@@ -25,8 +25,10 @@ interface Props {
   context?: ApiSymbol
   chip?: boolean
   signature?: Signature
+  /** Link an inline member declaration to its own page. */
+  nameHref?: string
 }
-const { type, index, context, chip, signature } = Astro.props as Props
+const { type, index, context, chip, signature, nameHref } = Astro.props as Props
 const spans = index.linkType(type, context, signature)
 /* gp-sphinx renders a type cross-reference as a code chip — `Bases:` and the
    parameter list both — and chips the names that resolve to nothing too, so
@@ -39,10 +41,12 @@ const isOperator = (text: string) => /^(->|=>|<:|:>)$/.test(text)
 ---
 <span class="api-type">{
   spans.map((span) =>
-    span.link ? (
+    span.declaration && span.text === context?.name && nameHref ? (
+      <a class="api-signature-name-link api-declaration-name" href={nameHref}><SymbolName name={span.text} /></a>
+    ) : span.link ? (
       <a
         href={span.link.href}
-        class:list={['api-type-link', chip && 'api-literal api-literal--link']}
+        class:list={['api-type-link', span.declaration && 'api-parameter-name', chip && 'api-literal api-literal--link']}
         rel={span.link.external ? 'nofollow noopener' : undefined}
         title={span.link.external ? `${span.text} (${span.link.project ?? "external"})` : span.link.symbol ? qualifiedNameOf(span.link.symbol) : undefined}
       ><SymbolName name={span.text} /></a>

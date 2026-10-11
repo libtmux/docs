@@ -7,6 +7,7 @@
 @import "tailwindcss";
 @import "./gp-sphinx-tokens.css";
 @import "./brand.css";
+@import "./api-kinds.css";
 @import "./flags.css" layer(components);
 @import "./image-loading.css" layer(components);
 /* Unlayered, like the widgets, so prose margins cannot outrank it. */

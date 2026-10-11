@@ -36,6 +36,56 @@ const stripSlashDoc = (raw: string): string | undefined => {
   return raw.replace(/^\/\/\/+[ \t]?/, '').replace(/\s+$/, '')
 }
 
+/** Remove syntax nodes, not comment-looking text inside string literal types. */
+function typescriptType(node: Node): string {
+  const type = node.firstChild?.type === ':' ? node.namedChildren.find((child) => child?.type !== 'comment') ?? node : node
+  let text = type.text
+  const comments = type.descendantsOfType('comment').filter((node): node is Node => node !== null)
+  for (const comment of comments.sort((a, b) => b.startIndex - a.startIndex)) {
+    const start = comment.startIndex - type.startIndex
+    const end = comment.endIndex - type.startIndex
+    text = text.slice(0, start) + ' ' + text.slice(end)
+  }
+  const lines = text.split('\n')
+  const rest = lines.slice(1).filter((line) => line.trim())
+  const indent = rest.length ? Math.min(...rest.map((line) => /^\s*/.exec(line)![0].length)) : 0
+  return [lines[0], ...lines.slice(1).map((line) => line.slice(Math.min(indent, /^\s*/.exec(line)![0].length)))]
+    .filter((line) => line.trim()).join('\n').trim()
+}
+
+/** Inline option descriptions belong to the parameter, with their field paths. */
+function typescriptParameter(node: Node) {
+  const name = node.childForFieldName('name') ?? node.childForFieldName('pattern')
+  if (!name) return undefined
+  const type = node.childForFieldName('type')
+  const descriptions: string[] = []
+  const visit = (current: Node, path: string[]) => {
+    for (const child of current.namedChildren) {
+      if (!child || child.type === 'comment') continue
+      if (child.type === 'property_signature') {
+        const field = child.childForFieldName('name')?.text
+        if (!field) continue
+        const names = [...path, field]
+        const previous = child.previousNamedSibling
+        const doc = previous?.type === 'comment' && previous.endPosition.row >= child.startPosition.row - 1
+          ? stripBlockDoc(previous.text) : undefined
+        if (doc) descriptions.push(`- \`${names.join('.')}\`: ${doc.replaceAll('\n', '\n  ')}`)
+        const nested = child.childForFieldName('type')
+        if (nested) visit(nested, names)
+      } else if (!['function_type', 'constructor_type'].includes(child.type)) visit(child, path)
+    }
+  }
+  if (type) visit(type, [])
+  return {
+    name: name.text.replace(/^\.\.\./, ''),
+    type: type ? typescriptType(type) : undefined,
+    default: node.childForFieldName('value')?.text,
+    ...(node.type === 'optional_parameter' ? { optional: true } : {}),
+    ...(name.type === 'rest_pattern' ? { variadic: 'positional' as const } : {}),
+    ...(descriptions.length ? { doc: descriptions.join('\n') } : {}),
+  }
+}
+
 export const TYPESCRIPT: LanguageSpec = {
   grammar: 'typescript',
   containers: {
@@ -79,6 +129,8 @@ export const TYPESCRIPT: LanguageSpec = {
     node.parent?.type !== 'program' ||
     (node.type !== 'function_declaration' && node.type !== 'function_signature'),
   fields: { returns: 'return_type' },
+  typeText: typescriptType,
+  parameter: typescriptParameter,
 }
 
 /** Only a bare `hidden` doc argument hides an item; alias strings do not. */
@@ -259,6 +311,8 @@ export const JAVA: LanguageSpec = {
 export const CSHARP: LanguageSpec = {
   grammar: 'csharp',
   docDialect: 'xml',
+  positionalProperties: (node) => ['record_declaration', 'record_struct_declaration'].includes(node.type)
+    && Boolean(node.childForFieldName('parameters')),
   containers: {
     class_declaration: 'class',
     interface_declaration: 'interface',

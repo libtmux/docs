@@ -27,6 +27,7 @@ describe('route branding', () => {
   it('uses project titles independently of package names and shared source repositories', () => {
     const names = {
       py: 'libtmux', ruby: 'libtmux-ruby', lua: 'libtmux-lua', ts: 'libtmux-ts',
+      powershell: 'libtmux-powershell', julia: 'LibTmux.jl',
       rs: 'libtmux-rs', go: 'libtmux-go', java: 'libtmux-java', kotlin: 'libtmux-kotlin',
       scala: 'libtmux-scala', csharp: 'libtmux-dotnet', fsharp: 'libtmux-fsharp',
       cxx: 'libtmux-cxx', swift: 'libtmux-swift',
@@ -40,6 +41,8 @@ describe('route branding', () => {
     expect(documentationTitle('Server | libtmux-dotnet', 'libtmux-dotnet')).toBe('Server | libtmux-dotnet')
     expect(documentationTitle('libtmux', 'libtmux')).toBe('libtmux')
     expect(documentationTitle('libtmux-scala', 'libtmux-scala')).toBe('libtmux-scala')
+    expect(documentationTitle('Server | LibTmux.jl | LibTmux.jl', 'LibTmux.jl')).toBe('Server | LibTmux.jl')
+    expect(documentationTitle('LibTmux.jl', 'LibTmux.jl')).toBe('LibTmux.jl')
   })
   it('publishes the size and digest of every catalogued asset', () => {
     const catalog = JSON.parse(readFileSync(publicFile('/brand/catalog.json'), 'utf8')) as {

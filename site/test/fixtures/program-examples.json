@@ -1,0 +1,167 @@
+{
+  "examples": [
+    {
+      "port": "powershell",
+      "page": "ports/powershell/examples/create-layout",
+      "language": "powershell",
+      "sourceRepository": "libtmux/libtmux-powershell",
+      "sourceRevision": "fcd0634e9ca887b70d88915c2d8e26c5da2737e5",
+      "files": [
+        {
+          "name": "quickstart.ps1",
+          "sha256": "7b2f017dba2445117e868f2d34fd07ca275484e3c8fa1624db7d48ac7d43a2c5"
+        }
+      ],
+      "shellRecipe": [
+        "pwsh -NoLogo -NoProfile -Command '\n  $ErrorActionPreference = \"Stop\"\n  Install-PSResource -Name LibTmux -Prerelease `\n    -Repository PSGallery -Scope CurrentUser -TrustRepository\n'",
+        "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\npwsh -NoLogo -NoProfile -File quickstart.ps1"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "editor: %0, %1",
+          "logs: %2"
+        ]
+      ]
+    },
+    {
+      "port": "powershell",
+      "page": "ports/powershell/examples/command-completion",
+      "language": "powershell",
+      "sourceRepository": "libtmux/libtmux-powershell",
+      "sourceRevision": "fcd0634e9ca887b70d88915c2d8e26c5da2737e5",
+      "files": [
+        {
+          "name": "command-completion.ps1",
+          "sha256": "5071c246ffc8a7ef4feee724f015f687a4cd66bd6860fe4d6500b1f7dddf2db9"
+        }
+      ],
+      "shellRecipe": [
+        "pwsh -NoLogo -NoProfile -Command '\n  $ErrorActionPreference = \"Stop\"\n  Install-PSResource -Name LibTmux -Prerelease `\n    -Repository PSGallery -Scope CurrentUser -TrustRepository\n'",
+        "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\npwsh -NoLogo -NoProfile -File command-completion.ps1"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "exit status: 7"
+        ]
+      ]
+    },
+    {
+      "port": "powershell",
+      "page": "ports/powershell/examples/wait-for-service",
+      "language": "powershell",
+      "sourceRepository": "libtmux/libtmux-powershell",
+      "sourceRevision": "fcd0634e9ca887b70d88915c2d8e26c5da2737e5",
+      "files": [
+        {
+          "name": "wait-for-service.ps1",
+          "sha256": "3744bb20db234610ca1789c847075d2964bc3d0cca51b23bd013e03a30fe8932"
+        }
+      ],
+      "shellRecipe": [
+        "pwsh -NoLogo -NoProfile -Command '\n  $ErrorActionPreference = \"Stop\"\n  Install-PSResource -Name LibTmux -Prerelease `\n    -Repository PSGallery -Scope CurrentUser -TrustRepository\n'",
+        "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\npwsh -NoLogo -NoProfile -File wait-for-service.ps1"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "readiness: observed",
+          "HTTP status: 200"
+        ]
+      ]
+    },
+    {
+      "port": "julia",
+      "page": "ports/julia/examples/owned-capture",
+      "language": "julia",
+      "sourceRepository": "libtmux/libtmux-julia",
+      "sourceRevision": "6f62bd72cb8d99f3759ca5e2cc3591165a03c768",
+      "files": [
+        {
+          "name": "owned_capture.jl",
+          "sha256": "9b55c3a7bf6eb9bb333e45107fc0661a1b36137a18cb321bc89d55d75c6f984c"
+        }
+      ],
+      "shellRecipe": [
+        "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-julia.git \\\n  6f62bd72cb8d99f3759ca5e2cc3591165a03c768\ngit -C source checkout -q --detach FETCH_HEAD",
+        "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\njulia --startup-file=no --project=source owned_capture.jl"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Captured %0: 24 screen bytes"
+        ]
+      ]
+    },
+    {
+      "port": "julia",
+      "page": "ports/julia/examples/shared-windows",
+      "language": "julia",
+      "sourceRepository": "libtmux/libtmux-julia",
+      "sourceRevision": "6f62bd72cb8d99f3759ca5e2cc3591165a03c768",
+      "files": [
+        {
+          "name": "shared_windows.jl",
+          "sha256": "f71d114b9b6bd5e84695d0d0580287b9a1bb96a38037d1aa0928b5a355a223e2"
+        }
+      ],
+      "shellRecipe": [
+        "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-julia.git \\\n  6f62bd72cb8d99f3759ca5e2cc3591165a03c768\ngit -C source checkout -q --detach FETCH_HEAD",
+        "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\njulia --startup-file=no --project=source shared_windows.jl"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "2 sessions, 2 windows, 3 links, 3 panes, 5 occurrences"
+        ]
+      ]
+    },
+    {
+      "port": "julia",
+      "page": "ports/julia/examples/cancel-control-wait",
+      "language": "julia",
+      "sourceRepository": "libtmux/libtmux-julia",
+      "sourceRevision": "6f62bd72cb8d99f3759ca5e2cc3591165a03c768",
+      "files": [
+        {
+          "name": "control_cancel.jl",
+          "sha256": "cbe5f859c0ce89a437cbbabbb18ba9bcd23142baf6ba84d6a3c506f240622e74"
+        }
+      ],
+      "shellRecipe": [
+        "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-julia.git \\\n  6f62bd72cb8d99f3759ca5e2cc3591165a03c768\ngit -C source checkout -q --detach FETCH_HEAD",
+        "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\njulia --startup-file=no --project=source control_cancel.jl"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Cancelled the wait and closed both owned control clients"
+        ]
+      ]
+    },
+    {
+      "port": "julia",
+      "page": "ports/julia/examples/observe-output",
+      "language": "julia",
+      "sourceRepository": "libtmux/libtmux-julia",
+      "sourceRevision": "6f62bd72cb8d99f3759ca5e2cc3591165a03c768",
+      "files": [
+        {
+          "name": "output_stream.jl",
+          "sha256": "7f94a7178e428d5e30aa38f2636b7f70ddda666e725f3c6891fc12d25518906a"
+        }
+      ],
+      "shellRecipe": [
+        "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-julia.git \\\n  6f62bd72cb8d99f3759ca5e2cc3591165a03c768\ngit -C source checkout -q --detach FETCH_HEAD",
+        "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\njulia --startup-file=no --project=source output_stream.jl"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "observed terminal echo: \u03bb"
+        ]
+      ]
+    }
+  ]
+}

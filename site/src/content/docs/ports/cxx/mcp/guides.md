@@ -3,6 +3,7 @@ title: Connect a C++ MCP client
 description: Build the optional native executable and launch it against an explicit POSIX tmux socket.
 port: cxx
 product: mcp
+equivalence: mcp-client-setup
 sidebar:
   label: Guides
   order: 2

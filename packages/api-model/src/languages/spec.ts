@@ -117,6 +117,10 @@ export interface LanguageSpec {
   receiverType?: (node: Node) => string | undefined
   /** A parameter whose native syntax cannot be split into a name and type. */
   parameter?: (node: Node) => Param | undefined
+  /** A type without its annotation delimiter or documentation comments. */
+  typeText?: (node: Node) => string
+  /** Positional record parameters also declare public properties. */
+  positionalProperties?: (node: Node) => boolean
   /**
    * The type a declaration has without spelling it, where the language
    * repeats one: in Go's `const` block a spec with no value takes the type of
@@ -214,6 +218,7 @@ function paramsOf(node: Node | null, spec: LanguageSpec): Param[] {
     const name = child.childForFieldName('name') ?? child.childForFieldName('pattern')
     const type = child.childForFieldName('type')
     const value = child.childForFieldName('value') ?? child.childForFieldName('default_value')
+      ?? child.namedChildren.find((node) => node?.type === 'equals_value_clause')?.namedChild(0)
     // Go groups parameters — `a, b string` is one node with two names — and a
     // receiver has no name at all. Falling back to the node's own text keeps
     // both readable instead of emitting an empty row.
@@ -221,7 +226,7 @@ function paramsOf(node: Node | null, spec: LanguageSpec): Param[] {
     if (!label) continue
     out.push({
       name: label.replace(/^[&*]+/, ''),
-      type: type?.text.replace(/\s+/g, ' '),
+      type: type ? spec.typeText?.(type) ?? type.text.replace(/\s+/g, ' ') : undefined,
       default: value?.text,
     })
   }
@@ -240,7 +245,7 @@ function signatureOf(node: Node, spec: LanguageSpec): Signature {
     // it: TypeScript's `type_annotation` is `: string`, and all 240 of its
     // signatures rendered as `foo() → : string`. The arrow or colon is the
     // renderer's to draw.
-    returns: returns?.text.replace(/\s+/g, ' ').replace(/^\s*(?:->|:)\s*/, ''),
+    returns: returns ? spec.typeText?.(returns) ?? returns.text.replace(/\s+/g, ' ').replace(/^\s*(?:->|:)\s*/, '') : undefined,
     typeParams: node
       .childForFieldName('type_parameters')
       ?.namedChildren.map((n) => n?.text ?? '')
@@ -320,18 +325,34 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
     const modifiers = modifiersFor(child, spec)
 
     if (containerKind) {
+      const positional = spec.positionalProperties?.(child)
+      const signatures = positional ? [signatureOf(child, spec)] : []
       emit(ctx, {
         id,
         name,
         kind: containerKind,
         modifiers,
         parent,
-        signatures: [],
-        doc: docFor(raw, spec, []),
+        signatures,
+        doc: docFor(raw, spec, signatures),
         source: { file: ctx.file, line: child.startPosition.row + 1 },
       })
       const body = child.childForFieldName(f.body) ?? child
       walk(body, ctx, id)
+      if (positional) {
+        const parameters = child.childForFieldName(f.params)?.namedChildren ?? []
+        for (const parameter of signatures[0].params) {
+          const propertyId = `${id}.${parameter.name}`
+          if (ctx.byId.has(propertyId)) continue
+          const declaration = parameters.find((node) => node?.childForFieldName('name')?.text === parameter.name)
+          emit(ctx, {
+            id: propertyId, name: parameter.name, kind: 'property', parent: id,
+            type: parameter.type, modifiers: [], signatures: [],
+            doc: parameter.doc ? { summary: parameter.doc } : undefined,
+            source: { file: ctx.file, line: (declaration ?? child).startPosition.row + 1 },
+          })
+        }
+      }
       continue
     }
 
@@ -357,8 +378,8 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
       modifiers,
       parent: owner,
       signatures: memberSignatures,
-      type: hasParams
-        ? undefined
+      type: hasParams ? undefined : child.childForFieldName('type') && spec.typeText
+        ? spec.typeText(child.childForFieldName('type')!)
         : (child.childForFieldName('type')?.text ?? spec.implicitType?.(child))?.replace(/\s+/g, ' '),
       value: hasParams
         ? undefined
@@ -398,7 +419,7 @@ function docFor(
   if (sig) {
     for (const param of sig.params) {
       const text = params.get(param.name)
-      if (text) param.doc = text
+      if (text) param.doc = [text, param.doc].filter(Boolean).join('\n\n')
     }
     if (returnsDoc) sig.returnsDoc = returnsDoc
     if (raises.length) sig.raises = raises

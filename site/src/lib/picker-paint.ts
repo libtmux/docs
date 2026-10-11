@@ -25,9 +25,26 @@ export function pickerPaintRules(): string {
     + '.home-language-icon img{display:none;width:var(--home-launcher-icon-size,1.5rem);height:var(--home-launcher-icon-size,1.5rem);object-fit:contain}'
     + 'html[data-theme-mode="light"] .home-language-icon{color-scheme:light}'
     + 'html[data-theme-mode="dark"] .home-language-icon{color-scheme:dark}'
+    + '[data-home-port-name]{display:none}'
     + PORTS.map((p) => paintPort(p.slug, 'lm-pkg-install') + paintPort(p.slug, 'lm-agent-prompt') + paintPortManagers(p)
+      + paintHomePort(p.slug)
       + `html[data-home-selected-port="${p.slug}"] .home-language-icon [data-home-default-icon]{display:none}`
       + `html[data-home-selected-port="${p.slug}"] .home-language-icon img[data-home-language-icon="${p.slug}"]{display:block}`).join('')
+}
+
+/** The homepage follows the head's selection before its launcher module loads. */
+function paintHomePort(slug: string): string {
+  const page = `html[data-home-ports][data-pkg-port="${slug}"]`
+  const selected = `html[data-home-selected-port="${slug}"]`
+  // Tailwind's base layer hides [hidden] with !important. Important layered
+  // declarations outrank unlayered ones, so join that layer and win by
+  // specificity while the selected panel still has its server-rendered flag.
+  return (
+    `@layer base{${page} [data-home-language]{display:none!important}` +
+    `${page} [data-home-language="${slug}"]{display:block!important}}` +
+    `${selected} [data-home-unselected-name]{display:none}` +
+    `${selected} [data-home-port-name="${slug}"]{display:inline}`
+  )
 }
 
 /** A port's library and each companion package keep their own saved manager. */

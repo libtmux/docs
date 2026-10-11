@@ -1,6 +1,10 @@
 /** Anchor arrival shared by Astro and native documentation pages. */
+// Keep link hints available through the shell asset used by every generator.
+import './external-links.js'
+
 export function installAnchorNavigation(win = window) {
   const doc = win.document
+  const pageUrl = new URL(win.location.href)
   const controller = new win.AbortController()
   const { signal } = controller
   let frame = 0
@@ -78,6 +82,14 @@ export function installAnchorNavigation(win = window) {
   }
 
   win.addEventListener('hashchange', () => schedule(), { signal })
+  win.addEventListener('popstate', (event) => {
+    // Address-bar fragment navigation can create an entry without router state.
+    // Astro leaves that entry alone. If another page is still mounted, load
+    // the browser's actual destination instead of leaving its old contents.
+    if (event.state === null && (win.location.pathname !== pageUrl.pathname || win.location.search !== pageUrl.search)) {
+      win.location.reload()
+    }
+  }, { signal })
   doc.addEventListener('click', (event) => {
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return
     const link = event.target.closest?.('a[href]')

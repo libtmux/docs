@@ -7,7 +7,8 @@ const KIND_MARKS: Record<SymbolKind, string> = {
   constant: 'k', typealias: 'A', exception: '!',
 }
 
-export const kindMark = (kind: string) => KIND_MARKS[kind as SymbolKind]
+const PROTOCOL_MARKS: Record<string, string> = { tool: 't', prompt: 'P', resource: 'r', 'resource-template': 'R' }
+export const kindMark = (kind: string) => KIND_MARKS[kind as SymbolKind] ?? PROTOCOL_MARKS[kind]
 
 const namespaceSegments = new Intl.Segmenter('en', { granularity: 'grapheme' })
 

@@ -12,6 +12,7 @@ import SiteHeader from '../components/SiteHeader.astro'
 import ShellHead from '../components/ShellHead.astro'
 import DocumentationScript from '../components/docs/DocumentationScript.astro'
 import SearchModal from '../components/SearchModal.astro'
+import LinkPreview from '../components/LinkPreview.astro'
 import { buildTarget } from '../lib/versions'
 import type { VersionEntry } from '../lib/versions'
 import { withPortRoot, withRoot } from '../lib/site-root'
@@ -252,6 +253,7 @@ const homeBrands = homeLauncher
     {!bare && <SiteFooter locale={locale as Locale} source={source} markdownHref={markdownHref} llmsRoot={llmsRoot} githubUrl={githubUrl} flush={flush} />}
     <BackToTop />
     <SearchModal port={navPort} version={navVersion} />
+    <LinkPreview />
     <DocumentationScript />
   </body>
 </html>

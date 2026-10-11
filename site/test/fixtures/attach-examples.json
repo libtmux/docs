@@ -429,6 +429,68 @@
         "3.2a",
         "3.7c"
       ]
+    },
+    {
+      "port": "powershell",
+      "language": "powershell",
+      "sourceRevision": "fcd0634e9ca887b70d88915c2d8e26c5da2737e5",
+      "sourceRepository": "libtmux/libtmux-powershell",
+      "toolchain": [
+        "PowerShell 7.4.20",
+        "PSResourceGet 1.1.1",
+        "LibTmux 0.1.0-alpha2"
+      ],
+      "page": "ports/powershell/guides/attaching-to-tmux",
+      "shellRecipe": [
+        "pwsh -NoLogo -NoProfile -Command '\n  $ErrorActionPreference = \"Stop\"\n  Install-PSResource -Name LibTmux -Version 0.1.0-alpha2 -Prerelease `\n    -Repository PSGallery -Scope CurrentUser -TrustRepository\n'",
+        "sh run.sh pwsh -NoLogo -NoProfile -File connect.ps1"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "work"
+        ]
+      ],
+      "files": [
+        {
+          "name": "connect.ps1",
+          "sha256": "9b7d64c848a6498380e574702fdca35fca7a66e227fd84711e7ecc38319889a9"
+        },
+        {
+          "name": "run.sh",
+          "sha256": "69a251952304d1af76082f1e36bd59fc3ea6e5ecc64e40540cbabae3e3e4fbc8"
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "language": "julia",
+      "sourceRevision": "6f62bd72cb8d99f3759ca5e2cc3591165a03c768",
+      "sourceRepository": "libtmux/libtmux-julia",
+      "toolchain": [
+        "Julia 1.13.0"
+      ],
+      "page": "ports/julia/guides/attaching-to-tmux",
+      "shellRecipe": [
+        "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-julia.git \\\n  6f62bd72cb8d99f3759ca5e2cc3591165a03c768\ngit -C source checkout -q --detach FETCH_HEAD",
+        "sh run.sh julia --startup-file=no --project=source connect.jl"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "work"
+        ]
+      ],
+      "files": [
+        {
+          "name": "connect.jl",
+          "sha256": "b22b7f00c624ef3d0f1082bad022787c822cc767091ed430a5af290c5080da8a"
+        },
+        {
+          "name": "run.sh",
+          "sha256": "cd35444c4d85ba5411c9bebbcc89a552cf346efe414502078d9a338d5c89f44e"
+        }
+      ]
     }
   ],
   "rootExample": {

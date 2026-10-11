@@ -2,16 +2,19 @@ import { getSidebar, type SidebarItem, type SidebarLinkItem } from './sidebar'
 import { documentationAreas } from './port-documentation'
 import { PORT_BY_SLUG, portPageUrl, referenceUrl, type DocProduct } from './ports'
 import { API_MODELS } from './api-models'
-import { productApiHref, productApiRoots } from './product-api'
+import { productApiNavigation } from './product-api'
+import { API_GLOSSARY_TITLE } from './api-glossary'
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import { withPortRoot } from './site-root'
 import { tmuxReferenceUrl } from './tmux-reference'
 import { tmuxManualUrl } from './tmux-manual-data'
+import { mcpObjects, MCP_SECTIONS, type McpSection } from './mcp-reference'
 
 export interface DocumentationSection {
   id: string
   label: string
   shortLabel?: string
+  disabled?: boolean
   href?: string
   items: SidebarItem[]
   alternatives?: SidebarLinkItem[]
@@ -28,10 +31,11 @@ const labels: Record<string, string> = {
   home: 'Home', guides: 'Guides', tutorials: 'Tutorials', topics: 'Topics', concepts: 'Concepts',
   examples: 'Examples', reference: 'API Reference', configuration: 'Configuration', internals: 'Internals',
   async: 'Async', runtimes: 'Runtimes', manual: 'CLI Manual',
+  ...MCP_SECTIONS,
 }
-const standardSections = ['home', 'guides', 'tutorials', 'topics', 'concepts', 'examples', 'manual', 'reference']
+const standardSections = ['home', 'guides', 'tutorials', 'topics', 'concepts', 'examples', 'manual', 'tools', 'prompts', 'resources', 'reference']
 const linksOf = (items: SidebarItem[]): SidebarLinkItem[] => items.flatMap((item) => item.type === 'link'
-  ? [item] : [...(item.href ? [{ type: 'link' as const, label: item.label, href: item.href }] : []), ...item.items])
+  ? [item] : [...(item.href ? [{ type: 'link' as const, label: item.label, href: item.href }] : []), ...linksOf(item.items)])
 
 /** Group actual published destinations, not a guessed matrix of app routes. */
 export function buildDocumentationSurfaces(
@@ -57,7 +61,7 @@ export function buildDocumentationSurfaces(
       if (key === 'third-party-notices') continue
       if (key === 'source-guide') key = 'guides'
       if (id === 'workspace' && (key === 'cli' || /^reference\/(?:exit-codes|output)$/.test(relative ?? ''))) key = 'manual'
-      else if (link.external || key === 'cli' || key === 'tools' || key === 'api') key = 'reference'
+      else if (link.external || key === 'cli' || key === 'api') key = 'reference'
       const section = sections.get(key) ?? { id: key, label: labels[key] ?? link.label, items: [] }
       if (!section.href && (relative === key || (key === 'manual' && relative === 'cli')) && !link.external) section.href = link.href
       section.items.push(link)
@@ -67,8 +71,9 @@ export function buildDocumentationSurfaces(
     reference.href = referenceUrl(info, version, id)
     if (domain.product) {
       // Protocol tools and the implementation API retain their native URLs.
-      const groups = new Map<string, SidebarLinkItem[]>()
+      const groups = new Map<string, SidebarItem[]>([['Language API', []]])
       for (const item of linksOf(reference.items)) {
+        if (item.href === reference.href) continue
         const route = item.href.slice(base.length)
         const label = route.startsWith(`${prefix}cli/`) ? 'CLI reference'
           : route.startsWith(`${prefix}tools/`) ? 'Tools'
@@ -78,16 +83,30 @@ export function buildDocumentationSurfaces(
         groups.set(label, entries)
       }
       const api = groups.get('Language API') ?? []
-      if (API_MODELS[port]) api.push(...productApiRoots(API_MODELS[port], domain.product).map((symbol) => ({
-        type: 'link' as const, label: symbol.name, kind: symbol.kind,
-        href: productApiHref(API_MODELS[port], symbol, version),
-      })))
+      if (API_MODELS[port]) {
+        const symbols = productApiNavigation(API_MODELS[port], domain.product, version)
+        api.push(...symbols)
+        // Keep glossary visits in the same expanded reference tree, with their
+        // own active entry rather than falsely selecting the reference index.
+        if (symbols.length) api.push({ type: 'link', label: API_GLOSSARY_TITLE, href: `${reference.href}glossary/` })
+      }
       groups.set('Language API', api)
-      reference.items = [...groups].map(([label, items]) => ({ type: 'group', label, items }))
+      reference.items = [...groups].map(([label, items]) => ({ type: 'group', label,
+        ...(label === 'Language API' ? { href: reference.href } : {}), items }))
     } else {
       reference.alternatives = linksOf(reference.items).filter((item) => item.href !== reference.href)
     }
     sections.set('reference', reference)
+    if (id === 'mcp') for (const [key, label] of Object.entries(MCP_SECTIONS)) {
+      const section = sections.get(key)
+      if (!section) continue
+      section.label = label
+      const objects = mcpObjects(port).filter((object) => object.section === key as McpSection)
+      section.disabled = objects.length === 0
+      section.items.push(...objects.map((object) => ({
+        type: 'link' as const, label: object.name, kind: object.kind, href: portPageUrl(info, version, object.path),
+      })))
+    }
     // Some named areas have no overview. Their first real page is a useful
     // destination without inventing an overview route.
     for (const section of sections.values()) section.href ??= linksOf(section.items)[0]?.href
@@ -98,7 +117,8 @@ export function buildDocumentationSurfaces(
     home.items = [
       { type: 'link', label: 'Overview', href },
       ...ordered.filter((section) => section.id !== 'home' && section.href)
-        .map((section): SidebarLinkItem => ({ type: 'link', label: section.label, href: section.href! })),
+        .map((section): SidebarLinkItem => ({ type: 'link', label: section.label, href: section.href!,
+          ...(section.disabled ? { disabled: true } : {}) })),
     ]
     return { id, label: domain.id === 'core' ? 'Core Library' : domain.label, href, sections: ordered }
   })
@@ -142,7 +162,7 @@ export function currentDocumentation(surfaces: DocumentationSurface[], currentPa
   const path = currentPath.slice(surface.href.length).split('/')[0] || 'home'
   const key = path === 'source-guide' ? 'guides'
     : path === 'cli' && surface.id === 'workspace' ? 'manual'
-    : path === 'cli' || path === 'tools' || path === 'api' ? 'reference' : path
+    : path === 'cli' || path === 'api' ? 'reference' : path
   const section = surface.sections.filter((entry) => entry.id !== 'home').flatMap((entry) =>
     [entry.href, ...linksOf(entry.items).map((item) => item.href)]
       .filter((href): href is string => Boolean(href && currentPath.startsWith(href)))

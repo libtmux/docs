@@ -11,10 +11,11 @@ import { DEFAULT_LOCALE } from '../i18n/locales.ts'
 import { buildLocale, localeOf, sourceIdOf } from '../i18n/resolve.ts'
 import { buildTarget } from './versions.ts'
 import { docsPath, docsRoutePath, proseHref, type DocsPage } from './docs-paths.ts'
-import { docsEntryAvailable } from './page-port-links.ts'
+import { docsEntriesAvailable } from './page-port-links.ts'
 import type { Locale } from '../i18n/locales.ts'
 import { PORT_ROOT, SITE_ROOT } from './site-root.ts'
 import { API_MODELS } from './api-models.ts'
+import { MCP_REFERENCE } from './mcp-reference'
 import { productApiHref, productApiRoots } from './product-api.ts'
 import { tmuxReferenceUrl } from './tmux-reference'
 import { buildsTmuxDocumentation, tmuxManualUrl } from './tmux-manual-data.ts'
@@ -49,13 +50,12 @@ export async function llmsPages(origin: string, base: string): Promise<LlmsPage[
   // Default locale only. A translation is a different document at a different
   // URL, and listing `ja/concepts` beside `concepts` in one file would hand an
   // agent the same page twice in two languages.
-  const entries = await getCollection(
+  const entries = docsEntriesAvailable(await getCollection(
     'docs',
     (entry) =>
-      docsEntryAvailable(entry, port) &&
       localeOf(entry.id) === DEFAULT_LOCALE &&
       (locale === DEFAULT_LOCALE || Boolean(port) || entry.data.port === undefined),
-  )
+  ), port)
   // The same page the routes serve: a translation where this locale has one,
   // so a section and that page's `.md` twin stay one text rather than two.
   let defaults: Record<string, string> = {}
@@ -103,7 +103,7 @@ export function llmsPage(entry: CollectionEntry<'docs'>, origin: string, base: s
     const model = API_MODELS[entryPort]
     const symbols = productApiRoots(model, entry.data.product)
     body += `\n\n## API declarations\n\n${symbols.map((symbol) => `- [${qualifiedNameOf(symbol)}](${origin}${productApiHref(model, symbol, version)})`).join('\n')}\n`
-    if (entry.data.product === 'mcp') body += `\n[Protocol catalog](${origin}${portPageUrl(PORT_BY_SLUG[entryPort], version, 'mcp/tools').replace(/\/$/, '.json')})\n`
+    if (entry.data.product === 'mcp' && MCP_REFERENCE[entryPort]) body += `\n[Protocol catalog](${origin}${portPageUrl(PORT_BY_SLUG[entryPort], version, 'mcp/tools').replace(/\/$/, '.json')})\n`
   }
   // A locale's landing entry routes to '', which is the root itself.
   return {
@@ -129,8 +129,7 @@ export function localeProse<T extends DocsPage>(
   port?: string,
   defaults: Record<string, string> = {},
 ): { entry: T; route: string }[] {
-  return entries
-    .filter((entry) => localeOf(entry.id) === locale && docsEntryAvailable(entry, port))
+  return docsEntriesAvailable(entries.filter((entry) => localeOf(entry.id) === locale), port)
     .map((entry) => {
       const source = { ...entry, id: sourceIdOf(entry.id) } as T
       return { entry: source, route: docsRoutePath(source, port, defaults) }

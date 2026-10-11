@@ -1262,6 +1262,127 @@
           "excerptSha256": "8968ddf7741769be9ab0f6d50a0e38d31310cacfd36a9336c821ac63e740fdca"
         }
       }
+    },
+    {
+      "port": "powershell",
+      "page": "home",
+      "sourceRepository": "libtmux/libtmux-powershell",
+      "sourceRevision": "fcd0634e9ca887b70d88915c2d8e26c5da2737e5",
+      "sourceTree": "e842e7d382a31131e73b2e9967d2b5d977304a0a",
+      "files": [
+        {
+          "name": "quickstart.ps1",
+          "sha256": "327bc9fdf32d4cffaa5033f04e61838e551bf5aa2bed50551383f305b8478fd1",
+          "clipboardSha256": "2e0437140b5dc07e1fc5ad142052afd74cb550a7828f41e441c958bd1423cc72"
+        }
+      ],
+      "shellRecipe": [
+        "pwsh -NoLogo -NoProfile -Command '\n  $ErrorActionPreference = \"Stop\"\n  $null = New-Item -ItemType Directory -Path ./modules -Force\n  Save-PSResource -Name LibTmux -Version 0.1.0-alpha2 `\n    -Prerelease -Path ./modules -TrustRepository\n'",
+        "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\npwsh -NoLogo -NoProfile -File quickstart.ps1"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "editor: %0, %1",
+          "logs: %2"
+        ]
+      ],
+      "excerptSha256": "2e0437140b5dc07e1fc5ad142052afd74cb550a7828f41e441c958bd1423cc72",
+      "tmuxVersions": [
+        "3.7d"
+      ],
+      "variants": {
+        "concise": {
+          "files": [
+            {
+              "name": "quickstart.ps1",
+              "sha256": "09d4b7effc0b3af230bec38e04fc2455c7016e3fec0490babefa68ccc45a1ae1",
+              "clipboardSha256": "e4fcc84eaac81992fd4715ac41a9d02dc528db812fb68eb1f2773defc8880447"
+            }
+          ],
+          "excerptSha256": "e4fcc84eaac81992fd4715ac41a9d02dc528db812fb68eb1f2773defc8880447"
+        },
+        "errors": {
+          "files": [
+            {
+              "name": "quickstart.ps1",
+              "sha256": "7c31cf6da65294e2d7d6b17640b9dc445162790a64ad6b23a01447c619dae6a1",
+              "clipboardSha256": "9cb1cdfb1de03fd3b7b7065d1621d04357aa94107281f24531afd4512849f37a"
+            }
+          ],
+          "excerptSha256": "9cb1cdfb1de03fd3b7b7065d1621d04357aa94107281f24531afd4512849f37a"
+        },
+        "cleanup": {
+          "files": [
+            {
+              "name": "quickstart.ps1",
+              "sha256": "1303c71ad0dcce2d039fad06b02e26e36723e04cb87f4051d88af335dce4fa6f",
+              "clipboardSha256": "ed47cdb553515d1eb26908880ec25aee4df30f8f23b607f1e514e97b8b8a288d"
+            }
+          ],
+          "excerptSha256": "ed47cdb553515d1eb26908880ec25aee4df30f8f23b607f1e514e97b8b8a288d"
+        }
+      }
+    },
+    {
+      "port": "julia",
+      "page": "home",
+      "sourceRepository": "libtmux/libtmux-julia",
+      "sourceRevision": "6f62bd72cb8d99f3759ca5e2cc3591165a03c768",
+      "sourceTree": "d0a50bcd9691a14b2a304387cb74b62444425eb8",
+      "files": [
+        {
+          "name": "quickstart.jl",
+          "sha256": "e8e28b416b8fa5e5cefc42a67e13b5f47118840516c33cd79c46d997e99e063e",
+          "clipboardSha256": "fcbea45d0f895ae82f18d7b5efb5d51e074fcec65d9b4d65eb3f6102149a1e78"
+        }
+      ],
+      "shellRecipe": [
+        "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-julia.git \\\n  6f62bd72cb8d99f3759ca5e2cc3591165a03c768\ngit -C source checkout -q --detach FETCH_HEAD",
+        "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\njulia --startup-file=no --project=source quickstart.jl"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "demo: 2 windows, 3 panes"
+        ]
+      ],
+      "excerptSha256": "fcbea45d0f895ae82f18d7b5efb5d51e074fcec65d9b4d65eb3f6102149a1e78",
+      "tmuxVersions": [
+        "3.7d"
+      ],
+      "variants": {
+        "concise": {
+          "files": [
+            {
+              "name": "quickstart.jl",
+              "sha256": "9cac65d0ae2a7b87208532b204e464eca5d4a54bc676a4f307367109e918fd63",
+              "clipboardSha256": "392832084f7b9acc0821ac71e1963d35bcef4f945ab65d241aa573e1d0191e3c"
+            }
+          ],
+          "excerptSha256": "392832084f7b9acc0821ac71e1963d35bcef4f945ab65d241aa573e1d0191e3c"
+        },
+        "errors": {
+          "files": [
+            {
+              "name": "quickstart.jl",
+              "sha256": "b5e9dab3a90713b63c5bbcab652f8b5ff405fafe5992829497608a4d0b277183",
+              "clipboardSha256": "558d26e274ee60a9bd5b9e81af8780a56df9c0a45a42012fb14c08103ecdf115"
+            }
+          ],
+          "excerptSha256": "558d26e274ee60a9bd5b9e81af8780a56df9c0a45a42012fb14c08103ecdf115"
+        },
+        "cleanup": {
+          "files": [
+            {
+              "name": "quickstart.jl",
+              "sha256": "6735e374b088c91c01ad47eef01bd80b2eca876e7a2a4bc968a8acebe53d42e8",
+              "clipboardSha256": "376fe3a7bea19970b4eeaa33482edbb71dbb54391371966d7dcf44b7f6bcb776"
+            }
+          ],
+          "excerptSha256": "376fe3a7bea19970b4eeaa33482edbb71dbb54391371966d7dcf44b7f6bcb776"
+        }
+      }
     }
   ]
 }

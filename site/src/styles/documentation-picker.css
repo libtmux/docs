@@ -24,6 +24,9 @@
 .doc-picker-check { margin-left: auto; color: var(--color-link); }
 .doc-picker-option[href]:hover, .doc-picker summary:hover { background: var(--color-surface-hover); }
 .doc-picker-option[aria-disabled] { color: var(--color-muted); }
+.doc-picker-option--unmatched { position: relative; padding-right: 2rem; color: var(--color-muted); }
+.doc-picker-home { position: absolute; top: .2rem; right: .15rem; display: grid; place-items: center; width: 1.75rem; height: 1.75rem; border-radius: .3rem; color: var(--text-color); }
+.doc-picker-home:hover { background: var(--color-surface-hover); color: var(--color-link); }
 .doc-picker-empty { padding: .75rem .5rem; }
 .doc-picker [hidden] { display: none !important; }
 .doc-picker :is(summary, a, input):focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }

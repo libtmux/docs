@@ -3,7 +3,7 @@ import type { ApiModel, ApiModelBase, ApiSymbol } from './model.ts'
 import { moduleOf } from './modules.ts'
 import { NAV } from './nav-config.ts'
 import { compileNav, type Bucket, type PortNav } from './nav.ts'
-import { OWNER_KINDS } from './prose.ts'
+import { OWNER_KINDS, pageSlug } from './prose.ts'
 
 /** Where a symbol that is not a type sits among a bucket's rows. */
 const FREE_ORDER: Record<string, number> = {
@@ -24,6 +24,8 @@ export interface NavSidecarBucket {
   label: string
   collapsed: boolean
   children?: NavSidecarBucket[]
+  shortcuts?: { id: string; name: string; slug: string; kind: ApiSymbol['kind'] }[]
+  target?: { id: string; name: string; slug: string; kind: ApiSymbol['kind'] }
 }
 
 /**
@@ -46,7 +48,8 @@ export function navSidecarFor(scope: string, model: ApiModelBase, nav: NavConfig
   // Every top-level symbol, not only the types: a free function, constant or
   // type alias has a page, and a sidebar that placed only types gave 1,282 of
   // those pages no row.
-  const topLevel = model.symbols.filter((s) => !s.parent)
+  const moduleIds = new Set(model.symbols.filter((symbol) => symbol.kind === 'module').map((symbol) => symbol.id))
+  const topLevel = model.symbols.filter((s) => !s.parent || (['powershell', 'julia'].includes(scope) && moduleIds.has(s.parent)))
   const conceptIds = Object.fromEntries(
     Object.entries(CONCEPTS)
       .map(([k, c]) => [k, c.symbols[scope]] as const)
@@ -80,17 +83,27 @@ export function navSidecarFor(scope: string, model: ApiModelBase, nav: NavConfig
     return [...ordered, ...remaining.filter((sym) => OWNER_KINDS.has(sym.kind)), ...free].map((sym) => ({
       id: sym.publicId ?? sym.id,
       name: sym.name,
-      slug: sym.slug,
+      slug: sym.slug ?? pageSlug(sym.publicId ?? sym.id),
       kind: sym.kind,
     }))
   }
   const shape = (buckets: Bucket[]): NavSidecarBucket[] =>
-    buckets.map((b) => ({
-      id: b.id,
-      label: b.label,
-      collapsed: b.collapsed ?? false,
-      ...(b.children ? { children: shape(b.children) } : {}),
-    }))
+    buckets.map((b) => {
+      const shortcuts = entries(b.shortcuts ?? [], b.shortcuts)
+      if (shortcuts.length !== new Set(b.shortcuts ?? []).size) {
+        throw new Error(`${scope}: ${b.id} contains an unknown navigation shortcut`)
+      }
+      const target = b.order && entries(compiled.assignments[b.id] ?? [], b.order)
+        .find((entry) => b.order!.includes(entry.id))
+      return {
+        id: b.id,
+        label: b.label,
+        collapsed: b.collapsed ?? false,
+        ...(target ? { target } : {}),
+        ...(shortcuts.length ? { shortcuts } : {}),
+        ...(b.children ? { children: shape(b.children) } : {}),
+      }
+    })
   return {
     port: scope,
     buckets: shape(nav.buckets),

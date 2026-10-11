@@ -1,11 +1,16 @@
-import { conceptsFor, parentInventory, sourceUrl, SymbolIndex, type ApiModel, type ApiModelBase, type ApiSymbol, type InventoryEntry } from '@libtmux/api-model'
+import { conceptsFor, parameterId, parentInventory, sourceUrl, SymbolIndex, type ApiModel, type ApiModelBase, type ApiSymbol, type InventoryEntry } from '@libtmux/api-model'
 import mentionIndex from '../data/mentions.json'
 import domInv from '../data/inventories/dom.entries.json'
 import jdkInv from '../data/inventories/jdk.entries.json'
 import pythonInv from '../data/inventories/python.entries.json'
+import juliaInv from '../data/inventories/julia.entries.json'
 import dependencyInv from '../data/inventories/dependencies.entries.json'
 import { PORT_BY_SLUG, referenceUrl, type DocProduct } from './ports'
 import { defaultVersionFor } from './versions'
+import powershellNav from '../data/api/powershell.nav.json'
+import juliaNav from '../data/api/julia.nav.json'
+import powershellModel from '../data/api/powershell.json'
+import juliaModel from '../data/api/julia.json'
 import cxxNav from '../data/api/cxx.nav.json'
 import csharpNav from '../data/api/csharp.nav.json'
 import goNav from '../data/api/go.nav.json'
@@ -43,6 +48,8 @@ import fsharpNav from '../data/api/fsharp.nav.json'
  * passed. Imports are visible to both.
  */
 export const API_MODELS: Record<string, ApiModel> = {
+  powershell: powershellModel as unknown as ApiModel,
+  julia: juliaModel as unknown as ApiModel,
   py: pyModel as unknown as ApiModel,
   ruby: rubyModel as unknown as ApiModel,
   lua: luaModel as unknown as ApiModel,
@@ -64,6 +71,8 @@ export interface NavEntry {
   name: string
   slug: string
   kind: string
+  /** A contextual link outside the declaration's canonical category. */
+  shortcut?: boolean
 }
 
 /** One bucket in a compiled sidebar, and the buckets it splits into. */
@@ -71,6 +80,8 @@ export interface NavBucket {
   id: string
   label: string
   collapsed: boolean
+  shortcuts?: NavEntry[]
+  target?: NavEntry
   /** Present when the bucket grew large enough to divide — see SPLITS in
    *  nav-config.ts. A child holds symbols of its own, so a renderer that
    *  walked only the top level would drop them. */
@@ -99,6 +110,8 @@ export interface PortNavData {
  * what a page renders cannot disagree.
  */
 export const API_NAV: Record<string, PortNavData> = {
+  powershell: powershellNav as unknown as PortNavData,
+  julia: juliaNav as unknown as PortNavData,
   py: pyNav as unknown as PortNavData,
   ruby: rubyNav as unknown as PortNavData,
   lua: luaNav as unknown as PortNavData,
@@ -133,6 +146,8 @@ export const OWNER_KINDS = new Set([
 ])
 
 export const PORT_NAME: Record<string, string> = {
+  powershell: 'PowerShell',
+  julia: 'Julia',
   py: 'Python',
   ruby: 'Ruby',
   lua: 'Lua',
@@ -225,6 +240,7 @@ const INVENTORIES: {
   project: string
 }[] = [
   { data: pythonInv, baseUrl: 'https://docs.python.org/3/', langs: ['py'], project: 'Python' },
+  { data: juliaInv, baseUrl: 'https://docs.julialang.org/en/v1/', langs: ['julia'], project: 'Julia' },
   // Neither of these is published as an inventory; both are converted from
   // what their projects do publish — see scripts/build-inventories.mjs.
   {
@@ -282,6 +298,10 @@ export function createApiIndex(model: ApiModelBase & { port?: string; language?:
   const parent = model.port ? PORT_BY_SLUG[model.port]?.parentLibrary : undefined
   if (parent && model.port) {
     index.addInventory('', parentApiInventory(model.port), [model.port], `libtmux ${PORT_NAME[parent.slug]}`)
+  }
+  for (const dependency of (model.port ? PORT_BY_SLUG[model.port]?.apiDependencies : undefined) ?? []) {
+    index.addInventory('', parentInventory(API_MODELS[dependency],
+      (symbol) => referenceHref(dependency, symbol.publicId ?? symbol.id)!), [model.port!], `libtmux ${PORT_NAME[dependency]}`)
   }
   const sourceFiles = new Map<string, Map<string, string>>()
   for (const symbol of model.symbols) {
@@ -377,17 +397,30 @@ export function referenceHref(port: string, publicId: string, version?: string):
   return `${referenceUrl(target, version ?? defaultVersionFor(port), product as DocProduct | 'core')}${symbol.slug ?? pageSlug(publicId)}/`
 }
 
-/** Source-verified equivalents, shared by reference entries and page navigation. */
+/** APIs for the same concept, preserving each port's native kind and behavior. */
 export function referenceAlternatives(port: string, publicId: string) {
   return conceptsFor(port, publicId).map((concept) => ({
     label: concept.label,
-    ports: Object.entries(PORT_NAME).map(([targetPort, name]) => ({
-      port: targetPort,
-      name,
-      publicId: concept.symbols[targetPort],
-      href: concept.symbols[targetPort] ? referenceHref(targetPort, concept.symbols[targetPort]) : undefined,
-      absent: concept.absent?.[targetPort],
-    })),
+    ports: Object.entries(PORT_NAME).map(([targetPort, name]) => {
+      const targetId = concept.symbols[targetPort]
+      const target = API_MODELS[targetPort]?.symbols.find((symbol) => (symbol.publicId ?? symbol.id) === targetId)
+      const href = targetId ? referenceHref(targetPort, targetId) : undefined
+      // Switches name this cmdlet's parameters, not similarly named .NET types.
+      const note = target?.command && href
+        ? concept.notes?.[targetPort]?.replace(/`-([A-Za-z][A-Za-z0-9]*)`/g, (_, name: string) =>
+          target.signatures.some((signature) => signature.params.some((param) => param.name === name))
+            ? '[`-' + name + '`](' + href + '#' + encodeURIComponent(parameterId(target, name)) + ')' : `-${name}`)
+        : concept.notes?.[targetPort]
+      return {
+        port: targetPort,
+        name,
+        publicId: targetId,
+        href,
+        kind: target?.command?.kind ?? target?.kind,
+        note,
+        absent: concept.absent?.[targetPort],
+      }
+    }),
   }))
 }
 

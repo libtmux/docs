@@ -73,6 +73,8 @@ const SIGNATURE_KEYWORDS: Record<string, Set<string>> = Object.fromEntries(Objec
   fsharp: 'module namespace type member static abstract override interface inherit let rec mutable inline internal private public of with get set new val and when',
   ts: 'readonly keyof typeof infer extends unique',
   swift: 'any',
+  julia: 'where struct mutable abstract primitive type function end',
+  cxx: 'alignas alignof auto class concept const consteval constexpr constinit decltype default delete enum explicit extern final friend inline mutable namespace noexcept operator override register requires static struct template thread_local typedef typename union using virtual volatile',
 }).map(([port, words]) => [port, new Set(words.split(' '))]))
 
 /** Language help stays separate from links to API declarations. */
@@ -367,6 +369,28 @@ export class SymbolIndex {
   resolve(target: string, role = 'any', context?: ApiSymbol): LinkTarget | undefined {
     const relative = target.startsWith('.')
     let clean = target.replace(/^[~.]/, '').replace(/\(\)$/, '')
+    if (this.lang === 'powershell' && context) {
+      const prefixed = /^[$-]/.test(clean)
+      const parameter = context.signatures.flatMap((signature) => signature.params)
+        .find((param) => param.name.toLowerCase() === (prefixed ? clean.slice(1) : clean).toLowerCase()
+          && (prefixed || param.binding?.common || ['WhatIf', 'Confirm'].includes(param.name)))
+      if (parameter) return { href: `${this.hrefFor(context).split('#')[0]}#${encodeURIComponent(parameterId(context, parameter.name))}`, external: false }
+      // These are ErrorRecord identifiers, not exception classes. Native help
+      // owns their meaning; keep the destination pinned to the extracted help.
+      if (/^Tmux\.[A-Za-z_]\w*$/.test(clean) && context.doc?.body) {
+        const notes = context.doc.body.split(/^### Notes\s*$/m)[1] ?? ''
+        const documented = [...notes.matchAll(/\bTmux\.[A-Za-z_]\w*/g)].some((match) => match[0] === clean)
+        const revision = context.source.extractedRevision ?? context.source.revision
+        const help = context.doc.examples?.map((example) => example.sourceUrl).find((href) =>
+          revision && href?.startsWith(`https://github.com/${context.source.repo}/blob/${revision}/docs/reference/`)
+            && href.endsWith(`/${context.name}.md`))
+        if (documented && help) return { href: `${help}#notes`, external: true, project: 'PowerShell command help' }
+      }
+    }
+    if (this.lang === 'powershell' && role === 'variable') return {
+      href: 'https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_variables?view=powershell-7.4',
+      external: true, project: 'PowerShell variables',
+    }
     if (this.lang === 'scala') clean = clean.replace(/^_root_\./, '').replace(/#/g, '.')
     if (this.lang === 'fsharp' || this.lang === 'csharp') clean = clean.replace(/`\d+/g, '')
     const [importHead, ...tail] = clean.split('.')
@@ -376,7 +400,7 @@ export class SymbolIndex {
 
     if (context && ['kotlin', 'scala', 'fsharp'].includes(this.lang ?? '') && !relative &&
         context.signatures.some((sig) => sig.params.some((param) => param.name === clean))) {
-      return { href: `${this.hrefFor(context).split('#')[0]}#${parameterId(context, clean)}`, external: false }
+      return { href: `${this.hrefFor(context).split('#')[0]}#${encodeURIComponent(parameterId(context, clean))}`, external: false }
     }
     if (context && ['kotlin', 'scala'].includes(this.lang ?? '')) {
       for (let scope: ApiSymbol | undefined = context; scope; scope = scope.parent ? this.byDeclared.get(scope.parent) : undefined) {
@@ -459,7 +483,9 @@ export class SymbolIndex {
     for (const inv of this.external) {
       if (inv.langs && (!this.lang || !inv.langs.includes(this.lang))) continue
       const hit = inv.byName.get(clean) ?? context?.namespaceImports?.toReversed()
-        .map((namespace) => inv.byName.get(`${namespace}.${clean}`)).find(Boolean)
+        .map((namespace) => inv.byName.get(`${namespace}.${clean}`)).find(Boolean) ??
+        (this.lang === 'julia' && !clean.includes('.')
+          ? inv.byName.get(`Core.${clean}`) ?? inv.byName.get(`Base.${clean}`) : undefined)
       if (hit) return { href: inv.baseUrl + hit.uri, external: true, project: inv.project }
     }
 
@@ -499,7 +525,24 @@ export class SymbolIndex {
    * having to.
    */
   linkText(text: string, context?: ApiSymbol): (DocSpan & { link?: LinkTarget })[] {
-    return this.linkDoc(tokenizeDoc(text, this.lang), context)
+    const spans = this.linkDoc(tokenizeDoc(text, this.lang), context)
+    if (this.lang !== 'powershell') return spans
+    // Reflected PowerShell help often leaves type and parameter names unmarked.
+    // Only promote a plain word when this command's resolver knows its target.
+    return spans.flatMap((span) => {
+      if (span.kind !== 'text') return [span]
+      const linked: (DocSpan & { link?: LinkTarget })[] = []
+      let start = 0
+      for (const match of span.text.matchAll(/(?<![\w$.-])[A-Z][A-Za-z0-9_]*(?:\.[A-Za-z_]\w*)*(?!\w|\.[A-Za-z_])/g)) {
+        const link = this.resolve(match[0], 'any', context)
+        if (!link) continue
+        if (match.index > start) linked.push({ kind: 'text', text: span.text.slice(start, match.index) })
+        linked.push({ kind: 'ref', target: match[0], label: match[0], role: 'any', link })
+        start = match.index + match[0].length
+      }
+      if (start < span.text.length) linked.push({ kind: 'text', text: span.text.slice(start) })
+      return linked
+    })
   }
 
   linkDoc(spans: DocSpan[], context?: ApiSymbol): (DocSpan & { link?: LinkTarget })[] {
@@ -526,7 +569,11 @@ export class SymbolIndex {
     // `::` is part of a name, not punctuation between two. Splitting there
     // turned `std::vector` into `std` and `vector`, so neither half matched
     // anything and C++ annotations rendered almost entirely plain.
-    const pattern = String.raw`(\/\*[\s\S]*?\*\/|\/\/[^\n]*|["'][^"']*["']|[A-Za-z_][A-Za-z0-9_.]*(?:::[A-Za-z_][A-Za-z0-9_.]*)*)|([^A-Za-z_"'/]+|["'/])`
+    const identifier = this.lang === 'julia'
+      ? String.raw`[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*!?`
+      : this.lang === 'powershell' ? String.raw`(?:[A-Za-z_][A-Za-z0-9_.]*\\)?[A-Za-z_][A-Za-z0-9_.-]*`
+      : String.raw`[A-Za-z_][A-Za-z0-9_.]*(?:::[A-Za-z_][A-Za-z0-9_.]*)*`
+    const pattern = String.raw`(\/\*[\s\S]*?\*\/|\/\/[^\n]*|["'][^"']*["']|${identifier})|([^A-Za-z_"'/]+|["'/])`
     // F# type variables start with an apostrophe but do not close like strings.
     const re = new RegExp(this.lang === 'fsharp'
       ? pattern.replace('(', String.raw`('[A-Za-z_][A-Za-z0-9_]*(?![A-Za-z0-9_'])|`)
@@ -541,6 +588,37 @@ export class SymbolIndex {
         out.push({ text: ident })
         continue
       }
+      if (this.lang === 'powershell' && signature && context) {
+        if (ident === context.name || ident === context.publicId) {
+          out.push({ text: ident, declaration: true })
+          continue
+        }
+        const parameter = annotation[m.index! - 1] === '-' && signature.params.find((param) => param.name === ident)
+        if (parameter) {
+          out.push({ text: ident, declaration: true, link: {
+            href: `${this.hrefFor(context).split('#')[0]}#${encodeURIComponent(parameterId(context, parameter.name))}`, external: false,
+          } })
+          continue
+        }
+      }
+      if (this.lang === 'cxx' && signature && context) {
+        if (ident === context.name && /^\s*\(/.test(annotation.slice(m.index! + ident.length))) {
+          out.push({ text: ident, declaration: true })
+          continue
+        }
+        if (signature.params.some((param) => param.name === ident) && /^\s*(?:[,)=]|\[)/.test(annotation.slice(m.index! + ident.length))) {
+          out.push({ text: ident, declaration: true, link: {
+            href: `${this.hrefFor(context).split('#')[0]}#${encodeURIComponent(parameterId(context, ident))}`, external: false,
+          } })
+          continue
+        }
+      }
+      // Julia's :session is a Symbol value, not the session function. A
+      // Type assertions and subtype/supertype bounds must still link types.
+      if (this.lang === 'julia' && /(?:^|[^:<>]):$/.test(annotation.slice(0, m.index))) {
+        out.push({ text: ident })
+        continue
+      }
       // A declaration's bindings are not references to other APIs. Keep this
       // separate from prose resolution, where an explicit parameter reference
       // can still point to that parameter's documentation.
@@ -551,7 +629,8 @@ export class SymbolIndex {
         continue
       }
       if (signature && context && (ident === context.name || ident.endsWith(`.${context.name}`)) &&
-          /\b(?:def|fun|class|interface|trait|object|type|val|var|member|let)\s+$/.test(annotation.slice(0, m.index))) {
+          (/\b(?:def|fun|class|interface|trait|object|type|val|var|member|let)\s+$/.test(annotation.slice(0, m.index)) ||
+            (this.lang === 'julia' && annotation.slice(0, m.index).trim() === '' && /^[{(]/.test(annotation.slice(m.index! + ident.length))))) {
         const receiver = ident.slice(0, -context.name.length).replace(/\.$/, '')
         if (receiver) out.push(...this.linkType(receiver, context), { text: '.' })
         out.push({ text: context.name, declaration: true })
@@ -559,10 +638,15 @@ export class SymbolIndex {
       }
       if (signature && (
         ((signature.params.some((param) => param.name === ident) || signature.receiver?.name === ident) &&
-          /^\s*\??\s*:(?!:)/.test(annotation.slice(m.index! + ident.length))) ||
+          (/^\s*\??\s*:(?!:)/.test(annotation.slice(m.index! + ident.length)) ||
+            (this.lang === 'julia' && /(?:^|[(,;])\s*$/.test(annotation.slice(0, m.index)) &&
+              /^\s*(?:::|[=,;)]|\.\.\.)/.test(annotation.slice(m.index! + ident.length))))) ||
         signature.typeParams?.includes(ident)
       )) {
-        out.push({ text: ident, declaration: true })
+        const parameter = this.lang === 'julia' && context && signature.params.some((param) => param.name === ident)
+        out.push({ text: ident, declaration: true, ...(parameter ? { link: {
+          href: `${this.hrefFor(context).split('#')[0]}#${encodeURIComponent(parameterId(context, ident))}`, external: false,
+        } } : {}) })
         continue
       }
       // Object fields, callback parameters and tuple labels declare names;

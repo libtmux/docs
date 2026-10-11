@@ -3,7 +3,9 @@
 # publishes: the identity job of .github/workflows/port-docs.yml.
 #
 # - A pull request builds `latest` from the merge commit GitHub tests, and
-#   publishes nothing. Not the head: the workflow also runs in the default
+#   publishes nothing by default. A caller with preview hosting may opt in
+#   to publishing same-repository PRs under pr-N; forks remain build-only.
+#   Not the head: the workflow also runs in the default
 #   branch's context, where checking out and running a pull request's head
 #   could poison its caches.
 # - A push to the default branch publishes `latest`. It is the default version
@@ -30,7 +32,17 @@ slug='^[A-Za-z0-9][A-Za-z0-9._-]*$'
 case "$EVENT" in
   pull_request)
     source_ref="$SHA"
-    entries=$(entry latest trunk false '' false)
+    if [[ "${PUBLISH_PREVIEWS:-false}" == true ]]; then
+      [[ "${PR_NUMBER:-}" =~ ^[0-9]+$ ]] || {
+        echo 'preview requires a numeric pull request number' >&2
+        exit 1
+      }
+      publish=false
+      [[ "${SAME_REPOSITORY_PR:-false}" == true ]] && publish=true
+      entries=$(entry "pr-$PR_NUMBER" pr false '' "$publish")
+    else
+      entries=$(entry latest trunk false '' false)
+    fi
     ;;
   push)
     source_ref="$SHA"

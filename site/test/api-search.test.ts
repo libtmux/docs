@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { API_MODELS, OWNER_KINDS } from '../src/lib/api-models'
+import { OWNER_KINDS } from '../src/lib/api-models'
 import { searchApi } from '../src/lib/api-search'
-import { referenceTree } from '../src/lib/api-tree'
+import { referenceNavigation, referenceTree } from '../src/lib/api-tree'
 import { API_MODEL_PORTS } from '../src/lib/ports'
 
 describe('reference symbol search', () => {
@@ -51,7 +51,7 @@ describe('reference symbol search', () => {
 
   it.each(API_MODEL_PORTS.map((port) => port.slug))('retains %s native kinds and searchable identities', (port) => {
     const inventory = referenceTree(port)
-    const symbols = new Map(API_MODELS[port].symbols.flatMap((symbol) =>
+    const symbols = new Map(referenceNavigation(port)!.model.symbols.flatMap((symbol) =>
       [[symbol.id, symbol], [symbol.publicId ?? symbol.id, symbol]] as const))
     const results = searchApi(inventory, '')
     expect(results.length).toBeGreaterThan(0)

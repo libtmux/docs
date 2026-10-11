@@ -104,6 +104,22 @@
         "kind": "trunk",
         "supported": true
       }
+    ],
+    "powershell": [
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
+    ],
+    "julia": [
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
     ]
   },
   "defaultVersion": {
@@ -119,6 +135,8 @@
     "csharp": "latest",
     "fsharp": "latest",
     "cxx": "latest",
-    "swift": "latest"
+    "swift": "latest",
+    "powershell": "latest",
+    "julia": "latest"
   }
 }

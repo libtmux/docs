@@ -1,11 +1,13 @@
 ---
 import type { ApiModel, ApiSymbol, SourceApiModel, SymbolIndex } from '@libtmux/api-model'
-import { membersOf, memberTier, conceptsFor, docSummaryText, memberSignals, parameterId, qualifiedNameOf, moduleOf, modulesIn, sourceUrl as apiSourceUrl, symbolsForProduct } from '@libtmux/api-model'
+import { membersOf, memberTier, docSummaryText, memberSignals, parameterId, qualifiedNameOf, moduleOf, modulesIn, sourceUrl as apiSourceUrl, symbolsForProduct } from '@libtmux/api-model'
 import mentionsData from '../../data/mentions.json'
 import ApiEntry from '../../components/api/ApiEntry.astro'
 import ApiRelationships from './ApiRelationships.astro'
 import { apiRelationshipSections, type ApiRelationshipPath } from '../../lib/api-relationships'
 import ApiBadge from '../../components/api/ApiBadge.astro'
+import ApiGlossaryContent from './ApiGlossaryContent.astro'
+import { API_GLOSSARY_TITLE, API_GLOSSARY_DESCRIPTION, API_GLOSSARY_PATH, apiGlossaryHref } from '../../lib/api-glossary'
 import ApiQualifiedName from '../../components/api/ApiQualifiedName.astro'
 import ApiType from '../../components/api/ApiType.astro'
 import ApiPageContents from '../../components/api/ApiPageContents.astro'
@@ -18,7 +20,7 @@ import { pagePortsFor } from '../../lib/page-ports-for'
 import { pageBreadcrumbs } from '../../lib/sidebar'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import { withRoot } from '../../lib/site-root'
-import { API_MODELS, API_NAV, OWNER_KINDS, PORT_NAME, indexFor, ownersOf, pageSlug, referenceHref, topLevelTypesOf } from '../../lib/api-models'
+import { API_MODELS, API_NAV, OWNER_KINDS, PORT_NAME, indexFor, ownersOf, pageSlug, referenceAlternatives, topLevelTypesOf } from '../../lib/api-models'
 import { PORT_BY_SLUG, referenceUrl } from '../../lib/ports'
 import { productApiHref } from '../../lib/product-api'
 import { symbolSource } from '../../lib/markdown-twins'
@@ -28,7 +30,7 @@ import { buildTarget, defaultVersionFor } from '../../lib/versions'
 import ApiDoc from '../../components/api/ApiDoc.astro'
 import ApiTree from '../../components/api/ApiTree.astro'
 import type { PortNavData } from '../../lib/api-models'
-import { navTree, referenceIndexSections, referenceIndexSectionsFor, type TreeBucket } from '../../lib/api-tree'
+import { apiTreeVersion, bucketForSymbol, navTree, referenceNavigation, referenceIndexSections, referenceIndexSectionsFor, type TreeBucket } from '../../lib/api-tree'
 import SymbolName from '../../components/api/SymbolName.astro'
 import '../../styles/api.css'
 import '../../styles/vendor/gp-sphinx-api.css'
@@ -57,8 +59,9 @@ interface Props {
   source?: SourceReferenceContext
   owner?: ApiSymbol
   searchable?: boolean
+  glossary?: boolean
 }
-const { model: portModel, source, owner, searchable = true } = Astro.props as Props
+const { model: portModel, source, owner, searchable = true, glossary = false } = Astro.props as Props
 const model = source?.model ?? portModel
 const port = portModel?.port
 const language = source?.model.language ?? port
@@ -108,7 +111,7 @@ const hrefFor = (s: ApiSymbol): string =>
  * every Python page after it resolved against nothing. `indexFor` now refuses
  * to cache a model with no symbols, which is the guard that makes this safe.
  */
-const pagePorts = source && owner ? source.pagePorts : await pagePortsFor(source ? 'reference' : slug ? `reference/${slug}` : 'reference', port)
+const pagePorts = source && owner ? source.pagePorts : await pagePortsFor(glossary ? 'reference/glossary' : source ? 'reference' : slug ? `reference/${slug}` : 'reference', port, version)
 const index = source?.index ?? indexFor(portModel ?? { port: 'py', extractor: '', symbols: [] }, hrefFor)
 
 /**
@@ -124,10 +127,11 @@ const index = source?.index ?? indexFor(portModel ?? { port: 'py', extractor: ''
  * which branch to open.
  */
 const nav = source?.nav ?? (port ? API_NAV[port] : undefined)
-const tree = source?.tree ?? (port ? navTree(port) : [])
+const dependencyNavigation = port && PORT_BY_SLUG[port]?.apiDependencyNavigation?.length ? referenceNavigation(port) : undefined
+const tree = source?.tree ?? dependencyNavigation?.tree ?? (port ? navTree(port) : [])
 
 /** Nav ids of the types that own members, which open into them in the tree. */
-const withMembers = new Set(pageOwners.map((s) => s.publicId ?? s.id))
+const withMembers = new Set([...pageOwners.map((s) => s.publicId ?? s.id), ...(dependencyNavigation?.members.keys() ?? [])])
 
 /** The type this page is about, or the one it is a member of. */
 const currentType =
@@ -138,21 +142,14 @@ const currentType =
       : undefined
 
 /**
- * Which branch this page sits in — one lookup, not a scan.
+ * Which branch this page sits in, using the curated placement map.
  *
  * `placement` is symbol id to bucket id, built alongside `assignments` so the
- * page never walks every bucket looking for itself. A member looks up its
- * type; a free function, constant or type alias is placed itself.
+ * page never walks every bucket looking for itself. A declaration uses its
+ * own placement first, including cmdlets grouped separately from their module.
+ * Members without a placement inherit the nearest placed owner's bucket.
  */
-let placed = currentType ?? (owner && !owner.parent ? owner : undefined)
-const ancestry = new Set<string>()
-while (placed?.parent && !ancestry.has(placed.id)) {
-  ancestry.add(placed.id)
-  const parent = model?.symbols.find((symbol) => symbol.id === placed!.parent)
-  if (!parent) break
-  placed = parent
-}
-const currentBucket = placed ? nav?.placement[placed.publicId ?? placed.id] : undefined
+const currentBucket = bucketForSymbol(model, nav, owner)
 
 /** The top-level bucket that holds the current one, which may be its parent. */
 const currentRoot = tree.find(
@@ -194,34 +191,23 @@ const packageUrl = packageMeta?.registry ?? portMeta?.registry?.url ?? withRoot(
 const declaringType = owner?.parent ? model?.symbols.find((s) => s.id === owner.parent) : undefined
 const ownerModule = owner ? moduleOf(declaringType ?? owner) : undefined
 const moduleAnchors = new Set(model ? modulesIn(model).map((m) => m.name) : [])
+const moduleLabel = ['java', 'kotlin', 'scala', 'go'].includes(port ?? '') ? 'Package'
+  : ['csharp', 'fsharp', 'cxx'].includes(port ?? '') ? 'Namespace' : 'Module'
 
-/**
- * The same symbol in the other ports, for the switcher.
- *
- * `conceptsFor` is the mapping that already backs "In other languages" on an
- * entry; reading it here puts the same knowledge in the definition block,
- * where a reader who arrived on the wrong language can leave in one click.
- * A port with no counterpart is absent rather than dead-linked — the concept
- * map records an `absent` reason for those, which is a different statement
- * from "we did not look".
- */
+/** Share the entry's verified relationships, including cmdlets and facade modules. */
 const conceptEntries =
-  owner && port ? conceptsFor(port, owner.publicId ?? owner.id) : []
+  owner && port ? referenceAlternatives(port, owner.publicId ?? owner.id) : []
 
 /**
- * The same symbol in every other port.
- *
- * Every port is listed, not only the ones with a counterpart: a reader
- * comparing languages needs to know that Swift has no equivalent, which is a
- * different statement from a switcher that quietly offers seven options on
- * one page and four on the next. The ones without are rendered disabled.
+ * An unmapped language is not evidence that the language lacks the concept.
+ * Native differences are described in the entry's "In other ports" section.
  */
 const counterparts = portModel
   ? Object.keys(API_MODELS)
       .filter((p) => p !== port)
       .map((p) => {
-        const id = conceptEntries.map((c) => c.symbols[p]).find((v) => typeof v === 'string')
-        return { port: p, label: PORT_NAME[p] ?? p, href: id ? referenceHref(p, id) : undefined }
+        const entry = conceptEntries.flatMap((group) => group.ports).find((entry) => entry.port === p && entry.href)
+        return { ...entry, port: p, label: PORT_NAME[p] ?? p }
       })
   : []
 
@@ -338,6 +324,14 @@ const indexNames = new Map<string, number>()
 for (const symbol of sections.flatMap((section) => [...section.types, ...section.free])) {
   indexNames.set(symbol.name, (indexNames.get(symbol.name) ?? 0) + 1)
 }
+const indexContext = (symbol: ApiSymbol) => {
+  if ((indexNames.get(symbol.name) ?? 0) < 2) return undefined
+  if (port === 'scala') return { label: `API: ${symbol.id.includes('.cats.') ? 'Cats Effect' : symbol.id.includes('.ox.') ? 'Ox' : 'Direct API'}`, kind: 'context' }
+  const name = qualifiedNameOf(symbol).slice(0, -symbol.name.length).replace(/(?:::|[./])$/, '')
+  // Qualified context can be a receiver type rather than an import package.
+  const isGoPackage = port === 'go' && !symbol.parent
+  return name ? { label: isGoPackage ? `Package: ${name}` : `In ${name}`, kind: isGoPackage ? 'package' : 'context' } : undefined
+}
 
 // Existing index fragments land on the card that links to the full declaration.
 const legacyIndexAnchors = (symbol: ApiSymbol) => [...new Set([
@@ -349,11 +343,13 @@ const inherited = members.filter((m) => m.inheritedFrom)
 const listed = members.filter((m) => !m.inheritedFrom || memberTier(m, signals) === 'parent')
 const otherInherited = inherited.filter((m) => memberTier(m, signals) !== 'parent')
 const memberGroups = apiMemberGroups(listed, signals)
+const showMemberGroups = memberGroups.length > 1
+const membersLabel = language === 'julia' && owner?.kind === 'struct' && listed.every((member) => member.kind === 'property') ? 'Fields' : 'Members'
 const pageSections: ApiSection[] = owner ? [
   { id: 'api-overview', label: 'Overview' },
   ...apiEntrySections(owner, language),
-  ...(listed.length ? [{ id: 'api-members', label: 'Members', count: listed.length },
-    ...memberGroups.map((group) => ({ id: group.id, label: group.label, nested: true }))] : []),
+  ...(listed.length ? [{ id: 'api-members', label: membersLabel, count: listed.length },
+    ...(showMemberGroups ? memberGroups.map((group) => ({ id: group.id, label: group.label, nested: true })) : [])] : []),
   ...(otherInherited.length ? [{ id: 'api-inherited', label: 'Inherited members', count: otherInherited.length }] : []),
 ] : []
 const relationshipSections = owner && model ? apiRelationshipSections(model, owner) : []
@@ -366,16 +362,16 @@ const related = owner ? relatedApiTypes(owner, members, index, declaringType, { 
   identity: qualifiedNameOf(symbol), kind: symbol.kind, href: hrefFor(symbol), symbol,
 })) : []
 if (related.length) pageSections.push({ id: 'api-related-types', label: 'Related types', count: related.length })
-const title = owner
+const title = glossary ? API_GLOSSARY_TITLE : owner
   ? qualifiedNameOf(owner)
   : model
     ? source?.title ?? `${label} API reference`
     : 'API reference'
-const pageTitle = owner ? title : source?.title ?? 'API reference'
+const pageTitle = glossary ? API_GLOSSARY_TITLE : owner ? title : source?.title ?? 'API reference'
 const displayName = owner ? (declaringType ? `${declaringType.name}.${owner.name}` : owner.name) : pageTitle
-const breadcrumbs = source?.breadcrumbs ?? await pageBreadcrumbs(displayName, slug ? `reference/${slug}` : 'reference', version, port)
-const pagePath = source?.pagePath ?? (slug ? `reference/${slug}` : 'reference')
-const description = source?.description ?? `Types, methods, and functions in libtmux for ${label}.`
+const breadcrumbs = source?.breadcrumbs ?? await pageBreadcrumbs(displayName, glossary ? 'reference/glossary' : slug ? `reference/${slug}` : 'reference', version, port)
+const pagePath = glossary ? 'reference/glossary' : source?.pagePath ?? (slug ? `reference/${slug}` : 'reference')
+const description = glossary ? API_GLOSSARY_DESCRIPTION : source?.description ?? `Types, methods, and functions in libtmux for ${label}.`
 const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
 ---
 
@@ -400,7 +396,8 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
   noindex={source ? version !== 'latest' : true}
   searchable={searchable}
   pageSource={model && (owner || source) ? symbolSource(model, owner) : undefined}
-  markdown={owner ? 'source' : 'rendered'}
+  canonicalOverride={glossary ? API_GLOSSARY_PATH : undefined}
+  markdown={glossary ? { href: `${API_GLOSSARY_PATH.slice(0, -1)}.md` } : owner ? 'source' : 'rendered'}
   markdownIndex={!owner}
   flush
   breadcrumbs={breadcrumbs}
@@ -423,8 +420,10 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
     {model && (
       <ApiTree
         referenceBase={refBase}
+        glossaryHref={port ? `${refBase}glossary/` : undefined}
         portName={label}
         tree={tree}
+        hrefs={dependencyNavigation?.hrefs}
         currentRoot={currentRoot}
         currentBucket={currentBucket}
         currentTypeId={currentType ? (currentType.publicId ?? currentType.id) : undefined}
@@ -434,6 +433,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
         ancestorMembers={ancestorMembers}
         withMembers={withMembers}
         currentPath={Astro.url.pathname}
+        version={apiTreeVersion(model, tree, dependencyNavigation?.hrefs)}
       />
     )}
 
@@ -441,7 +441,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
       <PageToolbar breadcrumbs={breadcrumbs} />
       <header id={owner ? 'api-overview' : undefined} class:list={[owner && 'api-reference-heading']}>
         {owner && <div class="api-reference-eyebrow">
-          <ApiBadge label={owner.kind} variant="kind" value={owner.kind} />
+          <ApiBadge label={owner.command?.kind ?? owner.kind} variant="kind" value={owner.kind} />
           <span>{source?.model.project ?? portMeta?.projectName}</span>
           {owner.doc?.since && <span>Since {owner.doc.since}</span>}
           <span class="api-reference-version">{version}</span>
@@ -453,8 +453,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
           <ApiQualifiedName
             name={qualifiedNameOf(owner)}
             namespace={ownerModule || undefined}
-            label={['java', 'kotlin', 'scala', 'go'].includes(port ?? '') ? 'Package'
-              : ['csharp', 'fsharp', 'cxx'].includes(port ?? '') ? 'Namespace' : 'Module'}
+            label={moduleLabel}
             href={ownerModule && moduleAnchors.has(ownerModule) ? `${refBase}#${ownerModule}` : undefined}
           />
           {owner.doc?.summary && <p class="api-reference-summary">
@@ -467,8 +466,9 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
         </>}
       </header>
 
+      {glossary && <div class="prose dark:prose-invert mt-6 max-w-none"><ApiGlossaryContent /></div>}
       {
-        !owner && !model && (
+        !glossary && !owner && !model && (
           <>
             <p class="mt-3"><a href={tmuxManualUrl()}>tmux manual</a>: command flags and behavior by tmux version.</p>
             <p class="mt-3 max-w-2xl">
@@ -502,10 +502,12 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
       }
 
       {
-        !owner && model && (
+        !glossary && !owner && model && (
           <>
             <p class="mt-3 max-w-2xl">
-              {source ? description : `Browse the ${label} types and operations for working with tmux. Start with the core objects below, or search for a type or member.`}
+              {source ? description : port === 'powershell'
+                ? 'Browse the LibTmux cmdlets by the tmux objects and operations they control. Each command includes syntax, parameter sets, pipeline types, and examples.'
+                : `Browse the ${label} types and operations for working with tmux. Start with the core objects below, or search for a type or member.`}
             </p>
             {paths.length > 0 && <ApiRelationships paths={paths} hrefFor={hrefFor} />}
             {sections.map((mod) => (
@@ -535,7 +537,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                     {[
                       mod.types.length > 0 && `${mod.types.length} ${mod.types.length === 1 ? 'type' : 'types'}`,
                       mod.free.length > 0 &&
-                        `${mod.free.length} ${mod.free.length === 1 ? 'function or constant' : 'functions and constants'}`,
+                        `${mod.free.length} ${port === 'powershell' ? 'cmdlets' : mod.free.length === 1 ? 'function or constant' : 'functions and constants'}`,
                     ]
                       .filter(Boolean)
                       .join(', ')}
@@ -551,33 +553,30 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                     `::after` in `api-index-card` keeps the whole card
                     clickable without nesting anything.
                   */}
-                  {[...mod.types, ...mod.free].map((o) => (
+                  {[...mod.types, ...mod.free].map((o) => {
+                    const count = model.symbols.filter((symbol) => symbol.parent === o.id).length
+                    const kind = o.signatures.some((signature) => /\bannotation class\b/.test(signature.raw ?? ''))
+                      ? 'annotation' : o.command?.kind ?? o.kind
+                    const context = indexContext(o)
+                    return (
                     <div id={mod.free.includes(o) ? o.publicId ?? o.id : undefined}
                       class="api-index-card scroll-mt-24 rounded border border-slate-200 p-3 hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-800">
                       {mod.free.includes(o) && legacyIndexAnchors(o).map((id) => <span id={id} class="sr-only" />)}
-                      <a class="api-index-card__link" href={hrefFor(o)}>
-                        <span class="font-mono font-semibold">{o.name}</span>
-                        <span class="ml-2 text-xs opacity-60">
-                          {model.symbols.some((s) => s.parent === o.id)
-                            ? `${model.symbols.filter((s) => s.parent === o.id).length} members`
-                            : o.signatures.some((sig) => /\bannotation class\b/.test(sig.raw ?? '')) ? 'annotation'
-                              : o.kind === 'typealias' ? 'type alias' : o.kind}
-                        </span>
-                      </a>
-                      {indexNames.get(o.name)! > 1 && (
-                        <p class="mt-1 text-xs opacity-70">
-                          {port === 'scala'
-                            ? o.id.includes('.cats.') ? 'Cats Effect' : o.id.includes('.ox.') ? 'Ox' : 'Direct API'
-                            : qualifiedNameOf(o).slice(0, -o.name.length).replace(/(?:::|[./])$/, '')}
-                        </p>
-                      )}
+                      <div class="api-index-card__heading">
+                        <a class="api-index-card__link font-mono font-semibold" href={hrefFor(o)}>{o.name}</a>
+                        <ApiBadge label={kind === 'typealias' ? 'type alias' : kind} variant="kind" value={kind} preview={false} />
+                        {context && <span class="api-index-card__context">
+                          <ApiBadge label={context.label} variant="mod" value={context.kind} preview={false} />
+                        </span>}
+                        {count > 0 && <span class="text-xs opacity-60">{count} {count === 1 ? 'member' : 'members'}</span>}
+                      </div>
                       {o.doc?.summary && (
                         <p class="mt-1 text-sm opacity-80">
                           <ApiDoc text={o.doc.summary} index={index} context={o} citations={false} />
                         </p>
                       )}
                     </div>
-                  ))}
+                  )})}
                 </div>
               </details>
             ))}
@@ -640,7 +639,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
             {pageSections.length > 1 &&
               <nav class="api-section-links" aria-label="Reference sections" data-pagefind-ignore="all">
                 {pageSections.filter((section) => !section.nested && !['Description', 'References'].includes(section.label))
-                  .map((section) => <a href={`#${section.id}`} data-api-section-link>{section.label}{section.count && <span>{section.count}</span>}</a>)}
+                  .map((section, i) => <a href={`#${section.id}`} data-api-section-link aria-current={i === 0 ? 'location' : undefined}>{section.label}{section.count && <span>{section.count}</span>}</a>)}
               </nav>}
             <!-- The type's own entry, through the same component as its
                  members. It is a declaration like any other — the only
@@ -656,22 +655,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
               and which package this is before deciding whether the description
               applies to them. Each row is a link, not a string.
             */}
-            {/*
-              Copy the page as Markdown, and a link to it.
 
-              The button fetches the `.md` URL rather than carrying its own
-              copy of the text: one generator, one document, so what is copied
-              is what is served. Without JavaScript the link still works — it
-              is a URL, and that is the whole feature.
-            */}
-            <p class="api-page-actions" data-pagefind-ignore="all">
-              <a href={`${refBase}${owner.slug ?? pageSlug(owner.publicId ?? owner.id)}.md`}>
-                View as Markdown
-              </a>
-              <button type="button" class="api-copy-md" data-md={`${refBase}${owner.slug ?? pageSlug(owner.publicId ?? owner.id)}.md`}>
-                Copy Markdown
-              </button>
-            </p>
 
             {/*
                 Indexed, not displayed twice: `data-pagefind-meta` puts the
@@ -733,7 +717,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                   <dd class="api-definition-langs">
                     {counterparts.map((c) =>
                       c.href ? (
-                        <a href={c.href}>{c.label}</a>
+                        <a href={c.href}>{c.label}{c.note && c.kind && <small class="api-lang-kind"> ({c.kind})</small>}</a>
                       ) : (
                         <span class="api-lang-absent" title={`No ${c.label} counterpart is mapped`}>
                           {c.label}
@@ -783,16 +767,16 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
             */}
             {listed.length > 0 && (
               <div class="mt-8">
-                <h2 class="api-section-heading text-lg font-semibold" id="api-members">Members<span class="api-section-count">{listed.length} {listed.length === 1 ? 'member' : 'members'}</span><a class="api-heading-link" href="#api-members" aria-label="Link to Members">#</a></h2>
-                {memberGroups.map((group) => <section class="api-member-group" aria-labelledby={group.id}>
-                <h3 id={group.id}>{group.label}<span class="api-section-count">{group.members.length} {group.members.length === 1 ? 'member' : 'members'}</span><a class="api-heading-link" href={`#${group.id}`} aria-label={`Link to ${group.label}`}>#</a></h3>
+                <h2 class="api-section-heading text-lg font-semibold" id="api-members">{membersLabel}<span class="api-section-count">{listed.length}</span><a class="api-heading-link" href="#api-members" aria-label={`Link to ${membersLabel}`}>#</a></h2>
+                {memberGroups.map((group) => <section id={showMemberGroups ? undefined : group.id} class:list={['api-member-group', !showMemberGroups && 'api-member-group--single']} aria-labelledby={showMemberGroups ? group.id : 'api-members'}>
+                {showMemberGroups && <h3 id={group.id}>{group.label}<span class="api-section-count">{group.members.length}</span><a class="api-heading-link" href={`#${group.id}`} aria-label={`Link to ${group.label}`}>#</a></h3>}
                 <ul class="api-member-list mt-3">
                   {group.members.map((m) => (
                     <li>
-                      <a class="api-member-link" href={hrefFor(m)}>{m.name}</a>
+                      <span><a class="api-member-link" href={hrefFor(m)}>{m.name}</a>{m.type && <span class="api-member-type">: <ApiType type={m.type} index={index} context={m} /></span>}</span>
                       <span class="api-member-badges">
                         <ApiBadge label={m.kind} variant="kind" value={m.kind} />
-                        {m.inheritedFrom && <span class="api-badge api-badge--mod" title={`Inherited from ${m.inheritedFrom}`}>inherited</span>}
+                        {m.inheritedFrom && <a class="api-badge api-badge--mod" href={apiGlossaryHref('inherited', Astro.url.pathname)} title={`Inherited from ${m.inheritedFrom}`}>inherited</a>}
                       </span>
                       {m.doc?.summary && (
                         <span class="api-member-summary">
@@ -818,7 +802,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                       <a class="api-member-link" href={hrefFor(m)}>{m.name}</a>
                       <span class="api-member-badges">
                         <ApiBadge label={m.kind} variant="kind" value={m.kind} />
-                        <span class="api-badge api-badge--mod" title={`Inherited from ${m.inheritedFrom}`}>inherited</span>
+                        <a class="api-badge api-badge--mod" href={apiGlossaryHref('inherited', Astro.url.pathname)} title={`Inherited from ${m.inheritedFrom}`}>inherited</a>
                       </span>
                       {m.doc?.summary && (
                         <span class="api-member-summary">
@@ -851,25 +835,5 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
   </main>
 
 
-  <script>
-    // Fetch the served Markdown and put it on the clipboard. Fetching rather
-    // than embedding keeps one source for the document; a failure leaves the
-    // label saying so instead of silently copying nothing.
-    document.addEventListener('click', async (event) => {
-      const button = (event.target as HTMLElement).closest<HTMLButtonElement>('.api-copy-md')
-      if (!button?.dataset.md) return
-      const original = button.textContent
-      try {
-        const response = await fetch(button.dataset.md)
-        if (!response.ok) throw new Error(String(response.status))
-        await navigator.clipboard.writeText(await response.text())
-        button.textContent = 'Copied'
-      } catch {
-        button.textContent = 'Copy failed'
-      }
-      setTimeout(() => {
-        button.textContent = original
-      }, 1500)
-    })
-  </script>
+
 </BaseLayout>

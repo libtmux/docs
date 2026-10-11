@@ -16,6 +16,8 @@ import { PORTS as PORT_DEFS } from '../site/src/lib/ports.ts'
 import { extractDoxygen } from '../packages/api-model/src/languages/doxygen.ts'
 import { extractLua } from '../packages/api-model/src/languages/lua.ts'
 import { extractRuby } from '../packages/api-model/src/languages/ruby.ts'
+import { extractPowerShell } from '../packages/api-model/src/languages/powershell.ts'
+import { extractJulia } from '../packages/api-model/src/languages/julia.ts'
 import { attachCompleteGoExamples, readCompleteGoExamples } from '../packages/api-model/src/languages/go-examples.ts'
 import { attachCompleteCSharpExamples } from '../packages/api-model/src/languages/csharp-examples.ts'
 import { attachCompleteFSharpExamples } from '../packages/api-model/src/languages/fsharp-examples.ts'
@@ -209,6 +211,16 @@ const PORTS = {
     nativeArtifact: 'docs/_build/api.json',
     repo: 'libtmux/libtmux-ruby',
     options: {},
+  },
+  powershell: {
+    checkout: '~/work/libtmux/libtmux-powershell-docs-site',
+    root: '.', nativeArtifact: 'build/docs/api.json',
+    repo: 'libtmux/libtmux-powershell', options: {},
+  },
+  julia: {
+    checkout: '~/work/libtmux/libtmux-julia-docs-site',
+    root: '.', nativeArtifact: 'docs/build/api.json',
+    repo: 'libtmux/libtmux-julia', options: {},
   },
   lua: {
     checkout: '~/work/libtmux/libtmux-lua-docs',
@@ -606,7 +618,8 @@ for (const [port, cfg] of Object.entries(PORTS)) {
       process.exit(1)
     }
     const artifact = JSON.parse(readFileSync(artifactPath, 'utf8'))
-    model = port === 'ruby' ? extractRuby(artifact, head) : extractLua(artifact, head)
+    const nativeExtractors = { ruby: extractRuby, lua: extractLua, powershell: extractPowerShell, julia: extractJulia }
+    model = nativeExtractors[port](artifact, head)
   } else {
     model = await extractProject({
       port,
@@ -735,6 +748,18 @@ for (const [port, cfg] of Object.entries(PORTS)) {
       .filter((symbol) => /^(examples\/workspace|apps\/mcp)\//.test(symbol.source.file))
     sourceUnits[0].symbols.push(...symbols)
     rmSync(output, { recursive: true })
+    // Format the extracted declarations once. Static HTML, Markdown and previews
+    // consume these same bytes without requiring a formatter during site builds.
+    const signatures = model.symbols.flatMap((symbol) => symbol.signatures).filter((signature) => signature.raw)
+    const separator = (i) => `// libtmux-signature-${i}`
+    const input = `struct ApiDeclarations {\n${signatures.map((signature, i) => `${separator(i)}\n${signature.raw}`).join('\n\n')}\n};\n`
+    const formatted = execFileSync(process.env.CLANG_FORMAT || 'clang-format',
+      ['--style=file', `--assume-filename=${join(checkout, 'include/libtmux.hpp')}`],
+      { cwd: checkout, input, encoding: 'utf8', maxBuffer: 1 << 26 })
+    const body = formatted.replace(/^struct ApiDeclarations \{\n/, '').replace(/\n\};\s*$/, '')
+    const parts = body.replace(/^  /gm, '').split(/^\/\/ libtmux-signature-\d+[ \t]*\n/m).slice(1)
+    if (parts.length !== signatures.length) throw new Error('C++ signature formatting lost a declaration boundary')
+    signatures.forEach((signature, i) => { signature.raw = parts[i].trim() })
   }
   if (model.pruned) model.pruned.kept = model.symbols.length
   const productOf = (file) => /(?:^|\/)(?:workspace|TmuxWorkspace|LibTmux\.Workspace|libtmux-workspace)(?:\/|$)|crates\/tmux-workspace\//.test(file)
@@ -784,14 +809,16 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     }
   }
   if (cfg.nativeArtifact) {
-    for (const symbol of model.symbols) {
-      symbol.source = {
-        ...symbol.source,
+    const locations = model.symbols.flatMap((symbol) => [symbol, ...symbol.signatures.filter((signature) => signature.source)])
+    for (const entry of locations) {
+      entry.source = {
+        ...entry.source,
         repo: cfg.repo,
         revision,
         extractedRevision: head,
       }
     }
+    remapLines(checkout, locations, revision, head)
     for (const source of model.sources ?? []) {
       source.repo = cfg.repo
       source.revision = revision

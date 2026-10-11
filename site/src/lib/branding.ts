@@ -39,7 +39,10 @@ export function branding(portSlug?: string, pagePath = '', root = '') {
 
 /** Keep one project suffix, including when normalizing an older native page. */
 export function documentationTitle(title: string, projectName: string): string {
-  const page = title.replace(/ \| libtmux(?:-[a-z]+)?$/, '')
+  const suffix = ` | ${projectName}`
+  let page = title
+  while (page.endsWith(suffix)) page = page.slice(0, -suffix.length)
+  page = page.replace(/ \| libtmux(?:-[a-z]+)?$/, '')
     .replace(/ [-–—] libtmux(?:-[a-z]+)?(?: v?\d[\w.+-]*)? documentation$/, '')
   return page === projectName ? page : `${page} | ${projectName}`
 }

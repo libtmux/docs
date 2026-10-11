@@ -3,7 +3,8 @@
 import { existsSync, globSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { Resolver, parentInventory, decideMention, isLikelyReference, notASymbol, notApiReason, proseMentions } from '../packages/api-model/src/index.ts'
+import { Resolver, parentInventory, decideMention, isLikelyReference, notASymbol, notApiReason, proseMentions, pageSlug } from '../packages/api-model/src/index.ts'
+import { isLocale } from '../site/src/i18n/locales.ts'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const contentDir = join(root, 'site/src/content/docs')
@@ -30,15 +31,16 @@ if (!modelList.length) {
 const models = Object.fromEntries(modelList.map((model) => [model.port, model]))
 const resolver = new Resolver(modelList)
 for (const port of PORT_DEFS) {
-  const parent = port.parentLibrary
-  if (parent) resolver.addInventory('Parent library API', '', parentInventory(models[parent.slug],
-    (symbol) => `/reference/${parent.slug}/${symbol.slug}/`), [port.slug])
+  const dependencies = [...(port.parentLibrary ? [port.parentLibrary.slug] : []), ...(port.apiDependencies ?? [])]
+  for (const dependency of dependencies) resolver.addInventory('Library API', '', parentInventory(models[dependency],
+    (symbol) => `/reference/${dependency}/${symbol.slug}/`), [port.slug])
 }
 // Match the renderer's external names before considering a cross-port fallback.
 for (const [file, project, baseUrl, langs] of [
   ['python', 'Python', 'https://docs.python.org/3/', ['py']],
   ['jdk', 'Java SE', 'https://docs.oracle.com/en/java/javase/21/docs/api/', ['java', 'kotlin', 'scala']],
   ['dom', 'MDN', 'https://developer.mozilla.org/', ['ts']],
+  ['julia', 'Julia', 'https://docs.julialang.org/en/v1/', ['julia']],
 ]) {
   const inventory = JSON.parse(readFileSync(join(root, `site/src/data/inventories/${file}.entries.json`), 'utf8'))
   resolver.addInventory(project, baseUrl, inventory.e.map(([name, uri]) => ({
@@ -56,6 +58,31 @@ function frontmatterValue(source, key) {
 function versionOf(port) {
   if (port === process.env.LIBTMUX_DOCS_PORT) return process.env.LIBTMUX_DOCS_VERSION || 'latest'
   try { return JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')[port] ?? 'latest' } catch { return 'latest' }
+}
+
+// Authored destinations carry ownership even when their labels are ambiguous.
+// Protocol, source and external links do not become language-API backlinks.
+const authoredTargets = new Map()
+for (const model of modelList) {
+  for (const symbol of model.symbols) {
+    const slug = symbol.slug ?? pageSlug(symbol.publicId ?? symbol.id)
+    const product = symbol.product && symbol.product !== 'core' && symbol.apiScope !== 'internal'
+      ? `${symbol.product}/` : ''
+    const target = { port: model.port, symbol: symbol.id }
+    authoredTargets.set(`/${model.port}/${versionOf(model.port)}/${product}reference/${slug}/`, target)
+    if (!product) authoredTargets.set(`/reference/${model.port}/${slug}/`, target)
+  }
+}
+
+function authoredTarget(href, page) {
+  if (href === undefined) return undefined
+  try {
+    const url = new URL(href, `https://libtmux.org${page}`)
+    if (!['http:', 'https:'].includes(url.protocol) || url.host !== 'libtmux.org') return undefined
+    const parts = decodeURIComponent(url.pathname).split('/').filter(Boolean)
+    if (isLocale(parts[0])) parts.shift()
+    return authoredTargets.get(`/${parts.join('/')}/`)
+  } catch { return undefined }
 }
 
 /** `site/src/content/docs/topics/traversal.md` becomes `/topics/traversal/`. */
@@ -154,21 +181,25 @@ for (const { file, source } of [...realEntries, ...sharedWorkspaceEntries(realFi
   const product = frontmatterValue(source, 'product') ?? /^ports\/[^/]+\/(workspace|mcp)\//.exec(file)?.[1]
 
   const selected = resolvePortContent(source, authoredPort)
-  for (const { port: contextPort, text, line, before, linked } of proseMentions(selected.body, PORT_BY_LABEL, selected.portAt)) {
+  for (const { port: contextPort, text, line, before, linked, href } of proseMentions(selected.body, PORT_BY_LABEL, selected.portAt)) {
     const pagePort = authoredPort ?? contextPort
     if (notASymbol(text)) continue
-    const decision = decideMention(text, { pagePort, product, before }, resolver, models)
-    if (decision.kind !== 'link') {
-      if (!linked && decision.kind === 'unresolved' && pagePort && isLikelyReference(text) && !notApiReason(text)) {
-        dangling.push({ port: pagePort, text, page, line, why: decision.why })
+    let target
+    if (linked) {
+      target = authoredTarget(href, page)
+    } else {
+      const decision = decideMention(text, { pagePort, product, before }, resolver, models)
+      if (decision.kind !== 'link') {
+        if (decision.kind === 'unresolved' && pagePort && isLikelyReference(text) && !notApiReason(text)) {
+          dangling.push({ port: pagePort, text, page, line, why: decision.why })
+        }
+        continue
       }
-      continue
+      const res = resolver.resolve(decision.port, text, product)
+      if ('symbol' in res) target = { port: decision.port, symbol: res.symbol.id }
     }
-    const port = decision.port
-    const res = resolver.resolve(port, text, product)
-    if (!('symbol' in res)) continue
-
-    const symbol = res.symbol.id
+    if (!target) continue
+    const { port, symbol } = target
     // `(port, symbol, page)` is the key: a symbol named three times on one
     // page is one backlink, not three.
     const key = `${port} ${symbol} ${page}`

@@ -44,14 +44,18 @@ const artwork = (id: string) => {
           <svg class="surface-chevron" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m6 4 4 4-4 4" /></svg>
         </summary>
         <div class="surface-options doc-picker-options">
-          {entry.sections.map((item) => item.href && <a href={item.href} class="surface-option doc-picker-option"
+          {entry.sections.map((item) => {
+            const Tag = item.disabled ? 'span' : 'a'
+            return item.href && <Tag href={item.disabled ? undefined : item.href} class="surface-option doc-picker-option"
             data-surface-option data-picker-option data-match={`${entry.label} ${item.label} ${item.id === 'reference' ? 'api tools cli' : ''}`}
+            role={item.disabled ? 'link' : undefined} aria-disabled={item.disabled ? 'true' : undefined}
+            title={item.disabled ? `No ${item.label.toLowerCase()} advertised in the reference configuration` : undefined}
             aria-label={item.shortLabel ? item.label : undefined}
             aria-current={!alternative && entry.id === surface.id && item.id === section.id ? 'location' : undefined}>
               <DocumentationIcon name={item.id} /><span class:list={{ 'surface-section-full': item.shortLabel }}>{item.label}</span>
               {item.shortLabel && <span class="surface-section-short" aria-hidden="true">{item.shortLabel}</span>}
               {!alternative && entry.id === surface.id && item.id === section.id && <span class="doc-picker-check" aria-hidden="true">✓</span>}
-            </a>)}
+            </Tag>})}
         </div>
         {entry.sections.some((item) => item.alternatives?.length) && <div class="surface-alternatives">
           <small>Other references</small>
@@ -102,6 +106,7 @@ const artwork = (id: string) => {
   .surface-group-name strong { font-weight: 500; }
   .surface-group-name small { margin-top: .2rem; }
   .surface-options { padding-top: .25rem; padding-bottom: .75rem; }
+  .surface-option[aria-disabled='true'] { color: var(--color-muted); opacity: .6; cursor: default; background: none; }
   .surface-alternatives { padding: .25rem 0 .5rem; border-top: 1px solid var(--color-edge); }
   .surface-alternatives > small { padding-inline: .4rem; }
   .surface-alternatives:not(:has(a:not([hidden]))) { display: none; }

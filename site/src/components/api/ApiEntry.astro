@@ -1,6 +1,8 @@
 ---
 import { parameterId, qualifiedNameOf, type ApiSymbol, type SymbolIndex } from '@libtmux/api-model'
 import { API_MODELS, mentionsOf, referenceAlternatives } from '../../lib/api-models'
+import { productApiIndex } from '../../lib/product-api'
+import { defaultVersionFor } from '../../lib/versions'
 import { SITE_ROOT } from '../../lib/site-root'
 import { proseHref } from '../../lib/docs-paths'
 import { Code } from 'astro-expressive-code/components'
@@ -11,9 +13,11 @@ import ApiDoc from './ApiDoc.astro'
 import ApiProse from './ApiProse.astro'
 import ApiType from './ApiType.astro'
 import type { AsideType } from '../../lib/aside'
-import { apiEntryFields, anonymousDeclarationLabel } from '../../lib/api-sections'
+import { apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMethodDetails, anonymousDeclarationLabel, nativeSignatureText, parameterBindingText, usesNativeSignatures } from '../../lib/api-sections'
 import { tmuxCommandsFor, tmuxManualUrl } from '../../lib/tmux-manual-data'
 import ApiFieldOverloads from './ApiFieldOverloads.astro'
+import ApiCommandParameters from './ApiCommandParameters.astro'
+import ApiSignatureParameters from './ApiSignatureParameters.astro'
 
 /**
  * One documented symbol, in the shape gp-sphinx's stylesheet expects.
@@ -49,6 +53,8 @@ interface Props {
    * instead. Same picture, without burying 98 entries inside one description.
    */
   member?: boolean
+  /** Open the member's own page from its declaration name. */
+  nameHref?: string
   /**
    * This entry is the page's subject, not one of its members.
    *
@@ -66,11 +72,11 @@ interface Props {
   legacyId?: string
 }
 const { symbol, index, sourceUrl, port, language = port, manualLinks, alternativesFor, heading = false, member = false,
-  showSummary = true, showBases = true, legacyId } = Astro.props as Props
+  showSummary = true, showBases = true, legacyId, nameHref } = Astro.props as Props
 const anchor = symbol.publicId ?? symbol.id
 const kind = symbol.kind
 const nativeEntries = language === 'c' ? symbol.signatures.filter((signature) => signature.raw) : symbol.signatures
-const nativeSignatures = ['kotlin', 'scala', 'fsharp', 'c'].includes(language ?? '')
+const nativeSignatures = usesNativeSignatures(symbol, language)
 
 /**
  * The Sphinx domain this port's symbols belong to.
@@ -163,7 +169,7 @@ const tmuxCommands = manualLinks ?? (port ? tmuxCommandsFor(port, anchor).map((c
 const mentionSections = [...new Set(mentions.map((m) => m.section ?? 'docs'))].sort()
 
 const badges = [
-  { label: kind, variant: 'kind' as const, value: kind },
+  { label: symbol.command?.kind ?? kind, variant: 'kind' as const, value: kind },
   ...(symbol.package ? [{ label: symbol.package, variant: 'mod' as const, value: 'package' }] : []),
   ...symbol.modifiers.map((m) => ({ label: m, variant: 'mod' as const, value: m })),
   ...(symbol.signatures.length > 1 && symbol.modifiers.includes('overload')
@@ -211,6 +217,8 @@ const folds = (sig: { params: unknown[] }) => sig.params.length >= FOLD_THRESHOL
 const foldable = symbol.signatures.some(folds)
 
 const { params, returns, raises } = apiEntryFields(symbol, language)
+const methods = apiMethodDetails(symbol)
+const overloadTargets = new Map(methods.map((method) => [method.overloadLabel, method.id]))
 const hasFields = params.length > 0 || returns.length > 0 || raises.length > 0
 
 /**
@@ -259,6 +267,8 @@ const hasBody =
   Boolean(symbol.doc?.summary) ||
   Boolean(symbol.doc?.body) ||
   Boolean(symbol.doc?.deprecated) ||
+  Boolean(symbol.command) ||
+  methods.length > 0 ||
   hasFields ||
   tmuxCommands.length > 0 ||
   elsewhere.length > 0
@@ -289,11 +299,17 @@ const hasBody =
     <div class="gp-sphinx-api-layout gp-sphinx-api-layout--responsive">
       <div class="gp-sphinx-api-layout-left">
         <span class="gp-sphinx-api-signature">
+          {language === 'julia' && kind === 'typealias' && symbol.type && (
+            <span class="api-native-signature"><span class="api-declaration-name">{symbol.name}</span> = <ApiType type={symbol.type} index={index} context={symbol} /></span>
+          )}
           {nativeSignatures ? (nativeEntries.length ? nativeEntries.map((sig) => (
-            <span class:list={['api-native-signature', port === 'fsharp' && 'api-native-signature--fsharp']}><ApiType type={sig.raw ?? symbol.name} index={index} context={symbol} signature={sig} /></span>
+            <span class:list={['api-native-signature', port === 'fsharp' && 'api-native-signature--fsharp']}>
+              {sig.label && sig.label !== '__AllParameterSets' && <span class="api-native-signature-label">{sig.label}{sig.isDefault ? ' (default)' : ''}: </span>}
+              <ApiType type={nativeSignatureText(symbol, sig, language)} index={index} context={symbol} signature={sig} nameHref={nameHref} />
+            </span>
           )) : <span class="api-native-signature">{anonymousDeclarationLabel(symbol)}</span>) : <>
           {keyword && <em class="property"><span class="pre">{keyword}</span> </em>}
-          {prename && <span class="sig-prename descclassname"><span class="pre">{prename}</span></span>}<span class="sig-name descname"><span class="pre">{symbol.name}</span></span>
+          {prename && <span class="sig-prename descclassname"><span class="pre">{prename}</span></span>}<span class="sig-name descname">{nameHref ? <a class="api-signature-name-link pre" href={nameHref}>{symbol.name}</a> : <span class="pre">{symbol.name}</span>}</span>
           {
             symbol.signatures.length === 0 && symbol.type && (
               <>
@@ -323,63 +339,15 @@ const hasBody =
                       <span class="sig-paren">)</span>
                     </summary>
                     <span class="gp-sphinx-api-signature-expanded">
-                      <span class="sig-paren">(</span>
-                      {sig.params.map((p, j) => (
-                        <>
-                          {j > 0 && <span class="sig-paren">, </span>}
-                          <em class="sig-param">
-                            {p.variadic === 'positional' && <span class="o">*</span>}
-                            {p.variadic === 'keyword' && <span class="o">**</span>}
-                            <span class="n">{p.name}</span>
-                            {p.type && (
-                              <>
-                                <span class="p">: </span>
-                                <ApiType type={p.type} index={index} context={symbol} />
-                              </>
-                            )}
-                            {p.default && (
-                              <>
-                                <span class="o"> = </span>
-                                <span class="default_value">{p.default}</span>
-                              </>
-                            )}
-                          </em>
-                        </>
-                      ))}
-                      <span class="sig-paren">)</span>
+                      <ApiSignatureParameters signature={sig} symbol={symbol} index={index} language={language} />
                     </span>
                   </details>
                 ) : (
-                  <>
-                <span class="sig-paren">(</span>
-                {sig.params.map((p, j) => (
-                  <>
-                    {j > 0 && <span class="sig-paren">, </span>}
-                    <em class="sig-param">
-                      {p.variadic === 'positional' && <span class="o">*</span>}
-                      {p.variadic === 'keyword' && <span class="o">**</span>}
-                      <span class="n">{p.name}</span>
-                      {p.type && (
-                        <>
-                          <span class="p">: </span>
-                          <ApiType type={p.type} index={index} context={symbol} />
-                        </>
-                      )}
-                      {p.default && (
-                        <>
-                          <span class="o"> = </span>
-                          <span class="default_value">{p.default}</span>
-                        </>
-                      )}
-                    </em>
-                  </>
-                ))}
-                <span class="sig-paren">)</span>
-                  </>
+                  <ApiSignatureParameters signature={sig} symbol={symbol} index={index} language={language} />
                 )}
                 {sig.returns && (
                   <span class="sig-return">
-                    <span class="sig-return-icon">&#8594;</span>{' '}
+                    <span class="sig-return-icon">{language === 'ts' ? ':' : '→'}</span>{' '}
                     <span class="sig-return-typehint">
                       <ApiType type={sig.returns} index={index} context={symbol} />
                     </span>
@@ -476,6 +444,38 @@ const hasBody =
       </div>
     )}
 
+    {symbol.command && (
+      <div class="gp-sphinx-api-command" id={`${anchor}.command`}>
+        <h2 class="rubric api-section-heading">Command details<a class="api-heading-link" href={`#${anchor}.command`} aria-label="Link to Command details">#</a></h2>
+        <dl class="api-definition api-command-facts">
+          {apiCommandFacts(symbol, Astro.url.pathname).map((fact) => <><dt>{fact.label}</dt><dd><ApiDoc text={fact.value} index={index} context={symbol} /></dd></>)}
+        </dl>
+        {apiCommandRelatedLinks(symbol, index).length > 0 && <div class="api-command-related">
+          <span class="api-command-related__label">Related APIs</span>
+          <ul>{apiCommandRelatedLinks(symbol, index).map((link) => <li><a href={link.href} class="api-xref">
+            {link.symbol ? <><ApiBadge label={link.symbol.command?.kind ?? link.symbol.kind} value={link.symbol.command?.kind ?? link.symbol.kind} variant="kind" compact /><code>{link.text}</code></> : link.text}
+          </a></li>)}</ul>
+        </div>}
+      </div>
+    )}
+
+    {methods.length > 0 && (
+      <div class="gp-sphinx-api-methods" id={`${anchor}.methods`}>
+        <h2 class="rubric api-section-heading">Methods<a class="api-heading-link" href={`#${anchor}.methods`} aria-label="Link to Methods">#</a></h2>
+        {methods.map(({ id, label, signature }) => {
+          const methodSource = signature.source && sourceUrl?.({ ...symbol, source: signature.source })
+          return (
+          <section id={id} class="api-method">
+            {symbol.signatures.length > 1 ? <h3 class="api-native-signature"><ApiType type={nativeSignatureText(symbol, signature, language)} index={index} context={symbol} signature={signature} />{methodSource && <a class="api-method-source" href={methodSource} aria-label={`Source for ${label}`}>[source]</a>}<a class="api-heading-link" href={`#${id}`} aria-label="Link to method">#</a></h3>
+              : methodSource && methodSource !== source && <p><a class="api-method-source" href={methodSource} aria-label={`Source for ${label}`}>[source]</a></p>}
+            {signature.extension && <p>Available when <code>{signature.extension}</code> is loaded.</p>}
+            {signature.doc?.summary && <ApiProse text={signature.doc.summary} index={index} context={symbol} />}
+            {signature.doc?.body && <ApiProse text={signature.doc.body} index={index} context={symbol} />}
+          </section>
+        )})}
+      </div>
+    )}
+
     {
       examples.length > 0 && (
         <div class="gp-sphinx-api-examples" id={`${anchor}.examples`}>
@@ -492,6 +492,7 @@ const hasBody =
                 {/* Preserve source comments, including Swift's required tools-version directive. */}
                 <Code code={ex.code} lang={codeLang(ex.lang)} title="" />
               </div>
+              {ex.outro && <div class="gp-sphinx-api-example-outro"><ApiDoc text={ex.outro} index={index} context={symbol} /></div>}
             </>
           ))}
         </div>
@@ -550,11 +551,13 @@ const hasBody =
               <>
                 <dt class="field-odd" id={`${anchor}.parameters`}>Parameters</dt>
                 <dd class="field-odd">
-                  <ul class="simple">
+                  {symbol.command ? <ApiCommandParameters params={params} symbol={symbol} index={index} /> : <ul class="simple api-parameters">
                     {params.map((p, i) => (
                       <li id={params.findIndex((entry) => entry.name === p.name) === i ? parameterId(symbol, p.name) : undefined}>
-                        <p>
-                          <strong>{p.name}</strong>
+                        <p class:list={[(language === 'julia' || language === 'ts') && 'api-parameter-heading']}>
+                          <strong><a href={`#${encodeURIComponent(parameterId(symbol, p.name))}`}><code>{p.name}</code></a></strong>
+                          {p.optional && '?'}
+                          {(language === 'julia' || language === 'ts') && p.default !== undefined && <>{' = '}<code>{p.default}</code></>}
                           {p.type && (
                             <>
                               {' ('}
@@ -562,18 +565,21 @@ const hasBody =
                               {') '}
                             </>
                           )}
-                          {p.doc && <>{' – '}<ApiDoc text={p.doc} index={index} context={symbol} /></>}
+                          {p.doc && !['julia', 'ts'].includes(language ?? '') && <>{' – '}<ApiDoc text={p.doc} index={index} context={symbol} /></>}
                           {p.since && <span class="gp-sphinx-api-param-since">added {p.since}</span>}
                           {p.deprecated && (
                             <span class="gp-sphinx-api-param-deprecated">
                               deprecated {p.deprecated}
                             </span>
                           )}
-                          <ApiFieldOverloads labels={p.overloads} />
+                          <ApiFieldOverloads labels={p.overloads} targets={overloadTargets} />
+                          <a class="api-heading-link" href={`#${encodeURIComponent(parameterId(symbol, p.name))}`} aria-label={`Link to ${p.name} parameter`} data-pagefind-ignore="all">#</a>
                         </p>
+                        {p.doc && ['julia', 'ts'].includes(language ?? '') && <ApiProse text={p.doc} index={index} context={symbol} />}
+                        {p.binding && <p class="api-parameter-binding"><ApiDoc text={parameterBindingText(p)!} index={index} context={symbol} /></p>}
                       </li>
                     ))}
-                  </ul>
+                  </ul>}
                 </dd>
               </>
             )}
@@ -584,7 +590,7 @@ const hasBody =
                   {returns.map((entry) => (
                     <p>
                       <ApiDoc text={entry.doc} index={index} context={symbol} />
-                      <ApiFieldOverloads labels={entry.overloads} />
+                      <ApiFieldOverloads labels={entry.overloads} targets={overloadTargets} />
                     </p>
                   ))}
                 </dd>
@@ -605,7 +611,7 @@ const hasBody =
                               <ApiDoc text={r.doc} index={index} context={symbol} />
                             </>
                           )}
-                          <ApiFieldOverloads labels={r.overloads} />
+                          <ApiFieldOverloads labels={r.overloads} targets={overloadTargets} />
                         </p>
                       </li>
                     ))}
@@ -656,19 +662,25 @@ const hasBody =
             {c.ports.map((e) => (
               <li>
                 <span class="api-elsewhere-port">{e.name}</span>
-                {e.href ? (
-                  <a href={e.href}>
+                <div class="api-elsewhere-value">
+                  {e.href ? (
+                    <a href={e.href}>
+                      {e.kind && <ApiBadge label={e.kind} value={e.kind} variant="kind" compact preview={false} />}
+                      <code>{e.qualifiedName}</code>
+                    </a>
+                  ) : e.publicId ? (
                     <code>{e.qualifiedName}</code>
-                  </a>
-                ) : e.publicId ? (
-                  <code>{e.qualifiedName}</code>
-                ) : (
-                  <span class="api-elsewhere-absent">
-                    {absentParts(e.absent).map((part, i) =>
-                      i % 2 ? <code>{part}</code> : part,
-                    )}
-                  </span>
-                )}
+                  ) : (
+                    <span class="api-elsewhere-absent">
+                      {absentParts(e.absent).map((part, i) =>
+                        i % 2 ? <code>{part}</code> : part,
+                      )}
+                    </span>
+                  )}
+                  {e.note && API_MODELS[e.port] && <p class="api-elsewhere-note">
+                    <ApiDoc text={e.note} index={productApiIndex(API_MODELS[e.port], defaultVersionFor(e.port))} />
+                  </p>}
+                </div>
               </li>
             ))}
           </ul>

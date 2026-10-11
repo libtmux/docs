@@ -515,5 +515,67 @@
       "errors": "import Foundation\nimport LibTmux\n\n@main\nstruct Quickstart {\n    static func main() async throws {\n        let server = try Server(\n            socketName: \"libtmux-home-\\(UUID().uuidString)\",\n            configurationFile: \"/dev/null\"\n        )\n\n        do {\n            try await work(server)\n        } catch {\n            print(\"tmux quickstart failed: \\(error)\")\n            throw error\n        }\n    }\n\n    static func work(_ server: Server) async throws {\n        let session = try await server.newSession(\n            named: \"work\",\n            windowName: \"editor\",\n            shell: \"/bin/sh\"\n        )\n        let logs = try await server.newWindow(\n            in: session,\n            named: \"logs\",\n            shell: \"/bin/sh\"\n        ).window\n        let pane = try await server.splitWindow(logs, direction: .right)\n\n        try await server.run(\"printf '\\\\nhello from %s\\\\n' libtmux\", in: pane)\n\n        let ready = try RegexPattern(\"^hello from libtmux$\")\n        let result = try await server.waitForOutput(\n            in: pane,\n            matching: [ready],\n            timeout: .seconds(5)\n        )\n        guard result.outcome == .matched else {\n            throw QuickstartError.outputTimedOut\n        }\n\n        for line in result.tail where line == \"hello from libtmux\" {\n            print(line)\n        }\n    }\n\n    enum QuickstartError: Error {\n        case outputTimedOut\n    }\n}\n",
       "cleanup": "import Foundation\nimport LibTmux\n\n@main\nstruct Quickstart {\n    static func main() async throws {\n        let server = try Server(\n            socketName: \"libtmux-home-\\(UUID().uuidString)\",\n            configurationFile: \"/dev/null\"\n        )\n\n        do {\n            try await work(server)\n        } catch {\n            if try await server.isRunning() {\n                try await server.killServer()\n            }\n            throw error\n        }\n        try await server.killServer()\n    }\n\n    static func work(_ server: Server) async throws {\n        let session = try await server.newSession(\n            named: \"work\",\n            windowName: \"editor\",\n            shell: \"/bin/sh\"\n        )\n        let logs = try await server.newWindow(\n            in: session,\n            named: \"logs\",\n            shell: \"/bin/sh\"\n        ).window\n        let pane = try await server.splitWindow(logs, direction: .right)\n\n        try await server.run(\"printf '\\\\nhello from %s\\\\n' libtmux\", in: pane)\n\n        let ready = try RegexPattern(\"^hello from libtmux$\")\n        let result = try await server.waitForOutput(\n            in: pane,\n            matching: [ready],\n            timeout: .seconds(5)\n        )\n        guard result.outcome == .matched else {\n            throw QuickstartError.outputTimedOut\n        }\n\n        for line in result.tail where line == \"hello from libtmux\" {\n            print(line)\n        }\n    }\n\n    enum QuickstartError: Error {\n        case outputTimedOut\n    }\n}\n"
     }
+  },
+  "powershell": {
+    "lang": "powershell",
+    "sourceRepository": "libtmux/libtmux-powershell",
+    "sourceRevision": "fcd0634e9ca887b70d88915c2d8e26c5da2737e5",
+    "sourceTree": "e842e7d382a31131e73b2e9967d2b5d977304a0a",
+    "program": "quickstart.ps1",
+    "excerpt": {
+      "startLine": 1,
+      "endLine": 40,
+      "dedent": 0,
+      "importsEndLine": 0
+    },
+    "files": [
+      {
+        "name": "quickstart.ps1",
+        "lang": "powershell",
+        "code": "$ErrorActionPreference = 'Stop'\nImport-Module \"$PSScriptRoot/modules/LibTmux/0.1.0/LibTmux.psd1\"\n\n$session = $null\n$failure = $null\ntry {\n    $socket = 'libtmux-home-' + [Guid]::NewGuid().ToString('N')\n    $server = New-TmuxServer -SocketName $socket -ConfigurationFile /dev/null\n\n    $session = $server | New-TmuxSession `\n        -Name demo -WindowName editor -Command 'exec /bin/cat'\n    $pane = $session | Get-TmuxPane\n    $null = $pane | Split-TmuxPane -Horizontal -Command 'exec /bin/cat'\n    $null = $session | New-TmuxWindow -Name logs -Command 'exec /bin/cat'\n\n    $captured = ($server | Get-TmuxSnapshot).Sessions |\n        Select-TmuxSession -Criteria @{ Name = 'demo' } -ExactlyOne\n    foreach ($window in $captured.Windows) {\n        '{0}: {1}' -f $window.Name, ($window.Panes.Id -join ', ')\n    }\n} catch {\n    $failure = [InvalidOperationException]::new(\n        \"tmux quickstart failed: $($_.Exception.Message)\", $_.Exception)\n    throw $failure\n} finally {\n    if ($session) {\n        $cleanupErrors = @()\n        $session | Remove-TmuxSession -Confirm:$false `\n            -ErrorAction SilentlyContinue -ErrorVariable cleanupErrors\n        if ($cleanupErrors) {\n            if ($failure) {\n                $errors = @($failure) + $cleanupErrors.Exception\n                throw [AggregateException]::new(\n                    'tmux operation and cleanup failed.',\n                    [Exception[]]$errors)\n            }\n            throw $cleanupErrors[0]\n        }\n    }\n}\n"
+      }
+    ],
+    "prerequisites": "PowerShell 7.4.20 with PSResourceGet 1.1.1, POSIX shell and tmux on Linux.",
+    "commands": [
+      "pwsh -NoLogo -NoProfile -Command '\n  $ErrorActionPreference = \"Stop\"\n  $null = New-Item -ItemType Directory -Path ./modules -Force\n  Save-PSResource -Name LibTmux -Version 0.1.0-alpha2 `\n    -Prerelease -Path ./modules -TrustRepository\n'",
+      "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\npwsh -NoLogo -NoProfile -File quickstart.ps1"
+    ],
+    "expectedOutput": "editor: %0, %1\nlogs: %2\n",
+    "variants": {
+      "concise": "$ErrorActionPreference = 'Stop'\nImport-Module \"$PSScriptRoot/modules/LibTmux/0.1.0/LibTmux.psd1\"\n\n$socket = 'libtmux-home-' + [Guid]::NewGuid().ToString('N')\n$server = New-TmuxServer -SocketName $socket -ConfigurationFile /dev/null\n\n$session = $server | New-TmuxSession `\n    -Name demo -WindowName editor -Command 'exec /bin/cat'\n$pane = $session | Get-TmuxPane\n$null = $pane | Split-TmuxPane -Horizontal -Command 'exec /bin/cat'\n$null = $session | New-TmuxWindow -Name logs -Command 'exec /bin/cat'\n\n$captured = ($server | Get-TmuxSnapshot).Sessions |\n    Select-TmuxSession -Criteria @{ Name = 'demo' } -ExactlyOne\nforeach ($window in $captured.Windows) {\n    '{0}: {1}' -f $window.Name, ($window.Panes.Id -join ', ')\n}\n",
+      "errors": "$ErrorActionPreference = 'Stop'\nImport-Module \"$PSScriptRoot/modules/LibTmux/0.1.0/LibTmux.psd1\"\n\ntry {\n    $socket = 'libtmux-home-' + [Guid]::NewGuid().ToString('N')\n    $server = New-TmuxServer -SocketName $socket -ConfigurationFile /dev/null\n\n    $session = $server | New-TmuxSession `\n        -Name demo -WindowName editor -Command 'exec /bin/cat'\n    $pane = $session | Get-TmuxPane\n    $null = $pane | Split-TmuxPane -Horizontal -Command 'exec /bin/cat'\n    $null = $session | New-TmuxWindow -Name logs -Command 'exec /bin/cat'\n\n    $captured = ($server | Get-TmuxSnapshot).Sessions |\n        Select-TmuxSession -Criteria @{ Name = 'demo' } -ExactlyOne\n    foreach ($window in $captured.Windows) {\n        '{0}: {1}' -f $window.Name, ($window.Panes.Id -join ', ')\n    }\n} catch {\n    $failure = [InvalidOperationException]::new(\n        \"tmux quickstart failed: $($_.Exception.Message)\", $_.Exception)\n    throw $failure\n}\n",
+      "cleanup": "$ErrorActionPreference = 'Stop'\nImport-Module \"$PSScriptRoot/modules/LibTmux/0.1.0/LibTmux.psd1\"\n\n$session = $null\n$failure = $null\ntry {\n    $socket = 'libtmux-home-' + [Guid]::NewGuid().ToString('N')\n    $server = New-TmuxServer -SocketName $socket -ConfigurationFile /dev/null\n\n    $session = $server | New-TmuxSession `\n        -Name demo -WindowName editor -Command 'exec /bin/cat'\n    $pane = $session | Get-TmuxPane\n    $null = $pane | Split-TmuxPane -Horizontal -Command 'exec /bin/cat'\n    $null = $session | New-TmuxWindow -Name logs -Command 'exec /bin/cat'\n\n    $captured = ($server | Get-TmuxSnapshot).Sessions |\n        Select-TmuxSession -Criteria @{ Name = 'demo' } -ExactlyOne\n    foreach ($window in $captured.Windows) {\n        '{0}: {1}' -f $window.Name, ($window.Panes.Id -join ', ')\n    }\n} catch {\n    $failure = $_.Exception\n    throw\n} finally {\n    if ($session) {\n        $cleanupErrors = @()\n        $session | Remove-TmuxSession -Confirm:$false `\n            -ErrorAction SilentlyContinue -ErrorVariable cleanupErrors\n        if ($cleanupErrors) {\n            if ($failure) {\n                $errors = @($failure) + $cleanupErrors.Exception\n                throw [AggregateException]::new(\n                    'tmux operation and cleanup failed.',\n                    [Exception[]]$errors)\n            }\n            throw $cleanupErrors[0]\n        }\n    }\n}\n"
+    }
+  },
+  "julia": {
+    "lang": "julia",
+    "sourceRepository": "libtmux/libtmux-julia",
+    "sourceRevision": "6f62bd72cb8d99f3759ca5e2cc3591165a03c768",
+    "sourceTree": "d0a50bcd9691a14b2a304387cb74b62444425eb8",
+    "program": "quickstart.jl",
+    "excerpt": {
+      "startLine": 1,
+      "endLine": 19,
+      "dedent": 0,
+      "importsEndLine": 0
+    },
+    "files": [
+      {
+        "name": "quickstart.jl",
+        "lang": "julia",
+        "code": "using LibTmux\n\ntry\n    with_server() do server\n        session = new_session(server; name=\"demo\", command=[\"/bin/cat\"])\n        pane = only(panes(snapshot(server))).ref\n        split_window(server, pane; direction=:below, command=[\"/bin/cat\"])\n        new_window(server, session; name=\"logs\", command=[\"/bin/cat\"])\n\n        snap = snapshot(server)\n        @assert isempty(strip(capture_pane(server, pane)))\n        println(only(sessions(snap)).name, \": \",\n                length(windows(snap)), \" windows, \",\n                length(panes(snap)), \" panes\")\n    end\ncatch error\n    println(stderr, \"tmux quickstart failed: \", sprint(showerror, error))\n    rethrow()\nend\n"
+      }
+    ],
+    "prerequisites": "Julia 1.13.0, Git, POSIX shell and tmux on Linux.",
+    "commands": [
+      "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-julia.git \\\n  6f62bd72cb8d99f3759ca5e2cc3591165a03c768\ngit -C source checkout -q --detach FETCH_HEAD",
+      "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\njulia --startup-file=no --project=source quickstart.jl"
+    ],
+    "expectedOutput": "demo: 2 windows, 3 panes\n",
+    "variants": {
+      "concise": "using LibTmux\n\nowned = open_server()\nserver = owned.server\n\nsession = new_session(server; name=\"demo\", command=[\"/bin/cat\"])\npane = only(panes(snapshot(server))).ref\nsplit_window(server, pane; direction=:below, command=[\"/bin/cat\"])\nnew_window(server, session; name=\"logs\", command=[\"/bin/cat\"])\n\nsnap = snapshot(server)\n@assert isempty(strip(capture_pane(server, pane)))\nprintln(only(sessions(snap)).name, \": \",\n        length(windows(snap)), \" windows, \",\n        length(panes(snap)), \" panes\")\n",
+      "errors": "using LibTmux\n\ntry\n    owned = open_server()\n    server = owned.server\n\n    session = new_session(server; name=\"demo\", command=[\"/bin/cat\"])\n    pane = only(panes(snapshot(server))).ref\n    split_window(server, pane; direction=:below, command=[\"/bin/cat\"])\n    new_window(server, session; name=\"logs\", command=[\"/bin/cat\"])\n\n    snap = snapshot(server)\n    @assert isempty(strip(capture_pane(server, pane)))\n    println(only(sessions(snap)).name, \": \",\n            length(windows(snap)), \" windows, \",\n            length(panes(snap)), \" panes\")\ncatch error\n    println(stderr, \"tmux quickstart failed: \", sprint(showerror, error))\n    rethrow()\nend\n",
+      "cleanup": "using LibTmux\n\nwith_server() do server\n    session = new_session(server; name=\"demo\", command=[\"/bin/cat\"])\n    pane = only(panes(snapshot(server))).ref\n    split_window(server, pane; direction=:below, command=[\"/bin/cat\"])\n    new_window(server, session; name=\"logs\", command=[\"/bin/cat\"])\n\n    snap = snapshot(server)\n    @assert isempty(strip(capture_pane(server, pane)))\n    println(only(sessions(snap)).name, \": \",\n            length(windows(snap)), \" windows, \",\n            length(panes(snap)), \" panes\")\nend\n"
+    }
   }
 }

@@ -5,6 +5,10 @@ import { visit } from 'unist-util-visit'
 import { isLikelyReference, notApiReason, type ApiProduct } from '@libtmux/api-model'
 import { createProseLinker, PORT_BY_LABEL } from '../lib/prose-resolver'
 import { PORT_BY_SLUG } from '../lib/ports'
+import { API_MODELS, pageSlug } from '../lib/api-models'
+import { kindMark } from '../lib/api-labels'
+import { docsPath } from '../lib/docs-paths'
+import { MCP_REFERENCE, mcpObjects } from '../lib/mcp-reference'
 
 /** Link inline API and source references using their prose ownership. */
 const here = dirname(fileURLToPath(import.meta.url))
@@ -87,6 +91,53 @@ const BLOCKS = new Set(['p', 'li', 'td', 'th', 'dd', 'dt', 'figcaption', 'blockq
 
 type El = { type?: string; tagName?: string; value?: string; properties?: Record<string, unknown>; children?: El[] }
 
+const symbolsByPage = new Map(Object.entries(API_MODELS).flatMap(([port, model]) => model.symbols.map(symbol => [
+  `${port}/${symbol.product && symbol.product !== 'core' ? `${symbol.product}/` : ''}${symbol.slug ?? pageSlug(symbol.publicId ?? symbol.id)}`,
+  symbol,
+] as const)))
+const protocolByPage = new Map(Object.keys(MCP_REFERENCE).flatMap(port => mcpObjects(port).map(object => [
+  `${port}/${object.path}`, object,
+] as const)))
+
+/** Only mark links whose actual destination names a known declaration. */
+function addKindBadge(anchor: El, port?: string, route?: string): void {
+  const href = anchor.properties?.href
+  if (typeof href !== 'string' || href.startsWith('#') || !anchor.children?.length || anchor.children.some(child => child.properties?.dataApiKind)) return
+  // Relative links require the real page route, including product nesting.
+  if (route === undefined && !/^(?:\/|[a-z][a-z0-9+.-]*:)/i.test(href)) return
+  let url: URL
+  try { url = new URL(href, `https://libtmux.org/${port ?? '_'}/latest/${(route ?? '').replace(/\/$/, '')}/`) } catch { return }
+  if (url.origin !== 'https://libtmux.org') return
+  let fragment: string
+  try { fragment = decodeURIComponent(url.hash.slice(1)) } catch { return }
+  const match = /\/([^/]+)\/[^/]+\/(?:(mcp|workspace)\/)?reference\/([^/]+)\/?$/.exec(url.pathname)
+  const protocol = /\/([^/]+)\/[^/]+\/(mcp\/(?:tools|prompts|resources)\/.+?)\/?$/.exec(url.pathname)
+  let kind: string | undefined
+  let title: string | undefined
+  if (match && PORT_BY_SLUG[match[1]!]) {
+    let slug: string
+    try { slug = decodeURIComponent(match[3]!) } catch { return }
+    const symbol = symbolsByPage.get(`${match[1]}/${match[2] ? `${match[2]}/` : ''}${slug}`)
+    if (!symbol || (fragment && fragment !== (symbol.publicId ?? symbol.id))) return
+    kind = symbol.kind
+    title = symbol.command?.kind ?? kind
+  } else if (protocol && PORT_BY_SLUG[protocol[1]!]) {
+    let path: string
+    try { path = decodeURIComponent(protocol[2]!) } catch { return }
+    const object = protocolByPage.get(`${protocol[1]}/${path}`)
+    if (!object || (fragment && fragment !== object.id)) return
+    kind = object.kind
+    title = `MCP ${kind}`
+  }
+  if (!kind) return
+  const mark = kindMark(kind)
+  if (!mark) return
+  anchor.children.unshift({ type: 'element', tagName: 'span', properties: {
+    className: ['api-link-kind', 'api-nav__kind', `api-badge--kind-${kind}`],
+    dataApiKind: kind, ariaHidden: 'true', title,
+  }, children: [{ type: 'element', tagName: 'span', properties: { className: ['api-badge__label'] }, children: [{ type: 'text', value: mark }] }] })
+}
+
 /**
  * Link every mention in the document, not only the ones inside a table.
  *
@@ -102,11 +153,15 @@ type El = { type?: string; tagName?: string; value?: string; properties?: Record
  * language of the fence above, then the port this build is for.
  */
 export function rehypeApiLinks() {
-  return (tree: unknown, file?: { data?: { astro?: { frontmatter?: { port?: string; product?: ApiProduct } } } }) => {
-    const buildPort = file?.data?.astro?.frontmatter?.port ?? (process.env.LIBTMUX_DOCS_PORT || undefined)
+  return (tree: unknown, file?: { path?: string; data?: { astro?: { frontmatter?: { port?: string; product?: ApiProduct; route?: string } } } }) => {
+    const frontmatter = file?.data?.astro?.frontmatter
+    const buildPort = frontmatter?.port ?? (process.env.LIBTMUX_DOCS_PORT || undefined)
+    const source = file?.path?.replaceAll('\\', '/').match(/\/content\/(docs|_workspace-shared)\/(.+)\.mdx?$/)
+    const id = source ? `${source[1] === '_workspace-shared' ? `ports/${buildPort}/` : ''}${source[2]}`.replace(/(?:^|\/)index$/, '') : undefined
+    const route = frontmatter?.route ?? (id !== undefined ? docsPath({ id, data: { ...frontmatter, port: buildPort } }) : undefined)
     // Native wrapper references own their symbols. Resolving the same short
     // name against another language's model would create a misleading link.
-    if (buildPort && PORT_BY_SLUG[buildPort]?.referenceKind === 'guide') return
+    const resolveMentions = !buildPort || PORT_BY_SLUG[buildPort]?.referenceKind !== 'guide'
     begin()
     const link = createProseLinker(file?.data?.astro?.frontmatter?.product)
     const sections: { depth: number; port?: string }[] = []
@@ -149,11 +204,19 @@ export function rehypeApiLinks() {
           continue
         }
         if (child.tagName === 'a') {
+          const href = child.properties?.href
+          if (typeof href === 'string' && href.startsWith('mcp:')) {
+            const pagePort = buildPort ?? rowPort ?? fence.lang ?? sections.at(-1)?.port
+            const decision = link(href, { pagePort, before: scope.text })
+            if (decision.kind === 'link') child.properties!.href = decision.href
+            else if (decision.kind === 'unresolved') record({ port: pagePort ?? 'shared', text: href, why: decision.why })
+          }
           walk(child, true, rowPort, fence, scope)
           scope.text += textOf(child)
+          addKindBadge(child, buildPort, route)
           continue
         }
-        if (child.tagName === 'code' && !inLink) {
+        if (child.tagName === 'code' && !inLink && resolveMentions) {
           const text = textOf(child).trim()
           const explicitPort = child.properties?.dataDocPort
           const pagePort = (typeof explicitPort === 'string' ? explicitPort : undefined)
@@ -169,8 +232,10 @@ export function rehypeApiLinks() {
                 ...(decision.external ? { rel: 'nofollow noopener' } : {}),
               },
             }
-          } else if (decision.kind === 'unresolved' && !decision.file && pagePort && isLikelyReference(text) && !notApiReason(text)) {
-            record({ port: pagePort, text, why: decision.why })
+            addKindBadge(kids[i]!, buildPort, route)
+          } else if (decision.kind === 'unresolved' && !decision.file &&
+            (text.startsWith('mcp:') || (pagePort && isLikelyReference(text) && !notApiReason(text)))) {
+            record({ port: pagePort ?? 'shared', text, why: decision.why })
           }
           scope.text += text
           continue
@@ -188,6 +253,7 @@ const LANG_TO_PORT: Record<string, string> = {
   python: 'py', py: 'py', typescript: 'ts', ts: 'ts', javascript: 'ts', js: 'ts',
   rust: 'rs', rs: 'rs', go: 'go', java: 'java', csharp: 'csharp', cs: 'csharp',
   cpp: 'cxx', 'c++': 'cxx', swift: 'swift',
+  powershell: 'powershell', pwsh: 'powershell', ps1: 'powershell', julia: 'julia',
 }
 
 function textOf(node: unknown): string {

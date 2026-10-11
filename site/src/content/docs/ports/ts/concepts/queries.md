@@ -139,7 +139,7 @@ if (failures.length > 0) throw new AggregateError(failures, "Query example faile
 $ bun run matching.ts
 ```
 
-The output identifies `app-api`, `app-worker`, and `MyApp-logs`; the version
+The output identifies `app-api`, `app-worker`, and `"MyApp-logs"`; the version
 pattern selects `app-v1-0`. Membership selects two application windows, while
 the predicate selects `app-beta` and `shell`.
 

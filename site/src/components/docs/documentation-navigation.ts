@@ -92,7 +92,9 @@ export function initDocumentationNavigation() {
       const status = picker.querySelector<HTMLElement>('[data-picker-status]')
       if (status) status.textContent = tokens.length ? `${count} matching entries` : ''
     }
-    const visibleLinks = () => options().filter((option): option is HTMLAnchorElement => option instanceof HTMLAnchorElement && Boolean(option.getClientRects().length))
+    const visibleLinks = () => options().filter((option) => !option.hidden)
+      .flatMap((option) => option instanceof HTMLAnchorElement ? [option] : [...option.querySelectorAll<HTMLAnchorElement>('[data-picker-home]')])
+      .filter((link) => Boolean(link.getClientRects().length))
     picker.addEventListener('toggle', () => {
       if (!picker.open) {
         if (topLayer && panel.matches(':popover-open')) panel.hidePopover()
@@ -145,24 +147,5 @@ export function initDocumentationNavigation() {
     document.addEventListener('scroll', (event) => {
       if (picker.open && event.target instanceof Node && !panel.contains(event.target)) position()
     }, { capture: true, signal })
-  }
-  for (const nav of document.querySelectorAll<HTMLElement>('[data-section-navigation]')) {
-    const input = nav.querySelector<HTMLInputElement>('[data-section-search]')!
-    const links = [...nav.querySelectorAll<HTMLAnchorElement>('.sidebar-nav a')]
-    const groups = [...nav.querySelectorAll<HTMLDetailsElement>('.sidebar-nav details')]
-    let saved: boolean[] | undefined
-    nav.querySelector<HTMLElement>('[data-section-search-label]')!.hidden = false
-    input.addEventListener('input', () => {
-      const query = input.value.trim().toLocaleLowerCase()
-      if (query && !saved) saved = groups.map((group) => group.open)
-      for (const link of links) link.hidden = !link.textContent?.toLocaleLowerCase().includes(query)
-      groups.forEach((group, index) => {
-        group.hidden = ![...group.querySelectorAll('a')].some((link) => !link.hidden)
-        if (query) group.open = !group.hidden
-        else if (saved) group.open = saved[index]
-      })
-      if (!query) saved = undefined
-      nav.querySelector<HTMLElement>('[data-section-empty]')!.hidden = links.some((link) => !link.hidden)
-    }, { signal })
   }
 }

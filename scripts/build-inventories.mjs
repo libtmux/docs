@@ -14,16 +14,18 @@
  * exist, which is the failure mode this whole subsystem exists to avoid: a
  * link that looks deliberate and goes nowhere.
  *
- * Usage: node scripts/build-inventories.mjs [--check]
+ * Usage: node scripts/build-inventories.mjs [--check] [--dom-only]
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { readInventory, writeInventory } from '../packages/api-model/src/inventory.ts'
+import { TYPESCRIPT_UTILITY_TYPES } from '../packages/api-model/src/builtins.ts'
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const outDir = join(repoRoot, 'site/src/data/inventories')
 const check = process.argv.includes('--check')
+const domOnly = process.argv.includes('--dom-only')
 
 const JDK = 'https://docs.oracle.com/en/java/javase/21/docs/api/'
 
@@ -102,6 +104,9 @@ function buildDom() {
     const text = readFileSync(path, 'utf8')
     for (const m of text.matchAll(/^\s*(?:declare\s+)?(?:interface|declare var|type|class)\s+([A-Z][A-Za-z0-9_]*)/gm)) {
       const name = m[1]
+      // lib.es5.d.ts also declares TypeScript-only transformations. Their
+      // curated Handbook links must not be shadowed by invented MDN entries.
+      if (Object.hasOwn(TYPESCRIPT_UTILITY_TYPES, name)) continue
       if (seen.has(name)) continue
       seen.set(name, { id: name, name, kind: 'interface', uri: `${prefix}${name}` })
     }
@@ -170,7 +175,7 @@ mkdirSync(outDir, { recursive: true })
 
 if (check) {
   let failed = 0
-  for (const name of ['jdk', 'dom']) {
+  for (const name of domOnly ? ['dom'] : ['jdk', 'dom']) {
     const out = join(outDir, `${name}.inv`)
     if (!existsSync(out)) {
       console.error(`build-inventories: ${name}.inv missing — run without --check`)
@@ -184,4 +189,4 @@ if (check) {
 }
 
 emit(buildDom())
-emit(await buildJdk())
+if (!domOnly) emit(await buildJdk())

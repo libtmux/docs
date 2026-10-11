@@ -3,6 +3,7 @@ title: Connect a Ruby MCP client
 description: Launch a pinned Ruby MCP server on its own private tmux socket, inspect the default tools, and close it with the client.
 port: ruby
 product: mcp
+equivalence: mcp-client-setup
 sidebar:
   label: Connect a client
   group: Guides

@@ -3,6 +3,7 @@ vi.mock('astro:content', () => ({ getCollection: vi.fn(async () => []) }))
 import { buildDocumentationSurfaces, currentDocumentation, getDocumentationSurfaces } from '../src/lib/documentation-navigation'
 import { PORTS, portPageUrl, type DocProduct } from '../src/lib/ports'
 import type { SidebarItem } from '../src/lib/sidebar'
+import { mcpObjects, MCP_REFERENCE } from '../src/lib/mcp-reference'
 
 const link = (label: string, href: string): SidebarItem => ({ type: 'link', label, href })
 const menus = (port: typeof PORTS[number], version: string) => Object.fromEntries(['core', 'mcp', 'workspace'].map((surface) => {
@@ -12,7 +13,7 @@ const menus = (port: typeof PORTS[number], version: string) => Object.fromEntrie
     ...(surface === 'workspace' ? [link('CLI Manual', base('cli')), link('Load', base('cli/load')),
       link('Installation', base('guides/installation')), link('Internal guides', base('internals/guides')),
       link('Exit codes', base('reference/exit-codes')), link('Output', base('reference/output'))] : []),
-    ...(surface === 'mcp' ? [link('Tools', base('tools'))] : []),
+    ...(surface === 'mcp' ? [link('Tools', base('tools')), link('Prompts', base('prompts')), link('Resources', base('resources'))] : []),
   ]]
 })) as Record<'core' | DocProduct, SidebarItem[]>
 
@@ -92,6 +93,15 @@ describe('documentation surface navigation', () => {
     }
   })
 
+  it('uses Julia’s existing MCP setup guide when no Guides overview exists', () => {
+    const setup = '/julia/latest/mcp/source-guide/'
+    const surfaces = buildDocumentationSurfaces('julia', 'latest', { mcp: [link('MCP server guide', setup)] })
+    const section = surfaces.find((surface) => surface.id === 'mcp')!.sections.find((section) => section.id === 'guides')!
+    expect(section.href).toBe(setup)
+    expect(section.items).toEqual([link('MCP server guide', setup)])
+    expect(currentDocumentation(surfaces, setup).section).toBe(section)
+  })
+
   it('omits unavailable Lua apps even when their availability pages exist', () => {
     const port = PORTS.find((entry) => entry.slug === 'lua')!
     const surfaces = buildDocumentationSurfaces('lua', 'latest', { core: [],
@@ -116,6 +126,22 @@ describe('documentation surface navigation', () => {
     expect(core.sections[0].items.map((item) => item.label)).toEqual(['Overview', 'Guides', 'Tutorials', 'API Reference'])
   })
 
+  it.each(['cxx', 'julia', 'powershell', 'ruby'])('keeps %s product glossaries inside their API navigation', (slug) => {
+    const port = PORTS.find((entry) => entry.slug === slug)!
+    const surfaces = buildDocumentationSurfaces(slug, 'latest', menus(port, 'latest'))
+    for (const surface of surfaces.filter((entry) => entry.id !== 'core')) {
+      const reference = surface.sections.find((section) => section.id === 'reference')!
+      const glossary = `${reference.href}glossary/`
+      const group = reference.items.find((item) => item.label === 'Language API')!
+      if (group.type !== 'group') throw new Error('Expected language API tree')
+      expect(group.items.length).toBeGreaterThan(1)
+      expect(group.items.filter((item) => item.href === glossary)).toEqual([{ type: 'link', label: 'API glossary', href: glossary }])
+      const selected = currentDocumentation(surfaces, glossary)
+      expect(selected.surface.id).toBe(surface.id)
+      expect(selected.section).toBe(reference)
+    }
+  })
+
   it('separates CLI and protocol references from the language API', () => {
     const port = PORTS.find((entry) => entry.slug === 'go')!
     const surfaces = buildDocumentationSurfaces('go', 'latest', menus(port, 'latest'))
@@ -129,9 +155,33 @@ describe('documentation surface navigation', () => {
     const api = currentDocumentation(surfaces, '/go/latest/workspace/reference/')
     expect(api.section.id).toBe('reference')
     expect(api.section.items.map((item) => item.label)).toEqual(['Language API'])
+    const languageApi = api.section.items[0]
+    expect(languageApi.href).toBe('/go/latest/workspace/reference/')
+    if (languageApi.type !== 'group') throw new Error('Expected language API group')
+    expect(languageApi.items.some((item) => item.href === languageApi.href)).toBe(false)
     const mcp = currentDocumentation(surfaces, portPageUrl(port, 'latest', 'mcp/tools/list_sessions'))
     expect(mcp.surface.id).toBe('mcp')
-    expect(mcp.section.items.map((item) => item.label)).toEqual(['Language API', 'Tools'])
+    expect(mcp.section.id).toBe('tools')
+    expect(mcp.section.items.map((item) => item.label)).toEqual(['Tools', ...MCP_REFERENCE.go.registrations.map((tool) => tool.wireName)])
+    expect(currentDocumentation(surfaces, '/go/latest/mcp/reference/').section.items.map((item) => item.label)).toEqual(['Language API'])
+  })
+
+  it.each(Object.keys(MCP_REFERENCE))('exposes all three protocol sections for %s with only its advertised objects', (slug) => {
+    const port = PORTS.find((entry) => entry.slug === slug)!
+    const surfaces = buildDocumentationSurfaces(slug, 'next', menus(port, 'next'))
+    const mcp = surfaces.find((surface) => surface.id === 'mcp')!
+    expect(mcp.sections.map((section) => section.id)).toEqual(['home', 'guides', 'examples', 'tools', 'prompts', 'resources', 'reference'])
+    for (const id of ['tools', 'prompts', 'resources']) {
+      const section = mcp.sections.find((section) => section.id === id)!
+      const objects = mcpObjects(slug).filter((object) => object.section === id)
+      expect(section.disabled).toBe(objects.length === 0)
+      const homeLink = mcp.sections.find((section) => section.id === 'home')!.items
+        .find((item) => item.type === 'link' && item.href === section.href)
+      expect(homeLink?.type === 'link' && Boolean(homeLink.disabled)).toBe(objects.length === 0)
+      expect(section.href).toBe(`/${slug}/next/mcp/${id}/`)
+      expect(section.items.slice(1)).toEqual(objects.map((object) => ({ type: 'link', label: object.name, kind: object.kind, href: `/${slug}/next/${object.path}/` })))
+      for (const object of objects) expect(currentDocumentation(surfaces, `/${slug}/next/${object.path}/`).section.id).toBe(id)
+    }
   })
 
   it('keeps ecosystem and upstream references reachable from the picker above the core API tree', () => {

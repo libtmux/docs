@@ -2,8 +2,9 @@ import { describe, expect, it, vi } from 'vitest'
 
 vi.stubEnv('LIBTMUX_DOCS_PORT_ROOT', '/pr-42/en')
 vi.stubEnv('LIBTMUX_DOCS_LOCALES_ROOT', '/pr-42')
-const { docsEntryAvailable, pagePortLinks } = await import('../src/lib/page-port-links')
-const { PORTS, PORT_BY_SLUG } = await import('../src/lib/ports')
+const { docsEntryAvailable, docsEntriesAvailable, pagePortLinks } = await import('../src/lib/page-port-links')
+const { PORTS, PORT_BY_SLUG, productAvailable } = await import('../src/lib/ports')
+const { referencePageLinks } = await import('../src/lib/reference-page-links')
 const { localePageHref, localeSourcePath } = await import('../src/i18n/locales')
 
 const docs = [
@@ -14,7 +15,127 @@ const docs = [
 ]
 const options = { version: 'v1.2.3', defaults: { py: 'stable', ts: 'latest' }, docs }
 
+describe('prose route ownership', () => {
+  const shared = { id: 'concepts', data: {} }
+  const ruby = { id: '_staged/ruby/concepts', data: { port: 'ruby', route: 'concepts' } }
+  const lua = { id: '_staged/lua/concepts', data: { port: 'lua', route: 'concepts' } }
+
+  it('selects native prose independently of collection order and keeps shared fallbacks', () => {
+    for (const entries of [[shared, ruby, lua], [lua, ruby, shared]]) {
+      expect(docsEntriesAvailable(entries, 'ruby')).toEqual([ruby])
+      expect(docsEntriesAvailable(entries, 'lua')).toEqual([lua])
+      expect(docsEntriesAvailable(entries, 'go')).toEqual([shared])
+      expect(docsEntriesAvailable(entries)).toEqual(entries)
+    }
+  })
+
+  it('keeps locale ownership separate and respects unsupported-port exclusions', () => {
+    const translation = { id: 'ja/concepts', data: {} }
+    const nativeTranslation = { id: 'ja/_staged/ruby/concepts', data: { port: 'ruby', route: 'concepts' } }
+    expect(docsEntriesAvailable([shared, translation, ruby, nativeTranslation], 'ruby')).toEqual([ruby, nativeTranslation])
+    expect(docsEntriesAvailable([shared, { ...ruby, data: { ...ruby.data, supportedPorts: ['lua'] } }], 'ruby')).toEqual([shared])
+  })
+
+  it('rejects conflicting pages within an owner even when another owner overrides them', () => {
+    const duplicate = { id: 'other-concepts', data: { route: 'concepts' } }
+    for (const entries of [[shared, ruby, duplicate], [ruby, shared, duplicate], [duplicate, ruby, shared]]) {
+      expect(() => docsEntriesAvailable(entries, 'ruby')).toThrow(/Duplicate documentation route concepts/)
+    }
+    expect(() => docsEntriesAvailable([ruby, { ...ruby, id: 'other-ruby-concepts' }], 'ruby')).toThrow(/_staged\/ruby\/concepts and other-ruby-concepts/)
+  })
+})
+
+describe('reference picker exits', () => {
+  it('keeps missing equivalents distinct from product and language home shortcuts', () => {
+    const entries = pagePortLinks({ ...options, pagePath: 'mcp/reference/libtmux-mcp-arguments', portSlug: 'cxx' })
+    expect(entries.find((entry) => entry.port === 'rs')).toMatchObject({
+      links: [], home: { href: '/pr-42/en/rs/latest/mcp/', label: 'Go to Rust MCP home' },
+    })
+    expect(entries.find((entry) => entry.port === 'lua')).toMatchObject({
+      links: [], home: { href: '/pr-42/en/lua/latest/', label: 'Go to Lua home' },
+    })
+    expect(entries.find((entry) => entry.port === 'py')?.home?.href).toBe('/pr-42/en/py/stable/mcp/')
+    expect(entries.find((entry) => entry.port === 'cxx')?.links[0]?.href).toBe('/pr-42/en/cxx/v1.2.3/mcp/reference/libtmux-mcp-arguments/')
+    const workspace = pagePortLinks({ ...options, pagePath: 'workspace/reference/unknown', portSlug: 'powershell' })
+    expect(workspace.find((entry) => entry.port === 'powershell')?.home?.href).toBe('/pr-42/en/powershell/v1.2.3/workspace/')
+    const core = pagePortLinks({ ...options, pagePath: 'reference/unknown', portSlug: 'rs' })
+    expect(core.find((entry) => entry.port === 'rs')?.home?.href).toBe('/pr-42/en/rs/v1.2.3/')
+  })
+
+  it('mounts glossary equivalents inside the available API product and preserves the term', () => {
+    const entries = pagePortLinks({ ...options, pagePath: 'mcp/reference/glossary', portSlug: 'cxx' })
+    expect(entries.find((entry) => entry.port === 'cxx')?.links).toEqual([
+      { href: '/pr-42/en/cxx/v1.2.3/mcp/reference/glossary/', preserveFragment: true },
+    ])
+    expect(entries.find((entry) => entry.port === 'julia')?.links).toEqual([
+      { href: '/pr-42/en/julia/latest/mcp/reference/glossary/', preserveFragment: true },
+    ])
+    expect(entries.find((entry) => entry.port === 'powershell')?.links).toEqual([])
+    const core = pagePortLinks({ ...options, pagePath: 'reference/glossary', portSlug: 'rs' })
+    expect(core.find((entry) => entry.port === 'py')?.links).toEqual([
+      { href: '/pr-42/en/py/stable/reference/glossary/', preserveFragment: true },
+    ])
+  })
+})
+
 describe('matching pages in another port', () => {
+  it('links cmdlet switches to parameters and keeps Julia receiver names out of function links', async () => {
+    const { referenceAlternatives, API_MODELS } = await import('../src/lib/api-models')
+    const { productApiIndex } = await import('../src/lib/product-api')
+    const { parameterId } = await import('@libtmux/api-model')
+    const examples = [
+      ['julia', 'LibTmux.snapshot', 'Depth'], ['cxx', 'libtmux::Session::windows', 'Session'],
+      ['cxx', 'libtmux::Window::panes', 'Window'], ['cxx', 'libtmux::Server::sessions', 'Server'],
+    ]
+    for (const [port, id, name] of examples) {
+      const entry = referenceAlternatives(port, id).flatMap((group) => group.ports).find((entry) => entry.port === 'powershell')!
+      const target = API_MODELS.powershell.symbols.find((symbol) => symbol.id === entry.publicId)!
+      const spans = productApiIndex(API_MODELS.powershell, 'latest').linkText(entry.note!)
+      const link = spans.find((span) => span.kind === 'link' && span.text === `-${name}`)
+      expect(link, `${id}: -${name}`).toMatchObject({ href: entry.href + '#' + encodeURIComponent(parameterId(target, name)), code: true })
+      expect(spans.some((span) => span.kind === 'ref' && span.target === `-${name}`)).toBe(false)
+    }
+    for (const id of ['LibTmux.windows', 'LibTmux.panes', 'LibTmux.sessions', 'LibTmux.clients']) {
+      const entries = referenceAlternatives('julia', id).flatMap((group) => group.ports).filter((entry) => entry.port === 'julia')
+      for (const entry of entries) {
+        const index = productApiIndex(API_MODELS.julia, 'latest')
+        const spans = index.linkText(entry.note!)
+        expect(spans.filter((span) => span.kind === 'ref').every((span) => span.link)).toBe(true)
+        const links = spans.flatMap((span) => span.kind === 'ref' && span.link ? [span.link.href] : [])
+        expect(links.some((href) => /libtmux-(session|window|snapshot)\/$/.test(href))).toBe(false)
+      }
+    }
+  })
+
+  it('publishes native differences and reverse links for Julia action references', () => {
+    const manifest = referencePageLinks()
+    const server = manifest.symbols.cxx['libtmux::Server']
+    expect(server.find((entry) => entry.port === 'powershell')).toMatchObject({
+      kind: 'cmdlet', href: '/pr-42/en/powershell/latest/reference/libtmux-new-tmuxserver/',
+      note: expect.stringContaining('shared .NET `LibTmux.Server`'),
+    })
+    expect(server.find((entry) => entry.port === 'fsharp')).toMatchObject({ kind: 'module' })
+    expect(manifest.symbols.julia['LibTmux.SessionRef']).toEqual(expect.arrayContaining([
+      expect.objectContaining({ port: 'cxx', href: '/pr-42/en/cxx/latest/reference/libtmux-session/' }),
+    ]))
+  })
+
+  it('links server types to verified Julia types, PowerShell cmdlets and F# modules in both directions', () => {
+    const pages = [
+      ['cxx', 'libtmux-server'], ['julia', 'libtmux-server'],
+      ['powershell', 'libtmux-new-tmuxserver'], ['fsharp', 'libtmux-fsharp-server'],
+    ]
+    for (const [portSlug, slug] of pages) {
+      const entries = pagePortLinks({ ...options, portSlug, pagePath: `reference/${slug}` })
+      for (const [port, target] of pages) {
+        const version = port === portSlug ? options.version : options.defaults[port as keyof typeof options.defaults] ?? 'latest'
+        expect(entries.find((entry) => entry.port === port)?.links[0].href).toBe(`/pr-42/en/${port}/${version}/reference/${target}/`)
+      }
+      if (portSlug !== 'powershell') expect(entries.find((entry) => entry.port === 'powershell')?.links[0].label).toBe('New-TmuxServer (cmdlet)')
+      if (portSlug !== 'fsharp') expect(entries.find((entry) => entry.port === 'fsharp')?.links[0].label).toBe('Server (module)')
+    }
+  })
+
   it('finds library counterparts from the tmux prose namespace', () => {
     const links = pagePortLinks({ ...options, pagePath: 'tmux/concepts/model' })
     expect(links.find((p) => p.port === 'go')?.links[0].href).toBe('/pr-42/en/go/latest/concepts/model/')
@@ -37,10 +158,73 @@ describe('matching pages in another port', () => {
     expect(links.find((p) => p.port === 'rs')?.links[0].href).toBe('/pr-42/en/rs/latest/workspace/internals/guides/')
     expect(links.find((p) => p.port === 'py')?.links).toEqual([])
   })
+
+  it('matches verified setup tasks across native and authored routes in both directions', () => {
+    const page = (port: string, route: string, title: string, equivalence = 'mcp-client-setup', product = 'mcp') => ({
+      id: `ports/${port}/${route}`, data: { port, route, title, product, equivalence, sidebar: { group: 'Guides' } },
+    })
+    const entries = [
+      page('julia', 'mcp/source-guide', 'MCP server guide'),
+      page('ruby', 'mcp/source-guide', 'MCP server guide'),
+      page('ruby', 'mcp/guides/connect-client', 'Connect a client'),
+      page('go', 'mcp/guides/connect-client', 'Connect a client'),
+      page('go', 'mcp/guides', 'Overview', ''),
+      page('py', 'mcp/guides', 'Connect a Python MCP client'),
+      page('ts', 'mcp/source-guide', 'Unrelated task', 'mcp-observation'),
+      page('ts', 'mcp/guides', 'Overview', ''),
+      page('java', 'workspace/source-guide', 'Different product', 'mcp-client-setup', 'workspace'),
+      page('lua', 'mcp/source-guide', 'Unsupported server'),
+      page('powershell', 'mcp/source-guide', 'Unsupported server'),
+    ]
+    for (const docs of [entries, [...entries].reverse()]) {
+      const links = pagePortLinks({ ...options, docs, pagePath: 'mcp/source-guide', portSlug: 'julia' })
+      expect(links.find((p) => p.port === 'julia')?.links).toEqual([{ href: '/pr-42/en/julia/v1.2.3/mcp/source-guide/' }])
+      expect(links.find((p) => p.port === 'go')?.links).toEqual([{ href: '/pr-42/en/go/latest/mcp/guides/connect-client/' }])
+      expect(links.find((p) => p.port === 'py')?.links).toEqual([{ href: '/pr-42/en/py/stable/mcp/guides/' }])
+      expect(links.find((p) => p.port === 'ruby')?.links).toEqual([
+        { href: '/pr-42/en/ruby/latest/mcp/guides/connect-client/', label: 'Connect a client' },
+        { href: '/pr-42/en/ruby/latest/mcp/source-guide/', label: 'MCP server guide' },
+      ])
+      expect(links.find((p) => p.port === 'ts')?.links).toEqual([{ href: '/pr-42/en/ts/latest/mcp/guides/', label: 'Guides overview' }])
+      for (const port of ['java', 'lua', 'powershell']) expect(links.find((p) => p.port === port)?.links).toEqual([])
+      for (const [portSlug, pagePath] of [['ruby', 'mcp/guides/connect-client'], ['py', 'mcp/guides']]) {
+        const reverse = pagePortLinks({ ...options, docs, pagePath, portSlug })
+        expect(reverse.find((p) => p.port === 'julia')?.links).toEqual([{ href: '/pr-42/en/julia/latest/mcp/source-guide/' }])
+        expect(reverse.find((p) => p.port === portSlug)?.links).toEqual([{ href: `/pr-42/en/${portSlug}/v1.2.3/${pagePath}/` }])
+      }
+    }
+  })
+
+  it('keeps a missing product article fallback in its real section', () => {
+    const docs = [
+      { id: 'ports/ts/workspace/internals/guides/special', data: { port: 'ts', product: 'workspace' } },
+      { id: 'ports/go/workspace/internals/guides', data: { port: 'go', product: 'workspace' } },
+      { id: 'ports/rs/workspace/guides', data: { port: 'rs', product: 'workspace' } },
+    ]
+    const links = pagePortLinks({ ...options, docs, pagePath: 'workspace/internals/guides/special', portSlug: 'ts' })
+    expect(links.find((p) => p.port === 'go')?.links).toEqual([{ href: '/pr-42/en/go/latest/workspace/internals/guides/', label: 'Guides overview' }])
+    expect(links.find((p) => p.port === 'rs')?.links).toEqual([])
+  })
   it('preserves the prose page and chooses the target port default', () => {
     const links = pagePortLinks({ ...options, pagePath: 'concepts/model', portSlug: 'py' })
     expect(links.find((p) => p.port === 'py')?.links[0].href).toBe('/pr-42/en/py/v1.2.3/concepts/model/')
     expect(links.find((p) => p.port === 'ts')?.links[0].href).toBe('/pr-42/en/ts/latest/concepts/model/')
+  })
+
+  it('labels an existing section overview when a port has no matching example', () => {
+    const entries = [
+      { id: 'ports/powershell/examples/create-layout', data: { port: 'powershell', route: 'examples/create-layout' } },
+      { id: 'ports/julia/examples/create-layout', data: { port: 'julia', route: 'examples/create-layout' } },
+      { id: 'ports/csharp/examples', data: { port: 'csharp', route: 'examples' } },
+      { id: 'ports/fsharp/examples', data: { port: 'fsharp', route: 'examples' } },
+    ]
+    const links = pagePortLinks({ ...options, docs: entries, pagePath: 'examples/create-layout', portSlug: 'powershell' })
+    expect(links.find((entry) => entry.port === 'powershell')?.links).toEqual([{ href: '/pr-42/en/powershell/v1.2.3/examples/create-layout/' }])
+    expect(links.find((entry) => entry.port === 'julia')?.links).toEqual([{ href: '/pr-42/en/julia/latest/examples/create-layout/' }])
+    for (const port of ['csharp', 'fsharp']) expect(links.find((entry) => entry.port === port)?.links).toEqual([
+      { href: `/pr-42/en/${port}/latest/examples/`, label: 'Examples overview' },
+    ])
+    expect(links.find((entry) => entry.port === 'java')?.links).toEqual([])
   })
 
   it('disables pages excluded by their port and unknown root-only routes', () => {
@@ -56,10 +240,13 @@ describe('matching pages in another port', () => {
   it('switches MCP tools using each port’s registered wire name', () => {
     const links = pagePortLinks({ ...options, pagePath: 'mcp/tools/capture_pane', portSlug: 'ts' })
     expect(links.find((entry) => entry.port === 'lua')?.links).toEqual([])
-    expect(links.filter((entry) => entry.port !== 'lua' && entry.port !== 'ruby' && !PORT_BY_SLUG[entry.port].parentLibrary).every((entry) => entry.links.length === 1)).toBe(true)
+    expect(links.filter((entry) => entry.links.some((link) => !link.label)).map((entry) => entry.port).sort())
+      .toEqual(['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift', 'julia'].sort())
+    expect(links.find((entry) => entry.port === 'ruby')?.links).toEqual([{ href: '/pr-42/en/ruby/latest/mcp/tools/', label: 'Tools overview' }])
     expect(links.find((entry) => entry.port === 'ts')?.links[0].href).toBe('/pr-42/en/ts/v1.2.3/mcp/tools/capture_pane/')
     expect(links.find((entry) => entry.port === 'py')?.links[0].href).toBe('/pr-42/en/py/stable/mcp/tools/capture_pane/')
     expect(links.find((entry) => entry.port === 'csharp')?.links[0].href).toBe('/pr-42/en/csharp/latest/mcp/tools/capture_pane/')
+    expect(links.find((entry) => entry.port === 'julia')?.links[0].href).toBe('/pr-42/en/julia/latest/mcp/tools/capture_pane/')
     const reverse = pagePortLinks({ ...options, pagePath: 'mcp/tools/capture_pane', portSlug: 'csharp' })
     expect(reverse.find((entry) => entry.port === 'ts')?.links[0].href).toBe('/pr-42/en/ts/latest/mcp/tools/capture_pane/')
   })
@@ -82,10 +269,30 @@ describe('matching pages in another port', () => {
 
   it('keeps scrollback-only clearing separate from clearing the visible screen', () => {
     const rust = pagePortLinks({ ...options, pagePath: 'mcp/tools/clear_pane_scrollback', portSlug: 'rs' })
-    expect(rust.filter((entry) => entry.links.length).map((entry) => entry.port)).toEqual(['ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'])
+    expect(rust.filter((entry) => entry.links.some((link) => !link.label)).map((entry) => entry.port)).toEqual(['ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'])
+    expect(rust.find((entry) => entry.port === 'py')?.links).toEqual([{ href: '/pr-42/en/py/stable/mcp/tools/', label: 'Tools overview' }])
     const python = pagePortLinks({ ...options, pagePath: 'mcp/tools/clear_pane', portSlug: 'py' })
-    expect(python.find((entry) => entry.port === 'rs')?.links).toEqual([])
-    expect(python.find((entry) => entry.port === 'csharp')?.links).toEqual([])
+    for (const port of ['rs', 'csharp']) expect(python.find((entry) => entry.port === port)?.links).toEqual([
+      { href: `/pr-42/en/${port}/latest/mcp/tools/`, label: 'Tools overview' },
+    ])
+  })
+
+  it('switches fixed resources by URI despite different display names', () => {
+    const links = pagePortLinks({ ...options, pagePath: 'mcp/resources/capabilities', portSlug: 'ts' })
+    expect(links.find((entry) => entry.port === 'go')?.links).toEqual([{ href: '/pr-42/en/go/latest/mcp/resources/tmux-capabilities/' }])
+    expect(links.find((entry) => entry.port === 'csharp')?.links).toEqual([{ href: '/pr-42/en/csharp/latest/mcp/resources/tmux_capabilities/' }])
+    expect(links.find((entry) => entry.port === 'py')?.links).toEqual([{ href: '/pr-42/en/py/stable/mcp/resources/', label: 'Resources overview' }])
+    expect(links.find((entry) => entry.port === 'julia')?.links).toEqual([{ href: '/pr-42/en/julia/latest/mcp/resources/', label: 'Resources overview' }])
+  })
+
+  it.each([
+    ['mcp/prompts/run_and_wait', 'Prompts'],
+    ['mcp/resources/templates/get_pane', 'Resources'],
+  ])('offers an explicitly labelled section when %s has no counterpart', (pagePath, section) => {
+    const links = pagePortLinks({ ...options, pagePath, portSlug: 'py' })
+    expect(links.find((entry) => entry.port === 'py')?.links).toEqual([{ href: `/pr-42/en/py/v1.2.3/${pagePath}/` }])
+    expect(links.find((entry) => entry.port === 'ts')?.links).toEqual([{ href: `/pr-42/en/ts/latest/mcp/${section.toLowerCase()}/`, label: `${section} overview` }])
+    expect(links.find((entry) => entry.port === 'powershell')?.links).toEqual([])
   })
 
   it('offers reference indexes rather than transplanting the current reference path', () => {
@@ -136,7 +343,7 @@ describe('workspace documentation compatibility', () => {
       const links = pagePortLinks({ ...options, docs: entries, pagePath, portSlug: 'go' })
       for (const entry of links) {
         const version = entry.port === 'go' ? 'v1.2.3' : entry.port === 'py' ? 'stable' : 'latest'
-        expect(entry.links).toEqual(PORT_BY_SLUG[entry.port].parentLibrary ? [] : [{ href: `/pr-42/en/${entry.port}/${version}/${pagePath}/` }])
+        expect(entry.links).toEqual(productAvailable(PORT_BY_SLUG[entry.port], 'workspace') ? [{ href: `/pr-42/en/${entry.port}/${version}/${pagePath}/` }] : [])
       }
       const missing = pagePortLinks({ ...options, pagePath, docs: entries.filter((entry) => entry.data.port !== 'cxx') })
       expect(missing.find((entry) => entry.port === 'cxx')?.links).toEqual([])

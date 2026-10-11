@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest'
 import { readInventory } from '@libtmux/api-model'
 import { API_MODELS, indexFor } from '../src/lib/api-models'
 import { productApiIndex } from '../src/lib/product-api'
+import { createProseLinker } from '../src/lib/prose-resolver'
 
 /**
  * The federation is reachable from a build, not just from a unit test.
@@ -24,6 +25,49 @@ const invDir = join(here, '../src/data/inventories')
 const href = (s: { publicId?: string; id: string }) => `#${s.publicId ?? s.id}`
 
 describe('indexFor attaches the inventories', () => {
+  it('links PowerShell commands, pipeline objects, common parameters, and variables', () => {
+    const model = API_MODELS.powershell
+    const command = model.symbols.find((symbol) => symbol.name === 'Connect-TmuxServer')!
+    const index = indexFor(model, href)
+    const signature = command.signatures[0]
+    const spans = index.linkType(signature.raw!, command, signature)
+    expect(spans.map((span) => span.text).join('')).toBe(signature.raw)
+    expect(spans.find((span) => span.text === 'Connect-TmuxServer')).toMatchObject({ declaration: true })
+    expect(spans.find((span) => span.text === 'Server')?.link?.href).toContain('.parameter.Server')
+    expect(spans.find((span) => span.text === 'LibTmux.Server')?.link?.href).toContain('/csharp/latest/reference/')
+    const prose = index.linkText('Use Get-TmuxSnapshot with LibTmux.Server and -ErrorAction. The example uses $SocketPath.', command)
+    const refs = prose.filter((span) => span.kind === 'ref')
+    expect(refs.map((span) => span.target)).toEqual(['Get-TmuxSnapshot', 'LibTmux.Server', '-ErrorAction', '$SocketPath'])
+    expect(refs.every((span) => span.link)).toBe(true)
+    expect(refs.at(-1)?.link?.href).toContain('about_variables')
+    for (const [name, path] of [
+      ['System.Management.Automation.SwitchParameter', 'system.management.automation.switchparameter?view=powershellsdk-7.4.0'],
+      ['System.Management.Automation.ActionPreference', 'system.management.automation.actionpreference?view=powershellsdk-7.4.0'],
+      ['System.String', 'system.string'], ['System.Nullable', 'system.nullable-1'],
+    ]) expect(index.resolve(name)?.href).toBe(`https://learn.microsoft.com/dotnet/api/${path}`)
+  })
+  it('links Julia standard types and typed parameters within their own language', () => {
+    const model = API_MODELS.julia
+    const alias = model.symbols.find((symbol) => symbol.id === 'LibTmux.SessionID')!
+    const index = indexFor(model, href)
+    for (const [name, path] of [
+      ['AbstractString', 'strings/#Core.AbstractString'], ['Any', 'base/#Core.Any'],
+      ['Int64', 'numbers/#Core.Int64'], ['Bool', 'numbers/#Core.Bool'],
+      ['String', 'strings/#Core.String-Tuple%7BAbstractString%7D'],
+    ]) {
+      expect(index.resolve(name)?.href).toBe(`https://docs.julialang.org/en/v1/base/${path}`)
+      expect(indexFor(API_MODELS.py, href).resolve(name)?.href ?? '').not.toContain('docs.julialang.org')
+    }
+    for (const signature of alias.signatures) {
+      const spans = index.linkType(signature.raw!, alias, signature)
+      expect(spans.map((span) => span.text).join('')).toBe(signature.raw)
+      for (const parameter of signature.params) {
+        if (parameter.type === 'AbstractString') expect(spans.find((span) => span.text === 'AbstractString')?.link?.href)
+          .toBe('https://docs.julialang.org/en/v1/base/strings/#Core.AbstractString')
+      }
+    }
+    expect(index.resolve('MissingJuliaType')).toBeUndefined()
+  })
   it('links Kotlin prose, parameters and each declared call-chain step', () => {
     const model = API_MODELS.kotlin
     const member = model.symbols.find((symbol) => symbol.id === 'io.github.libtmux.kotlin.Server.liveState')!
@@ -73,6 +117,37 @@ describe('indexFor attaches the inventories', () => {
     const hit = index.resolve('AbortController', 'class')
     expect(hit?.external).toBe(true)
     expect(hit?.href).toContain('developer.mozilla.org/en-US/docs/Web/API/AbortController')
+  })
+
+  it('links TypeScript utilities to the Handbook in core, MCP signatures, and prose', () => {
+    const model = API_MODELS.ts
+    const symbol = model.symbols.find((entry) => entry.product === 'mcp' && entry.name === 'createTmuxMcpServer')!
+    expect(symbol).toBeDefined()
+    const core = indexFor(model, href)
+    const product = productApiIndex(model, 'latest')
+    const prose = createProseLinker('mcp')
+    const utilityBase = 'https://www.typescriptlang.org/docs/handbook/utility-types.html#'
+    const cases = [
+      ['Readonly', 'readonlytype'], ['Record', 'recordkeys-type'],
+      ['Partial', 'partialtype'], ['Pick', 'picktype-keys'], ['Omit', 'omittype-keys'],
+      ['ReturnType', 'returntypetype'], ['ThisType', 'thistypetype'],
+    ]
+    for (const [name, fragment] of cases) {
+      const target = utilityBase + fragment
+      expect(core.resolve(name)?.href, name).toBe(target)
+      expect(product.resolve(name, 'any', symbol)?.href, name).toBe(target)
+      expect(prose(name, { pagePort: 'ts' }), name).toMatchObject({ kind: 'link', href: target, external: true })
+    }
+    const options = symbol.signatures[0].params.find((parameter) => parameter.name === 'options')!
+    expect(options.type).toContain('Readonly<Record<')
+    const spans = product.linkType(options.type!, symbol)
+    for (const [name, fragment] of cases.slice(0, 2)) {
+      expect(spans.find((span) => span.text === name)?.link?.href).toBe(utilityBase + fragment)
+    }
+    expect(product.resolve('Promise')?.href).toBe('https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise')
+    expect(product.resolve('AbortController')?.href).toBe('https://developer.mozilla.org/en-US/docs/Web/API/AbortController')
+    expect(product.resolve('MissingUtilityType')).toBeUndefined()
+    expect(indexFor(API_MODELS.java, href).resolve('Readonly')?.href).toBeUndefined()
   })
 
   it('links a Python name the built-in fallback cannot reach', () => {
@@ -149,7 +224,7 @@ describe('each sidecar agrees with the .inv beside it', () => {
    * what the round-trip tests validate; the sidecar is what the bundler can
    * see. Neither is redundant, so both are checked.
    */
-  it.each(['python', 'jdk', 'dom'])('%s', (name) => {
+  it.each(['python', 'jdk', 'dom', 'julia'])('%s', (name) => {
     const inv = readInventory(readFileSync(join(invDir, `${name}.inv`)))
     const sidecar = JSON.parse(
       readFileSync(join(invDir, `${name}.entries.json`), 'utf8'),

@@ -1,11 +1,133 @@
 import { describe, expect, it } from 'vitest'
+import { readFileSync, realpathSync } from 'node:fs'
+import { createRequire } from 'node:module'
+import { pathToFileURL } from 'node:url'
+import { experimental_AstroContainer } from 'astro/container'
+import { Window } from 'happy-dom'
 import { API_MODELS, createApiIndex, referenceAlternatives, topLevelTypesOf } from '../src/lib/api-models'
-import { productApiAlternatives, productApiRedirects, productApiRoutes } from '../src/lib/product-api'
+import { productApiAlternatives, productApiHref, productApiNavigation, productApiRedirects, productApiRoutes } from '../src/lib/product-api'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { PORT_BY_SLUG, productAvailable } from '../src/lib/ports'
 import { getResolver } from '../src/lib/prose-resolver'
-import { decideMention, type ApiProduct } from '@libtmux/api-model'
+import { decideMention, symbolsForProduct, type ApiProduct } from '@libtmux/api-model'
+import type { SidebarItem } from '../src/lib/sidebar'
 import mentionIndex from '../src/data/mentions.json'
+import { apiCommandRelatedLinks } from '../src/lib/api-sections'
+import { productApiIndex } from '../src/lib/product-api'
+
+const navigationLinks = (items: SidebarItem[]): string[] => items.flatMap((item) => [
+  ...(item.href ? [item.href] : []), ...(item.type === 'group' ? navigationLinks(item.items) : []),
+])
+
+describe('product declaration trees', () => {
+  it('resolves native PowerShell related help to local core and workspace APIs', () => {
+    const model = API_MODELS.powershell
+    const symbol = model.symbols.find((entry) => entry.id === 'LibTmux.Workspace\\ConvertTo-TmuxWorkspace')!
+    const related = apiCommandRelatedLinks(symbol, productApiIndex(model, 'v1.2.3'))
+    expect(related.map((link) => link.text)).toEqual(['Get-TmuxSnapshot', 'Resolve-TmuxWorkspace', 'ConvertTo-TmuxWorkspaceYaml', 'ConvertTo-TmuxWorkspaceJson'])
+    expect(related[0].href).toBe('/powershell/v1.2.3/reference/libtmux-get-tmuxsnapshot/')
+    expect(related.slice(1).every((link) => link.href.startsWith('/powershell/v1.2.3/workspace/reference/'))).toBe(true)
+    expect(related.every((link) => link.symbol?.command?.kind === 'cmdlet')).toBe(true)
+    const external = { ...symbol, command: { ...symbol.command!, relatedLinks: [
+      { text: 'External help', href: 'https://example.com/Get-TmuxSnapshot' },
+    ] } }
+    expect(apiCommandRelatedLinks(external, productApiIndex(model, 'latest'))[0]).toMatchObject({
+      text: 'External help', href: 'https://example.com/Get-TmuxSnapshot', symbol: undefined,
+    })
+  })
+  it('includes each public product declaration once, including deeply nested members', () => {
+    for (const model of Object.values(API_MODELS)) for (const product of ['workspace', 'mcp'] as const) {
+      const expected = symbolsForProduct(model, product).map((symbol) => productApiHref(model, symbol, 'v1.2.3')).sort()
+      const actual = navigationLinks(productApiNavigation(model, product, 'v1.2.3')).sort()
+      expect(actual, `${model.port} ${product}`).toEqual(expected)
+      expect(new Set(actual).size).toBe(actual.length)
+    }
+  })
+
+  it('opens the PowerShell workspace module into all nine cmdlets', () => {
+    const [module] = productApiNavigation(API_MODELS.powershell, 'workspace', 'latest')
+    expect(module).toMatchObject({ type: 'group', label: 'LibTmux.Workspace', kind: 'module' })
+    if (module.type !== 'group') throw new Error('Workspace module must have children')
+    expect(module.items).toHaveLength(9)
+    expect(module.items).toContainEqual({ type: 'link', label: 'ConvertTo-TmuxWorkspace', kind: 'cmdlet',
+      href: '/powershell/latest/workspace/reference/libtmux-workspace-convertto-tmuxworkspace/' })
+  })
+
+  it('groups Julia extension functions by their declaring module without inventing module pages', () => {
+    const tree = productApiNavigation(API_MODELS.julia, 'mcp', 'latest')
+    for (const [name, functions] of [['Base', ['close', 'isopen', 'show', 'showerror']],
+      ['ModelContextProtocol', ['close', 'is_connected', 'read_message', 'write_message']]] as const) {
+      const group = tree.find((item) => item.label === name)
+      expect(group?.type).toBe('group')
+      expect(group?.kind).toBe('module')
+      expect(group?.href).toBeUndefined()
+      if (group?.type !== 'group') throw new Error(`Missing ${name} group`)
+      expect(group.items.map((item) => item.label)).toEqual(functions)
+      expect(group.items.every((item) => item.href?.startsWith('/julia/latest/mcp/reference/libtmuxmcp-'))).toBe(true)
+    }
+  })
+
+  it('renders module badges for unlinked scopes and linked owners without adding a false destination', async () => {
+    const astroRequire = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
+    const { transform } = await import(astroRequire.resolve('@astrojs/compiler-rs'))
+    async function compile(relative: string, imports: Record<string, string> = {}) {
+      const file = new URL(relative, import.meta.url)
+      const source = readFileSync(file, 'utf8').replace(/<style[\s\S]*?<\/style>/g, '')
+      const result = await transform(source, { filename: file.pathname, internalURL: 'astro/compiler-runtime',
+        resultScopedSlot: true, resolvePath: (specifier: string) => specifier })
+      expect(result.diagnostics.filter((item: { severity: string }) => item.severity === 'error')).toEqual([])
+      let code = result.code.replaceAll('"astro/compiler-runtime"', JSON.stringify(pathToFileURL(astroRequire.resolve('astro/compiler-runtime')).href))
+      for (const [specifier, url] of Object.entries(imports)) code = code.replaceAll(JSON.stringify(specifier), JSON.stringify(url))
+      return `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`
+    }
+    const badge = await compile('../src/components/api/ApiBadge.astro', Object.fromEntries(
+      ['api-labels', 'api-glossary'].map((name) => [`../../lib/${name}`, new URL(`../src/lib/${name}.ts`, import.meta.url).href])))
+    const link = await compile('../src/components/docs/SidebarLink.astro', { '../api/ApiBadge.astro': badge })
+    const section = await compile('../src/components/docs/SidebarSection.astro', {
+      './SidebarLink.astro': link, '../api/ApiBadge.astro': badge,
+      // Isolate collection loading; these fixture paths already use one canonical spelling.
+      '../../lib/sidebar': 'data:text/javascript,export const isActivePath = (href, currentPath) => href === currentPath',
+    })
+    const component = (await import(/* @vite-ignore */ section)).default
+    const container = await experimental_AstroContainer.create()
+    const win = new Window()
+    try {
+      const scopes = productApiNavigation(API_MODELS.julia, 'mcp', 'latest')
+        .filter((item) => ['Base', 'ModelContextProtocol'].includes(item.label))
+      scopes.push(productApiNavigation(API_MODELS.powershell, 'workspace', 'latest')[0])
+      for (const group of scopes) {
+        if (group.type !== 'group') throw new Error(`Missing group ${group.label}`)
+        const currentPath = navigationLinks(group.items)[0]
+        win.document.body.innerHTML = await container.renderToString(component, { props: { ...group, currentPath } })
+        const summary = win.document.querySelector('summary')!
+        expect(summary.querySelectorAll('.api-nav__kind')).toHaveLength(1)
+        const mark = summary.querySelector('.api-nav__kind')!
+        expect(mark.textContent).toBe('M')
+        expect(mark.getAttribute('aria-hidden')).toBe('true')
+        expect(summary.querySelector('.api-nav__label')?.getAttribute('aria-description')).toBe('module')
+        expect(summary.querySelector('a')?.getAttribute('href')).toBe(group.href)
+        expect(win.document.querySelector('details')?.hasAttribute('open')).toBe(true)
+        expect(win.document.querySelector('a[aria-current="page"]')?.getAttribute('href')).toBe(currentPath)
+        expect(Array.from(win.document.querySelectorAll('.sidebar-section__children a')).map((entry) => entry.getAttribute('href')))
+          .toEqual(navigationLinks(group.items))
+      }
+    } finally {
+      await win.happyDOM.abort()
+    }
+  })
+
+  it('does not repeat a single Julia method signature in Markdown or remove its documentation', () => {
+    const model = API_MODELS.julia
+    const symbol = model.symbols.find((entry) => entry.id === 'LibTmuxMCP.tools')!
+    const markdown = symbolMarkdown({ model, symbol, packageName: 'LibTmuxMCP' })
+    expect(markdown).not.toContain('### `tools(')
+    expect(markdown).toContain("Return a fresh, pure SDK tool catalog containing only the application's enabled tools.")
+    expect(markdown).toContain('app')
+    const overloaded = model.symbols.find((entry) => entry.id === 'LibTmux.CancellationToken')!
+    const overloadMarkdown = symbolMarkdown({ model, symbol: overloaded, packageName: 'LibTmux' })
+    expect(overloadMarkdown).toContain('### `')
+  })
+})
 
 it('keeps the mention audit consistent with rendered prose links', () => {
   for (const row of mentionIndex.dangling) {

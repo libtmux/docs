@@ -17,12 +17,15 @@
  */
 import ApiTreeItems, { type TreeNode } from './ApiTreeItems.astro'
 import { bucketTotal, firstEntry, type TreeBucket } from '../../lib/api-tree'
+import { apiTreeHref } from '../../lib/api-search'
+import { initializeApiTree } from './api-tree-state'
 import '../../styles/api-tree.css'
 
 interface Props {
   referenceBase: string
   portName: string
   tree: TreeBucket[]
+  hrefs?: Record<string, string>
   /** Top-level bucket holding the page. */
   currentRoot?: string
   /** Bucket holding the page's type, which may be a child of `currentRoot`. */
@@ -39,44 +42,60 @@ interface Props {
   /** Nav ids of the types that have members, which open into them. */
   withMembers: Set<string>
   currentPath: string
+  version: string
+  /** Protocol references reuse this browser with their own object vocabulary. */
+  indexLabel?: string
+  treeLabel?: string
+  searchLabel?: string
+  searchPlaceholder?: string
+  filters?: { id: string; label: string }[]
+  currentIndex?: string
+  glossaryHref?: string
+  glossaryLabel?: string
 }
 
 const {
-  referenceBase, portName, tree, currentRoot, currentBucket, currentTypeId, ownerNavId, ownerId,
-  members, ancestorMembers, withMembers, currentPath,
+  referenceBase, portName, tree, hrefs, currentRoot, currentBucket, currentTypeId, ownerNavId, ownerId,
+  members, ancestorMembers, withMembers, currentPath, version,
+  indexLabel = 'API reference', treeLabel = `${portName} API`,
+  searchLabel = 'Find a type or member', searchPlaceholder = 'Find symbol',
+  filters = [{ id: 'all', label: 'All' }, { id: 'types', label: 'Types' }, { id: 'members', label: 'Members' }],
+  currentIndex,
+  glossaryHref, glossaryLabel = 'API glossary',
 } = Astro.props as Props
 // The port's own reference root. `withRoot` would give the locale root:
 // Astro's `base` prefixes routes, not strings a component builds.
 const base = referenceBase
-const href = (slug: string) => `${base}${slug}/`
+const href = (entry: { id: string; slug: string }) => apiTreeHref(base, entry, hrefs)
 
 let seq = 0
 const nextId = () => `api-nav-${++seq}`
 
-const symbolNode = (symbol: { id: string; name: string; kind: string; href: string }, level: number): TreeNode => {
-  const current = symbol.id === ownerNavId || symbol.id === ownerId
+const symbolNode = (symbol: { id: string; name: string; kind: string; href: string; shortcut?: boolean }, level: number): TreeNode => {
+  const current = !symbol.shortcut && (symbol.id === ownerNavId || symbol.id === ownerId)
   const children = ancestorMembers?.get(symbol.id) ?? (symbol.id === currentTypeId ? members : undefined)
   if (children?.length) {
     return {
-      id: nextId(), label: symbol.name, kind: symbol.kind, href: symbol.href, level, current, expanded: true,
-      children: children.map((member) => symbolNode(member, level + 1)),
+      id: nextId(), label: symbol.name, kind: symbol.kind, href: symbol.href, shortcut: symbol.shortcut, level, current, expanded: true,
+      lazy: `type:${symbol.id}`, children: children.map((member) => symbolNode(member, level + 1)),
     }
   }
   return {
-    id: nextId(), label: symbol.name, kind: symbol.kind, href: symbol.href, level, current,
+    id: nextId(), label: symbol.name, kind: symbol.kind, href: symbol.href, shortcut: symbol.shortcut, level, current,
     ...(withMembers.has(symbol.id) ? { expanded: false, lazy: `type:${symbol.id}` } : {}),
   }
 }
 
 const bucketNode = (b: TreeBucket, level: number, child: boolean): TreeNode => {
   const target = firstEntry(b)
-  const head = { id: nextId(), label: b.label, href: target ? href(target.slug) : undefined, count: child ? b.entries.length : bucketTotal(b), level }
+  const head = { id: nextId(), label: b.label, href: target ? href(target) : undefined, count: bucketTotal(b), level, lazy: `bucket:${b.id}`, current: currentIndex === b.id }
+  if (head.count === 0) return { ...head, href: undefined, lazy: undefined, disabled: true }
   const open = child ? b.id === currentBucket : b.id === currentRoot
   if (!open) return { ...head, expanded: false, lazy: `bucket:${b.id}` }
   return {
     ...head,
     expanded: true,
-    children: [...b.entries.map((t) => symbolNode({ ...t, href: href(t.slug) }, level + 1)), ...b.children.map((c) => bucketNode(c, level + 1, true))],
+    children: [...b.entries.map((t) => symbolNode({ ...t, href: href(t) }, level + 1)), ...b.children.map((c) => bucketNode(c, level + 1, true))],
   }
 }
 
@@ -90,13 +109,17 @@ const bucketNode = (b: TreeBucket, level: number, child: boolean): TreeNode => {
  */
 const indexNode: TreeNode = {
   id: nextId(),
-  label: 'API reference',
+  label: indexLabel,
   href: base,
   level: 1,
   current: currentPath.replace(/\/?$/, '/') === base,
 }
 
-const nodes = [indexNode, ...tree.map((b) => bucketNode(b, 1, false))]
+const glossaryNode: TreeNode[] = glossaryHref ? [{
+  id: nextId(), label: glossaryLabel, href: glossaryHref, level: 1,
+  current: currentPath.replace(/\/?$/, '/') === glossaryHref,
+}] : []
+const nodes = [...(indexLabel ? [indexNode] : []), ...glossaryNode, ...tree.map((b) => bucketNode(b, 1, false))]
 
 /** The one Tab stop: the page's own row, or the first row on a page with none. */
 const mark = (list: TreeNode[]): boolean =>
@@ -113,59 +136,43 @@ if (!mark(nodes) && nodes[0]) nodes[0].tab = true
     document.documentElement.setAttribute('data-api-nav', '')
   </script>
   <div class="api-nav-overlay" data-api-nav-overlay></div>
-  <div id="api-nav" class="api-nav" data-src={`${base}tree.json`} data-base={base} aria-labelledby="api-nav-title">
+  <div id="api-nav" class="api-nav" data-src={`${base}tree.json`} data-base={base} data-version={version} aria-labelledby="api-nav-title">
     <div class="api-nav__head">
-      <p class="api-nav__title" id="api-nav-title">{portName} API</p>
-      <button type="button" class="api-nav__close" data-api-nav-close aria-label="Close API contents">
+      <p class="api-nav__title" id="api-nav-title">{treeLabel}</p>
+      <button type="button" class="api-nav__close" data-api-nav-close aria-label={`Close ${treeLabel} contents`}>
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
     </div>
     <div class="api-nav__search">
-      <label for="api-symbol-search" class="sr-only">Find a type or member</label>
+      <label for="api-symbol-search" class="sr-only">{searchLabel}</label>
       <div class="api-nav__search-field">
         <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="6.75" cy="6.75" r="4.5" /><path d="m10.25 10.25 3.5 3.5" /></svg>
-        <input id="api-symbol-search" type="search" autocomplete="off" placeholder="Find symbol" aria-keyshortcuts="/" disabled />
+        <input id="api-symbol-search" type="search" autocomplete="off" placeholder={searchPlaceholder} aria-keyshortcuts="/" disabled />
         <kbd aria-hidden="true">/</kbd>
       </div>
-      <div class="api-nav__filters" role="group" aria-label="API search category">
-        <button type="button" data-api-search-kind="all" aria-pressed="true" disabled>All</button>
-        <button type="button" data-api-search-kind="types" aria-pressed="false" disabled>Types</button>
-        <button type="button" data-api-search-kind="members" aria-pressed="false" disabled>Members</button>
+      <div class="api-nav__filters" role="group" aria-label={`${treeLabel} search category`}>
+        {filters.map((filter) => <button type="button" data-api-search-kind={filter.id} aria-pressed={filter.id === 'all' ? 'true' : 'false'} disabled>{filter.label}</button>)}
       </div>
     </div>
-    <nav class="api-nav__nav" aria-label="API reference" data-pagefind-ignore="all">
+    <nav class="api-nav__nav" aria-label={treeLabel} data-pagefind-ignore="all">
       <p class="api-nav__search-status" role="status" data-api-search-status></p>
       <button type="button" class="api-nav__retry" data-api-search-retry hidden>Retry search</button>
       <ul class="api-nav__results" data-api-search-results hidden></ul>
-      <ul class="api-nav__tree" role="tree" aria-label={`${portName} API`}>
+      <ul class="api-nav__tree" role="tree" aria-label={treeLabel}>
         <ApiTreeItems nodes={nodes} />
       </ul>
     </nav>
   </div>
   <noscript><style>.api-nav__search { display: none; }</style></noscript>
-  <script is:inline>
-    // Open the tree at the page being read before it paints, as Learn's does:
-    // the tree scrolls on its own, so this moves the tree, never the page.
-    ;(() => {
-      const tree = document.querySelector('#api-nav [role="tree"]')
-      const current = tree && tree.querySelector('[aria-current="page"]')
-      if (!current) return
-      const row = current.closest('.api-nav__row') || current
-      const place = () => {
-        tree.scrollTop = Math.max(0, row.offsetTop - tree.clientHeight / 4)
-      }
-      place()
-      const placed = tree.scrollTop
-      // Web fonts change row heights; follow them unless the reader has scrolled.
-      if (document.fonts) document.fonts.ready.then(() => tree.scrollTop === placed && place())
-    })()
-  </script>
+  <script is:inline data-astro-rerun set:html={`((nav) => (${initializeApiTree.toString()})(nav, !nav.dataset.apiTreeInitialized))(document.currentScript.closest('.api-nav-column').querySelector('.api-nav'));`} />
   <script>
-    import { initApiTree } from './api-tree'
+    import { initApiTree, saveApiTreeState } from './api-tree'
 
     initApiTree()
+    document.addEventListener('astro:before-swap', saveApiTreeState)
     document.addEventListener('astro:after-swap', initApiTree)
+    window.addEventListener('pagehide', saveApiTreeState)
   </script>
 </div>

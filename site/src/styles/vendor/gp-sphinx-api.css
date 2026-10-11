@@ -196,7 +196,7 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header {
 
 dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--responsive {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 1rem;
   width: 100%;
 }
@@ -211,7 +211,7 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-layout-left 
 
 dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-layout-right {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 0.5rem;
   margin-left: auto;
   white-space: nowrap;

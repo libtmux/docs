@@ -3,6 +3,7 @@ title: Connect a TypeScript MCP client
 description: Launch @libtmux/mcp on a named socket and select the tools the client receives.
 port: ts
 product: mcp
+equivalence: mcp-client-setup
 sidebar:
   label: Guides
   order: 2

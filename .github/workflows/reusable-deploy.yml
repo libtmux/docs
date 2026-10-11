@@ -76,6 +76,14 @@ on:
         required: false
         type: string
         default: ''
+      require-current-pr:
+        description: >
+          Before PR publication, require the current open, same-repository
+          PR to match this run's tested source. Callers serialize publication
+          and cleanup in the same workflow queue. Non-PR versions are unchanged.
+        required: false
+        type: boolean
+        default: false
       aws-region:
         required: false
         type: string
@@ -136,7 +144,7 @@ jobs:
             echo "::error::path-prefix '$p' must be an unrooted path using letters, digits, '.', '_', '-' and '/', without '..'" >&2
             exit 1
           fi
-          reserved=(py ruby lua ts rs go java kotlin scala csharp fsharp cxx swift manifest _shell)
+          reserved=(py ruby lua powershell julia ts rs go java kotlin scala csharp fsharp cxx swift manifest _shell)
           for r in "${reserved[@]}"; do
             if [[ "$p" == "$r" ]]; then
               echo "::error::path-prefix '$p' is a bare reserved top-level name — qualify it, e.g. '$r/stable'" >&2
@@ -145,7 +153,7 @@ jobs:
           done
           if [[ -n "${PORT_IN:-}" ]]; then
             case "$PORT_IN" in
-              py|ruby|lua|ts|rs|go|java|kotlin|scala|csharp|fsharp|cxx|swift) ;;
+              py|ruby|lua|powershell|julia|ts|rs|go|java|kotlin|scala|csharp|fsharp|cxx|swift) ;;
               *) echo "::error::unknown port '$PORT_IN'" >&2; exit 1 ;;
             esac
             if [[ ! "$VERSION_IN" =~ ^[a-zA-Z0-9][a-zA-Z0-9._-]*$ || "$VERSION_IN" == *..* ]]; then
@@ -283,6 +291,41 @@ jobs:
           name: ${{ inputs.artifact }}
           path: dist
           digest-mismatch: error
+
+      # Keep this check inside the job that uploads. A partial rerun can reuse
+      # upstream job outputs, but must query current PR state on every upload
+      # attempt. Match the verified artifact source to the tested merge too.
+      - name: Require current tested pull request
+        if: inputs.require-current-pr && inputs.version-kind == 'pr'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          REPOSITORY: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+          TESTED_MERGE: ${{ github.sha }}
+          PORT: ${{ inputs.port }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          [[ "$EVENT" == pull_request && -n "$PORT" && "$PR" =~ ^[1-9][0-9]*$ && "$VERSION" == "pr-$PR" && "$EXPECTED_HEAD" =~ ^[0-9a-f]{40}$ && "$TESTED_MERGE" =~ ^[0-9a-f]{40}$ ]] || {
+            echo '::error::invalid tested pull request identity' >&2
+            exit 1
+          }
+          jq -e --arg merge "$TESTED_MERGE" '.sourceSha == $merge' publication/publication.json > /dev/null || {
+            echo "::error::preview artifact source differs from this run's tested merge" >&2
+            exit 1
+          }
+          response=$(gh api --method GET "repos/$REPOSITORY/pulls/$PR")
+          jq -e --slurp --argjson number "$PR" --arg repo "$REPOSITORY" --arg head "$EXPECTED_HEAD" --arg merge "$TESTED_MERGE" '
+            length == 1 and (.[0] |
+              type == "object" and .number == $number and .state == "open" and
+              .head.repo.full_name == $repo and .head.sha == $head and
+              .merge_commit_sha == $merge)
+          ' <<< "$response" > /dev/null || {
+            echo '::error::current PR is not open at the tested source; refusing preview publication' >&2
+            exit 1
+          }
 
       - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:

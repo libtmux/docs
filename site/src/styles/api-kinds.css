@@ -1,0 +1,106 @@
+/* Symbol colors shared by prose links, navigation and reference badges. */
+:root {
+  --api-kind-class-bg: #eef2ff;
+  --api-kind-class-fg: #4338ca;
+  --api-kind-class-border: #6366f1;
+  --api-kind-exception-bg: #fff1f2;
+  --api-kind-exception-fg: #be123c;
+  --api-kind-exception-border: #f43f5e;
+  --api-kind-function-bg: #e8f0fe;
+  --api-kind-function-fg: #1a56db;
+  --api-kind-function-border: #3b82f6;
+  --api-kind-method-bg: #ecfeff;
+  --api-kind-method-fg: #0e7490;
+  --api-kind-method-border: #06b6d4;
+  --api-kind-property-bg: #f0fdfa;
+  --api-kind-property-fg: #0f766e;
+  --api-kind-property-border: #14b8a6;
+  --api-kind-attribute-bg: #f1f5f9;
+  --api-kind-attribute-fg: #475569;
+  --api-kind-attribute-border: #94a3b8;
+  --api-kind-constant-bg: #f5f5f5;
+  --api-kind-constant-fg: #525252;
+  --api-kind-constant-border: #a3a3a3;
+  --api-kind-module-bg: #f0fdf4;
+  --api-kind-module-fg: #166534;
+  --api-kind-module-border: #22c55e;
+  --api-kind-typealias-bg: #f5f3ff;
+  --api-kind-typealias-fg: #6d28d9;
+  --api-kind-typealias-border: #8b5cf6;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-color-scheme='light']) {
+    --api-kind-class-bg: #1e1b4b;
+    --api-kind-class-fg: #a5b4fc;
+    --api-kind-exception-bg: #4c0519;
+    --api-kind-exception-fg: #fda4af;
+    --api-kind-exception-border: #fb7185;
+    --api-kind-function-bg: #172554;
+    --api-kind-function-fg: #93c5fd;
+    --api-kind-method-bg: #083344;
+    --api-kind-method-fg: #67e8f9;
+    --api-kind-method-border: #22d3ee;
+    --api-kind-property-bg: #042f2e;
+    --api-kind-property-fg: #5eead4;
+    --api-kind-property-border: #2dd4bf;
+    --api-kind-attribute-bg: #1e293b;
+    --api-kind-attribute-fg: #cbd5e1;
+    --api-kind-attribute-border: #64748b;
+    --api-kind-constant-bg: #262626;
+    --api-kind-constant-fg: #d4d4d4;
+    --api-kind-constant-border: #737373;
+    --api-kind-module-bg: #052e16;
+    --api-kind-module-fg: #86efac;
+    --api-kind-module-border: #4ade80;
+    --api-kind-typealias-bg: #2e1065;
+    --api-kind-typealias-fg: #c4b5fd;
+    --api-kind-typealias-border: #a78bfa;
+  }
+}
+
+[data-color-scheme='dark'] {
+  --api-kind-class-bg: #1e1b4b;
+  --api-kind-class-fg: #a5b4fc;
+  --api-kind-exception-bg: #4c0519;
+  --api-kind-exception-fg: #fda4af;
+  --api-kind-exception-border: #fb7185;
+  --api-kind-function-bg: #172554;
+  --api-kind-function-fg: #93c5fd;
+  --api-kind-method-bg: #083344;
+  --api-kind-method-fg: #67e8f9;
+  --api-kind-method-border: #22d3ee;
+  --api-kind-property-bg: #042f2e;
+  --api-kind-property-fg: #5eead4;
+  --api-kind-property-border: #2dd4bf;
+  --api-kind-attribute-bg: #1e293b;
+  --api-kind-attribute-fg: #cbd5e1;
+  --api-kind-attribute-border: #64748b;
+  --api-kind-constant-bg: #262626;
+  --api-kind-constant-fg: #d4d4d4;
+  --api-kind-constant-border: #737373;
+  --api-kind-module-bg: #052e16;
+  --api-kind-module-fg: #86efac;
+  --api-kind-module-border: #4ade80;
+  --api-kind-typealias-bg: #2e1065;
+  --api-kind-typealias-fg: #c4b5fd;
+  --api-kind-typealias-border: #a78bfa;
+}
+
+.api-badge--kind-class, .api-badge--kind-struct, .api-badge--kind-interface, .api-badge--kind-trait { background: var(--api-kind-class-bg); color: var(--api-kind-class-fg); border-color: var(--api-kind-class-border); }
+.api-badge--kind-exception { background: var(--api-kind-exception-bg); color: var(--api-kind-exception-fg); border-color: var(--api-kind-exception-border); }
+.api-badge--kind-function, .api-badge--kind-tool { background: var(--api-kind-function-bg); color: var(--api-kind-function-fg); border-color: var(--api-kind-function-border); }
+.api-badge--kind-method { background: var(--api-kind-method-bg); color: var(--api-kind-method-fg); border-color: var(--api-kind-method-border); }
+.api-badge--kind-property, .api-badge--kind-resource, .api-badge--kind-resource-template { background: var(--api-kind-property-bg); color: var(--api-kind-property-fg); border-color: var(--api-kind-property-border); }
+.api-badge--kind-attribute { background: var(--api-kind-attribute-bg); color: var(--api-kind-attribute-fg); border-color: var(--api-kind-attribute-border); }
+.api-badge--kind-constant { background: var(--api-kind-constant-bg); color: var(--api-kind-constant-fg); border-color: var(--api-kind-constant-border); }
+.api-badge--kind-module, .api-badge.api-badge--mod-package { background: var(--api-kind-module-bg); color: var(--api-kind-module-fg); border-color: var(--api-kind-module-border); }
+.api-badge--kind-typealias, .api-badge--kind-enum, .api-badge--kind-union, .api-badge--kind-prompt { background: var(--api-kind-typealias-bg); color: var(--api-kind-typealias-fg); border-color: var(--api-kind-typealias-border); }
+
+/* Shared with prose sidebars: decorate tooltip labels, not icons or borders. */
+:is(.api-badge, .api-nav__kind):is([title], [data-link-preview]) > .api-badge__label {
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: currentColor;
+  text-underline-offset: .2em;
+}

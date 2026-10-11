@@ -277,20 +277,21 @@ describe('prompt parts', () => {
    *
    * The first version of this module built every topic section per port, and
    * the landing page shipped a 97 KB island of eight identical copies. The
-   * bound is here so that regression is a failing test rather than something
-   * noticed while reading a build artefact.
+   * shared and per-port bounds catch that duplication without treating a new
+   * port as duplicated content. Measure serialized UTF-8, including unavailable
+   * topic messages and JSON overhead, rather than only some of the strings.
    */
   it('ships the shared half once, not once per port', () => {
     const shared = sharedParts(ctx)
-    const partsBytes =
-      shared.sections ? Object.values(shared.sections).join('').length + Object.values(shared.openings).join('').length : 0
+    const partsBytes = Buffer.byteLength(JSON.stringify(shared))
+    expect(partsBytes, 'shared topic text').toBeLessThan(10_000)
     const portBytes = PORTS.reduce((sum, port) => {
-      const parts = partsFor(port)
-      return sum + parts.setup.length + Object.values(parts.notes).join('').length
+      const bytes = Buffer.byteLength(JSON.stringify(partsFor(port)))
+      expect(bytes, `${port.slug} setup, notes and availability`).toBeLessThan(3_200)
+      return sum + bytes
     }, 0)
-    const wholeBytes = MATRIX.reduce((sum, { port, topic }) => sum + promptFor(port, topic.id).length, 0)
+    const wholeBytes = MATRIX.reduce((sum, { port, topic }) => sum + Buffer.byteLength(promptFor(port, topic.id)), 0)
     expect(wholeBytes / (partsBytes + portBytes)).toBeGreaterThan(4)
-    expect(partsBytes + portBytes).toBeLessThan(41_000)
   })
 
   it('rejects an unknown topic rather than composing a prompt without one', () => {

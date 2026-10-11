@@ -1,0 +1,46 @@
+---
+import { schemaAnchor, schemaChildren, schemaConstraints, inlineSchemaItem, isSchemaDefinition, type McpSchema } from '../../lib/mcp-schema'
+import { renderToolDescription } from '../../lib/mcp-reference'
+import McpSchemaType from './McpSchemaType.astro'
+interface Props { schema: McpSchema; root?: McpSchema; scope: string; pointer?: string; port: string; version: string; rootConstraints?: boolean }
+const { schema, root = schema, scope, pointer = '', port, version, rootConstraints = true } = Astro.props
+const children = schemaChildren(schema).filter((row) => !isSchemaDefinition(row.path))
+const displaysItems = typeof schema === 'object' && (schema.type === 'array' || (Array.isArray(schema.type) && schema.type.includes('array')))
+const inlineItems = children.filter((row) => displaysItems && row.path === '/items' && inlineSchemaItem(row.schema))
+const rows = await Promise.all(children.filter((row) => !inlineItems.includes(row)).map(async (row) => ({ ...row,
+  label: row.path.startsWith('/anyOf/') || row.path.startsWith('/oneOf/') ? `Variant ${Number(row.path.split('/').at(-1)) + 1}`
+    : row.path.startsWith('/allOf/') ? `Part ${Number(row.path.split('/').at(-1)) + 1}` : row.name,
+  id: schemaAnchor(scope, pointer + row.path),
+  html: typeof row.schema === 'object' && row.schema.description
+    ? await renderToolDescription(row.schema.description, { port, version }) : '',
+})))
+const composition = typeof schema === 'object' && (schema.oneOf ? 'Matches exactly one variant.' : schema.anyOf ? 'Matches one or more variants.' : schema.allOf ? 'Matches every part.' : '')
+---
+{rootConstraints && schemaConstraints(schema).length > 0 && <dl class="api-definition api-parameter-facts">
+  {schemaConstraints(schema).map(([key, value]) => <><dt>{key === 'default' ? 'Default' : key}</dt><dd><code>{value}</code></dd></>)}
+</dl>}
+{inlineItems.map((row) => <span id={schemaAnchor(scope, pointer + row.path)} class="section-anchor-alias" />)}
+{composition && <p class="mcp-schema-composition">{composition}</p>}
+<ul class="api-parameters api-command-parameters mcp-schema-fields">
+  {rows.map((row) => <li id={row.id}>
+    <p class="api-parameter-heading"><span class="api-parameter-signature"><a class="api-param-name" href={`#${encodeURIComponent(row.id)}`}><strong>{row.label}</strong></a>{': '}
+      <McpSchemaType schema={row.schema} root={root} scope={scope} /></span>
+      {row.required !== undefined && <span class:list={['mcp-field-requirement', row.required && 'mcp-field-requirement--required']}>{row.required ? 'Required' : 'Optional'}</span>}
+      <a class="api-heading-link" href={`#${encodeURIComponent(row.id)}`} aria-label={`Permalink to ${row.label}`}>#</a>
+    </p>
+    {row.html && <div set:html={row.html} />}
+    {schemaConstraints(row.schema).length > 0 && <dl class="api-definition api-parameter-facts">
+      {schemaConstraints(row.schema).map(([key, value]) => <><dt>{key === 'default' ? 'Default' : key}</dt><dd><code>{value}</code></dd></>)}
+    </dl>}
+    {schemaChildren(row.schema).length > 0 && <Astro.self schema={row.schema} root={root} scope={scope} pointer={pointer + row.path} port={port} version={version} rootConstraints={false} />}
+  </li>)}
+</ul>
+<style>
+  .mcp-schema-fields { list-style: none; padding: 0; margin-block: 0; }
+  .api-parameter-heading { flex-wrap: wrap; font-size: .875rem; line-height: 1.7; }
+  .api-type { color: var(--api-kind-class-fg); }
+  .mcp-schema-fields :global(p) { margin-block: .35rem; }
+  .mcp-field-requirement { font: .75rem var(--font-sans, sans-serif); color: var(--color-muted); }
+  .mcp-field-requirement--required { color: var(--color-fg); font-weight: 600; }
+  .mcp-schema-composition { font-size: .875rem; color: var(--color-muted); }
+</style>

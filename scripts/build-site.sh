@@ -302,6 +302,10 @@ node "$script_dir/stage-port-docs.mjs" --cached
 if [ -n "${LIBTMUX_DOCS_PORT:-}" ] && { [ "$LIBTMUX_DOCS_PORT" = ruby ] || [ "$LIBTMUX_DOCS_PORT" = lua ]; }; then
   node "$script_dir/gen-api-model.mjs" --port "$LIBTMUX_DOCS_PORT"
   node "$script_dir/stage-port-docs.mjs" --port "$LIBTMUX_DOCS_PORT"
+elif [ -n "${LIBTMUX_DOCS_SOURCE_SHA:-}" ] && { [ "$LIBTMUX_DOCS_PORT" = powershell ] || [ "$LIBTMUX_DOCS_PORT" = julia ]; }; then
+  node "$script_dir/gen-api-model.mjs" --port "$LIBTMUX_DOCS_PORT"
+  node "$script_dir/stage-port-docs.mjs" --port "$LIBTMUX_DOCS_PORT" --from-source
+  node "$script_dir/gen-api-model.mjs" --port "$LIBTMUX_DOCS_PORT" --nav
 elif [ -n "${LIBTMUX_DOCS_SOURCE_SHA:-}" ] && node --input-type=module -e '
   const { PORT_BY_SLUG } = await import("file://'"$site_dir"'/src/lib/ports.ts");
   process.exit(PORT_BY_SLUG[process.env.LIBTMUX_DOCS_PORT]?.parentLibrary ? 0 : 1);

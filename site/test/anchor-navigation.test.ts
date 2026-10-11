@@ -122,4 +122,32 @@ describe('shared anchor arrival', () => {
     p.flush()
     expect(p.scrolled).toHaveLength(1)
   })
+
+  it.each(['../other/#target', '?view=other#target'])('loads an unowned history destination when the old page remains mounted: %s', (destination) => {
+    const p = page('<h2 id="target">Target</h2>')
+    const reload = vi.spyOn(p.win.location, 'reload').mockImplementation(() => {})
+    p.win.history.replaceState(null, '', destination)
+    p.win.dispatchEvent(new p.win.PopStateEvent('popstate', { state: null }))
+    expect(reload).toHaveBeenCalledOnce()
+    expect(p.win.history.state).toBeNull()
+  })
+
+  it('leaves native same-page fragments and router-owned history to their normal navigation', () => {
+    const p = page('<h2 id="target">Target</h2>')
+    const reload = vi.spyOn(p.win.location, 'reload').mockImplementation(() => {})
+    p.win.history.replaceState(null, '', '#target')
+    p.win.dispatchEvent(new p.win.PopStateEvent('popstate', { state: null }))
+    p.win.history.replaceState({ index: 1 }, '', '../other/')
+    p.win.dispatchEvent(new p.win.PopStateEvent('popstate', { state: { index: 1 } }))
+    expect(reload).not.toHaveBeenCalled()
+  })
+
+  it('stops history fallback when the mounted page is replaced', () => {
+    const p = page('<h2 id="target">Target</h2>')
+    const reload = vi.spyOn(p.win.location, 'reload').mockImplementation(() => {})
+    p.dispose()
+    p.win.history.replaceState(null, '', '../other/')
+    p.win.dispatchEvent(new p.win.PopStateEvent('popstate', { state: null }))
+    expect(reload).not.toHaveBeenCalled()
+  })
 })

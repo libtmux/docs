@@ -57,8 +57,78 @@ describe('concept map', () => {
     expect(CONCEPTS['list-clients'].symbols.fsharp).toBe('LibTmux.FSharp.Server.clients')
     expect(CONCEPTS['list-server-windows'].symbols.fsharp).toBe('LibTmux.FSharp.Server.windows')
     expect(CONCEPTS['list-server-panes'].symbols.fsharp).toBe('LibTmux.FSharp.Server.panes')
-    expect(CONCEPTS['list-windows'].symbols.fsharp).toBeUndefined()
-    expect(CONCEPTS['list-panes'].symbols.fsharp).toBeUndefined()
+    expect(CONCEPTS['list-windows'].symbols.fsharp).toBe('LibTmux.FSharp.Session.windows')
+    expect(CONCEPTS['list-panes'].symbols.fsharp).toBe('LibTmux.FSharp.Window.panes')
+    expect(CONCEPTS['list-session-panes'].symbols.fsharp).toBe('LibTmux.FSharp.Session.panes')
+  })
+
+  it.runIf(models.size)('preserves native server representations instead of fabricating facade classes', () => {
+    const expected = [
+      ['powershell', 'LibTmux\\New-TmuxServer', 'function'],
+      ['julia', 'LibTmux.Server', 'struct'],
+      ['fsharp', 'LibTmux.FSharp.Server', 'module'],
+    ]
+    for (const [port, id, kind] of expected) {
+      const symbol = models.get(port)!.symbols.find((symbol) => (symbol.publicId ?? symbol.id) === id)!
+      expect(CONCEPTS.server.symbols[port]).toBe(id)
+      expect(symbol.kind).toBe(kind)
+      expect(conceptsFor(port, id)).toContain(CONCEPTS.server)
+    }
+    const cmdlet = models.get('powershell')!.symbols.find((symbol) => symbol.name === 'New-TmuxServer')!
+    expect(cmdlet.command?.kind).toBe('cmdlet')
+    expect(cmdlet.command?.outputTypes).toContain('LibTmux.Server')
+    expect(CONCEPTS.server.notes?.powershell).toContain('without contacting tmux')
+    expect(CONCEPTS.server.notes?.fsharp).toContain('shared .NET `LibTmux.Server`')
+  })
+
+  it.runIf(models.size)('keeps Julia references distinct from captured entities and validates receiver scopes', () => {
+    const model = models.get('julia')!
+    for (const name of ['Session', 'Window', 'Pane']) {
+      const concept = CONCEPTS[name.toLowerCase()]
+      expect(concept.symbols.julia).toBe(`LibTmux.${name}Snapshot`)
+      expect(concept.variants?.julia).toContain(`LibTmux.${name}Ref`)
+      expect(conceptsFor('julia', `LibTmux.${name}Ref`)).toContain(concept)
+    }
+    const windows = model.symbols.find((symbol) => symbol.id === CONCEPTS['list-windows'].symbols.julia)!
+    expect(windows.signatures.some((signature) => signature.raw?.includes('parent::LibTmux.SessionSnapshot'))).toBe(true)
+    expect(windows.signatures.some((signature) => signature.raw?.includes('snap::LibTmux.Snapshot'))).toBe(true)
+    const panes = model.symbols.find((symbol) => symbol.id === CONCEPTS['list-panes'].symbols.julia)!
+    expect(panes.signatures.some((signature) => signature.raw?.includes('win::LibTmux.WindowSnapshot'))).toBe(true)
+    expect(CONCEPTS['list-session-panes'].symbols.julia).toBeUndefined()
+    expect(CONCEPTS['list-session-panes'].absent?.julia).toContain('Traverse')
+    expect(CONCEPTS.snapshot.label).not.toMatch(/instant|atomic/)
+    expect(CONCEPTS.snapshot.notes?.julia).toContain('not make it a transaction')
+  })
+
+  it.runIf(models.size)('maps PowerShell listing scopes to declared parameter sets', () => {
+    const model = models.get('powershell')!
+    for (const [concept, receiver] of [
+      ['list-sessions', 'Server'], ['list-server-windows', 'Server'],
+      ['list-windows', 'Session'], ['list-server-panes', 'Server'],
+      ['list-session-panes', 'Session'], ['list-panes', 'Window'],
+    ]) {
+      const symbol = model.symbols.find((symbol) => symbol.id === CONCEPTS[concept].symbols.powershell)!
+      expect(symbol.signatures.some((signature) => signature.raw?.includes(`[-${receiver}] <LibTmux.${receiver}>`)), concept).toBe(true)
+      expect(CONCEPTS[concept].notes?.powershell, concept).toContain(`\`-${receiver}\``)
+    }
+  })
+
+  it.runIf(models.size)('distinguishes F# scoped query construction from acquiring results', () => {
+    const model = models.get('fsharp')!
+    for (const [concept, parent, child] of [
+      ['list-windows', 'Session', 'Window'],
+      ['list-session-panes', 'Session', 'Pane'],
+      ['list-panes', 'Window', 'Pane'],
+    ]) {
+      const symbol = model.symbols.find((entry) => entry.id === CONCEPTS[concept].symbols.fsharp)!
+      expect(symbol.signatures[0].params[0].type).toBe(`LibTmux.${parent}`)
+      expect(symbol.signatures[0].returns).toBe(`Query<LibTmux.${child}>`)
+      expect(CONCEPTS[concept].notes?.fsharp).toContain('deferred')
+      expect(CONCEPTS[concept].notes?.fsharp).toContain('`Query.list` acquires')
+      expect(CONCEPTS[concept].notes?.fsharp).not.toMatch(/already captured|missing coverage/)
+    }
+    const execute = model.symbols.find((entry) => entry.id === 'LibTmux.FSharp.Query.list')!
+    expect(execute.signatures[0].returns).toBe("Task<IReadOnlyList<'T>>")
   })
 
   it('links visible capture to the visible capture overload', () => {

@@ -1,5 +1,6 @@
 ---
 import type { KeywordHelp } from '@libtmux/api-model'
+import LinkPreview from '../LinkPreview.astro'
 
 interface Props {
   text: string
@@ -12,15 +13,8 @@ const id = `api-keyword-help-${locals.apiKeywordSequence = (locals.apiKeywordSeq
 ---
 <button type="button" class="api-type-label api-keyword api-keyword-trigger"
   popovertarget={id} popovertargetaction="show" aria-label={`About ${text}: ${help.title}`}
->{text}</button><span id={id} popover="auto" role="dialog" aria-label={help.title}
-  class="api-keyword-help" data-pagefind-ignore>
-  <strong>{help.title}</strong>
-  <span class="api-keyword-help__description">{help.description}</span>
-  <span class="api-keyword-help__actions">
-    <a href={help.href} rel="noopener">Language documentation</a>
-    <button type="button" popovertarget={id} popovertargetaction="hide">Close</button>
-  </span>
-</span>
+>{text}</button><LinkPreview id={id} title={help.title} description={help.description}
+  href={help.href} actionLabel="Language documentation" class="api-keyword-help" />
 
 <style>
   .api-keyword-trigger {
@@ -32,50 +26,20 @@ const id = `api-keyword-help-${locals.apiKeywordSequence = (locals.apiKeywordSeq
     font: inherit;
     cursor: help;
     text-decoration: underline dotted;
-    text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+    text-decoration-color: currentColor;
     text-underline-offset: 0.2em;
   }
   .api-keyword-trigger:focus-visible {
     outline: 2px solid var(--color-link);
     outline-offset: 3px;
   }
-  .api-keyword-help {
-    position: fixed;
-    inset: 0;
-    margin: auto;
-    width: min(22rem, calc(100vw - 2rem));
-    max-height: calc(100dvh - 2rem);
-    overflow: auto;
-    padding: 0.875rem 1rem;
-    border: 1px solid var(--color-background-border);
-    border-radius: 0.5rem;
-    background: var(--color-background-secondary);
-    color: var(--color-foreground-primary);
-    box-shadow: 0 4px 16px rgb(0 0 0 / 20%);
-    font: 400 0.875rem/1.5 var(--font-sans);
-    white-space: normal;
-    overflow-wrap: anywhere;
-  }
-  .api-keyword-help__description { display: block; margin-block: 0.5rem; }
-  .api-keyword-help__actions { display: flex; align-items: center; gap: 1rem; }
-  .api-keyword-help a { color: var(--color-link); text-decoration: underline; }
-  .api-keyword-help__actions button { margin-left: auto; padding: 0.25rem; cursor: pointer; }
 </style>
 
 <script>
+  import { positionLinkPreview } from '../../lib/link-preview-browser'
   const place = (panel: HTMLElement) => {
-    const trigger = document.querySelector(`[popovertarget="${panel.id}"].api-keyword-trigger`)
-    if (!trigger || !panel.matches(':popover-open')) return
-    const anchor = trigger.getBoundingClientRect()
-    const box = panel.getBoundingClientRect()
-    const gap = 8
-    // Fixed popovers must leave the reserved scrollbar gutter clear.
-    const viewport = document.documentElement.getBoundingClientRect()
-    const left = Math.max(viewport.left + gap, Math.min(anchor.left, viewport.right - box.width - gap))
-    const below = anchor.bottom + gap
-    const preferredTop = below + box.height <= innerHeight - gap ? below : anchor.top - box.height - gap
-    const top = Math.max(gap, Math.min(preferredTop, innerHeight - box.height - gap))
-    Object.assign(panel.style, { inset: 'auto', margin: '0', left: `${left}px`, top: `${top}px` })
+    const trigger = document.querySelector<HTMLElement>(`[popovertarget="${panel.id}"].api-keyword-trigger`)
+    if (trigger) positionLinkPreview(panel, trigger)
   }
   // Native activation opens the popover after beforetoggle; place it before paint.
   document.addEventListener('beforetoggle', (event) => {

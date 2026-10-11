@@ -28,6 +28,34 @@ const swift = (page: string) => `https://developer.apple.com/documentation/swift
 const mdn = (page: string) =>
   `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/${page}`
 const ts = (page: string) => `https://www.typescriptlang.org/docs/handbook/2/${page}`
+
+/** Compiler-only utilities have no JavaScript global or DOM reference on MDN. */
+export const TYPESCRIPT_UTILITY_TYPES: Record<string, string> = Object.fromEntries(
+  Object.entries({
+    Awaited: 'awaitedtype',
+    Partial: 'partialtype',
+    Required: 'requiredtype',
+    Readonly: 'readonlytype',
+    Record: 'recordkeys-type',
+    Pick: 'picktype-keys',
+    Omit: 'omittype-keys',
+    Exclude: 'excludeuniontype-excludedmembers',
+    Extract: 'extracttype-union',
+    NonNullable: 'nonnullabletype',
+    Parameters: 'parameterstype',
+    ConstructorParameters: 'constructorparameterstype',
+    ReturnType: 'returntypetype',
+    InstanceType: 'instancetypetype',
+    NoInfer: 'noinfertype',
+    ThisParameterType: 'thisparametertypetype',
+    OmitThisParameter: 'omitthisparametertype',
+    ThisType: 'thistypetype',
+    Uppercase: 'uppercasestringtype',
+    Lowercase: 'lowercasestringtype',
+    Capitalize: 'capitalizestringtype',
+    Uncapitalize: 'uncapitalizestringtype',
+  }).map(([name, fragment]) => [name, `https://www.typescriptlang.org/docs/handbook/utility-types.html#${fragment}`]),
+)
 const kotlin = (page: string) => `https://kotlinlang.org/api/core/kotlin-stdlib/${page}/`
 const scala = (page: string) => `https://www.scala-lang.org/api/3.x/${page}.html`
 const fsharp = (page: string) => `https://fsharp.github.io/fsharp-core-docs/reference/${page}.html`
@@ -79,6 +107,35 @@ const qualifiedDotnetExceptions = Object.fromEntries([
 ].flatMap((name) => [name, name.split('.').at(-1)!].map((alias) => [alias, dotnet(name.toLowerCase())])))
 
 export const BUILTINS: Record<string, Record<string, string>> = {
+  julia: {
+    // Documenter's inventory exposes String through this constructor entry.
+    String: 'https://docs.julialang.org/en/v1/base/strings/#Core.String-Tuple%7BAbstractString%7D',
+    'Core.String': 'https://docs.julialang.org/en/v1/base/strings/#Core.String-Tuple%7BAbstractString%7D',
+  },
+  powershell: {
+    ...Object.fromEntries(Object.entries({
+      'Get-Member': 'microsoft.powershell.utility',
+      'Where-Object': 'microsoft.powershell.core',
+      'Invoke-WebRequest': 'microsoft.powershell.utility',
+      'Start-ThreadJob': 'threadjob',
+      'Receive-Job': 'microsoft.powershell.core',
+      'Set-Content': 'microsoft.powershell.management',
+    }).map(([name, module]) => [name,
+      `https://learn.microsoft.com/powershell/module/${module}/${name.toLowerCase()}?view=powershell-7.4`])),
+    FileInfo: dotnet('system.io.fileinfo'),
+    ApplicationInfo: `${dotnet('system.management.automation.applicationinfo')}?view=powershellsdk-7.4.0`,
+    ...Object.fromEntries([
+      'ArgumentCompleter', 'ValidateCount', 'ValidateLength', 'ValidateNotNull',
+      'ValidateNotNullOrEmpty', 'ValidatePattern', 'ValidateRange', 'ValidateSet',
+    ].map((name) => [`System.Management.Automation.${name}Attribute`,
+      `${dotnet(`system.management.automation.${name.toLowerCase()}attribute`)}?view=powershellsdk-7.4.0`])),
+    ...Object.fromEntries(['String', 'Int32', 'Int64', 'Double', 'Boolean', 'Object', 'IO.FileInfo', 'Collections.IDictionary']
+      .map((name) => [`System.${name}`, dotnet(`system.${name.toLowerCase()}`)])),
+    'System.Nullable': dotnet('system.nullable-1'),
+    'System.Management.Automation.SwitchParameter': `${dotnet('system.management.automation.switchparameter')}?view=powershellsdk-7.4.0`,
+    'System.Management.Automation.ActionPreference': `${dotnet('system.management.automation.actionpreference')}?view=powershellsdk-7.4.0`,
+    CommonParameters: 'https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_commonparameters?view=powershell-7.4',
+  },
   kotlin: {
     ...qualifiedKotlin,
     suspend: 'https://kotlinlang.org/docs/coroutines-basics.html#suspending-functions',
@@ -306,9 +363,7 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     unknown: ts('everyday-types.html#unknown'),
     undefined: mdn('undefined'),
     null: mdn('null'),
-    Record: ts('..%2Futility-types.html#recordkeys-type'),
-    Partial: ts('..%2Futility-types.html#partialtype'),
-    Readonly: ts('..%2Futility-types.html#readonlytype'),
+    ...TYPESCRIPT_UTILITY_TYPES,
   },
   java: {
     ExtensionContext: 'https://docs.junit.org/current/api/org.junit.jupiter.api/org/junit/jupiter/api/extension/ExtensionContext.html',

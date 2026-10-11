@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest'
 import { PORTS, productAvailable, productDescription, productInDevelopment, workspaceOverviewNotice, type Port } from '../src/lib/ports'
 import { LANG_TO_PORT } from '../src/plugins/remark-port-code.mjs'
 import { SITE_BUILT, SITE_PREFIX, PREVIEW_PREFIX, productionPath, publishedPath, sitePath } from './site-root'
+import { MCP_REFERENCE, MCP_SECTIONS, mcpObjects } from '../src/lib/mcp-catalog'
 
 interface Manifest {
   ports: Record<string, { slug: string; supported: boolean }[]>
@@ -47,12 +48,14 @@ it('advertises local native loaders while retaining their development status', (
   // py-vs-generic-local-CLI dichotomy this test covers.
   const native = (p: Port) => p.workspaceCliAvailability === 'local' || p.workspaceCliAvailability === 'published'
   for (const port of PORTS.filter((p) => p.slug === 'py' || native(p))) {
-    expect(port.workspaceCli).toBe(native(port) ? 'tmux-workspace load' : 'tmuxp load')
+    expect(port.workspaceCli).toBe(port.slug === 'julia' ? 'libtmux-workspace load' : native(port) ? 'tmux-workspace load' : 'tmuxp load')
     if (!native(port)) expect(port.workspaceCliAvailability).toBe('released')
     expect(productInDevelopment(port, 'workspace')).toBe(native(port))
     expect(productInDevelopment(port, 'mcp')).toBe(true)
     expect(productDescription(port, 'workspace')).not.toMatch(/worktree|checkpoint/)
-    if (port.workspaceCliAvailability === 'local') expect(productDescription(port, 'workspace')).toContain('Build the CLI from source')
+    if (port.workspaceCliAvailability === 'local') {
+      expect(productDescription(port, 'workspace')).toContain(port.slug === 'julia' ? 'LibTmuxWorkspace' : 'Build the CLI from source')
+    }
     if (port.workspaceCliAvailability === 'published') {
       expect(productDescription(port, 'workspace')).toContain('prerelease')
       expect(workspaceOverviewNotice(port)?.body).not.toMatch(/unreleased|local/)
@@ -374,17 +377,18 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
           if (section === 'reference') {
             const prefix = urlFor(`${page.port}/${page.version}/${page.product}/`).pathname
             expect(path.startsWith(prefix), `${page.path} reference stays in its app`).toBe(true)
-            expect(['reference', page.product === 'mcp' ? 'tools' : 'cli'], `${page.path} reference kinds`)
+            expect(page.product === 'mcp' ? ['reference'] : ['reference', 'cli'], `${page.path} reference kinds`)
               .toContain(path.slice(prefix.length).split('/')[0])
           } else if (path !== sourceGuidePath) expect(path, `${page.path} scoped sidebar`).toContain(urlFor(sectionPath).pathname)
           expect(resolves(href, urlFor(page.path).href), `${page.path} sidebar destination ${href}`).toBe(true)
         }
         if (page.product === 'mcp' && page.section === 'reference' && productAvailable(port, 'mcp')) {
-          const tools = [...nav.querySelectorAll('a[href]')].find((link) => link.textContent.trim() === 'Tools')
-          expect(tools, `${page.path} Tools navigation`).toBeDefined()
-          const href = tools!.getAttribute('href')!
-          expect(new URL(href, urlFor(page.path)).pathname).toBe(urlFor(`${page.port}/${page.version}/mcp/tools/`).pathname)
-          expect(resolves(href, urlFor(page.path).href), href).toBe(true)
+          for (const section of Object.keys(MCP_SECTIONS)) {
+            const target = urlFor(`${page.port}/${page.version}/mcp/${section}/`).pathname
+            expect([...picker!.querySelectorAll('a[href]')].some((link) => new URL(link.getAttribute('href')!, urlFor(page.path)).pathname === target),
+              `${page.path} ${section} picker destination`).toBe(true)
+            expect(resolves(target, urlFor(page.path).href), target).toBe(true)
+          }
         } else if (page.product === 'workspace' && section === 'internals' && productAvailable(port, 'workspace')) {
           const hrefs = links
             .map((link) => new URL(link.getAttribute('href')!, urlFor(page.path)).pathname)
@@ -444,7 +448,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       const toolsPath = `${page.port}/${page.version}/mcp/tools/`
       const tools = await inspect(toolsPath, (document) => {
         developmentStatus(document, toolsPath)
-        return [...document.querySelectorAll('article dt a[href]')].map((link) => link.getAttribute('href')!)
+        return [...document.querySelectorAll('.api-index-card__link[href]')].map((link) => link.getAttribute('href')!)
       })
       expect(tools.length, `${toolsPath} protocol tools`).toBeGreaterThan(0)
       for (const href of tools) {
@@ -458,7 +462,36 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
           .find((detail) => detail.querySelector('summary')?.textContent === 'Input schema')
         expect(input, `${toolPath} input schema`).toBeDefined()
         expect(() => JSON.parse(input!.querySelector('code')!.textContent)).not.toThrow()
-        expect(document.querySelector('article h1')?.textContent).toBe(toolPath.split('/').at(-2))
+        expect(document.querySelector('.api-reference-content h1 code')?.textContent).toBe(toolPath.split('/').at(-2))
+      })
+    }
+  })
+
+  it.each(Object.keys(MCP_REFERENCE))('%s uses the shared reference browser for all advertised protocol objects', async (port) => {
+    const version = manifest().defaultVersion[port]
+    expect(version, `${port} default version`).toBeDefined()
+    for (const [section, label] of Object.entries(MCP_SECTIONS)) {
+      const index = `${port}/${version}/mcp/${section}/`
+      const objects = mcpObjects(port).filter((object) => object.section === section)
+      await inspect(index, (document) => {
+        expect(document.querySelector('main.api-reference-layout'), `${index} shared layout`).not.toBeNull()
+        expect(document.querySelector('#api-nav #api-symbol-search'), `${index} searchable tree`).not.toBeNull()
+        expect(document.querySelector('.api-reference-content h1')?.textContent).toBe(label)
+        const links = [...document.querySelectorAll('.api-index-card__link[href]')]
+        expect(links.map((link) => new URL(link.getAttribute('href')!, urlFor(index)).pathname).sort())
+          .toEqual(objects.map((object) => urlFor(`${port}/${version}/${object.path}/`).pathname).sort())
+        if (!objects.length) expect(document.querySelector('.api-reference-content')?.textContent).toContain(`does not advertise ${section}`)
+      })
+      for (const object of objects) await inspect(`${port}/${version}/${object.path}/`, (document) => {
+        expect(document.querySelector('main.api-reference-layout--symbol'), object.id).not.toBeNull()
+        expect(document.querySelector('.api-reference-content h1 code')?.textContent).toBe(object.name)
+        const declaration = document.getElementById(object.id)
+        expect(declaration?.getAttribute('data-domain')).toBe('mcp')
+        expect(declaration?.getAttribute('data-objtype')).toBe(object.kind)
+        expect(document.querySelector('nav.api-section-links'), `${object.id} section navigation`).not.toBeNull()
+        for (const suffix of ['parameters', 'result', 'schemas']) expect(document.getElementById(`${object.id}.${suffix}`), `${object.id}.${suffix}`).not.toBeNull()
+        const contract = [...document.querySelectorAll('details')].find((detail) => detail.querySelector('summary')?.textContent === (object.tool ? 'Input schema' : 'Registration'))!
+        expect(JSON.parse(contract.querySelector('code')!.textContent)).toEqual(object.tool?.inputSchema ?? object.item)
       })
     }
   })

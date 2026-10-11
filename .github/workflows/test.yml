@@ -42,11 +42,13 @@ jobs:
       - name: Install browser for the rendering audit
         run: pnpm --filter @libtmux/site exec playwright install --with-deps chromium
 
-      - name: Resolve integrated Ruby and Lua sources
+      - name: Resolve integrated guide sources
         id: integrated-sources
         run: |
           echo "ruby=$(jq -r .revision site/src/data/api/ruby.json)" >> "$GITHUB_OUTPUT"
           echo "lua=$(jq -r .revision site/src/data/api/lua.json)" >> "$GITHUB_OUTPUT"
+          echo "powershell=$(jq -r .revision site/src/data/api/powershell.json)" >> "$GITHUB_OUTPUT"
+          echo "julia=$(jq -r .revision site/src/data/api/julia.json)" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v7
         with:
@@ -60,12 +62,28 @@ jobs:
           ref: ${{ steps.integrated-sources.outputs.lua }}
           path: .port-sources/lua
           persist-credentials: false
+      - uses: actions/checkout@v7
+        with:
+          repository: libtmux/libtmux-powershell
+          ref: ${{ steps.integrated-sources.outputs.powershell }}
+          path: .port-sources/powershell
+          persist-credentials: false
+      - uses: actions/checkout@v7
+        with:
+          repository: libtmux/libtmux-julia
+          ref: ${{ steps.integrated-sources.outputs.julia }}
+          path: .port-sources/julia
+          persist-credentials: false
 
-      - name: Stage integrated Ruby and Lua guides
+      - name: Stage integrated source guides
         env:
           LIBTMUX_DOCS_CHECKOUT_RUBY: ${{ github.workspace }}/.port-sources/ruby
           LIBTMUX_DOCS_CHECKOUT_LUA: ${{ github.workspace }}/.port-sources/lua
-        run: node scripts/stage-port-docs.mjs --from-source
+          LIBTMUX_DOCS_CHECKOUT_POWERSHELL: ${{ github.workspace }}/.port-sources/powershell
+          LIBTMUX_DOCS_CHECKOUT_JULIA: ${{ github.workspace }}/.port-sources/julia
+        run: |
+          node scripts/stage-port-docs.mjs --from-source
+          node scripts/stage-port-docs.mjs --cached --check
 
       # Unit tests, lint, type-check, a real shell build, then the suites that
       # read built HTML, the link check and the API fidelity check — ordered
@@ -82,9 +100,10 @@ jobs:
           PREVIEW_PREFIX: pr-${{ github.event.pull_request.number }}
           LIBTMUX_DOCS_CHECKOUT_RUBY: ${{ github.workspace }}/.port-sources/ruby
           LIBTMUX_DOCS_CHECKOUT_LUA: ${{ github.workspace }}/.port-sources/lua
-          # Raw source proves the staged guides match the integrated models.
-          # Native exporter artifacts stay checked by each port's docs-site job.
-          LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS: ruby,lua
+          # PowerShell/Julia paths stay scoped to guide staging above, which
+          # checks the cache used by ordinary builds. Native API and MCP export
+          # freshness remain owning-port checks, not claims of this root audit.
+          LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS: ruby,lua,powershell,julia
 
       - name: Upload audited preview
         if: github.event_name == 'pull_request'

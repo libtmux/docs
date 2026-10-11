@@ -1,19 +1,6 @@
-/**
- * A code span that might name a symbol.
- *
- * Deliberately loose — the resolver is what decides whether a name exists, and
- * an unresolved mention renders as plain text, which is what it already was.
- * This only filters out spans that could not be a reference under any reading,
- * so the resolver is not asked about shell snippets and prose fragments.
- */
-export function looksLikeApiMention(text: string): boolean {
-  if (/\s/.test(text.trim()) && !/\(/.test(text)) return false
-  if (/\(/.test(text)) return true
-  if (/[.:]|->/.test(text)) return true
-  // A bare identifier counts only when it is type-cased, which is how every
-  // port in this estate spells a type.
-  return /^[A-Z][A-Za-z0-9_]*$/.test(text)
-}
+import { fromMarkdown } from 'mdast-util-from-markdown'
+import { looksLikeApiMention } from './prose.ts'
+export { looksLikeApiMention } from './prose.ts'
 
 /** One code span found in a port-labelled table row. */
 export interface TableMention {
@@ -90,6 +77,8 @@ export interface ProseMention {
   port?: string
   before: string
   linked?: boolean
+  /** Authored destination; a linked label must not be resolved by name again. */
+  href?: string
   /** 1-based source line. */
   line: number
   /** Source offsets including the code span's delimiters. */
@@ -101,6 +90,7 @@ const FENCE_PORT: Record<string, string> = {
   python: 'py', py: 'py', typescript: 'ts', ts: 'ts', javascript: 'ts', js: 'ts',
   rust: 'rs', rs: 'rs', go: 'go', java: 'java', csharp: 'csharp', cs: 'csharp',
   cpp: 'cxx', 'c++': 'cxx', swift: 'swift',
+  powershell: 'powershell', pwsh: 'powershell', ps1: 'powershell', julia: 'julia',
 }
 
 /** Inline references in prose, including port sections, tables, and existing links. */
@@ -151,18 +141,48 @@ export function proseMentions(markdown: string, portByLabel: Record<string, stri
   }
 
   const body = bodyLines.join('\n')
-  for (const match of body.matchAll(/(?<!`)(`+)([^`]+)\1(?!`)/g)) {
-    if (/\n\s*\n/.test(match[2])) continue
-    const text = match[2].replace(/\n/g, ' ').trim()
+  interface MarkdownNode {
+    type: string
+    value?: string
+    identifier?: string
+    url?: string
+    children?: MarkdownNode[]
+    position?: { start: { offset?: number }; end: { offset?: number } }
+  }
+  const tree = fromMarkdown(body)
+  const definitions = new Map<string, string>()
+  const collectDefinitions = (node: MarkdownNode) => {
+    if (node.type === 'definition' && node.identifier && node.url !== undefined) {
+      const id = node.identifier.toLowerCase()
+      if (!definitions.has(id)) definitions.set(id, node.url)
+    }
+    node.children?.forEach(collectDefinitions)
+  }
+  collectDefinitions(tree)
+  const spans: { text: string; start: number; end: number; href?: string }[] = []
+  const collectSpans = (node: MarkdownNode, href?: string) => {
+    if (node.type === 'image' || node.type === 'imageReference') return
+    if (node.type === 'link') href = node.url
+    if (node.type === 'linkReference') href = definitions.get(node.identifier!.toLowerCase())
+    const start = node.position?.start.offset
+    const end = node.position?.end.offset
+    if (node.type === 'inlineCode' && start !== undefined && end !== undefined) {
+      spans.push({ text: node.value!, start, end, ...(href !== undefined ? { href } : {}) })
+    }
+    node.children?.forEach((child) => collectSpans(child, href))
+  }
+  collectSpans(tree)
+  for (const span of spans) {
+    const text = span.text.replace(/\n/g, ' ').trim()
     if (!text) continue
-    const beforeMatch = body.slice(0, match.index)
+    const beforeMatch = body.slice(0, span.start)
     const line = beforeMatch.split('\n').length
     const ctx = context[line - 1]
     if (!ctx) continue
     const before = ctx.before + beforeMatch.slice(beforeMatch.lastIndexOf('\n') + 1)
-    const linked = body[match.index - 1] === '[' && body.slice(match.index + match[0].length).startsWith('](')
-    out.push({ text, port: portAt?.(match.index) ?? ctx.port, before, line,
-      start: match.index, end: match.index + match[0].length, ...(linked ? { linked: true } : {}) })
+    out.push({ text, port: portAt?.(span.start) ?? ctx.port, before, line,
+      start: span.start, end: span.end,
+      ...(span.href !== undefined ? { linked: true, href: span.href } : {}) })
   }
   return out
 }

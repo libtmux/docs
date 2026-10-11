@@ -9,12 +9,14 @@
  * the desktop column — so it owns no positioning of its own; the caller
  * decides how it's placed.
  */
+import { createHash } from 'node:crypto'
 import { getSidebar, isActivePath, type SidebarItem } from '../../lib/sidebar'
 import { DEFAULT_LOCALE, type Locale } from '../../i18n/locales'
 import SidebarLink from './SidebarLink.astro'
 import SidebarSection from './SidebarSection.astro'
 import { PORT_BY_SLUG, type DocProduct } from '../../lib/ports'
 import { currentDocumentation, getDocumentationSurfaces } from '../../lib/documentation-navigation'
+import { initializeDocumentationSidebar } from './documentation-sidebar'
 import '../../styles/api-tree.css'
 
 interface Props {
@@ -33,10 +35,12 @@ const portInfo = port ? PORT_BY_SLUG[port] : undefined
 const surfaces = portInfo ? await getDocumentationSurfaces(portInfo.slug, version, locale) : []
 const selected = surfaces.length ? currentDocumentation(surfaces, currentPath) : undefined
 const pageItems: SidebarItem[] = navigation ?? (selected ? selected.section.items : await getSidebar(port, version, locale, product))
+// Root pages can supply a versioned manual or glossary tree of their own.
+const navigationScope = selected?.section.href ?? `tree:${createHash('sha256').update(JSON.stringify(pageItems)).digest('hex')}`
 ---
 
 {selected && <p class="section-context"><span>{selected.surface.label}</span><a href={selected.section.href}>{selected.section.label}</a></p>}
-<div data-section-navigation>
+<div data-section-navigation data-section-scope={navigationScope}>
   <label class="section-search" data-section-search-label hidden>
     <span class="sr-only">Find a page in {selected?.section.label ?? 'documentation'}</span>
     <input type="search" autocomplete="off" placeholder="Find page" data-section-search />
@@ -45,15 +49,17 @@ const pageItems: SidebarItem[] = navigation ?? (selected ? selected.section.item
   {
     pageItems.map((item) =>
       item.type === 'group' ? (
-        <SidebarSection label={item.label} href={item.href} items={item.items} currentPath={currentPath} />
+        <SidebarSection label={item.label} href={item.href} kind={item.kind} items={item.items} currentPath={currentPath} />
       ) : (
-        <SidebarLink href={item.href} label={item.href === selected?.section.href && item.label === selected.section.label ? 'Overview' : item.label} external={item.external} kind={item.kind} isActive={isActivePath(item.href, currentPath)} />
+        <SidebarLink href={item.href} label={item.href === selected?.section.href && item.label === selected.section.label ? 'Overview' : item.label} external={item.external} kind={item.kind} disabled={item.disabled} isActive={isActivePath(item.href, currentPath)} />
       ),
     )
   }
   </nav>
   <p class="section-empty" data-section-empty role="status" hidden>No matching pages.</p>
 </div>
+
+<script is:inline data-astro-rerun set:html={`(${initializeDocumentationSidebar.toString()})(document.currentScript.previousElementSibling)`} />
 
 <style>
   .section-context { margin: 0 0 .75rem; }

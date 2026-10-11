@@ -16,7 +16,7 @@ const initial = entries[0].port
 
 <nav class="home-launcher" aria-label="Choose language and solution" data-home-launcher data-default-port={initial}>
   <div class="clearable-picker home-language-control" data-clear-replaces-caret>
-    <PagePortSwitcher entries={entries} portSlug={initial} label="Choose a programming language" homeLanguageIcons reserveLabelWidth>
+    <PagePortSwitcher entries={entries} label="Choose a programming language" homeLanguageIcons reserveLabelWidth>
       <button slot="title-actions" class="home-launcher-reset" type="button" data-home-reset hidden aria-label="Reset language selection">Reset</button>
     </PagePortSwitcher>
     <button class="picker-clear" type="button" data-home-reset hidden aria-label="Clear language selection" title="Clear language selection">
@@ -99,8 +99,6 @@ const initial = entries[0].port
         }
       }
       const name = chosen?.dataset.portName ?? 'Language'
-      picker.querySelector('.page-port-name')!.textContent = name
-      picker.querySelector('.page-port-short-name')!.textContent = chosen?.dataset.portName ?? 'Port'
       picker.querySelector('summary')!.setAttribute('aria-label', chosen ? `${name}: choose a programming language` : 'Choose a programming language')
       document.documentElement.setAttribute('data-pkg-port', port)
       if (brands[port]) {

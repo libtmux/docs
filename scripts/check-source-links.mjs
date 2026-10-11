@@ -90,7 +90,12 @@ for (const [port, where] of Object.entries(CHECKOUT)) {
 
   const model = JSON.parse(readFileSync(modelPath, 'utf8'))
   const units = new Map()
-  for (const symbol of model.symbols) {
+  const locations = model.symbols.flatMap((symbol) => [symbol,
+    ...symbol.signatures.filter((signature) => signature.source).map((signature, index) => ({
+      id: `${symbol.id} signature ${index + 1}`, source: signature.source,
+    })),
+  ])
+  for (const symbol of locations) {
     const repository = symbol.source.repo ?? model.repo
     const revision = symbol.source.revision ?? model.revision
     const key = `${repository}@${revision}`
@@ -161,7 +166,7 @@ for (const [port, where] of Object.entries(CHECKOUT)) {
   if (past) report(port, `${past} symbols point past the end of their file at ${rev.slice(0, 8)}`)
   if (!missing && !past) {
     console.log(
-      `check-source-links: ${port} ${unit.repository} ${unit.symbols.length} symbols, ${lengths.size} files ` +
+      `check-source-links: ${port} ${unit.repository} ${unit.symbols.length} declaration and method locations, ${lengths.size} files ` +
         `at ${rev.slice(0, 8)} (${publicRemotes.join(', ')})` +
         (noLine ? `, ${noLine} without a line` : ''),
     )

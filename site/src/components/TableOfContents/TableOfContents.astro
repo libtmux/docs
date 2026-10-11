@@ -29,6 +29,18 @@ const { items, minHeadingLevel = 2, maxHeadingLevel = 3, labelledBy } = Astro.pr
     </h2>}
     <TableOfContentsList toc={items} />
   </nav>
+  <script is:inline data-astro-rerun>
+    (() => {
+      const toc = document.currentScript.parentElement
+      const links = [...toc.querySelectorAll('a')]
+      const current = links.find(link => link.hash === location.hash) || links[0]
+      if (!current) return
+      current.setAttribute('aria-current', 'true')
+      for (let item = current.closest('li'); item; item = item.parentElement.closest('li')) {
+        item.classList.remove('collapsed')
+      }
+    })()
+  </script>
 </starlight-toc>
 
 <style>

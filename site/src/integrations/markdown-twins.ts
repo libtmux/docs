@@ -7,7 +7,7 @@ import { toMdast } from 'hast-util-to-mdast'
 import { gfmToMarkdown } from 'mdast-util-gfm'
 import { toMarkdown } from 'mdast-util-to-markdown'
 import { markdownDocument, markdownPath } from '../lib/markdown-twins.ts'
-import { MCP_REFERENCE, mcpReferenceRoutes } from '../lib/mcp-reference.ts'
+import { MCP_REFERENCE, mcpReferenceRoutes, mcpObjectAt, MCP_SECTIONS } from '../lib/mcp-reference.ts'
 import { PORT_BY_SLUG } from '../lib/ports.ts'
 import { buildTarget } from '../lib/versions.ts'
 import { buildLocale, DEFAULT_LOCALE } from '../i18n/locales.ts'
@@ -77,11 +77,12 @@ export function writeMcpExports(out: string, base: string, routes: ReturnType<ty
   const manifestPath = join(out, 'docs.json')
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
   const documents: { url: string; markdown: string; title: string; section: string }[] = []
-  for (const { path, port, toolName } of routes) {
+  for (const { path, port, toolName, section: domain, itemSlug } of routes) {
     const html = readFileSync(join(out, path, 'index.html'), 'utf8')
     const page = renderedPage(html, true, `${base}${path}/`)
     const reference = MCP_REFERENCE[port]
-    const tool = reference.registrations.find((entry) => entry.wireName === toolName)
+    const object = mcpObjectAt(port, domain, itemSlug)
+    const tool = object?.tool
     if (toolName && !tool) throw new Error(`Missing MCP registration: ${port}/${toolName}`)
     const source = tool?.source ?? {
       repo: reference.repo, revision: reference.revision, extractedRevision: reference.extractedRevision,
@@ -92,7 +93,7 @@ export function writeMcpExports(out: string, base: string, routes: ReturnType<ty
     const markdown = markdownDocument(page)
     mkdirSync(dirname(target), { recursive: true })
     writeFileSync(target, markdown)
-    const section = `${PORT_BY_SLUG[port].name} MCP tools`
+    const section = `${PORT_BY_SLUG[port].name} MCP ${MCP_SECTIONS[domain].toLowerCase()}`
     // Replacing an existing entry also makes a repeated integration idempotent.
     manifest.pages = manifest.pages.filter((entry: { url: string }) => entry.url !== page.url)
     manifest.pages.push({ title: page.title, description: page.description ?? '', section,
@@ -188,7 +189,8 @@ function renderedPage(html: string, preserveSchemas = false, pathname?: string) 
   const origin = url ? new URL(url).origin : ''
   // `main` first: the landing page's port cards are `article`s, and on a
   // DocsLayout page `main` holds nothing but the article.
-  const main = find(tree, (element) => element.tagName === 'main')
+  const main = find(tree, (element) => (element.properties?.className as string[] | undefined)?.includes('api-reference-content') === true)
+    ?? find(tree, (element) => element.tagName === 'main')
     ?? find(tree, (element) => element.tagName === 'article')
     ?? find(tree, (element) => element.properties?.dataPagefindBody !== undefined)
     ?? find(tree, (element) => element.tagName === 'body')!
@@ -196,11 +198,12 @@ function renderedPage(html: string, preserveSchemas = false, pathname?: string) 
   const title = textOf(heading).trim() || textOf(find(head ?? tree, (element) => element.tagName === 'title')).replace(/ \| libtmux$/, '').trim()
   // The title leads the document, so the page's own h1 would repeat it.
   const headings: { id: string; level: number; text: string }[] = []
-  const collectHeadings = (node: Node) => {
-    if (/^h[2-6]$/.test(node.tagName ?? '') && typeof node.properties?.id === 'string') headings.push({
-      id: node.properties.id, level: Number(node.tagName![1]), text: textOf(node).trim(),
+  const collectHeadings = (node: Node, sectionId?: string) => {
+    const id = node.properties?.id ?? sectionId
+    if (/^h[2-6]$/.test(node.tagName ?? '') && typeof id === 'string') headings.push({
+      id, level: Number(node.tagName![1]), text: textOf(node).replace(/[¶#]\s*$/, '').trim(),
     })
-    for (const child of node.children ?? []) collectHeadings(child)
+    for (const child of node.children ?? []) collectHeadings(child, node.tagName === 'section' ? node.properties?.id as string | undefined : undefined)
   }
   collectHeadings(main)
   prune(main, origin, heading, preserveSchemas, url)

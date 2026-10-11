@@ -9,6 +9,7 @@ import { SOURCE_GUIDE_PORTS } from '../src/lib/port-documentation'
 import scalaGuides from '../src/data/port-guides/scala.json'
 import fsharpGuides from '../src/data/port-guides/fsharp.json'
 import csharpModel from '../src/data/api/csharp.json'
+import powershellGuides from '../src/data/port-guides/powershell.json'
 
 describe('integrated guide inputs', () => {
   const port = PORTS.find((entry) => entry.slug === 'lua')!
@@ -52,6 +53,29 @@ describe('integrated guide inputs', () => {
 })
 
 describe('staged port guide links', () => {
+  it('keeps native PowerShell command and parameter links in their actual API product', () => {
+    const artifact = structuredClone(powershellGuides)
+    const guide = artifact.guides.find((entry) => entry.path === 'docs/capture.md')!
+    guide.content += '\n[content](reference/LibTmux/Get-TmuxPaneContent.md)\n'
+      + '[join](reference/LibTmux/Get-TmuxPaneContent.md#-joinwrappedlines)\n'
+      + '[confirm](reference/LibTmux/Disconnect-TmuxControl.md#-confirm)\n'
+      + '[plan](reference/LibTmux.Workspace/Invoke-TmuxWorkspace.md#-plan)\n'
+      + '[unknown](reference/LibTmux/Get-TmuxPaneContent.md#unknown-section)\n'
+    const page = stagedPortGuides('powershell', artifact).get('powershell/guides/capture/index.md')!
+    expect(page).toContain('[content](../../reference/libtmux-get-tmuxpanecontent/)')
+    expect(page).toContain('[join](../../reference/libtmux-get-tmuxpanecontent/#LibTmux%5CGet-TmuxPaneContent.parameter.JoinWrappedLines)')
+    expect(page).toContain('[confirm](../../reference/libtmux-disconnect-tmuxcontrol/#LibTmux%5CDisconnect-TmuxControl.parameter.Confirm)')
+    expect(page).toContain('[plan](../../workspace/reference/libtmux-workspace-invoke-tmuxworkspace/#LibTmux.Workspace%5CInvoke-TmuxWorkspace.parameter.Plan)')
+    expect(page).toContain(`[unknown](https://github.com/libtmux/libtmux-powershell/blob/${artifact.source.revision}/docs/reference/LibTmux/Get-TmuxPaneContent.md#unknown-section)`)
+  })
+
+  it.each(['julia', 'ruby'])('%s retains its MCP task identity without creating a redirect', (port) => {
+    const artifact = JSON.parse(readFileSync(new URL(`../src/data/port-guides/${port}.json`, import.meta.url), 'utf8'))
+    const page = stagedPortGuides(port, artifact).get(`${port}/mcp/source-guide/index.md`)!
+    expect(page).toContain('equivalence: "mcp-client-setup"')
+    expect(page).toContain('route: "mcp/source-guide"')
+    expect(page).not.toMatch(/^aliases:/m)
+  })
   it.each(SOURCE_GUIDE_PORTS)('%s follows shared guide naming and starts with setup', (port) => {
     const artifact = JSON.parse(readFileSync(new URL(`../src/data/port-guides/${port}.json`, import.meta.url), 'utf8'))
     const files = stagedPortGuides(port, artifact)
@@ -84,6 +108,32 @@ describe('staged port guide links', () => {
     )
     expect(result).toContain('[query](../query/#filters)')
     expect(result).toContain('https://github.com/libtmux/libtmux-lua/blob/abc123/tests/runtime.lua')
+  })
+
+  it('keeps registered documentation links inside the mounted site with their version and fragment', () => {
+    const result = rewriteLinks(
+      '[MCP](https://libtmux.org/en/dotnet/latest/mcp/#install)\n\n'
+        + '[server]: https://libtmux.org/en/dotnet/v0.1.0/reference/server/?view=all#parameters\n'
+        + '[workspace]: https://libtmux.org/en/csharp/latest/workspace/reference/libtmux-workspace-workspacebuildexception/\n'
+        + '[result]: https://libtmux.org/en/julia/latest/mcp/tools/run_operations/#mcp.tool.run_operations.output/anyOf/0/properties/atomic\n'
+        + '[foreign]: https://libtmux.org/en/not-a-port/latest/reference/\n',
+      'docs/mcp.md', 'guides/mcp', {}, 'libtmux/libtmux-powershell', 'abc123',
+    )
+    expect(result).toContain('[MCP](/csharp/latest/mcp/#install)')
+    expect(result).toContain('[server]: /csharp/v0.1.0/reference/server/?view=all#parameters')
+    expect(result).toContain('[workspace]: /csharp/latest/workspace/reference/libtmux-workspace-workspacebuildexception/')
+    expect(result).toContain('[result]: /julia/latest/mcp/tools/run_operations/#mcp.tool.run_operations.output/anyOf/0/properties/atomic')
+    expect(result).toContain('[foreign]: https://libtmux.org/en/not-a-port/latest/reference/')
+  })
+
+  it('preserves foreign, source, image and example URLs when correcting the old C# documentation slug', () => {
+    const source = '[foreign](https://example.org/en/dotnet/latest/mcp/)\n\n'
+      + '[source](https://github.com/libtmux/libtmux-dotnet/blob/main/docs/mcp.md)\n\n'
+      + '![image](https://libtmux.org/en/dotnet/latest/image.png)\n\n'
+      + '`https://libtmux.org/en/dotnet/latest/mcp/`\n\n'
+      + '```text\n[MCP](https://libtmux.org/en/dotnet/latest/mcp/)\n```\n'
+    expect(rewriteLinks(source, 'docs/mcp.md', 'guides/mcp', {}, 'libtmux/libtmux-powershell', 'abc123'))
+      .toBe(source)
   })
 
   it('takes reader routes and aliases from the port documentation catalog', () => {

@@ -13,8 +13,8 @@ const { sections, related } = Astro.props as Props
     <nav aria-label="On this page">
       <h2>On this page</h2>
       <ul>
-        {sections.map((section) => <li class:list={[section.nested && 'api-contents-nested']}>
-          <a href={`#${section.id}`} data-api-section-link>{section.label}</a>
+        {sections.map((section, i) => <li class:list={[section.nested && 'api-contents-nested']}>
+          <a href={`#${section.id}`} data-api-section-link aria-current={i === 0 ? 'location' : undefined}>{section.label}</a>
         </li>)}
       </ul>
     </nav>
@@ -28,38 +28,45 @@ const { sections, related } = Astro.props as Props
     </nav>}
   </aside>
 </api-page-contents>
-<script>
+<script is:inline data-astro-rerun>
+(() => {
   class ApiPageContents extends HTMLElement {
-    private controller?: AbortController
-    private frame = 0
+    controller
+    frame = 0
 
     connectedCallback() {
       this.controller = new AbortController()
       const { signal } = this.controller
-      const update = () => {
-        const links = [...document.querySelectorAll<HTMLAnchorElement>('[data-api-section-link]')]
-        const targets = [...new Set(links.map((link) => decodeURIComponent(link.hash.slice(1))))]
-          .map((id) => document.getElementById(id)).filter((target): target is HTMLElement => Boolean(target))
+      const decode = (hash) => { try { return decodeURIComponent(hash.slice(1)) } catch { return hash.slice(1) } }
+      const update = (initial = false) => {
+        const links = [...document.querySelectorAll('[data-api-section-link]')]
+        const targets = [...new Set(links.map((link) => decode(link.hash)))]
+          .map((id) => document.getElementById(id)).filter(Boolean)
           .sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top)
         // A short page cannot scroll its final section up to the sticky header.
         // Keep an explicitly selected section active while it remains visible.
-        const selected = targets.find((target) => target.id === decodeURIComponent(location.hash.slice(1)))
+        const fragment = decode(location.hash)
+        const destination = document.getElementById(fragment)
+        const selected = targets.findLast((target) => target.id === fragment ||
+          (destination && target.contains(destination)) ||
+          (target.id.endsWith('.parameters') && fragment.startsWith(target.id.replace(/\.parameters$/, '.parameter.'))))
         const selectedTop = selected?.getBoundingClientRect().top ?? -1
-        const current = selectedTop >= 112 && selectedTop < innerHeight ? selected
+        const keepSelected = selected && (initial || (selectedTop >= 112 && selectedTop < innerHeight))
+        const current = keepSelected ? selected
           : targets.findLast((target) => target.getBoundingClientRect().top <= 144) ?? targets[0]
         for (const link of links) {
-          if (decodeURIComponent(link.hash.slice(1)) === current?.id) link.setAttribute('aria-current', 'location')
+          if (decode(link.hash) === current?.id) link.setAttribute('aria-current', 'location')
           else link.removeAttribute('aria-current')
         }
       }
       const schedule = () => {
         cancelAnimationFrame(this.frame)
-        this.frame = requestAnimationFrame(update)
+        this.frame = requestAnimationFrame(() => update())
       }
       window.addEventListener('scroll', schedule, { passive: true, signal })
       window.addEventListener('hashchange', schedule, { signal })
       window.addEventListener('resize', schedule, { signal })
-      schedule()
+      update(true)
     }
 
     disconnectedCallback() {
@@ -68,4 +75,5 @@ const { sections, related } = Astro.props as Props
     }
   }
   if (!customElements.get('api-page-contents')) customElements.define('api-page-contents', ApiPageContents)
+})()
 </script>

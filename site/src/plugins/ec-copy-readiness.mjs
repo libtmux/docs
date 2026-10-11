@@ -4,7 +4,9 @@ import { select } from 'astro-expressive-code/hast'
 export function copyReadiness() {
   return {
     name: 'copy-readiness',
-    baseStyles: '.copy button:disabled { cursor: progress; opacity: 0.5; }',
+    // Preserve the frame's hover/focus visibility while waiting for handlers.
+    // A disabled opacity override flashes the button on every cold load.
+    baseStyles: '.copy button:disabled { cursor: progress; } .copy button { transition: none; }',
     // Custom modules follow the built-in frame module in the same bundle.
     // Its observer also attaches handlers before this observer enables buttons.
     jsModules: [`(() => {

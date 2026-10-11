@@ -4,6 +4,8 @@ export { loadLanguage, parserFor, type GrammarName } from './parser.ts'
 export { extractPython } from './languages/python.ts'
 export { extractRuby } from './languages/ruby.ts'
 export { extractLua } from './languages/lua.ts'
+export { extractPowerShell } from './languages/powershell.ts'
+export { extractJulia } from './languages/julia.ts'
 export { extractFSharp, extractFSharpArtifact } from './languages/fsharp.ts'
 export { extractProject } from './project.ts'
 export { resolvePublicIds } from './reexports.ts'
@@ -25,3 +27,4 @@ export { MEMBER_TIERS, memberSignals, memberTier, compareMembers, membersOf, typ
 export { parentInventory } from './parent-inventory.ts'
 
 export { navSidecarFor, type NavConfig } from './nav-sidecar.ts'
+export { parsePythonDoc } from './doc/python.ts'

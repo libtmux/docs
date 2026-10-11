@@ -33,6 +33,11 @@ on:
         required: false
         type: boolean
         default: false
+      publish-previews:
+        description: Publish same-repository pull requests under their pr-N version using the caller's preview role.
+        required: false
+        type: boolean
+        default: false
       tag-prefix:
         description: >
           Stripped from a release tag to give its version slug, e.g.
@@ -120,6 +125,9 @@ jobs:
           INPUT_DEFAULT: ${{ inputs.is-default }}
           INPUT_RESOLVES_TO: ${{ inputs.resolves-to }}
           INPUT_PUBLISH: ${{ inputs.publish }}
+          PUBLISH_PREVIEWS: ${{ inputs.publish-previews }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          SAME_REPOSITORY_PR: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
           REPOSITORY_URL: ${{ github.server_url }}/${{ github.repository }}
         run: |
           set -euo pipefail
@@ -181,6 +189,39 @@ jobs:
           ref: ${{ job.workflow_sha }}
           path: docs
           persist-credentials: false
+
+      # The caller's tooling can document an older selected source revision.
+      # Record both checkouts before either native exporter produces files.
+      - name: Check out native documentation tooling
+        if: matrix.port == 'powershell' || matrix.port == 'julia'
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          path: docs-generator
+          persist-credentials: false
+
+      - name: Read native documentation toolchain
+        if: matrix.port == 'powershell' || matrix.port == 'julia'
+        id: docs-runtime
+        env:
+          PORT: ${{ matrix.port }}
+          GENERATOR_CHECKOUT: ${{ github.workspace }}/docs-generator
+        run: |
+          python3 - <<'PY'
+          import os, pathlib, re
+          port = os.environ['PORT']
+          if port not in ('powershell', 'julia'):
+              raise ValueError('Unsupported native documentation port')
+          checkout = pathlib.Path(os.environ['GENERATOR_CHECKOUT']).resolve(strict=True)
+          entries = [line.split() for line in (checkout / '.tool-versions').read_text().splitlines()]
+          selected = [entry for entry in entries if entry and entry[0] == port]
+          if len(selected) != 1 or len(selected[0]) != 2 or not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+', selected[0][1]):
+              raise ValueError(f'Native {port} documentation requires one exact runtime version')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'version={selected[0][1]}\n')
+          with open(os.environ['GITHUB_ENV'], 'a') as output:
+              output.write(f'LIBTMUX_DOCS_GENERATOR_CHECKOUT={checkout}\n')
+          PY
 
       - name: Resolve Python's separate product sources
         if: inputs.port == 'py'
@@ -334,11 +375,88 @@ jobs:
         with:
           validate-wrappers: true
           cache-disabled: true
-      - if: matrix.port == 'csharp' || matrix.port == 'fsharp'
+      - if: matrix.port == 'csharp' || matrix.port == 'fsharp' || matrix.port == 'powershell'
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: port/global.json
           cache: false
+
+      - name: Install tested PowerShell documentation runtime
+        if: matrix.port == 'powershell'
+        env:
+          POWERSHELL_VERSION: ${{ steps.docs-runtime.outputs.version }}
+        run: |
+          set -euo pipefail
+          [[ "$POWERSHELL_VERSION" == 7.4.20 ]] || {
+            echo 'Update the reviewed PowerShell archive checksum for this runtime.' >&2
+            exit 1
+          }
+          archive="$RUNNER_TEMP/powershell-$POWERSHELL_VERSION-linux-x64.tar.gz"
+          curl --fail --location --retry 3 --output "$archive" \
+            "https://github.com/PowerShell/PowerShell/releases/download/v$POWERSHELL_VERSION/powershell-$POWERSHELL_VERSION-linux-x64.tar.gz"
+          printf '%s  %s\n' \
+            ed8008345c7f5337f5e293145f5e243ce132e5ee4dfc24ac551c45a4b3092181 \
+            "$archive" | sha256sum --check --strict
+          bin="$RUNNER_TEMP/powershell-docs"
+          mkdir -p "$bin"
+          tar -xzf "$archive" -C "$bin"
+          chmod +x "$bin/pwsh"
+          "$bin/pwsh" -NoLogo -NoProfile -Command \
+            'if ($PSVersionTable.PSVersion.ToString() -cne $env:POWERSHELL_VERSION) { throw "Unexpected PowerShell documentation runtime" }'
+          printf '%s\n' "$bin" >> "$GITHUB_PATH"
+
+      - name: Export PowerShell API from the selected source
+        if: matrix.port == 'powershell'
+        working-directory: port
+        run: |
+          set -euo pipefail
+          pwsh -NoLogo -NoProfile -File "$LIBTMUX_DOCS_GENERATOR_CHECKOUT/eng/Setup.ps1"
+          pwsh -NoLogo -NoProfile -File "$LIBTMUX_DOCS_GENERATOR_CHECKOUT/eng/Export-Docs.ps1" \
+            -SourceRoot "$PWD" -Restore
+
+      - if: matrix.port == 'julia'
+        uses: julia-actions/setup-julia@fa02766e078afaaf09b14210362cee14137e6a32 # v3.0.2
+        with:
+          version: ${{ steps.docs-runtime.outputs.version }}
+
+      - name: Prepare Julia documentation environment
+        if: matrix.port == 'julia'
+        env:
+          JULIA_VERSION: ${{ steps.docs-runtime.outputs.version }}
+          JULIA_DEPOT_PATH: ${{ runner.temp }}/julia-docs-depot
+          JULIA_LOAD_PATH: '@:@stdlib'
+          JULIA_PKG_PRECOMPILE_AUTO: '0'
+        run: |
+          set -euo pipefail
+          project="$RUNNER_TEMP/julia-docs"
+          mkdir -p "$project"
+          julia --startup-file=no --project="$project" -e '
+          using Pkg, TOML
+          VERSION == VersionNumber(ENV["JULIA_VERSION"]) || error("Unexpected Julia documentation runtime")
+          project, source, tooling = abspath.(ARGS)
+          definition = TOML.parsefile(joinpath(tooling, "docs", "Project.toml"))
+          definition["sources"] = Dict(
+              "LibTmux" => Dict("path" => source),
+              "LibTmuxMCP" => Dict("path" => joinpath(source, "packages", "LibTmuxMCP")),
+              "LibTmuxWorkspace" => Dict("path" => joinpath(source, "packages", "LibTmuxWorkspace")))
+          open(joinpath(project, "Project.toml"), "w") do output
+              TOML.print(output, definition)
+          end
+          Pkg.activate(project)
+          Pkg.instantiate()
+          Pkg.precompile()
+          ' "$project" "$GITHUB_WORKSPACE/port" "$LIBTMUX_DOCS_GENERATOR_CHECKOUT"
+          printf '%s\n' "JULIA_DEPOT_PATH=$JULIA_DEPOT_PATH" 'JULIA_LOAD_PATH=@:@stdlib' \
+            'JULIA_PKG_PRECOMPILE_AUTO=0' "LIBTMUX_DOCS_JULIA_PROJECT=$project" >> "$GITHUB_ENV"
+
+      - name: Export Julia API from the selected source
+        if: matrix.port == 'julia'
+        working-directory: port
+        run: |
+          set -euo pipefail
+          julia --startup-file=no --project="$LIBTMUX_DOCS_JULIA_PROJECT" \
+            "$LIBTMUX_DOCS_GENERATOR_CHECKOUT/docs/export-api.jl" "$PWD/docs/build/api.json"
+
       - if: matrix.port == 'ruby'
         uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
         with:

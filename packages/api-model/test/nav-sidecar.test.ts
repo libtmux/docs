@@ -68,6 +68,23 @@ describe('explicit catalog navigation', () => {
     expect(actual.diagnostics).toEqual(before.diagnostics)
     expect(config).toEqual(original)
   })
+
+  it('keeps contextual shortcuts separate from canonical placement and rejects missing targets', () => {
+    const model: ApiModelBase = { extractor: 'fixture', symbols: [symbol('owner', 'struct'), symbol('list_items', 'function')] }
+    const config: NavConfig = { buckets: [
+      { id: 'owner', label: 'Owner', match: { kind: 'id', is: 'owner' }, shortcuts: ['list_items'] },
+      { id: 'items', label: 'Items', match: { kind: 'id', is: 'list_items' } },
+    ] }
+    const before = structuredClone(model)
+    const actual = navSidecarFor('fixture', model, config)
+    expect(actual.buckets[0].shortcuts?.map((entry) => entry.id)).toEqual(['list_items'])
+    expect(actual.assignments.owner.map((entry) => entry.id)).toEqual(['owner'])
+    expect(actual.placement.list_items).toBe('items')
+    expect(actual.diagnostics.unmatched).toEqual([])
+    expect(model).toEqual(before)
+    config.buckets[0].shortcuts = ['missing']
+    expect(() => navSidecarFor('fixture', model, config)).toThrow('unknown navigation shortcut')
+  })
 })
 
 describe('existing port sidecars', () => {

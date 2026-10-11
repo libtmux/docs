@@ -12,7 +12,7 @@
  * assembly, and a docs build should not need the network. Committed, small,
  * and refreshed by re-running this.
  *
- * Usage: node scripts/fetch-inventories.mjs [--check]
+ * Usage: node scripts/fetch-inventories.mjs [--check] [--only=julia]
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
@@ -31,9 +31,12 @@ const outDir = join(repoRoot, 'site/src/data/inventories')
  */
 const SOURCES = {
   python: 'https://docs.python.org/3/objects.inv',
+  julia: 'https://docs.julialang.org/en/v1/objects.inv',
 }
 
 const check = process.argv.includes('--check')
+const only = process.argv.find((arg) => arg.startsWith('--only='))?.slice('--only='.length)
+if (only && !Object.hasOwn(SOURCES, only)) throw new Error(`Unknown inventory: ${only}`)
 /**
  * A JSON sidecar beside each `.inv`, because a bundler cannot see the `.inv`.
  *
@@ -64,6 +67,7 @@ mkdirSync(outDir, { recursive: true })
 
 let failed = 0
 for (const [name, url] of Object.entries(SOURCES)) {
+  if (only && name !== only) continue
   const out = join(outDir, `${name}.inv`)
   if (check) {
     if (!existsSync(out)) {

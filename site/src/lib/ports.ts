@@ -35,7 +35,7 @@ export interface PackageRegistry {
   /** This package's page on that registry. */
   url: string
   /** Which mark `components/icons/RegistryIcon.astro` draws. */
-  icon: 'pypi' | 'npm' | 'crates' | 'go' | 'maven' | 'nuget' | 'swift' | 'rubygems' | 'luarocks'
+  icon: 'pypi' | 'npm' | 'crates' | 'go' | 'maven' | 'nuget' | 'swift' | 'rubygems' | 'luarocks' | 'powershell'
 }
 
 export type PortPackageId = 'core' | 'async' | DocProduct
@@ -59,7 +59,7 @@ export type ProductAvailability = 'available' | 'unpublished'
  * One way to add a port's package to a project.
  *
  * Every port has more than one — a Python reader is on pip or uv, a
- * TypeScript reader on one of five, and Java, C++ and Swift cannot be
+ * TypeScript reader on one of four, and Java, C++ and Swift cannot be
  * installed from a command line at all — and a single `install` string chose
  * for all of them. Worse, two of those strings had stopped resolving: npm has
  * `libtmux`, not `@libtmux/libtmux`, and C++ is served from this project's own
@@ -93,7 +93,7 @@ export interface InstallCommand {
  * reader asked for: `code` exempts that package, and the `libtmux` it pins, so
  * a release published this morning still installs while its dependencies wait
  * out the window. A tool that cannot exempt one package from its own cutoff —
- * pip, Bun, Deno, and npx, which ignores `--min-release-age-exclude` — has no
+ * pip, Bun, and npx, which ignores `--min-release-age-exclude` — has no
  * `code`; the widget keeps the plain command and shows `note` instead. Each
  * form was run against the live registries before it was written here.
  */
@@ -137,6 +137,18 @@ export interface InstallForm {
   lang: string
 }
 
+/** Returned dependency objects that belong in a port's reference navigation. */
+export interface ApiDependencyNavigation {
+  port: string
+  label: string
+  package: string
+  version: string
+  revision: string
+  /** The consumer's extracted dependency declaration, reviewed with these pins. */
+  declaration: { path: string; sha256: string }
+  sections: Readonly<Record<string, readonly string[]>>
+}
+
 export interface Port {
   /** URL segment under the site root, e.g. `py` in /py/stable/. */
   slug: string
@@ -145,6 +157,10 @@ export interface Port {
   shortName: string
   /** Wrapper language sharing its parent's source, release and publisher. */
   parentLibrary?: { slug: string; runtime: string }
+  /** References returned by an independently released wrapper package. */
+  apiDependencies?: readonly string[]
+  /** Selected dependency types; their pages remain in the declaring port. */
+  apiDependencyNavigation?: readonly ApiDependencyNavigation[]
   /** Human name for nav and headings. */
   name: string
   /** Language shown in the port switcher. */
@@ -175,6 +191,8 @@ export interface Port {
   workspaceCli?: string
   /** Whether companion products exist for this language port. */
   productAvailability?: Partial<Record<DocProduct, ProductAvailability>>
+  /** Native product descriptions where the generic CLI wording does not apply. */
+  productDescriptions?: Partial<Record<DocProduct, string>>
   /** Separately published packages whose APIs belong in this port's docs. */
   packages?: readonly PortPackage[]
   /**
@@ -465,6 +483,113 @@ const CORE_PORTS: readonly Port[] = [
     },
   },
   {
+    slug: 'powershell',
+    projectName: 'libtmux-powershell',
+    logoLanguage: 'powershell',
+    shortName: 'PowerShell',
+    name: 'PowerShell',
+    language: 'PowerShell',
+    packageName: 'LibTmux',
+    repo: 'libtmux/libtmux-powershell',
+    docsDispatch: { workflow: 'docs.yml' },
+    apiDependencies: ['csharp'],
+    apiDependencyNavigation: [{
+      port: 'csharp', label: '.NET', package: 'LibTmux', version: '0.0.0-alpha.20',
+      revision: 'ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc',
+      declaration: { path: 'Directory.Packages.props', sha256: 'ac7abc834ccaf1c8f93b9f9292d6fa7c54ba35fd891e02e53d2fed49f2b41567' },
+      sections: {
+        server: ['LibTmux.Server'],
+        session: ['LibTmux.Session'],
+        window: ['LibTmux.Window'],
+        pane: ['LibTmux.Pane'],
+        client: ['LibTmux.Client', 'LibTmux.ClientAttachment'],
+        snapshots: ['LibTmux.CapturedRelation', 'LibTmux.CapturedValue', 'LibTmux.SnapshotDepth'],
+        queries: ['LibTmux.Query.QueryDocument', 'LibTmux.Query.QueryPlan', 'LibTmux.Query.QueryResult', 'LibTmux.Query.QueryTarget', 'LibTmux.Query.QueryPushdown'],
+        'queries-fields': ['LibTmux.Query.QueryFieldDescriptor'],
+      },
+    }],
+    checkout: '~/work/libtmux/libtmux-powershell',
+    worktree: '~/work/libtmux/libtmux-powershell-docs-site',
+    source: { path: 'src/LibTmux.PowerShell', ref: 'master' },
+    versionedDocs: true,
+    tagGrammar: 'semver',
+    renderer: 'astro',
+    publishesOwnTree: true,
+    generator: 'PowerShell command metadata, manifests, PlatyPS and C# source',
+    productAvailability: { mcp: 'unpublished' },
+    productDescriptions: { workspace: 'Read, validate, plan and load workspace files with the LibTmux.Workspace cmdlets.' },
+    packages: [{
+      id: 'workspace', name: 'LibTmux.Workspace',
+      registry: 'https://www.powershellgallery.com/packages/LibTmux.Workspace',
+      source: { path: 'src/LibTmux.Workspace.PowerShell', ref: 'master' },
+      installs: [
+        { label: 'PowerShellGet', lang: 'powershell', code: 'Install-Module -Name LibTmux.Workspace -AllowPrerelease',
+          note: 'Installs the matching LibTmux core dependency. Run PowerShell and tmux on the same Unix host.' },
+        { label: 'PSResourceGet', lang: 'powershell', code: 'Install-PSResource -Name LibTmux.Workspace -Prerelease',
+          note: 'Installs the matching LibTmux core dependency. Run PowerShell and tmux on the same Unix host.' },
+      ],
+    }],
+    installs: [
+      { label: 'PowerShellGet', lang: 'powershell', code: 'Install-Module -Name LibTmux -AllowPrerelease',
+        note: 'Requires PowerShell 7.4 or later and tmux on the same Unix host.' },
+      { label: 'PSResourceGet', lang: 'powershell', code: 'Install-PSResource -Name LibTmux -Prerelease',
+        note: 'Requires PowerShell 7.4 or later and tmux on the same Unix host.' },
+    ],
+    registry: { name: 'PowerShell Gallery', url: 'https://www.powershellgallery.com/packages/LibTmux', icon: 'powershell' },
+    initProject: { code: 'Create a PowerShell script in this directory; no project manifest is required.', lang: 'text' },
+    installForms: {
+      stable: { code: 'Install-Module -Name LibTmux', lang: 'powershell' },
+      prerelease: { code: 'Install-Module -Name LibTmux -RequiredVersion {version} -AllowPrerelease', lang: 'powershell' },
+      git: { code: 'git clone --branch {tag} --depth 1 https://github.com/libtmux/libtmux-powershell.git\npwsh -NoProfile -File libtmux-powershell/eng/Build.ps1 -Restore', lang: 'console' },
+    },
+    installNote: 'Import LibTmux after installation. LibTmux.Workspace is a separate module; the .NET MCP tool does not import either module.',
+  },
+  {
+    slug: 'julia',
+    projectName: 'LibTmux.jl',
+    logoLanguage: 'julia',
+    shortName: 'Julia',
+    name: 'Julia',
+    language: 'Julia',
+    packageName: 'LibTmux',
+    repo: 'libtmux/libtmux-julia',
+    docsDispatch: { workflow: 'docs.yml' },
+    checkout: '~/work/libtmux/libtmux-julia',
+    worktree: '~/work/libtmux/libtmux-julia-docs-site',
+    source: { path: 'src', ref: 'master' },
+    versionedDocs: true,
+    tagGrammar: 'semver',
+    renderer: 'astro',
+    publishesOwnTree: true,
+    generator: 'Julia syntax, native methods and documentation',
+    workspaceCli: 'libtmux-workspace load',
+    workspaceCliAvailability: 'local',
+    productDescriptions: { workspace: 'Read and plan tmuxp-style workspaces, then load them with LibTmuxWorkspace or its CLI.',
+      mcp: 'Run LibTmuxMCP to expose tmux tools to an MCP client.' },
+    packages: [
+      { id: 'workspace', name: 'LibTmuxWorkspace', source: { path: 'packages/LibTmuxWorkspace', ref: 'master' },
+        require: 'LibTmuxWorkspace', executable: 'libtmux-workspace',
+        installs: [{ label: 'Pkg (Git)', lang: 'julia',
+          code: 'using Pkg\nPkg.activate(".")\nrepo = "https://github.com/libtmux/libtmux-julia.git"\ntag = "v0.1.0-alpha.1"\nPkg.add([\n    PackageSpec(url=repo, rev=tag),\n    PackageSpec(url=repo, rev=tag, subdir="packages/LibTmuxWorkspace"),\n])',
+          note: 'Run in Julia. The core and workspace packages must use the same source release; neither is registered in General.' }] },
+      { id: 'mcp', name: 'LibTmuxMCP', source: { path: 'packages/LibTmuxMCP', ref: 'master' },
+        require: 'LibTmuxMCP', executable: 'libtmux-mcp',
+        installs: [{ label: 'Pkg (Git)', lang: 'julia',
+          code: 'using Pkg\nPkg.activate(".")\nrepo = "https://github.com/libtmux/libtmux-julia.git"\ntag = "v0.1.0-alpha.1"\nPkg.add([\n    PackageSpec(url=repo, rev=tag),\n    PackageSpec(url=repo, rev=tag, subdir="packages/LibTmuxMCP"),\n])',
+          note: 'Run in Julia. The core and MCP packages must use the same source release; neither is registered in General.' }] },
+    ],
+    installs: [{ label: 'Pkg (Git)', lang: 'julia',
+      code: 'using Pkg\nPkg.activate(".")\nPkg.add(PackageSpec(\n    url="https://github.com/libtmux/libtmux-julia.git",\n    rev="v0.1.0-alpha.1",\n))',
+      note: 'Run in Julia with tmux on PATH. This alpha release is installed from Git; it is not registered in General.' }],
+    initProject: { code: 'using Pkg\nPkg.activate(".")', lang: 'julia' },
+    installForms: {
+      stable: { code: 'using Pkg\nPkg.add("LibTmux")', lang: 'julia' },
+      prerelease: { code: 'using Pkg\nPkg.add(PackageSpec(name="LibTmux", version="{version}"))', lang: 'julia' },
+      git: { code: 'using Pkg\nPkg.add(PackageSpec(url="https://github.com/libtmux/libtmux-julia.git", rev="{tag}"))', lang: 'julia' },
+    },
+    installNote: 'Julia 1.10+ and tmux 3.2a+ are compatibility targets; see the compatibility guide for tested versions. Companion packages share the core source release.',
+  },
+  {
     slug: 'ts',
     projectName: 'libtmux-ts',
     logoLanguage: 'typescript',
@@ -606,12 +731,6 @@ const CORE_PORTS: readonly Port[] = [
         lang: 'console',
         code: 'bun add libtmux',
         cooldown: { bypass: 'bun add --minimum-release-age=0 libtmux', note: noExemption('Bun', 'libtmux') },
-      },
-      {
-        label: 'deno',
-        lang: 'console',
-        code: 'deno add npm:libtmux',
-        cooldown: { bypass: 'deno add --min-dep-age=0 npm:libtmux', note: noExemption('Deno', 'libtmux') },
       },
     ],
     registry: { name: 'npm', url: 'https://www.npmjs.com/package/libtmux', icon: 'npm' },
@@ -1158,6 +1277,7 @@ export function workspaceOverviewNotice(port: Port): { title: string; body: stri
 
 export function productDescription(port: Port, product: DocProduct): string {
   if (!productAvailable(port, product)) return 'Not available for this language port.'
+  if (port.productDescriptions?.[product]) return port.productDescriptions[product]!
   if (product === 'workspace') {
     if (port.workspaceCliAvailability === 'local')
       return `Build the CLI from source and load workspace files with ${port.workspaceCli}.`

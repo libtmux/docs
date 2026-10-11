@@ -117,6 +117,14 @@ describe('publish plan', () => {
       .toThrow('unconfigured has no dispatchable docs workflow')
   })
 
+  it.each(['powershell', 'julia'])('dispatches %s through its owning repository while keeping source selection separate', (slug) => {
+    expect(plan({ ports: slug, ref: 'reviewed-native-source', version: 'latest', versionKind: 'trunk' }, PORTS, lookup, versions))
+      .toMatchObject([{
+        port: slug, repo: `libtmux/libtmux-${slug}`, workflow: 'docs.yml',
+        dispatchRef: 'master', sourceRef: 'reviewed-native-source', language: '',
+      }])
+  })
+
   it.each([
     { repo: 'libtmux/libtmux-go/other' },
     { docsDispatch: { workflow: '../docs.yml' } },

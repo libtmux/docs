@@ -7,7 +7,7 @@ import { API_MODELS, PORT_NAME, pageSlug } from '../lib/api-models.ts'
 import { DOC_PRODUCTS, hasReference, PORTS, PORT_BY_SLUG, portPageUrl, productApiPath, productAvailable, productInDevelopment, referenceUrl, type DocProduct } from '../lib/ports.ts'
 import { PORT_ROOT } from '../lib/site-root.ts'
 import { docsRoutePath } from '../lib/docs-paths.ts'
-import { docsEntryAvailable } from '../lib/page-port-links.ts'
+import { docsEntriesAvailable } from '../lib/page-port-links.ts'
 import { isIndexSource, markdownPath } from '../lib/markdown-twins.ts'
 import { localeProse } from '../lib/llms.ts'
 import { documentationAreas } from '../lib/port-documentation.ts'
@@ -49,12 +49,11 @@ export const GET: APIRoute = async ({ site }) => {
   const defaults: Record<string, string> = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')
   const versionFor = (slug: string) => slug === port ? buildTarget(process.env).version : (defaults[slug] ?? 'latest')
 
-  const entries = await getCollection(
+  const entries = docsEntriesAvailable(await getCollection(
     'docs',
-    (entry) => docsEntryAvailable(entry, port)
-      && localeOf(entry.id) === DEFAULT_LOCALE
+    (entry) => localeOf(entry.id) === DEFAULT_LOCALE
       && (locale === DEFAULT_LOCALE || Boolean(port) || !entry.data.port),
-  )
+  ), port)
   // What this build serves at each route: a translation where it has one, and
   // the default locale's page where a placeholder stands in for it.
   const translations = new Map(locale === DEFAULT_LOCALE ? []
@@ -76,6 +75,7 @@ export const GET: APIRoute = async ({ site }) => {
       section: served.data.sidebar?.group ?? 'Documentation',
       url: `${origin}${entry.data.product && !port ? refBase : base}${route}`,
       markdownUrl: `${origin}${markdownPath(`${entry.data.product && !port ? refBase : twinBase}${route}`, isIndexSource(served.filePath))}`,
+      ...(entry.data.equivalence ? { equivalence: entry.data.equivalence } : {}),
       headings: headings.map((h) => ({ id: h.slug, level: h.depth, text: h.text })),
     })
   }

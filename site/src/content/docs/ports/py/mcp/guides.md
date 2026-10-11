@@ -3,6 +3,7 @@ title: Connect a Python MCP client
 description: Launch libtmux-mcp on a chosen socket and verify the tools your client receives.
 port: py
 product: mcp
+equivalence: mcp-client-setup
 sidebar:
   label: Guides
   order: 2

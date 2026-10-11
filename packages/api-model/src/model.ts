@@ -14,7 +14,7 @@
  */
 
 /** Language libraries, by the slug the site uses. */
-export type PortSlug = 'py' | 'ruby' | 'lua' | 'ts' | 'rs' | 'go' | 'java' | 'csharp' | 'cxx' | 'swift' | 'kotlin' | 'scala' | 'fsharp'
+export type PortSlug = 'py' | 'ruby' | 'lua' | 'ts' | 'rs' | 'go' | 'java' | 'csharp' | 'cxx' | 'swift' | 'kotlin' | 'scala' | 'fsharp' | 'powershell' | 'julia'
 
 export type ApiProduct = 'core' | 'workspace' | 'mcp'
 
@@ -82,6 +82,8 @@ export interface Param {
   type?: string
   /** Default value verbatim, when one is written. */
   default?: string
+  /** The caller may omit the parameter without supplying a default. */
+  optional?: boolean
   /** `*args` / `**kwargs` / variadic / `params` — rendered with its sigil. */
   variadic?: 'positional' | 'keyword'
   /** Doc text for this parameter, from the doc comment's field list. */
@@ -100,10 +102,36 @@ export interface Param {
    */
   since?: string
   deprecated?: string
+  /** Native command binding, specific to the containing parameter set. */
+  binding?: {
+    mandatory: boolean
+    position?: number
+    switch: boolean
+    common: boolean
+    dynamic: boolean
+    aliases: string[]
+    pipeline: { byValue: boolean; byPropertyName: boolean; remainingArguments: boolean }
+    documentedDefault?: string
+    nativeType: string
+    declaration?: { text: string; initializer?: string; source: ApiSymbol['source'] }
+    attributes: { type: string; arguments: unknown[]; namedArguments: Record<string, unknown> }[]
+  }
 }
 
 /** One callable signature. A symbol has several only when it is overloaded. */
 export interface Signature {
+  /** Native method identity or command parameter-set identity. */
+  identity?: string
+  /** Native dispatch distinguishes constructors from calls on an instance. */
+  methodKind?: 'function' | 'constructor' | 'call'
+  /** Parameter-set label or native method label. */
+  label?: string
+  isDefault?: boolean
+  /** Documentation and source belonging to this method or parameter set. */
+  doc?: DocBlock
+  source?: ApiSymbol['source']
+  /** Optional extension module that supplies this method. */
+  extension?: string
   /** Native signature text when its grammar carries more than the shared fields. */
   raw?: string
   params: Param[]
@@ -135,6 +163,8 @@ export interface DocBlock {
     lang: string
     code: string
     intro?: string
+    /** Prose following the code, retained in reading order. */
+    outro?: string
     /** Source for this complete example, independent of native comment syntax. */
     sourceUrl?: string
   }[]
@@ -240,11 +270,32 @@ export interface ApiSymbol {
   type?: string
   /** Value for a constant or a defaulted field, as written. */
   value?: string
+  /** Type parameters on the declaration, independent of constructor methods. */
+  typeParams?: string[]
+  /** Command behavior beyond its individual parameter sets. */
+  command?: {
+    kind: 'cmdlet' | 'function'
+    aliases: string[]
+    defaultParameterSet?: string
+    supportsShouldProcess: boolean
+    supportsPaging: boolean
+    supportsTransactions: boolean
+    confirmImpact: string
+    positionalBinding: boolean
+    inputTypes: { type: string; description: string }[]
+    outputTypes: string[]
+    relatedLinks: { text: string; href: string }[]
+  }
 }
 
 /** Everything extracted from one port's source tree. */
 /** Declarations and provenance shared by library and source references. */
 export interface ApiModelBase {
+  /** Native producer and inputs retained alongside the normalized surface. */
+  nativeProvenance?: {
+    files: { path: string; sha256: string }[]
+    exporter: Record<string, unknown>
+  }
   /** Generated public source files, stored with the revision that produced them. */
   generatedSources?: Record<string, string>
   repo?: string

@@ -2,10 +2,12 @@
 export interface Concept {
   /** What the operation does, in one line, in no particular language. */
   label: string
-  /** Public id of the symbol implementing it, per port. */
+  /** Public id of the API for this concept, per port; its native kind may differ. */
   symbols: Record<string, string>
-  /** Additional APIs in the same port implementing the same operation. */
+  /** Additional APIs in the same port for the same concept. */
   variants?: Record<string, string[]>
+  /** Native differences in representation, receiver scope, or acquisition behavior. */
+  notes?: Record<string, string>
   /** The containing object returned by this relationship, nearest parent first. */
   parentObject?: 'window' | 'session' | 'server'
   /** Source-verified public receivers when extraction keeps only the base declaration. */
@@ -1748,7 +1750,7 @@ export const CONCEPTS: Record<string, Concept> = {
     },
   },
   'snapshot': {
-    label: 'Capture the whole hierarchy at one instant',
+    label: 'Capture the tmux hierarchy',
     symbols: {
       scala: 'io.github.libtmux.scaladsl.Server.snapshot',
       kotlin: 'io.github.libtmux.kotlin.Server.snapshot',
@@ -3699,8 +3701,84 @@ for (const [id, symbol] of Object.entries(SCALA_EFFECT_CONCEPTS)) {
 }
 for (const [id, symbol] of Object.entries(RUBY_CONCEPTS)) CONCEPTS[id]!.symbols.ruby = symbol
 for (const [id, symbol] of Object.entries(LUA_CONCEPTS)) CONCEPTS[id]!.symbols.lua = symbol
+
+// The extracted PowerShell cmdlets and F# modules use the shared .NET handles.
+// Julia separates endpoint descriptions, captured entities, and action references.
+// Keep those distinctions with the mappings instead of inventing facade classes.
+const HIERARCHY_CONCEPTS: Record<string, Record<string, { symbol: string; note: string; variants?: string[] }>> = {
+  server: {
+    powershell: { symbol: 'LibTmux\\New-TmuxServer', note: 'This cmdlet constructs a shared .NET `LibTmux.Server` handle without contacting tmux.' },
+    julia: { symbol: 'LibTmux.Server', note: '`Server` describes an endpoint without contacting tmux. Read its hierarchy with `snapshot`.' },
+    fsharp: { symbol: 'LibTmux.FSharp.Server', note: 'This F# module provides functions over the shared .NET `LibTmux.Server` type.' },
+  },
+  session: {
+    powershell: { symbol: 'LibTmux\\Get-TmuxSession', note: 'This cmdlet reads and returns shared .NET `LibTmux.Session` objects. Child windows and panes require further acquisition.' },
+    julia: { symbol: 'LibTmux.SessionSnapshot', variants: ['LibTmux.SessionRef'], note: '`SessionSnapshot` holds captured session data. Actions use its `SessionRef`, a typed identity bound to an observed daemon generation.' },
+    fsharp: { symbol: 'LibTmux.FSharp.Session', note: 'This F# module builds deferred child queries from a shared .NET `LibTmux.Session` and its server association. `Query.list` acquires their results from tmux.' },
+  },
+  window: {
+    powershell: { symbol: 'LibTmux\\Get-TmuxWindow', note: 'This cmdlet reads shared .NET `LibTmux.Window` placements. Use `-Server` for all sessions or `-Session` for one session.' },
+    julia: { symbol: 'LibTmux.WindowSnapshot', variants: ['LibTmux.WindowRef'], note: '`WindowSnapshot` holds captured physical-window data. `WindowLink` records a placement in a session; actions use `WindowRef`.' },
+    fsharp: { symbol: 'LibTmux.FSharp.Window', note: 'This F# module identifies shared .NET `LibTmux.Window` placements and builds deferred pane queries. `Query.list` acquires their results from tmux.' },
+  },
+  pane: {
+    powershell: { symbol: 'LibTmux\\Get-TmuxPane', note: 'This cmdlet reads shared .NET `LibTmux.Pane` objects. Its `-Server`, `-Session`, and `-Window` parameter sets select the scope.' },
+    julia: { symbol: 'LibTmux.PaneSnapshot', variants: ['LibTmux.PaneRef'], note: '`PaneSnapshot` holds captured pane data. Actions use its `PaneRef`; `PaneOccurrence` adds a window placement in a session.' },
+    fsharp: { symbol: 'LibTmux.FSharp.Pane', note: 'This F# module reads captured fields and starts explicit operations on the shared .NET `LibTmux.Pane` type.' },
+  },
+  'list-sessions': {
+    powershell: { symbol: 'LibTmux\\Get-TmuxSession', note: 'Acquires sessions through `-Server`, with optional exact `-Id` and `-Name` selectors.' },
+    julia: { symbol: 'LibTmux.sessions', note: '`sessions` reads membership from a captured `Snapshot` without contacting tmux.' },
+    fsharp: { symbol: 'LibTmux.FSharp.Server.sessions', note: 'Builds a deferred session query on `LibTmux.Server`. `Query.list` acquires the results; it does not traverse the handle’s captured membership.' },
+  },
+  'list-windows': {
+    powershell: { symbol: 'LibTmux\\Get-TmuxWindow', note: 'Use the `-Session` parameter set to acquire placements in one session.' },
+    julia: { symbol: 'LibTmux.windows', note: '`windows` with a captured `SessionSnapshot` reads distinct physical windows in that session. Use `windowlinks` for placements.' },
+    fsharp: { symbol: 'LibTmux.FSharp.Session.windows', note: 'Builds a deferred window query from one `LibTmux.Session` and its server. `Query.list` acquires placements scoped to that session ID.' },
+  },
+  'list-panes': {
+    powershell: { symbol: 'LibTmux\\Get-TmuxPane', note: 'Use the `-Window` parameter set to acquire panes in one window.' },
+    julia: { symbol: 'LibTmux.panes', note: '`panes` with a captured `WindowSnapshot` reads panes in that window; missing coverage is an error.' },
+    fsharp: { symbol: 'LibTmux.FSharp.Window.panes', note: 'Builds a deferred pane query from one `LibTmux.Window` and its server. `Query.list` acquires panes scoped to that window ID.' },
+  },
+  'list-session-panes': {
+    powershell: { symbol: 'LibTmux\\Get-TmuxPane', note: 'Use the `-Session` parameter set to acquire panes across that session’s windows.' },
+    fsharp: { symbol: 'LibTmux.FSharp.Session.panes', note: 'Builds a deferred pane query from one `LibTmux.Session` and its server. `Query.list` acquires panes across that session’s windows.' },
+  },
+  'list-server-windows': {
+    powershell: { symbol: 'LibTmux\\Get-TmuxWindow', note: 'Use the `-Server` parameter set to acquire window placements across all sessions.' },
+    julia: { symbol: 'LibTmux.windows', note: '`windows` with a `Snapshot` reads every captured physical window. Use `windowlinks` for session placements.' },
+    fsharp: { symbol: 'LibTmux.FSharp.Server.windows', note: 'Builds a deferred query for placements across all sessions. `Query.list` acquires the results; a linked window appears once for each session placement.' },
+  },
+  'list-server-panes': {
+    powershell: { symbol: 'LibTmux\\Get-TmuxPane', note: 'Use the `-Server` parameter set to acquire panes across the server.' },
+    julia: { symbol: 'LibTmux.panes', note: '`panes` with a `Snapshot` reads every captured physical pane. Use `paneoccurrences` for session placements.' },
+    fsharp: { symbol: 'LibTmux.FSharp.Server.panes', note: 'Builds a deferred pane query on the shared .NET `LibTmux.Server`. `Query.list` acquires panes across that server.' },
+  },
+  'list-clients': {
+    powershell: { symbol: 'LibTmux\\Get-TmuxClient', note: 'Acquires attached clients through `-Server` and returns shared .NET `LibTmux.Client` objects.' },
+    julia: { symbol: 'LibTmux.clients', note: '`clients` reads attached clients from a captured `Snapshot` without contacting tmux.' },
+    fsharp: { symbol: 'LibTmux.FSharp.Server.clients', note: 'Builds a deferred client query on the shared .NET `LibTmux.Server`. `Query.list` acquires attached clients.' },
+  },
+  snapshot: {
+    powershell: { symbol: 'LibTmux\\Get-TmuxSnapshot', note: 'Acquires a replacement `LibTmux.Server` to `-Depth` (panes by default). Acquisition is not atomic; retained handles do not refresh.' },
+    julia: { symbol: 'LibTmux.snapshot', note: 'Acquires a new `Snapshot` over an observation interval. Topology checks do not make it a transaction; earlier snapshots do not refresh.' },
+    fsharp: { symbol: 'LibTmux.FSharp.Server.capture', note: 'Acquires a replacement shared .NET `LibTmux.Server` to the requested depth. Acquisition is not atomic; retained handles do not refresh.' },
+  },
+}
+for (const [id, ports] of Object.entries(HIERARCHY_CONCEPTS)) {
+  const concept = CONCEPTS[id]!
+  for (const [port, binding] of Object.entries(ports)) {
+    concept.symbols[port] = binding.symbol
+    ;(concept.notes ??= {})[port] = binding.note
+    if (binding.variants) (concept.variants ??= {})[port] = binding.variants
+  }
+}
+CONCEPTS['list-session-panes']!.absent!.julia = 'Traverse `windows(session)` and `panes(window)` in the captured snapshot. `panes(snapshot)` has server-wide scope.'
 for (const concept of Object.values(CONCEPTS)) {
   concept.absent ??= {}
+  if (!concept.symbols.powershell) concept.absent.powershell ??= 'No source-verified PowerShell equivalent is recorded for this operation.'
+  if (!concept.symbols.julia) concept.absent.julia ??= 'No source-verified Julia equivalent is recorded for this operation.'
   if (!concept.symbols.ruby) concept.absent.ruby = 'No source-verified Ruby equivalent is recorded for this operation.'
   if (!concept.symbols.lua) concept.absent.lua = 'No source-verified Lua equivalent is recorded for this operation.'
   if (!concept.symbols.kotlin) concept.absent.kotlin = 'No source-verified Kotlin equivalent is recorded for this operation.'

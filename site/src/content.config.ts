@@ -38,6 +38,8 @@ const docs = defineCollection({
     route: z.string().optional(),
     /** Legacy paths that redirect to a staged guide's canonical route. */
     aliases: z.array(z.string()).optional(),
+    /** Shared task identity for verified counterparts with different routes. */
+    equivalence: z.string().min(1).optional(),
     /** Exact port source backing a staged guide. */
     source: z.object({ repo: z.string(), path: z.string(), ref: z.string() }).optional(),
     /** Sidebar placement. */
