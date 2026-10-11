@@ -177,7 +177,7 @@ const homeBrands = homeLauncher
 ---
 
 <!doctype html>
-<html lang={locale} data-theme={brand.language} data-brand={brand.language} data-brand-variant={brand.variant} data-shell-base={buildBase}
+<html lang={locale} data-reference-previews data-theme={brand.language} data-brand={brand.language} data-brand-variant={brand.variant} data-shell-base={buildBase}
   data-home-ports={homeLauncher ? Object.keys(PORT_BY_SLUG).join(' ') : undefined}
   data-home-brands={homeBrands ? JSON.stringify(homeBrands) : undefined}>
   <head>

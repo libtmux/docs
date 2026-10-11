@@ -46,11 +46,11 @@ export function installAnchorNavigation(win = window) {
     }
     const display = visibleTarget(target)
     if (!display || display === doc.body || display === doc.documentElement) return
-    // The font gate hides the page for up to three seconds. Keep the full
+    // The font and link-hint gates hide the page during startup. Keep the full
     // arrival cue for the moment the reader can actually see it.
-    if (doc.documentElement.classList.contains('fonts-pending') && win.MutationObserver) {
+    if (doc.documentElement.matches('.fonts-pending, .link-hints-pending') && win.MutationObserver) {
       observer = new win.MutationObserver(() => {
-        if (!doc.documentElement.classList.contains('fonts-pending')) schedule(hash, scroll || opened)
+        if (!doc.documentElement.matches('.fonts-pending, .link-hints-pending')) schedule(hash, scroll || opened)
       })
       observer.observe(doc.documentElement, { attributes: true, attributeFilter: ['class'] })
       return

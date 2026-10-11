@@ -49,7 +49,13 @@ export function installExternalLinks(win = window) {
 
 if (typeof window !== 'undefined') {
   let cleanup
-  const boot = () => { cleanup?.(); cleanup = installExternalLinks(window) }
+  const boot = () => {
+    cleanup?.()
+    cleanup = installExternalLinks(window)
+    document.dispatchEvent(new CustomEvent('libtmux:external-links-ready', {
+      detail: { generation: document.documentElement.dataset.linkHintsGeneration, href: location.href },
+    }))
+  }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true })
   else boot()
   document.addEventListener('astro:page-load', boot)

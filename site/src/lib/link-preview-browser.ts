@@ -1,18 +1,9 @@
 import type { LinkPreview } from './link-preview'
+import { linkPreviewTarget, linkPreviewCandidate } from './link-preview-paint'
+export { linkPreviewTarget } from './link-preview-paint'
 
 const cache = new Map<string, LinkPreview>()
 let dispose = () => {}
-
-/** Only generated, same-origin reference endpoints are eligible for prefetch. */
-export function linkPreviewTarget(href: string, origin: string) {
-  let url: URL
-  try { url = new URL(href, origin) } catch { return undefined }
-  const reference = /\/reference\/[^/]+\/$/.test(url.pathname)
-  const protocolObject = /\/mcp\/(?:tools\/[^/]+|prompts\/[^/]+|resources\/(?:templates\/)?[^/]+)\/$/.test(url.pathname)
-    && !url.pathname.endsWith('/mcp/resources/templates/')
-  if (url.origin !== origin || url.search || (!reference && !protocolObject)) return undefined
-  return { url, endpoint: `${url.pathname.slice(0, -1)}.preview.json`, glossary: url.pathname.endsWith('/reference/glossary/') }
-}
 
 /** Keep keyword help and fetched previews inside the same viewport gutter. */
 export function positionLinkPreview(panel: HTMLElement, trigger: HTMLElement) {
@@ -59,11 +50,7 @@ export function initLinkPreviews() {
   }
   dispose = () => { close(); controller.abort() }
   const place = () => { if (current) positionLinkPreview(panel, current) }
-  const candidate = (target: EventTarget | null) => {
-    const link = target instanceof Element ? target.closest<HTMLAnchorElement>('a[href]') : null
-    return link && !link.matches('[data-preview-skip], [href^="#"], .api-heading-link, .api-index-card__link, .headerlink')
-      && !link.closest('nav, footer, [data-doc-picker], .api-index-card, .reference-link-preview') && linkPreviewTarget(link.href, location.origin) ? link : undefined
-  }
+  const candidate = (target: EventTarget | null) => linkPreviewCandidate(target, location.href)
   // Signal the same preview behavior on every eligible link without fetching it.
   for (const link of document.querySelectorAll<HTMLAnchorElement>('a[href]')) {
     if (link.closest('.api-index-card')) {

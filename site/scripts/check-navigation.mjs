@@ -29,14 +29,28 @@ export async function checkNavigationBeforeAnalytics(browser, base) {
   })
   try {
     await page.goto(url, { waitUntil: 'commit' })
-    const visibility = await page.evaluate(async () => {
+    const readiness = await page.evaluate(async () => {
       if (document.readyState === 'loading') {
         await new Promise((resolve) => document.addEventListener('readystatechange', resolve, { once: true }))
       }
       await document.fonts.ready
-      return getComputedStyle(document.body).visibility
+      const root = document.documentElement
+      if (root.classList.contains('link-hints-pending')) {
+        await new Promise((resolve) => {
+          const observer = new MutationObserver(() => {
+            if (!root.classList.contains('link-hints-pending')) {
+              observer.disconnect()
+              resolve()
+            }
+          })
+          observer.observe(root, { attributes: true, attributeFilter: ['class'] })
+        })
+      }
+      return { visibility: getComputedStyle(document.body).visibility,
+        suppressed: root.classList.contains('link-hints-suppressed') }
     })
-    assert.equal(visibility, 'visible', 'Loaded fonts reveal the page while analytics and the fallback timer are still pending')
+    assert.equal(readiness.suppressed, false, 'Actual icon readiness succeeds without the frozen fallback timer')
+    assert.equal(readiness.visibility, 'visible', 'Loaded fonts and icons reveal the page while analytics and the fallback timer are still pending')
     await page.clock.resume()
     const picker = page.locator('[data-surface-picker][data-enhanced]')
     await picker.waitFor({ state: 'visible' })
