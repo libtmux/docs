@@ -11,9 +11,11 @@ const PROTOCOL_MARKS: Record<string, string> = { tool: 't', prompt: 'P', resourc
 export const kindMark = (kind: string) => KIND_MARKS[kind as SymbolKind] ?? PROTOCOL_MARKS[kind]
 
 const namespaceSegments = new Intl.Segmenter('en', { granularity: 'grapheme' })
+const FULL_NAMESPACE_LENGTH = 48
 
-/** Preserve the final namespace segment and each language's separators. */
+/** Keep ordinary namespaces readable; shorten only long paths, preserving their final segment and separators. */
 export function abbreviateNamespace(namespace: string): string {
+  if ([...namespaceSegments.segment(namespace)].length <= FULL_NAMESPACE_LENGTH) return namespace
   const parts = namespace.split(/(::|[./])/)
   return parts.map((part, index) => index % 2 === 0 && index < parts.length - 1
     ? namespaceSegments.segment(part)[Symbol.iterator]().next().value?.segment ?? '' : part).join('')
