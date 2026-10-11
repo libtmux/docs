@@ -194,15 +194,15 @@ const summaries = new Map(await Promise.all(entries.map(async (entry) => [entry.
         <p class="mt-3">The reference configuration advertises {entries.length} {section === 'resources' ? 'resources and resource templates' : section}. Your server’s available objects depend on its configuration.{setup?.href && <> <a href={setup.href}>Setup documentation</a> explains how to connect a client.</>}</p>
         {port === 'cxx' && <p class="mt-3">This catalog uses POSIX. See <a href={`${base}topics/`}>platform limits</a> for the Windows preview.</p>}
         {sectionTree.children.map((group) => <section class="mt-8" id={group.id}>
-          <h2 class="api-index-summary border-b border-slate-200 pb-1 font-mono dark:border-slate-700">{group.label}<span class="ml-2 text-xs font-sans opacity-60">{group.entries.length} {group.entries.length === 1 ? (section === 'resources' ? 'object' : section.slice(0, -1)) : section === 'resources' ? 'objects' : section}</span><a class="headerlink" href={`#${group.id}`} aria-label={`Permalink to ${group.label}`}>#</a></h2>
-          <div class="mt-3 grid gap-3 sm:grid-cols-2">{entries.filter((entry) => mcpObjectGroup(entry) === group.label).map((entry) => <div class="api-index-card scroll-mt-24 rounded border border-slate-200 p-3 hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-800" id={entry.id}>
+          <h2 class="api-index-summary border-b border-edge pb-1 font-mono">{group.label}<span class="ml-2 text-xs font-sans opacity-60">{group.entries.length} {group.entries.length === 1 ? (section === 'resources' ? 'object' : section.slice(0, -1)) : section === 'resources' ? 'objects' : section}</span><a class="headerlink" href={`#${group.id}`} aria-label={`Permalink to ${group.label}`}>#</a></h2>
+          <div class="mt-3 grid gap-3 sm:grid-cols-2">{entries.filter((entry) => mcpObjectGroup(entry) === group.label).map((entry) => <div class="api-index-card scroll-mt-24 rounded border border-edge p-3 hover:bg-surface-hover" id={entry.id}>
             <a class="api-index-card__link font-mono font-semibold" href={portPageUrl(info, version, entry.path)}><ApiBadge label={entry.kind} variant="kind" value={entry.kind} compact /><SymbolName name={entry.name} /></a>
             <div class="mt-1 text-sm opacity-75" set:html={summaries.get(entry.id)} />
           </div>)}</div>
         </section>)}
         {!entries.length && <p class="mt-6">This server does not advertise {section} in the reference configuration.</p>}
         {section === 'tools' && <div class="mt-8 grid gap-3 sm:grid-cols-2">
-          {catalogs.map((catalog) => <section id={catalog.id} class="api-index-card scroll-mt-24 rounded border border-slate-200 p-3 dark:border-slate-800">
+          {catalogs.map((catalog) => <section id={catalog.id} class="api-index-card scroll-mt-24 rounded border border-edge p-3">
             <h2 class="font-mono font-semibold"><a class="api-index-card__link" href={catalog.href}><ApiBadge label={catalog.kind} variant="kind" value={catalog.kind} compact />{catalog.label}</a></h2>
             <p class="mt-1 text-sm opacity-75">{catalog.count ? `${catalog.count} advertised in the reference configuration.` : `This server does not advertise ${catalog.label.toLowerCase()} in the reference configuration.`}</p>
           </section>)}
