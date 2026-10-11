@@ -26,7 +26,7 @@ export const SHARED_PAGE_PATHS = ['mcp', 'mcp/tools', 'parity', 'search', 'trans
 export interface PagePortLink {
   port: string
   name: string
-  links: { href: string; label?: string; preserveFragment?: boolean }[]
+  links: { href: string; label?: string; preserveFragment?: boolean; fallback?: 'section' }[]
   /** A separate exit when this language has no equivalent page. */
   home?: { href: string; label: string }
 }
@@ -107,19 +107,21 @@ export function pagePortLinks({
         links = [{ href: `${referenceUrl(port, targetVersion, product ?? 'core')}glossary/`, preserveFragment: true }]
       }
     } else if (symbol) {
+      const targets = new Map<string, { label: string; note?: string }>()
       for (const alternative of alternatives) {
         const match = alternative.ports.find((p) => p.port === port.slug)
-        // Resolved here rather than taken from `match.href`, because the
-        // equivalent lives under the *target* port's version, which this
-        // caller knows and `referenceAlternatives` does not.
+        // Resolve against the target port's version, which this caller knows.
         const targetSymbol = match?.publicId
           ? API_MODELS[port.slug]?.symbols.find((entry) => (entry.publicId ?? entry.id) === match.publicId) : undefined
         const href = targetSymbol ? productApiHref(API_MODELS[port.slug], targetSymbol, targetVersion) : match?.href
-        if (href && !links.some((link) => link.href === href)) {
-          links.push({ href, label: match?.note && targetSymbol
-            ? `${targetSymbol.name} (${match.kind})` : alternative.label })
-        }
+        if (href && !targets.has(href)) targets.set(href, {
+          label: targetSymbol ? `${targetSymbol.name} (${match?.kind ?? targetSymbol.kind})` : alternative.label,
+          note: match?.note,
+        })
       }
+      links = [...targets].map(([href, target]) => ({ href,
+        ...(targets.size > 1 || target.note ? { label: target.label } : {}),
+      }))
       if (port.slug === symbolPort) {
         const href = productReference
           ? portPageUrl(port, targetVersion, path)
@@ -129,7 +131,7 @@ export function pagePortLinks({
     } else if (object) {
       const target = productAvailable(port, 'mcp') ? equivalentMcpObject(portSlug!, object, port.slug) : undefined
       if (target) links = [{ href: portPageUrl(port, targetVersion, target.path) }]
-      else if (productAvailable(port, 'mcp') && MCP_REFERENCE[port.slug]) links = [{ href: portPageUrl(port, targetVersion, `mcp/${object.section}`), label: `${object.section[0].toUpperCase()}${object.section.slice(1)} overview` }]
+      else if (productAvailable(port, 'mcp') && MCP_REFERENCE[port.slug]) links = [{ href: portPageUrl(port, targetVersion, `mcp/${object.section}`), label: `${object.section[0].toUpperCase()}${object.section.slice(1)} overview`, fallback: 'section' }]
     } else if (protocol && !protocol[2]) {
       if (productAvailable(port, 'mcp') && MCP_REFERENCE[port.slug]) links = [{ href: portPageUrl(port, targetVersion, path) }]
     } else if (!port.parentLibrary && (SHARED_PAGE_PATHS as readonly string[]).includes(path)) {
@@ -160,6 +162,7 @@ export function pagePortLinks({
         if (overview && section && overviewPath) links = [{
           href: portPageUrl(port, targetVersion, overviewPath),
           label: `${section[0].toUpperCase()}${section.slice(1)} overview`,
+          fallback: 'section',
         }]
       }
     }

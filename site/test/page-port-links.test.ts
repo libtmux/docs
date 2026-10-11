@@ -136,6 +136,21 @@ describe('matching pages in another port', () => {
     }
   })
 
+  it('omits repeated task captions while keeping native distinctions and missing exits', () => {
+    const entries = pagePortLinks({ ...options, portSlug: 'cxx', pagePath: 'reference/libtmux-server-sessions' })
+    for (const port of ['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'swift', 'java', 'kotlin', 'scala', 'csharp']) {
+      const links = entries.find((entry) => entry.port === port)!.links
+      expect(links, port).toHaveLength(1)
+      expect(links[0], port).not.toHaveProperty('label')
+    }
+    expect(entries.find((entry) => entry.port === 'julia')?.links[0]).toMatchObject({
+      href: '/pr-42/en/julia/latest/reference/libtmux-sessions/', label: 'sessions (function)',
+    })
+    expect(entries.find((entry) => entry.port === 'powershell')?.links[0].label).toContain('(cmdlet)')
+    expect(entries.find((entry) => entry.port === 'fsharp')?.links[0].label).toBeTruthy()
+    expect(entries.every((entry) => entry.links.every((link) => link.label !== 'List the server’s sessions'))).toBe(true)
+  })
+
   it('finds library counterparts from the tmux prose namespace', () => {
     const links = pagePortLinks({ ...options, pagePath: 'tmux/concepts/model' })
     expect(links.find((p) => p.port === 'go')?.links[0].href).toBe('/pr-42/en/go/latest/concepts/model/')
@@ -185,7 +200,7 @@ describe('matching pages in another port', () => {
         { href: '/pr-42/en/ruby/latest/mcp/guides/connect-client/', label: 'Connect a client' },
         { href: '/pr-42/en/ruby/latest/mcp/source-guide/', label: 'MCP server guide' },
       ])
-      expect(links.find((p) => p.port === 'ts')?.links).toEqual([{ href: '/pr-42/en/ts/latest/mcp/guides/', label: 'Guides overview' }])
+      expect(links.find((p) => p.port === 'ts')?.links).toEqual([{ href: '/pr-42/en/ts/latest/mcp/guides/', label: 'Guides overview', fallback: 'section' }])
       for (const port of ['java', 'lua', 'powershell']) expect(links.find((p) => p.port === port)?.links).toEqual([])
       for (const [portSlug, pagePath] of [['ruby', 'mcp/guides/connect-client'], ['py', 'mcp/guides']]) {
         const reverse = pagePortLinks({ ...options, docs, pagePath, portSlug })
@@ -202,7 +217,7 @@ describe('matching pages in another port', () => {
       { id: 'ports/rs/workspace/guides', data: { port: 'rs', product: 'workspace' } },
     ]
     const links = pagePortLinks({ ...options, docs, pagePath: 'workspace/internals/guides/special', portSlug: 'ts' })
-    expect(links.find((p) => p.port === 'go')?.links).toEqual([{ href: '/pr-42/en/go/latest/workspace/internals/guides/', label: 'Guides overview' }])
+    expect(links.find((p) => p.port === 'go')?.links).toEqual([{ href: '/pr-42/en/go/latest/workspace/internals/guides/', label: 'Guides overview', fallback: 'section' }])
     expect(links.find((p) => p.port === 'rs')?.links).toEqual([])
   })
   it('preserves the prose page and chooses the target port default', () => {
@@ -222,7 +237,7 @@ describe('matching pages in another port', () => {
     expect(links.find((entry) => entry.port === 'powershell')?.links).toEqual([{ href: '/pr-42/en/powershell/v1.2.3/examples/create-layout/' }])
     expect(links.find((entry) => entry.port === 'julia')?.links).toEqual([{ href: '/pr-42/en/julia/latest/examples/create-layout/' }])
     for (const port of ['csharp', 'fsharp']) expect(links.find((entry) => entry.port === port)?.links).toEqual([
-      { href: `/pr-42/en/${port}/latest/examples/`, label: 'Examples overview' },
+      { href: `/pr-42/en/${port}/latest/examples/`, label: 'Examples overview', fallback: 'section' },
     ])
     expect(links.find((entry) => entry.port === 'java')?.links).toEqual([])
   })
@@ -242,7 +257,7 @@ describe('matching pages in another port', () => {
     expect(links.find((entry) => entry.port === 'lua')?.links).toEqual([])
     expect(links.filter((entry) => entry.links.some((link) => !link.label)).map((entry) => entry.port).sort())
       .toEqual(['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift', 'julia'].sort())
-    expect(links.find((entry) => entry.port === 'ruby')?.links).toEqual([{ href: '/pr-42/en/ruby/latest/mcp/tools/', label: 'Tools overview' }])
+    expect(links.find((entry) => entry.port === 'ruby')?.links).toEqual([{ href: '/pr-42/en/ruby/latest/mcp/tools/', label: 'Tools overview', fallback: 'section' }])
     expect(links.find((entry) => entry.port === 'ts')?.links[0].href).toBe('/pr-42/en/ts/v1.2.3/mcp/tools/capture_pane/')
     expect(links.find((entry) => entry.port === 'py')?.links[0].href).toBe('/pr-42/en/py/stable/mcp/tools/capture_pane/')
     expect(links.find((entry) => entry.port === 'csharp')?.links[0].href).toBe('/pr-42/en/csharp/latest/mcp/tools/capture_pane/')
@@ -270,10 +285,10 @@ describe('matching pages in another port', () => {
   it('keeps scrollback-only clearing separate from clearing the visible screen', () => {
     const rust = pagePortLinks({ ...options, pagePath: 'mcp/tools/clear_pane_scrollback', portSlug: 'rs' })
     expect(rust.filter((entry) => entry.links.some((link) => !link.label)).map((entry) => entry.port)).toEqual(['ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'])
-    expect(rust.find((entry) => entry.port === 'py')?.links).toEqual([{ href: '/pr-42/en/py/stable/mcp/tools/', label: 'Tools overview' }])
+    expect(rust.find((entry) => entry.port === 'py')?.links).toEqual([{ href: '/pr-42/en/py/stable/mcp/tools/', label: 'Tools overview', fallback: 'section' }])
     const python = pagePortLinks({ ...options, pagePath: 'mcp/tools/clear_pane', portSlug: 'py' })
     for (const port of ['rs', 'csharp']) expect(python.find((entry) => entry.port === port)?.links).toEqual([
-      { href: `/pr-42/en/${port}/latest/mcp/tools/`, label: 'Tools overview' },
+      { href: `/pr-42/en/${port}/latest/mcp/tools/`, label: 'Tools overview', fallback: 'section' },
     ])
   })
 
@@ -281,8 +296,8 @@ describe('matching pages in another port', () => {
     const links = pagePortLinks({ ...options, pagePath: 'mcp/resources/capabilities', portSlug: 'ts' })
     expect(links.find((entry) => entry.port === 'go')?.links).toEqual([{ href: '/pr-42/en/go/latest/mcp/resources/tmux-capabilities/' }])
     expect(links.find((entry) => entry.port === 'csharp')?.links).toEqual([{ href: '/pr-42/en/csharp/latest/mcp/resources/tmux_capabilities/' }])
-    expect(links.find((entry) => entry.port === 'py')?.links).toEqual([{ href: '/pr-42/en/py/stable/mcp/resources/', label: 'Resources overview' }])
-    expect(links.find((entry) => entry.port === 'julia')?.links).toEqual([{ href: '/pr-42/en/julia/latest/mcp/resources/', label: 'Resources overview' }])
+    expect(links.find((entry) => entry.port === 'py')?.links).toEqual([{ href: '/pr-42/en/py/stable/mcp/resources/', label: 'Resources overview', fallback: 'section' }])
+    expect(links.find((entry) => entry.port === 'julia')?.links).toEqual([{ href: '/pr-42/en/julia/latest/mcp/resources/', label: 'Resources overview', fallback: 'section' }])
   })
 
   it.each([
@@ -291,7 +306,7 @@ describe('matching pages in another port', () => {
   ])('offers an explicitly labelled section when %s has no counterpart', (pagePath, section) => {
     const links = pagePortLinks({ ...options, pagePath, portSlug: 'py' })
     expect(links.find((entry) => entry.port === 'py')?.links).toEqual([{ href: `/pr-42/en/py/v1.2.3/${pagePath}/` }])
-    expect(links.find((entry) => entry.port === 'ts')?.links).toEqual([{ href: `/pr-42/en/ts/latest/mcp/${section.toLowerCase()}/`, label: `${section} overview` }])
+    expect(links.find((entry) => entry.port === 'ts')?.links).toEqual([{ href: `/pr-42/en/ts/latest/mcp/${section.toLowerCase()}/`, label: `${section} overview`, fallback: 'section' }])
     expect(links.find((entry) => entry.port === 'powershell')?.links).toEqual([])
   })
 
@@ -370,5 +385,26 @@ describe('workspace documentation compatibility', () => {
     // The reference is its own section now, so there is nothing under
     // Internals for it to be lifted out of.
     expect(workspaceRedirects(['workspace/reference/builder'])).toEqual([])
+  })
+})
+
+
+it('marks only real fallback sections on Julia ownership and preserves the selected version and target defaults', () => {
+  const entries = [
+    { id: '_staged/julia/topics/ownership', data: { port: 'julia', route: 'topics/ownership' } },
+    { id: 'topics', data: {} },
+    { id: 'ports/ruby/topics/ownership', data: { port: 'ruby', route: 'topics/ownership' } },
+  ]
+  const links = pagePortLinks({ ...options, docs: entries, pagePath: 'topics/ownership', portSlug: 'julia' })
+  expect(links.find((entry) => entry.port === 'julia')?.links).toEqual([{ href: '/pr-42/en/julia/v1.2.3/topics/ownership/' }])
+  expect(links.find((entry) => entry.port === 'ruby')?.links).toEqual([{ href: '/pr-42/en/ruby/latest/topics/ownership/' }])
+  expect(links.find((entry) => entry.port === 'py')?.links).toEqual([
+    { href: '/pr-42/en/py/stable/topics/', label: 'Topics overview', fallback: 'section' },
+  ])
+  const withoutOverview = pagePortLinks({ ...options, docs: entries.filter((entry) => entry.id !== 'topics'),
+    pagePath: 'topics/ownership', portSlug: 'julia' })
+  expect(withoutOverview.find((entry) => entry.port === 'py')?.links).toEqual([])
+  expect(withoutOverview.find((entry) => entry.port === 'py')?.home).toEqual({
+    href: '/pr-42/en/py/stable/', label: 'Go to Python home',
   })
 })

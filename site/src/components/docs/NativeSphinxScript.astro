@@ -37,7 +37,7 @@
           const options = (links.length ? links : [undefined]).map((link) => {
             const option = document.createElement(link ? 'a' : 'div')
             for (const attribute of template.attributes) {
-              if (!['href', 'aria-disabled', 'aria-current', 'hidden', 'data-preserve-fragment'].includes(attribute.name)) option.setAttribute(attribute.name, attribute.value)
+              if (!['href', 'aria-label', 'title', 'aria-disabled', 'aria-current', 'hidden', 'data-preserve-fragment'].includes(attribute.name)) option.setAttribute(attribute.name, attribute.value)
             }
             option.append(...[...template.childNodes].map((node) => node.cloneNode(true)))
             option.querySelector('.doc-picker-check')?.remove()
@@ -51,7 +51,13 @@
               label.append(detail)
             }
             option.dataset.match = `${port} ${template.dataset.portName} ${link?.label ?? ''}`
-            if (link) option.setAttribute('href', link.href)
+            if (link) {
+              option.setAttribute('href', link.href)
+              if (link.label) {
+                option.setAttribute('aria-label', `${template.dataset.portName}: ${link.label}`)
+                option.setAttribute('title', `${template.dataset.portName}: ${link.label}`)
+              }
+            }
             else if (template.dataset.homeHref) {
               const home = document.createElement('a')
               home.className = 'doc-picker-home'
