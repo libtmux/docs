@@ -18,21 +18,29 @@ export function createLinkPreviewPolicy() {
       return target(url.href, new URL(base).origin) ? link : undefined
     } catch { return undefined }
   }
-  return { target, candidate }
+  function mark(link: HTMLAnchorElement) {
+    link.dataset.linkPreview = ''
+    // Empty titles also suppress tooltips inherited from enclosing elements.
+    // Keep the visible name, explicit accessible label, and real link destination.
+    link.title = ''
+    for (const child of link.querySelectorAll('[title]')) child.removeAttribute('title')
+  }
+  return { target, candidate, mark }
 }
 
-export const { target: linkPreviewTarget, candidate: linkPreviewCandidate } = createLinkPreviewPolicy()
+export const { target: linkPreviewTarget, candidate: linkPreviewCandidate, mark: markLinkPreview } = createLinkPreviewPolicy()
 
 /** Serialized into the shared head; keep dependencies in the supplied policy. */
 export function initializeLinkPreviewPaint(policy: ReturnType<typeof createLinkPreviewPolicy>) {
   if (typeof HTMLElement.prototype.showPopover !== 'function') return
   function mark(root: Document | Element, base: string) {
-    const links = root instanceof Element && root.matches('a[href]')
-      ? [root as HTMLAnchorElement, ...root.querySelectorAll<HTMLAnchorElement>('a[href]')]
+    const enclosing = root instanceof Element ? root.closest<HTMLAnchorElement>('a[href]') : null
+    const links = enclosing
+      ? [enclosing, ...root.querySelectorAll<HTMLAnchorElement>('a[href]')]
       : root.querySelectorAll<HTMLAnchorElement>('a[href]')
     for (const link of links) {
       if (link.closest('.api-index-card')) delete link.dataset.linkPreview
-      else if (policy.candidate(link, base)) link.dataset.linkPreview = ''
+      else if (policy.candidate(link, base)) policy.mark(link)
     }
   }
   if (document.documentElement.hasAttribute('data-reference-previews')) {

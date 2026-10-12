@@ -776,7 +776,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                       <span><a class="api-member-link" href={hrefFor(m)}>{m.name}</a>{m.type && <span class="api-member-type">: <ApiType type={m.type} index={index} context={m} /></span>}</span>
                       <span class="api-member-badges">
                         <ApiBadge label={m.kind} variant="kind" value={m.kind} />
-                        {m.inheritedFrom && <a class="api-badge api-badge--mod" href={apiGlossaryHref('inherited', Astro.url.pathname)} title={`Inherited from ${m.inheritedFrom}`}>inherited</a>}
+                        {m.inheritedFrom && <a class="api-badge api-badge--mod" href={apiGlossaryHref('inherited', Astro.url.pathname)} title={`Inherited from ${m.inheritedFrom}`} aria-description={`Inherited from ${m.inheritedFrom}`} data-preview-context={`Inherited from ${m.inheritedFrom}.`}>inherited</a>}
                       </span>
                       {m.doc?.summary && (
                         <span class="api-member-summary">
@@ -802,7 +802,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                       <a class="api-member-link" href={hrefFor(m)}>{m.name}</a>
                       <span class="api-member-badges">
                         <ApiBadge label={m.kind} variant="kind" value={m.kind} />
-                        <a class="api-badge api-badge--mod" href={apiGlossaryHref('inherited', Astro.url.pathname)} title={`Inherited from ${m.inheritedFrom}`}>inherited</a>
+                        <a class="api-badge api-badge--mod" href={apiGlossaryHref('inherited', Astro.url.pathname)} title={`Inherited from ${m.inheritedFrom}`} aria-description={`Inherited from ${m.inheritedFrom}`} data-preview-context={`Inherited from ${m.inheritedFrom}.`}>inherited</a>
                       </span>
                       {m.doc?.summary && (
                         <span class="api-member-summary">

@@ -79,12 +79,28 @@ it.each([
   expect(marked('excluded')).toBe(false)
 })
 
-it('retains the existing server-rendered glossary badge marker', async () => {
+it('replaces native glossary tooltips while preserving the link name and destination', async () => {
   initializeLinkPreviewPaint(policy())
-  append('<a id="badge" class="api-badge" href="../glossary/#struct" data-link-preview title="struct"><span class="api-badge__label">struct</span></a>')
+  append('<span title="Enclosing tooltip"><a id="badge" class="api-badge" href="../glossary/#struct" data-link-preview title="struct" aria-label="Read the struct definition"><span class="api-badge__label" title="struct">struct</span></a></span>')
   await parsed()
   expect(marked('badge')).toBe(true)
-  expect(anchor('badge').getAttribute('title')).toBe('struct')
+  expect(anchor('badge').getAttribute('title')).toBe('')
+  expect(anchor('badge').querySelector('[title]')).toBeNull()
+  expect(anchor('badge').textContent).toBe('struct')
+  expect(anchor('badge').getAttribute('aria-label')).toBe('Read the struct definition')
+  expect(anchor('badge').getAttribute('href')).toBe('../glossary/#struct')
+  anchor('badge').insertAdjacentHTML('beforeend', '<span title="Later parsed child"> extra</span>')
+  await parsed()
+  expect(anchor('badge').querySelector('[title]')).toBeNull()
+  expect(anchor('badge').parentElement!.getAttribute('title')).toBe('Enclosing tooltip')
+})
+
+it('retains native tooltips on links without previews', async () => {
+  initializeLinkPreviewPaint(policy())
+  append('<nav><a id="nav" href="../libtmux-from_env/" title="Navigation">from_env</a></nav><div class="api-index-card"><a id="card" href="../libtmux-from_env/" title="Card">from_env</a></div>')
+  await parsed()
+  expect(anchor('nav').getAttribute('title')).toBe('Navigation')
+  expect(anchor('card').getAttribute('title')).toBe('Card')
 })
 
 it('drains and disconnects the parser observer at DOMContentLoaded', async () => {
@@ -104,11 +120,12 @@ it('initializes an API document before swapping from NativeShell, resolving its 
   await parsed(); expect(marked('native')).toBe(false)
   const next = win.document.implementation.createHTMLDocument()
   next.documentElement.setAttribute('data-reference-previews', '')
-  next.body.innerHTML = '<a id="incoming" href="../libtmux-from_env/">from_env</a><a id="fragment" href="#member">fragment</a>'
+  next.body.innerHTML = '<a id="incoming" href="../libtmux-from_env/" title="from_env">from_env</a><a id="fragment" href="#member">fragment</a>'
   const event = new win.Event('astro:before-swap')
   Object.assign(event, { newDocument: next, to: new URL('https://libtmux.org/en/julia/latest/reference/libtmux-server/') })
   win.document.dispatchEvent(event)
   expect(next.getElementById('incoming')!.hasAttribute('data-link-preview')).toBe(true)
+  expect(next.getElementById('incoming')!.getAttribute('title')).toBe('')
   expect(next.getElementById('fragment')!.hasAttribute('data-link-preview')).toBe(false)
   expect(win.document.getElementById('incoming')).toBeNull()
 })
@@ -116,8 +133,9 @@ it('initializes an API document before swapping from NativeShell, resolving its 
 it('preserves unsupported-popover fallback', async () => {
   Object.defineProperty(win.HTMLElement.prototype, 'showPopover', { value: undefined, configurable: true })
   initializeLinkPreviewPaint(policy())
-  append('<a id="ordinary" href="../libtmux-from_env/">ordinary</a>')
+  append('<a id="ordinary" href="../libtmux-from_env/" title="Ordinary fallback">ordinary</a>')
   await parsed(); expect(marked('ordinary')).toBe(false)
+  expect(anchor('ordinary').getAttribute('title')).toBe('Ordinary fallback')
 })
 
 it('runs the exact self-contained serialized initializer without module globals', async () => {

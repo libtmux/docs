@@ -1,4 +1,4 @@
-import { Window, type HTMLAnchorElement } from 'happy-dom'
+import { Window, type HTMLAnchorElement, type HTMLButtonElement, type HTMLElement } from 'happy-dom'
 import { readFileSync, realpathSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
@@ -104,7 +104,7 @@ beforeEach(() => {
   vi.useFakeTimers()
   opened = false
   win.document.body.innerHTML = `<a id="a" href="${prefix}-a/">a</a><a id="b" href="${prefix}-b/">b</a>
-    <span id="reference-link-preview"><code data-preview-title></code><span data-preview-description></span>
+    <span id="reference-link-preview"><code data-preview-title></code><button data-preview-expand hidden aria-expanded="false">Show full name</button><span data-preview-description></span>
     <span data-preview-detail></span><code data-preview-signature></code><a data-preview-open></a><button data-preview-close>Close</button></span>`
   const panel = win.document.getElementById('reference-link-preview')!
   Object.assign(panel, { showPopover: () => { opened = true }, hidePopover: () => { opened = false } })
@@ -128,6 +128,59 @@ const title = () => win.document.querySelector('[data-preview-title]')!.textCont
 const escape = () => win.document.dispatchEvent(new win.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
 
 describe('preview lifecycle', () => {
+  it('keeps the destructor name and native signature intact with meaningful title breaks', async () => {
+    const name = 'libtmux::CommandOperation::~CommandOperation'
+    const signature = '~CommandOperation();'
+    requests.mockResolvedValueOnce(new Response(JSON.stringify({ schema: 1, title: name,
+      description: '', signature, href: `${prefix}-a/` })))
+    hover(); await settle()
+    const panel = win.document.getElementById('reference-link-preview')!
+    expect(title()).toBe(name)
+    expect(panel.getAttribute('aria-label')).toBe(`${name} preview`)
+    expect(panel.querySelector('[data-preview-title]')!.getAttribute('title')).toBe(name)
+    expect(panel.querySelectorAll('[data-preview-title] wbr').length).toBeGreaterThan(0)
+    expect(panel.querySelector('[data-preview-signature]')!.textContent).toBe(signature)
+    expect(panel.querySelector('[data-preview-expand]')!.hasAttribute('hidden')).toBe(true)
+  })
+
+  it('expands long qualified names in place without changing full identity, signature or destination', async () => {
+    const name = 'io.github.libtmux.workspace.WorkspaceBuilder.applyWorkspace'
+    const signature = 'public WorkspaceResult applyWorkspace(WorkspacePlan plan);'
+    requests.mockResolvedValueOnce(new Response(JSON.stringify({ schema: 1, title: name,
+      description: '', signature, href: `${prefix}-a/` })))
+    hover(); await settle()
+    const panel = win.document.getElementById('reference-link-preview')!
+    const expand = panel.querySelector<HTMLButtonElement>('[data-preview-expand]')!
+    const short = title()
+    expect(short).not.toBe(name)
+    expect(short).toContain('applyWorkspace')
+    expect(expand.hidden).toBe(false)
+    expand.click()
+    expect(title()).toBe(name)
+    expect(expand.getAttribute('aria-expanded')).toBe('true')
+    expect(expand.textContent).toBe('Collapse')
+    expect(panel.getAttribute('aria-label')).toBe(`${name} preview`)
+    expect(panel.querySelector('[data-preview-signature]')!.textContent).toBe(signature)
+    expect(panel.querySelector('[data-preview-open]')!.getAttribute('href')).toBe(`https://libtmux.org${prefix}-a/`)
+    expand.click()
+    expect(title()).toBe(short)
+    expect(expand.getAttribute('aria-expanded')).toBe('false')
+    escape(); hover('b'); await settle()
+    expect(title()).toBe('b')
+    expect(expand.hidden).toBe(true)
+    expect(expand.getAttribute('aria-expanded')).toBe('false')
+  })
+
+  it('treats punctuation in a preview name as text when adding break opportunities', async () => {
+    const name = 'libtmux::Value<Other> & Value<Script>'
+    requests.mockResolvedValueOnce(new Response(JSON.stringify({ schema: 1, title: name,
+      description: '', href: `${prefix}-a/` })))
+    hover(); await settle()
+    expect(title()).toBe(name)
+    expect(win.document.querySelector('[data-preview-title] script')).toBeNull()
+    expect(Array.from(win.document.querySelector('[data-preview-title]')!.children).every((node) => node.tagName === 'WBR')).toBe(true)
+  })
+
   it('marks eligible previews without eagerly fetching their contents', () => {
     expect(link().hasAttribute('data-link-preview')).toBe(true)
     expect(requests).not.toHaveBeenCalled()
@@ -150,6 +203,47 @@ describe('preview lifecycle', () => {
     expect(click.defaultPrevented).toBe(false)
     expect(opened).toBe(false)
     expect(requests).not.toHaveBeenCalled()
+  })
+  it('suppresses duplicate native tooltips without changing keyboard preview semantics', async () => {
+    link().title = 'Native tooltip'
+    link().setAttribute('aria-label', 'Read a')
+    initLinkPreviews()
+    expect(link().title).toBe('')
+    expect(link().textContent).toBe('a')
+    expect(link().getAttribute('aria-label')).toBe('Read a')
+    expect(link().getAttribute('href')).toBe(`${prefix}-a/`)
+    link().focus(); await settle()
+    expect(opened).toBe(true)
+    expect(link().getAttribute('aria-details')).toBe('reference-link-preview')
+    expect(win.document.activeElement).toBe(link())
+    escape()
+    expect(opened).toBe(false)
+    expect(link().hasAttribute('aria-details')).toBe(false)
+    expect(win.document.activeElement).toBe(link())
+    expect(link().title).toBe('')
+    link('b').title = 'Dynamically added tooltip'
+    hover('b'); await settle()
+    expect(opened).toBe(true)
+    expect(link('b').title).toBe('')
+  })
+  it('preserves inherited origins as accessible descriptions and visible preview context', async () => {
+    const origin = 'Inherited from Base<Member>'
+    link().title = origin
+    link().setAttribute('aria-description', origin)
+    link().dataset.previewContext = `${origin}.`
+    initLinkPreviews()
+    expect(link().title).toBe('')
+    expect(link().getAttribute('aria-description')).toBe(origin)
+    requests.mockResolvedValueOnce(new Response(JSON.stringify({ schema: 1, title: 'inherited',
+      description: 'A member declared by a base type.', detail: 'Follow the declaration for its signature.', href: `${prefix}-a/` })))
+    hover(); await settle()
+    const detail = win.document.querySelector<HTMLElement>('[data-preview-detail]')!
+    expect(detail.hidden).toBe(false)
+    expect(detail.textContent).toBe(`${origin}. Follow the declaration for its signature.`)
+    expect(detail.children).toHaveLength(0)
+    escape(); hover('b'); await settle()
+    expect(detail.hidden).toBe(true)
+    expect(detail.textContent).toBe('')
   })
   it('loads on intent, caches repeated requests, and ignores touch hover', async () => {
     expect(requests).not.toHaveBeenCalled()

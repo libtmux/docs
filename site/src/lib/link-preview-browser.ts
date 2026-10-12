@@ -1,5 +1,7 @@
 import type { LinkPreview } from './link-preview'
-import { linkPreviewTarget, linkPreviewCandidate } from './link-preview-paint'
+import { linkPreviewTarget, linkPreviewCandidate, markLinkPreview } from './link-preview-paint'
+import { abbreviateNamespace } from './api-labels'
+import { wordBreak } from './word-break'
 export { linkPreviewTarget } from './link-preview-paint'
 
 const cache = new Map<string, LinkPreview>()
@@ -38,6 +40,17 @@ export function initLinkPreviews() {
   let timer: ReturnType<typeof setTimeout> | undefined
   let closeTimer: ReturnType<typeof setTimeout> | undefined
   let pinned = false, restoringFocus = false, shown = false
+  let fullTitle = '', shortTitle = ''
+  const title = panel.querySelector<HTMLElement>('[data-preview-title]')!
+  const expandTitle = panel.querySelector<HTMLButtonElement>('[data-preview-expand]')!
+  const renderTitle = (expanded: boolean) => {
+    title.replaceChildren(...wordBreak(expanded ? fullTitle : shortTitle).flatMap((part, index) =>
+      index ? [document.createElement('wbr'), document.createTextNode(part)] : [document.createTextNode(part)]))
+    title.title = fullTitle
+    expandTitle.hidden = fullTitle === shortTitle
+    expandTitle.setAttribute('aria-expanded', String(expanded))
+    expandTitle.textContent = expanded ? 'Collapse' : 'Show full name'
+  }
   const close = (restoreFocus = false) => {
     clearTimeout(timer); clearTimeout(closeTimer); intent++
     const trigger = current
@@ -57,7 +70,7 @@ export function initLinkPreviews() {
       delete link.dataset.linkPreview
       continue
     }
-    if (candidate(link)) link.dataset.linkPreview = ''
+    if (candidate(link)) markLinkPreview(link)
   }
   const load = (endpoint: string) => {
     if (cache.has(endpoint)) return Promise.resolve(cache.get(endpoint)!)
@@ -78,6 +91,7 @@ export function initLinkPreviews() {
   const show = async (link: HTMLAnchorElement, focus = false) => {
     const target = linkPreviewTarget(link.href, location.origin)
     if (!target) return
+    markLinkPreview(link)
     close()
     const ticket = ++intent
     current = link; pinned = focus
@@ -90,11 +104,14 @@ export function initLinkPreviews() {
       const destination = new URL(preview.href, location.origin)
       if (destination.origin !== location.origin) throw new Error('Invalid destination')
       if (target.url.hash) destination.hash = target.url.hash
-      panel.querySelector('[data-preview-title]')!.textContent = preview.title
+      fullTitle = preview.title
+      shortTitle = abbreviateNamespace(fullTitle)
+      renderTitle(false)
       panel.querySelector('[data-preview-description]')!.textContent = preview.description || 'Read the reference for this declaration.'
       for (const field of ['detail', 'signature'] as const) {
         const element = panel.querySelector<HTMLElement>(`[data-preview-${field}]`)!
-        element.textContent = preview[field] ?? ''; element.hidden = !preview[field]
+        const text = field === 'detail' ? [link.dataset.previewContext, preview.detail].filter(Boolean).join(' ') : preview.signature
+        element.textContent = text ?? ''; element.hidden = !text
       }
       const open = panel.querySelector<HTMLAnchorElement>('[data-preview-open]')!
       open.href = destination.href
@@ -150,6 +167,10 @@ export function initLinkPreviews() {
   // Intercept glossary activation before Astro's document-level navigation handler.
   }, { signal, capture: true })
   panel.querySelector('[data-preview-close]')!.addEventListener('click', () => close(true), { signal })
+  expandTitle.addEventListener('click', () => {
+    renderTitle(expandTitle.getAttribute('aria-expanded') !== 'true')
+    place()
+  }, { signal })
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && (current || panel.matches(':popover-open'))) { event.preventDefault(); close(pinned) }
   }, { signal, capture: true })

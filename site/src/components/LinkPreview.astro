@@ -12,7 +12,8 @@ const { id = 'reference-link-preview', title = 'Reference preview', description 
 ---
 <span id={id} popover="auto" role="dialog" aria-label={title}
   class:list={['reference-link-preview not-prose', className]} data-pagefind-ignore="all">
-  <span class="reference-link-preview__heading"><code data-preview-title>{title}</code><button type="button" data-preview-close popovertarget={id} popovertargetaction="hide" aria-label="Close preview">×</button></span>
+  <span class="reference-link-preview__heading"><code id={`${id}-title`} data-preview-title>{title}</code><button type="button" data-preview-close popovertarget={id} popovertargetaction="hide" aria-label="Close preview">×</button></span>
+  <button type="button" data-preview-expand hidden aria-expanded="false" aria-controls={`${id}-title`}>Show full name</button>
   <span data-preview-description>{description}</span>
   <span data-preview-detail hidden></span>
   <code data-preview-signature hidden></code>
@@ -27,7 +28,7 @@ const { id = 'reference-link-preview', title = 'Reference preview', description 
   }
   .reference-link-preview {
     position: fixed; inset: 0; margin: auto; padding: 1rem;
-    width: min(25rem, calc(100vw - 2rem)); max-height: min(28rem, calc(100dvh - 2rem));
+    box-sizing: border-box; width: min(40rem, calc(100vw - 2rem)); max-height: min(28rem, calc(100dvh - 2rem));
     overflow: auto; border: 1px solid var(--color-background-border); border-radius: .5rem;
     background: var(--color-background-secondary); color: var(--color-foreground-primary);
     box-shadow: 0 6px 24px rgb(0 0 0 / 22%);
@@ -35,8 +36,10 @@ const { id = 'reference-link-preview', title = 'Reference preview', description 
   }
   .reference-link-preview [hidden] { display: none; }
   .reference-link-preview__heading { display: flex; align-items: baseline; gap: .75rem; margin-bottom: .65rem; }
+  .reference-link-preview__heading code { flex: 1; min-width: 0; }
   .reference-link-preview code { font-family: var(--font-mono, ui-monospace, monospace); }
-  .reference-link-preview__heading button { margin-left: auto; padding: .1rem .4rem; cursor: pointer; }
+  .reference-link-preview__heading button { flex: none; margin-left: auto; padding: .1rem .4rem; cursor: pointer; }
+  .reference-link-preview [data-preview-expand] { margin-bottom: .65rem; color: var(--color-link); text-decoration: underline; cursor: pointer; }
   .reference-link-preview [data-preview-description], .reference-link-preview [data-preview-detail] { display: block; margin-bottom: .65rem; }
   .reference-link-preview [data-preview-detail][hidden] { display: none; }
   .reference-link-preview [data-preview-signature] { font: .8125rem/1.5 var(--font-mono, ui-monospace, monospace); white-space: pre-wrap; padding: .5rem; margin-block: .75rem; background: var(--color-background-primary); border: 1px solid var(--color-background-border); border-radius: .25rem; }
