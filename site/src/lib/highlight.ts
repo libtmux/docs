@@ -27,12 +27,32 @@ let instance: Promise<Highlighter> | undefined
  * A grammar that is never used is a megabyte of startup for nothing.
  */
 const LANGS = [
-  'python', 'ruby', 'lua', 'rust', 'ts', 'js', 'bash', 'console', 'json', 'yaml', 'text',
+  'python',
+  'ruby',
+  'lua',
+  'rust',
+  'ts',
+  'js',
+  'bash',
+  'console',
+  'json',
+  'yaml',
+  'text',
   // The install widget's build-file panels: a Gradle script, a Maven POM
   // fragment, a Package.swift dependency and a CMakeLists block. Three of the
   // eight ports cannot be installed from a command line at all, so without
   // these their only install instructions render as flat grey.
-  'kotlin', 'scala', 'fsharp', 'csharp', 'xml', 'swift', 'cmake', 'toml', 'nix', 'powershell', 'julia',
+  'kotlin',
+  'scala',
+  'fsharp',
+  'csharp',
+  'xml',
+  'swift',
+  'cmake',
+  'toml',
+  'nix',
+  'powershell',
+  'julia',
 ] as const
 
 /**
@@ -46,15 +66,18 @@ const THEMES = { light: 'github-light', dark: 'github-dark' }
 
 /** Give the dynamic prompt tokens the same palette as the code highlighter. */
 export function promptThemeRules(): string {
-  return shellThemes().map((theme) => {
-    const foreground = theme.colors?.['editor.foreground']
-    const background = theme.colors?.['editor.background']
-    if (!foreground || !background) throw new Error(`Prompt theme ${theme.name} has no editor colors`)
-    const token = (scope: string) => [...theme.tokenColors].reverse().find((rule) =>
-      (Array.isArray(rule.scope) ? rule.scope : [rule.scope]).includes(scope),
-    )?.settings.foreground ?? foreground
-    const selector = theme.type === 'dark' ? 'html[data-theme-mode="dark"]' : 'html:not([data-theme-mode="dark"])'
-    return `${selector} .lm-agent-prompt {
+  return shellThemes()
+    .map((theme) => {
+      const foreground = theme.colors?.['editor.foreground']
+      const background = theme.colors?.['editor.background']
+      if (!foreground || !background) throw new Error(`Prompt theme ${theme.name} has no editor colors`)
+      const token = (scope: string) =>
+        [...theme.tokenColors]
+          .reverse()
+          .find((rule) => (Array.isArray(rule.scope) ? rule.scope : [rule.scope]).includes(scope))?.settings
+          .foreground ?? foreground
+      const selector = theme.type === 'dark' ? 'html[data-theme-mode="dark"]' : 'html:not([data-theme-mode="dark"])'
+      return `${selector} .lm-agent-prompt {
       --lm-agent-prompt-code-bg: ${background};
       --lm-agent-prompt-code-fg: ${foreground};
       --lm-agent-prompt-url: ${token('support')};
@@ -63,7 +86,8 @@ export function promptThemeRules(): string {
       --lm-agent-prompt-key: ${token('entity')};
       --lm-agent-prompt-marker: ${token('keyword')};
     }`
-  }).join('\n')
+    })
+    .join('\n')
 }
 
 async function highlighter(): Promise<Highlighter> {
@@ -101,13 +125,17 @@ export async function highlight(code: string, lang: string): Promise<string | un
       themes: THEMES,
       defaultColor: false,
       cssVariablePrefix: '--shiki-',
-      transformers: session ? [{
-        line(node, line) {
-          const { kind, text } = session[line - 1] ?? {}
-          if (kind === 'prompt') node.children.unshift(promptElement())
-          else if (kind === 'output') node.children = [{ type: 'text', value: text ?? '' }]
-        },
-      }] : [],
+      transformers: session
+        ? [
+            {
+              line(node, line) {
+                const { kind, text } = session[line - 1] ?? {}
+                if (kind === 'prompt') node.children.unshift(promptElement())
+                else if (kind === 'output') node.children = [{ type: 'text', value: text ?? '' }]
+              },
+            },
+          ]
+        : [],
     })
   } catch {
     return undefined
@@ -132,9 +160,37 @@ export async function highlight(code: string, lang: string): Promise<string | un
  * there.
  */
 const EC_LANGS = new Set([
-  'python', 'ruby', 'lua', 'rust', 'ts', 'tsx', 'js', 'jsx', 'java', 'kotlin', 'scala', 'fsharp', 'swift',
-  'csharp', 'cpp', 'c', 'go', 'bash', 'shell', 'console', 'json', 'yaml',
-  'toml', 'xml', 'diff', 'text', 'tmux-usage', 'tmux-shell', 'tmux-config', 'powershell', 'julia',
+  'python',
+  'ruby',
+  'lua',
+  'rust',
+  'ts',
+  'tsx',
+  'js',
+  'jsx',
+  'java',
+  'kotlin',
+  'scala',
+  'fsharp',
+  'swift',
+  'csharp',
+  'cpp',
+  'c',
+  'go',
+  'bash',
+  'shell',
+  'console',
+  'json',
+  'yaml',
+  'toml',
+  'xml',
+  'diff',
+  'text',
+  'tmux-usage',
+  'tmux-shell',
+  'tmux-config',
+  'powershell',
+  'julia',
 ])
 
 const EC_ALIASES: Record<string, string> = {

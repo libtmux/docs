@@ -26,21 +26,34 @@ describe('PowerShell syntax layout', () => {
 
   it('preserves every native parameter set and its parameter, type and common-parameter links', () => {
     let count = 0
-    for (const symbol of model.symbols) for (const signature of symbol.signatures) {
-      if (!signature.raw) continue
-      const text = nativeSignatureText(symbol, signature, 'powershell')
-      expect(text.split('\n')[0], symbol.id).toBe(symbol.name)
-      expect(text.replace(/\s+/g, ' '), symbol.id).toBe(signature.raw.replace(/\s+/g, ' '))
-      const params = signature.params.filter((parameter) => !parameter.binding?.common)
-      const common = signature.params.some((parameter) => parameter.binding?.common) ? 1 : 0
-      expect(text.split('\n'), symbol.id).toHaveLength(1 + params.length + common)
-      expect(text.split('\n').slice(1).every((line) => /^ {4}\S/.test(line)), symbol.id).toBe(true)
-      const linked = (value: string) => index.linkType(value, symbol, signature).filter((span) => span.link).map((span) => ({ text: span.text, href: span.link!.href }))
-      expect(linked(text), symbol.id).toEqual(linked(signature.raw))
-      count++
-    }
+    for (const symbol of model.symbols)
+      for (const signature of symbol.signatures) {
+        if (!signature.raw) continue
+        const text = nativeSignatureText(symbol, signature, 'powershell')
+        expect(text.split('\n')[0], symbol.id).toBe(symbol.name)
+        expect(text.replace(/\s+/g, ' '), symbol.id).toBe(signature.raw.replace(/\s+/g, ' '))
+        const params = signature.params.filter((parameter) => !parameter.binding?.common)
+        const common = signature.params.some((parameter) => parameter.binding?.common) ? 1 : 0
+        expect(text.split('\n'), symbol.id).toHaveLength(1 + params.length + common)
+        expect(
+          text
+            .split('\n')
+            .slice(1)
+            .every((line) => /^ {4}\S/.test(line)),
+          symbol.id,
+        ).toBe(true)
+        const linked = (value: string) =>
+          index
+            .linkType(value, symbol, signature)
+            .filter((span) => span.link)
+            .map((span) => ({ text: span.text, href: span.link!.href }))
+        expect(linked(text), symbol.id).toEqual(linked(signature.raw))
+        count++
+      }
     expect(count).toBeGreaterThan(60)
-    const links = index.linkType(nativeSignatureText(invoke, invoke.signatures[0], 'powershell'), invoke, invoke.signatures[0]).filter((span) => span.link)
+    const links = index
+      .linkType(nativeSignatureText(invoke, invoke.signatures[0], 'powershell'), invoke, invoke.signatures[0])
+      .filter((span) => span.link)
     expect(links.find((span) => span.text === 'Arguments')?.link?.href).toContain('.parameter.Arguments')
     expect(links.find((span) => span.text === 'CommonParameters')?.link?.href).toContain('learn.microsoft.com')
   })
@@ -48,7 +61,9 @@ describe('PowerShell syntax layout', () => {
   it('exports the same multiline syntax to Markdown and leaves other native languages unchanged', () => {
     const text = nativeSignatureText(invoke, invoke.signatures[0], 'powershell')
     const markdown = symbolMarkdown({ model, symbol: invoke, index })
-    const code = fromMarkdown(markdown).children.filter((node) => node.type === 'code').map((node) => node.value)
+    const code = fromMarkdown(markdown)
+      .children.filter((node) => node.type === 'code')
+      .map((node) => node.value)
     expect(code).toContain(text)
     for (const language of ['csharp', 'fsharp', 'julia', 'c']) {
       expect(nativeSignatureText(invoke, invoke.signatures[0], language)).toBe(invoke.signatures[0].raw)

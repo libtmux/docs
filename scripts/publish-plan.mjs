@@ -41,14 +41,19 @@ function versionOf(tag, port) {
  */
 export function plan(inputs, catalog, lookup, versions) {
   const dispatchable = catalog.filter((port) => port.docsDispatch)
-  const wanted = inputs.ports.trim() === 'all'
-    ? dispatchable
-    : inputs.ports.split(',').map((slug) => slug.trim()).filter(Boolean).map((slug) => {
-      const port = catalog.find((candidate) => candidate.slug === slug)
-      if (!port) fail(`unknown port ${slug}`)
-      if (!dispatchable.includes(port)) fail(`${slug} has no dispatchable docs workflow`)
-      return port
-    })
+  const wanted =
+    inputs.ports.trim() === 'all'
+      ? dispatchable
+      : inputs.ports
+          .split(',')
+          .map((slug) => slug.trim())
+          .filter(Boolean)
+          .map((slug) => {
+            const port = catalog.find((candidate) => candidate.slug === slug)
+            if (!port) fail(`unknown port ${slug}`)
+            if (!dispatchable.includes(port)) fail(`${slug} has no dispatchable docs workflow`)
+            return port
+          })
   if (wanted.length === 0) fail('no ports selected')
 
   const ref = inputs.ref.trim()
@@ -76,26 +81,54 @@ export function plan(inputs, catalog, lookup, versions) {
     }
     if (!sources.has(port.repo)) sources.set(port.repo, lookup(port.repo))
     const { defaultBranch, tags } = sources.get(port.repo)
-    const base = { port: port.slug, repo: port.repo, repoOwner: repository[1], repoName: repository[2],
-      workflow: dispatch.workflow, dispatchRef: dispatch.ref ?? defaultBranch, language: dispatch.language ?? '' }
+    const base = {
+      port: port.slug,
+      repo: port.repo,
+      repoOwner: repository[1],
+      repoName: repository[2],
+      workflow: dispatch.workflow,
+      dispatchRef: dispatch.ref ?? defaultBranch,
+      language: dispatch.language ?? '',
+    }
     const releases = tags.filter((tag) => versions.releaseTag(tag, port) !== null)
     if (ref === 'latest') {
       const stable = releases.some((tag) => !versions.packageVersionIsPrerelease(versionOf(tag, port), port.tagGrammar))
-      entries.push({ ...base, sourceRef: defaultBranch, version: 'latest', kind: 'trunk', isDefault: !stable, resolvesTo: '' })
+      entries.push({
+        ...base,
+        sourceRef: defaultBranch,
+        version: 'latest',
+        kind: 'trunk',
+        isDefault: !stable,
+        resolvesTo: '',
+      })
     } else if (ref === 'release') {
       const tag = versions.newestPublishedTag(releases, port, null)
       if (!tag) continue
       const version = versionOf(tag, port)
       const alias = versions.packageVersionIsPrerelease(version, port.tagGrammar) ? 'next' : 'stable'
       entries.push({ ...base, sourceRef: tag, version, kind: 'tag', isDefault: false, resolvesTo: '' })
-      entries.push({ ...base, sourceRef: tag, version: alias, kind: 'alias', isDefault: alias === 'stable', resolvesTo: version })
+      entries.push({
+        ...base,
+        sourceRef: tag,
+        version: alias,
+        kind: 'alias',
+        isDefault: alias === 'stable',
+        resolvesTo: version,
+      })
     } else {
       const kind = inputs.versionKind
       if (!KINDS.includes(kind)) fail(`an exact ref needs version-kind trunk, tag or alias, not ${kind || 'auto'}`)
       if (!SLUG.test(inputs.version ?? '')) fail(`invalid version slug: ${inputs.version ?? ''}`)
       if (kind === 'alias' && !inputs.resolvesTo) fail('an alias requires resolves-to')
       if (kind !== 'alias' && inputs.resolvesTo) fail('resolves-to applies only to aliases')
-      entries.push({ ...base, sourceRef: ref, version: inputs.version, kind, isDefault: Boolean(inputs.isDefault), resolvesTo: inputs.resolvesTo ?? '' })
+      entries.push({
+        ...base,
+        sourceRef: ref,
+        version: inputs.version,
+        kind,
+        isDefault: Boolean(inputs.isDefault),
+        resolvesTo: inputs.resolvesTo ?? '',
+      })
     }
   }
   return entries
@@ -103,8 +136,10 @@ export function plan(inputs, catalog, lookup, versions) {
 
 /** The Markdown summary of a plan. */
 export function summary(entries, dryRun) {
-  const rows = entries.map((e) =>
-    `| ${e.port} | \`${e.repo}/${e.workflow}@${e.dispatchRef}\` | \`${e.sourceRef}\` | ${e.version} | ${e.kind}${e.resolvesTo ? ` → ${e.resolvesTo}` : ''} | ${e.isDefault ? 'yes' : ''} |`)
+  const rows = entries.map(
+    (e) =>
+      `| ${e.port} | \`${e.repo}/${e.workflow}@${e.dispatchRef}\` | \`${e.sourceRef}\` | ${e.version} | ${e.kind}${e.resolvesTo ? ` → ${e.resolvesTo}` : ''} | ${e.isDefault ? 'yes' : ''} |`,
+  )
   return [
     `### ${dryRun ? 'Dry run: would publish' : 'Publishing'} ${entries.length} version(s)`,
     '',
@@ -121,7 +156,9 @@ function lookup(repo) {
   const defaultBranch = /^ref: refs\/heads\/(\S+)\s+HEAD$/m.exec(head)?.[1]
   if (!defaultBranch) fail(`cannot read ${repo}'s default branch`)
   const tags = execFileSync('git', ['ls-remote', '--tags', '--refs', url], { encoding: 'utf8' })
-    .split('\n').filter(Boolean).map((line) => line.replace(/^.*refs\/tags\//, ''))
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => line.replace(/^.*refs\/tags\//, ''))
   return { defaultBranch, tags }
 }
 
@@ -129,14 +166,19 @@ async function main() {
   const env = process.env
   const { PORTS } = await import(resolve(root, 'site/src/lib/ports.ts'))
   const versions = await import(resolve(root, 'site/src/lib/versions.ts'))
-  const entries = plan({
-    ports: env.INPUT_PORTS ?? 'all',
-    ref: env.INPUT_REF ?? 'latest',
-    version: env.INPUT_VERSION ?? '',
-    versionKind: env.INPUT_KIND ?? 'auto',
-    isDefault: env.INPUT_DEFAULT === 'true',
-    resolvesTo: env.INPUT_RESOLVES_TO ?? '',
-  }, PORTS, lookup, versions)
+  const entries = plan(
+    {
+      ports: env.INPUT_PORTS ?? 'all',
+      ref: env.INPUT_REF ?? 'latest',
+      version: env.INPUT_VERSION ?? '',
+      versionKind: env.INPUT_KIND ?? 'auto',
+      isDefault: env.INPUT_DEFAULT === 'true',
+      resolvesTo: env.INPUT_RESOLVES_TO ?? '',
+    },
+    PORTS,
+    lookup,
+    versions,
+  )
   process.stdout.write(`${JSON.stringify({ include: entries })}\n`)
   process.stderr.write(summary(entries, env.INPUT_DRY_RUN !== 'false'))
 }

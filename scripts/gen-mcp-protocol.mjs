@@ -8,29 +8,45 @@ import { PORTS, productAvailable } from '../site/src/lib/ports.ts'
 import { captureProtocol } from './lib/mcp-protocol.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const expand = (path) => path.startsWith('~/') ? join(homedir(), path.slice(2)) : path
+const expand = (path) => (path.startsWith('~/') ? join(homedir(), path.slice(2)) : path)
 const only = process.argv.includes('--port') ? process.argv[process.argv.indexOf('--port') + 1] : undefined
 const checking = process.argv.includes('--check')
 const sourceBound = process.argv.includes('--source-bound')
 if (only && !PORTS.some((port) => port.slug === only)) throw new Error(`Unknown MCP port: ${only}`)
-if (sourceBound && (!only || process.env.LIBTMUX_DOCS_PORT !== only || !/^[0-9a-f]{40}$/.test(process.env.LIBTMUX_DOCS_SOURCE_SHA ?? ''))) {
+if (
+  sourceBound &&
+  (!only || process.env.LIBTMUX_DOCS_PORT !== only || !/^[0-9a-f]{40}$/.test(process.env.LIBTMUX_DOCS_SOURCE_SHA ?? ''))
+) {
   throw new Error('source-bound MCP discovery requires --port, matching LIBTMUX_DOCS_PORT and LIBTMUX_DOCS_SOURCE_SHA')
 }
-const checkoutFor = (port) => expand(port.slug === 'py'
-  ? process.env.LIBTMUX_DOCS_MCP_PY || '~/work/python/libtmux-mcp'
-  : process.env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`] || port.worktree)
+const checkoutFor = (port) =>
+  expand(
+    port.slug === 'py'
+      ? process.env.LIBTMUX_DOCS_MCP_PY || '~/work/python/libtmux-mcp'
+      : process.env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`] || port.worktree,
+  )
 const commands = {
   py: ['.venv/bin/python', '-m', 'libtmux_mcp'],
   ruby: [
-    'bundle', 'exec', 'libtmux-mcp',
-    '--socket-name', 'libtmux-docs-protocol',
-    '--endpoint', 'docs',
-    '--enable-tool', 'tmux_capture',
-    '--enable-tool', 'tmux_wait',
-    '--enable-tool', 'tmux_create',
-    '--enable-tool', 'tmux_send',
-    '--enable-tool', 'tmux_close',
-    '--enable-tool', 'tmux_run',
+    'bundle',
+    'exec',
+    'libtmux-mcp',
+    '--socket-name',
+    'libtmux-docs-protocol',
+    '--endpoint',
+    'docs',
+    '--enable-tool',
+    'tmux_capture',
+    '--enable-tool',
+    'tmux_wait',
+    '--enable-tool',
+    'tmux_create',
+    '--enable-tool',
+    'tmux_send',
+    '--enable-tool',
+    'tmux_close',
+    '--enable-tool',
+    'tmux_run',
   ],
   ts: ['bun', 'packages/mcp/src/server.ts'],
   rs: ['target/debug/tmux-mcp'],
@@ -38,8 +54,12 @@ const commands = {
   csharp: ['dotnet', 'src/LibTmux.Mcp/bin/Release/net10.0/LibTmux.Mcp.dll'],
   cxx: ['build/cxx-dev/apps/mcp/libtmux-mcp-server', '--socket-name', 'libtmux-docs-protocol'],
   swift: ['.build/debug/libtmux-mcp'],
-  julia: ['julia', '--startup-file=no', '-e',
-    'using LibTmuxMCP; args = ["--socket-name", "libtmux-docs-protocol", "--allow-create"]; for name in LibTmuxMCP._TOOL_NAMES; append!(args, ["--tool", name]); end; exit(LibTmuxMCP.main(args))'],
+  julia: [
+    'julia',
+    '--startup-file=no',
+    '-e',
+    'using LibTmuxMCP; args = ["--socket-name", "libtmux-docs-protocol", "--allow-create"]; for name in LibTmuxMCP._TOOL_NAMES; append!(args, ["--tool", name]); end; exit(LibTmuxMCP.main(args))',
+  ],
 }
 const builds = {
   rs: [['cargo', 'build', '--locked', '-p', 'tmux-mcp', '--bin', 'tmux-mcp', '--jobs', '2']],
@@ -64,9 +84,25 @@ const selections = {
   csharp: { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' },
   swift: { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' },
   cxx: { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' },
-  julia: { mode: 'explicit CLI options', tools: 'all registered tools via repeated --tool', allowCreate: '--allow-create' },
+  julia: {
+    mode: 'explicit CLI options',
+    tools: 'all registered tools via repeated --tool',
+    allowCreate: '--allow-create',
+  },
 }
-const selectionVariables = [...new Set(Object.values(selections).flatMap(Object.keys)), 'LIBTMUX_TOOLS', 'LIBTMUX_EXCLUDE_TOOLS', 'LIBTMUX_MCP_TOOLS', 'LIBTMUX_SAFETY', 'TMUX_MCP_SAFETY', 'LIBTMUX_MCP_CAPABILITIES', 'LIBTMUX_MCP_PROMPTS_AS_TOOLS', 'LIBTMUX_MCP_LIVE', 'LIBTMUX_SOCKET_NAME', 'LIBTMUX_SOCKET_PATH']
+const selectionVariables = [
+  ...new Set(Object.values(selections).flatMap(Object.keys)),
+  'LIBTMUX_TOOLS',
+  'LIBTMUX_EXCLUDE_TOOLS',
+  'LIBTMUX_MCP_TOOLS',
+  'LIBTMUX_SAFETY',
+  'TMUX_MCP_SAFETY',
+  'LIBTMUX_MCP_CAPABILITIES',
+  'LIBTMUX_MCP_PROMPTS_AS_TOOLS',
+  'LIBTMUX_MCP_LIVE',
+  'LIBTMUX_SOCKET_NAME',
+  'LIBTMUX_SOCKET_PATH',
+]
 const sourceStatus = (checkout, slug) => {
   // Publication records the clean/dirty state before native generation.
   // Generated, untracked artifacts such as Swift's symbolgraph are not edits.
@@ -89,19 +125,23 @@ const sourceRevision = (checkout, slug) => {
 // stale snapshot. Writing a snapshot set tolerates neither, because a
 // partial or unreliable set is worse than none.
 const relevant = PORTS.filter((port) => (!only || only === port.slug) && productAvailable(port, 'mcp'))
-const checkoutStates = new Map(relevant.map((port) => {
-  const checkout = checkoutFor(port)
-  if (!existsSync(checkout)) return [port.slug, 'missing']
-  const status = sourceStatus(checkout)
-  return [port.slug, status ? 'dirty' : 'ready']
-}))
+const checkoutStates = new Map(
+  relevant.map((port) => {
+    const checkout = checkoutFor(port)
+    if (!existsSync(checkout)) return [port.slug, 'missing']
+    const status = sourceStatus(checkout)
+    return [port.slug, status ? 'dirty' : 'ready']
+  }),
+)
 const missing = [...checkoutStates].filter(([, state]) => state === 'missing').map(([slug]) => slug)
 const dirty = [...checkoutStates].filter(([, state]) => state === 'dirty').map(([slug]) => slug)
 if (missing.length || dirty.length) {
   const note = `gen-mcp-protocol: ${[
     missing.length && `no checkout for ${missing.join(', ')}`,
     dirty.length && `uncommitted changes in ${dirty.join(', ')}`,
-  ].filter(Boolean).join('; ')}`
+  ]
+    .filter(Boolean)
+    .join('; ')}`
   if (checking && !sourceBound) {
     console.log(`${note} — skipping the comparison`)
     process.exit(0)
@@ -117,8 +157,11 @@ for (const port of relevant) {
   if (sourceBound) {
     const model = JSON.parse(readFileSync(join(root, 'site/src/data/api', `${port.slug}.json`), 'utf8'))
     const source = model.sources?.find((entry) => entry.product === 'mcp' && entry.repo === repository)
-    if (model.port !== port.slug || model.revision !== process.env.LIBTMUX_DOCS_SOURCE_SHA ||
-        (source?.extractedRevision ?? source?.revision) !== revision) {
+    if (
+      model.port !== port.slug ||
+      model.revision !== process.env.LIBTMUX_DOCS_SOURCE_SHA ||
+      (source?.extractedRevision ?? source?.revision) !== revision
+    ) {
       throw new Error(`${port.slug}: API model must describe the selected source and actual MCP checkout ${revision}`)
     }
   }
@@ -130,7 +173,10 @@ for (const port of relevant) {
   const environment = {
     ...Object.fromEntries(selectionVariables.map((key) => [key, undefined])),
     ...(['ruby', 'julia'].includes(port.slug) ? {} : selection),
-    TMUX: undefined, TMUX_PANE: undefined, TMUX_TMPDIR: socketRoot, LIBTMUX_SOCKET: 'libtmux-docs-protocol',
+    TMUX: undefined,
+    TMUX_PANE: undefined,
+    TMUX_TMPDIR: socketRoot,
+    LIBTMUX_SOCKET: 'libtmux-docs-protocol',
     ...(port.slug === 'julia' && !override ? { JULIA_PROJECT: join(socketRoot, 'julia-env') } : {}),
   }
   let protocol
@@ -139,22 +185,35 @@ for (const port of relevant) {
     const goBinary = join(socketRoot, 'libtmux-mcp')
     // Dependency downloads and compilation precede the protocol deadline.
     if (!override) {
-      if (port.slug === 'julia') execFileSync('julia', ['--startup-file=no', '-e',
-        'using Pkg; Pkg.activate(ARGS[1]); Pkg.develop([Pkg.PackageSpec(path=ARGS[2]), Pkg.PackageSpec(path=joinpath(ARGS[2], "packages", "LibTmuxMCP"))]); Pkg.instantiate(); Pkg.precompile()',
-        environment.JULIA_PROJECT, checkout,
-      ], { cwd: checkout, stdio: 'inherit' })
+      if (port.slug === 'julia')
+        execFileSync(
+          'julia',
+          [
+            '--startup-file=no',
+            '-e',
+            'using Pkg; Pkg.activate(ARGS[1]); Pkg.develop([Pkg.PackageSpec(path=ARGS[2]), Pkg.PackageSpec(path=joinpath(ARGS[2], "packages", "LibTmuxMCP"))]); Pkg.instantiate(); Pkg.precompile()',
+            environment.JULIA_PROJECT,
+            checkout,
+          ],
+          { cwd: checkout, stdio: 'inherit' },
+        )
       for (const [build, ...buildArgs] of builds[port.slug] ?? []) {
         execFileSync(build, buildArgs, { cwd: checkout, stdio: 'inherit' })
       }
-      if (port.slug === 'go') execFileSync('go', ['build', '-mod=readonly', '-o', goBinary, './cmd/libtmux-mcp'], { cwd, stdio: 'inherit' })
+      if (port.slug === 'go')
+        execFileSync('go', ['build', '-mod=readonly', '-o', goBinary, './cmd/libtmux-mcp'], { cwd, stdio: 'inherit' })
     }
     // These applications inspect a borrowed endpoint during startup.
-    if (['ruby', 'julia'].includes(port.slug)) execFileSync('tmux', [
-      '-L', 'libtmux-docs-protocol', '-f', '/dev/null', 'new-session', '-d', '-s', 'docs', '/bin/cat',
-    ], { env: { ...process.env, ...environment }, stdio: 'inherit' })
+    if (['ruby', 'julia'].includes(port.slug))
+      execFileSync(
+        'tmux',
+        ['-L', 'libtmux-docs-protocol', '-f', '/dev/null', 'new-session', '-d', '-s', 'docs', '/bin/cat'],
+        { env: { ...process.env, ...environment }, stdio: 'inherit' },
+      )
     const [command, ...args] = override ? JSON.parse(override) : port.slug === 'go' ? [goBinary] : commands[port.slug]
     protocol = await captureProtocol({ command, args, cwd, env: environment })
-    if (sourceRevision(checkout, port.slug) !== revision) throw new Error(`${port.slug}: source revision changed during discovery`)
+    if (sourceRevision(checkout, port.slug) !== revision)
+      throw new Error(`${port.slug}: source revision changed during discovery`)
   } catch (error) {
     failure = error
     throw error
@@ -170,21 +229,29 @@ for (const port of relevant) {
     } catch (error) {
       cleanupErrors.push(error)
     }
-    if (cleanupErrors.length) throw new AggregateError(failure ? [failure, ...cleanupErrors] : cleanupErrors,
-      `${port.slug}: MCP discovery cleanup failed`)
+    if (cleanupErrors.length)
+      throw new AggregateError(
+        failure ? [failure, ...cleanupErrors] : cleanupErrors,
+        `${port.slug}: MCP discovery cleanup failed`,
+      )
   }
   const payload = {
     generated: 'scripts/gen-mcp-protocol.mjs',
     repo: repository,
-    revision, selection, protocol,
+    revision,
+    selection,
+    protocol,
   }
   const out = join(root, 'site/src/data/mcp-protocol', `${port.slug}.json`)
   const text = `${JSON.stringify(payload, null, 2)}\n`
   if (checking) {
-    if (!existsSync(out) || readFileSync(out, 'utf8') !== text) throw new Error(`${port.slug}: protocol snapshot is stale`)
+    if (!existsSync(out) || readFileSync(out, 'utf8') !== text)
+      throw new Error(`${port.slug}: protocol snapshot is stale`)
   } else {
     mkdirSync(dirname(out), { recursive: true })
     writeFileSync(out, text)
   }
-  console.log(`gen-mcp-protocol: ${port.slug} ${protocol.tools.length} tools, ${protocol.resources.length} resources, ${protocol.resourceTemplates.length} resource templates, ${protocol.prompts.length} prompts`)
+  console.log(
+    `gen-mcp-protocol: ${port.slug} ${protocol.tools.length} tools, ${protocol.resources.length} resources, ${protocol.resourceTemplates.length} resource templates, ${protocol.prompts.length} prompts`,
+  )
 }

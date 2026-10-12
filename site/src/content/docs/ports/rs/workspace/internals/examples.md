@@ -27,8 +27,10 @@ $ mkdir rust-workspace-example && cd rust-workspace-example && \
 
 ```console
 $ git init libtmux-source && \
-    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-rs.git && \
-    git -C libtmux-source fetch --depth=1 origin d4e08b4eaab62ef4eeedab79b47973ae9a1de310 && \
+    git -C libtmux-source remote add origin \
+      https://github.com/libtmux/libtmux-rs.git && \
+    git -C libtmux-source fetch --depth=1 origin \
+      d4e08b4eaab62ef4eeedab79b47973ae9a1de310 && \
     git -C libtmux-source checkout --detach FETCH_HEAD
 ```
 
@@ -46,10 +48,17 @@ name = "workspace-example"
 version = "0.1.0"
 edition = "2024"
 
-[dependencies]
-libtmux = { path = "libtmux-source/crates/libtmux", features = ["test-support"] }
-tmux-workspace = { path = "libtmux-source/crates/tmux-workspace", default-features = false }
-tokio = { version = "=1.53.1", features = ["macros", "rt-multi-thread", "time"] }
+[dependencies.libtmux]
+path = "libtmux-source/crates/libtmux"
+features = ["test-support"]
+
+[dependencies.tmux-workspace]
+path = "libtmux-source/crates/tmux-workspace"
+default-features = false
+
+[dependencies.tokio]
+version = "=1.53.1"
+features = ["macros", "rt-multi-thread", "time"]
 ```
 
 Create the workspace file beside `Cargo.toml`:
@@ -94,7 +103,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         }
         let captured = freeze(&session).await?;
         if Workspace::from_yaml(&captured.to_yaml())? != captured {
-            return Err("captured workspace did not survive its YAML round trip".into());
+            return Err("captured workspace failed its YAML round trip".into());
         }
         println!("built: {} windows", windows.len());
         println!("panes: {}", panes.len());
@@ -111,7 +120,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
         (Err(error), Ok(())) => Err(error),
         (Ok(()), Err(error)) => Err(error.into()),
         (Err(operation), Err(cleanup)) => {
-            Err(format!("workspace failed: {operation}; cleanup failed: {cleanup}").into())
+            let message = format!(
+                "workspace failed: {operation}; cleanup failed: {cleanup}"
+            );
+            Err(message.into())
         }
     }
 }

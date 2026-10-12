@@ -15,14 +15,18 @@ describe('standard types in product signatures', () => {
       'Set-Content': 'microsoft.powershell.management',
     }
     for (const [name, module] of Object.entries(commands)) {
-      expect(builtinHref('powershell', name)).toBe(`https://learn.microsoft.com/powershell/module/${module}/${name.toLowerCase()}?view=powershell-7.4`)
+      expect(builtinHref('powershell', name)).toBe(
+        `https://learn.microsoft.com/powershell/module/${module}/${name.toLowerCase()}?view=powershell-7.4`,
+      )
       expect(builtinHref('csharp', name)).toBeUndefined()
     }
     for (const name of ['Get-InventedCommand', 'Stop', 'Boolean', 'Name', 'CaptureResult']) {
       expect(builtinHref('powershell', name)).toBeUndefined()
     }
     expect(builtinHref('powershell', 'FileInfo')).toBe('https://learn.microsoft.com/dotnet/api/system.io.fileinfo')
-    expect(builtinHref('powershell', 'ApplicationInfo')).toBe('https://learn.microsoft.com/dotnet/api/system.management.automation.applicationinfo?view=powershellsdk-7.4.0')
+    expect(builtinHref('powershell', 'ApplicationInfo')).toBe(
+      'https://learn.microsoft.com/dotnet/api/system.management.automation.applicationinfo?view=powershellsdk-7.4.0',
+    )
   })
 
   it('resolves compiler utility types without claiming local declarations', () => {
@@ -34,8 +38,12 @@ describe('standard types in product signatures', () => {
       expect(builtinHref('go', name)).toBeUndefined()
     }
     const local: ApiSymbol = {
-      id: 'example.Record', name: 'Record', kind: 'typealias', modifiers: [],
-      signatures: [], source: { file: 'example.ts' },
+      id: 'example.Record',
+      name: 'Record',
+      kind: 'typealias',
+      modifiers: [],
+      signatures: [],
+      source: { file: 'example.ts' },
     }
     const index = new SymbolIndex([local], () => '/reference/example-record/', 'ts')
     expect(index.resolve('Record')).toMatchObject({ href: '/reference/example-record/', external: false })
@@ -54,8 +62,10 @@ describe('standard types in product signatures', () => {
   })
 
   it('does not inherit object properties as keyword help', () => {
-    expect(new SymbolIndex([], () => '#', 'kotlin').linkType('constructor')[0])
-      .toEqual({ text: 'constructor', keyword: true })
+    expect(new SymbolIndex([], () => '#', 'kotlin').linkType('constructor')[0]).toEqual({
+      text: 'constructor',
+      keyword: true,
+    })
   })
 
   it('offers C++ nodiscard help only for the attribute', () => {
@@ -64,11 +74,15 @@ describe('standard types in product signatures', () => {
       const spans = index.linkType(declaration)
       expect(spans.map((span) => span.text).join('')).toBe(declaration)
       expect(spans.find((span) => span.text === 'nodiscard')).toMatchObject({
-        keyword: true, help: { href: 'https://eel.is/c++draft/dcl.attr.nodiscard' },
+        keyword: true,
+        help: { href: 'https://eel.is/c++draft/dcl.attr.nodiscard' },
       })
     }
     for (const declaration of [
-      'nodiscard', 'void nodiscard();', '/* [[nodiscard]] */', '"[[nodiscard]]"',
+      'nodiscard',
+      'void nodiscard();',
+      '/* [[nodiscard]] */',
+      '"[[nodiscard]]"',
       `void f(const char* value = "don't [[nodiscard]]");`,
       String.raw`void f(const char* value = "say \"[[nodiscard]]\"");`,
       'void f(const char* value = R"tag(say "[[nodiscard]]")tag");',
@@ -84,12 +98,32 @@ describe('standard types in product signatures', () => {
   it.each([
     ['kotlin', 'List<String>', 'List', 'https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/'],
     ['scala', 'Option[String]', 'Option', 'https://www.scala-lang.org/api/3.x/scala/Option.html'],
-    ['fsharp', "Result<'T, 'Error>", 'Result', 'https://fsharp.github.io/fsharp-core-docs/reference/fsharp-core-fsharpresult-2.html'],
+    [
+      'fsharp',
+      "Result<'T, 'Error>",
+      'Result',
+      'https://fsharp.github.io/fsharp-core-docs/reference/fsharp-core-fsharpresult-2.html',
+    ],
     ['rs', 'Option<OsString>', 'OsString', 'https://doc.rust-lang.org/std/ffi/struct.OsString.html'],
     ['csharp', 'IProgress<T>?', 'IProgress', 'https://learn.microsoft.com/dotnet/api/system.iprogress-1'],
-    ['csharp', 'ReadOnlyMemory<byte>', 'ReadOnlyMemory', 'https://learn.microsoft.com/dotnet/api/system.readonlymemory-1'],
-    ['csharp', 'IEnumerator<T>', 'IEnumerator', 'https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerator-1'],
-    ['csharp', 'IReadOnlyCollection<Pane>', 'IReadOnlyCollection', 'https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1'],
+    [
+      'csharp',
+      'ReadOnlyMemory<byte>',
+      'ReadOnlyMemory',
+      'https://learn.microsoft.com/dotnet/api/system.readonlymemory-1',
+    ],
+    [
+      'csharp',
+      'IEnumerator<T>',
+      'IEnumerator',
+      'https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerator-1',
+    ],
+    [
+      'csharp',
+      'IReadOnlyCollection<Pane>',
+      'IReadOnlyCollection',
+      'https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1',
+    ],
     ['cxx', 'std::function<void(double)>', 'double', 'https://en.cppreference.com/w/cpp/language/types'],
     ['swift', 'Data', 'Data', 'https://developer.apple.com/documentation/foundation/data'],
     ['swift', 'AsyncStream<String>', 'AsyncStream', 'https://developer.apple.com/documentation/swift/asyncstream'],
@@ -116,10 +150,12 @@ describe('standard types in product signatures', () => {
     expect(spans.map((span) => span.text).join('')).toBe('any Error')
     expect(spans.find((span) => span.text === 'any')).toEqual({ text: 'any', keyword: true })
     expect(spans.find((span) => span.text === 'Error')?.link).toMatchObject({
-      href: 'https://developer.apple.com/documentation/swift/error', external: true,
+      href: 'https://developer.apple.com/documentation/swift/error',
+      external: true,
     })
     expect(swift.linkType('any MissingError').find((span) => span.text === 'MissingError')).toEqual({
-      text: 'MissingError', link: undefined,
+      text: 'MissingError',
+      link: undefined,
     })
     expect(builtinHref('swift', 'any')).toBeUndefined()
     expect(new SymbolIndex([], () => '#', 'go').linkType('any')[0].link?.href).toBe('https://pkg.go.dev/builtin#any')
@@ -138,10 +174,21 @@ describe('standard types in product signatures', () => {
 
   it('uses Scala collections before bare aliases from the JDK inventory', () => {
     const index = new SymbolIndex([], () => '#', 'scala')
-    index.addInventory('https://docs.oracle.com/', ['Vector', 'java.util.Vector'].map((name) => ({
-      name, type: 'class', priority: 1, uri: 'java/util/Vector.html', dispname: '-',
-    })), ['scala'], 'Java SE')
-    expect(index.resolve('Vector')?.href).toBe('https://www.scala-lang.org/api/3.x/scala/collection/immutable/Vector.html')
+    index.addInventory(
+      'https://docs.oracle.com/',
+      ['Vector', 'java.util.Vector'].map((name) => ({
+        name,
+        type: 'class',
+        priority: 1,
+        uri: 'java/util/Vector.html',
+        dispname: '-',
+      })),
+      ['scala'],
+      'Java SE',
+    )
+    expect(index.resolve('Vector')?.href).toBe(
+      'https://www.scala-lang.org/api/3.x/scala/collection/immutable/Vector.html',
+    )
     expect(index.resolve('java.util.Vector')?.href).toBe('https://docs.oracle.com/java/util/Vector.html')
     expect(index.resolve('def')).toBeUndefined()
     expect(index.resolve('extension')).toBeUndefined()
@@ -162,7 +209,10 @@ describe('.NET exception references in F# and C#', () => {
     ['System.OperationCanceledException', 'system.operationcanceledexception'],
     ['System.IO.InvalidDataException', 'system.io.invaliddataexception'],
     ['System.IO.IOException', 'system.io.ioexception'],
-    ['System.Text.RegularExpressions.RegexMatchTimeoutException', 'system.text.regularexpressions.regexmatchtimeoutexception'],
+    [
+      'System.Text.RegularExpressions.RegexMatchTimeoutException',
+      'system.text.regularexpressions.regexmatchtimeoutexception',
+    ],
     ['System.Text.Json.JsonException', 'system.text.json.jsonexception'],
     ['System.Threading.Tasks.TaskCanceledException', 'system.threading.tasks.taskcanceledexception'],
   ] as const
@@ -179,25 +229,36 @@ describe('.NET exception references in F# and C#', () => {
   })
 
   it('links the real F# tryFindClient Raises type without changing its spelling', () => {
-    const model = JSON.parse(readFileSync(new URL('../../../site/src/data/api/fsharp.json', import.meta.url), 'utf8')) as ApiModel
+    const model = JSON.parse(
+      readFileSync(new URL('../../../site/src/data/api/fsharp.json', import.meta.url), 'utf8'),
+    ) as ApiModel
     const symbol = model.symbols.find((entry) => entry.id === 'LibTmux.FSharp.Server.tryFindClient')!
     expect(symbol.signatures[0].raises).toEqual([
       { type: 'System.ArgumentException', doc: 'The client name is null, empty or whitespace.' },
     ])
     const index = new SymbolIndex(model.symbols, (entry) => `#${entry.id}`, model.port)
     expect(index.linkType(symbol.signatures[0].raises![0].type, symbol)).toEqual([
-      { text: 'System.ArgumentException', link: {
-        href: 'https://learn.microsoft.com/dotnet/api/system.argumentexception', external: true,
-      } },
+      {
+        text: 'System.ArgumentException',
+        link: {
+          href: 'https://learn.microsoft.com/dotnet/api/system.argumentexception',
+          external: true,
+        },
+      },
     ])
   })
 
   it('leaves unknown namespaces and exceptions plain without borrowing another language', () => {
     for (const port of ['fsharp', 'csharp']) {
       const index = new SymbolIndex([], () => '#', port)
-      for (const name of ['System.MissingException', 'System.IO.ArgumentException',
-        'Other.ArgumentException', 'System.Text.Json.OtherException', 'System.Exceptionish',
-        'Newtonsoft.Json.JsonException']) {
+      for (const name of [
+        'System.MissingException',
+        'System.IO.ArgumentException',
+        'Other.ArgumentException',
+        'System.Text.Json.OtherException',
+        'System.Exceptionish',
+        'Newtonsoft.Json.JsonException',
+      ]) {
         expect(builtinHref(port, name)).toBeUndefined()
         expect(index.linkType(name)).toEqual([{ text: name, link: undefined }])
       }
@@ -208,14 +269,24 @@ describe('.NET exception references in F# and C#', () => {
   })
 
   it.each(['fsharp', 'csharp'])('retains a local exception definition before a short builtin in %s', (port) => {
-    const symbol = { id: 'LibTmux.ArgumentException', name: 'ArgumentException', kind: 'class',
-      modifiers: [], signatures: [], source: { file: 'example' }, slug: 'argument-exception' } satisfies ApiSymbol
+    const symbol = {
+      id: 'LibTmux.ArgumentException',
+      name: 'ArgumentException',
+      kind: 'class',
+      modifiers: [],
+      signatures: [],
+      source: { file: 'example' },
+      slug: 'argument-exception',
+    } satisfies ApiSymbol
     const index = new SymbolIndex([symbol], () => '/reference/argument-exception/', port)
     expect(index.resolve('ArgumentException')).toMatchObject({
-      href: '/reference/argument-exception/', external: false, symbol,
+      href: '/reference/argument-exception/',
+      external: false,
+      symbol,
     })
     expect(index.resolve('System.ArgumentException')).toMatchObject({
-      href: 'https://learn.microsoft.com/dotnet/api/system.argumentexception', external: true,
+      href: 'https://learn.microsoft.com/dotnet/api/system.argumentexception',
+      external: true,
     })
   })
 })

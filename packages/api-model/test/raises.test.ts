@@ -20,9 +20,7 @@ Raises
 :exc:\`libtmux.exc.BadSessionName\`
     When the name is invalid.
 `)
-    expect(parsed.raises).toEqual([
-      { type: 'libtmux.exc.BadSessionName', doc: 'When the name is invalid.' },
-    ])
+    expect(parsed.raises).toEqual([{ type: 'libtmux.exc.BadSessionName', doc: 'When the name is invalid.' }])
   })
 
   it('shortens a target Sphinx would shorten', () => {

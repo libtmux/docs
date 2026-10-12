@@ -38,16 +38,21 @@ local socket = assert(arg[1], "pass the private socket path")
 local binary = assert(arg[2], "pass the absolute tmux executable path")
 
 must(adapter.run(function(runtime)
-    local server = must(runtime:connect({ binary = binary, socket_path = socket }):await())
+    local server = must(runtime:connect({
+        binary = binary,
+        socket_path = socket,
+    }):await())
     local created = must(server:new_session({
         name = "capture", argv = { "/bin/sh" },
     }):await())
     local pane = created.pane
+    local tmux = quote(binary) .. " -S " .. quote(socket)
     local command = "printf '\\nlibtmux capture ready\\n'; "
-        .. quote(binary) .. " -S " .. quote(socket) .. " wait-for -S capture-ready"
+        .. tmux .. " wait-for -S capture-ready"
     must(pane:send_text(command):await())
     must(pane:send_keys({ "Enter" }):await())
-    must(server:command({ "wait-for", "capture-ready" }, { timeout = 5000 }):await())
+    local wait = { "wait-for", "capture-ready" }
+    must(server:command(wait, { timeout = 5000 }):await())
 
     local capture = must(pane:capture({ history_lines = 20 }):await())
     local found = false

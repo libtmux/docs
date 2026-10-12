@@ -17,7 +17,9 @@ const pageLinks = {
   symbols: {
     py: {
       'libtmux.Session': [{ port: 'ts', href: `${base}/ts/latest/reference/session-session/`, label: 'Session' }],
-      'libtmux.Session.windows': [{ port: 'ts', href: `${base}/ts/latest/reference/session-session-windows/`, label: 'Session windows' }],
+      'libtmux.Session.windows': [
+        { port: 'ts', href: `${base}/ts/latest/reference/session-session-windows/`, label: 'Session windows' },
+      ],
     },
   },
 }
@@ -31,7 +33,7 @@ async function load(path: string, body = '', head = '') {
   const requests: string[] = []
   window.fetch = (async (url: unknown) => {
     requests.push(String(url))
-    return { ok: true, json: async () => String(url).endsWith('versions.json') ? manifest : pageLinks }
+    return { ok: true, json: async () => (String(url).endsWith('versions.json') ? manifest : pageLinks) }
   }) as unknown as typeof window.fetch
   window.eval(source)
   window.document.dispatchEvent(new window.Event('DOMContentLoaded'))
@@ -56,8 +58,9 @@ describe('native API page switchers', () => {
     expect(window.customElements.get('libtmux-version-switcher')).toBeTruthy()
     expect(header.querySelector('select option')?.getAttribute('value')).toBe('latest')
     expect(header.querySelector('nav[aria-label="Documentation destinations"]')).toBeNull()
-    expect(document.querySelector('[data-lt-shell="footer"] [data-port-home="ts"]')?.getAttribute('href'))
-      .toBe(`${base}/ts/stable/`)
+    expect(document.querySelector('[data-lt-shell="footer"] [data-port-home="ts"]')?.getAttribute('href')).toBe(
+      `${base}/ts/stable/`,
+    )
     expect(header.querySelector('[data-page-port-switcher] a[href$="session-session/"]')).not.toBeNull()
   })
 
@@ -65,22 +68,32 @@ describe('native API page switchers', () => {
     const { document, requests } = await load('api/libtmux.session/')
     expect(document.querySelector('nav[aria-label="Documentation destinations"]')).toBeNull()
     expect(document.querySelectorAll('[data-page-port-switcher]')).toHaveLength(1)
-    expect(document.querySelector('[data-page-port-switcher] a[aria-current]')?.getAttribute('href'))
-      .toBe(`${base}/py/latest/api/libtmux.session/`)
-    expect([...document.querySelectorAll('.lt-shell-search-link')].find((link) => link.textContent === 'Search')?.getAttribute('href'))
-      .toBe(`${base}/py/latest/search/`)
+    expect(document.querySelector('[data-page-port-switcher] a[aria-current]')?.getAttribute('href')).toBe(
+      `${base}/py/latest/api/libtmux.session/`,
+    )
+    expect(
+      [...document.querySelectorAll('.lt-shell-search-link')]
+        .find((link) => link.textContent === 'Search')
+        ?.getAttribute('href'),
+    ).toBe(`${base}/py/latest/search/`)
     expect(requests).toEqual([`${base}/versions.json`, `${base}/page-links.json`])
   })
 
   it('keeps the page equivalents when following an ordinary section heading', async () => {
-    const { window, document } = await load('api/api/libtmux.session/', '<section id="sessions"><dt class="sig" id="libtmux.Session">Session</dt></section>')
+    const { window, document } = await load(
+      'api/api/libtmux.session/',
+      '<section id="sessions"><dt class="sig" id="libtmux.Session">Session</dt></section>',
+    )
     window.location.hash = '#sessions'
     window.dispatchEvent(new window.Event('hashchange'))
     expect(document.querySelector('[data-page-port-switcher] a[href$="session-session/"]')).not.toBeNull()
   })
 
   it('disables counterparts for an unmapped member instead of linking its class', async () => {
-    const { window, document } = await load('api/api/libtmux.session/', '<dt class="sig" id="libtmux.Session">Session</dt><dt class="sig" id="libtmux.Session.unmapped">unmapped</dt>')
+    const { window, document } = await load(
+      'api/api/libtmux.session/',
+      '<dt class="sig" id="libtmux.Session">Session</dt><dt class="sig" id="libtmux.Session.unmapped">unmapped</dt>',
+    )
     window.location.hash = '#libtmux.Session.unmapped'
     window.dispatchEvent(new window.Event('hashchange'))
     const menu = document.querySelector('[data-page-port-switcher]')!

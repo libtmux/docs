@@ -8,9 +8,7 @@ import { mapLine, parseHunks } from '../src/source-lines.ts'
  */
 describe('parseHunks', () => {
   it('reads an omitted count as one line', () => {
-    expect(parseHunks('@@ -3 +3 @@\n-old\n+new\n')).toEqual([
-      { oldStart: 3, oldLines: 1, newStart: 3, newLines: 1 },
-    ])
+    expect(parseHunks('@@ -3 +3 @@\n-old\n+new\n')).toEqual([{ oldStart: 3, oldLines: 1, newStart: 3, newLines: 1 }])
   })
 
   it('reads several hunks in one diff', () => {

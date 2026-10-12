@@ -146,11 +146,7 @@ function docCommentFor(node: Node, spec: LanguageSpec): string | undefined {
   // up through transparent wrappers is the difference between 16% and 80% of
   // TypeScript's symbols being documented — and nothing failed at 16%.
   let anchor: Node = node
-  while (
-    !anchor.previousNamedSibling &&
-    anchor.parent &&
-    spec.transparent?.includes(anchor.parent.type)
-  ) {
+  while (!anchor.previousNamedSibling && anchor.parent && spec.transparent?.includes(anchor.parent.type)) {
     anchor = anchor.parent
   }
   let cursor: Node | null = anchor.previousNamedSibling
@@ -217,8 +213,10 @@ function paramsOf(node: Node | null, spec: LanguageSpec): Param[] {
     }
     const name = child.childForFieldName('name') ?? child.childForFieldName('pattern')
     const type = child.childForFieldName('type')
-    const value = child.childForFieldName('value') ?? child.childForFieldName('default_value')
-      ?? child.namedChildren.find((node) => node?.type === 'equals_value_clause')?.namedChild(0)
+    const value =
+      child.childForFieldName('value') ??
+      child.childForFieldName('default_value') ??
+      child.namedChildren.find((node) => node?.type === 'equals_value_clause')?.namedChild(0)
     // Go groups parameters — `a, b string` is one node with two names — and a
     // receiver has no name at all. Falling back to the node's own text keeps
     // both readable instead of emitting an empty row.
@@ -226,7 +224,7 @@ function paramsOf(node: Node | null, spec: LanguageSpec): Param[] {
     if (!label) continue
     out.push({
       name: label.replace(/^[&*]+/, ''),
-      type: type ? spec.typeText?.(type) ?? type.text.replace(/\s+/g, ' ') : undefined,
+      type: type ? (spec.typeText?.(type) ?? type.text.replace(/\s+/g, ' ')) : undefined,
       default: value?.text,
     })
   }
@@ -236,16 +234,16 @@ function paramsOf(node: Node | null, spec: LanguageSpec): Param[] {
 function signatureOf(node: Node, spec: LanguageSpec): Signature {
   const f = { ...DEFAULT_FIELDS, ...spec.fields }
   const returns =
-    node.childForFieldName(f.returns) ??
-    node.childForFieldName('result') ??
-    node.childForFieldName('type')
+    node.childForFieldName(f.returns) ?? node.childForFieldName('result') ?? node.childForFieldName('type')
   return {
     params: paramsOf(node.childForFieldName(f.params), spec),
     // A grammar's return-type node often includes the syntax that introduces
     // it: TypeScript's `type_annotation` is `: string`, and all 240 of its
     // signatures rendered as `foo() → : string`. The arrow or colon is the
     // renderer's to draw.
-    returns: returns ? spec.typeText?.(returns) ?? returns.text.replace(/\s+/g, ' ').replace(/^\s*(?:->|:)\s*/, '') : undefined,
+    returns: returns
+      ? (spec.typeText?.(returns) ?? returns.text.replace(/\s+/g, ' ').replace(/^\s*(?:->|:)\s*/, ''))
+      : undefined,
     typeParams: node
       .childForFieldName('type_parameters')
       ?.namedChildren.map((n) => n?.text ?? '')
@@ -346,8 +344,13 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
           if (ctx.byId.has(propertyId)) continue
           const declaration = parameters.find((node) => node?.childForFieldName('name')?.text === parameter.name)
           emit(ctx, {
-            id: propertyId, name: parameter.name, kind: 'property', parent: id,
-            type: parameter.type, modifiers: [], signatures: [],
+            id: propertyId,
+            name: parameter.name,
+            kind: 'property',
+            parent: id,
+            type: parameter.type,
+            modifiers: [],
+            signatures: [],
             doc: parameter.doc ? { summary: parameter.doc } : undefined,
             source: { file: ctx.file, line: (declaration ?? child).startPosition.row + 1 },
           })
@@ -366,8 +369,7 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
     // `function_item`, so the spec cannot tell them apart — only the presence
     // of an enclosing `impl` or `trait` can, and that is known here. 85 Rust
     // functions in `mod` blocks were reported as ownerless methods.
-    const resolvedKind: SymbolKind =
-      memberKind === 'method' && !owner ? 'function' : memberKind
+    const resolvedKind: SymbolKind = memberKind === 'method' && !owner ? 'function' : memberKind
     // Built before the doc so C#'s `<param>` and `<exception>` can be lifted
     // onto it: the comment carries them, and nothing else does.
     const memberSignatures = hasParams ? [signatureOf(child, spec)] : []
@@ -378,9 +380,11 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
       modifiers,
       parent: owner,
       signatures: memberSignatures,
-      type: hasParams ? undefined : child.childForFieldName('type') && spec.typeText
-        ? spec.typeText(child.childForFieldName('type')!)
-        : (child.childForFieldName('type')?.text ?? spec.implicitType?.(child))?.replace(/\s+/g, ' '),
+      type: hasParams
+        ? undefined
+        : child.childForFieldName('type') && spec.typeText
+          ? spec.typeText(child.childForFieldName('type')!)
+          : (child.childForFieldName('type')?.text ?? spec.implicitType?.(child))?.replace(/\s+/g, ' '),
       value: hasParams
         ? undefined
         : child.childForFieldName('declarator')?.childForFieldName('value')?.text.replace(/\s+/g, ' '),
@@ -401,11 +405,7 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
  * The dialect is declared on the spec rather than tested for by grammar name,
  * so adding a port that documents in markup is a field rather than a branch.
  */
-function docFor(
-  raw: string | undefined,
-  spec: LanguageSpec,
-  signatures: Signature[],
-): DocBlock | undefined {
+function docFor(raw: string | undefined, spec: LanguageSpec, signatures: Signature[]): DocBlock | undefined {
   if (!raw) return undefined
   const parse =
     spec.docDialect === 'xml'
@@ -437,18 +437,25 @@ export async function extractWithSpec(
   const parser = await parserFor(spec.grammar)
   const tree = parser.parse(readFileSync(file, 'utf8'))
   if (!tree) return []
-  const packageName = spec.grammar === 'java'
-    ? tree.rootNode.namedChildren.find((node) => node?.type === 'package_declaration')
-      ?.namedChildren.find((node) => node?.type === 'scoped_identifier' || node?.type === 'identifier')
-    : undefined
+  const packageName =
+    spec.grammar === 'java'
+      ? tree.rootNode.namedChildren
+          .find((node) => node?.type === 'package_declaration')
+          ?.namedChildren.find((node) => node?.type === 'scoped_identifier' || node?.type === 'identifier')
+      : undefined
   const ctx: Ctx = {
     file,
     module,
     // Java packages come from declarations, not source paths or file names.
-    namespace: spec.grammar === 'java'
-      ? packageName?.type === 'identifier' ? packageName.text
-        : packageName?.descendantsOfType('identifier').flatMap((node) => node ? [node.text] : []).join('.') ?? ''
-      : undefined,
+    namespace:
+      spec.grammar === 'java'
+        ? packageName?.type === 'identifier'
+          ? packageName.text
+          : (packageName
+              ?.descendantsOfType('identifier')
+              .flatMap((node) => (node ? [node.text] : []))
+              .join('.') ?? '')
+        : undefined,
     symbols: [],
     byId: new Map(),
     spec,

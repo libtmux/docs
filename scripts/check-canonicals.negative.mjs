@@ -21,7 +21,13 @@ const ORIGIN = 'https://libtmux.org'
 /** A reference tree whose canonical for each page is `canonicalFor(path)`. */
 function site(canonicalFor) {
   const dir = mkdtempSync(join(tmpdir(), 'check-canonicals-'))
-  const pages = ['reference', 'py/latest/reference', 'ts/latest/reference', 'py/latest/reference/pane', 'ts/latest/reference/pane']
+  const pages = [
+    'reference',
+    'py/latest/reference',
+    'ts/latest/reference',
+    'py/latest/reference/pane',
+    'ts/latest/reference/pane',
+  ]
   for (const page of pages) {
     mkdirSync(join(dir, page), { recursive: true })
     const href = `${ORIGIN}${canonicalFor(`/${page}/`)}`
@@ -87,24 +93,33 @@ const check = (name, ok, detail) => {
 for (const variant of ['valid', 'missing', 'foreign', 'origin', 'fallback', 'indexable', 'chain']) {
   const dir = site((p) => p)
   const old = '/ts/latest/reference/old-pane/'
-  const destination = variant === 'missing' ? '/ts/latest/reference/missing/'
-    : variant === 'foreign' ? '/py/latest/reference/pane/' : '/ts/latest/reference/pane/'
+  const destination =
+    variant === 'missing'
+      ? '/ts/latest/reference/missing/'
+      : variant === 'foreign'
+        ? '/py/latest/reference/pane/'
+        : '/ts/latest/reference/pane/'
   const href = variant === 'origin' ? `https://example.invalid${destination}` : destination
   mkdirSync(join(dir, old), { recursive: true })
-  writeFileSync(join(dir, old, 'index.html'), `<html><head>
+  writeFileSync(
+    join(dir, old, 'index.html'),
+    `<html><head>
     ${variant === 'indexable' ? '' : '<meta name="robots" content="noindex">'}
     <link rel="canonical" href="${variant === 'origin' ? href : `${ORIGIN}${destination}`}">
     <noscript><meta http-equiv="refresh" content="0;url=${href}"></noscript>
-    </head><body><a href="${variant === 'fallback' ? old : href}">Continue</a></body></html>`)
+    </head><body><a href="${variant === 'fallback' ? old : href}">Continue</a></body></html>`,
+  )
   if (variant === 'chain') {
-    writeFileSync(join(dir, destination, 'index.html'), `<html><head>
+    writeFileSync(
+      join(dir, destination, 'index.html'),
+      `<html><head>
       <meta name="robots" content="noindex"><link rel="canonical" href="${ORIGIN}${old}">
       <noscript><meta http-equiv="refresh" content="0;url=${old}"></noscript>
-      </head><body><a href="${old}">Continue</a></body></html>`)
+      </head><body><a href="${old}">Continue</a></body></html>`,
+    )
   }
   const { code, out } = run(dir)
-  check(`reference redirect ${variant}`, variant === 'valid' ? code === 0 : code !== 0,
-    `exited ${code}:\n${out}`)
+  check(`reference redirect ${variant}`, variant === 'valid' ? code === 0 : code !== 0, `exited ${code}:\n${out}`)
   rmSync(dir, { recursive: true, force: true })
 }
 
@@ -115,19 +130,35 @@ for (const prefix of ['', '/pr-139']) {
     const shared = join(dir, 'reference/glossary')
     if (variant !== 'missing') {
       mkdirSync(shared, { recursive: true })
-      writeFileSync(join(shared, 'index.html'), `<link rel="canonical" href="${variant === 'wrong-target' ? `${ORIGIN}/elsewhere/` : href}">
-        ${variant === 'redirect' ? '<meta http-equiv="refresh" content="0;url=/elsewhere/">' : ''}`)
+      writeFileSync(
+        join(shared, 'index.html'),
+        `<link rel="canonical" href="${variant === 'wrong-target' ? `${ORIGIN}/elsewhere/` : href}">
+        ${variant === 'redirect' ? '<meta http-equiv="refresh" content="0;url=/elsewhere/">' : ''}`,
+      )
     }
-    const scopes = variant === 'declaration' ? ['py/latest/reference/pane']
-      : variant === 'nested' ? ['py/latest/reference/other/glossary']
-      : ['py/latest/reference/glossary', 'ts/latest/workspace/reference/glossary', 'ts/latest/mcp/reference/glossary']
+    const scopes =
+      variant === 'declaration'
+        ? ['py/latest/reference/pane']
+        : variant === 'nested'
+          ? ['py/latest/reference/other/glossary']
+          : [
+              'py/latest/reference/glossary',
+              'ts/latest/workspace/reference/glossary',
+              'ts/latest/mcp/reference/glossary',
+            ]
     for (const scope of scopes) {
       mkdirSync(join(dir, scope), { recursive: true })
-      writeFileSync(join(dir, scope, 'index.html'), `<link rel="canonical" href="${variant === 'foreign' ? href.replace(ORIGIN, 'https://example.invalid') : href}">`)
+      writeFileSync(
+        join(dir, scope, 'index.html'),
+        `<link rel="canonical" href="${variant === 'foreign' ? href.replace(ORIGIN, 'https://example.invalid') : href}">`,
+      )
     }
     const { code, out } = run(dir, { ...process.env, LIBTMUX_DOCS_LOCALES_ROOT: prefix })
-    check(`shared glossary ${variant} (${prefix || 'production'})`, variant === 'valid' ? code === 0 : code !== 0,
-      `exited ${code}:\n${out}`)
+    check(
+      `shared glossary ${variant} (${prefix || 'production'})`,
+      variant === 'valid' ? code === 0 : code !== 0,
+      `exited ${code}:\n${out}`,
+    )
     rmSync(dir, { recursive: true, force: true })
   }
 }

@@ -29,10 +29,16 @@ const json = (file: string) => JSON.parse(readFileSync(join(DATA, file), 'utf8')
 const REPOS = new Set<string>(['libtmux/docs', TMUX_REPOSITORY, ...PORTS.map((port) => port.repo)])
 for (const file of readdirSync(join(DATA, 'api')).filter((name) => name.endsWith('.json'))) {
   const model = json(`api/${file}`)
-  for (const repo of [model.repo, ...(model.sources ?? []).map((source: { repo?: string }) => source.repo),
-    ...(model.symbols ?? []).map((symbol: { source?: { repo?: string } }) => symbol.source?.repo)]) if (repo) REPOS.add(repo)
+  for (const repo of [
+    model.repo,
+    ...(model.sources ?? []).map((source: { repo?: string }) => source.repo),
+    ...(model.symbols ?? []).map((symbol: { source?: { repo?: string } }) => symbol.source?.repo),
+  ])
+    if (repo) REPOS.add(repo)
 }
-for (const port of Object.values(json('mcp-tools.json').ports) as { registrations?: { source?: { repo?: string } }[] }[]) {
+for (const port of Object.values(json('mcp-tools.json').ports) as {
+  registrations?: { source?: { repo?: string } }[]
+}[]) {
   for (const tool of port.registrations ?? []) if (tool.source?.repo) REPOS.add(tool.source.repo)
 }
 const attr = (name: string) => new RegExp(`\\b${name}=(?:"([^"]*)"|'([^']*)'|([^\\s>]+))`)
@@ -71,7 +77,12 @@ describe('GitHub footer targets', () => {
   it.each(['kotlin', 'scala'])('accepts the declared %s directory at a branch, tag or revision', (slug) => {
     for (const ref of ['master', 'v0.0.1-alpha.17', 'a'.repeat(40), 'feature%2Fsource-links']) {
       for (const prefix of ['', 'pr-50/']) {
-        expect(githubSourceMatches(`https://github.com/libtmux/libtmux-java/tree/${ref}/libtmux-${slug}`, `${prefix}en/${slug}/latest/index.html`)).toBe(true)
+        expect(
+          githubSourceMatches(
+            `https://github.com/libtmux/libtmux-java/tree/${ref}/libtmux-${slug}`,
+            `${prefix}en/${slug}/latest/index.html`,
+          ),
+        ).toBe(true)
       }
     }
   })
@@ -102,7 +113,8 @@ function htmlFiles(): string[] {
   return LOCALES.filter((locale) => existsSync(join(ASSEMBLY_ROOT, locale))).flatMap((locale) =>
     (readdirSync(join(ASSEMBLY_ROOT, locale), { recursive: true }) as string[])
       .filter((file) => file.endsWith('.html'))
-      .map((file) => `${PREVIEW_PREFIX.slice(1)}${PREVIEW_PREFIX ? '/' : ''}${locale}/${file.replaceAll('\\', '/')}`))
+      .map((file) => `${PREVIEW_PREFIX.slice(1)}${PREVIEW_PREFIX ? '/' : ''}${locale}/${file.replaceAll('\\', '/')}`),
+  )
 }
 
 function resolves(href: string, page: string): boolean {
@@ -131,10 +143,13 @@ interface Footer {
 }
 
 function footerOf(html: string): Footer | undefined {
-  const block = /<div\b[^>]*\bclass=(?:"[^"]*\bpage-source\b[^"]*"|page-source\b)[^>]*>([\s\S]*?)<\/div>/.exec(html)?.[1]
+  const block = /<div\b[^>]*\bclass=(?:"[^"]*\bpage-source\b[^"]*"|page-source\b)[^>]*>([\s\S]*?)<\/div>/.exec(
+    html,
+  )?.[1]
   if (block === undefined) return undefined
   const hrefs = [...block.matchAll(/<a\b[^>]*>/g)].map((tag) => value(tag[0], 'href') ?? '')
-  const icon = [...html.slice(html.indexOf(block)).matchAll(/<a\b[^>]*>/g)].map((tag) => tag[0])
+  const icon = [...html.slice(html.indexOf(block)).matchAll(/<a\b[^>]*>/g)]
+    .map((tag) => tag[0])
     .find((tag) => value(tag, 'aria-label') === 'GitHub')
   const links = [...html.matchAll(/<link\b[^>]*>/g)].map((tag) => tag[0])
   const alternate = links.find((tag) => value(tag, 'rel') === 'alternate' && value(tag, 'type') === 'text/markdown')
@@ -172,11 +187,17 @@ describe.skipIf(!SITE_BUILT)('machine-readable footer', () => {
         problems.push(`${page}: no page-source footer`)
         continue
       }
-      for (const [name, href] of Object.entries({ markdown: footer.markdown, manifest: footer.manifest, llms: footer.llms, llmsFull: footer.llmsFull })) {
+      for (const [name, href] of Object.entries({
+        markdown: footer.markdown,
+        manifest: footer.manifest,
+        llms: footer.llms,
+        llmsFull: footer.llmsFull,
+      })) {
         if (!href) problems.push(`${page}: no ${name} link`)
         else if (!resolves(href, page)) problems.push(`${page}: ${name} ${href} does not exist`)
       }
-      if (footer.alternate !== footer.markdown) problems.push(`${page}: <head> Markdown ${footer.alternate} differs from footer ${footer.markdown}`)
+      if (footer.alternate !== footer.markdown)
+        problems.push(`${page}: <head> Markdown ${footer.alternate} differs from footer ${footer.markdown}`)
       if (footer.markdown && resolves(footer.markdown, page)) {
         const twin = new URL(footer.markdown, `https://libtmux.org/${page}`).pathname
         const text = readFileSync(join(BUCKET_ROOT, twin.replace(/^\//, '')), 'utf8')
@@ -187,8 +208,10 @@ describe.skipIf(!SITE_BUILT)('machine-readable footer', () => {
         if (named) {
           const path = new URL(named).pathname
           const own = (twin.endsWith('/index.md') ? `${path}index.md` : `${path.replace(/\/$/, '')}.md`) === twin
-          const canonical = footer.canonical && new URL(footer.canonical, `https://libtmux.org/${page}`).pathname === path
-          if (!own && !canonical) problems.push(`${page}: Markdown ${footer.markdown} names ${named}, neither its page nor its canonical URL`)
+          const canonical =
+            footer.canonical && new URL(footer.canonical, `https://libtmux.org/${page}`).pathname === path
+          if (!own && !canonical)
+            problems.push(`${page}: Markdown ${footer.markdown} names ${named}, neither its page nor its canonical URL`)
         }
       }
       const raw = footer.raw && /^https:\/\/github\.com\/([^/]+\/[^/]+)\/raw\/[^/]+\/(.+)$/.exec(footer.raw)
@@ -198,7 +221,8 @@ describe.skipIf(!SITE_BUILT)('machine-readable footer', () => {
         if (footer.source !== raw[2]) problems.push(`${page}: source ${footer.source} differs from raw path ${raw[2]}`)
         if (raw[1] === 'libtmux/docs' && !tracked.has(raw[2])) problems.push(`${page}: source ${raw[2]} is not tracked`)
       }
-      if (!githubSourceMatches(footer.github, page)) problems.push(`${page}: GitHub icon ${footer.github} is not a declared source target`)
+      if (!githubSourceMatches(footer.github, page))
+        problems.push(`${page}: GitHub icon ${footer.github} is not a declared source target`)
     }
     expect(checked, 'shell pages found').toBeGreaterThan(0)
     expect(problems.slice(0, 40), `${problems.length} footer problems across ${checked} pages`).toEqual([])
@@ -210,7 +234,9 @@ describe.skipIf(!SITE_BUILT)('machine-readable footer', () => {
     const problems: string[] = []
     let checked = 0
     for (const locale of LOCALES.filter((locale) => existsSync(join(ASSEMBLY_ROOT, locale, 'llms-full.txt')))) {
-      for (const section of readFileSync(join(ASSEMBLY_ROOT, locale, 'llms-full.txt'), 'utf8').split('\n---\n\n').slice(1)) {
+      for (const section of readFileSync(join(ASSEMBLY_ROOT, locale, 'llms-full.txt'), 'utf8')
+        .split('\n---\n\n')
+        .slice(1)) {
         const url = /^Source: (\S+)$/m.exec(section)?.[1]
         if (!url) {
           problems.push(`${locale}/llms-full.txt: a section names no page`)
@@ -233,7 +259,8 @@ describe.skipIf(!SITE_BUILT)('machine-readable footer', () => {
         const here = new URL(url).pathname
         if (path !== (path.endsWith('/index.md') ? `${here}index.md` : `${here.replace(/\/$/, '')}.md`)) continue
         checked++
-        if (readFileSync(twin, 'utf8').trim() !== section.trim()) problems.push(`${locale}/llms-full.txt: ${url} differs from ${alternate}`)
+        if (readFileSync(twin, 'utf8').trim() !== section.trim())
+          problems.push(`${locale}/llms-full.txt: ${url} differs from ${alternate}`)
       }
     }
     expect(checked, 'llms-full.txt sections found').toBeGreaterThan(0)
@@ -246,7 +273,9 @@ describe.skipIf(!SITE_BUILT)('machine-readable footer', () => {
     const problems: string[] = []
     let checked = 0
     for (const locale of LOCALES.filter((locale) => existsSync(join(ASSEMBLY_ROOT, locale, 'docs.json')))) {
-      const manifest = JSON.parse(readFileSync(join(ASSEMBLY_ROOT, locale, 'docs.json'), 'utf8')) as { pages: { url: string; markdownUrl: string; title: string }[] }
+      const manifest = JSON.parse(readFileSync(join(ASSEMBLY_ROOT, locale, 'docs.json'), 'utf8')) as {
+        pages: { url: string; markdownUrl: string; title: string }[]
+      }
       for (const entry of manifest.pages) {
         const file = join(BUCKET_ROOT, decodeURIComponent(new URL(entry.url).pathname).replace(/^\//, ''), 'index.html')
         if (!existsSync(file)) {

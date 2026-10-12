@@ -30,7 +30,15 @@ describe('workspace-shared slots', () => {
 describe('workspace-shared frontmatter merge', () => {
   it('layers a port override over shared defaults and stamps port/product', () => {
     const frontmatter = { title: 'Shared title', ports: { go: { title: 'Go title' } } }
-    expect(resolvePortData(frontmatter, 'go', 'workspace')).toEqual({ title: 'Go title', port: 'go', product: 'workspace' })
-    expect(resolvePortData(frontmatter, 'ts', 'workspace')).toEqual({ title: 'Shared title', port: 'ts', product: 'workspace' })
+    expect(resolvePortData(frontmatter, 'go', 'workspace')).toEqual({
+      title: 'Go title',
+      port: 'go',
+      product: 'workspace',
+    })
+    expect(resolvePortData(frontmatter, 'ts', 'workspace')).toEqual({
+      title: 'Shared title',
+      port: 'ts',
+      product: 'workspace',
+    })
   })
 })

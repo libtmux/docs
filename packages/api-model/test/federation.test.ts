@@ -79,10 +79,7 @@ describe('inventories are scoped to their own language', () => {
     for (const port of OTHER_PORTS) {
       for (const name of [...POACHED, 'Stream.filter()']) {
         const res = r.resolve(port, name)
-        expect(
-          res.how === 'federated' ? res.project : '',
-          `${port} resolved ${name}`,
-        ).not.toBe('Python')
+        expect(res.how === 'federated' ? res.project : '', `${port} resolved ${name}`).not.toBe('Python')
       }
     }
   })
@@ -152,9 +149,7 @@ describe('constructors do not contest their own type', () => {
     // The symbol graph names a method `unsetEnvironment(_:in:)`; prose writes
     // `unsetEnvironment`. Both must find it.
     const r = new Resolver([
-      model('swift', [
-        { id: 'TmuxServer.unsetEnvironment(_:in:)', name: 'unsetEnvironment(_:in:)', kind: 'method' },
-      ]),
+      model('swift', [{ id: 'TmuxServer.unsetEnvironment(_:in:)', name: 'unsetEnvironment(_:in:)', kind: 'method' }]),
     ] as never)
     expect(r.resolve('swift', 'unsetEnvironment').how).toBe('unique')
   })
@@ -170,8 +165,7 @@ describe('constructors do not contest their own type', () => {
  * two characters.
  */
 describe('module names', () => {
-  const sym = (id: string, name: string) =>
-    ({ id, name, kind: 'class', signatures: [], docs: [] }) as never
+  const sym = (id: string, name: string) => ({ id, name, kind: 'class', signatures: [], docs: [] }) as never
 
   it('reads a module off a public id in every separator style', () => {
     expect(moduleOf(sym('libtmux.neo.Obj', 'Obj'))).toBe('libtmux.neo')
@@ -222,8 +216,7 @@ describe('module names', () => {
  * uses for its anchor.
  */
 describe('modules resolve as destinations', () => {
-  const sym = (id: string, name: string) =>
-    ({ id, name, kind: 'class', signatures: [], docs: [] }) as never
+  const sym = (id: string, name: string) => ({ id, name, kind: 'class', signatures: [], docs: [] }) as never
   const r = new Resolver([
     {
       port: 'py',
@@ -353,9 +346,9 @@ describe('enum variants reach the model', () => {
   it.runIf(existsSync(join(here, '../../../site/src/data/api/rs.json')))(
     'every enum with variants has them attached, not floating',
     () => {
-      const model = JSON.parse(
-        readFileSync(join(here, '../../../site/src/data/api/rs.json'), 'utf8'),
-      ) as { symbols: { id: string; kind: string; parent?: string }[] }
+      const model = JSON.parse(readFileSync(join(here, '../../../site/src/data/api/rs.json'), 'utf8')) as {
+        symbols: { id: string; kind: string; parent?: string }[]
+      }
       const enumIds = new Set(model.symbols.filter((s) => s.kind === 'enum').map((s) => s.id))
       const attached = model.symbols.filter((s) => s.parent && enumIds.has(s.parent))
       expect(attached.length).toBeGreaterThan(100)
@@ -389,12 +382,7 @@ describe('JDK and DOM federation', () => {
   const resolver = () => {
     const r = new Resolver([])
     if (jdk) {
-      r.addInventory(
-        'Java SE',
-        'https://docs.oracle.com/en/java/javase/21/docs/api/',
-        jdk.entries,
-        ['java'],
-      )
+      r.addInventory('Java SE', 'https://docs.oracle.com/en/java/javase/21/docs/api/', jdk.entries, ['java'])
     }
     if (dom) r.addInventory('MDN', 'https://developer.mozilla.org/', dom.entries, ['ts'])
     return r
@@ -417,9 +405,7 @@ describe('JDK and DOM federation', () => {
     expect(res.how).toBe('federated')
     // A language builtin, not a DOM interface. MDN files the two apart and so
     // must the inventory: `Web/API/Promise` is a page that does not exist.
-    expect(res.how === 'federated' && res.href).toContain(
-      'Web/JavaScript/Reference/Global_Objects/Promise',
-    )
+    expect(res.how === 'federated' && res.href).toContain('Web/JavaScript/Reference/Global_Objects/Promise')
   })
 
   it.runIf(dom)('keeps DOM interfaces under Web/API', () => {

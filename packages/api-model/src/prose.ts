@@ -37,7 +37,8 @@ export const OWNER_KINDS: ReadonlySet<string> = new Set([
   'class',
   'exception',
   'interface',
-  'struct', 'union',
+  'struct',
+  'union',
   'trait',
   'enum',
   'module',
@@ -153,8 +154,12 @@ export function portFromSentence(before: string): string | undefined {
  */
 export function isLikelyReference(text: string): boolean {
   const t = text.trim()
-  return /\(/.test(t) || /[.:]|->/.test(t) || /^[A-Z][A-Za-z0-9_]*$/.test(t)
-    || /^(?:[\w.]+\\)?[A-Z][A-Za-z]+-[A-Za-z][\w]*$/.test(t)
+  return (
+    /\(/.test(t) ||
+    /[.:]|->/.test(t) ||
+    /^[A-Z][A-Za-z0-9_]*$/.test(t) ||
+    /^(?:[\w.]+\\)?[A-Z][A-Za-z]+-[A-Za-z][\w]*$/.test(t)
+  )
 }
 
 /**
@@ -270,9 +275,10 @@ export function decideMention(
     if (builtin) return { kind: 'link', port, href: builtin, title: `${text}: ${PORT_NAME[port]}`, external: true }
   }
   // A known language must never resolve a similarly named API in another port.
-  if (tried.length) return ambiguous
-    ? { kind: 'skip', why: 'ambiguous within the stated port; qualify the receiver to link it' }
-    : { kind: 'unresolved', why: 'not defined in the stated port', tried }
+  if (tried.length)
+    return ambiguous
+      ? { kind: 'skip', why: 'ambiguous within the stated port; qualify the receiver to link it' }
+      : { kind: 'unresolved', why: 'not defined in the stated port', tried }
 
   // Nothing said which language. One claimant is an answer; several are not.
   const claims: { port: string; decision: MentionDecision }[] = []
@@ -383,9 +389,10 @@ export function decideFilePath(
     if (hit?.ambiguous) return { kind: 'unresolved', why: `several files named this in ${port} — write the path out` }
     if (hit) return { kind: 'link', port, path: hit.path, dir: hit.dir }
   }
-  if (named || ctx.pagePort) return generic
-    ? { kind: 'skip', why: 'names a kind of file, not one path' }
-    : { kind: 'unresolved', why: 'not held by the stated port' }
+  if (named || ctx.pagePort)
+    return generic
+      ? { kind: 'skip', why: 'names a kind of file, not one path' }
+      : { kind: 'unresolved', why: 'not held by the stated port' }
   const all = Object.keys(trees).flatMap((port) => {
     const hit = claims(port)
     return hit && !hit.ambiguous ? [{ port, path: hit.path, dir: hit.dir }] : []

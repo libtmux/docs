@@ -2,9 +2,20 @@ import type { SymbolKind } from '@libtmux/api-model'
 
 /** Compact marks retain the documented kind, including module versus method. */
 const KIND_MARKS: Record<SymbolKind, string> = {
-  class: 'C', interface: 'I', struct: 'S', union: 'U', enum: 'E', trait: 'T',
-  module: 'M', function: 'f', method: 'm', property: 'p', attribute: 'a',
-  constant: 'k', typealias: 'A', exception: '!',
+  class: 'C',
+  interface: 'I',
+  struct: 'S',
+  union: 'U',
+  enum: 'E',
+  trait: 'T',
+  module: 'M',
+  function: 'f',
+  method: 'm',
+  property: 'p',
+  attribute: 'a',
+  constant: 'k',
+  typealias: 'A',
+  exception: '!',
 }
 
 const PROTOCOL_MARKS: Record<string, string> = { tool: 't', prompt: 'P', resource: 'r', 'resource-template': 'R' }
@@ -17,6 +28,11 @@ const FULL_NAMESPACE_LENGTH = 48
 export function abbreviateNamespace(namespace: string): string {
   if ([...namespaceSegments.segment(namespace)].length <= FULL_NAMESPACE_LENGTH) return namespace
   const parts = namespace.split(/(::|[./])/)
-  return parts.map((part, index) => index % 2 === 0 && index < parts.length - 1
-    ? namespaceSegments.segment(part)[Symbol.iterator]().next().value?.segment ?? '' : part).join('')
+  return parts
+    .map((part, index) =>
+      index % 2 === 0 && index < parts.length - 1
+        ? (namespaceSegments.segment(part)[Symbol.iterator]().next().value?.segment ?? '')
+        : part,
+    )
+    .join('')
 }

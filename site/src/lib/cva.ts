@@ -134,43 +134,40 @@ export const navButtonVariants = cva(
  * </div>
  * ```
  */
-export const cardVariants = cva(
-  'relative rounded-lg border border-edge bg-surface shadow-sm',
-  {
-    variants: {
-      variant: {
-        // Default card style (ProjectCard)
-        default: 'p-6',
-        // Compact card style (Badge)
-        compact: 'p-4',
-      },
-      interactive: {
-        true: '',
-        false: '',
-      },
-      layout: {
-        // Vertical layout (ProjectCard)
-        vertical: 'flex flex-col items-center gap-3',
-        // Horizontal layout (Badge)
-        horizontal: 'flex items-start gap-3',
-      },
+export const cardVariants = cva('relative rounded-lg border border-edge bg-surface shadow-sm', {
+  variants: {
+    variant: {
+      // Default card style (ProjectCard)
+      default: 'p-6',
+      // Compact card style (Badge)
+      compact: 'p-4',
     },
-    compoundVariants: [
-      {
-        interactive: true,
-        class:
-          'cursor-pointer hover:bg-surface-hover focus:outline-none focus:ring-2 focus:ring-theme-primary/40 focus:ring-offset-2',
-      },
-      {
-        interactive: true,
-        variant: 'default',
-        class: 'hover:shadow-md',
-      },
-    ],
-    defaultVariants: {
-      variant: 'default',
-      interactive: false,
-      layout: 'vertical',
+    interactive: {
+      true: '',
+      false: '',
+    },
+    layout: {
+      // Vertical layout (ProjectCard)
+      vertical: 'flex flex-col items-center gap-3',
+      // Horizontal layout (Badge)
+      horizontal: 'flex items-start gap-3',
     },
   },
-)
+  compoundVariants: [
+    {
+      interactive: true,
+      class:
+        'cursor-pointer hover:bg-surface-hover focus:outline-none focus:ring-2 focus:ring-theme-primary/40 focus:ring-offset-2',
+    },
+    {
+      interactive: true,
+      variant: 'default',
+      class: 'hover:shadow-md',
+    },
+  ],
+  defaultVariants: {
+    variant: 'default',
+    interactive: false,
+    layout: 'vertical',
+  },
+})

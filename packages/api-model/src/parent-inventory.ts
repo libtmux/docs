@@ -26,4 +26,3 @@ export function parentInventory(model: ApiModel, hrefFor: (symbol: ApiSymbol) =>
     return best.length === 1 ? [best[0].entry] : []
   })
 }
-

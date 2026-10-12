@@ -9,7 +9,7 @@
       "files": [
         {
           "name": "workspace.ts",
-          "sha256": "20905548b12c76a93a0c6c0e6f939ade736bcc1b753dbd767125a71bf26b87ca"
+          "sha256": "48f427838a8a24fffce10f32056c6e66cb5de168753b31430456d1aa4f60012d"
         },
         {
           "name": "package.json",
@@ -26,7 +26,7 @@
       "page": "ports/ts/workspace/internals/examples",
       "shellRecipe": [
         "mkdir workspace-example && cd workspace-example",
-        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-ts.git && \\\n    git -C libtmux-source fetch --depth 1 origin 3fe1ca654b81b8cbf4a13b777a001a3298c87a6f && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
+        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin \\\n      https://github.com/libtmux/libtmux-ts.git && \\\n    git -C libtmux-source fetch --depth 1 origin \\\n      3fe1ca654b81b8cbf4a13b777a001a3298c87a6f && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
         "bun install --production",
         "bun run workspace.ts"
       ]
@@ -39,7 +39,7 @@
       "files": [
         {
           "name": "mcp.ts",
-          "sha256": "982f01a2d52160b6fbc0ed982c98542c4c8341022c1dac9da10809083a1124f7"
+          "sha256": "417db454b49ea128e354223edb9d7e26ffd592051b1513238e7066612b7edcf1"
         },
         {
           "name": "package.json",
@@ -56,7 +56,7 @@
       "page": "ports/ts/mcp/examples",
       "shellRecipe": [
         "mkdir mcp-example && cd mcp-example",
-        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-ts.git && \\\n    git -C libtmux-source fetch --depth 1 origin 3fe1ca654b81b8cbf4a13b777a001a3298c87a6f && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
+        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin \\\n      https://github.com/libtmux/libtmux-ts.git && \\\n    git -C libtmux-source fetch --depth 1 origin \\\n      3fe1ca654b81b8cbf4a13b777a001a3298c87a6f && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
         "bun install --production",
         "bun run mcp.ts"
       ]
@@ -69,7 +69,7 @@
       "files": [
         {
           "name": "Sources/WorkspaceExample/WorkspaceExample.swift",
-          "sha256": "17787f2ccf5e5d1bca44e113c2608810b8787caa6da9ecd65f371b5ba57c72b1"
+          "sha256": "50cf7f39f7c387e24d88678134b538c2c081f6c0efdefd51d779efa9bfb14f44"
         },
         {
           "name": "Package.swift",
@@ -86,7 +86,7 @@
       "page": "ports/swift/workspace/internals/examples",
       "shellRecipe": [
         "mkdir swift-workspace-example && cd swift-workspace-example && \\\n  mkdir -p Sources/WorkspaceExample",
-        "git init libtmux-source && \\\n  git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-swift.git && \\\n  git -C libtmux-source fetch --depth=1 origin 254f8b2be7eb60cacc3ffcb3ea8e456784f582df && \\\n  git -C libtmux-source checkout --detach FETCH_HEAD",
+        "git init libtmux-source && \\\n  git -C libtmux-source remote add origin \\\n    https://github.com/libtmux/libtmux-swift.git && \\\n  git -C libtmux-source fetch --depth=1 origin \\\n    254f8b2be7eb60cacc3ffcb3ea8e456784f582df && \\\n  git -C libtmux-source checkout --detach FETCH_HEAD",
         "swift run --jobs 2 WorkspaceExample"
       ]
     },
@@ -115,7 +115,7 @@
       "page": "ports/swift/mcp/examples",
       "shellRecipe": [
         "mkdir swift-mcp-example && cd swift-mcp-example && \\\n  mkdir -p Sources/MCPExample",
-        "git init libtmux-source && \\\n  git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-swift.git && \\\n  git -C libtmux-source fetch --depth=1 origin 254f8b2be7eb60cacc3ffcb3ea8e456784f582df && \\\n  git -C libtmux-source checkout --detach FETCH_HEAD",
+        "git init libtmux-source && \\\n  git -C libtmux-source remote add origin \\\n    https://github.com/libtmux/libtmux-swift.git && \\\n  git -C libtmux-source fetch --depth=1 origin \\\n    254f8b2be7eb60cacc3ffcb3ea8e456784f582df && \\\n  git -C libtmux-source checkout --detach FETCH_HEAD",
         "swift run --jobs 2 MCPExample"
       ]
     },
@@ -140,7 +140,7 @@
       "page": "ports/swift/mcp/guides",
       "shellRecipe": [
         "mkdir swift-mcp-client && cd swift-mcp-client",
-        "git init libtmux-source && \\\n  git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-swift.git && \\\n  git -C libtmux-source fetch --depth=1 origin 254f8b2be7eb60cacc3ffcb3ea8e456784f582df && \\\n  git -C libtmux-source checkout --detach FETCH_HEAD && \\\n  swift build --package-path libtmux-source --product libtmux-mcp --jobs 2",
+        "git init libtmux-source && \\\n  git -C libtmux-source remote add origin \\\n    https://github.com/libtmux/libtmux-swift.git && \\\n  git -C libtmux-source fetch --depth=1 origin \\\n    254f8b2be7eb60cacc3ffcb3ea8e456784f582df && \\\n  git -C libtmux-source checkout --detach FETCH_HEAD && \\\n  swift build --package-path libtmux-source --product libtmux-mcp --jobs 2",
         "sh run-mcp.sh"
       ]
     },
@@ -152,7 +152,7 @@
       "files": [
         {
           "name": "src/main/java/McpExample.java",
-          "sha256": "784f78db838619a9cdbc4507fa0abbabf262fa43f975819519f785275bddc7c8"
+          "sha256": "8728c8529fcd10fc986639368a652e426916be659cacc369eabdb25c20d19171"
         },
         {
           "name": "settings.gradle.kts",
@@ -173,7 +173,7 @@
       ],
       "page": "ports/java/mcp/examples",
       "shellRecipe": [
-        "mkdir java-mcp-example && cd java-mcp-example && \\\n    git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-java.git && \\\n    git -C libtmux-source fetch --depth=1 origin 842228310449e879ebcaa3f910597757c9dbffd6 && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD && \\\n    mkdir -p src/main/java",
+        "mkdir java-mcp-example && cd java-mcp-example && \\\n    git init libtmux-source && \\\n    git -C libtmux-source remote add origin \\\n      https://github.com/libtmux/libtmux-java.git && \\\n    git -C libtmux-source fetch --depth=1 origin \\\n      842228310449e879ebcaa3f910597757c9dbffd6 && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD && \\\n    mkdir -p src/main/java",
         "./libtmux-source/gradlew --no-daemon --max-workers=2 -p . installDist",
         "./build/install/mcp-example/bin/mcp-example"
       ]
@@ -186,7 +186,7 @@
       "files": [
         {
           "name": "run-mcp.sh",
-          "sha256": "e3b697676591e62e98769a988d0002efcfa693474feb228656589a472b0744f4"
+          "sha256": "3c3246e2d5b15136e4d0b0d76150ded9baad3987e3afbd7af5805b2c3bd503aa"
         }
       ],
       "toolchain": [
@@ -200,7 +200,7 @@
       "page": "ports/java/mcp/guides",
       "shellRecipe": [
         "mkdir java-mcp-client && cd java-mcp-client",
-        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-java.git && \\\n    git -C libtmux-source fetch --depth=1 origin 842228310449e879ebcaa3f910597757c9dbffd6 && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD && \\\n    ./libtmux-source/gradlew --no-daemon --max-workers=2 \\\n    -p libtmux-source :libtmux-mcp:installDist",
+        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin \\\n      https://github.com/libtmux/libtmux-java.git && \\\n    git -C libtmux-source fetch --depth=1 origin \\\n      842228310449e879ebcaa3f910597757c9dbffd6 && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD && \\\n    ./libtmux-source/gradlew --no-daemon --max-workers=2 \\\n    -p libtmux-source :libtmux-mcp:installDist",
         "sh run-mcp.sh"
       ]
     },
@@ -212,7 +212,7 @@
       "files": [
         {
           "name": "main.go",
-          "sha256": "8212bcec780cf5c69da03f90c9621318fc4f54e4f63d1b0147a32618173a60c5"
+          "sha256": "00cb53b40d67d587fe05489117bf84734682c0cd75db4d81782c1d7c9d1d5433"
         },
         {
           "name": "go.mod",
@@ -233,7 +233,7 @@
       "page": "ports/go/workspace/internals/examples",
       "shellRecipe": [
         "mkdir go-workspace-example && cd go-workspace-example",
-        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-go.git && \\\n    git -C libtmux-source fetch --depth=1 origin bb06e26e116e941813ca40bf45e7e3a47d38f52a && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
+        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin \\\n      https://github.com/libtmux/libtmux-go.git && \\\n    git -C libtmux-source fetch --depth=1 origin \\\n      bb06e26e116e941813ca40bf45e7e3a47d38f52a && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
         "go mod tidy",
         "go run ."
       ]
@@ -246,11 +246,11 @@
       "files": [
         {
           "name": "src/main.rs",
-          "sha256": "a35348dc9fa3b8db147aa11f253324845e6dee0730c9a65dd08314fd946d171a"
+          "sha256": "e5ef8236b74141a7097eb1eabf1dbfb301698bd8a8de2abe4689474848c896ba"
         },
         {
           "name": "Cargo.toml",
-          "sha256": "1255751db8fb75290d2db99649c1be104325c31be652500df07d95ad5cd16ac4"
+          "sha256": "4e4777c6f634fffe13fc53ca7f5b0fd2cfe3a5ff6285649649e41ded90f078b3"
         },
         {
           "name": "workspace.yaml",
@@ -267,7 +267,7 @@
       "page": "ports/rs/workspace/internals/examples",
       "shellRecipe": [
         "mkdir rust-workspace-example && cd rust-workspace-example && \\\n    mkdir src",
-        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-rs.git && \\\n    git -C libtmux-source fetch --depth=1 origin d4e08b4eaab62ef4eeedab79b47973ae9a1de310 && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
+        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin \\\n      https://github.com/libtmux/libtmux-rs.git && \\\n    git -C libtmux-source fetch --depth=1 origin \\\n      d4e08b4eaab62ef4eeedab79b47973ae9a1de310 && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
         "cargo run --quiet"
       ]
     },
@@ -308,7 +308,7 @@
       "files": [
         {
           "name": "snapshot-sessions.rb",
-          "sha256": "2df8b331308a9541b21b7c8325578fcdecb5f520b639542e7fe9cb6856341fee"
+          "sha256": "e199f960866900ea6d86be97af62575c578226b81e350e3ee0c2b6aa9587e731"
         }
       ],
       "toolchain": [
@@ -336,11 +336,11 @@
       "files": [
         {
           "name": "Cargo.toml",
-          "sha256": "5ec266b05567cb1799d2df65b3dcf6f5db69cab7c8878616d43f21da192d2562"
+          "sha256": "7c7f4c989307b8558a10cd0de051c0bc55e81c3b2575ff53b6212af51460cf7b"
         },
         {
           "name": "src/main.rs",
-          "sha256": "e3c7b08830177404e9c6c87b8680398a4983840b8ac3832bb7a461f5eaf6419e"
+          "sha256": "c4e72d88150e32fd86c4950c2878601aa8b48cba2effe72619776d61db984bf1"
         }
       ],
       "toolchain": [
@@ -371,7 +371,7 @@
         },
         {
           "name": "Program.cs",
-          "sha256": "b4c74bacf7abf45491f911e3ae1c6ccff35f46f57e3ff0aa679b16810d63ff4e"
+          "sha256": "3109d8145bd37f0959a6917ee22094ad41af733536d2425744e07e6dfc39afaa"
         }
       ],
       "toolchain": [
@@ -403,7 +403,7 @@
         },
         {
           "name": "Program.cs",
-          "sha256": "bd64d8460a0a04fd573250346c8a4511b7b001c9cbcdcfc00311f4197c452ebe"
+          "sha256": "5455e13e1c8ea9f1407b8c6aa25070d37c81542f2e7c85e3f87b634d66f14c1f"
         }
       ],
       "toolchain": [
@@ -435,7 +435,7 @@
         },
         {
           "name": "main.go",
-          "sha256": "4bf5af2cacf59ee249faf5b1a03c90989a4630f677bf2269333cdb3d23a8d992"
+          "sha256": "1814b076ea0a627ff6580f40daf31dc78826be4b027d80551d5807523277e34f"
         }
       ],
       "toolchain": [
@@ -469,7 +469,7 @@
         },
         {
           "name": "main.go",
-          "sha256": "463b621f2e258be2bb76bd510ef29477d2100b97d531bcfde816c7b54717d596"
+          "sha256": "887d4e5133063033225d24f1149706f2d87213acfb65c38e8869d901dbece1c3"
         }
       ],
       "toolchain": [

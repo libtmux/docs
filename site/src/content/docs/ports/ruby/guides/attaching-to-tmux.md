@@ -30,7 +30,8 @@ the example.
 require "libtmux"
 
 LibTmux::Server.open(socket_path: ENV.fetch("LIBTMUX_SOCKET_PATH")) do |server|
-  session = server.snapshot.sessions.find { |candidate| candidate.name == "work" }
+  sessions = server.snapshot.sessions
+  session = sessions.find { |candidate| candidate.name == "work" }
   raise "The work session does not exist" unless session
   puts session.name
 end

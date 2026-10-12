@@ -14,10 +14,11 @@ function audit(html: string) {
   scratch.push(path)
   writeFileSync(join(path, 'index.html'), html)
   const result = spawnSync(process.execPath, [checker, '--site', path, '--url', 'http://127.0.0.1:1', '--json'], {
-    encoding: 'utf8', timeout: 5000,
+    encoding: 'utf8',
+    timeout: 5000,
   })
   expect(result.error, result.stderr).toBeUndefined()
-  return { status: result.status, ...JSON.parse(result.stdout) as { notes: string[]; failures: string[] } }
+  return { status: result.status, ...(JSON.parse(result.stdout) as { notes: string[]; failures: string[] }) }
 }
 
 describe('font audit redirect exemptions', () => {

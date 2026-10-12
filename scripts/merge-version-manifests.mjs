@@ -10,17 +10,45 @@ function fail(message) {
 }
 
 export function validateReceipt(value, port, version) {
-  const check = (condition, message) => { if (!condition) fail(message) }
+  const check = (condition, message) => {
+    if (!condition) fail(message)
+  }
   const DIGEST = /^[0-9a-f]{64}$/
   const prefix = value?.destination?.prefix
   const parts = typeof prefix === 'string' ? prefix.split('/') : []
-  check(parts.length === 4 && /^[a-z]{2}(?:-[A-Z]{2})?$/.test(parts[0]) && parts[1] === port && parts[2] === version && parts[3] === '' && !prefix.includes('..'),
-    'publication receipt belongs to another destination')
-  check(value.destination.url === `https://libtmux.org/${prefix}` && value.build?.url === `/${prefix}build-provenance.json` && DIGEST.test(value.build?.sha256 ?? ''), 'invalid publication build/destination')
-  check(value.publisher?.repository === 'libtmux/docs' && /^[0-9a-f]{40}$/.test(value.publisher?.sha ?? ''), 'invalid publication publisher')
+  check(
+    parts.length === 4 &&
+      /^[a-z]{2}(?:-[A-Z]{2})?$/.test(parts[0]) &&
+      parts[1] === port &&
+      parts[2] === version &&
+      parts[3] === '' &&
+      !prefix.includes('..'),
+    'publication receipt belongs to another destination',
+  )
+  check(
+    value.destination.url === `https://libtmux.org/${prefix}` &&
+      value.build?.url === `/${prefix}build-provenance.json` &&
+      DIGEST.test(value.build?.sha256 ?? ''),
+    'invalid publication build/destination',
+  )
+  check(
+    value.publisher?.repository === 'libtmux/docs' && /^[0-9a-f]{40}$/.test(value.publisher?.sha ?? ''),
+    'invalid publication publisher',
+  )
   check(['published', 'verified-existing'].includes(value.operation), 'invalid publication operation')
-  check(Number.isSafeInteger(value.artifact?.id) && value.artifact.id > 0 && typeof value.artifact.name === 'string' && DIGEST.test(value.artifact.sha256 ?? ''), 'invalid publication artifact')
-  check(/^https:\/\/github\.com\/[^/]+\/[^/]+\/actions\/runs\/[0-9]+$/.test(value.run?.url ?? '') && Number.isSafeInteger(value.run?.attempt) && value.run.attempt > 0, 'invalid publication run')
+  check(
+    Number.isSafeInteger(value.artifact?.id) &&
+      value.artifact.id > 0 &&
+      typeof value.artifact.name === 'string' &&
+      DIGEST.test(value.artifact.sha256 ?? ''),
+    'invalid publication artifact',
+  )
+  check(
+    /^https:\/\/github\.com\/[^/]+\/[^/]+\/actions\/runs\/[0-9]+$/.test(value.run?.url ?? '') &&
+      Number.isSafeInteger(value.run?.attempt) &&
+      value.run.attempt > 0,
+    'invalid publication run',
+  )
 }
 
 function parseArgs(argv) {
@@ -76,12 +104,12 @@ function main() {
   const directory = resolve(options.fragments)
   const fragments = existsSync(directory)
     ? readdirSync(directory, { withFileTypes: true })
-      .filter((entry) => entry.isFile() && entry.name.endsWith('.json'))
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .map((entry) => ({
-        port: basename(entry.name, '.json'),
-        manifest: readManifest(resolve(directory, entry.name)),
-      }))
+        .filter((entry) => entry.isFile() && entry.name.endsWith('.json'))
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((entry) => ({
+          port: basename(entry.name, '.json'),
+          manifest: readManifest(resolve(directory, entry.name)),
+        }))
     : []
   const result = merge(readManifest(resolve(options.base)), fragments)
   writeFileSync(resolve(options.out), `${JSON.stringify(result, null, 2)}\n`)

@@ -13,7 +13,10 @@ import { apiGlossaryHref } from '../src/lib/api-glossary'
 import { initLinkPreviews, disposeLinkPreviews, linkPreviewTarget } from '../src/lib/link-preview-browser'
 
 it.each([
-  ['/en/powershell/latest/workspace/reference/libtmux-workspace/', '/en/powershell/latest/workspace/reference/glossary/#cmdlet'],
+  [
+    '/en/powershell/latest/workspace/reference/libtmux-workspace/',
+    '/en/powershell/latest/workspace/reference/glossary/#cmdlet',
+  ],
   ['/pr-42/en/julia/latest/mcp/reference/libtmuxmcp-tools/', '/pr-42/en/julia/latest/mcp/reference/glossary/#cmdlet'],
   ['/en/julia/latest/reference/libtmux-from_env/', '/en/julia/latest/reference/glossary/#cmdlet'],
 ])('keeps glossary terms in their existing reference context: %s', (context, expected) => {
@@ -47,8 +50,15 @@ it('provides exact glossary terms with durable destinations', () => {
 
 it('only fetches same-origin supported reference URLs', () => {
   const origin = 'https://libtmux.org'
-  expect(linkPreviewTarget('/en/ts/latest/reference/server/#parameter', origin)?.endpoint).toBe('/en/ts/latest/reference/server.preview.json')
-  for (const url of ['https://elsewhere.test/reference/server/', '/en/guides/', '/en/ts/latest/reference/server/?q=1', 'javascript:alert(1)']) {
+  expect(linkPreviewTarget('/en/ts/latest/reference/server/#parameter', origin)?.endpoint).toBe(
+    '/en/ts/latest/reference/server.preview.json',
+  )
+  for (const url of [
+    'https://elsewhere.test/reference/server/',
+    '/en/guides/',
+    '/en/ts/latest/reference/server/?q=1',
+    'javascript:alert(1)',
+  ]) {
     expect(linkPreviewTarget(url, origin)).toBeUndefined()
   }
 })
@@ -58,23 +68,42 @@ it('keeps native keyword help and parameter permalinks inside their inline parag
   const { transform } = await import(astroRequire.resolve('@astrojs/compiler-rs'))
   async function compile(relative: string, imports: Record<string, string> = {}) {
     const file = new URL(relative, import.meta.url)
-    const source = readFileSync(file, 'utf8').replace(/<script[\s\S]*?<\/script>/g, '').replace(/<style[\s\S]*?<\/style>/g, '')
-    const result = await transform(source, { filename: file.pathname, internalURL: 'astro/compiler-runtime',
-      resultScopedSlot: true, resolvePath: (specifier: string) => specifier })
+    const source = readFileSync(file, 'utf8')
+      .replace(/<script[\s\S]*?<\/script>/g, '')
+      .replace(/<style[\s\S]*?<\/style>/g, '')
+    const result = await transform(source, {
+      filename: file.pathname,
+      internalURL: 'astro/compiler-runtime',
+      resultScopedSlot: true,
+      resolvePath: (specifier: string) => specifier,
+    })
     expect(result.diagnostics.filter((item: { severity: string }) => item.severity === 'error')).toEqual([])
-    let code = result.code.replaceAll('"astro/compiler-runtime"', JSON.stringify(pathToFileURL(astroRequire.resolve('astro/compiler-runtime')).href))
-    for (const [specifier, url] of Object.entries(imports)) code = code.replaceAll(JSON.stringify(specifier), JSON.stringify(url))
+    let code = result.code.replaceAll(
+      '"astro/compiler-runtime"',
+      JSON.stringify(pathToFileURL(astroRequire.resolve('astro/compiler-runtime')).href),
+    )
+    for (const [specifier, url] of Object.entries(imports))
+      code = code.replaceAll(JSON.stringify(specifier), JSON.stringify(url))
     return `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`
   }
   const preview = await compile('../src/components/LinkPreview.astro')
   const keyword = await compile('../src/components/api/ApiKeyword.astro', { '../LinkPreview.astro': preview })
   const model = API_MODELS.kotlin
   const symbol = model.symbols.find((entry) => entry.id === 'io.github.libtmux.kotlin.ControlClient.output')!
-  const parameter = symbol.signatures.flatMap((signature) => signature.params).find((entry) => entry.name === 'onSubscribed')!
-  const helped = productApiIndex(model, 'latest').linkType(parameter.type!, symbol).find((span) => span.help)!
+  const parameter = symbol.signatures
+    .flatMap((signature) => signature.params)
+    .find((entry) => entry.name === 'onSubscribed')!
+  const helped = productApiIndex(model, 'latest')
+    .linkType(parameter.type!, symbol)
+    .find((span) => span.help)!
   const container = await experimental_AstroContainer.create()
-  const html = await container.renderToString((await import(/* @vite-ignore */ keyword)).default, { props: { text: helped.text, help: helped.help } })
-  const tree = fromHtml(`<p><strong>onSubscribed</strong> (${html}<span> () → Unit</span>) <a href="#parameter">#</a></p>`, { fragment: true })
+  const html = await container.renderToString((await import(/* @vite-ignore */ keyword)).default, {
+    props: { text: helped.text, help: helped.help },
+  })
+  const tree = fromHtml(
+    `<p><strong>onSubscribed</strong> (${html}<span> () → Unit</span>) <a href="#parameter">#</a></p>`,
+    { fragment: true },
+  )
   // Use the HTML5 parser: a hidden block element can still close the parameter paragraph.
   expect(tree.children).toHaveLength(1)
   const paragraph = tree.children[0]
@@ -99,18 +128,43 @@ let prefix: string
 beforeEach(() => {
   prefix = `/en/ts/latest/reference/preview-test-${++serial}`
   win = new Window({ url: 'https://libtmux.org/en/ts/latest/guides/' })
-  for (const [name, value] of Object.entries({ window: win, document: win.document, location: win.location,
-    Element: win.Element, Node: win.Node, HTMLElement: win.HTMLElement, innerHeight: 800 })) vi.stubGlobal(name, value)
+  for (const [name, value] of Object.entries({
+    window: win,
+    document: win.document,
+    location: win.location,
+    Element: win.Element,
+    Node: win.Node,
+    HTMLElement: win.HTMLElement,
+    innerHeight: 800,
+  }))
+    vi.stubGlobal(name, value)
   vi.useFakeTimers()
   opened = false
   win.document.body.innerHTML = `<a id="a" href="${prefix}-a/">a</a><a id="b" href="${prefix}-b/">b</a>
     <span id="reference-link-preview"><code data-preview-title></code><button data-preview-expand hidden aria-expanded="false">Show full name</button><span data-preview-description></span>
     <span data-preview-detail></span><code data-preview-signature></code><a data-preview-open></a><button data-preview-close>Close</button></span>`
   const panel = win.document.getElementById('reference-link-preview')!
-  Object.assign(panel, { showPopover: () => { opened = true }, hidePopover: () => { opened = false } })
+  Object.assign(panel, {
+    showPopover: () => {
+      opened = true
+    },
+    hidePopover: () => {
+      opened = false
+    },
+  })
   const matches = panel.matches.bind(panel)
-  panel.matches = (selector) => selector === ':popover-open' ? opened : matches(selector)
-  requests = vi.fn(async (path: string) => new Response(JSON.stringify({ schema: 1, title: path.includes('-a.') ? 'a' : 'b', description: 'Useful description.', href: path.replace('.preview.json', '/') })))
+  panel.matches = (selector) => (selector === ':popover-open' ? opened : matches(selector))
+  requests = vi.fn(
+    async (path: string) =>
+      new Response(
+        JSON.stringify({
+          schema: 1,
+          title: path.includes('-a.') ? 'a' : 'b',
+          description: 'Useful description.',
+          href: path.replace('.preview.json', '/'),
+        }),
+      ),
+  )
   vi.stubGlobal('fetch', requests)
   initLinkPreviews()
 })
@@ -122,7 +176,8 @@ afterEach(async () => {
   vi.restoreAllMocks()
 })
 const link = (id = 'a') => win.document.querySelector<HTMLAnchorElement>(`#${id}`)!
-const hover = (id = 'a', pointerType = 'mouse') => link(id).dispatchEvent(new win.PointerEvent('pointerover', { pointerType, bubbles: true }))
+const hover = (id = 'a', pointerType = 'mouse') =>
+  link(id).dispatchEvent(new win.PointerEvent('pointerover', { pointerType, bubbles: true }))
 const settle = () => vi.advanceTimersByTimeAsync(200)
 const title = () => win.document.querySelector('[data-preview-title]')!.textContent
 const escape = () => win.document.dispatchEvent(new win.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
@@ -131,9 +186,11 @@ describe('preview lifecycle', () => {
   it('keeps the destructor name and native signature intact with meaningful title breaks', async () => {
     const name = 'libtmux::CommandOperation::~CommandOperation'
     const signature = '~CommandOperation();'
-    requests.mockResolvedValueOnce(new Response(JSON.stringify({ schema: 1, title: name,
-      description: '', signature, href: `${prefix}-a/` })))
-    hover(); await settle()
+    requests.mockResolvedValueOnce(
+      new Response(JSON.stringify({ schema: 1, title: name, description: '', signature, href: `${prefix}-a/` })),
+    )
+    hover()
+    await settle()
     const panel = win.document.getElementById('reference-link-preview')!
     expect(title()).toBe(name)
     expect(panel.getAttribute('aria-label')).toBe(`${name} preview`)
@@ -146,9 +203,11 @@ describe('preview lifecycle', () => {
   it('expands long qualified names in place without changing full identity, signature or destination', async () => {
     const name = 'io.github.libtmux.workspace.WorkspaceBuilder.applyWorkspace'
     const signature = 'public WorkspaceResult applyWorkspace(WorkspacePlan plan);'
-    requests.mockResolvedValueOnce(new Response(JSON.stringify({ schema: 1, title: name,
-      description: '', signature, href: `${prefix}-a/` })))
-    hover(); await settle()
+    requests.mockResolvedValueOnce(
+      new Response(JSON.stringify({ schema: 1, title: name, description: '', signature, href: `${prefix}-a/` })),
+    )
+    hover()
+    await settle()
     const panel = win.document.getElementById('reference-link-preview')!
     const expand = panel.querySelector<HTMLButtonElement>('[data-preview-expand]')!
     const short = title()
@@ -165,7 +224,9 @@ describe('preview lifecycle', () => {
     expand.click()
     expect(title()).toBe(short)
     expect(expand.getAttribute('aria-expanded')).toBe('false')
-    escape(); hover('b'); await settle()
+    escape()
+    hover('b')
+    await settle()
     expect(title()).toBe('b')
     expect(expand.hidden).toBe(true)
     expect(expand.getAttribute('aria-expanded')).toBe('false')
@@ -173,30 +234,42 @@ describe('preview lifecycle', () => {
 
   it('treats punctuation in a preview name as text when adding break opportunities', async () => {
     const name = 'libtmux::Value<Other> & Value<Script>'
-    requests.mockResolvedValueOnce(new Response(JSON.stringify({ schema: 1, title: name,
-      description: '', href: `${prefix}-a/` })))
-    hover(); await settle()
+    requests.mockResolvedValueOnce(
+      new Response(JSON.stringify({ schema: 1, title: name, description: '', href: `${prefix}-a/` })),
+    )
+    hover()
+    await settle()
     expect(title()).toBe(name)
     expect(win.document.querySelector('[data-preview-title] script')).toBeNull()
-    expect(Array.from(win.document.querySelector('[data-preview-title]')!.children).every((node) => node.tagName === 'WBR')).toBe(true)
+    expect(
+      Array.from(win.document.querySelector('[data-preview-title]')!.children).every((node) => node.tagName === 'WBR'),
+    ).toBe(true)
   })
 
   it('marks eligible previews without eagerly fetching their contents', () => {
     expect(link().hasAttribute('data-link-preview')).toBe(true)
     expect(requests).not.toHaveBeenCalled()
-    win.document.body.insertAdjacentHTML('beforeend', '<a id="external" href="https://example.com/reference/type/">External</a><nav><a id="nav" href="/en/ts/latest/reference/type/">Navigation</a></nav><a id="skip" data-preview-skip href="/en/ts/latest/reference/type/">Skip</a>')
+    win.document.body.insertAdjacentHTML(
+      'beforeend',
+      '<a id="external" href="https://example.com/reference/type/">External</a><nav><a id="nav" href="/en/ts/latest/reference/type/">Navigation</a></nav><a id="skip" data-preview-skip href="/en/ts/latest/reference/type/">Skip</a>',
+    )
     initLinkPreviews()
     for (const id of ['external', 'nav', 'skip']) expect(link(id).hasAttribute('data-link-preview')).toBe(false)
     expect(requests).not.toHaveBeenCalled()
   })
   it('keeps glossary destinations in documentation pickers as ordinary navigation', async () => {
-    win.document.body.insertAdjacentHTML('beforeend', `<header><details data-doc-picker open>
+    win.document.body.insertAdjacentHTML(
+      'beforeend',
+      `<header><details data-doc-picker open>
       <summary>Choose a port</summary><div><a id="picker" href="/en/julia/latest/mcp/reference/glossary/#attribute">Julia</a></div>
-    </details></header>`)
+    </details></header>`,
+    )
     initLinkPreviews()
     expect(link('picker').hasAttribute('data-link-preview')).toBe(false)
-    hover('picker'); await settle()
-    link('picker').focus(); await settle()
+    hover('picker')
+    await settle()
+    link('picker').focus()
+    await settle()
     const click = new win.MouseEvent('click', { bubbles: true, cancelable: true })
     link('picker').dispatchEvent(click)
     await settle()
@@ -212,7 +285,8 @@ describe('preview lifecycle', () => {
     expect(link().textContent).toBe('a')
     expect(link().getAttribute('aria-label')).toBe('Read a')
     expect(link().getAttribute('href')).toBe(`${prefix}-a/`)
-    link().focus(); await settle()
+    link().focus()
+    await settle()
     expect(opened).toBe(true)
     expect(link().getAttribute('aria-details')).toBe('reference-link-preview')
     expect(win.document.activeElement).toBe(link())
@@ -222,7 +296,8 @@ describe('preview lifecycle', () => {
     expect(win.document.activeElement).toBe(link())
     expect(link().title).toBe('')
     link('b').title = 'Dynamically added tooltip'
-    hover('b'); await settle()
+    hover('b')
+    await settle()
     expect(opened).toBe(true)
     expect(link('b').title).toBe('')
   })
@@ -234,35 +309,60 @@ describe('preview lifecycle', () => {
     initLinkPreviews()
     expect(link().title).toBe('')
     expect(link().getAttribute('aria-description')).toBe(origin)
-    requests.mockResolvedValueOnce(new Response(JSON.stringify({ schema: 1, title: 'inherited',
-      description: 'A member declared by a base type.', detail: 'Follow the declaration for its signature.', href: `${prefix}-a/` })))
-    hover(); await settle()
+    requests.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          schema: 1,
+          title: 'inherited',
+          description: 'A member declared by a base type.',
+          detail: 'Follow the declaration for its signature.',
+          href: `${prefix}-a/`,
+        }),
+      ),
+    )
+    hover()
+    await settle()
     const detail = win.document.querySelector<HTMLElement>('[data-preview-detail]')!
     expect(detail.hidden).toBe(false)
     expect(detail.textContent).toBe(`${origin}. Follow the declaration for its signature.`)
     expect(detail.children).toHaveLength(0)
-    escape(); hover('b'); await settle()
+    escape()
+    hover('b')
+    await settle()
     expect(detail.hidden).toBe(true)
     expect(detail.textContent).toBe('')
   })
   it('loads on intent, caches repeated requests, and ignores touch hover', async () => {
     expect(requests).not.toHaveBeenCalled()
-    hover('a', 'touch'); await settle(); expect(requests).not.toHaveBeenCalled()
-    hover(); await settle(); expect(requests).toHaveBeenCalledTimes(1); expect(opened).toBe(true)
-    escape(); hover(); await settle(); expect(requests).toHaveBeenCalledTimes(1)
+    hover('a', 'touch')
+    await settle()
+    expect(requests).not.toHaveBeenCalled()
+    hover()
+    await settle()
+    expect(requests).toHaveBeenCalledTimes(1)
+    expect(opened).toBe(true)
+    escape()
+    hover()
+    await settle()
+    expect(requests).toHaveBeenCalledTimes(1)
   })
 
   it.each(['card', 'inline', 'kind', 'context'])('keeps %s links inside browse cards free of previews', async (id) => {
-    win.document.body.insertAdjacentHTML('beforeend', `<div class="api-index-card">
+    win.document.body.insertAdjacentHTML(
+      'beforeend',
+      `<div class="api-index-card">
       <a id="card" class="api-index-card__link" href="/en/cxx/latest/mcp/resources/tmux-capabilities/">tmux-capabilities</a>
       <a id="kind" class="api-badge" data-link-preview href="/en/cxx/latest/reference/glossary/#function">function</a>
       <a id="context" class="api-badge" href="/en/cxx/latest/reference/glossary/#package">Package: tmux</a>
       <p>The startup-frozen <a id="inline" href="/en/cxx/latest/reference/server/">server</a> capability manifest.</p>
-    </div>`)
+    </div>`,
+    )
     initLinkPreviews()
     expect(link(id).hasAttribute('data-link-preview')).toBe(false)
-    hover(id); await settle()
-    link(id).focus(); await settle()
+    hover(id)
+    await settle()
+    link(id).focus()
+    await settle()
     const click = new win.MouseEvent('click', { bubbles: true, cancelable: true })
     link(id).dispatchEvent(click)
     await settle()
@@ -272,56 +372,99 @@ describe('preview lifecycle', () => {
   })
 
   it('cancels a brief hover before requesting metadata', async () => {
-    hover(); vi.advanceTimersByTime(100)
+    hover()
+    vi.advanceTimersByTime(100)
     link().dispatchEvent(new win.PointerEvent('pointerout', { pointerType: 'mouse', bubbles: true }))
-    await settle(); expect(requests).not.toHaveBeenCalled()
+    await settle()
+    expect(requests).not.toHaveBeenCalled()
   })
 
   it('ignores a late response as soon as another link owns the intent', async () => {
     let resolveA!: (value: Response) => void
-    requests.mockImplementationOnce(() => new Promise<Response>((resolve) => { resolveA = resolve }))
-    hover(); await settle(); hover('b')
+    requests.mockImplementationOnce(
+      () =>
+        new Promise<Response>((resolve) => {
+          resolveA = resolve
+        }),
+    )
+    hover()
+    await settle()
+    hover('b')
     resolveA(new Response(JSON.stringify({ schema: 1, title: 'stale', description: '', href: `${prefix}-a/` })))
-    await Promise.resolve(); expect(opened).toBe(false)
-    await settle(); expect(opened).toBe(true); expect(title()).toBe('b')
+    await Promise.resolve()
+    expect(opened).toBe(false)
+    await settle()
+    expect(opened).toBe(true)
+    expect(title()).toBe('b')
   })
 
   it('aborts pending navigation work and never reopens after disposal', async () => {
     let resolveA!: (value: Response) => void
-    requests.mockImplementationOnce(() => new Promise<Response>((resolve) => { resolveA = resolve }))
-    hover(); await settle(); const signal = requests.mock.calls[0][1].signal as AbortSignal
-    disposeLinkPreviews(); expect(signal.aborted).toBe(true)
+    requests.mockImplementationOnce(
+      () =>
+        new Promise<Response>((resolve) => {
+          resolveA = resolve
+        }),
+    )
+    hover()
+    await settle()
+    const signal = requests.mock.calls[0][1].signal as AbortSignal
+    disposeLinkPreviews()
+    expect(signal.aborted).toBe(true)
     resolveA(new Response(JSON.stringify({ schema: 1, title: 'stale', description: '', href: `${prefix}-a/` })))
-    await settle(); expect(opened).toBe(false)
+    await settle()
+    expect(opened).toBe(false)
   })
 
   it('cancels a pending preview when keyboard focus moves to another control', async () => {
     let resolveA!: (value: Response) => void
-    requests.mockImplementationOnce(() => new Promise<Response>((resolve) => { resolveA = resolve }))
-    link().focus(); await settle()
-    const button = win.document.createElement('button'); win.document.body.append(button); button.focus()
+    requests.mockImplementationOnce(
+      () =>
+        new Promise<Response>((resolve) => {
+          resolveA = resolve
+        }),
+    )
+    link().focus()
+    await settle()
+    const button = win.document.createElement('button')
+    win.document.body.append(button)
+    button.focus()
     resolveA(new Response(JSON.stringify({ schema: 1, title: 'stale', description: '', href: `${prefix}-a/` })))
-    await settle(); expect(opened).toBe(false)
+    await settle()
+    expect(opened).toBe(false)
   })
 
   it('never replaces native keyword help with a pending API response', async () => {
     let resolveA!: (value: Response) => void
-    requests.mockImplementationOnce(() => new Promise<Response>((resolve) => { resolveA = resolve }))
-    hover(); await settle()
-    const help = win.document.createElement('span'); help.className = 'reference-link-preview api-keyword-help'
+    requests.mockImplementationOnce(
+      () =>
+        new Promise<Response>((resolve) => {
+          resolveA = resolve
+        }),
+    )
+    hover()
+    await settle()
+    const help = win.document.createElement('span')
+    help.className = 'reference-link-preview api-keyword-help'
     win.document.body.append(help)
-    const toggle = new win.Event('beforetoggle'); Object.assign(toggle, { newState: 'open' }); help.dispatchEvent(toggle)
+    const toggle = new win.Event('beforetoggle')
+    Object.assign(toggle, { newState: 'open' })
+    help.dispatchEvent(toggle)
     resolveA(new Response(JSON.stringify({ schema: 1, title: 'stale', description: '', href: `${prefix}-a/` })))
-    await settle(); expect(opened).toBe(false)
+    await settle()
+    expect(opened).toBe(false)
   })
 
   it('keeps API clicks and modified glossary clicks as ordinary navigation', async () => {
     const click = new win.MouseEvent('click', { bubbles: true, cancelable: true })
-    link().dispatchEvent(click); expect(click.defaultPrevented).toBe(false)
+    link().dispatchEvent(click)
+    expect(click.defaultPrevented).toBe(false)
     link().setAttribute('href', '/en/powershell/latest/workspace/reference/glossary/#cmdlet')
     const modified = new win.MouseEvent('click', { bubbles: true, cancelable: true, ctrlKey: true })
-    link().dispatchEvent(modified); expect(modified.defaultPrevented).toBe(false)
-    await settle(); expect(requests).not.toHaveBeenCalled()
+    link().dispatchEvent(modified)
+    expect(modified.defaultPrevented).toBe(false)
+    await settle()
+    expect(requests).not.toHaveBeenCalled()
   })
 
   it('opens a glossary definition on click and restores focus once on Escape', async () => {
@@ -329,21 +472,39 @@ describe('preview lifecycle', () => {
     requests.mockResolvedValueOnce(new Response(JSON.stringify(glossaryPreview(href))))
     link().setAttribute('href', `${href}#cmdlet`)
     let routerPrevented = false
-    win.document.addEventListener('click', (event) => { routerPrevented = event.defaultPrevented }, { once: true })
+    win.document.addEventListener(
+      'click',
+      (event) => {
+        routerPrevented = event.defaultPrevented
+      },
+      { once: true },
+    )
     const click = new win.MouseEvent('click', { bubbles: true, cancelable: true })
-    link().dispatchEvent(click); expect(click.defaultPrevented).toBe(true)
+    link().dispatchEvent(click)
+    expect(click.defaultPrevented).toBe(true)
     expect(routerPrevented).toBe(true)
-    await settle(); expect(opened).toBe(true); expect(title()).toBe('cmdlet')
+    await settle()
+    expect(opened).toBe(true)
+    expect(title()).toBe('cmdlet')
     expect(win.document.activeElement).toBe(win.document.querySelector('[data-preview-open]'))
-    escape(); await settle(); expect(opened).toBe(false); expect(win.document.activeElement).toBe(link())
+    escape()
+    await settle()
+    expect(opened).toBe(false)
+    expect(win.document.activeElement).toBe(link())
     expect(requests).toHaveBeenCalledTimes(1)
   })
 
   it('rejects missing and foreign metadata without trapping ordinary links', async () => {
     requests.mockResolvedValueOnce(new Response('', { status: 404 }))
-    hover(); await settle(); expect(opened).toBe(false)
-    requests.mockResolvedValueOnce(new Response(JSON.stringify({ schema: 1, title: 'unsafe', description: '', href: 'https://elsewhere.test/' })))
-    hover(); await settle(); expect(opened).toBe(false)
+    hover()
+    await settle()
+    expect(opened).toBe(false)
+    requests.mockResolvedValueOnce(
+      new Response(JSON.stringify({ schema: 1, title: 'unsafe', description: '', href: 'https://elsewhere.test/' })),
+    )
+    hover()
+    await settle()
+    expect(opened).toBe(false)
     expect(link().getAttribute('href')).toBe(`${prefix}-a/`)
   })
 })

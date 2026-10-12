@@ -34,19 +34,36 @@ const SITE = SITE_ROOT
 
 /** Languages that map to a port, mirroring `remark-port-code.mjs`. */
 const PORT_LANGS = new Set([
-  'python', 'py', 'typescript', 'ts', 'javascript', 'js', 'rust', 'rs',
-  'go', 'golang', 'java', 'kotlin', 'csharp', 'cs', 'c#', 'cpp', 'c++',
-  'cxx', 'swift',
+  'python',
+  'py',
+  'typescript',
+  'ts',
+  'javascript',
+  'js',
+  'rust',
+  'rs',
+  'go',
+  'golang',
+  'java',
+  'kotlin',
+  'csharp',
+  'cs',
+  'c#',
+  'cpp',
+  'c++',
+  'cxx',
+  'swift',
 ])
 
-const pages = SITE_BUILT && existsSync(join(SITE, 'topics'))
-  ? execFileSync('fd', ['-t', 'f', 'index.html', join(SITE, 'topics'), join(SITE, 'concepts')], {
-      encoding: 'utf8',
-    })
-      .trim()
-      .split('\n')
-      .filter(Boolean)
-  : []
+const pages =
+  SITE_BUILT && existsSync(join(SITE, 'topics'))
+    ? execFileSync('fd', ['-t', 'f', 'index.html', join(SITE, 'topics'), join(SITE, 'concepts')], {
+        encoding: 'utf8',
+      })
+        .trim()
+        .split('\n')
+        .filter(Boolean)
+    : []
 
 /**
  * The fence's language.
@@ -58,9 +75,7 @@ const pages = SITE_BUILT && existsSync(join(SITE, 'topics'))
 function languageOf(pre: Element): string | undefined {
   const attr = pre.getAttribute('data-language')
   if (attr) return attr.toLowerCase()
-  const cls = [...(pre.querySelector('code')?.classList ?? [])]
-    .map((c) => /^language-(.+)$/.exec(c)?.[1])
-    .find(Boolean)
+  const cls = [...(pre.querySelector('code')?.classList ?? [])].map((c) => /^language-(.+)$/.exec(c)?.[1]).find(Boolean)
   return cls?.toLowerCase()
 }
 

@@ -4,7 +4,19 @@ import { toMarkdown } from 'mdast-util-to-markdown'
 import { membersOf, memberSignals, memberTier, moduleOf, qualifiedNameOf } from '@libtmux/api-model'
 import mentions from '../data/mentions.json'
 import { PORT_NAME, referenceAlternatives } from './api-models'
-import { apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures } from './api-sections'
+import {
+  apiCommandFacts,
+  apiCommandRelatedLinks,
+  apiEntryFields,
+  apiMemberGroups,
+  apiMethodDetails,
+  anonymousDeclarationLabel,
+  nativeSignatureText,
+  parameterBindingText,
+  signatureMultiline,
+  signatureParameterText,
+  usesNativeSignatures,
+} from './api-sections'
 import { tmuxCommandsFor, tmuxManualUrl } from './tmux-manual-data'
 import { productApiIndex } from './product-api'
 import { defaultVersionFor } from './versions'
@@ -39,10 +51,12 @@ export interface MarkdownContext {
 
 function signatureLine(symbol: ApiSymbol, sig: Signature, port?: string): string {
   const multiline = signatureMultiline(symbol, sig, port)
-  const params = (sig.params ?? []).map((param) => {
-    const text = signatureParameterText(param, port)
-    return multiline ? `  ${text.replaceAll('\n', '\n  ')}` : text
-  }).join(multiline ? ',\n' : ', ')
+  const params = (sig.params ?? [])
+    .map((param) => {
+      const text = signatureParameterText(param, port)
+      return multiline ? `  ${text.replaceAll('\n', '\n  ')}` : text
+    })
+    .join(multiline ? ',\n' : ', ')
   const returns = sig.returns ? `${port === 'ts' ? ':' : ' ->'} ${sig.returns}` : ''
   return `${qualifiedNameOf(symbol)}(${multiline ? '\n' : ''}${params}${multiline ? '\n' : ''})${returns}`
 }
@@ -72,14 +86,26 @@ function powerShellProseMarkdown(markdown: string, index: SymbolIndex, symbol: A
         if (link) edits.push({ start, end, text: `[${inlineCode(node.value)}](${link.href})` })
       } else if (markdown.slice(start, end) === node.value) {
         const spans = index.linkText(node.value, symbol)
-        if (spans.some((span) => span.kind === 'ref' && span.link)) edits.push({ start, end,
-          text: spans.map((span) => span.kind === 'ref' && span.link
-            ? `[${inlineCode(span.label)}](${span.link.href})` : 'text' in span ? span.text : span.label).join('') })
+        if (spans.some((span) => span.kind === 'ref' && span.link))
+          edits.push({
+            start,
+            end,
+            text: spans
+              .map((span) =>
+                span.kind === 'ref' && span.link
+                  ? `[${inlineCode(span.label)}](${span.link.href})`
+                  : 'text' in span
+                    ? span.text
+                    : span.label,
+              )
+              .join(''),
+          })
       }
     } else if ('children' in node) for (const child of node.children) visit(child as Parameters<typeof visit>[0])
   }
   visit(fromMarkdown(markdown))
-  for (const edit of edits.sort((a, b) => b.start - a.start)) markdown = markdown.slice(0, edit.start) + edit.text + markdown.slice(edit.end)
+  for (const edit of edits.sort((a, b) => b.start - a.start))
+    markdown = markdown.slice(0, edit.start) + edit.text + markdown.slice(edit.end)
   return markdown
 }
 
@@ -87,8 +113,10 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   const { model, symbol } = ctx
   const port = 'port' in model ? model.port : undefined
   const language = 'language' in model ? model.language : port
-  const index = ctx.index ?? (port && 'port' in model ? productApiIndex(model, ctx.version ?? defaultVersionFor(port)) : undefined)
-  const prose = (text: string) => language === 'powershell' && index ? powerShellProseMarkdown(text, index, symbol) : text
+  const index =
+    ctx.index ?? (port && 'port' in model ? productApiIndex(model, ctx.version ?? defaultVersionFor(port)) : undefined)
+  const prose = (text: string) =>
+    language === 'powershell' && index ? powerShellProseMarkdown(text, index, symbol) : text
   const id = qualifiedNameOf(symbol)
   const out: string[] = [`# ${id}`, '']
 
@@ -98,7 +126,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   const mod = moduleOf(parent ?? symbol)
   if (mod) facts.push(`- **Module:** ${mod}`)
   if (ctx.packageName) facts.push(`- **Package:** ${ctx.packageName}`)
-  facts.push(`- **Language:** ${(port ? PORT_NAME[port] ?? port : language?.toUpperCase())}`)
+  facts.push(`- **Language:** ${port ? (PORT_NAME[port] ?? port) : language?.toUpperCase()}`)
   if (symbol.kind) facts.push(`- **Kind:** ${symbol.kind}`)
   if (ctx.source) facts.push(`- **Source:** ${ctx.source}`)
   if (symbol.exportedFrom) facts.push(`- **Exported from:** ${symbol.exportedFrom}`)
@@ -109,8 +137,14 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
       const parts: string[] = []
       let plain = ''
       for (const part of index?.linkType(base, symbol) ?? [{ text: base }]) {
-        if (!part.link) { plain += part.text; continue }
-        if (plain) { parts.push(inlineCode(plain)); plain = '' }
+        if (!part.link) {
+          plain += part.text
+          continue
+        }
+        if (plain) {
+          parts.push(inlineCode(plain))
+          plain = ''
+        }
         parts.push(`[${inlineCode(part.text)}](${part.link.href})`)
       }
       if (plain) parts.push(inlineCode(plain))
@@ -120,8 +154,14 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   }
   if (ctx.canonical) facts.push(`- **Page:** ${ctx.canonical}`)
   if (facts.length) out.push(...facts, '')
-  const commands = ctx.manualLinks ?? (port ? tmuxCommandsFor(port, symbol.publicId ?? symbol.id)
-    .map((command) => ({ ...command, href: tmuxManualUrl('latest', command.name) })) : [])
+  const commands =
+    ctx.manualLinks ??
+    (port
+      ? tmuxCommandsFor(port, symbol.publicId ?? symbol.id).map((command) => ({
+          ...command,
+          href: tmuxManualUrl('latest', command.name),
+        }))
+      : [])
   for (const command of commands) out.push(`tmux command: [\`${command.name}\`](${command.href})`, '')
   if (symbol.apiScope === 'supporting') {
     out.push('This type appears in public signatures. It is not a package entry point.', '')
@@ -132,9 +172,13 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     out.push(fencedCode(`${symbol.name} = ${symbol.type}`, 'julia'), '')
   }
   const signatures = language === 'c' ? symbol.signatures.filter((signature) => signature.raw) : symbol.signatures
-  const sig = signatures.map((entry) => native && entry.raw
-    ? `${entry.label && entry.label !== '__AllParameterSets' ? `${entry.label}${entry.isDefault ? ' (default)' : ''}:\n` : ''}${nativeSignatureText(symbol, entry, language)}`
-    : signatureLine(symbol, entry, language)).join('\n\n')
+  const sig = signatures
+    .map((entry) =>
+      native && entry.raw
+        ? `${entry.label && entry.label !== '__AllParameterSets' ? `${entry.label}${entry.isDefault ? ' (default)' : ''}:\n` : ''}${nativeSignatureText(symbol, entry, language)}`
+        : signatureLine(symbol, entry, language),
+    )
+    .join('\n\n')
   if (sig) out.push(fencedCode(sig, language === 'c' ? 'c' : ''), '')
   else if (language === 'c') out.push(`${anonymousDeclarationLabel(symbol)}.`, '')
 
@@ -142,10 +186,17 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   if (symbol.doc?.body) out.push(prose(symbol.doc.body), '')
   if (symbol.command) {
     out.push('## Command details', '')
-    for (const fact of apiCommandFacts(symbol, index?.resolve(symbol.id)?.href)) out.push(`- **${fact.label}:** ${fact.value}`)
+    for (const fact of apiCommandFacts(symbol, index?.resolve(symbol.id)?.href))
+      out.push(`- **${fact.label}:** ${fact.value}`)
     out.push('')
     const related = apiCommandRelatedLinks(symbol, index)
-    if (related.length) out.push('Related APIs:', '', ...related.map((link) => `- [${link.symbol ? inlineCode(link.text) : link.text}](${link.href})`), '')
+    if (related.length)
+      out.push(
+        'Related APIs:',
+        '',
+        ...related.map((link) => `- [${link.symbol ? inlineCode(link.text) : link.text}](${link.href})`),
+        '',
+      )
   }
 
   const methods = apiMethodDetails(symbol)
@@ -155,7 +206,13 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
       const { signature } = method
       if (symbol.signatures.length > 1) {
         const declaration = nativeSignatureText(symbol, signature, language)
-        if (declaration.includes('\n')) out.push(`### ${inlineCode(symbol.name)} (overload ${methodIndex + 1})`, '', fencedCode(declaration, language), '')
+        if (declaration.includes('\n'))
+          out.push(
+            `### ${inlineCode(symbol.name)} (overload ${methodIndex + 1})`,
+            '',
+            fencedCode(declaration, language),
+            '',
+          )
         else out.push(`### ${inlineCode(method.label)}`, '')
       }
       if (signature.extension) out.push(`Available when \`${signature.extension}\` is loaded.`, '')
@@ -191,14 +248,17 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   }
 
   const { params, returns, raises } = apiEntryFields(symbol, language)
-  const overloads = (labels: string[]) => labels.length ? ` (for ${labels.map(inlineCode).join('; ')})` : ''
+  const overloads = (labels: string[]) => (labels.length ? ` (for ${labels.map(inlineCode).join('; ')})` : '')
   if (params.length) {
     out.push('## Parameters', '')
     for (const p of params) {
       const blockDoc = ['julia', 'ts'].includes(language ?? '') && p.doc?.includes('\n')
-      out.push(`- ${inlineCode(p.name + (p.optional ? '?' : ''))}${p.type ? ` (${inlineCode(p.type.replaceAll('\n', ' '))})` : ''}${p.doc && !blockDoc ? `: ${p.doc}` : ''}${p.since ? ` (added ${p.since})` : ''}${p.deprecated ? ` (deprecated ${p.deprecated})` : ''}${overloads(p.overloads)}`)
+      out.push(
+        `- ${inlineCode(p.name + (p.optional ? '?' : ''))}${p.type ? ` (${inlineCode(p.type.replaceAll('\n', ' '))})` : ''}${p.doc && !blockDoc ? `: ${p.doc}` : ''}${p.since ? ` (added ${p.since})` : ''}${p.deprecated ? ` (deprecated ${p.deprecated})` : ''}${overloads(p.overloads)}`,
+      )
       if (blockDoc) out.push('', ...p.doc!.split('\n').map((line) => `  ${line}`), '')
-      if (['julia', 'ts'].includes(language ?? '') && p.default !== undefined) out.push(`  Default: ${inlineCode(p.default)}.`)
+      if (['julia', 'ts'].includes(language ?? '') && p.default !== undefined)
+        out.push(`  Default: ${inlineCode(p.default)}.`)
       const binding = parameterBindingText(p)
       if (binding) out.push(`  ${binding}`)
     }
@@ -226,7 +286,9 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   const inherited = members.filter((member) => member.inheritedFrom && memberTier(member, signals) !== 'parent')
   const appendMembers = (entries: ApiSymbol[]) => {
     for (const member of entries) {
-      out.push(`- ${ctx.hrefFor ? `[${inlineCode(member.name)}](${ctx.hrefFor(member)})` : inlineCode(member.name)} (${member.kind})${member.inheritedFrom ? `, inherited from ${inlineCode(member.inheritedFrom)}` : ''}${member.doc?.summary ? `: ${member.doc.summary}` : ''}`)
+      out.push(
+        `- ${ctx.hrefFor ? `[${inlineCode(member.name)}](${ctx.hrefFor(member)})` : inlineCode(member.name)} (${member.kind})${member.inheritedFrom ? `, inherited from ${inlineCode(member.inheritedFrom)}` : ''}${member.doc?.summary ? `: ${member.doc.summary}` : ''}`,
+      )
     }
     out.push('')
   }
@@ -249,14 +311,28 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   const paths = (ctx.paths ?? []).filter((path) => path.symbols.some((entry) => entry.id === symbol.id))
   if (paths.length) {
     out.push('## Paths through the source', '', 'Arrows name source relationships, not a runtime execution order.', '')
-    for (const path of paths) out.push(`### ${path.title}`, '', path.symbols.map((entry, i) =>
-      `${i > 0 ? ` — ${path.edges[i - 1] === 'call' ? 'calls' : 'references'} → ` : ''}${symbolLink(entry)}`).join(''), '')
+    for (const path of paths)
+      out.push(
+        `### ${path.title}`,
+        '',
+        path.symbols
+          .map(
+            (entry, i) =>
+              `${i > 0 ? ` — ${path.edges[i - 1] === 'call' ? 'calls' : 'references'} → ` : ''}${symbolLink(entry)}`,
+          )
+          .join(''),
+        '',
+      )
   }
   for (const section of apiRelationshipSections(model, symbol)) {
     out.push(`## ${section.label}`, '')
     for (const target of section.items) {
-      const callSource = section.id === 'api-calls' ? apiCallSource(model, symbol, target)
-        : section.id === 'api-called-by' ? apiCallSource(model, target, symbol) : undefined
+      const callSource =
+        section.id === 'api-calls'
+          ? apiCallSource(model, symbol, target)
+          : section.id === 'api-called-by'
+            ? apiCallSource(model, target, symbol)
+            : undefined
       out.push(`- ${symbolLink(target)} (${target.kind})${callSource ? ` [Call site](${callSource})` : ''}`)
     }
     out.push('')
@@ -268,7 +344,9 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     for (const group of alternatives) {
       out.push(`### ${group.label}`, '')
       for (const entry of group.ports.filter((entry) => entry.port !== port && entry.href)) {
-        out.push(`- ${entry.name}: [${inlineCode(entry.publicId!)}](${entry.href})${entry.kind ? ` (${entry.kind})` : ''}${entry.note ? `. ${entry.note}` : ''}`)
+        out.push(
+          `- ${entry.name}: [${inlineCode(entry.publicId!)}](${entry.href})${entry.kind ? ` (${entry.kind})` : ''}${entry.note ? `. ${entry.note}` : ''}`,
+        )
       }
       out.push('')
     }
@@ -280,16 +358,21 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     const edits: { start: number; end: number; text: string }[] = []
     const visit = (node: ReturnType<typeof fromMarkdown> | ReturnType<typeof fromMarkdown>['children'][number]) => {
       if (node.type === 'link' && /^@ref(?:\s|$)/.test(node.url)) {
-        const label = node.children.map((child) => 'value' in child ? child.value : '').join('')
+        const label = node.children.map((child) => ('value' in child ? child.value : '')).join('')
         const target = node.url.slice(4).trim() || label
         const link = index.resolve(target, 'any', symbol)
         if (!link) throw new Error(`Unresolved Julia documentation link: ${symbol.id} -> ${target}`)
         node.url = link.href
-        edits.push({ start: node.position!.start.offset!, end: node.position!.end.offset!, text: toMarkdown(node).trimEnd() })
+        edits.push({
+          start: node.position!.start.offset!,
+          end: node.position!.end.offset!,
+          text: toMarkdown(node).trimEnd(),
+        })
       } else if ('children' in node) for (const child of node.children) visit(child as Parameters<typeof visit>[0])
     }
     visit(fromMarkdown(markdown))
-    for (const edit of edits.sort((a, b) => b.start - a.start)) markdown = markdown.slice(0, edit.start) + edit.text + markdown.slice(edit.end)
+    for (const edit of edits.sort((a, b) => b.start - a.start))
+      markdown = markdown.slice(0, edit.start) + edit.text + markdown.slice(edit.end)
   }
 
   return markdown

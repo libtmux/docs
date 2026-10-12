@@ -34,8 +34,7 @@ describeIfSeeded('api projection', () => {
 
   it('holds every port that has an extracted model', () => {
     const ports = new Set(allExtractions().map((e) => e.port))
-    const expected = PORTS.filter((port) => existsSync(join(MODEL_DIR, `${port.slug}.json`)))
-      .map((port) => port.slug)
+    const expected = PORTS.filter((port) => existsSync(join(MODEL_DIR, `${port.slug}.json`))).map((port) => port.slug)
     expect([...ports].sort()).toEqual(expected.sort())
   })
 

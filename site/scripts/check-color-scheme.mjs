@@ -3,13 +3,23 @@ import assert from 'node:assert/strict'
 /** Compact cycling and wide radios share the same saved preference. */
 export async function checkColorScheme(browser, base) {
   for (const blocked of [false, true]) {
-    const context = await browser.newContext({ viewport: { width: 596, height: 777 }, colorScheme: 'light', reducedMotion: 'reduce' })
+    const context = await browser.newContext({
+      viewport: { width: 596, height: 777 },
+      colorScheme: 'light',
+      reducedMotion: 'reduce',
+    })
     try {
       if (blocked) {
-        await context.route('**/astro/runtime/client/dev-toolbar/entrypoint.js', (route) => route.fulfill({ contentType: 'application/javascript', body: 'export {}' }))
-        await context.addInitScript(() => Object.defineProperty(window, 'localStorage', {
-          get() { throw new DOMException('Storage blocked', 'SecurityError') },
-        }))
+        await context.route('**/astro/runtime/client/dev-toolbar/entrypoint.js', (route) =>
+          route.fulfill({ contentType: 'application/javascript', body: 'export {}' }),
+        )
+        await context.addInitScript(() =>
+          Object.defineProperty(window, 'localStorage', {
+            get() {
+              throw new DOMException('Storage blocked', 'SecurityError')
+            },
+          }),
+        )
       }
       const page = await context.newPage()
       const errors = []
@@ -33,10 +43,18 @@ export async function checkColorScheme(browser, base) {
       await cycle.focus()
       await page.keyboard.press('Space')
       await check('dark', 'Dark', 'Auto', 'dark')
-      assert(await cycle.evaluate((element) => parseFloat(getComputedStyle(element).outlineWidth) > 0), 'The cycling button has visible keyboard focus')
+      assert(
+        await cycle.evaluate((element) => parseFloat(getComputedStyle(element).outlineWidth) > 0),
+        'The cycling button has visible keyboard focus',
+      )
       await page.reload()
       await cycle.waitFor({ state: 'visible' })
-      await check(blocked ? 'system' : 'dark', blocked ? 'Auto' : 'Dark', blocked ? 'Light' : 'Auto', blocked ? 'light' : 'dark')
+      await check(
+        blocked ? 'system' : 'dark',
+        blocked ? 'Auto' : 'Dark',
+        blocked ? 'Light' : 'Auto',
+        blocked ? 'light' : 'dark',
+      )
       if (!blocked) {
         assert.equal(await page.evaluate(() => localStorage.getItem('color-scheme')), 'dark')
         await cycle.focus()
@@ -49,7 +67,11 @@ export async function checkColorScheme(browser, base) {
       await page.setViewportSize({ width: 763, height: 777 })
       assert(await radio.isVisible())
       assert.equal(await cycle.isVisible(), false)
-      assert.equal(await page.locator('.site-header__search-label').isVisible(), false, 'Search text stays hidden at the intermediate width')
+      assert.equal(
+        await page.locator('.site-header__search-label').isVisible(),
+        false,
+        'Search text stays hidden at the intermediate width',
+      )
       await radio.locator('[data-scheme="light"]').click()
       await page.setViewportSize({ width: 628, height: 777 })
       await check('light', 'Light', 'Dark', 'light')
@@ -58,7 +80,11 @@ export async function checkColorScheme(browser, base) {
       await context.close()
     }
   }
-  const reader = await browser.newContext({ viewport: { width: 1062, height: 789 }, colorScheme: 'light', reducedMotion: 'reduce' })
+  const reader = await browser.newContext({
+    viewport: { width: 1062, height: 789 },
+    colorScheme: 'light',
+    reducedMotion: 'reduce',
+  })
   try {
     const page = await reader.newPage()
     await page.goto(`${base}/tmux/concepts/server-session-window-pane/`)
@@ -70,7 +96,11 @@ export async function checkColorScheme(browser, base) {
     assert(position > 500, 'Exercise the sticky scheme controls while reading down the page')
     const checkPosition = async () => {
       await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))))
-      assert.equal(await page.evaluate(() => scrollY), position, 'Changing colour scheme preserves the reading position')
+      assert.equal(
+        await page.evaluate(() => scrollY),
+        position,
+        'Changing colour scheme preserves the reading position',
+      )
     }
     for (const scheme of ['dark', 'system', 'light']) {
       // Click the visible label: focusing the visually hidden radio directly
@@ -85,7 +115,12 @@ export async function checkColorScheme(browser, base) {
     await page.keyboard.press('ArrowRight')
     await checkPosition()
     assert.equal(await page.locator('html').getAttribute('data-color-scheme'), 'dark')
-    assert(await page.locator('[data-scheme="dark"]').evaluate((element) => parseFloat(getComputedStyle(element).outlineWidth) > 0), 'The radios retain visible keyboard focus')
+    assert(
+      await page
+        .locator('[data-scheme="dark"]')
+        .evaluate((element) => parseFloat(getComputedStyle(element).outlineWidth) > 0),
+      'The radios retain visible keyboard focus',
+    )
     await page.setViewportSize({ width: 596, height: 789 })
     await page.evaluate((top) => window.scrollTo({ top, behavior: 'instant' }), position)
     const compact = await page.locator('[data-scheme-cycle]').boundingBox()
@@ -101,9 +136,14 @@ export async function checkColorScheme(browser, base) {
     const page = await context.newPage()
     await page.goto(`${base}/`)
     assert.equal(await page.locator('[data-scheme-cycle]').isVisible(), false)
-    assert(await page.locator('[data-scheme-switch]').isVisible(), 'The original radio group remains the no-JS fallback')
+    assert(
+      await page.locator('[data-scheme-switch]').isVisible(),
+      'The original radio group remains the no-JS fallback',
+    )
   } finally {
     await context.close()
   }
-  console.log('Colour scheme: compact cycling, keyboard, accessible names, Auto, persistence, blocked storage, resize, reading position and no-JS fallback PASS')
+  console.log(
+    'Colour scheme: compact cycling, keyboard, accessible names, Auto, persistence, blocked storage, resize, reading position and no-JS fallback PASS',
+  )
 }

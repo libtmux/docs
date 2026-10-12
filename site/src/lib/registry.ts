@@ -13,7 +13,15 @@
  * assertion and could drift on how it handles a missing port.
  */
 import data from '../data/registry.json'
-import { installCommand, releaseWording, type InstallCommand, type InstallForm, type Port, type RegistryData, type RegistryEntry } from './ports'
+import {
+  installCommand,
+  releaseWording,
+  type InstallCommand,
+  type InstallForm,
+  type Port,
+  type RegistryData,
+  type RegistryEntry,
+} from './ports'
 import { releaseTag } from './versions'
 import { portParts, type PortParts, type PromptContext } from './prompts'
 
@@ -43,17 +51,28 @@ export function nugetInstallSelection(
   env: Record<string, string | undefined> = {},
 ): { version?: string; pin?: boolean } {
   if (port.slug !== 'csharp' && port.slug !== 'fsharp') return {}
-  const selected = env.LIBTMUX_DOCS_PORT === port.slug
-    ? releaseTag(env.LIBTMUX_DOCS_VERSION ?? '', port) : null
+  const selected = env.LIBTMUX_DOCS_PORT === port.slug ? releaseTag(env.LIBTMUX_DOCS_VERSION ?? '', port) : null
   return {
-    version: selected?.replace(/^v/, '') ?? sources.find((source) => source.product === 'core' && source.package === port.packageName)?.version,
+    version:
+      selected?.replace(/^v/, '') ??
+      sources.find((source) => source.product === 'core' && source.package === port.packageName)?.version,
     pin: selected !== null,
   }
 }
 
 /** Resolve package snippets against the selected docs source or registry snapshot. */
-export function installsFor(port: Port, selection: { version?: string; pin?: boolean } = {}): readonly InstallCommand[] {
-  if (!port.installs.some((command) => command.code.includes('{version}') || command.additionalBlocks?.some((block) => block.code.includes('{version}')))) return port.installs
+export function installsFor(
+  port: Port,
+  selection: { version?: string; pin?: boolean } = {},
+): readonly InstallCommand[] {
+  if (
+    !port.installs.some(
+      (command) =>
+        command.code.includes('{version}') ||
+        command.additionalBlocks?.some((block) => block.code.includes('{version}')),
+    )
+  )
+    return port.installs
   const entry = registryFor(port)
   const version = selection.version ?? entry.version
   const fill = (code: string) => code.replaceAll('{version}', version!)

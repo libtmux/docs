@@ -69,20 +69,36 @@ export function mcpObjects(port: string): McpObject[] {
     const section = kind === 'tool' ? 'tools' : kind === 'prompt' ? 'prompts' : 'resources'
     for (const entry of entries) {
       const name = 'wireName' in entry ? entry.wireName : entry.name
-      const identity = 'uriTemplate' in entry && entry.uriTemplate || 'uri' in entry && entry.uri || name
-      const segment = kind === 'tool' ? name : name.toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-|-$/g, '')
+      const identity = ('uriTemplate' in entry && entry.uriTemplate) || ('uri' in entry && entry.uri) || name
+      const segment =
+        kind === 'tool'
+          ? name
+          : name
+              .toLowerCase()
+              .replace(/[^a-z0-9_-]+/g, '-')
+              .replace(/^-|-$/g, '')
       if (!segment) throw new Error(`MCP object needs a route: ${port}/${kind}/${name}`)
       const slug = `${kind === 'resource-template' ? 'templates/' : ''}${segment}`
-      rows.push({ id: `mcp.${kind}.${identity}`, name, kind, section, slug,
-        path: `mcp/${section}/${slug}`, description: entry.description ?? '',
-        ...('wireName' in entry ? { tool: entry } : { item: entry }) })
+      rows.push({
+        id: `mcp.${kind}.${identity}`,
+        name,
+        kind,
+        section,
+        slug,
+        path: `mcp/${section}/${slug}`,
+        description: entry.description ?? '',
+        ...('wireName' in entry ? { tool: entry } : { item: entry }),
+      })
     }
   }
   add('tool', reference.registrations)
   add('prompt', reference.protocol.prompts)
   add('resource', reference.protocol.resources)
   add('resource-template', reference.protocol.resourceTemplates)
-  if (new Set(rows.map((row) => row.path)).size !== rows.length || new Set(rows.map((row) => row.id)).size !== rows.length) {
+  if (
+    new Set(rows.map((row) => row.path)).size !== rows.length ||
+    new Set(rows.map((row) => row.id)).size !== rows.length
+  ) {
     throw new Error(`Duplicate MCP object identity or route in ${port}`)
   }
   objects.set(port, rows)
@@ -94,13 +110,17 @@ export function resolveMcpObject(port: string, text: string, kind?: McpKind): Mc
   const explicit = /^mcp:(tool|prompt|resource|resource-template):(.+)$/.exec(text)
   const target = explicit?.[2] ?? text
   const family = explicit?.[1] ?? kind
-  const matches = mcpObjects(port).filter((entry) => (!family || entry.kind === family) &&
-    [entry.name, entry.item?.uri, entry.item?.uriTemplate].includes(target))
+  const matches = mcpObjects(port).filter(
+    (entry) =>
+      (!family || entry.kind === family) && [entry.name, entry.item?.uri, entry.item?.uriTemplate].includes(target),
+  )
   return matches.length === 1 ? matches[0] : undefined
 }
 
 export function mcpObjectAt(port: string, section: McpSection, slug?: string): McpObject | undefined {
-  return slug === undefined ? undefined : mcpObjects(port).find((entry) => entry.section === section && entry.slug === slug)
+  return slug === undefined
+    ? undefined
+    : mcpObjects(port).find((entry) => entry.section === section && entry.slug === slug)
 }
 
 export type McpMentionDecision =
@@ -109,7 +129,10 @@ export type McpMentionDecision =
   | { kind: 'unresolved'; why: string; tried: string[] }
 
 /** Shared by the renderer and source lint; undefined delegates to the language API. */
-export function decideMcpMention(text: string, context: Pick<MentionContext, 'pagePort' | 'before' | 'product'>): McpMentionDecision | undefined {
+export function decideMcpMention(
+  text: string,
+  context: Pick<MentionContext, 'pagePort' | 'before' | 'product'>,
+): McpMentionDecision | undefined {
   const explicit = text.startsWith('mcp:')
   if (!explicit && context.product !== 'mcp') return undefined
   const owner = (context.before && portFromSentence(context.before)) || context.pagePort
@@ -119,13 +142,22 @@ export function decideMcpMention(text: string, context: Pick<MentionContext, 'pa
     return object ? [{ port, object }] : []
   })
   if (matches.length === 1) return { kind: 'link', ...matches[0]! }
-  if (explicit) return { kind: 'unresolved',
-    why: matches.length ? 'MCP reference needs a port' : 'MCP object not advertised in the stated port', tried: ports }
+  if (explicit)
+    return {
+      kind: 'unresolved',
+      why: matches.length ? 'MCP reference needs a port' : 'MCP object not advertised in the stated port',
+      tried: ports,
+    }
   if (matches.length > 1) return { kind: 'skip', why: 'MCP reference needs a port' }
   // A same-name tool and prompt need an explicit kind, even if a language
   // declaration also has that name.
-  if (ports.some((port) => mcpObjects(port).filter((object) =>
-    [object.name, object.item?.uri, object.item?.uriTemplate].includes(text)).length > 1)) {
+  if (
+    ports.some(
+      (port) =>
+        mcpObjects(port).filter((object) => [object.name, object.item?.uri, object.item?.uriTemplate].includes(text))
+          .length > 1,
+    )
+  ) {
     return { kind: 'skip', why: 'MCP reference needs an object kind' }
   }
   return undefined

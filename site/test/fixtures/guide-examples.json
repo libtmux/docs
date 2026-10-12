@@ -56,7 +56,7 @@
       "files": [
         {
           "name": "history.sh",
-          "sha256": "e328f0ec37798b1519c10d2e5d6009ce0c6904a28bec1158be52bc9c056de0bb"
+          "sha256": "7795084fc29d175fcb5a82ac228c3661f68707836b6476223f89817b051fb8fc"
         }
       ],
       "shellRecipe": [

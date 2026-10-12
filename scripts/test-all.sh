@@ -172,6 +172,15 @@ node scripts/check-source-links.mjs
 step 'unit tests'
 LIBTMUX_DOCS_TEST_SOURCE_ONLY=1 pnpm run --recursive --if-present test
 
+step 'format'
+pnpm run format:check
+
+# Hand-written fences are not formatted; this holds them to 80 columns.
+# The self-test plants a wide line first, so a check that cannot fail is caught.
+step 'example width'
+python3 scripts/check_example_width.py --self-test
+python3 scripts/check_example_width.py
+
 step 'lint'
 pnpm run lint
 

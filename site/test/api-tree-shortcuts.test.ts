@@ -33,18 +33,38 @@ async function fixture(base = '/en/julia/latest/reference/') {
     Object.defineProperty(value, 'matches', { value: query === '(prefers-reduced-motion: reduce)' })
     return value
   })
-  const fetch = vi.fn(async () => ({ ok: true, json: async () => ({ port: 'julia', members: {}, buckets: [
-    { id: 'server', label: 'Server', count: 2, children: [], types: [
-      { id: 'Server', name: 'Server', slug: 'server', kind: 'struct', m: 0 },
-      { id: 'snapshot', name: 'snapshot', slug: 'snapshot', kind: 'function', m: 0, shortcut: true },
-    ] },
-    { id: 'snapshots', label: 'Snapshots', count: 1, children: [], types: [
-      { id: 'snapshot', name: 'snapshot', slug: 'snapshot', kind: 'function', m: 0 },
-    ] },
-  ] }) }))
+  const fetch = vi.fn(async () => ({
+    ok: true,
+    json: async () => ({
+      port: 'julia',
+      members: {},
+      buckets: [
+        {
+          id: 'server',
+          label: 'Server',
+          count: 2,
+          children: [],
+          types: [
+            { id: 'Server', name: 'Server', slug: 'server', kind: 'struct', m: 0 },
+            { id: 'snapshot', name: 'snapshot', slug: 'snapshot', kind: 'function', m: 0, shortcut: true },
+          ],
+        },
+        {
+          id: 'snapshots',
+          label: 'Snapshots',
+          count: 1,
+          children: [],
+          types: [{ id: 'snapshot', name: 'snapshot', slug: 'snapshot', kind: 'function', m: 0 }],
+        },
+      ],
+    }),
+  }))
   vi.stubGlobal('fetch', fetch)
-  const leaf = (slug: string, current = false, shortcut = false) => `<li role="none"><a role="treeitem" class="api-nav__row api-nav__leaf" href="${base}${slug}/" tabindex="${current ? 0 : -1}" ${current ? 'aria-current="page"' : ''} ${shortcut ? 'data-api-shortcut' : ''}><span class="api-nav__label">${slug}</span></a></li>`
-  const markup = (page: 'server' | 'snapshot') => `<div class="api-nav" data-base="${base}" data-src="${base}tree.json" data-version="model-v1"><ul role="tree" class="api-nav__tree">
+  const leaf = (slug: string, current = false, shortcut = false) =>
+    `<li role="none"><a role="treeitem" class="api-nav__row api-nav__leaf" href="${base}${slug}/" tabindex="${current ? 0 : -1}" ${current ? 'aria-current="page"' : ''} ${shortcut ? 'data-api-shortcut' : ''}><span class="api-nav__label">${slug}</span></a></li>`
+  const markup = (
+    page: 'server' | 'snapshot',
+  ) => `<div class="api-nav" data-base="${base}" data-src="${base}tree.json" data-version="model-v1"><ul role="tree" class="api-nav__tree">
     <li role="treeitem" data-lazy="bucket:server" aria-level="1" aria-expanded="${page === 'server'}" tabindex="-1"><div class="api-nav__row"><span class="api-nav__label">Server</span></div>${page === 'server' ? `<ul role="group">${leaf('server', true)}${leaf('snapshot', false, true)}</ul>` : ''}</li>
     <li role="treeitem" data-lazy="bucket:snapshots" aria-level="1" aria-expanded="${page === 'snapshot'}" tabindex="-1"><div class="api-nav__row"><span class="api-nav__label">Snapshots</span></div>${page === 'snapshot' ? `<ul role="group">${leaf('snapshot', true)}</ul>` : ''}</li>
   </ul></div>`
@@ -59,10 +79,14 @@ async function fixture(base = '/en/julia/latest/reference/') {
   const swap = (page: 'server' | 'snapshot', link?: HTMLElement, traverse = false) => {
     const next = win.document.implementation.createHTMLDocument()
     next.body.innerHTML = markup(page)
-    runtime.saveApiTreeState(Object.assign(new win.Event('astro:before-swap'), {
-      newDocument: next, to: new URL(`${base}${page}/`, win.location.href), sourceElement: link,
-      navigationType: traverse ? 'traverse' : 'push',
-    }) as unknown as Event)
+    runtime.saveApiTreeState(
+      Object.assign(new win.Event('astro:before-swap'), {
+        newDocument: next,
+        to: new URL(`${base}${page}/`, win.location.href),
+        sourceElement: link,
+        navigationType: traverse ? 'traverse' : 'push',
+      }) as unknown as Event,
+    )
     if (!traverse) win.history.pushState({ index: 1, scrollX: 0, scrollY: 0, other: 'next' }, '', `${base}${page}/`)
     win.document.body.innerHTML = next.body.innerHTML
     inline()
@@ -82,7 +106,11 @@ it('retains a clicked shortcut before paint, with one current row and unchanged 
   expect(f.tree().querySelectorAll('[role="treeitem"][tabindex="0"]')).toHaveLength(1)
   expect(f.tree().scrollTop).toBe(73)
   expect(win.location.pathname).toBe(`${f.base}snapshot/`)
-  expect(win.history.state).toMatchObject({ index: 1, other: 'next', libtmuxApiTree: { base: f.base, path: ['bucket:server'], top: 73 } })
+  expect(win.history.state).toMatchObject({
+    index: 1,
+    other: 'next',
+    libtmuxApiTree: { base: f.base, path: ['bucket:server'], top: 73 },
+  })
   expect(f.fetch).not.toHaveBeenCalled()
 })
 
@@ -115,10 +143,14 @@ it('retains a branch shortcut activated through the tree keyboard model', async 
   const original = f.tree().querySelector<HTMLElement>('a[data-api-shortcut]')!
   original.parentElement!.outerHTML = `<li role="treeitem" data-lazy="type:snapshot" aria-level="2" aria-expanded="false" tabindex="-1"><div class="api-nav__row"><a class="api-nav__label" data-api-shortcut href="${f.base}snapshot/" tabindex="-1">snapshot</a></div></li>`
   const branch = f.tree().querySelector<HTMLElement>('[data-lazy="type:snapshot"]')!
-  win.document.addEventListener('click', (event) => {
-    event.preventDefault()
-    f.swap('snapshot', event.target as HTMLElement)
-  }, { once: true })
+  win.document.addEventListener(
+    'click',
+    (event) => {
+      event.preventDefault()
+      f.swap('snapshot', event.target as HTMLElement)
+    },
+    { once: true },
+  )
   branch.focus()
   branch.dispatchEvent(new win.KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }))
   expect(f.current()).toHaveLength(1)
@@ -141,24 +173,33 @@ it('selects canonical rows for a new direct visit or an ordinary canonical link'
   expect(f.current()[0].hasAttribute('data-api-shortcut')).toBe(false)
 })
 
-it.each(['/en/julia/latest/reference/', '/pr-24/ja/julia/v1.2.3/mcp/reference/'])('scopes shortcut context to exact base and renderer version: %s', async (base) => {
-  const f = await fixture(base)
-  f.swap('snapshot', f.tree().querySelector<HTMLElement>('a[data-api-shortcut]')!)
-  const selection = shortcutHistoryState().libtmuxApiTree
-  expect(selection.base).toBe(base)
-  for (const override of [{ version: 'model-v2' }, { base: '/en/powershell/latest/reference/' }, { href: `${base}other/` }]) {
-    win.history.replaceState({ index: 2, libtmuxApiTree: { ...selection, ...override } }, '')
-    win.document.body.innerHTML = f.markup('snapshot')
-    f.inline()
-    expect(f.current()).toHaveLength(1)
-    expect(f.current()[0].hasAttribute('data-api-shortcut')).toBe(false)
-  }
-})
+it.each(['/en/julia/latest/reference/', '/pr-24/ja/julia/v1.2.3/mcp/reference/'])(
+  'scopes shortcut context to exact base and renderer version: %s',
+  async (base) => {
+    const f = await fixture(base)
+    f.swap('snapshot', f.tree().querySelector<HTMLElement>('a[data-api-shortcut]')!)
+    const selection = shortcutHistoryState().libtmuxApiTree
+    expect(selection.base).toBe(base)
+    for (const override of [
+      { version: 'model-v2' },
+      { base: '/en/powershell/latest/reference/' },
+      { href: `${base}other/` },
+    ]) {
+      win.history.replaceState({ index: 2, libtmuxApiTree: { ...selection, ...override } }, '')
+      win.document.body.innerHTML = f.markup('snapshot')
+      f.inline()
+      expect(f.current()).toHaveLength(1)
+      expect(f.current()[0].hasAttribute('data-api-shortcut')).toBe(false)
+    }
+  },
+)
 
 it('loads the selected branch from history when session storage is unavailable', async () => {
   const f = await fixture()
   f.swap('snapshot', f.tree().querySelector<HTMLElement>('a[data-api-shortcut]')!)
-  vi.spyOn(win.sessionStorage, 'getItem').mockImplementation(() => { throw new Error('unavailable') })
+  vi.spyOn(win.sessionStorage, 'getItem').mockImplementation(() => {
+    throw new Error('unavailable')
+  })
   win.document.body.innerHTML = f.markup('snapshot')
   f.inline()
   f.runtime.initApiTree()
@@ -171,10 +212,14 @@ it('reconciles a cached shortcut before the swap module yields or its inline scr
   const f = await fixture()
   const next = win.document.implementation.createHTMLDocument()
   next.body.innerHTML = f.markup('snapshot')
-  f.runtime.saveApiTreeState(Object.assign(new win.Event('astro:before-swap'), { newDocument: next,
-    to: new URL(`${f.base}snapshot/`, win.location.href), navigationType: 'push',
-    sourceElement: f.tree().querySelector('a[data-api-shortcut]'),
-  }) as unknown as Event)
+  f.runtime.saveApiTreeState(
+    Object.assign(new win.Event('astro:before-swap'), {
+      newDocument: next,
+      to: new URL(`${f.base}snapshot/`, win.location.href),
+      navigationType: 'push',
+      sourceElement: f.tree().querySelector('a[data-api-shortcut]'),
+    }) as unknown as Event,
+  )
   win.history.pushState({ index: 1 }, '', `${f.base}snapshot/`)
   win.document.body.innerHTML = next.body.innerHTML
   f.runtime.initApiTree()
@@ -209,10 +254,15 @@ it('rejects saved rows from the renderer that did not serialize shortcut identit
   win.history.pushState({ index: 1 }, '', `${f.base}snapshot/`)
   win.document.body.innerHTML = f.markup('snapshot')
   win.document.querySelector<HTMLElement>('.api-nav')!.dataset.version = version
-  win.sessionStorage.setItem(`libtmux:api-tree:${f.base}`, JSON.stringify({
-    version: oldVersion, top: 0, branches: { 'bucket:server': true },
-    groups: { 'bucket:server': [{ label: ['old unmarked snapshot'], href: `${f.base}snapshot/`, kind: 'function' }] },
-  }))
+  win.sessionStorage.setItem(
+    `libtmux:api-tree:${f.base}`,
+    JSON.stringify({
+      version: oldVersion,
+      top: 0,
+      branches: { 'bucket:server': true },
+      groups: { 'bucket:server': [{ label: ['old unmarked snapshot'], href: `${f.base}snapshot/`, kind: 'function' }] },
+    }),
+  )
   f.inline()
   expect(f.tree().textContent).not.toContain('old unmarked snapshot')
   f.runtime.initApiTree()
@@ -225,8 +275,12 @@ it('rejects saved rows from the renderer that did not serialize shortcut identit
 
 it('keeps the canonical page usable when history or storage is unavailable', async () => {
   const f = await fixture()
-  vi.spyOn(win.sessionStorage, 'getItem').mockImplementation(() => { throw new Error('unavailable') })
-  vi.spyOn(win.history, 'replaceState').mockImplementation(() => { throw new Error('unavailable') })
+  vi.spyOn(win.sessionStorage, 'getItem').mockImplementation(() => {
+    throw new Error('unavailable')
+  })
+  vi.spyOn(win.history, 'replaceState').mockImplementation(() => {
+    throw new Error('unavailable')
+  })
   f.swap('snapshot', f.tree().querySelector<HTMLElement>('a[data-api-shortcut]')!)
   expect(f.current()).toHaveLength(1)
   expect(f.current()[0].getAttribute('href')).toBe(`${f.base}snapshot/`)

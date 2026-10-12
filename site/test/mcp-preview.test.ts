@@ -13,7 +13,9 @@ it('previews every captured protocol object at its actual versioned route', () =
       expect(preview.title).toBe(object.name)
       expect(preview.kind).toBe(object.kind)
       expect(preview.href).toBe(portPageUrl(PORT_BY_SLUG[port], 'v1', object.path))
-      expect(linkPreviewTarget(preview.href, 'https://libtmux.org')?.endpoint).toBe(preview.href.replace(/\/$/, '.preview.json'))
+      expect(linkPreviewTarget(preview.href, 'https://libtmux.org')?.endpoint).toBe(
+        preview.href.replace(/\/$/, '.preview.json'),
+      )
       expect(preview.signature).toBe(object.item?.uriTemplate ?? object.item?.uri)
     }
   }
@@ -30,8 +32,13 @@ it('preserves opt-in tool availability without inventing a callable signature', 
 })
 
 it('does not turn protocol indexes or unknown categories into object previews', () => {
-  for (const path of ['/en/ts/latest/mcp/tools/', '/en/ts/latest/mcp/prompts/', '/en/ts/latest/mcp/resources/',
-    '/en/ts/latest/mcp/resources/templates/', '/en/ts/latest/mcp/unknown/foo/']) {
+  for (const path of [
+    '/en/ts/latest/mcp/tools/',
+    '/en/ts/latest/mcp/prompts/',
+    '/en/ts/latest/mcp/resources/',
+    '/en/ts/latest/mcp/resources/templates/',
+    '/en/ts/latest/mcp/unknown/foo/',
+  ]) {
     expect(linkPreviewTarget(path, 'https://libtmux.org')).toBeUndefined()
   }
 })

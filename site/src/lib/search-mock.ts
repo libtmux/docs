@@ -23,14 +23,23 @@ const PAGES: MockPage[] = [
     title: 'Getting started',
     excerpt: 'Install a libtmux port, start a tmux server and create a session from code.',
     sections: [
-      ['install', 'Install', 'Each port installs from its own registry: pip, npm, cargo, go get, Maven, NuGet, CMake or SwiftPM.'],
-      ['run-the-smallest-thing-that-proves-it-works', 'Run the smallest thing that proves it works', 'Start a session named foo, send keys to its pane, and read the output back.'],
+      [
+        'install',
+        'Install',
+        'Each port installs from its own registry: pip, npm, cargo, go get, Maven, NuGet, CMake or SwiftPM.',
+      ],
+      [
+        'run-the-smallest-thing-that-proves-it-works',
+        'Run the smallest thing that proves it works',
+        'Start a session named foo, send keys to its pane, and read the output back.',
+      ],
     ],
   },
   {
     path: 'tmux/concepts/server-session-window-pane/',
     title: 'Server, session, window, pane',
-    excerpt: 'tmux nests panes in windows, windows in sessions, and sessions in a server; every port models the same tree.',
+    excerpt:
+      'tmux nests panes in windows, windows in sessions, and sessions in a server; every port models the same tree.',
     sections: [
       ['server', 'Server', 'A server owns a socket and every session on it.'],
       ['session', 'Session', 'A session groups windows and outlives the client that created it.'],

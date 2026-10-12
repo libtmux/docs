@@ -17,10 +17,11 @@ export function attachCompleteLuaExamples(
   const require = (condition: unknown, message: string): void => {
     if (!condition) throw new Error(`Invalid complete Lua examples: ${message}`)
   }
-  require(source.repository === 'libtmux/libtmux-lua' && /^[a-f0-9]{40}$/.test(source.revision),
-    'source must name the Lua repository and a full revision')
-  require(manifest?.schema === 1 && Array.isArray(manifest.examples) && manifest.examples.length,
-    'unsupported or empty manifest')
+  require(source.repository === 'libtmux/libtmux-lua' &&
+    /^[a-f0-9]{40}$/.test(source.revision), 'source must name the Lua repository and a full revision')
+  require(manifest?.schema === 1 &&
+    Array.isArray(manifest.examples) &&
+    manifest.examples.length, 'unsupported or empty manifest')
   require(/^5\.[1-5]\.\d+$/.test(manifest.setup?.lua ?? '') &&
     /^\d+\.\d+\.\d+-\d+$/.test(manifest.setup?.luv ?? ''), 'runtime versions must be pinned')
   require(manifest.setup.launcher === 'examples/api/run.sh', 'unexpected launcher path')
@@ -28,8 +29,10 @@ export function attachCompleteLuaExamples(
     const matches = files?.filter((file) => file.path === path) ?? []
     require(matches.length === 1, `source file must resolve once: ${path}`)
     const code = matches[0].content
-    require(typeof code === 'string' && code.trim() && code.endsWith('\n') && !code.includes('\r'),
-      `source file must retain complete LF bytes: ${path}`)
+    require(typeof code === 'string' &&
+      code.trim() &&
+      code.endsWith('\n') &&
+      !code.includes('\r'), `source file must retain complete LF bytes: ${path}`)
     return code
   }
   const launcher = read(manifest.setup.launcher)
@@ -41,8 +44,9 @@ export function attachCompleteLuaExamples(
     ids.add(example.id)
     require(example.file === `examples/api/${example.id}.lua`, 'unexpected program path')
     require(typeof example.description === 'string' && example.description.trim(), 'task description is missing')
-    require(typeof example.stdout === 'string' && example.stdout.trim() && example.stdout.endsWith('\n'),
-      'expected output is missing')
+    require(typeof example.stdout === 'string' &&
+      example.stdout.trim() &&
+      example.stdout.endsWith('\n'), 'expected output is missing')
     require(Array.isArray(example.symbols) && example.symbols.length, 'API targets are missing')
     const code = read(example.file)
     const name = `${example.id}.lua`
@@ -50,7 +54,8 @@ export function attachCompleteLuaExamples(
       {
         lang: 'console',
         intro: `${example.description} Use Lua ${manifest.setup.lua}, LuaRocks, Git, tmux 3.2a or newer, a C compiler, and CMake on Linux. In a new directory, install the documented source and standalone runtime dependency:`,
-        code: `$ git clone https://github.com/${source.repository}.git libtmux-source &&\n` +
+        code:
+          `$ git clone https://github.com/${source.repository}.git libtmux-source &&\n` +
           `  git -C libtmux-source checkout ${source.revision} &&\n` +
           `  luarocks --tree ./rocks install luv ${manifest.setup.luv} &&\n` +
           '  (cd libtmux-source &&\n' +
@@ -59,7 +64,8 @@ export function attachCompleteLuaExamples(
       },
       {
         lang: 'sh',
-        intro: 'Save this complete launcher as run.sh. It starts a private tmux daemon and cleans up after success or failure. A failed daemon shutdown reports and retains its socket directory.',
+        intro:
+          'Save this complete launcher as run.sh. It starts a private tmux daemon and cleans up after success or failure. A failed daemon shutdown reports and retains its socket directory.',
         sourceUrl: url(manifest.setup.launcher),
         code: launcher,
       },

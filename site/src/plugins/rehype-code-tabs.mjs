@@ -151,8 +151,7 @@ export function rehypeCodeTabs() {
         // A heading always breaks the run: it opens a new section, and a tab
         // group spanning one would take the heading out of the page's table
         // of contents.
-        const isHeading =
-          child.type === 'element' && /^h[1-6]$/.test(String(child.tagName))
+        const isHeading = child.type === 'element' && /^h[1-6]$/.test(String(child.tagName))
 
         // A paragraph while a run is open is a caption for whatever comes
         // next — held, not flushed. If the next thing is not a fence, it is

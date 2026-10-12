@@ -15,9 +15,17 @@ beforeEach(() => {
   }
   frames = []
   const requestFrame = win.requestAnimationFrame.bind(win)
-  vi.spyOn(win, 'requestAnimationFrame').mockImplementation((callback) => { frames.push(callback); return requestFrame(() => {}) })
+  vi.spyOn(win, 'requestAnimationFrame').mockImplementation((callback) => {
+    frames.push(callback)
+    return requestFrame(() => {})
+  })
   Object.defineProperty(win.document, 'fonts', {
-    value: { ready: new Promise<void>((resolve) => { finishFonts = resolve }) }, configurable: true,
+    value: {
+      ready: new Promise<void>((resolve) => {
+        finishFonts = resolve
+      }),
+    },
+    configurable: true,
   })
 })
 afterEach(async () => {
@@ -47,9 +55,13 @@ function mount({ section = scope, rowOffset = 900, inert = false, hidden = false
   const nav = scroll.querySelector<HappyElement>('[data-section-navigation]')!
   const current = nav.querySelector<HappyElement>('#active')!
   const geometry = { rowOffset }
-  vi.spyOn(scroll, 'getClientRects').mockImplementation(() => (scroll.hidden ? [] : [scroll.getBoundingClientRect()]) as ReturnType<HappyElement['getClientRects']>)
+  vi.spyOn(scroll, 'getClientRects').mockImplementation(
+    () => (scroll.hidden ? [] : [scroll.getBoundingClientRect()]) as ReturnType<HappyElement['getClientRects']>,
+  )
   vi.spyOn(scroll, 'getBoundingClientRect').mockImplementation(() => new win.DOMRect(20, 100, 240, 400))
-  vi.spyOn(current, 'getBoundingClientRect').mockImplementation(() => new win.DOMRect(30, 100 + geometry.rowOffset - scroll.scrollTop, 220, 30))
+  vi.spyOn(current, 'getBoundingClientRect').mockImplementation(
+    () => new win.DOMRect(30, 100 + geometry.rowOffset - scroll.scrollTop, 220, 30),
+  )
   const start = () => initializeDocumentationSidebar(nav as unknown as HTMLElement)
   const language = nav.querySelector('details')!
   const secondary = nav.querySelectorAll('details')[1]
@@ -62,7 +74,9 @@ function flushFrames() {
 function saveState(top: number, branches = {}, section = scope) {
   win.sessionStorage.setItem(key(section), JSON.stringify({ top, branches }))
 }
-function readState(section = scope) { return JSON.parse(win.sessionStorage.getItem(key(section)) ?? 'null') }
+function readState(section = scope) {
+  return JSON.parse(win.sessionStorage.getItem(key(section)) ?? 'null')
+}
 
 it('reveals an off-screen active entry using only its real scroller', () => {
   const { start, scroll, current } = mount()
@@ -80,7 +94,8 @@ it('reveals an off-screen active entry using only its real scroller', () => {
 it('keeps an already visible destination at the saved reading position', () => {
   saveState(700)
   const { start, scroll } = mount()
-  start(); flushFrames()
+  start()
+  flushFrames()
   expect(scroll.scrollTop).toBe(700)
 })
 
@@ -101,37 +116,49 @@ it('saves current position before navigation and restores it in the same scope',
   win.document.dispatchEvent(new win.Event('astro:before-swap'))
   first.scroll.remove()
   const second = mount()
-  second.start(); flushFrames()
+  second.start()
+  flushFrames()
   expect(second.scroll.scrollTop).toBe(670)
   expect(second.secondary.open).toBe(true)
 })
 
-it.each(['/en/julia/latest/mcp/reference/', '/en/cxx/latest/workspace/reference/', '/en/cxx/stable/mcp/reference/', '/fr/cxx/latest/mcp/reference/'])(
-  'does not inherit state in %s', (section) => {
-    saveState(700, { [JSON.stringify([scope, 'Other'])]: true })
-    const { start, scroll, secondary } = mount({ section, rowOffset: 100 })
+it.each([
+  '/en/julia/latest/mcp/reference/',
+  '/en/cxx/latest/workspace/reference/',
+  '/en/cxx/stable/mcp/reference/',
+  '/fr/cxx/latest/mcp/reference/',
+])('does not inherit state in %s', (section) => {
+  saveState(700, { [JSON.stringify([scope, 'Other'])]: true })
+  const { start, scroll, secondary } = mount({ section, rowOffset: 100 })
+  start()
+  expect(scroll.scrollTop).toBe(0)
+  expect(secondary.open).toBe(false)
+})
+
+it.each(['wheel', 'pointerdown', 'keydown'])(
+  'does not override reader %s after font or frame completion',
+  async (event) => {
+    const { start, scroll, geometry } = mount()
     start()
-    expect(scroll.scrollTop).toBe(0)
-    expect(secondary.open).toBe(false)
+    scroll.dispatchEvent(new win.Event(event))
+    scroll.scrollTop = 500
+    geometry.rowOffset = 1200
+    finishFonts()
+    await Promise.resolve()
+    flushFrames()
+    win.dispatchEvent(new win.Event('resize'))
+    flushFrames()
+    expect(scroll.scrollTop).toBe(500)
   },
 )
-
-it.each(['wheel', 'pointerdown', 'keydown'])('does not override reader %s after font or frame completion', async (event) => {
-  const { start, scroll, geometry } = mount()
-  start()
-  scroll.dispatchEvent(new win.Event(event))
-  scroll.scrollTop = 500
-  geometry.rowOffset = 1200
-  finishFonts(); await Promise.resolve(); flushFrames()
-  win.dispatchEvent(new win.Event('resize')); flushFrames()
-  expect(scroll.scrollTop).toBe(500)
-})
 
 it('adjusts for delayed font layout before the reader interacts', async () => {
   const { start, scroll, geometry } = mount()
   start()
   geometry.rowOffset = 1200
-  finishFonts(); await Promise.resolve(); flushFrames()
+  finishFonts()
+  await Promise.resolve()
+  flushFrames()
   expect(scroll.scrollTop).toBe(1015)
 })
 
@@ -139,7 +166,9 @@ it('restores an inert mobile drawer on its first opening without a hidden copy o
   saveState(700)
   const mobile = mount({ inert: true })
   const desktop = mount({ hidden: true })
-  mobile.start(); desktop.start(); flushFrames()
+  mobile.start()
+  desktop.start()
+  flushFrames()
   win.dispatchEvent(new win.Event('pagehide'))
   expect(readState().top).toBe(700)
   expect(mobile.scroll.scrollTop).toBe(0)
@@ -160,14 +189,24 @@ it('captures drawer position before a navigation handler makes it inert', () => 
   const { start, scroll, current } = mount()
   start()
   scroll.scrollTop = 650
-  current.addEventListener('click', (event) => { event.preventDefault(); scroll.setAttribute('inert', '') })
+  current.addEventListener('click', (event) => {
+    event.preventDefault()
+    scroll.setAttribute('inert', '')
+  })
   current.dispatchEvent(new win.MouseEvent('click', { bubbles: true, cancelable: true }))
   expect(readState().top).toBe(650)
 })
 
 it.each(['blocked', 'malformed', 'negative', 'array'])('reveals the active entry with %s storage', (mode) => {
-  if (mode === 'blocked') vi.spyOn(win.sessionStorage, 'getItem').mockImplementation(() => { throw new Error('blocked') })
-  else win.sessionStorage.setItem(key(), mode === 'malformed' ? '{' : mode === 'negative' ? '{"top":-1,"branches":{}}' : '{"top":700,"branches":[]}')
+  if (mode === 'blocked')
+    vi.spyOn(win.sessionStorage, 'getItem').mockImplementation(() => {
+      throw new Error('blocked')
+    })
+  else
+    win.sessionStorage.setItem(
+      key(),
+      mode === 'malformed' ? '{' : mode === 'negative' ? '{"top":-1,"branches":{}}' : '{"top":700,"branches":[]}',
+    )
   const { start, scroll } = mount()
   start()
   expect(scroll.scrollTop).toBe(715)
@@ -205,8 +244,11 @@ it('ignores pending font and resize work after an Astro document swap', async ()
   start()
   win.document.dispatchEvent(new win.Event('astro:before-swap'))
   geometry.rowOffset = 1400
-  finishFonts(); await Promise.resolve(); flushFrames()
-  win.dispatchEvent(new win.Event('resize')); flushFrames()
+  finishFonts()
+  await Promise.resolve()
+  flushFrames()
+  win.dispatchEvent(new win.Event('resize'))
+  flushFrames()
   expect(scroll.scrollTop).toBe(715)
 })
 
@@ -220,12 +262,17 @@ it('keeps the last row reachable when the full header places the sidebar below i
     return win.innerHeight - inset - 16
   }
   vi.spyOn(scroll, 'getBoundingClientRect').mockImplementation(() => new win.DOMRect(20, 167, 240, height()))
-  vi.spyOn(current, 'getBoundingClientRect').mockImplementation(() => new win.DOMRect(30, 1567 - scroll.scrollTop, 220, 30))
+  vi.spyOn(current, 'getBoundingClientRect').mockImplementation(
+    () => new win.DOMRect(30, 1567 - scroll.scrollTop, 220, 30),
+  )
   Object.defineProperty(scroll, 'scrollTop', {
     get: () => Math.min(top, contentHeight - height()),
-    set: (value: number) => { top = Math.max(0, Math.min(value, contentHeight - height())) },
+    set: (value: number) => {
+      top = Math.max(0, Math.min(value, contentHeight - height()))
+    },
   })
-  start(); flushFrames()
+  start()
+  flushFrames()
   expect(scroll.getBoundingClientRect().bottom).toBe(826)
   expect(current.getBoundingClientRect().bottom).toBeLessThanOrEqual(826)
   expect(win.scrollY).toBe(0)
@@ -240,17 +287,20 @@ it('fits a moving desktop sidebar without overriding the reader position', () =>
   scroll.dispatchEvent(new win.Event('wheel'))
   scroll.scrollTop = 200
   top = 80
-  win.dispatchEvent(new win.Event('scroll')); flushFrames()
+  win.dispatchEvent(new win.Event('scroll'))
+  flushFrames()
   expect(scroll.style.maxHeight).toBe('calc(100dvh - 80px - 1rem)')
   expect(scroll.scrollTop).toBe(200)
   win.document.dispatchEvent(new win.Event('astro:before-swap'))
   top = 120
-  win.dispatchEvent(new win.Event('resize')); flushFrames()
+  win.dispatchEvent(new win.Event('resize'))
+  flushFrames()
   expect(scroll.style.maxHeight).toBe('calc(100dvh - 80px - 1rem)')
 })
 
 it('leaves the mobile drawer height with its own layout', () => {
   const { start, scroll } = mount()
-  start(); flushFrames()
+  start()
+  flushFrames()
   expect(scroll.style.maxHeight).toBe('')
 })

@@ -55,7 +55,7 @@ export const GET: APIRoute = ({ site }) => {
         status: entry.status,
         version: entry.version,
         tag: entry.tag,
-        registry: (port.registry?.name ?? 'its repository'),
+        registry: port.registry?.name ?? 'its repository',
       },
     }
   })
@@ -64,8 +64,7 @@ export const GET: APIRoute = ({ site }) => {
     schema: 1,
     name: 'libtmux agent prompts',
     url: `${base}/prompts/`,
-    description:
-      'Prompts that set up libtmux in a repository and build something with it, one per language and task.',
+    description: 'Prompts that set up libtmux in a repository and build something with it, one per language and task.',
     sourceRepository: 'https://github.com/libtmux/docs',
     topics: TOPICS.map((topic) => ({
       id: topic.id,

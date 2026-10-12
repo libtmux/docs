@@ -84,7 +84,8 @@ func capture() (err error) {
   }
   pane := panes[0]
   command := "printf '\\nlibtmux capture ready\\n'"
-  if err := pane.SendKeys(ctx, tmux.SendKeysRequest{Command: &command}); err != nil {
+  keys := tmux.SendKeysRequest{Command: &command}
+  if err := pane.SendKeys(ctx, keys); err != nil {
     return err
   }
   for {

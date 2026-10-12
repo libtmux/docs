@@ -13,14 +13,25 @@ const describeIfAssembled = SITE_BUILT ? describe : describe.skip
 function samplePages(): string[] {
   const prefix = SITE_PREFIX
   const wanted = [
-    'index.html', 'concepts/index.html', 'mcp/tools/index.html',
-    'topics/architecture/index.html', 'py/index.html',
-    'py/latest/topics/architecture/index.html', 'ts/latest/topics/architecture/index.html',
-    'rs/index.html', 'reference/index.html', 'ts/latest/reference/index.html',
-    'ts/latest/reference/session-session-panes/index.html', 'ts/latest/reference/session-session-sessionbrand/index.html',
-    'ts/latest/mcp/reference/index.html', 'go/latest/workspace/reference/index.html',
+    'index.html',
+    'concepts/index.html',
+    'mcp/tools/index.html',
+    'topics/architecture/index.html',
+    'py/index.html',
+    'py/latest/topics/architecture/index.html',
+    'ts/latest/topics/architecture/index.html',
+    'rs/index.html',
+    'reference/index.html',
+    'ts/latest/reference/index.html',
+    'ts/latest/reference/session-session-panes/index.html',
+    'ts/latest/reference/session-session-sessionbrand/index.html',
+    'ts/latest/mcp/reference/index.html',
+    'go/latest/workspace/reference/index.html',
   ].map((page) => prefix + page)
-  wanted.push(`${PREVIEW_PREFIX.slice(1)}${PREVIEW_PREFIX ? '/' : ''}ja/index.html`, `${PREVIEW_PREFIX.slice(1)}${PREVIEW_PREFIX ? '/' : ''}ja/concepts/index.html`)
+  wanted.push(
+    `${PREVIEW_PREFIX.slice(1)}${PREVIEW_PREFIX ? '/' : ''}ja/index.html`,
+    `${PREVIEW_PREFIX.slice(1)}${PREVIEW_PREFIX ? '/' : ''}ja/concepts/index.html`,
+  )
   const present = wanted.filter((page) => existsSync(join(SITE, page)))
 
   return present
@@ -66,7 +77,10 @@ describeIfAssembled('switcher targets', () => {
     const noDocument = NO_PAGE_COUNTERPART.some((suffix) => page.endsWith(suffix))
     // The counterpart picker is distinct from the app/section picker. Keep
     // explicit exceptions so losing a document's control remains a failure.
-    const window = new Window({ url: `https://libtmux.org/${page}`, settings: { disableJavaScriptEvaluation: true, disableJavaScriptFileLoading: true, disableCSSFileLoading: true } })
+    const window = new Window({
+      url: `https://libtmux.org/${page}`,
+      settings: { disableJavaScriptEvaluation: true, disableJavaScriptFileLoading: true, disableCSSFileLoading: true },
+    })
     try {
       window.document.write(html)
       const allMenus = [...window.document.querySelectorAll('details[data-page-port-switcher]')]
@@ -78,7 +92,10 @@ describeIfAssembled('switcher targets', () => {
       for (const menu of allMenus) {
         const counterparts = [...menu.querySelectorAll('a[href]')].map((link) => link.getAttribute('href')!)
         expect(counterparts.length, `${page} has an available destination`).toBeGreaterThan(0)
-        expect(counterparts.filter((href) => !resolves(href)), `${page}: destinations missing on disk`).toEqual([])
+        expect(
+          counterparts.filter((href) => !resolves(href)),
+          `${page}: destinations missing on disk`,
+        ).toEqual([])
         for (const disabled of menu.querySelectorAll('[aria-disabled="true"]')) {
           expect(disabled.hasAttribute('href'), `${page} unavailable counterparts are not links`).toBe(false)
         }
@@ -91,7 +108,9 @@ describeIfAssembled('switcher targets', () => {
   it.each(pages.map((p) => [p]))('%s: every hreflang alternate resolves', (page) => {
     const html = readFileSync(join(SITE, page), 'utf8')
     const hrefs = [...html.matchAll(/<link[^>]+hreflang="[^"]+"[^>]+href="([^"]+)"/g)].map((m) => m[1])
-    expect(hrefs.filter((h) => !resolves(h)), `${page}: alternates with no page`).toEqual([])
+    expect(
+      hrefs.filter((h) => !resolves(h)),
+      `${page}: alternates with no page`,
+    ).toEqual([])
   })
-
 })

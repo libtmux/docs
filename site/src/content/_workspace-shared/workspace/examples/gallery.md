@@ -173,7 +173,7 @@ windows:
     panes:
       - pane
       - shell_command:
-          - echo 'this pane should be focused, when window switched to first time'
+          - echo 'this pane is focused when its window is first selected'
         focus: true
       - pane
 ```
@@ -283,7 +283,7 @@ windows:
       - shell: /usr/bin/vim -u none
         shell_command:
           - iAll panes have the `remain-on-exit` setting on.
-          - When you exit out of the shell or application, the panes will remain.
+          - When you exit the shell or application, the panes remain.
           - Use tmux command `:kill-pane` to remove the pane.
           - Use tmux command `:respawn-pane` to restart the shell in the pane.
           - Use <Escape> and then `:q!` to get out of this vim window. :-)

@@ -99,8 +99,10 @@ windows:
     panes:
       - environment:
           DOC_PANE: pane
-        shell_command: 'printf "ENV=%s|%s|%s\n" "$DOC_SESSION" "$DOC_WINDOW" "$DOC_PANE"'
-      - shell_command: 'printf "ENV=%s|%s|%s\n" "$DOC_SESSION" "$DOC_WINDOW" "$DOC_PANE"'
+        shell_command:
+          'printf "ENV=%s|%s|%s\n" "$DOC_SESSION" "$DOC_WINDOW" "$DOC_PANE"'
+      - shell_command:
+          'printf "ENV=%s|%s|%s\n" "$DOC_SESSION" "$DOC_WINDOW" "$DOC_PANE"'
 ```
 
 A pane map selects its launch environment in place of the window map. Session

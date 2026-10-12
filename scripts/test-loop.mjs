@@ -17,7 +17,9 @@ let cancelled = false
 const stop = (signal = 'SIGTERM') => {
   for (const child of children) if (child.pid) stoppingGroups.add(child.pid)
   for (const pid of stoppingGroups) {
-    try { process.kill(-pid, signal) } catch (error) {
+    try {
+      process.kill(-pid, signal)
+    } catch (error) {
       if (error.code !== 'ESRCH') throw error
     }
   }
@@ -34,7 +36,9 @@ function run(command, args) {
   if (cancelled) throw new Error(`${loop} cancelled or exceeded ${budget}s`)
   const promise = new Promise((resolve, reject) => {
     const child = spawn(command, args, {
-      cwd: root, stdio: 'inherit', detached: true,
+      cwd: root,
+      stdio: 'inherit',
+      detached: true,
       env: { ...process.env, LIBTMUX_DOCS_TEST_SOURCE_ONLY: '1' },
     })
     children.add(child)
@@ -56,34 +60,54 @@ const pnpm = (...args) => {
   const entry = process.env.npm_execpath ?? 'pnpm'
   return /\.[cm]?js$/.test(entry) ? node(entry, ...args) : run(entry, args)
 }
-const tests = (directory, names = []) => node(vitest, 'run', '--root', directory,
-  '--maxWorkers', directory === 'site' ? '3' : '2', '--pool', 'threads', '--fsModuleCache',
-  ...(loop === 'medium' ? ['--exclude', '**/*.outer.test.ts'] : []),
-  ...names.map((name) => `test/${name}.test.ts`))
+const tests = (directory, names = []) =>
+  node(
+    vitest,
+    'run',
+    '--root',
+    directory,
+    '--maxWorkers',
+    directory === 'site' ? '3' : '2',
+    '--pool',
+    'threads',
+    '--fsModuleCache',
+    ...(loop === 'medium' ? ['--exclude', '**/*.outer.test.ts'] : []),
+    ...names.map((name) => `test/${name}.test.ts`),
+  )
 
 try {
   if (loop !== 'inner') await node('scripts/stage-port-docs.mjs', '--integrated')
-  const checks = loop === 'inner' ? [
-    tests('packages/api-model', ['concepts', 'resolver', 'mentions']),
-    tests('site', ['native-switchers', 'native-shell-context', 'normalize-native-shell']),
-  ] : ['packages/api-model', 'packages/theme', 'site'].map((directory) => tests(directory))
-  if (loop !== 'inner') checks.push(
-    pnpm('run', '--recursive', 'lint'),
-    pnpm('exec', 'oxlint', 'scripts'),
-    node('scripts/check-api-links.mjs'),
-    node('scripts/check-nav.mjs'),
-    node('scripts/gen-mentions.mjs', '--check'),
-    node('scripts/gen-shell-ports.mjs', '--check'),
-    node('scripts/gen-brand-css.mjs', '--check'),
-  )
-  if (loop === 'outer') checks.push(
-    node('scripts/gen-example-sources.mjs', '--check'),
-    pnpm('run', '--recursive', 'type-check'),
-    node('site/scripts/check-dev.mjs', '--sample'),
-  )
+  const checks =
+    loop === 'inner'
+      ? [
+          tests('packages/api-model', ['concepts', 'resolver', 'mentions']),
+          tests('site', ['native-switchers', 'native-shell-context', 'normalize-native-shell']),
+        ]
+      : ['packages/api-model', 'packages/theme', 'site'].map((directory) => tests(directory))
+  if (loop !== 'inner')
+    checks.push(
+      pnpm('run', 'format:check'),
+      run('python3', ['scripts/check_example_width.py', '--self-test']).then(() =>
+        run('python3', ['scripts/check_example_width.py']),
+      ),
+      pnpm('run', '--recursive', 'lint'),
+      pnpm('exec', 'oxlint', 'scripts'),
+      node('scripts/check-api-links.mjs'),
+      node('scripts/check-nav.mjs'),
+      node('scripts/gen-mentions.mjs', '--check'),
+      node('scripts/gen-shell-ports.mjs', '--check'),
+      node('scripts/gen-brand-css.mjs', '--check'),
+    )
+  if (loop === 'outer')
+    checks.push(
+      node('scripts/gen-example-sources.mjs', '--check'),
+      pnpm('run', '--recursive', 'type-check'),
+      node('site/scripts/check-dev.mjs', '--sample'),
+    )
   await Promise.all(checks)
   const elapsed = (performance.now() - started) / 1000
-  if (cancelled || elapsed >= budget) throw new Error(`${loop} cancelled or exceeded ${budget}s: ${elapsed.toFixed(2)}s`)
+  if (cancelled || elapsed >= budget)
+    throw new Error(`${loop} cancelled or exceeded ${budget}s: ${elapsed.toFixed(2)}s`)
   console.log(`${loop}: PASS in ${elapsed.toFixed(2)}s (budget <${budget}s; publication audit excluded)`)
 } catch (error) {
   console.error(error.message)
@@ -92,10 +116,12 @@ try {
   clearTimeout(deadline)
   if (children.size || stoppingGroups.size) {
     stop()
-    await new Promise((resolve) => setTimeout(() => {
-      stop('SIGKILL')
-      resolve()
-    }, 500))
+    await new Promise((resolve) =>
+      setTimeout(() => {
+        stop('SIGKILL')
+        resolve()
+      }, 500),
+    )
   }
   await Promise.allSettled(pending)
 }

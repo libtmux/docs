@@ -15,18 +15,34 @@ describe('complete Rust API examples', () => {
     expect(examples).toHaveLength(31)
     expect(new Set(examples.map((example) => example.sourceFile)).size).toBe(7)
     expect(new Set(examples.map((example) => example.page)).size).toBe(31)
-    const attached = model.symbols.filter((symbol) => symbol.doc?.examples?.some(
-      (block) => block.sourceUrl?.includes('/crates/libtmux/examples/api_'))).map((symbol) => symbol.id)
+    const attached = model.symbols
+      .filter((symbol) =>
+        symbol.doc?.examples?.some((block) => block.sourceUrl?.includes('/crates/libtmux/examples/api_')),
+      )
+      .map((symbol) => symbol.id)
     expect(examples.map((example) => example.symbol).sort()).toEqual(attached.sort())
-    for (const id of ['server.Server', 'server.Server.sessions', 'server.Server.windows',
-      'server.Server.panes', 'server.Server.new_session', 'session.Session.new_window',
-      'pane.Pane.split', 'query.QueryIteratorExt.matching', 'query.QueryIteratorExt.exactly_one',
-      'query.QueryIteratorExt.one_or_none', 'pane.Pane.send_keys', 'pane.Pane.capture']) {
+    for (const id of [
+      'server.Server',
+      'server.Server.sessions',
+      'server.Server.windows',
+      'server.Server.panes',
+      'server.Server.new_session',
+      'session.Session.new_window',
+      'pane.Pane.split',
+      'query.QueryIteratorExt.matching',
+      'query.QueryIteratorExt.exactly_one',
+      'query.QueryIteratorExt.one_or_none',
+      'pane.Pane.send_keys',
+      'pane.Pane.capture',
+    ]) {
       expect(attached).toContain(id)
     }
     expect(attached).not.toContain('options.OptionScope.Server')
-    expect(model.sources?.every((source) => source.revision === model.revision &&
-      source.extractedRevision === model.revision)).toBe(true)
+    expect(
+      model.sources?.every(
+        (source) => source.revision === model.revision && source.extractedRevision === model.revision,
+      ),
+    ).toBe(true)
   })
 
   it.each(examples)('preserves whole file and recipe bytes for $symbol in Markdown and copy payloads', (example) => {
@@ -43,12 +59,20 @@ describe('complete Rust API examples', () => {
     expect(example.files).toHaveLength(3)
     for (const file of example.files) {
       const label = `${example.symbol}/${file.name}`
-      if (!('sourceFile' in file) || typeof file.sourceFile !== 'string' ||
-          !('clipboardSha256' in file) || !('path' in file)) throw new Error(`${label}: missing receipt`)
+      if (
+        !('sourceFile' in file) ||
+        typeof file.sourceFile !== 'string' ||
+        !('clipboardSha256' in file) ||
+        !('path' in file)
+      )
+        throw new Error(`${label}: missing receipt`)
       const block = blocks[file.block]
       expect(hash(block.code), label).toBe(file.sha256)
       expect(hash(block.code.replace(/\n$/, ''))).toBe(file.clipboardSha256)
-      expect(exported.some((entry) => hash(entry.value + '\n') === file.sha256), label).toBe(true)
+      expect(
+        exported.some((entry) => hash(entry.value + '\n') === file.sha256),
+        label,
+      ).toBe(true)
       expect(block.sourceUrl).toBe(`https://github.com/${model.repo}/blob/${example.sourceRevision}/${file.sourceFile}`)
       expect(markdown).toContain(`[Source example](${block.sourceUrl}).`)
       expect(block.intro).toContain(file.path)
@@ -56,8 +80,9 @@ describe('complete Rust API examples', () => {
         expect(line.length).toBeLessThanOrEqual(100)
       }
     }
-    expect(example.consoleBlocks?.map((index) => blocks[index].code.replace(/^\$ /gm, '').trim()))
-      .toEqual(example.shellRecipe)
+    expect(example.consoleBlocks?.map((index) => blocks[index].code.replace(/^\$ /gm, '').trim())).toEqual(
+      example.shellRecipe,
+    )
     for (const command of example.shellRecipe) {
       expect(exported.some((entry) => entry.value.replace(/^\$ /gm, '').trim() === command)).toBe(true)
     }

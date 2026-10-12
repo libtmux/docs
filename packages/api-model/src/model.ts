@@ -14,7 +14,22 @@
  */
 
 /** Language libraries, by the slug the site uses. */
-export type PortSlug = 'py' | 'ruby' | 'lua' | 'ts' | 'rs' | 'go' | 'java' | 'csharp' | 'cxx' | 'swift' | 'kotlin' | 'scala' | 'fsharp' | 'powershell' | 'julia'
+export type PortSlug =
+  | 'py'
+  | 'ruby'
+  | 'lua'
+  | 'ts'
+  | 'rs'
+  | 'go'
+  | 'java'
+  | 'csharp'
+  | 'cxx'
+  | 'swift'
+  | 'kotlin'
+  | 'scala'
+  | 'fsharp'
+  | 'powershell'
+  | 'julia'
 
 export type ApiProduct = 'core' | 'workspace' | 'mcp'
 

@@ -13,12 +13,13 @@ import { DEFAULT_LOCALE, LOCALES } from '../i18n/locales'
  * so the port comes from the build rather than from the path's second
  * segment.
  */
-const symbolsByRoute = new Map<string, ApiSymbol>(Object.entries(API_MODELS).flatMap(([port, model]) =>
-  model.symbols.map((symbol) => [
-    `${port}/${symbol.slug ?? pageSlug(symbol.publicId ?? symbol.id)}`,
-    symbol,
-  ] as const),
-))
+const symbolsByRoute = new Map<string, ApiSymbol>(
+  Object.entries(API_MODELS).flatMap(([port, model]) =>
+    model.symbols.map(
+      (symbol) => [`${port}/${symbol.slug ?? pageSlug(symbol.publicId ?? symbol.id)}`, symbol] as const,
+    ),
+  ),
+)
 
 /** Static routes emitted in each port build, verified against assembled pages. */
 export const SHARED_PAGE_PATHS = ['mcp', 'mcp/tools', 'parity', 'search', 'translations'] as const
@@ -76,7 +77,9 @@ export function pagePortLinks({
   defaults: Record<string, string>
   docs: DocsPage[]
 }): PagePortLink[] {
-  const path = pagePath.replace(/^\/+|\/+$/g, '').replace(/^tmux\/(?=guides(?:\/|$)|topics(?:\/|$)|concepts(?:\/|$)|examples(?:\/|$))/, '')
+  const path = pagePath
+    .replace(/^\/+|\/+$/g, '')
+    .replace(/^tmux\/(?=guides(?:\/|$)|topics(?:\/|$)|concepts(?:\/|$)|examples(?:\/|$))/, '')
   const isReference = path === 'reference' || path.startsWith('reference/')
   const symbolSlug = isReference ? path.slice('reference/'.length) || undefined : undefined
   const productReference = /^(mcp|workspace)\/reference\/(.+)$/.exec(path)
@@ -89,7 +92,9 @@ export function pagePortLinks({
   const paths = [path, ...(own?.data.aliases ?? [])]
   const entries = own?.data.equivalence
     ? docs.filter((entry) => entry.data.equivalence === own.data.equivalence && entry.data.product === own.data.product)
-    : paths.flatMap((candidate) => docs.filter((entry) => docsPath(entry) === candidate || entry.data.aliases?.includes(candidate)))
+    : paths.flatMap((candidate) =>
+        docs.filter((entry) => docsPath(entry) === candidate || entry.data.aliases?.includes(candidate)),
+      )
   const product = /^(mcp|workspace)\//.exec(path)?.[1] as 'mcp' | 'workspace' | undefined
   const protocol = /^mcp\/(tools|prompts|resources)(?:\/(.+))?$/.exec(path)
   const object = protocol && portSlug ? mcpObjectAt(portSlug, protocol[1] as McpSection, protocol[2]) : undefined
@@ -112,14 +117,17 @@ export function pagePortLinks({
         const match = alternative.ports.find((p) => p.port === port.slug)
         // Resolve against the target port's version, which this caller knows.
         const targetSymbol = match?.publicId
-          ? API_MODELS[port.slug]?.symbols.find((entry) => (entry.publicId ?? entry.id) === match.publicId) : undefined
+          ? API_MODELS[port.slug]?.symbols.find((entry) => (entry.publicId ?? entry.id) === match.publicId)
+          : undefined
         const href = targetSymbol ? productApiHref(API_MODELS[port.slug], targetSymbol, targetVersion) : match?.href
-        if (href && !targets.has(href)) targets.set(href, {
-          label: targetSymbol ? `${targetSymbol.name} (${match?.kind ?? targetSymbol.kind})` : alternative.label,
-          note: match?.note,
-        })
+        if (href && !targets.has(href))
+          targets.set(href, {
+            label: targetSymbol ? `${targetSymbol.name} (${match?.kind ?? targetSymbol.kind})` : alternative.label,
+            note: match?.note,
+          })
       }
-      links = [...targets].map(([href, target]) => ({ href,
+      links = [...targets].map(([href, target]) => ({
+        href,
         ...(targets.size > 1 || target.note ? { label: target.label } : {}),
       }))
       if (port.slug === symbolPort) {
@@ -131,14 +139,23 @@ export function pagePortLinks({
     } else if (object) {
       const target = productAvailable(port, 'mcp') ? equivalentMcpObject(portSlug!, object, port.slug) : undefined
       if (target) links = [{ href: portPageUrl(port, targetVersion, target.path) }]
-      else if (productAvailable(port, 'mcp') && MCP_REFERENCE[port.slug]) links = [{ href: portPageUrl(port, targetVersion, `mcp/${object.section}`), label: `${object.section[0].toUpperCase()}${object.section.slice(1)} overview`, fallback: 'section' }]
+      else if (productAvailable(port, 'mcp') && MCP_REFERENCE[port.slug])
+        links = [
+          {
+            href: portPageUrl(port, targetVersion, `mcp/${object.section}`),
+            label: `${object.section[0].toUpperCase()}${object.section.slice(1)} overview`,
+            fallback: 'section',
+          },
+        ]
     } else if (protocol && !protocol[2]) {
-      if (productAvailable(port, 'mcp') && MCP_REFERENCE[port.slug]) links = [{ href: portPageUrl(port, targetVersion, path) }]
+      if (productAvailable(port, 'mcp') && MCP_REFERENCE[port.slug])
+        links = [{ href: portPageUrl(port, targetVersion, path) }]
     } else if (!port.parentLibrary && (SHARED_PAGE_PATHS as readonly string[]).includes(path)) {
       links = [{ href: portPageUrl(port, targetVersion, path) }]
     } else {
-      const eligible = entries.filter((entry) => docsEntryAvailable(entry, port.slug)
-        && (!product || productAvailable(port, product)))
+      const eligible = entries.filter(
+        (entry) => docsEntryAvailable(entry, port.slug) && (!product || productAvailable(port, product)),
+      )
       const owned = eligible.filter((entry) => entry.data.port === port.slug)
       const targets = owned.length ? owned : eligible
       if (own?.data.equivalence && targets.length) {
@@ -153,17 +170,25 @@ export function pagePortLinks({
       else {
         // A language-specific article may have no counterpart. Keep its
         // section reachable, and label that destination as an overview.
-        const sectionPath = /^((?:(?:mcp|workspace)\/(?:internals\/)?)?)(guides|examples|concepts|topics)(?:\/|$)/.exec(path)
+        const sectionPath = /^((?:(?:mcp|workspace)\/(?:internals\/)?)?)(guides|examples|concepts|topics)(?:\/|$)/.exec(
+          path,
+        )
         const group = own?.data.sidebar?.group?.toLowerCase()
-        const section = sectionPath?.[2] ?? (group && /^(guides|examples|concepts|topics)$/.test(group) ? group : undefined)
+        const section =
+          sectionPath?.[2] ?? (group && /^(guides|examples|concepts|topics)$/.test(group) ? group : undefined)
         const overviewPath = section && `${sectionPath?.[1] ?? (product ? `${product}/` : '')}${section}`
-        const overview = overviewPath && (!product || productAvailable(port, product))
-          && docs.find((entry) => docsPath(entry) === overviewPath && docsEntryAvailable(entry, port.slug))
-        if (overview && section && overviewPath) links = [{
-          href: portPageUrl(port, targetVersion, overviewPath),
-          label: `${section[0].toUpperCase()}${section.slice(1)} overview`,
-          fallback: 'section',
-        }]
+        const overview =
+          overviewPath &&
+          (!product || productAvailable(port, product)) &&
+          docs.find((entry) => docsPath(entry) === overviewPath && docsEntryAvailable(entry, port.slug))
+        if (overview && section && overviewPath)
+          links = [
+            {
+              href: portPageUrl(port, targetVersion, overviewPath),
+              label: `${section[0].toUpperCase()}${section.slice(1)} overview`,
+              fallback: 'section',
+            },
+          ]
       }
     }
     const homeProduct = product && productAvailable(port, product) ? product : undefined

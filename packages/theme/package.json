@@ -15,7 +15,6 @@
     "test:watch": "vitest watch",
     "test:types": "vitest run --typecheck",
     "lint": "oxlint --type-aware --tsconfig tsconfig.json --ignore-pattern '**/*.test.ts' --ignore-pattern '**/*.test-d.ts' src",
-    "format": "pnpm biome check . --write; biome format . --write",
     "update": "pnpm update",
     "ncu": "ncu",
     "clean": "rm -rf dist/ node_modules/.cache/",
@@ -27,7 +26,6 @@
     "tailwindcss": "^4.0.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "catalog:",
     "@types/chroma-js": "^3.1.2",
     "memfs": "^4.80.0",
     "oxlint": "catalog:",

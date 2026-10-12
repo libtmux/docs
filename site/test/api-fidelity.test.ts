@@ -9,19 +9,24 @@ import { sourceUrl } from '@libtmux/api-model'
 import { API_MODEL_PORTS } from '../src/lib/ports'
 
 const root = fileURLToPath(new URL('../../', import.meta.url))
-const models = Object.fromEntries(API_MODEL_PORTS.map((port) => [port.slug,
-  JSON.parse(readFileSync(join(root, `site/src/data/api/${port.slug}.json`), 'utf8')) as ApiModel,
-]))
+const models = Object.fromEntries(
+  API_MODEL_PORTS.map((port) => [
+    port.slug,
+    JSON.parse(readFileSync(join(root, `site/src/data/api/${port.slug}.json`), 'utf8')) as ApiModel,
+  ]),
+)
 const scratch: string[] = []
 afterEach(() => scratch.splice(0).forEach((path) => rmSync(path, { recursive: true, force: true })))
 
-const escape = (value: string) => value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+const escape = (value: string) =>
+  value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
 
 function entry(model: ApiModel, symbol: ApiSymbol, linked = true, declaration = false, responsive = false): string {
   const id = escape(`${symbol.publicId ?? symbol.id}${declaration ? '.declaration' : ''}`)
   const source = linked ? sourceUrl(model, symbol) : undefined
   const links = `<a class="headerlink" href="#${id}">¶</a>${source ? `<a href="${escape(source)}">source</a>` : ''}`
-  const layout = responsive ? `<span class="gp-sphinx-api-layout--responsive">${links}</span>`
+  const layout = responsive
+    ? `<span class="gp-sphinx-api-layout--responsive">${links}</span>`
     : `<span class="gp-sphinx-api-layout--desktop">${links}</span><span class="gp-sphinx-api-layout--mobile">${links}</span>`
   return `<dl><dt class="gp-sphinx-api-header" id="${id}" data-symbol-id="${escape(symbol.id)}" data-domain="std" data-objtype="${symbol.kind}" data-badge-count="0" data-has-badges="false" data-has-source="${Boolean(source)}" data-signature-expanded="true">${layout}</dt><dd>Reference fixture</dd></dl>`
 }
@@ -42,7 +47,8 @@ function fixture(responsive = false): string {
   return path
 }
 
-const audit = (path: string) => spawnSync(process.execPath, ['scripts/check-api-fidelity.mjs', path], { cwd: root, encoding: 'utf8' })
+const audit = (path: string) =>
+  spawnSync(process.execPath, ['scripts/check-api-fidelity.mjs', path], { cwd: root, encoding: 'utf8' })
 
 describe('API source fidelity gate', () => {
   it('accepts one responsive header per entry', () => {
@@ -87,11 +93,17 @@ describe('API source fidelity gate', () => {
     const model = models.py
     const declarations = model.symbols.filter((symbol) => sourceUrl(model, symbol)).slice(0, 20)
     expect(declarations).toHaveLength(20)
-    page(path, 'py', declarations.map((symbol, index) => entry(model, symbol, index !== 0, true)))
+    page(
+      path,
+      'py',
+      declarations.map((symbol, index) => entry(model, symbol, index !== 0, true)),
+    )
     const result = audit(path)
     expect(result.status).toBe(1)
     expect(result.stdout).toMatch(/py\s+1\s+20\s+20\s+19\s+95%/)
-    expect(result.stderr).toContain(`#${declarations[0].publicId ?? declarations[0].id}.declaration omits its known source link`)
+    expect(result.stderr).toContain(
+      `#${declarations[0].publicId ?? declarations[0].id}.declaration omits its known source link`,
+    )
     expect(result.stderr).not.toContain('source-eligible entries link to source')
   })
 })

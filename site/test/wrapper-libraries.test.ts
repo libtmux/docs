@@ -64,7 +64,9 @@ describe('wrapper library identities', () => {
       expect(portSourceUrl(port, version)).toBe(`${root}master${path}`)
     }
     expect(portSourceUrl(port, 'latest', 'feature/source-links')).toBe(`${root}feature%2Fsource-links${path}`)
-    expect(portSourceUrl(PORT_BY_SLUG.java, 'v0.0.1-alpha.17', 'a'.repeat(40))).toBe('https://github.com/libtmux/libtmux-java')
+    expect(portSourceUrl(PORT_BY_SLUG.java, 'v0.0.1-alpha.17', 'a'.repeat(40))).toBe(
+      'https://github.com/libtmux/libtmux-java',
+    )
   })
 
   it('supplies native examples and registry versions in the library installer', () => {
@@ -86,10 +88,13 @@ describe('wrapper library identities', () => {
 
   it('keeps parent-language examples in wrapper-owned guides', () => {
     vi.stubEnv('LIBTMUX_DOCS_PORT', 'fsharp')
-    const sample = () => ({ type: 'root', children: [
-      { type: 'code', lang: 'fsharp', value: 'open LibTmux.FSharp' },
-      { type: 'code', lang: 'csharp', value: 'using LibTmux;' },
-    ] })
+    const sample = () => ({
+      type: 'root',
+      children: [
+        { type: 'code', lang: 'fsharp', value: 'open LibTmux.FSharp' },
+        { type: 'code', lang: 'csharp', value: 'using LibTmux;' },
+      ],
+    })
     const owned = sample()
     remarkPortCode()(owned, { data: { astro: { frontmatter: { port: 'fsharp' } } } })
     expect(owned.children).toHaveLength(2)
@@ -107,9 +112,8 @@ describe('wrapper library identities', () => {
 
 describe('quickstart display formatting', () => {
   const views = PORTS.flatMap((port) => HOME_VIEWS.map((view) => ({ ...port, view })))
-  const columns = (line: string) => [...line].reduce(
-    (column, char) => column + (char === '\t' ? 8 - column % 8 : 1), 0,
-  )
+  const columns = (line: string) =>
+    [...line].reduce((column, char) => column + (char === '\t' ? 8 - (column % 8) : 1), 0)
   it('provides a complete verified program for every registered language', () => {
     expect(Object.keys(HOME_EXAMPLES).sort()).toEqual(PORTS.map((port) => port.slug).sort())
     expect(HOME_PROOF.examples.map((example) => example.port).sort()).toEqual(Object.keys(HOME_EXAMPLES).sort())
@@ -124,7 +128,9 @@ describe('quickstart display formatting', () => {
     const example = HOME_EXAMPLES[slug as keyof typeof HOME_EXAMPLES]
     expect(example.files.map((file) => file.name)).not.toContain('run.sh')
     expect(example.commands.join('\n')).not.toContain('sh run.sh')
-    expect(homeProgram(example, view)).not.toMatch(/\b(?:args|argv)\s*(?:\[\d+\]|\(\d+\))|CommandLine\.arguments|TMUX_SOCKET/)
+    expect(homeProgram(example, view)).not.toMatch(
+      /\b(?:args|argv)\s*(?:\[\d+\]|\(\d+\))|CommandLine\.arguments|TMUX_SOCKET/,
+    )
   })
 
   it.each(views)('$slug/$view fits 80 columns, including expanded tabs', ({ slug, view }) => {
@@ -141,12 +147,24 @@ describe('quickstart display formatting', () => {
     expect(complete.sourceRevision).toBe(proof.sourceRevision)
     expect(complete.sourceTree).toBe(proof.sourceTree)
     expect(complete.commands).toEqual(proof.shellRecipe)
-    expect(complete.files.map((file) => ({ name: file.name, sha256: hash(file.code), clipboardSha256: hash(file.code.replace(/\n$/, '')) }))).toEqual(proof.files)
+    expect(
+      complete.files.map((file) => ({
+        name: file.name,
+        sha256: hash(file.code),
+        clipboardSha256: hash(file.code.replace(/\n$/, '')),
+      })),
+    ).toEqual(proof.files)
     expect(hash(homeProgram(complete, 'full').replace(/\n$/, ''))).toBe(proof.excerptSha256)
     for (const view of HOME_VIEWS.filter((item) => item !== 'full')) {
       const code = homeProgram(complete, view)
-      const files = complete.files.map((file) => file.name === complete.program ? { ...file, code } : file)
-      expect(files.map((file) => ({ name: file.name, sha256: hash(file.code), clipboardSha256: hash(file.code.replace(/\n$/, '')) }))).toEqual(proof.variants[view].files)
+      const files = complete.files.map((file) => (file.name === complete.program ? { ...file, code } : file))
+      expect(
+        files.map((file) => ({
+          name: file.name,
+          sha256: hash(file.code),
+          clipboardSha256: hash(file.code.replace(/\n$/, '')),
+        })),
+      ).toEqual(proof.variants[view].files)
       expect(hash(code.replace(/\n$/, ''))).toBe(proof.variants[view].excerptSha256)
       expect(code, `${proof.port}/${view} must offer a distinct program`).not.toBe(homeProgram(complete, 'full'))
     }
@@ -159,46 +177,70 @@ describe('quickstart display formatting', () => {
 })
 
 describe.skipIf(!SITE_BUILT)('published wrapper pages', () => {
-  it.each(PORTS.filter((port) => port.parentLibrary))('$slug has complete library routes and metadata', async (port) => {
-    const root = `${port.slug}/latest`
-    const prefix = `/${SITE_PREFIX}${root}/`
-    for (const product of ['mcp', 'workspace']) expect(existsSync(sitePath(root, product)), `${port.slug}/${product}`).toBe(false)
-    for (const route of ['', 'guides', 'examples', 'reference']) {
-      const window = new Window({
-        url: `https://libtmux.org${prefix}${route}/`,
-        settings: { disableJavaScriptEvaluation: true, disableJavaScriptFileLoading: true, disableCSSFileLoading: true },
-      })
-      try {
-        const document = window.document
-        document.write(readFileSync(sitePath(root, route, 'index.html'), 'utf8'))
-        expect(document.querySelectorAll('h1'), `${port.slug}/${route}`).toHaveLength(1)
-        expect(document.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(`https://libtmux.org${prefix}${route ? `${route}/` : ''}`)
-        expect(document.querySelector('meta[property="og:image"]')?.getAttribute('content')).toContain(`/brand/${port.logoLanguage}/library/`)
-        expect(document.querySelector('link[rel="manifest"]')?.getAttribute('href')).toContain(`/brand/${port.logoLanguage}/library/`)
-        for (const anchor of document.querySelectorAll('main a[href], nav[aria-label="Documentation"] a[href], nav[aria-label="Port documentation"] a[href]')) {
-          const path = new URL(anchor.getAttribute('href')!, `https://libtmux.org${prefix}${route}/`).pathname
-          if (!path.startsWith(prefix)) continue
-          expect(path).not.toMatch(/\/(?:mcp|workspace)(?:\/|$)/)
-          expect(existsSync(publishedPath(decodeURIComponent(path))) || existsSync(publishedPath(decodeURIComponent(path), 'index.html')), path).toBe(true)
+  it.each(PORTS.filter((port) => port.parentLibrary))(
+    '$slug has complete library routes and metadata',
+    async (port) => {
+      const root = `${port.slug}/latest`
+      const prefix = `/${SITE_PREFIX}${root}/`
+      for (const product of ['mcp', 'workspace'])
+        expect(existsSync(sitePath(root, product)), `${port.slug}/${product}`).toBe(false)
+      for (const route of ['', 'guides', 'examples', 'reference']) {
+        const window = new Window({
+          url: `https://libtmux.org${prefix}${route}/`,
+          settings: {
+            disableJavaScriptEvaluation: true,
+            disableJavaScriptFileLoading: true,
+            disableCSSFileLoading: true,
+          },
+        })
+        try {
+          const document = window.document
+          document.write(readFileSync(sitePath(root, route, 'index.html'), 'utf8'))
+          expect(document.querySelectorAll('h1'), `${port.slug}/${route}`).toHaveLength(1)
+          expect(document.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(
+            `https://libtmux.org${prefix}${route ? `${route}/` : ''}`,
+          )
+          expect(document.querySelector('meta[property="og:image"]')?.getAttribute('content')).toContain(
+            `/brand/${port.logoLanguage}/library/`,
+          )
+          expect(document.querySelector('link[rel="manifest"]')?.getAttribute('href')).toContain(
+            `/brand/${port.logoLanguage}/library/`,
+          )
+          for (const anchor of document.querySelectorAll(
+            'main a[href], nav[aria-label="Documentation"] a[href], nav[aria-label="Port documentation"] a[href]',
+          )) {
+            const path = new URL(anchor.getAttribute('href')!, `https://libtmux.org${prefix}${route}/`).pathname
+            if (!path.startsWith(prefix)) continue
+            expect(path).not.toMatch(/\/(?:mcp|workspace)(?:\/|$)/)
+            expect(
+              existsSync(publishedPath(decodeURIComponent(path))) ||
+                existsSync(publishedPath(decodeURIComponent(path), 'index.html')),
+              path,
+            ).toBe(true)
+          }
+          if (!route) {
+            const logo = document.querySelector('main img')
+            expect(logo?.getAttribute('src')).toContain(`/brand/${port.logoLanguage}/library/logo.svg`)
+            expect(logo?.getAttribute('width')).toBe('88')
+            expect(document.querySelector('main')?.textContent).toContain(PORT_BY_SLUG[port.parentLibrary!.slug].name)
+            expect(document.querySelector('.port-links a')?.getAttribute('href')).toBe(portSourceUrl(port))
+            expect(document.querySelector('footer a[aria-label="GitHub"]')?.getAttribute('href')).toBe(
+              `${portSourceUrl(port)}${port.source ? '' : '/'}`,
+            )
+          }
+        } finally {
+          await window.happyDOM.close()
         }
-        if (!route) {
-          const logo = document.querySelector('main img')
-          expect(logo?.getAttribute('src')).toContain(`/brand/${port.logoLanguage}/library/logo.svg`)
-          expect(logo?.getAttribute('width')).toBe('88')
-          expect(document.querySelector('main')?.textContent).toContain(PORT_BY_SLUG[port.parentLibrary!.slug].name)
-          expect(document.querySelector('.port-links a')?.getAttribute('href')).toBe(portSourceUrl(port))
-          expect(document.querySelector('footer a[aria-label="GitHub"]')?.getAttribute('href')).toBe(`${portSourceUrl(port)}${port.source ? '' : '/'}`)
-        }
-      } finally { await window.happyDOM.close() }
-    }
-    const manifest = JSON.parse(readFileSync(sitePath(root, 'docs.json'), 'utf8'))
-    const identity = manifest.ports.find((entry: { slug: string }) => entry.slug === port.slug)
-    expect(identity.parentLibrary).toEqual(port.parentLibrary)
-    expect(identity.products).toEqual([])
-    expect(manifest.sourceRepository).toBe(`https://github.com/${port.repo}`)
-    for (const page of manifest.pages) {
-      const path = new URL(page.url).pathname
-      if (path.startsWith(prefix)) expect(existsSync(join(publishedPath(path), 'index.html')), page.url).toBe(true)
-    }
-  })
+      }
+      const manifest = JSON.parse(readFileSync(sitePath(root, 'docs.json'), 'utf8'))
+      const identity = manifest.ports.find((entry: { slug: string }) => entry.slug === port.slug)
+      expect(identity.parentLibrary).toEqual(port.parentLibrary)
+      expect(identity.products).toEqual([])
+      expect(manifest.sourceRepository).toBe(`https://github.com/${port.repo}`)
+      for (const page of manifest.pages) {
+        const path = new URL(page.url).pathname
+        if (path.startsWith(prefix)) expect(existsSync(join(publishedPath(path), 'index.html')), page.url).toBe(true)
+      }
+    },
+  )
 })

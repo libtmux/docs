@@ -68,8 +68,10 @@ for (const scheme of ['light', 'dark']) {
           }
           return top?.querySelector(':scope > [role="group"] > li:first-child a')?.getAttribute('href')
         })
-        check(firstPublicObject === new URL(BASE + path).pathname,
-          `${scheme}/${viewport}: Lua Server is not the first public Server object`)
+        check(
+          firstPublicObject === new URL(BASE + path).pathname,
+          `${scheme}/${viewport}: Lua Server is not the first public Server object`,
+        )
       }
     }
 
@@ -81,17 +83,29 @@ for (const scheme of ['light', 'dark']) {
       check(response?.ok(), `${scheme}/${viewport}: ${name} landing returned ${response?.status() ?? 'no response'}`)
       if (!response?.ok()) continue
       const targetPath = new URL(`${BASE}${target}`).pathname
-      const count = await page.locator('main a[href]').evaluateAll((links, expected) =>
-        links.filter((link) => new URL(link.href).pathname === expected.target && (link.textContent ?? '').includes(expected.label)).length,
-      { target: targetPath, label })
+      const count = await page
+        .locator('main a[href]')
+        .evaluateAll(
+          (links, expected) =>
+            links.filter(
+              (link) =>
+                new URL(link.href).pathname === expected.target && (link.textContent ?? '').includes(expected.label),
+            ).length,
+          { target: targetPath, label },
+        )
       check(count === 1, `${scheme}/${viewport}: ${name} landing has ${label}`)
     }
     const luaResponse = await page.goto(`${BASE}/lua/latest/`, { waitUntil: 'networkidle' })
-    check(luaResponse?.ok(), `${scheme}/${viewport}: Lua availability landing returned ${luaResponse?.status() ?? 'no response'}`)
+    check(
+      luaResponse?.ok(),
+      `${scheme}/${viewport}: Lua availability landing returned ${luaResponse?.status() ?? 'no response'}`,
+    )
     if (luaResponse?.ok()) {
       for (const product of ['mcp', 'workspace']) {
-        const offered = page.locator(`main a[href$="/lua/latest/${product}/"], [data-surface-picker] a[href$="/lua/latest/${product}/"]`)
-        check(await offered.count() === 0, `${scheme}/${viewport}: Lua offers unavailable ${product}`)
+        const offered = page.locator(
+          `main a[href$="/lua/latest/${product}/"], [data-surface-picker] a[href$="/lua/latest/${product}/"]`,
+        )
+        check((await offered.count()) === 0, `${scheme}/${viewport}: Lua offers unavailable ${product}`)
       }
     }
 
@@ -104,35 +118,61 @@ for (const scheme of ['light', 'dark']) {
         const option = language.locator(`a[data-port="${port}"]`)
         await option.focus()
         await option.press('Enter')
-        await page.waitForFunction((port) => document.querySelector('.lm-agent-prompt')?.dataset.activePort === port, port)
-        check(new URL(page.url()).searchParams.get('port') === port,
-          `${scheme}/${viewport}: keyboard language selection did not select ${port}`)
+        await page.waitForFunction(
+          (port) => document.querySelector('.lm-agent-prompt')?.dataset.activePort === port,
+          port,
+        )
+        check(
+          new URL(page.url()).searchParams.get('port') === port,
+          `${scheme}/${viewport}: keyboard language selection did not select ${port}`,
+        )
       }
       const install = (port) => page.locator(`.home-examples > [data-home-language="${port}"] .lm-pkg-install`)
       await choose('ruby')
       check(await install('ruby').isVisible(), `${scheme}/${viewport}: Ruby install is not visible`)
-      check(await install('ruby').locator('code').first().textContent().then((text) => /gem install/.test(text ?? '')),
-        `${scheme}/${viewport}: Ruby install command is missing`)
+      check(
+        await install('ruby')
+          .locator('code')
+          .first()
+          .textContent()
+          .then((text) => /gem install/.test(text ?? '')),
+        `${scheme}/${viewport}: Ruby install command is missing`,
+      )
       await choose('lua')
-      check(await install('lua').isVisible() && !(await install('ruby').isVisible()),
-        `${scheme}/${viewport}: Lua selection did not replace the Ruby install`)
-      check(await install('lua').locator('code').first().textContent().then((text) => /luarocks\s+(?:--local\s+)?install/.test(text ?? '')),
-        `${scheme}/${viewport}: Lua install command is missing`)
+      check(
+        (await install('lua').isVisible()) && !(await install('ruby').isVisible()),
+        `${scheme}/${viewport}: Lua selection did not replace the Ruby install`,
+      )
+      check(
+        await install('lua')
+          .locator('code')
+          .first()
+          .textContent()
+          .then((text) => /luarocks\s+(?:--local\s+)?install/.test(text ?? '')),
+        `${scheme}/${viewport}: Lua install command is missing`,
+      )
       await choose('ruby')
       const copy = install('ruby').locator('.lm-pkg-install__copy').first()
       await copy.click()
-      await copy.filter({ hasText: /copied/i }).waitFor({ timeout: 1000 }).catch(() => {})
-      check(await copy.textContent().then((text) => /copied/i.test(text ?? '')),
-        `${scheme}/${viewport}: Ruby copy control did not confirm the copy`)
-      check(await page.evaluate(() => navigator.clipboard.readText()).then((text) => /gem install/.test(text)),
-        `${scheme}/${viewport}: Ruby copy control wrote the wrong command`)
+      await copy
+        .filter({ hasText: /copied/i })
+        .waitFor({ timeout: 1000 })
+        .catch(() => {})
+      check(
+        await copy.textContent().then((text) => /copied/i.test(text ?? '')),
+        `${scheme}/${viewport}: Ruby copy control did not confirm the copy`,
+      )
+      check(
+        await page.evaluate(() => navigator.clipboard.readText()).then((text) => /gem install/.test(text)),
+        `${scheme}/${viewport}: Ruby copy control wrote the wrong command`,
+      )
 
       await page.keyboard.press('Control+k')
       const search = page.locator('#search-modal input[type="search"]')
       await search.fill('Ruby Async')
       const result = page.locator('#search-modal .search-panel__results a[href*="/ruby/latest/"]').first()
       await result.waitFor({ timeout: 5000 }).catch(() => {})
-      check(await result.count() > 0, `${scheme}/${viewport}: search returned no Ruby result`)
+      check((await result.count()) > 0, `${scheme}/${viewport}: search returned no Ruby result`)
     }
     await context.close()
   }

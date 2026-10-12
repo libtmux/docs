@@ -76,7 +76,8 @@ trap 'exit 1' HUP INT TERM
 
 unset TMUX TMUX_PANE
 export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work-one -n editor /bin/cat
+"$binary" -S "$socket" -f /dev/null \
+    new-session -d -s work-one -n editor /bin/cat
 "$binary" -S "$socket" new-session -d -s work-two -n logs /bin/cat
 "$@"
 "$binary" -S "$socket" has-session -t '=work-one'
@@ -120,11 +121,13 @@ fun main() = runBlocking {
         println(names.joinToString(", "))
         // Filtering the captured list makes no new tmux calls.
         check(sessions.filter { it.name.startsWith("work-") } == matching)
-        val onlyOne = (Session.name startsWith "work-").and(Session.name endsWith "one")
+        val endsInOne = Session.name endsWith "one"
+        val onlyOne = (Session.name startsWith "work-").and(endsInOne)
         check(sessions.filter(onlyOne).single().name == "work-one")
         val either = (Session.name eq "work-one").or(Session.name eq "work-two")
         check(sessions.filter(either).size == 2)
-        check(sessions.filter(!(Session.name eq "work-one")).single().name == "work-two")
+        val notOne = sessions.filter(!(Session.name eq "work-one"))
+        check(notOne.single().name == "work-two")
     }
 }
 ```
@@ -165,7 +168,9 @@ fun main() = runBlocking {
         val session = server.sessions().single { it.name == "work-one" }
         withControl(server, session) { control ->
             val reply = control.send("list-sessions", "-F", "#{session_name}")
-            check(reply.succeeded()) { "tmux rejected list-sessions: ${reply.outcome()}" }
+            check(reply.succeeded()) {
+                "tmux rejected list-sessions: ${reply.outcome()}"
+            }
             val names = reply.lines().sorted()
             check(names == listOf("work-one", "work-two"))
             println(names.joinToString(", "))

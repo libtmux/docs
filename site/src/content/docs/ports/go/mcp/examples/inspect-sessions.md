@@ -103,7 +103,8 @@ func run() (result error) {
 		return errors.Join(err, os.RemoveAll(directory))
 	}
 	defer func() {
-		cleanup, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		background := context.Background()
+		cleanup, cancel := context.WithTimeout(background, 5*time.Second)
 		defer cancel()
 		if err := server.Kill(cleanup); err != nil {
 			result = errors.Join(result, fmt.Errorf(
@@ -150,7 +151,8 @@ func run() (result error) {
 	}
 	defer func() {
 		if err := connection.Close(); err != nil {
-			result = errors.Join(result, fmt.Errorf("close MCP client: %w", err))
+			closeErr := fmt.Errorf("close MCP client: %w", err)
+			result = errors.Join(result, closeErr)
 		}
 	}()
 
@@ -184,7 +186,8 @@ func run() (result error) {
 	if err := json.Unmarshal(data, &listed); err != nil {
 		return fmt.Errorf("decode sessions: %w", err)
 	}
-	if len(listed.Sessions) != 1 || listed.Sessions[0].ID != string(created.ID()) {
+	want := string(created.ID())
+	if len(listed.Sessions) != 1 || listed.Sessions[0].ID != want {
 		return fmt.Errorf("unexpected session listing: %s", data)
 	}
 	session := listed.Sessions[0]

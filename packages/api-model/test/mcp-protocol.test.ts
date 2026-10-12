@@ -20,8 +20,9 @@ createInterface({ input: process.stdin }).on('line', line => {
 
 describe('MCP protocol discovery', () => {
   it('normalizes object order while preserving tuple and enumeration order', () => {
-    expect(JSON.stringify(orderedProtocol({ z: { b: 1, a: 2 }, a: ['z', 'a'] })))
-      .toBe('{"a":["z","a"],"z":{"a":2,"b":1}}')
+    expect(JSON.stringify(orderedProtocol({ z: { b: 1, a: 2 }, a: ['z', 'a'] }))).toBe(
+      '{"a":["z","a"],"z":{"a":2,"b":1}}',
+    )
   })
   it('collects paginated advertised contracts without invoking tools or unsupported capabilities', async () => {
     const protocol = await captureProtocol({ command: process.execPath, args: ['-e', server] })
@@ -33,13 +34,16 @@ describe('MCP protocol discovery', () => {
   })
 
   it('bounds an unresponsive process', async () => {
-    await expect(captureProtocol({ command: process.execPath, args: ['-e', 'setInterval(() => {}, 1000)'], timeoutMs: 50 }))
-      .rejects.toThrow('MCP discovery timed out')
+    await expect(
+      captureProtocol({ command: process.execPath, args: ['-e', 'setInterval(() => {}, 1000)'], timeoutMs: 50 }),
+    ).rejects.toThrow('MCP discovery timed out')
   })
 
-  it.each(['tools', 'prompts', 'resources', 'resourceTemplates'])('rejects a missing %s array instead of publishing an empty catalog', async (key) => {
-    const capability = key === 'resourceTemplates' ? 'resources' : key
-    const fixture = `
+  it.each(['tools', 'prompts', 'resources', 'resourceTemplates'])(
+    'rejects a missing %s array instead of publishing an empty catalog',
+    async (key) => {
+      const capability = key === 'resourceTemplates' ? 'resources' : key
+      const fixture = `
       const { createInterface } = require('node:readline');
       createInterface({ input: process.stdin }).on('line', line => {
         const message = JSON.parse(line);
@@ -50,14 +54,20 @@ describe('MCP protocol discovery', () => {
             ? { resources: [] } : {};
         console.log(JSON.stringify({ jsonrpc: '2.0', id: message.id, result }));
       });`
-    await expect(captureProtocol({ command: process.execPath, args: ['-e', fixture] }))
-      .rejects.toThrow(`missing or invalid ${key} array`)
-  })
+      await expect(captureProtocol({ command: process.execPath, args: ['-e', fixture] })).rejects.toThrow(
+        `missing or invalid ${key} array`,
+      )
+    },
+  )
 
   it('rejects an incomplete later page instead of publishing a partial catalog', async () => {
-    const fixture = server.replace("{ tools: [{ name: 'second', inputSchema: { type: 'object', properties: {} } }] }", '{}')
-    await expect(captureProtocol({ command: process.execPath, args: ['-e', fixture] }))
-      .rejects.toThrow('missing or invalid tools array')
+    const fixture = server.replace(
+      "{ tools: [{ name: 'second', inputSchema: { type: 'object', properties: {} } }] }",
+      '{}',
+    )
+    await expect(captureProtocol({ command: process.execPath, args: ['-e', fixture] })).rejects.toThrow(
+      'missing or invalid tools array',
+    )
   })
 
   it.each(['tools', 'prompts', 'resources', 'resourceTemplates'])('rejects an invalid %s registration', async (key) => {
@@ -73,12 +83,14 @@ describe('MCP protocol discovery', () => {
             ? { resources: [] } : { ${key}: [{ description: 'Missing the registration identity.' }] };
         console.log(JSON.stringify({ jsonrpc: '2.0', id: message.id, result }));
       });`
-    await expect(captureProtocol({ command: process.execPath, args: ['-e', fixture] }))
-      .rejects.toThrow(`invalid ${key} registration`)
+    await expect(captureProtocol({ command: process.execPath, args: ['-e', fixture] })).rejects.toThrow(
+      `invalid ${key} registration`,
+    )
   })
 
   it('follows an empty opaque pagination cursor', async () => {
-    const fixture = server.replace('message.params.cursor', "Object.hasOwn(message.params, 'cursor')")
+    const fixture = server
+      .replace('message.params.cursor', "Object.hasOwn(message.params, 'cursor')")
       .replace("nextCursor: 'page-two'", "nextCursor: ''")
     const protocol = await captureProtocol({ command: process.execPath, args: ['-e', fixture] })
     expect(protocol.tools.map((tool) => tool.name)).toEqual(['first', 'second'])
@@ -87,31 +99,38 @@ describe('MCP protocol discovery', () => {
   it('rejects a missing capabilities object while accepting an explicitly empty one', async () => {
     const empty = server.replace('capabilities: { tools: {} }', 'capabilities: {}')
     expect((await captureProtocol({ command: process.execPath, args: ['-e', empty] })).tools).toEqual([])
-    await expect(captureProtocol({ command: process.execPath, args: ['-e', server.replace('capabilities: { tools: {} }', 'invalid: {}')] }))
-      .rejects.toThrow('missing or invalid capabilities object')
+    await expect(
+      captureProtocol({
+        command: process.execPath,
+        args: ['-e', server.replace('capabilities: { tools: {} }', 'invalid: {}')],
+      }),
+    ).rejects.toThrow('missing or invalid capabilities object')
   })
 
   it.each(['null', 'false', '[]'])('rejects a malformed advertised capability %s', async (value) => {
     const fixture = server.replace('capabilities: { tools: {} }', `capabilities: { tools: ${value} }`)
-    await expect(captureProtocol({ command: process.execPath, args: ['-e', fixture] }))
-      .rejects.toThrow('invalid tools capability object')
+    await expect(captureProtocol({ command: process.execPath, args: ['-e', fixture] })).rejects.toThrow(
+      'invalid tools capability object',
+    )
   })
 
   it('requires the negotiated protocol and server identity', async () => {
     const fixture = server.replace("protocolVersion: '2025-11-25', serverInfo: { name: 'fixture', version: '1' },", '')
-    await expect(captureProtocol({ command: process.execPath, args: ['-e', fixture] }))
-      .rejects.toThrow('missing or invalid protocolVersion or serverInfo')
+    await expect(captureProtocol({ command: process.execPath, args: ['-e', fixture] })).rejects.toThrow(
+      'missing or invalid protocolVersion or serverInfo',
+    )
   })
 
   it.each([-32601, -32603])('handles resource template discovery error %i', async (code) => {
-    const resources = server
-      .replace('tools: {}', 'resources: {}')
-      .replace("} else if (message.method === 'tools/list') {", `} else if (message.method === 'resources/list') {
+    const resources = server.replace('tools: {}', 'resources: {}').replace(
+      "} else if (message.method === 'tools/list') {",
+      `} else if (message.method === 'resources/list') {
         result = { resources: [{ name: 'capabilities', uri: 'tmux://capabilities' }] };
       } else if (message.method === 'resources/templates/list') {
         process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id: message.id, error: { code: ${code}, message: 'template discovery failed' } }) + '\\n');
         return;
-      } else if (message.method === 'tools/list') {`)
+      } else if (message.method === 'tools/list') {`,
+    )
     const discovery = captureProtocol({ command: process.execPath, args: ['-e', resources] })
     if (code === -32601) {
       const protocol = await discovery
@@ -139,7 +158,8 @@ describe('MCP protocol discovery', () => {
           : { resourceTemplates: [{ name: 'first', uriTemplate: 'tmux://first/{id}' }], nextCursor: '' };
         console.log(JSON.stringify({ jsonrpc: '2.0', id: message.id, result }));
       });`
-    await expect(captureProtocol({ command: process.execPath, args: ['-e', fixture] }))
-      .rejects.toThrow('Second page disappeared')
+    await expect(captureProtocol({ command: process.execPath, args: ['-e', fixture] })).rejects.toThrow(
+      'Second page disappeared',
+    )
   })
 })

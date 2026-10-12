@@ -48,18 +48,31 @@ export interface SidebarGroupItem {
 export type SidebarItem = SidebarLinkItem | SidebarGroupItem
 
 /** Existing ancestor pages, followed by the current page, in reading order. */
-export async function pageBreadcrumbs(title: string, path: string, version: string, port?: string, locale: Locale = DEFAULT_LOCALE) {
+export async function pageBreadcrumbs(
+  title: string,
+  path: string,
+  version: string,
+  port?: string,
+  locale: Locale = DEFAULT_LOCALE,
+) {
   const language = port ? PORT_BY_SLUG[port] : undefined
-  const url = (route: string) => language ? portPageUrl(language, version, route) : withRoot(`/${route}${route ? '/' : ''}`)
+  const url = (route: string) =>
+    language ? portPageUrl(language, version, route) : withRoot(`/${route}${route ? '/' : ''}`)
   const tmux = !port && /^tmux(?:\/|$)/.test(path)
   const items = [{ name: language?.name ?? (tmux ? 'tmux' : 'Documentation'), url: url(tmux ? 'tmux' : '') }]
-  const entries = docsEntriesAvailable(await getCollection('docs', (entry) => !entry.data.port || entry.data.port === port), port)
+  const entries = docsEntriesAvailable(
+    await getCollection('docs', (entry) => !entry.data.port || entry.data.port === port),
+    port,
+  )
   const parts = path.split('/').filter(Boolean)
   for (let i = tmux ? 2 : 1; i < parts.length; i++) {
     const route = parts.slice(0, i).join('/')
-    const matching = entries.filter((entry) => (port ? docsPath : docsRoutePath)({ ...entry, id: sourceIdOf(entry.id) }) === route)
-    const entry = matching.find((entry) => localeOf(entry.id) === locale)
-      ?? matching.find((entry) => localeOf(entry.id) === DEFAULT_LOCALE)
+    const matching = entries.filter(
+      (entry) => (port ? docsPath : docsRoutePath)({ ...entry, id: sourceIdOf(entry.id) }) === route,
+    )
+    const entry =
+      matching.find((entry) => localeOf(entry.id) === locale) ??
+      matching.find((entry) => localeOf(entry.id) === DEFAULT_LOCALE)
     if (entry) items.push({ name: entry.data.title, url: url(route) })
     else if (route === 'reference') items.push({ name: 'API reference', url: url(route) })
   }
@@ -102,8 +115,11 @@ export function entryPath(entry: CollectionEntry<'docs'>): string {
 /** Port pages keep their navigation scope even when rendered by a root build. */
 function linkHref(entry: CollectionEntry<'docs'>, version: string, port?: string): string {
   if (port) return portPageUrl(PORT_BY_SLUG[port], version, entryPath(entry))
-  const path = docsRoutePath({ ...entry, id: sourceIdOf(entry.id) }, process.env.LIBTMUX_DOCS_PORT,
-    entry.data.port ? { [entry.data.port]: version } : {})
+  const path = docsRoutePath(
+    { ...entry, id: sourceIdOf(entry.id) },
+    process.env.LIBTMUX_DOCS_PORT,
+    entry.data.port ? { [entry.data.port]: version } : {},
+  )
   const base = import.meta.env.BASE_URL
   return path ? `${base}${path}/` : base
 }
@@ -179,11 +195,13 @@ export function portAreas(port: string, version: string): SidebarGroupItem {
   return {
     type: 'group',
     label: 'Documentation',
-    items: (p.parentLibrary ? ['guides', 'examples', 'concepts'] : ['topics', 'guides', 'examples', 'concepts']).map((area) => ({
-      type: 'link',
-      label: `${area[0]!.toUpperCase()}${area.slice(1)}`,
-      href: portPageUrl(p, version, area),
-    })),
+    items: (p.parentLibrary ? ['guides', 'examples', 'concepts'] : ['topics', 'guides', 'examples', 'concepts']).map(
+      (area) => ({
+        type: 'link',
+        label: `${area[0]!.toUpperCase()}${area.slice(1)}`,
+        href: portPageUrl(p, version, area),
+      }),
+    ),
   }
 }
 
@@ -219,13 +237,16 @@ export async function getSidebar(
   // that exist precisely so every page answers in every language. A nav that
   // shrinks as you switch language is worse than one that admits what is
   // untranslated.
-  const entries = docsEntriesAvailable(await getCollection(
-    'docs',
-    (entry) =>
-      (entry.data.port === undefined || entry.data.port === port) &&
-      entry.data.product === product &&
-      localeOf(entry.id) === DEFAULT_LOCALE,
-  ), port)
+  const entries = docsEntriesAvailable(
+    await getCollection(
+      'docs',
+      (entry) =>
+        (entry.data.port === undefined || entry.data.port === port) &&
+        entry.data.product === product &&
+        localeOf(entry.id) === DEFAULT_LOCALE,
+    ),
+    port,
+  )
 
   // The reader's own locale, where it has this page. `entryPath` strips the
   // locale, so a translation and its source share a key; the href is built
@@ -292,15 +313,22 @@ export async function getSidebar(
    */
   if (port === undefined) return [...groups, ...ungrouped]
   if (product) {
-    if (product === 'mcp' && productAvailable(PORT_BY_SLUG[port], 'mcp') && MCP_REFERENCE[port]) ungrouped.splice(1, 0,
-      ...Object.entries(MCP_SECTIONS).map(([section, label]) => ({
-        type: 'link' as const, label, href: portPageUrl(PORT_BY_SLUG[port], version, `mcp/${section}`),
-      })))
-    if (product === 'workspace') return [
-      ...ungrouped,
-      ...groups.filter((group) => group.label !== 'Internals'),
-      ...groups.filter((group) => group.label === 'Internals'),
-    ]
+    if (product === 'mcp' && productAvailable(PORT_BY_SLUG[port], 'mcp') && MCP_REFERENCE[port])
+      ungrouped.splice(
+        1,
+        0,
+        ...Object.entries(MCP_SECTIONS).map(([section, label]) => ({
+          type: 'link' as const,
+          label,
+          href: portPageUrl(PORT_BY_SLUG[port], version, `mcp/${section}`),
+        })),
+      )
+    if (product === 'workspace')
+      return [
+        ...ungrouped,
+        ...groups.filter((group) => group.label !== 'Internals'),
+        ...groups.filter((group) => group.label === 'Internals'),
+      ]
     return [...ungrouped, ...groups]
   }
   return [...referenceEntries(port, version), ...groups, ...ungrouped]

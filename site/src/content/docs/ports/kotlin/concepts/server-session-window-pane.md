@@ -78,7 +78,8 @@ trap 'exit 1' HUP INT TERM
 
 unset TMUX TMUX_PANE
 export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work-one -n editor /bin/cat
+"$binary" -S "$socket" -f /dev/null \
+    new-session -d -s work-one -n editor /bin/cat
 "$binary" -S "$socket" new-session -d -s work-two -n logs /bin/cat
 "$@"
 "$binary" -S "$socket" has-session -t '=work-one'
@@ -167,7 +168,8 @@ fun main() = runBlocking {
         val after = before.rename("renamed")
         check(before.name == "editor")
         check(after.name == "renamed")
-        val readAgain = server.sessions().single { it.name == "work-one" }.windows.single()
+        val again = server.sessions().single { it.name == "work-one" }
+        val readAgain = again.windows.single()
         check(readAgain.name == "renamed")
         println("${before.name} -> ${readAgain.name}")
     }

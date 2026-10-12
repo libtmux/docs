@@ -14,7 +14,7 @@ describe('Java names in copied Markdown', () => {
       expect(symbol).toBeDefined()
       const canonical = `https://libtmux.org/en/java/latest/reference/${symbol.slug}/`
       const text = symbolMarkdown({ model, symbol, canonical })
-      expect(text).toMatch(new RegExp(`^# ${name.replaceAll('.', '\\.') }\\n`))
+      expect(text).toMatch(new RegExp(`^# ${name.replaceAll('.', '\\.')}\\n`))
       expect(text).toContain('- **Module:** io.github.libtmux\n')
       expect(text).toContain(`- **Page:** ${canonical}\n`)
       if (symbol.signatures.length) expect(text).toContain(`${name}(`)

@@ -25,8 +25,10 @@ empty project and fetch the source revision used by this example:
 ```console
 $ mkdir java-mcp-example && cd java-mcp-example && \
     git init libtmux-source && \
-    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-java.git && \
-    git -C libtmux-source fetch --depth=1 origin 842228310449e879ebcaa3f910597757c9dbffd6 && \
+    git -C libtmux-source remote add origin \
+      https://github.com/libtmux/libtmux-java.git && \
+    git -C libtmux-source fetch --depth=1 origin \
+      842228310449e879ebcaa3f910597757c9dbffd6 && \
     git -C libtmux-source checkout --detach FETCH_HEAD && \
     mkdir -p src/main/java
 ```
@@ -100,18 +102,24 @@ public final class McpExample {
                 AutoCloseable stopTmux = server::killServer) {
             server.newSession(session -> session.named("mcp-example")
                     .running("/bin/cat", "-u"));
+            Path java = Path.of(System.getProperty("java.home"), "bin", "java");
             var launcher = ServerParameters.builder("env")
                     .args("-u", "TMUX", "-u", "TMUX_PANE",
-                            "-u", "LIBTMUX_EXCLUDE_TOOLS", "-u", "LIBTMUX_SAFETY",
+                            "-u", "LIBTMUX_EXCLUDE_TOOLS",
+                            "-u", "LIBTMUX_SAFETY",
                             "-u", "LIBTMUX_WATCH",
-                            Path.of(System.getProperty("java.home"), "bin", "java").toString(),
+                            java.toString(),
                             "-classpath", System.getProperty("java.class.path"),
-                            "io.github.libtmux.mcp.Main", "--socket-name", socket)
-                    .env(Map.of("LIBTMUX_TOOLSETS", "", "LIBTMUX_TOOLS", "list_sessions",
+                            "io.github.libtmux.mcp.Main",
+                            "--socket-name", socket)
+                    .env(Map.of(
+                            "LIBTMUX_TOOLSETS", "",
+                            "LIBTMUX_TOOLS", "list_sessions",
                             "LIBTMUX_TMUX_CONFIG", "/dev/null"))
                     .build();
             var mapper = new ObjectMapper();
-            var transport = new StdioClientTransport(launcher, new JacksonMcpJsonMapper(mapper));
+            var json = new JacksonMcpJsonMapper(mapper);
+            var transport = new StdioClientTransport(launcher, json);
             transport.setStdErrorHandler(System.err::println);
             try (var client = McpClient.sync(transport)
                     .initializationTimeout(Duration.ofSeconds(10))
@@ -121,17 +129,23 @@ public final class McpExample {
                 var offered = client.listTools().tools().stream()
                         .map(McpSchema.Tool::name).toList();
                 if (!offered.equals(List.of("list_sessions"))) {
-                    throw new IllegalStateException("Unexpected tools: " + offered);
+                    throw new IllegalStateException(
+                            "Unexpected tools: " + offered);
                 }
-                var result = client.callTool(
-                        McpSchema.CallToolRequest.builder("list_sessions").build());
+                var request = McpSchema.CallToolRequest
+                        .builder("list_sessions")
+                        .build();
+                var result = client.callTool(request);
                 if (Boolean.TRUE.equals(result.isError())) {
-                    throw new IllegalStateException("Tool failed: " + result.content());
+                    throw new IllegalStateException(
+                            "Tool failed: " + result.content());
                 }
-                var sessions = mapper.valueToTree(result.structuredContent()).path("sessions");
-                if (sessions.size() != 1 ||
-                        !sessions.get(0).path("name").asText().equals("mcp-example")) {
-                    throw new IllegalStateException("Expected the example's private session");
+                var content = mapper.valueToTree(result.structuredContent());
+                var sessions = content.path("sessions");
+                String first = sessions.path(0).path("name").asText();
+                if (sessions.size() != 1 || !first.equals("mcp-example")) {
+                    throw new IllegalStateException(
+                            "Expected the example's private session");
                 }
                 System.out.println("tools: list_sessions");
                 System.out.println("sessions: mcp-example");

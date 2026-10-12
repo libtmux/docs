@@ -1,5 +1,14 @@
 import { spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -21,8 +30,13 @@ const PORT_TREES = PORTS.filter((port) => port.publishesOwnTree).map((port) => p
 // that need one on disk. A port that publishes only its own `api/` still
 // has the rest of its tree published here.
 const SHELL_PORT = PORTS.find((port) => !port.publishesOwnTree)!.slug
-const sectionsFor = (slug: string): string[] =>
-  [...Object.keys(DOC_PRODUCTS), 'guides', 'topics', '_astro', ...(NATIVE_API.includes(slug) ? [] : ['api'])]
+const sectionsFor = (slug: string): string[] => [
+  ...Object.keys(DOC_PRODUCTS),
+  'guides',
+  'topics',
+  '_astro',
+  ...(NATIVE_API.includes(slug) ? [] : ['api']),
+]
 
 const scratch: string[] = []
 afterEach(() => scratch.splice(0).forEach((path) => rmSync(path, { recursive: true, force: true })))
@@ -58,9 +72,17 @@ function fixture(products = true): string {
       }
     }
   }
-  write(join(directory, 'shell-paths.json'), JSON.stringify({
-    schema: 1, locale: 'en', directories, files, nativeApi: NATIVE_API, portTrees: PORT_TREES,
-  }))
+  write(
+    join(directory, 'shell-paths.json'),
+    JSON.stringify({
+      schema: 1,
+      locale: 'en',
+      directories,
+      files,
+      nativeApi: NATIVE_API,
+      portTrees: PORT_TREES,
+    }),
+  )
   const executable = join(directory, 'bin/aws')
   mkdirSync(dirname(executable), { recursive: true })
   writeFileSync(executable, '#!/bin/bash\nprintf "%s\\0" "$#" "$@" >> "$AWS_RECORD"\n', { mode: 0o755 })
@@ -70,10 +92,16 @@ function fixture(products = true): string {
 function publish(directory: string, locale = 'en') {
   const record = join(directory, 'aws.args')
   const result = spawnSync('bash', [script], {
-    cwd: directory, encoding: 'utf8', timeout: 10000,
+    cwd: directory,
+    encoding: 'utf8',
+    timeout: 10000,
     env: {
-      ...process.env, PATH: `${join(directory, 'bin')}:${process.env.PATH}`, BUCKET: 'docs-test',
-      LOCALE: locale, RUNNER_TEMP: directory, AWS_RECORD: record,
+      ...process.env,
+      PATH: `${join(directory, 'bin')}:${process.env.PATH}`,
+      BUCKET: 'docs-test',
+      LOCALE: locale,
+      RUNNER_TEMP: directory,
+      AWS_RECORD: record,
     },
   })
   expect(result.error, result.stderr).toBeUndefined()
@@ -93,9 +121,14 @@ function assemblyFixture(): string {
   mkdirSync(join(directory, '_site'))
   renameSync(join(directory, 'dist'), join(directory, '_site', DEFAULT_LOCALE))
   for (const port of PORTS) write(join(directory, '_site', DEFAULT_LOCALE, port.slug, 'latest/api/index.html'))
-  write(join(directory, 'site/src/lib/ports.ts'),
-    `export const PORTS = ${JSON.stringify(PORTS.map(({ slug, publishesOwnApi, publishesOwnTree }) => ({ slug, publishesOwnApi, publishesOwnTree })))}; export const DOC_PRODUCTS = ${JSON.stringify(DOC_PRODUCTS)};\n`)
-  write(join(directory, 'site/src/i18n/locales.ts'), `export const DEFAULT_LOCALE = ${JSON.stringify(DEFAULT_LOCALE)};\n`)
+  write(
+    join(directory, 'site/src/lib/ports.ts'),
+    `export const PORTS = ${JSON.stringify(PORTS.map(({ slug, publishesOwnApi, publishesOwnTree }) => ({ slug, publishesOwnApi, publishesOwnTree })))}; export const DOC_PRODUCTS = ${JSON.stringify(DOC_PRODUCTS)};\n`,
+  )
+  write(
+    join(directory, 'site/src/i18n/locales.ts'),
+    `export const DEFAULT_LOCALE = ${JSON.stringify(DEFAULT_LOCALE)};\n`,
+  )
   return directory
 }
 
@@ -104,10 +137,16 @@ function assemblyFixture(): string {
 describe('production shell publication boundaries', { timeout: 30_000 }, () => {
   it('omits locally generated native APIs before declaring the assembled publication artifact', () => {
     const directory = assemblyFixture()
-    const expected = JSON.parse(readFileSync(join(directory, 'shell-paths.json'), 'utf8')) as { directories: string[]; files: string[] }
-    const preserved = [...expected.files, ...expected.directories.map((path) => `${path}/${path.endsWith('/_astro') ? 'shell.js' : 'index.html'}`)]
-      .map((path) => [path, readFileSync(join(directory, '_site', DEFAULT_LOCALE, path), 'utf8')] as const)
-    for (const file of ['shell-paths.json', 'reserved-prefixes.txt', 'reserved-products.txt']) rmSync(join(directory, file))
+    const expected = JSON.parse(readFileSync(join(directory, 'shell-paths.json'), 'utf8')) as {
+      directories: string[]
+      files: string[]
+    }
+    const preserved = [
+      ...expected.files,
+      ...expected.directories.map((path) => `${path}/${path.endsWith('/_astro') ? 'shell.js' : 'index.html'}`),
+    ].map((path) => [path, readFileSync(join(directory, '_site', DEFAULT_LOCALE, path), 'utf8')] as const)
+    for (const file of ['shell-paths.json', 'reserved-prefixes.txt', 'reserved-products.txt'])
+      rmSync(join(directory, file))
     const result = spawnSync(process.execPath, [metadataScript], { cwd: directory, encoding: 'utf8', timeout: 10000 })
     expect(result.error).toBeUndefined()
     expect(result.status, result.stderr).toBe(0)
@@ -118,12 +157,18 @@ describe('production shell publication boundaries', { timeout: 30_000 }, () => {
     expect(paths.nativeApi).toEqual(NATIVE_API)
     expect(paths.portTrees).toEqual(PORT_TREES)
     for (const port of PORTS) {
-      expect(existsSync(join(directory, '_site', DEFAULT_LOCALE, port.slug, 'latest/api')), port.slug)
-        .toBe(!NATIVE_API.includes(port.slug) && !PORT_TREES.includes(port.slug))
+      expect(existsSync(join(directory, '_site', DEFAULT_LOCALE, port.slug, 'latest/api')), port.slug).toBe(
+        !NATIVE_API.includes(port.slug) && !PORT_TREES.includes(port.slug),
+      )
     }
-    for (const [path, content] of preserved) expect(readFileSync(join(directory, '_site', DEFAULT_LOCALE, path), 'utf8')).toBe(content)
-    expect(readFileSync(join(directory, 'reserved-prefixes.txt'), 'utf8')).toBe(PORTS.map(({ slug }) => slug).join('\n') + '\n')
-    expect(readFileSync(join(directory, 'reserved-products.txt'), 'utf8')).toBe(Object.keys(DOC_PRODUCTS).join('\n') + '\n')
+    for (const [path, content] of preserved)
+      expect(readFileSync(join(directory, '_site', DEFAULT_LOCALE, path), 'utf8')).toBe(content)
+    expect(readFileSync(join(directory, 'reserved-prefixes.txt'), 'utf8')).toBe(
+      PORTS.map(({ slug }) => slug).join('\n') + '\n',
+    )
+    expect(readFileSync(join(directory, 'reserved-products.txt'), 'utf8')).toBe(
+      Object.keys(DOC_PRODUCTS).join('\n') + '\n',
+    )
   })
 
   it('rejects a native API symlink without removing it or its target', () => {
@@ -142,7 +187,13 @@ describe('production shell publication boundaries', { timeout: 30_000 }, () => {
 
   it('protects the complete Python version tree through assembly and publication', () => {
     const directory = assemblyFixture()
-    for (const path of ['index.html', 'guides/index.html', 'reference/index.html', 'mcp/index.html', '_astro/port.js']) {
+    for (const path of [
+      'index.html',
+      'guides/index.html',
+      'reference/index.html',
+      'mcp/index.html',
+      '_astro/port.js',
+    ]) {
       write(join(directory, '_site', DEFAULT_LOCALE, 'py/latest', path), 'Port-owned output\n')
     }
     const result = spawnSync(process.execPath, [metadataScript], { cwd: directory, encoding: 'utf8', timeout: 10000 })
@@ -157,51 +208,77 @@ describe('production shell publication boundaries', { timeout: 30_000 }, () => {
     expect(destinations.some((path) => path.startsWith('s3://docs-test/en/py/latest/'))).toBe(false)
   })
 
-  it.each(['en', 'ja'])('publishes %s products without replacing port, version, native API, or historical prefixes', (locale) => {
-    const result = publish(fixture(true), locale)
-    expect(result.status, result.stderr).toBe(0)
-    const syncs = result.commands.filter((args) => args[0] === 's3' && args[1] === 'sync')
-    const destinations = syncs.map((args) => args[3])
-    expect(destinations).toContain(`s3://docs-test/${locale}/_astro/`)
-    for (const port of PORTS.filter((candidate) => !PORT_TREES.includes(candidate.slug))) {
-      for (const section of sectionsFor(port.slug)) {
-        expect(destinations).toContain(`s3://docs-test/${locale}/${port.slug}/latest/${section}/`)
-      }
-    }
-    const productPrefixes = new Set(PORTS.flatMap((port) => sectionsFor(port.slug)
-      .filter(() => !PORT_TREES.includes(port.slug))
-      .map((section) => `s3://docs-test/${locale}/${port.slug}/latest/${section}/`)))
-    for (const args of syncs) {
-      const destination = args[3]
-      if (destination.endsWith('/_astro/')) expect(args, destination).not.toContain('--delete')
-      else expect(args, destination).toContain('--delete')
-      expect(destination === `s3://docs-test/${locale}/_astro/` || productPrefixes.has(destination), destination).toBe(true)
-      for (const port of PORTS) {
-        const preserved = ['stable/api/index.html', 'v0.1.0/mcp/index.html',
-          ...(NATIVE_API.includes(port.slug) ? ['latest/api/index.html'] : [])]
-        for (const path of preserved) {
-          expect(`s3://docs-test/${locale}/${port.slug}/${path}`.startsWith(destination), `${destination} preserves ${path}`).toBe(false)
+  it.each(['en', 'ja'])(
+    'publishes %s products without replacing port, version, native API, or historical prefixes',
+    (locale) => {
+      const result = publish(fixture(true), locale)
+      expect(result.status, result.stderr).toBe(0)
+      const syncs = result.commands.filter((args) => args[0] === 's3' && args[1] === 'sync')
+      const destinations = syncs.map((args) => args[3])
+      expect(destinations).toContain(`s3://docs-test/${locale}/_astro/`)
+      for (const port of PORTS.filter((candidate) => !PORT_TREES.includes(candidate.slug))) {
+        for (const section of sectionsFor(port.slug)) {
+          expect(destinations).toContain(`s3://docs-test/${locale}/${port.slug}/latest/${section}/`)
         }
       }
-    }
-    const copies = result.commands.filter((args) => args[1] === 'cp')
-    expect(copies.some((args) => args.includes('--recursive'))).toBe(false)
-    expect(copies.map((args) => args[3]).sort()).toEqual([
-      ...PORTS.flatMap((port) => ['index.html', 'index.md'].map((file) => `s3://docs-test/${locale}/${port.slug}/${file}`)),
-      ...PORTS.filter((port) => !PORT_TREES.includes(port.slug))
-        .flatMap((port) => ['index.html', 'docs.json'].map((file) => `s3://docs-test/${locale}/${port.slug}/latest/${file}`)),
-      `s3://docs-test/${locale}/index.html`, `s3://docs-test/${locale}/robots.txt`, 's3://docs-test/robots.txt',
-    ].sort())
-  })
+      const productPrefixes = new Set(
+        PORTS.flatMap((port) =>
+          sectionsFor(port.slug)
+            .filter(() => !PORT_TREES.includes(port.slug))
+            .map((section) => `s3://docs-test/${locale}/${port.slug}/latest/${section}/`),
+        ),
+      )
+      for (const args of syncs) {
+        const destination = args[3]
+        if (destination.endsWith('/_astro/')) expect(args, destination).not.toContain('--delete')
+        else expect(args, destination).toContain('--delete')
+        expect(
+          destination === `s3://docs-test/${locale}/_astro/` || productPrefixes.has(destination),
+          destination,
+        ).toBe(true)
+        for (const port of PORTS) {
+          const preserved = [
+            'stable/api/index.html',
+            'v0.1.0/mcp/index.html',
+            ...(NATIVE_API.includes(port.slug) ? ['latest/api/index.html'] : []),
+          ]
+          for (const path of preserved) {
+            expect(
+              `s3://docs-test/${locale}/${port.slug}/${path}`.startsWith(destination),
+              `${destination} preserves ${path}`,
+            ).toBe(false)
+          }
+        }
+      }
+      const copies = result.commands.filter((args) => args[1] === 'cp')
+      expect(copies.some((args) => args.includes('--recursive'))).toBe(false)
+      expect(copies.map((args) => args[3]).sort()).toEqual(
+        [
+          ...PORTS.flatMap((port) =>
+            ['index.html', 'index.md'].map((file) => `s3://docs-test/${locale}/${port.slug}/${file}`),
+          ),
+          ...PORTS.filter((port) => !PORT_TREES.includes(port.slug)).flatMap((port) =>
+            ['index.html', 'docs.json'].map((file) => `s3://docs-test/${locale}/${port.slug}/latest/${file}`),
+          ),
+          `s3://docs-test/${locale}/index.html`,
+          `s3://docs-test/${locale}/robots.txt`,
+          's3://docs-test/robots.txt',
+        ].sort(),
+      )
+    },
+  )
 
-  it.each(['.hidden/index.html', '.hidden-file'])('rejects %s at the artifact root before any AWS operation', (path) => {
-    const directory = fixture()
-    write(join(directory, 'dist', path))
-    const result = publish(directory)
-    expect(result.status).toBe(1)
-    expect(result.stderr).toContain('hidden entry')
-    expect(result.commands).toEqual([])
-  })
+  it.each(['.hidden/index.html', '.hidden-file'])(
+    'rejects %s at the artifact root before any AWS operation',
+    (path) => {
+      const directory = fixture()
+      write(join(directory, 'dist', path))
+      const result = publish(directory)
+      expect(result.status).toBe(1)
+      expect(result.stderr).toContain('hidden entry')
+      expect(result.commands).toEqual([])
+    },
+  )
 
   it.each(NATIVE_API)('refuses to publish %s/latest/api however the artifact declares it', (slug) => {
     const directory = fixture()
@@ -255,7 +332,8 @@ describe('production shell publication boundaries', { timeout: 30_000 }, () => {
   })
 
   it.each(['go/stable/guides', 'unknown/latest/guides', 'go/latest/../api'])(
-    'rejects declared path %s outside latest shell ownership', (path) => {
+    'rejects declared path %s outside latest shell ownership',
+    (path) => {
       const directory = fixture()
       const metadata = join(directory, 'shell-paths.json')
       const paths = JSON.parse(readFileSync(metadata, 'utf8'))
@@ -269,8 +347,13 @@ describe('production shell publication boundaries', { timeout: 30_000 }, () => {
   )
 
   it.each([
-    'py/latest/api/index.html', 'go/stable/mcp/index.html', 'go/v0.1.0/mcp/index.html',
-    'go/unknown/index.html', 'go/.unknown/index.html', 'go/latest/unknown/index.html', 'go/latest/.unknown/index.html',
+    'py/latest/api/index.html',
+    'go/stable/mcp/index.html',
+    'go/v0.1.0/mcp/index.html',
+    'go/unknown/index.html',
+    'go/.unknown/index.html',
+    'go/latest/unknown/index.html',
+    'go/latest/.unknown/index.html',
   ])('rejects unexpected %s before any AWS operation', (path) => {
     const directory = fixture()
     write(join(directory, 'dist', path))
@@ -307,13 +390,16 @@ describe('production shell publication boundaries', { timeout: 30_000 }, () => {
     expect(result.commands).toEqual([])
   })
 
-  it.each(['.outside', '_astro/outside', `${SHELL_PORT}/latest/mcp/outside`])('rejects symlink %s before any AWS operation', (path) => {
-    const directory = fixture(true)
-    write(join(directory, 'outside/index.html'))
-    symlinkSync(join(directory, 'outside'), join(directory, 'dist', path), 'dir')
-    const result = publish(directory)
-    expect(result.status).toBe(1)
-    expect(result.stderr).toContain('symlink')
-    expect(result.commands).toEqual([])
-  })
+  it.each(['.outside', '_astro/outside', `${SHELL_PORT}/latest/mcp/outside`])(
+    'rejects symlink %s before any AWS operation',
+    (path) => {
+      const directory = fixture(true)
+      write(join(directory, 'outside/index.html'))
+      symlinkSync(join(directory, 'outside'), join(directory, 'dist', path), 'dir')
+      const result = publish(directory)
+      expect(result.status).toBe(1)
+      expect(result.stderr).toContain('symlink')
+      expect(result.commands).toEqual([])
+    },
+  )
 })

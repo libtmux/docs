@@ -38,9 +38,7 @@ const expandHome = (p) => (p.startsWith('~/') ? join(homedir(), p.slice(2)) : p)
 
 const ours = resolve(arg('--ours', join(root, 'infra', 'cloudfront-function.js')))
 const tfConfig = expandHome(process.env.LIBTMUX_TF_CONFIG ?? '~/work/tf-config')
-const theirs = resolve(
-  arg('--theirs', join(tfConfig, 'terraform', 'sites', 'libtmux.org', 'cloudfront-function.js')),
-)
+const theirs = resolve(arg('--theirs', join(tfConfig, 'terraform', 'sites', 'libtmux.org', 'cloudfront-function.js')))
 
 if (!existsSync(ours)) {
   console.error(`check-edge-function-copy: no function at ${ours}`)
@@ -75,6 +73,6 @@ console.error(`  theirs: ${theirs}`)
 console.error(`  first difference at line ${i + 1}:`)
 console.error(`    ours:   ${al[i] ?? '<end of file>'}`)
 console.error(`    theirs: ${bl[i] ?? '<end of file>'}`)
-console.error('\nCopy this repository\'s function over the Terraform one and commit it there:')
+console.error("\nCopy this repository's function over the Terraform one and commit it there:")
 console.error(`  cp ${ours} ${theirs}`)
 process.exit(1)

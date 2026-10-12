@@ -16,7 +16,6 @@ import type { Bucket, Match, PortNav } from './nav.ts'
  * that hang off them, then the machinery, then the auxiliary trees.
  */
 
-
 const nameRe = (re: string): Match => ({ kind: 'name', re })
 
 /**
@@ -44,7 +43,10 @@ const words = (...is: string[]): Match => ({
     {
       kind: 'anyOf',
       // `libtmux::pane::id` is a pane field whose own name says nothing.
-      of: [{ kind: 'word', is }, { kind: 'module', re: `(^|[.:/])(${is.join('|')})$` }],
+      of: [
+        { kind: 'word', is },
+        { kind: 'module', re: `(^|[.:/])(${is.join('|')})$` },
+      ],
     },
   ],
 })
@@ -83,7 +85,10 @@ const hierarchy = (re: string, pathRe: string, ...vocabulary: string[]): Match =
     nameRe(re),
     {
       kind: 'allOf',
-      of: [{ kind: 'path', re: pathRe }, { kind: 'not', of: nameRe(Object.values(ATTACHED_NAMES).join('|')) }],
+      of: [
+        { kind: 'path', re: pathRe },
+        { kind: 'not', of: nameRe(Object.values(ATTACHED_NAMES).join('|')) },
+      ],
     },
     words(...vocabulary),
   ],
@@ -175,7 +180,16 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
     match: {
       kind: 'allOf',
       of: [
-        nameOrPath('Test|Fixture|Mock|Fake', 'test|fixture|mock|junit', 'test', 'tests', 'testing', 'fixture', 'mock', 'fake'),
+        nameOrPath(
+          'Test|Fixture|Mock|Fake',
+          'test|fixture|mock|junit',
+          'test',
+          'tests',
+          'testing',
+          'fixture',
+          'mock',
+          'fake',
+        ),
         { kind: 'not', of: { kind: 'allOf', of: [FREE, nameRe('^logger$')] } },
       ],
     },
@@ -226,9 +240,10 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
       of: [
         {
           kind: 'anyOf',
-          of: ['Kind', 'Mode', 'Style', 'Action', 'Options', 'Result', 'Event'].map(
-            (suffix): Match => ({ kind: 'name', suffix }),
-          ),
+          of: ['Kind', 'Mode', 'Style', 'Action', 'Options', 'Result', 'Event'].map((suffix): Match => ({
+            kind: 'name',
+            suffix,
+          })),
         },
         // Suffixes that name a type. `normalizePlanWorkspaceOptions` is a
         // function that takes one.
@@ -247,7 +262,11 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
         nameOrPath(
           'Control|Notification|Subscribe',
           '(^|/)control',
-          'control', 'notification', 'notifications', 'subscribe', 'subscription',
+          'control',
+          'notification',
+          'notifications',
+          'subscribe',
+          'subscription',
         ),
         freePath('(^|/)notification\\.hpp$'),
       ],
@@ -287,7 +306,16 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
         nameOrPath(
           'Query|Filter|Predicate|Matcher|Criteria|Operator|Quantifier|Expr|Node$|Field$|^(Server|Session|Window|Pane|Client)Fields$',
           '(^|/)quer(y|ies)[./]|(^|/)matching|(^|/)filter',
-          'query', 'queries', 'filter', 'predicate', 'matcher', 'criteria', 'where', 'relation', 'field', 'fields',
+          'query',
+          'queries',
+          'filter',
+          'predicate',
+          'matcher',
+          'criteria',
+          'where',
+          'relation',
+          'field',
+          'fields',
         ),
         // The query language's own files, whose helpers are `any_of`,
         // `children_of` and `WhereOf`.
@@ -321,7 +349,13 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
         // TypeScript's `paneStartDirectory` reads a workspace file's pane.
         {
           kind: 'allOf',
-          of: [FREE, { kind: 'path', re: '(^|/)(packages/|crates/tmux-)?workspace/|libtmux_consumers/|(^|/)packages/LibTmuxWorkspace/' }],
+          of: [
+            FREE,
+            {
+              kind: 'path',
+              re: '(^|/)(packages/|crates/tmux-)?workspace/|libtmux_consumers/|(^|/)packages/LibTmuxWorkspace/',
+            },
+          ],
         },
       ],
     },
@@ -343,14 +377,23 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
     label: 'Keys and bindings',
     match: nameOrPath(ATTACHED_NAMES.keys, '(^|/)(keys?|binding)', 'key', 'keys', 'binding'),
   },
-  { id: 'buffers', label: 'Buffers', match: nameOrPath(ATTACHED_NAMES.buffers, '(^|/)buffers?[./]', 'buffer', 'buffers') },
+  {
+    id: 'buffers',
+    label: 'Buffers',
+    match: nameOrPath(ATTACHED_NAMES.buffers, '(^|/)buffers?[./]', 'buffer', 'buffers'),
+  },
   {
     id: 'layout',
     label: 'Layout and geometry',
     match: nameOrPath(
       ATTACHED_NAMES.layout,
       '(^|/)layouts?[./]',
-      'layout', 'split', 'resize', 'direction', 'dimension', 'rotation',
+      'layout',
+      'split',
+      'resize',
+      'direction',
+      'dimension',
+      'rotation',
     ),
   },
   {
@@ -366,7 +409,12 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
   {
     id: 'version',
     label: 'Versions',
-    match: nameOrPath(ATTACHED_NAMES.version, '(^|/)versions?[./]|(^|/)__about__\\.|(^|/)build_info\\.go$', 'version', 'release'),
+    match: nameOrPath(
+      ATTACHED_NAMES.version,
+      '(^|/)versions?[./]|(^|/)__about__\\.|(^|/)build_info\\.go$',
+      'version',
+      'release',
+    ),
   },
   {
     id: 'commands',
@@ -374,7 +422,14 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
     match: nameOrPath(
       ATTACHED_NAMES.commands,
       '(^|/)(commands?|dispatch|transport|connection|process)|(^|/)libtmux/endpoint\\.rb$',
-      'command', 'commands', 'cmd', 'dispatch', 'transport', 'connection', 'process', 'engine',
+      'command',
+      'commands',
+      'cmd',
+      'dispatch',
+      'transport',
+      'connection',
+      'process',
+      'engine',
     ),
   },
 ]
@@ -433,9 +488,7 @@ const COLLAPSED = new Set(['requests', 'errors', 'constants', 'mcp', 'testing', 
 /** "Matches mine, and none of the rules that outrank mine." */
 function disjoint(index: number): Match {
   const above = CHAIN.slice(0, index).map((c): Match => ({ kind: 'not', of: c.match }))
-  return above.length === 0
-    ? CHAIN[index]!.match
-    : { kind: 'allOf', of: [CHAIN[index]!.match, ...above] }
+  return above.length === 0 ? CHAIN[index]!.match : { kind: 'allOf', of: [CHAIN[index]!.match, ...above] }
 }
 
 /**
@@ -574,19 +627,23 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
   julia: {
     unsettled: {
       LibTmux: 'package module spanning all task buckets; its exported declarations have their own placements',
-      'LibTmux.EntityRef': 'target identity shared by every entity, owned by none; concrete references sit with their entity',
+      'LibTmux.EntityRef':
+        'target identity shared by every entity, owned by none; concrete references sit with their entity',
       'LibTmux.TmuxID': 'typed tmux IDs shared by every entity; concrete ID aliases sit with their entity',
       'LibTmux.entitykey': 'identity keys shared by references, captured entities, window links and pane occurrences',
       'LibTmux.Base.==': 'one equality extension page for server identities and several entity ID and reference types',
       'LibTmux.Base.hash': 'one hashing extension page for server identities and several entity ID and reference types',
-      'LibTmux.Base.isequal': 'one equality extension page for server identities and several entity ID and reference types',
+      'LibTmux.Base.isequal':
+        'one equality extension page for server identities and several entity ID and reference types',
       'LibTmux.Base.string': 'one string conversion extension page for several entity ID types',
-      'LibTmux.Base.show': 'one display extension page shared by IDs, servers, snapshots, control connections and observation streams',
+      'LibTmux.Base.show':
+        'one display extension page shared by IDs, servers, snapshots, control connections and observation streams',
     },
   },
   lua: {
     unsettled: {
-      'libtmux.Configurable': 'options and hooks shared by sessions, windows and panes; the concrete handle is the subclass',
+      'libtmux.Configurable':
+        'options and hooks shared by sessions, windows and panes; the concrete handle is the subclass',
       'libtmux.Creation': 'creation receipt shared by several tmux objects',
       'libtmux.Entity': 'base of the tmux entity hierarchy; the concrete entity is the subclass',
       'libtmux.LinkDestination': 'window-link target shared by sessions and windows',
@@ -606,8 +663,7 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
   py: {
     unsettled: {
       'libtmux._vendor._structures.InfinityType': 'vendored from packaging; version comparison, not tmux',
-      'libtmux._vendor._structures.NegativeInfinityType':
-        'vendored from packaging; version comparison, not tmux',
+      'libtmux._vendor._structures.NegativeInfinityType': 'vendored from packaging; version comparison, not tmux',
       'libtmux.constants._DefaultOptionScope': 'private sentinel for an option scope left unset',
       'libtmux.neo.Obj': 'base of the neo object layer; the tmux entity is the subclass',
       'libtmux.__all__': 'the package export list, not an API of its own',
@@ -649,8 +705,7 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
       'config.Entry': 'workspace config entry; Workspaces covers the plan, not the file it parses',
       'target.EndpointInputs': 'socket endpoint resolution; sits below Server rather than inside it',
       'target.ResolvedEndpoint': 'socket endpoint resolution; sits below Server rather than inside it',
-      'target.ResolvedSocketSelector':
-        'socket endpoint resolution; sits below Server rather than inside it',
+      'target.ResolvedSocketSelector': 'socket endpoint resolution; sits below Server rather than inside it',
       'target.OsString': 'extractor leak: std::ffi::OsString is not declared by this crate',
       'src.DesignNotes': 'extractor leak: a doc-only module surfaced as a struct',
       'src.Findings': 'extractor leak: a doc-only module surfaced as a struct',
@@ -681,10 +736,8 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
       'io.github.libtmux.FindSpec.FindSpec': 'target addressing; used by every entity, owned by none',
       'io.github.libtmux.TargetIds.TargetIds': 'target addressing; used by every entity, owned by none',
       'io.github.libtmux.batch.Batch.Batch': 'batch execution; no tmux object of its own',
-      'io.github.libtmux.batch.OperationOutcome.OperationOutcome':
-        'batch execution; no tmux object of its own',
-      'io.github.libtmux.jackson.LibTmuxModels.LibTmuxModels':
-        'Jackson serialisation registration, not tmux API',
+      'io.github.libtmux.batch.OperationOutcome.OperationOutcome': 'batch execution; no tmux object of its own',
+      'io.github.libtmux.jackson.LibTmuxModels.LibTmuxModels': 'Jackson serialisation registration, not tmux API',
     },
   },
   csharp: {
@@ -716,8 +769,7 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
       OutputWait: 'wait and watch plumbing',
       SubscriptionChange: 'wait and watch plumbing',
       RegexPattern: 'regex translation for query matching; below Queries rather than inside it',
-      RegexUnsupportedConstruct:
-        'regex translation for query matching; below Queries rather than inside it',
+      RegexUnsupportedConstruct: 'regex translation for query matching; below Queries rather than inside it',
     },
   },
 }
@@ -747,29 +799,51 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
     snapshots: ['hascoverage', 'snapshotof', 'Base.getproperty', 'Base.propertynames'].map((name) => `LibTmux.${name}`),
     // Generic Base methods here belong only to ObservationStream. Keep its
     // pane and format event payloads in their existing domain buckets.
-    control: ['ObservationCursor', 'ObservationStream', 'observation_cursor', 'observe_output',
-      'Base.IteratorSize', 'Base.eltype', 'Base.iterate', 'Base.take!'].map((name) => `LibTmux.${name}`),
-    pane: ['paneoccurrences', 'occurrencekey', 'paste_bytes', 'paste_text', 'TextDecoder', 'decode!', 'decode_text']
-      .map((name) => `LibTmux.${name}`),
+    control: [
+      'ObservationCursor',
+      'ObservationStream',
+      'observation_cursor',
+      'observe_output',
+      'Base.IteratorSize',
+      'Base.eltype',
+      'Base.iterate',
+      'Base.take!',
+    ].map((name) => `LibTmux.${name}`),
+    pane: [
+      'paneoccurrences',
+      'occurrencekey',
+      'paste_bytes',
+      'paste_text',
+      'TextDecoder',
+      'decode!',
+      'decode_text',
+    ].map((name) => `LibTmux.${name}`),
     window: ['LibTmux.windowlinks'],
     commands: ['run_batch', 'run_group'].map((name) => `LibTmux.${name}`),
     workspace: ['LibTmuxWorkspace.ConfigLimits'],
     // Native subtyping establishes these exceptions despite their names.
     errors: ['CrossServerReference', 'StaleReference', 'ObservationLost', 'UnsupportedCriterion', 'Base.showerror']
-      .map((name) => `LibTmux.${name}`).concat('LibTmuxWorkspace.Base.showerror'),
+      .map((name) => `LibTmux.${name}`)
+      .concat('LibTmuxWorkspace.Base.showerror'),
   },
   java: {
     commands: ['MessageLog', 'PrintedText', 'Prompt', 'Shell'].map((name) => `io.github.libtmux.${name}.${name}`),
     server: ['io.github.libtmux.IncarnationFence.IncarnationFence'],
   },
   kotlin: {
-    commands: ['Batch', 'ExecutionPolicy', 'MessageLog', 'Prompt', 'Shell', 'retryIfSafe'].map((name) => `io.github.libtmux.kotlin.${name}`),
+    commands: ['Batch', 'ExecutionPolicy', 'MessageLog', 'Prompt', 'Shell', 'retryIfSafe'].map(
+      (name) => `io.github.libtmux.kotlin.${name}`,
+    ),
     server: ['io.github.libtmux.kotlin.LibTmuxDsl'],
     control: ['io.github.libtmux.Channel.await', 'io.github.libtmux.Channel.awaitReservingCapacity'],
   },
   scala: {
-    snapshots: ['io.github.libtmux.scaladsl.live.LiveView', 'io.github.libtmux.scaladsl.streaming.Observation',
-      'io.github.libtmux.scaladsl.cats.Instances', 'io.github.libtmux.scaladsl.cats.Observation'],
+    snapshots: [
+      'io.github.libtmux.scaladsl.live.LiveView',
+      'io.github.libtmux.scaladsl.streaming.Observation',
+      'io.github.libtmux.scaladsl.cats.Instances',
+      'io.github.libtmux.scaladsl.cats.Observation',
+    ],
     commands: ['Batch', 'Shell', 'MessageLog', 'Prompt'].map((name) => `io.github.libtmux.scaladsl.cats.${name}`),
     control: ['io.github.libtmux.scaladsl.cats.Channel', 'io.github.libtmux.scaladsl.ox.Flows'],
   },
@@ -785,33 +859,146 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
 
 /** Free functions and cmdlets need the same discovery-first order as object members. */
 const LANGUAGE_ORDER: Record<string, Record<string, string[]>> = {
-  julia: Object.fromEntries(Object.entries({
-    server: ['Server', 'open_server', 'with_server', 'from_env', 'OwnedServer', 'ServerIdentity'],
-    session: ['sessions', 'session', 'new_session', 'rename_session', 'kill_session', 'SessionRef', 'SessionID', 'SessionWhere'],
-    window: ['windows', 'window', 'new_window', 'split_window', 'select_window', 'rename_window', 'resize_window', 'link_window', 'unlink_window', 'move_window', 'swap_window', 'respawn_window', 'kill_window', 'WindowRef', 'WindowLinkRef', 'WindowID', 'WindowLink', 'WindowWhere', 'WindowLinkWhere'],
-    pane: ['panes', 'select_pane', 'resize_pane', 'move_pane', 'swap_pane', 'respawn_pane', 'kill_pane', 'PaneRef', 'PaneID', 'PaneOccurrence', 'PaneOutput', 'PaneWhere'],
-    client: ['clients', 'switch_client', 'detach_client', 'ClientRef', 'ClientID', 'ClientWhere'],
-    hooks: ['get_hook', 'set_hook', 'unset_hook', 'HookCommand'],
-    'options-functions': ['get_option', 'set_option', 'unset_option'],
-    buffers: ['load_buffer', 'save_buffer', 'delete_buffer', 'BufferRef', 'BufferID'],
-    environment: ['get_environment', 'set_environment', 'unset_environment', 'remove_environment', 'EnvironmentValue'],
-    snapshots: ['snapshot', 'Snapshot', 'capture_pane', 'capture_bytes', 'SessionSnapshot', 'WindowSnapshot', 'PaneSnapshot', 'ClientSnapshot', 'InconsistentSnapshot'],
-    control: ['open_control', 'ControlConnection', 'notifications', 'capture_baseline', 'subscribe_format', 'control_signal', 'Base.isopen', 'Base.wait', 'Base.notify', 'ObservationBaseline', 'ControlSignal'],
-    commands: ['TmuxCommand', 'run_command', 'CancellationToken', 'cancel!', 'iscancelled', 'on_cancel', 'Base.close', 'CancellationSubscription', 'RequestCancelled', 'DeadlineExceeded', 'OutputLimitExceeded', 'TmuxNotFound'],
-  }).map(([bucket, names]) => [bucket, names.map((name) => `LibTmux.${name}`)])),
-  powershell: Object.fromEntries(Object.entries({
-    server: ['New-TmuxServer', 'Get-TmuxServer', 'Connect-TmuxServer'],
-    session: ['Get-TmuxSession', 'Select-TmuxSession', 'New-TmuxSession', 'Enter-TmuxSession', 'Remove-TmuxSession'],
-    window: ['Get-TmuxWindow', 'Select-TmuxWindow', 'New-TmuxWindow', 'New-TmuxWindowLink', 'Set-TmuxWindowSize', 'Move-TmuxWindow', 'Remove-TmuxWindowLink', 'Remove-TmuxWindow'],
-    pane: ['Get-TmuxPane', 'Select-TmuxPane', 'Get-TmuxPaneContent', 'Split-TmuxPane', 'Send-TmuxText', 'Invoke-TmuxPaneCommand', 'Wait-TmuxPaneText', 'Update-TmuxPane', 'Set-TmuxPaneSize', 'Remove-TmuxPane'],
-    client: ['Get-TmuxClient', 'Get-TmuxClientAttachment', 'Update-TmuxClient'],
-    hooks: ['Get-TmuxHook', 'Set-TmuxHook', 'Invoke-TmuxHook', 'Remove-TmuxHook'],
-    'options-functions': ['Get-TmuxOption', 'Set-TmuxOption', 'Remove-TmuxOption'],
-    environment: ['Get-TmuxEnvironment', 'Set-TmuxEnvironment', 'Remove-TmuxEnvironment'],
-    commands: ['New-TmuxCommand', 'Invoke-TmuxCommand'],
-    control: ['Connect-TmuxControl', 'Watch-TmuxEvent', 'Wait-TmuxChannel', 'Invoke-TmuxControlCommand', 'Disconnect-TmuxControl'],
-    queries: ['New-TmuxQuery', 'Get-TmuxQueryPlan', 'Invoke-TmuxQuery', 'ConvertTo-TmuxQueryJson'],
-  }).map(([bucket, names]) => [bucket, names.map((name) => `LibTmux\\${name}`)])),
+  julia: Object.fromEntries(
+    Object.entries({
+      server: ['Server', 'open_server', 'with_server', 'from_env', 'OwnedServer', 'ServerIdentity'],
+      session: [
+        'sessions',
+        'session',
+        'new_session',
+        'rename_session',
+        'kill_session',
+        'SessionRef',
+        'SessionID',
+        'SessionWhere',
+      ],
+      window: [
+        'windows',
+        'window',
+        'new_window',
+        'split_window',
+        'select_window',
+        'rename_window',
+        'resize_window',
+        'link_window',
+        'unlink_window',
+        'move_window',
+        'swap_window',
+        'respawn_window',
+        'kill_window',
+        'WindowRef',
+        'WindowLinkRef',
+        'WindowID',
+        'WindowLink',
+        'WindowWhere',
+        'WindowLinkWhere',
+      ],
+      pane: [
+        'panes',
+        'select_pane',
+        'resize_pane',
+        'move_pane',
+        'swap_pane',
+        'respawn_pane',
+        'kill_pane',
+        'PaneRef',
+        'PaneID',
+        'PaneOccurrence',
+        'PaneOutput',
+        'PaneWhere',
+      ],
+      client: ['clients', 'switch_client', 'detach_client', 'ClientRef', 'ClientID', 'ClientWhere'],
+      hooks: ['get_hook', 'set_hook', 'unset_hook', 'HookCommand'],
+      'options-functions': ['get_option', 'set_option', 'unset_option'],
+      buffers: ['load_buffer', 'save_buffer', 'delete_buffer', 'BufferRef', 'BufferID'],
+      environment: [
+        'get_environment',
+        'set_environment',
+        'unset_environment',
+        'remove_environment',
+        'EnvironmentValue',
+      ],
+      snapshots: [
+        'snapshot',
+        'Snapshot',
+        'capture_pane',
+        'capture_bytes',
+        'SessionSnapshot',
+        'WindowSnapshot',
+        'PaneSnapshot',
+        'ClientSnapshot',
+        'InconsistentSnapshot',
+      ],
+      control: [
+        'open_control',
+        'ControlConnection',
+        'notifications',
+        'capture_baseline',
+        'subscribe_format',
+        'control_signal',
+        'Base.isopen',
+        'Base.wait',
+        'Base.notify',
+        'ObservationBaseline',
+        'ControlSignal',
+      ],
+      commands: [
+        'TmuxCommand',
+        'run_command',
+        'CancellationToken',
+        'cancel!',
+        'iscancelled',
+        'on_cancel',
+        'Base.close',
+        'CancellationSubscription',
+        'RequestCancelled',
+        'DeadlineExceeded',
+        'OutputLimitExceeded',
+        'TmuxNotFound',
+      ],
+    }).map(([bucket, names]) => [bucket, names.map((name) => `LibTmux.${name}`)]),
+  ),
+  powershell: Object.fromEntries(
+    Object.entries({
+      server: ['New-TmuxServer', 'Get-TmuxServer', 'Connect-TmuxServer'],
+      session: ['Get-TmuxSession', 'Select-TmuxSession', 'New-TmuxSession', 'Enter-TmuxSession', 'Remove-TmuxSession'],
+      window: [
+        'Get-TmuxWindow',
+        'Select-TmuxWindow',
+        'New-TmuxWindow',
+        'New-TmuxWindowLink',
+        'Set-TmuxWindowSize',
+        'Move-TmuxWindow',
+        'Remove-TmuxWindowLink',
+        'Remove-TmuxWindow',
+      ],
+      pane: [
+        'Get-TmuxPane',
+        'Select-TmuxPane',
+        'Get-TmuxPaneContent',
+        'Split-TmuxPane',
+        'Send-TmuxText',
+        'Invoke-TmuxPaneCommand',
+        'Wait-TmuxPaneText',
+        'Update-TmuxPane',
+        'Set-TmuxPaneSize',
+        'Remove-TmuxPane',
+      ],
+      client: ['Get-TmuxClient', 'Get-TmuxClientAttachment', 'Update-TmuxClient'],
+      hooks: ['Get-TmuxHook', 'Set-TmuxHook', 'Invoke-TmuxHook', 'Remove-TmuxHook'],
+      'options-functions': ['Get-TmuxOption', 'Set-TmuxOption', 'Remove-TmuxOption'],
+      environment: ['Get-TmuxEnvironment', 'Set-TmuxEnvironment', 'Remove-TmuxEnvironment'],
+      commands: ['New-TmuxCommand', 'Invoke-TmuxCommand'],
+      control: [
+        'Connect-TmuxControl',
+        'Watch-TmuxEvent',
+        'Wait-TmuxChannel',
+        'Invoke-TmuxControlCommand',
+        'Disconnect-TmuxControl',
+      ],
+      queries: ['New-TmuxQuery', 'Get-TmuxQueryPlan', 'Invoke-TmuxQuery', 'ConvertTo-TmuxQueryJson'],
+    }).map(([bucket, names]) => [bucket, names.map((name) => `LibTmux\\${name}`)]),
+  ),
 }
 
 /** Julia reads collections from an explicit snapshot, not from Server methods. */
@@ -823,8 +1010,7 @@ const LANGUAGE_SHORTCUTS: Record<string, Record<string, string[]>> = {
 function languageBucket(bucket: Bucket, port: string, root = bucket.id): Bucket {
   const placements = LANGUAGE_PLACEMENTS[port] ?? {}
   const ids = bucket.id === root ? placements[root] : undefined
-  const elsewhere = Object.entries(placements)
-    .flatMap(([id, symbols]) => id === root ? [] : symbols)
+  const elsewhere = Object.entries(placements).flatMap(([id, symbols]) => (id === root ? [] : symbols))
   const match: Match = elsewhere.length
     ? { kind: 'allOf', of: [bucket.match, { kind: 'not', of: { kind: 'id', is: elsewhere } }] }
     : bucket.match
@@ -838,7 +1024,23 @@ function languageBucket(bucket: Bucket, port: string, root = bucket.id): Bucket 
 }
 
 export const NAV: Record<string, PortNav> = Object.fromEntries(
-  ['powershell', 'julia', 'py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'kotlin', 'scala', 'fsharp', 'csharp', 'cxx', 'swift'].map((port) => [
+  [
+    'powershell',
+    'julia',
+    'py',
+    'ruby',
+    'lua',
+    'ts',
+    'rs',
+    'go',
+    'java',
+    'kotlin',
+    'scala',
+    'fsharp',
+    'csharp',
+    'cxx',
+    'swift',
+  ].map((port) => [
     port,
     {
       port,

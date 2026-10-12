@@ -24,8 +24,16 @@ async function navigation(options: { json?: ApiTreeJson; base?: string; search?:
   })
   const json: ApiTreeJson = options.json ?? {
     port: 'tmux',
-    buckets: [{ id: 'args', label: 'Arguments', count: 1, slug: 'args-entry', children: [],
-      types: [{ id: 'c:args_entry', name: 'args_entry', slug: 'args-entry', kind: 'struct', m: 1 }] }],
+    buckets: [
+      {
+        id: 'args',
+        label: 'Arguments',
+        count: 1,
+        slug: 'args-entry',
+        children: [],
+        types: [{ id: 'c:args_entry', name: 'args_entry', slug: 'args-entry', kind: 'struct', m: 1 }],
+      },
+    ],
     members: {
       'c:args_entry': [
         ['entry', 'entry', 'c:args_entry:entry', 'struct'],
@@ -54,7 +62,11 @@ async function navigation(options: { json?: ApiTreeJson; base?: string; search?:
     item.dispatchEvent(new win.KeyboardEvent('keydown', { key: name, bubbles: true, cancelable: true }))
     await vi.waitFor(() => expect(item.hasAttribute('aria-busy')).toBe(false))
   }
-  const children = (item: HTMLElement) => [...item.querySelectorAll<HTMLElement>(':scope > [role="group"] > [role="treeitem"], :scope > [role="group"] > [role="none"] > [role="treeitem"]')]
+  const children = (item: HTMLElement) => [
+    ...item.querySelectorAll<HTMLElement>(
+      ':scope > [role="group"] > [role="treeitem"], :scope > [role="group"] > [role="none"] > [role="treeitem"]',
+    ),
+  ]
   return { tree, bucket, key, children, fetch, initApiTree, saveApiTreeState }
 }
 
@@ -103,8 +115,12 @@ it('discards stale cached rows and treats cached labels as text', async () => {
   const nav = win.document.querySelector<HTMLElement>('.api-nav')!
   nav.dataset.version = 'model-b'
   const key = 'libtmux:api-tree:/en/tmux/3.7c/reference/'
-  const value = { top: 0, branches: { 'bucket:args': true }, version: 'model-a',
-    groups: { 'bucket:args': [{ label: ['<img src=x onerror=alert(1)>'], href: 'javascript:alert(1)' }] } }
+  const value = {
+    top: 0,
+    branches: { 'bucket:args': true },
+    version: 'model-a',
+    groups: { 'bucket:args': [{ label: ['<img src=x onerror=alert(1)>'], href: 'javascript:alert(1)' }] },
+  }
   win.sessionStorage.setItem(key, JSON.stringify(value))
   win.eval(`(${initializeApiTree.toString()})(document.querySelector('.api-nav'))`)
   expect(nav.querySelector('[role="group"]')).toBeNull()
@@ -120,12 +136,51 @@ it('keeps dependency destinations in lazy branches and filtered search under a l
   const dependencyBase = '/pr-138/ja/csharp/latest/reference/'
   const json: ApiTreeJson = {
     port: 'powershell',
-    buckets: [{ id: 'args', label: 'Server', count: 2, slug: 'libtmux-get-tmuxserver', children: [], types: [
-      { id: 'LibTmux.Server', name: 'Server (.NET)', symbolName: 'Server', slug: 'libtmux-server', kind: 'class', category: 'types', m: 1 },
-      { id: 'LibTmux\\Get-TmuxServer', name: 'Get-TmuxServer', slug: 'libtmux-get-tmuxserver', kind: 'function', category: 'members', m: 0 },
-    ] }],
-    members: { 'LibTmux.Server': [['Sessions', 'libtmux-server-sessions', 'LibTmux.Server.Sessions', 'property', 'members', '', 'LibTmux.Server.Sessions']] },
-    hrefs: { 'LibTmux.Server': `${dependencyBase}libtmux-server/`, 'LibTmux.Server.Sessions': `${dependencyBase}libtmux-server-sessions/` },
+    buckets: [
+      {
+        id: 'args',
+        label: 'Server',
+        count: 2,
+        slug: 'libtmux-get-tmuxserver',
+        children: [],
+        types: [
+          {
+            id: 'LibTmux.Server',
+            name: 'Server (.NET)',
+            symbolName: 'Server',
+            slug: 'libtmux-server',
+            kind: 'class',
+            category: 'types',
+            m: 1,
+          },
+          {
+            id: 'LibTmux\\Get-TmuxServer',
+            name: 'Get-TmuxServer',
+            slug: 'libtmux-get-tmuxserver',
+            kind: 'function',
+            category: 'members',
+            m: 0,
+          },
+        ],
+      },
+    ],
+    members: {
+      'LibTmux.Server': [
+        [
+          'Sessions',
+          'libtmux-server-sessions',
+          'LibTmux.Server.Sessions',
+          'property',
+          'members',
+          '',
+          'LibTmux.Server.Sessions',
+        ],
+      ],
+    },
+    hrefs: {
+      'LibTmux.Server': `${dependencyBase}libtmux-server/`,
+      'LibTmux.Server.Sessions': `${dependencyBase}libtmux-server-sessions/`,
+    },
   }
   const n = await navigation({ base, json, search: true })
   await n.key(n.bucket, 'ArrowRight')
@@ -138,10 +193,16 @@ it('keeps dependency destinations in lazy branches and filtered search under a l
   input.value = 'Server'
   win.document.querySelector<HTMLButtonElement>('[data-api-search-kind="types"]')!.click()
   await vi.waitFor(() => expect(win.document.querySelectorAll('[data-api-search-results] a')).toHaveLength(1))
-  expect(win.document.querySelector('[data-api-search-results] a')?.getAttribute('href')).toBe(`${dependencyBase}libtmux-server/`)
+  expect(win.document.querySelector('[data-api-search-results] a')?.getAttribute('href')).toBe(
+    `${dependencyBase}libtmux-server/`,
+  )
   input.value = 'Server.Sessions'
   win.document.querySelector<HTMLButtonElement>('[data-api-search-kind="members"]')!.click()
-  await vi.waitFor(() => expect(win.document.querySelector('[data-api-search-results] a')?.getAttribute('href')).toBe(`${dependencyBase}libtmux-server-sessions/`))
+  await vi.waitFor(() =>
+    expect(win.document.querySelector('[data-api-search-results] a')?.getAttribute('href')).toBe(
+      `${dependencyBase}libtmux-server-sessions/`,
+    ),
+  )
   expect(n.fetch).toHaveBeenCalledExactlyOnceWith(`${base}tree.json`)
 })
 
@@ -149,14 +210,20 @@ it('builds a lazy branch once when the reader opens it during restoration', asyn
   const n = await navigation()
   const originalFetch = n.fetch.getMockImplementation()!
   let release!: () => void
-  const pending = new Promise<void>((resolve) => { release = resolve })
+  const pending = new Promise<void>((resolve) => {
+    release = resolve
+  })
   n.fetch.mockImplementationOnce(async () => {
     await pending
     return originalFetch()
   })
-  win.sessionStorage.setItem('libtmux:api-tree:/en/tmux/3.7c/reference/', JSON.stringify({
-    top: 240, branches: { 'bucket:args': true },
-  }))
+  win.sessionStorage.setItem(
+    'libtmux:api-tree:/en/tmux/3.7c/reference/',
+    JSON.stringify({
+      top: 240,
+      branches: { 'bucket:args': true },
+    }),
+  )
   n.initApiTree()
   expect(n.fetch).toHaveBeenCalledTimes(1)
   const row = n.bucket.querySelector<HTMLElement>('.api-nav__row')!
@@ -174,11 +241,21 @@ it('builds a lazy branch once when the reader opens it during restoration', asyn
 
 it('links contextual shortcuts without marking a second current declaration', async () => {
   const json: ApiTreeJson = {
-    port: 'julia', members: {},
-    buckets: [{ id: 'args', label: 'Server', count: 2, slug: 'entry', children: [], types: [
-      { id: 'LibTmux.sessions', name: 'sessions', slug: 'entry', kind: 'function', m: 0, shortcut: true },
-      { id: 'LibTmux.sessions', name: 'sessions', slug: 'entry', kind: 'function', m: 0 },
-    ] }],
+    port: 'julia',
+    members: {},
+    buckets: [
+      {
+        id: 'args',
+        label: 'Server',
+        count: 2,
+        slug: 'entry',
+        children: [],
+        types: [
+          { id: 'LibTmux.sessions', name: 'sessions', slug: 'entry', kind: 'function', m: 0, shortcut: true },
+          { id: 'LibTmux.sessions', name: 'sessions', slug: 'entry', kind: 'function', m: 0 },
+        ],
+      },
+    ],
   }
   const n = await navigation({ json, base: '/en/julia/latest/reference/' })
   await n.key(n.bucket, 'ArrowRight')
@@ -190,7 +267,8 @@ it('links contextual shortcuts without marking a second current declaration', as
 
 it('keeps a visible destination at the saved scroll position', async () => {
   const n = await navigation()
-  n.tree.innerHTML = '<li role="none"><a role="treeitem" class="api-nav__row" aria-current="page" href="/entry/">Entry</a></li>'
+  n.tree.innerHTML =
+    '<li role="none"><a role="treeitem" class="api-nav__row" aria-current="page" href="/entry/">Entry</a></li>'
   Object.defineProperty(n.tree, 'clientHeight', { value: 300 })
   const row = n.tree.querySelector<HTMLElement>('a')!
   vi.spyOn(n.tree, 'getBoundingClientRect').mockReturnValue(new win.DOMRect(0, 100, 100, 300))
@@ -207,7 +285,8 @@ it('does not restore a different reference tree and centers within the visible v
   n.tree.scrollTop = 240
   n.saveApiTreeState()
   n.tree.closest('.api-nav')!.setAttribute('data-base', '/en/julia/latest/reference/')
-  n.tree.innerHTML = '<li role="none"><a role="treeitem" class="api-nav__row" aria-current="page" href="/entry/">Entry</a></li>'
+  n.tree.innerHTML =
+    '<li role="none"><a role="treeitem" class="api-nav__row" aria-current="page" href="/entry/">Entry</a></li>'
   Object.defineProperty(n.tree, 'clientHeight', { value: 600 })
   Object.defineProperty(win, 'innerHeight', { value: 500 })
   const row = n.tree.querySelector<HTMLElement>('a')!
@@ -221,7 +300,8 @@ it('does not restore a different reference tree and centers within the visible v
 
 it('centers an offscreen active row on initialization without moving document focus', async () => {
   const n = await navigation()
-  n.tree.innerHTML = '<li role="none"><a role="treeitem" class="api-nav__row" aria-current="page" href="/entry/">Entry</a></li>'
+  n.tree.innerHTML =
+    '<li role="none"><a role="treeitem" class="api-nav__row" aria-current="page" href="/entry/">Entry</a></li>'
   Object.defineProperty(n.tree, 'clientHeight', { value: 300 })
   const row = n.tree.querySelector<HTMLElement>('a')!
   vi.spyOn(n.tree, 'getBoundingClientRect').mockReturnValue(new win.DOMRect(0, 100, 100, 300))
@@ -273,7 +353,9 @@ it('keeps terminal, empty-owner and legacy members as ordered leaves', async () 
   await n.key(owner, 'ArrowRight')
   const leaves = n.children(owner).slice(1)
   expect(leaves.map((item) => item.getAttribute('href'))).toEqual([
-    '/en/tmux/3.7c/reference/value/', '/en/tmux/3.7c/reference/empty/', '/en/tmux/3.7c/reference/legacy/',
+    '/en/tmux/3.7c/reference/value/',
+    '/en/tmux/3.7c/reference/empty/',
+    '/en/tmux/3.7c/reference/legacy/',
   ])
   for (const leaf of leaves) {
     expect(leaf.tagName).toBe('A')
@@ -282,7 +364,6 @@ it('keeps terminal, empty-owner and legacy members as ordered leaves', async () 
     expect(leaf.querySelector('[role="group"]')).toBeNull()
   }
 })
-
 
 it('keeps empty protocol filters disabled when search initializes and after a page swap', async () => {
   const n = await navigation({ search: true })

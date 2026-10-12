@@ -92,8 +92,7 @@ const INTRA_DOC_RE = /\[`?([A-Za-z_][\w]*(?:::[\w]+)+)`?\](?!\()/g
  *
  * https://doc.rust-lang.org/rustdoc/write-documentation/linking-to-items-by-name.html
  */
-const INTRA_DOC_PAREN_RE =
-  /\[`?([^\]`]+)`?\]\(((?:crate|self|super|Self)?(?:::)?[A-Za-z_]\w*(?:::\w+)*)\)/g
+const INTRA_DOC_PAREN_RE = /\[`?([^\]`]+)`?\]\(((?:crate|self|super|Self)?(?:::)?[A-Za-z_]\w*(?:::\w+)*)\)/g
 
 /**
  * A backticked path with no scope operator: `` [`Window`] ``.
@@ -235,9 +234,7 @@ const SYNTAX: Record<string, ReadonlySet<string>> = {
  */
 export function docSummaryText(text: string, lang?: string): string {
   return tokenizeDoc(text, lang)
-    .map((span) =>
-      span.kind === 'ref' || span.kind === 'citation' ? span.label : span.text,
-    )
+    .map((span) => (span.kind === 'ref' || span.kind === 'citation' ? span.label : span.text))
     .join('')
 }
 
@@ -256,11 +253,17 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
       const label = match[1] ? match[2] : match[3]
       const target = match[4].trim()
       if (syntax.has('documenter') && /^@ref(?:\s|$)/.test(target)) {
-        hits.push({ start: match.index, end: match.index + match[0].length,
-          span: { kind: 'ref', role: 'any', target: target.slice(4).trim() || label, label } })
+        hits.push({
+          start: match.index,
+          end: match.index + match[0].length,
+          span: { kind: 'ref', role: 'any', target: target.slice(4).trim() || label, label },
+        })
       } else if (/^(?:https?:\/\/|\/(?!\/)|#)/.test(target)) {
-        hits.push({ start: match.index, end: match.index + match[0].length,
-          span: { kind: 'link', text: label, href: target, ...(match[1] ? { code: true } : {}) } })
+        hits.push({
+          start: match.index,
+          end: match.index + match[0].length,
+          span: { kind: 'link', text: label, href: target, ...(match[1] ? { code: true } : {}) },
+        })
       }
     }
   }
@@ -283,8 +286,11 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
       const target = syntax.has('scaladoc') ? match[1] : (match[2] ?? match[1])
       const label = syntax.has('scaladoc') ? (match[2] ?? match[1]) : match[1]
       if (!/^[\w.#]+$/.test(target)) continue
-      hits.push({ start: match.index, end: match.index + match[0].length,
-        span: { kind: 'ref', role: 'any', target, label } })
+      hits.push({
+        start: match.index,
+        end: match.index + match[0].length,
+        span: { kind: 'ref', role: 'any', target, label },
+      })
     }
   }
 
@@ -372,26 +378,27 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
     }
   }
 
-  if (syntax.has('rest')) for (const m of text.matchAll(ROLE_RE)) {
-    const role = m[1].replace(/^py:/, '')
-    const { target, label } = labelFor(m[2])
-    if (!ROLES.has(m[1])) {
-      // A role this resolver does not handle — `:term:`, `:ref:`, `:doc:` —
-      // still has to claim its range. Skipping it outright leaves its
-      // backticks visible to the single-backtick fallback below, which then
-      // invents a symbol reference out of a glossary term: `:term:`winlinks
-      // <winlink>`` was being reported as an unresolved symbol named
-      // `winlinks`. Emitting the label as literal text is both correct
-      // rendering and correct masking.
-      hits.push({ start: m.index, end: m.index + m[0].length, span: { kind: 'text', text: label } })
-      continue
+  if (syntax.has('rest'))
+    for (const m of text.matchAll(ROLE_RE)) {
+      const role = m[1].replace(/^py:/, '')
+      const { target, label } = labelFor(m[2])
+      if (!ROLES.has(m[1])) {
+        // A role this resolver does not handle — `:term:`, `:ref:`, `:doc:` —
+        // still has to claim its range. Skipping it outright leaves its
+        // backticks visible to the single-backtick fallback below, which then
+        // invents a symbol reference out of a glossary term: `:term:`winlinks
+        // <winlink>`` was being reported as an unresolved symbol named
+        // `winlinks`. Emitting the label as literal text is both correct
+        // rendering and correct masking.
+        hits.push({ start: m.index, end: m.index + m[0].length, span: { kind: 'text', text: label } })
+        continue
+      }
+      hits.push({
+        start: m.index,
+        end: m.index + m[0].length,
+        span: { kind: 'ref', role, target, label },
+      })
     }
-    hits.push({
-      start: m.index,
-      end: m.index + m[0].length,
-      span: { kind: 'ref', role, target, label },
-    })
-  }
   for (const m of text.matchAll(LITERAL_RE)) {
     hits.push({
       start: m.index,
@@ -433,13 +440,17 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
 
   if (lang === 'powershell') {
     // Native help stores these references as plain text rather than Markdown.
-    const names = /(?<![\w$])(?:\$[A-Za-z_]\w*|(?:LibTmux|System)(?:\.[A-Za-z_]\w*)+|(?:[A-Za-z_]\w*\\)?[A-Z][a-z]+-[A-Z][A-Za-z0-9]*|-[A-Z][A-Za-z0-9]*)(?!\w)/g
+    const names =
+      /(?<![\w$])(?:\$[A-Za-z_]\w*|(?:LibTmux|System)(?:\.[A-Za-z_]\w*)+|(?:[A-Za-z_]\w*\\)?[A-Z][a-z]+-[A-Z][A-Za-z0-9]*|-[A-Z][A-Za-z0-9]*)(?!\w)/g
     for (const match of text.matchAll(names)) {
       const start = match.index
       const end = start + match[0].length
       if (hits.some((hit) => hit.start < end && hit.end > start)) continue
-      hits.push({ start, end, span: { kind: 'ref',
-        role: match[0].startsWith('$') ? 'variable' : 'any', target: match[0], label: match[0] } })
+      hits.push({
+        start,
+        end,
+        span: { kind: 'ref', role: match[0].startsWith('$') ? 'variable' : 'any', target: match[0], label: match[0] },
+      })
     }
   }
 
@@ -459,15 +470,21 @@ export function referencesIn(text: string): { role: string; target: string }[] {
   // Bodies may retain narrative code blocks. Their code and delimiter ticks
   // are literals, not cross-references or names to add to the search graph.
   let fence: string | undefined
-  const prose = text.split('\n').map((line) => {
-    if (fence) {
-      if (new RegExp(`^\\s*${fence[0]}{${fence.length},}\\s*$`).test(line)) fence = undefined
-      return ''
-    }
-    const start = /^\s*(`{3,}|~{3,})/.exec(line)
-    if (start) { fence = start[1]; return '' }
-    return line
-  }).join('\n')
+  const prose = text
+    .split('\n')
+    .map((line) => {
+      if (fence) {
+        if (new RegExp(`^\\s*${fence[0]}{${fence.length},}\\s*$`).test(line)) fence = undefined
+        return ''
+      }
+      const start = /^\s*(`{3,}|~{3,})/.exec(line)
+      if (start) {
+        fence = start[1]
+        return ''
+      }
+      return line
+    })
+    .join('\n')
   return tokenizeDoc(prose)
     .filter((s): s is Extract<DocSpan, { kind: 'ref' }> => s.kind === 'ref')
     .map(({ role, target }) => ({ role, target }))

@@ -11,7 +11,11 @@ export function initializeLinkHintReadiness() {
     timer: ReturnType<typeof setTimeout>
   }
   let current: Gate
-  const pageHref = (href: string) => { const url = new URL(href); url.hash = ''; return url.href }
+  const pageHref = (href: string) => {
+    const url = new URL(href)
+    url.hash = ''
+    return url.href
+  }
   const roots = (gate: Gate) => {
     const live = document.documentElement
     return live.dataset.linkHintsGeneration === gate.token ? [gate.root, live] : [gate.root]
@@ -32,8 +36,12 @@ export function initializeLinkHintReadiness() {
     if (current) clearTimeout(current.timer)
     const root = doc.documentElement
     const gate: Gate = {
-      token: String(++generation), root, href: pageHref(href),
-      decorated: false, maskReady: false, settled: false,
+      token: String(++generation),
+      root,
+      href: pageHref(href),
+      decorated: false,
+      maskReady: false,
+      settled: false,
       timer: setTimeout(() => finish(gate, false), 3000),
     }
     current = gate
@@ -41,7 +49,10 @@ export function initializeLinkHintReadiness() {
     root.classList.remove('link-hints-suppressed')
     root.classList.add('link-hints-pending')
     const mask = doc.querySelector<HTMLLinkElement>('link[data-link-hints-mask]')
-    if (!mask) { finish(gate, false); return }
+    if (!mask) {
+      finish(gate, false)
+      return
+    }
     const image = new Image()
     // CSS masks use CORS fetches; share their decoded cache entry.
     image.crossOrigin = 'anonymous'
@@ -49,7 +60,13 @@ export function initializeLinkHintReadiness() {
     image.onload = () => {
       // Loading the bytes is not sufficient: wait until the mask can paint.
       const decoded = typeof image.decode === 'function' ? image.decode() : Promise.resolve()
-      decoded.then(() => { gate.maskReady = true; revealIfReady(gate) }, () => finish(gate, false))
+      decoded.then(
+        () => {
+          gate.maskReady = true
+          revealIfReady(gate)
+        },
+        () => finish(gate, false),
+      )
     }
     image.src = new URL(mask.getAttribute('href')!, href).href
   }
@@ -59,9 +76,18 @@ export function initializeLinkHintReadiness() {
     current.decorated = true
     revealIfReady(current)
   })
-  document.addEventListener('error', (event) => {
-    if (event.target instanceof HTMLScriptElement && event.target.isConnected && event.target.hasAttribute('data-link-hints-module')) finish(current, false)
-  }, true)
+  document.addEventListener(
+    'error',
+    (event) => {
+      if (
+        event.target instanceof HTMLScriptElement &&
+        event.target.isConnected &&
+        event.target.hasAttribute('data-link-hints-module')
+      )
+        finish(current, false)
+    },
+    true,
+  )
   document.addEventListener('astro:before-swap', (event) => begin(event.newDocument, event.to.href))
   begin(document, location.href)
 }

@@ -84,7 +84,9 @@ function docBlock(text = '', contract?: { id: string; title: string }): DocBlock
   const [summary = '', ...body] = trimmed.split(/\n\s*\n/)
   return {
     summary: summary || `Behavior: ${contract?.title}.`,
-    body: [body.join('\n\n'), contract ? `Behavior contract: ${contract.title}.` : ''].filter(Boolean).join('\n\n') || undefined,
+    body:
+      [body.join('\n\n'), contract ? `Behavior contract: ${contract.title}.` : ''].filter(Boolean).join('\n\n') ||
+      undefined,
   }
 }
 
@@ -131,24 +133,35 @@ function rbsSignature(raw: string, tags: RubyTag[] = []): Signature {
   const close = open < 0 ? -1 : closingParen(raw, open)
   const arrow = close < 0 ? -1 : topLevelArrow(raw, close + 1)
   const docs = new Map(tags.filter((tag) => tag.tag === 'param' && tag.name).map((tag) => [tag.name!, tag.text]))
-  const params: Param[] = open < 0 || close < 0 ? [] : splitTopLevel(raw.slice(open + 1, close)).map((part, index) => {
-    const keyword = /^(\??)([A-Za-z_]\w*[!?=]?):\s*(.+)$/.exec(part)
-    if (keyword) {
-      return {
-        name: keyword[2], type: keyword[3],
-        ...(keyword[1] ? { default: 'nil' } : {}),
-        ...(docs.get(keyword[2]) ? { doc: docs.get(keyword[2]) } : {}),
-      }
-    }
-    if (part.startsWith('**')) return { name: 'kwargs', type: part.slice(2), variadic: 'keyword' as const }
-    if (part.startsWith('*')) return { name: 'args', type: part.slice(1), variadic: 'positional' as const }
-    const optional = part.startsWith('?')
-    return { name: `arg${index + 1}`, type: optional ? part.slice(1) : part, ...(optional ? { default: 'nil' } : {}) }
-  })
+  const params: Param[] =
+    open < 0 || close < 0
+      ? []
+      : splitTopLevel(raw.slice(open + 1, close)).map((part, index) => {
+          const keyword = /^(\??)([A-Za-z_]\w*[!?=]?):\s*(.+)$/.exec(part)
+          if (keyword) {
+            return {
+              name: keyword[2],
+              type: keyword[3],
+              ...(keyword[1] ? { default: 'nil' } : {}),
+              ...(docs.get(keyword[2]) ? { doc: docs.get(keyword[2]) } : {}),
+            }
+          }
+          if (part.startsWith('**')) return { name: 'kwargs', type: part.slice(2), variadic: 'keyword' as const }
+          if (part.startsWith('*')) return { name: 'args', type: part.slice(1), variadic: 'positional' as const }
+          const optional = part.startsWith('?')
+          return {
+            name: `arg${index + 1}`,
+            type: optional ? part.slice(1) : part,
+            ...(optional ? { default: 'nil' } : {}),
+          }
+        })
   const typeParams = raw.startsWith('[') ? splitTopLevel(raw.slice(1, raw.indexOf(']'))) : undefined
-  const raises = tags.filter((tag) => tag.tag === 'raise').map((tag) => ({
-    type: tag.types?.join(' | ') || tag.name || 'StandardError', doc: tag.text,
-  }))
+  const raises = tags
+    .filter((tag) => tag.tag === 'raise')
+    .map((tag) => ({
+      type: tag.types?.join(' | ') || tag.name || 'StandardError',
+      doc: tag.text,
+    }))
   const returnsDoc = tags.find((tag) => tag.tag === 'return')?.text?.trim() || undefined
   return {
     raw,

@@ -39,7 +39,8 @@ let connect () = task {
     use timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5.0))
     let! server = Server.ConnectAsync(
         ServerConnectionOptions(SocketPath = socket), timeout.Token)
-    let! exists = server.HasSessionAsync("work", cancellationToken = timeout.Token)
+    let! exists =
+        server.HasSessionAsync("work", cancellationToken = timeout.Token)
     if not exists then invalidOp "The work session does not exist"
     printfn "work"
 }
@@ -70,7 +71,8 @@ Save this file beside the program using the displayed filename.
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Program.fs" />
-    <ProjectReference Include="libtmux-source/src/LibTmux.FSharp/LibTmux.FSharp.fsproj" />
+    <ProjectReference
+      Include="libtmux-source/src/LibTmux.FSharp/LibTmux.FSharp.fsproj" />
   </ItemGroup>
 </Project>
 ```

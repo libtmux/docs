@@ -134,7 +134,10 @@ function readJson(path) {
  * source-evidence link path, so the three line up with each other and with .NET's own
  * `module` field wherever the file is one .NET's ledger covers too. */
 function deriveModule(srcPath) {
-  const parts = srcPath.replace(/^src\//, '').replace(/\.py$/, '').split('/')
+  const parts = srcPath
+    .replace(/^src\//, '')
+    .replace(/\.py$/, '')
+    .split('/')
   if (parts.at(-1) === '__init__') parts.pop()
   return parts.join('.')
 }
@@ -218,11 +221,10 @@ function goTestFunctionNames(checkout) {
   // just in tmuxq/. One ripgrep pass over the whole checkout, not per-citation: 1588
   // entries citing a few hundred distinct functions is cheaper as a set-membership
   // check.
-  const out = execFileSync(
-    'rg',
-    ['-o', '--no-filename', '--no-line-number', 'func (Test\\w+)', '-r', '$1', '.'],
-    { cwd: checkout, encoding: 'utf8' },
-  )
+  const out = execFileSync('rg', ['-o', '--no-filename', '--no-line-number', 'func (Test\\w+)', '-r', '$1', '.'], {
+    cwd: checkout,
+    encoding: 'utf8',
+  })
   return new Set(out.split('\n').filter(Boolean))
 }
 
@@ -291,7 +293,10 @@ function parseJavaPythonApiTable(text) {
   const unparsed = []
   for (const line of lines) {
     if (!line.startsWith('|')) continue
-    const cells = line.split('|').slice(1, -1).map((c) => c.trim())
+    const cells = line
+      .split('|')
+      .slice(1, -1)
+      .map((c) => c.trim())
     if (cells.length !== 8 || cells[0] === 'Python symbol' || cells[0].startsWith('---')) continue
     const treatment = cells[4].replace(/<[^>]*>/g, '').trim()
     const evidence = cells[7]
@@ -320,7 +325,10 @@ function parseJavaTestMapCounts(path) {
   let dataRows = 0
   for (const line of lines) {
     if (!line.startsWith('|')) continue
-    const cells = line.split('|').slice(1, -1).map((c) => c.trim())
+    const cells = line
+      .split('|')
+      .slice(1, -1)
+      .map((c) => c.trim())
     if (cells.length !== 6 || cells[0] === 'Python evidence' || cells[0].startsWith('---')) continue
     dataRows += 1
     const status = cells[5]
@@ -353,7 +361,12 @@ function parseJava(checkout) {
   const apiText = readFileSync(apiPath, 'utf8')
   const { rows, unparsed } = parseJavaPythonApiTable(apiText)
   const pythonRevision = parseJavaPythonRevision(apiText)
-  const KNOWN_TREATMENT = new Set(['direct translation', 'approved omission', 'consolidation', 'semantic Java adaptation'])
+  const KNOWN_TREATMENT = new Set([
+    'direct translation',
+    'approved omission',
+    'consolidation',
+    'semantic Java adaptation',
+  ])
 
   const byModule = {}
   const portTally = emptyTally()
@@ -388,7 +401,10 @@ function parseJava(checkout) {
       'on the missing PythonBehaviorParityTest class. They count as claimed in ' +
       'the port total only. Server.attached_sessions has two evidence entries, ' +
       'so row counts can exceed the number of distinct corrections.',
-    contractClassesFound: { PythonApiParityContract: apiContractFound, PythonBehaviorParityTest: behaviorContractExists },
+    contractClassesFound: {
+      PythonApiParityContract: apiContractFound,
+      PythonBehaviorParityTest: behaviorContractExists,
+    },
     unparsedSourceEvidence: unparsed,
     portTally: (() => {
       // Fold test-map.md's "deliberate Java correction" rows into the port level

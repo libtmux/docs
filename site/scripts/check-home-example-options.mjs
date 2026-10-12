@@ -7,10 +7,16 @@ export async function checkHomeExampleOptions(browser, base) {
     const context = await browser.newContext({ viewport: { width: 944, height: 777 }, reducedMotion: 'reduce' })
     try {
       if (blocked) {
-        await context.route('**/astro/runtime/client/dev-toolbar/entrypoint.js', (route) => route.fulfill({ contentType: 'application/javascript', body: 'export {}' }))
-        await context.addInitScript(() => Object.defineProperty(window, 'localStorage', {
-          get() { throw new DOMException('Storage blocked', 'SecurityError') },
-        }))
+        await context.route('**/astro/runtime/client/dev-toolbar/entrypoint.js', (route) =>
+          route.fulfill({ contentType: 'application/javascript', body: 'export {}' }),
+        )
+        await context.addInitScript(() =>
+          Object.defineProperty(window, 'localStorage', {
+            get() {
+              throw new DOMException('Storage blocked', 'SecurityError')
+            },
+          }),
+        )
       }
       const page = await context.newPage()
       const runtimeErrors = []
@@ -19,12 +25,18 @@ export async function checkHomeExampleOptions(browser, base) {
       const errors = active.locator('[data-example-errors]')
       const cleanup = active.locator('[data-example-cleanup]')
       const check = async (handling, cleaning) => {
-        const actual = await page.locator('[data-home-example]').evaluateAll((examples) => examples.map((example) => ({
-          handling: example.querySelector('[data-example-errors]').checked,
-          cleaning: example.querySelector('[data-example-cleanup]').checked,
-        })))
-        assert.deepEqual(actual, PORTS.map(() => ({ handling, cleaning })), 'Every language shares both choices')
-        const view = handling ? (cleaning ? 'full' : 'errors') : (cleaning ? 'cleanup' : 'concise')
+        const actual = await page.locator('[data-home-example]').evaluateAll((examples) =>
+          examples.map((example) => ({
+            handling: example.querySelector('[data-example-errors]').checked,
+            cleaning: example.querySelector('[data-example-cleanup]').checked,
+          })),
+        )
+        assert.deepEqual(
+          actual,
+          PORTS.map(() => ({ handling, cleaning })),
+          'Every language shares both choices',
+        )
+        const view = handling ? (cleaning ? 'full' : 'errors') : cleaning ? 'cleanup' : 'concise'
         assert.equal(await active.locator('[data-home-view]:visible').getAttribute('data-home-view'), view)
       }
       await page.goto(`${base}/?port=rs&prompt=eval-sweep&from=a&from=b#program`)
@@ -56,7 +68,11 @@ export async function checkHomeExampleOptions(browser, base) {
         await page.goto(`${base}/?port=py`)
         await page.waitForSelector('[data-task-enhanced]:not([hidden])')
         await check(true, true)
-        assert.equal(new URL(page.url()).searchParams.get('errors'), '1', 'Stored choices are reflected in shareable URLs')
+        assert.equal(
+          new URL(page.url()).searchParams.get('errors'),
+          '1',
+          'Stored choices are reflected in shareable URLs',
+        )
       }
       await page.goto(`${base}/?port=rs&errors=0&cleanup=0`)
       await page.waitForSelector('[data-task-enhanced]:not([hidden])')
@@ -68,10 +84,14 @@ export async function checkHomeExampleOptions(browser, base) {
       await cleanup.uncheck()
       assert.equal(new URL(page.url()).searchParams.has('errors'), false)
       assert.equal(new URL(page.url()).searchParams.has('cleanup'), false)
-      if (!blocked) assert.deepEqual(await page.evaluate(() => [
-        localStorage.getItem('libtmux-docs.home-example.errors'),
-        localStorage.getItem('libtmux-docs.home-example.cleanup'),
-      ]), [null, null])
+      if (!blocked)
+        assert.deepEqual(
+          await page.evaluate(() => [
+            localStorage.getItem('libtmux-docs.home-example.errors'),
+            localStorage.getItem('libtmux-docs.home-example.cleanup'),
+          ]),
+          [null, null],
+        )
       await page.reload()
       await page.waitForSelector('[data-task-enhanced]:not([hidden])')
       await check(false, false)
@@ -79,16 +99,22 @@ export async function checkHomeExampleOptions(browser, base) {
       const transition = async (navigate) => {
         await page.evaluate(() => {
           window.__homeOptionsPageLoaded = false
-          document.addEventListener('astro:page-load', () => {
-            window.__homeOptionsPageLoaded = true
-          }, { once: true })
+          document.addEventListener(
+            'astro:page-load',
+            () => {
+              window.__homeOptionsPageLoaded = true
+            },
+            { once: true },
+          )
         })
         await navigate()
         await page.waitForFunction(() => window.__homeOptionsPageLoaded)
       }
       await page.goto(`${base}/?port=rs&errors=1&cleanup=0#first`)
       await page.waitForSelector('[data-task-enhanced]:not([hidden])')
-      await page.evaluate(() => { location.hash = 'second' })
+      await page.evaluate(() => {
+        location.hash = 'second'
+      })
       await errors.uncheck()
       await cleanup.check()
       await check(false, true)
@@ -119,5 +145,7 @@ export async function checkHomeExampleOptions(browser, base) {
       await context.close()
     }
   }
-  console.log('Example options: shared across 13 ports, independent defaults, URL/storage/reload/history, explicit zero, uncheck removal, task and URL preservation, blocked storage PASS')
+  console.log(
+    'Example options: shared across 13 ports, independent defaults, URL/storage/reload/history, explicit zero, uncheck removal, task and URL preservation, blocked storage PASS',
+  )
 }

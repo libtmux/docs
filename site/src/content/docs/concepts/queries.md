@@ -147,8 +147,10 @@ List<Window> editors = server.windows().stream()
         .toList();
 
 // Selections.exactlyOne() is the `.get()`-shaped call.
-Session build = Selections.exactlyOne(
-        server.sessions().stream().filter(Session_.name().is("build")).toList());
+List<Session> builds = server.sessions().stream()
+        .filter(Session_.name().is("build"))
+        .toList();
+Session build = Selections.exactlyOne(builds);
 ```
 
 ```csharp
@@ -163,8 +165,9 @@ IReadOnlyList<Session> matched = sessions.Matching<Session>(
 ```
 
 ```cpp
-// A filter is a value built from typed fields; `window::active.starts_with(...)`
-// would not compile: a flag has no string operations.
+// A filter is a value built from typed fields;
+// `window::active.starts_with(...)` would not compile: a flag has no
+// string operations.
 const auto interesting =
     libtmux::window::name.starts_with("e") || libtmux::window::name == "logs";
 
@@ -182,7 +185,10 @@ if (const auto only = libtmux::exactly_one(logs); only.has_value()) {
 let editors = try await server.panes().filter { $0.currentCommand == "nvim" }
 
 // Or build a filter that travels: stored, sent, replayed elsewhere:
-let expression = try FilterExpr<Pane>.where(\.currentCommand, .isIn(["nvim", "vim"]))
+let expression = try FilterExpr<Pane>.where(
+    \.currentCommand,
+    .isIn(["nvim", "vim"])
+)
 let matching = try await server.panes().filter(expression)
 ```
 <!-- /port -->

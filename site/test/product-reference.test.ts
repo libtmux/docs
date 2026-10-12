@@ -5,7 +5,13 @@ import { pathToFileURL } from 'node:url'
 import { experimental_AstroContainer } from 'astro/container'
 import { Window } from 'happy-dom'
 import { API_MODELS, createApiIndex, referenceAlternatives, topLevelTypesOf } from '../src/lib/api-models'
-import { productApiAlternatives, productApiHref, productApiNavigation, productApiRedirects, productApiRoutes } from '../src/lib/product-api'
+import {
+  productApiAlternatives,
+  productApiHref,
+  productApiNavigation,
+  productApiRedirects,
+  productApiRoutes,
+} from '../src/lib/product-api'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { PORT_BY_SLUG, productAvailable } from '../src/lib/ports'
 import { getResolver } from '../src/lib/prose-resolver'
@@ -15,33 +21,49 @@ import mentionIndex from '../src/data/mentions.json'
 import { apiCommandRelatedLinks } from '../src/lib/api-sections'
 import { productApiIndex } from '../src/lib/product-api'
 
-const navigationLinks = (items: SidebarItem[]): string[] => items.flatMap((item) => [
-  ...(item.href ? [item.href] : []), ...(item.type === 'group' ? navigationLinks(item.items) : []),
-])
+const navigationLinks = (items: SidebarItem[]): string[] =>
+  items.flatMap((item) => [
+    ...(item.href ? [item.href] : []),
+    ...(item.type === 'group' ? navigationLinks(item.items) : []),
+  ])
 
 describe('product declaration trees', () => {
   it('resolves native PowerShell related help to local core and workspace APIs', () => {
     const model = API_MODELS.powershell
     const symbol = model.symbols.find((entry) => entry.id === 'LibTmux.Workspace\\ConvertTo-TmuxWorkspace')!
     const related = apiCommandRelatedLinks(symbol, productApiIndex(model, 'v1.2.3'))
-    expect(related.map((link) => link.text)).toEqual(['Get-TmuxSnapshot', 'Resolve-TmuxWorkspace', 'ConvertTo-TmuxWorkspaceYaml', 'ConvertTo-TmuxWorkspaceJson'])
+    expect(related.map((link) => link.text)).toEqual([
+      'Get-TmuxSnapshot',
+      'Resolve-TmuxWorkspace',
+      'ConvertTo-TmuxWorkspaceYaml',
+      'ConvertTo-TmuxWorkspaceJson',
+    ])
     expect(related[0].href).toBe('/powershell/v1.2.3/reference/libtmux-get-tmuxsnapshot/')
     expect(related.slice(1).every((link) => link.href.startsWith('/powershell/v1.2.3/workspace/reference/'))).toBe(true)
     expect(related.every((link) => link.symbol?.command?.kind === 'cmdlet')).toBe(true)
-    const external = { ...symbol, command: { ...symbol.command!, relatedLinks: [
-      { text: 'External help', href: 'https://example.com/Get-TmuxSnapshot' },
-    ] } }
+    const external = {
+      ...symbol,
+      command: {
+        ...symbol.command!,
+        relatedLinks: [{ text: 'External help', href: 'https://example.com/Get-TmuxSnapshot' }],
+      },
+    }
     expect(apiCommandRelatedLinks(external, productApiIndex(model, 'latest'))[0]).toMatchObject({
-      text: 'External help', href: 'https://example.com/Get-TmuxSnapshot', symbol: undefined,
+      text: 'External help',
+      href: 'https://example.com/Get-TmuxSnapshot',
+      symbol: undefined,
     })
   })
   it('includes each public product declaration once, including deeply nested members', () => {
-    for (const model of Object.values(API_MODELS)) for (const product of ['workspace', 'mcp'] as const) {
-      const expected = symbolsForProduct(model, product).map((symbol) => productApiHref(model, symbol, 'v1.2.3')).sort()
-      const actual = navigationLinks(productApiNavigation(model, product, 'v1.2.3')).sort()
-      expect(actual, `${model.port} ${product}`).toEqual(expected)
-      expect(new Set(actual).size).toBe(actual.length)
-    }
+    for (const model of Object.values(API_MODELS))
+      for (const product of ['workspace', 'mcp'] as const) {
+        const expected = symbolsForProduct(model, product)
+          .map((symbol) => productApiHref(model, symbol, 'v1.2.3'))
+          .sort()
+        const actual = navigationLinks(productApiNavigation(model, product, 'v1.2.3')).sort()
+        expect(actual, `${model.port} ${product}`).toEqual(expected)
+        expect(new Set(actual).size).toBe(actual.length)
+      }
   })
 
   it('opens the PowerShell workspace module into all nine cmdlets', () => {
@@ -49,14 +71,20 @@ describe('product declaration trees', () => {
     expect(module).toMatchObject({ type: 'group', label: 'LibTmux.Workspace', kind: 'module' })
     if (module.type !== 'group') throw new Error('Workspace module must have children')
     expect(module.items).toHaveLength(9)
-    expect(module.items).toContainEqual({ type: 'link', label: 'ConvertTo-TmuxWorkspace', kind: 'cmdlet',
-      href: '/powershell/latest/workspace/reference/libtmux-workspace-convertto-tmuxworkspace/' })
+    expect(module.items).toContainEqual({
+      type: 'link',
+      label: 'ConvertTo-TmuxWorkspace',
+      kind: 'cmdlet',
+      href: '/powershell/latest/workspace/reference/libtmux-workspace-convertto-tmuxworkspace/',
+    })
   })
 
   it('groups Julia extension functions by their declaring module without inventing module pages', () => {
     const tree = productApiNavigation(API_MODELS.julia, 'mcp', 'latest')
-    for (const [name, functions] of [['Base', ['close', 'isopen', 'show', 'showerror']],
-      ['ModelContextProtocol', ['close', 'is_connected', 'read_message', 'write_message']]] as const) {
+    for (const [name, functions] of [
+      ['Base', ['close', 'isopen', 'show', 'showerror']],
+      ['ModelContextProtocol', ['close', 'is_connected', 'read_message', 'write_message']],
+    ] as const) {
       const group = tree.find((item) => item.label === name)
       expect(group?.type).toBe('group')
       expect(group?.kind).toBe('module')
@@ -73,27 +101,45 @@ describe('product declaration trees', () => {
     async function compile(relative: string, imports: Record<string, string> = {}) {
       const file = new URL(relative, import.meta.url)
       const source = readFileSync(file, 'utf8').replace(/<style[\s\S]*?<\/style>/g, '')
-      const result = await transform(source, { filename: file.pathname, internalURL: 'astro/compiler-runtime',
-        resultScopedSlot: true, resolvePath: (specifier: string) => specifier })
+      const result = await transform(source, {
+        filename: file.pathname,
+        internalURL: 'astro/compiler-runtime',
+        resultScopedSlot: true,
+        resolvePath: (specifier: string) => specifier,
+      })
       expect(result.diagnostics.filter((item: { severity: string }) => item.severity === 'error')).toEqual([])
-      let code = result.code.replaceAll('"astro/compiler-runtime"', JSON.stringify(pathToFileURL(astroRequire.resolve('astro/compiler-runtime')).href))
-      for (const [specifier, url] of Object.entries(imports)) code = code.replaceAll(JSON.stringify(specifier), JSON.stringify(url))
+      let code = result.code.replaceAll(
+        '"astro/compiler-runtime"',
+        JSON.stringify(pathToFileURL(astroRequire.resolve('astro/compiler-runtime')).href),
+      )
+      for (const [specifier, url] of Object.entries(imports))
+        code = code.replaceAll(JSON.stringify(specifier), JSON.stringify(url))
       return `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`
     }
-    const badge = await compile('../src/components/api/ApiBadge.astro', Object.fromEntries(
-      ['api-labels', 'api-glossary'].map((name) => [`../../lib/${name}`, new URL(`../src/lib/${name}.ts`, import.meta.url).href])))
+    const badge = await compile(
+      '../src/components/api/ApiBadge.astro',
+      Object.fromEntries(
+        ['api-labels', 'api-glossary'].map((name) => [
+          `../../lib/${name}`,
+          new URL(`../src/lib/${name}.ts`, import.meta.url).href,
+        ]),
+      ),
+    )
     const link = await compile('../src/components/docs/SidebarLink.astro', { '../api/ApiBadge.astro': badge })
     const section = await compile('../src/components/docs/SidebarSection.astro', {
-      './SidebarLink.astro': link, '../api/ApiBadge.astro': badge,
+      './SidebarLink.astro': link,
+      '../api/ApiBadge.astro': badge,
       // Isolate collection loading; these fixture paths already use one canonical spelling.
-      '../../lib/sidebar': 'data:text/javascript,export const isActivePath = (href, currentPath) => href === currentPath',
+      '../../lib/sidebar':
+        'data:text/javascript,export const isActivePath = (href, currentPath) => href === currentPath',
     })
     const component = (await import(/* @vite-ignore */ section)).default
     const container = await experimental_AstroContainer.create()
     const win = new Window()
     try {
-      const scopes = productApiNavigation(API_MODELS.julia, 'mcp', 'latest')
-        .filter((item) => ['Base', 'ModelContextProtocol'].includes(item.label))
+      const scopes = productApiNavigation(API_MODELS.julia, 'mcp', 'latest').filter((item) =>
+        ['Base', 'ModelContextProtocol'].includes(item.label),
+      )
       scopes.push(productApiNavigation(API_MODELS.powershell, 'workspace', 'latest')[0])
       for (const group of scopes) {
         if (group.type !== 'group') throw new Error(`Missing group ${group.label}`)
@@ -108,8 +154,11 @@ describe('product declaration trees', () => {
         expect(summary.querySelector('a')?.getAttribute('href')).toBe(group.href)
         expect(win.document.querySelector('details')?.hasAttribute('open')).toBe(true)
         expect(win.document.querySelector('a[aria-current="page"]')?.getAttribute('href')).toBe(currentPath)
-        expect(Array.from(win.document.querySelectorAll('.sidebar-section__children a')).map((entry) => entry.getAttribute('href')))
-          .toEqual(navigationLinks(group.items))
+        expect(
+          Array.from(win.document.querySelectorAll('.sidebar-section__children a')).map((entry) =>
+            entry.getAttribute('href'),
+          ),
+        ).toEqual(navigationLinks(group.items))
       }
     } finally {
       await win.happyDOM.abort()
@@ -183,9 +232,10 @@ it('gives Kotlin, Scala and F# native references with parent type links', () => 
     const index = createApiIndex(model, (symbol) => `/reference/${symbol.slug}/`)
     if (port === 'fsharp') {
       const capture = model.symbols.find((symbol) => symbol.id === 'LibTmux.FSharp.Pane.capture')!
-      expect(index.linkType(capture.signatures[0].raw!, capture)
-        .find((span) => span.text === 'CapturePaneRequest')?.link?.href)
-        .toBe('/csharp/latest/reference/libtmux-capturepanerequest/')
+      expect(
+        index.linkType(capture.signatures[0].raw!, capture).find((span) => span.text === 'CapturePaneRequest')?.link
+          ?.href,
+      ).toBe('/csharp/latest/reference/libtmux-capturepanerequest/')
     } else {
       const parent = index.resolve('io.github.libtmux.Server')
       expect(parent?.href).toBe('/java/latest/reference/io-github-libtmux-server-server/')
@@ -201,17 +251,29 @@ describe('product reference equivalents', () => {
     expect(model.symbols.some((symbol) => symbol.id === 'WorkspaceBuilderError.!=(_:_:)')).toBe(false)
     const routes = productApiRedirects({ swift: model }, 'swift', {}, 'latest')
     expect(routes).toHaveLength(1)
-    expect(routes[0]).toMatchObject({ path: 'workspace/reference/workspacebuildererror-(_-_-)',
-      target: 'workspace/reference/workspacebuildererror', symbol: { id: 'WorkspaceBuilderError' } })
-    expect(productApiRoutes({ swift: model }, 'swift', {}, 'latest')
-      .some((route) => route.path === routes[0].path)).toBe(false)
-    expect(productApiRedirects({ swift: model }, undefined, { swift: 'stable' }, 'latest')[0].path)
-      .toBe(`swift/stable/${routes[0].path}`)
+    expect(routes[0]).toMatchObject({
+      path: 'workspace/reference/workspacebuildererror-(_-_-)',
+      target: 'workspace/reference/workspacebuildererror',
+      symbol: { id: 'WorkspaceBuilderError' },
+    })
+    expect(
+      productApiRoutes({ swift: model }, 'swift', {}, 'latest').some((route) => route.path === routes[0].path),
+    ).toBe(false)
+    expect(productApiRedirects({ swift: model }, undefined, { swift: 'stable' }, 'latest')[0].path).toBe(
+      `swift/stable/${routes[0].path}`,
+    )
     expect(productApiRedirects({ swift: model }, 'go', {}, 'latest')).toEqual([])
     expect(productApiRedirects({}, 'swift', {}, 'latest')).toEqual([])
-    const oldModel = { ...model, symbols: [...model.symbols, {
-      ...routes[0].symbol, id: 'WorkspaceBuilderError.!=(_:_:)',
-    }] }
+    const oldModel = {
+      ...model,
+      symbols: [
+        ...model.symbols,
+        {
+          ...routes[0].symbol,
+          id: 'WorkspaceBuilderError.!=(_:_:)',
+        },
+      ],
+    }
     expect(productApiRedirects({ swift: oldModel }, 'swift', {}, 'v0.1.0')).toEqual([])
   })
 
@@ -219,10 +281,18 @@ describe('product reference equivalents', () => {
     const model = API_MODELS.go
     const symbol = model.symbols.find((entry) => entry.id === 'workspace.Build')!
     const group = productApiAlternatives(model, symbol, 'v1.2.3', { ts: 'stable' })[0]
-    expect(group.ports.find((entry) => entry.port === 'go')?.href).toBe('/go/v1.2.3/workspace/reference/workspace-build/')
-    expect(group.ports.find((entry) => entry.port === 'ts')?.href).toBe('/ts/stable/workspace/reference/builder-applyworkspace/')
-    expect(group.ports.find((entry) => entry.port === 'rs')?.href).toBe('/rs/latest/workspace/reference/src-workspacebuilder-build/')
-    expect(referenceAlternatives('go', symbol.id)[0].ports.find((entry) => entry.port === 'ts')?.href).toBe('/ts/latest/workspace/reference/builder-applyworkspace/')
+    expect(group.ports.find((entry) => entry.port === 'go')?.href).toBe(
+      '/go/v1.2.3/workspace/reference/workspace-build/',
+    )
+    expect(group.ports.find((entry) => entry.port === 'ts')?.href).toBe(
+      '/ts/stable/workspace/reference/builder-applyworkspace/',
+    )
+    expect(group.ports.find((entry) => entry.port === 'rs')?.href).toBe(
+      '/rs/latest/workspace/reference/src-workspacebuilder-build/',
+    )
+    expect(referenceAlternatives('go', symbol.id)[0].ports.find((entry) => entry.port === 'ts')?.href).toBe(
+      '/ts/latest/workspace/reference/builder-applyworkspace/',
+    )
   })
 
   it('publishes every product declaration in its own reference', () => {

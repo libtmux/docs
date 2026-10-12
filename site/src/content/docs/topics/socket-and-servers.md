@@ -115,7 +115,8 @@ Server named = Server.open(config);
 ```csharp
 using LibTmux;
 
-Server named = await Server.ConnectAsync(new ServerConnectionOptions(socketName: "work"));
+ServerConnectionOptions options = new(socketName: "work");
+Server named = await Server.ConnectAsync(options);
 ```
 
 ```cpp

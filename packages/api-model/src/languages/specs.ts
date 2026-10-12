@@ -38,7 +38,8 @@ const stripSlashDoc = (raw: string): string | undefined => {
 
 /** Remove syntax nodes, not comment-looking text inside string literal types. */
 function typescriptType(node: Node): string {
-  const type = node.firstChild?.type === ':' ? node.namedChildren.find((child) => child?.type !== 'comment') ?? node : node
+  const type =
+    node.firstChild?.type === ':' ? (node.namedChildren.find((child) => child?.type !== 'comment') ?? node) : node
   let text = type.text
   const comments = type.descendantsOfType('comment').filter((node): node is Node => node !== null)
   for (const comment of comments.sort((a, b) => b.startIndex - a.startIndex)) {
@@ -50,7 +51,9 @@ function typescriptType(node: Node): string {
   const rest = lines.slice(1).filter((line) => line.trim())
   const indent = rest.length ? Math.min(...rest.map((line) => /^\s*/.exec(line)![0].length)) : 0
   return [lines[0], ...lines.slice(1).map((line) => line.slice(Math.min(indent, /^\s*/.exec(line)![0].length)))]
-    .filter((line) => line.trim()).join('\n').trim()
+    .filter((line) => line.trim())
+    .join('\n')
+    .trim()
 }
 
 /** Inline option descriptions belong to the parameter, with their field paths. */
@@ -67,8 +70,10 @@ function typescriptParameter(node: Node) {
         if (!field) continue
         const names = [...path, field]
         const previous = child.previousNamedSibling
-        const doc = previous?.type === 'comment' && previous.endPosition.row >= child.startPosition.row - 1
-          ? stripBlockDoc(previous.text) : undefined
+        const doc =
+          previous?.type === 'comment' && previous.endPosition.row >= child.startPosition.row - 1
+            ? stripBlockDoc(previous.text)
+            : undefined
         if (doc) descriptions.push(`- \`${names.join('.')}\`: ${doc.replaceAll('\n', '\n  ')}`)
         const nested = child.childForFieldName('type')
         if (nested) visit(nested, names)
@@ -126,8 +131,7 @@ export const TYPESCRIPT: LanguageSpec = {
   // carrying a page for a shape a caller cannot import. Exporting them is the
   // port's decision to make. A private function is named by nothing.
   isExported: (node) =>
-    node.parent?.type !== 'program' ||
-    (node.type !== 'function_declaration' && node.type !== 'function_signature'),
+    node.parent?.type !== 'program' || (node.type !== 'function_declaration' && node.type !== 'function_signature'),
   fields: { returns: 'return_type' },
   typeText: typescriptType,
   parameter: typescriptParameter,
@@ -140,11 +144,18 @@ function rustDocHidden(node: Node): boolean {
       const attribute = sibling.namedChildren.find((child) => child?.type === 'attribute')
       if (attribute?.namedChildren[0]?.text !== 'doc') continue
       const args = attribute.namedChildren.find((child) => child?.type === 'token_tree')
-      const tokens = args?.children.filter((child) => child &&
-        child.type !== 'line_comment' && child.type !== 'block_comment') ?? []
-      if (tokens.some((token, index) => token?.type === 'identifier' && token.text === 'hidden' &&
-        ['(', ','].includes(tokens[index - 1]?.type ?? '') &&
-        [')', ','].includes(tokens[index + 1]?.type ?? ''))) return true
+      const tokens =
+        args?.children.filter((child) => child && child.type !== 'line_comment' && child.type !== 'block_comment') ?? []
+      if (
+        tokens.some(
+          (token, index) =>
+            token?.type === 'identifier' &&
+            token.text === 'hidden' &&
+            ['(', ','].includes(tokens[index - 1]?.type ?? '') &&
+            [')', ','].includes(tokens[index + 1]?.type ?? ''),
+        )
+      )
+        return true
     } else if (sibling.type !== 'line_comment' && sibling.type !== 'block_comment') break
   }
   return false
@@ -177,13 +188,7 @@ export const RUST: LanguageSpec = {
     // `variant` kind, and a named member of an enum is what a constant is.
     enum_variant: 'constant',
   },
-  transparent: [
-    'declaration_list',
-    'field_declaration_list',
-    'source_file',
-    'mod_item',
-    'enum_variant_list',
-  ],
+  transparent: ['declaration_list', 'field_declaration_list', 'source_file', 'mod_item', 'enum_variant_list'],
   commentTypes: ['line_comment', 'block_comment'],
   attributeTypes: ['attribute_item'],
   // A module compiled only for tests is not API. Rust keeps its unit tests
@@ -211,7 +216,7 @@ export const RUST: LanguageSpec = {
       .replace(/\bdyn\s+/g, '')
       .trim(),
   // Receivers have no name field: splitting `mut self` would name it `mut`.
-  parameter: (node) => node.type === 'self_parameter' ? { name: node.text } : undefined,
+  parameter: (node) => (node.type === 'self_parameter' ? { name: node.text } : undefined),
   // Trait methods and enum variants inherit their owner's visibility; the
   // walker rejects private owners before visiting their members. Impl blocks
   // have no visibility keyword, but inherent methods still require `pub`.
@@ -219,8 +224,11 @@ export const RUST: LanguageSpec = {
   isExported: (node) => {
     if (node.type === 'trait_item' && rustDocHidden(node)) return false
     if (node.type === 'impl_item' || node.type === 'enum_variant') return true
-    if ((node.type === 'function_item' || node.type === 'function_signature_item') &&
-      node.parent?.type === 'declaration_list' && node.parent.parent?.type === 'trait_item') {
+    if (
+      (node.type === 'function_item' || node.type === 'function_signature_item') &&
+      node.parent?.type === 'declaration_list' &&
+      node.parent.parent?.type === 'trait_item'
+    ) {
       return !rustDocHidden(node)
     }
     return node.children.some((c) => c?.type === 'visibility_modifier' && c.text.trim() === 'pub')
@@ -238,12 +246,18 @@ export const GO: LanguageSpec = {
     const_spec: 'constant',
     var_spec: 'attribute',
   },
-  transparent: ['type_declaration', 'const_declaration', 'var_declaration', 'struct_type', 'interface_type', 'field_declaration_list'],
+  transparent: [
+    'type_declaration',
+    'const_declaration',
+    'var_declaration',
+    'struct_type',
+    'interface_type',
+    'field_declaration_list',
+  ],
   commentTypes: ['comment'],
   // godoc has no marker: a `//` comment directly above a declaration is the
   // documentation. `//go:` directives are build metadata and are not.
-  stripDoc: (raw) =>
-    raw.startsWith('//') && !raw.startsWith('//go:') ? raw.replace(/^\/\/\s?/, '') : undefined,
+  stripDoc: (raw) => (raw.startsWith('//') && !raw.startsWith('//go:') ? raw.replace(/^\/\/\s?/, '') : undefined),
   // `func (w Window) Panes()` — the owning type is in the `receiver` field,
   // not in any enclosing node. Pointers and aliases both appear; the type name
   // is what matters, so `*Window` and `Window` resolve to the same owner.
@@ -251,7 +265,12 @@ export const GO: LanguageSpec = {
     if (node.type !== 'method_declaration') return undefined
     const decl = node.childForFieldName('receiver')?.namedChildren[0]
     const type = decl?.childForFieldName('type')?.text
-    return type?.replace(/^[*&]+/, '').replace(/\[.*$/, '').trim() || undefined
+    return (
+      type
+        ?.replace(/^[*&]+/, '')
+        .replace(/\[.*$/, '')
+        .trim() || undefined
+    )
   },
   // `TreeSortIndex` under `TreeSortDefault TreeSortOrder = iota` repeats the
   // spec above it, type included. Without this only the first value of each
@@ -299,9 +318,11 @@ export const JAVA: LanguageSpec = {
       // Keep existing internal records, but do not merge their signatures into
       // an advertised overload set. Interface methods are implicitly public.
       const name = node.childForFieldName('name')?.text
-      return !node.parent?.namedChildren.some((sibling) =>
-        sibling?.type === node.type && sibling.childForFieldName('name')?.text === name &&
-        sibling.children.some((child) => child?.type === 'modifiers' && /\b(public|protected)\b/.test(child.text)),
+      return !node.parent?.namedChildren.some(
+        (sibling) =>
+          sibling?.type === node.type &&
+          sibling.childForFieldName('name')?.text === name &&
+          sibling.children.some((child) => child?.type === 'modifiers' && /\b(public|protected)\b/.test(child.text)),
       )
     }
     return true
@@ -311,8 +332,9 @@ export const JAVA: LanguageSpec = {
 export const CSHARP: LanguageSpec = {
   grammar: 'csharp',
   docDialect: 'xml',
-  positionalProperties: (node) => ['record_declaration', 'record_struct_declaration'].includes(node.type)
-    && Boolean(node.childForFieldName('parameters')),
+  positionalProperties: (node) =>
+    ['record_declaration', 'record_struct_declaration'].includes(node.type) &&
+    Boolean(node.childForFieldName('parameters')),
   containers: {
     class_declaration: 'class',
     interface_declaration: 'interface',

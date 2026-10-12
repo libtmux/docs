@@ -21,15 +21,22 @@ import { PORTS } from './ports'
  * than rendering an empty body.
  */
 export function pickerPaintRules(): string {
-  return '.home-language-icon{display:inline-flex;align-items:center;justify-content:center;flex:none;width:var(--home-launcher-icon-size,1.5rem);height:var(--home-launcher-icon-size,1.5rem)}'
-    + '.home-language-icon img{display:none;width:var(--home-launcher-icon-size,1.5rem);height:var(--home-launcher-icon-size,1.5rem);object-fit:contain}'
-    + 'html[data-theme-mode="light"] .home-language-icon{color-scheme:light}'
-    + 'html[data-theme-mode="dark"] .home-language-icon{color-scheme:dark}'
-    + '[data-home-port-name]{display:none}'
-    + PORTS.map((p) => paintPort(p.slug, 'lm-pkg-install') + paintPort(p.slug, 'lm-agent-prompt') + paintPortManagers(p)
-      + paintHomePort(p.slug)
-      + `html[data-home-selected-port="${p.slug}"] .home-language-icon [data-home-default-icon]{display:none}`
-      + `html[data-home-selected-port="${p.slug}"] .home-language-icon img[data-home-language-icon="${p.slug}"]{display:block}`).join('')
+  return (
+    '.home-language-icon{display:inline-flex;align-items:center;justify-content:center;flex:none;width:var(--home-launcher-icon-size,1.5rem);height:var(--home-launcher-icon-size,1.5rem)}' +
+    '.home-language-icon img{display:none;width:var(--home-launcher-icon-size,1.5rem);height:var(--home-launcher-icon-size,1.5rem);object-fit:contain}' +
+    'html[data-theme-mode="light"] .home-language-icon{color-scheme:light}' +
+    'html[data-theme-mode="dark"] .home-language-icon{color-scheme:dark}' +
+    '[data-home-port-name]{display:none}' +
+    PORTS.map(
+      (p) =>
+        paintPort(p.slug, 'lm-pkg-install') +
+        paintPort(p.slug, 'lm-agent-prompt') +
+        paintPortManagers(p) +
+        paintHomePort(p.slug) +
+        `html[data-home-selected-port="${p.slug}"] .home-language-icon [data-home-default-icon]{display:none}` +
+        `html[data-home-selected-port="${p.slug}"] .home-language-icon img[data-home-language-icon="${p.slug}"]{display:block}`,
+    ).join('')
+  )
 }
 
 /** The homepage follows the head's selection before its launcher module loads. */
@@ -100,9 +107,8 @@ function paintPort(slug: string, family: string): string {
   // see PackageInstall.astro. It shows one with `inherit`, not `visible`: a
   // visible child paints through a hidden ancestor, so during the fonts gate
   // the saved panel painted alone before the rest of the page.
-  const [hide, show] = family === 'lm-pkg-install'
-    ? ['visibility:hidden', 'visibility:inherit']
-    : ['display:none', 'display:block']
+  const [hide, show] =
+    family === 'lm-pkg-install' ? ['visibility:hidden', 'visibility:inherit'] : ['display:none', 'display:block']
   return (
     `${scope} .${family}__panel{${hide}}` +
     `${scope} .${family}__panel[data-port="${slug}"]{${show}}` +

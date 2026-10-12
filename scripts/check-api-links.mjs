@@ -19,13 +19,26 @@
 import { existsSync, globSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { Resolver, parentInventory, decideFilePath, decideMention, isLikelyReference, looksLikeApiMention, notASymbol, notApiReason, proseMentions, readInventory } from '../packages/api-model/src/index.ts'
+import {
+  Resolver,
+  parentInventory,
+  decideFilePath,
+  decideMention,
+  isLikelyReference,
+  looksLikeApiMention,
+  notASymbol,
+  notApiReason,
+  proseMentions,
+  readInventory,
+} from '../packages/api-model/src/index.ts'
 import { decideMcpMention } from '../site/src/lib/mcp-catalog.ts'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const { API_MODEL_PORTS: PORT_DEFS, PORT_BY_SLUG } = await import(`file://${resolve(root, 'site/src/lib/ports.ts')}`)
 const PORTS = PORT_DEFS.map((p) => p.slug)
-const { KNOWN_PORTS, resolvePortBody, resolvePortContent } = await import(`file://${resolve(root, 'site/src/lib/workspace-shared-slots.ts')}`)
+const { KNOWN_PORTS, resolvePortBody, resolvePortContent } = await import(
+  `file://${resolve(root, 'site/src/lib/workspace-shared-slots.ts')}`
+)
 const SHARED = join(root, 'site/src/content/_workspace-shared')
 const CONTENT = join(root, 'site/src/content/docs')
 const started = Date.now()
@@ -42,11 +55,18 @@ if (!Object.keys(models).length) {
 const resolver = new Resolver(Object.values(models))
 for (const port of PORTS) {
   const identity = PORT_BY_SLUG[port]
-  const dependencies = [...(identity.parentLibrary ? [identity.parentLibrary.slug] : []), ...(identity.apiDependencies ?? [])]
-  for (const dependency of dependencies) resolver.addInventory('Library API', '', parentInventory(models[dependency],
-    (symbol) => `/reference/${dependency}/${symbol.slug}/`), [port])
+  const dependencies = [
+    ...(identity.parentLibrary ? [identity.parentLibrary.slug] : []),
+    ...(identity.apiDependencies ?? []),
+  ]
+  for (const dependency of dependencies)
+    resolver.addInventory(
+      'Library API',
+      '',
+      parentInventory(models[dependency], (symbol) => `/reference/${dependency}/${symbol.slug}/`),
+      [port],
+    )
 }
-
 
 /*
  * The same federated inventories the linker loads, scoped the same way.
@@ -58,7 +78,12 @@ for (const port of PORTS) {
  */
 const INVENTORIES = [
   { file: 'python.inv', project: 'Python', baseUrl: 'https://docs.python.org/3/', langs: ['py'] },
-  { file: 'jdk.inv', project: 'Java SE', baseUrl: 'https://docs.oracle.com/en/java/javase/21/docs/api/', langs: ['java', 'kotlin', 'scala'] },
+  {
+    file: 'jdk.inv',
+    project: 'Java SE',
+    baseUrl: 'https://docs.oracle.com/en/java/javase/21/docs/api/',
+    langs: ['java', 'kotlin', 'scala'],
+  },
   { file: 'dom.inv', project: 'MDN', baseUrl: 'https://developer.mozilla.org/', langs: ['ts'] },
   { file: 'julia.inv', project: 'Julia', baseUrl: 'https://docs.julialang.org/en/v1/', langs: ['julia'] },
 ]
@@ -150,7 +175,9 @@ const sharedRaw = files.length ? new Map() : sharedWorkspaceRaw()
 const targets = files.length
   ? files.map((f) => resolve(f))
   : [
-      ...globSync('{topics,guides,concepts,examples,ports}/**/*.{md,mdx}', { cwd: CONTENT }).map((f) => join(CONTENT, f)),
+      ...globSync('{topics,guides,concepts,examples,ports}/**/*.{md,mdx}', { cwd: CONTENT }).map((f) =>
+        join(CONTENT, f),
+      ),
       ...sharedRaw.keys(),
     ]
 
@@ -161,22 +188,34 @@ const missingFiles = []
 for (const file of targets) {
   const raw = sharedRaw.get(file) ?? readFileSync(file, 'utf8')
   const frontmatter = /^---\r?\n([\s\S]*?)\r?\n---/.exec(raw)?.[1] ?? ''
-  const authoredPort = /^port:\s*['"]?([a-z]+)['"]?\s*$/m.exec(frontmatter)?.[1]
-    ?? /^ports\/([^/]+)\//.exec(file.replace(`${CONTENT}/`, ''))?.[1]
+  const authoredPort =
+    /^port:\s*['"]?([a-z]+)['"]?\s*$/m.exec(frontmatter)?.[1] ??
+    /^ports\/([^/]+)\//.exec(file.replace(`${CONTENT}/`, ''))?.[1]
   // Match rehype-api-links: native wrapper guides have no shared API model.
   if (PORT_BY_SLUG[authoredPort]?.referenceKind === 'guide') continue
-  const product = /^product:\s*['"]?(core|workspace|mcp)['"]?\s*$/m.exec(frontmatter)?.[1]
-    ?? /^ports\/[^/]+\/(workspace|mcp)\//.exec(file.replace(`${CONTENT}/`, ''))?.[1]
+  const product =
+    /^product:\s*['"]?(core|workspace|mcp)['"]?\s*$/m.exec(frontmatter)?.[1] ??
+    /^ports\/[^/]+\/(workspace|mcp)\//.exec(file.replace(`${CONTENT}/`, ''))?.[1]
   const selected = resolvePortContent(raw, authoredPort)
-  for (const { text, port: ctxPort, before, line, linked } of proseMentions(selected.body, PORT_BY_LABEL, selected.portAt)) {
-    if (linked) { tally.alreadyLinked++; continue }
+  for (const { text, port: ctxPort, before, line, linked } of proseMentions(
+    selected.body,
+    PORT_BY_LABEL,
+    selected.portAt,
+  )) {
+    if (linked) {
+      tally.alreadyLinked++
+      continue
+    }
     const pagePort = authoredPort ?? ctxPort
 
     const protocol = decideMcpMention(text, { pagePort, product, before })
     if (protocol) {
       if (protocol.kind === 'link') tally.willLink++
       else if (protocol.kind === 'skip') tally.notASymbol++
-      else { tally.unresolved++; unresolved.push({ file, line, text, why: protocol.why }) }
+      else {
+        tally.unresolved++
+        unresolved.push({ file, line, text, why: protocol.why })
+      }
       continue
     }
 
@@ -184,25 +223,40 @@ for (const file of targets) {
       const d = decideFilePath(text, { before, pagePort }, trees)
       if (d.kind === 'link') tally.file++
       else if (d.kind === 'skip') tally.notASymbol++
-      else { tally.fileMissing++; missingFiles.push({ file, line, text, why: d.why }) }
+      else {
+        tally.fileMissing++
+        missingFiles.push({ file, line, text, why: d.why })
+      }
       continue
     }
     // The same two filters the linker applies, in the same order. This lint
     // exists to agree with the build; applying one fewer of them made it
     // report 124 where the build reported 61, which is the disagreement it
     // was written to prevent.
-    if (notASymbol(text) || !looksLikeApiMention(text)) { tally.notASymbol++; continue }
+    if (notASymbol(text) || !looksLikeApiMention(text)) {
+      tally.notASymbol++
+      continue
+    }
 
-
-    const decisions = (pagePort ? [pagePort] : PORTS)
-      .map((port) => decideMention(text, { pagePort: port, product, before }, resolver, models))
+    const decisions = (pagePort ? [pagePort] : PORTS).map((port) =>
+      decideMention(text, { pagePort: port, product, before }, resolver, models),
+    )
     // `notApiReason` gates *reporting*, not linking — exactly as the plugin
     // does. A span it names still gets offered to the resolver, because a
     // `TMUX_TMPDIR` that happens to resolve is a link worth having; it simply
     // is not a dangling reference when it does not.
     if (decisions.some((decision) => decision.kind === 'link')) tally.willLink++
-    else if (decisions.some((decision) => decision.kind === 'skip') || !isLikelyReference(text) || notApiReason(text) || EXCEPTIONS.has(text)) tally.notASymbol++
-    else { tally.unresolved++; unresolved.push({ file, line, text }) }
+    else if (
+      decisions.some((decision) => decision.kind === 'skip') ||
+      !isLikelyReference(text) ||
+      notApiReason(text) ||
+      EXCEPTIONS.has(text)
+    )
+      tally.notASymbol++
+    else {
+      tally.unresolved++
+      unresolved.push({ file, line, text })
+    }
   }
 }
 

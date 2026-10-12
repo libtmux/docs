@@ -13,11 +13,22 @@ const files = [
 const manifest = (): LuaExampleManifest => ({
   schema: 1,
   setup: { lua: '5.5.1', luv: '1.52.1-0', launcher: 'examples/api/run.sh' },
-  examples: [{ id: 'connect', symbols: ['libtmux.Runtime:connect'], file: 'examples/api/connect.lua',
-    description: 'Connect to a tmux daemon.', stdout: 'connected\n' }],
+  examples: [
+    {
+      id: 'connect',
+      symbols: ['libtmux.Runtime:connect'],
+      file: 'examples/api/connect.lua',
+      description: 'Connect to a tmux daemon.',
+      stdout: 'connected\n',
+    },
+  ],
 })
 const target = (): ApiSymbol => ({
-  id: 'libtmux.Runtime:connect', name: 'connect', kind: 'method', modifiers: [], signatures: [],
+  id: 'libtmux.Runtime:connect',
+  name: 'connect',
+  kind: 'method',
+  modifiers: [],
+  signatures: [],
   source: { file: 'lua/libtmux/_internal/runtime.lua', revision: source.revision },
   doc: { summary: 'Existing native documentation.' },
 })
@@ -31,8 +42,12 @@ describe('complete Lua API examples from native artifacts', () => {
     expect(examples).toHaveLength(4)
     expect(examples[1].code).toBe(launcher)
     expect(examples[2].code).toBe(program)
-    expect(examples[1].sourceUrl).toBe(`https://github.com/${source.repository}/blob/${source.revision}/examples/api/run.sh`)
-    expect(examples[2].sourceUrl).toBe(`https://github.com/${source.repository}/blob/${source.revision}/examples/api/connect.lua`)
+    expect(examples[1].sourceUrl).toBe(
+      `https://github.com/${source.repository}/blob/${source.revision}/examples/api/run.sh`,
+    )
+    expect(examples[2].sourceUrl).toBe(
+      `https://github.com/${source.repository}/blob/${source.revision}/examples/api/connect.lua`,
+    )
     expect(examples[0].code).toContain(`git -C libtmux-source checkout ${source.revision}`)
     expect(examples[0].code).toContain('luarocks --tree ./rocks install luv 1.52.1-0')
     expect(examples[3].code).toBe('$ eval "$(luarocks --tree ./rocks path)" &&\n  sh run.sh connect.lua\n')
@@ -47,8 +62,11 @@ describe('complete Lua API examples from native artifacts', () => {
   })
 
   it('rejects missing or ambiguous full-file payloads and changed line endings', () => {
-    for (const invalid of [files.slice(0, 1), [...files, files[0]],
-      files.map((file) => ({ ...file, content: file.content.replaceAll('\n', '\r\n') }))]) {
+    for (const invalid of [
+      files.slice(0, 1),
+      [...files, files[0]],
+      files.map((file) => ({ ...file, content: file.content.replaceAll('\n', '\r\n') })),
+    ]) {
       expect(() => attachCompleteLuaExamples([target()], manifest(), invalid, source)).toThrow()
     }
   })
@@ -62,20 +80,34 @@ describe('complete Lua API examples from native artifacts', () => {
 
   it('rejects unsafe paths and absent runtime or output contracts', () => {
     for (const mutate of [
-      (value: LuaExampleManifest) => { value.setup.launcher = '../run.sh' },
-      (value: LuaExampleManifest) => { value.examples[0].file = '../../connect.lua' },
-      (value: LuaExampleManifest) => { value.setup.lua = 'latest' },
-      (value: LuaExampleManifest) => { value.setup.luv = 'latest' },
-      (value: LuaExampleManifest) => { value.examples[0].stdout = '' },
-      (value: LuaExampleManifest) => { value.examples[0].description = '' },
+      (value: LuaExampleManifest) => {
+        value.setup.launcher = '../run.sh'
+      },
+      (value: LuaExampleManifest) => {
+        value.examples[0].file = '../../connect.lua'
+      },
+      (value: LuaExampleManifest) => {
+        value.setup.lua = 'latest'
+      },
+      (value: LuaExampleManifest) => {
+        value.setup.luv = 'latest'
+      },
+      (value: LuaExampleManifest) => {
+        value.examples[0].stdout = ''
+      },
+      (value: LuaExampleManifest) => {
+        value.examples[0].description = ''
+      },
     ]) {
       const value = manifest()
       mutate(value)
       expect(() => attachCompleteLuaExamples([target()], value, files, source)).toThrow()
     }
-    expect(() => attachCompleteLuaExamples([target()], manifest(), files, { ...source, revision: 'main' }))
-      .toThrow(/full revision/)
-    expect(() => attachCompleteLuaExamples([target()], manifest(), files, { ...source, repository: 'other/repo' }))
-      .toThrow(/Lua repository/)
+    expect(() => attachCompleteLuaExamples([target()], manifest(), files, { ...source, revision: 'main' })).toThrow(
+      /full revision/,
+    )
+    expect(() =>
+      attachCompleteLuaExamples([target()], manifest(), files, { ...source, repository: 'other/repo' }),
+    ).toThrow(/Lua repository/)
   })
 })

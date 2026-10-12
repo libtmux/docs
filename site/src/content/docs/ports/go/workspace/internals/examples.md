@@ -26,8 +26,10 @@ $ mkdir go-workspace-example && cd go-workspace-example
 
 ```console
 $ git init libtmux-source && \
-    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-go.git && \
-    git -C libtmux-source fetch --depth=1 origin bb06e26e116e941813ca40bf45e7e3a47d38f52a && \
+    git -C libtmux-source remote add origin \
+      https://github.com/libtmux/libtmux-go.git && \
+    git -C libtmux-source fetch --depth=1 origin \
+      bb06e26e116e941813ca40bf45e7e3a47d38f52a && \
     git -C libtmux-source checkout --detach FETCH_HEAD
 ```
 
@@ -119,10 +121,18 @@ func run() (err error) {
 		return errors.Join(err, os.RemoveAll(directory))
 	}
 	defer func() {
-		cleanup, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		cleanup, cancel := context.WithTimeout(
+			context.Background(),
+			5*time.Second,
+		)
 		defer cancel()
 		if cleanupErr := server.Kill(cleanup); cleanupErr != nil {
-			err = errors.Join(err, fmt.Errorf("stop private server at %s: %w", socket, cleanupErr))
+			stopErr := fmt.Errorf(
+				"stop private server at %s: %w",
+				socket,
+				cleanupErr,
+			)
+			err = errors.Join(err, stopErr)
 			return
 		}
 		err = errors.Join(err, os.RemoveAll(directory))
@@ -142,7 +152,11 @@ func run() (err error) {
 		return err
 	}
 	if len(windows) != 2 || len(panes) != 3 {
-		return fmt.Errorf("expected two windows and three panes, got %d and %d", len(windows), len(panes))
+		return fmt.Errorf(
+			"expected two windows and three panes, got %d and %d",
+			len(windows),
+			len(panes),
+		)
 	}
 	fmt.Printf("built: %d windows\npanes: %d\n", len(windows), len(panes))
 	return nil

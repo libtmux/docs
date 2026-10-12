@@ -40,7 +40,7 @@
  *
  * Vanilla JS, no deps.
  */
-(function () {
+;(function () {
   'use strict'
 
   var STORAGE_PREFIX = 'libtmux-docs.mcp-install'
@@ -450,7 +450,10 @@
   function announceCopyResult(button, copied) {
     var widget = button.closest('.lm-mcp-install')
     var status = widget && widget.querySelector('[data-copy-status]')
-    if (status) status.replaceChildren(document.createTextNode(copied ? 'Copied to clipboard.' : 'Copy failed. Select and copy the text manually.'))
+    if (status)
+      status.replaceChildren(
+        document.createTextNode(copied ? 'Copied to clipboard.' : 'Copy failed. Select and copy the text manually.'),
+      )
     var original = button.getAttribute('data-copy-label') || button.textContent
     button.setAttribute('data-copy-label', original)
     button.textContent = copied ? 'Copied' : 'Copy failed'
