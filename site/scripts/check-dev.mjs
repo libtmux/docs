@@ -601,8 +601,8 @@ try {
   } else if (apiAnchorsOnly) {
     await retryReload(() => checkApiAnchorArrival(browser, base))
   } else {
-    // Keep one auxiliary check beside the main page walk. Starting every
-    // matrix at once saturates the compiler and times out unrelated pages.
+    // Timed page loads share Vite's compiler. Finish each browser matrix
+    // before starting the next, including the main page walk below.
     let previous = Promise.resolve()
     const schedule = (check) => {
       const pending = previous.then(check).then(() => null, (error) => error)
@@ -635,6 +635,7 @@ try {
     apiNavigationPage.setDefaultTimeout(10000)
     const apiNavigation = schedule(() => retryReload(() => checkApiNavigation(apiNavigationPage, base)).finally(() => apiNavigationPage.close()))
     const apiAnchors = schedule(() => retryReload(() => checkApiAnchorArrival(browser, base)))
+    await apiAnchors
     const paths = ['tmux/concepts/server-session-window-pane', 'tmux/examples/attach-and-send-keys', 'mcp/tools', 'ts/latest/workspace/reference/builder-applyworkspace',
       'ts/latest/workspace/internals/guides', 'py/stable/workspace/guides',
       'ts/latest/mcp/tools', 'csharp/latest/mcp/tools/capture_pane']
