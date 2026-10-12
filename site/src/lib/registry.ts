@@ -14,6 +14,7 @@
  */
 import data from '../data/registry.json'
 import { installCommand, releaseWording, type InstallCommand, type InstallForm, type Port, type RegistryData, type RegistryEntry } from './ports'
+import { releaseTag } from './versions'
 import { portParts, type PortParts, type PromptContext } from './prompts'
 
 export const REGISTRY = data as RegistryData
@@ -35,12 +36,33 @@ export function registryFor(port: Port | string): RegistryEntry {
   return entry
 }
 
-/** Resolve package snippets against the registry snapshot used by this build. */
-export function installsFor(port: Port): readonly InstallCommand[] {
-  if (!port.installs.some((command) => command.code.includes('{version}'))) return port.installs
+/** Select a NuGet version without substituting another port's build identity. */
+export function nugetInstallSelection(
+  port: Port,
+  sources: readonly { product: string; package: string; version?: string }[] = [],
+  env: Record<string, string | undefined> = {},
+): { version?: string; pin?: boolean } {
+  if (port.slug !== 'csharp' && port.slug !== 'fsharp') return {}
+  const selected = env.LIBTMUX_DOCS_PORT === port.slug
+    ? releaseTag(env.LIBTMUX_DOCS_VERSION ?? '', port) : null
+  return {
+    version: selected?.replace(/^v/, '') ?? sources.find((source) => source.product === 'core' && source.package === port.packageName)?.version,
+    pin: selected !== null,
+  }
+}
+
+/** Resolve package snippets against the selected docs source or registry snapshot. */
+export function installsFor(port: Port, selection: { version?: string; pin?: boolean } = {}): readonly InstallCommand[] {
+  if (!port.installs.some((command) => command.code.includes('{version}') || command.additionalBlocks?.some((block) => block.code.includes('{version}')))) return port.installs
   const entry = registryFor(port)
-  if (!entry.version) return [{ label: 'Source', ...installCommand(port, entry) }]
-  return port.installs.map((command) => ({ ...command, code: command.code.replaceAll('{version}', entry.version!) }))
+  const version = selection.version ?? entry.version
+  const fill = (code: string) => code.replaceAll('{version}', version!)
+  if (!version) return [{ label: 'Source', ...installCommand(port, entry) }]
+  return port.installs.map((command) => ({
+    ...command,
+    code: fill(selection.pin && command.versionedCode ? command.versionedCode : command.code),
+    additionalBlocks: command.additionalBlocks?.map((block) => ({ ...block, code: fill(block.code) })),
+  }))
 }
 
 /** The install command that resolves today, for a port. */

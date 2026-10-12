@@ -70,7 +70,7 @@ function paintManagers(managerScope: string, count: number): string {
   if (count < 2) return ''
   return Array.from({ length: count }, (_, i) => i)
     .map((i) => {
-      const scope = `html[data-pkg-manager-${managerScope}="${i}"] .lm-pkg-install__panel[data-manager-scope="${managerScope}"]`
+      const scope = `html[data-pkg-manager-${managerScope}="${i}"] .lm-pkg-install__panel[data-manager-scope="${managerScope}"]:has(> .lm-pkg-install__cmd[data-manager="${i}"])`
       return (
         `${scope} .lm-pkg-install__cmd{display:none}` +
         `${scope} .lm-pkg-install__cmd[data-manager="${i}"]{display:block}` +

@@ -37,6 +37,19 @@
     --lm-pkg-install-scroll-hover: rgb(100 116 139);
   }
 
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme-mode]):not([data-theme="light"]) .lm-pkg-install {
+      --lm-pkg-install-bg-tabs: #1e293b; /* slate-800 */
+      --lm-pkg-install-border: #1e293b;
+      --lm-pkg-install-fg-secondary: #94a3b8; /* slate-400 */
+      --lm-pkg-install-fg-muted: #94a3b8;
+      --lm-pkg-install-hover: rgb(255 255 255 / 6%);
+      --lm-pkg-install-code-bg: #1e293b;
+      --lm-pkg-install-scroll: rgb(71 85 105);
+      --lm-pkg-install-scroll-hover: rgb(100 116 139);
+    }
+  }
+
   .lm-pkg-install__tabs {
     display: flex;
     flex-wrap: wrap;
@@ -393,6 +406,13 @@
   html[data-theme-mode='dark'] .lm-pkg-install__code .shiki span,
   html[data-theme-mode='dark'] .lm-pkg-install__code span {
     color: var(--shiki-dark);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme-mode]):not([data-theme="light"]) .lm-pkg-install__code .shiki span,
+    html:not([data-theme-mode]):not([data-theme="light"]) .lm-pkg-install__code span {
+      color: var(--shiki-dark);
+    }
   }
 
   /* In a gutter, level with the first line, with space on both sides: a line

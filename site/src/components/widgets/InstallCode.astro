@@ -4,10 +4,11 @@ interface Props {
   html: string
   language: string
   layout?: 'gutter' | 'overlay'
+  label?: string
 }
-const { html, language, layout = 'gutter' } = Astro.props
+const { html, language, layout = 'gutter', label } = Astro.props
 ---
-<div class={`lm-pkg-install__code lm-pkg-install__code--${layout}`} data-language={language} data-install-code><pre><code set:html={html} /></pre><button type="button" class="lm-pkg-install__copy" data-action="copy" aria-label="Copy to clipboard">Copy</button></div>
+<div class={`lm-pkg-install__code lm-pkg-install__code--${layout}`} data-language={language} data-install-code><pre><code set:html={html} /></pre><button type="button" class="lm-pkg-install__copy" data-action="copy" aria-label={label ? `Copy ${label}` : 'Copy to clipboard'}>Copy</button></div>
 <script>
   function copyPanelCode(button: HTMLElement) {
     const wrap = button.closest('.lm-pkg-install__code')

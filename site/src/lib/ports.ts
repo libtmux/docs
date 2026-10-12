@@ -73,13 +73,22 @@ export type ProductAvailability = 'available' | 'unpublished'
  * Maven, SwiftPM and CMake each need the release named, so those snippets
  * carry one, and say where it came from.
  */
-export interface InstallCommand {
-  /** Tab label — the tool, not the language. */
-  label: string
+export interface InstallBlock {
   /** Language for highlighting. `console` commands are shown with a `$`. */
   lang: string
   /** The command or file fragment, without a shell prompt. */
   code: string
+  /** Destination displayed above a separately copied file fragment. */
+  filename?: string
+}
+
+export interface InstallCommand extends InstallBlock {
+  /** Tab label — the tool, not the language. */
+  label: string
+  /** Extra fragments required by the same installation method. */
+  additionalBlocks?: readonly InstallBlock[]
+  /** Exact-version form for a selected historical documentation release. */
+  versionedCode?: string
   /** A caveat shown under the block. */
   note?: string
   /** How this command changes when the reader turns on a dependency cooldown. */
@@ -104,6 +113,49 @@ export interface InstallCooldown {
   bypass?: string
   /** Why a mode this command cannot express runs without one. */
   note?: string
+}
+
+/** NuGet library forms shared by C# and F#, with each package's own version. */
+function nugetInstalls(packageName: string, pinCli = false): readonly InstallCommand[] {
+  return [
+    {
+      label: '.NET CLI', lang: 'console',
+      code: `dotnet package add ${packageName} ${pinCli ? '--version {version}' : '--prerelease'}`,
+      versionedCode: `dotnet package add ${packageName} --version {version}`,
+      note: '.NET 10 SDK: run in your project directory. On .NET 8 or 9, use dotnet add package with the same arguments.',
+    },
+    {
+      label: 'PMC', lang: 'powershell', code: `NuGet\\Install-Package ${packageName} -Version {version}`,
+      note: 'Run in Visual Studio on Windows, in Tools > NuGet Package Manager > Package Manager Console. Choose the target project in that console.',
+    },
+    {
+      label: 'PackageReference', lang: 'xml',
+      code: `<PackageReference Include="${packageName}" Version="{version}" />`,
+      note: 'Add this inside an ItemGroup in your .csproj or .fsproj, then run dotnet restore. For central version management, use the CPM tab.',
+    },
+    {
+      label: 'CPM', lang: 'xml', filename: 'Directory.Packages.props',
+      code: `<Project>\n  <PropertyGroup>\n    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>\n  </PropertyGroup>\n  <ItemGroup>\n    <PackageVersion Include="${packageName}" Version="{version}" />\n  </ItemGroup>\n</Project>`,
+      additionalBlocks: [{ filename: 'Project file (.csproj or .fsproj)', lang: 'xml', code: `<PackageReference Include="${packageName}" />` }],
+      note: 'Save Directory.Packages.props at the solution root, or merge these settings into the existing file. Add the versionless reference inside the project’s ItemGroup, then run dotnet restore.',
+    },
+    {
+      label: 'Paket CLI', lang: 'console', code: `paket add ${packageName} --version {version} --interactive`,
+      note: 'Requires Paket and a solution initialized with paket init. The interactive prompt selects the projects that should reference the package.',
+    },
+    {
+      label: 'Script & Interactive', lang: 'fsharp', code: `#r "nuget: ${packageName}, {version}"`,
+      note: 'Use in an F# .fsx script, dotnet fsi, or a Polyglot Notebook with NuGet support, on .NET 8 or later. This is not a directive for an ordinary compiled project.',
+    },
+    {
+      label: 'File-Based Apps', lang: 'csharp', code: `#:package ${packageName}@{version}`,
+      note: 'C# file-based apps require the .NET 10 SDK. Place this at the top of a .cs file, before code, then run dotnet run app.cs. F# scripts use the Script & Interactive tab.',
+    },
+    {
+      label: 'Cake', lang: 'csharp', code: `#addin nuget:?package=${packageName}&version={version}&loaddependencies=true`,
+      note: 'Use Cake.Tool 6 or later for a .cake script on .NET 8 or later, with Cake’s in-process NuGet client enabled. This loads the library and its dependencies; it has no Cake task aliases or executable tool. Cake Frosting projects use PackageReference.',
+    },
+  ]
 }
 
 const { days: DAYS, minutes: MINUTES, duration: DURATION } = COOLDOWN_SLOTS
@@ -955,14 +1007,7 @@ const CORE_PORTS: readonly Port[] = [
     tagGrammar: 'semver',
     renderer: 'astro',
     generator: 'docfx metadata (--outputFormat markdown)',
-    installs: [
-      {
-        label: 'dotnet',
-        lang: 'console',
-        code: 'dotnet package add LibTmux --prerelease',
-        note: '--prerelease is required: every release so far carries an -alpha tag, and NuGet skips those unless asked.',
-      },
-    ],
+    installs: nugetInstalls('LibTmux'),
     registry: { name: 'NuGet', url: 'https://www.nuget.org/packages/LibTmux', icon: 'nuget' },
     initProject: { code: 'dotnet new console', lang: 'console' },
     installForms: {
@@ -1198,7 +1243,7 @@ const WRAPPER_LIBRARIES: readonly WrapperLibrary[] = [
     sourceReferenceDirectory: 'docs/fsharp-reference/reference',
     packageName: 'LibTmux.FSharp',
     registry: { name: 'NuGet', url: 'https://www.nuget.org/packages/LibTmux.FSharp', icon: 'nuget' },
-    installs: [{ label: 'dotnet', lang: 'console', code: 'dotnet package add LibTmux.FSharp --version {version}' }],
+    installs: nugetInstalls('LibTmux.FSharp', true),
     initProject: { code: 'dotnet new console --language F#', lang: 'console' },
     installForms: {
       stable: { code: 'dotnet package add LibTmux.FSharp', lang: 'console' },
