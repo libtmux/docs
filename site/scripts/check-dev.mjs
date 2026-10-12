@@ -175,7 +175,7 @@ async function checkSignatureLayouts(browser, base) {
           for (const declaration of model.signatures) assert(visibleText.includes(clean(declaration.raw)),
             `${port}: native declaration survives at ${width}px`)
         } else {
-          assert.deepEqual(await signature.locator('.sig-param > .n').allTextContents(),
+          assert.deepEqual(await signature.locator('.sig-param > :is(.n, .api-parameter-name)').allTextContents(),
             model.signatures.flatMap((declaration) => declaration.params.map((param) => param.name)),
             `${port}: all parameters survive at ${width}px`)
           assert.deepEqual((await signature.locator('.sig-return-typehint').allTextContents()).map(clean),
@@ -318,6 +318,9 @@ async function checkKeywordHelp(browser, base) {
           assert.equal(after.height, before.height, 'Keyword help does not change the signature height')
           const docs = panel.getByRole('link', { name: 'Language documentation' })
           assert.equal(await docs.getAttribute('href'), 'https://kotlinlang.org/docs/coroutines-basics.html#suspending-functions')
+          const close = panel.getByRole('button', { name: 'Close preview', exact: true })
+          await page.keyboard.press('Tab')
+          assert(await close.evaluate((element) => element === document.activeElement), 'Tab reaches the close control first')
           await page.keyboard.press('Tab')
           assert(await docs.evaluate((element) => element === document.activeElement), 'Tab reaches the documentation link')
           await page.keyboard.press('Escape')
@@ -334,7 +337,7 @@ async function checkKeywordHelp(browser, base) {
           await page.setViewportSize({ width, height: 900 })
           await trigger.click()
           await panel.waitFor({ state: 'visible' })
-          await panel.getByRole('button', { name: 'Close', exact: true }).click()
+          await close.click()
           await panel.waitFor({ state: 'hidden' })
           if (javaScriptEnabled) {
             await page.mouse.move(0, 0)
@@ -420,16 +423,10 @@ async function checkReferenceAndHeroes(browser, base) {
     const qualified = page.locator('.api-qualified-name')
     const fullName = 'io.github.libtmux.kotlin.Server.liveState'
     const namespace = qualified.locator('.api-qualified-namespace')
-    assert.equal(await namespace.innerText(), 'i.g.l.kotlin')
-    assert.equal(await namespace.getAttribute('title'), 'io.github.libtmux.kotlin')
-    const expand = qualified.getByRole('button', { name: 'Show full name', exact: true })
-    await expand.focus()
-    await page.keyboard.press('Enter')
     assert.equal(await namespace.innerText(), 'io.github.libtmux.kotlin')
-    assert.equal(await qualified.locator('[data-api-expand-name]').getAttribute('aria-expanded'), 'true')
-    await page.keyboard.press('Enter')
-    assert.equal(await namespace.innerText(), 'i.g.l.kotlin')
-    assert.equal(await expand.getAttribute('aria-expanded'), 'false')
+    assert.equal(await namespace.getAttribute('title'), 'io.github.libtmux.kotlin')
+    assert.equal(await qualified.locator('[data-api-expand-name]').count(), 0,
+      'Ordinary package names remain fully visible without an expansion control')
     for (const reject of [false, true]) {
       await page.evaluate((reject) => {
         Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
@@ -508,9 +505,9 @@ async function checkReferenceAndHeroes(browser, base) {
     ]) {
       await page.goto(`${base}/java/latest/reference/io-github-libtmux-${slug}/`)
       assert.equal(await page.title(), `${qualifiedName} | libtmux-java`)
-      assert.equal(await page.locator('.api-qualified-namespace').innerText(), 'i.g.libtmux')
-      await page.getByRole('button', { name: 'Show full name', exact: true }).click()
       assert.equal(await page.locator('.api-qualified-namespace').innerText(), 'io.github.libtmux')
+      assert.equal(await page.locator('[data-api-expand-name]').count(), 0,
+        'Ordinary Java package names remain fully visible without an expansion control')
       assert.equal(await page.locator('[data-api-copy-name]').getAttribute('data-api-copy-name'), qualifiedName)
       const legacyId = qualifiedName.replace('libtmux.Server', 'libtmux.Server.Server')
       assert(await page.locator(`[id="${legacyId}"]`).evaluate((element) => element.matches('dt.gp-sphinx-api-header')),
@@ -547,8 +544,10 @@ async function checkReferenceAndHeroes(browser, base) {
     }, 'Java manifest records source identity alongside its stable declaration URL')
     await page.goto(`${base}/kotlin/latest/reference/io-github-libtmux-kotlin-server/`)
     const javaEquivalent = page.locator('.api-elsewhere a[href$="/java/latest/reference/io-github-libtmux-server-server/"]')
-    assert.equal(await javaEquivalent.textContent().then((text) => text.trim()), 'io.github.libtmux.Server',
+    assert.equal(await javaEquivalent.locator(':scope > code').textContent(), 'io.github.libtmux.Server',
       'Equivalent Java API labels use the target source identity while retaining its stable URL')
+    assert.equal(await javaEquivalent.locator(':scope > .api-badge--kind-class[aria-hidden="true"]').textContent(), 'C',
+      'The decorative kind badge remains separate from the exact source name')
     console.log('Java names: source package and exact qualified names render without changing declaration anchors')
   } finally {
     await page.close()
@@ -703,7 +702,13 @@ try {
         assert.equal(await python.locator('[data-picker-home]').getAttribute('aria-label'), 'Go to Python Workspace Manager home')
       }
       if (path === 'csharp/latest/mcp/tools/capture_pane') {
-        assert.equal(await portLinks.count(), 8)
+        const capturePorts = ['py', 'julia', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift']
+        assert.deepEqual((await portLinks.evaluateAll((links) => links.map((link) => ({
+          port: link.dataset.port, href: link.getAttribute('href'),
+        })))).sort((a, b) => a.port.localeCompare(b.port)),
+        capturePorts.map((port) => ({
+          port, href: `/en/${port}/${port === 'py' ? 'stable' : 'latest'}/mcp/tools/capture_pane/`,
+        })).sort((a, b) => a.port.localeCompare(b.port)))
         assert.equal(await switcher.locator('a[aria-current="page"]').getAttribute('href'), `/en/${path}/`)
       }
       if (isReference) {

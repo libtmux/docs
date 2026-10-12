@@ -57,8 +57,8 @@ export async function checkReferencePreferences(browser, base) {
     await assertFirstFrame(false)
     await page.waitForFunction(() => window.__docsPageLoaded)
     // A real declaration link uses the client router, without replacing Window.
-    const linked = page.locator('.api-overview a[href*="/java/latest/reference/"]').first()
-    const target = await linked.getAttribute('href')
+    const target = `${new URL(base).pathname}/java/latest/reference/io-github-libtmux-exception-targetgoneexception-targetgoneexception/`
+    const linked = page.locator(`.api-overview a[href="${target}"]`).first()
     await linked.click()
     await page.waitForURL(new URL(target, base).href)
     await page.waitForFunction(() => window.__sourceFrames.length === 2)
