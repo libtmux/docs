@@ -21,6 +21,7 @@ import { rehypeApiLinks } from './src/plugins/rehype-api-links'
 import { rehypeRowAnchors } from './src/plugins/rehype-row-anchors'
 import { PORT_BY_SLUG, PORTS } from './src/lib/ports.ts'
 import { tmuxProsePath, workspaceRedirectPath } from './src/lib/docs-paths.ts'
+import { SOURCE_GUIDE_PORTS, sourceGuidesFor, sourceGuideRedirectsFor } from './src/lib/port-documentation.ts'
 import { KNOWN_PORTS } from './src/lib/workspace-shared-slots.ts'
 import { isLegacyTmuxManualPath } from './src/lib/tmux-manual-data.ts'
 
@@ -103,6 +104,16 @@ const isWorkspaceRedirect = (page: string): boolean => {
   return Boolean(published && workspaceRedirectPath(match![2], published))
 }
 
+const sourceGuideAliases = new Map(SOURCE_GUIDE_PORTS.map((port) => [port, new Set([
+  ...sourceGuidesFor(port).flatMap((guide) => guide.aliases),
+  ...sourceGuideRedirectsFor(port).map((redirect) => redirect.path),
+])]))
+
+const isSourceGuideRedirect = (page: string): boolean => {
+  const [, port, , ...route] = new URL(page).pathname.split('/').filter(Boolean)
+  return sourceGuideAliases.get(port)?.has(route.join('/')) ?? false
+}
+
 /** `/<locale>/<port>/` itself: a `noindex` redirect, not the tree beneath it. */
 const isPortRoot = (page: string): boolean => {
   const segments = new URL(page).pathname.replace(/^\/+|\/+$/g, '').split('/')
@@ -134,7 +145,7 @@ export default defineConfig({
           sitemap({
             filter: (page) =>
               !page.includes('/pr-') && !page.includes('/demo') && !isPlaceholder(page) &&
-              !isWorkspaceRedirect(page) && !isPortRoot(page) &&
+              !isWorkspaceRedirect(page) && !isSourceGuideRedirect(page) && !isPortRoot(page) &&
               !isLegacyTmuxManualPath(new URL(page).pathname) &&
               !/\/tmux\/(?!latest\/)[^/]+\/(?:manual|reference)\//.test(new URL(page).pathname),
           }),

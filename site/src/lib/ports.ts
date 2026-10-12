@@ -1304,18 +1304,20 @@ export function productInDevelopment(port: Port, product: DocProduct): boolean {
 
 /** Returns the in-development workspace notice; released or unavailable CLIs have none. */
 export function workspaceOverviewNotice(port: Port): { title: string; body: string } | undefined {
+  if (!port.workspaceCli) return undefined
   const title = `Workspace Manager for ${port.name} is in development.`
+  const command = port.workspaceCli.split(/\s+/)[0]
   if (port.workspaceCliAvailability === 'published') {
     return {
       title,
-      body: `The \`tmux-workspace\` CLI is published to ${port.registry?.name ?? 'the package registry'} `
+      body: `The \`${command}\` CLI is published to ${port.registry?.name ?? 'the package registry'} `
         + 'as a prerelease. Pin its version when automation depends on its output.',
     }
   }
   if (port.workspaceCliAvailability !== 'local') return undefined
   return {
     title,
-    body: 'Build `tmux-workspace` from the source revision in the installation guide. '
+    body: `Build \`${command}\` from the source revision in the installation guide. `
       + 'Its CLI and workspace library have separate installation and configuration contracts.',
   }
 }
