@@ -118,7 +118,8 @@ const summaries = new Map(await Promise.all(entries.map(async (entry) => [entry.
       currentBucket={currentBucket} currentIndex={object ? undefined : section} ownerId={object?.id}
       members={[]} withMembers={new Set()} currentPath={Astro.url.pathname} version={navigation.version}
       indexLabel="" treeLabel={`${info.name} MCP reference`} searchLabel="Find an MCP object" searchPlaceholder="Find tool, prompt, resource"
-      filters={[{ id: 'all', label: 'All' }, ...Object.entries(MCP_SECTIONS).map(([id, label]) => ({ id, label }))]} />
+      filters={[{ id: 'all', label: 'All' }, ...Object.entries(MCP_SECTIONS).map(([id, label]) => ({ id, label,
+        disabled: !mcpObjects(port).some((entry) => entry.section === id) }))]} />
     <div class="api-reference-content min-w-0 px-4 py-6 lg:px-6">
       <PageToolbar breadcrumbs={breadcrumbs} />
       <header id={object ? 'api-overview' : section} class:list={[object && 'api-reference-heading']}>

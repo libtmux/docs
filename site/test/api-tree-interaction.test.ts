@@ -282,3 +282,25 @@ it('keeps terminal, empty-owner and legacy members as ordered leaves', async () 
     expect(leaf.querySelector('[role="group"]')).toBeNull()
   }
 })
+
+
+it('keeps empty protocol filters disabled when search initializes and after a page swap', async () => {
+  const n = await navigation({ search: true })
+  const empty = win.document.createElement('button')
+  empty.dataset.apiSearchKind = 'prompts'
+  empty.setAttribute('data-api-search-empty', '')
+  empty.disabled = true
+  win.document.querySelector('.api-nav')!.prepend(empty)
+  const markup = win.document.body.innerHTML
+  for (const swap of [false, true]) {
+    if (swap) win.document.body.innerHTML = markup
+    n.initApiTree()
+    const unavailable = win.document.querySelector<HTMLButtonElement>('[data-api-search-kind="prompts"]')!
+    const all = win.document.querySelector<HTMLButtonElement>('[data-api-search-kind="all"]')!
+    expect(unavailable.disabled).toBe(true)
+    expect(all.disabled).toBe(false)
+    unavailable.click()
+    expect(n.fetch).not.toHaveBeenCalled()
+    expect(win.document.querySelector('[data-api-search-results]')!.hasAttribute('hidden')).toBe(true)
+  }
+})

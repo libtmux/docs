@@ -48,7 +48,7 @@ interface Props {
   treeLabel?: string
   searchLabel?: string
   searchPlaceholder?: string
-  filters?: { id: string; label: string }[]
+  filters?: { id: string; label: string; disabled?: boolean }[]
   currentIndex?: string
   glossaryHref?: string
   glossaryLabel?: string
@@ -153,7 +153,7 @@ if (!mark(nodes) && nodes[0]) nodes[0].tab = true
         <kbd aria-hidden="true">/</kbd>
       </div>
       <div class="api-nav__filters" role="group" aria-label={`${treeLabel} search category`}>
-        {filters.map((filter) => <button type="button" data-api-search-kind={filter.id} aria-pressed={filter.id === 'all' ? 'true' : 'false'} disabled>{filter.label}</button>)}
+        {filters.map((filter) => <button type="button" data-api-search-kind={filter.id} data-api-search-empty={filter.disabled || undefined} aria-pressed={filter.id === 'all' ? 'true' : 'false'} disabled>{filter.label}</button>)}
       </div>
     </div>
     <nav class="api-nav__nav" aria-label={treeLabel} data-pagefind-ignore="all">

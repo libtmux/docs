@@ -97,8 +97,8 @@
 .api-badge--kind-module, .api-badge.api-badge--mod-package { background: var(--api-kind-module-bg); color: var(--api-kind-module-fg); border-color: var(--api-kind-module-border); }
 .api-badge--kind-typealias, .api-badge--kind-enum, .api-badge--kind-union, .api-badge--kind-prompt { background: var(--api-kind-typealias-bg); color: var(--api-kind-typealias-fg); border-color: var(--api-kind-typealias-border); }
 
-/* Shared with prose sidebars: decorate tooltip labels, not icons or borders. */
-:is(.api-badge, .api-nav__kind):is([title], [data-link-preview]) > .api-badge__label {
+/* Only interactive preview labels receive the dotted affordance. */
+.api-badge[data-link-preview] > .api-badge__label {
   text-decoration-line: underline;
   text-decoration-style: dotted;
   text-decoration-color: currentColor;

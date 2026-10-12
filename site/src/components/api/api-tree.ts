@@ -114,7 +114,7 @@ function initSearch(nav: HTMLElement, tree: HTMLElement, signal: AbortSignal) {
   let kind = 'all'
   let generation = 0
   input.disabled = false
-  for (const button of filters) button.disabled = false
+  for (const button of filters) button.disabled = button.hasAttribute('data-api-search-empty')
   document.addEventListener('keydown', (event) => {
     if (event.key !== '/' || event.defaultPrevented || event.isComposing || event.metaKey || event.ctrlKey || event.altKey) return
     const target = event.target as Element
