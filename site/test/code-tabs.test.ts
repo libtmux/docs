@@ -54,7 +54,20 @@ describeIfBuilt('code tabs', () => {
      * It is not: Chrome stores `{"libtmux-code-tab":"go"}` and carries the
      * choice across a navigation. The isolation is what was missing.
      */
-    const evaluate = (source: string) => window.eval(`(() => {\n${source}\n})()`)
+    const evaluate = (source: string, script: HTMLScriptElement) => {
+      // Inline sidebar and table-of-contents scripts locate their own markup.
+      const previous = Object.getOwnPropertyDescriptor(document, 'currentScript')
+      Object.defineProperty(document, 'currentScript', {
+        configurable: true,
+        value: script.type === 'module' ? null : script,
+      })
+      try {
+        window.eval(`(() => {\n${source}\n})()`)
+      } finally {
+        if (previous) Object.defineProperty(document, 'currentScript', previous)
+        else Reflect.deleteProperty(document, 'currentScript')
+      }
+    }
 
     /*
      * `window.eval` runs a classic script, so a bundle using module-only
@@ -76,14 +89,14 @@ describeIfBuilt('code tabs', () => {
       const src = script.getAttribute('src')
       if (!src) {
         const inline = script.textContent ?? ''
-        if (!isModuleOnly(inline)) evaluate(inline)
+        if (!isModuleOnly(inline)) evaluate(inline, script)
         continue
       }
       if (!src.includes('/_astro/')) continue
       const asset = publishedPath(src)
       if (!existsSync(asset)) continue
       const source = readFileSync(asset, 'utf8')
-      if (!isModuleOnly(source)) evaluate(source)
+      if (!isModuleOnly(source)) evaluate(source, script)
     }
     return { window, document }
   }

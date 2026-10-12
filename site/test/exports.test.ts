@@ -135,7 +135,9 @@ describeIfAssembled('published exports', () => {
         const actual = [...template.content.querySelectorAll('.api-index-summary[id]')].map((node) => node.id)
         expect(reference.headings.map((heading: { id: string }) => heading.id)).toEqual(actual)
         expect(actual[0]).toBe('section-server')
-        expect(reference.symbols[0].name).toBe('Server')
+        if (port.slug === 'powershell') expect(reference.symbols.slice(0, 3).map((symbol: { name: string }) => symbol.name))
+          .toEqual(['New-TmuxServer', 'Get-TmuxServer', 'Connect-TmuxServer'])
+        else expect(reference.symbols[0].name).toBe('Server')
         for (const symbol of reference.symbols) {
           const target = new URL(symbol.url).pathname.replace(/^\//, '')
           expect(has(join(target, 'index.html')), symbol.url).toBe(true)
@@ -145,8 +147,10 @@ describeIfAssembled('published exports', () => {
         expect(has(inventoryPath)).toBe(true)
         const inventory = JSON.parse(readPublished(inventoryPath))
         for (const members of Object.values(inventory.members) as string[][][]) {
-          for (const [, slug] of members) {
-            expect(has(join(root, slug, 'index.html')), `${reference.symbolIndexUrl}: ${slug}`).toBe(true)
+          for (const [, slug, id] of members) {
+            const destination = inventory.hrefs?.[id]
+              ? new URL(inventory.hrefs[id], reference.url).pathname.replace(/^\//, '') : join(root, slug)
+            expect(has(join(destination, 'index.html')), `${reference.symbolIndexUrl}: ${id}`).toBe(true)
           }
         }
       } finally {

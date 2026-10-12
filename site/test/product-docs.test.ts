@@ -40,7 +40,14 @@ const primaryPorts = PORTS.filter((port) => !port.parentLibrary)
 const read = (path: string) => readFileSync(sitePath(path), 'utf8')
 const manifest = (): Manifest => JSON.parse(read('versions.json'))
 const urlFor = (path: string) => new URL(`/${SITE_PREFIX}${path}`, 'https://libtmux.org')
-const productUrl = /\/(?:py|ruby|lua|ts|rs|go|java|csharp|cxx|swift)\/[^/]+\/(?:mcp|workspace)(?:\/|$)/
+const productUrl = /\/(?:py|ruby|lua|powershell|julia|ts|rs|go|java|csharp|cxx|swift)\/[^/]+\/(?:mcp|workspace)(?:\/|$)/
+const nativeProductDocs = (port: string) => ['powershell', 'julia'].includes(port)
+const mcpClientSetupRoutes: Record<string, string[]> = {
+  py: ['mcp/guides'], ruby: ['mcp/guides/connect-client', 'mcp/source-guide'],
+  julia: ['mcp/source-guide'], ts: ['mcp/guides'], rs: ['mcp/guides/connect-client'],
+  go: ['mcp/guides/connect-client'], java: ['mcp/guides'], csharp: ['mcp/guides/connect-client'],
+  cxx: ['mcp/guides'], swift: ['mcp/guides'],
+}
 
 it('advertises local native loaders while retaining their development status', () => {
   // Ruby ships its own released `libtmux-workspace load` and published MCP
@@ -56,6 +63,7 @@ it('advertises local native loaders while retaining their development status', (
     if (port.workspaceCliAvailability === 'local') {
       expect(productDescription(port, 'workspace')).toContain(port.slug === 'julia' ? 'LibTmuxWorkspace' : 'Build the CLI from source')
     }
+    if (native(port)) expect(workspaceOverviewNotice(port)?.body).toContain(`\`${port.workspaceCli!.split(/\s+/)[0]}\``)
     if (port.workspaceCliAvailability === 'published') {
       expect(productDescription(port, 'workspace')).toContain('prerelease')
       expect(workspaceOverviewNotice(port)?.body).not.toMatch(/unreleased|local/)
@@ -64,6 +72,8 @@ it('advertises local native loaders while retaining their development status', (
 })
 
 function sectionsFor(port: string, product: ProductPage['product']): string[] {
+  if (port === 'powershell' && product === 'mcp') return []
+  if (nativeProductDocs(port)) return ['', 'source-guide', 'reference']
   if (port === 'lua') return ['']
   if (port === 'ruby') return ['', 'topics', 'guides', 'examples', 'reference']
   // `reference` is a section of the product now, not a page inside Internals:
@@ -159,6 +169,16 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     await redirectsTo('ruby/latest/guides/source/async', 'ruby/latest/guides/async/')
     await redirectsTo('lua/latest/guides/source/overview', 'lua/latest/guides/overview/')
     await redirectsTo('lua/latest/guides/source/runtime', 'lua/latest/guides/runtime/')
+    await redirectsTo('powershell/latest/mcp/', 'powershell/latest/guides/mcp/')
+    await inspect('powershell/latest/mcp/', (document) => {
+      expect(document.querySelector('meta[name="robots"]')?.getAttribute('content')).toContain('noindex')
+      expect(document.querySelector('a[href]')?.getAttribute('href')).toBe(urlFor('powershell/latest/guides/mcp/').pathname)
+    })
+    await inspect('powershell/latest/guides/mcp/', (document) => {
+      expect(document.querySelector('article h1')?.textContent).toBe('Using the .NET MCP server')
+      expect(document.querySelector('[data-pagefind-body]')).not.toBeNull()
+      expect(document.querySelector('[data-surface-picker] .surface-current strong')?.textContent).toBe('Core Library')
+    })
   })
 
   it('renders Lua Server in the public Server branch of its API sidebar', async () => {
@@ -210,7 +230,8 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
           const current = document.querySelector('[data-surface-picker] [aria-current="location"]')
           expect(current?.getAttribute('href'), `${path} selected section`).toBe(urlFor(path).pathname)
           for (const nav of document.querySelectorAll('[data-section-navigation] nav')) {
-            expect([...nav.querySelectorAll('a[href]')].some((link) => /\/(?:mcp|workspace)\//.test(link.getAttribute('href')!)),
+            expect([...nav.querySelectorAll('a[href]')].some((link) => products.some((product) =>
+              new URL(link.getAttribute('href')!, urlFor(path)).pathname.startsWith(urlFor(`${port}/latest/${product}/`).pathname))),
               `${path} section sidebar excludes other apps`).toBe(false)
           }
         }
@@ -261,7 +282,12 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       expect(headings1, page.path).toHaveLength(1)
       const sharedBrowse = page.product === 'workspace' && !['py', 'ruby'].includes(page.port)
         && ['guides', 'examples'].includes(page.section)
-      if (sharedBrowse) {
+      if (nativeProductDocs(page.port)) {
+        const nativeTitles = page.product === 'workspace'
+          ? { '': 'Workspace Manager', 'source-guide': 'Workspace guide', reference: `${page.port === 'julia' ? 'LibTmuxWorkspace' : 'LibTmux.Workspace'} API reference` }
+          : { '': 'MCP server', 'source-guide': 'MCP server guide', reference: 'LibTmuxMCP API reference' }
+        expect(text(headings1[0]!), page.path).toBe(nativeTitles[page.section as keyof typeof nativeTitles])
+      } else if (sharedBrowse) {
         expect(text(headings1[0]!), page.path).toBe(page.section === 'guides' ? 'Guides' : 'Examples')
       } else {
         expect(text(headings1[0]!), page.path).toContain(page.name)
@@ -349,13 +375,13 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         return
       }
       const surface = page.product === 'mcp' ? 'MCP' : 'Workspace Manager'
-      const section = page.section.split('/')[0] || 'home'
+      const section = page.section === 'source-guide' ? 'guides' : page.section.split('/')[0] || 'home'
       const sectionLabel = section === 'reference' ? 'API Reference' : section[0].toUpperCase() + section.slice(1)
       expect(picker?.querySelector('.surface-current strong')?.textContent, `${page.path} current app`).toBe(surface)
       expect(picker?.querySelector('.surface-current small')?.textContent, `${page.path} current section`).toBe(sectionLabel)
       const current = picker?.querySelectorAll('[aria-current="location"]')
       expect(current, `${page.path} one current section`).toHaveLength(1)
-      const sectionPath = `${page.port}/${page.version}/${page.product}/${section === 'home' ? '' : `${section}/`}`
+      const sectionPath = `${page.port}/${page.version}/${page.product}/${page.section === 'source-guide' ? 'source-guide/' : section === 'home' ? '' : `${section}/`}`
       expect(current![0].getAttribute('href'), `${page.path} current destination`).toBe(urlFor(sectionPath).pathname)
       expect(resolves(current![0].getAttribute('href')!), `${page.path} current destination exists`).toBe(true)
       const navigation = document.querySelectorAll('[data-section-navigation] nav')
@@ -385,8 +411,11 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         if (page.product === 'mcp' && page.section === 'reference' && productAvailable(port, 'mcp')) {
           for (const section of Object.keys(MCP_SECTIONS)) {
             const target = urlFor(`${page.port}/${page.version}/mcp/${section}/`).pathname
+            const count = mcpObjects(page.port).filter((object) => object.section === section).length
             expect([...picker!.querySelectorAll('a[href]')].some((link) => new URL(link.getAttribute('href')!, urlFor(page.path)).pathname === target),
-              `${page.path} ${section} picker destination`).toBe(true)
+              `${page.path} ${section} picker destination`).toBe(count > 0)
+            if (!count) expect([...picker!.querySelectorAll('[aria-disabled="true"]')].some((entry) => entry.textContent.includes(MCP_SECTIONS[section as keyof typeof MCP_SECTIONS])),
+              `${page.path} empty ${section} disabled`).toBe(true)
             expect(resolves(target, urlFor(page.path).href), target).toBe(true)
           }
         } else if (page.product === 'workspace' && section === 'internals' && productAvailable(port, 'workspace')) {
@@ -397,21 +426,22 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
           }
         }
       }
-      if (page.product === 'workspace' && page.port !== 'ruby' && productAvailable(port, 'workspace')) {
+      if (page.product === 'workspace' && page.port !== 'ruby' && !nativeProductDocs(page.port) && productAvailable(port, 'workspace')) {
         expect([...picker!.querySelectorAll('a[href]')].some((link) => link.getAttribute('href') === urlFor(`${page.port}/${page.version}/workspace/internals/`).pathname),
           `${page.path} Internals remains reachable in the picker`).toBe(true)
       }
-      if (page.product === 'workspace' && productInDevelopment(port, 'workspace') && !page.section) {
+      if (page.product === 'workspace' && port.workspaceCli && productInDevelopment(port, 'workspace') && !page.section) {
         const status = [...document.querySelectorAll('[role="note"]')]
           .map((note) => note.textContent ?? '')
           .find((text) => /in development/i.test(text))
         expect(status, `${page.path} development status`).toBeDefined()
         const article = document.querySelector('article')!.textContent
         if (port.workspaceCliAvailability === 'local') expect(article, `${page.path} source installation`).toContain('from the source revision in the installation guide')
-        expect(article, `${page.path} native CLI`).toContain('tmux-workspace')
+        expect(article, `${page.path} native CLI`).toContain(port.workspaceCli.split(/\s+/)[0])
         expect(article.match(/is in development/gi), `${page.path} states maturity once`).toHaveLength(1)
         const links = [...document.querySelectorAll('article a[href]')]
-        expect(links.some((link) => new URL(link.getAttribute('href')!, urlFor(page.path)).pathname === urlFor(`${page.port}/${page.version}/workspace/guides/installation/`).pathname), `${page.path} native installation`).toBe(true)
+        const installation = nativeProductDocs(page.port) ? 'source-guide' : 'guides/installation'
+        expect(links.some((link) => new URL(link.getAttribute('href')!, urlFor(page.path)).pathname === urlFor(`${page.port}/${page.version}/workspace/${installation}/`).pathname), `${page.path} native installation`).toBe(true)
         expect(links.some((link) => link.getAttribute('href') === 'https://tmuxp.git-pull.com/'), `${page.path} foreign installation`).toBe(false)
       }
     })
@@ -448,7 +478,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       const toolsPath = `${page.port}/${page.version}/mcp/tools/`
       const tools = await inspect(toolsPath, (document) => {
         developmentStatus(document, toolsPath)
-        return [...document.querySelectorAll('.api-index-card__link[href]')].map((link) => link.getAttribute('href')!)
+        return [...document.querySelectorAll('.api-index-card[id] > .api-index-card__link[href]')].map((link) => link.getAttribute('href')!)
       })
       expect(tools.length, `${toolsPath} protocol tools`).toBeGreaterThan(0)
       for (const href of tools) {
@@ -477,7 +507,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         expect(document.querySelector('main.api-reference-layout'), `${index} shared layout`).not.toBeNull()
         expect(document.querySelector('#api-nav #api-symbol-search'), `${index} searchable tree`).not.toBeNull()
         expect(document.querySelector('.api-reference-content h1')?.textContent).toBe(label)
-        const links = [...document.querySelectorAll('.api-index-card__link[href]')]
+        const links = [...document.querySelectorAll('.api-index-card[id] > .api-index-card__link[href]')]
         expect(links.map((link) => new URL(link.getAttribute('href')!, urlFor(index)).pathname).sort())
           .toEqual(objects.map((object) => urlFor(`${port}/${version}/${object.path}/`).pathname).sort())
         if (!objects.length) expect(document.querySelector('.api-reference-content')?.textContent).toContain(`does not advertise ${section}`)
@@ -498,26 +528,38 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
 
   it.each(primaryPorts.map((port) => port.slug))('switches to equivalent sections and the tmux documentation for %s', async (slug) => {
     const defaults = manifest().defaultVersion
-    for (const page of pages().filter((entry) => entry.port === slug)) await inspect(page.path, (document) => {
+    for (const page of pages().filter((entry) => entry.port === slug && entry.section !== 'source-guide')) await inspect(page.path, (document) => {
       const links = [...document.querySelectorAll('[data-page-port-switcher] a[data-port][href]')]
       const tmux = document.querySelector('[data-page-port-switcher] .tmux-area a[href]')
       expect(tmux?.getAttribute('href'), `${page.path} tmux destination`).toBe(urlFor('tmux/').pathname)
-      const counterparts = new Map(PORTS.flatMap((port) => {
+      const clientSetup = page.product === 'mcp' && page.section === 'guides'
+        && ['py', 'ts', 'java', 'cxx', 'swift'].includes(page.port)
+      const counterparts = clientSetup ? new Map(Object.entries(mcpClientSetupRoutes).map(([port, routes]) => [port,
+        routes.map((route) => urlFor(`${port}/${port === page.port ? page.version : defaults[port]}/${route}/`).pathname),
+      ])) : new Map(PORTS.flatMap((port) => {
         const section = page.section
+        if (port.slug === 'powershell' && page.product === 'mcp' && !section) {
+          return [[port.slug, [urlFor(`${port.slug}/${defaults[port.slug]}/mcp/`).pathname]]]
+        }
         if (port.parentLibrary || !sectionsFor(port.slug, page.product).includes(section)) return []
         const version = port.slug === page.port ? page.version : defaults[port.slug]
-        return [[port.slug, urlFor(`${port.slug}/${version}/${page.product}/${section ? `${section}/` : ''}`).pathname]]
+        return [[port.slug, [urlFor(`${port.slug}/${version}/${page.product}/${section ? `${section}/` : ''}`).pathname]]]
       }))
-      expect(links.length, `${page.path} port counterparts`).toBe(counterparts.size)
+      expect(links.length, `${page.path} port counterparts`).toBe([...counterparts.values()].flat().length)
       for (const port of PORTS) {
         const expected = counterparts.get(port.slug)
         if (expected) {
-          expect(links.some((link) => new URL(link.getAttribute('href')!, urlFor(page.path)).pathname === expected),
-            `${page.path} counterpart ${expected}`).toBe(true)
-          expect(resolves(expected), `${page.path} counterpart exists at ${expected}`).toBe(true)
+          for (const href of expected) {
+            expect(links.some((link) => new URL(link.getAttribute('href')!, urlFor(page.path)).pathname === href),
+              `${page.path} counterpart ${href}`).toBe(true)
+            expect(resolves(href), `${page.path} counterpart exists at ${href}`).toBe(true)
+          }
         } else {
-          const unavailable = [...document.querySelectorAll('[data-page-port-switcher] [aria-disabled="true"]')]
-          expect(unavailable.some((entry) => entry.textContent.includes(port.name)), `${page.path} unavailable ${port.name}`).toBe(true)
+          const unavailable = document.querySelector(`[data-page-port-switcher] .doc-picker-option--unmatched[data-port="${port.slug}"]`)
+          expect(unavailable?.textContent, `${page.path} unavailable ${port.name}`).toContain('No matching page')
+          const home = unavailable?.querySelector('a[data-picker-home]')?.getAttribute('href')
+          expect(home, `${page.path} ${port.name} home exit`).toBeDefined()
+          expect(resolves(home!, urlFor(page.path).href), `${page.path} ${port.name} home exists`).toBe(true)
         }
       }
     })
@@ -538,6 +580,23 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     })
   })
 
+  it.each([
+    ['powershell', 'workspace'], ['julia', 'workspace'], ['julia', 'mcp'],
+  ])('switches from the native %s %s source guide to verified task counterparts', async (port, product) => {
+    const defaults = manifest().defaultVersion
+    const routes: Record<string, string[]> = product === 'workspace' ? {
+      ruby: ['workspace/source-guide'], powershell: ['workspace/source-guide'], julia: ['workspace/source-guide'],
+    } : mcpClientSetupRoutes
+    const path = `${port}/${defaults[port]}/${product}/source-guide/`
+    await inspect(path, (document) => {
+      const links = [...document.querySelectorAll('[data-page-port-switcher] a[data-port][href]')]
+      expect(links.map((link) => new URL(link.getAttribute('href')!, urlFor(path)).pathname).sort()).toEqual(
+        Object.entries(routes).flatMap(([slug, paths]) => paths.map((route) => urlFor(`${slug}/${defaults[slug]}/${route}/`).pathname)).sort(),
+      )
+      for (const link of links) expect(resolves(link.getAttribute('href')!, urlFor(path).href)).toBe(true)
+    })
+  })
+
   it('redirects legacy workspace Topics without replacing Python CLI docs', async () => {
     // Guides and Examples now browse the native CLI documentation. The old
     // Topics route still redirects to the builder's internal topics.
@@ -552,7 +611,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     })
   })
 
-  it.each(PORTS.filter((port) => !port.parentLibrary && !['py', 'ruby', 'lua'].includes(port.slug)))
+  it.each(PORTS.filter((port) => !port.parentLibrary && !['py', 'ruby', 'lua', 'powershell', 'julia'].includes(port.slug)))
     ('$name publishes workspace Guides and Examples browse pages', async (port) => {
     for (const page of pages().filter((entry) => entry.product === 'workspace'
       && entry.port === port.slug && ['guides', 'examples'].includes(entry.section))) await inspect(page.path, (document) => {
