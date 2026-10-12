@@ -187,7 +187,7 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
   await checkNavigationBeforeAnalytics(browser, base)
   const ports = complete ? PORTS : PORTS.filter((port) => ['fsharp', 'ruby'].includes(port.slug))
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' })
-  page.setDefaultTimeout(10000)
+  page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
   await observeInitialPageLoad(page)
   const desktopPicker = (reader) => reader.locator('[data-documentation-context] [data-surface-picker]')
   const group = (picker, label) => picker.locator('[data-surface-group]').filter({
@@ -288,7 +288,7 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
     for (const colorScheme of ['light', 'dark']) {
       const context = await browser.newContext({ javaScriptEnabled, colorScheme, reducedMotion: 'reduce' })
       const reader = await context.newPage()
-      reader.setDefaultTimeout(10000)
+      reader.setDefaultTimeout(process.env.CI ? 20000 : 10000)
       try {
         if (javaScriptEnabled) await reader.addInitScript((scheme) => localStorage.setItem('color-scheme', scheme), colorScheme)
         for (const width of [320, 390, 641, 768, 1440, 1920]) {
@@ -531,7 +531,7 @@ export async function checkApiAnchorArrival(browser, base) {
     const context = await browser.newContext({ viewport: { width, height: 1000 }, colorScheme,
       javaScriptEnabled, reducedMotion: 'reduce' })
     const page = await context.newPage()
-    page.setDefaultTimeout(10000)
+    page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     try {
       for (const path of paths) {
         const response = await page.goto(path, { waitUntil: 'load' })

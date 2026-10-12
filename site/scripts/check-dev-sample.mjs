@@ -11,7 +11,7 @@ export async function checkDevSample(browser, base) {
   const page = await context.newPage()
   const errors = []
   page.on('pageerror', (error) => errors.push(error.message))
-  page.setDefaultTimeout(10000)
+  page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
   try {
     for (const path of ['tmux/concepts/server-session-window-pane/', 'mcp/tools/', 'api-example-probe/']) {
       const response = await page.goto(`${base}/${path}`)

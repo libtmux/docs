@@ -116,6 +116,7 @@ $ LIBTMUX_DOCS_BROWSER_CHANNEL=chrome pnpm test
 Install the pinned Chromium build for local browser checks with
 `pnpm --filter @libtmux/site exec playwright install chromium`. CI installs
 that build and its system dependencies before the publication audit.
+The standard ten-second browser timeout increases to twenty seconds on CI.
 
 Keep the complete assembly, all output suites, link audits, source/model
 freshness, and full browser matrix in the publication audit:

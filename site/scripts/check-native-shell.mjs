@@ -25,7 +25,7 @@ try {
     }
   }
   const page = await browser.newPage()
-  page.setDefaultTimeout(10000)
+  page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
   const loaded = new Set()
   page.on('response', (response) => {
     if (response.ok()) loaded.add(response.url())

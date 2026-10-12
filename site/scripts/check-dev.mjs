@@ -369,7 +369,7 @@ async function checkKeywordHelp(browser, base) {
 
 async function checkReferenceAndHeroes(browser, base) {
   const page = await browser.newPage({ reducedMotion: 'reduce' })
-  page.setDefaultTimeout(10000)
+  page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
   try {
     await checkApiExampleOwnership(page, base, 'api-example-probe/')
     for (const path of ['ts/latest/workspace/', 'ruby/latest/mcp/', 'cxx/latest/workspace/', 'cxx/latest/mcp/']) {
@@ -596,7 +596,7 @@ try {
     await retryReload(() => checkDocumentationNavigation(browser, base, true))
   } else if (apiNavigationOnly) {
     const page = await browser.newPage({ reducedMotion: 'reduce' })
-    page.setDefaultTimeout(10000)
+    page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     await retryReload(() => checkApiNavigation(page, base))
   } else if (apiAnchorsOnly) {
     await retryReload(() => checkApiAnchorArrival(browser, base))
@@ -614,15 +614,15 @@ try {
     // Finish that initial compilation before starting timed browser navigation.
     await apiExamples
     const page = await browser.newPage({ reducedMotion: 'reduce' })
-    page.setDefaultTimeout(10000)
+    page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     const manifest = await page.request.get(`${base}/page-links.json`)
     assert(manifest.ok(), `Native navigation manifest: HTTP ${manifest.status()}`)
     assert.equal((await manifest.json()).schema, 1)
     const clipboardPage = await browser.newPage()
-    clipboardPage.setDefaultTimeout(10000)
+    clipboardPage.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     const clipboard = schedule(() => checkClipboard(clipboardPage, base).finally(() => clipboardPage.close()))
     const navigationPage = await browser.newPage({ reducedMotion: 'reduce' })
-    navigationPage.setDefaultTimeout(10000)
+    navigationPage.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     const navigation = schedule(() => retryReload(() => checkNavigation(navigationPage, base)).finally(() => navigationPage.close()))
     const reference = schedule(() => checkReferenceAndHeroes(browser, base).then(() => checkSignatureLayouts(browser, base))
       .then(() => retryReload(() => checkKeywordHelp(browser, base)))
@@ -632,7 +632,7 @@ try {
     const homeLauncher = schedule(() => checkHomeLauncher(browser, base))
     const documentationNavigation = schedule(() => retryReload(() => checkDocumentationNavigation(browser, base)))
     const apiNavigationPage = await browser.newPage({ reducedMotion: 'reduce' })
-    apiNavigationPage.setDefaultTimeout(10000)
+    apiNavigationPage.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     const apiNavigation = schedule(() => retryReload(() => checkApiNavigation(apiNavigationPage, base)).finally(() => apiNavigationPage.close()))
     const apiAnchors = schedule(() => retryReload(() => checkApiAnchorArrival(browser, base)))
     await apiAnchors

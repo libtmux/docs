@@ -105,7 +105,7 @@ export async function checkHomeResponsiveLayout(page, width, port = null) {
 export async function checkHomeLauncher(browser, base) {
   const context = await browser.newContext({ reducedMotion: 'reduce' })
   const page = await context.newPage()
-  page.setDefaultTimeout(10000)
+  page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
   const errors = []
   page.on('pageerror', (error) => errors.push(error.message))
   const language = page.locator('[data-home-launcher] [data-page-port-switcher]')

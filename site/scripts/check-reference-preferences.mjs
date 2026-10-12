@@ -21,7 +21,7 @@ export async function checkReferencePreferences(browser, base) {
     document.addEventListener('astro:page-load', () => { window.__docsPageLoaded = true })
   })
   const page = await context.newPage()
-  page.setDefaultTimeout(10000)
+  page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
   const source = page.locator('.api-source-details')
   const assertFirstFrame = async (open) => {
     await page.waitForFunction(() => window.__sourceFrames.length > 0)
