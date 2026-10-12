@@ -73,7 +73,9 @@ implementation details only when they affect a reader's choice.
 ## Documented examples that run
 
 Use real public imports, valid names, and explicit prerequisites. Show
-necessary error handling and cleanup. Avoid placeholders that a reader must
+necessary error handling. Demonstrate cleanup in examples about resource
+lifetime; ordinary usage examples rely on external test cleanup. Avoid
+placeholders that a reader must
 decode. Verify example code against the relevant port and version rather
 than translating another port's spelling by analogy.
 
@@ -96,9 +98,16 @@ It scans `.md` pages, not MDX, and cannot check source existence when the
 relevant checkout is absent.
 
 Every executable example must work when copied with its displayed setup.
-Include imports, an entry point, required inputs, and cleanup. Show dependency
+Include imports, an entry point, and required inputs. Show dependency
 and run commands. Do not rely on variables or helper code from another example.
 A source file that only declares functions is not a runnable program.
+
+Keep ordinary examples on their library's default endpoint and use its public
+API to ensure a server when an operation requires one. They must work with an
+existing daemon or with none at that endpoint. The external
+[example runner](notes/example-testing.md) supplies socket defaults and owns
+test cleanup without adding fixture setup or cleanup to the displayed program.
+Exercise both initial conditions; a prestarted fixture does not verify startup.
 
 Run the exact displayed program against the documented library revision.
 Record its commands, source revision, result, and content hash in the review.
@@ -145,7 +154,8 @@ Use `--example api --port go --page reference/tmux-newserver` for a complete
 native Go API example. The runner reads the displayed files and commands from
 the generated API model. Go source files opt in with an
 `ExampleName_complete` or `ExampleType_Method_complete` function, one complete
-example per file, with its own imports, cleanup and `Output` assertion. The
+example per file, with its own imports and `Output` assertion. Include cleanup
+when the example teaches resource lifetime. The
 extractor reads committed source at the citation revision. Ordinary examples
 that depend on package helpers are not imported as complete programs.
 
