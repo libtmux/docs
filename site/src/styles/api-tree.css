@@ -245,8 +245,17 @@
   border-color: var(--api-kind-typealias-border);
 }
 
-/* Prose links use the same compact symbol mark as the navigation tree. */
-.api-link-kind { margin-inline-end: .3em; user-select: none; text-decoration: none; }
+/* Keep the kind beside the name while long identifiers wrap within the link. */
+a:has(> .api-link-kind) {
+  display: inline-flex;
+  align-items: baseline;
+  gap: .3em;
+  max-inline-size: 100%;
+  vertical-align: baseline;
+}
+.api-symbol-link__name { min-inline-size: 0; overflow-wrap: anywhere; }
+a > .api-link-kind { flex-shrink: 0; }
+.api-link-kind { user-select: none; text-decoration: none; }
 
 .api-nav__count {
   flex: none;

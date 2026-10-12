@@ -580,12 +580,14 @@ export class SymbolIndex {
       ? String.raw`[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*!?`
       : this.lang === 'powershell' ? String.raw`(?:[A-Za-z_][A-Za-z0-9_.]*\\)?[A-Za-z_][A-Za-z0-9_.-]*`
       : String.raw`[A-Za-z_][A-Za-z0-9_.]*(?:::[A-Za-z_][A-Za-z0-9_.]*)*`
-    const rawString = this.lang === 'cxx'
-      ? String.raw`(?:u8|u|U|L)?R"(?<rawDelimiter>[^ ()\\\t\v\f\r\n]{0,16})\([\s\S]*?\)\k<rawDelimiter>"|` : ''
-    const pattern = String.raw`(?<ident>${rawString}\/\*[\s\S]*?\*\/|\/\/[^\n]*|"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'|${identifier})|(?<other>[^A-Za-z_"'/]+|["'/])`
+    // C++ prefixes, escaped quotes, raw delimiters and suffixes belong to the
+    // literal token. Its contents cannot introduce an attribute or type link.
+    const cppLiteral = String.raw`(?:(?:u8|u|U|L)?R"(?<delimiter>[^ ()\\\t\v\f\r\n]{0,16})\([\s\S]*?\)\k<delimiter>"|(?:u8|u|U|L)?(?:"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'))(?:[A-Za-z_]\w*)?`
+    const pattern = String.raw`(?<ident>\/\*[\s\S]*?\*\/|\/\/[^\n]*|"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'|${identifier})|(?<other>[^A-Za-z_"'/]+|["'/])`
     // F# type variables start with an apostrophe but do not close like strings.
-    const re = new RegExp(this.lang === 'fsharp'
-      ? pattern.replace('(?<ident>', String.raw`(?<ident>'[A-Za-z_][A-Za-z0-9_]*(?![A-Za-z0-9_'])|`)
+    const re = new RegExp(this.lang === 'cxx'
+      ? String.raw`(?<literal>${cppLiteral}|\d(?:[eEpP][+-]|[\w.'])*)|(?<ident>\/\*[\s\S]*?\*\/|\/\/[^\n]*|${identifier})|(?<other>[^A-Za-z_0-9"'/]+|["'/])`
+      : this.lang === 'fsharp' ? pattern.replace('(?<ident>', String.raw`(?<ident>'[A-Za-z_][A-Za-z0-9_]*(?![A-Za-z0-9_'])|`)
       : pattern, 'g')
     for (const m of annotation.matchAll(re)) {
       const whole = m[0]
@@ -594,13 +596,13 @@ export class SymbolIndex {
         out.push({ text: whole })
         continue
       }
-      if (/^(?:["']|\/[/*])/.test(ident) || m.groups?.rawDelimiter !== undefined) {
+      if (/^(?:["']|\/[/*])/.test(ident)) {
         out.push({ text: ident })
         continue
       }
       if (this.lang === 'cxx' && ident === 'nodiscard' &&
           /\[\[\s*$/.test(annotation.slice(0, m.index)) &&
-          /^\s*(?:\]\]|\()/.test(annotation.slice(m.index! + ident.length))) {
+          /^\s*(?:\]\]|\(|,)/.test(annotation.slice(m.index! + ident.length))) {
         out.push({ text: ident, keyword: true, help: KEYWORD_HELP.cxx.nodiscard })
         continue
       }
