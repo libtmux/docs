@@ -37,9 +37,9 @@
  *   node scripts/gen-registry.mjs [--out <path>] [--baseline <path>] [--check] [--offline]
  *
  *   --out <path>       Write there (default: site/src/data/registry.json).
- *   --baseline <path>  The last known-good answer to fall back on, instead of
- *                      the committed file. The shell deploy passes the copy it
- *                      last published, so a registry that cannot be reached
+ *   --baseline <path>  The last known-good answer to fall back on, overlaid on
+ *                      the committed file for newly added ports. The shell
+ *                      deploy passes its last published copy, so an outage
  *                      keeps what the site already says rather than reverting
  *                      to whatever was last committed.
  *   --check            Write nothing; exit 1 if the committed file is out of date.
@@ -127,8 +127,66 @@ async function getText(url) {
     headers: { 'user-agent': 'libtmux-docs gen-registry.mjs' },
     signal: AbortSignal.timeout(20_000),
   })
-  if (!res.ok) return { missing: res.status === 404 || res.status === 403, body: null }
-  return { missing: false, body: await res.text() }
+  if (!res.ok) return { missing: res.status === 404 || res.status === 403, status: res.status, body: null }
+  return { missing: false, status: res.status, body: await res.text() }
+}
+
+/** Gallery v2 retains unlisted releases with a Published date in 1900. */
+async function galleryVersions(name, port) {
+  let url = `https://www.powershellgallery.com/api/v2/FindPackagesById()?id=%27${name}%27`
+  const seen = new Set()
+  const versions = []
+  while (url) {
+    if (seen.has(url) || seen.size >= 100) throw new Error('Gallery pagination did not finish')
+    seen.add(url)
+    const { status, body } = await getText(url)
+    if (body === null) throw new Error(`Gallery ${name}: HTTP ${status}`)
+    if (!/<feed\b[^>]*>/.test(body) || !/<\/feed>\s*$/.test(body)) throw new Error(`Gallery ${name}: invalid feed`)
+    const entries = [...body.matchAll(/<entry\b[^>]*>([\s\S]*?)<\/entry>/g)]
+    if ((body.match(/<entry\b/g)?.length ?? 0) !== entries.length) throw new Error(`Gallery ${name}: incomplete entries`)
+    for (const [, entry] of entries) {
+      const property = (key) => new RegExp(`<d:${key}\\b[^>]*>([^<]*)<\\/d:${key}>`).exec(entry)?.[1]
+      const id = property('Id')
+      const version = property('Version')
+      const published = property('Published')
+      if (id?.toLowerCase() !== name.toLowerCase() || !version || !releaseTag(version, port)
+          || !published || !/^\d{4}-\d{2}-\d{2}T/.test(published)) {
+        throw new Error(`Gallery ${name}: invalid package entry`)
+      }
+      if (!published.startsWith('1900-')) versions.push(version)
+    }
+    const next = [...body.matchAll(/<link\b[^>]*>/g)].find(([link]) => /\brel="next"/.test(link))?.[0]
+    if (!next) break
+    const href = /\bhref="([^"]+)"/.exec(next)?.[1]
+    if (!href) throw new Error(`Gallery ${name}: missing next page URL`)
+    const target = new URL(href.replaceAll('&amp;', '&'), url)
+    if (target.origin !== 'https://www.powershellgallery.com') throw new Error(`Gallery ${name}: unexpected next page origin`)
+    url = target.href
+  }
+  return [...new Set(versions)]
+}
+
+/** Read General's version tables; reject unfamiliar data rather than erase a good baseline. */
+function generalVersions(body, port) {
+  const releases = []
+  let current
+  for (const raw of body.split('\n')) {
+    const line = raw.replace(/\s*#.*$/, '').trim()
+    if (!line) continue
+    const header = /^\["([^"]+)"\]$/.exec(line)
+    if (header && releaseTag(header[1], port)) {
+      current = { version: header[1], tree: false, yanked: false }
+      releases.push(current)
+    } else if (current && /^git-tree-sha1\s*=\s*"[a-f0-9]{40}"$/.test(line)) {
+      current.tree = true
+    } else if (current && /^yanked\s*=\s*(true|false)$/.test(line)) {
+      current.yanked = /true$/.test(line)
+    } else {
+      throw new Error('General: invalid version table')
+    }
+  }
+  if (!releases.length || releases.some((release) => !release.tree)) throw new Error('General: missing version trees')
+  return releases.filter((release) => !release.yanked).map((release) => release.version)
 }
 
 /**
@@ -169,6 +227,19 @@ const PROBES = {
     const section = next < 0 ? rest : rest.slice(0, rest.indexOf('\n') + 1 + next)
     const versions = [...section.matchAll(/^\s{6}\["([^"]+)"\]\s*=\s*{/gm)].map((match) => match[1])
     return versions.length > 0 ? versions : null
+  },
+  async powershell(port) {
+    const packages = {}
+    for (const name of ['LibTmux', 'LibTmux.Workspace']) packages[name] = await galleryVersions(name, port)
+    return { versions: packages.LibTmux, packages }
+  },
+  async julia(port) {
+    const { status, body } = await getText(
+      'https://raw.githubusercontent.com/JuliaRegistries/General/master/L/LibTmux/Versions.toml',
+    )
+    if (status === 404) return null
+    if (body === null) throw new Error(`General: HTTP ${status}`)
+    return generalVersions(body, port)
   },
   async ts() {
     // `libtmux`, not the scoped `@libtmux/libtmux` this probe used to ask for.
@@ -278,23 +349,22 @@ if (opts.help) {
 }
 
 /**
- * The last known-good answer: `--baseline` when given, otherwise the committed
- * file, and only then `--out`. The committed file and `--out` are the same path
- * by default and are not when a caller writes elsewhere: reading the target
- * meant `--offline --out /tmp/x` had no baseline to re-emit and threw, which is
- * the one mode that exists precisely to avoid needing the network.
+ * Preserve each published entry when --baseline is supplied. A newly added
+ * port may not be published yet, so fill only missing entries from the seed.
+ * Reading --out alone would leave a fresh output path without any fallback.
  */
-const committed = opts.baseline
-  ? JSON.parse(readFileSync(opts.baseline, 'utf8'))
-  : existsSync(DEFAULT_OUT)
-    ? JSON.parse(readFileSync(DEFAULT_OUT, 'utf8'))
-    : existsSync(opts.out)
-      ? JSON.parse(readFileSync(opts.out, 'utf8'))
-      : { ports: {} }
+const seed = existsSync(DEFAULT_OUT)
+  ? JSON.parse(readFileSync(DEFAULT_OUT, 'utf8'))
+  : existsSync(opts.out)
+    ? JSON.parse(readFileSync(opts.out, 'utf8'))
+    : { ports: {} }
+const baseline = opts.baseline ? JSON.parse(readFileSync(opts.baseline, 'utf8')) : seed
+const committed = { ports: { ...seed.ports, ...baseline.ports } }
 
 const ports = {}
 const notes = []
 for (const port of PORTS) {
+  if (!opts.offline && typeof PROBES[port.slug] !== 'function') throw new Error(`${port.slug}: no registry probe`)
   const previous = committed.ports?.[port.slug]
   if (opts.offline) {
     if (!previous) throw new Error(`--offline needs a committed entry for ${port.slug}`)
