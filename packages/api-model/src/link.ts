@@ -85,6 +85,13 @@ export interface KeywordHelp {
 }
 
 const KEYWORD_HELP: Record<string, Record<string, KeywordHelp>> = {
+  cxx: {
+    nodiscard: {
+      title: 'C++ nodiscard attribute',
+      description: 'Asks the compiler to warn when a result is discarded. An explicit cast to void acknowledges that the result is intentionally ignored.',
+      href: 'https://eel.is/c++draft/dcl.attr.nodiscard',
+    },
+  },
   kotlin: {
     suspend: {
       title: 'Kotlin suspending functions',
@@ -573,19 +580,28 @@ export class SymbolIndex {
       ? String.raw`[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*!?`
       : this.lang === 'powershell' ? String.raw`(?:[A-Za-z_][A-Za-z0-9_.]*\\)?[A-Za-z_][A-Za-z0-9_.-]*`
       : String.raw`[A-Za-z_][A-Za-z0-9_.]*(?:::[A-Za-z_][A-Za-z0-9_.]*)*`
-    const pattern = String.raw`(\/\*[\s\S]*?\*\/|\/\/[^\n]*|["'][^"']*["']|${identifier})|([^A-Za-z_"'/]+|["'/])`
+    const rawString = this.lang === 'cxx'
+      ? String.raw`(?:u8|u|U|L)?R"(?<rawDelimiter>[^ ()\\\t\v\f\r\n]{0,16})\([\s\S]*?\)\k<rawDelimiter>"|` : ''
+    const pattern = String.raw`(?<ident>${rawString}\/\*[\s\S]*?\*\/|\/\/[^\n]*|"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'|${identifier})|(?<other>[^A-Za-z_"'/]+|["'/])`
     // F# type variables start with an apostrophe but do not close like strings.
     const re = new RegExp(this.lang === 'fsharp'
-      ? pattern.replace('(', String.raw`('[A-Za-z_][A-Za-z0-9_]*(?![A-Za-z0-9_'])|`)
+      ? pattern.replace('(?<ident>', String.raw`(?<ident>'[A-Za-z_][A-Za-z0-9_]*(?![A-Za-z0-9_'])|`)
       : pattern, 'g')
     for (const m of annotation.matchAll(re)) {
-      const [whole, ident, other] = m
+      const whole = m[0]
+      const { ident, other } = m.groups!
       if (other !== undefined || !ident) {
         out.push({ text: whole })
         continue
       }
-      if (/^(?:["']|\/[/*])/.test(ident)) {
+      if (/^(?:["']|\/[/*])/.test(ident) || m.groups?.rawDelimiter !== undefined) {
         out.push({ text: ident })
+        continue
+      }
+      if (this.lang === 'cxx' && ident === 'nodiscard' &&
+          /\[\[\s*$/.test(annotation.slice(0, m.index)) &&
+          /^\s*(?:\]\]|\()/.test(annotation.slice(m.index! + ident.length))) {
+        out.push({ text: ident, keyword: true, help: KEYWORD_HELP.cxx.nodiscard })
         continue
       }
       if (this.lang === 'powershell' && signature && context) {

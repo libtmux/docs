@@ -58,6 +58,29 @@ describe('standard types in product signatures', () => {
       .toEqual({ text: 'constructor', keyword: true })
   })
 
+  it('offers C++ nodiscard help only for the attribute', () => {
+    const index = new SymbolIndex([], () => '#', 'cxx')
+    for (const declaration of ['[[nodiscard]] bool valid();', '[[nodiscard("check the result")]] bool valid();']) {
+      const spans = index.linkType(declaration)
+      expect(spans.map((span) => span.text).join('')).toBe(declaration)
+      expect(spans.find((span) => span.text === 'nodiscard')).toMatchObject({
+        keyword: true, help: { href: 'https://eel.is/c++draft/dcl.attr.nodiscard' },
+      })
+    }
+    for (const declaration of [
+      'nodiscard', 'void nodiscard();', '/* [[nodiscard]] */', '"[[nodiscard]]"',
+      `void f(const char* value = "don't [[nodiscard]]");`,
+      String.raw`void f(const char* value = "say \"[[nodiscard]]\"");`,
+      'void f(const char* value = R"tag(say "[[nodiscard]]")tag");',
+      'void f(const char* value = u8R"("[[nodiscard]]")");',
+    ]) {
+      const spans = index.linkType(declaration)
+      expect(spans.some((span) => span.help)).toBe(false)
+      expect(spans.map((span) => span.text).join('')).toBe(declaration)
+    }
+    expect(new SymbolIndex([], () => '#', 'java').linkType('[[nodiscard]]').some((span) => span.help)).toBe(false)
+  })
+
   it.each([
     ['kotlin', 'List<String>', 'List', 'https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/'],
     ['scala', 'Option[String]', 'Option', 'https://www.scala-lang.org/api/3.x/scala/Option.html'],
