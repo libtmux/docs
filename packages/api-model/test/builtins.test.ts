@@ -1,10 +1,46 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { builtinHref } from '../src/builtins.ts'
+import { builtinHref, TYPESCRIPT_UTILITY_TYPES } from '../src/builtins.ts'
 import { SymbolIndex } from '../src/link.ts'
 import type { ApiModel, ApiSymbol } from '../src/model.ts'
 
 describe('standard types in product signatures', () => {
+  it('links standard PowerShell commands without claiming LibTmux members or other ports', () => {
+    const commands = {
+      'Get-Member': 'microsoft.powershell.utility',
+      'Where-Object': 'microsoft.powershell.core',
+      'Invoke-WebRequest': 'microsoft.powershell.utility',
+      'Start-ThreadJob': 'threadjob',
+      'Receive-Job': 'microsoft.powershell.core',
+      'Set-Content': 'microsoft.powershell.management',
+    }
+    for (const [name, module] of Object.entries(commands)) {
+      expect(builtinHref('powershell', name)).toBe(`https://learn.microsoft.com/powershell/module/${module}/${name.toLowerCase()}?view=powershell-7.4`)
+      expect(builtinHref('csharp', name)).toBeUndefined()
+    }
+    for (const name of ['Get-InventedCommand', 'Stop', 'Boolean', 'Name', 'CaptureResult']) {
+      expect(builtinHref('powershell', name)).toBeUndefined()
+    }
+    expect(builtinHref('powershell', 'FileInfo')).toBe('https://learn.microsoft.com/dotnet/api/system.io.fileinfo')
+    expect(builtinHref('powershell', 'ApplicationInfo')).toBe('https://learn.microsoft.com/dotnet/api/system.management.automation.applicationinfo?view=powershellsdk-7.4.0')
+  })
+
+  it('resolves compiler utility types without claiming local declarations', () => {
+    const utilities = new SymbolIndex([], () => '#', 'ts')
+    for (const [name, target] of Object.entries(TYPESCRIPT_UTILITY_TYPES)) {
+      expect(utilities.resolve(name)).toMatchObject({ href: target, external: true })
+      expect(new URL(target).pathname).toBe('/docs/handbook/utility-types.html')
+      expect(new URL(target).hash).not.toBe('')
+      expect(builtinHref('go', name)).toBeUndefined()
+    }
+    const local: ApiSymbol = {
+      id: 'example.Record', name: 'Record', kind: 'typealias', modifiers: [],
+      signatures: [], source: { file: 'example.ts' },
+    }
+    const index = new SymbolIndex([local], () => '/reference/example-record/', 'ts')
+    expect(index.resolve('Record')).toMatchObject({ href: '/reference/example-record/', external: false })
+  })
+
   it.each([
     ['kotlin', 'suspend', 'https://kotlinlang.org/docs/coroutines-basics.html#suspending-functions'],
     ['scala', 'def', 'https://docs.scala-lang.org/tour/basics.html#methods'],
@@ -20,6 +56,29 @@ describe('standard types in product signatures', () => {
   it('does not inherit object properties as keyword help', () => {
     expect(new SymbolIndex([], () => '#', 'kotlin').linkType('constructor')[0])
       .toEqual({ text: 'constructor', keyword: true })
+  })
+
+  it('offers C++ nodiscard help only for the attribute', () => {
+    const index = new SymbolIndex([], () => '#', 'cxx')
+    for (const declaration of ['[[nodiscard]] bool valid();', '[[nodiscard("check the result")]] bool valid();']) {
+      const spans = index.linkType(declaration)
+      expect(spans.map((span) => span.text).join('')).toBe(declaration)
+      expect(spans.find((span) => span.text === 'nodiscard')).toMatchObject({
+        keyword: true, help: { href: 'https://eel.is/c++draft/dcl.attr.nodiscard' },
+      })
+    }
+    for (const declaration of [
+      'nodiscard', 'void nodiscard();', '/* [[nodiscard]] */', '"[[nodiscard]]"',
+      `void f(const char* value = "don't [[nodiscard]]");`,
+      String.raw`void f(const char* value = "say \"[[nodiscard]]\"");`,
+      'void f(const char* value = R"tag(say "[[nodiscard]]")tag");',
+      'void f(const char* value = u8R"("[[nodiscard]]")");',
+    ]) {
+      const spans = index.linkType(declaration)
+      expect(spans.some((span) => span.help)).toBe(false)
+      expect(spans.map((span) => span.text).join('')).toBe(declaration)
+    }
+    expect(new SymbolIndex([], () => '#', 'java').linkType('[[nodiscard]]').some((span) => span.help)).toBe(false)
   })
 
   it.each([

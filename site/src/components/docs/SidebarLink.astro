@@ -12,13 +12,19 @@ interface Props {
   external?: boolean
   level?: number
   kind?: string
+  disabled?: boolean
 }
 
-const { href, label, isActive = false, external = false, level = 1, kind } = Astro.props
+const { href, label, isActive = false, external = false, level = 1, kind, disabled = false } = Astro.props
+const Tag = disabled ? 'span' : 'a'
 ---
 
-<a
-  href={href}
+<Tag
+  href={disabled ? undefined : href}
+  role={disabled ? 'link' : undefined}
+  aria-disabled={disabled ? 'true' : undefined}
+  title={disabled ? 'No objects advertised in the reference configuration' : undefined}
+  data-sidebar-label={label}
   class:list={['sidebar-link api-nav__row', { active: isActive }]}
   style={`--level:${level}`}
   aria-current={isActive ? 'page' : undefined}
@@ -36,7 +42,7 @@ const { href, label, isActive = false, external = false, level = 1, kind } = Ast
     )
   }
   {external && <span class="sr-only"> (opens in a new tab)</span>}
-</a>
+</Tag>
 
 <style>
   .sidebar-link[hidden] { display: none; }
@@ -77,5 +83,11 @@ const { href, label, isActive = false, external = false, level = 1, kind } = Ast
   .external-indicator {
     font-size: 0.75rem;
     opacity: 0.6;
+  }
+  .sidebar-link[aria-disabled='true'] {
+    color: var(--color-muted);
+    opacity: .6;
+    cursor: default;
+    background: none;
   }
 </style>

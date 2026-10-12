@@ -13,7 +13,8 @@ import DocumentationScript from '../components/docs/DocumentationScript.astro'
 import NativeSphinxScript from '../components/docs/NativeSphinxScript.astro'
 import type { NativePageContext, NativeShellContext } from '../lib/native-shell'
 import { referencePageLinks } from '../lib/reference-page-links'
-import { PORTS } from '../lib/ports'
+import { PORTS, portHomeUrl } from '../lib/ports'
+import { defaultVersionFor } from '../lib/versions'
 import '../styles/native-sphinx.css'
 
 interface Props { context: NativeShellContext; page: NativePageContext }
@@ -25,6 +26,7 @@ const symbols = Object.fromEntries(page.signatures.filter((id) => references.sym
 const matches = symbols[page.signatures[0]] ?? []
 const entries = PORTS.map((entry) => ({
   port: entry.slug, name: entry.name,
+  home: { href: portHomeUrl(entry, entry.slug === port ? version : defaultVersionFor(entry.slug)), label: `Go to ${entry.name} home` },
   links: entry.slug === port ? [{ href: page.url }]
     : !page.path ? [{ href: references.indexes[entry.slug] }]
       : matches.filter((match, index, all) => match.port === entry.slug && all.findIndex((other) => other.href === match.href) === index),

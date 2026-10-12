@@ -5,10 +5,11 @@ import { installAnchorNavigation } from '../public/_shell/anchors.js'
 const disposals: (() => void)[] = []
 afterEach(() => { disposals.splice(0).forEach((dispose) => dispose()); vi.restoreAllMocks() })
 
-function page(html: string, hash = '', fontsPending = false) {
+function page(html: string, hash = '', fontsPending = false, hintsPending = false) {
   const win = new Window({ url: `https://libtmux.org/en/ts/latest/reference/${hash}` })
   win.document.body.innerHTML = html
   if (fontsPending) win.document.documentElement.classList.add('fonts-pending')
+  if (hintsPending) win.document.documentElement.classList.add('link-hints-pending')
   const frames = new Map<number, FrameRequestCallback>()
   const timers = new Map<number, () => void>()
   let sequence = 0
@@ -103,6 +104,41 @@ describe('shared anchor arrival', () => {
     expect(p.scrolled).toEqual([{ id: 'server', collapsed: 0 }])
   })
 
+  it.each(['fonts-pending', 'link-hints-pending'])('waits for both visibility gates when %s finishes first', async (first) => {
+    const p = page('<details><summary>API</summary><h2 id="server">Server</h2></details>', '#server', true, true)
+    expect(p.doc.querySelector('details')?.open).toBe(true)
+    expect(p.timers.size).toBe(0)
+    p.doc.documentElement.classList.remove(first)
+    await p.win.happyDOM.waitUntilComplete(); p.flush()
+    expect(p.doc.querySelector('[data-anchor-arrival]')).toBeNull()
+    expect(p.timers.size).toBe(0)
+    p.doc.documentElement.classList.remove('fonts-pending', 'link-hints-pending')
+    await p.win.happyDOM.waitUntilComplete(); p.flush()
+    expect(p.doc.querySelector('[data-anchor-arrival]')?.id).toBe('server')
+    expect(p.win.setTimeout).toHaveBeenLastCalledWith(expect.any(Function), 2600)
+    expect(p.scrolled).toEqual([{ id: 'server', collapsed: 0 }])
+  })
+
+  it.each([false, true])('starts a full cue after the link gate releases, including suppressed icons: %s', async (suppressed) => {
+    const p = page('<h2 id="server">Server</h2>', '#server', false, true)
+    expect(p.doc.querySelector('[data-anchor-arrival]')).toBeNull()
+    expect(p.timers.size).toBe(0)
+    p.doc.documentElement.classList.toggle('link-hints-suppressed', suppressed)
+    p.doc.documentElement.classList.remove('link-hints-pending')
+    await p.win.happyDOM.waitUntilComplete(); p.flush()
+    expect(p.doc.querySelector('[data-anchor-arrival]')?.id).toBe('server')
+    expect(p.win.setTimeout).toHaveBeenLastCalledWith(expect.any(Function), 2600)
+  })
+
+  it('disconnects a pending link-gate observer when the page is replaced', async () => {
+    const p = page('<h2 id="server">Server</h2>', '#server', false, true)
+    p.dispose()
+    p.doc.documentElement.classList.remove('link-hints-pending')
+    await p.win.happyDOM.waitUntilComplete(); p.flush()
+    expect(p.doc.querySelector('[data-anchor-arrival]')).toBeNull()
+    expect(p.timers.size).toBe(0)
+  })
+
   it('ignores malformed fragments, other destinations, modified clicks and downloads', () => {
     const p = page('<h2 id="target">Target</h2><a id="external" href="https://example.com/#target">External</a><a id="other" href="../other/#target">Other</a><a id="modified" href="#target">Modified</a><a id="download" href="#target" download>Download</a>', '#%E0%A4')
     expect(p.doc.querySelector('[data-anchor-arrival]')).toBeNull()
@@ -121,5 +157,33 @@ describe('shared anchor arrival', () => {
     p.doc.dispatchEvent(new p.win.CustomEvent('libtmux:anchor-arrival', { detail: { id: 'examples' } }))
     p.flush()
     expect(p.scrolled).toHaveLength(1)
+  })
+
+  it.each(['../other/#target', '?view=other#target'])('loads an unowned history destination when the old page remains mounted: %s', (destination) => {
+    const p = page('<h2 id="target">Target</h2>')
+    const reload = vi.spyOn(p.win.location, 'reload').mockImplementation(() => {})
+    p.win.history.replaceState(null, '', destination)
+    p.win.dispatchEvent(new p.win.PopStateEvent('popstate', { state: null }))
+    expect(reload).toHaveBeenCalledOnce()
+    expect(p.win.history.state).toBeNull()
+  })
+
+  it('leaves native same-page fragments and router-owned history to their normal navigation', () => {
+    const p = page('<h2 id="target">Target</h2>')
+    const reload = vi.spyOn(p.win.location, 'reload').mockImplementation(() => {})
+    p.win.history.replaceState(null, '', '#target')
+    p.win.dispatchEvent(new p.win.PopStateEvent('popstate', { state: null }))
+    p.win.history.replaceState({ index: 1 }, '', '../other/')
+    p.win.dispatchEvent(new p.win.PopStateEvent('popstate', { state: { index: 1 } }))
+    expect(reload).not.toHaveBeenCalled()
+  })
+
+  it('stops history fallback when the mounted page is replaced', () => {
+    const p = page('<h2 id="target">Target</h2>')
+    const reload = vi.spyOn(p.win.location, 'reload').mockImplementation(() => {})
+    p.dispose()
+    p.win.history.replaceState(null, '', '../other/')
+    p.win.dispatchEvent(new p.win.PopStateEvent('popstate', { state: null }))
+    expect(reload).not.toHaveBeenCalled()
   })
 })

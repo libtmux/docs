@@ -1,10 +1,12 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { fromMarkdown } from 'mdast-util-from-markdown'
-import type { ApiSymbol } from '@libtmux/api-model'
+import { extractJulia, extractPowerShell, parameterId, SymbolIndex, type ApiSymbol } from '@libtmux/api-model'
 import { API_MODELS, OWNER_KINDS } from '../src/lib/api-models'
 import { membersByType } from '../src/lib/api-tree'
 import { PORTS, PORT_BY_SLUG, referenceUrl } from '../src/lib/ports'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
+import { nativeSignatureText } from '../src/lib/api-sections'
 
 function inlineCodes(text: string): string[] {
   const values: string[] = []
@@ -18,6 +20,125 @@ function inlineCodes(text: string): string[] {
 }
 
 describe('API Markdown content parity', () => {
+  it('exports cross-port native representations and acquisition differences', () => {
+    const model = API_MODELS.cxx
+    const symbol = model.symbols.find((symbol) => symbol.id === 'libtmux::Server')!
+    const text = symbolMarkdown({ model, symbol })
+    expect(text).toContain('## In other ports')
+    expect(text).toContain('PowerShell: [`LibTmux\\New-TmuxServer`]')
+    expect(text).toContain('(cmdlet). This cmdlet constructs a shared .NET `LibTmux.Server`')
+    expect(text).toContain('Julia: [`LibTmux.Server`]')
+    expect(text).toContain('F#: [`LibTmux.FSharp.Server`]')
+    expect(text).toContain('(module). This F# module provides functions')
+    const snapshot = API_MODELS.julia.symbols.find((symbol) => symbol.id === 'LibTmux.snapshot')!
+    const acquisition = symbolMarkdown({ model: API_MODELS.julia, symbol: snapshot })
+    expect(acquisition).toContain('Capture the tmux hierarchy')
+    expect(acquisition).not.toContain('at one instant')
+    expect(acquisition).toContain('Acquisition is not atomic')
+  })
+
+  it('separates long TypeScript parameter lines and exports inline option descriptions as prose', () => {
+    const model = API_MODELS.ts
+    const symbol = model.symbols.find((entry) => entry.id === 'mcp.server.createTmuxMcpServer')!
+    const text = symbolMarkdown({ model, symbol })
+    const signature = fromMarkdown(text).children.find((node) => node.type === 'code')!
+    expect(signature.type === 'code' && signature.value).toContain('createTmuxMcpServer(\n  tmux: Server,\n  options: {\n    readonly callerEnvironment?')
+    expect(signature.type === 'code' && signature.value).not.toContain('/**')
+    expect(text).not.toContain(': :')
+    const params = text.slice(text.indexOf('## Parameters'))
+    expect(params).toContain('`tmux` (`Server`)')
+    expect(params).toContain('`callerEnvironment`: Complete environment identifying')
+    expect(params).toContain('`startup`: Socket state and configuration provenance')
+    expect(params).toContain('Default: `{}`.')
+  })
+
+  it('does not repeat a sole Julia method source that the header already identifies', () => {
+    const model = API_MODELS.julia
+    const symbol = model.symbols.find((entry) => entry.id === 'LibTmux.from_env')!
+    const source = `https://github.com/${symbol.source.repo}/blob/${symbol.source.revision}/${symbol.source.file}#L${symbol.source.line}`
+    const text = symbolMarkdown({ model, symbol, source })
+    expect(text.split(source)).toHaveLength(2)
+    expect(text).toContain('Mapping used to read `TMUX`.')
+    expect(text).toContain('Explicit socket selectors bypass this lookup.')
+    expect(text).toContain('Executable name or path for later operations')
+  })
+
+  it('displays Julia aliases, keyword defaults and resolved Documenter links', () => {
+    const model = API_MODELS.julia
+    const index = new SymbolIndex(model.symbols, (symbol) => `/reference/${symbol.slug}/`, 'julia')
+    const alias = model.symbols.find((entry) => entry.id === 'LibTmux.SessionID')!
+    expect(symbolMarkdown({ model, symbol: alias, index })).toContain('SessionID = TmuxID{:session}')
+    const contains = model.symbols.find((entry) => entry.id === 'LibTmux.Filters.Contains')!
+    expect(symbolMarkdown({ model, symbol: contains, index })).toContain('Default: `:sensitive`.')
+    const cursor = model.symbols.find((entry) => entry.id === 'LibTmux.ObservationCursor')!
+    const markdown = symbolMarkdown({ model, symbol: cursor, index })
+    expect(markdown).not.toContain('](@ref)')
+    expect(markdown).toContain('](/reference/libtmux-observation_cursor/)')
+    const spans = index.linkText('[`observation_cursor`](@ref) and [Unicode](https://www.unicode.org/)', cursor)
+    expect(spans.find((span) => span.kind === 'ref')?.link?.href).toBe('/reference/libtmux-observation_cursor/')
+    expect(spans.find((span) => span.kind === 'link')).toMatchObject({ text: 'Unicode', href: 'https://www.unicode.org/' })
+  })
+
+  it('resolves PowerShell help links relative to their immutable source file', () => {
+    const model = API_MODELS.powershell
+    const commands = model.symbols.filter((symbol) => symbol.command)
+    const links = commands.flatMap((symbol) => symbol.command!.relatedLinks).filter((link) => link.href)
+    expect(links.length).toBeGreaterThan(100)
+    expect(links.every((link) => /^https:\/\//.test(link.href))).toBe(true)
+    expect(links.some((link) => link.href === `https://github.com/${model.repo}/blob/${model.revision}/docs/commands.md`)).toBe(true)
+    const index = new SymbolIndex(model.symbols, (symbol) => `/reference/${symbol.slug}/`, 'powershell')
+    const spans = index.linkText('[Guide](https://example.com/guide)')
+    expect(spans).toEqual([{ kind: 'link', text: 'Guide', href: 'https://example.com/guide' }])
+  })
+
+  it('retains Julia method documentation, source links and optional-extension requirements', () => {
+    const model = extractJulia(JSON.parse(readFileSync(new URL('../../packages/api-model/test/fixtures/julia-native.json', import.meta.url), 'utf8')))
+    const index = new SymbolIndex(model.symbols, (symbol) => `/reference/${encodeURIComponent(symbol.id)}/`, 'julia')
+    const kill = model.symbols.find((entry) => entry.id === 'LibTmux.kill_session')!
+    const text = symbolMarkdown({ model, symbol: kill, index })
+    for (const signature of kill.signatures) {
+      expect(text).toContain(nativeSignatureText(kill, signature, 'julia'))
+      expect(text).toContain(`/${signature.source!.file}#L${signature.source!.line}`)
+      if (signature.doc?.summary) expect(text).toContain(signature.doc.summary)
+    }
+    expect(text).toContain('## Methods')
+    expect(text).toContain('pinned daemon')
+    const codec = model.symbols.find((entry) => entry.id === 'LibTmux.read_where_json')!
+    expect(symbolMarkdown({ model, symbol: codec, index })).toContain('Available when `LibTmuxJSONExt` is loaded.')
+  })
+
+  it('exports separate, formatted C++ overloads with native specifiers and punctuation', () => {
+    const model = API_MODELS.cxx
+    const symbol = model.symbols.find((entry) => entry.id === 'libtmux::mcp::Arguments::Arguments')!
+    const index = new SymbolIndex(model.symbols, (entry) => `/reference/${entry.slug}/`, 'cxx')
+    const text = symbolMarkdown({ model, symbol, index })
+    expect(text).toContain('Arguments() = default;\n\nArguments(\n    std::initializer_list<std::pair<std::string_view, std::string_view>> values);\n\nexplicit Arguments(FlatArguments values);')
+    expect(text).not.toContain('values:')
+    const signature = symbol.signatures[2]
+    const spans = index.linkType(signature.raw!, symbol, signature)
+    expect(spans.find((span) => span.text === 'Arguments')?.declaration).toBe(true)
+    expect(spans.find((span) => span.text === 'explicit')?.keyword).toBe(true)
+    expect(spans.find((span) => span.text === 'values')?.link?.href).toBe(`/reference/${symbol.slug}/#${encodeURIComponent(parameterId(symbol, 'values'))}`)
+    expect(spans.find((span) => span.text === 'FlatArguments')?.link?.symbol?.id).toBe('libtmux::mcp::FlatArguments')
+  })
+
+  it('exports PowerShell syntax, parameter bindings, defaults and prose after examples', () => {
+    const model = extractPowerShell(JSON.parse(readFileSync(new URL('../../packages/api-model/test/fixtures/powershell-native.json', import.meta.url), 'utf8')))
+    const index = new SymbolIndex(model.symbols, (symbol) => `/reference/${encodeURIComponent(symbol.id)}/`, 'powershell')
+    const pane = model.symbols.find((entry) => entry.name === 'Get-TmuxPane')!
+    const text = symbolMarkdown({ model, symbol: pane, index })
+    for (const signature of pane.signatures) expect(text).toContain(nativeSignatureText(pane, signature, 'powershell'))
+    expect(text).toContain('## Command details')
+    expect(text).toContain('Required. Position 0. Accepts pipeline input by value.')
+    expect(text).toContain(' (for `Server`)')
+    const invoke = model.symbols.find((entry) => entry.name === 'Invoke-TmuxPaneCommand')!
+    const invocation = symbolMarkdown({ model, symbol: invoke, index })
+    expect(invocation).toContain('Documented default: `30`.')
+    const example = invoke.doc!.examples![0]
+    expect(invocation).toContain(example.outro)
+    expect(invocation.indexOf(example.outro!)).toBeGreaterThan(invocation.indexOf(example.code))
+  })
+
   it('exports parent objects ahead of the collections and operations they own', () => {
     const model = API_MODELS.java
     const symbol = model.symbols.find((entry) => entry.id === 'io.github.libtmux.Window.Window')!
@@ -154,15 +275,15 @@ describe('API Markdown content parity', () => {
         examples: [{ lang: 'ts', code: 'await pane.capture()', intro: 'Read visible lines.' }] },
     }
     const text = symbolMarkdown({ model: { ...API_MODELS.ts, symbols: [symbol] }, symbol })
-    expect(text).toContain('Server.capture(limit: number) -> string[]')
-    expect(text).toContain('Server.capture(options: CaptureOptions) -> string[]')
+    expect(text).toContain('Server.capture(limit: number): string[]')
+    expect(text).toContain('Server.capture(options: CaptureOptions): string[]')
     expect(text).toContain('**Inherited from:** Base.capture')
     expect(text).toContain('## Deprecated\n\nUse Pane.capture.')
     expect(text).toContain('## Changed\n\nReturns complete lines.')
     expect(text).toContain('**warning:** The pane may exit between commands.')
     expect(text).toContain('- [manual] The tmux capture-pane manual.')
-    expect(text).toContain('## Parameters\n\n- `options` (`CaptureOptions`): Choose the line range. (added 1.2) (deprecated Use a range.)')
-    expect(text).not.toContain('- `limit`')
+    expect(text).toContain('## Parameters\n\n- `limit` (`number`)')
+    expect(text).toContain('- `options` (`CaptureOptions`): Choose the line range. (added 1.2) (deprecated Use a range.)')
     expect(text).toContain('## Returns\n\nThe captured lines.')
     expect(text).toContain('## Raises\n\n- `CaptureError`: The pane no longer exists.')
     expect(text.indexOf('## Examples')).toBeLessThan(text.indexOf('## Parameters'))

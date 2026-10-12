@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { SymbolIndex } from '../src/link.ts'
-import type { ApiSymbol } from '../src/model.ts'
+import type { ApiSymbol, Signature } from '../src/model.ts'
 
 /**
  * Bare names that more than one symbol answers to.
@@ -45,6 +45,63 @@ it('links F# types around apostrophe-prefixed generic parameters', () => {
   const idx = new SymbolIndex([sym('Filter'), sym('Field')], (s) => `/${s.id}/`, 'fsharp')
   expect(idx.linkType("Filter<'T> -> Field<'T, 'Value>").filter((span) => span.link).map((span) => span.text))
     .toEqual(['Filter', 'Field'])
+})
+
+it('keeps Julia symbol literals separate from same-named APIs', () => {
+  const idx = new SymbolIndex([
+    sym('LibTmux.TmuxID'), sym('LibTmux.session', 'function'), sym('LibTmux.window', 'function'),
+  ], (s) => `/${s.id}/`, 'julia')
+  expect(linkFor(idx, 'session', 'session')?.href).toBe('/LibTmux.session/')
+  for (const annotation of ['TmuxID{:session}', '::TmuxID{:window}', 'Tuple{:session, :window}']) {
+    const spans = idx.linkType(annotation)
+    expect(spans.map((span) => span.text).join('')).toBe(annotation)
+    expect(spans.filter((span) => span.link).map((span) => span.text))
+      .toEqual(annotation.includes('TmuxID') ? ['TmuxID'] : [])
+  }
+})
+
+it('links Julia types after annotations without linking declaration names', () => {
+  const server = sym('LibTmux.Server')
+  const id = sym('LibTmux.TmuxID')
+  const idx = new SymbolIndex([server, id], (s) => `/${s.id}/`, 'julia')
+  const signature = { raw: 'LibTmux.Server(value::LibTmux.TmuxID{K}; socket_path) where K',
+    params: [{ name: 'value', type: 'LibTmux.TmuxID{K}' }, { name: 'socket_path', keywordOnly: true }], typeParams: ['K'] }
+  const spans = idx.linkType(signature.raw, server, signature)
+  expect(spans.map((span) => span.text).join('')).toBe(signature.raw)
+  expect(spans.filter((span) => span.link).map((span) => span.link?.href)).toEqual([
+    '/LibTmux.Server/#LibTmux.Server.parameter.value', '/LibTmux.TmuxID/',
+    '/LibTmux.Server/#LibTmux.Server.parameter.socket_path',
+  ])
+  expect(spans.filter((span) => span.declaration).map((span) => span.text)).toEqual(['Server', 'value', 'K', 'socket_path', 'K'])
+  expect(spans.find((span) => span.text === 'where')?.keyword).toBe(true)
+})
+
+it('links Julia variadic parameters without consuming their splat punctuation', () => {
+  const command = sym('LibTmux.capture_baseline', 'function')
+  const server = sym('LibTmux.Server')
+  const idx = new SymbolIndex([command, server], (s) => `/${s.id}/`, 'julia')
+  const signature = { raw: 'capture_baseline(server::LibTmux.Server, args...; kwargs...)',
+    params: [{ name: 'server', type: 'LibTmux.Server' }, { name: 'args', variadic: 'positional' },
+      { name: 'kwargs', variadic: 'keyword', keywordOnly: true }] } satisfies Signature
+  const spans = idx.linkType(signature.raw, command, signature)
+  expect(spans.map((span) => span.text).join('')).toBe(signature.raw)
+  for (const name of ['server', 'args', 'kwargs']) {
+    expect(spans.find((span) => span.text === name)?.link?.href)
+      .toBe(`/LibTmux.capture_baseline/#LibTmux.capture_baseline.parameter.${name}`)
+  }
+  expect(spans.find((span) => span.text === 'LibTmux.Server')?.link?.href).toBe('/LibTmux.Server/')
+  expect(spans.filter((span) => span.text.includes('...')).every((span) => !span.link)).toBe(true)
+})
+
+it('links Julia subtype bounds while leaving Symbol literals alone', () => {
+  const field = sym('LibTmux.FormatField')
+  const idx = new SymbolIndex([field, sym('LibTmux.session', 'function')], (s) => `/${s.id}/`, 'julia')
+  for (const annotation of ['AbstractVector{<:LibTmux.FormatField}', 'T<:LibTmux.FormatField',
+    'T>:LibTmux.FormatField', 'Tuple{:session, <:LibTmux.FormatField}']) {
+    const spans = idx.linkType(annotation)
+    expect(spans.map((span) => span.text).join('')).toBe(annotation)
+    expect(spans.filter((span) => span.link).map((span) => span.link?.href)).toEqual(['/LibTmux.FormatField/'])
+  }
 })
 
 describe('a bare name with more than one candidate', () => {

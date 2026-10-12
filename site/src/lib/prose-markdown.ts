@@ -19,14 +19,24 @@ export function linkProseMarkdown(raw: string, port?: string, product?: ApiProdu
   const linkApi = !port || PORT_BY_SLUG[port]?.referenceKind !== 'guide'
   const spans = new Set<number>()
   const edits: { start: number; end: number; text: string }[] = []
+  const link = createProseLinker(product)
   let htmlDepth = 0
   visit(fromMarkdown(body), (node) => {
-    if (project.authored && (node.type === 'link' || node.type === 'definition')) {
+    if ((node.type === 'link' || node.type === 'definition') && (project.authored || node.url.startsWith('mcp:'))) {
       const start = node.position?.start.offset
       const end = node.position?.end.offset
       if (start !== undefined && end !== undefined) {
         const owner = portAt(start) ?? port
-        edits.push({ start, end, text: rewriteMarkdownLinks(body.slice(start, end), (href: string) => project.authored!(href, owner)) })
+        edits.push({ start, end, text: rewriteMarkdownLinks(body.slice(start, end), (href: string) => {
+          if (href.startsWith('mcp:')) {
+            const paragraph = body.lastIndexOf('\n\n', start)
+            const before = body.slice(paragraph < 0 ? 0 : paragraph + 2, start)
+            const decision = link(href, { pagePort: owner, before })
+            if (decision.kind === 'link') return project.resolved?.(decision.href) ?? decision.href
+            return href
+          }
+          return project.authored?.(href, owner) ?? href
+        }) })
       }
     }
     if (['link', 'linkReference', 'image', 'imageReference', 'code', 'definition'].includes(node.type)) return SKIP
@@ -39,7 +49,6 @@ export function linkProseMarkdown(raw: string, port?: string, product?: ApiProdu
       spans.add(node.position.start.offset)
     }
   })
-  const link = createProseLinker(product)
   for (const mention of proseMentions(body, PORT_BY_LABEL, portAt)) {
     if (!spans.has(mention.start)) continue
     const decision = link(mention.text, { pagePort: portAt(mention.start) ?? port ?? mention.port, before: mention.before })

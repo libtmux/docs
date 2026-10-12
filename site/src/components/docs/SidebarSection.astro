@@ -1,36 +1,44 @@
 ---
-import { isActivePath, type SidebarLinkItem } from '../../lib/sidebar'
+import { isActivePath, type SidebarItem } from '../../lib/sidebar'
 import SidebarLink from './SidebarLink.astro'
+import ApiBadge from '../api/ApiBadge.astro'
 
 interface Props {
   label: string
   href?: string
-  items: SidebarLinkItem[]
+  kind?: string
+  level?: number
+  items: SidebarItem[]
   currentPath: string
 }
 
-const { label, href, items, currentPath } = Astro.props
+const { label, href, kind, level = 1, items, currentPath } = Astro.props
 const current = Boolean(href && isActivePath(href, currentPath))
-const expanded = current || items.some((item) => isActivePath(item.href, currentPath))
+const containsCurrent = (entries: SidebarItem[]): boolean => entries.some((item) =>
+  Boolean(item.href && isActivePath(item.href, currentPath)) || (item.type === 'group' && containsCurrent(item.items)))
+const expanded = current || containsCurrent(items)
 ---
 
 {items.length ? (
   <details class="sidebar-section" open={expanded}>
-    <summary class="api-nav__row section-label" style="--level:1">
-      {href ? <a href={href} class="api-nav__label" aria-current={current ? 'page' : undefined}>{label}</a>
-        : <span class="api-nav__label">{label}</span>}
+    <summary class="api-nav__row section-label" style={`--level:${level}`}>
+      {href ? <a href={href} data-sidebar-label={label} class="api-nav__label" aria-current={current ? 'page' : undefined} aria-description={kind}>{kind && <ApiBadge label={kind} variant="kind" value={kind} compact />}{label}</a>
+        : <span class="api-nav__label" aria-description={kind}>{kind && <ApiBadge label={kind} variant="kind" value={kind} compact />}{label}</span>}
       <span class="api-nav__chevron" aria-hidden="true" />
     </summary>
     <div class="sidebar-section__children">
-      {items.map((item) => <SidebarLink href={item.href} label={item.label} external={item.external} kind={item.kind}
-        isActive={isActivePath(item.href, currentPath)} level={2} />)}
+      {items.map((item) => item.type === 'group'
+        ? <Astro.self label={item.label} href={item.href} kind={item.kind} items={item.items} currentPath={currentPath} level={level + 1} />
+        : <SidebarLink href={item.href} label={item.label} external={item.external} kind={item.kind} disabled={item.disabled}
+            isActive={isActivePath(item.href, currentPath)} level={level + 1} />)}
     </div>
   </details>
-) : href && <SidebarLink href={href} label={label} isActive={current} />}
+) : href && <SidebarLink href={href} label={label} kind={kind} isActive={current} level={level} />}
 
 <style>
   .sidebar-section { margin-block: 0.125rem; }
   .section-label { list-style: none; }
+  .section-label > .api-nav__label { display: flex; align-items: center; gap: .25rem; min-width: 0; }
   .section-label::-webkit-details-marker { display: none; }
   .section-label:focus-visible {
     outline: 2px solid var(--focus-ring-color);

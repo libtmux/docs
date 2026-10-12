@@ -175,7 +175,7 @@ async function checkSignatureLayouts(browser, base) {
           for (const declaration of model.signatures) assert(visibleText.includes(clean(declaration.raw)),
             `${port}: native declaration survives at ${width}px`)
         } else {
-          assert.deepEqual(await signature.locator('.sig-param > .n').allTextContents(),
+          assert.deepEqual(await signature.locator('.sig-param > :is(.n, .api-parameter-name)').allTextContents(),
             model.signatures.flatMap((declaration) => declaration.params.map((param) => param.name)),
             `${port}: all parameters survive at ${width}px`)
           assert.deepEqual((await signature.locator('.sig-return-typehint').allTextContents()).map(clean),
@@ -318,6 +318,9 @@ async function checkKeywordHelp(browser, base) {
           assert.equal(after.height, before.height, 'Keyword help does not change the signature height')
           const docs = panel.getByRole('link', { name: 'Language documentation' })
           assert.equal(await docs.getAttribute('href'), 'https://kotlinlang.org/docs/coroutines-basics.html#suspending-functions')
+          const close = panel.getByRole('button', { name: 'Close preview', exact: true })
+          await page.keyboard.press('Tab')
+          assert(await close.evaluate((element) => element === document.activeElement), 'Tab reaches the close control first')
           await page.keyboard.press('Tab')
           assert(await docs.evaluate((element) => element === document.activeElement), 'Tab reaches the documentation link')
           await page.keyboard.press('Escape')
@@ -334,7 +337,7 @@ async function checkKeywordHelp(browser, base) {
           await page.setViewportSize({ width, height: 900 })
           await trigger.click()
           await panel.waitFor({ state: 'visible' })
-          await panel.getByRole('button', { name: 'Close', exact: true }).click()
+          await close.click()
           await panel.waitFor({ state: 'hidden' })
           if (javaScriptEnabled) {
             await page.mouse.move(0, 0)
@@ -366,7 +369,7 @@ async function checkKeywordHelp(browser, base) {
 
 async function checkReferenceAndHeroes(browser, base) {
   const page = await browser.newPage({ reducedMotion: 'reduce' })
-  page.setDefaultTimeout(10000)
+  page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
   try {
     await checkApiExampleOwnership(page, base, 'api-example-probe/')
     for (const path of ['ts/latest/workspace/', 'ruby/latest/mcp/', 'cxx/latest/workspace/', 'cxx/latest/mcp/']) {
@@ -420,16 +423,10 @@ async function checkReferenceAndHeroes(browser, base) {
     const qualified = page.locator('.api-qualified-name')
     const fullName = 'io.github.libtmux.kotlin.Server.liveState'
     const namespace = qualified.locator('.api-qualified-namespace')
-    assert.equal(await namespace.innerText(), 'i.g.l.kotlin')
-    assert.equal(await namespace.getAttribute('title'), 'io.github.libtmux.kotlin')
-    const expand = qualified.getByRole('button', { name: 'Show full name', exact: true })
-    await expand.focus()
-    await page.keyboard.press('Enter')
     assert.equal(await namespace.innerText(), 'io.github.libtmux.kotlin')
-    assert.equal(await qualified.locator('[data-api-expand-name]').getAttribute('aria-expanded'), 'true')
-    await page.keyboard.press('Enter')
-    assert.equal(await namespace.innerText(), 'i.g.l.kotlin')
-    assert.equal(await expand.getAttribute('aria-expanded'), 'false')
+    assert.equal(await namespace.getAttribute('title'), 'io.github.libtmux.kotlin')
+    assert.equal(await qualified.locator('[data-api-expand-name]').count(), 0,
+      'Ordinary package names remain fully visible without an expansion control')
     for (const reject of [false, true]) {
       await page.evaluate((reject) => {
         Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
@@ -508,9 +505,9 @@ async function checkReferenceAndHeroes(browser, base) {
     ]) {
       await page.goto(`${base}/java/latest/reference/io-github-libtmux-${slug}/`)
       assert.equal(await page.title(), `${qualifiedName} | libtmux-java`)
-      assert.equal(await page.locator('.api-qualified-namespace').innerText(), 'i.g.libtmux')
-      await page.getByRole('button', { name: 'Show full name', exact: true }).click()
       assert.equal(await page.locator('.api-qualified-namespace').innerText(), 'io.github.libtmux')
+      assert.equal(await page.locator('[data-api-expand-name]').count(), 0,
+        'Ordinary Java package names remain fully visible without an expansion control')
       assert.equal(await page.locator('[data-api-copy-name]').getAttribute('data-api-copy-name'), qualifiedName)
       const legacyId = qualifiedName.replace('libtmux.Server', 'libtmux.Server.Server')
       assert(await page.locator(`[id="${legacyId}"]`).evaluate((element) => element.matches('dt.gp-sphinx-api-header')),
@@ -547,8 +544,10 @@ async function checkReferenceAndHeroes(browser, base) {
     }, 'Java manifest records source identity alongside its stable declaration URL')
     await page.goto(`${base}/kotlin/latest/reference/io-github-libtmux-kotlin-server/`)
     const javaEquivalent = page.locator('.api-elsewhere a[href$="/java/latest/reference/io-github-libtmux-server-server/"]')
-    assert.equal(await javaEquivalent.textContent().then((text) => text.trim()), 'io.github.libtmux.Server',
+    assert.equal(await javaEquivalent.locator(':scope > code').textContent(), 'io.github.libtmux.Server',
       'Equivalent Java API labels use the target source identity while retaining its stable URL')
+    assert.equal(await javaEquivalent.locator(':scope > .api-badge--kind-class[aria-hidden="true"]').textContent(), 'C',
+      'The decorative kind badge remains separate from the exact source name')
     console.log('Java names: source package and exact qualified names render without changing declaration anchors')
   } finally {
     await page.close()
@@ -597,13 +596,13 @@ try {
     await retryReload(() => checkDocumentationNavigation(browser, base, true))
   } else if (apiNavigationOnly) {
     const page = await browser.newPage({ reducedMotion: 'reduce' })
-    page.setDefaultTimeout(10000)
+    page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     await retryReload(() => checkApiNavigation(page, base))
   } else if (apiAnchorsOnly) {
     await retryReload(() => checkApiAnchorArrival(browser, base))
   } else {
-    // Keep one auxiliary check beside the main page walk. Starting every
-    // matrix at once saturates the compiler and times out unrelated pages.
+    // Timed page loads share Vite's compiler. Finish each browser matrix
+    // before starting the next, including the main page walk below.
     let previous = Promise.resolve()
     const schedule = (check) => {
       const pending = previous.then(check).then(() => null, (error) => error)
@@ -615,15 +614,15 @@ try {
     // Finish that initial compilation before starting timed browser navigation.
     await apiExamples
     const page = await browser.newPage({ reducedMotion: 'reduce' })
-    page.setDefaultTimeout(10000)
+    page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     const manifest = await page.request.get(`${base}/page-links.json`)
     assert(manifest.ok(), `Native navigation manifest: HTTP ${manifest.status()}`)
     assert.equal((await manifest.json()).schema, 1)
     const clipboardPage = await browser.newPage()
-    clipboardPage.setDefaultTimeout(10000)
+    clipboardPage.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     const clipboard = schedule(() => checkClipboard(clipboardPage, base).finally(() => clipboardPage.close()))
     const navigationPage = await browser.newPage({ reducedMotion: 'reduce' })
-    navigationPage.setDefaultTimeout(10000)
+    navigationPage.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     const navigation = schedule(() => retryReload(() => checkNavigation(navigationPage, base)).finally(() => navigationPage.close()))
     const reference = schedule(() => checkReferenceAndHeroes(browser, base).then(() => checkSignatureLayouts(browser, base))
       .then(() => retryReload(() => checkKeywordHelp(browser, base)))
@@ -633,9 +632,10 @@ try {
     const homeLauncher = schedule(() => checkHomeLauncher(browser, base))
     const documentationNavigation = schedule(() => retryReload(() => checkDocumentationNavigation(browser, base)))
     const apiNavigationPage = await browser.newPage({ reducedMotion: 'reduce' })
-    apiNavigationPage.setDefaultTimeout(10000)
+    apiNavigationPage.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     const apiNavigation = schedule(() => retryReload(() => checkApiNavigation(apiNavigationPage, base)).finally(() => apiNavigationPage.close()))
     const apiAnchors = schedule(() => retryReload(() => checkApiAnchorArrival(browser, base)))
+    await apiAnchors
     const paths = ['tmux/concepts/server-session-window-pane', 'tmux/examples/attach-and-send-keys', 'mcp/tools', 'ts/latest/workspace/reference/builder-applyworkspace',
       'ts/latest/workspace/internals/guides', 'py/stable/workspace/guides',
       'ts/latest/mcp/tools', 'csharp/latest/mcp/tools/capture_pane']
@@ -671,18 +671,45 @@ try {
         assert.equal(await switcher.locator('.tmux-area a').getAttribute('href'), '/en/tmux/')
       }
       if (path === 'py/stable/workspace/guides') {
-        assert.equal(await portLinks.count(), workspacePortCount)
-        assert.equal(
-          await switcher.locator('[aria-disabled="true"]').count(),
-          PORTS.length - workspacePortCount,
-        )
+        // Native PowerShell and Julia articles live at workspace/source-guide,
+        // not this guide index; product availability alone is not a counterpart.
+        const guidePorts = ['py', 'ruby', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift']
+        assert.deepEqual((await portLinks.evaluateAll((links) => links.map((link) => link.dataset.port))).sort(),
+          [...guidePorts].sort())
+        assert.equal(await portLinks.count(), guidePorts.length)
+        const unmatched = switcher.locator('.doc-picker-option--unmatched')
+        const unavailablePorts = PORTS.filter((port) => !guidePorts.includes(port.slug))
+        assert.deepEqual((await unmatched.evaluateAll((rows) => rows.map((row) => row.dataset.port))).sort(),
+          unavailablePorts.map((port) => port.slug).sort())
+        assert.equal(await unmatched.count(), PORTS.length - guidePorts.length)
+        for (const port of unavailablePorts) {
+          const row = switcher.locator(`.doc-picker-option--unmatched[data-port="${port.slug}"]`)
+          assert.equal(await row.locator('a[data-port]').count(), 0, `${port.name}: no guide-index equivalent`)
+          assert.equal(await row.getAttribute('aria-disabled'), null, `${port.name}: home exit remains available`)
+          const workspace = productAvailable(port, 'workspace')
+          assert.equal(await row.locator('[data-picker-home]').getAttribute('href'),
+            `/en/${port.slug}/latest/${workspace ? 'workspace/' : ''}`)
+          assert.equal(await row.locator('[data-picker-home]').getAttribute('aria-label'),
+            `Go to ${port.name}${workspace ? ' Workspace Manager' : ''} home`)
+        }
       }
       if (path === 'ts/latest/workspace/internals/guides') {
-        const unavailable = await switcher.locator('[aria-disabled="true"]').allTextContents()
-        assert(unavailable.some((label) => /Python/.test(label)), 'Python internals guide stays unavailable')
+        const python = switcher.locator('.doc-picker-option--unmatched[data-port="py"]')
+        assert.equal(await python.count(), 1, 'Python internals guide stays unmatched')
+        assert.match(await python.textContent(), /No matching page/)
+        assert.equal(await python.locator('a[data-port]').count(), 0)
+        assert.equal(await python.getAttribute('aria-disabled'), null)
+        assert.equal(await python.locator('[data-picker-home]').getAttribute('href'), '/en/py/stable/workspace/')
+        assert.equal(await python.locator('[data-picker-home]').getAttribute('aria-label'), 'Go to Python Workspace Manager home')
       }
       if (path === 'csharp/latest/mcp/tools/capture_pane') {
-        assert.equal(await portLinks.count(), 8)
+        const capturePorts = ['py', 'julia', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift']
+        assert.deepEqual((await portLinks.evaluateAll((links) => links.map((link) => ({
+          port: link.dataset.port, href: link.getAttribute('href'),
+        })))).sort((a, b) => a.port.localeCompare(b.port)),
+        capturePorts.map((port) => ({
+          port, href: `/en/${port}/${port === 'py' ? 'stable' : 'latest'}/mcp/tools/capture_pane/`,
+        })).sort((a, b) => a.port.localeCompare(b.port)))
         assert.equal(await switcher.locator('a[aria-current="page"]').getAttribute('href'), `/en/${path}/`)
       }
       if (isReference) {

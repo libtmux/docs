@@ -271,6 +271,21 @@ describe('each language gets its own spelling of a cross-reference', () => {
   const ref = (spans: ReturnType<typeof tokenizeDoc>) =>
     spans.filter((s) => s.kind === 'ref').map((s) => (s as { target: string }).target)
 
+  it('preserves authored PowerShell code links and keyboard keys', () => {
+    const href = 'https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_commonparameters?view=powershell-7.4#-erroraction'
+    const spans = tokenizeDoc(`Use [\`-ErrorAction Stop\`](${href}) after <kbd>C-a</kbd> or <kbd>Enter</kbd>.`, 'powershell')
+    expect(spans.filter((span) => span.kind === 'link')).toEqual([
+      { kind: 'link', text: '-ErrorAction Stop', href, code: true },
+    ])
+    expect(spans.filter((span) => span.kind === 'kbd')).toEqual([
+      { kind: 'kbd', text: 'C-a' }, { kind: 'kbd', text: 'Enter' },
+    ])
+    expect(ref(spans)).toEqual([])
+    expect(tokenizeDoc('The command continues after the key is sent.', 'powershell')).toEqual([
+      { kind: 'text', text: 'The command continues after the key is sent.' },
+    ])
+  })
+
   it('Go doc links resolve, Rust-style ones do not leak into Go', () => {
     expect(ref(tokenizeDoc('See [GlobalWindowScope.Options] for this.', 'go'))).toEqual([
       'GlobalWindowScope.Options',

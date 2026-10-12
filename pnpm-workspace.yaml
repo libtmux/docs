@@ -3,6 +3,7 @@ packages:
   - site
 catalog:
   '@biomejs/biome': 2.5.14
+  entities: 7.0.1
   happy-dom: ^20.14.5
   oxlint: ^1.86.0
   tree-sitter-wasms: ^0.1.13

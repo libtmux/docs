@@ -38,6 +38,8 @@ const commands = {
   csharp: ['dotnet', 'src/LibTmux.Mcp/bin/Release/net10.0/LibTmux.Mcp.dll'],
   cxx: ['build/cxx-dev/apps/mcp/libtmux-mcp-server', '--socket-name', 'libtmux-docs-protocol'],
   swift: ['.build/debug/libtmux-mcp'],
+  julia: ['julia', '--startup-file=no', '-e',
+    'using LibTmuxMCP; args = ["--socket-name", "libtmux-docs-protocol", "--allow-create"]; for name in LibTmuxMCP._TOOL_NAMES; append!(args, ["--tool", name]); end; exit(LibTmuxMCP.main(args))'],
 }
 const builds = {
   rs: [['cargo', 'build', '--locked', '-p', 'tmux-mcp', '--bin', 'tmux-mcp', '--jobs', '2']],
@@ -62,8 +64,9 @@ const selections = {
   csharp: { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' },
   swift: { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' },
   cxx: { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' },
+  julia: { mode: 'explicit CLI options', tools: 'all registered tools via repeated --tool', allowCreate: '--allow-create' },
 }
-const selectionVariables = [...new Set(Object.values(selections).flatMap(Object.keys)), 'LIBTMUX_TOOLS', 'LIBTMUX_EXCLUDE_TOOLS', 'LIBTMUX_MCP_TOOLS', 'LIBTMUX_SAFETY', 'TMUX_MCP_SAFETY', 'LIBTMUX_MCP_CAPABILITIES', 'LIBTMUX_MCP_PROMPTS_AS_TOOLS', 'LIBTMUX_SOCKET_NAME', 'LIBTMUX_SOCKET_PATH']
+const selectionVariables = [...new Set(Object.values(selections).flatMap(Object.keys)), 'LIBTMUX_TOOLS', 'LIBTMUX_EXCLUDE_TOOLS', 'LIBTMUX_MCP_TOOLS', 'LIBTMUX_SAFETY', 'TMUX_MCP_SAFETY', 'LIBTMUX_MCP_CAPABILITIES', 'LIBTMUX_MCP_PROMPTS_AS_TOOLS', 'LIBTMUX_MCP_LIVE', 'LIBTMUX_SOCKET_NAME', 'LIBTMUX_SOCKET_PATH']
 const sourceStatus = (checkout, slug) => {
   // Publication records the clean/dirty state before native generation.
   // Generated, untracked artifacts such as Swift's symbolgraph are not edits.
@@ -126,8 +129,9 @@ for (const port of relevant) {
   const socket = join(socketRoot, `tmux-${process.getuid?.() ?? ''}`, 'libtmux-docs-protocol')
   const environment = {
     ...Object.fromEntries(selectionVariables.map((key) => [key, undefined])),
-    ...(port.slug === 'ruby' ? {} : selection),
+    ...(['ruby', 'julia'].includes(port.slug) ? {} : selection),
     TMUX: undefined, TMUX_PANE: undefined, TMUX_TMPDIR: socketRoot, LIBTMUX_SOCKET: 'libtmux-docs-protocol',
+    ...(port.slug === 'julia' && !override ? { JULIA_PROJECT: join(socketRoot, 'julia-env') } : {}),
   }
   let protocol
   let failure
@@ -135,13 +139,17 @@ for (const port of relevant) {
     const goBinary = join(socketRoot, 'libtmux-mcp')
     // Dependency downloads and compilation precede the protocol deadline.
     if (!override) {
+      if (port.slug === 'julia') execFileSync('julia', ['--startup-file=no', '-e',
+        'using Pkg; Pkg.activate(ARGS[1]); Pkg.develop([Pkg.PackageSpec(path=ARGS[2]), Pkg.PackageSpec(path=joinpath(ARGS[2], "packages", "LibTmuxMCP"))]); Pkg.instantiate(); Pkg.precompile()',
+        environment.JULIA_PROJECT, checkout,
+      ], { cwd: checkout, stdio: 'inherit' })
       for (const [build, ...buildArgs] of builds[port.slug] ?? []) {
         execFileSync(build, buildArgs, { cwd: checkout, stdio: 'inherit' })
       }
       if (port.slug === 'go') execFileSync('go', ['build', '-mod=readonly', '-o', goBinary, './cmd/libtmux-mcp'], { cwd, stdio: 'inherit' })
     }
-    // Ruby borrows an existing daemon even for protocol discovery.
-    if (port.slug === 'ruby') execFileSync('tmux', [
+    // These applications inspect a borrowed endpoint during startup.
+    if (['ruby', 'julia'].includes(port.slug)) execFileSync('tmux', [
       '-L', 'libtmux-docs-protocol', '-f', '/dev/null', 'new-session', '-d', '-s', 'docs', '/bin/cat',
     ], { env: { ...process.env, ...environment }, stdio: 'inherit' })
     const [command, ...args] = override ? JSON.parse(override) : port.slug === 'go' ? [goBinary] : commands[port.slug]

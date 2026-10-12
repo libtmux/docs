@@ -27,7 +27,16 @@ export function proseHref(href: string, root: string, port?: string, version = '
 
 export interface DocsPage {
   id: string
-  data: { port?: string; supportedPorts?: readonly string[]; product?: string; route?: string; aliases?: readonly string[] }
+  data: {
+    title?: string
+    port?: string
+    supportedPorts?: readonly string[]
+    product?: string
+    route?: string
+    aliases?: readonly string[]
+    equivalence?: string
+    sidebar?: { group?: string }
+  }
 }
 
 /** Path below a port/version root, or the unchanged shared document id. */

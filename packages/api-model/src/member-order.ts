@@ -16,8 +16,10 @@ import type { ApiModelBase, ApiSymbol } from './model.ts'
 export interface MemberSignals {
   /** Ports implementing the concept a member realises, by public id. */
   readonly conceptPorts: ReadonlyMap<string, number>
-  /** Concept ids by public id, for the listing test. */
+  /** The broadest concept by public id. */
   readonly conceptIds: ReadonlyMap<string, string>
+  /** Listing roles survive a broader concept that also names the operation. */
+  readonly listingConcepts: ReadonlyMap<string, string>
   /** Where that concept sits in the concept map, which lists core operations first. */
   readonly conceptOrder: ReadonlyMap<string, number>
   /** Containing object rank by public id: window, session, then server. */
@@ -53,6 +55,7 @@ export function memberSignals(
 ): MemberSignals {
   const conceptPorts = new Map<string, number>()
   const conceptIds = new Map<string, string>()
+  const listingConcepts = new Map<string, string>()
   const conceptOrder = new Map<string, number>()
   const parentObjects = new Map<string, { level: number; variant: number }>()
   const inheritedParents = new Map<string, Set<string>>()
@@ -67,6 +70,7 @@ export function memberSignals(
     }
     // A member can realise several concepts; the broadest one speaks for it.
     for (const [variant, target] of [symbol, ...(concept.variants?.[port] ?? [])].entries()) {
+      if (id.startsWith('list-') && !listingConcepts.has(target)) listingConcepts.set(target, id)
       if (concept.parentObject) parentObjects.set(target, {
         level: ['window', 'session', 'server'].indexOf(concept.parentObject), variant,
       })
@@ -79,7 +83,7 @@ export function memberSignals(
   }
   const counts = new Map<string, number>()
   for (const m of mentions) if (m.port === port) counts.set(m.symbol, (counts.get(m.symbol) ?? 0) + 1)
-  return { conceptPorts, conceptIds, conceptOrder, parentObjects, inheritedParents, mentions: counts }
+  return { conceptPorts, conceptIds, listingConcepts, conceptOrder, parentObjects, inheritedParents, mentions: counts }
 }
 
 const idOf = (s: ApiSymbol) => s.publicId ?? s.id
@@ -104,7 +108,7 @@ export function membersOf(model: ApiModelBase & { port?: string }, owner: ApiSym
 const LISTING = /^(list_?|get)?(sessions|windows|panes|clients|buffers)$/
 const LISTING_ORDER = ['sessions', 'windows', 'panes', 'clients', 'buffers']
 const listingRank = (s: ApiSymbol, signals: MemberSignals) => {
-  const concept = signals.conceptIds.get(idOf(s))
+  const concept = signals.listingConcepts.get(idOf(s))
   const name = concept?.startsWith('list-') ? concept.slice(5) : bareName(s).replace(/^(list_?|get)/, '')
   const rank = LISTING_ORDER.indexOf(name)
   return rank < 0 ? LISTING_ORDER.length : rank
@@ -131,7 +135,7 @@ export function memberTier(s: ApiSymbol, signals: MemberSignals): MemberTier {
   if (s.doc?.deprecated !== undefined || s.modifiers?.includes('deprecated')) return 'deprecated'
   if (signals.parentObjects.has(idOf(s))) return 'parent'
   const concept = signals.conceptIds.get(idOf(s))
-  if (LISTING.test(bareName(s)) || concept?.startsWith('list-')) return 'listing'
+  if (LISTING.test(bareName(s)) || signals.listingConcepts.has(idOf(s))) return 'listing'
   if (concept && QUERY.test(concept)) return 'query'
   if (concept) return 'concept'
   if (signals.mentions.get(idOf(s)) || s.doc?.examples?.length) return 'discussed'

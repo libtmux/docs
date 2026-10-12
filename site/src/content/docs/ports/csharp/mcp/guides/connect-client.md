@@ -3,6 +3,7 @@ title: Connect an MCP client
 description: Install the .NET tool, select its tmux endpoint, and verify discovery and ownership.
 port: csharp
 product: mcp
+equivalence: mcp-client-setup
 sidebar:
   group: Guides
   order: 10

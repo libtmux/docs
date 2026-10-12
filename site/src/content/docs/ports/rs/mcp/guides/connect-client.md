@@ -3,6 +3,7 @@ title: Connect an MCP client
 description: Install the Rust MCP server, choose its tmux socket, and inspect the tools your client can call.
 port: rs
 product: mcp
+equivalence: mcp-client-setup
 sidebar:
   group: Guides
   order: 10

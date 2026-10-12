@@ -1,7 +1,8 @@
 ---
 import InstallCode from './InstallCode.astro'
 import './package-install.css'
-import { installsFor } from '../../lib/registry'
+import { installsFor, nugetInstallSelection } from '../../lib/registry'
+import { API_MODELS } from '../../lib/api-models'
 import { Code } from 'astro-expressive-code/components'
 import { highlightInline, highlightWithCooldownSlots } from '../../lib/highlight'
 import { DEFAULT_COOLDOWN_DAYS } from '../../lib/install-matrix'
@@ -46,7 +47,7 @@ const copyLayout = (code: string) => (copyButton === 'auto' ? (code.includes('\n
 
 const selected = ports && ports.length > 0 ? PORTS.filter((p) => ports.includes(p.slug)) : PORTS
 const items = selected.map((port) => {
-  if (packageId === 'core') return { ...port, installs: installsFor(port) }
+  if (packageId === 'core') return { ...port, installs: installsFor(port, nugetInstallSelection(port, API_MODELS[port.slug]?.sources, process.env)) }
   const companion = port.packages?.find((entry) => entry.id === packageId)
   if (!companion?.installs) throw new Error(`PackageInstall: ${port.slug} has no install forms for ${packageId}`)
   return { ...port, packageName: companion.name, installs: companion.installs }
@@ -101,6 +102,14 @@ const installHtml = new Map(
       ] as const),
     ),
   ),
+)
+
+const additionalHtml = new Map(
+  await Promise.all(items.flatMap((p) => p.installs.flatMap((cmd, i) =>
+    (cmd.additionalBlocks ?? []).map(async (block, j) => [
+      `${p.slug}/${i}/${j}`, await highlightInline(block.code, block.lang),
+    ] as const),
+  ))),
 )
 
 /*
@@ -234,7 +243,12 @@ const cooldownGroup = (slug: string) => `cooldown-mode-${packageId}-${slug}`
               role={p.installs.length > 1 ? 'tabpanel' : undefined}
               tabindex={p.installs.length > 1 ? '0' : undefined}
             >
-              {!cmd.cooldown && <InstallCode html={installHtml.get(`${p.slug}/${i}`)!} language={cmd.lang} layout={copyLayout(cmd.code)} />}
+              {cmd.filename && <p class="lm-pkg-install__note"><strong>{cmd.filename}</strong></p>}
+              {!cmd.cooldown && <InstallCode html={installHtml.get(`${p.slug}/${i}`)!} language={cmd.lang} layout={copyLayout(cmd.code)} label={cmd.filename} />}
+              {cmd.additionalBlocks?.map((block, j) => <>
+                {block.filename && <p class="lm-pkg-install__note"><strong>{block.filename}</strong></p>}
+                <InstallCode html={additionalHtml.get(`${p.slug}/${i}/${j}`)!} language={block.lang} layout={copyLayout(block.code)} label={block.filename} />
+              </>)}
               {cmd.cooldown && (['off', 'days', 'bypass'] as const).map((mode) => {
                 const form = mode === 'days' ? 'code' : mode === 'bypass' ? 'bypass' : undefined
                 const code = form ? cmd.cooldown![form] : undefined

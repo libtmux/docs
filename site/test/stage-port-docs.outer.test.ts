@@ -1,5 +1,5 @@
 import { execFileSync, spawnSync } from 'node:child_process'
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { expect, it } from 'vitest'
@@ -11,7 +11,7 @@ const cachedRevision = 'a'.repeat(40)
 const files = ['scripts/stage-port-docs.mjs', 'site/src/lib/ports.ts',
   'site/src/lib/site-root.ts', 'site/src/lib/cooldown.ts', 'site/src/lib/port-documentation.ts',
   'site/src/lib/versions.ts']
-const stagedPorts = ['ruby', 'lua', 'kotlin', 'scala', 'fsharp']
+const stagedPorts = ['ruby', 'lua', 'powershell', 'julia', 'kotlin', 'scala', 'fsharp']
 
 function fixture(slug: 'ruby' | 'lua' | 'kotlin', run: (fixture: {
   directory: string; checkout: string; revision: string;
@@ -31,11 +31,15 @@ function fixture(slug: 'ruby' | 'lua' | 'kotlin', run: (fixture: {
       mkdirSync(dirname(join(directory, file)), { recursive: true })
       copyFileSync(join(root, file), join(directory, file))
     }
+    cpSync(join(root, 'packages/api-model/src'), join(directory, 'packages/api-model/src'), { recursive: true })
     symlinkSync(join(root, 'node_modules'), join(directory, 'node_modules'), 'dir')
     write(join(directory, 'package.json'), '{"type":"module"}')
     for (const port of stagedPorts) {
       write(join(directory, `site/src/data/port-guides/${port}.json`), artifact(port, cachedRevision, 'cached'))
-      write(join(directory, `site/src/data/api/${port}.json`), JSON.stringify({ revision: cachedRevision, symbols: [] }))
+      write(join(directory, `site/src/data/api/${port}.json`), JSON.stringify({
+        revision: cachedRevision, symbols: [],
+        ...(port === 'powershell' ? { nativeProvenance: { files: [] } } : {}),
+      }))
     }
     let revision = 'b'.repeat(40)
     if (slug === 'kotlin') {

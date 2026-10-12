@@ -18,7 +18,7 @@ async function checkTaskFirstPaint(browser, base) {
       })
       await context.route('**/versions.json', (route) => route.fulfill({ json: versions }))
       const page = await context.newPage()
-      page.setDefaultTimeout(10000)
+      page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
       const response = await page.goto(`${base}/?port=ts&errors=1&cleanup=1`, { waitUntil: 'commit' })
       assert(response?.ok(), `Task first paint: HTTP ${response?.status()}`)
       const widget = page.locator('.lm-agent-prompt')

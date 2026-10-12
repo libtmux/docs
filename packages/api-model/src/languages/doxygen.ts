@@ -281,7 +281,9 @@ function cCalls(
 /** `<param>` entries, with the `\param` docs Doxygen keeps separately. */
 function paramsOf(block: string, docs: Map<string, string>, c = false): Param[] {
   const out: Param[] = []
-  for (const m of block.matchAll(/<param>([\s\S]*?)<\/param>/g)) {
+  // Template parameters are declaration metadata, never runtime arguments.
+  const runtime = block.replace(/<templateparamlist>[\s\S]*?<\/templateparamlist>/g, '')
+  for (const m of runtime.matchAll(/<param>([\s\S]*?)<\/param>/g)) {
     const name = textOf(tag(m[1], 'declname') ?? (c ? tag(m[1], 'defname') : undefined) ?? '')
     const type = textOf(tag(m[1], 'type') ?? '')
     const def = tag(m[1], 'defval')
@@ -322,6 +324,41 @@ export interface DoxygenOptions {
   language?: 'c' | 'cpp'
   /** Producer relationships omitted rather than repaired by name. */
   onDiagnostic?: (message: string) => void
+}
+
+/** Native template parameter spelling, shared by declarations and metadata. */
+function cppTemplateParameters(block: string): string[] {
+  const template = tag(block, 'templateparamlist') ?? ''
+  return [...template.matchAll(/<param>([\s\S]*?)<\/param>/g)].map((match) => {
+    const type = codeOf(tag(match[1], 'type') ?? '')
+    const name = codeOf(tag(match[1], 'declname') ?? '')
+    const value = tag(match[1], 'defval')
+    return `${type}${name ? ` ${name}` : ''}${value ? ` = ${codeOf(value)}` : ''}`
+  })
+}
+
+/** Preserve C++ declaration syntax and specifiers that typed parameter rows cannot express. */
+function cppSignature(block: string): string | undefined {
+  const definition = codeOf(tag(block, 'definition') ?? '')
+  const args = codeOf(tag(block, 'argsstring') ?? '')
+  if (!definition || !args) return undefined
+  const name = codeOf(tag(block, 'name') ?? '')
+  const qualified = codeOf(tag(block, 'qualifiedname') ?? '')
+  // Inside an owner's panel, use the in-class spelling from the declaration.
+  let declaration = qualified && definition.endsWith(qualified)
+    ? `${definition.slice(0, -qualified.length)}${name}${args}` : `${definition}${args}`
+  for (const keyword of ['explicit', 'static', 'constexpr', 'consteval']) {
+    if (attr(block, keyword) === 'yes' && !new RegExp(`\\b${keyword}\\b`).test(definition)) declaration = `${keyword} ${declaration}`
+  }
+  if (attr(block, 'nodiscard') === 'yes' && !definition.includes('[[nodiscard')) declaration = `[[nodiscard]] ${declaration}`
+  const template = cppTemplateParameters(block)
+  const constraint = codeOf(tag(block, 'requiresclause') ?? '')
+  if (constraint && !/\brequires\b/.test(args)) {
+    declaration = template.length ? `requires ${constraint}\n${declaration}`
+      : declaration.replace(/(\s*=\s*(?:default|delete|0))?$/, (_, ending = '') => ` requires ${constraint}${ending}`)
+  }
+  if (template.length) declaration = `template <${template.join(', ')}>\n${declaration}`
+  return `${declaration};`
 }
 
 /**
@@ -476,14 +513,20 @@ export function extractDoxygen(xmlDir: string, sourceRoot = '', options: Doxygen
       const scope = attr(block, 'kind') === 'enum' ? afterEnumValues(block) : block
       const brief = textOf(tag(scope, 'briefdescription') ?? '')
       const detail = textOf(tag(scope, 'detaileddescription') ?? '')
-      const returnType = textOf(tag(block, 'type') ?? '')
+      // A template's first <type> and a parameter's <type> cannot stand in for
+      // the member's own (possibly empty, for constructors) return type.
+      const memberType = block.replace(/<(templateparamlist|param)>[\s\S]*?<\/\1>/g, '')
+      const returnType = textOf(tag(memberType, 'type') ?? '')
       const returnDoc = textOf(tag(block, 'simplesect') ?? '')
+      const templateParameters = c ? [] : cppTemplateParameters(block)
 
       const signature: Signature | undefined =
         attr(block, 'kind') === 'function'
           ? {
               params: paramsOf(block, paramDocs(block), c),
-              ...(c ? { raw: `${codeOf(tag(block, 'definition') ?? '')}${codeOf(tag(block, 'argsstring') ?? '')}` } : {}),
+              ...(templateParameters.length ? { typeParams: templateParameters } : {}),
+              ...(c ? { raw: `${codeOf(tag(block, 'definition') ?? '')}${codeOf(tag(block, 'argsstring') ?? '')}` }
+                : cppSignature(block) ? { raw: cppSignature(block) } : {}),
               returns: returnType || undefined,
               returnsDoc: returnDoc || undefined,
             }

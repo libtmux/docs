@@ -23,6 +23,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { globSync } from 'node:fs'
+import { decodeHTMLAttribute } from 'entities'
 
 const root = process.argv[2]
 const all = process.argv.includes('--all')
@@ -66,7 +67,7 @@ const idsOf = (page) => {
       ids.set(page, undefined)
       return undefined
     }
-    ids.set(page, new Set([...text.matchAll(/\sid="([^"]+)"/g)].map((m) => copyText(m[1]))))
+    ids.set(page, new Set([...text.matchAll(/\sid="([^"]+)"/g)].map((m) => copyText(decodeHTMLAttribute(m[1])))))
   }
   return ids.get(page)
 }
@@ -84,6 +85,24 @@ const pattern = all
  * zero broken.
  */
 const EXTERNAL = /^[a-z][a-z0-9+.-]*:/i
+
+// Percent-decode UTF-8 bytes once, retaining literal Unicode, '+' and invalid
+// escape syntax. Invalid UTF-8 becomes replacement characters as in HTML.
+function decodeFragment(anchor) {
+  const bytes = Buffer.from(anchor)
+  let length = 0
+  for (let i = 0; i < bytes.length; i++) {
+    const hex = bytes[i] === 37 ? bytes.toString('latin1', i + 1, i + 3) : ''
+    if (/^[0-9a-f]{2}$/i.test(hex)) {
+      bytes[length++] = Number.parseInt(hex, 16)
+      i += 2
+    } else bytes[length++] = bytes[i]
+  }
+  return bytes.subarray(0, length).toString('utf8')
+}
+
+// HTML fragment navigation tries the literal ID before percent-decoding.
+const hasAnchor = (targetIds, anchor) => targetIds?.has(anchor) || targetIds?.has(decodeFragment(anchor))
 
 /**
  * Resolve an href against the page that holds it.
@@ -114,12 +133,13 @@ const recordBrokenLink = (page, path, anchor, why) => broken.push({
 for (const page of pages) {
   const html = readFileSync(join(root, page), 'utf8')
   for (const m of html.matchAll(pattern)) {
-    const [, path, anchor] = m
+    const path = decodeHTMLAttribute(m[1])
+    const anchor = m[2] === undefined ? undefined : decodeHTMLAttribute(m[2])
     if (path.startsWith('//') || EXTERNAL.test(path) || (!path && !anchor)) continue
     // A bare fragment points into the page it is written on.
     if (!path) {
       checked++
-      if (anchor && !idsOf(page)?.has(anchor)) recordBrokenLink(page, '', anchor, 'no anchor')
+      if (anchor && !hasAnchor(idsOf(page), anchor)) recordBrokenLink(page, '', anchor, 'no anchor')
       continue
     }
     checked++
@@ -134,7 +154,7 @@ for (const page of pages) {
       : clean.endsWith('/') || resolved === '' ? `${resolved}/index.html`.replace(/^\//, '') : resolved
     const targetIds = idsOf(target)
     if (targetIds === undefined) recordBrokenLink(page, path, anchor, 'no page')
-    else if (anchor && !targetIds.has(anchor)) recordBrokenLink(page, path, anchor, 'no anchor')
+    else if (anchor && !hasAnchor(targetIds, anchor)) recordBrokenLink(page, path, anchor, 'no anchor')
   }
 }
 

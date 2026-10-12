@@ -28,6 +28,8 @@ export const PORT_NAME: Record<string, string> = {
   kotlin: 'Kotlin',
   scala: 'Scala',
   fsharp: 'F#',
+  powershell: 'PowerShell',
+  julia: 'Julia',
 }
 
 /** Declarations that own a page of members. */
@@ -109,9 +111,10 @@ export function looksLikeApiMention(text: string): boolean {
   if (/\(/.test(t)) return true
   if (/[.:]|->/.test(t)) return true
   if (/^[A-Z][A-Za-z0-9_]*$/.test(t)) return true
+  if (/^(?:[\w.]+\\)?[A-Z][A-Za-z]+-[A-Za-z][\w]*$/.test(t)) return true
   // `wait_for`, `capture_pane`, `activeWindow`: an identifier, admitted as a
   // candidate for the resolver to accept or reject.
-  return /^[a-z_][A-Za-z0-9_]*$/.test(t)
+  return /^@?[a-z_][A-Za-z0-9_]*!?$/.test(t)
 }
 
 /**
@@ -151,6 +154,7 @@ export function portFromSentence(before: string): string | undefined {
 export function isLikelyReference(text: string): boolean {
   const t = text.trim()
   return /\(/.test(t) || /[.:]|->/.test(t) || /^[A-Z][A-Za-z0-9_]*$/.test(t)
+    || /^(?:[\w.]+\\)?[A-Z][A-Za-z]+-[A-Za-z][\w]*$/.test(t)
 }
 
 /**

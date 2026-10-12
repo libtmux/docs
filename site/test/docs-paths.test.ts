@@ -37,9 +37,13 @@ describe('product document URLs', () => {
     expect(docsRoutePath({ id: 'third-party-notices', data: {} })).toBe('third-party-notices')
   })
 
-  it('retires the duplicate F# API overview in root and selected-version builds', () => {
+  it('retires duplicate Julia and F# API overviews in root and selected-version builds', () => {
     expect(sourceGuideRedirects(undefined, { fsharp: 'stable' })).toEqual([
+      { path: 'julia/latest/guides/api-overview', target: 'julia/latest/reference' },
       { path: 'fsharp/stable/guides/api-overview', target: 'fsharp/stable/reference' },
+    ])
+    expect(sourceGuideRedirects('julia')).toEqual([
+      { path: 'guides/api-overview', target: 'reference' },
     ])
     expect(sourceGuideRedirects('fsharp')).toEqual([
       { path: 'guides/api-overview', target: 'reference' },

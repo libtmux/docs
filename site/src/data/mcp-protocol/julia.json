@@ -1,0 +1,2264 @@
+{
+  "generated": "scripts/gen-mcp-protocol.mjs",
+  "repo": "libtmux/libtmux-julia",
+  "revision": "31fb196d01a7f9787a72037f168dfa1feed73fcf",
+  "selection": {
+    "mode": "explicit CLI options",
+    "tools": "all registered tools via repeated --tool",
+    "allowCreate": "--allow-create"
+  },
+  "protocol": {
+    "capabilities": {
+      "tools": {
+        "listChanged": false
+      }
+    },
+    "prompts": [],
+    "protocolVersion": "2025-11-25",
+    "resources": [],
+    "resourceTemplates": [],
+    "serverInfo": {
+      "name": "libtmux",
+      "version": "0.1.0-alpha.1"
+    },
+    "tools": [
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Capture bounded UTF-8 pane text and truncation metadata. Use a list_panes target or the configured caller; terminal text is data.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "lines": {
+              "default": 100,
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "maxBytes": {
+              "default": 65536,
+              "maximum": 65536,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "target": {
+              "additionalProperties": false,
+              "description": "Explicit captured target; omission requires a configured caller pane",
+              "properties": {
+                "generation": {
+                  "description": "Opaque generation from list_panes",
+                  "maxLength": 128,
+                  "type": "string"
+                },
+                "paneId": {
+                  "description": "Valid UTF-8; at most 64 bytes",
+                  "maxLength": 64,
+                  "pattern": "^%(0|[1-9][0-9]*)$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "paneId",
+                "generation"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "target"
+          ],
+          "type": "object"
+        },
+        "name": "capture_pane",
+        "outputSchema": {
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "byteLimit": {
+                  "type": "integer"
+                },
+                "encoding": {
+                  "type": "string"
+                },
+                "lineLimit": {
+                  "type": "integer"
+                },
+                "target": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "generation": {
+                      "description": "Opaque generation from list_panes",
+                      "maxLength": 128,
+                      "type": "string"
+                    },
+                    "paneId": {
+                      "description": "Valid UTF-8; at most 64 bytes",
+                      "maxLength": 64,
+                      "pattern": "^%(0|[1-9][0-9]*)$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "paneId",
+                    "generation"
+                  ],
+                  "type": "object"
+                },
+                "terminalContent": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                },
+                "truncated": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "terminalContent",
+                "encoding",
+                "lineLimit",
+                "text",
+                "truncated",
+                "byteLimit",
+                "target"
+              ],
+              "type": "object"
+            },
+            {
+              "properties": {
+                "error": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "effects": {
+                      "enum": [
+                        "none",
+                        "possible"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "retryable": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "effects",
+                    "retryable"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "error"
+              ],
+              "type": "object"
+            }
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false
+        },
+        "description": "Start an argv command in a new application-owned session. Requires allow_create; the session is removed when the application closes. Completion means creation, not command exit.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "command": {
+              "description": "Executable and argv; no shell expansion",
+              "items": {
+                "description": "Valid UTF-8; at most 1024 bytes",
+                "maxLength": 1024,
+                "type": "string"
+              },
+              "maxItems": 32,
+              "minItems": 1,
+              "type": "array"
+            },
+            "name": {
+              "description": "Valid UTF-8; at most 64 bytes",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "command"
+          ],
+          "type": "object"
+        },
+        "name": "create_session",
+        "outputSchema": {
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "completed": {
+                  "type": "boolean"
+                },
+                "generation": {
+                  "type": "string"
+                },
+                "ownership": {
+                  "const": "application"
+                },
+                "panes": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "generation": {
+                        "description": "Opaque generation from list_panes",
+                        "maxLength": 128,
+                        "type": "string"
+                      },
+                      "paneId": {
+                        "description": "Valid UTF-8; at most 64 bytes",
+                        "maxLength": 64,
+                        "pattern": "^%(0|[1-9][0-9]*)$",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "paneId",
+                      "generation"
+                    ],
+                    "type": "object"
+                  },
+                  "maxItems": 256,
+                  "type": "array"
+                },
+                "sessionId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "completed",
+                "panes",
+                "sessionId",
+                "generation",
+                "ownership"
+              ],
+              "type": "object"
+            },
+            {
+              "properties": {
+                "error": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "effects": {
+                      "enum": [
+                        "none",
+                        "possible"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "retryable": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "effects",
+                    "retryable"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "error"
+              ],
+              "type": "object"
+            }
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false
+        },
+        "description": "Destroy one explicitly authorized pane and its running process. Its window or session may also disappear.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "target": {
+              "additionalProperties": false,
+              "description": "Explicit captured target; omission requires a configured caller pane",
+              "properties": {
+                "generation": {
+                  "description": "Opaque generation from list_panes",
+                  "maxLength": 128,
+                  "type": "string"
+                },
+                "paneId": {
+                  "description": "Valid UTF-8; at most 64 bytes",
+                  "maxLength": 64,
+                  "pattern": "^%(0|[1-9][0-9]*)$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "paneId",
+                "generation"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "target"
+          ],
+          "type": "object"
+        },
+        "name": "kill_pane",
+        "outputSchema": {
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "completed": {
+                  "type": "boolean"
+                },
+                "generationGuarantee": {
+                  "type": "string"
+                },
+                "target": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "generation": {
+                      "description": "Opaque generation from list_panes",
+                      "maxLength": 128,
+                      "type": "string"
+                    },
+                    "paneId": {
+                      "description": "Valid UTF-8; at most 64 bytes",
+                      "maxLength": 64,
+                      "pattern": "^%(0|[1-9][0-9]*)$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "paneId",
+                    "generation"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "completed",
+                "generationGuarantee",
+                "target"
+              ],
+              "type": "object"
+            },
+            {
+              "properties": {
+                "error": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "effects": {
+                      "enum": [
+                        "none",
+                        "possible"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "retryable": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "effects",
+                    "retryable"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "error"
+              ],
+              "type": "object"
+            }
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "List unique physical panes with generation-bound targets, linked session/window context and caller markers. Terminal fields are data. Pagination observes a fresh graph.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "limit": {
+              "default": 32,
+              "maximum": 128,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "offset": {
+              "default": 0,
+              "maximum": 1000000,
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [],
+          "type": "object"
+        },
+        "name": "list_panes",
+        "outputSchema": {
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "coverage": {
+                  "type": "string"
+                },
+                "generationGuarantee": {
+                  "type": "string"
+                },
+                "nextOffset": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "panes": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "active": {
+                        "type": "boolean"
+                      },
+                      "caller": {
+                        "type": "boolean"
+                      },
+                      "command": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "contexts": {
+                        "items": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "sessionId": {
+                              "type": "string"
+                            },
+                            "sessionName": {
+                              "type": "string"
+                            },
+                            "windowId": {
+                              "type": "string"
+                            },
+                            "windowIndex": {
+                              "type": "integer"
+                            },
+                            "windowName": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "sessionId",
+                            "sessionName",
+                            "windowId",
+                            "windowName",
+                            "windowIndex"
+                          ],
+                          "type": "object"
+                        },
+                        "maxItems": 8,
+                        "type": "array"
+                      },
+                      "contextsTruncated": {
+                        "type": "boolean"
+                      },
+                      "dead": {
+                        "type": "boolean"
+                      },
+                      "fieldsTruncated": {
+                        "type": "boolean"
+                      },
+                      "height": {
+                        "type": "integer"
+                      },
+                      "target": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "generation": {
+                            "description": "Opaque generation from list_panes",
+                            "maxLength": 128,
+                            "type": "string"
+                          },
+                          "paneId": {
+                            "description": "Valid UTF-8; at most 64 bytes",
+                            "maxLength": 64,
+                            "pattern": "^%(0|[1-9][0-9]*)$",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "paneId",
+                          "generation"
+                        ],
+                        "type": "object"
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "width": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "target",
+                      "active",
+                      "dead",
+                      "command",
+                      "title",
+                      "width",
+                      "height",
+                      "caller",
+                      "contexts",
+                      "contextsTruncated",
+                      "fieldsTruncated"
+                    ],
+                    "type": "object"
+                  },
+                  "maxItems": 128,
+                  "type": "array"
+                },
+                "terminalContent": {
+                  "type": "string"
+                },
+                "total": {
+                  "type": "integer"
+                },
+                "truncated": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "terminalContent",
+                "nextOffset",
+                "generationGuarantee",
+                "panes",
+                "total",
+                "truncated",
+                "coverage"
+              ],
+              "type": "object"
+            },
+            {
+              "properties": {
+                "error": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "effects": {
+                      "enum": [
+                        "none",
+                        "possible"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "retryable": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "effects",
+                    "retryable"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "error"
+              ],
+              "type": "object"
+            }
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false
+        },
+        "description": "Paste UTF-8 text through a temporary owned buffer without adding Enter. The terminal application may transform input.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "target": {
+              "additionalProperties": false,
+              "description": "Explicit captured target; omission requires a configured caller pane",
+              "properties": {
+                "generation": {
+                  "description": "Opaque generation from list_panes",
+                  "maxLength": 128,
+                  "type": "string"
+                },
+                "paneId": {
+                  "description": "Valid UTF-8; at most 64 bytes",
+                  "maxLength": 64,
+                  "pattern": "^%(0|[1-9][0-9]*)$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "paneId",
+                "generation"
+              ],
+              "type": "object"
+            },
+            "text": {
+              "description": "Valid UTF-8; at most 65536 bytes",
+              "maxLength": 65536,
+              "type": "string"
+            }
+          },
+          "required": [
+            "target",
+            "text"
+          ],
+          "type": "object"
+        },
+        "name": "paste_text",
+        "outputSchema": {
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "completed": {
+                  "type": "boolean"
+                },
+                "generationGuarantee": {
+                  "type": "string"
+                },
+                "target": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "generation": {
+                      "description": "Opaque generation from list_panes",
+                      "maxLength": 128,
+                      "type": "string"
+                    },
+                    "paneId": {
+                      "description": "Valid UTF-8; at most 64 bytes",
+                      "maxLength": 64,
+                      "pattern": "^%(0|[1-9][0-9]*)$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "paneId",
+                    "generation"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "completed",
+                "generationGuarantee",
+                "target"
+              ],
+              "type": "object"
+            },
+            {
+              "properties": {
+                "error": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "effects": {
+                      "enum": [
+                        "none",
+                        "possible"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "retryable": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "effects",
+                    "retryable"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "error"
+              ],
+              "type": "object"
+            }
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": false
+        },
+        "description": "Request pane width or height in cells. tmux may constrain the resulting size to fit its window.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "anyOf": [
+            {
+              "required": [
+                "width"
+              ]
+            },
+            {
+              "required": [
+                "height"
+              ]
+            }
+          ],
+          "properties": {
+            "height": {
+              "maximum": 10000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "target": {
+              "additionalProperties": false,
+              "description": "Explicit captured target; omission requires a configured caller pane",
+              "properties": {
+                "generation": {
+                  "description": "Opaque generation from list_panes",
+                  "maxLength": 128,
+                  "type": "string"
+                },
+                "paneId": {
+                  "description": "Valid UTF-8; at most 64 bytes",
+                  "maxLength": 64,
+                  "pattern": "^%(0|[1-9][0-9]*)$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "paneId",
+                "generation"
+              ],
+              "type": "object"
+            },
+            "width": {
+              "maximum": 10000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "target"
+          ],
+          "type": "object"
+        },
+        "name": "resize_pane",
+        "outputSchema": {
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "completed": {
+                  "type": "boolean"
+                },
+                "generationGuarantee": {
+                  "type": "string"
+                },
+                "target": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "generation": {
+                      "description": "Opaque generation from list_panes",
+                      "maxLength": 128,
+                      "type": "string"
+                    },
+                    "paneId": {
+                      "description": "Valid UTF-8; at most 64 bytes",
+                      "maxLength": 64,
+                      "pattern": "^%(0|[1-9][0-9]*)$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "paneId",
+                    "generation"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "completed",
+                "generationGuarantee",
+                "target"
+              ],
+              "type": "object"
+            },
+            {
+              "properties": {
+                "error": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "effects": {
+                      "enum": [
+                        "none",
+                        "possible"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "retryable": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "effects",
+                    "retryable"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "error"
+              ],
+              "type": "object"
+            }
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false
+        },
+        "description": "Run up to eight enabled tool calls sequentially after validating every item. Stop at the first execution failure and return ordered completed results plus a one-based failedIndex; no rollback.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "operations": {
+              "items": {
+                "oneOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "arguments": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "limit": {
+                            "default": 32,
+                            "maximum": 128,
+                            "minimum": 1,
+                            "type": "integer"
+                          },
+                          "offset": {
+                            "default": 0,
+                            "maximum": 1000000,
+                            "minimum": 0,
+                            "type": "integer"
+                          }
+                        },
+                        "required": [],
+                        "type": "object"
+                      },
+                      "tool": {
+                        "const": "list_panes"
+                      }
+                    },
+                    "required": [
+                      "tool",
+                      "arguments"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "arguments": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "lines": {
+                            "default": 100,
+                            "maximum": 1000,
+                            "minimum": 1,
+                            "type": "integer"
+                          },
+                          "maxBytes": {
+                            "default": 65536,
+                            "maximum": 65536,
+                            "minimum": 1,
+                            "type": "integer"
+                          },
+                          "target": {
+                            "additionalProperties": false,
+                            "description": "Explicit captured target; omission requires a configured caller pane",
+                            "properties": {
+                              "generation": {
+                                "description": "Opaque generation from list_panes",
+                                "maxLength": 128,
+                                "type": "string"
+                              },
+                              "paneId": {
+                                "description": "Valid UTF-8; at most 64 bytes",
+                                "maxLength": 64,
+                                "pattern": "^%(0|[1-9][0-9]*)$",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "paneId",
+                              "generation"
+                            ],
+                            "type": "object"
+                          }
+                        },
+                        "required": [
+                          "target"
+                        ],
+                        "type": "object"
+                      },
+                      "tool": {
+                        "const": "capture_pane"
+                      }
+                    },
+                    "required": [
+                      "tool",
+                      "arguments"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "arguments": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "keys": {
+                            "items": {
+                              "description": "Valid UTF-8; at most 1024 bytes",
+                              "maxLength": 1024,
+                              "type": "string"
+                            },
+                            "maxItems": 64,
+                            "minItems": 1,
+                            "type": "array"
+                          },
+                          "literal": {
+                            "default": false,
+                            "type": "boolean"
+                          },
+                          "target": {
+                            "additionalProperties": false,
+                            "description": "Explicit captured target; omission requires a configured caller pane",
+                            "properties": {
+                              "generation": {
+                                "description": "Opaque generation from list_panes",
+                                "maxLength": 128,
+                                "type": "string"
+                              },
+                              "paneId": {
+                                "description": "Valid UTF-8; at most 64 bytes",
+                                "maxLength": 64,
+                                "pattern": "^%(0|[1-9][0-9]*)$",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "paneId",
+                              "generation"
+                            ],
+                            "type": "object"
+                          }
+                        },
+                        "required": [
+                          "target",
+                          "keys"
+                        ],
+                        "type": "object"
+                      },
+                      "tool": {
+                        "const": "send_keys"
+                      }
+                    },
+                    "required": [
+                      "tool",
+                      "arguments"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "arguments": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "target": {
+                            "additionalProperties": false,
+                            "description": "Explicit captured target; omission requires a configured caller pane",
+                            "properties": {
+                              "generation": {
+                                "description": "Opaque generation from list_panes",
+                                "maxLength": 128,
+                                "type": "string"
+                              },
+                              "paneId": {
+                                "description": "Valid UTF-8; at most 64 bytes",
+                                "maxLength": 64,
+                                "pattern": "^%(0|[1-9][0-9]*)$",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "paneId",
+                              "generation"
+                            ],
+                            "type": "object"
+                          },
+                          "text": {
+                            "description": "Valid UTF-8; at most 65536 bytes",
+                            "maxLength": 65536,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "target",
+                          "text"
+                        ],
+                        "type": "object"
+                      },
+                      "tool": {
+                        "const": "paste_text"
+                      }
+                    },
+                    "required": [
+                      "tool",
+                      "arguments"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "arguments": {
+                        "additionalProperties": false,
+                        "anyOf": [
+                          {
+                            "required": [
+                              "width"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "height"
+                            ]
+                          }
+                        ],
+                        "properties": {
+                          "height": {
+                            "maximum": 10000,
+                            "minimum": 1,
+                            "type": "integer"
+                          },
+                          "target": {
+                            "additionalProperties": false,
+                            "description": "Explicit captured target; omission requires a configured caller pane",
+                            "properties": {
+                              "generation": {
+                                "description": "Opaque generation from list_panes",
+                                "maxLength": 128,
+                                "type": "string"
+                              },
+                              "paneId": {
+                                "description": "Valid UTF-8; at most 64 bytes",
+                                "maxLength": 64,
+                                "pattern": "^%(0|[1-9][0-9]*)$",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "paneId",
+                              "generation"
+                            ],
+                            "type": "object"
+                          },
+                          "width": {
+                            "maximum": 10000,
+                            "minimum": 1,
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "target"
+                        ],
+                        "type": "object"
+                      },
+                      "tool": {
+                        "const": "resize_pane"
+                      }
+                    },
+                    "required": [
+                      "tool",
+                      "arguments"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "arguments": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "target": {
+                            "additionalProperties": false,
+                            "description": "Explicit captured target; omission requires a configured caller pane",
+                            "properties": {
+                              "generation": {
+                                "description": "Opaque generation from list_panes",
+                                "maxLength": 128,
+                                "type": "string"
+                              },
+                              "paneId": {
+                                "description": "Valid UTF-8; at most 64 bytes",
+                                "maxLength": 64,
+                                "pattern": "^%(0|[1-9][0-9]*)$",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "paneId",
+                              "generation"
+                            ],
+                            "type": "object"
+                          }
+                        },
+                        "required": [
+                          "target"
+                        ],
+                        "type": "object"
+                      },
+                      "tool": {
+                        "const": "kill_pane"
+                      }
+                    },
+                    "required": [
+                      "tool",
+                      "arguments"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "arguments": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "command": {
+                            "description": "Executable and argv; no shell expansion",
+                            "items": {
+                              "description": "Valid UTF-8; at most 1024 bytes",
+                              "maxLength": 1024,
+                              "type": "string"
+                            },
+                            "maxItems": 32,
+                            "minItems": 1,
+                            "type": "array"
+                          },
+                          "name": {
+                            "description": "Valid UTF-8; at most 64 bytes",
+                            "maxLength": 64,
+                            "pattern": "^[A-Za-z0-9_-]+$",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "name",
+                          "command"
+                        ],
+                        "type": "object"
+                      },
+                      "tool": {
+                        "const": "create_session"
+                      }
+                    },
+                    "required": [
+                      "tool",
+                      "arguments"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "arguments": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "generation": {
+                            "description": "Valid UTF-8; at most 128 bytes",
+                            "maxLength": 128,
+                            "type": "string"
+                          },
+                          "sessionId": {
+                            "description": "Valid UTF-8; at most 64 bytes",
+                            "maxLength": 64,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "sessionId",
+                          "generation"
+                        ],
+                        "type": "object"
+                      },
+                      "tool": {
+                        "const": "teardown_session"
+                      }
+                    },
+                    "required": [
+                      "tool",
+                      "arguments"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "arguments": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "target": {
+                            "additionalProperties": false,
+                            "description": "Explicit captured target; omission requires a configured caller pane",
+                            "properties": {
+                              "generation": {
+                                "description": "Opaque generation from list_panes",
+                                "maxLength": 128,
+                                "type": "string"
+                              },
+                              "paneId": {
+                                "description": "Valid UTF-8; at most 64 bytes",
+                                "maxLength": 64,
+                                "pattern": "^%(0|[1-9][0-9]*)$",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "paneId",
+                              "generation"
+                            ],
+                            "type": "object"
+                          },
+                          "text": {
+                            "description": "Valid UTF-8; at most 1024 bytes",
+                            "maxLength": 1024,
+                            "minLength": 1,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "target",
+                          "text"
+                        ],
+                        "type": "object"
+                      },
+                      "tool": {
+                        "const": "wait_for_text"
+                      }
+                    },
+                    "required": [
+                      "tool",
+                      "arguments"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "arguments": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "keys": {
+                            "items": {
+                              "description": "Valid UTF-8; at most 1024 bytes",
+                              "maxLength": 1024,
+                              "type": "string"
+                            },
+                            "maxItems": 64,
+                            "minItems": 1,
+                            "type": "array"
+                          },
+                          "literal": {
+                            "default": false,
+                            "type": "boolean"
+                          },
+                          "target": {
+                            "additionalProperties": false,
+                            "description": "Explicit captured target; omission requires a configured caller pane",
+                            "properties": {
+                              "generation": {
+                                "description": "Opaque generation from list_panes",
+                                "maxLength": 128,
+                                "type": "string"
+                              },
+                              "paneId": {
+                                "description": "Valid UTF-8; at most 64 bytes",
+                                "maxLength": 64,
+                                "pattern": "^%(0|[1-9][0-9]*)$",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "paneId",
+                              "generation"
+                            ],
+                            "type": "object"
+                          },
+                          "text": {
+                            "description": "Valid UTF-8; at most 1024 bytes",
+                            "maxLength": 1024,
+                            "minLength": 1,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "target",
+                          "keys",
+                          "text"
+                        ],
+                        "type": "object"
+                      },
+                      "tool": {
+                        "const": "send_keys_and_wait"
+                      }
+                    },
+                    "required": [
+                      "tool",
+                      "arguments"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              },
+              "maxItems": 8,
+              "minItems": 1,
+              "type": "array"
+            }
+          },
+          "required": [
+            "operations"
+          ],
+          "type": "object"
+        },
+        "name": "run_operations",
+        "outputSchema": {
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "atomic": {
+                  "const": false
+                },
+                "completed": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "result": {
+                        "type": "object"
+                      },
+                      "tool": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "tool",
+                      "result"
+                    ],
+                    "type": "object"
+                  },
+                  "maxItems": 8,
+                  "type": "array"
+                },
+                "failedIndex": {
+                  "type": "null"
+                }
+              },
+              "required": [
+                "failedIndex",
+                "completed",
+                "atomic"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "atomic": {
+                  "const": false
+                },
+                "completed": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "result": {
+                        "type": "object"
+                      },
+                      "tool": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "tool",
+                      "result"
+                    ],
+                    "type": "object"
+                  },
+                  "maxItems": 8,
+                  "type": "array"
+                },
+                "error": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "effects": {
+                      "enum": [
+                        "none",
+                        "possible"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "retryable": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "effects",
+                    "retryable"
+                  ],
+                  "type": "object"
+                },
+                "failedIndex": {
+                  "maximum": 8,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "failedIndex",
+                "completed",
+                "atomic",
+                "error"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "atomic": {
+                  "const": false
+                },
+                "completed": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "completed": {
+                        "const": true
+                      },
+                      "resultOmitted": {
+                        "const": true
+                      },
+                      "tool": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "tool",
+                      "completed",
+                      "resultOmitted"
+                    ],
+                    "type": "object"
+                  },
+                  "maxItems": 8,
+                  "type": "array"
+                },
+                "error": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "const": "result_limit"
+                    },
+                    "effects": {
+                      "enum": [
+                        "none",
+                        "possible"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "retryable": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "effects",
+                    "retryable"
+                  ],
+                  "type": "object"
+                },
+                "failedIndex": {
+                  "type": "null"
+                }
+              },
+              "required": [
+                "completed",
+                "atomic",
+                "error",
+                "failedIndex"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "atomic": {
+                  "const": false
+                },
+                "completed": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "completed": {
+                        "const": true
+                      },
+                      "resultOmitted": {
+                        "const": true
+                      },
+                      "tool": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "tool",
+                      "completed",
+                      "resultOmitted"
+                    ],
+                    "type": "object"
+                  },
+                  "maxItems": 8,
+                  "type": "array"
+                },
+                "error": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "const": "result_limit"
+                    },
+                    "effects": {
+                      "enum": [
+                        "none",
+                        "possible"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "retryable": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "effects",
+                    "retryable"
+                  ],
+                  "type": "object"
+                },
+                "failedIndex": {
+                  "maximum": 8,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "originalError": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "completed",
+                "atomic",
+                "error",
+                "failedIndex",
+                "originalError"
+              ],
+              "type": "object"
+            },
+            {
+              "properties": {
+                "error": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "effects": {
+                      "enum": [
+                        "none",
+                        "possible"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "retryable": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "effects",
+                    "retryable"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "error"
+              ],
+              "type": "object"
+            }
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false
+        },
+        "description": "Send explicit key tokens or literal text to one captured target. No Enter is added; use a separate Enter token when intended.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "keys": {
+              "items": {
+                "description": "Valid UTF-8; at most 1024 bytes",
+                "maxLength": 1024,
+                "type": "string"
+              },
+              "maxItems": 64,
+              "minItems": 1,
+              "type": "array"
+            },
+            "literal": {
+              "default": false,
+              "type": "boolean"
+            },
+            "target": {
+              "additionalProperties": false,
+              "description": "Explicit captured target; omission requires a configured caller pane",
+              "properties": {
+                "generation": {
+                  "description": "Opaque generation from list_panes",
+                  "maxLength": 128,
+                  "type": "string"
+                },
+                "paneId": {
+                  "description": "Valid UTF-8; at most 64 bytes",
+                  "maxLength": 64,
+                  "pattern": "^%(0|[1-9][0-9]*)$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "paneId",
+                "generation"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "target",
+            "keys"
+          ],
+          "type": "object"
+        },
+        "name": "send_keys",
+        "outputSchema": {
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "completed": {
+                  "type": "boolean"
+                },
+                "generationGuarantee": {
+                  "type": "string"
+                },
+                "target": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "generation": {
+                      "description": "Opaque generation from list_panes",
+                      "maxLength": 128,
+                      "type": "string"
+                    },
+                    "paneId": {
+                      "description": "Valid UTF-8; at most 64 bytes",
+                      "maxLength": 64,
+                      "pattern": "^%(0|[1-9][0-9]*)$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "paneId",
+                    "generation"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "completed",
+                "generationGuarantee",
+                "target"
+              ],
+              "type": "object"
+            },
+            {
+              "properties": {
+                "error": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "effects": {
+                      "enum": [
+                        "none",
+                        "possible"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "retryable": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "effects",
+                    "retryable"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "error"
+              ],
+              "type": "object"
+            }
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false
+        },
+        "description": "Register output before sending explicit keys, then wait for literal text in output observed since registration. No Enter is added. Concurrent output may also match; this is not command-exit proof.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "keys": {
+              "items": {
+                "description": "Valid UTF-8; at most 1024 bytes",
+                "maxLength": 1024,
+                "type": "string"
+              },
+              "maxItems": 64,
+              "minItems": 1,
+              "type": "array"
+            },
+            "literal": {
+              "default": false,
+              "type": "boolean"
+            },
+            "target": {
+              "additionalProperties": false,
+              "description": "Explicit captured target; omission requires a configured caller pane",
+              "properties": {
+                "generation": {
+                  "description": "Opaque generation from list_panes",
+                  "maxLength": 128,
+                  "type": "string"
+                },
+                "paneId": {
+                  "description": "Valid UTF-8; at most 64 bytes",
+                  "maxLength": 64,
+                  "pattern": "^%(0|[1-9][0-9]*)$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "paneId",
+                "generation"
+              ],
+              "type": "object"
+            },
+            "text": {
+              "description": "Valid UTF-8; at most 1024 bytes",
+              "maxLength": 1024,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "target",
+            "keys",
+            "text"
+          ],
+          "type": "object"
+        },
+        "name": "send_keys_and_wait",
+        "outputSchema": {
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "continuity": {
+                  "const": "reset"
+                },
+                "evidence": {
+                  "const": "literal_text"
+                },
+                "generationGuarantee": {
+                  "type": "string"
+                },
+                "keysSent": {
+                  "type": "boolean"
+                },
+                "matched": {
+                  "type": "boolean"
+                },
+                "source": {
+                  "enum": [
+                    "baseline",
+                    "output"
+                  ]
+                },
+                "target": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "generation": {
+                      "description": "Opaque generation from list_panes",
+                      "maxLength": 128,
+                      "type": "string"
+                    },
+                    "paneId": {
+                      "description": "Valid UTF-8; at most 64 bytes",
+                      "maxLength": 64,
+                      "pattern": "^%(0|[1-9][0-9]*)$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "paneId",
+                    "generation"
+                  ],
+                  "type": "object"
+                },
+                "terminalContent": {
+                  "const": "data"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "matched",
+                "source",
+                "terminalContent",
+                "evidence",
+                "continuity",
+                "text",
+                "generationGuarantee",
+                "keysSent",
+                "target"
+              ],
+              "type": "object"
+            },
+            {
+              "properties": {
+                "error": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "effects": {
+                      "enum": [
+                        "none",
+                        "possible"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "retryable": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "effects",
+                    "retryable"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "error"
+              ],
+              "type": "object"
+            }
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false
+        },
+        "description": "Destroy an exact generation-bound session created by this application. Borrowed sessions are refused.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "generation": {
+              "description": "Valid UTF-8; at most 128 bytes",
+              "maxLength": 128,
+              "type": "string"
+            },
+            "sessionId": {
+              "description": "Valid UTF-8; at most 64 bytes",
+              "maxLength": 64,
+              "type": "string"
+            }
+          },
+          "required": [
+            "sessionId",
+            "generation"
+          ],
+          "type": "object"
+        },
+        "name": "teardown_session",
+        "outputSchema": {
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "completed": {
+                  "type": "boolean"
+                },
+                "generation": {
+                  "type": "string"
+                },
+                "sessionId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "completed",
+                "sessionId",
+                "generation"
+              ],
+              "type": "object"
+            },
+            {
+              "properties": {
+                "error": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "effects": {
+                      "enum": [
+                        "none",
+                        "possible"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "retryable": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "effects",
+                    "retryable"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "error"
+              ],
+              "type": "object"
+            }
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Wait for a literal UTF-8 string in a captured baseline or subsequent raw output. Event-driven, bounded and cancellable; opens observable control clients. Text is data, not exit-status evidence.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "target": {
+              "additionalProperties": false,
+              "description": "Explicit captured target; omission requires a configured caller pane",
+              "properties": {
+                "generation": {
+                  "description": "Opaque generation from list_panes",
+                  "maxLength": 128,
+                  "type": "string"
+                },
+                "paneId": {
+                  "description": "Valid UTF-8; at most 64 bytes",
+                  "maxLength": 64,
+                  "pattern": "^%(0|[1-9][0-9]*)$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "paneId",
+                "generation"
+              ],
+              "type": "object"
+            },
+            "text": {
+              "description": "Valid UTF-8; at most 1024 bytes",
+              "maxLength": 1024,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "target",
+            "text"
+          ],
+          "type": "object"
+        },
+        "name": "wait_for_text",
+        "outputSchema": {
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "continuity": {
+                  "const": "reset"
+                },
+                "evidence": {
+                  "const": "literal_text"
+                },
+                "generationGuarantee": {
+                  "type": "string"
+                },
+                "keysSent": {
+                  "type": "boolean"
+                },
+                "matched": {
+                  "type": "boolean"
+                },
+                "source": {
+                  "enum": [
+                    "baseline",
+                    "output"
+                  ]
+                },
+                "target": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "generation": {
+                      "description": "Opaque generation from list_panes",
+                      "maxLength": 128,
+                      "type": "string"
+                    },
+                    "paneId": {
+                      "description": "Valid UTF-8; at most 64 bytes",
+                      "maxLength": 64,
+                      "pattern": "^%(0|[1-9][0-9]*)$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "paneId",
+                    "generation"
+                  ],
+                  "type": "object"
+                },
+                "terminalContent": {
+                  "const": "data"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "matched",
+                "source",
+                "terminalContent",
+                "evidence",
+                "continuity",
+                "text",
+                "generationGuarantee",
+                "keysSent",
+                "target"
+              ],
+              "type": "object"
+            },
+            {
+              "properties": {
+                "error": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "effects": {
+                      "enum": [
+                        "none",
+                        "possible"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "retryable": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "effects",
+                    "retryable"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "error"
+              ],
+              "type": "object"
+            }
+          ],
+          "type": "object"
+        }
+      }
+    ]
+  }
+}

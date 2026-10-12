@@ -9,10 +9,10 @@ import { API_MODELS } from '../lib/api-models'
 import type { ApiModel, ApiSymbol } from '@libtmux/api-model'
 import { productApiRedirects, productApiRoutes } from '../lib/product-api'
 import { buildTarget } from '../lib/versions'
-import ToolReference from '../components/mcp/ToolReference.astro'
+import ProtocolReference from '../components/mcp/ProtocolReference.astro'
 import TmuxOverview from '../components/tmux/Overview.astro'
-import { mcpReferenceRoutes } from '../lib/mcp-reference'
-import { docsEntryAvailable } from '../lib/page-port-links'
+import { mcpReferenceRoutes, type McpSection } from '../lib/mcp-reference'
+import { docsEntriesAvailable } from '../lib/page-port-links'
 import { docsRedirects, docsRoutePath, sourceGuideRedirects, workspaceRedirects } from '../lib/docs-paths'
 import { DEFAULT_LOCALE, localeRoot, type Locale } from '../i18n/locales'
 import { buildLocale, localeOf, placeholderPairs, sourceIdOf } from '../i18n/resolve'
@@ -23,8 +23,7 @@ export async function getStaticPaths() {
   const port = process.env.LIBTMUX_DOCS_PORT
   let defaults: Record<string, string> = {}
   try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
-  const prose = entries
-    .filter((entry) => localeOf(entry.id) === locale && docsEntryAvailable(entry, port))
+  const prose = docsEntriesAvailable(entries.filter((entry) => localeOf(entry.id) === locale), port)
   const real = prose
     .map((entry) => ({
       params: { slug: docsRoutePath({ ...entry, id: sourceIdOf(entry.id) }, port, defaults) },
@@ -73,11 +72,13 @@ interface Props {
   symbol?: ApiSymbol
   mcpPort?: string
   toolName?: string
+  section?: McpSection
+  itemSlug?: string
 }
-const { entry, placeholderLocale, globalPage, version, model, symbol, mcpPort, toolName, redirect } = Astro.props
+const { entry, placeholderLocale, globalPage, version, model, symbol, mcpPort, section, itemSlug, redirect } = Astro.props
 const destination = globalPage === 'tmux' && buildLocale() !== DEFAULT_LOCALE
   ? `${localeRoot(DEFAULT_LOCALE)}tmux/`
   : redirect ? `${import.meta.env.BASE_URL.replace(/\/$/, '')}/${redirect}/` : undefined
 ---
 
-{destination ? <RedirectPage destination={destination} title="the documentation" /> : globalPage === 'tmux' ? <TmuxOverview /> : globalPage === 'mcp' ? <McpOverview /> : globalPage === 'tools' ? <McpTools /> : mcpPort ? <ToolReference port={mcpPort} toolName={toolName} version={version!} /> : model && symbol ? <ProductApiPage model={model} symbol={symbol} version={version!} /> : entry && <DocPage entry={entry} version={version} placeholderLocale={placeholderLocale} />}
+{destination ? <RedirectPage destination={destination} title="the documentation" /> : globalPage === 'tmux' ? <TmuxOverview /> : globalPage === 'mcp' ? <McpOverview /> : globalPage === 'tools' ? <McpTools /> : mcpPort ? <ProtocolReference port={mcpPort} section={section!} itemSlug={itemSlug} version={version!} /> : model && symbol ? <ProductApiPage model={model} symbol={symbol} version={version!} /> : entry && <DocPage entry={entry} version={version} placeholderLocale={placeholderLocale} />}

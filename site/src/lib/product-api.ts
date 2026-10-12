@@ -1,6 +1,7 @@
 import { symbolsForProduct, type ApiModel, type ApiSymbol, type SymbolIndex } from '@libtmux/api-model'
 import { API_MODELS, createApiIndex, referenceAlternatives } from './api-models'
 import { PORT_BY_SLUG, portPageUrl, productApiPath, referenceUrl, type DocProduct } from './ports'
+import type { SidebarItem, SidebarGroupItem } from './sidebar'
 
 /** Keep core references stable while product declarations stay in their section. */
 export function productApiHref(model: ApiModel, symbol: ApiSymbol, version: string): string {
@@ -69,6 +70,42 @@ export function productApiRoots(model: ApiModel, product: DocProduct): ApiSymbol
   const ids = new Set(symbols.map((symbol) => symbol.id))
   return symbols.filter((symbol) => !symbol.parent || !ids.has(symbol.parent))
     .sort((a, b) => a.name.localeCompare(b.name))
+}
+
+/** Preserve declaration ownership, including nested members, in product sidebars. */
+export function productApiNavigation(model: ApiModel, product: DocProduct, version: string): SidebarItem[] {
+  const symbols = symbolsForProduct(model, product)
+  const children = new Map<string, ApiSymbol[]>()
+  for (const symbol of symbols) if (symbol.parent) {
+    const entries = children.get(symbol.parent) ?? []
+    entries.push(symbol)
+    children.set(symbol.parent, entries)
+  }
+  const entry = (symbol: ApiSymbol, label = symbol.name): SidebarItem => {
+    const members = children.get(symbol.id) ?? []
+    const link = { label, kind: symbol.command?.kind ?? symbol.kind, href: productApiHref(model, symbol, version) }
+    return members.length ? { type: 'group', ...link, items: members.map((member) => entry(member)) }
+      : { type: 'link', ...link }
+  }
+  const rows: SidebarItem[] = []
+  const namespaces = new Map<string, SidebarGroupItem>()
+  for (const symbol of productApiRoots(model, product)) {
+    // Julia extends functions owned by other modules. Their qualified names
+    // identify a grouping, not a new local module declaration or page.
+    const qualified = model.port === 'julia' && symbol.kind === 'function' ? symbol.qualifiedName : undefined
+    const separator = qualified?.lastIndexOf('.') ?? -1
+    if (qualified && separator > 0) {
+      const label = qualified.slice(0, separator)
+      let group = namespaces.get(label)
+      if (!group) {
+        group = { type: 'group', label, kind: 'module', items: [] }
+        namespaces.set(label, group)
+        rows.push(group)
+      }
+      group.items.push(entry(symbol, qualified.slice(separator + 1)))
+    } else rows.push(entry(symbol))
+  }
+  return rows
 }
 
 const indexes = new WeakMap<ApiModel, Map<string, SymbolIndex>>()

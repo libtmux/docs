@@ -33,6 +33,8 @@ export interface PortSourceGuide {
   description?: string
   route: string
   aliases: readonly string[]
+  /** Verified task counterpart; does not create a redirect or change its URL. */
+  equivalence?: string
   domain: string
   package?: PortPackageId
   product?: DocProduct
@@ -63,6 +65,44 @@ const libraryDomain = (description: string): DocumentationDomain => ({
 })
 
 const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
+  powershell: {
+    domains: [
+      libraryDomain('Install LibTmux and use cmdlets to read and control tmux.'),
+      { id: 'workspace', label: 'Workspace Manager', kind: 'product', navGroup: 'Apps', route: 'workspace', package: 'workspace', product: 'workspace',
+        description: 'Read, validate, plan and load workspace files with LibTmux.Workspace.' },
+    ],
+    sourceGuides: [
+      guide('README.md', 'guides/getting-started', 'core', { title: 'Getting started', sidebar: { group: 'Guides', order: 1 } }),
+      ...['read', 'query', 'create', 'remove', 'layout', 'placement', 'input', 'capture', 'commands', 'watch', 'clients', 'environment', 'options', 'hooks', 'compatibility', 'troubleshooting'].map((name) =>
+        guide(`docs/${name}.md`, `guides/${name}`, 'core')),
+      guide('docs/mcp.md', 'guides/mcp', 'core', { title: 'Using the .NET MCP server', aliases: ['mcp'] }),
+      guide('docs/workspace.md', 'workspace/source-guide', 'workspace', { title: 'Workspace guide', product: 'workspace', package: 'workspace', aliases: [] }),
+    ],
+  },
+  julia: {
+    domains: [
+      libraryDomain('Create or connect to tmux servers and work with captured state.'),
+      { id: 'mcp', label: 'MCP', kind: 'product', navGroup: 'Apps', route: 'mcp', package: 'mcp', product: 'mcp',
+        description: 'Configure the LibTmuxMCP stdio server and its tool permissions.' },
+      { id: 'workspace', label: 'Workspace Manager', kind: 'product', navGroup: 'Apps', route: 'workspace', package: 'workspace', product: 'workspace',
+        description: 'Read, validate, plan and load workspace files with LibTmuxWorkspace.' },
+    ],
+    sourceGuides: [
+      guide('docs/src/index.md', 'guides/getting-started', 'core', { title: 'Getting started', sidebar: { group: 'Guides', order: 1 } }),
+      guide('docs/src/installation.md', 'guides/installation', 'core', { title: 'Installation', sidebar: { group: 'Guides', order: 2 } }),
+      guide('docs/src/queries.md', 'concepts/queries', 'core', { title: 'Captured queries', aliases: [] }),
+      guide('docs/src/ownership.md', 'topics/ownership', 'core', { title: 'Ownership and I/O', aliases: [] }),
+      guide('docs/src/observations.md', 'topics/observations', 'core', { title: 'Observing output', aliases: [] }),
+      guide('docs/src/compatibility.md', 'guides/compatibility', 'core', { title: 'Compatibility' }),
+      guide('docs/src/troubleshooting.md', 'guides/troubleshooting', 'core', { title: 'Troubleshooting' }),
+      guide('docs/src/mcp.md', 'mcp/source-guide', 'mcp', {
+        title: 'MCP server guide', product: 'mcp', package: 'mcp', aliases: [],
+        equivalence: 'mcp-client-setup', sidebar: { group: 'Guides' },
+      }),
+      guide('docs/src/workspaces.md', 'workspace/source-guide', 'workspace', { title: 'Workspace guide', product: 'workspace', package: 'workspace', aliases: [] }),
+    ],
+    redirects: [{ sourcePath: 'docs/src/api.md', path: 'guides/api-overview', target: 'reference' }],
+  },
   kotlin: {
     domains: [libraryDomain('Kotlin coroutine handles, builders and flows over the Java/JVM library.')],
     sourceGuides: [
@@ -158,6 +198,7 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       guide('gems/libtmux-mcp/README.md', 'mcp/source-guide', 'mcp', {
         title: 'MCP server guide', sidebar: { group: 'Guides', order: 3 },
         package: 'mcp', product: 'mcp', aliases: [],
+        equivalence: 'mcp-client-setup',
       }),
       guide('gems/libtmux-workspace/README.md', 'workspace/source-guide', 'workspace', {
         title: 'Workspace guide', sidebar: { group: 'Guides', order: 3 },

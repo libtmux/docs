@@ -1,6 +1,10 @@
 /** Anchor arrival shared by Astro and native documentation pages. */
+// Keep link hints available through the shell asset used by every generator.
+import './external-links.js'
+
 export function installAnchorNavigation(win = window) {
   const doc = win.document
+  const pageUrl = new URL(win.location.href)
   const controller = new win.AbortController()
   const { signal } = controller
   let frame = 0
@@ -42,11 +46,11 @@ export function installAnchorNavigation(win = window) {
     }
     const display = visibleTarget(target)
     if (!display || display === doc.body || display === doc.documentElement) return
-    // The font gate hides the page for up to three seconds. Keep the full
+    // The font and link-hint gates hide the page during startup. Keep the full
     // arrival cue for the moment the reader can actually see it.
-    if (doc.documentElement.classList.contains('fonts-pending') && win.MutationObserver) {
+    if (doc.documentElement.matches('.fonts-pending, .link-hints-pending') && win.MutationObserver) {
       observer = new win.MutationObserver(() => {
-        if (!doc.documentElement.classList.contains('fonts-pending')) schedule(hash, scroll || opened)
+        if (!doc.documentElement.matches('.fonts-pending, .link-hints-pending')) schedule(hash, scroll || opened)
       })
       observer.observe(doc.documentElement, { attributes: true, attributeFilter: ['class'] })
       return
@@ -78,6 +82,14 @@ export function installAnchorNavigation(win = window) {
   }
 
   win.addEventListener('hashchange', () => schedule(), { signal })
+  win.addEventListener('popstate', (event) => {
+    // Address-bar fragment navigation can create an entry without router state.
+    // Astro leaves that entry alone. If another page is still mounted, load
+    // the browser's actual destination instead of leaving its old contents.
+    if (event.state === null && (win.location.pathname !== pageUrl.pathname || win.location.search !== pageUrl.search)) {
+      win.location.reload()
+    }
+  }, { signal })
   doc.addEventListener('click', (event) => {
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return
     const link = event.target.closest?.('a[href]')

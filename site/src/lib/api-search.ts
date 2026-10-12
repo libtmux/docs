@@ -6,8 +6,9 @@ export interface ApiTreeEntry {
   qualifiedName?: string
   slug: string
   m: 0 | 1
+  shortcut?: boolean
   kind?: string
-  category?: 'types' | 'members'
+  category?: string
   summary?: string
 }
 
@@ -23,8 +24,15 @@ export interface ApiTreeBucket {
 export interface ApiTreeJson {
   port: string
   buckets: ApiTreeBucket[]
-  members: Record<string, [string, string, string?, string?, ('types' | 'members')?, string?, string?][]>
+  members: Record<string, [string, string, string?, string?, string?, string?, string?][]>
+  /** Canonical destinations for declarations documented in another port. */
+  hrefs?: Record<string, string>
   relationships?: Record<string, { target: string; kind: 'type' | 'call' | 'reference'; sites?: { file: string; line: number }[] }[]>
+}
+
+/** Initial markup, lazy branches and search use the same declaration URL. */
+export function apiTreeHref(base: string, entry: { id?: string; slug: string }, hrefs?: Record<string, string>): string {
+  return (entry.id ? hrefs?.[entry.id] : undefined) ?? `${base}${entry.slug}/`
 }
 
 export interface ApiSearchResult {
@@ -34,7 +42,7 @@ export interface ApiSearchResult {
   qualifiedName: string
   slug: string
   kind: string
-  category: 'types' | 'members'
+  category: string
   summary: string
 }
 

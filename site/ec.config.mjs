@@ -18,6 +18,14 @@ export default defineEcConfig({
   // Keep literal tabs in displayed code and clipboard text.
   tabWidth: 0,
   themes: shellThemes(),
+  customizeTheme(theme) {
+    const dark = theme.type === 'dark'
+    theme.settings.push(
+      { scope: ['support.type.property-name.json'], settings: { foreground: dark ? '#f0a0c0' : '#963b63' } },
+      { scope: ['string.quoted.double.json'], settings: { foreground: dark ? '#e6c86e' : '#755400' } },
+      { scope: ['constant.language.json', 'constant.numeric.json'], settings: { foreground: dark ? '#c3a6f4' : '#6840a0' } },
+    )
+  },
   plugins: [shellPrompt(), copyReadiness()],
   shiki: { langs: [tmuxUsage, ...bash, tmuxShell, tmuxConfig], langAlias: { sbt: 'scala', tmux: 'tmux-config' } },
   useDarkModeMediaQuery: false,

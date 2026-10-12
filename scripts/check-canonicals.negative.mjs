@@ -30,9 +30,9 @@ function site(canonicalFor) {
   return dir
 }
 
-function run(dir) {
+function run(dir, env = process.env) {
   try {
-    return { code: 0, out: execFileSync('node', [script, dir], { encoding: 'utf8', stdio: 'pipe' }) }
+    return { code: 0, out: execFileSync('node', [script, dir], { encoding: 'utf8', stdio: 'pipe', env }) }
   } catch (err) {
     return { code: err.status, out: `${err.stdout ?? ''}${err.stderr ?? ''}` }
   }
@@ -106,6 +106,30 @@ for (const variant of ['valid', 'missing', 'foreign', 'origin', 'fallback', 'ind
   check(`reference redirect ${variant}`, variant === 'valid' ? code === 0 : code !== 0,
     `exited ${code}:\n${out}`)
   rmSync(dir, { recursive: true, force: true })
+}
+
+for (const prefix of ['', '/pr-139']) {
+  for (const variant of ['valid', 'missing', 'foreign', 'wrong-target', 'declaration', 'nested', 'redirect']) {
+    const dir = site((p) => `${prefix}/en${p}`)
+    const href = `${ORIGIN}${prefix}/en/reference/glossary/`
+    const shared = join(dir, 'reference/glossary')
+    if (variant !== 'missing') {
+      mkdirSync(shared, { recursive: true })
+      writeFileSync(join(shared, 'index.html'), `<link rel="canonical" href="${variant === 'wrong-target' ? `${ORIGIN}/elsewhere/` : href}">
+        ${variant === 'redirect' ? '<meta http-equiv="refresh" content="0;url=/elsewhere/">' : ''}`)
+    }
+    const scopes = variant === 'declaration' ? ['py/latest/reference/pane']
+      : variant === 'nested' ? ['py/latest/reference/other/glossary']
+      : ['py/latest/reference/glossary', 'ts/latest/workspace/reference/glossary', 'ts/latest/mcp/reference/glossary']
+    for (const scope of scopes) {
+      mkdirSync(join(dir, scope), { recursive: true })
+      writeFileSync(join(dir, scope, 'index.html'), `<link rel="canonical" href="${variant === 'foreign' ? href.replace(ORIGIN, 'https://example.invalid') : href}">`)
+    }
+    const { code, out } = run(dir, { ...process.env, LIBTMUX_DOCS_LOCALES_ROOT: prefix })
+    check(`shared glossary ${variant} (${prefix || 'production'})`, variant === 'valid' ? code === 0 : code !== 0,
+      `exited ${code}:\n${out}`)
+    rmSync(dir, { recursive: true, force: true })
+  }
 }
 
 if (failures) {

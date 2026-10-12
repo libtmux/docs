@@ -4,6 +4,7 @@ import { Window } from 'happy-dom'
 import { describe, expect, it } from 'vitest'
 import { ModuleKind, ScriptTarget, transpileModule } from 'typescript'
 import { pickerPaintRules } from '../src/lib/picker-paint'
+import { PORTS } from '../src/lib/ports'
 import { SITE_BUILT, SITE_ROOT, SITE_PREFIX, publishedPath } from './site-root'
 
 /**
@@ -46,7 +47,20 @@ function load(page: string, url: string, stored: Record<string, string> = {}): L
   const document = window.document as unknown as Document
   for (const [key, value] of Object.entries(stored)) window.localStorage.setItem(key, value)
   document.write(readFileSync(page, 'utf8'))
-  const evaluate = (source: string) => window.eval(`(() => {\n${source}\n})()`)
+  const evaluate = (source: string, script: HTMLScriptElement) => {
+    // Manual evaluation must expose the executing classic script to page code.
+    const previous = Object.getOwnPropertyDescriptor(document, 'currentScript')
+    Object.defineProperty(document, 'currentScript', {
+      configurable: true,
+      value: script.type === 'module' ? null : script,
+    })
+    try {
+      window.eval(`(() => {\n${source}\n})()`)
+    } finally {
+      if (previous) Object.defineProperty(document, 'currentScript', previous)
+      else Reflect.deleteProperty(document, 'currentScript')
+    }
+  }
   const modules = new Map<string, { exports: Record<string, unknown> }>()
   const evaluateModule = (asset: string): Record<string, unknown> => {
     const existing = modules.get(asset)
@@ -69,7 +83,7 @@ function load(page: string, url: string, stored: Record<string, string> = {}): L
     const src = script.getAttribute('src')
     if (!src) {
       const inline = script.textContent ?? ''
-      if (!isModuleOnly(inline)) evaluate(inline)
+      if (!isModuleOnly(inline)) evaluate(inline, script)
       continue
     }
     if (!src.includes('/_astro/')) continue
@@ -80,11 +94,24 @@ function load(page: string, url: string, stored: Record<string, string> = {}): L
       continue
     }
     const source = readFileSync(asset, 'utf8')
-    if (!isModuleOnly(source)) evaluate(source)
+    if (!isModuleOnly(source)) evaluate(source, script)
   }
   window.document.dispatchEvent(new window.Event('DOMContentLoaded'))
   return { window, document }
 }
+
+describe('page script evaluation', () => {
+  it('exposes classic scripts and leaves currentScript null for modules', () => {
+    const { document } = load(
+      join(import.meta.dirname, 'fixtures/install-widget-script-semantics.html'),
+      'https://libtmux.org/',
+    )
+    expect(document.documentElement.dataset.classicBefore).toBe('classic-before')
+    expect(document.documentElement.dataset.module).toBe('null')
+    expect(document.documentElement.dataset.classicAfter).toBe('classic-after')
+    expect(document.currentScript).toBeNull()
+  })
+})
 
 /** The one command block a panel is showing, by the rules the page carries. */
 function visibleCommand(document: Document, panelSelector: string): string {
@@ -107,9 +134,37 @@ describe('saved package manager paint', () => {
   it('keys a companion package apart from its library', () => {
     const rules = pickerPaintRules()
     expect(rules).toContain('html[data-pkg-manager-ts-workspace="6"] .lm-pkg-install__panel[data-manager-scope="ts-workspace"]')
-    expect(rules).toContain('html[data-pkg-manager-ts="4"] .lm-pkg-install__panel[data-manager-scope="ts"]')
-    // The library lists five managers; a seventh is the CLI's alone.
+    expect(rules).toContain('html[data-pkg-manager-ts="3"] .lm-pkg-install__panel[data-manager-scope="ts"]')
+    // The library lists four managers; a seventh is the CLI's alone.
     expect(rules).not.toContain('html[data-pkg-manager-ts="6"]')
+  })
+})
+
+describe('homepage preference before body parsing', () => {
+  const themeScript = readFileSync(new URL('../src/components/ThemeScript.astro', import.meta.url), 'utf8')
+    .match(/<script is:inline>([\s\S]*?)<\/script>/)![1]
+
+  it.each([
+    ['?port=rs', 'py', 'rs'],
+    ['', 'swift', 'swift'],
+    ['?port=unknown', 'go', 'go'],
+    ['?port=unknown', 'unknown', null],
+    ['', null, null],
+  ])('resolves %s with saved %s as %s before deferred scripts', async (query, saved, expected) => {
+    const window = new Window({ url: `https://libtmux.org/en/${query}` })
+    const { document } = window
+    document.documentElement.setAttribute('data-home-ports', PORTS.map((port) => port.slug).join(' '))
+    document.documentElement.setAttribute('data-home-brands', JSON.stringify(Object.fromEntries(PORTS.map((port) => [port.slug, port.logoLanguage]))))
+    if (saved) window.localStorage.setItem('libtmux-docs.package-install.port', saved)
+    window.eval(themeScript)
+    // Happy DOM does not model CSS cascade layers. Actual first-paint
+    // visibility needs the built Tailwind styles and a real browser.
+    expect(document.body.children).toHaveLength(0)
+    expect(document.documentElement.getAttribute('data-home-selected-port')).toBe(expected)
+    expect(document.documentElement.getAttribute('data-brand')).toBe(
+      PORTS.find((port) => port.slug === (expected ?? 'py'))!.logoLanguage,
+    )
+    await window.happyDOM.abort()
   })
 })
 
@@ -121,7 +176,7 @@ describeIfBuilt('package install picker', () => {
   it('shows one command per port, and the first by default', () => {
     const { document } = load(PORT_HOME, url)
     const managers = document.querySelectorAll(`${CORE} .lm-pkg-install__manager`)
-    expect(managers.length).toBe(5)
+    expect(managers.length).toBe(4)
     expect(visibleCommand(document, CORE)).toBe(
       '$ npm install libtmux',
     )
@@ -185,7 +240,7 @@ describeIfBuilt('package install picker', () => {
     const left = load(PORT_HOME, url)
     arrow(left, 'ArrowLeft')
     expect(visibleCommand(left.document, CORE)).toBe(
-      '$ deno add npm:libtmux',
+      '$ bun add libtmux',
     )
   })
 

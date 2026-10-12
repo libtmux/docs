@@ -71,6 +71,16 @@ const PORTS = [
     pattern: /registerTool\(\s*"([a-z_]+)"/gs,
   },
   {
+    slug: 'julia',
+    dir: '~/work/libtmux/libtmux-julia/packages/LibTmuxMCP/src',
+    glob: 'tools.jl',
+    // tools(app) builds the SDK catalog from this declared tuple.
+    section: /^const _TOOL_NAMES = \([\s\S]*?^\)/m,
+    pattern: /"([a-z][a-z0-9_]*)"/g,
+    defaults: /^const _ROUTINE_TOOLS = \(([\s\S]*?)\)/m,
+    enableOption: '--tool',
+  },
+  {
     slug: 'rs',
     dir: '~/work/libtmux/libtmux-rs/crates/tmux-mcp/src/tools',
     glob: '*.rs',
@@ -211,14 +221,22 @@ for (const port of relevant) {
   }
   const revision = sourceBound ? head : source?.revision ?? head
   const names = new Map()
+  let defaultNames
   for (const file of filesIn(dir, port.glob, port.exclude)) {
     const text = readFileSync(file, 'utf8')
+    const section = port.section?.exec(text)
+    if (port.section && !section) throw new Error(`${port.slug}: declared tool catalog not found in ${file}`)
+    if (port.defaults) {
+      const defaults = port.defaults.exec(text)
+      if (!defaults) throw new Error(`${port.slug}: default tool catalog not found in ${file}`)
+      defaultNames = new Set([...defaults[1].matchAll(/"([a-z][a-z0-9_]*)"/g)].map((match) => match[1]))
+    }
     const path = relative(port.checkout, file)
     const hunks = head === revision ? [] : parseHunks(git(port.checkout, 'diff', '-U0', `${revision}..${head}`, '--', path))
-    for (const match of text.matchAll(port.pattern)) {
+    for (const match of (section?.[0] ?? text).matchAll(port.pattern)) {
       const wireName = port.capture ? port.capture(match) : match[1]
       const name = port.wirePrefix ? wireName.replace(new RegExp(`^${port.wirePrefix}`), '') : wireName
-      const line = mapLine(hunks, text.slice(0, match.index).split('\n').length)
+      const line = mapLine(hunks, text.slice(0, (section?.index ?? 0) + match.index).split('\n').length)
       names.set(name, { wireName, source: { repo: port.repo, revision, extractedRevision: head, file: path, ...(line ? { line } : {}) } })
     }
   }
@@ -233,6 +251,7 @@ for (const port of relevant) {
       name, ...registration, description: tool?.description ?? '',
       schemaStatus: tool ? 'runtime' : 'unavailable',
       ...(port.slug === 'ruby' ? { enabledByDefault: ['capabilities', 'snapshot'].includes(name) } : {}),
+      ...(defaultNames ? { enabledByDefault: defaultNames.has(name), enableOption: port.enableOption } : {}),
       ...(tool ? { inputSchema: tool.inputSchema, outputSchema: tool.outputSchema, annotations: tool.annotations, meta: tool._meta } : {}),
     }
   })

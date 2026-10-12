@@ -131,7 +131,7 @@ d('resolver', () => {
     expect('symbol' in rust ? rust.symbol.product : undefined).toBe('mcp')
   })
 
-  it('resolves most of the real corpus', () => {
+  it('resolves most unlinked references in the real corpus', () => {
     const LABEL: Record<string, string> = {
       Python: 'py', Ruby: 'ruby', Lua: 'lua', TypeScript: 'ts', Rust: 'rs', Go: 'go',
       Java: 'java', '.NET': 'csharp', 'C++': 'cxx', Swift: 'swift',
@@ -144,6 +144,9 @@ d('resolver', () => {
     let resolved = 0
     for (const f of walk(docs)) {
       for (const mention of proseMentions(readFileSync(f, 'utf8'), LABEL)) {
+        // Authored links already select a destination, which may be a protocol
+        // object or external API. The name resolver does not own those labels.
+        if (mention.linked) continue
         const { text, before } = mention
         const port = portFromSentence(before) ?? mention.port
         if (!port) continue

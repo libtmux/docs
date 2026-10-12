@@ -1,0 +1,25 @@
+{
+  "name": "PowerShell",
+  "asset": "icon.svg",
+  "sourceUrl": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/powershell/powershell-original.svg",
+  "resolvedUrl": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/powershell/powershell-original.svg",
+  "sourcePage": "https://github.com/devicons/devicon/tree/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/powershell",
+  "retrievedAt": "2026-10-10T18:04:46.645136+00:00",
+  "sha256": "f72bc9843ff04005045b659f1ce960d03ddf7707fe02cb5d3dee373914a6d750",
+  "copyright": "Devicon collection: Copyright (c) 2015 konpa. The language marks belong to their respective projects.",
+  "license": {
+    "name": "MIT (Devicon collection)",
+    "urls": [
+      "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/LICENSE"
+    ],
+    "notes": "Used to identify the language and its package destination. No endorsement is implied.",
+    "localCopy": {
+      "file": "LICENSE.txt",
+      "sourceUrl": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/LICENSE",
+      "retrievedAt": "2026-10-10T18:04:46.645136+00:00",
+      "sha256": "121194741d4a915b9f5890fdd6dd95121f9b1f816517c792358d72d7c838d664"
+    }
+  },
+  "modifications": "None. The downloaded SVG bytes are preserved.",
+  "upstreamRevision": "7330accdbc47e2dc0c19789a48533c4a3c50fe58"
+}

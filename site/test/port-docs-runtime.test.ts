@@ -30,6 +30,94 @@ function selectedVersion(port: string, source?: string) {
   } finally { rmSync(directory, { recursive: true, force: true }) }
 }
 
+function documentationVersion(port: string, source: string) {
+  const directory = mkdtempSync(join(tmpdir(), 'libtmux-docs-runtime-'))
+  const tooling = join(directory, 'export tooling')
+  const output = join(directory, 'output')
+  const environment = join(directory, 'environment')
+  try {
+    mkdirSync(tooling)
+    writeFileSync(join(tooling, '.tool-versions'), source)
+    writeFileSync(output, '')
+    writeFileSync(environment, '')
+    const result = spawnSync('bash', ['-e', '-c', script('Read native documentation toolchain')], {
+      cwd: directory, encoding: 'utf8', timeout: 5000,
+      env: { ...process.env, PORT: port, GENERATOR_CHECKOUT: tooling, GITHUB_OUTPUT: output, GITHUB_ENV: environment },
+    })
+    return { ...result, output: readFileSync(output, 'utf8'), environment: readFileSync(environment, 'utf8'), tooling }
+  } finally { rmSync(directory, { recursive: true, force: true }) }
+}
+
+describe('native documentation producers', () => {
+  it.each([
+    ['powershell', 'powershell 7.4.20\ndotnet 8.0.425\n', '7.4.20'],
+    ['julia', 'julia 1.13.0\n', '1.13.0'],
+  ])('reads the exact %s exporter runtime separately from the API source', (port, source, version) => {
+    const result = documentationVersion(port, source)
+    expect(result.status, result.stderr).toBe(0)
+    expect(result.output).toBe(`version=${version}\n`)
+    expect(result.environment).toBe(`LIBTMUX_DOCS_GENERATOR_CHECKOUT=${result.tooling}\n`)
+  })
+
+  it.each([
+    ['powershell', 'powershell latest\n'],
+    ['julia', 'julia 1.13.0 injected\n'],
+    ['julia', 'julia 1.13.0\njulia 1.10.0\n'],
+    ['julia', 'powershell 7.4.20\n'],
+    ['ruby', 'ruby 4.0.7\n'],
+  ])('rejects ambiguous or unsupported %s tooling before exporting environment values', (port, source) => {
+    const result = documentationVersion(port, source)
+    expect(result.status).not.toBe(0)
+    expect(result.output).toBe('')
+    expect(result.environment).toBe('')
+  })
+
+  it('rejects a changed PowerShell archive before extraction or PATH publication', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-powershell-download-'))
+    try {
+      const output = join(directory, 'path')
+      const extracted = join(directory, 'extracted')
+      writeFileSync(output, '')
+      writeFileSync(join(directory, 'curl'), `#!${process.execPath}
+const fs = require('node:fs')
+fs.writeFileSync(process.argv[process.argv.indexOf('--output') + 1], 'changed archive')
+`, { mode: 0o700 })
+      writeFileSync(join(directory, 'tar'), `#!/bin/sh\ntouch '${extracted}'\n`, { mode: 0o700 })
+      const result = spawnSync('bash', ['-e', '-c', script('Install tested PowerShell documentation runtime')], {
+        cwd: root, encoding: 'utf8', timeout: 5000,
+        env: { ...process.env, PATH: `${directory}:${process.env.PATH}`, POWERSHELL_VERSION: '7.4.20', RUNNER_TEMP: directory, GITHUB_PATH: output },
+      })
+      expect(result.status).not.toBe(0)
+      expect(result.stderr).toContain('computed checksum did NOT match')
+      expect(readFileSync(output, 'utf8')).toBe('')
+      expect(() => readFileSync(extracted)).toThrow()
+    } finally { rmSync(directory, { recursive: true, force: true }) }
+  })
+
+  it('prepares the PowerShell exporter before extracting the selected source checkout', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-powershell-export-'))
+    try {
+      const source = join(directory, 'selected source')
+      const tooling = join(directory, 'export tooling')
+      const output = join(directory, 'invocations')
+      mkdirSync(source)
+      mkdirSync(tooling)
+      writeFileSync(join(directory, 'pwsh'), `#!${process.execPath}
+require('node:fs').appendFileSync(process.env.EXPORT_INVOCATIONS, JSON.stringify(process.argv.slice(2)) + '\\n')
+`, { mode: 0o700 })
+      const result = spawnSync('bash', ['-e', '-c', script('Export PowerShell API from the selected source')], {
+        cwd: source, encoding: 'utf8', timeout: 5000,
+        env: { ...process.env, PATH: `${directory}:${process.env.PATH}`, LIBTMUX_DOCS_GENERATOR_CHECKOUT: tooling, EXPORT_INVOCATIONS: output },
+      })
+      expect(result.status, result.stderr).toBe(0)
+      expect(readFileSync(output, 'utf8').trim().split('\n').map((line) => JSON.parse(line))).toEqual([
+        ['-NoLogo', '-NoProfile', '-File', join(tooling, 'eng/Setup.ps1')],
+        ['-NoLogo', '-NoProfile', '-File', join(tooling, 'eng/Export-Docs.ps1'), '-SourceRoot', source, '-Restore'],
+      ])
+    } finally { rmSync(directory, { recursive: true, force: true }) }
+  })
+})
+
 function doxygenProbe(version: string, aliases = 1, overloads = 2, protection = 'public') {
   const directory = mkdtempSync(join(tmpdir(), 'libtmux-doxygen-test-'))
   try {
@@ -148,7 +236,7 @@ describe('selected MCP runtime provisioning', () => {
 
   it.each([
     ['go', true], ['py', true], ['ruby', true],
-    ['lua', false], ['kotlin', false], ['scala', false], ['fsharp', false],
+    ['lua', false], ['kotlin', false], ['scala', false], ['fsharp', false], ['powershell', false], ['julia', true],
   ])('uses the product catalog for %s runtime availability', (port, required) => {
     const directory = mkdtempSync(join(tmpdir(), 'libtmux-mcp-availability-'))
     try {

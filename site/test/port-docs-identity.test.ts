@@ -47,6 +47,34 @@ describe('port docs identity', () => {
     expect(result.outputs.should_publish).toBe('false')
   })
 
+  it('publishes an opted-in same-repository preview from the tested merge commit', () => {
+    const result = identity({ EVENT: 'pull_request', PUBLISH_PREVIEWS: 'true',
+      PR_NUMBER: '37', SAME_REPOSITORY_PR: 'true' })
+    expect(result.status).toBe(0)
+    expect(result.outputs.source_ref).toBe('abc123')
+    expect(versions(result.entries)).toEqual([['pr-37', 'pr', false, '']])
+    expect(result.outputs.should_publish).toBe('true')
+    for (const port of ['powershell', 'julia']) {
+      const matrix = publicationMatrix({ include: result.entries }, port, `libtmux/libtmux-${port}`)
+      expect(matrix.include).toEqual([{ ...result.entries[0], port }])
+    }
+  })
+
+  it.each(['false', ''])('keeps fork or missing-identity previews unpublishable (%s)', (sameRepository) => {
+    const result = identity({ EVENT: 'pull_request', PUBLISH_PREVIEWS: 'true',
+      PR_NUMBER: '37', SAME_REPOSITORY_PR: sameRepository })
+    expect(result.status).toBe(0)
+    expect(versions(result.entries)).toEqual([['pr-37', 'pr', false, '']])
+    expect(result.outputs.should_publish).toBe('false')
+  })
+
+  it.each(['', '../latest', '37/../../latest'])('rejects an invalid opted-in preview number: %s', (number) => {
+    const result = identity({ EVENT: 'pull_request', PUBLISH_PREVIEWS: 'true',
+      PR_NUMBER: number, SAME_REPOSITORY_PR: 'true' })
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain('preview requires a numeric pull request number')
+  })
+
   it('publishes latest from the default branch only, as the default until a stable release', () => {
     const trunk = identity({ EVENT: 'push', REF_NAME: 'master' })
     expect(versions(trunk.entries)).toEqual([['latest', 'trunk', true, '']])
@@ -126,7 +154,8 @@ describe('port docs workflow', () => {
   })
 
   it('never runs a pull request head or restores a cache', () => {
-    expect(workflow).not.toContain('pull_request.head')
+    expect(workflow).not.toContain('pull_request.head.sha')
+    expect(workflow).toContain('SHA: ${{ github.sha }}')
     expect(workflow).not.toMatch(/uses: (?:actions\/cache|Swatinem\/rust-cache)@/)
     for (const [, key, value] of workflow.matchAll(/^\s+((?:enable-|bundler-|no-)?cache(?:-disabled)?):\s+(\S+)/gm)) {
       expect(value, key).toBe(['cache-disabled', 'no-cache'].includes(key) ? 'true' : 'false')

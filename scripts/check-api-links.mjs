@@ -20,6 +20,7 @@ import { existsSync, globSync, readdirSync, readFileSync, statSync } from 'node:
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Resolver, parentInventory, decideFilePath, decideMention, isLikelyReference, looksLikeApiMention, notASymbol, notApiReason, proseMentions, readInventory } from '../packages/api-model/src/index.ts'
+import { decideMcpMention } from '../site/src/lib/mcp-catalog.ts'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const { API_MODEL_PORTS: PORT_DEFS, PORT_BY_SLUG } = await import(`file://${resolve(root, 'site/src/lib/ports.ts')}`)
@@ -40,9 +41,10 @@ if (!Object.keys(models).length) {
 }
 const resolver = new Resolver(Object.values(models))
 for (const port of PORTS) {
-  const parent = PORT_BY_SLUG[port]?.parentLibrary
-  if (parent) resolver.addInventory('Parent library API', '', parentInventory(models[parent.slug],
-    (symbol) => `/reference/${parent.slug}/${symbol.slug}/`), [port])
+  const identity = PORT_BY_SLUG[port]
+  const dependencies = [...(identity.parentLibrary ? [identity.parentLibrary.slug] : []), ...(identity.apiDependencies ?? [])]
+  for (const dependency of dependencies) resolver.addInventory('Library API', '', parentInventory(models[dependency],
+    (symbol) => `/reference/${dependency}/${symbol.slug}/`), [port])
 }
 
 
@@ -58,6 +60,7 @@ const INVENTORIES = [
   { file: 'python.inv', project: 'Python', baseUrl: 'https://docs.python.org/3/', langs: ['py'] },
   { file: 'jdk.inv', project: 'Java SE', baseUrl: 'https://docs.oracle.com/en/java/javase/21/docs/api/', langs: ['java', 'kotlin', 'scala'] },
   { file: 'dom.inv', project: 'MDN', baseUrl: 'https://developer.mozilla.org/', langs: ['ts'] },
+  { file: 'julia.inv', project: 'Julia', baseUrl: 'https://docs.julialang.org/en/v1/', langs: ['julia'] },
 ]
 for (const { file, project, baseUrl, langs } of INVENTORIES) {
   const inv = join(root, 'site/src/data/inventories', file)
@@ -97,7 +100,7 @@ const EXCEPTIONS = new Map()
   }
 }
 
-const FILE_RE = /^[\w./@-]+\.(py|ts|tsx|js|rs|go|java|cs|cpp|hpp|h|swift|md|toml|json|ya?ml|sh)$/
+const FILE_RE = /^[\w./@-]+\.(py|ts|tsx|js|rs|go|java|cs|cpp|hpp|h|swift|jl|ps1|psm1|psd1|md|toml|json|ya?ml|sh)$/
 const PORT_BY_LABEL = Object.fromEntries(PORT_DEFS.map((port) => [port.name, port.slug]))
 PORT_BY_LABEL['C#'] = 'csharp'
 
@@ -168,6 +171,14 @@ for (const file of targets) {
   for (const { text, port: ctxPort, before, line, linked } of proseMentions(selected.body, PORT_BY_LABEL, selected.portAt)) {
     if (linked) { tally.alreadyLinked++; continue }
     const pagePort = authoredPort ?? ctxPort
+
+    const protocol = decideMcpMention(text, { pagePort, product, before })
+    if (protocol) {
+      if (protocol.kind === 'link') tally.willLink++
+      else if (protocol.kind === 'skip') tally.notASymbol++
+      else { tally.unresolved++; unresolved.push({ file, line, text, why: protocol.why }) }
+      continue
+    }
 
     if (FILE_RE.test(text) || text.endsWith('/')) {
       const d = decideFilePath(text, { before, pagePort }, trees)

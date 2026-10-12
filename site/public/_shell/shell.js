@@ -7,6 +7,8 @@
     {"slug":"py","name":"Python","shortName":"Py","logoLanguage":"python","versionedDocs":true},
     {"slug":"ruby","name":"Ruby","shortName":"Rb","logoLanguage":"ruby","versionedDocs":true},
     {"slug":"lua","name":"Lua","shortName":"Lua","logoLanguage":"lua","versionedDocs":true},
+    {"slug":"powershell","name":"PowerShell","shortName":"PowerShell","logoLanguage":"powershell","versionedDocs":true},
+    {"slug":"julia","name":"Julia","shortName":"Julia","logoLanguage":"julia","versionedDocs":true},
     {"slug":"ts","name":"TypeScript","shortName":"TS","logoLanguage":"typescript","versionedDocs":true},
     {"slug":"rs","name":"Rust","shortName":"Rs","logoLanguage":"rust","versionedDocs":true},
     {"slug":"go","name":"Go","shortName":"Go","logoLanguage":"go","versionedDocs":true},

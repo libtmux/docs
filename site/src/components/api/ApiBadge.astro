@@ -9,6 +9,7 @@
  * loud.
  */
 import { kindMark } from '../../lib/api-labels'
+import { apiGlossaryHref } from '../../lib/api-glossary'
 interface Props {
   label: string
   variant: 'kind' | 'mod'
@@ -16,16 +17,26 @@ interface Props {
   value: string
   /** The small symbol mark shared by navigation and related APIs. */
   compact?: boolean
+  /** Cards already provide context; their badges keep ordinary glossary links. */
+  preview?: boolean
 }
-const { label, variant, value, compact = false } = Astro.props as Props
-const text = compact ? kindMark(value) : label
+const { label, variant, value, compact = false, preview = true } = Astro.props as Props
+const palette = value === 'cmdlet' ? 'function' : value
+const text = compact ? kindMark(palette) : label
+// Cmdlets use the function palette but retain their PowerShell command kind.
+const href = compact ? undefined : apiGlossaryHref(variant === 'kind' ? label : value, Astro.url.pathname)
+// Compact marks already sit inside navigation links.
+const Tag = href ? 'a' : 'span'
 ---
-{text && <span
-  class:list={compact ? ['api-nav__kind', `api-badge--kind-${value}`] : [
+{text && <Tag
+  href={href}
+  data-link-preview={href && preview ? '' : undefined}
+  class:list={compact ? ['api-nav__kind', `api-badge--kind-${palette}`] : [
     'api-badge',
     `api-badge--${variant}`,
-    `api-badge--${variant}-${value}`,
+    `api-badge--${variant}-${palette}`,
   ]}
-  title={compact ? value : variant === 'kind' ? `${label} (kind)` : label}
+  title={preview ? compact ? value : variant === 'kind' ? `${label} (kind)` : label : undefined}
+  aria-label={href ? `${label}: read the ${variant === 'kind' ? label : value} definition in the API glossary` : undefined}
   aria-hidden={compact ? 'true' : undefined}
->{text}</span>}
+><span class="api-badge__label">{text}</span></Tag>}

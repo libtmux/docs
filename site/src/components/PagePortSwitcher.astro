@@ -21,10 +21,10 @@ const current = entries.find((entry) => entry.port === portSlug)
 const name = tmux ? 'tmux CLI' : current?.name ?? PORT_BY_SLUG[portSlug ?? '']?.name ?? 'In other ports'
 const shortName = tmux ? 'tmux' : PORT_BY_SLUG[portSlug ?? '']?.shortName ?? name
 const families = [
-  { label: 'Scripting & web', ports: ['py', 'ruby', 'lua', 'ts'] },
+  { label: 'Scripting & web', ports: ['py', 'ruby', 'lua', 'julia', 'ts'] },
   { label: 'Compiled & native', ports: ['rs', 'go', 'cxx', 'swift'] },
   { label: 'JVM', ports: ['java', 'kotlin', 'scala'] },
-  { label: '.NET', ports: ['csharp', 'fsharp'] },
+  { label: '.NET', ports: ['csharp', 'fsharp', 'powershell'] },
 ]
 const known = new Set(families.flatMap((family) => family.ports))
 families.push({ label: 'Other languages', ports: entries.filter((entry) => !known.has(entry.port)).map((entry) => entry.port) })
@@ -42,7 +42,13 @@ families.push({ label: 'Other languages', ports: entries.filter((entry) => !know
         src={withRoot(`/brand/languages/${entry.port}/icon.svg`)}
         width="24" height="24" alt="" loading="eager" decoding="sync" />)}
     </span>
-    <span class="page-port-name">{homeLanguageIcons ? 'Language' : name}</span><span class="page-port-short-name" aria-hidden="true">{homeLanguageIcons ? 'Port' : shortName}</span>
+    <span class="page-port-name">{homeLanguageIcons ? <>
+      <span data-home-unselected-name>Language</span>
+      {entries.map((entry) => <span data-home-port-name={entry.port}>{entry.name}</span>)}
+    </> : name}</span><span class="page-port-short-name" aria-hidden="true">{homeLanguageIcons ? <>
+      <span data-home-unselected-name>Port</span>
+      {entries.map((entry) => <span data-home-port-name={entry.port}>{entry.name}</span>)}
+    </> : shortName}</span>
     {reserveLabelWidth && <span class="page-port-label-sizer" aria-hidden="true" style="visibility: hidden; height: 0; overflow: hidden;">
       <span class="page-port-sizer-default">{homeLanguageIcons ? 'Language' : name}</span>
       {entries.map((entry) => <span>{entry.name}</span>)}
@@ -61,18 +67,31 @@ families.push({ label: 'Other languages', ports: entries.filter((entry) => !know
       return ports.length > 0 && <section class="port-family" data-picker-group>
         <h3>{family.label}</h3>
         <div class="doc-picker-options">
-          {ports.map((entry) => entry.links.length ? entry.links.map((link) => <a class="doc-picker-option" href={link.href}
+          {ports.map((entry) => {
+            const links = entry.links.filter((link) => !link.fallback)
+            const overview = entry.links.find((link) => link.fallback === 'section')
+            const home = overview ? { href: overview.href, label: `Go to ${entry.name} ${overview.label ?? 'overview'}` } : entry.home
+            return links.length ? links.map((link) => <a class="doc-picker-option" href={link.href}
             data-port={entry.port} data-port-name={entry.name} data-port-short-name={PORT_BY_SLUG[entry.port]?.shortName ?? entry.name}
+            data-home-href={entry.home?.href} data-home-label={entry.home?.label}
+            data-preserve-fragment={link.preserveFragment || undefined}
             data-picker-option data-match={`${entry.port} ${entry.name} ${PORT_BY_SLUG[entry.port]?.shortName ?? ''} ${link.label ?? ''}`}
+            aria-label={link.label ? `${entry.name}: ${link.label}` : undefined}
+            title={link.label ? `${entry.name}: ${link.label}` : undefined}
             aria-current={entry.port === portSlug ? 'page' : undefined}>
             <img class="port-artwork" src={withRoot(branding(entry.port).asset('logo.svg'))} width="26" height="26" alt="" />
-            <span>{entry.name}{entry.links.length > 1 && <small>{link.label}</small>}</span>
+            <span>{entry.name}{links.length > 1 && link.label && <small>{link.label}</small>}</span>
             {entry.port === portSlug && <span class="doc-picker-check" aria-hidden="true">✓</span>}
-          </a>) : <span class="doc-picker-option" aria-disabled="true" data-port={entry.port} data-port-name={entry.name}
-            data-picker-option data-match={`${entry.port} ${entry.name}`}>
+          </a>) : <div class="doc-picker-option doc-picker-option--unmatched" data-port={entry.port} data-port-name={entry.name}
+            data-home-href={home?.href} data-home-label={home?.label}
+            data-picker-option data-match={`${entry.port} ${entry.name} ${overview?.label ?? ''}`}>
             <img class="port-artwork" src={withRoot(branding(entry.port).asset('logo.svg'))} width="26" height="26" alt="" />
-            <span>{entry.name}<small>Unavailable</small></span>
-          </span>)}
+            <span>{entry.name}<small>No matching page</small></span>
+            {home && <a class="doc-picker-home" data-picker-home href={home.href}
+              aria-label={home.label} title={home.label}>
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="m2 7 6-5 6 5M3.5 6v8h3V9h3v5h3V6" stroke-linejoin="round" stroke-linecap="round" /></svg>
+            </a>}
+          </div>})}
         </div>
       </section>
     })}

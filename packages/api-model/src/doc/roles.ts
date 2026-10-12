@@ -31,6 +31,8 @@ const ROLES = new Set([
 export type DocSpan =
   | { kind: 'text'; text: string }
   | { kind: 'code'; text: string }
+  | { kind: 'link'; text: string; href: string; code?: boolean }
+  | { kind: 'kbd'; text: string }
   /** `**like this**`, which Markdown and reST spell the same way. */
   | { kind: 'strong'; text: string }
   | { kind: 'emphasis'; text: string }
@@ -219,6 +221,8 @@ const SYNTAX: Record<string, ReadonlySet<string>> = {
   cxx: new Set([]),
   kotlin: new Set(['kdoc', 'jsdoc']),
   scala: new Set(['scaladoc', 'jsdoc']),
+  julia: new Set(['markdown-link', 'documenter']),
+  powershell: new Set(['markdown-link']),
 }
 
 /**
@@ -244,6 +248,26 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
 
   type Hit = { start: number; end: number; span: DocSpan }
   const hits: Hit[] = []
+
+  if (syntax.has('markdown-link')) {
+    // A code label can contain brackets (generic types, regexes, array values)
+    // and use a longer backtick fence when the code itself contains backticks.
+    for (const match of text.matchAll(/\[(?:(`+)([^\n]*?)\1|([^\]\n]+))\]\(([^\n)]+)\)/g)) {
+      const label = match[1] ? match[2] : match[3]
+      const target = match[4].trim()
+      if (syntax.has('documenter') && /^@ref(?:\s|$)/.test(target)) {
+        hits.push({ start: match.index, end: match.index + match[0].length,
+          span: { kind: 'ref', role: 'any', target: target.slice(4).trim() || label, label } })
+      } else if (/^(?:https?:\/\/|\/(?!\/)|#)/.test(target)) {
+        hits.push({ start: match.index, end: match.index + match[0].length,
+          span: { kind: 'link', text: label, href: target, ...(match[1] ? { code: true } : {}) } })
+      }
+    }
+  }
+
+  for (const match of text.matchAll(/<kbd>([^<\n]+)<\/kbd>/g)) {
+    hits.push({ start: match.index, end: match.index + match[0].length, span: { kind: 'kbd', text: match[1] } })
+  }
 
   if (syntax.has('kdoc') || syntax.has('scaladoc')) {
     const prose = text.split('')
@@ -404,6 +428,18 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
     const end = start + match[0].length
     if (!hits.some((hit) => hit.start < end && hit.end > start)) {
       hits.push({ start, end, span: { kind: 'emphasis', text: match[1] } })
+    }
+  }
+
+  if (lang === 'powershell') {
+    // Native help stores these references as plain text rather than Markdown.
+    const names = /(?<![\w$])(?:\$[A-Za-z_]\w*|(?:LibTmux|System)(?:\.[A-Za-z_]\w*)+|(?:[A-Za-z_]\w*\\)?[A-Z][a-z]+-[A-Z][A-Za-z0-9]*|-[A-Z][A-Za-z0-9]*)(?!\w)/g
+    for (const match of text.matchAll(names)) {
+      const start = match.index
+      const end = start + match[0].length
+      if (hits.some((hit) => hit.start < end && hit.end > start)) continue
+      hits.push({ start, end, span: { kind: 'ref',
+        role: match[0].startsWith('$') ? 'variable' : 'any', target: match[0], label: match[0] } })
     }
   }
 

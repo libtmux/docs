@@ -10,16 +10,15 @@ const shell = readFileSync(new URL('../../.github/workflows/deploy-shell.yml', i
 const testWorkflow = readFileSync(new URL('../../.github/workflows/test.yml', import.meta.url), 'utf8')
 const publicationAudit = readFileSync(new URL('../../scripts/test-all.sh', import.meta.url), 'utf8')
 const publishRoot = readFileSync(new URL('../../scripts/publish-root.sh', import.meta.url), 'utf8')
+const sourceGuidePorts = ['ruby', 'lua', 'powershell', 'julia']
 
 function sourceCheckoutContract(workflow: string): void {
-  expect(workflow).toContain('echo "ruby=$(jq -r .revision site/src/data/api/ruby.json)" >> "$GITHUB_OUTPUT"')
-  expect(workflow).toContain('echo "lua=$(jq -r .revision site/src/data/api/lua.json)" >> "$GITHUB_OUTPUT"')
-  expect(workflow).toContain('repository: libtmux/libtmux-ruby')
-  expect(workflow).toContain('repository: libtmux/libtmux-lua')
-  expect(workflow).toContain('ref: ${{ steps.integrated-sources.outputs.ruby }}')
-  expect(workflow).toContain('ref: ${{ steps.integrated-sources.outputs.lua }}')
-  expect(workflow).toContain('path: .port-sources/ruby')
-  expect(workflow).toContain('path: .port-sources/lua')
+  for (const port of sourceGuidePorts) {
+    expect(workflow).toContain(`echo "${port}=$(jq -r .revision site/src/data/api/${port}.json)" >> "$GITHUB_OUTPUT"`)
+    expect(workflow).toContain(`repository: libtmux/libtmux-${port}`)
+    expect(workflow).toContain('ref: ${{ steps.integrated-sources.outputs.' + port + ' }}')
+    expect(workflow).toContain(`path: .port-sources/${port}`)
+  }
   expect(workflow).toContain('persist-credentials: false')
 }
 
@@ -290,10 +289,26 @@ describe('port publisher contract', () => {
     expect(result.environment).toBe('PREFIX=pr-42\n')
   })
 
-  it('passes a qualified port through to its required provenance validation', () => {
-    const result = validatePrefix('libtmux/libtmux-go', 'go', 'go/pr-42')
+  it.each(PORTS)('passes $slug through to its required provenance validation', ({ repo, slug }) => {
+    const result = validatePrefix(repo, slug, `${slug}/pr-42`)
     expect(result.status, result.stderr).toBe(0)
-    expect(result.environment).toBe('PREFIX=en/go/pr-42\n')
+    expect(result.environment).toBe(`PREFIX=en/${slug}/pr-42\n`)
+  })
+
+  it.each(['powershell', 'julia'])('accepts %s latest while rejecting bare and cross-port prefixes', (slug) => {
+    const repo = `libtmux/libtmux-${slug}`
+    const latest = validatePrefix(repo, slug, `${slug}/latest`, { VERSION_IN: 'latest', KIND_IN: 'trunk' })
+    expect(latest.status, latest.stderr).toBe(0)
+    expect(latest.environment).toBe(`PREFIX=en/${slug}/latest\n`)
+    for (const prefix of [slug, `${slug}/pr-42/child`, 'go/pr-42']) {
+      const result = validatePrefix(repo, slug, prefix)
+      expect(result.status, prefix).toBe(1)
+      expect(result.environment).toBe('')
+    }
+    const shared = validatePrefix('libtmux/docs', '', slug)
+    expect(shared.status, shared.stderr).toBe(1)
+    expect(shared.stderr).toContain('bare reserved top-level name')
+    expect(shared.environment).toBe('')
   })
 
   it.each(['v1\nPROVENANCE_REVIEW_MARKER=1', 'v1\rMARKER=1', 'v1\n', 'v1/other', 'v1..2', 'v1+build'])('rejects malformed version %j without writing environment bytes', (version) => {
@@ -361,37 +376,46 @@ describe('port publisher contract', () => {
     expect(merge).not.toMatch(/\|\| true|2>\/dev\/null/)
   })
 
-  it('stages source-bound Ruby and Lua guides before the publication audit checks backlinks', () => {
+  it('stages every source-bound native guide before the publication audit checks backlinks', () => {
     sourceCheckoutContract(testWorkflow)
     expect(testWorkflow).toContain('node scripts/stage-port-docs.mjs --from-source')
-    expect(testWorkflow).toContain('LIBTMUX_DOCS_CHECKOUT_RUBY: ${{ github.workspace }}/.port-sources/ruby')
-    expect(testWorkflow).toContain('LIBTMUX_DOCS_CHECKOUT_LUA: ${{ github.workspace }}/.port-sources/lua')
-    expect(testWorkflow).toContain('LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS: ruby,lua')
+    const stage = testWorkflow.slice(testWorkflow.indexOf('- name: Stage integrated source guides'), testWorkflow.indexOf('- name: test-all'))
+    const audit = testWorkflow.slice(testWorkflow.indexOf('- name: test-all'), testWorkflow.indexOf('- name: Upload audited preview'))
+    for (const port of sourceGuidePorts) {
+      expect(stage).toContain(`LIBTMUX_DOCS_CHECKOUT_${port.toUpperCase()}: ` + '${{ github.workspace }}/.port-sources/' + port)
+    }
+    expect(stage).toContain('node scripts/stage-port-docs.mjs --cached --check')
+    expect(stage.indexOf('--cached --check')).toBeGreaterThan(stage.indexOf('--from-source'))
+    for (const port of ['ruby', 'lua']) {
+      expect(audit).toContain(`LIBTMUX_DOCS_CHECKOUT_${port.toUpperCase()}: ` + '${{ github.workspace }}/.port-sources/' + port)
+    }
+    expect(audit).not.toMatch(/LIBTMUX_DOCS_CHECKOUT_(POWERSHELL|JULIA):/)
+    expect(testWorkflow).toContain('LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS: ' + sourceGuidePorts.join(','))
     expect(publicationAudit).toContain('LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS')
     expect(publicationAudit).toContain('--skip-native-model-ports')
   })
 
-  it('can explicitly exclude a raw source guide checkout from native-model freshness', () => {
+  it.each(sourceGuidePorts)('can explicitly exclude a raw %s guide checkout from native-model freshness', (port) => {
     const checkout = mkdtempSync(join(tmpdir(), 'libtmux-docs-native-model-'))
-    const env = { ...process.env, LIBTMUX_DOCS_CHECKOUT_RUBY: checkout }
+    const env = { ...process.env, [`LIBTMUX_DOCS_CHECKOUT_${port.toUpperCase()}`]: checkout }
     try {
-      const unskipped = spawnSync(process.execPath, ['scripts/gen-api-model.mjs', '--port', 'ruby', '--check'], {
+      const unskipped = spawnSync(process.execPath, ['scripts/gen-api-model.mjs', '--port', port, '--check'], {
         cwd: new URL('../..', import.meta.url), env, encoding: 'utf8',
       })
       expect(unskipped.status).toBe(1)
-      expect(unskipped.stderr).toContain('ruby has no native artifact')
+      expect(unskipped.stderr).toContain(`${port} has no native artifact`)
 
       const skipped = spawnSync(process.execPath, [
-        'scripts/gen-api-model.mjs', '--port', 'ruby', '--check', '--skip-native-model-ports', 'ruby',
+        'scripts/gen-api-model.mjs', '--port', port, '--check', '--skip-native-model-ports', port,
       ], { cwd: new URL('../..', import.meta.url), env, encoding: 'utf8' })
       expect(skipped.status).toBe(0)
-      expect(skipped.stdout).toContain('ruby native model freshness skipped')
+      expect(skipped.stdout).toContain(`${port} native model freshness skipped`)
     } finally {
       rmSync(checkout, { recursive: true, force: true })
     }
   })
 
-  it('assembles previews from latest source-bound Ruby and Lua inputs', () => {
+  it('assembles previews from the integrated source guide inputs', () => {
     sourceCheckoutContract(testWorkflow)
     expect(testWorkflow).toContain('pnpm test:publication --preview "$PREVIEW_PREFIX"')
     expect(publicationAudit).toContain('./scripts/build-site.sh --versions latest,stable')
@@ -517,5 +541,114 @@ describe('shell publish', () => {
     expect(skip).toBeGreaterThan(-1)
     expect(skip).toBeLessThan(shell.indexOf('run: bash publish-root.sh'))
     expect(shell).toContain('cp scripts/skip-unchanged.mjs skip-unchanged.mjs')
+  })
+})
+
+const testedHead = 'b'.repeat(40)
+const testedMerge = 'a'.repeat(40)
+const currentPullRequest = {
+  number: 42, state: 'open',
+  head: { repo: { full_name: 'libtmux/libtmux-powershell' }, sha: testedHead },
+  merge_commit_sha: testedMerge,
+}
+
+function requireCurrentPullRequest(response: unknown, env: Record<string, string> = {}, apiStatus = 0) {
+  const directory = mkdtempSync(join(tmpdir(), 'libtmux-current-pr-'))
+  try {
+    const calls = join(directory, 'calls')
+    writeFileSync(calls, '')
+    mkdirSync(join(directory, 'publication'))
+    writeFileSync(join(directory, 'publication/publication.json'), JSON.stringify({ sourceSha: env.ARTIFACT_SOURCE_SHA ?? testedMerge }))
+    writeFileSync(join(directory, 'response'), typeof response === 'string' ? response : JSON.stringify(response))
+    writeFileSync(join(directory, 'gh'), `#!${process.execPath}
+const fs = require('node:fs')
+const args = process.argv.slice(2)
+fs.appendFileSync(process.env.CALLS, JSON.stringify(args) + '\\n')
+if (JSON.stringify(args) !== JSON.stringify(['api', '--method', 'GET', 'repos/' + process.env.REPOSITORY + '/pulls/' + process.env.PR])) process.exit(99)
+if (Number(process.env.API_STATUS)) process.exit(Number(process.env.API_STATUS))
+process.stdout.write(fs.readFileSync(process.env.RESPONSE))
+`, { mode: 0o755 })
+    const body = /- name: Require current tested pull request[\s\S]*?        run: \|\n((?: {10}[^\n]*\n|\n)*)/.exec(reusable)![1].replace(/^ {10}/gm, '')
+    const result = spawnSync('bash', ['-c', body], {
+      encoding: 'utf8', timeout: 10000, cwd: directory, env: {
+        ...process.env, PATH: `${directory}:${process.env.PATH}`, CALLS: calls,
+        RESPONSE: join(directory, 'response'), API_STATUS: String(apiStatus),
+        EVENT: 'pull_request', REPOSITORY: 'libtmux/libtmux-powershell', PR: '42',
+        PORT: 'powershell', VERSION: 'pr-42', EXPECTED_HEAD: testedHead, TESTED_MERGE: testedMerge, ...env,
+      },
+    })
+    expect(result.error, result.stderr).toBeUndefined()
+    return { ...result, calls: readFileSync(calls, 'utf8').trim().split('\n').filter(Boolean).map((line) => JSON.parse(line)) }
+  } finally {
+    rmSync(directory, { recursive: true, force: true })
+  }
+}
+
+describe('current PR publication guard', () => {
+  it('checks inside the actual publisher before AWS access on every opted-in preview attempt', () => {
+    expect(reusable).toContain('      require-current-pr:')
+    expect(reusable).toMatch(/      require-current-pr:[\s\S]*?type: boolean\n        default: false/)
+    const start = reusable.indexOf('      - name: Require current tested pull request')
+    const aws = reusable.indexOf('      - uses: aws-actions/configure-aws-credentials')
+    expect(start).toBeGreaterThan(reusable.indexOf('      - name: Verify artifact and build provenance'))
+    expect(start).toBeLessThan(aws)
+    const check = reusable.slice(start, aws)
+    expect(check).toContain("if: inputs.require-current-pr && inputs.version-kind == 'pr'")
+    expect(check).toContain('TESTED_MERGE: ${{ github.sha }}')
+    expect(check).toContain('EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}')
+    expect(check).toContain('GH_TOKEN: ${{ github.token }}')
+    expect(check).not.toMatch(/needs\.|GITHUB_OUTPUT|continue-on-error/)
+    // Default success() must stop all later AWS steps after a failed check.
+    expect(reusable.slice(start)).not.toMatch(/always\(\)|!cancelled\(\)|continue-on-error/)
+  })
+
+  it.each(['powershell', 'julia'])('allows the current tested same-repository %s preview', (port) => {
+    const repo = `libtmux/libtmux-${port}`
+    const result = requireCurrentPullRequest({ ...currentPullRequest, head: { repo: { full_name: repo }, sha: testedHead } }, { PORT: port, REPOSITORY: repo })
+    expect(result.status, result.stderr).toBe(0)
+    expect(result.calls).toEqual([['api', '--method', 'GET', `repos/${repo}/pulls/42`]])
+  })
+
+  it.each([
+    ['closed PR', { ...currentPullRequest, state: 'closed' }],
+    ['fork head', { ...currentPullRequest, head: { repo: { full_name: 'other/fork' }, sha: testedHead } }],
+    ['new head', { ...currentPullRequest, head: { ...currentPullRequest.head, sha: 'c'.repeat(40) } }],
+    ['new merge', { ...currentPullRequest, merge_commit_sha: 'd'.repeat(40) }],
+    ['pending merge', { ...currentPullRequest, merge_commit_sha: null }],
+    ['wrong PR', { ...currentPullRequest, number: 43 }],
+    ['string PR', { ...currentPullRequest, number: '42' }],
+    ['missing head', { ...currentPullRequest, head: null }],
+    ['empty response', ''],
+    ['malformed JSON', 'not json'],
+    ['null JSON', null],
+    ['array JSON', [currentPullRequest]],
+    ['multiple JSON responses', `${JSON.stringify(currentPullRequest)}\n${JSON.stringify(currentPullRequest)}`],
+  ])('fails before AWS for %s', (_name, response) => {
+    const result = requireCurrentPullRequest(response)
+    expect(result.status, result.stderr).not.toBe(0)
+    expect(result.calls).toHaveLength(1)
+  })
+
+  it('fails closed on API errors', () => {
+    expect(requireCurrentPullRequest(currentPullRequest, {}, 31).status).toBe(31)
+  })
+
+  it.each<Record<string, string>>([
+    { EVENT: 'workflow_dispatch' }, { EVENT: 'pull_request_target' }, { PORT: '' },
+    { PR: '' }, { PR: '0' }, { PR: '../42' }, { VERSION: 'pr-43' },
+    { EXPECTED_HEAD: '' }, { TESTED_MERGE: '' }, { ARTIFACT_SOURCE_SHA: 'c'.repeat(40) },
+  ])('rejects invalid tested identity before API access: %j', (env) => {
+    const result = requireCurrentPullRequest(currentPullRequest, env)
+    expect(result.status).toBe(1)
+    expect(result.calls).toEqual([])
+  })
+
+  it.each(['failed-jobs', 'specific-publish-job', 'reusable-publisher-child-job'])('rechecks current state on %s reruns with cached successful upstream outputs', () => {
+    expect(requireCurrentPullRequest(currentPullRequest, { GITHUB_RUN_ATTEMPT: '1' }).status).toBe(0)
+    // Build/provenance may legitimately reuse attempt 1. This same-job gate
+    // still executes after cleanup, even without a new upstream job output.
+    const rerun = requireCurrentPullRequest({ ...currentPullRequest, state: 'closed' }, { GITHUB_RUN_ATTEMPT: '2' })
+    expect(rerun.status).toBe(1)
+    expect(rerun.calls).toHaveLength(1)
   })
 })

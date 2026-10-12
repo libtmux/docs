@@ -1,0 +1,14 @@
+/* The mask is our own drawing. currentColor supports light, dark and forced colors. */
+a[data-external-link]::after {
+  content: "";
+  display: inline-block;
+  inline-size: 0.8em;
+  block-size: 0.8em;
+  margin-inline-start: 0.22em;
+  vertical-align: -0.05em;
+  background-color: currentColor;
+  mask: url("./external-link.svg") center / contain no-repeat;
+}
+@media (forced-colors: active) {
+  a[data-external-link]::after { background-color: LinkText; forced-color-adjust: none; }
+}

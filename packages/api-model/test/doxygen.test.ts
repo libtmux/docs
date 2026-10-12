@@ -15,6 +15,36 @@ function extractCompound(xml: string) {
 }
 
 describe('Doxygen public inheritance', () => {
+  it('keeps native C++ overload spelling, defaulting, explicit conversion and trailing qualifiers', () => {
+    const symbols = extractCompound(`<compounddef kind="struct"><compoundname>sample::Arguments</compoundname><sectiondef>
+      <memberdef kind="function" prot="public"><type/><definition>sample::Arguments::Arguments</definition><qualifiedname>sample::Arguments::Arguments</qualifiedname><name>Arguments</name><argsstring>()=default</argsstring></memberdef>
+      <memberdef kind="function" prot="public" explicit="yes"><type/><definition>sample::Arguments::Arguments</definition><qualifiedname>sample::Arguments::Arguments</qualifiedname><name>Arguments</name><argsstring>(FlatArguments values)</argsstring><param><type>FlatArguments</type><declname>values</declname></param></memberdef>
+      <memberdef kind="function" prot="public"><type>const Value &amp;</type><definition>const Value &amp; sample::Arguments::get</definition><qualifiedname>sample::Arguments::get</qualifiedname><name>get</name><argsstring>() const &amp; noexcept</argsstring></memberdef>
+    </sectiondef><location file="arguments.hpp" line="1"/></compounddef>`)
+    expect(symbols.find((symbol) => symbol.name === 'Arguments' && symbol.kind === 'method')?.signatures.map((signature) => signature.raw)).toEqual([
+      'Arguments()=default;', 'explicit Arguments(FlatArguments values);',
+    ])
+    expect(symbols.find((symbol) => symbol.name === 'get')?.signatures[0].raw).toBe('const Value & get() const & noexcept;')
+  })
+
+  it('preserves template constraints and nodiscard in C++ declarations', () => {
+    const symbols = extractCompound(`<compounddef kind="struct"><compoundname>sample::Value</compoundname><sectiondef>
+      <memberdef kind="function" prot="public">
+        <templateparamlist><param><type>std::integral</type><declname>Integer</declname></param></templateparamlist>
+        <type></type><definition>sample::Value::Value</definition><qualifiedname>sample::Value::Value</qualifiedname><name>Value</name><argsstring>(Integer item)</argsstring>
+        <param><type>Integer</type><declname>item</declname></param>
+        <requiresclause>(!std::same_as&lt;std::remove_cv_t&lt;Integer&gt;, bool&gt;)</requiresclause>
+      </memberdef>
+      <memberdef kind="function" prot="public" nodiscard="yes"><type>bool</type><definition>bool sample::Value::cancelled</definition><qualifiedname>sample::Value::cancelled</qualifiedname><name>cancelled</name><argsstring>() const noexcept</argsstring></memberdef>
+      <memberdef kind="function" prot="public"><type>bool</type><definition>bool sample::Value::valid</definition><qualifiedname>sample::Value::valid</qualifiedname><name>valid</name><argsstring>() const</argsstring><requiresclause>Enabled&lt;T&gt;</requiresclause></memberdef>
+    </sectiondef><location file="value.hpp" line="1"/></compounddef>`)
+    expect(symbols.find((symbol) => symbol.kind === 'method' && symbol.name === 'Value')?.signatures[0].raw).toBe('template <std::integral Integer>\nrequires (!std::same_as<std::remove_cv_t<Integer>, bool>)\nValue(Integer item);')
+    expect(symbols.find((symbol) => symbol.kind === 'method' && symbol.name === 'Value')?.signatures[0]).toMatchObject({ typeParams: ['std::integral Integer'], params: [{ name: 'item', type: 'Integer' }], returns: undefined })
+    expect(symbols.find((symbol) => symbol.kind === 'method' && symbol.name === 'Value')?.signatures[0].params).toHaveLength(1)
+    expect(symbols.find((symbol) => symbol.name === 'cancelled')?.signatures[0].raw).toBe('[[nodiscard]] bool cancelled() const noexcept;')
+    expect(symbols.find((symbol) => symbol.name === 'valid')?.signatures[0].raw).toBe('bool valid() const requires Enabled<T>;')
+  })
+
   it('keeps public bases without exposing private or protected implementation bases', () => {
     const symbols = extractCompound(`
       <compounddef kind="class">

@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+<head><title>Script evaluation fixture</title></head>
+<body>
+  <script id="classic-before">
+    document.documentElement.dataset.classicBefore = document.currentScript?.id ?? 'null'
+  </script>
+  <script id="module" type="module">
+    document.documentElement.dataset.module = document.currentScript?.id ?? 'null'
+  </script>
+  <script id="classic-after">
+    document.documentElement.dataset.classicAfter = document.currentScript?.id ?? 'null'
+  </script>
+</body>
+</html>

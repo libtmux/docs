@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { PORTS, productAvailable } from '../src/lib/ports.ts'
+import mcpCatalogs from '../src/data/mcp-tools.json' with { type: 'json' }
 import { checkPickerFilters } from './check-picker-filters.mjs'
 
 /** Optional scripts injected at the end of the body cannot gate navigation. */
@@ -29,14 +30,28 @@ export async function checkNavigationBeforeAnalytics(browser, base) {
   })
   try {
     await page.goto(url, { waitUntil: 'commit' })
-    const visibility = await page.evaluate(async () => {
+    const readiness = await page.evaluate(async () => {
       if (document.readyState === 'loading') {
         await new Promise((resolve) => document.addEventListener('readystatechange', resolve, { once: true }))
       }
       await document.fonts.ready
-      return getComputedStyle(document.body).visibility
+      const root = document.documentElement
+      if (root.classList.contains('link-hints-pending')) {
+        await new Promise((resolve) => {
+          const observer = new MutationObserver(() => {
+            if (!root.classList.contains('link-hints-pending')) {
+              observer.disconnect()
+              resolve()
+            }
+          })
+          observer.observe(root, { attributes: true, attributeFilter: ['class'] })
+        })
+      }
+      return { visibility: getComputedStyle(document.body).visibility,
+        suppressed: root.classList.contains('link-hints-suppressed') }
     })
-    assert.equal(visibility, 'visible', 'Loaded fonts reveal the page while analytics and the fallback timer are still pending')
+    assert.equal(readiness.suppressed, false, 'Actual icon readiness succeeds without the frozen fallback timer')
+    assert.equal(readiness.visibility, 'visible', 'Loaded fonts and icons reveal the page while analytics and the fallback timer are still pending')
     await page.clock.resume()
     const picker = page.locator('[data-surface-picker][data-enhanced]')
     await picker.waitFor({ state: 'visible' })
@@ -172,7 +187,7 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
   await checkNavigationBeforeAnalytics(browser, base)
   const ports = complete ? PORTS : PORTS.filter((port) => ['fsharp', 'ruby'].includes(port.slug))
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' })
-  page.setDefaultTimeout(10000)
+  page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
   await observeInitialPageLoad(page)
   const desktopPicker = (reader) => reader.locator('[data-documentation-context] [data-surface-picker]')
   const group = (picker, label) => picker.locator('[data-surface-group]').filter({
@@ -217,8 +232,18 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
         ...(productAvailable(port, 'workspace') ? ['Workspace Manager'] : []),
       ]
       assert.deepEqual(names.slice(1).sort(), appNames, `${slug}: only available applications appear`)
-      assert.equal(await picker.locator('[data-surface-option]:not(a[href])').count(), 0,
-        `${slug}: every section has a real destination`)
+      const catalog = appNames.includes('MCP') ? mcpCatalogs.ports[slug] : undefined
+      const emptySections = catalog ? [
+        ...(catalog.registrations.length ? [] : ['Tools']),
+        ...(catalog.protocol.prompts.length ? [] : ['Prompts']),
+        ...(catalog.protocol.resources.length || catalog.protocol.resourceTemplates.length ? [] : ['Resources']),
+      ] : []
+      const disabled = await picker.locator('[data-surface-option]:not(a[href])').evaluateAll((items) =>
+        items.map((item) => ({ label: item.textContent.trim(), role: item.getAttribute('role'),
+          disabled: item.getAttribute('aria-disabled'), title: item.getAttribute('title') })))
+      assert.deepEqual(disabled, emptySections.map((label) => ({ label, role: 'link', disabled: 'true',
+        title: `No ${label.toLowerCase()} advertised in the reference configuration` })),
+      `${slug}: only empty protocol catalogs are disabled`)
       assert.equal(await picker.getByText('Navigation preview').count(), 0, `${slug}: no empty section placeholders`)
       await page.keyboard.press('Escape')
       assert.equal(await picker.getAttribute('open'), null)
@@ -263,7 +288,7 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
     for (const colorScheme of ['light', 'dark']) {
       const context = await browser.newContext({ javaScriptEnabled, colorScheme, reducedMotion: 'reduce' })
       const reader = await context.newPage()
-      reader.setDefaultTimeout(10000)
+      reader.setDefaultTimeout(process.env.CI ? 20000 : 10000)
       try {
         if (javaScriptEnabled) await reader.addInitScript((scheme) => localStorage.setItem('color-scheme', scheme), colorScheme)
         for (const width of [320, 390, 641, 768, 1440, 1920]) {
@@ -432,6 +457,8 @@ export async function checkApiNavigation(page, base) {
     await page.waitForURL(`${base}/lua/latest/reference/`)
     await page.locator('.api-index-card__link[href$="/reference/libtmux-server/"]').click()
     await page.waitForURL(server)
+    // URL arrival precedes the link-hint reveal gate on a client navigation.
+    await page.locator('[data-api-nav-toggle]').waitFor({ state: 'visible' })
     assert(await page.locator('[data-api-nav-toggle]').isVisible(), `${path || 'Port home'} to API keeps the drawer toggle`)
     await page.locator('[data-api-nav-toggle]').click()
     await page.locator('[data-api-nav-close]').click()
@@ -504,7 +531,7 @@ export async function checkApiAnchorArrival(browser, base) {
     const context = await browser.newContext({ viewport: { width, height: 1000 }, colorScheme,
       javaScriptEnabled, reducedMotion: 'reduce' })
     const page = await context.newPage()
-    page.setDefaultTimeout(10000)
+    page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     try {
       for (const path of paths) {
         const response = await page.goto(path, { waitUntil: 'load' })

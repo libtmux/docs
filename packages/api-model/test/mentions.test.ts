@@ -57,4 +57,29 @@ describe('prose mentions', () => {
       { text: 'Session.new_window(name, attach=False)', port: 'py', before: 'Use ', line: 2 },
     ])
   })
+
+  it('retains authored destinations for inline, reference and descriptive links', () => {
+    const source = [
+      '[`capture_pane`](/julia/latest/mcp/tools/capture_pane/)',
+      '[`error.effects`][effects]',
+      '[Read `Session` details](<../reference/session/#members> "Session")',
+      '[`Server`][] and [`Pane`].',
+      '',
+      '[effects]: /julia/latest/mcp/tools/run_operations/#output',
+      '[`Server`]: https://example.org/server',
+      '[`Pane`]: /reference/pane/',
+    ].join('\n')
+    expect(proseMentions(source, LABELS).map(({ text, linked, href }) => ({ text, linked, href }))).toEqual([
+      { text: 'capture_pane', linked: true, href: '/julia/latest/mcp/tools/capture_pane/' },
+      { text: 'error.effects', linked: true, href: '/julia/latest/mcp/tools/run_operations/#output' },
+      { text: 'Session', linked: true, href: '../reference/session/#members' },
+      { text: 'Server', linked: true, href: 'https://example.org/server' },
+      { text: 'Pane', linked: true, href: '/reference/pane/' },
+    ])
+  })
+
+  it('does not read image alt text or escaped code delimiters as API mentions', () => {
+    const source = '![`Server`](server.svg) and \\`Pane\\` beside `Window`.'
+    expect(proseMentions(source, LABELS).map(({ text }) => text)).toEqual(['Window'])
+  })
 })

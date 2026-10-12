@@ -3,6 +3,7 @@ title: Connect a Swift MCP client
 description: Build the Swift MCP executable and connect it to a private tmux server.
 port: swift
 product: mcp
+equivalence: mcp-client-setup
 sidebar:
   label: Guides
   order: 2

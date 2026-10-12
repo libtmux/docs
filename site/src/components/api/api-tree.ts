@@ -11,13 +11,97 @@
  */
 import { wordBreak } from '../../lib/word-break'
 import { kindMark } from '../../lib/api-labels'
-import { searchApi, type ApiTreeBucket as JsonBucket, type ApiTreeJson as TreeJson } from '../../lib/api-search'
+import { apiTreeHref, searchApi, type ApiTreeBucket as JsonBucket, type ApiTreeJson as TreeJson } from '../../lib/api-search'
+import { apiTreePath, captureApiTree, initializeApiTree, type ApiTreeSelection, type ApiTreeState } from './api-tree-state'
 
 const ITEM = '[role="treeitem"]'
 const EASING = 'cubic-bezier(0.8, 0, 0.2, 1)'
 const requests = new Map<string, Promise<TreeJson>>()
 let seq = 0
 let controller: AbortController | undefined
+
+const stateKey = (nav: HTMLElement) => `libtmux:api-tree:${nav.dataset.base}`
+
+/** Capture the outgoing tree before Astro replaces it, also for full loads. */
+export function saveApiTreeState(event?: Event) {
+  for (const nav of document.querySelectorAll<HTMLElement>('.api-nav')) {
+    const tree = nav.querySelector<HTMLElement>('[role="tree"]')
+    if (!tree || nav.dataset.restoring === 'true') continue
+    try { window.sessionStorage.setItem(stateKey(nav), JSON.stringify(captureApiTree(nav, tree))) } catch { /* Storage is optional. */ }
+  }
+  const transition = event as (Event & { newDocument?: Document; to?: URL; sourceElement?: HTMLElement; navigationType?: string }) | undefined
+  if (!transition?.newDocument || !transition.to || transition.navigationType === 'traverse') return
+  const link = transition.sourceElement?.closest<HTMLAnchorElement>('.api-nav__tree a[data-api-shortcut]')
+  const nav = link?.closest<HTMLElement>('.api-nav')
+  const tree = nav?.querySelector<HTMLElement>('[role="tree"]')
+  for (const incoming of transition.newDocument.querySelectorAll<HTMLElement>('.api-nav')) {
+    const selection: ApiTreeSelection | null = link && nav && tree &&
+      incoming.dataset.base === nav.dataset.base && incoming.dataset.version === nav.dataset.version &&
+      link.origin === transition.to.origin && link.pathname + link.search === transition.to.pathname + transition.to.search
+      ? { base: nav.dataset.base!, version: nav.dataset.version!, href: link.pathname + link.search,
+        path: apiTreePath(link, tree), top: tree.scrollTop } : null
+    incoming.dataset.apiTreeArrival = JSON.stringify(selection)
+  }
+}
+
+/** Restore expanded branches before scroll, then reveal the actual destination. */
+async function restoreTree(nav: HTMLElement, tree: HTMLElement, signal: AbortSignal) {
+  const selection = initializeApiTree(nav, false)
+  let saved: ApiTreeState | undefined
+  try {
+    const value = JSON.parse(window.sessionStorage.getItem(stateKey(nav)) ?? 'null')
+    if (Number.isFinite(value?.top) && value.top >= 0 && value.branches && typeof value.branches === 'object') saved = value
+  } catch { /* A fresh or storage-restricted page still reveals its current row. */ }
+  nav.dataset.restoring = 'true'
+  let interacted = nav.dataset.apiTreeInteracted === 'true'
+  for (const event of ['wheel', 'pointerdown', 'keydown']) {
+    tree.addEventListener(event, () => { interacted = true }, { signal, once: true })
+  }
+  if (saved || selection) {
+    const restore = async (root: HTMLElement) => {
+      for (const item of root.querySelectorAll<HTMLElement>(':scope > [role="treeitem"][data-lazy]')) {
+        if (signal.aborted || interacted) return
+        const current = Boolean(item.querySelector('[aria-current="page"]'))
+        const open = current || selection?.path.includes(item.dataset.lazy!) || saved?.branches[item.dataset.lazy!] === true
+        let group = item.querySelector<HTMLElement>(':scope > [role="group"]')
+        if (open && !group) {
+          try { group = await build(nav, item) ?? null } catch { /* Keep the branch retryable. */ }
+        }
+        if (signal.aborted || interacted) return
+        if (group || !open) item.setAttribute('aria-expanded', String(open))
+        if (group && open) await restore(group)
+      }
+    }
+    await restore(tree)
+  }
+  if (signal.aborted || !tree.isConnected) return
+  initializeApiTree(nav, false)
+  const currentShortcut = tree.querySelector<HTMLElement>('a[data-api-shortcut][aria-current="page"]')
+  const selectedTop = currentShortcut && selection && JSON.stringify(apiTreePath(currentShortcut, tree)) === JSON.stringify(selection.path)
+    ? selection.top : undefined
+  if (!interacted && (selectedTop !== undefined || saved)) tree.scrollTop = selectedTop ?? saved!.top
+  const reveal = () => {
+    if (signal.aborted || !tree.isConnected || interacted) return
+    const current = tree.querySelector<HTMLElement>('[aria-current="page"]')
+    const row = current?.closest<HTMLElement>('.api-nav__row') ?? current
+    if (!row || !tree.clientHeight) return
+    for (let owner = row.closest<HTMLElement>('[aria-expanded]'); owner; owner = owner.parentElement?.closest<HTMLElement>('[aria-expanded]') ?? null) {
+      owner.setAttribute('aria-expanded', 'true')
+    }
+    const box = tree.getBoundingClientRect()
+    const rect = row.getBoundingClientRect()
+    const bottom = Math.min(box.bottom, window.innerHeight)
+    // Keep a visible selection in place. A new/deep destination is centered
+    // within the tree, without scrolling the document or changing focus.
+    if ((!saved && selectedTop === undefined) || rect.top < box.top || rect.bottom > bottom) {
+      tree.scrollTop += rect.top - box.top - (bottom - box.top - rect.height) / 2
+    }
+  }
+  reveal()
+  window.requestAnimationFrame(reveal)
+  document.fonts?.ready.then(reveal)
+  delete nav.dataset.restoring
+}
 
 /** Search the same port inventory used for lazy branches. */
 function initSearch(nav: HTMLElement, tree: HTMLElement, signal: AbortSignal) {
@@ -30,7 +114,7 @@ function initSearch(nav: HTMLElement, tree: HTMLElement, signal: AbortSignal) {
   let kind = 'all'
   let generation = 0
   input.disabled = false
-  for (const button of filters) button.disabled = false
+  for (const button of filters) button.disabled = button.hasAttribute('data-api-search-empty')
   document.addEventListener('keydown', (event) => {
     if (event.key !== '/' || event.defaultPrevented || event.isComposing || event.metaKey || event.ctrlKey || event.altKey) return
     const target = event.target as Element
@@ -59,7 +143,7 @@ function initSearch(nav: HTMLElement, tree: HTMLElement, signal: AbortSignal) {
       for (const record of found.slice(0, 100)) {
         const li = document.createElement('li')
         const link = document.createElement('a')
-        link.href = `${nav.dataset.base}${record.slug}/`
+        link.href = apiTreeHref(nav.dataset.base ?? '/', record, json.hrefs)
         const name = document.createElement('strong')
         name.textContent = record.name
         const mark = kindBadge(record.kind)
@@ -173,11 +257,14 @@ function kindBadge(kind?: string): HTMLSpanElement | undefined {
   badge.className = `api-nav__kind api-badge--kind-${kind}`
   badge.title = kind!
   badge.setAttribute('aria-hidden', 'true')
-  badge.textContent = mark
+  const label = document.createElement('span')
+  label.className = 'api-badge__label'
+  label.textContent = mark
+  badge.append(label)
   return badge
 }
 
-function leaf(name: string, href: string, level: number, kind?: string): HTMLLIElement {
+function leaf(name: string, href: string, level: number, kind?: string, shortcut = false): HTMLLIElement {
   const li = document.createElement('li')
   li.setAttribute('role', 'none')
   const a = document.createElement('a')
@@ -188,7 +275,8 @@ function leaf(name: string, href: string, level: number, kind?: string): HTMLLIE
   a.style.setProperty('--level', String(level))
   a.setAttribute('aria-level', String(level))
   if (kind) a.setAttribute('aria-description', kind)
-  if (new URL(href, location.href).pathname === location.pathname) a.setAttribute('aria-current', 'page')
+  if (shortcut) a.setAttribute('data-api-shortcut', '')
+  if (!shortcut && new URL(href, location.href).pathname === location.pathname) a.setAttribute('aria-current', 'page')
   const mark = kindBadge(kind)
   if (mark) a.append(mark)
   a.append(label(name))
@@ -196,7 +284,7 @@ function leaf(name: string, href: string, level: number, kind?: string): HTMLLIE
   return li
 }
 
-function branch(name: string, href: string | undefined, level: number, lazy: string, count?: number, kind?: string): HTMLLIElement {
+function branch(name: string, href: string | undefined, level: number, lazy: string, count?: number, kind?: string, shortcut = false): HTMLLIElement {
   const id = `api-nav-c${++seq}`
   const li = document.createElement('li')
   li.setAttribute('role', 'treeitem')
@@ -222,7 +310,8 @@ function branch(name: string, href: string | undefined, level: number, lazy: str
     a.id = id
     a.href = href
     a.tabIndex = -1
-    if (new URL(href, location.href).pathname === location.pathname) a.setAttribute('aria-current', 'page')
+    if (shortcut) a.setAttribute('data-api-shortcut', '')
+    if (!shortcut && new URL(href, location.href).pathname === location.pathname) a.setAttribute('aria-current', 'page')
     wordBreak(name).forEach((part, i) => {
       if (i > 0) a.append(document.createElement('wbr'))
       a.append(part)
@@ -255,6 +344,9 @@ function findBucket(buckets: JsonBucket[], id: string): JsonBucket | undefined {
 
 async function build(nav: HTMLElement, item: HTMLElement): Promise<HTMLElement | undefined> {
   const json = await load(nav.dataset.src ?? '')
+  // Restoration and a reader's toggle can await the same request.
+  const existing = item.querySelector<HTMLElement>(':scope > [role="group"]')
+  if (existing) return existing
   const base = nav.dataset.base ?? '/'
   const [kind, ...rest] = (item.dataset.lazy ?? '').split(':')
   const id = rest.join(':')
@@ -264,16 +356,18 @@ async function build(nav: HTMLElement, item: HTMLElement): Promise<HTMLElement |
     const bucket = findBucket(json.buckets, id)
     if (!bucket) return undefined
     for (const t of bucket.types) {
-      children.push(t.m ? branch(t.name, `${base}${t.slug}/`, level, `type:${t.id}`, undefined, t.kind) : leaf(t.name, `${base}${t.slug}/`, level, t.kind))
+      const href = apiTreeHref(base, t, json.hrefs)
+      children.push(t.m ? branch(t.name, href, level, `type:${t.id}`, undefined, t.kind, t.shortcut) : leaf(t.name, href, level, t.kind, t.shortcut))
     }
     for (const c of bucket.children) {
       children.push(branch(c.label, c.slug ? `${base}${c.slug}/` : undefined, level, `bucket:${c.id}`, c.types.length))
     }
   } else {
     for (const [name, slug, memberId, kind] of json.members[id] ?? []) {
+      const href = apiTreeHref(base, { id: memberId, slug }, json.hrefs)
       children.push(memberId && json.members[memberId]?.length
-        ? branch(name, `${base}${slug}/`, level, `type:${memberId}`, undefined, kind)
-        : leaf(name, `${base}${slug}/`, level, kind))
+        ? branch(name, href, level, `type:${memberId}`, undefined, kind)
+        : leaf(name, href, level, kind))
     }
   }
   const group = document.createElement('ul')
@@ -286,6 +380,7 @@ async function build(nav: HTMLElement, item: HTMLElement): Promise<HTMLElement |
     group.append(li)
   })
   item.append(group)
+  initializeApiTree(nav, false)
   return group
 }
 
@@ -331,6 +426,15 @@ async function toggle(nav: HTMLElement, item: HTMLElement, open: boolean) {
 }
 
 function initTree(nav: HTMLElement, tree: HTMLElement, signal: AbortSignal) {
+  tree.addEventListener('scroll', () => {
+    const selection = window.history.state?.libtmuxApiTree as ApiTreeSelection | undefined
+    const current = tree.querySelector<HTMLElement>('a[data-api-shortcut][aria-current="page"]')
+    if (!selection || !current || selection.base !== nav.dataset.base || selection.version !== nav.dataset.version ||
+        selection.href !== location.pathname + location.search || JSON.stringify(selection.path) !== JSON.stringify(apiTreePath(current, tree))) return
+    try {
+      window.history.replaceState({ ...window.history.state, libtmuxApiTree: { ...selection, top: tree.scrollTop } }, '')
+    } catch { /* History state is optional. */ }
+  }, { signal })
   tree.addEventListener(
     'keydown',
     (event) => {
@@ -465,8 +569,10 @@ export function initApiTree() {
   navs.forEach((nav) => {
     const tree = nav.querySelector<HTMLElement>('[role="tree"]')
     if (tree) {
+      if (nav.dataset.apiTreeInitialized !== 'true') initializeApiTree(nav)
       initTree(nav, tree, signal)
       initSearch(nav, tree, signal)
+      void restoreTree(nav, tree, signal)
     }
     initDrawer(nav, signal)
   })

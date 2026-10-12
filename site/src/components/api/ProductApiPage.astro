@@ -3,7 +3,7 @@ import { qualifiedNameOf, docSummaryText, sourceUrl, symbolsForProduct, type Api
 import DocsLayout from '../../layouts/DocsLayout.astro'
 import ApiEntry from './ApiEntry.astro'
 import { productApiAlternatives, productApiHref, productApiIndex } from '../../lib/product-api'
-import { productApiPath, type DocProduct } from '../../lib/ports'
+import { DOC_PRODUCTS, PORT_BY_SLUG, portPageUrl, productApiPath, type DocProduct } from '../../lib/ports'
 import { symbolSource } from '../../lib/markdown-twins'
 import '../../styles/api.css'
 import '../../styles/vendor/gp-sphinx-api.css'
@@ -14,22 +14,27 @@ const hrefFor = (entry: ApiSymbol) => productApiHref(model, entry, version)
 const index = productApiIndex(model, version)
 const members = symbolsForProduct(model, product).filter((entry) => entry.parent === symbol.id)
 const pagePath = `${productApiPath(product)}/${symbol.slug}`
+const port = PORT_BY_SLUG[model.port]
+const breadcrumbs = [
+  { name: port.name, url: portPageUrl(port, version) },
+  { name: DOC_PRODUCTS[product].label, url: portPageUrl(port, version, product) },
+  { name: 'API reference', url: portPageUrl(port, version, productApiPath(product)) },
+  { name: qualifiedNameOf(symbol), url: hrefFor(symbol), symbol: true },
+]
 let defaults: Record<string, string> = {}
 try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
 const alternativesFor = (entry: ApiSymbol) => productApiAlternatives(model, entry, version, defaults)
 ---
 
-<DocsLayout title={qualifiedNameOf(symbol)} description={symbol.doc?.summary ? docSummaryText(symbol.doc.summary, model.port) : `${symbol.name} API documentation.`}
+<DocsLayout title={qualifiedNameOf(symbol)} symbolTitle breadcrumbs={breadcrumbs} description={symbol.doc?.summary ? docSummaryText(symbol.doc.summary, model.port) : `${symbol.name} API documentation.`}
   port={model.port} product={product} version={version} pagePath={pagePath} tableOfContents={false}
   pageSource={symbolSource(model, symbol)} markdown="source">
-  <p><a href="../">API reference</a> · <a href={`../${symbol.slug}.md`}>Markdown</a></p>
+  <div class="api-reference-content not-prose">
   {symbol.apiScope === 'supporting' && <p>This type appears in public signatures. It is not a package entry point.</p>}
   <ApiEntry symbol={symbol} index={index} port={model.port} alternativesFor={alternativesFor} heading sourceUrl={(entry) => sourceUrl(model, entry)} />
   {members.length > 0 && <section>
     <h2>Members</h2>
-    {members.map((member) => <>
-      <p><a href={hrefFor(member)}><code>{member.name}</code></a></p>
-      <ApiEntry symbol={member} index={index} port={model.port} alternativesFor={alternativesFor} member sourceUrl={(entry) => sourceUrl(model, entry)} />
-    </>)}
+    {members.map((member) => <ApiEntry symbol={member} index={index} port={model.port} alternativesFor={alternativesFor} member nameHref={hrefFor(member)} sourceUrl={(entry) => sourceUrl(model, entry)} />)}
   </section>}
+  </div>
 </DocsLayout>

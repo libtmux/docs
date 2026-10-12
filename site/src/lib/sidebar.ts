@@ -17,13 +17,14 @@
  * sidebar `href`, or a page's own link and its sidebar entry disagree.
  */
 import { getCollection } from 'astro:content'
+import { MCP_REFERENCE, MCP_SECTIONS } from './mcp-reference'
 import type { CollectionEntry } from 'astro:content'
 import { PORT_BY_SLUG, portPageUrl, productAvailable, referenceUrl, type DocProduct } from './ports'
 import { withPortRoot, withRoot } from './site-root'
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import { localeOf, sourceIdOf } from '../i18n/resolve'
 import { docsPath, docsRoutePath } from './docs-paths'
-import { docsEntryAvailable } from './page-port-links'
+import { docsEntriesAvailable } from './page-port-links'
 
 export interface SidebarLinkItem {
   type: 'link'
@@ -31,6 +32,7 @@ export interface SidebarLinkItem {
   href: string
   /** True when the link leaves libtmux.org (an ecosystem reference host). */
   external?: boolean
+  disabled?: boolean
   kind?: string
 }
 
@@ -39,7 +41,8 @@ export interface SidebarGroupItem {
   label: string
   /** The section overview belongs on the group row, not in a duplicate child. */
   href?: string
-  items: SidebarLinkItem[]
+  kind?: string
+  items: SidebarItem[]
 }
 
 export type SidebarItem = SidebarLinkItem | SidebarGroupItem
@@ -50,7 +53,7 @@ export async function pageBreadcrumbs(title: string, path: string, version: stri
   const url = (route: string) => language ? portPageUrl(language, version, route) : withRoot(`/${route}${route ? '/' : ''}`)
   const tmux = !port && /^tmux(?:\/|$)/.test(path)
   const items = [{ name: language?.name ?? (tmux ? 'tmux' : 'Documentation'), url: url(tmux ? 'tmux' : '') }]
-  const entries = await getCollection('docs', (entry) => !entry.data.port || entry.data.port === port)
+  const entries = docsEntriesAvailable(await getCollection('docs', (entry) => !entry.data.port || entry.data.port === port), port)
   const parts = path.split('/').filter(Boolean)
   for (let i = tmux ? 2 : 1; i < parts.length; i++) {
     const route = parts.slice(0, i).join('/')
@@ -216,14 +219,13 @@ export async function getSidebar(
   // that exist precisely so every page answers in every language. A nav that
   // shrinks as you switch language is worse than one that admits what is
   // untranslated.
-  const entries = await getCollection(
+  const entries = docsEntriesAvailable(await getCollection(
     'docs',
     (entry) =>
       (entry.data.port === undefined || entry.data.port === port) &&
-      docsEntryAvailable(entry, port) &&
       entry.data.product === product &&
       localeOf(entry.id) === DEFAULT_LOCALE,
-  )
+  ), port)
 
   // The reader's own locale, where it has this page. `entryPath` strips the
   // locale, so a translation and its source share a key; the href is built
@@ -231,7 +233,7 @@ export async function getSidebar(
   // locale and a placeholder is served at the same path as a translation.
   const translated = new Map<string, CollectionEntry<'docs'>>()
   if (locale !== DEFAULT_LOCALE) {
-    const inLocale = await getCollection('docs', (entry) => localeOf(entry.id) === locale)
+    const inLocale = docsEntriesAvailable(await getCollection('docs', (entry) => localeOf(entry.id) === locale), port)
     for (const entry of inLocale) translated.set(entryPath(entry), entry)
   }
 
@@ -290,9 +292,10 @@ export async function getSidebar(
    */
   if (port === undefined) return [...groups, ...ungrouped]
   if (product) {
-    if (product === 'mcp' && productAvailable(PORT_BY_SLUG[port], 'mcp')) ungrouped.splice(1, 0, {
-      type: 'link', label: 'Tools', href: portPageUrl(PORT_BY_SLUG[port], version, 'mcp/tools'),
-    })
+    if (product === 'mcp' && productAvailable(PORT_BY_SLUG[port], 'mcp') && MCP_REFERENCE[port]) ungrouped.splice(1, 0,
+      ...Object.entries(MCP_SECTIONS).map(([section, label]) => ({
+        type: 'link' as const, label, href: portPageUrl(PORT_BY_SLUG[port], version, `mcp/${section}`),
+      })))
     if (product === 'workspace') return [
       ...ungrouped,
       ...groups.filter((group) => group.label !== 'Internals'),

@@ -38,6 +38,17 @@ function mentionsFile(mentions: unknown[]): string {
 }
 
 describe('prose mention index', () => {
+  it('follows the authored owner instead of guessing from a linked label', () => {
+    const guide = '/julia/latest/mcp/source-guide/'
+    for (const symbol of ['LibTmux.capture_pane', 'LibTmux.send_keys']) {
+      expect(mentionIndex.mentions.some((row) => row.port === 'julia' && row.symbol === symbol && row.page === guide)).toBe(false)
+    }
+    expect(mentionIndex.mentions.some((row) => row.port === 'csharp'
+      && row.symbol === 'LibTmux.Workspace.WorkspaceActionKind.CaptureResult'
+      && row.page === '/powershell/latest/workspace/source-guide/')).toBe(true)
+    expect(mentionIndex.dangling.filter((row) => ['powershell', 'julia'].includes(row.port))).toEqual([])
+  })
+
   it('does not turn language types into unrelated API backlinks', () => {
     for (const [port, symbol, page] of [
       ['swift', 'JSONValue.bool(_:)', '/topics/socket-and-servers/'],

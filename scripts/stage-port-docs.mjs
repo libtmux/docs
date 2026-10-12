@@ -10,6 +10,7 @@ import { toMarkdown } from 'mdast-util-to-markdown'
 import { PORTS } from '../site/src/lib/ports.ts'
 import { defaultVersionFor } from '../site/src/lib/versions.ts'
 import { sourceGuidesFor, sourceGuideRedirectsFor, SOURCE_GUIDE_PORTS } from '../site/src/lib/port-documentation.ts'
+import { SymbolIndex, parameterId } from '../packages/api-model/src/link.ts'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const output = join(root, 'site/src/content/docs/_staged')
@@ -50,8 +51,13 @@ function external(value) {
   return /^(?:[a-z][a-z0-9+.-]*:|#|\/)/i.test(value)
 }
 
-export function rewriteLinks(content, sourcePath, route, routes, repo, revision) {
+export function rewriteLinks(content, sourcePath, route, routes, repo, revision, nativeReferenceFiles = new Set()) {
   const targetUrl = (destination, image = false) => {
+    const owned = !image && /^https?:\/\/libtmux\.org\/en\/([^/]+)\//.exec(destination)
+    if (owned) {
+      const port = owned[1] === 'dotnet' ? 'csharp' : owned[1]
+      if (PORTS.some((entry) => entry.slug === port)) return destination.replace(owned[0], `/${port}/`)
+    }
     const ownSource = `https://github.com/${repo}/blob/`
     if (!image && destination.startsWith(ownSource)) {
       const [ref, ...path] = destination.slice(ownSource.length).split('/')
@@ -64,11 +70,14 @@ export function rewriteLinks(content, sourcePath, route, routes, repo, revision)
     const [target, fragment = ''] = destination.split('#', 2)
     const normalized = posix.normalize(posix.join(posix.dirname(sourcePath), target))
     const memberRoute = fragment && routes[`${normalized}#${fragment}`]
-    const staged = memberRoute || routes[normalized]
+    // Unknown native-help sections keep their source destination rather than
+    // acquiring a fragment that the shared reference does not render.
+    const staged = memberRoute || (fragment && nativeReferenceFiles.has(normalized) ? undefined : routes[normalized])
     if (staged) {
       let href = posix.relative(route, staged[0]) || '.'
       if (!href.startsWith('.')) href = `./${href}`
-      return `${href.replace(/\/$/, '')}/${fragment && !memberRoute ? `#${fragment}` : ''}`
+      const anchor = staged[1] || (!memberRoute ? fragment : '')
+      return `${href.replace(/\/$/, '')}/${anchor ? `#${anchor}` : ''}`
     }
     return `https://github.com/${repo}/${image ? 'raw' : 'blob'}/${revision}/${normalized}${fragment ? `#${fragment}` : ''}`
   }
@@ -124,7 +133,23 @@ export function stagedPortGuides(port, artifact) {
   const identity = PORTS.find((entry) => entry.slug === port)
   const routes = ROUTES[port]
   const linkRoutes = Object.fromEntries(Object.entries(routes).map(([sourcePath, guide]) => [sourcePath, [guide.route]]))
+  const nativeReferenceFiles = new Set()
   for (const redirect of sourceGuideRedirectsFor(port)) linkRoutes[redirect.sourcePath] = [redirect.target]
+  if (port === 'powershell') {
+    const model = JSON.parse(readFileSync(join(root, 'site/src/data/api/powershell.json'), 'utf8'))
+    const files = new Set(model.nativeProvenance.files.map((file) => file.path))
+    for (const symbol of model.symbols.filter((entry) => entry.command)) {
+      const help = `docs/reference/${symbol.namespace}/${symbol.name}.md`
+      if (!files.has(help)) throw new Error(`PowerShell command help is absent from native provenance: ${help}`)
+      const reference = `${symbol.product === 'workspace' ? 'workspace/' : ''}reference/${symbol.slug}`
+      linkRoutes[help] = [reference]
+      nativeReferenceFiles.add(help)
+      for (const parameter of symbol.signatures.flatMap((signature) => signature.params)) {
+        if (parameter.binding?.common) continue
+        linkRoutes[`${help}#-${parameter.name.toLowerCase()}`] = [reference, encodeURIComponent(parameterId(symbol, parameter.name))]
+      }
+    }
+  }
   if (identity.sourceReferenceDirectory) {
     const { symbols } = JSON.parse(readFileSync(join(root, `site/src/data/api/${port}.json`), 'utf8'))
     const byId = new Map(symbols.map((symbol) => [symbol.id, symbol]))
@@ -139,14 +164,15 @@ export function stagedPortGuides(port, artifact) {
   const guides = new Map((artifact.guides ?? []).map((guide) => [guide.path, guide.content]))
   const files = new Map()
   for (const [sourcePath, guide] of Object.entries(routes)) {
-    const { route, product, package: packageId, domain, aliases, sidebar } = guide
+    const { route, product, package: packageId, domain, aliases, equivalence, sidebar } = guide
     const content = guides.get(sourcePath)
     if (typeof content !== 'string') throw new Error(`${port}: native artifact is missing guide ${sourcePath}`)
     const { title: sourceTitle, body } = titleAndBody(content, sourcePath)
     const title = guide.title ?? sourceTitle
     const linked = port === 'fsharp' && sourcePath === 'docs/fsharp/supported-query-fields.md'
       ? linkSnapshotDepths(body) : body
-    const rewritten = rewriteLinks(linked, sourcePath, route, linkRoutes, artifact.source.repository, artifact.source.revision)
+    const nativeLinked = port === 'julia' ? linkDocumenter(linked) : linked
+    const rewritten = rewriteLinks(nativeLinked, sourcePath, route, linkRoutes, artifact.source.repository, artifact.source.revision, nativeReferenceFiles)
     const data = {
       title,
       description: guide.description ?? `${title}: ${identity.packageName} documentation.`,
@@ -155,6 +181,7 @@ export function stagedPortGuides(port, artifact) {
       ...(packageId ? { package: packageId } : {}),
       ...(domain ? { domain } : {}),
       ...(aliases.length ? { aliases } : {}),
+      ...(equivalence ? { equivalence } : {}),
       route,
       source: { repo: artifact.source.repository, path: sourcePath, ref: artifact.source.revision },
       sidebar: sidebar ?? { group: product ? (product === 'mcp' ? 'MCP' : 'Workspace Manager')
@@ -171,25 +198,28 @@ export function stagedPortGuides(port, artifact) {
       const frontmatter = Object.entries(data).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join('\n')
       files.set(`${port}/${route}/index.md`, `---\n${frontmatter}\n---\n\n${body}\n`)
     }
-    for (const section of identity.parentLibrary ? ['guides'] : ['guides', 'examples', 'topics']) {
+    for (const section of identity.parentLibrary ? ['guides'] : ['guides', 'examples', 'topics', 'concepts']) {
+      // Authored overviews own their cards and must keep one public route.
+      if (existsSync(join(root, `site/src/content/docs/ports/${port}/${section}/index.md`))) continue
       const selected = Object.entries(routes).filter(([, entry]) => entry.domain === 'core' && entry.route.startsWith(`${section}/`))
       const cards = selected.map(([path, entry]) => ({ label: entry.title ?? titleAndBody(guides.get(path), path).title,
         href: `../${entry.route}/`, body: entry.description ?? `Read about ${titleAndBody(guides.get(path), path).title.toLowerCase()}.`,
         order: entry.sidebar?.order ?? Number.MAX_SAFE_INTEGER }))
         .sort((a, b) => a.order - b.order || a.label.localeCompare(b.label))
         .map(({ order: _order, ...card }) => card)
-      if (section === 'guides') cards.splice(Math.min(1, cards.length), 0, {
+      if (section === 'guides' && existsSync(join(root, `site/src/content/docs/ports/${port}/guides/attaching-to-tmux.md`))) cards.splice(Math.min(1, cards.length), 0, {
         label: 'Attaching to tmux', href: '../guides/attaching-to-tmux/',
         body: 'Connect to an existing socket and leave its server running.',
       })
-      if (section === 'examples') cards.unshift({
+      if (section === 'examples' && existsSync(join(root, `site/src/content/docs/ports/${port}/examples/capture-pane-output.md`))) cards.unshift({
         label: 'Capture pane output', href: '../examples/capture-pane-output/',
         body: 'Send a command, wait for its output, and clean up the private server.',
       })
       writeIndex(section, section[0].toUpperCase() + section.slice(1),
         { guides: 'Connect to tmux and work with its sessions, windows, and panes.',
           examples: 'Run complete programs with their documented setup and cleanup.',
-          topics: 'Understand object ownership, state, and operation behavior.' }[section], cards)
+          topics: 'Understand object ownership, state, and operation behavior.',
+          concepts: 'Understand captured queries, object identities, and operations.' }[section], cards)
     }
     if (identity.referenceKind === 'guide' && identity.ecosystemHost) writeIndex('reference', `${identity.name} API reference`,
       `Use the [${identity.ecosystemHost.name} reference](${identity.ecosystemHost.url}) for published package versions.\n\nThe [source at this documentation revision](https://github.com/${source.repo}/tree/${source.ref}/${posix.dirname(source.path)}/src/main) contains the wrapper declarations and their documentation.\n\n${identity.name} and its ${identity.parentLibrary.runtime} core share a release version.`)
@@ -201,13 +231,47 @@ function artifactFromSource(port, checkout) {
   const modelPath = join(root, `site/src/data/api/${port.slug}.json`)
   const model = port.parentLibrary ? undefined : JSON.parse(readFileSync(modelPath, 'utf8'))
   const revision = model?.revision ?? execFileSync('git', ['-C', checkout, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
-  return {
-    source: { repository: port.repo, revision },
-    guides: Object.keys(ROUTES[port.slug]).map((path) => ({
-      path,
-      content: execFileSync('git', ['-C', checkout, 'show', `${revision}:${path}`], { encoding: 'utf8', maxBuffer: 4 * 1024 * 1024 }),
-    })),
+  return artifactFromRevision(port, checkout, revision)
+}
+
+/** Expand the native manual's literal source includes without evaluating Julia. */
+export function expandDocumenter(content, sourcePath, readSource) {
+  return content.replace(/^```jldoctest(?:[^\n]*)$/gm, '```julia').replace(/^```@(eval|autodocs)\n([\s\S]*?)^```/gm, (_block, directive, code) => {
+    if (directive === 'autodocs') {
+      const module = /Modules = \[(LibTmux(?:MCP|Workspace)?)\]/.exec(code)?.[1]
+      if (!module) throw new Error(`Unsupported Documenter module in ${sourcePath}`)
+      const product = module === 'LibTmuxMCP' ? 'mcp/' : module === 'LibTmuxWorkspace' ? 'workspace/' : ''
+      return `Browse the [${module} API reference](/julia/${defaultVersionFor('julia')}/${product}reference/).`
+    }
+    const match = /^using Markdown\s+Markdown\.parse\("```julia\\n" \* read\(joinpath\(@__DIR__, ((?:"[^"\n]+"(?:, )?)+)\), String\) \* "\\n```"\)\s*$/.exec(code)
+    if (!match) throw new Error(`Unsupported Documenter source include in ${sourcePath}`)
+    const parts = [...match[1].matchAll(/"([^"\n]+)"/g)].map((entry) => entry[1])
+    const file = posix.normalize(posix.join(posix.dirname(sourcePath), ...parts))
+    if (file.startsWith('../') || posix.isAbsolute(file)) throw new Error(`Documenter include escapes its checkout: ${file}`)
+    const source = readSource(file)
+    const fence = '`'.repeat(Math.max(3, ...[...source.matchAll(/`+/g)].map((entry) => entry[0].length + 1)))
+    return `${fence}julia title="${posix.basename(file)}"\n${source.trimEnd()}\n${fence}`
+  })
+}
+
+/** Resolve Documenter references against the same catalog the site renders. */
+function linkDocumenter(content) {
+  const model = JSON.parse(readFileSync(join(root, 'site/src/data/api/julia.json'), 'utf8'))
+  const index = new SymbolIndex(model.symbols, (symbol) =>
+    `/julia/${defaultVersionFor('julia')}/${symbol.product && symbol.product !== 'core' ? `${symbol.product}/` : ''}reference/${symbol.slug}/`, 'julia')
+  const edits = []
+  const walk = (node) => {
+    if (node.type === 'link' && node.url === '@ref') {
+      const target = node.children.map((child) => child.value ?? '').join('')
+      const match = index.resolve(target)
+      if (!match) throw new Error(`Unresolved Julia guide reference: ${target}`)
+      node.url = match.href
+      edits.push({ start: node.position.start.offset, end: node.position.end.offset, text: toMarkdown(node).trimEnd() })
+    } else for (const child of node.children ?? []) walk(child)
   }
+  walk(fromMarkdown(content))
+  for (const edit of edits.sort((a, b) => b.start - a.start)) content = content.slice(0, edit.start) + edit.text + content.slice(edit.end)
+  return content
 }
 
 /** Read the integrated commit even when a contributor's working tree has advanced. */
@@ -221,7 +285,11 @@ export function artifactFromRevision(port, checkout, revision) {
   }
   return {
     source: { repository: port.repo, revision },
-    guides: Object.keys(ROUTES[port.slug]).map((path) => ({ path, content: git('show', `${revision}:${path}`) })),
+    guides: Object.keys(ROUTES[port.slug]).map((path) => {
+      const readSource = (file) => git('show', `${revision}:${file}`)
+      const content = readSource(path)
+      return { path, content: port.slug === 'julia' ? expandDocumenter(content, path, readSource) : content }
+    }),
   }
 }
 

@@ -3,6 +3,7 @@ title: Connect a Java MCP client
 description: Build the Java MCP launcher and connect it to a private tmux server.
 port: java
 product: mcp
+equivalence: mcp-client-setup
 sidebar:
   label: Guides
   order: 2

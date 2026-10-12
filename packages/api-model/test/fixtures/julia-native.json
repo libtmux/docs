@@ -1,0 +1,3116 @@
+{
+  "exporter": {
+    "dependencies": {
+      "JSON": "1.10.0",
+      "Tables": "1.14.0"
+    },
+    "julia": "1.13.0",
+    "name": "Julia syntax + native methods and documentation",
+    "sha256": "75b3e4b172512a2cff299b69fa1109ccd981822ffcefeb5c57bfd9aae12c42e1",
+    "version": 1
+  },
+  "extensionMethods": [
+    {
+      "documentation": [],
+      "id": "Base.IndexStyle",
+      "methods": [
+        {
+          "documentation": [],
+          "identity": "Tuple{Type{Base.IndexStyle}, Type{<:LibTmux.RowProjection}}",
+          "kind": "constructor",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "#unused#",
+              "type": "Type{<:LibTmux.RowProjection}",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "IndexStyle(::Type{<:LibTmux.RowProjection})",
+          "source": {
+            "file": "src/projection.jl",
+            "line": 10
+          },
+          "sourceSignature": "Base.IndexStyle(::Type{<:RowProjection})",
+          "typeParameters": []
+        },
+        {
+          "documentation": [],
+          "identity": "Tuple{Type{Base.IndexStyle}, Type{<:LibTmux.Selection}}",
+          "kind": "constructor",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "#unused#",
+              "type": "Type{<:LibTmux.Selection}",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "IndexStyle(::Type{<:LibTmux.Selection})",
+          "source": {
+            "file": "src/model.jl",
+            "line": 188
+          },
+          "sourceSignature": "Base.IndexStyle(::Type{<:Selection})",
+          "typeParameters": []
+        },
+        {
+          "documentation": [],
+          "identity": "Tuple{Type{Base.IndexStyle}, Type{<:LibTmux._FiniteCommandResult}}",
+          "kind": "constructor",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "#unused#",
+              "type": "Type{<:LibTmux._FiniteCommandResult}",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "IndexStyle(::Type{<:LibTmux._FiniteCommandResult})",
+          "source": {
+            "file": "src/batches.jl",
+            "line": 62
+          },
+          "sourceSignature": "Base.IndexStyle(::Type{<:_FiniteCommandResult})",
+          "typeParameters": []
+        }
+      ],
+      "module": "Base",
+      "name": "IndexStyle"
+    },
+    {
+      "documentation": [],
+      "id": "Base.IteratorSize",
+      "methods": [
+        {
+          "documentation": [],
+          "identity": "Tuple{Type{Base.IteratorSize}, Type{LibTmux.ObservationStream}}",
+          "kind": "constructor",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "#unused#",
+              "type": "Type{LibTmux.ObservationStream}",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "Base.IteratorSize(::Type{LibTmux.ObservationStream})",
+          "source": {
+            "file": "src/observation.jl",
+            "line": 707
+          },
+          "sourceSignature": "Base.IteratorSize(::Type{ObservationStream})",
+          "typeParameters": []
+        }
+      ],
+      "module": "Base",
+      "name": "IteratorSize"
+    },
+    {
+      "documentation": [
+        {
+          "fields": {},
+          "markdown": "```julia\nclose(owned::OwnedServer)\n```\n\nStop only the spawned daemon, reap it, join its watchers, and remove its owned directory. Concurrent calls serialize; later calls return `nothing`. Shutdown sends SIGTERM and permits 900 ms for exit and diagnostic drainage. If SIGKILL or forced pipe closure is needed, cleanup completes before throwing `OwnedServerCleanupError`. A replaced ownership marker prevents directory removal. Cleanup never sends `kill-server` to an endpoint.\n",
+          "signature": "Tuple{LibTmux.OwnedServer}",
+          "source": {
+            "file": "src/lifecycle.jl",
+            "line": 127
+          }
+        },
+        {
+          "fields": {},
+          "markdown": "Cancel and join active calls, then tear down only application-owned sessions.\n",
+          "signature": "Tuple{LibTmuxMCP.Application}",
+          "source": {
+            "file": "packages/LibTmuxMCP/src/tools.jl",
+            "line": 179
+          }
+        }
+      ],
+      "id": "Base.close",
+      "methods": [
+        {
+          "documentation": [],
+          "identity": "Tuple{typeof(Base.close), LibTmux.CancellationSubscription}",
+          "kind": "function",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "subscription",
+              "type": "LibTmux.CancellationSubscription",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "close(subscription::LibTmux.CancellationSubscription)",
+          "source": {
+            "file": "src/process.jl",
+            "line": 167
+          },
+          "sourceSignature": "Base.close(subscription::CancellationSubscription)",
+          "typeParameters": []
+        },
+        {
+          "documentation": [],
+          "identity": "Tuple{typeof(Base.close), LibTmux.ControlConnection}",
+          "kind": "function",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "connection",
+              "type": "LibTmux.ControlConnection",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "close(connection::LibTmux.ControlConnection)",
+          "source": {
+            "file": "src/control.jl",
+            "line": 1005
+          },
+          "sourceSignature": "Base.close(connection::ControlConnection)",
+          "typeParameters": []
+        },
+        {
+          "documentation": [],
+          "identity": "Tuple{typeof(Base.close), LibTmux.ObservationStream}",
+          "kind": "function",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "stream",
+              "type": "LibTmux.ObservationStream",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "close(stream::LibTmux.ObservationStream)",
+          "source": {
+            "file": "src/observation.jl",
+            "line": 642
+          },
+          "sourceSignature": "Base.close(stream::ObservationStream)",
+          "typeParameters": []
+        },
+        {
+          "documentation": [
+            {
+              "fields": {},
+              "markdown": "```julia\nclose(owned::OwnedServer)\n```\n\nStop only the spawned daemon, reap it, join its watchers, and remove its owned directory. Concurrent calls serialize; later calls return `nothing`. Shutdown sends SIGTERM and permits 900 ms for exit and diagnostic drainage. If SIGKILL or forced pipe closure is needed, cleanup completes before throwing `OwnedServerCleanupError`. A replaced ownership marker prevents directory removal. Cleanup never sends `kill-server` to an endpoint.\n",
+              "signature": "Tuple{LibTmux.OwnedServer}",
+              "source": {
+                "file": "src/lifecycle.jl",
+                "line": 127
+              }
+            }
+          ],
+          "identity": "Tuple{typeof(Base.close), LibTmux.OwnedServer}",
+          "kind": "function",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "owned",
+              "type": "LibTmux.OwnedServer",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "close(owned::LibTmux.OwnedServer)",
+          "source": {
+            "file": "src/lifecycle.jl",
+            "line": 137
+          },
+          "sourceSignature": "Base.close(owned::OwnedServer)",
+          "typeParameters": []
+        },
+        {
+          "documentation": [
+            {
+              "fields": {},
+              "markdown": "Cancel and join active calls, then tear down only application-owned sessions.\n",
+              "signature": "Tuple{LibTmuxMCP.Application}",
+              "source": {
+                "file": "packages/LibTmuxMCP/src/tools.jl",
+                "line": 179
+              }
+            }
+          ],
+          "identity": "Tuple{typeof(Base.close), LibTmuxMCP.Application}",
+          "kind": "function",
+          "module": "LibTmuxMCP",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "app",
+              "type": "LibTmuxMCP.Application",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "close(app::LibTmuxMCP.Application)",
+          "source": {
+            "file": "packages/LibTmuxMCP/src/tools.jl",
+            "line": 180
+          },
+          "sourceSignature": "Base.close(app::Application)",
+          "typeParameters": []
+        },
+        {
+          "documentation": [],
+          "identity": "Tuple{typeof(Base.close), LibTmuxWorkspace._CLIOwnedOutput}",
+          "kind": "function",
+          "module": "LibTmuxWorkspace",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "owner",
+              "type": "LibTmuxWorkspace._CLIOwnedOutput",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "close(owner::LibTmuxWorkspace._CLIOwnedOutput)",
+          "source": {
+            "file": "packages/LibTmuxWorkspace/src/cli_output.jl",
+            "line": 183
+          },
+          "sourceSignature": "Base.close(owner::_CLIOwnedOutput)",
+          "typeParameters": []
+        },
+        {
+          "documentation": [],
+          "identity": "Tuple{typeof(Base.close), LibTmuxWorkspace._CLISignalWatcher}",
+          "kind": "function",
+          "module": "LibTmuxWorkspace",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "watcher",
+              "type": "LibTmuxWorkspace._CLISignalWatcher",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "close(watcher::LibTmuxWorkspace._CLISignalWatcher)",
+          "source": {
+            "file": "packages/LibTmuxWorkspace/src/cli_signal.jl",
+            "line": 90
+          },
+          "sourceSignature": "Base.close(watcher::_CLISignalWatcher)",
+          "typeParameters": []
+        }
+      ],
+      "module": "Base",
+      "name": "close"
+    },
+    {
+      "documentation": [],
+      "id": "Tables.rows",
+      "methods": [
+        {
+          "documentation": [],
+          "identity": "Tuple{typeof(Tables.rows), LibTmux.RowProjection}",
+          "kind": "function",
+          "module": "LibTmuxTablesExt",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "rows",
+              "type": "LibTmux.RowProjection",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": true,
+          "signature": "rows(rows::LibTmux.RowProjection)",
+          "source": {
+            "file": "ext/LibTmuxTablesExt.jl",
+            "line": 8
+          },
+          "sourceSignature": "Tables.rows(rows::RowProjection)",
+          "typeParameters": []
+        }
+      ],
+      "module": "Tables",
+      "name": "rows"
+    }
+  ],
+  "extensions": [
+    "LibTmuxJSONExt",
+    "LibTmuxTablesExt"
+  ],
+  "modules": [
+    {
+      "bindings": [
+        "Criterion",
+        "Filters",
+        "FormatObservation",
+        "FormatValueError",
+        "RowProjection",
+        "Selection",
+        "Server",
+        "SessionID",
+        "SessionRef",
+        "SessionSnapshot",
+        "WindowID",
+        "from_env",
+        "kill_session",
+        "read_where_json",
+        "set_option"
+      ],
+      "module": "LibTmux",
+      "package": "LibTmux",
+      "product": "core",
+      "supportingBindings": [
+        "EntityRef",
+        "TmuxID"
+      ]
+    },
+    {
+      "bindings": [
+        "AtLeast",
+        "Contains"
+      ],
+      "module": "LibTmux.Filters",
+      "package": "LibTmux",
+      "product": "core",
+      "supportingBindings": []
+    },
+    {
+      "bindings": [
+        "Application"
+      ],
+      "module": "LibTmuxMCP",
+      "package": "LibTmuxMCP",
+      "product": "mcp",
+      "supportingBindings": []
+    },
+    {
+      "bindings": [
+        "parse_config"
+      ],
+      "module": "LibTmuxWorkspace",
+      "package": "LibTmuxWorkspace",
+      "product": "workspace",
+      "supportingBindings": []
+    }
+  ],
+  "packages": [
+    {
+      "file": "Project.toml",
+      "name": "LibTmux",
+      "version": "0.1.0-alpha.1"
+    },
+    {
+      "file": "packages/LibTmuxMCP/Project.toml",
+      "name": "LibTmuxMCP",
+      "version": "0.1.0-alpha.1"
+    },
+    {
+      "file": "packages/LibTmuxWorkspace/Project.toml",
+      "name": "LibTmuxWorkspace",
+      "version": "0.1.0-alpha.1"
+    }
+  ],
+  "port": "julia",
+  "schema": 1,
+  "source": {
+    "files": [
+      {
+        "path": "Project.toml",
+        "sha256": "18c82150923aa384a3f63f06ed97fa9363f86a9c6e19d27d125c35a1ee2ee02d"
+      },
+      {
+        "path": "ext/LibTmuxJSONExt.jl",
+        "sha256": "e8c95f7bbd15e802cfbeffc1aa32189208ed904eba753e2bbaa5825d86289e2b"
+      },
+      {
+        "path": "ext/LibTmuxTablesExt.jl",
+        "sha256": "a06566ae84af7b01c679cd331a50d4c6abf9610fb64fe4b13c1445f42c05e2d7"
+      },
+      {
+        "path": "packages/LibTmuxMCP/CHANGELOG.md",
+        "sha256": "d1091e8a833a55bfd4cda0b28bc6f2e620917ba4973a4695cbf977c32902c954"
+      },
+      {
+        "path": "packages/LibTmuxMCP/LICENSE",
+        "sha256": "e32e2d62046374e7f08a57882699e3f37920edf6b770f817e5b67eb625e2eb4f"
+      },
+      {
+        "path": "packages/LibTmuxMCP/Project.toml",
+        "sha256": "7cfddefcd826d9b8c242010d91f48c17899d587f2e6f272e8c87a1ee704cfa34"
+      },
+      {
+        "path": "packages/LibTmuxMCP/README.md",
+        "sha256": "410c4f29efa134b078945df52e503f35b16fa2dd16b600fef68716255fec4d26"
+      },
+      {
+        "path": "packages/LibTmuxMCP/assets/logo.png",
+        "sha256": "94e1b3fae1a0e6e68633567a19df9e55237bed7bd2a139ddcbbfafba00bd2757"
+      },
+      {
+        "path": "packages/LibTmuxMCP/assets/logo.svg",
+        "sha256": "1b87c60f07f9c0911a13756547087e0ea471efd5f4445a10212632e227ebdc4f"
+      },
+      {
+        "path": "packages/LibTmuxMCP/docs/adapter.md",
+        "sha256": "a6b76b78f5f333044b953587c9e7d40afe090e2f37f5db8e869e3329e929481f"
+      },
+      {
+        "path": "packages/LibTmuxMCP/src/LibTmuxMCP.jl",
+        "sha256": "d3eba009c87a0b6a1c723f6b5b61b802a4c283211bc4be3fe456cb94e75794f7"
+      },
+      {
+        "path": "packages/LibTmuxMCP/src/adapter.jl",
+        "sha256": "b2eb4436f955bf81ca6cdc74c19f0fbaa1cb977792634d38c4d6d3f223bdbe20"
+      },
+      {
+        "path": "packages/LibTmuxMCP/src/cli.jl",
+        "sha256": "94e065c39df1c0e8bf70becef85520698fa1ecbaee066e95675258f78bb48ca5"
+      },
+      {
+        "path": "packages/LibTmuxMCP/src/precompile.jl",
+        "sha256": "a6bb3c02201f6ce5a89f15077708ab555cd2f62f488549d0d0be2571d8a5eba5"
+      },
+      {
+        "path": "packages/LibTmuxMCP/src/stdio.jl",
+        "sha256": "b3e90560b19333faa39224479720eaddc25e232c8200954d1584a1d778953e6b"
+      },
+      {
+        "path": "packages/LibTmuxMCP/src/tools.jl",
+        "sha256": "98e7f4c979713058f84c31df454e7cdc0158a299a57fc1c1091b239133dbd57b"
+      },
+      {
+        "path": "packages/LibTmuxMCP/test/adapter.jl",
+        "sha256": "0a856e058cd208d7d1ab07e619cb8b1971de7cef0d320384079cf2c4238c1d2e"
+      },
+      {
+        "path": "packages/LibTmuxMCP/test/cli.jl",
+        "sha256": "185c2158f4d15b707141eb6a87ba769e7772c852e532eab9e8f61cf754e16150"
+      },
+      {
+        "path": "packages/LibTmuxMCP/test/product.jl",
+        "sha256": "53a72d34961dd46cbce71741d29fa5484f11275b54b563283dd000515c78f381"
+      },
+      {
+        "path": "packages/LibTmuxMCP/test/product_client.py",
+        "sha256": "7f5001d99fec8e2a53b5edd8c229e48c4ae85203ba52b1462e81279d12e647b7"
+      },
+      {
+        "path": "packages/LibTmuxMCP/test/runtests.jl",
+        "sha256": "70a1742fd10a7a04ab0e41cdbac747839d022b6a2bb4bb4a53dd72a5925273df"
+      },
+      {
+        "path": "packages/LibTmuxMCP/test/stdio.jl",
+        "sha256": "7bfdbffd9622142b8fe7d8c530b4e58f2642340a81faa7e49d218236123976be"
+      },
+      {
+        "path": "packages/LibTmuxMCP/test/stdio_backpressure.py",
+        "sha256": "90c5d345d690642ef8c41fa40ab7da5f6a9e5feec9c4634f1402a92c9242231c"
+      },
+      {
+        "path": "packages/LibTmuxMCP/test/stdio_child.jl",
+        "sha256": "cf0fd72cee72e747eac45e902582d42a66a3d8c438a11bd3603bd1af6908ed74"
+      },
+      {
+        "path": "packages/LibTmuxMCP/test/stdio_client.py",
+        "sha256": "055861553173759e412dd80b5569950b3faa89d54213080673dc734241796f5c"
+      },
+      {
+        "path": "packages/LibTmuxMCP/test/support/named_tmux.jl",
+        "sha256": "8eb773eaf8827ba2a6c31b0027db72be800e5bfdb61e0ff7f2070ac4a007a9c4"
+      },
+      {
+        "path": "packages/LibTmuxMCP/test/tools.jl",
+        "sha256": "f4f899241a9937166b7f2d0a52d02f8933501ef882b4374d89e6e7ee2814844f"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/CHANGELOG.md",
+        "sha256": "6f3d11acd9af75913ebed0b90e94253a9ecb3ae539ce745256b02dcdb738e71e"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/LICENSE",
+        "sha256": "e32e2d62046374e7f08a57882699e3f37920edf6b770f817e5b67eb625e2eb4f"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/Project.toml",
+        "sha256": "e97adc733792438a09307c4d0908db22b196bfadbce1a7f276a6d622c0cc3977"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/README.md",
+        "sha256": "0c1d75309cbb3d45cae082ed9f87a0db5ecee91c4b532dddea5db1b06fc95210"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/assets/logo.png",
+        "sha256": "ada5237871a615f2679d44cd3809623d25f285c34cabe9d881d81e146c00adf4"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/assets/logo.svg",
+        "sha256": "c3005e064e10163e77efec72b7e6455f4ad608537b2cb34349fc777eb8785287"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/dev/cli_latency.jl",
+        "sha256": "fb8a2b5847bf58e88cb136d4a033ab262b6b01ff8778778207cf9db75cd2c85b"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/examples/owned_load.jl",
+        "sha256": "fb739e53161c14eeae78defb442cd343a42bbe20bc0a885db11972769f57a688"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/examples/plan.jl",
+        "sha256": "db6331610df604de451c1feda8c924fc8d33efcbc6c3f84471262a6bfd9ed42d"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/examples/workspace.yaml",
+        "sha256": "bee59fdf30312cbcd2694c71dc34caae609e7b8c8ad08deb2e268e3a9973db20"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/src/LibTmuxWorkspace.jl",
+        "sha256": "c74d9efa278755e3cb031336bdfe698f375439f3fbbfc99ddf96382d7dcc3862"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/src/apply.jl",
+        "sha256": "c895be2285646077c3590aaf178b3df6c09a32ba78ed24bb9f9e5c983aab7ffb"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/src/cli.jl",
+        "sha256": "0d8c3c2bfa4998eb7e3681919c95f13a1b5fd363682eb1f575f1051befc33fb7"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/src/cli_output.jl",
+        "sha256": "b6d577f51fd57922940188fdd33a9dc2128645b92be6663a2c1f1f8d61c60547"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/src/cli_signal.jl",
+        "sha256": "6caf3269c0ddd645a04d4d7f71e8cea2fddcadff010fec2df0105baf2d576ae6"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/src/config.jl",
+        "sha256": "13c5da79fffebbb2bb33dca66fa98879f2ecfcb5bf785bec196d441b50a1b038"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/src/parser.jl",
+        "sha256": "dfea34789bc453c46e7ae8edbc22c025722ea18b50b6dc1a4b9cf7c48cf25299"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/src/plan.jl",
+        "sha256": "8798efce813240fae7a84ea4be6fa0ccf1f87fa4d07f2ae548a2197365a3ee49"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/src/precompile.jl",
+        "sha256": "bc28cb99589b716a1b3e55101ca11a17db18122f25cec018c656f60093495239"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/src/script.jl",
+        "sha256": "d88d036e3645f3ce4c28e4a230eb424e4fb43dcca926e908fd40b1b78c62a698"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/test/apply.jl",
+        "sha256": "4b1e80a7bf1ab5ed3ab0d5ac57388e647e5fce0f677865540e386ebf30d07936"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/test/apply_cancel.jl",
+        "sha256": "ac29a282ea3e05cd7f3d083dea954bb5707b7cbfd5d4f577fad23adb7b9fb0bd"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/test/apply_failure.jl",
+        "sha256": "bcfa7b206467d49e7b6e8b58e80042317b91aef0eafd0d14e2caf5a24d4a5320"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/test/cli.jl",
+        "sha256": "1c93808f3fd505e926ca2901b5d03f9779a8a7a37b96613bd61e3983ba412654"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/test/cli_backpressure.jl",
+        "sha256": "32a5226ee0a0d2ece2c2de9cfae024c6909ac86e0a74cbc0fcef49a92340dcba"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/test/cli_integration.jl",
+        "sha256": "db569a101834652a290ab200f9273960c67a811f3f789f502292ba9c50d84054"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/test/cli_output.jl",
+        "sha256": "a5c4fb7243fbef805498b912bc93965277cb4e421d5e23747a46be7c37dc0604"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/test/cli_signal.jl",
+        "sha256": "a0890fc4984c70656117eeafd9fc6bf5ffeeaeab6d41ef61f77cae0e732ccf72"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/test/config.jl",
+        "sha256": "cc1f033e195716dfcf86b6a0d1b5abcf987a688c6319b9d10771fdd29e44fa4d"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/test/owned_server.jl",
+        "sha256": "c1fac1c1c1e25844f2ecdb4fc79a7fcad9c51c4e1cb41a25949febb1c06be607"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/test/readiness.jl",
+        "sha256": "6c19b406a5a2aa09ffabb953ed1d3d83baad50aca90f435a9a60612a058fa92c"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/test/runtests.jl",
+        "sha256": "ac7da1cf63ebed01d69fe6da979ce43edd68db6cae850814e8f635cc4d3f9487"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/test/script.jl",
+        "sha256": "b3727ea1a0c95cbb63fb80a2e03b86a4a5a2b397b5a96bab47038f8a88c0aef9"
+      },
+      {
+        "path": "packages/LibTmuxWorkspace/test/support/named_tmux.jl",
+        "sha256": "8eb773eaf8827ba2a6c31b0027db72be800e5bfdb61e0ff7f2070ac4a007a9c4"
+      },
+      {
+        "path": "src/LibTmux.jl",
+        "sha256": "dcfa48944f08be5ebf9cfdb9a9ed33d0a5c3a01de916ac623c44749fe7581cb5"
+      },
+      {
+        "path": "src/acquisition.jl",
+        "sha256": "3cc23c065bef64bccc9cb01465de124b5a6e380f227570872bf524670fb2ba55"
+      },
+      {
+        "path": "src/batches.jl",
+        "sha256": "ecde029abf088a88af2527bd06e938635f64054d0d8c0d6a1b915344ad6b2899"
+      },
+      {
+        "path": "src/configuration.jl",
+        "sha256": "63e75663c4ff55abfe49b47fcc2dc4c4197f2262c69f15b0e1aa6616777e899c"
+      },
+      {
+        "path": "src/control.jl",
+        "sha256": "6a482c8006b04feb59c9ab010ae3f858ce0d1b954611bc46503b643dba07f180"
+      },
+      {
+        "path": "src/control_buffers.jl",
+        "sha256": "33421b30ec8af9b9ed2f982062712b3728c063a083281becc1f67d7e2dea3dfd"
+      },
+      {
+        "path": "src/control_clients.jl",
+        "sha256": "9607bd228ed9eb78ada3b7e5ec1946af81375bce626b9055210ab489ebc3798d"
+      },
+      {
+        "path": "src/control_configuration.jl",
+        "sha256": "08ed33b7aa8dda5a3e86891ebd7b9612e418f7ae5acc9997829d60ce324cb0cb"
+      },
+      {
+        "path": "src/control_formats.jl",
+        "sha256": "831a9dc74fe50231157ede1a63ef6c5bd15c12503d8d7d453112a93dcc44300c"
+      },
+      {
+        "path": "src/control_io.jl",
+        "sha256": "c73b6610e0d2ce7873fc3759b3d222b3ecea45ac989264476e6a27a5dcb696d9"
+      },
+      {
+        "path": "src/control_operations.jl",
+        "sha256": "7aec4500890ac4a8426f38e798959e56e4d49d2a5bb7c9489d0454bc2948f3ac"
+      },
+      {
+        "path": "src/control_options.jl",
+        "sha256": "3bbd649ba8e6539277159bbfb929e2c249b4dbe994e45c7e1f8535ed138921ea"
+      },
+      {
+        "path": "src/control_protocol.jl",
+        "sha256": "46e2f2e0404009d71bd576ee5319c91829934a4fae6cb6680d15ca6d963a0223"
+      },
+      {
+        "path": "src/control_topology.jl",
+        "sha256": "c9c211111aec6620676f84b81e2cccf805427e446862776b5dc07250268ccf78"
+      },
+      {
+        "path": "src/criteria.jl",
+        "sha256": "956fb6a5680876d312c617c2aa43437a8ebdbb297ce00bee7f13093f158c3882"
+      },
+      {
+        "path": "src/criteria_generated.jl",
+        "sha256": "6d89e299f54be121a7fd9268ee918a01752b3efabc822fc75e26d5b9578ff118"
+      },
+      {
+        "path": "src/format_rows.jl",
+        "sha256": "cd2f52dcf44a08ac8ec74cb8b4172bb10b4006f8457c62ff8885fbbfb3eb8caa"
+      },
+      {
+        "path": "src/formats.jl",
+        "sha256": "769393f4032211977f61276164f08951ffe5fc174789c7406c481c89ff5266e7"
+      },
+      {
+        "path": "src/lifecycle.jl",
+        "sha256": "5f3566325baf2784f6e8dcf30420fd9217119be3750c5ad5a4c92751a9a43342"
+      },
+      {
+        "path": "src/model.jl",
+        "sha256": "d347286954b67e7a4f9e665a1151173169a706ee557521bc70323c99a48ec891"
+      },
+      {
+        "path": "src/observation.jl",
+        "sha256": "b10120c65aeb45d30405752e15fcf48f53a35fc3f32efe3fcc6a0bc455899335"
+      },
+      {
+        "path": "src/operations.jl",
+        "sha256": "b11b703dfae74f6828077c91b6ebb03aeb005a7b8319dd89596133d810309a62"
+      },
+      {
+        "path": "src/options_generated.jl",
+        "sha256": "3abc8139ad3fa9baa39dbe7a4bea3a14d6f033b2c88d2f03d4b5aba735c9eb92"
+      },
+      {
+        "path": "src/pane_io.jl",
+        "sha256": "ff59faeed9d10dc69cc9ea188e85b19fa93e1a88d1200b10dab85adc0b6207eb"
+      },
+      {
+        "path": "src/precompile.jl",
+        "sha256": "b5a280bf92aebbd483b96ff69a91ed9cf744f35a0a79cee83441e0a27bb2f9bc"
+      },
+      {
+        "path": "src/process.jl",
+        "sha256": "ffd768eea385a7214fac8788faefd4b2a74ba4aaaaa8aff0ffb8dcdc6068a484"
+      },
+      {
+        "path": "src/projection.jl",
+        "sha256": "1f4524ef510230b916da59c87aca9597e8a8ddf2e30c41bca499b6d04325e836"
+      },
+      {
+        "path": "src/server.jl",
+        "sha256": "00d789cd613f8acfa4e929986a0d721ef430b460278b2154d3addeed71b9962d"
+      },
+      {
+        "path": "src/sibling_wire.jl",
+        "sha256": "441a204c19e2669caedb568fb2a664d0606f7c40051ff97c51137f1c8524b606"
+      },
+      {
+        "path": "src/text.jl",
+        "sha256": "554c7dc7eed7b0f99f25550f2456c1f73a1a93490facbef247d5d40f012ab66c"
+      },
+      {
+        "path": "src/topology.jl",
+        "sha256": "b98e1897b7c4d4f1eb4a50b0f2d57052090fde72c573de02930cbd785fce4186"
+      },
+      {
+        "path": "src/wire.jl",
+        "sha256": "ebd81934742d249510b5f9719bb91dc30abc384898ffce9aba5cb40fa40a374f"
+      }
+    ],
+    "repository": "libtmux/libtmux-julia",
+    "revision": "6f62bd72cb8d99f3759ca5e2cc3591165a03c768"
+  },
+  "symbols": [
+    {
+      "abstract": true,
+      "aliasOf": null,
+      "definition": null,
+      "documentation": [
+        {
+          "fields": {},
+          "markdown": "A validated local predicate; portable criteria never contain caller callbacks.\n",
+          "signature": "Union{}",
+          "source": {
+            "file": "src/criteria.jl",
+            "line": 1
+          }
+        }
+      ],
+      "exported": true,
+      "fields": [],
+      "id": "LibTmux.Criterion",
+      "kind": "type",
+      "methods": [
+        {
+          "documentation": [],
+          "identity": "Tuple{LibTmux.Criterion, Any}",
+          "kind": "call",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "item",
+              "type": "Any",
+              "variadic": false
+            }
+          ],
+          "receiver": {
+            "name": "q",
+            "type": "LibTmux.Criterion"
+          },
+          "requiresExtension": false,
+          "signature": "(q::LibTmux.Criterion)(item)",
+          "source": {
+            "file": "src/criteria.jl",
+            "line": 237
+          },
+          "sourceSignature": "(q::Criterion)(item)::Bool",
+          "typeParameters": []
+        }
+      ],
+      "module": "LibTmux",
+      "mutable": false,
+      "name": "Criterion",
+      "package": "LibTmux",
+      "product": "core",
+      "public": true,
+      "qualifiedAccess": false,
+      "source": {
+        "file": "src/criteria.jl",
+        "line": 1
+      },
+      "supertype": "Function",
+      "supporting": false,
+      "type": "LibTmux.Criterion",
+      "typeArguments": []
+    },
+    {
+      "abstract": false,
+      "aliasOf": null,
+      "definition": null,
+      "documentation": [
+        {
+          "fields": {},
+          "markdown": "A typed entity identity bound to a captured daemon generation.\n",
+          "signature": "Union{}",
+          "source": {
+            "file": "src/model.jl",
+            "line": 71
+          }
+        }
+      ],
+      "exported": false,
+      "fields": [
+        {
+          "name": "server",
+          "type": "LibTmux.ServerIdentity"
+        },
+        {
+          "name": "id",
+          "type": "I<:LibTmux.EntityID"
+        }
+      ],
+      "id": "LibTmux.EntityRef",
+      "kind": "type",
+      "methods": [
+        {
+          "documentation": [],
+          "identity": "Tuple{Type{LibTmux.EntityRef{I}}, LibTmux.ServerIdentity, Any} where I<:LibTmux.EntityID",
+          "kind": "constructor",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "server",
+              "type": "LibTmux.ServerIdentity",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "id",
+              "type": "Any",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "LibTmux.EntityRef{I}(server::LibTmux.ServerIdentity, id) where I<:EntityID",
+          "source": {
+            "file": "src/model.jl",
+            "line": 76
+          },
+          "sourceSignature": "EntityRef{I}(server::ServerIdentity, id) where I <: EntityID",
+          "typeParameters": [
+            "I<:LibTmux.EntityID"
+          ]
+        }
+      ],
+      "module": "LibTmux",
+      "mutable": false,
+      "name": "EntityRef",
+      "package": "LibTmux",
+      "product": "core",
+      "public": false,
+      "qualifiedAccess": false,
+      "source": {
+        "file": "src/model.jl",
+        "line": 71
+      },
+      "supertype": "Any",
+      "supporting": true,
+      "type": "LibTmux.EntityRef",
+      "typeArguments": [
+        "I<:LibTmux.EntityID"
+      ]
+    },
+    {
+      "abstract": false,
+      "aliasOf": null,
+      "definition": null,
+      "documentation": [
+        {
+          "fields": {},
+          "markdown": "Named local filter operators. Import as `import LibTmux.Filters as F`.\n",
+          "signature": "Union{}",
+          "source": {
+            "file": "src/criteria.jl",
+            "line": 22
+          }
+        }
+      ],
+      "exported": true,
+      "fields": [],
+      "id": "LibTmux.Filters",
+      "kind": "module",
+      "methods": [],
+      "module": "LibTmux",
+      "mutable": false,
+      "name": "Filters",
+      "package": "LibTmux",
+      "product": "core",
+      "public": true,
+      "qualifiedAccess": false,
+      "source": {
+        "file": "src/criteria.jl",
+        "line": 22
+      },
+      "supertype": null,
+      "supporting": false,
+      "type": "Module",
+      "typeArguments": []
+    },
+    {
+      "abstract": false,
+      "aliasOf": null,
+      "definition": null,
+      "documentation": [],
+      "exported": false,
+      "fields": [
+        {
+          "name": "value",
+          "type": "Real"
+        }
+      ],
+      "id": "LibTmux.Filters.AtLeast",
+      "kind": "type",
+      "methods": [
+        {
+          "documentation": [],
+          "identity": "Tuple{Type{LibTmux.Filters.AtLeast}, Any}",
+          "kind": "constructor",
+          "module": "LibTmux.Filters",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "value",
+              "type": "Any",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "LibTmux.Filters.AtLeast(value)",
+          "source": {
+            "file": "src/criteria.jl",
+            "line": 56
+          },
+          "sourceSignature": "($(Expr(:$, :name)))(value)",
+          "typeParameters": []
+        }
+      ],
+      "module": "LibTmux.Filters",
+      "mutable": false,
+      "name": "AtLeast",
+      "package": "LibTmux",
+      "product": "core",
+      "public": false,
+      "qualifiedAccess": true,
+      "source": {
+        "file": "src/criteria.jl",
+        "line": 56
+      },
+      "supertype": "LibTmux.Filters.Operator",
+      "supporting": false,
+      "type": "LibTmux.Filters.AtLeast",
+      "typeArguments": []
+    },
+    {
+      "abstract": false,
+      "aliasOf": null,
+      "definition": null,
+      "documentation": [],
+      "exported": false,
+      "fields": [
+        {
+          "name": "value",
+          "type": "String"
+        },
+        {
+          "name": "case",
+          "type": "Symbol"
+        }
+      ],
+      "id": "LibTmux.Filters.Contains",
+      "kind": "type",
+      "methods": [
+        {
+          "documentation": [],
+          "identity": "Tuple{Type{LibTmux.Filters.Contains}, AbstractString}",
+          "kind": "constructor",
+          "module": "LibTmux.Filters",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "value",
+              "type": "AbstractString",
+              "variadic": false
+            },
+            {
+              "default": ":sensitive",
+              "keyword": true,
+              "name": "case",
+              "type": "Symbol",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "LibTmux.Filters.Contains(value::AbstractString; case)",
+          "source": {
+            "file": "src/criteria.jl",
+            "line": 45
+          },
+          "sourceSignature": "($(Expr(:$, :name)))(value::AbstractString; case::Symbol = :sensitive)",
+          "typeParameters": []
+        }
+      ],
+      "module": "LibTmux.Filters",
+      "mutable": false,
+      "name": "Contains",
+      "package": "LibTmux",
+      "product": "core",
+      "public": false,
+      "qualifiedAccess": true,
+      "source": {
+        "file": "src/criteria.jl",
+        "line": 45
+      },
+      "supertype": "LibTmux.Filters.Operator",
+      "supporting": false,
+      "type": "LibTmux.Filters.Contains",
+      "typeArguments": []
+    },
+    {
+      "abstract": false,
+      "aliasOf": null,
+      "definition": null,
+      "documentation": [
+        {
+          "fields": {},
+          "markdown": "One explicit format observation. `:present` means a nonempty expansion, not a version-support guarantee. Empty expansions have `availability=:unverified`: tmux cannot distinguish an empty value from an unknown or unavailable variable. `raw` always retains the decoded text. Empty strings retain `value=\"\"`; numeric and Boolean observations use `value=nothing` until their value is verified.\n",
+          "signature": "Union{}",
+          "source": {
+            "file": "src/formats.jl",
+            "line": 24
+          }
+        }
+      ],
+      "exported": true,
+      "fields": [
+        {
+          "name": "field",
+          "type": "LibTmux.FormatField{T}"
+        },
+        {
+          "name": "raw",
+          "type": "String"
+        },
+        {
+          "name": "value",
+          "type": "Union{Nothing, T}"
+        },
+        {
+          "name": "availability",
+          "type": "Symbol"
+        }
+      ],
+      "id": "LibTmux.FormatObservation",
+      "kind": "type",
+      "methods": [
+        {
+          "documentation": [],
+          "identity": "Tuple{Type{LibTmux.FormatObservation{T}} where T, Vararg{Any, 4}}",
+          "kind": "constructor",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "field",
+              "type": "Any",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "raw",
+              "type": "Any",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "value",
+              "type": "Any",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "availability",
+              "type": "Any",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "(var\"#ctor-self#\"::Type{LibTmux.FormatObservation{T}} where T)(field, raw, value, availability)",
+          "source": {
+            "file": "src/formats.jl",
+            "line": 32
+          },
+          "sourceSignature": null,
+          "typeParameters": []
+        },
+        {
+          "documentation": [],
+          "identity": "Tuple{Type{LibTmux.FormatObservation}, LibTmux.FormatField{T}, String, Union{Nothing, T}, Symbol} where T",
+          "kind": "constructor",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "field",
+              "type": "LibTmux.FormatField{T}",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "raw",
+              "type": "String",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "value",
+              "type": "Union{Nothing, T}",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "availability",
+              "type": "Symbol",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "LibTmux.FormatObservation(field::LibTmux.FormatField{T}, raw::String, value::Union{Nothing, T}, availability::Symbol) where T",
+          "source": {
+            "file": "src/formats.jl",
+            "line": 32
+          },
+          "sourceSignature": null,
+          "typeParameters": [
+            "T"
+          ]
+        }
+      ],
+      "module": "LibTmux",
+      "mutable": false,
+      "name": "FormatObservation",
+      "package": "LibTmux",
+      "product": "core",
+      "public": true,
+      "qualifiedAccess": false,
+      "source": {
+        "file": "src/formats.jl",
+        "line": 24
+      },
+      "supertype": "Any",
+      "supporting": false,
+      "type": "LibTmux.FormatObservation",
+      "typeArguments": [
+        "T"
+      ]
+    },
+    {
+      "abstract": false,
+      "aliasOf": null,
+      "definition": null,
+      "documentation": [
+        {
+          "fields": {},
+          "markdown": "A nonempty format value failed its requested decoder; command bytes remain in `result`.\n",
+          "signature": "Union{}",
+          "source": {
+            "file": "src/formats.jl",
+            "line": 38
+          }
+        }
+      ],
+      "exported": true,
+      "fields": [
+        {
+          "name": "field",
+          "type": "String"
+        },
+        {
+          "name": "expected",
+          "type": "DataType"
+        },
+        {
+          "name": "raw",
+          "type": "String"
+        },
+        {
+          "name": "result",
+          "type": "R"
+        }
+      ],
+      "id": "LibTmux.FormatValueError",
+      "kind": "type",
+      "methods": [
+        {
+          "documentation": [],
+          "identity": "Tuple{Type{LibTmux.FormatValueError{R}} where R, Vararg{Any, 4}}",
+          "kind": "constructor",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "field",
+              "type": "Any",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "expected",
+              "type": "Any",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "raw",
+              "type": "Any",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "result",
+              "type": "Any",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "(var\"#ctor-self#\"::Type{LibTmux.FormatValueError{R}} where R)(field, expected, raw, result)",
+          "source": {
+            "file": "src/formats.jl",
+            "line": 40
+          },
+          "sourceSignature": null,
+          "typeParameters": []
+        },
+        {
+          "documentation": [],
+          "identity": "Tuple{Type{LibTmux.FormatValueError}, String, DataType, String, R} where R",
+          "kind": "constructor",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "field",
+              "type": "String",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "expected",
+              "type": "DataType",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "raw",
+              "type": "String",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "result",
+              "type": "R",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "LibTmux.FormatValueError(field::String, expected::DataType, raw::String, result::R) where R",
+          "source": {
+            "file": "src/formats.jl",
+            "line": 40
+          },
+          "sourceSignature": null,
+          "typeParameters": [
+            "R"
+          ]
+        }
+      ],
+      "module": "LibTmux",
+      "mutable": false,
+      "name": "FormatValueError",
+      "package": "LibTmux",
+      "product": "core",
+      "public": true,
+      "qualifiedAccess": false,
+      "source": {
+        "file": "src/formats.jl",
+        "line": 38
+      },
+      "supertype": "LibTmux.LibTmuxError",
+      "supporting": false,
+      "type": "LibTmux.FormatValueError",
+      "typeArguments": [
+        "R"
+      ]
+    },
+    {
+      "abstract": false,
+      "aliasOf": null,
+      "definition": null,
+      "documentation": [
+        {
+          "fields": {},
+          "markdown": "Read-only scalar rows over one captured selection. Construct with `project_rows`. Column names and types survive empty selections. Retaining this projection retains its source snapshot. No operation refreshes data.\n",
+          "signature": "Union{}",
+          "source": {
+            "file": "src/projection.jl",
+            "line": 1
+          }
+        }
+      ],
+      "exported": true,
+      "fields": [
+        {
+          "name": "_selection",
+          "type": "S<:LibTmux.Selection"
+        }
+      ],
+      "id": "LibTmux.RowProjection",
+      "kind": "type",
+      "methods": [
+        {
+          "documentation": [],
+          "identity": "Tuple{Type{LibTmux.RowProjection{R, S}} where {R<:NamedTuple, S<:LibTmux.Selection}, Any}",
+          "kind": "constructor",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "_selection",
+              "type": "Any",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "(var\"#ctor-self#\"::Type{LibTmux.RowProjection{R, S}} where {R<:NamedTuple, S<:LibTmux.Selection})(_selection)",
+          "source": {
+            "file": "src/projection.jl",
+            "line": 7
+          },
+          "sourceSignature": null,
+          "typeParameters": []
+        }
+      ],
+      "module": "LibTmux",
+      "mutable": false,
+      "name": "RowProjection",
+      "package": "LibTmux",
+      "product": "core",
+      "public": true,
+      "qualifiedAccess": false,
+      "source": {
+        "file": "src/projection.jl",
+        "line": 1
+      },
+      "supertype": "AbstractArray{R<:NamedTuple, 1}",
+      "supporting": false,
+      "type": "LibTmux.RowProjection",
+      "typeArguments": [
+        "R<:NamedTuple",
+        "S<:LibTmux.Selection"
+      ]
+    },
+    {
+      "abstract": false,
+      "aliasOf": null,
+      "definition": null,
+      "documentation": [
+        {
+          "fields": {},
+          "markdown": "```julia\nSelection(items; snapshot=nothing)\n```\n\nRead-only, ordered membership copied from `items`. Filtering preserves its element type, order, duplicates and snapshot provenance. A small selection may retain its entire snapshot. `collect`, `map` and `similar` return ordinary mutable arrays. Elements supplied by callers are not recursively frozen.\n",
+          "signature": "Union{}",
+          "source": {
+            "file": "src/model.jl",
+            "line": 157
+          }
+        }
+      ],
+      "exported": true,
+      "fields": [
+        {
+          "name": "_items",
+          "type": "Array{T, 1}"
+        },
+        {
+          "name": "_snapshot",
+          "type": "Union{Nothing, LibTmux.Snapshot}"
+        }
+      ],
+      "id": "LibTmux.Selection",
+      "kind": "type",
+      "methods": [
+        {
+          "documentation": [],
+          "identity": "Tuple{Type{LibTmux.Selection{T}}, Base.AbstractVector{T}, Union{Nothing, LibTmux.Snapshot}} where T",
+          "kind": "constructor",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "items",
+              "type": "AbstractArray{T, 1}",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "snapshot",
+              "type": "Union{Nothing, LibTmux.Snapshot}",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "LibTmux.Selection{T}(items::AbstractVector{T}, snapshot::Union{Nothing, LibTmux.Snapshot}) where T",
+          "source": {
+            "file": "src/model.jl",
+            "line": 169
+          },
+          "sourceSignature": "Selection{T}(items::AbstractVector{T}, snapshot::Union{Nothing, Snapshot}) where T",
+          "typeParameters": [
+            "T"
+          ]
+        },
+        {
+          "documentation": [],
+          "identity": "Tuple{Type{LibTmux.Selection}, Base.AbstractVector{T}} where T",
+          "kind": "constructor",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "items",
+              "type": "AbstractArray{T, 1}",
+              "variadic": false
+            },
+            {
+              "default": "nothing",
+              "keyword": true,
+              "name": "snapshot",
+              "type": "Union{Nothing, Snapshot}",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "LibTmux.Selection(items::AbstractVector{T}; snapshot) where T",
+          "source": {
+            "file": "src/model.jl",
+            "line": 182
+          },
+          "sourceSignature": "Selection(items::AbstractVector{T}; snapshot::Union{Nothing, Snapshot} = nothing) where T",
+          "typeParameters": [
+            "T"
+          ]
+        }
+      ],
+      "module": "LibTmux",
+      "mutable": false,
+      "name": "Selection",
+      "package": "LibTmux",
+      "product": "core",
+      "public": true,
+      "qualifiedAccess": false,
+      "source": {
+        "file": "src/model.jl",
+        "line": 157
+      },
+      "supertype": "AbstractArray{T, 1}",
+      "supporting": false,
+      "type": "LibTmux.Selection",
+      "typeArguments": [
+        "T"
+      ]
+    },
+    {
+      "abstract": false,
+      "aliasOf": null,
+      "definition": null,
+      "documentation": [
+        {
+          "fields": {},
+          "markdown": "```julia\nServer(; socket_path=nothing, socket_name=nothing, tmux=\"tmux\")\n```\n\nDescribe a tmux endpoint without contacting it. Supply exactly one socket selector. A description does not own a daemon or any sessions. Use `from_env` to opt into the ambient tmux endpoint.\n",
+          "signature": "Union{}",
+          "source": {
+            "file": "src/server.jl",
+            "line": 1
+          }
+        }
+      ],
+      "exported": true,
+      "fields": [
+        {
+          "name": "socket_path",
+          "type": "Union{Nothing, String}"
+        },
+        {
+          "name": "socket_name",
+          "type": "Union{Nothing, String}"
+        },
+        {
+          "name": "tmux",
+          "type": "String"
+        }
+      ],
+      "id": "LibTmux.Server",
+      "kind": "type",
+      "methods": [
+        {
+          "documentation": [],
+          "identity": "Tuple{Type{LibTmux.Server}}",
+          "kind": "constructor",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": "nothing",
+              "keyword": true,
+              "name": "socket_path",
+              "type": null,
+              "variadic": false
+            },
+            {
+              "default": "nothing",
+              "keyword": true,
+              "name": "socket_name",
+              "type": null,
+              "variadic": false
+            },
+            {
+              "default": "\"tmux\"",
+              "keyword": true,
+              "name": "tmux",
+              "type": null,
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "LibTmux.Server(; socket_path, socket_name, tmux)",
+          "source": {
+            "file": "src/server.jl",
+            "line": 13
+          },
+          "sourceSignature": "Server(; socket_path = nothing, socket_name = nothing, tmux = \"tmux\")",
+          "typeParameters": []
+        }
+      ],
+      "module": "LibTmux",
+      "mutable": false,
+      "name": "Server",
+      "package": "LibTmux",
+      "product": "core",
+      "public": true,
+      "qualifiedAccess": false,
+      "source": {
+        "file": "src/server.jl",
+        "line": 1
+      },
+      "supertype": "Any",
+      "supporting": false,
+      "type": "LibTmux.Server",
+      "typeArguments": []
+    },
+    {
+      "abstract": false,
+      "aliasOf": "LibTmux.TmuxID",
+      "definition": "TmuxID{:session}",
+      "documentation": [],
+      "exported": true,
+      "fields": [
+        {
+          "name": "value",
+          "type": "String"
+        }
+      ],
+      "id": "LibTmux.SessionID",
+      "kind": "type",
+      "methods": [
+        {
+          "documentation": [],
+          "identity": "Tuple{Type{LibTmux.TmuxID{Kind}}, AbstractString} where Kind",
+          "kind": "constructor",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "value",
+              "type": "AbstractString",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "LibTmux.TmuxID{Kind}(value::AbstractString) where Kind",
+          "source": {
+            "file": "src/model.jl",
+            "line": 25
+          },
+          "sourceSignature": "TmuxID{Kind}(value::AbstractString) where Kind",
+          "typeParameters": [
+            "Kind"
+          ]
+        },
+        {
+          "documentation": [],
+          "identity": "Tuple{Type{LibTmux.TmuxID{K}}, LibTmux.TmuxID{K}} where K",
+          "kind": "constructor",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "id",
+              "type": "LibTmux.TmuxID{K}",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "LibTmux.TmuxID{K}(id::LibTmux.TmuxID{K}) where K",
+          "source": {
+            "file": "src/model.jl",
+            "line": 40
+          },
+          "sourceSignature": "TmuxID{K}(id::TmuxID{K}) where K",
+          "typeParameters": [
+            "K"
+          ]
+        }
+      ],
+      "module": "LibTmux",
+      "mutable": false,
+      "name": "SessionID",
+      "package": "LibTmux",
+      "product": "core",
+      "public": true,
+      "qualifiedAccess": false,
+      "source": {
+        "file": "src/model.jl",
+        "line": 41
+      },
+      "supertype": "LibTmux.EntityID",
+      "supporting": false,
+      "type": "LibTmux.SessionID",
+      "typeArguments": [
+        ":session"
+      ]
+    },
+    {
+      "abstract": false,
+      "aliasOf": "LibTmux.EntityRef",
+      "definition": "EntityRef{SessionID}",
+      "documentation": [],
+      "exported": true,
+      "fields": [
+        {
+          "name": "server",
+          "type": "LibTmux.ServerIdentity"
+        },
+        {
+          "name": "id",
+          "type": "LibTmux.SessionID"
+        }
+      ],
+      "id": "LibTmux.SessionRef",
+      "kind": "type",
+      "methods": [
+        {
+          "documentation": [],
+          "identity": "Tuple{Type{LibTmux.EntityRef{I}}, LibTmux.ServerIdentity, Any} where I<:LibTmux.EntityID",
+          "kind": "constructor",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "server",
+              "type": "LibTmux.ServerIdentity",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "id",
+              "type": "Any",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "LibTmux.EntityRef{I}(server::LibTmux.ServerIdentity, id) where I<:EntityID",
+          "source": {
+            "file": "src/model.jl",
+            "line": 76
+          },
+          "sourceSignature": "EntityRef{I}(server::ServerIdentity, id) where I <: EntityID",
+          "typeParameters": [
+            "I<:LibTmux.EntityID"
+          ]
+        }
+      ],
+      "module": "LibTmux",
+      "mutable": false,
+      "name": "SessionRef",
+      "package": "LibTmux",
+      "product": "core",
+      "public": true,
+      "qualifiedAccess": false,
+      "source": {
+        "file": "src/model.jl",
+        "line": 78
+      },
+      "supertype": "Any",
+      "supporting": false,
+      "type": "LibTmux.SessionRef",
+      "typeArguments": [
+        "LibTmux.SessionID"
+      ]
+    },
+    {
+      "abstract": false,
+      "aliasOf": null,
+      "definition": null,
+      "documentation": [],
+      "exported": true,
+      "fields": [
+        {
+          "name": "_snapshot",
+          "type": "LibTmux.Snapshot"
+        },
+        {
+          "name": "_index",
+          "type": "Int64"
+        }
+      ],
+      "id": "LibTmux.SessionSnapshot",
+      "kind": "type",
+      "methods": [
+        {
+          "documentation": [],
+          "identity": "Tuple{Type{LibTmux.SessionSnapshot}, Any, Any}",
+          "kind": "constructor",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "_snapshot",
+              "type": "Any",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "_index",
+              "type": "Any",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "LibTmux.SessionSnapshot(_snapshot, _index)",
+          "source": {
+            "file": "src/model.jl",
+            "line": 139
+          },
+          "sourceSignature": null,
+          "typeParameters": []
+        },
+        {
+          "documentation": [],
+          "identity": "Tuple{Type{LibTmux.SessionSnapshot}, LibTmux.Snapshot, Int64}",
+          "kind": "constructor",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "_snapshot",
+              "type": "LibTmux.Snapshot",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "_index",
+              "type": "Int64",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "LibTmux.SessionSnapshot(_snapshot::LibTmux.Snapshot, _index::Int64)",
+          "source": {
+            "file": "src/model.jl",
+            "line": 139
+          },
+          "sourceSignature": null,
+          "typeParameters": []
+        }
+      ],
+      "module": "LibTmux",
+      "mutable": false,
+      "name": "SessionSnapshot",
+      "package": "LibTmux",
+      "product": "core",
+      "public": true,
+      "qualifiedAccess": false,
+      "source": {
+        "file": "src/model.jl",
+        "line": 139
+      },
+      "supertype": "LibTmux.EntitySnapshot",
+      "supporting": false,
+      "type": "LibTmux.SessionSnapshot",
+      "typeArguments": []
+    },
+    {
+      "abstract": false,
+      "aliasOf": null,
+      "definition": null,
+      "documentation": [
+        {
+          "fields": {},
+          "markdown": "A validated tmux numeric ID whose type fixes its entity kind.\n",
+          "signature": "Union{}",
+          "source": {
+            "file": "src/model.jl",
+            "line": 21
+          }
+        }
+      ],
+      "exported": false,
+      "fields": [
+        {
+          "name": "value",
+          "type": "String"
+        }
+      ],
+      "id": "LibTmux.TmuxID",
+      "kind": "type",
+      "methods": [
+        {
+          "documentation": [],
+          "identity": "Tuple{Type{LibTmux.TmuxID{Kind}}, AbstractString} where Kind",
+          "kind": "constructor",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "value",
+              "type": "AbstractString",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "LibTmux.TmuxID{Kind}(value::AbstractString) where Kind",
+          "source": {
+            "file": "src/model.jl",
+            "line": 25
+          },
+          "sourceSignature": "TmuxID{Kind}(value::AbstractString) where Kind",
+          "typeParameters": [
+            "Kind"
+          ]
+        },
+        {
+          "documentation": [],
+          "identity": "Tuple{Type{LibTmux.TmuxID{K}}, LibTmux.TmuxID{K}} where K",
+          "kind": "constructor",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "id",
+              "type": "LibTmux.TmuxID{K}",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "LibTmux.TmuxID{K}(id::LibTmux.TmuxID{K}) where K",
+          "source": {
+            "file": "src/model.jl",
+            "line": 40
+          },
+          "sourceSignature": "TmuxID{K}(id::TmuxID{K}) where K",
+          "typeParameters": [
+            "K"
+          ]
+        }
+      ],
+      "module": "LibTmux",
+      "mutable": false,
+      "name": "TmuxID",
+      "package": "LibTmux",
+      "product": "core",
+      "public": false,
+      "qualifiedAccess": false,
+      "source": {
+        "file": "src/model.jl",
+        "line": 21
+      },
+      "supertype": "LibTmux.EntityID",
+      "supporting": true,
+      "type": "LibTmux.TmuxID",
+      "typeArguments": [
+        "Kind"
+      ]
+    },
+    {
+      "abstract": false,
+      "aliasOf": "LibTmux.TmuxID",
+      "definition": "TmuxID{:window}",
+      "documentation": [],
+      "exported": true,
+      "fields": [
+        {
+          "name": "value",
+          "type": "String"
+        }
+      ],
+      "id": "LibTmux.WindowID",
+      "kind": "type",
+      "methods": [
+        {
+          "documentation": [],
+          "identity": "Tuple{Type{LibTmux.TmuxID{Kind}}, AbstractString} where Kind",
+          "kind": "constructor",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "value",
+              "type": "AbstractString",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "LibTmux.TmuxID{Kind}(value::AbstractString) where Kind",
+          "source": {
+            "file": "src/model.jl",
+            "line": 25
+          },
+          "sourceSignature": "TmuxID{Kind}(value::AbstractString) where Kind",
+          "typeParameters": [
+            "Kind"
+          ]
+        },
+        {
+          "documentation": [],
+          "identity": "Tuple{Type{LibTmux.TmuxID{K}}, LibTmux.TmuxID{K}} where K",
+          "kind": "constructor",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "id",
+              "type": "LibTmux.TmuxID{K}",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "LibTmux.TmuxID{K}(id::LibTmux.TmuxID{K}) where K",
+          "source": {
+            "file": "src/model.jl",
+            "line": 40
+          },
+          "sourceSignature": "TmuxID{K}(id::TmuxID{K}) where K",
+          "typeParameters": [
+            "K"
+          ]
+        }
+      ],
+      "module": "LibTmux",
+      "mutable": false,
+      "name": "WindowID",
+      "package": "LibTmux",
+      "product": "core",
+      "public": true,
+      "qualifiedAccess": false,
+      "source": {
+        "file": "src/model.jl",
+        "line": 42
+      },
+      "supertype": "LibTmux.EntityID",
+      "supporting": false,
+      "type": "LibTmux.WindowID",
+      "typeArguments": [
+        ":window"
+      ]
+    },
+    {
+      "abstract": false,
+      "aliasOf": null,
+      "definition": null,
+      "documentation": [
+        {
+          "fields": {},
+          "markdown": "```julia\nfrom_env(; env=ENV, socket_path=nothing, socket_name=nothing, tmux=\"tmux\")\n```\n\nRead the endpoint from `TMUX`, or select the named `default` socket when it is absent. Explicit selectors take precedence. This function performs no I/O.\n",
+          "signature": "Tuple{}",
+          "source": {
+            "file": "src/server.jl",
+            "line": 35
+          }
+        }
+      ],
+      "exported": true,
+      "fields": [],
+      "id": "LibTmux.from_env",
+      "kind": "function",
+      "methods": [
+        {
+          "documentation": [
+            {
+              "fields": {},
+              "markdown": "```julia\nfrom_env(; env=ENV, socket_path=nothing, socket_name=nothing, tmux=\"tmux\")\n```\n\nRead the endpoint from `TMUX`, or select the named `default` socket when it is absent. Explicit selectors take precedence. This function performs no I/O.\n",
+              "signature": "Tuple{}",
+              "source": {
+                "file": "src/server.jl",
+                "line": 35
+              }
+            }
+          ],
+          "identity": "Tuple{typeof(LibTmux.from_env)}",
+          "kind": "function",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": "ENV",
+              "keyword": true,
+              "name": "env",
+              "type": null,
+              "variadic": false
+            },
+            {
+              "default": "nothing",
+              "keyword": true,
+              "name": "socket_path",
+              "type": null,
+              "variadic": false
+            },
+            {
+              "default": "nothing",
+              "keyword": true,
+              "name": "socket_name",
+              "type": null,
+              "variadic": false
+            },
+            {
+              "default": "\"tmux\"",
+              "keyword": true,
+              "name": "tmux",
+              "type": null,
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "from_env(; env, socket_path, socket_name, tmux)",
+          "source": {
+            "file": "src/server.jl",
+            "line": 41
+          },
+          "sourceSignature": "from_env(; env = ENV, socket_path = nothing, socket_name = nothing, tmux = \"tmux\")",
+          "typeParameters": []
+        }
+      ],
+      "module": "LibTmux",
+      "mutable": false,
+      "name": "from_env",
+      "package": "LibTmux",
+      "product": "core",
+      "public": true,
+      "qualifiedAccess": false,
+      "source": {
+        "file": "src/server.jl",
+        "line": 35
+      },
+      "supertype": null,
+      "supporting": false,
+      "type": "typeof(LibTmux.from_env)",
+      "typeArguments": []
+    },
+    {
+      "abstract": false,
+      "aliasOf": null,
+      "definition": null,
+      "documentation": [
+        {
+          "fields": {},
+          "markdown": "```julia\nkill_session(server, target; timeout=5.0, cancel=nothing, strict=false)\n```\n\nRemove the referenced tmux object and return its `CommandResult`. Identity checks are best effort; `strict=true` refuses execution. Failures after submission may have remote effects and are never retried.\n",
+          "signature": "Union{}",
+          "source": {
+            "file": "src/operations.jl",
+            "line": 286
+          }
+        },
+        {
+          "fields": {},
+          "markdown": "```julia\nkill_session(connection::ControlConnection, target; kwargs...)\n```\n\nExecute `kill-session` against an exact ID on the pinned daemon. Return `ControlResult` after the completion fence. Removing the session carrying this connection, its last window, or its last pane may close the connection before the fence; that outcome raises an uncertain-effect error. No retry, reconnect or subprocess fallback occurs.\n",
+          "signature": "Tuple{LibTmux.ControlConnection, LibTmux.SessionRef}",
+          "source": {
+            "file": "src/control_topology.jl",
+            "line": 68
+          }
+        }
+      ],
+      "exported": true,
+      "fields": [],
+      "id": "LibTmux.kill_session",
+      "kind": "function",
+      "methods": [
+        {
+          "documentation": [
+            {
+              "fields": {},
+              "markdown": "```julia\nkill_session(connection::ControlConnection, target; kwargs...)\n```\n\nExecute `kill-session` against an exact ID on the pinned daemon. Return `ControlResult` after the completion fence. Removing the session carrying this connection, its last window, or its last pane may close the connection before the fence; that outcome raises an uncertain-effect error. No retry, reconnect or subprocess fallback occurs.\n",
+              "signature": "Tuple{LibTmux.ControlConnection, LibTmux.SessionRef}",
+              "source": {
+                "file": "src/control_topology.jl",
+                "line": 68
+              }
+            }
+          ],
+          "identity": "Tuple{typeof(LibTmux.kill_session), LibTmux.ControlConnection, LibTmux.SessionRef}",
+          "kind": "function",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "connection",
+              "type": "LibTmux.ControlConnection",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "target",
+              "type": "LibTmux.SessionRef",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": true,
+              "name": "kwargs",
+              "type": null,
+              "variadic": true
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "kill_session(connection::LibTmux.ControlConnection, target::LibTmux.SessionRef; kwargs...)",
+          "source": {
+            "file": "src/control_topology.jl",
+            "line": 64
+          },
+          "sourceSignature": "($(Expr(:$, :operation)))(connection::ControlConnection, target::$(Expr(:$, :Ref)); kwargs...)",
+          "typeParameters": []
+        },
+        {
+          "documentation": [],
+          "identity": "Tuple{typeof(LibTmux.kill_session), LibTmux.Server, LibTmux.SessionRef}",
+          "kind": "function",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "server",
+              "type": "LibTmux.Server",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "target",
+              "type": "LibTmux.SessionRef",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": true,
+              "name": "kwargs",
+              "type": null,
+              "variadic": true
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "kill_session(server::LibTmux.Server, target::LibTmux.SessionRef; kwargs...)",
+          "source": {
+            "file": "src/operations.jl",
+            "line": 282
+          },
+          "sourceSignature": "($(Expr(:$, :operation)))(server::Server, target::$(Expr(:$, :Ref)); kwargs...)",
+          "typeParameters": []
+        }
+      ],
+      "module": "LibTmux",
+      "mutable": false,
+      "name": "kill_session",
+      "package": "LibTmux",
+      "product": "core",
+      "public": true,
+      "qualifiedAccess": false,
+      "source": {
+        "file": "src/operations.jl",
+        "line": 286
+      },
+      "supertype": null,
+      "supporting": false,
+      "type": "typeof(LibTmux.kill_session)",
+      "typeArguments": []
+    },
+    {
+      "abstract": false,
+      "aliasOf": null,
+      "definition": null,
+      "documentation": [
+        {
+          "fields": {},
+          "markdown": "```julia\nread_where_json(text; limits=WhereLimits(), max_input_bytes=8388608)\n```\n\nRead criteria JSON after `using JSON` loads the optional codec extension. Input byte, nesting and token bounds are checked before JSON materialization; duplicate keys and invalid JSON raise `WireCriteriaError`.\n",
+          "signature": "Union{}",
+          "source": {
+            "file": "src/wire.jl",
+            "line": 69
+          }
+        }
+      ],
+      "exported": true,
+      "fields": [],
+      "id": "LibTmux.read_where_json",
+      "kind": "function",
+      "methods": [
+        {
+          "documentation": [],
+          "identity": "Tuple{typeof(LibTmux.read_where_json), AbstractString}",
+          "kind": "function",
+          "module": "LibTmuxJSONExt",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "text",
+              "type": "AbstractString",
+              "variadic": false
+            },
+            {
+              "default": "WhereLimits()",
+              "keyword": true,
+              "name": "limits",
+              "type": "WhereLimits",
+              "variadic": false
+            },
+            {
+              "default": "8 * 1024 ^ 2",
+              "keyword": true,
+              "name": "max_input_bytes",
+              "type": "Int",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": true,
+          "signature": "read_where_json(text::AbstractString; limits, max_input_bytes)",
+          "source": {
+            "file": "ext/LibTmuxJSONExt.jl",
+            "line": 58
+          },
+          "sourceSignature": "LibTmux.read_where_json(text::AbstractString; limits::WhereLimits = WhereLimits(), max_input_bytes::Int = 8 * 1024 ^ 2)",
+          "typeParameters": []
+        }
+      ],
+      "module": "LibTmux",
+      "mutable": false,
+      "name": "read_where_json",
+      "package": "LibTmux",
+      "product": "core",
+      "public": true,
+      "qualifiedAccess": false,
+      "source": {
+        "file": "src/wire.jl",
+        "line": 69
+      },
+      "supertype": null,
+      "supporting": false,
+      "type": "typeof(LibTmux.read_where_json)",
+      "typeArguments": []
+    },
+    {
+      "abstract": false,
+      "aliasOf": null,
+      "definition": null,
+      "documentation": [
+        {
+          "fields": {},
+          "markdown": "```julia\nset_option(server, scope, name, value; index=nothing, kwargs...)\n```\n\nPass a value to tmux without format expansion and return `CommandResult`. Scope and names follow `get_option`. tmux applies each option's value rules, including flag and numeric parsing. Without an index, its whole-array assignment rules apply. For executable command bodies use `set_hook`.\n",
+          "signature": "Tuple{LibTmux.Server, Any, AbstractString, AbstractString}",
+          "source": {
+            "file": "src/configuration.jl",
+            "line": 260
+          }
+        },
+        {
+          "fields": {},
+          "markdown": "```julia\nset_option(connection::ControlConnection, scope, name, value; index=nothing, kwargs...)\n```\n\nSet an exact option without format expansion. Unrestricted string options and string arrays preserve literal tabs/newlines. Numeric, flag, choice, colour, key, style and other validated options require printable UTF-8 values because tmux may reflect an invalid value in control diagnostics. tmux validates the remaining value rules. Scalar command options use `set_hook`'s literal grammar; an empty value stores an empty command list. Hook arrays require `set_hook`. Return `ControlResult`; cancellation does not roll back an admitted mutation.\n",
+          "signature": "Tuple{LibTmux.ControlConnection, Any, AbstractString, AbstractString}",
+          "source": {
+            "file": "src/control_options.jl",
+            "line": 230
+          }
+        }
+      ],
+      "exported": true,
+      "fields": [],
+      "id": "LibTmux.set_option",
+      "kind": "function",
+      "methods": [
+        {
+          "documentation": [
+            {
+              "fields": {},
+              "markdown": "```julia\nset_option(connection::ControlConnection, scope, name, value; index=nothing, kwargs...)\n```\n\nSet an exact option without format expansion. Unrestricted string options and string arrays preserve literal tabs/newlines. Numeric, flag, choice, colour, key, style and other validated options require printable UTF-8 values because tmux may reflect an invalid value in control diagnostics. tmux validates the remaining value rules. Scalar command options use `set_hook`'s literal grammar; an empty value stores an empty command list. Hook arrays require `set_hook`. Return `ControlResult`; cancellation does not roll back an admitted mutation.\n",
+              "signature": "Tuple{LibTmux.ControlConnection, Any, AbstractString, AbstractString}",
+              "source": {
+                "file": "src/control_options.jl",
+                "line": 230
+              }
+            }
+          ],
+          "identity": "Tuple{typeof(LibTmux.set_option), LibTmux.ControlConnection, Any, AbstractString, AbstractString}",
+          "kind": "function",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "connection",
+              "type": "LibTmux.ControlConnection",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "scope",
+              "type": "Any",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "name",
+              "type": "AbstractString",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "value",
+              "type": "AbstractString",
+              "variadic": false
+            },
+            {
+              "default": "nothing",
+              "keyword": true,
+              "name": "index",
+              "type": null,
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": true,
+              "name": "kwargs",
+              "type": null,
+              "variadic": true
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "set_option(connection::LibTmux.ControlConnection, scope, name::AbstractString, value::AbstractString; index, kwargs...)",
+          "source": {
+            "file": "src/control_options.jl",
+            "line": 241
+          },
+          "sourceSignature": "set_option(connection::ControlConnection, scope, name::AbstractString, value::AbstractString; index = nothing, kwargs...)",
+          "typeParameters": []
+        },
+        {
+          "documentation": [
+            {
+              "fields": {},
+              "markdown": "```julia\nset_option(server, scope, name, value; index=nothing, kwargs...)\n```\n\nPass a value to tmux without format expansion and return `CommandResult`. Scope and names follow `get_option`. tmux applies each option's value rules, including flag and numeric parsing. Without an index, its whole-array assignment rules apply. For executable command bodies use `set_hook`.\n",
+              "signature": "Tuple{LibTmux.Server, Any, AbstractString, AbstractString}",
+              "source": {
+                "file": "src/configuration.jl",
+                "line": 260
+              }
+            }
+          ],
+          "identity": "Tuple{typeof(LibTmux.set_option), LibTmux.Server, Any, AbstractString, AbstractString}",
+          "kind": "function",
+          "module": "LibTmux",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "server",
+              "type": "LibTmux.Server",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "scope",
+              "type": "Any",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "name",
+              "type": "AbstractString",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "value",
+              "type": "AbstractString",
+              "variadic": false
+            },
+            {
+              "default": "nothing",
+              "keyword": true,
+              "name": "index",
+              "type": null,
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": true,
+              "name": "kwargs",
+              "type": null,
+              "variadic": true
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "set_option(server::LibTmux.Server, scope, name::AbstractString, value::AbstractString; index, kwargs...)",
+          "source": {
+            "file": "src/configuration.jl",
+            "line": 268
+          },
+          "sourceSignature": "set_option(server::Server, scope, name::AbstractString, value::AbstractString; index = nothing, kwargs...)",
+          "typeParameters": []
+        }
+      ],
+      "module": "LibTmux",
+      "mutable": false,
+      "name": "set_option",
+      "package": "LibTmux",
+      "product": "core",
+      "public": true,
+      "qualifiedAccess": false,
+      "source": {
+        "file": "src/configuration.jl",
+        "line": 260
+      },
+      "supertype": null,
+      "supporting": false,
+      "type": "typeof(LibTmux.set_option)",
+      "typeArguments": []
+    },
+    {
+      "abstract": false,
+      "aliasOf": null,
+      "definition": null,
+      "documentation": [
+        {
+          "fields": {},
+          "markdown": "```julia\nApplication(server; caller=nothing, allowed_tools=(\"list_panes\", \"capture_pane\", \"send_keys\"),\n            allowed_panes=nothing, allow_create=false, timeout=5.0,\n            max_capture_bytes=65536, max_result_bytes=1048576)\n```\n\nConfigure an MCP application without I/O. `server` is an explicit borrowed endpoint. Omitted pane targets use only `caller`; there is no ambient/current pane fallback. `allowed_panes=nothing` permits any explicitly addressed pane; otherwise copy the supplied generation-bound references as the allowlist. Tool names and pane policy also apply to each item in `run_operations`.\n\nCreation requires both an enabled `create_session` tool and `allow_create=true`. The application owns those sessions and their observed panes, and tears down its sessions on `close`. It never owns the borrowed daemon or caller session.\n",
+          "signature": "Union{}",
+          "source": {
+            "file": "packages/LibTmuxMCP/src/tools.jl",
+            "line": 48
+          }
+        }
+      ],
+      "exported": true,
+      "fields": [
+        {
+          "name": "server",
+          "type": "LibTmux.Server"
+        },
+        {
+          "name": "caller",
+          "type": "Union{Nothing, LibTmux.PaneRef}"
+        },
+        {
+          "name": "allowed_tools",
+          "type": "Tuple{Vararg{String}}"
+        },
+        {
+          "name": "allow_create",
+          "type": "Bool"
+        },
+        {
+          "name": "timeout",
+          "type": "Float64"
+        },
+        {
+          "name": "max_capture_bytes",
+          "type": "Int64"
+        },
+        {
+          "name": "max_result_bytes",
+          "type": "Int64"
+        },
+        {
+          "name": "_allowed_panes",
+          "type": "Union{Nothing, Base.Vector{LibTmux.PaneRef}}"
+        },
+        {
+          "name": "_condition",
+          "type": "Base.GenericCondition{Base.ReentrantLock}"
+        },
+        {
+          "name": "_state",
+          "type": "Base.RefValue{Symbol}"
+        },
+        {
+          "name": "_next",
+          "type": "Base.RefValue{UInt64}"
+        },
+        {
+          "name": "_active",
+          "type": "Base.Dict{UInt64, LibTmuxMCP._ApplicationCall}"
+        },
+        {
+          "name": "_owned",
+          "type": "Base.Dict{LibTmux.SessionRef, Base.Vector{LibTmux.PaneRef}}"
+        },
+        {
+          "name": "_creating",
+          "type": "Base.RefValue{Int64}"
+        }
+      ],
+      "id": "LibTmuxMCP.Application",
+      "kind": "type",
+      "methods": [
+        {
+          "documentation": [],
+          "identity": "Tuple{Type{LibTmuxMCP.Application}, LibTmux.Server, Union{Nothing, LibTmux.PaneRef}, Tuple{Vararg{String}}, Bool, Float64, Int64, Int64, Union{Nothing, Base.Vector{LibTmux.PaneRef}}, Base.GenericCondition{Base.ReentrantLock}, Base.RefValue{Symbol}, Base.RefValue{UInt64}, Base.Dict{UInt64, LibTmuxMCP._ApplicationCall}, Base.Dict{LibTmux.SessionRef, Base.Vector{LibTmux.PaneRef}}, Base.RefValue{Int64}}",
+          "kind": "constructor",
+          "module": "LibTmuxMCP",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "server",
+              "type": "LibTmux.Server",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "caller",
+              "type": "Union{Nothing, LibTmux.PaneRef}",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "allowed_tools",
+              "type": "Tuple{Vararg{String}}",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "allow_create",
+              "type": "Bool",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "timeout",
+              "type": "Float64",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "max_capture_bytes",
+              "type": "Int64",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "max_result_bytes",
+              "type": "Int64",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "_allowed_panes",
+              "type": "Union{Nothing, Base.Vector{LibTmux.PaneRef}}",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "_condition",
+              "type": "Base.GenericCondition{Base.ReentrantLock}",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "_state",
+              "type": "Base.RefValue{Symbol}",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "_next",
+              "type": "Base.RefValue{UInt64}",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "_active",
+              "type": "Base.Dict{UInt64, LibTmuxMCP._ApplicationCall}",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "_owned",
+              "type": "Base.Dict{LibTmux.SessionRef, Base.Vector{LibTmux.PaneRef}}",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "_creating",
+              "type": "Base.RefValue{Int64}",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "LibTmuxMCP.Application(server::LibTmux.Server, caller::Union{Nothing, LibTmux.PaneRef}, allowed_tools::Tuple{Vararg{String}}, allow_create::Bool, timeout::Float64, max_capture_bytes::Int64, max_result_bytes::Int64, _allowed_panes::Union{Nothing, Vector{LibTmux.PaneRef}}, _condition::Base.GenericCondition{ReentrantLock}, _state::Base.RefValue{Symbol}, _next::Base.RefValue{UInt64}, _active::Dict{UInt64, LibTmuxMCP._ApplicationCall}, _owned::Dict{LibTmux.SessionRef, Vector{LibTmux.PaneRef}}, _creating::Base.RefValue{Int64})",
+          "source": {
+            "file": "packages/LibTmuxMCP/src/tools.jl",
+            "line": 64
+          },
+          "sourceSignature": null,
+          "typeParameters": []
+        },
+        {
+          "documentation": [],
+          "identity": "Tuple{Type{LibTmuxMCP.Application}, LibTmux.Server}",
+          "kind": "constructor",
+          "module": "LibTmuxMCP",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "server",
+              "type": "LibTmux.Server",
+              "variadic": false
+            },
+            {
+              "default": "nothing",
+              "keyword": true,
+              "name": "caller",
+              "type": "Union{Nothing, LibTmux.PaneRef}",
+              "variadic": false
+            },
+            {
+              "default": "_ROUTINE_TOOLS",
+              "keyword": true,
+              "name": "allowed_tools",
+              "type": null,
+              "variadic": false
+            },
+            {
+              "default": "nothing",
+              "keyword": true,
+              "name": "allowed_panes",
+              "type": null,
+              "variadic": false
+            },
+            {
+              "default": "false",
+              "keyword": true,
+              "name": "allow_create",
+              "type": "Bool",
+              "variadic": false
+            },
+            {
+              "default": "5.0",
+              "keyword": true,
+              "name": "timeout",
+              "type": "Real",
+              "variadic": false
+            },
+            {
+              "default": "65536",
+              "keyword": true,
+              "name": "max_capture_bytes",
+              "type": "Int",
+              "variadic": false
+            },
+            {
+              "default": "1048576",
+              "keyword": true,
+              "name": "max_result_bytes",
+              "type": "Int",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "LibTmuxMCP.Application(server::LibTmux.Server; caller, allowed_tools, allowed_panes, allow_create, timeout, max_capture_bytes, max_result_bytes)",
+          "source": {
+            "file": "packages/LibTmuxMCP/src/tools.jl",
+            "line": 80
+          },
+          "sourceSignature": "Application(server::LibTmux.Server; caller::Union{Nothing, LibTmux.PaneRef} = nothing, allowed_tools = _ROUTINE_TOOLS, allowed_panes = nothing, allow_create::Bool = false, timeout::Real = 5.0, max_capture_bytes::Int = 65536, max_result_bytes::Int = 1048576)",
+          "typeParameters": []
+        },
+        {
+          "documentation": [],
+          "identity": "Tuple{Type{LibTmuxMCP.Application}, Vararg{Any, 14}}",
+          "kind": "constructor",
+          "module": "LibTmuxMCP",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "server",
+              "type": "Any",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "caller",
+              "type": "Any",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "allowed_tools",
+              "type": "Any",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "allow_create",
+              "type": "Any",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "timeout",
+              "type": "Any",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "max_capture_bytes",
+              "type": "Any",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "max_result_bytes",
+              "type": "Any",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "_allowed_panes",
+              "type": "Any",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "_condition",
+              "type": "Any",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "_state",
+              "type": "Any",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "_next",
+              "type": "Any",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "_active",
+              "type": "Any",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "_owned",
+              "type": "Any",
+              "variadic": false
+            },
+            {
+              "default": null,
+              "keyword": false,
+              "name": "_creating",
+              "type": "Any",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "LibTmuxMCP.Application(server, caller, allowed_tools, allow_create, timeout, max_capture_bytes, max_result_bytes, _allowed_panes, _condition, _state, _next, _active, _owned, _creating)",
+          "source": {
+            "file": "packages/LibTmuxMCP/src/tools.jl",
+            "line": 64
+          },
+          "sourceSignature": null,
+          "typeParameters": []
+        }
+      ],
+      "module": "LibTmuxMCP",
+      "mutable": false,
+      "name": "Application",
+      "package": "LibTmuxMCP",
+      "product": "mcp",
+      "public": true,
+      "qualifiedAccess": false,
+      "source": {
+        "file": "packages/LibTmuxMCP/src/tools.jl",
+        "line": 48
+      },
+      "supertype": "Any",
+      "supporting": false,
+      "type": "LibTmuxMCP.Application",
+      "typeArguments": []
+    },
+    {
+      "abstract": false,
+      "aliasOf": null,
+      "definition": null,
+      "documentation": [
+        {
+          "fields": {},
+          "markdown": "```julia\nparse_config(text; format=:yaml, source_path=nothing, limits=ConfigLimits())\n```\n\nParse one bounded UTF-8 YAML or JSON document. Reject duplicate keys before collapse, YAML aliases/merges and non-JSON tags. Preserve inert command text. A supplied source path must be absolute; parsing never reads that path.\n",
+          "signature": "Tuple{AbstractString}",
+          "source": {
+            "file": "packages/LibTmuxWorkspace/src/parser.jl",
+            "line": 98
+          }
+        }
+      ],
+      "exported": true,
+      "fields": [],
+      "id": "LibTmuxWorkspace.parse_config",
+      "kind": "function",
+      "methods": [
+        {
+          "documentation": [
+            {
+              "fields": {},
+              "markdown": "```julia\nparse_config(text; format=:yaml, source_path=nothing, limits=ConfigLimits())\n```\n\nParse one bounded UTF-8 YAML or JSON document. Reject duplicate keys before collapse, YAML aliases/merges and non-JSON tags. Preserve inert command text. A supplied source path must be absolute; parsing never reads that path.\n",
+              "signature": "Tuple{AbstractString}",
+              "source": {
+                "file": "packages/LibTmuxWorkspace/src/parser.jl",
+                "line": 98
+              }
+            }
+          ],
+          "identity": "Tuple{typeof(LibTmuxWorkspace.parse_config), AbstractString}",
+          "kind": "function",
+          "module": "LibTmuxWorkspace",
+          "parameters": [
+            {
+              "default": null,
+              "keyword": false,
+              "name": "text",
+              "type": "AbstractString",
+              "variadic": false
+            },
+            {
+              "default": ":yaml",
+              "keyword": true,
+              "name": "format",
+              "type": "Symbol",
+              "variadic": false
+            },
+            {
+              "default": "nothing",
+              "keyword": true,
+              "name": "source_path",
+              "type": null,
+              "variadic": false
+            },
+            {
+              "default": "ConfigLimits()",
+              "keyword": true,
+              "name": "limits",
+              "type": "ConfigLimits",
+              "variadic": false
+            }
+          ],
+          "receiver": null,
+          "requiresExtension": false,
+          "signature": "parse_config(text::AbstractString; format, source_path, limits)",
+          "source": {
+            "file": "packages/LibTmuxWorkspace/src/parser.jl",
+            "line": 105
+          },
+          "sourceSignature": "parse_config(text::AbstractString; format::Symbol = :yaml, source_path = nothing, limits::ConfigLimits = ConfigLimits())",
+          "typeParameters": []
+        }
+      ],
+      "module": "LibTmuxWorkspace",
+      "mutable": false,
+      "name": "parse_config",
+      "package": "LibTmuxWorkspace",
+      "product": "workspace",
+      "public": true,
+      "qualifiedAccess": false,
+      "source": {
+        "file": "packages/LibTmuxWorkspace/src/parser.jl",
+        "line": 98
+      },
+      "supertype": null,
+      "supporting": false,
+      "type": "typeof(LibTmuxWorkspace.parse_config)",
+      "typeArguments": []
+    }
+  ],
+  "fixture": {
+    "description": "Complete selected native Julia bindings and methods; module inventories restricted to these bindings.",
+    "sourceArtifactSha256": "c441a47b7f2ae34abf8f92b50911fde80400946727c28b3d9ad7fdf8c01be589"
+  }
+}

@@ -2,6 +2,48 @@
  "mentions": [
   {
    "port": "csharp",
+   "symbol": "LibTmux.CapturedRelation.IsCaptured",
+   "page": "/powershell/latest/concepts/captured-state/",
+   "title": "Captured state and I/O",
+   "section": "concepts"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.CapturedValue.IsCaptured",
+   "page": "/powershell/latest/guides/read/",
+   "title": "Read tmux objects",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.CapturedValue.Value",
+   "page": "/powershell/latest/guides/read/",
+   "title": "Read tmux objects",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Client.Generation",
+   "page": "/powershell/latest/guides/clients/",
+   "title": "Inspect attached clients",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Client.Name",
+   "page": "/powershell/latest/guides/clients/",
+   "title": "Inspect attached clients",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Client.Tty",
+   "page": "/powershell/latest/guides/clients/",
+   "title": "Inspect attached clients",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
    "symbol": "LibTmux.IncompleteSnapshotException",
    "page": "/topics/architecture/",
    "title": "Architecture",
@@ -177,6 +219,69 @@
   },
   {
    "port": "csharp",
+   "symbol": "LibTmux.PaneRunResult.AnchorLost",
+   "page": "/powershell/latest/guides/input/",
+   "title": "Send input to a pane",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.PaneRunResult.LinesMissed",
+   "page": "/powershell/latest/guides/input/",
+   "title": "Send input to a pane",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.PaneRunResult.TimedOut",
+   "page": "/powershell/latest/examples/command-completion/",
+   "title": "Check command completion",
+   "section": "examples"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.PaneRunResult.TimedOut",
+   "page": "/powershell/latest/guides/input/",
+   "title": "Send input to a pane",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.PaneWaitOutcome.PaneExited",
+   "page": "/powershell/latest/guides/input/",
+   "title": "Send input to a pane",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.PaneWaitOutcome.TimedOut",
+   "page": "/powershell/latest/guides/input/",
+   "title": "Send input to a pane",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.PaneWaitResult.AnchorLost",
+   "page": "/powershell/latest/guides/input/",
+   "title": "Send input to a pane",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.PaneWaitResult.LinesMissed",
+   "page": "/powershell/latest/guides/input/",
+   "title": "Send input to a pane",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Query.QueryPlan.RequiredSnapshotDepth",
+   "page": "/powershell/latest/guides/query/",
+   "title": "Filter and query tmux objects",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
    "symbol": "LibTmux.SendKeysRequest.Literal",
    "page": "/topics/pane-interaction/",
    "title": "Pane interaction",
@@ -202,6 +307,13 @@
    "page": "/csharp/latest/workspace/reference/",
    "title": "C# workspace builder API",
    "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Server",
+   "page": "/fsharp/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "csharp",
@@ -275,6 +387,13 @@
   },
   {
    "port": "csharp",
+   "symbol": "LibTmux.Server.Sessions",
+   "page": "/powershell/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "csharp",
    "symbol": "LibTmux.ServerConnectionOptions",
    "page": "/csharp/latest/workspace/internals/guides/",
    "title": "Use the C# workspace builder",
@@ -303,6 +422,13 @@
   },
   {
    "port": "csharp",
+   "symbol": "LibTmux.Session.ActivePane",
+   "page": "/powershell/latest/guides/read/",
+   "title": "Read tmux objects",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
    "symbol": "LibTmux.Session.ActiveWindow",
    "page": "/topics/traversal/",
    "title": "Traversal",
@@ -325,9 +451,72 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.Session.Panes",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Session.Panes",
    "page": "/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Session.Windows",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.SnapshotDepth.Panes",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "title": "Query fields",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.SnapshotDepth.Server",
+   "page": "/powershell/latest/guides/read/",
+   "title": "Read tmux objects",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.SnapshotDepth.Sessions",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "title": "Query fields",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.SnapshotDepth.Sessions",
+   "page": "/powershell/latest/guides/read/",
+   "title": "Read tmux objects",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.SnapshotDepth.Windows",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "title": "Query fields",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.SnapshotDepth.Windows",
+   "page": "/powershell/latest/guides/read/",
+   "title": "Read tmux objects",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.SnapshotMetadata.Elapsed",
+   "page": "/powershell/latest/guides/read/",
+   "title": "Read tmux objects",
+   "section": "guides"
   },
   {
    "port": "csharp",
@@ -415,6 +604,48 @@
   },
   {
    "port": "csharp",
+   "symbol": "LibTmux.TmuxEnvironmentEntry.Name",
+   "page": "/powershell/latest/guides/environment/",
+   "title": "Set the environment for new panes",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxEnvironmentEntry.Value",
+   "page": "/powershell/latest/guides/environment/",
+   "title": "Set the environment for new panes",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxHook.Name",
+   "page": "/powershell/latest/guides/hooks/",
+   "title": "Configure and run hooks",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxHook.Values",
+   "page": "/powershell/latest/guides/hooks/",
+   "title": "Configure and run hooks",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxHookEntry.Command",
+   "page": "/powershell/latest/guides/hooks/",
+   "title": "Configure and run hooks",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxHookEntry.Index",
+   "page": "/powershell/latest/guides/hooks/",
+   "title": "Configure and run hooks",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
    "symbol": "LibTmux.TmuxHooks.GetAllAsync",
    "page": "/topics/options-and-hooks/",
    "title": "Options and hooks",
@@ -457,6 +688,27 @@
   },
   {
    "port": "csharp",
+   "symbol": "LibTmux.TmuxOption.Index",
+   "page": "/powershell/latest/guides/options/",
+   "title": "Read and change options",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxOption.Name",
+   "page": "/powershell/latest/guides/options/",
+   "title": "Read and change options",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxOption.Value",
+   "page": "/powershell/latest/guides/options/",
+   "title": "Read and change options",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
    "symbol": "LibTmux.TmuxOptions.GetAllAsync",
    "page": "/topics/options-and-hooks/",
    "title": "Options and hooks",
@@ -482,6 +734,20 @@
    "page": "/topics/options-and-hooks/",
    "title": "Options and hooks",
    "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxOptionValue.Boolean",
+   "page": "/powershell/latest/guides/options/",
+   "title": "Read and change options",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxOptionValue.Raw",
+   "page": "/powershell/latest/guides/options/",
+   "title": "Read and change options",
+   "section": "guides"
   },
   {
    "port": "csharp",
@@ -535,6 +801,13 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.Window.ActivePane",
+   "page": "/powershell/latest/guides/read/",
+   "title": "Read tmux objects",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Window.ActivePane",
    "page": "/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
@@ -555,10 +828,45 @@
   },
   {
    "port": "csharp",
+   "symbol": "LibTmux.Window.Layout",
+   "page": "/powershell/latest/guides/layout/",
+   "title": "Arrange panes and resize windows",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Window.Panes",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
    "symbol": "LibTmux.Window.Session",
    "page": "/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceAction.Request",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceAction.Request",
+   "page": "/powershell/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceActionKind.CaptureResult",
+   "page": "/powershell/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
   },
   {
    "port": "csharp",
@@ -639,6 +947,34 @@
   },
   {
    "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceBuildException",
+   "page": "/powershell/latest/guides/troubleshooting/",
+   "title": "Troubleshooting",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceBuildException",
+   "page": "/powershell/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceBuildException.CompensationJournal",
+   "page": "/powershell/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceBuildException.Journal",
+   "page": "/powershell/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "csharp",
    "symbol": "LibTmux.Workspace.WorkspaceBuildException.PartialResult",
    "page": "/csharp/latest/workspace/internals/guides/",
    "title": "Use the C# workspace builder",
@@ -653,6 +989,13 @@
   },
   {
    "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceExistingSession.Append",
+   "page": "/powershell/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "csharp",
    "symbol": "LibTmux.Workspace.WorkspaceExistingSession.Replace",
    "page": "/csharp/latest/workspace/internals/topics/",
    "title": "C# workspace builder behavior",
@@ -660,10 +1003,24 @@
   },
   {
    "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceExistingSession.Replace",
+   "page": "/powershell/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "csharp",
    "symbol": "LibTmux.Workspace.WorkspaceExistingSession.Reuse",
    "page": "/csharp/latest/workspace/internals/topics/",
    "title": "C# workspace builder behavior",
    "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceExistingSession.Reuse",
+   "page": "/powershell/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
   },
   {
    "port": "csharp",
@@ -744,6 +1101,13 @@
   },
   {
    "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspacePlan.CompensationActions",
+   "page": "/powershell/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "csharp",
    "symbol": "LibTmux.Workspace.WorkspacePlanOptions",
    "page": "/csharp/latest/workspace/internals/topics/",
    "title": "C# workspace builder behavior",
@@ -758,16 +1122,16 @@
   },
   {
    "port": "csharp",
-   "symbol": "LibTmux.Workspace.WorkspaceReadiness.Cooperative",
-   "page": "/csharp/latest/workspace/internals/topics/",
-   "title": "C# workspace builder behavior",
+   "symbol": "LibTmux.Workspace.WorkspaceReadiness",
+   "page": "/csharp/latest/workspace/reference/",
+   "title": "C# workspace builder API",
    "section": "ports"
   },
   {
    "port": "csharp",
    "symbol": "LibTmux.Workspace.WorkspaceReadiness.Cooperative",
-   "page": "/csharp/latest/workspace/reference/",
-   "title": "C# workspace builder API",
+   "page": "/csharp/latest/workspace/internals/topics/",
+   "title": "C# workspace builder behavior",
    "section": "ports"
   },
   {
@@ -793,6 +1157,13 @@
   },
   {
    "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceResult.Session",
+   "page": "/powershell/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "csharp",
    "symbol": "LibTmux.Workspace.WorkspaceResult.Unsupported",
    "page": "/csharp/latest/workspace/internals/guides/",
    "title": "Use the C# workspace builder",
@@ -804,6 +1175,20 @@
    "page": "/csharp/latest/workspace/internals/topics/",
    "title": "C# workspace builder behavior",
    "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceServerStartup.CreateOrJoin",
+   "page": "/powershell/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceServerStartup.RequireExisting",
+   "page": "/powershell/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
   },
   {
    "port": "csharp",
@@ -1731,6 +2116,13 @@
   },
   {
    "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.cleanupFailure",
+   "page": "/fsharp/latest/topics/ownership/",
+   "title": "Native identity and ownership",
+   "section": "topics"
+  },
+  {
+   "port": "fsharp",
    "symbol": "LibTmux.FSharp.Control.enter",
    "page": "/fsharp/latest/guides/modes/",
    "title": "Execution modes",
@@ -1745,6 +2137,13 @@
   },
   {
    "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.enter",
+   "page": "/fsharp/latest/topics/ownership/",
+   "title": "Native identity and ownership",
+   "section": "topics"
+  },
+  {
+   "port": "fsharp",
    "symbol": "LibTmux.FSharp.Control.enterSession",
    "page": "/fsharp/latest/guides/modes/",
    "title": "Execution modes",
@@ -1756,6 +2155,13 @@
    "page": "/fsharp/latest/guides/streams/",
    "title": "Streams and cleanup",
    "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.enterSession",
+   "page": "/fsharp/latest/topics/ownership/",
+   "title": "Native identity and ownership",
+   "section": "topics"
   },
   {
    "port": "fsharp",
@@ -1780,6 +2186,13 @@
   },
   {
    "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.events",
+   "page": "/fsharp/latest/topics/observations/",
+   "title": "Streams and live state",
+   "section": "topics"
+  },
+  {
+   "port": "fsharp",
    "symbol": "LibTmux.FSharp.Control.foldWhile",
    "page": "/fsharp/latest/guides/modes/",
    "title": "Execution modes",
@@ -1791,6 +2204,20 @@
    "page": "/fsharp/latest/guides/streams/",
    "title": "Streams and cleanup",
    "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.foldWhile",
+   "page": "/fsharp/latest/topics/observations/",
+   "title": "Streams and live state",
+   "section": "topics"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.foldWhile",
+   "page": "/fsharp/latest/topics/ownership/",
+   "title": "Native identity and ownership",
+   "section": "topics"
   },
   {
    "port": "fsharp",
@@ -1808,6 +2235,20 @@
   },
   {
    "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.iter",
+   "page": "/fsharp/latest/topics/observations/",
+   "title": "Streams and live state",
+   "section": "topics"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.iter",
+   "page": "/fsharp/latest/topics/ownership/",
+   "title": "Native identity and ownership",
+   "section": "topics"
+  },
+  {
+   "port": "fsharp",
    "symbol": "LibTmux.FSharp.Control.useSession",
    "page": "/fsharp/latest/guides/modes/",
    "title": "Execution modes",
@@ -1819,6 +2260,13 @@
    "page": "/fsharp/latest/guides/streams/",
    "title": "Streams and cleanup",
    "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.useSession",
+   "page": "/fsharp/latest/topics/ownership/",
+   "title": "Native identity and ownership",
+   "section": "topics"
   },
   {
    "port": "fsharp",
@@ -1843,6 +2291,13 @@
   },
   {
    "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.watchPane",
+   "page": "/fsharp/latest/topics/observations/",
+   "title": "Streams and live state",
+   "section": "topics"
+  },
+  {
+   "port": "fsharp",
    "symbol": "LibTmux.FSharp.Control.watchPanes",
    "page": "/fsharp/latest/guides/getting-started/",
    "title": "Getting started",
@@ -1861,6 +2316,13 @@
    "page": "/fsharp/latest/guides/streams/",
    "title": "Streams and cleanup",
    "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.watchPanes",
+   "page": "/fsharp/latest/topics/observations/",
+   "title": "Streams and live state",
+   "section": "topics"
   },
   {
    "port": "fsharp",
@@ -1889,6 +2351,13 @@
    "page": "/fsharp/latest/guides/streams/",
    "title": "Streams and cleanup",
    "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.withSession",
+   "page": "/fsharp/latest/topics/ownership/",
+   "title": "Native identity and ownership",
+   "section": "topics"
   },
   {
    "port": "fsharp",
@@ -2102,10 +2571,24 @@
   },
   {
    "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Mirror.start",
+   "page": "/fsharp/latest/topics/observations/",
+   "title": "Streams and live state",
+   "section": "topics"
+  },
+  {
+   "port": "fsharp",
    "symbol": "LibTmux.FSharp.Mirror.startRefreshing",
    "page": "/fsharp/latest/guides/streams/",
    "title": "Streams and cleanup",
    "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Mirror.startRefreshing",
+   "page": "/fsharp/latest/topics/observations/",
+   "title": "Streams and live state",
+   "section": "topics"
   },
   {
    "port": "fsharp",
@@ -2200,6 +2683,13 @@
   },
   {
    "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Pane.run",
+   "page": "/fsharp/latest/topics/observations/",
+   "title": "Streams and live state",
+   "section": "topics"
+  },
+  {
+   "port": "fsharp",
    "symbol": "LibTmux.FSharp.Pane.sendAndWait",
    "page": "/fsharp/latest/guides/getting-started/",
    "title": "Getting started",
@@ -2218,6 +2708,13 @@
    "page": "/fsharp/latest/guides/streams/",
    "title": "Streams and cleanup",
    "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Pane.sendAndWait",
+   "page": "/fsharp/latest/topics/observations/",
+   "title": "Streams and live state",
+   "section": "topics"
   },
   {
    "port": "fsharp",
@@ -2270,6 +2767,13 @@
   },
   {
    "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Pane.waitForText",
+   "page": "/fsharp/latest/topics/observations/",
+   "title": "Streams and live state",
+   "section": "topics"
+  },
+  {
+   "port": "fsharp",
    "symbol": "LibTmux.FSharp.Pane.waitUntil",
    "page": "/fsharp/latest/guides/getting-started/",
    "title": "Getting started",
@@ -2281,6 +2785,13 @@
    "page": "/fsharp/latest/guides/streams/",
    "title": "Streams and cleanup",
    "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Pane.waitUntil",
+   "page": "/fsharp/latest/topics/observations/",
+   "title": "Streams and live state",
+   "section": "topics"
   },
   {
    "port": "fsharp",
@@ -2382,6 +2893,13 @@
   },
   {
    "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Retry.ifNotSent",
+   "page": "/fsharp/latest/topics/execution/",
+   "title": "Tasks, cancellation, and retry",
+   "section": "topics"
+  },
+  {
+   "port": "fsharp",
    "symbol": "LibTmux.FSharp.ScreenSearch.Text",
    "page": "/fsharp/latest/guides/interop/",
    "title": ".NET interoperation",
@@ -2407,6 +2925,13 @@
    "page": "/fsharp/latest/guides/quickstart/",
    "title": "Quick start",
    "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Selection.exactlyOne",
+   "page": "/fsharp/latest/topics/ownership/",
+   "title": "Native identity and ownership",
+   "section": "topics"
   },
   {
    "port": "fsharp",
@@ -2554,6 +3079,27 @@
    "page": "/fsharp/latest/guides/interop/",
    "title": ".NET interoperation",
    "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.TmuxFailure.|MayHaveRun|_|",
+   "page": "/fsharp/latest/topics/execution/",
+   "title": "Tasks, cancellation, and retry",
+   "section": "topics"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.TmuxFailure.|NotSent|_|",
+   "page": "/fsharp/latest/topics/execution/",
+   "title": "Tasks, cancellation, and retry",
+   "section": "topics"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.TmuxFailure.|Ran|_|",
+   "page": "/fsharp/latest/topics/execution/",
+   "title": "Tasks, cancellation, and retry",
+   "section": "topics"
   },
   {
    "port": "fsharp",
@@ -4433,13 +4979,6 @@
   },
   {
    "port": "java",
-   "symbol": "io.github.libtmux.Shell.Shell.capturing",
-   "page": "/scala/latest/guides/compatibility/",
-   "title": "Compatibility",
-   "section": "guides"
-  },
-  {
-   "port": "java",
    "symbol": "io.github.libtmux.snapshot.ClientState.ClientState",
    "page": "/scala/latest/guides/query/",
    "title": "Queries",
@@ -4684,6 +5223,538 @@
    "section": "ports"
   },
   {
+   "port": "julia",
+   "symbol": "LibTmux.BufferRef",
+   "page": "/julia/latest/topics/ownership/",
+   "title": "Ownership and I/O",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.cancel!",
+   "page": "/julia/latest/examples/cancel-control-wait/",
+   "title": "Cancel a control wait",
+   "section": "examples"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.CancellationSubscription",
+   "page": "/julia/latest/topics/ownership/",
+   "title": "Ownership and I/O",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.CancellationToken",
+   "page": "/julia/latest/examples/cancel-control-wait/",
+   "title": "Cancel a control wait",
+   "section": "examples"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.CancellationToken",
+   "page": "/julia/latest/topics/ownership/",
+   "title": "Ownership and I/O",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.capture_baseline",
+   "page": "/julia/latest/examples/observe-output/",
+   "title": "Observe pane output",
+   "section": "examples"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.capture_baseline",
+   "page": "/julia/latest/topics/observations/",
+   "title": "Observing output",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.capture_bytes",
+   "page": "/julia/latest/topics/ownership/",
+   "title": "Ownership and I/O",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.capture_pane",
+   "page": "/julia/latest/examples/owned-capture/",
+   "title": "Capture a pane",
+   "section": "examples"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.ClientWhere",
+   "page": "/julia/latest/concepts/queries/",
+   "title": "Captured queries",
+   "section": "concepts"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.ControlBufferCleanupError",
+   "page": "/julia/latest/topics/ownership/",
+   "title": "Ownership and I/O",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.ControlConnection",
+   "page": "/julia/latest/topics/execution/",
+   "title": "Execution and cancellation",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.ControlConnection",
+   "page": "/julia/latest/topics/ownership/",
+   "title": "Ownership and I/O",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.ControlResult",
+   "page": "/julia/latest/topics/ownership/",
+   "title": "Ownership and I/O",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.DeadlineExceeded.timeout",
+   "page": "/julia/latest/topics/observations/",
+   "title": "Observing output",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.DeadlineExceeded.timeout",
+   "page": "/julia/latest/topics/ownership/",
+   "title": "Ownership and I/O",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.decode_where",
+   "page": "/julia/latest/concepts/queries/",
+   "title": "Captured queries",
+   "section": "concepts"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.delete_buffer",
+   "page": "/julia/latest/topics/ownership/",
+   "title": "Ownership and I/O",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.encode_where",
+   "page": "/julia/latest/concepts/queries/",
+   "title": "Captured queries",
+   "section": "concepts"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.EnvironmentValue",
+   "page": "/julia/latest/topics/ownership/",
+   "title": "Ownership and I/O",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.Filters.AnyRelated",
+   "page": "/julia/latest/concepts/queries/",
+   "title": "Captured queries",
+   "section": "concepts"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.format_value",
+   "page": "/julia/latest/topics/observations/",
+   "title": "Observing output",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.from_env",
+   "page": "/julia/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.get_environment",
+   "page": "/julia/latest/topics/ownership/",
+   "title": "Ownership and I/O",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.load_buffer",
+   "page": "/julia/latest/topics/ownership/",
+   "title": "Ownership and I/O",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.MultipleMatchesError",
+   "page": "/julia/latest/concepts/queries/",
+   "title": "Captured queries",
+   "section": "concepts"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.NoMatchError",
+   "page": "/julia/latest/concepts/queries/",
+   "title": "Captured queries",
+   "section": "concepts"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.notifications",
+   "page": "/julia/latest/topics/observations/",
+   "title": "Observing output",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.observation_cursor",
+   "page": "/julia/latest/topics/observations/",
+   "title": "Observing output",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.ObservationLost",
+   "page": "/julia/latest/topics/observations/",
+   "title": "Observing output",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.observe_output",
+   "page": "/julia/latest/examples/observe-output/",
+   "title": "Observe pane output",
+   "section": "examples"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.observe_output",
+   "page": "/julia/latest/topics/observations/",
+   "title": "Observing output",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.onlymatch",
+   "page": "/julia/latest/concepts/queries/",
+   "title": "Captured queries",
+   "section": "concepts"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.onlymatch",
+   "page": "/julia/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.open_control",
+   "page": "/julia/latest/examples/cancel-control-wait/",
+   "title": "Cancel a control wait",
+   "section": "examples"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.open_control",
+   "page": "/julia/latest/topics/ownership/",
+   "title": "Ownership and I/O",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.open_server",
+   "page": "/julia/latest/guides/troubleshooting/",
+   "title": "Troubleshooting",
+   "section": "guides"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.OwnedServer",
+   "page": "/julia/latest/topics/ownership/",
+   "title": "Ownership and I/O",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.paneoccurrences",
+   "page": "/julia/latest/concepts/queries/",
+   "title": "Captured queries",
+   "section": "concepts"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.paneoccurrences",
+   "page": "/julia/latest/examples/shared-windows/",
+   "title": "Query shared windows",
+   "section": "examples"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.panes",
+   "page": "/julia/latest/concepts/queries/",
+   "title": "Captured queries",
+   "section": "concepts"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.PaneWhere",
+   "page": "/julia/latest/concepts/queries/",
+   "title": "Captured queries",
+   "section": "concepts"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.paste_bytes",
+   "page": "/julia/latest/topics/ownership/",
+   "title": "Ownership and I/O",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.RawFormat",
+   "page": "/julia/latest/guides/troubleshooting/",
+   "title": "Troubleshooting",
+   "section": "guides"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.RequestCancelled",
+   "page": "/julia/latest/examples/cancel-control-wait/",
+   "title": "Cancel a control wait",
+   "section": "examples"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.run_batch",
+   "page": "/julia/latest/topics/execution/",
+   "title": "Execution and cancellation",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.run_batch",
+   "page": "/julia/latest/topics/ownership/",
+   "title": "Ownership and I/O",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.run_group",
+   "page": "/julia/latest/topics/execution/",
+   "title": "Execution and cancellation",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.run_group",
+   "page": "/julia/latest/topics/ownership/",
+   "title": "Ownership and I/O",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.Selection",
+   "page": "/julia/latest/concepts/queries/",
+   "title": "Captured queries",
+   "section": "concepts"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.Server",
+   "page": "/julia/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.Server",
+   "page": "/julia/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.Server",
+   "page": "/julia/latest/guides/troubleshooting/",
+   "title": "Troubleshooting",
+   "section": "guides"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.Server",
+   "page": "/julia/latest/topics/execution/",
+   "title": "Execution and cancellation",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.Server",
+   "page": "/julia/latest/topics/ownership/",
+   "title": "Ownership and I/O",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.Server.tmux",
+   "page": "/julia/latest/guides/installation/",
+   "title": "Installation",
+   "section": "guides"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.SessionWhere",
+   "page": "/julia/latest/concepts/queries/",
+   "title": "Captured queries",
+   "section": "concepts"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.SessionWhere",
+   "page": "/julia/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.set_hook",
+   "page": "/julia/latest/topics/ownership/",
+   "title": "Ownership and I/O",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.snapshot",
+   "page": "/julia/latest/concepts/queries/",
+   "title": "Captured queries",
+   "section": "concepts"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.snapshot",
+   "page": "/julia/latest/examples/owned-capture/",
+   "title": "Capture a pane",
+   "section": "examples"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.snapshot",
+   "page": "/julia/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.SnapshotCoverageError",
+   "page": "/julia/latest/concepts/queries/",
+   "title": "Captured queries",
+   "section": "concepts"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.subscribe_format",
+   "page": "/julia/latest/topics/observations/",
+   "title": "Observing output",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.UnsupportedCapability",
+   "page": "/julia/latest/topics/ownership/",
+   "title": "Ownership and I/O",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.WindowLinkWhere",
+   "page": "/julia/latest/concepts/queries/",
+   "title": "Captured queries",
+   "section": "concepts"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.WindowLinkWhere",
+   "page": "/julia/latest/examples/shared-windows/",
+   "title": "Query shared windows",
+   "section": "examples"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.WindowWhere",
+   "page": "/julia/latest/concepts/queries/",
+   "title": "Captured queries",
+   "section": "concepts"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.with_server",
+   "page": "/julia/latest/examples/cancel-control-wait/",
+   "title": "Cancel a control wait",
+   "section": "examples"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.with_server",
+   "page": "/julia/latest/examples/owned-capture/",
+   "title": "Capture a pane",
+   "section": "examples"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.with_server",
+   "page": "/julia/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.with_server",
+   "page": "/julia/latest/topics/ownership/",
+   "title": "Ownership and I/O",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmuxMCP",
+   "page": "/julia/latest/mcp/",
+   "title": "MCP server",
+   "section": "ports"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmuxMCP",
+   "page": "/julia/latest/mcp/reference/",
+   "title": "LibTmuxMCP API reference",
+   "section": "ports"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmuxWorkspace",
+   "page": "/julia/latest/workspace/",
+   "title": "Workspace Manager",
+   "section": "ports"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmuxWorkspace",
+   "page": "/julia/latest/workspace/reference/",
+   "title": "LibTmuxWorkspace API reference",
+   "section": "ports"
+  },
+  {
    "port": "kotlin",
    "symbol": "io.github.libtmux.kotlin.Client",
    "page": "/kotlin/latest/guides/coroutines/",
@@ -4727,6 +5798,20 @@
   },
   {
    "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.ControlClient.events",
+   "page": "/kotlin/latest/topics/execution/",
+   "title": "Coroutines and command execution",
+   "section": "topics"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.ControlClient.events",
+   "page": "/kotlin/latest/topics/observations/",
+   "title": "Flows and event loss",
+   "section": "topics"
+  },
+  {
+   "port": "kotlin",
    "symbol": "io.github.libtmux.kotlin.ControlClient.output",
    "page": "/kotlin/latest/guides/coroutines/",
    "title": "Coroutines and flows",
@@ -4738,6 +5823,20 @@
    "page": "/kotlin/latest/guides/getting-started/",
    "title": "Getting started",
    "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.ControlClient.output",
+   "page": "/kotlin/latest/topics/execution/",
+   "title": "Coroutines and command execution",
+   "section": "topics"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.ControlClient.output",
+   "page": "/kotlin/latest/topics/observations/",
+   "title": "Flows and event loss",
+   "section": "topics"
   },
   {
    "port": "kotlin",
@@ -4755,6 +5854,13 @@
   },
   {
    "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.ExecutionPolicy.commands",
+   "page": "/kotlin/latest/topics/execution/",
+   "title": "Coroutines and command execution",
+   "section": "topics"
+  },
+  {
+   "port": "kotlin",
    "symbol": "io.github.libtmux.kotlin.ExecutionPolicy.Companion.default",
    "page": "/kotlin/latest/guides/coroutines/",
    "title": "Coroutines and flows",
@@ -4766,6 +5872,13 @@
    "page": "/kotlin/latest/guides/coroutines/",
    "title": "Coroutines and flows",
    "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.ExecutionPolicy.streamReads",
+   "page": "/kotlin/latest/topics/execution/",
+   "title": "Coroutines and command execution",
+   "section": "topics"
   },
   {
    "port": "kotlin",
@@ -4787,6 +5900,13 @@
    "page": "/kotlin/latest/guides/getting-started/",
    "title": "Getting started",
    "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Pane",
+   "page": "/kotlin/latest/topics/ownership/",
+   "title": "Client ownership and captured state",
+   "section": "topics"
   },
   {
    "port": "kotlin",
@@ -4923,6 +6043,13 @@
   },
   {
    "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Server",
+   "page": "/kotlin/latest/topics/ownership/",
+   "title": "Client ownership and captured state",
+   "section": "topics"
+  },
+  {
+   "port": "kotlin",
    "symbol": "io.github.libtmux.kotlin.Server.batch",
    "page": "/kotlin/latest/guides/coroutines/",
    "title": "Coroutines and flows",
@@ -4962,6 +6089,13 @@
    "page": "/kotlin/latest/guides/getting-started/",
    "title": "Getting started",
    "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Server.Companion.fromJava",
+   "page": "/kotlin/latest/topics/ownership/",
+   "title": "Client ownership and captured state",
+   "section": "topics"
   },
   {
    "port": "kotlin",
@@ -5011,6 +6145,13 @@
    "page": "/kotlin/latest/guides/getting-started/",
    "title": "Getting started",
    "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Server.liveState",
+   "page": "/kotlin/latest/topics/execution/",
+   "title": "Coroutines and command execution",
+   "section": "topics"
   },
   {
    "port": "kotlin",
@@ -5081,6 +6222,13 @@
    "page": "/kotlin/latest/guides/getting-started/",
    "title": "Getting started",
    "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Session",
+   "page": "/kotlin/latest/topics/ownership/",
+   "title": "Client ownership and captured state",
+   "section": "topics"
   },
   {
    "port": "kotlin",
@@ -5168,6 +6316,13 @@
   },
   {
    "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Window",
+   "page": "/kotlin/latest/topics/ownership/",
+   "title": "Client ownership and captured state",
+   "section": "topics"
+  },
+  {
+   "port": "kotlin",
    "symbol": "io.github.libtmux.kotlin.WindowBuilder",
    "page": "/kotlin/latest/guides/coroutines/",
    "title": "Coroutines and flows",
@@ -5186,6 +6341,13 @@
    "page": "/kotlin/latest/guides/getting-started/",
    "title": "Getting started",
    "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.withControl",
+   "page": "/kotlin/latest/topics/ownership/",
+   "title": "Client ownership and captured state",
+   "section": "topics"
   },
   {
    "port": "kotlin",
@@ -5214,6 +6376,13 @@
    "page": "/kotlin/latest/guides/getting-started/",
    "title": "Getting started",
    "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.withServer",
+   "page": "/kotlin/latest/topics/ownership/",
+   "title": "Client ownership and captured state",
+   "section": "topics"
   },
   {
    "port": "lua",
@@ -5339,13 +6508,6 @@
    "symbol": "libtmux.CommandOutcome.error",
    "page": "/lua/latest/guides/commands/",
    "title": "Execute tmux commands",
-   "section": "guides"
-  },
-  {
-   "port": "lua",
-   "symbol": "libtmux.CommandOutcome.status",
-   "page": "/lua/latest/guides/options/",
-   "title": "tmux option and hook reference",
    "section": "guides"
   },
   {
@@ -5574,13 +6736,6 @@
   },
   {
    "port": "lua",
-   "symbol": "libtmux.NewSessionOptions.window_name",
-   "page": "/lua/latest/topics/format-token-fields/",
-   "title": "tmux field catalog",
-   "section": "topics"
-  },
-  {
-   "port": "lua",
    "symbol": "libtmux.Observation:coverage",
    "page": "/lua/latest/guides/control/",
    "title": "Observing a session",
@@ -5661,13 +6816,6 @@
    "symbol": "libtmux.Pane:capture",
    "page": "/lua/latest/guides/panes/",
    "title": "Pane operations",
-   "section": "guides"
-  },
-  {
-   "port": "lua",
-   "symbol": "libtmux.Pane:capture_to_buffer",
-   "page": "/lua/latest/guides/buffers/",
-   "title": "Read and paste named buffers",
    "section": "guides"
   },
   {
@@ -6350,6 +7498,664 @@
    "section": "guides"
   },
   {
+   "port": "powershell",
+   "symbol": "LibTmux",
+   "page": "/powershell/latest/guides/commands/",
+   "title": "Commands and control clients",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux",
+   "page": "/powershell/latest/guides/query/",
+   "title": "Filter and query tmux objects",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux",
+   "page": "/powershell/latest/workspace/",
+   "title": "Workspace Manager",
+   "section": "ports"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux",
+   "page": "/powershell/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux.Workspace",
+   "page": "/powershell/latest/workspace/",
+   "title": "Workspace Manager",
+   "section": "ports"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux.Workspace",
+   "page": "/powershell/latest/workspace/reference/",
+   "title": "LibTmux.Workspace API reference",
+   "section": "ports"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux.Workspace",
+   "page": "/powershell/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux.Workspace\\ConvertTo-TmuxWorkspaceJson",
+   "page": "/powershell/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux.Workspace\\Get-TmuxWorkspace",
+   "page": "/powershell/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux.Workspace\\Get-TmuxWorkspacePlan",
+   "page": "/powershell/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux.Workspace\\Invoke-TmuxWorkspace",
+   "page": "/powershell/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux.Workspace\\Test-TmuxWorkspace",
+   "page": "/powershell/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Connect-TmuxControl",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Connect-TmuxControl",
+   "page": "/powershell/latest/guides/watch/",
+   "title": "Watch events and use runspaces",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Connect-TmuxControl",
+   "page": "/powershell/latest/topics/ownership/",
+   "title": "Ownership and cleanup",
+   "section": "topics"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Connect-TmuxServer",
+   "page": "/powershell/latest/concepts/captured-state/",
+   "title": "Captured state and I/O",
+   "section": "concepts"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Connect-TmuxServer",
+   "page": "/powershell/latest/concepts/identity/",
+   "title": "Object identity and placement",
+   "section": "concepts"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Connect-TmuxServer",
+   "page": "/powershell/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Connect-TmuxServer",
+   "page": "/powershell/latest/guides/read/",
+   "title": "Read tmux objects",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\ConvertTo-TmuxQueryJson",
+   "page": "/powershell/latest/guides/query/",
+   "title": "Filter and query tmux objects",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Disconnect-TmuxControl",
+   "page": "/powershell/latest/guides/commands/",
+   "title": "Commands and control clients",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Disconnect-TmuxControl",
+   "page": "/powershell/latest/topics/ownership/",
+   "title": "Ownership and cleanup",
+   "section": "topics"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Enter-TmuxSession",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Enter-TmuxSession",
+   "page": "/powershell/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Get-TmuxPane",
+   "page": "/powershell/latest/concepts/captured-state/",
+   "title": "Captured state and I/O",
+   "section": "concepts"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Get-TmuxPane",
+   "page": "/powershell/latest/guides/input/",
+   "title": "Send input to a pane",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Get-TmuxPane",
+   "page": "/powershell/latest/guides/layout/",
+   "title": "Arrange panes and resize windows",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Get-TmuxPane",
+   "page": "/powershell/latest/guides/read/",
+   "title": "Read tmux objects",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Get-TmuxPaneContent",
+   "page": "/powershell/latest/guides/capture/",
+   "title": "Capture, refresh and raw commands",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Get-TmuxPaneContent",
+   "page": "/powershell/latest/guides/input/",
+   "title": "Send input to a pane",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Get-TmuxQueryField",
+   "page": "/powershell/latest/concepts/queries/",
+   "title": "Local selection and source queries",
+   "section": "concepts"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Get-TmuxQueryField",
+   "page": "/powershell/latest/guides/query/",
+   "title": "Filter and query tmux objects",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Get-TmuxQueryPlan",
+   "page": "/powershell/latest/concepts/queries/",
+   "title": "Local selection and source queries",
+   "section": "concepts"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Get-TmuxSession",
+   "page": "/powershell/latest/concepts/captured-state/",
+   "title": "Captured state and I/O",
+   "section": "concepts"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Get-TmuxSession",
+   "page": "/powershell/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Get-TmuxSession",
+   "page": "/powershell/latest/guides/read/",
+   "title": "Read tmux objects",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Get-TmuxSnapshot",
+   "page": "/powershell/latest/concepts/captured-state/",
+   "title": "Captured state and I/O",
+   "section": "concepts"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Get-TmuxSnapshot",
+   "page": "/powershell/latest/examples/create-layout/",
+   "title": "Create windows and panes",
+   "section": "examples"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Get-TmuxSnapshot",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Get-TmuxSnapshot",
+   "page": "/powershell/latest/guides/read/",
+   "title": "Read tmux objects",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Get-TmuxWindow",
+   "page": "/powershell/latest/concepts/captured-state/",
+   "title": "Captured state and I/O",
+   "section": "concepts"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Get-TmuxWindow",
+   "page": "/powershell/latest/guides/layout/",
+   "title": "Arrange panes and resize windows",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Get-TmuxWindow",
+   "page": "/powershell/latest/guides/read/",
+   "title": "Read tmux objects",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Invoke-TmuxChain",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Invoke-TmuxChain",
+   "page": "/powershell/latest/topics/execution/",
+   "title": "Dispatch, completion, and failure",
+   "section": "topics"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Invoke-TmuxCommand",
+   "page": "/powershell/latest/guides/capture/",
+   "title": "Capture, refresh and raw commands",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Invoke-TmuxControlCommand",
+   "page": "/powershell/latest/guides/commands/",
+   "title": "Commands and control clients",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Invoke-TmuxControlCommand",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Invoke-TmuxControlCommand",
+   "page": "/powershell/latest/topics/execution/",
+   "title": "Dispatch, completion, and failure",
+   "section": "topics"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Invoke-TmuxPaneCommand",
+   "page": "/powershell/latest/examples/command-completion/",
+   "title": "Check command completion",
+   "section": "examples"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Invoke-TmuxPaneCommand",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Invoke-TmuxPaneCommand",
+   "page": "/powershell/latest/guides/input/",
+   "title": "Send input to a pane",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Invoke-TmuxPaneCommand",
+   "page": "/powershell/latest/topics/execution/",
+   "title": "Dispatch, completion, and failure",
+   "section": "topics"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Invoke-TmuxQuery",
+   "page": "/powershell/latest/concepts/queries/",
+   "title": "Local selection and source queries",
+   "section": "concepts"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\New-TmuxCommand",
+   "page": "/powershell/latest/guides/commands/",
+   "title": "Commands and control clients",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\New-TmuxCommand",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\New-TmuxCommand",
+   "page": "/powershell/latest/topics/execution/",
+   "title": "Dispatch, completion, and failure",
+   "section": "topics"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\New-TmuxQuery",
+   "page": "/powershell/latest/concepts/queries/",
+   "title": "Local selection and source queries",
+   "section": "concepts"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\New-TmuxServer",
+   "page": "/powershell/latest/concepts/captured-state/",
+   "title": "Captured state and I/O",
+   "section": "concepts"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\New-TmuxServer",
+   "page": "/powershell/latest/concepts/identity/",
+   "title": "Object identity and placement",
+   "section": "concepts"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\New-TmuxServer",
+   "page": "/powershell/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\New-TmuxServer",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\New-TmuxServer",
+   "page": "/powershell/latest/guides/troubleshooting/",
+   "title": "Troubleshooting",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\New-TmuxServer",
+   "page": "/powershell/latest/topics/ownership/",
+   "title": "Ownership and cleanup",
+   "section": "topics"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\New-TmuxSession",
+   "page": "/powershell/latest/examples/create-layout/",
+   "title": "Create windows and panes",
+   "section": "examples"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\New-TmuxSession",
+   "page": "/powershell/latest/guides/create/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\New-TmuxWindow",
+   "page": "/powershell/latest/guides/create/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Remove-TmuxPane",
+   "page": "/powershell/latest/guides/remove/",
+   "title": "Remove sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Remove-TmuxSession",
+   "page": "/powershell/latest/examples/command-completion/",
+   "title": "Check command completion",
+   "section": "examples"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Remove-TmuxSession",
+   "page": "/powershell/latest/examples/create-layout/",
+   "title": "Create windows and panes",
+   "section": "examples"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Remove-TmuxSession",
+   "page": "/powershell/latest/examples/wait-for-service/",
+   "title": "Wait for a service",
+   "section": "examples"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Remove-TmuxSession",
+   "page": "/powershell/latest/guides/remove/",
+   "title": "Remove sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Remove-TmuxWindow",
+   "page": "/powershell/latest/guides/remove/",
+   "title": "Remove sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Select-TmuxPane",
+   "page": "/powershell/latest/concepts/captured-state/",
+   "title": "Captured state and I/O",
+   "section": "concepts"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Select-TmuxPane",
+   "page": "/powershell/latest/concepts/queries/",
+   "title": "Local selection and source queries",
+   "section": "concepts"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Select-TmuxSession",
+   "page": "/powershell/latest/concepts/queries/",
+   "title": "Local selection and source queries",
+   "section": "concepts"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Select-TmuxSession",
+   "page": "/powershell/latest/examples/create-layout/",
+   "title": "Create windows and panes",
+   "section": "examples"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Select-TmuxWindow",
+   "page": "/powershell/latest/concepts/queries/",
+   "title": "Local selection and source queries",
+   "section": "concepts"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Send-TmuxKey",
+   "page": "/powershell/latest/guides/input/",
+   "title": "Send input to a pane",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Send-TmuxKey",
+   "page": "/powershell/latest/topics/execution/",
+   "title": "Dispatch, completion, and failure",
+   "section": "topics"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Send-TmuxText",
+   "page": "/powershell/latest/guides/input/",
+   "title": "Send input to a pane",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Split-TmuxPane",
+   "page": "/powershell/latest/examples/create-layout/",
+   "title": "Create windows and panes",
+   "section": "examples"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Split-TmuxPane",
+   "page": "/powershell/latest/guides/create/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Update-TmuxPane",
+   "page": "/powershell/latest/guides/capture/",
+   "title": "Capture, refresh and raw commands",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Update-TmuxPane",
+   "page": "/powershell/latest/guides/read/",
+   "title": "Read tmux objects",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Wait-TmuxChannel",
+   "page": "/powershell/latest/guides/input/",
+   "title": "Send input to a pane",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Wait-TmuxPaneText",
+   "page": "/powershell/latest/examples/wait-for-service/",
+   "title": "Wait for a service",
+   "section": "examples"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Wait-TmuxPaneText",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Wait-TmuxPaneText",
+   "page": "/powershell/latest/topics/execution/",
+   "title": "Dispatch, completion, and failure",
+   "section": "topics"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Wait-TmuxPaneText",
+   "page": "/powershell/latest/topics/observations/",
+   "title": "Watching output and state",
+   "section": "topics"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Watch-TmuxEvent",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Watch-TmuxEvent",
+   "page": "/powershell/latest/guides/watch/",
+   "title": "Watch events and use runspaces",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Watch-TmuxEvent",
+   "page": "/powershell/latest/topics/observations/",
+   "title": "Watching output and state",
+   "section": "topics"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Watch-TmuxEvent",
+   "page": "/powershell/latest/topics/ownership/",
+   "title": "Ownership and cleanup",
+   "section": "topics"
+  },
+  {
    "port": "py",
    "symbol": "libtmux_mcp.models.RunCommandResult.exit_status",
    "page": "/py/latest/mcp/topics/",
@@ -6438,13 +8244,6 @@
    "symbol": "libtmux_mcp.tools.pane_tools.wait.wait_for_text",
    "page": "/py/latest/mcp/topics/",
    "title": "Python MCP topics",
-   "section": "ports"
-  },
-  {
-   "port": "py",
-   "symbol": "libtmux_mcp.tools.server_tools.list_sessions",
-   "page": "/py/latest/mcp/examples/",
-   "title": "Python MCP examples",
    "section": "ports"
   },
   {
@@ -7464,6 +9263,13 @@
   },
   {
    "port": "rs",
+   "symbol": "control.ControlEvents.next_event",
+   "page": "/rs/latest/guides/control-mode/",
+   "title": "Send commands over control mode",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
    "symbol": "control.ControlEvents.shutdown",
    "page": "/rs/latest/guides/control-mode/",
    "title": "Send commands over control mode",
@@ -7489,6 +9295,13 @@
    "page": "/rs/latest/guides/control-mode/",
    "title": "Send commands over control mode",
    "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "control.ControlSender.reply_timeout",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
   },
   {
    "port": "rs",
@@ -7619,13 +9432,6 @@
   {
    "port": "rs",
    "symbol": "mcp.src.TmuxTools.capture_since",
-   "page": "/rs/latest/mcp/topics/",
-   "title": "Rust MCP topics",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "mcp.src.TmuxTools.capture_since",
    "page": "/rs/latest/mcp/topics/tool-selection/",
    "title": "Tool selection",
    "section": "ports"
@@ -7649,13 +9455,6 @@
    "symbol": "mcp.src.TmuxTools.list_sessions",
    "page": "/rs/latest/mcp/examples/inspect-sessions/",
    "title": "List sessions through MCP",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "mcp.src.TmuxTools.list_sessions",
-   "page": "/rs/latest/mcp/guides/connect-client/",
-   "title": "Connect an MCP client",
    "section": "ports"
   },
   {
@@ -7726,20 +9525,6 @@
    "symbol": "mcp.src.TmuxTools.snapshot_pane",
    "page": "/rs/latest/mcp/topics/tool-selection/",
    "title": "Tool selection",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "mcp.src.TmuxTools.wait_for_text",
-   "page": "/rs/latest/mcp/guides/connect-client/",
-   "title": "Connect an MCP client",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "mcp.src.TmuxTools.wait_for_text",
-   "page": "/rs/latest/mcp/topics/",
-   "title": "Rust MCP topics",
    "section": "ports"
   },
   {
@@ -8052,7 +9837,14 @@
   },
   {
    "port": "rs",
-   "symbol": "plan.run.PlanResult.dispatches",
+   "symbol": "plan.run.PlanResult",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "plan.run.PlanResult",
    "page": "/rs/latest/guides/batching-commands/",
    "title": "Batch commands with a plan",
    "section": "guides"
@@ -8193,6 +9985,13 @@
   {
    "port": "rs",
    "symbol": "query.FilterExpr.or",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "query.MultipleItemsError",
    "page": "/rs/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
@@ -8525,6 +10324,20 @@
    "page": "/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "session.Session.refresh",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "session.Session.refreshed",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
   },
   {
    "port": "rs",
@@ -9291,13 +11104,6 @@
   },
   {
    "port": "scala",
-   "symbol": "io.github.libtmux.scaladsl.cats.Control.attach",
-   "page": "/scala/latest/guides/ownership/",
-   "title": "Ownership",
-   "section": "guides"
-  },
-  {
-   "port": "scala",
    "symbol": "io.github.libtmux.scaladsl.cats.Control.attachUnfenced",
    "page": "/scala/latest/guides/ownership/",
    "title": "Ownership",
@@ -9361,6 +11167,13 @@
   },
   {
    "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.cats.Observation.kept",
+   "page": "/scala/latest/topics/observations/",
+   "title": "Observations, gaps, and reconciliation",
+   "section": "topics"
+  },
+  {
+   "port": "scala",
    "symbol": "io.github.libtmux.scaladsl.cats.Observation.UnknownCause",
    "page": "/scala/latest/guides/streaming/",
    "title": "Streaming",
@@ -9379,6 +11192,13 @@
    "page": "/scala/latest/guides/streaming/",
    "title": "Streaming",
    "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.cats.Observation.value",
+   "page": "/scala/latest/topics/observations/",
+   "title": "Observations, gaps, and reconciliation",
+   "section": "topics"
   },
   {
    "port": "scala",
@@ -9404,16 +11224,16 @@
   {
    "port": "scala",
    "symbol": "io.github.libtmux.scaladsl.cats.Server.resource",
-   "page": "/scala/latest/examples/capture-pane-output/",
-   "title": "Capture pane output",
-   "section": "examples"
+   "page": "/scala/latest/guides/ownership/",
+   "title": "Ownership",
+   "section": "guides"
   },
   {
    "port": "scala",
    "symbol": "io.github.libtmux.scaladsl.cats.Server.resource",
-   "page": "/scala/latest/guides/ownership/",
-   "title": "Ownership",
-   "section": "guides"
+   "page": "/scala/latest/topics/ownership/",
+   "title": "Client and effect lifetimes",
+   "section": "topics"
   },
   {
    "port": "scala",
@@ -9579,13 +11399,6 @@
   {
    "port": "scala",
    "symbol": "io.github.libtmux.scaladsl.Server",
-   "page": "/scala/latest/guides/getting-started/",
-   "title": "Getting started",
-   "section": "guides"
-  },
-  {
-   "port": "scala",
-   "symbol": "io.github.libtmux.scaladsl.Server",
    "page": "/scala/latest/guides/ownership/",
    "title": "Ownership",
    "section": "guides"
@@ -9606,6 +11419,13 @@
   },
   {
    "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Server.fromJava",
+   "page": "/scala/latest/topics/ownership/",
+   "title": "Client and effect lifetimes",
+   "section": "topics"
+  },
+  {
+   "port": "scala",
    "symbol": "io.github.libtmux.scaladsl.Server.hooks",
    "page": "/scala/latest/guides/execution/",
    "title": "Execution",
@@ -9614,9 +11434,9 @@
   {
    "port": "scala",
    "symbol": "io.github.libtmux.scaladsl.Server.open",
-   "page": "/scala/latest/guides/ownership/",
-   "title": "Ownership",
-   "section": "guides"
+   "page": "/scala/latest/topics/ownership/",
+   "title": "Client and effect lifetimes",
+   "section": "topics"
   },
   {
    "port": "scala",
@@ -11174,6 +12994,13 @@
   },
   {
    "port": "ts",
+   "symbol": "window.Window.linkedSessions",
+   "page": "/ts/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
    "symbol": "window.Window.panes",
    "page": "/topics/traversal/",
    "title": "Traversal",
@@ -11193,6 +13020,13 @@
    "text": "LibTmux.FSharp",
    "page": "/fsharp/latest/guides/getting-started/",
    "line": 16,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "TimedOut",
+   "page": "/fsharp/latest/guides/getting-started/",
+   "line": 172,
    "why": "not defined in the stated port"
   },
   {
@@ -11445,13 +13279,6 @@
    "text": "libtmux-ruby.workspace",
    "page": "/ruby/latest/workspace/source-guide/",
    "line": 79,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "scala",
-   "text": "ScalaOperationGenerator",
-   "page": "/scala/latest/guides/compatibility/",
-   "line": 44,
    "why": "not defined in the stated port"
   },
   {

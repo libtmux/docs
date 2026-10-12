@@ -37,6 +37,72 @@ describe('MCP protocol discovery', () => {
       .rejects.toThrow('MCP discovery timed out')
   })
 
+  it.each(['tools', 'prompts', 'resources', 'resourceTemplates'])('rejects a missing %s array instead of publishing an empty catalog', async (key) => {
+    const capability = key === 'resourceTemplates' ? 'resources' : key
+    const fixture = `
+      const { createInterface } = require('node:readline');
+      createInterface({ input: process.stdin }).on('line', line => {
+        const message = JSON.parse(line);
+        if (!message.id) return;
+        const result = message.method === 'initialize'
+          ? { protocolVersion: '2025-11-25', serverInfo: { name: 'fixture', version: '1' }, capabilities: { ${capability}: {} } }
+          : message.method === 'resources/list' && '${key}' === 'resourceTemplates'
+            ? { resources: [] } : {};
+        console.log(JSON.stringify({ jsonrpc: '2.0', id: message.id, result }));
+      });`
+    await expect(captureProtocol({ command: process.execPath, args: ['-e', fixture] }))
+      .rejects.toThrow(`missing or invalid ${key} array`)
+  })
+
+  it('rejects an incomplete later page instead of publishing a partial catalog', async () => {
+    const fixture = server.replace("{ tools: [{ name: 'second', inputSchema: { type: 'object', properties: {} } }] }", '{}')
+    await expect(captureProtocol({ command: process.execPath, args: ['-e', fixture] }))
+      .rejects.toThrow('missing or invalid tools array')
+  })
+
+  it.each(['tools', 'prompts', 'resources', 'resourceTemplates'])('rejects an invalid %s registration', async (key) => {
+    const capability = key === 'resourceTemplates' ? 'resources' : key
+    const fixture = `
+      const { createInterface } = require('node:readline');
+      createInterface({ input: process.stdin }).on('line', line => {
+        const message = JSON.parse(line);
+        if (!message.id) return;
+        const result = message.method === 'initialize'
+          ? { protocolVersion: '2025-11-25', serverInfo: { name: 'fixture', version: '1' }, capabilities: { ${capability}: {} } }
+          : message.method === 'resources/list' && '${key}' === 'resourceTemplates'
+            ? { resources: [] } : { ${key}: [{ description: 'Missing the registration identity.' }] };
+        console.log(JSON.stringify({ jsonrpc: '2.0', id: message.id, result }));
+      });`
+    await expect(captureProtocol({ command: process.execPath, args: ['-e', fixture] }))
+      .rejects.toThrow(`invalid ${key} registration`)
+  })
+
+  it('follows an empty opaque pagination cursor', async () => {
+    const fixture = server.replace('message.params.cursor', "Object.hasOwn(message.params, 'cursor')")
+      .replace("nextCursor: 'page-two'", "nextCursor: ''")
+    const protocol = await captureProtocol({ command: process.execPath, args: ['-e', fixture] })
+    expect(protocol.tools.map((tool) => tool.name)).toEqual(['first', 'second'])
+  })
+
+  it('rejects a missing capabilities object while accepting an explicitly empty one', async () => {
+    const empty = server.replace('capabilities: { tools: {} }', 'capabilities: {}')
+    expect((await captureProtocol({ command: process.execPath, args: ['-e', empty] })).tools).toEqual([])
+    await expect(captureProtocol({ command: process.execPath, args: ['-e', server.replace('capabilities: { tools: {} }', 'invalid: {}')] }))
+      .rejects.toThrow('missing or invalid capabilities object')
+  })
+
+  it.each(['null', 'false', '[]'])('rejects a malformed advertised capability %s', async (value) => {
+    const fixture = server.replace('capabilities: { tools: {} }', `capabilities: { tools: ${value} }`)
+    await expect(captureProtocol({ command: process.execPath, args: ['-e', fixture] }))
+      .rejects.toThrow('invalid tools capability object')
+  })
+
+  it('requires the negotiated protocol and server identity', async () => {
+    const fixture = server.replace("protocolVersion: '2025-11-25', serverInfo: { name: 'fixture', version: '1' },", '')
+    await expect(captureProtocol({ command: process.execPath, args: ['-e', fixture] }))
+      .rejects.toThrow('missing or invalid protocolVersion or serverInfo')
+  })
+
   it.each([-32601, -32603])('handles resource template discovery error %i', async (code) => {
     const resources = server
       .replace('tools: {}', 'resources: {}')
@@ -51,8 +117,29 @@ describe('MCP protocol discovery', () => {
       const protocol = await discovery
       expect(protocol.resources.map((resource) => resource.uri)).toEqual(['tmux://capabilities'])
       expect(protocol.resourceTemplates).toEqual([])
+      expect(protocol.unsupportedMethods).toEqual(['resources/templates/list'])
     } else {
       await expect(discovery).rejects.toThrow('template discovery failed')
     }
+  })
+
+  it('rejects method-not-found after a successful template page instead of publishing a partial catalog', async () => {
+    const fixture = `
+      const { createInterface } = require('node:readline');
+      createInterface({ input: process.stdin }).on('line', line => {
+        const message = JSON.parse(line);
+        if (!message.id) return;
+        if (message.method === 'resources/templates/list' && Object.hasOwn(message.params, 'cursor')) {
+          console.log(JSON.stringify({ jsonrpc: '2.0', id: message.id, error: { code: -32601, message: 'Second page disappeared' } }));
+          return;
+        }
+        const result = message.method === 'initialize'
+          ? { protocolVersion: '2025-11-25', serverInfo: { name: 'fixture', version: '1' }, capabilities: { resources: {} } }
+          : message.method === 'resources/list' ? { resources: [] }
+          : { resourceTemplates: [{ name: 'first', uriTemplate: 'tmux://first/{id}' }], nextCursor: '' };
+        console.log(JSON.stringify({ jsonrpc: '2.0', id: message.id, result }));
+      });`
+    await expect(captureProtocol({ command: process.execPath, args: ['-e', fixture] }))
+      .rejects.toThrow('Second page disappeared')
   })
 })

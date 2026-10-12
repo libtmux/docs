@@ -11,6 +11,7 @@ import { PORT_BY_SLUG } from '../site/src/lib/ports.ts'
 export const RECORD = 'build-provenance.json'
 const SHA = /^[0-9a-f]{40}$/
 const DIGEST = /^[0-9a-f]{64}$/
+const NATIVE_GENERATOR_PORTS = new Set(['ruby', 'lua', 'powershell', 'julia'])
 const segment = /^[a-zA-Z0-9][a-zA-Z0-9._-]*$/
 const fail = (message) => { throw new Error(`publication-provenance: ${message}`) }
 const check = (condition, message) => { if (!condition) fail(message) }
@@ -63,7 +64,7 @@ export function snapshot(docsRoot, env = process.env) {
   }
   const docs = checkoutIdentity(docsRoot)
   check(docs.repository === 'libtmux/docs', 'docs checkout must belong to libtmux/docs')
-  const nativeGenerator = ['ruby', 'lua'].includes(port.slug)
+  const nativeGenerator = NATIVE_GENERATOR_PORTS.has(port.slug)
     ? checkoutIdentity(env.LIBTMUX_DOCS_GENERATOR_CHECKOUT || env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`]) : undefined
   if (nativeGenerator) check(nativeGenerator.repository === port.repo, `native generator repository must be ${port.repo}`)
   const current = { schema: 1, port: port.slug, version: env.LIBTMUX_DOCS_VERSION, locale, docs, sources,
@@ -179,7 +180,7 @@ export function verifyBuild(root, expected) {
   check(record.docs?.repository === expected.publisherRepository && record.docs?.sha === expected.publisherSha,
     'builder docs SHA differs from publisher workflow SHA')
   check(record.docs.dirty === false, 'docs inputs are dirty')
-  if (['ruby', 'lua'].includes(record.port)) {
+  if (NATIVE_GENERATOR_PORTS.has(record.port)) {
     check(record.nativeGenerator?.repository === port.repo && SHA.test(record.nativeGenerator?.sha ?? ''), 'missing or invalid native generator repository/SHA')
     check(record.nativeGenerator.dirty === false, 'native generator inputs are dirty')
   } else check(record.nativeGenerator === undefined, 'unexpected native generator')

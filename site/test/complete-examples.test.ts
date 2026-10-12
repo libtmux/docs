@@ -9,8 +9,10 @@ import products from './fixtures/product-examples.json'
 import queries from './fixtures/query-examples.json'
 import concepts from './fixtures/concept-examples.json'
 import guides from './fixtures/guide-examples.json'
+import programs from './fixtures/program-examples.json'
 import { remarkPortCode, resolvePortCode } from '../src/plugins/remark-port-code.mjs'
 import { rehypeCodeTabs } from '../src/plugins/rehype-code-tabs.mjs'
+import { sessionLines } from '../src/plugins/ec-shell-prompt.mjs'
 import { docsEntryAvailable, pagePortLinks } from '../src/lib/page-port-links'
 import { docsPath, docsRedirects, docsRoutePath } from '../src/lib/docs-paths'
 
@@ -21,11 +23,18 @@ const fences = (markdown: string) => [...markdown.matchAll(/^```(\S+)([^\n]*)\n(
   .map((match) => ({ language: match[1], title: /title="([^"]+)"/.exec(match[2])?.[1], code: match[3] }))
 const sha256 = (code: string) => createHash('sha256').update(code).digest('hex')
 const examples = [...receipt.examples, ...attach.examples, ...products.examples, ...queries.examples,
-  ...concepts.examples, ...guides.examples]
+  ...concepts.examples, ...guides.examples, ...programs.examples]
 
 afterEach(() => vi.unstubAllEnvs())
 
 describe('verified complete programs', () => {
+  it.each(programs.examples)('copies every setup command on $page', (example) => {
+    const copied = fences(bodyOf(example.page)).filter((block) => block.language === 'console')
+      .map((block) => sessionLines(block.code.trimEnd().split('\n'))
+        .filter((line) => line.kind !== 'output').map((line) => line.text).join('\n').trim())
+    expect(copied).toEqual(example.shellRecipe)
+  })
+
   it.each([
     ...['kotlin', 'scala', 'fsharp'].map((port) => ({
       port, paths: ['index', 'server-session-window-pane', 'queries', 'transports', 'workspaces'],

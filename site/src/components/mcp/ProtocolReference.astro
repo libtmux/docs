@@ -1,0 +1,241 @@
+---
+import { Code } from 'astro-expressive-code/components'
+import { parsePythonDoc } from '@libtmux/api-model'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import ApiTree from '../api/ApiTree.astro'
+import ApiBadge from '../api/ApiBadge.astro'
+import { apiGlossaryHref, MCP_GLOSSARY_TITLE } from '../../lib/api-glossary'
+import Aside from '../Aside.astro'
+import ApiPageContents from '../api/ApiPageContents.astro'
+import SymbolName from '../api/SymbolName.astro'
+import PageToolbar from '../PageToolbar.astro'
+import PagePortSwitcher from '../PagePortSwitcher.astro'
+import DocumentationContext from '../docs/DocumentationContext.astro'
+import McpSchemaFields from './McpSchema.astro'
+import McpSchemaType from './McpSchemaType.astro'
+import { PORT_BY_SLUG, portPageUrl, productInDevelopment } from '../../lib/ports'
+import { MCP_REFERENCE, MCP_SECTIONS, mcpObjects, mcpObjectAt, mcpObjectGroup, mcpNavigation, renderToolDescription, toolSummary, type McpSection } from '../../lib/mcp-reference'
+import { schemaDefinitions, type McpSchema } from '../../lib/mcp-schema'
+import { pagePortsFor } from '../../lib/page-ports-for'
+import { getDocumentationSurfaces } from '../../lib/documentation-navigation'
+import { buildLocale } from '../../i18n/resolve'
+import { localeSourcePath } from '../../i18n/locales'
+import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO } from '../../i18n/contribute'
+import '../../styles/api.css'
+import '../../styles/vendor/gp-sphinx-api.css'
+
+interface Props { port: string; version: string; section: McpSection; itemSlug?: string }
+const { port, version, section, itemSlug } = Astro.props
+const info = PORT_BY_SLUG[port]
+const reference = MCP_REFERENCE[port]
+const object = mcpObjectAt(port, section, itemSlug)
+if (itemSlug && !object) throw new Error(`Unknown MCP object ${port}/${section}/${itemSlug}`)
+const path = object?.path ?? `mcp/${section}`
+const title = object?.name ?? MCP_SECTIONS[section]
+const base = portPageUrl(info, version, 'mcp')
+const pageUrl = portPageUrl(info, version, path)
+const navigation = mcpNavigation(port)
+const sectionTree = navigation.tree.find((entry) => entry.id === section)!
+const currentBucket = sectionTree.children.find((group) => group.entries.some((entry) => entry.id === object?.id))?.id
+const entries = mcpObjects(port).filter((entry) => entry.section === section)
+const catalogs = [
+  { id: 'resources', label: 'Resources', kind: 'resource', section: 'resources', group: 'resources-fixed-resources' },
+  { id: 'resource-templates', label: 'Resource templates', kind: 'resource-template', section: 'resources', group: 'resources-resource-templates' },
+  { id: 'prompts', label: 'Prompts', kind: 'prompt', section: 'prompts', group: '' },
+].map((catalog) => {
+  const count = mcpObjects(port).filter((entry) => entry.kind === catalog.kind).length
+  return { ...catalog, count, href: `${base}${catalog.section}/${count && catalog.group ? `#${catalog.group}` : ''}` }
+})
+const pagePorts = await pagePortsFor(path, port)
+const setup = (await getDocumentationSurfaces(port, version, buildLocale()))
+  .find((surface) => surface.id === 'mcp')?.sections.find((entry) => entry.id === 'guides')
+const breadcrumbs = [
+  { name: info.name, url: portPageUrl(info, version) },
+  { name: 'MCP', url: base },
+  { name: MCP_SECTIONS[section], url: portPageUrl(info, version, `mcp/${section}`) },
+  ...(object ? [{ name: object.name, url: pageUrl, symbol: true }] : []),
+]
+const source = object?.tool?.source
+const sourceUrl = source ? `https://github.com/${source.repo}/blob/${source.revision}/${source.file}${source.line ? `#L${source.line}` : ''}` : undefined
+const pageSource = source ? { repo: source.repo, path: source.file, ref: source.revision }
+  : { repo: CONTRIBUTE_REPO, path: `site/src/data/mcp-protocol/${port}.json`, ref: CONTRIBUTE_BRANCH }
+const context = { port, version, objectId: object?.id }
+// Resource descriptions retain native NumPy argument prose in their own rows.
+const parsed = port === 'py' && object?.kind === 'resource-template' ? parsePythonDoc(object.description) : undefined
+const description = parsed ? [parsed.doc.summary, parsed.doc.body].filter(Boolean).join('\n\n') : object?.description ?? ''
+const descriptionHtml = await renderToolDescription(description, context)
+const parameters = object?.item?.arguments?.map((arg) => ({ name: arg.name, required: arg.required ?? false,
+  binding: 'Prompt argument', description: arg.description ?? '' })) ??
+  [...(object?.item?.uriTemplate ?? '').matchAll(/\{([+#./;?&]?)([^}]+)\}/g)].flatMap((match) => match[2].split(',').map((variable) => {
+    const name = variable.replace(/(?::\d+|\*)$/, '')
+    return { name, required: undefined, binding: '?&'.includes(match[1]) && match[1] ? 'Query variable' : 'URI variable', description: parsed?.params.get(name) ?? '' }
+  }))
+const parameterRows = await Promise.all(parameters.map(async (arg) => ({ ...arg,
+  id: `${object!.id}.parameter.${arg.name}`, html: await renderToolDescription(arg.description, context),
+})))
+const input = object?.tool?.inputSchema as McpSchema | undefined
+const output = object?.tool?.outputSchema as McpSchema | undefined
+const typeGroups = await Promise.all(([
+  { label: 'Argument types', schema: input, scope: `${object?.id}.input` },
+  { label: 'Result types', schema: output, scope: `${object?.id}.output` },
+]).map(async (group) => ({ ...group, definitions: await Promise.all(schemaDefinitions(group.schema ?? false).map(async (entry) => ({
+  ...entry, id: group.scope + entry.path,
+  html: typeof entry.schema === 'object' ? await renderToolDescription(entry.schema.description ?? '', context) : '',
+}))) })))
+const hasTypes = typeGroups.some((group) => group.definitions.length)
+const schema = input && typeof input === 'object' ? input : undefined
+const fields = Object.entries(schema?.properties ?? {})
+const declaration = object?.item?.uriTemplate ?? object?.item?.uri
+const method = object?.kind === 'tool' ? 'tools/call' : object?.kind === 'prompt' ? 'prompts/get' : 'resources/read'
+const sections = object ? [
+  { id: 'api-overview', label: 'Overview' },
+  { id: `${object.id}.parameters`, label: object.kind.startsWith('resource') ? 'URI parameters' : 'Arguments' },
+  { id: `${object.id}.result`, label: 'Result' },
+  ...(hasTypes ? [{ id: `${object.id}.types`, label: 'Types' }] : []),
+  ...(object.tool ? [{ id: `${object.id}.annotations`, label: 'Annotations' }] : []),
+  { id: `${object.id}.schemas`, label: 'Protocol data' },
+] : []
+const introductions: Record<McpSection, string> = {
+  tools: 'Browse the operations the server exposes to MCP clients. Use the registered name and arguments when sending a tools/call request.',
+  prompts: 'Browse the reusable workflows the server provides through prompts/get. Each prompt documents its arguments and the messages it returns.',
+  resources: 'Browse the data the server exposes through resources/read. Resource templates describe URI patterns and the variables used to select a resource.',
+}
+const summaries = new Map(await Promise.all(entries.map(async (entry) => [entry.id, await renderToolDescription(toolSummary(entry.description), { port, version, objectId: entry.id })] as const)))
+---
+<BaseLayout title={object ? title : `${info.name} MCP ${title}`} description={object ? toolSummary(object.description) : introductions[section]}
+  portSlug={port} version={version} pagePath={path} pageSource={pageSource}
+  documentationLayout="reference" breadcrumbs={breadcrumbs} markdown="rendered" flush>
+  <div slot="header-navigation" class="site-header-language"><PagePortSwitcher entries={pagePorts} portSlug={port} reserveLabelWidth /></div>
+  <DocumentationContext slot="context" port={port} version={version} locale={buildLocale()}
+    sourcePath={localeSourcePath(Astro.url.pathname, buildLocale())} reference>
+    <button type="button" class="api-nav-toggle" slot="navigation" data-api-nav-toggle data-pagefind-ignore="all" aria-controls="api-nav" aria-expanded="false">
+      <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" d="M2 4h12M2 8h12M2 12h8" /></svg>
+      <span class="sr-only">MCP reference contents</span>
+    </button>
+  </DocumentationContext>
+  <main class:list={['api-reference-layout grid', object && 'api-reference-layout--symbol']}>
+    <ApiTree referenceBase={base} glossaryHref={`${base}reference/glossary/`} glossaryLabel={MCP_GLOSSARY_TITLE} portName={info.name} tree={navigation.tree} currentRoot={section}
+      currentBucket={currentBucket} currentIndex={object ? undefined : section} ownerId={object?.id}
+      members={[]} withMembers={new Set()} currentPath={Astro.url.pathname} version={navigation.version}
+      indexLabel="" treeLabel={`${info.name} MCP reference`} searchLabel="Find an MCP object" searchPlaceholder="Find tool, prompt, resource"
+      filters={[{ id: 'all', label: 'All' }, ...Object.entries(MCP_SECTIONS).map(([id, label]) => ({ id, label,
+        disabled: !mcpObjects(port).some((entry) => entry.section === id) }))]} />
+    <div class="api-reference-content min-w-0 px-4 py-6 lg:px-6">
+      <PageToolbar breadcrumbs={breadcrumbs} />
+      <header id={object ? 'api-overview' : section} class:list={[object && 'api-reference-heading']}>
+        {object && <div class="api-reference-eyebrow"><ApiBadge label={object.kind.replace('-', ' ')} variant="kind" value={object.kind} /><span>MCP</span><span class="api-reference-version">{version}</span></div>}
+        <h1 class="scroll-mt-24 font-mono text-2xl font-semibold tracking-tight">{object ? <code><SymbolName name={title} /></code> : title}</h1>
+        {!object && <p class="mt-3">{introductions[section]}</p>}
+      </header>
+      {productInDevelopment(info, 'mcp') && <Aside type="caution" title="MCP is in development">
+        <p>Server behavior and tool contracts may change. Tool availability depends on the server configuration.</p>
+      </Aside>}
+      {object ? <>
+        <nav class="api-section-links" aria-label="Reference sections" data-pagefind-ignore="all">{sections.map((entry, i) => <a href={`#${encodeURIComponent(entry.id)}`} data-api-section-link aria-current={i === 0 ? 'location' : undefined}>{entry.label}</a>)}</nav>
+        <dl class="py gp-sphinx-api-container">
+          <dt id={object.id} class="sig sig-object gp-sphinx-api-header" data-domain="mcp" data-objtype={object.kind}>
+            <div class="gp-sphinx-api-layout gp-sphinx-api-layout--responsive">
+              <div class="gp-sphinx-api-layout-left"><span class="gp-sphinx-api-signature">
+                {declaration ? <code class="api-native-signature">{declaration}</code> : <span class="mcp-signature"><strong class="sig-name descname">{object.name}</strong>({fields.length || parameterRows.length ? '\n' : ''}{fields.length ? fields.map(([name, value]) => <span>{'  '}<a href={`#${encodeURIComponent(`${object.id}.input/properties/${name.replaceAll('~', '~0').replaceAll('/', '~1')}`)}`}>{name}</a>{schema?.required?.includes(name) ? '' : '?'}: <McpSchemaType schema={value} root={input!} scope={`${object.id}.input`} />{','}{'\n'}</span>) : parameterRows.map((arg) => <span>{'  '}<a href={`#${encodeURIComponent(arg.id)}`}>{arg.name}</a>{arg.required ? '' : '?'},{'\n'}</span>)})</span>}
+              </span></div>
+              <div class="gp-sphinx-api-layout-right"><ApiBadge label={object.kind.replace('-', ' ')} variant="kind" value={object.kind} />{sourceUrl && <a href={sourceUrl}>[source]</a>}<a class="headerlink" href={`#${encodeURIComponent(object.id)}`} aria-label={`Permalink to ${object.name}`}>¶</a></div>
+            </div>
+          </dt>
+          <dd class="api-overview mcp-overview">
+            <div class="api-doc" set:html={descriptionHtml} />
+            <dl class="api-definition api-command-facts"><dt>MCP request method</dt><dd><code>{method}</code>
+              <span class="mcp-method-description">{object.kind === 'tool' ? <>Send <code>{object.name}</code> as the tool name, with the arguments below.</>
+                : object.kind === 'prompt' ? <>Send <code>{object.name}</code> as the prompt name, with the arguments below.</>
+                : <>Send the resource URI shown above.</>}</span></dd>
+              {object.item?.mimeType && <><dt>MIME type</dt><dd><code>{object.item.mimeType}</code></dd></>}
+              {object.tool?.enabledByDefault !== undefined && <><dt>Tool selection</dt><dd>{object.tool.enabledByDefault ? 'Enabled by default.' : <>Opt in with <code>{object.tool.enableOption ?? '--enable-tool'} {object.name}</code>.</>}</dd></>}
+            </dl>
+            <section id={`${object.id}.parameters`}>
+              <span id="arguments" class="section-anchor-alias" />
+              <h2>{object.kind.startsWith('resource') ? 'URI parameters' : 'Arguments'}<a class="headerlink" href={`#${encodeURIComponent(`${object.id}.parameters`)}`} aria-label="Permalink to arguments">#</a></h2>
+              {input ? <>{fields.length === 0 && <p>No named arguments.</p>}<McpSchemaFields schema={input} scope={`${object.id}.input`} port={port} version={version} /></> : parameterRows.length ? <ul class="api-parameters api-command-parameters">
+                {parameterRows.map((arg) => <li id={arg.id}><p class="api-parameter-heading"><code class="api-param-name"><strong>{arg.name}</strong></code><a class="headerlink" href={`#${encodeURIComponent(arg.id)}`} aria-label={`Permalink to ${arg.name}`}>#</a></p>
+                  {arg.html && <div set:html={arg.html} />}<dl class="api-definition api-parameter-facts"><dt>Binding</dt><dd>{arg.binding}</dd>{arg.required !== undefined && <><dt>Required</dt><dd>{arg.required ? 'Yes' : 'No'}</dd></>}</dl>
+                </li>)}
+              </ul> : <p>{object.kind === 'resource' ? 'Read this resource using its fixed URI.' : 'No arguments are advertised.'}</p>}
+            </section>
+            <section id={`${object.id}.result`}><h2>Result<a class="headerlink" href={`#${encodeURIComponent(`${object.id}.result`)}`} aria-label="Permalink to result">#</a></h2>
+              {output ? <><p class="mcp-schema-type">Returns <McpSchemaType schema={output} root={output} scope={`${object.id}.output`} /></p><McpSchemaFields schema={output} scope={`${object.id}.output`} port={port} version={version} /></>
+                : object.kind === 'prompt' ? <p>Returns the prompt’s messages. The client supplies the advertised arguments as strings.</p>
+                : object.kind.startsWith('resource') ? <p>Returns resource contents for the requested URI{object.item?.mimeType && <> with MIME type <code>{object.item.mimeType}</code></>}.</p>
+                : <p>This server does not advertise an output schema for this tool. Its description defines the returned content.</p>}
+              {parsed?.returnsDoc && <div set:html={await renderToolDescription(parsed.returnsDoc, context)} />}
+            </section>
+            {hasTypes && <section id={`${object.id}.types`} class="mcp-types"><h2>Types<a class="headerlink" href={`#${encodeURIComponent(`${object.id}.types`)}`} aria-label="Permalink to types">#</a></h2>
+              {typeGroups.filter((group) => group.definitions.length).map((group) => <>
+                {typeGroups.every((entry) => entry.definitions.length) && <h3 class="mcp-type-group">{group.label}</h3>}
+                {group.definitions.map((entry) => <dl class="py gp-sphinx-api-container mcp-type-definition">
+                  <dt id={entry.id} class="sig sig-object gp-sphinx-api-header">
+                    <div class="gp-sphinx-api-layout gp-sphinx-api-layout--responsive">
+                      <div class="gp-sphinx-api-layout-left"><h3 class="mcp-type-name"><code>{entry.name}</code>{': '}<McpSchemaType schema={entry.schema} root={group.schema!} scope={group.scope} /></h3></div>
+                      <div class="gp-sphinx-api-layout-right"><ApiBadge label="type" variant="kind" value="typealias" /><a class="headerlink" href={`#${encodeURIComponent(entry.id)}`} aria-label={`Permalink to ${entry.name}`}>¶</a></div>
+                    </div>
+                  </dt>
+                  <dd class="api-overview"><div class="api-doc" set:html={entry.html} /><McpSchemaFields schema={entry.schema} root={group.schema!} scope={group.scope} pointer={entry.path} port={port} version={version} /></dd>
+                </dl>)}
+              </>)}
+            </section>}
+            {object.tool && <section id={`${object.id}.annotations`}><h2>Annotations<a class="headerlink" href={`#${encodeURIComponent(`${object.id}.annotations`)}`} aria-label="Permalink to annotations">#</a></h2>
+              {object.tool.annotations && Object.keys(object.tool.annotations).length ? <dl class="api-definition api-command-facts">{Object.entries(object.tool.annotations).map(([name, value]) => <><dt>{apiGlossaryHref(name, pageUrl) ? <a href={apiGlossaryHref(name, pageUrl)} data-link-preview><code>{name}</code></a> : <code>{name}</code>}</dt><dd><code>{JSON.stringify(value)}</code></dd></>)}</dl> : <p>No annotations are advertised.</p>}
+            </section>}
+            <section id={`${object.id}.schemas`}><span id="schemas" class="section-anchor-alias" /><h2>Protocol data<a class="headerlink" href={`#${encodeURIComponent(`${object.id}.schemas`)}`} aria-label="Permalink to protocol data">#</a></h2>
+              <p>Use the complete advertised contract for validation and client integration.</p>
+              <details open><summary>{object.tool ? 'Input schema' : 'Registration'}</summary><Code code={JSON.stringify(input ?? object.item, null, 2)} lang="json" /></details>
+              {output && <details open><summary>Output schema</summary><Code code={JSON.stringify(output, null, 2)} lang="json" /></details>}
+            </section>
+          </dd>
+        </dl>
+        <footer class="mcp-reference-footer" data-pagefind-ignore="all"><a href={`${pageUrl.replace(/\/$/, '')}.json`}>Protocol JSON</a></footer>
+      </> : <>
+        <p class="mt-3">The reference configuration advertises {entries.length} {section === 'resources' ? 'resources and resource templates' : section}. Your server’s available objects depend on its configuration.{setup?.href && <> <a href={setup.href}>Setup documentation</a> explains how to connect a client.</>}</p>
+        {port === 'cxx' && <p class="mt-3">This catalog uses POSIX. See <a href={`${base}topics/`}>platform limits</a> for the Windows preview.</p>}
+        {sectionTree.children.map((group) => <section class="mt-8" id={group.id}>
+          <h2 class="api-index-summary border-b border-edge pb-1 font-mono">{group.label}<span class="ml-2 text-xs font-sans opacity-60">{group.entries.length} {group.entries.length === 1 ? (section === 'resources' ? 'object' : section.slice(0, -1)) : section === 'resources' ? 'objects' : section}</span><a class="headerlink" href={`#${group.id}`} aria-label={`Permalink to ${group.label}`}>#</a></h2>
+          <div class="mt-3 grid gap-3 sm:grid-cols-2">{entries.filter((entry) => mcpObjectGroup(entry) === group.label).map((entry) => <div class="api-index-card scroll-mt-24 rounded border border-edge p-3 hover:bg-surface-hover" id={entry.id}>
+            <a class="api-index-card__link font-mono font-semibold" href={portPageUrl(info, version, entry.path)}><ApiBadge label={entry.kind} variant="kind" value={entry.kind} compact /><SymbolName name={entry.name} /></a>
+            <div class="mt-1 text-sm opacity-75" set:html={summaries.get(entry.id)} />
+          </div>)}</div>
+        </section>)}
+        {!entries.length && <p class="mt-6">This server does not advertise {section} in the reference configuration.</p>}
+        {section === 'tools' && <div class="mt-8 grid gap-3 sm:grid-cols-2">
+          {catalogs.map((catalog) => <section id={catalog.id} class="api-index-card scroll-mt-24 rounded border border-edge p-3">
+            <h2 class="font-mono font-semibold"><a class="api-index-card__link" href={catalog.href}><ApiBadge label={catalog.kind} variant="kind" value={catalog.kind} compact />{catalog.label}</a></h2>
+            <p class="mt-1 text-sm opacity-75">{catalog.count ? `${catalog.count} advertised in the reference configuration.` : `This server does not advertise ${catalog.label.toLowerCase()} in the reference configuration.`}</p>
+          </section>)}
+        </div>}
+        <details class="mt-8"><summary>Reference configuration</summary>
+          {Object.keys(reference.selection).length ? <dl class="api-definition api-command-facts">{Object.entries(reference.selection).map(([name, value]) => <><dt><code>{name}</code></dt><dd><code>{value}</code></dd></>)}</dl> : <p>No selection environment variables are set.</p>}
+          <p>Protocol version: <code>{reference.protocol.protocolVersion}</code>. <a href={`${base}tools.json`}>Download the full protocol catalog</a>.</p>
+          <p>Source: <a href={`https://github.com/${reference.repo}/tree/${reference.revision}`}><code>{reference.repo}@{reference.revision.slice(0, 12)}</code></a>.</p>
+        </details>
+        <p class="mt-4">The <a href={`${base}reference/`}>language API reference</a> documents embedding and implementation types.</p>
+      </>}
+    </div>
+    {object && <ApiPageContents sections={sections} related={[]} />}
+  </main>
+</BaseLayout>
+<style>
+  .mcp-signature { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .api-index-card__link { display: flex; align-items: baseline; gap: .35rem; }
+  .api-overview section { margin-block-start: 1.5rem; }
+  .api-overview h2 { font-size: 1.125rem; font-weight: 600; margin-bottom: .75rem; padding-bottom: .4rem; border-bottom: 1px solid var(--api-border); }
+  .mcp-overview { font-size: .9375rem; line-height: 1.65; }
+  .mcp-overview :global(.api-parameter-heading) { flex-wrap: wrap; font-size: .875rem; line-height: 1.7; }
+  .mcp-method-description { display: block; margin-top: .25rem; }
+  .mcp-schema-type { font-size: .8125rem; color: var(--color-muted); margin-bottom: .75rem; }
+  .mcp-schema-type code { color: var(--api-kind-class-fg); }
+  .mcp-type-name { font: 600 .9375rem var(--font-mono, ui-monospace, monospace); margin: 0; }
+  .mcp-type-group { margin-block: 1rem .75rem; font-size: .9375rem; }
+  .mcp-type-definition { margin-block: 1rem; }
+  .mcp-types :global(.api-type) { font-weight: 400; }
+  .mcp-reference-footer { display: flex; flex-wrap: wrap; gap: .5rem 1rem; margin-top: 2rem; padding-block: 1rem; border-top: 1px solid var(--api-border); font-size: .875rem; }
+  .api-overview details + details { margin-top: 1rem; }
+  .api-overview summary { cursor: pointer; font-weight: 600; margin-bottom: .5rem; }
+  .api-overview :global(.headerlink) { margin-inline-start: .4rem; }
+  .api-overview :global(.mcp-schema-fields .mcp-schema-fields) { padding-inline-start: 1rem; border-inline-start: 1px solid var(--color-edge); }
+</style>

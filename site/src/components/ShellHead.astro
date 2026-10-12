@@ -4,6 +4,8 @@ import { Font } from 'astro:assets'
 import ThemeScript from './ThemeScript.astro'
 import { pickerPaintRules } from '../lib/picker-paint'
 import { withRoot } from '../lib/site-root'
+import { initializeLinkHintReadiness } from '../lib/link-hint-readiness'
+import { createLinkPreviewPolicy, initializeLinkPreviewPaint } from '../lib/link-preview-paint'
 
 interface Props { preloadSansItalic?: boolean }
 const { preloadSansItalic = false } = Astro.props
@@ -20,9 +22,12 @@ const { preloadSansItalic = false } = Astro.props
   { weight: 700, style: 'italic' },
 ]} />
 {/* ThemeScript lifts this gate on document.fonts.ready or after three seconds. */}
-<style is:inline>html.fonts-pending body{visibility:hidden}</style>
+<style is:inline>html.fonts-pending body,html.link-hints-pending body{visibility:hidden}html.link-hints-suppressed a[data-external-link]::after{display:none}</style>
 <ThemeScript />
+<link rel="preload" as="image" crossorigin="anonymous" href={withRoot('/_shell/external-link.svg')} data-link-hints-mask />
+<script is:inline set:html={`(${initializeLinkHintReadiness.toString()})();`} />
+<script is:inline set:html={`(${initializeLinkPreviewPaint.toString()})((${createLinkPreviewPolicy.toString()})());`} />
 <link rel="stylesheet" href={withRoot('/_shell/anchors.css')} />
-<script is:inline type="module" src={withRoot('/_shell/anchors.js')}></script>
+<script is:inline type="module" data-link-hints-module src={withRoot('/_shell/anchors.js')}></script>
 <style is:global set:html={pickerPaintRules()} />
 <link rel="preload" href={withRoot('/versions.json')} as="fetch" crossorigin="anonymous" />

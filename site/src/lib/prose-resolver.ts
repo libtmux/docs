@@ -1,12 +1,14 @@
-import { Resolver, decideFilePath, decideMention, notASymbol, type ApiProduct, type InventoryEntry, type MentionContext, type MentionDecision } from '@libtmux/api-model'
-import { API_MODELS, PORT_NAME, parentApiInventory } from './api-models'
+import { Resolver, decideFilePath, decideMention, notASymbol, parentInventory, type ApiProduct, type InventoryEntry, type MentionContext, type MentionDecision } from '@libtmux/api-model'
+import { API_MODELS, PORT_NAME, referenceHref } from './api-models'
 import { productApiHref } from './product-api'
-import { PORT_BY_SLUG, referenceUrl } from './ports'
+import { PORTS, PORT_BY_SLUG, portPageUrl, referenceUrl } from './ports'
+import { decideMcpMention } from './mcp-catalog'
 import { buildTarget } from './versions'
 import { withPortRoot } from './site-root'
 import domInv from '../data/inventories/dom.entries.json'
 import jdkInv from '../data/inventories/jdk.entries.json'
 import pythonInv from '../data/inventories/python.entries.json'
+import juliaInv from '../data/inventories/julia.entries.json'
 import pyPaths from '../data/api/py.paths.json'
 import rubyPaths from '../data/api/ruby.paths.json'
 import luaPaths from '../data/api/lua.paths.json'
@@ -20,6 +22,8 @@ import swiftPaths from '../data/api/swift.paths.json'
 import kotlinPaths from '../data/api/kotlin.paths.json'
 import scalaPaths from '../data/api/scala.paths.json'
 import fsharpPaths from '../data/api/fsharp.paths.json'
+import powershellPaths from '../data/api/powershell.paths.json'
+import juliaPaths from '../data/api/julia.paths.json'
 
 /** Language labels used by shared prose headings and comparison rows. */
 export const PORT_BY_LABEL: Record<string, string> = Object.fromEntries(
@@ -32,9 +36,10 @@ const PATHS: Record<string, { repo: string; revision: string; paths: string[] }>
   py: pyPaths, ruby: rubyPaths, lua: luaPaths, ts: tsPaths, rs: rsPaths,
   go: goPaths, java: javaPaths, csharp: csharpPaths, cxx: cxxPaths,
   swift: swiftPaths, kotlin: kotlinPaths, scala: scalaPaths, fsharp: fsharpPaths,
+  powershell: powershellPaths, julia: juliaPaths,
 }
 const TREES = Object.fromEntries(Object.entries(PATHS).map(([port, data]) => [port, new Set(data.paths)]))
-const FILE_RE = /^[\w./@-]+\.(py|ts|tsx|js|rs|go|java|cs|cpp|hpp|h|swift|md|toml|json|ya?ml|sh)$/
+const FILE_RE = /^[\w./@-]+\.(py|ts|tsx|js|rs|go|java|cs|cpp|hpp|h|swift|jl|ps1|psm1|psd1|md|toml|json|ya?ml|sh)$/
 
 type ProseDecision = MentionDecision & { file?: boolean }
 
@@ -47,6 +52,18 @@ export function createProseLinker(product?: ApiProduct) {
     ? buildTarget(process.env).version : (defaults[port] ?? 'latest')
 
   return (text: string, context: Pick<MentionContext, 'pagePort' | 'before'>): ProseDecision => {
+    let protocol = decideMcpMention(text, { ...context, product })
+    // Markdown encodes URI-template braces; literal registrations still win.
+    if (protocol?.kind === 'unresolved' && text.startsWith('mcp:')) {
+      try { protocol = decideMcpMention(decodeURIComponent(text), { ...context, product }) ?? protocol } catch { /* Preserve malformed destinations. */ }
+    }
+    if (protocol?.kind === 'link') {
+      const { port, object } = protocol
+      return { kind: 'link', port, external: false,
+        href: portPageUrl(PORT_BY_SLUG[port]!, versionOf(port), object.path),
+        title: `${object.name}: ${PORT_NAME[port]} MCP ${object.kind}` }
+    }
+    if (protocol) return protocol
     if (FILE_RE.test(text) || text.endsWith('/')) {
       const decision = decideFilePath(text, context, TREES)
       if (decision.kind === 'unresolved') return { ...decision, tried: [], file: true }
@@ -113,6 +130,7 @@ const INVENTORIES: {
     langs: ['java', 'kotlin', 'scala'],
   },
   { data: domInv, project: 'MDN', baseUrl: 'https://developer.mozilla.org/', langs: ['ts'] },
+  { data: juliaInv, project: 'Julia', baseUrl: 'https://docs.julialang.org/en/v1/', langs: ['julia'] },
 ]
 
 /**
@@ -144,8 +162,12 @@ export function getResolver(): Resolver {
   for (const { data, project, baseUrl, langs } of INVENTORIES) {
     r.addInventory(project, baseUrl, entriesOf(data), langs)
   }
-  for (const port of ['kotlin', 'scala', 'fsharp']) {
-    r.addInventory('Parent library API', '', parentApiInventory(port), [port])
+  for (const port of PORTS) {
+    const dependencies = [...(port.parentLibrary ? [port.parentLibrary.slug] : []), ...(port.apiDependencies ?? [])]
+    for (const dependency of dependencies) {
+      r.addInventory(`libtmux ${PORT_NAME[dependency]}`, '', parentInventory(API_MODELS[dependency],
+        (symbol) => referenceHref(dependency, symbol.publicId ?? symbol.id)!), [port.slug])
+    }
   }
   resolver = r
   return r

@@ -83,22 +83,33 @@ d('member order', () => {
   it.each(PORTS)('puts %s listings and queries before creation and utility methods', (port) => {
     const { symbols } = model(port)
     const signals = memberSignals(port)
+    const listingIds = new Set(LISTINGS.map((id) => CONCEPTS[id]!.symbols[port]))
+    const groups = symbols
+      .filter((symbol) => ['Server', 'Session', 'Window', 'Pane', 'Client', 'Snapshot'].includes(symbol.name))
+      .map((owner) => ({ id: owner.id, members: symbols.filter((symbol) => symbol.parent === owner.id) }))
+    // Cmdlets belong to their module; Julia's operations are free functions.
+    if (port === 'powershell') groups.push({ id: 'LibTmux', members: symbols.filter((symbol) => symbol.parent === 'LibTmux') })
+    if (port === 'julia') groups.push({
+      id: 'LibTmux free functions',
+      members: symbols.filter((symbol) => !symbol.parent && symbol.kind === 'function' && symbol.id.startsWith('LibTmux.')),
+    })
     let checked = 0
-    for (const owner of symbols.filter((symbol) => ['Server', 'Session', 'Window', 'Pane', 'Client', 'Snapshot'].includes(symbol.name))) {
-      const members = symbols.filter((symbol) => symbol.parent === owner.id)
+    for (const { id, members } of groups) {
       const ordered = members.toSorted(compareMembers(signals))
-      const routine = members.filter((symbol) => /^(new_?session|new_?window|create_?session|create_?window|close|dispose|asjava|tostring|__enter__|kill_?server)$/.test(
-        symbol.name.replace(/\(.*$/, '').replace(/Async$/, '').toLowerCase()))
+      const routine = members.filter((symbol) => ['New-TmuxSession', 'New-TmuxWindow', 'Remove-TmuxServer', 'Disconnect-TmuxControl', 'Base.close'].includes(symbol.name) ||
+        /^(new_?session|new_?window|create_?session|create_?window|close|dispose|asjava|tostring|__enter__|kill_?server)$/.test(
+          symbol.name.replace(/\(.*$/, '').replace(/Async$/, '').toLowerCase()))
       const priority = members.filter((symbol) => symbol.doc?.deprecated === undefined && !symbol.modifiers?.includes('deprecated') && (
+        listingIds.has(symbol.publicId ?? symbol.id) ||
         /^(?:list_?|get)?(?:sessions|windows|panes|clients|buffers)$/.test(symbol.name.replace(/\(.*$/, '').replace(/Async$/, '').toLowerCase()) ||
         /^(search-|snapshot$)/.test(signals.conceptIds.get(symbol.publicId ?? symbol.id) ?? '')))
       for (const listing of priority) for (const helper of routine) {
-        expect(ordered.indexOf(listing), `${owner.id}: ${listing.name} before ${helper.name}`).toBeLessThan(ordered.indexOf(helper))
+        expect(ordered.indexOf(listing), `${id}: ${listing.name} before ${helper.name}`).toBeLessThan(ordered.indexOf(helper))
         checked++
       }
       // F# currently exposes listPanes without creation or lifecycle helpers.
       if (priority.length && !routine.length) {
-        expect(priority, owner.id).toContain(ordered.find((member) => memberTier(member, signals) !== 'parent'))
+        expect(priority, id).toContain(ordered.find((member) => memberTier(member, signals) !== 'parent'))
         checked++
       }
     }
@@ -151,12 +162,70 @@ d('member order', () => {
     const signals = memberSignals(port)
     const symbols = model(port).symbols
     const parents = symbols.filter((symbol) => memberTier(symbol, signals) === 'parent')
-    // F# supplies functions over .NET handles, not a second set of handle properties.
-    expect(parents.length > 0).toBe(port !== 'fsharp')
+    // F#/PowerShell use .NET handles; Julia's relationships are free functions.
+    expect(parents.length > 0).toBe(!['fsharp', 'powershell', 'julia'].includes(port))
     for (const parent of parents) {
       const siblings = symbols.filter((symbol) => symbol.parent === parent.parent).toSorted(compareMembers(signals))
       for (const sibling of siblings.filter((symbol) => memberTier(symbol, signals) !== 'parent')) {
         expect(siblings.indexOf(parent), `${parent.id} before ${sibling.id}`).toBeLessThan(siblings.indexOf(sibling))
+      }
+    }
+  })
+
+  it('retains PowerShell listing roles when the same cmdlet also represents an entity', () => {
+    const api = model('powershell')
+    const signals = memberSignals('powershell')
+    const owner = api.symbols.find((symbol) => symbol.id === 'LibTmux')!
+    expect(owner.kind).toBe('module')
+    const ordered = membersOf(api, owner, signals)
+    const expected = ['Get-TmuxSession', 'Get-TmuxWindow', 'Get-TmuxPane']
+    expect(ordered.slice(0, 3).map((symbol) => symbol.name)).toEqual(expected)
+    for (const [index, name] of expected.entries()) {
+      const symbol = ordered[index]
+      expect(symbol.parent).toBe(owner.id)
+      expect(symbol.kind).toBe('function')
+      expect(signals.conceptIds.get(symbol.id)).toBe(['session', 'window', 'pane'][index])
+      expect(memberTier(symbol, signals), name).toBe('listing')
+    }
+  })
+
+  it('keeps PowerShell parent relationships on the returned native .NET handles', () => {
+    const api = model('powershell')
+    for (const [cmdlet, receiver, result] of [
+      ['Get-TmuxSession', 'Server', 'Session'],
+      ['Get-TmuxWindow', 'Session', 'Window'],
+      ['Get-TmuxPane', 'Window', 'Pane'],
+    ]) {
+      const symbol = api.symbols.find((entry) => entry.id === `LibTmux\\${cmdlet}`)!
+      expect(symbol).toMatchObject({ kind: 'function', parent: 'LibTmux' })
+      expect(symbol.signatures.some((signature) => signature.returns === `LibTmux.${result}` &&
+        signature.params.some((param) => param.name === receiver && param.type === `LibTmux.${receiver}`))).toBe(true)
+      expect(api.symbols.some((entry) => entry.id === `LibTmux.${result}`)).toBe(false)
+      const handle = model('csharp').symbols.find((entry) => entry.id === `LibTmux.${result}`)!
+      expect(handle, result).toBeDefined()
+      expect(membersOf(model('csharp'), handle).some((entry) => entry.name === 'Server' &&
+        memberTier(entry, memberSignals('csharp')) === 'parent')).toBe(true)
+    }
+  })
+
+  it('checks Julia captured relationships as free functions with their native receivers', () => {
+    const api = model('julia')
+    for (const [name, receiverTypes] of [
+      ['sessions', ['Snapshot']],
+      ['windows', ['SessionSnapshot', 'Snapshot']],
+      ['panes', ['Snapshot', 'WindowSnapshot']],
+      ['window', ['PaneSnapshot', 'WindowLink']],
+      ['session', ['ClientSnapshot', 'WindowLink']],
+    ] as const) {
+      const symbol = api.symbols.find((entry) => entry.id === `LibTmux.${name}`)!
+      expect(symbol.kind).toBe('function')
+      expect(symbol.parent).toBeUndefined()
+      expect(symbol.signatures.map((signature) => signature.params[0].type).sort())
+        .toEqual(receiverTypes.map((type) => `LibTmux.${type}`).sort())
+      for (const type of receiverTypes) {
+        const owner = api.symbols.find((entry) => entry.id === `LibTmux.${type}`)!
+        expect(owner, type).toBeDefined()
+        expect(membersOf(api, owner).some((entry) => entry.id === symbol.id)).toBe(false)
       }
     }
   })

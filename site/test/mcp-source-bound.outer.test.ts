@@ -15,7 +15,7 @@ const tool = { name: 'list_sessions', description: 'Selected source contract', i
   type: 'object', properties: { label: { type: 'string', description: 'Selected source argument' } },
 } }
 
-function fixture(slug: 'go' | 'py' | 'ruby' | 'java' | 'swift', run: (fixture: {
+function fixture(slug: 'go' | 'py' | 'ruby' | 'java' | 'swift' | 'julia', run: (fixture: {
   directory: string; checkout: string; sha: string; model: string; snapshot: string; catalog: string;
   discovery: string; env: NodeJS.ProcessEnv;
   invoke: (script: 'protocol' | 'tools', args?: string[], env?: NodeJS.ProcessEnv) => SpawnSyncReturns<string>;
@@ -41,6 +41,9 @@ function fixture(slug: 'go' | 'py' | 'ruby' | 'java' | 'swift', run: (fixture: {
     } else if (slug === 'swift') {
       write(join(checkout, 'Sources/LibTmuxMCP/ToolOperation.swift'),
         'enum ToolOperation: String {\n\n    case listSessions = "list_sessions"\n}\n')
+    } else if (slug === 'julia') {
+      write(join(checkout, 'packages/LibTmuxMCP/src/tools.jl'),
+        'const _TOOL_NAMES = (\n    "list_sessions",\n)\nconst _ROUTINE_TOOLS = ("list_sessions",)\nconst unrelated = "not_a_tool"\n')
     } else {
       write(join(checkout, slug === 'go' ? 'mcp/manifest_catalog.go' : 'src/libtmux_mcp/tools/sessions.py'),
         slug === 'go' ? 'var catalog = []tool{{name: "list_sessions"}}\n' : 'mcp.tool()(list_sessions)\n')
@@ -59,7 +62,7 @@ function fixture(slug: 'go' | 'py' | 'ruby' | 'java' | 'swift', run: (fixture: {
     const repo = slug === 'py' ? 'tmux-python/libtmux-mcp' : `libtmux/libtmux-${slug}`
     write(model, JSON.stringify({ port: slug, revision: coreSha, sources: [{ product: 'mcp', repo, revision: sha, extractedRevision: sha }] }))
     write(catalog, JSON.stringify({ generated: 'fixture', referenceDocumented: 54,
-      ports: Object.fromEntries(['py', 'ruby', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'].map((port) => [port, {
+      ports: Object.fromEntries(['py', 'ruby', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift', 'julia'].map((port) => [port, {
         tools: ['old_tool'], registrations: [{ wireName: 'old_tool' }], revision: 'a'.repeat(40),
       }])),
     }))
@@ -70,7 +73,8 @@ import { writeFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import { createInterface } from 'node:readline'
 writeFileSync(process.env.DISCOVERY, JSON.stringify({ tmp: process.env.TMUX_TMPDIR, tmux: process.env.TMUX,
-  pane: process.env.TMUX_PANE, toolsets: process.env.LIBTMUX_TOOLSETS, socket: process.env.LIBTMUX_SOCKET }))
+  pane: process.env.TMUX_PANE, toolsets: process.env.LIBTMUX_TOOLSETS, socket: process.env.LIBTMUX_SOCKET,
+  live: process.env.LIBTMUX_MCP_LIVE }))
 createInterface({ input: process.stdin }).on('line', (line) => {
   const message = JSON.parse(line)
   if (!message.id) return
@@ -87,6 +91,7 @@ createInterface({ input: process.stdin }).on('line', (line) => {
       [`LIBTMUX_DOCS_CHECKOUT_${slug.toUpperCase()}`]: checkout, LIBTMUX_DOCS_MCP_PY: checkout,
       [`LIBTMUX_DOCS_MCP_COMMAND_${slug.toUpperCase()}`]: JSON.stringify([process.execPath, server]),
       TMUX: 'inherited-session', TMUX_PANE: '%123', LIBTMUX_TOOLSETS: 'teardown', LIBTMUX_SOCKET_PATH: '/must-not-use',
+      LIBTMUX_MCP_LIVE: '0',
       DISCOVERY: discovery, SOURCE: checkout,
     }
     const invoke = (script: 'protocol' | 'tools', args: string[] = [], overrides: NodeJS.ProcessEnv = {}) => spawnSync(process.execPath,
@@ -97,6 +102,19 @@ createInterface({ input: process.stdin }).on('line', (line) => {
     rmSync(directory, { recursive: true, force: true })
   }
 }
+
+it('extracts only the Julia declared catalog and retains its native default selection', () => {
+  fixture('julia', ({ catalog, invoke }) => {
+    const protocol = invoke('protocol')
+    expect(protocol.status, protocol.stderr).toBe(0)
+    const result = invoke('tools')
+    expect(result.status, result.stderr).toBe(0)
+    const registrations = JSON.parse(readFileSync(catalog, 'utf8')).ports.julia.registrations
+    expect(registrations).toHaveLength(1)
+    expect(registrations[0]).toMatchObject({ wireName: 'list_sessions', enabledByDefault: true,
+      enableOption: '--tool', schemaStatus: 'runtime', source: { line: 2 } })
+  })
+})
 
 it('cites the Swift enum case after a blank line', () => {
   fixture('swift', ({ catalog, invoke }) => {
@@ -131,6 +149,7 @@ it.each(['go', 'py'] as const)('binds the %s catalog to its actual MCP source an
     expect(environment).toMatchObject({ toolsets: 'inspect,manage,execute,teardown', socket: 'libtmux-docs-protocol' })
     expect(environment.tmux).toBeUndefined()
     expect(environment.pane).toBeUndefined()
+    expect(environment.live).toBeUndefined()
     expect(environment.tmp).toContain('libtmux-docs-mcp-')
     expect(existsSync(environment.tmp)).toBe(false)
   })

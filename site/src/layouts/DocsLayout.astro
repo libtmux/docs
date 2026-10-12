@@ -11,6 +11,7 @@ import { generateToC } from '../utils/generateToC'
 import { DEFAULT_LOCALE, localeSourcePath, type Locale } from '../i18n/locales'
 import type { LocaleStatus } from '../i18n/resolve'
 import PageToolbar from '../components/PageToolbar.astro'
+import SymbolName from '../components/api/SymbolName.astro'
 import PagePortSwitcher from '../components/PagePortSwitcher.astro'
 import DocumentationContext from '../components/docs/DocumentationContext.astro'
 import { pageBreadcrumbs, type SidebarItem } from '../lib/sidebar'
@@ -43,6 +44,8 @@ import { DOC_PRODUCTS, PORT_BY_SLUG, portPageUrl, productAvailable, productDescr
  */
 interface Props {
   title: string
+  /** Render an API identifier as code while retaining its plain metadata title. */
+  symbolTitle?: boolean
   description?: string
   /** Which port's nav to scope the sidebar to. Omit for shell pages with no port. */
   port?: string
@@ -84,12 +87,13 @@ interface Props {
    */
   bare?: boolean
   navigation?: SidebarItem[]
-  breadcrumbs?: { name: string; url: string }[]
+  breadcrumbs?: { name: string; url: string; symbol?: boolean }[]
   pagePorts?: PagePortLink[]
 }
 
 const {
   title,
+  symbolTitle = false,
   description,
   port,
   product,
@@ -197,7 +201,7 @@ const breadcrumbs = requestedBreadcrumbs ?? (product && port ? [
 
   <!-- Mobile sidebar drawer -->
   <div id="mobile-sidebar-overlay" class="fixed inset-0 z-40 bg-black/50 opacity-0 invisible lg:hidden"></div>
-  <aside id="mobile-sidebar" inert class="drawer-surface fixed left-0 top-0 z-50 h-full w-64 -translate-x-full overflow-y-auto lg:hidden">
+  <aside id="mobile-sidebar" data-documentation-scroll="mobile" inert class="drawer-surface fixed left-0 top-0 z-50 h-full w-64 -translate-x-full overflow-y-auto lg:hidden">
     <div class="p-4">
       <div class="mb-6 flex items-center justify-between">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Navigation</h2>
@@ -226,7 +230,7 @@ const breadcrumbs = requestedBreadcrumbs ?? (product && port ? [
   */}
   <div class="mx-auto flex max-w-[100rem] gap-5 px-4 py-6 lg:px-5">
     <aside class="hidden w-64 shrink-0 lg:block">
-      <div class="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
+      <div data-documentation-scroll="desktop" class="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
         <Sidebar locale={locale} port={port} product={product} version={version} currentPath={currentPath} navigation={navigation} />
       </div>
     </aside>
@@ -243,7 +247,9 @@ const breadcrumbs = requestedBreadcrumbs ?? (product && port ? [
               <slot name="hero-links" />
             </div>
           </div>
-        ) : <h1 id={PAGE_TITLE_ID} class="wrap-anywhere">{title}</h1>}
+        ) : <h1 id={PAGE_TITLE_ID} class="wrap-anywhere">{symbolTitle
+          ? <code class="not-prose symbol-title"><SymbolName name={title} /></code>
+          : title}</h1>}
         {/*
           The same caution the reference and the prose use, rather than a box
           of its own: a reader who has seen one development warning should
@@ -314,7 +320,7 @@ const breadcrumbs = requestedBreadcrumbs ?? (product && port ? [
         // Into the drawer, so the next Tab is a menu item rather than whatever
         // sits behind it; and back to the button on close, so the reader
         // returns to where they were rather than to the top of the document.
-        ;(closeButton ?? sidebar.querySelector<HTMLElement>('a'))?.focus()
+        ;(closeButton ?? sidebar.querySelector<HTMLElement>('a'))?.focus({ preventScroll: true })
       }
       function close() {
         if (!sidebar || !overlay) return
@@ -325,7 +331,7 @@ const breadcrumbs = requestedBreadcrumbs ?? (product && port ? [
         document.body.style.overflow = ''
         toggleButton?.setAttribute('aria-expanded', 'false')
         setInert(true)
-        if (hadFocus) toggleButton?.focus()
+        if (hadFocus) toggleButton?.focus({ preventScroll: true })
       }
 
       toggleButton?.addEventListener('click', open, { signal })
@@ -367,6 +373,16 @@ const breadcrumbs = requestedBreadcrumbs ?? (product && port ? [
 </BaseLayout>
 
 <style>
+  h1 > .symbol-title {
+    font: inherit;
+    font-family: var(--font-mono, ui-monospace, monospace);
+    color: inherit;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+  }
   .product-hero { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem; }
   .product-hero img { width: 88px; height: 88px; flex: none; margin: 0; }
   .product-hero h1 { min-width: 0; margin: 0; }

@@ -4,6 +4,7 @@
 Use --port to choose a language and --output-dir for a new evidence directory.
 Use --example guide --page guides/<name> for a shared tmux shell program.
 Use --example home --port <slug> for the homepage's complete program.
+Use --example program --port <slug> --page examples/<name> for an examples page.
 The selected language's native tools, Git, and tmux must already be on PATH.
 This downloads and builds dependencies; it belongs outside routine site tests.
 """
@@ -63,7 +64,7 @@ def stop_process_group(process):
 def main():
     repo = Path(__file__).resolve().parent.parent
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--example', choices=['capture', 'attach', 'query', 'concept', 'guide', 'api', 'home'], default='capture')
+    parser.add_argument('--example', choices=['capture', 'attach', 'query', 'concept', 'guide', 'api', 'home', 'program'], default='capture')
     parser.add_argument('--port')
     parser.add_argument('--page', help='Guide path, or page within the selected port')
     parser.add_argument('--program', help='Source program ID when an API page has several complete examples')
@@ -160,7 +161,7 @@ def main():
     env.pop('TMUX', None)
     env.pop('TMUX_PANE', None)
     sandbox = None
-    if args.example == 'home':
+    if args.example in ('home', 'program'):
         from example_tmux_sandbox import ExampleTmuxSandbox
         sandbox = ExampleTmuxSandbox(output, env)
     if sandbox:

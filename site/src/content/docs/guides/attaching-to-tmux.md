@@ -132,7 +132,9 @@ socket and leaves that server running:
 [C++](/cxx/latest/guides/attaching-to-tmux/) ·
 [Swift](/swift/latest/guides/attaching-to-tmux/) ·
 [Ruby](/ruby/latest/guides/attaching-to-tmux/) ·
-[Lua](/lua/latest/guides/attaching-to-tmux/)
+[Lua](/lua/latest/guides/attaching-to-tmux/) ·
+[PowerShell](/powershell/latest/guides/attaching-to-tmux/) ·
+[Julia](/julia/latest/guides/attaching-to-tmux/)
 
 ## Where to go next
 

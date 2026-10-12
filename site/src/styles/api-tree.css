@@ -63,6 +63,10 @@
   cursor: pointer;
   font-size: 0.75rem;
 }
+.api-nav__filters button:disabled {
+  opacity: .5;
+  cursor: default;
+}
 .api-nav__filters button[aria-pressed='true'] {
   background: var(--background-color);
   color: var(--color-link);
@@ -240,6 +244,9 @@
   color: var(--api-kind-typealias-fg);
   border-color: var(--api-kind-typealias-border);
 }
+
+/* Prose links use the same compact symbol mark as the navigation tree. */
+.api-link-kind { margin-inline-end: .3em; user-select: none; text-decoration: none; }
 
 .api-nav__count {
   flex: none;
@@ -458,3 +465,9 @@ html[data-api-nav] .api-nav__item[aria-expanded='false'] > [role='group']:not([d
 }
 .api-nav__retry:hover { background: var(--color-surface-hover); }
 .api-nav__retry:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
+.api-nav__row[aria-disabled='true'] {
+  color: var(--color-muted);
+  opacity: .6;
+  cursor: default;
+  background: none;
+}

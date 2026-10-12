@@ -66,6 +66,15 @@ describe('tmux manual sitemap routes', () => {
 })
 
 describe('canonical workspace sitemap routes', () => {
+  it.each([
+    ['powershell/latest/mcp/', 'powershell/latest/guides/mcp/'],
+    ['julia/latest/guides/api-overview/', 'julia/latest/reference/'],
+    ['ruby/latest/guides/source/core/', 'ruby/latest/guides/core/'],
+    ['lua/latest/guides/source/overview/', 'lua/latest/guides/overview/'],
+  ])('excludes the source-guide alias %s while retaining %s', (alias, canonical) => {
+    expect(sitemapOptions.filter!(`https://libtmux.org/en/${alias}`)).toBe(false)
+    expect(sitemapOptions.filter!(`https://libtmux.org/en/${canonical}`)).toBe(true)
+  })
   it.each(['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift', 'ruby'])(
     'includes real %s Guides and Examples pages', (port) => {
       expect(includes(port, 'guides')).toBe(true)
@@ -99,8 +108,8 @@ describe('canonical workspace sitemap routes', () => {
     const run = async (name: keyof typeof hooks, value: unknown) => {
       await (hooks[name] as (input: unknown) => unknown)(value)
     }
-    const kept = ['ts/latest/workspace/guides/', 'go/latest/workspace/examples/', 'py/stable/workspace/guides/', 'ruby/latest/workspace/topics/']
-    const omitted = ['ts/latest/workspace/topics/', 'go/latest/workspace/api/builder/', 'lua/latest/workspace/guides/', 'kotlin/latest/workspace/examples/']
+    const kept = ['ts/latest/workspace/guides/', 'go/latest/workspace/examples/', 'py/stable/workspace/guides/', 'ruby/latest/workspace/topics/', 'powershell/latest/guides/mcp/', 'julia/latest/reference/']
+    const omitted = ['ts/latest/workspace/topics/', 'go/latest/workspace/api/builder/', 'lua/latest/workspace/guides/', 'kotlin/latest/workspace/examples/', 'powershell/latest/mcp/', 'julia/latest/guides/api-overview/']
     try {
       await run('astro:config:done', { config: { site: 'https://libtmux.org', base: '/en/', trailingSlash: 'always', build: { format: 'directory' } } })
       await run('astro:routes:resolved', { routes: [] })

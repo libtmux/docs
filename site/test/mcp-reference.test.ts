@@ -1,7 +1,9 @@
 import { readFileSync } from 'node:fs'
 import { expect, it } from 'vitest'
 import catalogs from '../src/data/mcp-tools.json'
-import { equivalentMcpTool, MCP_REFERENCE, renderToolDescription, toolSummary } from '../src/lib/mcp-reference'
+import { equivalentMcpTool, equivalentMcpObject, MCP_REFERENCE, mcpObjects, mcpObjectAt, mcpReferenceRoutes, mcpNavigation, resolveMcpObject, renderToolDescription, toolSummary } from '../src/lib/mcp-reference'
+import { apiTreeHref, searchApi } from '../src/lib/api-search'
+import { PORTS } from '../src/lib/ports'
 
 it.each(Object.entries(catalogs.ports))('keeps the %s catalog bound to its committed native snapshot', (port, catalog) => {
   const snapshot = JSON.parse(readFileSync(new URL(`../src/data/mcp-protocol/${port}.json`, import.meta.url), 'utf8'))
@@ -83,4 +85,56 @@ it('links only registered tool mentions in description prose', async () => {
   const dotnet = await renderToolDescription('Use capture_pane or `run_shell_command`.', { port: 'csharp', version: 'latest' })
   expect(dotnet).toContain('/csharp/latest/mcp/tools/capture_pane/')
   expect(dotnet).toContain('/csharp/latest/mcp/tools/run_shell_command/')
+})
+
+it.each(Object.keys(MCP_REFERENCE))('routes and indexes every advertised %s protocol object once', (port) => {
+  const snapshot = JSON.parse(readFileSync(new URL(`../src/data/mcp-protocol/${port}.json`, import.meta.url), 'utf8'))
+  const protocol = snapshot.protocol
+  const expected = [
+    ...protocol.tools.map((row: { name: string }) => ['tool', row.name]),
+    ...protocol.prompts.map((row: { name: string }) => ['prompt', row.name]),
+    ...protocol.resources.map((row: { name: string }) => ['resource', row.name]),
+    ...protocol.resourceTemplates.map((row: { name: string }) => ['resource-template', row.name]),
+  ]
+  const objects = mcpObjects(port)
+  expect(objects.map(({ kind, name }) => [kind, name])).toEqual(expected)
+  expect(new Set(objects.map((object) => object.id)).size).toBe(expected.length)
+  const routes = mcpReferenceRoutes(port, {}, 'next')
+  expect(routes.filter((route) => !route.itemSlug).map((route) => route.path)).toEqual(['mcp/tools', 'mcp/prompts', 'mcp/resources'])
+  expect(routes).toHaveLength(expected.length + 3)
+  const navigation = mcpNavigation(port)
+  const all = searchApi(navigation.json, '')
+  expect(all.map((row) => row.id).sort()).toEqual(objects.map((row) => row.id).sort())
+  for (const object of objects) {
+    const route = routes.find((entry) => entry.path === object.path)!
+    expect(route, object.id).toMatchObject({ port, section: object.section, itemSlug: object.slug, version: 'next' })
+    expect(mcpObjectAt(port, route.section, route.itemSlug)).toBe(object)
+    const result = searchApi(navigation.json, object.name, object.section).find((row) => row.id === object.id)!
+    expect(result, object.id).toMatchObject({ name: object.name, kind: object.kind, category: object.section })
+    expect(apiTreeHref(`/${port}/next/mcp/`, result)).toBe(`/${port}/next/${object.path}/`)
+    expect(searchApi(navigation.json, object.name, object.section === 'tools' ? 'prompts' : 'tools').some((row) => row.id === object.id)).toBe(false)
+  }
+})
+
+it('keeps resource URI identity distinct from display names and template identities', () => {
+  const object = resolveMcpObject('ts', 'mcp:resource:tmux://capabilities')!
+  expect(object).toMatchObject({ id: 'mcp.resource.tmux://capabilities', name: 'capabilities' })
+  expect(equivalentMcpObject('ts', object, 'go')).toMatchObject({ name: 'tmux capabilities', path: 'mcp/resources/tmux-capabilities' })
+  expect(equivalentMcpObject('ts', object, 'csharp')).toMatchObject({ name: 'tmux_capabilities', path: 'mcp/resources/tmux_capabilities' })
+  expect(equivalentMcpObject('ts', object, 'py')).toBeUndefined()
+  const template = resolveMcpObject('py', 'mcp:resource-template:tmux://panes/{pane_id}{?socket_name}')!
+  expect(template).toMatchObject({ name: 'get_pane', path: 'mcp/resources/templates/get_pane' })
+  expect(resolveMcpObject('py', 'mcp:resource:tmux://panes/{pane_id}{?socket_name}')).toBeUndefined()
+})
+
+it('does not invent protocol objects for ports without a captured contract', () => {
+  for (const { slug: port } of PORTS.filter((entry) => !MCP_REFERENCE[entry.slug])) {
+    expect(mcpObjects(port)).toEqual([])
+    expect(mcpReferenceRoutes(port, {}, 'latest')).toEqual([])
+    expect(resolveMcpObject(port, 'mcp:tool:list_sessions')).toBeUndefined()
+  }
+  const routes = mcpReferenceRoutes(undefined, { py: 'stable', ts: 'next' }, 'ignored')
+  expect(routes.find((route) => route.port === 'py' && route.section === 'prompts' && !route.itemSlug)?.path).toBe('py/stable/mcp/prompts')
+  expect(routes.find((route) => route.port === 'ts' && route.section === 'resources' && !route.itemSlug)?.path).toBe('ts/next/mcp/resources')
+  expect(new Set(routes.map((route) => route.path)).size).toBe(routes.length)
 })
