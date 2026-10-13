@@ -4,6 +4,8 @@ import { Font } from 'astro:assets'
 import ThemeScript from './ThemeScript.astro'
 import { pickerPaintRules } from '../lib/picker-paint'
 import { initializePageReadiness } from '../lib/page-readiness'
+import { initializeWebAnalytics } from '../lib/web-analytics'
+import { withRoot } from '../lib/site-root'
 import { installExternalLinks } from '../../public/_shell/external-links.js'
 import externalLink from '../../public/_shell/external-link.svg?raw'
 import externalLinksCss from '../../public/_shell/external-links.css?raw'
@@ -36,6 +38,7 @@ const hintsCss = externalLinksCss.replace('url("./external-link.svg")', `url("${
 <ThemeScript />
 <style is:inline set:html={hintsCss} />
 <script is:inline set:html={`(${initializePageReadiness.toString()})(${installExternalLinks.toString()},${JSON.stringify(mask)});`} />
+<script is:inline set:html={`(${initializeWebAnalytics.toString()})(${JSON.stringify(withRoot('/_shell/web-analytics.json'))});`} />
 <script is:inline set:html={`(${initializeLinkPreviewPaint.toString()})((${createLinkPreviewPolicy.toString()})());`} />
 <script>
   import '../../public/_shell/anchors.js'

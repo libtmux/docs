@@ -38,6 +38,73 @@ async function observeAppearance(context) {
   })
 }
 
+/** Optional policy and beacon requests cannot hold browser lifecycle events. */
+export async function checkWebAnalytics(browser, base) {
+  for (const kind of ['beacon', 'policy', 'excluded']) {
+    const context = await browser.newContext({ viewport: { width: 390, height: 900 } })
+    await observeAppearance(context)
+    const page = await context.newPage()
+    const errors = []
+    page.on('pageerror', (error) => errors.push(error.message))
+    let release, requested = false, beaconRequests = 0
+    const held = new Promise((resolve) => { release = resolve })
+    try {
+      await page.route('**/_shell/web-analytics.json', async (route) => {
+        if (kind === 'policy') {
+          requested = true
+          await held
+          await route.abort()
+          return
+        }
+        const response = await route.fetch()
+        assert.equal(response.status(), 200, 'The built policy resource exists')
+        const headers = { ...response.headers() }
+        if (kind !== 'excluded') headers['x-libtmux-analytics'] = 'allow'
+        else delete headers['x-libtmux-analytics']
+        await route.fulfill({ response, headers })
+      })
+      await page.route('https://static.cloudflareinsights.com/**', async (route) => {
+        beaconRequests++
+        requested = true
+        await held
+        await route.abort()
+      })
+      const incoming = kind === 'beacon' ? page.waitForRequest('https://static.cloudflareinsights.com/**')
+        : kind === 'policy' ? page.waitForRequest('**/_shell/web-analytics.json')
+        : page.waitForResponse((response) => new URL(response.url()).pathname.endsWith('/_shell/web-analytics.json'))
+      await Promise.all([incoming, page.goto(`${base}/swift/latest/mcp/reference/jsonvalue-(_-_-)-sduv/`, {
+        waitUntil: 'load', timeout: process.env.CI ? 20000 : 10000,
+      })])
+      await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready')
+      await page.evaluate(() => new Promise((resolve) => {
+        let remaining = 8
+        const sample = () => { if (--remaining) requestAnimationFrame(sample); else resolve() }
+        requestAnimationFrame(sample)
+      }))
+      const observation = await page.evaluate(() => ({
+        readyState: document.readyState,
+        load: performance.getEntriesByType('navigation')[0].loadEventEnd,
+        appearance: window.__appearance,
+        beacon: Boolean(document.querySelector('script[data-cf-beacon]')),
+      }))
+      assert.equal(observation.readyState, 'complete', `${kind}: browser load completed`)
+      assert(observation.load > 0, `${kind}: load was recorded before releasing analytics`)
+      assert(observation.appearance.first.fonts, `${kind}: downloaded fonts were ready at first appearance`)
+      assert.equal(observation.appearance.shifts, 0, `${kind}: no observed post-reveal layout shift`)
+      if (kind === 'excluded') {
+        assert.equal(beaconRequests, 0, 'Excluded visitors make no beacon request')
+        assert.equal(observation.beacon, false, 'Excluded visitors have no beacon element')
+      } else assert(requested, `${kind}: the optional request remains held`)
+      assert.deepEqual(errors, [], `${kind}: no page error`)
+    } finally {
+      release()
+      await page.unrouteAll({ behavior: 'wait' })
+      await context.close()
+    }
+  }
+  console.log('Analytics: held policy/beacon cannot block load; edge denial excludes the beacon PASS')
+}
+
 /** Held and failed required resources must never become elapsed-time success. */
 export async function checkRequiredAppearance(browser, base) {
   for (const [kind, path, width] of [

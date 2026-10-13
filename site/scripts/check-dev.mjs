@@ -14,7 +14,7 @@ import { checkHomeTaskReset } from './check-home-task-reset.mjs'
 import { checkColorScheme } from './check-color-scheme.mjs'
 import { checkHomeExampleOptions } from './check-home-example-options.mjs'
 import { checkDevSample } from './check-dev-sample.mjs'
-import { checkRequiredAppearance } from './check-page-readiness.mjs'
+import { checkRequiredAppearance, checkWebAnalytics } from './check-page-readiness.mjs'
 
 const apiNavigationOnly = process.argv.includes('--api-navigation')
 const apiAnchorsOnly = process.argv.includes('--api-anchors')
@@ -574,6 +574,7 @@ try {
   await ready
   if (sampleOnly) {
     await retryReload(() => checkDevSample(browser, base))
+    await checkWebAnalytics(browser, base)
   } else if (homeLauncherOnly) {
     await checkHomeLauncher(browser, base)
   } else if (homeControlsOnly) {
@@ -604,6 +605,7 @@ try {
     await retryReload(() => checkApiAnchorArrival(browser, base))
   } else {
     await retryReload(() => checkRequiredAppearance(browser, base))
+    await checkWebAnalytics(browser, base)
     // Timed page loads share Vite's compiler. Finish each browser matrix
     // before starting the next, including the main page walk below.
     let previous = Promise.resolve()
