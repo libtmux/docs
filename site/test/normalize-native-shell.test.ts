@@ -9,6 +9,37 @@ import { nativeArticle, nativeHash } from '../../scripts/native-shell-context.mj
 import { recordBuild, verifyBuild } from '../../scripts/publication-provenance.mjs'
 
 describe('native shell URL normalization', () => {
+  it('expands native signature panels and queues their scroll for completed layout', async () => {
+    const directory = mkdtempSync(join(tmpdir(), 'native-layout-'))
+    const win = new Window({ url: 'https://libtmux.org/en/py/latest/api/#parameter' })
+    try {
+      mkdirSync(join(directory, '_static/js'), { recursive: true })
+      const file = join(directory, '_static/js/layout.js')
+      writeFileSync(file, readFileSync(new URL('./fixtures/native-layout.js', import.meta.url)))
+      const contextFile = join(directory, 'context.json')
+      writeFileSync(contextFile, JSON.stringify({ port: 'py', version: 'latest', root: '/en/', pages: [] }))
+      const options = { sphinxPort: 'py', contextFile }
+      await normalizeNativeShell(directory, '/en', options)
+      const layouts: (() => void)[] = []
+      const scrolled: string[] = []
+      Object.assign(win, {
+        __libtmuxAppearance: { layout: (work: () => void) => layouts.push(work) },
+        setTimeout: () => { throw Error('Native scroll escaped into a timer') },
+      })
+      win.document.body.innerHTML = '<div class="gp-sphinx-api-header"><div class="gp-sphinx-api-signature"><button class="gp-sphinx-api-signature-toggle" aria-controls="expanded" aria-expanded="false"></button><div id="expanded" class="gp-sphinx-api-signature-expanded" hidden><span id="parameter">Parameter</span></div></div></div>'
+      win.HTMLElement.prototype.scrollIntoView = function () { scrolled.push(this.id) }
+      win.eval(readFileSync(file, 'utf8'))
+      expect(layouts).toHaveLength(1)
+      layouts.shift()!()
+      expect(win.document.querySelector('#expanded')?.hasAttribute('hidden')).toBe(false)
+      expect(scrolled).toEqual([])
+      expect(layouts).toHaveLength(1)
+      layouts.shift()!()
+      expect(scrolled).toEqual(['parameter'])
+      expect(await normalizeNativeShell(directory, '/en', options)).toBe(0)
+    } finally { await win.happyDOM.abort(); rmSync(directory, { recursive: true, force: true }) }
+  })
+
   it('completes pinned Sphinx highlighting during appearance layout without a timer', async () => {
     const directory = mkdtempSync(join(tmpdir(), 'native-highlight-'))
     const win = new Window({ url: 'https://libtmux.org/en/py/stable/api/?highlight=window' })
@@ -84,12 +115,14 @@ describe('native shell URL normalization', () => {
       const shell = join(directory, 'shell')
       mkdirSync(join(native, 'api/pane'), { recursive: true })
       mkdirSync(join(native, '_static'), { recursive: true })
+      mkdirSync(join(native, '_static/js'), { recursive: true })
+      writeFileSync(join(native, '_static/js/layout.js'), readFileSync(new URL('./fixtures/native-layout.js', import.meta.url)))
       if (tabsPresent) writeFileSync(join(native, '_static/tabs.js'), '/* retained tabs extension */')
       mkdirSync(join(shell, 'api/api/pane'), { recursive: true })
       const page = join(native, 'api/pane/index.html')
       const article = '<h2 id="capture">Pane &amp; capture</h2>\n<pre>  $ printf &quot;ok&quot;\n</pre><a href="#capture">Capture</a>'
       const tabs = '<script src="../../_static/tabs.js?v=legacy"></script>'
-      const otherScripts = '<script src="../../_static/design-tabs.js"></script><script src="https://other.example/_static/tabs.js"></script><script src="../../_static/missing.js"></script>'
+      const otherScripts = '<script src="../../_static/js/layout.js?v=old"></script><script src="../../_static/design-tabs.js"></script><script src="https://other.example/_static/tabs.js"></script><script src="../../_static/missing.js"></script>'
       const baseline = `<html class="no-js"><head><title>Native title</title><link rel="canonical" href="https://native.example/pane/"><link href="../../_static/theme.css" rel="stylesheet"><link href="../../_static/libtmux-org.css?v=old" rel="stylesheet"><script src="/_shell/shell.js"></script>${tabs}${otherScripts}</head><body><header class="mobile-header">Old</header><article role="main">${article}</article><footer><a href="../session/">Next</a><p>Native attribution</p><div class="page-source"><code>docs/pane.md</code></div></footer></body></html>`
       writeFileSync(page, baseline)
       const context = {
@@ -108,6 +141,8 @@ describe('native shell URL normalization', () => {
       expect(html).toContain('href="/pr-42/en/py/v0.62.0/api/_static/theme.css"')
       expect(html.includes('src="/pr-42/en/py/v0.62.0/api/_static/tabs.js?v=legacy"')).toBe(tabsPresent)
       expect(html).toContain('src="/pr-42/en/py/v0.62.0/api/_static/design-tabs.js"')
+      const layoutDigest = nativeHash(readFileSync(join(native, '_static/js/layout.js'))).slice(0, 12)
+      expect(html).toContain(`src="/pr-42/en/py/v0.62.0/api/_astro/js/layout.${layoutDigest}.js"`)
       expect(html).toContain('src="https://other.example/_static/tabs.js"')
       expect(html).toContain('src="/pr-42/en/py/v0.62.0/api/_static/missing.js"')
       expect(html).toContain('<a href="../session/">Next</a><p>Native attribution</p>')

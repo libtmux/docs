@@ -34,6 +34,10 @@ function adaptHighlight(directory) {
 /** Complete retained native widgets before the shared page gate reveals them. */
 function adaptWidgets(directory) {
   const assets = [
+    ['js/layout.js', 'f10b833c4781bc9ac9dd99762e840c4990a2036011e4f11572f6831611cb52d3', [
+      ["  document.addEventListener('DOMContentLoaded', expandForHash);", "  if (window.__libtmuxAppearance) window.__libtmuxAppearance.layout(expandForHash);\n  else document.addEventListener('DOMContentLoaded', expandForHash);"],
+      ['    setTimeout(function () {\n      // No block option: respect CSS scroll-margin-top from the theme.\n      target.scrollIntoView();\n    }, 50);', '    var scroll = function () { target.scrollIntoView({ behavior: \'instant\' }); };\n    if (window.__libtmuxAppearance) window.__libtmuxAppearance.layout(scroll);\n    else scroll();'],
+    ]],
     ['doctools.js', '2992c09df91826a8d33e3b48b645ee77e457adcf7c712d776a814e1e2c448b43', [
       ['_ready(Documentation.init);', 'if (window.__libtmuxAppearance) window.__libtmuxAppearance.layout(Documentation.init);\nelse _ready(Documentation.init);'],
     ]],
@@ -130,7 +134,7 @@ function adaptNativePage(html, page, context, chrome, file, assetDigests) {
         return ''
       })
     result = stripNativeTheme(result, file)
-    result = result.replace(/\bsrc=(["'])((?:[^"']*\/)?_static\/([^/"'?]+\.js))(?:\?[^"']*)?\1/g,
+    result = result.replace(/\bsrc=(["'])((?:[^"']*\/)?_static\/([^"'?]+\.js))(?:\?[^"']*)?\1/g,
       (attribute, quote, src, name) => assetDigests[name]
         ? `src=${quote}${context.base}_astro/${name.replace(/\.js$/, `.${assetDigests[name].slice(0, 12)}.js`)}${quote}` : attribute)
     // Keep normalized native assets rooted in the published version tree.
