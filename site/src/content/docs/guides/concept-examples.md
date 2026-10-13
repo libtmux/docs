@@ -7,10 +7,10 @@ sidebar:
   order: 90
 ---
 
-Non-Python MCP servers and workspace builders are maintained examples of
-libtmux in use. They let maintainers dogfood the core library through a real
-application, including configuration, packaging and deployment. Their menu
-badge says **concept**.
+Use the non-Python MCP servers and workspace builders as maintained examples
+of libtmux usage and deployment. Their menu badge says **concept**. Maintainers
+use them to dogfood the core library through a real application, including
+configuration and packaging.
 
 ## Concept and alpha
 
