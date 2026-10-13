@@ -131,6 +131,8 @@ export async function checkRequiredAppearance(browser, base) {
     await legacy.route(probe, (route) => route.fulfill({ contentType: 'text/html', body:
       `<link rel="stylesheet" href="${base}/_shell/anchors.css"><script type="module" src="${base}/_shell/anchors.js"></script><a href="https://example.com/">External</a>` }))
     await legacy.goto(probe)
+    // The conditional decorator import can finish after window load.
+    await legacy.locator('a[data-external-link]').waitFor({ state: 'attached' })
     assert.equal(await legacy.locator('a').getAttribute('data-external-link'), 'example.com', 'Standalone and cached older heads retain decoration')
     assert.match(await legacy.locator('a').evaluate((link) => getComputedStyle(link, '::after').maskImage), /external-link\.svg/)
   } finally { await legacy.close() }

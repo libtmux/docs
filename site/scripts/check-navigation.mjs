@@ -396,12 +396,12 @@ export async function checkApiNavigation(page, base) {
   const snapshot = `${base}/lua/latest/reference/libtmux-server-snapshot/`
   for (const width of [688, 390]) {
     await page.setViewportSize({ width, height: 759 })
-    await page.goto(server, { waitUntil: 'load' })
+    await page.goto(server, { waitUntil: 'commit' })
     await page.waitForFunction(() => window.__docsPageLoaded)
     await page.locator('[data-api-nav-toggle]').waitFor({ state: 'visible' })
     await page.evaluate(() => { window.__apiNavigationProbe = true })
     await page.locator('.api-member-link[href$="libtmux-server-snapshot/"]').click()
-    await page.waitForURL(snapshot)
+    await page.waitForURL(snapshot, { waitUntil: 'commit' })
     await page.waitForFunction(() => window.__docsPageLoaded)
     assert.equal(await page.evaluate(() => window.__apiNavigationProbe), undefined, 'API navigation loads a new document')
     assert(await page.locator('html').evaluate((el) => el.hasAttribute('data-api-nav')),
@@ -430,8 +430,8 @@ export async function checkApiNavigation(page, base) {
       assert.equal(await toggle.getAttribute('aria-expanded'), 'false')
       assert.equal(await page.evaluate(() => document.body.style.overflow), '')
     }
-    await page.goBack()
-    await page.waitForURL(server)
+    await page.goBack({ waitUntil: 'commit' })
+    await page.waitForURL(server, { waitUntil: 'commit' })
     await page.waitForFunction(() => window.__docsPageLoaded)
     const menu = page.locator('[data-documentation-context] [data-surface-picker]')
     assert(await menu.locator(':scope > summary').isVisible(), 'Documentation context is available above the closed API drawer')
@@ -441,15 +441,15 @@ export async function checkApiNavigation(page, base) {
     assert.equal(await menu.evaluate((el) => el.open), false)
   }
   for (const path of ['', 'guides/overview/']) {
-    const response = await page.goto(`${base}/lua/latest/${path}`, { waitUntil: 'load' })
+    const response = await page.goto(`${base}/lua/latest/${path}`, { waitUntil: 'commit' })
     assert(response?.ok(), `Lua ${path || 'home'}: HTTP ${response?.status()}`)
     await page.waitForFunction(() => window.__docsPageLoaded)
     const picker = page.locator('[data-documentation-context] [data-surface-picker]')
     await picker.locator(':scope > summary').click()
     await picker.locator('a[href$="/lua/latest/reference/"]').click()
-    await page.waitForURL(`${base}/lua/latest/reference/`)
+    await page.waitForURL(`${base}/lua/latest/reference/`, { waitUntil: 'commit' })
     await page.locator('.api-index-card__link[href$="/reference/libtmux-server/"]').click()
-    await page.waitForURL(server)
+    await page.waitForURL(server, { waitUntil: 'commit' })
     // URL arrival precedes completion of required appearance.
     await page.locator('[data-api-nav-toggle]').waitFor({ state: 'visible' })
     assert(await page.locator('[data-api-nav-toggle]').isVisible(), `${path || 'Port home'} to API keeps the drawer toggle`)
@@ -497,7 +497,8 @@ export async function checkApiNavigation(page, base) {
     sessionStorage.removeItem(`libtmux:api-tree:${nav.dataset.base}`)
   })
   await page.route('**/tree.json', (route) => route.fulfill({ status: 503, body: 'Unavailable' }))
-  await page.reload()
+  await page.reload({ waitUntil: 'commit' })
+  await page.waitForFunction(() => window.__docsPageLoaded)
   await page.locator('[data-api-nav-toggle]').click()
   await search.fill('Server:snapshot')
   await page.waitForFunction(() => document.querySelector('[data-api-search-status]').textContent.includes('could not load'))
