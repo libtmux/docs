@@ -1,5 +1,11 @@
 /* Furo's fluid root size would resize the shared controls on wide screens. */
-html[data-native-shell] { font-size: 100%; --native-header-height: calc(3.25rem + 1px); }
+html[data-native-shell] {
+  font-size: 100%;
+  --native-header-height: calc(3.25rem + 1px);
+  /* Native Tailwind defaults must not replace the shared downloaded faces. */
+  --font-sans: var(--font-ibm-plex-sans);
+  --font-mono: var(--font-ibm-plex-mono);
+}
 @media (max-width: 35rem) { html[data-native-shell] { --native-header-height: calc(6rem + 1px); } }
 /* The shared shell owns the palette; Furo still owns the native article. */
 html[data-native-shell] body {
