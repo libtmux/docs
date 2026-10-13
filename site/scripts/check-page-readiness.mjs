@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 /** Real font selection, link drawing and geometry at the first visible frame. */
 async function observeAppearance(context) {
   await context.addInitScript(() => {
-    window.__appearance = { first: null, shifts: 0, positions: [] }
+    window.__appearance = { document: crypto.randomUUID(), first: null, shifts: 0, positions: [] }
     new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
         if (window.__appearance.first && !entry.hadRecentInput) window.__appearance.shifts += entry.value
@@ -22,7 +22,8 @@ async function observeAppearance(context) {
             readiness: document.documentElement.dataset.pageReadiness,
             fonts: text.every((element) => {
               const s = getComputedStyle(element)
-              return document.fonts.check(`${s.fontStyle} ${s.fontWeight} ${s.fontSize} ${s.fontFamily.split(',')[0]}`)
+              const family = s.fontFamily.split(',')[0]
+              return family.includes('IBM Plex') && document.fonts.check(`${s.fontStyle} ${s.fontWeight} ${s.fontSize} ${family}`)
             }),
             mask: icon ? getComputedStyle(icon, '::after').maskImage : null,
             underline: dotted ? getComputedStyle(dotted).textDecorationStyle : null,
@@ -87,11 +88,18 @@ export async function checkRequiredAppearance(browser, base) {
       // The test clock crosses the former cutoff; no product timer is used.
       await page.clock.fastForward(3500)
       assert(requested, `${kind}: the actual required request was held`)
-      assert.equal(await page.locator('html').getAttribute('data-page-readiness'), 'pending', `${kind}: stays pending past the old cutoff`)
-      assert.equal(await page.evaluate(() => window.__appearance.first), null, `${kind}: no incomplete visible frame`)
+      const held = await page.evaluate(() => ({ ...window.__appearance,
+        readiness: document.documentElement.dataset.pageReadiness }))
+      assert.equal(held.readiness, 'pending', `${kind}: stays pending past the old cutoff`)
+      assert.equal(held.first, null, `${kind}: no incomplete visible frame`)
       release()
-      await page.waitForFunction(() => window.__appearance.positions.length >= 2)
-      const result = await page.evaluate(() => window.__appearance)
+      const sample = await page.waitForFunction((document) => {
+        const result = window.__appearance
+        if (result.document !== document) return { changed: true }
+        return result.first && result.positions.length >= 2 ? structuredClone(result) : false
+      }, held.document)
+      const result = await sample.jsonValue()
+      if (result.changed) throw new Error('Appearance document changed during required-resource check')
       assert.equal(result.first.readiness, 'ready')
       assert(result.first.fonts, `${kind}: selected fonts succeeded before reveal`)
       assert.match(result.first.mask, /^url\("?data:image\/svg\+xml,/, `${kind}: the external icon draws at first reveal`)

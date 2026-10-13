@@ -129,6 +129,7 @@ const terminate = async () => {
 process.on('SIGTERM', terminate)
 process.on('SIGINT', terminate)
 const startServer = () => dev({ root, cacheDir: join(mirror, 'cache'),
+  devToolbar: { enabled: false },
   vite: { cacheDir: join(mirror, 'vite') }, logLevel: 'error',
   server: { host: '127.0.0.1', port: 0 } })
 server = await startServer()
@@ -142,7 +143,7 @@ async function retryReload(check, page) {
     const message = String(error)
     const navigation = message.match(/Navigation to "([^"]+)" is interrupted by another navigation to "([^"]+)"/)
     const samePageReload = navigation && navigation[1] === navigation[2] && navigation[1].startsWith(`${base}/`)
-    if (!/Execution context was destroyed/.test(message) && !samePageReload) throw error
+    if (!/Execution context was destroyed|Appearance document changed during required-resource check/.test(message) && !samePageReload) throw error
     if (samePageReload && page) await page.waitForURL(navigation[2], { waitUntil: 'load' })
     await check()
   }

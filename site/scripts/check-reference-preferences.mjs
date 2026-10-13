@@ -86,14 +86,26 @@ export async function checkReferencePreferences(browser, base) {
       Object.defineProperty(window, 'localStorage', { get() { throw new Error('Storage blocked') } })
     })
     const page = await fallback.newPage()
+    const errors = []
+    page.on('pageerror', (error) => errors.push(error.stack))
+    page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()) })
     try {
       await page.goto(`${base}${path}`)
+      if (javaScriptEnabled) {
+        await page.waitForFunction(() => document.documentElement.dataset.pageReadiness !== 'pending')
+        assert.equal(await page.locator('html').getAttribute('data-page-readiness'), 'ready', errors.join('\n'))
+      }
       const details = page.locator('.api-source-details')
+      const summary = details.locator('summary')
+      await summary.waitFor({ state: 'visible' })
       assert.equal(await details.evaluate((el) => el.open), true)
-      await details.locator('summary').focus()
+      await summary.focus()
+      assert(await summary.evaluate((element) => element === document.activeElement), 'The visible disclosure receives keyboard focus')
       await page.keyboard.press('Space')
+      await page.waitForFunction(() => !document.querySelector('.api-source-details').open)
       assert.equal(await details.evaluate((el) => el.open), false)
       await page.keyboard.press('Space')
+      await page.waitForFunction(() => document.querySelector('.api-source-details').open)
       assert.equal(await details.evaluate((el) => el.open), true)
     } finally {
       await fallback.close()
