@@ -148,7 +148,7 @@ for (const path of ['/go/latest/reference/', '/py/stable/reference/libtmux-serve
   await trigger.click()
   note((await p.locator('main h1').first().boundingBox())?.y === headingBefore?.y,
     `${path}: opening the picker does not move the heading`)
-  const workspace = menu.locator('[data-surface-group]').filter({ has: p.locator('summary strong', { hasText: /^Workspace Manager$/ }) })
+  const workspace = menu.locator('[data-surface-group]').filter({ has: p.locator('summary .surface-label', { hasText: /^Workspace Manager$/ }) })
   await workspace.locator(':scope > summary').click()
   const home = workspace.getByRole('link', { name: 'Home', exact: true })
   note(await home.isVisible(), `${path}: workspace remains reachable from the product picker`)

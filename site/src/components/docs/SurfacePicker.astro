@@ -21,9 +21,9 @@ const artwork = (id: string) => {
 <details class="surface-picker doc-picker" data-surface-picker data-doc-picker data-pagefind-ignore="all">
   <summary aria-label={solutionsOnly ? 'Choose a solution' : `Choose documentation: ${surface.label}, ${currentLabel}`}>
     {port ? <img class="surface-artwork" src={artwork(surface.id)} width="30" height="30" alt="" /> : <TmuxLogo />}
-    <span class="surface-current"><strong>{!solutionsOnly && surface.id === 'tmux'
+    <span class="surface-current"><strong><span class="surface-label">{!solutionsOnly && surface.id === 'tmux'
       ? <><span class="surface-name-full">{surface.label}</span><span class="surface-name-short">tmux</span></>
-      : solutionsOnly ? <><span class="home-solution-name-full">Choose a solution</span><span class="home-solution-name-short" aria-hidden="true">Solution</span></> : surface.label}{!solutionsOnly && surface.concept && <>{' '}<ConceptBadge /></>}</strong>{!solutionsOnly && <small>{currentLabel}</small>}</span>
+      : solutionsOnly ? <><span class="home-solution-name-full">Choose a solution</span><span class="home-solution-name-short" aria-hidden="true">Solution</span></> : surface.label}</span>{!solutionsOnly && surface.concept && <>{' '}<ConceptBadge /></>}</strong>{!solutionsOnly && <small>{currentLabel}</small>}</span>
     <svg class="doc-picker-caret" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
   </summary>
   <div class="surface-panel doc-picker-panel" data-surface-panel data-picker-panel>
@@ -37,11 +37,11 @@ const artwork = (id: string) => {
       {surfaces.map((entry) => solutionsOnly ? <a class="surface-destination doc-picker-option" href={entry.href}
         data-picker-option data-match={`${entry.label} ${descriptions[entry.id]}`}>
         <img class="surface-artwork" src={artwork(entry.id)} width="30" height="30" alt="" />
-        <span class="surface-group-name"><strong>{entry.label}{entry.concept && <>{' '}<ConceptBadge /></>}</strong>{' '}<small>{entry.concept ? CONCEPT_DESCRIPTION : descriptions[entry.id]}</small></span>
+        <span class="surface-group-name"><strong><span class="surface-label">{entry.label}</span>{entry.concept && <>{' '}<ConceptBadge /></>}</strong>{' '}<small>{entry.concept ? CONCEPT_DESCRIPTION : descriptions[entry.id]}</small></span>
         <span class="surface-destination-arrow" aria-hidden="true">→</span>
       </a> : <details class="surface-group" data-surface-group data-picker-group open={entry.id === surface.id}>
         <summary>{port ? <img class="surface-artwork" src={artwork(entry.id)} width="30" height="30" alt="" /> : <TmuxLogo />}
-          <span class="surface-group-name"><strong>{entry.label}{entry.concept && <>{' '}<ConceptBadge /></>}</strong>{' '}<small>{entry.concept ? 'Working example of the core library' : descriptions[entry.id]}</small></span>
+          <span class="surface-group-name"><strong><span class="surface-label">{entry.label}</span>{entry.concept && <>{' '}<ConceptBadge /></>}</strong>{' '}<small>{entry.concept ? 'Working example of the core library' : descriptions[entry.id]}</small></span>
           <svg class="surface-chevron" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m6 4 4 4-4 4" /></svg>
         </summary>
         {entry.concept && <p class="surface-concept-description">{CONCEPT_DESCRIPTION}</p>}
@@ -74,7 +74,7 @@ const artwork = (id: string) => {
     </nav>
     <p class="doc-picker-empty" data-surface-empty data-picker-empty hidden>No matching documentation.</p>
     <p class="sr-only" role="status" data-surface-status data-picker-status></p>
-    {surfaces.some((entry) => entry.concept) && <p class="surface-status-key"><a href={withRoot('/tmux/guides/concept-examples/')}>Concept and alpha</a>: example support scope and release maturity.</p>}
+    {!solutionsOnly && surfaces.some((entry) => entry.concept) && <p class="surface-status-key"><a href={withRoot('/tmux/guides/concept-examples/')}>Concept and alpha</a>: example support scope and release maturity.</p>}
     <div class="surface-picker-footer" aria-label="Current documentation context"><span>{port ? PORT_BY_SLUG[port].name : 'tmux'}</span>{' · '}<span>{version}</span>{' · '}<span>{locale}</span></div>
   </div>
 </details>

@@ -9,6 +9,7 @@ import { tmuxCommandsFor, tmuxManualUrl } from './tmux-manual-data'
 import { productApiIndex } from './product-api'
 import { defaultVersionFor } from './versions'
 import { apiCallSource, apiRelationshipSections, type ApiRelationshipPath } from './api-relationships'
+import { PORT_BY_SLUG, productConceptNotice } from './ports'
 
 /**
  * A symbol's page as Markdown.
@@ -91,6 +92,10 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   const prose = (text: string) => language === 'powershell' && index ? powerShellProseMarkdown(text, index, symbol) : text
   const id = qualifiedNameOf(symbol)
   const out: string[] = [`# ${id}`, '']
+  const info = port ? PORT_BY_SLUG[port] : undefined
+  const notice = info && (symbol.product === 'mcp' || symbol.product === 'workspace')
+    ? productConceptNotice(info, symbol.product) : undefined
+  if (notice) out.push(`**${notice.title}** ${notice.body}`, '')
 
   // The definition block, in the same order the page shows it.
   const facts: string[] = []

@@ -379,7 +379,8 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       const surface = page.product === 'mcp' ? 'MCP' : 'Workspace Manager'
       const section = page.section === 'source-guide' ? 'guides' : page.section.split('/')[0] || 'home'
       const sectionLabel = section === 'reference' ? 'API Reference' : section[0].toUpperCase() + section.slice(1)
-      expect(picker?.querySelector('.surface-current strong')?.textContent, `${page.path} current app`).toBe(surface)
+      expect(picker?.querySelector('.surface-current .surface-label')?.textContent, `${page.path} current app`).toBe(surface)
+      expect(picker?.querySelectorAll('.surface-current .concept-badge').length).toBe(productIsConcept(port, page.product) ? 1 : 0)
       expect(picker?.querySelector('.surface-current small')?.textContent, `${page.path} current section`).toBe(sectionLabel)
       const current = picker?.querySelectorAll('[aria-current="location"]')
       expect(current, `${page.path} one current section`).toHaveLength(1)

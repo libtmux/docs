@@ -33,6 +33,10 @@ guide names the package or source build, runtime requirements and tmux
 endpoint. The example and its language API remain available to read, run and
 adapt.
 
+Markdown copies retain the concept scope. Protocol JSON contains the server's
+advertised contracts; the [agent manifest](../../../docs.json) records the
+companion's concept scope.
+
 Keep tmux access local or behind access controls you own. An MCP tool can
 send shell input, and a workspace file can configure shell commands. A concept
 badge does not provide authentication, authorization or isolation.

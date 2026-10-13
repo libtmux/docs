@@ -4,7 +4,7 @@ import { fromMarkdown } from 'mdast-util-from-markdown'
 import { extractJulia, extractPowerShell, parameterId, SymbolIndex, type ApiSymbol } from '@libtmux/api-model'
 import { API_MODELS, OWNER_KINDS } from '../src/lib/api-models'
 import { membersByType } from '../src/lib/api-tree'
-import { PORTS, PORT_BY_SLUG, referenceUrl } from '../src/lib/ports'
+import { CONCEPT_DESCRIPTION, PORTS, PORT_BY_SLUG, referenceUrl } from '../src/lib/ports'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { nativeSignatureText } from '../src/lib/api-sections'
 
@@ -20,6 +20,19 @@ function inlineCodes(text: string): string[] {
 }
 
 describe('API Markdown content parity', () => {
+  it.each(['mcp', 'workspace'])('retains concept scope in Go %s declaration copies', (product) => {
+    const model = API_MODELS.go
+    const symbol = model.symbols.find((entry) => entry.product === product)!
+    expect(symbolMarkdown({ model, symbol })).toContain(CONCEPT_DESCRIPTION)
+  })
+
+  it('keeps core and Python declaration copies outside concept scope', () => {
+    const core = API_MODELS.go.symbols.find((entry) => entry.id === 'tmux.Server')!
+    expect(symbolMarkdown({ model: API_MODELS.go, symbol: core })).not.toContain(CONCEPT_DESCRIPTION)
+    const python = API_MODELS.py.symbols.find((entry) => entry.product === 'mcp')!
+    expect(symbolMarkdown({ model: API_MODELS.py, symbol: python })).not.toContain(CONCEPT_DESCRIPTION)
+  })
+
   it('exports cross-port native representations and acquisition differences', () => {
     const model = API_MODELS.cxx
     const symbol = model.symbols.find((symbol) => symbol.id === 'libtmux::Server')!
