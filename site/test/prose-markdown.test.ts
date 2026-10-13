@@ -11,7 +11,7 @@ import { llmsPage, llmsPages, localeProse } from '../src/lib/llms'
 import { getSidebar, pageBreadcrumbs } from '../src/lib/sidebar'
 import { API_MODELS } from '../src/lib/api-models'
 import { productApiHref } from '../src/lib/product-api'
-import { PORT_BY_SLUG } from '../src/lib/ports'
+import { CONCEPT_DESCRIPTION, PORT_BY_SLUG } from '../src/lib/ports'
 import { resolvePortCode, remarkPortCode } from '../src/plugins/remark-port-code.mjs'
 import { rehypeApiLinks } from '../src/plugins/rehype-api-links'
 
@@ -32,6 +32,16 @@ function exampleBytes(markdown: string): string[] {
 }
 
 describe('prose Markdown links', () => {
+  it.each(['go', 'ruby', 'py', 'lua'])('preserves %s example support scope in guide exports', (port) => {
+    for (const product of ['mcp', 'workspace'] as const) {
+      const entry = { id: `ports/${port}/${product}/guides`, body: 'Read the guide.',
+        data: { title: 'Guide', port, product, route: `${product}/guides` } } as CollectionEntry<'docs'>
+      const exported = llmsPage(entry, 'https://libtmux.org', '/en/')
+      if (port === 'go' || port === 'ruby') expect(exported.body).toContain(CONCEPT_DESCRIPTION)
+      else expect(exported.body).not.toContain(CONCEPT_DESCRIPTION)
+    }
+  })
+
   it('uses the native Concepts page in routes, exports, sidebar and breadcrumbs', async () => {
     vi.stubEnv('LIBTMUX_DOCS_PORT', 'ruby')
     vi.stubEnv('LIBTMUX_DOCS_LOCALE', 'en')

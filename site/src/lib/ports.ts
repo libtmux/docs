@@ -19,6 +19,9 @@ export const DOC_PRODUCTS = {
 
 export type DocProduct = keyof typeof DOC_PRODUCTS
 
+/** Support scope is independent of a package's release maturity. */
+export const CONCEPT_DESCRIPTION = 'Maintained as a working example of core library usage and deployment. Example APIs, tools and configuration may change without a compatibility or product support commitment.'
+
 /**
  * Where a port's package is published, for the links row on its pages.
  *
@@ -1286,6 +1289,17 @@ export function productAvailable(port: Port, product: DocProduct): boolean {
   return !port.parentLibrary && port.productAvailability?.[product] !== 'unpublished'
 }
 
+/** Non-Python companions dogfood their core library as concept examples. */
+export function productIsConcept(port: Port, product: DocProduct): boolean {
+  return port.slug !== 'py' && productAvailable(port, product)
+}
+
+export function productConceptNotice(port: Port, product: DocProduct): { title: string; body: string } | undefined {
+  return productIsConcept(port, product)
+    ? { title: `${DOC_PRODUCTS[product].label} concept example`, body: CONCEPT_DESCRIPTION }
+    : undefined
+}
+
 /** Whether the package picker has a concrete install form for this package. */
 export function hasPackageInstalls(port: Port, packageId: PortPackageId): boolean {
   if (packageId === 'core') return port.installs.length > 0
@@ -1302,22 +1316,25 @@ export function productInDevelopment(port: Port, product: DocProduct): boolean {
   return product === 'mcp' || port.workspaceCliAvailability !== 'released'
 }
 
-/** Returns the in-development workspace notice; released or unavailable CLIs have none. */
+/** Workspace overview support scope and installation prerequisites. */
 export function workspaceOverviewNotice(port: Port): { title: string; body: string } | undefined {
-  if (!port.workspaceCli) return undefined
-  const title = `Workspace Manager for ${port.name} is in development.`
+  if (!productAvailable(port, 'workspace')) return undefined
+  const concept = productConceptNotice(port, 'workspace')
+  if (!port.workspaceCli) return concept
+  const title = concept?.title ?? `Workspace Manager for ${port.name} is in development.`
+  const scope = concept ? `${concept.body} ` : ''
   const command = port.workspaceCli.split(/\s+/)[0]
   if (port.workspaceCliAvailability === 'published') {
     return {
       title,
-      body: `The \`${command}\` CLI is published to ${port.registry?.name ?? 'the package registry'} `
+      body: scope + `The \`${command}\` CLI is published to ${port.registry?.name ?? 'the package registry'} `
         + 'as a prerelease. Pin its version when automation depends on its output.',
     }
   }
-  if (port.workspaceCliAvailability !== 'local') return undefined
+  if (port.workspaceCliAvailability !== 'local') return concept
   return {
     title,
-    body: `Build \`${command}\` from the source revision in the installation guide. `
+    body: scope + `Build \`${command}\` from the source revision in the installation guide. `
       + 'Its CLI and workspace library have separate installation and configuration contracts.',
   }
 }

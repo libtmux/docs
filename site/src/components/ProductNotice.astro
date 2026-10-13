@@ -1,0 +1,21 @@
+---
+import Aside from './Aside.astro'
+import ProseText from './ProseText.astro'
+import { DOC_PRODUCTS, PORT_BY_SLUG, productConceptNotice, productDescription, productInDevelopment, workspaceOverviewNotice, type DocProduct } from '../lib/ports'
+import { withRoot } from '../lib/site-root'
+
+interface Props { port: string; product: DocProduct; overview?: boolean }
+const { port, product, overview = false } = Astro.props
+const info = PORT_BY_SLUG[port]
+const concept = productConceptNotice(info, product)
+const notice = (overview && product === 'workspace' ? workspaceOverviewNotice(info) : undefined) ?? concept
+  ?? (productInDevelopment(info, product) ? {
+    title: `${DOC_PRODUCTS[product].label} is in development`,
+    body: product === 'workspace' ? productDescription(info, product)
+      : 'Server behavior and tool contracts may change. Tool availability depends on the server configuration.',
+  } : undefined)
+---
+{notice && <Aside type={concept ? 'note' : 'caution'} title={notice.title}>
+  <ProseText text={notice.body} port={port} class="mb-0" />
+  {concept && <p class="mb-0"><a href={withRoot('/tmux/guides/concept-examples/')}>What concept means</a></p>}
+</Aside>}

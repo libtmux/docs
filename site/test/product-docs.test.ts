@@ -2,7 +2,7 @@ import { existsSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { Window } from 'happy-dom'
 import { describe, expect, it } from 'vitest'
-import { PORTS, productAvailable, productDescription, productInDevelopment, workspaceOverviewNotice, type Port } from '../src/lib/ports'
+import { CONCEPT_DESCRIPTION, PORTS, productAvailable, productDescription, productIsConcept, productInDevelopment, workspaceOverviewNotice, type Port } from '../src/lib/ports'
 import { LANG_TO_PORT } from '../src/plugins/remark-port-code.mjs'
 import { SITE_BUILT, SITE_PREFIX, PREVIEW_PREFIX, productionPath, publishedPath, sitePath } from './site-root'
 import { MCP_REFERENCE, MCP_SECTIONS, mcpObjects } from '../src/lib/mcp-catalog'
@@ -30,7 +30,7 @@ interface DocsManifest {
   pages: { url: string; markdownUrl: string }[]
   ports: {
     slug: string
-    products: { slug: string; availability: string; inDevelopment: boolean; cli?: string | null; cliAvailability?: string | null; reference: string | null; protocol?: string | null }[]
+    products: { slug: string; availability: string; inDevelopment: boolean; support?: string; supportDescription?: string; cli?: string | null; cliAvailability?: string | null; reference: string | null; protocol?: string | null }[]
     documentation: { id: string; name: string; kind: string; availability: string; url: string; package?: string }[]
   }[]
 }
@@ -139,10 +139,11 @@ function graph(document: Window['document']): StructuredEntry[] {
  * matters to a reader is that the page says so before its prose, in a block
  * set apart from it.
  */
-function developmentStatus(document: Window['document'], path: string): void {
+function developmentStatus(document: Window['document'], path: string, concept = false): void {
   const notes = [...document.querySelectorAll('[role="note"]')]
-  const status = notes.find((note) => /in development/i.test(note.textContent ?? ''))
-  expect(status, `${path} development status`).toBeDefined()
+  const status = notes.find((note) => (concept ? /concept example/i : /in development/i).test(note.textContent ?? ''))
+  expect(status, `${path} support scope or development status`).toBeDefined()
+  if (concept) expect(status!.textContent).toContain(CONCEPT_DESCRIPTION)
 }
 
 async function redirectsTo(path: string, target: string): Promise<void> {
@@ -358,7 +359,8 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
 
   it.each(PORTS.filter((port) => !port.parentLibrary))('$name distinguishes unfinished products and groups workspace internals', async (port) => {
     for (const page of pages().filter((entry) => entry.port === port.slug)) await inspect(page.path, (document) => {
-      if (productInDevelopment(port, page.product)) developmentStatus(document, page.path)
+      if (productIsConcept(port, page.product) || productInDevelopment(port, page.product))
+        developmentStatus(document, page.path, productIsConcept(port, page.product))
       const picker = document.querySelector('[data-surface-picker]')
       if (!productAvailable(port, page.product)) {
         expect(document.querySelector('article')!.textContent, `${page.path} availability`).toMatch(/not published|no published/i)
@@ -433,12 +435,12 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       if (page.product === 'workspace' && port.workspaceCli && productInDevelopment(port, 'workspace') && !page.section) {
         const status = [...document.querySelectorAll('[role="note"]')]
           .map((note) => note.textContent ?? '')
-          .find((text) => /in development/i.test(text))
-        expect(status, `${page.path} development status`).toBeDefined()
+          .find((text) => /concept example/i.test(text))
+        expect(status, `${page.path} concept scope`).toBeDefined()
         const article = document.querySelector('article')!.textContent
         if (port.workspaceCliAvailability === 'local') expect(article, `${page.path} source installation`).toContain('from the source revision in the installation guide')
         expect(article, `${page.path} native CLI`).toContain(port.workspaceCli.split(/\s+/)[0])
-        expect(article.match(/is in development/gi), `${page.path} states maturity once`).toHaveLength(1)
+        expect(article.match(/concept example/gi), `${page.path} states scope once`).toHaveLength(1)
         const links = [...document.querySelectorAll('article a[href]')]
         const installation = nativeProductDocs(page.port) ? 'source-guide' : 'guides/installation'
         expect(links.some((link) => new URL(link.getAttribute('href')!, urlFor(page.path)).pathname === urlFor(`${page.port}/${page.version}/workspace/${installation}/`).pathname), `${page.path} native installation`).toBe(true)
@@ -702,6 +704,10 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
           const metadata = advertised.products.find((entry) => entry.slug === product)!
           expect(metadata.availability, `${root}${port.slug} ${product} availability`).toBe(productAvailable(port, product) ? 'available' : 'unpublished')
           expect(metadata.inDevelopment, `${root}${port.slug} ${product} development status`).toBe(productInDevelopment(port, product))
+          if (productIsConcept(port, product)) {
+            expect(metadata.support).toBe('concept')
+            expect(metadata.supportDescription).toBe(CONCEPT_DESCRIPTION)
+          } else expect(metadata.support).toBeUndefined()
           const section = 'reference'
           if (productAvailable(port, product)) {
             expect(new URL(metadata.reference!, urlFor(root)).pathname).toBe(urlFor(`${port.slug}/${rootVersion || defaults[port.slug]}/${product}/${section}/`).pathname)

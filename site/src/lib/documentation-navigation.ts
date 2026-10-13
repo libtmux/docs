@@ -1,6 +1,6 @@
 import { getSidebar, type SidebarItem, type SidebarLinkItem } from './sidebar'
 import { documentationAreas } from './port-documentation'
-import { PORT_BY_SLUG, portPageUrl, referenceUrl, type DocProduct } from './ports'
+import { PORT_BY_SLUG, portPageUrl, productIsConcept, referenceUrl, type DocProduct } from './ports'
 import { API_MODELS } from './api-models'
 import { productApiNavigation } from './product-api'
 import { API_GLOSSARY_TITLE } from './api-glossary'
@@ -25,6 +25,8 @@ export interface DocumentationSurface {
   label: string
   href: string
   sections: DocumentationSection[]
+  /** Example support scope; release maturity is documented separately. */
+  concept?: boolean
 }
 
 const labels: Record<string, string> = {
@@ -120,7 +122,8 @@ export function buildDocumentationSurfaces(
         .map((section): SidebarLinkItem => ({ type: 'link', label: section.label, href: section.href!,
           ...(section.disabled ? { disabled: true } : {}) })),
     ]
-    return { id, label: domain.id === 'core' ? 'Core Library' : domain.label, href, sections: ordered }
+    return { id, label: domain.id === 'core' ? 'Core Library' : domain.label, href, sections: ordered,
+      ...(domain.product && productIsConcept(info, domain.product) ? { concept: true } : {}) }
   })
 }
 

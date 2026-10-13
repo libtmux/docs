@@ -16,15 +16,14 @@ import PagePortSwitcher from '../components/PagePortSwitcher.astro'
 import DocumentationContext from '../components/docs/DocumentationContext.astro'
 import { pageBreadcrumbs, type SidebarItem } from '../lib/sidebar'
 import type { PagePortLink } from '../lib/page-port-links'
-import ProseText from '../components/ProseText.astro'
 import { pagePortsFor } from '../lib/page-ports-for'
-import Aside from '../components/Aside.astro'
+import ProductNotice from '../components/ProductNotice.astro'
 import BaseLayout from './BaseLayout.astro'
 import type { PageSource } from '../lib/markdown-twins'
 import { API_MODELS } from '../lib/api-models'
 import { branding } from '../lib/branding'
 import { withRoot } from '../lib/site-root'
-import { DOC_PRODUCTS, PORT_BY_SLUG, portPageUrl, productAvailable, productDescription, productInDevelopment, workspaceOverviewNotice, type DocProduct } from '../lib/ports'
+import { DOC_PRODUCTS, PORT_BY_SLUG, portPageUrl, productAvailable, type DocProduct } from '../lib/ports'
 
 /**
  * The documentation reading shell: sidebar | content | table of contents.
@@ -138,9 +137,6 @@ const tocItems =
 const pagePorts = requestedPagePorts ?? await pagePortsFor(sourcePath ?? pagePath, port, version)
 const productBrand = port && product && pagePath === product && productAvailable(PORT_BY_SLUG[port], product)
   ? branding(port, pagePath) : undefined
-const development = product && port && productInDevelopment(PORT_BY_SLUG[port], product)
-const workspaceOverview = product === 'workspace' && pagePath === 'workspace' && port
-  ? workspaceOverviewNotice(PORT_BY_SLUG[port]) : undefined
 const workspaceInternals = product === 'workspace' && pagePath.startsWith('workspace/internals/')
 const breadcrumbs = requestedBreadcrumbs ?? (product && port ? [
   { name: PORT_BY_SLUG[port].name, url: portPageUrl(PORT_BY_SLUG[port], version) },
@@ -250,18 +246,7 @@ const breadcrumbs = requestedBreadcrumbs ?? (product && port ? [
         ) : <h1 id={PAGE_TITLE_ID} class="wrap-anywhere">{symbolTitle
           ? <code class="not-prose symbol-title"><SymbolName name={title} /></code>
           : title}</h1>}
-        {/*
-          The same caution the reference and the prose use, rather than a box
-          of its own: a reader who has seen one development warning should
-          recognise the next without reading it twice.
-        */}
-        {development && <Aside type="caution" title={workspaceOverview ? workspaceOverview.title : `${DOC_PRODUCTS[product!].label} is in development`}>
-          {workspaceOverview
-            ? <ProseText text={workspaceOverview.body} port={port} class="mb-0" />
-            : <p class="mb-0">{product === 'workspace'
-              ? productDescription(PORT_BY_SLUG[port!], 'workspace')
-              : 'Server behavior and tool contracts may change. Tool availability depends on the server configuration.'}</p>}
-        </Aside>}
+        {product && port && <ProductNotice port={port} product={product} overview={pagePath === product} />}
         <slot />
       </article>
       )}
