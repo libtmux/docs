@@ -2,12 +2,44 @@ import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { runInNewContext } from 'node:vm'
+import { Window } from 'happy-dom'
 import { describe, expect, it } from 'vitest'
 import { normalizeNativeShell } from '../../scripts/normalize-native-shell.mjs'
 import { nativeArticle, nativeHash } from '../../scripts/native-shell-context.mjs'
 import { recordBuild, verifyBuild } from '../../scripts/publication-provenance.mjs'
 
 describe('native shell URL normalization', () => {
+  it('completes pinned Sphinx highlighting during appearance layout without a timer', async () => {
+    const directory = mkdtempSync(join(tmpdir(), 'native-highlight-'))
+    const win = new Window({ url: 'https://libtmux.org/en/py/stable/api/?highlight=window' })
+    try {
+      mkdirSync(join(directory, '_static'))
+      const file = join(directory, '_static/sphinx_highlight.js')
+      writeFileSync(file, readFileSync(new URL('./fixtures/sphinx_highlight.js', import.meta.url)))
+      const contextFile = join(directory, 'context.json')
+      writeFileSync(contextFile, JSON.stringify({ port: 'py', version: 'latest', root: '/en/', pages: [] }))
+      const options = { sphinxPort: 'py', contextFile }
+      await normalizeNativeShell(directory, '/en', options)
+      const layouts: (() => void)[] = []
+      Object.assign(win, {
+        __libtmuxAppearance: { layout: (work: () => void) => layouts.push(work) },
+        DOCUMENTATION_OPTIONS: { ENABLE_SEARCH_SHORTCUTS: false },
+        _ready: () => { throw Error('Startup escaped appearance layout') },
+        setTimeout: () => { throw Error('Highlighting escaped into a timer') },
+      })
+      win.document.body.innerHTML = '<div class="body">A tmux window</div>'
+      win.eval(readFileSync(file, 'utf8'))
+      expect(win.document.querySelector('.highlighted')).toBeNull()
+      expect(layouts).toHaveLength(1)
+      layouts[0]!()
+      expect(win.document.querySelector('.highlighted')?.textContent).toBe('window')
+      expect(win.location.search).toBe('')
+      expect(await normalizeNativeShell(directory, '/en', options)).toBe(0)
+      const digest = nativeHash(readFileSync(file)).slice(0, 12)
+      expect(readFileSync(join(directory, `_astro/sphinx_highlight.${digest}.js`), 'utf8')).toBe(readFileSync(file, 'utf8'))
+    } finally { await win.happyDOM.abort(); rmSync(directory, { recursive: true, force: true }) }
+  })
+
   it.each(['copybutton.js', 'design-tabs.js', 'doctools.js'])('rejects an unrecognized native widget before adapting %s', async (name) => {
     const directory = mkdtempSync(join(tmpdir(), 'native-widget-'))
     try {
@@ -85,6 +117,7 @@ describe('native shell URL normalization', () => {
       expect(html).not.toContain('src="/pr-42/en/_shell/shell.js"')
       expect(html).not.toMatch(/libtmux-org|mobile-header|data-native-shell-export|data-native-boundary|docs\/pane.md/)
       expect(html.indexOf('class="site-header"')).toBeLessThan(html.indexOf('<article'))
+      expect(html.indexOf('<!-- libtmux-native-head -->')).toBeLessThan(html.indexOf('_static/theme.css'))
       expect(await normalizeNativeShell(native, '/pr-42/en/', options)).toBe(0)
       expect(readFileSync(page, 'utf8')).toBe(html)
 

@@ -542,6 +542,7 @@ const activePortRules = items
     supported: boolean
   }
 
+  import { waitForAppearance } from '../../lib/page-readiness'
   import { HOME_PORT_PREVIEW_EVENT } from '../../lib/home-hover-preview'
 
   const STORAGE_KEY = 'libtmux-docs.package-install.port'
@@ -645,7 +646,8 @@ const activePortRules = items
         // Storage blocked: the choice holds for this page and no longer.
       }
     }
-    populateVersions(widget, slug)
+    const versions = populateVersions(widget, slug)
+    if (versions) waitForAppearance(versions)
     render(widget)
   }
 
@@ -666,9 +668,14 @@ const activePortRules = items
       // '/versions.json' reads production's manifest instead of its own.
       const root = (document.querySelector<HTMLElement>('.lm-agent-prompt')?.dataset.root || '/').replace(/\/+$/, '')
       manifest = fetch(`${root}/versions.json`, { cache: 'no-cache' })
-        .then((res) => (res.ok ? res.json() : undefined))
-        .then((body) => (body?.schema === 1 ? (body.ports as Record<string, VersionEntry[]>) : undefined))
-        .catch(() => undefined)
+        .then((res) => {
+          if (!res.ok) throw new Error('Version manifest failed to load')
+          return res.json()
+        })
+        .then((body) => {
+          if (body?.schema !== 1) throw new Error('Invalid version manifest')
+          return body.ports as Record<string, VersionEntry[]>
+        })
     }
     return manifest
   }
@@ -677,7 +684,7 @@ const activePortRules = items
     const control = widget.querySelector<HTMLElement>('[data-version-control]')
     const select = widget.querySelector<HTMLSelectElement>('[data-select="version"]')
     if (!control || !select) return
-    void versionManifest().then((ports) => {
+    return versionManifest().then((ports) => {
       const entries = (ports?.[slug] ?? []).filter((e) => e.supported)
       if (entries.length < 2) {
         control.hidden = true

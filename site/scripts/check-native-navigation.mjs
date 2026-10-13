@@ -20,8 +20,12 @@ async function openNativeLink(page, suffix) {
       if (toggle) toggle.checked = true
     }
   })
+  await link.scrollIntoViewIfNeeded()
+  const scroll = await page.locator('.sidebar-scroll').evaluate((element) => element.scrollTop)
   await link.click()
   await page.waitForURL((url) => url.pathname.endsWith(suffix))
+  await page.locator('html[data-page-readiness="ready"]').waitFor({ state: 'attached' })
+  return scroll
 }
 
 async function checkMetadata(page) {
@@ -41,7 +45,7 @@ async function checkMetadata(page) {
     })
     return { actual: read(document), expected: read(fresh) }
   }, html)
-  assert.deepEqual(metadata.actual, metadata.expected, 'A client navigation retained metadata from the previous page')
+  assert.deepEqual(metadata.actual, metadata.expected, 'Navigation retained metadata from the previous page')
   assert(metadata.actual.markdown && metadata.actual.source, 'Native source and Markdown links are missing')
   assert.equal(await page.locator('[data-surface-picker] .surface-current small').textContent(), 'Upstream reference')
 }
@@ -55,21 +59,15 @@ try {
       page.on('pageerror', (error) => errors.push(String(error)))
       page.on('request', (request) => { if (request.isNavigationRequest()) documents.push(request.url()) })
       await page.goto(root)
-      await page.evaluate(() => document.fonts.ready)
-      const identity = await page.evaluate(() => {
-        window.nativeNavigationIdentity = crypto.randomUUID()
-        document.addEventListener('astro:before-swap', () => {
-          window.nativeSidebarScroll = document.querySelector('.sidebar-scroll')?.scrollTop ?? 0
-        })
-        return window.nativeNavigationIdentity
-      })
-      await openNativeLink(page, 'internals/api/libtmux._internal.constants/')
-      assert.equal(await page.evaluate(() => window.nativeNavigationIdentity), identity, 'Native link reloaded the document')
+      await page.locator('html[data-page-readiness="ready"]').waitFor({ state: 'attached' })
+      await page.evaluate(() => { window.nativeNavigationIdentity = true })
+      const before = await openNativeLink(page, 'internals/api/libtmux._internal.constants/')
+      assert.equal(await page.evaluate(() => window.nativeNavigationIdentity), undefined, 'Native links create a new document')
       await checkMetadata(page)
-      const scroll = await page.evaluate(() => {
+      const scroll = await page.evaluate((before) => {
         const sidebar = document.querySelector('.sidebar-scroll')
-        return { actual: sidebar.scrollTop, expected: Math.min(window.nativeSidebarScroll, sidebar.scrollHeight - sidebar.clientHeight) }
-      })
+        return { actual: sidebar.scrollTop, expected: Math.min(before, sidebar.scrollHeight - sidebar.clientHeight) }
+      }, before)
       assert(Math.abs(scroll.actual - scroll.expected) <= 1, `Sidebar position changed: ${JSON.stringify(scroll)}`)
       assert.equal(await page.locator('#__navigation').isChecked(), false, 'A page navigation left the drawer open')
       await openNativeLink(page, 'internals/api/libtmux._internal.query_list/')
@@ -96,16 +94,17 @@ try {
       await page.goForward()
       await page.waitForURL(`${root}internals/api/libtmux._internal.constants/`)
       await checkMetadata(page)
-      assert.equal(await page.evaluate(() => window.nativeNavigationIdentity), identity, 'History reloaded the document')
-      assert.deepEqual(documents, [root], 'A native transition made a document navigation request')
+      assert(documents.includes(`${root}internals/api/libtmux._internal.constants/`), 'Native links request their destination document')
       assert.deepEqual(errors, [], 'Native transitions threw browser errors')
       assert.equal(await page.evaluate(() => document.body.dataset.theme), colorScheme)
       // The generated reference is an independently built shell boundary.
+      await page.evaluate(() => { window.nativeNavigationIdentity = true })
       await page.locator('[data-surface-picker] > summary').click()
       await page.locator(`[data-surface-picker] a[href="${new URL(base).pathname}/py/${version}/reference/"]`).click()
       await page.waitForURL(`${base}/py/${version}/reference/`)
+      await page.locator('html[data-page-readiness="ready"]').waitFor({ state: 'attached' })
       assert.equal(await page.evaluate(() => window.nativeNavigationIdentity), undefined, 'A different shell reused native global scripts')
-      console.log(`Native navigation: ${width}px ${colorScheme} ${reducedMotion}, client links, metadata, anchors, history, copy, theme, and boundary PASS`)
+      console.log(`Native navigation: ${width}px ${colorScheme} ${reducedMotion}, document links, metadata, anchors, history, copy, theme, and boundary PASS`)
     } finally { await context.close() }
   }
   for (const javaScriptEnabled of [false, true]) {

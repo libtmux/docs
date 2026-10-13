@@ -26,32 +26,18 @@ export async function checkNavigationBeforeAnalytics(browser, base) {
     const body = await response.text()
     assert(body.includes('</body>'), 'The real documentation page has a body')
     await route.fulfill({ response, body: body.replace('</body>',
-      `<script type="module" src="${analytics}"></script></body>`) })
+      `<script type="module" data-cf-beacon="{}" src="${analytics}"></script></body>`) })
   })
   try {
     await page.goto(url, { waitUntil: 'commit' })
-    const readiness = await page.evaluate(async () => {
-      if (document.readyState === 'loading') {
-        await new Promise((resolve) => document.addEventListener('readystatechange', resolve, { once: true }))
-      }
-      await document.fonts.ready
+    await page.locator('html[data-page-readiness="ready"]').waitFor({ state: 'attached' })
+    const readiness = await page.evaluate(() => {
       const root = document.documentElement
-      if (root.classList.contains('link-hints-pending')) {
-        await new Promise((resolve) => {
-          const observer = new MutationObserver(() => {
-            if (!root.classList.contains('link-hints-pending')) {
-              observer.disconnect()
-              resolve()
-            }
-          })
-          observer.observe(root, { attributes: true, attributeFilter: ['class'] })
-        })
-      }
       return { visibility: getComputedStyle(document.body).visibility,
         suppressed: root.classList.contains('link-hints-suppressed') }
     })
-    assert.equal(readiness.suppressed, false, 'Actual icon readiness succeeds without the frozen fallback timer')
-    assert.equal(readiness.visibility, 'visible', 'Loaded fonts and icons reveal the page while analytics and the fallback timer are still pending')
+    assert.equal(readiness.suppressed, false, 'Actual icon readiness succeeds while the page clock is frozen')
+    assert.equal(readiness.visibility, 'visible', 'Loaded fonts and icons reveal the page while analytics is pending')
     await page.clock.resume()
     const picker = page.locator('[data-surface-picker][data-enhanced]')
     await picker.waitFor({ state: 'visible' })
@@ -385,15 +371,25 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
   console.log('Surface picker: search, keyboard, history and scoped page lists pass on phone/tablet/desktop, both themes and without JavaScript')
 }
 
-/** Browser load can precede the router's initial page-load event in development. */
+/** Observe the first visible appearance in every destination document. */
 async function observeInitialPageLoad(page) {
   await page.addInitScript(() => {
     window.__docsPageLoaded = false
-    document.addEventListener('astro:page-load', () => { window.__docsPageLoaded = true }, { once: true })
+    document.addEventListener('libtmux:page-ready', () => { window.__docsPageLoaded = true }, { once: true })
+    const observe = () => {
+      if (document.querySelector('main h1') && getComputedStyle(document.body).visibility === 'visible') {
+        window.__firstVisibleAppearance = {
+          readiness: document.documentElement.dataset.pageReadiness,
+          theme: document.documentElement.dataset.themeMode,
+          cooldown: document.documentElement.dataset.mcpInstallCooldownEnabled,
+        }
+      } else requestAnimationFrame(observe)
+    }
+    requestAnimationFrame(observe)
   })
 }
 
-/** Keep the API drawer usable after the router replaces the document. */
+/** Keep API controls and history usable across document navigation. */
 export async function checkApiNavigation(page, base) {
   await observeInitialPageLoad(page)
   const server = `${base}/lua/latest/reference/libtmux-server/`
@@ -403,14 +399,11 @@ export async function checkApiNavigation(page, base) {
     await page.goto(server, { waitUntil: 'load' })
     await page.waitForFunction(() => window.__docsPageLoaded)
     await page.locator('[data-api-nav-toggle]').waitFor({ state: 'visible' })
-    await page.evaluate(() => {
-      window.__apiNavigationProbe = { loads: 0 }
-      document.addEventListener('astro:page-load', () => window.__apiNavigationProbe.loads++)
-    })
+    await page.evaluate(() => { window.__apiNavigationProbe = true })
     await page.locator('.api-member-link[href$="libtmux-server-snapshot/"]').click()
     await page.waitForURL(snapshot)
-    await page.waitForFunction(() => window.__apiNavigationProbe?.loads === 1)
-    assert(await page.evaluate(() => window.__apiNavigationProbe), 'API navigation retains the document')
+    await page.waitForFunction(() => window.__docsPageLoaded)
+    assert.equal(await page.evaluate(() => window.__apiNavigationProbe), undefined, 'API navigation loads a new document')
     assert(await page.locator('html').evaluate((el) => el.hasAttribute('data-api-nav')),
       `API navigation restores the drawer styles at ${width}px`)
     const nav = page.locator('#api-nav')
@@ -439,7 +432,7 @@ export async function checkApiNavigation(page, base) {
     }
     await page.goBack()
     await page.waitForURL(server)
-    await page.waitForFunction(() => window.__apiNavigationProbe?.loads === 2)
+    await page.waitForFunction(() => window.__docsPageLoaded)
     const menu = page.locator('[data-documentation-context] [data-surface-picker]')
     assert(await menu.locator(':scope > summary').isVisible(), 'Documentation context is available above the closed API drawer')
     await menu.locator(':scope > summary').click()
@@ -457,7 +450,7 @@ export async function checkApiNavigation(page, base) {
     await page.waitForURL(`${base}/lua/latest/reference/`)
     await page.locator('.api-index-card__link[href$="/reference/libtmux-server/"]').click()
     await page.waitForURL(server)
-    // URL arrival precedes the link-hint reveal gate on a client navigation.
+    // URL arrival precedes completion of required appearance.
     await page.locator('[data-api-nav-toggle]').waitFor({ state: 'visible' })
     assert(await page.locator('[data-api-nav-toggle]').isVisible(), `${path || 'Port home'} to API keeps the drawer toggle`)
     await page.locator('[data-api-nav-toggle]').click()
@@ -468,7 +461,7 @@ export async function checkApiNavigation(page, base) {
   await page.locator('#api-nav').waitFor({ state: 'visible' })
   assert.equal(await page.locator('#api-nav').evaluate((el) => el.inert), false)
   assert.equal(await page.locator('[data-api-nav-toggle]').isVisible(), false)
-  console.log('API navigation: client swaps, Back, drawer close controls, disclosure alignment and desktop pass')
+  console.log('API navigation: native documents, Back, drawer close controls, disclosure alignment and desktop pass')
 
   const search = page.getByRole('searchbox', { name: 'Find a type or member' })
   const results = page.locator('[data-api-search-results]')
@@ -499,6 +492,10 @@ export async function checkApiNavigation(page, base) {
   await results.locator('a[href$="libtmux-server-snapshot/"]').waitFor()
   assert.equal(await page.locator('[role="tree"]').isVisible(), false, 'Phone search replaces the tree')
   await page.locator('[data-api-nav-close]').click()
+  await page.evaluate(() => {
+    const nav = document.querySelector('.api-nav')
+    sessionStorage.removeItem(`libtmux:api-tree:${nav.dataset.base}`)
+  })
   await page.route('**/tree.json', (route) => route.fulfill({ status: 503, body: 'Unavailable' }))
   await page.reload()
   await page.locator('[data-api-nav-toggle]').click()
@@ -568,7 +565,7 @@ export async function checkApiAnchorArrival(browser, base) {
   console.log(`API anchors: ${paths.size} declarations across ${PORTS.length} ports, primary and retained fragments, phone/desktop, both themes and no-JavaScript navigation pass`)
 }
 
-/** Check the controls attached to a document after its content is replaced. */
+/** Check document navigation, persisted preferences and controls at each arrival. */
 export async function checkNavigation(page, base) {
   await observeInitialPageLoad(page)
   await page.goto(`${base}/tmux/examples/attach-and-send-keys/`, { waitUntil: 'load' })
@@ -577,21 +574,26 @@ export async function checkNavigation(page, base) {
     localStorage.setItem('color-scheme', 'dark')
     localStorage.setItem('libtmux-docs.mcp-install.cooldown.enabled', '1')
     window.__applyTheme()
-    window.__navigationProbe = { loads: 0, blank: false, wrongTheme: false }
-    document.addEventListener('astro:page-load', () => window.__navigationProbe.loads++)
-    document.addEventListener('astro:after-swap', () => {
-      window.__navigationProbe.blank ||= document.documentElement.classList.contains('fonts-pending')
-      window.__navigationProbe.wrongTheme ||= document.documentElement.dataset.themeMode !== 'dark'
-    })
+    window.__navigationProbe = true
   })
+  const assertArrival = async () => {
+    await page.waitForFunction(() => window.__firstVisibleAppearance)
+    assert.deepEqual(await page.evaluate(() => window.__firstVisibleAppearance),
+      { readiness: 'ready', theme: 'dark', cooldown: '1' }, 'Saved preferences are present at the first visible frame')
+  }
   await page.getByRole('navigation', { name: 'Breadcrumb', exact: true }).getByRole('link', { name: 'Examples', exact: true }).click()
-  await page.waitForFunction(() => window.__navigationProbe?.loads === 1)
+  await page.waitForURL(`${base}/tmux/examples/`)
+  await page.waitForFunction(() => window.__docsPageLoaded)
+  await assertArrival()
+  assert.equal(await page.evaluate(() => window.__navigationProbe), undefined, 'A link loads a new document')
   assert.match(page.url(), /\/examples\/$/)
   const example = page.locator('main').getByRole('link').filter({
     has: page.getByRole('heading', { name: 'Attach and send keys', exact: true }),
   })
   await example.click()
-  await page.waitForFunction(() => window.__navigationProbe?.loads === 2)
+  await page.waitForURL(`${base}/tmux/examples/attach-and-send-keys/`)
+  await page.waitForFunction(() => window.__docsPageLoaded)
+  await assertArrival()
   assert.match(page.url(), /\/examples\/attach-and-send-keys\/$/)
   await page.keyboard.press('Control+k')
   await page.locator('#search-modal[open] .search-panel__input').waitFor({ state: 'visible' })
@@ -607,10 +609,13 @@ export async function checkNavigation(page, base) {
   await otherTab.click()
   assert.equal(await page.locator(`.code-tab[data-port="${port}"]`).first().getAttribute('aria-selected'), 'true')
   await page.goBack()
-  await page.waitForFunction(() => window.__navigationProbe?.loads === 3)
-  assert.deepEqual(await page.evaluate(() => window.__navigationProbe), { loads: 3, blank: false, wrongTheme: false })
+  await page.waitForURL(`${base}/tmux/examples/`)
+  await page.waitForFunction(() => window.__docsPageLoaded)
+  await assertArrival()
+  assert.equal(await page.locator('html').getAttribute('data-theme-mode'), 'dark')
+  assert.equal(await page.locator('html').getAttribute('data-page-readiness'), 'ready')
   assert.equal(await page.locator('html').getAttribute('data-mcp-install-cooldown-enabled'), '1')
-  console.log('Navigation: document retained, Back, search, code tabs, menu and saved theme/cooldown pass')
+  console.log('Navigation: native documents, Back, search, code tabs, menu and saved theme/cooldown pass')
 
   for (const [port, version] of [['ts', 'latest'], ['py', 'stable']]) {
     const prefix = new URL(`${base}/${port}/${version}/`).pathname

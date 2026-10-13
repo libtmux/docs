@@ -10,7 +10,7 @@ export async function checkReferencePreferences(browser, base) {
     const seen = new WeakSet()
     const observe = () => {
       const details = document.querySelector('.api-source-details')
-      if (details?.querySelector('summary') && !seen.has(details)) {
+      if (details?.querySelector('summary') && getComputedStyle(document.body).visibility === 'visible' && !seen.has(details)) {
         seen.add(details)
         window.__sourceFrames.push({ path: location.pathname, open: details.open })
       }
@@ -18,7 +18,7 @@ export async function checkReferencePreferences(browser, base) {
     }
     requestAnimationFrame(observe)
     window.__docsPageLoaded = false
-    document.addEventListener('astro:page-load', () => { window.__docsPageLoaded = true })
+    document.addEventListener('libtmux:page-ready', () => { window.__docsPageLoaded = true })
   })
   const page = await context.newPage()
   page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
@@ -56,12 +56,11 @@ export async function checkReferencePreferences(browser, base) {
     await page.reload()
     await assertFirstFrame(false)
     await page.waitForFunction(() => window.__docsPageLoaded)
-    // A real declaration link uses the client router, without replacing Window.
+    // A real declaration link restores the preference in a new document.
     const target = `${new URL(base).pathname}/java/latest/reference/io-github-libtmux-exception-targetgoneexception-targetgoneexception/`
     const linked = page.locator(`.api-overview a[href="${target}"]`).first()
     await linked.click()
     await page.waitForURL(new URL(target, base).href)
-    await page.waitForFunction(() => window.__sourceFrames.length === 2)
     await assertFirstFrame(false)
     await source.locator('summary').click()
     await page.waitForFunction((key) => localStorage.getItem(key) === 'open', key)
@@ -76,7 +75,7 @@ export async function checkReferencePreferences(browser, base) {
     await other.locator('.api-source-details > summary').click()
     await page.waitForFunction(() => document.querySelector('.api-source-details').open)
     await other.close()
-    console.log('Source and package: default open, keyboard, reload, client route, cross-port/tab and first-frame state pass')
+    console.log('Source and package: default open, keyboard, reload, document links, cross-port/tab and first-frame state pass')
   } finally {
     await context.close()
   }

@@ -79,7 +79,8 @@ it('retains separate native-page home exits when fragment equivalents change', (
   } }
   win.document.body.insertAdjacentHTML('beforeend', `<script type="application/json" data-native-page-ports>${JSON.stringify(context)}</script>`)
   const source = readFileSync(new URL('../src/components/docs/NativeSphinxScript.astro', import.meta.url), 'utf8').match(/<script>([\s\S]*?)<\/script>/)![1]
-  win.eval(ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText)
+  Object.assign(win, { layoutBeforeAppearance: (work: () => void) => work() })
+  win.eval(ts.transpileModule(source.replace(/^  import .*$/gm, ''), { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText)
   const option = () => win.document.querySelector('[data-picker-option][data-port="rs"]')!
   expect(option().tagName).toBe('DIV')
   expect(option().hasAttribute('title')).toBe(false)

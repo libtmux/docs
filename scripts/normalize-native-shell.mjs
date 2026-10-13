@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PORT_BY_SLUG } from '../site/src/lib/ports.ts'
@@ -19,29 +19,33 @@ function adaptHighlight(directory) {
   const remove = 'localStorage.removeItem("sphinx_highlight_terms")'
   const guardedGet = `(() => { try { return ${get}; } catch { return null; } })()`
   const guardedRemove = `try { ${remove}; } catch {}`
-  const before = original.replace(guardedGet, get).replaceAll(guardedRemove, remove)
+  const startup = '_ready(() => {'
+  const prepared = '(window.__libtmuxAppearance ? window.__libtmuxAppearance.layout : _ready)(() => {'
+  const delayed = '\n    window.setTimeout(() => {\n      terms.forEach((term) => _highlightText(body, term, "highlighted"));\n    }, 10);'
+  const immediate = '\n    terms.forEach((term) => _highlightText(body, term, "highlighted"));'
+  const before = original.replace(guardedGet, get).replaceAll(guardedRemove, remove).replace(prepared, startup).replace(immediate, delayed)
   if (nativeHash(before) !== highlightHash) throw new Error(`Native search highlighter changed: ${file}`)
-  const after = before.replace(get, guardedGet).replaceAll(remove, guardedRemove)
+  const after = before.replace(get, guardedGet).replaceAll(remove, guardedRemove).replace(startup, prepared).replace(delayed, immediate)
   if (after === original) return 0
   writeFileSync(file, after)
   return 1
 }
 
-/** Keep native widget behavior when Astro replaces the document body. */
+/** Complete retained native widgets before the shared page gate reveals them. */
 function adaptWidgets(directory) {
   const assets = [
     ['doctools.js', '2992c09df91826a8d33e3b48b645ee77e457adcf7c712d776a814e1e2c448b43', [
-      ['_ready(Documentation.init);', '_ready(Documentation.init);\ndocument.addEventListener("astro:after-swap", Documentation.initDomainIndexTable);'],
+      ['_ready(Documentation.init);', 'if (window.__libtmuxAppearance) window.__libtmuxAppearance.layout(Documentation.init);\nelse _ready(Documentation.init);'],
     ]],
     ['copybutton.js', '75381d09e0497b436ac3c7a1e690415e4f2ccf2b0cc5202fad70b3bdcb7bbf80', [
       ['const addCopyButtonToCodeCells = () => {', 'let nativeClipboard;\nconst addCopyButtonToCodeCells = () => {\n  nativeClipboard?.destroy();'],
       ["codeCell.insertAdjacentHTML('afterend', clipboardButton(id))", "if (!codeCell.nextElementSibling?.classList.contains('copybtn')) codeCell.insertAdjacentHTML('afterend', clipboardButton(id))"],
       ["const clipboard = new ClipboardJS('.copybtn', {text: copyTargetText})", "const clipboard = nativeClipboard = new ClipboardJS('.copybtn', {text: copyTargetText})"],
-      ['runWhenDOMLoaded(addCopyButtonToCodeCells)', 'runWhenDOMLoaded(addCopyButtonToCodeCells)\ndocument.addEventListener("astro:page-load", addCopyButtonToCodeCells);\ndocument.addEventListener("astro:before-swap", () => nativeClipboard?.destroy());'],
+      ['runWhenDOMLoaded(addCopyButtonToCodeCells)', 'if (window.__libtmuxAppearance) window.__libtmuxAppearance.layout(addCopyButtonToCodeCells);\nelse runWhenDOMLoaded(addCopyButtonToCodeCells);'],
     ]],
     ['design-tabs.js', 'de2467cfca5bb555043369f1eea82c9cd794e70fa0444f216aa4ebb18cefc9f0', [
       ['function ready() {', 'function ready() {\n  sd_id_to_elements = {};'],
-      ['document.addEventListener("DOMContentLoaded", ready, false);', 'document.addEventListener("DOMContentLoaded", ready, false);\ndocument.addEventListener("astro:page-load", ready);'],
+      ['document.addEventListener("DOMContentLoaded", ready, false);', 'if (window.__libtmuxAppearance) window.__libtmuxAppearance.layout(ready);\nelse document.addEventListener("DOMContentLoaded", ready, false);'],
       ['window.sessionStorage.getItem(\n          storageKeyPrefix + group\n        )', '(() => { try { return window.sessionStorage.getItem(storageKeyPrefix + group); } catch { return null; } })()'],
       ['window.sessionStorage.setItem(storageKeyPrefix + group, tabParam);', 'try { window.sessionStorage.setItem(storageKeyPrefix + group, tabParam); } catch {}'],
       ['window.sessionStorage.setItem(storageKeyPrefix + group, id);', 'try { window.sessionStorage.setItem(storageKeyPrefix + group, id); } catch {}'],
@@ -127,8 +131,9 @@ function adaptNativePage(html, page, context, chrome, file, assetDigests) {
       })
     result = stripNativeTheme(result, file)
     result = result.replace(/\bsrc=(["'])((?:[^"']*\/)?_static\/([^/"'?]+\.js))(?:\?[^"']*)?\1/g,
-      (attribute, quote, src, name) => assetDigests[name] ? `src=${quote}${src}?v=${assetDigests[name].slice(0, 12)}${quote}` : attribute)
-    // ClientRouter compares asset URLs before changing the document location.
+      (attribute, quote, src, name) => assetDigests[name]
+        ? `src=${quote}${context.base}_astro/${name.replace(/\.js$/, `.${assetDigests[name].slice(0, 12)}.js`)}${quote}` : attribute)
+    // Keep normalized native assets rooted in the published version tree.
     result = result.replace(/\b(src|href)=(["'])(?:\.\.\/)*(_static\/[^"']+)\2/g,
       (_attribute, name, quote, path) => `${name}=${quote}${escapeAttribute(context.base + path)}${quote}`)
     result = result.replace(/\bhref=(["'])(\/[^"']+\.html)\1/g, (attribute, quote, href) => {
@@ -145,7 +150,10 @@ function adaptNativePage(html, page, context, chrome, file, assetDigests) {
     return `<html${clean} data-native-shell="${contextHash}" data-theme="${brand}" data-brand="${brand}" data-brand-variant="library" data-shell-base="${escapeAttribute(context.base)}" data-native-toc="${Boolean(page.hasTableOfContents)}">`
   })
   before = before
-    .replace(/<\/head>/i, `<!-- libtmux-native-head -->${chrome.head}<!-- /libtmux-native-head -->\n</head>`)
+    .replace(/(<head\b[^>]*>)([\s\S]*?)(<\/head>)/i, (_tag, open, content, close) => {
+      const charset = /<meta\b[^>]*charset[^>]*>/i.exec(content)?.[0] ?? '<meta charset="utf-8">'
+      return `${open}${charset}<!-- libtmux-native-head -->${chrome.head}<!-- /libtmux-native-head -->${content.replace(charset, '')}${close}`
+    })
     .replace(/<body\b([^>]*)>\s*/i, (_tag, attributes) => `<body${attributes.replace(/\sdata-documentation-layout=["'][^"']*["']/gi, '')} data-documentation-layout="reference">\n<!-- libtmux-native-header -->${chrome.header}<!-- /libtmux-native-header -->\n`)
     .replace(/<aside class="sidebar-drawer"(?: id="native-navigation")?>/, '<aside class="sidebar-drawer" id="native-navigation">')
   after = after
@@ -180,6 +188,15 @@ export async function normalizeNativeShell(directory, prefix, { sphinxPort, vers
   const highlightFile = join(directory, '_static/sphinx_highlight.js')
   const highlightDigest = context && existsSync(highlightFile) ? nativeHash(readFileSync(highlightFile)) : undefined
   const assetDigests = { ...widgets.digests, 'sphinx_highlight.js': highlightDigest }
+  // The distribution can ignore query strings. Put adapted script identity
+  // in the path so cached native startup cannot evade the appearance gate.
+  for (const [name, digest] of Object.entries(assetDigests)) {
+    if (!digest) continue
+    const target = join(directory, '_astro', name.replace(/\.js$/, `.${digest.slice(0, 12)}.js`))
+    if (existsSync(target)) {
+      if (nativeHash(readFileSync(target)) !== digest) throw new Error(`Native asset identity changed: ${target}`)
+    } else { mkdirSync(dirname(target), { recursive: true }); writeFileSync(target, readFileSync(join(directory, '_static', name))); changed++ }
+  }
   function walk(dir) {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       const path = join(dir, entry.name)
