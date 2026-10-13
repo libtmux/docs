@@ -447,9 +447,9 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     })
   })
 
-  it('links generated declarations and schema-bearing tools inside their product', async () => {
+  it.each(primaryPorts)('$name links generated declarations and schema-bearing tools inside their product', async (port) => {
     for (const page of pages().filter((entry) => entry.section === 'reference'
-      && productAvailable(PORTS.find((port) => port.slug === entry.port)!, entry.product))) {
+      && entry.port === port.slug && productAvailable(port, entry.product))) {
       const prefix = `${page.port}/${page.version}/${page.product}/${page.section}/`
       const declarations = await inspect(page.path, (document) =>
         [...document.querySelectorAll('[aria-labelledby="generated-api"] a[href]')]
