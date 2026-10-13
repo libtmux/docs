@@ -5,93 +5,70 @@ manifest it serves is produced.
 
 ## Prerequisites
 
-Only Node and pnpm are required. Everything else — `uv`, `bun`, `doxygen`,
-`docfx`, `swift` — is optional: each self-hosted port's reference generator
-is skipped, not fatal, when its toolchain isn't on `PATH` or isn't fully
-usable (see "Reference generator statuses" below).
+Use the Node and pnpm versions declared in `package.json`. Integrated guide
+staging also needs the source checkouts named in `site/src/lib/ports.ts` at
+its recorded revisions. See [CONTRIBUTING.md](../CONTRIBUTING.md) for setup
+and verification loops.
 
-Two of them need help finding themselves, and the build supplies it rather
-than asking you to. `bun` installed through npm leaves a shim whose
-postinstall never ran; a working copy in a mise install directory is
-preferred over it. `docfx` is a .NET global tool, so it needs `DOTNET_ROOT`
-set — mise installs the SDK outside every location the apphost searches, and
-without it `docfx` exits with "You must install .NET to run this
-application" even though .NET is right there. Both are silent no-ops on a
-machine that has neither.
+A full local assembly can run native reference generators when their
+runtime and checkout are present. Missing optional generators produce
+`skipped` rows. Selected-source MCP export is required even with
+`--skip-refs`; a failed exporter fails that build.
 
 ## Full local build
 
 ```console
-$ ./scripts/build-site.sh
+$ pnpm build:site
 ```
 
-This assembles `_site/` at the repo root:
+The default output is `_site/`. Each locale has its own tree, such as
+`_site/en/`, containing shared prose and a version subtree for each selected
+port. Rust, Go and Java have local guides and references as well as links to
+their ecosystem documentation hosts.
 
-- The Astro shell, built once for shared prose (landing page, concepts,
-  guides, examples, parity) at the site root.
-- The Astro shell again, once per self-hosted port times version
-  (`latest`, `stable` by default), each with `LIBTMUX_DOCS_BASE` and the
-  version env vars set to that port+version's own values, output under
-  `_site/<port>/<version>/`.
-- Each self-hosted port's reference generator, run once per port+version
-  and copied to `_site/<port>/<version>/api/` when its toolchain is usable
-  and the checkout has the generator's config/entrypoint in place.
-- One Pagefind pass over the assembled `_site/` tree, so search spans the
-  shell and every generator's output together.
+`LIBTMUX_DOCS_OUT_DIR` changes the assembly directory. The build replaces
+that directory, so select a dedicated generated-output location. The
+assembly lock covers the checkout because Astro staging is shared across
+builds, including builds with different output directories.
 
-Ecosystem ports (Rust, Go, Java — see `site/src/lib/ports.ts`) get no
-version subtree at all: the site links out to their canonical host
-(docs.rs, pkg.go.dev, javadoc.io), so there is nothing local to build.
-
-The script ends with a summary table, one row per port+version (a single
-row for ecosystem ports, which have no version subtree):
-
-```text
-PORT     VERSION  MODE           STATUS     REASON
-py       latest   sphinx         built      [Sphinx + sphinx-gp-theme] ...
-py       stable   sphinx         built      [Sphinx + sphinx-gp-theme] ...
-ts       latest   astro          skipped    [@microsoft/api-extractor JSON] bun not usable: ...
-rs       -        ecosystem      n/a        deep-links to docs.rs, no local output
-```
+Shell builds use a content-addressed `.build-cache/`. `--no-cache` rebuilds
+the shells; `LIBTMUX_DOCS_CACHE` selects a separate cache directory. Native
+reference output is cached with its source revision and logs. Cache entries
+older than fourteen days are removed during an assembly.
 
 ### Reference generator statuses
 
-- `built` — the generator produced final HTML, copied into
-  `<port>/<version>/api/`. True today for Sphinx (Python, C++) and DocC
-  (Swift), which render their own final pages.
-- `model-only` — the generator ran and produced an intermediate model
-  (TypeScript's `docs/api.md`, .NET's docfx YAML), but nothing is copied:
-  the shell has no page route yet that renders that model into HTML at
-  `/<port>/<version>/api/`. `site/src/lib/ports.ts`'s `referenceUrl()`
-  already promises that URL; closing this gap means either wiring a
-  content-collection loader + page route for it, or moving that port to
-  `referenceMode: 'ecosystem'`.
-- `skipped` — the toolchain isn't usable (absent from `PATH`, or present
-  but broken — see below) or the checkout doesn't have the generator's
-  config/entrypoint yet. Never aborts the run.
-- `failed` — the toolchain is usable and the generator was actually
-  invoked, but it exited non-zero. Recorded in the table, logged under
-  `_site/.build-logs/<port>-<version>.log`, and makes the script exit 1
-  *after* printing the full table — every other port still gets built.
+The final table reports each port and version's reference result:
 
-A toolchain is checked by actually running it (`uv --version`, and so on),
-not just by resolving it on `PATH`: an installed-but-broken binary (seen in
-this sandbox — an npm-shimmed `bun` whose postinstall was skipped) is
-treated the same as an absent one, a `skipped` row with the first line of
-the error, rather than surfacing as a confusing generator `failed`.
+- `built`: a native reference was generated and assembled.
+- `redirected`: the legacy `api/` entry points at the shell's `reference/`.
+- `skipped`: the native generator or its input is unavailable, or the run
+  selected `--skip-refs`. This does not establish reference coverage.
+- `failed`: the generator failed; inspect the named `.build-logs/` file.
+- `not listed`: the selected version is absent from the port manifest.
 
-**Side effect worth knowing about:** the TypeScript generator is that
-repo's own documented invocation, `bun run docs:api`
-(`~/work/libtmux/libtmux-ts`'s `AGENTS.md`: "Run `bun run docs:api` and
-commit the result") — it writes `packages/libtmux/docs/api.md` in that
-checkout, a tracked file. Running a full build with a working `bun`
-toolchain may leave a real diff there; review or discard it as you would
-any other generated-file diff.
+A shell compilation failure aborts the assembly. Check the summary and run
+checks against the assembled output before publishing it.
 
-A broken *shell* build (an actual Astro/content error, not a missing
-reference toolchain) aborts the whole run — that's not something this
-script tries to work around, since it means the site itself doesn't build,
-not that one port's reference is unavailable.
+### Clean generated builds
+
+Stop development and preview servers, then list generated output:
+
+```console
+$ pnpm clean --dry-run --cache
+```
+
+Remove the listed output and reusable build cache:
+
+```console
+$ pnpm clean --cache
+```
+
+Cleanup removes `_site/`, `_site.*/`, `site/dist/`, `site/.astro/` and
+transient API and guide staging. Without `--cache`, `.build-cache/` stays.
+The assembly lock prevents cleaning a running assembly. Source,
+`node_modules/` and `output/` review evidence stay intact. Custom output
+and cache directories require explicit cleanup at their own locations.
 
 ### Options
 
@@ -107,7 +84,7 @@ $ ./scripts/build-site.sh --skip-refs
 $ ./scripts/build-site.sh --skip-pagefind
 ```
 
-`--ports` limits which self-hosted ports get a shell build and a reference
+`--ports` limits which ports get a shell build and a reference
 generation pass (comma-separated slugs from `site/src/lib/ports.ts`).
 `--versions` overrides the default `latest,stable`. `--skip-refs` builds
 only the shell and search index. `--skip-pagefind` skips the final
@@ -310,18 +287,12 @@ outright:
 $ node scripts/gen-versions.mjs --overrides overrides.json
 ```
 
-## Known gap: search only works from the site root today
+## Search index
 
-`site/src/pages/search.astro` builds its Pagefind bundle URL from
-`import.meta.env.BASE_URL` — correct for the one Pagefind index Starlight
-or a single-version site would have, but this site runs Pagefind exactly
-once over the whole assembled `_site/` tree (`/pagefind/...`), not once per
-port+version. A search page rendered under `_site/<port>/<version>/search/`
-computes `/<port>/<version>/pagefind/...`, which doesn't exist — only the
-root-level `_site/search/` page's `BASE_URL` of `/` happens to line up.
-`SiteHeader.astro`'s search link already points at the root `/search/`
-unconditionally, so this doesn't break site navigation today, but the
-per-port/version copies of that page are dead weight and would actively
-break if anything ever links to them directly. Worth an absolute
-`/pagefind/` path in `search.astro` rather than a `BASE_URL`-relative one —
-flagged here for whoever owns that file, not fixed here.
+The assembly runs Pagefind over the locale tree after shell and native
+pages are assembled. `--skip-pagefind` omits that pass. Development and
+partial builds can have no index; the search panel reports the missing
+index instead of implying that the current page contains no matches.
+
+The search bundle uses the locale root, including a PR preview's prefix,
+so port and version pages share the assembled index.

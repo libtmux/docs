@@ -8,6 +8,7 @@
     "build": "pnpm --filter @libtmux/site build",
     "preview": "pnpm --filter @libtmux/site preview",
     "build:site": "./scripts/build-site.sh",
+    "clean": "bash scripts/clean-build.sh",
     "type-check": "pnpm run --recursive type-check",
     "lint": "pnpm run --recursive lint && oxlint scripts",
     "test": "node scripts/test-loop.mjs outer",
