@@ -1,5 +1,11 @@
 /** Anchor arrival shared by Astro and native documentation pages. */
 
+// Standalone exports and cached older heads still rely on this module's
+// decorator import. The coordinated head already installed decoration.
+if (typeof window !== 'undefined' && !window.__libtmuxAppearance) {
+  await import('./external-links.js')
+}
+
 export function installAnchorNavigation(win = window) {
   const doc = win.document
   const pageUrl = new URL(win.location.href)

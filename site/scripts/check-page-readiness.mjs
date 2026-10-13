@@ -117,5 +117,14 @@ export async function checkRequiredAppearance(browser, base) {
     await page.locator('html[data-page-readiness="ready"]').waitFor({ state: 'attached' })
     assert(await page.locator('main h1').isVisible(), 'Reload recovers after the required resource becomes available')
   } finally { await context.close() }
+  const legacy = await browser.newPage()
+  try {
+    const probe = `${base}/legacy-shell-probe/`
+    await legacy.route(probe, (route) => route.fulfill({ contentType: 'text/html', body:
+      `<link rel="stylesheet" href="${base}/_shell/anchors.css"><script type="module" src="${base}/_shell/anchors.js"></script><a href="https://example.com/">External</a>` }))
+    await legacy.goto(probe)
+    assert.equal(await legacy.locator('a').getAttribute('data-external-link'), 'example.com', 'Standalone and cached older heads retain decoration')
+    assert.match(await legacy.locator('a').evaluate((link) => getComputedStyle(link, '::after').maskImage), /external-link\.svg/)
+  } finally { await legacy.close() }
   console.log('Appearance: held font/module/effect, first visible fonts/icons/dotted links, stable geometry, failure and Reload PASS')
 }
