@@ -339,7 +339,7 @@ jobs:
         env:
           BUCKET: ${{ secrets.LIBTMUX_DOCS_BUCKET }}
           LOCALE: ${{ matrix.locale }}
-          PUBLISH_POLICY_SINCE: '2026-09-27'
+          PUBLISH_POLICY_SINCE: '2026-10-12'
         run: |
           node skip-unchanged.mjs --dir dist --bucket "$BUCKET" \
             --prefix "$LOCALE/" --policy-since "$PUBLISH_POLICY_SINCE"
