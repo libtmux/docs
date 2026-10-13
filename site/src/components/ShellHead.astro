@@ -3,7 +3,6 @@ import '../styles/global.css'
 import { Font } from 'astro:assets'
 import ThemeScript from './ThemeScript.astro'
 import { pickerPaintRules } from '../lib/picker-paint'
-import { withRoot } from '../lib/site-root'
 import { initializePageReadiness } from '../lib/page-readiness'
 import { installExternalLinks } from '../../public/_shell/external-links.js'
 import externalLink from '../../public/_shell/external-link.svg?raw'
@@ -41,4 +40,3 @@ const hintsCss = externalLinksCss.replace('url("./external-link.svg")', `url("${
   import '../../public/_shell/anchors.js'
 </script>
 <style is:global set:html={pickerPaintRules()} />
-<link rel="preload" href={withRoot('/versions.json')} as="fetch" crossorigin="anonymous" />

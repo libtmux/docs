@@ -366,6 +366,8 @@ const segmentNames =
   }
 
   for (const root of document.querySelectorAll<HTMLElement>('.search-panel')) {
-    waitForAppearance(mount(root))
+    const dialog = root.closest('dialog')
+    if (dialog) dialog.addEventListener('search-modal:open', () => { void mount(root) }, { once: true })
+    else waitForAppearance(mount(root))
   }
 </script>
