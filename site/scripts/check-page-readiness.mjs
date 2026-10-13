@@ -105,6 +105,65 @@ export async function checkWebAnalytics(browser, base) {
   console.log('Analytics: held policy/beacon cannot block load; edge denial excludes the beacon PASS')
 }
 
+/** Reproduce a late beacon arriving between an Astro swap and script execution. */
+export async function checkWebAnalyticsTransitions(browser, base) {
+  for (const markHandled of [true, false]) {
+    const context = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 390, height: 900 } })
+    const page = await context.newPage()
+    page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
+    let release, requested = false
+    const held = new Promise((resolve) => { release = resolve })
+    try {
+      await page.route('**/_shell/web-analytics.json', async (route) => {
+        const response = await route.fetch()
+        await route.fulfill({ response, headers: { ...response.headers(), 'x-libtmux-analytics': 'allow' } })
+      })
+      await page.route('https://static.cloudflareinsights.com/**', async (route) => {
+        requested = true
+        await held
+        await route.abort()
+      })
+      const incoming = page.waitForRequest('https://static.cloudflareinsights.com/**')
+      await Promise.all([incoming, page.goto(`${base}/analytics-router-probe/first/`, { waitUntil: 'load' })])
+      await page.evaluate((markHandled) => {
+        const beacon = document.querySelector('script[data-cf-beacon]')
+        if (beacon?.getAttribute('data-astro-exec') !== '') throw new Error('The real loader must mark its beacon handled')
+        const late = beacon.cloneNode(true)
+        if (!markHandled) late.removeAttribute('data-astro-exec')
+        window.__analyticsRouterProbe = { identity: crypto.randomUUID(), pageLoads: 0, inserted: false }
+        document.addEventListener('astro:page-load', () => { window.__analyticsRouterProbe.pageLoads++ })
+        document.addEventListener('astro:after-swap', () => {
+          document.head.append(late)
+          window.__analyticsRouterProbe.inserted = true
+        }, { once: true })
+      }, markHandled)
+      const identity = await page.evaluate(() => window.__analyticsRouterProbe.identity)
+      await page.locator('#analytics-next').click()
+      await page.waitForFunction(() => window.__analyticsRouterProbe?.inserted &&
+        document.querySelector('main h1')?.textContent === 'second analytics article')
+      if (markHandled) {
+        await page.waitForFunction(() => window.__analyticsRouterProbe.pageLoads === 1)
+      }
+      await page.evaluate(() => new Promise((resolve) => {
+        let remaining = 8
+        const sample = () => { if (--remaining) requestAnimationFrame(sample); else resolve() }
+        requestAnimationFrame(sample)
+      }))
+      const observation = await page.evaluate(() => ({
+        ...window.__analyticsRouterProbe,
+        load: performance.getEntriesByType('navigation')[0].loadEventEnd,
+      }))
+      assert.equal(observation.identity, identity, 'A real ClientRouter swap retained the document')
+      assert(observation.load > 0 && requested, 'The initial document loaded while the beacon remained held')
+      assert.equal(observation.pageLoads, markHandled ? 1 : 0,
+        'Only the unmarked negative control waits for optional analytics')
+      release()
+      await page.waitForFunction(() => window.__analyticsRouterProbe.pageLoads === 1)
+    } finally { release(); await page.unrouteAll({ behavior: 'wait' }); await context.close() }
+  }
+  console.log('Analytics: real ClientRouter swap completes with held beacon; unmarked negative control stalls and recovers PASS')
+}
+
 /** Held and failed required resources must never become elapsed-time success. */
 export async function checkRequiredAppearance(browser, base) {
   for (const [kind, path, width] of [

@@ -14,6 +14,8 @@ export function initializeWebAnalytics(policyUrl: string): void {
       const script = document.createElement('script')
       script.type = 'module'
       script.async = true
+      // Astro's router must not await this optional request during a swap.
+      script.dataset.astroExec = ''
       script.src = 'https://static.cloudflareinsights.com/beacon.min.js'
       script.dataset.cfBeacon = JSON.stringify({ token })
       document.head.append(script)

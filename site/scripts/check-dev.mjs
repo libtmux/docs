@@ -14,7 +14,7 @@ import { checkHomeTaskReset } from './check-home-task-reset.mjs'
 import { checkColorScheme } from './check-color-scheme.mjs'
 import { checkHomeExampleOptions } from './check-home-example-options.mjs'
 import { checkDevSample } from './check-dev-sample.mjs'
-import { checkRequiredAppearance, checkWebAnalytics } from './check-page-readiness.mjs'
+import { checkRequiredAppearance, checkWebAnalytics, checkWebAnalyticsTransitions } from './check-page-readiness.mjs'
 
 const apiNavigationOnly = process.argv.includes('--api-navigation')
 const apiAnchorsOnly = process.argv.includes('--api-anchors')
@@ -58,6 +58,25 @@ import DocsLayout from '../layouts/DocsLayout.astro'
 for (const file of ['astro.config.ts', 'ec.config.mjs', 'package.json', 'tsconfig.json']) cpSync(join(source, file), join(root, file))
 for (const file of ['public', 'node_modules']) symlinkSync(join(source, file), join(root, file), 'dir')
 for (const file of ['scripts', 'packages', 'node_modules']) symlinkSync(join(source, '..', file), join(mirror, file), 'dir')
+const analyticsProbe = join(root, 'src/pages/analytics-router-probe')
+mkdirSync(analyticsProbe)
+writeFileSync(join(analyticsProbe, '[page].astro'), `---
+import { ClientRouter } from 'astro:transitions'
+import { initializeWebAnalytics } from '../../lib/web-analytics'
+import { withRoot } from '../../lib/site-root'
+export function getStaticPaths() {
+  return ['first', 'second'].map((page) => ({ params: { page } }))
+}
+const { page } = Astro.params
+---
+<html lang="en"><head><ClientRouter fallback="swap" /><title>Analytics router probe</title>
+  <script is:inline set:html={\`(\${initializeWebAnalytics.toString()})(\${JSON.stringify(withRoot('/_shell/web-analytics.json'))});\`} />
+</head>
+<body><main><h1>{page} analytics article</h1><p><code>libtmux.Server()</code></p>
+  <a href="/en/analytics-router-probe/second/" id="analytics-next">Next article</a>
+  <a href="https://example.com/">External link</a>
+</main></body></html>
+`)
 // Exercise the production reference page in the root server. Its model and
 // owner are the same props its port route supplies, without another Vite boot.
 writeFileSync(join(root, 'src/pages/api-example-probe.astro'), `---
@@ -575,6 +594,7 @@ try {
   if (sampleOnly) {
     await retryReload(() => checkDevSample(browser, base))
     await checkWebAnalytics(browser, base)
+    await checkWebAnalyticsTransitions(browser, base)
   } else if (homeLauncherOnly) {
     await checkHomeLauncher(browser, base)
   } else if (homeControlsOnly) {
@@ -606,6 +626,7 @@ try {
   } else {
     await retryReload(() => checkRequiredAppearance(browser, base))
     await checkWebAnalytics(browser, base)
+    await checkWebAnalyticsTransitions(browser, base)
     // Timed page loads share Vite's compiler. Finish each browser matrix
     // before starting the next, including the main page walk below.
     let previous = Promise.resolve()

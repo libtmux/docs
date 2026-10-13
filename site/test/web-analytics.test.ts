@@ -35,6 +35,7 @@ it('starts neither policy nor beacon before the load event', async () => {
   })
   expect(beacon()?.type).toBe('module')
   expect(beacon()?.async).toBe(true)
+  expect(beacon()?.dataset.astroExec).toBe('')
   expect(beacon()?.src).toBe('https://static.cloudflareinsights.com/beacon.min.js')
   expect(JSON.parse(beacon()!.dataset.cfBeacon!)).toEqual({ token })
 })
