@@ -173,6 +173,9 @@
     signal.addEventListener('abort', () => cancelAnimationFrame(frame), { once: true })
     update()
     layoutBeforeAppearance(update)
+    document.addEventListener('gp-sphinx:navigated', () => {
+      queueMicrotask(() => layoutBeforeAppearance(update))
+    }, { signal })
   }
   initNativeSphinx()
   layoutBeforeAppearance(() => {
