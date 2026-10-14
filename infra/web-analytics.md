@@ -11,6 +11,20 @@ The token in that JSON is the public installation token, not an API
 credential. The loader skips an already injected beacon and initializes
 once per browser document, including Astro navigation.
 
+This policy uses a separate manual registration for `libtmux.org`, while
+the production zone registration retains automatic installation and EU
+exclusion. Create the manual registration with
+`cf rum site-info create --host libtmux.org --auto-install=false`, then
+copy its public token into the policy JSON. Check a real beacon POST after
+registration has propagated. In the preview rollout, the automatic zone
+token returned 404 from the external collector; the manual registration
+returned 204. A downloaded script alone does not verify collection.
+
+Cloudflare's [collection FAQ](https://developers.cloudflare.com/web-analytics/faq/)
+distinguishes the manual collector at `cloudflareinsights.com/cdn-cgi/rum`
+from automatic collection at the site's own `/cdn-cgi/rum`. The owned
+loader checks geographic permission before requesting the manual beacon.
+
 The beacon carries Astro's handled-script marker so a late insertion during
 a swap cannot enter the router's script wait. The isolated ClientRouter
 probe checks this race and a negative control with the marker removed.
