@@ -49,11 +49,14 @@ const script = () => {
 
 it('waits for parsing, mask decode, fonts and final connected layout', async () => {
   initializePageReadiness(decorate, 'data:image/svg+xml,icon')
-  const layout = vi.fn(); layoutBeforeAppearance(layout)
-  expect(decorate).toHaveBeenCalledOnce()
+  const layout = vi.fn(() => expect(decorate).toHaveBeenCalledOnce()); layoutBeforeAppearance(layout)
   mask.resolve(); fonts.resolve(); await flush()
+  expect(decorate).not.toHaveBeenCalled()
   expect(root().dataset.pageReadiness).toBe('pending')
-  parse(); await flush()
+  parse()
+  expect(decorate).toHaveBeenCalledOnce()
+  expect(layout).not.toHaveBeenCalled()
+  await flush()
   expect(layout).toHaveBeenCalledOnce()
   expect(root().dataset.pageReadiness).toBe('ready')
   expect(root().classList.contains('fonts-pending')).toBe(false)

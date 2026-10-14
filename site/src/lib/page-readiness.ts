@@ -130,7 +130,6 @@ export function initializePageReadiness(decorate: (win: Window) => unknown, mask
         !event.filename.includes('cloudflareinsights.com')) fail(event.error)
   })
 
-  try { decorate(window) } catch (error) { fail(error) }
   const image = new Image()
   image.src = mask
   wait(image.decode())
@@ -176,6 +175,7 @@ export function initializePageReadiness(decorate: (win: Window) => unknown, mask
   const complete = async () => {
     if (parsed) return
     parsed = true
+    try { decorate(window) } catch (error) { fail(error) }
     observer.takeRecords().forEach((record) => record.addedNodes.forEach(scan))
     try {
       // Registered work can add resources or layout during font loading. Reach
