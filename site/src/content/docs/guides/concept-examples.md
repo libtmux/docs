@@ -41,7 +41,7 @@ Keep tmux access local or behind access controls you own. An MCP tool can
 send shell input, and a workspace file can configure shell commands. A concept
 badge does not provide authentication, authorization or isolation.
 
-## Keep dogfooding useful
+## Check and report failures
 
 A concept example needs to work at its documented revision. Exercise a
 workspace load and inspect the resulting session, or connect an MCP client

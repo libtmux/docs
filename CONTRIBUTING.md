@@ -198,7 +198,7 @@ also requires the generated Sphinx pages; check the run's skip summary.
 Stop development and preview servers, then remove generated output and staging:
 
 ```console
-$ pnpm clean
+$ pnpm run clean
 ```
 
 Add `--dry-run` to list the directories or `--cache` to remove cached shell

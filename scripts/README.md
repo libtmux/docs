@@ -55,13 +55,13 @@ checks against the assembled output before publishing it.
 Stop development and preview servers, then list generated output:
 
 ```console
-$ pnpm clean --dry-run --cache
+$ pnpm run clean --dry-run --cache
 ```
 
 Remove the listed output and reusable build cache:
 
 ```console
-$ pnpm clean --cache
+$ pnpm run clean --cache
 ```
 
 Cleanup removes `_site/`, `_site.*/`, `site/dist/`, `site/.astro/` and

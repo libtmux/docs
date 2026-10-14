@@ -19,7 +19,8 @@ const artwork = (id: string) => {
 }
 ---
 <details class="surface-picker doc-picker" data-surface-picker data-doc-picker data-pagefind-ignore="all">
-  <summary aria-label={solutionsOnly ? 'Choose a solution' : `Choose documentation: ${surface.label}, ${currentLabel}`}>
+  <summary aria-label={solutionsOnly ? 'Choose a solution' : `Choose documentation: ${surface.label}, ${currentLabel}${surface.concept ? ', concept example' : ''}`}
+    aria-description={!solutionsOnly && surface.concept ? CONCEPT_DESCRIPTION : undefined}>
     {port ? <img class="surface-artwork" src={artwork(surface.id)} width="30" height="30" alt="" /> : <TmuxLogo />}
     <span class="surface-current"><strong><span class="surface-label">{!solutionsOnly && surface.id === 'tmux'
       ? <><span class="surface-name-full">{surface.label}</span><span class="surface-name-short">tmux</span></>
