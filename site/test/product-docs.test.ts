@@ -139,7 +139,7 @@ function graph(document: Window['document']): StructuredEntry[] {
  * matters to a reader is that the page says so before its prose, in a block
  * set apart from it.
  */
-function developmentStatus(document: Window['document'], path: string, concept = false): void {
+function developmentStatus(document: Window['document'], path: string, concept: boolean): void {
   const notes = [...document.querySelectorAll('[role="note"]')]
   const status = notes.find((note) => (concept ? /concept example/i : /in development/i).test(note.textContent ?? ''))
   expect(status, `${path} support scope or development status`).toBeDefined()
@@ -453,6 +453,8 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
   it('links generated declarations and schema-bearing tools inside their product', async () => {
     for (const page of pages().filter((entry) => entry.section === 'reference'
       && productAvailable(PORTS.find((port) => port.slug === entry.port)!, entry.product))) {
+      const port = PORTS.find((entry) => entry.slug === page.port)!
+      const concept = productIsConcept(port, page.product)
       const prefix = `${page.port}/${page.version}/${page.product}/${page.section}/`
       const declarations = await inspect(page.path, (document) =>
         [...document.querySelectorAll('[aria-labelledby="generated-api"] a[href]')]
@@ -475,12 +477,13 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
           expect(labels.slice(0, 2)).toEqual([page.name, 'Workspace Manager'])
           expect(labels.at(-1)).toBe(sample.title)
           expect(graph(document).find((entry) => entry['@type'] === 'BreadcrumbList')?.itemListElement?.map((item) => item.name)).toEqual(labels)
-        } else developmentStatus(document, samplePath)
+        }
+        if (concept || productInDevelopment(port, page.product)) developmentStatus(document, samplePath, concept)
       })
       if (page.product !== 'mcp') continue
       const toolsPath = `${page.port}/${page.version}/mcp/tools/`
       const tools = await inspect(toolsPath, (document) => {
-        developmentStatus(document, toolsPath)
+        developmentStatus(document, toolsPath, concept)
         return [...document.querySelectorAll('.api-index-card[id] > .api-index-card__link[href]')].map((link) => link.getAttribute('href')!)
       })
       expect(tools.length, `${toolsPath} protocol tools`).toBeGreaterThan(0)
@@ -490,7 +493,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       }
       const toolPath = new URL(tools[0], urlFor(toolsPath)).pathname.slice(SITE_PREFIX.length + 1)
       await inspect(toolPath, (document) => {
-        developmentStatus(document, toolPath)
+        developmentStatus(document, toolPath, concept)
         const input = [...document.querySelectorAll('details')]
           .find((detail) => detail.querySelector('summary')?.textContent === 'Input schema')
         expect(input, `${toolPath} input schema`).toBeDefined()
