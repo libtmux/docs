@@ -97,6 +97,17 @@ describe('inventories are scoped to their own language', () => {
   })
 })
 
+it.each(['/en/', '/pr-142/en/'])('roots source and parent inventory links within %s', (root) => {
+  const uri = `${root}kotlin/latest/reference/source/SessionOperations.kt/`
+  for (const inventoryUri of [uri, uri.slice(1)]) {
+    const index = new SymbolIndex([], (s) => `#${s.id}`, 'kotlin')
+    index.addInventory('', [{ name: 'SessionOperations.kt', uri: inventoryUri, type: 'std:label', priority: 1, dispname: '-' }], ['kotlin'], 'Source')
+    const hit = index.resolve('SessionOperations.kt')
+    expect(hit?.href).toBe(uri)
+    expect(new URL(hit!.href, 'https://libtmux.org').hostname).toBe('libtmux.org')
+  }
+})
+
 /**
  * A type is not ambiguous with its own constructor.
  *
