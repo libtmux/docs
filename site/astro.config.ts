@@ -352,6 +352,8 @@ export default defineConfig({
   server: { port: 4321 },
 
   vite: {
+    // Parse generated catalogs without compiling their object literals.
+    json: { stringify: true, namedExports: false },
     // Required module execution must have an observable load/error outcome.
     build: { assetsInlineLimit: 0 },
     resolve: { tsconfigPaths: false, noExternal: ['@tailwindcss/typography'] },
