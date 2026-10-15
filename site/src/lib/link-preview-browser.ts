@@ -1,4 +1,5 @@
 import type { LinkPreview } from './link-preview'
+import type { CodeHighlight } from './highlight'
 import { linkPreviewTarget, linkPreviewCandidate, markLinkPreview } from './link-preview-paint'
 import { abbreviateNamespace } from './api-labels'
 import { wordBreak } from './word-break'
@@ -24,6 +25,53 @@ function validPreview(value: unknown): value is LinkPreview {
   return data.schema === 1 && typeof data.title === 'string' && typeof data.description === 'string'
     && typeof data.href === 'string' && (!data.detail || typeof data.detail === 'string')
     && (!data.signature || typeof data.signature === 'string')
+}
+
+/** Optional token metadata can fail independently of the real reference link. */
+export function renderPreviewSignature(element: HTMLElement, preview: LinkPreview) {
+  const signature = preview.signature ?? ''
+  const value = preview.signatureHighlight
+  const color = (input: unknown) => typeof input === 'string' && /^#(?:[\da-f]{3,4}|[\da-f]{6}|[\da-f]{8})$/i.test(input)
+  const object = (input: unknown): input is Record<string, unknown> => !!input && typeof input === 'object'
+  const palette = (input: unknown) => object(input) && color(input.foreground) && color(input.background)
+  const style = (input: unknown) => object(input) && color(input.color)
+    && typeof input.fontStyle === 'number' && Number.isInteger(input.fontStyle) && input.fontStyle >= 0 && input.fontStyle <= 15
+  const valid = (input: unknown): input is CodeHighlight => object(input) && typeof input.language === 'string'
+    && palette(input.light) && palette(input.dark) && Array.isArray(input.lines)
+    && input.lines.every((line: unknown) => Array.isArray(line) && line.every((token: unknown) => object(token)
+      && typeof token.content === 'string' && style(token.light) && style(token.dark)))
+    && input.lines.map((line: { content: string }[]) => line.map((token) => token.content).join('')).join('\n') === signature
+
+  element.replaceChildren()
+  element.classList.remove('lm-highlighted')
+  delete element.dataset.language
+  for (const theme of ['light', 'dark']) {
+    element.style.removeProperty(`--shiki-${theme}-bg`)
+    element.style.removeProperty(`--shiki-${theme}`)
+  }
+  element.hidden = !signature
+  if (!signature || !valid(value)) { element.textContent = signature; return }
+  element.classList.add('lm-highlighted')
+  element.dataset.language = value.language
+  for (const theme of ['light', 'dark'] as const) {
+    element.style.setProperty(`--shiki-${theme}-bg`, value[theme].background)
+    element.style.setProperty(`--shiki-${theme}`, value[theme].foreground)
+  }
+  for (const [lineIndex, line] of value.lines.entries()) {
+    if (lineIndex) element.append(document.createTextNode('\n'))
+    for (const token of line) {
+      const span = document.createElement('span')
+      span.textContent = token.content
+      for (const theme of ['light', 'dark'] as const) {
+        const { fontStyle } = token[theme]
+        span.style.setProperty(`--shiki-${theme}`, token[theme].color)
+        span.style.setProperty(`--shiki-${theme}-font-style`, fontStyle & 1 ? 'italic' : 'normal')
+        span.style.setProperty(`--shiki-${theme}-font-weight`, fontStyle & 2 ? 'bold' : 'normal')
+        span.style.setProperty(`--shiki-${theme}-text-decoration`, [fontStyle & 4 ? 'underline' : '', fontStyle & 8 ? 'line-through' : ''].filter(Boolean).join(' ') || 'none')
+      }
+      element.append(span)
+    }
+  }
 }
 
 export function disposeLinkPreviews() { dispose(); dispose = () => {} }
@@ -108,11 +156,10 @@ export function initLinkPreviews() {
       shortTitle = abbreviateNamespace(fullTitle)
       renderTitle(false)
       panel.querySelector('[data-preview-description]')!.textContent = preview.description || 'Read the reference for this declaration.'
-      for (const field of ['detail', 'signature'] as const) {
-        const element = panel.querySelector<HTMLElement>(`[data-preview-${field}]`)!
-        const text = field === 'detail' ? [link.dataset.previewContext, preview.detail].filter(Boolean).join(' ') : preview.signature
-        element.textContent = text ?? ''; element.hidden = !text
-      }
+      const detail = panel.querySelector<HTMLElement>('[data-preview-detail]')!
+      const context = [link.dataset.previewContext, preview.detail].filter(Boolean).join(' ')
+      detail.textContent = context; detail.hidden = !context
+      renderPreviewSignature(panel.querySelector<HTMLElement>('[data-preview-signature]')!, preview)
       const open = panel.querySelector<HTMLAnchorElement>('[data-preview-open]')!
       open.href = destination.href
       panel.setAttribute('aria-label', `${preview.title} preview`)

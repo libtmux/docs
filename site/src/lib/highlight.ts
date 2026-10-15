@@ -1,4 +1,6 @@
-import { createHighlighter, type Highlighter } from 'shiki'
+import { createHighlighter, type Highlighter, type BundledLanguage } from 'shiki'
+import { createRenderer } from 'astro-expressive-code'
+import ecConfig from '../../ec.config.mjs'
 import { COOLDOWN_FORMATS, COOLDOWN_MARKERS, COOLDOWN_SLOTS, formatCooldown, type CooldownUnit } from './cooldown.ts'
 import { promptElement, SESSION_LANGS, sessionLines, shellThemes } from '../plugins/ec-shell-prompt.mjs'
 import { tmuxUsage } from './tmux-usage.mjs'
@@ -20,13 +22,7 @@ import { properties } from './properties.mjs'
  */
 let instance: Promise<Highlighter> | undefined
 
-/**
- * Languages loaded up front.
- *
- * Only the ones doc comments in this estate actually use — `gen-api-model`
- * reports 618 Python blocks, 192 TypeScript and 104 Rust, and nothing else.
- * A grammar that is never used is a megabyte of startup for nothing.
- */
+/** Frequent languages load once; other supported grammars load on demand. */
 const LANGS = [
   'python', 'ruby', 'lua', 'rust', 'ts', 'js', 'bash', 'console', 'json', 'yaml', 'text',
   // The install widget's build-file panels: a Gradle script, a Maven POM
@@ -43,7 +39,7 @@ const LANGS = [
  * this site handles dark mode: no flash, no JavaScript, and the same markup
  * serves a reader who has never chosen.
  */
-const THEMES = { light: 'github-light', dark: 'github-dark' }
+const THEMES = { light: 'github-light', dark: 'github-dark' } as const
 
 /** Give the dynamic prompt tokens the same palette as the code highlighter. */
 export function promptThemeRules(): string {
@@ -68,19 +64,23 @@ export function promptThemeRules(): string {
 }
 
 async function highlighter(): Promise<Highlighter> {
-  instance ??= createHighlighter({
-    // Registered under the names in `THEMES`, with plain Bash arguments.
-    themes: shellThemes(),
+  instance ??= createRenderer(ecConfig).then(({ ec }) => createHighlighter({
+    // Include Expressive Code's contrast correction as well as its custom scopes.
+    themes: ec.themes.map(({ name, type, settings, colors, fg, bg }) => ({ name, type, settings, colors, fg, bg })),
     langs: [...LANGS, tmuxUsage, tmuxShell, tmuxConfig, properties],
-  })
+  }))
   return instance
 }
 
-/** Whether a language has a grammar loaded, so an unknown one degrades. */
-function known(lang: string): string {
-  const normalised = lang === 'typescript' ? 'ts' : lang === 'javascript' ? 'js'
-    : lang === 'properties' ? properties.name : lang
-  return [tmuxUsage.name, tmuxShell.name, tmuxConfig.name, properties.name, ...LANGS].includes(normalised) ? normalised : 'text'
+/** Load supported block languages on demand rather than flattening previews. */
+async function known(hl: Highlighter, lang: string): Promise<string> {
+  const normalized = codeLang(lang)
+  const resolved = normalized === 'properties' ? properties.name
+    : LANGS.includes(lang as typeof LANGS[number]) ? lang : normalized
+  if (resolved !== 'text' && !hl.getLoadedLanguages().includes(resolved)) {
+    await hl.loadLanguage(resolved as BundledLanguage)
+  }
+  return resolved
 }
 
 /**
@@ -99,7 +99,7 @@ export async function highlight(code: string, lang: string): Promise<string | un
     // Output reaches the grammar as a blank line, so the apostrophe in `can't`
     // cannot open a string that runs on into the next command.
     return hl.codeToHtml(session ? session.map(({ kind, text }) => (kind === 'output' ? '' : text)).join('\n') : code, {
-      lang: session ? 'bash' : known(lang),
+      lang: session ? 'bash' : await known(hl, lang),
       themes: THEMES,
       defaultColor: false,
       cssVariablePrefix: '--shiki-',
@@ -116,23 +116,7 @@ export async function highlight(code: string, lang: string): Promise<string | un
   }
 }
 
-/**
- * The language name to hand Expressive Code for a doc-comment example.
- *
- * `<Code>` throws on a grammar Shiki does not know, and one bad `lang` in one
- * docstring would fail the whole build — the opposite of the tradeoff
- * `highlight` makes two functions above. The list is what the extracted
- * models actually carry (`python`, `rust`, `ts`, `java`, `swift`, `csharp`,
- * `console`) plus the aliases a doc comment spells them with; anything else
- * renders as plain text in the same frame rather than as a build failure.
- *
- * Not the `LANGS` list above: that one is small on purpose, because every
- * grammar it names is loaded eagerly into one long-lived highlighter.
- * Expressive Code loads grammars lazily from the full Shiki bundle, so naming
- * a language here costs nothing until a block uses it — which is why `java`,
- * `swift` and `csharp` can be highlighted here and were flattened to `text`
- * there.
- */
+/** Unsupported doc-comment labels retain a plain-text frame instead of failing builds. */
 const EC_LANGS = new Set([
   'python', 'ruby', 'lua', 'rust', 'ts', 'tsx', 'js', 'jsx', 'java', 'kotlin', 'scala', 'fsharp', 'swift',
   'csharp', 'cpp', 'c', 'go', 'bash', 'shell', 'console', 'json', 'yaml',
@@ -160,6 +144,34 @@ export function codeLang(lang?: string): string {
   const name = (lang ?? '').trim().toLowerCase()
   const resolved = EC_ALIASES[name] ?? name
   return EC_LANGS.has(resolved) ? resolved : 'text'
+}
+
+/** Inert themed tokens; browsers construct text nodes rather than parsing HTML. */
+export interface CodeHighlight {
+  language: string
+  light: { foreground: string; background: string }
+  dark: { foreground: string; background: string }
+  lines: { content: string; light: { color: string; fontStyle: number }; dark: { color: string; fontStyle: number } }[][]
+}
+
+/** Compact code uses the same grammar and palettes as ordinary blocks. */
+export async function highlightTokens(code: string, lang: string): Promise<CodeHighlight | undefined> {
+  try {
+    const hl = await highlighter()
+    const language = await known(hl, lang)
+    const palette = (theme: string) => {
+      const { fg, bg } = hl.getTheme(theme)
+      return { foreground: fg, background: bg }
+    }
+    return { language, light: palette(THEMES.light), dark: palette(THEMES.dark),
+      // Shiki's type union excludes the custom grammars already loaded by known().
+      lines: hl.codeToTokensWithThemes(code, { lang: language as BundledLanguage, themes: THEMES }).map((line) =>
+        line.map((token) => ({ content: token.content,
+          light: { color: token.variants.light.color ?? hl.getTheme(THEMES.light).fg, fontStyle: token.variants.light.fontStyle ?? 0 },
+          dark: { color: token.variants.dark.color ?? hl.getTheme(THEMES.dark).fg, fontStyle: token.variants.dark.fontStyle ?? 0 },
+        }))),
+    }
+  } catch { return undefined }
 }
 
 /**
