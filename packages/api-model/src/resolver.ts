@@ -278,11 +278,14 @@ export class Resolver {
 
     if (port === 'java' && text.trim().endsWith('()')) {
       const name = text.trim().slice(0, -2)
-      const accessors = this.members(port, name.split('.').at(-1)!)
-        .filter((row) => row.symbol.id.endsWith('()') &&
+      const callables = this.members(port, name.split('.').at(-1)!)
+        .filter((row) => row.symbol.kind === 'method' && row.symbol.signatures.some((signature) => signature.returns !== undefined) &&
           (row.qualified === name || row.qualified.endsWith(`.${name}`)))
-      if (accessors.length === 1) return { how: 'unique', symbol: accessors[0].symbol, port }
-      if (accessors.length > 1) return { how: 'ambiguous', candidates: accessors.length }
+      if (callables.some((row) => row.symbol.id.endsWith('()'))) {
+        const candidates = Resolver.preferProduct(callables, product)
+        if (candidates.length === 1) return { how: 'unique', symbol: candidates[0].symbol, port }
+        if (candidates.length > 1) return { how: 'ambiguous', candidates: candidates.length }
+      }
     }
 
     const parts = toPath(text)

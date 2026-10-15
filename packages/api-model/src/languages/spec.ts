@@ -355,6 +355,8 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
           const componentId = `${id}.${parameter.name}`
           if (accessors) {
             const declaration = ctx.byId.get(componentId)
+            if (declaration?.kind === 'method' && declaration.signatures.some((signature) =>
+              signature.params.length === 0 && signature.returns === parameter.type)) continue
             const accessorId = (declaration && declaration.kind !== 'method') || parameter.name === name
               ? `${componentId}()` : componentId
             const existing = ctx.byId.get(accessorId)

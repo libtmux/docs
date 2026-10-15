@@ -173,6 +173,34 @@ describe('Java record component boundaries', () => {
   })
 })
 
+describe('Java record accessor resolution boundaries', () => {
+  it('retains an explicit accessor named after its record without adding another method', async () => {
+    const symbols = await extract(`public record Self(int Self) {
+      /** Explicit accessor. */
+      public int Self() { return Self; }
+    }`)
+    const owner = symbols.find((symbol) => symbol.id === 'example.Self')!
+    const accessors = symbols.filter((symbol) => symbol.parent === owner.id && symbol.name === 'Self')
+    expect(accessors).toHaveLength(1)
+    expect(accessors[0]).toMatchObject({
+      id: 'example.Self.Self', signatures: [{ params: [], returns: 'int' }],
+      doc: { summary: 'Explicit accessor.' }, source: { line: 3 },
+    })
+  })
+
+  it('keeps an unqualified collision accessor ambiguous with an ordinary method', async () => {
+    const symbols = await extract(`package example;
+      public record HasType(int Value) { public static class Value {} }
+      public class Ordinary { public int Value() { return 0; } }`)
+    const accessor = symbols.find((symbol) => symbol.id === 'example.HasType.Value()')!
+    const ordinary = symbols.find((symbol) => symbol.id === 'example.Ordinary.Value')!
+    const resolver = new Resolver([{ port: 'java', extractor: 'test', symbols }])
+    expect(resolver.resolve('java', 'Value()')).toMatchObject({ how: 'ambiguous', candidates: 2 })
+    expect(resolver.resolve('java', 'example.HasType.Value()')).toMatchObject({ symbol: { id: accessor.id } })
+    expect(resolver.resolve('java', 'example.Ordinary.Value()')).toMatchObject({ symbol: { id: ordinary.id } })
+  })
+})
+
 describe('Java callable visibility', () => {
   it('excludes package-private overloads before merging public signatures', async () => {
     const source = `
