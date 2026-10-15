@@ -82,6 +82,7 @@ function proseMarkdown(markdown: string, index: SymbolIndex, symbol: ApiSymbol, 
       }
       if (!linkApi) return
       if (node.type === 'inlineCode') {
+        if (!index.linkText(markdown.slice(start, end), symbol).some((span) => span.kind === 'ref')) return
         const link = index.resolve(node.value, 'any', symbol)
         if (link) edits.push({ start, end, text: `[${inlineCode(node.value)}](${link.href})` })
         else {
@@ -116,7 +117,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   const port = 'port' in model ? model.port : undefined
   const language = 'language' in model ? model.language : port
   const index = ctx.index ?? (port && 'port' in model ? productApiIndex(model, ctx.version ?? defaultVersionFor(port)) : undefined)
-  const prose = (text: string) => index ? proseMarkdown(text, index, symbol, ['powershell', 'scala'].includes(language ?? '')) : text
+  const prose = (text: string) => index ? proseMarkdown(text, index, symbol, ['powershell', 'scala', 'ts'].includes(language ?? '')) : text
   const id = qualifiedNameOf(symbol)
   const out: string[] = [`# ${id}`, '']
 

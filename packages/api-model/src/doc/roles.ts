@@ -1,3 +1,5 @@
+import { fromMarkdown } from 'mdast-util-from-markdown'
+
 /**
  * reST cross-reference roles, which are most of the interlinking.
  *
@@ -181,6 +183,30 @@ const REST_LITERAL_RE = /``((?:[^`]|`(?!`))+)``/g
 /** A single-backtick reference, which napoleon also resolves. */
 const BACKTICK_RE = /`([^`<>]+)`/g
 
+/** Match equal-length Markdown delimiters without interpreting their code as reST. */
+function markdownCode(text: string, masked: string): { start: number; end: number; text: string; ticks: number }[] {
+  const runs = [...masked.matchAll(/`+/g)]
+  const next = new Map<number, number>()
+  const closing = runs.map(() => -1)
+  for (let i = runs.length - 1; i >= 0; i--) {
+    closing[i] = next.get(runs[i][0].length) ?? -1
+    next.set(runs[i][0].length, i)
+  }
+  const spans: ReturnType<typeof markdownCode> = []
+  for (let i = 0; i < runs.length; i++) {
+    const open = runs[i]
+    let slashes = 0
+    for (let at = open.index - 1; at >= 0 && text[at] === '\\'; at--) slashes++
+    if (slashes % 2 || closing[i] < 0) continue
+    const close = runs[closing[i]]
+    let code = text.slice(open.index + open[0].length, close.index).replace(/\r\n?|\n/g, ' ')
+    if (code.startsWith(' ') && code.endsWith(' ') && /[^ ]/.test(code)) code = code.slice(1, -1)
+    spans.push({ start: open.index, end: close.index + close[0].length, text: code, ticks: open[0].length })
+    i = closing[i]
+  }
+  return spans
+}
+
 function labelFor(raw: string): { target: string; label: string } {
   const titled = /^(.*?)\s*<([^>]+)>$/.exec(raw.trim())
   if (titled) return { target: titled[2].trim(), label: titled[1].trim() }
@@ -222,7 +248,7 @@ const SYNTAX: Record<string, ReadonlySet<string>> = {
   rs: new Set(['intra-doc']),
   go: new Set(['go-link']),
   java: new Set(['jsdoc']),
-  ts: new Set(['jsdoc']),
+  ts: new Set(['jsdoc', 'markdown-link']),
   csharp: new Set(['xml-doc']),
   // DocC gives double backticks a meaning reST reserves for a literal: in a
   // Swift doc comment ``Server`` is a symbol link, not code.
@@ -258,20 +284,38 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
   type Hit = { start: number; end: number; span: DocSpan }
   const hits: Hit[] = []
 
-  if (syntax.has('markdown-link')) {
-    // A code label can contain brackets (generic types, regexes, array values)
-    // and use a longer backtick fence when the code itself contains backticks.
-    for (const match of text.matchAll(/\[(?:(`+)([^\n]*?)\1|([^\]\n]+))\]\(([^\n)]+)\)/g)) {
-      const label = match[1] ? match[2] : match[3]
-      const target = match[4].trim()
-      if (syntax.has('documenter') && /^@ref(?:\s|$)/.test(target)) {
-        hits.push({ start: match.index, end: match.index + match[0].length,
-          span: { kind: 'ref', role: 'any', target: target.slice(4).trim() || label, label } })
-      } else if (/^(?:https?:\/\/|\/(?!\/)|#)/.test(target)) {
-        hits.push({ start: match.index, end: match.index + match[0].length,
-          span: { kind: 'link', text: label, href: target, ...(match[1] ? { code: true } : {}) } })
-      }
+  if (syntax.has('documenter')) {
+    // Documenter's named @ref destination contains spaces that Markdown URLs cannot.
+    for (const match of text.matchAll(/\[(?:(`+)([^\n]*?)\1|([^\]\n]+))\]\(@ref\s+([^\n)]+)\)/g)) {
+      hits.push({ start: match.index, end: match.index + match[0].length,
+        span: { kind: 'ref', role: 'any', target: match[4].trim(), label: match[1] ? match[2] : match[3] } })
     }
+  }
+  if (syntax.has('markdown-link') && text.includes('](')) {
+    // Authored links own their labels, including generic code and balanced URI parentheses.
+    type MarkdownNode = ReturnType<typeof fromMarkdown> | ReturnType<typeof fromMarkdown>['children'][number]
+    const labelText = (node: MarkdownNode): string => 'value' in node ? node.value
+      : 'children' in node ? node.children.map((child) => labelText(child as MarkdownNode)).join('')
+        : 'alt' in node ? node.alt ?? '' : ''
+    const visit = (node: MarkdownNode) => {
+      if (node.type === 'link') {
+        const start = node.position!.start.offset!
+        const end = node.position!.end.offset!
+        const label = labelText(node)
+        const target = node.url
+        let span: DocSpan = { kind: 'text', text: text.slice(start, end) }
+        if (syntax.has('documenter') && /^@ref(?:\s|$)/.test(target)) {
+          span = { kind: 'ref', role: 'any', target: target.slice(4).trim() || label, label }
+        } else if (/^https?:\/\//i.test(target) || !/^(?:[a-z][\w+.-]*:|\/\/)/i.test(target)) {
+          span = { kind: 'link', text: label, href: target,
+            ...(node.children.length === 1 && node.children[0].type === 'inlineCode' ? { code: true } : {}) }
+        }
+        hits.push({ start, end, span })
+        return
+      }
+      if ('children' in node) for (const child of node.children) visit(child as Parameters<typeof visit>[0])
+    }
+    visit(fromMarkdown(text))
   }
 
   for (const match of text.matchAll(/<kbd>([^<\n]+)<\/kbd>/g)) {
@@ -401,14 +445,11 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
       span: { kind: 'ref', role, target, label },
     })
   }
-  for (const m of text.matchAll(syntax.has('rest') ? REST_LITERAL_RE : LITERAL_RE)) {
+  if (syntax.has('rest')) for (const m of text.matchAll(REST_LITERAL_RE)) {
     hits.push({
       start: m.index,
       end: m.index + m[0].length,
-      // DocC's ``Symbol`` is a link where reST's ``literal`` is code.
-      span: syntax.has('docc')
-        ? { kind: 'ref', role: 'any', target: m[1].replace(/\(.*$/, ''), label: m[1] }
-        : { kind: 'code', text: m[1] },
+      span: { kind: 'code', text: m[1] },
     })
   }
   if (syntax.has('rest')) {
@@ -452,18 +493,30 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
   // with one inside a role and swallow everything between them. In
   // ``:meth:`send keys <Pane.send_keys>` plus `Window`.`` that consumed the
   // `Window` reference entirely.
+  // Native tags can contain unmatched ticks; they cannot consume a later code opener.
   // Code units, not code points: `hits` are regex indices into the string.
   const masked = text.split('')
   for (const hit of hits) {
     for (let i = hit.start; i < hit.end; i++) masked[i] = ' '
   }
-  for (const m of masked.join('').matchAll(BACKTICK_RE)) {
-    const { target, label } = labelFor(m[1])
-    hits.push({
-      start: m.index,
-      end: m.index + m[0].length,
-      span: { kind: 'ref', role: 'any', target, label },
-    })
+  if (syntax.has('rest')) {
+    for (const m of masked.join('').matchAll(BACKTICK_RE)) {
+      const { target, label } = labelFor(m[1])
+      hits.push({
+        start: m.index,
+        end: m.index + m[0].length,
+        span: { kind: 'ref', role: 'any', target, label },
+      })
+    }
+  } else {
+    for (const code of markdownCode(text, masked.join(''))) {
+      const span: DocSpan = code.ticks === 1
+        ? { kind: 'ref', role: 'any', target: code.text, label: code.text }
+        : syntax.has('docc') && code.ticks === 2
+          ? { kind: 'ref', role: 'any', target: code.text.replace(/\(.*$/, ''), label: code.text }
+          : { kind: 'code', text: code.text }
+      hits.push({ start: code.start, end: code.end, span })
+    }
   }
 
   for (const match of text.matchAll(EMPHASIS_RE)) {

@@ -104,6 +104,33 @@ it('colors only marked reference separators from the active port palette', () =>
   expect(rule).not.toMatch(/#[\da-f]{3,8}\b/i)
 })
 
+it('renders the WhereOf generic as one code expression with independent native links', async () => {
+  const model = API_MODELS.ts
+  const context = model.symbols.find((symbol) => symbol.id === 'selection.WhereOf')!
+  const index = productApiIndex(model, 'next')
+  const text = context.doc!.body!
+  const container = await experimental_AstroContainer.create()
+  win.document.body.innerHTML = await container.renderToString(await docComponent(), { props: { text, index, context } })
+  const code = win.document.querySelector('code.api-literal')!
+  expect(code.textContent).toBe('Selection<Pane>')
+  expect(win.document.body.textContent).toBe(text.replaceAll('`', ''))
+  expect([...code.querySelectorAll('a')].map((link) => [link.textContent, link.getAttribute('href')])).toEqual([
+    ['Selection', '/ts/next/reference/selection-selection/'],
+    ['Pane', '/ts/next/reference/pane-pane/'],
+  ])
+  for (const link of code.querySelectorAll('a')) {
+    expect(link.hasAttribute('tabindex')).toBe(false)
+    expect(link.hasAttribute('onclick')).toBe(false)
+    expect(link.hasAttribute('aria-hidden')).toBe(false)
+  }
+  markPreviews()
+  for (const link of code.querySelectorAll('a')) {
+    const owners = [link, ...link.querySelectorAll('*')].filter((node) => win.getComputedStyle(node).textDecorationLine.includes('underline'))
+    expect(owners).toHaveLength(1)
+    expect(win.getComputedStyle(owners[0]).textDecorationStyle).toBe('dotted')
+  }
+})
+
 it('leaves unrelated hashes, source comments and URL fragments unchanged', async () => {
   const model = API_MODELS.scala
   const index = productApiIndex(model, 'latest')

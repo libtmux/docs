@@ -346,7 +346,7 @@ const hasBody =
                   <span class="sig-return">
                     <span class="sig-return-icon">{language === 'ts' ? ':' : '→'}</span>{' '}
                     <span class="sig-return-typehint">
-                      <ApiType type={sig.returns} index={index} context={symbol} />
+                      <ApiType type={sig.returns} index={index} context={symbol} signature={sig} />
                     </span>
                   </span>
                 )}

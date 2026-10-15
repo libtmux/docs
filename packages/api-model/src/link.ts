@@ -605,6 +605,19 @@ export class SymbolIndex {
    */
   linkType(annotation: string, context?: ApiSymbol, signature?: Signature): TypeSpan[] {
     const out: TypeSpan[] = []
+    const boundTypes = new Set<string>()
+    if (this.lang === 'ts') {
+      // Shared prose has no selected overload; a local binding makes a global match ambiguous.
+      const parameters = signature ? [...signature.typeParams ?? []]
+        : context?.signatures.flatMap((sig) => sig.typeParams ?? []) ?? []
+      for (let scope = context; scope; scope = scope.parent ? this.byDeclared.get(scope.parent) : undefined) {
+        parameters.push(...scope.typeParams ?? [])
+      }
+      for (const parameter of parameters) {
+        const name = /^\s*<?\s*(?:(?:const|in|out)\s+)*([A-Za-z_$][\w$]*)(?=\s*(?:extends\b|=|>|$))/.exec(parameter)?.[1]
+        if (name) boundTypes.add(name)
+      }
+    }
     // Identifiers, including dotted ones; everything else is punctuation,
     // whitespace or a string literal and passes through untouched.
     // `::` is part of a name, not punctuation between two. Splitting there
@@ -613,10 +626,12 @@ export class SymbolIndex {
     const identifier = this.lang === 'julia'
       ? String.raw`[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*!?`
       : this.lang === 'powershell' ? String.raw`(?:[A-Za-z_][A-Za-z0-9_.]*\\)?[A-Za-z_][A-Za-z0-9_.-]*`
+      : this.lang === 'ts' ? String.raw`[A-Za-z_$][A-Za-z0-9_$.]*`
       : String.raw`[A-Za-z_][A-Za-z0-9_.]*(?:::[A-Za-z_][A-Za-z0-9_.]*)*`
     const rawString = this.lang === 'cxx'
       ? String.raw`(?:u8|u|U|L)?R"(?<rawDelimiter>[^ ()\\\t\v\f\r\n]{0,16})\([\s\S]*?\)\k<rawDelimiter>"|` : ''
-    const pattern = String.raw`(?<ident>${rawString}\/\*[\s\S]*?\*\/|\/\/[^\n]*|"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'|${identifier})|(?<other>[^A-Za-z_"'/]+|["'/])`
+    const initial = this.lang === 'ts' ? 'A-Za-z_$' : 'A-Za-z_'
+    const pattern = String.raw`(?<ident>${rawString}\/\*[\s\S]*?\*\/|\/\/[^\n]*|"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'|${identifier})|(?<other>[^${initial}"'/]+|["'/])`
     // F# type variables start with an apostrophe but do not close like strings.
     const re = new RegExp(this.lang === 'fsharp'
       ? pattern.replace('(?<ident>', String.raw`(?<ident>'[A-Za-z_][A-Za-z0-9_]*(?![A-Za-z0-9_'])|`)
@@ -630,6 +645,11 @@ export class SymbolIndex {
       }
       if (/^(?:["']|\/[/*])/.test(ident) || m.groups?.rawDelimiter !== undefined) {
         out.push({ text: ident })
+        continue
+      }
+      // A locally bound type parameter must not acquire an unrelated global type's URL.
+      if (boundTypes.has(ident)) {
+        out.push({ text: ident, declaration: true })
         continue
       }
       if (this.lang === 'cxx' && ident === 'nodiscard' &&

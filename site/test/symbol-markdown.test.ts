@@ -19,6 +19,25 @@ function inlineCodes(text: string): string[] {
   return values
 }
 
+it('exports the linked WhereOf generic without losing type syntax or authored content', () => {
+  const model = API_MODELS.ts
+  const owner = model.symbols.find((entry) => entry.id === 'selection.WhereOf')!
+  const index = new SymbolIndex(model.symbols, (entry) => `/pr-42/en/ts/v1/reference/${entry.slug}/`, 'ts')
+  const markdown = symbolMarkdown({ model, symbol: owner, index })
+  expect(markdown).toContain('[`Selection`](/pr-42/en/ts/v1/reference/selection-selection/)`<`[`Pane`](/pr-42/en/ts/v1/reference/pane-pane/)`>`')
+  expect(inlineCodes(markdown).join('')).toContain('Selection<Pane>')
+  const authored = '[`Selection<Pane>`](../guide/?label=(pane)#example)'
+  const fenced = '```ts\nconst panes: Selection<Pane> = snapshot.panes;\n```'
+  const literal = '``Selection<Pane>``'
+  const symbol = { ...owner, doc: { summary: '', body: [authored, literal, '`Selection<Missing, "Pane">`', fenced].join('\n\n') } }
+  const exported = symbolMarkdown({ model, symbol, index })
+  expect(exported).toContain(authored)
+  expect(exported).toContain(fenced)
+  expect(exported).toContain(literal)
+  expect(exported).toContain('[`Selection`](/pr-42/en/ts/v1/reference/selection-selection/)`<Missing, "Pane">`')
+  expect(exported).not.toContain('/reference/pane-pane/')
+})
+
 describe('API Markdown content parity', () => {
   it('links native tmux command mentions in every port without editing examples', () => {
     for (const port of PORTS) {
