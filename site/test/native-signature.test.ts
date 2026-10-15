@@ -1,6 +1,8 @@
 import { readFileSync, realpathSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
+import assert from 'node:assert/strict'
+import { runInNewContext } from 'node:vm'
 import { describe, expect, it } from 'vitest'
 import { experimental_AstroContainer } from 'astro/container'
 import { Window, type Element } from 'happy-dom'
@@ -64,6 +66,57 @@ const cases = [
 let componentPromise: ReturnType<typeof signatureComponent> | undefined
 
 describe('native signature emission', () => {
+  it.fails('checks the hosted signature fixture against rendered TypeScript declarations without raw text', async () => {
+    const source = readFileSync(new URL('../scripts/check-dev.mjs', import.meta.url), 'utf8')
+    const start = source.indexOf("writeFileSync(join(root, 'src/pages/api-signature-probe.astro')")
+    const end = source.indexOf('\nfor (const { slug: port } of PORTS)', start)
+    let fixture = ''
+    runInNewContext(source.slice(start, end), {
+      root: '', join: (...parts: string[]) => parts.join('/'), signaturePorts: [{ slug: 'ts' }],
+      writeFileSync: (_path: string, text: string) => { fixture = text },
+    })
+    const [, frontmatter, template] = fixture.split('---')
+    const attributes = [...template.matchAll(/(data-signature-[\w-]+)=\{([^}]+)\}/g)]
+      .map(([, name, expression]) => `${JSON.stringify(name)}: ${expression}`).join(', ')
+    const model = JSON.parse(readFileSync(new URL('../src/data/api/ts.json', import.meta.url), 'utf8')) as ApiModel
+    // Run the real probe's bindings without starting its Astro server.
+    const entries = await runInNewContext(`(async () => {
+      ${frontmatter.replace(/^import .*$/gm, '')}
+      return entries.map(({ port, model, symbol }) => ({ symbol, attributes: { ${attributes} } }))
+    })()`, { API_MODELS: { ts: model }, API_MODEL_PORTS: [{ slug: 'ts' }], apiSignatureLayouts, nativeSignatureText }) as {
+      symbol: ApiSymbol; attributes: Record<string, string>
+    }[]
+    const entry = entries.find(({ symbol }) => symbol.signatures.length > 0)!
+    expect(entry.symbol.signatures.every((signature) => signature.raw === undefined)).toBe(true)
+    const component = await (componentPromise ??= signatureComponent())
+    const container = await experimental_AstroContainer.create()
+    const signatureLayouts = await apiSignatureLayouts(entry.symbol, 'ts')
+    const index = new SymbolIndex(model.symbols, (symbol) => `/${symbol.slug}/`, 'ts')
+    const win = new Window()
+    try {
+      win.document.body.innerHTML = (await Promise.all(entry.symbol.signatures.map((sig) =>
+        container.renderToString(component, { props: {
+          symbol: entry.symbol, sig, port: 'ts', language: 'ts', index, signatureLayouts,
+          nativeSignatureText: () => signatureLayouts.get(sig)!.text,
+        } })))).join('\n')
+      const assertionStart = source.indexOf('const visibleText = clean(await signature.innerText())')
+      const assertionEnd = source.indexOf('\n        } else {', assertionStart)
+      const assertion = source.slice(assertionStart, assertionEnd) + '\n}'
+      const check = (text = displayedSignature(win.document.body), binding = entry.attributes) => runInNewContext(`(async () => { ${assertion} })()`, {
+        assert, port: 'ts', width: 390, model: entry.symbol,
+        clean: (value: string) => value.replace(/\s+/g, ' ').trim(),
+        entry: { getAttribute: (name: string) => binding[name] ?? null },
+        signature: { innerText: () => text, locator: (selector: string) => ({ count: () => win.document.querySelectorAll(selector).length }) },
+      })
+      await check()
+      const text = displayedSignature(win.document.body)
+      await expect(check(text.replace(entry.symbol.name, 'missingCallable'))).rejects.toThrow('native declaration survives')
+      await expect(check(text, { ...entry.attributes, 'data-signature-native': '[]' })).rejects.toThrow()
+    } finally {
+      await win.happyDOM.abort()
+    }
+  })
+
   it.each(cases)('preserves exact %s signature boundaries and native indentation', async (port, id) => {
     const model = JSON.parse(readFileSync(new URL(`../src/data/api/${port}.json`, import.meta.url), 'utf8')) as ApiModel
     const symbol = model.symbols.find((entry) => entry.id === id)!
