@@ -21,6 +21,8 @@ import { tmuxReferenceUrl } from './tmux-reference'
 import { buildsTmuxDocumentation, tmuxManualUrl } from './tmux-manual-data.ts'
 import { selectPortCards } from './workspace-shared-slots.ts'
 import { linkProseMarkdown } from './prose-markdown'
+import { apiGlossaryBody } from './api-glossary.ts'
+import { glossaryPages } from './api-glossary-routes.ts'
 
 export interface LlmsPage {
   title: string
@@ -65,6 +67,12 @@ export async function llmsPages(origin: string, base: string): Promise<LlmsPage[
       .map(({ entry, route }) => [route, entry] as const))
   return entries
     .map((entry) => llmsPage(translations.get(docsRoutePath(entry, port, defaults)) ?? entry, origin, base))
+    .concat(glossaryPages().map((glossary) => ({
+      title: glossary.title, description: glossary.description,
+      url: new URL(glossary.path, origin).href,
+      section: glossary.port ? `${PORT_BY_SLUG[glossary.port].name}${glossary.product ? ` ${glossary.product === 'mcp' ? 'MCP' : 'Workspace Manager'}` : ''} API reference` : 'API reference',
+      body: apiGlossaryBody(glossary.path), order: Number.MAX_SAFE_INTEGER,
+    })))
     .sort((a, b) => a.section.localeCompare(b.section) || a.order - b.order || a.title.localeCompare(b.title))
 }
 

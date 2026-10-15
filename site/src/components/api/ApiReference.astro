@@ -7,7 +7,7 @@ import ApiRelationships from './ApiRelationships.astro'
 import { apiRelationshipSections, type ApiRelationshipPath } from '../../lib/api-relationships'
 import ApiBadge from '../../components/api/ApiBadge.astro'
 import ApiGlossaryContent from './ApiGlossaryContent.astro'
-import { API_GLOSSARY_TITLE, API_GLOSSARY_DESCRIPTION, API_GLOSSARY_PATH, apiGlossaryHref } from '../../lib/api-glossary'
+import { apiGlossary, API_GLOSSARY_TITLE, apiGlossaryHref } from '../../lib/api-glossary'
 import ApiQualifiedName from '../../components/api/ApiQualifiedName.astro'
 import ApiType from '../../components/api/ApiType.astro'
 import ApiPageContents from '../../components/api/ApiPageContents.astro'
@@ -370,7 +370,8 @@ const pageTitle = glossary ? API_GLOSSARY_TITLE : owner ? title : source?.title 
 const displayName = owner ? (declaringType ? `${declaringType.name}.${owner.name}` : owner.name) : pageTitle
 const breadcrumbs = source?.breadcrumbs ?? await pageBreadcrumbs(displayName, glossary ? 'reference/glossary' : slug ? `reference/${slug}` : 'reference', version, port)
 const pagePath = glossary ? 'reference/glossary' : source?.pagePath ?? (slug ? `reference/${slug}` : 'reference')
-const description = glossary ? API_GLOSSARY_DESCRIPTION : source?.description ?? `Types, methods, and functions in libtmux for ${label}.`
+const glossaryContext = apiGlossary(`${refBase}glossary/`)
+const description = glossary ? glossaryContext.description : source?.description ?? `Types, methods, and functions in libtmux for ${label}.`
 const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
 ---
 
@@ -395,8 +396,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
   noindex={source ? version !== 'latest' : true}
   searchable={searchable}
   pageSource={model && (owner || source) ? symbolSource(model, owner) : undefined}
-  canonicalOverride={glossary ? API_GLOSSARY_PATH : undefined}
-  markdown={glossary ? { href: `${API_GLOSSARY_PATH.slice(0, -1)}.md` } : owner ? 'source' : 'rendered'}
+  markdown={glossary ? { href: `${glossaryContext.path.slice(0, -1)}.md` } : owner ? 'source' : 'rendered'}
   markdownIndex={!owner}
   flush
   breadcrumbs={breadcrumbs}
@@ -465,7 +465,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
         </>}
       </header>
 
-      {glossary && <div class="prose dark:prose-invert mt-6 max-w-none"><ApiGlossaryContent /></div>}
+      {glossary && <div class="prose dark:prose-invert mt-6 max-w-none"><ApiGlossaryContent contextPath={glossaryContext.path} /></div>}
       {
         !glossary && !owner && !model && (
           <>

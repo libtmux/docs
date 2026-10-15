@@ -60,8 +60,9 @@ describe('prose Markdown links', () => {
     try {
       expect(localeProse(entries, 'en', 'ruby')).toEqual([{ entry: native, route: 'concepts' }])
       const exported = await llmsPages('https://libtmux.org', '/en/ruby/latest/')
-      expect(exported).toHaveLength(1)
-      expect(exported[0]).toMatchObject({ title: 'Ruby concepts', body: 'Ruby concepts.', url: 'https://libtmux.org/en/ruby/latest/concepts/' })
+      const prose = exported.filter((page) => !page.url.endsWith('/reference/glossary/'))
+      expect(prose).toHaveLength(1)
+      expect(prose[0]).toMatchObject({ title: 'Ruby concepts', body: 'Ruby concepts.', url: 'https://libtmux.org/en/ruby/latest/concepts/' })
       const sidebar = await getSidebar('ruby', 'latest')
       const concepts = sidebar.find((entry) => entry.type === 'group' && entry.label === 'Concepts')
       expect(concepts).toMatchObject({ href: expect.stringContaining('/ruby/latest/concepts/'), items: [] })

@@ -5,7 +5,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import ts from 'typescript'
 import { experimental_AstroContainer } from 'astro/container'
 import { Window } from 'happy-dom'
-import { API_GLOSSARY_GROUPS, ALL_GLOSSARY_GROUPS, MCP_GLOSSARY_GROUPS, API_GLOSSARY_PATH, apiGlossaryHref, apiGlossaryMarkdown } from '../src/lib/api-glossary'
+import { API_GLOSSARY_GROUPS, ALL_GLOSSARY_GROUPS, MCP_GLOSSARY_GROUPS, API_GLOSSARY_PATH, apiGlossary, apiGlossaryHref, apiGlossaryMarkdown } from '../src/lib/api-glossary'
+import { NATIVE_API_GLOSSARIES } from '../src/lib/api-glossary-native'
 import { glossaryPreview } from '../src/lib/link-preview'
 import { GET as markdownRoute } from '../src/pages/reference/glossary.md'
 import { GET as jsonRoute } from '../src/pages/reference/glossary.json'
@@ -33,9 +34,9 @@ function declaredLabels(name: string): string[] {
 }
 
 /** Compile the real small component without starting a site or building API pages. */
-async function badgeComponent() {
+async function badgeComponent(name = 'ApiBadge') {
   const { transform } = await import(astroRequire.resolve('@astrojs/compiler-rs'))
-  const source = new URL('../src/components/api/ApiBadge.astro', import.meta.url)
+  const source = new URL(`../src/components/api/${name}.astro`, import.meta.url)
   const compiled = await transform(readFileSync(source, 'utf8'), {
     filename: source.pathname, internalURL: 'astro/compiler-runtime', resultScopedSlot: true,
     resolvePath: (specifier: string) => specifier,
@@ -49,6 +50,29 @@ async function badgeComponent() {
 }
 
 describe('API glossary coverage', () => {
+  it('explains Scala methods and extensions in the Scala preview', () => {
+    const preview = glossaryPreview('/en/scala/latest/reference/glossary/')
+    expect(preview.terms!.method.description).toContain('def')
+    expect(preview.terms!.method.detail).toContain('extension')
+    expect(JSON.stringify(preview)).not.toContain('Python')
+    expect(JSON.stringify(preview)).not.toContain('Julia')
+  })
+
+  it('exports a Scala glossary with native references and its own identity', async () => {
+    vi.stubEnv('LIBTMUX_DOCS_PORT', 'scala')
+    vi.stubEnv('LIBTMUX_DOCS_VERSION', 'latest')
+    const context = { site: new URL('https://libtmux.org'), url: new URL('https://libtmux.org/en/scala/latest/reference/glossary.json') } as Parameters<typeof jsonRoute>[0]
+    const json = await (await jsonRoute(context)).json()
+    const markdown = await (await markdownRoute(context)).text()
+    expect(json.url).toBe('https://libtmux.org/en/scala/latest/reference/glossary/')
+    const method = json.groups.flatMap((group: { terms: { id: string }[] }) => group.terms).find((term: { id: string }) => term.id === 'method')
+    expect(method.definition).toContain('def')
+    expect(method.references.map((reference: { url: string }) => new URL(reference.url).hostname)).toEqual(['docs.scala-lang.org', 'docs.scala-lang.org'])
+    expect(markdown).toContain('Source: https://libtmux.org/en/scala/latest/reference/glossary/')
+    expect(markdown).not.toContain('Python')
+    expect(markdown).not.toContain('Julia')
+  })
+
   it('defines every kind and modifier supported by the API model, including unused kinds', () => {
     expect(API_GLOSSARY_GROUPS.find((group) => group.id === 'symbol-kinds')!.terms.map((term) => term.id).sort()).toEqual([...declaredLabels('SymbolKind'), 'cmdlet'].sort())
     expect(API_GLOSSARY_GROUPS.find((group) => group.id === 'modifiers')!.terms.map((term) => term.id).sort()).toEqual([...declaredLabels('Modifier'), 'inherited'].sort())
@@ -70,6 +94,22 @@ describe('API glossary coverage', () => {
     }
     expect(symbols).toBeGreaterThan(0)
     expect(missing).toEqual([])
+  })
+
+  it.each(Object.keys(NATIVE_API_GLOSSARIES))('covers every extracted %s badge with a native definition', (port) => {
+    const model = JSON.parse(readFileSync(new URL(`../src/data/api/${port}.json`, import.meta.url), 'utf8'))
+    const path = `/preview-17/en/${port}/v9-proof/reference/glossary/`
+    const native = apiGlossary(path)
+    expect(native.port).toBe(port)
+    expect(native.path).toBe(path)
+    const ids = native.groups.flatMap((group) => group.terms.map((term) => term.id))
+    expect(new Set(ids).size).toBe(ids.length)
+    for (const symbol of model.symbols) {
+      for (const label of [symbol.kind, ...(symbol.modifiers ?? []), ...(symbol.command ? [symbol.command.kind] : []), ...(symbol.inheritedFrom ? ['inherited'] : []), 'package']) {
+        expect(apiGlossaryHref(label, path), `${symbol.id}:${label}`).toBe(`${path}#${label}`)
+      }
+    }
+    for (const id of ids) expect(native.groups.flatMap((group) => group.terms).find((term) => term.id === id)).toEqual({ id, ...NATIVE_API_GLOSSARIES[port][id] })
   })
 
   it('uses stable unique anchors and language references for every term', () => {
@@ -104,7 +144,7 @@ describe('API glossary coverage', () => {
     }
   })
 
-  it('keeps glossary links at the shared English root across ports and preview locales', async () => {
+  it('keeps native glossary links at the port English root across preview locales', async () => {
     vi.stubEnv('LIBTMUX_DOCS_PORT', 'powershell')
     vi.stubEnv('LIBTMUX_DOCS_ROOT', '/pr-138/ja')
     vi.stubEnv('LIBTMUX_DOCS_PORT_ROOT', '/pr-138/ja')
@@ -112,8 +152,8 @@ describe('API glossary coverage', () => {
     vi.stubEnv('LIBTMUX_DOCS_LOCALES_ROOT', '/pr-138/')
     vi.resetModules()
     const glossary = await import('../src/lib/api-glossary')
-    expect(glossary.apiGlossaryHref('cmdlet')).toBe('/pr-138/en/reference/glossary/#cmdlet')
-    expect(glossary.apiGlossaryHref('function')).toBe('/pr-138/en/reference/glossary/#function')
+    expect(glossary.apiGlossaryHref('cmdlet')).toBe('/pr-138/en/powershell/latest/reference/glossary/#cmdlet')
+    expect(glossary.apiGlossaryHref('function')).toBe('/pr-138/en/powershell/latest/reference/glossary/#function')
   })
 
   it('exports the same terms, definitions, anchors, and references through Markdown and JSON', async () => {
@@ -139,6 +179,24 @@ describe('API glossary coverage', () => {
 })
 
 describe('rendered API badges', () => {
+  it('renders native Scala meanings and matching contextual twins in Core, MCP and Workspace', async () => {
+    const component = await badgeComponent('ApiGlossaryContent')
+    const container = await experimental_AstroContainer.create()
+    const win = new Window()
+    windows.push(win)
+    for (const product of ['', 'mcp/', 'workspace/']) {
+      const path = `/preview-17/en/scala/v9-proof/${product}reference/glossary/`
+      win.document.body.innerHTML = await container.renderToString(component, { props: { contextPath: path } })
+      const section = win.document.querySelector('section[aria-labelledby="method"]')!
+      expect(section.textContent).toContain('declared with def')
+      expect(section.textContent).toContain('extension method')
+      expect([...section.querySelectorAll('a')].map((link) => new URL(link.href).hostname)).toEqual(['docs.scala-lang.org', 'docs.scala-lang.org'])
+      expect(win.document.body.textContent).not.toMatch(/Python|Julia/)
+      expect(win.document.querySelector('a[href$=".json"]')!.getAttribute('href')).toBe(`${path.slice(0, -1)}.json`)
+      expect(Boolean(win.document.querySelector('#readOnlyHint'))).toBe(product === 'mcp/')
+    }
+  })
+
   it('links full labels to their meanings while keeping compact marks safe inside links', async () => {
     const component = await badgeComponent()
     const container = await experimental_AstroContainer.create()

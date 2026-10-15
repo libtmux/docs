@@ -1,6 +1,6 @@
 import { docSummaryText, qualifiedNameOf, sourceUrl, type ApiModel, type ApiSymbol } from '@libtmux/api-model'
 import { productApiHref } from './product-api'
-import { API_GLOSSARY_GROUPS, ALL_GLOSSARY_GROUPS, API_GLOSSARY_PATH, MCP_GLOSSARY_TITLE, MCP_GLOSSARY_DESCRIPTION } from './api-glossary'
+import { apiGlossary } from './api-glossary'
 import { codeLang, highlightTokens, type CodeHighlight } from './highlight'
 
 /** Small, inert metadata shared by reference links and their preview cards. */
@@ -37,12 +37,11 @@ export async function highlightedPreview(preview: LinkPreview): Promise<LinkPrev
 }
 
 export function glossaryPreview(href: string): LinkPreview {
-  const mcp = href.includes('/mcp/reference/')
-  const groups = mcp || href === API_GLOSSARY_PATH ? ALL_GLOSSARY_GROUPS : API_GLOSSARY_GROUPS
-  return { schema: 1, title: mcp ? MCP_GLOSSARY_TITLE : 'API glossary', description: mcp ? MCP_GLOSSARY_DESCRIPTION : 'Definitions of API kinds, modifiers, packages, and MCP annotations.', href,
-    terms: Object.fromEntries(groups.flatMap((group) => group.terms.map((term) => [term.id, {
+  const glossary = apiGlossary(href)
+  return { schema: 1, title: glossary.title, description: glossary.description, href: glossary.path,
+    terms: Object.fromEntries(glossary.groups.flatMap((group) => group.terms.map((term) => [term.id, {
       schema: 1, title: term.id, kind: term.id, description: term.definition, detail: term.detail,
-      href: `${href}#${term.id}`,
+      href: `${glossary.path}#${term.id}`,
     } satisfies LinkPreview]))),
   }
 }
