@@ -28,6 +28,7 @@ const navigation: SidebarItem[] = [
   { type: 'link', label: 'All commands', href: tmuxManualUrl(version) },
   { type: 'link', label: 'Full manual', href: tmuxManualUrl(version, 'full') },
   ...sections.map((section) => ({ type: 'group' as const, label: sectionTitle(section),
+    href: `${tmuxManualUrl(version)}#${section.toLowerCase().replaceAll(' ', '-')}`,
     items: reference.commands.filter((entry) => entry.section === section).map((entry) => ({
       type: 'link' as const, label: entry.name, href: tmuxManualUrl(version, entry.name),
     })),

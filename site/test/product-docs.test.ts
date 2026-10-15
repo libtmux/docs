@@ -569,13 +569,13 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     for (const page of pages().filter((entry) => entry.port === slug)) await inspect(page.path, (document) => {
       const crumb = document.querySelector('nav[aria-label="Breadcrumb"]')!
       expect(crumb, page.path).not.toBeNull()
-      const labels = [...crumb.querySelectorAll('a, [aria-current="page"]')].map((item) => item.textContent.trim())
+      const labels = [...crumb.querySelectorAll('[data-breadcrumb-item]')].map((item) => item.textContent.trim())
       const structured = graph(document).find((entry) => entry['@type'] === 'BreadcrumbList')
       expect(structured?.itemListElement?.map((item) => item.name), page.path).toEqual(labels)
       expect(labels[0]).toBe(page.name)
       expect(labels[1]).toBe(page.product === 'mcp' ? 'MCP' : 'Workspace Manager')
       if (page.section.startsWith('internals/')) expect(labels[2]).toBe('Internals')
-      for (const item of structured!.itemListElement!) expect(resolves(item.item), item.item).toBe(true)
+      for (const item of structured!.itemListElement!) if (item.item) expect(resolves(item.item), item.item).toBe(true)
       expect(new URL(structured!.itemListElement!.at(-1)!.item).pathname).toBe(urlFor(page.path).pathname)
     })
   })

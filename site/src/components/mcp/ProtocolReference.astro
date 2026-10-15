@@ -53,6 +53,7 @@ const breadcrumbs = [
   { name: info.name, url: portPageUrl(info, version) },
   { name: 'MCP', url: base },
   { name: MCP_SECTIONS[section], url: portPageUrl(info, version, `mcp/${section}`) },
+  ...(object && currentBucket ? [{ name: mcpObjectGroup(object), url: `${base}${section}/#${currentBucket}` }] : []),
   ...(object ? [{ name: object.name, url: pageUrl, symbol: true }] : []),
 ]
 const source = object?.tool?.source

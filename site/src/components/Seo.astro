@@ -59,7 +59,7 @@ interface Props {
    * one, and that is what a crawler should be told.
    */
   canonicalOverride?: string
-  breadcrumbs?: { name: string; url: string }[]
+  breadcrumbs?: { name: string; url?: string }[]
 }
 
 const {
@@ -199,7 +199,8 @@ const graph: Graph = {
     ...(breadcrumbs.length ? [{
       '@type': 'BreadcrumbList' as const,
       itemListElement: breadcrumbs.map((item, i) => ({
-        '@type': 'ListItem' as const, position: i + 1, name: item.name, item: new URL(item.url, origin).href,
+        '@type': 'ListItem' as const, position: i + 1, name: item.name,
+        ...(item.url ? { item: new URL(item.url, origin).href } : {}),
       })),
     }] : []),
   ],

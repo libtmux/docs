@@ -11,6 +11,7 @@ import { API_MODELS, API_NAV, OWNER_KINDS, pageSlug, referenceHref, topLevelType
 import type { ApiTreeBucket, ApiTreeJson } from './api-search'
 import { createHash } from 'node:crypto'
 import { PORT_BY_SLUG, type ApiDependencyNavigation } from './ports'
+import type { BreadcrumbItem } from './sidebar'
 
 export interface TreeBucket {
   id: string
@@ -57,6 +58,45 @@ export function bucketForSymbol(model: ApiModelBase | undefined, nav: PortNavDat
     symbol = parent ? model?.symbols.find((candidate) => candidate.id === parent) : undefined
   }
   return undefined
+}
+
+/** The same category ancestry opens the sidebar and names the page's location. */
+export function bucketAncestors(tree: TreeBucket[], id: string | undefined): TreeBucket[] {
+  if (id === undefined) return []
+  for (const bucket of tree) {
+    if (bucket.id === id) return [bucket]
+    const children = bucketAncestors(bucket.children, id)
+    if (children.length) return [bucket, ...children]
+  }
+  return []
+}
+
+/** Canonical sidebar categories and declaration owners, without shortcut duplicates. */
+export function referenceBreadcrumbs(
+  model: ApiModelBase, nav: PortNavData, tree: TreeBucket[], symbol: ApiSymbol,
+  base: string, hrefFor: (symbol: ApiSymbol) => string,
+): BreadcrumbItem[] {
+  const buckets = bucketAncestors(tree, bucketForSymbol(model, nav, symbol))
+  const anchors = new Set(referenceIndexSectionsFor(model, tree).map((entry) => entry.id))
+  const crumbs: BreadcrumbItem[] = buckets.map((bucket) => ({ name: bucket.label,
+    ...(anchors.has(bucket.id) ? { url: `${base}#section-${encodeURIComponent(bucket.id)}` } : {}),
+  }))
+  const entries = buckets.at(-1)?.entries.filter((entry) => !entry.shortcut) ?? []
+  const lineage: ApiSymbol[] = []
+  const seen = new Set<string>()
+  let current: ApiSymbol | undefined = symbol
+  while (current && !seen.has(current.id)) {
+    seen.add(current.id)
+    lineage.unshift(current)
+    if (entries.some((entry) => entry.id === (current!.publicId ?? current!.id))) break
+    current = current.parent ? model.symbols.find((entry) => entry.id === current!.parent) : undefined
+  }
+  const root = entries.find((entry) => entry.id === (lineage[0]?.publicId ?? lineage[0]?.id))
+  // An explicitly placed member can be a root even when its module is elsewhere.
+  if (!root) lineage.splice(0, Math.max(0, lineage.length - 1))
+  return [...crumbs, ...lineage.map((entry, i) => ({ name: i === 0 && root ? root.name : entry.name,
+    url: hrefFor(entry), symbol: true,
+  }))]
 }
 
 const productSymbols = (model: ApiModelBase) =>

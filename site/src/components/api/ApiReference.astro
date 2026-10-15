@@ -30,7 +30,8 @@ import { buildTarget, defaultVersionFor } from '../../lib/versions'
 import ApiDoc from '../../components/api/ApiDoc.astro'
 import ApiTree from '../../components/api/ApiTree.astro'
 import type { PortNavData } from '../../lib/api-models'
-import { apiTreeVersion, bucketForSymbol, navTree, referenceNavigation, referenceIndexSections, referenceIndexSectionsFor, type TreeBucket } from '../../lib/api-tree'
+import { apiTreeVersion, bucketAncestors, bucketForSymbol, navTree, referenceNavigation, referenceIndexSections, referenceIndexSectionsFor, type TreeBucket } from '../../lib/api-tree'
+import type { BreadcrumbItem } from '../../lib/sidebar'
 import SymbolName from '../../components/api/SymbolName.astro'
 import '../../styles/api.css'
 import '../../styles/vendor/gp-sphinx-api.css'
@@ -45,7 +46,7 @@ export interface SourceReferenceContext {
   version: string
   referenceBase: string
   pagePath: string
-  breadcrumbs: { name: string; url: string }[]
+  breadcrumbs: BreadcrumbItem[]
   nav: PortNavData
   tree: TreeBucket[]
   index: SymbolIndex
@@ -152,9 +153,7 @@ const currentType =
 const currentBucket = bucketForSymbol(model, nav, owner)
 
 /** The top-level bucket that holds the current one, which may be its parent. */
-const currentRoot = tree.find(
-  (b) => b.id === currentBucket || b.children.some((c) => c.id === currentBucket),
-)?.id
+const currentRoot = bucketAncestors(tree, currentBucket)[0]?.id
 /**
  * Most useful first, in the sidebar and on the page alike: the accessors that
  * walk the hierarchy, then the operations every port shares, then the rest,

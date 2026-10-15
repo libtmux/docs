@@ -25,6 +25,16 @@ import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import { localeOf, sourceIdOf } from '../i18n/resolve'
 import { docsPath, docsRoutePath } from './docs-paths'
 import { docsEntriesAvailable } from './page-port-links'
+import { API_MODELS, API_NAV } from './api-models'
+import { navTree, referenceBreadcrumbs } from './api-tree'
+import { productApiHref } from './product-api'
+
+export interface BreadcrumbItem {
+  name: string
+  /** Grouping-only ancestors remain readable without inventing a page. */
+  url?: string
+  symbol?: boolean
+}
 
 export interface SidebarLinkItem {
   type: 'link'
@@ -47,12 +57,46 @@ export interface SidebarGroupItem {
 
 export type SidebarItem = SidebarLinkItem | SidebarGroupItem
 
+/** Find a page's actual navigation ancestry, retaining groups without destinations. */
+export function sidebarBreadcrumbs(items: SidebarItem[], currentUrl: string): BreadcrumbItem[] {
+  const location = new URL(currentUrl, 'https://libtmux.org')
+  const matches = (href: string) => {
+    const target = new URL(href, location)
+    return target.origin === location.origin && target.pathname.replace(/\/$/, '') === location.pathname.replace(/\/$/, '')
+  }
+  for (const item of items) {
+    if (item.type === 'link' && (item.disabled || item.external)) continue
+    const crumb = { name: item.label, url: item.href, ...(item.kind ? { symbol: true } : {}) }
+    if (item.href && matches(item.href)) return [crumb]
+    if (item.type === 'group') {
+      const children = sidebarBreadcrumbs(item.items, currentUrl)
+      if (children.length) return [crumb, ...children]
+    }
+  }
+  return []
+}
+
+/** Keep documentation scope while replacing the leaf with its sidebar ancestry. */
+export function withSidebarBreadcrumbs(crumbs: BreadcrumbItem[], items: SidebarItem[], currentUrl: string): BreadcrumbItem[] {
+  if (!crumbs.length) return crumbs
+  const path = sidebarBreadcrumbs(items, currentUrl)
+  if (!path.length) return crumbs
+  const prefix = crumbs.slice(0, -1)
+  return [...prefix, ...path.filter((entry) => !entry.url || !prefix.some((ancestor) => ancestor.url === entry.url))]
+}
+
 /** Existing ancestor pages, followed by the current page, in reading order. */
-export async function pageBreadcrumbs(title: string, path: string, version: string, port?: string, locale: Locale = DEFAULT_LOCALE) {
+export async function pageBreadcrumbs(title: string, path: string, version: string, port?: string, locale: Locale = DEFAULT_LOCALE): Promise<BreadcrumbItem[]> {
   const language = port ? PORT_BY_SLUG[port] : undefined
   const url = (route: string) => language ? portPageUrl(language, version, route) : withRoot(`/${route}${route ? '/' : ''}`)
   const tmux = !port && /^tmux(?:\/|$)/.test(path)
-  const items = [{ name: language?.name ?? (tmux ? 'tmux' : 'Documentation'), url: url(tmux ? 'tmux' : '') }]
+  const items: BreadcrumbItem[] = [{ name: language?.name ?? (tmux ? 'tmux' : 'Documentation'), url: url(tmux ? 'tmux' : '') }]
+  const model = port ? API_MODELS[port] : undefined
+  const symbol = path.startsWith('reference/') ? model?.symbols.find((entry) => entry.slug === path.slice('reference/'.length)) : undefined
+  if (symbol && model && API_NAV[port!]) return [...items,
+    { name: 'API reference', url: url('reference') },
+    ...referenceBreadcrumbs(model, API_NAV[port!], navTree(port!), symbol, url('reference'), (entry) => productApiHref(model, entry, version)),
+  ]
   const entries = docsEntriesAvailable(await getCollection('docs', (entry) => !entry.data.port || entry.data.port === port), port)
   const parts = path.split('/').filter(Boolean)
   for (let i = tmux ? 2 : 1; i < parts.length; i++) {
