@@ -4,11 +4,15 @@ import { afterEach, expect, it, vi } from 'vitest'
 
 const component = readFileSync(new URL('../src/components/api/ApiPageContents.astro', import.meta.url), 'utf8')
 const script = component.match(/<script is:inline[^>]*>([\s\S]*?)<\/script>/)![1]
+const css = readFileSync(new URL('../src/styles/api.css', import.meta.url), 'utf8')
 let win: Window
 afterEach(async () => { await win?.happyDOM.abort(); vi.restoreAllMocks() })
 
-function mount({ header = 53, row = 48, members = 180, hash = '' } = {}) {
+function mount({ header = 53, row = 48, members = 180, hash = '', scripting = true, fontSize = 16, width = 1440, height = 900 } = {}) {
   win = new Window({ url: `https://libtmux.org/en/scala/latest/reference/window/${hash}` })
+  win.happyDOM.setWindowSize({ width, height })
+  win.document.documentElement.style.fontSize = `${fontSize}px`
+  win.document.head.innerHTML = `<style>.site-header { position: sticky; top: 0; }${css}</style>`
   win.document.body.innerHTML = `<header class="site-header"></header>
     <main class="api-reference-layout api-reference-layout--symbol">
       <div class="api-reference-content"><header id="api-overview"></header>
@@ -36,16 +40,49 @@ function mount({ header = 53, row = 48, members = 180, hash = '' } = {}) {
     constructor(callback: ResizeObserverCallback) { super(); observers.push(callback) }
   } })
   const flush = () => { for (const [id, callback] of [...frames]) { frames.delete(id); callback(0) } }
-  win.eval(script)
+  if (scripting) win.eval(script)
   return { geometry, flush, resize: () => observers.forEach((callback) => callback([], {} as ResizeObserver)),
     current: () => win.document.querySelector('.api-section-links [aria-current="location"]')?.getAttribute('href') }
 }
 
-it('uses the actual header and section-row heights for reading clearance', () => {
-  const page = mount({ header: 97, row: 96, members: 195 })
+it.each([
+  { width: 1440, height: 900, fontSize: 16 },
+  { width: 1440, height: 900, fontSize: 32 },
+  { width: 1036, height: 897, fontSize: 32 },
+  { width: 390, height: 844, fontSize: 32 },
+  { width: 960, height: 400, fontSize: 32 },
+])('keeps unmeasured navigation in ordinary flow at $width × $height with $fontSize px text', (viewport) => {
+  mount({ ...viewport, scripting: false })
+  const root = win.document.documentElement
+  expect(win.getComputedStyle(win.document.querySelector('.site-header')!).position).toBe('static')
+  expect(win.getComputedStyle(win.document.querySelector('.api-section-links')!).position).toBe('static')
+  expect(win.getComputedStyle(root).getPropertyValue('--api-header-height')).toBe('0px')
+  expect(win.getComputedStyle(root).getPropertyValue('--api-sections-height')).toBe('0px')
+  expect(root.hasAttribute('data-api-sections-measured')).toBe(false)
+  for (const link of win.document.querySelectorAll<HTMLAnchorElement>('[data-api-section-link]')) {
+    expect(win.document.getElementById(link.hash.slice(1))).not.toBeNull()
+    expect(link.getAttribute('href')).toBe(link.hash)
+  }
+})
+
+it('preserves the site header outside API symbol pages', () => {
+  mount({ scripting: false })
+  win.document.querySelector('.api-reference-layout')!.remove()
+  expect(win.getComputedStyle(win.document.querySelector('.site-header')!).position).toBe('sticky')
+})
+
+it.each([
+  { header: 97, row: 96, fontSize: 16 },
+  { header: 105, row: 293.75, fontSize: 32 },
+  { header: 265.5, row: 96.875, fontSize: 32 },
+])('enables sticky navigation after measuring $header px header and $row px row', (geometry) => {
+  const page = mount({ ...geometry, members: Math.ceil(geometry.header) + Math.ceil(geometry.row) + geometry.fontSize * 0.75 })
   page.flush()
-  expect(win.document.documentElement.style.getPropertyValue('--api-header-height')).toBe('97px')
-  expect(win.document.documentElement.style.getPropertyValue('--api-sections-height')).toBe('96px')
+  expect(win.document.documentElement.style.getPropertyValue('--api-header-height')).toBe(`${Math.ceil(geometry.header)}px`)
+  expect(win.document.documentElement.style.getPropertyValue('--api-sections-height')).toBe(`${Math.ceil(geometry.row)}px`)
+  expect(win.document.documentElement.hasAttribute('data-api-sections-measured')).toBe(true)
+  expect(win.getComputedStyle(win.document.querySelector('.site-header')!).position).toBe('sticky')
+  expect(win.getComputedStyle(win.document.querySelector('.api-section-links')!).position).toBe('sticky')
   expect(page.current()).toBe('#api-members')
 })
 
@@ -74,6 +111,8 @@ it('disconnects layout observers and removes page-specific clearance after leavi
   page.flush()
   win.document.querySelector('api-page-contents')!.remove()
   expect(win.document.documentElement.style.getPropertyValue('--api-header-height')).toBe('')
+  expect(win.document.documentElement.hasAttribute('data-api-sections-measured')).toBe(false)
+  expect(win.getComputedStyle(win.document.querySelector('.api-section-links')!).position).toBe('static')
   page.geometry.header = 150
   win.dispatchEvent(new win.Event('resize')); page.flush()
   expect(win.document.documentElement.style.getPropertyValue('--api-header-height')).toBe('')

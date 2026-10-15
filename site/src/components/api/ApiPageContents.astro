@@ -49,6 +49,7 @@ const { sections, related } = Astro.props as Props
         const rowHeight = Math.ceil(row?.getBoundingClientRect().height ?? 0)
         root.style.setProperty('--api-header-height', `${headerHeight}px`)
         root.style.setProperty('--api-sections-height', `${rowHeight}px`)
+        root.setAttribute('data-api-sections-measured', '')
         return headerHeight + rowHeight + (Number.parseFloat(getComputedStyle(root).fontSize) || 16) * 0.75
       }
       const decode = (hash) => { try { return decodeURIComponent(hash.slice(1)) } catch { return hash.slice(1) } }
@@ -110,6 +111,7 @@ const { sections, related } = Astro.props as Props
       cancelAnimationFrame(this.frame)
       document.documentElement.style.removeProperty('--api-header-height')
       document.documentElement.style.removeProperty('--api-sections-height')
+      document.documentElement.removeAttribute('data-api-sections-measured')
     }
   }
   if (!customElements.get('api-page-contents')) customElements.define('api-page-contents', ApiPageContents)
