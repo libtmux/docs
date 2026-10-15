@@ -194,11 +194,11 @@ function docCommentFor(node: Node, spec: LanguageSpec): string | undefined {
   return text.trim() ? text : undefined
 }
 
-/** Modifier keywords sitting as unnamed children of a declaration. */
+/** Modifier keywords on a declaration, including Rust's grouped function keywords. */
 function modifiersFor(node: Node, spec: LanguageSpec): Modifier[] {
   if (!spec.modifiers) return []
   const found = new Set<Modifier>()
-  for (const child of node.children) {
+  for (const child of node.children.flatMap((child) => child?.type === 'function_modifiers' ? child.children : [child])) {
     if (!child) continue
     // `modifiers` in Java/C#, bare keywords elsewhere, attributes in Rust.
     const text = child.type === 'modifiers' || child.type === 'modifier' ? child.text : child.type

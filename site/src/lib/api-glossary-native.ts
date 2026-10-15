@@ -182,6 +182,7 @@ export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> =
       references: [{ title: 'Rust constants', url: rustReference('items/constant-items') }, { title: 'Rust enum variants', url: rustReference('items/enumerations') }],
     },
     typealias: term('A Rust type name referring to an existing type expression, without creating a distinct newtype.', 'Rust type aliases', rustReference('items/type-aliases')),
+    async: term('A Rust async fn that returns a future. Its body runs when that future is polled, rather than when the function is called.', 'Rust async functions', `${rustReference('items/functions')}#async-functions`),
     overload: term('Multiple extracted declarations or implementations for this Rust item. Inspect the impl and trait context; Rust functions do not overload by parameter types.', 'Rust associated declarations', rustReference('items/associated-items')),
     package: term('A Cargo package supplying one or more crates. Rust paths and imports refer to crates and their modules.', 'Cargo packages and targets', 'https://doc.rust-lang.org/cargo/reference/cargo-targets.html'),
   },

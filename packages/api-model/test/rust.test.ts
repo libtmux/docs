@@ -30,6 +30,34 @@ async function extract(source: string, privateMembers = false) {
 }
 
 describe('Rust trait member visibility', () => {
+  it('keeps async and unsafe declaration modifiers without reading function bodies', async () => {
+    const symbols = await extract(`
+      pub struct Server;
+      impl Server {
+        pub async fn set_hook(&self, name: &str, command: impl Into<OsString>) -> Result<(), Error> {}
+        pub unsafe fn raw(&mut self) {}
+        pub async unsafe fn async_raw(&self) {}
+        pub fn synchronous(&self) { let pending = async {}; unsafe {} }
+      }
+      pub trait Poller {
+        async fn poll<T: Send>(&self, value: T) -> Result<T, Error>;
+        unsafe fn raw(&self);
+      }
+    `)
+    expect(symbols.find((symbol) => symbol.id === 'query.Server.set_hook')).toMatchObject({
+      modifiers: ['async'],
+      signatures: [{ params: [{ name: '&self' }, { name: 'name', type: '&str' },
+        { name: 'command', type: 'impl Into<OsString>' }], returns: 'Result<(), Error>' }],
+    })
+    expect(symbols.find((symbol) => symbol.id === 'query.Server.raw')?.modifiers).toEqual(['unsafe'])
+    expect(symbols.find((symbol) => symbol.id === 'query.Server.async_raw')?.modifiers).toEqual(['async', 'unsafe'])
+    expect(symbols.find((symbol) => symbol.id === 'query.Server.synchronous')?.modifiers).toEqual([])
+    expect(symbols.find((symbol) => symbol.id === 'query.Poller.poll')).toMatchObject({
+      modifiers: ['async'], signatures: [{ typeParams: ['T: Send'], params: [{ name: '&self' }, { name: 'value', type: 'T' }] }],
+    })
+    expect(symbols.find((symbol) => symbol.id === 'query.Poller.raw')?.modifiers).toEqual(['unsafe'])
+  })
+
   it('keeps required and default methods with their docs, signatures and owner', async () => {
     const symbols = await extract(`
       pub trait QueryIteratorExt: Iterator {

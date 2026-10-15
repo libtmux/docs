@@ -310,4 +310,21 @@ describe('rendered API badges', () => {
     expect(win.document.querySelector('a')).toBeNull()
     expect(win.document.querySelector('span')!.textContent).toBe('future-kind')
   })
+
+  it('renders the extracted Rust async contract with its native glossary link', async () => {
+    const model = JSON.parse(readFileSync(new URL('../src/data/api/rs.json', import.meta.url), 'utf8'))
+    const method = model.symbols.find((symbol: { id: string }) => symbol.id === 'server.Server.set_hook')
+    expect(method.modifiers).toContain('async')
+    const container = await experimental_AstroContainer.create()
+    const win = new Window()
+    windows.push(win)
+    win.document.body.innerHTML = await container.renderToString(await badgeComponent(), {
+      request: new Request('http://localhost:53971/en/rs/latest/reference/server-server-set_hook/'),
+      props: { label: 'async', variant: 'mod', value: 'async' },
+    })
+    const badge = win.document.querySelector('a.api-badge--mod-async')!
+    expect(badge.textContent).toBe('async')
+    expect(badge.getAttribute('href')).toBe('/en/rs/latest/reference/glossary/#async')
+    expect(badge.getAttribute('aria-label')).toContain('async definition')
+  })
 })
