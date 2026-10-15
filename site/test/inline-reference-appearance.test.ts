@@ -26,7 +26,11 @@ afterEach(async () => { await win.happyDOM.abort(); vi.unstubAllGlobals() })
 
 function markPreviews() {
   const policy = createLinkPreviewPolicy()
-  for (const link of win.document.querySelectorAll('a')) if (policy.candidate(link, win.location.href)) policy.mark(link)
+  for (const fixtureLink of win.document.querySelectorAll('a')) {
+    // Adapt happy-dom's separate DOM declarations at the browser-policy boundary.
+    const link = fixtureLink as unknown as HTMLAnchorElement
+    if (policy.candidate(link, win.location.href)) policy.mark(link)
+  }
 }
 
 it('assigns one dotted decoration to each real preview link, including nested and mixed labels', () => {

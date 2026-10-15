@@ -6,7 +6,7 @@ import { pagePortLinks, type PagePortLink } from '../src/lib/page-port-links'
 import { API_MODELS } from '../src/lib/api-models'
 import { PORTS, productAvailable } from '../src/lib/ports'
 import ts from 'typescript'
-import { Window, type HTMLElement } from 'happy-dom'
+import { Window, type HTMLAnchorElement, type HTMLElement } from 'happy-dom'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { initDocumentationNavigation } from '../src/components/docs/documentation-navigation'
 
