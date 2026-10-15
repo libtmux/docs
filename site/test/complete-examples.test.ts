@@ -116,6 +116,8 @@ describe('verified complete programs', () => {
       commands: ['new-session', 'attach-session', 'detach-client', 'list-clients'] },
     { page: 'concepts/workspaces', ports: ['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'],
       commands: ['new-session', 'new-window', 'split-window', 'select-layout', 'source-file'] },
+    { page: 'examples/attach-and-send-keys', ports: ['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'],
+      commands: ['attach-session', 'has-session', 'list-panes', 'send-keys', 'capture-pane'] },
   ])('teaches native $page while retaining its library routes', ({ page, ports, commands }) => {
     const { content, frontmatter } = parsePage(page)
     expect(frontmatter.supportedPorts).toEqual([])

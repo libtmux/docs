@@ -216,6 +216,31 @@
           "dev:logs:1"
         ]
       ]
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "examples/attach-and-send-keys",
+      "sourceRevision": "79072dd1a9f5fb437a5859e362a496fd57ec0981",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "send-command.sh",
+          "sha256": "9c41c8c71213982d5419010bedc8accf25f8dd555850ac2c4f048de19a06d2dd"
+        }
+      ],
+      "shellRecipe": [
+        "sh send-command.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "native input ready"
+        ]
+      ]
     }
   ]
 }
