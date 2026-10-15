@@ -25,7 +25,7 @@ function articleFor(page: string, port?: string) {
       const { content: body, frontmatter: data } = parseFrontmatter(
         readFileSync(`${contentRoot}docs/${id}.md`, 'utf8'), { frontmatter: 'remove' },
       )
-      return { id, body, data }
+      return { id: id.replace(/\/index$/, ''), body, data }
     })
   const selected = docsEntriesAvailable(sources, port)
   expect(selected, `${port || 'tmux'}:${page}`).toHaveLength(1)
@@ -150,6 +150,17 @@ describe('port prose ownership', () => {
     }
     for (const output of [html, markdown]) {
       expect(output).not.toMatch(/Server\.Chain|ControlClient|EnterControlModeAsync|libtmux\._internal|language-python/)
+    }
+  })
+
+  it.each(['guides', 'concepts', 'topics', 'examples'])('keeps the native %s overview about tmux commands', (section) => {
+    const { body, data } = articleFor(`${section}/index`)
+    expect(data.supportedPorts).toEqual([])
+    expect(body).toContain('tmux')
+    expect(body).toMatch(/\]\(\/tmux\/latest\/manual\//)
+    expect(body).not.toMatch(/API reference|doctest|QueryList|libtmux::|using LibTmux/)
+    for (const port of Object.keys(languageNames)) {
+      expect(articleFor(`${section}/index`, port).data.port).toBe(port)
     }
   })
 
