@@ -216,7 +216,7 @@ function paramsOf(node: Node | null, spec: LanguageSpec): Param[] {
   const out: Param[] = []
   for (const child of node.namedChildren) {
     if (!child) continue
-    if (child.type === 'comment') continue
+    if (spec.commentTypes.includes(child.type)) continue
     const native = spec.parameter?.(child)
     if (native) {
       out.push(native)
@@ -354,10 +354,13 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
         for (const parameter of signatures[0].params) {
           const componentId = `${id}.${parameter.name}`
           if (accessors) {
-            const existing = ctx.byId.get(componentId)
+            const declaration = ctx.byId.get(componentId)
+            const accessorId = (declaration && declaration.kind !== 'method') || parameter.name === name
+              ? `${componentId}()` : componentId
+            const existing = ctx.byId.get(accessorId)
             if (existing?.signatures.some((signature) => signature.params.length === 0)) continue
             emit(ctx, {
-              id: componentId, name: parameter.name, kind: 'method', parent: id,
+              id: accessorId, name: parameter.name, kind: 'method', parent: id,
               modifiers: [], signatures: [{ params: [], returns: parameter.type }],
               doc: parameter.doc ? { summary: parameter.doc } : undefined,
               // The accessor is implicit; no method declaration owns a source line.

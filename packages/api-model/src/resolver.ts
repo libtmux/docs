@@ -199,7 +199,11 @@ export class Resolver {
           list.push(row)
           this.byMember.set(key, list)
         }
-        this.byQualified.set(model.port + ' ' + qualified, row)
+        const key = model.port + ' ' + qualified
+        if (model.port === 'java' && symbol.id.endsWith('()')) {
+          this.byQualified.set(key + '()', row)
+          if (!this.byQualified.has(key)) this.byQualified.set(key, row)
+        } else this.byQualified.set(key, row)
 
       }
       // Old anchors remain accepted, including identities that overlap a
@@ -272,6 +276,15 @@ export class Resolver {
     const exact = this.byQualified.get(port + ' ' + text.trim())
     if (exact) return { how: 'module', symbol: exact.symbol, port }
 
+    if (port === 'java' && text.trim().endsWith('()')) {
+      const name = text.trim().slice(0, -2)
+      const accessors = this.members(port, name.split('.').at(-1)!)
+        .filter((row) => row.symbol.id.endsWith('()') &&
+          (row.qualified === name || row.qualified.endsWith(`.${name}`)))
+      if (accessors.length === 1) return { how: 'unique', symbol: accessors[0].symbol, port }
+      if (accessors.length > 1) return { how: 'ambiguous', candidates: accessors.length }
+    }
+
     const parts = toPath(text)
     if (!parts.length) return { how: 'not-a-symbol', why: 'empty after normalisation' }
 
@@ -291,7 +304,10 @@ export class Resolver {
     }
 
     const member = parts[parts.length - 1]
-    const candidates = Resolver.preferTypeOverConstructor(this.members(port, member))
+    const members = this.members(port, member)
+    const bare = port === 'java' && !text.trim().endsWith('()')
+      ? members.filter((row) => !row.symbol.id.endsWith('()')) : members
+    const candidates = Resolver.preferTypeOverConstructor(bare.length ? bare : members)
     if (parts.length > 2) {
       const suffix = `.${parts.join('.')}`
       const qualified = candidates.filter((row) => `.${toPath(row.qualified).join('.')}`.endsWith(suffix))

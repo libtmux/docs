@@ -406,6 +406,16 @@ export class SymbolIndex {
     if (imported) clean = [imported, ...tail].join('.')
     if (this.lang === 'scala') clean = clean.replace(/^_root_\./, '')
 
+    const called = target.endsWith('()')
+    const javaCallable = this.lang === 'java' && (role === 'meth' || role === 'func' || (role === 'any' && called))
+    if (javaCallable) {
+      const accessor = this.byPublic.get(`${clean}()`) ?? this.byQualified.get(clean)
+        ?.find((symbol) => symbol.kind === 'method' && symbol.id.endsWith('()'))
+      if (accessor && (called || this.byPublic.get(clean)?.kind !== 'method')) {
+        return { href: this.hrefFor(accessor), external: false, symbol: accessor }
+      }
+    }
+
     if (context && ['kotlin', 'scala', 'fsharp'].includes(this.lang ?? '') && !relative &&
         context.signatures.some((sig) => sig.params.some((param) => param.name === clean))) {
       return { href: `${this.hrefFor(context).split('#')[0]}#${encodeURIComponent(parameterId(context, clean))}`, external: false }
@@ -447,7 +457,9 @@ export class SymbolIndex {
       }
       for (const scope of scopes) {
         const target = `${scope}${this.lang === 'cxx' ? '::' : '.'}${clean}`
-        const hit = this.byPublic.get(target) ?? this.pick(this.byQualified.get(target), role, context)
+        const declaration = this.byPublic.get(target) ?? this.pick(this.byQualified.get(target), role, context)
+        const accessor = javaCallable ? this.byPublic.get(`${target}()`) : undefined
+        const hit = accessor && (called || declaration?.kind !== 'method') ? accessor : declaration
         if (hit && (this.lang === 'java' || this.lang === 'csharp') && role === 'class' && !ROLE_KINDS.class.includes(hit.kind)) continue
         if (hit) return { href: this.hrefFor(hit), external: false, symbol: hit }
       }

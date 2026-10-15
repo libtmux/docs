@@ -277,6 +277,12 @@ export const GO: LanguageSpec = {
 export const JAVA: LanguageSpec = {
   grammar: 'java',
   docDialect: 'javadoc',
+  parameter: (node) => {
+    if (node.type !== 'spread_parameter' || node.parent?.parent?.type !== 'record_declaration') return undefined
+    const name = node.namedChildren.find((child) => child?.type === 'variable_declarator')?.childForFieldName('name')?.text
+    const type = node.namedChildren.find((child) => child && !['modifiers', 'variable_declarator'].includes(child.type))?.text
+    return name && type ? { name, type: `${type}[]`, variadic: 'positional' } : undefined
+  },
   recordAccessors: (node) => node.type === 'record_declaration',
   rawSignature: (node) => {
     if (node.type !== 'record_declaration') return undefined
