@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
+import { createHash } from 'node:crypto'
 import { Window } from 'happy-dom'
 import { describe, expect, it } from 'vitest'
 import { PORTS, productAvailable, productDescription, productInDevelopment, workspaceOverviewNotice, type Port } from '../src/lib/ports'
@@ -38,6 +39,18 @@ interface DocsManifest {
 const products = ['mcp', 'workspace'] as const
 const primaryPorts = PORTS.filter((port) => !port.parentLibrary)
 const read = (path: string) => readFileSync(sitePath(path), 'utf8')
+// Earlier product checks parse these indexes. Reuse only plain link facts,
+// keyed by the current HTML bytes, rather than keeping their large DOMs alive.
+const declarationIndexes = new Map<string, { href: string; title: string }[]>()
+function referenceDeclarations(html: string, document?: Window['document']) {
+  const identity = createHash('sha256').update(html).digest('hex')
+  const saved = declarationIndexes.get(identity)
+  if (saved || !document) return saved
+  const declarations = [...document.querySelectorAll('[aria-labelledby="generated-api"] a[href]')]
+    .map((link) => ({ href: link.getAttribute('href')!, title: link.textContent.trim() }))
+  declarationIndexes.set(identity, declarations)
+  return declarations
+}
 const manifest = (): Manifest => JSON.parse(read('versions.json'))
 const urlFor = (path: string) => new URL(`/${SITE_PREFIX}${path}`, 'https://libtmux.org')
 const productUrl = /\/(?:py|ruby|lua|powershell|julia|ts|rs|go|java|csharp|cxx|swift)\/[^/]+\/(?:mcp|workspace)(?:\/|$)/
@@ -113,12 +126,40 @@ async function inspect<T>(path: string, check: (document: Window['document']) =>
     settings: { disableJavaScriptEvaluation: true, disableJavaScriptFileLoading: true, disableCSSFileLoading: true },
   })
   try {
-    window.document.write(readFileSync(file, 'utf8'))
+    const html = readFileSync(file, 'utf8')
+    window.document.write(html)
+    if (/(?:mcp|workspace)\/reference\/$/.test(path)) referenceDeclarations(html, window.document)
     return await check(window.document)
   } finally {
     await window.happyDOM.close()
   }
 }
+
+async function declarationIndex(path: string) {
+  const file = sitePath(path, 'index.html')
+  expect(existsSync(file), `assembled product page ${path}`).toBe(true)
+  const saved = referenceDeclarations(readFileSync(file, 'utf8'))
+  return saved ?? inspect(path, (document) => referenceDeclarations(readFileSync(file, 'utf8'), document)!)
+}
+
+it('reuses declaration facts only for identical HTML without retaining a document', async () => {
+  const window = new Window()
+  try {
+    const html = '<section aria-labelledby="generated-api"><a href="/reference/server/"><code>Server</code></a></section>'
+    window.document.body.innerHTML = html
+    const first = referenceDeclarations(html, window.document)
+    expect(first).toEqual([{ href: '/reference/server/', title: 'Server' }])
+    window.document.body.innerHTML = ''
+    expect(referenceDeclarations(html)).toEqual(first)
+    const changed = html.replaceAll('server', 'pane').replaceAll('Server', 'Pane')
+    expect(referenceDeclarations(changed)).toBeUndefined()
+    window.document.body.innerHTML = changed
+    expect(referenceDeclarations(changed, window.document)).toEqual([{ href: '/reference/pane/', title: 'Pane' }])
+    expect(referenceDeclarations(html)).toEqual(first)
+  } finally {
+    await window.happyDOM.close()
+  }
+})
 
 const pageHtml = (path: string) => readFileSync(sitePath(path, 'index.html'), 'utf8')
 const tags = (html: string, name: string) => [...html.matchAll(new RegExp(`<${name}\\b[^>]*>`, 'gi'))].map((match) => match[0])
@@ -494,9 +535,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     for (const page of pages().filter((entry) => entry.section === 'reference'
       && productAvailable(PORTS.find((port) => port.slug === entry.port)!, entry.product))) {
       const prefix = `${page.port}/${page.version}/${page.product}/${page.section}/`
-      const declarations = await inspect(page.path, (document) =>
-        [...document.querySelectorAll('[aria-labelledby="generated-api"] a[href]')]
-          .map((link) => ({ href: link.getAttribute('href')!, title: link.textContent.trim() })))
+      const declarations = await declarationIndex(page.path)
       expect(declarations.length, `${page.path} generated declarations`).toBeGreaterThan(0)
       for (const declaration of declarations) {
         expect(new URL(declaration.href, urlFor(page.path)).pathname).toMatch(new RegExp(`^/${SITE_PREFIX}${prefix}[^/]+/$`))
