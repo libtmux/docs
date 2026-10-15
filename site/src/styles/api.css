@@ -632,8 +632,25 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header .gp-sphin
   overflow-wrap: anywhere;
 }
 .api-reference-layout { max-width: 108rem; margin-inline: auto; }
+html:has(.api-reference-layout--symbol) {
+  --api-header-height: calc(3.25rem + 1px);
+  --api-sections-height: 3rem;
+  --api-reading-top: calc(var(--api-header-height) + var(--api-sections-height) + 0.75rem);
+  scroll-padding-top: var(--api-reading-top);
+}
+html:has(.api-reference-layout--symbol):has(.site-header :focus) { scroll-padding-top: 0; }
+@media (max-width: 35rem) {
+  html:has(.api-reference-layout--symbol) { --api-header-height: calc(6rem + 1px); }
+}
+@media (max-height: 30rem) and (min-width: 35.001rem) {
+  html:has(.api-reference-layout--symbol) { --api-header-height: calc(2.75rem + 1px); }
+}
 @media (min-width: 56rem) {
   .api-reference-layout:has(> .api-nav-column) { grid-template-columns: 16rem minmax(0, 1fr); }
+  .api-reference-layout--symbol .api-nav {
+    top: var(--api-header-height);
+    height: calc(100dvh - var(--api-header-height));
+  }
 }
 .api-page-contents { display: none; }
 @media (min-width: 85rem) {
@@ -651,8 +668,8 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header .gp-sphin
   }
   .api-page-contents > aside {
     position: sticky;
-    top: 6.5rem;
-    max-height: calc(100dvh - 8rem);
+    top: calc(var(--api-header-height) + 1rem);
+    max-height: calc(100dvh - var(--api-header-height) - 2rem);
     overflow-y: auto;
     border-left: 1px solid var(--color-edge);
     padding-left: 0.75rem;
@@ -826,19 +843,38 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header .gp-sphin
   outline-offset: 2px;
 }
 .api-section-links {
+  position: sticky;
+  top: var(--api-header-height);
+  z-index: 20;
   display: flex;
   flex-wrap: wrap;
   gap: 0.25rem 1.5rem;
   margin-block: 1.25rem;
   border-bottom: 1px solid var(--color-edge);
+  background: var(--background-color);
   font-size: 0.875rem;
 }
 .api-section-links a {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
   padding-block: 0.75rem;
   text-decoration: none;
   border-bottom: 2px solid transparent;
 }
 .api-section-links a:hover, .api-section-links a:focus-visible { border-bottom-color: currentColor; }
+.api-section-links a:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: -2px; }
+@media (max-width: 35rem), (max-height: 30rem) {
+  .api-section-links {
+    flex-wrap: nowrap;
+    gap: 1rem;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: thin;
+  }
+  .api-section-links a { white-space: nowrap; }
+}
 .api-section-links a[aria-current="location"] {
   color: var(--color-link);
   border-bottom-color: currentColor;
@@ -857,8 +893,8 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header .gp-sphin
 }
 .api-source-details { margin-block: 1rem 1.5rem; font-size: 0.875rem; }
 .api-source-details > summary { cursor: pointer; color: var(--color-muted); }
-.api-reference-content :is(.api-reference-heading, section, h2, h3, .gp-sphinx-api-examples, .gp-sphinx-api-description, .gp-sphinx-api-references, dt[id]) {
-  scroll-margin-top: 7rem;
+.api-reference-layout--symbol .api-reference-content [id] {
+  scroll-margin-top: 0;
 }
 @media print {
   .api-page-contents, .api-section-links { display: none; }

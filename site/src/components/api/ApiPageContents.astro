@@ -32,14 +32,29 @@ const { sections, related } = Astro.props as Props
 (() => {
   class ApiPageContents extends HTMLElement {
     controller
+    observer
     frame = 0
 
     connectedCallback() {
       this.controller = new AbortController()
       const { signal } = this.controller
+      const layout = this.closest('.api-reference-layout')
+      const header = document.querySelector('.site-header')
+      const row = layout?.querySelector('.api-section-links')
+      const root = document.documentElement
+      let previousReadingTop
+      let previousSection
+      const measure = () => {
+        const headerHeight = Math.ceil(header?.getBoundingClientRect().height ?? 0)
+        const rowHeight = Math.ceil(row?.getBoundingClientRect().height ?? 0)
+        root.style.setProperty('--api-header-height', `${headerHeight}px`)
+        root.style.setProperty('--api-sections-height', `${rowHeight}px`)
+        return headerHeight + rowHeight + (Number.parseFloat(getComputedStyle(root).fontSize) || 16) * 0.75
+      }
       const decode = (hash) => { try { return decodeURIComponent(hash.slice(1)) } catch { return hash.slice(1) } }
       const update = (initial = false) => {
-        const links = [...document.querySelectorAll('[data-api-section-link]')]
+        const readingTop = measure()
+        const links = [...(layout?.querySelectorAll('[data-api-section-link]') ?? [])]
         const targets = [...new Set(links.map((link) => decode(link.hash)))]
           .map((id) => document.getElementById(id)).filter(Boolean)
           .sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top)
@@ -47,17 +62,33 @@ const { sections, related } = Astro.props as Props
         // Keep an explicitly selected section active while it remains visible.
         const fragment = decode(location.hash)
         const destination = document.getElementById(fragment)
+        if (previousReadingTop !== undefined && readingTop > previousReadingTop && destination) {
+          const display = destination.querySelector(':scope > :is(h1, h2, h3, h4, h5, h6)') ?? destination
+          const top = display.getBoundingClientRect().top
+          if (top >= previousReadingTop - 1 && top < readingTop) window.scrollBy({ top: top - readingTop, behavior: 'instant' })
+        }
+        previousReadingTop = readingTop
         const selected = targets.findLast((target) => target.id === fragment ||
           (destination && target.contains(destination)) ||
           (target.id.endsWith('.parameters') && fragment.startsWith(target.id.replace(/\.parameters$/, '.parameter.'))))
         const selectedTop = selected?.getBoundingClientRect().top ?? -1
-        const keepSelected = selected && (initial || (selectedTop >= 112 && selectedTop < innerHeight))
+        const keepSelected = selected && (initial || (selectedTop >= readingTop && selectedTop < innerHeight))
         const current = keepSelected ? selected
-          : targets.findLast((target) => target.getBoundingClientRect().top <= 144) ?? targets[0]
+          : targets.findLast((target) => target.getBoundingClientRect().top <= readingTop + 1) ?? targets[0]
         for (const link of links) {
           if (decode(link.hash) === current?.id) link.setAttribute('aria-current', 'location')
           else link.removeAttribute('aria-current')
         }
+        if (current?.id !== previousSection && row && !row.contains(document.activeElement)) {
+          const active = row.querySelector('[aria-current="location"]')
+          if (active) {
+            const bounds = row.getBoundingClientRect()
+            const link = active.getBoundingClientRect()
+            if (link.left < bounds.left) row.scrollLeft += link.left - bounds.left
+            else if (link.right > bounds.right) row.scrollLeft += link.right - bounds.right
+          }
+        }
+        previousSection = current?.id
       }
       const schedule = () => {
         cancelAnimationFrame(this.frame)
@@ -66,12 +97,19 @@ const { sections, related } = Astro.props as Props
       window.addEventListener('scroll', schedule, { passive: true, signal })
       window.addEventListener('hashchange', schedule, { signal })
       window.addEventListener('resize', schedule, { signal })
+      this.observer = new ResizeObserver(schedule)
+      if (header) this.observer.observe(header)
+      if (row) this.observer.observe(row)
+      document.fonts?.ready.then(() => { if (!signal.aborted) schedule() })
       update(true)
     }
 
     disconnectedCallback() {
       this.controller?.abort()
+      this.observer?.disconnect()
       cancelAnimationFrame(this.frame)
+      document.documentElement.style.removeProperty('--api-header-height')
+      document.documentElement.style.removeProperty('--api-sections-height')
     }
   }
   if (!customElements.get('api-page-contents')) customElements.define('api-page-contents', ApiPageContents)
