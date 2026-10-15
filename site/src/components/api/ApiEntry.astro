@@ -303,10 +303,7 @@ const hasBody =
             <span class="api-native-signature"><span class="api-declaration-name">{symbol.name}</span> = <ApiType type={symbol.type} index={index} context={symbol} /></span>
           )}
           {nativeSignatures ? (nativeEntries.length ? nativeEntries.map((sig) => (
-            <span class:list={['api-native-signature', port === 'fsharp' && 'api-native-signature--fsharp']}>
-              {sig.label && sig.label !== '__AllParameterSets' && <span class="api-native-signature-label">{sig.label}{sig.isDefault ? ' (default)' : ''}: </span>}
-              <ApiType type={nativeSignatureText(symbol, sig, language)} index={index} context={symbol} signature={sig} nameHref={nameHref} />
-            </span>
+            <span class:list={['api-native-signature', port === 'fsharp' && 'api-native-signature--fsharp']}>{sig.label && sig.label !== '__AllParameterSets' && <span class="api-native-signature-label">{sig.label}{sig.isDefault ? ' (default)' : ''}: </span>}<ApiType type={nativeSignatureText(symbol, sig, language)} index={index} context={symbol} signature={sig} nameHref={nameHref} /></span>
           )) : <span class="api-native-signature">{anonymousDeclarationLabel(symbol)}</span>) : <>
           {keyword && <em class="property"><span class="pre">{keyword}</span> </em>}
           {prename && <span class="sig-prename descclassname"><span class="pre">{prename}</span></span>}<span class="sig-name descname">{nameHref ? <a class="api-signature-name-link pre" href={nameHref}>{symbol.name}</a> : <span class="pre">{symbol.name}</span>}</span>
