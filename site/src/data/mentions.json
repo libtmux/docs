@@ -4517,13 +4517,6 @@
   },
   {
    "port": "java",
-   "symbol": "io.github.libtmux.junit5.FakeTmux.FakeTmux.output",
-   "page": "/scala/latest/guides/streaming/",
-   "title": "Streaming",
-   "section": "guides"
-  },
-  {
-   "port": "java",
    "symbol": "io.github.libtmux.junit5.TmuxExtension.TmuxExtension",
    "page": "/java/latest/guides/testing-with-libtmux/",
    "title": "Testing with libtmux",
@@ -4843,13 +4836,6 @@
    "page": "/java/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
-  },
-  {
-   "port": "java",
-   "symbol": "io.github.libtmux.Server.Server.commands",
-   "page": "/java/latest/workspace/cli/import-teamocil/",
-   "title": "Import from Teamocil",
-   "section": "ports"
   },
   {
    "port": "java",
@@ -5203,9 +5189,30 @@
   },
   {
    "port": "java",
+   "symbol": "io.github.libtmux.workspace.PaneSpec.PaneSpec.commands",
+   "page": "/java/latest/workspace/cli/import-teamocil/",
+   "title": "Import from Teamocil",
+   "section": "ports"
+  },
+  {
+   "port": "java",
    "symbol": "io.github.libtmux.workspace.WindowSpec.WindowSpec",
    "page": "/java/latest/workspace/reference/",
    "title": "Java workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.workspace.WindowSpec.WindowSpec.panes",
+   "page": "/java/latest/workspace/cli/import-tmuxinator/",
+   "title": "Import from tmuxinator",
+   "section": "ports"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.workspace.WindowSpec.WindowSpec.panes",
+   "page": "/java/latest/workspace/configuration/panes/",
+   "title": "Pane configuration",
    "section": "ports"
   },
   {
@@ -5220,6 +5227,27 @@
    "symbol": "io.github.libtmux.workspace.Workspace.Workspace",
    "page": "/java/latest/workspace/reference/",
    "title": "Java workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.workspace.Workspace.Workspace.windows",
+   "page": "/java/latest/workspace/configuration/session/",
+   "title": "Session configuration",
+   "section": "ports"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.workspace.Workspace.Workspace.windows",
+   "page": "/java/latest/workspace/configuration/windows/",
+   "title": "Window configuration",
+   "section": "ports"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.workspace.Workspace.Workspace.windows",
+   "page": "/java/latest/workspace/internals/topics/",
+   "title": "Java workspace builder behavior",
    "section": "ports"
   },
   {
@@ -5402,13 +5430,6 @@
    "symbol": "LibTmux.DeadlineExceeded.timeout",
    "page": "/julia/latest/topics/ownership/",
    "title": "Ownership and I/O",
-   "section": "topics"
-  },
-  {
-   "port": "julia",
-   "symbol": "LibTmux.DeadlineExceeded.timeout",
-   "page": "/topics/waiting-and-retry/",
-   "title": "Waiting and retrying",
    "section": "topics"
   },
   {
@@ -11324,6 +11345,13 @@
    "symbol": "io.github.libtmux.scaladsl.cats.Control.isAlive",
    "page": "/scala/latest/guides/execution/",
    "title": "Execution",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.cats.Control.output",
+   "page": "/scala/latest/guides/streaming/",
+   "title": "Streaming",
    "section": "guides"
   },
   {
