@@ -556,16 +556,19 @@ const hasBody =
                     {params.map((p, i) => (
                       <li id={params.findIndex((entry) => entry.name === p.name) === i ? parameterId(symbol, p.name) : undefined}>
                         <p class:list={[(language === 'julia' || language === 'ts') && 'api-parameter-heading']}>
-                          <strong><a href={`#${encodeURIComponent(parameterId(symbol, p.name))}`}><code>{p.name}</code></a></strong>
-                          {p.optional && '?'}
-                          {(language === 'julia' || language === 'ts') && p.default !== undefined && <>{' = '}<code>{p.default}</code></>}
-                          {p.type && (
-                            <>
-                              {' ('}
-                              <ApiType type={p.type} index={index} context={symbol} />
-                              {') '}
-                            </>
-                          )}
+                          <span class="api-parameter-signature">
+                            <strong><a href={`#${encodeURIComponent(parameterId(symbol, p.name))}`}><code>{p.name}</code></a></strong>
+                            {p.optional && '?'}
+                            {(language === 'julia' || language === 'ts') && p.default !== undefined && <>{' = '}<code>{p.default}</code></>}
+                            {p.type && (
+                              <>
+                                {' ('}
+                                <ApiType type={p.type} index={index} context={symbol} />
+                                {') '}
+                              </>
+                            )}
+                          </span>
+                          <a class="api-heading-link" href={`#${encodeURIComponent(parameterId(symbol, p.name))}`} aria-label={`Link to ${p.name} parameter`} data-pagefind-ignore="all">#</a>
                           {p.doc && !['julia', 'ts'].includes(language ?? '') && <>{' – '}<ApiDoc text={p.doc} index={index} context={symbol} /></>}
                           {p.since && <span class="gp-sphinx-api-param-since">added {p.since}</span>}
                           {p.deprecated && (
@@ -574,7 +577,6 @@ const hasBody =
                             </span>
                           )}
                           <ApiFieldOverloads labels={p.overloads} targets={overloadTargets} />
-                          <a class="api-heading-link" href={`#${encodeURIComponent(parameterId(symbol, p.name))}`} aria-label={`Link to ${p.name} parameter`} data-pagefind-ignore="all">#</a>
                         </p>
                         {p.doc && ['julia', 'ts'].includes(language ?? '') && <ApiProse text={p.doc} index={index} context={symbol} />}
                         {p.binding && <p class="api-parameter-binding"><ApiDoc text={parameterBindingText(p)!} index={index} context={symbol} /></p>}

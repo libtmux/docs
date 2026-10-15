@@ -782,7 +782,6 @@ html:has(.api-reference-layout--symbol):not([data-api-sections-measured]) .site-
   font-weight: 400;
   text-decoration: none;
 }
-.api-command-parameters .api-heading-link { margin-inline-start: auto; }
 .api-heading-link:hover { color: var(--color-link); }
 .api-heading-link:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
 .api-related-types { margin-top: 2rem; }
