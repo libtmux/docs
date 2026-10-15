@@ -32,6 +32,24 @@ function exampleBytes(markdown: string): string[] {
 }
 
 describe('prose Markdown links', () => {
+  it('links native commands through prose HTML and Markdown without claiming prose aliases', async () => {
+    const source = 'Call tmux resize-pane. Use `$ tmux -L local run -b true` and `display-message`. Keep tmux has many panes.\n\n[Keep `run-shell`](https://example.com/authored).\n\n<code><a href="https://example.com/native">run-shell</a></code>\n\n`tmux run-shell true && tmux display-message hello`\n\n```sh\ntmux run-shell true\n```'
+    const processor = await createMarkdownProcessor({ rehypePlugins: [rehypeApiLinks], syntaxHighlight: false })
+    const html = (await processor.render(source, { frontmatter: { port: 'go' } })).code
+    const markdown = linkProseMarkdown(source, 'go')
+    for (const command of ['resize-pane', 'run-shell', 'display-message']) {
+      expect(html).toContain(`href="/tmux/latest/manual/${command}/"`)
+      expect(urls(markdown)).toContain(`/tmux/latest/manual/${command}/`)
+    }
+    expect(markdown).toContain('Keep tmux has many panes.')
+    expect(html).not.toContain('/manual/has-session/')
+    expect(urls(markdown)).not.toContain('/tmux/latest/manual/has-session/')
+    expect(markdown).toContain('[Keep `run-shell`](https://example.com/authored)')
+    expect(markdown).toContain('<code><a href="https://example.com/native">run-shell</a></code>')
+    expect(html).not.toMatch(/<a[^>]*>\s*<code>\s*<a/)
+    expect(exampleBytes(markdown)).toEqual(exampleBytes(source))
+  })
+
   it('uses the native Concepts page in routes, exports, sidebar and breadcrumbs', async () => {
     vi.stubEnv('LIBTMUX_DOCS_PORT', 'ruby')
     vi.stubEnv('LIBTMUX_DOCS_LOCALE', 'en')

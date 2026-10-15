@@ -5,6 +5,7 @@ import { resolvePortContent } from './workspace-shared-slots'
 import { createProseLinker, PORT_BY_LABEL } from './prose-resolver'
 import { PORT_BY_SLUG } from './ports'
 import { rewriteMarkdownLinks } from '../plugins/remark-port-code.mjs'
+import { tmuxMentionMarkdown } from './tmux-links'
 
 interface MarkdownLinkProjection {
   /** Resolved API URLs already include their deployment prefix. */
@@ -43,6 +44,15 @@ export function linkProseMarkdown(raw: string, port?: string, product?: ApiProdu
     if (node.type === 'html') {
       for (const tag of node.value.matchAll(/<(\/?)(?:a|code|pre)\b[^>]*>/gi)) {
         htmlDepth = Math.max(0, htmlDepth + (tag[1] ? -1 : 1))
+      }
+    }
+    if ((node.type === 'inlineCode' || node.type === 'text') && !htmlDepth && node.position?.start.offset !== undefined) {
+      const start = node.position.start.offset
+      const end = node.position.end.offset!
+      const native = tmuxMentionMarkdown(node.value, node.type === 'inlineCode', project.resolved)
+      if (native && (node.type === 'inlineCode' || body.slice(start, end) === node.value)) {
+        edits.push({ start, end, text: native })
+        return SKIP
       }
     }
     if (linkApi && node.type === 'inlineCode' && !htmlDepth && node.position?.start.offset !== undefined) {

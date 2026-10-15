@@ -9,6 +9,7 @@ import { API_MODELS, pageSlug } from '../lib/api-models'
 import { kindMark } from '../lib/api-labels'
 import { docsPath } from '../lib/docs-paths'
 import { MCP_REFERENCE, mcpObjects } from '../lib/mcp-reference'
+import { tmuxCommandMentions } from '../lib/tmux-links'
 
 /** Link inline API and source references using their prose ownership. */
 const here = dirname(fileURLToPath(import.meta.url))
@@ -90,6 +91,19 @@ function record(entry: DanglingReference): void {
 const BLOCKS = new Set(['p', 'li', 'td', 'th', 'dd', 'dt', 'figcaption', 'blockquote'])
 
 type El = { type?: string; tagName?: string; value?: string; properties?: Record<string, unknown>; children?: El[] }
+const containsAnchor = (node: El): boolean => node.tagName === 'a' || Boolean(node.children?.some(containsAnchor))
+
+function commandNodes(text: string, code = false): El[] {
+  const linked: El[] = []
+  let end = 0
+  for (const mention of tmuxCommandMentions(text, { code })) {
+    if (mention.start > end) linked.push({ type: 'text', value: text.slice(end, mention.start) })
+    linked.push({ type: 'element', tagName: 'a', properties: { href: mention.href }, children: [{ type: 'text', value: mention.text }] })
+    end = mention.end
+  }
+  if (end < text.length) linked.push({ type: 'text', value: text.slice(end) })
+  return linked
+}
 
 const symbolsByPage = new Map(Object.entries(API_MODELS).flatMap(([port, model]) => model.symbols.map(symbol => [
   `${port}/${symbol.product && symbol.product !== 'core' ? `${symbol.product}/` : ''}${symbol.slug ?? pageSlug(symbol.publicId ?? symbol.id)}`,
@@ -200,6 +214,12 @@ export function rehypeApiLinks() {
       for (let i = 0; i < kids.length; i++) {
         const child = kids[i]!
         if (child.type === 'text') {
+          const mentions = !inLink ? tmuxCommandMentions(child.value ?? '') : []
+          if (mentions.length) {
+            const linked = commandNodes(child.value ?? '')
+            kids.splice(i, 1, ...linked)
+            i += linked.length - 1
+          }
           scope.text += child.value ?? ''
           continue
         }
@@ -216,8 +236,21 @@ export function rehypeApiLinks() {
           addKindBadge(child, buildPort, route)
           continue
         }
-        if (child.tagName === 'code' && !inLink && resolveMentions) {
+        if (child.tagName === 'code' && !inLink) {
           const text = textOf(child).trim()
+          if (containsAnchor(child)) { scope.text += text; continue }
+          const commands = tmuxCommandMentions(text, { code: true })
+          if (commands.length === 1) {
+            kids[i] = { type: 'element', tagName: 'a', properties: { href: commands[0].href }, children: [child] }
+            scope.text += text
+            continue
+          }
+          if (commands.length > 1 && child.children?.every((node) => node.type === 'text')) {
+            child.children = commandNodes(textOf(child), true)
+            scope.text += text
+            continue
+          }
+          if (!resolveMentions) continue
           const explicitPort = child.properties?.dataDocPort
           const pagePort = (typeof explicitPort === 'string' ? explicitPort : undefined)
             ?? buildPort ?? rowPort ?? fence.lang ?? sections.at(-1)?.port

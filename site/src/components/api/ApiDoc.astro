@@ -1,5 +1,6 @@
 ---
 import type { ApiSymbol, SymbolIndex } from '@libtmux/api-model'
+import { linkTmuxDoc } from '../../lib/tmux-links'
 
 /**
  * Doc-comment prose with its cross-references resolved.
@@ -27,7 +28,7 @@ interface Props {
 const { text, index, context, citations = true } = Astro.props as Props
 // Through the index, so the tokenizer knows which language's spelling of a
 // cross-reference it is reading. Tokenizing here meant reST for all eight.
-const spans = index.linkText(text, context)
+const spans = linkTmuxDoc(index.linkText(text, context))
 ---
 <span>{
   spans.map((span) => {

@@ -6,6 +6,7 @@ import mentions from '../data/mentions.json'
 import { PORT_NAME, referenceAlternatives } from './api-models'
 import { apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures } from './api-sections'
 import { tmuxCommandsFor, tmuxManualUrl } from './tmux-manual-data'
+import { tmuxCommandMentions, tmuxMentionMarkdown } from './tmux-links'
 import { productApiIndex } from './product-api'
 import { defaultVersionFor } from './versions'
 import { apiCallSource, apiRelationshipSections, type ApiRelationshipPath } from './api-relationships'
@@ -58,15 +59,28 @@ function inlineCode(code: string): string {
   return `${fence}${pad}${code}${pad}${fence}`
 }
 
-function proseMarkdown(markdown: string, index: SymbolIndex, symbol: ApiSymbol): string {
+function proseMarkdown(markdown: string, index: SymbolIndex, symbol: ApiSymbol, linkApi: boolean): string {
+  if (!linkApi && !/\btmux\s/.test(markdown) && !tmuxCommandMentions(markdown).length) return markdown
   // Use the HTML resolver for prose exports too. Never rewrite runnable code
   // blocks or the contents of an author-supplied link.
   const edits: { start: number; end: number; text: string }[] = []
+  let htmlDepth = 0
   const visit = (node: ReturnType<typeof fromMarkdown> | ReturnType<typeof fromMarkdown>['children'][number]) => {
     if (node.type === 'link' || node.type === 'linkReference' || node.type === 'code') return
+    if (node.type === 'html') {
+      for (const tag of node.value.matchAll(/<(\/?)(?:a|code|pre)\b[^>]*>/gi)) htmlDepth = Math.max(0, htmlDepth + (tag[1] ? -1 : 1))
+      return
+    }
     if (node.type === 'inlineCode' || node.type === 'text') {
+      if (htmlDepth) return
       const start = node.position!.start.offset!
       const end = node.position!.end.offset!
+      const tmux = tmuxMentionMarkdown(node.value, node.type === 'inlineCode')
+      if (tmux && (node.type === 'inlineCode' || markdown.slice(start, end) === node.value)) {
+        edits.push({ start, end, text: tmux })
+        return
+      }
+      if (!linkApi) return
       if (node.type === 'inlineCode') {
         const link = index.resolve(node.value, 'any', symbol)
         if (link) edits.push({ start, end, text: `[${inlineCode(node.value)}](${link.href})` })
@@ -102,7 +116,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   const port = 'port' in model ? model.port : undefined
   const language = 'language' in model ? model.language : port
   const index = ctx.index ?? (port && 'port' in model ? productApiIndex(model, ctx.version ?? defaultVersionFor(port)) : undefined)
-  const prose = (text: string) => ['powershell', 'scala'].includes(language ?? '') && index ? proseMarkdown(text, index, symbol) : text
+  const prose = (text: string) => index ? proseMarkdown(text, index, symbol, ['powershell', 'scala'].includes(language ?? '')) : text
   const id = qualifiedNameOf(symbol)
   const out: string[] = [`# ${id}`, '']
 

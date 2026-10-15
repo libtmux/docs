@@ -20,6 +20,23 @@ function inlineCodes(text: string): string[] {
 }
 
 describe('API Markdown content parity', () => {
+  it('links native tmux command mentions in every port without editing examples', () => {
+    for (const port of PORTS) {
+      const original = 'Call tmux resize-pane. Use `$ tmux run-shell` or `display-message`. Keep tmux has many panes.'
+      const symbol: ApiSymbol = {
+        id: 'commandExample', name: 'commandExample', kind: 'function', modifiers: [], signatures: [],
+        source: { file: 'example' }, doc: { summary: original, body: 'Keep <a href="https://example.com/authored">run-shell</a>.', examples: [{ lang: 'sh', code: 'tmux run-shell true\n' }] },
+      }
+      const text = symbolMarkdown({ model: { ...API_MODELS[port.slug], symbols: [symbol] }, symbol })
+      expect(text, port.slug).toContain('[resize-pane](/tmux/latest/manual/resize-pane/)')
+      expect(text, port.slug).toMatch(/\[`(?:\$ tmux )?run-shell`\]\(\/tmux\/latest\/manual\/run-shell\/\)/)
+      expect(text, port.slug).toContain('[`display-message`](/tmux/latest/manual/display-message/)')
+      expect(text, port.slug).toContain('Keep tmux has many panes.')
+      expect(text, port.slug).toContain('Keep <a href="https://example.com/authored">run-shell</a>.')
+      expect(text, port.slug).toContain('```sh\ntmux run-shell true\n```')
+    }
+  })
+
   it('exports the Scala Using.resource callee link while preserving runnable code and authored links', () => {
     const model = API_MODELS.scala
     const server = model.symbols.find((symbol) => symbol.id === 'io.github.libtmux.scaladsl.Server')!
