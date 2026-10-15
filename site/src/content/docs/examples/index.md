@@ -31,3 +31,19 @@ Use [`send-keys`](/tmux/latest/manual/send-keys/),
 [`capture-pane`](/tmux/latest/manual/capture-pane/), and
 [`source-file`](/tmux/latest/manual/source-file/) for their command syntax.
 [Guides](/guides/) explains variations and failure handling.
+
+<a id="what-verified-means-per-port"></a>
+
+## Source and verification
+
+The displayed shell files are the source for these native tmux examples;
+a site build does not execute them. Each page links the tmux manual for
+the commands it uses.
+
+For a page listed in `site/test/fixtures/guide-examples.json`,
+`scripts/check-example-prose.py` checks its displayed file hashes and setup
+commands, then executes the recorded shell recipe with the tmux executable
+found on the shell's path. Its result records the tmux version, page and file
+hashes, exit status, and any missing expected output. A receipt covers only the exact
+program, tmux version, and host prerequisites used in that run; it does not
+establish execution of other examples or other versions.
