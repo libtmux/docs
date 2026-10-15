@@ -13,6 +13,8 @@ export function installAnchorNavigation(win = window) {
   let observer
 
   doc.documentElement.setAttribute('data-anchor-navigation', '')
+  const cancelStartup = () => doc.documentElement.removeAttribute('data-anchor-startup')
+  if (doc.documentElement.getAttribute('data-anchor-startup') !== win.location.href) cancelStartup()
 
   const clear = () => {
     win.clearTimeout(timer)
@@ -33,6 +35,7 @@ export function installAnchorNavigation(win = window) {
 
   const arrive = (hash, scroll = false) => {
     clear()
+    if (doc.documentElement.getAttribute('data-anchor-startup') !== win.location.href) cancelStartup()
     let id
     try { id = decodeURIComponent(hash.replace(/^#/, '')) } catch { return }
     const target = id && doc.getElementById(id)
@@ -55,7 +58,9 @@ export function installAnchorNavigation(win = window) {
       observer.observe(doc.documentElement, { attributes: true, attributeFilter: ['class'] })
       return
     }
-    if (opened || scroll) display.scrollIntoView({ block: 'start', behavior: 'instant' })
+    const startup = doc.documentElement.getAttribute('data-anchor-startup') === win.location.href
+    if (startup) cancelStartup()
+    if (opened || scroll || startup) display.scrollIntoView({ block: 'start', behavior: 'instant' })
 
     const highlight = () => {
       if (signal.aborted || !display.isConnected) return
@@ -82,6 +87,13 @@ export function installAnchorNavigation(win = window) {
   }
 
   win.addEventListener('hashchange', () => schedule(), { signal })
+  // A late reveal must not pull the reader back after they start navigating.
+  for (const type of ['wheel', 'touchstart', 'pointerdown']) {
+    doc.addEventListener(type, cancelStartup, { passive: true, signal })
+  }
+  doc.addEventListener('keydown', (event) => {
+    if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ', 'Tab'].includes(event.key)) cancelStartup()
+  }, { signal })
   win.addEventListener('popstate', (event) => {
     // Address-bar fragment navigation can create an entry without router state.
     // Astro leaves that entry alone. If another page is still mounted, load

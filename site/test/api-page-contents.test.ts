@@ -131,6 +131,48 @@ it('keeps a fragment arrival clear when the occupied header grows', () => {
   expect(scroll).not.toHaveBeenCalled()
 })
 
+it.each(['font', 'width'])('keeps a selected heading pinned when %s changes reflow preceding content', (change) => {
+  const page = mount({ hash: '#member-parameter', members: 113 })
+  page.flush()
+  const scroll = vi.spyOn(win, 'scrollBy').mockImplementation(() => {})
+  page.geometry.members = 1500
+  if (change === 'font') win.document.documentElement.style.fontSize = '32px'
+  else win.happyDOM.setWindowSize({ width: 1036, height: 900 })
+  page.resize(); page.flush()
+  expect(scroll).toHaveBeenCalledWith({ top: 1500 - (change === 'font' ? 125 : 113), behavior: 'instant' })
+})
+
+it.each([350, -200])('preserves a reading position away from the pinned heading at %s px during reflow', (members) => {
+  const page = mount({ hash: '#member-parameter', members })
+  page.flush()
+  const scroll = vi.spyOn(win, 'scrollBy').mockImplementation(() => {})
+  page.geometry.members = 1500
+  win.document.documentElement.style.fontSize = '32px'
+  page.resize(); page.flush()
+  expect(scroll).not.toHaveBeenCalled()
+})
+
+it('preserves a reader scroll that precedes the next resize observation', () => {
+  const page = mount({ hash: '#member-parameter', members: 113 })
+  page.flush()
+  const scroll = vi.spyOn(win, 'scrollBy').mockImplementation(() => {})
+  Object.defineProperty(win, 'scrollY', { value: 180, configurable: true })
+  page.geometry.members = 1500
+  win.document.documentElement.style.fontSize = '32px'
+  page.resize(); page.flush()
+  expect(scroll).not.toHaveBeenCalled()
+})
+
+it('does not pin an old fragment while the destination changes during reflow', () => {
+  const page = mount({ hash: '#member-parameter', members: 113 })
+  page.flush()
+  const scroll = vi.spyOn(win, 'scrollBy').mockImplementation(() => {})
+  win.location.hash = '#api-related-types'
+  win.document.documentElement.style.fontSize = '32px'
+  page.resize(); page.flush()
+  expect(scroll).not.toHaveBeenCalled()
+})
+
 it('reveals a newly active link using only the horizontal section scroller', () => {
   const page = mount({ hash: '#api-members', members: 250 })
   const row = win.document.querySelector('.api-section-links')!
