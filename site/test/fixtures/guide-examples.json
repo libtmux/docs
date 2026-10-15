@@ -135,6 +135,33 @@
           "exact target checked"
         ]
       ]
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "concepts/server-session-window-pane",
+      "sourceRevision": "79072dd1a9f5fb437a5859e362a496fd57ec0981",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "hierarchy.sh",
+          "sha256": "5db2b25abde71f9351961a4a01ca477fad0d7e291bd2da9481bd9548e749b328"
+        }
+      ],
+      "shellRecipe": [
+        "sh hierarchy.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "renamed:source",
+          "stable IDs preserved",
+          "shared window links: 2"
+        ]
+      ]
     }
   ]
 }

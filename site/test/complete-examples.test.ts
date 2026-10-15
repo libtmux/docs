@@ -107,23 +107,27 @@ describe('verified complete programs', () => {
     }
   })
 
-  it('teaches native queries while retaining the library query routes', () => {
-    const page = 'concepts/queries'
+  it.each([
+    { page: 'concepts/queries', ports: ['py', 'java', 'csharp', 'cxx', 'swift'],
+      commands: ['list-sessions', 'list-windows', 'list-panes', 'has-session'] },
+    { page: 'concepts/server-session-window-pane', ports: ['py', 'ts', 'rs', 'java', 'csharp', 'cxx', 'swift', 'ruby', 'lua'],
+      commands: ['new-session', 'link-window', 'list-windows', 'list-panes'] },
+  ])('teaches native $page while retaining its library routes', ({ page, ports, commands }) => {
     const { content, frontmatter } = parsePage(page)
     expect(frontmatter.supportedPorts).toEqual([])
     expect(fences(content).every((block) => ['sh', 'text', 'console'].includes(block.language))).toBe(true)
     expect(content).not.toMatch(/QueryList|server\.sessions|Selections\.|FilterExpr/)
-    for (const command of ['list-sessions', 'list-windows', 'list-panes', 'has-session']) {
+    for (const command of commands) {
       expect(content).toContain(`/tmux/latest/manual/${command}/`)
     }
-    const docs = [{ id: page, data: frontmatter }, ...['py', 'java', 'csharp', 'cxx', 'swift'].map((port) => {
+    const docs = [{ id: page, data: frontmatter }, ...ports.map((port) => {
       const id = `ports/${port}/${page}`
       const { frontmatter: data } = parsePage(id)
       expect(data.port).toBe(port)
       expect(data.route).toBe(page)
       return { id, data }
     })]
-    for (const port of ['py', 'java', 'csharp', 'cxx', 'swift']) {
+    for (const port of ports) {
       const available = docs.filter((entry) => docsEntryAvailable(entry, port))
       expect(available).toHaveLength(1)
       expect(available[0].data.port).toBe(port)

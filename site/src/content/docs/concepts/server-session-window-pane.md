@@ -1,7 +1,7 @@
 ---
-supportedPorts: [py, ts, rs, java, csharp, cxx, swift, ruby, lua]
+supportedPorts: []
 title: Server, session, window, pane
-description: How tmux servers, sessions, windows, panes and attached clients relate to each other.
+description: Understand native tmux objects, stable IDs, window links, and attached clients.
 sidebar:
   label: Server, session, window, pane
   group: Concepts
@@ -9,221 +9,142 @@ sidebar:
 tableOfContents: true
 ---
 
-libtmux models tmux's server, session, window, and pane objects:
+A tmux server owns sessions, windows, and panes. A session holds links to
+windows. Each window holds one or more panes, and each pane runs a process
+inside a terminal. A client connects your terminal to a session.
 
-```
+```text
 Server
 ├── Session
-│   └── Window
-│       └── Pane
-└── Client (attached view)
+│   └── Window link
+│       └── Window
+│           └── Pane
+└── Client attached to a session
 ```
 
-A `Server` contains sessions. Each `Session` contains links to windows, and each
-`Window` contains panes. Commands run inside a `Pane`, where you send input and
-capture output. A window can be linked to more than one session.
+Use [`new-session`](/tmux/latest/manual/new-session/) to start a session,
+[`new-window`](/tmux/latest/manual/new-window/) to add a window, and
+[`split-window`](/tmux/latest/manual/split-window/) to add a pane. Closing a
+client leaves those objects and their processes running unless an option such
+as `destroy-unattached` requests their removal.
 
-## Stable identity, not name or index
+<a id="stable-identity-not-name-or-index"></a>
 
-tmux assigns a unique ID to each session, window, and pane at creation. The ID
-remains stable for that object's lifetime even if its name or index changes:
+## Stable identity
+
+tmux assigns an ID when it creates a session, window, or pane. The ID stays
+with that object until it is destroyed, even when its name or index changes.
+A server is selected by its socket name or path.
 
 | Object | ID prefix | Example |
-|--------|-----------|---------|
+| --- | --- | --- |
 | Session | `$` | `$13` |
 | Window | `@` | `@3243` |
 | Pane | `%` | `%5433` |
-| Server | - | identified by socket name or path instead |
 
-Use stable IDs to identify the same tmux object across reads. Names and indexes
-can change while a program is running.
+Quote IDs that contain `$` when typing them in a shell. A saved ID belongs to
+one server lifetime: another server using the same socket path can reuse IDs.
+The [target syntax](/tmux/latest/manual/full/#COMMANDS) describes how commands
+resolve IDs, names, and indexes.
 
-<!-- port:py,ts,rs,go,java,csharp,cxx,swift -->
-Read the hierarchy:
+Save this complete script as `hierarchy.sh`. It requires tmux 3.2a or newer
+and a POSIX shell. It renames a session and a window, checks their IDs, and
+links the window into another session on its private server.
 
-```python
-for session in server.sessions:
-    print(session.session_name)
-    for window in session.windows:
-        print(" ", window.window_index, window.window_name)
-        for pane in window.panes:
-            print("   ", pane.pane_id, pane.pane_current_command)
+```sh title="hierarchy.sh"
+#!/bin/sh
+set -eu
+directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-hierarchy.XXXXXX")
+socket="$directory/tmux.sock"
+
+cleanup() {
+    status=$?
+    trap - 0 HUP INT TERM
+    if [ -S "$socket" ] && ! tmux -S "$socket" kill-server; then
+        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
+        exit 1
+    fi
+    rm -rf "$directory" || status=$?
+    exit "$status"
+}
+trap cleanup 0
+trap 'exit 1' HUP INT TERM
+
+pane=$(tmux -S "$socket" -f /dev/null new-session -d -P \
+    -F '#{pane_id}' -s work -n editor 'cat')
+session=$(tmux -S "$socket" display-message -p -t "$pane" '#{session_id}')
+window=$(tmux -S "$socket" display-message -p -t "$pane" '#{window_id}')
+
+tmux -S "$socket" rename-session -t "$session" renamed
+tmux -S "$socket" rename-window -t "$window" source
+names=$(tmux -S "$socket" display-message -p -t "$pane" \
+    '#{session_name}:#{window_name}')
+[ "$names" = renamed:source ]
+printf '%s\n' "$names"
+current=$(tmux -S "$socket" display-message -p -t "$pane" \
+    '#{session_id} #{window_id} #{pane_id}')
+[ "$current" = "$session $window $pane" ]
+printf 'stable IDs preserved\n'
+
+tmux -S "$socket" new-session -d -s other 'cat'
+tmux -S "$socket" link-window -s "$window" -t '=other:1'
+links=$(tmux -S "$socket" list-windows -a \
+    -f "#{==:#{window_id},$window}" -F '#{window_id}')
+# Window IDs contain no whitespace; each row represents one session link.
+# shellcheck disable=SC2086
+set -- $links
+[ "$#" -eq 2 ]
+[ "$1" = "$window" ] && [ "$2" = "$window" ]
+printf 'shared window links: %s\n' "$#"
 ```
 
-```typescript
-for (const session of await server.sessions()) {
-  console.log(session.name);
-  for (const window of session.windows) {
-    console.log(" ", window.index, window.name);
-    for (const pane of window.panes) {
-      console.log("   ", pane.id, pane.currentCommand);
-    }
-  }
-}
+Run the saved script:
+
+```console
+$ sh hierarchy.sh
 ```
 
-```rust
-// Three tmux commands total, not one per object: walking down would cost a
-// command per session and per window.
-for branch in server.hierarchy().await? {
-    let session = &branch.session;
-    println!("{session} {} ({} windows)",
-        session.name().to_string_lossy(), session.window_count());
+The output is `renamed:source`, `stable IDs preserved`, and
+`shared window links: 2` on separate lines. The cleanup trap stops the private
+server and removes its socket directory, including after a failed check.
 
-    for built in &branch.windows {
-        let window = &built.window;
-        println!("  {window} {}", window.name().to_string_lossy());
+## Window links and panes
 
-        for pane in &built.panes {
-            println!("    {pane}");
-        }
-    }
-}
-```
+[`link-window`](/tmux/latest/manual/link-window/) makes an existing window
+available in another session. Both links refer to the same panes and running
+programs. A pane ID identifies that pane across both sessions. Its window
+index belongs to a link and can differ between sessions.
 
-```go
-// A snapshot reads sessions, windows, and panes in one pass; relations
-// resolve against it without another tmux command.
-snapshot, err := server.Snapshot(ctx)
-if err != nil {
-    return err
-}
-for _, session := range snapshot.Sessions() {
-	name, _ := session.Name()
-	fmt.Printf("%s %q\n", session.ID(), name)
+[`unlink-window`](/tmux/latest/manual/unlink-window/) removes a session's
+window link. A window needs at least one link to survive; read the command's
+`-k` behavior before removing the last link.
+[`kill-window`](/tmux/latest/manual/kill-window/) destroys the window through
+all its links. Use the smallest object that your cleanup actually owns.
 
-	windows, _ := session.Windows()
-	for _, window := range windows {
-		fmt.Printf("  %s:%d\n", window.ID(), window.Index())
-		panes, _ := window.Panes()
-		for _, pane := range panes {
-			command, _ := pane.CurrentCommand()
-			fmt.Printf("    %s %q\n", pane.ID(), command)
-		}
-	}
-}
-```
+<a id="client-a-view-not-a-child"></a>
 
-```java
-for (Session session : server.sessions()) {
-    System.out.println(session.name());
-    for (Window window : session.windows()) {
-        System.out.println("  " + window.index() + " " + window.name());
-        for (Pane pane : window.panes()) {
-            System.out.println("    " + pane.id().value() + " " + pane.currentCommand());
-        }
-    }
-}
-```
+## Attached clients
 
-```csharp
-foreach (Session session in await server.GetSessionsAsync())
-{
-    Console.WriteLine(session.Name);
-    foreach (Window window in await session.GetWindowsAsync())
-    {
-        Console.WriteLine($"  {window.Index} {window.Name}");
-        foreach (Pane pane in await window.GetPanesAsync())
-        {
-            Console.WriteLine($"    {pane.Index} {pane.Width}x{pane.Height}");
-        }
-    }
-}
-```
+[`attach-session`](/tmux/latest/manual/attach-session/) connects a terminal
+to a session. [`detach-client`](/tmux/latest/manual/detach-client/) releases
+that client while pane processes continue. Several clients can view the same
+session; [`list-clients`](/tmux/latest/manual/list-clients/) lists them.
 
-```cpp
-const auto sessions = server.sessions();
-if (!sessions.has_value()) return 1;
+A [control-mode connection](../transports/) is also a client. It counts toward
+`session_attached` and affects options such as `destroy-unattached`. Check
+those options before assuming that detaching every client leaves a session
+running.
 
-for (const libtmux::Session& session : *sessions) {
-  std::printf("%s (%lld windows)\n", std::string{session.name()}.c_str(),
-              session.window_count());
+## Read current state
 
-  const auto windows = session.windows();
-  if (!windows.has_value()) continue;
+[`list-sessions`](/tmux/latest/manual/list-sessions/),
+[`list-windows`](/tmux/latest/manual/list-windows/), and
+[`list-panes`](/tmux/latest/manual/list-panes/) read current server state.
+Use their `-F` formats to print IDs and the fields your task needs.
+[Filtering and queries](../queries/) explains scopes, filters, and repeated
+rows for shared windows. A later command can still fail if another client
+removes an object after the listing.
 
-  for (const libtmux::Window& window : *windows) {
-    std::printf("  %s\n", std::string{window.name()}.c_str());
-
-    const auto panes = window.panes();
-    if (!panes.has_value()) continue;
-
-    for (const libtmux::Pane& pane : *panes) {
-      std::printf("    %s\n", std::string{pane.id()}.c_str());
-    }
-  }
-}
-```
-
-```swift
-// A snapshot reads sessions, windows, and panes in one pass; the relations
-// below resolve against it without another tmux command.
-let snapshot = try await server.snapshot()
-for session in snapshot.sessions {
-    print(session.name)
-    for window in snapshot.windows(of: session) {
-        print(" ", window.name)
-        for pane in snapshot.panes(of: window) {
-            print("   ", pane.id, pane.currentCommand)
-        }
-    }
-}
-```
-
-<!-- /port -->
-
-## Client: a view, not a child
-
-A `Client` represents a terminal attached to a session. Several clients can view
-the same server, and each can switch sessions or windows independently. Client
-fields describe the view at the time of the read.
-
-A [control-mode connection](../transports/) is also a client. It appears in
-`list-clients`, counts toward `session_attached`, and affects
-attachment-dependent behavior such as `destroy-unattached`. Closing the last
-attached client can therefore destroy a session configured with that option.
-
-<!-- port:root -->
-## What differs between ports
-
-Ports differ in how they read state and report failures:
-
-- **Refreshing state.** Python objects reflect their last read until you call
-  `.refresh()`. TypeScript, Swift, and Go also provide snapshots whose
-  relationships can be queried without another tmux command.
-- **Blocking and async calls.** Python and Java use blocking calls. Rust,
-  TypeScript, C#, and Swift provide async APIs. Go uses ordinary calls with
-  contexts for cancellation and deadlines.
-- **Failure handling.** Python and C# raise exceptions. C++ returns
-  `expected<T, CommandFailure>`. Some commands have an expected negative answer,
-  such as `has-session` when a session is absent; check the method's result
-  contract before treating that answer as a failure.
-
-See [Control mode vs one-shot](../transports/) for command costs and connection
-behavior.
-<!-- /port -->
-
-
-<!-- port:go -->
-## Snapshots and live commands
-
-`Server.Snapshot(ctx)` reads the hierarchy. The resulting relationship methods
-read that captured data without another tmux command. A boolean return value
-reports whether a relationship was captured. Use `Session.SearchWindows` or
-`Server.SearchPanes` for current live state, and check the returned error.
-
-Calls that contact tmux accept a context for cancellation and deadlines.
-Cancelling a mutation does not prove that tmux never received it; check the
-resulting state before retrying. [Errors and exceptions](/topics/errors-and-exceptions/)
-covers failure handling.
-<!-- /port -->
-
-<!-- port:root -->
-## tmux command reference
-
-Read the tmux command references for [list-sessions](/tmux/latest/manual/list-sessions/),
-[list-windows](/tmux/latest/manual/list-windows/), and
-[list-panes](/tmux/latest/manual/list-panes/). The
-[target syntax](/tmux/latest/manual/full/#COMMANDS) explains IDs, names,
-and indexes.
-<!-- /port -->
+The pinned
+[tmux manual](https://github.com/tmux/tmux/blob/79072dd1a9f5fb437a5859e362a496fd57ec0981/tmux.1)
+documents the object and target behavior used here.

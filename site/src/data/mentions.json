@@ -23,6 +23,13 @@
   },
   {
    "port": "csharp",
+   "symbol": "LibTmux.Client",
+   "page": "/csharp/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "csharp",
    "symbol": "LibTmux.Client.Generation",
    "page": "/powershell/latest/guides/clients/",
    "title": "Inspect attached clients",
@@ -125,6 +132,13 @@
    "page": "/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Pane",
+   "page": "/csharp/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "csharp",
@@ -290,6 +304,13 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.Server",
+   "page": "/csharp/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Server",
    "page": "/csharp/latest/guides/attaching-to-tmux/",
    "title": "Attaching to tmux",
    "section": "guides"
@@ -405,6 +426,13 @@
    "page": "/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Session",
+   "page": "/csharp/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "csharp",
@@ -783,6 +811,13 @@
    "page": "/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Window",
+   "page": "/csharp/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "csharp",
@@ -1206,6 +1241,13 @@
   },
   {
    "port": "cxx",
+   "symbol": "libtmux::Client",
+   "page": "/cxx/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "cxx",
    "symbol": "libtmux::CommandFailure",
    "page": "/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
@@ -1382,6 +1424,13 @@
   {
    "port": "cxx",
    "symbol": "libtmux::Pane",
+   "page": "/cxx/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Pane",
    "page": "/topics/architecture/",
    "title": "Architecture",
    "section": "topics"
@@ -1504,6 +1553,13 @@
    "page": "/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Server",
+   "page": "/cxx/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "cxx",
@@ -1655,6 +1711,13 @@
   {
    "port": "cxx",
    "symbol": "libtmux::Session",
+   "page": "/cxx/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Session",
    "page": "/topics/architecture/",
    "title": "Architecture",
    "section": "topics"
@@ -1749,6 +1812,13 @@
    "page": "/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Window",
+   "page": "/cxx/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "cxx",
@@ -3572,13 +3642,6 @@
   },
   {
    "port": "go",
-   "symbol": "tmux.Server.SearchPanes",
-   "page": "/concepts/server-session-window-pane/",
-   "title": "Server, session, window, pane",
-   "section": "concepts"
-  },
-  {
-   "port": "go",
    "symbol": "tmux.Server.SearchSessions",
    "page": "/go/latest/concepts/queries/",
    "title": "Filtering and queries",
@@ -3618,13 +3681,6 @@
    "page": "/topics/environment/",
    "title": "Environment",
    "section": "topics"
-  },
-  {
-   "port": "go",
-   "symbol": "tmux.Server.Snapshot",
-   "page": "/concepts/server-session-window-pane/",
-   "title": "Server, session, window, pane",
-   "section": "concepts"
   },
   {
    "port": "go",
@@ -3737,13 +3793,6 @@
    "page": "/topics/pane-interaction/",
    "title": "Pane interaction",
    "section": "topics"
-  },
-  {
-   "port": "go",
-   "symbol": "tmux.Session.SearchWindows",
-   "page": "/concepts/server-session-window-pane/",
-   "title": "Server, session, window, pane",
-   "section": "concepts"
   },
   {
    "port": "go",
@@ -4314,6 +4363,13 @@
   },
   {
    "port": "java",
+   "symbol": "io.github.libtmux.Client.Client",
+   "page": "/java/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "java",
    "symbol": "io.github.libtmux.control.ControlClient.ControlClient",
    "page": "/concepts/transports/",
    "title": "Control mode vs one-shot",
@@ -4504,6 +4560,13 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Pane.Pane",
+   "page": "/java/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Pane.Pane",
    "page": "/topics/architecture/",
    "title": "Architecture",
    "section": "topics"
@@ -4633,6 +4696,13 @@
    "page": "/scala/latest/guides/query/",
    "title": "Queries",
    "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Server.Server",
+   "page": "/java/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "java",
@@ -4861,6 +4931,13 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Session.Session",
+   "page": "/java/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Session.Session",
    "page": "/java/latest/workspace/internals/topics/",
    "title": "Java workspace builder behavior",
    "section": "ports"
@@ -5018,6 +5095,13 @@
    "page": "/topics/architecture/",
    "title": "Architecture",
    "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Window.Window",
+   "page": "/java/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "java",
@@ -8270,6 +8354,13 @@
   {
    "port": "py",
    "symbol": "libtmux.client.Client",
+   "page": "/py/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.client.Client",
    "page": "/topics/architecture/",
    "title": "Architecture",
    "section": "topics"
@@ -8322,6 +8413,13 @@
    "page": "/topics/architecture/",
    "title": "Architecture",
    "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.pane.Pane",
+   "page": "/py/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "py",
@@ -8480,6 +8578,13 @@
   {
    "port": "py",
    "symbol": "libtmux.server.Server",
+   "page": "/py/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.server.Server",
    "page": "/py/latest/guides/attaching-to-tmux/",
    "title": "Attaching to tmux",
    "section": "guides"
@@ -8627,6 +8732,13 @@
   {
    "port": "py",
    "symbol": "libtmux.session.Session",
+   "page": "/py/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.session.Session",
    "page": "/py/latest/workspace/reference/",
    "title": "Python workspace internal API",
    "section": "ports"
@@ -8706,6 +8818,13 @@
    "symbol": "libtmux.window.Window",
    "page": "/concepts/workspaces/",
    "title": "Workspaces",
+   "section": "concepts"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.window.Window",
+   "page": "/py/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
    "section": "concepts"
   },
   {
@@ -8980,6 +9099,13 @@
    "page": "/py/latest/workspace/reference/",
    "title": "Python workspace internal API",
    "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "client.Client",
+   "page": "/rs/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "rs",
@@ -9474,6 +9600,13 @@
   {
    "port": "rs",
    "symbol": "pane.Pane",
+   "page": "/rs/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.Pane",
    "page": "/rs/latest/concepts/transports/",
    "title": "Subprocesses, plans, and control mode",
    "section": "concepts"
@@ -9964,6 +10097,13 @@
   {
    "port": "rs",
    "symbol": "server.Server",
+   "page": "/rs/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.Server",
    "page": "/rs/latest/concepts/transports/",
    "title": "Subprocesses, plans, and control mode",
    "section": "concepts"
@@ -10184,6 +10324,13 @@
    "page": "/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "session.Session",
+   "page": "/rs/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "rs",
@@ -10429,6 +10576,13 @@
    "page": "/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "window.Window",
+   "page": "/rs/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "rs",
@@ -10782,6 +10936,13 @@
   },
   {
    "port": "ruby",
+   "symbol": "LibTmux::Pane",
+   "page": "/ruby/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "ruby",
    "symbol": "LibTmux::Selection",
    "page": "/ruby/latest/concepts/transports/",
    "title": "Execution modes",
@@ -10852,6 +11013,13 @@
   },
   {
    "port": "ruby",
+   "symbol": "LibTmux::Session",
+   "page": "/ruby/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "ruby",
    "symbol": "LibTmux::Session#new_window",
    "page": "/ruby/latest/guides/core/",
    "title": "Server bindings",
@@ -10884,6 +11052,13 @@
    "page": "/ruby/latest/guides/async/",
    "title": "Async",
    "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Window",
+   "page": "/ruby/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "ruby",
@@ -11419,6 +11594,13 @@
   },
   {
    "port": "swift",
+   "symbol": "Client",
+   "page": "/swift/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "swift",
    "symbol": "ControlSession.watch(_:)",
    "page": "/concepts/transports/",
    "title": "Control mode vs one-shot",
@@ -11472,6 +11654,13 @@
    "page": "/topics/pane-interaction/",
    "title": "Pane interaction",
    "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "Pane",
+   "page": "/swift/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "swift",
@@ -11542,6 +11731,20 @@
    "page": "/swift/latest/workspace/configuration/windows/",
    "title": "Window configuration",
    "section": "ports"
+  },
+  {
+   "port": "swift",
+   "symbol": "RegexPattern.source",
+   "page": "/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "swift",
+   "symbol": "Server",
+   "page": "/swift/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "swift",
@@ -11756,6 +11959,13 @@
   {
    "port": "swift",
    "symbol": "Session",
+   "page": "/swift/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "swift",
+   "symbol": "Session",
    "page": "/swift/latest/workspace/internals/topics/",
    "title": "Swift workspace builder behavior",
    "section": "ports"
@@ -11941,6 +12151,13 @@
    "page": "/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "Window",
+   "page": "/swift/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "swift",
@@ -12245,6 +12462,13 @@
   },
   {
    "port": "ts",
+   "symbol": "client.Client",
+   "page": "/ts/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
    "symbol": "config.parseWorkspace",
    "page": "/ts/latest/workspace/internals/",
    "title": "TypeScript workspace internals",
@@ -12382,6 +12606,13 @@
    "page": "/topics/architecture/",
    "title": "Architecture",
    "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "pane.Pane",
+   "page": "/ts/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "ts",
@@ -12582,6 +12813,13 @@
   {
    "port": "ts",
    "symbol": "server.Server",
+   "page": "/ts/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
+   "symbol": "server.Server",
    "page": "/ts/latest/guides/attaching-to-tmux/",
    "title": "Attaching to tmux",
    "section": "guides"
@@ -12771,6 +13009,13 @@
   {
    "port": "ts",
    "symbol": "session.Session",
+   "page": "/ts/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
+   "symbol": "session.Session",
    "page": "/ts/latest/workspace/internals/topics/",
    "title": "TypeScript workspace builder behavior",
    "section": "ports"
@@ -12872,6 +13117,13 @@
    "page": "/topics/architecture/",
    "title": "Architecture",
    "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "window.Window",
+   "page": "/ts/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "ts",
