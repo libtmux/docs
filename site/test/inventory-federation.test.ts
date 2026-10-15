@@ -104,6 +104,10 @@ describe('indexFor attaches the inventories', () => {
       expect(index.resolve('Window', 'class', server)?.symbol?.id).toBe(`${prefix}.Window`)
       expect(index.resolve(`${prefix}.Server#sessions`, 'any', server)?.symbol?.id).toBe(`${prefix}.Server.sessions`)
     }
+    const server = model.symbols.find((symbol) => symbol.id === 'io.github.libtmux.scaladsl.Server')!
+    expect(server.extends).toEqual(['AutoCloseable'])
+    expect(index.resolve('close()', 'any', server)?.href)
+      .toBe('https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/AutoCloseable.html#close()')
   })
   it('links a JDK type from a Java annotation', () => {
     const index = indexFor(API_MODELS.java, href)

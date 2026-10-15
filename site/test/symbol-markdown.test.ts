@@ -43,6 +43,7 @@ describe('API Markdown content parity', () => {
     const target = 'https://www.scala-lang.org/api/3.9.0/scala/util/Using$.html#resource-fffffb81'
     const markdown = symbolMarkdown({ model, symbol: server })
     expect(markdown).toContain('[`Using.resource`](' + target + ')`(server) { ... }`')
+    expect(markdown).toContain('[`close()`](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/AutoCloseable.html#close())')
     const source = '[`Using.resource`](https://example.com/authored)\n\n```scala\nUsing.resource(server) { ... }\n```'
     const symbol = { ...server, doc: { summary: source } }
     expect(symbolMarkdown({ model: { ...model, symbols: [symbol] }, symbol })).toContain(source)

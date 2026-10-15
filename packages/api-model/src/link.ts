@@ -376,6 +376,7 @@ export class SymbolIndex {
   resolve(target: string, role = 'any', context?: ApiSymbol): LinkTarget | undefined {
     const relative = target.startsWith('.')
     let clean = target.replace(/^[~.]/, '').replace(/\(\)$/, '')
+    let opaqueContext = false
     if (this.lang === 'powershell' && context) {
       const prefixed = /^[$-]/.test(clean)
       const parameter = context.signatures.flatMap((signature) => signature.params)
@@ -450,6 +451,34 @@ export class SymbolIndex {
         if (hit && this.lang === 'java' && role === 'class' && !ROLE_KINDS.class.includes(hit.kind)) continue
         if (hit) return { href: this.hrefFor(hit), external: false, symbol: hit }
       }
+      if (this.lang === 'scala') {
+        const owners: ApiSymbol[] = []
+        for (let scope: ApiSymbol | undefined = context; scope; scope = scope.parent ? this.byDeclared.get(scope.parent) : undefined) {
+          owners.push(scope)
+          opaqueContext ||= scope.modifiers.includes('opaque')
+        }
+        if (opaqueContext && !clean.includes('.') && role !== 'class') {
+          const inherited = new Map<string, LinkTarget>()
+          const visited = new Set<string>()
+          for (const owner of owners) {
+            if (visited.has(owner.id)) continue
+            visited.add(owner.id)
+            for (const bound of owner.extends ?? []) {
+              // Only named public bounds establish ownership; complex types stay unresolved.
+              const type = bound.trim()
+              if (!/^[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*$/.test(type)) continue
+              const base = this.resolve(type, 'class', owner)
+              if (!base) continue
+              const name = base.symbol ? qualifiedNameOf(base.symbol) : type
+              const member = this.resolve(`${name}.${clean}`, role, owner)
+              if (member) inherited.set(member.href, member)
+              else if (base.symbol) owners.push(base.symbol)
+            }
+          }
+          if (inherited.size === 1) return [...inherited.values()][0]
+          if (inherited.size > 1) return undefined
+        }
+      }
       // A relative reference must not fall through to a global bare-name
       // match: `.panes` written in Session means Session's, or nothing.
       if (relative && !clean.includes('.')) return undefined
@@ -472,6 +501,8 @@ export class SymbolIndex {
     }
 
     const bySuffix = this.pick(this.bySuffix.get(clean), role, context)
+    if (bySuffix && opaqueContext && !clean.includes('.') && bySuffix.parent &&
+        ['method', 'property', 'attribute'].includes(bySuffix.kind)) return undefined
     if (bySuffix) return { href: this.hrefFor(bySuffix), external: false, symbol: bySuffix }
 
     if (!clean.includes('.')) {

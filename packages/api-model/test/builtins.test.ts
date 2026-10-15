@@ -17,7 +17,7 @@ describe('standard types in product signatures', () => {
       expect(spans.filter((span) => span.link).map((span) => [span.text, span.link!.href])).toEqual([[callee, target]])
     }
     expect(index.resolve('ResourceOwner.resource', 'any', { ...context, imports: { ResourceOwner: 'scala.util.Using' } })?.href).toBe(target)
-    expect(index.resolve('resource', 'any', context)?.symbol?.id).toBe('io.github.libtmux.scaladsl.cats.Server.resource')
+    expect(index.resolve('resource', 'any', context)).toBeUndefined()
     expect(index.resolve('Using.missing', 'any', context)).toBeUndefined()
     for (const expression of ['"Using.resource(server)"', '/* Using.resource(server) */', '// Using.resource(server)']) {
       expect(index.linkType(expression, context).some((span) => span.link)).toBe(false)

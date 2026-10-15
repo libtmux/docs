@@ -236,7 +236,7 @@ export interface ApiSymbol {
   /** Declaration forwarded by a native export, such as a Scala companion field. */
   exportedFrom?: string
   doc?: DocBlock
-  /** Base classes / implemented interfaces, as written. */
+  /** Base classes, implemented interfaces or public Scala upper bounds, as written. */
   extends?: string[]
   /**
    * The URL segment for this symbol's page, unique within its port.
