@@ -162,6 +162,33 @@
           "shared window links: 2"
         ]
       ]
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "concepts/transports",
+      "sourceRevision": "79072dd1a9f5fb437a5859e362a496fd57ec0981",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "transports.sh",
+          "sha256": "1ca650b11213bb2cadbdf26490e074b695ae74bd82d365a09ab1cb5db24febab"
+        }
+      ],
+      "shellRecipe": [
+        "sh transports.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "batch created two windows",
+          "control command completed",
+          "session remains after control client detaches"
+        ]
+      ]
     }
   ]
 }

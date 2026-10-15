@@ -112,6 +112,8 @@ describe('verified complete programs', () => {
       commands: ['list-sessions', 'list-windows', 'list-panes', 'has-session'] },
     { page: 'concepts/server-session-window-pane', ports: ['py', 'ts', 'rs', 'java', 'csharp', 'cxx', 'swift', 'ruby', 'lua'],
       commands: ['new-session', 'link-window', 'list-windows', 'list-panes'] },
+    { page: 'concepts/transports', ports: ['py', 'ts', 'go', 'java', 'csharp', 'cxx', 'swift'],
+      commands: ['new-session', 'attach-session', 'detach-client', 'list-clients'] },
   ])('teaches native $page while retaining its library routes', ({ page, ports, commands }) => {
     const { content, frontmatter } = parsePage(page)
     expect(frontmatter.supportedPorts).toEqual([])

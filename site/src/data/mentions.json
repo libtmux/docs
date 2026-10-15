@@ -339,7 +339,7 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.Server.Chain",
-   "page": "/concepts/transports/",
+   "page": "/csharp/latest/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
   },
@@ -360,7 +360,7 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.Server.EnterControlModeAsync",
-   "page": "/concepts/transports/",
+   "page": "/csharp/latest/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
   },
@@ -1235,7 +1235,7 @@
   {
    "port": "cxx",
    "symbol": "libtmux::Chain",
-   "page": "/concepts/transports/",
+   "page": "/cxx/latest/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
   },
@@ -1263,7 +1263,7 @@
   {
    "port": "cxx",
    "symbol": "libtmux::Connection",
-   "page": "/concepts/transports/",
+   "page": "/cxx/latest/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
   },
@@ -1648,7 +1648,7 @@
   {
    "port": "cxx",
    "symbol": "libtmux::Server::control",
-   "page": "/concepts/transports/",
+   "page": "/cxx/latest/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
   },
@@ -1707,6 +1707,13 @@
    "page": "/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::ServerImplementation::tmux",
+   "page": "/cxx/latest/concepts/transports/",
+   "title": "Control mode vs one-shot",
+   "section": "concepts"
   },
   {
    "port": "cxx",
@@ -3517,14 +3524,14 @@
   {
    "port": "go",
    "symbol": "tmux.Plan",
-   "page": "/concepts/transports/",
+   "page": "/go/latest/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
   },
   {
    "port": "go",
    "symbol": "tmux.Plan.Run",
-   "page": "/concepts/transports/",
+   "page": "/go/latest/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
   },
@@ -3762,14 +3769,14 @@
   {
    "port": "go",
    "symbol": "tmux.Session.OpenControl",
-   "page": "/concepts/transports/",
+   "page": "/go/latest/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
   },
   {
    "port": "go",
    "symbol": "tmux.Session.OpenNotifications",
-   "page": "/concepts/transports/",
+   "page": "/go/latest/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
   },
@@ -4315,7 +4322,7 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.batch.Batch.Batch",
-   "page": "/concepts/transports/",
+   "page": "/java/latest/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
   },
@@ -4371,14 +4378,14 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.control.ControlClient.ControlClient",
-   "page": "/concepts/transports/",
+   "page": "/java/latest/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
   },
   {
    "port": "java",
    "symbol": "io.github.libtmux.control.ControlClient.ControlClient.send",
-   "page": "/concepts/transports/",
+   "page": "/java/latest/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
   },
@@ -8277,7 +8284,7 @@
   {
    "port": "py",
    "symbol": "libtmux._internal.control_mode.ControlMode",
-   "page": "/concepts/transports/",
+   "page": "/py/latest/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
   },
@@ -9105,13 +9112,6 @@
    "symbol": "client.Client",
    "page": "/rs/latest/concepts/server-session-window-pane/",
    "title": "Server, session, window, pane",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "command.CommandChain",
-   "page": "/concepts/transports/",
-   "title": "Control mode vs one-shot",
    "section": "concepts"
   },
   {
@@ -11602,7 +11602,7 @@
   {
    "port": "swift",
    "symbol": "ControlSession.watch(_:)",
-   "page": "/concepts/transports/",
+   "page": "/swift/latest/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
   },
@@ -11784,7 +11784,7 @@
   {
    "port": "swift",
    "symbol": "Server.connected(attachingTo:_:)",
-   "page": "/concepts/transports/",
+   "page": "/swift/latest/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
   },
@@ -12638,16 +12638,16 @@
   {
    "port": "ts",
    "symbol": "pane.Pane.sendKeys",
-   "page": "/concepts/transports/",
-   "title": "Control mode vs one-shot",
-   "section": "concepts"
+   "page": "/topics/pane-interaction/",
+   "title": "Pane interaction",
+   "section": "topics"
   },
   {
    "port": "ts",
    "symbol": "pane.Pane.sendKeys",
-   "page": "/topics/pane-interaction/",
-   "title": "Pane interaction",
-   "section": "topics"
+   "page": "/ts/latest/concepts/transports/",
+   "title": "Control mode vs one-shot",
+   "section": "concepts"
   },
   {
    "port": "ts",
@@ -12869,7 +12869,7 @@
   {
    "port": "ts",
    "symbol": "server.Server.batch",
-   "page": "/concepts/transports/",
+   "page": "/ts/latest/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
   },
@@ -12883,7 +12883,7 @@
   {
    "port": "ts",
    "symbol": "server.Server.connect",
-   "page": "/concepts/transports/",
+   "page": "/ts/latest/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
   },
@@ -12925,7 +12925,7 @@
   {
    "port": "ts",
    "symbol": "server.Server.pipeline",
-   "page": "/concepts/transports/",
+   "page": "/ts/latest/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
   },
@@ -12988,7 +12988,7 @@
   {
    "port": "ts",
    "symbol": "server.Server.watch",
-   "page": "/concepts/transports/",
+   "page": "/ts/latest/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
   },
@@ -13044,7 +13044,7 @@
   {
    "port": "ts",
    "symbol": "session.Session.newWindow",
-   "page": "/concepts/transports/",
+   "page": "/ts/latest/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
   },
@@ -13450,13 +13450,6 @@
    "why": "not defined in the stated port"
   },
   {
-   "port": "py",
-   "text": "libtmux._internal",
-   "page": "/concepts/transports/",
-   "line": 33,
-   "why": "not defined in the stated port"
-  },
-  {
    "port": "swift",
    "text": "TmuxWorkspace",
    "page": "/concepts/workspaces/",
@@ -13482,6 +13475,13 @@
    "text": "WatchPaneOutput",
    "page": "/kotlin/latest/examples/",
    "line": 15,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "py",
+   "text": "libtmux._internal",
+   "page": "/py/latest/concepts/transports/",
+   "line": 33,
    "why": "not defined in the stated port"
   },
   {
