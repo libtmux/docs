@@ -133,6 +133,49 @@ function graph(document: Window['document']): StructuredEntry[] {
     })
 }
 
+/** Read the rendered sidebar ancestry independently of the breadcrumb builder. */
+function referenceTrail(document: Window['document'], href: string) {
+  const navigation = document.querySelector('[data-section-navigation] nav')!
+  const current = [...navigation.querySelectorAll('a[aria-current="page"]')]
+    .find((link) => link.getAttribute('href') === href)
+  expect(current, `${href} active sidebar declaration`).toBeDefined()
+  const trail: { name: string; url: string | null }[] = [{ name: current!.getAttribute('data-sidebar-label')!, url: href }]
+  for (let group = current!.closest('details.sidebar-section'); group; group = group.parentElement?.closest('details.sidebar-section') ?? null) {
+    const label = group.querySelector(':scope > summary > .api-nav__label')!
+    if (label === current) continue
+    const copy = label.cloneNode(true)
+    for (const decoration of copy.querySelectorAll('[aria-hidden="true"]')) decoration.remove()
+    trail.unshift({ name: copy.textContent.trim(), url: label.getAttribute('href') })
+  }
+  return trail
+}
+
+it.each([
+  { href: '/reference/application-close/', label: 'close', expected: [
+    { name: 'Application', url: '/reference/application/' }, { name: 'close', url: '/reference/application-close/' },
+  ] },
+  { href: '/reference/application/', label: 'Application', expected: [
+    { name: 'Application', url: '/reference/application/' },
+  ] },
+])('reads reference ancestors of $label without badges or a repeated current owner', async ({ href, label, expected }) => {
+  const window = new Window()
+  try {
+    window.document.body.innerHTML = `<div data-section-navigation><nav>
+      <details class="sidebar-section"><summary><a class="api-nav__label" href="/reference/">Language API</a></summary>
+      <details class="sidebar-section"><summary><span class="api-nav__label"><span aria-hidden="true">M</span>Base</span></summary>
+      <details class="sidebar-section"><summary><a class="api-nav__label" data-sidebar-label="Application" href="/reference/application/"><span aria-hidden="true">S</span>Application</a></summary>
+      <a data-sidebar-label="close" href="/reference/application-close/">close</a>
+      </details></details></details></nav></div>`
+    window.document.querySelector(`a[data-sidebar-label="${label}"]`)!.setAttribute('aria-current', 'page')
+    expect(referenceTrail(window.document, href)).toEqual([
+      { name: 'Language API', url: '/reference/' }, { name: 'Base', url: null },
+      ...expected,
+    ])
+  } finally {
+    await window.happyDOM.close()
+  }
+})
+
 /**
  * The notice is an `Aside`, the same one the reference and the guides use,
  * so it is a `role=note` rather than a landmark with a name of its own. What
@@ -465,13 +508,28 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         expect(document.querySelector('article h1')?.textContent).toBe(sample.title)
         expect(graph(document).some((entry) => entry['@type'] === 'APIReference')).toBe(true)
         if (page.product === 'workspace') {
-          const labels = [...document.querySelectorAll('nav[aria-label="Breadcrumb"] a, nav[aria-label="Breadcrumb"] [aria-current="page"]')]
-            .map((item) => item.textContent.trim())
-          // The reference is a section of the product, so its pages hang
-          // directly off it: no Internals level in between any more.
-          expect(labels.slice(0, 2)).toEqual([page.name, 'Workspace Manager'])
-          expect(labels.at(-1)).toBe(sample.title)
-          expect(graph(document).find((entry) => entry['@type'] === 'BreadcrumbList')?.itemListElement?.map((item) => item.name)).toEqual(labels)
+          const reference = urlFor(page.path).pathname
+          const expected = [
+            { name: page.name, url: urlFor(`${page.port}/${page.version}/`).pathname },
+            { name: 'Workspace Manager', url: urlFor(`${page.port}/${page.version}/workspace/`).pathname },
+            { name: 'API reference', url: reference },
+            ...referenceTrail(document, new URL(sample.href, urlFor(page.path)).pathname)
+              .filter((item) => item.url !== reference),
+          ]
+          const crumbs = [...document.querySelectorAll('nav[aria-label="Breadcrumb"] [data-breadcrumb-item]')]
+          expect(crumbs.map((item) => item.textContent.trim()), `${samplePath} sidebar ancestry`)
+            .toEqual(expected.map((item) => item.name))
+          for (const [index, crumb] of crumbs.entries()) {
+            expect(crumb.getAttribute('href'), `${samplePath} ancestor destination`)
+              .toBe(index === crumbs.length - 1 ? null : expected[index].url)
+            if (expected[index].url) expect(resolves(expected[index].url!, urlFor(samplePath).href)).toBe(true)
+          }
+          expect(crumbs.at(-1)?.getAttribute('aria-current')).toBe('page')
+          expect(graph(document).find((entry) => entry['@type'] === 'BreadcrumbList')?.itemListElement)
+            .toEqual(expected.filter((item) => item.url).map((item, index) => ({
+              '@type': 'ListItem', position: index + 1, name: item.name,
+              item: new URL(item.url!, 'https://libtmux.org').href,
+            })))
         } else developmentStatus(document, samplePath)
       })
       if (page.product !== 'mcp') continue
