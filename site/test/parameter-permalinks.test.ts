@@ -95,7 +95,7 @@ async function render(command = false, language = 'py') {
 
 const follows = (first: Element, second: Element) => Boolean(first.compareDocumentPosition(second) & 4)
 
-it.fails('keeps the ordinary parameter permalink before its prose and lifecycle metadata', async () => {
+it('keeps the ordinary parameter permalink before its prose and lifecycle metadata', async () => {
   const { paragraph } = await render()
   const permalink = paragraph.querySelector('a.api-heading-link')!
   const prose = [...paragraph.querySelectorAll('span')].find((span) => span.textContent === parameter.doc)!
@@ -107,7 +107,7 @@ it.fails('keeps the ordinary parameter permalink before its prose and lifecycle 
   expect(follows(permalink, paragraph.querySelector('.api-field-overloads')!)).toBe(true)
 })
 
-it.fails('keeps command parameter controls beside their signature instead of the far edge', async () => {
+it('keeps command parameter controls beside their signature instead of the far edge', async () => {
   const { win } = await render(true)
   const permalinks = [...win.document.querySelectorAll('a.api-heading-link')]
   expect(permalinks).toHaveLength(2)
