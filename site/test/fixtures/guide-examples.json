@@ -295,6 +295,61 @@
           "temporary session removed; keep remains"
         ]
       ]
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "topics/format-tokens",
+      "sourceRevision": "79072dd1a9f5fb437a5859e362a496fd57ec0981",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "formats.sh",
+          "sha256": "f0e802ddc17cf8bb80461571484f441ec4f0b4687d884536dda0edf30b695e98"
+        }
+      ],
+      "shellRecipe": [
+        "sh formats.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "work:main:active",
+          "unknown format: absent",
+          "pane format inventory checked"
+        ]
+      ]
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "topics/environment",
+      "sourceRevision": "79072dd1a9f5fb437a5859e362a496fd57ec0981",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "environment.sh",
+          "sha256": "88c066e11fa10ab1b251fadb24f021516d95ab07545e841dcf96c8ca62694f2a"
+        }
+      ],
+      "shellRecipe": [
+        "sh environment.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "server: DEMO_VALUE=global",
+          "session: DEMO_VALUE=session",
+          "new pane: session",
+          "one-pane override: override"
+        ]
+      ]
     }
   ]
 }

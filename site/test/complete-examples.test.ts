@@ -122,6 +122,10 @@ describe('verified complete programs', () => {
       commands: ['new-session', 'display-message', 'list-sessions', 'has-session', 'kill-server'] },
     { page: 'topics/context-managers', ports: ['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'],
       commands: ['kill-pane', 'kill-window', 'kill-session', 'kill-server', 'unlink-window'] },
+    { page: 'topics/format-tokens', ports: ['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'],
+      commands: ['display-message', 'list-sessions', 'list-windows', 'list-panes'] },
+    { page: 'topics/environment', ports: ['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'],
+      commands: ['set-environment', 'show-environment', 'new-window', 'split-window'] },
   ])('teaches native $page while retaining its library routes', ({ page, ports, commands }) => {
     const { content, frontmatter } = parsePage(page)
     expect(frontmatter.supportedPorts).toEqual([])
