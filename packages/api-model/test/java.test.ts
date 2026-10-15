@@ -25,7 +25,7 @@ async function extract(source: string, privateMembers = false, module = 'example
 }
 
 describe('Java record components', () => {
-  it.fails('retains documented components and their implicit public accessors', async () => {
+  it('retains documented components and their implicit public accessors', async () => {
     const symbols = await extract(`package io.github.libtmux.batch;
 /** What became of every operation in one batch.
  * @param operations one result per submitted operation, in submission order
@@ -66,7 +66,7 @@ public record BatchResult(@ReadOnly List<OperationResult> operations) {
       .entries.find((entry) => entry.name === accessor.id)?.uri).toBe(hrefFor(accessor))
   })
 
-  it.fails('preserves explicit accessors, constructors and fields without synthesizing duplicate methods', async () => {
+  it('preserves explicit accessors, constructors and fields without synthesizing duplicate methods', async () => {
     const symbols = await extract(`package example;
 /** @param value the supplied value */
 public record Result<T>(T value) {
@@ -102,6 +102,77 @@ public class Ordinary {
   })
 })
 
+describe('Java record component boundaries', () => {
+  it.each(['String', 'T', 'String[]'])('keeps variable-arity %s components and their array accessor types', async (element) => {
+    const symbols = await extract(`public record Varargs<T>(@ReadOnly ${element}... values) {}`)
+    const owner = symbols.find((symbol) => symbol.id === 'example.Varargs')!
+    expect(owner.signatures[0]).toMatchObject({
+      raw: `public record Varargs<T>(@ReadOnly ${element}... values)`,
+      params: [{ name: 'values', type: `${element}[]`, variadic: 'positional' }], typeParams: ['T'],
+    })
+    expect(symbols.filter((symbol) => symbol.parent === owner.id).map((symbol) => [symbol.name, symbol.signatures]))
+      .toEqual([['values', [{ params: [], returns: `${element}[]` }]]])
+  })
+
+  it('skips line and block comments between record components', async () => {
+    const symbols = await extract(`public record WithComment(int a, /* separate b */ String b,
+        // separate c
+        boolean c) {}`)
+    const owner = symbols.find((symbol) => symbol.id === 'example.WithComment')!
+    expect(owner.signatures[0].params).toEqual([
+      { name: 'a', type: 'int' }, { name: 'b', type: 'String' }, { name: 'c', type: 'boolean' },
+    ])
+    expect(symbols.filter((symbol) => symbol.parent === owner.id).map((symbol) => symbol.name)).toEqual(['a', 'b', 'c'])
+  })
+
+  it.each(['public static class Value {}', 'public record Value(int x) {}', 'public record Value() {}'])
+    ('keeps a same-name type distinct from its accessor: %s', async (nested) => {
+      const symbols = await extract(`package nativepkg; public record NameClash(int Value) { ${nested} }`, false, 'legacy.NameClash')
+      const owner = symbols.find((symbol) => symbol.id === 'legacy.NameClash.NameClash')!
+      const type = symbols.find((symbol) => symbol.id === `${owner.id}.Value`)!
+      const accessor = symbols.find((symbol) => symbol.id === `${owner.id}.Value()`)!
+      expect(type.kind).toBe('class')
+      expect(type.modifiers).not.toContain('overload')
+      expect(type.signatures.flatMap((signature) => signature.params.map((param) => param.name)))
+        .toEqual(nested.includes('(int x)') ? ['x'] : [])
+      expect(accessor).toMatchObject({ kind: 'method', parent: owner.id, name: 'Value', signatures: [{ params: [], returns: 'int' }] })
+      const hrefFor = (symbol: typeof symbols[number]) => `/reference/${symbol.id}/`
+      const index = new SymbolIndex(symbols, hrefFor, 'java')
+      expect(index.resolve('Value', 'class', owner)?.symbol?.id).toBe(type.id)
+      expect(index.resolve('Value', 'meth', owner)?.symbol?.id).toBe(accessor.id)
+      expect(index.resolve('Value()', 'any', owner)?.symbol?.id).toBe(accessor.id)
+      expect(index.resolve(accessor.qualifiedName! + '()', 'meth')?.symbol?.id).toBe(accessor.id)
+      expect(index.resolve(type.id, 'class')?.symbol?.id).toBe(type.id)
+      const model = { port: 'java' as const, extractor: 'test', symbols }
+      const resolver = new Resolver([model])
+      expect(resolver.resolve('java', type.qualifiedName!)).toMatchObject({ symbol: { id: type.id } })
+      expect(resolver.resolve('java', 'Value')).toMatchObject({ symbol: { id: type.id } })
+      expect(resolver.resolve('java', 'Value()')).toMatchObject({ symbol: { id: accessor.id } })
+      expect(resolver.resolve('java', accessor.qualifiedName! + '()')).toMatchObject({ symbol: { id: accessor.id } })
+      expect(resolver.resolve('java', 'NameClash.Value()')).toMatchObject({ symbol: { id: accessor.id } })
+      const entries = readInventory(writeInventory(model, { project: 'java', version: 'test', uriFor: hrefFor })).entries
+      for (const symbol of [type, accessor]) expect(entries.find((entry) => entry.name === symbol.id)?.uri).toBe(hrefFor(symbol))
+      const parents = parentInventory(model, hrefFor)
+      expect(parents.find((entry) => entry.name === type.qualifiedName)?.uri).toBe(hrefFor(type).slice(1))
+      expect(parents.find((entry) => entry.name === accessor.qualifiedName + '()')?.uri).toBe(hrefFor(accessor).slice(1))
+    })
+
+  it('keeps explicit constructor identities separate from a same-name record component', async () => {
+    const symbols = await extract(`package example; public record SelfName(int SelfName) {
+      public SelfName(int SelfName) { this.SelfName = SelfName; }
+      public SelfName() { this(0); }
+    }`)
+    const owner = symbols.find((symbol) => symbol.id === 'example.SelfName')!
+    const constructor = symbols.find((symbol) => symbol.id === 'example.SelfName.SelfName')!
+    const accessor = symbols.find((symbol) => symbol.id === 'example.SelfName.SelfName()')!
+    expect(constructor.signatures).toEqual([{ params: [{ name: 'SelfName', type: 'int' }] }, { params: [] }])
+    expect(accessor.signatures).toEqual([{ params: [], returns: 'int' }])
+    const index = new SymbolIndex(symbols, (symbol) => `/reference/${symbol.id}/`, 'java')
+    expect(index.resolve(constructor.id, 'meth')?.symbol?.id).toBe(constructor.id)
+    expect(index.resolve('SelfName()', 'any', owner)?.symbol?.id).toBe(accessor.id)
+  })
+})
+
 describe('Java callable visibility', () => {
   it('excludes package-private overloads before merging public signatures', async () => {
     const source = `
@@ -121,7 +192,7 @@ describe('Java callable visibility', () => {
     const method = symbols.find((symbol) => symbol.name === 'serve')
     expect(method?.signatures.map((signature) => signature.params[0].type)).toEqual(['String', 'int'])
     expect(symbols.find((symbol) => symbol.id === 'example.Example.Example')?.signatures).toHaveLength(1)
-    expect(symbols.find((symbol) => symbol.name === 'Internal')?.kind).toBe('struct')
+    expect(symbols.find((symbol) => symbol.name === 'Internal')?.kind).toBe('class')
     expect(symbols.find((symbol) => symbol.id === 'example.Internal.inspect')).toBeDefined()
 
     const all = await extract(source, true)

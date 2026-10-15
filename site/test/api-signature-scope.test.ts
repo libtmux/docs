@@ -81,3 +81,21 @@ it('keeps C# record property types and parameter links distinct', async () => {
   expect([...win.document.querySelectorAll('a.api-type-link')].map((link) => [link.textContent, link.getAttribute('href')]))
     .toEqual(['Session', 'Window', 'Pane'].map((name) => [name, path(model.symbols.find((entry) => entry.id === `LibTmux.${name}`)!)]))
 })
+
+it('renders Java record components with separate parameter and native type links', async () => {
+  const model = JSON.parse(readFileSync(new URL('../src/data/api/java.json', import.meta.url), 'utf8')) as ApiModel
+  const symbol = model.symbols.find((entry) => entry.id === 'io.github.libtmux.batch.BatchResult.BatchResult')!
+  const path = (entry: ApiSymbol) => `/en/java/latest/reference/${entry.slug}/`
+  const index = new SymbolIndex(model.symbols, path, 'java')
+  const win = new Window()
+  windows.push(win)
+  const container = await experimental_AstroContainer.create()
+  win.document.body.innerHTML = await container.renderToString(await parameterComponent(), {
+    props: { signature: symbol.signatures[0], symbol, index, language: 'java' },
+  })
+  expect(win.document.body.textContent).toBe('(operations: List<OperationResult>)')
+  expect(win.document.querySelector('a.api-parameter-name')?.getAttribute('href')).toBe(`#${parameterId(symbol, 'operations')}`)
+  const result = model.symbols.find((entry) => entry.qualifiedName === 'io.github.libtmux.batch.OperationResult')!
+  expect([...win.document.querySelectorAll('a.api-type-link')].map((link) => [link.textContent, link.getAttribute('href')]))
+    .toContainEqual(['OperationResult', path(result)])
+})
