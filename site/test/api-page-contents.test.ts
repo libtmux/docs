@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { Window } from 'happy-dom'
+import { Window, type HTMLAnchorElement } from 'happy-dom'
 import { afterEach, expect, it, vi } from 'vitest'
 
 const component = readFileSync(new URL('../src/components/api/ApiPageContents.astro', import.meta.url), 'utf8')
