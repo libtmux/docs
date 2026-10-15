@@ -132,9 +132,9 @@ async function checkHostedDeclarations(port: string) {
 describe('native signature emission', () => {
   it('checks the hosted signature fixture against rendered TypeScript declarations without raw text', () => checkHostedDeclarations('ts'))
 
-  it.fails('checks the hosted signature fixture against rendered Julia declarations without return annotations', () => checkHostedDeclarations('julia'))
+  it('checks the hosted signature fixture against rendered Julia declarations without return annotations', () => checkHostedDeclarations('julia'))
 
-  it.fails('selects fixtures for every API port and retains existing typed-return choices', async () => {
+  it('selects fixtures for every API port and retains existing typed-return choices', async () => {
     const models = Object.fromEntries(API_MODEL_PORTS.map(({ slug }) => [slug,
       JSON.parse(readFileSync(new URL(`../src/data/api/${slug}.json`, import.meta.url), 'utf8')) as ApiModel]))
     const before = JSON.stringify(models.julia)
@@ -149,7 +149,7 @@ describe('native signature emission', () => {
     expect(JSON.stringify(models.julia)).toBe(before)
   })
 
-  it.fails.each(['empty', 'scalar-only', 'non-native', 'missing-raw', 'empty-raw'])('rejects a requested port with %s callable coverage', async (failure) => {
+  it.each(['empty', 'scalar-only', 'non-native', 'missing-raw', 'empty-raw'])('rejects a requested port with %s callable coverage', async (failure) => {
     const model = JSON.parse(readFileSync(new URL('../src/data/api/julia.json', import.meta.url), 'utf8')) as ApiModel
     const symbol = model.symbols.find((entry) => entry.id === 'LibTmux.capture_bytes')!
     const port = failure === 'non-native' ? 'py' : 'julia'
