@@ -86,4 +86,13 @@ describe('sidebar-derived breadcrumbs', () => {
       { type: 'link', label: 'Same path, foreign origin', href: 'https://example.com/reference/member/' },
     ], '/reference/member/')).toEqual([])
   })
+
+  it('keeps product identity when its landing sidebar calls the page Overview', () => {
+    for (const name of ['MCP', 'Workspace Manager']) {
+      const root = name === 'MCP' ? '/en/julia/latest/mcp/' : '/en/julia/latest/workspace/'
+      const crumbs = [{ name: 'Julia', url: '/en/julia/latest/' }, { name, url: root }]
+      const items = [{ type: 'link' as const, label: 'Overview', href: root }]
+      expect(withSidebarBreadcrumbs(crumbs, items, root)).toEqual(crumbs)
+    }
+  })
 })

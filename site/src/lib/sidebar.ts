@@ -81,6 +81,7 @@ export function withSidebarBreadcrumbs(crumbs: BreadcrumbItem[], items: SidebarI
   if (!crumbs.length) return crumbs
   const path = sidebarBreadcrumbs(items, currentUrl)
   if (!path.length) return crumbs
+  if (path.length === 1 && path[0].name === 'Overview') return crumbs
   const prefix = crumbs.slice(0, -1)
   return [...prefix, ...path.filter((entry) => !entry.url || !prefix.some((ancestor) => ancestor.url === entry.url))]
 }
