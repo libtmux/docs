@@ -1,8 +1,9 @@
 import { readFileSync } from 'node:fs'
-import type { Node } from 'web-tree-sitter'
+import type { Node, Parser } from 'web-tree-sitter'
 import { parseMarkdownDocFull } from '../doc/markdown.ts'
 import { parseXmlDoc } from '../doc/csharp.ts'
 import { parseJavadoc } from '../doc/javadoc.ts'
+import { parseGoDoc } from '../doc/go.ts'
 import {
   DEFAULT_EXTRACT_OPTIONS,
   type ApiSymbol,
@@ -36,11 +37,11 @@ export interface LanguageSpec {
   /**
    * The dialect this language's doc comments are written in.
    *
-   * Markdown when unset, which is what Rust, TypeScript and Go write. C# is
+   * Markdown when unset, which is what Rust and TypeScript write. C# is
    * documentation XML and Java is HTML; both printed their markup into the
    * reference until it was read in the dialect it was written in.
    */
-  docDialect?: 'xml' | 'javadoc'
+  docDialect?: 'xml' | 'javadoc' | 'godoc'
   /**
    * The container kind this language reserves for extension blocks.
    *
@@ -185,8 +186,9 @@ function docCommentFor(node: Node, spec: LanguageSpec): string | undefined {
     expectedRow = cursor.startPosition.row
     cursor = cursor.previousNamedSibling
   }
-  const text = lines.join('\n').trim()
-  return text || undefined
+  const joined = lines.join('\n')
+  const text = spec.docDialect === 'godoc' ? joined.replace(/^\n+|\n+$/g, '') : joined.trim()
+  return text.trim() ? text : undefined
 }
 
 /** Modifier keywords sitting as unnamed children of a declaration. */
@@ -254,6 +256,7 @@ function signatureOf(node: Node, spec: LanguageSpec): Signature {
 }
 
 interface Ctx {
+  parser: Parser
   file: string
   module: string
   namespace?: string
@@ -334,7 +337,7 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
         modifiers,
         parent,
         signatures,
-        doc: docFor(raw, spec, signatures),
+        doc: docFor(raw, spec, signatures, ctx.parser),
         source: { file: ctx.file, line: child.startPosition.row + 1 },
       })
       const body = child.childForFieldName(f.body) ?? child
@@ -384,7 +387,7 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
       value: hasParams
         ? undefined
         : child.childForFieldName('declarator')?.childForFieldName('value')?.text.replace(/\s+/g, ' '),
-      doc: docFor(raw, spec, memberSignatures),
+      doc: docFor(raw, spec, memberSignatures, ctx.parser),
       source: { file: ctx.file, line: child.startPosition.row + 1 },
     })
   }
@@ -405,6 +408,7 @@ function docFor(
   raw: string | undefined,
   spec: LanguageSpec,
   signatures: Signature[],
+  parser: Parser,
 ): DocBlock | undefined {
   if (!raw) return undefined
   const parse =
@@ -412,7 +416,8 @@ function docFor(
       ? parseXmlDoc
       : spec.docDialect === 'javadoc'
         ? parseJavadoc
-        : (text: string) => parseMarkdownDocFull(text, spec.grammar)
+        : spec.docDialect === 'godoc' ? (text: string) => parseGoDoc(text, parser)
+          : (text: string) => parseMarkdownDocFull(text, spec.grammar)
   const { doc, params, returnsDoc, raises } = parse(raw)
 
   const sig = signatures[0]
@@ -442,6 +447,7 @@ export async function extractWithSpec(
       ?.namedChildren.find((node) => node?.type === 'scoped_identifier' || node?.type === 'identifier')
     : undefined
   const ctx: Ctx = {
+    parser,
     file,
     module,
     // Java packages come from declarations, not source paths or file names.

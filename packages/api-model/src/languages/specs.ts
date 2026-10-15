@@ -230,6 +230,7 @@ export const RUST: LanguageSpec = {
 
 export const GO: LanguageSpec = {
   grammar: 'go',
+  docDialect: 'godoc',
   containers: { type_spec: 'struct' },
   members: {
     function_declaration: 'function',
@@ -242,8 +243,9 @@ export const GO: LanguageSpec = {
   commentTypes: ['comment'],
   // godoc has no marker: a `//` comment directly above a declaration is the
   // documentation. `//go:` directives are build metadata and are not.
-  stripDoc: (raw) =>
-    raw.startsWith('//') && !raw.startsWith('//go:') ? raw.replace(/^\/\/\s?/, '') : undefined,
+  stripDoc: (raw) => raw.startsWith('//') && !raw.startsWith('//go:')
+    ? raw.replace(/^\/\/ ?/, '')
+    : raw.startsWith('/*') ? raw.slice(2, -2) : undefined,
   // `func (w Window) Panes()` — the owning type is in the `receiver` field,
   // not in any enclosing node. Pointers and aliases both appear; the type name
   // is what matters, so `*Window` and `Window` resolve to the same owner.
