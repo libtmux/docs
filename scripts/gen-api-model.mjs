@@ -29,7 +29,7 @@ import { mapLine, parseHunks } from '../packages/api-model/src/source-lines.ts'
 import { extractProject } from '../packages/api-model/src/project.ts'
 import { scopeProductSymbols } from '../packages/api-model/src/product-exports.ts'
 import { inheritProductFromOwners } from '../packages/api-model/src/products.ts'
-import { pageSlug } from '../packages/api-model/src/prose.ts'
+import { pageSlug, recordAccessorSlugOwner } from '../packages/api-model/src/prose.ts'
 import { navSidecar } from '../packages/api-model/src/nav-sidecar.ts'
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -889,7 +889,12 @@ for (const [port, cfg] of Object.entries(PORTS)) {
       group[0].slug = base
       continue
     }
+    const nativeOwner = recordAccessorSlugOwner(model, group)
     for (const s of group) {
+      if (s === nativeOwner) {
+        s.slug = base
+        continue
+      }
       s.slug = `${base}-${shortHash(s.publicId ?? s.id)}`
       disambiguated++
     }

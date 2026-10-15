@@ -277,11 +277,17 @@ export const GO: LanguageSpec = {
 export const JAVA: LanguageSpec = {
   grammar: 'java',
   docDialect: 'javadoc',
+  recordAccessors: (node) => node.type === 'record_declaration',
+  rawSignature: (node) => {
+    if (node.type !== 'record_declaration') return undefined
+    const body = node.childForFieldName('body')
+    return node.text.slice(0, body ? body.startIndex - node.startIndex : undefined).trimEnd()
+  },
   containers: {
     class_declaration: 'class',
     interface_declaration: 'interface',
     enum_declaration: 'enum',
-    record_declaration: 'struct',
+    record_declaration: 'class',
   },
   members: {
     method_declaration: 'method',

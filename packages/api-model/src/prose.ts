@@ -69,6 +69,21 @@ export function pageSlug(id: string): string {
     .replace(/^-|-$/g, '')
 }
 
+/** Keep an authored declaration's route when an implicit Java accessor collides. */
+export function recordAccessorSlugOwner(model: ApiModel, group: ApiSymbol[]): ApiSymbol | undefined {
+  if (model.port !== 'java') return undefined
+  const inferred = group.filter((symbol) => {
+    if (symbol.kind !== 'method' || symbol.source.line !== undefined || symbol.signatures.length !== 1) return false
+    const signature = symbol.signatures[0]
+    if (signature.params.length !== 0) return false
+    const owner = model.symbols.find((candidate) => candidate.id === symbol.parent)
+    return owner?.signatures.some((record) => /\brecord\b/.test(record.raw ?? '') &&
+      record.params.some((component) => component.name === symbol.name && component.type === signature.returns))
+  })
+  const declared = group.filter((symbol) => !inferred.includes(symbol))
+  return inferred.length > 0 && declared.length === 1 ? declared[0] : undefined
+}
+
 /**
  * Where a symbol's page is.
  *

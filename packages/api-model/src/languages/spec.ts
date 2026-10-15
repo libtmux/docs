@@ -123,6 +123,8 @@ export interface LanguageSpec {
   typeText?: (node: Node) => string
   /** Positional record parameters also declare public properties. */
   positionalProperties?: (node: Node) => boolean
+  /** Java record components also declare public no-argument accessor methods. */
+  recordAccessors?: (node: Node) => boolean
   /** Retain native declaration facts which the shared signature fields cannot express. */
   rawSignature?: (node: Node) => string | undefined
   /**
@@ -332,7 +334,8 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
     const modifiers = modifiersFor(child, spec)
 
     if (containerKind) {
-      const positional = spec.positionalProperties?.(child)
+      const accessors = spec.recordAccessors?.(child)
+      const positional = spec.positionalProperties?.(child) || accessors
       const signatures = positional ? [signatureOf(child, spec)] : []
       emit(ctx, {
         id,
@@ -349,11 +352,23 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
       if (positional) {
         const parameters = child.childForFieldName(f.params)?.namedChildren ?? []
         for (const parameter of signatures[0].params) {
-          const propertyId = `${id}.${parameter.name}`
-          if (ctx.byId.has(propertyId)) continue
+          const componentId = `${id}.${parameter.name}`
+          if (accessors) {
+            const existing = ctx.byId.get(componentId)
+            if (existing?.signatures.some((signature) => signature.params.length === 0)) continue
+            emit(ctx, {
+              id: componentId, name: parameter.name, kind: 'method', parent: id,
+              modifiers: [], signatures: [{ params: [], returns: parameter.type }],
+              doc: parameter.doc ? { summary: parameter.doc } : undefined,
+              // The accessor is implicit; no method declaration owns a source line.
+              source: { file: ctx.file },
+            })
+            continue
+          }
+          if (ctx.byId.has(componentId)) continue
           const declaration = parameters.find((node) => node?.childForFieldName('name')?.text === parameter.name)
           emit(ctx, {
-            id: propertyId, name: parameter.name, kind: 'property', parent: id,
+            id: componentId, name: parameter.name, kind: 'property', parent: id,
             type: parameter.type, modifiers: [], signatures: [],
             doc: parameter.doc ? { summary: parameter.doc } : undefined,
             source: { file: ctx.file, line: (declaration ?? child).startPosition.row + 1 },
