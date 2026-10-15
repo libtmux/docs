@@ -264,7 +264,7 @@ const hasBody =
   Boolean(symbol.inheritedFrom) ||
   Boolean(symbol.exportedFrom) ||
   Boolean(symbol.publicOwner && symbol.publicOwner !== symbol.id) ||
-  Boolean(symbol.doc?.summary) ||
+  Boolean(showSummary && symbol.doc?.summary) ||
   Boolean(symbol.doc?.body) ||
   Boolean(symbol.doc?.deprecated) ||
   Boolean(symbol.command) ||

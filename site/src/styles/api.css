@@ -604,6 +604,9 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header .gp-sphin
   max-width: 100%;
   margin-left: auto;
 }
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-layout-right {
+  align-items: center;
+}
 .api-native-signature {
   display: block;
   font-family: var(--font-mono, ui-monospace, monospace);
@@ -748,16 +751,22 @@ html:has(.api-reference-layout--symbol):has(.site-header :focus) { scroll-paddin
   font-size: 0.75rem;
 }
 .page-toolbar-controls--reference select { max-width: 11rem; }
-.api-section-heading { display: flex; align-items: baseline; gap: 0.75rem; }
+.api-section-heading { display: flex; align-items: baseline; gap: 0.375rem; }
 .api-heading-link {
   flex: none;
-  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 1.5rem;
+  min-block-size: 1.5rem;
+  margin-inline-start: 0.25rem;
   padding: 0.2rem 0.35rem;
   color: var(--color-muted);
   font-size: 0.875rem;
   font-weight: 400;
   text-decoration: none;
 }
+.api-command-parameters .api-heading-link { margin-inline-start: auto; }
 .api-heading-link:hover { color: var(--color-link); }
 .api-heading-link:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
 .api-related-types { margin-top: 2rem; }

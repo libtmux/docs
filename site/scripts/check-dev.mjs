@@ -27,6 +27,7 @@ const globalHeaderOnly = process.argv.includes('--global-header')
 const homeLauncherOnly = process.argv.includes('--home-launcher')
 const homeControlsOnly = process.argv.includes('--home-controls')
 const sampleOnly = process.argv.includes('--sample')
+const serveOnly = process.argv.includes('--serve')
 const documentationNavigationOnly = process.argv.includes('--documentation-navigation')
 const workspacePortCount = PORTS.filter((port) => productAvailable(port, 'workspace')).length
 
@@ -66,6 +67,27 @@ const model = API_MODELS.ts
 const owner = model.symbols.find((symbol) => symbol.id === 'pane.Pane.capture')
 ---
 <Reference model={model} owner={owner} />
+`)
+writeFileSync(join(root, 'src/pages/api-body-probe.astro'), `---
+import ApiEntry from '../components/api/ApiEntry.astro'
+import DocsLayout from '../layouts/DocsLayout.astro'
+import { API_MODELS, indexFor } from '../lib/api-models'
+import '../styles/api.css'
+import '../styles/vendor/gp-sphinx-api.css'
+const model = API_MODELS.scala
+const owner = model.symbols.find((symbol) => symbol.name === 'PaneFields')
+const cases = [
+  { name: 'hidden', showSummary: false },
+  { name: 'visible', showSummary: true },
+  { name: 'description', showSummary: false, body: 'Retained declaration description.' },
+]
+---
+<DocsLayout title="Declaration body visibility" tableOfContents={false}>
+  {cases.map(({ name, showSummary, body }) => <section data-body-case={name}>
+    <ApiEntry symbol={{ ...owner, id: 'body.' + name, doc: { ...owner.doc, body } }}
+      index={indexFor(model, (entry) => '#' + entry.id)} language="scala" showSummary={showSummary} />
+  </section>)}
+</DocsLayout>
 `)
 writeFileSync(join(root, 'src/pages/api-signature-probe.astro'), `---
 import ApiEntry from '../components/api/ApiEntry.astro'
@@ -129,9 +151,13 @@ process.on('SIGTERM', terminate)
 process.on('SIGINT', terminate)
 const startServer = () => dev({ root, cacheDir: join(mirror, 'cache'),
   vite: { cacheDir: join(mirror, 'vite') }, logLevel: 'error',
-  server: { host: '127.0.0.1', port: 0 } })
+  server: { host: '127.0.0.1', port: serveOnly ? 53971 : 0 } })
 server = await startServer()
 const base = `http://127.0.0.1:${server.address.port}/en`
+if (serveOnly) {
+  console.log(`Combined source preview: ${base}/`)
+  await new Promise(() => {})
+}
 
 // Vite can reload once after its initial dependency optimization.
 async function retryReload(check, page) {
@@ -371,6 +397,53 @@ async function checkReferenceAndHeroes(browser, base) {
   const page = await browser.newPage({ reducedMotion: 'reduce' })
   page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
   try {
+    await page.goto(`${base}/api-body-probe/`)
+    await page.locator('[data-body-case="visible"] .gp-sphinx-api-summary').waitFor({ state: 'visible' })
+    assert.equal(await page.locator('[data-body-case="hidden"] dl.py > dd').count(), 0,
+      'A suppressed summary does not create an empty declaration body')
+    assert.match(await page.locator('[data-body-case="visible"] dl.py > dd').innerText(), /Typed fields/,
+      'A visible summary retains its declaration body')
+    assert.match(await page.locator('[data-body-case="description"] dl.py > dd').innerText(), /Retained declaration description/,
+      'Other body content remains when the summary is suppressed')
+    await page.goto(`${base}/scala/latest/reference/io-github-libtmux-scaladsl-generated-panefields/`)
+    assert.equal(await page.locator('.api-overview dl.py > dd').count(), 0,
+      'PaneFields has a compact declaration without an empty body')
+    assert.equal(await page.locator('.api-member-link').count(), 14, 'PaneFields keeps its members')
+    const footerIcon = page.locator('footer a[aria-label="GitHub"]')
+    await page.waitForFunction(() => document.querySelector('footer a[aria-label="GitHub"]')?.hasAttribute('data-external-link'))
+    assert.equal(await footerIcon.evaluate((link) => getComputedStyle(link, '::after').content), 'none',
+      'The external footer icon has no additional glyph')
+    assert.match(await footerIcon.getAttribute('aria-description'), /^External site:/,
+      'Icon links retain the external destination description')
+    await page.goto(`${base}/go/latest/reference/tmuxq-matching/`)
+    const descriptionLink = page.getByRole('link', { name: 'Link to Description', exact: true })
+    await descriptionLink.waitFor({ state: 'visible' })
+    for (const width of [1035, 518, 390]) {
+      await page.setViewportSize({ width, height: 897 })
+      const placement = await descriptionLink.evaluate((link) => {
+        const range = document.createRange()
+        range.selectNodeContents(link.parentElement.firstChild)
+        const label = range.getBoundingClientRect()
+        const box = link.getBoundingClientRect()
+        return { gap: box.left - label.right, width: box.width, height: box.height }
+      })
+      assert(placement.gap >= 0 && placement.gap <= 16, `${width}px: section permalink stays beside its heading`)
+      assert(placement.width >= 24 && placement.height >= 24, `${width}px: section permalink has a comfortable target`)
+    }
+    await descriptionLink.focus()
+    assert(await descriptionLink.evaluate((link) => parseFloat(getComputedStyle(link).outlineWidth) >= 2),
+      'Section permalinks retain visible keyboard focus')
+    await page.keyboard.press('Enter')
+    assert.equal(new URL(page.url()).hash, '#tmuxq.Matching.description', 'The section permalink keeps its destination')
+    await page.goto(`${base}/scala/latest/reference/io-github-libtmux-scaladsl-window/`)
+    const controls = page.locator('dt.api-native-header .gp-sphinx-api-layout-right').first()
+    await controls.waitFor({ state: 'visible' })
+    const centers = await controls.evaluate((row) => [...row.children].filter((node) => node.checkVisibility()).map((node) => {
+      const box = node.getBoundingClientRect()
+      return box.top + box.height / 2
+    }))
+    assert(centers.length >= 2 && Math.max(...centers) - Math.min(...centers) <= 1,
+      'Declaration toolbar controls align vertically within their row')
     await checkApiExampleOwnership(page, base, 'api-example-probe/')
     for (const path of ['ts/latest/workspace/', 'ruby/latest/mcp/', 'cxx/latest/workspace/', 'cxx/latest/mcp/']) {
       await page.goto(`${base}/${path}`, { waitUntil: 'load' })
