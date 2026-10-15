@@ -154,6 +154,28 @@ describe('API glossary coverage', () => {
     expect(apiGlossaryHref('method', '/en/powershell/latest/reference/glossary/')).toBeUndefined()
   })
 
+  it('explains named Go string and function types represented by the struct badge', () => {
+    const model = JSON.parse(readFileSync(new URL('../src/data/api/go.json', import.meta.url), 'utf8'))
+    for (const id of ['tmux.TmuxFilter', 'tmux.CommandObserver']) expect(model.symbols.find((symbol: { id: string }) => symbol.id === id).kind).toBe('struct')
+    const term = NATIVE_API_GLOSSARIES.go.struct
+    expect(term.definition).toContain('named Go type')
+    expect(term.detail).toContain('string')
+    expect(term.detail).toContain('function')
+  })
+
+  it('explains Rust constructors represented by the method badge without inventing a self receiver', () => {
+    const model = JSON.parse(readFileSync(new URL('../src/data/api/rs.json', import.meta.url), 'utf8'))
+    for (const id of ['server.Server.new', 'plan.Plan.new']) {
+      const symbol = model.symbols.find((symbol: { id: string }) => symbol.id === id)
+      expect(symbol.kind).toBe('method')
+      expect(symbol.signatures[0].params).toEqual([])
+    }
+    const term = NATIVE_API_GLOSSARIES.rs.method
+    expect(term.definition).toContain('associated function')
+    expect(term.detail).toContain('without a receiver')
+    expect(term.detail).toContain('Type::function')
+  })
+
   it.each([
     ['py', 'method', 'bound method'], ['ruby', 'static', 'singleton method'],
     ['lua', 'typealias', 'tooling alias'], ['go', 'method', 'receiver parameter'],

@@ -144,7 +144,7 @@ export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> =
     package: term('The distributed PowerShell module supplying these commands, distinct from each exported Verb-Noun command name.', 'PowerShell module distribution', powershellDocs('scripting/developer/module/writing-a-windows-powershell-module')),
   },
   go: {
-    struct: term('A Go composite type with a sequence of named fields. Assignment copies the struct value; referenced data may remain shared.', 'Go struct types', goSpec('Struct_types')),
+    struct: term('A named Go type shown under the struct badge in this reference.', 'Go type definitions', goSpec('Type_definitions'), 'The underlying type can be a struct, string, function or another Go type. Its declaration determines fields, call syntax and conversion rules.'),
     function: term('A Go function declared at package scope with parameters and result values.', 'Go function declarations', goSpec('Function_declarations')),
     method: term('A Go function with a receiver parameter associating it with a defined type.', 'Go method declarations', goSpec('Method_declarations'), 'A pointer receiver and a value receiver have different method sets; follow the displayed signature.'),
     attribute: term('A Go struct field or package variable in this reference, including exported error values.', 'Go variable declarations', goSpec('Variable_declarations')),
@@ -175,7 +175,7 @@ export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> =
     enum: term('A Rust type whose variants can be unit-like, tuple-like or struct-like, each potentially carrying data.', 'Rust enums', rustReference('items/enumerations')),
     trait: term('A Rust contract of associated functions, types and constants implemented for concrete types.', 'Rust traits', rustReference('items/traits')),
     function: term('A Rust fn item with typed parameters, a return type and any declared generic bounds.', 'Rust functions', rustReference('items/functions')),
-    method: term('A Rust associated function with a self receiver, callable with method syntax.', 'Rust methods', `${rustReference('items/associated-items')}#methods`, 'The receiver determines whether the call borrows, mutably borrows or takes ownership.'),
+    method: term('A Rust associated function declared on a type or trait.', 'Rust associated functions and methods', `${rustReference('items/associated-items')}#associated-functions-and-methods`, 'A function with a self receiver is a method; its receiver determines borrowing or ownership. An associated function without a receiver, such as a constructor, is called with Type::function.'),
     attribute: term('A Rust struct field in this reference, rather than a #[...] attribute annotation.', 'Rust fields', rustReference('items/structs')),
     constant: {
       definition: 'A Rust constant or enum variant shown as a named API value. Variants can carry fields.',
