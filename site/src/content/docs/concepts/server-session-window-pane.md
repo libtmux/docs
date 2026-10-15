@@ -146,5 +146,5 @@ rows for shared windows. A later command can still fail if another client
 removes an object after the listing.
 
 The pinned
-[tmux manual](https://github.com/tmux/tmux/blob/79072dd1a9f5fb437a5859e362a496fd57ec0981/tmux.1)
+[tmux manual](https://github.com/tmux/tmux/blob/e476c1230b958df0cb12977517d24b3dc931375b/tmux.1)
 documents the object and target behavior used here.

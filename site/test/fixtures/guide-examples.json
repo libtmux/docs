@@ -110,7 +110,7 @@
       "port": "tmux",
       "rootOnly": true,
       "page": "concepts/queries",
-      "sourceRevision": "79072dd1a9f5fb437a5859e362a496fd57ec0981",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
       "sourceUse": "tmux manual; native runtime versions recorded separately",
       "verifiedTmuxVersions": [
         "3.2a",
@@ -140,7 +140,7 @@
       "port": "tmux",
       "rootOnly": true,
       "page": "concepts/server-session-window-pane",
-      "sourceRevision": "79072dd1a9f5fb437a5859e362a496fd57ec0981",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
       "sourceUse": "tmux manual; native runtime versions recorded separately",
       "verifiedTmuxVersions": [
         "3.2a",
@@ -167,7 +167,7 @@
       "port": "tmux",
       "rootOnly": true,
       "page": "concepts/transports",
-      "sourceRevision": "79072dd1a9f5fb437a5859e362a496fd57ec0981",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
       "sourceUse": "tmux manual; native runtime versions recorded separately",
       "verifiedTmuxVersions": [
         "3.2a",
@@ -194,7 +194,7 @@
       "port": "tmux",
       "rootOnly": true,
       "page": "concepts/workspaces",
-      "sourceRevision": "79072dd1a9f5fb437a5859e362a496fd57ec0981",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
       "sourceUse": "tmux manual; native runtime versions recorded separately",
       "verifiedTmuxVersions": [
         "3.2a",
@@ -221,7 +221,7 @@
       "port": "tmux",
       "rootOnly": true,
       "page": "examples/attach-and-send-keys",
-      "sourceRevision": "79072dd1a9f5fb437a5859e362a496fd57ec0981",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
       "sourceUse": "tmux manual; native runtime versions recorded separately",
       "verifiedTmuxVersions": [
         "3.2a",
@@ -246,7 +246,7 @@
       "port": "tmux",
       "rootOnly": true,
       "page": "topics/socket-and-servers",
-      "sourceRevision": "79072dd1a9f5fb437a5859e362a496fd57ec0981",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
       "sourceUse": "tmux manual; native runtime versions recorded separately",
       "verifiedTmuxVersions": [
         "3.2a",
@@ -273,7 +273,7 @@
       "port": "tmux",
       "rootOnly": true,
       "page": "topics/context-managers",
-      "sourceRevision": "79072dd1a9f5fb437a5859e362a496fd57ec0981",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
       "sourceUse": "tmux manual; native runtime versions recorded separately",
       "verifiedTmuxVersions": [
         "3.2a",
@@ -300,7 +300,7 @@
       "port": "tmux",
       "rootOnly": true,
       "page": "topics/format-tokens",
-      "sourceRevision": "79072dd1a9f5fb437a5859e362a496fd57ec0981",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
       "sourceUse": "tmux manual; native runtime versions recorded separately",
       "verifiedTmuxVersions": [
         "3.2a",
@@ -327,7 +327,7 @@
       "port": "tmux",
       "rootOnly": true,
       "page": "topics/environment",
-      "sourceRevision": "79072dd1a9f5fb437a5859e362a496fd57ec0981",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
       "sourceUse": "tmux manual; native runtime versions recorded separately",
       "verifiedTmuxVersions": [
         "3.2a",
@@ -355,7 +355,7 @@
       "port": "tmux",
       "rootOnly": true,
       "page": "topics/options-and-hooks",
-      "sourceRevision": "79072dd1a9f5fb437a5859e362a496fd57ec0981",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
       "sourceUse": "tmux manual; native runtime versions recorded separately",
       "verifiedTmuxVersions": [
         "3.2a",
@@ -383,7 +383,7 @@
       "port": "tmux",
       "rootOnly": true,
       "page": "topics/pane-interaction",
-      "sourceRevision": "79072dd1a9f5fb437a5859e362a496fd57ec0981",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
       "sourceUse": "tmux manual; native runtime versions recorded separately",
       "verifiedTmuxVersions": [
         "3.2a",
@@ -409,7 +409,7 @@
       "port": "tmux",
       "rootOnly": true,
       "page": "topics/waiting-and-retry",
-      "sourceRevision": "79072dd1a9f5fb437a5859e362a496fd57ec0981",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
       "sourceUse": "tmux manual; native runtime versions recorded separately",
       "verifiedTmuxVersions": [
         "3.2a",
@@ -436,7 +436,7 @@
       "port": "tmux",
       "rootOnly": true,
       "page": "topics/traversal",
-      "sourceRevision": "79072dd1a9f5fb437a5859e362a496fd57ec0981",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
       "sourceUse": "tmux manual; native runtime versions recorded separately",
       "verifiedTmuxVersions": [
         "3.2a",
@@ -464,7 +464,7 @@
       "port": "tmux",
       "rootOnly": true,
       "page": "topics/architecture",
-      "sourceRevision": "79072dd1a9f5fb437a5859e362a496fd57ec0981",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
       "sourceUse": "tmux manual; native runtime versions recorded separately",
       "verifiedTmuxVersions": [
         "3.2a",
@@ -491,7 +491,7 @@
       "port": "tmux",
       "rootOnly": true,
       "page": "topics/errors-and-exceptions",
-      "sourceRevision": "79072dd1a9f5fb437a5859e362a496fd57ec0981",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
       "sourceUse": "tmux manual; native runtime versions recorded separately",
       "verifiedTmuxVersions": [
         "3.2a",
