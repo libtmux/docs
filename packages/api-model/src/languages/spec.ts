@@ -123,6 +123,8 @@ export interface LanguageSpec {
   typeText?: (node: Node) => string
   /** Positional record parameters also declare public properties. */
   positionalProperties?: (node: Node) => boolean
+  /** Retain native declaration facts which the shared signature fields cannot express. */
+  rawSignature?: (node: Node) => string | undefined
   /**
    * The type a declaration has without spelling it, where the language
    * repeats one: in Go's `const` block a spec with no value takes the type of
@@ -243,6 +245,7 @@ function signatureOf(node: Node, spec: LanguageSpec): Signature {
     node.childForFieldName('result') ??
     node.childForFieldName('type')
   return {
+    raw: spec.rawSignature?.(node),
     params: paramsOf(node.childForFieldName(f.params), spec),
     // A grammar's return-type node often includes the syntax that introduces
     // it: TypeScript's `type_annotation` is `: string`, and all 240 of its

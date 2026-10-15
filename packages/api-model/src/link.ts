@@ -448,7 +448,7 @@ export class SymbolIndex {
       for (const scope of scopes) {
         const target = `${scope}${this.lang === 'cxx' ? '::' : '.'}${clean}`
         const hit = this.byPublic.get(target) ?? this.pick(this.byQualified.get(target), role, context)
-        if (hit && this.lang === 'java' && role === 'class' && !ROLE_KINDS.class.includes(hit.kind)) continue
+        if (hit && (this.lang === 'java' || this.lang === 'csharp') && role === 'class' && !ROLE_KINDS.class.includes(hit.kind)) continue
         if (hit) return { href: this.hrefFor(hit), external: false, symbol: hit }
       }
       if (this.lang === 'scala') {

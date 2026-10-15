@@ -315,12 +315,18 @@ export const CSHARP: LanguageSpec = {
   docDialect: 'xml',
   positionalProperties: (node) => ['record_declaration', 'record_struct_declaration'].includes(node.type)
     && Boolean(node.childForFieldName('parameters')),
+  rawSignature: (node) => {
+    if (!['record_declaration', 'record_struct_declaration'].includes(node.type)) return undefined
+    const body = node.childForFieldName('body')
+    return node.text.slice(0, body?.type === 'declaration_list' ? body.startIndex - node.startIndex : undefined).trimEnd()
+  },
   containers: {
     class_declaration: 'class',
     interface_declaration: 'interface',
     struct_declaration: 'struct',
     enum_declaration: 'enum',
-    record_declaration: 'struct',
+    // A bare record is a reference type; only `record struct` is a value type.
+    record_declaration: 'class',
     // `readonly record struct PaneId` is a node of its own. Missing here, its
     // constructor surfaced as a free function named `PaneId` and its members
     // as free symbols, and `PaneId`, `TmuxVersion` and eight more had no page.

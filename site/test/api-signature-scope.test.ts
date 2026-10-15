@@ -2,7 +2,7 @@ import { readFileSync, realpathSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
 import { experimental_AstroContainer } from 'astro/container'
-import { parameterId, qualifiedNameOf, SymbolIndex, type ApiSymbol, type Signature } from '@libtmux/api-model'
+import { parameterId, qualifiedNameOf, SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model'
 import { Window } from 'happy-dom'
 import { afterEach, expect, it, vi } from 'vitest'
 import { signatureMultiline } from '../src/lib/api-sections'
@@ -59,4 +59,24 @@ it('renders each overload parameter in its own TypeScript type scope', async () 
     const links = [...win.document.querySelectorAll('a.api-type-link')].map((link) => link.getAttribute('href'))
     expect(links).toEqual(signature === generic ? [] : ['/pane.Pane/'])
   }
+})
+
+it('keeps C# record property types and parameter links distinct', async () => {
+  const model = JSON.parse(readFileSync(new URL('../src/data/api/csharp.json', import.meta.url), 'utf8')) as ApiModel
+  const symbol = model.symbols.find((entry) => entry.id === 'LibTmux.ClientAttachment')!
+  expect(symbol.kind).toBe('class')
+  expect(symbol.signatures[0].raw).toBe('public sealed record ClientAttachment(Session? Session, Window? Window, Pane? Pane);')
+  const path = (entry: ApiSymbol) => `/en/csharp/latest/reference/${entry.slug}/`
+  const index = new SymbolIndex(model.symbols, path, 'csharp')
+  const win = new Window()
+  windows.push(win)
+  const container = await experimental_AstroContainer.create()
+  win.document.body.innerHTML = await container.renderToString(await parameterComponent(), {
+    props: { signature: symbol.signatures[0], symbol, index, language: 'csharp' },
+  })
+  expect(win.document.body.textContent).toBe('(Session: Session?, Window: Window?, Pane: Pane?)')
+  expect([...win.document.querySelectorAll('a.api-parameter-name')].map((link) => [link.textContent, link.getAttribute('href')]))
+    .toEqual(['Session', 'Window', 'Pane'].map((name) => [name, `#${parameterId(symbol, name)}`]))
+  expect([...win.document.querySelectorAll('a.api-type-link')].map((link) => [link.textContent, link.getAttribute('href')]))
+    .toEqual(['Session', 'Window', 'Pane'].map((name) => [name, path(model.symbols.find((entry) => entry.id === `LibTmux.${name}`)!)]))
 })
