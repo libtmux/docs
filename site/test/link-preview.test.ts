@@ -18,11 +18,17 @@ import { highlightTokens } from '../src/lib/highlight'
 import config from '../ec.config.mjs'
 
 it.each([
-  ['/en/powershell/latest/workspace/reference/libtmux-workspace/', '/en/powershell/latest/workspace/reference/glossary/#cmdlet'],
-  ['/pr-42/en/julia/latest/mcp/reference/libtmuxmcp-tools/', '/pr-42/en/julia/latest/mcp/reference/glossary/#cmdlet'],
-  ['/en/julia/latest/reference/libtmux-from_env/', '/en/julia/latest/reference/glossary/#cmdlet'],
-])('keeps glossary terms in their existing reference context: %s', (context, expected) => {
-  expect(apiGlossaryHref('cmdlet', context)).toBe(expected)
+  ['/en/powershell/latest/workspace/reference/libtmux-workspace/', 'cmdlet', '/en/powershell/latest/workspace/reference/glossary/#cmdlet'],
+  ['/pr-42/en/julia/latest/mcp/reference/libtmuxmcp-tools/', 'struct', '/pr-42/en/julia/latest/mcp/reference/glossary/#struct'],
+  ['/en/julia/latest/reference/libtmux-from_env/', 'struct', '/en/julia/latest/reference/glossary/#struct'],
+])('keeps native glossary terms in their existing reference context: %s', (context, term, expected) => {
+  expect(apiGlossaryHref(term, context)).toBe(expected)
+})
+
+it('does not invent PowerShell glossary terms in a native Julia context', () => {
+  const context = '/en/julia/latest/reference/libtmux-from_env/'
+  expect(apiGlossaryHref('cmdlet', context)).toBeUndefined()
+  expect(glossaryPreview('/en/julia/latest/reference/glossary/').terms!.cmdlet).toBeUndefined()
 })
 
 it('does not invent contextual glossaries for source projects or ordinary articles', () => {
