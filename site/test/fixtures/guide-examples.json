@@ -189,6 +189,33 @@
           "session remains after control client detaches"
         ]
       ]
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "concepts/workspaces",
+      "sourceRevision": "79072dd1a9f5fb437a5859e362a496fd57ec0981",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "layout.sh",
+          "sha256": "872a8da8eaec81e504769aeb0fc791ff5958fdcf75f1a1be9db8e8513938a949"
+        }
+      ],
+      "shellRecipe": [
+        "sh layout.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "dev:editor:3",
+          "main pane selected",
+          "dev:logs:1"
+        ]
+      ]
     }
   ]
 }

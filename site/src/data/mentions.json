@@ -8732,15 +8732,15 @@
   {
    "port": "py",
    "symbol": "libtmux.session.Session",
-   "page": "/concepts/workspaces/",
-   "title": "Workspaces",
+   "page": "/py/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
    "section": "concepts"
   },
   {
    "port": "py",
    "symbol": "libtmux.session.Session",
-   "page": "/py/latest/concepts/server-session-window-pane/",
-   "title": "Server, session, window, pane",
+   "page": "/py/latest/concepts/workspaces/",
+   "title": "Workspaces",
    "section": "concepts"
   },
   {
@@ -8823,15 +8823,15 @@
   {
    "port": "py",
    "symbol": "libtmux.window.Window",
-   "page": "/concepts/workspaces/",
-   "title": "Workspaces",
+   "page": "/py/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
    "section": "concepts"
   },
   {
    "port": "py",
    "symbol": "libtmux.window.Window",
-   "page": "/py/latest/concepts/server-session-window-pane/",
-   "title": "Server, session, window, pane",
+   "page": "/py/latest/concepts/workspaces/",
+   "title": "Workspaces",
    "section": "concepts"
   },
   {
@@ -12365,7 +12365,7 @@
   {
    "port": "ts",
    "symbol": "builder.applyWorkspace",
-   "page": "/concepts/workspaces/",
+   "page": "/ts/latest/concepts/workspaces/",
    "title": "Workspaces",
    "section": "concepts"
   },
@@ -13450,20 +13450,6 @@
    "why": "not defined in the stated port"
   },
   {
-   "port": "swift",
-   "text": "TmuxWorkspace",
-   "page": "/concepts/workspaces/",
-   "line": 153,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "swift",
-   "text": "YAMLWorkspaces",
-   "page": "/concepts/workspaces/",
-   "line": 154,
-   "why": "not defined in the stated port"
-  },
-  {
    "port": "csharp",
    "text": "ConnectAndBuild",
    "page": "/examples/attach-and-send-keys/",
@@ -13482,6 +13468,20 @@
    "text": "libtmux._internal",
    "page": "/py/latest/concepts/transports/",
    "line": 33,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "swift",
+   "text": "TmuxWorkspace",
+   "page": "/swift/latest/concepts/workspaces/",
+   "line": 46,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "swift",
+   "text": "YAMLWorkspaces",
+   "page": "/swift/latest/concepts/workspaces/",
+   "line": 47,
    "why": "not defined in the stated port"
   },
   {

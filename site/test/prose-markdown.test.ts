@@ -223,31 +223,31 @@ describe('prose Markdown links', () => {
     const { rehypeApiLinks: deployedApiLinks } = await import('../src/plugins/rehype-api-links')
     const { rehypeSiteRoot } = await import('../src/plugins/rehype-site-root.mjs')
     const { remarkPortCode: deployedPortCode } = await import('../src/plugins/remark-port-code.mjs')
-    const { content, frontmatter } = parseFrontmatter(readFileSync(new URL('../src/content/docs/concepts/workspaces.md', import.meta.url), 'utf8'))
-    const entry = { id: 'concepts/workspaces', body: content, data: frontmatter } as CollectionEntry<'docs'>
-
-    for (const port of ['go', 'py', 'rs', 'java', 'csharp', '']) {
+    const cases = ['go', 'py', 'rs', 'java', 'csharp'].flatMap((owner) => [
+      { owner, port: owner }, { owner, port: '' },
+    ])
+    for (const { owner, port } of cases) {
+      const id = `ports/${owner}/concepts/workspaces`
+      const { content, frontmatter } = parseFrontmatter(readFileSync(new URL(`../src/content/docs/${id}.md`, import.meta.url), 'utf8'))
+      const entry = { id, body: content, data: frontmatter } as CollectionEntry<'docs'>
       vi.stubEnv('LIBTMUX_DOCS_PORT', port)
       const base = port ? `${root}/${port}/next/` : `${root}/`
       const exported = deployedPage(entry, 'https://libtmux.org', base)
       const renderer = await createMarkdownProcessor({
         remarkPlugins: [deployedPortCode], rehypePlugins: [rehypeSiteRoot, deployedApiLinks], syntaxHighlight: false,
       })
-      const html = (await renderer.render(content)).code
+      const html = (await renderer.render(content, { frontmatter })).code
       const htmlLinks = [...html.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map((match) => new URL(match[1], 'https://libtmux.org').href)
-      const expectedOwners = port ? [port] : ['py', 'go', 'rs', 'java', 'csharp']
       const defaults: Record<string, string> = { py: 'stable', rs: 'v0.1' }
-      for (const owner of expectedOwners) {
-        const version = owner === port ? 'next' : defaults[owner] ?? 'latest'
-        const target = `https://libtmux.org${ports}/${owner}/${version}/workspace/`
-        expect(htmlLinks, `${port || 'shared'} HTML`).toContain(target)
-        expect(urls(exported.body), `${port || 'shared'} Markdown`).toContain(target)
-      }
+      const version = owner === port ? 'next' : defaults[owner] ?? 'latest'
+      const target = `https://libtmux.org${ports}/${owner}/${version}/workspace/`
+      expect(htmlLinks, `${owner}/${port || 'root'} HTML`).toContain(target)
+      expect(urls(exported.body), `${owner}/${port || 'root'} Markdown`).toContain(target)
       for (const target of htmlLinks.filter((href) => href.includes('/reference/'))) {
         expect(urls(exported.body), `${port || 'shared'} API ${target}`).toContain(target)
       }
       expect(exported.body).not.toContain(`${root}${ports}/`)
-      expect(exampleBytes(exported.body)).toEqual(exampleBytes(resolvePortCode(content, port || undefined)))
+      expect(exampleBytes(exported.body)).toEqual(exampleBytes(resolvePortCode(content, port || undefined, owner)))
     }
   })
 
