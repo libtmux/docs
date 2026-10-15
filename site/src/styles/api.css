@@ -446,7 +446,7 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
   text-decoration: none;
 }
 
-.api-xref:hover .api-literal--link {
+.api-xref:not([data-link-preview]):hover .api-literal--link {
   border-color: var(--color-link);
 }
 

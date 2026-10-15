@@ -28,6 +28,12 @@ const { id = 'reference-link-preview', title = 'Reference preview', description 
   }
   a[data-link-preview]:not(.api-badge):has(.api-literal--link) { color: var(--color-link); }
   a[data-link-preview]:not(.api-badge) code { text-decoration-line: none; }
+  /* Keep the preview dots inside the code frame, clear of its bottom border. */
+  a[data-link-preview]:not(.api-badge):is(.api-literal, :has(.api-literal)),
+  .api-literal a[data-link-preview]:not(.api-badge) {
+    text-underline-offset: .08em;
+    text-decoration-thickness: 1px;
+  }
   .reference-link-preview {
     position: fixed; inset: 0; margin: auto; padding: 1rem;
     box-sizing: border-box; width: min(40rem, calc(100vw - 2rem)); max-height: min(28rem, calc(100dvh - 2rem));
