@@ -118,6 +118,11 @@ const kinds = {
 } satisfies Record<SymbolKind | 'cmdlet', Definition>
 
 const modifiers = {
+  opaque: {
+    definition: 'A type declaration whose representation is hidden outside its defining scope.',
+    detail: 'Scala opaque type aliases keep their underlying representation visible within the defining scope while exposing the alias and its public operations to callers.',
+    references: [{ title: 'Scala opaque type aliases', url: 'https://docs.scala-lang.org/scala3/reference/other-new-features/opaques.html' }],
+  },
   static: {
     definition: 'A member associated with a type rather than bound to a particular instance.',
     detail: 'A Python staticmethod receives neither an implicit instance nor an implicit class argument. A classmethod receives the class. Static does not mean pure, immutable, or safe for concurrent calls.',
@@ -197,7 +202,7 @@ const modifiers = {
     detail: 'The reference identifies the declaring type. Follow that declaration for its signature and documentation; inheritance and overriding rules depend on the language.',
     references: [{ title: 'Python inheritance', url: 'https://docs.python.org/3/tutorial/classes.html#inheritance' }],
   },
-} satisfies Record<Modifier | 'inherited', Definition>
+} satisfies Record<Modifier | 'inherited' | 'opaque', Definition>
 
 const context = {
   package: {

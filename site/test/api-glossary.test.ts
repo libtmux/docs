@@ -50,6 +50,18 @@ async function badgeComponent(name = 'ApiBadge') {
 }
 
 describe('API glossary coverage', () => {
+  it('defines the Scala opaque modifier at both deliberate global and native anchors', () => {
+    const path = '/en/scala/latest/reference/glossary/'
+    expect(apiGlossaryHref('opaque', API_GLOSSARY_PATH)).toBe(`${API_GLOSSARY_PATH}#opaque`)
+    expect(apiGlossaryHref('opaque', path)).toBe(`${path}#opaque`)
+    const opaque = glossaryPreview(path).terms!.opaque
+    expect(opaque.description).toContain('opaque type alias')
+    expect(opaque.description).toContain('defining scope')
+    expect(apiGlossary(path).groups.flatMap((group) => group.terms).find((term) => term.id === 'opaque')!.references).toEqual([
+      { title: 'Scala opaque type aliases', url: 'https://docs.scala-lang.org/scala3/reference/other-new-features/opaques.html' },
+    ])
+  })
+
   it('explains Scala methods and extensions in the Scala preview', () => {
     const preview = glossaryPreview('/en/scala/latest/reference/glossary/')
     expect(preview.terms!.method.description).toContain('def')
@@ -75,7 +87,7 @@ describe('API glossary coverage', () => {
 
   it('defines every kind and modifier supported by the API model, including unused kinds', () => {
     expect(API_GLOSSARY_GROUPS.find((group) => group.id === 'symbol-kinds')!.terms.map((term) => term.id).sort()).toEqual([...declaredLabels('SymbolKind'), 'cmdlet'].sort())
-    expect(API_GLOSSARY_GROUPS.find((group) => group.id === 'modifiers')!.terms.map((term) => term.id).sort()).toEqual([...declaredLabels('Modifier'), 'inherited'].sort())
+    expect(API_GLOSSARY_GROUPS.find((group) => group.id === 'modifiers')!.terms.map((term) => term.id).sort()).toEqual([...new Set([...declaredLabels('Modifier'), 'inherited', 'opaque'])].sort())
     expect(ids.size).toBe(terms.length)
     expect(ids.has('package')).toBe(true)
   })
@@ -113,7 +125,7 @@ describe('API glossary coverage', () => {
   })
 
   it('uses stable unique anchors and language references for every term', () => {
-    const primaryHosts = new Set(['docs.python.org', 'docs.julialang.org', 'go.dev', 'docs.swift.org', 'eel.is', 'learn.microsoft.com', 'doc.rust-lang.org', 'www.typescriptlang.org', 'kotlinlang.org', 'packaging.python.org', 'modelcontextprotocol.io'])
+    const primaryHosts = new Set(['docs.python.org', 'docs.julialang.org', 'docs.scala-lang.org', 'go.dev', 'docs.swift.org', 'eel.is', 'learn.microsoft.com', 'doc.rust-lang.org', 'www.typescriptlang.org', 'kotlinlang.org', 'packaging.python.org', 'modelcontextprotocol.io'])
     for (const term of terms) {
       expect(term.id).toMatch(/^[a-z][a-zA-Z]*$/)
       expect(apiGlossaryHref(term.id)).toBe(`${API_GLOSSARY_PATH}#${term.id}`)
