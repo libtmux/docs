@@ -1,7 +1,7 @@
 ---
-supportedPorts: [py, ts, rs, go, java, csharp, cxx, swift]
+supportedPorts: []
 title: Pane interaction
-description: Input defaults, screen capture, and waiting for a command to finish.
+description: Send native tmux input, capture a pane screen or scrollback, and wait for an output condition.
 sidebar:
   label: Pane interaction
   group: Topics
@@ -9,288 +9,111 @@ sidebar:
 tableOfContents: true
 ---
 
-Send input to a pane and capture its screen to interact with a running program.
-[Attach and send keys](/examples/attach-and-send-keys/) provides examples.
-[Sending keys](/guides/sending-keys/) and [Capturing
-output](/guides/capturing-output/) are task guides; this page covers input
-defaults, capture ranges, and completion handling.
+[`send-keys`](/tmux/latest/manual/send-keys/) sends text or key names to a
+pane's terminal. [`capture-pane`](/tmux/latest/manual/capture-pane/) reads
+its screen and scrollback. Choose the pane explicitly and treat sending input
+and observing its result as separate operations.
 
-## Typing into a pane
+## Send a command and capture its result
 
-Two questions come up every time you send something to a pane: should tmux
-press Enter afterward, and should tmux interpret what you sent as key names
-(`Enter`, `C-c`) rather than literal characters? Choose both explicitly when
-a command depends on them.
+Save this complete script as `pane-io.sh`. It requires tmux 3.2a or newer and
+a POSIX shell. It starts a shell with an empty prompt, sends a command, polls
+for both result lines, and cleans up its private server.
 
-<!-- port:py -->
-<!-- port:root -->
-### Python
-<!-- /port -->
+```sh title="pane-io.sh"
+#!/bin/sh
+set -eu
+directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-pane-io.XXXXXX")
+socket="$directory/tmux.sock"
 
-**Type without Enter:** `pane.send_keys(text, enter=False)`
-
-**Type + Enter (default):** `pane.send_keys(text)`
-
-**How "literal" is chosen:** `literal=True` flag on the same method
-
-<!-- /port -->
-
-<!-- port:ts -->
-<!-- port:root -->
-### TypeScript
-<!-- /port -->
-
-**Type without Enter:** `pane.sendKeys(text, { enter: false })`
-
-**Type + Enter (default):** `pane.sendKeys(text)`
-
-**How "literal" is chosen:** `{ literal: true }` option
-
-<!-- /port -->
-
-<!-- port:go -->
-<!-- port:root -->
-### Go
-<!-- /port -->
-
-**Type without Enter:** `pane.SendKeys(ctx, SendKeysRequest{Command: &text,
-SkipEnter: true})`
-
-**Type + Enter (default):** `pane.SendKeys(ctx, SendKeysRequest{Command:
-&text})`
-
-**How "literal" is chosen:** `Literal: true` field
-
-<!-- /port -->
-
-<!-- port:rs -->
-<!-- port:root -->
-### Rust
-<!-- /port -->
-
-**Type without Enter:** `pane.send_keys(keys)`: **always literal**, key names
-typed as text
-
-**Type + Enter (default):** `pane.send_line(text)`
-
-**How "literal" is chosen:** `send_keys` sends literal text; `send_key_names`
-interprets tmux key names.
-
-<!-- /port -->
-
-<!-- port:java -->
-<!-- port:root -->
-### Java
-<!-- /port -->
-
-**Type without Enter:** `pane.send(keys)`
-
-**Type + Enter (default):** `pane.sendLine(command)`
-
-**How "literal" is chosen:** Separate text and key-sending methods.
-
-<!-- /port -->
-
-<!-- port:csharp -->
-<!-- port:root -->
-### C#
-<!-- /port -->
-
-**Type without Enter:** `SendKeysAsync(new SendKeysRequest(text, enter: false))`
-
-**Type + Enter (default):** `SendTextAsync(text)` (defaults `enter: true`)
-
-**How "literal" is chosen:** `SendKeysRequest.Literal` field;
-`SendTextAsync` hardcodes it
-
-<!-- /port -->
-
-<!-- port:cxx -->
-<!-- port:root -->
-### C++
-<!-- /port -->
-
-**Type without Enter:** `pane->send_text(text)`
-
-**Type + Enter:** `pane->send_text(text)` then `pane->send_key("Enter")`
-separately: no combined convenience exists
-
-**How "literal" is chosen:** `send_text` is always literal; `send_key` is always
-a key name
-
-<!-- /port -->
-
-<!-- port:swift -->
-<!-- port:root -->
-### Swift
-<!-- /port -->
-
-**Type without Enter:** `server.sendKeys([text], to: pane)`
-
-**Type + Enter (default):** `server.run(text, in: pane)` (sugar for
-`sendKeys([text, "Enter"], to: pane)`)
-
-**How "literal" is chosen:** `literally: true` option on `sendKeys`
-
-<!-- /port -->
-
-### Examples
-
-<!-- port:rs -->
-`send_keys` sends literal text. Use `send_key_names` for tmux key names.
-Passing `"Enter"` to `send_keys` types those characters. `send_line` appends a
-carriage return and delivers it with the text in one tmux command.
-<!-- /port -->
-
-<!-- port:java -->
-`sendLine` appends a carriage return and delivers it with the text in one tmux
-command.
-<!-- /port -->
-
-<!-- port:py,ts,go,csharp,cxx -->
-Text and Enter can be separate tmux commands. If the second operation fails,
-the text may already be in the pane. Check the current state before retrying;
-repeating the whole request can duplicate input.
-<!-- /port -->
-
-Send a command line and press Enter:
-
-```python
-pane.send_keys("echo hi", enter=False)  # type without pressing Enter
-pane.send_keys("echo hi")               # default: presses Enter afterward
-```
-
-```typescript
-await pane.sendKeys("echo hi", { enter: false });
-await pane.sendKeys("echo hi");
-```
-
-```go
-text := "printf 'hello\\n'"
-if err := pane.SendKeys(ctx, tmux.SendKeysRequest{
-    Command: &text,
-    Literal: true,
-}); err != nil {
-    return fmt.Errorf("send command: %w", err)
+cleanup() {
+    status=$?
+    trap - 0 HUP INT TERM
+    if [ -S "$socket" ] && ! tmux -S "$socket" kill-server; then
+        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
+        exit 1
+    fi
+    rm -rf "$directory" || status=$?
+    exit "$status"
 }
+trap cleanup 0
+trap 'exit 1' HUP INT TERM
+
+pane=$(tmux -S "$socket" -f /dev/null new-session -d -P \
+    -e PS1= -F '#{pane_id}' -s work -n main 'sh')
+tmux -S "$socket" send-keys -l -t "$pane" "printf 'first line\\nsecond line\\n'"
+tmux -S "$socket" send-keys -t "$pane" Enter
+ready=no
+for attempt in 1 2 3 4 5; do
+    tmux -S "$socket" capture-pane -p -J -S - -t "$pane" \
+        > "$directory/screen.txt"
+    sed 's/[[:blank:]]*$//' "$directory/screen.txt" > "$directory/lines.txt"
+    if grep -Fx 'first line' "$directory/lines.txt" > /dev/null && \
+        grep -Fx 'second line' "$directory/lines.txt" > /dev/null; then
+        ready=yes
+        break
+    fi
+    if [ "$attempt" -lt 5 ]; then
+        sleep 1
+    fi
+done
+[ "$ready" = yes ]
+printf 'first line\nsecond line\n'
 ```
 
-```rust
-pane.send_keys("echo hi").await?; // Always literal text.
-pane.send_line("echo hi").await?; // text and Enter in one send-keys -l call
+Run the saved script:
+
+```console
+$ sh pane-io.sh
 ```
 
-```java
-pane.send("echo hi");     // no Enter
-pane.sendLine("echo hi"); // text and \r in one send-keys -l call
-```
+The output is `first line` followed by `second line`. The capture checks match
+whole result lines so the echoed command cannot satisfy them. The loop makes
+at most five attempts with one second between unsuccessful attempts. `-J`
+preserves trailing spaces, so the text-only checks remove those spaces from
+a separate copy of the captured lines.
 
-```csharp
-await pane.SendKeysAsync(new SendKeysRequest("echo hi", enter: false));
-await pane.SendTextAsync("echo hi"); // defaults enter: true
-```
+## Literal input and named keys
 
-```cpp
-pane->send_text("echo hi");
-pane->send_key("Enter"); // separate command: no combined convenience exists
-```
+`send-keys -l` treats its arguments as literal text. Without `-l`, tmux
+recognizes key names such as `Enter`, `C-c`, and `Up`. Shell quoting protects
+an argument from the shell; `-l` controls how tmux interprets it. The script
+sends literal command text first and the `Enter` key separately.
 
-```swift
-try await server.sendKeys(["echo hi"], to: pane) // no Enter
-try await server.run("echo hi", in: pane)        // sugar for sendKeys([text, "Enter"])
-```
+The [sending keys guide](/guides/sending-keys/) explains literal key names
+and Enter. A pane can also be in a mode such as copy mode, where keys act on
+that mode rather than reaching the application; choose the pane's input
+state deliberately.
 
-## Reading a pane back
+## Capture range and representation
 
-Capture reads the pane's visible screen by default. Request scrollback when
-you need earlier output. A capture is a snapshot of terminal contents, including
-any input echoed by the application.
+`capture-pane -p` prints the capture. With no range, it captures the visible
+screen. `-S -` starts at the oldest available history line, and `-J` joins
+wrapped lines. History is bounded by tmux configuration, so old output may
+already have been discarded. `-a` selects the alternate screen when it exists;
+that screen has no scrollback history.
 
-<!-- port:go -->
-`pane.Capture` returns `([]string, error)`. Pass a `context.Context` with a
-deadline and check the error before using the result. Set the start boundary to
-`tmux.CaptureBoundary` to include scrollback. `End: tmux.CaptureBoundary`
-includes the bottom of the visible pane.
-<!-- /port -->
+A capture is terminal state, including prompts, echoed input, cursor updates,
+and full-screen redraws. It is not an application's original stdout stream.
+For ongoing pane output, inspect
+[`pipe-pane`](/tmux/latest/manual/pipe-pane/) and choose when recording begins.
+The [capture guide](/guides/capturing-output/) covers ranges and formatting.
 
-```python
-pane.capture_pane()
-```
+<a id="waiting-for-something-to-finish"></a>
 
-```typescript
-await pane.capture();
-```
+## Wait for the required state
 
-```go
-lines, err := pane.Capture(ctx, tmux.CapturePaneRequest{})
-if err != nil {
-    return fmt.Errorf("capture pane: %w", err)
-}
-for _, line := range lines {
-    fmt.Println(line)
-}
-```
+A successful `send-keys` command means tmux handled the input. The application
+may still be processing it. Poll for a specific result when that is the
+observable condition your script needs. Match the result rather than text
+that can appear in the command echo.
 
-```rust
-pane.capture().await?;
-```
+When the program can cooperate, it can signal a named
+[`wait-for`](/tmux/latest/manual/wait-for/) channel. The
+[waiting topic](../waiting-and-retry/) explains signaling and time limits.
+An object can disappear between input and capture, so keep errors visible
+and run cleanup on failed paths too.
 
-```java
-pane.capture();
-```
-
-```csharp
-await pane.CaptureAsync();
-```
-
-```cpp
-pane->capture();
-```
-
-```swift
-try await server.capture(pane)
-```
-
-## Waiting for something to finish
-
-A send call completes when input reaches tmux. It does not wait for the shell
-command to finish. Wait for expected output or a completion signal.
-
-<!-- port:py -->
-Poll capture output for a marker or use the `wait_for` signal channel when you
-control the command. The test-support module provides
-`libtmux.test.retry_until(condition, ...)` for arbitrary conditions.
-<!-- /port -->
-
-<!-- port:swift -->
-`server.waitForOutput(...)` waits for a pattern in pane output and returns an
-`OutputWait`. Give the wait a timeout.
-<!-- /port -->
-
-<!-- port:go -->
-Use `server.WaitFor` with a `WaitForRequest` when the command can signal tmux's
-`wait-for` channel. For streaming output, open `pane.OpenObservation(ctx)`
-before sending input so the observation includes the command's first bytes.
-Both paths take a context; cancellation bounds how long the caller waits.
-
-For a new command whose exit status matters, use `session.Run` and inspect its
-result. Capturing screen text alone cannot establish the command's exit status.
-<!-- /port -->
-
-<!-- port:csharp -->
-Use `TmuxWaitChannel` when the command can signal a named tmux `wait-for`
-channel. Use a cancellation token to bound the wait.
-<!-- /port -->
-
-[Capture pane output](/examples/capture-pane-output/) shows capture and waiting
-examples. [Waiting and retrying](../waiting-and-retry/) explains completion
-conditions and timeouts.
-
-<details>
-<summary>tmux manual and source</summary>
-
-The tmux manual defines [key-name and literal input](https://github.com/tmux/tmux/blob/94796f6b1182507efac8a272fc309a79e22e58a5/tmux.1#L4457)
-and [screen and history capture](https://github.com/tmux/tmux/blob/94796f6b1182507efac8a272fc309a79e22e58a5/tmux.1#L2798).
-A send operation delivers input; it does not establish the program's exit status.
-
-</details>
+The pinned
+[tmux manual](https://github.com/tmux/tmux/blob/79072dd1a9f5fb437a5859e362a496fd57ec0981/tmux.1)
+documents the commands and formats used here.

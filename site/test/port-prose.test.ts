@@ -297,12 +297,12 @@ describe('port prose ownership', () => {
   })
 
   it.each(['pane-interaction', 'options-and-hooks'])('curates the %s article in HTML and machine-readable text', async (name) => {
-    const raw = readFileSync(new URL(`../src/content/docs/topics/${name}.md`, import.meta.url), 'utf8')
-    const body = raw.replace(/^---\n[\s\S]*?\n---\n/, '')
+    const { body, data } = articleFor(`topics/${name}`, 'go')
+    expect(data.port).toBe('go')
     vi.stubEnv('LIBTMUX_DOCS_PORT', 'go')
     const renderer = await createMarkdownProcessor({ remarkPlugins: [remarkPortCode], syntaxHighlight: false })
-    const rendered = await renderer.render(body)
-    const markdown = resolvePortCode(body, 'go')
+    const rendered = await renderer.render(body, { frontmatter: data })
+    const markdown = resolvePortCode(body, 'go', data.port)
     for (const output of [rendered.code, markdown]) {
       expect(output).not.toMatch(/Python|TypeScript|Rust|Java|\.NET|C\+\+|Swift|pane\.send_keys|pane\.show_options/)
       expect(output).toContain('ctx')
@@ -310,9 +310,15 @@ describe('port prose ownership', () => {
     expect(rendered.metadata.headings.map((heading) => heading.text)).not.toContain('Go')
     vi.stubEnv('LIBTMUX_DOCS_PORT', '')
     const rootRenderer = await createMarkdownProcessor({ remarkPlugins: [remarkPortCode], syntaxHighlight: false })
-    const root = await rootRenderer.render(body)
-    expect(root.code).toContain('Python')
-    expect(root.code).toContain('language-python')
-    expect(root.code).toContain('language-go')
+    for (const [port, language] of [['py', 'python'], ['go', 'go']]) {
+      const owned = articleFor(`topics/${name}`, port)
+      const root = await rootRenderer.render(owned.body, { frontmatter: owned.data })
+      expect(root.code).toContain(`language-${language}`)
+    }
+    const native = articleFor(`topics/${name}`)
+    expect(native.data.supportedPorts).toEqual([])
+    const root = await rootRenderer.render(native.body, { frontmatter: native.data })
+    expect(root.code).toContain('language-sh')
+    expect(root.code).not.toMatch(/language-python|language-go|pane\.send_keys|pane\.show_options/)
   })
 })
