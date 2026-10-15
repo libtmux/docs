@@ -11,6 +11,10 @@ import { proseMentions } from '@libtmux/api-model'
 import { proseHref } from '../src/lib/docs-paths'
 import { docsEntriesAvailable, docsEntryAvailable } from '../src/lib/page-port-links'
 import { PORT_BY_SLUG } from '../src/lib/ports'
+import { linkProseMarkdown } from '../src/lib/prose-markdown'
+import { tmuxManual } from '../src/lib/tmux-manual-data'
+import { fromMarkdown } from 'mdast-util-from-markdown'
+import { visit } from 'unist-util-visit'
 
 const languageNames: Record<string, string[]> = {
   py: ['Python'], ts: ['TypeScript'], go: ['Go'], rs: ['Rust'], java: ['Java'],
@@ -163,6 +167,33 @@ describe('port prose ownership', () => {
       expect(articleFor(`${section}/index`, port).data.port).toBe(port)
     }
   })
+
+  it.each(globSync(`${contentRoot}docs/{guides,concepts,topics,examples}/*.md`))(
+    'keeps native prose and manual destinations in %s', (path) => {
+      const { content, frontmatter } = parseFrontmatter(readFileSync(path, 'utf8'))
+      expect(frontmatter.supportedPorts, path).toEqual([])
+      const body = resolvePortCode(content)
+      const languages: string[] = []
+      visit(fromMarkdown(body), 'code', (node) => { languages.push(node.lang ?? '') })
+      expect(languages.every((language) => ['sh', 'bash', 'console', 'text'].includes(language)), path).toBe(true)
+      expect(body, path).not.toMatch(/QueryList|server\.sessions|FilterExpr|CreateWindowAsync/)
+      vi.stubEnv('LIBTMUX_DOCS_PORT', '')
+      const markdown = linkProseMarkdown(body)
+      expect(markdown, path).not.toMatch(/\]\(\/(?:py|ts|rs|go|java|csharp|cxx|swift)\/[^/]+\/(?:api|reference)\//)
+      const links = [...markdown.matchAll(/\]\((\/tmux\/[^/]+\/manual\/[^\s)]*)\)/g)]
+      expect(links.length, path).toBeGreaterThan(0)
+      for (const [, href] of links) {
+        const target = new URL(href, 'https://libtmux.org')
+        const [, version, command] = /^\/tmux\/([^/]+)\/manual\/(.*?)\/?$/.exec(target.pathname)!
+        const manual = tmuxManual(version)
+        if (command === 'full') {
+          if (target.hash) expect(manual.sections.map((section) => section.id), href).toContain(target.hash.slice(1))
+        } else if (command) {
+          expect(manual.commands.map((entry) => entry.name), href).toContain(command)
+        }
+      }
+    },
+  )
 
   it('rejects misspelled, empty and unmatched ownership markers', () => {
     for (const body of ['<!-- port:golang -->bad<!-- /port -->', '<!-- port: -->bad<!-- /port -->', '<!-- port:go -->bad']) {
