@@ -575,6 +575,7 @@ export async function checkNavigation(page, base) {
   await page.waitForFunction(() => window.__docsPageLoaded)
   await page.evaluate(() => {
     localStorage.setItem('color-scheme', 'dark')
+    localStorage.removeItem('libtmux-code-tab')
     localStorage.setItem('libtmux-docs.mcp-install.cooldown.enabled', '1')
     window.__applyTheme()
     window.__navigationProbe = { loads: 0, blank: false, wrongTheme: false }
@@ -602,14 +603,28 @@ export async function checkNavigation(page, base) {
   await page.getByRole('button', { name: 'Print', exact: true }).waitFor({ state: 'visible' })
   await page.keyboard.press('Escape')
   assert.equal(await page.locator('[data-page-actions]').getAttribute('open'), null)
-  const otherTab = page.locator('.code-tab[aria-selected="false"]').first()
-  const port = await otherTab.getAttribute('data-port')
-  await otherTab.click()
-  assert.equal(await page.locator(`.code-tab[data-port="${port}"]`).first().getAttribute('aria-selected'), 'true')
+  assert.equal(await page.locator('main libtmux-code-tabs').count(), 0, 'Native tmux prose has no language tabs')
   await page.goBack()
   await page.waitForFunction(() => window.__navigationProbe?.loads === 3)
   assert.deepEqual(await page.evaluate(() => window.__navigationProbe), { loads: 3, blank: false, wrongTheme: false })
   assert.equal(await page.locator('html').getAttribute('data-mcp-install-cooldown-enabled'), '1')
+
+  await page.goto(`${base}/code-tabs-probe/`, { waitUntil: 'load' })
+  await page.waitForFunction(() => window.__docsPageLoaded)
+  await page.waitForFunction(() => customElements.get('libtmux-code-tabs'))
+  await page.evaluate(() => {
+    window.__codeTabsProbeLoads = 0
+    document.addEventListener('astro:page-load', () => window.__codeTabsProbeLoads++)
+  })
+  await page.getByRole('link', { name: 'Open the code tabs fixture', exact: true }).click()
+  await page.waitForFunction(() => window.__codeTabsProbeLoads === 1)
+  assert.match(page.url(), /\/code-tabs-probe\/\?from=client$/)
+  const otherTab = page.locator('.code-tab[aria-selected="false"]').first()
+  const port = await otherTab.getAttribute('data-port')
+  await otherTab.click()
+  assert.equal(await page.locator(`.code-tab[data-port="${port}"]`).first().getAttribute('aria-selected'), 'true')
+  assert.equal(await page.locator(`.code-tab-panel[data-port="${port}"]:not([hidden])`).count(), 2,
+    'Client navigation initializes both real Markdown tab groups')
   console.log('Navigation: document retained, Back, search, code tabs, menu and saved theme/cooldown pass')
 
   for (const [port, version] of [['ts', 'latest'], ['py', 'stable']]) {

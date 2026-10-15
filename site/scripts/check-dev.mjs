@@ -58,6 +58,19 @@ import DocsLayout from '../layouts/DocsLayout.astro'
 for (const file of ['astro.config.ts', 'ec.config.mjs', 'package.json', 'tsconfig.json']) cpSync(join(source, file), join(root, file))
 for (const file of ['public', 'node_modules']) symlinkSync(join(source, file), join(root, file), 'dir')
 for (const file of ['scripts', 'packages', 'node_modules']) symlinkSync(join(source, '..', file), join(mirror, file), 'dir')
+// Keep browser component fixtures outside the native tmux content tree.
+mkdirSync(join(root, 'src/browser-probes'))
+cpSync(join(source, 'test/fixtures/browser-code-tabs.md'), join(root, 'src/browser-probes/code-tabs.md'))
+writeFileSync(join(root, 'src/pages/code-tabs-probe.astro'), `---
+import DocsLayout from '../layouts/DocsLayout.astro'
+import { Content } from '../browser-probes/code-tabs.md'
+import { withRoot } from '../lib/site-root'
+---
+<DocsLayout title="Code tabs browser fixture" pagePath="code-tabs-probe" tableOfContents={false}>
+  <p><a href={withRoot('/code-tabs-probe/?from=client')}>Open the code tabs fixture</a></p>
+  <Content />
+</DocsLayout>
+`)
 // Exercise the production reference page in the root server. Its model and
 // owner are the same props its port route supplies, without another Vite boot.
 writeFileSync(join(root, 'src/pages/api-example-probe.astro'), `---
