@@ -481,7 +481,10 @@ export class SymbolIndex {
 
     // Scala and Kotlin default imports take precedence over a JDK inventory's
     // bare aliases. An explicit java.util.Vector import still resolves there.
-    const builtin = this.lang ? builtinHref(this.lang, clean) : undefined
+    const usingAlias = this.lang === 'scala' && (clean === 'Using' || clean.startsWith('Using.'))
+    const shadowedUsing = usingAlias && (this.byName.has('Using') || this.bySuffix.has(clean) ||
+      context?.signatures.some((sig) => sig.params.some((param) => param.name === 'Using') || sig.receiver?.name === 'Using'))
+    const builtin = this.lang && !shadowedUsing ? builtinHref(this.lang, clean) : undefined
     if (builtin && ['kotlin', 'scala'].includes(this.lang ?? '')) return { href: builtin, external: true }
 
     // Intersphinx order: exact name, then the shortest suffix. An inventory

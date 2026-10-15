@@ -58,7 +58,7 @@ function inlineCode(code: string): string {
   return `${fence}${pad}${code}${pad}${fence}`
 }
 
-function powerShellProseMarkdown(markdown: string, index: SymbolIndex, symbol: ApiSymbol): string {
+function proseMarkdown(markdown: string, index: SymbolIndex, symbol: ApiSymbol): string {
   // Use the HTML resolver for prose exports too. Never rewrite runnable code
   // blocks or the contents of an author-supplied link.
   const edits: { start: number; end: number; text: string }[] = []
@@ -70,6 +70,20 @@ function powerShellProseMarkdown(markdown: string, index: SymbolIndex, symbol: A
       if (node.type === 'inlineCode') {
         const link = index.resolve(node.value, 'any', symbol)
         if (link) edits.push({ start, end, text: `[${inlineCode(node.value)}](${link.href})` })
+        else {
+          const parts = index.linkType(node.value, symbol)
+          if (parts.some((part) => part.link)) {
+            let plain = ''
+            let linked = ''
+            for (const part of parts) {
+              if (!part.link) { plain += part.text; continue }
+              if (plain) { linked += inlineCode(plain); plain = '' }
+              linked += `[${inlineCode(part.text)}](${part.link.href})`
+            }
+            if (plain) linked += inlineCode(plain)
+            edits.push({ start, end, text: linked })
+          }
+        }
       } else if (markdown.slice(start, end) === node.value) {
         const spans = index.linkText(node.value, symbol)
         if (spans.some((span) => span.kind === 'ref' && span.link)) edits.push({ start, end,
@@ -88,7 +102,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   const port = 'port' in model ? model.port : undefined
   const language = 'language' in model ? model.language : port
   const index = ctx.index ?? (port && 'port' in model ? productApiIndex(model, ctx.version ?? defaultVersionFor(port)) : undefined)
-  const prose = (text: string) => language === 'powershell' && index ? powerShellProseMarkdown(text, index, symbol) : text
+  const prose = (text: string) => ['powershell', 'scala'].includes(language ?? '') && index ? proseMarkdown(text, index, symbol) : text
   const id = qualifiedNameOf(symbol)
   const out: string[] = [`# ${id}`, '']
 

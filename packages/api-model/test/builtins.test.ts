@@ -5,6 +5,40 @@ import { SymbolIndex } from '../src/link.ts'
 import type { ApiModel, ApiSymbol } from '../src/model.ts'
 
 describe('standard types in product signatures', () => {
+  it('links Scala Using.resource without losing the callee owner or expression', () => {
+    const model = JSON.parse(readFileSync(new URL('../../../site/src/data/api/scala.json', import.meta.url), 'utf8')) as ApiModel
+    const context = model.symbols.find((symbol) => symbol.id === 'io.github.libtmux.scaladsl.Server')!
+    const index = new SymbolIndex(model.symbols, (symbol) => `#${symbol.id}`, 'scala')
+    const target = 'https://www.scala-lang.org/api/3.9.0/scala/util/Using$.html#resource-fffffb81'
+    for (const callee of ['Using.resource', 'scala.util.Using.resource']) {
+      const expression = `${callee}(server) { ... }`
+      const spans = index.linkType(expression, context)
+      expect(spans.map((span) => span.text).join('')).toBe(expression)
+      expect(spans.filter((span) => span.link).map((span) => [span.text, span.link!.href])).toEqual([[callee, target]])
+    }
+    expect(index.resolve('ResourceOwner.resource', 'any', { ...context, imports: { ResourceOwner: 'scala.util.Using' } })?.href).toBe(target)
+    expect(index.resolve('resource', 'any', context)?.symbol?.id).toBe('io.github.libtmux.scaladsl.cats.Server.resource')
+    expect(index.resolve('Using.missing', 'any', context)).toBeUndefined()
+    for (const expression of ['"Using.resource(server)"', '/* Using.resource(server) */', '// Using.resource(server)']) {
+      expect(index.linkType(expression, context).some((span) => span.link)).toBe(false)
+    }
+    expect(new SymbolIndex([], () => '#', 'java').resolve('Using.resource')).toBeUndefined()
+  })
+
+  it('keeps local and imported Scala Using bindings ahead of the prose fallback', () => {
+    const owner: ApiSymbol = { id: 'example.Using', name: 'Using', kind: 'module', modifiers: [], signatures: [], source: { file: 'Example.scala' } }
+    const member: ApiSymbol = { ...owner, id: 'example.Using.resource', name: 'resource', kind: 'method', parent: owner.id }
+    const index = new SymbolIndex([owner, member], (symbol) => `#${symbol.id}`, 'scala')
+    expect(index.resolve('Using.resource')).toMatchObject({ href: '#example.Using.resource', external: false })
+    expect(index.resolve('Using.resource', 'any', { ...owner, imports: { Using: 'unrelated.Using' } })).toBeUndefined()
+    expect(new SymbolIndex([owner], (symbol) => `#${symbol.id}`, 'scala').resolve('Using.resource')).toBeUndefined()
+    const ambiguous = new SymbolIndex([owner, member, { ...member, id: 'other.Using.resource' }], (symbol) => `#${symbol.id}`, 'scala')
+    expect(ambiguous.resolve('Using.resource')).toBeUndefined()
+    expect(new SymbolIndex([], () => '#', 'scala').resolve('Using.resource', 'any', {
+      ...owner, id: 'example.operation', name: 'operation', signatures: [{ params: [{ name: 'Using', type: 'CustomOwner' }] }],
+    })).toBeUndefined()
+  })
+
   it('links standard PowerShell commands without claiming LibTmux members or other ports', () => {
     const commands = {
       'Get-Member': 'microsoft.powershell.utility',

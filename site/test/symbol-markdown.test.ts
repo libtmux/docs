@@ -20,6 +20,17 @@ function inlineCodes(text: string): string[] {
 }
 
 describe('API Markdown content parity', () => {
+  it('exports the Scala Using.resource callee link while preserving runnable code and authored links', () => {
+    const model = API_MODELS.scala
+    const server = model.symbols.find((symbol) => symbol.id === 'io.github.libtmux.scaladsl.Server')!
+    const target = 'https://www.scala-lang.org/api/3.9.0/scala/util/Using$.html#resource-fffffb81'
+    const markdown = symbolMarkdown({ model, symbol: server })
+    expect(markdown).toContain('[`Using.resource`](' + target + ')`(server) { ... }`')
+    const source = '[`Using.resource`](https://example.com/authored)\n\n```scala\nUsing.resource(server) { ... }\n```'
+    const symbol = { ...server, doc: { summary: source } }
+    expect(symbolMarkdown({ model: { ...model, symbols: [symbol] }, symbol })).toContain(source)
+  })
+
   it('exports cross-port native representations and acquisition differences', () => {
     const model = API_MODELS.cxx
     const symbol = model.symbols.find((symbol) => symbol.id === 'libtmux::Server')!
