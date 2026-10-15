@@ -194,7 +194,7 @@ describe('prose Markdown links', () => {
     const { llmsPage: deployedPage } = await import('../src/lib/llms')
     const pages = [
       ['topics/architecture', ['go/next/concepts/queries', 'java/latest/concepts/queries']],
-      ['topics/waiting-and-retry', ['ts/next/concepts/transports']],
+      ['ports/ts/topics/waiting-and-retry', ['ts/next/concepts/transports']],
     ] as const
     for (const [id, targets] of pages) {
       const { content, frontmatter } = parseFrontmatter(readFileSync(new URL(`../src/content/docs/${id}.md`, import.meta.url), 'utf8'))

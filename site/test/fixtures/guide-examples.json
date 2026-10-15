@@ -404,6 +404,61 @@
           "second line"
         ]
       ]
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "topics/waiting-and-retry",
+      "sourceRevision": "79072dd1a9f5fb437a5859e362a496fd57ec0981",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "waiting.sh",
+          "sha256": "b3e350bad006dd6381c7e54cbece083dd1c738beadf7c3750fdded3f0096e22a"
+        }
+      ],
+      "shellRecipe": [
+        "sh waiting.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "build completed",
+          "unsignalled channel reached deadline",
+          "lock released"
+        ]
+      ]
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "topics/traversal",
+      "sourceRevision": "79072dd1a9f5fb437a5859e362a496fd57ec0981",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "traversal.sh",
+          "sha256": "ea1d85c2f446d7fae972d102515749febc64d2d7b80c4a948d32d4404637f5d8"
+        }
+      ],
+      "shellRecipe": [
+        "sh traversal.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "work windows: 2",
+          "work panes: 3",
+          "server pane rows: 6",
+          "unique server panes: 4"
+        ]
+      ]
     }
   ]
 }

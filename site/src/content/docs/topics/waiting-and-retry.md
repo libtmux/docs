@@ -1,7 +1,7 @@
 ---
-supportedPorts: [py, ts, rs, go, java, csharp, cxx, swift]
+supportedPorts: []
 title: Waiting and retrying
-description: Polling a condition instead of guessing a sleep, and tmux's own wait-for signal channel as the alternative to polling.
+description: Coordinate native tmux commands with wait-for channels, bounded waits, and state checks before retries.
 sidebar:
   label: Waiting and retrying
   group: Topics
@@ -9,317 +9,109 @@ sidebar:
 tableOfContents: true
 ---
 
-After sending input or starting a process, wait for the state your next step
-requires. [Pane
-interaction](../pane-interaction/#waiting-for-something-to-finish) covers
-waiting for screen text. This page covers arbitrary conditions and tmux's named
-`wait-for` signal channels.
+Wait for the state your next command needs. A successful input command does
+not establish that a pane's application finished. Use a named
+[`wait-for`](/tmux/latest/manual/wait-for/) signal when the program can
+cooperate, or poll an observable condition with a deadline.
 
-## Polling a condition
+## Signal completion and bound the wait
 
-Polling checks a condition repeatedly until it succeeds or a deadline expires.
-Set a deadline and choose an interval that limits unnecessary tmux commands.
+Save this complete script as `waiting.sh`. It requires tmux 3.2a or newer,
+a POSIX shell, and the GNU coreutils `timeout` command. It starts a producer
+on a private server, waits for its signal, checks a deadline, and releases
+a cooperative lock before cleanup.
 
-<!-- port:py -->
-<!-- port:root -->
-### Python
-<!-- /port -->
+```sh title="waiting.sh"
+#!/bin/sh
+set -eu
+directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-waiting.XXXXXX")
+socket="$directory/tmux.sock"
 
-**Helper:** `libtmux.test.retry_until(fn, seconds=, interval=)`
-
-**Where it lives:** `src/libtmux/test/` in the main package; raises
-`WaitTimeout`.
-<!-- /port -->
-
-<!-- port:ts -->
-<!-- port:root -->
-### TypeScript
-<!-- /port -->
-
-**Helper:** `connectedServer.waitFor(matches, options)`
-
-**Where it lives:** The public control-connection API. Tests a predicate over
-`ServerSnapshot`; see [Control mode vs one-shot](/concepts/transports/).
-<!-- /port -->
-
-<!-- port:go -->
-<!-- port:root -->
-### Go
-<!-- /port -->
-
-**Helper:** `tmuxtest.WaitFor(ctx, interval, condition)`
-
-**Where it lives:** `tmuxtest`, a separate test-support package from `tmux`
-<!-- /port -->
-
-<!-- port:rs -->
-<!-- port:root -->
-### Rust
-<!-- /port -->
-
-**Helper:** `libtmux::test::retry_until(within, condition)`
-
-**Where it lives:** `crates/libtmux/src/test.rs`, enabled with the `test-support` Cargo
-feature.
-<!-- /port -->
-
-<!-- port:java -->
-<!-- port:root -->
-### Java
-<!-- /port -->
-
-**Helper:** Not listed.
-
-**Where it lives:** not found in the shipped library; a package-private
-`Await.until(...)` exists only inside the `integration-tests` module, which
-downstream code cannot depend on
-<!-- /port -->
-
-<!-- port:csharp -->
-<!-- port:root -->
-### C#
-<!-- /port -->
-
-**Helper:** `LibTmux.Testing.TmuxWait.UntilAsync(probe, timeout, interval)`
-
-**Where it lives:** the separate `LibTmux.Testing` package
-<!-- /port -->
-
-<!-- port:cxx -->
-<!-- port:root -->
-### C++
-<!-- /port -->
-
-**Helper:** Not listed.
-
-**Where it lives:** no generic condition-poll helper found in the public
-library; a `wait_until` exists only in the private `testing` component, for
-waiting on a spawned child process, not on tmux state
-<!-- /port -->
-
-<!-- port:swift -->
-<!-- port:root -->
-### Swift
-<!-- /port -->
-
-**Helper:** Not listed.
-
-**Where it lives:** a `waitUntil` helper exists only inside the test target's
-own support code, not shipped
-<!-- /port -->
-
-### Examples
-
-<!-- port:ts -->
-`waitFor` subscribes before reading a server snapshot so it does not miss a
-change between those steps.
-<!-- /port -->
-<!-- port:go -->
-`tmuxtest.WaitFor` probes immediately, then at the requested positive interval.
-It returns a probe error or context error unchanged. Each probe must read fresh
-state and honor its context. `Session.Windows()` only reads a stored snapshot;
-use `Session.SearchWindows` to query tmux on every probe.
-<!-- /port -->
-
-```python
-def is_window_up(pane, name):
-    return any(w.window_name == name for w in pane.window.session.windows)
-
-libtmux.test.retry_until(lambda: is_window_up(pane, "build"), seconds=5.0)
-```
-
-```typescript
-await using live = await server.connect();
-await live.waitFor((snapshot) => snapshot.windows.exists({ name: "build" }));
-```
-
-```go
-waitCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
-defer cancel()
-err := tmuxtest.WaitFor(waitCtx, 50*time.Millisecond, func(ctx context.Context) (bool, error) {
-	windows, err := session.SearchWindows(ctx, nil)
-	if err != nil {
-		return false, err
-	}
-	for _, w := range windows {
-		if name, ok := w.Name(); ok && name == "build" {
-			return true, nil
-		}
-	}
-	return false, nil
-})
-if err != nil {
-    return fmt.Errorf("wait for build window: %w", err)
+cleanup() {
+    status=$?
+    trap - 0 HUP INT TERM
+    if [ -S "$socket" ] && ! tmux -S "$socket" kill-server; then
+        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
+        exit 1
+    fi
+    rm -rf "$directory" || status=$?
+    exit "$status"
 }
+trap cleanup 0
+trap 'exit 1' HUP INT TERM
+
+tmux -S "$socket" -f /dev/null new-session -d -s work 'cat'
+tmux -S "$socket" new-window -d -t '=work:' -n build \
+    -e "DEMO_SOCKET=$socket" -e "RESULT=$directory/built.txt" \
+    'printf "build completed\n" > "$RESULT"; tmux -S "$DEMO_SOCKET" wait-for -S built; exec cat'
+timeout 5 tmux -S "$socket" wait-for built
+[ "$(cat "$directory/built.txt")" = 'build completed' ]
+printf 'build completed\n'
+
+if timeout 1 tmux -S "$socket" wait-for never-signalled; then
+    printf 'An unsignalled channel unexpectedly completed\n' >&2
+    exit 1
+else
+    status=$?
+    [ "$status" -eq 124 ]
+fi
+printf 'unsignalled channel reached deadline\n'
+
+timeout 5 tmux -S "$socket" wait-for -L layout-lock
+tmux -S "$socket" wait-for -U layout-lock
+printf 'lock released\n'
 ```
 
-```rust
-libtmux::test::retry_until(std::time::Duration::from_secs(5), async || {
-    session.windows().await.map(|ws| ws.iter().any(|w| w.name() == "build")).unwrap_or(false)
-})
-.await?;
+Run the saved script:
+
+```console
+$ sh waiting.sh
 ```
 
-```csharp
-await LibTmux.Testing.TmuxWait.UntilAsync(
-    async ct => (await session.GetWindowsAsync(ct)).Any(w => w.Name == "build"),
-    TimeSpan.FromSeconds(5),
-    TimeSpan.FromMilliseconds(50));
-```
+The output is `build completed`, `unsignalled channel reached deadline`, and
+`lock released` on separate lines. The producer writes its result before
+signaling. The deliberately unsignalled channel verifies that the shell
+recognizes GNU `timeout`'s exit status 124.
 
-<!-- port:java,cxx,swift -->
-Use a loop with a deadline and interval when a specific wait API does not fit.
+## Name the channel and choose its meaning
+
+`wait-for channel` waits for a signal. `wait-for -S channel` signals that name.
+Both commands must reach the same server. Channel names are server-wide;
+two sessions do not provide separate channel namespaces. Use a private
+server or a job-specific name when independent tasks could collide.
+
+The signal says that the producer reached its signaling step. It carries no
+result text and does not prove that an arbitrary command succeeded. Check
+the operation's result, write it before signaling, and keep errors visible.
+The [capture example](/examples/capture-pane-output/) uses a completion
+signal with pane output.
+
+## Timeouts and retries
+
+`wait-for` has no native timeout flag. This script uses GNU `timeout` to bound
+its waiting client. A deadline ending the client does not roll back server
+state or stop a separate producer. Read the required state before deciding
+whether to retry a mutation such as
+[`new-window`](/tmux/latest/manual/new-window/).
+
+For output conditions, a bounded loop around
+[`capture-pane`](/tmux/latest/manual/capture-pane/) can wait for a specific
+result. Match output that cannot be satisfied by the echoed input command.
 [Pane interaction](../pane-interaction/#waiting-for-something-to-finish)
-covers output waits.
-<!-- /port -->
+shows a complete example with a fixed attempt count.
 
-## tmux's own wait-for channel
+## Cooperative locks
 
-Use `tmux wait-for -S <channel>` to signal and `tmux wait-for <channel>` to
-block until signalled. This avoids repeated screen captures when the command can
-announce its own completion:
+`wait-for -L name` acquires a named lock, waiting while it is held.
+`wait-for -U name` releases it. Every cooperating caller must use the same
+name and server. The lock coordinates those callers; it does not make a
+group of tmux mutations atomic or undo changes on failure.
 
-<!-- port:py -->
-<!-- port:root -->
-### Python
-<!-- /port -->
-Signal a channel with `Server.wait_for` and `set_flag=True`.
-Call the same method without that flag to wait for the signal.
-<!-- /port -->
+Arrange release on every exit path when a shared server owns the lock.
+The example's final cleanup stops its entire private server, including any
+remaining channels. [Command failures](../errors-and-exceptions/) explains
+how command errors and partial work affect retries.
 
-<!-- port:ts -->
-<!-- port:root -->
-### TypeScript
-<!-- /port -->
-The public API does not expose the channel handshake used internally
-by the test server during startup.
-<!-- /port -->
-
-<!-- port:go -->
-<!-- port:root -->
-### Go
-<!-- /port -->
-Call `Server.WaitFor` with a `WaitForRequest`. Set its mode to
-`WaitForModeSignal` to signal the channel; the zero-value mode waits.
-<!-- /port -->
-
-<!-- port:rs -->
-<!-- port:root -->
-### Rust
-<!-- /port -->
-`Server.signal_channel` signals a channel.
-`Server.wait_for_channel` waits with a timeout and returns a `ChannelWait`
-indicating whether it was signalled or timed out.
-<!-- /port -->
-
-<!-- port:java -->
-<!-- port:root -->
-### Java
-<!-- /port -->
-Obtain a channel through `Server.channel`. Its `signal()` method
-wakes a waiter; `await(timeout)` returns a `WakeReason` so the caller can
-distinguish a signal from a timeout.
-<!-- /port -->
-
-<!-- port:csharp -->
-<!-- port:root -->
-### C#
-<!-- /port -->
-`Server.OpenWaitChannel` returns a `TmuxWaitChannel`. Keep it in
-an `await using` scope and call `WaitAsync` with a budget. Select the
-signal mode to signal the channel.
-<!-- /port -->
-
-<!-- port:cxx -->
-<!-- port:root -->
-### C++
-<!-- /port -->
-`Server.signal` signals a channel. `Server.wait_for` waits for the
-channel with a timeout.
-<!-- /port -->
-
-<!-- port:swift -->
-<!-- port:root -->
-### Swift
-<!-- /port -->
-`Server.signal` signals a channel, and `Server.wait(for:)` waits
-for it. Both calls are async and throwing.
-<!-- /port -->
-
-```python
-server.new_session(session_name="work")
-server.wait_for("built", set_flag=True)  # signal
-server.wait_for("built")                 # block until signalled
-```
-
-```go
-if err := server.WaitFor(ctx, tmux.WaitForRequest{
-    Channel: "built", Mode: tmux.WaitForModeSignal,
-}); err != nil {
-    return err
-}
-if err := server.WaitFor(ctx, tmux.WaitForRequest{Channel: "built"}); err != nil {
-    return err
-}
-```
-
-```rust
-server.signal_channel("built").await?;
-let outcome = server.wait_for_channel("built", std::time::Duration::from_secs(5)).await?;
-```
-
-```java
-Channel built = server.channel("built");
-built.signal();
-WakeReason reason = built.await(Duration.ofSeconds(5));
-```
-
-```csharp
-await using TmuxWaitChannel channel = server.OpenWaitChannel("built");
-bool signalled = await channel.WaitAsync(TimeSpan.FromSeconds(5));
-```
-
-```cpp
-server.signal("built");
-server.wait_for("built", std::chrono::seconds{5});
-```
-
-```swift
-try await server.signal("built")
-try await server.wait(for: "built")
-```
-
-tmux remembers a signal sent before a waiter starts. The next wait on that
-channel returns immediately, so completion is not lost when the command finishes
-first.
-
-A raw `wait-for` client can exit zero when the server dies, as well as when the
-channel is signalled. Verify server liveness when a lost server must be treated
-as a failed task.
-
-<!-- port:java -->
-Check `WakeReason` to distinguish server loss from a signal. `drain()` can
-clear a remembered signal before reusing a channel.
-<!-- /port -->
-<!-- port:swift -->
-`wait(for:)` checks the server PID before and after waiting to distinguish
-server loss from a signal.
-<!-- /port -->
-
-Use a channel name specific to the task. A remembered signal can otherwise
-satisfy an unrelated later wait.
-
-<!-- port:root -->
-The [wait-for reference](/tmux/latest/manual/wait-for/) describes completion
-signals and locks for each supported tmux version.
-<!-- /port -->
-
-<details>
-<summary>tmux manual and source</summary>
-
-The tmux manual describes [completion channels](https://github.com/tmux/tmux/blob/94796f6b1182507efac8a272fc309a79e22e58a5/tmux.1#L8715).
-The [channel implementation](https://github.com/tmux/tmux/blob/94796f6b1182507efac8a272fc309a79e22e58a5/cmd-wait-for.c#L388)
-retains an early signal until a waiter consumes it. Use a fresh channel name
-for each operation.
-
-</details>
+The pinned
+[tmux manual](https://github.com/tmux/tmux/blob/79072dd1a9f5fb437a5859e362a496fd57ec0981/tmux.1)
+documents the commands and formats used here.

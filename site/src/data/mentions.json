@@ -59,15 +59,15 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.IncompleteSnapshotException",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
+   "page": "/csharp/latest/topics/traversal/",
+   "title": "Traversal",
    "section": "topics"
   },
   {
    "port": "csharp",
    "symbol": "LibTmux.IncompleteSnapshotException",
-   "page": "/topics/traversal/",
-   "title": "Traversal",
+   "page": "/topics/architecture/",
+   "title": "Architecture",
    "section": "topics"
   },
   {
@@ -178,7 +178,7 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.Pane.Equals",
-   "page": "/topics/traversal/",
+   "page": "/csharp/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -227,7 +227,7 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.Pane.Window",
-   "page": "/topics/traversal/",
+   "page": "/csharp/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -381,7 +381,7 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.Server.GetSessionsAsync",
-   "page": "/topics/traversal/",
+   "page": "/csharp/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -409,7 +409,7 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.Server.OpenWaitChannel",
-   "page": "/topics/waiting-and-retry/",
+   "page": "/csharp/latest/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
   },
@@ -451,7 +451,7 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.Session",
-   "page": "/topics/traversal/",
+   "page": "/csharp/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -465,7 +465,7 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.Session.ActiveWindow",
-   "page": "/topics/traversal/",
+   "page": "/csharp/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -479,7 +479,14 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.Session.GetWindowsAsync",
-   "page": "/topics/traversal/",
+   "page": "/csharp/latest/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Session.Panes",
+   "page": "/csharp/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -489,13 +496,6 @@
    "page": "/powershell/latest/guides/getting-started/",
    "title": "Getting started",
    "section": "guides"
-  },
-  {
-   "port": "csharp",
-   "symbol": "LibTmux.Session.Panes",
-   "page": "/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
   },
   {
    "port": "csharp",
@@ -794,7 +794,7 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.TmuxWait.UntilAsync",
-   "page": "/topics/waiting-and-retry/",
+   "page": "/csharp/latest/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
   },
@@ -808,14 +808,14 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.TmuxWaitChannel",
-   "page": "/topics/waiting-and-retry/",
+   "page": "/csharp/latest/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
   },
   {
    "port": "csharp",
    "symbol": "LibTmux.TmuxWaitChannel.WaitAsync",
-   "page": "/topics/waiting-and-retry/",
+   "page": "/csharp/latest/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
   },
@@ -836,7 +836,14 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.Window",
-   "page": "/topics/traversal/",
+   "page": "/csharp/latest/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Window.ActivePane",
+   "page": "/csharp/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -849,13 +856,6 @@
   },
   {
    "port": "csharp",
-   "symbol": "LibTmux.Window.ActivePane",
-   "page": "/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "csharp",
    "symbol": "LibTmux.Window.FromEnvironmentAsync",
    "page": "/csharp/latest/topics/environment/",
    "title": "Environment",
@@ -864,7 +864,7 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.Window.GetPanesAsync",
-   "page": "/topics/traversal/",
+   "page": "/csharp/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -885,7 +885,7 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.Window.Session",
-   "page": "/topics/traversal/",
+   "page": "/csharp/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -1263,7 +1263,7 @@
   {
    "port": "cxx",
    "symbol": "libtmux::CommandOperation::wait_until",
-   "page": "/topics/waiting-and-retry/",
+   "page": "/cxx/latest/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
   },
@@ -1459,15 +1459,15 @@
   {
    "port": "cxx",
    "symbol": "libtmux::Pane",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
+   "page": "/cxx/latest/topics/traversal/",
+   "title": "Traversal",
    "section": "topics"
   },
   {
    "port": "cxx",
    "symbol": "libtmux::Pane",
-   "page": "/topics/traversal/",
-   "title": "Traversal",
+   "page": "/topics/architecture/",
+   "title": "Architecture",
    "section": "topics"
   },
   {
@@ -1564,7 +1564,7 @@
   {
    "port": "cxx",
    "symbol": "libtmux::Pane::window",
-   "page": "/topics/traversal/",
+   "page": "/cxx/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -1704,21 +1704,21 @@
   {
    "port": "cxx",
    "symbol": "libtmux::Server::sessions",
-   "page": "/topics/traversal/",
+   "page": "/cxx/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
   {
    "port": "cxx",
    "symbol": "libtmux::Server::signal",
-   "page": "/topics/waiting-and-retry/",
+   "page": "/cxx/latest/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
   },
   {
    "port": "cxx",
    "symbol": "libtmux::Server::wait_for",
-   "page": "/topics/waiting-and-retry/",
+   "page": "/cxx/latest/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
   },
@@ -1753,21 +1753,21 @@
   {
    "port": "cxx",
    "symbol": "libtmux::Session",
+   "page": "/cxx/latest/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Session",
    "page": "/topics/architecture/",
    "title": "Architecture",
    "section": "topics"
   },
   {
    "port": "cxx",
-   "symbol": "libtmux::Session",
-   "page": "/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "cxx",
    "symbol": "libtmux::Session::active_window",
-   "page": "/topics/traversal/",
+   "page": "/cxx/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -1788,7 +1788,7 @@
   {
    "port": "cxx",
    "symbol": "libtmux::Session::panes",
-   "page": "/topics/traversal/",
+   "page": "/cxx/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -1802,7 +1802,7 @@
   {
    "port": "cxx",
    "symbol": "libtmux::Session::windows",
-   "page": "/topics/traversal/",
+   "page": "/cxx/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -1879,35 +1879,35 @@
   {
    "port": "cxx",
    "symbol": "libtmux::Window",
+   "page": "/cxx/latest/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Window",
    "page": "/topics/architecture/",
    "title": "Architecture",
    "section": "topics"
   },
   {
    "port": "cxx",
-   "symbol": "libtmux::Window",
-   "page": "/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "cxx",
    "symbol": "libtmux::Window::active_pane",
-   "page": "/topics/traversal/",
+   "page": "/cxx/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
   {
    "port": "cxx",
    "symbol": "libtmux::Window::panes",
-   "page": "/topics/traversal/",
+   "page": "/cxx/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
   {
    "port": "cxx",
    "symbol": "libtmux::Window::session",
-   "page": "/topics/traversal/",
+   "page": "/cxx/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -3496,7 +3496,7 @@
   {
    "port": "go",
    "symbol": "tmux.Pane.ID",
-   "page": "/topics/traversal/",
+   "page": "/go/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -3531,7 +3531,7 @@
   {
    "port": "go",
    "symbol": "tmux.Pane.Window",
-   "page": "/topics/traversal/",
+   "page": "/go/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -3552,7 +3552,7 @@
   {
    "port": "go",
    "symbol": "tmux.PaneID",
-   "page": "/topics/traversal/",
+   "page": "/go/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -3713,7 +3713,7 @@
   {
    "port": "go",
    "symbol": "tmux.Server.Sessions",
-   "page": "/topics/traversal/",
+   "page": "/go/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -3755,7 +3755,7 @@
   {
    "port": "go",
    "symbol": "tmux.Server.WaitFor",
-   "page": "/topics/waiting-and-retry/",
+   "page": "/go/latest/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
   },
@@ -3790,7 +3790,7 @@
   {
    "port": "go",
    "symbol": "tmux.Session.ActiveWindow",
-   "page": "/topics/traversal/",
+   "page": "/go/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -3825,7 +3825,7 @@
   {
    "port": "go",
    "symbol": "tmux.Session.Panes",
-   "page": "/topics/traversal/",
+   "page": "/go/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -3846,16 +3846,16 @@
   {
    "port": "go",
    "symbol": "tmux.Session.SearchWindows",
-   "page": "/go/latest/workspace/internals/guides/",
-   "title": "Use the Go workspace builder",
-   "section": "ports"
+   "page": "/go/latest/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
   },
   {
    "port": "go",
    "symbol": "tmux.Session.SearchWindows",
-   "page": "/topics/waiting-and-retry/",
-   "title": "Waiting and retrying",
-   "section": "topics"
+   "page": "/go/latest/workspace/internals/guides/",
+   "title": "Use the Go workspace builder",
+   "section": "ports"
   },
   {
    "port": "go",
@@ -3895,14 +3895,14 @@
   {
    "port": "go",
    "symbol": "tmux.Session.Windows",
-   "page": "/topics/traversal/",
+   "page": "/go/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
   {
    "port": "go",
    "symbol": "tmux.Session.Windows",
-   "page": "/topics/waiting-and-retry/",
+   "page": "/go/latest/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
   },
@@ -3965,7 +3965,7 @@
   {
    "port": "go",
    "symbol": "tmux.WaitForModeSignal",
-   "page": "/topics/waiting-and-retry/",
+   "page": "/go/latest/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
   },
@@ -3979,7 +3979,7 @@
   {
    "port": "go",
    "symbol": "tmux.WaitForRequest",
-   "page": "/topics/waiting-and-retry/",
+   "page": "/go/latest/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
   },
@@ -3993,7 +3993,7 @@
   {
    "port": "go",
    "symbol": "tmux.Window.ActivePane",
-   "page": "/topics/traversal/",
+   "page": "/go/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -4014,14 +4014,14 @@
   {
    "port": "go",
    "symbol": "tmux.Window.Panes",
-   "page": "/topics/traversal/",
+   "page": "/go/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
   {
    "port": "go",
    "symbol": "tmux.Window.Session",
-   "page": "/topics/traversal/",
+   "page": "/go/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -4147,7 +4147,7 @@
   {
    "port": "go",
    "symbol": "tmuxtest.WaitFor",
-   "page": "/topics/waiting-and-retry/",
+   "page": "/go/latest/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
   },
@@ -4392,14 +4392,14 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Channel.Channel.drain",
-   "page": "/topics/waiting-and-retry/",
+   "page": "/java/latest/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
   },
   {
    "port": "java",
    "symbol": "io.github.libtmux.Channel.Channel.signal",
-   "page": "/topics/waiting-and-retry/",
+   "page": "/java/latest/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
   },
@@ -4651,7 +4651,7 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Pane.Pane.equals",
-   "page": "/topics/traversal/",
+   "page": "/java/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -4700,7 +4700,7 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Pane.Pane.window",
-   "page": "/topics/traversal/",
+   "page": "/java/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -4833,7 +4833,7 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Server.Server.channel",
-   "page": "/topics/waiting-and-retry/",
+   "page": "/java/latest/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
   },
@@ -4896,7 +4896,7 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Server.Server.sessions",
-   "page": "/topics/traversal/",
+   "page": "/java/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -5001,7 +5001,7 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Session.Session.activeWindow",
-   "page": "/topics/traversal/",
+   "page": "/java/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -5015,7 +5015,7 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Session.Session.windows",
-   "page": "/topics/traversal/",
+   "page": "/java/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -5120,7 +5120,7 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.WakeReason.WakeReason",
-   "page": "/topics/waiting-and-retry/",
+   "page": "/java/latest/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
   },
@@ -5162,21 +5162,21 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Window.Window.activePane",
-   "page": "/topics/traversal/",
+   "page": "/java/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
   {
    "port": "java",
    "symbol": "io.github.libtmux.Window.Window.panes",
-   "page": "/topics/traversal/",
+   "page": "/java/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
   {
    "port": "java",
    "symbol": "io.github.libtmux.Window.Window.session",
-   "page": "/topics/traversal/",
+   "page": "/java/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -5402,6 +5402,13 @@
    "symbol": "LibTmux.DeadlineExceeded.timeout",
    "page": "/julia/latest/topics/ownership/",
    "title": "Ownership and I/O",
+   "section": "topics"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.DeadlineExceeded.timeout",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
    "section": "topics"
   },
   {
@@ -8403,7 +8410,7 @@
   {
    "port": "py",
    "symbol": "libtmux._internal.query_list.QueryList",
-   "page": "/topics/traversal/",
+   "page": "/py/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -8487,7 +8494,7 @@
   {
    "port": "py",
    "symbol": "libtmux.exc.WaitTimeout",
-   "page": "/topics/waiting-and-retry/",
+   "page": "/py/latest/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
   },
@@ -8571,7 +8578,7 @@
   {
    "port": "py",
    "symbol": "libtmux.pane.Pane.pane_id",
-   "page": "/topics/traversal/",
+   "page": "/py/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -8648,7 +8655,7 @@
   {
    "port": "py",
    "symbol": "libtmux.pane.Pane.window",
-   "page": "/topics/traversal/",
+   "page": "/py/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -8753,7 +8760,7 @@
   {
    "port": "py",
    "symbol": "libtmux.server.Server.sessions",
-   "page": "/topics/traversal/",
+   "page": "/py/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -8795,7 +8802,7 @@
   {
    "port": "py",
    "symbol": "libtmux.server.Server.wait_for",
-   "page": "/topics/waiting-and-retry/",
+   "page": "/py/latest/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
   },
@@ -8844,7 +8851,7 @@
   {
    "port": "py",
    "symbol": "libtmux.session.Session.active_window",
-   "page": "/topics/traversal/",
+   "page": "/py/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -8865,7 +8872,7 @@
   {
    "port": "py",
    "symbol": "libtmux.session.Session.panes",
-   "page": "/topics/traversal/",
+   "page": "/py/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -8893,7 +8900,7 @@
   {
    "port": "py",
    "symbol": "libtmux.session.Session.windows",
-   "page": "/topics/traversal/",
+   "page": "/py/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -8935,7 +8942,7 @@
   {
    "port": "py",
    "symbol": "libtmux.window.Window.active_pane",
-   "page": "/topics/traversal/",
+   "page": "/py/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -8970,21 +8977,21 @@
   {
    "port": "py",
    "symbol": "libtmux.window.Window.panes",
-   "page": "/topics/traversal/",
+   "page": "/py/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
   {
    "port": "py",
    "symbol": "libtmux.window.Window.session",
-   "page": "/topics/traversal/",
+   "page": "/py/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
   {
    "port": "py",
    "symbol": "libtmux.window.Window.window_id",
-   "page": "/topics/traversal/",
+   "page": "/py/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -9768,7 +9775,7 @@
   {
    "port": "rs",
    "symbol": "pane.Pane.id",
-   "page": "/topics/traversal/",
+   "page": "/rs/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -9866,7 +9873,7 @@
   {
    "port": "rs",
    "symbol": "pane.Pane.window",
-   "page": "/topics/traversal/",
+   "page": "/rs/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -9875,6 +9882,13 @@
    "symbol": "pane.Pane.window_id",
    "page": "/rs/latest/topics/format-tokens/",
    "title": "Format-token fields",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.Pane.window_id",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
    "section": "topics"
   },
   {
@@ -10188,7 +10202,7 @@
   {
    "port": "rs",
    "symbol": "server.ChannelWait",
-   "page": "/topics/waiting-and-retry/",
+   "page": "/rs/latest/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
   },
@@ -10272,7 +10286,7 @@
   {
    "port": "rs",
    "symbol": "server.Server.attached_sessions",
-   "page": "/topics/traversal/",
+   "page": "/rs/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -10384,7 +10398,7 @@
   {
    "port": "rs",
    "symbol": "server.Server.sessions",
-   "page": "/topics/traversal/",
+   "page": "/rs/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -10405,7 +10419,7 @@
   {
    "port": "rs",
    "symbol": "server.Server.signal_channel",
-   "page": "/topics/waiting-and-retry/",
+   "page": "/rs/latest/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
   },
@@ -10419,7 +10433,7 @@
   {
    "port": "rs",
    "symbol": "server.Server.wait_for_channel",
-   "page": "/topics/waiting-and-retry/",
+   "page": "/rs/latest/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
   },
@@ -10468,7 +10482,7 @@
   {
    "port": "rs",
    "symbol": "session.Session.active_window",
-   "page": "/topics/traversal/",
+   "page": "/rs/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -10496,7 +10510,7 @@
   {
    "port": "rs",
    "symbol": "session.Session.panes",
-   "page": "/topics/traversal/",
+   "page": "/rs/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -10531,7 +10545,7 @@
   {
    "port": "rs",
    "symbol": "session.Session.windows",
-   "page": "/topics/traversal/",
+   "page": "/rs/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -10636,7 +10650,7 @@
   {
    "port": "rs",
    "symbol": "test.retry_until",
-   "page": "/topics/waiting-and-retry/",
+   "page": "/rs/latest/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
   },
@@ -10713,7 +10727,7 @@
   {
    "port": "rs",
    "symbol": "window.Window.active_pane",
-   "page": "/topics/traversal/",
+   "page": "/rs/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -10727,14 +10741,14 @@
   {
    "port": "rs",
    "symbol": "window.Window.panes",
-   "page": "/topics/traversal/",
+   "page": "/rs/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
   {
    "port": "rs",
    "symbol": "window.Window.session",
-   "page": "/topics/traversal/",
+   "page": "/rs/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -11770,15 +11784,15 @@
   {
    "port": "swift",
    "symbol": "Pane",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
+   "page": "/swift/latest/topics/traversal/",
+   "title": "Traversal",
    "section": "topics"
   },
   {
    "port": "swift",
    "symbol": "Pane",
-   "page": "/topics/traversal/",
-   "title": "Traversal",
+   "page": "/topics/architecture/",
+   "title": "Architecture",
    "section": "topics"
   },
   {
@@ -11798,7 +11812,7 @@
   {
    "port": "swift",
    "symbol": "Pane.windowID",
-   "page": "/topics/traversal/",
+   "page": "/swift/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -11980,7 +11994,7 @@
   {
    "port": "swift",
    "symbol": "Server.sessions()",
-   "page": "/topics/traversal/",
+   "page": "/swift/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -12008,7 +12022,7 @@
   {
    "port": "swift",
    "symbol": "Server.signal(_:)",
-   "page": "/topics/waiting-and-retry/",
+   "page": "/swift/latest/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
   },
@@ -12043,7 +12057,7 @@
   {
    "port": "swift",
    "symbol": "Server.wait(for:)",
-   "page": "/topics/waiting-and-retry/",
+   "page": "/swift/latest/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
   },
@@ -12078,6 +12092,13 @@
   {
    "port": "swift",
    "symbol": "Session",
+   "page": "/swift/latest/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "Session",
    "page": "/swift/latest/workspace/internals/topics/",
    "title": "Swift workspace builder behavior",
    "section": "ports"
@@ -12098,29 +12119,22 @@
   },
   {
    "port": "swift",
-   "symbol": "Session",
-   "page": "/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "swift",
    "symbol": "Snapshot",
-   "page": "/topics/traversal/",
+   "page": "/swift/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
   {
    "port": "swift",
    "symbol": "Snapshot.panes(of:)",
-   "page": "/topics/traversal/",
+   "page": "/swift/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
   {
    "port": "swift",
    "symbol": "Snapshot.windows(of:)",
-   "page": "/topics/traversal/",
+   "page": "/swift/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -12260,7 +12274,7 @@
   {
    "port": "swift",
    "symbol": "waitUntil(within:_:)",
-   "page": "/topics/waiting-and-retry/",
+   "page": "/swift/latest/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
   },
@@ -12281,15 +12295,15 @@
   {
    "port": "swift",
    "symbol": "Window",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
+   "page": "/swift/latest/topics/traversal/",
+   "title": "Traversal",
    "section": "topics"
   },
   {
    "port": "swift",
    "symbol": "Window",
-   "page": "/topics/traversal/",
-   "title": "Traversal",
+   "page": "/topics/architecture/",
+   "title": "Architecture",
    "section": "topics"
   },
   {
@@ -12827,7 +12841,7 @@
   {
    "port": "ts",
    "symbol": "pane.Pane.window",
-   "page": "/topics/traversal/",
+   "page": "/ts/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -12862,16 +12876,16 @@
   {
    "port": "ts",
    "symbol": "selection.Selection",
-   "page": "/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
+   "page": "/ts/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
   },
   {
    "port": "ts",
    "symbol": "selection.Selection",
-   "page": "/ts/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
+   "page": "/ts/latest/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
   },
   {
    "port": "ts",
@@ -13058,16 +13072,16 @@
   {
    "port": "ts",
    "symbol": "server.Server.sessions",
-   "page": "/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
+   "page": "/ts/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
   },
   {
    "port": "ts",
    "symbol": "server.Server.sessions",
-   "page": "/ts/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
+   "page": "/ts/latest/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
   },
   {
    "port": "ts",
@@ -13149,7 +13163,7 @@
   {
    "port": "ts",
    "symbol": "session.Session.activeWindow",
-   "page": "/topics/traversal/",
+   "page": "/ts/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -13170,7 +13184,7 @@
   {
    "port": "ts",
    "symbol": "session.Session.panes",
-   "page": "/topics/traversal/",
+   "page": "/ts/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -13198,14 +13212,14 @@
   {
    "port": "ts",
    "symbol": "session.Session.windows",
-   "page": "/topics/traversal/",
+   "page": "/ts/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
   {
    "port": "ts",
    "symbol": "types.ConnectedServer.waitFor",
-   "page": "/topics/waiting-and-retry/",
+   "page": "/ts/latest/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
   },
@@ -13226,7 +13240,7 @@
   {
    "port": "ts",
    "symbol": "types.ServerSnapshot",
-   "page": "/topics/waiting-and-retry/",
+   "page": "/ts/latest/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
   },
@@ -13247,7 +13261,7 @@
   {
    "port": "ts",
    "symbol": "window.Window.activePane",
-   "page": "/topics/traversal/",
+   "page": "/ts/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
@@ -13261,14 +13275,14 @@
   {
    "port": "ts",
    "symbol": "window.Window.panes",
-   "page": "/topics/traversal/",
+   "page": "/ts/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   },
   {
    "port": "ts",
    "symbol": "window.Window.session",
-   "page": "/topics/traversal/",
+   "page": "/ts/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
   }
