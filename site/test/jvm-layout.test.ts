@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { parserFor, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model'
+import { parserFor, SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model'
 import { fromMarkdown } from 'mdast-util-from-markdown'
-import { apiSignatureLayouts, codeWidthFailures } from '../src/lib/code-layout'
+import { apiSignatureLayouts, codeWidthFailures, signatureSpans } from '../src/lib/code-layout'
 import { symbolMarkdownWithLayout } from '../src/lib/symbol-markdown'
 
 const fixtures = [
@@ -29,6 +29,40 @@ const method = (raw: string, params: Signature['params'] = [], typeParams?: stri
 })
 
 describe('Scala and Kotlin callable layouts', () => {
+  it.each([
+    ['scala', 'def method(\n  // Target parameter explanation\n  value: Target\n): Target'],
+    ['scala', 'def method(value: Target // Target trailing explanation\n): Target'],
+    ['scala', 'def method(value: Target // x\n): Target'],
+    ['scala', 'def method(value: Target // Target before comma\n, other: Target): Target'],
+    ['scala', 'extension (self: Receiver) // x\n  def method(value: Target): Target'],
+    ['kotlin', 'fun method(\n  // Target parameter explanation\n  value: Target\n): Target'],
+    ['kotlin', 'fun method(value: Target // Target trailing explanation\n): Target'],
+    ['kotlin', 'fun method(value: Target // x\n): Target'],
+    ['kotlin', 'fun method(value: Target // Target before comma\n, other: Target): Target'],
+  ] as const)('preserves %s line-comment boundaries in %s', async (port, raw) => {
+    const symbol = method(raw, [{ name: 'value' }, ...(raw.includes('other:') ? [{ name: 'other' }] : [])])
+    const parser = await parserFor(port)
+    try {
+      const before = parser.parse(raw)!
+      expect(before.rootNode.hasError).toBe(false)
+      const layout = (await apiSignatureLayouts(symbol, port)).get(symbol.signatures[0]!)!
+      const after = parser.parse(layout.text)!
+      expect(after.rootNode.hasError).toBe(false)
+      expect(after.rootNode.toString()).toBe(before.rootNode.toString())
+      expect(layout.text.match(/\/\/[^\n]*/g)).toEqual(raw.match(/\/\/[^\n]*/g))
+      expect(layout.failures).toEqual([])
+      const target: ApiSymbol = { id: 'Target', name: 'Target', kind: 'class', modifiers: [], signatures: [], source: { file: 'probe' } }
+      const index = new SymbolIndex([symbol, target], (entry) => `/${entry.id}/`, port)
+      const spans = signatureSpans(layout, index, symbol, symbol.signatures[0]!)
+      expect(spans.map((span) => span.text).join('')).toBe(layout.text)
+      expect(spans.filter((span) => span.link?.href === '/Target/')).toHaveLength(symbol.signatures[0]!.params.length + 1)
+      expect(spans.filter((span) => span.link?.href.startsWith('#Probe.method.parameter.')).map((span) => span.text))
+        .toEqual(symbol.signatures[0]!.params.map((param) => param.name))
+      before.delete()
+      after.delete()
+    } finally { parser.delete() }
+  })
+
   it.each(fixtures)('matches the native %s formatter study for complete sessions overloads', async (port, id, expected) => {
     const model = JSON.parse(readFileSync(new URL(`../src/data/api/${port}.json`, import.meta.url), 'utf8')) as ApiModel
     const symbol = model.symbols.find((entry) => entry.id === id)!

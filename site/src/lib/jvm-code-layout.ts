@@ -7,7 +7,7 @@ type NativeParser = Awaited<ReturnType<typeof parserFor>>
 type NativeTree = NonNullable<ReturnType<NativeParser['parse']>>
 type NativeNode = NativeTree['rootNode']
 type Doc = doc.builders.Doc
-const { align, group, hardline, join, line, softline } = doc.builders
+const { align, group, hardline, line, softline } = doc.builders
 const grammars = new Map<Port, ReturnType<typeof loadLanguage>>()
 const layouts = new Map<string, Promise<CodeLayout>>()
 
@@ -56,10 +56,11 @@ function fingerprint(node: NativeNode): unknown {
 }
 
 function printHeader(root: NativeNode, port: Port): string {
+  const isLineComment = (node?: NativeNode): boolean => node?.type === 'comment' || node?.type === 'line_comment'
   const sequence = (children: NativeNode[]): Doc => children.flatMap((node, index) => {
     const previous = children[index - 1]
     const rawGap = previous ? root.text.slice(previous.endIndex - root.startIndex, node.startIndex - root.startIndex) : ''
-    const gap: Doc = previous?.type === 'line_comment' ? hardline
+    const gap: Doc = isLineComment(previous) ? hardline
       : /\S/.test(rawGap) ? rawGap : rawGap ? ' ' : ''
     return [gap, print(node)]
   })
@@ -78,16 +79,23 @@ function printHeader(root: NativeNode, port: Port): string {
     if (trailingComma) items.pop()
     if (!items[0]?.length) return node.text
     const indent = port === 'scala' && ['type_arguments', 'type_parameters'].includes(node.type) ? 2 : 4
+    const endsInComment = isLineComment(items.at(-1)?.at(-1))
+    const contents = items.flatMap((item, index) => [
+      ...(index ? [isLineComment(items[index - 1]?.at(-1)) ? hardline : '', ',', line] : []),
+      sequence(item),
+    ])
     return group([
       open.text, contextual?.text ?? '',
-      align(indent, [contextual ? line : softline, join([',', line], items.map(sequence))]),
-      trailingComma ? ',' : '', softline, close.text,
+      align(indent, [contextual ? line : softline, contents]),
+      trailingComma ? [endsInComment ? hardline : '', ','] : '',
+      endsInComment && !trailingComma ? hardline : softline, close.text,
     ])
   }
   const print = (node: NativeNode): Doc => {
     if (node.type === 'extension_definition') {
       const body = node.childForFieldName('body')!
-      return group([sequence(children(node).filter((child) => child.id !== body.id)), align(2, [line, print(body)])])
+      const receiver = children(node).filter((child) => child.id !== body.id)
+      return group([sequence(receiver), align(2, [isLineComment(receiver.at(-1)) ? hardline : line, print(body)])])
     }
     if (lists.has(node.type) || (node.type === 'parameter_types' && node.firstChild?.type === '(')) return printList(node)
     // Expression bodies and literals are opaque: line breaks inside them may
