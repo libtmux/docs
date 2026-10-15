@@ -4,6 +4,7 @@ import SectionHeading from '../../../../components/SectionHeading.astro'
 import { Code } from 'astro-expressive-code/components'
 import { tmuxCommandSources, tmuxReferenceUrl } from '../../../../lib/tmux-reference'
 import { withRoot } from '../../../../lib/site-root'
+import type { PageSource } from '../../../../lib/markdown-twins'
 import { rowAnchor } from '../../../../lib/row-anchors'
 import { highlightTmuxManual, linkTmuxManualEntries } from '../../../../lib/tmux-manual'
 import type { SidebarItem } from '../../../../lib/sidebar'
@@ -47,7 +48,7 @@ const guides = tmuxGuidesFor(command?.name ?? '')
 const headings = tmuxManualHeadings(version, slug)
 const notes = tmuxCommandNotes(version, slug)
 const implementations = command ? tmuxCommandSources(version, command.name) : []
-const source = { repo: TMUX_REPOSITORY, path: 'tmux.1', ref: reference.revision }
+const source: PageSource = { repo: TMUX_REPOSITORY, path: 'tmux.1', ref: reference.sourceCommit }
 const manualHtml = command || isManual
   ? await highlightTmuxManual(linkTmuxManualEntries(tmuxManualHtml(command?.html ?? reference.manual, version), command?.name))
   : ''
@@ -116,8 +117,8 @@ const manualHtml = command || isManual
   <details class="mt-8">
     <summary>tmux sources and license</summary>
     <p>Syntax comes from <code>tmux {reference.version} list-commands</code>. See the <a href={`${tmuxManualUrl(version, 'full')}#DESCRIPTION`}>global options</a> for sockets and configuration, and <a href={`${tmuxManualUrl(version, 'full')}#COMMANDS`}>command syntax and targets</a>.</p>
-    <p>Behavior is taken from the <a href={`https://github.com/${TMUX_REPOSITORY}/blob/${reference.revision}/tmux.1`}>tmux {reference.version} manual</a>.</p>
-    {command && <p><a href={`https://github.com/${TMUX_REPOSITORY}/blob/${reference.revision}/${command.sourceFile}#L${command.sourceLine}`}>Command declaration</a></p>}
+    <p>Behavior is taken from the <a href={`https://github.com/${TMUX_REPOSITORY}/blob/${reference.sourceCommit}/tmux.1`}>tmux {reference.version} manual</a>.</p>
+    {command && <p><a href={`https://github.com/${TMUX_REPOSITORY}/blob/${reference.sourceCommit}/${command.sourceFile}#L${command.sourceLine}`}>Command declaration</a></p>}
     <pre class="tmux-license">{reference.license}</pre>
   </details>
 </DocsLayout>
