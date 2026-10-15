@@ -40,8 +40,10 @@ The displayed shell files are the source for these native tmux examples;
 a site build does not execute them. Each page links the tmux manual for
 the commands it uses.
 
-For a page listed in `site/test/fixtures/guide-examples.json`,
-`scripts/check-example-prose.py` checks its displayed file hashes and setup
+For a page listed in
+[`site/test/fixtures/guide-examples.json`](https://github.com/libtmux/docs/blob/6d2c72cb263279c9e79fc96810877b376697d785/site/test/fixtures/guide-examples.json),
+[`scripts/check-example-prose.py`](https://github.com/libtmux/docs/blob/6d2c72cb263279c9e79fc96810877b376697d785/scripts/check-example-prose.py)
+checks its displayed file hashes and setup
 commands, then executes the recorded shell recipe with the tmux executable
 found on the shell's path. Its result records the tmux version, page and file
 hashes, exit status, and any missing expected output. A receipt covers only the exact
