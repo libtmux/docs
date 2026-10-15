@@ -57,6 +57,8 @@ export type DocSpan =
  *   "search upward", and the label drops it.
  */
 const ROLE_RE = /:([a-z:]+):`([^`]+)`/g
+/** Embedded reST hyperlinks, including anonymous links with two underscores. */
+const REST_LINK_RE = /(?<![\w`])`([^`<>\n]+?)\s*<([^`<>\n]+)>`_{1,2}(?!\w)/g
 
 /**
  * A citation reference: `[server_manual]_`.
@@ -169,6 +171,8 @@ const EMPHASIS_RE = /(?<![\w*\\])\*(?![\s*])([^*\n]+?)(?<![\s\\])\*(?![\w*])/g
 
 /** A bare double-backtick literal, which is never a link. */
 const LITERAL_RE = /``([^`]+)``/g
+/** reST literals can contain single backticks without enabling nested markup. */
+const REST_LITERAL_RE = /``((?:[^`]|`(?!`))+)``/g
 /** A single-backtick reference, which napoleon also resolves. */
 const BACKTICK_RE = /`([^`<>]+)`/g
 
@@ -392,7 +396,7 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
       span: { kind: 'ref', role, target, label },
     })
   }
-  for (const m of text.matchAll(LITERAL_RE)) {
+  for (const m of text.matchAll(syntax.has('rest') ? REST_LITERAL_RE : LITERAL_RE)) {
     hits.push({
       start: m.index,
       end: m.index + m[0].length,
@@ -401,6 +405,32 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
         ? { kind: 'ref', role: 'any', target: m[1].replace(/\(.*$/, ''), label: m[1] }
         : { kind: 'code', text: m[1] },
     })
+  }
+  if (syntax.has('rest')) {
+    const escaped = (position: number) => {
+      let start = position
+      while (text[start - 1] === '\\') start--
+      return (position - start) % 2 === 1
+    }
+    for (const match of text.matchAll(REST_LINK_RE)) {
+      const start = match.index
+      const end = start + match[0].length
+      if (hits.some((hit) => hit.start < end && hit.end > start)) continue
+      const label = match[1].trim()
+      const target = match[2].trim()
+      let span: DocSpan = { kind: 'text', text: match[0] }
+      if (label && !escaped(start) && !escaped(start + match[0].indexOf('<'))) {
+        try {
+          const destination = new URL(target)
+          if (/^https?:\/\//i.test(target) && (destination.protocol === 'http:' || destination.protocol === 'https:')) {
+            span = { kind: 'link', text: label, href: target }
+          }
+        } catch {
+          // Malformed destinations remain literal.
+        }
+      }
+      hits.push({ start, end, span })
+    }
   }
   // Single-backtick references are scanned over a *masked* copy, with every
   // range already claimed by a role or a literal blanked out. Filtering
