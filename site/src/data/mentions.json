@@ -1284,7 +1284,7 @@
   {
    "port": "cxx",
    "symbol": "libtmux::FilterExpr",
-   "page": "/concepts/queries/",
+   "page": "/cxx/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
@@ -1718,7 +1718,7 @@
   {
    "port": "cxx",
    "symbol": "libtmux::StringFieldHandle::starts_with",
-   "page": "/concepts/queries/",
+   "page": "/cxx/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
@@ -3419,21 +3419,7 @@
   {
    "port": "go",
    "symbol": "tmux.PaneFilter",
-   "page": "/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "go",
-   "symbol": "tmux.PaneFilter",
    "page": "/go/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "go",
-   "symbol": "tmux.PaneFilter.Predicate",
-   "page": "/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
@@ -3582,13 +3568,6 @@
    "symbol": "tmux.Server.Panes",
    "page": "/go/latest/concepts/server-session-window-pane/",
    "title": "Server, session, window, pane",
-   "section": "concepts"
-  },
-  {
-   "port": "go",
-   "symbol": "tmux.Server.SearchPanes",
-   "page": "/concepts/queries/",
-   "title": "Filtering and queries",
    "section": "concepts"
   },
   {
@@ -3874,13 +3853,6 @@
   {
    "port": "go",
    "symbol": "tmux.TmuxFilter",
-   "page": "/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "go",
-   "symbol": "tmux.TmuxFilter",
    "page": "/go/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
@@ -4043,13 +4015,6 @@
    "port": "go",
    "symbol": "tmuxq.First",
    "page": "/go/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "go",
-   "symbol": "tmuxq.Matching",
-   "page": "/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
@@ -4399,7 +4364,7 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.exception.CardinalityException.CardinalityException.MultipleMatches",
-   "page": "/concepts/queries/",
+   "page": "/java/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
@@ -4413,7 +4378,7 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.exception.CardinalityException.CardinalityException.NoMatch",
-   "page": "/concepts/queries/",
+   "page": "/java/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
@@ -4511,7 +4476,7 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Pane_.Pane_",
-   "page": "/concepts/queries/",
+   "page": "/java/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
@@ -4630,7 +4595,7 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.query.Fields.Fields.TextField.startsWith",
-   "page": "/concepts/queries/",
+   "page": "/java/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
@@ -4658,7 +4623,7 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.query.Selections.Selections.exactlyOne",
-   "page": "/concepts/queries/",
+   "page": "/java/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
@@ -4875,7 +4840,7 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Session_.Session_",
-   "page": "/concepts/queries/",
+   "page": "/java/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
@@ -5036,7 +5001,7 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Window_.Window_",
-   "page": "/concepts/queries/",
+   "page": "/java/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
@@ -8270,7 +8235,7 @@
   {
    "port": "py",
    "symbol": "libtmux._internal.query_list.QueryList",
-   "page": "/concepts/queries/",
+   "page": "/py/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
@@ -8284,14 +8249,14 @@
   {
    "port": "py",
    "symbol": "libtmux._internal.query_list.QueryList.filter",
-   "page": "/concepts/queries/",
+   "page": "/py/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
   {
    "port": "py",
    "symbol": "libtmux._internal.query_list.QueryList.get",
-   "page": "/concepts/queries/",
+   "page": "/py/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
@@ -8326,7 +8291,7 @@
   {
    "port": "py",
    "symbol": "libtmux.exc.MultipleObjectsReturned",
-   "page": "/concepts/queries/",
+   "page": "/py/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
@@ -8340,7 +8305,7 @@
   {
    "port": "py",
    "symbol": "libtmux.exc.ObjectDoesNotExist",
-   "page": "/concepts/queries/",
+   "page": "/py/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
@@ -8417,7 +8382,7 @@
   {
    "port": "py",
    "symbol": "libtmux.pane.Pane.from_pane_id",
-   "page": "/concepts/queries/",
+   "page": "/py/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
@@ -8578,21 +8543,21 @@
   {
    "port": "py",
    "symbol": "libtmux.server.Server.panes",
-   "page": "/concepts/queries/",
+   "page": "/py/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
   {
    "port": "py",
    "symbol": "libtmux.server.Server.search_sessions",
-   "page": "/concepts/queries/",
+   "page": "/py/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
   {
    "port": "py",
    "symbol": "libtmux.server.Server.sessions",
-   "page": "/concepts/queries/",
+   "page": "/py/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
@@ -8648,7 +8613,7 @@
   {
    "port": "py",
    "symbol": "libtmux.server.Server.windows",
-   "page": "/concepts/queries/",
+   "page": "/py/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
@@ -8725,7 +8690,7 @@
   {
    "port": "py",
    "symbol": "libtmux.session.Session.windows",
-   "page": "/concepts/queries/",
+   "page": "/py/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
@@ -8781,21 +8746,21 @@
   {
    "port": "py",
    "symbol": "libtmux.window.Window.from_window_id",
-   "page": "/concepts/queries/",
+   "page": "/py/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
   {
    "port": "py",
    "symbol": "libtmux.window.Window.linked_sessions",
-   "page": "/concepts/queries/",
+   "page": "/py/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
   {
    "port": "py",
    "symbol": "libtmux.window.Window.panes",
-   "page": "/concepts/queries/",
+   "page": "/py/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
@@ -8837,7 +8802,7 @@
   {
    "port": "py",
    "symbol": "tmuxp.cli.search.SearchPattern.regex",
-   "page": "/concepts/queries/",
+   "page": "/py/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
@@ -9930,13 +9895,6 @@
    "port": "rs",
    "symbol": "query.FilterExpr",
    "page": "/rs/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "query.FilterExpr.and",
-   "page": "/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
@@ -12323,21 +12281,7 @@
   {
    "port": "ts",
    "symbol": "errors.MultipleMatchesError",
-   "page": "/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "ts",
-   "symbol": "errors.MultipleMatchesError",
    "page": "/ts/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "ts",
-   "symbol": "errors.NoMatchError",
-   "page": "/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
@@ -12589,13 +12533,6 @@
   {
    "port": "ts",
    "symbol": "selection.Selection.filter",
-   "page": "/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "ts",
-   "symbol": "selection.Selection.filter",
    "page": "/ts/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
@@ -12604,13 +12541,6 @@
    "port": "ts",
    "symbol": "selection.Selection.first",
    "page": "/ts/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "ts",
-   "symbol": "selection.Selection.one",
-   "page": "/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
@@ -12631,21 +12561,7 @@
   {
    "port": "ts",
    "symbol": "selection.Selection.oneOrUndefined",
-   "page": "/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "ts",
-   "symbol": "selection.Selection.oneOrUndefined",
    "page": "/ts/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "ts",
-   "symbol": "selection.Selection.where",
-   "page": "/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },

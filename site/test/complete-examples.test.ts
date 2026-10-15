@@ -107,7 +107,31 @@ describe('verified complete programs', () => {
     }
   })
 
-  it.each(guides.examples)('keeps $page shell-only with working port routes to complete programs', (example) => {
+  it('teaches native queries while retaining the library query routes', () => {
+    const page = 'concepts/queries'
+    const { content, frontmatter } = parsePage(page)
+    expect(frontmatter.supportedPorts).toEqual([])
+    expect(fences(content).every((block) => ['sh', 'text', 'console'].includes(block.language))).toBe(true)
+    expect(content).not.toMatch(/QueryList|server\.sessions|Selections\.|FilterExpr/)
+    for (const command of ['list-sessions', 'list-windows', 'list-panes', 'has-session']) {
+      expect(content).toContain(`/tmux/latest/manual/${command}/`)
+    }
+    const docs = [{ id: page, data: frontmatter }, ...['py', 'java', 'csharp', 'cxx', 'swift'].map((port) => {
+      const id = `ports/${port}/${page}`
+      const { frontmatter: data } = parsePage(id)
+      expect(data.port).toBe(port)
+      expect(data.route).toBe(page)
+      return { id, data }
+    })]
+    for (const port of ['py', 'java', 'csharp', 'cxx', 'swift']) {
+      const available = docs.filter((entry) => docsEntryAvailable(entry, port))
+      expect(available).toHaveLength(1)
+      expect(available[0].data.port).toBe(port)
+      expect(docsRoutePath(available[0], port)).toBe(page)
+    }
+  })
+
+  it.each(guides.examples.filter((example) => example.page.startsWith('guides/')))('keeps $page shell-only with working port routes to complete programs', (example) => {
     const { content, frontmatter } = parsePage(example.page)
     expect(frontmatter.supportedPorts).toEqual([])
     expect(fences(content).every((block) => ['sh', 'console'].includes(block.language))).toBe(true)

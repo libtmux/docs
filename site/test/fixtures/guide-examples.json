@@ -105,6 +105,36 @@
         "sh test-tmux.sh"
       ],
       "expectedOutput": "tmux fixture passed"
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "concepts/queries",
+      "sourceRevision": "79072dd1a9f5fb437a5859e362a496fd57ec0981",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "queries.sh",
+          "sha256": "d35072e4de7e9804c2b76a4e056a3b72b654f58f3ddd0a7c383331ff94cf1200"
+        }
+      ],
+      "shellRecipe": [
+        "sh queries.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "exact: work",
+          "case insensitive: work",
+          "regex: work:editor",
+          "active panes in work: 2",
+          "no matching sessions",
+          "exact target checked"
+        ]
+      ]
     }
   ]
 }
