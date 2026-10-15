@@ -71,6 +71,7 @@ export type Modifier =
   | 'readonly'
   | 'deprecated'
   | 'overload'
+  | 'opaque'
   | 'private'
   | 'generator'
   | 'unsafe'
