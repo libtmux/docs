@@ -122,14 +122,14 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.OwnedSessionScope",
-   "page": "/topics/context-managers/",
+   "page": "/csharp/latest/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
   },
   {
    "port": "csharp",
    "symbol": "LibTmux.OwnedWindowScope",
-   "page": "/topics/context-managers/",
+   "page": "/csharp/latest/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
   },
@@ -388,14 +388,14 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.Server.IsAliveAsync",
-   "page": "/topics/socket-and-servers/",
+   "page": "/csharp/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
   {
    "port": "csharp",
    "symbol": "LibTmux.Server.KillAsync",
-   "page": "/topics/socket-and-servers/",
+   "page": "/csharp/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
@@ -416,16 +416,16 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.ServerConnectionOptions",
-   "page": "/csharp/latest/workspace/internals/guides/",
-   "title": "Use the C# workspace builder",
-   "section": "ports"
+   "page": "/csharp/latest/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
   },
   {
    "port": "csharp",
    "symbol": "LibTmux.ServerConnectionOptions",
-   "page": "/topics/socket-and-servers/",
-   "title": "Socket and servers",
-   "section": "topics"
+   "page": "/csharp/latest/workspace/internals/guides/",
+   "title": "Use the C# workspace builder",
+   "section": "ports"
   },
   {
    "port": "csharp",
@@ -437,7 +437,7 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.Session",
-   "page": "/topics/context-managers/",
+   "page": "/csharp/latest/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
   },
@@ -549,7 +549,7 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.Testing.TemporaryHierarchyScope",
-   "page": "/topics/context-managers/",
+   "page": "/csharp/latest/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
   },
@@ -563,7 +563,7 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.Testing.TmuxTestFactory.CreateHierarchyAsync",
-   "page": "/topics/context-managers/",
+   "page": "/csharp/latest/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
   },
@@ -822,7 +822,7 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.Window",
-   "page": "/topics/context-managers/",
+   "page": "/csharp/latest/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
   },
@@ -1270,7 +1270,7 @@
   {
    "port": "cxx",
    "symbol": "libtmux::Connection::connect",
-   "page": "/examples/attach-and-send-keys/",
+   "page": "/cxx/latest/examples/attach-and-send-keys/",
    "title": "Attach and send keys",
    "section": "examples"
   },
@@ -1431,15 +1431,15 @@
   {
    "port": "cxx",
    "symbol": "libtmux::Pane",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
+   "page": "/cxx/latest/topics/context-managers/",
+   "title": "Ownership and cleanup",
    "section": "topics"
   },
   {
    "port": "cxx",
    "symbol": "libtmux::Pane",
-   "page": "/topics/context-managers/",
-   "title": "Ownership and cleanup",
+   "page": "/topics/architecture/",
+   "title": "Architecture",
    "section": "topics"
   },
   {
@@ -1620,14 +1620,14 @@
   {
    "port": "cxx",
    "symbol": "libtmux::Server::at_default",
-   "page": "/topics/socket-and-servers/",
+   "page": "/cxx/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
   {
    "port": "cxx",
    "symbol": "libtmux::Server::at_socket_name",
-   "page": "/topics/socket-and-servers/",
+   "page": "/cxx/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
@@ -1641,7 +1641,7 @@
   {
    "port": "cxx",
    "symbol": "libtmux::Server::at_socket_path",
-   "page": "/topics/socket-and-servers/",
+   "page": "/cxx/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
@@ -1669,14 +1669,14 @@
   {
    "port": "cxx",
    "symbol": "libtmux::Server::is_alive",
-   "page": "/topics/socket-and-servers/",
+   "page": "/cxx/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
   {
    "port": "cxx",
    "symbol": "libtmux::Server::kill",
-   "page": "/topics/socket-and-servers/",
+   "page": "/cxx/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
@@ -1725,15 +1725,15 @@
   {
    "port": "cxx",
    "symbol": "libtmux::Session",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
+   "page": "/cxx/latest/topics/context-managers/",
+   "title": "Ownership and cleanup",
    "section": "topics"
   },
   {
    "port": "cxx",
    "symbol": "libtmux::Session",
-   "page": "/topics/context-managers/",
-   "title": "Ownership and cleanup",
+   "page": "/topics/architecture/",
+   "title": "Architecture",
    "section": "topics"
   },
   {
@@ -1809,16 +1809,16 @@
   {
    "port": "cxx",
    "symbol": "libtmux::test::ScopedTmuxServer",
-   "page": "/cxx/latest/workspace/internals/examples/",
-   "title": "C++ workspace builder examples",
-   "section": "ports"
+   "page": "/cxx/latest/topics/context-managers/",
+   "title": "Ownership and cleanup",
+   "section": "topics"
   },
   {
    "port": "cxx",
    "symbol": "libtmux::test::ScopedTmuxServer",
-   "page": "/topics/context-managers/",
-   "title": "Ownership and cleanup",
-   "section": "topics"
+   "page": "/cxx/latest/workspace/internals/examples/",
+   "title": "C++ workspace builder examples",
+   "section": "ports"
   },
   {
    "port": "cxx",
@@ -1830,15 +1830,15 @@
   {
    "port": "cxx",
    "symbol": "libtmux::Window",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
+   "page": "/cxx/latest/topics/context-managers/",
+   "title": "Ownership and cleanup",
    "section": "topics"
   },
   {
    "port": "cxx",
    "symbol": "libtmux::Window",
-   "page": "/topics/context-managers/",
-   "title": "Ownership and cleanup",
+   "page": "/topics/architecture/",
+   "title": "Architecture",
    "section": "topics"
   },
   {
@@ -1879,6 +1879,13 @@
   {
    "port": "cxx",
    "symbol": "libtmux::workspace::build",
+   "page": "/cxx/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::workspace::build",
    "page": "/cxx/latest/workspace/internals/",
    "title": "C++ workspace internals",
    "section": "ports"
@@ -1903,13 +1910,6 @@
    "page": "/cxx/latest/workspace/reference/",
    "title": "C++ workspace builder API",
    "section": "ports"
-  },
-  {
-   "port": "cxx",
-   "symbol": "libtmux::workspace::build",
-   "page": "/examples/attach-and-send-keys/",
-   "title": "Attach and send keys",
-   "section": "examples"
   },
   {
    "port": "cxx",
@@ -3300,14 +3300,14 @@
   {
    "port": "go",
    "symbol": "tmux.ControlClient",
-   "page": "/topics/context-managers/",
+   "page": "/go/latest/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
   },
   {
    "port": "go",
    "symbol": "tmux.ErrDaemonReplaced",
-   "page": "/topics/socket-and-servers/",
+   "page": "/go/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
@@ -3363,7 +3363,7 @@
   {
    "port": "go",
    "symbol": "tmux.NewServer",
-   "page": "/topics/socket-and-servers/",
+   "page": "/go/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
@@ -3377,7 +3377,7 @@
   {
    "port": "go",
    "symbol": "tmux.NotificationStream",
-   "page": "/topics/context-managers/",
+   "page": "/go/latest/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
   },
@@ -3398,7 +3398,7 @@
   {
    "port": "go",
    "symbol": "tmux.Pane",
-   "page": "/topics/context-managers/",
+   "page": "/go/latest/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
   },
@@ -3517,7 +3517,7 @@
   {
    "port": "go",
    "symbol": "tmux.PaneObservation",
-   "page": "/topics/context-managers/",
+   "page": "/go/latest/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
   },
@@ -3587,7 +3587,7 @@
   {
    "port": "go",
    "symbol": "tmux.Server.Equal",
-   "page": "/topics/socket-and-servers/",
+   "page": "/go/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
@@ -3601,7 +3601,7 @@
   {
    "port": "go",
    "symbol": "tmux.Server.IsAlive",
-   "page": "/topics/socket-and-servers/",
+   "page": "/go/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
@@ -3622,7 +3622,7 @@
   {
    "port": "go",
    "symbol": "tmux.Server.Kill",
-   "page": "/topics/socket-and-servers/",
+   "page": "/go/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
@@ -3727,21 +3727,21 @@
   {
    "port": "go",
    "symbol": "tmux.ServerOptions.SocketName",
-   "page": "/topics/socket-and-servers/",
+   "page": "/go/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
   {
    "port": "go",
    "symbol": "tmux.ServerOptions.SocketPath",
-   "page": "/topics/socket-and-servers/",
+   "page": "/go/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
   {
    "port": "go",
    "symbol": "tmux.Session",
-   "page": "/topics/context-managers/",
+   "page": "/go/latest/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
   },
@@ -3944,7 +3944,7 @@
   {
    "port": "go",
    "symbol": "tmux.Window",
-   "page": "/topics/context-managers/",
+   "page": "/go/latest/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
   },
@@ -4098,7 +4098,7 @@
   {
    "port": "go",
    "symbol": "tmuxtest.NewServer",
-   "page": "/topics/context-managers/",
+   "page": "/go/latest/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
   },
@@ -4763,6 +4763,13 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Server.Server",
+   "page": "/java/latest/topics/context-managers/",
+   "title": "Ownership and cleanup",
+   "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Server.Server",
    "page": "/java/latest/workspace/internals/",
    "title": "Java workspace internals",
    "section": "ports"
@@ -4783,13 +4790,6 @@
   },
   {
    "port": "java",
-   "symbol": "io.github.libtmux.Server.Server",
-   "page": "/topics/context-managers/",
-   "title": "Ownership and cleanup",
-   "section": "topics"
-  },
-  {
-   "port": "java",
    "symbol": "io.github.libtmux.Server.Server.channel",
    "page": "/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
@@ -4798,7 +4798,7 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Server.Server.close",
-   "page": "/topics/socket-and-servers/",
+   "page": "/java/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
@@ -4819,7 +4819,14 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Server.Server.isAlive",
-   "page": "/topics/socket-and-servers/",
+   "page": "/java/latest/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Server.Server.killServer",
+   "page": "/java/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
@@ -4829,13 +4836,6 @@
    "page": "/java/latest/workspace/internals/examples/",
    "title": "Java workspace builder examples",
    "section": "ports"
-  },
-  {
-   "port": "java",
-   "symbol": "io.github.libtmux.Server.Server.killServer",
-   "page": "/topics/socket-and-servers/",
-   "title": "Socket and servers",
-   "section": "topics"
   },
   {
    "port": "java",
@@ -4896,21 +4896,21 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.ServerEndpoint.ServerEndpoint.defaultSocket",
-   "page": "/topics/socket-and-servers/",
+   "page": "/java/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
   {
    "port": "java",
    "symbol": "io.github.libtmux.ServerEndpoint.ServerEndpoint.namedSocket",
-   "page": "/topics/socket-and-servers/",
+   "page": "/java/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
   {
    "port": "java",
    "symbol": "io.github.libtmux.ServerEndpoint.ServerEndpoint.socketPath",
-   "page": "/topics/socket-and-servers/",
+   "page": "/java/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
@@ -8304,6 +8304,13 @@
   },
   {
    "port": "py",
+   "symbol": "libtmux._internal.env.TMUX",
+   "page": "/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "py",
    "symbol": "libtmux._internal.env.TMUX_PANE",
    "page": "/guides/attaching-to-tmux/",
    "title": "Attaching to tmux",
@@ -8431,6 +8438,13 @@
   {
    "port": "py",
    "symbol": "libtmux.pane.Pane",
+   "page": "/py/latest/topics/context-managers/",
+   "title": "Ownership and cleanup",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.pane.Pane",
    "page": "/py/latest/workspace/reference/",
    "title": "Python workspace internal API",
    "section": "ports"
@@ -8440,13 +8454,6 @@
    "symbol": "libtmux.pane.Pane",
    "page": "/topics/architecture/",
    "title": "Architecture",
-   "section": "topics"
-  },
-  {
-   "port": "py",
-   "symbol": "libtmux.pane.Pane",
-   "page": "/topics/context-managers/",
-   "title": "Ownership and cleanup",
    "section": "topics"
   },
   {
@@ -8599,6 +8606,20 @@
   {
    "port": "py",
    "symbol": "libtmux.server.Server",
+   "page": "/py/latest/topics/context-managers/",
+   "title": "Ownership and cleanup",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.server.Server",
+   "page": "/py/latest/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.server.Server",
    "page": "/py/latest/workspace/reference/",
    "title": "Python workspace internal API",
    "section": "ports"
@@ -8612,22 +8633,8 @@
   },
   {
    "port": "py",
-   "symbol": "libtmux.server.Server",
-   "page": "/topics/context-managers/",
-   "title": "Ownership and cleanup",
-   "section": "topics"
-  },
-  {
-   "port": "py",
-   "symbol": "libtmux.server.Server",
-   "page": "/topics/socket-and-servers/",
-   "title": "Socket and servers",
-   "section": "topics"
-  },
-  {
-   "port": "py",
    "symbol": "libtmux.server.Server.__eq__",
-   "page": "/topics/socket-and-servers/",
+   "page": "/py/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
@@ -8641,14 +8648,14 @@
   {
    "port": "py",
    "symbol": "libtmux.server.Server.is_alive",
-   "page": "/topics/socket-and-servers/",
+   "page": "/py/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
   {
    "port": "py",
    "symbol": "libtmux.server.Server.kill_server",
-   "page": "/topics/socket-and-servers/",
+   "page": "/py/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
@@ -8697,7 +8704,7 @@
   {
    "port": "py",
    "symbol": "libtmux.server.Server.socket_name",
-   "page": "/topics/socket-and-servers/",
+   "page": "/py/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
@@ -8746,6 +8753,13 @@
   {
    "port": "py",
    "symbol": "libtmux.session.Session",
+   "page": "/py/latest/topics/context-managers/",
+   "title": "Ownership and cleanup",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.session.Session",
    "page": "/py/latest/workspace/reference/",
    "title": "Python workspace internal API",
    "section": "ports"
@@ -8755,13 +8769,6 @@
    "symbol": "libtmux.session.Session",
    "page": "/topics/architecture/",
    "title": "Architecture",
-   "section": "topics"
-  },
-  {
-   "port": "py",
-   "symbol": "libtmux.session.Session",
-   "page": "/topics/context-managers/",
-   "title": "Ownership and cleanup",
    "section": "topics"
   },
   {
@@ -8837,6 +8844,13 @@
   {
    "port": "py",
    "symbol": "libtmux.window.Window",
+   "page": "/py/latest/topics/context-managers/",
+   "title": "Ownership and cleanup",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.window.Window",
    "page": "/py/latest/workspace/reference/",
    "title": "Python workspace internal API",
    "section": "ports"
@@ -8846,13 +8860,6 @@
    "symbol": "libtmux.window.Window",
    "page": "/topics/architecture/",
    "title": "Architecture",
-   "section": "topics"
-  },
-  {
-   "port": "py",
-   "symbol": "libtmux.window.Window",
-   "page": "/topics/context-managers/",
-   "title": "Ownership and cleanup",
    "section": "topics"
   },
   {
@@ -10188,7 +10195,7 @@
   {
    "port": "rs",
    "symbol": "server.Server.builder",
-   "page": "/topics/socket-and-servers/",
+   "page": "/rs/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
@@ -10202,7 +10209,7 @@
   {
    "port": "rs",
    "symbol": "server.Server.check_alive",
-   "page": "/topics/socket-and-servers/",
+   "page": "/rs/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
@@ -10230,7 +10237,7 @@
   {
    "port": "rs",
    "symbol": "server.Server.is_alive",
-   "page": "/topics/socket-and-servers/",
+   "page": "/rs/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
@@ -10244,14 +10251,14 @@
   {
    "port": "rs",
    "symbol": "server.Server.kill",
-   "page": "/topics/socket-and-servers/",
+   "page": "/rs/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
   {
    "port": "rs",
    "symbol": "server.Server.new",
-   "page": "/topics/socket-and-servers/",
+   "page": "/rs/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
@@ -10552,16 +10559,16 @@
   {
    "port": "rs",
    "symbol": "test.TestServer",
-   "page": "/rs/latest/workspace/internals/examples/",
-   "title": "Rust workspace builder examples",
-   "section": "ports"
+   "page": "/rs/latest/topics/context-managers/",
+   "title": "Ownership and cleanup",
+   "section": "topics"
   },
   {
    "port": "rs",
    "symbol": "test.TestServer",
-   "page": "/topics/context-managers/",
-   "title": "Ownership and cleanup",
-   "section": "topics"
+   "page": "/rs/latest/workspace/internals/examples/",
+   "title": "Rust workspace builder examples",
+   "section": "ports"
   },
   {
    "port": "rs",
@@ -10573,7 +10580,7 @@
   {
    "port": "rs",
    "symbol": "test.TestServer.shutdown",
-   "page": "/topics/context-managers/",
+   "page": "/rs/latest/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
   },
@@ -11609,7 +11616,7 @@
   {
    "port": "swift",
    "symbol": "Endpoint.socketName(_:)",
-   "page": "/topics/socket-and-servers/",
+   "page": "/swift/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
@@ -11763,6 +11770,13 @@
   {
    "port": "swift",
    "symbol": "Server",
+   "page": "/swift/latest/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "Server",
    "page": "/swift/latest/workspace/internals/",
    "title": "Swift workspace internals",
    "section": "ports"
@@ -11772,13 +11786,6 @@
    "symbol": "Server",
    "page": "/topics/architecture/",
    "title": "Architecture",
-   "section": "topics"
-  },
-  {
-   "port": "swift",
-   "symbol": "Server",
-   "page": "/topics/socket-and-servers/",
-   "title": "Socket and servers",
    "section": "topics"
   },
   {
@@ -11812,21 +11819,21 @@
   {
    "port": "swift",
    "symbol": "Server.isRunning()",
-   "page": "/topics/socket-and-servers/",
+   "page": "/swift/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
   {
    "port": "swift",
    "symbol": "Server.kill(_:)",
-   "page": "/topics/context-managers/",
+   "page": "/swift/latest/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
   },
   {
    "port": "swift",
    "symbol": "Server.killServer()",
-   "page": "/topics/socket-and-servers/",
+   "page": "/swift/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
@@ -12533,7 +12540,7 @@
   {
    "port": "ts",
    "symbol": "errors.TmuxServerRestartedError",
-   "page": "/topics/socket-and-servers/",
+   "page": "/ts/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
@@ -12890,14 +12897,14 @@
   {
    "port": "ts",
    "symbol": "server.Server.isAlive",
-   "page": "/topics/socket-and-servers/",
+   "page": "/ts/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
   {
    "port": "ts",
    "symbol": "server.Server.kill",
-   "page": "/topics/socket-and-servers/",
+   "page": "/ts/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
@@ -12932,7 +12939,7 @@
   {
    "port": "ts",
    "symbol": "server.Server.raiseIfDead",
-   "page": "/topics/socket-and-servers/",
+   "page": "/ts/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
@@ -13452,8 +13459,8 @@
   {
    "port": "csharp",
    "text": "ConnectAndBuild",
-   "page": "/examples/attach-and-send-keys/",
-   "line": 152,
+   "page": "/csharp/latest/examples/attach-and-send-keys/",
+   "line": 37,
    "why": "not defined in the stated port"
   },
   {
@@ -13543,8 +13550,8 @@
   {
    "port": "ts",
    "text": "[Symbol.asyncDispose]",
-   "page": "/topics/context-managers/",
-   "line": 147,
+   "page": "/ts/latest/topics/context-managers/",
+   "line": 21,
    "why": "not defined in the stated port"
   }
  ]

@@ -241,6 +241,60 @@
           "native input ready"
         ]
       ]
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "topics/socket-and-servers",
+      "sourceRevision": "79072dd1a9f5fb437a5859e362a496fd57ec0981",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "sockets.sh",
+          "sha256": "d51baca3c4feeffa811092b8e3ec53d4b559dcd10fc61c672ece9fe26a2f0464"
+        }
+      ],
+      "shellRecipe": [
+        "sh sockets.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "servers have different PIDs",
+          "first server: renamed",
+          "second server: work"
+        ]
+      ]
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "topics/context-managers",
+      "sourceRevision": "79072dd1a9f5fb437a5859e362a496fd57ec0981",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "cleanup.sh",
+          "sha256": "c27b5a4e8f3172b83edd19406a394b046bf0667b0fa4325633f59506c3ba8c09"
+        }
+      ],
+      "shellRecipe": [
+        "sh cleanup.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "temporary pane removed",
+          "temporary window removed",
+          "temporary session removed; keep remains"
+        ]
+      ]
     }
   ]
 }

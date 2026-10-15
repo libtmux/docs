@@ -118,6 +118,10 @@ describe('verified complete programs', () => {
       commands: ['new-session', 'new-window', 'split-window', 'select-layout', 'source-file'] },
     { page: 'examples/attach-and-send-keys', ports: ['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'],
       commands: ['attach-session', 'has-session', 'list-panes', 'send-keys', 'capture-pane'] },
+    { page: 'topics/socket-and-servers', ports: ['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'],
+      commands: ['new-session', 'display-message', 'list-sessions', 'has-session', 'kill-server'] },
+    { page: 'topics/context-managers', ports: ['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'],
+      commands: ['kill-pane', 'kill-window', 'kill-session', 'kill-server', 'unlink-window'] },
   ])('teaches native $page while retaining its library routes', ({ page, ports, commands }) => {
     const { content, frontmatter } = parsePage(page)
     expect(frontmatter.supportedPorts).toEqual([])

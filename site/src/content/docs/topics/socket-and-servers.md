@@ -1,7 +1,7 @@
 ---
-supportedPorts: [py, ts, rs, go, java, csharp, cxx, swift]
+supportedPorts: []
 title: Socket and servers
-description: Select a server socket, check liveness, and detect a replacement daemon.
+description: Select a native tmux server, inspect its socket and process, and keep independent servers separate.
 sidebar:
   label: Socket and servers
   group: Topics
@@ -9,305 +9,102 @@ sidebar:
 tableOfContents: true
 ---
 
-A tmux server is selected by its Unix-domain socket. Use different sockets for
-independent servers, such as a development session and an isolated test server.
-Choose the default socket, a named socket (`-L`), or an explicit path (`-S`).
+A tmux server listens on a Unix-domain socket. Every client command selects
+one server. Use the same socket selection when creating objects, reading state,
+sending input, and cleaning up.
 
-## Naming a server
+## Select a server
 
-<!-- port:py -->
-<!-- port:root -->
-### Python
-<!-- /port -->
-`Server()` selects the default socket. Pass `socket_name="work"` to
-select a named socket, or `socket_path="/tmp/tmux-1000/work"` for an
-explicit path.
-<!-- /port -->
+`-L` selects a socket name below tmux's per-user socket directory. `-S` selects
+an explicit socket path; when supplied, it takes precedence over `-L`. Without
+an explicit selection, a client inside tmux can use the server recorded in
+`TMUX`; an outside client uses the default socket.
 
-<!-- port:ts -->
-<!-- port:root -->
-### TypeScript
-<!-- /port -->
-`new Server()` selects the default socket. Set `socketName` to select
-a named socket, or `socketPath` to use an explicit path.
-<!-- /port -->
+Save this complete script as `sockets.sh`. It requires tmux 3.2a or newer and
+a POSIX shell. It starts two private servers with the same session name,
+changes one, and verifies that the other is unaffected.
 
-<!-- port:go -->
-<!-- port:root -->
-### Go
-<!-- /port -->
-`tmux.NewServer(tmux.ServerOptions{})` selects the default socket.
-Set `ServerOptions.SocketName` for a named socket or
-`ServerOptions.SocketPath` for an explicit path.
-<!-- /port -->
+```sh title="sockets.sh"
+#!/bin/sh
+set -eu
+directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-sockets.XXXXXX")
+socket="$directory/tmux.sock"
 
-<!-- port:rs -->
-<!-- port:root -->
-### Rust
-<!-- /port -->
-`Server::new()` selects the default socket. Use
-`Server::builder().socket_name("work").build()?` for a named socket or
-`Server::builder().socket_path(path).build()?` for an explicit path.
-<!-- /port -->
-
-<!-- port:java -->
-<!-- port:root -->
-### Java
-<!-- /port -->
-`ServerEndpoint.defaultSocket()` selects the default socket.
-`ServerEndpoint.namedSocket("work")` selects a named socket, and
-`ServerEndpoint.socketPath(path)` selects an explicit path.
-<!-- /port -->
-
-<!-- port:csharp -->
-<!-- port:root -->
-### C#
-<!-- /port -->
-`new ServerConnectionOptions()` selects the default socket. Supply
-`socketName` for a named socket or `socketPath` for an explicit path.
-<!-- /port -->
-
-<!-- port:cxx -->
-<!-- port:root -->
-### C++
-<!-- /port -->
-`Server::at_default()` selects the default socket. Use
-`Server::at_socket_name("work")` for a named socket or
-`Server::at_socket_path(path)` for an explicit path.
-<!-- /port -->
-
-<!-- port:swift -->
-<!-- port:root -->
-### Swift
-<!-- /port -->
-Select a named socket with `Server(socketName: "work")` or an
-explicit path with `Server(socketPath: path)`. The initializer requires
-a socket selection; see the default-socket example below.
-<!-- /port -->
-
-```python
-default_server = libtmux.Server()
-named = libtmux.Server(socket_name="work")
-```
-
-```typescript
-const named = new Server({ socketName: "work" });
-```
-
-```go
-named, err := tmux.NewServer(tmux.ServerOptions{SocketName: "work"})
-if err != nil {
-    return err
+other="$directory/other.sock"
+cleanup() {
+    status=$?
+    trap - 0 HUP INT TERM
+    failed=no
+    for address in "$socket" "$other"; do
+        if [ -S "$address" ] && ! tmux -S "$address" kill-server; then
+            failed=yes
+        fi
+    done
+    if [ "$failed" = yes ]; then
+        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
+        exit 1
+    fi
+    rm -rf "$directory" || status=$?
+    exit "$status"
 }
+
+trap cleanup 0
+trap 'exit 1' HUP INT TERM
+
+tmux -S "$socket" -f /dev/null new-session -d -s work 'cat'
+tmux -S "$other" -f /dev/null new-session -d -s work 'cat'
+selected=$(tmux -S "$socket" display-message -p '#{socket_path}')
+[ "$selected" = "$socket" ]
+first_pid=$(tmux -S "$socket" display-message -p '#{pid}')
+second_pid=$(tmux -S "$other" display-message -p '#{pid}')
+[ "$first_pid" != "$second_pid" ]
+printf 'servers have different PIDs\n'
+
+tmux -S "$socket" rename-session -t '=work' renamed
+first=$(tmux -S "$socket" list-sessions -F '#{session_name}')
+second=$(tmux -S "$other" list-sessions -F '#{session_name}')
+[ "$first" = renamed ] && [ "$second" = work ]
+printf 'first server: %s\nsecond server: %s\n' "$first" "$second"
 ```
 
-```rust
-let named = libtmux::Server::builder().socket_name("work").build()?;
+Run the saved script:
+
+```console
+$ sh sockets.sh
 ```
 
-```java
-ServerConfig config = ServerConfig.builder()
-        .endpoint(ServerEndpoint.namedSocket("work"))
-        .build();
-Server named = Server.open(config);
-```
+The output is `servers have different PIDs`, `first server: renamed`, and
+`second server: work` on separate lines. Both private servers are stopped by
+the cleanup trap.
 
-```csharp
-using LibTmux;
+## Check the selected server
 
-Server named = await Server.ConnectAsync(new ServerConnectionOptions(socketName: "work"));
-```
+[`display-message -p`](/tmux/latest/manual/display-message/) evaluates formats
+on the selected server. `#{socket_path}` reports its socket and `#{pid}` its
+process ID. [`list-sessions`](/tmux/latest/manual/list-sessions/) lists that
+server's sessions. The IDs assigned inside two independent servers can be
+the same; an ID needs its server context.
 
-```cpp
-auto named = libtmux::Server::at_socket_name("work");
-```
+[`has-session`](/tmux/latest/manual/has-session/) checks a particular session.
+A failed lookup does not by itself prove that no server exists: the server
+may be running with other sessions or with `exit-empty` disabled. Preserve
+standard error when diagnosing a failed connection or target lookup.
 
-```swift
-let named = try Server(socketName: "work")
-```
+## Own the socket lifecycle
 
-Choose either a socket name or a socket path. tmux uses `TMUX_TMPDIR` to
-resolve the directory for default and named sockets.
+[`new-session`](/tmux/latest/manual/new-session/) starts a server if needed.
+`-f /dev/null` skips configuration when that server starts; it does not reset
+an existing server's configuration. Use a new directory when a test must own
+the server from creation through cleanup.
 
-<!-- port:ts -->
-Supplying both selectors raises `TypeError`.
-<!-- /port -->
-<!-- port:go -->
-`ServerOptions.SocketPath` takes precedence over `ServerOptions.SocketName` when both are set.
-<!-- /port -->
+The socket path can be reused after a server stops. Cached object IDs can
+then refer to a different server lifetime. Re-read state after a restart
+instead of applying old IDs to a replacement daemon.
+[`kill-server`](/tmux/latest/manual/kill-server/) stops every session on the
+selected server. Use it only when that server is the resource you own.
+The [isolated test guide](/guides/testing-with-libtmux/) demonstrates that
+cleanup boundary.
 
-<!-- port:swift -->
-Swift requires an explicit `socketPath` or `socketName` argument. To reach
-tmux's default socket, use `Server(socketName: "default")`.
-<!-- /port -->
-
-<!-- port:py -->
-`Server(socket_name_factory=...)` accepts a callable that generates socket
-names. Use a unique name for each isolated test server.
-<!-- /port -->
-<!-- port:csharp -->
-`ServerConnectionOptions(socketNameFactory: ...)` accepts a callable that
-generates socket names. Use a unique name for each isolated test server.
-<!-- /port -->
-
-## Is the server actually there?
-
-A server handle does not prove that the target server is running. Use a liveness
-check when your program needs to distinguish a live server from an unavailable
-socket:
-
-<!-- port:py -->
-<!-- port:root -->
-### Python
-<!-- /port -->
-`Server.is_alive` returns a boolean indicating whether the server
-responds.
-<!-- /port -->
-
-<!-- port:ts -->
-<!-- port:root -->
-### TypeScript
-<!-- /port -->
-`Server.isAlive` returns a promise of a boolean. `Server.raiseIfDead`
-throws when the server is unavailable and retains the reason reported by tmux.
-<!-- /port -->
-
-<!-- port:go -->
-<!-- port:root -->
-### Go
-<!-- /port -->
-`Server.IsAlive` returns `(bool, error)`. The error reports a check
-that could not be completed; a false result alone means the server is not alive.
-<!-- /port -->
-
-<!-- port:rs -->
-<!-- port:root -->
-### Rust
-<!-- /port -->
-`Server.is_alive` returns a boolean. Use `Server.check_alive` when
-you also need to distinguish a failed check from a server that is not alive.
-<!-- /port -->
-
-<!-- port:java -->
-<!-- port:root -->
-### Java
-<!-- /port -->
-`Server.isAlive` returns a boolean.
-<!-- /port -->
-
-<!-- port:csharp -->
-<!-- port:root -->
-### C#
-<!-- /port -->
-`Server.IsAliveAsync` returns `Task<bool>`.
-<!-- /port -->
-
-<!-- port:cxx -->
-<!-- port:root -->
-### C++
-<!-- /port -->
-`Server.is_alive` takes a timeout and returns a boolean.
-<!-- /port -->
-
-<!-- port:swift -->
-<!-- port:root -->
-### Swift
-<!-- /port -->
-`Server.isRunning` is an async throwing check that returns `Bool`.
-<!-- /port -->
-
-```python
-if server.is_alive():
-    server.sessions
-```
-
-```typescript
-if (await server.isAlive()) {
-  await server.snapshot();
-}
-```
-
-```go
-alive, err := server.IsAlive(ctx)
-if err != nil {
-    return err
-}
-fmt.Println("server running:", alive)
-```
-
-```rust
-if server.is_alive().await {
-    server.sessions().await?;
-}
-```
-
-```java
-if (server.isAlive()) {
-    server.sessions();
-}
-```
-
-```csharp
-if (await server.IsAliveAsync())
-{
-    await server.GetSessionsAsync();
-}
-```
-
-```cpp
-if (server.is_alive(std::chrono::seconds{2})) {
-  server.sessions();
-}
-```
-
-```swift
-if try await server.isRunning() {
-    try await server.sessions()
-}
-```
-
-<!-- port:ts -->
-`isAlive()` returns a boolean. Use `raiseIfDead()` when you need failure details.
-<!-- /port -->
-<!-- port:rs -->
-`is_alive()` returns a boolean. Use `check_alive()` when you need failure details.
-<!-- /port -->
-
-## Killing a server, and telling two apart
-
-Killing a server ends all its sessions. Use this only for a server your program
-owns; for narrower cleanup, kill the session or pane you created.
-
-<!-- port:py -->
-Call `server.kill_server()`. `Server.__eq__` compares `socket_name` and
-`socket_path` when deciding whether two handles select the same endpoint.
-<!-- /port -->
-<!-- port:ts -->
-Call `await server.kill()`. `TmuxServerRestartedError` reports an operation
-whose handle encountered a replacement daemon on the same socket.
-<!-- /port -->
-<!-- port:go -->
-Call `server.Kill(ctx)` and check its error. `server.Equal(other)` compares
-the captured socket bindings, resolving relative paths and environment-based
-socket names. Equal endpoints do not prove equal daemon lifetimes.
-`ErrDaemonReplaced` reports a replacement daemon on the selected socket.
-<!-- /port -->
-<!-- port:rs -->
-Call `server.kill().await?` and handle a cleanup failure before returning.
-<!-- /port -->
-<!-- port:java -->
-Call `server.killServer()` to stop tmux. `Server.close()` releases the local
-connection and leaves tmux running; see [Ownership and cleanup](../context-managers/).
-<!-- /port -->
-<!-- port:csharp -->
-Call `await server.KillAsync()` and handle a cleanup failure before returning.
-<!-- /port -->
-<!-- port:cxx -->
-Call `server.kill()` and inspect its result for a failure.
-<!-- /port -->
-<!-- port:swift -->
-Call `try await server.killServer()` and handle a cleanup failure before returning.
-<!-- /port -->
-
-A restarted server can reuse a socket path while having different state. Do
-not treat a matching path as proof that a cached object still exists.
+The pinned
+[tmux manual](https://github.com/tmux/tmux/blob/79072dd1a9f5fb437a5859e362a496fd57ec0981/tmux.1)
+documents the commands and formats used here.
