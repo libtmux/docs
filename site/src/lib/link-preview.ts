@@ -20,11 +20,12 @@ export interface LinkPreview {
 
 export function symbolPreview(model: ApiModel, symbol: ApiSymbol, version: string): LinkPreview {
   const summary = symbol.doc?.summary ?? symbol.signatures.find((signature) => signature.doc?.summary)?.doc?.summary
+  const signature = symbol.signatures[0]?.raw ?? (symbol.value !== undefined ? `${symbol.name} = ${symbol.value}` : undefined)
   return {
     schema: 1, title: qualifiedNameOf(symbol), kind: symbol.command?.kind ?? symbol.kind,
     description: summary ? docSummaryText(summary, model.port) : '',
-    signature: symbol.signatures[0]?.raw,
-    signatureLanguage: symbol.signatures[0]?.raw ? codeLang(model.port) : undefined,
+    signature,
+    signatureLanguage: signature ? codeLang(model.port) : undefined,
     detail: symbol.signatures.length > 1 ? `${symbol.signatures.length} signatures in the full reference.` : undefined,
     href: productApiHref(model, symbol, version), source: sourceUrl(model, symbol),
   }

@@ -15,6 +15,7 @@ import {
   type SymbolKind,
 } from '../model.ts'
 import { type GrammarName, parserFor } from '../parser.ts'
+import { attachTypeScriptConstants } from './typescript-constants.ts'
 
 /**
  * One extractor, five languages, driven by a per-language spec.
@@ -461,5 +462,9 @@ export async function extractWithSpec(
     options: { ...DEFAULT_EXTRACT_OPTIONS, ...options },
   }
   walk(tree.rootNode, ctx, undefined)
+  if (spec.grammar === 'typescript') {
+    attachTypeScriptConstants(tree.rootNode, ctx.symbols, file, module,
+      (node) => docFor(docCommentFor(node, spec), spec, [], parser))
+  }
   return ctx.symbols
 }

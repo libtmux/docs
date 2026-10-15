@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro'
 import { API_MODELS } from '../../lib/api-models'
 import { pageSlug, sourceUrl, symbolsForProduct } from '@libtmux/api-model'
 import { symbolMarkdown } from '../../lib/symbol-markdown'
+import { productApiHref } from '../../lib/product-api'
 import { PORT_BY_SLUG, referenceUrl } from '../../lib/ports'
 import { DEFAULT_LOCALE } from '../../i18n/locales'
 import { buildLocale } from '../../i18n/resolve'
@@ -60,6 +61,7 @@ export const GET: APIRoute = ({ props, site }) => {
       source: sourceUrl(model, symbol, `${origin}${referenceBase}`),
       packageName: symbol.package ?? PORT_BY_SLUG[port]?.packageName,
       version: buildTarget(process.env).version,
+      hrefFor: (entry) => productApiHref(model, entry, buildTarget(process.env).version),
     }),
     { headers: { 'Content-Type': 'text/markdown; charset=utf-8' } },
   )

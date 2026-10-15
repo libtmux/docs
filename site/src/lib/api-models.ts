@@ -145,6 +145,12 @@ export const OWNER_KINDS = new Set([
   'typealias',
 ])
 
+/** Constant objects can own members without changing their language kind to a type. */
+export function isMemberOwner(symbol: ApiSymbol): boolean {
+  return OWNER_KINDS.has(symbol.kind) || (symbol.kind === 'constant' &&
+    Boolean(symbol.declarations?.some((declaration) => declaration.kind === 'constant')))
+}
+
 export const PORT_NAME: Record<string, string> = {
   powershell: 'PowerShell',
   julia: 'Julia',
@@ -183,7 +189,7 @@ export const PORT_NAME: Record<string, string> = {
  */
 export function ownersOf(model: ApiModelBase) {
   const hasMembers = new Set(model.symbols.flatMap((s) => (s.parent ? [s.parent] : [])))
-  return model.symbols.filter((s) => OWNER_KINDS.has(s.kind) && hasMembers.has(s.id))
+  return model.symbols.filter((s) => isMemberOwner(s) && hasMembers.has(s.id))
 }
 
 /** The types the port index lists: top-level only, so nesting reads as nesting. */

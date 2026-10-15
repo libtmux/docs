@@ -4,7 +4,7 @@ import { toMarkdown } from 'mdast-util-to-markdown'
 import { membersOf, memberSignals, memberTier, moduleOf, qualifiedNameOf } from '@libtmux/api-model'
 import mentions from '../data/mentions.json'
 import { PORT_NAME, referenceAlternatives } from './api-models'
-import { apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures } from './api-sections'
+import { apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, hasScalarMembers, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures } from './api-sections'
 import { tmuxCommandsFor, tmuxManualUrl } from './tmux-manual-data'
 import { tmuxCommandMentions, tmuxMentionMarkdown } from './tmux-links'
 import { productApiIndex } from './product-api'
@@ -165,6 +165,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     ? `${entry.label && entry.label !== '__AllParameterSets' ? `${entry.label}${entry.isDefault ? ' (default)' : ''}:\n` : ''}${nativeSignatureText(symbol, entry, language)}`
     : signatureLine(symbol, entry, language)).join('\n\n')
   if (sig) out.push(fencedCode(sig, language === 'c' ? 'c' : ''), '')
+  else if (symbol.value !== undefined) out.push(fencedCode(`${qualifiedNameOf(symbol)}${symbol.type ? `: ${symbol.type}` : ''} = ${symbol.value}`, language ?? ''), '')
   else if (language === 'c') out.push(`${anonymousDeclarationLabel(symbol)}.`, '')
 
   if (symbol.doc?.summary) out.push(prose(symbol.doc.summary), '')
@@ -261,7 +262,15 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   }
   if (declared.length) {
     out.push('## Members', '')
-    for (const group of apiMemberGroups(declared, signals)) {
+    if (hasScalarMembers(symbol, declared)) {
+      out.push('| Name | Value | Description |', '| --- | --- | --- |')
+      const cell = (text: string) => text.replaceAll('|', '\\|').replaceAll('\n', ' ')
+      for (const member of declared) {
+        const name = ctx.hrefFor ? `[${inlineCode(member.name)}](${ctx.hrefFor(member)})` : inlineCode(member.name)
+        out.push(`| ${cell(name)} | ${cell(inlineCode(member.value!))} | ${cell(member.doc?.summary ?? '')} |`)
+      }
+      out.push('')
+    } else for (const group of apiMemberGroups(declared, signals)) {
       out.push(`### ${group.label}`, '')
       appendMembers(group.members)
     }

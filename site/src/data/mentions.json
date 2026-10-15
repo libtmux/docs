@@ -8451,20 +8451,6 @@
   },
   {
    "port": "py",
-   "symbol": "libtmux.constants.ResizeAdjustmentDirection.Up",
-   "page": "/guides/sending-keys/",
-   "title": "Sending keys",
-   "section": "guides"
-  },
-  {
-   "port": "py",
-   "symbol": "libtmux.constants.ResizeAdjustmentDirection.Up",
-   "page": "/topics/pane-interaction/",
-   "title": "Pane interaction",
-   "section": "topics"
-  },
-  {
-   "port": "py",
    "symbol": "libtmux.exc.LibTmuxException",
    "page": "/py/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",

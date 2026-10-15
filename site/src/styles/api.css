@@ -207,6 +207,14 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
 }
 .api-member-list li:last-child { border-bottom: 0; }
 .api-member-list li:hover { background: var(--color-surface); }
+.api-scalar-members { width: 100%; margin-block: 0.75rem; border-collapse: collapse; }
+.api-scalar-members :is(th, td) {
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid var(--color-edge);
+  text-align: left;
+  vertical-align: top;
+}
+.api-scalar-members th[scope="row"] { font-weight: inherit; }
 .api-member-group { margin-block: 1.5rem 2rem; }
 .api-member-group--single { margin-top: 0.75rem; }
 .api-member-type { font: 0.875em var(--font-mono, ui-monospace, monospace); overflow-wrap: anywhere; }

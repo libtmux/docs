@@ -9,6 +9,13 @@ export interface ApiSection {
   count?: number
 }
 
+/** Scalar properties of a native constant object use a value table. */
+export function hasScalarMembers(owner: ApiSymbol, members: ApiSymbol[]): boolean {
+  return Boolean(owner.declarations?.some((declaration) => declaration.kind === 'constant')) &&
+    members.length > 0 && members.every((member) => member.kind === 'property' &&
+      member.modifiers.includes('readonly') && member.value !== undefined)
+}
+
 /** Match the rendered declaration in HTML and Markdown, including long lists. */
 export function signatureParameterText(param: Param, port?: string): string {
   const variadic = param.variadic === 'keyword' ? '**' : param.variadic ? (port === 'ts' ? '...' : '*') : ''

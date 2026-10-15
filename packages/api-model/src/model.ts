@@ -228,6 +228,8 @@ export interface ApiSymbol {
   /** Enclosing symbol's id, or undefined at module level. */
   parent?: string
   signatures: Signature[]
+  /** Distinct native declarations sharing one public name, such as a TypeScript type/value pair. */
+  declarations?: { kind: SymbolKind; text: string; source: ApiSymbol['source']; doc?: DocBlock }[]
   /** Explicit source imports used to resolve aliases in native signatures. */
   imports?: Record<string, string>
   /** Relationships resolved by the native documentation producer. */

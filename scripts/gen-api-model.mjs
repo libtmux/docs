@@ -787,6 +787,11 @@ for (const [port, cfg] of Object.entries(PORTS)) {
       }
       symbol.product ??= productOf(relativeFile)
       symbol.source = { ...symbol.source, file: relativeFile, repo: unit.repo, revision: unit.revision, extractedRevision: unit.head }
+      for (const declaration of symbol.declarations ?? []) {
+        const file = declaration.source.file
+        declaration.source = { ...declaration.source, file: isAbsolute(file) ? relative(base, file) : file,
+          repo: unit.repo, revision: unit.revision, extractedRevision: unit.head }
+      }
     }
     inheritProductFromOwners(unit.symbols)
     for (const product of ['workspace', 'mcp']) {
@@ -799,7 +804,7 @@ for (const [port, cfg] of Object.entries(PORTS)) {
       } else if (port === 'rs') entries = [join(unit.checkout, `crates/tmux-${product}/src/lib.rs`)]
       scopeProductSymbols(symbols, { port, root: unit.checkout, entries, readSource: (file) => readFileSync(file, 'utf8') })
     }
-    remapLines(unit.checkout, unit.symbols, unit.revision, unit.head)
+    remapLines(unit.checkout, unit.symbols.flatMap((symbol) => [symbol, ...(symbol.declarations ?? [])]), unit.revision, unit.head)
     for (const product of new Set(unit.symbols.map((symbol) => symbol.product))) {
       model.sources.push({
         product, package: unit.package ?? packages[port]?.[product] ?? portBySlug[port].packageName,

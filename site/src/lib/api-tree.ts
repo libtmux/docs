@@ -7,7 +7,7 @@
  */
 import { membersOf, memberSignals, qualifiedNameOf, symbolsForProduct, type ApiModel, type ApiModelBase, type ApiSymbol } from '@libtmux/api-model'
 import mentions from '../data/mentions.json'
-import { API_MODELS, API_NAV, OWNER_KINDS, pageSlug, referenceHref, topLevelTypesOf, type NavEntry, type PortNavData, type NavBucket } from './api-models'
+import { API_MODELS, API_NAV, OWNER_KINDS, isMemberOwner, pageSlug, referenceHref, topLevelTypesOf, type NavEntry, type PortNavData, type NavBucket } from './api-models'
 import type { ApiTreeBucket, ApiTreeJson } from './api-search'
 import { createHash } from 'node:crypto'
 import { PORT_BY_SLUG, type ApiDependencyNavigation } from './ports'
@@ -272,7 +272,7 @@ export function membersByType(port: string): Map<string, TreeMember[]> {
 export function membersByTypeFor(scope: string, model: ApiModelBase): Map<string, TreeMember[]> {
   const out = new Map<string, TreeMember[]>()
   const signals = memberSignals(scope, mentions.mentions)
-  for (const owner of model.symbols.filter((symbol) => OWNER_KINDS.has(symbol.kind))) {
+  for (const owner of model.symbols.filter(isMemberOwner)) {
     const members = membersOf(model, owner, signals)
     if (members.length) out.set(owner.publicId ?? owner.id, members.map((symbol) => ({
       id: symbol.id, name: symbol.name, slug: symbol.slug ?? pageSlug(symbol.publicId ?? symbol.id),
@@ -337,7 +337,7 @@ export function referenceNavigation(port: string): ReferenceNavigation | undefin
       symbols.set(symbol.id, symbol)
       hrefs[symbol.id] = href
       hrefs[id] = href
-      if (OWNER_KINDS.has(symbol.kind)) {
+      if (isMemberOwner(symbol)) {
         const children = membersOf(dependency, symbol, signals)
         if (children.length) {
           members.set(id, children.map((child) => ({ id: child.id, name: child.name, slug: child.slug ?? pageSlug(child.publicId ?? child.id) })))

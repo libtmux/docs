@@ -1,0 +1,23 @@
+---
+import type { ApiSymbol, SymbolIndex } from '@libtmux/api-model'
+import ApiDoc from './ApiDoc.astro'
+
+interface Props {
+  owner: ApiSymbol
+  members: ApiSymbol[]
+  index: SymbolIndex
+  hrefFor: (symbol: ApiSymbol) => string
+}
+const { owner, members, index, hrefFor } = Astro.props
+---
+<table class="api-scalar-members">
+  <caption class="sr-only">{owner.name} constant object properties</caption>
+  <thead><tr><th scope="col">Name</th><th scope="col">Value</th><th scope="col">Description</th></tr></thead>
+  <tbody>
+    {members.map((member) => <tr id={`member-${member.publicId ?? member.id}`}>
+      <th scope="row"><a class="api-member-link" href={hrefFor(member)}>{member.name}</a></th>
+      <td><code class="api-literal">{member.value}</code></td>
+      <td>{member.doc?.summary && <ApiDoc text={member.doc.summary} index={index} context={member} citations={false} />}</td>
+    </tr>)}
+  </tbody>
+</table>

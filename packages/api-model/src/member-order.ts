@@ -97,7 +97,8 @@ export function membersOf(model: ApiModelBase & { port?: string }, owner: ApiSym
       members.push({ ...source, parent: owner.id, inheritedFrom: source.parent })
     }
   }
-  return members.sort(compareMembers(signals))
+  return owner.declarations?.some((declaration) => declaration.kind === 'constant')
+    ? members : members.sort(compareMembers(signals))
 }
 
 /**
