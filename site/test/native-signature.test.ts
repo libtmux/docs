@@ -142,7 +142,7 @@ describe('native signature emission', () => {
           const label = sig.label && sig.label !== '__AllParameterSets'
             ? `${sig.label}${sig.isDefault ? ' (default)' : ''}: ` : ''
           expect(displayedSignature(signature)).toBe(label + text(symbol, sig, port))
-          if (port === 'ts') {
+          if (['ts', 'scala', 'kotlin'].includes(port)) {
             expect(signature.querySelector('.api-declaration-name')?.textContent).toBe(symbol.name)
             expect(signature.getAttribute('data-code-columns')).toBe('60')
             expect(signature.getAttribute('data-code-width-status')).toBe('fits')
@@ -205,22 +205,58 @@ describe('native signature emission', () => {
     }
   })
 
-  it('keeps a selected overload binding separate from a global type with the same name', async () => {
+  it.each([
+    ['scala', '"Target"', 1],
+    ['scala', '"🐱 Target"', 1],
+    ['scala', 's"Target ${Target()}"', 2],
+    ['scala', '"""first\n  Target\nlast"""', 1],
+    ['kotlin', '"Target"', 1],
+    ['kotlin', '"🐱 Target"', 1],
+    ['kotlin', '"Target ${Target()}"', 2],
+    ['kotlin', '"""first\n  Target\nlast"""', 1],
+  ] as const)('retains %s parameter anchors and distinguishes literal references in %s', async (port, value, references) => {
+    const sig: Signature = { raw: `${port === 'scala' ? 'def' : 'public fun'} method(value: String = ${value}): Target`, params: [{ name: 'value', type: 'String', default: value }], returns: 'Target' }
+    const symbol: ApiSymbol = { id: 'Probe.method', name: 'method', kind: 'method', modifiers: [], signatures: [sig], source: { file: 'probe' } }
+    const target: ApiSymbol = { id: 'Target', name: 'Target', kind: 'class', modifiers: [], signatures: [], source: { file: 'probe' } }
+    const index = new SymbolIndex([symbol, target], (entry) => `/${entry.id}/`, port)
+    const signatureLayouts = await apiSignatureLayouts(symbol, port)
+    const component = await (componentPromise ??= signatureComponent())
+    const container = await experimental_AstroContainer.create()
+    const win = new Window()
+    try {
+      win.document.body.innerHTML = await container.renderToString(component, { props: {
+        symbol, sig, port, language: port, index, signatureLayouts,
+        nativeSignatureText: () => signatureLayouts.get(sig)!.text, nameHref: '/Probe.method/',
+      } })
+      const signature = win.document.querySelector('.api-native-signature')!
+      expect(displayedSignature(signature)).toBe(signatureLayouts.get(sig)!.text)
+      expect([...signature.querySelectorAll('a[href="/Target/"]')].map((link) => link.textContent))
+        .toEqual(Array.from({ length: references }, () => 'Target'))
+      expect(signature.querySelector('a.api-parameter-name')?.getAttribute('href')).toBe('#Probe.method.parameter.value')
+      expect(signature.querySelector('a.api-signature-name-link')?.getAttribute('href')).toBe('/Probe.method/')
+    } finally {
+      await win.happyDOM.abort()
+    }
+  })
+
+  it.each(['ts', 'scala', 'kotlin'] as const)('keeps a selected %s overload binding separate from a global type with the same name', async (port) => {
     const signatures: Signature[] = [
-      { typeParams: ['Target'], params: [{ name: 'value', type: 'Target' }], returns: 'Target' },
-      { params: [{ name: 'value', type: 'Target' }], returns: 'Target' },
+      { typeParams: ['Target'], params: [{ name: 'value', type: 'Target' }], returns: 'Target',
+        ...(port === 'scala' ? { raw: 'def method[Target](value: Target): Target' } : port === 'kotlin' ? { raw: 'public fun <Target> method(value: Target): Target' } : {}) },
+      { params: [{ name: 'value', type: 'Target' }], returns: 'Target',
+        ...(port === 'scala' ? { raw: 'def method(value: Target): Target' } : port === 'kotlin' ? { raw: 'public fun method(value: Target): Target' } : {}) },
     ]
-    const symbol: ApiSymbol = { id: 'Probe.method', name: 'method', kind: 'method', modifiers: [], signatures, source: { file: 'probe.ts' } }
+    const symbol: ApiSymbol = { id: 'Probe.method', name: 'method', kind: 'method', modifiers: [], signatures, imports: { Target: 'Probe.Target' }, source: { file: 'probe.ts' } }
     const target: ApiSymbol = { id: 'Probe.Target', name: 'Target', kind: 'class', modifiers: [], signatures: [], source: { file: 'probe.ts' } }
-    const index = new SymbolIndex([symbol, target], (entry) => `/${entry.id}/`, 'ts')
-    const signatureLayouts = await apiSignatureLayouts(symbol, 'ts')
+    const index = new SymbolIndex([symbol, target], (entry) => `/${entry.id}/`, port)
+    const signatureLayouts = await apiSignatureLayouts(symbol, port)
     const component = await (componentPromise ??= signatureComponent())
     const container = await experimental_AstroContainer.create()
     const win = new Window()
     try {
       for (const [i, sig] of signatures.entries()) {
         win.document.body.innerHTML = await container.renderToString(component, { props: {
-          symbol, sig, port: 'ts', language: 'ts', index, signatureLayouts,
+          symbol, sig, port, language: port, index, signatureLayouts,
           nativeSignatureText: () => signatureLayouts.get(sig)!.text,
         } })
         const signature = win.document.querySelector('.api-native-signature')!
@@ -256,5 +292,29 @@ describe('native signature emission', () => {
     } finally {
       await win.happyDOM.abort()
     }
+  })
+
+  it.each(['scala', 'kotlin'] as const)('marks unresolved %s widths on the actual native signature fragment', async (port) => {
+    const value = `"${'x'.repeat(90)}"`
+    const sig: Signature = { raw: `${port === 'scala' ? 'def' : 'public fun'} method(value: String = ${value}): Target`, params: [{ name: 'value', type: 'String', default: value }] }
+    const symbol: ApiSymbol = { id: 'Probe.method', name: 'method', kind: 'method', modifiers: [], signatures: [sig], source: { file: 'probe' } }
+    const index = new SymbolIndex([symbol], (entry) => `/${entry.id}/`, port)
+    const signatureLayouts = await apiSignatureLayouts(symbol, port)
+    const layout = signatureLayouts.get(sig)!
+    const component = await (componentPromise ??= signatureComponent())
+    const container = await experimental_AstroContainer.create()
+    const win = new Window()
+    try {
+      win.document.body.innerHTML = await container.renderToString(component, { props: {
+        symbol, sig, port, language: port, index, signatureLayouts,
+        nativeSignatureText: () => layout.text,
+      } })
+      const signature = win.document.querySelector('.api-native-signature')!
+      expect(displayedSignature(signature)).toBe(layout.text)
+      expect(signature.getAttribute('data-code-columns')).toBe('60')
+      expect(signature.getAttribute('data-code-width-status')).toBe('unresolved')
+      expect(layout.failures.length).toBeGreaterThan(0)
+      expect(JSON.parse(signature.getAttribute('data-code-width-failures')!)).toEqual(layout.failures)
+    } finally { await win.happyDOM.abort() }
   })
 })

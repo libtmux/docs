@@ -4,7 +4,7 @@ import { parameterId, type ApiSymbol, type Signature, type SymbolIndex } from '@
 export const CODE_COLUMNS = { api: 60, example: 80 } as const
 export type CodeSurface = keyof typeof CODE_COLUMNS
 export interface CodeWidthFailure { line: number; columns: number; limit: number }
-type CodeSyntax = { start: number; end: number } & (
+export type CodeSyntax = { start: number; end: number } & (
   { kind: 'name' | 'literal' } | { kind: 'parameter'; parameter: number }
 )
 export interface CodeLayout {
@@ -129,7 +129,14 @@ export function supportsTypeScriptSignatures(symbol: ApiSymbol, language?: strin
 
 /** Prepare one layout per overload for both HTML and the Markdown twin. */
 export async function apiSignatureLayouts(symbol: ApiSymbol, language?: string): Promise<Map<Signature, CodeLayout>> {
-  if (!supportsTypeScriptSignatures(symbol, language)) return new Map()
-  return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
-    [signature, await typescriptSignatureLayout(symbol, signature)] as const)))
+  if (supportsTypeScriptSignatures(symbol, language)) {
+    return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
+      [signature, await typescriptSignatureLayout(symbol, signature)] as const)))
+  }
+  if ((language === 'scala' || language === 'kotlin') && ['method', 'function'].includes(symbol.kind)) {
+    const { jvmSignatureLayout } = await import('./jvm-code-layout')
+    return new Map(await Promise.all(symbol.signatures.filter((signature) => signature.raw).map(async (signature) =>
+      [signature, await jvmSignatureLayout(signature, language)] as const)))
+  }
+  return new Map()
 }
