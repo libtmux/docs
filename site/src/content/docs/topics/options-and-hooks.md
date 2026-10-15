@@ -108,6 +108,24 @@ Keep hooks targeted to the resources they should change. A global hook can
 affect other sessions, and a hook that runs the same event-producing command
 needs a design that avoids unintended repeated work.
 
+## tmux version compatibility
+
+The commands in `options.sh` work on both documented tmux versions. Check
+the event itself when choosing a hook; its availability belongs to tmux,
+independently of a library's API.
+
+| Feature | tmux 3.2a | tmux 3.7c |
+|---------|-----------|-----------|
+| `pane-title-changed` hook | Supported | Supported |
+
+`pane-title-changed` runs when a pane's title changes, including a change
+made with [`select-pane -T`](/tmux/latest/manual/select-pane/).
+The hook was [added before tmux 3.2](https://github.com/tmux/tmux/commit/d329b035cee47d968a8c93b5cbd8fde879ce6f0d)
+and is registered in both the
+[3.2a source](https://github.com/tmux/tmux/blob/3b929f332aafa7f1080eacc31feb11ffbb1d1841/options-table.c#L1143)
+and the
+[3.7c source](https://github.com/tmux/tmux/blob/e476c1230b958df0cb12977517d24b3dc931375b/options-table.c#L1700).
+
 The pinned
 [tmux manual](https://github.com/tmux/tmux/blob/e476c1230b958df0cb12977517d24b3dc931375b/tmux.1)
 documents the commands and formats used here.

@@ -85,7 +85,14 @@ The compatibility notes list these tmux requirements:
 | All options/hooks features | 3.2+ |
 | Window/pane hook *scope flags* (`-w`, `-p`) accepted | 3.2+; see the supported-scope caveat above |
 | `client-active`, `window-resized` hooks | 3.3+ |
-| `pane-title-changed` hook | 3.5+ |
+| `pane-title-changed` hook | 3.2+ |
+
+The `pane-title-changed` hook was
+[added before tmux 3.2](https://github.com/tmux/tmux/commit/d329b035cee47d968a8c93b5cbd8fde879ce6f0d).
+It is present in both the documented
+[3.2a source](https://github.com/tmux/tmux/blob/3b929f332aafa7f1080eacc31feb11ffbb1d1841/options-table.c#L1143)
+and the
+[3.7c source](https://github.com/tmux/tmux/blob/e476c1230b958df0cb12977517d24b3dc931375b/options-table.c#L1700).
 
 Check the library's supported tmux versions before using a version-specific
 option or hook.
