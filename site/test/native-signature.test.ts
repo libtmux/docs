@@ -4,8 +4,9 @@ import { pathToFileURL } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { experimental_AstroContainer } from 'astro/container'
 import { Window, type Element } from 'happy-dom'
-import { SymbolIndex, type ApiModel } from '@libtmux/api-model'
+import { SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model'
 import { nativeSignatureText } from '../src/lib/api-sections'
+import { apiSignatureLayouts } from '../src/lib/code-layout'
 
 const astroRequire = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
 
@@ -28,6 +29,7 @@ async function signatureComponent() {
   const type = await compile('../src/components/api/ApiType.astro', {
     './SymbolName.astro': name, './ApiKeyword.astro': keyword,
     '@libtmux/api-model': new URL('../../packages/api-model/src/index.ts', import.meta.url).href,
+    '../../lib/code-layout': new URL('../src/lib/code-layout.ts', import.meta.url).href,
   })
   const source = readFileSync(new URL('../src/components/api/ApiEntry.astro', import.meta.url), 'utf8')
   const start = source.indexOf("<span class:list={['api-native-signature',")
@@ -35,7 +37,7 @@ async function signatureComponent() {
   expect(start).toBeGreaterThan(0)
   expect(end).toBeGreaterThan(start)
   const fragment = source.slice(start, end)
-  const wrapper = `---\nimport ApiType from './ApiType.astro'\nconst { symbol, sig, port, language, index, nameHref, nativeSignatureText } = Astro.props\n---\n${fragment}`
+  const wrapper = `---\nimport ApiType from './ApiType.astro'\nconst { symbol, sig, port, language, index, nameHref, nativeSignatureText, signatureLayouts = new Map() } = Astro.props\n---\n${fragment}`
   return (await import(/* @vite-ignore */ await compile('../src/components/api/ApiEntry.astro', { './ApiType.astro': type }, wrapper))).default
 }
 
@@ -46,6 +48,12 @@ function displayedSignature(element: Element): string {
 }
 
 const cases = [
+  ['ts', 'server.Server.setHook'],
+  ['ts', 'selection.Selection.filter'],
+  ['ts', 'selection.Selection.[Symbol.iterator]'],
+  ['ts', 'types.TmuxEventStream.[Symbol.asyncDispose]'],
+  ['ts', 'types.ConnectedServer.[Symbol.asyncDispose]'],
+  ['ts', 'server.Server.constructor'],
   ['cxx', 'libtmux::Server::sessions'],
   ['scala', 'io.github.libtmux.scaladsl.Server.sessions'],
   ['kotlin', 'io.github.libtmux.kotlin.Server.sessions'],
@@ -63,26 +71,131 @@ describe('native signature emission', () => {
     const component = await (componentPromise ??= signatureComponent())
     const container = await experimental_AstroContainer.create()
     const index = new SymbolIndex(model.symbols, (entry) => `/en/${port}/latest/reference/${entry.slug}/`, port)
+    const signatureLayouts = await apiSignatureLayouts(symbol, port)
+    const text = (entry: typeof symbol, signature: typeof symbol.signatures[number], language: string) => signatureLayouts.get(signature)?.text ?? nativeSignatureText(entry, signature, language)
     const win = new Window()
     try {
       for (const sig of symbol.signatures) {
         for (const member of [false, true]) {
           win.document.body.innerHTML = await container.renderToString(component, { props: {
             symbol, sig, port, language: port, index,
-            nameHref: member ? `/en/${port}/latest/reference/${symbol.slug}/` : undefined, nativeSignatureText,
+            nameHref: member ? `/en/${port}/latest/reference/${symbol.slug}/` : undefined, nativeSignatureText: text, signatureLayouts,
           } })
           const signature = win.document.querySelector('.api-native-signature')!
           const label = sig.label && sig.label !== '__AllParameterSets'
             ? `${sig.label}${sig.isDefault ? ' (default)' : ''}: ` : ''
-          expect(displayedSignature(signature)).toBe(label + nativeSignatureText(symbol, sig, port))
+          expect(displayedSignature(signature)).toBe(label + text(symbol, sig, port))
+          if (port === 'ts') {
+            expect(signature.querySelector('.api-declaration-name')?.textContent).toBe(symbol.name)
+            expect(signature.getAttribute('data-code-columns')).toBe('60')
+            expect(signature.getAttribute('data-code-width-status')).toBe('fits')
+            expect(signature.querySelector('.api-signature-name-link')?.getAttribute('href'))
+              .toBe(member ? `/en/${port}/latest/reference/${symbol.slug}/` : undefined)
+            for (const param of sig.params) {
+              const parameter = [...signature.querySelectorAll('a.api-parameter-name')].find((link) => link.textContent === param.name)
+              expect(parameter?.getAttribute('href')).toBe(`#${encodeURIComponent(`${symbol.publicId ?? symbol.id}.parameter.${param.name}`)}`)
+            }
+            if (symbol.name === 'setHook') {
+              const options = [...signature.querySelectorAll('a.api-type-link')].find((link) => link.textContent === 'SetHookOptions')
+              expect(options?.getAttribute('href')).toBe('/en/ts/latest/reference/types-sethookoptions/')
+            }
+          }
         }
       }
       const sig = { ...symbol.signatures[0], label: 'ByServer', isDefault: true }
       win.document.body.innerHTML = await container.renderToString(component, { props: {
-        symbol, sig, port, language: port, index, nativeSignatureText,
+        symbol, sig, port, language: port, index, nativeSignatureText: text, signatureLayouts,
       } })
       expect(displayedSignature(win.document.querySelector('.api-native-signature')!))
-        .toBe(`ByServer (default): ${nativeSignatureText(symbol, sig, port)}`)
+        .toBe(`ByServer (default): ${text(symbol, sig, port)}`)
+    } finally {
+      await win.happyDOM.abort()
+    }
+  })
+
+  it.each([
+    { label: 'template value', value: '`Target`', references: 0 },
+    { label: 'regular expression', value: '/Target/u', references: 0 },
+    { label: 'quoted value', value: '"Target"', references: 0 },
+    { label: 'template type', value: '"Target"', type: '`Target-${keyof Target}`', references: 1 },
+    { label: 'template interpolation', value: '`Target ${new Target()} ${/Target/u.test("Target")}`', references: 1 },
+    { label: 'division next to a regex', value: 'Target / /Target/u.test("Target")', references: 1 },
+    { label: 'comment', value: '(1 /* Target */ + 2)', references: 0 },
+    { label: 'multiline template interpolation', value: '`first\n  Target\n${new Target()}\n  last`', references: 1 },
+    { label: 'parameter named after its callable', value: '"Target"', parameter: 'method', references: 0 },
+  ])('distinguishes $label syntax in linked native headers', async ({ value, type, references, parameter = 'value' }) => {
+    const sig: Signature = { params: [{ name: parameter, ...(type ? { type } : {}), default: value }], returns: 'void' }
+    const symbol: ApiSymbol = { id: 'Probe.method', name: 'method', kind: 'method', modifiers: [], signatures: [sig], source: { file: 'probe.ts' } }
+    const target: ApiSymbol = { id: 'Probe.Target', name: 'Target', kind: 'class', modifiers: [], signatures: [], source: { file: 'probe.ts' } }
+    const index = new SymbolIndex([symbol, target], (entry) => `/${entry.id}/`, 'ts')
+    const signatureLayouts = await apiSignatureLayouts(symbol, 'ts')
+    const component = await (componentPromise ??= signatureComponent())
+    const container = await experimental_AstroContainer.create()
+    const win = new Window()
+    try {
+      win.document.body.innerHTML = await container.renderToString(component, { props: {
+        symbol, sig, port: 'ts', language: 'ts', index, signatureLayouts,
+        nativeSignatureText: () => signatureLayouts.get(sig)!.text, nameHref: '/Probe.method/',
+      } })
+      const signature = win.document.querySelector('.api-native-signature')!
+      expect(displayedSignature(signature)).toBe(signatureLayouts.get(sig)!.text)
+      expect([...signature.querySelectorAll('a[href="/Probe.Target/"]')].map((link) => link.textContent))
+        .toEqual(Array.from({ length: references }, () => 'Target'))
+      expect(signature.querySelector('a.api-parameter-name')?.getAttribute('href')).toBe(`#Probe.method.parameter.${parameter}`)
+      expect(signature.querySelectorAll('a.api-signature-name-link')).toHaveLength(1)
+    } finally {
+      await win.happyDOM.abort()
+    }
+  })
+
+  it('keeps a selected overload binding separate from a global type with the same name', async () => {
+    const signatures: Signature[] = [
+      { typeParams: ['Target'], params: [{ name: 'value', type: 'Target' }], returns: 'Target' },
+      { params: [{ name: 'value', type: 'Target' }], returns: 'Target' },
+    ]
+    const symbol: ApiSymbol = { id: 'Probe.method', name: 'method', kind: 'method', modifiers: [], signatures, source: { file: 'probe.ts' } }
+    const target: ApiSymbol = { id: 'Probe.Target', name: 'Target', kind: 'class', modifiers: [], signatures: [], source: { file: 'probe.ts' } }
+    const index = new SymbolIndex([symbol, target], (entry) => `/${entry.id}/`, 'ts')
+    const signatureLayouts = await apiSignatureLayouts(symbol, 'ts')
+    const component = await (componentPromise ??= signatureComponent())
+    const container = await experimental_AstroContainer.create()
+    const win = new Window()
+    try {
+      for (const [i, sig] of signatures.entries()) {
+        win.document.body.innerHTML = await container.renderToString(component, { props: {
+          symbol, sig, port: 'ts', language: 'ts', index, signatureLayouts,
+          nativeSignatureText: () => signatureLayouts.get(sig)!.text,
+        } })
+        const signature = win.document.querySelector('.api-native-signature')!
+        expect(displayedSignature(signature)).toBe(signatureLayouts.get(sig)!.text)
+        expect(signature.querySelectorAll('a[href="/Probe.Target/"]')).toHaveLength(i ? 2 : 0)
+        expect(signature.querySelector('a.api-parameter-name')?.getAttribute('href')).toBe('#Probe.method.parameter.value')
+      }
+    } finally {
+      await win.happyDOM.abort()
+    }
+  })
+
+  it('marks an indivisible over-width header unresolved without changing its copied text', async () => {
+    const sig: Signature = { params: [{ name: 'value', type: `"${'x'.repeat(90)}"` }], returns: 'A'.repeat(75) }
+    const symbol: ApiSymbol = { id: 'Probe.method', name: 'method', kind: 'method', modifiers: [], signatures: [sig], source: { file: 'probe.ts' } }
+    const index = new SymbolIndex([symbol], (entry) => `/${entry.id}/`, 'ts')
+    const signatureLayouts = await apiSignatureLayouts(symbol, 'ts')
+    const component = await (componentPromise ??= signatureComponent())
+    const container = await experimental_AstroContainer.create()
+    const win = new Window()
+    try {
+      win.document.body.innerHTML = await container.renderToString(component, { props: {
+        symbol, sig, port: 'ts', language: 'ts', index, signatureLayouts,
+        nativeSignatureText: () => signatureLayouts.get(sig)!.text,
+      } })
+      const signature = win.document.querySelector('.api-native-signature')!
+      expect(displayedSignature(signature)).toBe(signatureLayouts.get(sig)!.text)
+      expect(signature.getAttribute('data-code-columns')).toBe('60')
+      expect(signature.getAttribute('data-code-width-status')).toBe('unresolved')
+      expect(JSON.parse(signature.getAttribute('data-code-width-failures')!)).toEqual([
+        { line: 2, columns: 102, limit: 60 }, { line: 3, columns: 78, limit: 60 },
+      ])
     } finally {
       await win.happyDOM.abort()
     }

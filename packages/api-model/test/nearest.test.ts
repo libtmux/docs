@@ -47,6 +47,22 @@ it('links F# types around apostrophe-prefixed generic parameters', () => {
     .toEqual(['Filter', 'Field'])
 })
 
+it('keeps TypeScript callable names and modifiers separate from type references', () => {
+  const owner = sym('module.method', 'method')
+  const target = sym('module.Target')
+  const idx = new SymbolIndex([owner, target], (symbol) => `/${symbol.id}/`, 'ts')
+  const signature = { params: [{ name: 'value', type: 'Target' }], returns: 'Target' }
+  for (const prefix of ['', 'static async ', 'async function* ']) {
+    const text = `${prefix}method(\n  value: Target,\n): Target`
+    const spans = idx.linkType(text, owner, signature)
+    expect(spans.map((span) => span.text).join('')).toBe(text)
+    expect(spans.find((span) => span.text === 'method')).toEqual({ text: 'method', declaration: true })
+    expect(spans.filter((span) => span.link).map((span) => span.text)).toEqual(['Target', 'Target'])
+    for (const keyword of prefix.split(/\W+/).filter(Boolean)) expect(spans.find((span) => span.text === keyword)?.keyword).toBe(true)
+  }
+  expect(idx.linkType('ReadonlyArray<method>', owner, signature).find((span) => span.text === 'method')?.declaration).toBeUndefined()
+})
+
 it('keeps Julia symbol literals separate from same-named APIs', () => {
   const idx = new SymbolIndex([
     sym('LibTmux.TmuxID'), sym('LibTmux.session', 'function'), sym('LibTmux.window', 'function'),

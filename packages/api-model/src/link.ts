@@ -71,7 +71,7 @@ const SIGNATURE_KEYWORDS: Record<string, Set<string>> = Object.fromEntries(Objec
   kotlin: 'public private protected internal class interface object fun val var suspend override abstract open final data sealed enum inline reified crossinline noinline vararg in out where companion constructor operator infix tailrec external expect actual by',
   scala: 'def extension val var class trait object type given using implicit inline transparent opaque override abstract final sealed case lazy private protected open infix export derives end',
   fsharp: 'module namespace type member static abstract override interface inherit let rec mutable inline internal private public of with get set new val and when',
-  ts: 'readonly keyof typeof infer extends unique',
+  ts: 'readonly keyof typeof infer extends unique private static async function const',
   swift: 'any',
   julia: 'where struct mutable abstract primitive type function end',
   cxx: 'alignas alignof auto class concept const consteval constexpr constinit decltype default delete enum explicit extern final friend inline mutable namespace noexcept operator override register requires static struct template thread_local typedef typename union using virtual volatile',
@@ -682,6 +682,12 @@ export class SymbolIndex {
           } })
           continue
         }
+      }
+      if (this.lang === 'ts' && signature && context && ident === context.name &&
+          /^(?:(?:private|static|async)\s+)*(?:function\s*)?\*?\s*$/.test(annotation.slice(0, m.index)) &&
+          /^\s*[<(]/.test(annotation.slice(m.index! + ident.length))) {
+        out.push({ text: ident, declaration: true })
+        continue
       }
       // Julia's :session is a Symbol value, not the session function. A
       // Type assertions and subtype/supertype bounds must still link types.

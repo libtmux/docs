@@ -9,6 +9,7 @@ import { tmuxCommandsFor, tmuxManualUrl } from './tmux-manual-data'
 import { tmuxCommandMentions, tmuxMentionMarkdown } from './tmux-links'
 import { productApiIndex } from './product-api'
 import { defaultVersionFor } from './versions'
+import { apiSignatureLayouts, type CodeLayout } from './code-layout'
 import { apiCallSource, apiRelationshipSections, type ApiRelationshipPath } from './api-relationships'
 
 /**
@@ -36,6 +37,7 @@ export interface MarkdownContext {
   source?: string
   packageName?: string
   version?: string
+  signatureLayouts?: ReadonlyMap<Signature, CodeLayout>
 }
 
 function signatureLine(symbol: ApiSymbol, sig: Signature, port?: string): string {
@@ -112,6 +114,12 @@ function proseMarkdown(markdown: string, index: SymbolIndex, symbol: ApiSymbol, 
   return markdown
 }
 
+/** Production export prepares the same native layouts used by ApiEntry. */
+export async function symbolMarkdownWithLayout(ctx: MarkdownContext): Promise<string> {
+  const language = 'language' in ctx.model ? ctx.model.language : ctx.model.port
+  return symbolMarkdown({ ...ctx, signatureLayouts: await apiSignatureLayouts(ctx.symbol, language) })
+}
+
 export function symbolMarkdown(ctx: MarkdownContext): string {
   const { model, symbol } = ctx
   const port = 'port' in model ? model.port : undefined
@@ -161,9 +169,9 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     out.push(fencedCode(`${symbol.name} = ${symbol.type}`, 'julia'), '')
   }
   const signatures = language === 'c' ? symbol.signatures.filter((signature) => signature.raw) : symbol.signatures
-  const sig = signatures.map((entry) => native && entry.raw
+  const sig = signatures.map((entry) => ctx.signatureLayouts?.get(entry)?.text ?? (native && entry.raw
     ? `${entry.label && entry.label !== '__AllParameterSets' ? `${entry.label}${entry.isDefault ? ' (default)' : ''}:\n` : ''}${nativeSignatureText(symbol, entry, language)}`
-    : signatureLine(symbol, entry, language)).join('\n\n')
+    : signatureLine(symbol, entry, language))).join('\n\n')
   if (sig) out.push(fencedCode(sig, language === 'c' ? 'c' : ''), '')
   else if (symbol.value !== undefined) out.push(fencedCode(`${qualifiedNameOf(symbol)}${symbol.type ? `: ${symbol.type}` : ''} = ${symbol.value}`, language ?? ''), '')
   else if (language === 'c') out.push(`${anonymousDeclarationLabel(symbol)}.`, '')

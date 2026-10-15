@@ -3,7 +3,7 @@ import { getCollection, type CollectionEntry } from 'astro:content'
 import { sourceUrl } from '@libtmux/api-model'
 import { API_MODELS } from '../lib/api-models'
 import { productApiHref, productApiRedirects, productApiRoutes } from '../lib/product-api'
-import { symbolMarkdown } from '../lib/symbol-markdown'
+import { symbolMarkdownWithLayout } from '../lib/symbol-markdown'
 import { buildLocale } from '../i18n/resolve'
 import { DEFAULT_LOCALE } from '../i18n/locales'
 import { buildTarget } from '../lib/versions'
@@ -62,7 +62,7 @@ export async function getStaticPaths() {
   return all
 }
 
-export const GET: APIRoute = ({ props, site }) => {
+export const GET: APIRoute = async ({ props, site }) => {
   const headers = { 'Content-Type': 'text/markdown; charset=utf-8' }
   const route = props as Props
   if ('entry' in route) {
@@ -71,7 +71,7 @@ export const GET: APIRoute = ({ props, site }) => {
   }
   const model = API_MODELS[route.port]
   const symbol = model.symbols.find((entry) => entry.id === route.id)!
-  return new Response(symbolMarkdown({
+  return new Response(await symbolMarkdownWithLayout({
     model, symbol,
     version: route.version,
     hrefFor: (entry) => productApiHref(model, entry, route.version),

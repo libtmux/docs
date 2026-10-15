@@ -35,6 +35,7 @@ async function parameterComponent() {
   })
   const type = await compile('../src/components/api/ApiType.astro', {
     '@libtmux/api-model': helpers, './SymbolName.astro': name, './ApiKeyword.astro': keyword,
+    '../../lib/code-layout': new URL('../src/lib/code-layout.ts', import.meta.url).href,
   })
   const url = await compile('../src/components/api/ApiSignatureParameters.astro', {
     '@libtmux/api-model': helpers, '../../lib/api-sections': helpers, './ApiType.astro': type,

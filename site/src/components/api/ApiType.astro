@@ -1,6 +1,7 @@
 ---
 import type { ApiSymbol, Signature, SymbolIndex } from '@libtmux/api-model'
 import { qualifiedNameOf } from '@libtmux/api-model'
+import { signatureSpans, type CodeLayout, type SignatureSpan } from '../../lib/code-layout'
 import SymbolName from './SymbolName.astro'
 import ApiKeyword from './ApiKeyword.astro'
 
@@ -25,11 +26,15 @@ interface Props {
   context?: ApiSymbol
   chip?: boolean
   signature?: Signature
+  /** Grammar ranges from a prepared native declaration. */
+  layout?: CodeLayout
   /** Link an inline member declaration to its own page. */
   nameHref?: string
 }
-const { type, index, context, chip, signature, nameHref } = Astro.props as Props
-const spans = index.linkType(type, context, signature)
+const { type, index, context, chip, signature, nameHref, layout } = Astro.props as Props
+const spans: SignatureSpan[] = layout && context && signature
+  ? signatureSpans(layout, index, context, signature) : index.linkType(type, context, signature)
+const isDeclarationName = (span: SignatureSpan) => span.declarationName || (!layout && span.declaration && span.text === context?.name)
 /* gp-sphinx renders a type cross-reference as a code chip — `Bases:` and the
    parameter list both — and chips the names that resolve to nothing too, so
    the box marks "this is a type" and the colour marks "this one is a link".
@@ -41,7 +46,7 @@ const isOperator = (text: string) => /^(->|=>|<:|:>)$/.test(text)
 ---
 <span class="api-type">{
   spans.map((span) =>
-    span.declaration && span.text === context?.name && nameHref ? (
+    isDeclarationName(span) && nameHref ? (
       <a class="api-signature-name-link api-declaration-name" href={nameHref}><SymbolName name={span.text} /></a>
     ) : span.link ? (
       <a
@@ -54,7 +59,7 @@ const isOperator = (text: string) => /^(->|=>|<:|:>)$/.test(text)
       <span class:list={[
         span.declaration || span.keyword ? 'api-type-label' : 'api-punct',
         span.keyword && 'api-keyword',
-        span.declaration && (span.text === context?.name ? 'api-declaration-name' : 'api-parameter-name'),
+        span.declaration && (isDeclarationName(span) ? 'api-declaration-name' : 'api-parameter-name'),
         chip && NAME.test(span.text) && 'api-literal',
       ]}>{literalParts(span.text).map((part) => isOperator(part)
         ? <span class="api-operator">{part}</span> : part)}</span>

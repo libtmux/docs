@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro'
 import { API_MODELS } from '../../lib/api-models'
 import { pageSlug, sourceUrl, symbolsForProduct } from '@libtmux/api-model'
-import { symbolMarkdown } from '../../lib/symbol-markdown'
+import { symbolMarkdownWithLayout } from '../../lib/symbol-markdown'
 import { productApiHref } from '../../lib/product-api'
 import { PORT_BY_SLUG, referenceUrl } from '../../lib/ports'
 import { DEFAULT_LOCALE } from '../../i18n/locales'
@@ -43,7 +43,7 @@ export async function getStaticPaths() {
   return paths
 }
 
-export const GET: APIRoute = ({ props, site }) => {
+export const GET: APIRoute = async ({ props, site }) => {
   const { port, id } = props as { port: string; id: string }
   const model = API_MODELS[port]
   const symbol = model?.symbols.find((s) => s.id === id)
@@ -54,7 +54,7 @@ export const GET: APIRoute = ({ props, site }) => {
   const referenceBase = referenceUrl(PORT_BY_SLUG[port]!, buildTarget(process.env).version)
 
   return new Response(
-    symbolMarkdown({
+    await symbolMarkdownWithLayout({
       model,
       symbol,
       canonical: `${origin}${referenceUrl(PORT_BY_SLUG[port]!, buildTarget(process.env).version)}${slug}/`,
