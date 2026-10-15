@@ -174,16 +174,16 @@ describe('Java record component boundaries', () => {
 })
 
 describe('Java record accessor resolution boundaries', () => {
-  it('retains an explicit accessor named after its record without adding another method', async () => {
-    const symbols = await extract(`public record Self(int Self) {
+  it.each([['int', 'int'], ['java.lang.String', 'String']])('retains an explicit accessor with component %s and return %s', async (component, returns) => {
+    const symbols = await extract(`public record Self(${component} Self) {
       /** Explicit accessor. */
-      public int Self() { return Self; }
+      public ${returns} Self() { return Self; }
     }`)
     const owner = symbols.find((symbol) => symbol.id === 'example.Self')!
     const accessors = symbols.filter((symbol) => symbol.parent === owner.id && symbol.name === 'Self')
     expect(accessors).toHaveLength(1)
     expect(accessors[0]).toMatchObject({
-      id: 'example.Self.Self', signatures: [{ params: [], returns: 'int' }],
+      id: 'example.Self.Self', signatures: [{ params: [], returns }],
       doc: { summary: 'Explicit accessor.' }, source: { line: 3 },
     })
   })
