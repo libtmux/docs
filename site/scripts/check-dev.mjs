@@ -112,7 +112,7 @@ import DocsLayout from '../layouts/DocsLayout.astro'
 import { API_MODELS, indexFor } from '../lib/api-models'
 import { API_MODEL_PORTS, referenceUrl } from '../lib/ports'
 import { apiSignatureLayouts } from '../lib/code-layout'
-import { nativeSignatureText } from '../lib/api-sections'
+import { nativeSignatureText, usesNativeSignatures } from '../lib/api-sections'
 import '../styles/api.css'
 import '../styles/vendor/gp-sphinx-api.css'
 const entries = API_MODEL_PORTS.filter(({ slug }) => ${JSON.stringify(signaturePorts.map((port) => port.slug))}.includes(slug))
@@ -120,7 +120,15 @@ const entries = API_MODEL_PORTS.filter(({ slug }) => ${JSON.stringify(signatureP
   const model = API_MODELS[port]
   const callable = model.symbols.filter((symbol) => symbol.signatures.some((signature) =>
     signature.params.length > 0 && signature.returns))
-  const symbol = callable.find((symbol) => /capture/i.test(symbol.name)) ?? callable[0]
+  let symbol = callable.find((symbol) => /capture/i.test(symbol.name)) ?? callable[0]
+  if (!symbol) {
+    // Native method records can omit inferred return types, as Julia does.
+    const native = model.symbols.filter((entry) => usesNativeSignatures(entry, port) &&
+      entry.signatures.some((signature) => signature.params.length > 0) &&
+      entry.signatures.every((signature) => typeof signature.raw === 'string' && signature.raw.trim()))
+    symbol = native.find((entry) => entry.kind === 'function' && /capture/i.test(entry.name)) ?? native[0]
+  }
+  if (!symbol) throw new Error('API signature fixture is missing a parameterized callable for ' + port)
   const scalar = model.symbols.find((symbol) => symbol.signatures.length === 0 && symbol.type && symbol.value)
   return [symbol, scalar].filter(Boolean).map((symbol) => ({ port, model, symbol }))
 })
