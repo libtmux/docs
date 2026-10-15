@@ -652,16 +652,18 @@ async function checkReferenceAndHeroes(browser, base) {
 }
 
 try {
-  // Compile the first page during setup; navigation assertions measure
+  // Compile the initial pages during setup; navigation assertions measure
   // the running app. The outer loop still budgets this initial compilation.
   const firstPage = homeLauncherOnly || homeControlsOnly ? '/'
     : keywordHelpOnly ? '/kotlin/latest/reference/io-github-libtmux-kotlin-withserver/'
     : documentationNavigationOnly ? '/py/latest/' : apiSignaturesOnly ? '/api-signature-probe/'
     : apiNavigationOnly ? '/lua/latest/reference/libtmux-server/' : '/tmux/concepts/server-session-window-pane/'
-  const ready = fetch(`${base}${firstPage}`).then(async (response) => {
-    assert(response.ok, `Browser setup: HTTP ${response.status} at ${firstPage}`)
+  const setupPages = sampleOnly ? [firstPage, '/demo/widgets/pickers/'] : [firstPage]
+  const ready = Promise.all(setupPages.map(async (path) => {
+    const response = await fetch(`${base}${path}`)
+    assert(response.ok, `Browser setup: HTTP ${response.status} at ${path}`)
     await response.text()
-  })
+  }))
   const engine = process.env.LIBTMUX_DOCS_BROWSER ?? 'chromium'
   const driver = { chromium, firefox, webkit }[engine]
   if (!driver) throw new Error(`Unknown browser: ${engine}`)
