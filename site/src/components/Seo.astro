@@ -198,9 +198,9 @@ const graph: Graph = {
       : []),
     ...(breadcrumbs.length ? [{
       '@type': 'BreadcrumbList' as const,
-      itemListElement: breadcrumbs.map((item, i) => ({
+      itemListElement: breadcrumbs.filter((item) => item.url).map((item, i) => ({
         '@type': 'ListItem' as const, position: i + 1, name: item.name,
-        ...(item.url ? { item: new URL(item.url, origin).href } : {}),
+        item: new URL(item.url!, origin).href,
       })),
     }] : []),
   ],

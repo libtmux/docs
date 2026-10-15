@@ -569,7 +569,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     for (const page of pages().filter((entry) => entry.port === slug)) await inspect(page.path, (document) => {
       const crumb = document.querySelector('nav[aria-label="Breadcrumb"]')!
       expect(crumb, page.path).not.toBeNull()
-      const labels = [...crumb.querySelectorAll('[data-breadcrumb-item]')].map((item) => item.textContent.trim())
+      const labels = [...crumb.querySelectorAll('a[data-breadcrumb-item], [data-breadcrumb-item][aria-current="page"]')].map((item) => item.textContent.trim())
       const structured = graph(document).find((entry) => entry['@type'] === 'BreadcrumbList')
       expect(structured?.itemListElement?.map((item) => item.name), page.path).toEqual(labels)
       expect(labels[0]).toBe(page.name)
