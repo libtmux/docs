@@ -111,6 +111,8 @@ import ApiEntry from '../components/api/ApiEntry.astro'
 import DocsLayout from '../layouts/DocsLayout.astro'
 import { API_MODELS, indexFor } from '../lib/api-models'
 import { API_MODEL_PORTS, referenceUrl } from '../lib/ports'
+import { apiSignatureLayouts } from '../lib/code-layout'
+import { nativeSignatureText } from '../lib/api-sections'
 import '../styles/api.css'
 import '../styles/vendor/gp-sphinx-api.css'
 const entries = API_MODEL_PORTS.filter(({ slug }) => ${JSON.stringify(signaturePorts.map((port) => port.slug))}.includes(slug))
@@ -122,10 +124,17 @@ const entries = API_MODEL_PORTS.filter(({ slug }) => ${JSON.stringify(signatureP
   const scalar = model.symbols.find((symbol) => symbol.signatures.length === 0 && symbol.type && symbol.value)
   return [symbol, scalar].filter(Boolean).map((symbol) => ({ port, model, symbol }))
 })
+const nativeDeclarations = new Map()
+for (const { port, symbol } of entries) {
+  const layouts = await apiSignatureLayouts(symbol, port)
+  nativeDeclarations.set(symbol, symbol.signatures.map((signature) =>
+    layouts.get(signature)?.text ?? nativeSignatureText(symbol, signature, port)))
+}
 ---
 <DocsLayout title="API signature layout" tableOfContents={false}>
   {entries.map(({ port, model, symbol }) => (
-    <section data-signature-port={port} data-signature-model={JSON.stringify(symbol)}>
+    <section data-signature-port={port} data-signature-model={JSON.stringify(symbol)}
+      data-signature-native={JSON.stringify(nativeDeclarations.get(symbol))}>
       <ApiEntry symbol={{ ...symbol, doc: undefined }} index={indexFor(model, (entry) => referenceUrl(port, entry.slug))} port={port} />
     </section>
   ))}
@@ -251,7 +260,11 @@ async function checkSignatureLayouts(browser, base) {
         }
         const visibleText = clean(await signature.innerText())
         if (await signature.locator('.api-native-signature').count()) {
-          for (const declaration of model.signatures) assert(visibleText.includes(clean(declaration.raw)),
+          const declarations = JSON.parse(await entry.getAttribute('data-signature-native'))
+          assert(Array.isArray(declarations) && declarations.every((text) => typeof text === 'string' && text.trim()),
+            `${port}: prepared native declarations are bound to the fixture`)
+          assert.equal(declarations.length, model.signatures.length, `${port}: every native declaration is checked`)
+          for (const declaration of declarations) assert(visibleText.includes(clean(declaration)),
             `${port}: native declaration survives at ${width}px`)
         } else {
           assert.deepEqual(await signature.locator('.sig-param > :is(.n, .api-parameter-name)').allTextContents(),
