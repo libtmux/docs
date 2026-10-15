@@ -20,12 +20,14 @@ const { id = 'reference-link-preview', title = 'Reference preview', description 
   <a href={href} data-preview-open data-preview-skip>{actionLabel}</a>
 </span>
 <style is:global>
-  a[data-link-preview]:not(.api-badge), a[data-link-preview] code {
+  a[data-link-preview]:not(.api-badge) {
     text-decoration-line: underline;
     text-decoration-style: dotted;
     text-decoration-color: currentColor;
     text-underline-offset: .2em;
   }
+  a[data-link-preview]:not(.api-badge):has(.api-literal--link) { color: var(--color-link); }
+  a[data-link-preview]:not(.api-badge) code { text-decoration-line: none; }
   .reference-link-preview {
     position: fixed; inset: 0; margin: auto; padding: 1rem;
     box-sizing: border-box; width: min(40rem, calc(100vw - 2rem)); max-height: min(28rem, calc(100dvh - 2rem));

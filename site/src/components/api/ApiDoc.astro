@@ -29,6 +29,8 @@ const { text, index, context, citations = true } = Astro.props as Props
 // Through the index, so the tokenizer knows which language's spelling of a
 // cross-reference it is reading. Tokenizing here meant reST for all eight.
 const spans = linkTmuxDoc(index.linkText(text, context))
+const memberReference = /^(?:[\w$]+(?:\.[\w$]+)*)?#[^\s#]+(?:\([^#]*\))?$/
+const labelParts = (label: string, qualified: boolean) => qualified ? label.split(/(#)/) : [label]
 ---
 <span>{
   spans.map((span) => {
@@ -48,14 +50,16 @@ const spans = linkTmuxDoc(index.linkText(text, context))
         <span>{span.label}</span>
       )
     }
+    const parts = span.link ? [] : index.linkType(span.label, context)
+    const qualified = memberReference.test(span.label) && Boolean(span.link || parts.some((part) => part.link))
     return span.link ? (
       <a class="api-xref" href={span.link.href} rel={span.link.external ? 'nofollow noopener' : undefined}>
-        <code class="api-literal api-literal--link">{span.label}</code>
+        <code class="api-literal api-literal--link">{labelParts(span.label, qualified).map((text) => qualified && text === '#' ? <span class="api-reference-separator">{text}</span> : text)}</code>
       </a>
     ) : (
-      <code class="api-literal">{index.linkType(span.label, context).map((part) => part.link
-        ? <a class="api-xref api-literal--link" href={part.link.href}>{part.text}</a>
-        : part.text)}</code>
+      <code class="api-literal">{parts.map((part) => part.link
+        ? <a class="api-xref api-literal--link" href={part.link.href}>{labelParts(part.text, qualified).map((text) => qualified && text === '#' ? <span class="api-reference-separator">{text}</span> : text)}</a>
+        : labelParts(part.text, qualified).map((text) => qualified && text === '#' ? <span class="api-reference-separator">{text}</span> : text))}</code>
     )
   })
 }</span>

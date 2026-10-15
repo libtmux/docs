@@ -437,6 +437,10 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
 .api-literal--link {
   color: var(--color-link);
 }
+.api-literal .api-reference-separator {
+  color: var(--color-link);
+  color: color-mix(in srgb, var(--color-link) 85%, var(--color-foreground-primary));
+}
 
 .api-xref {
   text-decoration: none;
