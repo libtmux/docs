@@ -58,7 +58,12 @@ export type DocSpan =
  */
 const ROLE_RE = /:([a-z:]+):`([^`]+)`/g
 /** Embedded reST hyperlinks, including anonymous links with two underscores. */
-const REST_LINK_RE = /(?<![\w`])`([^`<>\n]+?)\s*<([^`<>\n]+)>`_{1,2}(?!\w)/g
+const REST_LINK_RE = /`([^`<>]+?)(\s*)<((?:\\[\s\S]|[^\\<>`])+)>`_{1,2}/g
+/** reST distinguishes opening and closing ASCII delimiters from Unicode punctuation. */
+/* eslint-disable no-control-regex -- Docutils also treats U+001C through U+001F as whitespace. */
+const REST_LINK_START_RE = /(?:[\p{White_Space}\u001c-\u001f"'(<[{/:-]|(?=[^\x00-\x7f])[\p{Ps}\p{Pi}\p{Pf}\p{Pd}\p{Po}])$/u
+const REST_LINK_END_RE = /^(?:[\p{White_Space}\u001c-\u001f"')>\]}/:.,;!?\\-]|(?=[^\x00-\x7f])[\p{Pe}\p{Pi}\p{Pf}\p{Pd}\p{Po}])/u
+/* eslint-enable no-control-regex */
 
 /**
  * A citation reference: `[server_manual]_`.
@@ -407,19 +412,26 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
     })
   }
   if (syntax.has('rest')) {
-    const escaped = (position: number) => {
-      let start = position
-      while (text[start - 1] === '\\') start--
-      return (position - start) % 2 === 1
-    }
     for (const match of text.matchAll(REST_LINK_RE)) {
       const start = match.index
       const end = start + match[0].length
       if (hits.some((hit) => hit.start < end && hit.end > start)) continue
-      const label = match[1].trim()
-      const target = match[2].trim()
+      const rawLabel = match[1]
+      const separator = match[2]
+      const rawTarget = match[3]
       let span: DocSpan = { kind: 'text', text: match[0] }
-      if (label && !escaped(start) && !escaped(start + match[0].indexOf('<'))) {
+      const delimited = (start === 0 || REST_LINK_START_RE.test(text.slice(Math.max(0, start - 2), start)))
+        && (end === text.length || REST_LINK_END_RE.test(text.slice(end, end + 2)))
+      /* eslint-disable no-control-regex -- Match Docutils whitespace and its NUL escape markers. */
+      const validWhitespace = !/^[\p{White_Space}\u001c-\u001f]/u.test(rawLabel)
+        && /^[ \t\r\n]+$/.test(separator)
+        && !/^[\p{White_Space}\u001c-\u001f]|[\p{White_Space}\u001c-\u001f]$/u.test(rawTarget)
+      if (delimited && validWhitespace) {
+        const label = rawLabel.replace(/\\([ \n])|\\([\s\S]?)/g, (_match, _space, char: string | undefined) => char ?? '')
+        // Docutils folds URI whitespace before removing native escape markers.
+        const target = rawTarget.replace(/\\([\s\S]?)/g, '\u0000$1').split(/\u0000[ \n]/)
+          .map((part) => part.replace(/[\p{White_Space}\u001c-\u001f]/gu, '')).join(' ')
+          .replaceAll('\u0000', '').replace(/\\_$/, '_')
         try {
           const destination = new URL(target)
           if (/^https?:\/\//i.test(target) && (destination.protocol === 'http:' || destination.protocol === 'https:')) {
@@ -429,6 +441,7 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
           // Malformed destinations remain literal.
         }
       }
+      /* eslint-enable no-control-regex */
       hits.push({ start, end, span })
     }
   }

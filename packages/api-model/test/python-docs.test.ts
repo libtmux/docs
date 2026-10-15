@@ -112,6 +112,56 @@ describe('Python docstring structure', () => {
   })
 
   it.each([
+    [String.raw`https://example.org/a\_b`, 'https://example.org/a_b'],
+    [String.raw`https://example.org/a\>b`, 'https://example.org/a>b'],
+    [String.raw`https://example.org/a\<b`, 'https://example.org/a<b'],
+    [String.raw`https://example.org/a\\_b`, String.raw`https://example.org/a\_b`],
+    [String.raw`https://example.org/a\\_`, 'https://example.org/a_'],
+    ['https://example.org/a b', 'https://example.org/ab'],
+    [String.raw`https://example.org/a\ b`, 'https://example.org/a b'],
+  ])('preserves the native reST destination for %s', (source, href) => {
+    const [span] = tokenizeDoc('`manual <' + source + '>`_', 'py')
+    expect(span).toEqual({ kind: 'link', text: 'manual', href })
+    expect(new URL((span as { href: string }).href).href).toBe(new URL(href).href)
+  })
+
+  it('unescapes the native label without changing its destination', () => {
+    expect(tokenizeDoc('`manual\\_name <https://example.org/a>`_', 'py')).toEqual([
+      { kind: 'link', text: 'manual_name', href: 'https://example.org/a' },
+    ])
+  })
+
+  it.each([
+    'é`manual <https://example.org/a>`_',
+    '`manual <https://example.org/a>`_é',
+    '前`manual <https://example.org/a>`_',
+    '`manual <https://example.org/a>`_後',
+    '🙂`manual <https://example.org/a>`_',
+    '`manual <https://example.org/a>`_🙂',
+    '` manual <https://example.org/a>`_',
+    '`manual < https://example.org/a>`_',
+    '`manual <https://example.org/a >`_',
+    '`manual<https://example.org/a>`_',
+    '\\\\' + '`manual <https://example.org/a>`_',
+    '`manual \\\\<https://example.org/a>`_',
+    ')`manual <https://example.org/a>`_',
+    '`manual <https://example.org/a>`_(',
+    '.`manual <https://example.org/a>`_',
+    '`manual <https://example.org/a>`_#',
+  ])('keeps invalid native inline boundaries literal: %s', (source) => {
+    expect(tokenizeDoc(source, 'py').filter((span) => span.kind === 'link')).toEqual([])
+    expect(docSummaryText(source, 'py')).toBe(source)
+  })
+
+  it.each([['(', ')'], ['«', '»'], ['「', '」'], ['—', '。']])('keeps valid native punctuation around a link: %s %s', (before, after) => {
+    const source = before + '`manual <https://example.org/a>`_' + after
+    expect(tokenizeDoc(source, 'py').filter((span) => span.kind === 'link')).toEqual([
+      { kind: 'link', text: 'manual', href: 'https://example.org/a' },
+    ])
+    expect(docSummaryText(source, 'py')).toBe(before + 'manual' + after)
+  })
+
+  it.each([
     '`unsafe <javascript:alert(1)>`_',
     '`unsafe <data:text/html,hello>`_',
     '`unsafe <file:///etc/passwd>`_',
