@@ -120,14 +120,38 @@ for (const { slug: port } of PORTS) {
   writeFileSync(join(directory, '[...slug].astro'), `---
 import Reference from '../../../reference/[...slug].astro'
 import { API_MODELS } from '../../../../lib/api-models'
+import { coreApiSymbols } from '../../../../lib/product-api'
 export function getStaticPaths() {
   const model = API_MODELS.${port}
   return [{ params: { slug: undefined }, props: { model } },
-    ...model.symbols.map((owner) => ({ params: { slug: owner.slug }, props: { model, owner } }))]
+    ...coreApiSymbols(model).map((owner) => ({ params: { slug: owner.slug }, props: { model, owner } }))]
 }
 const { model, owner } = Astro.props
 ---
 <Reference model={model} owner={owner} />
+`)
+  writeFileSync(join(directory, 'glossary.astro'), `---
+import ApiReference from '../../../../components/api/ApiReference.astro'
+import { API_MODELS } from '../../../../lib/api-models'
+---
+<ApiReference model={API_MODELS.${port}} glossary />
+`)
+  for (const format of ['json', 'md']) writeFileSync(join(directory, `glossary.${format}.ts`), `
+export { GET } from '../../../reference/glossary.${format}'
+`)
+  writeFileSync(join(directory, '[...slug].preview.json.ts'), `
+import { API_MODELS } from '../../../../lib/api-models'
+import { symbolPreview, glossaryPreview } from '../../../../lib/link-preview'
+import { PORT_BY_SLUG, referenceUrl } from '../../../../lib/ports'
+import { coreApiSymbols } from '../../../../lib/product-api'
+export { GET } from '../../../[...slug].preview.json'
+export function getStaticPaths() {
+  const model = API_MODELS.${port}
+  const glossary = referenceUrl(PORT_BY_SLUG.${port}, 'latest') + 'glossary/'
+  return [{ params: { slug: 'glossary' }, props: { preview: glossaryPreview(glossary) } },
+    ...coreApiSymbols(model).map((owner) => ({ params: { slug: owner.slug },
+      props: { preview: symbolPreview(model, owner, 'latest') } }))]
+}
 `)
   writeFileSync(join(directory, 'tree.json.ts'), `
 import { referenceTree } from '../../../../lib/api-tree'
