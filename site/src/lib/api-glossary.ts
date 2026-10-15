@@ -260,7 +260,7 @@ export function apiGlossary(contextPath?: string) {
   const path = port
     ? `${contextual ? `${contextual[1]}${contextual[4] ?? ''}reference/` : `${localeRoot(DEFAULT_LOCALE)}${port}/${version}/reference/`}glossary/`
     : API_GLOSSARY_PATH
-  const languageGroups = nativeGroups.get(port ?? '') ?? API_GLOSSARY_GROUPS
+  const languageGroups = port ? nativeGroups.get(port) ?? [] : API_GLOSSARY_GROUPS
   const mcp = product === 'mcp'
   return { port, product, path, title: mcp ? MCP_GLOSSARY_TITLE : API_GLOSSARY_TITLE,
     description: mcp ? MCP_GLOSSARY_DESCRIPTION : port ? `Kinds, modifiers and package labels in the ${PORT_BY_SLUG[port].name} API reference.` : API_GLOSSARY_DESCRIPTION,

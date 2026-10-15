@@ -17,6 +17,20 @@ const modelPath = new URL('../../packages/api-model/src/model.ts', import.meta.u
 const modelSource = ts.createSourceFile(modelPath.pathname, readFileSync(modelPath, 'utf8'), ts.ScriptTarget.Latest, true)
 const astroRequire = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
 const windows: Window[] = []
+const nativeAuthorities: Record<string, RegExp> = {
+  scala: /^https:\/\/docs\.scala-lang\.org\//, java: /^https:\/\/docs\.oracle\.com\//,
+  kotlin: /^https:\/\/kotlinlang\.org\//, julia: /^https:\/\/docs\.julialang\.org\//,
+  py: /^https:\/\/(?:docs\.python\.org|peps\.python\.org|packaging\.python\.org)\//,
+  ts: /^https:\/\/www\.typescriptlang\.org\//,
+  csharp: /^https:\/\/learn\.microsoft\.com\/en-us\/(?:dotnet\/csharp|nuget)\//,
+  fsharp: /^https:\/\/learn\.microsoft\.com\/en-us\/(?:dotnet\/fsharp|nuget)\//,
+  powershell: /^https:\/\/learn\.microsoft\.com\/en-us\/powershell\//,
+  go: /^https:\/\/go\.dev\//, cxx: /^https:\/\/(?:eel\.is\/c\+\+draft|cmake\.org\/cmake)\//,
+  rs: /^https:\/\/doc\.rust-lang\.org\//,
+  ruby: /^https:\/\/(?:docs\.ruby-lang\.org|guides\.rubygems\.org|github\.com\/ruby\/rbs)\//,
+  lua: /^https:\/\/(?:www\.lua\.org|luals\.github\.io)\//,
+  swift: /^https:\/\/(?:docs\.swift\.org|www\.swift\.org)\//,
+}
 
 afterEach(async () => {
   vi.unstubAllEnvs()
@@ -121,7 +135,38 @@ describe('API glossary coverage', () => {
         expect(apiGlossaryHref(label, path), `${symbol.id}:${label}`).toBe(`${path}#${label}`)
       }
     }
-    for (const id of ids) expect(native.groups.flatMap((group) => group.terms).find((term) => term.id === id)).toEqual({ id, ...NATIVE_API_GLOSSARIES[port][id] })
+    for (const id of ids) {
+      const term = native.groups.flatMap((group) => group.terms).find((term) => term.id === id)!
+      expect(term).toEqual({ id, ...NATIVE_API_GLOSSARIES[port][id] })
+      expect(term.references.length).toBeGreaterThan(0)
+      for (const reference of term.references) expect(reference.url, `${port}:${id}`).toMatch(nativeAuthorities[port])
+    }
+  })
+
+  it('authors a native catalog for every extracted language without a generic fallback', () => {
+    const ports = readdirSync(new URL('../src/data/api/', import.meta.url)).filter((file) => file.endsWith('.json'))
+      .flatMap((file) => {
+        const model = JSON.parse(readFileSync(new URL(`../src/data/api/${file}`, import.meta.url), 'utf8'))
+        return model.symbols ? [model.port] : []
+      })
+    expect(Object.keys(NATIVE_API_GLOSSARIES).sort()).toEqual(ports.sort())
+    expect(apiGlossaryHref('cmdlet', '/en/julia/latest/reference/glossary/')).toBeUndefined()
+    expect(apiGlossaryHref('method', '/en/powershell/latest/reference/glossary/')).toBeUndefined()
+  })
+
+  it.each([
+    ['py', 'method', 'bound method'], ['ruby', 'static', 'singleton method'],
+    ['lua', 'typealias', 'tooling alias'], ['go', 'method', 'receiver parameter'],
+    ['rs', 'overload', 'do not overload'], ['cxx', 'readonly', 'const-qualified'],
+    ['csharp', 'readonly', 'readonly instance fields'], ['fsharp', 'enum', 'discriminated union'],
+    ['swift', 'interface', 'Swift protocol'], ['ts', 'private', 'TypeScript'],
+    ['powershell', 'cmdlet', 'pipeline input'], ['java', 'readonly', 'final class'],
+    ['kotlin', 'async', 'suspend'], ['julia', 'function', 'generic function'],
+    ['scala', 'method', 'declared with def'],
+  ])('keeps the native meaning of %s %s in its preview and authored twins', (port, id, meaning) => {
+    const path = `/en/${port}/latest/reference/glossary/`
+    expect(glossaryPreview(path).terms![id].description).toContain(meaning)
+    expect(apiGlossaryMarkdown('https://libtmux.org', path)).toContain(meaning)
   })
 
   it('uses stable unique anchors and language references for every term', () => {

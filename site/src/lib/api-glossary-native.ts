@@ -9,6 +9,18 @@ const scalaReference = (page: string) => `https://docs.scala-lang.org/scala3/ref
 const javaSpec = (chapter: number, section: string) => `https://docs.oracle.com/javase/specs/jls/se21/html/jls-${chapter}.html#jls-${section}`
 const kotlinDocs = (page: string) => `https://kotlinlang.org/docs/${page}.html`
 const juliaManual = (page: string) => `https://docs.julialang.org/en/v1/manual/${page}/`
+const pythonDocs = (page: string) => `https://docs.python.org/3/${page}.html`
+const tsHandbook = (page: string) => `https://www.typescriptlang.org/docs/handbook/2/${page}.html`
+const csharpDocs = (page: string) => `https://learn.microsoft.com/en-us/dotnet/csharp/${page}`
+const fsharpDocs = (page: string) => `https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/${page}`
+const powershellDocs = (page: string) => `https://learn.microsoft.com/en-us/powershell/${page}`
+const goSpec = (section: string) => `https://go.dev/ref/spec#${section}`
+const cxxSpec = (section: string) => `https://eel.is/c++draft/${section}`
+const rustReference = (page: string) => `https://doc.rust-lang.org/reference/${page}.html`
+const rubySyntax = (page: string) => `https://docs.ruby-lang.org/en/3.4/syntax/${page}_rdoc.html`
+const luaManual = (section: string) => `https://www.lua.org/manual/5.4/manual.html#${section}`
+const luaAnnotation = (section: string) => `https://luals.github.io/wiki/annotations/#${section}`
+const swiftBook = (page: string) => `https://docs.swift.org/latest/documentation/the-swift-programming-language/${page}/`
 
 export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> = {
   scala: {
@@ -67,5 +79,145 @@ export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> =
     abstract: term('A Julia abstract type that can have subtypes but no direct instances.', 'Julia abstract types', `${juliaManual('types')}#man-abstract-types`),
     readonly: term('A Julia field whose containing immutable struct prevents field reassignment.', 'Julia immutable composite types', `${juliaManual('types')}#Composite-Types`, 'A referenced vector or other mutable value can still change internally.'),
     package: term('The Julia package supplying the module and its public bindings.', 'Julia code loading', juliaManual('code-loading'), 'Package loading and module namespaces are related but distinct; use the documented project environment.'),
+  },
+  py: {
+    class: term('A Python type defining attributes and behavior for its instances.', 'Python classes', pythonDocs('tutorial/classes')),
+    function: term('A Python callable defined with def or a lambda expression.', 'Python function definitions', `${pythonDocs('reference/compound_stmts')}#function-definitions`),
+    method: term('A Python callable obtained through a class or instance. An ordinary bound method supplies its instance as the first argument.', 'Python instance methods', `${pythonDocs('reference/datamodel')}#instance-methods`),
+    property: term('A Python descriptor whose getter, setter or deleter runs during attribute access.', 'Python properties', `${pythonDocs('library/functions')}#property`, 'A property need not correspond to a stored field, and reading it may execute code.'),
+    attribute: term('A named Python value accessed on an object or class, potentially through a descriptor or dynamic lookup.', 'Python attribute access', `${pythonDocs('reference/datamodel')}#customizing-attribute-access`),
+    constant: term('A named Python API value conventionally treated as constant. Uppercase naming does not prevent reassignment at runtime.', 'Python constant naming', 'https://peps.python.org/pep-0008/#constants'),
+    exception: term('A Python exception class whose instances can be raised and handled with except.', 'Python exceptions', `${pythonDocs('tutorial/errors')}#user-defined-exceptions`),
+    async: term('A Python coroutine function declared with async def. Calling it creates a coroutine to await or schedule.', 'Python coroutine functions', `${pythonDocs('reference/compound_stmts')}#coroutine-function-definition`),
+    classmethod: term('A Python method that receives the class as its implicit first argument, including when called through an instance.', 'Python class methods', `${pythonDocs('library/functions')}#classmethod`),
+    inherited: term('A Python member resolved from a base class through the method resolution order.', 'Python inheritance', `${pythonDocs('tutorial/classes')}#inheritance`, 'The reference names the declaring class so its original definition remains navigable.'),
+    package: term('The Python distribution supplying this API. Its installation name can differ from the package name used in imports.', 'Python distributions and import packages', 'https://packaging.python.org/en/latest/discussions/distribution-package-vs-import-package/'),
+  },
+  ts: {
+    class: term('A TypeScript class declaring a runtime constructor and members, with a corresponding instance type.', 'TypeScript classes', tsHandbook('classes')),
+    interface: term('A TypeScript type describing a structural contract. It does not create a runtime object or constructor.', 'TypeScript interfaces', `${tsHandbook('everyday-types')}#interfaces`),
+    function: term('A TypeScript callable with typed parameters and a return type.', 'TypeScript functions', tsHandbook('functions')),
+    method: term('A TypeScript function member declared on a class or object type.', 'TypeScript methods', `${tsHandbook('classes')}#methods`),
+    property: term('A TypeScript object member, including a stored field or an accessor.', 'TypeScript properties', `${tsHandbook('classes')}#getters--setters`, 'Getters and setters can execute code; the type declaration alone does not promise storage.'),
+    attribute: term('A TypeScript field or declared object member in this reference.', 'TypeScript fields', `${tsHandbook('classes')}#fields`),
+    typealias: term('A TypeScript name for a type expression, including a union, object or function type.', 'TypeScript type aliases', `${tsHandbook('everyday-types')}#type-aliases`, 'It does not create a runtime constructor or a distinct nominal type.'),
+    async: term('A TypeScript async function returning a Promise. Awaiting it can suspend its caller without implying a new thread.', 'TypeScript async functions', 'https://www.typescriptlang.org/docs/handbook/release-notes/typescript-1-7.html#asyncawait-support-in-es6-targets-node-v4'),
+    private: term('A TypeScript member restricted to its declaring class.', 'TypeScript member visibility', `${tsHandbook('classes')}#member-visibility`, 'The private keyword is checked by TypeScript; JavaScript #private fields also enforce privacy at runtime.'),
+    readonly: term('A TypeScript member that cannot be assigned through that typed reference after its permitted initialization.', 'TypeScript readonly fields', `${tsHandbook('classes')}#readonly`, 'Referenced objects may still be mutable; readonly does not freeze them.'),
+    static: term('A TypeScript member accessed on its class constructor rather than on an instance.', 'TypeScript static members', `${tsHandbook('classes')}#static-members`),
+    overload: term('Multiple TypeScript call signatures describing accepted argument and result combinations.', 'TypeScript overloads', `${tsHandbook('functions')}#function-overloads`, 'A function implementation supplies one body; callers use its exposed overload signatures.'),
+    package: term('The npm package supplying this TypeScript API. Package identity and module import paths can differ.', 'TypeScript modules and packages', 'https://www.typescriptlang.org/docs/handbook/modules/reference.html#node_modules-package-lookups'),
+  },
+  csharp: {
+    class: term('A C# reference type with constructors, fields and function members.', 'C# classes', csharpDocs('language-reference/language-specification/classes')),
+    interface: term('A C# contract declaring members that implementing types provide, potentially with default implementations.', 'C# interfaces', csharpDocs('language-reference/keywords/interface')),
+    struct: term('A C# value type whose assignment copies its value. Referenced objects inside it can remain shared.', 'C# structures', csharpDocs('language-reference/builtin-types/struct')),
+    enum: term('A C# value type with named integral constants and a specified underlying integer type.', 'C# enums', csharpDocs('language-reference/builtin-types/enum')),
+    method: term('A C# callable member invoked on an instance or, for static methods, on a type.', 'C# methods', csharpDocs('programming-guide/classes-and-structs/methods')),
+    property: term('A C# member accessed through get, set or init accessors, which may execute code.', 'C# properties', csharpDocs('programming-guide/classes-and-structs/properties')),
+    constant: term('A named C# constant or enum member. const values are compile-time values; static readonly fields are initialized at runtime.', 'C# constants', csharpDocs('programming-guide/classes-and-structs/constants')),
+    static: term('A C# member belonging to its type rather than a particular instance.', 'C# static members', csharpDocs('programming-guide/classes-and-structs/static-classes-and-static-class-members')),
+    abstract: term('A C# class that cannot be instantiated, or a member whose implementation is supplied by a derived type.', 'C# abstract declarations', csharpDocs('language-reference/keywords/abstract')),
+    async: term('A C# method that can await asynchronous work. The modifier does not itself start a new thread.', 'C# async methods', csharpDocs('language-reference/keywords/async')),
+    readonly: term('A C# field assignable during initialization or construction, or a struct with readonly instance fields.', 'C# readonly declarations', csharpDocs('language-reference/keywords/readonly'), 'References stored in readonly fields can still point to mutable objects.'),
+    overload: term('C# methods sharing a name but accepting different parameter signatures.', 'C# method overloading', csharpDocs('programming-guide/classes-and-structs/methods')),
+    package: term('The NuGet package supplying this C# API. A package name is distinct from a namespace or assembly name.', 'NuGet packages', 'https://learn.microsoft.com/en-us/nuget/what-is-nuget'),
+  },
+  fsharp: {
+    module: term('An F# grouping of values, functions and types, addressed by a qualified name or opened into scope.', 'F# modules', fsharpDocs('modules')),
+    class: {
+      definition: 'An F# class groups constructors and members. The shared class badge also covers some abbreviated types; inspect their signatures.',
+      references: [{ title: 'F# classes', url: fsharpDocs('classes') }, { title: 'F# type abbreviations', url: fsharpDocs('type-abbreviations') }],
+    },
+    struct: term('An F# record or structured type in this reference. Records are reference types unless marked with the Struct attribute.', 'F# records', fsharpDocs('records')),
+    enum: term('An F# discriminated union in this reference, with named cases that can carry data.', 'F# discriminated unions', fsharpDocs('discriminated-unions')),
+    function: term('An F# callable value, often declared with let or exposed with val in a signature file.', 'F# functions', fsharpDocs('functions/'), 'Curried arguments can be supplied one at a time; tupled arguments form a single argument value.'),
+    method: term('An F# member function declared on a type, called on an instance or as a static member.', 'F# methods', fsharpDocs('members/methods')),
+    property: term('An F# member accessed as a value through a getter and an optional setter.', 'F# properties', fsharpDocs('members/properties'), 'Accessors may execute code; a property is not necessarily a record field.'),
+    constant: term('A named F# union case or literal value in this reference. A union case can accept associated data.', 'F# union cases', fsharpDocs('discriminated-unions')),
+    package: term('The NuGet package supplying this F# API. Its package identity and F# namespace or module names serve different roles.', 'NuGet packages', 'https://learn.microsoft.com/en-us/nuget/what-is-nuget'),
+  },
+  powershell: {
+    cmdlet: term('A PowerShell command participating in pipeline input, parameter binding and object output.', 'PowerShell cmdlets', powershellDocs('scripting/developer/cmdlet/cmdlet-overview'), 'The reference uses this label for exported advanced functions as well as binary cmdlets.'),
+    function: term('A PowerShell named script block with parameters and a body.', 'PowerShell functions', powershellDocs('module/microsoft.powershell.core/about/about_functions'), 'Advanced functions use CmdletBinding and related attributes for cmdlet-style behavior.'),
+    module: term('A PowerShell unit loaded with Import-Module, grouping exported commands and resources.', 'PowerShell modules', powershellDocs('scripting/developer/module/understanding-a-windows-powershell-module')),
+    package: term('The distributed PowerShell module supplying these commands, distinct from each exported Verb-Noun command name.', 'PowerShell module distribution', powershellDocs('scripting/developer/module/writing-a-windows-powershell-module')),
+  },
+  go: {
+    struct: term('A Go composite type with a sequence of named fields. Assignment copies the struct value; referenced data may remain shared.', 'Go struct types', goSpec('Struct_types')),
+    function: term('A Go function declared at package scope with parameters and result values.', 'Go function declarations', goSpec('Function_declarations')),
+    method: term('A Go function with a receiver parameter associating it with a defined type.', 'Go method declarations', goSpec('Method_declarations'), 'A pointer receiver and a value receiver have different method sets; follow the displayed signature.'),
+    attribute: term('A Go struct field or package variable in this reference, including exported error values.', 'Go variable declarations', goSpec('Variable_declarations')),
+    constant: term('A Go constant value. Typed and untyped constants follow the type and representability rules at their use site.', 'Go constants', goSpec('Constants')),
+    package: term('The Go module supplying this API. Its importable packages have paths and names distinct from the module dependency identity.', 'Go modules and packages', 'https://go.dev/doc/modules/layout'),
+  },
+  cxx: {
+    class: term('A C++ class type grouping data and member functions, with private member access by default.', 'C++ classes', cxxSpec('class.pre')),
+    struct: term('A C++ class declared with struct, whose members and bases are public by default.', 'C++ class keys', cxxSpec('class.pre'), 'struct does not imply immutability or a particular allocation strategy.'),
+    enum: term('A C++ enumeration with named values. enum class introduces a scoped enumeration.', 'C++ enumerations', cxxSpec('dcl.enum')),
+    function: term('A C++ non-member function, typically declared within a namespace.', 'C++ function declarations', cxxSpec('dcl.fct')),
+    method: term('A C++ member function invoked for an object or, when static, through its class.', 'C++ member functions', cxxSpec('class.mfct.non.static')),
+    attribute: term('A C++ data member in this reference. The badge describes data, rather than a bracketed attribute annotation.', 'C++ data members', cxxSpec('class.mem')),
+    constant: term('A named C++ API value or preprocessor macro. Read the declaration to distinguish const, constexpr and #define.', 'C++ macro replacement', cxxSpec('cpp.replace')),
+    typealias: term('A C++ typedef or using declaration naming an existing type without creating a new distinct type.', 'C++ type aliases', cxxSpec('dcl.typedef')),
+    static: term('A C++ member associated with its class rather than a particular object.', 'C++ static members', cxxSpec('class.static')),
+    abstract: term('A C++ class with an unimplemented pure virtual function, which cannot be instantiated directly.', 'C++ abstract classes', cxxSpec('class.abstract')),
+    readonly: term('A const-qualified C++ declaration. A const member function cannot change ordinary members through this; mutable members and referenced objects may still change.', 'C++ const qualification', cxxSpec('dcl.type.cv')),
+    overload: term('C++ functions sharing a name, resolved from arguments and the applicable member qualifiers.', 'C++ overload resolution', cxxSpec('over.match')),
+    package: term('The C++ library distribution supplying headers and library targets. Its installation identity is separate from namespace names.', 'CMake packages', 'https://cmake.org/cmake/help/latest/manual/cmake-packages.7.html'),
+  },
+  rs: {
+    class: {
+      definition: 'A Rust named type shown with the shared class badge. Rust declares structs and enums; inspect the declaration for its actual form.',
+      references: [{ title: 'Rust structs', url: rustReference('items/structs') }, { title: 'Rust enums', url: rustReference('items/enumerations') }],
+    },
+    struct: term('A Rust data type with named, tuple or no fields. Its fields, visibility and ownership follow the declaration.', 'Rust structs', rustReference('items/structs')),
+    enum: term('A Rust type whose variants can be unit-like, tuple-like or struct-like, each potentially carrying data.', 'Rust enums', rustReference('items/enumerations')),
+    trait: term('A Rust contract of associated functions, types and constants implemented for concrete types.', 'Rust traits', rustReference('items/traits')),
+    function: term('A Rust fn item with typed parameters, a return type and any declared generic bounds.', 'Rust functions', rustReference('items/functions')),
+    method: term('A Rust associated function with a self receiver, callable with method syntax.', 'Rust methods', `${rustReference('items/associated-items')}#methods`, 'The receiver determines whether the call borrows, mutably borrows or takes ownership.'),
+    attribute: term('A Rust struct field in this reference, rather than a #[...] attribute annotation.', 'Rust fields', rustReference('items/structs')),
+    constant: {
+      definition: 'A Rust constant or enum variant shown as a named API value. Variants can carry fields.',
+      references: [{ title: 'Rust constants', url: rustReference('items/constant-items') }, { title: 'Rust enum variants', url: rustReference('items/enumerations') }],
+    },
+    typealias: term('A Rust type name referring to an existing type expression, without creating a distinct newtype.', 'Rust type aliases', rustReference('items/type-aliases')),
+    overload: term('Multiple extracted declarations or implementations for this Rust item. Inspect the impl and trait context; Rust functions do not overload by parameter types.', 'Rust associated declarations', rustReference('items/associated-items')),
+    package: term('A Cargo package supplying one or more crates. Rust paths and imports refer to crates and their modules.', 'Cargo packages and targets', 'https://doc.rust-lang.org/cargo/reference/cargo-targets.html'),
+  },
+  ruby: {
+    module: term('A Ruby namespace that can also supply instance methods as a mixin.', 'Ruby modules', rubySyntax('modules_and_classes')),
+    class: term('A Ruby object type defining instance behavior and inheriting from a superclass.', 'Ruby classes', rubySyntax('modules_and_classes')),
+    method: term('A Ruby operation called on a receiver, usually declared with def.', 'Ruby methods', rubySyntax('methods'), 'Instance methods act on instances; singleton methods act on a particular object, including a class object.'),
+    static: term('A Ruby class-level or module-level singleton method, called on that object.', 'Ruby singleton methods', rubySyntax('methods')),
+    typealias: term('An RBS type alias used to describe Ruby values for tooling. It does not define a runtime class.', 'RBS type aliases', 'https://github.com/ruby/rbs/blob/master/docs/syntax.md#type-alias-declaration'),
+    package: term('The Ruby gem supplying this API. Gem names identify distributions; require loads Ruby files.', 'Ruby gems', 'https://guides.rubygems.org/what-is-a-gem/'),
+  },
+  lua: {
+    module: term('A Lua module loaded through require, commonly returning a table of exported values.', 'Lua modules', luaManual('pdf-require')),
+    class: term('A Lua tooling annotation describing a table or other value as a named object shape.', 'Lua class annotations', luaAnnotation('class'), 'Lua does not have a class declaration keyword; the implementation supplies its runtime behavior.'),
+    function: term('A Lua callable value with parameters and potentially multiple results.', 'Lua function definitions', luaManual('3.4.11')),
+    method: term('A Lua function called with colon syntax, which passes the receiver as the first argument self.', 'Lua method calls', luaManual('3.4.10')),
+    attribute: term('A Lua table field or annotated member. Reading a missing field may invoke a metatable lookup.', 'Lua table access', luaManual('2.4')),
+    typealias: term('A Lua tooling alias describing a type expression in comments, without declaring a runtime type.', 'Lua type aliases', luaAnnotation('alias')),
+    overload: term('Alternative Lua function signatures supplied by documentation annotations, rather than runtime overload selection.', 'Lua overload annotations', luaAnnotation('overload')),
+    inherited: term('A Lua member documented on an annotated parent type. Follow its declaring type for the original contract.', 'Lua annotated inheritance', luaAnnotation('class')),
+    package: term('The Lua library distribution supplying these modules. A package name and the string passed to require need not match.', 'Lua packages and require', luaManual('6.3')),
+  },
+  swift: {
+    class: term('A Swift reference type whose instances can share identity and whose subclasses can inherit behavior.', 'Swift classes', swiftBook('classesandstructures')),
+    struct: term('A Swift value type copied when assigned or passed. Reference-valued properties can still share objects.', 'Swift structures', swiftBook('classesandstructures')),
+    enum: term('A Swift type with named cases, which can carry associated values or have raw values.', 'Swift enumerations', swiftBook('enumerations')),
+    interface: term('A Swift protocol declaring requirements for conforming types, shown with the interface badge.', 'Swift protocols', swiftBook('protocols')),
+    function: term('A Swift callable declared with func, using parameter names, argument labels and a result type.', 'Swift functions', swiftBook('functions')),
+    method: term('A Swift function associated with a class, structure or enumeration.', 'Swift methods', swiftBook('methods'), 'Instance methods use a value; type methods are called on the type. mutating permits changes to a value-type receiver.'),
+    property: term('A Swift stored or computed member, declared with let or var as applicable.', 'Swift properties', swiftBook('properties'), 'Computed properties use accessors; their value need not be stored.'),
+    constant: term('A Swift binding declared with let, or a named enum case in this reference.', 'Swift constants', swiftBook('thebasics'), 'A let binding cannot be reassigned, but a referenced class instance may remain mutable.'),
+    typealias: term('A Swift name for an existing type, without defining a new distinct type.', 'Swift type aliases', `${swiftBook('declarations')}#Type-Alias-Declaration`),
+    static: term('A Swift member called or accessed on its type. Class members declared with class can allow subclass overrides.', 'Swift type members', swiftBook('methods')),
+    async: term('A Swift asynchronous function that can suspend at await points, without promising a particular thread.', 'Swift concurrency', swiftBook('concurrency')),
+    overload: term('Swift declarations sharing a base name, distinguished by their argument labels, types and applicable context.', 'Swift function declarations', swiftBook('functions')),
+    inherited: term('A Swift member supplied by a superclass. The reference identifies its original declaring type.', 'Swift inheritance', swiftBook('inheritance')),
+    package: term('The Swift package supplying products built from modules and targets. Package and module names serve different roles.', 'Swift packages', 'https://www.swift.org/documentation/package-manager/'),
   },
 }
