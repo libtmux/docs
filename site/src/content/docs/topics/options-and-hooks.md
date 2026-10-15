@@ -110,7 +110,7 @@ needs a design that avoids unintended repeated work.
 
 ## tmux version compatibility
 
-The commands in `options.sh` work on both documented tmux versions. Check
+The script's commands work on both documented tmux versions. Check
 the event itself when choosing a hook; its availability belongs to tmux,
 independently of a library's API.
 
