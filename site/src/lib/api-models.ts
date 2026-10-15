@@ -291,8 +291,10 @@ export function parentApiInventory(port: string): InventoryEntry[] {
 
 /** Build an index with this site's language-scoped external inventories. */
 export function createApiIndex(model: ApiModelBase & { port?: string; language?: string }, hrefFor: (s: ApiSymbol) => string): SymbolIndex {
-  const index = new SymbolIndex(model.symbols, hrefFor, model.port ?? model.language)
+  const language = model.port ?? model.language
+  const index = new SymbolIndex(model.symbols, hrefFor, language)
   for (const { data, baseUrl, langs, project } of INVENTORIES) {
+    if (!language || !langs.includes(language)) continue
     index.addInventory(baseUrl, entriesOf(data), langs, project)
   }
   const parent = model.port ? PORT_BY_SLUG[model.port]?.parentLibrary : undefined
