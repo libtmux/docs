@@ -24,6 +24,84 @@ async function extract(source: string, privateMembers = false, module = 'example
   return extractWithSpec(JAVA, file, module, { privateMembers })
 }
 
+describe('Java record components', () => {
+  it.fails('retains documented components and their implicit public accessors', async () => {
+    const symbols = await extract(`package io.github.libtmux.batch;
+/** What became of every operation in one batch.
+ * @param operations one result per submitted operation, in submission order
+ */
+public record BatchResult(@ReadOnly List<OperationResult> operations) {
+    public BatchResult { operations = List.copyOf(operations); }
+    /** Whether every operation succeeded. */
+    public boolean succeeded() { return true; }
+}`)
+    const record = symbols.find((symbol) => symbol.id === 'example.BatchResult')!
+    expect(record.signatures).toEqual([{
+      raw: 'public record BatchResult(@ReadOnly List<OperationResult> operations)',
+      params: [{ name: 'operations', type: 'List<OperationResult>',
+        doc: 'one result per submitted operation, in submission order' }],
+    }])
+    expect(record.kind).toBe('class')
+    expect(record.qualifiedName).toBe('io.github.libtmux.batch.BatchResult')
+    const accessor = symbols.find((symbol) => symbol.id === 'example.BatchResult.operations')!
+    expect(accessor).toMatchObject({
+      name: 'operations', kind: 'method', parent: record.id,
+      qualifiedName: 'io.github.libtmux.batch.BatchResult.operations',
+      signatures: [{ params: [], returns: 'List<OperationResult>' }],
+      doc: { summary: 'one result per submitted operation, in submission order' },
+      source: { file: record.source.file },
+    })
+    expect(accessor.source.line).toBeUndefined()
+    expect(symbols.some((symbol) => symbol.kind === 'attribute' && symbol.name === 'operations')).toBe(false)
+    expect(symbols.find((symbol) => symbol.name === 'succeeded')).toMatchObject({
+      signatures: [{ params: [], returns: 'boolean' }],
+      doc: { summary: 'Whether every operation succeeded.' }, source: { line: 8 },
+    })
+    const model = { port: 'java' as const, extractor: 'test', symbols }
+    const hrefFor = (symbol: typeof symbols[number]) => `/reference/${symbol.id}/`
+    const index = new SymbolIndex(symbols, hrefFor, 'java')
+    expect(index.resolve('operations', 'meth', record)?.symbol?.id).toBe(accessor.id)
+    expect(index.resolve(accessor.qualifiedName!)?.href).toBe(hrefFor(accessor))
+    expect(readInventory(writeInventory(model, { project: 'java', version: 'test', uriFor: hrefFor }))
+      .entries.find((entry) => entry.name === accessor.id)?.uri).toBe(hrefFor(accessor))
+  })
+
+  it.fails('preserves explicit accessors, constructors and fields without synthesizing duplicate methods', async () => {
+    const symbols = await extract(`package example;
+/** @param value the supplied value */
+public record Result<T>(T value) {
+    public static final int LIMIT = 4;
+    public Result(T value) { this.value = value; }
+    /** The normalized value. */
+    public T value() { return value; }
+    public T value(int ignored) { return value; }
+}
+public record Overloaded(String name) {
+    public String name(int ignored) { return name; }
+}
+public record Empty() {}
+public class Ordinary {
+    public int count;
+    private record Hidden(int secret) {}
+}`)
+    const record = symbols.find((symbol) => symbol.id === 'example.Result')!
+    expect(record.signatures[0]).toMatchObject({ params: [{ name: 'value', type: 'T', doc: 'the supplied value' }], typeParams: ['T'] })
+    const accessor = symbols.find((symbol) => symbol.id === 'example.Result.value')!
+    expect(accessor.signatures).toHaveLength(2)
+    expect(accessor.doc?.summary).toBe('The normalized value.')
+    expect(accessor.source.line).toBe(7)
+    expect(symbols.find((symbol) => symbol.id === 'example.Result.Result')).toMatchObject({
+      kind: 'method', signatures: [{ params: [{ name: 'value', type: 'T' }] }], source: { line: 5 },
+    })
+    expect(symbols.find((symbol) => symbol.id === 'example.Result.LIMIT')).toMatchObject({ kind: 'attribute', type: 'int', source: { line: 4 } })
+    expect(symbols.find((symbol) => symbol.id === 'example.Overloaded.name')?.signatures)
+      .toEqual([{ params: [{ name: 'ignored', type: 'int' }], returns: 'String' }, { params: [], returns: 'String' }])
+    expect(symbols.find((symbol) => symbol.id === 'example.Empty')).toMatchObject({ kind: 'class', signatures: [{ raw: 'public record Empty()', params: [] }] })
+    expect(symbols.find((symbol) => symbol.id === 'example.Ordinary')?.signatures).toEqual([])
+    expect(symbols.some((symbol) => symbol.name === 'Hidden' || symbol.name === 'secret')).toBe(false)
+  })
+})
+
 describe('Java callable visibility', () => {
   it('excludes package-private overloads before merging public signatures', async () => {
     const source = `
