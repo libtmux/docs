@@ -9,7 +9,7 @@ import { rehypeSiteRoot } from '../src/plugins/rehype-site-root.mjs'
 import { rehypeApiLinks } from '../src/plugins/rehype-api-links'
 import { proseMentions } from '@libtmux/api-model'
 import { proseHref } from '../src/lib/docs-paths'
-import { docsEntryAvailable } from '../src/lib/page-port-links'
+import { docsEntriesAvailable, docsEntryAvailable } from '../src/lib/page-port-links'
 import { PORT_BY_SLUG } from '../src/lib/ports'
 
 const languageNames: Record<string, string[]> = {
@@ -17,6 +17,20 @@ const languageNames: Record<string, string[]> = {
   csharp: ['.NET', 'C#'], cxx: ['C++'], swift: ['Swift'],
 }
 const contentRoot = fileURLToPath(new URL('../src/content/', import.meta.url))
+
+function articleFor(page: string, port?: string) {
+  const sources = [page, ...(port ? [`ports/${port}/${page}`] : [])]
+    .filter((id) => existsSync(`${contentRoot}docs/${id}.md`))
+    .map((id) => {
+      const { content: body, frontmatter: data } = parseFrontmatter(
+        readFileSync(`${contentRoot}docs/${id}.md`, 'utf8'), { frontmatter: 'remove' },
+      )
+      return { id, body, data }
+    })
+  const selected = docsEntriesAvailable(sources, port)
+  expect(selected, `${port || 'tmux'}:${page}`).toHaveLength(1)
+  return selected[0]
+}
 
 afterEach(() => vi.unstubAllEnvs())
 
@@ -102,17 +116,42 @@ describe('port prose ownership', () => {
     expect(rendered.code).not.toContain('Python')
   })
 
-  it.each(['', 'py', 'ts', 'go', 'java', 'csharp', 'cxx', 'swift'])(
+  it.each(['py', 'ts', 'go', 'java', 'csharp', 'cxx', 'swift'])(
     'renders transport choices as complete prose for %s in HTML and Markdown', async (port) => {
-      const { content } = parseFrontmatter(readFileSync(`${contentRoot}docs/concepts/transports.md`, 'utf8'), { frontmatter: 'remove' })
+      const { body: content, data } = articleFor('concepts/transports', port)
+      expect(data.port).toBe(port)
       vi.stubEnv('LIBTMUX_DOCS_PORT', port)
       const renderer = await createMarkdownProcessor({ remarkPlugins: [remarkPortCode], syntaxHighlight: false })
-      const html = (await renderer.render(content)).code
+      const html = (await renderer.render(content, { frontmatter: data })).code
       expect(html).not.toContain('<table>')
       expect(html).toContain('<p>Choose based on whether you need command results')
-      expect(resolvePortCode(content, port)).toContain('\n\nChoose based on')
+      expect(resolvePortCode(content, port, data.port)).toContain('\n\nChoose based on')
     },
   )
+
+  it('renders native transport commands and protocol boundaries in HTML and Markdown', async () => {
+    const { body: content, data } = articleFor('concepts/transports')
+    expect(data.supportedPorts).toEqual([])
+    vi.stubEnv('LIBTMUX_DOCS_PORT', '')
+    const renderer = await createMarkdownProcessor({ remarkPlugins: [remarkPortCode], syntaxHighlight: false })
+    const html = (await renderer.render(content, { frontmatter: data })).code
+    const markdown = resolvePortCode(content)
+    expect(html.match(/<table>/g)).toHaveLength(1)
+    expect(html).toContain('language-sh')
+    expect(markdown).toContain('tmux -S "$socket" -C attach-session')
+    for (const marker of ['%begin', '%end', '%error', '%window-add', '%output']) {
+      expect(html).toContain(marker)
+      expect(markdown).toContain(marker)
+    }
+    for (const command of ['new-session', 'attach-session', 'detach-client', 'list-clients']) {
+      const href = `/tmux/latest/manual/${command}/`
+      expect(html).toContain(`href="${href}"`)
+      expect(markdown).toContain(href)
+    }
+    for (const output of [html, markdown]) {
+      expect(output).not.toMatch(/Server\.Chain|ControlClient|EnterControlModeAsync|libtmux\._internal|language-python/)
+    }
+  })
 
   it('rejects misspelled, empty and unmatched ownership markers', () => {
     for (const body of ['<!-- port:golang -->bad<!-- /port -->', '<!-- port: -->bad<!-- /port -->', '<!-- port:go -->bad']) {
