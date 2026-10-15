@@ -56,7 +56,7 @@ it('highlights the source-bound Scala signature for a cross-language preview wit
   const preview = symbolPreview(model, symbol, 'latest')
   expect(preview.signature).toBe('final class FlagField[T]')
   expect(preview.signatureLanguage).toBe('scala')
-  const response = await GET({ props: { preview } } as Parameters<typeof GET>[0])
+  const response = await GET({ props: { preview } } as unknown as Parameters<typeof GET>[0])
   const payload = await response.json()
   expect(payload.signatureHighlight.language).toBe('scala')
   expect(payload.signatureHighlight.lines.map((line: { content: string }[]) => line.map((token) => token.content).join('')).join('\n'))
