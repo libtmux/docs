@@ -297,7 +297,7 @@ export class Resolver {
       const qualified = candidates.filter((row) => `.${toPath(row.qualified).join('.')}`.endsWith(suffix))
       if (qualified.length === 1) return { how: 'scoped', symbol: qualified[0].symbol, port }
     }
-    if (candidates.length === 1) return { how: 'unique', symbol: candidates[0].symbol, port }
+    if (parts.length === 1 && candidates.length === 1) return { how: 'unique', symbol: candidates[0].symbol, port }
     let local = Resolver.preferProduct(candidates, product)
     if (parts.length === 1) {
       // A bare type name does not name an unrelated enum variant or property.
@@ -311,8 +311,9 @@ export class Resolver {
       // Prose names a variable after its type; both spellings occur.
       for (const cand of [receiver, receiver[0].toUpperCase() + receiver.slice(1)]) {
         const owners = this.members(port, cand).filter((r) => TYPE_KINDS.has(r.symbol.kind))
-        const scoped = Resolver.preferProduct(candidates.filter((r) => owners.some((o) => r.symbol.parent === o.symbol.id)), product)
-        if (scoped.length === 1) return { how: 'scoped', symbol: scoped[0].symbol, port }
+        const scoped = Resolver.preferProduct(candidates.filter((r) => owners.some((o) =>
+          r.symbol.parent === o.symbol.id || (port === 'kotlin' && r.symbol.parent === `${o.symbol.id}.Companion`))), product)
+        if (scoped.length === 1) return { how: candidates.length === 1 ? 'unique' : 'scoped', symbol: scoped[0].symbol, port }
         if (scoped.length > 1) {
           const prefix = this.primary[port]
           const preferred = prefix ? scoped.filter((r) => r.qualified.startsWith(prefix + '.')) : []
@@ -337,7 +338,7 @@ export class Resolver {
       }
     }
 
-    if (local.length === 1) return { how: 'unique', symbol: local[0].symbol, port }
+    if (parts.length === 1 && local.length === 1) return { how: 'unique', symbol: local[0].symbol, port }
 
     const qualified = parts.join('.')
 
@@ -369,6 +370,9 @@ export class Resolver {
       }
     }
 
+    // A known qualified external name wins over an unrelated local tail.
+    // AutoCloseable.close must not become Observation.close.
+    if (local.length === 1) return { how: 'unique', symbol: local[0].symbol, port }
     if (local.length > 1) return { how: 'ambiguous', candidates: local.length }
     return { how: 'no-symbol' }
   }

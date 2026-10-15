@@ -2900,13 +2900,6 @@
   },
   {
    "port": "fsharp",
-   "symbol": "LibTmux.FSharp.ScreenSearch.Text",
-   "page": "/fsharp/latest/guides/interop/",
-   "title": ".NET interoperation",
-   "section": "guides"
-  },
-  {
-   "port": "fsharp",
    "symbol": "LibTmux.FSharp.Selection.exactlyOne",
    "page": "/fsharp/latest/concepts/queries/",
    "title": "Filtering and queries",
@@ -3050,13 +3043,6 @@
    "symbol": "LibTmux.FSharp.SessionSpec",
    "page": "/fsharp/latest/guides/quickstart/",
    "title": "Quick start",
-   "section": "guides"
-  },
-  {
-   "port": "fsharp",
-   "symbol": "LibTmux.FSharp.SessionSpec.Windows",
-   "page": "/fsharp/latest/guides/supported-query-fields/",
-   "title": "Query fields",
    "section": "guides"
   },
   {
@@ -3233,20 +3219,6 @@
    "page": "/go/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
-  },
-  {
-   "port": "go",
-   "symbol": "tmux.CommandError.Is",
-   "page": "/go/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "go",
-   "symbol": "tmux.CommandError.Is",
-   "page": "/topics/errors-and-exceptions/",
-   "title": "Errors and exceptions",
-   "section": "topics"
   },
   {
    "port": "go",

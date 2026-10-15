@@ -112,6 +112,39 @@ describe('indexFor attaches the inventories', () => {
     expect(hit?.href).toContain('docs.oracle.com')
   })
 
+  it('uses each JDK package owner for Java, Kotlin and Scala references', () => {
+    const base = 'https://docs.oracle.com/en/java/javase/21/docs/api/'
+    const cases = [
+      ['java.lang.AutoCloseable', 'java.base/java/lang/AutoCloseable.html'],
+      ['AutoCloseable.close', 'java.base/java/lang/AutoCloseable.html#close()'],
+      ['java.lang.AutoCloseable.close', 'java.base/java/lang/AutoCloseable.html#close()'],
+      ['java.net.http.HttpClient', 'java.net.http/java/net/http/HttpClient.html'],
+      ['java.util.logging.Logger', 'java.logging/java/util/logging/Logger.html'],
+      ['java.lang.management.ManagementFactory', 'java.management/java/lang/management/ManagementFactory.html'],
+      ['java.util.Map.Entry', 'java.base/java/util/Map.Entry.html'],
+      ['Map.Entry.getKey', 'java.base/java/util/Map.Entry.html#getKey()'],
+      ['java.lang.instrument.Instrumentation', 'java.instrument/java/lang/instrument/Instrumentation.html'],
+      ['java.util.prefs.Preferences', 'java.prefs/java/util/prefs/Preferences.html'],
+    ]
+    for (const port of ['java', 'kotlin', 'scala']) {
+      const core = indexFor(API_MODELS[port], href)
+      const product = productApiIndex(API_MODELS[port], 'latest')
+      const prose = createProseLinker()
+      for (const [name, path] of cases) {
+        expect(core.resolve(name)?.href, `${port}: ${name}`).toBe(base + path)
+        expect(product.resolve(name)?.href, `${port} product: ${name}`).toBe(base + path)
+        expect(prose(name, { pagePort: port }), `${port} prose: ${name}`).toMatchObject({ kind: 'link', href: base + path })
+      }
+    }
+    expect(indexFor(API_MODELS.py, href).resolve('AutoCloseable')?.href).toBeUndefined()
+    expect(createProseLinker()('Server.open', { pagePort: 'kotlin' })).toMatchObject({
+      kind: 'link', href: '/kotlin/latest/reference/io-github-libtmux-kotlin-server-companion-open/', external: false,
+    })
+    expect(createProseLinker()('Observation.close', { pagePort: 'scala' })).toMatchObject({
+      kind: 'link', href: '/scala/latest/reference/io-github-libtmux-scaladsl-streaming-observation-close/', external: false,
+    })
+  })
+
   it('links a DOM interface from a TypeScript annotation', () => {
     const index = indexFor(API_MODELS.ts, href)
     const hit = index.resolve('AbortController', 'class')
@@ -185,7 +218,7 @@ describe('indexFor attaches the inventories', () => {
       const external = product.linkType(annotation, reader).find((span) => span.text === 'Path')?.link
       expect(external, `${version} workspace file parameter`).toMatchObject({
         external: true,
-        href: 'https://docs.oracle.com/en/java/javase/21/docs/api/java/nio/file/Path.html',
+        href: 'https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/nio/file/Path.html',
       })
       const workspace = product.linkType(signature.returns!, reader).find((span) => span.text === 'Workspace')?.link
       expect(workspace?.href).toContain(`/java/${version}/workspace/reference/`)
