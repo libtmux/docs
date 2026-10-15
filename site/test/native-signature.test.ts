@@ -66,7 +66,7 @@ const cases = [
 let componentPromise: ReturnType<typeof signatureComponent> | undefined
 
 describe('native signature emission', () => {
-  it.fails('checks the hosted signature fixture against rendered TypeScript declarations without raw text', async () => {
+  it('checks the hosted signature fixture against rendered TypeScript declarations without raw text', async () => {
     const source = readFileSync(new URL('../scripts/check-dev.mjs', import.meta.url), 'utf8')
     const start = source.indexOf("writeFileSync(join(root, 'src/pages/api-signature-probe.astro')")
     const end = source.indexOf('\nfor (const { slug: port } of PORTS)', start)
@@ -111,7 +111,11 @@ describe('native signature emission', () => {
       await check()
       const text = displayedSignature(win.document.body)
       await expect(check(text.replace(entry.symbol.name, 'missingCallable'))).rejects.toThrow('native declaration survives')
+      await expect(check(text.replace(entry.symbol.signatures[0].params[0].name, 'missingParameter'))).rejects.toThrow('native declaration survives')
       await expect(check(text, { ...entry.attributes, 'data-signature-native': '[]' })).rejects.toThrow()
+      for (const value of ['null', '[""]', '[null]']) {
+        await expect(check(text, { ...entry.attributes, 'data-signature-native': value })).rejects.toThrow('prepared native declarations are bound')
+      }
     } finally {
       await win.happyDOM.abort()
     }
