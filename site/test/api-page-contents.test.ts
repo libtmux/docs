@@ -27,12 +27,14 @@ function mount({ header = 53, row = 48, members = 180, hash = '' } = {}) {
   vi.spyOn(win.document.getElementById('member-parameter')!, 'getBoundingClientRect').mockImplementation(() => new win.DOMRect(0, geometry.members, 350, 30))
   const frames = new Map<number, FrameRequestCallback>()
   let next = 0
-  win.requestAnimationFrame = (callback) => { frames.set(++next, callback); return next }
-  win.cancelAnimationFrame = (id) => { frames.delete(id) }
+  Object.defineProperties(win, {
+    requestAnimationFrame: { value: (callback: FrameRequestCallback) => { frames.set(++next, callback); return next } },
+    cancelAnimationFrame: { value: (id: number) => { frames.delete(id) } },
+  })
   const observers: ResizeObserverCallback[] = []
-  win.ResizeObserver = class extends win.ResizeObserver {
-    constructor(callback: ResizeObserverCallback) { super(callback); observers.push(callback) }
-  }
+  Object.defineProperty(win, 'ResizeObserver', { value: class extends win.ResizeObserver {
+    constructor(callback: ResizeObserverCallback) { super(); observers.push(callback) }
+  } })
   const flush = () => { for (const [id, callback] of [...frames]) { frames.delete(id); callback(0) } }
   win.eval(script)
   return { geometry, flush, resize: () => observers.forEach((callback) => callback([], {} as ResizeObserver)),
