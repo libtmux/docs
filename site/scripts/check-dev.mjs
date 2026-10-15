@@ -28,6 +28,10 @@ const homeLauncherOnly = process.argv.includes('--home-launcher')
 const homeControlsOnly = process.argv.includes('--home-controls')
 const sampleOnly = process.argv.includes('--sample')
 const serveOnly = process.argv.includes('--serve')
+const requestedBrowserPort = process.env.LIBTMUX_DOCS_BROWSER_PORT
+assert(requestedBrowserPort === undefined || /^\d+$/.test(requestedBrowserPort)
+  && Number(requestedBrowserPort) >= 1 && Number(requestedBrowserPort) <= 65535,
+  'LIBTMUX_DOCS_BROWSER_PORT must be an integer from 1 to 65535')
 const documentationNavigationOnly = process.argv.includes('--documentation-navigation')
 const workspacePortCount = PORTS.filter((port) => productAvailable(port, 'workspace')).length
 
@@ -197,8 +201,10 @@ const terminate = async () => {
 process.on('SIGTERM', terminate)
 process.on('SIGINT', terminate)
 const startServer = () => dev({ root, cacheDir: join(mirror, 'cache'),
-  vite: { cacheDir: join(mirror, 'vite') }, logLevel: 'error',
-  server: { host: '127.0.0.1', port: serveOnly ? 53971 : 0 } })
+  vite: { cacheDir: join(mirror, 'vite'),
+    ...(requestedBrowserPort === undefined ? {} : { server: { strictPort: true } }) }, logLevel: 'error',
+  server: { host: '127.0.0.1', port: requestedBrowserPort === undefined
+    ? (serveOnly ? 53971 : 0) : Number(requestedBrowserPort) } })
 server = await startServer()
 const base = `http://127.0.0.1:${server.address.port}/en`
 if (serveOnly) {
