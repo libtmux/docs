@@ -134,6 +134,10 @@ describe('verified complete programs', () => {
       commands: ['wait-for', 'new-window', 'capture-pane'] },
     { page: 'topics/traversal', ports: ['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'],
       commands: ['list-sessions', 'list-windows', 'list-panes', 'link-window', 'display-message'] },
+    { page: 'topics/architecture', ports: ['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'],
+      commands: ['new-session', 'new-window', 'list-sessions', 'list-windows', 'list-panes'] },
+    { page: 'topics/errors-and-exceptions', ports: ['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'],
+      commands: ['has-session', 'list-windows', 'capture-pane', 'select-window', 'new-window'] },
   ])('teaches native $page while retaining its library routes', ({ page, ports, commands }) => {
     const { content, frontmatter } = parsePage(page)
     expect(frontmatter.supportedPorts).toEqual([])

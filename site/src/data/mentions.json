@@ -52,6 +52,13 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.IncompleteSnapshotException",
+   "page": "/csharp/latest/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.IncompleteSnapshotException",
    "page": "/csharp/latest/topics/format-tokens/",
    "title": "Format-token fields",
    "section": "topics"
@@ -65,22 +72,15 @@
   },
   {
    "port": "csharp",
-   "symbol": "LibTmux.IncompleteSnapshotException",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
-   "section": "topics"
-  },
-  {
-   "port": "csharp",
    "symbol": "LibTmux.LibTmuxException",
-   "page": "/topics/errors-and-exceptions/",
+   "page": "/csharp/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
   {
    "port": "csharp",
    "symbol": "LibTmux.LibTmuxException.Dispatch",
-   "page": "/topics/errors-and-exceptions/",
+   "page": "/csharp/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
@@ -143,7 +143,7 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.Pane",
-   "page": "/topics/architecture/",
+   "page": "/csharp/latest/topics/architecture/",
    "title": "Architecture",
    "section": "topics"
   },
@@ -577,35 +577,35 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.TmuxCommandException",
-   "page": "/topics/errors-and-exceptions/",
+   "page": "/csharp/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
   {
    "port": "csharp",
    "symbol": "LibTmux.TmuxDispatchState",
-   "page": "/topics/errors-and-exceptions/",
+   "page": "/csharp/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
   {
    "port": "csharp",
    "symbol": "LibTmux.TmuxDispatchState.Dispatched",
-   "page": "/topics/errors-and-exceptions/",
+   "page": "/csharp/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
   {
    "port": "csharp",
    "symbol": "LibTmux.TmuxDispatchState.NotDispatched",
-   "page": "/topics/errors-and-exceptions/",
+   "page": "/csharp/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
   {
    "port": "csharp",
    "symbol": "LibTmux.TmuxDispatchState.Unknown",
-   "page": "/topics/errors-and-exceptions/",
+   "page": "/csharp/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
@@ -717,7 +717,7 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.TmuxObjectNotFoundException",
-   "page": "/topics/errors-and-exceptions/",
+   "page": "/csharp/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
@@ -787,7 +787,7 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.TmuxTransportException",
-   "page": "/topics/errors-and-exceptions/",
+   "page": "/csharp/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
@@ -1256,7 +1256,7 @@
   {
    "port": "cxx",
    "symbol": "libtmux::CommandFailure",
-   "page": "/topics/errors-and-exceptions/",
+   "page": "/cxx/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
@@ -1284,35 +1284,35 @@
   {
    "port": "cxx",
    "symbol": "libtmux::DeliveryStatus",
-   "page": "/topics/errors-and-exceptions/",
+   "page": "/cxx/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
   {
    "port": "cxx",
    "symbol": "libtmux::DeliveryStatus::indeterminate",
-   "page": "/topics/errors-and-exceptions/",
+   "page": "/cxx/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
   {
    "port": "cxx",
    "symbol": "libtmux::DeliveryStatus::not_started",
-   "page": "/topics/errors-and-exceptions/",
+   "page": "/cxx/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
   {
    "port": "cxx",
    "symbol": "libtmux::DeliveryStatus::replied",
-   "page": "/topics/errors-and-exceptions/",
+   "page": "/cxx/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
   {
    "port": "cxx",
    "symbol": "libtmux::DeliveryStatus::written",
-   "page": "/topics/errors-and-exceptions/",
+   "page": "/cxx/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
@@ -1438,6 +1438,13 @@
   {
    "port": "cxx",
    "symbol": "libtmux::Pane",
+   "page": "/cxx/latest/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Pane",
    "page": "/cxx/latest/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
@@ -1465,13 +1472,6 @@
   },
   {
    "port": "cxx",
-   "symbol": "libtmux::Pane",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
-   "section": "topics"
-  },
-  {
-   "port": "cxx",
    "symbol": "libtmux::Pane::capture",
    "page": "/cxx/latest/guides/capturing-output/",
    "title": "Capturing output",
@@ -1494,15 +1494,15 @@
   {
    "port": "cxx",
    "symbol": "libtmux::Pane::expand",
-   "page": "/cxx/latest/topics/format-tokens/",
-   "title": "Format-token fields",
+   "page": "/cxx/latest/topics/architecture/",
+   "title": "Architecture",
    "section": "topics"
   },
   {
    "port": "cxx",
    "symbol": "libtmux::Pane::expand",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
+   "page": "/cxx/latest/topics/format-tokens/",
+   "title": "Format-token fields",
    "section": "topics"
   },
   {
@@ -1739,6 +1739,13 @@
   {
    "port": "cxx",
    "symbol": "libtmux::Session",
+   "page": "/cxx/latest/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Session",
    "page": "/cxx/latest/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
@@ -1755,13 +1762,6 @@
    "symbol": "libtmux::Session",
    "page": "/cxx/latest/topics/traversal/",
    "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "cxx",
-   "symbol": "libtmux::Session",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
    "section": "topics"
   },
   {
@@ -1858,6 +1858,13 @@
   {
    "port": "cxx",
    "symbol": "libtmux::Window",
+   "page": "/cxx/latest/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Window",
    "page": "/cxx/latest/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
@@ -1881,13 +1888,6 @@
    "symbol": "libtmux::Window",
    "page": "/cxx/latest/topics/traversal/",
    "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "cxx",
-   "symbol": "libtmux::Window",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
    "section": "topics"
   },
   {
@@ -3356,14 +3356,14 @@
   {
    "port": "go",
    "symbol": "tmux.ErrNoServer",
-   "page": "/topics/errors-and-exceptions/",
+   "page": "/go/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
   {
    "port": "go",
    "symbol": "tmux.ErrNotFound",
-   "page": "/topics/errors-and-exceptions/",
+   "page": "/go/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
@@ -4490,16 +4490,16 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.exception.LibTmuxException.LibTmuxException",
-   "page": "/scala/latest/guides/execution/",
-   "title": "Execution",
-   "section": "guides"
+   "page": "/java/latest/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
   },
   {
    "port": "java",
    "symbol": "io.github.libtmux.exception.LibTmuxException.LibTmuxException",
-   "page": "/topics/errors-and-exceptions/",
-   "title": "Errors and exceptions",
-   "section": "topics"
+   "page": "/scala/latest/guides/execution/",
+   "title": "Execution",
+   "section": "guides"
   },
   {
    "port": "java",
@@ -4511,7 +4511,7 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Hooks.Hooks",
-   "page": "/topics/architecture/",
+   "page": "/java/latest/topics/architecture/",
    "title": "Architecture",
    "section": "topics"
   },
@@ -4574,7 +4574,7 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Options.Options",
-   "page": "/topics/architecture/",
+   "page": "/java/latest/topics/architecture/",
    "title": "Architecture",
    "section": "topics"
   },
@@ -4588,16 +4588,16 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Pane_.Pane_",
-   "page": "/scala/latest/guides/query/",
-   "title": "Queries",
-   "section": "guides"
+   "page": "/java/latest/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
   },
   {
    "port": "java",
    "symbol": "io.github.libtmux.Pane_.Pane_",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
-   "section": "topics"
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
   },
   {
    "port": "java",
@@ -4616,7 +4616,7 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Pane.Pane",
-   "page": "/topics/architecture/",
+   "page": "/java/latest/topics/architecture/",
    "title": "Architecture",
    "section": "topics"
   },
@@ -4805,6 +4805,13 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Server.Server",
+   "page": "/java/latest/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Server.Server",
    "page": "/java/latest/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
@@ -4822,13 +4829,6 @@
    "page": "/java/latest/workspace/reference/",
    "title": "Java workspace builder API",
    "section": "ports"
-  },
-  {
-   "port": "java",
-   "symbol": "io.github.libtmux.Server.Server",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
-   "section": "topics"
   },
   {
    "port": "java",
@@ -4966,16 +4966,16 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Session_.Session_",
-   "page": "/scala/latest/guides/query/",
-   "title": "Queries",
-   "section": "guides"
+   "page": "/java/latest/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
   },
   {
    "port": "java",
    "symbol": "io.github.libtmux.Session_.Session_",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
-   "section": "topics"
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
   },
   {
    "port": "java",
@@ -4987,16 +4987,16 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Session.Session",
-   "page": "/java/latest/workspace/internals/topics/",
-   "title": "Java workspace builder behavior",
-   "section": "ports"
+   "page": "/java/latest/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
   },
   {
    "port": "java",
    "symbol": "io.github.libtmux.Session.Session",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
-   "section": "topics"
+   "page": "/java/latest/workspace/internals/topics/",
+   "title": "Java workspace builder behavior",
+   "section": "ports"
   },
   {
    "port": "java",
@@ -5106,14 +5106,14 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.transport.DispatchOutcome.DispatchOutcome",
-   "page": "/topics/errors-and-exceptions/",
+   "page": "/java/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
   {
    "port": "java",
    "symbol": "io.github.libtmux.transport.DispatchOutcome.DispatchOutcome.NOT_DISPATCHED",
-   "page": "/topics/errors-and-exceptions/",
+   "page": "/java/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
@@ -5134,16 +5134,16 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Window_.Window_",
-   "page": "/scala/latest/guides/query/",
-   "title": "Queries",
-   "section": "guides"
+   "page": "/java/latest/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
   },
   {
    "port": "java",
    "symbol": "io.github.libtmux.Window_.Window_",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
-   "section": "topics"
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
   },
   {
    "port": "java",
@@ -5155,7 +5155,7 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Window.Window",
-   "page": "/topics/architecture/",
+   "page": "/java/latest/topics/architecture/",
    "title": "Architecture",
    "section": "topics"
   },
@@ -8445,7 +8445,7 @@
   {
    "port": "py",
    "symbol": "libtmux.client.Client",
-   "page": "/topics/architecture/",
+   "page": "/py/latest/topics/architecture/",
    "title": "Architecture",
    "section": "topics"
   },
@@ -8466,7 +8466,7 @@
   {
    "port": "py",
    "symbol": "libtmux.exc.LibTmuxException",
-   "page": "/topics/errors-and-exceptions/",
+   "page": "/py/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
@@ -8501,7 +8501,7 @@
   {
    "port": "py",
    "symbol": "libtmux.neo.Obj",
-   "page": "/topics/architecture/",
+   "page": "/py/latest/topics/architecture/",
    "title": "Architecture",
    "section": "topics"
   },
@@ -8511,6 +8511,13 @@
    "page": "/py/latest/concepts/server-session-window-pane/",
    "title": "Server, session, window, pane",
    "section": "concepts"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.pane.Pane",
+   "page": "/py/latest/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
   },
   {
    "port": "py",
@@ -8525,13 +8532,6 @@
    "page": "/py/latest/workspace/reference/",
    "title": "Python workspace internal API",
    "section": "ports"
-  },
-  {
-   "port": "py",
-   "symbol": "libtmux.pane.Pane",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
-   "section": "topics"
   },
   {
    "port": "py",
@@ -8683,6 +8683,13 @@
   {
    "port": "py",
    "symbol": "libtmux.server.Server",
+   "page": "/py/latest/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.server.Server",
    "page": "/py/latest/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
@@ -8700,13 +8707,6 @@
    "page": "/py/latest/workspace/reference/",
    "title": "Python workspace internal API",
    "section": "ports"
-  },
-  {
-   "port": "py",
-   "symbol": "libtmux.server.Server",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
-   "section": "topics"
   },
   {
    "port": "py",
@@ -8830,6 +8830,13 @@
   {
    "port": "py",
    "symbol": "libtmux.session.Session",
+   "page": "/py/latest/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.session.Session",
    "page": "/py/latest/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
@@ -8840,13 +8847,6 @@
    "page": "/py/latest/workspace/reference/",
    "title": "Python workspace internal API",
    "section": "ports"
-  },
-  {
-   "port": "py",
-   "symbol": "libtmux.session.Session",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
-   "section": "topics"
   },
   {
    "port": "py",
@@ -8921,6 +8921,13 @@
   {
    "port": "py",
    "symbol": "libtmux.window.Window",
+   "page": "/py/latest/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.window.Window",
    "page": "/py/latest/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
@@ -8931,13 +8938,6 @@
    "page": "/py/latest/workspace/reference/",
    "title": "Python workspace internal API",
    "section": "ports"
-  },
-  {
-   "port": "py",
-   "symbol": "libtmux.window.Window",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
-   "section": "topics"
   },
   {
    "port": "py",
@@ -9474,14 +9474,14 @@
   {
    "port": "rs",
    "symbol": "error.ControlModeErrorKind.DispatchTimedOut",
-   "page": "/topics/errors-and-exceptions/",
+   "page": "/rs/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
   {
    "port": "rs",
    "symbol": "error.Error",
-   "page": "/topics/errors-and-exceptions/",
+   "page": "/rs/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
@@ -9537,14 +9537,14 @@
   {
    "port": "rs",
    "symbol": "hooks.IndexedHooks",
-   "page": "/topics/architecture/",
+   "page": "/rs/latest/topics/architecture/",
    "title": "Architecture",
    "section": "topics"
   },
   {
    "port": "rs",
    "symbol": "hooks.SparseValues",
-   "page": "/topics/architecture/",
+   "page": "/rs/latest/topics/architecture/",
    "title": "Architecture",
    "section": "topics"
   },
@@ -9719,7 +9719,7 @@
   {
    "port": "rs",
    "symbol": "pane.Pane",
-   "page": "/topics/architecture/",
+   "page": "/rs/latest/topics/architecture/",
    "title": "Architecture",
    "section": "topics"
   },
@@ -9754,7 +9754,7 @@
   {
    "port": "rs",
    "symbol": "pane.Pane.current_command",
-   "page": "/topics/architecture/",
+   "page": "/rs/latest/topics/architecture/",
    "title": "Architecture",
    "section": "topics"
   },
@@ -10258,6 +10258,13 @@
   {
    "port": "rs",
    "symbol": "server.Server",
+   "page": "/rs/latest/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.Server",
    "page": "/rs/latest/workspace/internals/",
    "title": "Rust workspace internals",
    "section": "ports"
@@ -10275,13 +10282,6 @@
    "page": "/rs/latest/workspace/reference/",
    "title": "Rust workspace builder API",
    "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
-   "section": "topics"
   },
   {
    "port": "rs",
@@ -10461,6 +10461,13 @@
   {
    "port": "rs",
    "symbol": "session.Session",
+   "page": "/rs/latest/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "session.Session",
    "page": "/rs/latest/topics/environment/",
    "title": "Environment",
    "section": "topics"
@@ -10471,13 +10478,6 @@
    "page": "/rs/latest/workspace/reference/",
    "title": "Rust workspace builder API",
    "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "session.Session",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
-   "section": "topics"
   },
   {
    "port": "rs",
@@ -10552,7 +10552,7 @@
   {
    "port": "rs",
    "symbol": "snapshot.Availability",
-   "page": "/topics/architecture/",
+   "page": "/rs/latest/topics/architecture/",
    "title": "Architecture",
    "section": "topics"
   },
@@ -10713,15 +10713,15 @@
   {
    "port": "rs",
    "symbol": "window.Window",
-   "page": "/rs/latest/topics/environment/",
-   "title": "Environment",
+   "page": "/rs/latest/topics/architecture/",
+   "title": "Architecture",
    "section": "topics"
   },
   {
    "port": "rs",
    "symbol": "window.Window",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
+   "page": "/rs/latest/topics/environment/",
+   "title": "Environment",
    "section": "topics"
   },
   {
@@ -11777,6 +11777,13 @@
   {
    "port": "swift",
    "symbol": "Pane",
+   "page": "/swift/latest/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "Pane",
    "page": "/swift/latest/topics/format-tokens/",
    "title": "Format-token fields",
    "section": "topics"
@@ -11786,13 +11793,6 @@
    "symbol": "Pane",
    "page": "/swift/latest/topics/traversal/",
    "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "swift",
-   "symbol": "Pane",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
    "section": "topics"
   },
   {
@@ -11882,6 +11882,13 @@
   {
    "port": "swift",
    "symbol": "Server",
+   "page": "/swift/latest/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "Server",
    "page": "/swift/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
@@ -11892,13 +11899,6 @@
    "page": "/swift/latest/workspace/internals/",
    "title": "Swift workspace internals",
    "section": "ports"
-  },
-  {
-   "port": "swift",
-   "symbol": "Server",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
-   "section": "topics"
   },
   {
    "port": "swift",
@@ -12085,6 +12085,13 @@
   {
    "port": "swift",
    "symbol": "Session",
+   "page": "/swift/latest/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "Session",
    "page": "/swift/latest/topics/format-tokens/",
    "title": "Format-token fields",
    "section": "topics"
@@ -12109,13 +12116,6 @@
    "page": "/swift/latest/workspace/reference/",
    "title": "Swift workspace builder API",
    "section": "ports"
-  },
-  {
-   "port": "swift",
-   "symbol": "Session",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
-   "section": "topics"
   },
   {
    "port": "swift",
@@ -12169,7 +12169,7 @@
   {
    "port": "swift",
    "symbol": "TmuxError",
-   "page": "/topics/errors-and-exceptions/",
+   "page": "/swift/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
@@ -12288,6 +12288,13 @@
   {
    "port": "swift",
    "symbol": "Window",
+   "page": "/swift/latest/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "Window",
    "page": "/swift/latest/topics/format-tokens/",
    "title": "Format-token fields",
    "section": "topics"
@@ -12297,13 +12304,6 @@
    "symbol": "Window",
    "page": "/swift/latest/topics/traversal/",
    "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "swift",
-   "symbol": "Window",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
    "section": "topics"
   },
   {
@@ -12659,7 +12659,7 @@
   {
    "port": "ts",
    "symbol": "errors.TmuxCommandError",
-   "page": "/topics/errors-and-exceptions/",
+   "page": "/ts/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
@@ -12673,14 +12673,14 @@
   {
    "port": "ts",
    "symbol": "errors.TmuxTransportError",
-   "page": "/topics/errors-and-exceptions/",
+   "page": "/ts/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
   {
    "port": "ts",
    "symbol": "errors.TmuxTransportError.delivery",
-   "page": "/topics/errors-and-exceptions/",
+   "page": "/ts/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
@@ -12736,16 +12736,16 @@
   {
    "port": "ts",
    "symbol": "pane.Pane",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
-   "section": "topics"
+   "page": "/ts/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "ts",
    "symbol": "pane.Pane",
-   "page": "/ts/latest/concepts/server-session-window-pane/",
-   "title": "Server, session, window, pane",
-   "section": "concepts"
+   "page": "/ts/latest/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
   },
   {
    "port": "ts",
@@ -12855,7 +12855,7 @@
   {
    "port": "ts",
    "symbol": "selection.ClientWhere.written",
-   "page": "/topics/errors-and-exceptions/",
+   "page": "/ts/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
@@ -13135,16 +13135,16 @@
   {
    "port": "ts",
    "symbol": "session.Session",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
-   "section": "topics"
+   "page": "/ts/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "ts",
    "symbol": "session.Session",
-   "page": "/ts/latest/concepts/server-session-window-pane/",
-   "title": "Server, session, window, pane",
-   "section": "concepts"
+   "page": "/ts/latest/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
   },
   {
    "port": "ts",
@@ -13247,16 +13247,16 @@
   {
    "port": "ts",
    "symbol": "window.Window",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
-   "section": "topics"
+   "page": "/ts/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "ts",
    "symbol": "window.Window",
-   "page": "/ts/latest/concepts/server-session-window-pane/",
-   "title": "Server, session, window, pane",
-   "section": "concepts"
+   "page": "/ts/latest/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
   },
   {
    "port": "ts",

@@ -193,7 +193,8 @@ describe('prose Markdown links', () => {
     vi.resetModules()
     const { llmsPage: deployedPage } = await import('../src/lib/llms')
     const pages = [
-      ['topics/architecture', ['go/next/concepts/queries', 'java/latest/concepts/queries']],
+      ['ports/go/topics/architecture', ['go/next/concepts/queries']],
+      ['ports/java/topics/architecture', ['java/latest/concepts/queries']],
       ['ports/ts/topics/waiting-and-retry', ['ts/next/concepts/transports']],
     ] as const
     for (const [id, targets] of pages) {
@@ -310,8 +311,8 @@ describe('prose Markdown links', () => {
   it('exports the architecture links that HTML renders, without changing programs or anchors', async () => {
     vi.stubEnv('LIBTMUX_DOCS_PORT', 'rs')
     vi.stubEnv('LIBTMUX_DOCS_VERSION', 'next')
-    const { content, frontmatter } = parseFrontmatter(readFileSync(new URL('../src/content/docs/topics/architecture.md', import.meta.url), 'utf8'))
-    const entry = { id: 'topics/architecture', body: content, data: frontmatter } as CollectionEntry<'docs'>
+    const { content, frontmatter } = parseFrontmatter(readFileSync(new URL('../src/content/docs/ports/rs/topics/architecture.md', import.meta.url), 'utf8'))
+    const entry = { id: 'ports/rs/topics/architecture', body: content, data: frontmatter } as CollectionEntry<'docs'>
     const exported = llmsPage(entry, 'https://libtmux.org', '/en/rs/next/')
     const renderer = await createMarkdownProcessor({ remarkPlugins: [remarkPortCode], rehypePlugins: [rehypeApiLinks], syntaxHighlight: false })
     const html = (await renderer.render(content)).code

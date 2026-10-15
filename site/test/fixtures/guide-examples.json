@@ -459,6 +459,60 @@
           "unique server panes: 4"
         ]
       ]
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "topics/architecture",
+      "sourceRevision": "79072dd1a9f5fb437a5859e362a496fd57ec0981",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "architecture.sh",
+          "sha256": "f3f8870a19af57b1578cecab64a9c56d8c21550ac0607e6a3cb73c544c7f5b35"
+        }
+      ],
+      "shellRecipe": [
+        "sh architecture.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "session state: work:2",
+          "server PID unchanged",
+          "attached clients: 0"
+        ]
+      ]
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "topics/errors-and-exceptions",
+      "sourceRevision": "79072dd1a9f5fb437a5859e362a496fd57ec0981",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "failures.sh",
+          "sha256": "544889b4e16af36653d12b2046cb949073998cb8f574a7d4e880f18a1ba18cef"
+        }
+      ],
+      "shellRecipe": [
+        "sh failures.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "missing session returned 1",
+          "partial work remains: main,before",
+          "error preserved on stderr"
+        ]
+      ]
     }
   ]
 }

@@ -1,242 +1,121 @@
 ---
-supportedPorts: [py, ts, rs, go, java, csharp, cxx, swift]
-title: Errors and exceptions
-description: Handle command failures, inspect delivery status, and decide when a retry is safe.
+supportedPorts: []
+title: Command failures
+description: Inspect native tmux exit status and error output, recognize partial command groups, and check state before retrying.
 sidebar:
-  label: Errors and exceptions
+  label: Command failures
   group: Topics
   order: 11
 tableOfContents: true
 ---
 
-A command can fail because tmux rejects it, or because the transport stops
-before returning a reply. Inspect the reported error and delivery state before
-retrying a mutation: tmux may already have received it.
+Check a tmux client's exit status and preserve its standard error. A missing
+target, unsupported flag, command error, or connection failure can require
+different recovery. An expected negative answer, such as an absent session,
+can be handled as a branch in a shell script.
 
-For lookup failures caused by zero or multiple matches, see [Filtering and
-queries](/concepts/queries/#the-cardinality-contract-side-by-side).
+## Check absence and partial work
 
-## A failed command, as a value
+Save this complete script as `failures.sh`. It requires tmux 3.2a or newer
+and a POSIX shell. It checks a missing session, deliberately fails a grouped
+command, and inspects what remains on its private server.
 
-<!-- port:py -->
-<!-- port:root -->
-### Python
-<!-- /port -->
-Command failures raise `LibTmuxException`. It can carry a
-`subcommand`; its string representation includes the subcommand and stderr.
-<!-- /port -->
+```sh title="failures.sh"
+#!/bin/sh
+set -eu
+directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-failures.XXXXXX")
+socket="$directory/tmux.sock"
 
-<!-- port:ts -->
-<!-- port:root -->
-### TypeScript
-<!-- /port -->
-`TmuxCommandError` reports a command tmux rejected. `TmuxTransportError`
-reports a failure to obtain a reply. Catch these error types separately
-when the distinction affects recovery.
-<!-- /port -->
-
-<!-- port:go -->
-<!-- port:root -->
-### Go
-<!-- /port -->
-Operations return an error alongside their result. Inspect typed
-errors and sentinel values with `errors.As` and `errors.Is`; preserve them
-when wrapping with `%w`.
-<!-- /port -->
-
-<!-- port:rs -->
-<!-- port:root -->
-### Rust
-<!-- /port -->
-Fallible operations return `Result<T, Error>`. Match the
-non-exhaustive `Error` enum and include a fallback for variants added later.
-<!-- /port -->
-
-<!-- port:java -->
-<!-- port:root -->
-### Java
-<!-- /port -->
-Command failures raise unchecked exceptions derived from
-`LibTmuxException`, which extends `RuntimeException`.
-<!-- /port -->
-
-<!-- port:csharp -->
-<!-- port:root -->
-### C#
-<!-- /port -->
-Failures raise subclasses of `LibTmuxException`, including
-`TmuxCommandException`, `TmuxTransportException`, and
-`TmuxObjectNotFoundException`.
-<!-- /port -->
-
-<!-- port:cxx -->
-<!-- port:root -->
-### C++
-<!-- /port -->
-Fallible operations return `expected<T, CommandFailure>`.
-`CommandFailure` records the failure kind, delivery status, exit code, and
-diagnostic.
-<!-- /port -->
-
-<!-- port:swift -->
-<!-- port:root -->
-### Swift
-<!-- /port -->
-Fallible operations use typed throws with `TmuxError`. Catch
-that error to inspect the failure.
-<!-- /port -->
-
-<!-- port:go -->
-Use `errors.Is` for sentinel errors such as `tmux.ErrNoServer` and
-`tmux.ErrNotFound`. Use `errors.As` to inspect a `*tmux.CommandError` and its
-completed command result. Wrap errors with `%w` to preserve that information.
-<!-- /port -->
-
-<!-- port:ts -->
-Distinguish a command rejected by tmux from a transport failure:
-
-```typescript
-import { TmuxCommandError, TmuxTransportError } from "libtmux";
-
-try {
-  await pane.capture();
-} catch (error) {
-  if (error instanceof TmuxCommandError) {
-    error.args;     // the argument vector
-    error.exitCode;
-    error.stderr;    // tmux's own lines
-  } else if (error instanceof TmuxTransportError) {
-    error.kind;      // "cancelled" | "pipe" | "protocol" | "spawn" | "timeout"
-    error.delivery;  // see below: this is the question a retry depends on
-  }
+cleanup() {
+    status=$?
+    trap - 0 HUP INT TERM
+    if [ -S "$socket" ] && ! tmux -S "$socket" kill-server; then
+        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
+        exit 1
+    fi
+    rm -rf "$directory" || status=$?
+    exit "$status"
 }
+trap cleanup 0
+trap 'exit 1' HUP INT TERM
+
+tmux -S "$socket" -f /dev/null new-session -d -s work -n main 'cat'
+if tmux -S "$socket" has-session -t '=missing' \
+    > "$directory/stdout.txt" 2> "$directory/stderr.txt"; then
+    printf 'Missing session unexpectedly exists\n' >&2
+    exit 1
+else
+    status=$?
+    [ "$status" -eq 1 ]
+fi
+[ ! -s "$directory/stdout.txt" ] && [ -s "$directory/stderr.txt" ]
+printf 'missing session returned 1\n'
+
+if tmux -S "$socket" \
+    new-window -d -t '=work:' -n before 'cat' \; \
+    select-window -t '=missing:bad' \; \
+    new-window -d -t '=work:' -n after 'cat' \
+    > "$directory/stdout.txt" 2> "$directory/stderr.txt"; then
+    printf 'Invalid target unexpectedly succeeded\n' >&2
+    exit 1
+else
+    status=$?
+    [ "$status" -eq 1 ]
+fi
+windows=$(tmux -S "$socket" list-windows -t '=work' -F '#{window_name}')
+[ "$windows" = "$(printf 'main\nbefore')" ]
+printf 'partial work remains: main,before\n'
+[ -s "$directory/stderr.txt" ]
+printf 'error preserved on stderr\n'
 ```
 
-<!-- /port -->
+Run the saved script:
 
-## Is it safe to retry?
-
-Retry a mutation automatically only when you know it was not dispatched, or when
-repeating it is safe for your operation. A timeout, cancellation, or dropped
-connection can occur after tmux has acted. These APIs expose delivery
-information:
-
-<!-- port:ts -->
-<!-- port:root -->
-### TypeScript
-<!-- /port -->
-`TmuxTransportError.delivery` distinguishes `not_started`,
-`written`, `replied`, and `indeterminate`. Only `not_started` establishes
-that retrying cannot repeat an already-dispatched command.
-<!-- /port -->
-
-<!-- port:csharp -->
-<!-- port:root -->
-### C#
-<!-- /port -->
-`LibTmuxException.Dispatch` reports a `TmuxDispatchState`:
-`NotDispatched`, `Dispatched`, or `Unknown`. Treat the default, `Unknown`,
-as potentially dispatched.
-<!-- /port -->
-
-<!-- port:java -->
-<!-- port:root -->
-### Java
-<!-- /port -->
-`TmuxTimeoutException.outcome()` exposes a `DispatchOutcome`:
-`NOT_DISPATCHED`, `COMPLETE`, or `UNKNOWN`.
-<!-- /port -->
-
-<!-- port:cxx -->
-<!-- port:root -->
-### C++
-<!-- /port -->
-`DeliveryStatus` distinguishes `not_started`, `written`, `replied`,
-and `indeterminate`.
-<!-- /port -->
-
-<!-- port:rs -->
-<!-- port:root -->
-### Rust
-<!-- /port -->
-With the `control-mode` feature, `ControlModeErrorKind.DispatchTimedOut`
-means the command was not dispatched. A plain timeout can occur after tmux
-received the command, so do not infer that retrying is safe.
-<!-- /port -->
-
-<!-- port:py -->
-<!-- port:root -->
-### Python
-<!-- /port -->
-Inspect the exit status after a subprocess completes. If the call was
-interrupted, verify the resulting tmux state before repeating a mutation.
-<!-- /port -->
-
-<!-- port:go -->
-<!-- port:root -->
-### Go
-<!-- /port -->
-Inspect the exit status after a subprocess completes. If the call was
-interrupted, verify the resulting tmux state before repeating a mutation.
-A failed pooled control connection is retired, but its failure does not
-prove that a mutation was never dispatched.
-<!-- /port -->
-
-<!-- port:swift -->
-<!-- port:root -->
-### Swift
-<!-- /port -->
-A control-session failure does not establish that tmux never received
-the command. Retry only when non-delivery is known or repeating the
-operation is safe.
-<!-- /port -->
-
-```typescript
-import { TmuxTransportError } from "libtmux";
-
-try {
-  await session.newWindow({ name: "build" });
-} catch (error) {
-  if (error instanceof TmuxTransportError && error.delivery === "not_started") {
-    // safe to retry: nothing reached tmux
-  }
-}
+```console
+$ sh failures.sh
 ```
 
-```csharp
-try
-{
-    await session.CreateWindowAsync(new NewWindowRequest(name: "build"));
-}
-catch (LibTmuxException error) when (error.Dispatch == TmuxDispatchState.NotDispatched)
-{
-    // safe to retry
-}
-```
+The output is `missing session returned 1`,
+`partial work remains: main,before`, and `error preserved on stderr` on
+separate lines. The `before` window survives the group's error; the later
+`after` window was never created. Cleanup still removes the private server.
 
-```cpp
-auto result = session.new_window({.name = "build"});
-if (!result.has_value() && result.error().delivery == libtmux::DeliveryStatus::not_started) {
-  // safe to retry
-}
-```
+## Separate results from diagnostics
 
-Treat unknown delivery as potentially executed.
+[`has-session`](/tmux/latest/manual/has-session/) exits with zero when the
+selected session exists and one when it does not. The example records that
+status immediately in the `else` branch. A missing server is also an error,
+so keep the diagnostic when the distinction matters.
 
-<!-- port:cxx,ts -->
-A `not_started` result means the request did not reach tmux. A `written` result
-means the transport accepted the request but no terminal reply arrived.
-<!-- /port -->
-<!-- port:csharp -->
-`NotDispatched` identifies a request that did not reach tmux.
-<!-- /port -->
-<!-- port:java -->
-`NOT_DISPATCHED` identifies a request that did not reach tmux.
-<!-- /port -->
-<!-- port:rs -->
-`DispatchTimedOut` identifies a request that did not reach tmux.
-<!-- /port -->
+Commands such as [`list-windows`](/tmux/latest/manual/list-windows/) and
+[`capture-pane -p`](/tmux/latest/manual/capture-pane/) print results on
+standard output. Capturing standard error separately keeps diagnostics out
+of data that a script parses. Preserve a failed command's status before
+running a later command that changes `$?`.
 
-For subprocess calls that complete normally, inspect the exit status. If a call
-is interrupted or times out without a delivery state, check tmux's resulting
-state before repeating a mutation.
+## Inspect partial mutations before retrying
+
+Commands separated with a tmux `;` run in a group. A command error stops
+subsequent commands in that group, and earlier mutations remain. The
+[command syntax](/tmux/latest/manual/full/#COMMANDS) documents those queues.
+The example's [`select-window`](/tmux/latest/manual/select-window/) fails
+after the first [`new-window`](/tmux/latest/manual/new-window/) succeeds.
+
+After a timeout or lost connection, a mutation may already have reached the
+server. Re-read the required state before retrying. Use exact targets and
+retained IDs to recognize objects created by the operation. A pre-check and
+a later mutation are separate commands, so another client can change state
+between them.
+
+## Distinguish tmux completion from application completion
+
+[`send-keys`](/tmux/latest/manual/send-keys/) succeeding reports that tmux
+handled the input; it does not report the pane application's exit status.
+A background task also needs its own completion and error reporting.
+[Waiting and retrying](../waiting-and-retry/) covers bounded waits and
+completion signals. [Ownership and cleanup](../context-managers/) shows how
+a shell trap preserves operation failures during teardown.
+
+The pinned
+[tmux manual](https://github.com/tmux/tmux/blob/79072dd1a9f5fb437a5859e362a496fd57ec0981/tmux.1)
+documents the commands and formats used here.

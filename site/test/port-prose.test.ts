@@ -244,9 +244,10 @@ describe('port prose ownership', () => {
 
   it('links architecture files at the selected revision and preserves the old heading anchor', async () => {
     vi.stubEnv('LIBTMUX_DOCS_PORT', 'rs')
-    const { content } = parseFrontmatter(readFileSync(`${contentRoot}docs/topics/architecture.md`, 'utf8'))
+    const { body: content, data } = articleFor('topics/architecture', 'rs')
+    expect(data.port).toBe('rs')
     const renderer = await createMarkdownProcessor({ remarkPlugins: [remarkPortCode], rehypePlugins: [rehypeApiLinks], syntaxHighlight: false })
-    const html = (await renderer.render(content)).code
+    const html = (await renderer.render(content, { frontmatter: data })).code
     const inventory = JSON.parse(readFileSync(new URL('../src/data/api/rs.paths.json', import.meta.url), 'utf8'))
     for (const file of ['formats.rs', 'snapshot.rs', 'hooks.rs', 'options.rs', 'server/settings.rs', 'session/settings.rs', 'window/settings.rs', 'pane/settings.rs']) {
       expect(html).toContain(`href="https://github.com/${inventory.repo}/blob/${inventory.revision}/crates/libtmux/src/${file}"`)
