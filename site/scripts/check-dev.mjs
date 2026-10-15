@@ -143,6 +143,16 @@ const { model, owner } = Astro.props
 ---
 <Reference model={model} owner={owner} />
 `)
+  writeFileSync(join(directory, '[...slug].md.ts'), `
+import { API_MODELS } from '../../../../lib/api-models'
+import { coreApiSymbols } from '../../../../lib/product-api'
+export { GET } from '../../../reference/[...slug].md'
+export function getStaticPaths() {
+  const model = API_MODELS.${port}
+  return coreApiSymbols(model).map((owner) => ({ params: { slug: owner.slug },
+    props: { port: '${port}', id: owner.id } }))
+}
+`)
   writeFileSync(join(directory, 'glossary.astro'), `---
 import ApiReference from '../../../../components/api/ApiReference.astro'
 import { API_MODELS } from '../../../../lib/api-models'
