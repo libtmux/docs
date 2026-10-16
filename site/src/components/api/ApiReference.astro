@@ -8,7 +8,7 @@ import ApiRelationships from './ApiRelationships.astro'
 import { apiRelationshipSections, type ApiRelationshipPath } from '../../lib/api-relationships'
 import ApiBadge from '../../components/api/ApiBadge.astro'
 import ApiGlossaryContent from './ApiGlossaryContent.astro'
-import { apiGlossary, API_GLOSSARY_TITLE, apiGlossaryHref } from '../../lib/api-glossary'
+import { apiGlossary, apiGlossaryHeadings, API_GLOSSARY_TITLE, apiGlossaryHref } from '../../lib/api-glossary'
 import ApiQualifiedName from '../../components/api/ApiQualifiedName.astro'
 import ApiType from '../../components/api/ApiType.astro'
 import ApiPageContents from '../../components/api/ApiPageContents.astro'
@@ -346,7 +346,10 @@ const memberGroups = apiMemberGroups(listed, signals)
 const scalarMembers = Boolean(owner && hasScalarMembers(owner, listed))
 const showMemberGroups = !scalarMembers && memberGroups.length > 1
 const membersLabel = owner?.variant || (language === 'julia' && owner?.kind === 'struct' && listed.every((member) => member.kind === 'property')) ? 'Fields' : 'Members'
-const pageSections: ApiSection[] = owner ? [
+const glossaryContext = apiGlossary(`${refBase}glossary/`)
+const pageSections: ApiSection[] = glossary ? apiGlossaryHeadings(glossaryContext.path).map((heading) => ({
+  id: heading.slug, label: heading.text, nested: heading.depth === 3,
+})) : owner ? [
   { id: 'api-overview', label: 'Overview' },
   ...apiEntrySections(owner, language),
   ...(listed.length ? [{ id: 'api-members', label: membersLabel, count: listed.length },
@@ -372,7 +375,6 @@ const pageTitle = glossary ? API_GLOSSARY_TITLE : owner ? title : source?.title 
 const displayName = owner ? (declaringType ? `${declaringType.name}.${owner.name}` : owner.name) : pageTitle
 const breadcrumbs = source?.breadcrumbs ?? await pageBreadcrumbs(displayName, glossary ? 'reference/glossary' : slug ? `reference/${slug}` : 'reference', version, port)
 const pagePath = glossary ? 'reference/glossary' : source?.pagePath ?? (slug ? `reference/${slug}` : 'reference')
-const glossaryContext = apiGlossary(`${refBase}glossary/`)
 const description = glossary ? glossaryContext.description : source?.description ?? `Types, methods, and functions in libtmux for ${label}.`
 const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
 ---
@@ -417,7 +419,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
   </DocumentationContext>}
   <!-- Flush: the tree's column runs from the header to the footer against the
        viewport's edge, as Learn's does, and only the text column is padded. -->
-  <main class:list={["api-reference-layout grid", owner && 'api-reference-layout--symbol']}>
+  <main class:list={["api-reference-layout grid", owner && 'api-reference-layout--symbol', glossary && 'api-reference-layout--glossary']}>
     {model && (
       <ApiTree
         referenceBase={refBase}
@@ -467,7 +469,17 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
         </>}
       </header>
 
-      {glossary && <div class="prose dark:prose-invert mt-6 max-w-none"><ApiGlossaryContent contextPath={glossaryContext.path} /></div>}
+      {glossary && <>
+        <details class="api-glossary-contents" data-pagefind-ignore="all">
+          <summary>On this page</summary>
+          <nav aria-label="On this page"><ul>{pageSections.map((section) =>
+            <li class:list={[section.nested && 'api-contents-nested']}>
+              <a href={`#${section.id}`} data-api-section-link>{section.label}</a>
+            </li>)}
+          </ul></nav>
+        </details>
+        <div class="prose dark:prose-invert mt-6 max-w-none"><ApiGlossaryContent contextPath={glossaryContext.path} /></div>
+      </>}
       {
         !glossary && !owner && !model && (
           <>
@@ -832,7 +844,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
         )
       }
     </div>
-    {owner && <ApiPageContents sections={pageSections} related={related} />}
+    {(owner || glossary) && <ApiPageContents sections={pageSections} related={related} />}
   </main>
 
 

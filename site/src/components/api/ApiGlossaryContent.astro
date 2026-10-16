@@ -8,10 +8,10 @@ const jsonHref = `${glossary.path.slice(0, -1)}.json`
   <p>{glossary.description} Select an annotation or full API badge to open its definition here.</p>
   <p>The signature and entry documentation describe the API’s behavior, including its calling conventions, storage and runtime checks.</p>
   {groups.map((group) => <section aria-labelledby={group.id}>
-    <h2 id={group.id}>{group.title}</h2>
+    <h2 id={group.id}>{group.title}<a class="api-heading-link" href={`#${group.id}`} aria-label={`Link to ${group.title}`} data-pagefind-ignore="all">#</a></h2>
     <p>{group.description}</p>
     {group.terms.map((term) => <section aria-labelledby={term.id}>
-      <h3 id={term.id}><code>{term.id}</code></h3>
+      <h3 id={term.id}><code>{term.id}</code><a class="api-heading-link" href={`#${term.id}`} aria-label={`Link to ${term.id}`} data-pagefind-ignore="all">#</a></h3>
       <p>{term.definition}</p>
       {term.detail && <p>{term.detail}</p>}
       <p>References: {term.references.map((reference, index) => <>
