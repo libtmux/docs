@@ -11,7 +11,7 @@ const layouts = new Map<string, Promise<CodeLayout>>()
 let grammar: ReturnType<typeof loadLanguage> | undefined
 const lists = new Set(['parameter_list', 'type_parameter_list', 'type_arguments'])
 const containers = new Set([
-  'function_declaration', 'method_declaration', 'parameter_declaration', 'variadic_parameter_declaration',
+  'source_file', 'function_declaration', 'method_declaration', 'parameter_declaration', 'variadic_parameter_declaration',
   'function_type', 'generic_type', 'pointer_type', 'slice_type', 'array_type', 'map_type', 'channel_type',
 ])
 const literals = new Set(['raw_string_literal', 'interpreted_string_literal', 'rune_literal', 'comment'])
@@ -71,7 +71,7 @@ function printHeader(root: NativeNode): string {
       if (previous) {
         const sourceGap = gap(previous, child)
         contents.push(isLineComment(previous) || (isComment(child) && sourceGap.includes('\n')) ? hardline
-          : isComment(previous) || isComment(child) ? ' '
+          : child.type === ',' ? '' : isComment(previous) || isComment(child) ? ' '
             : previous.type === ',' ? line : sourceGap ? ' ' : '')
       }
       contents.push(print(child))
@@ -112,7 +112,7 @@ function printHeader(root: NativeNode): string {
   }).formatted
 }
 
-function syntaxRanges(owner: NativeNode, signature: Signature): CodeSyntax[] {
+function syntaxRanges(root: NativeNode, owner: NativeNode, signature: Signature): CodeSyntax[] {
   const name = owner.childForFieldName('name')!
   const syntax: CodeSyntax[] = [{ start: name.startIndex, end: name.endIndex, kind: 'name' }]
   const parameters = owner.childForFieldName('parameters')!
@@ -140,7 +140,7 @@ function syntaxRanges(owner: NativeNode, signature: Signature): CodeSyntax[] {
         node.id !== receiverType?.childForFieldName('type')?.id) literal(node)
     children(node).forEach(visit)
   }
-  visit(owner)
+  visit(root)
   return syntax.sort((a, b) => a.start - b.start)
 }
 
@@ -152,7 +152,9 @@ async function formatHeader(symbol: ApiSymbol, signature: Signature): Promise<Co
   let output: NativeTree | null = null
   try {
     input = parser.parse(signature.raw!)
-    const owner = input?.rootNode.namedChildCount === 1 ? input.rootNode.namedChild(0) : null
+    // A comment before the removed body becomes a sibling of the declaration.
+    const declarations = input?.rootNode.namedChildren.filter((node) => node && !isComment(node)) ?? []
+    const owner = declarations.length === 1 ? declarations[0] : null
     if (!input || input.rootNode.hasError || !owner || !['function_declaration', 'method_declaration'].includes(owner.type) || owner.childForFieldName('body')) {
       throw new Error(`Invalid Go callable header grammar: ${signature.raw}`)
     }
@@ -162,12 +164,13 @@ async function formatHeader(symbol: ApiSymbol, signature: Signature): Promise<Co
         owner.childForFieldName('name')?.text !== symbol.name || JSON.stringify(names) !== JSON.stringify(signature.params.map((param) => param.name))) {
       throw new Error(`Go callable header binding disagrees with the model: ${signature.raw}`)
     }
-    const text = printHeader(owner)
+    const text = printHeader(input.rootNode)
     output = parser.parse(text)
-    if (!output || output.rootNode.hasError || JSON.stringify(fingerprint(owner)) !== JSON.stringify(fingerprint(output.rootNode.namedChild(0)!))) {
+    if (!output || output.rootNode.hasError || JSON.stringify(fingerprint(input.rootNode)) !== JSON.stringify(fingerprint(output.rootNode))) {
       throw new Error(`Formatting changed Go callable header grammar: ${signature.raw}`)
     }
-    return { text, limit: CODE_COLUMNS.api, failures: await codeWidthFailures(text, 'api'), syntax: syntaxRanges(output.rootNode.namedChild(0)!, signature) }
+    const formatted = output.rootNode.namedChildren.find((node) => node && !isComment(node))!
+    return { text, limit: CODE_COLUMNS.api, failures: await codeWidthFailures(text, 'api'), syntax: syntaxRanges(output.rootNode, formatted, signature) }
   } finally {
     input?.delete(); output?.delete(); parser.delete()
   }
