@@ -55,7 +55,7 @@ function fingerprint(node: NativeNode): unknown {
   return [node.type, parts, node.text.slice(offset).replace(/\s/g, '')]
 }
 
-function printHeader(root: NativeNode, port: Port): string {
+function printHeader(root: NativeNode, port: Port, kotlinContinuations = false): string {
   const isLineComment = (node?: NativeNode): boolean => node?.type === 'comment' || node?.type === 'line_comment'
   const sequence = (children: NativeNode[]): Doc => children.flatMap((node, index) => {
     const previous = children[index - 1]
@@ -64,6 +64,11 @@ function printHeader(root: NativeNode, port: Port): string {
       : /\S/.test(rawGap) ? rawGap : rawGap ? ' ' : ''
     return [gap, print(node)]
   })
+  const continuation = (nodes: NativeNode[], separator: string): Doc => {
+    const at = nodes.findIndex((node) => node.type === separator)
+    if (at === -1 || at === nodes.length - 1) return sequence(nodes)
+    return [sequence(nodes.slice(0, at + 1)), group(align(4, [line, sequence(nodes.slice(at + 1))]))]
+  }
   const printList = (node: NativeNode): Doc => {
     const nodes = children(node)
     const open = nodes[0]!
@@ -82,7 +87,7 @@ function printHeader(root: NativeNode, port: Port): string {
     const endsInComment = isLineComment(items.at(-1)?.at(-1))
     const contents = items.flatMap((item, index) => [
       ...(index ? [isLineComment(items[index - 1]?.at(-1)) ? hardline : '', ',', line] : []),
-      sequence(item),
+      kotlinContinuations && node.type === 'function_value_parameters' ? continuation(item, '=') : sequence(item),
     ])
     return group([
       open.text, contextual?.text ?? '',
@@ -98,6 +103,7 @@ function printHeader(root: NativeNode, port: Port): string {
       return group([sequence(receiver), align(2, [isLineComment(receiver.at(-1)) ? hardline : line, print(body)])])
     }
     if (lists.has(node.type) || (node.type === 'parameter_types' && node.firstChild?.type === '(')) return printList(node)
+    if (kotlinContinuations && node.type === 'function_declaration') return group(continuation(children(node), ':'))
     // Expression bodies and literals are opaque: line breaks inside them may
     // be meaningful, even when the outer header is only a declaration.
     if (!containers.has(node.type) || !node.childCount) return node.text
@@ -164,12 +170,24 @@ async function formatHeader(signature: Signature, port: Port): Promise<CodeLayou
     if (!input || input.rootNode.hasError || declaration(input.rootNode)?.type !== 'function_declaration') {
       throw new Error(`Invalid ${port} callable header grammar: ${signature.raw}`)
     }
-    const text = printHeader(input.rootNode, port)
+    let text = printHeader(input.rootNode, port)
+    let failures = await codeWidthFailures(text, 'api')
+    if (port === 'kotlin' && failures.length) {
+      const alternate = printHeader(input.rootNode, port, true)
+      const remaining = await codeWidthFailures(alternate, 'api')
+      const widest = Math.max(...failures.map((failure) => failure.columns))
+      const alternativeWidth = Math.max(0, ...remaining.map((failure) => failure.columns))
+      if (remaining.length <= failures.length && alternativeWidth <= widest &&
+        (remaining.length < failures.length || alternativeWidth < widest)) {
+        text = alternate
+        failures = remaining
+      }
+    }
     output = parser.parse(text)
     if (!output || output.rootNode.hasError || JSON.stringify(fingerprint(input.rootNode)) !== JSON.stringify(fingerprint(output.rootNode))) {
       throw new Error(`Formatting changed ${port} callable header grammar: ${signature.raw}`)
     }
-    return { text, limit: CODE_COLUMNS.api, failures: await codeWidthFailures(text, 'api'), syntax: syntaxRanges(output.rootNode, signature, port) }
+    return { text, limit: CODE_COLUMNS.api, failures, syntax: syntaxRanges(output.rootNode, signature, port) }
   } finally {
     input?.delete()
     output?.delete()
