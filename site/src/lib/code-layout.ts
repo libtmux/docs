@@ -5,7 +5,7 @@ export const CODE_COLUMNS = { api: 60, example: 80 } as const
 export type CodeSurface = keyof typeof CODE_COLUMNS
 export interface CodeWidthFailure { line: number; columns: number; limit: number }
 export type CodeSyntax = { start: number; end: number } & (
-  { kind: 'name' | 'literal' } | { kind: 'parameter'; parameter: number }
+  { kind: 'name' | 'literal' | 'keyword' } | { kind: 'parameter'; parameter: number }
 )
 export interface CodeLayout {
   text: string
@@ -20,18 +20,27 @@ export type SignatureSpan = ReturnType<SymbolIndex['linkType']>[number] & { decl
 /** Resolve references at render time; cached layouts contain grammar, never URLs. */
 export function signatureSpans(layout: CodeLayout, index: SymbolIndex, symbol: ApiSymbol, signature: Signature): SignatureSpan[] {
   const spans: SignatureSpan[] = []
+  // The callable's own bindings do not exist in its enclosing declaration.
+  const ownerScope: Signature = { params: [], enclosingTypeParamNames: signature.enclosingTypeParamNames }
+  const linkText = (start: number, end: number): SignatureSpan[] => {
+    if (layout.contextEnd === undefined || start >= layout.contextEnd) return index.linkType(layout.text.slice(start, end), symbol, signature)
+    const boundary = Math.min(end, layout.contextEnd)
+    return [...index.linkType(layout.text.slice(start, boundary), symbol, ownerScope),
+      ...(end > boundary ? index.linkType(layout.text.slice(boundary, end), symbol, signature) : [])]
+  }
   let offset = 0
   for (const range of layout.syntax ?? []) {
-    spans.push(...index.linkType(layout.text.slice(offset, range.start), symbol, signature))
+    spans.push(...linkText(offset, range.start))
     const text = layout.text.slice(range.start, range.end)
     if (range.kind === 'name') spans.push({ text, declaration: true, declarationName: true })
     else if (range.kind === 'parameter') spans.push({ text, declaration: true, link: {
       href: `#${encodeURIComponent(parameterId(symbol, signature.params[range.parameter]!.name))}`, external: false,
     } })
+    else if (range.kind === 'keyword') spans.push({ text, keyword: true, nonReference: true })
     else spans.push({ text, nonReference: true })
     offset = range.end
   }
-  spans.push(...index.linkType(layout.text.slice(offset), symbol, signature))
+  spans.push(...linkText(offset, layout.text.length))
   if (layout.contextEnd === undefined) return spans
   let position = 0
   return spans.flatMap((span) => {
@@ -153,6 +162,9 @@ export function supportsRustSignatures(symbol: ApiSymbol, language?: string): bo
 
 /** Prepare one layout per overload for both HTML and the Markdown twin. */
 export async function apiSignatureLayouts(symbol: ApiSymbol, language?: string): Promise<Map<Signature, CodeLayout>> {
+  if (language === 'rs' && ['method', 'function'].includes(symbol.kind) && symbol.signatures.length && !supportsRustSignatures(symbol, language)) {
+    throw new Error(`Unavailable native Rust callable header: ${symbol.id}`)
+  }
   if (supportsRustSignatures(symbol, language)) {
     const { rustSignatureLayout } = await import('./rust-code-layout')
     return new Map(await Promise.all(symbol.signatures.map(async (signature) =>

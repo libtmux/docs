@@ -116,6 +116,10 @@ function syntaxRanges(parts: NativeNode[], bound: Set<string>, initial: CodeSynt
   const syntax = [...initial]
   const visit = (node: NativeNode) => {
     if (syntax.some((range) => range.start <= node.startIndex && range.end >= node.endIndex)) return
+    if (!node.isNamed && !node.childCount && /^[\p{L}_][\p{L}\p{N}_]*$/u.test(node.text)) {
+      syntax.push({ start: node.startIndex, end: node.endIndex, kind: 'keyword' })
+      return
+    }
     if (comments.has(node.type) || literals.has(node.type) || node.type === 'lifetime' ||
       (['identifier', 'type_identifier'].includes(node.type) && (bound.has(node.text) || node.text === 'Self')) ||
       (node.type === 'scoped_type_identifier' && (bound.has(node.text.split('::')[0]!) || node.text.startsWith('Self::')))) {
@@ -129,7 +133,7 @@ function syntaxRanges(parts: NativeNode[], bound: Set<string>, initial: CodeSynt
         syntax.push({ start: pattern.startIndex, end: pattern.endIndex, kind: 'literal' })
       }
     }
-    children(node, true).forEach(visit)
+    children(node).forEach(visit)
   }
   parts.forEach(visit)
   return syntax.sort((a, b) => a.start - b.start)
@@ -164,7 +168,8 @@ async function formatHeader(symbol: ApiSymbol, signature: Signature): Promise<Co
     const original = parse(signature.raw!)
     parameterRanges(original.owner, symbol, signature)
     const context = signature.enclosingDeclaration ? parse(signature.enclosingDeclaration, true) : undefined
-    const bound = new Set([...bindingNames(original.owner), ...bindingNames(context?.owner)])
+    const ownerBound = bindingNames(context?.owner)
+    const callableBound = new Set([...bindingNames(original.owner), ...ownerBound])
     const headerText = printHeader(original.parts, original.source)
     const formatted = parse(headerText)
     if (JSON.stringify(original.parts.map(fingerprint)) !== JSON.stringify(formatted.parts.map(fingerprint))) {
@@ -175,14 +180,14 @@ async function formatHeader(symbol: ApiSymbol, signature: Signature): Promise<Co
       context.parts.some((node) => node.type === 'where_clause' || node.type === 'attribute_item'))
     const contextText = showContext ? printHeader(context.parts, context.source) : ''
     const offset = contextText ? contextText.length + 1 : 0
-    const syntax = syntaxRanges(formatted.parts, bound, parameterRanges(formatted.owner, symbol, signature))
+    const syntax = syntaxRanges(formatted.parts, callableBound, parameterRanges(formatted.owner, symbol, signature))
       .map((range) => ({ ...range, start: range.start + offset, end: range.end + offset }))
     if (contextText) {
       const after = parse(contextText, true)
       if (JSON.stringify(context!.parts.map(fingerprint)) !== JSON.stringify(after.parts.map(fingerprint))) {
         throw new Error(`Formatting changed Rust enclosing declaration grammar: ${signature.enclosingDeclaration}`)
       }
-      syntax.unshift(...syntaxRanges(after.parts, bound))
+      syntax.unshift(...syntaxRanges(after.parts, ownerBound))
     }
     const text = `${contextText ? `${contextText}\n` : ''}${headerText}`
     return { text, limit: CODE_COLUMNS.api, failures: await codeWidthFailures(text, 'api'), syntax,

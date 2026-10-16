@@ -151,9 +151,12 @@ function rustDocHidden(node: Node): boolean {
 }
 
 /** Outer attributes are siblings; doc comments remain in the prose projection. */
-function rustHeader(node: Node): string | undefined {
+function rustHeader(node: Node): string {
   const body = node.childForFieldName('body')
-  if (node.children.some((child) => child && child.id !== body?.id && (child.hasError || child.isMissing))) return undefined
+  const kind = ['function_item', 'function_signature_item'].includes(node.type) ? 'callable header' : 'enclosing declaration'
+  if (node.children.some((child) => child && child.id !== body?.id && (child.hasError || child.isMissing))) {
+    throw new Error(`Invalid Rust ${kind} grammar at line ${node.startPosition.row + 1}`)
+  }
   const prefix: Node[] = []
   for (let previous = node.previousNamedSibling; previous; previous = previous.previousNamedSibling) {
     if (previous.type === 'attribute_item') prefix.unshift(previous)
@@ -162,7 +165,7 @@ function rustHeader(node: Node): string | undefined {
     } else break
   }
   while (prefix.length && prefix[0]!.type !== 'attribute_item') prefix.shift()
-  if (prefix.some((part) => part.hasError)) return undefined
+  if (prefix.some((part) => part.hasError)) throw new Error(`Invalid Rust ${kind} attribute grammar at line ${node.startPosition.row + 1}`)
   const header = node.text.slice(0, body ? body.startIndex - node.startIndex : undefined).trimEnd()
   return [...prefix.map((part) => part.text), header].join('\n')
 }

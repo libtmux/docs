@@ -72,7 +72,6 @@ const SIGNATURE_KEYWORDS: Record<string, Set<string>> = Object.fromEntries(Objec
   scala: 'def extension val var class trait object type given using implicit inline transparent opaque override abstract final sealed case lazy private protected open infix export derives end',
   fsharp: 'module namespace type member static abstract override interface inherit let rec mutable inline internal private public of with get set new val and when',
   ts: 'readonly keyof typeof infer extends unique private static async function const',
-  rs: 'pub crate self super unsafe async const extern fn impl trait for where mut ref dyn type in as move static',
   go: 'func chan map struct interface',
   swift: 'any',
   julia: 'where struct mutable abstract primitive type function end',
@@ -666,7 +665,7 @@ export class SymbolIndex {
       ? String.raw`[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*!?`
       : this.lang === 'powershell' ? String.raw`(?:[A-Za-z_][A-Za-z0-9_.]*\\)?[A-Za-z_][A-Za-z0-9_.-]*`
       : this.lang === 'ts' ? String.raw`[A-Za-z_$][A-Za-z0-9_$.]*`
-      : rustPayload ? String.raw`(?:r#)?[A-Za-z_][A-Za-z0-9_.]*(?:::(?:r#)?[A-Za-z_][A-Za-z0-9_.]*)*`
+      : this.lang === 'rs' ? String.raw`(?:r#)?[A-Za-z_][A-Za-z0-9_.]*(?:::(?:r#)?[A-Za-z_][A-Za-z0-9_.]*)*`
       : String.raw`[A-Za-z_][A-Za-z0-9_.]*(?:::[A-Za-z_][A-Za-z0-9_.]*)*`
     const rawString = this.lang === 'cxx'
       ? String.raw`(?:u8|u|U|L)?R"(?<rawDelimiter>[^ ()\\\t\v\f\r\n]{0,16})\([\s\S]*?\)\k<rawDelimiter>"|` : ''
