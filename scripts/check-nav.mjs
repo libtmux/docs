@@ -26,8 +26,8 @@
  *              pages rendered the old curation.
  *   unreachable  a symbol the tree has no row for at all. The tree lists every
  *              top-level symbol in a bucket or in Other, and the members of
- *              any type beneath it; a symbol nested in something that is not
- *              a type is neither.
+ *              each member owner beneath it, including structured variants
+ *              and constant objects. Other parents cannot expose children.
  *
  * A bucket empty in SOME ports is not a failure and is reported separately:
  * the buckets are shared vocabulary across eight ports, and Python having no
@@ -37,7 +37,7 @@ import { readFileSync, existsSync, readdirSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { navSidecar } from '../packages/api-model/src/nav-sidecar.ts'
-import { OWNER_KINDS } from '../packages/api-model/src/prose.ts'
+import { isMemberOwner } from '../packages/api-model/src/prose.ts'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const json = process.argv.includes('--json')
@@ -134,14 +134,18 @@ for (const nav of navs) {
         detail: `${nav.port}.nav.json does not match nav-config.ts and ${nav.port}.json`,
         names: ['node scripts/gen-api-model.mjs --nav'],
       })
-    const kindOf = new Map(model.symbols.map((s) => [s.id, s.kind]))
-    const unreachable = model.symbols.filter((s) => s.parent && !OWNER_KINDS.has(kindOf.get(s.parent)))
+    const byId = new Map(model.symbols.map((s) => [s.id, s]))
+    const unreachable = model.symbols.filter((s) => {
+      if (!s.parent) return false
+      const parent = byId.get(s.parent)
+      return !parent || !isMemberOwner(parent)
+    })
     if (unreachable.length)
       failures.push({
         check: 'unreachable',
         port: nav.port,
         detail: `${unreachable.length} symbols nested in something the tree does not open`,
-        names: unreachable.map((s) => `${s.id} (in ${kindOf.get(s.parent) ?? 'a missing parent'})`),
+        names: unreachable.map((s) => `${s.id} (in ${byId.get(s.parent)?.kind ?? 'a missing parent'})`),
       })
   }
   if (d.staleUnsettled.length)

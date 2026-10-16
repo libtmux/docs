@@ -44,6 +44,12 @@ export const OWNER_KINDS: ReadonlySet<string> = new Set([
   'typealias',
 ])
 
+/** Declarations whose children the reference tree and member pages expose. */
+export function isMemberOwner(symbol: ApiSymbol): boolean {
+  return Boolean(symbol.variant && symbol.variant !== 'unit') || OWNER_KINDS.has(symbol.kind) || (symbol.kind === 'constant' &&
+    Boolean(symbol.declarations?.some((declaration) => declaration.kind === 'constant')))
+}
+
 /** The types that get their own page: the ones with members to put on it. */
 export function ownersOf(model: ApiModel): ApiSymbol[] {
   const hasMembers = new Set(model.symbols.flatMap((s) => (s.parent ? [s.parent] : [])))

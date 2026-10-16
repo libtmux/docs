@@ -1,4 +1,4 @@
-import { conceptsFor, parameterId, parentInventory, sourceUrl, SymbolIndex, type ApiModel, type ApiModelBase, type ApiSymbol, type InventoryEntry } from '@libtmux/api-model'
+import { conceptsFor, isMemberOwner, OWNER_KINDS, parameterId, parentInventory, sourceUrl, SymbolIndex, type ApiModel, type ApiModelBase, type ApiSymbol, type InventoryEntry } from '@libtmux/api-model'
 import mentionIndex from '../data/mentions.json'
 import domInv from '../data/inventories/dom.entries.json'
 import jdkInv from '../data/inventories/jdk.entries.json'
@@ -127,29 +127,7 @@ export const API_NAV: Record<string, PortNavData> = {
   fsharp: fsharpNav as unknown as PortNavData,
 }
 
-/**
- * Declarations that own a page of members.
- *
- * A Rust `enum` and a Go `struct` earn one for the same reason a Python class
- * does. Scala opaque types can own extensions and companion members.
- */
-export const OWNER_KINDS = new Set([
-  'class',
-  'exception',
-  'interface',
-  'struct',
-  'union',
-  'trait',
-  'enum',
-  'module',
-  'typealias',
-])
-
-/** Constant objects can own members without changing their language kind to a type. */
-export function isMemberOwner(symbol: ApiSymbol): boolean {
-  return Boolean(symbol.variant && symbol.variant !== 'unit') || OWNER_KINDS.has(symbol.kind) || (symbol.kind === 'constant' &&
-    Boolean(symbol.declarations?.some((declaration) => declaration.kind === 'constant')))
-}
+export { isMemberOwner, OWNER_KINDS } from '@libtmux/api-model'
 
 export const PORT_NAME: Record<string, string> = {
   powershell: 'PowerShell',
