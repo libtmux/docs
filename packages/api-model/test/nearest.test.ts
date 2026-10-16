@@ -180,7 +180,7 @@ describe('a bare name with more than one candidate', () => {
 })
 
 describe('Go type candidates', () => {
-  it.fails.each(['class', 'exception', 'enum', 'struct', 'union', 'interface', 'typealias', 'trait'])
+  it.each(['class', 'exception', 'enum', 'struct', 'union', 'interface', 'typealias', 'trait'])
     ('continues past a scoped method to a %s type', (kind) => {
       const owner = sym('tmux.Owner')
       const method = { ...sym('tmux.Owner.Choice', 'method'), parent: owner.id }
@@ -192,7 +192,7 @@ describe('Go type candidates', () => {
       expect(idx.linkText('[Choice]', method).find((span) => span.kind === 'ref')?.link?.symbol?.id).toBe(method.id)
     })
 
-  it.fails.each(['method', 'function', 'attribute', 'property', 'constant', 'module'])
+  it.each(['method', 'function', 'attribute', 'property', 'constant', 'module'])
     ('leaves a %s out of every Go type-candidate boundary', (kind) => {
       const member = { ...sym('tmux.Owner.Choice', kind), parent: 'tmux.Owner' }
       const qualified = { ...sym('internal.Native', kind), name: 'Choice', qualifiedName: 'public.Choice' }
@@ -210,7 +210,7 @@ describe('Go type candidates', () => {
       }
     })
 
-  it.fails('does not use a method when actual type candidates remain ambiguous', () => {
+  it('does not use a method when actual type candidates remain ambiguous', () => {
     const method = { ...sym('tmux.Owner.Choice', 'method'), parent: 'tmux.Owner' }
     const idx = index([method, sym('first.Choice'), sym('second.Choice')])
     expect(linkFor(idx, 'Box[Choice]', 'Choice', method)).toBeUndefined()

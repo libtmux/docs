@@ -302,7 +302,7 @@ describe('native signature emission', () => {
     } finally { await win.happyDOM.abort() }
   })
 
-  it.fails.each([
+  it.each([
     'tmux.SessionOptionValues.PromptCommandCursorStyle',
     'tmux.WindowOptionValues.PaneScrollbarsPosition',
   ])('links the actual Go return type without self-linking the declaration: %s', async (id) => {
