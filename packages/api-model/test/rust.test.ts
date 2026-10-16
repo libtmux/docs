@@ -142,7 +142,7 @@ describe('Rust enum payload fields', () => {
     expect(spans.filter((span) => span.text === 'PaneId').every((span) => span.link?.symbol?.id === 'query.PaneId')).toBe(true)
   })
 
-  it.fails.each(['tuple', 'field'] as const)('keeps callback labels unlinked in a %s payload context', async (kind) => {
+  it.each(['tuple', 'field'] as const)('keeps callback labels unlinked in a %s payload context', async (kind) => {
     const symbols = await extract(`pub struct PaneId; pub fn pane() {} pub enum Event {
       Output { pane: PaneId, callback: fn(pane: PaneId) }, Tuple(fn(pane: PaneId)),
     }`)
