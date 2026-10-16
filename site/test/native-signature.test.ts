@@ -1,15 +1,17 @@
 import { readFileSync, realpathSync } from 'node:fs'
 import { createRequire } from 'node:module'
-import { pathToFileURL } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+import { join } from 'node:path'
 import assert from 'node:assert/strict'
 import { runInNewContext } from 'node:vm'
 import { describe, expect, it } from 'vitest'
 import { experimental_AstroContainer } from 'astro/container'
 import { Window, type Element, type HTMLElement } from 'happy-dom'
-import { SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model'
-import { nativeSignatureText, usesNativeSignatures } from '../src/lib/api-sections'
+import { parameterId, SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model'
+import { apiEntryFields, nativeSignatureText, usesNativeSignatures } from '../src/lib/api-sections'
 import { API_MODEL_PORTS } from '../src/lib/ports'
 import { apiSignatureLayouts } from '../src/lib/code-layout'
+import * as nativeLayoutChecks from '../scripts/check-native-layout.mjs'
 
 const astroRequire = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
 
@@ -65,6 +67,45 @@ const cases = [
   ['powershell', 'LibTmux\\Connect-TmuxControl'],
 ] as const
 let componentPromise: ReturnType<typeof signatureComponent> | undefined
+
+async function scalaObserverFixture() {
+  const model = JSON.parse(readFileSync(new URL('../src/data/api/scala.json', import.meta.url), 'utf8')) as ApiModel
+  const symbol = model.symbols.find((entry) => entry.id === 'io.github.libtmux.scaladsl.Server.windows')!
+  const component = await (componentPromise ??= signatureComponent())
+  const container = await experimental_AstroContainer.create()
+  const signatureLayouts = await apiSignatureLayouts(symbol, 'scala')
+  const index = new SymbolIndex(model.symbols, (entry) => `/${entry.slug}/`, 'scala')
+  const win = new Window()
+  const signatures = await Promise.all(symbol.signatures.map((sig) => container.renderToString(component, { props: {
+    symbol, sig, port: 'scala', language: 'scala', index, signatureLayouts,
+    nativeSignatureText: () => signatureLayouts.get(sig)!.text,
+  } })))
+  win.document.body.innerHTML = `<dl><dt class="api-native-header" data-symbol-id="${symbol.id}">${signatures.join('')}</dt></dl>`
+  for (const parameter of apiEntryFields(symbol, 'scala').params) {
+    if (win.document.getElementById(parameterId(symbol, parameter.name))) continue
+    const field = win.document.createElement('div')
+    field.id = parameterId(symbol, parameter.name)
+    win.document.body.append(field)
+  }
+  return { win, symbol }
+}
+
+async function runHostedScalaLinks(win: Window) {
+  const source = readFileSync(new URL('../scripts/check-dev.mjs', import.meta.url), 'utf8')
+  const route = source.indexOf("await page.goto(`${base}/scala/latest/reference/io-github-libtmux-scaladsl-server-windows/`)")
+  const start = source.indexOf('    const links =', route)
+  const end = source.indexOf('    for (const width of [1440, 768, 390])', start)
+  expect(start).toBeGreaterThan(route)
+  expect(end).toBeGreaterThan(start)
+  const header = win.document.querySelector('dt.api-native-header')!
+  const signature = {
+    locator: (selector: string) => ({ evaluateAll: (read: (elements: Element[]) => unknown) => read([...header.querySelectorAll(selector)]) }),
+    evaluate: (read: (element: Element) => unknown) => read(header),
+  }
+  return runInNewContext(`(async () => { ${source.slice(start, end)} })()`, {
+    assert, signature, readFileSync, join, source: fileURLToPath(new URL('../', import.meta.url)), ...nativeLayoutChecks,
+  })
+}
 
 async function signatureProbe(models: Record<string, ApiModel>) {
   const ports = Object.keys(models).map((slug) => ({ slug }))
@@ -130,6 +171,12 @@ async function checkHostedDeclarations(port: string) {
 }
 
 describe('native signature emission', () => {
+  it.fails('accepts actual Scala parameter anchors in the hosted reference observer', async () => {
+    const { win } = await scalaObserverFixture()
+    try { await runHostedScalaLinks(win) }
+    finally { await win.happyDOM.abort() }
+  })
+
   it('renders Go source headers with parameter targets and linked types', async () => {
     const model = JSON.parse(readFileSync(new URL('../src/data/api/go.json', import.meta.url), 'utf8')) as ApiModel
     const symbol = model.symbols.find((entry) => entry.id === 'tmux.Server.ListBuffers')!
