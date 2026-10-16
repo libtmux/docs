@@ -318,6 +318,7 @@ export class SymbolIndex {
     if (!candidates?.length) return undefined
     const kinds = ROLE_KINDS[role] ?? []
     const filtered = kinds.length ? candidates.filter((c) => kinds.includes(c.kind)) : candidates
+    if (this.lang === 'go' && role === 'class' && !filtered.length) return undefined
     const pool = filtered.length ? filtered : candidates
     // A declaration beats an inherited copy: a link should land where the
     // thing is written, not on one of its thirty subclasses.
@@ -376,6 +377,7 @@ export class SymbolIndex {
    */
   resolve(target: string, role = 'any', context?: ApiSymbol): LinkTarget | undefined {
     const relative = target.startsWith('.')
+    const goType = this.lang === 'go' && role === 'class'
     let clean = target.replace(/^[~.]/, '').replace(/\(\)$/, '')
     let opaqueContext = false
     if (this.lang === 'powershell' && context) {
@@ -461,7 +463,7 @@ export class SymbolIndex {
         const declaration = this.byPublic.get(target) ?? this.pick(this.byQualified.get(target), role, context)
         const accessor = javaCallable ? this.byPublic.get(`${target}()`) : undefined
         const hit = accessor && (called || declaration?.kind !== 'method') ? accessor : declaration
-        if (hit && (this.lang === 'java' || this.lang === 'csharp') && role === 'class' && !ROLE_KINDS.class.includes(hit.kind)) continue
+        if (hit && role === 'class' && (goType || this.lang === 'java' || this.lang === 'csharp') && !ROLE_KINDS.class.includes(hit.kind)) continue
         if (hit) return { href: this.hrefFor(hit), external: false, symbol: hit }
       }
       if (this.lang === 'scala') {
@@ -498,7 +500,7 @@ export class SymbolIndex {
     }
 
     const exact = this.byPublic.get(clean)
-    if (exact) return { href: this.hrefFor(exact), external: false, symbol: exact }
+    if (exact && (!goType || ROLE_KINDS.class.includes(exact.kind))) return { href: this.hrefFor(exact), external: false, symbol: exact }
 
     // Keep existing ids authoritative when a constructor's native spelling
     // also names a legacy type id.
