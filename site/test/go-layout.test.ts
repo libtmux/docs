@@ -73,7 +73,7 @@ describe('Go callable layouts', () => {
     expect(spans.find((span) => span.link?.href === '#tmux.Method.parameter.value')?.text).toBe('value')
   })
 
-  it.fails.each([
+  it.each([
     ['func Method(value Target) /* Target  after header */', 1],
     ['func Method(value Target) Target /* Target  after result */', 2],
     ['func Method(value Target) Target /* Target first */ /* Target  second */', 2],
@@ -98,7 +98,7 @@ describe('Go callable layouts', () => {
     } finally { rmSync(directory, { recursive: true, force: true }) }
   })
 
-  it.fails('keeps an inline block comment attached to its following parameter comma', async () => {
+  it('keeps an inline block comment attached to its following parameter comma', async () => {
     const symbol = callable('func Method(value Target /* Target */, other Target) Target', [{ name: 'value' }, { name: 'other' }])
     const result = await layout(symbol)
     expect(result.text).toContain('value Target /* Target */,')
