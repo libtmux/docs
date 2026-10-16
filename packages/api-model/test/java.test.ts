@@ -420,7 +420,7 @@ describe('Java source-qualified names', () => {
 
 
 describe('Java native annotation and lexical type identities', () => {
-  it.fails.each([
+  it.each([
     ['inner owner', '@Marker("static") public class Inner { public T read() { return null; } }', 'example.Outer.Inner.read'],
     ['constructor', '@Marker("static") public Outer(T value) {}', 'example.Outer.Outer'],
     ['field', '@Marker("static") public T value;', 'example.Outer.value'],
@@ -438,6 +438,47 @@ describe('Java native annotation and lexical type identities', () => {
     expect(boundary.typeScopeBoundary).toBe(false)
     expect(index.linkType('example.T', symbol, signature)[0].link?.symbol?.id).toBe('example.T')
     expect(index.linkType('Unknown', symbol, signature)).toEqual([{ text: 'Unknown', link: undefined }])
+  })
+
+  it('keeps explicit and implicit static scopes separate from modifier text', async () => {
+    const symbols = await extract(`package example;
+      @interface Marker { String value(); }
+      class T {}
+      class Outer<T> {
+        @Marker("static") public class Inner {
+          public /* static */ Inner(T value) {}
+          public /* static */ T value;
+        }
+        public static class Nested<R> {
+          public Nested(R value) {}
+          public example.T read(R value) { return null; }
+        }
+        public static example.T field;
+        public static example.T read() { return null; }
+        public interface Contract<R> { R local(); }
+        public record Record<R>(R value) {}
+        public enum Mode { VALUE }
+      }
+    `)
+    const byId = (id: string) => symbols.find((symbol) => symbol.id === `example.Outer.${id}`)!
+    const index = new SymbolIndex(symbols, (symbol) => `/${symbol.id}/`, 'java')
+    for (const id of ['Inner', 'Inner.value']) expect(byId(id).typeScopeBoundary).toBe(false)
+    expect(byId('Inner').modifiers).toEqual(['static'])
+    expect(byId('Inner.Inner').signatures[0]?.typeScopeBoundary).toBe(false)
+    for (const id of ['Inner.Inner', 'Inner.value']) {
+      const symbol = byId(id)
+      expect(index.linkType('T', symbol, symbol.signatures[0])).toEqual([{ text: 'T', declaration: true }])
+    }
+    for (const id of ['Nested', 'field', 'Contract', 'Record', 'Mode', 'Mode.VALUE']) expect(byId(id).typeScopeBoundary).toBe(true)
+    expect(byId('read').signatures[0]?.typeScopeBoundary).toBe(true)
+    expect(byId('Nested.Nested').signatures[0]?.typeScopeBoundary).toBe(false)
+    const constructor = byId('Nested.Nested')
+    expect(index.linkType('R', constructor, constructor.signatures[0])).toEqual([{ text: 'R', declaration: true }])
+    for (const id of ['Nested.read', 'field', 'read']) {
+      const symbol = byId(id)
+      expect(index.linkType('example.T', symbol, symbol.signatures[0])[0].link?.symbol?.id).toBe('example.T')
+      expect(index.linkType('Unknown', symbol, symbol.signatures[0])).toEqual([{ text: 'Unknown', link: undefined }])
+    }
   })
 
   it.each(['@Marker("static") public', 'public /* static */'])('derives instance scope from grammar through %s', async (prefix) => {
@@ -474,6 +515,7 @@ describe('Java native annotation and lexical type identities', () => {
       expect(instance.typeScopeBoundary).toBe(false)
       expect(detached.typeScopeBoundary).toBe(true)
       expect(index.linkType('T', method, instance)).toEqual([{ text: 'T', declaration: true }])
+      // A lookup-only negative: an enclosing T would be illegal in this static declaration.
       expect(index.linkType('T', method, detached)[0].link?.symbol?.id).toBe('example.T')
       expect(index.linkType('T', method)).toEqual([{ text: 'T', declaration: true }])
       expect(method.signatures.map((signature) => signature.raw)).toEqual(members.map((member) => member.slice(0, member.indexOf('{')).trimEnd()))
@@ -564,7 +606,9 @@ public class Container { private @interface Hidden {} }
     }
     for (const suffix of ['Outer.Nested.unbound', 'Outer.NestedInterface.unbound', 'Outer.NestedRecord.unbound', 'InterfaceOwner.NestedClass.unbound', 'Outer.unbound']) {
       const symbol = symbols.find((entry) => entry.id === `example.${suffix}`)!
+      // The header uses legal example.T; bare T here only probes the scope boundary.
       expect(index.linkType('T', symbol, symbol.signatures[0])[0].link?.symbol?.id).toBe('example.T')
+      expect(index.linkType('example.T', symbol, symbol.signatures[0])[0].link?.symbol?.id).toBe('example.T')
     }
     const direct = symbols.find((entry) => entry.name === 'direct')!
     expect(index.linkType('Unknown', direct)).toEqual([{ text: 'Unknown', link: undefined }])
