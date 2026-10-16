@@ -64,6 +64,32 @@ async function badgeComponent(name = 'ApiBadge') {
 }
 
 describe('API glossary coverage', () => {
+  it.fails('defines Java annotation interfaces and elements in native previews and exports', async () => {
+    const path = '/en/java/latest/reference/glossary/'
+    const annotation = NATIVE_API_GLOSSARIES.java.annotation
+    expect(annotation).toBeDefined()
+    expect(annotation.definition).toContain('@interface')
+    expect(annotation.definition).toContain('element')
+    expect(annotation.detail).toContain('no parameters')
+    expect(annotation.detail).toContain('default')
+    expect(annotation.references).toEqual([
+      { title: 'Java annotation interfaces and elements', url: 'https://docs.oracle.com/javase/specs/jls/se21/html/jls-9.html#jls-9.6' },
+    ])
+    for (const context of [API_GLOSSARY_PATH, path]) {
+      expect(apiGlossaryHref('annotation', context)).toBe(`${context}#annotation`)
+      expect(glossaryPreview(context).terms!.annotation.description).toBe(annotation.definition)
+      expect(apiGlossaryMarkdown('https://libtmux.org', context)).toContain(annotation.detail)
+    }
+    vi.stubEnv('LIBTMUX_DOCS_PORT', 'java')
+    const context = { site: new URL('https://libtmux.org'), url: new URL('https://libtmux.org/en/java/latest/reference/glossary.json') } as Parameters<typeof jsonRoute>[0]
+    const json = await (await jsonRoute(context)).json()
+    const exported = json.groups.flatMap((group: { terms: { id: string }[] }) => group.terms).find((term: { id: string }) => term.id === 'annotation')
+    expect(exported).toEqual({ id: 'annotation', ...annotation, url: `https://libtmux.org${path}#annotation` })
+    expect(await (await markdownRoute(context)).text()).toContain(annotation.definition)
+    for (const port of ['scala', 'kotlin', 'csharp', 'ts']) expect(apiGlossaryHref('annotation', `/en/${port}/latest/reference/glossary/`)).toBeUndefined()
+    expect(apiGlossaryHref('Unknown', path)).toBeUndefined()
+  })
+
   it('defines the Scala opaque modifier at both deliberate global and native anchors', () => {
     const path = '/en/scala/latest/reference/glossary/'
     expect(apiGlossaryHref('opaque', API_GLOSSARY_PATH)).toBe(`${API_GLOSSARY_PATH}#opaque`)
