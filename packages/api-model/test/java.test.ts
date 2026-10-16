@@ -420,6 +420,24 @@ describe('Java source-qualified names', () => {
 
 
 describe('Java native annotation and lexical type identities', () => {
+  it.fails.each([
+    ['inner owner', '@Marker("static") public class Inner { public T read() { return null; } }', 'read'],
+    ['constructor', '@Marker("static") public Outer(T value) {}', 'Outer'],
+    ['field', '@Marker("static") public T value;', 'value'],
+  ])('retains enclosing bindings through an annotated %s', async (_label, declaration, member) => {
+    const symbols = await extract(`package example;
+      @interface Marker { String value(); }
+      class T {}
+      class Outer<T> { ${declaration} }
+    `)
+    const symbol = symbols.find((entry) => entry.parent && entry.name === member)!
+    const signature = symbol.signatures[0]
+    const index = new SymbolIndex(symbols, (entry) => `/${entry.id}/`, 'java')
+    expect(index.linkType('T', symbol, signature)).toEqual([{ text: 'T', declaration: true }])
+    expect(index.linkType('example.T', symbol, signature)[0].link?.symbol?.id).toBe('example.T')
+    expect(index.linkType('Unknown', symbol, signature)).toEqual([{ text: 'Unknown', link: undefined }])
+  })
+
   it.each(['@Marker("static") public', 'public /* static */'])('derives instance scope from grammar through %s', async (prefix) => {
     const symbols = await extract(`public class Outer<T> { ${prefix} T read() { return null; } } public class T {}`)
     const method = symbols.find((symbol) => symbol.name === 'read')!
