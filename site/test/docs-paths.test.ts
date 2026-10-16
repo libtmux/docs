@@ -1,10 +1,29 @@
 import { describe, expect, it } from 'vitest'
-import { docsPath, docsRedirects, docsRoutePath, proseHref, sourceGuideRedirects, workspaceRedirectPath } from '../src/lib/docs-paths'
+import { docsPath, docsRedirects, docsRoutePath, isTmuxProse, proseHref, sourceGuideRedirects, workspaceRedirectPath } from '../src/lib/docs-paths'
 import { PORTS } from '../src/lib/ports'
 
 const pythonGuide = { id: 'ports/py/workspace/guides', data: { port: 'py', product: 'workspace' } }
 
 describe('product document URLs', () => {
+  it.each(['guides', 'topics', 'concepts', 'examples'])('shares native %s ownership with the canonical route', (section) => {
+    for (const id of [section, `${section}/nested/page`, `ja/${section}/nested/page`]) {
+      const entry = { id, data: {} }
+      expect(isTmuxProse(entry)).toBe(true)
+      expect(isTmuxProse(entry, 'go')).toBe(false)
+      expect(isTmuxProse({ id, data: { port: 'go' } })).toBe(false)
+    }
+    expect(isTmuxProse({ id: '_staged/native/page', data: { route: `${section}/page` } })).toBe(true)
+    expect(isTmuxProse({ id: `${section}/page`, data: { route: 'parity' } })).toBe(false)
+  })
+
+  it('keeps product routes and shared pages outside native tmux ownership', () => {
+    expect(isTmuxProse(pythonGuide)).toBe(false)
+    for (const id of ['', 'parity', 'third-party-notices', 'unknown/guides/page']) {
+      expect(isTmuxProse({ id, data: { supportedPorts: [] } })).toBe(false)
+    }
+    expect(() => isTmuxProse({ id: 'guides/page', data: { route: '../guides/page' } })).toThrow('Invalid staged document route')
+  })
+
   it.each(['', '/pr-42'])('keeps explicit port and versioned tmux references in their English build under %s', (prefix) => {
     const root = `${prefix}/ja`
     const ports = `${prefix}/en`

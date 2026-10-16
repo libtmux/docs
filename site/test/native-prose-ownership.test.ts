@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 vi.mock('astro:content', () => ({ getCollection: vi.fn(async () => []) }))
 import type { CollectionEntry } from 'astro:content'
-import { readFileSync } from 'node:fs'
+import { globSync, readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { createMarkdownProcessor, parseFrontmatter } from '@astrojs/markdown-remark'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { visit } from 'unist-util-visit'
@@ -15,8 +16,9 @@ beforeEach(() => vi.stubEnv('LIBTMUX_DOCS_PORT', ''))
 afterEach(() => vi.unstubAllEnvs())
 
 const processor = createMarkdownProcessor({ rehypePlugins: [rehypeApiLinks], syntaxHighlight: false })
-const sourceEntry = (id: string) => {
-  const { content, frontmatter } = parseFrontmatter(readFileSync(new URL(`../src/content/docs/${id}.md`, import.meta.url), 'utf8'))
+const plainProcessor = createMarkdownProcessor({ syntaxHighlight: false })
+const sourceEntry = (id: string, file = `${id}.md`) => {
+  const { content, frontmatter } = parseFrontmatter(readFileSync(new URL(`../src/content/docs/${file}`, import.meta.url), 'utf8'))
   return { id, body: content, data: frontmatter } as CollectionEntry<'docs'>
 }
 const fixture = (id: string, body: string, data: Record<string, unknown> = {}) =>
@@ -40,6 +42,14 @@ function fences(text: string): string[] {
   return bytes
 }
 
+function proseText(text: string): string {
+  const values: string[] = []
+  visit(fromMarkdown(text), (node) => {
+    if ('value' in node) values.push(node.value)
+  })
+  return values.join('')
+}
+
 const nativeCases = [
   ['guides/attaching-to-tmux', ['TMUX', 'TMUX_PANE']],
   ['topics/environment', ['TMUX', 'TMUX_PANE']],
@@ -50,13 +60,31 @@ const nativeCases = [
 ] as const
 
 describe('native tmux prose ownership', () => {
-  it.fails.each(nativeCases)('keeps native %s HTML free of inferred library links', async (id) => {
+  it('preserves the native corpus text and every executable fence through HTML and exports', async () => {
+    const entries = globSync('**/*.{md,mdx}', { cwd: fileURLToPath(new URL('../src/content/docs/', import.meta.url)) })
+      .filter((file) => /^(guides|topics|concepts|examples)(?:\/|\.mdx?$)/.test(file))
+      .map((file) => sourceEntry(file.replace(/\.mdx?$/, ''), file))
+    expect(entries.length).toBeGreaterThan(0)
+    for (const entry of entries) {
+      const markdown = markdownOf(entry)
+      expect(fences(markdown), entry.id).toEqual(fences(entry.body!))
+      // llmsPage appends authored frontmatter cards after the source body.
+      expect(proseText(markdown).startsWith(proseText(entry.body!)), entry.id).toBe(true)
+      const html = await htmlOf(entry)
+      const plainHtml = (await (await plainProcessor).render(entry.body ?? '')).code
+      expect(html, entry.id).not.toContain('api-mention')
+      expect(html.match(/<pre\b[\s\S]*?<\/pre>/g) ?? [], entry.id)
+        .toEqual(plainHtml.match(/<pre\b[\s\S]*?<\/pre>/g) ?? [])
+    }
+  })
+
+  it.each(nativeCases)('keeps native %s HTML free of inferred library links', async (id) => {
     const html = await htmlOf(sourceEntry(id))
     expect(html).not.toContain('api-mention')
     expect(html).toContain('/tmux/latest/manual/')
   })
 
-  it.fails.each(nativeCases)('keeps native %s Markdown free of inferred library links', (id, names) => {
+  it.each(nativeCases)('keeps native %s Markdown free of inferred library links', (id, names) => {
     const entry = sourceEntry(id)
     const markdown = markdownOf(entry)
     for (const name of names) {
@@ -67,7 +95,7 @@ describe('native tmux prose ownership', () => {
     expect(links(markdown).some((href) => href.includes('/tmux/latest/manual/'))).toBe(true)
   })
 
-  it.fails.each(['html', 'markdown'])('rejects literal output with only Swift available in %s', async (format) => {
+  it.each(['html', 'markdown'])('rejects literal output with only Swift available in %s', async (format) => {
     // Keep the real resolver and inventories; narrow only the claimants, as a
     // missing Rust source field did before the payload extraction correction.
     getResolver()
@@ -82,7 +110,7 @@ describe('native tmux prose ownership', () => {
     }
   })
 
-  it.fails.each([
+  it.each([
     ['ja/topics/environment', {}],
     ['_staged/native/intro', { route: 'concepts/native' }],
     ['guides/index', {}],
@@ -90,7 +118,7 @@ describe('native tmux prose ownership', () => {
     expect(await htmlOf(fixture(id, 'The value is `TMUX`.', data))).not.toContain('api-mention')
   })
 
-  it.fails.each([
+  it.each([
     ['ja/topics/environment', {}],
     ['_staged/native/intro', { route: 'concepts/native' }],
     ['guides/index', {}],
