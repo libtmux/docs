@@ -420,6 +420,37 @@ describe('Java source-qualified names', () => {
 
 
 describe('Java native annotation and lexical type identities', () => {
+  it.fails('uses the selected overload static boundary in either source order', async () => {
+    const declarations = ['public static void mixed(int value) {}', 'public T mixed() { return null; }']
+    for (const members of [declarations, declarations.toReversed()]) {
+      const symbols = await extract(`public class Outer<T> { ${members.join('\n')} } public class T {}`)
+      const method = symbols.find((symbol) => symbol.name === 'mixed')!
+      const index = new SymbolIndex(symbols, (symbol) => `/${symbol.id}/`, 'java')
+      const instance = method.signatures.find((signature) => signature.returns === 'T')!
+      const detached = method.signatures.find((signature) => signature.returns === 'void')!
+      expect(index.linkType('T', method, instance)).toEqual([{ text: 'T', declaration: true }])
+      expect(index.linkType('T', method, detached)[0].link?.symbol?.id).toBe('example.T')
+      expect(index.linkType('T', method)).toEqual([{ text: 'T', declaration: true }])
+      expect(method.signatures.map((signature) => signature.raw)).toEqual(members.map((member) => member.slice(0, member.indexOf('{')).trimEnd()))
+      expect(method.modifiers).toEqual(members[0] === declarations[0] ? ['static', 'overload'] : ['overload'])
+    }
+  })
+
+  it.fails('does not borrow a sibling overload type parameter for a selected nongeneric signature', async () => {
+    const declarations = ['public <T> T find(T value) { return value; }', 'public T find() { return null; }']
+    for (const members of [declarations, declarations.toReversed()]) {
+      const symbols = await extract(`public class Overloads { ${members.join('\n')} } public class T {}`)
+      const method = symbols.find((symbol) => symbol.name === 'find')!
+      const index = new SymbolIndex(symbols, (symbol) => `/${symbol.id}/`, 'java')
+      const generic = method.signatures.find((signature) => signature.typeParamNames?.length)!
+      const nongeneric = method.signatures.find((signature) => !signature.typeParamNames?.length)!
+      expect(index.linkType('T', method, nongeneric)[0].link?.symbol?.id).toBe('example.T')
+      expect(index.linkType('T', method, generic)).toEqual([{ text: 'T', declaration: true }])
+      expect(index.linkType('T', method)).toEqual([{ text: 'T', declaration: true }])
+      expect(index.linkType('Unknown', method, nongeneric)).toEqual([{ text: 'Unknown', link: undefined }])
+    }
+  })
+
   it('retains annotation declarations, elements and exact defaults', async () => {
     const symbols = await extract(`package nativepkg;
 /** Native operation marker. */

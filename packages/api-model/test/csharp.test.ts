@@ -19,6 +19,15 @@ async function extract(source: string) {
 }
 
 describe('C# positional records', () => {
+  it.fails.each([
+    'public record Result { public string Value { get; init; } }',
+    'public record struct Result { public int Value { get; init; } }',
+    'public record Result;',
+  ])('keeps non-positional record signatures empty: %s', async (source) => {
+    const symbols = await extract(source)
+    expect(symbols.find((symbol) => symbol.id === 'LibTmux.Result')!.signatures).toEqual([])
+  })
+
   it.each(['record', 'record class', 'sealed record', 'record struct', 'readonly record struct'])('extracts %s properties, constructor and parameter documentation', async (declaration) => {
     const symbols = await extract(`namespace LibTmux;
 /// <summary>A command result.</summary>
