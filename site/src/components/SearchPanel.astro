@@ -152,6 +152,8 @@ const segmentNames =
   .search-panel[data-modal='true'] .search-panel__filters {
     min-height: 0;
     overflow-y: auto;
+    padding: 0.125rem;
+    scroll-padding-block: 0.5rem;
   }
 
   /* The filter column only when there are filters: an index without them,
@@ -197,6 +199,11 @@ const segmentNames =
   .search-panel__results {
     min-width: 0;
     overflow-y: auto;
+  }
+
+  .search-panel[data-modal='true'] .search-panel__results {
+    padding-block: 0.125rem;
+    scroll-padding-block: 0.125rem;
   }
 
   .search-panel__status {
