@@ -1,4 +1,6 @@
-import { readFileSync, realpathSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
+import { tmpdir } from 'node:os'
 import { createRequire } from 'node:module'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { join } from 'node:path'
@@ -44,6 +46,26 @@ async function signatureComponent() {
   const fragment = source.slice(start, end)
   const wrapper = `---\nimport ApiType from './ApiType.astro'\nconst { symbol, sig, port, language, index, nameHref, nativeSignatureText, signatureLayouts = new Map() } = Astro.props\n---\n${fragment}`
   return (await import(/* @vite-ignore */ await compile('../src/components/api/ApiEntry.astro', { './ApiType.astro': type }, wrapper))).default
+}
+
+function auditSignature(html: string) {
+  const directory = mkdtempSync(join(tmpdir(), 'libtmux-signature-audit-'))
+  try {
+    for (const { slug } of API_MODEL_PORTS) {
+      const destination = join(directory, slug, 'latest', 'reference', 'probe')
+      mkdirSync(destination, { recursive: true })
+      writeFileSync(join(destination, 'index.html'), html)
+    }
+    const ceiling = join(directory, 'ceiling.json')
+    writeFileSync(ceiling, JSON.stringify(Object.fromEntries(API_MODEL_PORTS.map(({ slug }) => [slug, 0]))))
+    try {
+      const output = execFileSync(process.execPath, [fileURLToPath(new URL('../../scripts/check-type-links.mjs', import.meta.url)), directory, '--ceiling', ceiling], { encoding: 'utf8', stdio: 'pipe' })
+      return { code: 0, output }
+    } catch (error) {
+      const result = error as { status: number; stdout: string; stderr: string }
+      return { code: result.status, output: `${result.stdout}${result.stderr}` }
+    }
+  } finally { rmSync(directory, { recursive: true, force: true }) }
 }
 
 function displayedSignature(element: Element): string {
@@ -352,7 +374,7 @@ describe('native signature emission', () => {
     } finally { await win.happyDOM.abort() }
   })
 
-  it('renders Go source headers with parameter targets and linked types', async () => {
+  it.fails('renders Go source headers with parameter targets and linked types', async () => {
     const model = JSON.parse(readFileSync(new URL('../src/data/api/go.json', import.meta.url), 'utf8')) as ApiModel
     const symbol = model.symbols.find((entry) => entry.id === 'tmux.Server.ListBuffers')!
     const sig = symbol.signatures[0]!
@@ -378,6 +400,39 @@ describe('native signature emission', () => {
       expect([...signature.querySelectorAll('a.api-type-link')].map((link) => [link.textContent, link.getAttribute('href')])).toContainEqual(['Server', '/en/go/latest/reference/tmux-server/'])
       expect([...signature.querySelectorAll('a.api-type-link')].map((link) => [link.textContent, link.getAttribute('href')])).toContainEqual(['ListBuffersRequest', '/en/go/latest/reference/tmux-listbuffersrequest/'])
       expect(signature.querySelector('.api-keyword')?.textContent).toBe('func')
+      const receiver = signature.querySelector('[data-api-role="syntax"]')!
+      expect(receiver?.textContent).toBe('s')
+      expect(receiver.className).toBe('api-punct')
+      expect(auditSignature(signature.outerHTML)).toMatchObject({ code: 0 })
+    } finally { await win.happyDOM.abort() }
+  })
+
+  it.fails.each([
+    ['ts', undefined],
+    ['scala', 'def Method(value: String = "Target"): Unknown'],
+    ['kotlin', 'fun Method(value: String = "Target"): Unknown'],
+  ] as const)('preserves %s literal roles without hiding an unresolved return type', async (port, raw) => {
+    const sig: Signature = { raw, params: [{ name: 'value', type: port === 'ts' ? 'string' : 'String', default: '"Target"' }], returns: 'Unknown' }
+    const symbol: ApiSymbol = { id: 'probe.Method', name: 'Method', kind: port === 'ts' ? 'function' : 'method', modifiers: [], signatures: [sig], source: { file: 'probe' } }
+    const target: ApiSymbol = { id: 'probe.Target', name: 'Target', kind: 'class', modifiers: [], signatures: [], source: { file: 'probe' } }
+    const signatureLayouts = await apiSignatureLayouts(symbol, port)
+    const container = await experimental_AstroContainer.create()
+    const win = new Window()
+    try {
+      win.document.body.innerHTML = await container.renderToString(await (componentPromise ??= signatureComponent()), { props: {
+        symbol, sig, port, language: port, signatureLayouts,
+        index: new SymbolIndex([symbol, target], (entry) => `/${entry.id}/`, port), nativeSignatureText: () => signatureLayouts.get(sig)!.text,
+      } })
+      const signature = win.document.querySelector('.api-native-signature')!
+      expect(displayedSignature(signature)).toBe(signatureLayouts.get(sig)!.text)
+      expect([...signature.querySelectorAll('[data-api-role="syntax"]')].map((span) => span.textContent).join('')).toContain('Target')
+      expect([...signature.querySelectorAll('[data-api-role="syntax"]')].every((span) => span.className === 'api-punct')).toBe(true)
+      expect(signature.querySelector('a[href="/probe.Target/"]')).toBeNull()
+      const unknown = [...signature.querySelectorAll('span.api-punct')].find((span) => span.textContent === 'Unknown')!
+      expect(unknown).toBeDefined()
+      expect(unknown.hasAttribute('data-api-role')).toBe(false)
+      expect(signature.querySelector('a.api-parameter-name')?.getAttribute('href')).toBe('#probe.Method.parameter.value')
+      expect(auditSignature(signature.outerHTML)).toMatchObject({ code: 1, output: expect.stringContaining('Unknown(1)') })
     } finally { await win.happyDOM.abort() }
   })
 

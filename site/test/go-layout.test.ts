@@ -123,6 +123,36 @@ describe('Go callable layouts', () => {
     expect(spans.filter((span) => span.link?.href.startsWith('#tmux.Method.parameter.')).map((span) => span.text)).toEqual(['Target', 'value'])
   })
 
+  it.fails('preserves grammar-owned roles from source extraction without exempting unknown types', async () => {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-go-syntax-roles-'))
+    try {
+      const file = join(directory, 'probe.go')
+      writeFileSync(file, `package tmux
+// Box owns a type parameter.
+type Box[T any] struct{}
+type Known struct{}
+func (receiver *Box[T]) Method(value T, callback func(label Unknown) (result Known, err error), record struct{ Field Unknown }, contract interface{ Call(Unknown) Known }) Unknown { panic(0) }
+func Generic[T MissingConstraint](value T) T { panic(0) }
+`)
+      const symbols = await extractWithSpec(GO, file, 'tmux')
+      const index = new SymbolIndex(symbols, (entry) => `/${entry.id}/`, 'go')
+      const symbol = symbols.find((entry) => entry.name === 'Method')!
+      const result = await layout(symbol)
+      const spans = signatureSpans(result, index, symbol, symbol.signatures[0]!)
+      const literalTexts = spans.filter((span) => 'nonReference' in span && span.nonReference).map((span) => span.text)
+      expect(literalTexts).toEqual(['receiver', 'T', 'T', 'label', 'result', 'err', 'Field', 'Call'])
+      expect(spans.filter((span) => span.text === 'Unknown')).toHaveLength(4)
+      expect(spans.filter((span) => span.text === 'Unknown').every((span) => !('nonReference' in span) && !span.link)).toBe(true)
+      expect(spans.filter((span) => span.link?.href === '/tmux.Known/')).toHaveLength(2)
+      expect(spans.map((span) => span.text).join('')).toBe(result.text)
+      const generic = symbols.find((entry) => entry.name === 'Generic')!
+      const genericLayout = await layout(generic)
+      const genericSpans = signatureSpans(genericLayout, index, generic, generic.signatures[0]!)
+      expect(genericSpans.filter((span) => 'nonReference' in span && span.nonReference).map((span) => span.text)).toEqual(['T', 'T', 'T'])
+      expect(genericSpans.find((span) => span.text === 'MissingConstraint')).toEqual({ text: 'MissingConstraint' })
+    } finally { rmSync(directory, { recursive: true, force: true }) }
+  })
+
   it('preserves raw string tags and reports indivisible over-width tokens', async () => {
     const tag = '`Target  tag\n unchanged`'
     const token = 'LongTarget'.repeat(9)

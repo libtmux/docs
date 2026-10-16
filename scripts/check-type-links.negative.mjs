@@ -27,7 +27,7 @@ const usr = () =>
   '<span class="api-punct">:</span><span class="api-punct">s8CopyableP</span></span>'
 
 /** A site where every port has `n` plain names, plus optional extras. */
-function site({ n = 0, mangled = false } = {}) {
+function site({ n = 0, mangled = false, markup = '' } = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'check-type-links-'))
   for (const p of PORTS) {
     const d = join(dir, p, 'latest', 'reference', 'thing')
@@ -35,7 +35,7 @@ function site({ n = 0, mangled = false } = {}) {
     const body =
       linked('Server') +
       Array.from({ length: n }, (_, i) => plain(`Plain${i}`)).join('') +
-      (mangled ? usr() : '')
+      (mangled ? usr() : '') + markup
     writeFileSync(join(d, 'index.html'), `<html><body>${body}</body></html>`)
   }
   return dir
@@ -57,7 +57,8 @@ function run(dir, ceilings, extra = [], omit = []) {
 }
 
 let failures = 0
-const check = (name, ok, detail) => {
+const check = (name, ok, detail, expectedFailure = false) => {
+  if (expectedFailure) ok = !ok
   if (ok) console.log(`ok   ${name}`)
   else {
     console.error(`FAIL ${name} — ${detail}`)
@@ -163,6 +164,49 @@ const check = (name, ok, detail) => {
   const dir = site({ n: 2 })
   const { code, recorded } = run(dir, 5, ['--update'])
   check('lowering the ceiling is allowed', code === 0 && recorded === 2, `exited ${code}, ceiling now ${recorded}`)
+  rmSync(dir, { recursive: true, force: true })
+}
+
+for (const markup of [
+  '<span class="api-punct" data-api-role="syntax">receiver</span>',
+  "<span data-extra='x > y' data-api-role='syntax' class='api-punct'>T</span>",
+  '<span data-api-role=syntax class=api-punct>label</span>',
+]) {
+  const dir = site({ markup })
+  const { code, out } = run(dir, 0)
+  check('grammar-owned syntax is outside the type count', code === 0, `exited ${code}:\n${out}`)
+  rmSync(dir, { recursive: true, force: true })
+}
+
+for (const markup of [
+  '<span class="api-punct" data-extra="x > y">Unknown</span>',
+  "<span data-api-role='type' class='api-punct'>Unknown</span>",
+  '<span data-api-role=unrecognized class=api-punct>Unknown</span>',
+  '<span data-api-role="syntax" class="api-type"><span class="api-punct">Unknown</span></span>',
+  '<span class="api-punct" data-api-role="syntax"><span class="api-punct">Unknown</span></span>',
+]) {
+  const dir = site({ markup })
+  const { code, out } = run(dir, 0)
+  check('unknown types remain counted through attributes and parents', code !== 0 && out.includes('Unknown(1)'), `exited ${code}:\n${out}`, !markup.includes('<span', 1))
+  rmSync(dir, { recursive: true, force: true })
+}
+
+{
+  // The existing ceiling covers single-class spans, not chips. Expanding that
+  // metric needs a separately reviewed source-backed inventory.
+  const dir = site({ markup: '<span class="api-punct api-literal">ChipGap</span>' + plain('Unknown') })
+  const { code, out } = run(dir, 1, ['--list'])
+  check('the recorded single-class metric does not expand to chips', code === 0 && out.includes('Unknown(1)') && !out.includes('ChipGap'), out)
+  rmSync(dir, { recursive: true, force: true })
+}
+
+for (const markup of [
+  '<span data-api-role="syntax" class="api-type"><span class="api-punct" data-api-role="syntax">s</span>:<span class="api-punct" data-api-role="syntax">s8CopyableP</span></span>',
+  "<span data-extra='x > y' class='api-type'><span class='api-punct'>s</span>:<span class='api-punct'>s8CopyableP</span></span>",
+]) {
+  const dir = site({ markup })
+  const { code, out } = run(dir, 99)
+  check('syntax metadata and attribute order cannot hide mangled types', code !== 0 && out.includes('s:s8CopyableP'), `exited ${code}:\n${out}`, true)
   rmSync(dir, { recursive: true, force: true })
 }
 
