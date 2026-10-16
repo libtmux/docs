@@ -159,6 +159,47 @@ describe('Rust enum payload fields', () => {
 })
 
 describe('Rust trait member visibility', () => {
+  it.fails('retains callable headers with outer attributes, bounds and native body boundaries', async () => {
+    const raw = `#[must_use = "keep { braces }, punctuation and  spaces"]
+#[cfg(feature = "native")]
+pub async unsafe fn inspect<'a, T: Clone, const N: usize>(
+    &'a mut self,
+    r#type: &'a T,
+    bytes: [u8; N],
+) -> Result<&'a T, Error>
+where
+    T: Send + 'a,`
+    const symbols = await extract(`pub struct Server;
+impl Server {
+${raw} { let unrelated = "body"; }
+}
+pub trait Poller {
+    unsafe extern "C" fn required(&self, value: fn(u8, u8)) -> u8;
+}`)
+    const signature = symbols.find((symbol) => symbol.name === 'inspect')!.signatures[0]!
+    expect(signature.raw).toBe(raw)
+    expect(signature.params.map((param) => param.name)).toEqual(["&'a mut self", 'r#type', 'bytes'])
+    expect(signature.typeParams).toEqual(["'a", 'T: Clone', 'const N: usize'])
+    expect(symbols.find((symbol) => symbol.name === 'required')!.signatures[0]!.raw)
+      .toBe('unsafe extern "C" fn required(&self, value: fn(u8, u8)) -> u8;')
+  })
+
+  it.fails('retains distinct impl contexts and source locations without flattening owner generics', async () => {
+    const symbols = await extract(`pub struct Slot<T>;
+impl Slot<SessionSlot> { pub const fn pane(self) -> Slot<PaneSlot> {} }
+impl Slot<WindowSlot> { pub const fn pane(self) -> Slot<PaneSlot> {} }
+impl<'a, T: Clone> Slot<T> where T: Send { pub fn get(&'a self) -> &'a T {} }
+pub trait Poller<T: Clone = String> { fn required(&self, value: T); }`)
+    const panes = symbols.find((symbol) => symbol.name === 'pane')!.signatures
+    expect(panes.map((signature) => signature.enclosingDeclaration)).toEqual(['impl Slot<SessionSlot>', 'impl Slot<WindowSlot>'])
+    expect(panes.map((signature) => signature.source?.line)).toEqual([2, 3])
+    const get = symbols.find((symbol) => symbol.name === 'get')!.signatures[0]!
+    expect(get.enclosingDeclaration).toBe("impl<'a, T: Clone> Slot<T> where T: Send")
+    expect(get.typeParams).toBeUndefined()
+    expect(symbols.find((symbol) => symbol.name === 'required')!.signatures[0]!.enclosingDeclaration)
+      .toBe('pub trait Poller<T: Clone = String>')
+  })
+
   it('keeps async and unsafe declaration modifiers without reading function bodies', async () => {
     const symbols = await extract(`
       pub struct Server;
