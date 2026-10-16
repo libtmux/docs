@@ -51,6 +51,7 @@ export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> =
     method: term('Named Java behavior called on an object or, for static methods, on a class.', 'Java method declarations', javaSpec(8, '8.4')),
     attribute: term('A Java field holding a value on an instance or its class.', 'Java fields', javaSpec(8, '8.3')),
     constant: term('A named Java API value. A final primitive or String initialized with a constant expression is a constant variable.', 'Java constant variables', javaSpec(4, '4.12.4')),
+    annotation: term('A Java annotation interface declared with @interface, or an element declared inside it.', 'Java annotation interfaces and elements', javaSpec(9, '9.6'), 'Elements are declared as methods with no parameters. An element may use default to supply its value when an annotation omits it.'),
     static: term('A class member accessed without an instance. A static method has no current object.', 'Java static methods', javaSpec(8, '8.4.3.2')),
     abstract: term('An incompletely implemented class or method. Concrete subclasses implement inherited abstract methods.', 'Java abstract classes', javaSpec(8, '8.1.1.1')),
     readonly: term('A final Java declaration. A final class cannot be extended; a final field cannot be reassigned after initialization.', 'Java final declarations', javaSpec(8, '8.1.1.2')),

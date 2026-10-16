@@ -118,6 +118,7 @@ const kinds = {
 } satisfies Record<SymbolKind | 'cmdlet', Definition>
 
 const modifiers = {
+  annotation: NATIVE_API_GLOSSARIES.java.annotation,
   opaque: {
     definition: 'A type declaration whose representation is hidden outside its defining scope.',
     detail: 'Scala opaque type aliases keep their underlying representation visible within the defining scope while exposing the alias and its public operations to callers.',
