@@ -14,6 +14,10 @@ interface Measurement {
   header: Region; row: Region | null; left: Region | null; right: Region | null
   signatures: Region[]
 }
+interface LineMeasurement {
+  text: string; innerText: string
+  rows: { line: number; text: string; glyphs: number; topSpread: number }[]
+}
 
 const measured = JSON.parse(readFileSync(new URL('./fixtures/scala-signature-geometry.json', import.meta.url), 'utf8'))
   .records as Measurement[]
@@ -183,5 +187,49 @@ describe('hosted native signature geometry', () => {
     const measurement = sample(768)
     measurement.pageWidth = measurement.viewport + 2
     await expect(runHostedGeometry(measurement)).rejects.toThrow('Scala overloads fit at 768px')
+  })
+})
+
+const lineMeasurements = JSON.parse(readFileSync(new URL('./fixtures/formatted-signature-lines.json', import.meta.url), 'utf8'))
+  .records as { port: string; before: LineMeasurement; prePrototype: LineMeasurement }[]
+
+describe('formatter-owned painted rows', () => {
+  it.each(lineMeasurements)('rejects observed $port soft wrapping despite unchanged text', async ({ before, prePrototype }) => {
+    expect(before.text).toBe(prePrototype.text)
+    expect(before.innerText).toBe(prePrototype.innerText)
+    await expect(nativeLayoutChecks.checkNativeSignatureLines({ evaluate: async () => [before] })).rejects.toThrow(/one painted row/)
+    await expect(nativeLayoutChecks.checkNativeSignatureLines({ evaluate: async () => [prePrototype] })).resolves.toEqual([prePrototype])
+  })
+
+  it('measures split inline text, ignores popovers and leaves blank source lines intact', async () => {
+    const win = new Window()
+    try {
+      win.document.body.innerHTML = '<dt><span class="api-native-signature--formatted">call(\n    <a>Target</a> name,\n\n)</span><span class="api-native-signature">unformatted</span></dt>'
+      const header = win.document.querySelector('dt')!
+      const signature = header.querySelector('.api-native-signature--formatted')!
+      const popover = win.document.createElement('div')
+      popover.setAttribute('popover', 'auto')
+      popover.textContent = 'Visible help is outside the declaration'
+      signature.append(popover)
+      let start: Node, offset = 0, wrapped = false
+      Object.defineProperty(win.document, 'createRange', { value: () => ({
+        setStart: (node: Node, at: number) => { start = node; offset = at },
+        setEnd: () => {},
+        getBoundingClientRect: () => ({ width: 8, height: 16,
+          top: wrapped && start.textContent?.includes(' name,') && offset > 0 ? 42 : 20 }),
+      }) })
+      const read = { evaluate: async (inspect: (element: Element) => unknown) => inspect(header) }
+      const measured = await nativeLayoutChecks.checkNativeSignatureLines(read)
+      expect(measured).toHaveLength(1)
+      expect(measured[0].text).toBe('call(\n    Target name,\n\n)')
+      expect(measured[0].rows.map((row: { glyphs: number }) => row.glyphs)).toEqual([5, 11, 0, 1])
+      wrapped = true
+      await expect(nativeLayoutChecks.checkNativeSignatureLines(read)).rejects.toThrow(/line 2 stays on one painted row/)
+    } finally { await win.happyDOM.abort() }
+  })
+
+  it('rejects nonempty lines whose text has no painted glyphs', async () => {
+    const record = { text: 'Missing', rows: [{ line: 1, text: 'Missing', glyphs: 0, topSpread: 0 }] }
+    await expect(nativeLayoutChecks.checkNativeSignatureLines({ evaluate: async () => [record] })).rejects.toThrow(/painted text/)
   })
 })

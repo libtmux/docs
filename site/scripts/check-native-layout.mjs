@@ -71,7 +71,54 @@ export async function checkNativeSignatureGeometry(header) {
   assert(near(code.width, availableCodeWidth), 'Native signature uses the available code width')
   assert(near(below ? controls.top - code.bottom : controls.left - code.right, below ? row.rowGap : row.columnGap),
     'Native signature metadata follows the computed layout gap')
+  await checkNativeSignatureLines(header)
   return { ...geometry, mode: below ? 'stacked' : 'inline', availableCodeWidth }
+}
+
+/** A formatter's logical line must occupy one painted row, even when it scrolls. */
+export async function checkNativeSignatureLines(header) {
+  const signatures = await header.evaluate((element) => {
+    const document = element.ownerDocument
+    return [...element.querySelectorAll('.api-native-signature--formatted')].map((signature) => {
+      const walk = document.createTreeWalker(signature, document.defaultView.NodeFilter.SHOW_TEXT)
+      const lines = [{ text: '', tops: [] }]
+      let node
+      while ((node = walk.nextNode())) {
+        if (node.parentElement.closest('[popover]') || !node.parentElement.checkVisibility({ visibilityProperty: true })) continue
+        for (let offset = 0; offset < node.textContent.length;) {
+          const char = String.fromCodePoint(node.textContent.codePointAt(offset))
+          const end = offset + char.length
+          if (char === '\n') lines.push({ text: '', tops: [] })
+          else {
+            const line = lines.at(-1)
+            line.text += char
+            if (!/\s/.test(char)) {
+              const range = document.createRange()
+              range.setStart(node, offset)
+              range.setEnd(node, end)
+              const rect = range.getBoundingClientRect()
+              if (rect.width && rect.height) line.tops.push(rect.top)
+            }
+          }
+          offset = end
+        }
+      }
+      return { text: lines.map((line) => line.text).join('\n'), rows: lines.map((line, index) => ({
+        line: index + 1, text: line.text, glyphs: line.tops.length,
+        topSpread: line.tops.length ? Math.max(...line.tops) - Math.min(...line.tops) : 0,
+      })) }
+    })
+  })
+  for (const [index, signature] of signatures.entries()) {
+    assert(signature.text.trim(), `Formatted signature ${index + 1} has visible text`)
+    for (const line of signature.rows) {
+      if (!line.text.trim()) continue
+      assert(line.glyphs > 0, `Formatted signature ${index + 1} line ${line.line} has painted text`)
+      assert(Number.isFinite(line.topSpread) && line.topSpread <= 1,
+        `Formatted signature ${index + 1} line ${line.line} stays on one painted row: ${line.text}`)
+    }
+  }
+  return signatures
 }
 
 /** Bind native parameter anchors to their displayed overload and local fields. */

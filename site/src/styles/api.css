@@ -627,7 +627,7 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-layout-right
   font-weight: 400;
 }
 /* Formatter-owned breaks must not be replaced by camel-case token breaks. */
-.api-native-signature--formatted { tab-size: 8; }
+.api-native-signature--formatted { white-space: pre; tab-size: 8; }
 .api-native-signature--formatted,
 .api-native-signature--formatted :is(.api-type-link, .api-declaration-name, .api-parameter-name) {
   overflow-wrap: normal;

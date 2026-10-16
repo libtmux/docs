@@ -545,7 +545,7 @@ describe('native signature emission', () => {
       .rejects.toThrow(`API signature fixture is missing a parameterized callable for ${port}`)
   })
 
-  it.fails.each([
+  it.each([
     ['ts', 'server.Server.setHook', 'containment'],
     ['scala', 'io.github.libtmux.scaladsl.Server.sessions', 'containment'],
     ['kotlin', 'io.github.libtmux.kotlin.Server.sessions', 'containment'],
@@ -576,6 +576,8 @@ describe('native signature emission', () => {
         } })
         win.document.body.innerHTML = `<dl class="py gp-sphinx-api-container"><dt class="gp-sphinx-api-header">${html}</dt><dd>Body</dd></dl>`
         const signature = win.document.querySelector<HTMLElement>('.api-native-signature')!
+        // Happy DOM caches the first computed style; establish focus before measuring it.
+        if (check === 'keyboard') signature.focus()
         const style = win.getComputedStyle(signature)
         expect(displayedSignature(signature)).toBe(layout.text)
         expect(style.whiteSpace).toBe('pre')
@@ -594,7 +596,6 @@ describe('native signature emission', () => {
           expect(signature.getAttribute('role')).toBe('region')
           expect(signature.getAttribute('aria-label')).toBe(`Signature for ${symbol.name}${symbol.signatures.length > 1 ? `, overload ${i + 1} of ${symbol.signatures.length}` : ''}`)
           expect(signature.tabIndex).toBe(0)
-          signature.focus()
           expect(win.document.activeElement).toBe(signature)
           expect(win.getComputedStyle(signature).outlineStyle).toBe('solid')
           for (const trigger of signature.querySelectorAll('[popovertarget]')) {

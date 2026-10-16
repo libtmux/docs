@@ -1,0 +1,184 @@
+{
+  "sourceRevision": "f49d4401a045813b71a3bb2367fb4476863b48c2",
+  "viewport": {
+    "width": 390,
+    "height": 899
+  },
+  "scope": "Conductor browser observation and isolated white-space:pre DOM prototype; not delivered acceptance",
+  "records": [
+    {
+      "port": "java",
+      "before": {
+        "text": "@ReadOnly\n@Operation(Kind.READ)\npublic List<Session> sessions(\n        FilterExpr<Session> expression)",
+        "innerText": "@ReadOnly\n@Operation(Kind.READ)\npublic List<Session> sessions(\n        FilterExpr<Session> expression)",
+        "whiteSpace": "pre-wrap",
+        "client": 317,
+        "scroll": 317,
+        "rows": [
+          {
+            "line": 1,
+            "text": "@ReadOnly",
+            "glyphs": 9,
+            "topSpread": 0
+          },
+          {
+            "line": 2,
+            "text": "@Operation(Kind.READ)",
+            "glyphs": 21,
+            "topSpread": 0
+          },
+          {
+            "line": 3,
+            "text": "public List<Session> sessions(",
+            "glyphs": 28,
+            "topSpread": 0
+          },
+          {
+            "line": 4,
+            "text": "        FilterExpr<Session> expression)",
+            "glyphs": 30,
+            "topSpread": 22.390625
+          }
+        ]
+      },
+      "prePrototype": {
+        "text": "@ReadOnly\n@Operation(Kind.READ)\npublic List<Session> sessions(\n        FilterExpr<Session> expression)",
+        "innerText": "@ReadOnly\n@Operation(Kind.READ)\npublic List<Session> sessions(\n        FilterExpr<Session> expression)",
+        "whiteSpace": "pre",
+        "client": 317,
+        "scroll": 329,
+        "rows": [
+          {
+            "line": 1,
+            "text": "@ReadOnly",
+            "glyphs": 9,
+            "topSpread": 0
+          },
+          {
+            "line": 2,
+            "text": "@Operation(Kind.READ)",
+            "glyphs": 21,
+            "topSpread": 0
+          },
+          {
+            "line": 3,
+            "text": "public List<Session> sessions(",
+            "glyphs": 28,
+            "topSpread": 0
+          },
+          {
+            "line": 4,
+            "text": "        FilterExpr<Session> expression)",
+            "glyphs": 30,
+            "topSpread": 0
+          }
+        ]
+      }
+    },
+    {
+      "port": "kotlin",
+      "before": {
+        "text": "public suspend fun <R> withControl(\n    server: Server,\n    session: Session,\n    timeout: Duration =\n        server.config.defaultTimeout().toKotlinDuration(),\n    block: suspend (ControlClient) -> R,\n): R",
+        "innerText": "public suspend fun <R> withControl(\n    server: Server,\n    session: Session,\n    timeout: Duration =\n        server.config.defaultTimeout().toKotlinDuration(),\n    block: suspend (ControlClient) -> R,\n): R",
+        "whiteSpace": "pre-wrap",
+        "client": 317,
+        "scroll": 395,
+        "rows": [
+          {
+            "line": 1,
+            "text": "public suspend fun <R> withControl(",
+            "glyphs": 31,
+            "topSpread": 0
+          },
+          {
+            "line": 2,
+            "text": "    server: Server,",
+            "glyphs": 14,
+            "topSpread": 0
+          },
+          {
+            "line": 3,
+            "text": "    session: Session,",
+            "glyphs": 16,
+            "topSpread": 0
+          },
+          {
+            "line": 4,
+            "text": "    timeout: Duration =",
+            "glyphs": 17,
+            "topSpread": 0
+          },
+          {
+            "line": 5,
+            "text": "        server.config.defaultTimeout().toKotlinDuration(),",
+            "glyphs": 50,
+            "topSpread": 22.390625
+          },
+          {
+            "line": 6,
+            "text": "    block: suspend (ControlClient) -> R,",
+            "glyphs": 32,
+            "topSpread": 22.390625
+          },
+          {
+            "line": 7,
+            "text": "): R",
+            "glyphs": 3,
+            "topSpread": 0
+          }
+        ]
+      },
+      "prePrototype": {
+        "text": "public suspend fun <R> withControl(\n    server: Server,\n    session: Session,\n    timeout: Duration =\n        server.config.defaultTimeout().toKotlinDuration(),\n    block: suspend (ControlClient) -> R,\n): R",
+        "innerText": "public suspend fun <R> withControl(\n    server: Server,\n    session: Session,\n    timeout: Duration =\n        server.config.defaultTimeout().toKotlinDuration(),\n    block: suspend (ControlClient) -> R,\n): R",
+        "whiteSpace": "pre",
+        "client": 317,
+        "scroll": 500,
+        "rows": [
+          {
+            "line": 1,
+            "text": "public suspend fun <R> withControl(",
+            "glyphs": 31,
+            "topSpread": 0
+          },
+          {
+            "line": 2,
+            "text": "    server: Server,",
+            "glyphs": 14,
+            "topSpread": 0
+          },
+          {
+            "line": 3,
+            "text": "    session: Session,",
+            "glyphs": 16,
+            "topSpread": 0
+          },
+          {
+            "line": 4,
+            "text": "    timeout: Duration =",
+            "glyphs": 17,
+            "topSpread": 0
+          },
+          {
+            "line": 5,
+            "text": "        server.config.defaultTimeout().toKotlinDuration(),",
+            "glyphs": 50,
+            "topSpread": 0
+          },
+          {
+            "line": 6,
+            "text": "    block: suspend (ControlClient) -> R,",
+            "glyphs": 32,
+            "topSpread": 0
+          },
+          {
+            "line": 7,
+            "text": "): R",
+            "glyphs": 3,
+            "topSpread": 0
+          }
+        ]
+      }
+    }
+  ]
+}
