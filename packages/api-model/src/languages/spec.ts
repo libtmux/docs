@@ -135,6 +135,8 @@ export interface LanguageSpec {
   declarationModifiers?: (node: Node) => Modifier[]
   /** A nested type whose grammar excludes enclosing type-variable bindings. */
   typeScopeBoundary?: (node: Node) => boolean
+  /** A callable boundary independent of the shared symbol's other overloads. */
+  signatureTypeScopeBoundary?: (node: Node) => boolean | undefined
   /** Native enum cases own named or positional fields without a callable signature. */
   enumVariant?: (node: Node) => {
     shape: NonNullable<ApiSymbol['variant']>
@@ -258,6 +260,7 @@ function signatureOf(node: Node, spec: LanguageSpec): Signature {
     node.childForFieldName(f.returns) ??
     node.childForFieldName('result') ??
     node.childForFieldName('type')
+  const scopeBoundary = spec.signatureTypeScopeBoundary?.(node)
   return {
     raw: spec.rawSignature?.(node),
     params: paramsOf(node.childForFieldName(f.params), spec),
@@ -268,6 +271,7 @@ function signatureOf(node: Node, spec: LanguageSpec): Signature {
     // renderer's to draw.
     returns: returns ? spec.typeText?.(returns) ?? returns.text.replace(/\s+/g, ' ').replace(/^\s*(?:->|:)\s*/, '') : undefined,
     ...(spec.typeParameterNames?.(node) ? { typeParamNames: spec.typeParameterNames(node) } : {}),
+    ...(scopeBoundary !== undefined ? { typeScopeBoundary: scopeBoundary } : {}),
     typeParams: node
       .childForFieldName('type_parameters')
       ?.namedChildren.map((n) => n?.text ?? '')
@@ -350,7 +354,7 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
     if (containerKind) {
       const accessors = spec.recordAccessors?.(child)
       const positional = spec.positionalProperties?.(child) || accessors
-      const signatures = positional || spec.rawSignature?.(child) ? [signatureOf(child, spec)] : []
+      const signatures = positional || (spec.grammar === 'java' && spec.rawSignature?.(child)) ? [signatureOf(child, spec)] : []
       emit(ctx, {
         id,
         name,
@@ -385,7 +389,7 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
             if (existing?.signatures.some((signature) => signature.params.length === 0)) continue
             emit(ctx, {
               id: accessorId, name: parameter.name, kind: 'method', parent: id,
-              modifiers: [], signatures: [{ params: [], returns: parameter.type }],
+              modifiers: [], signatures: [{ params: [], returns: parameter.type, ...(existing ? { typeScopeBoundary: false } : {}) }],
               doc: parameter.doc ? { summary: parameter.doc } : undefined,
               // The accessor is implicit; no method declaration owns a source line.
               source: { file: ctx.file },

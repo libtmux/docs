@@ -143,6 +143,8 @@ export interface Signature {
   typeParams?: string[]
   /** Names bound by native type-parameter declarations, without annotations or bounds. */
   typeParamNames?: string[]
+  /** Whether this overload excludes enclosing type variables; false retains instance scope. */
+  typeScopeBoundary?: boolean
   /** Named or implicit receiver of a native extension declaration. */
   receiver?: Param
   /** `throws` / `raises`, as a type and its doc text. */

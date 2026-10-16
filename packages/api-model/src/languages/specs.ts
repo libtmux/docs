@@ -331,6 +331,9 @@ export const JAVA: LanguageSpec = {
   typeScopeBoundary: (node) => ['class_body', 'interface_body', 'annotation_type_body', 'enum_body_declarations'].includes(node.parent?.type ?? '') &&
     (['interface_declaration', 'annotation_type_declaration', 'enum_declaration', 'record_declaration'].includes(node.type) ||
       (node.type === 'class_declaration' && ['interface_body', 'annotation_type_body'].includes(node.parent!.type))),
+  signatureTypeScopeBoundary: (node) => node.type === 'method_declaration'
+    ? Boolean(node.children.find((child) => child?.type === 'modifiers')?.children.some((child) => child?.type === 'static' && !child.isNamed))
+    : undefined,
   parameter: (node) => {
     // The pinned grammar parses annotated receivers as formal parameters.
     if (node.type === 'receiver_parameter' ||

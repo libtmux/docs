@@ -636,10 +636,13 @@ export class SymbolIndex {
       }
     }
     if (this.lang === 'java') {
-      for (const name of signature?.typeParamNames ?? context?.signatures.flatMap((entry) => entry.typeParamNames ?? []) ?? []) boundTypes.add(name)
+      const signatures = signature ? [signature] : context?.signatures ?? []
+      for (const name of signatures.flatMap((entry) => entry.typeParamNames ?? [])) boundTypes.add(name)
       for (let scope = context; scope; scope = scope.parent ? this.byDeclared.get(scope.parent) : undefined) {
         for (const name of scope.typeParamNames ?? []) boundTypes.add(name)
-        if (scope.typeScopeBoundary || scope.modifiers.includes('static')) break
+        const staticBoundary = scope === context && signatures.length && signatures.every((entry) => entry.typeScopeBoundary !== undefined)
+          ? signatures.every((entry) => entry.typeScopeBoundary) : scope.modifiers.includes('static')
+        if (scope.typeScopeBoundary || staticBoundary) break
       }
     }
     if (rustPayload) {
