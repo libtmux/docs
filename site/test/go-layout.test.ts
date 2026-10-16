@@ -1,10 +1,14 @@
-import { readFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { parserFor, SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { apiSignatureLayouts, codeWidthFailures, signatureSpans } from '../src/lib/code-layout'
 import { usesNativeSignatures } from '../src/lib/api-sections'
 import { symbolMarkdownWithLayout } from '../src/lib/symbol-markdown'
+import { extractWithSpec } from '../../packages/api-model/src/languages/spec'
+import { GO } from '../../packages/api-model/src/languages/specs'
 
 const model = JSON.parse(readFileSync(new URL('../src/data/api/go.json', import.meta.url), 'utf8')) as ApiModel
 const callable = (raw: string, params: Signature['params'] = []): ApiSymbol => ({
@@ -69,6 +73,43 @@ describe('Go callable layouts', () => {
     expect(spans.find((span) => span.link?.href === '#tmux.Method.parameter.value')?.text).toBe('value')
   })
 
+  it.fails.each([
+    ['func Method(value Target) /* Target  after header */', 1],
+    ['func Method(value Target) Target /* Target  after result */', 2],
+    ['func Method(value Target) Target /* Target first */ /* Target  second */', 2],
+  ])('retains extracted trailing comments in %s', async (raw, typeLinks) => {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-go-header-comments-'))
+    try {
+      const file = join(directory, 'probe.go')
+      writeFileSync(file, `package tmux\n${raw} { panic(0) }\n`)
+      const symbol = (await extractWithSpec(GO, file, 'tmux'))[0]!
+      expect(symbol.signatures[0]!.raw).toBe(raw)
+      const result = await layout(symbol)
+      expect(result.text.match(/\/\*[\s\S]*?\*\//g)).toEqual(raw.match(/\/\*[\s\S]*?\*\//g))
+      const target: ApiSymbol = { id: 'tmux.Target', name: 'Target', kind: 'struct', modifiers: [], signatures: [], source: { file: 'probe.go' } }
+      const spans = signatureSpans(result, new SymbolIndex([symbol, target], (entry) => `/${entry.id}/`, 'go'), symbol, symbol.signatures[0]!)
+      expect(spans.map((span) => span.text).join('')).toBe(result.text)
+      expect(spans.filter((span) => span.link?.href === '/tmux.Target/')).toHaveLength(typeLinks)
+      expect(spans.find((span) => span.link?.href === '#tmux.Method.parameter.value')?.text).toBe('value')
+      expect(result.failures).toEqual(await codeWidthFailures(result.text, 'api'))
+      const markdown = await symbolMarkdownWithLayout({ model: { ...model, symbols: [symbol, target] }, symbol })
+      const signature = fromMarkdown(markdown).children.find((node) => node.type === 'code')
+      expect(signature?.type === 'code' && signature.value).toBe(result.text)
+    } finally { rmSync(directory, { recursive: true, force: true }) }
+  })
+
+  it.fails('keeps an inline block comment attached to its following parameter comma', async () => {
+    const symbol = callable('func Method(value Target /* Target */, other Target) Target', [{ name: 'value' }, { name: 'other' }])
+    const result = await layout(symbol)
+    expect(result.text).toContain('value Target /* Target */,')
+    expect(result.text).not.toContain('*/ ,')
+    const target: ApiSymbol = { id: 'tmux.Target', name: 'Target', kind: 'struct', modifiers: [], signatures: [], source: { file: 'probe.go' } }
+    const spans = signatureSpans(result, new SymbolIndex([symbol, target], (entry) => `/${entry.id}/`, 'go'), symbol, symbol.signatures[0]!)
+    expect(spans.map((span) => span.text).join('')).toBe(result.text)
+    expect(spans.filter((span) => span.link?.href === '/tmux.Target/')).toHaveLength(3)
+    expect(spans.filter((span) => span.link?.href.startsWith('#tmux.Method.parameter.')).map((span) => span.text)).toEqual(['value', 'other'])
+  })
+
   it('preserves generic constraints and suppresses local generic or nested name collisions', async () => {
     const symbol = callable('func Method[T interface{ ~string | ~[]byte }](Target func(Target T) (Target T), value pkg.T) T', [{ name: 'Target' }, { name: 'value' }])
     const target: ApiSymbol = { id: 'tmux.Target', name: 'Target', kind: 'struct', modifiers: [], signatures: [], source: { file: 'probe.go' } }
@@ -126,6 +167,7 @@ describe('Go callable layouts', () => {
   it.each([
     ['func Method(value Broken[', [{ name: 'value' }]],
     ['func Method(value Target) {}', [{ name: 'value' }]],
+    ['func Method(value Target)\nfunc Extra()', [{ name: 'value' }]],
     ['func Different(value Target)', [{ name: 'value' }]],
     ['func Method(value Target)', [{ name: 'missing' }]],
   ] as const)('rejects invalid grammar or stale model bindings in %s', async (raw, params) => {
