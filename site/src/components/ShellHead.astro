@@ -17,7 +17,7 @@ const { preloadSansItalic = false } = Astro.props
   ...(preloadSansItalic ? [{ weight: 400, style: 'italic' as const }] : []),
 ]} />
 <Font cssVariable="--font-ibm-plex-mono" preload={[
-  { weight: 400, style: 'normal' }, { weight: 400, style: 'italic' },
+  { weight: 400, style: 'normal' },
   { weight: 600, style: 'normal' }, { weight: 700, style: 'normal' },
   { weight: 700, style: 'italic' },
 ]} />
