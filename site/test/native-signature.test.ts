@@ -7,7 +7,7 @@ import { runInNewContext } from 'node:vm'
 import { describe, expect, it } from 'vitest'
 import { experimental_AstroContainer } from 'astro/container'
 import { Window, type Element, type HTMLElement } from 'happy-dom'
-import { parameterId, SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model'
+import { parameterId, parentInventory, SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model'
 import { apiEntryFields, nativeSignatureText, usesNativeSignatures } from '../src/lib/api-sections'
 import { API_MODEL_PORTS } from '../src/lib/ports'
 import { apiSignatureLayouts } from '../src/lib/code-layout'
@@ -75,6 +75,8 @@ async function scalaObserverFixture() {
   const container = await experimental_AstroContainer.create()
   const signatureLayouts = await apiSignatureLayouts(symbol, 'scala')
   const index = new SymbolIndex(model.symbols, (entry) => `/${entry.slug}/`, 'scala')
+  const java = JSON.parse(readFileSync(new URL('../src/data/api/java.json', import.meta.url), 'utf8')) as ApiModel
+  index.addInventory('', parentInventory(java, (entry) => `/en/java/latest/reference/${entry.slug}/`), ['scala'], 'libtmux Java')
   const win = new Window()
   const signatures = await Promise.all(symbol.signatures.map((sig) => container.renderToString(component, { props: {
     symbol, sig, port: 'scala', language: 'scala', index, signatureLayouts,
@@ -103,7 +105,7 @@ async function runHostedScalaLinks(win: Window) {
     evaluate: (read: (element: Element) => unknown) => read(header),
   }
   return runInNewContext(`(async () => { ${source.slice(start, end)} })()`, {
-    assert, signature, readFileSync, join, source: fileURLToPath(new URL('../', import.meta.url)), ...nativeLayoutChecks,
+    assert, signature, readFileSync, join, JSON, source: fileURLToPath(new URL('../', import.meta.url)), ...nativeLayoutChecks,
   })
 }
 
@@ -171,10 +173,46 @@ async function checkHostedDeclarations(port: string) {
 }
 
 describe('native signature emission', () => {
-  it.fails('accepts actual Scala parameter anchors in the hosted reference observer', async () => {
+  it('accepts actual Scala parameter anchors in the hosted reference observer', async () => {
     const { win } = await scalaObserverFixture()
     try { await runHostedScalaLinks(win) }
     finally { await win.happyDOM.abort() }
+  })
+
+  it.each([
+    'missing link', 'type-link classification', 'duplicate link', 'foreign name',
+    'wrong fragment', 'external destination', 'wrong owner destination',
+    'missing target', 'duplicate target', 'wrong overload', 'missing overload', 'wrong owner',
+    'declaration self-link', 'keyword link', 'extra unclassified parameter link', 'wrong Vector destination',
+  ])('rejects %s in the hosted Scala reference observer', async (failure) => {
+    const { win, symbol } = await scalaObserverFixture()
+    try {
+      const header = win.document.querySelector('dt.api-native-header')!
+      const signatures = [...header.querySelectorAll('.api-native-signature')]
+      const parameter = [...header.querySelectorAll('a.api-parameter-name')].find((link) => link.textContent === 'id')!
+      const target = win.document.getElementById(parameterId(symbol, 'id'))!
+      if (failure === 'missing link') parameter.remove()
+      else if (failure === 'type-link classification') parameter.classList.remove('api-parameter-name')
+      else if (failure === 'duplicate link') parameter.after(parameter.cloneNode(true))
+      else if (failure === 'foreign name') parameter.textContent = 'foreign'
+      else if (failure === 'wrong fragment') parameter.setAttribute('href', '#missing')
+      else if (failure === 'external destination') parameter.setAttribute('href', `https://example.com/${parameter.getAttribute('href')}`)
+      else if (failure === 'wrong owner destination') parameter.setAttribute('href', '#Other.parameter.id')
+      else if (failure === 'missing target') target.remove()
+      else if (failure === 'duplicate target') target.after(target.cloneNode(true))
+      else if (failure === 'wrong overload') signatures[0]!.append(parameter)
+      else if (failure === 'missing overload') signatures[0]!.remove()
+      else if (failure === 'wrong owner') header.setAttribute('data-symbol-id', 'Other')
+      else if (failure === 'wrong Vector destination') {
+        for (const link of header.querySelectorAll('a')) if (link.textContent === 'Vector') link.setAttribute('href', 'https://example.com/Vector')
+      } else {
+        const link = win.document.createElement('a')
+        link.href = '/wrong/'
+        link.textContent = failure === 'declaration self-link' ? 'windows' : failure === 'keyword link' ? 'def' : 'id'
+        signatures[0]!.append(link)
+      }
+      await expect(runHostedScalaLinks(win)).rejects.toThrow(/native |declaration token|Vector links/i)
+    } finally { await win.happyDOM.abort() }
   })
 
   it('renders Go source headers with parameter targets and linked types', async () => {
