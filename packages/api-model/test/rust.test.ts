@@ -159,7 +159,24 @@ describe('Rust enum payload fields', () => {
 })
 
 describe('Rust trait member visibility', () => {
-  it.fails('retains callable headers with outer attributes, bounds and native body boundaries', async () => {
+  it('extracts valid native headers even when the body uses newer async closure syntax', async () => {
+    const symbols = await extract(`pub struct Server;
+impl Server {
+    /// The body is outside the header projection.
+    #[must_use]
+    pub fn method(value: Target) -> Target {
+        let callback = async |value| value;
+        value
+    }
+}`)
+    const signature = symbols.find((symbol) => symbol.name === 'method')!.signatures[0]!
+    expect(signature.raw).toBe('#[must_use]\npub fn method(value: Target) -> Target')
+    expect(signature.enclosingDeclaration).toBe('impl Server')
+    expect(signature.raw).not.toContain('The body')
+    expect(signature.raw).not.toContain('callback')
+  })
+
+  it('retains callable headers with outer attributes, bounds and native body boundaries', async () => {
     const raw = `#[must_use = "keep { braces }, punctuation and  spaces"]
 #[cfg(feature = "native")]
 pub async unsafe fn inspect<'a, T: Clone, const N: usize>(
@@ -184,7 +201,7 @@ pub trait Poller {
       .toBe('unsafe extern "C" fn required(&self, value: fn(u8, u8)) -> u8;')
   })
 
-  it.fails('retains distinct impl contexts and source locations without flattening owner generics', async () => {
+  it('retains distinct impl contexts and source locations without flattening owner generics', async () => {
     const symbols = await extract(`pub struct Slot<T>;
 impl Slot<SessionSlot> { pub const fn pane(self) -> Slot<PaneSlot> {} }
 impl Slot<WindowSlot> { pub const fn pane(self) -> Slot<PaneSlot> {} }
