@@ -295,7 +295,7 @@ describe('rendered API badges', () => {
       const section = win.document.querySelector('section[aria-labelledby="method"]')!
       expect(section.textContent).toContain('declared with def')
       expect(section.textContent).toContain('extension method')
-      expect([...section.querySelectorAll('a')].map((link) => new URL(link.href).hostname)).toEqual(['docs.scala-lang.org', 'docs.scala-lang.org'])
+      expect([...section.querySelectorAll('p a')].map((link) => new URL(link.href).hostname)).toEqual(['docs.scala-lang.org', 'docs.scala-lang.org'])
       expect(win.document.body.textContent).not.toMatch(/Python|Julia/)
       expect(win.document.querySelector('a[href$=".json"]')!.getAttribute('href')).toBe(`${path.slice(0, -1)}.json`)
       expect(Boolean(win.document.querySelector('#readOnlyHint'))).toBe(product === 'mcp/')
