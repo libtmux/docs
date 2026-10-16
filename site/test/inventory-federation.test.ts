@@ -3,7 +3,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { readInventory } from '@libtmux/api-model'
-import { API_MODELS, indexFor } from '../src/lib/api-models'
+import { API_MODELS, createApiIndex, indexFor } from '../src/lib/api-models'
 import { productApiIndex } from '../src/lib/product-api'
 import { createProseLinker } from '../src/lib/prose-resolver'
 
@@ -278,4 +278,20 @@ describe('each sidecar agrees with the .inv beside it', () => {
     const mismatched = sidecar.e.filter(([n, u]) => !fromInv.has(key(n, u)))
     expect(mismatched.slice(0, 3), `${name}: URIs differ`).toEqual([])
   })
+})
+
+
+it.fails('resolves ReadOnly through its pinned dependency source and preserves local identity', () => {
+  const model = API_MODELS.java
+  const source = 'https://github.com/JetBrains/kotlin/blob/5687445832cd835b4509b9fbc264cdf1a8201093/libraries/tools/kotlin-annotations-jvm/src/kotlin/annotations/jvm/ReadOnly.java#L28'
+  const index = createApiIndex(model, href)
+  for (const name of ['ReadOnly', 'kotlin.annotations.jvm.ReadOnly']) {
+    expect(index.resolve(name, 'class')).toMatchObject({ external: true, href: source, project: 'Kotlin JVM annotations source' })
+  }
+  const local = { id: 'example.ReadOnly', qualifiedName: 'example.ReadOnly', name: 'ReadOnly', kind: 'interface' as const, modifiers: [], signatures: [], source: { file: 'ReadOnly.java' } }
+  const scoped = createApiIndex({ ...model, symbols: [...model.symbols, local] }, href)
+  expect(scoped.resolve('ReadOnly', 'class', local)?.symbol?.id).toBe(local.id)
+  expect(scoped.resolve('kotlin.annotations.jvm.ReadOnly', 'class', local)?.href).toBe(source)
+  expect(createApiIndex(API_MODELS.go, href).resolve('kotlin.annotations.jvm.ReadOnly')).toBeUndefined()
+  expect(index.resolve('MissingAnnotation', 'class')).toBeUndefined()
 })
