@@ -90,6 +90,40 @@ const cases = [
 ] as const
 let componentPromise: ReturnType<typeof signatureComponent> | undefined
 
+it.fails.each([
+  'generated.PaneFields.id', 'Pane.id',
+  'generated.PaneFields.active', 'Pane.active',
+  'generated.SessionFields.windows', 'Session.windows',
+  'generated.WindowFields.session', 'Window.session',
+])('renders the Scala return continuation in %s with native links', async (suffix) => {
+  const model = JSON.parse(readFileSync(new URL('../src/data/api/scala.json', import.meta.url), 'utf8')) as ApiModel
+  const symbol = model.symbols.find((entry) => entry.id === `io.github.libtmux.scaladsl.${suffix}`)!
+  const signatureLayouts = await apiSignatureLayouts(symbol, 'scala')
+  const index = new SymbolIndex(model.symbols, (entry) => `/en/scala/latest/reference/${entry.slug}/`, 'scala')
+  const java = JSON.parse(readFileSync(new URL('../src/data/api/java.json', import.meta.url), 'utf8')) as ApiModel
+  index.addInventory('', parentInventory(java, (entry) => `/en/java/latest/reference/${entry.slug}/`), ['scala'], 'libtmux Java')
+  const container = await experimental_AstroContainer.create()
+  const win = new Window()
+  try {
+    const component = await (componentPromise ??= signatureComponent())
+    win.document.body.innerHTML = (await Promise.all(symbol.signatures.map((sig) => container.renderToString(component, {
+      props: { symbol, sig, port: 'scala', language: 'scala', index, signatureLayouts, nativeSignatureText },
+    })))).join('')
+    const declarations = [...win.document.querySelectorAll('.api-native-signature')]
+    expect(declarations.map((element) => element.getAttribute('data-code-width-status'))).toEqual(symbol.signatures.map(() => 'fits'))
+    expect(declarations.map((element) => element.getAttribute('data-code-columns'))).toEqual(symbol.signatures.map(() => '60'))
+    expect(declarations.map(displayedSignature)).toEqual([...signatureLayouts.values()].map((layout) => layout.text))
+    expect([...win.document.querySelectorAll('a.api-parameter-name')].map((link) => [link.textContent, link.getAttribute('href')]))
+      .toEqual(symbol.signatures.flatMap((signature) => signature.params.map((param) => [param.name, `#${encodeURIComponent(parameterId(symbol, param.name))}`])))
+    const qualified = symbol.signatures[0]!.returns!.split('[')[0]!
+    const type = model.symbols.find((entry) => entry.id === qualified.replace(/^_root_\./, ''))!
+    expect([...win.document.querySelectorAll('a')].filter((link) => link.textContent === qualified).map((link) => link.getAttribute('href')))
+      .toEqual([`/en/scala/latest/reference/${type.slug}/`])
+    expect([...win.document.querySelectorAll('a')].filter((link) => link.textContent === symbol.name)).toEqual([])
+    expect(win.document.querySelector('a a')).toBeNull()
+  } finally { await win.happyDOM.abort() }
+})
+
 it.each([
   'Pane.capture', 'cats.Pane.capture', 'Server.cmd', 'cats.Server.cmd',
 ])('renders the Scala parameter continuation in %s with native links', async (suffix) => {

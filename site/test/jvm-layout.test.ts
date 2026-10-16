@@ -89,6 +89,185 @@ const scalaParameterLayouts = [
   ): Window`],
 ] as const
 
+const scalaReturnLayouts = [
+  ['io.github.libtmux.scaladsl.generated.PaneFields.id', 0, `def id:
+  _root_.io.github.libtmux.scaladsl.query.Fields.TextField[
+    JavaPane
+  ]`],
+  ['io.github.libtmux.scaladsl.generated.PaneFields.command', 0, `def command:
+  _root_.io.github.libtmux.scaladsl.query.Fields.TextField[
+    JavaPane
+  ]`],
+  ['io.github.libtmux.scaladsl.generated.PaneFields.active', 0, `def active:
+  _root_.io.github.libtmux.scaladsl.query.Fields.FlagField[
+    JavaPane
+  ]`],
+  ['io.github.libtmux.scaladsl.generated.PaneFields.title', 0, `def title:
+  _root_.io.github.libtmux.scaladsl.query.Fields.TextField[
+    JavaPane
+  ]`],
+  ['io.github.libtmux.scaladsl.generated.PaneFields.path', 0, `def path:
+  _root_.io.github.libtmux.scaladsl.query.Fields.TextField[
+    JavaPane
+  ]`],
+  ['io.github.libtmux.scaladsl.generated.PaneFields.atTop', 0, `def atTop:
+  _root_.io.github.libtmux.scaladsl.query.Fields.FlagField[
+    JavaPane
+  ]`],
+  ['io.github.libtmux.scaladsl.generated.PaneFields.atBottom', 0, `def atBottom:
+  _root_.io.github.libtmux.scaladsl.query.Fields.FlagField[
+    JavaPane
+  ]`],
+  ['io.github.libtmux.scaladsl.generated.PaneFields.atLeft', 0, `def atLeft:
+  _root_.io.github.libtmux.scaladsl.query.Fields.FlagField[
+    JavaPane
+  ]`],
+  ['io.github.libtmux.scaladsl.generated.PaneFields.atRight', 0, `def atRight:
+  _root_.io.github.libtmux.scaladsl.query.Fields.FlagField[
+    JavaPane
+  ]`],
+  ['io.github.libtmux.scaladsl.generated.SessionFields.id', 0, `def id:
+  _root_.io.github.libtmux.scaladsl.query.Fields.TextField[
+    JavaSession
+  ]`],
+  ['io.github.libtmux.scaladsl.generated.SessionFields.name', 0, `def name:
+  _root_.io.github.libtmux.scaladsl.query.Fields.TextField[
+    JavaSession
+  ]`],
+  ['io.github.libtmux.scaladsl.generated.SessionFields.attached', 0, `def attached:
+  _root_.io.github.libtmux.scaladsl.query.Fields.FlagField[
+    JavaSession
+  ]`],
+  ['io.github.libtmux.scaladsl.generated.SessionFields.windows', 0, `def windows:
+  _root_.io.github.libtmux.scaladsl.query.Fields.ToManyRef[
+    JavaSession,
+    JavaWindow
+  ]`],
+  ['io.github.libtmux.scaladsl.generated.WindowFields.id', 0, `def id:
+  _root_.io.github.libtmux.scaladsl.query.Fields.TextField[
+    JavaWindow
+  ]`],
+  ['io.github.libtmux.scaladsl.generated.WindowFields.name', 0, `def name:
+  _root_.io.github.libtmux.scaladsl.query.Fields.TextField[
+    JavaWindow
+  ]`],
+  ['io.github.libtmux.scaladsl.generated.WindowFields.active', 0, `def active:
+  _root_.io.github.libtmux.scaladsl.query.Fields.FlagField[
+    JavaWindow
+  ]`],
+  ['io.github.libtmux.scaladsl.generated.WindowFields.linked', 0, `def linked:
+  _root_.io.github.libtmux.scaladsl.query.Fields.FlagField[
+    JavaWindow
+  ]`],
+  ['io.github.libtmux.scaladsl.generated.WindowFields.panes', 0, `def panes:
+  _root_.io.github.libtmux.scaladsl.query.Fields.ToManyRef[
+    JavaWindow,
+    JavaPane
+  ]`],
+  ['io.github.libtmux.scaladsl.generated.WindowFields.session', 0, `def session:
+  _root_.io.github.libtmux.scaladsl.query.Fields.ToOneRef[
+    JavaWindow,
+    JavaSession
+  ]`],
+  ['io.github.libtmux.scaladsl.generated.ClientFields.name', 0, `def name:
+  _root_.io.github.libtmux.scaladsl.query.Fields.TextField[
+    JavaClient
+  ]`],
+  ['io.github.libtmux.scaladsl.generated.ClientFields.session', 0, `def session:
+  _root_.io.github.libtmux.scaladsl.query.Fields.ToOneRef[
+    JavaClient,
+    JavaSession
+  ]`],
+  ['io.github.libtmux.scaladsl.Client.name', 0, `def name:
+  _root_.io.github.libtmux.scaladsl.query.Fields.TextField[
+    JavaClient
+  ]`],
+  ['io.github.libtmux.scaladsl.Client.session', 0, `def session:
+  _root_.io.github.libtmux.scaladsl.query.Fields.ToOneRef[
+    JavaClient,
+    JavaSession
+  ]`],
+  ['io.github.libtmux.scaladsl.Pane.id', 0, `def id:
+  _root_.io.github.libtmux.scaladsl.query.Fields.TextField[
+    JavaPane
+  ]`],
+  ['io.github.libtmux.scaladsl.Pane.command', 0, `def command:
+  _root_.io.github.libtmux.scaladsl.query.Fields.TextField[
+    JavaPane
+  ]`],
+  ['io.github.libtmux.scaladsl.Pane.active', 0, `def active:
+  _root_.io.github.libtmux.scaladsl.query.Fields.FlagField[
+    JavaPane
+  ]`],
+  ['io.github.libtmux.scaladsl.Pane.title', 0, `def title:
+  _root_.io.github.libtmux.scaladsl.query.Fields.TextField[
+    JavaPane
+  ]`],
+  ['io.github.libtmux.scaladsl.Pane.path', 0, `def path:
+  _root_.io.github.libtmux.scaladsl.query.Fields.TextField[
+    JavaPane
+  ]`],
+  ['io.github.libtmux.scaladsl.Pane.atTop', 0, `def atTop:
+  _root_.io.github.libtmux.scaladsl.query.Fields.FlagField[
+    JavaPane
+  ]`],
+  ['io.github.libtmux.scaladsl.Pane.atBottom', 0, `def atBottom:
+  _root_.io.github.libtmux.scaladsl.query.Fields.FlagField[
+    JavaPane
+  ]`],
+  ['io.github.libtmux.scaladsl.Pane.atLeft', 0, `def atLeft:
+  _root_.io.github.libtmux.scaladsl.query.Fields.FlagField[
+    JavaPane
+  ]`],
+  ['io.github.libtmux.scaladsl.Pane.atRight', 0, `def atRight:
+  _root_.io.github.libtmux.scaladsl.query.Fields.FlagField[
+    JavaPane
+  ]`],
+  ['io.github.libtmux.scaladsl.Session.id', 0, `def id:
+  _root_.io.github.libtmux.scaladsl.query.Fields.TextField[
+    JavaSession
+  ]`],
+  ['io.github.libtmux.scaladsl.Session.name', 0, `def name:
+  _root_.io.github.libtmux.scaladsl.query.Fields.TextField[
+    JavaSession
+  ]`],
+  ['io.github.libtmux.scaladsl.Session.attached', 0, `def attached:
+  _root_.io.github.libtmux.scaladsl.query.Fields.FlagField[
+    JavaSession
+  ]`],
+  ['io.github.libtmux.scaladsl.Session.windows', 0, `def windows:
+  _root_.io.github.libtmux.scaladsl.query.Fields.ToManyRef[
+    JavaSession,
+    JavaWindow
+  ]`],
+  ['io.github.libtmux.scaladsl.Window.id', 0, `def id:
+  _root_.io.github.libtmux.scaladsl.query.Fields.TextField[
+    JavaWindow
+  ]`],
+  ['io.github.libtmux.scaladsl.Window.name', 0, `def name:
+  _root_.io.github.libtmux.scaladsl.query.Fields.TextField[
+    JavaWindow
+  ]`],
+  ['io.github.libtmux.scaladsl.Window.active', 0, `def active:
+  _root_.io.github.libtmux.scaladsl.query.Fields.FlagField[
+    JavaWindow
+  ]`],
+  ['io.github.libtmux.scaladsl.Window.linked', 0, `def linked:
+  _root_.io.github.libtmux.scaladsl.query.Fields.FlagField[
+    JavaWindow
+  ]`],
+  ['io.github.libtmux.scaladsl.Window.panes', 0, `def panes:
+  _root_.io.github.libtmux.scaladsl.query.Fields.ToManyRef[
+    JavaWindow,
+    JavaPane
+  ]`],
+  ['io.github.libtmux.scaladsl.Window.session', 0, `def session:
+  _root_.io.github.libtmux.scaladsl.query.Fields.ToOneRef[
+    JavaWindow,
+    JavaSession
+  ]`],
+] as const
+
 let scalaExtraction: Promise<ApiModel> | undefined
 async function extractedScala() {
   return scalaExtraction ??= (async () => {
@@ -128,6 +307,46 @@ const method = (raw: string, params: Signature['params'] = [], typeParams?: stri
 })
 
 describe('Scala and Kotlin callable layouts', () => {
+  it.fails.each(scalaReturnLayouts)('fits the extracted Scala return continuation in %s', async (id, ordinal, expected) => {
+    const symbol = scalaModel.symbols.find((entry) => entry.id === id)!
+    const source = (await extractedScala()).symbols.find((entry) => entry.id === (symbol.exportedFrom ?? id))!
+    const signature = symbol.signatures[ordinal]!
+    expect(signature).toEqual(source.signatures[0])
+    const before = JSON.stringify(symbol)
+    const layouts = await apiSignatureLayouts(symbol, 'scala')
+    const layout = layouts.get(signature)!
+    expect(layout.failures).toEqual([])
+    expect(layout.text).toBe(expected)
+    expect(JSON.stringify(symbol)).toBe(before)
+    const parser = await parserFor('scala')
+    const input = parser.parse(signature.raw!)!
+    const output = parser.parse(layout.text)!
+    try {
+      expect(input.rootNode.hasError || output.rootNode.hasError).toBe(false)
+      expect(output.rootNode.toString()).toBe(input.rootNode.toString())
+    } finally { input.delete(); output.delete(); parser.delete() }
+    const index = new SymbolIndex(scalaModel.symbols, (entry) => `/en/scala/latest/reference/${entry.slug}/`, 'scala')
+    index.addInventory('', parentInventory(javaModel, (entry) => `/en/java/latest/reference/${entry.slug}/`), ['scala'], 'libtmux Java')
+    const spans = signatureSpans(layout, index, symbol, signature)
+    expect(spans.map((span) => span.text).join('')).toBe(expected)
+    expect(spans.filter((span) => span.declarationName).map((span) => span.text)).toEqual([symbol.name])
+    expect(spans.filter((span) => span.link?.href.startsWith('#'))).toEqual([])
+    const qualified = signature.returns!.split('[')[0]!
+    const nativeType = scalaModel.symbols.find((entry) => entry.id === qualified.replace(/^_root_\./, ''))!
+    expect(spans.filter((span) => span.text === qualified).map((span) => span.link?.href))
+      .toEqual([`/en/scala/latest/reference/${nativeType.slug}/`])
+    for (const name of signature.returns!.match(/\[([^\]]+)\]/)![1]!.split(', ')) {
+      const native = javaModel.symbols.find((entry) => entry.kind === 'class' && entry.qualifiedName === `io.github.libtmux.${name.replace(/^Java/, '')}`)!
+      expect(spans.filter((span) => span.text === name).map((span) => span.link?.href))
+        .toEqual([`/en/java/latest/reference/${native.slug}/`])
+    }
+    const again = { ...symbol, signatures: [{ ...signature, raw: layout.text }] }
+    expect([...(await apiSignatureLayouts(again, 'scala')).values()][0]!.text).toBe(expected)
+    const markdown = fromMarkdown(await symbolMarkdownWithLayout({ model: scalaModel, symbol }))
+    const code = markdown.children.find((node) => node.type === 'code')
+    expect(code?.type === 'code' && code.value).toBe([...layouts.values()].map((item) => item.text).join('\n\n'))
+  })
+
   it.each([
     'io.github.example.QualifiedTarget',
     '=> io.github.example.QualifiedTarget',
