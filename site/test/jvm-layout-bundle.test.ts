@@ -7,7 +7,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { expect, it } from 'vitest'
 import type { ApiModel } from '@libtmux/api-model'
 
-it.fails('resolves native callable grammars and the parser runtime after SSR bundling', async () => {
+it('resolves native callable grammars and the parser runtime after SSR bundling', async () => {
   const root = fileURLToPath(new URL('../', import.meta.url))
   const require = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
   const { build } = await import(/* @vite-ignore */ pathToFileURL(require.resolve('vite')).href)

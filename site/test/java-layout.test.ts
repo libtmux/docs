@@ -33,7 +33,7 @@ async function sameGrammar(before: string, after: string) {
 }
 
 describe('Java callable layouts', () => {
-  it.fails('prints both native sessions overloads under the API cap in HTML and Markdown preparation', async () => {
+  it('prints both native sessions overloads under the API cap in HTML and Markdown preparation', async () => {
     const symbol = model.symbols.find((entry) => entry.id === 'io.github.libtmux.Server.Server.sessions')!
     expect(usesNativeSignatures(symbol, 'java')).toBe(true)
     const layouts = await apiSignatureLayouts(symbol, 'java')
@@ -48,7 +48,7 @@ describe('Java callable layouts', () => {
     expect(signature?.type === 'code' && signature.value).toBe(expected.join('\n\n'))
   })
 
-  it.fails('retains the real varargs overload and each parameter destination', async () => {
+  it('retains the real varargs overload and each parameter destination', async () => {
     const symbol = model.symbols.find((entry) => entry.id === 'io.github.libtmux.batch.Batch.Batch.add')!
     const layouts = await apiSignatureLayouts(symbol, 'java')
     expect([...layouts.values()].map((layout) => layout.text)).toEqual([
@@ -56,15 +56,21 @@ describe('Java callable layouts', () => {
       '@Operation(Kind.CAPTURED)\npublic Batch add(List<String> argv)',
     ])
     const index = new SymbolIndex(model.symbols, (entry) => `/${entry.slug}/`, 'java')
+    const inventory = JSON.parse(readFileSync(new URL('../src/data/inventories/jdk.entries.json', import.meta.url), 'utf8')) as { e: [string, string][] }
+    index.addInventory('https://docs.oracle.com/en/java/javase/21/docs/api/', inventory.e.map(([name, uri]) => ({
+      name, uri, type: 'std:label', priority: 1, dispname: '-',
+    })), ['java'], 'Java SE')
     for (const signature of symbol.signatures) {
       const spans = signatureSpans(layouts.get(signature)!, index, symbol, signature)
       expect(spans.filter((span) => span.text === 'add')).toEqual([{ text: 'add', declaration: true, declarationName: true }])
       expect(spans.filter((span) => span.link?.href.startsWith('#')).map((span) => [span.text, span.link!.href]))
         .toEqual([['argv', '#io.github.libtmux.batch.Batch.Batch.add.parameter.argv']])
+      expect(spans.filter((span) => span.text === 'String').map((span) => span.link?.href))
+        .toEqual(['https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html'])
     }
   })
 
-  it.fails.each([
+  it.each([
     'public <T extends Target & Comparable<T>> Map<String, List<? super T[]>> method(final List<T> values, Target... rest) throws java.io.IOException, IllegalArgumentException',
     'public Probe(@Marker Target value, String... rest)',
     'abstract Target method(Target value[])[];',
@@ -78,7 +84,7 @@ describe('Java callable layouts', () => {
     expect(layout.failures).toEqual(await codeWidthFailures(layout.text, 'api'))
   })
 
-  it.fails.each([
+  it.each([
     'public Target method(\n// Target explains value\nTarget value)',
     'public Target method(Target value // Target before close\n)',
     'public Target method(Target value) /* Target after header */',
@@ -101,7 +107,7 @@ describe('Java callable layouts', () => {
     expect(layout.failures).toEqual([])
   })
 
-  it.fails('shields locally bound type names while retaining their bound links', async () => {
+  it('shields locally bound type names while retaining their bound links', async () => {
     const symbol = method('public <Target extends Bound> Target method(List<Target> value)', [{ name: 'value' }])
     const layout = await layoutFor(symbol)
     const index = new SymbolIndex([symbol, target('Target'), target('Bound'), target('List')], (entry) => `/${entry.id}/`, 'java')
@@ -111,7 +117,7 @@ describe('Java callable layouts', () => {
     expect(spans.filter((span) => span.link?.href === '/List/')).toHaveLength(1)
   })
 
-  it.fails('reports an indivisible overlong token instead of silently treating it as compliant', async () => {
+  it('reports an indivisible overlong token instead of silently treating it as compliant', async () => {
     const name = 'Indivisible'.repeat(8)
     const symbol = method(`public ${name} method()`)
     const layout = await layoutFor(symbol)
@@ -120,7 +126,7 @@ describe('Java callable layouts', () => {
     expect(layout.failures).toEqual(await codeWidthFailures(layout.text, 'api'))
   })
 
-  it.fails('keeps native receiver syntax without adding a callable parameter', async () => {
+  it('keeps native receiver syntax without adding a callable parameter', async () => {
     const symbol = method('public Target method(Probe this, Target value)', [{ name: 'value' }])
     const layout = await layoutFor(symbol)
     expect(layout.text).toBe(symbol.signatures[0]!.raw)
@@ -130,7 +136,7 @@ describe('Java callable layouts', () => {
     expect(spans.filter((span) => span.link?.href === '/Probe/')).toHaveLength(1)
   })
 
-  it.fails('respects neighboring surface widths without an unstable or wider fallback', async () => {
+  it('respects neighboring surface widths without an unstable or wider fallback', async () => {
     const limits = CODE_COLUMNS as { api: number; example: number }
     const symbol = model.symbols.find((entry) => entry.id === 'io.github.libtmux.Server.Server.sessions')!
     try {
@@ -149,7 +155,7 @@ describe('Java callable layouts', () => {
     } finally { limits.api = 60 }
   })
 
-  it.fails('does not rename a source declaration or manufacture a parameter binding', async () => {
+  it('does not rename a source declaration or manufacture a parameter binding', async () => {
     await expect(apiSignatureLayouts(method('public Target different()'), 'java')).rejects.toThrow(/declaration/)
     await expect(apiSignatureLayouts(method('public Target method(Target actual)', [{ name: 'invented' }]), 'java')).rejects.toThrow(/parameter/)
     await expect(apiSignatureLayouts(method('public Target method(Target broken<'), 'java')).rejects.toThrow(/grammar/)

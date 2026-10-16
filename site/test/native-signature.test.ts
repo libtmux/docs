@@ -68,7 +68,7 @@ const cases = [
 ] as const
 let componentPromise: ReturnType<typeof signatureComponent> | undefined
 
-it.fails.each([
+it.each([
   ['io.github.libtmux.Server.Server.sessions', 'expression', 'FilterExpr'],
   ['io.github.libtmux.batch.Batch.Batch.add', 'argv', 'Batch'],
 ])('renders the native Java %s overloads with owned parameter anchors', async (id, parameter, typeName) => {
@@ -78,6 +78,10 @@ it.fails.each([
   const signatureLayouts = await apiSignatureLayouts(symbol, 'java')
   const hrefFor = (entry: ApiSymbol) => `/en/java/latest/reference/${entry.slug}/`
   const index = new SymbolIndex(model.symbols, hrefFor, 'java')
+  const inventory = JSON.parse(readFileSync(new URL('../src/data/inventories/jdk.entries.json', import.meta.url), 'utf8')) as { e: [string, string][] }
+  index.addInventory('https://docs.oracle.com/en/java/javase/21/docs/api/', inventory.e.map(([name, uri]) => ({
+    name, uri, type: 'std:label', priority: 1, dispname: '-',
+  })), ['java'], 'Java SE')
   const container = await experimental_AstroContainer.create()
   const win = new Window()
   try {
@@ -99,6 +103,10 @@ it.fails.each([
     const expectedTarget = model.symbols.find((entry) => entry.name === typeName && ['class', 'interface'].includes(entry.kind))!
     expect([...win.document.querySelectorAll('a')].filter((link) => link.textContent === typeName)
       .map((link) => link.getAttribute('href'))).toContain(hrefFor(expectedTarget))
+    const standardType = parameter === 'argv' ? 'String' : 'List'
+    const standardHref = `https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/${standardType === 'String' ? 'lang' : 'util'}/${standardType}.html`
+    expect([...win.document.querySelectorAll('a')].filter((link) => link.textContent === standardType)
+      .map((link) => link.getAttribute('href'))).toEqual(symbol.signatures.map(() => standardHref))
     const links = [...win.document.querySelectorAll('a.api-parameter-name')]
     expect(links.map((link) => [link.textContent, link.getAttribute('href')])).toEqual(
       symbol.signatures.filter((signature) => signature.params.some((param) => param.name === parameter))
