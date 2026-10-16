@@ -57,8 +57,7 @@ function run(dir, ceilings, extra = [], omit = []) {
 }
 
 let failures = 0
-const check = (name, ok, detail, expectedFailure = false) => {
-  if (expectedFailure) ok = !ok
+const check = (name, ok, detail) => {
   if (ok) console.log(`ok   ${name}`)
   else {
     console.error(`FAIL ${name} — ${detail}`)
@@ -220,12 +219,12 @@ for (const quote of ["'", '"']) {
     '<span class="api-punct" data-api-role="syntax">s8CopyableP</span></span>'
   const dir = site({ markup })
   const { code, out } = run(dir, 99)
-  check('quoted HTML comments cannot hide a visible mangled id', code !== 0 && out.includes('s:s8CopyableP'), `exited ${code}:\n${out}`, true)
+  check('quoted HTML comments cannot hide a visible mangled id', code !== 0 && out.includes('s:s8CopyableP'), `exited ${code}:\n${out}`)
   rmSync(dir, { recursive: true, force: true })
 
   const unknown = site({ markup: `<span class="api-type"><span class="api-punct">Un${comment}known</span></span>` })
   const result = run(unknown, 0)
-  check('quoted HTML comments cannot hide a visible unknown type', result.code !== 0 && result.out.includes('Unknown(1)'), `exited ${result.code}:\n${result.out}`, true)
+  check('quoted HTML comments cannot hide a visible unknown type', result.code !== 0 && result.out.includes('Unknown(1)'), `exited ${result.code}:\n${result.out}`)
   rmSync(unknown, { recursive: true, force: true })
 }
 
