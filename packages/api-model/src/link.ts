@@ -640,8 +640,7 @@ export class SymbolIndex {
       for (const name of signatures.flatMap((entry) => entry.typeParamNames ?? [])) boundTypes.add(name)
       for (let scope = context; scope; scope = scope.parent ? this.byDeclared.get(scope.parent) : undefined) {
         for (const name of scope.typeParamNames ?? []) boundTypes.add(name)
-        const staticBoundary = scope === context && signatures.length && signatures.every((entry) => entry.typeScopeBoundary !== undefined)
-          ? signatures.every((entry) => entry.typeScopeBoundary) : scope.modifiers.includes('static')
+        const staticBoundary = scope === context && signatures.length && signatures.every((entry) => entry.typeScopeBoundary === true)
         if (scope.typeScopeBoundary || staticBoundary) break
       }
     }

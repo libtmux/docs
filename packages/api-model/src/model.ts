@@ -230,7 +230,7 @@ export interface ApiSymbol {
   name: string
   kind: SymbolKind
   modifiers: Modifier[]
-  /** Native nested-type boundary excludes enclosing type-parameter bindings. */
+  /** Whether this native owner or field excludes enclosing type-parameter bindings. */
   typeScopeBoundary?: boolean
   /** Enclosing symbol's id, or undefined at module level. */
   parent?: string

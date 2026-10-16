@@ -133,8 +133,8 @@ export interface LanguageSpec {
   typeParameterNames?: (node: Node) => string[] | undefined
   /** Modifiers implied by the native declaration rather than a written keyword. */
   declarationModifiers?: (node: Node) => Modifier[]
-  /** A nested type whose grammar excludes enclosing type-variable bindings. */
-  typeScopeBoundary?: (node: Node) => boolean
+  /** Whether a native owner or field excludes enclosing type-variable bindings. */
+  typeScopeBoundary?: (node: Node) => boolean | undefined
   /** A callable boundary independent of the shared symbol's other overloads. */
   signatureTypeScopeBoundary?: (node: Node) => boolean | undefined
   /** Native enum cases own named or positional fields without a callable signature. */
@@ -350,6 +350,7 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
     const id = parent ? `${parent}.${name}` : `${ctx.module}.${name}`
     const raw = docCommentFor(child, spec)
     const modifiers = modifiersFor(child, spec)
+    const scopeBoundary = spec.typeScopeBoundary?.(child)
 
     if (containerKind) {
       const accessors = spec.recordAccessors?.(child)
@@ -362,7 +363,7 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
         modifiers,
         parent,
         signatures,
-        ...(spec.typeScopeBoundary?.(child) ? { typeScopeBoundary: true } : {}),
+        ...(scopeBoundary !== undefined ? { typeScopeBoundary: scopeBoundary } : {}),
         ...(spec.typeParameterNames?.(child) ? {
           typeParams: child.childForFieldName('type_parameters')!.namedChildren.flatMap((node) => node && !spec.commentTypes.includes(node.type) ? [node.text] : []),
           typeParamNames: spec.typeParameterNames(child),
@@ -432,6 +433,7 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
       modifiers,
       parent: owner,
       signatures: memberSignatures,
+      ...(scopeBoundary !== undefined ? { typeScopeBoundary: scopeBoundary } : {}),
       ...(variant ? { variant: variant.shape } : {}),
       type: hasParams ? undefined : child.childForFieldName('type') && spec.typeText
         ? spec.typeText(child.childForFieldName('type')!)
