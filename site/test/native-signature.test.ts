@@ -68,6 +68,46 @@ const cases = [
 ] as const
 let componentPromise: ReturnType<typeof signatureComponent> | undefined
 
+it.fails.each([
+  ['io.github.libtmux.Server.Server.sessions', 'expression', 'FilterExpr'],
+  ['io.github.libtmux.batch.Batch.Batch.add', 'argv', 'Batch'],
+])('renders the native Java %s overloads with owned parameter anchors', async (id, parameter, typeName) => {
+  const model = JSON.parse(readFileSync(new URL('../src/data/api/java.json', import.meta.url), 'utf8')) as ApiModel
+  const symbol = model.symbols.find((entry) => entry.id === id)!
+  expect(usesNativeSignatures(symbol, 'java')).toBe(true)
+  const signatureLayouts = await apiSignatureLayouts(symbol, 'java')
+  const hrefFor = (entry: ApiSymbol) => `/en/java/latest/reference/${entry.slug}/`
+  const index = new SymbolIndex(model.symbols, hrefFor, 'java')
+  const container = await experimental_AstroContainer.create()
+  const win = new Window()
+  try {
+    const component = await (componentPromise ??= signatureComponent())
+    const fragments = await Promise.all(symbol.signatures.map((sig) => container.renderToString(
+      component, {
+        props: { symbol, sig, port: 'java', language: 'java', index, signatureLayouts, nativeSignatureText },
+      },
+    )))
+    win.document.body.innerHTML = fragments.join('')
+    const signatures = [...win.document.querySelectorAll('.api-native-signature')]
+    expect(signatures.map(displayedSignature)).toEqual([...signatureLayouts.values()].map((layout) => layout.text))
+    expect(signatures).toHaveLength(symbol.signatures.length)
+    for (const signature of signatures) {
+      expect(signature.getAttribute('data-code-columns')).toBe('60')
+      expect(signature.getAttribute('data-code-width-status')).toBe('fits')
+      expect([...signature.querySelectorAll('a')].filter((link) => link.textContent === symbol.name)).toEqual([])
+    }
+    const expectedTarget = model.symbols.find((entry) => entry.name === typeName && ['class', 'interface'].includes(entry.kind))!
+    expect([...win.document.querySelectorAll('a')].filter((link) => link.textContent === typeName)
+      .map((link) => link.getAttribute('href'))).toContain(hrefFor(expectedTarget))
+    const links = [...win.document.querySelectorAll('a.api-parameter-name')]
+    expect(links.map((link) => [link.textContent, link.getAttribute('href')])).toEqual(
+      symbol.signatures.filter((signature) => signature.params.some((param) => param.name === parameter))
+        .map(() => [parameter, `#${encodeURIComponent(parameterId(symbol, parameter))}`]),
+    )
+    expect(win.document.querySelector('a a')).toBeNull()
+  } finally { await win.happyDOM.abort() }
+})
+
 async function scalaObserverFixture() {
   const model = JSON.parse(readFileSync(new URL('../src/data/api/scala.json', import.meta.url), 'utf8')) as ApiModel
   const symbol = model.symbols.find((entry) => entry.id === 'io.github.libtmux.scaladsl.Server.windows')!
