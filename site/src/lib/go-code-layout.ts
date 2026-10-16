@@ -48,7 +48,7 @@ function fingerprint(node: NativeNode): unknown {
   return [node.type, parts, node.text.slice(offset).replace(/\s/g, '')]
 }
 
-function printHeader(root: NativeNode): string {
+function printHeader(root: NativeNode, breakSingleTypeArguments = false): string {
   const documents = new Map<string, Doc>()
   const gap = (left: NativeNode, right: NativeNode): string => root.text.slice(left.endIndex - root.startIndex, right.startIndex - root.startIndex)
   const sequence = (nodes: NativeNode[], breakLists: number[] = []): Doc => nodes.flatMap((node, index) => {
@@ -57,8 +57,8 @@ function printHeader(root: NativeNode): string {
     return [previous && isLineComment(previous) ? hardline : /\S/.test(sourceGap) ? sourceGap : sourceGap ? ' ' : '', print(node, breakLists.includes(node.id))]
   })
   const printList = (node: NativeNode, shouldBreak: boolean): Doc => {
-    // gofmt collapses a sole type argument even when it was authored multiline.
-    if (node.type === 'type_arguments' && node.namedChildren.filter((child) => child && !isComment(child)).length === 1) return node.text
+    // Prefer native spacing until the measured header exceeds the docs cap.
+    if (!breakSingleTypeArguments && node.type === 'type_arguments' && node.namedChildren.filter((child) => child && !isComment(child)).length === 1) return node.text
     const nodes = children(node)
     const inside = nodes.slice(1, -1)
     const lastValue = inside.findLastIndex((child) => child.type !== ',' && !isComment(child))
@@ -164,13 +164,23 @@ async function formatHeader(symbol: ApiSymbol, signature: Signature): Promise<Co
         owner.childForFieldName('name')?.text !== symbol.name || JSON.stringify(names) !== JSON.stringify(signature.params.map((param) => param.name))) {
       throw new Error(`Go callable header binding disagrees with the model: ${signature.raw}`)
     }
-    const text = printHeader(input.rootNode)
+    let text = printHeader(input.rootNode)
+    let failures = await codeWidthFailures(text, 'api')
+    if (failures.length) {
+      // gofmt has no width option and collapses these valid multiline groups.
+      const narrowed = printHeader(input.rootNode, true)
+      const remaining = await codeWidthFailures(narrowed, 'api')
+      if (Math.max(0, ...remaining.map((failure) => failure.columns)) < Math.max(...failures.map((failure) => failure.columns))) {
+        text = narrowed
+        failures = remaining
+      }
+    }
     output = parser.parse(text)
     if (!output || output.rootNode.hasError || JSON.stringify(fingerprint(input.rootNode)) !== JSON.stringify(fingerprint(output.rootNode))) {
       throw new Error(`Formatting changed Go callable header grammar: ${signature.raw}`)
     }
     const formatted = output.rootNode.namedChildren.find((node) => node && !isComment(node))!
-    return { text, limit: CODE_COLUMNS.api, failures: await codeWidthFailures(text, 'api'), syntax: syntaxRanges(output.rootNode, formatted, signature) }
+    return { text, limit: CODE_COLUMNS.api, failures, syntax: syntaxRanges(output.rootNode, formatted, signature) }
   } finally {
     input?.delete(); output?.delete(); parser.delete()
   }
