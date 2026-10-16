@@ -166,8 +166,8 @@ describe('Java record component boundaries', () => {
     const constructor = symbols.find((symbol) => symbol.id === 'example.SelfName.SelfName')!
     const accessor = symbols.find((symbol) => symbol.id === 'example.SelfName.SelfName()')!
     expect(constructor.signatures).toEqual([
-      { raw: 'public SelfName(int SelfName)', params: [{ name: 'SelfName', type: 'int' }] },
-      { raw: 'public SelfName()', params: [] },
+      { raw: 'public SelfName(int SelfName)', params: [{ name: 'SelfName', type: 'int' }], typeScopeBoundary: false },
+      { raw: 'public SelfName()', params: [], typeScopeBoundary: false },
     ])
     expect(accessor.signatures).toEqual([{ params: [], returns: 'int' }])
     const index = new SymbolIndex(symbols, (symbol) => `/reference/${symbol.id}/`, 'java')
@@ -421,19 +421,21 @@ describe('Java source-qualified names', () => {
 
 describe('Java native annotation and lexical type identities', () => {
   it.fails.each([
-    ['inner owner', '@Marker("static") public class Inner { public T read() { return null; } }', 'read'],
-    ['constructor', '@Marker("static") public Outer(T value) {}', 'Outer'],
-    ['field', '@Marker("static") public T value;', 'value'],
+    ['inner owner', '@Marker("static") public class Inner { public T read() { return null; } }', 'example.Outer.Inner.read'],
+    ['constructor', '@Marker("static") public Outer(T value) {}', 'example.Outer.Outer'],
+    ['field', '@Marker("static") public T value;', 'example.Outer.value'],
   ])('retains enclosing bindings through an annotated %s', async (_label, declaration, member) => {
     const symbols = await extract(`package example;
       @interface Marker { String value(); }
       class T {}
       class Outer<T> { ${declaration} }
     `)
-    const symbol = symbols.find((entry) => entry.parent && entry.name === member)!
+    const symbol = symbols.find((entry) => entry.id === member)!
     const signature = symbol.signatures[0]
     const index = new SymbolIndex(symbols, (entry) => `/${entry.id}/`, 'java')
     expect(index.linkType('T', symbol, signature)).toEqual([{ text: 'T', declaration: true }])
+    const boundary = _label === 'inner owner' ? symbols.find((entry) => entry.name === 'Inner')! : signature ?? symbol
+    expect(boundary.typeScopeBoundary).toBe(false)
     expect(index.linkType('example.T', symbol, signature)[0].link?.symbol?.id).toBe('example.T')
     expect(index.linkType('Unknown', symbol, signature)).toEqual([{ text: 'Unknown', link: undefined }])
   })
@@ -538,15 +540,15 @@ public class Container { private @interface Hidden {} }
     const symbols = await extract(`public class Outer<T> {
       public T direct(T value) { return value; }
       public class Inner<R> { public T outer(R value) { return null; } }
-      public static class Nested<R> { public T unbound(R value) { return null; } }
-      public interface NestedInterface<R> { T unbound(R value); }
-      public record NestedRecord<R>(R value) { public T unbound() { return null; } }
+      public static class Nested<R> { public example.T unbound(R value) { return null; } }
+      public interface NestedInterface<R> { example.T unbound(R value); }
+      public record NestedRecord<R>(R value) { public example.T unbound() { return null; } }
       public enum NestedEnum { VALUE }
       public @interface NestedAnnotation { String value(); }
-      public static T unbound() { return null; }
+      public static example.T unbound() { return null; }
       public static <@Mark T extends Bound> T rebound(T value) { return value; }
     }
-    public interface InterfaceOwner<T> { class NestedClass { public T unbound() { return null; } } }
+    public interface InterfaceOwner<T> { class NestedClass { public example.T unbound() { return null; } } }
     public class T {} public class R {} public class Bound {} public @interface Mark {}`)
     const index = new SymbolIndex(symbols, (entry) => `/${entry.id}/`, 'java')
     for (const name of ['NestedInterface', 'NestedRecord', 'NestedEnum', 'NestedAnnotation', 'NestedClass']) {
@@ -554,7 +556,7 @@ public class Container { private @interface Hidden {} }
       expect(nested.typeScopeBoundary).toBe(true)
       expect(nested.modifiers).toEqual(name === 'NestedAnnotation' ? ['annotation'] : [])
     }
-    expect(symbols.find((entry) => entry.name === 'Inner')?.typeScopeBoundary).toBeUndefined()
+    expect(symbols.find((entry) => entry.name === 'Inner')?.typeScopeBoundary).toBe(false)
     expect(symbols.find((entry) => entry.name === 'Nested')?.modifiers).toEqual(['static'])
     for (const suffix of ['Outer.direct', 'Outer.Inner.outer', 'Outer.rebound']) {
       const symbol = symbols.find((entry) => entry.id === `example.${suffix}`)!
