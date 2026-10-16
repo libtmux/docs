@@ -126,7 +126,7 @@ describe('native tmux prose ownership', () => {
     expect(markdownOf(fixture(id, 'The value is `TMUX`.', data))).not.toContain('[`TMUX`](')
   })
 
-  it.fails.each(['guides', 'topics', 'concepts', 'examples'])('preserves canonical staged tmux %s in HTML and Markdown', async (section) => {
+  it.each(['guides', 'topics', 'concepts', 'examples'])('preserves canonical staged tmux %s in HTML and Markdown', async (section) => {
     const entry = fixture('_staged/native/canonical', 'The value is `TMUX`. Use `run-shell`.', {
       route: `tmux/${section}/canonical`,
     })

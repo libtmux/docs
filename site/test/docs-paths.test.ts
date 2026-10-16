@@ -16,7 +16,7 @@ describe('product document URLs', () => {
     expect(isTmuxProse({ id: `${section}/page`, data: { route: 'parity' } })).toBe(false)
   })
 
-  it.fails.each(['guides', 'topics', 'concepts', 'examples'])('recognizes already canonical tmux %s routes', (section) => {
+  it.each(['guides', 'topics', 'concepts', 'examples'])('recognizes already canonical tmux %s routes', (section) => {
     for (const path of [`tmux/${section}`, `tmux/${section}/nested/page`]) {
       const staged = { id: '_staged/native/canonical', data: { route: path } }
       expect(docsRoutePath(staged)).toBe(path)
