@@ -68,7 +68,7 @@ const cases = [
 ] as const
 let componentPromise: ReturnType<typeof signatureComponent> | undefined
 
-it.fails.each([
+it.each([
   'withServer', 'withControl', 'Server.control', 'Server.Companion.open',
   'Server.Companion.fromJava', 'Client.fetchAttachment', 'Server.liveState', 'Server.withLiveState',
 ])('renders the Kotlin %s header within the shared API width', async (suffix) => {

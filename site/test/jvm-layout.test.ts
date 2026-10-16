@@ -34,7 +34,7 @@ const method = (raw: string, params: Signature['params'] = [], typeParams?: stri
 })
 
 describe('Scala and Kotlin callable layouts', () => {
-  it.fails.each([
+  it.each([
     ['withServer', 'policy: ExecutionPolicy =\n        ExecutionPolicy.default(config),'],
     ['withControl', 'timeout: Duration =\n        server.config.defaultTimeout().toKotlinDuration(),'],
     ['Server.control', 'timeout: Duration =\n        config.defaultTimeout().toKotlinDuration(),'],
@@ -76,6 +76,86 @@ describe('Scala and Kotlin callable layouts', () => {
       const code = markdown.children.find((node) => node.type === 'code')
       expect(code?.type === 'code' && code.value).toBe(layout.text)
     } finally { rmSync(root, { recursive: true, force: true }) }
+  })
+
+  it.each([
+    ['String', '"Target = exact:  spaces"', 1],
+    ['Target', '/* Target = note */ Target()', 3],
+    ['Target', '// Target = note\n Target()', 3],
+    ['Target', 'Target() /* Target note */', 3],
+    ['String', '"""first\n  Target = exact: spaces\nlast"""', 1],
+    ['String', '"Target = ${Target()}"', 2],
+  ] as const)('preserves Kotlin default tokens and links for %s = %s', async (type, value, links) => {
+    const name = 'configurationValueWithAnExplicitDefault'
+    const raw = `public fun method(${name}: ${type} = ${value}): Target`
+    const symbol = method(raw, [{ name, type, default: value }])
+    const layout = (await apiSignatureLayouts(symbol, 'kotlin')).get(symbol.signatures[0]!)!
+    const parser = await parserFor('kotlin')
+    const before = parser.parse(raw)!
+    const after = parser.parse(layout.text)!
+    try {
+      expect(before.rootNode.hasError || after.rootNode.hasError).toBe(false)
+      expect(after.rootNode.toString()).toBe(before.rootNode.toString())
+      const literalKinds = ['string_literal', 'line_comment', 'multiline_comment']
+      expect(after.rootNode.descendantsOfType(literalKinds).map((node) => node && [node.type, node.text]))
+        .toEqual(before.rootNode.descendantsOfType(literalKinds).map((node) => node && [node.type, node.text]))
+      expect(layout.failures).toEqual([])
+      const target: ApiSymbol = { id: 'Target', name: 'Target', kind: 'class', modifiers: [], signatures: [], source: { file: 'probe' } }
+      const index = new SymbolIndex([symbol, target], (entry) => `/${entry.id}/`, 'kotlin')
+      const spans = signatureSpans(layout, index, symbol, symbol.signatures[0]!)
+      expect(spans.map((span) => span.text).join('')).toBe(layout.text)
+      expect(spans.filter((span) => span.link?.href === '/Target/')).toHaveLength(links)
+      expect(spans.filter((span) => span.link?.href.startsWith('#')).map((span) => span.link!.href))
+        .toEqual([`#Probe.method.parameter.${name}`])
+    } finally { before.delete(); after.delete(); parser.delete() }
+  })
+
+  it.each([
+    'Map<String, List<Target?>?>?',
+    '((Target?) -> List<Target?>)?',
+    '/* Target */ Target?',
+    '// Target\n Target?',
+  ])('retains Kotlin return grammar while wrapping %s', async (returns) => {
+    const raw = `public suspend fun ReceiverWithARealName.method(): ${returns}`
+    const symbol = method(raw)
+    const layout = (await apiSignatureLayouts(symbol, 'kotlin')).get(symbol.signatures[0]!)!
+    const parser = await parserFor('kotlin')
+    const before = parser.parse(raw)!
+    const after = parser.parse(layout.text)!
+    try {
+      expect(before.rootNode.hasError || after.rootNode.hasError).toBe(false)
+      expect(after.rootNode.toString()).toBe(before.rootNode.toString())
+      expect(layout.text.match(/\?/g)).toEqual(raw.match(/\?/g))
+      expect(layout.failures).toEqual([])
+      const again = method(layout.text)
+      expect([...(await apiSignatureLayouts(again, 'kotlin')).values()][0]!.text).toBe(layout.text)
+    } finally { before.delete(); after.delete(); parser.delete() }
+  })
+
+  it.each([58, 59, 60, 61, 62])('keeps compact Kotlin headers at the %s-column boundary', async (columns) => {
+    const name = `method${'X'.repeat(columns - 'public fun method(): Target'.length)}`
+    const raw = `public fun ${name}(): Target`
+    const symbol = { ...method(raw), name }
+    const layout = (await apiSignatureLayouts(symbol, 'kotlin')).get(symbol.signatures[0]!)!
+    expect(raw.length).toBe(columns)
+    expect(layout.text).toBe(columns <= 60 ? raw : `public fun ${name}():\n    Target`)
+    expect(layout.failures).toEqual([])
+  })
+
+  it.each([
+    `${'Indivisible'.repeat(9)}()`,
+    `"${'indivisible '.repeat(9)}"`,
+    `/* ${'indivisible '.repeat(9)}*/ Target()`,
+  ])('reports indivisible Kotlin default width without altering %s', async (value) => {
+    const name = 'configurationValueWithAnExplicitDefault'
+    const raw = `public fun method(${name}: Target = ${value}): Target`
+    const symbol = method(raw, [{ name }])
+    const layout = (await apiSignatureLayouts(symbol, 'kotlin')).get(symbol.signatures[0]!)!
+    expect(layout.text).toContain(value)
+    expect(layout.failures.length).toBeGreaterThan(0)
+    expect(layout.failures).toEqual(await codeWidthFailures(layout.text, 'api'))
+    const again = method(layout.text, [{ name }])
+    expect([...(await apiSignatureLayouts(again, 'kotlin')).values()][0]!.text).toBe(layout.text)
   })
 
   it.each([
