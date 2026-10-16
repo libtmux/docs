@@ -2,6 +2,7 @@ import { Window, type HTMLAnchorElement, type HTMLButtonElement, type HTMLElemen
 import { readFileSync, realpathSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
+import { runInNewContext } from 'node:vm'
 import { experimental_AstroContainer } from 'astro/container'
 import { createRenderer } from 'astro-expressive-code'
 import { select } from 'astro-expressive-code/hast'
@@ -12,7 +13,7 @@ import { symbolPreview, glossaryPreview } from '../src/lib/link-preview'
 import { API_MODELS } from '../src/lib/api-models'
 import { productApiIndex } from '../src/lib/product-api'
 import { apiGlossaryHref } from '../src/lib/api-glossary'
-import { initLinkPreviews, disposeLinkPreviews, linkPreviewTarget } from '../src/lib/link-preview-browser'
+import { initLinkPreviews, disposeLinkPreviews, linkPreviewTarget, positionLinkPreview } from '../src/lib/link-preview-browser'
 import { GET } from '../src/pages/[...slug].preview.json'
 import { highlightTokens } from '../src/lib/highlight'
 import config from '../ec.config.mjs'
@@ -183,6 +184,44 @@ const title = () => win.document.querySelector('[data-preview-title]')!.textCont
 const escape = () => win.document.dispatchEvent(new win.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
 
 describe('preview lifecycle', () => {
+  it.fails('repositions open keyword help when a declaration scrolls without bubbling', async () => {
+    const source = readFileSync(new URL('../src/components/api/ApiKeyword.astro', import.meta.url), 'utf8')
+    const script = source.match(/<script>([\s\S]*?)<\/script>/)![1].replace(/^\s*import .*$/gm, '')
+    const { transpileModule } = await import('typescript')
+    win.document.body.insertAdjacentHTML('beforeend', `<span class="api-native-signature--formatted" id="declaration">
+      <button class="api-keyword-trigger" popovertarget="keyword-help">extension</button>
+      <span class="api-keyword-help" id="keyword-help" popover="auto"></span></span>`)
+    const panel = win.document.querySelector<HTMLElement>('#keyword-help')!
+    const trigger = win.document.querySelector('.api-keyword-trigger')!
+    let left = 200, keywordOpen = true
+    // Happy DOM has no layout or top-layer state. Keep event propagation and
+    // the actual positioning function, supplying only those browser facts.
+    panel.getBoundingClientRect = () => new win.DOMRect(0, 0, 200, 100)
+    trigger.getBoundingClientRect = () => new win.DOMRect(left, 40, 100, 20)
+    win.document.documentElement.getBoundingClientRect = () => new win.DOMRect(0, 0, 1000, 800)
+    const matches = panel.matches.bind(panel)
+    panel.matches = (selector) => selector === ':popover-open' ? keywordOpen : matches(selector)
+    const document = {
+      addEventListener: win.document.addEventListener.bind(win.document),
+      querySelector: win.document.querySelector.bind(win.document),
+      querySelectorAll: (selector: string) => win.document.querySelectorAll(selector === '.api-keyword-help:popover-open'
+        ? keywordOpen ? '#keyword-help' : '#closed-keyword-help' : selector),
+    }
+    runInNewContext(transpileModule(script, {}).outputText, {
+      window: win, document, positionLinkPreview, HTMLElement: win.HTMLElement,
+      Element: win.Element, Node: win.Node, requestAnimationFrame: win.requestAnimationFrame.bind(win), setTimeout,
+    })
+    win.dispatchEvent(new win.Event('resize'))
+    expect(panel.style.left).toBe('200px')
+    left = 120
+    win.document.getElementById('declaration')!.dispatchEvent(new win.Event('scroll', { bubbles: false }))
+    expect(panel.style.left).toBe('120px')
+    keywordOpen = false
+    left = 80
+    win.document.getElementById('declaration')!.dispatchEvent(new win.Event('scroll', { bubbles: false }))
+    expect(panel.style.left).toBe('120px')
+  })
+
   it('renders validated highlighted tokens as selectable text and falls back on malformed styling', async () => {
     const signature = 'final class Value<T> & Other'
     const token = (content: string, light = '#A626A4') => ({ content,
