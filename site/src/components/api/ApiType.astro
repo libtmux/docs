@@ -61,7 +61,7 @@ const isOperator = (text: string) => /^(->|=>|<:|:>)$/.test(text)
         span.keyword && 'api-keyword',
         span.declaration && (isDeclarationName(span) ? 'api-declaration-name' : 'api-parameter-name'),
         chip && NAME.test(span.text) && 'api-literal',
-      ]}>{literalParts(span.text).map((part) => isOperator(part)
+      ]} data-api-role={span.nonReference ? 'syntax' : undefined}>{literalParts(span.text).map((part) => isOperator(part)
         ? <span class="api-operator">{part}</span> : part)}</span>
     ),
   )

@@ -16,8 +16,9 @@
  * So there are two gates here. A mangled USR is never acceptable and fails on
  * sight. Everything else unresolved is counted and held under a ceiling,
  * because the residue is mostly language keywords — `impl`, `let`, `typename`
- * — which are supposed to be plain, and separating those by hand would be a
- * list that rots. What must not happen is the number growing.
+ * — which are supposed to be plain. Grammar-owned nonreference tokens carry
+ * an explicit role from the native formatter. All other plain identifiers
+ * remain counted; no list of names or ports exempts them.
  */
 import { readFileSync, writeFileSync, readdirSync, existsSync, statSync } from 'node:fs'
 import { join, dirname } from 'node:path'
@@ -48,36 +49,51 @@ const text = (html) =>
     .replace(/&(#39|amp|lt|gt|quot|nbsp);/g, (_, e) => ENTITIES[e])
     .trim()
 
-/**
- * The visible text of each `api-type` block.
- *
- * The block nests — every name inside is its own `<span>` or `<a>` — so a
- * non-greedy match to the first `</span>` returns the first fragment alone.
- * That mistake reports zero on a page full of USRs, so the depth counter here
- * is the whole point of the function.
- */
-function typeBlocks(html) {
-  const out = []
-  const open = /<span class="api-type">/g
-  let m
-  while ((m = open.exec(html))) {
-    let i = m.index + m[0].length
-    let depth = 1
-    while (depth > 0) {
-      const nextOpen = html.indexOf('<span', i)
-      const nextClose = html.indexOf('</span>', i)
-      if (nextClose === -1) break
-      if (nextOpen !== -1 && nextOpen < nextClose) {
-        i = html.indexOf('>', nextOpen) + 1
-        depth++
-      } else {
-        i = nextClose + 7
-        depth--
-      }
-    }
-    out.push(text(html.slice(m.index + m[0].length, i - 7)))
+/** Attribute order and quoting do not change a rendered token's role. */
+function attributes(source) {
+  const result = new Map()
+  for (const match of source.matchAll(/([^\s"'<>/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g)) {
+    const name = match[1].toLowerCase()
+    if (!result.has(name)) result.set(name, match[2] ?? match[3] ?? match[4] ?? '')
   }
-  return out
+  return result
+}
+
+/** Keep the recorded single-class metric; type chips need their own inventory. */
+function singleClass(classes, name) {
+  return classes.length === 1 && classes[0] === name
+}
+
+function typeMarkup(html) {
+  const spans = []
+  const plain = []
+  const blocks = []
+  let resolved = 0
+  // Stack spans so operators nested inside a type cannot conceal a mangled id.
+  for (const match of html.matchAll(/<!--[\s\S]*?-->|<(\/?)(span|a)\b((?:[^>"']|"[^"]*"|'[^']*')*)>/gi)) {
+    if (!match[2]) continue
+    const tag = match[2].toLowerCase()
+    if (match[1]) {
+      if (tag !== 'span') continue
+      const span = spans.pop()
+      if (!span) continue
+      const value = text(html.slice(span.start, match.index))
+      if (span.type) blocks.push(value)
+      if (span.plain) plain.push(value)
+      continue
+    }
+    const attrs = attributes(match[3])
+    const classes = (attrs.get('class') ?? '').trim().split(/\s+/)
+    if (tag === 'a') {
+      if (singleClass(classes, 'api-type-link')) resolved++
+    } else {
+      spans.push({ start: match.index + match[0].length,
+        type: classes.includes('api-type'),
+        plain: singleClass(classes, 'api-punct') && attrs.get('data-api-role') !== 'syntax',
+      })
+    }
+  }
+  return { resolved, plain, blocks }
 }
 
 function* htmlFiles(dir) {
@@ -89,8 +105,6 @@ function* htmlFiles(dir) {
   }
 }
 
-const PUNCT_SPAN = /<span class="api-punct">((?:(?!<\/span>).)*)<\/span>/g
-const TYPE_LINK = /<a [^>]*class="api-type-link"/g
 const IDENTIFIER = /^[A-Za-z_][A-Za-z0-9_]*$/
 
 function measure(port) {
@@ -99,12 +113,12 @@ function measure(port) {
   const mangled = []
   for (const file of referenceDirs(site, port, { products: true }).flatMap((dir) => [...htmlFiles(dir)])) {
     const html = readFileSync(file, 'utf8')
-    resolved += (html.match(TYPE_LINK) ?? []).length
-    for (const block of typeBlocks(html)) {
+    const markup = typeMarkup(html)
+    resolved += markup.resolved
+    for (const block of markup.blocks) {
       if (USR.test(block)) mangled.push({ file: file.slice(site.length), block })
     }
-    for (const m of html.matchAll(PUNCT_SPAN)) {
-      const t = text(m[1])
+    for (const t of markup.plain) {
       if (IDENTIFIER.test(t)) unresolved.set(t, (unresolved.get(t) ?? 0) + 1)
     }
   }

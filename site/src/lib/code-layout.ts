@@ -13,7 +13,7 @@ export interface CodeLayout {
   failures: CodeWidthFailure[]
   syntax?: CodeSyntax[]
 }
-export type SignatureSpan = ReturnType<SymbolIndex['linkType']>[number] & { declarationName?: true }
+export type SignatureSpan = ReturnType<SymbolIndex['linkType']>[number] & { declarationName?: true; nonReference?: true }
 
 /** Resolve references at render time; cached layouts contain grammar, never URLs. */
 export function signatureSpans(layout: CodeLayout, index: SymbolIndex, symbol: ApiSymbol, signature: Signature): SignatureSpan[] {
@@ -26,7 +26,7 @@ export function signatureSpans(layout: CodeLayout, index: SymbolIndex, symbol: A
     else if (range.kind === 'parameter') spans.push({ text, declaration: true, link: {
       href: `#${encodeURIComponent(parameterId(symbol, signature.params[range.parameter]!.name))}`, external: false,
     } })
-    else spans.push({ text })
+    else spans.push({ text, nonReference: true })
     offset = range.end
   }
   spans.push(...index.linkType(layout.text.slice(offset), symbol, signature))
