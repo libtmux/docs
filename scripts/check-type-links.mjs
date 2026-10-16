@@ -45,7 +45,7 @@ const USR = /^s:[A-Za-z0-9_]+$/
 const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'", nbsp: ' ' }
 const text = (html) =>
   html
-    .replace(/<[^>]+>/g, '')
+    .replace(/<(?:[^>"']|"[^"]*"|'[^']*')*>/g, '')
     .replace(/&(#39|amp|lt|gt|quot|nbsp);/g, (_, e) => ENTITIES[e])
     .trim()
 

@@ -57,8 +57,7 @@ function run(dir, ceilings, extra = [], omit = []) {
 }
 
 let failures = 0
-const check = (name, ok, detail, expectedFailure = false) => {
-  if (expectedFailure) ok = !ok
+const check = (name, ok, detail) => {
   if (ok) console.log(`ok   ${name}`)
   else {
     console.error(`FAIL ${name} — ${detail}`)
@@ -182,12 +181,13 @@ for (const markup of [
   '<span class="api-punct" data-extra="x > y">Unknown</span>',
   "<span data-api-role='type' class='api-punct'>Unknown</span>",
   '<span data-api-role=unrecognized class=api-punct>Unknown</span>',
+  `<span class=api-punct data-extra='data-api-role="syntax"'>Unknown</span>`,
   '<span data-api-role="syntax" class="api-type"><span class="api-punct">Unknown</span></span>',
   '<span class="api-punct" data-api-role="syntax"><span class="api-punct">Unknown</span></span>',
 ]) {
   const dir = site({ markup })
   const { code, out } = run(dir, 0)
-  check('unknown types remain counted through attributes and parents', code !== 0 && out.includes('Unknown(1)'), `exited ${code}:\n${out}`, !markup.includes('<span', 1))
+  check('unknown types remain counted through attributes and parents', code !== 0 && out.includes('Unknown(1)'), `exited ${code}:\n${out}`)
   rmSync(dir, { recursive: true, force: true })
 }
 
@@ -203,10 +203,12 @@ for (const markup of [
 for (const markup of [
   '<span data-api-role="syntax" class="api-type"><span class="api-punct" data-api-role="syntax">s</span>:<span class="api-punct" data-api-role="syntax">s8CopyableP</span></span>',
   "<span data-extra='x > y' class='api-type'><span class='api-punct'>s</span>:<span class='api-punct'>s8CopyableP</span></span>",
+  '<span class="api-type extra" data-api-role="syntax"><span class="api-punct api-literal">s</span>:<span class="api-punct api-literal">s8CopyableP</span></span>',
+  `<span class="api-type"><span class="api-punct" data-extra='x > y'>s</span>:<span class="api-punct">s8CopyableP</span></span>`,
 ]) {
   const dir = site({ markup })
   const { code, out } = run(dir, 99)
-  check('syntax metadata and attribute order cannot hide mangled types', code !== 0 && out.includes('s:s8CopyableP'), `exited ${code}:\n${out}`, true)
+  check('syntax metadata and attribute order cannot hide mangled types', code !== 0 && out.includes('s:s8CopyableP'), `exited ${code}:\n${out}`)
   rmSync(dir, { recursive: true, force: true })
 }
 
