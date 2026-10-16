@@ -136,6 +136,10 @@ export interface Signature {
   extension?: string
   /** Native signature text when its grammar carries more than the shared fields. */
   raw?: string
+  /** Native impl or trait header that owns this callable, without its body. */
+  enclosingDeclaration?: string
+  /** Lexical bindings from that impl or trait, separate from callable generics. */
+  enclosingTypeParamNames?: string[]
   params: Param[]
   returns?: string
   returnsDoc?: string

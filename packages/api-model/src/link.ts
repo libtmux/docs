@@ -72,6 +72,7 @@ const SIGNATURE_KEYWORDS: Record<string, Set<string>> = Object.fromEntries(Objec
   scala: 'def extension val var class trait object type given using implicit inline transparent opaque override abstract final sealed case lazy private protected open infix export derives end',
   fsharp: 'module namespace type member static abstract override interface inherit let rec mutable inline internal private public of with get set new val and when',
   ts: 'readonly keyof typeof infer extends unique private static async function const',
+  rs: 'pub crate self super unsafe async const extern fn impl trait for where mut ref dyn type in as move static',
   go: 'func chan map struct interface',
   swift: 'any',
   julia: 'where struct mutable abstract primitive type function end',
@@ -644,6 +645,10 @@ export class SymbolIndex {
         if (scope.typeScopeBoundary || staticBoundary) break
       }
     }
+    if (this.lang === 'rs') {
+      const signatures = signature ? [signature] : context?.signatures ?? []
+      for (const name of signatures.flatMap((entry) => [...entry.typeParamNames ?? [], ...entry.enclosingTypeParamNames ?? []])) boundTypes.add(name)
+    }
     if (rustPayload) {
       for (let scope: ApiSymbol | undefined = context; scope; scope = scope.parent ? this.byDeclared.get(scope.parent) : undefined) {
         for (const parameter of scope.typeParams ?? []) {
@@ -706,6 +711,10 @@ export class SymbolIndex {
         continue
       }
       // A locally bound type parameter must not acquire an unrelated global type's URL.
+      if (this.lang === 'rs' && annotation[m.index! - 1] === "'") {
+        out.push({ text: ident })
+        continue
+      }
       if (boundTypes.has(ident)) {
         out.push({ text: ident, declaration: true })
         continue

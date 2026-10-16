@@ -51,7 +51,7 @@ const isOperator = (text: string) => /^(->|=>|<:|:>)$/.test(text)
     ) : span.link ? (
       <a
         href={span.link.href}
-        class:list={['api-type-link', span.declaration && 'api-parameter-name', chip && 'api-literal api-literal--link']}
+        class:list={['api-type-link', span.declaration && 'api-parameter-name', chip && 'api-literal api-literal--link', span.enclosingContext && 'api-signature-context']}
         rel={span.link.external ? 'nofollow noopener' : undefined}
         title={span.link.external ? `${span.text} (${span.link.project ?? "external"})` : span.link.symbol ? qualifiedNameOf(span.link.symbol) : undefined}
       ><SymbolName name={span.text} /></a>
@@ -60,6 +60,7 @@ const isOperator = (text: string) => /^(->|=>|<:|:>)$/.test(text)
         span.declaration || span.keyword ? 'api-type-label' : 'api-punct',
         span.keyword && 'api-keyword',
         span.declaration && (isDeclarationName(span) ? 'api-declaration-name' : 'api-parameter-name'),
+        span.enclosingContext && 'api-signature-context',
         chip && NAME.test(span.text) && 'api-literal',
       ]} data-api-role={span.nonReference ? 'syntax' : undefined}>{literalParts(span.text).map((part) => isOperator(part)
         ? <span class="api-operator">{part}</span> : part)}</span>

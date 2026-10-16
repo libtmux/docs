@@ -654,6 +654,7 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-layout-right
 }
 .api-native-signature .api-keyword { color: var(--api-kind-exception-fg); }
 .api-native-signature .api-declaration-name { color: var(--api-kind-function-fg); }
+.api-native-signature .api-signature-context { color: var(--color-foreground-secondary); }
 .api-native-signature .api-operator { white-space: nowrap; }
 .api-method > h3 { font-size: 0.875rem; line-height: 1.7; }
 .api-method-source { margin-inline-start: 0.75rem; white-space: nowrap; font-size: 0.875em; }

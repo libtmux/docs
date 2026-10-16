@@ -794,7 +794,7 @@ for (const [port, cfg] of Object.entries(PORTS)) {
       symbol.product ??= productOf(relativeFile)
       symbol.source = { ...symbol.source, file: relativeFile, repo: unit.repo, revision: unit.revision,
         extractedRevision: citationSymbols.has(symbol) ? unit.revision : unit.head }
-      for (const declaration of symbol.declarations ?? []) {
+      for (const declaration of [...symbol.declarations ?? [], ...symbol.signatures.filter((signature) => signature.source)]) {
         const file = declaration.source.file
         declaration.source = { ...declaration.source, file: isAbsolute(file) ? relative(base, file) : file,
           repo: unit.repo, revision: unit.revision, extractedRevision: unit.head }
@@ -813,7 +813,7 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     }
     // Native macro projections were read at the citation revision already.
     remapLines(unit.checkout, unit.symbols.flatMap((symbol) => citationSymbols.has(symbol)
-      ? [] : [symbol, ...(symbol.declarations ?? [])]), unit.revision, unit.head)
+      ? [] : [symbol, ...(symbol.declarations ?? []), ...symbol.signatures.filter((signature) => signature.source)]), unit.revision, unit.head)
     for (const product of new Set(unit.symbols.map((symbol) => symbol.product))) {
       model.sources.push({
         product, package: unit.package ?? packages[port]?.[product] ?? portBySlug[port].packageName,

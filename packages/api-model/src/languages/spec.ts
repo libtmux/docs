@@ -137,6 +137,8 @@ export interface LanguageSpec {
   typeScopeBoundary?: (node: Node) => boolean | undefined
   /** A callable boundary independent of the shared symbol's other overloads. */
   signatureTypeScopeBoundary?: (node: Node) => boolean | undefined
+  /** Retain the native owner header and each callable's own source location. */
+  enclosingDeclaration?: (node: Node) => { raw: string; typeParamNames?: string[] } | undefined
   /** Native enum cases own named or positional fields without a callable signature. */
   enumVariant?: (node: Node) => {
     shape: NonNullable<ApiSymbol['variant']>
@@ -254,15 +256,19 @@ function paramsOf(node: Node | null, spec: LanguageSpec): Param[] {
   return out
 }
 
-function signatureOf(node: Node, spec: LanguageSpec): Signature {
+function signatureOf(node: Node, spec: LanguageSpec, file: string): Signature {
   const f = { ...DEFAULT_FIELDS, ...spec.fields }
   const returns =
     node.childForFieldName(f.returns) ??
     node.childForFieldName('result') ??
     node.childForFieldName('type')
   const scopeBoundary = spec.signatureTypeScopeBoundary?.(node)
+  const enclosing = spec.enclosingDeclaration?.(node)
   return {
     raw: spec.rawSignature?.(node),
+    ...(enclosing ? { enclosingDeclaration: enclosing.raw,
+      ...(enclosing.typeParamNames ? { enclosingTypeParamNames: enclosing.typeParamNames } : {}) } : {}),
+    ...(spec.enclosingDeclaration ? { source: { file, line: node.startPosition.row + 1 } } : {}),
     params: paramsOf(node.childForFieldName(f.params), spec),
     receiver: spec.receiver?.(node),
     // A grammar's return-type node often includes the syntax that introduces
@@ -355,7 +361,7 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
     if (containerKind) {
       const accessors = spec.recordAccessors?.(child)
       const positional = spec.positionalProperties?.(child) || accessors
-      const signatures = positional || (spec.grammar === 'java' && spec.rawSignature?.(child)) ? [signatureOf(child, spec)] : []
+      const signatures = positional || (spec.grammar === 'java' && spec.rawSignature?.(child)) ? [signatureOf(child, spec, ctx.file)] : []
       emit(ctx, {
         id,
         name,
@@ -425,7 +431,7 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
     // Built before the doc so C#'s `<param>` and `<exception>` can be lifted
     // onto it: the comment carries them, and nothing else does.
     const variant = spec.enumVariant?.(child)
-    const memberSignatures = variant ? [{ raw: variant.raw, params: [] }] : hasParams ? [signatureOf(child, spec)] : []
+    const memberSignatures = variant ? [{ raw: variant.raw, params: [] }] : hasParams ? [signatureOf(child, spec, ctx.file)] : []
     emit(ctx, {
       id: memberId,
       name,

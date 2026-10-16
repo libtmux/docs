@@ -150,6 +150,39 @@ function rustDocHidden(node: Node): boolean {
   return false
 }
 
+/** Outer attributes are siblings; doc comments remain in the prose projection. */
+function rustHeader(node: Node): string | undefined {
+  const body = node.childForFieldName('body')
+  if (node.children.some((child) => child && child.id !== body?.id && (child.hasError || child.isMissing))) return undefined
+  const prefix: Node[] = []
+  for (let previous = node.previousNamedSibling; previous; previous = previous.previousNamedSibling) {
+    if (previous.type === 'attribute_item') prefix.unshift(previous)
+    else if (['line_comment', 'block_comment'].includes(previous.type)) {
+      if (!/^\/\/[/!]|^\/\*[*!]/.test(previous.text)) prefix.unshift(previous)
+    } else break
+  }
+  while (prefix.length && prefix[0]!.type !== 'attribute_item') prefix.shift()
+  if (prefix.some((part) => part.hasError)) return undefined
+  const header = node.text.slice(0, body ? body.startIndex - node.startIndex : undefined).trimEnd()
+  return [...prefix.map((part) => part.text), header].join('\n')
+}
+
+/** Bounds and defaults mention types; only the declaration's name binds one. */
+function rustTypeParameterNames(node: Node): string[] | undefined {
+  const parameters = node.childForFieldName('type_parameters')
+  const nameOf = (parameter: Node): string | undefined => {
+    if (parameter.type === 'type_identifier' || parameter.type === 'lifetime') return parameter.text
+    if (parameter.type === 'const_parameter') return parameter.childForFieldName('name')?.text
+    if (parameter.type === 'constrained_type_parameter') return parameter.childForFieldName('left')?.text
+    const name = parameter.type === 'optional_type_parameter' ? parameter.childForFieldName('name') : null
+    return name ? nameOf(name) : undefined
+  }
+  return parameters?.namedChildren.flatMap((parameter) => {
+    const name = parameter && nameOf(parameter)
+    return name ? [name] : []
+  })
+}
+
 export const RUST: LanguageSpec = {
   grammar: 'rust',
   // `class` is only ever `impl_item` here: Rust has no other construct that
@@ -212,6 +245,15 @@ export const RUST: LanguageSpec = {
       .trim(),
   // Receivers have no name field: splitting `mut self` would name it `mut`.
   parameter: (node) => node.type === 'self_parameter' ? { name: node.text } : undefined,
+  rawSignature: (node) => ['function_item', 'function_signature_item'].includes(node.type)
+    ? rustHeader(node) : undefined,
+  typeParameterNames: (node) => ['function_item', 'function_signature_item'].includes(node.type)
+    ? rustTypeParameterNames(node) : undefined,
+  enclosingDeclaration: (node) => {
+    const owner = node.parent?.parent
+    const raw = owner && ['impl_item', 'trait_item'].includes(owner.type) ? rustHeader(owner) : undefined
+    return owner && raw ? { raw, typeParamNames: rustTypeParameterNames(owner) } : undefined
+  },
   // Trait methods and enum variants inherit their owner's visibility; the
   // walker rejects private owners before visiting their members. Impl blocks
   // have no visibility keyword, but inherent methods still require `pub`.

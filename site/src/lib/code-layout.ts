@@ -12,8 +12,10 @@ export interface CodeLayout {
   limit: number
   failures: CodeWidthFailure[]
   syntax?: CodeSyntax[]
+  /** The leading native owner fragment, when it distinguishes callable scope. */
+  contextEnd?: number
 }
-export type SignatureSpan = ReturnType<SymbolIndex['linkType']>[number] & { declarationName?: true; nonReference?: true }
+export type SignatureSpan = ReturnType<SymbolIndex['linkType']>[number] & { declarationName?: true; nonReference?: true; enclosingContext?: true }
 
 /** Resolve references at render time; cached layouts contain grammar, never URLs. */
 export function signatureSpans(layout: CodeLayout, index: SymbolIndex, symbol: ApiSymbol, signature: Signature): SignatureSpan[] {
@@ -30,7 +32,14 @@ export function signatureSpans(layout: CodeLayout, index: SymbolIndex, symbol: A
     offset = range.end
   }
   spans.push(...index.linkType(layout.text.slice(offset), symbol, signature))
-  return spans
+  if (layout.contextEnd === undefined) return spans
+  let position = 0
+  return spans.flatMap((span) => {
+    const end = Math.max(0, Math.min(span.text.length, layout.contextEnd! - position))
+    position += span.text.length
+    return end === 0 ? [span] : end === span.text.length ? [{ ...span, enclosingContext: true as const }]
+      : [{ ...span, text: span.text.slice(0, end), enclosingContext: true as const }, { ...span, text: span.text.slice(end) }]
+  })
 }
 
 /** Measure printed columns after tab expansion; font and viewport checks are separate. */
@@ -137,8 +146,18 @@ export function supportsJavaSignatures(symbol: ApiSymbol, language?: string): bo
     symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
 }
 
+export function supportsRustSignatures(symbol: ApiSymbol, language?: string): boolean {
+  return language === 'rs' && ['method', 'function'].includes(symbol.kind) && symbol.signatures.length > 0 &&
+    symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
+}
+
 /** Prepare one layout per overload for both HTML and the Markdown twin. */
 export async function apiSignatureLayouts(symbol: ApiSymbol, language?: string): Promise<Map<Signature, CodeLayout>> {
+  if (supportsRustSignatures(symbol, language)) {
+    const { rustSignatureLayout } = await import('./rust-code-layout')
+    return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
+      [signature, await rustSignatureLayout(symbol, signature)] as const)))
+  }
   if (supportsTypeScriptSignatures(symbol, language)) {
     return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
       [signature, await typescriptSignatureLayout(symbol, signature)] as const)))
