@@ -128,7 +128,99 @@ const method = (raw: string, params: Signature['params'] = [], typeParams?: stri
 })
 
 describe('Scala and Kotlin callable layouts', () => {
-  it.fails.each(scalaParameterLayouts)('fits the extracted Scala parameter continuation in %s', async (id, ordinal, expected) => {
+  it.each([
+    'io.github.example.QualifiedTarget',
+    '=> io.github.example.QualifiedTarget',
+    'io.github.example.QualifiedTarget*',
+    '(Target, Target) => Target',
+    'Target & io.github.example.QualifiedTarget',
+    'Target | io.github.example.QualifiedTarget',
+    'Map[String, Vector[Target]]',
+    '/* Target: keep */ Target',
+    '// Target: keep\nTarget',
+    'Target = "Target: keep  spaces"',
+    'Target = """first\n  Target: keep spaces\nlast"""',
+    'Target = s"Target: ${Target()}"',
+  ])('preserves extracted Scala parameter syntax and literals in %s', async (type) => {
+    const raw = `def method(configurationValueForAnOperation: ${type}): Target`
+    const root = mkdtempSync(join(tmpdir(), 'libtmux-scala-parameter-'))
+    try {
+      writeFileSync(join(root, 'Probe.scala'), `package probe\nclass Target\nobject Probe {\n${raw} = ???\n}`)
+      const model = await extractJvm('scala', [root])
+      const symbol = model.symbols.find((entry) => entry.id === 'probe.Probe.method')!
+      const signature = symbol.signatures[0]!
+      expect(signature.raw).toBe(raw)
+      expect(signature.params.map((param) => param.name)).toEqual(['configurationValueForAnOperation'])
+      const layout = (await apiSignatureLayouts(symbol, 'scala')).get(signature)!
+      const parser = await parserFor('scala')
+      const before = parser.parse(raw)!
+      const after = parser.parse(layout.text)!
+      try {
+        expect(before.rootNode.hasError || after.rootNode.hasError).toBe(false)
+        expect(after.rootNode.toString()).toBe(before.rootNode.toString())
+        const literals = ['comment', 'block_comment', 'string', 'interpolated_string_expression']
+        expect(after.rootNode.descendantsOfType(literals).map((node) => [node.type, node.text]))
+          .toEqual(before.rootNode.descendantsOfType(literals).map((node) => [node.type, node.text]))
+      } finally { before.delete(); after.delete(); parser.delete() }
+      expect(layout.failures).toEqual([])
+      const spans = signatureSpans(layout, new SymbolIndex(model.symbols, (entry) => `/${entry.id}/`, 'scala'), symbol, signature)
+      expect(spans.map((span) => span.text).join('')).toBe(layout.text)
+      expect(spans.filter((span) => span.link?.href.startsWith('#')).map((span) => span.link!.href))
+        .toEqual(['#probe.Probe.method.parameter.configurationValueForAnOperation'])
+      const again = { ...symbol, signatures: [{ ...signature, raw: layout.text }] }
+      expect([...(await apiSignatureLayouts(again, 'scala')).values()][0]!.text).toBe(layout.text)
+    } finally { rmSync(root, { recursive: true, force: true }) }
+  })
+
+  it.each([59, 60, 61, 62])('wraps Scala parameter types only beyond the %s-column boundary', async (columns) => {
+    const type = `Target${'X'.repeat(columns - '    value: Target'.length)}`
+    const symbol = method(`def method(value: ${type}): Target`, [{ name: 'value', type }])
+    const layout = (await apiSignatureLayouts(symbol, 'scala')).get(symbol.signatures[0]!)!
+    expect(layout.text).toBe(columns <= 60
+      ? `def method(\n    value: ${type}\n): Target`
+      : `def method(\n    value:\n        ${type}\n): Target`)
+    expect(layout.failures).toEqual([])
+  })
+
+  it('keeps extracted Scala receiver, context and backtick parameter ownership', async () => {
+    const raw = `extension [F[_]](self: Receiver[F])(using F: Async[F])
+def method[T <: Target](\`a parameter.with spaces\`: Vector[T], timeout: _root_.scala.concurrent.duration.FiniteDuration)(using trace: Trace[F]): F[T]`
+    const root = mkdtempSync(join(tmpdir(), 'libtmux-scala-context-'))
+    try {
+      writeFileSync(join(root, 'Probe.scala'), `package probe\nclass Receiver[F[_]]\nclass Target\nclass T\n${raw} = ???`)
+      const model = await extractJvm('scala', [root])
+      const symbol = model.symbols.find((entry) => entry.id === 'probe.Receiver.method')!
+      const signature = symbol.signatures[0]!
+      expect(signature.raw).toBe(raw)
+      expect(signature.receiver).toEqual({ name: 'self', type: 'Receiver[F]' })
+      expect(signature.params.map((param) => param.name)).toEqual(['`a parameter.with spaces`', 'timeout', 'trace'])
+      const layout = (await apiSignatureLayouts(symbol, 'scala')).get(signature)!
+      expect(layout.failures).toEqual([])
+      expect(layout.text).toContain('timeout:\n          _root_.scala.concurrent.duration.FiniteDuration')
+      const spans = signatureSpans(layout, new SymbolIndex(model.symbols, (entry) => `/${entry.id}/`, 'scala'), symbol, signature)
+      expect(spans.map((span) => span.text).join('')).toBe(layout.text)
+      expect(spans.filter((span) => span.link?.href.startsWith('#')).map((span) => [span.text, span.link!.href]))
+        .toEqual(signature.params.map((param) => [param.name, `#${encodeURIComponent(`${symbol.id}.parameter.${param.name}`)}`]))
+      expect(spans.filter((span) => span.link?.href === '/probe.T/')).toEqual([])
+      expect(spans.filter((span) => span.text === 'self' || span.text === 'F').some((span) => span.link)).toBe(false)
+    } finally { rmSync(root, { recursive: true, force: true }) }
+  })
+
+  it.each([
+    'Indivisible'.repeat(9),
+    `String = "${'indivisible '.repeat(9)}"`,
+    `/* ${'indivisible '.repeat(9)}*/ Target`,
+  ])('retains explicit Scala width failures for an indivisible %s', async (type) => {
+    const symbol = method(`def method(configurationValueForAnOperation: ${type}): Target`, [{ name: 'configurationValueForAnOperation' }])
+    const layout = (await apiSignatureLayouts(symbol, 'scala')).get(symbol.signatures[0]!)!
+    expect(layout.text).toContain(type)
+    expect(layout.failures.length).toBeGreaterThan(0)
+    expect(layout.failures).toEqual(await codeWidthFailures(layout.text, 'api'))
+    const again = { ...symbol, signatures: [{ ...symbol.signatures[0]!, raw: layout.text }] }
+    expect([...(await apiSignatureLayouts(again, 'scala')).values()][0]!.text).toBe(layout.text)
+  })
+
+  it.each(scalaParameterLayouts)('fits the extracted Scala parameter continuation in %s', async (id, ordinal, expected) => {
     const symbol = scalaModel.symbols.find((entry) => entry.id === id)!
     const extracted = (await extractedScala()).symbols.find((entry) => entry.id === id)!
     expect(extracted.signatures).toEqual(symbol.signatures)

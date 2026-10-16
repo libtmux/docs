@@ -90,7 +90,7 @@ const cases = [
 ] as const
 let componentPromise: ReturnType<typeof signatureComponent> | undefined
 
-it.fails.each([
+it.each([
   'Pane.capture', 'cats.Pane.capture', 'Server.cmd', 'cats.Server.cmd',
 ])('renders the Scala parameter continuation in %s with native links', async (suffix) => {
   const model = JSON.parse(readFileSync(new URL('../src/data/api/scala.json', import.meta.url), 'utf8')) as ApiModel
