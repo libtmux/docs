@@ -129,6 +129,12 @@ export interface LanguageSpec {
   recordAccessors?: (node: Node) => boolean
   /** Retain native declaration facts which the shared signature fields cannot express. */
   rawSignature?: (node: Node) => string | undefined
+  /** Native binding names stay separate from the source type-parameter text. */
+  typeParameterNames?: (node: Node) => string[] | undefined
+  /** Modifiers implied by the native declaration rather than a written keyword. */
+  declarationModifiers?: (node: Node) => Modifier[]
+  /** A nested type whose grammar excludes enclosing type-variable bindings. */
+  typeScopeBoundary?: (node: Node) => boolean
   /** Native enum cases own named or positional fields without a callable signature. */
   enumVariant?: (node: Node) => {
     shape: NonNullable<ApiSymbol['variant']>
@@ -208,7 +214,7 @@ function docCommentFor(node: Node, spec: LanguageSpec): string | undefined {
 /** Modifier keywords on a declaration, including Rust's grouped function keywords. */
 function modifiersFor(node: Node, spec: LanguageSpec): Modifier[] {
   if (!spec.modifiers) return []
-  const found = new Set<Modifier>()
+  const found = new Set<Modifier>(spec.declarationModifiers?.(node))
   for (const child of node.children.flatMap((child) => child?.type === 'function_modifiers' ? child.children : [child])) {
     if (!child) continue
     // `modifiers` in Java/C#, bare keywords elsewhere, attributes in Rust.
@@ -261,6 +267,7 @@ function signatureOf(node: Node, spec: LanguageSpec): Signature {
     // signatures rendered as `foo() → : string`. The arrow or colon is the
     // renderer's to draw.
     returns: returns ? spec.typeText?.(returns) ?? returns.text.replace(/\s+/g, ' ').replace(/^\s*(?:->|:)\s*/, '') : undefined,
+    ...(spec.typeParameterNames?.(node) ? { typeParamNames: spec.typeParameterNames(node) } : {}),
     typeParams: node
       .childForFieldName('type_parameters')
       ?.namedChildren.map((n) => n?.text ?? '')
@@ -343,7 +350,7 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
     if (containerKind) {
       const accessors = spec.recordAccessors?.(child)
       const positional = spec.positionalProperties?.(child) || accessors
-      const signatures = positional ? [signatureOf(child, spec)] : []
+      const signatures = positional || spec.rawSignature?.(child) ? [signatureOf(child, spec)] : []
       emit(ctx, {
         id,
         name,
@@ -351,6 +358,11 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
         modifiers,
         parent,
         signatures,
+        ...(spec.typeScopeBoundary?.(child) ? { typeScopeBoundary: true } : {}),
+        ...(spec.typeParameterNames?.(child) ? {
+          typeParams: child.childForFieldName('type_parameters')!.namedChildren.flatMap((node) => node && !spec.commentTypes.includes(node.type) ? [node.text] : []),
+          typeParamNames: spec.typeParameterNames(child),
+        } : {}),
         ...(spec.grammar === 'rust' && child.type === 'enum_item' && child.childForFieldName('type_parameters')
           ? { typeParams: child.childForFieldName('type_parameters')!.namedChildren.flatMap((node) => node ? [node.text] : []) }
           : {}),
@@ -393,7 +405,7 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
       continue
     }
 
-    const hasParams = Boolean(child.childForFieldName(f.params))
+    const hasParams = Boolean(child.childForFieldName(f.params)) || Boolean(memberKind === 'method' && spec.rawSignature?.(child))
     // A receiver re-homes the member onto its type, which lives in the same
     // module — Go's package — even when it is declared in another file.
     const receiver = spec.receiverType?.(child)
@@ -420,7 +432,7 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
       type: hasParams ? undefined : child.childForFieldName('type') && spec.typeText
         ? spec.typeText(child.childForFieldName('type')!)
         : (child.childForFieldName('type')?.text ?? spec.implicitType?.(child))?.replace(/\s+/g, ' '),
-      value: variant ? variant.value : hasParams
+      value: child.type === 'annotation_type_element_declaration' && spec.grammar === 'java' ? child.childForFieldName('value')?.text : variant ? variant.value : hasParams
         ? undefined
         : child.childForFieldName('declarator')?.childForFieldName('value')?.text.replace(/\s+/g, ' '),
       doc: docFor(raw, spec, memberSignatures, ctx.parser),

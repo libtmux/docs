@@ -75,6 +75,7 @@ export type Modifier =
   | 'private'
   | 'generator'
   | 'unsafe'
+  | 'annotation'
 
 /** One parameter, as written. */
 export interface Param {
@@ -140,6 +141,8 @@ export interface Signature {
   returnsDoc?: string
   /** Type parameters / generics, as written: `T`, `T: Clone`, `<T extends X>`. */
   typeParams?: string[]
+  /** Names bound by native type-parameter declarations, without annotations or bounds. */
+  typeParamNames?: string[]
   /** Named or implicit receiver of a native extension declaration. */
   receiver?: Param
   /** `throws` / `raises`, as a type and its doc text. */
@@ -225,6 +228,8 @@ export interface ApiSymbol {
   name: string
   kind: SymbolKind
   modifiers: Modifier[]
+  /** Native nested-type boundary excludes enclosing type-parameter bindings. */
+  typeScopeBoundary?: boolean
   /** Enclosing symbol's id, or undefined at module level. */
   parent?: string
   signatures: Signature[]
@@ -277,6 +282,8 @@ export interface ApiSymbol {
   value?: string
   /** Type parameters on the declaration, independent of constructor methods. */
   typeParams?: string[]
+  /** Names bound by native type-parameter declarations, without annotations or bounds. */
+  typeParamNames?: string[]
   /** Command behavior beyond its individual parameter sets. */
   command?: {
     kind: 'cmdlet' | 'function'

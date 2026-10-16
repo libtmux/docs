@@ -133,7 +133,7 @@ export function supportsGoSignatures(symbol: ApiSymbol, language?: string): bool
 }
 
 export function supportsJavaSignatures(symbol: ApiSymbol, language?: string): boolean {
-  return language === 'java' && symbol.kind === 'method' && symbol.signatures.length > 0 &&
+  return language === 'java' && (symbol.kind === 'method' || (symbol.kind === 'interface' && symbol.modifiers.includes('annotation'))) && symbol.signatures.length > 0 &&
     symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
 }
 

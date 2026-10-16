@@ -7,7 +7,6 @@ type NativeTree = NonNullable<ReturnType<NativeParser['parse']>>
 type NativeNode = NativeTree['rootNode']
 type Doc = doc.builders.Doc
 const { align, group, hardline, line, softline } = doc.builders
-const prefix = 'class __Documentation {\n'
 const comments = new Set(['line_comment', 'block_comment'])
 const literals = new Set(['string_literal', 'character_literal'])
 const lists = new Set(['formal_parameters', 'type_arguments', 'type_parameters', 'annotation_argument_list'])
@@ -21,7 +20,7 @@ const layouts = new Map<string, Promise<CodeLayout>>()
 
 /** Source headers own every token; the documentation surface owns whitespace. */
 export function javaSignatureLayout(symbol: ApiSymbol, signature: Signature): Promise<CodeLayout> {
-  const key = JSON.stringify([symbol.name, signature.raw, signature.params.map((param) => param.name), CODE_COLUMNS.api])
+  const key = JSON.stringify([symbol.name, symbol.kind, symbol.modifiers.includes('annotation'), signature.raw, signature.params.map((param) => param.name), CODE_COLUMNS.api])
   let pending = layouts.get(key)
   if (!pending) {
     pending = formatHeader(symbol, signature)
@@ -33,14 +32,14 @@ export function javaSignatureLayout(symbol: ApiSymbol, signature: Signature): Pr
 const children = (node: NativeNode, named = false): NativeNode[] =>
   (named ? node.namedChildren : node.children).filter((child): child is NativeNode => child !== null)
 
-function header(tree: NativeTree, raw: string) {
+function header(tree: NativeTree, raw: string, prefix: string) {
   const body = tree.rootNode.namedChild(0)?.childForFieldName('body')
   const end = prefix.length + raw.length
   const nodes = body ? children(body, true).filter((node) => node.startIndex < end) : []
   const declarations = nodes.filter((node) => !comments.has(node.type))
   const owner = declarations[0]
   if (tree.rootNode.hasError || tree.rootNode.namedChildCount !== 1 || declarations.length !== 1 || !owner ||
-    !['method_declaration', 'constructor_declaration'].includes(owner.type) ||
+    !['method_declaration', 'constructor_declaration', 'annotation_type_declaration', 'annotation_type_element_declaration'].includes(owner.type) ||
     (owner.childForFieldName('body')?.startIndex ?? end) < end) {
     throw new Error(`Invalid Java callable header grammar: ${raw}`)
   }
@@ -120,11 +119,12 @@ function printHeader(parts: NativeNode[], source: string, breakName: boolean): s
   }).formatted
 }
 
-function syntaxRanges(owner: NativeNode, parts: NativeNode[], symbol: ApiSymbol, signature: Signature): CodeSyntax[] {
+function syntaxRanges(owner: NativeNode, parts: NativeNode[], symbol: ApiSymbol, signature: Signature, prefix: string): CodeSyntax[] {
   const name = owner.childForFieldName('name')!
   if (name.text !== symbol.name) throw new Error(`Java declaration name does not match ${symbol.id}: ${name.text}`)
   const syntax: CodeSyntax[] = [{ start: name.startIndex - prefix.length, end: name.endIndex - prefix.length, kind: 'name' }]
-  const parameters = children(owner.childForFieldName('parameters')!, true)
+  const parameterList = owner.childForFieldName('parameters')
+  const parameters = (parameterList ? children(parameterList, true) : [])
     .filter((node) => ['formal_parameter', 'spread_parameter'].includes(node.type) && node.childForFieldName('name')?.text !== 'this')
   const parameterNames = parameters.map((node) => node.childForFieldName('name') ??
     children(node, true).find((child) => child.type === 'variable_declarator')?.childForFieldName('name'))
@@ -139,14 +139,15 @@ function syntaxRanges(owner: NativeNode, parts: NativeNode[], symbol: ApiSymbol,
     .filter((node) => node.type === 'type_parameter')
     .map((node) => children(node, true).find((child) => child.type === 'type_identifier')?.text) : [])
   const visit = (node: NativeNode) => {
-    if (comments.has(node.type) || literals.has(node.type) || (node.type === 'type_identifier' && bound.has(node.text))) {
+    if (comments.has(node.type) || literals.has(node.type) || (node.type === 'type_identifier' && bound.has(node.text)) ||
+      (!node.isNamed && ['modifiers', 'throws', 'type_bound', 'wildcard', 'annotation_type_declaration', 'annotation_type_element_declaration', 'class_literal'].includes(node.parent?.type ?? ''))) {
       syntax.push({ start: node.startIndex - prefix.length, end: node.endIndex - prefix.length, kind: 'literal' })
     } else {
       // The ellipsis is punctuation, not part of a qualified type name.
       if (node.type === 'spread_parameter') for (const child of children(node)) {
         if (child.type === '...') syntax.push({ start: child.startIndex - prefix.length, end: child.endIndex - prefix.length, kind: 'literal' })
       }
-      children(node, true).forEach(visit)
+      children(node).forEach(visit)
     }
   }
   parts.forEach(visit)
@@ -157,14 +158,16 @@ async function formatHeader(symbol: ApiSymbol, signature: Signature): Promise<Co
   await (grammar ??= loadLanguage('java'))
   const parser = await parserFor('java')
   const raw = signature.raw!
-  const wrap = (text: string) => `${prefix}${text}\n{}\n}`
+  const annotationElement = symbol.kind === 'method' && symbol.modifiers.includes('annotation')
+  const prefix = `${annotationElement ? '@interface' : 'class'} __Documentation {\n`
+  const wrap = (text: string) => `${prefix}${text}${annotationElement ? '' : '\n{}'}\n}`
   let input: NativeTree | null = null
   let output: NativeTree | null = null
   try {
     input = parser.parse(wrap(raw))
     if (!input) throw new Error(`Invalid Java callable header grammar: ${raw}`)
-    const original = header(input, raw)
-    syntaxRanges(original.owner, original.parts, symbol, signature)
+    const original = header(input, raw, prefix)
+    syntaxRanges(original.owner, original.parts, symbol, signature, prefix)
     let text = printHeader(original.parts, wrap(raw), false)
     let failures = await codeWidthFailures(text, 'api')
     if (failures.length) {
@@ -178,10 +181,10 @@ async function formatHeader(symbol: ApiSymbol, signature: Signature): Promise<Co
     }
     output = parser.parse(wrap(text))
     if (!output) throw new Error(`Invalid Java callable header grammar: ${text}`)
-    const formatted = header(output, text)
+    const formatted = header(output, text, prefix)
     if (JSON.stringify(original.parts.map(fingerprint)) !== JSON.stringify(formatted.parts.map(fingerprint))) {
       throw new Error(`Formatting changed Java callable header grammar: ${raw}`)
     }
-    return { text, limit: CODE_COLUMNS.api, failures, syntax: syntaxRanges(formatted.owner, formatted.parts, symbol, signature) }
+    return { text, limit: CODE_COLUMNS.api, failures, syntax: syntaxRanges(formatted.owner, formatted.parts, symbol, signature, prefix) }
   } finally { input?.delete(); output?.delete(); parser.delete() }
 }

@@ -635,6 +635,13 @@ export class SymbolIndex {
         if (name) boundTypes.add(name)
       }
     }
+    if (this.lang === 'java') {
+      for (const name of signature?.typeParamNames ?? context?.signatures.flatMap((entry) => entry.typeParamNames ?? []) ?? []) boundTypes.add(name)
+      for (let scope = context; scope; scope = scope.parent ? this.byDeclared.get(scope.parent) : undefined) {
+        for (const name of scope.typeParamNames ?? []) boundTypes.add(name)
+        if (scope.typeScopeBoundary || scope.modifiers.includes('static')) break
+      }
+    }
     if (rustPayload) {
       for (let scope: ApiSymbol | undefined = context; scope; scope = scope.parent ? this.byDeclared.get(scope.parent) : undefined) {
         for (const parameter of scope.typeParams ?? []) {

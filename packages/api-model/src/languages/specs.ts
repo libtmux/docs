@@ -321,6 +321,16 @@ export const GO: LanguageSpec = {
 export const JAVA: LanguageSpec = {
   grammar: 'java',
   docDialect: 'javadoc',
+  typeParameterNames: (node) => node.childForFieldName('type_parameters')?.namedChildren.flatMap((parameter) => {
+    const name = parameter?.type === 'type_parameter'
+      ? parameter.namedChildren.find((child) => child?.type === 'type_identifier')?.text : undefined
+    return name ? [name] : []
+  }),
+  declarationModifiers: (node) => ['annotation_type_declaration', 'annotation_type_element_declaration'].includes(node.type) ? ['annotation'] : [],
+  // Member interfaces, annotations, enums and records have no enclosing type-variable scope.
+  typeScopeBoundary: (node) => ['class_body', 'interface_body', 'annotation_type_body', 'enum_body_declarations'].includes(node.parent?.type ?? '') &&
+    (['interface_declaration', 'annotation_type_declaration', 'enum_declaration', 'record_declaration'].includes(node.type) ||
+      (node.type === 'class_declaration' && ['interface_body', 'annotation_type_body'].includes(node.parent!.type))),
   parameter: (node) => {
     // The pinned grammar parses annotated receivers as formal parameters.
     if (node.type === 'receiver_parameter' ||
@@ -333,18 +343,20 @@ export const JAVA: LanguageSpec = {
   },
   recordAccessors: (node) => node.type === 'record_declaration',
   rawSignature: (node) => {
-    if (!['record_declaration', 'method_declaration', 'constructor_declaration'].includes(node.type)) return undefined
+    if (!['record_declaration', 'method_declaration', 'constructor_declaration', 'annotation_type_declaration', 'annotation_type_element_declaration'].includes(node.type)) return undefined
     const body = node.childForFieldName('body')
     return node.text.slice(0, body ? body.startIndex - node.startIndex : undefined).trimEnd()
   },
   containers: {
     class_declaration: 'class',
     interface_declaration: 'interface',
+    annotation_type_declaration: 'interface',
     enum_declaration: 'enum',
     record_declaration: 'class',
   },
   members: {
     method_declaration: 'method',
+    annotation_type_element_declaration: 'method',
     constructor_declaration: 'method',
     field_declaration: 'attribute',
     enum_constant: 'constant',
