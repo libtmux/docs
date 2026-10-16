@@ -141,6 +141,21 @@ describe('Rust enum payload fields', () => {
     })
     expect(spans.filter((span) => span.text === 'PaneId').every((span) => span.link?.symbol?.id === 'query.PaneId')).toBe(true)
   })
+
+  it.fails.each(['tuple', 'field'] as const)('keeps callback labels unlinked in a %s payload context', async (kind) => {
+    const symbols = await extract(`pub struct PaneId; pub fn pane() {} pub enum Event {
+      Output { pane: PaneId, callback: fn(pane: PaneId) }, Tuple(fn(pane: PaneId)),
+    }`)
+    const context = symbols.find((symbol) => symbol.id === (kind === 'tuple' ? 'query.Event.Tuple' : 'query.Event.Output.callback'))!
+    const index = new SymbolIndex(symbols, (symbol) => `/reference/${pageSlug(symbol.id)}/`, 'rs')
+    const signature = context.signatures[0]
+    const text = kind === 'tuple' ? signature.raw! : context.type!
+    const spans = index.linkType(text, context, signature)
+    expect(spans.map((span) => span.text).join('')).toBe(text)
+    expect(spans.find((span) => span.text === 'PaneId')?.link?.symbol?.id).toBe('query.PaneId')
+    expect(index.resolve('pane', 'any', context)?.symbol?.id).toBe(kind === 'tuple' ? 'query.pane' : 'query.Event.Output.pane')
+    expect(spans.find((span) => span.text === 'pane')?.link).toBeUndefined()
+  })
 })
 
 describe('Rust trait member visibility', () => {
