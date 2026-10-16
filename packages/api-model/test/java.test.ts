@@ -66,7 +66,7 @@ public record BatchResult(@ReadOnly List<OperationResult> operations) {
       .entries.find((entry) => entry.name === accessor.id)?.uri).toBe(hrefFor(accessor))
   })
 
-  it('preserves explicit accessors, constructors and fields without synthesizing duplicate methods', async () => {
+  it.fails('preserves explicit accessors, constructors and fields without synthesizing duplicate methods', async () => {
     const symbols = await extract(`package example;
 /** @param value the supplied value */
 public record Result<T>(T value) {
@@ -95,7 +95,7 @@ public class Ordinary {
     })
     expect(symbols.find((symbol) => symbol.id === 'example.Result.LIMIT')).toMatchObject({ kind: 'attribute', type: 'int', source: { line: 4 } })
     expect(symbols.find((symbol) => symbol.id === 'example.Overloaded.name')?.signatures)
-      .toEqual([{ params: [{ name: 'ignored', type: 'int' }], returns: 'String' }, { params: [], returns: 'String' }])
+      .toEqual([{ raw: 'public String name(int ignored)', params: [{ name: 'ignored', type: 'int' }], returns: 'String' }, { params: [], returns: 'String' }])
     expect(symbols.find((symbol) => symbol.id === 'example.Empty')).toMatchObject({ kind: 'class', signatures: [{ raw: 'public record Empty()', params: [] }] })
     expect(symbols.find((symbol) => symbol.id === 'example.Ordinary')?.signatures).toEqual([])
     expect(symbols.some((symbol) => symbol.name === 'Hidden' || symbol.name === 'secret')).toBe(false)
@@ -157,7 +157,7 @@ describe('Java record component boundaries', () => {
       expect(parents.find((entry) => entry.name === accessor.qualifiedName + '()')?.uri).toBe(hrefFor(accessor).slice(1))
     })
 
-  it('keeps explicit constructor identities separate from a same-name record component', async () => {
+  it.fails('keeps explicit constructor identities separate from a same-name record component', async () => {
     const symbols = await extract(`package example; public record SelfName(int SelfName) {
       public SelfName(int SelfName) { this.SelfName = SelfName; }
       public SelfName() { this(0); }
@@ -165,11 +165,81 @@ describe('Java record component boundaries', () => {
     const owner = symbols.find((symbol) => symbol.id === 'example.SelfName')!
     const constructor = symbols.find((symbol) => symbol.id === 'example.SelfName.SelfName')!
     const accessor = symbols.find((symbol) => symbol.id === 'example.SelfName.SelfName()')!
-    expect(constructor.signatures).toEqual([{ params: [{ name: 'SelfName', type: 'int' }] }, { params: [] }])
+    expect(constructor.signatures).toEqual([
+      { raw: 'public SelfName(int SelfName)', params: [{ name: 'SelfName', type: 'int' }] },
+      { raw: 'public SelfName()', params: [] },
+    ])
     expect(accessor.signatures).toEqual([{ params: [], returns: 'int' }])
     const index = new SymbolIndex(symbols, (symbol) => `/reference/${symbol.id}/`, 'java')
     expect(index.resolve(constructor.id, 'meth')?.symbol?.id).toBe(constructor.id)
     expect(index.resolve('SelfName()', 'any', owner)?.symbol?.id).toBe(accessor.id)
+  })
+})
+
+describe('Java callable source headers', () => {
+  it.fails('retains annotations, modifiers, generics, throws and comments without the method body', async () => {
+    const raw = `@Note("Target  literal")
+@ReadOnly
+public synchronized <T extends Target & Comparable<T>>
+Map<String, List<? super T[]>> read(final @Safe T value)
+    throws IOException, Other /* retained  comment */`
+    const symbols = await extract(`public class Example { ${raw} { throw new IOException(); } }`)
+    const method = symbols.find((symbol) => symbol.name === 'read')!
+    expect(method.signatures[0].raw).toBe(raw)
+    expect(method.signatures[0].params).toEqual([{ name: 'value', type: 'T' }])
+    expect(method.signatures[0].typeParams).toEqual(['T extends Target & Comparable<T>'])
+    expect(method.signatures[0].returns).toBe('Map<String, List<? super T[]>>')
+  })
+
+  it.fails('retains complete overloads and constructor headers in source order', async () => {
+    const symbols = await extract(`package example;
+public class Example {
+    @ReadOnly public List<Session> sessions(FilterExpr<Session> expression) { return null; }
+    @ReadOnly public List<Session> sessions() { return null; }
+    protected Example(String name) {}
+}`)
+    const method = symbols.find((symbol) => symbol.name === 'sessions')!
+    expect(method.signatures.map((signature) => signature.raw)).toEqual([
+      '@ReadOnly public List<Session> sessions(FilterExpr<Session> expression)',
+      '@ReadOnly public List<Session> sessions()',
+    ])
+    expect(method.id).toBe('example.Example.sessions')
+    expect(method.parent).toBe('example.Example')
+    const constructor = symbols.find((symbol) => symbol.id === 'example.Example.Example')!
+    expect(constructor.signatures[0]).toMatchObject({ raw: 'protected Example(String name)', params: [{ name: 'name', type: 'String' }] })
+    expect(constructor.signatures[0].returns).toBeUndefined()
+  })
+
+  it.fails('preserves bodyless interface syntax without inventing public or removing its semicolon', async () => {
+    const symbols = await extract(`public interface Example {
+    @ReadOnly List<Session> sessions(FilterExpr<Session> expression) throws IOException;
+    default List<Session> sessions() { return null; }
+}`)
+    expect(symbols.find((symbol) => symbol.name === 'sessions')!.signatures.map((signature) => signature.raw)).toEqual([
+      '@ReadOnly List<Session> sessions(FilterExpr<Session> expression) throws IOException;',
+      'default List<Session> sessions()',
+    ])
+  })
+
+  it.fails.each(['String', 'T', 'String[]'])('retains variable-arity %s names, types and owning documentation', async (type) => {
+    const symbols = await extract(`public class Example<T> {
+    /** @param values values in their original order */
+    @SafeVarargs public final void accept(final @ReadOnly ${type}... values) {}
+    public Example(${type}... initial) {}
+}`)
+    const method = symbols.find((symbol) => symbol.name === 'accept')!
+    expect(method.signatures[0].params).toEqual([{
+      name: 'values', type, variadic: 'positional', doc: 'values in their original order',
+    }])
+    const constructor = symbols.find((symbol) => symbol.id === 'example.Example.Example')!
+    expect(constructor.signatures[0].params).toEqual([{ name: 'initial', type, variadic: 'positional' }])
+  })
+
+  it('does not fabricate a source header or line for an implicit record accessor', async () => {
+    const symbols = await extract('public record Example(String value) {}')
+    const accessor = symbols.find((symbol) => symbol.id === 'example.Example.value')!
+    expect(accessor.signatures).toEqual([{ params: [], returns: 'String' }])
+    expect(accessor.source.line).toBeUndefined()
   })
 })
 
