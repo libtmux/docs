@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import { builtinHref, memberTier, type ApiSymbol, type MemberSignals, type Param, type Signature, type SymbolIndex } from '@libtmux/api-model'
 import { apiGlossaryHref } from './api-glossary'
-import { supportsGoSignatures, supportsTypeScriptSignatures } from './code-layout'
+import { supportsGoSignatures, supportsJavaSignatures, supportsTypeScriptSignatures } from './code-layout'
 
 export interface ApiSection {
   id: string
@@ -30,7 +30,7 @@ export function signatureMultiline(symbol: ApiSymbol, signature: Signature, port
 
 /** Keep native declaration syntax consistent in HTML and copied Markdown. */
 export function usesNativeSignatures(symbol: ApiSymbol, port?: string): boolean {
-  return (port === 'rs' && Boolean(symbol.variant)) || supportsTypeScriptSignatures(symbol, port) || supportsGoSignatures(symbol, port) || ['kotlin', 'scala', 'fsharp', 'c', 'powershell', 'julia'].includes(port ?? '') ||
+  return (port === 'rs' && Boolean(symbol.variant)) || supportsTypeScriptSignatures(symbol, port) || supportsGoSignatures(symbol, port) || supportsJavaSignatures(symbol, port) || ['kotlin', 'scala', 'fsharp', 'c', 'powershell', 'julia'].includes(port ?? '') ||
     (port === 'cxx' && symbol.signatures.length > 0 && symbol.signatures.every((signature) => Boolean(signature.raw)))
 }
 
