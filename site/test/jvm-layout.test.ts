@@ -385,8 +385,8 @@ describe('Scala and Kotlin callable layouts', () => {
         expect(before.rootNode.hasError || after.rootNode.hasError).toBe(false)
         expect(after.rootNode.toString()).toBe(before.rootNode.toString())
         const literals = ['comment', 'block_comment', 'string', 'interpolated_string_expression']
-        expect(after.rootNode.descendantsOfType(literals).map((node) => [node.type, node.text]))
-          .toEqual(before.rootNode.descendantsOfType(literals).map((node) => [node.type, node.text]))
+        expect(after.rootNode.descendantsOfType(literals).map((node) => [node!.type, node!.text]))
+          .toEqual(before.rootNode.descendantsOfType(literals).map((node) => [node!.type, node!.text]))
       } finally { before.delete(); after.delete(); parser.delete() }
       expect(layout.failures).toEqual(await codeWidthFailures(layout.text, 'api'))
       const spans = signatureSpans(layout, new SymbolIndex(model.symbols, (entry) => `/${entry.id}/`, 'scala'), symbol, signature)
@@ -468,8 +468,8 @@ describe('Scala and Kotlin callable layouts', () => {
         expect(before.rootNode.hasError || after.rootNode.hasError).toBe(false)
         expect(after.rootNode.toString()).toBe(before.rootNode.toString())
         const literals = ['comment', 'block_comment', 'string', 'interpolated_string_expression']
-        expect(after.rootNode.descendantsOfType(literals).map((node) => [node.type, node.text]))
-          .toEqual(before.rootNode.descendantsOfType(literals).map((node) => [node.type, node.text]))
+        expect(after.rootNode.descendantsOfType(literals).map((node) => [node!.type, node!.text]))
+          .toEqual(before.rootNode.descendantsOfType(literals).map((node) => [node!.type, node!.text]))
       } finally { before.delete(); after.delete(); parser.delete() }
       expect(layout.failures).toEqual([])
       const spans = signatureSpans(layout, new SymbolIndex(model.symbols, (entry) => `/${entry.id}/`, 'scala'), symbol, signature)
