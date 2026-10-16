@@ -246,6 +246,24 @@ export const GO: LanguageSpec = {
   stripDoc: (raw) => raw.startsWith('//') && !raw.startsWith('//go:')
     ? raw.replace(/^\/\/ ?/, '')
     : raw.startsWith('/*') ? raw.slice(2, -2) : undefined,
+  rawSignature: (node) => {
+    if (!['function_declaration', 'method_declaration'].includes(node.type)) return undefined
+    const body = node.childForFieldName('body')
+    return node.text.slice(0, body ? body.startIndex - node.startIndex : undefined).trimEnd()
+  },
+  parameter: (node) => {
+    if (!['parameter_declaration', 'variadic_parameter_declaration'].includes(node.type)) return undefined
+    const names = node.childrenForFieldName('name').flatMap((name) => name ? [name.text] : [])
+    const type = node.childForFieldName('type')?.text
+    return (names.length ? names : ['']).map((name) => ({
+      name, type,
+      ...(node.type === 'variadic_parameter_declaration' ? { variadic: 'positional' as const } : {}),
+    }))
+  },
+  receiver: (node) => {
+    const receiver = node.childForFieldName('receiver')?.namedChildren.find((child) => child?.type === 'parameter_declaration')
+    return receiver ? { name: receiver.childForFieldName('name')?.text ?? '', type: receiver.childForFieldName('type')?.text } : undefined
+  },
   // `func (w Window) Panes()` — the owning type is in the `receiver` field,
   // not in any enclosing node. Pointers and aliases both appear; the type name
   // is what matters, so `*Window` and `Window` resolve to the same owner.

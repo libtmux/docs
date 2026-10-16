@@ -117,8 +117,10 @@ export interface LanguageSpec {
    * every method is a free function and no type has members.
    */
   receiverType?: (node: Node) => string | undefined
-  /** A parameter whose native syntax cannot be split into a name and type. */
-  parameter?: (node: Node) => Param | undefined
+  /** Native parameters, including languages that group several names under one type. */
+  parameter?: (node: Node) => Param | Param[] | undefined
+  /** Receiver facts from the declaration, independently of its resolved owner. */
+  receiver?: (node: Node) => Param | undefined
   /** A type without its annotation delimiter or documentation comments. */
   typeText?: (node: Node) => string
   /** Positional record parameters also declare public properties. */
@@ -219,16 +221,13 @@ function paramsOf(node: Node | null, spec: LanguageSpec): Param[] {
     if (spec.commentTypes.includes(child.type)) continue
     const native = spec.parameter?.(child)
     if (native) {
-      out.push(native)
+      out.push(...Array.isArray(native) ? native : [native])
       continue
     }
     const name = child.childForFieldName('name') ?? child.childForFieldName('pattern')
     const type = child.childForFieldName('type')
     const value = child.childForFieldName('value') ?? child.childForFieldName('default_value')
       ?? child.namedChildren.find((node) => node?.type === 'equals_value_clause')?.namedChild(0)
-    // Go groups parameters — `a, b string` is one node with two names — and a
-    // receiver has no name at all. Falling back to the node's own text keeps
-    // both readable instead of emitting an empty row.
     const label = name?.text ?? child.text.split(/[\s:]/)[0]
     if (!label) continue
     out.push({
@@ -249,6 +248,7 @@ function signatureOf(node: Node, spec: LanguageSpec): Signature {
   return {
     raw: spec.rawSignature?.(node),
     params: paramsOf(node.childForFieldName(f.params), spec),
+    receiver: spec.receiver?.(node),
     // A grammar's return-type node often includes the syntax that introduces
     // it: TypeScript's `type_annotation` is `: string`, and all 240 of its
     // signatures rendered as `foo() → : string`. The arrow or colon is the
