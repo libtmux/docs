@@ -60,7 +60,8 @@ export function isTmuxProse(entry: DocsPage, buildPort?: string): boolean {
   const locale = entry.id.split('/')[0]!
   const id = isLocale(locale) && locale !== DEFAULT_LOCALE ? entry.id.slice(locale.length + 1) : entry.id
   const path = docsPath({ ...entry, id })
-  return tmuxProsePath(path) !== path
+  const route = tmuxProsePath(path)
+  return route.startsWith('tmux/') && tmuxProsePath(route.slice('tmux/'.length)) === route
 }
 
 /** Root builds expose product pages at the same URLs as assembled port builds. */
