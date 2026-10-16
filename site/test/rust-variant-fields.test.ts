@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
-import { membersOf, navSidecarFor, SymbolIndex, type ApiModel, type ApiSymbol } from '@libtmux/api-model'
-import { API_MODELS, API_NAV, isMemberOwner } from '../src/lib/api-models'
+import { isMemberOwner as sharedMemberOwner, OWNER_KINDS as sharedOwnerKinds, ownersOf as proseOwnersOf, membersOf, navSidecarFor, SymbolIndex, type ApiModel, type ApiSymbol } from '@libtmux/api-model'
+import { API_MODELS, API_NAV, isMemberOwner, OWNER_KINDS, ownersOf } from '../src/lib/api-models'
 import { membersByTypeFor, navTreeFor, referenceTreeFor } from '../src/lib/api-tree'
 import { searchApi } from '../src/lib/api-search'
 import { apiEntryFields, apiEntrySections, hasScalarMembers } from '../src/lib/api-sections'
@@ -82,5 +82,47 @@ describe('Rust payload documentation surfaces', () => {
     expect(isMemberOwner(ordinary)).toBe(false)
     expect(apiEntrySections({ ...ordinary, kind: 'method', signatures: [{ params: [{ name: 'value', doc: 'The input.' }] }] }, 'rs'))
       .toContainEqual(expect.objectContaining({ label: 'Parameters' }))
+  })
+})
+
+
+describe('shared reference member ownership', () => {
+  const constant = { kind: 'constant' as const, text: 'export const Direction = { Up: "UP" } as const', source }
+  const typealias = { kind: 'typealias' as const, text: 'export type Direction = "UP"', source }
+  const cases: [string, Partial<ApiSymbol>, boolean][] = [
+    ...['class', 'exception', 'interface', 'struct', 'union', 'trait', 'enum', 'module', 'typealias'].map((kind) =>
+      [kind, { kind: kind as ApiSymbol['kind'] }, true] as [string, Partial<ApiSymbol>, boolean]),
+    ['named variant', { kind: 'constant', variant: 'struct' }, true],
+    ['tuple variant', { kind: 'constant', variant: 'tuple' }, true],
+    ['unit variant', { kind: 'constant', variant: 'unit' }, false],
+    ['scalar constant', { kind: 'constant', type: 'number', modifiers: ['readonly'] }, false],
+    ['constant object', { kind: 'constant', declarations: [constant] }, true],
+    ['type/value family', { kind: 'typealias', declarations: [typealias, constant] }, true],
+    ['type-only metadata on constant', { kind: 'constant', declarations: [typealias] }, false],
+    ['nested function', { kind: 'function' }, false],
+    ['constant metadata on function', { kind: 'function', declarations: [constant] }, false],
+  ]
+
+  it('uses the checker predicate without changing prose kind ownership', () => {
+    expect(isMemberOwner).toBe(sharedMemberOwner)
+    expect(OWNER_KINDS).toBe(sharedOwnerKinds)
+    expect(ownersOf(model).map((owner) => owner.id)).toContain(variant.id)
+    expect(proseOwnersOf(model).map((owner) => owner.id)).not.toContain(variant.id)
+  })
+
+  it.each(cases)('keeps initial and lazy %s ownership aligned', (_label, shape, expected) => {
+    const parent: ApiSymbol = {
+      id: 'fixture.Parent', name: 'Parent', kind: 'class', modifiers: [], signatures: [], source, ...shape,
+    }
+    const child: ApiSymbol = {
+      id: `${parent.id}.child`, name: 'child', parent: parent.id,
+      kind: 'attribute', type: 'u8', modifiers: [], signatures: [], source,
+    }
+    const fixture: ApiModel = { port: 'rs', extractor: 'fixture', symbols: [parent, child] }
+    const nav = navSidecarFor('rs', fixture, { buckets: [{ id: 'parents', label: 'Parents', match: { kind: 'id', is: parent.id } }] })
+    const tree = referenceTreeFor('rs', fixture, navTreeFor(fixture, nav))
+    expect(ownersOf(fixture).map((owner) => owner.id)).toEqual(expected ? [parent.id] : [])
+    expect(membersByTypeFor('rs', fixture).get(parent.id)?.map((member) => member.id)).toEqual(expected ? [child.id] : undefined)
+    expect(tree.members[parent.id]?.map((row) => row[2])).toEqual(expected ? [child.id] : undefined)
   })
 })

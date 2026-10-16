@@ -178,7 +178,7 @@ describe('navigation checker member ownership', () => {
     }
   }
 
-  it.fails('accepts structured variants and constant objects that the reference tree opens', () => {
+  it('accepts structured variants and constant objects that the reference tree opens', () => {
     const failures = check(fixture).flatMap((failure) => failure.names)
     for (const parent of ['control.Event.Output', 'control.Event.Tuple', 'constants.Direction']) {
       expect(failures, parent).not.toContain(`${parent}.child (in constant)`)
@@ -197,7 +197,7 @@ describe('navigation checker member ownership', () => {
     }
   })
 
-  it.fails('accepts every native Rust payload field in the current model', () => {
+  it('accepts every native Rust payload field in the current model', () => {
     const model: ApiModel = JSON.parse(readFileSync(new URL('../../../site/src/data/api/rs.json', import.meta.url), 'utf8'))
     const payloads = new Set(model.symbols.filter((entry) => entry.variant === 'struct' || entry.variant === 'tuple').map((entry) => entry.id))
     expect(model.symbols.filter((entry) => entry.parent && payloads.has(entry.parent))).toHaveLength(163)
