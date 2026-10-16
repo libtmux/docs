@@ -483,8 +483,19 @@ export async function extractWithSpec(
   module: string,
   options: ExtractOptions = {},
 ): Promise<ApiSymbol[]> {
+  return extractSourceWithSpec(spec, readFileSync(file, 'utf8'), file, module, options)
+}
+
+/** Extract native source text while retaining its owning file for provenance. */
+export async function extractSourceWithSpec(
+  spec: LanguageSpec,
+  source: string,
+  file: string,
+  module: string,
+  options: ExtractOptions = {},
+): Promise<ApiSymbol[]> {
   const parser = await parserFor(spec.grammar)
-  const tree = parser.parse(readFileSync(file, 'utf8'))
+  const tree = parser.parse(source)
   if (!tree) return []
   const packageName = spec.grammar === 'java'
     ? tree.rootNode.namedChildren.find((node) => node?.type === 'package_declaration')
