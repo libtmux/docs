@@ -80,7 +80,7 @@ describe('Rust callable layouts', () => {
 const extract = (source: string) => extractSourceWithSpec(RUST, source, 'probe.rs', 'probe')
 
 describe('Rust source grammar edge cases', () => {
-  it.fails('resolves owner references before callable-local generic bindings enter scope', async () => {
+  it('resolves owner references before callable-local generic bindings enter scope', async () => {
     const symbols = await extract('pub struct T;\npub struct Probe<U>(U);\nimpl Probe<T> {\n    pub fn method<T>(value: T) {}\n}')
     const symbol = symbols.find((entry) => entry.name === 'method')!
     const signature = symbol.signatures[0]!
@@ -92,12 +92,12 @@ describe('Rust source grammar edge cases', () => {
     expect(index.linkType('T', symbol, signature).find((span) => span.text === 'T')?.link).toBeUndefined()
   })
 
-  it.fails('retains grammar keyword roles and links named raw type identifiers', async () => {
+  it('retains grammar keyword roles and links named raw type identifiers', async () => {
     const symbols = await extract('pub struct r#type; pub trait Trait {} pub async unsafe extern "C" fn method(value: impl Trait, other: r#type) -> r#type {}')
     const symbol = symbols.find((entry) => entry.name === 'method')!
     const signature = symbol.signatures[0]!
     const layout = await layoutFor(symbol)
-    const words = layout.syntax?.filter((range) => String(range.kind) === 'keyword').map((range) => layout.text.slice(range.start, range.end))
+    const words = layout.syntax?.filter((range) => range.kind === 'keyword').map((range) => layout.text.slice(range.start, range.end))
     expect(words).toEqual(['pub', 'async', 'unsafe', 'extern', 'fn', 'impl'])
     const index = new SymbolIndex(symbols, (entry) => `/${encodeURIComponent(entry.id)}/`, 'rs')
     const spans = signatureSpans(layout, index, symbol, signature)
@@ -226,7 +226,7 @@ impl<T> Probe<T> { pub fn method(value: T) {} }`)
     expect(layout.failures).toEqual([])
   })
 
-  it('rejects inconsistent headers, body fragments, extra declarations and missing native inputs', async () => {
+  it('rejects inconsistent headers, body fragments and extra declarations', async () => {
     await expect(apiSignatureLayouts(method('pub fn other()'), 'rs')).rejects.toThrow(/declaration name/)
     await expect(apiSignatureLayouts(method('pub fn method(actual: T)', [{ name: 'invented' }]), 'rs')).rejects.toThrow(/parameter/)
     for (const raw of ['pub fn method(value: Broken<', 'pub fn method() {}', 'pub fn method(); pub fn extra();']) {
@@ -237,7 +237,7 @@ impl<T> Probe<T> { pub fn method(value: T) {} }`)
     await expect(apiSignatureLayouts(invalid, 'rs')).rejects.toThrow(/grammar/)
   })
 
-  it.fails('reports unavailable native Rust headers before fallback reconstruction', async () => {
+  it('reports unavailable native Rust headers before fallback reconstruction', async () => {
     const implicit = { ...method('pub fn method()'), signatures: [{ params: [] }] }
     const mixed = { ...implicit, signatures: [...implicit.signatures, { raw: 'pub fn method()', params: [] }] }
     for (const symbol of [implicit, mixed]) {

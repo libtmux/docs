@@ -159,11 +159,11 @@ describe('Rust enum payload fields', () => {
 })
 
 describe('Rust trait member visibility', () => {
-  it.fails('reports malformed callable headers instead of dropping native syntax', async () => {
+  it('reports malformed callable headers instead of dropping native syntax', async () => {
     await expect(extract('pub fn method(value: Broken<) {}')).rejects.toThrow(/Invalid Rust callable header grammar/)
   })
 
-  it.fails('reports malformed owner headers instead of dropping native context', async () => {
+  it('reports malformed owner headers instead of dropping native context', async () => {
     await expect(extract('pub struct Probe; impl<T:> Probe { pub fn method(value: T) {} }'))
       .rejects.toThrow(/Invalid Rust enclosing declaration grammar/)
   })
