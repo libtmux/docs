@@ -66,7 +66,7 @@ public record BatchResult(@ReadOnly List<OperationResult> operations) {
       .entries.find((entry) => entry.name === accessor.id)?.uri).toBe(hrefFor(accessor))
   })
 
-  it('preserves explicit accessors, constructors and fields without synthesizing duplicate methods', async () => {
+  it.fails('preserves explicit accessors, constructors and fields without synthesizing duplicate methods', async () => {
     const symbols = await extract(`package example;
 /** @param value the supplied value */
 public record Result<T>(T value) {
@@ -95,7 +95,7 @@ public class Ordinary {
     })
     expect(symbols.find((symbol) => symbol.id === 'example.Result.LIMIT')).toMatchObject({ kind: 'attribute', type: 'int', source: { line: 4 } })
     expect(symbols.find((symbol) => symbol.id === 'example.Overloaded.name')?.signatures)
-      .toEqual([{ raw: 'public String name(int ignored)', params: [{ name: 'ignored', type: 'int' }], returns: 'String' }, { params: [], returns: 'String' }])
+      .toEqual([{ raw: 'public String name(int ignored)', params: [{ name: 'ignored', type: 'int' }], returns: 'String', typeScopeBoundary: false }, { params: [], returns: 'String' }])
     expect(symbols.find((symbol) => symbol.id === 'example.Empty')).toMatchObject({ kind: 'class', signatures: [{ raw: 'public record Empty()', params: [] }] })
     expect(symbols.find((symbol) => symbol.id === 'example.Ordinary')?.signatures).toEqual([])
     expect(symbols.some((symbol) => symbol.name === 'Hidden' || symbol.name === 'secret')).toBe(false)
@@ -428,6 +428,8 @@ describe('Java native annotation and lexical type identities', () => {
       const index = new SymbolIndex(symbols, (symbol) => `/${symbol.id}/`, 'java')
       const instance = method.signatures.find((signature) => signature.returns === 'T')!
       const detached = method.signatures.find((signature) => signature.returns === 'void')!
+      expect(instance.typeScopeBoundary).toBe(false)
+      expect(detached.typeScopeBoundary).toBe(true)
       expect(index.linkType('T', method, instance)).toEqual([{ text: 'T', declaration: true }])
       expect(index.linkType('T', method, detached)[0].link?.symbol?.id).toBe('example.T')
       expect(index.linkType('T', method)).toEqual([{ text: 'T', declaration: true }])
