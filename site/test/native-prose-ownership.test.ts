@@ -126,6 +126,20 @@ describe('native tmux prose ownership', () => {
     expect(markdownOf(fixture(id, 'The value is `TMUX`.', data))).not.toContain('[`TMUX`](')
   })
 
+  it.fails.each(['guides', 'topics', 'concepts', 'examples'])('preserves canonical staged tmux %s in HTML and Markdown', async (section) => {
+    const entry = fixture('_staged/native/canonical', 'The value is `TMUX`. Use `run-shell`.', {
+      route: `tmux/${section}/canonical`,
+    })
+    const html = await htmlOf(entry)
+    const markdown = markdownOf(entry)
+    expect(html).toContain('TMUX')
+    expect(markdown).toContain('`TMUX`')
+    expect(html).toContain('/tmux/latest/manual/run-shell/')
+    expect(markdown).toContain('/tmux/latest/manual/run-shell/')
+    expect({ htmlLibraryLink: html.includes('api-mention'), markdownLibraryLink: markdown.includes('[`TMUX`](') })
+      .toEqual({ htmlLibraryLink: false, markdownLibraryLink: false })
+  })
+
   it('preserves authored destinations, manual links, command inference and copied fences', async () => {
     const body = [
       '[`renamed:source`](/swift/latest/reference/regexpattern-source/)',

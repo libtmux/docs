@@ -16,6 +16,25 @@ describe('product document URLs', () => {
     expect(isTmuxProse({ id: `${section}/page`, data: { route: 'parity' } })).toBe(false)
   })
 
+  it.fails.each(['guides', 'topics', 'concepts', 'examples'])('recognizes already canonical tmux %s routes', (section) => {
+    for (const path of [`tmux/${section}`, `tmux/${section}/nested/page`]) {
+      const staged = { id: '_staged/native/canonical', data: { route: path } }
+      expect(docsRoutePath(staged)).toBe(path)
+      expect(isTmuxProse(staged)).toBe(true)
+      expect(isTmuxProse({ id: path, data: {} })).toBe(true)
+      expect(isTmuxProse({ id: `ja/${path}`, data: {} })).toBe(true)
+      expect(isTmuxProse(staged, 'py')).toBe(false)
+      expect(isTmuxProse({ ...staged, data: { ...staged.data, port: 'py' } })).toBe(false)
+    }
+  })
+
+  it('keeps native reference and similarly named routes outside tmux prose', () => {
+    for (const route of ['tmux', 'tmux/manual', 'tmux/latest/manual/full', 'tmux/reference',
+      'tmux/guides-other/page', 'unknown/tmux/guides/page', 'tmux/tmux/guides/page']) {
+      expect(isTmuxProse({ id: '_staged/native/control', data: { route } }), route).toBe(false)
+    }
+  })
+
   it('keeps product routes and shared pages outside native tmux ownership', () => {
     expect(isTmuxProse(pythonGuide)).toBe(false)
     for (const id of ['', 'parity', 'third-party-notices', 'unknown/guides/page']) {
