@@ -1,14 +1,108 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { parserFor, SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model'
+import { parserFor, parentInventory, SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { apiSignatureLayouts, codeWidthFailures, signatureSpans } from '../src/lib/code-layout'
 import { symbolMarkdownWithLayout } from '../src/lib/symbol-markdown'
 import { extractJvm } from '../../packages/api-model/src/languages/jvm'
 
 const kotlinModel = JSON.parse(readFileSync(new URL('../src/data/api/kotlin.json', import.meta.url), 'utf8')) as ApiModel
+
+const scalaModel = JSON.parse(readFileSync(new URL('../src/data/api/scala.json', import.meta.url), 'utf8')) as ApiModel
+const javaModel = JSON.parse(readFileSync(new URL('../src/data/api/java.json', import.meta.url), 'utf8')) as ApiModel
+const scalaParameterLayouts = [
+  ['io.github.libtmux.scaladsl.cats.Pane.capture', 1, `extension [F[_]](self: Pane[F])(using
+    F: _root_.cats.effect.Async[F]
+)
+  def capture(
+      configure:
+          io.github.libtmux.CaptureSpec.Builder => Unit
+  ): F[Vector[String]]`],
+  ['io.github.libtmux.scaladsl.cats.Server.newSession', 1, `extension [F[_]](self: Server[F])(using
+    F: _root_.cats.effect.Async[F]
+)
+  def newSession(
+      configure:
+          io.github.libtmux.SessionSpec.Builder => Unit
+  ): F[Session[F]]`],
+  ['io.github.libtmux.scaladsl.cats.Server.isAlive', 1, `extension [F[_]](self: Server[F])(using
+    F: _root_.cats.effect.Async[F]
+)
+  def isAlive(
+      timeout:
+          _root_.scala.concurrent.duration.FiniteDuration
+  ): F[Boolean]`],
+  ['io.github.libtmux.scaladsl.cats.Server.killServer', 1, `extension [F[_]](self: Server[F])(using
+    F: _root_.cats.effect.Async[F]
+)
+  def killServer(
+      timeout:
+          _root_.scala.concurrent.duration.FiniteDuration
+  ): F[Unit]`],
+  ['io.github.libtmux.scaladsl.cats.Server.cmd', 2, `extension [F[_]](self: Server[F])(using
+    F: _root_.cats.effect.Async[F]
+)
+  def cmd(
+      argv: Vector[String],
+      timeout:
+          _root_.scala.concurrent.duration.FiniteDuration
+  ): F[io.github.libtmux.transport.CommandResult]`],
+  ['io.github.libtmux.scaladsl.cats.Session.newWindow', 1, `extension [F[_]](self: Session[F])(using
+    F: _root_.cats.effect.Async[F]
+)
+  def newWindow(
+      configure:
+          io.github.libtmux.WindowSpec.Builder => Unit
+  ): F[Window[F]]`],
+  ['io.github.libtmux.scaladsl.Pane.capture', 1, `extension (self: Pane)
+  def capture(
+      configure:
+          io.github.libtmux.CaptureSpec.Builder => Unit
+  ): Vector[String]`],
+  ['io.github.libtmux.scaladsl.Server.newSession', 1, `extension (self: Server)
+  def newSession(
+      configure:
+          io.github.libtmux.SessionSpec.Builder => Unit
+  ): Session`],
+  ['io.github.libtmux.scaladsl.Server.isAlive', 1, `extension (self: Server)
+  def isAlive(
+      timeout:
+          _root_.scala.concurrent.duration.FiniteDuration
+  ): Boolean`],
+  ['io.github.libtmux.scaladsl.Server.killServer', 1, `extension (self: Server)
+  def killServer(
+      timeout:
+          _root_.scala.concurrent.duration.FiniteDuration
+  ): Unit`],
+  ['io.github.libtmux.scaladsl.Server.cmd', 2, `extension (self: Server)
+  def cmd(
+      argv: Vector[String],
+      timeout:
+          _root_.scala.concurrent.duration.FiniteDuration
+  ): io.github.libtmux.transport.CommandResult`],
+  ['io.github.libtmux.scaladsl.Session.newWindow', 1, `extension (self: Session)
+  def newWindow(
+      configure:
+          io.github.libtmux.WindowSpec.Builder => Unit
+  ): Window`],
+] as const
+
+let scalaExtraction: Promise<ApiModel> | undefined
+async function extractedScala() {
+  return scalaExtraction ??= (async () => {
+    const root = mkdtempSync(join(tmpdir(), 'libtmux-scala-width-'))
+    try {
+      for (const [i, source] of Object.values(scalaModel.generatedSources!).entries()) {
+        const directory = join(root, String(i))
+        mkdirSync(directory)
+        writeFileSync(join(directory, 'Native.scala'), source)
+      }
+      return await extractJvm('scala', [root], scalaModel.revision)
+    } finally { rmSync(root, { recursive: true, force: true }) }
+  })()
+}
 
 const fixtures = [
   ['scala', 'io.github.libtmux.scaladsl.Server.sessions', [
@@ -34,6 +128,36 @@ const method = (raw: string, params: Signature['params'] = [], typeParams?: stri
 })
 
 describe('Scala and Kotlin callable layouts', () => {
+  it.fails.each(scalaParameterLayouts)('fits the extracted Scala parameter continuation in %s', async (id, ordinal, expected) => {
+    const symbol = scalaModel.symbols.find((entry) => entry.id === id)!
+    const extracted = (await extractedScala()).symbols.find((entry) => entry.id === id)!
+    expect(extracted.signatures).toEqual(symbol.signatures)
+    const native = { ...symbol, signatures: extracted.signatures }
+    const signature = native.signatures[ordinal]!
+    const layouts = await apiSignatureLayouts(native, 'scala')
+    const layout = layouts.get(signature)!
+    expect(layout.failures).toEqual([])
+    expect(layout.text).toBe(expected)
+    const index = new SymbolIndex(scalaModel.symbols, (entry) => `/${entry.id}/`, 'scala')
+    index.addInventory('', parentInventory(javaModel, (entry) => `/java/${entry.id}/`), ['scala'], 'libtmux Java')
+    const spans = signatureSpans(layout, index, native, signature)
+    expect(spans.map((span) => span.text).join('')).toBe(expected)
+    expect(spans.filter((span) => span.declarationName).map((span) => span.text)).toEqual([symbol.name])
+    expect(spans.filter((span) => span.link?.href.startsWith('#')).map((span) => [span.text, span.link!.href]))
+      .toEqual(signature.params.map((param) => [param.name, `#${id}.parameter.${param.name}`]))
+    const parameterType = signature.params.at(-1)!.type!
+    const qualifiedType = parameterType.replace(/ => Unit$/, '')
+    const target = qualifiedType.startsWith('_root_.scala.')
+      ? 'https://www.scala-lang.org/api/3.x/scala/concurrent/duration/FiniteDuration.html'
+      : `/java/${javaModel.symbols.find((entry) => entry.qualifiedName === qualifiedType && entry.kind === 'class')!.id}/`
+    expect(spans.filter((span) => span.text === qualifiedType).map((span) => span.link?.href)).toEqual([target])
+    const again = { ...native, signatures: [{ ...signature, raw: layout.text }] }
+    expect([...(await apiSignatureLayouts(again, 'scala')).values()][0]!.text).toBe(expected)
+    const markdown = fromMarkdown(await symbolMarkdownWithLayout({ model: scalaModel, symbol: native }))
+    const code = markdown.children.find((node) => node.type === 'code')
+    expect(code?.type === 'code' && code.value).toBe([...layouts.values()].map((item) => item.text).join('\n\n'))
+  })
+
   it.each([
     ['withServer', 'policy: ExecutionPolicy =\n        ExecutionPolicy.default(config),'],
     ['withControl', 'timeout: Duration =\n        server.config.defaultTimeout().toKotlinDuration(),'],
