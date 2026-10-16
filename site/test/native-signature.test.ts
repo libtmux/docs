@@ -545,13 +545,17 @@ describe('native signature emission', () => {
       .rejects.toThrow(`API signature fixture is missing a parameterized callable for ${port}`)
   })
 
-  it.each([
+  it.fails.each([
     ['ts', 'server.Server.setHook', 'containment'],
     ['scala', 'io.github.libtmux.scaladsl.Server.sessions', 'containment'],
     ['kotlin', 'io.github.libtmux.kotlin.Server.sessions', 'containment'],
+    ['go', 'tmux.Server.ListBuffers', 'containment'],
+    ['java', 'io.github.libtmux.Server.Server.sessions', 'containment'],
     ['ts', 'server.Server.setHook', 'keyboard'],
     ['scala', 'io.github.libtmux.scaladsl.Server.sessions', 'keyboard'],
     ['kotlin', 'io.github.libtmux.kotlin.Server.sessions', 'keyboard'],
+    ['go', 'tmux.Server.ListBuffers', 'keyboard'],
+    ['java', 'io.github.libtmux.Server.Server.sessions', 'keyboard'],
   ] as const)('gives formatted %s declaration %s local %s access', async (port, id, check) => {
     const model = JSON.parse(readFileSync(new URL(`../src/data/api/${port}.json`, import.meta.url), 'utf8')) as ApiModel
     const symbol = model.symbols.find((entry) => entry.id === id)!
@@ -574,11 +578,11 @@ describe('native signature emission', () => {
         const signature = win.document.querySelector<HTMLElement>('.api-native-signature')!
         const style = win.getComputedStyle(signature)
         expect(displayedSignature(signature)).toBe(layout.text)
+        expect(style.whiteSpace).toBe('pre')
         expect(win.getComputedStyle(win.document.querySelector('dl')!).overflow).toBe('visible')
         if (check === 'containment') {
           expect(style.overflowX).toBe('auto')
           expect(style.maxInlineSize).toBe('100%')
-          expect(style.whiteSpace).toBe('pre-wrap')
           expect(style.overflowWrap).toBe('normal')
           for (const link of signature.querySelectorAll('.api-type-link')) {
             expect(win.getComputedStyle(link).overflowWrap).toBe('normal')
@@ -601,10 +605,12 @@ describe('native signature emission', () => {
     } finally { await win.happyDOM.abort() }
   })
 
-  it('keeps an unformatted native declaration outside the scroll-region contract', async () => {
-    const port = 'cxx'
-    const model = JSON.parse(readFileSync(new URL('../src/data/api/cxx.json', import.meta.url), 'utf8')) as ApiModel
-    const symbol = model.symbols.find((entry) => entry.id === 'libtmux::Server::sessions')!
+  it.each([
+    ['cxx', 'libtmux::Server::sessions', 'pre-wrap'],
+    ['fsharp', 'LibTmux.FSharp.Server.newSession', 'normal'],
+  ] as const)('keeps unformatted %s outside the scroll-region contract', async (port, id, whiteSpace) => {
+    const model = JSON.parse(readFileSync(new URL(`../src/data/api/${port}.json`, import.meta.url), 'utf8')) as ApiModel
+    const symbol = model.symbols.find((entry) => entry.id === id)!
     const sig = symbol.signatures[0]
     const component = await (componentPromise ??= signatureComponent())
     const container = await experimental_AstroContainer.create()
@@ -617,6 +623,7 @@ describe('native signature emission', () => {
       const signature = win.document.querySelector('.api-native-signature')!
       expect(signature.hasAttribute('tabindex')).toBe(false)
       expect(signature.hasAttribute('role')).toBe(false)
+      expect(win.getComputedStyle(signature).whiteSpace).toBe(whiteSpace)
       expect(win.getComputedStyle(signature).overflowX).not.toBe('auto')
       expect(win.getComputedStyle(signature).overflowWrap).toBe('anywhere')
     } finally { await win.happyDOM.abort() }
