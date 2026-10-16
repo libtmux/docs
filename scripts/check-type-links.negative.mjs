@@ -228,6 +228,35 @@ for (const quote of ["'", '"']) {
   rmSync(unknown, { recursive: true, force: true })
 }
 
+const expectBroken = (name, ok, detail) => check(`xfail ${name}`, !ok, ok ? 'unexpected pass' : detail)
+for (const quote of ["'", '"']) {
+  const fragment = (value, note) => `<span data-note=${quote}${note}${quote}>${value}</span>`
+  const attributeMangled = site({ markup: `<span class="api-type">${fragment('s', '<!--')}:${fragment('s8CopyableP', '-->')}</span>` })
+  const mangledResult = run(attributeMangled, 99)
+  expectBroken('comment delimiters in quoted attributes cannot hide a mangled id',
+    mangledResult.code !== 0 && mangledResult.out.includes('s:s8CopyableP'), `exited ${mangledResult.code}:\n${mangledResult.out}`)
+  rmSync(attributeMangled, { recursive: true, force: true })
+
+  const attributeUnknown = site({ markup: `<span class="api-punct">${fragment('Un', '<!--')}${fragment('known', '-->')}</span>` })
+  const unknownResult = run(attributeUnknown, 0)
+  expectBroken('comment delimiters in quoted attributes preserve the complete unknown name',
+    unknownResult.code !== 0 && unknownResult.out.includes('Unknown(1)'), `exited ${unknownResult.code}:\n${unknownResult.out}`)
+  rmSync(attributeUnknown, { recursive: true, force: true })
+
+  const comment = `<!-- ${quote} --!>`
+  const bangMangled = site({ markup: `<span class="api-type">s${comment}:s8CopyableP</span>` })
+  const bangResult = run(bangMangled, 99)
+  expectBroken('bang-ended quoted comments cannot hide a visible mangled id',
+    bangResult.code !== 0 && bangResult.out.includes('s:s8CopyableP'), `exited ${bangResult.code}:\n${bangResult.out}`)
+  rmSync(bangMangled, { recursive: true, force: true })
+
+  const bangUnknown = site({ markup: `<span class="api-punct">Un${comment}known</span>` })
+  const result = run(bangUnknown, 0)
+  expectBroken('bang-ended quoted comments cannot hide a visible unknown type',
+    result.code !== 0 && result.out.includes('Unknown(1)'), `exited ${result.code}:\n${result.out}`)
+  rmSync(bangUnknown, { recursive: true, force: true })
+}
+
 if (failures) {
   console.error(`\ncheck-type-links cannot detect ${failures} of the situations it exists for.`)
   process.exit(1)
