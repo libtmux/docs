@@ -11867,13 +11867,6 @@
   },
   {
    "port": "swift",
-   "symbol": "RegexPattern.source",
-   "page": "/concepts/server-session-window-pane/",
-   "title": "Server, session, window, pane",
-   "section": "concepts"
-  },
-  {
-   "port": "swift",
    "symbol": "Server",
    "page": "/swift/latest/concepts/server-session-window-pane/",
    "title": "Server, session, window, pane",
