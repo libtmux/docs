@@ -322,9 +322,13 @@ export const JAVA: LanguageSpec = {
   grammar: 'java',
   docDialect: 'javadoc',
   parameter: (node) => {
+    // The pinned grammar parses annotated receivers as formal parameters.
+    if (node.type === 'receiver_parameter' ||
+      (node.type === 'formal_parameter' && node.childForFieldName('name')?.text === 'this')) return []
     if (node.type !== 'spread_parameter') return undefined
     const name = node.namedChildren.find((child) => child?.type === 'variable_declarator')?.childForFieldName('name')?.text
-    const type = node.namedChildren.find((child) => child && !['modifiers', 'variable_declarator'].includes(child.type))?.text
+    const type = node.namedChildren.find((child) => child &&
+      !['modifiers', 'variable_declarator'].includes(child.type) && !JAVA.commentTypes.includes(child.type))?.text
     return name && type ? { name, type: node.parent?.parent?.type === 'record_declaration' ? `${type}[]` : type, variadic: 'positional' } : undefined
   },
   recordAccessors: (node) => node.type === 'record_declaration',

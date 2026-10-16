@@ -125,7 +125,7 @@ function syntaxRanges(owner: NativeNode, parts: NativeNode[], symbol: ApiSymbol,
   if (name.text !== symbol.name) throw new Error(`Java declaration name does not match ${symbol.id}: ${name.text}`)
   const syntax: CodeSyntax[] = [{ start: name.startIndex - prefix.length, end: name.endIndex - prefix.length, kind: 'name' }]
   const parameters = children(owner.childForFieldName('parameters')!, true)
-    .filter((node) => ['formal_parameter', 'spread_parameter'].includes(node.type))
+    .filter((node) => ['formal_parameter', 'spread_parameter'].includes(node.type) && node.childForFieldName('name')?.text !== 'this')
   const parameterNames = parameters.map((node) => node.childForFieldName('name') ??
     children(node, true).find((child) => child.type === 'variable_declarator')?.childForFieldName('name'))
   if (parameterNames.length !== signature.params.length || parameterNames.some((node, i) => node?.text !== signature.params[i]!.name)) {
@@ -135,7 +135,9 @@ function syntaxRanges(owner: NativeNode, parts: NativeNode[], symbol: ApiSymbol,
     start: node!.startIndex - prefix.length, end: node!.endIndex - prefix.length, kind: 'parameter', parameter: i,
   })
   const typeParameters = owner.childForFieldName('type_parameters')
-  const bound = new Set(typeParameters ? children(typeParameters, true).map((node) => node.firstNamedChild?.text) : [])
+  const bound = new Set(typeParameters ? children(typeParameters, true)
+    .filter((node) => node.type === 'type_parameter')
+    .map((node) => children(node, true).find((child) => child.type === 'type_identifier')?.text) : [])
   const visit = (node: NativeNode) => {
     if (comments.has(node.type) || literals.has(node.type) || (node.type === 'type_identifier' && bound.has(node.text))) {
       syntax.push({ start: node.startIndex - prefix.length, end: node.endIndex - prefix.length, kind: 'literal' })
