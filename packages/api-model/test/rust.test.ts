@@ -29,6 +29,99 @@ async function extract(source: string, privateMembers = false) {
   return extractWithSpec(RUST, join(root, 'query.rs'), 'query', { privateMembers })
 }
 
+describe('Rust enum payload fields', () => {
+  it.fails('retains named payload fields with native types, docs and source lines', async () => {
+    const symbols = await extract(`pub enum Event {
+    /// A pane produced output.
+    Output {
+        /// The pane that produced it.
+        pane: PaneId,
+        /// The output bytes.
+        bytes: Vec<u8>,
+    },
+    /// The session list changed.
+    SessionsChanged,
+}`)
+    const variant = symbols.find((symbol) => symbol.id === 'query.Event.Output')!
+    expect(variant).toMatchObject({ kind: 'constant', variant: 'struct', parent: 'query.Event',
+      signatures: [{ raw: 'Output {\n    pane: PaneId,\n    bytes: Vec<u8>,\n}', params: [] }],
+      doc: { summary: 'A pane produced output.' }, source: { line: 3 } })
+    expect(variant.value).toBeUndefined()
+    expect(symbols.filter((symbol) => symbol.parent === variant.id)).toMatchObject([
+      { id: 'query.Event.Output.pane', name: 'pane', kind: 'attribute', type: 'PaneId', signatures: [],
+        doc: { summary: 'The pane that produced it.' }, source: { line: 5 } },
+      { id: 'query.Event.Output.bytes', name: 'bytes', kind: 'attribute', type: 'Vec<u8>', signatures: [],
+        doc: { summary: 'The output bytes.' }, source: { line: 7 } },
+    ])
+    expect(symbols.find((symbol) => symbol.name === 'SessionsChanged')).toMatchObject({
+      variant: 'unit', signatures: [{ raw: 'SessionsChanged', params: [] }],
+    })
+  })
+
+  it.fails('distinguishes tuple positions, empty shapes and explicit unevaluated discriminants', async () => {
+    const symbols = await extract(`pub enum Payload {
+    Tuple(
+        /// The first item.
+        Vec<(u8, u8)>,
+        String,
+    ),
+    EmptyTuple(),
+    EmptyStruct {},
+    Unit,
+    Number = 1 << 3,
+}`)
+    const tuple = symbols.find((symbol) => symbol.name === 'Tuple')!
+    expect(tuple).toMatchObject({ variant: 'tuple', signatures: [{
+      raw: 'Tuple(\n    Vec<(u8, u8)>,\n    String,\n)', params: [],
+    }] })
+    expect(symbols.filter((symbol) => symbol.parent === tuple.id)).toMatchObject([
+      { id: 'query.Payload.Tuple.0', name: '0', type: 'Vec<(u8, u8)>', doc: { summary: 'The first item.' }, source: { line: 4 } },
+      { id: 'query.Payload.Tuple.1', name: '1', type: 'String', source: { line: 5 } },
+    ])
+    expect(symbols.find((symbol) => symbol.name === '1')?.doc).toBeUndefined()
+    for (const [name, variant, raw] of [['EmptyTuple', 'tuple', 'EmptyTuple()'], ['EmptyStruct', 'struct', 'EmptyStruct {}'], ['Unit', 'unit', 'Unit']]) {
+      const entry = symbols.find((symbol) => symbol.name === name)!
+      expect(entry).toMatchObject({ variant, signatures: [{ raw, params: [] }] })
+      expect(entry.value).toBeUndefined()
+      expect(symbols.filter((symbol) => symbol.parent === entry.id)).toEqual([])
+    }
+    expect(symbols.find((symbol) => symbol.name === 'Number')).toMatchObject({
+      value: '1 << 3', signatures: [{ raw: 'Number = 1 << 3', params: [] }],
+    })
+  })
+
+  it.fails('links actual fields and payload types without borrowing generic names from other declarations', async () => {
+    const symbols = await extract(`pub struct T; pub struct PaneId; pub enum Event<T: Clone> {
+      Output { pane: PaneId, value: T }, Tuple(T),
+    }`)
+    const variant = symbols.find((symbol) => symbol.name === 'Output')!
+    const field = symbols.find((symbol) => symbol.id === 'query.Event.Output.value')!
+    expect(field).toBeDefined()
+    const index = new SymbolIndex(symbols, (symbol) => `/reference/${pageSlug(symbol.id)}/`, 'rs')
+    const spans = index.linkType(variant.signatures[0].raw!, variant, variant.signatures[0])
+    expect(spans.find((span) => span.text === 'Output')).toMatchObject({ declaration: true })
+    expect(spans.find((span) => span.text === 'pane')?.link?.symbol?.id).toBe('query.Event.Output.pane')
+    expect(spans.find((span) => span.text === 'PaneId')?.link?.symbol?.id).toBe('query.PaneId')
+    expect(spans.find((span) => span.text === 'T')?.link).toBeUndefined()
+    expect(index.linkType(field.type!, field).find((span) => span.text === 'T')?.link).toBeUndefined()
+    expect(index.resolve('Output.pane', 'any', symbols.find((symbol) => symbol.name === 'Event'))?.symbol?.id).toBe('query.Event.Output.pane')
+    expect(index.resolve('query.Event.Tuple.0')?.symbol?.name).toBe('0')
+  })
+
+  it('does not expose private owners or interpret macros and attributed payloads', async () => {
+    const symbols = await extract(`enum Private { Output { bytes: Vec<u8> } }
+      pub enum Public {
+        Conditional { #[cfg(feature = "extra")] value: u8 },
+        Hidden { #[doc(hidden)] secret: u8 },
+      }
+      macro_rules! make { () => { pub enum Generated { Tuple(u8) } } }
+    `)
+    expect(symbols.some((symbol) => symbol.id.startsWith('query.Private'))).toBe(false)
+    expect(symbols.some((symbol) => symbol.parent?.startsWith('query.Public.'))).toBe(false)
+    expect(symbols.some((symbol) => symbol.parent === 'query.Generated.Tuple')).toBe(false)
+  })
+})
+
 describe('Rust trait member visibility', () => {
   it('keeps async and unsafe declaration modifiers without reading function bodies', async () => {
     const symbols = await extract(`
