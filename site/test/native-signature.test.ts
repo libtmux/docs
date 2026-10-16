@@ -374,7 +374,7 @@ describe('native signature emission', () => {
     } finally { await win.happyDOM.abort() }
   })
 
-  it.fails('renders Go source headers with parameter targets and linked types', async () => {
+  it('renders Go source headers with parameter targets and linked types', async () => {
     const model = JSON.parse(readFileSync(new URL('../src/data/api/go.json', import.meta.url), 'utf8')) as ApiModel
     const symbol = model.symbols.find((entry) => entry.id === 'tmux.Server.ListBuffers')!
     const sig = symbol.signatures[0]!
@@ -407,7 +407,7 @@ describe('native signature emission', () => {
     } finally { await win.happyDOM.abort() }
   })
 
-  it.fails.each([
+  it.each([
     ['ts', undefined],
     ['scala', 'def Method(value: String = "Target"): Unknown'],
     ['kotlin', 'fun Method(value: String = "Target"): Unknown'],

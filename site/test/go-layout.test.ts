@@ -123,7 +123,7 @@ describe('Go callable layouts', () => {
     expect(spans.filter((span) => span.link?.href.startsWith('#tmux.Method.parameter.')).map((span) => span.text)).toEqual(['Target', 'value'])
   })
 
-  it.fails('preserves grammar-owned roles from source extraction without exempting unknown types', async () => {
+  it('preserves grammar-owned roles from source extraction without exempting unknown types', async () => {
     const directory = mkdtempSync(join(tmpdir(), 'libtmux-go-syntax-roles-'))
     try {
       const file = join(directory, 'probe.go')
