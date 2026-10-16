@@ -43,10 +43,12 @@ const site = positional[0] ?? join(root, '_site')
 /** A mangled Swift USR standing where a type name belongs. */
 const USR = /^s:[A-Za-z0-9_]+$/
 const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'", nbsp: ' ' }
+// Consume comments and quoted tags together so neither scans inside the other.
+// HTML also closes comments at --!>, <!-->, and <!--->.
+const MARKUP = /<!--(?:>|->|[\s\S]*?(?:--!?>|$))|<(?:(\/?)(span|a)\b)?((?:[^>"']|"[^"]*"|'[^']*')*)>/gi
 const text = (html) =>
   html
-    .replace(/<!--[\s\S]*?-->/g, '')
-    .replace(/<(?:[^>"']|"[^"]*"|'[^']*')*>/g, '')
+    .replace(MARKUP, '')
     .replace(/&(#39|amp|lt|gt|quot|nbsp);/g, (_, e) => ENTITIES[e])
     .trim()
 
@@ -71,7 +73,7 @@ function typeMarkup(html) {
   const blocks = []
   let resolved = 0
   // Stack spans so operators nested inside a type cannot conceal a mangled id.
-  for (const match of html.matchAll(/<!--[\s\S]*?-->|<(\/?)(span|a)\b((?:[^>"']|"[^"]*"|'[^']*')*)>/gi)) {
+  for (const match of html.matchAll(MARKUP)) {
     if (!match[2]) continue
     const tag = match[2].toLowerCase()
     if (match[1]) {
