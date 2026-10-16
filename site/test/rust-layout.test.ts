@@ -80,6 +80,32 @@ describe('Rust callable layouts', () => {
 const extract = (source: string) => extractSourceWithSpec(RUST, source, 'probe.rs', 'probe')
 
 describe('Rust source grammar edge cases', () => {
+  it.fails('resolves owner references before callable-local generic bindings enter scope', async () => {
+    const symbols = await extract('pub struct T;\npub struct Probe<U>(U);\nimpl Probe<T> {\n    pub fn method<T>(value: T) {}\n}')
+    const symbol = symbols.find((entry) => entry.name === 'method')!
+    const signature = symbol.signatures[0]!
+    const index = new SymbolIndex(symbols, (entry) => `/${entry.id}/`, 'rs')
+    const layout = await layoutFor(symbol)
+    const spans = signatureSpans(layout, index, symbol, signature)
+    expect(spans.filter((span) => span.enclosingContext && span.text === 'T').map((span) => span.link?.href)).toEqual(['/probe.T/'])
+    expect(spans.filter((span) => !span.enclosingContext && span.text === 'T').map((span) => span.link)).toEqual([undefined, undefined])
+    expect(index.linkType('T', symbol, signature).find((span) => span.text === 'T')?.link).toBeUndefined()
+  })
+
+  it.fails('retains grammar keyword roles and links named raw type identifiers', async () => {
+    const symbols = await extract('pub struct r#type; pub trait Trait {} pub async unsafe extern "C" fn method(value: impl Trait, other: r#type) -> r#type {}')
+    const symbol = symbols.find((entry) => entry.name === 'method')!
+    const signature = symbol.signatures[0]!
+    const layout = await layoutFor(symbol)
+    const words = layout.syntax?.filter((range) => String(range.kind) === 'keyword').map((range) => layout.text.slice(range.start, range.end))
+    expect(words).toEqual(['pub', 'async', 'unsafe', 'extern', 'fn', 'impl'])
+    const index = new SymbolIndex(symbols, (entry) => `/${encodeURIComponent(entry.id)}/`, 'rs')
+    const spans = signatureSpans(layout, index, symbol, signature)
+    expect(spans.filter((span) => span.keyword).map((span) => span.text)).toEqual(words)
+    expect(spans.filter((span) => span.link?.symbol?.id === 'probe.r#type')).toHaveLength(2)
+    expect(spans.filter((span) => span.text.includes('"C"')).some((span) => span.link)).toBe(false)
+  })
+
   it('keeps method and impl binders distinct in headers and parameter type links', async () => {
     const symbols = await extract(`pub struct T; pub struct U; pub struct V; pub struct N;
 pub struct Bound; pub struct label; pub struct Probe<T>;
@@ -209,11 +235,16 @@ impl<T> Probe<T> { pub fn method(value: T) {} }`)
     const invalid = method('pub fn method()')
     invalid.signatures[0]!.enclosingDeclaration = 'impl Probe { pub fn extra() {} }'
     await expect(apiSignatureLayouts(invalid, 'rs')).rejects.toThrow(/grammar/)
+  })
+
+  it.fails('reports unavailable native Rust headers before fallback reconstruction', async () => {
     const implicit = { ...method('pub fn method()'), signatures: [{ params: [] }] }
     const mixed = { ...implicit, signatures: [...implicit.signatures, { raw: 'pub fn method()', params: [] }] }
     for (const symbol of [implicit, mixed]) {
       expect(usesNativeSignatures(symbol, 'rs')).toBe(false)
-      expect(await apiSignatureLayouts(symbol, 'rs')).toEqual(new Map())
+      await expect(apiSignatureLayouts(symbol, 'rs')).rejects.toThrow(/unavailable.*Rust|Rust.*unavailable/i)
+      await expect(symbolMarkdownWithLayout({ model: { port: 'rs', extractor: 'fixture', symbols: [symbol] }, symbol }))
+        .rejects.toThrow(/unavailable.*Rust|Rust.*unavailable/i)
     }
   })
 })

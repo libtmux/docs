@@ -159,6 +159,15 @@ describe('Rust enum payload fields', () => {
 })
 
 describe('Rust trait member visibility', () => {
+  it.fails('reports malformed callable headers instead of dropping native syntax', async () => {
+    await expect(extract('pub fn method(value: Broken<) {}')).rejects.toThrow(/Invalid Rust callable header grammar/)
+  })
+
+  it.fails('reports malformed owner headers instead of dropping native context', async () => {
+    await expect(extract('pub struct Probe; impl<T:> Probe { pub fn method(value: T) {} }'))
+      .rejects.toThrow(/Invalid Rust enclosing declaration grammar/)
+  })
+
   it('extracts valid native headers even when the body uses newer async closure syntax', async () => {
     const symbols = await extract(`pub struct Server;
 impl Server {
