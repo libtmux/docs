@@ -14,7 +14,7 @@ import { checkHomeTaskReset } from './check-home-task-reset.mjs'
 import { checkColorScheme } from './check-color-scheme.mjs'
 import { checkHomeExampleOptions } from './check-home-example-options.mjs'
 import { checkDevSample } from './check-dev-sample.mjs'
-import { checkNativeSignatureLinks } from './check-native-layout.mjs'
+import { checkNativeSignatureGeometry, checkNativeSignatureLinks } from './check-native-layout.mjs'
 
 const apiNavigationOnly = process.argv.includes('--api-navigation')
 const apiAnchorsOnly = process.argv.includes('--api-anchors')
@@ -628,13 +628,11 @@ async function checkReferenceAndHeroes(browser, base) {
     'Scala Vector links to its own collection type')
     for (const width of [1440, 768, 390]) {
       await page.setViewportSize({ width, height: 900 })
-      const header = await signature.boundingBox()
-      const code = await signature.locator('.gp-sphinx-api-layout-left:visible, .gp-sphinx-api-layout-bottom:visible').boundingBox()
-      assert(code.width >= header.width - 36, `Scala overloads use the signature width at ${width}px`)
+      await checkNativeSignatureGeometry(signature)
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
         `Scala overloads fit at ${width}px`)
     }
-    console.log('Scala overloads: parameter anchors resolve locally, API types link, and badges leave the full code width')
+    console.log('Scala overloads: local parameter targets, API links and available code width pass with aligned metadata')
     await page.goto(`${base}/kotlin/latest/reference/io-github-libtmux-kotlin-server-session/`)
     const errors = page.locator('[id="io.github.libtmux.kotlin.Server.session.errors"] + dd')
     assert.match(await errors.innerText(), /NoMatch/)

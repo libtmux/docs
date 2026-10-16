@@ -1,5 +1,79 @@
 import assert from 'node:assert/strict'
 
+/** Measure the code width left by first-line or stacked declaration metadata. */
+export async function checkNativeSignatureGeometry(header) {
+  const geometry = await header.evaluate((element) => {
+    const pixels = (value) => value === 'normal' ? 0 : Number.parseFloat(value)
+    const read = (region) => {
+      if (!region) return null
+      const rect = region.getBoundingClientRect()
+      const style = element.ownerDocument.defaultView.getComputedStyle(region)
+      return {
+        left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom,
+        width: rect.width, height: rect.height,
+        insets: {
+          left: pixels(style.paddingLeft) + pixels(style.borderLeftWidth),
+          right: pixels(style.paddingRight) + pixels(style.borderRightWidth),
+          top: pixels(style.paddingTop) + pixels(style.borderTopWidth),
+          bottom: pixels(style.paddingBottom) + pixels(style.borderBottomWidth),
+        },
+        rowGap: pixels(style.rowGap), columnGap: pixels(style.columnGap),
+      }
+    }
+    const row = element.querySelector(':scope > .gp-sphinx-api-layout')
+    return {
+      header: read(element), row: read(row),
+      code: read(row?.querySelector(':scope > .gp-sphinx-api-layout-left')),
+      controls: read(row?.querySelector(':scope > .gp-sphinx-api-layout-right')),
+      firstSignature: read(row?.querySelector('.api-native-signature')),
+    }
+  })
+  // Allow subpixel layout rounding, not an unused strip of code width.
+  const tolerance = 1 / 16
+  const near = (a, b) => Math.abs(a - b) <= tolerance
+  const content = (region) => ({
+    left: region.left + region.insets.left, right: region.right - region.insets.right,
+    top: region.top + region.insets.top, bottom: region.bottom - region.insets.bottom,
+  })
+  const contained = (inner, outer) => inner.left >= outer.left - tolerance && inner.right <= outer.right + tolerance
+    && inner.top >= outer.top - tolerance && inner.bottom <= outer.bottom + tolerance
+  for (const [name, region] of Object.entries(geometry)) {
+    assert(region, `Native signature ${name} region is present`)
+    assert(Object.values(region.insets).every(Number.isFinite)
+      && [region.left, region.right, region.top, region.bottom, region.width, region.height].every(Number.isFinite)
+      && region.width > 0 && region.height > 0
+      && near(region.width, region.right - region.left) && near(region.height, region.bottom - region.top),
+    `Native signature ${name} has measurable bounds and insets`)
+  }
+  const { row, code, controls, firstSignature } = geometry
+  const headerContent = content(geometry.header)
+  const rowContent = content(row)
+  assert(contained(row, headerContent), 'Native signature row is contained in the padded header')
+  assert(near(row.left, headerContent.left) && near(row.right, headerContent.right),
+    'Native signature row uses the available header width')
+  assert(contained(code, rowContent), 'Native signature code is contained in its layout row')
+  assert(contained(controls, rowContent), 'Native signature metadata is contained in its layout row')
+  assert(contained(firstSignature, content(code)), 'Native first signature is contained in the code region')
+  assert(near(code.left, rowContent.left) && near(code.top, rowContent.top),
+    'Native signature code begins at the layout row origin')
+  assert(near(controls.right, rowContent.right), 'Native signature metadata reaches the layout row edge')
+  assert(Number.isFinite(row.rowGap) && row.rowGap >= 0 && Number.isFinite(row.columnGap) && row.columnGap >= 0,
+    'Native signature row has measurable gaps')
+  const below = controls.top >= code.bottom - tolerance
+  const beside = controls.left >= code.right - tolerance
+  assert(below || beside, 'Native signature code and metadata do not overlap')
+  if (!below) {
+    assert(near(controls.top, code.top) && near(firstSignature.top, code.top)
+      && controls.bottom <= firstSignature.bottom + tolerance,
+    'Native signature metadata aligns with the first line')
+  }
+  const availableCodeWidth = rowContent.right - rowContent.left - (below ? 0 : controls.width + row.columnGap)
+  assert(near(code.width, availableCodeWidth), 'Native signature uses the available code width')
+  assert(near(below ? controls.top - code.bottom : controls.left - code.right, below ? row.rowGap : row.columnGap),
+    'Native signature metadata follows the computed layout gap')
+  return { ...geometry, mode: below ? 'stacked' : 'inline', availableCodeWidth }
+}
+
 /** Bind native parameter anchors to their displayed overload and local fields. */
 export async function checkNativeSignatureLinks(header, symbol) {
   assert(symbol?.signatures.length > 0, 'Native signature owner is present in the model')
