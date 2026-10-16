@@ -135,7 +135,7 @@ describe('Go callable layouts', () => {
     expect(result.syntax!.filter((range) => range.kind === 'literal').map((range) => result.text.slice(range.start, range.end))).toContain(tag)
   })
 
-  it.fails.each([
+  it.each([
     ['tmux.SessionOptionValues.PromptCommandCursorStyle', 'func (\n\tv SessionOptionValues,\n) PromptCommandCursorStyle() OptionValue[\n\tPromptCommandCursorStyle,\n]'],
     ['tmux.WindowOptionValues.PaneScrollbarsPosition', 'func (\n\tv WindowOptionValues,\n) PaneScrollbarsPosition() OptionValue[\n\tPaneScrollbarsPosition,\n]'],
   ])('wraps the breakable generic result of %s at 60 columns', async (id, expected) => {
@@ -164,7 +164,7 @@ describe('Go callable layouts', () => {
     expect(signature?.type === 'code' && signature.value).toBe(expected)
   })
 
-  it.fails.each([
+  it.each([
     ['tmux.SessionOptionValues.PromptCommandCursorStyle', 66],
     ['tmux.WindowOptionValues.PaneScrollbarsPosition', 62],
   ])('keeps %s stable across neighboring width boundaries', async (id, priorColumns) => {
@@ -188,6 +188,33 @@ describe('Go callable layouts', () => {
     const symbol = callable('func Method() OptionValue[Target]')
     expect((await layout(symbol)).text).toBe(symbol.signatures[0]!.raw)
     expect((await layout(symbol)).failures).toEqual([])
+  })
+
+  it('preserves nested type and parameter destinations while breaking a sole argument', async () => {
+    const name = 'Target'.repeat(7)
+    const raw = `func Method(value Target) Box[/* Target  comment */ Box[${name}]]`
+    const symbol = callable(raw, [{ name: 'value', type: 'Target' }])
+    const types: ApiSymbol[] = ['Target', 'Box', name].map((name) => ({
+      id: `tmux.${name}`, name, kind: 'struct', modifiers: [], signatures: [], source: { file: 'probe.go' },
+    }))
+    const result = await layout(symbol)
+    expect(result.failures).toEqual([])
+    expect(result.text).toContain(`\n\t\t${name},\n`)
+    expect(result.text).toContain('/* Target  comment */')
+    expect((await layout({ ...symbol, signatures: [{ ...symbol.signatures[0]!, raw: result.text }] })).text).toBe(result.text)
+    const spans = signatureSpans(result, new SymbolIndex([symbol, ...types], (entry) => `/${entry.id}/`, 'go'), symbol, symbol.signatures[0]!)
+    expect(spans.map((span) => span.text).join('')).toBe(result.text)
+    expect(spans.filter((span) => span.link).map((span) => [span.text, span.link!.href])).toEqual([
+      ['value', '#tmux.Method.parameter.value'], ['Target', '/tmux.Target/'],
+      ['Box', '/tmux.Box/'], ['Box', '/tmux.Box/'], [name, `/tmux.${name}/`],
+    ])
+  })
+
+  it('retains an unresolved layout when nested indentation would widen its longest line', async () => {
+    const raw = `func Method() A[B[C[D[${'Target'.repeat(12)}]]]]`
+    const result = await layout(callable(raw))
+    expect(result.text).toBe(raw)
+    expect(result.failures).toEqual([{ line: 1, columns: raw.length, limit: 60 }])
   })
 
   it('keeps interface method names separate from identically named types', async () => {

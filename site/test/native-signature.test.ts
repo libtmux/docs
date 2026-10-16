@@ -273,7 +273,7 @@ describe('native signature emission', () => {
     } finally { await win.happyDOM.abort() }
   })
 
-  it.fails.each([
+  it.each([
     ['tmux.SessionOptionValues.PromptCommandCursorStyle', 'func (\n\tv SessionOptionValues,\n) PromptCommandCursorStyle() OptionValue[\n\tPromptCommandCursorStyle,\n]'],
     ['tmux.WindowOptionValues.PaneScrollbarsPosition', 'func (\n\tv WindowOptionValues,\n) PaneScrollbarsPosition() OptionValue[\n\tPaneScrollbarsPosition,\n]'],
   ])('renders a width-compliant generic result for %s', async (id, expected) => {
@@ -299,6 +299,27 @@ describe('native signature emission', () => {
         [symbol.parent!.slice('tmux.'.length), `/${symbol.parent}/`],
         ...index.linkType(sig.returns!, symbol, sig).flatMap((span) => span.link ? [[span.text, span.link.href]] : []),
       ])
+    } finally { await win.happyDOM.abort() }
+  })
+
+  it('reports an indivisible Go token as unresolved in the rendered signature', async () => {
+    const token = 'UnbreakableType'.repeat(6)
+    const raw = `func Method() ${token}`
+    const sig: Signature = { raw, params: [] }
+    const symbol: ApiSymbol = { id: 'tmux.Method', name: 'Method', kind: 'function', modifiers: [], signatures: [sig], source: { file: 'probe.go' } }
+    const component = await (componentPromise ??= signatureComponent())
+    const container = await experimental_AstroContainer.create()
+    const signatureLayouts = await apiSignatureLayouts(symbol, 'go')
+    const win = new Window()
+    try {
+      win.document.body.innerHTML = await container.renderToString(component, { props: {
+        symbol, sig, port: 'go', language: 'go', signatureLayouts,
+        index: new SymbolIndex([symbol], (entry) => `/${entry.id}/`, 'go'), nativeSignatureText: () => signatureLayouts.get(sig)!.text,
+      } })
+      const signature = win.document.querySelector('.api-native-signature')!
+      expect(signature.getAttribute('data-code-width-status')).toBe('unresolved')
+      expect(JSON.parse(signature.getAttribute('data-code-width-failures')!)).toEqual([{ line: 1, columns: raw.length, limit: 60 }])
+      expect(displayedSignature(signature)).toBe(raw)
     } finally { await win.happyDOM.abort() }
   })
 
