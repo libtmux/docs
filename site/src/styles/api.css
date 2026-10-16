@@ -643,7 +643,7 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-layout-right
   outline-offset: 2px;
 }
 /* Keep the keyword ring inside the scroll region's focus gutter. */
-.api-native-signature--formatted .api-keyword-trigger:focus-visible { outline-offset: 2px; }
+.api-native-signature--formatted button.api-keyword-trigger:focus-visible { outline-offset: 2px; }
 .api-native-signature + .api-native-signature {
   margin-top: .75rem;
 }
