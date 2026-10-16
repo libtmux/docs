@@ -1,0 +1,112 @@
+import { readFileSync } from 'node:fs'
+import { describe, expect, it } from 'vitest'
+import { parserFor, SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model'
+import { fromMarkdown } from 'mdast-util-from-markdown'
+import { apiSignatureLayouts, codeWidthFailures, signatureSpans } from '../src/lib/code-layout'
+import { usesNativeSignatures } from '../src/lib/api-sections'
+import { symbolMarkdownWithLayout } from '../src/lib/symbol-markdown'
+
+const model = JSON.parse(readFileSync(new URL('../src/data/api/go.json', import.meta.url), 'utf8')) as ApiModel
+const callable = (raw: string, params: Signature['params'] = []): ApiSymbol => ({
+  id: 'tmux.Method', name: 'Method', kind: 'function', modifiers: [],
+  signatures: [{ raw, params }], source: { file: 'probe.go' },
+})
+async function layout(symbol: ApiSymbol) {
+  const result = (await apiSignatureLayouts(symbol, 'go')).get(symbol.signatures[0]!)
+  expect(result).toBeDefined()
+  return result!
+}
+
+describe('Go callable layouts', () => {
+  it.fails.each([
+    ['tmux.Server.ListBuffers', 'func (s Server) ListBuffers(\n\tctx context.Context,\n\trequest ListBuffersRequest,\n) ([]string, error)'],
+    ['tmux.Server.Sessions', 'func (s Server) Sessions(\n\tctx context.Context,\n) ([]Session, error)'],
+    ['tmuxq.Matching', 'func Matching[T any](values []T, filter Filter[T]) ([]T, error)'],
+  ])('shares the native 60-column %s declaration with Markdown', async (id, expected) => {
+    const symbol = model.symbols.find((entry) => entry.id === id)!
+    expect(usesNativeSignatures(symbol, 'go')).toBe(true)
+    const result = await layout(symbol)
+    expect(result.text).toBe(expected)
+    expect(result.limit).toBe(60)
+    expect(result.failures).toEqual([])
+    const markdown = await symbolMarkdownWithLayout({ model, symbol })
+    const signature = fromMarkdown(markdown).children.find((node) => node.type === 'code')
+    expect(signature?.type === 'code' && signature.value).toBe(expected)
+  })
+
+  it.fails('retains grouped names, variadics, nested callable types and source declaration order', async () => {
+    const symbol = callable('func Method(first, second string, values ...func(name Target, extra Other) (Target, error)) (Target, error)', [
+      { name: 'first', type: 'string' }, { name: 'second', type: 'string' }, { name: 'values', type: 'func(name Target, extra Other) (Target, error)', variadic: 'positional' },
+    ])
+    const result = await layout(symbol)
+    expect(result.text).toContain('\n\tfirst, second string,\n')
+    expect(result.text).toContain('values ...func(')
+    expect(result.text).toContain('\n\t\tname Target,\n\t\textra Other,\n\t) (Target, error),\n')
+    expect(result.failures).toEqual([])
+    const parser = await parserFor('go')
+    try {
+      const input = parser.parse(symbol.signatures[0]!.raw!)!
+      const output = parser.parse(result.text)!
+      expect(output.rootNode.hasError).toBe(false)
+      expect(output.rootNode.toString()).toBe(input.rootNode.toString())
+      input.delete(); output.delete()
+    } finally { parser.delete() }
+  })
+
+  it.fails.each([
+    'func Method(\n// Target before parameter\nvalue Target,\n) Target',
+    'func Method(value Target, // Target after comma\n) Target',
+    'func Method(value /* Target  comment */ Target) Target',
+  ])('preserves comments and their line ownership in %s', async (raw) => {
+    const symbol = callable(raw, [{ name: 'value', type: 'Target' }])
+    const result = await layout(symbol)
+    expect(result.text.match(/\/\/[^\n]*|\/\*[\s\S]*?\*\//g)).toEqual(raw.match(/\/\/[^\n]*|\/\*[\s\S]*?\*\//g))
+    const target: ApiSymbol = { id: 'tmux.Target', name: 'Target', kind: 'struct', modifiers: [], signatures: [], source: { file: 'probe.go' } }
+    const index = new SymbolIndex([symbol, target], (entry) => `/${entry.id}/`, 'go')
+    const spans = signatureSpans(result, index, symbol, symbol.signatures[0]!)
+    expect(spans.map((span) => span.text).join('')).toBe(result.text)
+    expect(spans.filter((span) => span.link?.href === '/tmux.Target/')).toHaveLength(2)
+    expect(spans.find((span) => span.link?.href === '#tmux.Method.parameter.value')?.text).toBe('value')
+  })
+
+  it.fails('preserves generic constraints and suppresses local generic or nested name collisions', async () => {
+    const symbol = callable('func Method[T interface{ ~string | ~[]byte }](Target func(Target T) (Target T), value pkg.T) T', [{ name: 'Target' }, { name: 'value' }])
+    const target: ApiSymbol = { id: 'tmux.Target', name: 'Target', kind: 'struct', modifiers: [], signatures: [], source: { file: 'probe.go' } }
+    const unrelated: ApiSymbol = { ...target, id: 'tmux.T', name: 'T' }
+    const external: ApiSymbol = { ...target, id: 'pkg.T', name: 'T', qualifiedName: 'pkg.T' }
+    const result = await layout(symbol)
+    expect(result.text).toContain('interface{ ~string | ~[]byte }')
+    const spans = signatureSpans(result, new SymbolIndex([symbol, target, unrelated, external], (entry) => `/${entry.id}/`, 'go'), symbol, symbol.signatures[0]!)
+    expect(spans.some((span) => span.link?.href === '/tmux.Target/' || span.link?.href === '/tmux.T/')).toBe(false)
+    expect(spans.find((span) => span.link?.href === '/pkg.T/')?.text).toBe('pkg.T')
+    expect(spans.filter((span) => span.link?.href.startsWith('#tmux.Method.parameter.')).map((span) => span.text)).toEqual(['Target', 'value'])
+  })
+
+  it.fails('preserves raw string tags and reports indivisible over-width tokens', async () => {
+    const tag = '`Target  tag\n unchanged`'
+    const token = 'LongTarget'.repeat(9)
+    const symbol = callable(`func Method(value struct { Name string ${tag} }) ${token}`, [{ name: 'value' }])
+    const result = await layout(symbol)
+    expect(result.text).toContain(tag)
+    expect(result.text).toContain(token)
+    expect(result.failures.length).toBeGreaterThan(0)
+    expect(result.failures).toEqual(await codeWidthFailures(result.text, 'api'))
+    expect(result.syntax!.filter((range) => range.kind === 'literal').map((range) => result.text.slice(range.start, range.end))).toContain(tag)
+  })
+
+  it.fails.each([
+    ['func Method(value Broken[', [{ name: 'value' }]],
+    ['func Method(value Target) {}', [{ name: 'value' }]],
+    ['func Different(value Target)', [{ name: 'value' }]],
+    ['func Method(value Target)', [{ name: 'missing' }]],
+  ] as const)('rejects invalid grammar or stale model bindings in %s', async (raw, params) => {
+    await expect(apiSignatureLayouts(callable(raw, [...params]), 'go')).rejects.toThrow(/grammar|binding/)
+  })
+
+  it('does not manufacture a native header from missing source', async () => {
+    const symbol = callable('func Method()')
+    delete symbol.signatures[0]!.raw
+    expect(usesNativeSignatures(symbol, 'go')).toBe(false)
+    expect(await apiSignatureLayouts(symbol, 'go')).toEqual(new Map())
+  })
+})

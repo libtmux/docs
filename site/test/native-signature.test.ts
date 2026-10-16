@@ -130,6 +130,35 @@ async function checkHostedDeclarations(port: string) {
 }
 
 describe('native signature emission', () => {
+  it.fails('renders Go source headers with parameter targets and linked types', async () => {
+    const model = JSON.parse(readFileSync(new URL('../src/data/api/go.json', import.meta.url), 'utf8')) as ApiModel
+    const symbol = model.symbols.find((entry) => entry.id === 'tmux.Server.ListBuffers')!
+    const sig = symbol.signatures[0]!
+    const component = await (componentPromise ??= signatureComponent())
+    const container = await experimental_AstroContainer.create()
+    const index = new SymbolIndex(model.symbols, (entry) => `/en/go/latest/reference/${entry.slug}/`, 'go')
+    const signatureLayouts = await apiSignatureLayouts(symbol, 'go')
+    const text = () => signatureLayouts.get(sig)?.text ?? nativeSignatureText(symbol, sig, 'go')
+    const win = new Window()
+    try {
+      win.document.body.innerHTML = await container.renderToString(component, { props: {
+        symbol, sig, port: 'go', language: 'go', index, signatureLayouts,
+        nameHref: `/en/go/latest/reference/${symbol.slug}/`, nativeSignatureText: text,
+      } })
+      const signature = win.document.querySelector('.api-native-signature')!
+      expect(signature.getAttribute('data-code-columns')).toBe('60')
+      expect(signature.getAttribute('data-code-width-status')).toBe('fits')
+      expect(displayedSignature(signature)).toBe('func (s Server) ListBuffers(\n\tctx context.Context,\n\trequest ListBuffersRequest,\n) ([]string, error)')
+      expect(signature.querySelector('.api-signature-name-link')?.getAttribute('href')).toBe(`/en/go/latest/reference/${symbol.slug}/`)
+      expect([...signature.querySelectorAll('a.api-parameter-name')].map((link) => [link.textContent, link.getAttribute('href')])).toEqual([
+        ['ctx', '#tmux.Server.ListBuffers.parameter.ctx'], ['request', '#tmux.Server.ListBuffers.parameter.request'],
+      ])
+      expect([...signature.querySelectorAll('a.api-type-link')].map((link) => [link.textContent, link.getAttribute('href')])).toContainEqual(['Server', '/en/go/latest/reference/tmux-server/'])
+      expect([...signature.querySelectorAll('a.api-type-link')].map((link) => [link.textContent, link.getAttribute('href')])).toContainEqual(['ListBuffersRequest', '/en/go/latest/reference/tmux-listbuffersrequest/'])
+      expect(signature.querySelector('.api-keyword')?.textContent).toBe('func')
+    } finally { await win.happyDOM.abort() }
+  })
+
   it('checks the hosted signature fixture against rendered TypeScript declarations without raw text', () => checkHostedDeclarations('ts'))
 
   it('checks the hosted signature fixture against rendered Julia declarations without return annotations', () => checkHostedDeclarations('julia'))
