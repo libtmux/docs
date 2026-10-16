@@ -64,7 +64,7 @@ async function badgeComponent(name = 'ApiBadge') {
 }
 
 describe('API glossary coverage', () => {
-  it.fails('defines Java annotation interfaces and elements in native previews and exports', async () => {
+  it('defines Java annotation interfaces and elements in native previews and exports', async () => {
     const path = '/en/java/latest/reference/glossary/'
     const annotation = NATIVE_API_GLOSSARIES.java.annotation
     expect(annotation).toBeDefined()
@@ -218,7 +218,7 @@ describe('API glossary coverage', () => {
   })
 
   it('uses stable unique anchors and language references for every term', () => {
-    const primaryHosts = new Set(['docs.python.org', 'docs.julialang.org', 'docs.scala-lang.org', 'go.dev', 'docs.swift.org', 'eel.is', 'learn.microsoft.com', 'doc.rust-lang.org', 'www.typescriptlang.org', 'kotlinlang.org', 'packaging.python.org', 'modelcontextprotocol.io'])
+    const primaryHosts = new Set(['docs.python.org', 'docs.julialang.org', 'docs.scala-lang.org', 'docs.oracle.com', 'go.dev', 'docs.swift.org', 'eel.is', 'learn.microsoft.com', 'doc.rust-lang.org', 'www.typescriptlang.org', 'kotlinlang.org', 'packaging.python.org', 'modelcontextprotocol.io'])
     for (const term of terms) {
       expect(term.id).toMatch(/^[a-z][a-zA-Z]*$/)
       expect(apiGlossaryHref(term.id)).toBe(`${API_GLOSSARY_PATH}#${term.id}`)
