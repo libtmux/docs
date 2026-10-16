@@ -184,7 +184,7 @@ const title = () => win.document.querySelector('[data-preview-title]')!.textCont
 const escape = () => win.document.dispatchEvent(new win.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
 
 describe('preview lifecycle', () => {
-  it.fails('repositions open keyword help when a declaration scrolls without bubbling', async () => {
+  it('repositions open keyword help when a declaration scrolls without bubbling', async () => {
     const source = readFileSync(new URL('../src/components/api/ApiKeyword.astro', import.meta.url), 'utf8')
     const script = source.match(/<script>([\s\S]*?)<\/script>/)![1].replace(/^\s*import .*$/gm, '')
     const { transpileModule } = await import('typescript')
