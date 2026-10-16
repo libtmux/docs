@@ -7,10 +7,11 @@
  */
 import { membersOf, memberSignals, qualifiedNameOf, symbolsForProduct, type ApiModel, type ApiModelBase, type ApiSymbol } from '@libtmux/api-model'
 import mentions from '../data/mentions.json'
-import { API_MODELS, API_NAV, OWNER_KINDS, pageSlug, referenceHref, topLevelTypesOf, type NavEntry, type PortNavData, type NavBucket } from './api-models'
+import { API_MODELS, API_NAV, OWNER_KINDS, isMemberOwner, pageSlug, referenceHref, topLevelTypesOf, type NavEntry, type PortNavData, type NavBucket } from './api-models'
 import type { ApiTreeBucket, ApiTreeJson } from './api-search'
 import { createHash } from 'node:crypto'
 import { PORT_BY_SLUG, type ApiDependencyNavigation } from './ports'
+import type { BreadcrumbItem } from './sidebar'
 
 export interface TreeBucket {
   id: string
@@ -57,6 +58,45 @@ export function bucketForSymbol(model: ApiModelBase | undefined, nav: PortNavDat
     symbol = parent ? model?.symbols.find((candidate) => candidate.id === parent) : undefined
   }
   return undefined
+}
+
+/** The same category ancestry opens the sidebar and names the page's location. */
+export function bucketAncestors(tree: TreeBucket[], id: string | undefined): TreeBucket[] {
+  if (id === undefined) return []
+  for (const bucket of tree) {
+    if (bucket.id === id) return [bucket]
+    const children = bucketAncestors(bucket.children, id)
+    if (children.length) return [bucket, ...children]
+  }
+  return []
+}
+
+/** Canonical sidebar categories and declaration owners, without shortcut duplicates. */
+export function referenceBreadcrumbs(
+  model: ApiModelBase, nav: PortNavData, tree: TreeBucket[], symbol: ApiSymbol,
+  base: string, hrefFor: (symbol: ApiSymbol) => string,
+): BreadcrumbItem[] {
+  const buckets = bucketAncestors(tree, bucketForSymbol(model, nav, symbol))
+  const anchors = new Set(referenceIndexSectionsFor(model, tree).map((entry) => entry.id))
+  const crumbs: BreadcrumbItem[] = buckets.map((bucket) => ({ name: bucket.label,
+    ...(anchors.has(bucket.id) ? { url: `${base}#section-${encodeURIComponent(bucket.id)}` } : {}),
+  }))
+  const entries = buckets.at(-1)?.entries.filter((entry) => !entry.shortcut) ?? []
+  const lineage: ApiSymbol[] = []
+  const seen = new Set<string>()
+  let current: ApiSymbol | undefined = symbol
+  while (current && !seen.has(current.id)) {
+    seen.add(current.id)
+    lineage.unshift(current)
+    if (entries.some((entry) => entry.id === (current!.publicId ?? current!.id))) break
+    current = current.parent ? model.symbols.find((entry) => entry.id === current!.parent) : undefined
+  }
+  const root = entries.find((entry) => entry.id === (lineage[0]?.publicId ?? lineage[0]?.id))
+  // An explicitly placed member can be a root even when its module is elsewhere.
+  if (!root) lineage.splice(0, Math.max(0, lineage.length - 1))
+  return [...crumbs, ...lineage.map((entry, i) => ({ name: i === 0 && root ? root.name : entry.name,
+    url: hrefFor(entry), symbol: true,
+  }))]
 }
 
 const productSymbols = (model: ApiModelBase) =>
@@ -232,7 +272,7 @@ export function membersByType(port: string): Map<string, TreeMember[]> {
 export function membersByTypeFor(scope: string, model: ApiModelBase): Map<string, TreeMember[]> {
   const out = new Map<string, TreeMember[]>()
   const signals = memberSignals(scope, mentions.mentions)
-  for (const owner of model.symbols.filter((symbol) => OWNER_KINDS.has(symbol.kind))) {
+  for (const owner of model.symbols.filter(isMemberOwner)) {
     const members = membersOf(model, owner, signals)
     if (members.length) out.set(owner.publicId ?? owner.id, members.map((symbol) => ({
       id: symbol.id, name: symbol.name, slug: symbol.slug ?? pageSlug(symbol.publicId ?? symbol.id),
@@ -297,7 +337,7 @@ export function referenceNavigation(port: string): ReferenceNavigation | undefin
       symbols.set(symbol.id, symbol)
       hrefs[symbol.id] = href
       hrefs[id] = href
-      if (OWNER_KINDS.has(symbol.kind)) {
+      if (isMemberOwner(symbol)) {
         const children = membersOf(dependency, symbol, signals)
         if (children.length) {
           members.set(id, children.map((child) => ({ id: child.id, name: child.name, slug: child.slug ?? pageSlug(child.publicId ?? child.id) })))

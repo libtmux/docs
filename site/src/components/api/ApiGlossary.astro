@@ -10,18 +10,14 @@ const referenceBase = port ? referenceUrl(PORT_BY_SLUG[port], version, product ?
 const pagePath = product ? `${product}/reference/glossary` : 'reference/glossary'
 const glossaryPath = `${referenceBase}glossary/`
 import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO } from '../../i18n/contribute'
-import { API_GLOSSARY_DESCRIPTION, API_GLOSSARY_GROUPS, ALL_GLOSSARY_GROUPS, MCP_GLOSSARY_GROUPS, MCP_GLOSSARY_TITLE, MCP_GLOSSARY_DESCRIPTION, API_GLOSSARY_PATH, API_GLOSSARY_TITLE } from '../../lib/api-glossary'
+import { apiGlossary, API_GLOSSARY_PATH, API_GLOSSARY_TITLE } from '../../lib/api-glossary'
 
-const mcp = product === 'mcp'
-const title = mcp ? MCP_GLOSSARY_TITLE : API_GLOSSARY_TITLE
-const description = mcp ? MCP_GLOSSARY_DESCRIPTION : API_GLOSSARY_DESCRIPTION
-const groups = mcp ? [...MCP_GLOSSARY_GROUPS, ...API_GLOSSARY_GROUPS] : port ? API_GLOSSARY_GROUPS : ALL_GLOSSARY_GROUPS
+const { title, description, groups } = apiGlossary(glossaryPath)
 const headings = groups.flatMap((group) => [
   { depth: 2, slug: group.id, text: group.title },
   ...group.terms.map((term) => ({ depth: 3, slug: term.id, text: term.id })),
 ])
-const sharedBuild = !port
-const markdownHref = `${API_GLOSSARY_PATH.slice(0, -1)}.md`
+const markdownHref = `${glossaryPath.slice(0, -1)}.md`
 ---
 
 <DocsLayout
@@ -32,9 +28,8 @@ const markdownHref = `${API_GLOSSARY_PATH.slice(0, -1)}.md`
   sourcePath={pagePath}
   locale={DEFAULT_LOCALE}
   locales={[DEFAULT_LOCALE]}
-  canonicalOverride={API_GLOSSARY_PATH}
-  noindex={!sharedBuild}
-  searchable={sharedBuild}
+  canonicalOverride={port ? undefined : API_GLOSSARY_PATH}
+  searchable
   headings={headings}
   markdown={{ href: markdownHref }}
   pageSource={{ repo: CONTRIBUTE_REPO, ref: CONTRIBUTE_BRANCH, path: 'site/src/lib/api-glossary.ts' }}
@@ -49,5 +44,5 @@ const markdownHref = `${API_GLOSSARY_PATH.slice(0, -1)}.md`
     { type: 'link', label: API_GLOSSARY_TITLE, href: glossaryPath },
   ]}
 >
-  <ApiGlossaryContent mcp={mcp} shared={!port} />
+  <ApiGlossaryContent contextPath={glossaryPath} />
 </DocsLayout>

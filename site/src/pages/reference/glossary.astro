@@ -4,4 +4,4 @@ import ApiReference from '../../components/api/ApiReference.astro'
 import { API_MODELS } from '../../lib/api-models'
 const port = process.env.LIBTMUX_DOCS_PORT
 ---
-{port && API_MODELS[port] ? <ApiReference model={API_MODELS[port]} glossary searchable={false} /> : <ApiGlossary />}
+{port && API_MODELS[port] ? <ApiReference model={API_MODELS[port]} glossary /> : <ApiGlossary />}

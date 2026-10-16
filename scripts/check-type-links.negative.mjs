@@ -27,7 +27,7 @@ const usr = () =>
   '<span class="api-punct">:</span><span class="api-punct">s8CopyableP</span></span>'
 
 /** A site where every port has `n` plain names, plus optional extras. */
-function site({ n = 0, mangled = false } = {}) {
+function site({ n = 0, mangled = false, markup = '' } = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'check-type-links-'))
   for (const p of PORTS) {
     const d = join(dir, p, 'latest', 'reference', 'thing')
@@ -35,7 +35,7 @@ function site({ n = 0, mangled = false } = {}) {
     const body =
       linked('Server') +
       Array.from({ length: n }, (_, i) => plain(`Plain${i}`)).join('') +
-      (mangled ? usr() : '')
+      (mangled ? usr() : '') + markup
     writeFileSync(join(d, 'index.html'), `<html><body>${body}</body></html>`)
   }
   return dir
@@ -164,6 +164,117 @@ const check = (name, ok, detail) => {
   const { code, recorded } = run(dir, 5, ['--update'])
   check('lowering the ceiling is allowed', code === 0 && recorded === 2, `exited ${code}, ceiling now ${recorded}`)
   rmSync(dir, { recursive: true, force: true })
+}
+
+for (const markup of [
+  '<span class="api-punct" data-api-role="syntax">receiver</span>',
+  "<span data-extra='x > y' data-api-role='syntax' class='api-punct'>T</span>",
+  '<span data-api-role=syntax class=api-punct>label</span>',
+]) {
+  const dir = site({ markup })
+  const { code, out } = run(dir, 0)
+  check('grammar-owned syntax is outside the type count', code === 0, `exited ${code}:\n${out}`)
+  rmSync(dir, { recursive: true, force: true })
+}
+
+for (const markup of [
+  '<span class="api-punct" data-extra="x > y">Unknown</span>',
+  "<span data-api-role='type' class='api-punct'>Unknown</span>",
+  '<span data-api-role=unrecognized class=api-punct>Unknown</span>',
+  `<span class=api-punct data-extra='data-api-role="syntax"'>Unknown</span>`,
+  '<span data-api-role="syntax" class="api-type"><span class="api-punct">Unknown</span></span>',
+  '<span class="api-punct" data-api-role="syntax"><span class="api-punct">Unknown</span></span>',
+]) {
+  const dir = site({ markup })
+  const { code, out } = run(dir, 0)
+  check('unknown types remain counted through attributes and parents', code !== 0 && out.includes('Unknown(1)'), `exited ${code}:\n${out}`)
+  rmSync(dir, { recursive: true, force: true })
+}
+
+{
+  // The existing ceiling covers single-class spans, not chips. Expanding that
+  // metric needs a separately reviewed source-backed inventory.
+  const dir = site({ markup: '<span class="api-punct api-literal">ChipGap</span>' + plain('Unknown') })
+  const { code, out } = run(dir, 1, ['--list'])
+  check('the recorded single-class metric does not expand to chips', code === 0 && out.includes('Unknown(1)') && !out.includes('ChipGap'), out)
+  rmSync(dir, { recursive: true, force: true })
+}
+
+for (const markup of [
+  '<span data-api-role="syntax" class="api-type"><span class="api-punct" data-api-role="syntax">s</span>:<span class="api-punct" data-api-role="syntax">s8CopyableP</span></span>',
+  "<span data-extra='x > y' class='api-type'><span class='api-punct'>s</span>:<span class='api-punct'>s8CopyableP</span></span>",
+  '<span class="api-type extra" data-api-role="syntax"><span class="api-punct api-literal">s</span>:<span class="api-punct api-literal">s8CopyableP</span></span>',
+  `<span class="api-type"><span class="api-punct" data-extra='x > y'>s</span>:<span class="api-punct">s8CopyableP</span></span>`,
+]) {
+  const dir = site({ markup })
+  const { code, out } = run(dir, 99)
+  check('syntax metadata and attribute order cannot hide mangled types', code !== 0 && out.includes('s:s8CopyableP'), `exited ${code}:\n${out}`)
+  rmSync(dir, { recursive: true, force: true })
+}
+
+for (const quote of ["'", '"']) {
+  const comment = `<!-- ${quote} -->`
+  const markup = '<span class="api-type"><span class="api-punct" data-api-role="syntax">s</span>' +
+    comment + '<span class="api-punct" data-api-role="syntax">:</span>' +
+    '<span class="api-punct" data-api-role="syntax">s8CopyableP</span></span>'
+  const dir = site({ markup })
+  const { code, out } = run(dir, 99)
+  check('quoted HTML comments cannot hide a visible mangled id', code !== 0 && out.includes('s:s8CopyableP'), `exited ${code}:\n${out}`)
+  rmSync(dir, { recursive: true, force: true })
+
+  const unknown = site({ markup: `<span class="api-type"><span class="api-punct">Un${comment}known</span></span>` })
+  const result = run(unknown, 0)
+  check('quoted HTML comments cannot hide a visible unknown type', result.code !== 0 && result.out.includes('Unknown(1)'), `exited ${result.code}:\n${result.out}`)
+  rmSync(unknown, { recursive: true, force: true })
+}
+
+for (const quote of ["'", '"']) {
+  const fragment = (value, note) => `<span data-note=${quote}${note}${quote}>${value}</span>`
+  const attributeMangled = site({ markup: `<span class="api-type">${fragment('s', '<!--')}:${fragment('s8CopyableP', '-->')}</span>` })
+  const mangledResult = run(attributeMangled, 99)
+  check('comment delimiters in quoted attributes cannot hide a mangled id',
+    mangledResult.code !== 0 && mangledResult.out.includes('s:s8CopyableP'), `exited ${mangledResult.code}:\n${mangledResult.out}`)
+  rmSync(attributeMangled, { recursive: true, force: true })
+
+  const attributeUnknown = site({ markup: `<span class="api-punct">${fragment('Un', '<!--')}${fragment('known', '-->')}</span>` })
+  const unknownResult = run(attributeUnknown, 0)
+  check('comment delimiters in quoted attributes preserve the complete unknown name',
+    unknownResult.code !== 0 && unknownResult.out.includes('Unknown(1)'), `exited ${unknownResult.code}:\n${unknownResult.out}`)
+  rmSync(attributeUnknown, { recursive: true, force: true })
+
+  const comment = `<!-- ${quote} --!>`
+  const bangMangled = site({ markup: `<span class="api-type">s${comment}:s8CopyableP</span>` })
+  const bangResult = run(bangMangled, 99)
+  check('bang-ended quoted comments cannot hide a visible mangled id',
+    bangResult.code !== 0 && bangResult.out.includes('s:s8CopyableP'), `exited ${bangResult.code}:\n${bangResult.out}`)
+  rmSync(bangMangled, { recursive: true, force: true })
+
+  const bangUnknown = site({ markup: `<span class="api-punct">Un${comment}known</span>` })
+  const result = run(bangUnknown, 0)
+  check('bang-ended quoted comments cannot hide a visible unknown type',
+    result.code !== 0 && result.out.includes('Unknown(1)'), `exited ${result.code}:\n${result.out}`)
+  rmSync(bangUnknown, { recursive: true, force: true })
+}
+
+for (const comment of ['<!-->', '<!--->']) {
+  const dir = site({ markup: plain(`Un${comment}known`) })
+  const { code, out } = run(dir, 0)
+  check('abrupt empty comments preserve a visible unknown type', code !== 0 && out.includes('Unknown(1)'), `exited ${code}:\n${out}`)
+  rmSync(dir, { recursive: true, force: true })
+}
+
+for (const quote of ["'", '"']) {
+  const hidden = plain('Unknown') + usr()
+  const comment = site({ markup: `<!-- ${quote} ${hidden} --!>` })
+  const result = run(comment, 0)
+  check('commented type markup contributes no names', result.code === 0, `exited ${result.code}:\n${result.out}`)
+  rmSync(comment, { recursive: true, force: true })
+
+  const value = quote === '"' ? hidden.replaceAll('"', "'") : hidden
+  const attribute = site({ markup: `<div data-note=${quote}${value}${quote}></div>` })
+  const { code, out } = run(attribute, 0)
+  check('type markup inside a quoted attribute contributes no names', code === 0, `exited ${code}:\n${out}`)
+  rmSync(attribute, { recursive: true, force: true })
 }
 
 if (failures) {

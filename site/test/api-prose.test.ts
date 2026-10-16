@@ -4,6 +4,10 @@ import { fromMarkdown } from 'mdast-util-from-markdown'
 import { API_MODELS } from '../src/lib/api-models'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { parseApiProse } from '../src/lib/api-prose'
+import { createRenderer } from 'astro-expressive-code'
+import { select, toHtml } from 'astro-expressive-code/hast'
+import config from '../ec.config.mjs'
+import { codeLang } from '../src/lib/highlight'
 
 describe('shared API prose blocks', () => {
   it('preserves fenced source instead of treating prompts, comments and bullets as prose', () => {
@@ -24,6 +28,32 @@ describe('shared API prose blocks', () => {
 
   it('uses text for unlabelled literal fences and retains unfinished code', () => {
     expect(parseApiProse('~~~\na\n  b')).toEqual([{ kind: 'code', lang: 'text', code: 'a\n  b' }])
+  })
+
+  it('keeps native numbered and bullet lists distinct from neighboring code', () => {
+    expect(parseApiProse('3. Read a snapshot.\n4. Match the records.\n\n```go\nmatched := Matching(panes, filter)\n```\n\n• Inspect errors.')).toEqual([
+      { kind: 'ol', start: 3, items: [{ text: 'Read a snapshot.', children: [] }, { text: 'Match the records.', children: [] }] },
+      { kind: 'code', lang: 'go', code: 'matched := Matching(panes, filter)' },
+      { kind: 'ul', items: [{ text: 'Inspect errors.', children: [] }] },
+    ])
+  })
+
+  it('renders and exports the source-bound Go Matching example without changing Copy text', async () => {
+    const model = API_MODELS.go
+    const symbol = model.symbols.find((entry) => entry.id === 'tmuxq.Matching')!
+    const expected = 'active, err := tmuxq.Matching(snapshot.Panes(), tmux.PaneActiveIs(true))'
+    expect(symbol.source.revision).toBe('6f3df55f8a41999e41225eefb3940545b834e6a2')
+    const blocks = parseApiProse(symbol.doc!.body!)
+    expect(blocks).toEqual([{ kind: 'code', lang: 'go', code: expected }])
+    const block = blocks[0]
+    if (block.kind !== 'code') throw new Error('Missing native code block')
+    const renderer = await createRenderer(config)
+    const result = await renderer.ec.render({ code: block.code, language: codeLang(block.lang) })
+    expect(select('pre', result.renderedGroupAst)?.properties.dataLanguage).toBe('go')
+    expect(select('[data-code]', result.renderedGroupAst)?.properties.dataCode).toBe(expected)
+    expect(new Set([...toHtml(result.renderedGroupAst).matchAll(/--0:([^;"]+)/g)].map((match) => match[1])).size).toBeGreaterThan(1)
+    expect(fromMarkdown(symbolMarkdown({ model, symbol })).children.filter((node) => node.type === 'code'))
+      .toContainEqual(expect.objectContaining({ lang: 'go', value: expected }))
   })
 })
 

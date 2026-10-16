@@ -14,7 +14,8 @@ import PageToolbar from '../components/PageToolbar.astro'
 import SymbolName from '../components/api/SymbolName.astro'
 import PagePortSwitcher from '../components/PagePortSwitcher.astro'
 import DocumentationContext from '../components/docs/DocumentationContext.astro'
-import { pageBreadcrumbs, type SidebarItem } from '../lib/sidebar'
+import { getSidebar, pageBreadcrumbs, withSidebarBreadcrumbs, type BreadcrumbItem, type SidebarItem } from '../lib/sidebar'
+import { currentDocumentation, getDocumentationSurfaces } from '../lib/documentation-navigation'
 import type { PagePortLink } from '../lib/page-port-links'
 import ProseText from '../components/ProseText.astro'
 import { pagePortsFor } from '../lib/page-ports-for'
@@ -87,7 +88,7 @@ interface Props {
    */
   bare?: boolean
   navigation?: SidebarItem[]
-  breadcrumbs?: { name: string; url: string; symbol?: boolean }[]
+  breadcrumbs?: BreadcrumbItem[]
   pagePorts?: PagePortLink[]
 }
 
@@ -142,12 +143,15 @@ const development = product && port && productInDevelopment(PORT_BY_SLUG[port], 
 const workspaceOverview = product === 'workspace' && pagePath === 'workspace' && port
   ? workspaceOverviewNotice(PORT_BY_SLUG[port]) : undefined
 const workspaceInternals = product === 'workspace' && pagePath.startsWith('workspace/internals/')
-const breadcrumbs = requestedBreadcrumbs ?? (product && port ? [
+const surfaces = port ? await getDocumentationSurfaces(port, version, locale) : []
+const selectedSection = surfaces.length ? currentDocumentation(surfaces, currentPath)?.section : undefined
+const sidebarNavigation = navigation ?? selectedSection?.items ?? await getSidebar(port, version, locale, product)
+const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && port ? [
   { name: PORT_BY_SLUG[port].name, url: portPageUrl(PORT_BY_SLUG[port], version) },
   { name: DOC_PRODUCTS[product].label, url: portPageUrl(PORT_BY_SLUG[port], version, product) },
   ...(workspaceInternals ? [{ name: 'Internals', url: portPageUrl(PORT_BY_SLUG[port], version, 'workspace/internals') }] : []),
   ...(pagePath !== product ? [{ name: title, url: portPageUrl(PORT_BY_SLUG[port], version, pagePath) }] : []),
-] : await pageBreadcrumbs(title, pagePath, version, port, locale))
+] : await pageBreadcrumbs(title, pagePath, version, port, locale)), sidebarNavigation, currentPath)
 ---
 
 <BaseLayout
@@ -188,7 +192,7 @@ const breadcrumbs = requestedBreadcrumbs ?? (product && port ? [
     <div class="mobile-fallback lg:hidden" data-pagefind-ignore="all">
       <details>
         <summary>Browse documentation</summary>
-        <Sidebar locale={locale} port={port} product={product} version={version} currentPath={currentPath} navigation={navigation} />
+        <Sidebar locale={locale} port={port} product={product} version={version} currentPath={currentPath} navigation={sidebarNavigation} />
       </details>
       {tocItems.length > 0 && <details>
         <summary>On this page</summary>
@@ -216,7 +220,7 @@ const breadcrumbs = requestedBreadcrumbs ?? (product && port ? [
           </svg>
         </button>
       </div>
-      <Sidebar locale={locale} port={port} product={product} version={version} currentPath={currentPath} navigation={navigation} />
+      <Sidebar locale={locale} port={port} product={product} version={version} currentPath={currentPath} navigation={sidebarNavigation} />
     </div>
   </aside>
 
@@ -231,7 +235,7 @@ const breadcrumbs = requestedBreadcrumbs ?? (product && port ? [
   <div class="mx-auto flex max-w-[100rem] gap-5 px-4 py-6 lg:px-5">
     <aside class="hidden w-64 shrink-0 lg:block">
       <div data-documentation-scroll="desktop" class="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
-        <Sidebar locale={locale} port={port} product={product} version={version} currentPath={currentPath} navigation={navigation} />
+        <Sidebar locale={locale} port={port} product={product} version={version} currentPath={currentPath} navigation={sidebarNavigation} />
       </div>
     </aside>
 

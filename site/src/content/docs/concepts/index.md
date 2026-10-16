@@ -1,5 +1,5 @@
 ---
-supportedPorts: [py, ts, rs, go, java, csharp, cxx, swift, ruby, lua]
+supportedPorts: []
 title: Concepts
 description: tmux objects, command transports, queries, and workspaces.
 sidebar:
@@ -20,7 +20,7 @@ cards:
     ports: [root, py, ts, rs, go, java, csharp, cxx, swift]
   - label: Workspaces
     href: workspaces/
-    body: Build pane layouts from code or configuration files.
+    body: Build pane layouts with commands or tmux command files.
     ports: [root, py, ts, rs, go, java, csharp, cxx, swift]
   - label: Native guides
     href: ../guides/
@@ -28,8 +28,11 @@ cards:
     ports: [ruby, lua]
 ---
 
-libtmux lets you create sessions, arrange windows and panes, send commands, and
-read output from tmux. Start with the object hierarchy, then read about the
-transport, query, or workspace behavior your program needs.
+tmux creates sessions, arranges windows and panes, and keeps their programs
+running when you detach. Start with the object hierarchy, then read about
+command clients, filters, or workspace layouts.
 
-Use the API reference for signatures, defaults, and failure conditions.
+The concepts include complete shell scripts on private servers. Use
+[`list-sessions`](/tmux/latest/manual/list-sessions/) and
+[`list-panes`](/tmux/latest/manual/list-panes/) to inspect live state, and
+read the [tmux manual](/tmux/latest/manual/) for command flags and formats.

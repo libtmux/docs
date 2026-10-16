@@ -97,5 +97,17 @@
     "e": [
       ["McpServer", "src/server/mcp.ts#L72"]
     ]
+  },
+  {
+    "project": "Kotlin JVM annotations source",
+    "version": "2.4.10",
+    "langs": [
+      "java"
+    ],
+    "baseUrl": "https://github.com/JetBrains/kotlin/blob/5687445832cd835b4509b9fbc264cdf1a8201093/libraries/tools/kotlin-annotations-jvm/src/kotlin/annotations/jvm/",
+    "e": [
+      ["ReadOnly", "ReadOnly.java#L28"],
+      ["kotlin.annotations.jvm.ReadOnly", "ReadOnly.java#L28"]
+    ]
   }
 ]

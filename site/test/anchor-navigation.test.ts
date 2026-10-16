@@ -1,13 +1,21 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { Window } from 'happy-dom'
+import { readFileSync } from 'node:fs'
 import { installAnchorNavigation } from '../public/_shell/anchors.js'
 
 const disposals: (() => void)[] = []
 afterEach(() => { disposals.splice(0).forEach((dispose) => dispose()); vi.restoreAllMocks() })
 
-function page(html: string, hash = '', fontsPending = false, hintsPending = false) {
+function page(html: string, hash = '', fontsPending = false, hintsPending = false, startup?: { state?: unknown; navigation?: string }) {
   const win = new Window({ url: `https://libtmux.org/en/ts/latest/reference/${hash}` })
   win.document.body.innerHTML = html
+  if (startup) {
+    win.history.replaceState(startup.state ?? null, '')
+    vi.spyOn(win.performance, 'getEntriesByType').mockReturnValue([{ type: startup.navigation ?? 'reload' }] as unknown as ReturnType<typeof win.performance.getEntriesByType>)
+    const shell = readFileSync(new URL('../src/components/ShellHead.astro', import.meta.url), 'utf8')
+    win.eval(shell.match(/<script is:inline data-anchor-startup>([\s\S]*?)<\/script>/)?.[1] ?? '')
+    if (win.history.state === null) win.history.replaceState({ index: 0, scrollX: 0, scrollY: 0 }, '')
+  }
   if (fontsPending) win.document.documentElement.classList.add('fonts-pending')
   if (hintsPending) win.document.documentElement.classList.add('link-hints-pending')
   const frames = new Map<number, FrameRequestCallback>()
@@ -39,6 +47,74 @@ function page(html: string, hash = '', fontsPending = false, hintsPending = fals
 }
 
 describe('shared anchor arrival', () => {
+  it('recovers an initially unowned fragment after the router seeds its startup position', () => {
+    const p = page('<h2 id="server">Server</h2>', '#server', false, false, {})
+    expect(p.scrolled).toEqual([{ id: 'server', collapsed: 0 }])
+    expect(p.win.history.state).toEqual({ index: 0, scrollX: 0, scrollY: 0 })
+    expect(p.doc.documentElement.hasAttribute('data-anchor-startup')).toBe(false)
+    p.dispose()
+    disposals.push(installAnchorNavigation(p.win as unknown as typeof window))
+    p.flush()
+    expect(p.scrolled).toHaveLength(1)
+  })
+
+  it('keeps the initial unowned arrival through bootstrap replacement and both visibility gates', async () => {
+    const p = page('<h2 id="server">Server</h2>', '#server', true, true, {})
+    expect(p.scrolled).toEqual([])
+    expect(p.doc.documentElement.getAttribute('data-anchor-startup')).toBe(p.win.location.href)
+    p.dispose()
+    disposals.push(installAnchorNavigation(p.win as unknown as typeof window))
+    p.flush()
+    p.doc.documentElement.classList.remove('fonts-pending')
+    await p.win.happyDOM.waitUntilComplete(); p.flush()
+    expect(p.scrolled).toEqual([])
+    p.doc.documentElement.classList.remove('link-hints-pending')
+    await p.win.happyDOM.waitUntilComplete(); p.flush()
+    expect(p.scrolled).toEqual([{ id: 'server', collapsed: 0 }])
+    expect(p.doc.documentElement.hasAttribute('data-anchor-startup')).toBe(false)
+  })
+
+  it.each([
+    { state: { index: 1, scrollX: 0, scrollY: 480 } },
+    { state: { index: 1, scrollX: 0, scrollY: 0 } },
+    { navigation: 'back_forward' },
+  ])('leaves owned or traversed reading positions to normal history: %j', (startup) => {
+    const p = page('<h2 id="server">Server</h2>', '#server', false, false, startup)
+    expect(p.scrolled).toEqual([])
+    expect(p.doc.documentElement.hasAttribute('data-anchor-startup')).toBe(false)
+  })
+
+  it.each(['wheel', 'touchstart', 'pointerdown', 'PageDown'])('cancels only the pending initial arrival after reader input: %s', async (input) => {
+    const p = page('<h2 id="server">Server</h2>', '#server', true, true, {})
+    p.doc.dispatchEvent(input === 'PageDown'
+      ? new p.win.KeyboardEvent('keydown', { key: input, bubbles: true })
+      : new p.win.Event(input, { bubbles: true }))
+    p.doc.documentElement.classList.remove('fonts-pending', 'link-hints-pending')
+    await p.win.happyDOM.waitUntilComplete(); p.flush()
+    expect(p.scrolled).toEqual([])
+    expect(p.doc.documentElement.hasAttribute('data-anchor-startup')).toBe(false)
+  })
+
+  it('retains an initial arrival after a key that does not scroll', async () => {
+    const p = page('<h2 id="server">Server</h2>', '#server', true, false, {})
+    p.doc.dispatchEvent(new p.win.KeyboardEvent('keydown', { key: 'a', bubbles: true }))
+    p.doc.documentElement.classList.remove('fonts-pending')
+    await p.win.happyDOM.waitUntilComplete(); p.flush()
+    expect(p.scrolled).toEqual([{ id: 'server', collapsed: 0 }])
+  })
+
+  it('discards a pending startup destination when the fragment changes', async () => {
+    const p = page('<h2 id="server">Server</h2><h2 id="other">Other</h2>', '#server', true, false, {})
+    p.win.location.hash = '#other'
+    p.win.dispatchEvent(new p.win.HashChangeEvent('hashchange')); p.flush()
+    expect(p.doc.documentElement.hasAttribute('data-anchor-startup')).toBe(false)
+    p.doc.documentElement.classList.remove('fonts-pending')
+    await p.win.happyDOM.waitUntilComplete(); p.flush()
+    p.win.location.hash = '#server'
+    p.win.dispatchEvent(new p.win.HashChangeEvent('hashchange')); p.flush()
+    expect(p.scrolled).toEqual([])
+  })
+
   it('opens every containing disclosure before scrolling and highlights its summary', () => {
     const p = page('<details><summary>Outer</summary><details id="server"><summary id="server-label">Server</summary>Members</details></details>', '#server')
     expect(p.doc.querySelectorAll('details[open]')).toHaveLength(2)

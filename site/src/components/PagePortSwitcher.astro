@@ -75,6 +75,7 @@ families.push({ label: 'Other languages', ports: entries.filter((entry) => !know
             data-port={entry.port} data-port-name={entry.name} data-port-short-name={PORT_BY_SLUG[entry.port]?.shortName ?? entry.name}
             data-home-href={entry.home?.href} data-home-label={entry.home?.label}
             data-preserve-fragment={link.preserveFragment || undefined}
+            data-fragment-ids={link.fragmentIds?.join(' ')}
             data-picker-option data-match={`${entry.port} ${entry.name} ${PORT_BY_SLUG[entry.port]?.shortName ?? ''} ${link.label ?? ''}`}
             aria-label={link.label ? `${entry.name}: ${link.label}` : undefined}
             title={link.label ? `${entry.name}: ${link.label}` : undefined}

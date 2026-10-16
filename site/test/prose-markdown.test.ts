@@ -32,6 +32,24 @@ function exampleBytes(markdown: string): string[] {
 }
 
 describe('prose Markdown links', () => {
+  it('links native commands through prose HTML and Markdown without claiming prose aliases', async () => {
+    const source = 'Call tmux resize-pane. Use `$ tmux -L local run -b true` and `display-message`. Keep tmux has many panes.\n\n[Keep `run-shell`](https://example.com/authored).\n\n<code><a href="https://example.com/native">run-shell</a></code>\n\n`tmux run-shell true && tmux display-message hello`\n\n```sh\ntmux run-shell true\n```'
+    const processor = await createMarkdownProcessor({ rehypePlugins: [rehypeApiLinks], syntaxHighlight: false })
+    const html = (await processor.render(source, { frontmatter: { port: 'go' } })).code
+    const markdown = linkProseMarkdown(source, 'go')
+    for (const command of ['resize-pane', 'run-shell', 'display-message']) {
+      expect(html).toContain(`href="/tmux/latest/manual/${command}/"`)
+      expect(urls(markdown)).toContain(`/tmux/latest/manual/${command}/`)
+    }
+    expect(markdown).toContain('Keep tmux has many panes.')
+    expect(html).not.toContain('/manual/has-session/')
+    expect(urls(markdown)).not.toContain('/tmux/latest/manual/has-session/')
+    expect(markdown).toContain('[Keep `run-shell`](https://example.com/authored)')
+    expect(markdown).toContain('<code><a href="https://example.com/native">run-shell</a></code>')
+    expect(html).not.toMatch(/<a[^>]*>\s*<code>\s*<a/)
+    expect(exampleBytes(markdown)).toEqual(exampleBytes(source))
+  })
+
   it('uses the native Concepts page in routes, exports, sidebar and breadcrumbs', async () => {
     vi.stubEnv('LIBTMUX_DOCS_PORT', 'ruby')
     vi.stubEnv('LIBTMUX_DOCS_LOCALE', 'en')
@@ -42,8 +60,9 @@ describe('prose Markdown links', () => {
     try {
       expect(localeProse(entries, 'en', 'ruby')).toEqual([{ entry: native, route: 'concepts' }])
       const exported = await llmsPages('https://libtmux.org', '/en/ruby/latest/')
-      expect(exported).toHaveLength(1)
-      expect(exported[0]).toMatchObject({ title: 'Ruby concepts', body: 'Ruby concepts.', url: 'https://libtmux.org/en/ruby/latest/concepts/' })
+      const prose = exported.filter((page) => !page.url.endsWith('/reference/glossary/'))
+      expect(prose).toHaveLength(1)
+      expect(prose[0]).toMatchObject({ title: 'Ruby concepts', body: 'Ruby concepts.', url: 'https://libtmux.org/en/ruby/latest/concepts/' })
       const sidebar = await getSidebar('ruby', 'latest')
       const concepts = sidebar.find((entry) => entry.type === 'group' && entry.label === 'Concepts')
       expect(concepts).toMatchObject({ href: expect.stringContaining('/ruby/latest/concepts/'), items: [] })
@@ -174,9 +193,9 @@ describe('prose Markdown links', () => {
     vi.resetModules()
     const { llmsPage: deployedPage } = await import('../src/lib/llms')
     const pages = [
-      ['topics/architecture', ['go/next/concepts/queries', 'java/latest/concepts/queries']],
-      ['concepts/server-session-window-pane', ['go/next/topics/errors-and-exceptions']],
-      ['topics/waiting-and-retry', ['ts/next/concepts/transports']],
+      ['ports/go/topics/architecture', ['go/next/concepts/queries']],
+      ['ports/java/topics/architecture', ['java/latest/concepts/queries']],
+      ['ports/ts/topics/waiting-and-retry', ['ts/next/concepts/transports']],
     ] as const
     for (const [id, targets] of pages) {
       const { content, frontmatter } = parseFrontmatter(readFileSync(new URL(`../src/content/docs/${id}.md`, import.meta.url), 'utf8'))
@@ -205,31 +224,31 @@ describe('prose Markdown links', () => {
     const { rehypeApiLinks: deployedApiLinks } = await import('../src/plugins/rehype-api-links')
     const { rehypeSiteRoot } = await import('../src/plugins/rehype-site-root.mjs')
     const { remarkPortCode: deployedPortCode } = await import('../src/plugins/remark-port-code.mjs')
-    const { content, frontmatter } = parseFrontmatter(readFileSync(new URL('../src/content/docs/concepts/workspaces.md', import.meta.url), 'utf8'))
-    const entry = { id: 'concepts/workspaces', body: content, data: frontmatter } as CollectionEntry<'docs'>
-
-    for (const port of ['go', 'py', 'rs', 'java', 'csharp', '']) {
+    const cases = ['go', 'py', 'rs', 'java', 'csharp'].flatMap((owner) => [
+      { owner, port: owner }, { owner, port: '' },
+    ])
+    for (const { owner, port } of cases) {
+      const id = `ports/${owner}/concepts/workspaces`
+      const { content, frontmatter } = parseFrontmatter(readFileSync(new URL(`../src/content/docs/${id}.md`, import.meta.url), 'utf8'))
+      const entry = { id, body: content, data: frontmatter } as CollectionEntry<'docs'>
       vi.stubEnv('LIBTMUX_DOCS_PORT', port)
       const base = port ? `${root}/${port}/next/` : `${root}/`
       const exported = deployedPage(entry, 'https://libtmux.org', base)
       const renderer = await createMarkdownProcessor({
         remarkPlugins: [deployedPortCode], rehypePlugins: [rehypeSiteRoot, deployedApiLinks], syntaxHighlight: false,
       })
-      const html = (await renderer.render(content)).code
+      const html = (await renderer.render(content, { frontmatter })).code
       const htmlLinks = [...html.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map((match) => new URL(match[1], 'https://libtmux.org').href)
-      const expectedOwners = port ? [port] : ['py', 'go', 'rs', 'java', 'csharp']
       const defaults: Record<string, string> = { py: 'stable', rs: 'v0.1' }
-      for (const owner of expectedOwners) {
-        const version = owner === port ? 'next' : defaults[owner] ?? 'latest'
-        const target = `https://libtmux.org${ports}/${owner}/${version}/workspace/`
-        expect(htmlLinks, `${port || 'shared'} HTML`).toContain(target)
-        expect(urls(exported.body), `${port || 'shared'} Markdown`).toContain(target)
-      }
+      const version = owner === port ? 'next' : defaults[owner] ?? 'latest'
+      const target = `https://libtmux.org${ports}/${owner}/${version}/workspace/`
+      expect(htmlLinks, `${owner}/${port || 'root'} HTML`).toContain(target)
+      expect(urls(exported.body), `${owner}/${port || 'root'} Markdown`).toContain(target)
       for (const target of htmlLinks.filter((href) => href.includes('/reference/'))) {
         expect(urls(exported.body), `${port || 'shared'} API ${target}`).toContain(target)
       }
       expect(exported.body).not.toContain(`${root}${ports}/`)
-      expect(exampleBytes(exported.body)).toEqual(exampleBytes(resolvePortCode(content, port || undefined)))
+      expect(exampleBytes(exported.body)).toEqual(exampleBytes(resolvePortCode(content, port || undefined, owner)))
     }
   })
 
@@ -292,8 +311,8 @@ describe('prose Markdown links', () => {
   it('exports the architecture links that HTML renders, without changing programs or anchors', async () => {
     vi.stubEnv('LIBTMUX_DOCS_PORT', 'rs')
     vi.stubEnv('LIBTMUX_DOCS_VERSION', 'next')
-    const { content, frontmatter } = parseFrontmatter(readFileSync(new URL('../src/content/docs/topics/architecture.md', import.meta.url), 'utf8'))
-    const entry = { id: 'topics/architecture', body: content, data: frontmatter } as CollectionEntry<'docs'>
+    const { content, frontmatter } = parseFrontmatter(readFileSync(new URL('../src/content/docs/ports/rs/topics/architecture.md', import.meta.url), 'utf8'))
+    const entry = { id: 'ports/rs/topics/architecture', body: content, data: frontmatter } as CollectionEntry<'docs'>
     const exported = llmsPage(entry, 'https://libtmux.org', '/en/rs/next/')
     const renderer = await createMarkdownProcessor({ remarkPlugins: [remarkPortCode], rehypePlugins: [rehypeApiLinks], syntaxHighlight: false })
     const html = (await renderer.render(content)).code

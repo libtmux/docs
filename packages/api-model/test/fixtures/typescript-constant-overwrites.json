@@ -1,0 +1,96 @@
+[
+  {
+    "name": "spread-after",
+    "source": "declare const overrides: Record<string, string>;\nexport const Direction = { Up: \"UP\", ...overrides } as const;",
+    "members": []
+  },
+  {
+    "name": "spread-before",
+    "source": "declare const overrides: Record<string, string>;\nexport const Direction = { ...overrides, Up: \"UP\" } as const;",
+    "members": [
+      [
+        "Up",
+        "\"UP\""
+      ]
+    ]
+  },
+  {
+    "name": "computed-after",
+    "source": "declare const key: string;\nexport const Direction = { Up: \"UP\", [key]: \"DOWN\" } as const;",
+    "members": []
+  },
+  {
+    "name": "quoted-override",
+    "source": "export const Direction = { Up: \"UP\", \"Up\": \"DOWN\" } as const;",
+    "members": []
+  },
+  {
+    "name": "standalone",
+    "source": "export const Direction = { Up: \"UP\" } as const;",
+    "members": [
+      [
+        "Up",
+        "\"UP\""
+      ]
+    ]
+  },
+  {
+    "name": "real-enum",
+    "source": "export enum Direction { Up = \"UP\", Down = \"DOWN\" }",
+    "members": [
+      [
+        "Up",
+        null
+      ],
+      [
+        "Down",
+        null
+      ]
+    ]
+  },
+  {
+    "name": "quoted-map",
+    "source": "export const Map = { \"UP\": \"up\", [key]: \"dynamic\" } as const;",
+    "members": []
+  },
+  {
+    "name": "duplicate-scalars",
+    "source": "export const Direction = { Up: \"UP\", Up: \"DOWN\" } as const;",
+    "members": [
+      [
+        "Up",
+        "\"DOWN\""
+      ]
+    ]
+  },
+  {
+    "name": "accessor-after",
+    "source": "export const Direction = { Up: \"UP\", get Up() { return \"DOWN\"; } } as const;",
+    "members": []
+  },
+  {
+    "name": "accessor-before",
+    "source": "export const Direction = { get Up() { return \"DOWN\"; }, Up: \"UP\" } as const;",
+    "members": [
+      [
+        "Up",
+        "\"UP\""
+      ]
+    ]
+  },
+  {
+    "name": "computed-before",
+    "source": "declare const key: string;\nexport const Direction = { [key]: \"DOWN\", Up: \"UP\" } as const;",
+    "members": [
+      [
+        "Up",
+        "\"UP\""
+      ]
+    ]
+  },
+  {
+    "name": "mutable-annotation",
+    "source": "export const Direction: { Up: string } = { Up: \"UP\" } as const;\nDirection.Up = \"DOWN\";",
+    "members": []
+  }
+]

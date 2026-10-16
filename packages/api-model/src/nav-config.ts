@@ -676,6 +676,8 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
   },
   java: {
     unsettled: {
+      'io.github.libtmux.catalog.Advanced.Advanced': 'public annotation describing facade catalog scope',
+      'io.github.libtmux.catalog.Operation.Operation': 'public annotation classifying facade catalog operations',
       'io.github.libtmux.Channel.Channel': 'async channel plumbing for control mode',
       'io.github.libtmux.WakeReason.WakeReason': 'async channel plumbing for control mode',
       'io.github.libtmux.FindSpec.FindSpec': 'target addressing; used by every entity, owned by none',

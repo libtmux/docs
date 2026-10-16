@@ -351,6 +351,8 @@ export default defineConfig({
   server: { port: 4321 },
 
   vite: {
+    // Generated catalogs need only their default export.
+    json: { stringify: true, namedExports: false },
     resolve: { tsconfigPaths: false, noExternal: ['@tailwindcss/typography'] },
     plugins: [tailwindcss() as never, {
       name: 'libtmux-shared-assets-dev',
