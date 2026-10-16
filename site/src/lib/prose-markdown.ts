@@ -6,8 +6,11 @@ import { createProseLinker, PORT_BY_LABEL } from './prose-resolver'
 import { PORT_BY_SLUG } from './ports'
 import { rewriteMarkdownLinks } from '../plugins/remark-port-code.mjs'
 import { tmuxMentionMarkdown } from './tmux-links'
+import { isTmuxProse, type DocsPage } from './docs-paths'
 
 interface MarkdownLinkProjection {
+  /** The same source identity and route that determine HTML ownership. */
+  page?: DocsPage
   /** Resolved API URLs already include their deployment prefix. */
   resolved?: (href: string) => string
   /** Authored links need the ownership region and the selected build version. */
@@ -17,7 +20,8 @@ interface MarkdownLinkProjection {
 /** Add resolved links without reserializing prose or executable examples. */
 export function linkProseMarkdown(raw: string, port?: string, product?: ApiProduct, project: MarkdownLinkProjection = {}): string {
   const { body, portAt } = resolvePortContent(raw, port)
-  const linkApi = !port || PORT_BY_SLUG[port]?.referenceKind !== 'guide'
+  const linkApi = (!project.page || !isTmuxProse(project.page, port))
+    && (!port || PORT_BY_SLUG[port]?.referenceKind !== 'guide')
   const spans = new Set<number>()
   const edits: { start: number; end: number; text: string }[] = []
   const link = createProseLinker(product)

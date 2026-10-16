@@ -1,6 +1,7 @@
 /** Collection identity stays distinct from a product page's public path. */
 import { PORT_BY_SLUG, productAvailable } from './ports.ts'
 import { SOURCE_GUIDE_PORTS, sourceGuideRedirectsFor } from './port-documentation.ts'
+import { DEFAULT_LOCALE, isLocale } from '../i18n/locales.ts'
 
 /** Shared tmux prose has one public home, outside the language libraries. */
 export function tmuxProsePath(path: string): string {
@@ -51,6 +52,15 @@ export function docsPath(entry: DocsPage): string {
   const prefix = `ports/${entry.data.port}/`
   if (!entry.id.startsWith(prefix)) throw new Error(`Invalid product document id: ${entry.id}`)
   return entry.id.slice(prefix.length)
+}
+
+/** Infer library references only outside the native tmux prose routes. */
+export function isTmuxProse(entry: DocsPage, buildPort?: string): boolean {
+  if (entry.data.port || buildPort) return false
+  const locale = entry.id.split('/')[0]!
+  const id = isLocale(locale) && locale !== DEFAULT_LOCALE ? entry.id.slice(locale.length + 1) : entry.id
+  const path = docsPath({ ...entry, id })
+  return tmuxProsePath(path) !== path
 }
 
 /** Root builds expose product pages at the same URLs as assembled port builds. */

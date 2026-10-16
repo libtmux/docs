@@ -6834,13 +6834,6 @@
   },
   {
    "port": "lua",
-   "symbol": "libtmux.NewSessionOptions.window_name",
-   "page": "/topics/format-tokens/",
-   "title": "Format-token fields",
-   "section": "topics"
-  },
-  {
-   "port": "lua",
    "symbol": "libtmux.Observation:coverage",
    "page": "/lua/latest/guides/control/",
    "title": "Observing a session",
@@ -8368,37 +8361,9 @@
   {
    "port": "py",
    "symbol": "libtmux._internal.env.TMUX",
-   "page": "/guides/attaching-to-tmux/",
-   "title": "Attaching to tmux",
-   "section": "guides"
-  },
-  {
-   "port": "py",
-   "symbol": "libtmux._internal.env.TMUX",
    "page": "/py/latest/topics/environment/",
    "title": "Environment",
    "section": "topics"
-  },
-  {
-   "port": "py",
-   "symbol": "libtmux._internal.env.TMUX",
-   "page": "/topics/environment/",
-   "title": "Environment",
-   "section": "topics"
-  },
-  {
-   "port": "py",
-   "symbol": "libtmux._internal.env.TMUX",
-   "page": "/topics/socket-and-servers/",
-   "title": "Socket and servers",
-   "section": "topics"
-  },
-  {
-   "port": "py",
-   "symbol": "libtmux._internal.env.TMUX_PANE",
-   "page": "/guides/attaching-to-tmux/",
-   "title": "Attaching to tmux",
-   "section": "guides"
   },
   {
    "port": "py",
@@ -8411,13 +8376,6 @@
    "port": "py",
    "symbol": "libtmux._internal.env.TMUX_PANE",
    "page": "/py/latest/topics/environment/",
-   "title": "Environment",
-   "section": "topics"
-  },
-  {
-   "port": "py",
-   "symbol": "libtmux._internal.env.TMUX_PANE",
-   "page": "/topics/environment/",
    "title": "Environment",
    "section": "topics"
   },
@@ -9368,13 +9326,6 @@
   },
   {
    "port": "rs",
-   "symbol": "config.Workspace.session_name",
-   "page": "/topics/format-tokens/",
-   "title": "Format-token fields",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
    "symbol": "config.Workspace.to_yaml",
    "page": "/rs/latest/workspace/internals/guides/",
    "title": "Use the Rust workspace builder",
@@ -9889,13 +9840,6 @@
    "symbol": "pane.Pane.window_id",
    "page": "/rs/latest/topics/format-tokens/",
    "title": "Format-token fields",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.Pane.window_id",
-   "page": "/topics/traversal/",
-   "title": "Traversal",
    "section": "topics"
   },
   {

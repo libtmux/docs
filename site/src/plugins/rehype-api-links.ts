@@ -7,7 +7,7 @@ import { createProseLinker, PORT_BY_LABEL } from '../lib/prose-resolver'
 import { PORT_BY_SLUG } from '../lib/ports'
 import { API_MODELS, pageSlug } from '../lib/api-models'
 import { kindMark } from '../lib/api-labels'
-import { docsPath } from '../lib/docs-paths'
+import { docsPath, isTmuxProse } from '../lib/docs-paths'
 import { MCP_REFERENCE, mcpObjects } from '../lib/mcp-reference'
 import { tmuxCommandMentions } from '../lib/tmux-links'
 
@@ -173,9 +173,10 @@ export function rehypeApiLinks() {
     const source = file?.path?.replaceAll('\\', '/').match(/\/content\/(docs|_workspace-shared)\/(.+)\.mdx?$/)
     const id = source ? `${source[1] === '_workspace-shared' ? `ports/${buildPort}/` : ''}${source[2]}`.replace(/(?:^|\/)index$/, '') : undefined
     const route = frontmatter?.route ?? (id !== undefined ? docsPath({ id, data: { ...frontmatter, port: buildPort } }) : undefined)
-    // Native wrapper references own their symbols. Resolving the same short
-    // name against another language's model would create a misleading link.
-    const resolveMentions = !buildPort || PORT_BY_SLUG[buildPort]?.referenceKind !== 'guide'
+    // Native tmux prose and wrapper references own their names; a library's
+    // similarly named symbol is not evidence for a link from those pages.
+    const nativeTmux = isTmuxProse({ id: id ?? '', data: { ...frontmatter, port: buildPort } })
+    const resolveMentions = !nativeTmux && (!buildPort || PORT_BY_SLUG[buildPort]?.referenceKind !== 'guide')
     begin()
     const link = createProseLinker(file?.data?.astro?.frontmatter?.product)
     const sections: { depth: number; port?: string }[] = []
