@@ -302,6 +302,33 @@ describe('native signature emission', () => {
     } finally { await win.happyDOM.abort() }
   })
 
+  it.fails.each([
+    'tmux.SessionOptionValues.PromptCommandCursorStyle',
+    'tmux.WindowOptionValues.PaneScrollbarsPosition',
+  ])('links the actual Go return type without self-linking the declaration: %s', async (id) => {
+    const model = JSON.parse(readFileSync(new URL('../src/data/api/go.json', import.meta.url), 'utf8')) as ApiModel
+    const symbol = model.symbols.find((entry) => entry.id === id)!
+    const target = model.symbols.find((entry) => entry.name === symbol.name && entry.kind === 'struct')!
+    const sig = symbol.signatures[0]!
+    const component = await (componentPromise ??= signatureComponent())
+    const container = await experimental_AstroContainer.create()
+    const signatureLayouts = await apiSignatureLayouts(symbol, 'go')
+    const index = new SymbolIndex(model.symbols, (entry) => `/en/go/latest/reference/${entry.slug}/`, 'go')
+    const win = new Window()
+    try {
+      win.document.body.innerHTML = await container.renderToString(component, { props: {
+        symbol, sig, port: 'go', language: 'go', signatureLayouts, index,
+        nativeSignatureText: () => signatureLayouts.get(sig)!.text,
+      } })
+      const signature = win.document.querySelector('.api-native-signature')!
+      expect([...signature.querySelectorAll('a')].filter((link) => link.textContent === symbol.name)
+        .map((link) => link.getAttribute('href'))).toEqual([`/en/go/latest/reference/${target.slug}/`])
+      expect(signature.querySelector('.api-signature-name-link')).toBeNull()
+      expect(displayedSignature(signature)).toBe(signatureLayouts.get(sig)!.text)
+      expect(signature.getAttribute('data-code-width-status')).toBe('fits')
+    } finally { await win.happyDOM.abort() }
+  })
+
   it('reports an indivisible Go token as unresolved in the rendered signature', async () => {
     const token = 'UnbreakableType'.repeat(6)
     const raw = `func Method() ${token}`

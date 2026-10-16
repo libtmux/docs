@@ -179,6 +179,45 @@ describe('a bare name with more than one candidate', () => {
   })
 })
 
+describe('Go type candidates', () => {
+  it.fails.each(['class', 'exception', 'enum', 'struct', 'union', 'interface', 'typealias', 'trait'])
+    ('continues past a scoped method to a %s type', (kind) => {
+      const owner = sym('tmux.Owner')
+      const method = { ...sym('tmux.Owner.Choice', 'method'), parent: owner.id }
+      const type = sym('tmux.Choice', kind)
+      const idx = index([owner, method, type])
+      expect(linkFor(idx, 'Box[Choice]', 'Choice', method)?.symbol?.id).toBe(type.id)
+      expect(idx.resolve('Choice', 'any', method)?.symbol?.id).toBe(method.id)
+      expect(idx.resolve('Choice', 'meth', method)?.symbol?.id).toBe(method.id)
+      expect(idx.linkText('[Choice]', method).find((span) => span.kind === 'ref')?.link?.symbol?.id).toBe(method.id)
+    })
+
+  it.fails.each(['method', 'function', 'attribute', 'property', 'constant', 'module'])
+    ('leaves a %s out of every Go type-candidate boundary', (kind) => {
+      const member = { ...sym('tmux.Owner.Choice', kind), parent: 'tmux.Owner' }
+      const qualified = { ...sym('internal.Native', kind), name: 'Choice', qualifiedName: 'public.Choice' }
+      const bare = { ...sym('Internal', kind), name: 'Choice' }
+      for (const [symbols, target, context] of [
+        [[member], 'Choice', member],
+        [[member], member.id, undefined],
+        [[member], 'Owner.Choice', undefined],
+        [[qualified], 'public.Choice', undefined],
+        [[bare], 'Choice', undefined],
+      ] as const) {
+        const idx = index([...symbols])
+        expect(idx.resolve(target, 'class', context)).toBeUndefined()
+        expect(idx.resolve(target, 'any', context)?.symbol?.kind).toBe(kind)
+      }
+    })
+
+  it.fails('does not use a method when actual type candidates remain ambiguous', () => {
+    const method = { ...sym('tmux.Owner.Choice', 'method'), parent: 'tmux.Owner' }
+    const idx = index([method, sym('first.Choice'), sym('second.Choice')])
+    expect(linkFor(idx, 'Box[Choice]', 'Choice', method)).toBeUndefined()
+    expect(idx.resolve('Choice', 'meth', method)?.symbol?.id).toBe(method.id)
+  })
+})
+
 it('resolves C++ core and workspace types through their enclosing namespaces', () => {
   const cpp = (id: string) => ({ ...sym(id), name: id.split('::').at(-1)! })
   const symbols = ['libtmux::Pane', 'libtmux::workspace::Pane'].map(cpp)
