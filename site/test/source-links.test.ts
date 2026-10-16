@@ -48,11 +48,11 @@ function fixture(port: 'java' | 'kotlin' | 'scala' = 'kotlin', { generated = tru
       encoding: 'utf8', timeout: 5000,
     })
   }
-  return { model, ordinary, declaration, file, content, git, revision, invoke }
+  return { model, native, ordinary, declaration, file, content, git, revision, invoke }
 }
 
 describe('source link audit', () => {
-  it.fails.each(['java', 'kotlin', 'scala'] as const)('accepts the embedded source route for a real %s declaration', (port) => {
+  it.each(['java', 'kotlin', 'scala'] as const)('accepts the embedded source route for a real %s declaration', (port) => {
     const { model, declaration, file, git, revision, invoke } = fixture(port)
     expect(sourceUrl(model, declaration, `/pr-42/en/${port}/v1/reference/`))
       .toBe(`/pr-42/en/${port}/v1/reference/sources/${file}`)
@@ -61,6 +61,113 @@ describe('source link audit', () => {
     expect(result.error).toBeUndefined()
     expect(result.status, result.stderr).toBe(0)
     expect(result.stdout).not.toContain('skipped')
+  })
+
+  it.each(['java', 'kotlin', 'scala'] as const)('checks every embedded %s catalog location against its emitted text', (port) => {
+    const { model, native, ordinary, revision, invoke } = fixture(port)
+    const generated = native.symbols.filter((symbol) => Object.hasOwn(native.generatedSources!, symbol.source.file))
+    model.generatedSources = native.generatedSources
+    model.symbols = [ordinary, ...generated.map((symbol) => ({ ...symbol,
+      source: { ...symbol.source, repo: model.repo, revision, extractedRevision: revision },
+    }))]
+    const result = invoke()
+    expect(result.status, result.stderr).toBe(0)
+    expect(result.stdout).toContain(`${generated.length} generated declaration and method locations, ${Object.keys(native.generatedSources!).length} embedded files`)
+    expect(result.stdout).not.toContain('skipped')
+  })
+
+  it('requires an embedded entry instead of exempting generated-looking paths', () => {
+    const { model, file, invoke } = fixture()
+    delete model.generatedSources![file]
+    const result = invoke()
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain(`name a path absent at`)
+    expect(result.stderr).toContain(file)
+  })
+
+  it('selects an embedded route by its catalog entry without a path-prefix convention', () => {
+    const { model, ordinary, invoke } = fixture()
+    model.symbols = [ordinary]
+    model.generatedSources = { [ordinary.source.file]: 'package embedded;\nclass Server {}\n' }
+    expect(sourceUrl(model, ordinary, '/en/kotlin/latest/reference/'))
+      .toBe('/en/kotlin/latest/reference/sources/src/Server.java')
+    const result = invoke()
+    expect(result.status, result.stderr).toBe(0)
+    expect(result.stdout).toContain('1 generated declaration and method locations')
+  })
+
+  it.each([null, [], 'text', 42])('rejects a malformed generated-source catalog: %j', (catalog) => {
+    const { model, invoke } = fixture()
+    model.generatedSources = catalog as unknown as Record<string, string>
+    const result = invoke()
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain('generatedSources must map relative source paths to text')
+  })
+
+  it.each([null, {}, [], 42, true, '', '  \n', 'source\0text'])('rejects missing or non-text embedded content: %j', (content) => {
+    const { model, file, invoke } = fixture()
+    model.generatedSources![file] = content as unknown as string
+    const result = invoke()
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain('must contain nonempty text')
+  })
+
+  it('rejects truncated embedded content using the actual declaration line', () => {
+    const { model, file, declaration, invoke } = fixture()
+    expect(declaration.source.line).toBeGreaterThan(1)
+    model.generatedSources![file] = 'truncated source'
+    const result = invoke()
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain('points outside embedded generated source')
+  })
+
+  it.each(['../Outside.kt', '/Outside.kt', 'src/../Outside.kt', 'src/./Outside.kt', 'src//Outside.kt',
+    'src\\Outside.kt', 'src/%2e%2e/Outside.kt', 'src/Outside.kt?raw=1', 'src/Outside.kt#fragment',
+    'C:/Outside.kt', 'src/Outside\n.kt'])('rejects a generated route path that changes its destination: %j', (file) => {
+    const { model, declaration, content, invoke } = fixture()
+    model.generatedSources = { [file]: content }
+    declaration.source.file = file
+    const result = invoke()
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain('is not a canonical relative path')
+  })
+
+  it('checks unreferenced embedded files because they also become source routes', () => {
+    const { model, invoke } = fixture()
+    model.generatedSources!['../Unused.kt'] = 'unreferenced source'
+    const result = invoke()
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain('generated source "../Unused.kt" is not a canonical relative path')
+  })
+
+  it.each([0, -1, 1.5, '2', null, 100000])('rejects an invalid generated declaration line: %j', (line) => {
+    const { declaration, invoke } = fixture()
+    declaration.source.line = line as number
+    const result = invoke()
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain('points outside embedded generated source')
+  })
+
+  it('checks generated signature locations independently of the owner source', () => {
+    const { model, ordinary, declaration, content, invoke } = fixture()
+    model.symbols = [ordinary]
+    ordinary.signatures = [{ params: [], source: { ...declaration.source } }]
+    const valid = invoke()
+    expect(valid.status, valid.stderr).toBe(0)
+    expect(valid.stdout).toContain('1 generated declaration and method locations')
+    ordinary.signatures[0].source!.line = content.split('\n').length + 1
+    const invalid = invoke()
+    expect(invalid.status).toBe(1)
+    expect(invalid.stderr).toContain('Server signature 1 points outside embedded generated source')
+  })
+
+  it('retains ordinary Git signature checks on an owner with embedded source', () => {
+    const { declaration, invoke } = fixture()
+    declaration.signatures = [{ params: [], source: { file: 'src/Missing.java', line: 1 } }]
+    const result = invoke()
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain('name a path absent at')
+    expect(result.stderr).toContain('src/Missing.java')
   })
 
   it('accepts a public Git source and an unspecified line', () => {
