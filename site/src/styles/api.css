@@ -26,7 +26,7 @@
   :root:not([data-theme-mode]):not([data-theme="light"]) {
     --color-api-name: #ee5151;
     --color-api-pre-name: #ee5151;
-    --color-api-paren: #9ca0a5;
+    --color-api-paren: var(--color-foreground-secondary, #9ca0a5);
     --color-api-keyword: #9ca0a5;
   }
 }
@@ -71,7 +71,7 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:not(:target) {
 }
 /* An entry without a body needs only the card's outer border. */
 dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
-  border-bottom: 0;
+  border-bottom-width: 0;
   border-radius: calc(0.5rem - 1px);
 }
 .api-signature-name-link { color: inherit; text-decoration: none; }
