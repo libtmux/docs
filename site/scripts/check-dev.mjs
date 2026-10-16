@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict'
-import { cpSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { dev } from 'astro'
@@ -14,6 +14,7 @@ import { checkHomeTaskReset } from './check-home-task-reset.mjs'
 import { checkColorScheme } from './check-color-scheme.mjs'
 import { checkHomeExampleOptions } from './check-home-example-options.mjs'
 import { checkDevSample } from './check-dev-sample.mjs'
+import { checkNativeSignatureLinks } from './check-native-layout.mjs'
 
 const apiNavigationOnly = process.argv.includes('--api-navigation')
 const apiAnchorsOnly = process.argv.includes('--api-anchors')
@@ -613,10 +614,11 @@ async function checkReferenceAndHeroes(browser, base) {
     console.log('Reference contents: section targets, active links, related declarations and grouped member order pass')
     await page.goto(`${base}/scala/latest/reference/io-github-libtmux-scaladsl-server-windows/`)
     const signature = page.locator('dt.api-native-header').first()
-    const links = await signature.locator('.api-native-signature a').evaluateAll((elements) =>
-      elements.map((element) => ({ name: element.textContent, href: element.getAttribute('href') })))
+    const links = await checkNativeSignatureLinks(signature,
+      JSON.parse(readFileSync(join(source, 'src/data/api/scala.json'), 'utf8')).symbols
+        .find((symbol) => symbol.id === 'io.github.libtmux.scaladsl.Server.windows'))
     for (const name of ['def', 'extension', 'self', 'windows', 'id', 'expression']) {
-      assert(!links.some((link) => link.name === name), `${name} is a declaration token, not an API link`)
+      assert(!links.some((link) => link.name === name && !link.parameter), `${name} is a declaration token, not an API link`)
     }
     for (const name of ['Server', 'Window', 'io.github.libtmux.WindowId']) {
       assert(links.some((link) => link.name === name), `Scala signature links ${name}`)
@@ -632,7 +634,7 @@ async function checkReferenceAndHeroes(browser, base) {
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
         `Scala overloads fit at ${width}px`)
     }
-    console.log('Scala overloads: only API symbols link, Vector resolves to Scala, and badges leave the full code width')
+    console.log('Scala overloads: parameter anchors resolve locally, API types link, and badges leave the full code width')
     await page.goto(`${base}/kotlin/latest/reference/io-github-libtmux-kotlin-server-session/`)
     const errors = page.locator('[id="io.github.libtmux.kotlin.Server.session.errors"] + dd')
     assert.match(await errors.innerText(), /NoMatch/)
