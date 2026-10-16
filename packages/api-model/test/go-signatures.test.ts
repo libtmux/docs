@@ -15,14 +15,14 @@ async function extract(source: string) {
 }
 
 describe('Go callable source facts', () => {
-  it.fails('retains the complete ListBuffers header without its implementation', async () => {
+  it('retains the complete ListBuffers header without its implementation', async () => {
     const raw = 'func (s Server) ListBuffers(\n\tctx context.Context,\n\trequest ListBuffersRequest,\n) ([]string, error)'
     const symbols = await extract(`${raw} { return nil, nil }`)
     const method = symbols.find((symbol) => symbol.name === 'ListBuffers')!
     expect(method.signatures[0]!.raw).toBe(raw)
   })
 
-  it.fails.each([
+  it.each([
     ['s *Server[T]', { name: 's', type: '*Server[T]' }],
     ['s Server', { name: 's', type: 'Server' }],
     ['*Server', { name: '', type: '*Server' }],
@@ -32,7 +32,7 @@ describe('Go callable source facts', () => {
     expect(method.parent).toBe('tmux.Server')
   })
 
-  it.fails('retains every grouped parameter in declaration order', async () => {
+  it('retains every grouped parameter in declaration order', async () => {
     const method = (await extract('func Join(a, b string, c, d *Target) {}'))[0]!
     expect(method.signatures[0]!.params).toEqual([
       { name: 'a', type: 'string' }, { name: 'b', type: 'string' },
@@ -40,7 +40,7 @@ describe('Go callable source facts', () => {
     ])
   })
 
-  it.fails('retains variadic and unnamed parameter facts without inventing names', async () => {
+  it('retains variadic and unnamed parameter facts without inventing names', async () => {
     const symbols = await extract('func Named(first Target, rest ...Target) {}\nfunc Unnamed(string, ...Target) {}')
     expect(symbols[0]!.signatures[0]!.params).toEqual([
       { name: 'first', type: 'Target' }, { name: 'rest', type: 'Target', variadic: 'positional' },
@@ -50,7 +50,7 @@ describe('Go callable source facts', () => {
     ])
   })
 
-  it.fails('retains type constraints and literal whitespace inside the source header', async () => {
+  it('retains type constraints and literal whitespace inside the source header', async () => {
     const raw = 'func Matching[T interface{ ~string | ~[]byte }](value struct { Name string `Target  tag` }, filter func(T) bool) (result []T, err error)'
     const method = (await extract(`${raw} { return nil, nil }`))[0]!
     expect(method.signatures[0]!.raw).toBe(raw)
