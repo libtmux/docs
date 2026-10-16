@@ -12,6 +12,9 @@ import { Window, type Element, type HTMLElement } from 'happy-dom'
 import { parameterId, parentInventory, SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model'
 import { apiEntryFields, nativeSignatureText, usesNativeSignatures } from '../src/lib/api-sections'
 import { API_MODEL_PORTS } from '../src/lib/ports'
+import { extractSourceWithSpec } from '../../packages/api-model/src/languages/spec'
+import { JAVA } from '../../packages/api-model/src/languages/specs'
+import { createApiIndex } from '../src/lib/api-models'
 import { apiSignatureLayouts } from '../src/lib/code-layout'
 import * as nativeLayoutChecks from '../scripts/check-native-layout.mjs'
 
@@ -913,4 +916,53 @@ describe('native signature emission', () => {
       expect(JSON.parse(signature.getAttribute('data-code-width-failures')!)).toEqual(layout.failures)
     } finally { await win.happyDOM.abort() }
   })
+})
+
+
+it.fails('audits real Java grammar roles without masking an unknown type', async () => {
+  const symbols = await extractSourceWithSpec(JAVA, `public @interface Marker { String value() default "Unknown"; }
+public class Probe<T> { @Marker("literal  Unknown") public synchronized T method(Target value) throws Failure { return null; } }
+public class Target {} public class Failure {} public class T {}`, 'Probe.java', 'edge')
+  const symbol = symbols.find((entry) => entry.name === 'method')!
+  const signatureLayouts = await apiSignatureLayouts(symbol, 'java')
+  const index = createApiIndex({ port: 'java', extractor: 'test', symbols }, (entry) => `/${entry.id}/`)
+  const container = await experimental_AstroContainer.create()
+  const win = new Window()
+  try {
+    const component = await (componentPromise ??= signatureComponent())
+    const html = await container.renderToString(component, { props: { symbol, sig: symbol.signatures[0], port: 'java', language: 'java', index, signatureLayouts, nativeSignatureText } })
+    win.document.body.innerHTML = html
+    expect(displayedSignature(win.document.querySelector('.api-native-signature')!)).toBe([...signatureLayouts.values()][0]!.text)
+    expect([...win.document.querySelectorAll('[data-api-role="syntax"]')].map((element) => element.textContent)).toEqual(['"literal  Unknown"', 'public', 'synchronized', 'throws'])
+    expect([...win.document.querySelectorAll('a')].filter((element) => element.textContent === 'T')).toEqual([])
+    expect(auditSignature(html).code).toBe(0)
+    const bound = [...win.document.querySelectorAll('span.api-parameter-name')].find((element) => element.textContent === 'T')!
+    expect(bound).toBeDefined()
+    bound.className = 'api-punct'
+    bound.textContent = 'Unknown'
+    expect(auditSignature(win.document.body.innerHTML).code).toBe(1)
+    expect(auditSignature(`${html}<span class="api-type"><span class="api-punct">s:s8CopyableP</span></span>`).code).toBe(1)
+  } finally { await win.happyDOM.abort() }
+})
+
+it.fails('links recovered annotations and owner type bindings in actual Java headers', async () => {
+  const model = JSON.parse(readFileSync(new URL('../src/data/api/java.json', import.meta.url), 'utf8')) as ApiModel
+  const index = createApiIndex(model, (entry) => `/en/java/latest/reference/${entry.slug}/`)
+  const container = await experimental_AstroContainer.create()
+  const win = new Window()
+  try {
+    const component = await (componentPromise ??= signatureComponent())
+    for (const id of ['io.github.libtmux.Server.Server.sessions', 'io.github.libtmux.OptionKey.OptionKey.read']) {
+      const symbol = model.symbols.find((entry) => entry.id === id)!
+      const signatureLayouts = await apiSignatureLayouts(symbol, 'java')
+      const html = (await Promise.all(symbol.signatures.map((sig) => container.renderToString(component, { props: { symbol, sig, port: 'java', language: 'java', index, signatureLayouts, nativeSignatureText } })))).join('')
+      win.document.body.innerHTML = html
+      expect([...win.document.querySelectorAll('.api-native-signature')].map(displayedSignature)).toEqual([...signatureLayouts.values()].map((layout) => layout.text))
+      expect(auditSignature(html).code).toBe(0)
+      if (symbol.name === 'sessions') {
+        expect(win.document.querySelector('a[href="/en/java/latest/reference/io-github-libtmux-catalog-operation-operation/"]')?.textContent).toBe('Operation')
+        expect([...win.document.querySelectorAll('a')].find((link) => link.textContent === 'ReadOnly')?.getAttribute('href')).toContain('5687445832cd835b4509b9fbc264cdf1a8201093')
+      }
+    }
+  } finally { await win.happyDOM.abort() }
 })
