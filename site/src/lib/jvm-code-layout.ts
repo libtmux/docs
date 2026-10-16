@@ -55,7 +55,7 @@ function fingerprint(node: NativeNode): unknown {
   return [node.type, parts, node.text.slice(offset).replace(/\s/g, '')]
 }
 
-function printHeader(root: NativeNode, port: Port, kotlinContinuations = false): string {
+function printHeader(root: NativeNode, port: Port, continuations = false): string {
   const isLineComment = (node?: NativeNode): boolean => node?.type === 'comment' || node?.type === 'line_comment'
   const sequence = (children: NativeNode[]): Doc => children.flatMap((node, index) => {
     const previous = children[index - 1]
@@ -87,7 +87,7 @@ function printHeader(root: NativeNode, port: Port, kotlinContinuations = false):
     const endsInComment = isLineComment(items.at(-1)?.at(-1))
     const contents = items.flatMap((item, index) => [
       ...(index ? [isLineComment(items[index - 1]?.at(-1)) ? hardline : '', ',', line] : []),
-      kotlinContinuations && node.type === 'function_value_parameters' ? continuation(item, '=') : sequence(item),
+      continuations && port === 'kotlin' && node.type === 'function_value_parameters' ? continuation(item, '=') : sequence(item),
     ])
     return group([
       open.text, contextual?.text ?? '',
@@ -103,7 +103,8 @@ function printHeader(root: NativeNode, port: Port, kotlinContinuations = false):
       return group([sequence(receiver), align(2, [isLineComment(receiver.at(-1)) ? hardline : line, print(body)])])
     }
     if (lists.has(node.type) || (node.type === 'parameter_types' && node.firstChild?.type === '(')) return printList(node)
-    if (kotlinContinuations && node.type === 'function_declaration') return group(continuation(children(node), ':'))
+    if (continuations && ((port === 'kotlin' && node.type === 'function_declaration') ||
+      (port === 'scala' && node.type === 'parameter'))) return group(continuation(children(node), ':'))
     // Expression bodies and literals are opaque: line breaks inside them may
     // be meaningful, even when the outer header is only a declaration.
     if (!containers.has(node.type) || !node.childCount) return node.text
@@ -172,7 +173,7 @@ async function formatHeader(signature: Signature, port: Port): Promise<CodeLayou
     }
     let text = printHeader(input.rootNode, port)
     let failures = await codeWidthFailures(text, 'api')
-    if (port === 'kotlin' && failures.length) {
+    if (failures.length) {
       const alternate = printHeader(input.rootNode, port, true)
       const remaining = await codeWidthFailures(alternate, 'api')
       const widest = Math.max(...failures.map((failure) => failure.columns))
