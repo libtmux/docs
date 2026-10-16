@@ -4,7 +4,7 @@ import { readFileSync, realpathSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
 import { experimental_AstroContainer } from 'astro/container'
-import { Window } from 'happy-dom'
+import { Window, type Document } from 'happy-dom'
 import * as model from '@libtmux/api-model'
 import * as glossary from '../src/lib/api-glossary'
 import { NATIVE_API_GLOSSARIES } from '../src/lib/api-glossary-native'
@@ -147,7 +147,7 @@ function checkContents(document: Document, path: string) {
   }
 }
 
-it.fails.each([{ port: 'go', term: 'struct' }, { port: 'ts', term: 'class' }])('renders $port core glossary contents without replacing the API browse tree', async ({ port, term }) => {
+it.each([{ port: 'go', term: 'struct' }, { port: 'ts', term: 'class' }])('renders $port core glossary contents without replacing the API browse tree', async ({ port, term }) => {
   vi.stubEnv('LIBTMUX_DOCS_VERSION', 'v9-proof')
   const path = `${ports.referenceUrl(ports.PORT_BY_SLUG[port], 'v9-proof')}glossary/`
   const component = await (await components())('ApiReference')
@@ -167,7 +167,7 @@ it.fails.each([{ port: 'go', term: 'struct' }, { port: 'ts', term: 'class' }])('
   expect(win.document.querySelector('a[href$=".json"]')?.getAttribute('href')).toBe(`${path.slice(0, -1)}.json`)
 })
 
-it.fails.each([undefined, 'mcp', 'workspace'] as const)('preserves real DocsLayout contents and adds %s glossary permalinks', async (product) => {
+it.each([undefined, 'mcp', 'workspace'] as const)('preserves real DocsLayout contents and adds %s glossary permalinks', async (product) => {
   const path = product ? `${ports.referenceUrl(ports.PORT_BY_SLUG.go, 'v9-proof', product)}glossary/` : glossary.API_GLOSSARY_PATH
   const component = await (await components())('ApiGlossary')
   const container = await experimental_AstroContainer.create()
@@ -182,7 +182,7 @@ it.fails.each([undefined, 'mcp', 'workspace'] as const)('preserves real DocsLayo
   checkHeadings(win.document, path)
 })
 
-it.fails.each(Object.keys(NATIVE_API_GLOSSARIES))('keeps %s filtered native glossary targets and definitions in every product', async (port) => {
+it.each(Object.keys(NATIVE_API_GLOSSARIES))('keeps %s filtered native glossary targets and definitions in every product', async (port) => {
   const component = await (await components())('ApiGlossaryContent')
   const container = await experimental_AstroContainer.create()
   const win = new Window()

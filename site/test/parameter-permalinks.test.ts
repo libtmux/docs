@@ -9,7 +9,8 @@ import { apiEntryFields, parameterBindingFacts, POWER_SHELL_COMMON_HELP } from '
 import { linkTmuxDoc } from '../src/lib/tmux-links'
 
 const astroRequire = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
-const css = readFileSync(new URL('../src/styles/api.css', import.meta.url), 'utf8')
+const css = ['api-headings.css', 'api.css'].map((name) =>
+  readFileSync(new URL(`../src/styles/${name}`, import.meta.url), 'utf8')).join('\n')
 const windows: Window[] = []
 afterEach(async () => {
   for (const win of windows.splice(0)) await win.happyDOM.abort()
