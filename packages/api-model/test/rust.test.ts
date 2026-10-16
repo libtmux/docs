@@ -30,7 +30,7 @@ async function extract(source: string, privateMembers = false) {
 }
 
 describe('Rust enum payload fields', () => {
-  it.fails('retains named payload fields with native types, docs and source lines', async () => {
+  it('retains named payload fields with native types, docs and source lines', async () => {
     const symbols = await extract(`pub enum Event {
     /// A pane produced output.
     Output {
@@ -58,7 +58,7 @@ describe('Rust enum payload fields', () => {
     })
   })
 
-  it.fails('distinguishes tuple positions, empty shapes and explicit unevaluated discriminants', async () => {
+  it('distinguishes tuple positions, empty shapes and explicit unevaluated discriminants', async () => {
     const symbols = await extract(`#[repr(u8)] pub enum Payload {
     Tuple(
         /// The first item.
@@ -90,7 +90,7 @@ describe('Rust enum payload fields', () => {
     })
   })
 
-  it.fails('links actual fields and payload types without borrowing generic names from other declarations', async () => {
+  it('links actual fields and payload types without borrowing generic names from other declarations', async () => {
     const symbols = await extract(`pub struct T; pub struct PaneId; pub enum Event<T: Clone> {
       Output { pane: PaneId, value: T }, Tuple(T),
     }`)
@@ -121,7 +121,7 @@ describe('Rust enum payload fields', () => {
     expect(symbols.some((symbol) => symbol.parent === 'query.Generated.Tuple')).toBe(false)
   })
 
-  it.fails('links raw field names without linking nested labels or shadowing field declarations', async () => {
+  it('links raw field names without linking nested labels or shadowing field declarations', async () => {
     const symbols = await extract(`pub struct PaneId; pub enum Event<T> {
       Output { r#type: PaneId, pane: PaneId, callback: fn(pane: PaneId), T: T },
     }`)

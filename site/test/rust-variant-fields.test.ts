@@ -23,7 +23,7 @@ const hrefFor = (symbol: ApiSymbol) => `/en/rs/latest/reference/${symbol.id}/`
 const index = new SymbolIndex(symbols, hrefFor, 'rs')
 
 describe('Rust payload documentation surfaces', () => {
-  it.fails('keeps field order and makes payload fields discoverable through initial and lazy navigation and search', () => {
+  it('keeps field order and makes payload fields discoverable through initial and lazy navigation and search', () => {
     expect(isMemberOwner(variant)).toBe(true)
     expect(membersOf(model, variant).map((field) => field.name)).toEqual(['pane', 'bytes'])
     expect(membersByTypeFor('rs', model).get(variant.id)?.map((field) => field.id)).toEqual(symbols.slice(2).map((field) => field.id))
@@ -34,7 +34,7 @@ describe('Rust payload documentation surfaces', () => {
     expect(hasScalarMembers(variant, membersOf(model, variant))).toBe(false)
   })
 
-  it.fails('exports structural payload text and linked typed fields without a parameter section', () => {
+  it('exports structural payload text and linked typed fields without a parameter section', () => {
     const markdown = symbolMarkdown({ model, symbol: variant, index, hrefFor })
     expect(markdown).toContain(variant.signatures[0].raw)
     expect(markdown).toContain('## Fields')

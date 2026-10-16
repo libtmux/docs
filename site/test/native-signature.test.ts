@@ -109,7 +109,7 @@ async function runHostedScalaLinks(win: Window) {
   })
 }
 
-it.fails('renders Rust structural payload names and field links without callable parameters', async () => {
+it('renders Rust structural payload names and field links without callable parameters', async () => {
   const symbol: ApiSymbol = {
     id: 'control.Event.Output', name: 'Output', kind: 'constant', parent: 'control.Event', variant: 'struct',
     modifiers: [], source: { file: 'control.rs' },
