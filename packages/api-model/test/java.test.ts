@@ -66,7 +66,7 @@ public record BatchResult(@ReadOnly List<OperationResult> operations) {
       .entries.find((entry) => entry.name === accessor.id)?.uri).toBe(hrefFor(accessor))
   })
 
-  it.fails('preserves explicit accessors, constructors and fields without synthesizing duplicate methods', async () => {
+  it('preserves explicit accessors, constructors and fields without synthesizing duplicate methods', async () => {
     const symbols = await extract(`package example;
 /** @param value the supplied value */
 public record Result<T>(T value) {
@@ -157,7 +157,7 @@ describe('Java record component boundaries', () => {
       expect(parents.find((entry) => entry.name === accessor.qualifiedName + '()')?.uri).toBe(hrefFor(accessor).slice(1))
     })
 
-  it.fails('keeps explicit constructor identities separate from a same-name record component', async () => {
+  it('keeps explicit constructor identities separate from a same-name record component', async () => {
     const symbols = await extract(`package example; public record SelfName(int SelfName) {
       public SelfName(int SelfName) { this.SelfName = SelfName; }
       public SelfName() { this(0); }
@@ -177,7 +177,7 @@ describe('Java record component boundaries', () => {
 })
 
 describe('Java callable source headers', () => {
-  it.fails('retains annotations, modifiers, generics, throws and comments without the method body', async () => {
+  it('retains annotations, modifiers, generics, throws and comments without the method body', async () => {
     const raw = `@Note("Target  literal")
 @ReadOnly
 public synchronized <T extends Target & Comparable<T>>
@@ -191,7 +191,7 @@ Map<String, List<? super T[]>> read(final @Safe T value)
     expect(method.signatures[0].returns).toBe('Map<String, List<? super T[]>>')
   })
 
-  it.fails('retains complete overloads and constructor headers in source order', async () => {
+  it('retains complete overloads and constructor headers in source order', async () => {
     const symbols = await extract(`package example;
 public class Example {
     @ReadOnly public List<Session> sessions(FilterExpr<Session> expression) { return null; }
@@ -210,7 +210,7 @@ public class Example {
     expect(constructor.signatures[0].returns).toBeUndefined()
   })
 
-  it.fails('preserves bodyless interface syntax without inventing public or removing its semicolon', async () => {
+  it('preserves bodyless interface syntax without inventing public or removing its semicolon', async () => {
     const symbols = await extract(`public interface Example {
     @ReadOnly List<Session> sessions(FilterExpr<Session> expression) throws IOException;
     default List<Session> sessions() { return null; }
@@ -221,7 +221,7 @@ public class Example {
     ])
   })
 
-  it.fails.each(['String', 'T', 'String[]'])('retains variable-arity %s names, types and owning documentation', async (type) => {
+  it.each(['String', 'T', 'String[]'])('retains variable-arity %s names, types and owning documentation', async (type) => {
     const symbols = await extract(`public class Example<T> {
     /** @param values values in their original order */
     @SafeVarargs public final void accept(final @ReadOnly ${type}... values) {}
