@@ -139,7 +139,13 @@ function syntaxRanges(owner: NativeNode, parts: NativeNode[], symbol: ApiSymbol,
   const visit = (node: NativeNode) => {
     if (comments.has(node.type) || literals.has(node.type) || (node.type === 'type_identifier' && bound.has(node.text))) {
       syntax.push({ start: node.startIndex - prefix.length, end: node.endIndex - prefix.length, kind: 'literal' })
-    } else children(node, true).forEach(visit)
+    } else {
+      // The ellipsis is punctuation, not part of a qualified type name.
+      if (node.type === 'spread_parameter') for (const child of children(node)) {
+        if (child.type === '...') syntax.push({ start: child.startIndex - prefix.length, end: child.endIndex - prefix.length, kind: 'literal' })
+      }
+      children(node, true).forEach(visit)
+    }
   }
   parts.forEach(visit)
   return syntax.sort((a, b) => a.start - b.start)
