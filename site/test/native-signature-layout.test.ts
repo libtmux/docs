@@ -81,12 +81,48 @@ function shift(region: Region, dx: number, dy: number) {
 }
 
 describe('hosted native signature geometry', () => {
-  it.fails('accepts the observed first-line metadata beside a 1440px Scala header', async () => {
+  it('accepts the observed first-line metadata beside a 1440px Scala header', async () => {
     await runHostedGeometry(sample(1440))
   })
 
   it.each([768, 390])('accepts the observed full-width code above metadata at %ipx', async (width) => {
     await runHostedGeometry(sample(width))
+  })
+
+  it('derives available width from the DOM padding rather than a fixed header inset', async () => {
+    const measurement = sample(1440)
+    measurement.header.padding = '8px 20px'
+    shift(measurement.row!, 8, 0)
+    resize(measurement.row!, measurement.row!.width - 16)
+    shift(measurement.left!, 8, 0)
+    resize(measurement.left!, measurement.left!.width - 16)
+    shift(measurement.right!, -8, 0)
+    shift(measurement.signatures[0], 8, 0)
+    await runHostedGeometry(measurement)
+  })
+
+  it('uses the computed column gap beside metadata', async () => {
+    const measurement = sample(1440)
+    measurement.row!.gap = '10px 24px'
+    resize(measurement.left!, measurement.left!.width - 8)
+    await runHostedGeometry(measurement)
+  })
+
+  it('uses the computed row gap below code', async () => {
+    const measurement = sample(768)
+    measurement.row!.gap = '10px 24px'
+    shift(measurement.right!, 0, 4)
+    for (const region of [measurement.header, measurement.row!]) {
+      region.height += 4
+      region.bottom += 4
+    }
+    await runHostedGeometry(measurement)
+  })
+
+  it.each([1440, 768])('rejects even a fractional unused code strip at %ipx', async (width) => {
+    const measurement = sample(width)
+    resize(measurement.left!, measurement.left!.width - 0.125)
+    await expect(runHostedGeometry(measurement)).rejects.toThrow(/available code width/)
   })
 
   it('rejects code that wastes available width in a stacked header', async () => {
@@ -98,10 +134,10 @@ describe('hosted native signature geometry', () => {
   it('rejects code that wastes available width beside metadata', async () => {
     const measurement = sample(1440)
     resize(measurement.left!, measurement.left!.width - 20)
-    await expect(runHostedGeometry(measurement)).rejects.toThrow(/signature width|available code width/)
+    await expect(runHostedGeometry(measurement)).rejects.toThrow(/available code width/)
   })
 
-  it.fails('rejects metadata overlapping a full-width stacked code region', async () => {
+  it('rejects metadata overlapping a full-width stacked code region', async () => {
     const measurement = sample(768)
     shift(measurement.right!, 0, -measurement.right!.height)
     await expect(runHostedGeometry(measurement)).rejects.toThrow(/overlap/)
@@ -110,31 +146,37 @@ describe('hosted native signature geometry', () => {
   it('rejects metadata centered against the entire multiline code region', async () => {
     const measurement = sample(1440)
     shift(measurement.right!, 0, (measurement.left!.height - measurement.right!.height) / 2)
-    await expect(runHostedGeometry(measurement)).rejects.toThrow(AssertionError)
+    await expect(runHostedGeometry(measurement)).rejects.toThrow(/first line/)
   })
 
-  it.fails('rejects a row outside the padded header content', async () => {
+  it('rejects a row outside the padded header content', async () => {
     const measurement = sample(768)
     shift(measurement.row!, -1, 0)
     await expect(runHostedGeometry(measurement)).rejects.toThrow(/contained/)
   })
 
-  it.fails('rejects code outside its layout row', async () => {
+  it('rejects code outside its layout row', async () => {
     const measurement = sample(768)
     shift(measurement.left!, -1, 0)
     await expect(runHostedGeometry(measurement)).rejects.toThrow(/contained/)
   })
 
-  it.fails('rejects metadata outside its layout row', async () => {
+  it('rejects metadata outside its layout row', async () => {
     const measurement = sample(768)
     shift(measurement.right!, 1, 0)
     await expect(runHostedGeometry(measurement)).rejects.toThrow(/contained/)
   })
 
-  it.fails.each(['row', 'left', 'right'] as const)('reports a missing %s region as an assertion', async (region) => {
+  it.each(['row', 'left', 'right'] as const)('reports a missing %s region as an assertion', async (region) => {
     const measurement = sample(768)
     measurement[region] = null
     await expect(runHostedGeometry(measurement)).rejects.toThrow(AssertionError)
+  })
+
+  it('reports a missing first signature as an assertion', async () => {
+    const measurement = sample(768)
+    measurement.signatures = []
+    await expect(runHostedGeometry(measurement)).rejects.toThrow(/firstSignature region is present/)
   })
 
   it('keeps document overflow independent of header geometry', async () => {
