@@ -5,7 +5,7 @@ import assert from 'node:assert/strict'
 import { runInNewContext } from 'node:vm'
 import { describe, expect, it } from 'vitest'
 import { experimental_AstroContainer } from 'astro/container'
-import { Window, type Element } from 'happy-dom'
+import { Window, type Element, type HTMLElement } from 'happy-dom'
 import { SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model'
 import { nativeSignatureText, usesNativeSignatures } from '../src/lib/api-sections'
 import { API_MODEL_PORTS } from '../src/lib/ports'
@@ -160,6 +160,83 @@ describe('native signature emission', () => {
       })) }]
     await expect(signatureProbe({ [port]: { ...model, symbols } }).then(() => undefined))
       .rejects.toThrow(`API signature fixture is missing a parameterized callable for ${port}`)
+  })
+
+  it.fails.each([
+    ['ts', 'server.Server.setHook', 'containment'],
+    ['scala', 'io.github.libtmux.scaladsl.Server.sessions', 'containment'],
+    ['kotlin', 'io.github.libtmux.kotlin.Server.sessions', 'containment'],
+    ['ts', 'server.Server.setHook', 'keyboard'],
+    ['scala', 'io.github.libtmux.scaladsl.Server.sessions', 'keyboard'],
+    ['kotlin', 'io.github.libtmux.kotlin.Server.sessions', 'keyboard'],
+  ] as const)('gives formatted %s declaration %s local %s access', async (port, id, check) => {
+    const model = JSON.parse(readFileSync(new URL(`../src/data/api/${port}.json`, import.meta.url), 'utf8')) as ApiModel
+    const symbol = model.symbols.find((entry) => entry.id === id)!
+    const signatureLayouts = await apiSignatureLayouts(symbol, port)
+    const component = await (componentPromise ??= signatureComponent())
+    const container = await experimental_AstroContainer.create()
+    const index = new SymbolIndex(model.symbols, (entry) => `/${entry.slug}/`, port)
+    const win = new Window()
+    try {
+      const css = ['vendor/gp-sphinx-api.css', 'api.css'].map((name) =>
+        readFileSync(new URL(`../src/styles/${name}`, import.meta.url), 'utf8')).join('\n')
+      win.document.head.innerHTML = `<style>:root { --focus-ring-color: #247; }${css}</style>`
+      for (const [i, sig] of symbol.signatures.entries()) {
+        const layout = signatureLayouts.get(sig)!
+        const html = await container.renderToString(component, { props: {
+          symbol, sig, port, language: port, index, signatureLayouts,
+          nativeSignatureText: () => layout.text,
+        } })
+        win.document.body.innerHTML = `<dl class="py gp-sphinx-api-container"><dt class="gp-sphinx-api-header">${html}</dt><dd>Body</dd></dl>`
+        const signature = win.document.querySelector<HTMLElement>('.api-native-signature')!
+        const style = win.getComputedStyle(signature)
+        expect(displayedSignature(signature)).toBe(layout.text)
+        expect(win.getComputedStyle(win.document.querySelector('dl')!).overflow).toBe('visible')
+        if (check === 'containment') {
+          expect(style.overflowX).toBe('auto')
+          expect(style.maxInlineSize).toBe('100%')
+          expect(style.whiteSpace).toBe('pre-wrap')
+          expect(style.overflowWrap).toBe('normal')
+          for (const link of signature.querySelectorAll('.api-type-link')) {
+            expect(win.getComputedStyle(link).overflowWrap).toBe('normal')
+          }
+          for (const breakPoint of signature.querySelectorAll('wbr')) {
+            expect(win.getComputedStyle(breakPoint).display).toBe('none')
+          }
+        } else {
+          expect(signature.getAttribute('role')).toBe('region')
+          expect(signature.getAttribute('aria-label')).toBe(`Signature for ${symbol.name}${symbol.signatures.length > 1 ? `, overload ${i + 1} of ${symbol.signatures.length}` : ''}`)
+          expect(signature.tabIndex).toBe(0)
+          signature.focus()
+          expect(win.document.activeElement).toBe(signature)
+          expect(win.getComputedStyle(signature).outlineStyle).toBe('solid')
+          for (const trigger of signature.querySelectorAll('[popovertarget]')) {
+            expect(win.document.getElementById(trigger.getAttribute('popovertarget')!)?.getAttribute('popover')).toBe('auto')
+          }
+        }
+      }
+    } finally { await win.happyDOM.abort() }
+  })
+
+  it('keeps an unformatted native declaration outside the scroll-region contract', async () => {
+    const port = 'cxx'
+    const model = JSON.parse(readFileSync(new URL('../src/data/api/cxx.json', import.meta.url), 'utf8')) as ApiModel
+    const symbol = model.symbols.find((entry) => entry.id === 'libtmux::Server::sessions')!
+    const sig = symbol.signatures[0]
+    const component = await (componentPromise ??= signatureComponent())
+    const container = await experimental_AstroContainer.create()
+    const win = new Window()
+    try {
+      win.document.head.innerHTML = `<style>${readFileSync(new URL('../src/styles/api.css', import.meta.url), 'utf8')}</style>`
+      win.document.body.innerHTML = await container.renderToString(component, { props: {
+        symbol, sig, port, language: port, index: new SymbolIndex(model.symbols, (entry) => `/${entry.slug}/`, port), nativeSignatureText,
+      } })
+      const signature = win.document.querySelector('.api-native-signature')!
+      expect(signature.hasAttribute('tabindex')).toBe(false)
+      expect(signature.hasAttribute('role')).toBe(false)
+      expect(win.getComputedStyle(signature).overflowX).not.toBe('auto')
+      expect(win.getComputedStyle(signature).overflowWrap).toBe('anywhere')
+    } finally { await win.happyDOM.abort() }
   })
 
   it.each(cases)('preserves exact %s signature boundaries and native indentation', async (port, id) => {
