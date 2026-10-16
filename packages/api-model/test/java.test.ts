@@ -177,6 +177,48 @@ describe('Java record component boundaries', () => {
 })
 
 describe('Java callable source headers', () => {
+  it.fails.each([
+    ['/* retains */', 'String'],
+    ['// retains\n', 'String[]'],
+    ['/* retains */', 'java.lang.String'],
+    ['/* retains */', 'List<String>'],
+    ['/* retains */', 'int'],
+  ])('selects the %s spread parameter type %s through annotations and comments', async (comment, type) => {
+    const symbols = await extract(`public abstract class Example {
+      public Example(@Mark ${comment} ${type}... values) {}
+      /** @param values original values */
+      public abstract void accept(@Mark ${comment} ${type}... values);
+    }
+    public record Items(@Mark ${comment} ${type}... values) {}`)
+    const constructor = symbols.find((symbol) => symbol.id === 'example.Example.Example')!
+    const method = symbols.find((symbol) => symbol.name === 'accept')!
+    const record = symbols.find((symbol) => symbol.name === 'Items')!
+    expect(constructor.signatures[0].params).toEqual([{ name: 'values', type, variadic: 'positional' }])
+    expect(method.signatures[0].params).toEqual([{ name: 'values', type, variadic: 'positional', doc: 'original values' }])
+    expect(record.signatures[0].params).toEqual([{ name: 'values', type: `${type}[]`, variadic: 'positional' }])
+    expect(symbols.find((symbol) => symbol.id === 'example.Items.values')!.signatures).toEqual([{ params: [], returns: `${type}[]` }])
+    expect(constructor.signatures[0].raw).toBe(`public Example(@Mark ${comment} ${type}... values)`)
+    expect(method.signatures[0].raw).toBe(`public abstract void accept(@Mark ${comment} ${type}... values);`)
+  })
+
+  it.fails('keeps explicit method and constructor receivers outside callable parameters', async () => {
+    const symbols = await extract(`public abstract class Example {
+      /** @param value the supplied value */
+      public <@Mark T> T method(@Mark Example this, T value) { return value; }
+      public abstract void accept(Example this, String receiver);
+      public class Inner {
+        public Inner(Example Example.this, String value) {}
+      }
+    }`)
+    expect(symbols.find((symbol) => symbol.name === 'method')!.signatures[0].params)
+      .toEqual([{ name: 'value', type: 'T', doc: 'the supplied value' }])
+    expect(symbols.find((symbol) => symbol.name === 'accept')!.signatures[0].params)
+      .toEqual([{ name: 'receiver', type: 'String' }])
+    const constructor = symbols.find((symbol) => symbol.id === 'example.Example.Inner.Inner')!
+    expect(constructor.signatures[0].params).toEqual([{ name: 'value', type: 'String' }])
+    expect(constructor.signatures[0].raw).toBe('public Inner(Example Example.this, String value)')
+  })
+
   it('retains annotations, modifiers, generics, throws and comments without the method body', async () => {
     const raw = `@Note("Target  literal")
 @ReadOnly

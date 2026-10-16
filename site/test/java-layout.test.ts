@@ -3,8 +3,10 @@ import { describe, expect, it } from 'vitest'
 import { parserFor, SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { apiSignatureLayouts, CODE_COLUMNS, codeWidthFailures, signatureSpans } from '../src/lib/code-layout'
-import { usesNativeSignatures } from '../src/lib/api-sections'
+import { apiEntryFields, usesNativeSignatures } from '../src/lib/api-sections'
 import { symbolMarkdownWithLayout } from '../src/lib/symbol-markdown'
+import { extractSourceWithSpec } from '../../packages/api-model/src/languages/spec'
+import { JAVA } from '../../packages/api-model/src/languages/specs'
 
 const model = JSON.parse(readFileSync(new URL('../src/data/api/java.json', import.meta.url), 'utf8')) as ApiModel
 const method = (raw: string, params: Signature['params'] = [], name = 'method'): ApiSymbol => ({
@@ -33,6 +35,66 @@ async function sameGrammar(before: string, after: string) {
 }
 
 describe('Java callable layouts', () => {
+  it.fails.each([
+    'public <@Mark T> T method(T value)',
+    'public <@Mark T extends Bound> T method(T value)',
+    'public <@Mark /* binder */ T extends Bound> T method(T value)',
+    'public <@Mark T> T method(Probe this, T value)',
+    'public abstract <@Mark T extends Bound> T method(@Mark Probe this, T value);',
+  ])('preserves extracted annotated binders and receiver ownership in %s', async (raw) => {
+    const source = `public abstract class Probe { ${raw}${raw.endsWith(';') ? '' : ' { throw new RuntimeException(); }'} }`
+    const symbols = await extractSourceWithSpec(JAVA, source, 'Probe.java', 'edge')
+    const symbol = symbols.find((entry) => entry.name === 'method')!
+    const signature = symbol.signatures[0]!
+    expect(signature.params).toEqual([{ name: 'value', type: 'T' }])
+    const layout = await layoutFor(symbol)
+    await sameGrammar(raw, layout.text)
+    const globals = ['T', 'Bound', 'Mark'].map((name) => ({ ...target(name), id: `global.${name}` }))
+    const index = new SymbolIndex([...symbols, ...globals], (entry) => `/${entry.id}/`, 'java')
+    const spans = signatureSpans(layout, index, symbol, signature)
+    expect(spans.map((span) => span.text).join('')).toBe(layout.text)
+    expect(spans.filter((span) => span.link?.href === '/global.T/')).toEqual([])
+    expect(spans.filter((span) => span.link?.href === '/global.Mark/')).toHaveLength(raw.includes('@Mark Probe') ? 2 : 1)
+    expect(spans.filter((span) => span.link?.href === '/global.Bound/')).toHaveLength(raw.includes('extends Bound') ? 1 : 0)
+    expect(spans.filter((span) => span.link?.href === '/edge.Probe/')).toHaveLength(raw.includes('Probe this') ? 1 : 0)
+    expect(spans.filter((span) => span.link?.href.startsWith('#')).map((span) => [span.text, span.link!.href]))
+      .toEqual([['value', '#edge.Probe.method.parameter.value']])
+    expect(apiEntryFields(symbol, 'java').params.map((param) => param.name)).toEqual(['value'])
+    expect(layout.failures).toEqual([])
+  })
+
+  it.fails.each(['/* String retains */', '// String retains\n'])('keeps extracted varargs metadata and comment text through %s', async (comment) => {
+    const raw = `public void method(@Mark ${comment} String... values)`
+    const symbols = await extractSourceWithSpec(JAVA, `public class Probe { ${raw} {} }`, 'Probe.java', 'edge')
+    const symbol = symbols.find((entry) => entry.name === 'method')!
+    const signature = symbol.signatures[0]!
+    expect(signature.params).toEqual([{ name: 'values', type: 'String', variadic: 'positional' }])
+    const layout = await layoutFor(symbol)
+    await sameGrammar(raw, layout.text)
+    expect(layout.text).toContain(comment.trimEnd())
+    const index = new SymbolIndex([...symbols, target('String'), target('Mark')], (entry) => `/${entry.id}/`, 'java')
+    const spans = signatureSpans(layout, index, symbol, signature)
+    expect(spans.filter((span) => span.link?.href === '/String/')).toHaveLength(1)
+    expect(spans.filter((span) => span.link?.href.startsWith('#')).map((span) => span.text)).toEqual(['values'])
+    expect(apiEntryFields(symbol, 'java').params).toMatchObject([{ name: 'values', type: 'String', variadic: 'positional' }])
+    expect(layout.failures).toEqual([])
+  })
+
+  it.fails('lays out an extracted inner constructor receiver without inventing an argument', async () => {
+    const raw = 'public Inner(Probe Probe.this, String value)'
+    const symbols = await extractSourceWithSpec(JAVA, `public class Probe { public class Inner { ${raw} {} } }`, 'Probe.java', 'edge')
+    const symbol = symbols.find((entry) => entry.id === 'edge.Probe.Inner.Inner')!
+    expect(symbol.signatures[0]!.params).toEqual([{ name: 'value', type: 'String' }])
+    const layout = await layoutFor(symbol)
+    expect(layout.text).toBe(raw)
+    const index = new SymbolIndex(symbols, (entry) => `/${entry.id}/`, 'java')
+    const spans = signatureSpans(layout, index, symbol, symbol.signatures[0]!)
+    expect(spans.filter((span) => span.link?.href === '/edge.Probe/')).toHaveLength(1)
+    expect(spans.filter((span) => span.link?.href.startsWith('#')).map((span) => [span.text, span.link!.href]))
+      .toEqual([['value', '#edge.Probe.Inner.Inner.parameter.value']])
+    expect(apiEntryFields(symbol, 'java').params.map((param) => param.name)).toEqual(['value'])
+  })
+
   it('prints both native sessions overloads under the API cap in HTML and Markdown preparation', async () => {
     const symbol = model.symbols.find((entry) => entry.id === 'io.github.libtmux.Server.Server.sessions')!
     expect(usesNativeSignatures(symbol, 'java')).toBe(true)
