@@ -127,11 +127,21 @@ export function supportsTypeScriptSignatures(symbol: ApiSymbol, language?: strin
   return language === 'ts' && ['method', 'function'].includes(symbol.kind) && symbol.signatures.length > 0
 }
 
+export function supportsGoSignatures(symbol: ApiSymbol, language?: string): boolean {
+  return language === 'go' && ['method', 'function'].includes(symbol.kind) && symbol.signatures.length > 0 &&
+    symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
+}
+
 /** Prepare one layout per overload for both HTML and the Markdown twin. */
 export async function apiSignatureLayouts(symbol: ApiSymbol, language?: string): Promise<Map<Signature, CodeLayout>> {
   if (supportsTypeScriptSignatures(symbol, language)) {
     return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
       [signature, await typescriptSignatureLayout(symbol, signature)] as const)))
+  }
+  if (supportsGoSignatures(symbol, language)) {
+    const { goSignatureLayout } = await import('./go-code-layout')
+    return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
+      [signature, await goSignatureLayout(symbol, signature)] as const)))
   }
   if ((language === 'scala' || language === 'kotlin') && ['method', 'function'].includes(symbol.kind)) {
     const { jvmSignatureLayout } = await import('./jvm-code-layout')
