@@ -59,7 +59,7 @@ describe('Rust enum payload fields', () => {
   })
 
   it.fails('distinguishes tuple positions, empty shapes and explicit unevaluated discriminants', async () => {
-    const symbols = await extract(`pub enum Payload {
+    const symbols = await extract(`#[repr(u8)] pub enum Payload {
     Tuple(
         /// The first item.
         Vec<(u8, u8)>,
@@ -119,6 +119,27 @@ describe('Rust enum payload fields', () => {
     expect(symbols.some((symbol) => symbol.id.startsWith('query.Private'))).toBe(false)
     expect(symbols.some((symbol) => symbol.parent?.startsWith('query.Public.'))).toBe(false)
     expect(symbols.some((symbol) => symbol.parent === 'query.Generated.Tuple')).toBe(false)
+  })
+
+  it.fails('links raw field names without linking nested labels or shadowing field declarations', async () => {
+    const symbols = await extract(`pub struct PaneId; pub enum Event<T> {
+      Output { r#type: PaneId, pane: PaneId, callback: fn(pane: PaneId), T: T },
+    }`)
+    const variant = symbols.find((symbol) => symbol.name === 'Output')!
+    expect(variant.variant).toBe('struct')
+    const index = new SymbolIndex(symbols, (symbol) => `/reference/${pageSlug(symbol.id)}/`, 'rs')
+    const spans = index.linkType(variant.signatures[0].raw!, variant, variant.signatures[0])
+    expect(spans.map((span) => span.text).join('')).toBe(variant.signatures[0].raw)
+    expect({
+      raw: spans.find((span) => span.text === 'r#type')?.link?.symbol?.id,
+      nested: spans.filter((span) => span.text === 'pane').map((span) => span.link?.symbol?.id),
+      bound: spans.filter((span) => span.text === 'T').map((span) => span.link?.symbol?.id),
+    }).toEqual({
+      raw: 'query.Event.Output.r#type',
+      nested: ['query.Event.Output.pane', undefined],
+      bound: ['query.Event.Output.T', undefined],
+    })
+    expect(spans.filter((span) => span.text === 'PaneId').every((span) => span.link?.symbol?.id === 'query.PaneId')).toBe(true)
   })
 })
 
