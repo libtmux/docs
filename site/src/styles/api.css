@@ -632,6 +632,18 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-layout-right
   overflow-wrap: normal;
 }
 .api-native-signature--formatted wbr { display: none; }
+/* Enlarged text can make one intact token wider than the available column. */
+.api-native-signature--formatted {
+  max-inline-size: 100%;
+  overflow-x: auto;
+  padding: 0.25rem;
+}
+.api-native-signature--formatted:focus-visible {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: 2px;
+}
+/* Keep the keyword ring inside the scroll region's focus gutter. */
+.api-native-signature--formatted .api-keyword-trigger:focus-visible { outline-offset: 2px; }
 .api-native-signature + .api-native-signature {
   margin-top: .75rem;
 }
