@@ -130,7 +130,7 @@ async function checkHostedDeclarations(port: string) {
 }
 
 describe('native signature emission', () => {
-  it.fails('renders Go source headers with parameter targets and linked types', async () => {
+  it('renders Go source headers with parameter targets and linked types', async () => {
     const model = JSON.parse(readFileSync(new URL('../src/data/api/go.json', import.meta.url), 'utf8')) as ApiModel
     const symbol = model.symbols.find((entry) => entry.id === 'tmux.Server.ListBuffers')!
     const sig = symbol.signatures[0]!
@@ -159,7 +159,7 @@ describe('native signature emission', () => {
     } finally { await win.happyDOM.abort() }
   })
 
-  it.fails('exposes a Go width failure without splitting or changing its native token', async () => {
+  it('exposes a Go width failure without splitting or changing its native token', async () => {
     const model = JSON.parse(readFileSync(new URL('../src/data/api/go.json', import.meta.url), 'utf8')) as ApiModel
     const symbol = model.symbols.find((entry) => entry.id === 'tmux.SessionOptionValues.PromptCommandCursorStyle')!
     const sig = symbol.signatures[0]!

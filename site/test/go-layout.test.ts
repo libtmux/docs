@@ -18,7 +18,7 @@ async function layout(symbol: ApiSymbol) {
 }
 
 describe('Go callable layouts', () => {
-  it.fails.each([
+  it.each([
     ['tmux.Server.ListBuffers', 'func (s Server) ListBuffers(\n\tctx context.Context,\n\trequest ListBuffersRequest,\n) ([]string, error)'],
     ['tmux.Server.Sessions', 'func (s Server) Sessions(\n\tctx context.Context,\n) ([]Session, error)'],
     ['tmuxq.Matching', 'func Matching[T any](\n\tvalues []T,\n\tfilter Filter[T],\n) ([]T, error)'],
@@ -34,7 +34,7 @@ describe('Go callable layouts', () => {
     expect(signature?.type === 'code' && signature.value).toBe(expected)
   })
 
-  it.fails('retains grouped names, variadics, nested callable types and source declaration order', async () => {
+  it('retains grouped names, variadics, nested callable types and source declaration order', async () => {
     const symbol = callable('func Method(first, second string, values ...func(name Target, extra Other) (Target, error)) (Target, error)', [
       { name: 'first', type: 'string' }, { name: 'second', type: 'string' }, { name: 'values', type: 'func(name Target, extra Other) (Target, error)', variadic: 'positional' },
     ])
@@ -53,7 +53,7 @@ describe('Go callable layouts', () => {
     } finally { parser.delete() }
   })
 
-  it.fails.each([
+  it.each([
     'func Method(\n// Target before parameter\nvalue Target,\n) Target',
     'func Method(value Target, // Target after comma\n) Target',
     'func Method(value /* Target  comment */ Target) Target',
@@ -69,7 +69,7 @@ describe('Go callable layouts', () => {
     expect(spans.find((span) => span.link?.href === '#tmux.Method.parameter.value')?.text).toBe('value')
   })
 
-  it.fails('preserves generic constraints and suppresses local generic or nested name collisions', async () => {
+  it('preserves generic constraints and suppresses local generic or nested name collisions', async () => {
     const symbol = callable('func Method[T interface{ ~string | ~[]byte }](Target func(Target T) (Target T), value pkg.T) T', [{ name: 'Target' }, { name: 'value' }])
     const target: ApiSymbol = { id: 'tmux.Target', name: 'Target', kind: 'struct', modifiers: [], signatures: [], source: { file: 'probe.go' } }
     const unrelated: ApiSymbol = { ...target, id: 'tmux.T', name: 'T' }
@@ -82,7 +82,7 @@ describe('Go callable layouts', () => {
     expect(spans.filter((span) => span.link?.href.startsWith('#tmux.Method.parameter.')).map((span) => span.text)).toEqual(['Target', 'value'])
   })
 
-  it.fails('preserves raw string tags and reports indivisible over-width tokens', async () => {
+  it('preserves raw string tags and reports indivisible over-width tokens', async () => {
     const tag = '`Target  tag\n unchanged`'
     const token = 'LongTarget'.repeat(9)
     const symbol = callable(`func Method(value struct { Name string ${tag} }) ${token}`, [{ name: 'value' }])
@@ -94,7 +94,7 @@ describe('Go callable layouts', () => {
     expect(result.syntax!.filter((range) => range.kind === 'literal').map((range) => result.text.slice(range.start, range.end))).toContain(tag)
   })
 
-  it.fails.each([
+  it.each([
     ['tmux.SessionOptionValues.PromptCommandCursorStyle', 66],
     ['tmux.WindowOptionValues.PaneScrollbarsPosition', 62],
   ])('reports the remaining native width failure for %s', async (id, columns) => {
@@ -104,7 +104,7 @@ describe('Go callable layouts', () => {
     expect(result.failures).toEqual([{ line: 3, columns, limit: 60 }])
   })
 
-  it.fails('keeps interface method names separate from identically named types', async () => {
+  it('keeps interface method names separate from identically named types', async () => {
     const symbol = callable('func Method(value interface{ Target(Target) Target; Field() Target }) Target', [{ name: 'value' }])
     const target: ApiSymbol = { id: 'tmux.Target', name: 'Target', kind: 'struct', modifiers: [], signatures: [], source: { file: 'probe.go' } }
     const result = await layout(symbol)
@@ -113,7 +113,7 @@ describe('Go callable layouts', () => {
     expect(result.failures).toEqual(await codeWidthFailures(result.text, 'api'))
   })
 
-  it.fails('distinguishes a receiver type from its locally bound type parameter of the same name', async () => {
+  it('distinguishes a receiver type from its locally bound type parameter of the same name', async () => {
     const symbol = callable('func (receiver *T[T]) Method(value T) T', [{ name: 'value' }])
     symbol.kind = 'method'
     const type: ApiSymbol = { id: 'tmux.T', name: 'T', kind: 'struct', modifiers: [], signatures: [], source: { file: 'probe.go' } }
@@ -123,7 +123,7 @@ describe('Go callable layouts', () => {
     expect(spans.map((span) => span.text).join('')).toBe(result.text)
   })
 
-  it.fails.each([
+  it.each([
     ['func Method(value Broken[', [{ name: 'value' }]],
     ['func Method(value Target) {}', [{ name: 'value' }]],
     ['func Different(value Target)', [{ name: 'value' }]],
