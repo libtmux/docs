@@ -322,14 +322,14 @@ export const JAVA: LanguageSpec = {
   grammar: 'java',
   docDialect: 'javadoc',
   parameter: (node) => {
-    if (node.type !== 'spread_parameter' || node.parent?.parent?.type !== 'record_declaration') return undefined
+    if (node.type !== 'spread_parameter') return undefined
     const name = node.namedChildren.find((child) => child?.type === 'variable_declarator')?.childForFieldName('name')?.text
     const type = node.namedChildren.find((child) => child && !['modifiers', 'variable_declarator'].includes(child.type))?.text
-    return name && type ? { name, type: `${type}[]`, variadic: 'positional' } : undefined
+    return name && type ? { name, type: node.parent?.parent?.type === 'record_declaration' ? `${type}[]` : type, variadic: 'positional' } : undefined
   },
   recordAccessors: (node) => node.type === 'record_declaration',
   rawSignature: (node) => {
-    if (node.type !== 'record_declaration') return undefined
+    if (!['record_declaration', 'method_declaration', 'constructor_declaration'].includes(node.type)) return undefined
     const body = node.childForFieldName('body')
     return node.text.slice(0, body ? body.startIndex - node.startIndex : undefined).trimEnd()
   },
