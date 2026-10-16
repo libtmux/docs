@@ -159,6 +159,28 @@ describe('native signature emission', () => {
     } finally { await win.happyDOM.abort() }
   })
 
+  it.fails('exposes a Go width failure without splitting or changing its native token', async () => {
+    const model = JSON.parse(readFileSync(new URL('../src/data/api/go.json', import.meta.url), 'utf8')) as ApiModel
+    const symbol = model.symbols.find((entry) => entry.id === 'tmux.SessionOptionValues.PromptCommandCursorStyle')!
+    const sig = symbol.signatures[0]!
+    const component = await (componentPromise ??= signatureComponent())
+    const container = await experimental_AstroContainer.create()
+    const signatureLayouts = await apiSignatureLayouts(symbol, 'go')
+    const text = () => signatureLayouts.get(sig)?.text ?? nativeSignatureText(symbol, sig, 'go')
+    const win = new Window()
+    try {
+      win.document.body.innerHTML = await container.renderToString(component, { props: {
+        symbol, sig, port: 'go', language: 'go', signatureLayouts,
+        index: new SymbolIndex(model.symbols, (entry) => `/${entry.id}/`, 'go'), nativeSignatureText: text,
+      } })
+      const signature = win.document.querySelector('.api-native-signature')!
+      expect(signature.getAttribute('data-code-width-status')).toBe('unresolved')
+      expect(JSON.parse(signature.getAttribute('data-code-width-failures')!)).toEqual([{ line: 3, columns: 66, limit: 60 }])
+      expect(displayedSignature(signature)).toBe(text())
+      expect(displayedSignature(signature)).toContain('OptionValue[PromptCommandCursorStyle]')
+    } finally { await win.happyDOM.abort() }
+  })
+
   it('checks the hosted signature fixture against rendered TypeScript declarations without raw text', () => checkHostedDeclarations('ts'))
 
   it('checks the hosted signature fixture against rendered Julia declarations without return annotations', () => checkHostedDeclarations('julia'))

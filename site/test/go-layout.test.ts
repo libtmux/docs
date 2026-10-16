@@ -21,7 +21,7 @@ describe('Go callable layouts', () => {
   it.fails.each([
     ['tmux.Server.ListBuffers', 'func (s Server) ListBuffers(\n\tctx context.Context,\n\trequest ListBuffersRequest,\n) ([]string, error)'],
     ['tmux.Server.Sessions', 'func (s Server) Sessions(\n\tctx context.Context,\n) ([]Session, error)'],
-    ['tmuxq.Matching', 'func Matching[T any](values []T, filter Filter[T]) ([]T, error)'],
+    ['tmuxq.Matching', 'func Matching[T any](\n\tvalues []T,\n\tfilter Filter[T],\n) ([]T, error)'],
   ])('shares the native 60-column %s declaration with Markdown', async (id, expected) => {
     const symbol = model.symbols.find((entry) => entry.id === id)!
     expect(usesNativeSignatures(symbol, 'go')).toBe(true)
@@ -92,6 +92,35 @@ describe('Go callable layouts', () => {
     expect(result.failures.length).toBeGreaterThan(0)
     expect(result.failures).toEqual(await codeWidthFailures(result.text, 'api'))
     expect(result.syntax!.filter((range) => range.kind === 'literal').map((range) => result.text.slice(range.start, range.end))).toContain(tag)
+  })
+
+  it.fails.each([
+    ['tmux.SessionOptionValues.PromptCommandCursorStyle', 66],
+    ['tmux.WindowOptionValues.PaneScrollbarsPosition', 62],
+  ])('reports the remaining native width failure for %s', async (id, columns) => {
+    const symbol = model.symbols.find((entry) => entry.id === id)!
+    const result = await layout(symbol)
+    expect(result.text).toContain(`OptionValue[${symbol.name}]`)
+    expect(result.failures).toEqual([{ line: 3, columns, limit: 60 }])
+  })
+
+  it.fails('keeps interface method names separate from identically named types', async () => {
+    const symbol = callable('func Method(value interface{ Target(Target) Target; Field() Target }) Target', [{ name: 'value' }])
+    const target: ApiSymbol = { id: 'tmux.Target', name: 'Target', kind: 'struct', modifiers: [], signatures: [], source: { file: 'probe.go' } }
+    const result = await layout(symbol)
+    const spans = signatureSpans(result, new SymbolIndex([symbol, target], (entry) => `/${entry.id}/`, 'go'), symbol, symbol.signatures[0]!)
+    expect(spans.filter((span) => span.link?.href === '/tmux.Target/')).toHaveLength(4)
+    expect(result.failures).toEqual(await codeWidthFailures(result.text, 'api'))
+  })
+
+  it.fails('distinguishes a receiver type from its locally bound type parameter of the same name', async () => {
+    const symbol = callable('func (receiver *T[T]) Method(value T) T', [{ name: 'value' }])
+    symbol.kind = 'method'
+    const type: ApiSymbol = { id: 'tmux.T', name: 'T', kind: 'struct', modifiers: [], signatures: [], source: { file: 'probe.go' } }
+    const result = await layout(symbol)
+    const spans = signatureSpans(result, new SymbolIndex([symbol, type], (entry) => `/${entry.id}/`, 'go'), symbol, symbol.signatures[0]!)
+    expect(spans.filter((span) => span.link?.href === '/tmux.T/')).toHaveLength(1)
+    expect(spans.map((span) => span.text).join('')).toBe(result.text)
   })
 
   it.fails.each([
