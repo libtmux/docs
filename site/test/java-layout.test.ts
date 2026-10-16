@@ -35,7 +35,7 @@ async function sameGrammar(before: string, after: string) {
 }
 
 describe('Java callable layouts', () => {
-  it.fails.each([
+  it.each([
     'public <@Mark T> T method(T value)',
     'public <@Mark T extends Bound> T method(T value)',
     'public <@Mark /* binder */ T extends Bound> T method(T value)',
@@ -63,7 +63,7 @@ describe('Java callable layouts', () => {
     expect(layout.failures).toEqual([])
   })
 
-  it.fails.each(['/* String retains */', '// String retains\n'])('keeps extracted varargs metadata and comment text through %s', async (comment) => {
+  it.each(['/* String retains */', '// String retains\n'])('keeps extracted varargs metadata and comment text through %s', async (comment) => {
     const raw = `public void method(@Mark ${comment} String... values)`
     const symbols = await extractSourceWithSpec(JAVA, `public class Probe { ${raw} {} }`, 'Probe.java', 'edge')
     const symbol = symbols.find((entry) => entry.name === 'method')!
@@ -80,7 +80,7 @@ describe('Java callable layouts', () => {
     expect(layout.failures).toEqual([])
   })
 
-  it.fails('lays out an extracted inner constructor receiver without inventing an argument', async () => {
+  it('lays out an extracted inner constructor receiver without inventing an argument', async () => {
     const raw = 'public Inner(Probe Probe.this, String value)'
     const symbols = await extractSourceWithSpec(JAVA, `public class Probe { public class Inner { ${raw} {} } }`, 'Probe.java', 'edge')
     const symbol = symbols.find((entry) => entry.id === 'edge.Probe.Inner.Inner')!
@@ -93,6 +93,24 @@ describe('Java callable layouts', () => {
     expect(spans.filter((span) => span.link?.href.startsWith('#')).map((span) => [span.text, span.link!.href]))
       .toEqual([['value', '#edge.Probe.Inner.Inner.parameter.value']])
     expect(apiEntryFields(symbol, 'java').params.map((param) => param.name)).toEqual(['value'])
+  })
+
+  it('retains annotated ordinary arguments whose names resemble receivers', async () => {
+    const raw = 'public void method(@Mark Probe thisValue, @Mark Probe receiver)'
+    const symbols = await extractSourceWithSpec(JAVA, `public class Probe { ${raw} {} }`, 'Probe.java', 'edge')
+    const symbol = symbols.find((entry) => entry.name === 'method')!
+    const signature = symbol.signatures[0]!
+    expect(signature.params).toEqual([{ name: 'thisValue', type: 'Probe' }, { name: 'receiver', type: 'Probe' }])
+    const layout = await layoutFor(symbol)
+    await sameGrammar(raw, layout.text)
+    const index = new SymbolIndex([...symbols, target('Mark')], (entry) => `/${entry.id}/`, 'java')
+    const spans = signatureSpans(layout, index, symbol, signature)
+    expect(spans.filter((span) => span.link?.href.startsWith('#')).map((span) => span.link!.href))
+      .toEqual(['#edge.Probe.method.parameter.thisValue', '#edge.Probe.method.parameter.receiver'])
+    expect(spans.filter((span) => span.link?.href === '/edge.Probe/')).toHaveLength(2)
+    expect(spans.filter((span) => span.link?.href === '/Mark/')).toHaveLength(2)
+    expect(apiEntryFields(symbol, 'java').params.map((param) => param.name)).toEqual(['thisValue', 'receiver'])
+    expect(layout.failures).toEqual([])
   })
 
   it('prints both native sessions overloads under the API cap in HTML and Markdown preparation', async () => {

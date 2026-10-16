@@ -177,7 +177,7 @@ describe('Java record component boundaries', () => {
 })
 
 describe('Java callable source headers', () => {
-  it.fails.each([
+  it.each([
     ['/* retains */', 'String'],
     ['// retains\n', 'String[]'],
     ['/* retains */', 'java.lang.String'],
@@ -201,7 +201,7 @@ describe('Java callable source headers', () => {
     expect(method.signatures[0].raw).toBe(`public abstract void accept(@Mark ${comment} ${type}... values);`)
   })
 
-  it.fails('keeps explicit method and constructor receivers outside callable parameters', async () => {
+  it('keeps explicit method and constructor receivers outside callable parameters', async () => {
     const symbols = await extract(`public abstract class Example {
       /** @param value the supplied value */
       public <@Mark T> T method(@Mark Example this, T value) { return value; }
