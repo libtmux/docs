@@ -252,3 +252,36 @@ describe('Java callable layouts', () => {
     expect(CODE_COLUMNS).toEqual({ api: 60, example: 80 })
   })
 })
+
+
+describe('Java grammar roles and annotation headers', () => {
+  it.fails('marks native modifier and constraint tokens without hiding real types', async () => {
+    const raw = 'public static synchronized <T extends Bound> T method(Target value) throws Failure'
+    const symbol = method(raw, [{ name: 'value', type: 'Target' }])
+    const layout = await layoutFor(symbol)
+    const index = new SymbolIndex(['Target', 'Bound', 'Failure', 'public', 'static', 'synchronized', 'extends', 'throws'].map(target), (entry) => `/${entry.id}/`, 'java')
+    const spans = signatureSpans(layout, index, symbol, symbol.signatures[0]!)
+    expect(spans.filter((span) => span.nonReference).map((span) => span.text)).toEqual(['public', 'static', 'synchronized', 'T', 'extends', 'T', 'throws'])
+    expect(spans.filter((span) => span.link && !span.link.href.startsWith('#')).map((span) => span.text)).toEqual(['Bound', 'Target', 'Failure'])
+    expect(spans.map((span) => span.text).join('')).toBe(layout.text)
+  })
+
+  it.fails('renders extracted annotation headers and defaults using native grammar', async () => {
+    const symbols = await extractSourceWithSpec(JAVA, `public @interface Operation { String text() default "Unknown  text"; Class<?>[] owners() default {Target.class}; }`, 'Operation.java', 'edge')
+    expect(symbols.map((entry) => entry.name)).toEqual(['Operation', 'text', 'owners'])
+    const index = new SymbolIndex([...symbols, target('Target'), target('String'), target('Class')], (entry) => `/${entry.id}/`, 'java')
+    for (const [i, expected] of ['public @interface Operation', 'String text() default "Unknown  text";', 'Class<?>[] owners() default {Target.class};'].entries()) {
+      const symbol = symbols[i]!
+      const layout = await layoutFor(symbol)
+      expect(layout.text).toBe(expected)
+      expect(layout.failures).toEqual([])
+      const spans = signatureSpans(layout, index, symbol, symbol.signatures[0]!)
+      expect(spans.map((span) => span.text).join('')).toBe(expected)
+      expect(spans.some((span) => span.link?.href === '/Unknown/')).toBe(false)
+      const markdown = await symbolMarkdownWithLayout({ model: { port: 'java', extractor: 'test', symbols }, symbol })
+      expect(markdown).toContain(expected)
+    }
+    const owners = symbols[2]!
+    expect(signatureSpans(await layoutFor(owners), index, owners, owners.signatures[0]!).filter((span) => span.link).map((span) => span.text)).toEqual(['Class', 'Target'])
+  })
+})

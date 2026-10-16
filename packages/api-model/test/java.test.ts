@@ -417,3 +417,71 @@ describe('Java source-qualified names', () => {
     expect(index.resolve('example.Example.Example.Example')?.symbol?.kind).toBe('method')
   })
 })
+
+
+describe('Java native annotation and lexical type identities', () => {
+  it.fails('retains annotation declarations, elements and exact defaults', async () => {
+    const symbols = await extract(`package nativepkg;
+/** Native operation marker. */
+public @interface Operation {
+    /** The operation kind. */
+    Kind value();
+    /** First supported version. */
+    String tmuxSince() default "";
+    Class<?>[] owners() default {String.class};
+}
+public class Container { private @interface Hidden {} }
+`)
+    const annotation = symbols.find((entry) => entry.name === 'Operation')!
+    expect(annotation).toMatchObject({ kind: 'interface', modifiers: ['annotation'],
+      qualifiedName: 'nativepkg.Operation', signatures: [{ raw: 'public @interface Operation', params: [] }],
+      doc: { summary: 'Native operation marker.' } })
+    expect(symbols.filter((entry) => entry.parent === annotation.id)).toMatchObject([
+      { name: 'value', kind: 'method', modifiers: ['annotation'], signatures: [{ raw: 'Kind value();', params: [], returns: 'Kind' }], doc: { summary: 'The operation kind.' } },
+      { name: 'tmuxSince', kind: 'method', value: '""', signatures: [{ raw: 'String tmuxSince() default "";', params: [], returns: 'String' }], doc: { summary: 'First supported version.' } },
+      { name: 'owners', kind: 'method', value: '{String.class}', signatures: [{ raw: 'Class<?>[] owners() default {String.class};', params: [], returns: 'Class<?>[]' }] },
+    ])
+    expect(symbols.some((entry) => entry.name === 'Hidden')).toBe(false)
+    const index = new SymbolIndex(symbols, (entry) => `/${entry.id}/`, 'java')
+    expect(index.resolve('nativepkg.Operation', 'class')?.symbol?.id).toBe(annotation.id)
+    expect(index.resolve('Operation.tmuxSince', 'meth', annotation)?.symbol?.name).toBe('tmuxSince')
+  })
+
+  it.fails('extracts grammar-owned generic names without losing annotations and bounds', async () => {
+    const symbols = await extract(`public class Outer<@Mark T extends Bound, R> {
+      public <@Mark U extends Bound> U method(T value) { return null; }
+      public class Inner<V> { public T outer(R value, V next) { return null; } }
+    }`)
+    expect(symbols.find((entry) => entry.name === 'Outer')).toMatchObject({
+      signatures: [], typeParams: ['@Mark T extends Bound', 'R'], typeParamNames: ['T', 'R'],
+    })
+    expect(symbols.find((entry) => entry.name === 'method')?.signatures[0]).toMatchObject({
+      typeParams: ['@Mark U extends Bound'], typeParamNames: ['U'],
+    })
+  })
+
+  it.fails('resolves lexical Java type variables across real static and nested boundaries', async () => {
+    const symbols = await extract(`public class Outer<T> {
+      public T direct(T value) { return value; }
+      public class Inner<R> { public T outer(R value) { return null; } }
+      public static class Nested<R> { public T unbound(R value) { return null; } }
+      public interface NestedInterface<R> { T unbound(R value); }
+      public record NestedRecord<R>(R value) { public T unbound() { return null; } }
+      public static T unbound() { return null; }
+      public static <@Mark T extends Bound> T rebound(T value) { return value; }
+    }
+    public class T {} public class R {} public class Bound {} public @interface Mark {}`)
+    const index = new SymbolIndex(symbols, (entry) => `/${entry.id}/`, 'java')
+    for (const suffix of ['Outer.direct', 'Outer.Inner.outer', 'Outer.rebound']) {
+      const symbol = symbols.find((entry) => entry.id === `example.${suffix}`)!
+      expect(index.linkType('T', symbol, symbol.signatures[0])).toEqual([{ text: 'T', declaration: true }])
+    }
+    for (const suffix of ['Outer.Nested.unbound', 'Outer.NestedInterface.unbound', 'Outer.NestedRecord.unbound', 'Outer.unbound']) {
+      const symbol = symbols.find((entry) => entry.id === `example.${suffix}`)!
+      expect(index.linkType('T', symbol, symbol.signatures[0])[0].link?.symbol?.id).toBe('example.T')
+    }
+    const direct = symbols.find((entry) => entry.name === 'direct')!
+    expect(index.linkType('Unknown', direct)).toEqual([{ text: 'Unknown', link: undefined }])
+    expect(index.linkType('R', direct)[0].link?.symbol?.id).toBe('example.R')
+  })
+})
