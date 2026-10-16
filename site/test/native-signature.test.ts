@@ -162,7 +162,7 @@ describe('native signature emission', () => {
       .rejects.toThrow(`API signature fixture is missing a parameterized callable for ${port}`)
   })
 
-  it.fails.each([
+  it.each([
     ['ts', 'server.Server.setHook', 'containment'],
     ['scala', 'io.github.libtmux.scaladsl.Server.sessions', 'containment'],
     ['kotlin', 'io.github.libtmux.kotlin.Server.sessions', 'containment'],
