@@ -68,6 +68,34 @@ const cases = [
 ] as const
 let componentPromise: ReturnType<typeof signatureComponent> | undefined
 
+it.fails.each([
+  'withServer', 'withControl', 'Server.control', 'Server.Companion.open',
+  'Server.Companion.fromJava', 'Client.fetchAttachment', 'Server.liveState', 'Server.withLiveState',
+])('renders the Kotlin %s header within the shared API width', async (suffix) => {
+  const model = JSON.parse(readFileSync(new URL('../src/data/api/kotlin.json', import.meta.url), 'utf8')) as ApiModel
+  const symbol = model.symbols.find((entry) => entry.id === `io.github.libtmux.kotlin.${suffix}`)!
+  const signatureLayouts = await apiSignatureLayouts(symbol, 'kotlin')
+  const index = new SymbolIndex(model.symbols, (entry) => `/en/kotlin/latest/reference/${entry.slug}/`, 'kotlin')
+  const java = JSON.parse(readFileSync(new URL('../src/data/api/java.json', import.meta.url), 'utf8')) as ApiModel
+  index.addInventory('', parentInventory(java, (entry) => `/en/java/latest/reference/${entry.slug}/`), ['kotlin'], 'libtmux Java')
+  const container = await experimental_AstroContainer.create()
+  const win = new Window()
+  try {
+    const component = await (componentPromise ??= signatureComponent())
+    win.document.body.innerHTML = (await Promise.all(symbol.signatures.map((sig) => container.renderToString(component, {
+      props: { symbol, sig, port: 'kotlin', language: 'kotlin', index, signatureLayouts, nativeSignatureText },
+    })))).join('')
+    const declarations = [...win.document.querySelectorAll('.api-native-signature')]
+    expect(declarations.map((element) => element.getAttribute('data-code-width-status'))).toEqual(symbol.signatures.map(() => 'fits'))
+    expect(declarations.map((element) => element.getAttribute('data-code-columns'))).toEqual(symbol.signatures.map(() => '60'))
+    expect(declarations.map(displayedSignature)).toEqual([...signatureLayouts.values()].map((layout) => layout.text))
+    expect([...win.document.querySelectorAll('a.api-parameter-name')].map((link) => [link.textContent, link.getAttribute('href')]))
+      .toEqual(symbol.signatures.flatMap((signature) => signature.params.map((param) => [param.name, `#${encodeURIComponent(parameterId(symbol, param.name))}`])))
+    expect([...win.document.querySelectorAll('a')].filter((link) => link.textContent === symbol.name)).toEqual([])
+    expect(win.document.querySelector('a a')).toBeNull()
+  } finally { await win.happyDOM.abort() }
+})
+
 it.each([
   ['io.github.libtmux.Server.Server.sessions', 'expression', 'FilterExpr'],
   ['io.github.libtmux.batch.Batch.Batch.add', 'argv', 'Batch'],

@@ -1,9 +1,14 @@
-import { readFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { parserFor, SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { apiSignatureLayouts, codeWidthFailures, signatureSpans } from '../src/lib/code-layout'
 import { symbolMarkdownWithLayout } from '../src/lib/symbol-markdown'
+import { extractJvm } from '../../packages/api-model/src/languages/jvm'
+
+const kotlinModel = JSON.parse(readFileSync(new URL('../src/data/api/kotlin.json', import.meta.url), 'utf8')) as ApiModel
 
 const fixtures = [
   ['scala', 'io.github.libtmux.scaladsl.Server.sessions', [
@@ -29,6 +34,50 @@ const method = (raw: string, params: Signature['params'] = [], typeParams?: stri
 })
 
 describe('Scala and Kotlin callable layouts', () => {
+  it.fails.each([
+    ['withServer', 'policy: ExecutionPolicy =\n        ExecutionPolicy.default(config),'],
+    ['withControl', 'timeout: Duration =\n        server.config.defaultTimeout().toKotlinDuration(),'],
+    ['Server.control', 'timeout: Duration =\n        config.defaultTimeout().toKotlinDuration(),'],
+    ['Server.Companion.open', 'policy: ExecutionPolicy =\n        ExecutionPolicy.default(config),'],
+    ['Server.Companion.fromJava', 'policy: ExecutionPolicy =\n        ExecutionPolicy.default(server.config()),'],
+    ['Client.fetchAttachment', 'Client.fetchAttachment():\n    ClientAttachment?'],
+    ['Server.liveState', 'attachTimeout: Duration =\n        config.defaultTimeout().toKotlinDuration(),'],
+    ['Server.withLiveState', 'attachTimeout: Duration =\n        config.defaultTimeout().toKotlinDuration(),'],
+  ])('fits the extracted native Kotlin %s header without changing its tokens', async (suffix, continuation) => {
+    const symbol = kotlinModel.symbols.find((entry) => entry.id === `io.github.libtmux.kotlin.${suffix}`)!
+    const original = symbol.signatures[0]!
+    const root = mkdtempSync(join(tmpdir(), 'libtmux-kotlin-width-'))
+    try {
+      const imports = Object.entries(symbol.imports ?? {}).map(([name, target]) =>
+        `import ${target}${target.split('.').at(-1) === name ? '' : ` as ${name}`}`).join('\n')
+      const header = `${original.raw} = TODO()`
+      const source = suffix.startsWith('Server.Companion.') ? `class Server {\ncompanion object {\n${header}\n}\n}`
+        : suffix === 'Server.control' ? `class Server {\n${header}\n}` : header
+      writeFileSync(join(root, 'Native.kt'), `package io.github.libtmux.kotlin\n${imports}\n${source}\n`)
+      const extracted = (await extractJvm('kotlin', [root])).symbols.find((entry) => entry.id === symbol.id)!
+      const signature = extracted.signatures[0]!
+      expect(signature.raw).toBe(original.raw)
+      expect(signature.params).toEqual(original.params.map(({ doc: _doc, ...param }) => param))
+      expect(signature.returns).toBe(original.returns)
+      expect(extracted.imports).toEqual(symbol.imports)
+      const native = { ...symbol, signatures: extracted.signatures }
+      const layout = (await apiSignatureLayouts(native, 'kotlin')).get(signature)!
+      expect(layout.failures).toEqual([])
+      expect(layout.text).toContain(continuation)
+      const index = new SymbolIndex(kotlinModel.symbols, (entry) => `/${entry.id}/`, 'kotlin')
+      const spans = signatureSpans(layout, index, native, signature)
+      expect(spans.map((span) => span.text).join('')).toBe(layout.text)
+      expect(spans.filter((span) => span.declarationName).map((span) => span.text)).toEqual([symbol.name])
+      expect(spans.filter((span) => span.link?.href.startsWith('#')).map((span) => span.link!.href))
+        .toEqual(signature.params.map((param) => `#${symbol.id}.parameter.${param.name}`))
+      const again = { ...native, signatures: [{ ...signature, raw: layout.text }] }
+      expect([...(await apiSignatureLayouts(again, 'kotlin')).values()][0]!.text).toBe(layout.text)
+      const markdown = fromMarkdown(await symbolMarkdownWithLayout({ model: kotlinModel, symbol: native }))
+      const code = markdown.children.find((node) => node.type === 'code')
+      expect(code?.type === 'code' && code.value).toBe(layout.text)
+    } finally { rmSync(root, { recursive: true, force: true }) }
+  })
+
   it.each([
     ['scala', 'def method(\n  // Target parameter explanation\n  value: Target\n): Target'],
     ['scala', 'def method(value: Target // Target trailing explanation\n): Target'],
