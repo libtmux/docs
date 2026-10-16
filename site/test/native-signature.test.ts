@@ -919,7 +919,7 @@ describe('native signature emission', () => {
 })
 
 
-it.fails('audits real Java grammar roles without masking an unknown type', async () => {
+it('audits real Java grammar roles without masking an unknown type', async () => {
   const symbols = await extractSourceWithSpec(JAVA, `public @interface Marker { String value() default "Unknown"; }
 public class Probe<T> { @Marker("literal  Unknown") public synchronized T method(Target value) throws Failure { return null; } }
 public class Target {} public class Failure {} public class T {}`, 'Probe.java', 'edge')
@@ -945,7 +945,7 @@ public class Target {} public class Failure {} public class T {}`, 'Probe.java',
   } finally { await win.happyDOM.abort() }
 })
 
-it.fails('links recovered annotations and owner type bindings in actual Java headers', async () => {
+it('links recovered annotations and owner type bindings in actual Java headers', async () => {
   const model = JSON.parse(readFileSync(new URL('../src/data/api/java.json', import.meta.url), 'utf8')) as ApiModel
   const index = createApiIndex(model, (entry) => `/en/java/latest/reference/${entry.slug}/`)
   const container = await experimental_AstroContainer.create()

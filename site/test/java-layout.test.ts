@@ -255,7 +255,7 @@ describe('Java callable layouts', () => {
 
 
 describe('Java grammar roles and annotation headers', () => {
-  it.fails('marks native modifier and constraint tokens without hiding real types', async () => {
+  it('marks native modifier and constraint tokens without hiding real types', async () => {
     const raw = 'public static synchronized <T extends Bound> T method(Target value) throws Failure'
     const symbol = method(raw, [{ name: 'value', type: 'Target' }])
     const layout = await layoutFor(symbol)
@@ -266,7 +266,7 @@ describe('Java grammar roles and annotation headers', () => {
     expect(spans.map((span) => span.text).join('')).toBe(layout.text)
   })
 
-  it.fails('renders extracted annotation headers and defaults using native grammar', async () => {
+  it('renders extracted annotation headers and defaults using native grammar', async () => {
     const symbols = await extractSourceWithSpec(JAVA, `public @interface Operation { String text() default "Unknown  text"; Class<?>[] owners() default {Target.class}; }`, 'Operation.java', 'edge')
     expect(symbols.map((entry) => entry.name)).toEqual(['Operation', 'text', 'owners'])
     const index = new SymbolIndex([...symbols, target('Target'), target('String'), target('Class')], (entry) => `/${entry.id}/`, 'java')

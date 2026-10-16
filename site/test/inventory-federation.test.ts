@@ -281,7 +281,7 @@ describe('each sidecar agrees with the .inv beside it', () => {
 })
 
 
-it.fails('resolves ReadOnly through its pinned dependency source and preserves local identity', () => {
+it('resolves ReadOnly through its pinned dependency source and preserves local identity', () => {
   const model = API_MODELS.java
   const source = 'https://github.com/JetBrains/kotlin/blob/5687445832cd835b4509b9fbc264cdf1a8201093/libraries/tools/kotlin-annotations-jvm/src/kotlin/annotations/jvm/ReadOnly.java#L28'
   const index = createApiIndex(model, href)

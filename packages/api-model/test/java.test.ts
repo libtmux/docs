@@ -420,7 +420,7 @@ describe('Java source-qualified names', () => {
 
 
 describe('Java native annotation and lexical type identities', () => {
-  it.fails('retains annotation declarations, elements and exact defaults', async () => {
+  it('retains annotation declarations, elements and exact defaults', async () => {
     const symbols = await extract(`package nativepkg;
 /** Native operation marker. */
 public @interface Operation {
@@ -447,7 +447,7 @@ public class Container { private @interface Hidden {} }
     expect(index.resolve('Operation.tmuxSince', 'meth', annotation)?.symbol?.name).toBe('tmuxSince')
   })
 
-  it.fails('extracts grammar-owned generic names without losing annotations and bounds', async () => {
+  it('extracts grammar-owned generic names without losing annotations and bounds', async () => {
     const symbols = await extract(`public class Outer<@Mark T extends Bound, R> {
       public <@Mark U extends Bound> U method(T value) { return null; }
       public class Inner<V> { public T outer(R value, V next) { return null; } }
@@ -460,23 +460,33 @@ public class Container { private @interface Hidden {} }
     })
   })
 
-  it.fails('resolves lexical Java type variables across real static and nested boundaries', async () => {
+  it('resolves lexical Java type variables across real static and nested boundaries', async () => {
     const symbols = await extract(`public class Outer<T> {
       public T direct(T value) { return value; }
       public class Inner<R> { public T outer(R value) { return null; } }
       public static class Nested<R> { public T unbound(R value) { return null; } }
       public interface NestedInterface<R> { T unbound(R value); }
       public record NestedRecord<R>(R value) { public T unbound() { return null; } }
+      public enum NestedEnum { VALUE }
+      public @interface NestedAnnotation { String value(); }
       public static T unbound() { return null; }
       public static <@Mark T extends Bound> T rebound(T value) { return value; }
     }
+    public interface InterfaceOwner<T> { class NestedClass { public T unbound() { return null; } } }
     public class T {} public class R {} public class Bound {} public @interface Mark {}`)
     const index = new SymbolIndex(symbols, (entry) => `/${entry.id}/`, 'java')
+    for (const name of ['NestedInterface', 'NestedRecord', 'NestedEnum', 'NestedAnnotation', 'NestedClass']) {
+      const nested = symbols.find((entry) => entry.name === name)!
+      expect(nested.typeScopeBoundary).toBe(true)
+      expect(nested.modifiers).toEqual(name === 'NestedAnnotation' ? ['annotation'] : [])
+    }
+    expect(symbols.find((entry) => entry.name === 'Inner')?.typeScopeBoundary).toBeUndefined()
+    expect(symbols.find((entry) => entry.name === 'Nested')?.modifiers).toEqual(['static'])
     for (const suffix of ['Outer.direct', 'Outer.Inner.outer', 'Outer.rebound']) {
       const symbol = symbols.find((entry) => entry.id === `example.${suffix}`)!
       expect(index.linkType('T', symbol, symbol.signatures[0])).toEqual([{ text: 'T', declaration: true }])
     }
-    for (const suffix of ['Outer.Nested.unbound', 'Outer.NestedInterface.unbound', 'Outer.NestedRecord.unbound', 'Outer.unbound']) {
+    for (const suffix of ['Outer.Nested.unbound', 'Outer.NestedInterface.unbound', 'Outer.NestedRecord.unbound', 'InterfaceOwner.NestedClass.unbound', 'Outer.unbound']) {
       const symbol = symbols.find((entry) => entry.id === `example.${suffix}`)!
       expect(index.linkType('T', symbol, symbol.signatures[0])[0].link?.symbol?.id).toBe('example.T')
     }
