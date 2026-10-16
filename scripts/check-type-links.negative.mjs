@@ -228,33 +228,53 @@ for (const quote of ["'", '"']) {
   rmSync(unknown, { recursive: true, force: true })
 }
 
-const expectBroken = (name, ok, detail) => check(`xfail ${name}`, !ok, ok ? 'unexpected pass' : detail)
 for (const quote of ["'", '"']) {
   const fragment = (value, note) => `<span data-note=${quote}${note}${quote}>${value}</span>`
   const attributeMangled = site({ markup: `<span class="api-type">${fragment('s', '<!--')}:${fragment('s8CopyableP', '-->')}</span>` })
   const mangledResult = run(attributeMangled, 99)
-  expectBroken('comment delimiters in quoted attributes cannot hide a mangled id',
+  check('comment delimiters in quoted attributes cannot hide a mangled id',
     mangledResult.code !== 0 && mangledResult.out.includes('s:s8CopyableP'), `exited ${mangledResult.code}:\n${mangledResult.out}`)
   rmSync(attributeMangled, { recursive: true, force: true })
 
   const attributeUnknown = site({ markup: `<span class="api-punct">${fragment('Un', '<!--')}${fragment('known', '-->')}</span>` })
   const unknownResult = run(attributeUnknown, 0)
-  expectBroken('comment delimiters in quoted attributes preserve the complete unknown name',
+  check('comment delimiters in quoted attributes preserve the complete unknown name',
     unknownResult.code !== 0 && unknownResult.out.includes('Unknown(1)'), `exited ${unknownResult.code}:\n${unknownResult.out}`)
   rmSync(attributeUnknown, { recursive: true, force: true })
 
   const comment = `<!-- ${quote} --!>`
   const bangMangled = site({ markup: `<span class="api-type">s${comment}:s8CopyableP</span>` })
   const bangResult = run(bangMangled, 99)
-  expectBroken('bang-ended quoted comments cannot hide a visible mangled id',
+  check('bang-ended quoted comments cannot hide a visible mangled id',
     bangResult.code !== 0 && bangResult.out.includes('s:s8CopyableP'), `exited ${bangResult.code}:\n${bangResult.out}`)
   rmSync(bangMangled, { recursive: true, force: true })
 
   const bangUnknown = site({ markup: `<span class="api-punct">Un${comment}known</span>` })
   const result = run(bangUnknown, 0)
-  expectBroken('bang-ended quoted comments cannot hide a visible unknown type',
+  check('bang-ended quoted comments cannot hide a visible unknown type',
     result.code !== 0 && result.out.includes('Unknown(1)'), `exited ${result.code}:\n${result.out}`)
   rmSync(bangUnknown, { recursive: true, force: true })
+}
+
+for (const comment of ['<!-->', '<!--->']) {
+  const dir = site({ markup: plain(`Un${comment}known`) })
+  const { code, out } = run(dir, 0)
+  check('abrupt empty comments preserve a visible unknown type', code !== 0 && out.includes('Unknown(1)'), `exited ${code}:\n${out}`)
+  rmSync(dir, { recursive: true, force: true })
+}
+
+for (const quote of ["'", '"']) {
+  const hidden = plain('Unknown') + usr()
+  const comment = site({ markup: `<!-- ${quote} ${hidden} --!>` })
+  const result = run(comment, 0)
+  check('commented type markup contributes no names', result.code === 0, `exited ${result.code}:\n${result.out}`)
+  rmSync(comment, { recursive: true, force: true })
+
+  const value = quote === '"' ? hidden.replaceAll('"', "'") : hidden
+  const attribute = site({ markup: `<div data-note=${quote}${value}${quote}></div>` })
+  const { code, out } = run(attribute, 0)
+  check('type markup inside a quoted attribute contributes no names', code === 0, `exited ${code}:\n${out}`)
+  rmSync(attribute, { recursive: true, force: true })
 }
 
 if (failures) {
