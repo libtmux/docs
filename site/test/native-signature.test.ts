@@ -273,25 +273,32 @@ describe('native signature emission', () => {
     } finally { await win.happyDOM.abort() }
   })
 
-  it('exposes a Go width failure without splitting or changing its native token', async () => {
+  it.fails.each([
+    ['tmux.SessionOptionValues.PromptCommandCursorStyle', 'func (\n\tv SessionOptionValues,\n) PromptCommandCursorStyle() OptionValue[\n\tPromptCommandCursorStyle,\n]'],
+    ['tmux.WindowOptionValues.PaneScrollbarsPosition', 'func (\n\tv WindowOptionValues,\n) PaneScrollbarsPosition() OptionValue[\n\tPaneScrollbarsPosition,\n]'],
+  ])('renders a width-compliant generic result for %s', async (id, expected) => {
     const model = JSON.parse(readFileSync(new URL('../src/data/api/go.json', import.meta.url), 'utf8')) as ApiModel
-    const symbol = model.symbols.find((entry) => entry.id === 'tmux.SessionOptionValues.PromptCommandCursorStyle')!
+    const symbol = model.symbols.find((entry) => entry.id === id)!
     const sig = symbol.signatures[0]!
     const component = await (componentPromise ??= signatureComponent())
     const container = await experimental_AstroContainer.create()
+    const index = new SymbolIndex(model.symbols, (entry) => `/${entry.id}/`, 'go')
     const signatureLayouts = await apiSignatureLayouts(symbol, 'go')
     const text = () => signatureLayouts.get(sig)?.text ?? nativeSignatureText(symbol, sig, 'go')
     const win = new Window()
     try {
       win.document.body.innerHTML = await container.renderToString(component, { props: {
         symbol, sig, port: 'go', language: 'go', signatureLayouts,
-        index: new SymbolIndex(model.symbols, (entry) => `/${entry.id}/`, 'go'), nativeSignatureText: text,
+        index, nativeSignatureText: text,
       } })
       const signature = win.document.querySelector('.api-native-signature')!
-      expect(signature.getAttribute('data-code-width-status')).toBe('unresolved')
-      expect(JSON.parse(signature.getAttribute('data-code-width-failures')!)).toEqual([{ line: 3, columns: 66, limit: 60 }])
-      expect(displayedSignature(signature)).toBe(text())
-      expect(displayedSignature(signature)).toContain('OptionValue[PromptCommandCursorStyle]')
+      expect(signature.getAttribute('data-code-width-status')).toBe('fits')
+      expect(signature.getAttribute('data-code-width-failures')).toBeNull()
+      expect(displayedSignature(signature)).toBe(expected)
+      expect([...signature.querySelectorAll('a.api-type-link')].map((link) => [link.textContent, link.getAttribute('href')])).toEqual([
+        [symbol.parent!.slice('tmux.'.length), `/${symbol.parent}/`],
+        ...index.linkType(sig.returns!, symbol, sig).flatMap((span) => span.link ? [[span.text, span.link.href]] : []),
+      ])
     } finally { await win.happyDOM.abort() }
   })
 

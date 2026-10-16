@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { parserFor, SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model'
 import { fromMarkdown } from 'mdast-util-from-markdown'
-import { apiSignatureLayouts, codeWidthFailures, signatureSpans } from '../src/lib/code-layout'
+import { apiSignatureLayouts, CODE_COLUMNS, codeWidthFailures, signatureSpans } from '../src/lib/code-layout'
 import { usesNativeSignatures } from '../src/lib/api-sections'
 import { symbolMarkdownWithLayout } from '../src/lib/symbol-markdown'
 import { extractWithSpec } from '../../packages/api-model/src/languages/spec'
@@ -135,14 +135,59 @@ describe('Go callable layouts', () => {
     expect(result.syntax!.filter((range) => range.kind === 'literal').map((range) => result.text.slice(range.start, range.end))).toContain(tag)
   })
 
-  it.each([
-    ['tmux.SessionOptionValues.PromptCommandCursorStyle', 66],
-    ['tmux.WindowOptionValues.PaneScrollbarsPosition', 62],
-  ])('reports the remaining native width failure for %s', async (id, columns) => {
+  it.fails.each([
+    ['tmux.SessionOptionValues.PromptCommandCursorStyle', 'func (\n\tv SessionOptionValues,\n) PromptCommandCursorStyle() OptionValue[\n\tPromptCommandCursorStyle,\n]'],
+    ['tmux.WindowOptionValues.PaneScrollbarsPosition', 'func (\n\tv WindowOptionValues,\n) PaneScrollbarsPosition() OptionValue[\n\tPaneScrollbarsPosition,\n]'],
+  ])('wraps the breakable generic result of %s at 60 columns', async (id, expected) => {
     const symbol = model.symbols.find((entry) => entry.id === id)!
     const result = await layout(symbol)
-    expect(result.text).toContain(`OptionValue[${symbol.name}]`)
-    expect(result.failures).toEqual([{ line: 3, columns, limit: 60 }])
+    expect(result.failures).toEqual([])
+    expect(result.text).toBe(expected)
+    expect((await layout({ ...symbol, signatures: [{ ...symbol.signatures[0]!, raw: result.text }] })).text).toBe(result.text)
+    const parser = await parserFor('go')
+    try {
+      const input = parser.parse(symbol.signatures[0]!.raw!)!
+      const output = parser.parse(result.text)!
+      expect(output.rootNode.hasError).toBe(false)
+      expect(output.rootNode.toString()).toBe(input.rootNode.toString())
+      input.delete(); output.delete()
+    } finally { parser.delete() }
+    const index = new SymbolIndex(model.symbols, (entry) => `/${entry.id}/`, 'go')
+    const spans = signatureSpans(result, index, symbol, symbol.signatures[0]!)
+    expect(spans.map((span) => span.text).join('')).toBe(expected)
+    expect(spans.filter((span) => span.declarationName).map((span) => span.text)).toEqual([symbol.name])
+    expect(spans.filter((span) => span.link).map((span) => span.link!.href)).toEqual([
+      `/${symbol.parent}/`, ...index.linkType(symbol.signatures[0]!.returns!, symbol, symbol.signatures[0]!).flatMap((span) => span.link ? [span.link.href] : []),
+    ])
+    const markdown = await symbolMarkdownWithLayout({ model, symbol })
+    const signature = fromMarkdown(markdown).children.find((node) => node.type === 'code')
+    expect(signature?.type === 'code' && signature.value).toBe(expected)
+  })
+
+  it.fails.each([
+    ['tmux.SessionOptionValues.PromptCommandCursorStyle', 66],
+    ['tmux.WindowOptionValues.PaneScrollbarsPosition', 62],
+  ])('keeps %s stable across neighboring width boundaries', async (id, priorColumns) => {
+    const symbol = model.symbols.find((entry) => entry.id === id)!
+    const receiver = symbol.signatures[0]!.receiver!
+    const prefix = `func (\n\t${receiver.name} ${receiver.type},\n) ${symbol.name}() OptionValue[`
+    const original = CODE_COLUMNS.api
+    try {
+      for (const limit of [59, 60, 61, 62, 65, 66, 67]) {
+        Object.assign(CODE_COLUMNS, { api: limit })
+        const result = await layout(symbol)
+        expect(result.limit).toBe(limit)
+        expect(result.failures).toEqual([])
+        expect(result.text).toBe(limit >= priorColumns ? `${prefix}${symbol.name}]` : `${prefix}\n\t${symbol.name},\n]`)
+        expect((await layout({ ...symbol, signatures: [{ ...symbol.signatures[0]!, raw: result.text }] })).text).toBe(result.text)
+      }
+    } finally { Object.assign(CODE_COLUMNS, { api: original }) }
+  })
+
+  it('keeps an already fitting generic result inline', async () => {
+    const symbol = callable('func Method() OptionValue[Target]')
+    expect((await layout(symbol)).text).toBe(symbol.signatures[0]!.raw)
+    expect((await layout(symbol)).failures).toEqual([])
   })
 
   it('keeps interface method names separate from identically named types', async () => {
