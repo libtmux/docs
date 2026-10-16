@@ -688,9 +688,11 @@ export class SymbolIndex {
             out.push({ text: ident, declaration: true, link: { href: this.hrefFor(field), external: false, symbol: field } })
             continue
           }
-          out.push({ text: ident, declaration: true })
-          continue
         }
+      }
+      if (rustPayload && /^\s*:(?!:)/.test(annotation.slice(m.index! + ident.length))) {
+        out.push({ text: ident, declaration: true })
+        continue
       }
       // A locally bound type parameter must not acquire an unrelated global type's URL.
       if (boundTypes.has(ident)) {
