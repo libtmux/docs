@@ -138,6 +138,38 @@ it('renders Rust structural payload names and field links without callable param
   } finally { await win.happyDOM.abort() }
 })
 
+it.each([
+  ['control.Event.Output', 'PaneId'],
+  ['control.Subscription.Pane', 'PaneId'],
+  ['control.Subscription.Window', 'WindowId'],
+])('links the real %s payload to its native %s owner', async (id, name) => {
+  const model = JSON.parse(readFileSync(new URL('../src/data/api/rs.json', import.meta.url), 'utf8')) as ApiModel
+  const symbol = model.symbols.find((entry) => entry.id === id)!
+  const owner = model.symbols.find((entry) => entry.id === `target.${name}`)!
+  expect(owner.kind).toBe('struct')
+  const hrefFor = (entry: ApiSymbol) => `/en/rs/latest/reference/${entry.slug}/`
+  const container = await experimental_AstroContainer.create()
+  const win = new Window()
+  try {
+    for (const present of [true, false]) {
+      const symbols = present ? model.symbols : model.symbols.filter((entry) => entry.id !== owner.id)
+      const index = new SymbolIndex(symbols, hrefFor, 'rs')
+      win.document.body.innerHTML = await container.renderToString(await (componentPromise ??= signatureComponent()), {
+        props: { symbol, sig: symbol.signatures[0], port: 'rs', language: 'rs', index,
+          nameHref: hrefFor(symbol), nativeSignatureText },
+      })
+      expect(displayedSignature(win.document.body)).toBe(symbol.signatures[0].raw)
+      const links = [...win.document.querySelectorAll('a.api-type-link')].filter((link) => link.textContent === name)
+      expect(links.map((link) => link.getAttribute('href'))).toEqual(present ? [hrefFor(owner)] : [])
+      expect(win.document.querySelector('a a')).toBeNull()
+      if (name === 'PaneId' && symbol.variant === 'struct') {
+        const field = model.symbols.find((entry) => entry.id === `${id}.pane`)!
+        expect(win.document.querySelector(`a[href="${hrefFor(field)}"]`)?.textContent).toBe('pane')
+      }
+    }
+  } finally { await win.happyDOM.abort() }
+})
+
 async function signatureProbe(models: Record<string, ApiModel>) {
   const ports = Object.keys(models).map((slug) => ({ slug }))
   const source = readFileSync(new URL('../scripts/check-dev.mjs', import.meta.url), 'utf8')

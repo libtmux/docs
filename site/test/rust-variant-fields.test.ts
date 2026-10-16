@@ -1,11 +1,14 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { membersOf, navSidecarFor, SymbolIndex, type ApiModel, type ApiSymbol } from '@libtmux/api-model'
-import { isMemberOwner } from '../src/lib/api-models'
+import { API_MODELS, API_NAV, isMemberOwner } from '../src/lib/api-models'
 import { membersByTypeFor, navTreeFor, referenceTreeFor } from '../src/lib/api-tree'
 import { searchApi } from '../src/lib/api-search'
 import { apiEntryFields, apiEntrySections, hasScalarMembers } from '../src/lib/api-sections'
 import { symbolPreview } from '../src/lib/link-preview'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
+import { GET as referenceMarkdown, getStaticPaths } from '../src/pages/reference/[...slug].md'
+
+vi.mock('astro:content', () => ({ getCollection: () => { throw new Error('Core Markdown must use its API model') } }))
 
 const source = { file: 'control.rs', repo: 'libtmux/libtmux-rs', revision: 'pinned' }
 const symbols: ApiSymbol[] = [
@@ -23,6 +26,33 @@ const hrefFor = (symbol: ApiSymbol) => `/en/rs/latest/reference/${symbol.id}/`
 const index = new SymbolIndex(symbols, hrefFor, 'rs')
 
 describe('Rust payload documentation surfaces', () => {
+  it('publishes native ID owners in navigation, search and the real Markdown endpoint', async () => {
+    const nativeModel = API_MODELS.rs
+    const tree = referenceTreeFor('rs', nativeModel, navTreeFor(nativeModel, API_NAV.rs))
+    vi.stubEnv('LIBTMUX_DOCS_PORT', 'rs')
+    vi.stubEnv('LIBTMUX_DOCS_VERSION', 'latest')
+    try {
+      const paths = await getStaticPaths()
+      for (const name of ['SessionId', 'WindowId', 'PaneId']) {
+        const owner = nativeModel.symbols.find((entry) => entry.id === `target.${name}`)!
+        expect(searchApi(tree, name).map((entry) => entry.id)).toContain(owner.id)
+        expect(paths).toContainEqual({ params: { slug: owner.slug }, props: { port: 'rs', id: owner.id } })
+        // The endpoint only consumes props/site; no request runtime is needed.
+        const response = await referenceMarkdown({
+          props: { port: 'rs', id: owner.id }, site: new URL('https://libtmux.org'),
+        } as unknown as Parameters<typeof referenceMarkdown>[0])
+        expect(response.status).toBe(200)
+        const markdown = await response.text()
+        expect(markdown).toContain(owner.doc!.summary)
+        expect(markdown).toContain(owner.doc!.body)
+        expect(markdown).toContain(owner.doc!.examples![0].code)
+        expect(markdown).toContain(`https://github.com/libtmux/libtmux-rs/blob/${nativeModel.revision}/crates/libtmux/src/target.rs#L${owner.source.line}`)
+        expect(markdown).not.toContain('number: u32')
+        expect(markdown).not.toContain('later_method')
+      }
+    } finally { vi.unstubAllEnvs() }
+  })
+
   it('keeps field order and makes payload fields discoverable through initial and lazy navigation and search', () => {
     expect(isMemberOwner(variant)).toBe(true)
     expect(membersOf(model, variant).map((field) => field.name)).toEqual(['pane', 'bytes'])
