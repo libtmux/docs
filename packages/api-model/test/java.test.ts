@@ -95,7 +95,7 @@ public class Ordinary {
     })
     expect(symbols.find((symbol) => symbol.id === 'example.Result.LIMIT')).toMatchObject({ kind: 'attribute', type: 'int', source: { line: 4 } })
     expect(symbols.find((symbol) => symbol.id === 'example.Overloaded.name')?.signatures)
-      .toEqual([{ raw: 'public String name(int ignored)', params: [{ name: 'ignored', type: 'int' }], returns: 'String', typeScopeBoundary: false }, { params: [], returns: 'String' }])
+      .toEqual([{ raw: 'public String name(int ignored)', params: [{ name: 'ignored', type: 'int' }], returns: 'String', typeScopeBoundary: false }, { params: [], returns: 'String', typeScopeBoundary: false }])
     expect(symbols.find((symbol) => symbol.id === 'example.Empty')).toMatchObject({ kind: 'class', signatures: [{ raw: 'public record Empty()', params: [] }] })
     expect(symbols.find((symbol) => symbol.id === 'example.Ordinary')?.signatures).toEqual([])
     expect(symbols.some((symbol) => symbol.name === 'Hidden' || symbol.name === 'secret')).toBe(false)
@@ -420,6 +420,18 @@ describe('Java source-qualified names', () => {
 
 
 describe('Java native annotation and lexical type identities', () => {
+  it.fails('keeps an implicit record accessor in instance scope beside a static overload', async () => {
+    const symbols = await extract(`public record Outer<T>(T value) { public static void value(int ignored) {} } public class T {}`)
+    const method = symbols.find((symbol) => symbol.id === 'example.Outer.value')!
+    const instance = method.signatures.find((signature) => signature.params.length === 0)!
+    const index = new SymbolIndex(symbols, (symbol) => `/${symbol.id}/`, 'java')
+    expect(index.linkType('T', method, instance)).toEqual([{ text: 'T', declaration: true }])
+    expect(instance).toEqual({ params: [], returns: 'T', typeScopeBoundary: false })
+    expect(instance.raw).toBeUndefined()
+    expect(method.modifiers).toEqual(['static', 'overload'])
+    expect(index.linkType('T', method)).toEqual([{ text: 'T', declaration: true }])
+  })
+
   it.fails('uses the selected overload static boundary in either source order', async () => {
     const declarations = ['public static void mixed(int value) {}', 'public T mixed() { return null; }']
     for (const members of [declarations, declarations.toReversed()]) {
