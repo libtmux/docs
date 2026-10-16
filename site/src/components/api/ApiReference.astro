@@ -345,7 +345,7 @@ const otherInherited = inherited.filter((m) => memberTier(m, signals) !== 'paren
 const memberGroups = apiMemberGroups(listed, signals)
 const scalarMembers = Boolean(owner && hasScalarMembers(owner, listed))
 const showMemberGroups = !scalarMembers && memberGroups.length > 1
-const membersLabel = language === 'julia' && owner?.kind === 'struct' && listed.every((member) => member.kind === 'property') ? 'Fields' : 'Members'
+const membersLabel = owner?.variant || (language === 'julia' && owner?.kind === 'struct' && listed.every((member) => member.kind === 'property')) ? 'Fields' : 'Members'
 const pageSections: ApiSection[] = owner ? [
   { id: 'api-overview', label: 'Overview' },
   ...apiEntrySections(owner, language),

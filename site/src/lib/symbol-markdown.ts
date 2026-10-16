@@ -173,6 +173,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     ? `${entry.label && entry.label !== '__AllParameterSets' ? `${entry.label}${entry.isDefault ? ' (default)' : ''}:\n` : ''}${nativeSignatureText(symbol, entry, language)}`
     : signatureLine(symbol, entry, language))).join('\n\n')
   if (sig) out.push(fencedCode(sig, language === 'c' ? 'c' : ''), '')
+  else if (parent?.variant && symbol.type) out.push(fencedCode(`${symbol.name}: ${symbol.type}`, language), '')
   else if (symbol.value !== undefined) out.push(fencedCode(`${qualifiedNameOf(symbol)}${symbol.type ? `: ${symbol.type}` : ''} = ${symbol.value}`, language ?? ''), '')
   else if (language === 'c') out.push(`${anonymousDeclarationLabel(symbol)}.`, '')
 
@@ -264,12 +265,12 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   const inherited = members.filter((member) => member.inheritedFrom && memberTier(member, signals) !== 'parent')
   const appendMembers = (entries: ApiSymbol[]) => {
     for (const member of entries) {
-      out.push(`- ${ctx.hrefFor ? `[${inlineCode(member.name)}](${ctx.hrefFor(member)})` : inlineCode(member.name)} (${member.kind})${member.inheritedFrom ? `, inherited from ${inlineCode(member.inheritedFrom)}` : ''}${member.doc?.summary ? `: ${member.doc.summary}` : ''}`)
+      out.push(`- ${ctx.hrefFor ? `[${inlineCode(member.name)}](${ctx.hrefFor(member)})` : inlineCode(member.name)} (${symbol.variant && member.type ? inlineCode(member.type) : member.kind})${member.inheritedFrom ? `, inherited from ${inlineCode(member.inheritedFrom)}` : ''}${member.doc?.summary ? `: ${member.doc.summary}` : ''}`)
     }
     out.push('')
   }
   if (declared.length) {
-    out.push('## Members', '')
+    out.push(symbol.variant ? '## Fields' : '## Members', '')
     if (hasScalarMembers(symbol, declared)) {
       out.push('| Name | Value | Description |', '| --- | --- | --- |')
       const cell = (text: string) => text.replaceAll('|', '\\|').replaceAll('\n', ' ')

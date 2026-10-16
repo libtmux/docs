@@ -129,6 +129,13 @@ export interface LanguageSpec {
   recordAccessors?: (node: Node) => boolean
   /** Retain native declaration facts which the shared signature fields cannot express. */
   rawSignature?: (node: Node) => string | undefined
+  /** Native enum cases own named or positional fields without a callable signature. */
+  enumVariant?: (node: Node) => {
+    shape: NonNullable<ApiSymbol['variant']>
+    raw: string
+    value?: string
+    fields: { name: string; type: string; node: Node }[]
+  } | undefined
   /**
    * The type a declaration has without spelling it, where the language
    * repeats one: in Go's `const` block a spec with no value takes the type of
@@ -344,6 +351,9 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
         modifiers,
         parent,
         signatures,
+        ...(spec.grammar === 'rust' && child.type === 'enum_item' && child.childForFieldName('type_parameters')
+          ? { typeParams: child.childForFieldName('type_parameters')!.namedChildren.flatMap((node) => node ? [node.text] : []) }
+          : {}),
         doc: docFor(raw, spec, signatures, ctx.parser),
         source: { file: ctx.file, line: child.startPosition.row + 1 },
       })
@@ -397,7 +407,8 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
       memberKind === 'method' && !owner ? 'function' : memberKind
     // Built before the doc so C#'s `<param>` and `<exception>` can be lifted
     // onto it: the comment carries them, and nothing else does.
-    const memberSignatures = hasParams ? [signatureOf(child, spec)] : []
+    const variant = spec.enumVariant?.(child)
+    const memberSignatures = variant ? [{ raw: variant.raw, params: [] }] : hasParams ? [signatureOf(child, spec)] : []
     emit(ctx, {
       id: memberId,
       name,
@@ -405,15 +416,24 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
       modifiers,
       parent: owner,
       signatures: memberSignatures,
+      ...(variant ? { variant: variant.shape } : {}),
       type: hasParams ? undefined : child.childForFieldName('type') && spec.typeText
         ? spec.typeText(child.childForFieldName('type')!)
         : (child.childForFieldName('type')?.text ?? spec.implicitType?.(child))?.replace(/\s+/g, ' '),
-      value: hasParams
+      value: variant ? variant.value : hasParams
         ? undefined
         : child.childForFieldName('declarator')?.childForFieldName('value')?.text.replace(/\s+/g, ' '),
       doc: docFor(raw, spec, memberSignatures, ctx.parser),
       source: { file: ctx.file, line: child.startPosition.row + 1 },
     })
+    for (const field of variant?.fields ?? []) {
+      emit(ctx, {
+        id: `${memberId}.${field.name}`, name: field.name, kind: 'attribute', parent: memberId,
+        modifiers: [], signatures: [], type: field.type,
+        doc: docFor(docCommentFor(field.node, spec), spec, [], ctx.parser),
+        source: { file: ctx.file, line: field.node.startPosition.row + 1 },
+      })
+    }
   }
 }
 

@@ -228,6 +228,8 @@ export interface ApiSymbol {
   /** Enclosing symbol's id, or undefined at module level. */
   parent?: string
   signatures: Signature[]
+  /** Native enum case shape; its child attributes are fields, not callable parameters. */
+  variant?: 'unit' | 'tuple' | 'struct'
   /** Distinct native declarations sharing one public name, such as a TypeScript type/value pair. */
   declarations?: { kind: SymbolKind; text: string; source: ApiSymbol['source']; doc?: DocBlock }[]
   /** Explicit source imports used to resolve aliases in native signatures. */

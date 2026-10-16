@@ -147,7 +147,7 @@ export const OWNER_KINDS = new Set([
 
 /** Constant objects can own members without changing their language kind to a type. */
 export function isMemberOwner(symbol: ApiSymbol): boolean {
-  return OWNER_KINDS.has(symbol.kind) || (symbol.kind === 'constant' &&
+  return Boolean(symbol.variant && symbol.variant !== 'unit') || OWNER_KINDS.has(symbol.kind) || (symbol.kind === 'constant' &&
     Boolean(symbol.declarations?.some((declaration) => declaration.kind === 'constant')))
 }
 

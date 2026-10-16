@@ -619,6 +619,8 @@ export class SymbolIndex {
   linkType(annotation: string, context?: ApiSymbol, signature?: Signature): TypeSpan[] {
     const out: TypeSpan[] = []
     const boundTypes = new Set<string>()
+    const rustPayload = this.lang === 'rs' && (context?.variant || (context?.parent && this.byDeclared.get(context.parent)?.variant))
+    const variantDelimiters: string[] = []
     if (this.lang === 'ts') {
       // Shared prose has no selected overload; a local binding makes a global match ambiguous.
       const parameters = signature ? [...signature.typeParams ?? []]
@@ -631,6 +633,14 @@ export class SymbolIndex {
         if (name) boundTypes.add(name)
       }
     }
+    if (rustPayload) {
+      for (let scope: ApiSymbol | undefined = context; scope; scope = scope.parent ? this.byDeclared.get(scope.parent) : undefined) {
+        for (const parameter of scope.typeParams ?? []) {
+          const name = /^\s*(?:const\s+)?((?:r#)?[A-Za-z_][A-Za-z0-9_]*)(?=\s*(?::|=|$))/.exec(parameter)?.[1]
+          if (name) boundTypes.add(name)
+        }
+      }
+    }
     // Identifiers, including dotted ones; everything else is punctuation,
     // whitespace or a string literal and passes through untouched.
     // `::` is part of a name, not punctuation between two. Splitting there
@@ -640,6 +650,7 @@ export class SymbolIndex {
       ? String.raw`[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*!?`
       : this.lang === 'powershell' ? String.raw`(?:[A-Za-z_][A-Za-z0-9_.]*\\)?[A-Za-z_][A-Za-z0-9_.-]*`
       : this.lang === 'ts' ? String.raw`[A-Za-z_$][A-Za-z0-9_$.]*`
+      : rustPayload ? String.raw`(?:r#)?[A-Za-z_][A-Za-z0-9_.]*(?:::(?:r#)?[A-Za-z_][A-Za-z0-9_.]*)*`
       : String.raw`[A-Za-z_][A-Za-z0-9_.]*(?:::[A-Za-z_][A-Za-z0-9_.]*)*`
     const rawString = this.lang === 'cxx'
       ? String.raw`(?:u8|u|U|L)?R"(?<rawDelimiter>[^ ()\\\t\v\f\r\n]{0,16})\([\s\S]*?\)\k<rawDelimiter>"|` : ''
@@ -653,12 +664,33 @@ export class SymbolIndex {
       const whole = m[0]
       const { ident, other } = m.groups!
       if (other !== undefined || !ident) {
+        if (rustPayload && context?.variant && signature) {
+          for (const delimiter of whole.match(/->|=>|[{}()[\]<>]/g) ?? []) {
+            if ('{[(<'.includes(delimiter)) variantDelimiters.push(delimiter)
+            else if (variantDelimiters.length && '}])>'.indexOf(delimiter) === '{[(<'.indexOf(variantDelimiters.at(-1)!)) variantDelimiters.pop()
+          }
+        }
         out.push({ text: whole })
         continue
       }
       if (/^(?:["']|\/[/*])/.test(ident) || m.groups?.rawDelimiter !== undefined) {
         out.push({ text: ident })
         continue
+      }
+      if (this.lang === 'rs' && context?.variant && signature) {
+        if (ident === context.name && annotation.slice(0, m.index).trim() === '') {
+          out.push({ text: ident, declaration: true })
+          continue
+        }
+        if (context.variant === 'struct' && /^\s*:(?!:)/.test(annotation.slice(m.index! + ident.length))) {
+          const field = this.byDeclared.get(`${context.id}.${ident}`)
+          if (variantDelimiters.length === 1 && variantDelimiters[0] === '{' && field?.parent === context.id) {
+            out.push({ text: ident, declaration: true, link: { href: this.hrefFor(field), external: false, symbol: field } })
+            continue
+          }
+          out.push({ text: ident, declaration: true })
+          continue
+        }
       }
       // A locally bound type parameter must not acquire an unrelated global type's URL.
       if (boundTypes.has(ident)) {

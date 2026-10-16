@@ -226,6 +226,32 @@ export const RUST: LanguageSpec = {
     return node.children.some((c) => c?.type === 'visibility_modifier' && c.text.trim() === 'pub')
   },
   fields: { returns: 'return_type' },
+  enumVariant: (node) => {
+    if (node.type !== 'enum_variant' || node.hasError) return undefined
+    const owner = node.parent?.parent
+    if (rustDocHidden(node) || (owner && rustDocHidden(owner))) return undefined
+    const body = node.childForFieldName('body')
+    // Conditional and attributed fields require native configuration information.
+    // Keep the existing case entry rather than publish a guessed field set.
+    if (body?.descendantsOfType('attribute_item').length) return undefined
+    const shape = body?.type === 'field_declaration_list' ? 'struct'
+      : body?.type === 'ordered_field_declaration_list' ? 'tuple' : 'unit'
+    const nodes = shape === 'struct' ? body!.namedChildren.filter((field) => field?.type === 'field_declaration')
+      : shape === 'tuple' ? body!.childrenForFieldName('type') : []
+    const fields = nodes.flatMap((field, position) => {
+      if (!field) return []
+      const name = shape === 'tuple' ? String(position) : field.childForFieldName('name')?.text
+      const type = shape === 'tuple' ? field.text : field.childForFieldName('type')?.text
+      return name && type ? [{ name, type, node: field }] : []
+    })
+    if (fields.length !== nodes.length) return undefined
+    const name = node.childForFieldName('name')!.text
+    const value = node.childForFieldName('value')?.text
+    const delimiters = shape === 'struct' ? [' {', '}'] : shape === 'tuple' ? ['(', ')'] : ['', '']
+    const payload = fields.map((field) => `${shape === 'struct' ? `${field.name}: ` : ''}${field.type},`)
+    const raw = `${name}${delimiters[0]}${payload.length ? `\n    ${payload.join('\n    ')}\n` : ''}${delimiters[1]}${value === undefined ? '' : ` = ${value}`}`
+    return { shape, raw, fields, value }
+  },
 }
 
 export const GO: LanguageSpec = {
