@@ -64,10 +64,10 @@ function printHeader(root: NativeNode, port: Port, continuations = false): strin
       : /\S/.test(rawGap) ? rawGap : rawGap ? ' ' : ''
     return [gap, print(node)]
   })
-  const continuation = (nodes: NativeNode[], separator: string): Doc => {
+  const continuation = (nodes: NativeNode[], separator: string, indent = 4): Doc => {
     const at = nodes.findIndex((node) => node.type === separator)
     if (at === -1 || at === nodes.length - 1) return sequence(nodes)
-    return [sequence(nodes.slice(0, at + 1)), group(align(4, [line, sequence(nodes.slice(at + 1))]))]
+    return [sequence(nodes.slice(0, at + 1)), group(align(indent, [line, sequence(nodes.slice(at + 1))]))]
   }
   const printList = (node: NativeNode): Doc => {
     const nodes = children(node)
@@ -103,8 +103,9 @@ function printHeader(root: NativeNode, port: Port, continuations = false): strin
       return group([sequence(receiver), align(2, [isLineComment(receiver.at(-1)) ? hardline : line, print(body)])])
     }
     if (lists.has(node.type) || (node.type === 'parameter_types' && node.firstChild?.type === '(')) return printList(node)
-    if (continuations && ((port === 'kotlin' && node.type === 'function_declaration') ||
-      (port === 'scala' && node.type === 'parameter'))) return group(continuation(children(node), ':'))
+    if (continuations && (node.type === 'function_declaration' || (port === 'scala' && node.type === 'parameter'))) {
+      return group(continuation(children(node), ':', port === 'scala' && node.type === 'function_declaration' ? 2 : 4))
+    }
     // Expression bodies and literals are opaque: line breaks inside them may
     // be meaningful, even when the outer header is only a declaration.
     if (!containers.has(node.type) || !node.childCount) return node.text
