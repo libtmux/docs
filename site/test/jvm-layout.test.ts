@@ -268,6 +268,29 @@ const scalaReturnLayouts = [
   ]`],
 ] as const
 
+const scalaUnresolvedReturns = [
+  ['io.github.libtmux.scaladsl.generated.PaneFields.index', 0],
+  ['io.github.libtmux.scaladsl.generated.PaneFields.width', 0],
+  ['io.github.libtmux.scaladsl.generated.PaneFields.height', 0],
+  ['io.github.libtmux.scaladsl.generated.PaneFields.left', 0],
+  ['io.github.libtmux.scaladsl.generated.PaneFields.top', 0],
+  ['io.github.libtmux.scaladsl.generated.SessionFields.windowCount', 0],
+  ['io.github.libtmux.scaladsl.generated.WindowFields.index', 0],
+  ['io.github.libtmux.scaladsl.generated.WindowFields.width', 0],
+  ['io.github.libtmux.scaladsl.generated.WindowFields.height', 0],
+  ['io.github.libtmux.scaladsl.generated.WindowFields.paneCount', 0],
+  ['io.github.libtmux.scaladsl.Pane.index', 0],
+  ['io.github.libtmux.scaladsl.Pane.width', 0],
+  ['io.github.libtmux.scaladsl.Pane.height', 0],
+  ['io.github.libtmux.scaladsl.Pane.left', 0],
+  ['io.github.libtmux.scaladsl.Pane.top', 0],
+  ['io.github.libtmux.scaladsl.Session.windowCount', 0],
+  ['io.github.libtmux.scaladsl.Window.index', 0],
+  ['io.github.libtmux.scaladsl.Window.width', 0],
+  ['io.github.libtmux.scaladsl.Window.height', 0],
+  ['io.github.libtmux.scaladsl.Window.paneCount', 0],
+] as const
+
 let scalaExtraction: Promise<ApiModel> | undefined
 async function extractedScala() {
   return scalaExtraction ??= (async () => {
@@ -307,7 +330,74 @@ const method = (raw: string, params: Signature['params'] = [], typeParams?: stri
 })
 
 describe('Scala and Kotlin callable layouts', () => {
-  it.fails.each(scalaReturnLayouts)('fits the extracted Scala return continuation in %s', async (id, ordinal, expected) => {
+  it.each(scalaUnresolvedReturns)('reports the remaining Scala return width in %s', async (id, ordinal) => {
+    const symbol = scalaModel.symbols.find((entry) => entry.id === id)!
+    const signature = symbol.signatures[ordinal]!
+    const layout = (await apiSignatureLayouts(symbol, 'scala')).get(signature)!
+    expect(layout.failures).toEqual([{ line: 2, columns: 61, limit: 60 }])
+    expect(layout.failures).toEqual(await codeWidthFailures(layout.text, 'api'))
+    const qualified = signature.returns!.split('[')[0]!
+    expect(layout.text).toContain(`\n  ${qualified}[`)
+    const index = new SymbolIndex(scalaModel.symbols, (entry) => `/${entry.id}/`, 'scala')
+    const spans = signatureSpans(layout, index, symbol, signature)
+    expect(spans.map((span) => span.text).join('')).toBe(layout.text)
+    expect(spans.filter((span) => span.text === qualified).map((span) => span.link?.href))
+      .toEqual(['/io.github.libtmux.scaladsl.query.Fields.NumberField/'])
+    const again = { ...symbol, signatures: [{ ...signature, raw: layout.text }] }
+    expect([...(await apiSignatureLayouts(again, 'scala')).values()][0]!.text).toBe(layout.text)
+  })
+
+  it.each([59, 60, 61, 62])('retains the Scala return boundary at %s columns', async (columns) => {
+    const type = `Target${'X'.repeat(columns - 'def method: Target'.length)}`
+    const raw = `def method: ${type}`
+    const symbol = method(raw)
+    const layout = (await apiSignatureLayouts(symbol, 'scala')).get(symbol.signatures[0]!)!
+    expect(layout.text).toBe(columns <= 60 ? raw : `def method:\n  ${type}`)
+    expect(layout.failures).toEqual([])
+  })
+
+  it.each([
+    'TargetWithUnusuallyLongButSingleName',
+    'Vector[TargetWithUnusuallyLongButSingleName]',
+    'Map[Target, TargetWithUnusuallyLongButSingleName]',
+    '() => TargetWithUnusuallyLongButSingleName',
+    '(Target, TargetWithUnusuallyLongButSingleName) => Target',
+    'Target & TargetWithUnusuallyLongButSingleName',
+    'Target | TargetWithUnusuallyLongButSingleName',
+    'TargetWithUnusuallyLongButSingleName @unchecked',
+    '/* Target: exact  spaces */ TargetWithUnusuallyLongButSingleName',
+    '// Target: exact  spaces\nTargetWithUnusuallyLongButSingleName',
+  ])('preserves extracted Scala return grammar and literals in %s', async (type) => {
+    const name = 'methodWithAnExplicitNameForReturnType'
+    const raw = `def ${name}: ${type}`
+    const root = mkdtempSync(join(tmpdir(), 'libtmux-scala-return-'))
+    try {
+      writeFileSync(join(root, 'Probe.scala'), `package probe\nclass Target\nclass TargetWithUnusuallyLongButSingleName\nobject Probe {\n${raw} = ???\n}`)
+      const model = await extractJvm('scala', [root])
+      const symbol = model.symbols.find((entry) => entry.id === `probe.Probe.${name}`)!
+      const signature = symbol.signatures[0]!
+      expect(signature.raw).toBe(raw)
+      const layout = (await apiSignatureLayouts(symbol, 'scala')).get(signature)!
+      const parser = await parserFor('scala')
+      const before = parser.parse(raw)!
+      const after = parser.parse(layout.text)!
+      try {
+        expect(before.rootNode.hasError || after.rootNode.hasError).toBe(false)
+        expect(after.rootNode.toString()).toBe(before.rootNode.toString())
+        const literals = ['comment', 'block_comment', 'string', 'interpolated_string_expression']
+        expect(after.rootNode.descendantsOfType(literals).map((node) => [node.type, node.text]))
+          .toEqual(before.rootNode.descendantsOfType(literals).map((node) => [node.type, node.text]))
+      } finally { before.delete(); after.delete(); parser.delete() }
+      expect(layout.failures).toEqual(await codeWidthFailures(layout.text, 'api'))
+      const spans = signatureSpans(layout, new SymbolIndex(model.symbols, (entry) => `/${entry.id}/`, 'scala'), symbol, signature)
+      expect(spans.map((span) => span.text).join('')).toBe(layout.text)
+      expect(spans.filter((span) => span.link?.href.startsWith('#'))).toEqual([])
+      const again = { ...symbol, signatures: [{ ...signature, raw: layout.text }] }
+      expect([...(await apiSignatureLayouts(again, 'scala')).values()][0]!.text).toBe(layout.text)
+    } finally { rmSync(root, { recursive: true, force: true }) }
+  })
+
+  it.each(scalaReturnLayouts)('fits the extracted Scala return continuation in %s', async (id, ordinal, expected) => {
     const symbol = scalaModel.symbols.find((entry) => entry.id === id)!
     const source = (await extractedScala()).symbols.find((entry) => entry.id === (symbol.exportedFrom ?? id))!
     const signature = symbol.signatures[ordinal]!

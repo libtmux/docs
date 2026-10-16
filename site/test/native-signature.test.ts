@@ -90,7 +90,28 @@ const cases = [
 ] as const
 let componentPromise: ReturnType<typeof signatureComponent> | undefined
 
-it.fails.each([
+it.each(['generated.PaneFields.index', 'Pane.index'])('renders an unresolved Scala NumberField return in %s', async (suffix) => {
+  const model = JSON.parse(readFileSync(new URL('../src/data/api/scala.json', import.meta.url), 'utf8')) as ApiModel
+  const symbol = model.symbols.find((entry) => entry.id === `io.github.libtmux.scaladsl.${suffix}`)!
+  const signatureLayouts = await apiSignatureLayouts(symbol, 'scala')
+  const index = new SymbolIndex(model.symbols, (entry) => `/${entry.id}/`, 'scala')
+  const container = await experimental_AstroContainer.create()
+  const win = new Window()
+  try {
+    const component = await (componentPromise ??= signatureComponent())
+    win.document.body.innerHTML = await container.renderToString(component, {
+      props: { symbol, sig: symbol.signatures[0], port: 'scala', language: 'scala', index, signatureLayouts, nativeSignatureText },
+    })
+    const declaration = win.document.querySelector('.api-native-signature')!
+    expect(declaration.getAttribute('data-code-width-status')).toBe('unresolved')
+    expect(declaration.getAttribute('data-code-columns')).toBe('60')
+    expect(displayedSignature(declaration)).toBe(signatureLayouts.get(symbol.signatures[0]!)!.text)
+    expect([...win.document.querySelectorAll('a')].filter((link) => link.textContent === '_root_.io.github.libtmux.scaladsl.query.Fields.NumberField').map((link) => link.getAttribute('href')))
+      .toEqual(['/io.github.libtmux.scaladsl.query.Fields.NumberField/'])
+  } finally { await win.happyDOM.abort() }
+})
+
+it.each([
   'generated.PaneFields.id', 'Pane.id',
   'generated.PaneFields.active', 'Pane.active',
   'generated.SessionFields.windows', 'Session.windows',
