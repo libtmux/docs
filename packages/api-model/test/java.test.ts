@@ -66,7 +66,7 @@ public record BatchResult(@ReadOnly List<OperationResult> operations) {
       .entries.find((entry) => entry.name === accessor.id)?.uri).toBe(hrefFor(accessor))
   })
 
-  it.fails('preserves explicit accessors, constructors and fields without synthesizing duplicate methods', async () => {
+  it('preserves explicit accessors, constructors and fields without synthesizing duplicate methods', async () => {
     const symbols = await extract(`package example;
 /** @param value the supplied value */
 public record Result<T>(T value) {
@@ -420,7 +420,18 @@ describe('Java source-qualified names', () => {
 
 
 describe('Java native annotation and lexical type identities', () => {
-  it.fails('keeps an implicit record accessor in instance scope beside a static overload', async () => {
+  it.each(['@Marker("static") public', 'public /* static */'])('derives instance scope from grammar through %s', async (prefix) => {
+    const symbols = await extract(`public class Outer<T> { ${prefix} T read() { return null; } } public class T {}`)
+    const method = symbols.find((symbol) => symbol.name === 'read')!
+    const signature = method.signatures[0]!
+    const index = new SymbolIndex(symbols, (symbol) => `/${symbol.id}/`, 'java')
+    expect(signature.typeScopeBoundary).toBe(false)
+    expect(signature.raw).toBe(`${prefix} T read()`)
+    expect(index.linkType('T', method, signature)).toEqual([{ text: 'T', declaration: true }])
+    expect(index.linkType('Unknown', method, signature)).toEqual([{ text: 'Unknown', link: undefined }])
+  })
+
+  it('keeps an implicit record accessor in instance scope beside a static overload', async () => {
     const symbols = await extract(`public record Outer<T>(T value) { public static void value(int ignored) {} } public class T {}`)
     const method = symbols.find((symbol) => symbol.id === 'example.Outer.value')!
     const instance = method.signatures.find((signature) => signature.params.length === 0)!
@@ -432,7 +443,7 @@ describe('Java native annotation and lexical type identities', () => {
     expect(index.linkType('T', method)).toEqual([{ text: 'T', declaration: true }])
   })
 
-  it.fails('uses the selected overload static boundary in either source order', async () => {
+  it('uses the selected overload static boundary in either source order', async () => {
     const declarations = ['public static void mixed(int value) {}', 'public T mixed() { return null; }']
     for (const members of [declarations, declarations.toReversed()]) {
       const symbols = await extract(`public class Outer<T> { ${members.join('\n')} } public class T {}`)
@@ -450,7 +461,7 @@ describe('Java native annotation and lexical type identities', () => {
     }
   })
 
-  it.fails('does not borrow a sibling overload type parameter for a selected nongeneric signature', async () => {
+  it('does not borrow a sibling overload type parameter for a selected nongeneric signature', async () => {
     const declarations = ['public <T> T find(T value) { return value; }', 'public T find() { return null; }']
     for (const members of [declarations, declarations.toReversed()]) {
       const symbols = await extract(`public class Overloads { ${members.join('\n')} } public class T {}`)

@@ -19,7 +19,7 @@ async function extract(source: string) {
 }
 
 describe('C# positional records', () => {
-  it.fails.each([
+  it.each([
     'public record Result { public string Value { get; init; } }',
     'public record struct Result { public int Value { get; init; } }',
     'public record Result;',
