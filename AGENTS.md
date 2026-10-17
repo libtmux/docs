@@ -66,8 +66,11 @@ an entire language root.
 ## Merging pull requests
 
 Use a descriptive subject ending in the actual PR number: `Title (#PRNUM)`.
-Follow it with `what:` and `why:` sections describing the change and its
-reason. Never use the default `Merge pull request ... from ...` subject.
+Follow it with `what:` and `why:` sections describing the delivered features,
+fixes and their purpose. For pins, compare the old and new upstream trees
+and summarize the behavior adopted, including any language-specific scope.
+Keep source refs in the body as provenance. Never use the default
+`Merge pull request ... from ...` subject.
 
 Pass the subject and body explicitly to the merge command. Read back the
 resulting commit message before starting another merge.
