@@ -19,6 +19,7 @@ import ApiFieldOverloads from './ApiFieldOverloads.astro'
 import ApiCommandParameters from './ApiCommandParameters.astro'
 import ApiSignatureParameters from './ApiSignatureParameters.astro'
 import { apiSignatureLayouts } from '../../lib/code-layout'
+import { pythonSignatureLayout } from '../../lib/python-code-layout'
 
 /**
  * One documented symbol, in the shape gp-sphinx's stylesheet expects.
@@ -157,6 +158,10 @@ const prename = heading && qualifiedName.endsWith(symbol.name)
   : ''
 
 const bases = heading && showBases ? ((symbol as { extends?: string[] }).extends ?? []) : []
+
+/** Python wraps by the columns the bar spends before its parameters, which differ by heading and member. */
+const pythonLayouts = language === 'py' ? new Map(await Promise.all(symbol.signatures.map(async (signature) =>
+  [signature, await pythonSignatureLayout(signature, { name: `${keyword ? `${keyword} ` : ''}${prename}${symbol.name}` })] as const))) : undefined
 
 const examples = symbol.doc?.examples ?? []
 const references = symbol.doc?.references ?? []
@@ -344,17 +349,19 @@ const hasBody =
                       <span class="sig-paren">)</span>
                     </summary>
                     <span class="gp-sphinx-api-signature-expanded">
-                      <ApiSignatureParameters signature={sig} symbol={symbol} index={index} language={language} />
+                      <ApiSignatureParameters signature={sig} symbol={symbol} index={index} language={language} layout={pythonLayouts?.get(sig)} />
                     </span>
                   </details>
                 ) : (
-                  <ApiSignatureParameters signature={sig} symbol={symbol} index={index} language={language} />
+                  <ApiSignatureParameters signature={sig} symbol={symbol} index={index} language={language} layout={pythonLayouts?.get(sig)} />
                 )}
                 {sig.returns && (
                   <span class="sig-return">
                     <span class="sig-return-icon">{language === 'ts' ? ':' : '→'}</span>{' '}
                     <span class="sig-return-typehint">
-                      <ApiType type={sig.returns} index={index} context={symbol} signature={sig} />
+                      {pythonLayouts?.get(sig)?.returns?.includes('\n')
+                        ? <span class="api-signature-parameters--multiline"><ApiType type={pythonLayouts.get(sig)!.returns!} index={index} context={symbol} signature={sig} /></span>
+                        : <ApiType type={pythonLayouts?.get(sig)?.returns ?? sig.returns} index={index} context={symbol} signature={sig} />}
                     </span>
                   </span>
                 )}

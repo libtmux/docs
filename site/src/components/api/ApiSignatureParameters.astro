@@ -1,6 +1,7 @@
 ---
 import { parameterId, type ApiSymbol, type Signature, type SymbolIndex } from '@libtmux/api-model'
 import { signatureMultiline } from '../../lib/api-sections'
+import type { PythonLayout } from '../../lib/python-code-layout'
 import ApiType from './ApiType.astro'
 
 interface Props {
@@ -8,9 +9,14 @@ interface Props {
   symbol: ApiSymbol
   index: SymbolIndex
   language?: string
+  /** A prepared layout fixes the line breaks, indentation and trailing comma. */
+  layout?: PythonLayout
 }
-const { signature, symbol, index, language } = Astro.props as Props
-const multiline = signatureMultiline(symbol, signature, language)
-const indentType = (text: string) => multiline ? text.replaceAll('\n', '\n  ') : text
+const { signature, symbol, index, language, layout } = Astro.props as Props
+const multiline = layout ? layout.mode !== 'flat' : signatureMultiline(symbol, signature, language)
+const explode = layout ? layout.mode === 'explode' : multiline
+const lead = layout ? '    ' : '  '
+const typeOf = (i: number, type?: string) => layout?.parameters[i]?.type ?? type
+const indentType = (text: string) => multiline && !layout ? text.replaceAll('\n', '\n  ') : text
 ---
-<span class:list={['api-signature-parameters', multiline && 'api-signature-parameters--multiline']}><span class="sig-paren">(</span>{multiline && '\n'}{signature.params.map((param, i) => <Fragment>{multiline && '  '}<span class="sig-param">{param.variadic && <span class="o">{param.variadic === 'keyword' ? '**' : language === 'ts' ? '...' : '*'}</span>}{(param.doc || language === 'ts') ? <a class="api-parameter-name" href={`#${encodeURIComponent(parameterId(symbol, param.name))}`}>{param.name}</a> : <span class="n">{param.name}</span>}{param.optional && <span class="o">?</span>}{param.type && <Fragment><span class="p">: </span><ApiType type={indentType(param.type)} index={index} context={symbol} signature={signature} /></Fragment>}{param.default !== undefined && <Fragment><span class="o"> = </span><span class="default_value">{indentType(param.default)}</span></Fragment>}</span>{i < signature.params.length - 1 && <span class="sig-paren">,</span>}{multiline ? '\n' : i < signature.params.length - 1 ? ' ' : ''}</Fragment>)}<span class="sig-paren">)</span></span>
+<span class:list={['api-signature-parameters', multiline && 'api-signature-parameters--multiline']}><span class="sig-paren">(</span>{multiline && '\n'}{layout?.mode === 'hug' && lead}{signature.params.map((param, i) => <Fragment>{explode && lead}<span class="sig-param">{param.variadic && <span class="o">{param.variadic === 'keyword' ? '**' : language === 'ts' ? '...' : '*'}</span>}{(param.doc || language === 'ts') ? <a class="api-parameter-name" href={`#${encodeURIComponent(parameterId(symbol, param.name))}`}>{param.name}</a> : <span class="n">{param.name}</span>}{param.optional && <span class="o">?</span>}{typeOf(i, param.type) && <Fragment><span class="p">: </span><ApiType type={indentType(typeOf(i, param.type)!)} index={index} context={symbol} signature={signature} /></Fragment>}{param.default !== undefined && <Fragment><span class="o"> = </span><span class="default_value">{indentType(param.default)}</span></Fragment>}</span>{(i < signature.params.length - 1 || (layout && explode)) && <span class="sig-paren">,</span>}{explode ? '\n' : i < signature.params.length - 1 ? ' ' : layout?.mode === 'hug' ? '\n' : ''}</Fragment>)}<span class="sig-paren">)</span></span>

@@ -1,4 +1,4 @@
-import { parameterId, type ApiSymbol, type Signature, type SymbolIndex } from '@libtmux/api-model'
+import { parameterId, qualifiedNameOf, type ApiSymbol, type Signature, type SymbolIndex } from '@libtmux/api-model'
 
 /** Documentation surface budgets, independent of a port's source formatter. */
 export const CODE_COLUMNS = { api: 60, example: 80 } as const
@@ -240,6 +240,13 @@ export async function apiSignatureLayouts(symbol: ApiSymbol, language?: string):
     const { powershellSignatureLayout } = await import('./powershell-code-layout')
     return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
       [signature, await powershellSignatureLayout(symbol, signature)] as const)))
+  }
+  if (language === 'py' && symbol.signatures.length) {
+    // The export prints the qualified name, so the layout reserves its columns.
+    const { pythonSignatureLayout } = await import('./python-code-layout')
+    const name = qualifiedNameOf(symbol)
+    return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
+      [signature, await pythonSignatureLayout(signature, { name })] as const)))
   }
   if (language === 'julia' && symbol.signatures.some((signature) => signature.raw?.trim())) {
     const { juliaSignatureLayout } = await import('./julia-code-layout')
