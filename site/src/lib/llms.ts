@@ -6,7 +6,7 @@ import { getCollection } from 'astro:content'
 import { qualifiedNameOf } from '@libtmux/api-model'
 import type { CollectionEntry } from 'astro:content'
 import { resolvePortCode } from '../plugins/remark-port-code.mjs'
-import { PORTS, PORT_BY_SLUG, hasReference, portPageUrl, productApiPath, productAvailable, referenceUrl, workspaceOverviewNotice } from './ports.ts'
+import { PORTS, PORT_BY_SLUG, hasReference, portPageUrl, productApiPath, productAvailable, productConceptNotice, referenceUrl, workspaceOverviewNotice } from './ports.ts'
 import { DEFAULT_LOCALE } from '../i18n/locales.ts'
 import { buildLocale, localeOf, sourceIdOf } from '../i18n/resolve.ts'
 import { buildTarget } from './versions.ts'
@@ -103,8 +103,10 @@ export function llmsPage(entry: CollectionEntry<'docs'>, origin: string, base: s
   if (cards.length) {
     body += `\n\n${cards.map((card) => `- [${card.label}](${new URL(proseHref(card.href, SITE_ROOT, entryPort ?? port, version), url).href}): ${card.body}`).join('\n')}\n`
   }
-  if (entryPort && entry.data.product === 'workspace' && docsPath(entry) === 'workspace') {
-    const notice = workspaceOverviewNotice(PORT_BY_SLUG[entryPort])
+  if (entryPort && entry.data.product) {
+    const notice = entry.data.product === 'workspace' && docsPath(entry) === 'workspace'
+      ? workspaceOverviewNotice(PORT_BY_SLUG[entryPort])
+      : productConceptNotice(PORT_BY_SLUG[entryPort], entry.data.product)
     if (notice) body = `**${notice.title}** ${notice.body}\n\n${body}`
   }
   if (entryPort && entry.data.product && productAvailable(PORT_BY_SLUG[entryPort], entry.data.product)

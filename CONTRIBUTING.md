@@ -208,6 +208,17 @@ The server listens at `http://localhost:8080`. Leave it running in another
 terminal when running the publication audit to exercise browser checks. Style parity
 also requires the generated Sphinx pages; check the run's skip summary.
 
+Stop development and preview servers, then remove generated output and staging:
+
+```console
+$ pnpm run clean
+```
+
+Add `--dry-run` to list the directories or `--cache` to remove cached shell
+and reference builds too. Cleanup shares the assembly lock and refuses to
+run during an assembly. It preserves source, dependencies and `output/`
+review evidence. Custom output and cache locations need their own cleanup.
+
 ## Pull requests
 
 Keep commits focused on one topic. Explain the problem, resulting behavior,

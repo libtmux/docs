@@ -11,7 +11,7 @@ import { llmsPage, llmsPages, localeProse } from '../src/lib/llms'
 import { getSidebar, pageBreadcrumbs } from '../src/lib/sidebar'
 import { API_MODELS } from '../src/lib/api-models'
 import { productApiHref } from '../src/lib/product-api'
-import { PORT_BY_SLUG } from '../src/lib/ports'
+import { CONCEPT_DESCRIPTION, PORT_BY_SLUG } from '../src/lib/ports'
 import { resolvePortCode, remarkPortCode } from '../src/plugins/remark-port-code.mjs'
 import { rehypeApiLinks } from '../src/plugins/rehype-api-links'
 import { remarkDocumenterHeadings } from '../src/plugins/remark-documenter-headings'
@@ -50,6 +50,16 @@ describe('prose Markdown links', () => {
     expect(markdown).toContain('<code><a href="https://example.com/native">run-shell</a></code>')
     expect(html).not.toMatch(/<a[^>]*>\s*<code>\s*<a/)
     expect(exampleBytes(markdown)).toEqual(exampleBytes(source))
+  })
+
+  it.each(['go', 'ruby', 'py', 'lua'])('preserves %s example support scope in guide exports', (port) => {
+    for (const product of ['mcp', 'workspace'] as const) {
+      const entry = { id: `ports/${port}/${product}/guides`, body: 'Read the guide.',
+        data: { title: 'Guide', port, product, route: `${product}/guides` } } as CollectionEntry<'docs'>
+      const exported = llmsPage(entry, 'https://libtmux.org', '/en/')
+      if (port === 'go' || port === 'ruby') expect(exported.body).toContain(CONCEPT_DESCRIPTION)
+      else expect(exported.body).not.toContain(CONCEPT_DESCRIPTION)
+    }
   })
 
   it('retains native Documenter heading IDs in headings, row links and collected navigation', async () => {

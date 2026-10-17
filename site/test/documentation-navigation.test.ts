@@ -18,6 +18,15 @@ const menus = (port: typeof PORTS[number], version: string) => Object.fromEntrie
 })) as Record<'core' | DocProduct, SidebarItem[]>
 
 describe('documentation surface navigation', () => {
+  it.each(PORTS)('marks only available non-Python companions as concept examples for $slug', (port) => {
+    const surfaces = buildDocumentationSurfaces(port.slug, 'latest', menus(port, 'latest'))
+    for (const surface of surfaces) {
+      expect(Boolean(surface.concept)).toBe(port.slug !== 'py' && surface.id !== 'core')
+    }
+    if (port.parentLibrary || port.slug === 'lua') expect(surfaces.map((surface) => surface.id)).toEqual(['core'])
+    if (port.slug === 'ruby') expect(surfaces.find((surface) => surface.id === 'workspace')?.concept).toBe(true)
+  })
+
   it('offers the tmux area without inventing a library port or empty prose sections', async () => {
     const surfaces = await getDocumentationSurfaces(undefined, 'latest')
     expect(surfaces.map((surface) => surface.id)).toEqual(['tmux'])

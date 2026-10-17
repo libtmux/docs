@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { PORTS, productAvailable } from '../src/lib/ports.ts'
+import { CONCEPT_DESCRIPTION, PORTS, productAvailable } from '../src/lib/ports.ts'
 import mcpCatalogs from '../src/data/mcp-tools.json' with { type: 'json' }
 import { checkPickerFilters } from './check-picker-filters.mjs'
 
@@ -85,6 +85,8 @@ async function checkNoticeAlignment(page, centered = false) {
 async function checkContextControls(page) {
   // Native view transitions temporarily route hit testing to the root element.
   await page.waitForFunction(() => !document.documentElement.hasAttribute('data-astro-transition'))
+  await page.locator('[data-documentation-context] :is(.doc-picker > summary, [data-context-settings-toggle], [data-context-settings-back]):visible')
+    .first().click({ trial: true })
   const layout = await page.evaluate(() => {
     const bar = document.querySelector('[data-documentation-context]')
     const controls = [...bar.querySelectorAll('.doc-picker > summary, .documentation-context-navigation > button, [data-context-settings-toggle], [data-context-settings-back]')]
@@ -177,7 +179,7 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
   await observeInitialPageLoad(page)
   const desktopPicker = (reader) => reader.locator('[data-documentation-context] [data-surface-picker]')
   const group = (picker, label) => picker.locator('[data-surface-group]').filter({
-    has: picker.page().locator('summary strong', { hasText: new RegExp(`^${label}$`) }),
+    has: picker.page().locator('summary .surface-label', { hasText: new RegExp(`^${label}$`) }),
   })
   const openPicker = async (picker, enhanced = true) => {
     await picker.locator(':scope > summary').click()
@@ -211,13 +213,26 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
       }
       assert(sections.every(({ href }) => href.startsWith(`${new URL(base).pathname}/${slug}/latest/`)),
         `${slug}: sections retain the selected port and version`)
-      const names = await picker.locator('[data-surface-group] > summary strong').allTextContents()
+      const groups = picker.locator('[data-surface-group]')
+      const names = await groups.locator(':scope > summary .surface-label').allTextContents()
       assert.equal(names[0], 'Core Library', `${slug}: the library is the default surface`)
       const appNames = parentLibrary ? [] : [
         ...(productAvailable(port, 'mcp') ? ['MCP'] : []),
         ...(productAvailable(port, 'workspace') ? ['Workspace Manager'] : []),
       ]
       assert.deepEqual(names.slice(1).sort(), appNames, `${slug}: only available applications appear`)
+      assert.equal(await core.locator(':scope > summary .concept-badge').count(), 0, `${slug}: core has no example scope badge`)
+      for (const label of appNames) {
+        const app = group(picker, label)
+        const badge = app.locator(':scope > summary .concept-badge')
+        assert.equal(await badge.count(), slug === 'py' ? 0 : 1, `${slug}: ${label} concept scope`)
+        if (slug !== 'py') {
+          assert.equal(await badge.getAttribute('title'), CONCEPT_DESCRIPTION)
+          await app.locator(':scope > summary').click()
+          assert(await app.locator('.surface-concept-description').isVisible(), `${slug}: scope is readable after expanding`)
+          await app.locator(':scope > summary').click()
+        }
+      }
       const catalog = appNames.includes('MCP') ? mcpCatalogs.ports[slug] : undefined
       const emptySections = catalog ? [
         ...(catalog.registrations.length ? [] : ['Tools']),
@@ -291,15 +306,17 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
               return { top, bottom, height, width }
             }
             return { bar: bounds('[data-documentation-context]'), surface: bounds('[data-surface-picker] > summary'),
-              port: bounds('[data-page-port-switcher] > summary'), header: ['.site-header__search', '.scheme-switch, .scheme-cycle', '.site-header__menu-button'].map(bounds) }
+              context: bounds('.documentation-context-selectors .doc-picker > summary, [data-context-settings-toggle]'), header: ['.site-header__search', '.scheme-switch, .scheme-cycle', '.site-header__menu-button'].map(bounds) }
           })
           assert(layout.bar.height <= 58, `${width}: context remains a single compact row`)
-          assert(Math.abs((layout.surface.top + layout.surface.bottom) - (layout.port.top + layout.port.bottom)) <= 1,
+          assert(Math.abs((layout.surface.top + layout.surface.bottom) - (layout.context.top + layout.context.bottom)) <= 1,
             `${width}: surface and context controls are vertically centered`)
           assert(layout.surface.width >= 60, `${width}: the surface trigger remains usable`)
           assert(layout.header.every((item) => Math.abs(item.height - layout.header[0].height) < .1
             && Math.abs(item.top - layout.header[0].top) < .1), `${width}: Search, scheme and menu have equal heights`)
-          assert.equal((await picker.locator('.surface-current').innerText()).replace(/\s+/g, ' ').trim(), 'Workspace Manager Home')
+          assert.equal((await picker.locator('.surface-current .surface-label').innerText()).trim(), 'Workspace Manager')
+          assert.equal((await picker.locator('.surface-current small').innerText()).trim(), 'Home')
+          assert.equal(await picker.locator('.surface-current .concept-badge').count(), 1)
           await openPicker(picker, javaScriptEnabled)
           if (javaScriptEnabled) {
             const search = picker.locator('[data-surface-search]')
