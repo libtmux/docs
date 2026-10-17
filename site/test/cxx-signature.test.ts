@@ -1,13 +1,16 @@
 import { readFileSync, realpathSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { experimental_AstroContainer } from 'astro/container'
 import { Window, type Element } from 'happy-dom'
 import { SymbolIndex, type ApiModel, type ApiSymbol } from '@libtmux/api-model'
+import { nativeSignatureText } from '../src/lib/api-sections'
 
 const model = JSON.parse(readFileSync(new URL('../src/data/api/cxx.json', import.meta.url), 'utf8')) as ApiModel
 const astroRequire = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
+
+afterEach(() => vi.unstubAllGlobals())
 
 /** Compile the actual signature fragment and its inline components in isolation. */
 async function signatureComponent() {
@@ -22,6 +25,10 @@ async function signatureComponent() {
     for (const [specifier, url] of Object.entries(imports)) code = code.replaceAll(JSON.stringify(specifier), JSON.stringify(url))
     return `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`
   }
+  // The compiled data module uses the same helper transformed by Vitest.
+  vi.stubGlobal('__cxxSignatureHelpers', { nativeSignatureText })
+  const helpers = 'data:text/javascript,export const { nativeSignatureText } = globalThis.__cxxSignatureHelpers'
+  expect((await import(/* @vite-ignore */ helpers)).nativeSignatureText).toBe(nativeSignatureText)
   const name = await compile('../src/components/api/SymbolName.astro', { '../../lib/word-break': new URL('../src/lib/word-break.ts', import.meta.url).href })
   const preview = await compile('../src/components/LinkPreview.astro')
   const keyword = await compile('../src/components/api/ApiKeyword.astro', { '../LinkPreview.astro': preview })
@@ -44,7 +51,7 @@ async function signatureComponent() {
   return (await import(/* @vite-ignore */ await compile('../src/components/api/ApiEntry.astro', {
     './ApiType.astro': type,
     '../../lib/code-layout': new URL('../src/lib/code-layout.ts', import.meta.url).href,
-    '../../lib/api-sections': new URL('../src/lib/api-sections.ts', import.meta.url).href,
+    '../../lib/api-sections': helpers,
   }, wrapper))).default
 }
 
