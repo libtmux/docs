@@ -20,6 +20,57 @@ const layoutFor = async (symbol: ApiSymbol) => {
 }
 
 describe('Rust callable layouts', () => {
+  it('breaks the pinned must-use attribute without changing its literal or member links', async () => {
+    const model = JSON.parse(readFileSync(new URL('../src/data/api/rs.json', import.meta.url), 'utf8')) as ApiModel
+    const symbol = model.symbols.find((entry) => entry.id === 'command.Command.new')!
+    const signature = symbol.signatures[0]!
+    const raw = signature.raw
+    const source = { ...signature.source }
+    const layout = await layoutFor(symbol)
+    expect(layout.failures).toEqual([])
+    expect(layout.text).toBe('#[must_use =\n    "a command has no effect until it is dispatched"\n]\npub fn new(subcommand: impl Into<OsString>) -> Self')
+    expect(signature.raw).toBe(raw)
+    expect(signature.source).toEqual(source)
+    const index = new SymbolIndex(model.symbols, (entry) => `/${entry.id}/`, 'rs')
+    const spans = signatureSpans(layout, index, symbol, signature)
+    expect(spans.map((span) => span.text).join('')).toBe(layout.text)
+    expect(spans.filter((span) => span.declarationName).map((span) => span.text)).toEqual(['new'])
+    expect(spans.filter((span) => span.link?.href.startsWith('#')).map((span) => span.link!.href))
+      .toEqual(['#command.Command.new.parameter.subcommand'])
+    expect(spans.find((span) => span.text.startsWith('#[must_use'))).toMatchObject({ nonReference: true })
+    const markdown = await symbolMarkdownWithLayout({ model, symbol, index })
+    const code = fromMarkdown(markdown).children.find((node) => node.type === 'code')
+    expect(code?.type === 'code' && code.value).toBe(layout.text)
+    const parser = await parserFor('rust')
+    const before = parser.parse(`${raw} {}`)!
+    const after = parser.parse(`${layout.text} {}`)!
+    try {
+      expect(after.rootNode.hasError).toBe(false)
+      expect(after.rootNode.toString()).toBe(before.rootNode.toString())
+    } finally { before.delete(); after.delete(); parser.delete() }
+    const again = { ...signature, raw: layout.text }
+    expect((await apiSignatureLayouts({ ...symbol, signatures: [again] }, 'rs')).get(again)!.text).toBe(layout.text)
+  })
+
+  it.each([
+    '"Target retains all words and  exact spaces here."',
+    'r#"Target retains all words and  exact spaces here."#',
+  ])('keeps string attribute contents opaque while breaking %s', async (literal) => {
+    const symbols = await extractSourceWithSpec(RUST, `pub struct Target;\n#[must_use = ${literal}]\npub fn method(value: Target) -> Target {}`, 'probe.rs', 'probe')
+    const symbol = symbols.find((entry) => entry.name === 'method')!
+    const signature = symbol.signatures[0]!
+    const layout = await layoutFor(symbol)
+    expect(layout.failures).toEqual([])
+    expect(layout.text).toContain(`#[must_use =\n    ${literal}\n]`)
+    const index = new SymbolIndex(symbols, (entry) => `/${entry.id}/`, 'rs')
+    const spans = signatureSpans(layout, index, symbol, signature)
+    expect(spans.filter((span) => span.link?.href === '/probe.Target/')).toHaveLength(2)
+    const attribute = spans.find((span) => span.text.includes(literal))
+    expect(attribute).toMatchObject({ nonReference: true })
+    expect(attribute?.link).toBeUndefined()
+    expect(spans.map((span) => span.text).join('')).toBe(layout.text)
+  })
+
   it('prepares both pinned specialized Slot contexts without displayed bodies or invented punctuation', async () => {
     const model = JSON.parse(readFileSync(new URL('../src/data/api/rs.json', import.meta.url), 'utf8')) as ApiModel
     const symbol = model.symbols.find((entry) => entry.id === 'plan.Slot.pane')!

@@ -1,5 +1,5 @@
 import { loadLanguage, parserFor, type ApiSymbol, type Signature } from '@libtmux/api-model'
-import { doc } from 'prettier'
+import { doc, util } from 'prettier'
 import { CODE_COLUMNS, codeWidthFailures, type CodeLayout, type CodeSyntax } from './code-layout'
 
 type NativeParser = Awaited<ReturnType<typeof parserFor>>
@@ -44,7 +44,7 @@ function declaration(tree: NativeTree, raw: string, context = false) {
 
 /** Whitespace inside comments, literals and token trees remains semantic. */
 function fingerprint(node: NativeNode): unknown {
-  if (comments.has(node.type) || literals.has(node.type) || !node.childCount) return [node.type, node.text]
+  if (comments.has(node.type) || (literals.has(node.type) && node.type !== 'attribute_item') || !node.childCount) return [node.type, node.text]
   let offset = 0
   const parts = children(node).map((child) => {
     const gap = node.text.slice(offset, child.startIndex - node.startIndex).replace(/\s/g, '')
@@ -70,6 +70,17 @@ function printHeader(parts: NativeNode[], source: string): string {
       inside.at(-1)?.type === 'line_comment' ? hardline : softline, nodes.at(-1)!.text])
   }
   const print = (node: NativeNode): Doc => {
+    if (node.type === 'attribute_item' && !/[\r\n\t]/.test(node.text)) {
+      const attribute = children(node, true).find((child) => child.type === 'attribute')
+      const value = attribute?.childForFieldName('value')
+      if (attribute && value && children(attribute).length === 3 &&
+          ['string_literal', 'raw_string_literal'].includes(value.type) &&
+          util.getStringWidth(node.text) > CODE_COLUMNS.api &&
+          util.getStringWidth(value.text) <= CODE_COLUMNS.api - 4) {
+        return group([source.slice(node.startIndex, value.startIndex).trimEnd(),
+          indent([line, value.text]), softline, source.slice(value.endIndex, node.endIndex).trimStart()])
+      }
+    }
     if (comments.has(node.type) || literals.has(node.type) || node.type.endsWith('_pattern') || !node.childCount) return node.text
     if (lists.has(node.type)) return printList(node)
     if (node.type === 'where_clause') return ['where', indent([hardline, group(sequence(children(node).slice(1), true))])]

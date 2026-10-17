@@ -131,6 +131,7 @@ const section = (sectionPath.split('/').filter(Boolean)[0] ?? 'home').toLowerCas
 
 const routePort = portSlug ?? (process.env.LIBTMUX_DOCS_PORT || undefined) ?? (pagePath.startsWith('reference/') ? pagePath.split('/')[1] : undefined)
 const navPort = routePort ? PORT_BY_SLUG[routePort]?.slug : undefined
+const tmux = !portSlug && !navPort && /^tmux(?:\/|$)/.test(pagePath)
 const brand = pageBrand(navPort, pagePath)
 let portDefaults: Record<string, string> = {}
 try {
@@ -235,7 +236,7 @@ const homeBrands = homeLauncher
     {/* Under the navigation bars and inside the same `bare` guard: a page without the
         top bar is an embedded or vendored one, and a notice about this site's
         stability has no business appearing there. */}
-    {!bare && <PrereleaseNotice centered={!navPort && !pagePath} />}
+    {!bare && !tmux && <PrereleaseNotice centered={!navPort && !pagePath} />}
     <!-- `data-pagefind-body` scopes the index to the page's own content.
          Without it Pagefind indexed the header and footer on all 1,066
          pages, so every nav label outranked the prose that mentioned it
