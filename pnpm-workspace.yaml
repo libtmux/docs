@@ -11,7 +11,7 @@ catalog:
   # 0.26/0.27 reject them — 0.27 by throwing a bare Error from deep inside its
   # WASM loader, which reads like a corrupt file rather than a version skew.
   web-tree-sitter: 0.25.10
-  oxlint-tsgolint: ^7.0.2003
+  oxlint-tsgolint: ^7.0.2004
   tailwindcss: ^4.3.3
   typescript: ^6.0.3
   vitest: ^5.0.3
