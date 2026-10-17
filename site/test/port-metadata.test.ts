@@ -251,7 +251,7 @@ describe('port destinations', () => {
     vi.stubEnv('LIBTMUX_DOCS_PORT_ROOT', '/pr-42/en')
     vi.stubEnv('LIBTMUX_DOCS_LOCALES_ROOT', '/pr-42')
     vi.resetModules()
-    const { PORTS: ports, portDestinations: destinations, portHomeUrl } = await import('../src/lib/ports')
+    const { PORTS: ports, portDestinations: destinations, portHomeUrl, portPickers: pickers } = await import('../src/lib/ports')
     // The same environment prefixes this site's own routes, so the check can fail.
     expect(portHomeUrl(ports[0]!, 'latest')).toMatch(/^\/pr-42\/en\//)
     for (const port of ports) {
@@ -267,18 +267,26 @@ describe('port destinations', () => {
           }
         }
       }
+      for (const { rows } of pickers(port)) {
+        for (const { url } of rows) {
+          const { protocol, hostname, pathname } = new URL(url)
+          expect([protocol, hostname.endsWith('libtmux.org')], url).toEqual(['https:', false])
+          expect(pathname, url).not.toMatch(/^\/(?:pr-\d+\/)?(?:(?:en|ja)\/|pr-\d+\/)/)
+        }
+      }
     }
   })
 
   it('loads and resolves under bare Node, which build-site.sh uses', () => {
     const module = new URL('../src/lib/ports.ts', import.meta.url).href
-    const script = `const { PORT_BY_SLUG, portDestinations } = await import(${JSON.stringify(module)}); `
-      + 'console.log(JSON.stringify(portDestinations({ port: PORT_BY_SLUG.go })))'
+    const script = `const { PORT_BY_SLUG, portDestinations, portPickers } = await import(${JSON.stringify(module)}); `
+      + 'console.log(JSON.stringify({ ...portDestinations({ port: PORT_BY_SLUG.go }), pickers: portPickers(PORT_BY_SLUG.rs).map((entry) => entry.kind) }))'
     const output = execFileSync(process.execPath, ['--input-type=module', '-e', script], { encoding: 'utf8', cwd: fileURLToPath(new URL('..', import.meta.url)) })
     expect(JSON.parse(output)).toMatchObject({
       source: { url: 'https://github.com/libtmux/libtmux-go' },
       registry: { name: 'pkg.go.dev' },
     })
     expect(JSON.parse(output)).not.toHaveProperty('ecosystem')
+    expect(JSON.parse(output).pickers).toEqual(['github', 'packages', 'docs'])
   })
 })
