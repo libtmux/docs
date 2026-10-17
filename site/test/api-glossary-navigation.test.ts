@@ -284,7 +284,7 @@ function pathFor(product: 'mcp' | undefined) {
 }
 
 it.each(contentsCases([390, 1023, 1280, 1440]))('retains contents handoff controls at $width, product=$product, JS=$javascript', checkContentsHandoff)
-it.fails.each(contentsCases([1024, 1036, 1279]))('bridges contents handoff at $width, product=$product, JS=$javascript', checkContentsHandoff)
+it.each(contentsCases([1024, 1036, 1279]))('bridges contents handoff at $width, product=$product, JS=$javascript', checkContentsHandoff)
 
 function hydrateDrawers(win: Window) {
   for (const name of ['layouts/DocsLayout.astro', 'components/MobileToC.astro']) {
@@ -303,7 +303,7 @@ function drawerState(win: Window, open: boolean) {
   expect(doc.body.style.overflow).toBe(open ? 'hidden' : '')
 }
 
-it.fails('keeps open contents through the sidebar handoff and cleans up at its desktop handoff', async () => {
+it('keeps open contents through the sidebar handoff and cleans up at its desktop handoff', async () => {
   const win = await contentsPage('mcp', 1023)
   hydrateDrawers(win)
   win.document.getElementById('mobile-toc-toggle')!.click()
