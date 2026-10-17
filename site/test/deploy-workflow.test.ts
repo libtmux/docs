@@ -528,7 +528,9 @@ describe('shell publish', () => {
   // skip-unchanged proves unchanged is not uploaded, so a new header reaches
   // it only because an object older than that date is always re-uploaded.
   // Change a header and this fails until the date moves with it.
-  const policy = { since: '2026-09-27', cacheControl: ['public, max-age=0, s-maxage=300'] }
+  const policy = { since: '2026-10-12', cacheControl: [
+    'public, max-age=31536000, immutable', 'public, max-age=0, s-maxage=300',
+  ] }
 
   it('re-uploads every object written before the current header policy', () => {
     const headers = [...new Set([...publishRoot.matchAll(/--cache-control "([^"]+)"/g)].map((match) => match[1]))]

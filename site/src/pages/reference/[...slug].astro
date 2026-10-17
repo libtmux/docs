@@ -1,10 +1,10 @@
 ---
 import type { ApiModel, ApiSymbol } from '@libtmux/api-model'
-import { symbolsForProduct } from '@libtmux/api-model'
 import ApiReference from '../../components/api/ApiReference.astro'
 import { API_MODELS, pageSlug } from '../../lib/api-models'
 import { DEFAULT_LOCALE } from '../../i18n/locales'
 import { buildLocale } from '../../i18n/resolve'
+import { coreApiSymbols } from '../../lib/product-api'
 
 export async function getStaticPaths() {
   // The default locale only. The reference is not translated — a
@@ -41,12 +41,7 @@ export async function getStaticPaths() {
   //
   // `slug` comes from the model rather than from `pageSlug` because it has to
   // be injective; see its comment in model.ts.
-  const productIds = new Set([
-    ...symbolsForProduct(model, 'mcp'),
-    ...symbolsForProduct(model, 'workspace'),
-  ].map((symbol) => symbol.id))
-  for (const owner of model.symbols) {
-    if (productIds.has(owner.id)) continue
+  for (const owner of coreApiSymbols(model)) {
     paths.push({
       params: { slug: owner.slug ?? pageSlug(owner.publicId ?? owner.id) },
       props: { model, owner },

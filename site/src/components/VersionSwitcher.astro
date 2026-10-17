@@ -54,10 +54,19 @@ const currentHref = Astro.url.pathname.replace(/\/404\/?$/, '/404.html') + Astro
   // continues to offer releases published after its own build.
   class LibtmuxVersionSwitcher extends HTMLElement {
     private controller?: AbortController
-    async connectedCallback() {
+    connectedCallback() {
       this.controller?.abort()
       this.controller = new AbortController()
       const { signal } = this.controller
+      const picker = this.querySelector<HTMLDetailsElement>('details')
+      let requested = false
+      picker?.addEventListener('toggle', () => {
+        if (!picker.open || requested) return
+        requested = true
+        void this.refresh(signal)
+      }, { signal })
+    }
+    private async refresh(signal: AbortSignal) {
       const port = this.dataset.port
       const current = this.dataset.current ?? ''
       const root = (this.dataset.root || '/').replace(/\/+$/, '')

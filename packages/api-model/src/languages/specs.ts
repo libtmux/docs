@@ -150,6 +150,42 @@ function rustDocHidden(node: Node): boolean {
   return false
 }
 
+/** Outer attributes are siblings; doc comments remain in the prose projection. */
+function rustHeader(node: Node): string {
+  const body = node.childForFieldName('body')
+  const kind = ['function_item', 'function_signature_item'].includes(node.type) ? 'callable header' : 'enclosing declaration'
+  if (node.children.some((child) => child && child.id !== body?.id && (child.hasError || child.isMissing))) {
+    throw new Error(`Invalid Rust ${kind} grammar at line ${node.startPosition.row + 1}`)
+  }
+  const prefix: Node[] = []
+  for (let previous = node.previousNamedSibling; previous; previous = previous.previousNamedSibling) {
+    if (previous.type === 'attribute_item') prefix.unshift(previous)
+    else if (['line_comment', 'block_comment'].includes(previous.type)) {
+      if (!/^\/\/[/!]|^\/\*[*!]/.test(previous.text)) prefix.unshift(previous)
+    } else break
+  }
+  while (prefix.length && prefix[0]!.type !== 'attribute_item') prefix.shift()
+  if (prefix.some((part) => part.hasError)) throw new Error(`Invalid Rust ${kind} attribute grammar at line ${node.startPosition.row + 1}`)
+  const header = node.text.slice(0, body ? body.startIndex - node.startIndex : undefined).trimEnd()
+  return [...prefix.map((part) => part.text), header].join('\n')
+}
+
+/** Bounds and defaults mention types; only the declaration's name binds one. */
+function rustTypeParameterNames(node: Node): string[] | undefined {
+  const parameters = node.childForFieldName('type_parameters')
+  const nameOf = (parameter: Node): string | undefined => {
+    if (parameter.type === 'type_identifier' || parameter.type === 'lifetime') return parameter.text
+    if (parameter.type === 'const_parameter') return parameter.childForFieldName('name')?.text
+    if (parameter.type === 'constrained_type_parameter') return parameter.childForFieldName('left')?.text
+    const name = parameter.type === 'optional_type_parameter' ? parameter.childForFieldName('name') : null
+    return name ? nameOf(name) : undefined
+  }
+  return parameters?.namedChildren.flatMap((parameter) => {
+    const name = parameter && nameOf(parameter)
+    return name ? [name] : []
+  })
+}
+
 export const RUST: LanguageSpec = {
   grammar: 'rust',
   // `class` is only ever `impl_item` here: Rust has no other construct that
@@ -212,6 +248,15 @@ export const RUST: LanguageSpec = {
       .trim(),
   // Receivers have no name field: splitting `mut self` would name it `mut`.
   parameter: (node) => node.type === 'self_parameter' ? { name: node.text } : undefined,
+  rawSignature: (node) => ['function_item', 'function_signature_item'].includes(node.type)
+    ? rustHeader(node) : undefined,
+  typeParameterNames: (node) => ['function_item', 'function_signature_item'].includes(node.type)
+    ? rustTypeParameterNames(node) : undefined,
+  enclosingDeclaration: (node) => {
+    const owner = node.parent?.parent
+    const raw = owner && ['impl_item', 'trait_item'].includes(owner.type) ? rustHeader(owner) : undefined
+    return owner && raw ? { raw, typeParamNames: rustTypeParameterNames(owner) } : undefined
+  },
   // Trait methods and enum variants inherit their owner's visibility; the
   // walker rejects private owners before visiting their members. Impl blocks
   // have no visibility keyword, but inherent methods still require `pub`.
@@ -226,10 +271,37 @@ export const RUST: LanguageSpec = {
     return node.children.some((c) => c?.type === 'visibility_modifier' && c.text.trim() === 'pub')
   },
   fields: { returns: 'return_type' },
+  enumVariant: (node) => {
+    if (node.type !== 'enum_variant' || node.hasError) return undefined
+    const owner = node.parent?.parent
+    if (rustDocHidden(node) || (owner && rustDocHidden(owner))) return undefined
+    const body = node.childForFieldName('body')
+    // Conditional and attributed fields require native configuration information.
+    // Keep the existing case entry rather than publish a guessed field set.
+    if (body?.descendantsOfType('attribute_item').length) return undefined
+    const shape = body?.type === 'field_declaration_list' ? 'struct'
+      : body?.type === 'ordered_field_declaration_list' ? 'tuple' : 'unit'
+    const nodes = shape === 'struct' ? body!.namedChildren.filter((field) => field?.type === 'field_declaration')
+      : shape === 'tuple' ? body!.childrenForFieldName('type') : []
+    const fields = nodes.flatMap((field, position) => {
+      if (!field) return []
+      const name = shape === 'tuple' ? String(position) : field.childForFieldName('name')?.text
+      const type = shape === 'tuple' ? field.text : field.childForFieldName('type')?.text
+      return name && type ? [{ name, type, node: field }] : []
+    })
+    if (fields.length !== nodes.length) return undefined
+    const name = node.childForFieldName('name')!.text
+    const value = node.childForFieldName('value')?.text
+    const delimiters = shape === 'struct' ? [' {', '}'] : shape === 'tuple' ? ['(', ')'] : ['', '']
+    const payload = fields.map((field) => `${shape === 'struct' ? `${field.name}: ` : ''}${field.type},`)
+    const raw = `${name}${delimiters[0]}${payload.length ? `\n    ${payload.join('\n    ')}\n` : ''}${delimiters[1]}${value === undefined ? '' : ` = ${value}`}`
+    return { shape, raw, fields, value }
+  },
 }
 
 export const GO: LanguageSpec = {
   grammar: 'go',
+  docDialect: 'godoc',
   containers: { type_spec: 'struct' },
   members: {
     function_declaration: 'function',
@@ -242,8 +314,27 @@ export const GO: LanguageSpec = {
   commentTypes: ['comment'],
   // godoc has no marker: a `//` comment directly above a declaration is the
   // documentation. `//go:` directives are build metadata and are not.
-  stripDoc: (raw) =>
-    raw.startsWith('//') && !raw.startsWith('//go:') ? raw.replace(/^\/\/\s?/, '') : undefined,
+  stripDoc: (raw) => raw.startsWith('//') && !raw.startsWith('//go:')
+    ? raw.replace(/^\/\/ ?/, '')
+    : raw.startsWith('/*') ? raw.slice(2, -2) : undefined,
+  rawSignature: (node) => {
+    if (!['function_declaration', 'method_declaration'].includes(node.type)) return undefined
+    const body = node.childForFieldName('body')
+    return node.text.slice(0, body ? body.startIndex - node.startIndex : undefined).trimEnd()
+  },
+  parameter: (node) => {
+    if (!['parameter_declaration', 'variadic_parameter_declaration'].includes(node.type)) return undefined
+    const names = node.childrenForFieldName('name').flatMap((name) => name ? [name.text] : [])
+    const type = node.childForFieldName('type')?.text
+    return (names.length ? names : ['']).map((name) => ({
+      name, type,
+      ...(node.type === 'variadic_parameter_declaration' ? { variadic: 'positional' as const } : {}),
+    }))
+  },
+  receiver: (node) => {
+    const receiver = node.childForFieldName('receiver')?.namedChildren.find((child) => child?.type === 'parameter_declaration')
+    return receiver ? { name: receiver.childForFieldName('name')?.text ?? '', type: receiver.childForFieldName('type')?.text } : undefined
+  },
   // `func (w Window) Panes()` — the owning type is in the `receiver` field,
   // not in any enclosing node. Pointers and aliases both appear; the type name
   // is what matters, so `*Window` and `Window` resolve to the same owner.
@@ -275,14 +366,54 @@ export const GO: LanguageSpec = {
 export const JAVA: LanguageSpec = {
   grammar: 'java',
   docDialect: 'javadoc',
+  typeParameterNames: (node) => node.childForFieldName('type_parameters')?.namedChildren.flatMap((parameter) => {
+    const name = parameter?.type === 'type_parameter'
+      ? parameter.namedChildren.find((child) => child?.type === 'type_identifier')?.text : undefined
+    return name ? [name] : []
+  }),
+  declarationModifiers: (node) => ['annotation_type_declaration', 'annotation_type_element_declaration'].includes(node.type) ? ['annotation'] : [],
+  typeScopeBoundary: (node) => {
+    if (!['class_declaration', 'interface_declaration', 'annotation_type_declaration', 'enum_declaration',
+      'record_declaration', 'field_declaration', 'enum_constant'].includes(node.type)) return undefined
+    if (node.children.find((child) => child?.type === 'modifiers')?.children.some((child) => child?.type === 'static' && !child.isNamed)) return true
+    if (node.type === 'enum_constant') return true
+    // Member interfaces, annotations, enums and records are implicitly static.
+    return ['class_body', 'interface_body', 'annotation_type_body', 'enum_body_declarations'].includes(node.parent?.type ?? '') &&
+      (['interface_declaration', 'annotation_type_declaration', 'enum_declaration', 'record_declaration'].includes(node.type) ||
+        (['class_declaration', 'field_declaration'].includes(node.type) && ['interface_body', 'annotation_type_body'].includes(node.parent!.type)))
+  },
+  signatureTypeScopeBoundary: (node) => {
+    if (['constructor_declaration', 'annotation_type_element_declaration'].includes(node.type)) return false
+    return node.type === 'method_declaration'
+      ? Boolean(node.children.find((child) => child?.type === 'modifiers')?.children.some((child) => child?.type === 'static' && !child.isNamed))
+      : undefined
+  },
+  parameter: (node) => {
+    // The pinned grammar parses annotated receivers as formal parameters.
+    if (node.type === 'receiver_parameter' ||
+      (node.type === 'formal_parameter' && node.childForFieldName('name')?.text === 'this')) return []
+    if (node.type !== 'spread_parameter') return undefined
+    const name = node.namedChildren.find((child) => child?.type === 'variable_declarator')?.childForFieldName('name')?.text
+    const type = node.namedChildren.find((child) => child &&
+      !['modifiers', 'variable_declarator'].includes(child.type) && !JAVA.commentTypes.includes(child.type))?.text
+    return name && type ? { name, type: node.parent?.parent?.type === 'record_declaration' ? `${type}[]` : type, variadic: 'positional' } : undefined
+  },
+  recordAccessors: (node) => node.type === 'record_declaration',
+  rawSignature: (node) => {
+    if (!['record_declaration', 'method_declaration', 'constructor_declaration', 'annotation_type_declaration', 'annotation_type_element_declaration'].includes(node.type)) return undefined
+    const body = node.childForFieldName('body')
+    return node.text.slice(0, body ? body.startIndex - node.startIndex : undefined).trimEnd()
+  },
   containers: {
     class_declaration: 'class',
     interface_declaration: 'interface',
+    annotation_type_declaration: 'interface',
     enum_declaration: 'enum',
-    record_declaration: 'struct',
+    record_declaration: 'class',
   },
   members: {
     method_declaration: 'method',
+    annotation_type_element_declaration: 'method',
     constructor_declaration: 'method',
     field_declaration: 'attribute',
     enum_constant: 'constant',
@@ -313,12 +444,18 @@ export const CSHARP: LanguageSpec = {
   docDialect: 'xml',
   positionalProperties: (node) => ['record_declaration', 'record_struct_declaration'].includes(node.type)
     && Boolean(node.childForFieldName('parameters')),
+  rawSignature: (node) => {
+    if (!['record_declaration', 'record_struct_declaration'].includes(node.type)) return undefined
+    const body = node.childForFieldName('body')
+    return node.text.slice(0, body?.type === 'declaration_list' ? body.startIndex - node.startIndex : undefined).trimEnd()
+  },
   containers: {
     class_declaration: 'class',
     interface_declaration: 'interface',
     struct_declaration: 'struct',
     enum_declaration: 'enum',
-    record_declaration: 'struct',
+    // A bare record is a reference type; only `record struct` is a value type.
+    record_declaration: 'class',
     // `readonly record struct PaneId` is a node of its own. Missing here, its
     // constructor surfaced as a free function named `PaneId` and its members
     // as free symbols, and `PaneId`, `TmuxVersion` and eight more had no page.

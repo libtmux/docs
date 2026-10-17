@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro'
 import { API_MODELS } from '../lib/api-models'
 import { productApiHref } from '../lib/product-api'
-import { symbolPreview, glossaryPreview, type LinkPreview } from '../lib/link-preview'
+import { symbolPreview, glossaryPreview, highlightedPreview, type LinkPreview } from '../lib/link-preview'
 import { PORT_BY_SLUG, referenceUrl } from '../lib/ports'
 import { symbolsForProduct } from '@libtmux/api-model'
 import { buildTarget } from '../lib/versions'
@@ -40,6 +40,6 @@ export function getStaticPaths() {
   }
   return paths
 }
-export const GET: APIRoute = ({ props }) => new Response(JSON.stringify(props.preview), {
+export const GET: APIRoute = async ({ props }) => new Response(JSON.stringify(await highlightedPreview(props.preview)), {
   headers: { 'Content-Type': 'application/json; charset=utf-8' },
 })

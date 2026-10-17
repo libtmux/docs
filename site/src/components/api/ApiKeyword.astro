@@ -49,7 +49,7 @@ const id = `api-keyword-help-${locals.apiKeywordSequence = (locals.apiKeywordSeq
   }, true)
   const placeOpen = () => document.querySelectorAll<HTMLElement>('.api-keyword-help:popover-open').forEach(place)
   window.addEventListener('resize', placeOpen)
-  window.addEventListener('scroll', placeOpen, { passive: true })
+  window.addEventListener('scroll', placeOpen, { passive: true, capture: true })
   const triggerFor = (target: EventTarget | null) => target instanceof Element
     ? target.closest<HTMLButtonElement>('.api-keyword-trigger') : null
   const show = (trigger: HTMLButtonElement | null, previous?: EventTarget | null) => {

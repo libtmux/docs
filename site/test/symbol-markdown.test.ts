@@ -4,7 +4,7 @@ import { fromMarkdown } from 'mdast-util-from-markdown'
 import { extractJulia, extractPowerShell, parameterId, SymbolIndex, type ApiSymbol } from '@libtmux/api-model'
 import { API_MODELS, OWNER_KINDS } from '../src/lib/api-models'
 import { membersByType } from '../src/lib/api-tree'
-import { PORTS, PORT_BY_SLUG, referenceUrl } from '../src/lib/ports'
+import { CONCEPT_DESCRIPTION, PORTS, PORT_BY_SLUG, referenceUrl } from '../src/lib/ports'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { nativeSignatureText } from '../src/lib/api-sections'
 
@@ -19,7 +19,68 @@ function inlineCodes(text: string): string[] {
   return values
 }
 
+it('exports the linked WhereOf generic without losing type syntax or authored content', () => {
+  const model = API_MODELS.ts
+  const owner = model.symbols.find((entry) => entry.id === 'selection.WhereOf')!
+  const index = new SymbolIndex(model.symbols, (entry) => `/pr-42/en/ts/v1/reference/${entry.slug}/`, 'ts')
+  const markdown = symbolMarkdown({ model, symbol: owner, index })
+  expect(markdown).toContain('[`Selection`](/pr-42/en/ts/v1/reference/selection-selection/)`<`[`Pane`](/pr-42/en/ts/v1/reference/pane-pane/)`>`')
+  expect(inlineCodes(markdown).join('')).toContain('Selection<Pane>')
+  const authored = '[`Selection<Pane>`](../guide/?label=(pane)#example)'
+  const fenced = '```ts\nconst panes: Selection<Pane> = snapshot.panes;\n```'
+  const literal = '``Selection<Pane>``'
+  const symbol = { ...owner, doc: { summary: '', body: [authored, literal, '`Selection<Missing, "Pane">`', fenced].join('\n\n') } }
+  const exported = symbolMarkdown({ model, symbol, index })
+  expect(exported).toContain(authored)
+  expect(exported).toContain(fenced)
+  expect(exported).toContain(literal)
+  expect(exported).toContain('[`Selection`](/pr-42/en/ts/v1/reference/selection-selection/)`<Missing, "Pane">`')
+  expect(exported).not.toContain('/reference/pane-pane/')
+})
+
 describe('API Markdown content parity', () => {
+  it('links native tmux command mentions in every port without editing examples', () => {
+    for (const port of PORTS) {
+      const original = 'Call tmux resize-pane. Use `$ tmux run-shell` or `display-message`. Keep tmux has many panes.'
+      const symbol: ApiSymbol = {
+        id: 'commandExample', name: 'commandExample', kind: 'function', modifiers: [], signatures: [],
+        source: { file: 'example' }, doc: { summary: original, body: 'Keep <a href="https://example.com/authored">run-shell</a>.', examples: [{ lang: 'sh', code: 'tmux run-shell true\n' }] },
+      }
+      const text = symbolMarkdown({ model: { ...API_MODELS[port.slug], symbols: [symbol] }, symbol })
+      expect(text, port.slug).toContain('[resize-pane](/tmux/latest/manual/resize-pane/)')
+      expect(text, port.slug).toMatch(/\[`(?:\$ tmux )?run-shell`\]\(\/tmux\/latest\/manual\/run-shell\/\)/)
+      expect(text, port.slug).toContain('[`display-message`](/tmux/latest/manual/display-message/)')
+      expect(text, port.slug).toContain('Keep tmux has many panes.')
+      expect(text, port.slug).toContain('Keep <a href="https://example.com/authored">run-shell</a>.')
+      expect(text, port.slug).toContain('```sh\ntmux run-shell true\n```')
+    }
+  })
+
+  it('exports the Scala Using.resource callee link while preserving runnable code and authored links', () => {
+    const model = API_MODELS.scala
+    const server = model.symbols.find((symbol) => symbol.id === 'io.github.libtmux.scaladsl.Server')!
+    const target = 'https://www.scala-lang.org/api/3.9.0/scala/util/Using$.html#resource-fffffb81'
+    const markdown = symbolMarkdown({ model, symbol: server })
+    expect(markdown).toContain('[`Using.resource`](' + target + ')`(server) { ... }`')
+    expect(markdown).toContain('[`close()`](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/AutoCloseable.html#close())')
+    const source = '[`Using.resource`](https://example.com/authored)\n\n```scala\nUsing.resource(server) { ... }\n```'
+    const symbol = { ...server, doc: { summary: source } }
+    expect(symbolMarkdown({ model: { ...model, symbols: [symbol] }, symbol })).toContain(source)
+  })
+
+  it.each(['mcp', 'workspace'])('retains concept scope in Go %s declaration copies', (product) => {
+    const model = API_MODELS.go
+    const symbol = model.symbols.find((entry) => entry.product === product)!
+    expect(symbolMarkdown({ model, symbol })).toContain(CONCEPT_DESCRIPTION)
+  })
+
+  it('keeps core and Python declaration copies outside concept scope', () => {
+    const core = API_MODELS.go.symbols.find((entry) => entry.id === 'tmux.Server')!
+    expect(symbolMarkdown({ model: API_MODELS.go, symbol: core })).not.toContain(CONCEPT_DESCRIPTION)
+    const python = API_MODELS.py.symbols.find((entry) => entry.product === 'mcp')!
+    expect(symbolMarkdown({ model: API_MODELS.py, symbol: python })).not.toContain(CONCEPT_DESCRIPTION)
+  })
+
   it('exports cross-port native representations and acquisition differences', () => {
     const model = API_MODELS.cxx
     const symbol = model.symbols.find((symbol) => symbol.id === 'libtmux::Server')!

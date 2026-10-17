@@ -13,11 +13,12 @@ import ApiDoc from './ApiDoc.astro'
 import ApiProse from './ApiProse.astro'
 import ApiType from './ApiType.astro'
 import type { AsideType } from '../../lib/aside'
-import { apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMethodDetails, anonymousDeclarationLabel, nativeSignatureText, parameterBindingText, usesNativeSignatures } from '../../lib/api-sections'
+import { apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMethodDetails, anonymousDeclarationLabel, nativeSignatureText as unformattedNativeSignatureText, parameterBindingText, usesNativeSignatures } from '../../lib/api-sections'
 import { tmuxCommandsFor, tmuxManualUrl } from '../../lib/tmux-manual-data'
 import ApiFieldOverloads from './ApiFieldOverloads.astro'
 import ApiCommandParameters from './ApiCommandParameters.astro'
 import ApiSignatureParameters from './ApiSignatureParameters.astro'
+import { apiSignatureLayouts } from '../../lib/code-layout'
 
 /**
  * One documented symbol, in the shape gp-sphinx's stylesheet expects.
@@ -77,6 +78,9 @@ const anchor = symbol.publicId ?? symbol.id
 const kind = symbol.kind
 const nativeEntries = language === 'c' ? symbol.signatures.filter((signature) => signature.raw) : symbol.signatures
 const nativeSignatures = usesNativeSignatures(symbol, language)
+const signatureLayouts = await apiSignatureLayouts(symbol, language)
+const nativeSignatureText: typeof unformattedNativeSignatureText = (entry, signature, port) =>
+  signatureLayouts.get(signature)?.text ?? unformattedNativeSignatureText(entry, signature, port)
 
 /**
  * The Sphinx domain this port's symbols belong to.
@@ -264,7 +268,7 @@ const hasBody =
   Boolean(symbol.inheritedFrom) ||
   Boolean(symbol.exportedFrom) ||
   Boolean(symbol.publicOwner && symbol.publicOwner !== symbol.id) ||
-  Boolean(symbol.doc?.summary) ||
+  Boolean(showSummary && symbol.doc?.summary) ||
   Boolean(symbol.doc?.body) ||
   Boolean(symbol.doc?.deprecated) ||
   Boolean(symbol.command) ||
@@ -303,10 +307,11 @@ const hasBody =
             <span class="api-native-signature"><span class="api-declaration-name">{symbol.name}</span> = <ApiType type={symbol.type} index={index} context={symbol} /></span>
           )}
           {nativeSignatures ? (nativeEntries.length ? nativeEntries.map((sig) => (
-            <span class:list={['api-native-signature', port === 'fsharp' && 'api-native-signature--fsharp']}>
-              {sig.label && sig.label !== '__AllParameterSets' && <span class="api-native-signature-label">{sig.label}{sig.isDefault ? ' (default)' : ''}: </span>}
-              <ApiType type={nativeSignatureText(symbol, sig, language)} index={index} context={symbol} signature={sig} nameHref={nameHref} />
-            </span>
+            <span class:list={['api-native-signature', port === 'fsharp' && 'api-native-signature--fsharp', signatureLayouts.has(sig) && 'api-native-signature--formatted']}
+              tabindex={signatureLayouts.has(sig) ? '0' : undefined}
+              role={signatureLayouts.has(sig) ? 'region' : undefined}
+              aria-label={signatureLayouts.has(sig) ? `Signature for ${symbol.name}${symbol.signatures.length > 1 ? `, overload ${symbol.signatures.indexOf(sig) + 1} of ${symbol.signatures.length}` : ''}` : undefined}
+              data-code-columns={signatureLayouts.get(sig)?.limit} data-code-width-status={signatureLayouts.has(sig) ? (signatureLayouts.get(sig)!.failures.length ? 'unresolved' : 'fits') : undefined} data-code-width-failures={signatureLayouts.get(sig)?.failures.length ? JSON.stringify(signatureLayouts.get(sig)!.failures) : undefined}>{sig.label && sig.label !== '__AllParameterSets' && <span class="api-native-signature-label">{sig.label}{sig.isDefault ? ' (default)' : ''}: </span>}<ApiType type={nativeSignatureText(symbol, sig, language)} index={index} context={symbol} signature={sig} nameHref={nameHref} layout={signatureLayouts.get(sig)} /></span>
           )) : <span class="api-native-signature">{anonymousDeclarationLabel(symbol)}</span>) : <>
           {keyword && <em class="property"><span class="pre">{keyword}</span> </em>}
           {prename && <span class="sig-prename descclassname"><span class="pre">{prename}</span></span>}<span class="sig-name descname">{nameHref ? <a class="api-signature-name-link pre" href={nameHref}>{symbol.name}</a> : <span class="pre">{symbol.name}</span>}</span>
@@ -349,7 +354,7 @@ const hasBody =
                   <span class="sig-return">
                     <span class="sig-return-icon">{language === 'ts' ? ':' : '→'}</span>{' '}
                     <span class="sig-return-typehint">
-                      <ApiType type={sig.returns} index={index} context={symbol} />
+                      <ApiType type={sig.returns} index={index} context={symbol} signature={sig} />
                     </span>
                   </span>
                 )}
@@ -466,7 +471,7 @@ const hasBody =
           const methodSource = signature.source && sourceUrl?.({ ...symbol, source: signature.source })
           return (
           <section id={id} class="api-method">
-            {symbol.signatures.length > 1 ? <h3 class="api-native-signature"><ApiType type={nativeSignatureText(symbol, signature, language)} index={index} context={symbol} signature={signature} />{methodSource && <a class="api-method-source" href={methodSource} aria-label={`Source for ${label}`}>[source]</a>}<a class="api-heading-link" href={`#${id}`} aria-label="Link to method">#</a></h3>
+            {symbol.signatures.length > 1 ? <h3 class="api-native-signature"><ApiType type={nativeSignatureText(symbol, signature, language)} index={index} context={symbol} signature={signature} layout={signatureLayouts.get(signature)} />{methodSource && <a class="api-method-source" href={methodSource} aria-label={`Source for ${label}`}>[source]</a>}<a class="api-heading-link" href={`#${id}`} aria-label="Link to method">#</a></h3>
               : methodSource && methodSource !== source && <p><a class="api-method-source" href={methodSource} aria-label={`Source for ${label}`}>[source]</a></p>}
             {signature.extension && <p>Available when <code>{signature.extension}</code> is loaded.</p>}
             {signature.doc?.summary && <ApiProse text={signature.doc.summary} index={index} context={symbol} />}
@@ -555,16 +560,19 @@ const hasBody =
                     {params.map((p, i) => (
                       <li id={params.findIndex((entry) => entry.name === p.name) === i ? parameterId(symbol, p.name) : undefined}>
                         <p class:list={[(language === 'julia' || language === 'ts') && 'api-parameter-heading']}>
-                          <strong><a href={`#${encodeURIComponent(parameterId(symbol, p.name))}`}><code>{p.name}</code></a></strong>
-                          {p.optional && '?'}
-                          {(language === 'julia' || language === 'ts') && p.default !== undefined && <>{' = '}<code>{p.default}</code></>}
-                          {p.type && (
-                            <>
-                              {' ('}
-                              <ApiType type={p.type} index={index} context={symbol} />
-                              {') '}
-                            </>
-                          )}
+                          <span class="api-parameter-signature">
+                            <strong><a href={`#${encodeURIComponent(parameterId(symbol, p.name))}`}><code>{p.name}</code></a></strong>
+                            {p.optional && '?'}
+                            {(language === 'julia' || language === 'ts') && p.default !== undefined && <>{' = '}<code>{p.default}</code></>}
+                            {p.type && (
+                              <>
+                                {' ('}
+                                <ApiType type={p.type} index={index} context={symbol} />
+                                {') '}
+                              </>
+                            )}
+                          </span>
+                          <a class="api-heading-link" href={`#${encodeURIComponent(parameterId(symbol, p.name))}`} aria-label={`Link to ${p.name} parameter`} data-pagefind-ignore="all">#</a>
                           {p.doc && !['julia', 'ts'].includes(language ?? '') && <>{' – '}<ApiDoc text={p.doc} index={index} context={symbol} /></>}
                           {p.since && <span class="gp-sphinx-api-param-since">added {p.since}</span>}
                           {p.deprecated && (
@@ -573,7 +581,6 @@ const hasBody =
                             </span>
                           )}
                           <ApiFieldOverloads labels={p.overloads} targets={overloadTargets} />
-                          <a class="api-heading-link" href={`#${encodeURIComponent(parameterId(symbol, p.name))}`} aria-label={`Link to ${p.name} parameter`} data-pagefind-ignore="all">#</a>
                         </p>
                         {p.doc && ['julia', 'ts'].includes(language ?? '') && <ApiProse text={p.doc} index={index} context={symbol} />}
                         {p.binding && <p class="api-parameter-binding"><ApiDoc text={parameterBindingText(p)!} index={index} context={symbol} /></p>}

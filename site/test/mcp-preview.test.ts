@@ -1,6 +1,7 @@
 import { expect, it } from 'vitest'
 import { MCP_REFERENCE, mcpObjects } from '../src/lib/mcp-catalog'
 import { mcpObjectPreview } from '../src/lib/mcp-preview'
+import { highlightedPreview } from '../src/lib/link-preview'
 import { linkPreviewTarget } from '../src/lib/link-preview-browser'
 import { portPageUrl, PORT_BY_SLUG } from '../src/lib/ports'
 
@@ -27,6 +28,18 @@ it('preserves opt-in tool availability without inventing a callable signature', 
   expect(preview.detail).toBe(`Enable with ${object.tool!.enableOption}.`)
   expect(preview.signature).toBeUndefined()
   expect(preview.source).toContain(`/blob/${object.tool!.source.revision}/`)
+})
+
+it('keeps protocol URIs as plain selectable content and does not invent absent signatures', async () => {
+  const [port, resource] = Object.keys(MCP_REFERENCE).flatMap((port) => mcpObjects(port)
+    .filter((entry) => entry.kind === 'resource-template').map((entry) => [port, entry] as const))[0]
+  const preview = await highlightedPreview(mcpObjectPreview(port, 'latest', resource))
+  expect(preview.signature).toBe(resource.item?.uriTemplate)
+  expect(preview.signatureHighlight!.language).toBe('text')
+  expect(preview.signatureHighlight!.lines.flat().map((token) => token.content).join('')).toBe(preview.signature)
+  expect(new Set(preview.signatureHighlight!.lines.flat().map((token) => token.light.color)).size).toBe(1)
+  const empty = { schema: 1 as const, title: 'No signature', description: '', href: '/reference/none/' }
+  expect(await highlightedPreview(empty)).toBe(empty)
 })
 
 it('does not turn protocol indexes or unknown categories into object previews', () => {

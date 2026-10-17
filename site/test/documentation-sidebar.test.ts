@@ -4,7 +4,7 @@ import { initializeDocumentationSidebar } from '../src/components/docs/documenta
 
 let win: Window
 let frames: FrameRequestCallback[]
-let finishFonts: () => void
+let finishAppearanceLayout: () => void
 const scope = '/en/cxx/latest/mcp/reference/'
 const key = (value = scope) => `libtmux:section-nav:${value}`
 
@@ -16,9 +16,9 @@ beforeEach(() => {
   frames = []
   const requestFrame = win.requestAnimationFrame.bind(win)
   vi.spyOn(win, 'requestAnimationFrame').mockImplementation((callback) => { frames.push(callback); return requestFrame(() => {}) })
-  Object.defineProperty(win.document, 'fonts', {
-    value: { ready: new Promise<void>((resolve) => { finishFonts = resolve }) }, configurable: true,
-  })
+  const layouts: (() => void)[] = []
+  Object.assign(win, { __libtmuxAppearance: { layout: (work: () => void) => layouts.push(work) } })
+  finishAppearanceLayout = () => { layouts.splice(0).forEach((work) => work()) }
 })
 afterEach(async () => {
   win.document.dispatchEvent(new win.Event('astro:before-swap'))
@@ -122,7 +122,7 @@ it.each(['wheel', 'pointerdown', 'keydown'])('does not override reader %s after 
   scroll.dispatchEvent(new win.Event(event))
   scroll.scrollTop = 500
   geometry.rowOffset = 1200
-  finishFonts(); await Promise.resolve(); flushFrames()
+  finishAppearanceLayout(); await Promise.resolve(); flushFrames()
   win.dispatchEvent(new win.Event('resize')); flushFrames()
   expect(scroll.scrollTop).toBe(500)
 })
@@ -131,7 +131,7 @@ it('adjusts for delayed font layout before the reader interacts', async () => {
   const { start, scroll, geometry } = mount()
   start()
   geometry.rowOffset = 1200
-  finishFonts(); await Promise.resolve(); flushFrames()
+  finishAppearanceLayout(); await Promise.resolve(); flushFrames()
   expect(scroll.scrollTop).toBe(1015)
 })
 
@@ -205,7 +205,7 @@ it('ignores pending font and resize work after an Astro document swap', async ()
   start()
   win.document.dispatchEvent(new win.Event('astro:before-swap'))
   geometry.rowOffset = 1400
-  finishFonts(); await Promise.resolve(); flushFrames()
+  finishAppearanceLayout(); await Promise.resolve(); flushFrames()
   win.dispatchEvent(new win.Event('resize')); flushFrames()
   expect(scroll.scrollTop).toBe(715)
 })

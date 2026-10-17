@@ -8,12 +8,20 @@
 @import "./gp-sphinx-tokens.css";
 @import "./brand.css";
 @import "./api-kinds.css";
+@import "./api-headings.css";
 @import "./flags.css" layer(components);
 @import "./image-loading.css" layer(components);
 /* Unlayered, like the widgets, so prose margins cannot outrank it. */
 @import "./aside.css";
 @plugin "@tailwindcss/typography";
 @plugin "@libtmux/theme";
+
+/* Body padding supplies the space before leading metadata or section content. */
+dl.py > dd > .gp-sphinx-api-mentions:first-child,
+dl.py > dd > .gp-sphinx-api-description:first-child > :first-child,
+dl.py > dd > .gp-sphinx-api-examples:first-child > :first-child {
+  margin-block-start: 0;
+}
 
 /* Font-face declarations handled by @fontsource imports */
 
@@ -770,7 +778,7 @@ body {
 }
 
 body[data-documentation-layout='prose'] {
-  --site-frame-width: 100rem;
+  --site-frame-width: 108rem;
 }
 
 body[data-documentation-layout='reference'] {

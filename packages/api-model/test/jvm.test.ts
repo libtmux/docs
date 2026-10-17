@@ -1,10 +1,11 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { extractJvm } from '../src/languages/jvm.ts'
 import { tokenizeDoc } from '../src/doc/roles.ts'
 import { SymbolIndex } from '../src/link.ts'
+import { readInventory } from '../src/inventory.ts'
 
 const directories: string[] = []
 afterEach(() => directories.splice(0).forEach((dir) => rmSync(dir, { recursive: true })))
@@ -16,6 +17,52 @@ function fixture(file: string, code: string) {
 }
 
 describe('native JVM declarations', () => {
+  it('resolves opaque Scala members through public upper bounds without exposing the implementation', async () => {
+    const root = fixture('Server.scala', `package example
+import java.lang.AutoCloseable as Releasable
+opaque type Server <: Releasable = JavaServer
+object Server
+opaque type Hidden = JavaServer
+object Hidden
+opaque type Choice <: Releasable | NotCloseable = JavaServer
+object Choice
+opaque type Intersection >: Lower <: Releasable & Marker = JavaServer
+object Intersection
+opaque type GenericChoice <: Releasable[Value] | NotCloseable[Value] = JavaServer
+object GenericChoice
+object Before
+opaque type Before <: Releasable = JavaServer
+opaque type Owned <: Releasable = JavaServer
+object Owned {
+  extension (self: Owned) { def close(): Unit = () }
+}
+class Observation { def close(): Unit = () }
+`)
+    const model = await extractJvm('scala', [root])
+    const server = model.symbols.find((symbol) => symbol.id === 'example.Server')!
+    expect(server.extends).toEqual(['Releasable'])
+    expect(server.modifiers).toContain('opaque')
+    expect(model.symbols.find((symbol) => symbol.id === 'example.Before')).toMatchObject({ extends: ['Releasable'], modifiers: ['opaque'] })
+    const intersection = model.symbols.find((symbol) => symbol.id === 'example.Intersection')!
+    expect(intersection.extends).toEqual(['Releasable', 'Marker'])
+    const index = new SymbolIndex(model.symbols, (symbol) => `#${symbol.id}`, 'scala')
+    index.addInventory('https://docs.oracle.com/en/java/javase/21/docs/api/',
+      readInventory(readFileSync(new URL('../../../site/src/data/inventories/jdk.inv', import.meta.url))).entries, ['scala'])
+    expect(index.resolve('close()', 'any', server)).toMatchObject({
+      href: 'https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/AutoCloseable.html#close()', external: true,
+    })
+    expect(index.resolve('close()', 'any', model.symbols.find((symbol) => symbol.id === 'example.Hidden'))).toBeUndefined()
+    expect(index.resolve('close()', 'any', model.symbols.find((symbol) => symbol.id === 'example.Choice'))).toBeUndefined()
+    expect(index.resolve('close()', 'any', model.symbols.find((symbol) => symbol.id === 'example.GenericChoice'))).toBeUndefined()
+    expect(index.resolve('close()', 'any', intersection)?.href)
+      .toBe('https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/AutoCloseable.html#close()')
+    expect(index.resolve('Observation.close', 'any', server)?.href).toBe('#example.Observation.close')
+    expect(index.resolve('close()', 'any', model.symbols.find((symbol) => symbol.id === 'example.Observation'))?.href)
+      .toBe('#example.Observation.close')
+    expect(index.resolve('close()', 'any', model.symbols.find((symbol) => symbol.id === 'example.Owned'))?.href)
+      .toBe('#example.Owned.close')
+  })
+
   it('links Scala type parameters and extension receivers to their declarations', async () => {
     const root = fixture('Box.scala', `package example
 class Box[F[_], +A <: Other](val value: A) {

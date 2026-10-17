@@ -117,13 +117,10 @@ export async function checkHomeHover(browser, base) {
     await page.clock.fastForward(1200)
     assert.equal((await read()).port, null, 'A touch event cannot start a preview')
 
-    // A real client-side navigation unbinds homepage previews.
-    await page.evaluate(() => {
-      window.__homeNavigationComplete = false
-      document.addEventListener('astro:page-load', () => { window.__homeNavigationComplete = true }, { once: true })
-    })
     await page.locator('.site-header__mark').click()
-    await page.waitForFunction(() => window.__homeNavigationComplete && document.querySelector('[data-home-launcher]'))
+    await page.waitForURL(`${base}/`)
+    await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready'
+      && document.querySelector('[data-home-launcher]'))
     await language.locator('summary').click()
     await language.locator('.tmux-area a').click()
     await page.waitForURL(`${base}/tmux/`)

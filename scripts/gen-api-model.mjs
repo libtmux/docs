@@ -22,6 +22,7 @@ import { attachCompleteGoExamples, readCompleteGoExamples } from '../packages/ap
 import { attachCompleteCSharpExamples } from '../packages/api-model/src/languages/csharp-examples.ts'
 import { attachCompleteFSharpExamples } from '../packages/api-model/src/languages/fsharp-examples.ts'
 import { attachCompleteRustExamples } from '../packages/api-model/src/languages/rust-examples.ts'
+import { attachNativeRustIdStructs } from '../packages/api-model/src/languages/rust-id-structs.ts'
 import { attachCompleteCxxExamples } from '../packages/api-model/src/languages/cxx-examples.ts'
 import { attachCompleteJvmExamples } from '../packages/api-model/src/languages/jvm-examples.ts'
 import { attachCompleteSwiftExamples } from '../packages/api-model/src/languages/swift-examples.ts'
@@ -29,7 +30,7 @@ import { mapLine, parseHunks } from '../packages/api-model/src/source-lines.ts'
 import { extractProject } from '../packages/api-model/src/project.ts'
 import { scopeProductSymbols } from '../packages/api-model/src/product-exports.ts'
 import { inheritProductFromOwners } from '../packages/api-model/src/products.ts'
-import { pageSlug } from '../packages/api-model/src/prose.ts'
+import { pageSlug, recordAccessorSlugOwner } from '../packages/api-model/src/prose.ts'
 import { navSidecar } from '../packages/api-model/src/nav-sidecar.ts'
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -685,9 +686,10 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     }, { repo: cfg.repo, revision })
   }
 
+  const citationSymbols = new Set()
   if (port === 'cxx' || port === 'rs') {
     const attach = port === 'rs' ? attachCompleteRustExamples : attachCompleteCxxExamples
-    attach(model.symbols, (file) => {
+    const readSource = (file) => {
       try {
         return execFileSync('git', ['-C', checkout, 'show', `${revision}:${file}`], {
           encoding: 'utf8', maxBuffer: 1 << 26, stdio: ['ignore', 'pipe', 'ignore'],
@@ -695,7 +697,11 @@ for (const [port, cfg] of Object.entries(PORTS)) {
       } catch {
         return undefined
       }
-    }, { repo: cfg.repo, revision })
+    }
+    if (port === 'rs') {
+      for (const symbol of await attachNativeRustIdStructs(model, readSource, { repo: cfg.repo, revision })) citationSymbols.add(symbol)
+    }
+    attach(model.symbols, readSource, { repo: cfg.repo, revision })
   }
 
   const legacyIds = new Set(model.symbols.map((symbol) => symbol.id))
@@ -786,7 +792,13 @@ for (const [port, cfg] of Object.entries(PORTS)) {
         model.generatedSources[relativeFile] ??= readFileSync(join(unit.checkout, relativeFile), 'utf8')
       }
       symbol.product ??= productOf(relativeFile)
-      symbol.source = { ...symbol.source, file: relativeFile, repo: unit.repo, revision: unit.revision, extractedRevision: unit.head }
+      symbol.source = { ...symbol.source, file: relativeFile, repo: unit.repo, revision: unit.revision,
+        extractedRevision: citationSymbols.has(symbol) ? unit.revision : unit.head }
+      for (const declaration of [...symbol.declarations ?? [], ...symbol.signatures.filter((signature) => signature.source)]) {
+        const file = declaration.source.file
+        declaration.source = { ...declaration.source, file: isAbsolute(file) ? relative(base, file) : file,
+          repo: unit.repo, revision: unit.revision, extractedRevision: unit.head }
+      }
     }
     inheritProductFromOwners(unit.symbols)
     for (const product of ['workspace', 'mcp']) {
@@ -799,7 +811,9 @@ for (const [port, cfg] of Object.entries(PORTS)) {
       } else if (port === 'rs') entries = [join(unit.checkout, `crates/tmux-${product}/src/lib.rs`)]
       scopeProductSymbols(symbols, { port, root: unit.checkout, entries, readSource: (file) => readFileSync(file, 'utf8') })
     }
-    remapLines(unit.checkout, unit.symbols, unit.revision, unit.head)
+    // Native macro projections were read at the citation revision already.
+    remapLines(unit.checkout, unit.symbols.flatMap((symbol) => citationSymbols.has(symbol)
+      ? [] : [symbol, ...(symbol.declarations ?? []), ...symbol.signatures.filter((signature) => signature.source)]), unit.revision, unit.head)
     for (const product of new Set(unit.symbols.map((symbol) => symbol.product))) {
       model.sources.push({
         product, package: unit.package ?? packages[port]?.[product] ?? portBySlug[port].packageName,
@@ -884,7 +898,12 @@ for (const [port, cfg] of Object.entries(PORTS)) {
       group[0].slug = base
       continue
     }
+    const nativeOwner = recordAccessorSlugOwner(model, group)
     for (const s of group) {
+      if (s === nativeOwner) {
+        s.slug = base
+        continue
+      }
       s.slug = `${base}-${shortHash(s.publicId ?? s.id)}`
       disambiguated++
     }

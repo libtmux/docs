@@ -25,10 +25,20 @@ for the published client.
 
 ## Run it without Tokio
 
-Check out the experiment branch:
+Use Rust 1.97.1, the repository's pinned toolchain; the manifests require
+Rust 1.97 or newer. The live example requires Unix and tmux 3.2a or newer on
+`PATH`. The check script also requires Bash.
+
+Clone the repository:
 
 ```console
-$ git clone --branch standard-library-core https://github.com/libtmux/libtmux-rs.git
+$ git clone https://github.com/libtmux/libtmux-rs.git
+```
+
+Check out the revision used by the linked programs:
+
+```console
+$ git -C libtmux-rs checkout --detach d7541fbace16d6a45882cd0af0ea6880f9c21748
 ```
 
 Enter its standalone Cargo workspace:
@@ -65,7 +75,7 @@ socket under `/tmp/libtmux-rs-dev/` when finished.
 
 Set `LIBTMUX_TEST_TMUX` to choose a different tmux executable. Both programs
 print human-readable output to stdout, report errors to stderr, and exit zero
-on success or one on failure.
+on success and nonzero on failure.
 
 The [offline consumer][offline] builds a capture request synchronously. The
 [live consumer][live] passes that same core type to the adapter and receives

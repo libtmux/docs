@@ -1,0 +1,27 @@
+{
+  "name": "Documentation analytics policy",
+  "description": "First-party permission for optional documentation analytics",
+  "kind": "zone",
+  "phase": "http_response_headers_transform",
+  "rules": [
+    {
+      "ref": "pr_142_web_analytics_policy",
+      "description": "Allow PR 142 analytics outside EU and unknown locations",
+      "action": "rewrite",
+      "action_parameters": {
+        "headers": {
+          "x-libtmux-analytics": {
+            "operation": "set",
+            "value": "allow"
+          },
+          "cache-control": {
+            "operation": "set",
+            "value": "private, no-store"
+          }
+        }
+      },
+      "expression": "http.host eq \"libtmux.org\" and starts_with(http.request.uri.path, \"/pr-142/\") and ends_with(http.request.uri.path, \"/_shell/web-analytics.json\") and (ip.src.country ne \"\" and not ip.src.country in {\"AT\" \"AX\" \"BE\" \"BG\" \"CY\" \"CZ\" \"DE\" \"DK\" \"EE\" \"ES\" \"FI\" \"FR\" \"GF\" \"GP\" \"GR\" \"HR\" \"HU\" \"IE\" \"IT\" \"LT\" \"LU\" \"LV\" \"MF\" \"MQ\" \"MT\" \"NL\" \"PL\" \"PT\" \"RE\" \"RO\" \"SE\" \"SI\" \"SK\" \"YT\" \"XX\" \"T1\"})",
+      "enabled": true
+    }
+  ]
+}

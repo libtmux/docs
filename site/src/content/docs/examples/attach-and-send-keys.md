@@ -1,7 +1,7 @@
 ---
-supportedPorts: [py, ts, rs, go, java, csharp, cxx, swift]
+supportedPorts: []
 title: Attach and send keys
-description: Get a session handle, send a command to a pane, and capture output.
+description: Find a tmux pane, send literal text and Enter, and capture the resulting output on a private server.
 sidebar:
   label: Attach and send keys
   group: Examples
@@ -9,202 +9,104 @@ sidebar:
 tableOfContents: true
 ---
 
-Get a session handle, send a command to a pane, and capture output. These
-examples use libtmux from your program; to attach your terminal interactively,
-see [Attaching to tmux](/guides/attaching-to-tmux/).
+Use [`attach-session`](/tmux/latest/manual/attach-session/) to view a session
+in your terminal. A shell script can find its pane, send input with
+[`send-keys`](/tmux/latest/manual/send-keys/), and read the screen with
+[`capture-pane`](/tmux/latest/manual/capture-pane/).
 
-The examples include setup, error handling, and cleanup. [Source and
-verification](#where-this-comes-from) identifies their files and checks.
+## Find a pane and send a command
 
-```python
->>> import libtmux
->>> server = libtmux.Server()
->>> session = server.new_session(session_name='demo')
-Session(...)
+Save this complete script as `send-command.sh`. It requires tmux 3.2a or newer
+and a POSIX shell. It creates a private session, selects one pane by its ID,
+sends a shell command, and checks its output before cleaning up the server.
 
->>> window = session.active_window
->>> pane = window.split(shell='sh')
->>> pane.capture_pane()
-['$']
+```sh title="send-command.sh"
+#!/bin/sh
+set -eu
+directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-send-command.XXXXXX")
+socket="$directory/tmux.sock"
 
->>> pane.send_keys('echo "Hello world"', enter=True)
-
->>> pane.capture_pane()
-['$ echo "Hello world"', 'Hello world', '$']
-```
-
-```typescript file="examples/quickstart/quickstart.ts"
-```
-
-```rust file="crates/libtmux/examples/scratch.rs"
-```
-
-```go file="examples/quickstart/main.go"
-```
-
-```java file="examples/src/main/java/io/github/libtmux/examples/BuildAWorkspace.java"
-```
-
-```csharp file="examples/LibTmux.Examples/Snippets/OneShot.cs"
-```
-
-```cpp
-// No tmux failure is thrown. Every call answers with a value that is either
-// the result or the reason there isn't one.
-const auto sessions = server.sessions();
-if (!sessions.has_value()) {
-  std::fprintf(stderr, "%s\n", sessions.error().diagnostic.c_str());
-  return 1;
+cleanup() {
+    status=$?
+    trap - 0 HUP INT TERM
+    if [ -S "$socket" ] && ! tmux -S "$socket" kill-server; then
+        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
+        exit 1
+    fi
+    rm -rf "$directory" || status=$?
+    exit "$status"
 }
+trap cleanup 0
+trap 'exit 1' HUP INT TERM
 
-for (const libtmux::Session& session : *sessions) {
-  std::printf("%s has %lld window(s)\n", std::string{session.name()}.c_str(),
-              session.window_count());
-}
+tmux -S "$socket" -f /dev/null new-session -d -e PS1= -s demo -n main 'sh'
+tmux -S "$socket" has-session -t '=demo'
+panes=$(tmux -S "$socket" list-panes -t '=demo:main' \
+    -f '#{pane_active}' -F '#{pane_id}')
+# Pane IDs contain no whitespace; reject zero or multiple rows.
+# shellcheck disable=SC2086
+set -- $panes
+[ "$#" -eq 1 ]
+pane=$1
 
-const libtmux::Session& session = sessions->at(0);
-
-// Build an arrangement without composing a single tmux argument.
-const auto editor = session.new_window({.name = "editor"});
-if (!editor.has_value()) {
-  std::fprintf(stderr, "%s\n", editor.error().diagnostic.c_str());
-  return 1;
-}
-
-const auto logs = editor->split({.horizontal = true, .percentage = 30});
-if (!logs.has_value()) {
-  std::fprintf(stderr, "%s\n", logs.error().diagnostic.c_str());
-  return 1;
-}
-
-(void)logs->send_text("journalctl -f");
-(void)logs->send_key("Enter");
+tmux -S "$socket" send-keys -l -t "$pane" "printf 'native input ready\\n'"
+tmux -S "$socket" send-keys -t "$pane" Enter
+found=no
+for attempt in 1 2 3 4 5; do
+    tmux -S "$socket" capture-pane -p -t "$pane" > "$directory/screen.txt"
+    if grep -Fx 'native input ready' "$directory/screen.txt" > /dev/null; then
+        found=yes
+        break
+    fi
+    if [ "$attempt" -lt 5 ]; then
+        sleep 1
+    fi
+done
+if [ "$found" != yes ]; then
+    printf 'Expected pane output did not appear\n' >&2
+    exit 1
+fi
+printf 'native input ready\n'
 ```
 
-```swift file="Examples/Sources/ExampleCode/Changing.swift"
+Run the saved script:
+
+```console
+$ sh send-command.sh
 ```
 
-## Finding an existing session instead
+The output is `native input ready`. The screen check matches a complete line
+from `printf`, rather than the shell's echoed command. The loop makes at most
+five captures and waits one second between unsuccessful attempts. `-e PS1=`
+starts the shell with an empty prompt so its prompt cannot prefix that line.
 
-For a script that runs repeatedly, look up a session before creating it.
-[Attaching to
-tmux](/guides/attaching-to-tmux/#finding-a-session-instead-of-always-creating-one)
-shows that pattern, and [Filtering and querying, in
-practice](/guides/querying-and-filtering/) covers absent and ambiguous matches.
+## Keep literal text and keys separate
 
-## Where this comes from
+`send-keys -l` sends the characters in the supplied string literally. The
+second command sends the named `Enter` key so the pane's shell executes the
+text. Supplying `Enter` to `-l` would type that word. The
+[sending keys guide](/guides/sending-keys/) also covers control keys and pane
+input modes.
 
-<!-- port:py -->
-<!-- port:root -->
-### Python
-<!-- /port -->
+[`has-session`](/tmux/latest/manual/has-session/) with `=demo` requires an
+exact session name. [`list-panes`](/tmux/latest/manual/list-panes/) prints
+the matching pane IDs, and the script checks that exactly one was returned.
+Those IDs belong to the selected server. Keep the same socket on every
+command, including capture and cleanup.
 
-**Source:** `src/libtmux/server.py`, `session.py`, `pane.py` docstrings
+## Wait for the result you need
 
-**In this page:** hand-quoted, composed from three separate docstrings
+`send-keys` returning does not mean the pane's program has processed the
+input. This example waits for its output condition with a bounded polling
+loop. When a program can signal completion, use the
+[capture example](/examples/capture-pane-output/) or
+[`wait-for`](/tmux/latest/manual/wait-for/) for a named signal.
 
-**Checked by:** `pytest` runs every `>>>` doctest (`testpaths` includes
-`src/libtmux`) against a real, isolated tmux session on every test run
-<!-- /port -->
+Capturing the pane reads terminal state, including prompts and screen
+updates. Use the [capture guide](/guides/capturing-output/) for scrollback
+ranges and wrapped lines. If another client closes the pane, the next command
+fails and the cleanup trap still retires the server this script owns.
 
-<!-- port:ts -->
-<!-- port:root -->
-### TypeScript
-<!-- /port -->
-
-**Source:** `examples/quickstart/quickstart.ts`
-
-**In this page:** read whole from the file
-
-**Checked by:** run against real tmux by `bun test examples`; its first half is
-also mirrored into README.md under a `<!-- runs: ... -->` marker, checked
-line-for-line by `scripts/check-doc-runnable.ts`
-<!-- /port -->
-
-<!-- port:rs -->
-<!-- port:root -->
-### Rust
-<!-- /port -->
-
-**Source:** `crates/libtmux/examples/scratch.rs`
-
-**In this page:** read whole from the file
-
-**Checked by:** run to completion against a throwaway tmux by
-`scripts/run-examples.sh` (`just examples`), which CI runs and which also
-asserts the example leaves no session behind
-<!-- /port -->
-
-<!-- port:go -->
-<!-- port:root -->
-### Go
-<!-- /port -->
-
-**Source:** `examples/quickstart/main.go`
-
-**In this page:** read whole from the file
-
-**Checked by:** the whole file runs against a real tmux server as
-`TestQuickstart`; the `docs:quickstart` region inside it is additionally
-mirrored into README.md by `go generate ./tmux`, and CI fails if the two drift
-<!-- /port -->
-
-<!-- port:java -->
-<!-- port:root -->
-### Java
-<!-- /port -->
-
-**Source:**
-`examples/src/main/java/io/github/libtmux/examples/BuildAWorkspace.java`
-
-**In this page:** read whole from the file
-
-**Checked by:** run against real tmux by the `examples` module's own
-`ExamplesRunTest`
-<!-- /port -->
-
-<!-- port:csharp -->
-<!-- port:root -->
-### C#
-<!-- /port -->
-
-**Source:** `examples/LibTmux.Examples/Snippets/OneShot.cs`
-
-**In this page:** read whole from the file
-
-**Checked by:** its `ConnectAndBuild` region is mirrored into README.md and
-checked by `sync_snippets.py --check`; the mirrored `csharp run` block is
-additionally compiled and run by `ReadmeExampleTests`
-<!-- /port -->
-
-<!-- port:cxx -->
-<!-- port:root -->
-### C++
-<!-- /port -->
-
-**Source:** `examples/05-readme.cpp`, the `connect` and `build` regions
-
-**In this page:** Copied excerpts from the `connect` and `build` regions.
-
-**Checked by:** quoted verbatim into README.md, checked for drift by
-`tools/docs/check_readme.py`, and the whole file is built and run by CTest
-<!-- /port -->
-
-<!-- port:swift -->
-<!-- port:root -->
-### Swift
-<!-- /port -->
-
-**Source:** `Examples/Sources/ExampleCode/Changing.swift`
-
-**In this page:** read whole from the file
-
-**Checked by:** matched against the README's "Change what is there" section by
-`Scripts/check_examples.py`; compiled and run through the package's public
-products by `swift test --package-path Examples`
-<!-- /port -->
-
-### Source inclusion
-
-A `file="..."` fence reads the named source during the site build. Hand-quoted
-excerpts are copies; their source files and regions are listed above.
+The pinned
+[tmux manual](https://github.com/tmux/tmux/blob/e476c1230b958df0cb12977517d24b3dc931375b/tmux.1)
+documents key names, literal input, and capture behavior.

@@ -4,7 +4,7 @@ import { getCollection, render } from 'astro:content'
 import { DEFAULT_LOCALE, localeRoot } from '../i18n/locales.ts'
 import { buildLocale, localeOf } from '../i18n/resolve.ts'
 import { API_MODELS, PORT_NAME, pageSlug } from '../lib/api-models.ts'
-import { DOC_PRODUCTS, hasReference, PORTS, PORT_BY_SLUG, portPageUrl, productApiPath, productAvailable, productInDevelopment, referenceUrl, type DocProduct } from '../lib/ports.ts'
+import { DOC_PRODUCTS, hasReference, PORTS, PORT_BY_SLUG, portPageUrl, productApiPath, productAvailable, productIsConcept, productInDevelopment, referenceUrl, CONCEPT_DESCRIPTION, type DocProduct } from '../lib/ports.ts'
 import { PORT_ROOT } from '../lib/site-root.ts'
 import { docsRoutePath } from '../lib/docs-paths.ts'
 import { docsEntriesAvailable } from '../lib/page-port-links.ts'
@@ -16,6 +16,7 @@ import { tmuxReferenceContext, tmuxReferenceUrl } from '../lib/tmux-reference'
 import { buildsTmuxDocumentation, TMUX_VERSIONS } from '../lib/tmux-manual-data'
 import { referenceIndexSections, referenceIndexSectionsFor } from '../lib/api-tree.ts'
 import { tmuxManualDescription, tmuxManualHeadings, tmuxManualTitle, tmuxManualRoutes, tmuxManualUrl } from '../lib/tmux-manual-data.ts'
+import { glossaryPages } from '../lib/api-glossary-routes.ts'
 
 /**
  * `/docs.json` — the agent manifest.
@@ -77,6 +78,18 @@ export const GET: APIRoute = async ({ site }) => {
       markdownUrl: `${origin}${markdownPath(`${entry.data.product && !port ? refBase : twinBase}${route}`, isIndexSource(served.filePath))}`,
       ...(entry.data.equivalence ? { equivalence: entry.data.equivalence } : {}),
       headings: headings.map((h) => ({ id: h.slug, level: h.depth, text: h.text })),
+    })
+  }
+
+  for (const glossary of glossaryPages()) {
+    const url = new URL(glossary.path, origin).href
+    pages.push({
+      title: glossary.title, description: glossary.description, section: 'API reference', url,
+      markdownUrl: `${url.slice(0, -1)}.md`, jsonUrl: `${url.slice(0, -1)}.json`,
+      headings: glossary.groups.flatMap((group) => [
+        { id: group.id, level: 2, text: group.title },
+        ...group.terms.map((term) => ({ id: term.id, level: 3, text: term.id })),
+      ]),
     })
   }
 
@@ -161,6 +174,7 @@ export const GET: APIRoute = async ({ site }) => {
         slug, name: product.label,
         availability: productAvailable(p, slug as DocProduct) ? 'available' : 'unpublished',
         inDevelopment: productInDevelopment(p, slug as DocProduct),
+        ...(productIsConcept(p, slug as DocProduct) ? { support: 'concept', supportDescription: CONCEPT_DESCRIPTION } : {}),
         ...(slug === 'workspace' ? { cli: p.workspaceCli ?? null, cliAvailability: p.workspaceCliAvailability ?? null } : {}),
         url: portPageUrl(p, versionFor(p.slug), slug),
         reference: productAvailable(p, slug as DocProduct)

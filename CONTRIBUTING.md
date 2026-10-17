@@ -113,6 +113,19 @@ Chrome:
 $ LIBTMUX_DOCS_BROWSER_CHANNEL=chrome pnpm test
 ```
 
+To keep local browser checks on a fixed port, stop the preview using that
+port, then run:
+
+```console
+$ LIBTMUX_DOCS_BROWSER_PORT=53971 pnpm test
+```
+
+The value must be an integer from 1 to 65535. An occupied explicit port fails
+the check instead of selecting another port. This setting also applies to
+direct `check-dev.mjs` invocations, including `--serve`; without it, automated
+checks select an available port and `--serve` uses 53971. Restart the shared
+preview after the checks finish.
+
 Install the pinned Chromium build for local browser checks with
 `pnpm --filter @libtmux/site exec playwright install chromium`. CI installs
 that build and its system dependencies before the publication audit.
@@ -194,6 +207,17 @@ $ ./scripts/serve.sh
 The server listens at `http://localhost:8080`. Leave it running in another
 terminal when running the publication audit to exercise browser checks. Style parity
 also requires the generated Sphinx pages; check the run's skip summary.
+
+Stop development and preview servers, then remove generated output and staging:
+
+```console
+$ pnpm run clean
+```
+
+Add `--dry-run` to list the directories or `--cache` to remove cached shell
+and reference builds too. Cleanup shares the assembly lock and refuses to
+run during an assembly. It preserves source, dependencies and `output/`
+review evidence. Custom output and cache locations need their own cleanup.
 
 ## Pull requests
 

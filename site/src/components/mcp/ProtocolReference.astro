@@ -5,7 +5,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
 import ApiTree from '../api/ApiTree.astro'
 import ApiBadge from '../api/ApiBadge.astro'
 import { apiGlossaryHref, MCP_GLOSSARY_TITLE } from '../../lib/api-glossary'
-import Aside from '../Aside.astro'
+import ProductNotice from '../ProductNotice.astro'
 import ApiPageContents from '../api/ApiPageContents.astro'
 import SymbolName from '../api/SymbolName.astro'
 import PageToolbar from '../PageToolbar.astro'
@@ -13,7 +13,7 @@ import PagePortSwitcher from '../PagePortSwitcher.astro'
 import DocumentationContext from '../docs/DocumentationContext.astro'
 import McpSchemaFields from './McpSchema.astro'
 import McpSchemaType from './McpSchemaType.astro'
-import { PORT_BY_SLUG, portPageUrl, productInDevelopment } from '../../lib/ports'
+import { PORT_BY_SLUG, portPageUrl } from '../../lib/ports'
 import { MCP_REFERENCE, MCP_SECTIONS, mcpObjects, mcpObjectAt, mcpObjectGroup, mcpNavigation, renderToolDescription, toolSummary, type McpSection } from '../../lib/mcp-reference'
 import { schemaDefinitions, type McpSchema } from '../../lib/mcp-schema'
 import { pagePortsFor } from '../../lib/page-ports-for'
@@ -53,6 +53,7 @@ const breadcrumbs = [
   { name: info.name, url: portPageUrl(info, version) },
   { name: 'MCP', url: base },
   { name: MCP_SECTIONS[section], url: portPageUrl(info, version, `mcp/${section}`) },
+  ...(object && currentBucket ? [{ name: mcpObjectGroup(object), url: `${base}${section}/#${currentBucket}` }] : []),
   ...(object ? [{ name: object.name, url: pageUrl, symbol: true }] : []),
 ]
 const source = object?.tool?.source
@@ -127,9 +128,7 @@ const summaries = new Map(await Promise.all(entries.map(async (entry) => [entry.
         <h1 class="scroll-mt-24 font-mono text-2xl font-semibold tracking-tight">{object ? <code><SymbolName name={title} /></code> : title}</h1>
         {!object && <p class="mt-3">{introductions[section]}</p>}
       </header>
-      {productInDevelopment(info, 'mcp') && <Aside type="caution" title="MCP is in development">
-        <p>Server behavior and tool contracts may change. Tool availability depends on the server configuration.</p>
-      </Aside>}
+      <ProductNotice port={port} product="mcp" />
       {object ? <>
         <nav class="api-section-links" aria-label="Reference sections" data-pagefind-ignore="all">{sections.map((entry, i) => <a href={`#${encodeURIComponent(entry.id)}`} data-api-section-link aria-current={i === 0 ? 'location' : undefined}>{entry.label}</a>)}</nav>
         <dl class="py gp-sphinx-api-container">

@@ -19,6 +19,7 @@ import { danglingReport } from './src/integrations/dangling-report'
 import { inventory } from './src/integrations/inventory'
 import { rehypeApiLinks } from './src/plugins/rehype-api-links'
 import { rehypeRowAnchors } from './src/plugins/rehype-row-anchors'
+import { remarkDocumenterHeadings } from './src/plugins/remark-documenter-headings'
 import { PORT_BY_SLUG, PORTS } from './src/lib/ports.ts'
 import { tmuxProsePath, workspaceRedirectPath } from './src/lib/docs-paths.ts'
 import { SOURCE_GUIDE_PORTS, sourceGuidesFor, sourceGuideRedirectsFor } from './src/lib/port-documentation.ts'
@@ -321,7 +322,7 @@ export default defineConfig({
     processor: unified({
       // Runs before expressive-code's own transform, so a fence dropped here
       // is never highlighted or emitted at all.
-      remarkPlugins: [remarkPortCode],
+      remarkPlugins: [remarkPortCode, remarkDocumenterHeadings],
       rehypePlugins: [
         rehypeHeadingIds,
         rehypeSiteRoot,
@@ -346,11 +347,16 @@ export default defineConfig({
     }),
   },
 
-  prefetch: { defaultStrategy: 'viewport', prefetchAll: true },
+  // Mutable HTML revalidates on navigation, so speculative fetches add work.
+  prefetch: false,
   compressHTML: true,
   server: { port: 4321 },
 
   vite: {
+    // Generated catalogs need only their default export.
+    json: { stringify: true, namedExports: false },
+    // Required module execution must have an observable load/error outcome.
+    build: { assetsInlineLimit: 0 },
     resolve: { tsconfigPaths: false, noExternal: ['@tailwindcss/typography'] },
     plugins: [tailwindcss() as never, {
       name: 'libtmux-shared-assets-dev',

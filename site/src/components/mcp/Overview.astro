@@ -1,9 +1,10 @@
 ---
 import { ALL_TRANSLATED } from '../../i18n/resolve'
 import Aside from '../Aside.astro'
+import ConceptBadge from '../ConceptBadge.astro'
 import McpInstall from '../../components/widgets/McpInstall.astro'
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import { PORTS, portPageUrl, productAvailable } from '../../lib/ports'
+import { CONCEPT_DESCRIPTION, PORTS, portPageUrl, productAvailable, productIsConcept } from '../../lib/ports'
 import { API_MODELS } from '../../lib/api-models'
 import mcpTools from '../../data/mcp-tools.json'
 import { withRoot } from '../../lib/site-root'
@@ -56,6 +57,11 @@ try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } ca
         Python is pre-alpha; the other ports are alpha. Tool names, arguments,
         and behavior can change between releases.
       </p>
+      <p class="mb-0">
+        Non-Python servers are concept examples. {CONCEPT_DESCRIPTION}{' '}
+        <a href={withRoot('/tmux/guides/concept-examples/')}>Concept and alpha</a>
+        describe support scope and release maturity separately.
+      </p>
     </Aside>
 
     <h2 class="mt-10 text-xl font-semibold">Install the Python server</h2>
@@ -88,6 +94,7 @@ try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } ca
             <a class="font-medium hover:underline" href={portPageUrl(p, defaults[p.slug] ?? 'latest', 'mcp')}>
               {p.name}
             </a>
+            {productIsConcept(p, 'mcp') && <>{' '}<ConceptBadge /></>}
             <span class="ml-2 font-mono text-sm opacity-70">{API_MODELS[p.slug]?.sources?.find((source) => source.product === 'mcp')?.package}</span>
             <span class="ml-2 text-sm opacity-60">{toolCount[p.slug]?.tools.length ?? 0} tools</span>
           </li>

@@ -34,11 +34,11 @@
     "oxlint-tsgolint": "catalog:",
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
-    "vite": "^8.3.1",
+    "vite": "^8.3.4",
     "vitest": "catalog:"
   },
   "dependencies": {
     "chroma-js": "^3.2.0",
-    "zod": "^4.6.5"
+    "zod": "^4.6.7"
   }
 }

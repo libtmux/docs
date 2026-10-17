@@ -47,6 +47,22 @@ it('links F# types around apostrophe-prefixed generic parameters', () => {
     .toEqual(['Filter', 'Field'])
 })
 
+it('keeps TypeScript callable names and modifiers separate from type references', () => {
+  const owner = sym('module.method', 'method')
+  const target = sym('module.Target')
+  const idx = new SymbolIndex([owner, target], (symbol) => `/${symbol.id}/`, 'ts')
+  const signature = { params: [{ name: 'value', type: 'Target' }], returns: 'Target' }
+  for (const prefix of ['', 'static async ', 'async function* ']) {
+    const text = `${prefix}method(\n  value: Target,\n): Target`
+    const spans = idx.linkType(text, owner, signature)
+    expect(spans.map((span) => span.text).join('')).toBe(text)
+    expect(spans.find((span) => span.text === 'method')).toEqual({ text: 'method', declaration: true })
+    expect(spans.filter((span) => span.link).map((span) => span.text)).toEqual(['Target', 'Target'])
+    for (const keyword of prefix.split(/\W+/).filter(Boolean)) expect(spans.find((span) => span.text === keyword)?.keyword).toBe(true)
+  }
+  expect(idx.linkType('ReadonlyArray<method>', owner, signature).find((span) => span.text === 'method')?.declaration).toBeUndefined()
+})
+
 it('keeps Julia symbol literals separate from same-named APIs', () => {
   const idx = new SymbolIndex([
     sym('LibTmux.TmuxID'), sym('LibTmux.session', 'function'), sym('LibTmux.window', 'function'),
@@ -160,6 +176,45 @@ describe('a bare name with more than one candidate', () => {
   it('stays plain when two candidates are equally near', () => {
     const tied = index([sym('a.b.Thing'), sym('a.c.Thing'), sym('a.d.Caller', 'method')])
     expect(linkFor(tied, 'Thing', 'Thing', sym('a.d.Caller', 'method'))).toBeUndefined()
+  })
+})
+
+describe('Go type candidates', () => {
+  it.each(['class', 'exception', 'enum', 'struct', 'union', 'interface', 'typealias', 'trait'])
+    ('continues past a scoped method to a %s type', (kind) => {
+      const owner = sym('tmux.Owner')
+      const method = { ...sym('tmux.Owner.Choice', 'method'), parent: owner.id }
+      const type = sym('tmux.Choice', kind)
+      const idx = index([owner, method, type])
+      expect(linkFor(idx, 'Box[Choice]', 'Choice', method)?.symbol?.id).toBe(type.id)
+      expect(idx.resolve('Choice', 'any', method)?.symbol?.id).toBe(method.id)
+      expect(idx.resolve('Choice', 'meth', method)?.symbol?.id).toBe(method.id)
+      expect(idx.linkText('[Choice]', method).find((span) => span.kind === 'ref')?.link?.symbol?.id).toBe(method.id)
+    })
+
+  it.each(['method', 'function', 'attribute', 'property', 'constant', 'module'])
+    ('leaves a %s out of every Go type-candidate boundary', (kind) => {
+      const member = { ...sym('tmux.Owner.Choice', kind), parent: 'tmux.Owner' }
+      const qualified = { ...sym('internal.Native', kind), name: 'Choice', qualifiedName: 'public.Choice' }
+      const bare = { ...sym('Internal', kind), name: 'Choice' }
+      for (const [symbols, target, context] of [
+        [[member], 'Choice', member],
+        [[member], member.id, undefined],
+        [[member], 'Owner.Choice', undefined],
+        [[qualified], 'public.Choice', undefined],
+        [[bare], 'Choice', undefined],
+      ] as const) {
+        const idx = index([...symbols])
+        expect(idx.resolve(target, 'class', context)).toBeUndefined()
+        expect(idx.resolve(target, 'any', context)?.symbol?.kind).toBe(kind)
+      }
+    })
+
+  it('does not use a method when actual type candidates remain ambiguous', () => {
+    const method = { ...sym('tmux.Owner.Choice', 'method'), parent: 'tmux.Owner' }
+    const idx = index([method, sym('first.Choice'), sym('second.Choice')])
+    expect(linkFor(idx, 'Box[Choice]', 'Choice', method)).toBeUndefined()
+    expect(idx.resolve('Choice', 'meth', method)?.symbol?.id).toBe(method.id)
   })
 })
 

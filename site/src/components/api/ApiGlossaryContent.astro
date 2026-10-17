@@ -1,17 +1,17 @@
 ---
-import { API_GLOSSARY_DESCRIPTION, API_GLOSSARY_GROUPS, API_GLOSSARY_PATH, MCP_GLOSSARY_DESCRIPTION, MCP_GLOSSARY_GROUPS } from '../../lib/api-glossary'
-interface Props { mcp?: boolean; shared?: boolean }
-const { mcp = false, shared = false } = Astro.props
-const groups = mcp ? [...MCP_GLOSSARY_GROUPS, ...API_GLOSSARY_GROUPS] : [...API_GLOSSARY_GROUPS, ...(shared ? MCP_GLOSSARY_GROUPS : [])]
-const jsonHref = `${API_GLOSSARY_PATH.slice(0, -1)}.json`
+import { apiGlossary } from '../../lib/api-glossary'
+interface Props { contextPath?: string }
+const glossary = apiGlossary(Astro.props.contextPath ?? Astro.url.pathname)
+const { groups } = glossary
+const jsonHref = `${glossary.path.slice(0, -1)}.json`
 ---
-  <p>{mcp ? MCP_GLOSSARY_DESCRIPTION : API_GLOSSARY_DESCRIPTION} Select an annotation or full API badge to open its definition here.</p>
-  <p>The signature and entry documentation describe the API’s behavior. A shared label does not imply identical calling conventions, storage, or runtime checks across languages.</p>
+  <p>{glossary.description} Select an annotation or full API badge to open its definition here.</p>
+  <p>The signature and entry documentation describe the API’s behavior, including its calling conventions, storage and runtime checks.</p>
   {groups.map((group) => <section aria-labelledby={group.id}>
-    <h2 id={group.id}>{group.title}</h2>
+    <h2 id={group.id}>{group.title}<a class="api-heading-link" href={`#${group.id}`} aria-label={`Link to ${group.title}`} data-pagefind-ignore="all">#</a></h2>
     <p>{group.description}</p>
     {group.terms.map((term) => <section aria-labelledby={term.id}>
-      <h3 id={term.id}><code>{term.id}</code></h3>
+      <h3 id={term.id}><code>{term.id}</code><a class="api-heading-link" href={`#${term.id}`} aria-label={`Link to ${term.id}`} data-pagefind-ignore="all">#</a></h3>
       <p>{term.definition}</p>
       {term.detail && <p>{term.detail}</p>}
       <p>References: {term.references.map((reference, index) => <>

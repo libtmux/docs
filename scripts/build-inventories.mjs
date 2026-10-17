@@ -21,6 +21,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { readInventory, writeInventory } from '../packages/api-model/src/inventory.ts'
 import { TYPESCRIPT_UTILITY_TYPES } from '../packages/api-model/src/builtins.ts'
+import { javadocSymbols } from '../packages/api-model/src/javadoc.ts'
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const outDir = join(repoRoot, 'site/src/data/inventories')
@@ -51,30 +52,12 @@ async function javadocIndex(file) {
 }
 
 async function buildJdk() {
-  const types = await javadocIndex('type-search-index.js')
-  const members = await javadocIndex('member-search-index.js')
-  const symbols = []
-
-  for (const t of types) {
-    if (!t.p || !t.l || !JDK_PACKAGES.test(t.p)) continue
-    // The bare class name as well as the qualified one: prose writes
-    // `Optional`, not `java.util.Optional`, and an inventory keyed only on the
-    // qualified form answers neither.
-    const path = `${t.p.replace(/\./g, '/')}/${t.l.replace(/\./g, '.')}.html`
-    symbols.push({ id: `${t.p}.${t.l}`, name: t.l, kind: 'class', uri: path })
-    symbols.push({ id: t.l, name: t.l, kind: 'class', uri: path })
-  }
-
-  for (const m of members) {
-    if (!m.p || !m.c || !m.l || !JDK_PACKAGES.test(m.p)) continue
-    // `l` is the display label, which carries the parameter list;
-    // `u` is the URL fragment when it differs.
-    const bare = m.l.replace(/\(.*$/, '')
-    if (!bare || /[^A-Za-z0-9_$]/.test(bare)) continue
-    const path = `${m.p.replace(/\./g, '/')}/${m.c.replace(/\./g, '.')}.html#${m.u ?? m.l}`
-    symbols.push({ id: `${m.c}.${bare}`, name: bare, kind: 'method', uri: path })
-  }
-
+  const [packages, types, members] = await Promise.all([
+    javadocIndex('package-search-index.js'), javadocIndex('type-search-index.js'), javadocIndex('member-search-index.js'),
+  ])
+  const symbols = javadocSymbols(packages,
+    types.filter((type) => type.p && JDK_PACKAGES.test(type.p)),
+    members.filter((member) => member.p && JDK_PACKAGES.test(member.p)))
   return { name: 'jdk', project: 'Java SE 21', baseUrl: JDK, symbols }
 }
 

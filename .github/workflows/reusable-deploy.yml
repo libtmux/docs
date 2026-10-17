@@ -366,12 +366,14 @@ jobs:
           BUCKET: ${{ secrets.bucket }}
         run: |
           set -euo pipefail
-          # Scoped to $PREFIX, never the bucket root — the live bug in
-          # ~/work/python/libtmux/.github/workflows/docs.yml this design
-          # replaces. --delete is safe here because $PREFIX is this call's
-          # own exclusive key, validated above.
+          # Retain old hashes for cached HTML, and update existing asset TTLs.
+          # Every copy and deleting sync remains inside this call's prefix.
+          while IFS= read -r -d '' assets; do
+            aws s3 cp "$assets/" "s3://$BUCKET/$PREFIX/${assets#dist/}/" \
+              --recursive --cache-control "public, max-age=31536000, immutable"
+          done < <(find dist -type d -name _astro -print0)
           aws s3 sync dist/ "s3://$BUCKET/$PREFIX/" \
-            --delete \
+            --delete --exclude "_astro/*" --exclude "*/_astro/*" \
             --cache-control "$CACHE_CONTROL"
 
       - name: Upsert manifest/<port>.json

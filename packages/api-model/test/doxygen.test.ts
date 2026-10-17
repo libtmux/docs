@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { extractDoxygen } from '../src/languages/doxygen.ts'
+import { extractDoxygen, normalizeCppTemplateSpacing } from '../src/languages/doxygen.ts'
 
 function extractCompound(xml: string) {
   const dir = mkdtempSync(join(tmpdir(), 'libtmux-api-doxygen-'))
@@ -13,6 +13,54 @@ function extractCompound(xml: string) {
     rmSync(dir, { recursive: true, force: true })
   }
 }
+
+describe('Doxygen C++ template spacing', () => {
+  it.each([
+    ['expected< std::vector< Session >, CommandFailure >', 'expected<std::vector<Session>, CommandFailure>'],
+    ['std::less< >', 'std::less<>'],
+    ['template < typename T >\nstd::array< int, (8 >> 1) >', 'template <typename T>\nstd::array<int, (8 >> 1)>'],
+    ['std::array< int, (a < b ? 1 : 2) >', 'std::array<int, (a < b ? 1 : 2)>'],
+    ['std::array< char, sizeof(R"tag(< x > )tag") >', 'std::array<char, sizeof(R"tag(< x > )tag")>'],
+    ['T< /* < preserve > */ U >', 'T</* < preserve > */ U>'],
+    ['T< "😀 < text > " >', 'T<"😀 < text > ">'],
+  ])('removes only template padding in %s', (input, expected) => {
+    expect(normalizeCppTemplateSpacing(input)).toBe(expected)
+    expect(normalizeCppTemplateSpacing(expected)).toBe(expected)
+  })
+
+  it.each([
+    'bool operator < (const Value & other) const;',
+    'std::ostream & operator << (std::ostream & out, const Value & value);',
+    'bool operator > (const Value & other) const;',
+    'auto operator <=> (const Value & other) const = default;',
+    'bool valid() requires (a < b && c > d && x <= y && z >= w);',
+    'int shifted(int value = (8 >> 1), int mask = (1 << 2));',
+    'const char * text(const char * value = " < keep  > ");',
+    'T<\n  U\n> multiline();',
+  ])('preserves native operators, literals and newlines in %s', (input) => {
+    expect(normalizeCppTemplateSpacing(input)).toBe(input)
+  })
+
+  it('normalizes declaration, return, parameter, default, alias, field and base types together', () => {
+    const symbols = extractCompound(`<compounddef kind="struct"><compoundname>sample::Value</compoundname>
+      <basecompoundref prot="public">Base&lt; int &gt;</basecompoundref><sectiondef>
+      <memberdef kind="function" prot="public"><type>std::vector&lt; int &gt;</type>
+        <definition>std::vector&lt; int &gt; sample::Value::read</definition><qualifiedname>sample::Value::read</qualifiedname><name>read</name>
+        <argsstring>(std::optional&lt; int &gt; value = std::optional&lt; int &gt;{}) const</argsstring>
+        <param><type>std::optional&lt; int &gt;</type><declname>value</declname><defval>std::optional&lt; int &gt;{}</defval></param>
+      </memberdef>
+      <memberdef kind="variable" prot="public"><type>std::optional&lt; std::size_t &gt;</type><name>limit</name></memberdef>
+      <memberdef kind="typedef" prot="public"><type>std::vector&lt; int &gt;</type><name>Values</name></memberdef>
+    </sectiondef><location file="value.hpp" line="1"/></compounddef>`)
+    expect(symbols.find((symbol) => symbol.name === 'Value')?.extends).toEqual(['Base<int>'])
+    expect(symbols.find((symbol) => symbol.name === 'read')?.signatures[0]).toMatchObject({
+      raw: 'std::vector<int> read(std::optional<int> value = std::optional<int>{}) const;',
+      returns: 'std::vector<int>', params: [{ name: 'value', type: 'std::optional<int>', default: 'std::optional<int>{}' }],
+    })
+    expect(symbols.find((symbol) => symbol.name === 'limit')?.type).toBe('std::optional<std::size_t>')
+    expect(symbols.find((symbol) => symbol.name === 'Values')?.type).toBe('std::vector<int>')
+  })
+})
 
 describe('Doxygen public inheritance', () => {
   it('keeps native C++ overload spelling, defaulting, explicit conversion and trailing qualifiers', () => {

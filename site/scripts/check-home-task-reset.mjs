@@ -23,7 +23,8 @@ async function checkTaskFirstPaint(browser, base) {
       assert(response?.ok(), `Task first paint: HTTP ${response?.status()}`)
       const widget = page.locator('.lm-agent-prompt')
       const native = widget.locator('[data-task-native] select')
-      await native.waitFor({ state: 'visible' })
+      await native.waitFor({ state: 'attached' })
+      assert.equal(await page.locator('html').getAttribute('data-page-readiness'), 'pending', 'A held required widget keeps the document pending')
       await page.evaluate(() => document.fonts.ready)
       assert.equal((await native.boundingBox()).height, 36, `${width}: the initial task selector reserves its enhanced height`)
       const geometry = () => widget.locator('.lm-agent-prompt__controls').evaluate((bar) => {
@@ -40,7 +41,7 @@ async function checkTaskFirstPaint(browser, base) {
       releaseWidget()
       await page.waitForLoadState('load')
       await page.waitForFunction(() => document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'ts')
-      await page.waitForLoadState('networkidle')
+      await page.locator('html[data-page-readiness="ready"]').waitFor({ state: 'attached' })
       assert.equal(await widget.locator('[data-version-control]').count(), 0, 'Published versions do not insert another homepage control')
       assert.deepEqual(await geometry(), before, `${width}: initializing the task picker leaves the row in place`)
       const visiblePrompt = widget.locator('[data-port="ts"] [data-prompt-text]')
@@ -89,13 +90,15 @@ export async function checkHomeTaskReset(browser, base) {
       const control = menu.locator('summary')
       const reset = widget.locator('[data-action="reset-topic"]')
       await page.waitForFunction(() => document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'ruby')
-      await page.evaluate(() => {
-        window.__taskNavigations = 0
-        document.addEventListener('astro:before-preparation', () => { window.__taskNavigations++ })
-      })
+      const identity = await page.evaluate(() => window.__taskDocument = crypto.randomUUID())
+      const documents = []
+      const navigation = (request) => { if (request.isNavigationRequest()) documents.push(request.url()) }
+      page.on('request', navigation)
       assert.equal(await reset.isVisible(), false, 'The default task is not an explicit selection')
       await chooseHomeTask(page, 'session-switcher')
-      assert.equal(await page.evaluate(() => window.__taskNavigations), 0, 'Choosing a task updates the widget without starting page navigation')
+      assert.equal(await page.evaluate(() => window.__taskDocument), identity, 'Choosing a task retains the document')
+      assert.deepEqual(documents, [], 'Choosing a task sends no document request')
+      page.off('request', navigation)
       assert(await reset.isVisible())
       assert.equal(new URL(page.url()).searchParams.get('prompt'), 'session-switcher')
       await page.reload()

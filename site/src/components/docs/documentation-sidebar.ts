@@ -110,6 +110,5 @@ export function initializeDocumentationSidebar(nav: HTMLElement | null) {
   const observer = window.ResizeObserver ? new window.ResizeObserver(later) : undefined
   observer?.observe(document.body)
   restore()
-  later()
-  void document.fonts?.ready.then(later)
+  window.__libtmuxAppearance?.layout(restore)
 }

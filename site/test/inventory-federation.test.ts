@@ -3,7 +3,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { readInventory } from '@libtmux/api-model'
-import { API_MODELS, indexFor } from '../src/lib/api-models'
+import { API_MODELS, createApiIndex, indexFor } from '../src/lib/api-models'
 import { productApiIndex } from '../src/lib/product-api'
 import { createProseLinker } from '../src/lib/prose-resolver'
 
@@ -104,12 +104,49 @@ describe('indexFor attaches the inventories', () => {
       expect(index.resolve('Window', 'class', server)?.symbol?.id).toBe(`${prefix}.Window`)
       expect(index.resolve(`${prefix}.Server#sessions`, 'any', server)?.symbol?.id).toBe(`${prefix}.Server.sessions`)
     }
+    const server = model.symbols.find((symbol) => symbol.id === 'io.github.libtmux.scaladsl.Server')!
+    expect(server.extends).toEqual(['AutoCloseable'])
+    expect(index.resolve('close()', 'any', server)?.href)
+      .toBe('https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/AutoCloseable.html#close()')
   })
   it('links a JDK type from a Java annotation', () => {
     const index = indexFor(API_MODELS.java, href)
     const hit = index.resolve('List', 'class')
     expect(hit?.external, 'List should resolve into the JDK').toBe(true)
     expect(hit?.href).toContain('docs.oracle.com')
+  })
+
+  it('uses each JDK package owner for Java, Kotlin and Scala references', () => {
+    const base = 'https://docs.oracle.com/en/java/javase/21/docs/api/'
+    const cases = [
+      ['java.lang.AutoCloseable', 'java.base/java/lang/AutoCloseable.html'],
+      ['AutoCloseable.close', 'java.base/java/lang/AutoCloseable.html#close()'],
+      ['java.lang.AutoCloseable.close', 'java.base/java/lang/AutoCloseable.html#close()'],
+      ['java.net.http.HttpClient', 'java.net.http/java/net/http/HttpClient.html'],
+      ['java.util.logging.Logger', 'java.logging/java/util/logging/Logger.html'],
+      ['java.lang.management.ManagementFactory', 'java.management/java/lang/management/ManagementFactory.html'],
+      ['java.util.Map.Entry', 'java.base/java/util/Map.Entry.html'],
+      ['Map.Entry.getKey', 'java.base/java/util/Map.Entry.html#getKey()'],
+      ['java.lang.instrument.Instrumentation', 'java.instrument/java/lang/instrument/Instrumentation.html'],
+      ['java.util.prefs.Preferences', 'java.prefs/java/util/prefs/Preferences.html'],
+    ]
+    for (const port of ['java', 'kotlin', 'scala']) {
+      const core = indexFor(API_MODELS[port], href)
+      const product = productApiIndex(API_MODELS[port], 'latest')
+      const prose = createProseLinker()
+      for (const [name, path] of cases) {
+        expect(core.resolve(name)?.href, `${port}: ${name}`).toBe(base + path)
+        expect(product.resolve(name)?.href, `${port} product: ${name}`).toBe(base + path)
+        expect(prose(name, { pagePort: port }), `${port} prose: ${name}`).toMatchObject({ kind: 'link', href: base + path })
+      }
+    }
+    expect(indexFor(API_MODELS.py, href).resolve('AutoCloseable')?.href).toBeUndefined()
+    expect(createProseLinker()('Server.open', { pagePort: 'kotlin' })).toMatchObject({
+      kind: 'link', href: '/kotlin/latest/reference/io-github-libtmux-kotlin-server-companion-open/', external: false,
+    })
+    expect(createProseLinker()('Observation.close', { pagePort: 'scala' })).toMatchObject({
+      kind: 'link', href: '/scala/latest/reference/io-github-libtmux-scaladsl-streaming-observation-close/', external: false,
+    })
   })
 
   it('links a DOM interface from a TypeScript annotation', () => {
@@ -185,7 +222,7 @@ describe('indexFor attaches the inventories', () => {
       const external = product.linkType(annotation, reader).find((span) => span.text === 'Path')?.link
       expect(external, `${version} workspace file parameter`).toMatchObject({
         external: true,
-        href: 'https://docs.oracle.com/en/java/javase/21/docs/api/java/nio/file/Path.html',
+        href: 'https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/nio/file/Path.html',
       })
       const workspace = product.linkType(signature.returns!, reader).find((span) => span.text === 'Workspace')?.link
       expect(workspace?.href).toContain(`/java/${version}/workspace/reference/`)
@@ -241,4 +278,20 @@ describe('each sidecar agrees with the .inv beside it', () => {
     const mismatched = sidecar.e.filter(([n, u]) => !fromInv.has(key(n, u)))
     expect(mismatched.slice(0, 3), `${name}: URIs differ`).toEqual([])
   })
+})
+
+
+it('resolves ReadOnly through its pinned dependency source and preserves local identity', () => {
+  const model = API_MODELS.java
+  const source = 'https://github.com/JetBrains/kotlin/blob/5687445832cd835b4509b9fbc264cdf1a8201093/libraries/tools/kotlin-annotations-jvm/src/kotlin/annotations/jvm/ReadOnly.java#L28'
+  const index = createApiIndex(model, href)
+  for (const name of ['ReadOnly', 'kotlin.annotations.jvm.ReadOnly']) {
+    expect(index.resolve(name, 'class')).toMatchObject({ external: true, href: source, project: 'Kotlin JVM annotations source' })
+  }
+  const local = { id: 'example.ReadOnly', qualifiedName: 'example.ReadOnly', name: 'ReadOnly', kind: 'interface' as const, modifiers: [], signatures: [], source: { file: 'ReadOnly.java' } }
+  const scoped = createApiIndex({ ...model, symbols: [...model.symbols, local] }, href)
+  expect(scoped.resolve('ReadOnly', 'class', local)?.symbol?.id).toBe(local.id)
+  expect(scoped.resolve('kotlin.annotations.jvm.ReadOnly', 'class', local)?.href).toBe(source)
+  expect(createApiIndex(API_MODELS.go, href).resolve('kotlin.annotations.jvm.ReadOnly')).toBeUndefined()
+  expect(index.resolve('MissingAnnotation', 'class')).toBeUndefined()
 })

@@ -143,56 +143,9 @@
     if (event.key === apiSourceKey || event.key === null) initApiSourceDetails(document);
   });
 
-  /**
-   * Hold the page until the real faces are in, then show it once.
-   *
-   * `font-display: block` is not enough on its own, and the reason is the
-   * font stack rather than the descriptor. Astro's `optimizedFallbacks`
-   * appends a metric-matched family backed by `local("Courier New")` with
-   * `font-display: swap`, so while IBM Plex Mono is still in its block
-   * period the browser has a perfectly good next family to draw with — and
-   * it does. Captured with the fonts delayed 1.2s, the wordmark paints in
-   * Courier at 300ms and becomes Plex when the woff2 lands. That swap is
-   * what "the Mono fonts load delayed" is.
-   *
-   * So the page is gated instead: hidden until `document.fonts.ready`, which
-   * resolves when every face the document uses has loaded or failed. With all
-   * twenty faces preloaded beside the critical CSS, that is a short wait, and
-   * what follows it is one paint in the right type rather than two.
-   *
-   * The timeout is the part that matters for safety. A font that never
-   * arrives must not leave a blank page, so the gate lifts after 3s
-   * regardless — the same ceiling `font-display: block` uses before it gives
-   * up and swaps.
-   *
-   * No-JS readers never get the class, so they never get the gate.
-   */
-  function gateOnFonts() {
-    const root = document.documentElement;
-    if (!document.fonts) return;
-    root.classList.add('fonts-pending');
-    const show = () => root.classList.remove('fonts-pending');
-    setTimeout(show, 3000);
-
-    // Waited for *after* parsing, not here. `document.fonts.ready` reports on
-    // the loads the document currently has pending, and in <head> it has
-    // none — the stylesheet naming the faces has not been read yet. Asking
-    // now resolves it immediately and lifts the gate before a single font is
-    // requested, which is what the first version of this did: the class was
-    // gone by 400ms with the woff2 still 1.1s away.
-    const wait = () => document.fonts.ready.then(show).catch(show);
-    if (document.readyState === 'loading') {
-      // Parsing finishes before deferred modules such as analytics complete.
-      document.addEventListener('readystatechange', wait, { once: true });
-    } else {
-      wait();
-    }
-  }
-
   // Apply theme immediately on load
   applyTheme();
   try { applyPackagePort(); applyCooldown(); applyPrereleaseNotice(); } catch (_) { /* Storage may be disabled. */ }
-  gateOnFonts();
 
   // Expose for the bundled astro:after-swap handler below so the logic isn't
   // duplicated (inline scripts can't be imported from).

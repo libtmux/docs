@@ -1,0 +1,18 @@
+{
+  "name": "Documentation analytics injection",
+  "description": "Use the owned optional beacon only in the documentation preview",
+  "kind": "zone",
+  "phase": "http_config_settings",
+  "rules": [
+    {
+      "ref": "pr_142_manual_web_analytics",
+      "description": "Disable automatic RUM injection in PR 142",
+      "action": "set_config",
+      "action_parameters": {
+        "disable_rum": true
+      },
+      "expression": "http.host eq \"libtmux.org\" and starts_with(http.request.uri.path, \"/pr-142/\")",
+      "enabled": true
+    }
+  ]
+}

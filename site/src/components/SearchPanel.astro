@@ -116,6 +116,10 @@ const segmentNames =
     outline: none;
   }
 
+  .search-panel[data-modal='true'] .search-panel__input {
+    min-width: 0;
+  }
+
   /* The browser's own clear affordance duplicates Escape and sits where the
      hint goes. */
   .search-panel__input::-webkit-search-cancel-button {
@@ -140,11 +144,27 @@ const segmentNames =
     min-height: 0;
   }
 
+  /* Keep the stacked filters from taking the modal's entire results area. */
+  .search-panel[data-modal='true'] .search-panel__body:not(:has(> .search-panel__filters[hidden])) {
+    grid-template-rows: minmax(0, 1fr) minmax(0, 2fr);
+  }
+
+  .search-panel[data-modal='true'] .search-panel__filters {
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0.125rem;
+    scroll-padding-block: 0.5rem;
+  }
+
   /* The filter column only when there are filters: an index without them,
      such as the demo's, would otherwise squeeze results into 14rem. */
   @media (min-width: 56rem) {
     .search-panel__body:not(:has(> .search-panel__filters[hidden])) {
       grid-template-columns: 14rem minmax(0, 1fr);
+    }
+
+    .search-panel[data-modal='true'] .search-panel__body:not(:has(> .search-panel__filters[hidden])) {
+      grid-template-rows: minmax(0, 1fr);
     }
   }
 
@@ -179,6 +199,11 @@ const segmentNames =
   .search-panel__results {
     min-width: 0;
     overflow-y: auto;
+  }
+
+  .search-panel[data-modal='true'] .search-panel__results {
+    padding-block: 0.125rem;
+    scroll-padding-block: 0.125rem;
   }
 
   .search-panel__status {
@@ -341,33 +366,33 @@ const segmentNames =
 
 <script>
   import { mountSearchPanel, type SubResultsDisplay } from '../lib/search-panel'
+  import { waitForAppearance } from '../lib/page-readiness'
 
-  async function bindSearchPanels() {
-    for (const root of document.querySelectorAll<HTMLElement>('.search-panel')) {
-      if (root.dataset.mounted) continue
-      root.dataset.mounted = 'true'
-      const bundle = root.dataset.searchBundle!
-      // Loaded only by a panel that asks for it, so the index never ships with
-      // the search page or the modal.
-      const mock = root.dataset.mock === undefined ? undefined : (await import('../lib/search-mock')).mockPagefind(bundle)
-      if (!root.isConnected) continue
-      const handle = mountSearchPanel(root, bundle, {
-        subResults: root.dataset.subResults as SubResultsDisplay | undefined,
-        initialQuery: root.dataset.initialQuery,
-        initialPort: root.dataset.initialPort,
-        mock,
-        segmentNames: root.dataset.segmentNames ? (JSON.parse(root.dataset.segmentNames) as Record<string, string>) : undefined,
-      })
-
-      const dialog = root.closest('dialog')
-      if (dialog) {
-        // Focus after the dialog is actually open, or the input is not yet
-        // focusable and the keystroke that opened it is lost.
-        dialog.addEventListener('search-modal:open', () => handle.focus())
-        dialog.addEventListener('close', () => handle.clear())
-      }
+  async function mount(root: HTMLElement) {
+    if (root.dataset.mounted) return
+    root.dataset.mounted = 'true'
+    const bundle = root.dataset.searchBundle!
+    const mock = root.dataset.mock === undefined ? undefined : (await import('../lib/search-mock')).mockPagefind(bundle)
+    if (!root.isConnected) return
+    const handle = mountSearchPanel(root, bundle, {
+      subResults: root.dataset.subResults as SubResultsDisplay | undefined,
+      initialQuery: root.dataset.initialQuery,
+      initialPort: root.dataset.initialPort,
+      mock,
+      segmentNames: root.dataset.segmentNames ? (JSON.parse(root.dataset.segmentNames) as Record<string, string>) : undefined,
+    })
+    const dialog = root.closest('dialog')
+    if (dialog) {
+      handle.focus()
+      dialog.addEventListener('search-modal:open', () => handle.focus())
+      dialog.addEventListener('close', () => handle.clear())
     }
+    await handle.ready
   }
-  void bindSearchPanels()
-  document.addEventListener('astro:after-swap', () => void bindSearchPanels())
+
+  for (const root of document.querySelectorAll<HTMLElement>('.search-panel')) {
+    const dialog = root.closest('dialog')
+    if (dialog) dialog.addEventListener('search-modal:open', () => { void mount(root) }, { once: true })
+    else waitForAppearance(mount(root))
+  }
 </script>

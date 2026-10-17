@@ -1,8 +1,9 @@
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
+import { createHash } from 'node:crypto'
 import { Window } from 'happy-dom'
 import { describe, expect, it } from 'vitest'
-import { PORTS, productAvailable, productDescription, productInDevelopment, workspaceOverviewNotice, type Port } from '../src/lib/ports'
+import { CONCEPT_DESCRIPTION, PORTS, productAvailable, productDescription, productIsConcept, productInDevelopment, workspaceOverviewNotice, type Port } from '../src/lib/ports'
 import { LANG_TO_PORT } from '../src/plugins/remark-port-code.mjs'
 import { SITE_BUILT, SITE_PREFIX, PREVIEW_PREFIX, productionPath, publishedPath, sitePath } from './site-root'
 import { MCP_REFERENCE, MCP_SECTIONS, mcpObjects } from '../src/lib/mcp-catalog'
@@ -30,7 +31,7 @@ interface DocsManifest {
   pages: { url: string; markdownUrl: string }[]
   ports: {
     slug: string
-    products: { slug: string; availability: string; inDevelopment: boolean; cli?: string | null; cliAvailability?: string | null; reference: string | null; protocol?: string | null }[]
+    products: { slug: string; availability: string; inDevelopment: boolean; support?: string; supportDescription?: string; cli?: string | null; cliAvailability?: string | null; reference: string | null; protocol?: string | null }[]
     documentation: { id: string; name: string; kind: string; availability: string; url: string; package?: string }[]
   }[]
 }
@@ -38,6 +39,18 @@ interface DocsManifest {
 const products = ['mcp', 'workspace'] as const
 const primaryPorts = PORTS.filter((port) => !port.parentLibrary)
 const read = (path: string) => readFileSync(sitePath(path), 'utf8')
+// Earlier product checks parse these indexes. Reuse only plain link facts,
+// keyed by the current HTML bytes, rather than keeping their large DOMs alive.
+const declarationIndexes = new Map<string, { href: string; title: string }[]>()
+function referenceDeclarations(html: string, document?: Window['document']) {
+  const identity = createHash('sha256').update(html).digest('hex')
+  const saved = declarationIndexes.get(identity)
+  if (saved || !document) return saved
+  const declarations = [...document.querySelectorAll('[aria-labelledby="generated-api"] a[href]')]
+    .map((link) => ({ href: link.getAttribute('href')!, title: link.textContent.trim() }))
+  declarationIndexes.set(identity, declarations)
+  return declarations
+}
 const manifest = (): Manifest => JSON.parse(read('versions.json'))
 const urlFor = (path: string) => new URL(`/${SITE_PREFIX}${path}`, 'https://libtmux.org')
 const productUrl = /\/(?:py|ruby|lua|powershell|julia|ts|rs|go|java|csharp|cxx|swift)\/[^/]+\/(?:mcp|workspace)(?:\/|$)/
@@ -113,12 +126,40 @@ async function inspect<T>(path: string, check: (document: Window['document']) =>
     settings: { disableJavaScriptEvaluation: true, disableJavaScriptFileLoading: true, disableCSSFileLoading: true },
   })
   try {
-    window.document.write(readFileSync(file, 'utf8'))
+    const html = readFileSync(file, 'utf8')
+    window.document.write(html)
+    if (/(?:mcp|workspace)\/reference\/$/.test(path)) referenceDeclarations(html, window.document)
     return await check(window.document)
   } finally {
     await window.happyDOM.close()
   }
 }
+
+async function declarationIndex(path: string) {
+  const file = sitePath(path, 'index.html')
+  expect(existsSync(file), `assembled product page ${path}`).toBe(true)
+  const saved = referenceDeclarations(readFileSync(file, 'utf8'))
+  return saved ?? inspect(path, (document) => referenceDeclarations(readFileSync(file, 'utf8'), document)!)
+}
+
+it('reuses declaration facts only for identical HTML without retaining a document', async () => {
+  const window = new Window()
+  try {
+    const html = '<section aria-labelledby="generated-api"><a href="/reference/server/"><code>Server</code></a></section>'
+    window.document.body.innerHTML = html
+    const first = referenceDeclarations(html, window.document)
+    expect(first).toEqual([{ href: '/reference/server/', title: 'Server' }])
+    window.document.body.innerHTML = ''
+    expect(referenceDeclarations(html)).toEqual(first)
+    const changed = html.replaceAll('server', 'pane').replaceAll('Server', 'Pane')
+    expect(referenceDeclarations(changed)).toBeUndefined()
+    window.document.body.innerHTML = changed
+    expect(referenceDeclarations(changed, window.document)).toEqual([{ href: '/reference/pane/', title: 'Pane' }])
+    expect(referenceDeclarations(html)).toEqual(first)
+  } finally {
+    await window.happyDOM.close()
+  }
+})
 
 const pageHtml = (path: string) => readFileSync(sitePath(path, 'index.html'), 'utf8')
 const tags = (html: string, name: string) => [...html.matchAll(new RegExp(`<${name}\\b[^>]*>`, 'gi'))].map((match) => match[0])
@@ -133,16 +174,60 @@ function graph(document: Window['document']): StructuredEntry[] {
     })
 }
 
+/** Read the rendered sidebar ancestry independently of the breadcrumb builder. */
+function referenceTrail(document: Window['document'], href: string) {
+  const navigation = document.querySelector('[data-section-navigation] nav')!
+  const current = [...navigation.querySelectorAll('a[aria-current="page"]')]
+    .find((link) => link.getAttribute('href') === href)
+  expect(current, `${href} active sidebar declaration`).toBeDefined()
+  const trail: { name: string; url: string | null }[] = [{ name: current!.getAttribute('data-sidebar-label')!, url: href }]
+  for (let group = current!.closest('details.sidebar-section'); group; group = group.parentElement?.closest('details.sidebar-section') ?? null) {
+    const label = group.querySelector(':scope > summary > .api-nav__label')!
+    if (label === current) continue
+    const copy = label.cloneNode(true)
+    for (const decoration of copy.querySelectorAll('[aria-hidden="true"]')) decoration.remove()
+    trail.unshift({ name: copy.textContent.trim(), url: label.getAttribute('href') })
+  }
+  return trail
+}
+
+it.each([
+  { href: '/reference/application-close/', label: 'close', expected: [
+    { name: 'Application', url: '/reference/application/' }, { name: 'close', url: '/reference/application-close/' },
+  ] },
+  { href: '/reference/application/', label: 'Application', expected: [
+    { name: 'Application', url: '/reference/application/' },
+  ] },
+])('reads reference ancestors of $label without badges or a repeated current owner', async ({ href, label, expected }) => {
+  const window = new Window()
+  try {
+    window.document.body.innerHTML = `<div data-section-navigation><nav>
+      <details class="sidebar-section"><summary><a class="api-nav__label" href="/reference/">Language API</a></summary>
+      <details class="sidebar-section"><summary><span class="api-nav__label"><span aria-hidden="true">M</span>Base</span></summary>
+      <details class="sidebar-section"><summary><a class="api-nav__label" data-sidebar-label="Application" href="/reference/application/"><span aria-hidden="true">S</span>Application</a></summary>
+      <a data-sidebar-label="close" href="/reference/application-close/">close</a>
+      </details></details></details></nav></div>`
+    window.document.querySelector(`a[data-sidebar-label="${label}"]`)!.setAttribute('aria-current', 'page')
+    expect(referenceTrail(window.document, href)).toEqual([
+      { name: 'Language API', url: '/reference/' }, { name: 'Base', url: null },
+      ...expected,
+    ])
+  } finally {
+    await window.happyDOM.close()
+  }
+})
+
 /**
  * The notice is an `Aside`, the same one the reference and the guides use,
  * so it is a `role=note` rather than a landmark with a name of its own. What
  * matters to a reader is that the page says so before its prose, in a block
  * set apart from it.
  */
-function developmentStatus(document: Window['document'], path: string): void {
+function developmentStatus(document: Window['document'], path: string, concept: boolean): void {
   const notes = [...document.querySelectorAll('[role="note"]')]
-  const status = notes.find((note) => /in development/i.test(note.textContent ?? ''))
-  expect(status, `${path} development status`).toBeDefined()
+  const status = notes.find((note) => (concept ? /concept example/i : /in development/i).test(note.textContent ?? ''))
+  expect(status, `${path} support scope or development status`).toBeDefined()
+  if (concept) expect(status!.textContent).toContain(CONCEPT_DESCRIPTION)
 }
 
 async function redirectsTo(path: string, target: string): Promise<void> {
@@ -358,7 +443,8 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
 
   it.each(PORTS.filter((port) => !port.parentLibrary))('$name distinguishes unfinished products and groups workspace internals', async (port) => {
     for (const page of pages().filter((entry) => entry.port === port.slug)) await inspect(page.path, (document) => {
-      if (productInDevelopment(port, page.product)) developmentStatus(document, page.path)
+      if (productIsConcept(port, page.product) || productInDevelopment(port, page.product))
+        developmentStatus(document, page.path, productIsConcept(port, page.product))
       const picker = document.querySelector('[data-surface-picker]')
       if (!productAvailable(port, page.product)) {
         expect(document.querySelector('article')!.textContent, `${page.path} availability`).toMatch(/not published|no published/i)
@@ -377,7 +463,8 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       const surface = page.product === 'mcp' ? 'MCP' : 'Workspace Manager'
       const section = page.section === 'source-guide' ? 'guides' : page.section.split('/')[0] || 'home'
       const sectionLabel = section === 'reference' ? 'API Reference' : section[0].toUpperCase() + section.slice(1)
-      expect(picker?.querySelector('.surface-current strong')?.textContent, `${page.path} current app`).toBe(surface)
+      expect(picker?.querySelector('.surface-current .surface-label')?.textContent, `${page.path} current app`).toBe(surface)
+      expect(picker?.querySelectorAll('.surface-current .concept-badge').length).toBe(productIsConcept(port, page.product) ? 1 : 0)
       expect(picker?.querySelector('.surface-current small')?.textContent, `${page.path} current section`).toBe(sectionLabel)
       const current = picker?.querySelectorAll('[aria-current="location"]')
       expect(current, `${page.path} one current section`).toHaveLength(1)
@@ -433,12 +520,12 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       if (page.product === 'workspace' && port.workspaceCli && productInDevelopment(port, 'workspace') && !page.section) {
         const status = [...document.querySelectorAll('[role="note"]')]
           .map((note) => note.textContent ?? '')
-          .find((text) => /in development/i.test(text))
-        expect(status, `${page.path} development status`).toBeDefined()
+          .find((text) => /concept example/i.test(text))
+        expect(status, `${page.path} concept scope`).toBeDefined()
         const article = document.querySelector('article')!.textContent
         if (port.workspaceCliAvailability === 'local') expect(article, `${page.path} source installation`).toContain('from the source revision in the installation guide')
         expect(article, `${page.path} native CLI`).toContain(port.workspaceCli.split(/\s+/)[0])
-        expect(article.match(/is in development/gi), `${page.path} states maturity once`).toHaveLength(1)
+        expect(article.match(/concept example/gi), `${page.path} states scope once`).toHaveLength(1)
         const links = [...document.querySelectorAll('article a[href]')]
         const installation = nativeProductDocs(page.port) ? 'source-guide' : 'guides/installation'
         expect(links.some((link) => new URL(link.getAttribute('href')!, urlFor(page.path)).pathname === urlFor(`${page.port}/${page.version}/workspace/${installation}/`).pathname), `${page.path} native installation`).toBe(true)
@@ -447,13 +534,12 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     })
   })
 
-  it('links generated declarations and schema-bearing tools inside their product', async () => {
+  it.each(primaryPorts)('$name links generated declarations and schema-bearing tools inside their product', async (port) => {
     for (const page of pages().filter((entry) => entry.section === 'reference'
-      && productAvailable(PORTS.find((port) => port.slug === entry.port)!, entry.product))) {
+      && entry.port === port.slug && productAvailable(port, entry.product))) {
+      const concept = productIsConcept(port, page.product)
       const prefix = `${page.port}/${page.version}/${page.product}/${page.section}/`
-      const declarations = await inspect(page.path, (document) =>
-        [...document.querySelectorAll('[aria-labelledby="generated-api"] a[href]')]
-          .map((link) => ({ href: link.getAttribute('href')!, title: link.textContent.trim() })))
+      const declarations = await declarationIndex(page.path)
       expect(declarations.length, `${page.path} generated declarations`).toBeGreaterThan(0)
       for (const declaration of declarations) {
         expect(new URL(declaration.href, urlFor(page.path)).pathname).toMatch(new RegExp(`^/${SITE_PREFIX}${prefix}[^/]+/$`))
@@ -465,19 +551,35 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         expect(document.querySelector('article h1')?.textContent).toBe(sample.title)
         expect(graph(document).some((entry) => entry['@type'] === 'APIReference')).toBe(true)
         if (page.product === 'workspace') {
-          const labels = [...document.querySelectorAll('nav[aria-label="Breadcrumb"] a, nav[aria-label="Breadcrumb"] [aria-current="page"]')]
-            .map((item) => item.textContent.trim())
-          // The reference is a section of the product, so its pages hang
-          // directly off it: no Internals level in between any more.
-          expect(labels.slice(0, 2)).toEqual([page.name, 'Workspace Manager'])
-          expect(labels.at(-1)).toBe(sample.title)
-          expect(graph(document).find((entry) => entry['@type'] === 'BreadcrumbList')?.itemListElement?.map((item) => item.name)).toEqual(labels)
-        } else developmentStatus(document, samplePath)
+          const reference = urlFor(page.path).pathname
+          const expected = [
+            { name: page.name, url: urlFor(`${page.port}/${page.version}/`).pathname },
+            { name: 'Workspace Manager', url: urlFor(`${page.port}/${page.version}/workspace/`).pathname },
+            { name: 'API reference', url: reference },
+            ...referenceTrail(document, new URL(sample.href, urlFor(page.path)).pathname)
+              .filter((item) => item.url !== reference),
+          ]
+          const crumbs = [...document.querySelectorAll('nav[aria-label="Breadcrumb"] [data-breadcrumb-item]')]
+          expect(crumbs.map((item) => item.textContent.trim()), `${samplePath} sidebar ancestry`)
+            .toEqual(expected.map((item) => item.name))
+          for (const [index, crumb] of crumbs.entries()) {
+            expect(crumb.getAttribute('href'), `${samplePath} ancestor destination`)
+              .toBe(index === crumbs.length - 1 ? null : expected[index].url)
+            if (expected[index].url) expect(resolves(expected[index].url!, urlFor(samplePath).href)).toBe(true)
+          }
+          expect(crumbs.at(-1)?.getAttribute('aria-current')).toBe('page')
+          expect(graph(document).find((entry) => entry['@type'] === 'BreadcrumbList')?.itemListElement)
+            .toEqual(expected.filter((item) => item.url).map((item, index) => ({
+              '@type': 'ListItem', position: index + 1, name: item.name,
+              item: new URL(item.url!, 'https://libtmux.org').href,
+            })))
+        }
+        if (concept || productInDevelopment(port, page.product)) developmentStatus(document, samplePath, concept)
       })
       if (page.product !== 'mcp') continue
       const toolsPath = `${page.port}/${page.version}/mcp/tools/`
       const tools = await inspect(toolsPath, (document) => {
-        developmentStatus(document, toolsPath)
+        developmentStatus(document, toolsPath, concept)
         return [...document.querySelectorAll('.api-index-card[id] > .api-index-card__link[href]')].map((link) => link.getAttribute('href')!)
       })
       expect(tools.length, `${toolsPath} protocol tools`).toBeGreaterThan(0)
@@ -487,7 +589,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       }
       const toolPath = new URL(tools[0], urlFor(toolsPath)).pathname.slice(SITE_PREFIX.length + 1)
       await inspect(toolPath, (document) => {
-        developmentStatus(document, toolPath)
+        developmentStatus(document, toolPath, concept)
         const input = [...document.querySelectorAll('details')]
           .find((detail) => detail.querySelector('summary')?.textContent === 'Input schema')
         expect(input, `${toolPath} input schema`).toBeDefined()
@@ -569,13 +671,13 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     for (const page of pages().filter((entry) => entry.port === slug)) await inspect(page.path, (document) => {
       const crumb = document.querySelector('nav[aria-label="Breadcrumb"]')!
       expect(crumb, page.path).not.toBeNull()
-      const labels = [...crumb.querySelectorAll('a, [aria-current="page"]')].map((item) => item.textContent.trim())
+      const labels = [...crumb.querySelectorAll('a[data-breadcrumb-item], [data-breadcrumb-item][aria-current="page"]')].map((item) => item.textContent.trim())
       const structured = graph(document).find((entry) => entry['@type'] === 'BreadcrumbList')
       expect(structured?.itemListElement?.map((item) => item.name), page.path).toEqual(labels)
       expect(labels[0]).toBe(page.name)
       expect(labels[1]).toBe(page.product === 'mcp' ? 'MCP' : 'Workspace Manager')
       if (page.section.startsWith('internals/')) expect(labels[2]).toBe('Internals')
-      for (const item of structured!.itemListElement!) expect(resolves(item.item), item.item).toBe(true)
+      for (const item of structured!.itemListElement!) if (item.item) expect(resolves(item.item), item.item).toBe(true)
       expect(new URL(structured!.itemListElement!.at(-1)!.item).pathname).toBe(urlFor(page.path).pathname)
     })
   })
@@ -702,6 +804,10 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
           const metadata = advertised.products.find((entry) => entry.slug === product)!
           expect(metadata.availability, `${root}${port.slug} ${product} availability`).toBe(productAvailable(port, product) ? 'available' : 'unpublished')
           expect(metadata.inDevelopment, `${root}${port.slug} ${product} development status`).toBe(productInDevelopment(port, product))
+          if (productIsConcept(port, product)) {
+            expect(metadata.support).toBe('concept')
+            expect(metadata.supportDescription).toBe(CONCEPT_DESCRIPTION)
+          } else expect(metadata.support).toBeUndefined()
           const section = 'reference'
           if (productAvailable(port, product)) {
             expect(new URL(metadata.reference!, urlFor(root)).pathname).toBe(urlFor(`${port.slug}/${rootVersion || defaults[port.slug]}/${product}/${section}/`).pathname)

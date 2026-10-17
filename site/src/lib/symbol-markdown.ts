@@ -4,11 +4,14 @@ import { toMarkdown } from 'mdast-util-to-markdown'
 import { membersOf, memberSignals, memberTier, moduleOf, qualifiedNameOf } from '@libtmux/api-model'
 import mentions from '../data/mentions.json'
 import { PORT_NAME, referenceAlternatives } from './api-models'
-import { apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures } from './api-sections'
+import { apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, hasScalarMembers, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures } from './api-sections'
 import { tmuxCommandsFor, tmuxManualUrl } from './tmux-manual-data'
+import { tmuxCommandMentions, tmuxMentionMarkdown } from './tmux-links'
 import { productApiIndex } from './product-api'
 import { defaultVersionFor } from './versions'
+import { apiSignatureLayouts, type CodeLayout } from './code-layout'
 import { apiCallSource, apiRelationshipSections, type ApiRelationshipPath } from './api-relationships'
+import { PORT_BY_SLUG, productConceptNotice } from './ports'
 
 /**
  * A symbol's page as Markdown.
@@ -35,6 +38,7 @@ export interface MarkdownContext {
   source?: string
   packageName?: string
   version?: string
+  signatureLayouts?: ReadonlyMap<Signature, CodeLayout>
 }
 
 function signatureLine(symbol: ApiSymbol, sig: Signature, port?: string): string {
@@ -58,18 +62,46 @@ function inlineCode(code: string): string {
   return `${fence}${pad}${code}${pad}${fence}`
 }
 
-function powerShellProseMarkdown(markdown: string, index: SymbolIndex, symbol: ApiSymbol): string {
+function proseMarkdown(markdown: string, index: SymbolIndex, symbol: ApiSymbol, linkApi: boolean): string {
+  if (!linkApi && !/\btmux\s/.test(markdown) && !tmuxCommandMentions(markdown).length) return markdown
   // Use the HTML resolver for prose exports too. Never rewrite runnable code
   // blocks or the contents of an author-supplied link.
   const edits: { start: number; end: number; text: string }[] = []
+  let htmlDepth = 0
   const visit = (node: ReturnType<typeof fromMarkdown> | ReturnType<typeof fromMarkdown>['children'][number]) => {
     if (node.type === 'link' || node.type === 'linkReference' || node.type === 'code') return
+    if (node.type === 'html') {
+      for (const tag of node.value.matchAll(/<(\/?)(?:a|code|pre)\b[^>]*>/gi)) htmlDepth = Math.max(0, htmlDepth + (tag[1] ? -1 : 1))
+      return
+    }
     if (node.type === 'inlineCode' || node.type === 'text') {
+      if (htmlDepth) return
       const start = node.position!.start.offset!
       const end = node.position!.end.offset!
+      const tmux = tmuxMentionMarkdown(node.value, node.type === 'inlineCode')
+      if (tmux && (node.type === 'inlineCode' || markdown.slice(start, end) === node.value)) {
+        edits.push({ start, end, text: tmux })
+        return
+      }
+      if (!linkApi) return
       if (node.type === 'inlineCode') {
+        if (!index.linkText(markdown.slice(start, end), symbol).some((span) => span.kind === 'ref')) return
         const link = index.resolve(node.value, 'any', symbol)
         if (link) edits.push({ start, end, text: `[${inlineCode(node.value)}](${link.href})` })
+        else {
+          const parts = index.linkType(node.value, symbol)
+          if (parts.some((part) => part.link)) {
+            let plain = ''
+            let linked = ''
+            for (const part of parts) {
+              if (!part.link) { plain += part.text; continue }
+              if (plain) { linked += inlineCode(plain); plain = '' }
+              linked += `[${inlineCode(part.text)}](${part.link.href})`
+            }
+            if (plain) linked += inlineCode(plain)
+            edits.push({ start, end, text: linked })
+          }
+        }
       } else if (markdown.slice(start, end) === node.value) {
         const spans = index.linkText(node.value, symbol)
         if (spans.some((span) => span.kind === 'ref' && span.link)) edits.push({ start, end,
@@ -83,14 +115,24 @@ function powerShellProseMarkdown(markdown: string, index: SymbolIndex, symbol: A
   return markdown
 }
 
+/** Production export prepares the same native layouts used by ApiEntry. */
+export async function symbolMarkdownWithLayout(ctx: MarkdownContext): Promise<string> {
+  const language = 'language' in ctx.model ? ctx.model.language : ctx.model.port
+  return symbolMarkdown({ ...ctx, signatureLayouts: await apiSignatureLayouts(ctx.symbol, language) })
+}
+
 export function symbolMarkdown(ctx: MarkdownContext): string {
   const { model, symbol } = ctx
   const port = 'port' in model ? model.port : undefined
   const language = 'language' in model ? model.language : port
   const index = ctx.index ?? (port && 'port' in model ? productApiIndex(model, ctx.version ?? defaultVersionFor(port)) : undefined)
-  const prose = (text: string) => language === 'powershell' && index ? powerShellProseMarkdown(text, index, symbol) : text
+  const prose = (text: string) => index ? proseMarkdown(text, index, symbol, ['powershell', 'scala', 'ts'].includes(language ?? '')) : text
   const id = qualifiedNameOf(symbol)
   const out: string[] = [`# ${id}`, '']
+  const info = port ? PORT_BY_SLUG[port] : undefined
+  const notice = info && (symbol.product === 'mcp' || symbol.product === 'workspace')
+    ? productConceptNotice(info, symbol.product) : undefined
+  if (notice) out.push(`**${notice.title}** ${notice.body}`, '')
 
   // The definition block, in the same order the page shows it.
   const facts: string[] = []
@@ -132,10 +174,12 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     out.push(fencedCode(`${symbol.name} = ${symbol.type}`, 'julia'), '')
   }
   const signatures = language === 'c' ? symbol.signatures.filter((signature) => signature.raw) : symbol.signatures
-  const sig = signatures.map((entry) => native && entry.raw
+  const sig = signatures.map((entry) => ctx.signatureLayouts?.get(entry)?.text ?? (native && entry.raw
     ? `${entry.label && entry.label !== '__AllParameterSets' ? `${entry.label}${entry.isDefault ? ' (default)' : ''}:\n` : ''}${nativeSignatureText(symbol, entry, language)}`
-    : signatureLine(symbol, entry, language)).join('\n\n')
+    : signatureLine(symbol, entry, language))).join('\n\n')
   if (sig) out.push(fencedCode(sig, language === 'c' ? 'c' : ''), '')
+  else if (parent?.variant && symbol.type) out.push(fencedCode(`${symbol.name}: ${symbol.type}`, language), '')
+  else if (symbol.value !== undefined) out.push(fencedCode(`${qualifiedNameOf(symbol)}${symbol.type ? `: ${symbol.type}` : ''} = ${symbol.value}`, language ?? ''), '')
   else if (language === 'c') out.push(`${anonymousDeclarationLabel(symbol)}.`, '')
 
   if (symbol.doc?.summary) out.push(prose(symbol.doc.summary), '')
@@ -226,13 +270,21 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   const inherited = members.filter((member) => member.inheritedFrom && memberTier(member, signals) !== 'parent')
   const appendMembers = (entries: ApiSymbol[]) => {
     for (const member of entries) {
-      out.push(`- ${ctx.hrefFor ? `[${inlineCode(member.name)}](${ctx.hrefFor(member)})` : inlineCode(member.name)} (${member.kind})${member.inheritedFrom ? `, inherited from ${inlineCode(member.inheritedFrom)}` : ''}${member.doc?.summary ? `: ${member.doc.summary}` : ''}`)
+      out.push(`- ${ctx.hrefFor ? `[${inlineCode(member.name)}](${ctx.hrefFor(member)})` : inlineCode(member.name)} (${symbol.variant && member.type ? inlineCode(member.type) : member.kind})${member.inheritedFrom ? `, inherited from ${inlineCode(member.inheritedFrom)}` : ''}${member.doc?.summary ? `: ${member.doc.summary}` : ''}`)
     }
     out.push('')
   }
   if (declared.length) {
-    out.push('## Members', '')
-    for (const group of apiMemberGroups(declared, signals)) {
+    out.push(symbol.variant ? '## Fields' : '## Members', '')
+    if (hasScalarMembers(symbol, declared)) {
+      out.push('| Name | Value | Description |', '| --- | --- | --- |')
+      const cell = (text: string) => text.replaceAll('|', '\\|').replaceAll('\n', ' ')
+      for (const member of declared) {
+        const name = ctx.hrefFor ? `[${inlineCode(member.name)}](${ctx.hrefFor(member)})` : inlineCode(member.name)
+        out.push(`| ${cell(name)} | ${cell(inlineCode(member.value!))} | ${cell(member.doc?.summary ?? '')} |`)
+      }
+      out.push('')
+    } else for (const group of apiMemberGroups(declared, signals)) {
       out.push(`### ${group.label}`, '')
       appendMembers(group.members)
     }
