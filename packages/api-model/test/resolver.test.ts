@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { readInventory } from '../src/inventory.ts'
@@ -143,7 +143,9 @@ d('resolver', () => {
     let linkable = 0
     let resolved = 0
     for (const f of walk(docs)) {
-      for (const mention of proseMentions(readFileSync(f, 'utf8'), LABEL)) {
+      const [area, port] = relative(docs, f).split(/[\\/]/)
+      const owner = ['ports', '_staged'].includes(area) && PORTS.some((entry) => entry === port) ? port : undefined
+      for (const mention of proseMentions(readFileSync(f, 'utf8'), LABEL, () => owner)) {
         // Authored links already select a destination, which may be a protocol
         // object or external API. The name resolver does not own those labels.
         if (mention.linked) continue

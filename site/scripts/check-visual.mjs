@@ -28,7 +28,8 @@ import pixelmatch from 'pixelmatch'
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const dir = join(root, 'test/baselines')
 const update = process.argv.includes('--update')
-const base = process.argv.find((a) => a.startsWith('http')) ?? 'http://localhost:8080'
+// `scripts/serve.sh` serves the assembled site under the `en` locale.
+const base = process.argv.find((a) => a.startsWith('http')) ?? 'http://localhost:8080/en'
 
 /** One page per rendering path, not one per port: the component is shared. */
 const PAGES = [

@@ -10,7 +10,7 @@ export async function checkReferencePreferences(browser, base) {
     const seen = new WeakSet()
     const observe = () => {
       const details = document.querySelector('.api-source-details')
-      if (details?.querySelector('summary') && !seen.has(details)) {
+      if (details?.querySelector('summary') && getComputedStyle(document.body).visibility === 'visible' && !seen.has(details)) {
         seen.add(details)
         window.__sourceFrames.push({ path: location.pathname, open: details.open })
       }
@@ -18,7 +18,7 @@ export async function checkReferencePreferences(browser, base) {
     }
     requestAnimationFrame(observe)
     window.__docsPageLoaded = false
-    document.addEventListener('astro:page-load', () => { window.__docsPageLoaded = true })
+    document.addEventListener('libtmux:page-ready', () => { window.__docsPageLoaded = true })
   })
   const page = await context.newPage()
   page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
@@ -30,7 +30,7 @@ export async function checkReferencePreferences(browser, base) {
     assert.equal(await source.evaluate((el) => el.open), open)
   }
   try {
-    await page.goto(`${base}${path}`)
+    await page.goto(`${base}${path}`, { waitUntil: 'commit' })
     await page.waitForFunction(() => window.__docsPageLoaded)
     await assertFirstFrame(true)
     // Exercise both possible disclosure heights on the reported short page.
@@ -53,30 +53,30 @@ export async function checkReferencePreferences(browser, base) {
       assert(overview.scroll < errorsScroll - 20, `Overview returns above Errors with source ${open ? 'open' : 'closed'}`)
       assert(overview.heading >= overview.header && overview.heading < 350, 'Overview reveals the heading')
     }
-    await page.reload()
+    await page.reload({ waitUntil: 'commit' })
     await assertFirstFrame(false)
     await page.waitForFunction(() => window.__docsPageLoaded)
-    // A real declaration link uses the client router, without replacing Window.
+    // A real declaration link restores the preference in a new document.
     const target = `${new URL(base).pathname}/java/latest/reference/io-github-libtmux-exception-targetgoneexception-targetgoneexception/`
     const linked = page.locator(`.api-overview a[href="${target}"]`).first()
     await linked.click()
-    await page.waitForURL(new URL(target, base).href)
-    await page.waitForFunction(() => window.__sourceFrames.length === 2)
+    await page.waitForURL(new URL(target, base).href, { waitUntil: 'commit' })
     await assertFirstFrame(false)
     await source.locator('summary').click()
     await page.waitForFunction((key) => localStorage.getItem(key) === 'open', key)
-    await page.goto(`${base}/kotlin/latest/reference/io-github-libtmux-kotlin-server-livestate/`)
+    await page.goto(`${base}/kotlin/latest/reference/io-github-libtmux-kotlin-server-livestate/`, { waitUntil: 'commit' })
     await assertFirstFrame(true)
     await source.locator('summary').click()
     await page.waitForFunction((key) => localStorage.getItem(key) === 'closed', key)
     // A new tab and another port share the same persistent preference.
     const other = await context.newPage()
-    await other.goto(`${base}${path}`)
+    await other.goto(`${base}${path}`, { waitUntil: 'commit' })
+    await other.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready')
     assert.equal(await other.locator('.api-source-details').evaluate((el) => el.open), false)
     await other.locator('.api-source-details > summary').click()
     await page.waitForFunction(() => document.querySelector('.api-source-details').open)
     await other.close()
-    console.log('Source and package: default open, keyboard, reload, client route, cross-port/tab and first-frame state pass')
+    console.log('Source and package: default open, keyboard, reload, document links, cross-port/tab and first-frame state pass')
   } finally {
     await context.close()
   }
@@ -87,14 +87,26 @@ export async function checkReferencePreferences(browser, base) {
       Object.defineProperty(window, 'localStorage', { get() { throw new Error('Storage blocked') } })
     })
     const page = await fallback.newPage()
+    const errors = []
+    page.on('pageerror', (error) => errors.push(error.stack))
+    page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()) })
     try {
-      await page.goto(`${base}${path}`)
+      await page.goto(`${base}${path}`, { waitUntil: 'commit' })
+      if (javaScriptEnabled) {
+        await page.waitForFunction(() => ['ready', 'failed'].includes(document.documentElement.dataset.pageReadiness))
+        assert.equal(await page.locator('html').getAttribute('data-page-readiness'), 'ready', errors.join('\n'))
+      }
       const details = page.locator('.api-source-details')
+      const summary = details.locator('summary')
+      await summary.waitFor({ state: 'visible' })
       assert.equal(await details.evaluate((el) => el.open), true)
-      await details.locator('summary').focus()
+      await summary.focus()
+      assert(await summary.evaluate((element) => element === document.activeElement), 'The visible disclosure receives keyboard focus')
       await page.keyboard.press('Space')
+      await page.waitForFunction(() => !document.querySelector('.api-source-details').open)
       assert.equal(await details.evaluate((el) => el.open), false)
       await page.keyboard.press('Space')
+      await page.waitForFunction(() => document.querySelector('.api-source-details').open)
       assert.equal(await details.evaluate((el) => el.open), true)
     } finally {
       await fallback.close()

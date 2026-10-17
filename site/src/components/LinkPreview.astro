@@ -20,11 +20,19 @@ const { id = 'reference-link-preview', title = 'Reference preview', description 
   <a href={href} data-preview-open data-preview-skip>{actionLabel}</a>
 </span>
 <style is:global>
-  a[data-link-preview]:not(.api-badge), a[data-link-preview] code {
+  a[data-link-preview]:not(.api-badge) {
     text-decoration-line: underline;
     text-decoration-style: dotted;
     text-decoration-color: currentColor;
     text-underline-offset: .2em;
+  }
+  a[data-link-preview]:not(.api-badge):has(.api-literal--link) { color: var(--color-link); }
+  a[data-link-preview]:not(.api-badge) code { text-decoration-line: none; }
+  /* Keep the preview dots inside the code frame, clear of its bottom border. */
+  a[data-link-preview]:not(.api-badge):is(.api-literal, :has(.api-literal)),
+  .api-literal a[data-link-preview]:not(.api-badge) {
+    text-underline-offset: .08em;
+    text-decoration-thickness: 1px;
   }
   .reference-link-preview {
     position: fixed; inset: 0; margin: auto; padding: 1rem;
@@ -42,7 +50,10 @@ const { id = 'reference-link-preview', title = 'Reference preview', description 
   .reference-link-preview [data-preview-expand] { margin-bottom: .65rem; color: var(--color-link); text-decoration: underline; cursor: pointer; }
   .reference-link-preview [data-preview-description], .reference-link-preview [data-preview-detail] { display: block; margin-bottom: .65rem; }
   .reference-link-preview [data-preview-detail][hidden] { display: none; }
-  .reference-link-preview [data-preview-signature] { font: .8125rem/1.5 var(--font-mono, ui-monospace, monospace); white-space: pre-wrap; padding: .5rem; margin-block: .75rem; background: var(--color-background-primary); border: 1px solid var(--color-background-border); border-radius: .25rem; }
+  .reference-link-preview [data-preview-signature] { font: .8125rem/1.5 var(--font-mono, ui-monospace, monospace); white-space: pre-wrap; padding: .5rem; margin-block: .75rem; background: var(--shiki-light-bg, var(--color-background-primary)); color: var(--shiki-light, inherit); border: 1px solid var(--color-background-border); border-radius: .25rem; }
+  .reference-link-preview [data-preview-signature] span { font-style: var(--shiki-light-font-style); font-weight: var(--shiki-light-font-weight); text-decoration: var(--shiki-light-text-decoration); }
+  html[data-theme-mode="dark"] .reference-link-preview [data-preview-signature] { background: var(--shiki-dark-bg, var(--color-background-primary)); color: var(--shiki-dark, inherit); }
+  html[data-theme-mode="dark"] .reference-link-preview [data-preview-signature] span { font-style: var(--shiki-dark-font-style); font-weight: var(--shiki-dark-font-weight); text-decoration: var(--shiki-dark-text-decoration); }
   .reference-link-preview [data-preview-signature]:not([hidden]) { display: block; }
   .reference-link-preview [data-preview-open] { color: var(--color-link); text-decoration: underline; }
   .reference-link-preview :focus-visible { outline: 2px solid var(--color-link); outline-offset: 3px; }

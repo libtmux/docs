@@ -1,7 +1,7 @@
 ---
-supportedPorts: [py, ts, rs, go, java, csharp, cxx, swift]
+supportedPorts: []
 title: Guides
-description: Task-oriented walkthroughs that sit between the concepts and each port's own API reference.
+description: Run tmux commands to create sessions, send input, capture output, query objects, and isolate tests.
 sidebar:
   label: Overview
   group: Guides
@@ -35,13 +35,13 @@ cards:
     body: Use isolated tmux servers and manage test cleanup.
 ---
 
-Use these guides to connect to tmux, send input, capture output, query objects,
-and test your program. [Concepts](/concepts/) explains the object model and
-transport choices.
+Use these guides to run tmux tasks from a terminal or a shell script. Start
+with [getting started](getting-started/) to create a session, window, and
+pane. [Concepts](/concepts/) explains their identities and relationships.
 
-[Examples](/examples/) provides complete programs with setup and cleanup.
+[Examples](/examples/) provides complete scripts with setup and cleanup.
 
-<!-- port:root -->
-The general guides use tmux shell commands. Select a port from the dropdown
-for its library APIs, imports and native project setup.
-<!-- /port -->
+The command references for [`new-session`](/tmux/latest/manual/new-session/)
+and [`capture-pane`](/tmux/latest/manual/capture-pane/) describe their flags
+for the selected tmux release. The guides state their prerequisites and own
+their private server cleanup.

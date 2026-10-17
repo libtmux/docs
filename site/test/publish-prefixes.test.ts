@@ -160,7 +160,7 @@ describe('production shell publication boundaries', { timeout: 30_000 }, () => {
   it.each(['en', 'ja'])('publishes %s products without replacing port, version, native API, or historical prefixes', (locale) => {
     const result = publish(fixture(true), locale)
     expect(result.status, result.stderr).toBe(0)
-    const syncs = result.commands.filter((args) => args[0] === 's3' && args[1] === 'sync')
+    const syncs = result.commands.filter((args) => args[0] === 's3' && (args[1] === 'sync' || args.includes('--recursive')))
     const destinations = syncs.map((args) => args[3])
     expect(destinations).toContain(`s3://docs-test/${locale}/_astro/`)
     for (const port of PORTS.filter((candidate) => !PORT_TREES.includes(candidate.slug))) {
@@ -173,7 +173,10 @@ describe('production shell publication boundaries', { timeout: 30_000 }, () => {
       .map((section) => `s3://docs-test/${locale}/${port.slug}/latest/${section}/`)))
     for (const args of syncs) {
       const destination = args[3]
-      if (destination.endsWith('/_astro/')) expect(args, destination).not.toContain('--delete')
+      if (destination.endsWith('/_astro/')) {
+        expect(args, destination).not.toContain('--delete')
+        expect(args).toContain('public, max-age=31536000, immutable')
+      }
       else expect(args, destination).toContain('--delete')
       expect(destination === `s3://docs-test/${locale}/_astro/` || productPrefixes.has(destination), destination).toBe(true)
       for (const port of PORTS) {
@@ -184,7 +187,9 @@ describe('production shell publication boundaries', { timeout: 30_000 }, () => {
         }
       }
     }
-    const copies = result.commands.filter((args) => args[1] === 'cp')
+    const firstHtml = result.commands.findIndex((args) => args[1] === 'sync' || args[3]?.endsWith('.html'))
+    expect(result.commands.slice(firstHtml).some((args) => args.includes('--recursive'))).toBe(false)
+    const copies = result.commands.filter((args) => args[1] === 'cp' && !args.includes('--recursive'))
     expect(copies.some((args) => args.includes('--recursive'))).toBe(false)
     expect(copies.map((args) => args[3]).sort()).toEqual([
       ...PORTS.flatMap((port) => ['index.html', 'index.md'].map((file) => `s3://docs-test/${locale}/${port.slug}/${file}`)),

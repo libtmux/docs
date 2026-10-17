@@ -10,6 +10,7 @@
  * instances don't leak.
  */
 
+import { layoutBeforeAppearance } from '../../lib/page-readiness'
 import { PAGE_TITLE_ID } from '../../constants'
 
 class StarlightTOC extends HTMLElement {
@@ -39,7 +40,7 @@ class StarlightTOC extends HTMLElement {
   private onIdle = (cb: IdleRequestCallback) => (window.requestIdleCallback || ((cb) => setTimeout(cb, 1)))(cb)
 
   connectedCallback(): void {
-    this.onIdle(() => this.init())
+    layoutBeforeAppearance(this.init)
   }
 
   disconnectedCallback(): void {
@@ -208,11 +209,9 @@ class StarlightTOC extends HTMLElement {
       if (link) {
         this.setActiveHeadingWithoutAnimation(id)
 
-        // Scroll ToC to make active item visible
-        setTimeout(() => {
-          // Site is intentionally motionless: jump, don't smooth-scroll
-          link.scrollIntoView({ block: 'center' })
-        }, 100)
+        // Move only the contents panel; preserve the document's fragment arrival.
+        const panel = this.querySelector<HTMLElement>('.toc-nav')
+        if (panel) panel.scrollTop += link.getBoundingClientRect().top - panel.getBoundingClientRect().top
         return
       }
     }

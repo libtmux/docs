@@ -21,6 +21,7 @@ import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Resolver, parentInventory, decideFilePath, decideMention, isLikelyReference, looksLikeApiMention, notASymbol, notApiReason, proseMentions, readInventory } from '../packages/api-model/src/index.ts'
 import { decideMcpMention } from '../site/src/lib/mcp-catalog.ts'
+import { isTmuxProse } from '../site/src/lib/docs-paths.ts'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const { API_MODEL_PORTS: PORT_DEFS, PORT_BY_SLUG } = await import(`file://${resolve(root, 'site/src/lib/ports.ts')}`)
@@ -163,6 +164,11 @@ for (const file of targets) {
   const frontmatter = /^---\r?\n([\s\S]*?)\r?\n---/.exec(raw)?.[1] ?? ''
   const authoredPort = /^port:\s*['"]?([a-z]+)['"]?\s*$/m.exec(frontmatter)?.[1]
     ?? /^ports\/([^/]+)\//.exec(file.replace(`${CONTENT}/`, ''))?.[1]
+  const route = /^route:\s*(.+)$/m.exec(frontmatter)?.[1].trim().replace(/^['"]|['"]$/g, '')
+  const nativeTmux = isTmuxProse({
+    id: relative(CONTENT, file).replaceAll('\\', '/').replace(/\.mdx?$/, ''),
+    data: { port: authoredPort, route },
+  })
   // Match rehype-api-links: native wrapper guides have no shared API model.
   if (PORT_BY_SLUG[authoredPort]?.referenceKind === 'guide') continue
   const product = /^product:\s*['"]?(core|workspace|mcp)['"]?\s*$/m.exec(frontmatter)?.[1]
@@ -170,6 +176,7 @@ for (const file of targets) {
   const selected = resolvePortContent(raw, authoredPort)
   for (const { text, port: ctxPort, before, line, linked } of proseMentions(selected.body, PORT_BY_LABEL, selected.portAt)) {
     if (linked) { tally.alreadyLinked++; continue }
+    if (nativeTmux) { tally.notASymbol++; continue }
     const pagePort = authoredPort ?? ctxPort
 
     const protocol = decideMcpMention(text, { pagePort, product, before })

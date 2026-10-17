@@ -20,7 +20,7 @@
 :root {
   --color-api-name: #b30000;
   --color-api-pre-name: #b30000;
-  --color-api-paren: #5a5c63;
+  --color-api-paren: var(--color-foreground-secondary, #5a5c63);
   --color-api-keyword: black;
   --gp-sphinx-type-metadata: 87.5%;
   --gp-sphinx-api-signature-indent: 1.5rem;
@@ -29,7 +29,7 @@
 [data-theme-mode='dark'] {
   --color-api-name: #ee5151;
   --color-api-pre-name: #ee5151;
-  --color-api-paren: #9ca0a5;
+  --color-api-paren: var(--color-foreground-secondary, #9ca0a5);
   --color-api-keyword: #9ca0a5;
 }
 

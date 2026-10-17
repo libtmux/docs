@@ -4,6 +4,9 @@
 [data-anchor-arrival], [data-anchor-arrival] > :is(td, th) {
   animation: libtmux-anchor-arrival 2.6s ease-out;
 }
+html:is(.fonts-pending, .link-hints-pending) [data-anchor-arrival] {
+  animation-play-state: paused;
+}
 @keyframes libtmux-anchor-arrival {
   0%, 55% { background-color: color-mix(in srgb, var(--color-link, #2879d0) 18%, transparent); }
   100% { background-color: transparent; }

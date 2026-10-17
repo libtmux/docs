@@ -121,6 +121,9 @@ The command reference uses the revisions in `site/src/data/tmux/versions.json`.
 Each snapshot combines that revision's manual with the corresponding binary's
 `list-commands` output. The generator starts and cleans up a private server.
 It also retains the upstream license and command source locations.
+The original `revision` pin is retained separately from its peeled
+`sourceCommit` and `sourceTree`. File links use the commit because GitHub's
+file endpoints do not accept annotated tag object hashes.
 
 With mandoc 1.14.6 and binaries installed as `<binaries>/<version>/bin/tmux`,
 regenerate the committed snapshots:

@@ -65,16 +65,23 @@ describe('reference picker exits', () => {
   it('mounts glossary equivalents inside the available API product and preserves the term', () => {
     const entries = pagePortLinks({ ...options, pagePath: 'mcp/reference/glossary', portSlug: 'cxx' })
     expect(entries.find((entry) => entry.port === 'cxx')?.links).toEqual([
-      { href: '/pr-42/en/cxx/v1.2.3/mcp/reference/glossary/', preserveFragment: true },
+      { href: '/pr-42/en/cxx/v1.2.3/mcp/reference/glossary/', preserveFragment: true, fragmentIds: expect.arrayContaining(['attribute', 'mcp-tool-annotations']) },
     ])
     expect(entries.find((entry) => entry.port === 'julia')?.links).toEqual([
-      { href: '/pr-42/en/julia/latest/mcp/reference/glossary/', preserveFragment: true },
+      { href: '/pr-42/en/julia/latest/mcp/reference/glossary/', preserveFragment: true, fragmentIds: expect.arrayContaining(['attribute', 'mcp-tool-annotations']) },
     ])
     expect(entries.find((entry) => entry.port === 'powershell')?.links).toEqual([])
     const core = pagePortLinks({ ...options, pagePath: 'reference/glossary', portSlug: 'rs' })
     expect(core.find((entry) => entry.port === 'py')?.links).toEqual([
-      { href: '/pr-42/en/py/stable/reference/glossary/', preserveFragment: true },
+      { href: '/pr-42/en/py/stable/reference/glossary/', preserveFragment: true, fragmentIds: expect.arrayContaining(['method', 'symbol-kinds']) },
     ])
+  })
+
+  it('advertises only real destination glossary term and group fragments', () => {
+    const entries = pagePortLinks({ ...options, pagePath: 'reference/glossary', portSlug: 'scala' })
+    expect(entries.find((entry) => entry.port === 'powershell')?.links[0]).toHaveProperty('fragmentIds', expect.arrayContaining(['function', 'cmdlet', 'symbol-kinds']))
+    expect(entries.find((entry) => entry.port === 'powershell')?.links[0]).toHaveProperty('fragmentIds', expect.not.arrayContaining(['method']))
+    expect(entries.find((entry) => entry.port === 'java')?.links[0]).toHaveProperty('fragmentIds', expect.arrayContaining(['method']))
   })
 })
 

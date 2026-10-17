@@ -76,6 +76,13 @@ function typeParameters(node: Node, language: Language): string[] {
   }) : []
 }
 
+function upperBounds(node: Node): string[] {
+  const types = (type: Node): string[] => type.type === 'infix_type' && field(type, 'operator')?.text === '&'
+    ? [field(type, 'left'), field(type, 'right')].flatMap((part) => part ? types(part) : []) : [compact(type.text)]
+  return childrenOf(node).filter((child) => child.type === 'upper_bound')
+    .flatMap((bound) => { const type = field(bound, 'type'); return type ? types(type) : [] })
+}
+
 /** Extract handwritten declarations and generated extensions in one symbol table. */
 export async function extractJvm(port: Language, roots: string[], revision?: string): Promise<ApiModel> {
   const parser = await parserFor(port)
@@ -100,11 +107,16 @@ export async function extractJvm(port: Language, roots: string[], revision?: str
     if (companion) {
       // A Scala opaque type and its companion share the public name. Keep
       // both declarations and the type's kind on their common reference page.
-      if (previous.kind === 'module' && symbol.kind !== 'module') previous.kind = symbol.kind
+      if (previous.kind === 'module' && symbol.kind !== 'module') {
+        previous.kind = symbol.kind
+        previous.imports = symbol.imports
+      }
     } else if (previous.kind !== symbol.kind) {
       throw new Error(`Conflicting ${port} declarations for ${symbol.id}`)
     } else if (!previous.modifiers.includes('overload')) previous.modifiers.push('overload')
     previous.signatures.push(...symbol.signatures)
+    previous.extends ??= symbol.extends
+    previous.modifiers = [...new Set([...previous.modifiers, ...symbol.modifiers])]
     previous.doc ??= symbol.doc
   }
 
@@ -228,6 +240,11 @@ export async function extractJvm(port: Language, roots: string[], revision?: str
               parent: owner, signatures: [signature], imports: Object.fromEntries(imports),
               modifiers: /\bsuspend\b/.test(named(node, 'modifiers')?.text ?? '') ? ['async'] : [],
               doc: documentation(node, port, signature, comments, source), source: { file, line: node.startPosition.row + 1 },
+            }
+            if (port === 'scala' && kind === 'typealias') {
+              const bounds = upperBounds(node)
+              if (bounds.length) symbol.extends = bounds
+              if (named(node, 'opaque_modifier')) symbol.modifiers.push('opaque')
             }
             if (ownReceiver) extensions.push(symbol)
             else emit(symbol)

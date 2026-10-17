@@ -77,14 +77,8 @@ export async function checkHomeExampleOptions(browser, base) {
       await check(false, false)
 
       const transition = async (navigate) => {
-        await page.evaluate(() => {
-          window.__homeOptionsPageLoaded = false
-          document.addEventListener('astro:page-load', () => {
-            window.__homeOptionsPageLoaded = true
-          }, { once: true })
-        })
         await navigate()
-        await page.waitForFunction(() => window.__homeOptionsPageLoaded)
+        await page.locator('html[data-page-readiness="ready"]').waitFor({ state: 'attached' })
       }
       await page.goto(`${base}/?port=rs&errors=1&cleanup=0#first`)
       await page.waitForSelector('[data-task-enhanced]:not([hidden])')
@@ -95,14 +89,12 @@ export async function checkHomeExampleOptions(browser, base) {
       await page.goBack()
       await page.waitForFunction(() => location.hash === '#first')
       await check(true, false)
-      // Query restoration is synchronous; the router's page swap is not.
       await transition(() => page.goForward())
       await page.waitForFunction(() => location.hash === '#second')
       await check(false, true)
 
       const documentation = `${base}/tmux/?from=doc#start`
       await page.goto(documentation)
-      // The incoming default panel is visible before scripts restore the port.
       await transition(() => page.locator('.site-header__mark').click())
       await page.waitForSelector('[data-task-enhanced]:not([hidden])')
       await errors.check()

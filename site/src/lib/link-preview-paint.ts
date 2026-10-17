@@ -66,6 +66,9 @@ export function initializeLinkPreviewPaint(policy: ReturnType<typeof createLinkP
       }, { once: true })
     }
   }
+  document.defaultView?.__libtmuxAppearance?.layout(() => {
+    if (document.documentElement.hasAttribute('data-reference-previews')) mark(document, location.href)
+  })
   // NativeShell shares this startup script but does not enable previews itself.
   document.addEventListener('astro:before-swap', (event) => {
     if (event.newDocument.documentElement.hasAttribute('data-reference-previews')) {

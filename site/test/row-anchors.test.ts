@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
+import { createMarkdownProcessor } from '@astrojs/markdown-remark'
 import { fromHtml } from 'hast-util-from-html'
 import { visit } from 'unist-util-visit'
 import { rowAnchor } from '../src/lib/row-anchors'
@@ -70,6 +71,22 @@ describe('section and item permalinks', () => {
     expect(rows.map((entry) => entry.id)).toEqual(['ls-options-json', 'ls-options-formatting-json', 'ls-examples-json'])
     expect(render(`<h1 id="ls">ls</h1><h2 id="ls-options">Options</h2>${row}`).rows[0].id)
       .toBe('ls-options-json')
+  })
+
+  it('retains the native hook compatibility row through the Markdown pipeline', async () => {
+    const markdown = readFileSync(new URL('../src/content/docs/topics/options-and-hooks.md', import.meta.url), 'utf8')
+      .replace(/^---\n[\s\S]*?\n---\n/, '')
+    const processor = await createMarkdownProcessor({ syntaxHighlight: false })
+    const html = (await processor.render(markdown)).code
+    const { rows } = render(html)
+    expect(rows).toContainEqual({
+      id: 'tmux-version-compatibility-pane-title-changed-hook',
+      href: '#tmux-version-compatibility-pane-title-changed-hook',
+      label: 'Link to pane-title-changed hook in tmux version compatibility',
+    })
+    expect(html).toContain('tmux 3.2a')
+    expect(html).toContain('tmux 3.7c')
+    expect(html).not.toContain('3.5+')
   })
 })
 

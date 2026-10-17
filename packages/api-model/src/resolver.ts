@@ -199,7 +199,11 @@ export class Resolver {
           list.push(row)
           this.byMember.set(key, list)
         }
-        this.byQualified.set(model.port + ' ' + qualified, row)
+        const key = model.port + ' ' + qualified
+        if (model.port === 'java' && symbol.id.endsWith('()')) {
+          this.byQualified.set(key + '()', row)
+          if (!this.byQualified.has(key)) this.byQualified.set(key, row)
+        } else this.byQualified.set(key, row)
 
       }
       // Old anchors remain accepted, including identities that overlap a
@@ -272,6 +276,18 @@ export class Resolver {
     const exact = this.byQualified.get(port + ' ' + text.trim())
     if (exact) return { how: 'module', symbol: exact.symbol, port }
 
+    if (port === 'java' && text.trim().endsWith('()')) {
+      const name = text.trim().slice(0, -2)
+      const callables = this.members(port, name.split('.').at(-1)!)
+        .filter((row) => row.symbol.kind === 'method' && row.symbol.signatures.some((signature) => signature.returns !== undefined) &&
+          (row.qualified === name || row.qualified.endsWith(`.${name}`)))
+      if (callables.some((row) => row.symbol.id.endsWith('()'))) {
+        const candidates = Resolver.preferProduct(callables, product)
+        if (candidates.length === 1) return { how: 'unique', symbol: candidates[0].symbol, port }
+        if (candidates.length > 1) return { how: 'ambiguous', candidates: candidates.length }
+      }
+    }
+
     const parts = toPath(text)
     if (!parts.length) return { how: 'not-a-symbol', why: 'empty after normalisation' }
 
@@ -291,13 +307,16 @@ export class Resolver {
     }
 
     const member = parts[parts.length - 1]
-    const candidates = Resolver.preferTypeOverConstructor(this.members(port, member))
+    const members = this.members(port, member)
+    const bare = port === 'java' && !text.trim().endsWith('()')
+      ? members.filter((row) => !row.symbol.id.endsWith('()')) : members
+    const candidates = Resolver.preferTypeOverConstructor(bare.length ? bare : members)
     if (parts.length > 2) {
       const suffix = `.${parts.join('.')}`
       const qualified = candidates.filter((row) => `.${toPath(row.qualified).join('.')}`.endsWith(suffix))
       if (qualified.length === 1) return { how: 'scoped', symbol: qualified[0].symbol, port }
     }
-    if (candidates.length === 1) return { how: 'unique', symbol: candidates[0].symbol, port }
+    if (parts.length === 1 && candidates.length === 1) return { how: 'unique', symbol: candidates[0].symbol, port }
     let local = Resolver.preferProduct(candidates, product)
     if (parts.length === 1) {
       // A bare type name does not name an unrelated enum variant or property.
@@ -311,8 +330,9 @@ export class Resolver {
       // Prose names a variable after its type; both spellings occur.
       for (const cand of [receiver, receiver[0].toUpperCase() + receiver.slice(1)]) {
         const owners = this.members(port, cand).filter((r) => TYPE_KINDS.has(r.symbol.kind))
-        const scoped = Resolver.preferProduct(candidates.filter((r) => owners.some((o) => r.symbol.parent === o.symbol.id)), product)
-        if (scoped.length === 1) return { how: 'scoped', symbol: scoped[0].symbol, port }
+        const scoped = Resolver.preferProduct(candidates.filter((r) => owners.some((o) =>
+          r.symbol.parent === o.symbol.id || (port === 'kotlin' && r.symbol.parent === `${o.symbol.id}.Companion`))), product)
+        if (scoped.length === 1) return { how: candidates.length === 1 ? 'unique' : 'scoped', symbol: scoped[0].symbol, port }
         if (scoped.length > 1) {
           const prefix = this.primary[port]
           const preferred = prefix ? scoped.filter((r) => r.qualified.startsWith(prefix + '.')) : []
@@ -337,7 +357,7 @@ export class Resolver {
       }
     }
 
-    if (local.length === 1) return { how: 'unique', symbol: local[0].symbol, port }
+    if (parts.length === 1 && local.length === 1) return { how: 'unique', symbol: local[0].symbol, port }
 
     const qualified = parts.join('.')
 
@@ -369,6 +389,9 @@ export class Resolver {
       }
     }
 
+    // A known qualified external name wins over an unrelated local tail.
+    // AutoCloseable.close must not become Observation.close.
+    if (local.length === 1) return { how: 'unique', symbol: local[0].symbol, port }
     if (local.length > 1) return { how: 'ambiguous', candidates: local.length }
     return { how: 'no-symbol' }
   }

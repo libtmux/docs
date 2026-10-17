@@ -107,7 +107,61 @@ describe('verified complete programs', () => {
     }
   })
 
-  it.each(guides.examples)('keeps $page shell-only with working port routes to complete programs', (example) => {
+  it.each([
+    { page: 'concepts/queries', ports: ['py', 'java', 'csharp', 'cxx', 'swift'],
+      commands: ['list-sessions', 'list-windows', 'list-panes', 'has-session'] },
+    { page: 'concepts/server-session-window-pane', ports: ['py', 'ts', 'rs', 'java', 'csharp', 'cxx', 'swift', 'ruby', 'lua'],
+      commands: ['new-session', 'link-window', 'list-windows', 'list-panes'] },
+    { page: 'concepts/transports', ports: ['py', 'ts', 'go', 'java', 'csharp', 'cxx', 'swift'],
+      commands: ['new-session', 'attach-session', 'detach-client', 'list-clients'] },
+    { page: 'concepts/workspaces', ports: ['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'],
+      commands: ['new-session', 'new-window', 'split-window', 'select-layout', 'source-file'] },
+    { page: 'examples/attach-and-send-keys', ports: ['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'],
+      commands: ['attach-session', 'has-session', 'list-panes', 'send-keys', 'capture-pane'] },
+    { page: 'topics/socket-and-servers', ports: ['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'],
+      commands: ['new-session', 'display-message', 'list-sessions', 'has-session', 'kill-server'] },
+    { page: 'topics/context-managers', ports: ['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'],
+      commands: ['kill-pane', 'kill-window', 'kill-session', 'kill-server', 'unlink-window'] },
+    { page: 'topics/format-tokens', ports: ['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'],
+      commands: ['display-message', 'list-sessions', 'list-windows', 'list-panes'] },
+    { page: 'topics/environment', ports: ['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'],
+      commands: ['set-environment', 'show-environment', 'new-window', 'split-window'] },
+    { page: 'topics/options-and-hooks', ports: ['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'],
+      commands: ['set-option', 'show-options', 'set-window-option', 'set-hook', 'show-hooks'] },
+    { page: 'topics/pane-interaction', ports: ['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'],
+      commands: ['send-keys', 'capture-pane', 'pipe-pane', 'wait-for'] },
+    { page: 'topics/waiting-and-retry', ports: ['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'],
+      commands: ['wait-for', 'new-window', 'capture-pane'] },
+    { page: 'topics/traversal', ports: ['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'],
+      commands: ['list-sessions', 'list-windows', 'list-panes', 'link-window', 'display-message'] },
+    { page: 'topics/architecture', ports: ['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'],
+      commands: ['new-session', 'new-window', 'list-sessions', 'list-windows', 'list-panes'] },
+    { page: 'topics/errors-and-exceptions', ports: ['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'],
+      commands: ['has-session', 'list-windows', 'capture-pane', 'select-window', 'new-window'] },
+  ])('teaches native $page while retaining its library routes', ({ page, ports, commands }) => {
+    const { content, frontmatter } = parsePage(page)
+    expect(frontmatter.supportedPorts).toEqual([])
+    expect(fences(content).every((block) => ['sh', 'text', 'console'].includes(block.language))).toBe(true)
+    expect(content).not.toMatch(/QueryList|server\.sessions|Selections\.|FilterExpr/)
+    for (const command of commands) {
+      expect(content).toContain(`/tmux/latest/manual/${command}/`)
+    }
+    const docs = [{ id: page, data: frontmatter }, ...ports.map((port) => {
+      const id = `ports/${port}/${page}`
+      const { frontmatter: data } = parsePage(id)
+      expect(data.port).toBe(port)
+      expect(data.route).toBe(page)
+      return { id, data }
+    })]
+    for (const port of ports) {
+      const available = docs.filter((entry) => docsEntryAvailable(entry, port))
+      expect(available).toHaveLength(1)
+      expect(available[0].data.port).toBe(port)
+      expect(docsRoutePath(available[0], port)).toBe(page)
+    }
+  })
+
+  it.each(guides.examples.filter((example) => example.page.startsWith('guides/')))('keeps $page shell-only with working port routes to complete programs', (example) => {
     const { content, frontmatter } = parsePage(example.page)
     expect(frontmatter.supportedPorts).toEqual([])
     expect(fences(content).every((block) => ['sh', 'console'].includes(block.language))).toBe(true)

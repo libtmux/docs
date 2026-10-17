@@ -16,6 +16,7 @@ import { tmuxReferenceContext, tmuxReferenceUrl } from '../lib/tmux-reference'
 import { buildsTmuxDocumentation, TMUX_VERSIONS } from '../lib/tmux-manual-data'
 import { referenceIndexSections, referenceIndexSectionsFor } from '../lib/api-tree.ts'
 import { tmuxManualDescription, tmuxManualHeadings, tmuxManualTitle, tmuxManualRoutes, tmuxManualUrl } from '../lib/tmux-manual-data.ts'
+import { glossaryPages } from '../lib/api-glossary-routes.ts'
 
 /**
  * `/docs.json` — the agent manifest.
@@ -77,6 +78,18 @@ export const GET: APIRoute = async ({ site }) => {
       markdownUrl: `${origin}${markdownPath(`${entry.data.product && !port ? refBase : twinBase}${route}`, isIndexSource(served.filePath))}`,
       ...(entry.data.equivalence ? { equivalence: entry.data.equivalence } : {}),
       headings: headings.map((h) => ({ id: h.slug, level: h.depth, text: h.text })),
+    })
+  }
+
+  for (const glossary of glossaryPages()) {
+    const url = new URL(glossary.path, origin).href
+    pages.push({
+      title: glossary.title, description: glossary.description, section: 'API reference', url,
+      markdownUrl: `${url.slice(0, -1)}.md`, jsonUrl: `${url.slice(0, -1)}.json`,
+      headings: glossary.groups.flatMap((group) => [
+        { id: group.id, level: 2, text: group.title },
+        ...group.terms.map((term) => ({ id: term.id, level: 3, text: term.id })),
+      ]),
     })
   }
 

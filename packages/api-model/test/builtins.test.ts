@@ -4,7 +4,128 @@ import { builtinHref, TYPESCRIPT_UTILITY_TYPES } from '../src/builtins.ts'
 import { SymbolIndex } from '../src/link.ts'
 import type { ApiModel, ApiSymbol } from '../src/model.ts'
 
+describe('C++ standard references', () => {
+  const model = JSON.parse(readFileSync(new URL('../../../site/src/data/api/cxx.json', import.meta.url), 'utf8')) as ApiModel
+
+  it('resolves every std:: token present in public declaration and member types', () => {
+    const index = new SymbolIndex(model.symbols, (symbol) => `#${symbol.id}`, 'cxx')
+    const annotations = model.symbols.flatMap((symbol) => [symbol.type, ...(symbol.extends ?? []),
+      ...symbol.signatures.flatMap((signature) => [signature.raw, signature.returns, ...(signature.typeParams ?? []),
+        ...signature.params.flatMap((param) => [param.type, param.default])])]).filter((text): text is string => Boolean(text))
+    const names = new Set(annotations.flatMap((text) => [...text.matchAll(/std::[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*/g)].map((match) => match[0])))
+    expect(names.size).toBeGreaterThanOrEqual(50)
+    for (const name of names) {
+      expect(index.linkType(name)[0]?.link, name).toMatchObject({ external: true, href: expect.stringContaining('https://en.cppreference.com/w/cpp/') })
+    }
+  })
+
+  it.each([
+    ['std::size_t', 'types/size_t'],
+    ['std::chrono::milliseconds', 'chrono/duration'],
+    ['std::filesystem::path', 'filesystem/path'],
+  ])('links %s inside the native ExecutionPolicy field type', (name, page) => {
+    const symbol = model.symbols.find((symbol) => symbol.parent === 'libtmux::ExecutionPolicy' && symbol.type?.includes(name))!
+    expect(symbol).toBeDefined()
+    const spans = new SymbolIndex(model.symbols, () => '#', 'cxx').linkType(symbol.type!, symbol)
+    expect(spans.find((span) => span.text === name)?.link).toMatchObject({ href: `https://en.cppreference.com/w/cpp/${page}`, external: true })
+  })
+
+  it.each([
+    String.raw`"\"[[nodiscard]]"`,
+    String.raw`R"x("[[nodiscard]])x"`,
+    String.raw`"escaped \" std::size_t [[nodiscard]] \\ tail"`,
+    String.raw`u8"\"[[nodiscard]] std::string"`,
+    String.raw`u"\"[[nodiscard]]"`,
+    String.raw`U"\"[[nodiscard]]"`,
+    String.raw`L"\"[[nodiscard]]"`,
+    String.raw`R"("[[nodiscard]] std::size_t)"`,
+    String.raw`u8R"tag("[[nodiscard]] std::filesystem::path)tag"`,
+    String.raw`uR"tag("[[nodiscard]])tag"`,
+    String.raw`UR"tag("[[nodiscard]])tag"`,
+    String.raw`LR"tag("[[nodiscard]])tag"`,
+    String.raw`R"a-b("[[nodiscard]] )wrong" std::size_t)a-b"`,
+    String.raw`"\"[[nodiscard]]"_label`,
+    String.raw`u8R"tag("[[nodiscard]])tag"sv`,
+    String.raw`'\''`,
+    String.raw`L'\''`,
+    String.raw`u8'\''`,
+    String.raw`u'\''`,
+    String.raw`U'\''`,
+  ])('keeps C++ literal contents opaque to attribute and type linking: %s', (literal) => {
+    const index = new SymbolIndex([], () => '#', 'cxx')
+    expect(index.linkType(literal)).toEqual([{ text: literal }])
+    const annotation = `const auto value = ${literal}; [[nodiscard]] int read();`
+    const spans = index.linkType(annotation)
+    expect(spans.map((span) => span.text).join('')).toBe(annotation)
+    const help = spans.filter((span) => span.help)
+    expect(help).toHaveLength(1)
+    expect(help[0]).toMatchObject({ text: 'nodiscard', keyword: true,
+      help: { href: 'https://eel.is/c++draft/dcl.attr.nodiscard' } })
+    expect(help[0].link).toBeUndefined()
+    expect(spans.some((span) => span.link?.href.startsWith('https://en.cppreference.com/w/cpp/') && span.text !== 'int')).toBe(false)
+  })
+
+  it('keeps numeric digit separators separate from character literals and later type names', () => {
+    const index = new SymbolIndex([], () => '#', 'cxx')
+    const annotation = "void f(int count = 1'000, std::size_t limit = 2'000, char quote = '\\'');"
+    const spans = index.linkType(annotation)
+    expect(spans.map((span) => span.text).join('')).toBe(annotation)
+    expect(spans.find((span) => span.text === 'std::size_t')?.link).toEqual({
+      href: 'https://en.cppreference.com/w/cpp/types/size_t', external: true,
+    })
+  })
+
+  it('offers native nodiscard help without claiming identifiers or other ports', () => {
+    const index = new SymbolIndex(model.symbols, () => '#', 'cxx')
+    for (const member of ['sessions', 'buffers']) {
+      const symbol = model.symbols.find((symbol) => symbol.id === `libtmux::Server::${member}`)!
+      const signature = symbol.signatures[0]
+      const spans = index.linkType(signature.raw!, symbol, signature)
+      expect(spans.map((span) => span.text).join('')).toBe(signature.raw)
+      expect(spans.find((span) => span.text === 'nodiscard')?.help?.href).toBe('https://eel.is/c++draft/dcl.attr.nodiscard')
+    }
+    expect(index.linkType('[[nodiscard("keep  < text > ")]] int read();').find((span) => span.text === 'nodiscard')?.help).toBeDefined()
+    expect(index.linkType('int nodiscard;').find((span) => span.text === 'nodiscard')?.help).toBeUndefined()
+    expect(new SymbolIndex([], () => '#', 'ts').linkType('nodiscard')[0].help).toBeUndefined()
+    for (const name of ['std::invented', 'std::chrono::invented', 'std::filesystem::invented']) expect(index.resolve(name)).toBeUndefined()
+  })
+})
+
 describe('standard types in product signatures', () => {
+  it('links Scala Using.resource without losing the callee owner or expression', () => {
+    const model = JSON.parse(readFileSync(new URL('../../../site/src/data/api/scala.json', import.meta.url), 'utf8')) as ApiModel
+    const context = model.symbols.find((symbol) => symbol.id === 'io.github.libtmux.scaladsl.Server')!
+    const index = new SymbolIndex(model.symbols, (symbol) => `#${symbol.id}`, 'scala')
+    const target = 'https://www.scala-lang.org/api/3.9.0/scala/util/Using$.html#resource-fffffb81'
+    for (const callee of ['Using.resource', 'scala.util.Using.resource']) {
+      const expression = `${callee}(server) { ... }`
+      const spans = index.linkType(expression, context)
+      expect(spans.map((span) => span.text).join('')).toBe(expression)
+      expect(spans.filter((span) => span.link).map((span) => [span.text, span.link!.href])).toEqual([[callee, target]])
+    }
+    expect(index.resolve('ResourceOwner.resource', 'any', { ...context, imports: { ResourceOwner: 'scala.util.Using' } })?.href).toBe(target)
+    expect(index.resolve('resource', 'any', context)).toBeUndefined()
+    expect(index.resolve('Using.missing', 'any', context)).toBeUndefined()
+    for (const expression of ['"Using.resource(server)"', '/* Using.resource(server) */', '// Using.resource(server)']) {
+      expect(index.linkType(expression, context).some((span) => span.link)).toBe(false)
+    }
+    expect(new SymbolIndex([], () => '#', 'java').resolve('Using.resource')).toBeUndefined()
+  })
+
+  it('keeps local and imported Scala Using bindings ahead of the prose fallback', () => {
+    const owner: ApiSymbol = { id: 'example.Using', name: 'Using', kind: 'module', modifiers: [], signatures: [], source: { file: 'Example.scala' } }
+    const member: ApiSymbol = { ...owner, id: 'example.Using.resource', name: 'resource', kind: 'method', parent: owner.id }
+    const index = new SymbolIndex([owner, member], (symbol) => `#${symbol.id}`, 'scala')
+    expect(index.resolve('Using.resource')).toMatchObject({ href: '#example.Using.resource', external: false })
+    expect(index.resolve('Using.resource', 'any', { ...owner, imports: { Using: 'unrelated.Using' } })).toBeUndefined()
+    expect(new SymbolIndex([owner], (symbol) => `#${symbol.id}`, 'scala').resolve('Using.resource')).toBeUndefined()
+    const ambiguous = new SymbolIndex([owner, member, { ...member, id: 'other.Using.resource' }], (symbol) => `#${symbol.id}`, 'scala')
+    expect(ambiguous.resolve('Using.resource')).toBeUndefined()
+    expect(new SymbolIndex([], () => '#', 'scala').resolve('Using.resource', 'any', {
+      ...owner, id: 'example.operation', name: 'operation', signatures: [{ params: [{ name: 'Using', type: 'CustomOwner' }] }],
+    })).toBeUndefined()
+  })
+
   it('links standard PowerShell commands without claiming LibTmux members or other ports', () => {
     const commands = {
       'Get-Member': 'microsoft.powershell.utility',
@@ -60,7 +181,7 @@ describe('standard types in product signatures', () => {
 
   it('offers C++ nodiscard help only for the attribute', () => {
     const index = new SymbolIndex([], () => '#', 'cxx')
-    for (const declaration of ['[[nodiscard]] bool valid();', '[[nodiscard("check the result")]] bool valid();']) {
+    for (const declaration of ['[[nodiscard]] bool valid();', '[[nodiscard("check the result")]] bool valid();', '[[nodiscard, maybe_unused]] bool valid();']) {
       const spans = index.linkType(declaration)
       expect(spans.map((span) => span.text).join('')).toBe(declaration)
       expect(spans.find((span) => span.text === 'nodiscard')).toMatchObject({
@@ -108,6 +229,29 @@ describe('standard types in product signatures', () => {
     }
     expect(builtinHref('go', 'OsString')).toBeUndefined()
     expect(builtinHref('rs', 'Data')).toBeUndefined()
+  })
+
+  it('links fully qualified Rust I/O errors without claiming local Error', () => {
+    const model = JSON.parse(readFileSync(new URL('../../../site/src/data/api/rs.json', import.meta.url), 'utf8')) as ApiModel
+    const field = model.symbols.find((symbol) => symbol.id === 'config.ConfigError.Read.source')!
+    expect(field.type).toBe('std::io::Error')
+    const index = new SymbolIndex(model.symbols, (symbol) => `#${symbol.id}`, 'rs')
+    const spans = index.linkType(field.type!, field)
+    expect(spans.map((span) => span.text).join('')).toBe(field.type)
+    expect(spans.filter((span) => span.link)).toMatchObject([{
+      text: 'std::io::Error',
+      link: { href: 'https://doc.rust-lang.org/std/io/struct.Error.html', external: true },
+    }])
+    const local: ApiSymbol = {
+      id: 'example.Error', name: 'Error', kind: 'class', modifiers: [],
+      signatures: [], source: { file: 'example.rs' },
+    }
+    const localIndex = new SymbolIndex([local], (symbol) => `#${symbol.id}`, 'rs')
+    expect(localIndex.resolve('Error')).toMatchObject({ href: '#example.Error', external: false })
+    for (const name of ['Error', 'io::Error', 'other::io::Error']) {
+      expect(builtinHref('rs', name)).toBeUndefined()
+    }
+    expect(builtinHref('cxx', 'std::io::Error')).toBeUndefined()
   })
 
   it('keeps Swift existential any as syntax while resolving the error protocol', () => {

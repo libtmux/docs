@@ -2,9 +2,11 @@
 import type { Modifier, SymbolKind } from '@libtmux/api-model'
 import { DEFAULT_LOCALE, localeRoot } from '../i18n/locales.ts'
 import { markdownDocument } from './markdown-twins.ts'
-import { PORT_BY_SLUG } from './ports.ts'
+import { PORT_BY_SLUG, type DocProduct } from './ports.ts'
+import { buildTarget } from './versions.ts'
+import { NATIVE_API_GLOSSARIES } from './api-glossary-native.ts'
 
-interface Definition {
+export interface Definition {
   definition: string
   detail?: string
   references: { title: string; url: string }[]
@@ -116,6 +118,12 @@ const kinds = {
 } satisfies Record<SymbolKind | 'cmdlet', Definition>
 
 const modifiers = {
+  annotation: NATIVE_API_GLOSSARIES.java.annotation,
+  opaque: {
+    definition: 'A type declaration whose representation is hidden outside its defining scope.',
+    detail: 'Scala opaque type aliases keep their underlying representation visible within the defining scope while exposing the alias and its public operations to callers.',
+    references: [{ title: 'Scala opaque type aliases', url: 'https://docs.scala-lang.org/scala3/reference/other-new-features/opaques.html' }],
+  },
   static: {
     definition: 'A member associated with a type rather than bound to a particular instance.',
     detail: 'A Python staticmethod receives neither an implicit instance nor an implicit class argument. A classmethod receives the class. Static does not mean pure, immutable, or safe for concurrent calls.',
@@ -195,7 +203,7 @@ const modifiers = {
     detail: 'The reference identifies the declaring type. Follow that declaration for its signature and documentation; inheritance and overriding rules depend on the language.',
     references: [{ title: 'Python inheritance', url: 'https://docs.python.org/3/tutorial/classes.html#inheritance' }],
   },
-} satisfies Record<Modifier | 'inherited', Definition>
+} satisfies Record<Modifier | 'inherited' | 'opaque', Definition>
 
 const context = {
   package: {
@@ -235,20 +243,51 @@ export const MCP_GLOSSARY_GROUPS: typeof API_GLOSSARY_GROUPS = [{
 }]
 export const ALL_GLOSSARY_GROUPS = [...API_GLOSSARY_GROUPS, ...MCP_GLOSSARY_GROUPS]
 const terms = new Map(ALL_GLOSSARY_GROUPS.flatMap((group) => group.terms.map((term) => [term.id, term] as const)))
+const nativeGroups = new Map(Object.entries(NATIVE_API_GLOSSARIES).map(([port, native]) => [port,
+  API_GLOSSARY_GROUPS.map((group) => ({ ...group,
+    description: group.id === 'symbol-kinds' ? `Kinds identify declarations in the ${PORT_BY_SLUG[port].name} API reference.` : group.description,
+    terms: group.terms.flatMap((term) => native[term.id] ? [{ id: term.id, ...native[term.id] }] : []),
+  })).filter((group) => group.terms.length),
+]))
+
+/** Native content and contextual identity shared by pages, previews and exports. */
+export function apiGlossary(contextPath?: string) {
+  const match = contextPath?.match(/^(.*?\/([^/]+)\/([^/]+)\/)((mcp|workspace)\/)?(?:reference(?:\/|\.)|tools\/|prompts\/|resources\/)/)
+  const contextual = match && Object.hasOwn(PORT_BY_SLUG, match[2]) ? match : undefined
+  const candidate = contextual?.[2] ?? (contextPath ? undefined : process.env.LIBTMUX_DOCS_PORT)
+  const port = candidate && Object.hasOwn(PORT_BY_SLUG, candidate) ? candidate : undefined
+  const product = contextual?.[5] as DocProduct | undefined
+  const version = contextual?.[3] ?? buildTarget(process.env).version
+  const path = port
+    ? `${contextual ? `${contextual[1]}${contextual[4] ?? ''}reference/` : `${localeRoot(DEFAULT_LOCALE)}${port}/${version}/reference/`}glossary/`
+    : API_GLOSSARY_PATH
+  const languageGroups = port ? nativeGroups.get(port) ?? [] : API_GLOSSARY_GROUPS
+  const mcp = product === 'mcp'
+  return { port, product, path, title: mcp ? MCP_GLOSSARY_TITLE : API_GLOSSARY_TITLE,
+    description: mcp ? MCP_GLOSSARY_DESCRIPTION : port ? `Kinds, modifiers and package labels in the ${PORT_BY_SLUG[port].name} API reference.` : API_GLOSSARY_DESCRIPTION,
+    groups: mcp ? [...MCP_GLOSSARY_GROUPS, ...languageGroups] : port ? languageGroups : ALL_GLOSSARY_GROUPS,
+  }
+}
+
+/** Page contents follow the same filtered native groups and term order. */
+export function apiGlossaryHeadings(contextPath?: string) {
+  return apiGlossary(contextPath).groups.flatMap((group) => [
+    { depth: 2, slug: group.id, text: group.title },
+    ...group.terms.map((term) => ({ depth: 3, slug: term.id, text: term.id })),
+  ])
+}
 
 /** Unknown labels remain plain text rather than linking to an absent definition. */
 export function apiGlossaryHref(term: string, contextPath?: string): string | undefined {
-  const mcp = contextPath?.match(/^(\/[^?#]*?\/([^/]+)\/[^/]+\/mcp\/)/)
-  const reference = mcp && PORT_BY_SLUG[mcp[2]] ? `${mcp[1]}reference/`
-    : contextPath?.match(/^(\/[^?#]*?\/reference\/|\/reference\/)/)?.[0]
-  const port = reference?.match(/\/([^/]+)\/[^/]+\/(?:mcp\/|workspace\/)?reference\/$/)?.[1]
-  const annotation = MCP_GLOSSARY_GROUPS.some((group) => group.terms.some((entry) => entry.id === term))
-  return terms.has(term) ? `${reference && port && PORT_BY_SLUG[port] && (!annotation || mcp) ? `${reference}glossary/` : API_GLOSSARY_PATH}#${term}` : undefined
+  if (!terms.has(term)) return undefined
+  const glossary = apiGlossary(contextPath)
+  return glossary.groups.some((group) => group.terms.some((entry) => entry.id === term)) ? `${glossary.path}#${term}` : undefined
 }
 
-/** The Markdown twin uses the same definitions and references as the HTML page. */
-export function apiGlossaryMarkdown(origin: string): string {
-  const body = ALL_GLOSSARY_GROUPS.flatMap((group) => [
+/** The page's authored Markdown also feeds its LLM export. */
+export function apiGlossaryBody(contextPath?: string): string {
+  const glossary = apiGlossary(contextPath)
+  return glossary.groups.flatMap((group) => [
     `## ${group.title}`, '', group.description, '',
     ...group.terms.flatMap((term) => [
       `### ${term.id}`, '', term.definition, '',
@@ -256,5 +295,10 @@ export function apiGlossaryMarkdown(origin: string): string {
       `References: ${term.references.map((ref) => `[${ref.title}](${ref.url})`).join('; ')}.`, '',
     ]),
   ]).join('\n')
-  return markdownDocument({ title: API_GLOSSARY_TITLE, description: API_GLOSSARY_DESCRIPTION, url: new URL(API_GLOSSARY_PATH, origin).href, body })
+}
+
+/** The Markdown twin uses the same definitions and references as the HTML page. */
+export function apiGlossaryMarkdown(origin: string, contextPath?: string): string {
+  const glossary = apiGlossary(contextPath)
+  return markdownDocument({ title: glossary.title, description: glossary.description, url: new URL(glossary.path, origin).href, body: apiGlossaryBody(contextPath) })
 }

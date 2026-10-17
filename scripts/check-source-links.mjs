@@ -8,9 +8,9 @@
  * normalisation had introduced, and three ports naming a commit that exists
  * only on a private fork — and both were invisible in a green build.
  *
- * Checked against git rather than HTTP so it runs offline, in CI, and without
- * rate limits. git is also the stronger check: it can say the path exists *at
- * that commit*, which a 200 from a moved file would not.
+ * Git links are checked against their commit without HTTP or rate limits.
+ * Generated sources use owned raw routes, checked against the embedded text
+ * those routes serve rather than a file that need not be committed.
  *
  * Usage: node scripts/check-source-links.mjs [--port py]
  */
@@ -89,18 +89,50 @@ for (const [port, where] of Object.entries(CHECKOUT)) {
   }
 
   const model = JSON.parse(readFileSync(modelPath, 'utf8'))
+  const generatedLengths = new Map()
+  const beforeGenerated = failed
+  if (model.generatedSources !== undefined) {
+    if (!model.generatedSources || typeof model.generatedSources !== 'object' || Array.isArray(model.generatedSources)) {
+      report(port, 'generatedSources must map relative source paths to text')
+    } else {
+      for (const [file, content] of Object.entries(model.generatedSources)) {
+        generatedLengths.set(file, null)
+        if (!file || /[\\?#%\p{Cc}]/u.test(file) || /^[a-z]:/i.test(file) ||
+            file.split('/').some((part) => !part || part === '.' || part === '..')) {
+          report(port, `generated source ${JSON.stringify(file)} is not a canonical relative path`)
+        } else if (typeof content !== 'string' || !content.trim() || content.includes('\0')) {
+          report(port, `generated source ${JSON.stringify(file)} must contain nonempty text`)
+        } else {
+          generatedLengths.set(file, content.split('\n').length)
+        }
+      }
+    }
+  }
   const units = new Map()
+  let generatedLocations = 0
   const locations = model.symbols.flatMap((symbol) => [symbol,
     ...symbol.signatures.filter((signature) => signature.source).map((signature, index) => ({
       id: `${symbol.id} signature ${index + 1}`, source: signature.source,
     })),
   ])
   for (const symbol of locations) {
+    if (generatedLengths.has(symbol.source.file)) {
+      const length = generatedLengths.get(symbol.source.file)
+      const line = symbol.source.line
+      if (length !== null && line !== undefined && (!Number.isInteger(line) || line < 1 || line > length)) {
+        report(port, `${symbol.id} points outside embedded generated source ${JSON.stringify(symbol.source.file)}`)
+      }
+      generatedLocations++
+      continue
+    }
     const repository = symbol.source.repo ?? model.repo
     const revision = symbol.source.revision ?? model.revision
     const key = `${repository}@${revision}`
     if (!units.has(key)) units.set(key, { repository, revision, symbols: [] })
     units.get(key).symbols.push(symbol)
+  }
+  if (generatedLengths.size && failed === beforeGenerated) {
+    console.log(`check-source-links: ${port} ${generatedLocations} generated declaration and method locations, ${generatedLengths.size} embedded files`)
   }
   for (const unit of units.values()) {
   const repo = expand(PRODUCT_CHECKOUT[unit.repository] ?? where)

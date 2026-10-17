@@ -176,13 +176,17 @@ done
 
 # Each deleting sync owns one shell subtree, never a locale, port,
 # or version root shared with a native documentation publisher.
+# Upload immutable assets before any HTML that refers to them. Copy also
+# updates metadata on existing hashes; sync alone skips unchanged objects.
 for name in "${dirs[@]}"; do
-  # Cached HTML can still reference assets from the previous build.
-  sync_options=(--delete)
-  [[ "${name##*/}" == _astro ]] && sync_options=()
+  [[ "${name##*/}" == _astro ]] || continue
+  aws s3 cp "dist/$name/" "s3://$BUCKET/$locale/$name/" \
+    --recursive --cache-control "public, max-age=31536000, immutable"
+done
+for name in "${dirs[@]}"; do
+  [[ "${name##*/}" == _astro ]] && continue
   aws s3 sync "dist/$name/" "s3://$BUCKET/$locale/$name/" \
-    "${sync_options[@]}" \
-    --cache-control "public, max-age=0, s-maxage=300"
+    --delete --cache-control "public, max-age=0, s-maxage=300"
 done
 for name in "${reserved_index_dirs[@]}"; do
   aws s3 cp "dist/$name/index.html" "s3://$BUCKET/$locale/$name/index.html" \

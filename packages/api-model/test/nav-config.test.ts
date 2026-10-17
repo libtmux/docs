@@ -1,4 +1,8 @@
-import { readFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { spawnSync } from 'node:child_process'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { NAV } from '../src/nav-config.ts'
 import { compileNav } from '../src/nav.ts'
@@ -120,5 +124,83 @@ describe('native PowerShell and Julia navigation', () => {
     const fresh = symbol('LibTmux.Unreviewed', 'Unreviewed', 'src/model.jl')
     const nav = compileNav(NAV[port], [fresh], { conceptIds: {}, moduleOf: () => 'LibTmux' })
     expect(nav.diagnostics.unmatched).toEqual([fresh.id])
+  })
+})
+
+
+describe('navigation checker member ownership', () => {
+  const source = { file: 'src/owners.rs' }
+  const owner = (id: string, kind: ApiSymbol['kind'], extra: Partial<ApiSymbol> = {}): ApiSymbol => ({
+    id, name: id.split('.').at(-1)!, kind, modifiers: [], signatures: [], source, ...extra,
+  })
+  const declarations = (kind: ApiSymbol['kind']): NonNullable<ApiSymbol['declarations']> => [
+    { kind, text: 'authored declaration', source },
+  ]
+  const parents = [
+    owner('control.Event', 'enum'),
+    owner('control.Event.Output', 'constant', { parent: 'control.Event', variant: 'struct' }),
+    owner('control.Event.Tuple', 'constant', { parent: 'control.Event', variant: 'tuple' }),
+    owner('control.Event.Ready', 'constant', { parent: 'control.Event', variant: 'unit' }),
+    owner('control.Event.Scalar', 'constant', { parent: 'control.Event' }),
+    owner('control.Container', 'struct'),
+    owner('control.handler', 'function'),
+    owner('constants.Direction', 'constant', { declarations: declarations('constant') }),
+    owner('constants.DirectionType', 'typealias', { declarations: [...declarations('typealias'), ...declarations('constant')] }),
+    owner('constants.ZERO', 'constant', { type: 'number', modifiers: ['readonly'] }),
+    owner('constants.TypeOnly', 'constant', { declarations: declarations('typealias') }),
+    owner('constants.callback', 'function', { declarations: declarations('constant') }),
+  ]
+  const fixture: ApiModel = {
+    port: 'rs', extractor: 'fixture', symbols: [
+      ...parents,
+      ...[...parents.map((entry) => entry.id), 'control.Missing'].map((parent) =>
+        owner(`${parent}.child`, parent === 'control.handler' ? 'function' : 'attribute', { parent })),
+    ],
+  }
+  interface Failure { check: string; names: string[] }
+  const check = (model: ApiModel): Failure[] => {
+    const dir = mkdtempSync(join(tmpdir(), 'libtmux-nav-owners-'))
+    try {
+      writeFileSync(join(dir, `${model.port}.json`), JSON.stringify(model))
+      writeFileSync(join(dir, `${model.port}.nav.json`), `${JSON.stringify(navSidecar(model.port, model))}\n`)
+      const result = spawnSync(process.execPath, [
+        fileURLToPath(new URL('../../../scripts/check-nav.mjs', import.meta.url)), '--json', '--dir', dir,
+      ], { encoding: 'utf8' })
+      expect(result.error).toBeUndefined()
+      expect(result.stderr).toBe('')
+      expect([0, 1]).toContain(result.status)
+      const failures = (JSON.parse(result.stdout) as { failures: Failure[] }).failures
+      // Small catalogs leave unrelated shared buckets empty; ownership is the invariant here.
+      expect(failures.filter((failure) => !['dead', 'unmatched', 'unreachable'].includes(failure.check))).toEqual([])
+      return failures.filter((failure) => failure.check === 'unreachable')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  }
+
+  it('accepts structured variants and constant objects that the reference tree opens', () => {
+    const failures = check(fixture).flatMap((failure) => failure.names)
+    for (const parent of ['control.Event.Output', 'control.Event.Tuple', 'constants.Direction']) {
+      expect(failures, parent).not.toContain(`${parent}.child (in constant)`)
+    }
+  })
+
+  it('accepts type owners and rejects unit variants, scalar constants, functions and missing parents', () => {
+    const failures = check(fixture).flatMap((failure) => failure.names)
+    for (const parent of ['control.Event', 'control.Container', 'constants.DirectionType']) {
+      expect(failures.some((failure) => failure.startsWith(`${parent}.child (`)), parent).toBe(false)
+    }
+    for (const parent of ['control.Event.Ready', 'control.Event.Scalar', 'control.handler', 'constants.ZERO',
+      'constants.TypeOnly', 'constants.callback', 'control.Missing']) {
+      const kind = parents.find((entry) => entry.id === parent)?.kind ?? 'a missing parent'
+      expect(failures).toContain(`${parent}.child (in ${kind})`)
+    }
+  })
+
+  it('accepts every native Rust payload field in the current model', () => {
+    const model: ApiModel = JSON.parse(readFileSync(new URL('../../../site/src/data/api/rs.json', import.meta.url), 'utf8'))
+    const payloads = new Set(model.symbols.filter((entry) => entry.variant === 'struct' || entry.variant === 'tuple').map((entry) => entry.id))
+    expect(model.symbols.filter((entry) => entry.parent && payloads.has(entry.parent))).toHaveLength(163)
+    expect(check(model)).toEqual([])
   })
 })

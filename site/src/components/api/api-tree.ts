@@ -9,6 +9,7 @@
  * and a printable character moves to the next row starting with it. One row
  * holds the tree's Tab stop.
  */
+import { waitForAppearance, layoutBeforeAppearance } from '../../lib/page-readiness'
 import { wordBreak } from '../../lib/word-break'
 import { kindMark } from '../../lib/api-labels'
 import { apiTreeHref, searchApi, type ApiTreeBucket as JsonBucket, type ApiTreeJson as TreeJson } from '../../lib/api-search'
@@ -65,7 +66,7 @@ async function restoreTree(nav: HTMLElement, tree: HTMLElement, signal: AbortSig
         const open = current || selection?.path.includes(item.dataset.lazy!) || saved?.branches[item.dataset.lazy!] === true
         let group = item.querySelector<HTMLElement>(':scope > [role="group"]')
         if (open && !group) {
-          try { group = await build(nav, item) ?? null } catch { /* Keep the branch retryable. */ }
+          group = await build(nav, item) ?? null
         }
         if (signal.aborted || interacted) return
         if (group || !open) item.setAttribute('aria-expanded', String(open))
@@ -98,8 +99,7 @@ async function restoreTree(nav: HTMLElement, tree: HTMLElement, signal: AbortSig
     }
   }
   reveal()
-  window.requestAnimationFrame(reveal)
-  document.fonts?.ready.then(reveal)
+  layoutBeforeAppearance(reveal)
   delete nav.dataset.restoring
 }
 
@@ -572,7 +572,7 @@ export function initApiTree() {
       if (nav.dataset.apiTreeInitialized !== 'true') initializeApiTree(nav)
       initTree(nav, tree, signal)
       initSearch(nav, tree, signal)
-      void restoreTree(nav, tree, signal)
+      waitForAppearance(restoreTree(nav, tree, signal))
     }
     initDrawer(nav, signal)
   })

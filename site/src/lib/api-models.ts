@@ -1,4 +1,4 @@
-import { conceptsFor, parameterId, parentInventory, sourceUrl, SymbolIndex, type ApiModel, type ApiModelBase, type ApiSymbol, type InventoryEntry } from '@libtmux/api-model'
+import { conceptsFor, isMemberOwner, OWNER_KINDS, parameterId, parentInventory, sourceUrl, SymbolIndex, type ApiModel, type ApiModelBase, type ApiSymbol, type InventoryEntry } from '@libtmux/api-model'
 import mentionIndex from '../data/mentions.json'
 import domInv from '../data/inventories/dom.entries.json'
 import jdkInv from '../data/inventories/jdk.entries.json'
@@ -127,23 +127,7 @@ export const API_NAV: Record<string, PortNavData> = {
   fsharp: fsharpNav as unknown as PortNavData,
 }
 
-/**
- * Declarations that own a page of members.
- *
- * A Rust `enum` and a Go `struct` earn one for the same reason a Python class
- * does. Scala opaque types can own extensions and companion members.
- */
-export const OWNER_KINDS = new Set([
-  'class',
-  'exception',
-  'interface',
-  'struct',
-  'union',
-  'trait',
-  'enum',
-  'module',
-  'typealias',
-])
+export { isMemberOwner, OWNER_KINDS } from '@libtmux/api-model'
 
 export const PORT_NAME: Record<string, string> = {
   powershell: 'PowerShell',
@@ -183,7 +167,7 @@ export const PORT_NAME: Record<string, string> = {
  */
 export function ownersOf(model: ApiModelBase) {
   const hasMembers = new Set(model.symbols.flatMap((s) => (s.parent ? [s.parent] : [])))
-  return model.symbols.filter((s) => OWNER_KINDS.has(s.kind) && hasMembers.has(s.id))
+  return model.symbols.filter((s) => isMemberOwner(s) && hasMembers.has(s.id))
 }
 
 /** The types the port index lists: top-level only, so nesting reads as nesting. */
@@ -291,8 +275,10 @@ export function parentApiInventory(port: string): InventoryEntry[] {
 
 /** Build an index with this site's language-scoped external inventories. */
 export function createApiIndex(model: ApiModelBase & { port?: string; language?: string }, hrefFor: (s: ApiSymbol) => string): SymbolIndex {
-  const index = new SymbolIndex(model.symbols, hrefFor, model.port ?? model.language)
+  const language = model.port ?? model.language
+  const index = new SymbolIndex(model.symbols, hrefFor, language)
   for (const { data, baseUrl, langs, project } of INVENTORIES) {
+    if (!language || !langs.includes(language)) continue
     index.addInventory(baseUrl, entriesOf(data), langs, project)
   }
   const parent = model.port ? PORT_BY_SLUG[model.port]?.parentLibrary : undefined
