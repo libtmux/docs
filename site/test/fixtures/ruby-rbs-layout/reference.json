@@ -1,0 +1,808 @@
+{
+  "tools": {
+    "ruby": "4.0.7",
+    "rbs": "4.2.0",
+    "syntax_tree": "6.3.0",
+    "syntax_tree-rbs": "1.0.0",
+    "prettier_print": "1.2.1"
+  },
+  "width": 60,
+  "cases": [
+    {
+      "id": "fuzz-7/1281",
+      "name": "call",
+      "static": false,
+      "raw": "() -> T",
+      "reference": "def call: () -> T",
+      "stock": "def call: -> T"
+    },
+    {
+      "id": "LibTmux::MCP::StdioTransport#run",
+      "name": "run",
+      "static": false,
+      "raw": "() -> nil",
+      "reference": "def run: () -> nil",
+      "stock": "def run: -> nil"
+    },
+    {
+      "id": "untyped fn",
+      "name": "x",
+      "static": false,
+      "raw": "(?) -> void",
+      "reference": "def x: (?) -> void",
+      "stock": null
+    },
+    {
+      "id": "fuzz-7/1456",
+      "name": "call",
+      "static": false,
+      "raw": "() -> 20",
+      "reference": "def call: () -> 20",
+      "stock": "def call: -> 20"
+    },
+    {
+      "id": "fuzz-7/1701",
+      "name": "windows",
+      "static": false,
+      "raw": "() -> 20",
+      "reference": "def windows: () -> 20",
+      "stock": "def windows: -> 20"
+    },
+    {
+      "id": "fuzz-7/2456",
+      "name": "call",
+      "static": true,
+      "raw": "() -> 20",
+      "reference": "def self.call: () -> 20",
+      "stock": "def self.call: -> 20"
+    },
+    {
+      "id": "fuzz-7/2241",
+      "name": "call",
+      "static": true,
+      "raw": "() -> top",
+      "reference": "def self.call: () -> top",
+      "stock": "def self.call: -> top"
+    },
+    {
+      "id": "LibTmux::CapturedRecord#==",
+      "name": "==",
+      "static": false,
+      "raw": "(untyped) -> bool",
+      "reference": "def ==: (untyped) -> bool"
+    },
+    {
+      "id": "LibTmux::ClientSnapshot#==",
+      "name": "==",
+      "static": false,
+      "raw": "(untyped) -> bool",
+      "reference": "def ==: (untyped) -> bool"
+    },
+    {
+      "id": "keyword name",
+      "name": "class",
+      "static": false,
+      "raw": "() -> ::Class",
+      "reference": "def `class`: () -> ::Class",
+      "stock": "def `class`: -> ::Class"
+    },
+    {
+      "id": "fuzz-7/2414",
+      "name": "call",
+      "static": false,
+      "raw": "[T] () -> Output",
+      "reference": "def call: [T] () -> Output",
+      "stock": "def call: [T] -> Output"
+    },
+    {
+      "id": "fuzz-7/302",
+      "name": "run_group",
+      "static": false,
+      "raw": "[T] () -> 20",
+      "reference": "def run_group: [T] () -> 20",
+      "stock": "def run_group: [T] -> 20"
+    },
+    {
+      "id": "fuzz-7/736",
+      "name": "each_event",
+      "static": false,
+      "raw": "() -> ^() -> 10?",
+      "reference": "def each_event: () -> ^() -> 10?",
+      "stock": "def each_event: -> (^-> 10?)"
+    },
+    {
+      "id": "LibTmux::FilterExpr#to_proc",
+      "name": "to_proc",
+      "static": false,
+      "raw": "() -> ^(untyped) -> bool",
+      "reference": "def to_proc: () -> ^(untyped) -> bool",
+      "stock": "def to_proc: -> (^(untyped) -> bool)"
+    },
+    {
+      "id": "fuzz-7/1044",
+      "name": "windows",
+      "static": false,
+      "raw": "() -> singleton(::Symbol)",
+      "reference": "def windows: () -> singleton(::Symbol)",
+      "stock": "def windows: -> singleton(::Symbol)"
+    },
+    {
+      "id": "fuzz-7/541",
+      "name": "send_keys",
+      "static": false,
+      "raw": "() -> singleton(::Symbol)",
+      "reference": "def send_keys: () -> singleton(::Symbol)",
+      "stock": "def send_keys: -> singleton(::Symbol)"
+    },
+    {
+      "id": "LibTmux::Async::ControlSubscription#each",
+      "name": "each",
+      "static": false,
+      "raw": "() { (::LibTmux::ControlEvent) -> untyped } -> self",
+      "reference": "def each: () {\n  (::LibTmux::ControlEvent) -> untyped\n} -> self",
+      "stock": "def each: { (::LibTmux::ControlEvent) -> untyped } -> self"
+    },
+    {
+      "id": "LibTmux::ControlSubscription#each",
+      "name": "each",
+      "static": false,
+      "raw": "() { (::LibTmux::ControlEvent) -> untyped } -> self",
+      "reference": "def each: () {\n  (::LibTmux::ControlEvent) -> untyped\n} -> self",
+      "stock": "def each: { (::LibTmux::ControlEvent) -> untyped } -> self"
+    },
+    {
+      "id": "fuzz-7/64",
+      "name": "call",
+      "static": false,
+      "raw": "() -> { max_bytes0: Output, limits1: ::Enumerator }",
+      "reference": "def call: () -> {\n  max_bytes0: Output,\n  limits1: ::Enumerator\n}",
+      "stock": "def call: -> {\n  :max_bytes0 => Output,\n  :limits1 => ::Enumerator\n}"
+    },
+    {
+      "id": "LibTmux::SessionSnapshot#panes",
+      "name": "panes",
+      "static": false,
+      "raw": "() -> ::LibTmux::Selection[::LibTmux::PaneSnapshot]",
+      "reference": "def panes: () -> ::LibTmux::Selection[\n  ::LibTmux::PaneSnapshot\n]",
+      "stock": "def panes: -> ::LibTmux::Selection[::LibTmux::PaneSnapshot]"
+    },
+    {
+      "id": "LibTmux::Snapshot#panes",
+      "name": "panes",
+      "static": false,
+      "raw": "() -> ::LibTmux::Selection[::LibTmux::PaneSnapshot]",
+      "reference": "def panes: () -> ::LibTmux::Selection[\n  ::LibTmux::PaneSnapshot\n]",
+      "stock": "def panes: -> ::LibTmux::Selection[::LibTmux::PaneSnapshot]"
+    },
+    {
+      "id": "fuzz-7/912",
+      "name": "each_event",
+      "static": false,
+      "raw": "(?::Enumerator[:vertical, :horizontal]) -> true",
+      "reference": "def each_event: (\n  ?::Enumerator[:vertical, :horizontal]\n) -> true"
+    },
+    {
+      "id": "fuzz-7/1572",
+      "name": "diagnostics",
+      "static": true,
+      "raw": "(::Numeric?) -> ::LibTmux::WindowSnapshot",
+      "reference": "def self.diagnostics: (\n  ::Numeric?\n) -> ::LibTmux::WindowSnapshot"
+    },
+    {
+      "id": "fuzz-7/638",
+      "name": "capture",
+      "static": false,
+      "raw": "[T] () -> { name0: ::LibTmux::MCP::_ShellInvitation }",
+      "reference": "def capture: [T] () -> {\n  name0: ::LibTmux::MCP::_ShellInvitation\n}",
+      "stock": "def capture: [T] -> {\n  :name0 => ::LibTmux::MCP::_ShellInvitation\n}"
+    },
+    {
+      "id": "fuzz-7/1105",
+      "name": "run_group",
+      "static": false,
+      "raw": "() -> (::LibTmux::Selection | \"yaml\" | ::Symbol)",
+      "reference": "def run_group: () -> (\n  ::LibTmux::Selection\n  | \"yaml\"\n  | ::Symbol\n)",
+      "stock": "def run_group: -> (::LibTmux::Selection | \"yaml\" | ::Symbol)"
+    },
+    {
+      "id": "fuzz-7/532",
+      "name": "call",
+      "static": false,
+      "raw": "(?session: ::Enumerable[::String] & ::LibTmux::Snapshot) -> top",
+      "reference": "def call: (\n  ?session: ::Enumerable[::String] & ::LibTmux::Snapshot\n) -> top"
+    },
+    {
+      "id": "fuzz-7/1011",
+      "name": "each_event",
+      "static": false,
+      "raw": "() -> (^() -> void | ::Proc | ::Numeric | nil | T)",
+      "reference": "def each_event: () -> (\n  ^() -> void\n  | ::Proc\n  | ::Numeric\n  | nil\n  | T\n)",
+      "stock": "def each_event: -> ((^-> void)\n| ::Proc\n| ::Numeric\n| nil\n| T)"
+    },
+    {
+      "id": "fuzz-7/1754",
+      "name": "select_layout",
+      "static": false,
+      "raw": "(\"yaml\", ::Enumerable[::String] & ::Comparable) -> 20",
+      "reference": "def select_layout: (\n  \"yaml\",\n  ::Enumerable[::String] & ::Comparable\n) -> 20"
+    },
+    {
+      "id": "LibTmux::Async::ControlConnection#diagnostics",
+      "name": "diagnostics",
+      "static": false,
+      "raw": "() -> { admitted_requests: ::Integer, incomplete_requests: ::Integer, queued_requests: ::Integer, writing_requests: ::Integer, awaiting_reply: ::Integer, reserved_wire_bytes: ::Integer, retained_reply_bytes: ::Integer, stderr_received_bytes: ::Integer, subscription_count: ::Integer, stopping: bool, finished: bool, cleanup_error_count: ::Integer, limits: { max_requests: ::Integer, max_command_bytes: ::Integer, max_queue_bytes: ::Integer, max_line_bytes: ::Integer, max_reply_bytes: ::Integer, max_stderr_bytes: ::Integer, max_subscriptions: ::Integer } }",
+      "reference": "def diagnostics: () -> {\n  admitted_requests: ::Integer,\n  incomplete_requests: ::Integer,\n  queued_requests: ::Integer,\n  writing_requests: ::Integer,\n  awaiting_reply: ::Integer,\n  reserved_wire_bytes: ::Integer,\n  retained_reply_bytes: ::Integer,\n  stderr_received_bytes: ::Integer,\n  subscription_count: ::Integer,\n  stopping: bool,\n  finished: bool,\n  cleanup_error_count: ::Integer,\n  limits: {\n    max_requests: ::Integer,\n    max_command_bytes: ::Integer,\n    max_queue_bytes: ::Integer,\n    max_line_bytes: ::Integer,\n    max_reply_bytes: ::Integer,\n    max_stderr_bytes: ::Integer,\n    max_subscriptions: ::Integer\n  }\n}",
+      "stock": "def diagnostics: -> {\n  admitted_requests: ::Integer,\n  incomplete_requests: ::Integer,\n  queued_requests: ::Integer,\n  writing_requests: ::Integer,\n  awaiting_reply: ::Integer,\n  reserved_wire_bytes: ::Integer,\n  retained_reply_bytes: ::Integer,\n  stderr_received_bytes: ::Integer,\n  subscription_count: ::Integer,\n  stopping: bool,\n  finished: bool,\n  cleanup_error_count: ::Integer,\n  limits: {\n    max_requests: ::Integer,\n    max_command_bytes: ::Integer,\n    max_queue_bytes: ::Integer,\n    max_line_bytes: ::Integer,\n    max_reply_bytes: ::Integer,\n    max_stderr_bytes: ::Integer,\n    max_subscriptions: ::Integer\n  }\n}"
+    },
+    {
+      "id": "LibTmux::ControlConnection#diagnostics",
+      "name": "diagnostics",
+      "static": false,
+      "raw": "() -> { admitted_requests: ::Integer, incomplete_requests: ::Integer, queued_requests: ::Integer, writing_requests: ::Integer, awaiting_reply: ::Integer, reserved_wire_bytes: ::Integer, retained_reply_bytes: ::Integer, stderr_received_bytes: ::Integer, subscription_count: ::Integer, stopping: bool, finished: bool, cleanup_error_count: ::Integer, limits: { max_requests: ::Integer, max_command_bytes: ::Integer, max_queue_bytes: ::Integer, max_line_bytes: ::Integer, max_reply_bytes: ::Integer, max_stderr_bytes: ::Integer, max_subscriptions: ::Integer } }",
+      "reference": "def diagnostics: () -> {\n  admitted_requests: ::Integer,\n  incomplete_requests: ::Integer,\n  queued_requests: ::Integer,\n  writing_requests: ::Integer,\n  awaiting_reply: ::Integer,\n  reserved_wire_bytes: ::Integer,\n  retained_reply_bytes: ::Integer,\n  stderr_received_bytes: ::Integer,\n  subscription_count: ::Integer,\n  stopping: bool,\n  finished: bool,\n  cleanup_error_count: ::Integer,\n  limits: {\n    max_requests: ::Integer,\n    max_command_bytes: ::Integer,\n    max_queue_bytes: ::Integer,\n    max_line_bytes: ::Integer,\n    max_reply_bytes: ::Integer,\n    max_stderr_bytes: ::Integer,\n    max_subscriptions: ::Integer\n  }\n}",
+      "stock": "def diagnostics: -> {\n  admitted_requests: ::Integer,\n  incomplete_requests: ::Integer,\n  queued_requests: ::Integer,\n  writing_requests: ::Integer,\n  awaiting_reply: ::Integer,\n  reserved_wire_bytes: ::Integer,\n  retained_reply_bytes: ::Integer,\n  stderr_received_bytes: ::Integer,\n  subscription_count: ::Integer,\n  stopping: bool,\n  finished: bool,\n  cleanup_error_count: ::Integer,\n  limits: {\n    max_requests: ::Integer,\n    max_command_bytes: ::Integer,\n    max_queue_bytes: ::Integer,\n    max_line_bytes: ::Integer,\n    max_reply_bytes: ::Integer,\n    max_stderr_bytes: ::Integer,\n    max_subscriptions: ::Integer\n  }\n}"
+    },
+    {
+      "id": "LibTmux::Async::Scope.new",
+      "name": "new",
+      "static": true,
+      "raw": "(parent: untyped, server: ::LibTmux::Server, ?concurrency: ::Integer, ?max_requests: ::Integer, ?max_controls: ::Integer, ?max_queue_bytes: ::Integer, ?max_output_bytes: ::Integer, ?stdout_limit: ::Integer, ?stderr_limit: ::Integer, ?input_limit: ::Integer, ?argv_limit: ::Integer, ?cleanup_timeout: ::Numeric, ?drain_timeout: ::Numeric) -> ::LibTmux::Async::Scope",
+      "reference": "def self.new: (\n  parent: untyped,\n  server: ::LibTmux::Server,\n  ?concurrency: ::Integer,\n  ?max_requests: ::Integer,\n  ?max_controls: ::Integer,\n  ?max_queue_bytes: ::Integer,\n  ?max_output_bytes: ::Integer,\n  ?stdout_limit: ::Integer,\n  ?stderr_limit: ::Integer,\n  ?input_limit: ::Integer,\n  ?argv_limit: ::Integer,\n  ?cleanup_timeout: ::Numeric,\n  ?drain_timeout: ::Numeric\n) -> ::LibTmux::Async::Scope"
+    },
+    {
+      "id": "LibTmux::MCP::StdioTransport.new",
+      "name": "new",
+      "static": true,
+      "raw": "(server: untyped, parent: untyped, input: ::IO, output: ::IO, ?concurrency: ::Integer, ?max_requests: ::Integer, ?max_frame_bytes: ::Integer, ?max_request_bytes: ::Integer, ?max_output_bytes: ::Integer, ?request_timeout: ::Numeric, ?write_timeout: ::Numeric, ?cleanup_timeout: ::Numeric) -> ::LibTmux::MCP::StdioTransport",
+      "reference": "def self.new: (\n  server: untyped,\n  parent: untyped,\n  input: ::IO,\n  output: ::IO,\n  ?concurrency: ::Integer,\n  ?max_requests: ::Integer,\n  ?max_frame_bytes: ::Integer,\n  ?max_request_bytes: ::Integer,\n  ?max_output_bytes: ::Integer,\n  ?request_timeout: ::Numeric,\n  ?write_timeout: ::Numeric,\n  ?cleanup_timeout: ::Numeric\n) -> ::LibTmux::MCP::StdioTransport"
+    },
+    {
+      "id": "LibTmux::ControlConnection.new",
+      "name": "new",
+      "static": true,
+      "raw": "(binding: untyped, session_id: ::String, ?reconnect: ::LibTmux::ControlConnection?, ?max_requests: ::Integer, ?max_command_bytes: ::Integer, ?max_queue_bytes: ::Integer, ?max_line_bytes: ::Integer, ?max_reply_bytes: ::Integer, ?max_stderr_bytes: ::Integer, ?max_subscriptions: ::Integer) -> ::LibTmux::ControlConnection",
+      "reference": "def self.new: (\n  binding: untyped,\n  session_id: ::String,\n  ?reconnect: ::LibTmux::ControlConnection?,\n  ?max_requests: ::Integer,\n  ?max_command_bytes: ::Integer,\n  ?max_queue_bytes: ::Integer,\n  ?max_line_bytes: ::Integer,\n  ?max_reply_bytes: ::Integer,\n  ?max_stderr_bytes: ::Integer,\n  ?max_subscriptions: ::Integer\n) -> ::LibTmux::ControlConnection"
+    },
+    {
+      "id": "LibTmux::Pane#capture",
+      "name": "capture",
+      "static": false,
+      "raw": "(?start: ::Integer | ::String | nil, ?finish: ::Integer | ::String | nil, ?join: bool, ?escapes: bool, ?escape_bytes: bool, ?preserve_trailing: bool, ?trim_trailing: bool, ?alternate: bool, ?mode_screen: bool, ?pending: bool, ?timeout: ::Numeric, ?cancel: untyped) -> ::LibTmux::CommandResult",
+      "reference": "def capture: (\n  ?start: ::Integer | ::String | nil,\n  ?finish: ::Integer | ::String | nil,\n  ?join: bool,\n  ?escapes: bool,\n  ?escape_bytes: bool,\n  ?preserve_trailing: bool,\n  ?trim_trailing: bool,\n  ?alternate: bool,\n  ?mode_screen: bool,\n  ?pending: bool,\n  ?timeout: ::Numeric,\n  ?cancel: untyped\n) -> ::LibTmux::CommandResult"
+    },
+    {
+      "id": "long union param",
+      "name": "mode",
+      "static": false,
+      "raw": "(?mode: :reliable | :tail | :window_link | :session | :window | :pane_output) -> void",
+      "reference": "def mode: (\n  ?mode: :reliable\n  | :tail\n  | :window_link\n  | :session\n  | :window\n  | :pane_output\n) -> void"
+    },
+    {
+      "id": "long union return",
+      "name": "kind",
+      "static": false,
+      "raw": "() -> (:session | :window | :pane | :window_link | :server | :client | :buffer)",
+      "reference": "def kind: () -> (\n  :session\n  | :window\n  | :pane\n  | :window_link\n  | :server\n  | :client\n  | :buffer\n)",
+      "stock": "def kind: -> (:session\n| :window\n| :pane\n| :window_link\n| :server\n| :client\n| :buffer)"
+    },
+    {
+      "id": "long union return nested",
+      "name": "kind",
+      "static": false,
+      "raw": "(::String, ?kind: :session | :window | :pane | :window_link | :server | :client | :buffer) -> (::LibTmux::Session | ::LibTmux::Window | ::LibTmux::Pane)",
+      "reference": "def kind: (\n  ::String,\n  ?kind: :session\n  | :window\n  | :pane\n  | :window_link\n  | :server\n  | :client\n  | :buffer\n) -> (\n  ::LibTmux::Session\n  | ::LibTmux::Window\n  | ::LibTmux::Pane\n)",
+      "stock": "def kind: (\n  ::String,\n  ?kind: :session\n  | :window\n  | :pane\n  | :window_link\n  | :server\n  | :client\n  | :buffer\n) -> (::LibTmux::Session\n| ::LibTmux::Window\n| ::LibTmux::Pane)"
+    },
+    {
+      "id": "tuple",
+      "name": "pair",
+      "static": false,
+      "raw": "() -> [::LibTmux::SessionSnapshot, ::LibTmux::WindowSnapshot, ::LibTmux::PaneSnapshot, ::Integer]",
+      "reference": "def pair: () -> [\n  ::LibTmux::SessionSnapshot,\n  ::LibTmux::WindowSnapshot,\n  ::LibTmux::PaneSnapshot,\n  ::Integer\n]",
+      "stock": "def pair: -> [::LibTmux::SessionSnapshot, ::LibTmux::WindowSnapshot, ::LibTmux::PaneSnapshot, ::Integer]"
+    },
+    {
+      "id": "proc param",
+      "name": "each",
+      "static": false,
+      "raw": "(::Enumerable[Input], ?result_bytes: ^(Output) -> ::Integer, ?on_error: ^(::LibTmux::CommandError, ::Integer) -> void) -> void",
+      "reference": "def each: (\n  ::Enumerable[Input],\n  ?result_bytes: ^(Output) -> ::Integer,\n  ?on_error: ^(::LibTmux::CommandError, ::Integer) -> void\n) -> void"
+    },
+    {
+      "id": "proc return long",
+      "name": "matcher",
+      "static": false,
+      "raw": "() -> ^(::LibTmux::SessionSnapshot, ::LibTmux::WindowSnapshot) -> bool",
+      "reference": "def matcher: () -> ^(\n  ::LibTmux::SessionSnapshot,\n  ::LibTmux::WindowSnapshot\n) -> bool",
+      "stock": "def matcher: -> (^(\n  ::LibTmux::SessionSnapshot,\n  ::LibTmux::WindowSnapshot\n) -> bool)"
+    },
+    {
+      "id": "block optional",
+      "name": "each_event",
+      "static": false,
+      "raw": "(?timeout: ::Numeric) ?{ (::LibTmux::ControlEvent, ::LibTmux::ControlConnection) -> untyped } -> ::Enumerator[::LibTmux::ControlEvent, void]",
+      "reference": "def each_event: (\n  ?timeout: ::Numeric\n) ?{\n  (\n    ::LibTmux::ControlEvent,\n    ::LibTmux::ControlConnection\n  ) -> untyped\n} -> ::Enumerator[::LibTmux::ControlEvent, void]"
+    },
+    {
+      "id": "block long",
+      "name": "each_event",
+      "static": false,
+      "raw": "(?timeout: ::Numeric) { (::LibTmux::ControlEvent, ::LibTmux::ControlConnection, ::Integer) -> untyped } -> void",
+      "reference": "def each_event: (\n  ?timeout: ::Numeric\n) {\n  (\n    ::LibTmux::ControlEvent,\n    ::LibTmux::ControlConnection,\n    ::Integer\n  ) -> untyped\n} -> void"
+    },
+    {
+      "id": "type params",
+      "name": "map",
+      "static": false,
+      "raw": "[Input < ::LibTmux::Entity, Output] (::Enumerable[Input], ?concurrency: ::Integer, ?max_items: ::Integer) { (Input) -> Output } -> ::Array[Output]",
+      "reference": "def map: [Input < ::LibTmux::Entity, Output] (\n  ::Enumerable[Input],\n  ?concurrency: ::Integer,\n  ?max_items: ::Integer\n) {\n  (Input) -> Output\n} -> ::Array[Output]",
+      "stock": "def map: [Input, Output] (\n  ::Enumerable[Input],\n  ?concurrency: ::Integer,\n  ?max_items: ::Integer\n) {\n  (Input) -> Output\n} -> ::Array[Output]"
+    },
+    {
+      "id": "operator",
+      "name": "==",
+      "static": false,
+      "raw": "(untyped) -> bool",
+      "reference": "def ==: (untyped) -> bool"
+    },
+    {
+      "id": "literal str",
+      "name": "x",
+      "static": false,
+      "raw": "(?format: \"json\" | \"yaml\", ?limit: 10 | 20) -> true",
+      "reference": "def x: (?format: \"json\" | \"yaml\", ?limit: 10 | 20) -> true"
+    },
+    {
+      "id": "nested record",
+      "name": "stats",
+      "static": false,
+      "raw": "() -> { total: ::Integer, windows: { active: ::Integer, hidden: ::Integer }, names: ::Array[::String] }",
+      "reference": "def stats: () -> {\n  total: ::Integer,\n  windows: { active: ::Integer, hidden: ::Integer },\n  names: ::Array[::String]\n}",
+      "stock": "def stats: -> {\n  total: ::Integer,\n  windows: { active: ::Integer, hidden: ::Integer },\n  names: ::Array[::String]\n}"
+    },
+    {
+      "id": "long generic arg",
+      "name": "windows",
+      "static": false,
+      "raw": "() -> ::LibTmux::Selection[::LibTmux::VeryLongSnapshotNameForWindows]",
+      "reference": "def windows: () -> ::LibTmux::Selection[\n  ::LibTmux::VeryLongSnapshotNameForWindows\n]",
+      "stock": "def windows: -> ::LibTmux::Selection[::LibTmux::VeryLongSnapshotNameForWindows]"
+    },
+    {
+      "id": "generic multi arg",
+      "name": "windows",
+      "static": false,
+      "raw": "(::Hash[::LibTmux::VeryLongSnapshotName, ::LibTmux::AnotherVeryLongSnapshotName]) -> void",
+      "reference": "def windows: (\n  ::Hash[\n    ::LibTmux::VeryLongSnapshotName,\n    ::LibTmux::AnotherVeryLongSnapshotName\n  ]\n) -> void",
+      "stock": "def windows: (\n  ::Hash[::LibTmux::VeryLongSnapshotName, ::LibTmux::AnotherVeryLongSnapshotName]\n) -> void"
+    },
+    {
+      "id": "optional long",
+      "name": "x",
+      "static": false,
+      "raw": "(::LibTmux::VeryLongSnapshotNameForWindows?, ::LibTmux::AnotherVeryLongSnapshotName?) -> void",
+      "reference": "def x: (\n  ::LibTmux::VeryLongSnapshotNameForWindows?,\n  ::LibTmux::AnotherVeryLongSnapshotName?\n) -> void"
+    },
+    {
+      "id": "rest positional",
+      "name": "send_keys",
+      "static": false,
+      "raw": "(*::String, ?timeout: ::Numeric, ?cancel: untyped, ?literal: bool, ?escape: bool) -> ::LibTmux::CommandResult",
+      "reference": "def send_keys: (\n  *::String,\n  ?timeout: ::Numeric,\n  ?cancel: untyped,\n  ?literal: bool,\n  ?escape: bool\n) -> ::LibTmux::CommandResult"
+    },
+    {
+      "id": "required kw then block",
+      "name": "open",
+      "static": true,
+      "raw": "[T] (server: ::LibTmux::Server, ?parent: untyped, **untyped) { (::LibTmux::Async::Scope) -> T } -> T",
+      "reference": "def self.open: [T] (\n  server: ::LibTmux::Server,\n  ?parent: untyped,\n  **untyped\n) {\n  (::LibTmux::Async::Scope) -> T\n} -> T"
+    },
+    {
+      "id": "no params block",
+      "name": "x",
+      "static": false,
+      "raw": "() { (::String) -> void } -> void",
+      "reference": "def x: () { (::String) -> void } -> void",
+      "stock": "def x: { (::String) -> void } -> void"
+    },
+    {
+      "id": "interface",
+      "name": "x",
+      "static": false,
+      "raw": "(_Reader, ?_Writer) -> instance",
+      "reference": "def x: (_Reader, ?_Writer) -> instance"
+    },
+    {
+      "id": "singleton",
+      "name": "x",
+      "static": false,
+      "raw": "(singleton(::LibTmux::Server), ::Class) -> self",
+      "reference": "def x: (singleton(::LibTmux::Server), ::Class) -> self"
+    },
+    {
+      "id": "intersection",
+      "name": "x",
+      "static": false,
+      "raw": "(::String & ::Comparable & ::LibTmux::VeryLongInterfaceNameHere) -> void",
+      "reference": "def x: (\n  ::String\n  & ::Comparable\n  & ::LibTmux::VeryLongInterfaceNameHere\n) -> void"
+    },
+    {
+      "id": "LibTmux::Selection#where",
+      "name": "where",
+      "static": false,
+      "raw": "(?untyped, **untyped) -> ::LibTmux::Selection[Elem]",
+      "reference": "def where: (\n  ?untyped,\n  **untyped\n) -> ::LibTmux::Selection[Elem]"
+    },
+    {
+      "id": "LibTmux::Server#unset_environment",
+      "name": "unset_environment",
+      "static": false,
+      "raw": "(::String, ?timeout: ::Numeric, ?cancel: untyped) -> ::LibTmux::CommandResult",
+      "reference": "def unset_environment: (\n  ::String,\n  ?timeout: ::Numeric,\n  ?cancel: untyped\n) -> ::LibTmux::CommandResult"
+    },
+    {
+      "id": "LibTmux::Workspace::ApplyResult#created_refs",
+      "name": "created_refs",
+      "static": false,
+      "raw": "() -> ::Hash[::String, ::LibTmux::EntityRef]",
+      "reference": "def created_refs: () -> ::Hash[\n  ::String,\n  ::LibTmux::EntityRef\n]",
+      "stock": "def created_refs: -> ::Hash[::String, ::LibTmux::EntityRef]"
+    },
+    {
+      "id": "LibTmux::Server#diagnostics",
+      "name": "diagnostics",
+      "static": false,
+      "raw": "() -> { admitted_requests: ::Integer, reserved_process_slots: ::Integer, control_connections: ::Integer, closed: bool, limits: { max_requests: ::Integer, max_controls: ::Integer, close_timeout: ::Numeric } }",
+      "reference": "def diagnostics: () -> {\n  admitted_requests: ::Integer,\n  reserved_process_slots: ::Integer,\n  control_connections: ::Integer,\n  closed: bool,\n  limits: {\n    max_requests: ::Integer,\n    max_controls: ::Integer,\n    close_timeout: ::Numeric\n  }\n}",
+      "stock": "def diagnostics: -> {\n  admitted_requests: ::Integer,\n  reserved_process_slots: ::Integer,\n  control_connections: ::Integer,\n  closed: bool,\n  limits: {\n    max_requests: ::Integer,\n    max_controls: ::Integer,\n    close_timeout: ::Numeric\n  }\n}"
+    },
+    {
+      "id": "LibTmux::Workspace::Plan::Step.new",
+      "name": "new",
+      "static": true,
+      "raw": "(id: ::Integer, operation: ::Symbol, target: ::String, arguments: ::Hash[::String, untyped], produces: ::Array[::String], effect: ::Symbol) -> instance",
+      "reference": "def self.new: (\n  id: ::Integer,\n  operation: ::Symbol,\n  target: ::String,\n  arguments: ::Hash[::String, untyped],\n  produces: ::Array[::String],\n  effect: ::Symbol\n) -> instance"
+    },
+    {
+      "id": "LibTmux::Server#new_session",
+      "name": "new_session",
+      "static": false,
+      "raw": "(name: ::String, command: ::Array[::String], receipt: true, ?width: ::Integer?, ?height: ::Integer?, ?window_name: ::String?, ?cwd: ::String?, ?environment: ::Hash[::String, ::String], ?timeout: ::Numeric, ?cancel: untyped) -> ::LibTmux::CreationReceipt",
+      "reference": "def new_session: (\n  name: ::String,\n  command: ::Array[::String],\n  receipt: true,\n  ?width: ::Integer?,\n  ?height: ::Integer?,\n  ?window_name: ::String?,\n  ?cwd: ::String?,\n  ?environment: ::Hash[::String, ::String],\n  ?timeout: ::Numeric,\n  ?cancel: untyped\n) -> ::LibTmux::CreationReceipt"
+    },
+    {
+      "id": "LibTmux::Server.start",
+      "name": "start",
+      "static": true,
+      "raw": "(?executable: ::String, ?config: ::String?, ?timeout: ::Numeric, ?cancel: untyped, **untyped) -> ::LibTmux::Server",
+      "reference": "def self.start: (\n  ?executable: ::String,\n  ?config: ::String?,\n  ?timeout: ::Numeric,\n  ?cancel: untyped,\n  **untyped\n) -> ::LibTmux::Server"
+    },
+    {
+      "id": "LibTmux::ControlConnection#exchange",
+      "name": "exchange",
+      "static": false,
+      "raw": "(::String, ?timeout: ::Numeric, ?cancel: untyped) -> ::LibTmux::GuardedReply",
+      "reference": "def exchange: (\n  ::String,\n  ?timeout: ::Numeric,\n  ?cancel: untyped\n) -> ::LibTmux::GuardedReply"
+    },
+    {
+      "id": "LibTmux::CommandResult.new",
+      "name": "new",
+      "static": true,
+      "raw": "(stdout: ::String, stderr: ::String, status: ::Process::Status, elapsed_seconds: ::Float, pid: ::Integer, argv: ::Array[::String]) -> ::LibTmux::CommandResult",
+      "reference": "def self.new: (\n  stdout: ::String,\n  stderr: ::String,\n  status: ::Process::Status,\n  elapsed_seconds: ::Float,\n  pid: ::Integer,\n  argv: ::Array[::String]\n) -> ::LibTmux::CommandResult"
+    },
+    {
+      "id": "LibTmux::Server#new_session",
+      "name": "new_session",
+      "static": false,
+      "raw": "(name: ::String, command: ::Array[::String], ?receipt: false, ?width: ::Integer?, ?height: ::Integer?, ?window_name: ::String?, ?cwd: ::String?, ?environment: ::Hash[::String, ::String], ?timeout: ::Numeric, ?cancel: untyped) -> ::LibTmux::Session",
+      "reference": "def new_session: (\n  name: ::String,\n  command: ::Array[::String],\n  ?receipt: false,\n  ?width: ::Integer?,\n  ?height: ::Integer?,\n  ?window_name: ::String?,\n  ?cwd: ::String?,\n  ?environment: ::Hash[::String, ::String],\n  ?timeout: ::Numeric,\n  ?cancel: untyped\n) -> ::LibTmux::Session"
+    },
+    {
+      "id": "LibTmux::Server#environment",
+      "name": "environment",
+      "static": false,
+      "raw": "(::String, ?hidden: bool, ?timeout: ::Numeric, ?cancel: untyped) -> ::String?",
+      "reference": "def environment: (\n  ::String,\n  ?hidden: bool,\n  ?timeout: ::Numeric,\n  ?cancel: untyped\n) -> ::String?"
+    },
+    {
+      "id": "LibTmux::Session#rename",
+      "name": "rename",
+      "static": false,
+      "raw": "(::String, ?timeout: ::Numeric, ?cancel: untyped) -> ::LibTmux::CommandResult",
+      "reference": "def rename: (\n  ::String,\n  ?timeout: ::Numeric,\n  ?cancel: untyped\n) -> ::LibTmux::CommandResult"
+    },
+    {
+      "id": "LibTmux::Session#list_window_links",
+      "name": "list_window_links",
+      "static": false,
+      "raw": "(?timeout: ::Numeric, ?cancel: untyped) -> ::Array[::LibTmux::WindowLink]",
+      "reference": "def list_window_links: (\n  ?timeout: ::Numeric,\n  ?cancel: untyped\n) -> ::Array[::LibTmux::WindowLink]"
+    },
+    {
+      "id": "LibTmux::Workspace::CLI.run",
+      "name": "run",
+      "static": true,
+      "raw": "(::Array[::String], ?out: untyped, ?err: untyped, ?directory: ::String, ?environment: untyped) -> ::Integer",
+      "reference": "def self.run: (\n  ::Array[::String],\n  ?out: untyped,\n  ?err: untyped,\n  ?directory: ::String,\n  ?environment: untyped\n) -> ::Integer"
+    },
+    {
+      "id": "LibTmux::Async::Server#open_control",
+      "name": "open_control",
+      "static": false,
+      "raw": "[T] (session: ::LibTmux::EntityRef, ?reconnect: ::LibTmux::ControlConnection?, **::Integer) { (::LibTmux::Async::ControlConnection) -> T } -> T",
+      "reference": "def open_control: [T] (\n  session: ::LibTmux::EntityRef,\n  ?reconnect: ::LibTmux::ControlConnection?,\n  **::Integer\n) {\n  (::LibTmux::Async::ControlConnection) -> T\n} -> T"
+    },
+    {
+      "id": "LibTmux::Selection#select",
+      "name": "select",
+      "static": false,
+      "raw": "() -> ::Enumerator[Elem, ::LibTmux::Selection[Elem]]",
+      "reference": "def select: () -> ::Enumerator[\n  Elem,\n  ::LibTmux::Selection[Elem]\n]",
+      "stock": "def select: -> ::Enumerator[Elem, ::LibTmux::Selection[Elem]]"
+    },
+    {
+      "id": "LibTmux::MCP::Application#call",
+      "name": "call",
+      "static": false,
+      "raw": "(::String, ?::Hash[untyped, untyped], ?cancellation: untyped) -> untyped",
+      "reference": "def call: (\n  ::String,\n  ?::Hash[untyped, untyped],\n  ?cancellation: untyped\n) -> untyped"
+    },
+    {
+      "id": "LibTmux::Async::Server#wait_for",
+      "name": "wait_for",
+      "static": false,
+      "raw": "(::String, ?action: :wait | :signal | :lock | :unlock, ?timeout: ::Numeric, ?cancel: untyped) -> ::LibTmux::CommandResult",
+      "reference": "def wait_for: (\n  ::String,\n  ?action: :wait | :signal | :lock | :unlock,\n  ?timeout: ::Numeric,\n  ?cancel: untyped\n) -> ::LibTmux::CommandResult"
+    },
+    {
+      "id": "LibTmux::Async::Server#new_session",
+      "name": "new_session",
+      "static": false,
+      "raw": "(name: ::String, command: ::Array[::String], ?receipt: false, ?width: ::Integer?, ?height: ::Integer?, ?window_name: ::String?, ?cwd: ::String?, ?environment: ::Hash[::String, ::String], ?timeout: ::Numeric, ?cancel: untyped) -> ::LibTmux::Session",
+      "reference": "def new_session: (\n  name: ::String,\n  command: ::Array[::String],\n  ?receipt: false,\n  ?width: ::Integer?,\n  ?height: ::Integer?,\n  ?window_name: ::String?,\n  ?cwd: ::String?,\n  ?environment: ::Hash[::String, ::String],\n  ?timeout: ::Numeric,\n  ?cancel: untyped\n) -> ::LibTmux::Session"
+    },
+    {
+      "id": "LibTmux::Server#run_group",
+      "name": "run_group",
+      "static": false,
+      "raw": "(::Array[::Array[::String]], ?input: ::String, ?timeout: ::Numeric, ?cancel: untyped) -> ::LibTmux::GroupResult",
+      "reference": "def run_group: (\n  ::Array[::Array[::String]],\n  ?input: ::String,\n  ?timeout: ::Numeric,\n  ?cancel: untyped\n) -> ::LibTmux::GroupResult"
+    },
+    {
+      "id": "LibTmux::Window#kill",
+      "name": "kill",
+      "static": false,
+      "raw": "(?timeout: ::Numeric, ?cancel: untyped) -> ::LibTmux::CommandResult",
+      "reference": "def kill: (\n  ?timeout: ::Numeric,\n  ?cancel: untyped\n) -> ::LibTmux::CommandResult"
+    },
+    {
+      "id": "LibTmux::Session#set_environment",
+      "name": "set_environment",
+      "static": false,
+      "raw": "(::String, ::String, ?hidden: bool, ?timeout: ::Numeric, ?cancel: untyped) -> ::LibTmux::CommandResult",
+      "reference": "def set_environment: (\n  ::String,\n  ::String,\n  ?hidden: bool,\n  ?timeout: ::Numeric,\n  ?cancel: untyped\n) -> ::LibTmux::CommandResult"
+    },
+    {
+      "id": "LibTmux::Async::Scope#map",
+      "name": "map",
+      "static": false,
+      "raw": "[Input, Output] (::Enumerable[Input], ?concurrency: ::Integer, ?max_items: ::Integer, ?max_bytes: ::Integer, ?result_bytes: ^(Output) -> ::Integer) { (Input) -> Output } -> ::Array[Output]",
+      "reference": "def map: [Input, Output] (\n  ::Enumerable[Input],\n  ?concurrency: ::Integer,\n  ?max_items: ::Integer,\n  ?max_bytes: ::Integer,\n  ?result_bytes: ^(Output) -> ::Integer\n) {\n  (Input) -> Output\n} -> ::Array[Output]"
+    },
+    {
+      "id": "LibTmux::Session#display",
+      "name": "display",
+      "static": false,
+      "raw": "(::String, ?timeout: ::Numeric, ?cancel: untyped) -> ::LibTmux::CommandResult",
+      "reference": "def display: (\n  ::String,\n  ?timeout: ::Numeric,\n  ?cancel: untyped\n) -> ::LibTmux::CommandResult"
+    },
+    {
+      "id": "LibTmux::Pane#send_keys",
+      "name": "send_keys",
+      "static": false,
+      "raw": "(*::String, ?timeout: ::Numeric, ?cancel: untyped) -> ::LibTmux::CommandResult",
+      "reference": "def send_keys: (\n  *::String,\n  ?timeout: ::Numeric,\n  ?cancel: untyped\n) -> ::LibTmux::CommandResult"
+    },
+    {
+      "id": "fuzz-7/1334",
+      "name": "each_event",
+      "static": false,
+      "raw": "(::Enumerator[^(::Array) -> ::LibTmux::Server, true, ::LibTmux::Server | ::String], cancel: [ ::Enumerable[::String] & ::Enumerable[::String] ]) -> ::Hash[\"yaml\" | ::LibTmux::VeryLongClassNameForSnapshots]",
+      "reference": "def each_event: (\n  ::Enumerator[\n    ^(::Array) -> ::LibTmux::Server,\n    true,\n    ::LibTmux::Server | ::String\n  ],\n  cancel: [::Enumerable[::String] & ::Enumerable[::String]]\n) -> ::Hash[\n  \"yaml\" | ::LibTmux::VeryLongClassNameForSnapshots\n]",
+      "stock": "def each_event: (\n  ::Enumerator[^(\n    ::Array\n  ) -> ::LibTmux::Server, true, ::LibTmux::Server\n  | ::String],\n  cancel: [::Enumerable[::String] & ::Enumerable[::String]]\n) -> ::Hash[(\"yaml\"\n| ::LibTmux::VeryLongClassNameForSnapshots)]"
+    },
+    {
+      "id": "fuzz-7/1899",
+      "name": "each_event",
+      "static": true,
+      "raw": "(::Array[::Symbol | top, Output, ::Proc], T, *::Numeric, timeout: \"json\", mode: { max_bytes0: [ ::LibTmux::Session, :pane, 20, :tail ], generation1: ::Enumerator[:horizontal] }, ?limits: ^(T) -> { retained_event_bytes0: ::LibTmux::Server }, ?cancel: { max_bytes0: 10 }, ?window_id: singleton(::LibTmux::Session)) { () -> singleton(::Integer) } -> :window_link",
+      "reference": "def self.each_event: (\n  ::Array[::Symbol | top, Output, ::Proc],\n  T,\n  *::Numeric,\n  timeout: \"json\",\n  mode: {\n    max_bytes0: [::LibTmux::Session, :pane, 20, :tail],\n    generation1: ::Enumerator[:horizontal]\n  },\n  ?limits: ^(\n    T\n  ) -> { retained_event_bytes0: ::LibTmux::Server },\n  ?cancel: { max_bytes0: 10 },\n  ?window_id: singleton(::LibTmux::Session)\n) {\n  () -> singleton(::Integer)\n} -> :window_link",
+      "stock": "def self.each_event: (\n  ::Array[::Symbol | top, Output, ::Proc],\n  T,\n  *::Numeric,\n  timeout: \"json\",\n  mode: {\n    :max_bytes0 => [::LibTmux::Session, :pane, 20, :tail],\n    :generation1 => ::Enumerator[:horizontal]\n  },\n  ?limits: ^(\n    T\n  ) -> { :retained_event_bytes0 => ::LibTmux::Server },\n  ?cancel: { :max_bytes0 => 10 },\n  ?window_id: singleton(::LibTmux::Session)\n) {\n  -> singleton(::Integer)\n} -> :window_link"
+    },
+    {
+      "id": "fuzz-7/2161",
+      "name": "fetch_all",
+      "static": false,
+      "raw": "[T] (?session: { cancel0: ::LibTmux::Snapshot & ::Comparable & ::Enumerable[::String], name1: ::Hash[10], window_id2: instance? }, ?max_bytes: ::Hash[::LibTmux::Selection[T, void], ^() -> \"yaml\"]) -> ::LibTmux::MCP::_ShellInvitation",
+      "reference": "def fetch_all: [T] (\n  ?session: {\n    cancel0: ::LibTmux::Snapshot\n    & ::Comparable\n    & ::Enumerable[::String],\n    name1: ::Hash[10],\n    window_id2: instance?\n  },\n  ?max_bytes: ::Hash[\n    ::LibTmux::Selection[T, void],\n    ^() -> \"yaml\"\n  ]\n) -> ::LibTmux::MCP::_ShellInvitation",
+      "stock": "def fetch_all: [T] (\n  ?session: {\n    :cancel0 => ::LibTmux::Snapshot\n    & ::Comparable\n    & ::Enumerable[::String],\n    :name1 => ::Hash[10],\n    :window_id2 => instance?\n  },\n  ?max_bytes: ::Hash[::LibTmux::Selection[T, void], ^-> \"yaml\"]\n) -> ::LibTmux::MCP::_ShellInvitation"
+    },
+    {
+      "id": "fuzz-7/1803",
+      "name": "windows",
+      "static": true,
+      "raw": "(::Integer, ?cancel: [ :session, ::LibTmux::Session, ::LibTmux::MCP::_ShellInvitation ], ?max_bytes: ::Hash[20, ::LibTmux::MCP::_ShellInvitation, ::LibTmux::Session]) -> ::Enumerator[bot]",
+      "reference": "def self.windows: (\n  ::Integer,\n  ?cancel: [\n    :session,\n    ::LibTmux::Session,\n    ::LibTmux::MCP::_ShellInvitation\n  ],\n  ?max_bytes: ::Hash[\n    20,\n    ::LibTmux::MCP::_ShellInvitation,\n    ::LibTmux::Session\n  ]\n) -> ::Enumerator[bot]",
+      "stock": "def self.windows: (\n  ::Integer,\n  ?cancel: [:session, ::LibTmux::Session, ::LibTmux::MCP::_ShellInvitation],\n  ?max_bytes: ::Hash[20, ::LibTmux::MCP::_ShellInvitation, ::LibTmux::Session]\n) -> ::Enumerator[bot]"
+    },
+    {
+      "id": "fuzz-7/1887",
+      "name": "select_layout",
+      "static": false,
+      "raw": "(::LibTmux::Selection[::Enumerator, nil], *::Hash[:pane], window_id: Output, timeout: { window_id0: ::Numeric, cancel1: ::LibTmux::Session }, ?pane_id: { session0: 10, generation1: :observed, limits2: 20, pane_id3: ::String }, ?limits: [ Output, :window_link, instance, true ]) -> :vertical",
+      "reference": "def select_layout: (\n  ::LibTmux::Selection[::Enumerator, nil],\n  *::Hash[:pane],\n  window_id: Output,\n  timeout: {\n    window_id0: ::Numeric,\n    cancel1: ::LibTmux::Session\n  },\n  ?pane_id: {\n    session0: 10,\n    generation1: :observed,\n    limits2: 20,\n    pane_id3: ::String\n  },\n  ?limits: [Output, :window_link, instance, true]\n) -> :vertical",
+      "stock": "def select_layout: (\n  ::LibTmux::Selection[::Enumerator, nil],\n  *::Hash[:pane],\n  window_id: Output,\n  timeout: {\n    :window_id0 => ::Numeric,\n    :cancel1 => ::LibTmux::Session\n  },\n  ?pane_id: {\n    :session0 => 10,\n    :generation1 => :observed,\n    :limits2 => 20,\n    :pane_id3 => ::String\n  },\n  ?limits: [Output, :window_link, instance, true]\n) -> :vertical"
+    },
+    {
+      "id": "fuzz-7/409",
+      "name": "select_layout",
+      "static": false,
+      "raw": "() { (::Array[\"yaml\", ::Hash], instance, singleton(::Integer)) -> { timeout0: ::LibTmux::Session, limits1: :observed, session2: :reliable } } -> ::Numeric",
+      "reference": "def select_layout: () {\n  (\n    ::Array[\"yaml\", ::Hash],\n    instance,\n    singleton(::Integer)\n  ) -> {\n    timeout0: ::LibTmux::Session,\n    limits1: :observed,\n    session2: :reliable\n  }\n} -> ::Numeric",
+      "stock": "def select_layout: {\n  (\n    ::Array[\"yaml\", ::Hash],\n    instance,\n    singleton(::Integer)\n  ) -> {\n    :timeout0 => ::LibTmux::Session,\n    :limits1 => :observed,\n    :session2 => :reliable\n  }\n} -> ::Numeric"
+    },
+    {
+      "id": "fuzz-7/1820",
+      "name": "capture",
+      "static": false,
+      "raw": "(^(::Numeric, { session0: ::Hash?, limits1: Output | :vertical | nil | top | 20, session2: [ :session, ::Enumerator, :tail, ::LibTmux::MCP::_ShellInvitation ] }, ::LibTmux::Selection[20 | ::LibTmux::Selection | \"yaml\" | instance]) -> ::Hash[::Numeric?, \"yaml\"], ?retained_event_bytes: ^() -> ::Integer? | ::Hash | [ { window_id0: 20 }, ::Hash?, :dispatch_only, { pane_id0: :observed, generation1: :window_link, max_bytes2: 10, name3: false } ] | { mode0: singleton(::Numeric), mode1: :observed } | :pane | ::Hash | singleton(::String) | ::Proc) -> { limits0: :tail, name1: { limits0: true, name1: singleton(::LibTmux::Server) }, pane_id2: Elem? }",
+      "reference": "def capture: (\n  ^(\n    ::Numeric,\n    {\n      session0: ::Hash?,\n      limits1: Output | :vertical | nil | top | 20,\n      session2: [\n        :session,\n        ::Enumerator,\n        :tail,\n        ::LibTmux::MCP::_ShellInvitation\n      ]\n    },\n    ::LibTmux::Selection[\n      20 | ::LibTmux::Selection | \"yaml\" | instance\n    ]\n  ) -> ::Hash[::Numeric?, \"yaml\"],\n  ?retained_event_bytes: ^() -> ::Integer?\n  | ::Hash\n  | [\n    { window_id0: 20 },\n    ::Hash?,\n    :dispatch_only,\n    {\n      pane_id0: :observed,\n      generation1: :window_link,\n      max_bytes2: 10,\n      name3: false\n    }\n  ]\n  | { mode0: singleton(::Numeric), mode1: :observed }\n  | :pane\n  | ::Hash\n  | singleton(::String)\n  | ::Proc\n) -> {\n  limits0: :tail,\n  name1: {\n    limits0: true,\n    name1: singleton(::LibTmux::Server)\n  },\n  pane_id2: Elem?\n}",
+      "stock": "def capture: (\n  ^(\n    ::Numeric,\n    {\n      :session0 => ::Hash?,\n      :limits1 => Output | :vertical | nil | top | 20,\n      :session2 => [:session, ::Enumerator, :tail, ::LibTmux::MCP::_ShellInvitation]\n    },\n    ::LibTmux::Selection[20\n    | ::LibTmux::Selection\n    | \"yaml\"\n    | instance]\n  ) -> ::Hash[::Numeric?, \"yaml\"],\n  ?retained_event_bytes: ^-> ::Integer?\n  | ::Hash\n  | [{ :window_id0 => 20 }, ::Hash?, :dispatch_only, {\n    :pane_id0 => :observed,\n    :generation1 => :window_link,\n    :max_bytes2 => 10,\n    :name3 => false\n  }]\n  | { :mode0 => singleton(::Numeric), :mode1 => :observed }\n  | :pane\n  | ::Hash\n  | singleton(::String)\n  | ::Proc\n) -> {\n  :limits0 => :tail,\n  :name1 => {\n    :limits0 => true,\n    :name1 => singleton(::LibTmux::Server)\n  },\n  :pane_id2 => Elem?\n}"
+    },
+    {
+      "id": "fuzz-7/40",
+      "name": "each_event",
+      "static": false,
+      "raw": "[T] (?cancel: { max_bytes0: ::String, retained_event_bytes1: ::String, retained_event_bytes2: :pane }) { () -> :vertical } -> ::Array[::Hash, :pane]",
+      "reference": "def each_event: [T] (\n  ?cancel: {\n    max_bytes0: ::String,\n    retained_event_bytes1: ::String,\n    retained_event_bytes2: :pane\n  }\n) {\n  () -> :vertical\n} -> ::Array[::Hash, :pane]",
+      "stock": "def each_event: [T] (\n  ?cancel: {\n    :max_bytes0 => ::String,\n    :retained_event_bytes1 => ::String,\n    :retained_event_bytes2 => :pane\n  }\n) {\n  -> :vertical\n} -> ::Array[::Hash, :pane]"
+    },
+    {
+      "id": "fuzz-7/2435",
+      "name": "windows",
+      "static": false,
+      "raw": "(singleton(::Numeric), ?\"json\", ?Elem, max_bytes: ::Enumerator[[ :reliable, \"yaml\" ], \"json\"?, :tail], ?generation: ::Array[Elem?]) -> ^(Elem?) -> [ :tail, bool ]",
+      "reference": "def windows: (\n  singleton(::Numeric),\n  ?\"json\",\n  ?Elem,\n  max_bytes: ::Enumerator[\n    [:reliable, \"yaml\"],\n    \"json\"?,\n    :tail\n  ],\n  ?generation: ::Array[Elem?]\n) -> ^(Elem?) -> [:tail, bool]",
+      "stock": "def windows: (\n  singleton(::Numeric),\n  ?\"json\",\n  ?Elem,\n  max_bytes: ::Enumerator[[:reliable, \"yaml\"], \"json\"?, :tail],\n  ?generation: ::Array[Elem?]\n) -> (^(Elem?) -> [:tail, bool])"
+    },
+    {
+      "id": "fuzz-7/1552",
+      "name": "diagnostics",
+      "static": false,
+      "raw": "[T] (mode: ::Array[::Array[::Numeric, T, bool], :pane], limits: ::Enumerable[::String] & ::LibTmux::Snapshot, ?cancel: ::Array[::Array, ::LibTmux::Server | 20 | ::LibTmux::Selection, ::Array[:reliable, ::Integer]]) -> ::LibTmux::Selection[true | \"json\" | 10 | Output, ::Enumerator[::String, bool], ^(untyped, :window, ::LibTmux::Session) -> :pane]",
+      "reference": "def diagnostics: [T] (\n  mode: ::Array[::Array[::Numeric, T, bool], :pane],\n  limits: ::Enumerable[::String] & ::LibTmux::Snapshot,\n  ?cancel: ::Array[\n    ::Array,\n    ::LibTmux::Server | 20 | ::LibTmux::Selection,\n    ::Array[:reliable, ::Integer]\n  ]\n) -> ::LibTmux::Selection[\n  true | \"json\" | 10 | Output,\n  ::Enumerator[::String, bool],\n  ^(untyped, :window, ::LibTmux::Session) -> :pane\n]",
+      "stock": "def diagnostics: [T] (\n  mode: ::Array[::Array[::Numeric, T, bool], :pane],\n  limits: ::Enumerable[::String] & ::LibTmux::Snapshot,\n  ?cancel: ::Array[::Array, ::LibTmux::Server\n  | 20\n  | ::LibTmux::Selection, ::Array[:reliable, ::Integer]]\n) -> ::LibTmux::Selection[(true\n| \"json\"\n| 10\n| Output), ::Enumerator[::String, bool], (^(\n  untyped,\n  :window,\n  ::LibTmux::Session\n) -> :pane)]"
+    },
+    {
+      "id": "fuzz-7/162",
+      "name": "windows",
+      "static": false,
+      "raw": "(::LibTmux::Selection, ::LibTmux::Selection, { limits0: (::Enumerator | T | ::LibTmux::Selection | \"yaml\" | 10)?, retained_event_bytes1: [ true, ::Enumerator, true, \"yaml\" ] | (::LibTmux::Snapshot & ::Comparable) | \"json\" | :session }, ?:reliable, ?^(:observed) -> ::Hash[^() -> \"json\", ::LibTmux::Selection[bool, nil]], timeout: ::Array[::LibTmux::Selection[T?, ::Array[::Array], true]]) -> T",
+      "reference": "def windows: (\n  ::LibTmux::Selection,\n  ::LibTmux::Selection,\n  {\n    limits0: (\n      ::Enumerator\n      | T\n      | ::LibTmux::Selection\n      | \"yaml\"\n      | 10\n    )?,\n    retained_event_bytes1: [\n      true,\n      ::Enumerator,\n      true,\n      \"yaml\"\n    ]\n    | (::LibTmux::Snapshot & ::Comparable)\n    | \"json\"\n    | :session\n  },\n  ?:reliable,\n  ?^(\n    :observed\n  ) -> ::Hash[\n    ^() -> \"json\",\n    ::LibTmux::Selection[bool, nil]\n  ],\n  timeout: ::Array[\n    ::LibTmux::Selection[T?, ::Array[::Array], true]\n  ]\n) -> T",
+      "stock": "def windows: (\n  ::LibTmux::Selection,\n  ::LibTmux::Selection,\n  {\n    :limits0 => (::Enumerator\n    | T\n    | ::LibTmux::Selection\n    | \"yaml\"\n    | 10)?,\n    :retained_event_bytes1 => [true, ::Enumerator, true, \"yaml\"]\n    | ::LibTmux::Snapshot & ::Comparable\n    | \"json\"\n    | :session\n  },\n  ?:reliable,\n  ?^(\n    :observed\n  ) -> ::Hash[(^-> \"json\"), ::LibTmux::Selection[bool, nil]],\n  timeout: ::Array[::LibTmux::Selection[T?, ::Array[::Array], true]]\n) -> T"
+    },
+    {
+      "id": "fuzz-7/147",
+      "name": "send_keys",
+      "static": false,
+      "raw": "(::LibTmux::Selection[{ name0: ::LibTmux::WindowSnapshot, pane_id1: :tail, pane_id2: ::String, timeout3: ::Integer }], Output?, 10, [ ::Numeric, ::LibTmux::Snapshot & ::Comparable & ::Enumerable[::String] ], ?::LibTmux::Snapshot & ::LibTmux::Snapshot & ::Enumerable[::String], ?timeout: :dispatch_only) -> { session0: { mode0: :window_link, name1: ::Array, mode2: Elem } }",
+      "reference": "def send_keys: (\n  ::LibTmux::Selection[\n    {\n      name0: ::LibTmux::WindowSnapshot,\n      pane_id1: :tail,\n      pane_id2: ::String,\n      timeout3: ::Integer\n    }\n  ],\n  Output?,\n  10,\n  [\n    ::Numeric,\n    ::LibTmux::Snapshot\n    & ::Comparable\n    & ::Enumerable[::String]\n  ],\n  ?::LibTmux::Snapshot\n  & ::LibTmux::Snapshot\n  & ::Enumerable[::String],\n  ?timeout: :dispatch_only\n) -> {\n  session0: {\n    mode0: :window_link,\n    name1: ::Array,\n    mode2: Elem\n  }\n}",
+      "stock": "def send_keys: (\n  ::LibTmux::Selection[{\n    :name0 => ::LibTmux::WindowSnapshot,\n    :pane_id1 => :tail,\n    :pane_id2 => ::String,\n    :timeout3 => ::Integer\n  }],\n  Output?,\n  10,\n  [::Numeric, ::LibTmux::Snapshot\n  & ::Comparable\n  & ::Enumerable[::String]],\n  ?::LibTmux::Snapshot\n  & ::LibTmux::Snapshot\n  & ::Enumerable[::String],\n  ?timeout: :dispatch_only\n) -> {\n  :session0 => {\n    :mode0 => :window_link,\n    :name1 => ::Array,\n    :mode2 => Elem\n  }\n}"
+    },
+    {
+      "id": "fuzz-7/88",
+      "name": "each_event",
+      "static": false,
+      "raw": "([ ::Symbol, \"yaml\", \"json\", :tail ], ::LibTmux::Selection[::LibTmux::WindowSnapshot], { generation0: :window_link, pane_id1: ::Numeric, name2: T }) -> Elem",
+      "reference": "def each_event: (\n  [::Symbol, \"yaml\", \"json\", :tail],\n  ::LibTmux::Selection[::LibTmux::WindowSnapshot],\n  {\n    generation0: :window_link,\n    pane_id1: ::Numeric,\n    name2: T\n  }\n) -> Elem",
+      "stock": "def each_event: (\n  [::Symbol, \"yaml\", \"json\", :tail],\n  ::LibTmux::Selection[::LibTmux::WindowSnapshot],\n  {\n    :generation0 => :window_link,\n    :pane_id1 => ::Numeric,\n    :name2 => T\n  }\n) -> Elem"
+    },
+    {
+      "id": "fuzz-7/486",
+      "name": "run_group",
+      "static": true,
+      "raw": "(::Proc, ?{ timeout0: { max_bytes0: ::LibTmux::MCP::_ShellInvitation? } }, ?timeout: { generation0: ^({ timeout0: 10, mode1: :vertical, generation2: ::LibTmux::WindowSnapshot, pane_id3: Output }, ::LibTmux::Snapshot & ::LibTmux::Snapshot & ::Enumerable[::String]) -> ::Array }, ?pane_id: ::Enumerator[{ cancel0: ::LibTmux::WindowSnapshot }, ^(:reliable) -> \"json\"] | ::Hash[::Enumerator[nil]] | bot, ?window_id: { retained_event_bytes0: :tail, limits1: ::LibTmux::Selection[[ :tail, :pane, untyped, :dispatch_only ]], window_id2: ::LibTmux::Session? }) -> ::String",
+      "reference": "def self.run_group: (\n  ::Proc,\n  ?{\n    timeout0: {\n      max_bytes0: ::LibTmux::MCP::_ShellInvitation?\n    }\n  },\n  ?timeout: {\n    generation0: ^(\n      {\n        timeout0: 10,\n        mode1: :vertical,\n        generation2: ::LibTmux::WindowSnapshot,\n        pane_id3: Output\n      },\n      ::LibTmux::Snapshot\n      & ::LibTmux::Snapshot\n      & ::Enumerable[::String]\n    ) -> ::Array\n  },\n  ?pane_id: ::Enumerator[\n    { cancel0: ::LibTmux::WindowSnapshot },\n    ^(:reliable) -> \"json\"\n  ]\n  | ::Hash[::Enumerator[nil]]\n  | bot,\n  ?window_id: {\n    retained_event_bytes0: :tail,\n    limits1: ::LibTmux::Selection[\n      [:tail, :pane, untyped, :dispatch_only]\n    ],\n    window_id2: ::LibTmux::Session?\n  }\n) -> ::String",
+      "stock": "def self.run_group: (\n  ::Proc,\n  ?{\n    :timeout0 => {\n      :max_bytes0 => ::LibTmux::MCP::_ShellInvitation?\n    }\n  },\n  ?timeout: {\n    :generation0 => ^(\n      {\n        :timeout0 => 10,\n        :mode1 => :vertical,\n        :generation2 => ::LibTmux::WindowSnapshot,\n        :pane_id3 => Output\n      },\n      ::LibTmux::Snapshot\n      & ::LibTmux::Snapshot\n      & ::Enumerable[::String]\n    ) -> ::Array\n  },\n  ?pane_id: ::Enumerator[{\n    :cancel0 => ::LibTmux::WindowSnapshot\n  }, ^(:reliable) -> \"json\"]\n  | ::Hash[::Enumerator[nil]]\n  | bot,\n  ?window_id: {\n    :retained_event_bytes0 => :tail,\n    :limits1 => ::LibTmux::Selection[[:tail, :pane, untyped, :dispatch_only]],\n    :window_id2 => ::LibTmux::Session?\n  }\n) -> ::String"
+    },
+    {
+      "id": "fuzz-7/635",
+      "name": "fetch_all",
+      "static": false,
+      "raw": "[T] (::LibTmux::Selection[[ ::Numeric, ::Enumerable[::String] & ::Enumerable[::String] & ::Comparable, Elem, { session0: \"json\", name1: ::Symbol, name2: :horizontal } ], :dispatch_only], generation: :pane, limits: ::Comparable & ::Enumerable[::String], ?cancel: \"json\"?) { () -> :window } -> Output",
+      "reference": "def fetch_all: [T] (\n  ::LibTmux::Selection[\n    [\n      ::Numeric,\n      ::Enumerable[::String]\n      & ::Enumerable[::String]\n      & ::Comparable,\n      Elem,\n      {\n        session0: \"json\",\n        name1: ::Symbol,\n        name2: :horizontal\n      }\n    ],\n    :dispatch_only\n  ],\n  generation: :pane,\n  limits: ::Comparable & ::Enumerable[::String],\n  ?cancel: \"json\"?\n) {\n  () -> :window\n} -> Output",
+      "stock": "def fetch_all: [T] (\n  ::LibTmux::Selection[[::Numeric, ::Enumerable[::String]\n  & ::Enumerable[::String]\n  & ::Comparable, Elem, {\n    :session0 => \"json\",\n    :name1 => ::Symbol,\n    :name2 => :horizontal\n  }], :dispatch_only],\n  generation: :pane,\n  limits: ::Comparable & ::Enumerable[::String],\n  ?cancel: \"json\"?\n) {\n  -> :window\n} -> Output"
+    },
+    {
+      "id": "fuzz-7/1770",
+      "name": "select_layout",
+      "static": false,
+      "raw": "(^(::Array) -> false, self, ::LibTmux::Selection[false, ::LibTmux::MCP::_ShellInvitation, ::LibTmux::Server], ::LibTmux::Selection[untyped, bot], ?::Enumerable[::String] & ::Enumerable[::String], name: Elem?, max_bytes: [ 20 ]) { (T) -> ::LibTmux::MCP::_ShellInvitation } -> ::Enumerator[:window_link]",
+      "reference": "def select_layout: (\n  ^(::Array) -> false,\n  self,\n  ::LibTmux::Selection[\n    false,\n    ::LibTmux::MCP::_ShellInvitation,\n    ::LibTmux::Server\n  ],\n  ::LibTmux::Selection[untyped, bot],\n  ?::Enumerable[::String] & ::Enumerable[::String],\n  name: Elem?,\n  max_bytes: [20]\n) {\n  (T) -> ::LibTmux::MCP::_ShellInvitation\n} -> ::Enumerator[:window_link]",
+      "stock": "def select_layout: (\n  ^(::Array) -> false,\n  self,\n  ::LibTmux::Selection[false, ::LibTmux::MCP::_ShellInvitation, ::LibTmux::Server],\n  ::LibTmux::Selection[untyped, bot],\n  ?::Enumerable[::String] & ::Enumerable[::String],\n  name: Elem?,\n  max_bytes: [20]\n) {\n  (T) -> ::LibTmux::MCP::_ShellInvitation\n} -> ::Enumerator[:window_link]"
+    },
+    {
+      "id": "fuzz-7/76",
+      "name": "diagnostics",
+      "static": false,
+      "raw": "[T] () ?{ () -> nil } -> { pane_id0: ::Hash[singleton(::String)], generation1: singleton(::Integer), timeout2: ::Symbol | ::LibTmux::Selection[Elem] | ::Hash, cancel3: [ ::Enumerable[::String] & ::Comparable, singleton(::LibTmux::Session), ::Hash?, ::LibTmux::WindowSnapshot ] }",
+      "reference": "def diagnostics: [T] () ?{\n  () -> nil\n} -> {\n  pane_id0: ::Hash[singleton(::String)],\n  generation1: singleton(::Integer),\n  timeout2: ::Symbol | ::LibTmux::Selection[Elem] | ::Hash,\n  cancel3: [\n    ::Enumerable[::String] & ::Comparable,\n    singleton(::LibTmux::Session),\n    ::Hash?,\n    ::LibTmux::WindowSnapshot\n  ]\n}",
+      "stock": "def diagnostics: [T] ?{\n  -> nil\n} -> {\n  :pane_id0 => ::Hash[singleton(::String)],\n  :generation1 => singleton(::Integer),\n  :timeout2 => (::Symbol\n  | ::LibTmux::Selection[Elem]\n  | ::Hash),\n  :cancel3 => [(::Enumerable[::String]\n  & ::Comparable), singleton(::LibTmux::Session), ::Hash?, ::LibTmux::WindowSnapshot]\n}"
+    },
+    {
+      "id": "fuzz-7/2279",
+      "name": "run_group",
+      "static": true,
+      "raw": "(?timeout: :vertical, ?pane_id: [ ::Enumerator[::Array, ::Enumerator], \"json\"? ]) -> [ [ ::Symbol, untyped, ::LibTmux::VeryLongClassNameForSnapshots ] ]",
+      "reference": "def self.run_group: (\n  ?timeout: :vertical,\n  ?pane_id: [::Enumerator[::Array, ::Enumerator], \"json\"?]\n) -> [\n  [\n    ::Symbol,\n    untyped,\n    ::LibTmux::VeryLongClassNameForSnapshots\n  ]\n]",
+      "stock": "def self.run_group: (\n  ?timeout: :vertical,\n  ?pane_id: [::Enumerator[::Array, ::Enumerator], \"json\"?]\n) -> [[::Symbol, untyped, ::LibTmux::VeryLongClassNameForSnapshots]]"
+    },
+    {
+      "id": "fuzz-7/1368",
+      "name": "windows",
+      "static": false,
+      "raw": "(?limits: instance) -> [ { generation0: ::Hash[Elem, ::LibTmux::Selection, ::LibTmux::WindowSnapshot], generation1: self | :dispatch_only, max_bytes2: ::Hash[::Proc, ::LibTmux::WindowSnapshot] }, ::Enumerator[{ limits0: ::LibTmux::MCP::_ShellInvitation, retained_event_bytes1: :reliable, pane_id2: ::Hash, window_id3: ::LibTmux::MCP::_ShellInvitation }, ::String], ::Array[::Enumerator, ::LibTmux::Server] | ::Array[10] | ::Enumerator ]",
+      "reference": "def windows: (\n  ?limits: instance\n) -> [\n  {\n    generation0: ::Hash[\n      Elem,\n      ::LibTmux::Selection,\n      ::LibTmux::WindowSnapshot\n    ],\n    generation1: self | :dispatch_only,\n    max_bytes2: ::Hash[::Proc, ::LibTmux::WindowSnapshot]\n  },\n  ::Enumerator[\n    {\n      limits0: ::LibTmux::MCP::_ShellInvitation,\n      retained_event_bytes1: :reliable,\n      pane_id2: ::Hash,\n      window_id3: ::LibTmux::MCP::_ShellInvitation\n    },\n    ::String\n  ],\n  ::Array[::Enumerator, ::LibTmux::Server]\n  | ::Array[10]\n  | ::Enumerator\n]",
+      "stock": "def windows: (\n  ?limits: instance\n) -> [{\n  :generation0 => ::Hash[Elem, ::LibTmux::Selection, ::LibTmux::WindowSnapshot],\n  :generation1 => (self | :dispatch_only),\n  :max_bytes2 => ::Hash[::Proc, ::LibTmux::WindowSnapshot]\n}, ::Enumerator[{\n  :limits0 => ::LibTmux::MCP::_ShellInvitation,\n  :retained_event_bytes1 => :reliable,\n  :pane_id2 => ::Hash,\n  :window_id3 => ::LibTmux::MCP::_ShellInvitation\n}, ::String], (::Array[::Enumerator, ::LibTmux::Server]\n| ::Array[10]\n| ::Enumerator)]"
+    },
+    {
+      "id": "fuzz-7/908",
+      "name": "select_layout",
+      "static": true,
+      "raw": "(nil | ::Hash[::Symbol, ::Hash[::LibTmux::MCP::_ShellInvitation]] | ::LibTmux::Selection[::LibTmux::WindowSnapshot, [ top, \"json\", Elem, ::Integer ]] | ::Array[\"json\", ::LibTmux::Selection[:session], singleton(::Integer)], ::Proc, session: ::Hash[:reliable], window_id: ::LibTmux::Selection[::LibTmux::Selection], ?limits: ::LibTmux::Selection[[ ::Hash[:reliable, 10, ::LibTmux::Selection], ::LibTmux::Selection, ::Array[::LibTmux::MCP::_ShellInvitation] ], [ 20, { max_bytes0: ::Enumerator, pane_id1: top }, self ], ::Array[::Hash[void]]], ?mode: [ bool, ::LibTmux::Selection[::Hash[10, :vertical, 20]] ]) -> :tail",
+      "reference": "def self.select_layout: (\n  nil\n  | ::Hash[\n    ::Symbol,\n    ::Hash[::LibTmux::MCP::_ShellInvitation]\n  ]\n  | ::LibTmux::Selection[\n    ::LibTmux::WindowSnapshot,\n    [top, \"json\", Elem, ::Integer]\n  ]\n  | ::Array[\n    \"json\",\n    ::LibTmux::Selection[:session],\n    singleton(::Integer)\n  ],\n  ::Proc,\n  session: ::Hash[:reliable],\n  window_id: ::LibTmux::Selection[::LibTmux::Selection],\n  ?limits: ::LibTmux::Selection[\n    [\n      ::Hash[:reliable, 10, ::LibTmux::Selection],\n      ::LibTmux::Selection,\n      ::Array[::LibTmux::MCP::_ShellInvitation]\n    ],\n    [20, { max_bytes0: ::Enumerator, pane_id1: top }, self],\n    ::Array[::Hash[void]]\n  ],\n  ?mode: [\n    bool,\n    ::LibTmux::Selection[::Hash[10, :vertical, 20]]\n  ]\n) -> :tail",
+      "stock": "def self.select_layout: (\n  nil\n  | ::Hash[::Symbol, ::Hash[::LibTmux::MCP::_ShellInvitation]]\n  | ::LibTmux::Selection[::LibTmux::WindowSnapshot, [top, \"json\", Elem, ::Integer]]\n  | ::Array[\"json\", ::LibTmux::Selection[:session], singleton(::Integer)],\n  ::Proc,\n  session: ::Hash[:reliable],\n  window_id: ::LibTmux::Selection[::LibTmux::Selection],\n  ?limits: ::LibTmux::Selection[[::Hash[:reliable, 10, ::LibTmux::Selection], ::LibTmux::Selection, ::Array[::LibTmux::MCP::_ShellInvitation]], [20, {\n    :max_bytes0 => ::Enumerator,\n    :pane_id1 => top\n  }, self], ::Array[::Hash[void]]],\n  ?mode: [bool, ::LibTmux::Selection[::Hash[10, :vertical, 20]]]\n) -> :tail"
+    },
+    {
+      "id": "fuzz-7/1292",
+      "name": "fetch_all",
+      "static": false,
+      "raw": "(::LibTmux::Server?, window_id: ^(bot) -> ::Comparable & ::Enumerable[::String], session: ^({ limits0: ::Symbol, mode1: instance }, ::Array[bot, ::Symbol]) -> [ \"yaml\", ::Proc ]) { ([ ::LibTmux::Server, :session, :window_link, \"yaml\" ], singleton(::Numeric)) -> void } -> { generation0: ::LibTmux::Session | :window | ::Enumerator, session1: :observed }",
+      "reference": "def fetch_all: (\n  ::LibTmux::Server?,\n  window_id: ^(bot) -> ::Comparable\n  & ::Enumerable[::String],\n  session: ^(\n    { limits0: ::Symbol, mode1: instance },\n    ::Array[bot, ::Symbol]\n  ) -> [\"yaml\", ::Proc]\n) {\n  (\n    [::LibTmux::Server, :session, :window_link, \"yaml\"],\n    singleton(::Numeric)\n  ) -> void\n} -> {\n  generation0: ::LibTmux::Session | :window | ::Enumerator,\n  session1: :observed\n}",
+      "stock": "def fetch_all: (\n  ::LibTmux::Server?,\n  window_id: (^(bot) -> ::Comparable)\n  & ::Enumerable[::String],\n  session: ^(\n    { :limits0 => ::Symbol, :mode1 => instance },\n    ::Array[bot, ::Symbol]\n  ) -> [\"yaml\", ::Proc]\n) {\n  (\n    [::LibTmux::Server, :session, :window_link, \"yaml\"],\n    singleton(::Numeric)\n  ) -> void\n} -> {\n  :generation0 => (::LibTmux::Session\n  | :window\n  | ::Enumerator),\n  :session1 => :observed\n}"
+    },
+    {
+      "id": "fuzz-7/1739",
+      "name": "run_group",
+      "static": false,
+      "raw": "() { () -> 20 } -> ::LibTmux::Selection[singleton(::Integer), ::Enumerator[::LibTmux::WindowSnapshot, Output | bool | ::LibTmux::WindowSnapshot | untyped | :dispatch_only, ::Enumerator | 10 | ::LibTmux::MCP::_ShellInvitation], Elem]",
+      "reference": "def run_group: () {\n  () -> 20\n} -> ::LibTmux::Selection[\n  singleton(::Integer),\n  ::Enumerator[\n    ::LibTmux::WindowSnapshot,\n    Output\n    | bool\n    | ::LibTmux::WindowSnapshot\n    | untyped\n    | :dispatch_only,\n    ::Enumerator | 10 | ::LibTmux::MCP::_ShellInvitation\n  ],\n  Elem\n]",
+      "stock": "def run_group: {\n  -> 20\n} -> ::LibTmux::Selection[singleton(::Integer), ::Enumerator[::LibTmux::WindowSnapshot, (Output\n| bool\n| ::LibTmux::WindowSnapshot\n| untyped\n| :dispatch_only), (::Enumerator\n| 10\n| ::LibTmux::MCP::_ShellInvitation)], Elem]"
+    },
+    {
+      "id": "fuzz-7/2465",
+      "name": "select_layout",
+      "static": true,
+      "raw": "(^(self, :window, ^(:dispatch_only, Output) -> self) -> singleton(::String), ?session: ::Comparable & ::LibTmux::Snapshot, ?cancel: { limits0: { cancel0: false } }) -> ::LibTmux::Selection",
+      "reference": "def self.select_layout: (\n  ^(\n    self,\n    :window,\n    ^(:dispatch_only, Output) -> self\n  ) -> singleton(::String),\n  ?session: ::Comparable & ::LibTmux::Snapshot,\n  ?cancel: { limits0: { cancel0: false } }\n) -> ::LibTmux::Selection",
+      "stock": "def self.select_layout: (\n  ^(\n    self,\n    :window,\n    ^(:dispatch_only, Output) -> self\n  ) -> singleton(::String),\n  ?session: ::Comparable & ::LibTmux::Snapshot,\n  ?cancel: { :limits0 => { :cancel0 => false } }\n) -> ::LibTmux::Selection"
+    },
+    {
+      "id": "fuzz-7/505",
+      "name": "capture",
+      "static": true,
+      "raw": "[T] (::Enumerator[Elem], ::Enumerable[::String] & ::Comparable & ::Enumerable[::String]) -> ::LibTmux::Selection[::LibTmux::WindowSnapshot, :dispatch_only, bot]",
+      "reference": "def self.capture: [T] (\n  ::Enumerator[Elem],\n  ::Enumerable[::String]\n  & ::Comparable\n  & ::Enumerable[::String]\n) -> ::LibTmux::Selection[\n  ::LibTmux::WindowSnapshot,\n  :dispatch_only,\n  bot\n]",
+      "stock": "def self.capture: [T] (\n  ::Enumerator[Elem],\n  ::Enumerable[::String]\n  & ::Comparable\n  & ::Enumerable[::String]\n) -> ::LibTmux::Selection[::LibTmux::WindowSnapshot, :dispatch_only, bot]"
+    },
+    {
+      "id": "fuzz-7/1527",
+      "name": "fetch_all",
+      "static": false,
+      "raw": "[T] (::LibTmux::WindowSnapshot, *false, cancel: { name0: ::Enumerator[::String], max_bytes1: false, max_bytes2: { name0: ::LibTmux::Session }, generation3: { retained_event_bytes0: ::Symbol } }, ?name: ::LibTmux::Selection[[ :vertical, :reliable, ::Proc ]]) -> ::Numeric?",
+      "reference": "def fetch_all: [T] (\n  ::LibTmux::WindowSnapshot,\n  *false,\n  cancel: {\n    name0: ::Enumerator[::String],\n    max_bytes1: false,\n    max_bytes2: { name0: ::LibTmux::Session },\n    generation3: { retained_event_bytes0: ::Symbol }\n  },\n  ?name: ::LibTmux::Selection[\n    [:vertical, :reliable, ::Proc]\n  ]\n) -> ::Numeric?",
+      "stock": "def fetch_all: [T] (\n  ::LibTmux::WindowSnapshot,\n  *false,\n  cancel: {\n    :name0 => ::Enumerator[::String],\n    :max_bytes1 => false,\n    :max_bytes2 => { :name0 => ::LibTmux::Session },\n    :generation3 => { :retained_event_bytes0 => ::Symbol }\n  },\n  ?name: ::LibTmux::Selection[[:vertical, :reliable, ::Proc]]\n) -> ::Numeric?"
+    }
+  ]
+}

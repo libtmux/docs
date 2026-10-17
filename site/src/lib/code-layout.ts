@@ -202,6 +202,11 @@ export function supportsPowerShellSignatures(symbol: ApiSymbol, language?: strin
   return language === 'powershell' && symbol.signatures.length > 0 && symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
 }
 
+export function supportsRubySignatures(symbol: ApiSymbol, language?: string): boolean {
+  return language === 'ruby' && symbol.kind === 'method' && symbol.signatures.length > 0 &&
+    symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
+}
+
 /** Prepare one layout per overload for both HTML and the Markdown twin. */
 export async function apiSignatureLayouts(symbol: ApiSymbol, language?: string): Promise<Map<Signature, CodeLayout>> {
   if (language === 'rs' && ['method', 'function'].includes(symbol.kind) && symbol.signatures.length && !supportsRustSignatures(symbol, language)) {
@@ -252,6 +257,11 @@ export async function apiSignatureLayouts(symbol: ApiSymbol, language?: string):
     const { juliaSignatureLayout } = await import('./julia-code-layout')
     return new Map(await Promise.all(symbol.signatures.filter((signature) => signature.raw?.trim()).map(async (signature) =>
       [signature, await juliaSignatureLayout(symbol, signature)] as const)))
+  }
+  if (supportsRubySignatures(symbol, language)) {
+    const { rubySignatureLayout } = await import('./ruby-code-layout')
+    return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
+      [signature, await rubySignatureLayout(symbol, signature)] as const)))
   }
   if ((language === 'scala' || language === 'kotlin') && ['method', 'function'].includes(symbol.kind)) {
     const { jvmSignatureLayout } = await import('./jvm-code-layout')
