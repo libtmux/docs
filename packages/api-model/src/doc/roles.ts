@@ -176,6 +176,16 @@ const STRONG_RE = /\*\*(?!\s)([^*\n]+?)(?<!\s)\*\*/g
 /** Word boundaries keep globs, multiplication and escaped stars literal. */
 const EMPHASIS_RE = /(?<![\w*\\])\*(?![\s*])([^*\n]+?)(?<![\s\\])\*(?![\w*])/g
 
+/**
+ * A DocC symbol link as the symbol index spells it.
+ *
+ * Swift ids keep their argument labels, `Server.using(_:_:)`, so the label
+ * list stays; only the path before it changes, from DocC's `Type/member` to the
+ * dotted form every id uses.
+ */
+const doccTarget = (text: string): string =>
+  text.replace(/^[^(]*/, (path) => path.replace(/(?<=\w)\/(?=\w)/g, '.'))
+
 /** A bare double-backtick literal, which is never a link. */
 const LITERAL_RE = /``([^`]+)``/g
 /** reST literals can contain single backticks without enabling nested markup. */
@@ -515,7 +525,7 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
       const span: DocSpan = code.ticks === 1
         ? { kind: 'ref', role: 'any', target: code.text, label: code.text }
         : syntax.has('docc') && code.ticks === 2
-          ? { kind: 'ref', role: 'any', target: code.text.replace(/\(.*$/, ''), label: code.text }
+          ? { kind: 'ref', role: 'any', target: doccTarget(code.text), label: code.text }
           : { kind: 'code', text: code.text }
       hits.push({ start: code.start, end: code.end, span })
     }

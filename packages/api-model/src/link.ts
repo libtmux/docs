@@ -196,6 +196,8 @@ export class SymbolIndex {
   private readonly byDeclared = new Map<string, ApiSymbol>()
   private readonly bySuffix = new Map<string, ApiSymbol[]>()
   private readonly byName = new Map<string, ApiSymbol[]>()
+  /** Swift declarations that take labels, under the path without them: `Server.sessions`. */
+  private readonly swiftCallables = new Map<string, ApiSymbol[]>()
 
   // A plain field, not a constructor parameter property. Node's
   // --experimental-strip-types rejects parameter properties outright
@@ -255,6 +257,12 @@ export class SymbolIndex {
       const list = this.byName.get(s.name) ?? []
       list.push(s)
       this.byName.set(s.name, list)
+      const labels = this.lang === 'swift' ? pub.indexOf('(') : -1
+      if (labels > 0) {
+        const overloads = this.swiftCallables.get(pub.slice(0, labels)) ?? []
+        overloads.push(s)
+        this.swiftCallables.set(pub.slice(0, labels), overloads)
+      }
     }
   }
 
@@ -378,7 +386,9 @@ export class SymbolIndex {
   resolve(target: string, role = 'any', context?: ApiSymbol): LinkTarget | undefined {
     const relative = target.startsWith('.')
     const goType = this.lang === 'go' && role === 'class'
-    let clean = target.replace(/^[~.]/, '').replace(/\(\)$/, '')
+    let clean = target.replace(/^[~.]/, '')
+    // Swift ids keep their argument labels, so `isRunning()` names `Server.isRunning()`.
+    if (this.lang !== 'swift') clean = clean.replace(/\(\)$/, '')
     let opaqueContext = false
     if (this.lang === 'powershell' && context) {
       const prefixed = /^[$-]/.test(clean)
@@ -465,6 +475,18 @@ export class SymbolIndex {
         const hit = accessor && (called || declaration?.kind !== 'method') ? accessor : declaration
         if (hit && role === 'class' && (goType || this.lang === 'java' || this.lang === 'csharp') && !ROLE_KINDS.class.includes(hit.kind)) continue
         if (hit) return { href: this.hrefFor(hit), external: false, symbol: hit }
+        // DocC takes a bare name to the one declaration that owns it. Several
+        // overloads leave it ambiguous, and the global match below would pick
+        // a same-named property of another type instead.
+        const overloads = this.lang === 'swift' && !clean.includes('(') ? this.swiftCallables.get(target) : undefined
+        if (overloads) {
+          // A parameter named like a method means the parameter, and a name
+          // in its own declaration's documentation needs no link to itself.
+          const parameter = context.signatures.some((sig) => sig.params.some((param) => param.name === clean))
+          return overloads.length === 1 && overloads[0] !== context && !parameter
+            ? { href: this.hrefFor(overloads[0]), external: false, symbol: overloads[0] }
+            : undefined
+        }
       }
       if (this.lang === 'scala') {
         const owners: ApiSymbol[] = []

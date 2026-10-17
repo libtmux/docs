@@ -366,9 +366,22 @@ describe('each language gets its own spelling of a cross-reference', () => {
 
   it('DocC gives double backticks the meaning reST gives single ones', () => {
     // ``Server`` is a symbol link in a Swift doc comment and a literal in reST.
-    expect(ref(tokenizeDoc('Call ``Server/kill()`` first.', 'swift'))).toEqual(['Server/kill'])
+    expect(ref(tokenizeDoc('Call ``Server/kill()`` first.', 'swift'))).toEqual(['Server.kill()'])
     const asRest = tokenizeDoc('Call ``Server`` first.', 'py')
     expect(asRest.some((s) => s.kind === 'code')).toBe(true)
+  })
+
+  it('a DocC link keeps its argument labels and spells a path with dots', () => {
+    const targets = (text: string) => tokenizeDoc(text, 'swift').filter((s) => s.kind === 'ref')
+      .map((s) => [(s as { target: string }).target, (s as { label: string }).label])
+    expect(targets('``using(_:_:)`` and ``isRunning()``')).toEqual([
+      ['using(_:_:)', 'using(_:_:)'], ['isRunning()', 'isRunning()'],
+    ])
+    expect(targets('``TmuxMode/direct`` and ``Snapshot/windows(of:)``')).toEqual([
+      ['TmuxMode.direct', 'TmuxMode/direct'], ['Snapshot.windows(of:)', 'Snapshot/windows(of:)'],
+    ])
+    // Only a slash between two names is a path; an operator's own slash is not.
+    expect(targets('``/(_:_:)``')).toEqual([['/(_:_:)', '/(_:_:)']])
   })
 
   it('an undeclared language still gets reST, which the Python corpus needs', () => {
