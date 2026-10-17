@@ -160,6 +160,12 @@ export function supportsRustSignatures(symbol: ApiSymbol, language?: string): bo
     symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
 }
 
+/** F# `val` and `member` signatures; union cases, fields and type headers keep their native one-line text. */
+export function supportsFSharpSignatures(symbol: ApiSymbol, language?: string): boolean {
+  return language === 'fsharp' && ['function', 'method', 'constant'].includes(symbol.kind) && symbol.signatures.length > 0 &&
+    symbol.signatures.every((signature) => /^(?:val|member)\s/.test(signature.raw ?? ''))
+}
+
 /** Prepare one layout per overload for both HTML and the Markdown twin. */
 export async function apiSignatureLayouts(symbol: ApiSymbol, language?: string): Promise<Map<Signature, CodeLayout>> {
   if (language === 'rs' && ['method', 'function'].includes(symbol.kind) && symbol.signatures.length && !supportsRustSignatures(symbol, language)) {
@@ -183,6 +189,11 @@ export async function apiSignatureLayouts(symbol: ApiSymbol, language?: string):
     const { javaSignatureLayout } = await import('./java-code-layout')
     return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
       [signature, await javaSignatureLayout(symbol, signature)] as const)))
+  }
+  if (supportsFSharpSignatures(symbol, language)) {
+    const { fsharpSignatureLayout } = await import('./fsharp-code-layout')
+    return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
+      [signature, await fsharpSignatureLayout(signature)] as const)))
   }
   if ((language === 'scala' || language === 'kotlin') && ['method', 'function'].includes(symbol.kind)) {
     const { jvmSignatureLayout } = await import('./jvm-code-layout')

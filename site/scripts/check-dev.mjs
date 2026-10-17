@@ -353,10 +353,12 @@ async function checkSignatureLayouts(browser, base) {
         assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
           `${colorScheme}/${width}px: F# signature fits`)
         if (width === 803) {
+          // The formatted declaration breaks after the name, so the first argument is one row below.
           const first = await keyword.boundingBox()
           const parameter = await declaration.locator('.api-parameter-name').first().boundingBox()
-          assert(Math.abs(first.y + first.height / 2 - parameter.y - parameter.height / 2) < 2,
-            'F# source indentation does not force an empty signature row')
+          const lineHeight = await declaration.locator('.api-native-signature').evaluate((element) => Number.parseFloat(getComputedStyle(element).lineHeight))
+          const rows = (parameter.y + parameter.height / 2 - first.y - first.height / 2) / lineHeight
+          assert(Math.abs(rows - 1) < 0.25, 'F# source indentation does not force an empty signature row')
         }
       }
     }

@@ -660,8 +660,8 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-layout-right
 .api-method-source { margin-inline-start: 0.75rem; white-space: nowrap; font-size: 0.875em; }
 .api-method + .api-method { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--api-border); }
 .api-method > p { margin-block: 0.5rem 0.75rem; }
-/* F# source indentation is not a required break in a signature's type chain. */
-.api-native-signature--fsharp { white-space: normal; }
+/* Raw F# source indentation is not a required break; a formatted layout owns its breaks. */
+.api-native-signature--fsharp:not(.api-native-signature--formatted) { white-space: normal; }
 
 .api-reference-content {
   overflow-wrap: anywhere;
