@@ -329,6 +329,16 @@ describe('each language gets its own spelling of a cross-reference', () => {
     ])
   })
 
+  it('a generic doc-ID cref is labelled without its arity marker', () => {
+    for (const lang of ['csharp', 'fsharp']) {
+      expect(tokenizeDoc('See <see cref="T:LibTmux.FSharp.Query`1"/> first.', lang)[1]).toMatchObject({
+        kind: 'ref', target: 'LibTmux.FSharp.Query`1', label: 'Query',
+      })
+    }
+    // Only a trailing marker goes; a name that merely contains digits stays whole.
+    expect(tokenizeDoc('<see cref="T:LibTmux.Utf8Text"/>', 'csharp')[0]).toMatchObject({ label: 'Utf8Text' })
+  })
+
   it('a C# keyword is a literal, not a member', () => {
     const spans = tokenizeDoc('Or <see langword="null" /> for the default.', 'csharp')
     expect(spans.filter((s) => s.kind === 'code').map((s) => (s as { text: string }).text)).toEqual([

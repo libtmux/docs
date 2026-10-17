@@ -412,7 +412,7 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
       hits.push({
         start: m.index,
         end: m.index + m[0].length,
-        span: { kind: 'ref', role: 'any', target, label: target.split('.').pop() ?? target },
+        span: { kind: 'ref', role: 'any', target, label: (target.split('.').pop() ?? target).replace(/`+\d+$/, '') },
       })
     }
   }
