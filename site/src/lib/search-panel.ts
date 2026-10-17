@@ -66,6 +66,8 @@ const displayUrl = (url: string) => url.replace(/index\.html$/, '').replace(/\.h
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
 
 export interface SearchPanelHandle {
+  /** Initial filters and any requested results have finished rendering. */
+  ready: Promise<void>
   focus: () => void
   clear: () => void
 }
@@ -384,12 +386,11 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
 
   if (settings.initialQuery) {
     input.value = settings.initialQuery
-    void run(settings.initialQuery)
-  } else {
-    void run('')
   }
+  const ready = run(settings.initialQuery ?? '')
 
   return {
+    ready,
     focus: () => input.focus(),
     clear: () => {
       input.value = ''

@@ -347,13 +347,16 @@ export default defineConfig({
     }),
   },
 
-  prefetch: { defaultStrategy: 'viewport', prefetchAll: true },
+  // Mutable HTML revalidates on navigation, so speculative fetches add work.
+  prefetch: false,
   compressHTML: true,
   server: { port: 4321 },
 
   vite: {
     // Generated catalogs need only their default export.
     json: { stringify: true, namedExports: false },
+    // Required module execution must have an observable load/error outcome.
+    build: { assetsInlineLimit: 0 },
     resolve: { tsconfigPaths: false, noExternal: ['@tailwindcss/typography'] },
     plugins: [tailwindcss() as never, {
       name: 'libtmux-shared-assets-dev',

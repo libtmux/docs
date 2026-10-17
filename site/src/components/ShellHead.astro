@@ -3,12 +3,20 @@ import '../styles/global.css'
 import { Font } from 'astro:assets'
 import ThemeScript from './ThemeScript.astro'
 import { pickerPaintRules } from '../lib/picker-paint'
+import { initializePageReadiness } from '../lib/page-readiness'
+import { initializeWebAnalytics } from '../lib/web-analytics'
 import { withRoot } from '../lib/site-root'
-import { initializeLinkHintReadiness } from '../lib/link-hint-readiness'
+import { installExternalLinks } from '../../public/_shell/external-links.js'
+import externalLink from '../../public/_shell/external-link.svg?raw'
+import externalLinksCss from '../../public/_shell/external-links.css?raw'
+import anchorsCss from '../../public/_shell/anchors.css?raw'
 import { createLinkPreviewPolicy, initializeLinkPreviewPaint } from '../lib/link-preview-paint'
 
 interface Props { preloadSansItalic?: boolean }
 const { preloadSansItalic = false } = Astro.props
+const mask = `data:image/svg+xml,${encodeURIComponent(externalLink)}`
+const hintsCss = externalLinksCss.replace('url("./external-link.svg")', `url("${mask}")`)
+  + anchorsCss.replace("@import url('./external-links.css');", '')
 ---
 {/* Preload the faces used at first paint before the font gate starts. */}
 <Font cssVariable="--font-ibm-plex-sans" preload={[
@@ -17,23 +25,27 @@ const { preloadSansItalic = false } = Astro.props
   ...(preloadSansItalic ? [{ weight: 400, style: 'italic' as const }] : []),
 ]} />
 <Font cssVariable="--font-ibm-plex-mono" preload={[
-  { weight: 400, style: 'normal' },
+  { weight: 400, style: 'normal' }, { weight: 500, style: 'normal' },
   { weight: 600, style: 'normal' }, { weight: 700, style: 'normal' },
   { weight: 700, style: 'italic' },
 ]} />
-{/* ThemeScript lifts this gate on document.fonts.ready or after three seconds. */}
-<style is:inline>html.fonts-pending body,html.link-hints-pending body{visibility:hidden}html.link-hints-suppressed a[data-external-link]::after{display:none}</style>
+<style is:inline>
+  html.fonts-pending body, html.link-hints-pending body { visibility: hidden; }
+  #page-load-status { visibility: visible; position: fixed; inset: 0; display: grid; place-content: center; gap: 1rem; padding: 2rem; background: var(--background-color, white); color: var(--text-color, black); font: 1rem system-ui; }
+  #page-load-status button { font: inherit; cursor: pointer; }
+</style>
 <script is:inline data-anchor-startup>
-  // Capture unowned fragments before the deferred router seeds scroll state.
+  // Capture unowned fragments before startup scripts alter history state.
   if (location.hash && history.state === null && performance.getEntriesByType('navigation')[0]?.type !== 'back_forward') {
     document.documentElement.setAttribute('data-anchor-startup', location.href);
   }
 </script>
 <ThemeScript />
-<link rel="preload" as="image" crossorigin="anonymous" href={withRoot('/_shell/external-link.svg')} data-link-hints-mask />
-<script is:inline set:html={`(${initializeLinkHintReadiness.toString()})();`} />
+<style is:inline set:html={hintsCss} />
+<script is:inline set:html={`(${initializePageReadiness.toString()})(${installExternalLinks.toString()},${JSON.stringify(mask)});`} />
+<script is:inline set:html={`(${initializeWebAnalytics.toString()})(${JSON.stringify(withRoot('/_shell/web-analytics.json'))});`} />
 <script is:inline set:html={`(${initializeLinkPreviewPaint.toString()})((${createLinkPreviewPolicy.toString()})());`} />
-<link rel="stylesheet" href={withRoot('/_shell/anchors.css')} />
-<script is:inline type="module" data-link-hints-module src={withRoot('/_shell/anchors.js')}></script>
+<script>
+  import '../../public/_shell/anchors.js'
+</script>
 <style is:global set:html={pickerPaintRules()} />
-<link rel="preload" href={withRoot('/versions.json')} as="fetch" crossorigin="anonymous" />

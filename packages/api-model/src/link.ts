@@ -542,7 +542,11 @@ export class SymbolIndex {
         .map((namespace) => inv.byName.get(`${namespace}.${clean}`)).find(Boolean) ??
         (this.lang === 'julia' && !clean.includes('.')
           ? inv.byName.get(`Core.${clean}`) ?? inv.byName.get(`Base.${clean}`) : undefined)
-      if (hit) return { href: inv.baseUrl + hit.uri, external: true, project: inv.project }
+      if (hit) return {
+        href: inv.baseUrl === '/' && hit.uri.startsWith('/') ? hit.uri : inv.baseUrl + hit.uri,
+        external: true,
+        project: inv.project,
+      }
     }
 
     if (builtin) return { href: builtin, external: true }

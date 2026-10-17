@@ -171,8 +171,39 @@ export async function checkNativeHeader(page) {
   assert.deepEqual(controls.covered, [], 'Native header controls are reachable')
 }
 
-/** Delay enhancement until the initial article and navigation can be inspected. */
+const observedPages = new WeakSet()
+
+/** Hold required enhancement, then inspect complete native first appearance. */
 export async function checkNativeFirstPaint(page, url) {
+  if (!observedPages.has(page)) {
+    observedPages.add(page)
+    await page.addInitScript(() => {
+      window.__nativePaint = { document: crypto.randomUUID(), frames: [], first: null }
+      const sample = () => {
+        const heading = document.querySelector('article h1')
+        const state = window.__nativePaint
+        if (heading && getComputedStyle(document.body).visibility === 'visible') {
+          const { x, y, width, height } = heading.getBoundingClientRect()
+          state.frames.push({ x, y, width, height })
+          if (!state.first) {
+            state.first = {
+              ready: document.documentElement.dataset.pageReadiness,
+              fonts: [heading, document.querySelector('article code')].filter(Boolean).every((element) => {
+                const s = getComputedStyle(element)
+                const family = s.fontFamily.split(',')[0]
+                const name = family.replace(/^['"]|['"]$/g, '')
+                return family.includes('IBM Plex') && [...document.fonts].some((face) =>
+                  face.family === name && face.status === 'loaded')
+                  && document.fonts.check(`${s.fontStyle} ${s.fontWeight} ${s.fontSize} ${family}`)
+              }),
+            }
+          }
+        }
+        if (state.frames.length < 2) requestAnimationFrame(sample)
+      }
+      requestAnimationFrame(sample)
+    })
+  }
   let release
   const delayedScript = new Promise((resolve) => { release = resolve })
   const pendingRoutes = []
@@ -183,20 +214,29 @@ export async function checkNativeFirstPaint(page, url) {
   }
   await page.route('**/_astro/*.js', routeScript)
   try {
-    const response = await page.goto(url, { waitUntil: 'commit' })
+    const required = page.waitForRequest((request) => request.resourceType() === 'script'
+      && /\/_astro\/[^/]+\.js$/.test(new URL(request.url()).pathname))
+    void required.catch(() => {})
+    let response = await page.goto(url, { waitUntil: 'commit' })
+    if (!response) response = await page.reload({ waitUntil: 'commit' })
     assert(response?.ok(), `Native page: HTTP ${response?.status()}`)
-    await page.locator('article h1').waitFor({ state: 'visible' })
-    assert(await page.locator('.site-header').isVisible(), 'Compiled native header is visible before enhancement arrives')
-    assert.equal(await page.locator('[data-page-port-switcher]').getAttribute('data-enhanced'), null,
-      'Native navigation is visible before enhancement')
-    await checkNativeHeader(page)
-    const initial = await page.locator('article h1').boundingBox()
-    await page.evaluate(() => { window.__initialNativeHeader = document.querySelector('.site-header') })
+    await required
+    await page.locator('article h1').waitFor({ state: 'attached' })
+    const held = await page.evaluate(() => ({ ...window.__nativePaint,
+      readiness: document.documentElement.dataset.pageReadiness }))
+    assert.equal(held.readiness, 'pending', 'Required native enhancement remains pending')
+    assert.equal(held.first, null, 'Native content stays gated while required enhancement is held')
     release()
-    await page.waitForLoadState('networkidle')
-    assert.deepEqual(await page.locator('article h1').boundingBox(), initial, `Native first paint stays still at ${page.viewportSize().width}px`)
-    assert(await page.evaluate(() => window.__initialNativeHeader === document.querySelector('.site-header')),
-      'Enhancement preserves the initial header')
+    const observation = await page.waitForFunction(() => {
+      const result = window.__nativePaint
+      return result.first && result.frames.length >= 2 ? structuredClone(result) : false
+    })
+    const result = await observation.jsonValue()
+    assert.equal(result.document, held.document, 'Held and revealed native observations share a document')
+    assert.equal(result.first.ready, 'ready')
+    assert(result.first.fonts, 'Selected native heading and code faces are loaded IBM Plex at first reveal')
+    assert.deepEqual(result.frames[1], result.frames[0], `Native first paint stays still at ${page.viewportSize().width}px`)
+    await checkNativeHeader(page)
     assert.equal(await page.locator('.site-header').count(), 1)
   } finally {
     release()

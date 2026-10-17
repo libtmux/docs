@@ -45,7 +45,7 @@ try {
       assert([...loaded].some((url) => url.includes(`/${version}/_astro/`) && url.endsWith('.css')), 'Compiled native CSS did not load')
       assert([...loaded].some((url) => url.includes(`/${version}/_astro/DocumentationScript.`)), 'Compiled shared navigation did not load')
       assert(![...loaded].some((url) => /(?:\/_shell\/shell\.js|\/spa-nav\.js|\/scripts\/furo\.js)/.test(url)), 'A competing native shell/router loaded')
-      assert(await page.locator('meta[name="astro-view-transitions-enabled"]').count(), 'Native pages have no shared client router')
+      assert.equal(await page.locator('meta[name="astro-view-transitions-enabled"]').count(), 0, 'Native pages use the shared document boundary')
       assert.equal(await page.locator('[data-surface-picker] .surface-current small').textContent(), 'Upstream reference')
       assert.deepEqual((await page.locator('[data-surface-picker] a[aria-current]').allTextContents()).map((text) => text.replaceAll(/\s|✓/g, '')), ['Upstreamreference'])
       await menu.locator('summary').focus()

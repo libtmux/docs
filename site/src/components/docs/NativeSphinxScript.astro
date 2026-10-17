@@ -1,6 +1,20 @@
 <script>
+  import { layoutBeforeAppearance } from '../../lib/page-readiness'
   let controller: AbortController | undefined
-  let sidebarScroll = 0
+  const sidebarKey = `libtmux:native-sidebar:${document.documentElement.dataset.shellBase}`
+  const saveSidebar = () => {
+    const sidebar = document.querySelector('.sidebar-scroll')
+    if (!sidebar) return
+    try { sessionStorage.setItem(sidebarKey, String(sidebar.scrollTop)) } catch { /* Storage is optional. */ }
+  }
+  layoutBeforeAppearance(() => {
+    const sidebar = document.querySelector('.sidebar-scroll')
+    try {
+      const saved = sessionStorage.getItem(sidebarKey)
+      if (sidebar && saved !== null && Number.isFinite(Number(saved))) sidebar.scrollTop = Number(saved)
+    } catch { /* Direct arrivals remain usable without storage. */ }
+  })
+  window.addEventListener('pagehide', saveSidebar)
   const syncTheme = () => {
     document.documentElement.classList.remove('no-js')
     document.body.dataset.theme = document.documentElement.dataset.themeMode || 'auto'
@@ -158,18 +172,13 @@
     window.addEventListener('resize', schedule, { signal })
     signal.addEventListener('abort', () => cancelAnimationFrame(frame), { once: true })
     update()
+    layoutBeforeAppearance(update)
+    document.addEventListener('gp-sphinx:navigated', () => {
+      queueMicrotask(() => layoutBeforeAppearance(update))
+    }, { signal })
   }
   initNativeSphinx()
-  document.addEventListener('astro:before-swap', () => {
-    sidebarScroll = document.querySelector('.sidebar-scroll')?.scrollTop ?? 0
-    controller?.abort()
-  })
-  document.addEventListener('astro:after-swap', () => {
-    initNativeSphinx()
-    const sidebar = document.querySelector('.sidebar-scroll')
-    if (sidebar) sidebar.scrollTop = sidebarScroll
-  })
-  document.addEventListener('astro:page-load', () => {
-    document.dispatchEvent(new CustomEvent('gp-sphinx:navigated', { detail: { url: location.href } }))
+  layoutBeforeAppearance(() => {
+    document.dispatchEvent(new CustomEvent('gp-sphinx:navigated', { detail: { url: location.href, initial: true } }))
   })
 </script>

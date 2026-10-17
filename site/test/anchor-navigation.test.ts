@@ -6,7 +6,7 @@ import { installAnchorNavigation } from '../public/_shell/anchors.js'
 const disposals: (() => void)[] = []
 afterEach(() => { disposals.splice(0).forEach((dispose) => dispose()); vi.restoreAllMocks() })
 
-function page(html: string, hash = '', fontsPending = false, hintsPending = false, startup?: { state?: unknown; navigation?: string }) {
+function page(html: string, hash = '', fontsPending = false, hintsPending = false, startup?: { state?: unknown; navigation?: string }, coordinated = false) {
   const win = new Window({ url: `https://libtmux.org/en/ts/latest/reference/${hash}` })
   win.document.body.innerHTML = html
   if (startup) {
@@ -36,6 +36,10 @@ function page(html: string, hash = '', fontsPending = false, hintsPending = fals
   win.HTMLElement.prototype.scrollIntoView = function () {
     scrolled.push({ id: this.id, collapsed: win.document.querySelectorAll('details:not([open])').length })
   }
+  const layouts: (() => void)[] = []
+  if (coordinated) Object.assign(win, { __libtmuxAppearance: {
+    wait: () => {}, layout: (work: () => void) => layouts.push(work),
+  } })
   const dispose = installAnchorNavigation(win as unknown as typeof window)
   disposals.push(dispose, () => { void win.happyDOM.abort() })
   const flush = () => { const pending = [...frames.values()]; frames.clear(); pending.forEach((fn) => fn(0)) }
@@ -43,10 +47,98 @@ function page(html: string, hash = '', fontsPending = false, hintsPending = fals
     new win.MouseEvent('click', { bubbles: true, cancelable: true, button: 0, ...options }),
   )
   flush()
-  return { win, doc: win.document, flush, click, scrolled, timers, dispose }
+  const preparePass = () => layouts.splice(0).forEach((work) => work())
+  const prepare = () => {
+    for (let pass = 0; layouts.length; pass++) {
+      expect(pass).toBeLessThan(3)
+      preparePass()
+    }
+  }
+  return { win, doc: win.document, flush, click, scrolled, timers, dispose, prepare, preparePass }
 }
 
 describe('shared anchor arrival', () => {
+  it('prepares an unowned initial disclosure and starts its full cue after reveal', () => {
+    const p = page('<details><summary>API</summary><h2 id="server">Server</h2></details>', '#server', true, true, {}, true)
+    expect(p.scrolled).toEqual([])
+    p.prepare()
+    expect(p.doc.querySelector('details')?.open).toBe(true)
+    expect(p.scrolled).toEqual([{ id: 'server', collapsed: 0 }])
+    expect(p.timers.size).toBe(0)
+    p.doc.documentElement.classList.remove('fonts-pending', 'link-hints-pending')
+    p.doc.dispatchEvent(new p.win.CustomEvent('libtmux:page-ready'))
+    expect(p.win.setTimeout).toHaveBeenLastCalledWith(expect.any(Function), 2600)
+  })
+
+  it.each(['wheel', 'touchstart', 'pointerdown', 'PageDown', 'Tab'])('does not recover cancelled startup scrolling during appearance layout: %s', (input) => {
+    const p = page('<details><summary>API</summary><h2 id="server">Server</h2></details>', '#server', true, true, {}, true)
+    p.doc.dispatchEvent(['PageDown', 'Tab'].includes(input)
+      ? new p.win.KeyboardEvent('keydown', { key: input, bubbles: true })
+      : new p.win.Event(input, { bubbles: true }))
+    p.prepare()
+    expect(p.doc.querySelector('details')?.open).toBe(true)
+    expect(p.scrolled).toEqual([])
+    expect(p.doc.documentElement.hasAttribute('data-anchor-startup')).toBe(false)
+    // Explicit subsequent intent still scrolls after the same cancellation.
+    p.doc.documentElement.classList.remove('fonts-pending', 'link-hints-pending')
+    p.doc.dispatchEvent(new p.win.CustomEvent('libtmux:anchor-arrival', { detail: { id: 'server' } }))
+    p.flush()
+    expect(p.scrolled).toEqual([{ id: 'server', collapsed: 0 }])
+  })
+
+  it.each([
+    { state: { index: 1, scrollX: 0, scrollY: 480 } },
+    { state: { index: 1, scrollX: 0, scrollY: 0 } },
+    { navigation: 'back_forward' },
+  ])('preserves a restored reading position during coordinated initial layout: %j', (startup) => {
+    const p = page('<details><summary>API</summary><h2 id="server">Server</h2></details>', '#server', true, true, startup, true)
+    const state = p.win.history.state
+    p.prepare()
+    expect(p.doc.querySelector('details')?.open).toBe(true)
+    expect(p.scrolled).toEqual([])
+    expect(p.win.history.state).toEqual(state)
+  })
+
+  it('does not reinterpret a changed fragment as pending initial intent', () => {
+    const p = page('<h2 id="server">Server</h2><h2 id="other">Other</h2>', '#server', true, true, {}, true)
+    p.win.history.replaceState(null, '', '#other')
+    p.prepare()
+    expect(p.scrolled).toEqual([])
+    expect(p.doc.querySelector('[data-anchor-arrival]')).toBeNull()
+    expect(p.win.location.hash).toBe('#other')
+  })
+
+  it('leaves a stale fragment alone after reader input and passive appearance work', () => {
+    const p = page('<h2 id="server">Server</h2>', '#server', true, true, {}, true)
+    p.doc.dispatchEvent(new p.win.Event('wheel', { bubbles: true }))
+    p.prepare()
+    p.win.dispatchEvent(new p.win.Event('resize'))
+    p.win.dispatchEvent(new p.win.Event('scroll'))
+    p.flush()
+    expect(p.scrolled).toEqual([])
+    expect(p.win.location.hash).toBe('#server')
+  })
+
+  it('makes retained appearance callbacks inert after anchor cleanup', () => {
+    const p = page('<details><summary>API</summary><h2 id="server">Server</h2></details>', '#server', true, true, {}, true)
+    p.dispose()
+    p.prepare()
+    expect(p.doc.querySelector('details')?.open).toBe(false)
+    expect(p.doc.querySelector('[data-anchor-arrival]')).toBeNull()
+    expect(p.scrolled).toEqual([])
+    expect(p.timers.size).toBe(0)
+  })
+
+  it('rechecks cleanup between native preparation and initial measurement', () => {
+    const p = page('<h2 id="server">Server</h2>', '#server', true, true, {}, true)
+    p.preparePass()
+    expect(p.scrolled).toEqual([])
+    p.dispose()
+    p.preparePass()
+    expect(p.scrolled).toEqual([])
+    expect(p.doc.querySelector('[data-anchor-arrival]')).toBeNull()
+  })
+
   it('recovers an initially unowned fragment after the router seeds its startup position', () => {
     const p = page('<h2 id="server">Server</h2>', '#server', false, false, {})
     expect(p.scrolled).toEqual([{ id: 'server', collapsed: 0 }])

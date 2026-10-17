@@ -15,6 +15,7 @@ import { checkColorScheme } from './check-color-scheme.mjs'
 import { checkHomeExampleOptions } from './check-home-example-options.mjs'
 import { checkDevSample } from './check-dev-sample.mjs'
 import { checkNativeSignatureGeometry, checkNativeSignatureLinks } from './check-native-layout.mjs'
+import { checkRequiredAppearance, checkWebAnalytics, checkWebAnalyticsTransitions } from './check-page-readiness.mjs'
 
 const apiNavigationOnly = process.argv.includes('--api-navigation')
 const apiAnchorsOnly = process.argv.includes('--api-anchors')
@@ -75,6 +76,25 @@ import { withRoot } from '../lib/site-root'
   <p><a href={withRoot('/code-tabs-probe/?from=client')}>Open the code tabs fixture</a></p>
   <Content />
 </DocsLayout>
+`)
+const analyticsProbe = join(root, 'src/pages/analytics-router-probe')
+mkdirSync(analyticsProbe)
+writeFileSync(join(analyticsProbe, '[page].astro'), `---
+import { ClientRouter } from 'astro:transitions'
+import { initializeWebAnalytics } from '../../lib/web-analytics'
+import { withRoot } from '../../lib/site-root'
+export function getStaticPaths() {
+  return ['first', 'second'].map((page) => ({ params: { page } }))
+}
+const { page } = Astro.params
+---
+<html lang="en"><head><ClientRouter fallback="swap" /><title>Analytics router probe</title>
+  <script is:inline set:html={\`(\${initializeWebAnalytics.toString()})(\${JSON.stringify(withRoot('/_shell/web-analytics.json'))});\`} />
+</head>
+<body><main><h1>{page} analytics article</h1><p><code>libtmux.Server()</code></p>
+  <a href="/en/analytics-router-probe/second/" id="analytics-next">Next article</a>
+  <a href="https://example.com/">External link</a>
+</main></body></html>
 `)
 // Exercise the production reference page in the root server. Its model and
 // owner are the same props its port route supplies, without another Vite boot.
@@ -219,6 +239,7 @@ const terminate = async () => {
 process.on('SIGTERM', terminate)
 process.on('SIGINT', terminate)
 const startServer = () => dev({ root, cacheDir: join(mirror, 'cache'),
+  devToolbar: { enabled: false },
   vite: { cacheDir: join(mirror, 'vite'),
     ...(requestedBrowserPort === undefined ? {} : { server: { strictPort: true } }) }, logLevel: 'error',
   server: { host: '127.0.0.1', port: requestedBrowserPort === undefined
@@ -238,7 +259,7 @@ async function retryReload(check, page) {
     const message = String(error)
     const navigation = message.match(/Navigation to "([^"]+)" is interrupted by another navigation to "([^"]+)"/)
     const samePageReload = navigation && navigation[1] === navigation[2] && navigation[1].startsWith(`${base}/`)
-    if (!/Execution context was destroyed/.test(message) && !samePageReload) throw error
+    if (!/Execution context was destroyed|Appearance document changed during required-resource check/.test(message) && !samePageReload) throw error
     if (samePageReload && page) await page.waitForURL(navigation[2], { waitUntil: 'load' })
     await check()
   }
@@ -720,7 +741,9 @@ try {
   browser = await driver.launch(engine === 'chromium' ? { channel: process.env.LIBTMUX_DOCS_BROWSER_CHANNEL } : {})
   await ready
   if (sampleOnly) {
-    await checkDevSample(browser, base)
+    await retryReload(() => checkDevSample(browser, base))
+    await checkWebAnalytics(browser, base)
+    await checkWebAnalyticsTransitions(browser, base)
   } else if (homeLauncherOnly) {
     await checkHomeLauncher(browser, base)
   } else if (homeControlsOnly) {
@@ -750,6 +773,9 @@ try {
   } else if (apiAnchorsOnly) {
     await retryReload(() => checkApiAnchorArrival(browser, base))
   } else {
+    await retryReload(() => checkRequiredAppearance(browser, base))
+    await checkWebAnalytics(browser, base)
+    await checkWebAnalyticsTransitions(browser, base)
     // Timed page loads share Vite's compiler. Finish each browser matrix
     // before starting the next, including the main page walk below.
     let previous = Promise.resolve()

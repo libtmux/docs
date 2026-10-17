@@ -1,6 +1,10 @@
 /** Anchor arrival shared by Astro and native documentation pages. */
-// Keep link hints available through the shell asset used by every generator.
-import './external-links.js'
+
+// Standalone exports and cached older heads still rely on this module's
+// decorator import. The coordinated head already installed decoration.
+if (typeof window !== 'undefined' && !window.__libtmuxAppearance) {
+  await import('./external-links.js')
+}
 
 export function installAnchorNavigation(win = window) {
   const doc = win.document
@@ -16,8 +20,10 @@ export function installAnchorNavigation(win = window) {
   const cancelStartup = () => doc.documentElement.removeAttribute('data-anchor-startup')
   if (doc.documentElement.getAttribute('data-anchor-startup') !== win.location.href) cancelStartup()
 
+  const expire = () => { timer = win.setTimeout(clear, 2600) }
   const clear = () => {
     win.clearTimeout(timer)
+    doc.removeEventListener('libtmux:page-ready', expire)
     observer?.disconnect()
     highlighted?.removeAttribute('data-anchor-arrival')
     highlighted = undefined
@@ -33,7 +39,7 @@ export function installAnchorNavigation(win = window) {
     return target?.querySelector(':scope > :is(h1, h2, h3, h4, h5, h6)') || target
   }
 
-  const arrive = (hash, scroll = false) => {
+  const arrive = (hash, scroll = false, preparing = false) => {
     clear()
     if (doc.documentElement.getAttribute('data-anchor-startup') !== win.location.href) cancelStartup()
     let id
@@ -51,7 +57,7 @@ export function installAnchorNavigation(win = window) {
     if (!display || display === doc.body || display === doc.documentElement) return
     // The font and link-hint gates hide the page during startup. Keep the full
     // arrival cue for the moment the reader can actually see it.
-    if (doc.documentElement.matches('.fonts-pending, .link-hints-pending') && win.MutationObserver) {
+    if (!preparing && doc.documentElement.matches('.fonts-pending, .link-hints-pending') && win.MutationObserver) {
       observer = new win.MutationObserver(() => {
         if (!doc.documentElement.matches('.fonts-pending, .link-hints-pending')) schedule(hash, scroll || opened)
       })
@@ -60,14 +66,16 @@ export function installAnchorNavigation(win = window) {
     }
     const startup = doc.documentElement.getAttribute('data-anchor-startup') === win.location.href
     if (startup) cancelStartup()
-    if (opened || scroll || startup) display.scrollIntoView({ block: 'start', behavior: 'instant' })
+    if ((!preparing && opened) || scroll || startup) display.scrollIntoView({ block: 'start', behavior: 'instant' })
 
     const highlight = () => {
       if (signal.aborted || !display.isConnected) return
       observer?.disconnect()
       highlighted = display
       display.setAttribute('data-anchor-arrival', '')
-      timer = win.setTimeout(clear, 2600)
+      if (doc.documentElement.matches('.fonts-pending, .link-hints-pending')) {
+        doc.addEventListener('libtmux:page-ready', expire, { once: true, signal })
+      } else expire()
     }
     // Start the cue on arrival, including browsers using smooth scrolling.
     const rect = display.getBoundingClientRect()
@@ -118,7 +126,17 @@ export function installAnchorNavigation(win = window) {
   doc.addEventListener('libtmux:anchor-arrival', (event) => {
     if (typeof event.detail?.id === 'string') schedule(`#${encodeURIComponent(event.detail.id)}`, true)
   }, { signal })
-  schedule()
+  if (win.__libtmuxAppearance) {
+    const appearance = win.__libtmuxAppearance
+    appearance.layout(() => {
+      if (signal.aborted || win.location.href !== pageUrl.href) return
+      // Native initial callbacks expand panels in this pass. Measure the
+      // resulting geometry next, with startup intent checked at arrival.
+      appearance.layout(() => {
+        if (!signal.aborted && win.location.href === pageUrl.href) arrive(pageUrl.hash, false, true)
+      })
+    })
+  } else schedule()
 
   return () => {
     controller.abort()
