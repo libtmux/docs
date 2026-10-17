@@ -1,0 +1,267 @@
+{
+  "tools": {
+    "lua-language-server": "3.19.1",
+    "stylua": "2.4.0"
+  },
+  "width": 60,
+  "stylua": {
+    "config": {
+      "syntax": "Lua51",
+      "column_width": 60,
+      "indent_type": "Spaces",
+      "indent_width": 2
+    },
+    "cases": [
+      {
+        "declaration": "function libtmux.Configurable.set_option(self, name, value, options) end",
+        "formatted": "function libtmux.Configurable.set_option(\n  self,\n  name,\n  value,\n  options\n)\nend"
+      },
+      {
+        "declaration": "function libtmux.Session.navigate_window(self, direction, options, another) end",
+        "formatted": "function libtmux.Session.navigate_window(\n  self,\n  direction,\n  options,\n  another\n)\nend"
+      },
+      {
+        "declaration": "function libtmux.Server.query_panes_with_a_long_name(self, options, more) end",
+        "formatted": "function libtmux.Server.query_panes_with_a_long_name(\n  self,\n  options,\n  more\n)\nend"
+      },
+      {
+        "declaration": "function libtmux.Pane.resize(self, options) end",
+        "formatted": "function libtmux.Pane.resize(self, options) end"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "id": "libtmux.Buffer:reference",
+      "name": "reference",
+      "flat": "fun(self: libtmux.Entity<libtmux.SnapshotBuffer>):libtmux.Reference?, libtmux.Error?",
+      "formatted": "reference: fun(\n  self: libtmux.Entity<libtmux.SnapshotBuffer>,\n):libtmux.Reference?, libtmux.Error?"
+    },
+    {
+      "id": "libtmux.Pane:resize",
+      "name": "resize",
+      "flat": "fun(self: libtmux.Pane, options: libtmux.ResizePaneOptions):libtmux.Request<boolean>",
+      "formatted": "resize: fun(\n  self: libtmux.Pane,\n  options: libtmux.ResizePaneOptions,\n):libtmux.Request<boolean>"
+    },
+    {
+      "id": "libtmux.Runtime:stats",
+      "name": "stats",
+      "flat": "fun(self: libtmux.Runtime):table<string, integer>",
+      "formatted": "stats: fun(self: libtmux.Runtime):table<string, integer>"
+    },
+    {
+      "id": "libtmux.Request:on_complete",
+      "name": "on_complete",
+      "flat": "fun(self: libtmux.Request<T>, callback: fun(value?: <T>, err?: libtmux.Error)):libtmux.Request<T>",
+      "formatted": "on_complete: fun(\n  self: libtmux.Request<T>,\n  callback: fun(value?: <T>, err?: libtmux.Error),\n):libtmux.Request<T>"
+    },
+    {
+      "id": "libtmux.Runtime:spawn",
+      "name": "spawn",
+      "flat": "fun(self: libtmux.Runtime, body: fun(runtime: libtmux.Runtime):<T>?, libtmux.Error?):libtmux.Request<T>",
+      "formatted": "spawn: fun(\n  self: libtmux.Runtime,\n  body: fun(runtime: libtmux.Runtime):<T>?, libtmux.Error?,\n):libtmux.Request<T>",
+      "warns": [
+        "luadoc-miss-type-name"
+      ]
+    },
+    {
+      "id": "libtmux.Watch:next",
+      "name": "next",
+      "flat": "fun(self: libtmux.Watch, options?: { timeout: number, deadline: number }):libtmux.Request<libtmux.ObservationEvent>",
+      "formatted": "next: fun(\n  self: libtmux.Watch,\n  options?: { timeout: number, deadline: number },\n):libtmux.Request<libtmux.ObservationEvent>"
+    },
+    {
+      "id": "libtmux.Session:navigate_window",
+      "name": "navigate_window",
+      "flat": "fun(self: libtmux.Session, direction: \"last\"|\"next\"|\"previous\", options?: libtmux.NavigateWindowOptions):libtmux.Request<boolean>",
+      "formatted": "navigate_window: fun(\n  self: libtmux.Session,\n  direction: \"last\"|\"next\"|\"previous\",\n  options?: libtmux.NavigateWindowOptions,\n):libtmux.Request<boolean>"
+    },
+    {
+      "id": "libtmux.Window:set_option",
+      "name": "set_option",
+      "flat": "fun(self: libtmux.Configurable<libtmux.SnapshotWindow>, name: string, value: boolean|string|number|libtmux.HookProgram|libtmux.OptionArrayInput, options?: libtmux.SettingSetOptions):libtmux.Request<boolean>",
+      "formatted": "set_option: fun(\n  self: libtmux.Configurable<libtmux.SnapshotWindow>,\n  name: string,\n  value: boolean|string|number|libtmux.HookProgram|libtmux.OptionArrayInput,\n  options?: libtmux.SettingSetOptions,\n):libtmux.Request<boolean>"
+    },
+    {
+      "id": "libtmux.Server:query_panes",
+      "name": "query_panes",
+      "flat": "fun(self: libtmux.Server, options?: libtmux.LiveQueryOptions):libtmux.Request<libtmux.LiveQueryResult<libtmux.SnapshotPane>>",
+      "formatted": "query_panes: fun(\n  self: libtmux.Server,\n  options?: libtmux.LiveQueryOptions,\n):\n  libtmux.Request<libtmux.LiveQueryResult<libtmux.SnapshotPane>>"
+    },
+    {
+      "id": "libtmux.Pane:run_hook",
+      "name": "run_hook",
+      "flat": "fun(self: libtmux.Configurable<libtmux.SnapshotPane>, name: string, options?: libtmux.RunHookOptions):libtmux.Request<boolean>",
+      "formatted": "run_hook: fun(\n  self: libtmux.Configurable<libtmux.SnapshotPane>,\n  name: string,\n  options?: libtmux.RunHookOptions,\n):libtmux.Request<boolean>"
+    },
+    {
+      "id": "libtmux.Window:list_hooks",
+      "name": "list_hooks",
+      "flat": "fun(self: libtmux.Configurable<libtmux.SnapshotWindow>, options?: libtmux.SettingListOptions):libtmux.Request<libtmux.HookRecord[]>",
+      "formatted": "list_hooks: fun(\n  self: libtmux.Configurable<libtmux.SnapshotWindow>,\n  options?: libtmux.SettingListOptions,\n):libtmux.Request<libtmux.HookRecord[]>"
+    },
+    {
+      "id": "libtmux.Session:get_hook",
+      "name": "get_hook",
+      "flat": "fun(self: libtmux.Configurable<libtmux.SnapshotSession>, name: string, options?: libtmux.SettingGetOptions):libtmux.Request<libtmux.HookRecord>",
+      "formatted": "get_hook: fun(\n  self: libtmux.Configurable<libtmux.SnapshotSession>,\n  name: string,\n  options?: libtmux.SettingGetOptions,\n):libtmux.Request<libtmux.HookRecord>"
+    },
+    {
+      "id": "libtmux.Server:handle",
+      "name": "handle",
+      "flat": "fun(self: libtmux.Server, snapshot: libtmux.Snapshot, record: libtmux.SnapshotBuffer):libtmux.Buffer?, libtmux.Error?",
+      "formatted": "handle: fun(\n  self: libtmux.Server,\n  snapshot: libtmux.Snapshot,\n  record: libtmux.SnapshotBuffer,\n):libtmux.Buffer?, libtmux.Error?"
+    },
+    {
+      "id": "libtmux.Server:set_buffer",
+      "name": "set_buffer",
+      "flat": "fun(self: libtmux.Server, name: string, bytes: string, options?: libtmux.BufferOptions):libtmux.Request<boolean>",
+      "formatted": "set_buffer: fun(\n  self: libtmux.Server,\n  name: string,\n  bytes: string,\n  options?: libtmux.BufferOptions,\n):libtmux.Request<boolean>"
+    },
+    {
+      "id": "libtmux.Pane:move_to",
+      "name": "move_to",
+      "flat": "fun(self: libtmux.Pane, other: libtmux.Pane, options?: libtmux.MovePaneOptions):libtmux.Request<boolean>",
+      "formatted": "move_to: fun(\n  self: libtmux.Pane,\n  other: libtmux.Pane,\n  options?: libtmux.MovePaneOptions,\n):libtmux.Request<boolean>"
+    },
+    {
+      "id": "libtmux.Server:explain",
+      "name": "explain",
+      "flat": "fun(self: libtmux.Server, options?: libtmux.LiveQueryOptions):libtmux.Request<libtmux.LiveQueryPlan>",
+      "formatted": "explain: fun(\n  self: libtmux.Server,\n  options?: libtmux.LiveQueryOptions,\n):libtmux.Request<libtmux.LiveQueryPlan>"
+    },
+    {
+      "id": "libtmux.Pane:set_title",
+      "name": "set_title",
+      "flat": "fun(self: libtmux.Pane, text: string, options?: libtmux.PaneOptions):libtmux.Request<boolean>",
+      "formatted": "set_title: fun(\n  self: libtmux.Pane,\n  text: string,\n  options?: libtmux.PaneOptions,\n):libtmux.Request<boolean>"
+    },
+    {
+      "id": "libtmux.BufferValue:text",
+      "name": "text",
+      "flat": "fun(self: libtmux.BufferValue):string?, libtmux.Error?",
+      "formatted": "text: fun(self: libtmux.BufferValue):string?, libtmux.Error?"
+    },
+    {
+      "id": "libtmux.Capture:text",
+      "name": "text",
+      "flat": "fun(self: libtmux.Capture):string?, libtmux.Error?",
+      "formatted": "text: fun(self: libtmux.Capture):string?, libtmux.Error?"
+    },
+    {
+      "id": "empty",
+      "name": "empty",
+      "flat": "fun()",
+      "formatted": "empty: fun()"
+    },
+    {
+      "id": "only self fits",
+      "name": "close",
+      "flat": "fun(self: libtmux.Pane)",
+      "formatted": "close: fun(self: libtmux.Pane)"
+    },
+    {
+      "id": "only self long",
+      "name": "snapshot",
+      "flat": "fun(self: libtmux.Entity<libtmux.SnapshotWindowLink>):libtmux.Request<libtmux.SnapshotWindowLink>",
+      "formatted": "snapshot: fun(\n  self: libtmux.Entity<libtmux.SnapshotWindowLink>,\n):libtmux.Request<libtmux.SnapshotWindowLink>"
+    },
+    {
+      "id": "results break",
+      "name": "pair",
+      "flat": "fun(self: libtmux.Server):libtmux.VeryLongResultNameOne?, libtmux.VeryLongResultNameTwo?, libtmux.Error?",
+      "formatted": "pair: fun(\n  self: libtmux.Server,\n):\n  libtmux.VeryLongResultNameOne?,\n  libtmux.VeryLongResultNameTwo?,\n  libtmux.Error?"
+    },
+    {
+      "id": "named results",
+      "name": "pair",
+      "flat": "fun(self: libtmux.Server):ok: boolean, err: libtmux.Error?",
+      "formatted": "pair: fun(\n  self: libtmux.Server,\n):ok: boolean, err: libtmux.Error?"
+    },
+    {
+      "id": "generics",
+      "name": "map",
+      "flat": "fun<T, U>(self: libtmux.Selection<T>, callback: fun(value: T, index: integer):U):libtmux.Selection<U>",
+      "formatted": "map: fun<T, U>(\n  self: libtmux.Selection<T>,\n  callback: fun(value: T, index: integer):U,\n):libtmux.Selection<U>",
+      "warns": [
+        "luadoc-miss-type-name"
+      ]
+    },
+    {
+      "id": "varargs",
+      "name": "send",
+      "flat": "fun(self: libtmux.Pane, ...: string):libtmux.Request<boolean>",
+      "formatted": "send: fun(\n  self: libtmux.Pane,\n  ...: string,\n):libtmux.Request<boolean>"
+    },
+    {
+      "id": "table type",
+      "name": "watch",
+      "flat": "fun(self: libtmux.Watch, options?: { timeout: number, deadline: number, retries: integer, backoff: number }):libtmux.Request<boolean>",
+      "formatted": "watch: fun(\n  self: libtmux.Watch,\n  options?: {\n    timeout: number,\n    deadline: number,\n    retries: integer,\n    backoff: number,\n  },\n):libtmux.Request<boolean>"
+    },
+    {
+      "id": "table inside table",
+      "name": "watch",
+      "flat": "fun(self: libtmux.Watch, options?: { timeout: number, nested: { deadline: number, retries: integer, backoff: number, jitter: number } }):boolean",
+      "formatted": "watch: fun(\n  self: libtmux.Watch,\n  options?: {\n    timeout: number,\n    nested: {\n      deadline: number,\n      retries: integer,\n      backoff: number,\n      jitter: number,\n    },\n  },\n):boolean"
+    },
+    {
+      "id": "tuple",
+      "name": "bounds",
+      "flat": "fun(self: libtmux.Pane):[integer, integer, integer, integer, integer, integer, integer, integer, integer, integer]",
+      "formatted": "bounds: fun(\n  self: libtmux.Pane,\n):\n  [\n    integer,\n    integer,\n    integer,\n    integer,\n    integer,\n    integer,\n    integer,\n    integer,\n    integer,\n    integer,\n  ]"
+    },
+    {
+      "id": "nested callback breaks",
+      "name": "on_complete",
+      "flat": "fun(self: libtmux.Request<T>, callback: fun(value?: libtmux.VeryLongValueType, err?: libtmux.VeryLongErrorType, extra?: string)):libtmux.Request<T>",
+      "formatted": "on_complete: fun(\n  self: libtmux.Request<T>,\n  callback: fun(\n    value?: libtmux.VeryLongValueType,\n    err?: libtmux.VeryLongErrorType,\n    extra?: string,\n  ),\n):libtmux.Request<T>"
+    },
+    {
+      "id": "union of function",
+      "name": "listen",
+      "flat": "fun(self: libtmux.Pane, handler: fun(event: libtmux.Event)|nil, options?: libtmux.ListenOptions):boolean",
+      "formatted": "listen: fun(\n  self: libtmux.Pane,\n  handler: fun(event: libtmux.Event)|nil,\n  options?: libtmux.ListenOptions,\n):boolean"
+    },
+    {
+      "id": "array and optional",
+      "name": "select",
+      "flat": "fun(self: libtmux.Server, names: string[], extra?: (string|number)[]):libtmux.Request<libtmux.Selection<libtmux.SnapshotPane>>",
+      "formatted": "select: fun(\n  self: libtmux.Server,\n  names: string[],\n  extra?: (string|number)[],\n):libtmux.Request<libtmux.Selection<libtmux.SnapshotPane>>"
+    },
+    {
+      "id": "string union",
+      "name": "navigate",
+      "flat": "fun(self: libtmux.Session, direction: \"last\"|\"next\"|\"previous\"|\"first\", options?: libtmux.NavigateWindowOptions):boolean",
+      "formatted": "navigate: fun(\n  self: libtmux.Session,\n  direction: \"last\"|\"next\"|\"previous\"|\"first\",\n  options?: libtmux.NavigateWindowOptions,\n):boolean"
+    },
+    {
+      "id": "indivisible name",
+      "name": "x",
+      "flat": "fun(self: libtmux.Pane, value: libtmux.AnExtremelyLongTypeNameThatCannotBeSplitAtAllByAnyFormatter):boolean",
+      "formatted": "x: fun(\n  self: libtmux.Pane,\n  value: libtmux.AnExtremelyLongTypeNameThatCannotBeSplitAtAllByAnyFormatter,\n):boolean"
+    }
+  ],
+  "rejected": [
+    {
+      "id": "closing parenthesis on its own line without a trailing comma",
+      "flat": "fun(self: libtmux.Probe, name: string):string?",
+      "wrapped": "fun(\n  self: libtmux.Probe,\n  name: string\n):string?"
+    },
+    {
+      "id": "break before a union member",
+      "flat": "fun(self: libtmux.Probe, value: boolean|string|number):string?",
+      "wrapped": "fun(self: libtmux.Probe, value: boolean\n  |string|number):string?"
+    },
+    {
+      "id": "break inside generic arguments",
+      "flat": "fun(self: libtmux.Probe, value: table<string, integer>):string?",
+      "wrapped": "fun(self: libtmux.Probe, value: table<\n  string, integer>):string?"
+    },
+    {
+      "id": "break between an argument name and its type",
+      "flat": "fun(self: libtmux.Probe, name: string):string?",
+      "wrapped": "fun(self: libtmux.Probe, name:\n  string):string?"
+    }
+  ]
+}
