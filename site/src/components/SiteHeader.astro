@@ -2,8 +2,10 @@
 import ColorSchemeSwitcher from './ColorSchemeSwitcher.astro'
 import LocaleSwitcher from './LocaleSwitcher.astro'
 import VersionSwitcher from './VersionSwitcher.astro'
+import RegistryIcon from './icons/RegistryIcon.astro'
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import type { LocaleStatus } from '../i18n/resolve'
+import { PORT_BY_SLUG, portDestinations } from '../lib/ports'
 import { withPortRoot, withRoot } from '../lib/site-root'
 
 interface Props {
@@ -22,6 +24,12 @@ interface Props {
   sourcePath?: string
   /** Each available locale's translation status. */
   localeStatuses?: Record<string, LocaleStatus>
+  /**
+   * The GitHub location of what this page documents, when that is not the
+   * port's own library: a companion app lives in its own repository, and a
+   * native page cites an exact revision. Replaces the derived source link.
+   */
+  sourceUrl?: string
 }
 const {
   portSlug,
@@ -31,7 +39,29 @@ const {
   sourcePath,
   localeStatuses,
   documentationContext = false,
+  sourceUrl,
 } = Astro.props as Props
+
+/*
+ * Source and package links belong to a port's pages. A page with no port,
+ * such as the homepage or the tmux manual, has no package to name.
+ */
+const port = portSlug ? PORT_BY_SLUG[portSlug] : undefined
+const destinations = port && portDestinations({ port, version, sourceUrl })
+const portLinks = port && destinations ? [
+  {
+    id: 'source', href: destinations.source.url, icon: 'github' as const,
+    name: `${destinations.source.repo.split('/').pop()}${destinations.source.path ? `/${destinations.source.path}` : ''} on GitHub`,
+  },
+  ...(destinations.registry ? [{
+    id: 'package', href: destinations.registry.url, icon: destinations.registry.icon,
+    name: `${port.packageName} on ${destinations.registry.name}`,
+  }] : []),
+] : []
+const apiLink = port && destinations?.ecosystem && {
+  href: destinations.ecosystem.url, label: destinations.ecosystem.name,
+  name: `${port.packageName} API reference on ${destinations.ecosystem.name}`,
+}
 ---
 
 <header
@@ -46,6 +76,30 @@ const {
     <slot name="navigation" />
 
     <div class="site-header__spacer"></div>
+
+    {/*
+      Ordinary links, and icon-only at every width: a visible label hidden by
+      a media query still counts as link text to the external-link hint, which
+      would then draw its glyph beside a bare mark. The accessible name and the
+      tooltip carry the destination instead. The API host has no mark, so it
+      keeps its text and moves into the menu where the bar has no room.
+    */}
+    {
+      portLinks.length > 0 && (
+        <div class="site-header__ports">
+          {portLinks.map((link) => (
+            <a href={link.href} class="topnav-chip site-header__port-link" rel="noopener" aria-label={link.name} title={link.name} data-port-link={link.id}>
+              <RegistryIcon icon={link.icon} decorative />
+            </a>
+          ))}
+          {apiLink && (
+            <a href={apiLink.href} class="topnav-chip site-header__port-link site-header__port-link--api" rel="noopener" aria-label={apiLink.name} data-port-link="api">
+              {apiLink.label}
+            </a>
+          )}
+        </div>
+      )
+    }
 
     {/* Keep search and colour controls visible at every width. */}
     <div class="site-header__always">
@@ -93,6 +147,7 @@ const {
         <div class="site-header__panel-row site-header__panel-links">
           <a href={withPortRoot('/reference/')} class="topnav-chip px-2 py-1 text-sm">Reference</a>
           <a href={withRoot('/mcp/')} class="topnav-chip px-2 py-1 text-sm">MCP</a>
+          {apiLink && <a href={apiLink.href} class="topnav-chip site-header__api-menu px-2 py-1 text-sm" rel="noopener" aria-label={apiLink.name}>{apiLink.label}</a>}
         </div>
       </div>
     </details>

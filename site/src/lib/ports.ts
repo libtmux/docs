@@ -1310,7 +1310,7 @@ export interface DestinationRequest {
   version?: string
   /** Commit that the page's source citations are bound to. */
   revision?: string
-  /** An already computed GitHub URL, such as a layout's, that replaces the derived source. */
+  /** An already computed GitHub URL, such as a layout's, that replaces the derived source. Its trailing slash is dropped. */
   sourceUrl?: string
 }
 
@@ -1370,7 +1370,7 @@ export function portDestinations({ port, project, product, version = 'latest', r
     : port?.registry
 
   return {
-    source: sourceUrl ? { url: sourceUrl, repo: given?.repo ?? derived.repo, ...(given?.path && { path: given.path }) } : derived,
+    source: sourceUrl ? { url: sourceUrl.replace(/\/+$/, ''), repo: given?.repo ?? derived.repo, ...(given?.path && { path: given.path }) } : derived,
     registry,
     // Go's registry and reference host are the same destination.
     ecosystem: !product && port?.ecosystemHost && port.ecosystemHost.url !== registry?.url ? port.ecosystemHost : undefined,

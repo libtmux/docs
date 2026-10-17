@@ -27,12 +27,22 @@ export interface AstroTemplateOptions {
   real?: readonly string[]
   /** Replacement Astro source, keyed by path below `site/src`. */
   stubs?: Readonly<Record<string, string>>
+  /** Replacement exports for a helper import, keyed by its specifier. */
+  modules?: Readonly<Record<string, Exports>>
 }
 
-const dataModule = (code: string) => `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`
+let loads = 0
 
-/** Compile `entry`, a path below `site/src`, and return its default export. */
+/**
+ * Compile `entry`, a path below `site/src`, and return its default export.
+ *
+ * Each call evaluates its own module graph: Node caches a data URL by its
+ * text, so a numbered comment keeps a second load, after `vi.resetModules()`
+ * and a changed environment, from reusing the first one's helper bindings.
+ */
 export async function loadAstroTemplate(entry: string, options: AstroTemplateOptions = {}) {
+  const load = ++loads
+  const dataModule = (code: string) => `data:text/javascript;base64,${Buffer.from(`${code}\n//# load ${load}`).toString('base64')}`
   const { transform } = await import(astroRequire.resolve('@astrojs/compiler-rs'))
   const real = new Set([entry, ...(options.real ?? [])])
   const compiled = new Map<string, string>()
@@ -64,8 +74,8 @@ export async function loadAstroTemplate(entry: string, options: AstroTemplateOpt
       if (options.stubs?.[key] !== undefined) return compile(local, options.stubs[key])
       return real.has(key) ? compile(local) : compile(local, '<slot />')
     }
-    const exports: Exports = await import(/* @vite-ignore */ local ? fileURLToPath(local) : specifier)
-    const key = local?.href ?? specifier
+    const exports: Exports = options.modules?.[specifier] ?? await import(/* @vite-ignore */ local ? fileURLToPath(local) : specifier)
+    const key = `${load}:${local?.href ?? specifier}`
     modules.set(key, exports)
     const access = `globalThis[Symbol.for('libtmux.astro-templates')].get(${JSON.stringify(key)})`
     const names = Object.keys(exports).filter((name) => name !== 'default')

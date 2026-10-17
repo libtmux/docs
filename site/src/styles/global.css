@@ -1080,6 +1080,45 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
   height: 1.75rem;
 }
 
+/*
+ * The current port's source, package and API links, at the height of the
+ * search, colour and menu controls. The marks are icon-only: see SiteHeader.astro.
+ */
+.site-header__ports {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: none;
+}
+
+.site-header__port-link {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid var(--color-background-border);
+  padding: 0 0.3rem;
+  font-size: 0.875rem;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.site-header__port-link--api {
+  padding-inline: 0.5rem;
+}
+
+/* The brand colour arrives on interaction, as on the links in a port's hero. */
+.site-header__port-link:is(:hover, :focus-visible) .registry-icon {
+  color: var(--icon-brand);
+}
+
+html[data-theme-mode='dark'] .site-header__port-link:is(:hover, :focus-visible) .registry-icon {
+  color: var(--icon-brand-dark);
+}
+
 .site-header__search {
   display: inline-flex;
   align-items: center;
@@ -1274,6 +1313,13 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
   transform: rotate(180deg);
 }
 
+/* The API host is text, which a phone-width bar cannot spare; the menu has it. */
+@media (max-width: 47.999rem) {
+  .site-header__port-link--api { display: none; }
+}
+@media (min-width: 48rem) {
+  .site-header__api-menu { display: none; }
+}
 @media (max-width: 95.999rem) {
   .site-header__menu-label { display: none; }
   .site-header__bar { gap: 0.5rem; }

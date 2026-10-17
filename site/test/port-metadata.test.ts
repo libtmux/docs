@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import registry from '../src/data/registry.json'
 import { SERVERS } from '../src/lib/install-matrix'
 import { PORT_BY_SLUG, PORTS, hasPackageInstalls, installCommand, portDestinations, portSourceUrl, productAvailable, type DocProduct } from '../src/lib/ports'
+import { DESTINATIONS } from './fixtures/port-destinations'
 
 describe('Ruby port metadata', () => {
   it('describes the core and companion packages independently', () => {
@@ -134,53 +135,6 @@ describe('workspace CLI availability', () => {
   })
 })
 
-type Destination = readonly [name: string, url: string, icon?: string]
-
-// Expected source, package and API destinations for each registered port. Julia and
-// C++ have no registry: their source repository is the destination.
-const DESTINATIONS: Record<string, { source: string; registry?: Destination; api?: Destination }> = {
-  py: { source: 'https://github.com/tmux-python/libtmux', registry: ['PyPI', 'https://pypi.org/project/libtmux/', 'pypi'] },
-  ruby: { source: 'https://github.com/libtmux/libtmux-ruby', registry: ['RubyGems', 'https://rubygems.org/gems/libtmux', 'rubygems'] },
-  lua: { source: 'https://github.com/libtmux/libtmux-lua', registry: ['LuaRocks', 'https://luarocks.org/modules/tony/libtmux', 'luarocks'] },
-  powershell: {
-    source: 'https://github.com/libtmux/libtmux-powershell/tree/master/src/LibTmux.PowerShell',
-    registry: ['PowerShell Gallery', 'https://www.powershellgallery.com/packages/LibTmux', 'powershell'],
-  },
-  julia: { source: 'https://github.com/libtmux/libtmux-julia/tree/master/src' },
-  ts: { source: 'https://github.com/libtmux/libtmux-ts', registry: ['npm', 'https://www.npmjs.com/package/libtmux', 'npm'] },
-  rs: {
-    source: 'https://github.com/libtmux/libtmux-rs',
-    registry: ['crates.io', 'https://crates.io/crates/libtmux', 'crates'],
-    api: ['docs.rs', 'https://docs.rs/libtmux'],
-  },
-  go: {
-    source: 'https://github.com/libtmux/libtmux-go',
-    registry: ['pkg.go.dev', 'https://pkg.go.dev/github.com/libtmux/libtmux-go/tmux', 'go'],
-  },
-  java: {
-    source: 'https://github.com/libtmux/libtmux-java',
-    registry: ['Maven Central', 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux', 'maven'],
-    api: ['javadoc.io', 'https://javadoc.io/doc/io.github.libtmux/libtmux'],
-  },
-  kotlin: {
-    source: 'https://github.com/libtmux/libtmux-java/tree/master/libtmux-kotlin',
-    registry: ['Maven Central', 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-kotlin', 'maven'],
-    api: ['Dokka', 'https://javadoc.io/doc/io.github.libtmux/libtmux-kotlin'],
-  },
-  scala: {
-    source: 'https://github.com/libtmux/libtmux-java/tree/master/libtmux-scala',
-    registry: ['Maven Central', 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-scala_3', 'maven'],
-    api: ['Scaladoc', 'https://javadoc.io/doc/io.github.libtmux/libtmux-scala_3'],
-  },
-  csharp: { source: 'https://github.com/libtmux/libtmux-dotnet', registry: ['NuGet', 'https://www.nuget.org/packages/LibTmux', 'nuget'] },
-  fsharp: { source: 'https://github.com/libtmux/libtmux-dotnet', registry: ['NuGet', 'https://www.nuget.org/packages/LibTmux.FSharp', 'nuget'] },
-  cxx: { source: 'https://github.com/libtmux/libtmux-cxx' },
-  swift: {
-    source: 'https://github.com/libtmux/libtmux-swift',
-    registry: ['Swift Package Index', 'https://swiftpackageindex.com/libtmux/libtmux-swift', 'swift'],
-  },
-}
-
 describe('port destinations', () => {
   afterEach(() => {
     vi.unstubAllEnvs()
@@ -189,9 +143,11 @@ describe('port destinations', () => {
 
   it.each(Object.entries(DESTINATIONS))('resolves the %s source, package and API links', (slug, expected) => {
     const { source, registry: packageRegistry, ecosystem } = portDestinations({ port: PORT_BY_SLUG[slug] })
-    expect(source.url).toBe(expected.source)
-    expect(packageRegistry && [packageRegistry.name, packageRegistry.url, packageRegistry.icon]).toEqual(expected.registry)
-    expect(ecosystem && [ecosystem.name, ecosystem.url]).toEqual(expected.api)
+    expect(source.url).toBe(expected.source.url)
+    expect(packageRegistry && { name: packageRegistry.name, url: packageRegistry.url, icon: packageRegistry.icon })
+      .toEqual(expected.registry && { name: expected.registry.name, url: expected.registry.url, icon: expected.registry.icon })
+    expect(ecosystem && { name: ecosystem.name, url: ecosystem.url })
+      .toEqual(expected.api && { name: expected.api.name, url: expected.api.url })
   })
 
   it('has an expectation for every registered port and no other', () => {
@@ -280,7 +236,7 @@ describe('port destinations', () => {
   it('follows a layout-supplied source URL and reads its repository and directory', () => {
     const py = PORT_BY_SLUG.py!
     const fromLayout = (sourceUrl: string) => portDestinations({ port: py, sourceUrl })
-    expect(fromLayout('https://github.com/tmux-python/tmuxp/').source).toEqual({ url: 'https://github.com/tmux-python/tmuxp/', repo: 'tmux-python/tmuxp' })
+    expect(fromLayout('https://github.com/tmux-python/tmuxp/').source).toEqual({ url: 'https://github.com/tmux-python/tmuxp', repo: 'tmux-python/tmuxp' })
     expect(fromLayout('https://github.com/tmux-python/libtmux/tree/0123abcd').source)
       .toEqual({ url: 'https://github.com/tmux-python/libtmux/tree/0123abcd', repo: 'tmux-python/libtmux' })
     expect(fromLayout('https://github.com/libtmux/libtmux-java/tree/master/libtmux-kotlin').source)
