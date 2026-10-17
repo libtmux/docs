@@ -4,6 +4,93 @@ import { builtinHref, TYPESCRIPT_UTILITY_TYPES } from '../src/builtins.ts'
 import { SymbolIndex } from '../src/link.ts'
 import type { ApiModel, ApiSymbol } from '../src/model.ts'
 
+describe('C++ standard references', () => {
+  const model = JSON.parse(readFileSync(new URL('../../../site/src/data/api/cxx.json', import.meta.url), 'utf8')) as ApiModel
+
+  it('resolves every std:: token present in public declaration and member types', () => {
+    const index = new SymbolIndex(model.symbols, (symbol) => `#${symbol.id}`, 'cxx')
+    const annotations = model.symbols.flatMap((symbol) => [symbol.type, ...(symbol.extends ?? []),
+      ...symbol.signatures.flatMap((signature) => [signature.raw, signature.returns, ...(signature.typeParams ?? []),
+        ...signature.params.flatMap((param) => [param.type, param.default])])]).filter((text): text is string => Boolean(text))
+    const names = new Set(annotations.flatMap((text) => [...text.matchAll(/std::[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*/g)].map((match) => match[0])))
+    expect(names.size).toBeGreaterThanOrEqual(50)
+    for (const name of names) {
+      expect(index.linkType(name)[0]?.link, name).toMatchObject({ external: true, href: expect.stringContaining('https://en.cppreference.com/w/cpp/') })
+    }
+  })
+
+  it.each([
+    ['std::size_t', 'types/size_t'],
+    ['std::chrono::milliseconds', 'chrono/duration'],
+    ['std::filesystem::path', 'filesystem/path'],
+  ])('links %s inside the native ExecutionPolicy field type', (name, page) => {
+    const symbol = model.symbols.find((symbol) => symbol.parent === 'libtmux::ExecutionPolicy' && symbol.type?.includes(name))!
+    expect(symbol).toBeDefined()
+    const spans = new SymbolIndex(model.symbols, () => '#', 'cxx').linkType(symbol.type!, symbol)
+    expect(spans.find((span) => span.text === name)?.link).toMatchObject({ href: `https://en.cppreference.com/w/cpp/${page}`, external: true })
+  })
+
+  it.each([
+    String.raw`"\"[[nodiscard]]"`,
+    String.raw`R"x("[[nodiscard]])x"`,
+    String.raw`"escaped \" std::size_t [[nodiscard]] \\ tail"`,
+    String.raw`u8"\"[[nodiscard]] std::string"`,
+    String.raw`u"\"[[nodiscard]]"`,
+    String.raw`U"\"[[nodiscard]]"`,
+    String.raw`L"\"[[nodiscard]]"`,
+    String.raw`R"("[[nodiscard]] std::size_t)"`,
+    String.raw`u8R"tag("[[nodiscard]] std::filesystem::path)tag"`,
+    String.raw`uR"tag("[[nodiscard]])tag"`,
+    String.raw`UR"tag("[[nodiscard]])tag"`,
+    String.raw`LR"tag("[[nodiscard]])tag"`,
+    String.raw`R"a-b("[[nodiscard]] )wrong" std::size_t)a-b"`,
+    String.raw`"\"[[nodiscard]]"_label`,
+    String.raw`u8R"tag("[[nodiscard]])tag"sv`,
+    String.raw`'\''`,
+    String.raw`L'\''`,
+    String.raw`u8'\''`,
+    String.raw`u'\''`,
+    String.raw`U'\''`,
+  ])('keeps C++ literal contents opaque to attribute and type linking: %s', (literal) => {
+    const index = new SymbolIndex([], () => '#', 'cxx')
+    expect(index.linkType(literal)).toEqual([{ text: literal }])
+    const annotation = `const auto value = ${literal}; [[nodiscard]] int read();`
+    const spans = index.linkType(annotation)
+    expect(spans.map((span) => span.text).join('')).toBe(annotation)
+    const help = spans.filter((span) => span.help)
+    expect(help).toHaveLength(1)
+    expect(help[0]).toMatchObject({ text: 'nodiscard', keyword: true,
+      help: { href: 'https://eel.is/c++draft/dcl.attr.nodiscard' } })
+    expect(help[0].link).toBeUndefined()
+    expect(spans.some((span) => span.link?.href.startsWith('https://en.cppreference.com/w/cpp/') && span.text !== 'int')).toBe(false)
+  })
+
+  it('keeps numeric digit separators separate from character literals and later type names', () => {
+    const index = new SymbolIndex([], () => '#', 'cxx')
+    const annotation = "void f(int count = 1'000, std::size_t limit = 2'000, char quote = '\\'');"
+    const spans = index.linkType(annotation)
+    expect(spans.map((span) => span.text).join('')).toBe(annotation)
+    expect(spans.find((span) => span.text === 'std::size_t')?.link).toEqual({
+      href: 'https://en.cppreference.com/w/cpp/types/size_t', external: true,
+    })
+  })
+
+  it('offers native nodiscard help without claiming identifiers or other ports', () => {
+    const index = new SymbolIndex(model.symbols, () => '#', 'cxx')
+    for (const member of ['sessions', 'buffers']) {
+      const symbol = model.symbols.find((symbol) => symbol.id === `libtmux::Server::${member}`)!
+      const signature = symbol.signatures[0]
+      const spans = index.linkType(signature.raw!, symbol, signature)
+      expect(spans.map((span) => span.text).join('')).toBe(signature.raw)
+      expect(spans.find((span) => span.text === 'nodiscard')?.help?.href).toBe('https://eel.is/c++draft/dcl.attr.nodiscard')
+    }
+    expect(index.linkType('[[nodiscard("keep  < text > ")]] int read();').find((span) => span.text === 'nodiscard')?.help).toBeDefined()
+    expect(index.linkType('int nodiscard;').find((span) => span.text === 'nodiscard')?.help).toBeUndefined()
+    expect(new SymbolIndex([], () => '#', 'ts').linkType('nodiscard')[0].help).toBeUndefined()
+    for (const name of ['std::invented', 'std::chrono::invented', 'std::filesystem::invented']) expect(index.resolve(name)).toBeUndefined()
+  })
+})
+
 describe('standard types in product signatures', () => {
   it('links Scala Using.resource without losing the callee owner or expression', () => {
     const model = JSON.parse(readFileSync(new URL('../../../site/src/data/api/scala.json', import.meta.url), 'utf8')) as ApiModel
@@ -94,7 +181,7 @@ describe('standard types in product signatures', () => {
 
   it('offers C++ nodiscard help only for the attribute', () => {
     const index = new SymbolIndex([], () => '#', 'cxx')
-    for (const declaration of ['[[nodiscard]] bool valid();', '[[nodiscard("check the result")]] bool valid();']) {
+    for (const declaration of ['[[nodiscard]] bool valid();', '[[nodiscard("check the result")]] bool valid();', '[[nodiscard, maybe_unused]] bool valid();']) {
       const spans = index.linkType(declaration)
       expect(spans.map((span) => span.text).join('')).toBe(declaration)
       expect(spans.find((span) => span.text === 'nodiscard')).toMatchObject({

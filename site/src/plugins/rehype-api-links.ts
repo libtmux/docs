@@ -146,6 +146,9 @@ function addKindBadge(anchor: El, port?: string, route?: string): void {
   if (!kind) return
   const mark = kindMark(kind)
   if (!mark) return
+  anchor.children = [{ type: 'element', tagName: 'span', properties: {
+    className: ['api-symbol-link__name'],
+  }, children: anchor.children }]
   anchor.children.unshift({ type: 'element', tagName: 'span', properties: {
     className: ['api-link-kind', 'api-nav__kind', `api-badge--kind-${kind}`],
     dataApiKind: kind, ariaHidden: 'true', title,

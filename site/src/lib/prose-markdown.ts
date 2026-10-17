@@ -7,6 +7,7 @@ import { PORT_BY_SLUG } from './ports'
 import { rewriteMarkdownLinks } from '../plugins/remark-port-code.mjs'
 import { tmuxMentionMarkdown } from './tmux-links'
 import { isTmuxProse, type DocsPage } from './docs-paths'
+import { documenterHeading } from '../plugins/remark-documenter-headings'
 
 interface MarkdownLinkProjection {
   /** The same source identity and route that determine HTML ownership. */
@@ -27,6 +28,19 @@ export function linkProseMarkdown(raw: string, port?: string, product?: ApiProdu
   const link = createProseLinker(product)
   let htmlDepth = 0
   visit(fromMarkdown(body), (node) => {
+    if (node.type === 'heading' && node.position?.start.offset !== undefined && node.position.end.offset !== undefined) {
+      const start = node.position.start.offset, end = node.position.end.offset
+      const owner = portAt(start) ?? port
+      if (owner === 'julia') {
+        const named = documenterHeading(body.slice(start, end))
+        if (named) {
+          const label = linkProseMarkdown(named.label, owner, product, project)
+          edits.push({ start, end, text: `<a id="${named.id}"></a>\n\n${'#'.repeat(node.depth)} ${label}` })
+          return SKIP
+        }
+      }
+    }
+
     if ((node.type === 'link' || node.type === 'definition') && (project.authored || node.url.startsWith('mcp:'))) {
       const start = node.position?.start.offset
       const end = node.position?.end.offset
