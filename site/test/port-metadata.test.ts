@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import registry from '../src/data/registry.json'
-import { PORT_BY_SLUG, PORTS, hasPackageInstalls, productAvailable } from '../src/lib/ports'
+import { SERVERS } from '../src/lib/install-matrix'
+import { PORT_BY_SLUG, PORTS, hasPackageInstalls, installCommand, productAvailable } from '../src/lib/ports'
 
 describe('Ruby port metadata', () => {
   it('describes the core and companion packages independently', () => {
@@ -69,5 +70,39 @@ describe('Lua port metadata', () => {
       stable: null,
       tag: 'v0.1.0alpha1',
     })
+  })
+})
+
+describe('Julia port metadata', () => {
+  /** Every Julia install spelling a reader can copy. */
+  function snippets(): Array<[string, string]> {
+    const julia = PORT_BY_SLUG.julia!
+    const server = SERVERS.julia!
+    return [
+      ['core', julia.installs[0]!.code],
+      ['git form', julia.installForms.git.code],
+      ...julia.packages!.map((entry): [string, string] => [entry.id, entry.installs![0]!.code]),
+      ['MCP setup', server.resolve(server.methods[0]!, server.cooldowns[0]!).prereq!],
+    ]
+  }
+
+  it('installs from the default branch because the repository has no release tag', () => {
+    expect(registry.ports.julia).toMatchObject({ status: 'unpublished', version: null, stable: null, tag: null })
+    for (const [name, code] of snippets()) expect(code, `${name} names the branch`).toContain('"master"')
+    for (const [name, code] of snippets().filter(([name]) => !['core', 'git form'].includes(name))) {
+      expect(code.match(/rev=ref/g), `${name} adds the core and companion at one ref`).toHaveLength(2)
+    }
+  })
+
+  it('names no release tag that was never pushed', () => {
+    for (const [name, code] of snippets()) {
+      expect(code, `${name} cites a nonexistent tag`).not.toMatch(/v\d+\.\d+\.\d+/)
+      expect(code, `${name} cites a nonexistent tag`).not.toMatch(/\btag\b/)
+    }
+  })
+
+  it('composes the prompt install command without a tag', () => {
+    const julia = PORT_BY_SLUG.julia!
+    expect(installCommand(julia, registry.ports.julia as Parameters<typeof installCommand>[1]).code).toBe(julia.installForms.git.code)
   })
 })

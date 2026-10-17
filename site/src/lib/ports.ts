@@ -625,24 +625,25 @@ const CORE_PORTS: readonly Port[] = [
       { id: 'workspace', name: 'LibTmuxWorkspace', source: { path: 'packages/LibTmuxWorkspace', ref: 'master' },
         require: 'LibTmuxWorkspace', executable: 'libtmux-workspace',
         installs: [{ label: 'Pkg (Git)', lang: 'julia',
-          code: 'using Pkg\nPkg.activate(".")\nrepo = "https://github.com/libtmux/libtmux-julia.git"\ntag = "v0.1.0-alpha.1"\nPkg.add([\n    PackageSpec(url=repo, rev=tag),\n    PackageSpec(url=repo, rev=tag, subdir="packages/LibTmuxWorkspace"),\n])',
-          note: 'Run in Julia. The core and workspace packages must use the same source release; neither is registered in General.' }] },
+          code: 'using Pkg\nPkg.activate(".")\nrepo = "https://github.com/libtmux/libtmux-julia.git"\nref = "master"\nPkg.add([\n    PackageSpec(url=repo, rev=ref),\n    PackageSpec(url=repo, rev=ref, subdir="packages/LibTmuxWorkspace"),\n])',
+          note: 'Run in Julia. Neither package is registered in General, so this installs the master branch. Add the core and workspace packages in one call so both use the same revision.' }] },
       { id: 'mcp', name: 'LibTmuxMCP', source: { path: 'packages/LibTmuxMCP', ref: 'master' },
         require: 'LibTmuxMCP', executable: 'libtmux-mcp',
         installs: [{ label: 'Pkg (Git)', lang: 'julia',
-          code: 'using Pkg\nPkg.activate(".")\nrepo = "https://github.com/libtmux/libtmux-julia.git"\ntag = "v0.1.0-alpha.1"\nPkg.add([\n    PackageSpec(url=repo, rev=tag),\n    PackageSpec(url=repo, rev=tag, subdir="packages/LibTmuxMCP"),\n])',
-          note: 'Run in Julia. The core and MCP packages must use the same source release; neither is registered in General.' }] },
+          code: 'using Pkg\nPkg.activate(".")\nrepo = "https://github.com/libtmux/libtmux-julia.git"\nref = "master"\nPkg.add([\n    PackageSpec(url=repo, rev=ref),\n    PackageSpec(url=repo, rev=ref, subdir="packages/LibTmuxMCP"),\n])',
+          note: 'Run in Julia. Neither package is registered in General, so this installs the master branch. Add the core and MCP packages in one call so both use the same revision.' }] },
     ],
     installs: [{ label: 'Pkg (Git)', lang: 'julia',
-      code: 'using Pkg\nPkg.activate(".")\nPkg.add(PackageSpec(\n    url="https://github.com/libtmux/libtmux-julia.git",\n    rev="v0.1.0-alpha.1",\n))',
-      note: 'Run in Julia with tmux on PATH. This alpha release is installed from Git; it is not registered in General.' }],
+      code: 'using Pkg\nPkg.activate(".")\nPkg.add(PackageSpec(\n    url="https://github.com/libtmux/libtmux-julia.git",\n    rev="master",\n))',
+      note: 'Run in Julia with tmux on PATH. The package is not registered in General, so this installs the master branch; Manifest.toml records the package tree hash.' }],
     initProject: { code: 'using Pkg\nPkg.activate(".")', lang: 'julia' },
     installForms: {
       stable: { code: 'using Pkg\nPkg.add("LibTmux")', lang: 'julia' },
       prerelease: { code: 'using Pkg\nPkg.add(PackageSpec(name="LibTmux", version="{version}"))', lang: 'julia' },
-      git: { code: 'using Pkg\nPkg.add(PackageSpec(url="https://github.com/libtmux/libtmux-julia.git", rev="{tag}"))', lang: 'julia' },
+      // The repository has no release tag to substitute, so this form names its default branch.
+      git: { code: 'using Pkg\nPkg.add(PackageSpec(url="https://github.com/libtmux/libtmux-julia.git", rev="master"))', lang: 'julia' },
     },
-    installNote: 'Julia 1.10+ and tmux 3.2a+ are compatibility targets; see the compatibility guide for tested versions. Companion packages share the core source release.',
+    installNote: 'Julia 1.10+ and tmux 3.2a+ are compatibility targets; see the compatibility guide for tested versions. Companion packages install from the same revision as the core.',
   },
   {
     slug: 'ts',
@@ -1480,6 +1481,9 @@ export function installCommand(port: Port, entry: RegistryEntry): InstallForm {
   // Unpublished, or published with nothing resolvable. The repository is the
   // only place the code exists, so the tag is the version.
   if (!entry.tag) {
+    // A repository with no release tag installs its default branch, and the
+    // git form then names that branch instead of taking a `{tag}`.
+    if (!forms.git.code.includes('{tag}')) return forms.git
     throw new Error(
       `installCommand: ${port.slug} has no registry version and no release tag; ` +
         'run node scripts/gen-registry.mjs',
@@ -1496,7 +1500,11 @@ export function releaseWording(port: Port, entry: RegistryEntry): string {
   if (entry.status === 'prerelease') {
     return `${port.packageName} has no stable release. ${entry.version} is the newest prerelease on ${port.registry?.name ?? 'its registry'}, and the command below names it because the resolver skips prereleases otherwise.`
   }
-  return `${port.packageName} is not published to ${port.registry?.name ?? 'its registry'} yet, so this installs from the repository at tag ${entry.tag}.`
+  const registry = port.registry?.name ?? 'its registry'
+  if (!entry.tag) {
+    return `${port.packageName} is not published to ${registry} yet and the repository has no release tag, so this installs from its default branch.`
+  }
+  return `${port.packageName} is not published to ${registry} yet, so this installs from the repository at tag ${entry.tag}.`
 }
 
 /** Artwork identity for a port page, reference, or shared product landing. */
