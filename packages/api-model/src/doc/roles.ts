@@ -250,6 +250,8 @@ const SYNTAX: Record<string, ReadonlySet<string>> = {
   java: new Set(['jsdoc']),
   ts: new Set(['jsdoc', 'markdown-link']),
   csharp: new Set(['xml-doc']),
+  // `.fsi` doc comments are the same XML, parsed by the same `parseXmlDoc`.
+  fsharp: new Set(['xml-doc']),
   // DocC gives double backticks a meaning reST reserves for a literal: in a
   // Swift doc comment ``Server`` is a symbol link, not code.
   swift: new Set(['docc']),
