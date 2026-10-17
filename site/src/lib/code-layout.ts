@@ -197,6 +197,11 @@ export function supportsCSharpSignatures(symbol: ApiSymbol, language?: string): 
     (csharpParameters(signature) !== undefined && (signature.typeParams ?? []).every((param) => /^(?:(?:in|out)\s+)?[A-Za-z_]\w*$/.test(param))))
 }
 
+/** Help syntax is source text for the command; it has no formatter of its own. */
+export function supportsPowerShellSignatures(symbol: ApiSymbol, language?: string): boolean {
+  return language === 'powershell' && symbol.signatures.length > 0 && symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
+}
+
 /** Prepare one layout per overload for both HTML and the Markdown twin. */
 export async function apiSignatureLayouts(symbol: ApiSymbol, language?: string): Promise<Map<Signature, CodeLayout>> {
   if (language === 'rs' && ['method', 'function'].includes(symbol.kind) && symbol.signatures.length && !supportsRustSignatures(symbol, language)) {
@@ -230,6 +235,11 @@ export async function apiSignatureLayouts(symbol: ApiSymbol, language?: string):
     const { csharpSignatureLayout } = await import('./csharp-code-layout')
     return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
       [signature, await csharpSignatureLayout(symbol, signature)] as const)))
+  }
+  if (supportsPowerShellSignatures(symbol, language)) {
+    const { powershellSignatureLayout } = await import('./powershell-code-layout')
+    return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
+      [signature, await powershellSignatureLayout(symbol, signature)] as const)))
   }
   if ((language === 'scala' || language === 'kotlin') && ['method', 'function'].includes(symbol.kind)) {
     const { jvmSignatureLayout } = await import('./jvm-code-layout')

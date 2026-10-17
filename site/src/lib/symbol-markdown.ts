@@ -174,9 +174,13 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     out.push(fencedCode(`${symbol.name} = ${symbol.type}`, 'julia'), '')
   }
   const signatures = language === 'c' ? symbol.signatures.filter((signature) => signature.raw) : symbol.signatures
-  const sig = signatures.map((entry) => ctx.signatureLayouts?.get(entry)?.text ?? (native && entry.raw
-    ? `${entry.label && entry.label !== '__AllParameterSets' ? `${entry.label}${entry.isDefault ? ' (default)' : ''}:\n` : ''}${nativeSignatureText(symbol, entry, language)}`
-    : signatureLine(symbol, entry, language))).join('\n\n')
+  // A parameter set names its declaration whether or not the text was laid out.
+  const setLabel = (entry: Signature) => entry.label && entry.label !== '__AllParameterSets' ? `${entry.label}${entry.isDefault ? ' (default)' : ''}:\n` : ''
+  const sig = signatures.map((entry) => {
+    const layout = ctx.signatureLayouts?.get(entry)?.text
+    return layout !== undefined ? `${setLabel(entry)}${layout}` : native && entry.raw
+      ? `${setLabel(entry)}${nativeSignatureText(symbol, entry, language)}` : signatureLine(symbol, entry, language)
+  }).join('\n\n')
   if (sig) out.push(fencedCode(sig, language === 'c' ? 'c' : ''), '')
   else if (parent?.variant && symbol.type) out.push(fencedCode(`${symbol.name}: ${symbol.type}`, language), '')
   else if (symbol.value !== undefined) out.push(fencedCode(`${qualifiedNameOf(symbol)}${symbol.type ? `: ${symbol.type}` : ''} = ${symbol.value}`, language ?? ''), '')
