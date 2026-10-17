@@ -106,3 +106,28 @@ describe('Julia port metadata', () => {
     expect(installCommand(julia, registry.ports.julia as Parameters<typeof installCommand>[1]).code).toBe(julia.installForms.git.code)
   })
 })
+
+describe('workspace CLI availability', () => {
+  const installs = (slug: string) => PORT_BY_SLUG[slug]!.packages!.find((entry) => entry.id === 'workspace')!.installs!
+  const fromCheckout = /--path|\.\/gradlew|\bcmake\b|swift build|git clone/
+
+  it.each(['rs', 'go'])('marks %s published because its registry serves the executable', (slug) => {
+    expect(PORT_BY_SLUG[slug]!.workspaceCliAvailability).toBe('published')
+    for (const install of installs(slug)) expect(install.code, `${slug} ${install.label}`).not.toMatch(fromCheckout)
+  })
+
+  it('installs the Rust crate and the Go command from their registries', () => {
+    expect(installs('rs').map(({ code }) => code)).toEqual([
+      expect.stringMatching(/^cargo install --locked --version 0\.1\.0-alpha\.\d+ tmux-workspace$/),
+    ])
+    expect(installs('go').map(({ code }) => code)).toEqual([
+      'go install github.com/libtmux/libtmux-go/workspace/cmd/tmux-workspace@latest',
+    ])
+  })
+
+  // Java's artifact is a class jar with no launcher, C++ has no registry entry
+  // and Swift resolves from Git, so none of them installs the executable.
+  it.each(['java', 'cxx', 'swift'])('keeps %s local because a build produces its executable', (slug) => {
+    expect(PORT_BY_SLUG[slug]!.workspaceCliAvailability).toBe('local')
+  })
+})
