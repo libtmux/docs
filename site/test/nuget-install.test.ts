@@ -147,7 +147,7 @@ function savedState(win: Window) {
 }
 
 describe('package tab keyboard navigation', () => {
-  it.fails.each([
+  it.each([
     ['csharp', 'Home', 0], ['csharp', 'End', 7],
     ['fsharp', 'Home', 0], ['fsharp', 'End', 7],
   ] as const)('selects and remembers the %s manager edge with %s', async (slug, key, index) => {
@@ -169,7 +169,7 @@ describe('package tab keyboard navigation', () => {
     expect(changes).toBe(1)
   })
 
-  it.fails.each(['Home', 'End'])('selects and remembers the language edge with %s', async (key) => {
+  it.each(['Home', 'End'])('selects and remembers the language edge with %s', async (key) => {
     const win = await renderPair('csharp', ['csharp', 'fsharp']), doc = win.document
     const groups = tabGroups(win, 'language'), index = key === 'Home' ? 0 : groups[0].length - 1
     const start = key === 'Home' ? groups[0].at(-1)! : groups[0][0]
