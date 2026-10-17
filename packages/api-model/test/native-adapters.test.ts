@@ -263,4 +263,58 @@ describe('Lua native documentation adapter', () => {
     hierarchy.declarations[0]!.defines[0] = { ...hierarchy.declarations[0]!.defines[0]!, extends: [{ view: 'libtmux.Session' }] }
     expect(inherited(extractLua(hierarchy)).get_option).toBe('libtmux.Configurable')
   })
+
+  describe('class descriptions', () => {
+    // LuaLS leaves the space after `---` on every line and repeats the text on
+    // the declaration and on its `doc.class` define.
+    const described = (name: string, desc: string | undefined, fields: string[] = ['close']) => {
+      const text = desc === undefined ? {} : { desc, rawdesc: desc }
+      return {
+        name, type: 'type', view: name, ...text,
+        defines: [{ ...definition('lua/libtmux/_internal/server.lua', 600), ...text }],
+        fields: fields.map((field) => ({
+          name: field, file: 'lua/libtmux/_internal/server.lua', start: [610, 0], type: 'doc.field',
+          view: `fun(self: ${name})`, visible: 'public',
+          extends: { args: [{ name: 'self', view: name }], returns: [] },
+        })),
+      }
+    }
+    const overview = [
+      ' A tmux server, reached through a connected runtime.',
+      '',
+      ' # What is on here',
+      '',
+      ' **Connecting.** `Server:close` closes the connections the handle owns.',
+    ].join('\n')
+
+    it('carries the class comment to the class symbol once', () => {
+      const model = extractLua({ ...artifact, declarations: [described('libtmux.Server', overview)] })
+      const server = model.symbols.find((s) => s.id === 'libtmux.Server')!
+      expect(server.doc?.summary).toBe('A tmux server, reached through a connected runtime.')
+      expect(server.doc?.body?.split('\n').map((line) => line.trim())).toEqual([
+        '# What is on here',
+        '',
+        '**Connecting.** `Server:close` closes the connections the handle owns.',
+      ])
+      const carriers = model.symbols.filter((s) => JSON.stringify(s.doc ?? {}).includes('What is on here'))
+      expect(carriers.map((s) => s.id)).toEqual(['libtmux.Server'])
+      expect(model.symbols.find((s) => s.id === 'libtmux.Server:close')?.doc).toBeUndefined()
+    })
+
+    it('leaves an undocumented class without a description', () => {
+      const model = extractLua({ ...artifact, declarations: [described('libtmux.Server', undefined)] })
+      expect(model.symbols.find((s) => s.id === 'libtmux.Server')?.doc).toBeUndefined()
+    })
+
+    it('does not turn the generated listing of an alias into its description', () => {
+      const listing = '```lua\nlibtmux.NamedLayout:\n    | \'tiled\'\n```'
+      const alias = {
+        name: 'libtmux.NamedLayout', type: 'type', view: 'libtmux.NamedLayout',
+        defines: [{ ...definition('lua/libtmux/_internal/topology.lua', 690), type: 'doc.alias', desc: listing, rawdesc: listing }],
+        fields: [],
+      }
+      const model = extractLua({ ...artifact, declarations: [alias] })
+      expect(model.symbols.find((s) => s.id === 'libtmux.NamedLayout')?.doc).toBeUndefined()
+    })
+  })
 })
