@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
+import { markText } from '../doc/markdown.ts'
 import type { ApiSymbol, Modifier, Param, Signature, SymbolKind } from '../model.ts'
 
 /**
@@ -38,11 +39,6 @@ const MEMBER_KIND: Record<string, SymbolKind> = {
   define: 'constant',
 }
 
-/** A Markdown mark around `inner`, with the whitespace it started with left outside. */
-const marked = (inner: string, mark: string): string =>
-  inner.replace(/^(\s*)([\s\S]*?)(\s*)$/, (_, before: string, text: string, after: string) =>
-    text ? `${before}${mark}${text}${mark}${after}` : inner)
-
 /**
  * Strip Doxygen's inline markup, keeping the text a reader would see.
  *
@@ -56,11 +52,11 @@ function textOf(xml: string): string {
     .replace(/<\/ref>/g, '')
     .replace(/<computeroutput>/g, '`')
     .replace(/<\/computeroutput>/g, '`')
-    .replace(/<bold>([\s\S]*?)<\/bold>/g, (_, inner: string) => marked(inner, '**'))
-    .replace(/<emphasis>([\s\S]*?)<\/emphasis>/g, (_, inner: string) => marked(inner, '*'))
+    .replace(/<bold>([\s\S]*?)<\/bold>/g, (_, inner: string) => markText(inner, '**'))
+    .replace(/<emphasis>([\s\S]*?)<\/emphasis>/g, (_, inner: string) => markText(inner, '*'))
     .replace(/<sect([1-4])\b[^>]*>\s*<title>([\s\S]*?)<\/title>/g, (_, level: string, title: string) =>
       `\n\n${'#'.repeat(Number(level))} ${title.replace(/\s+/g, ' ').trim()}\n\n`)
-    .replace(/<title>([\s\S]*?)<\/title>/g, (_, title: string) => `\n\n${marked(title.replace(/\s+/g, ' ').trim(), '**')}\n\n`)
+    .replace(/<title>([\s\S]*?)<\/title>/g, (_, title: string) => `\n\n${markText(title.replace(/\s+/g, ' ').trim(), '**')}\n\n`)
     .replace(/<para>/g, '\n')
     .replace(/<\/para>/g, '\n')
     .replace(/<[^>]+>/g, '')

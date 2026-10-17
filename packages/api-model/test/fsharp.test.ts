@@ -90,3 +90,17 @@ it.runIf(existsSync(MODEL))('leaves no XML tag in any description of the F# refe
   // The control: the model does carry tags, so the check above can fail.
   expect(prose.some((text) => tokenizeDoc(text, 'fsharp').some((span) => span.kind === 'code'))).toBe(true)
 })
+
+it('reads <b> and <em> in an F# description as marks, as C# does', () => {
+  const model = extractFSharpArtifact({
+    ...artifact,
+    declarations: [documented('LibTmux.FSharp.Server', 'module', 'LibTmux.FSharp',
+      '<summary>Starts servers.</summary><remarks><para><b>Connecting.</b> Opens <em>one</em> server.</para></remarks>')],
+  }, 'a'.repeat(40))
+  const body = model.symbols[0].doc!.body!
+  expect(body).toBe('**Connecting.** Opens *one* server.')
+  expect(tokenizeDoc(body, 'fsharp').filter((span) => span.kind === 'strong' || span.kind === 'emphasis')).toEqual([
+    { kind: 'strong', text: 'Connecting.' },
+    { kind: 'emphasis', text: 'one' },
+  ])
+})

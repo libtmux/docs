@@ -14,6 +14,14 @@ import type { DocBlock } from '../model.ts'
  * different grammar with its own parser in `python.ts`.
  */
 
+/**
+ * A Markdown mark around `inner`, with the whitespace it started with left
+ * outside: `** x**` is not strong, `**x** ` is. Empty content takes no mark.
+ */
+export const markText = (inner: string, mark: string): string =>
+  inner.replace(/^(\s*)([\s\S]*?)(\s*)$/, (_, before: string, text: string, after: string) =>
+    text ? `${before}${mark}${text}${mark}${after}` : inner)
+
 /** ` ```lang ` … ` ``` `, with the language optional. */
 const FENCE = /^\s*(?:```|~~~)\s*([\w+-]*)\s*$/
 
