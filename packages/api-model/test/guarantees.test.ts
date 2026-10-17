@@ -388,6 +388,14 @@ describe('each language gets its own spelling of a cross-reference', () => {
     expect(tokenizeDoc('<see cref="T:LibTmux.Utf8Text"/>', 'csharp')[0]).toMatchObject({ label: 'Utf8Text' })
   })
 
+  it('a compiler-checked generic cref names the member without its type parameters', () => {
+    // `{T}` is how a C# cref spells a generic parameter; the member's id has none.
+    expect(tokenizeDoc('<see cref="M:LibTmux.Query.QueryExtensions.Matching{T}(System.Collections.Generic.IEnumerable{T})"/>', 'csharp')[0])
+      .toMatchObject({ kind: 'ref', target: 'LibTmux.Query.QueryExtensions.Matching', label: 'Matching' })
+    expect(tokenizeDoc('<see cref="T:LibTmux.QueryPlan{T}"/>', 'csharp')[0])
+      .toMatchObject({ target: 'LibTmux.QueryPlan', label: 'QueryPlan' })
+  })
+
   it('a C# keyword is a literal, not a member', () => {
     const spans = tokenizeDoc('Or <see langword="null" /> for the default.', 'csharp')
     expect(spans.filter((s) => s.kind === 'code').map((s) => (s as { text: string }).text)).toEqual([

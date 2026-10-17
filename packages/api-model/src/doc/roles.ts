@@ -441,7 +441,8 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
       hits.push({ start: m.index, end: m.index + m[0].length, span: { kind: 'code', text: m[1] } })
     }
     for (const m of text.matchAll(XML_SEE_RE)) {
-      const target = m[1].replace(/\(.*$/, '')
+      // `{T}` spells a generic parameter in a compiler-checked cref; ids carry none.
+      const target = m[1].replace(/\(.*$/, '').replace(/\{[^{}]*\}/g, '')
       hits.push({
         start: m.index,
         end: m.index + m[0].length,
