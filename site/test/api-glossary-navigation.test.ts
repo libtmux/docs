@@ -303,6 +303,27 @@ function drawerState(win: Window, open: boolean) {
   expect(doc.body.style.overflow).toBe(open ? 'hidden' : '')
 }
 
+it.each([undefined, 'mcp' as const])('requests scroll-preserving %s contents focus on open and dismissal', async (product) => {
+  const win = await contentsPage(product, 1036)
+  hydrateDrawers(win)
+  const doc = win.document
+  const toggle = doc.getElementById('mobile-toc-toggle')! as HTMLElement
+  const close = doc.getElementById('mobile-toc-close')! as HTMLElement
+  toggle.focus()
+  const enter = vi.spyOn(close, 'focus')
+  const restore = vi.spyOn(toggle, 'focus')
+  toggle.click()
+  drawerState(win, true)
+  expect(doc.activeElement).toBe(close)
+  doc.dispatchEvent(new win.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+  drawerState(win, false)
+  expect(doc.activeElement).toBe(toggle)
+  expect({ enter: enter.mock.calls, restore: restore.mock.calls }).toEqual({
+    enter: [[{ preventScroll: true }]],
+    restore: [[{ preventScroll: true }]],
+  })
+})
+
 it('keeps open contents through the sidebar handoff and cleans up at its desktop handoff', async () => {
   const win = await contentsPage('mcp', 1023)
   hydrateDrawers(win)
