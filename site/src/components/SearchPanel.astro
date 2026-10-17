@@ -116,6 +116,10 @@ const segmentNames =
     outline: none;
   }
 
+  .search-panel[data-modal='true'] .search-panel__input {
+    min-width: 0;
+  }
+
   /* The browser's own clear affordance duplicates Escape and sits where the
      hint goes. */
   .search-panel__input::-webkit-search-cancel-button {
@@ -140,11 +144,27 @@ const segmentNames =
     min-height: 0;
   }
 
+  /* Keep the stacked filters from taking the modal's entire results area. */
+  .search-panel[data-modal='true'] .search-panel__body:not(:has(> .search-panel__filters[hidden])) {
+    grid-template-rows: minmax(0, 1fr) minmax(0, 2fr);
+  }
+
+  .search-panel[data-modal='true'] .search-panel__filters {
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0.125rem;
+    scroll-padding-block: 0.5rem;
+  }
+
   /* The filter column only when there are filters: an index without them,
      such as the demo's, would otherwise squeeze results into 14rem. */
   @media (min-width: 56rem) {
     .search-panel__body:not(:has(> .search-panel__filters[hidden])) {
       grid-template-columns: 14rem minmax(0, 1fr);
+    }
+
+    .search-panel[data-modal='true'] .search-panel__body:not(:has(> .search-panel__filters[hidden])) {
+      grid-template-rows: minmax(0, 1fr);
     }
   }
 
@@ -179,6 +199,11 @@ const segmentNames =
   .search-panel__results {
     min-width: 0;
     overflow-y: auto;
+  }
+
+  .search-panel[data-modal='true'] .search-panel__results {
+    padding-block: 0.125rem;
+    scroll-padding-block: 0.125rem;
   }
 
   .search-panel__status {

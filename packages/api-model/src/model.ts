@@ -71,9 +71,11 @@ export type Modifier =
   | 'readonly'
   | 'deprecated'
   | 'overload'
+  | 'opaque'
   | 'private'
   | 'generator'
   | 'unsafe'
+  | 'annotation'
 
 /** One parameter, as written. */
 export interface Param {
@@ -134,11 +136,19 @@ export interface Signature {
   extension?: string
   /** Native signature text when its grammar carries more than the shared fields. */
   raw?: string
+  /** Native impl or trait header that owns this callable, without its body. */
+  enclosingDeclaration?: string
+  /** Lexical bindings from that impl or trait, separate from callable generics. */
+  enclosingTypeParamNames?: string[]
   params: Param[]
   returns?: string
   returnsDoc?: string
   /** Type parameters / generics, as written: `T`, `T: Clone`, `<T extends X>`. */
   typeParams?: string[]
+  /** Names bound by native type-parameter declarations, without annotations or bounds. */
+  typeParamNames?: string[]
+  /** Whether this overload excludes enclosing type variables; false retains instance scope. */
+  typeScopeBoundary?: boolean
   /** Named or implicit receiver of a native extension declaration. */
   receiver?: Param
   /** `throws` / `raises`, as a type and its doc text. */
@@ -224,9 +234,15 @@ export interface ApiSymbol {
   name: string
   kind: SymbolKind
   modifiers: Modifier[]
+  /** Whether this native owner or field excludes enclosing type-parameter bindings. */
+  typeScopeBoundary?: boolean
   /** Enclosing symbol's id, or undefined at module level. */
   parent?: string
   signatures: Signature[]
+  /** Native enum case shape; its child attributes are fields, not callable parameters. */
+  variant?: 'unit' | 'tuple' | 'struct'
+  /** Distinct native declarations sharing one public name, such as a TypeScript type/value pair. */
+  declarations?: { kind: SymbolKind; text: string; source: ApiSymbol['source']; doc?: DocBlock }[]
   /** Explicit source imports used to resolve aliases in native signatures. */
   imports?: Record<string, string>
   /** Relationships resolved by the native documentation producer. */
@@ -236,7 +252,7 @@ export interface ApiSymbol {
   /** Declaration forwarded by a native export, such as a Scala companion field. */
   exportedFrom?: string
   doc?: DocBlock
-  /** Base classes / implemented interfaces, as written. */
+  /** Base classes, implemented interfaces or public Scala upper bounds, as written. */
   extends?: string[]
   /**
    * The URL segment for this symbol's page, unique within its port.
@@ -272,6 +288,8 @@ export interface ApiSymbol {
   value?: string
   /** Type parameters on the declaration, independent of constructor methods. */
   typeParams?: string[]
+  /** Names bound by native type-parameter declarations, without annotations or bounds. */
+  typeParamNames?: string[]
   /** Command behavior beyond its individual parameter sets. */
   command?: {
     kind: 'cmdlet' | 'function'

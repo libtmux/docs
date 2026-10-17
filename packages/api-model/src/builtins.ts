@@ -58,6 +58,7 @@ export const TYPESCRIPT_UTILITY_TYPES: Record<string, string> = Object.fromEntri
 )
 const kotlin = (page: string) => `https://kotlinlang.org/api/core/kotlin-stdlib/${page}/`
 const scala = (page: string) => `https://www.scala-lang.org/api/3.x/${page}.html`
+const scalaUsing = 'https://www.scala-lang.org/api/3.9.0/scala/util/Using$.html'
 const fsharp = (page: string) => `https://fsharp.github.io/fsharp-core-docs/reference/${page}.html`
 const coroutines = (page: string) => `https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/${page}`
 const catsEffect = (name: string) => `https://typelevel.org/cats-effect/api/3.x/cats/effect/kernel/${name}.html`
@@ -160,7 +161,9 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     IterableOnce: scala('scala/collection/IterableOnce'),
     'scala.concurrent.duration.FiniteDuration': scala('scala/concurrent/duration/FiniteDuration'),
     ExecutionContext: scala('scala/concurrent/ExecutionContext'),
-    'scala.util.Using.resource': scala('scala/util/Using$'),
+    Using: scalaUsing, 'scala.util.Using': scalaUsing,
+    'Using.resource': `${scalaUsing}#resource-fffffb81`,
+    'scala.util.Using.resource': `${scalaUsing}#resource-fffffb81`,
     IO: 'https://typelevel.org/cats-effect/api/3.x/cats/effect/IO.html',
     Resource: 'https://typelevel.org/cats-effect/api/3.x/cats/effect/kernel/Resource.html',
   },
@@ -227,6 +230,7 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     Type: dotnet('system.type'),
   },
   rs: {
+    'std::io::Error': rust('io/struct.Error.html'),
     Result: rust('result/enum.Result.html'),
     Option: rust('option/enum.Option.html'),
     Vec: rust('vec/struct.Vec.html'),

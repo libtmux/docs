@@ -75,6 +75,109 @@ describe('Python docstring structure', () => {
     }
     expect(docSummaryText('A *small* **local** `list`.', 'py')).toBe('A small local list.')
   })
+
+  it('preserves embedded reST hyperlinks beside native roles and references', () => {
+    const manual = 'https://libtmux.org/en/tmux/3.7c/manual/full/#CLIENTS_AND_SESSIONS'
+    const command = 'http://example.org/new-session/?a=1&b=2#behavior'
+    expect(tokenizeDoc(`Read \`Clients and sessions <${manual}>\`_ or \`new-session <${command}>\`__ before :class:\`Server\` and \`Window\`.`, 'py')).toEqual([
+      { kind: 'text', text: 'Read ' },
+      { kind: 'link', text: 'Clients and sessions', href: manual },
+      { kind: 'text', text: ' or ' },
+      { kind: 'link', text: 'new-session', href: command },
+      { kind: 'text', text: ' before ' },
+      { kind: 'ref', role: 'class', target: 'Server', label: 'Server' },
+      { kind: 'text', text: ' and ' },
+      { kind: 'ref', role: 'any', target: 'Window', label: 'Window' },
+      { kind: 'text', text: '.' },
+    ])
+  })
+
+  it('keeps embedded links through real Python citation extraction', async () => {
+    const href = 'https://libtmux.org/en/tmux/3.7c/manual/new-session/'
+    const [symbol] = await extract(`class Server:\n    """A server [server_manual]_.\n\n    References\n    ----------\n    .. [server_manual] Create with \`new-session\n       <${href}>\`_.\n    """\n`)
+    expect(symbol.doc?.references).toEqual([{ name: 'server_manual', text: `Create with \`new-session <${href}>\`_.` }])
+    expect(tokenizeDoc(symbol.doc!.references![0].text, 'py')).toEqual([
+      { kind: 'text', text: 'Create with ' },
+      { kind: 'link', text: 'new-session', href },
+      { kind: 'text', text: '.' },
+    ])
+    expect(tokenizeDoc(symbol.doc!.summary!, 'py')).toContainEqual({ kind: 'citation', target: 'server_manual', label: '[server_manual]' })
+  })
+
+  it('keeps embedded hyperlink markup literal inside native double backticks', () => {
+    const literal = '`manual <https://example.org/manual/>`_'
+    expect(tokenizeDoc(`Print \`\`${literal}\`\` exactly.`, 'py')).toEqual([
+      { kind: 'text', text: 'Print ' }, { kind: 'code', text: literal }, { kind: 'text', text: ' exactly.' },
+    ])
+  })
+
+  it.each([
+    [String.raw`https://example.org/a\_b`, 'https://example.org/a_b'],
+    [String.raw`https://example.org/a\>b`, 'https://example.org/a>b'],
+    [String.raw`https://example.org/a\<b`, 'https://example.org/a<b'],
+    [String.raw`https://example.org/a\\_b`, String.raw`https://example.org/a\_b`],
+    [String.raw`https://example.org/a\\_`, 'https://example.org/a_'],
+    ['https://example.org/a b', 'https://example.org/ab'],
+    [String.raw`https://example.org/a\ b`, 'https://example.org/a b'],
+  ])('preserves the native reST destination for %s', (source, href) => {
+    const [span] = tokenizeDoc('`manual <' + source + '>`_', 'py')
+    expect(span).toEqual({ kind: 'link', text: 'manual', href })
+    expect(new URL((span as { href: string }).href).href).toBe(new URL(href).href)
+  })
+
+  it('unescapes the native label without changing its destination', () => {
+    expect(tokenizeDoc('`manual\\_name <https://example.org/a>`_', 'py')).toEqual([
+      { kind: 'link', text: 'manual_name', href: 'https://example.org/a' },
+    ])
+  })
+
+  it.each([
+    'é`manual <https://example.org/a>`_',
+    '`manual <https://example.org/a>`_é',
+    '前`manual <https://example.org/a>`_',
+    '`manual <https://example.org/a>`_後',
+    '🙂`manual <https://example.org/a>`_',
+    '`manual <https://example.org/a>`_🙂',
+    '` manual <https://example.org/a>`_',
+    '`manual < https://example.org/a>`_',
+    '`manual <https://example.org/a >`_',
+    '`manual<https://example.org/a>`_',
+    '\\\\' + '`manual <https://example.org/a>`_',
+    '`manual \\\\<https://example.org/a>`_',
+    ')`manual <https://example.org/a>`_',
+    '`manual <https://example.org/a>`_(',
+    '.`manual <https://example.org/a>`_',
+    '`manual <https://example.org/a>`_#',
+  ])('keeps invalid native inline boundaries literal: %s', (source) => {
+    expect(tokenizeDoc(source, 'py').filter((span) => span.kind === 'link')).toEqual([])
+    expect(docSummaryText(source, 'py')).toBe(source)
+  })
+
+  it.each([['(', ')'], ['«', '»'], ['「', '」'], ['—', '。']])('keeps valid native punctuation around a link: %s %s', (before, after) => {
+    const source = before + '`manual <https://example.org/a>`_' + after
+    expect(tokenizeDoc(source, 'py').filter((span) => span.kind === 'link')).toEqual([
+      { kind: 'link', text: 'manual', href: 'https://example.org/a' },
+    ])
+    expect(docSummaryText(source, 'py')).toBe(before + 'manual' + after)
+  })
+
+  it.each([
+    '`unsafe <javascript:alert(1)>`_',
+    '`unsafe <data:text/html,hello>`_',
+    '`unsafe <file:///etc/passwd>`_',
+    '`invalid <https://>`_',
+    '`relative <https:manual>`_',
+    '\\' + '`manual <https://example.org/manual/>`_',
+    '`manual \\<https://example.org/manual/>`_',
+    'prefix`manual <https://example.org/manual/>`_',
+    '`manual <https://example.org/manual/>`_suffix',
+  ])('does not turn unsupported or escaped reST markup into a hyperlink: %s', (text) => {
+    expect(tokenizeDoc(text, 'py').filter((span) => span.kind === 'link')).toEqual([])
+  })
+
+  it.each(['go', 'rs', 'java', 'powershell', 'swift'])('does not interpret reST hyperlinks as %s markup', (port) => {
+    expect(tokenizeDoc('`manual <https://example.org/manual/>`_', port).filter((span) => span.kind === 'link')).toEqual([])
+  })
 })
 
 async function extract(source: string) {

@@ -71,7 +71,8 @@ const SIGNATURE_KEYWORDS: Record<string, Set<string>> = Object.fromEntries(Objec
   kotlin: 'public private protected internal class interface object fun val var suspend override abstract open final data sealed enum inline reified crossinline noinline vararg in out where companion constructor operator infix tailrec external expect actual by',
   scala: 'def extension val var class trait object type given using implicit inline transparent opaque override abstract final sealed case lazy private protected open infix export derives end',
   fsharp: 'module namespace type member static abstract override interface inherit let rec mutable inline internal private public of with get set new val and when',
-  ts: 'readonly keyof typeof infer extends unique',
+  ts: 'readonly keyof typeof infer extends unique private static async function const',
+  go: 'func chan map struct interface',
   swift: 'any',
   julia: 'where struct mutable abstract primitive type function end',
   cxx: 'alignas alignof auto class concept const consteval constexpr constinit decltype default delete enum explicit extern final friend inline mutable namespace noexcept operator override register requires static struct template thread_local typedef typename union using virtual volatile',
@@ -317,6 +318,7 @@ export class SymbolIndex {
     if (!candidates?.length) return undefined
     const kinds = ROLE_KINDS[role] ?? []
     const filtered = kinds.length ? candidates.filter((c) => kinds.includes(c.kind)) : candidates
+    if (this.lang === 'go' && role === 'class' && !filtered.length) return undefined
     const pool = filtered.length ? filtered : candidates
     // A declaration beats an inherited copy: a link should land where the
     // thing is written, not on one of its thirty subclasses.
@@ -375,7 +377,9 @@ export class SymbolIndex {
    */
   resolve(target: string, role = 'any', context?: ApiSymbol): LinkTarget | undefined {
     const relative = target.startsWith('.')
+    const goType = this.lang === 'go' && role === 'class'
     let clean = target.replace(/^[~.]/, '').replace(/\(\)$/, '')
+    let opaqueContext = false
     if (this.lang === 'powershell' && context) {
       const prefixed = /^[$-]/.test(clean)
       const parameter = context.signatures.flatMap((signature) => signature.params)
@@ -404,6 +408,16 @@ export class SymbolIndex {
     const imported = !relative && context?.imports?.[importHead]
     if (imported) clean = [imported, ...tail].join('.')
     if (this.lang === 'scala') clean = clean.replace(/^_root_\./, '')
+
+    const called = target.endsWith('()')
+    const javaCallable = this.lang === 'java' && (role === 'meth' || role === 'func' || (role === 'any' && called))
+    if (javaCallable) {
+      const accessor = this.byPublic.get(`${clean}()`) ?? this.byQualified.get(clean)
+        ?.find((symbol) => symbol.kind === 'method' && symbol.id.endsWith('()'))
+      if (accessor && (called || this.byPublic.get(clean)?.kind !== 'method')) {
+        return { href: this.hrefFor(accessor), external: false, symbol: accessor }
+      }
+    }
 
     if (context && ['kotlin', 'scala', 'fsharp'].includes(this.lang ?? '') && !relative &&
         context.signatures.some((sig) => sig.params.some((param) => param.name === clean))) {
@@ -446,9 +460,39 @@ export class SymbolIndex {
       }
       for (const scope of scopes) {
         const target = `${scope}${this.lang === 'cxx' ? '::' : '.'}${clean}`
-        const hit = this.byPublic.get(target) ?? this.pick(this.byQualified.get(target), role, context)
-        if (hit && this.lang === 'java' && role === 'class' && !ROLE_KINDS.class.includes(hit.kind)) continue
+        const declaration = this.byPublic.get(target) ?? this.pick(this.byQualified.get(target), role, context)
+        const accessor = javaCallable ? this.byPublic.get(`${target}()`) : undefined
+        const hit = accessor && (called || declaration?.kind !== 'method') ? accessor : declaration
+        if (hit && role === 'class' && (goType || this.lang === 'java' || this.lang === 'csharp') && !ROLE_KINDS.class.includes(hit.kind)) continue
         if (hit) return { href: this.hrefFor(hit), external: false, symbol: hit }
+      }
+      if (this.lang === 'scala') {
+        const owners: ApiSymbol[] = []
+        for (let scope: ApiSymbol | undefined = context; scope; scope = scope.parent ? this.byDeclared.get(scope.parent) : undefined) {
+          owners.push(scope)
+          opaqueContext ||= scope.modifiers.includes('opaque')
+        }
+        if (opaqueContext && !clean.includes('.') && role !== 'class') {
+          const inherited = new Map<string, LinkTarget>()
+          const visited = new Set<string>()
+          for (const owner of owners) {
+            if (visited.has(owner.id)) continue
+            visited.add(owner.id)
+            for (const bound of owner.extends ?? []) {
+              // Only named public bounds establish ownership; complex types stay unresolved.
+              const type = bound.trim()
+              if (!/^[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*$/.test(type)) continue
+              const base = this.resolve(type, 'class', owner)
+              if (!base) continue
+              const name = base.symbol ? qualifiedNameOf(base.symbol) : type
+              const member = this.resolve(`${name}.${clean}`, role, owner)
+              if (member) inherited.set(member.href, member)
+              else if (base.symbol) owners.push(base.symbol)
+            }
+          }
+          if (inherited.size === 1) return [...inherited.values()][0]
+          if (inherited.size > 1) return undefined
+        }
       }
       // A relative reference must not fall through to a global bare-name
       // match: `.panes` written in Session means Session's, or nothing.
@@ -456,7 +500,7 @@ export class SymbolIndex {
     }
 
     const exact = this.byPublic.get(clean)
-    if (exact) return { href: this.hrefFor(exact), external: false, symbol: exact }
+    if (exact && (!goType || ROLE_KINDS.class.includes(exact.kind))) return { href: this.hrefFor(exact), external: false, symbol: exact }
 
     // Keep existing ids authoritative when a constructor's native spelling
     // also names a legacy type id.
@@ -472,6 +516,8 @@ export class SymbolIndex {
     }
 
     const bySuffix = this.pick(this.bySuffix.get(clean), role, context)
+    if (bySuffix && opaqueContext && !clean.includes('.') && bySuffix.parent &&
+        ['method', 'property', 'attribute'].includes(bySuffix.kind)) return undefined
     if (bySuffix) return { href: this.hrefFor(bySuffix), external: false, symbol: bySuffix }
 
     if (!clean.includes('.')) {
@@ -481,7 +527,10 @@ export class SymbolIndex {
 
     // Scala and Kotlin default imports take precedence over a JDK inventory's
     // bare aliases. An explicit java.util.Vector import still resolves there.
-    const builtin = this.lang ? builtinHref(this.lang, clean) : undefined
+    const usingAlias = this.lang === 'scala' && (clean === 'Using' || clean.startsWith('Using.'))
+    const shadowedUsing = usingAlias && (this.byName.has('Using') || this.bySuffix.has(clean) ||
+      context?.signatures.some((sig) => sig.params.some((param) => param.name === 'Using') || sig.receiver?.name === 'Using'))
+    const builtin = this.lang && !shadowedUsing ? builtinHref(this.lang, clean) : undefined
     if (builtin && ['kotlin', 'scala'].includes(this.lang ?? '')) return { href: builtin, external: true }
 
     // Intersphinx order: exact name, then the shortest suffix. An inventory
@@ -571,6 +620,42 @@ export class SymbolIndex {
    */
   linkType(annotation: string, context?: ApiSymbol, signature?: Signature): TypeSpan[] {
     const out: TypeSpan[] = []
+    const boundTypes = new Set<string>()
+    const rustPayload = this.lang === 'rs' && (context?.variant || (context?.parent && this.byDeclared.get(context.parent)?.variant))
+    const variantDelimiters: string[] = []
+    if (this.lang === 'ts') {
+      // Shared prose has no selected overload; a local binding makes a global match ambiguous.
+      const parameters = signature ? [...signature.typeParams ?? []]
+        : context?.signatures.flatMap((sig) => sig.typeParams ?? []) ?? []
+      for (let scope = context; scope; scope = scope.parent ? this.byDeclared.get(scope.parent) : undefined) {
+        parameters.push(...scope.typeParams ?? [])
+      }
+      for (const parameter of parameters) {
+        const name = /^\s*<?\s*(?:(?:const|in|out)\s+)*([A-Za-z_$][\w$]*)(?=\s*(?:extends\b|=|>|$))/.exec(parameter)?.[1]
+        if (name) boundTypes.add(name)
+      }
+    }
+    if (this.lang === 'java') {
+      const signatures = signature ? [signature] : context?.signatures ?? []
+      for (const name of signatures.flatMap((entry) => entry.typeParamNames ?? [])) boundTypes.add(name)
+      for (let scope = context; scope; scope = scope.parent ? this.byDeclared.get(scope.parent) : undefined) {
+        for (const name of scope.typeParamNames ?? []) boundTypes.add(name)
+        const staticBoundary = scope === context && signatures.length && signatures.every((entry) => entry.typeScopeBoundary === true)
+        if (scope.typeScopeBoundary || staticBoundary) break
+      }
+    }
+    if (this.lang === 'rs') {
+      const signatures = signature ? [signature] : context?.signatures ?? []
+      for (const name of signatures.flatMap((entry) => [...entry.typeParamNames ?? [], ...entry.enclosingTypeParamNames ?? []])) boundTypes.add(name)
+    }
+    if (rustPayload) {
+      for (let scope: ApiSymbol | undefined = context; scope; scope = scope.parent ? this.byDeclared.get(scope.parent) : undefined) {
+        for (const parameter of scope.typeParams ?? []) {
+          const name = /^\s*(?:const\s+)?((?:r#)?[A-Za-z_][A-Za-z0-9_]*)(?=\s*(?::|=|$))/.exec(parameter)?.[1]
+          if (name) boundTypes.add(name)
+        }
+      }
+    }
     // Identifiers, including dotted ones; everything else is punctuation,
     // whitespace or a string literal and passes through untouched.
     // `::` is part of a name, not punctuation between two. Splitting there
@@ -579,11 +664,14 @@ export class SymbolIndex {
     const identifier = this.lang === 'julia'
       ? String.raw`[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*!?`
       : this.lang === 'powershell' ? String.raw`(?:[A-Za-z_][A-Za-z0-9_.]*\\)?[A-Za-z_][A-Za-z0-9_.-]*`
+      : this.lang === 'ts' ? String.raw`[A-Za-z_$][A-Za-z0-9_$.]*`
+      : this.lang === 'rs' ? String.raw`(?:r#)?[A-Za-z_][A-Za-z0-9_.]*(?:::(?:r#)?[A-Za-z_][A-Za-z0-9_.]*)*`
       : String.raw`[A-Za-z_][A-Za-z0-9_.]*(?:::[A-Za-z_][A-Za-z0-9_.]*)*`
     // C++ prefixes, escaped quotes, raw delimiters and suffixes belong to the
     // literal token. Its contents cannot introduce an attribute or type link.
     const cppLiteral = String.raw`(?:(?:u8|u|U|L)?R"(?<delimiter>[^ ()\\\t\v\f\r\n]{0,16})\([\s\S]*?\)\k<delimiter>"|(?:u8|u|U|L)?(?:"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'))(?:[A-Za-z_]\w*)?`
-    const pattern = String.raw`(?<ident>\/\*[\s\S]*?\*\/|\/\/[^\n]*|"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'|${identifier})|(?<other>[^A-Za-z_"'/]+|["'/])`
+    const initial = this.lang === 'ts' ? 'A-Za-z_$' : 'A-Za-z_'
+    const pattern = String.raw`(?<ident>\/\*[\s\S]*?\*\/|\/\/[^\n]*|"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'|${identifier})|(?<other>[^${initial}"'/]+|["'/])`
     // F# type variables start with an apostrophe but do not close like strings.
     const re = new RegExp(this.lang === 'cxx'
       ? String.raw`(?<literal>${cppLiteral}|\d(?:[eEpP][+-]|[\w.'])*)|(?<ident>\/\*[\s\S]*?\*\/|\/\/[^\n]*|${identifier})|(?<other>[^A-Za-z_0-9"'/]+|["'/])`
@@ -593,11 +681,43 @@ export class SymbolIndex {
       const whole = m[0]
       const { ident, other } = m.groups!
       if (other !== undefined || !ident) {
+        if (rustPayload && context?.variant && signature) {
+          for (const delimiter of whole.match(/->|=>|[{}()[\]<>]/g) ?? []) {
+            if ('{[(<'.includes(delimiter)) variantDelimiters.push(delimiter)
+            else if (variantDelimiters.length && '}])>'.indexOf(delimiter) === '{[(<'.indexOf(variantDelimiters.at(-1)!)) variantDelimiters.pop()
+          }
+        }
         out.push({ text: whole })
         continue
       }
       if (/^(?:["']|\/[/*])/.test(ident)) {
         out.push({ text: ident })
+        continue
+      }
+      if (this.lang === 'rs' && context?.variant && signature) {
+        if (ident === context.name && annotation.slice(0, m.index).trim() === '') {
+          out.push({ text: ident, declaration: true })
+          continue
+        }
+        if (context.variant === 'struct' && /^\s*:(?!:)/.test(annotation.slice(m.index! + ident.length))) {
+          const field = this.byDeclared.get(`${context.id}.${ident}`)
+          if (variantDelimiters.length === 1 && variantDelimiters[0] === '{' && field?.parent === context.id) {
+            out.push({ text: ident, declaration: true, link: { href: this.hrefFor(field), external: false, symbol: field } })
+            continue
+          }
+        }
+      }
+      if (rustPayload && /^\s*:(?!:)/.test(annotation.slice(m.index! + ident.length))) {
+        out.push({ text: ident, declaration: true })
+        continue
+      }
+      // A locally bound type parameter must not acquire an unrelated global type's URL.
+      if (this.lang === 'rs' && annotation[m.index! - 1] === "'") {
+        out.push({ text: ident })
+        continue
+      }
+      if (boundTypes.has(ident)) {
+        out.push({ text: ident, declaration: true })
         continue
       }
       if (this.lang === 'cxx' && ident === 'nodiscard' &&
@@ -630,6 +750,12 @@ export class SymbolIndex {
           } })
           continue
         }
+      }
+      if (this.lang === 'ts' && signature && context && ident === context.name &&
+          /^(?:(?:private|static|async)\s+)*(?:function\s*)?\*?\s*$/.test(annotation.slice(0, m.index)) &&
+          /^\s*[<(]/.test(annotation.slice(m.index! + ident.length))) {
+        out.push({ text: ident, declaration: true })
+        continue
       }
       // Julia's :session is a Symbol value, not the session function. A
       // Type assertions and subtype/supertype bounds must still link types.

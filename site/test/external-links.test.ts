@@ -16,6 +16,38 @@ function page() {
   return { win, doc: win.document, dispose }
 }
 describe('shared external link hints', () => {
+  it('keeps external metadata on icon links without adding a second visual glyph', async () => {
+    const { doc, win } = page()
+    const fixtures = doc.createElement('div')
+    fixtures.innerHTML = `<a id="svg-icon" href="https://github.com/libtmux/docs" aria-label="GitHub"><svg><title>GitHub</title><path /></svg></a>
+      <a id="image-icon" href="https://example.com/" aria-label="Example"><img alt="Example" src="icon.svg" /><span class="sr-only">Example</span></a>
+      <a id="mixed-icon" href="https://example.com/"><svg aria-hidden="true"><path /></svg><span>Documentation</span></a>
+      <a id="labelled-text" href="https://example.com/" aria-label="Documentation">Documentation</a>`
+    doc.body.append(fixtures)
+    await win.happyDOM.waitUntilComplete()
+    for (const id of ['svg-icon', 'image-icon']) {
+      const link = doc.getElementById(id)!
+      expect(link.hasAttribute('data-external-link-icon')).toBe(true)
+      expect(link.getAttribute('aria-label')).toBe(id === 'svg-icon' ? 'GitHub' : 'Example')
+      expect(link.getAttribute('aria-description')).toMatch(/^External site:/)
+      expect(link.hasAttribute('target')).toBe(false)
+    }
+    for (const id of ['mixed-icon', 'labelled-text']) {
+      expect(doc.getElementById(id)!.hasAttribute('data-external-link')).toBe(true)
+      expect(doc.getElementById(id)!.hasAttribute('data-external-link-icon')).toBe(false)
+    }
+    const icon = doc.getElementById('svg-icon')!
+    icon.insertAdjacentHTML('beforeend', '<span>GitHub</span>')
+    await win.happyDOM.waitUntilComplete()
+    expect(icon.hasAttribute('data-external-link-icon')).toBe(false)
+    icon.querySelector('span')!.remove()
+    await win.happyDOM.waitUntilComplete()
+    expect(icon.hasAttribute('data-external-link-icon')).toBe(true)
+    icon.setAttribute('href', '/en/')
+    await win.happyDOM.waitUntilComplete()
+    expect(icon.hasAttribute('data-external-link-icon')).toBe(false)
+    expect(icon.hasAttribute('data-external-link')).toBe(false)
+  })
   it('marks outside HTTP destinations without changing labels, code, or internal links', () => {
     const { doc } = page()
     const link = doc.getElementById('external')!
@@ -38,6 +70,12 @@ describe('shared external link hints', () => {
     expect(first.hasAttribute('data-external-link')).toBe(false)
     expect(first.hasAttribute('title')).toBe(false)
     expect(next.title).toBe('View on example.com')
+    const protocol = doc.getElementById('protocol')!
+    protocol.removeAttribute('href')
+    await win.happyDOM.waitUntilComplete()
+    expect(protocol.hasAttribute('data-external-link')).toBe(false)
+    expect(protocol.getAttribute('title')).toBe('Python reference')
+    expect(protocol.getAttribute('aria-description')).toBe('More detail')
     dispose()
     expect(doc.querySelectorAll('[data-external-link]')).toHaveLength(0)
     expect(doc.getElementById('protocol')!.getAttribute('title')).toBe('Python reference')

@@ -14,7 +14,8 @@ import PageToolbar from '../components/PageToolbar.astro'
 import SymbolName from '../components/api/SymbolName.astro'
 import PagePortSwitcher from '../components/PagePortSwitcher.astro'
 import DocumentationContext from '../components/docs/DocumentationContext.astro'
-import { pageBreadcrumbs, type SidebarItem } from '../lib/sidebar'
+import { getSidebar, pageBreadcrumbs, withSidebarBreadcrumbs, type BreadcrumbItem, type SidebarItem } from '../lib/sidebar'
+import { currentDocumentation, getDocumentationSurfaces } from '../lib/documentation-navigation'
 import type { PagePortLink } from '../lib/page-port-links'
 import ProseText from '../components/ProseText.astro'
 import { pagePortsFor } from '../lib/page-ports-for'
@@ -87,7 +88,7 @@ interface Props {
    */
   bare?: boolean
   navigation?: SidebarItem[]
-  breadcrumbs?: { name: string; url: string; symbol?: boolean }[]
+  breadcrumbs?: BreadcrumbItem[]
   pagePorts?: PagePortLink[]
 }
 
@@ -142,12 +143,15 @@ const development = product && port && productInDevelopment(PORT_BY_SLUG[port], 
 const workspaceOverview = product === 'workspace' && pagePath === 'workspace' && port
   ? workspaceOverviewNotice(PORT_BY_SLUG[port]) : undefined
 const workspaceInternals = product === 'workspace' && pagePath.startsWith('workspace/internals/')
-const breadcrumbs = requestedBreadcrumbs ?? (product && port ? [
+const surfaces = port ? await getDocumentationSurfaces(port, version, locale) : []
+const selectedSection = surfaces.length ? currentDocumentation(surfaces, currentPath)?.section : undefined
+const sidebarNavigation = navigation ?? selectedSection?.items ?? await getSidebar(port, version, locale, product)
+const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && port ? [
   { name: PORT_BY_SLUG[port].name, url: portPageUrl(PORT_BY_SLUG[port], version) },
   { name: DOC_PRODUCTS[product].label, url: portPageUrl(PORT_BY_SLUG[port], version, product) },
   ...(workspaceInternals ? [{ name: 'Internals', url: portPageUrl(PORT_BY_SLUG[port], version, 'workspace/internals') }] : []),
   ...(pagePath !== product ? [{ name: title, url: portPageUrl(PORT_BY_SLUG[port], version, pagePath) }] : []),
-] : await pageBreadcrumbs(title, pagePath, version, port, locale))
+] : await pageBreadcrumbs(title, pagePath, version, port, locale)), sidebarNavigation, currentPath)
 ---
 
 <BaseLayout
@@ -175,20 +179,20 @@ const breadcrumbs = requestedBreadcrumbs ?? (product && port ? [
     <PagePortSwitcher entries={pagePorts} portSlug={port} tmux={!port} reserveLabelWidth />
   </div>}
   {hasContext && <DocumentationContext slot="context" port={port} version={contextVersion} locale={locale}
-    sourcePath={localeSourcePath(Astro.url.pathname, locale)} localeStatuses={localeStatuses}>
+    sourcePath={localeSourcePath(Astro.url.pathname, locale)} localeStatuses={localeStatuses} tableOfContents={tocItems.length > 0}>
     <DocumentationNavigationButtons slot="navigation" tableOfContents={tocItems.length > 0} />
   </DocumentationContext>}
   <CodeTabs />
-  {!hasContext && <div class="mobile-toolbar lg:hidden"><DocumentationNavigationButtons tableOfContents={tocItems.length > 0} /></div>}
+  {!hasContext && <div class:list={['mobile-toolbar', tocItems.length > 0 && 'mobile-toolbar--contents']}><DocumentationNavigationButtons tableOfContents={tocItems.length > 0} /></div>}
 
   <noscript>
     <style is:inline>
       .mobile-toolbar, .documentation-context-navigation, #mobile-sidebar, #mobile-toc { display: none !important; }
     </style>
-    <div class="mobile-fallback lg:hidden" data-pagefind-ignore="all">
-      <details>
+    <div class:list={['mobile-fallback', tocItems.length > 0 ? 'xl:hidden' : 'lg:hidden']} data-pagefind-ignore="all">
+      <details class="lg:hidden">
         <summary>Browse documentation</summary>
-        <Sidebar locale={locale} port={port} product={product} version={version} currentPath={currentPath} navigation={navigation} />
+        <Sidebar locale={locale} port={port} product={product} version={version} currentPath={currentPath} navigation={sidebarNavigation} />
       </details>
       {tocItems.length > 0 && <details>
         <summary>On this page</summary>
@@ -216,7 +220,7 @@ const breadcrumbs = requestedBreadcrumbs ?? (product && port ? [
           </svg>
         </button>
       </div>
-      <Sidebar locale={locale} port={port} product={product} version={version} currentPath={currentPath} navigation={navigation} />
+      <Sidebar locale={locale} port={port} product={product} version={version} currentPath={currentPath} navigation={sidebarNavigation} />
     </div>
   </aside>
 
@@ -231,7 +235,7 @@ const breadcrumbs = requestedBreadcrumbs ?? (product && port ? [
   <div class="mx-auto flex max-w-[100rem] gap-5 px-4 py-6 lg:px-5">
     <aside class="hidden w-64 shrink-0 lg:block">
       <div data-documentation-scroll="desktop" class="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
-        <Sidebar locale={locale} port={port} product={product} version={version} currentPath={currentPath} navigation={navigation} />
+        <Sidebar locale={locale} port={port} product={product} version={version} currentPath={currentPath} navigation={sidebarNavigation} />
       </div>
     </aside>
 
@@ -363,7 +367,10 @@ const breadcrumbs = requestedBreadcrumbs ?? (product && port ? [
        * page that could not be scrolled and no visible control to release it.
        */
       const desktop = window.matchMedia('(min-width: 1024px)')
-      desktop.addEventListener('change', (e) => e.matches && close(), { signal })
+      desktop.addEventListener('change', (e) => {
+        // Contents can stay open until 80rem and still owns its scroll lock.
+        if (e.matches && sidebar && !sidebar.classList.contains('-translate-x-full')) close()
+      }, { signal })
       if (desktop.matches) close()
     }
 
@@ -390,15 +397,7 @@ const breadcrumbs = requestedBreadcrumbs ?? (product && port ? [
     .product-hero { display: block; }
     .product-hero img { margin-bottom: 1rem; }
   }
-  /*
-   * The breakpoint is stated here, not left to `lg:hidden` on the element.
-   *
-   * Astro scopes this rule to `.mobile-toolbar[data-astro-cid-…]`, which is
-   * specificity (0,2,0) against Tailwind's `.lg\:hidden` at (0,1,0) — so the
-   * utility never won and the toolbar rendered at every width. A hamburger
-   * and a contents button sat above the three-column desktop layout on all
-   * 394 pages that use this shell.
-   */
+  /* Scoped display rules use the same breakpoints as the replacement columns. */
   .mobile-toolbar {
     position: sticky;
     top: 0;
@@ -411,7 +410,12 @@ const breadcrumbs = requestedBreadcrumbs ?? (product && port ? [
     color: var(--text-color);
     padding: 0.5rem 1rem;
   }
-  @media (min-width: 1024px) {
+  @media (min-width: 64rem) {
+    .mobile-toolbar:not(.mobile-toolbar--contents) {
+      display: none;
+    }
+  }
+  @media (min-width: 80rem) {
     .mobile-toolbar {
       display: none;
     }

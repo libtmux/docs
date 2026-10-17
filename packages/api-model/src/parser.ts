@@ -15,7 +15,9 @@ import { Language, Parser } from 'web-tree-sitter'
  * needs emscripten or docker, which would make this package unusable on a
  * machine that just wants to render docs. `tree-sitter-wasms` is Unlicense.
  */
-const require = createRequire(import.meta.url)
+// SSR bundles move this module away from its dependencies. Resolve both the
+// runtime and grammar WASM from the package that owns their pinned versions.
+const require = createRequire(import.meta.resolve('@libtmux/api-model'))
 
 /** Grammar file per language, by the name tree-sitter-wasms uses. */
 const GRAMMAR = {
@@ -38,7 +40,7 @@ const cache = new Map<GrammarName, Language>()
 
 /** Load a grammar once per process. Parser.init() is idempotent but not free. */
 export async function loadLanguage(name: GrammarName): Promise<Language> {
-  ready ??= Parser.init()
+  ready ??= Parser.init({ locateFile: () => require.resolve('web-tree-sitter/tree-sitter.wasm') })
   await ready
   const hit = cache.get(name)
   if (hit) return hit

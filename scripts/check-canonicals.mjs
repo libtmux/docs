@@ -84,9 +84,6 @@ for (const root of roots) walk(root)
 
 const CANONICAL = /<link\s+rel="canonical"\s+href="([^"]+)"/i
 const REFRESH = /<meta\s+http-equiv="refresh"\s+content="0;url=([^"]+)"/i
-const glossaryFile = join(siteDir, 'reference/glossary/index.html')
-const glossaryHtml = existsSync(glossaryFile) ? readFileSync(glossaryFile, 'utf8') : ''
-const glossaryCanonical = glossaryHtml.match(CANONICAL)?.[1]
 const wrong = []
 let checked = 0
 let redirects = 0
@@ -109,17 +106,6 @@ for (const file of pages) {
   // Its canonical twin: the same page under this port's default version.
   const [, port, version] = own.split('/')
   const refresh = html.match(REFRESH)
-  // Contextual glossaries render the shared definitions inside each sidebar.
-  // Only these exact routes may use the existing shared glossary canonical.
-  const contextualGlossary = ['', 'workspace/', 'mcp/'].some((product) =>
-    own === `/${port}/${version}/${product}reference/glossary/`)
-  if (contextualGlossary && declared === '/reference/glossary/') {
-    checked += 1
-    if (!glossaryCanonical || glossaryCanonical !== found[1] || refresh || REFRESH.test(glossaryHtml)) {
-      wrong.push({ file, want: 'the existing shared glossary canonical', got: declared })
-    }
-    continue
-  }
   if (refresh) {
     // A retired declaration has no content to canonicalise. Its canonical,
     // no-JS redirect and fallback link must reach the same reference page.

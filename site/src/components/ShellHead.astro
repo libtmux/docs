@@ -17,12 +17,18 @@ const { preloadSansItalic = false } = Astro.props
   ...(preloadSansItalic ? [{ weight: 400, style: 'italic' as const }] : []),
 ]} />
 <Font cssVariable="--font-ibm-plex-mono" preload={[
-  { weight: 400, style: 'normal' }, { weight: 400, style: 'italic' },
+  { weight: 400, style: 'normal' },
   { weight: 600, style: 'normal' }, { weight: 700, style: 'normal' },
   { weight: 700, style: 'italic' },
 ]} />
 {/* ThemeScript lifts this gate on document.fonts.ready or after three seconds. */}
 <style is:inline>html.fonts-pending body,html.link-hints-pending body{visibility:hidden}html.link-hints-suppressed a[data-external-link]::after{display:none}</style>
+<script is:inline data-anchor-startup>
+  // Capture unowned fragments before the deferred router seeds scroll state.
+  if (location.hash && history.state === null && performance.getEntriesByType('navigation')[0]?.type !== 'back_forward') {
+    document.documentElement.setAttribute('data-anchor-startup', location.href);
+  }
+</script>
 <ThemeScript />
 <link rel="preload" as="image" crossorigin="anonymous" href={withRoot('/_shell/external-link.svg')} data-link-hints-mask />
 <script is:inline set:html={`(${initializeLinkHintReadiness.toString()})();`} />

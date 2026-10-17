@@ -1,7 +1,8 @@
 import { parseFrontmatter } from '@astrojs/markdown-remark'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { selectPortCards } from '../src/lib/workspace-shared-slots'
+import { docsEntriesAvailable } from '../src/lib/page-port-links'
 
 interface Card {
   label: string
@@ -10,9 +11,18 @@ interface Card {
   ports?: string[]
 }
 
-const index = (section: string) => parseFrontmatter(readFileSync(
-  new URL(`../src/content/docs/${section}/index.md`, import.meta.url), 'utf8'),
-  { frontmatter: 'remove' })
+const index = (section: string, port?: string) => {
+  const candidates = [section, ...(port ? [`ports/${port}/${section}`] : [])]
+    .map((id) => ({ id, file: new URL(`../src/content/docs/${id}/index.md`, import.meta.url) }))
+    .filter(({ file }) => existsSync(file))
+    .map(({ id, file }) => {
+      const parsed = parseFrontmatter(readFileSync(file, 'utf8'), { frontmatter: 'remove' })
+      return { ...parsed, id, data: parsed.frontmatter }
+    })
+  const selected = docsEntriesAvailable(candidates, port)
+  expect(selected, `${port || 'tmux'}:${section}`).toHaveLength(1)
+  return selected[0]
+}
 const cards = (section: string, port?: string) =>
   selectPortCards(index(section).frontmatter.cards as Card[], port)
 
@@ -65,12 +75,31 @@ describe('shared browse cards', () => {
     expect(selectPortCards(undefined)).toEqual([])
   })
 
-  it('keeps the published example verification anchors and source checks', () => {
-    const body = index('examples').content
+  it('keeps the published Swift example verification anchors and source checks', () => {
+    const selected = index('examples', 'swift')
+    expect(selected.id).toBe('ports/swift/examples')
+    expect(selected.frontmatter.port).toBe('swift')
+    const body = selected.content
     expect(body).toContain('<a id="what-verified-means-per-port"></a>')
     expect(body).toContain('## Source and verification')
     expect(body).toContain('`Scripts/check_examples.py` checks that README examples match sources')
     expect(body).toContain('`swift test --package-path Examples` compiles')
     expect(body).not.toContain('| Swift |')
+  })
+
+  it('keeps the native example verification fragment and scopes its shell receipts', () => {
+    const selected = index('examples')
+    expect(selected.frontmatter.supportedPorts).toEqual([])
+    const body = selected.content
+    expect(body).toContain('<a id="what-verified-means-per-port"></a>')
+    expect(body).toContain('## Source and verification')
+    expect(body).toContain('a site build does not execute them')
+    expect(body).toContain('`site/test/fixtures/guide-examples.json`')
+    expect(body).toContain('`scripts/check-example-prose.py`')
+    expect(body).toContain('recorded shell recipe')
+    expect(body).toContain('tmux version')
+    expect(body).toContain('other examples or other versions')
+    expect(body).toContain('/tmux/latest/manual/send-keys/')
+    expect(body).not.toMatch(/Swift|Scripts\/check_examples\.py|swift test|\| Port \|/)
   })
 })

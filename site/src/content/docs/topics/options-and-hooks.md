@@ -1,7 +1,7 @@
 ---
-supportedPorts: [py, ts, rs, go, java, csharp, cxx, swift]
+supportedPorts: []
 title: Options and hooks
-description: Read and update tmux options, and register commands for tmux events.
+description: Set native tmux options at their supported scope and run hook commands on events.
 sidebar:
   label: Options and hooks
   group: Topics
@@ -9,462 +9,123 @@ sidebar:
 tableOfContents: true
 ---
 
-Use options to change tmux behavior, such as `automatic-rename` or the
-status-line format. Use hooks to run commands on events such as
-`session-renamed` or `after-split-window`. Choose the scope supported by the
-option or hook.
+Options configure tmux behavior, and hooks run tmux commands when events
+occur. Choose the scope before changing a value: a server setting, a global
+session default, one session, a window default, or one window can have
+different effects.
 
-## Reading and writing options
+## Set options and observe an event
 
-Read, set, or unset an option at its supported scope. Distinguish a local
-override from the effective value inherited from a parent scope.
+Save this complete script as `options.sh`. It requires tmux 3.2a or newer and
+a POSIX shell. It checks a global default and local overrides, then registers
+and removes a session hook on its private server.
 
-<!-- port:py -->
-<!-- port:root -->
-### Python
-<!-- /port -->
+```sh title="options.sh"
+#!/bin/sh
+set -eu
+directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-options.XXXXXX")
+socket="$directory/tmux.sock"
 
-**Read all (this scope):** `pane.show_options()`
-
-**Read effective/inherited:** `pane.show_option(name, global_=True)` reaches the
-global fallback explicitly; no separate "resolved" call
-
-**Set:** `pane.set_option(name, value)`
-
-**Unset:** `pane.unset_option(name)`
-
-<!-- /port -->
-
-<!-- port:ts -->
-<!-- port:root -->
-### TypeScript
-<!-- /port -->
-
-**Read all (this scope):** `pane.showOptions()`
-
-**Read effective/inherited:** `pane.showResolvedOptions()`
-
-**Set:** `pane.setOption(name, value)`
-
-**Unset:** `pane.unsetOption(name)`
-
-<!-- /port -->
-
-<!-- port:go -->
-<!-- port:root -->
-### Go
-<!-- /port -->
-
-`pane.Options(ctx)` returns a fresh typed snapshot, including inherited values.
-Its accessors return an `OptionValue`; use `OptionValue.Get` to distinguish a
-present value from an absent one. Check the read error before inspecting the snapshot.
-
-Use the handle that owns the option's scope. For example, `automatic-rename`
-belongs to a window: use `Window.SetOption` or `Window.UnsetOption`, then read
-`Window.Options` again for an updated snapshot.
-
-For a single raw value, `Pane.RawOption` returns the string, its presence, and an
-error. Do not treat an error as an absent option.
-
-<!-- /port -->
-
-<!-- port:rs -->
-<!-- port:root -->
-### Rust
-<!-- /port -->
-
-**Read all (this scope):** `pane.options()` (typed `BTreeMap`),
-`pane.option_names()`
-
-**Read effective/inherited:** `pane.typed_option(name)` decodes one value by its
-declared kind
-
-**Set:** `pane.set_option(name, value)`, `pane.append_option(name, value)`
-
-**Unset:** `pane.unset_option(name)`
-
-<!-- /port -->
-
-<!-- port:java -->
-<!-- port:root -->
-### Java
-<!-- /port -->
-
-**Read all (this scope):** `pane.options().all()`
-
-**Read effective/inherited:** `pane.options().get(name)` reads `show-options -A
--v`: inherited, not just local
-
-**Set:** `pane.options().set(name, value)`
-
-**Unset:** `pane.options().unset(name)`
-
-<!-- /port -->
-
-<!-- port:csharp -->
-<!-- port:root -->
-### C#
-<!-- /port -->
-
-**Read all (this scope):** `pane.Options.GetAllAsync()`
-
-**Read effective/inherited:** `pane.Options.GetAsync(new GetOptionRequest(name,
-includeInherited: true))`: an explicit opt-in flag, mapped straight to tmux's
-own `-A`
-
-**Set:** `pane.Options.SetAsync(new SetOptionRequest(name, value))`
-
-**Unset:** `pane.Options.UnsetAsync(...)`
-
-<!-- /port -->
-
-<!-- port:cxx -->
-<!-- port:root -->
-### C++
-<!-- /port -->
-
-**Read all (this scope):** `pane->options()`
-
-**Read effective/inherited:** Not listed.
-
-**Set:** `pane->set_option(name, value)`
-
-**Unset:** `pane->unset_option(name)`
-
-<!-- /port -->
-
-<!-- port:swift -->
-<!-- port:root -->
-### Swift
-<!-- /port -->
-
-**Read all (this scope):** `server.options(.pane(pane))`
-
-**Read effective/inherited:** `server.option(name, scope: .pane(pane))` reads
-presence from the listing, then the value with `-v`
-
-**Set:** `server.setOption(name, to: value, scope: .pane(pane))`
-
-**Unset:** `server.unsetOption(name, scope: .pane(pane))`
-
-<!-- /port -->
-
-### Examples
-
-After a successful write completes, read the option to obtain its updated value.
-The following examples set, read, and unset an option:
-
-```python
-pane.set_option("automatic-rename", "off")
-pane.show_options()
-pane.unset_option("automatic-rename")
-```
-
-```typescript
-await pane.setOption("automatic-rename", "off");
-await pane.showOptions();
-await pane.unsetOption("automatic-rename");
-```
-
-```go
-if err := window.SetOption(ctx, "automatic-rename", "off", tmux.SetOptionOptions{}); err != nil {
-    return fmt.Errorf("set automatic rename: %w", err)
+cleanup() {
+    status=$?
+    trap - 0 HUP INT TERM
+    if [ -S "$socket" ] && ! tmux -S "$socket" kill-server; then
+        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
+        exit 1
+    fi
+    rm -rf "$directory" || status=$?
+    exit "$status"
 }
-options, err := window.Options(ctx)
-if err != nil {
-    return fmt.Errorf("read window options: %w", err)
-}
-value, present := options.AutomaticRename().Get()
-fmt.Println("automatic rename:", value, "present:", present)
-if err := window.UnsetOption(ctx, "automatic-rename", tmux.UnsetOptionOptions{}); err != nil {
-    return fmt.Errorf("unset automatic rename: %w", err)
-}
+trap cleanup 0
+trap 'exit 1' HUP INT TERM
+
+tmux -S "$socket" -f /dev/null new-session -d -s work -n main 'cat'
+tmux -S "$socket" set-option -g status off
+tmux -S "$socket" set-option -t '=work:' status on
+tmux -S "$socket" set-window-option -t '=work:main' automatic-rename off
+global=$(tmux -S "$socket" show-options -g -v status)
+session=$(tmux -S "$socket" show-options -v -t '=work:' status)
+rename=$(tmux -S "$socket" show-window-options -v \
+    -t '=work:main' automatic-rename)
+[ "$global" = off ] && [ "$session" = on ] && [ "$rename" = off ]
+printf 'global status: %s\nsession status: %s\n' "$global" "$session"
+printf 'window automatic-rename: %s\n' "$rename"
+
+tmux -S "$socket" set-hook -t '=work:' after-new-window \
+    'set-option -t =work: @created yes'
+tmux -S "$socket" new-window -d -t '=work:' -n hooked 'cat'
+created=$(tmux -S "$socket" show-options -v -t '=work:' @created)
+[ "$created" = yes ]
+printf 'hook ran: %s\n' "$created"
+tmux -S "$socket" set-hook -u -t '=work:' after-new-window
 ```
 
-```rust
-pane.set_option("automatic-rename", "off").await?;
-pane.options().await?;
-pane.unset_option("automatic-rename").await?;
+Run the saved script:
+
+```console
+$ sh options.sh
 ```
 
-```java
-pane.options().set("automatic-rename", "off");
-pane.options().all();
-pane.options().unset("automatic-rename");
-```
-
-```csharp
-await pane.Options.SetAsync(new SetOptionRequest("automatic-rename", "off"));
-await pane.Options.GetAllAsync();
-await pane.Options.UnsetAsync("automatic-rename");
-```
-
-```cpp
-pane->set_option("automatic-rename", "off");
-pane->options();
-pane->unset_option("automatic-rename");
-```
-
-```swift
-try await server.setOption("automatic-rename", to: "off", scope: .pane(pane))
-try await server.options(.pane(pane))
-try await server.unsetOption("automatic-rename", scope: .pane(pane))
-```
-
-## Hooks
-
-<!-- port:py -->
-<!-- port:root -->
-### Python
-<!-- /port -->
-
-**Set:** `pane.set_hook(name, command)`
-
-**Unset:** `pane.unset_hook(name)`
-
-**List:** `pane.show_hook(name)`, `pane.show_hooks()` (all)
-
-**Run now, without the event:** Not listed.
-
-<!-- /port -->
-
-<!-- port:ts -->
-<!-- port:root -->
-### TypeScript
-<!-- /port -->
-
-**Set:** `pane.setHook(name, command, { append })`
-
-**Unset:** `pane.unsetHook(name)`
-
-**List:** `pane.showHooks()` (all; no singular `showHook`)
-
-**Run now, without the event:** Not listed.
-
-<!-- /port -->
-
-<!-- port:go -->
-<!-- port:root -->
-### Go
-<!-- /port -->
-
-Use `session.SetHook` to register a command and `session.Hooks` to read the
-session's typed hook values. `session.UnsetHook` removes a registration.
-`Session.SetHooks` writes indexed entries when an event needs more than one command.
-
-Use `server.GlobalSessionScope()` for hooks shared by sessions. Keep hook
-registration at a scope supported by the tmux event.
-
-<!-- /port -->
-
-<!-- port:rs -->
-<!-- port:root -->
-### Rust
-<!-- /port -->
-
-**Set:** `pane.set_hook(name, command)`
-
-**Unset:** `pane.unset_hook(name)`
-
-**List:** `pane.hook(name)`: one name only; **no listing at pane/window scope**,
-by design (see below)
-
-**Run now, without the event:** Not listed.
-
-<!-- /port -->
-
-<!-- port:java -->
-<!-- port:root -->
-### Java
-<!-- /port -->
-
-**Set:** `pane.hooks().set(event, command)`, `.append(event, command)`
-
-**Unset:** `pane.hooks().unset(event)`
-
-**List:** `pane.hooks().all()`
-
-**Run now, without the event:** `pane.hooks().run(event)`: tmux's `set-hook -R`
-
-<!-- /port -->
-
-<!-- port:csharp -->
-<!-- port:root -->
-### C#
-<!-- /port -->
-
-**Set:** `pane.Hooks.SetAsync(new SetHookRequest(event, command))`
-
-**Unset:** `pane.Hooks.UnsetAsync(...)`
-
-**List:** `pane.Hooks.GetAllAsync()`
-
-**Run now, without the event:** `pane.Hooks.RunAsync(...)`
-
-<!-- /port -->
-
-<!-- port:cxx -->
-<!-- port:root -->
-### C++
-<!-- /port -->
-
-**Set:** `session.set_hook(name, command)`: no `Window`/`Pane` overload exists
-at all
-
-**Unset:** Not listed.
-
-**List:** `session.hooks()`, `server.global_hooks()`
-
-**Run now, without the event:** Not listed.
-
-<!-- /port -->
-
-<!-- port:swift -->
-<!-- port:root -->
-### Swift
-<!-- /port -->
-
-**Set:** `server.setHook(name, to: command, at: index, in: scope)`
-
-**Unset:** `server.unsetHook(name, in: scope)`
-
-**List:** `server.hooks(scope)`
-
-**Run now, without the event:** `server.runHook(name, in: scope)`
-
-<!-- /port -->
-
-### Examples
-
-tmux stores hook commands in indexed arrays, such as `after-new-window[0]`.
-
-<!-- port:py -->
-Include the array index in the hook name.
-<!-- /port -->
-<!-- port:ts -->
-Include the array index in the hook name or pass `{ append: true }` to append.
-<!-- /port -->
-<!-- port:go -->
-`Session.SetHooks` accepts indexed hook entries. Pass a context and check errors from
-both mutations and reads; a successful write does not refresh earlier snapshots.
-<!-- /port -->
-<!-- port:swift -->
-The `at:` parameter selects the array index.
-<!-- /port -->
-<!-- port:java -->
-Use `.append()` to add a command without choosing the next array index.
-<!-- /port -->
-
-Set and list a session hook. The next section explains window and pane scope
-limitations:
-
-```python
-session.set_hook("session-renamed", "display-message 'renamed'")
-session.show_hooks()
-```
-
-```typescript
-await session.setHook("session-renamed", "display-message 'renamed'");
-await session.showHooks();
-```
-
-```go
-if err := session.SetHook(ctx, "session-renamed", "display-message 'renamed'"); err != nil {
-    return fmt.Errorf("set session hook: %w", err)
-}
-value, present, err := session.RawHook(ctx, "session-renamed")
-if err != nil {
-    return fmt.Errorf("read session hooks: %w", err)
-}
-fmt.Println("session-renamed:", value, "present:", present)
-```
-
-```rust
-session.set_hook("session-renamed", "display-message 'renamed'").await?;
-session.hooks().await?;
-```
-
-```java
-session.hooks().set("session-renamed", "display-message 'renamed'");
-session.hooks().all();
-```
-
-```csharp
-await session.Hooks.SetAsync(new SetHookRequest("session-renamed", "display-message 'renamed'"));
-await session.Hooks.GetAllAsync();
-```
-
-```cpp
-session.set_hook("session-renamed", "display-message 'renamed'");
-session.hooks(); // No session unset helper is listed above.
-```
-
-```swift
-try await server.setHook("session-renamed", to: "display-message 'renamed'", in: .session(session.id.rawValue))
-try await server.hooks(.session(session.id.rawValue))
-```
-
-<a id="window-and-pane-hook-scopes-are-mostly-fiction"></a>
-
-## Supported hook scopes
-
-tmux stores hooks globally or per session. Accepted `set-hook -w` or `-p` flags
-do not imply a separate window or pane hook table, and `show-hooks` does not
-provide a corresponding listing. Check the event's supported scope if a hook is
-accepted but never fires.
-
-<!-- port:java -->
-Check `hooks().all()` when diagnosing a hook that does not fire. tmux can accept
-a hook at an unsupported scope without an effective registration.
-<!-- /port -->
-
-<!-- port:rs -->
-`Pane::set_hook` and `Window::set_hook` return `Error::OptionScopeMismatch`
-for an unsupported scope.
-<!-- /port -->
-
-<!-- port:swift -->
-`HookScope` restricts registration to `.global` and `.session`.
-<!-- /port -->
-
-<!-- port:cxx -->
-Use `Session::set_hook` or `Server::global_hooks()`. Window and pane handles
-do not provide hook methods.
-<!-- /port -->
-
-Options have window and pane tables of their own. The hook-scope limitation does
-not apply to ordinary options.
+The output is `global status: off`, `session status: on`,
+`window automatic-rename: off`, and `hook ran: yes` on separate lines.
+The hook sets a user option when the new window is created; the following
+read checks that result.
+
+## Choose option scope and inheritance
+
+[`set-option`](/tmux/latest/manual/set-option/) changes options and
+[`show-options`](/tmux/latest/manual/show-options/) reads them. `-g` selects
+global defaults for session options; `-t` selects a particular session.
+`-s` selects server options. Window and pane options use `-w` and `-p`,
+respectively, where the selected release supports that option's scope.
+
+[`set-window-option`](/tmux/latest/manual/set-window-option/) and
+[`show-window-options`](/tmux/latest/manual/show-window-options/) select
+window options. A local value overrides its global default. Unsetting a
+local option with `-u` restores inheritance where that option supports it;
+it is different from assigning an empty value.
+
+`show-options -v` prints the value alone. User options begin with `@` and can
+store application-specific strings, such as the script's `@created` marker.
+Inspect the [options reference](/tmux/latest/manual/full/#OPTIONS) for types,
+valid scopes, array handling, and version-specific settings.
+
+## Run and remove hooks
+
+[`set-hook`](/tmux/latest/manual/set-hook/) registers tmux commands for an
+event. The script uses the session's `after-new-window` hook. Hook bodies are
+tmux command strings, so the shell quotes them before tmux parses them.
+Use [`run-shell`](/tmux/latest/manual/run-shell/) inside a hook when its task
+needs a shell command.
+
+[`show-hooks`](/tmux/latest/manual/show-hooks/) lists installed hooks.
+`set-hook -u` removes a hook at the selected scope. Hook arrays can contain
+several commands; replacing an entry and appending one have different effects.
+The [hooks reference](/tmux/latest/manual/full/#HOOKS) lists events and
+supported scopes. An `after-` hook runs after its associated command succeeds.
+
+Keep hooks targeted to the resources they should change. A global hook can
+affect other sessions, and a hook that runs the same event-producing command
+needs a design that avoids unintended repeated work.
 
 ## tmux version compatibility
 
-<!-- port:py -->
-The compatibility notes list these tmux requirements:
+The script's commands work on both documented tmux versions. Check
+the event itself when choosing a hook; its availability belongs to tmux,
+independently of a library's API.
 
-| Feature | Minimum tmux |
-|---------|-------------|
-| All options/hooks features | 3.2+ |
-| Window/pane hook *scope flags* (`-w`, `-p`) accepted | 3.2+; see the supported-scope caveat above |
-| `client-active`, `window-resized` hooks | 3.3+ |
-| `pane-title-changed` hook | 3.5+ |
+| Feature | tmux 3.2a | tmux 3.7c |
+|---------|-----------|-----------|
+| `pane-title-changed` hook | Supported | Supported |
 
-<!-- /port -->
+`pane-title-changed` runs when a pane's title changes, including a change
+made with [`select-pane -T`](/tmux/latest/manual/select-pane/).
+The hook was [added before tmux 3.2](https://github.com/tmux/tmux/commit/d329b035cee47d968a8c93b5cbd8fde879ce6f0d)
+and is registered in both the
+[3.2a source](https://github.com/tmux/tmux/blob/3b929f332aafa7f1080eacc31feb11ffbb1d1841/options-table.c#L1143)
+and the
+[3.7c source](https://github.com/tmux/tmux/blob/e476c1230b958df0cb12977517d24b3dc931375b/options-table.c#L1700).
 
-Check the library's supported tmux versions before using a version-specific
-option or hook.
-
-<!-- port:root -->
-Use the command references for [show-options](/tmux/latest/manual/show-options/),
-[set-option](/tmux/latest/manual/set-option/),
-[show-hooks](/tmux/latest/manual/show-hooks/), and
-[set-hook](/tmux/latest/manual/set-hook/) to check the flags and scope rules
-for your tmux version.
-<!-- /port -->
-
-<details>
-<summary>tmux manual and source</summary>
-
-The tmux manual defines [option scopes and inherited reads](https://github.com/tmux/tmux/blob/94796f6b1182507efac8a272fc309a79e22e58a5/tmux.1#L4725).
-Unsetting a local value restores inheritance. Hook programs run in tmux when
-their event occurs; see the [hook implementation](https://github.com/tmux/tmux/blob/94796f6b1182507efac8a272fc309a79e22e58a5/cmd-set-option.c).
-
-</details>
+The pinned
+[tmux manual](https://github.com/tmux/tmux/blob/e476c1230b958df0cb12977517d24b3dc931375b/tmux.1)
+documents the commands and formats used here.

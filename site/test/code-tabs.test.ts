@@ -1,108 +1,40 @@
-import { readFileSync, existsSync } from 'node:fs'
-import { join } from 'node:path'
+import { createMarkdownProcessor } from '@astrojs/markdown-remark'
+import { readFileSync } from 'node:fs'
 import { Window } from 'happy-dom'
-import { beforeAll, describe, expect, it } from 'vitest'
-import { SITE_BUILT, SITE_ROOT, SITE_PREFIX, publishedPath } from './site-root'
+import ts from 'typescript'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { rehypeCodeTabs } from '../src/plugins/rehype-code-tabs.mjs'
 
-/**
- * The code-tab group, driven the way a reader drives it.
- *
- * Chrome confirms the rendered markup and the initial state; what it cannot
- * do here is click, because CDP will not bind in this environment. This runs
- * the real component script against the real built page in a DOM, so the two
- * behaviours that make the control worth having — every group on the page
- * switching together, and the choice surviving a reload — are actually
- * exercised rather than asserted.
- */
-// SITE_ROOT, not a hardcoded `_site`: `test-all.sh` injects the tree it just
-// built, and every other assembled-tree suite reads it from there. This one
-// looked somewhere else, so it could skip — silently, since a skipped
-// `describe` reports as a pass — while the suites beside it ran.
-const PAGE = join(SITE_ROOT, 'tmux/topics/architecture/index.html')
+/** The browser probe and DOM tests share real Markdown and the owned component. */
+const fixture = readFileSync(new URL('./fixtures/browser-code-tabs.md', import.meta.url), 'utf8')
+const component = readFileSync(new URL('../src/components/CodeTabs.astro', import.meta.url), 'utf8')
+const script = /<script>([\s\S]*?)<\/script>/.exec(component)![1]
+const client = ts.transpileModule(script, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText
 
-const describeIfBuilt = SITE_BUILT && existsSync(PAGE) ? describe : describe.skip
-
-describeIfBuilt('code tabs', () => {
+describe('code tabs', () => {
   let window: Window
   let document: Document
+  let html: string
+  const windows: Window[] = []
 
   const load = (stored?: string) => {
-    window = new Window({ url: `https://libtmux.org/${SITE_PREFIX}tmux/topics/architecture/` })
+    window = new Window({ url: 'https://libtmux.org/en/code-tabs-probe/' })
+    windows.push(window)
     document = window.document as unknown as Document
     if (stored) window.localStorage.setItem('libtmux-code-tab', stored)
-    const html = readFileSync(PAGE, 'utf8')
-    document.write(html)
-    // Astro hoists and bundles a component's `<script>` into `/_astro/*.js`,
-    // so the code under test is on disk rather than inline — evaluating only
-    // inline scripts runs none of it. And the page carries JSON-LD in a
-    // `<script type="application/ld+json">`, which is not JavaScript and
-    // throws if you eval it.
-    const isJs = (el: Element) => {
-      const type = el.getAttribute('type')
-      return !type || type === 'module' || type === 'text/javascript'
-    }
-
-    /**
-     * Each `<script type="module">` gets its own scope, so evaluate each one
-     * inside a function rather than sharing `window`'s.
-     *
-     * `window.eval` puts every script in one global scope, and Astro's
-     * minifier names module-level bindings `e`, `t`, `n` — so this page's
-     * `var e = 'libtmux-code-tab'` was overwritten by a later script's own
-     * `var e`, and the component then wrote its preference under the key
-     * `'[object Object]'`. That looked exactly like a bug in the component.
-     * It is not: Chrome stores `{"libtmux-code-tab":"go"}` and carries the
-     * choice across a navigation. The isolation is what was missing.
-     */
-    const evaluate = (source: string, script: HTMLScriptElement) => {
-      // Inline sidebar and table-of-contents scripts locate their own markup.
-      const previous = Object.getOwnPropertyDescriptor(document, 'currentScript')
-      Object.defineProperty(document, 'currentScript', {
-        configurable: true,
-        value: script.type === 'module' ? null : script,
-      })
-      try {
-        window.eval(`(() => {\n${source}\n})()`)
-      } finally {
-        if (previous) Object.defineProperty(document, 'currentScript', previous)
-        else Reflect.deleteProperty(document, 'currentScript')
-      }
-    }
-
-    /*
-     * `window.eval` runs a classic script, so a bundle using module-only
-     * syntax throws before any of it executes. ClientRouter has static imports;
-     * the search panel reads `import.meta.env` and loads Pagefind dynamically.
-     * The browser checks exercise those modules.
-     *
-     * Skipping those is safe here — this file tests the code-tab component,
-     * and the assertions below fail if its own script did not run — and it is
-     * narrower than catching, which would also swallow a genuine error thrown
-     * by the script under test.
-     */
-    const isModuleOnly = (source: string) =>
-      /\bimport\.meta\b/.test(source) || /\bimport\s*\(/.test(source) ||
-      /\bimport\b\s*(?:[\w*{]|['"])/.test(source) || /\bexport\s/.test(source)
-
-    for (const script of [...document.querySelectorAll('script')]) {
-      if (!isJs(script)) continue
-      const src = script.getAttribute('src')
-      if (!src) {
-        const inline = script.textContent ?? ''
-        if (!isModuleOnly(inline)) evaluate(inline, script)
-        continue
-      }
-      if (!src.includes('/_astro/')) continue
-      const asset = publishedPath(src)
-      if (!existsSync(asset)) continue
-      const source = readFileSync(asset, 'utf8')
-      if (!isModuleOnly(source)) evaluate(source, script)
-    }
+    document.body.innerHTML = html
+    window.eval(`(() => {\n${client}\n})()`)
     return { window, document }
   }
 
-  beforeAll(() => {
+  beforeAll(async () => {
+    const renderer = await createMarkdownProcessor({ rehypePlugins: [rehypeCodeTabs], syntaxHighlight: false })
+    html = (await renderer.render(fixture)).code
     load()
+  })
+
+  afterAll(async () => {
+    await Promise.all(windows.map((instance) => instance.happyDOM.close()))
   })
 
   it('renders one group with a tab per port', () => {
@@ -110,6 +42,9 @@ describeIfBuilt('code tabs', () => {
     expect(groups.length).toBeGreaterThan(0)
     const tabs = groups[0].querySelectorAll('.code-tab')
     expect(tabs.length).toBeGreaterThan(1)
+    expect(groups).toHaveLength(2)
+    expect(document.querySelectorAll('li')).toHaveLength(60)
+    expect(groups[0].querySelector('.code-tab[data-port="cxx"]')).not.toBeNull()
   })
 
   it('shows exactly one panel at a time', () => {
@@ -152,5 +87,20 @@ describeIfBuilt('code tabs', () => {
       )
       expect(shown.length, 'exactly one panel per group').toBe(1)
     }
+  })
+
+  it('initializes real groups inserted after the component is registered', () => {
+    const current = load()
+    const replacement = current.document.createElement('template')
+    replacement.innerHTML = html
+    current.document.body.replaceChildren(replacement.content.cloneNode(true))
+    current.document.querySelector<HTMLElement>('.code-tab[data-port="cxx"]')!.click()
+    const selected = [...current.document.querySelectorAll('.code-tab[aria-selected="true"]')]
+    expect(selected).toHaveLength(2)
+    expect(selected.every((tab) => tab.getAttribute('data-port') === 'cxx')).toBe(true)
+    const visible = [...current.document.querySelectorAll<HTMLElement>('.code-tab-panel')]
+      .filter((panel) => !panel.hidden)
+    expect(visible).toHaveLength(2)
+    expect(visible.every((panel) => panel.dataset.port === 'cxx')).toBe(true)
   })
 })

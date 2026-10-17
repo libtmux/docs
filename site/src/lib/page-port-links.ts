@@ -5,6 +5,7 @@ import { docsPath, docsRoutePath, type DocsPage } from './docs-paths'
 import { productApiHref } from './product-api'
 import { MCP_REFERENCE, equivalentMcpObject, mcpObjectAt, type McpSection } from './mcp-reference'
 import { DEFAULT_LOCALE, LOCALES } from '../i18n/locales'
+import { apiGlossary } from './api-glossary'
 
 /**
  * Every symbol by the route it answers on, keyed by port.
@@ -26,7 +27,7 @@ export const SHARED_PAGE_PATHS = ['mcp', 'mcp/tools', 'parity', 'search', 'trans
 export interface PagePortLink {
   port: string
   name: string
-  links: { href: string; label?: string; preserveFragment?: boolean; fallback?: 'section' }[]
+  links: { href: string; label?: string; preserveFragment?: boolean; fragmentIds?: string[]; fallback?: 'section' }[]
   /** A separate exit when this language has no equivalent page. */
   home?: { href: string; label: string }
 }
@@ -104,7 +105,9 @@ export function pagePortLinks({
     } else if (/^(?:(?:mcp|workspace)\/)?reference\/glossary$/.test(path)) {
       const model = API_MODELS[port.slug]
       if (model && (!product || symbolsForProduct(model, product).length)) {
-        links = [{ href: `${referenceUrl(port, targetVersion, product ?? 'core')}glossary/`, preserveFragment: true }]
+        const href = `${referenceUrl(port, targetVersion, product ?? 'core')}glossary/`
+        const fragmentIds = apiGlossary(href).groups.flatMap((group) => [group.id, ...group.terms.map((term) => term.id)])
+        links = [{ href, preserveFragment: true, fragmentIds }]
       }
     } else if (symbol) {
       const targets = new Map<string, { label: string; note?: string }>()

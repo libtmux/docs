@@ -29,7 +29,231 @@ async function extract(source: string, privateMembers = false) {
   return extractWithSpec(RUST, join(root, 'query.rs'), 'query', { privateMembers })
 }
 
+describe('Rust enum payload fields', () => {
+  it('retains named payload fields with native types, docs and source lines', async () => {
+    const symbols = await extract(`pub enum Event {
+    /// A pane produced output.
+    Output {
+        /// The pane that produced it.
+        pane: PaneId,
+        /// The output bytes.
+        bytes: Vec<u8>,
+    },
+    /// The session list changed.
+    SessionsChanged,
+}`)
+    const variant = symbols.find((symbol) => symbol.id === 'query.Event.Output')!
+    expect(variant).toMatchObject({ kind: 'constant', variant: 'struct', parent: 'query.Event',
+      signatures: [{ raw: 'Output {\n    pane: PaneId,\n    bytes: Vec<u8>,\n}', params: [] }],
+      doc: { summary: 'A pane produced output.' }, source: { line: 3 } })
+    expect(variant.value).toBeUndefined()
+    expect(symbols.filter((symbol) => symbol.parent === variant.id)).toMatchObject([
+      { id: 'query.Event.Output.pane', name: 'pane', kind: 'attribute', type: 'PaneId', signatures: [],
+        doc: { summary: 'The pane that produced it.' }, source: { line: 5 } },
+      { id: 'query.Event.Output.bytes', name: 'bytes', kind: 'attribute', type: 'Vec<u8>', signatures: [],
+        doc: { summary: 'The output bytes.' }, source: { line: 7 } },
+    ])
+    expect(symbols.find((symbol) => symbol.name === 'SessionsChanged')).toMatchObject({
+      variant: 'unit', signatures: [{ raw: 'SessionsChanged', params: [] }],
+    })
+  })
+
+  it('distinguishes tuple positions, empty shapes and explicit unevaluated discriminants', async () => {
+    const symbols = await extract(`#[repr(u8)] pub enum Payload {
+    Tuple(
+        /// The first item.
+        Vec<(u8, u8)>,
+        String,
+    ),
+    EmptyTuple(),
+    EmptyStruct {},
+    Unit,
+    Number = 1 << 3,
+}`)
+    const tuple = symbols.find((symbol) => symbol.name === 'Tuple')!
+    expect(tuple).toMatchObject({ variant: 'tuple', signatures: [{
+      raw: 'Tuple(\n    Vec<(u8, u8)>,\n    String,\n)', params: [],
+    }] })
+    expect(symbols.filter((symbol) => symbol.parent === tuple.id)).toMatchObject([
+      { id: 'query.Payload.Tuple.0', name: '0', type: 'Vec<(u8, u8)>', doc: { summary: 'The first item.' }, source: { line: 4 } },
+      { id: 'query.Payload.Tuple.1', name: '1', type: 'String', source: { line: 5 } },
+    ])
+    expect(symbols.find((symbol) => symbol.name === '1')?.doc).toBeUndefined()
+    for (const [name, variant, raw] of [['EmptyTuple', 'tuple', 'EmptyTuple()'], ['EmptyStruct', 'struct', 'EmptyStruct {}'], ['Unit', 'unit', 'Unit']]) {
+      const entry = symbols.find((symbol) => symbol.name === name)!
+      expect(entry).toMatchObject({ variant, signatures: [{ raw, params: [] }] })
+      expect(entry.value).toBeUndefined()
+      expect(symbols.filter((symbol) => symbol.parent === entry.id)).toEqual([])
+    }
+    expect(symbols.find((symbol) => symbol.name === 'Number')).toMatchObject({
+      value: '1 << 3', signatures: [{ raw: 'Number = 1 << 3', params: [] }],
+    })
+  })
+
+  it('links actual fields and payload types without borrowing generic names from other declarations', async () => {
+    const symbols = await extract(`pub struct T; pub struct PaneId; pub enum Event<T: Clone> {
+      Output { pane: PaneId, value: T }, Tuple(T),
+    }`)
+    const variant = symbols.find((symbol) => symbol.name === 'Output')!
+    const field = symbols.find((symbol) => symbol.id === 'query.Event.Output.value')!
+    expect(field).toBeDefined()
+    const index = new SymbolIndex(symbols, (symbol) => `/reference/${pageSlug(symbol.id)}/`, 'rs')
+    const spans = index.linkType(variant.signatures[0].raw!, variant, variant.signatures[0])
+    expect(spans.find((span) => span.text === 'Output')).toMatchObject({ declaration: true })
+    expect(spans.find((span) => span.text === 'pane')?.link?.symbol?.id).toBe('query.Event.Output.pane')
+    expect(spans.find((span) => span.text === 'PaneId')?.link?.symbol?.id).toBe('query.PaneId')
+    expect(spans.find((span) => span.text === 'T')?.link).toBeUndefined()
+    expect(index.linkType(field.type!, field).find((span) => span.text === 'T')?.link).toBeUndefined()
+    expect(index.resolve('Output.pane', 'any', symbols.find((symbol) => symbol.name === 'Event'))?.symbol?.id).toBe('query.Event.Output.pane')
+    expect(index.resolve('query.Event.Tuple.0')?.symbol?.name).toBe('0')
+  })
+
+  it('does not expose private owners or interpret macros and attributed payloads', async () => {
+    const symbols = await extract(`enum Private { Output { bytes: Vec<u8> } }
+      pub enum Public {
+        Conditional { #[cfg(feature = "extra")] value: u8 },
+        Hidden { #[doc(hidden)] secret: u8 },
+      }
+      macro_rules! make { () => { pub enum Generated { Tuple(u8) } } }
+    `)
+    expect(symbols.some((symbol) => symbol.id.startsWith('query.Private'))).toBe(false)
+    expect(symbols.some((symbol) => symbol.parent?.startsWith('query.Public.'))).toBe(false)
+    expect(symbols.some((symbol) => symbol.parent === 'query.Generated.Tuple')).toBe(false)
+  })
+
+  it('links raw field names without linking nested labels or shadowing field declarations', async () => {
+    const symbols = await extract(`pub struct PaneId; pub enum Event<T> {
+      Output { r#type: PaneId, pane: PaneId, callback: fn(pane: PaneId), T: T },
+    }`)
+    const variant = symbols.find((symbol) => symbol.name === 'Output')!
+    expect(variant.variant).toBe('struct')
+    const index = new SymbolIndex(symbols, (symbol) => `/reference/${pageSlug(symbol.id)}/`, 'rs')
+    const spans = index.linkType(variant.signatures[0].raw!, variant, variant.signatures[0])
+    expect(spans.map((span) => span.text).join('')).toBe(variant.signatures[0].raw)
+    expect({
+      raw: spans.find((span) => span.text === 'r#type')?.link?.symbol?.id,
+      nested: spans.filter((span) => span.text === 'pane').map((span) => span.link?.symbol?.id),
+      bound: spans.filter((span) => span.text === 'T').map((span) => span.link?.symbol?.id),
+    }).toEqual({
+      raw: 'query.Event.Output.r#type',
+      nested: ['query.Event.Output.pane', undefined],
+      bound: ['query.Event.Output.T', undefined],
+    })
+    expect(spans.filter((span) => span.text === 'PaneId').every((span) => span.link?.symbol?.id === 'query.PaneId')).toBe(true)
+  })
+
+  it.each(['tuple', 'field'] as const)('keeps callback labels unlinked in a %s payload context', async (kind) => {
+    const symbols = await extract(`pub struct PaneId; pub fn pane() {} pub enum Event {
+      Output { pane: PaneId, callback: fn(pane: PaneId) }, Tuple(fn(pane: PaneId)),
+    }`)
+    const context = symbols.find((symbol) => symbol.id === (kind === 'tuple' ? 'query.Event.Tuple' : 'query.Event.Output.callback'))!
+    const index = new SymbolIndex(symbols, (symbol) => `/reference/${pageSlug(symbol.id)}/`, 'rs')
+    const signature = context.signatures[0]
+    const text = kind === 'tuple' ? signature.raw! : context.type!
+    const spans = index.linkType(text, context, signature)
+    expect(spans.map((span) => span.text).join('')).toBe(text)
+    expect(spans.find((span) => span.text === 'PaneId')?.link?.symbol?.id).toBe('query.PaneId')
+    expect(index.resolve('pane', 'any', context)?.symbol?.id).toBe(kind === 'tuple' ? 'query.pane' : 'query.Event.Output.pane')
+    expect(spans.find((span) => span.text === 'pane')?.link).toBeUndefined()
+  })
+})
+
 describe('Rust trait member visibility', () => {
+  it('reports malformed callable headers instead of dropping native syntax', async () => {
+    await expect(extract('pub fn method(value: Broken<) {}')).rejects.toThrow(/Invalid Rust callable header grammar/)
+  })
+
+  it('reports malformed owner headers instead of dropping native context', async () => {
+    await expect(extract('pub struct Probe; impl<T:> Probe { pub fn method(value: T) {} }'))
+      .rejects.toThrow(/Invalid Rust enclosing declaration grammar/)
+  })
+
+  it('extracts valid native headers even when the body uses newer async closure syntax', async () => {
+    const symbols = await extract(`pub struct Server;
+impl Server {
+    /// The body is outside the header projection.
+    #[must_use]
+    pub fn method(value: Target) -> Target {
+        let callback = async |value| value;
+        value
+    }
+}`)
+    const signature = symbols.find((symbol) => symbol.name === 'method')!.signatures[0]!
+    expect(signature.raw).toBe('#[must_use]\npub fn method(value: Target) -> Target')
+    expect(signature.enclosingDeclaration).toBe('impl Server')
+    expect(signature.raw).not.toContain('The body')
+    expect(signature.raw).not.toContain('callback')
+  })
+
+  it('retains callable headers with outer attributes, bounds and native body boundaries', async () => {
+    const raw = `#[must_use = "keep { braces }, punctuation and  spaces"]
+#[cfg(feature = "native")]
+pub async unsafe fn inspect<'a, T: Clone, const N: usize>(
+    &'a mut self,
+    r#type: &'a T,
+    bytes: [u8; N],
+) -> Result<&'a T, Error>
+where
+    T: Send + 'a,`
+    const symbols = await extract(`pub struct Server;
+impl Server {
+${raw} { let unrelated = "body"; }
+}
+pub trait Poller {
+    unsafe extern "C" fn required(&self, value: fn(u8, u8)) -> u8;
+}`)
+    const signature = symbols.find((symbol) => symbol.name === 'inspect')!.signatures[0]!
+    expect(signature.raw).toBe(raw)
+    expect(signature.params.map((param) => param.name)).toEqual(["&'a mut self", 'r#type', 'bytes'])
+    expect(signature.typeParams).toEqual(["'a", 'T: Clone', 'const N: usize'])
+    expect(symbols.find((symbol) => symbol.name === 'required')!.signatures[0]!.raw)
+      .toBe('unsafe extern "C" fn required(&self, value: fn(u8, u8)) -> u8;')
+  })
+
+  it('retains distinct impl contexts and source locations without flattening owner generics', async () => {
+    const symbols = await extract(`pub struct Slot<T>;
+impl Slot<SessionSlot> { pub const fn pane(self) -> Slot<PaneSlot> {} }
+impl Slot<WindowSlot> { pub const fn pane(self) -> Slot<PaneSlot> {} }
+impl<'a, T: Clone> Slot<T> where T: Send { pub fn get(&'a self) -> &'a T {} }
+pub trait Poller<T: Clone = String> { fn required(&self, value: T); }`)
+    const panes = symbols.find((symbol) => symbol.name === 'pane')!.signatures
+    expect(panes.map((signature) => signature.enclosingDeclaration)).toEqual(['impl Slot<SessionSlot>', 'impl Slot<WindowSlot>'])
+    expect(panes.map((signature) => signature.source?.line)).toEqual([2, 3])
+    const get = symbols.find((symbol) => symbol.name === 'get')!.signatures[0]!
+    expect(get.enclosingDeclaration).toBe("impl<'a, T: Clone> Slot<T> where T: Send")
+    expect(get.typeParams).toBeUndefined()
+    expect(symbols.find((symbol) => symbol.name === 'required')!.signatures[0]!.enclosingDeclaration)
+      .toBe('pub trait Poller<T: Clone = String>')
+  })
+
+  it('keeps async and unsafe declaration modifiers without reading function bodies', async () => {
+    const symbols = await extract(`
+      pub struct Server;
+      impl Server {
+        pub async fn set_hook(&self, name: &str, command: impl Into<OsString>) -> Result<(), Error> {}
+        pub unsafe fn raw(&mut self) {}
+        pub async unsafe fn async_raw(&self) {}
+        pub fn synchronous(&self) { let pending = async {}; unsafe {} }
+      }
+      pub trait Poller {
+        async fn poll<T: Send>(&self, value: T) -> Result<T, Error>;
+        unsafe fn raw(&self);
+      }
+    `)
+    expect(symbols.find((symbol) => symbol.id === 'query.Server.set_hook')).toMatchObject({
+      modifiers: ['async'],
+      signatures: [{ params: [{ name: '&self' }, { name: 'name', type: '&str' },
+        { name: 'command', type: 'impl Into<OsString>' }], returns: 'Result<(), Error>' }],
+    })
+    expect(symbols.find((symbol) => symbol.id === 'query.Server.raw')?.modifiers).toEqual(['unsafe'])
+    expect(symbols.find((symbol) => symbol.id === 'query.Server.async_raw')?.modifiers).toEqual(['async', 'unsafe'])
+    expect(symbols.find((symbol) => symbol.id === 'query.Server.synchronous')?.modifiers).toEqual([])
+    expect(symbols.find((symbol) => symbol.id === 'query.Poller.poll')).toMatchObject({
+      modifiers: ['async'], signatures: [{ typeParams: ['T: Send'], params: [{ name: '&self' }, { name: 'value', type: 'T' }] }],
+    })
+    expect(symbols.find((symbol) => symbol.id === 'query.Poller.raw')?.modifiers).toEqual(['unsafe'])
+  })
+
   it('keeps required and default methods with their docs, signatures and owner', async () => {
     const symbols = await extract(`
       pub trait QueryIteratorExt: Iterator {

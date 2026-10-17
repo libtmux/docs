@@ -100,7 +100,10 @@ function main() {
   const binaries = resolve(option('--binaries'))
   const mandoc = option('--mandoc')
   for (const { version, revision } of pins.versions) {
-    const manual = execFileSync('git', ['-C', source, 'show', `${revision}:tmux.1`], { encoding: 'utf8' })
+    // Pins may name annotated tag objects; file URLs need their peeled commit.
+    const sourceCommit = execFileSync('git', ['-C', source, 'rev-parse', '--verify', `${revision}^{commit}`], { encoding: 'utf8' }).trim()
+    const sourceTree = execFileSync('git', ['-C', source, 'rev-parse', `${sourceCommit}^{tree}`], { encoding: 'utf8' }).trim()
+    const manual = execFileSync('git', ['-C', source, 'show', `${sourceCommit}:tmux.1`], { encoding: 'utf8' })
     const binary = join(binaries, version, 'bin/tmux')
     if (execFileSync(binary, ['-V'], { encoding: 'utf8' }).trim() !== `tmux ${version}`) {
       throw new Error(`Wrong tmux binary for ${version}: ${binary}`)
@@ -119,7 +122,7 @@ function main() {
       if (existsSync(socket)) execFileSync(binary, ['-S', socket, 'kill-server'], { env })
       rmSync(temporary, { recursive: true })
     }
-    const declarations = execFileSync('git', ['-C', source, 'grep', '-n', '-E', '\\.name = "', revision, '--', 'cmd-*.c'], { encoding: 'utf8' })
+    const declarations = execFileSync('git', ['-C', source, 'grep', '-n', '-E', '\\.name = "', sourceCommit, '--', 'cmd-*.c'], { encoding: 'utf8' })
     const sources = new Map([...declarations.matchAll(/^[^:]+:([^:]+):(\d+):.*\.name = "([^"]+)"/gm)]
       .map((match) => [match[3], { sourceFile: match[1], sourceLine: Number(match[2]) }]))
     const commands = catalog.trimEnd().split('\n').map((line) => {
@@ -131,14 +134,14 @@ function main() {
     const html = execFileSync(mandoc, ['-Thtml', '-Ofragment'], { input: manual, encoding: 'utf8', maxBuffer: 4 * 1024 * 1024 })
     const license = manual.split('\n.Dd')[0].split('\n').filter((line) => line.startsWith('.\\"')).slice(2)
       .map((line) => line.replace(/^\.\\" ?/, '')).join('\n').trim()
-    const model = { version, revision, manualSha256: digest(manual), catalogSha256: digest(catalog), license,
+    const model = { version, revision, sourceCommit, sourceTree, manualSha256: digest(manual), catalogSha256: digest(catalog), license,
       ...parseManual(html, commands, version) }
     const target = join(dataDir, `${version}.json`)
     const output = `${JSON.stringify(model, null, 2)}\n`
     if (args.includes('--check')) {
       if (readFileSync(target, 'utf8') !== output) throw new Error(`Stale tmux manual: ${version}`)
     } else writeFileSync(target, output)
-    console.log(`tmux ${version}: ${model.commands.length} commands at ${revision}`)
+    console.log(`tmux ${version}: ${model.commands.length} commands at ${revision} (commit ${sourceCommit})`)
   }
 }
 

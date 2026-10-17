@@ -2,7 +2,10 @@ import { Window, type HTMLAnchorElement, type HTMLButtonElement, type HTMLElemen
 import { readFileSync, realpathSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
+import { runInNewContext } from 'node:vm'
 import { experimental_AstroContainer } from 'astro/container'
+import { createRenderer } from 'astro-expressive-code'
+import { select } from 'astro-expressive-code/hast'
 import { fromHtml } from 'hast-util-from-html'
 import { visit } from 'unist-util-visit'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -10,14 +13,23 @@ import { symbolPreview, glossaryPreview } from '../src/lib/link-preview'
 import { API_MODELS } from '../src/lib/api-models'
 import { productApiIndex } from '../src/lib/product-api'
 import { apiGlossaryHref } from '../src/lib/api-glossary'
-import { initLinkPreviews, disposeLinkPreviews, linkPreviewTarget } from '../src/lib/link-preview-browser'
+import { initLinkPreviews, disposeLinkPreviews, linkPreviewTarget, positionLinkPreview } from '../src/lib/link-preview-browser'
+import { GET } from '../src/pages/[...slug].preview.json'
+import { highlightTokens } from '../src/lib/highlight'
+import config from '../ec.config.mjs'
 
 it.each([
-  ['/en/powershell/latest/workspace/reference/libtmux-workspace/', '/en/powershell/latest/workspace/reference/glossary/#cmdlet'],
-  ['/pr-42/en/julia/latest/mcp/reference/libtmuxmcp-tools/', '/pr-42/en/julia/latest/mcp/reference/glossary/#cmdlet'],
-  ['/en/julia/latest/reference/libtmux-from_env/', '/en/julia/latest/reference/glossary/#cmdlet'],
-])('keeps glossary terms in their existing reference context: %s', (context, expected) => {
-  expect(apiGlossaryHref('cmdlet', context)).toBe(expected)
+  ['/en/powershell/latest/workspace/reference/libtmux-workspace/', 'cmdlet', '/en/powershell/latest/workspace/reference/glossary/#cmdlet'],
+  ['/pr-42/en/julia/latest/mcp/reference/libtmuxmcp-tools/', 'struct', '/pr-42/en/julia/latest/mcp/reference/glossary/#struct'],
+  ['/en/julia/latest/reference/libtmux-from_env/', 'struct', '/en/julia/latest/reference/glossary/#struct'],
+])('keeps native glossary terms in their existing reference context: %s', (context, term, expected) => {
+  expect(apiGlossaryHref(term, context)).toBe(expected)
+})
+
+it('does not invent PowerShell glossary terms in a native Julia context', () => {
+  const context = '/en/julia/latest/reference/libtmux-from_env/'
+  expect(apiGlossaryHref('cmdlet', context)).toBeUndefined()
+  expect(glossaryPreview('/en/julia/latest/reference/glossary/').terms!.cmdlet).toBeUndefined()
 })
 
 it('does not invent contextual glossaries for source projects or ordinary articles', () => {
@@ -43,6 +55,50 @@ it('provides exact glossary terms with durable destinations', () => {
   const preview = glossaryPreview(href)
   expect(preview.terms!.cmdlet.href).toBe(`${href}#cmdlet`)
   expect(preview.terms!.cmdlet.description.length).toBeGreaterThan(20)
+})
+
+it('highlights the source-bound Scala signature for a cross-language preview without Copy markup', async () => {
+  const model = API_MODELS.scala
+  const symbol = model.symbols.find((entry) => entry.id === 'io.github.libtmux.scaladsl.query.Fields.FlagField')!
+  const preview = symbolPreview(model, symbol, 'latest')
+  expect(preview.signature).toBe('final class FlagField[T]')
+  expect(preview.signatureLanguage).toBe('scala')
+  const response = await GET({ props: { preview } } as unknown as Parameters<typeof GET>[0])
+  const payload = await response.json()
+  expect(payload.signatureHighlight.language).toBe('scala')
+  expect(payload.signatureHighlight.lines.map((line: { content: string }[]) => line.map((token) => token.content).join('')).join('\n'))
+    .toBe(preview.signature)
+  expect(JSON.stringify(payload.signatureHighlight)).not.toContain('<button')
+  for (const theme of ['light', 'dark']) {
+    expect(new Set(payload.signatureHighlight.lines.flat().map((token: Record<string, { color: string }>) => token[theme].color)).size).toBeGreaterThan(1)
+  }
+})
+
+it.each([
+  ['scala', 'final class FlagField[T]'],
+  ['java', 'public void close() throws Exception;'],
+  ['cxx', 'std::vector<Pane> Server::panes() const;'],
+  ['c', 'struct window *window_create(unsigned int width);'],
+  ['go', 'func Matching[T any](values []T, filter Filter[T]) ([]T, error)'],
+  ['json', '{"name":"FlagField","required":true,"count":1}'],
+])('uses ordinary codeblock colors for the %s target language', async (language, signature) => {
+  const highlight = (await highlightTokens(signature, language))!
+  expect(highlight.lines.flat().map((token) => token.content).join('')).toBe(signature)
+  expect(new Set(highlight.lines.flat().map((token) => token.light.color)).size).toBeGreaterThan(1)
+  const renderer = await createRenderer(config)
+  const result = await renderer.ec.render({ code: signature, language: highlight.language })
+  const line = select('.ec-line .code', result.renderedGroupAst)!
+  const paints: { text: string; style: string }[] = []
+  visit(line, 'element', (node) => {
+    if (typeof node.properties.style === 'string') paints.push({
+      text: node.children.map((child) => child.type === 'text' ? child.value : '').join(''), style: node.properties.style,
+    })
+  })
+  for (const [theme, variable] of [['dark', '0'], ['light', '1']] as const) {
+    const expected = highlight.lines.flat().flatMap((token) => [...token.content].map((character) => [character, token[theme].color.toLowerCase()]))
+    const actual = paints.flatMap((token) => [...token.text].map((character) => [character, token.style.match(new RegExp(`--${variable}:([^;]+)`))![1].toLowerCase()]))
+    expect(actual, `${language}/${theme}`).toEqual(expected)
+  }
 })
 
 it('only fetches same-origin supported reference URLs', () => {
@@ -128,6 +184,72 @@ const title = () => win.document.querySelector('[data-preview-title]')!.textCont
 const escape = () => win.document.dispatchEvent(new win.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
 
 describe('preview lifecycle', () => {
+  it('repositions open keyword help when a declaration scrolls without bubbling', async () => {
+    const source = readFileSync(new URL('../src/components/api/ApiKeyword.astro', import.meta.url), 'utf8')
+    const script = source.match(/<script>([\s\S]*?)<\/script>/)![1].replace(/^\s*import .*$/gm, '')
+    const { transpileModule } = await import('typescript')
+    win.document.body.insertAdjacentHTML('beforeend', `<span class="api-native-signature--formatted" id="declaration">
+      <button class="api-keyword-trigger" popovertarget="keyword-help">extension</button>
+      <span class="api-keyword-help" id="keyword-help" popover="auto"></span></span>`)
+    const panel = win.document.querySelector<HTMLElement>('#keyword-help')!
+    const trigger = win.document.querySelector('.api-keyword-trigger')!
+    let left = 200, keywordOpen = true
+    // Happy DOM has no layout or top-layer state. Keep event propagation and
+    // the actual positioning function, supplying only those browser facts.
+    panel.getBoundingClientRect = () => new win.DOMRect(0, 0, 200, 100)
+    trigger.getBoundingClientRect = () => new win.DOMRect(left, 40, 100, 20)
+    win.document.documentElement.getBoundingClientRect = () => new win.DOMRect(0, 0, 1000, 800)
+    const matches = panel.matches.bind(panel)
+    panel.matches = (selector) => selector === ':popover-open' ? keywordOpen : matches(selector)
+    const document = {
+      addEventListener: win.document.addEventListener.bind(win.document),
+      querySelector: win.document.querySelector.bind(win.document),
+      querySelectorAll: (selector: string) => win.document.querySelectorAll(selector === '.api-keyword-help:popover-open'
+        ? keywordOpen ? '#keyword-help' : '#closed-keyword-help' : selector),
+    }
+    runInNewContext(transpileModule(script, {}).outputText, {
+      window: win, document, positionLinkPreview, HTMLElement: win.HTMLElement,
+      Element: win.Element, Node: win.Node, requestAnimationFrame: win.requestAnimationFrame.bind(win), setTimeout,
+    })
+    win.dispatchEvent(new win.Event('resize'))
+    expect(panel.style.left).toBe('200px')
+    left = 120
+    win.document.getElementById('declaration')!.dispatchEvent(new win.Event('scroll', { bubbles: false }))
+    expect(panel.style.left).toBe('120px')
+    keywordOpen = false
+    left = 80
+    win.document.getElementById('declaration')!.dispatchEvent(new win.Event('scroll', { bubbles: false }))
+    expect(panel.style.left).toBe('120px')
+  })
+
+  it('renders validated highlighted tokens as selectable text and falls back on malformed styling', async () => {
+    const signature = 'final class Value<T> & Other'
+    const token = (content: string, light = '#A626A4') => ({ content,
+      light: { color: light, fontStyle: 0 }, dark: { color: '#F97583', fontStyle: 1 } })
+    const payload = { schema: 1, title: 'example.Value', description: '', signature, signatureLanguage: 'java',
+      href: `${prefix}-a/`, signatureHighlight: { language: 'java',
+        light: { foreground: '#24292E', background: '#FFFFFF' },
+        dark: { foreground: '#E1E4E8', background: '#24292E' },
+        lines: [[token('final class '), token('Value<T> & Other', '#032F62')]] } }
+    requests.mockResolvedValueOnce(new Response(JSON.stringify(payload)))
+    hover(); await settle()
+    const code = win.document.querySelector<HTMLElement>('[data-preview-signature]')!
+    expect(code.textContent).toBe(signature)
+    expect(code.querySelectorAll('span').length).toBe(2)
+    expect(code.querySelectorAll('button, script, a, input')).toHaveLength(0)
+    expect(code.querySelector('span')!.style.getPropertyValue('--shiki-light')).toBe('#A626A4')
+    expect(code.querySelector('span')!.style.getPropertyValue('--shiki-dark')).toBe('#F97583')
+    expect(code.querySelector('span')!.style.getPropertyValue('--shiki-dark-font-style')).toBe('italic')
+    escape()
+    requests.mockResolvedValueOnce(new Response(JSON.stringify({ ...payload, href: `${prefix}-b/`,
+      signatureHighlight: { ...payload.signatureHighlight, lines: [[token(signature, 'url(https://evil.test/)')]] } })))
+    hover('b'); await settle()
+    expect(code.textContent).toBe(signature)
+    expect(code.querySelectorAll('*')).toHaveLength(0)
+    expect(code.style.getPropertyValue('--shiki-light-bg')).toBe('')
+    expect(code.classList.contains('lm-highlighted')).toBe(false)
+  })
+
   it('keeps the destructor name and native signature intact with meaningful title breaks', async () => {
     const name = 'libtmux::CommandOperation::~CommandOperation'
     const signature = '~CommandOperation();'

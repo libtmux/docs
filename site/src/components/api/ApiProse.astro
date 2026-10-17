@@ -18,8 +18,9 @@ const { self: ApiProse } = Astro
 ---
 
 {
-  blocks.map((block) =>
-    block.kind === 'code' ? (
+  blocks.map((block) => {
+    const List = block.kind === 'ol' ? 'ol' : 'ul'
+    return block.kind === 'code' ? (
       <div class="api-prose-code"><Code code={block.code} lang={codeLang(block.lang)} title="" /></div>
     ) : block.kind === 'rubric' ? (
       <p class="rubric">{block.text}</p>
@@ -28,7 +29,7 @@ const { self: ApiProse } = Astro
         <ApiDoc text={block.text} index={index} context={context} />
       </p>
     ) : (
-      <ul>
+      <List start={block.kind === 'ol' ? block.start : undefined}>
         {block.items.map((item) => (
           <li>
             <ApiDoc text={item.text} index={index} context={context} />
@@ -37,7 +38,7 @@ const { self: ApiProse } = Astro
             )}
           </li>
         ))}
-      </ul>
-    ),
-  )
+      </List>
+    )
+  })
 }

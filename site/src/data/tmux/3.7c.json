@@ -1,6 +1,8 @@
 {
   "version": "3.7c",
   "revision": "79072dd1a9f5fb437a5859e362a496fd57ec0981",
+  "sourceCommit": "e476c1230b958df0cb12977517d24b3dc931375b",
+  "sourceTree": "ad5fe15a4b84ae9489eb4bb643f932ffab949ed2",
   "manualSha256": "bb2d390d0288fa02346f2727b1a923e99229a6abe3bc9517c4b92ea844272e58",
   "catalogSha256": "37c155ea1c6abf35bde6379d9b916fc4f43884c85e1a8e171c5942d90a378eb0",
   "license": "Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>\n\nPermission to use, copy, modify, and distribute this software for any\npurpose with or without fee is hereby granted, provided that the above\ncopyright notice and this permission notice appear in all copies.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES\nWITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF\nMERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR\nANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES\nWHATSOEVER RESULTING FROM LOSS OF MIND, USE, DATA OR PROFITS, WHETHER\nIN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING\nOUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.",
