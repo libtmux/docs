@@ -171,8 +171,8 @@ catalogs:
       specifier: 7.0.1
       version: 7.0.1
     happy-dom:
-      specifier: ^20.14.5
-      version: 20.14.5
+      specifier: ^21.0.1
+      version: 21.0.1
     oxlint:
       specifier: ^1.88.0
       version: 1.88.0
@@ -210,7 +210,7 @@ importers:
         version: 7.0.1
       happy-dom:
         specifier: 'catalog:'
-        version: 20.14.5
+        version: 21.0.1
       mdast-util-from-markdown:
         specifier: 2.0.3
         version: 2.0.3
@@ -259,7 +259,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: 'catalog:'
-        version: 5.0.4(@types/node@26.6.3)(happy-dom@20.14.5)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.4(@types/node@26.6.3)(happy-dom@21.0.1)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
 
   packages/theme:
     dependencies:
@@ -296,7 +296,7 @@ importers:
         version: 8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: 'catalog:'
-        version: 5.0.4(@types/node@26.6.3)(happy-dom@20.14.5)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.4(@types/node@26.6.3)(happy-dom@21.0.1)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
 
   site:
     dependencies:
@@ -366,7 +366,7 @@ importers:
         version: 0.44.2(astro@7.3.5(patch_hash=8d9d3d9846bc0ef177412506f49cc826ef05ae1635c7469368d442ff574c7eb8)(@astrojs/markdown-remark@7.3.1)(@types/node@26.6.3)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: 'catalog:'
-        version: 20.14.5
+        version: 21.0.1
       oxlint:
         specifier: 'catalog:'
         version: 1.88.0(oxlint-tsgolint@7.0.2004)
@@ -402,7 +402,7 @@ importers:
         version: 5.1.0
       vitest:
         specifier: 'catalog:'
-        version: 5.0.4(@types/node@26.6.3)(happy-dom@20.14.5)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.4(@types/node@26.6.3)(happy-dom@21.0.1)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
 
 packages:
 
@@ -2130,8 +2130,8 @@ packages:
   h3@1.15.11:
     resolution: {integrity: sha512-L3THSe2MPeBwgIZVSH5zLdBBU90TOxarvhK9d04IDY2AmVS8j2Jz2LIWtwsGOU3lu2I5jCN7FNvVfY2+XyF+mg==}
 
-  happy-dom@20.14.5:
-    resolution: {integrity: sha512-x/RzkpWO40bTjIoT30iQtt64FLLmH/iRcUCN2X//bLx7H3ifkdfPXyqsro/OYtqzIAhiLMMA7mmiOR9C3NOKjQ==}
+  happy-dom@21.0.1:
+    resolution: {integrity: sha512-pRBs/u9fhrncyByOl58DMex0R2uAj6ZPKWIjV5j5yNGZBqLw3P6BTRhlc0DD5b/Ht4/6JYTMuE2LJhUWRC6SGw==}
     engines: {node: '>=20.0.0'}
 
   hast-util-embedded@3.0.0:
@@ -5014,7 +5014,7 @@ snapshots:
       ufo: 1.6.4
       uncrypto: 0.1.3
 
-  happy-dom@20.14.5:
+  happy-dom@21.0.1:
     dependencies:
       '@types/node': 26.6.3
       '@types/whatwg-mimetype': 3.0.2
@@ -6519,7 +6519,7 @@ snapshots:
     optionalDependencies:
       vite: 8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)
 
-  vitest@5.0.4(@types/node@26.6.3)(happy-dom@20.14.5)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)):
+  vitest@5.0.4(@types/node@26.6.3)(happy-dom@21.0.1)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)):
     dependencies:
       '@types/chai': 5.2.3
       '@vitest/mocker': 5.0.4(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
@@ -6537,7 +6537,7 @@ snapshots:
       why-is-node-running: 3.2.1
     optionalDependencies:
       '@types/node': 26.6.3
-      happy-dom: 20.14.5
+      happy-dom: 21.0.1
     transitivePeerDependencies:
       - msw
 
