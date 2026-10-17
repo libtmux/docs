@@ -68,7 +68,7 @@ const { tocItems } = Astro.props
         document.body.style.overflow = 'hidden'
         toggleButton?.setAttribute('aria-expanded', 'true')
         setInert(false)
-        ;(closeButton ?? toc.querySelector<HTMLElement>('a'))?.focus()
+        ;(closeButton ?? toc.querySelector<HTMLElement>('a'))?.focus({ preventScroll: true })
       }
     }
     function closeToC() {
@@ -80,7 +80,7 @@ const { tocItems } = Astro.props
         document.body.style.overflow = ''
         toggleButton?.setAttribute('aria-expanded', 'false')
         setInert(true)
-        if (hadFocus) toggleButton?.focus()
+        if (hadFocus) toggleButton?.focus({ preventScroll: true })
       }
     }
     // Event listeners
