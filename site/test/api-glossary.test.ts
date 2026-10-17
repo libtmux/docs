@@ -4,7 +4,7 @@ import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import ts from 'typescript'
 import { experimental_AstroContainer } from 'astro/container'
-import { Window } from 'happy-dom'
+import { Window, type HTMLAnchorElement } from 'happy-dom'
 import { API_GLOSSARY_GROUPS, ALL_GLOSSARY_GROUPS, MCP_GLOSSARY_GROUPS, API_GLOSSARY_PATH, apiGlossary, apiGlossaryHref, apiGlossaryMarkdown } from '../src/lib/api-glossary'
 import { NATIVE_API_GLOSSARIES } from '../src/lib/api-glossary-native'
 import { glossaryPreview } from '../src/lib/link-preview'
@@ -295,7 +295,7 @@ describe('rendered API badges', () => {
       const section = win.document.querySelector('section[aria-labelledby="method"]')!
       expect(section.textContent).toContain('declared with def')
       expect(section.textContent).toContain('extension method')
-      expect([...section.querySelectorAll('a')].map((link) => new URL(link.href).hostname)).toEqual(['docs.scala-lang.org', 'docs.scala-lang.org'])
+      expect([...section.querySelectorAll<HTMLAnchorElement>('p a')].map((link) => new URL(link.href).hostname)).toEqual(['docs.scala-lang.org', 'docs.scala-lang.org'])
       expect(win.document.body.textContent).not.toMatch(/Python|Julia/)
       expect(win.document.querySelector('a[href$=".json"]')!.getAttribute('href')).toBe(`${path.slice(0, -1)}.json`)
       expect(Boolean(win.document.querySelector('#readOnlyHint'))).toBe(product === 'mcp/')

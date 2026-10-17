@@ -1,0 +1,17 @@
+/* Shared API and glossary permalinks stay beside the heading label. */
+.api-heading-link {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 1.5rem;
+  min-block-size: 1.5rem;
+  margin-inline-start: 0.25rem;
+  padding: 0.2rem 0.35rem;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+  font-weight: 400;
+  text-decoration: none;
+}
+.api-heading-link:hover { color: var(--color-link); }
+.api-heading-link:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }

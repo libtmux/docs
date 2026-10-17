@@ -16,8 +16,9 @@ interface Props {
   sourcePath: string
   localeStatuses?: Record<string, LocaleStatus>
   reference?: boolean
+  tableOfContents?: boolean
 }
-const { port, version, locale, sourcePath, localeStatuses, reference = false } = Astro.props
+const { port, version, locale, sourcePath, localeStatuses, reference = false, tableOfContents = false } = Astro.props
 const surfaces = await getDocumentationSurfaces(port, version, locale)
 const command = sourcePath.match(/^tmux\/[^/]+\/manual\/(.+?)\/?$/)?.[1]
 const sourceReference = sourcePath.match(/^tmux\/([^/]+)\/reference(?:\/(.*?))?\/?$/)
@@ -27,7 +28,7 @@ const tmuxVersions = !port ? TMUX_VERSIONS.map((entry) => ({
   current: entry === version,
 })) : undefined
 ---
-<div class:list={['documentation-context', reference && 'documentation-context--reference']} data-documentation-context data-pagefind-ignore="all">
+<div class:list={['documentation-context', reference && 'documentation-context--reference', tableOfContents && 'documentation-context--contents']} data-documentation-context data-pagefind-ignore="all">
   <div class="documentation-context-inner">
     <div class="documentation-context-surface">
       <SurfacePicker surfaces={surfaces} currentPath={Astro.url.pathname} port={port} version={version} locale={locale} />
@@ -67,7 +68,8 @@ const tmuxVersions = !port ? TMUX_VERSIONS.map((entry) => ({
   .documentation-context-navigation { display: flex; flex: none; align-items: center; gap: .4rem; margin-left: auto; padding: .25rem .75rem .25rem 0; }
   .documentation-context-navigation:empty { display: none; }
   .documentation-context-navigation :global(.api-nav-toggle) { flex: none; justify-content: center; width: 2.25rem; height: 2.25rem; margin: 0; padding: 0; gap: 0; }
-  @media (min-width: 64rem) { .documentation-context-navigation { display: none; } }
+  @media (min-width: 64rem) { .documentation-context:not(.documentation-context--contents) .documentation-context-navigation { display: none; } }
+  @media (min-width: 80rem) { .documentation-context--contents .documentation-context-navigation { display: none; } }
   @media (min-width: 56rem) { .documentation-context--reference .documentation-context-navigation { display: none; } }
   .documentation-context :global(.doc-picker) { position: static; }
   .documentation-context :global(.doc-picker-panel) { left: .5rem; }

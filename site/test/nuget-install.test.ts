@@ -91,14 +91,14 @@ async function component() {
     return (await import(/* @vite-ignore */ url)).default
   })()
 }
-async function render(slug: string, saved?: string) {
+async function render(slug: string, saved?: string, ports = [slug]) {
   const win = new Window({ url: `https://libtmux.org/en/${slug}/latest/` }); windows.push(win)
   if (saved) {
     win.localStorage.setItem(`libtmux-docs.package-install.manager.${slug}`, saved)
     win.document.documentElement.setAttribute(`data-pkg-manager-${slug}`, saved)
   }
   const container = await experimental_AstroContainer.create()
-  win.document.body.innerHTML = await container.renderToString(await component(), { props: { ports: [slug] } })
+  win.document.body.innerHTML = await container.renderToString(await component(), { props: { ports } })
   const style = win.document.createElement('style')
   style.textContent = readFileSync(new URL('../src/components/widgets/package-install.css', import.meta.url), 'utf8') + pickerPaintRules()
   win.document.head.append(style)
@@ -110,6 +110,137 @@ function hydrate(win: Window, file: URL) {
   win.eval(ts.transpileModule(`(() => {${script}})()`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText)
   win.document.dispatchEvent(new win.Event('astro:page-load'))
 }
+
+async function renderPair(slug: string, ports = [slug]) {
+  const win = await render(slug, '3', ports)
+  win.document.body.append(win.document.querySelector('.lm-pkg-install')!.cloneNode(true))
+  hydrate(win, packageFile)
+  return win
+}
+
+function pressKey(win: Window, tab: HTMLButtonElement, key: string) {
+  tab.focus()
+  const event = new win.KeyboardEvent('keydown', { key, bubbles: true, cancelable: true })
+  tab.dispatchEvent(event)
+  return event
+}
+
+function expectSelected(tabs: HTMLButtonElement[], index: number) {
+  expect(tabs.map((tab) => [tab.getAttribute('aria-selected'), tab.tabIndex])).toEqual(
+    tabs.map((_, position) => [String(position === index), position === index ? 0 : -1]),
+  )
+}
+
+function tabGroups(win: Window, strip: 'manager' | 'language') {
+  const selector = strip === 'manager'
+    ? '.lm-pkg-install__panel[data-port="csharp"] .lm-pkg-install__manager'
+    : '.lm-pkg-install__tabs > .lm-pkg-install__tab'
+  return [...win.document.querySelectorAll('.lm-pkg-install')]
+    .map((widget) => [...widget.querySelectorAll<HTMLButtonElement>(selector)])
+}
+
+function savedState(win: Window) {
+  return Array.from({ length: win.localStorage.length }, (_, index) => {
+    const key = win.localStorage.key(index)!
+    return [key, win.localStorage.getItem(key)]
+  })
+}
+
+describe('package tab keyboard navigation', () => {
+  it.each([
+    ['csharp', 'Home', 0], ['csharp', 'End', 7],
+    ['fsharp', 'Home', 0], ['fsharp', 'End', 7],
+  ] as const)('selects and remembers the %s manager edge with %s', async (slug, key, index) => {
+    const win = await renderPair(slug), doc = win.document
+    const panels = [...doc.querySelectorAll('.lm-pkg-install__panel')]
+    const groups = panels.map((panel) => [...panel.querySelectorAll<HTMLButtonElement>('.lm-pkg-install__manager')])
+    let changes = 0
+    win.addEventListener('lm-pkg-install:manager', () => changes++)
+    const event = pressKey(win, groups[0][3], key)
+    expect(doc.activeElement?.getAttribute('data-manager-value')).toBe(String(index))
+    expect(event.defaultPrevented).toBe(true)
+    expect(doc.activeElement).toBe(groups[0][index])
+    for (const [position, tabs] of groups.entries()) {
+      expectSelected(tabs, index)
+      expect(panels[position].getAttribute('data-active-manager')).toBe(String(index))
+    }
+    expect(doc.documentElement.getAttribute(`data-pkg-manager-${slug}`)).toBe(String(index))
+    expect(win.localStorage.getItem(`libtmux-docs.package-install.manager.${slug}`)).toBe(String(index))
+    expect(changes).toBe(1)
+  })
+
+  it.each(['Home', 'End'])('selects and remembers the language edge with %s', async (key) => {
+    const win = await renderPair('csharp', ['csharp', 'fsharp']), doc = win.document
+    const groups = tabGroups(win, 'language'), index = key === 'Home' ? 0 : groups[0].length - 1
+    const start = key === 'Home' ? groups[0].at(-1)! : groups[0][0]
+    start.click()
+    let changes = 0
+    win.addEventListener('lm-pkg-install:change', () => changes++)
+    const event = pressKey(win, start, key), slug = groups[0][index].dataset.tabValue!
+    expect(doc.activeElement?.getAttribute('data-tab-value')).toBe(slug)
+    expect(event.defaultPrevented).toBe(true)
+    expect(doc.activeElement).toBe(groups[0][index])
+    for (const tabs of groups) expectSelected(tabs, index)
+    expect([...doc.querySelectorAll('.lm-pkg-install')].map((widget) => widget.getAttribute('data-active-port'))).toEqual([slug, slug])
+    expect(doc.documentElement.getAttribute('data-pkg-port')).toBe(slug)
+    expect(win.localStorage.getItem('libtmux-docs.package-install.port')).toBe(slug)
+    expect(changes).toBe(1)
+  })
+
+  it.each(['manager', 'language'] as const)('preserves wrapping arrow navigation in the %s strip', async (strip) => {
+    const win = await renderPair('csharp', ['csharp', 'fsharp']), groups = tabGroups(win, strip)
+    const last = groups[0].length - 1
+    groups[0][last].click()
+    for (const [key, index] of [['ArrowRight', 0], ['ArrowLeft', last]] as const) {
+      const current = groups[0].find((tab) => tab.getAttribute('aria-selected') === 'true')!
+      expect(pressKey(win, current, key).defaultPrevented).toBe(true)
+      expect(win.document.activeElement).toBe(groups[0][index])
+      for (const tabs of groups) expectSelected(tabs, index)
+    }
+  })
+
+  it.each(['manager', 'language'] as const)('leaves other keys to the %s strip', async (strip) => {
+    const win = await renderPair('csharp', ['csharp', 'fsharp']), groups = tabGroups(win, strip)
+    const index = strip === 'manager' ? 3 : 1, current = groups[0][index]
+    current.click()
+    const before = savedState(win)
+    let changes = 0
+    win.addEventListener('lm-pkg-install:manager', () => changes++)
+    win.addEventListener('lm-pkg-install:change', () => changes++)
+    for (const key of ['Tab', 'Enter', ' ', 'ArrowUp', 'ArrowDown', 'x']) {
+      expect(pressKey(win, current, key).defaultPrevented).toBe(false)
+      expect(win.document.activeElement).toBe(current)
+      for (const tabs of groups) expectSelected(tabs, index)
+      expect(savedState(win)).toEqual(before)
+    }
+    expect(changes).toBe(0)
+  })
+
+  it.each(['manager', 'language'] as const)('keeps a single remaining %s tab unchanged', async (strip) => {
+    const win = await renderPair('csharp', ['csharp', 'fsharp']), groups = tabGroups(win, strip)
+    const current = groups[0][0]
+    current.click()
+    for (const tab of groups[0].slice(1)) tab.remove()
+    const before = savedState(win)
+    let changes = 0
+    win.addEventListener('lm-pkg-install:manager', () => changes++)
+    win.addEventListener('lm-pkg-install:change', () => changes++)
+    for (const key of ['Home', 'End', 'ArrowLeft', 'ArrowRight']) {
+      expect(pressKey(win, current, key).defaultPrevented).toBe(false)
+      expect(win.document.activeElement).toBe(current)
+      expectSelected([current], 0)
+      expectSelected(groups[1], 0)
+      expect(savedState(win)).toEqual(before)
+    }
+    expect(changes).toBe(0)
+  })
+
+  it('omits tab strips when the rendered port has one install choice', async () => {
+    const win = await render('rs')
+    expect(win.document.querySelectorAll('[role="tab"]')).toHaveLength(0)
+    expect(win.document.querySelectorAll('.lm-pkg-install__cmd')).toHaveLength(1)
+  })
+})
 
 describe('NuGet widget rendering and copied fragments', () => {
   it.each(['csharp', 'fsharp'])('paints the saved CPM choice and copies each %s fragment separately', async (slug) => {

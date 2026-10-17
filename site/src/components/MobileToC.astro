@@ -10,10 +10,10 @@ const { tocItems } = Astro.props
 ---
 
 <!-- Mobile ToC Overlay -->
-<div id="mobile-toc-overlay" class="fixed inset-0 bg-black/50 z-40 opacity-0 invisible lg:hidden"></div>
+<div id="mobile-toc-overlay" class="fixed inset-0 bg-black/50 z-40 opacity-0 invisible xl:hidden"></div>
 
 <!-- Mobile ToC -->
-<aside id="mobile-toc" inert class="drawer-surface fixed right-0 top-0 h-full w-64 z-50 transform translate-x-full lg:hidden overflow-y-auto">
+<aside id="mobile-toc" inert class="drawer-surface fixed right-0 top-0 h-full w-64 z-50 transform translate-x-full xl:hidden overflow-y-auto">
   <div class="p-4">
     <!-- Header with close button -->
     <div class="flex items-center justify-between mb-6">
@@ -112,7 +112,7 @@ const { tocItems } = Astro.props
 
     // Widening past the breakpoint hides the panel but would leave the body
     // scroll-locked; see the sidebar drawer's note.
-    const desktop = window.matchMedia('(min-width: 1024px)')
+    const desktop = window.matchMedia('(min-width: 80rem)')
     desktop.addEventListener('change', (e) => e.matches && closeToC(), { signal })
     if (desktop.matches) closeToC()
   }

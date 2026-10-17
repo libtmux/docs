@@ -269,6 +269,14 @@ export function apiGlossary(contextPath?: string) {
   }
 }
 
+/** Page contents follow the same filtered native groups and term order. */
+export function apiGlossaryHeadings(contextPath?: string) {
+  return apiGlossary(contextPath).groups.flatMap((group) => [
+    { depth: 2, slug: group.id, text: group.title },
+    ...group.terms.map((term) => ({ depth: 3, slug: term.id, text: term.id })),
+  ])
+}
+
 /** Unknown labels remain plain text rather than linking to an absent definition. */
 export function apiGlossaryHref(term: string, contextPath?: string): string | undefined {
   if (!terms.has(term)) return undefined

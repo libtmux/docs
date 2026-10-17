@@ -10,13 +10,10 @@ const referenceBase = port ? referenceUrl(PORT_BY_SLUG[port], version, product ?
 const pagePath = product ? `${product}/reference/glossary` : 'reference/glossary'
 const glossaryPath = `${referenceBase}glossary/`
 import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO } from '../../i18n/contribute'
-import { apiGlossary, API_GLOSSARY_PATH, API_GLOSSARY_TITLE } from '../../lib/api-glossary'
+import { apiGlossary, apiGlossaryHeadings, API_GLOSSARY_PATH, API_GLOSSARY_TITLE } from '../../lib/api-glossary'
 
-const { title, description, groups } = apiGlossary(glossaryPath)
-const headings = groups.flatMap((group) => [
-  { depth: 2, slug: group.id, text: group.title },
-  ...group.terms.map((term) => ({ depth: 3, slug: term.id, text: term.id })),
-])
+const { title, description } = apiGlossary(glossaryPath)
+const headings = apiGlossaryHeadings(glossaryPath)
 const markdownHref = `${glossaryPath.slice(0, -1)}.md`
 ---
 
