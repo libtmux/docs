@@ -49,6 +49,9 @@ and call an advertised tool. Check output, errors and cleanup against an
 isolated tmux server. A page that renders or a package that installs does
 not establish those results.
 
+Use the [tmux socket selection options](/tmux/latest/manual/full/#DESCRIPTION)
+to keep the test server separate from your normal sessions.
+
 Report a failing example with its revision, tmux version, smallest input and
 observed error. If the failure comes from the core library, reduce it to a
 core API call. The example is useful evidence for improving the library;
