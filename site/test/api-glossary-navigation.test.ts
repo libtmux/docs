@@ -4,7 +4,9 @@ import { readFileSync, realpathSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
 import { experimental_AstroContainer } from 'astro/container'
-import { Window, type Document } from 'happy-dom'
+import { Window, type Document, type Element, type HTMLElement } from 'happy-dom'
+import ts from 'typescript'
+import { compile as compileTailwind } from 'tailwindcss'
 import * as model from '@libtmux/api-model'
 import * as glossary from '../src/lib/api-glossary'
 import { NATIVE_API_GLOSSARIES } from '../src/lib/api-glossary-native'
@@ -25,9 +27,11 @@ import * as documentation from '../src/lib/documentation-navigation'
 import * as pagePorts from '../src/lib/page-ports-for'
 import * as markdown from '../src/lib/markdown-twins'
 import * as manual from '../src/lib/tmux-manual-data'
+import * as reference from '../src/lib/tmux-reference'
 import * as locales from '../src/i18n/locales'
 import * as resolve from '../src/i18n/resolve'
 import * as contribute from '../src/i18n/contribute'
+import * as ui from '../src/i18n/ui'
 import * as constants from '../src/constants'
 import * as toc from '../src/utils/generateToC'
 import * as branding from '../src/lib/branding'
@@ -49,10 +53,10 @@ async function components() {
       'api-relationships': relationships, 'api-tree': tree, 'api-search': search,
       'api-labels': labels, 'word-break': wordBreak, ports, 'product-api': products,
       versions, 'site-root': roots, sidebar, 'documentation-navigation': documentation,
-      'page-ports-for': pagePorts, 'markdown-twins': markdown, 'tmux-manual-data': manual,
+      'page-ports-for': pagePorts, 'markdown-twins': markdown, 'tmux-manual-data': manual, 'tmux-reference': reference,
       branding,
     }).map(([name, exports]) => [new URL(`../src/lib/${name}.ts`, import.meta.url).href, exports])),
-    ...Object.fromEntries(Object.entries({ locales, resolve, contribute }).map(([name, exports]) =>
+    ...Object.fromEntries(Object.entries({ locales, resolve, contribute, ui }).map(([name, exports]) =>
       [new URL(`../src/i18n/${name}.ts`, import.meta.url).href, exports])),
     [new URL('../src/components/api/api-tree-state.ts', import.meta.url).href]: treeState,
     [new URL('../src/constants.ts', import.meta.url).href]: constants,
@@ -68,9 +72,11 @@ async function components() {
     'api/ApiPageContents.astro', 'api/ApiTree.astro', 'api/ApiTreeItems.astro',
     'api/ApiBadge.astro', 'api/SymbolName.astro', 'TableOfContents/TableOfContents.astro',
     'TableOfContents/TableOfContentsList.astro', 'MobileToC.astro',
+    'docs/DocumentationContext.astro', 'docs/DocumentationNavigationButtons.astro',
   ].map((name) => new URL(`../src/components/${name}`, import.meta.url).href))
   realTemplates.add(new URL('../src/layouts/DocsLayout.astro', import.meta.url).href)
   const compiled = new Map<string, string>()
+  const styles: string[] = []
   // Collection loading and outer chrome are outside this regression. No glossary or TOC stub.
   const shell = (await transform('<slot /><slot name="context" /><slot name="header-navigation" />', {
     filename: 'glossary-test-chrome.astro', internalURL: 'astro/compiler-runtime', resultScopedSlot: true,
@@ -81,12 +87,14 @@ async function components() {
   async function compile(file: URL): Promise<string> {
     if (compiled.has(file.href)) return compiled.get(file.href)!
     const source = readFileSync(file, 'utf8')
-      .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/g, '')
+      .replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, '')
       .replace(/^import ['"][^'"\n]+\.css['"];?\s*$/gm, '')
     const result = await transform(source, { filename: file.pathname, internalURL: 'astro/compiler-runtime',
-      resultScopedSlot: true, resolvePath: (specifier: string) => specifier })
+      resultScopedSlot: true, scopedStyleStrategy: 'attribute', resolvePath: (specifier: string) => specifier })
     expect(result.diagnostics.filter((item: { severity: string }) => item.severity === 'error')).toEqual([])
+    styles.push(...result.css)
     let code = result.code.replaceAll('"astro/compiler-runtime"', JSON.stringify(runtime))
+      .replace(/^import ["'][^"'\n]+\?astro&type=style[^"'\n]+["'];?\s*$/gm, '')
     const specifiers = [...code.matchAll(/\bfrom\s+["']([^"']+)["']/g)].map((match) => match[1])
     for (const specifier of new Set(specifiers)) {
       if (specifier === 'astro/compiler-runtime' || specifier === runtime || specifier.startsWith('node:')) continue
@@ -109,7 +117,8 @@ async function components() {
     compiled.set(file.href, url)
     return url
   }
-  return async (name: string) => (await import(/* @vite-ignore */ await compile(new URL(`../src/components/api/${name}.astro`, import.meta.url)))).default
+  return Object.assign(async (name: string) =>
+    (await import(/* @vite-ignore */ await compile(new URL(`../src/components/api/${name}.astro`, import.meta.url)))).default, { styles })
 }
 
 function expectedHeadings(path: string) {
@@ -199,5 +208,175 @@ it.each(Object.keys(NATIVE_API_GLOSSARIES))('keeps %s filtered native glossary t
     }
     checkHeadings(win.document, path)
     expect(win.document.querySelector('a[href$=".json"]')?.getAttribute('href')).toBe(`${path.slice(0, -1)}.json`)
+  }
+})
+
+// Use the installed Tailwind theme and actual emitted component CSS. No
+// hand-written breakpoint styles stand in for the production controls.
+async function paint(win: Window, styles: string[]) {
+  const require = createRequire(new URL('../package.json', import.meta.url))
+  const theme = readFileSync(require.resolve('tailwindcss/theme.css'), 'utf8')
+  const compiler = await compileTailwind(`${theme}\n@tailwind utilities;`)
+  const classes = [...win.document.querySelectorAll('[class]')].flatMap((element) => [...element.classList])
+  const style = win.document.createElement('style')
+  style.textContent = `${compiler.build(classes)}\n${styles.join('\n')}`
+  win.document.head.append(style)
+}
+
+function displayed(win: Window, element: Element | null): boolean {
+  if (!element) return false
+  for (let current: Element | null = element; current; current = current.parentElement) {
+    if (win.getComputedStyle(current).display === 'none') return false
+  }
+  return true
+}
+
+async function contentsPage(product: 'mcp' | undefined, width: number, javascript = true, empty = false) {
+  const path = pathFor(product)
+  const templates = await components()
+  const container = await experimental_AstroContainer.create()
+  const html = await container.renderToString(await templates(empty ? '../../layouts/DocsLayout' : 'ApiGlossary'), {
+    props: empty
+      ? { title: 'No headings', ...(product ? { port: 'go' } : {}), version: 'latest', navigation: [], pagePorts: [], breadcrumbs: [] }
+      : { ...(product ? { port: 'go', product } : {}), version: 'latest' },
+    request: new Request(`https://libtmux.org${path}`),
+  })
+  const win = new Window({ url: `https://libtmux.org${path}`, width, height: 899 })
+  windows.push(win)
+  // Select the real noscript payload for the DOM fixture. This does not claim
+  // browser no-JavaScript rendering or geometry acceptance.
+  win.document.body.innerHTML = html.replace(/<noscript\b[^>]*>([\s\S]*?)<\/noscript>/g, javascript ? '' : '$1')
+  await paint(win, templates.styles)
+  return win
+}
+
+const contentsCases = (widths: number[]) => [undefined, 'mcp' as const].flatMap((product) =>
+  [true, false].flatMap((javascript) => widths.map((width) => ({ product, javascript, width }))))
+
+async function checkContentsHandoff({ product, javascript, width }: ReturnType<typeof contentsCases>[number]) {
+  const win = await contentsPage(product, width, javascript)
+  const doc = win.document
+  const desktop = doc.querySelector('main + aside nav.toc-nav')
+  const fallback = [...doc.querySelectorAll('.mobile-fallback details')]
+  const browse = fallback.find((details) => details.querySelector('summary')?.textContent === 'Browse documentation')
+  const contents = fallback.find((details) => details.querySelector('summary')?.textContent === 'On this page')
+  const compact = javascript ? doc.getElementById('mobile-toc-toggle') : contents ?? null
+  expect(displayed(win, compact), 'compact contents remains available until its desktop replacement').toBe(width < 1280)
+  expect(displayed(win, desktop), 'desktop contents retains its existing 80rem handoff').toBe(width >= 1280)
+  expect([compact, desktop].filter((element) => displayed(win, element))).toHaveLength(1)
+  if (javascript) {
+    expect(displayed(win, doc.getElementById('mobile-sidebar-toggle')), 'navigation still hands off at 64rem').toBe(width < 1024)
+    expect(displayed(win, doc.getElementById('mobile-toc'))).toBe(width < 1280)
+    expect(displayed(win, doc.getElementById('mobile-toc-overlay'))).toBe(width < 1280)
+    expect(doc.getElementById('mobile-toc-toggle')?.getAttribute('aria-controls')).toBe('mobile-toc')
+    expect(doc.getElementById('mobile-toc')?.hasAttribute('inert')).toBe(true)
+  } else {
+    expect(displayed(win, browse ?? null), 'native navigation still hands off at 64rem').toBe(width < 1024)
+    expect(displayed(win, doc.getElementById('mobile-toc-toggle'))).toBe(false)
+    expect(displayed(win, doc.getElementById('mobile-toc'))).toBe(false)
+    expect(contents?.querySelector('summary')?.textContent).toBe('On this page')
+  }
+  checkContents(doc, pathFor(product))
+}
+
+function pathFor(product: 'mcp' | undefined) {
+  return product ? '/en/go/latest/mcp/reference/glossary/' : glossary.API_GLOSSARY_PATH
+}
+
+it.each(contentsCases([390, 1023, 1280, 1440]))('retains contents handoff controls at $width, product=$product, JS=$javascript', checkContentsHandoff)
+it.fails.each(contentsCases([1024, 1036, 1279]))('bridges contents handoff at $width, product=$product, JS=$javascript', checkContentsHandoff)
+
+function hydrateDrawers(win: Window) {
+  for (const name of ['layouts/DocsLayout.astro', 'components/MobileToC.astro']) {
+    const source = readFileSync(new URL(`../src/${name}`, import.meta.url), 'utf8')
+    const script = source.match(/<script>([\s\S]*?)<\/script>/)![1]
+    win.eval(ts.transpileModule(`(() => {${script}})()`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText)
+  }
+}
+
+function drawerState(win: Window, open: boolean) {
+  const doc = win.document
+  expect(doc.getElementById('mobile-toc-toggle')?.getAttribute('aria-expanded')).toBe(String(open))
+  expect(doc.getElementById('mobile-toc')?.inert).toBe(!open)
+  expect(doc.getElementById('mobile-toc')?.classList.contains('translate-x-full')).toBe(!open)
+  expect(doc.getElementById('mobile-toc-overlay')?.classList.contains('invisible')).toBe(!open)
+  expect(doc.body.style.overflow).toBe(open ? 'hidden' : '')
+}
+
+it.fails('keeps open contents through the sidebar handoff and cleans up at its desktop handoff', async () => {
+  const win = await contentsPage('mcp', 1023)
+  hydrateDrawers(win)
+  win.document.getElementById('mobile-toc-toggle')!.click()
+  drawerState(win, true)
+  for (const width of [1024, 1036, 1279]) {
+    win.happyDOM.setWindowSize({ width, height: 899 })
+    drawerState(win, true)
+  }
+  win.happyDOM.setWindowSize({ width: 1280, height: 899 })
+  drawerState(win, false)
+})
+
+it.each([undefined, 'mcp' as const])('retains %s drawer focus, dismissal and one-drawer ownership', async (product) => {
+  const win = await contentsPage(product, 390)
+  hydrateDrawers(win)
+  const doc = win.document
+  const toggle = doc.getElementById('mobile-toc-toggle')!
+  const open = () => { toggle.focus(); toggle.click(); drawerState(win, true); expect(doc.activeElement?.id).toBe('mobile-toc-close') }
+  open()
+  doc.dispatchEvent(new win.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+  drawerState(win, false)
+  expect(doc.activeElement).toBe(toggle)
+  open()
+  doc.getElementById('mobile-toc-overlay')!.click()
+  drawerState(win, false)
+  expect(doc.activeElement).toBe(toggle)
+  open()
+  doc.querySelector<HTMLElement>('#mobile-toc a')!.click()
+  drawerState(win, false)
+  expect(doc.activeElement).toBe(toggle)
+  open()
+  doc.getElementById('mobile-sidebar-toggle')!.click()
+  expect(doc.getElementById('mobile-toc')?.inert).toBe(true)
+  expect(doc.getElementById('mobile-sidebar')?.inert).toBe(false)
+  expect(doc.body.style.overflow).toBe('hidden')
+  win.happyDOM.setWindowSize({ width: 1036, height: 899 })
+  expect(doc.getElementById('mobile-sidebar')?.inert).toBe(true)
+  expect(doc.body.style.overflow).toBe('')
+  let opened = 0
+  doc.addEventListener('libtmux:drawer-open', () => opened++)
+  doc.dispatchEvent(new win.Event('astro:after-swap'))
+  doc.dispatchEvent(new win.Event('astro:after-swap'))
+  open()
+  expect(opened).toBe(1)
+})
+
+it.each([undefined, 'mcp' as const])('does not retain an empty %s toolbar after navigation becomes desktop', async (product) => {
+  const win = await contentsPage(product, 1036, false, true)
+  expect(win.document.getElementById('mobile-toc-toggle')).toBeNull()
+  expect(displayed(win, win.document.querySelector('.mobile-toolbar'))).toBe(false)
+  expect(displayed(win, win.document.querySelector('.mobile-fallback'))).toBe(false)
+  expect(displayed(win, win.document.getElementById('mobile-sidebar-toggle'))).toBe(false)
+})
+
+it.each([895, 896, 1036])('preserves native/reference controls and their 56rem cutoff at %s', async (width) => {
+  const templates = await components()
+  const container = await experimental_AstroContainer.create()
+  const navigation = await container.renderToString(await templates('../docs/DocumentationNavigationButtons'), {
+    props: { tableOfContents: true, native: true },
+  })
+  const html = await container.renderToString(await templates('../docs/DocumentationContext'), {
+    props: { port: 'go', version: 'latest', locale: 'en', sourcePath: 'go/latest/reference/', reference: true },
+    slots: { navigation }, request: new Request('https://libtmux.org/en/go/latest/reference/'),
+  })
+  const win = new Window({ width, height: 899 })
+  windows.push(win)
+  win.document.body.innerHTML = html
+  await paint(win, templates.styles)
+  for (const [id, target] of [['mobile-sidebar-toggle', '__navigation'], ['mobile-toc-toggle', '__toc']]) {
+    const control = win.document.getElementById(id)!
+    expect(control.tagName).toBe('LABEL')
+    expect(control.getAttribute('for')).toBe(target)
+    expect(control.getAttribute('tabindex')).toBe('0')
+    expect(displayed(win, control)).toBe(width < 896)
   }
 })
