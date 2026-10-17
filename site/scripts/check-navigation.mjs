@@ -573,6 +573,7 @@ export async function checkNavigation(page, base) {
   await page.waitForFunction(() => window.__docsPageLoaded)
   await page.evaluate(() => {
     localStorage.setItem('color-scheme', 'dark')
+    localStorage.removeItem('libtmux-code-tab')
     localStorage.setItem('libtmux-docs.mcp-install.cooldown.enabled', '1')
     window.__applyTheme()
     window.__navigationProbe = true
@@ -605,10 +606,7 @@ export async function checkNavigation(page, base) {
   await page.getByRole('button', { name: 'Print', exact: true }).waitFor({ state: 'visible' })
   await page.keyboard.press('Escape')
   assert.equal(await page.locator('[data-page-actions]').getAttribute('open'), null)
-  const otherTab = page.locator('.code-tab[aria-selected="false"]').first()
-  const port = await otherTab.getAttribute('data-port')
-  await otherTab.click()
-  assert.equal(await page.locator(`.code-tab[data-port="${port}"]`).first().getAttribute('aria-selected'), 'true')
+  assert.equal(await page.locator('main libtmux-code-tabs').count(), 0, 'Native tmux prose has no language tabs')
   await page.goBack()
   await page.waitForURL(`${base}/tmux/examples/`)
   await page.waitForFunction(() => window.__docsPageLoaded)
@@ -616,6 +614,40 @@ export async function checkNavigation(page, base) {
   assert.equal(await page.locator('html').getAttribute('data-theme-mode'), 'dark')
   assert.equal(await page.locator('html').getAttribute('data-page-readiness'), 'ready')
   assert.equal(await page.locator('html').getAttribute('data-mcp-install-cooldown-enabled'), '1')
+
+  await page.goto(`${base}/code-tabs-probe/`, { waitUntil: 'load' })
+  await page.waitForFunction(() => window.__docsPageLoaded)
+  await page.waitForFunction(() => customElements.get('libtmux-code-tabs'))
+  await assertArrival()
+  const savedTab = page.locator('.code-tab[aria-selected="false"]').first()
+  const savedPort = await savedTab.getAttribute('data-port')
+  await savedTab.click()
+  assert.equal(await page.locator(`.code-tab-panel[data-port="${savedPort}"]:not([hidden])`).count(), 2)
+  await page.evaluate(() => { window.__codeTabsProbeDocument = true })
+  await page.getByRole('link', { name: 'Open the code tabs fixture', exact: true }).click()
+  await page.waitForURL(`${base}/code-tabs-probe/?from=client`)
+  await page.waitForFunction(() => window.__docsPageLoaded)
+  await page.waitForFunction(() => customElements.get('libtmux-code-tabs'))
+  await assertArrival()
+  assert.equal(await page.evaluate(() => window.__codeTabsProbeDocument), undefined,
+    'The query link initializes a new native document')
+  assert.match(page.url(), /\/code-tabs-probe\/\?from=client$/)
+  assert.equal(await page.locator(`.code-tab-panel[data-port="${savedPort}"]:not([hidden])`).count(), 2,
+    'The new document restores the saved language in both real Markdown tab groups')
+  const otherTab = page.locator('.code-tab[aria-selected="false"]').first()
+  const port = await otherTab.getAttribute('data-port')
+  await otherTab.click()
+  assert.equal(await page.locator(`.code-tab[data-port="${port}"]`).first().getAttribute('aria-selected'), 'true')
+  assert.equal(await page.locator(`.code-tab-panel[data-port="${port}"]:not([hidden])`).count(), 2,
+    'Native navigation initializes both real Markdown tab groups')
+  assert.equal(await page.evaluate(() => localStorage.getItem('libtmux-code-tab')), port)
+  await page.goBack()
+  await page.waitForURL(`${base}/code-tabs-probe/`)
+  await page.waitForFunction(() => window.__docsPageLoaded)
+  await assertArrival()
+  assert.equal(await page.locator('main libtmux-code-tabs').count(), 2)
+  assert.equal(await page.evaluate(() => localStorage.getItem('libtmux-code-tab')), port,
+    'Back preserves the saved language preference')
   console.log('Navigation: native documents, Back, search, code tabs, menu and saved theme/cooldown pass')
 
   for (const [port, version] of [['ts', 'latest'], ['py', 'stable']]) {

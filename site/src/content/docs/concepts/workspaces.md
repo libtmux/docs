@@ -1,7 +1,7 @@
 ---
-supportedPorts: [py, ts, rs, go, java, csharp, cxx, swift]
+supportedPorts: []
 title: Workspaces
-description: Build pane layouts with the object API or a workspace configuration file.
+description: Build a native tmux workspace with session, window, pane, and layout commands.
 sidebar:
   label: Workspaces
   group: Concepts
@@ -9,296 +9,127 @@ sidebar:
 tableOfContents: true
 ---
 
-A workspace arranges windows and panes for a task, such as editing code, running
-a development server, and following logs. Build it with the object API when the
-layout depends on program logic. Use a declarative builder when you want to
-store the layout in a configuration file, such as
-[tmuxp](https://tmuxp.git-pull.com/) YAML or JSON.
+A workspace is an arrangement of tmux windows and panes for a task. Native
+tmux builds that arrangement with commands such as
+[`new-session`](/tmux/latest/manual/new-session/),
+[`new-window`](/tmux/latest/manual/new-window/), and
+[`split-window`](/tmux/latest/manual/split-window/). The layout and the
+processes running inside its panes are separate: rearranging panes keeps their
+programs running.
 
-## Building one imperatively
+## Build a pane layout
 
-Create a window, split it into panes, apply a layout, and send each pane its
-command:
+Save this complete script as `layout.sh`. It requires tmux 3.2a or newer and
+a POSIX shell. It creates a three-pane editor window and a one-pane logs
+window on a private server, then stops that server on exit.
 
-```python
-def create_dev_workspace(session, name='dev'):
-    window = session.new_window(window_name=name, attach=False)
-    window.resize(height=50, width=160)
+```sh title="layout.sh"
+#!/bin/sh
+set -eu
+directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-layout.XXXXXX")
+socket="$directory/tmux.sock"
 
-    main_pane = window.active_pane
-    terminal_pane = main_pane.split(size='30%')
-    log_pane = terminal_pane.split(direction=PaneDirection.Right)
-
-    return {'window': window, 'main': main_pane,
-            'terminal': terminal_pane, 'logs': log_pane}
-```
-
-```rust
-let mut window = session.new_window("dev").await?;
-let main_pane = window.active_pane().await?.expect("a new window has a pane");
-
-let terminal_pane = main_pane
-    .split(SplitOptions::new(SplitDirection::Below).size(PaneSize::Percent(30)))
-    .await?;
-let logs_pane = terminal_pane
-    .split(SplitOptions::new(SplitDirection::Right))
-    .await?;
-
-window.select_layout(Layout::MainVertical).await?;
-```
-
-```go
-window, err := session.NewWindow(ctx, tmux.NewWindowRequest{Name: tmux.Ptr("dev")})
-if err != nil {
-	return err
+cleanup() {
+    status=$?
+    trap - 0 HUP INT TERM
+    if [ -S "$socket" ] && ! tmux -S "$socket" kill-server; then
+        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
+        exit 1
+    fi
+    rm -rf "$directory" || status=$?
+    exit "$status"
 }
-// Attach: true makes the split active, so the next split divides it rather
-// than the pane that was already there.
-terminal, err := window.SplitPane(ctx, tmux.SplitPaneRequest{
-	Attach: true, Percentage: tmux.Ptr(30),
-})
-if err != nil {
-	return err
-}
-if _, err := window.SplitPane(ctx, tmux.SplitPaneRequest{Direction: tmux.PaneDirectionRight}); err != nil {
-	return err
-}
-_ = terminal
-return window.SelectLayout(ctx, tmux.SelectLayoutRequest{Layout: "main-vertical"})
+trap cleanup 0
+trap 'exit 1' HUP INT TERM
+
+main=$(tmux -S "$socket" -f /dev/null new-session -d -P \
+    -F '#{pane_id}' -s dev -n editor -x 100 -y 30 'cat')
+right=$(tmux -S "$socket" split-window -h -d -P \
+    -l '30%' -F '#{pane_id}' -t "$main" 'cat')
+tmux -S "$socket" split-window -v -d -l '50%' -t "$right" 'cat'
+tmux -S "$socket" select-layout -t "$main" main-vertical > /dev/null
+tmux -S "$socket" select-pane -t "$main"
+
+editor=$(tmux -S "$socket" display-message -p -t "$main" \
+    '#{session_name}:#{window_name}:#{window_panes}')
+[ "$editor" = dev:editor:3 ]
+printf '%s\n' "$editor"
+active=$(tmux -S "$socket" display-message -p -t "$main" '#{pane_active}')
+[ "$active" = 1 ]
+printf 'main pane selected\n'
+
+tmux -S "$socket" new-window -d -t '=dev:' -n logs 'cat'
+logs=$(tmux -S "$socket" list-windows -t '=dev' \
+    -f '#{==:#{window_name},logs}' -F '#{window_panes}')
+[ "$logs" = 1 ]
+printf 'dev:logs:%s\n' "$logs"
 ```
 
-```java
-Window window = session.newWindow(w -> w.named("dev").detached());
-Pane terminal = window.split(split -> split.percent(30));
-Pane logs = terminal.split(split -> split.toRight());
+Run the saved script:
 
-window.selectLayout(Layout.MAIN_VERTICAL);
+```console
+$ sh layout.sh
 ```
 
-```csharp
-Window window = await session.CreateWindowAsync(new NewWindowRequest(name: "dev"));
-Pane main = (await window.GetPanesAsync())[0];
+The output is `dev:editor:3`, `main pane selected`, and `dev:logs:1` on
+separate lines. `cat` keeps every pane alive without requiring project files
+or a development toolchain.
 
-Pane terminal = await main.SplitAsync(new SplitPaneRequest(percentage: 30));
-Pane logs = await terminal.SplitAsync(new SplitPaneRequest(direction: PaneDirection.Right));
+## Choose split direction and size
 
-await window.SelectLayoutAsync(new SelectLayoutRequest("main-vertical"));
-```
+`split-window -h` places the new pane to the right; `-v` places it below.
+The default is a vertical split. Add `-b` to create the new pane to the left
+or above instead. With `-l`, a number selects columns for a horizontal split
+or lines for a vertical split. A value ending in `%` uses a percentage of the
+available space.
 
-```cpp
-const auto window = session.new_window({.name = "dev"});
-if (!window.has_value()) return 1;
+The script records pane IDs from `-P -F '#{pane_id}'`. Passing those IDs to
+later commands keeps the splits tied to the intended pane. `-d` keeps the new
+pane or window from becoming active. Use
+[`select-pane`](/tmux/latest/manual/select-pane/) and
+[`select-window`](/tmux/latest/manual/select-window/) when you want to change
+focus explicitly.
 
-// `focus = true` makes the new pane active, so the next split divides it.
-const auto terminal = window->split({.percentage = 30, .focus = true});
-if (!terminal.has_value()) return 1;
+## Apply a layout
 
-const auto logs = window->split({.horizontal = true});
-if (!logs.has_value()) return 1;
+[`select-layout`](/tmux/latest/manual/select-layout/) rearranges existing
+panes. Presets include `even-horizontal`, `even-vertical`, `main-horizontal`,
+`main-vertical`, and `tiled`. The script applies `main-vertical` after its
+splits, so that preset determines the final geometry rather than the earlier
+split percentages.
 
-(void)window->select_layout("main-vertical");
-```
+Set an initial detached size with `new-session -x` and `-y` when your script
+needs room for several panes. Attached client sizes and the `window-size`
+option can change the window size later. A split can fail if the target pane
+has too little space; keep that command's error visible.
 
-```swift
-let session = try await server.newSession(named: "work")
-let window = try await server.newWindow(in: session, named: "dev").window
+## Store the commands in a file
 
-let terminal = try await server.splitWindow(window, size: .percentage(30))
-let logs = try await server.split(terminal, direction: .right)
+[`source-file`](/tmux/latest/manual/source-file/) reads tmux commands from a
+file on the selected server. The [workspace file example](/examples/workspace-from-file/)
+shows a complete command file and its shell launcher. Commands run in order;
+an error can leave earlier changes applied. Loading a file again can also fail
+when its session name already exists.
 
-try await server.selectLayout(window, "main-vertical")
-```
+tmux command files use tmux syntax. Applications that load YAML or JSON add
+their own configuration formats and lifecycle rules. Use the native command
+file when tmux commands already express the layout you need.
 
-A split creates a pane; direction and size control its placement. Applying a
-layout rearranges existing panes while their processes continue running. tmux provides `even-horizontal`, `even-vertical`, `main-horizontal`,
-`main-vertical`, and `tiled` layouts.
+## Clean up what the script owns
 
-Choose detached creation when the user's current window should retain focus.
-Splits and resizes issue tmux commands; [Control mode vs one-shot](../transports/)
-covers their transport costs and batching.
+[`kill-pane`](/tmux/latest/manual/kill-pane/),
+[`kill-window`](/tmux/latest/manual/kill-window/), and
+[`kill-session`](/tmux/latest/manual/kill-session/) remove those objects and
+their pane processes. [`kill-server`](/tmux/latest/manual/kill-server/) stops
+every session on the selected server. The example can use it because the
+private socket belongs only to that script.
 
-<!-- port:py -->
-`attach=False` keeps a newly created window in the background.
-<!-- /port -->
+For cleanup inside a shared server, retain the IDs of the objects you created
+and remove those objects. A linked window can belong to several sessions;
+[the object hierarchy](../server-session-window-pane/) explains that ownership
+boundary. The [isolated test guide](/guides/testing-with-libtmux/) shows cleanup
+that preserves command failures.
 
-## Building one declaratively
-
-These packages read or build workspace configurations based on tmuxp:
-
-<!-- port:py -->
-<!-- port:root -->
-### Python
-<!-- /port -->
-`tmuxp` loads a workspace configuration and creates its sessions, windows,
-and panes. See [Workspace Manager](/workspace/) for its configuration and CLI.
-<!-- /port -->
-
-<!-- port:ts -->
-<!-- port:root -->
-### TypeScript
-<!-- /port -->
-`@libtmux/workspace` applies a workspace configuration through
-`applyWorkspace`. Pass the server and a configuration containing
-`session_name` and `windows`.
-<!-- /port -->
-
-<!-- port:go -->
-<!-- port:root -->
-### Go
-<!-- /port -->
-The `workspace` package loads tmuxp-shaped workspace configurations.
-See [Workspace Manager](/workspace/) for the supported fields and CLI.
-<!-- /port -->
-
-<!-- port:rs -->
-<!-- port:root -->
-### Rust
-<!-- /port -->
-The `tmux-workspace` crate loads tmuxp-shaped configurations.
-See [Workspace Manager](/workspace/) for the supported fields and CLI.
-<!-- /port -->
-
-<!-- port:java -->
-<!-- port:root -->
-### Java
-<!-- /port -->
-`libtmux-workspace` supports the tmuxp configuration fields needed to
-describe a workspace. See [Workspace Manager](/workspace/) for the supported
-configuration and CLI.
-<!-- /port -->
-
-<!-- port:csharp -->
-<!-- port:root -->
-### C#
-<!-- /port -->
-`LibTmux.Workspace` reads tmuxp YAML. See [Workspace Manager](/workspace/)
-for configuration fields and the CLI.
-<!-- /port -->
-
-<!-- port:swift -->
-<!-- port:root -->
-### Swift
-<!-- /port -->
-`TmuxWorkspace` accepts configurations written in Swift, JSON, or YAML.
-YAML support requires the `YAMLWorkspaces` trait.
-<!-- /port -->
-
-<!-- port:ts -->
-TypeScript's `applyWorkspace` applies a desired configuration. Applying the same
-configuration again reuses its existing objects:
-<!-- /port -->
-
-
-
-```ts
-await applyWorkspace(server, {
-  session_name: "api",
-  windows: [
-    { window_name: "editor", panes: ["vim", "git status"] },
-    { window_name: "server", panes: [{ shell_command: "bun dev", focus: true }] },
-  ],
-});
-```
-
-```rust
-use tmux_workspace::{Workspace, WorkspaceBuilder};
-
-let workspace = Workspace::from_yaml(yaml_source)?;
-let session = WorkspaceBuilder::new(&server).build(&workspace).await?;
-```
-
-```go
-described, err := workspace.Parse(document)
-if err != nil {
-	return err
-}
-session, err := workspace.Build(ctx, server, described)
-if err != nil {
-    return err
-}
-fmt.Println("workspace session:", session.ID())
-```
-
-```java
-Workspace workspace = WorkspaceBuilder.parse(yaml);
-Session session = WorkspaceBuilder.build(server, workspace);
-```
-
-```csharp
-WorkspaceFile workspace = WorkspaceFile.Parse(yaml);
-WorkspaceResult result = await new WorkspaceBuilder(server).BuildAsync(workspace, ct);
-```
-
-```swift
-let workspace = Workspace(
-    sessionName: "work",
-    windows: [WindowPlan(windowName: "editor", panes: [PanePlan(), PanePlan()])]
-)
-let session = try await WorkspaceBuilder.build(workspace, on: server)
-```
-
-<!-- port:cxx -->
-C++ provides a consumer example in `examples/workspace/` that reads tmuxp
-configuration. The workspace builder is part of that example, rather than a
-library package:
-<!-- /port -->
-
-
-
-```cpp
-// Not a package: this is the examples/workspace/ consumer, showing the
-// shape a tmuxp document builds into rather than a library entry point.
-const workspace::Workspace description{
-    .session_name = "dev",
-    .windows = {{.name = "editor", .panes = {{}, {}}}}};
-const auto built = workspace::build(server, description);
-```
-
-## Cleaning up
-
-<!-- port:py -->
-`Window` and `Session` context managers kill their objects on block exit,
-including when the block raises:
-<!-- /port -->
-<!-- port:go -->
-Use a named error result in the enclosing function so deferred cleanup can
-return its own failure. Give cleanup a fresh, bounded context:
-<!-- /port -->
-<!-- port:csharp -->
-An ownership scope kills its session when `await using` exits:
-<!-- /port -->
-
-```python
-with session.new_window(window_name='temp-window') as temp_win:
-    pane = temp_win.active_pane
-    pane.send_keys('echo "temporary workspace"')
-# window is gone here, even if the block raised
-```
-
-```go
-// No context manager: defer runs the cleanup at the end of the enclosing
-// function instead of the end of a block.
-session, err := server.NewSession(ctx, tmux.NewSessionRequest{Name: "temp-session"})
-if err != nil {
-	return err
-}
-defer func() {
-	cleanupCtx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	err = errors.Join(err, session.Kill(cleanupCtx))
-}()
-```
-
-```csharp
-await using OwnedSessionScope scope = await server.CreateOwnedSessionAsync(
-    new NewSessionRequest(name: "temp-session"));
-Window window = (await scope.Value.GetWindowsAsync())[0];
-Pane pane = (await window.GetPanesAsync())[0];
-
-await pane.SendTextAsync("echo temporary workspace");
-// session is gone here, even if an exception unwound through the block
-```
-
-See [Context managers](/topics/context-managers/) for cleanup support in each
-port. Use explicit kill methods when the handle does not provide scope-based
-cleanup.
+The pinned
+[tmux manual](https://github.com/tmux/tmux/blob/e476c1230b958df0cb12977517d24b3dc931375b/tmux.1)
+documents the split, sizing, and layout commands.

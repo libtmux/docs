@@ -179,6 +179,6 @@
   }
   initNativeSphinx()
   layoutBeforeAppearance(() => {
-    document.dispatchEvent(new CustomEvent('gp-sphinx:navigated', { detail: { url: location.href } }))
+    document.dispatchEvent(new CustomEvent('gp-sphinx:navigated', { detail: { url: location.href, initial: true } }))
   })
 </script>

@@ -1,8 +1,9 @@
 import { readFileSync } from 'node:fs'
-import type { Node } from 'web-tree-sitter'
+import type { Node, Parser } from 'web-tree-sitter'
 import { parseMarkdownDocFull } from '../doc/markdown.ts'
 import { parseXmlDoc } from '../doc/csharp.ts'
 import { parseJavadoc } from '../doc/javadoc.ts'
+import { parseGoDoc } from '../doc/go.ts'
 import {
   DEFAULT_EXTRACT_OPTIONS,
   type ApiSymbol,
@@ -14,6 +15,7 @@ import {
   type SymbolKind,
 } from '../model.ts'
 import { type GrammarName, parserFor } from '../parser.ts'
+import { attachTypeScriptConstants } from './typescript-constants.ts'
 
 /**
  * One extractor, five languages, driven by a per-language spec.
@@ -36,11 +38,11 @@ export interface LanguageSpec {
   /**
    * The dialect this language's doc comments are written in.
    *
-   * Markdown when unset, which is what Rust, TypeScript and Go write. C# is
+   * Markdown when unset, which is what Rust and TypeScript write. C# is
    * documentation XML and Java is HTML; both printed their markup into the
    * reference until it was read in the dialect it was written in.
    */
-  docDialect?: 'xml' | 'javadoc'
+  docDialect?: 'xml' | 'javadoc' | 'godoc'
   /**
    * The container kind this language reserves for extension blocks.
    *
@@ -115,12 +117,35 @@ export interface LanguageSpec {
    * every method is a free function and no type has members.
    */
   receiverType?: (node: Node) => string | undefined
-  /** A parameter whose native syntax cannot be split into a name and type. */
-  parameter?: (node: Node) => Param | undefined
+  /** Native parameters, including languages that group several names under one type. */
+  parameter?: (node: Node) => Param | Param[] | undefined
+  /** Receiver facts from the declaration, independently of its resolved owner. */
+  receiver?: (node: Node) => Param | undefined
   /** A type without its annotation delimiter or documentation comments. */
   typeText?: (node: Node) => string
   /** Positional record parameters also declare public properties. */
   positionalProperties?: (node: Node) => boolean
+  /** Java record components also declare public no-argument accessor methods. */
+  recordAccessors?: (node: Node) => boolean
+  /** Retain native declaration facts which the shared signature fields cannot express. */
+  rawSignature?: (node: Node) => string | undefined
+  /** Native binding names stay separate from the source type-parameter text. */
+  typeParameterNames?: (node: Node) => string[] | undefined
+  /** Modifiers implied by the native declaration rather than a written keyword. */
+  declarationModifiers?: (node: Node) => Modifier[]
+  /** Whether a native owner or field excludes enclosing type-variable bindings. */
+  typeScopeBoundary?: (node: Node) => boolean | undefined
+  /** A callable boundary independent of the shared symbol's other overloads. */
+  signatureTypeScopeBoundary?: (node: Node) => boolean | undefined
+  /** Retain the native owner header and each callable's own source location. */
+  enclosingDeclaration?: (node: Node) => { raw: string; typeParamNames?: string[] } | undefined
+  /** Native enum cases own named or positional fields without a callable signature. */
+  enumVariant?: (node: Node) => {
+    shape: NonNullable<ApiSymbol['variant']>
+    raw: string
+    value?: string
+    fields: { name: string; type: string; node: Node }[]
+  } | undefined
   /**
    * The type a declaration has without spelling it, where the language
    * repeats one: in Go's `const` block a spec with no value takes the type of
@@ -185,15 +210,16 @@ function docCommentFor(node: Node, spec: LanguageSpec): string | undefined {
     expectedRow = cursor.startPosition.row
     cursor = cursor.previousNamedSibling
   }
-  const text = lines.join('\n').trim()
-  return text || undefined
+  const joined = lines.join('\n')
+  const text = spec.docDialect === 'godoc' ? joined.replace(/^\n+|\n+$/g, '') : joined.trim()
+  return text.trim() ? text : undefined
 }
 
-/** Modifier keywords sitting as unnamed children of a declaration. */
+/** Modifier keywords on a declaration, including Rust's grouped function keywords. */
 function modifiersFor(node: Node, spec: LanguageSpec): Modifier[] {
   if (!spec.modifiers) return []
-  const found = new Set<Modifier>()
-  for (const child of node.children) {
+  const found = new Set<Modifier>(spec.declarationModifiers?.(node))
+  for (const child of node.children.flatMap((child) => child?.type === 'function_modifiers' ? child.children : [child])) {
     if (!child) continue
     // `modifiers` in Java/C#, bare keywords elsewhere, attributes in Rust.
     const text = child.type === 'modifiers' || child.type === 'modifier' ? child.text : child.type
@@ -209,19 +235,16 @@ function paramsOf(node: Node | null, spec: LanguageSpec): Param[] {
   const out: Param[] = []
   for (const child of node.namedChildren) {
     if (!child) continue
-    if (child.type === 'comment') continue
+    if (spec.commentTypes.includes(child.type)) continue
     const native = spec.parameter?.(child)
     if (native) {
-      out.push(native)
+      out.push(...Array.isArray(native) ? native : [native])
       continue
     }
     const name = child.childForFieldName('name') ?? child.childForFieldName('pattern')
     const type = child.childForFieldName('type')
     const value = child.childForFieldName('value') ?? child.childForFieldName('default_value')
       ?? child.namedChildren.find((node) => node?.type === 'equals_value_clause')?.namedChild(0)
-    // Go groups parameters — `a, b string` is one node with two names — and a
-    // receiver has no name at all. Falling back to the node's own text keeps
-    // both readable instead of emitting an empty row.
     const label = name?.text ?? child.text.split(/[\s:]/)[0]
     if (!label) continue
     out.push({
@@ -233,19 +256,28 @@ function paramsOf(node: Node | null, spec: LanguageSpec): Param[] {
   return out
 }
 
-function signatureOf(node: Node, spec: LanguageSpec): Signature {
+function signatureOf(node: Node, spec: LanguageSpec, file: string): Signature {
   const f = { ...DEFAULT_FIELDS, ...spec.fields }
   const returns =
     node.childForFieldName(f.returns) ??
     node.childForFieldName('result') ??
     node.childForFieldName('type')
+  const scopeBoundary = spec.signatureTypeScopeBoundary?.(node)
+  const enclosing = spec.enclosingDeclaration?.(node)
   return {
+    raw: spec.rawSignature?.(node),
+    ...(enclosing ? { enclosingDeclaration: enclosing.raw,
+      ...(enclosing.typeParamNames ? { enclosingTypeParamNames: enclosing.typeParamNames } : {}) } : {}),
+    ...(spec.enclosingDeclaration ? { source: { file, line: node.startPosition.row + 1 } } : {}),
     params: paramsOf(node.childForFieldName(f.params), spec),
+    receiver: spec.receiver?.(node),
     // A grammar's return-type node often includes the syntax that introduces
     // it: TypeScript's `type_annotation` is `: string`, and all 240 of its
     // signatures rendered as `foo() → : string`. The arrow or colon is the
     // renderer's to draw.
     returns: returns ? spec.typeText?.(returns) ?? returns.text.replace(/\s+/g, ' ').replace(/^\s*(?:->|:)\s*/, '') : undefined,
+    ...(spec.typeParameterNames?.(node) ? { typeParamNames: spec.typeParameterNames(node) } : {}),
+    ...(scopeBoundary !== undefined ? { typeScopeBoundary: scopeBoundary } : {}),
     typeParams: node
       .childForFieldName('type_parameters')
       ?.namedChildren.map((n) => n?.text ?? '')
@@ -254,6 +286,7 @@ function signatureOf(node: Node, spec: LanguageSpec): Signature {
 }
 
 interface Ctx {
+  parser: Parser
   file: string
   module: string
   namespace?: string
@@ -323,10 +356,12 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
     const id = parent ? `${parent}.${name}` : `${ctx.module}.${name}`
     const raw = docCommentFor(child, spec)
     const modifiers = modifiersFor(child, spec)
+    const scopeBoundary = spec.typeScopeBoundary?.(child)
 
     if (containerKind) {
-      const positional = spec.positionalProperties?.(child)
-      const signatures = positional ? [signatureOf(child, spec)] : []
+      const accessors = spec.recordAccessors?.(child)
+      const positional = spec.positionalProperties?.(child) || accessors
+      const signatures = positional || (spec.grammar === 'java' && spec.rawSignature?.(child)) ? [signatureOf(child, spec, ctx.file)] : []
       emit(ctx, {
         id,
         name,
@@ -334,7 +369,15 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
         modifiers,
         parent,
         signatures,
-        doc: docFor(raw, spec, signatures),
+        ...(scopeBoundary !== undefined ? { typeScopeBoundary: scopeBoundary } : {}),
+        ...(spec.typeParameterNames?.(child) ? {
+          typeParams: child.childForFieldName('type_parameters')!.namedChildren.flatMap((node) => node && !spec.commentTypes.includes(node.type) ? [node.text] : []),
+          typeParamNames: spec.typeParameterNames(child),
+        } : {}),
+        ...(spec.grammar === 'rust' && child.type === 'enum_item' && child.childForFieldName('type_parameters')
+          ? { typeParams: child.childForFieldName('type_parameters')!.namedChildren.flatMap((node) => node ? [node.text] : []) }
+          : {}),
+        doc: docFor(raw, spec, signatures, ctx.parser),
         source: { file: ctx.file, line: child.startPosition.row + 1 },
       })
       const body = child.childForFieldName(f.body) ?? child
@@ -342,11 +385,28 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
       if (positional) {
         const parameters = child.childForFieldName(f.params)?.namedChildren ?? []
         for (const parameter of signatures[0].params) {
-          const propertyId = `${id}.${parameter.name}`
-          if (ctx.byId.has(propertyId)) continue
+          const componentId = `${id}.${parameter.name}`
+          if (accessors) {
+            const declaration = ctx.byId.get(componentId)
+            if (declaration?.kind === 'method' && declaration.signatures.some((signature) =>
+              signature.params.length === 0 && signature.returns !== undefined)) continue
+            const accessorId = (declaration && declaration.kind !== 'method') || parameter.name === name
+              ? `${componentId}()` : componentId
+            const existing = ctx.byId.get(accessorId)
+            if (existing?.signatures.some((signature) => signature.params.length === 0)) continue
+            emit(ctx, {
+              id: accessorId, name: parameter.name, kind: 'method', parent: id,
+              modifiers: [], signatures: [{ params: [], returns: parameter.type, ...(existing ? { typeScopeBoundary: false } : {}) }],
+              doc: parameter.doc ? { summary: parameter.doc } : undefined,
+              // The accessor is implicit; no method declaration owns a source line.
+              source: { file: ctx.file },
+            })
+            continue
+          }
+          if (ctx.byId.has(componentId)) continue
           const declaration = parameters.find((node) => node?.childForFieldName('name')?.text === parameter.name)
           emit(ctx, {
-            id: propertyId, name: parameter.name, kind: 'property', parent: id,
+            id: componentId, name: parameter.name, kind: 'property', parent: id,
             type: parameter.type, modifiers: [], signatures: [],
             doc: parameter.doc ? { summary: parameter.doc } : undefined,
             source: { file: ctx.file, line: (declaration ?? child).startPosition.row + 1 },
@@ -356,7 +416,7 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
       continue
     }
 
-    const hasParams = Boolean(child.childForFieldName(f.params))
+    const hasParams = Boolean(child.childForFieldName(f.params)) || Boolean(memberKind === 'method' && spec.rawSignature?.(child))
     // A receiver re-homes the member onto its type, which lives in the same
     // module — Go's package — even when it is declared in another file.
     const receiver = spec.receiverType?.(child)
@@ -370,7 +430,8 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
       memberKind === 'method' && !owner ? 'function' : memberKind
     // Built before the doc so C#'s `<param>` and `<exception>` can be lifted
     // onto it: the comment carries them, and nothing else does.
-    const memberSignatures = hasParams ? [signatureOf(child, spec)] : []
+    const variant = spec.enumVariant?.(child)
+    const memberSignatures = variant ? [{ raw: variant.raw, params: [] }] : hasParams ? [signatureOf(child, spec, ctx.file)] : []
     emit(ctx, {
       id: memberId,
       name,
@@ -378,15 +439,25 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
       modifiers,
       parent: owner,
       signatures: memberSignatures,
+      ...(scopeBoundary !== undefined ? { typeScopeBoundary: scopeBoundary } : {}),
+      ...(variant ? { variant: variant.shape } : {}),
       type: hasParams ? undefined : child.childForFieldName('type') && spec.typeText
         ? spec.typeText(child.childForFieldName('type')!)
         : (child.childForFieldName('type')?.text ?? spec.implicitType?.(child))?.replace(/\s+/g, ' '),
-      value: hasParams
+      value: child.type === 'annotation_type_element_declaration' && spec.grammar === 'java' ? child.childForFieldName('value')?.text : variant ? variant.value : hasParams
         ? undefined
         : child.childForFieldName('declarator')?.childForFieldName('value')?.text.replace(/\s+/g, ' '),
-      doc: docFor(raw, spec, memberSignatures),
+      doc: docFor(raw, spec, memberSignatures, ctx.parser),
       source: { file: ctx.file, line: child.startPosition.row + 1 },
     })
+    for (const field of variant?.fields ?? []) {
+      emit(ctx, {
+        id: `${memberId}.${field.name}`, name: field.name, kind: 'attribute', parent: memberId,
+        modifiers: [], signatures: [], type: field.type,
+        doc: docFor(docCommentFor(field.node, spec), spec, [], ctx.parser),
+        source: { file: ctx.file, line: field.node.startPosition.row + 1 },
+      })
+    }
   }
 }
 
@@ -405,6 +476,7 @@ function docFor(
   raw: string | undefined,
   spec: LanguageSpec,
   signatures: Signature[],
+  parser: Parser,
 ): DocBlock | undefined {
   if (!raw) return undefined
   const parse =
@@ -412,7 +484,8 @@ function docFor(
       ? parseXmlDoc
       : spec.docDialect === 'javadoc'
         ? parseJavadoc
-        : (text: string) => parseMarkdownDocFull(text, spec.grammar)
+        : spec.docDialect === 'godoc' ? (text: string) => parseGoDoc(text, parser)
+          : (text: string) => parseMarkdownDocFull(text, spec.grammar)
   const { doc, params, returnsDoc, raises } = parse(raw)
 
   const sig = signatures[0]
@@ -434,14 +507,26 @@ export async function extractWithSpec(
   module: string,
   options: ExtractOptions = {},
 ): Promise<ApiSymbol[]> {
+  return extractSourceWithSpec(spec, readFileSync(file, 'utf8'), file, module, options)
+}
+
+/** Extract native source text while retaining its owning file for provenance. */
+export async function extractSourceWithSpec(
+  spec: LanguageSpec,
+  source: string,
+  file: string,
+  module: string,
+  options: ExtractOptions = {},
+): Promise<ApiSymbol[]> {
   const parser = await parserFor(spec.grammar)
-  const tree = parser.parse(readFileSync(file, 'utf8'))
+  const tree = parser.parse(source)
   if (!tree) return []
   const packageName = spec.grammar === 'java'
     ? tree.rootNode.namedChildren.find((node) => node?.type === 'package_declaration')
       ?.namedChildren.find((node) => node?.type === 'scoped_identifier' || node?.type === 'identifier')
     : undefined
   const ctx: Ctx = {
+    parser,
     file,
     module,
     // Java packages come from declarations, not source paths or file names.
@@ -455,5 +540,9 @@ export async function extractWithSpec(
     options: { ...DEFAULT_EXTRACT_OPTIONS, ...options },
   }
   walk(tree.rootNode, ctx, undefined)
+  if (spec.grammar === 'typescript') {
+    attachTypeScriptConstants(tree.rootNode, ctx.symbols, file, module,
+      (node) => docFor(docCommentFor(node, spec), spec, [], parser))
+  }
   return ctx.symbols
 }

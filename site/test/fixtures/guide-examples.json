@@ -105,6 +105,414 @@
         "sh test-tmux.sh"
       ],
       "expectedOutput": "tmux fixture passed"
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "concepts/queries",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "queries.sh",
+          "sha256": "d35072e4de7e9804c2b76a4e056a3b72b654f58f3ddd0a7c383331ff94cf1200"
+        }
+      ],
+      "shellRecipe": [
+        "sh queries.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "exact: work",
+          "case insensitive: work",
+          "regex: work:editor",
+          "active panes in work: 2",
+          "no matching sessions",
+          "exact target checked"
+        ]
+      ]
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "concepts/server-session-window-pane",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "hierarchy.sh",
+          "sha256": "5db2b25abde71f9351961a4a01ca477fad0d7e291bd2da9481bd9548e749b328"
+        }
+      ],
+      "shellRecipe": [
+        "sh hierarchy.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "renamed:source",
+          "stable IDs preserved",
+          "shared window links: 2"
+        ]
+      ]
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "concepts/transports",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "transports.sh",
+          "sha256": "1ca650b11213bb2cadbdf26490e074b695ae74bd82d365a09ab1cb5db24febab"
+        }
+      ],
+      "shellRecipe": [
+        "sh transports.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "batch created two windows",
+          "control command completed",
+          "session remains after control client detaches"
+        ]
+      ]
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "concepts/workspaces",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "layout.sh",
+          "sha256": "872a8da8eaec81e504769aeb0fc791ff5958fdcf75f1a1be9db8e8513938a949"
+        }
+      ],
+      "shellRecipe": [
+        "sh layout.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "dev:editor:3",
+          "main pane selected",
+          "dev:logs:1"
+        ]
+      ]
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "examples/attach-and-send-keys",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "send-command.sh",
+          "sha256": "9c41c8c71213982d5419010bedc8accf25f8dd555850ac2c4f048de19a06d2dd"
+        }
+      ],
+      "shellRecipe": [
+        "sh send-command.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "native input ready"
+        ]
+      ]
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "topics/socket-and-servers",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "sockets.sh",
+          "sha256": "d51baca3c4feeffa811092b8e3ec53d4b559dcd10fc61c672ece9fe26a2f0464"
+        }
+      ],
+      "shellRecipe": [
+        "sh sockets.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "servers have different PIDs",
+          "first server: renamed",
+          "second server: work"
+        ]
+      ]
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "topics/context-managers",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "cleanup.sh",
+          "sha256": "c27b5a4e8f3172b83edd19406a394b046bf0667b0fa4325633f59506c3ba8c09"
+        }
+      ],
+      "shellRecipe": [
+        "sh cleanup.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "temporary pane removed",
+          "temporary window removed",
+          "temporary session removed; keep remains"
+        ]
+      ]
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "topics/format-tokens",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "formats.sh",
+          "sha256": "f0e802ddc17cf8bb80461571484f441ec4f0b4687d884536dda0edf30b695e98"
+        }
+      ],
+      "shellRecipe": [
+        "sh formats.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "work:main:active",
+          "unknown format: absent",
+          "pane format inventory checked"
+        ]
+      ]
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "topics/environment",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "environment.sh",
+          "sha256": "88c066e11fa10ab1b251fadb24f021516d95ab07545e841dcf96c8ca62694f2a"
+        }
+      ],
+      "shellRecipe": [
+        "sh environment.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "server: DEMO_VALUE=global",
+          "session: DEMO_VALUE=session",
+          "new pane: session",
+          "one-pane override: override"
+        ]
+      ]
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "topics/options-and-hooks",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "options.sh",
+          "sha256": "e33a1ec9966250ca5b86dd6f29eee276d1ce8b14164b31a121368e32c7f62502"
+        }
+      ],
+      "shellRecipe": [
+        "sh options.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "global status: off",
+          "session status: on",
+          "window automatic-rename: off",
+          "hook ran: yes"
+        ]
+      ]
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "topics/pane-interaction",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "pane-io.sh",
+          "sha256": "87a524e8f47bff507c24271eb5db00cc9fe1584482608acdfd31b0a4164bfcc8"
+        }
+      ],
+      "shellRecipe": [
+        "sh pane-io.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "first line",
+          "second line"
+        ]
+      ]
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "topics/waiting-and-retry",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "waiting.sh",
+          "sha256": "b3e350bad006dd6381c7e54cbece083dd1c738beadf7c3750fdded3f0096e22a"
+        }
+      ],
+      "shellRecipe": [
+        "sh waiting.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "build completed",
+          "unsignalled channel reached deadline",
+          "lock released"
+        ]
+      ]
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "topics/traversal",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "traversal.sh",
+          "sha256": "ea1d85c2f446d7fae972d102515749febc64d2d7b80c4a948d32d4404637f5d8"
+        }
+      ],
+      "shellRecipe": [
+        "sh traversal.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "work windows: 2",
+          "work panes: 3",
+          "server pane rows: 6",
+          "unique server panes: 4"
+        ]
+      ]
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "topics/architecture",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "architecture.sh",
+          "sha256": "f3f8870a19af57b1578cecab64a9c56d8c21550ac0607e6a3cb73c544c7f5b35"
+        }
+      ],
+      "shellRecipe": [
+        "sh architecture.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "session state: work:2",
+          "server PID unchanged",
+          "attached clients: 0"
+        ]
+      ]
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "topics/errors-and-exceptions",
+      "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "failures.sh",
+          "sha256": "544889b4e16af36653d12b2046cb949073998cb8f574a7d4e880f18a1ba18cef"
+        }
+      ],
+      "shellRecipe": [
+        "sh failures.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "missing session returned 1",
+          "partial work remains: main,before",
+          "error preserved on stderr"
+        ]
+      ]
     }
   ]
 }

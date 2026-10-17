@@ -3,6 +3,15 @@ import { API_MODELS, createApiIndex, referenceAlternatives } from './api-models'
 import { PORT_BY_SLUG, portPageUrl, productApiPath, referenceUrl, type DocProduct } from './ports'
 import type { SidebarItem, SidebarGroupItem } from './sidebar'
 
+/** Public product declarations have their own routes; internal declarations stay in core. */
+export function coreApiSymbols(model: ApiModel): ApiSymbol[] {
+  const productIds = new Set([
+    ...symbolsForProduct(model, 'mcp'),
+    ...symbolsForProduct(model, 'workspace'),
+  ].map((symbol) => symbol.id))
+  return model.symbols.filter((symbol) => !productIds.has(symbol.id))
+}
+
 /** Keep core references stable while product declarations stay in their section. */
 export function productApiHref(model: ApiModel, symbol: ApiSymbol, version: string): string {
   if (symbol.product && symbol.product !== 'core' && symbol.apiScope !== 'internal') {

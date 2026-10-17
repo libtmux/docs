@@ -7,6 +7,7 @@ export type ProseBlock =
   | { kind: 'p'; text: string }
   | { kind: 'code'; code: string; lang: string }
   | { kind: 'ul'; items: ProseItem[] }
+  | { kind: 'ol'; start: number; items: ProseItem[] }
   /** `# Errors`, `# Panics`, `# Safety` — Rust's convention, and Go's. */
   | { kind: 'rubric'; text: string }
 
@@ -22,7 +23,7 @@ export function parseApiProse(source: string): ProseBlock[] {
   const lines = source.split('\n')
   let para: string[] = []
   /** Open lists, innermost last, with the indent that opened each. */
-  let stack: { indent: number; items: ProseItem[] }[] = []
+  let stack: { indent: number; kind: 'ul' | 'ol'; start?: number; items: ProseItem[] }[] = []
 
   const flushPara = () => {
     const joined = para.join(' ').replace(/\s+/g, ' ').trim()
@@ -30,7 +31,10 @@ export function parseApiProse(source: string): ProseBlock[] {
     para = []
   }
   const flushList = () => {
-    if (stack.length) blocks.push({ kind: 'ul', items: stack[0].items })
+    if (stack.length) {
+      const { kind, start, items } = stack[0]
+      blocks.push(kind === 'ol' ? { kind, start: start ?? 1, items } : { kind, items })
+    }
     stack = []
   }
 
@@ -55,18 +59,21 @@ export function parseApiProse(source: string): ProseBlock[] {
       blocks.push({ kind: 'rubric', text: heading[1].trim() })
       continue
     }
-    const bullet = /^(\s*)[-*+]\s+(.*)$/.exec(raw)
+    const bullet = /^(\s*)(?:([-*+•])|(\d+)[.)])\s+(.*)$/.exec(raw)
     if (bullet) {
       flushPara()
       const indent = bullet[1].length
-      const item: ProseItem = { text: bullet[2].trim(), children: [] }
+      const kind = bullet[2] ? 'ul' : 'ol'
+      const start = bullet[3] ? Number(bullet[3]) : undefined
+      const item: ProseItem = { text: bullet[4].trim(), children: [] }
       while (stack.length && indent < stack[stack.length - 1].indent) stack.pop()
+      if (stack.length && indent === stack[stack.length - 1].indent && kind !== stack[stack.length - 1].kind) flushList()
       if (!stack.length) {
-        stack.push({ indent, items: [item] })
+        stack.push({ indent, kind, start, items: [item] })
       } else if (indent > stack[stack.length - 1].indent) {
         const parent = stack[stack.length - 1].items.at(-1)
         if (parent) {
-          stack.push({ indent, items: parent.children })
+          stack.push({ indent, kind, start, items: parent.children })
           stack[stack.length - 1].items.push(item)
         }
       } else {

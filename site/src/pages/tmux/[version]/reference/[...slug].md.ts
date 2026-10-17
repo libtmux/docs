@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro'
 import { sourceUrl } from '@libtmux/api-model'
-import { symbolMarkdown } from '../../../../lib/symbol-markdown'
+import { symbolMarkdownWithLayout } from '../../../../lib/symbol-markdown'
 import { tmuxReferenceIndex, tmuxReferencePaths, tmuxReferenceRoutes, tmuxReferenceUrl, tmuxSourceCommands, tmuxSourceModel } from '../../../../lib/tmux-reference'
 
 export function getStaticPaths() {
@@ -8,10 +8,10 @@ export function getStaticPaths() {
     params: { version, slug: symbol!.slug }, props: { version, symbol: symbol! },
   }))
 }
-export const GET: APIRoute = ({ props, site }) => {
+export const GET: APIRoute = async ({ props, site }) => {
   const { version, symbol } = props
   const model = tmuxSourceModel(version)
-  return new Response(symbolMarkdown({
+  return new Response(await symbolMarkdownWithLayout({
     model, symbol, version, index: tmuxReferenceIndex(version),
     canonical: new URL(tmuxReferenceUrl(version, symbol), site).href,
     source: sourceUrl(model, symbol),

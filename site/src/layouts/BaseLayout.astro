@@ -57,7 +57,7 @@ interface Props {
   canonicalOverride?: string
   /** Every locale's status for this page, for the locale switcher. */
   localeStatuses?: Record<string, string>
-  breadcrumbs?: { name: string; url: string }[]
+  breadcrumbs?: { name: string; url?: string }[]
   /** The file this page is rendered from. Defaults to the route's own `.astro` file. */
   pageSource?: PageSource
   /** Whether this page's Markdown twin is `<page>/index.md` rather than `<page>.md`. */

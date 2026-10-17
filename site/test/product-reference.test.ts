@@ -5,7 +5,7 @@ import { pathToFileURL } from 'node:url'
 import { experimental_AstroContainer } from 'astro/container'
 import { Window } from 'happy-dom'
 import { API_MODELS, createApiIndex, referenceAlternatives, topLevelTypesOf } from '../src/lib/api-models'
-import { productApiAlternatives, productApiHref, productApiNavigation, productApiRedirects, productApiRoutes } from '../src/lib/product-api'
+import { coreApiSymbols, productApiAlternatives, productApiHref, productApiNavigation, productApiRedirects, productApiRoutes } from '../src/lib/product-api'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { PORT_BY_SLUG, productAvailable } from '../src/lib/ports'
 import { getResolver } from '../src/lib/prose-resolver'
@@ -20,6 +20,20 @@ const navigationLinks = (items: SidebarItem[]): string[] => items.flatMap((item)
 ])
 
 describe('product declaration trees', () => {
+  it('keeps public product pages out of core without dropping internal declarations', () => {
+    const model = API_MODELS.go
+    const workspace = model.symbols.find((symbol) => symbol.id === 'workspace.Workspace.InitialSessionRequest')!
+    expect(workspace).toBeDefined()
+    expect(coreApiSymbols(model)).not.toContain(workspace)
+    expect(productApiHref(model, workspace, 'latest')).toContain('/workspace/reference/')
+    const internal = { ...workspace, apiScope: 'internal' as const }
+    expect(coreApiSymbols({ ...model, symbols: [internal] })).toEqual([internal])
+    for (const candidate of Object.values(API_MODELS)) {
+      const core = coreApiSymbols(candidate)
+      expect(core.length + symbolsForProduct(candidate, 'workspace').length + symbolsForProduct(candidate, 'mcp').length)
+        .toBe(candidate.symbols.length)
+    }
+  })
   it('resolves native PowerShell related help to local core and workspace APIs', () => {
     const model = API_MODELS.powershell
     const symbol = model.symbols.find((entry) => entry.id === 'LibTmux.Workspace\\ConvertTo-TmuxWorkspace')!

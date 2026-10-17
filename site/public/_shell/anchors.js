@@ -17,6 +17,8 @@ export function installAnchorNavigation(win = window) {
   let observer
 
   doc.documentElement.setAttribute('data-anchor-navigation', '')
+  const cancelStartup = () => doc.documentElement.removeAttribute('data-anchor-startup')
+  if (doc.documentElement.getAttribute('data-anchor-startup') !== win.location.href) cancelStartup()
 
   const expire = () => { timer = win.setTimeout(clear, 2600) }
   const clear = () => {
@@ -39,6 +41,7 @@ export function installAnchorNavigation(win = window) {
 
   const arrive = (hash, scroll = false, preparing = false) => {
     clear()
+    if (doc.documentElement.getAttribute('data-anchor-startup') !== win.location.href) cancelStartup()
     let id
     try { id = decodeURIComponent(hash.replace(/^#/, '')) } catch { return }
     const target = id && doc.getElementById(id)
@@ -61,7 +64,9 @@ export function installAnchorNavigation(win = window) {
       observer.observe(doc.documentElement, { attributes: true, attributeFilter: ['class'] })
       return
     }
-    if (opened || scroll) display.scrollIntoView({ block: 'start', behavior: 'instant' })
+    const startup = doc.documentElement.getAttribute('data-anchor-startup') === win.location.href
+    if (startup) cancelStartup()
+    if ((!preparing && opened) || scroll || startup) display.scrollIntoView({ block: 'start', behavior: 'instant' })
 
     const highlight = () => {
       if (signal.aborted || !display.isConnected) return
@@ -90,6 +95,13 @@ export function installAnchorNavigation(win = window) {
   }
 
   win.addEventListener('hashchange', () => schedule(), { signal })
+  // A late reveal must not pull the reader back after they start navigating.
+  for (const type of ['wheel', 'touchstart', 'pointerdown']) {
+    doc.addEventListener(type, cancelStartup, { passive: true, signal })
+  }
+  doc.addEventListener('keydown', (event) => {
+    if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ', 'Tab'].includes(event.key)) cancelStartup()
+  }, { signal })
   win.addEventListener('popstate', (event) => {
     // Address-bar fragment navigation can create an entry without router state.
     // Astro leaves that entry alone. If another page is still mounted, load
@@ -114,8 +126,17 @@ export function installAnchorNavigation(win = window) {
   doc.addEventListener('libtmux:anchor-arrival', (event) => {
     if (typeof event.detail?.id === 'string') schedule(`#${encodeURIComponent(event.detail.id)}`, true)
   }, { signal })
-  if (win.__libtmuxAppearance) win.__libtmuxAppearance.layout(() => arrive(win.location.hash, true, true))
-  else schedule()
+  if (win.__libtmuxAppearance) {
+    const appearance = win.__libtmuxAppearance
+    appearance.layout(() => {
+      if (signal.aborted || win.location.href !== pageUrl.href) return
+      // Native initial callbacks expand panels in this pass. Measure the
+      // resulting geometry next, with startup intent checked at arrival.
+      appearance.layout(() => {
+        if (!signal.aborted && win.location.href === pageUrl.href) arrive(pageUrl.hash, false, true)
+      })
+    })
+  } else schedule()
 
   return () => {
     controller.abort()

@@ -3,9 +3,10 @@ import PageActions from './PageActions.astro'
 import PagePortSwitcher from './PagePortSwitcher.astro'
 import SymbolName from './api/SymbolName.astro'
 import type { PagePortLink } from '../lib/page-port-links'
+import type { BreadcrumbItem } from '../lib/sidebar'
 
 interface Props {
-  breadcrumbs: { name: string; url: string; symbol?: boolean }[]
+  breadcrumbs: BreadcrumbItem[]
   pagePorts?: PagePortLink[]
   port?: string
   editHref?: string
@@ -20,8 +21,9 @@ const { breadcrumbs, pagePorts = [], port, editHref, editLabel } = Astro.props
       {breadcrumbs.map((item, i) => <li class="min-w-0 max-w-full wrap-anywhere">
         {i > 0 && <span aria-hidden="true" class="me-2">/</span>}
         {i === breadcrumbs.length - 1
-          ? <span aria-current="page">{item.symbol ? <code class="font-mono"><SymbolName name={item.name} /></code> : item.name}</span>
-          : <a class="hover:underline" href={item.url}>{item.symbol ? <code class="font-mono"><SymbolName name={item.name} /></code> : item.name}</a>}
+          ? <span data-breadcrumb-item aria-current="page">{item.symbol ? <SymbolName name={item.name} /> : item.name}</span>
+          : item.url ? <a data-breadcrumb-item class="hover:underline" href={item.url}>{item.symbol ? <SymbolName name={item.name} /> : item.name}</a>
+          : <span data-breadcrumb-item>{item.symbol ? <SymbolName name={item.name} /> : item.name}</span>}
       </li>)}
     </ol>
   </nav>

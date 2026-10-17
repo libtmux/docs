@@ -4,7 +4,7 @@ import v32 from '../data/tmux/api/3.2a.json?raw'
 import v37 from '../data/tmux/api/3.7c.json?raw'
 import pins from '../data/tmux/versions.json'
 import { createApiIndex, type PortNavData } from './api-models'
-import { navTreeFor, referenceTreeFor } from './api-tree'
+import { navTreeFor, referenceTreeFor, referenceBreadcrumbs } from './api-tree'
 import { apiRelationshipPath } from './api-relationships'
 import { PORTS } from './ports'
 import { withPortRoot } from './site-root'
@@ -211,6 +211,7 @@ export function tmuxReferencePaths(version = 'latest') {
 }
 export function tmuxReferenceContext(version: string, symbol?: ApiSymbol) {
   const model = tmuxSourceModel(version)
+  const referenceNavigation = navigation(model)
   const commands = symbol ? tmuxSourceCommands(version, symbol) : []
   const equivalents = commands.flatMap((command) => tmuxApiLinks(command.name))
   return {
@@ -221,9 +222,10 @@ export function tmuxReferenceContext(version: string, symbol?: ApiSymbol) {
     breadcrumbs: [
       { name: 'tmux', url: withPortRoot('/tmux/') },
       { name: `Reference (${model.version})`, url: tmuxReferenceUrl(version) },
-      ...(symbol ? [{ name: symbol.name, url: tmuxReferenceUrl(version, symbol) }] : []),
+      ...(symbol ? referenceBreadcrumbs(model, referenceNavigation.nav, referenceNavigation.tree, symbol,
+        tmuxReferenceUrl(version), (entry) => tmuxReferenceUrl(version, entry)) : []),
     ],
-    ...navigation(model), index: tmuxReferenceIndex(version), paths: tmuxReferencePaths(version),
+    ...referenceNavigation, index: tmuxReferenceIndex(version), paths: tmuxReferencePaths(version),
     manualLinks: commands,
     pagePorts: PORTS.map((port) => ({ port: port.slug, name: port.name,
       links: [...new Set(equivalents.filter((entry) => entry.name === port.name).map((entry) => entry.href))]

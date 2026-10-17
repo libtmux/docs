@@ -135,7 +135,13 @@ export function initDocumentationNavigation() {
     }, { signal })
     picker.addEventListener('click', (event) => {
       const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('a[data-preserve-fragment]') : null
-      if (link && location.hash) link.hash = location.hash
+      if (!link) return
+      const ids = link.dataset.fragmentIds?.split(' ')
+      if (ids) {
+        let id = location.hash.slice(1)
+        try { id = decodeURIComponent(id) } catch { id = '' }
+        link.hash = id && ids.includes(id) ? location.hash : ''
+      } else if (location.hash) link.hash = location.hash
     }, { signal })
     document.addEventListener('click', (event) => {
       if (picker.open && event.target instanceof Node && !picker.contains(event.target)) picker.open = false

@@ -5,7 +5,7 @@ import { getCollection } from 'astro:content'
 import { readFileSync } from 'node:fs'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { visit } from 'unist-util-visit'
-import { createMarkdownProcessor, parseFrontmatter } from '@astrojs/markdown-remark'
+import { createMarkdownProcessor, parseFrontmatter, rehypeHeadingIds } from '@astrojs/markdown-remark'
 import { linkProseMarkdown } from '../src/lib/prose-markdown'
 import { llmsPage, llmsPages, localeProse } from '../src/lib/llms'
 import { getSidebar, pageBreadcrumbs } from '../src/lib/sidebar'
@@ -14,6 +14,8 @@ import { productApiHref } from '../src/lib/product-api'
 import { PORT_BY_SLUG } from '../src/lib/ports'
 import { resolvePortCode, remarkPortCode } from '../src/plugins/remark-port-code.mjs'
 import { rehypeApiLinks } from '../src/plugins/rehype-api-links'
+import { remarkDocumenterHeadings } from '../src/plugins/remark-documenter-headings'
+import { rehypeRowAnchors } from '../src/plugins/rehype-row-anchors'
 
 afterEach(() => vi.unstubAllEnvs())
 
@@ -32,6 +34,82 @@ function exampleBytes(markdown: string): string[] {
 }
 
 describe('prose Markdown links', () => {
+  it('links native commands through prose HTML and Markdown without claiming prose aliases', async () => {
+    const source = 'Call tmux resize-pane. Use `$ tmux -L local run -b true` and `display-message`. Keep tmux has many panes.\n\n[Keep `run-shell`](https://example.com/authored).\n\n<code><a href="https://example.com/native">run-shell</a></code>\n\n`tmux run-shell true && tmux display-message hello`\n\n```sh\ntmux run-shell true\n```'
+    const processor = await createMarkdownProcessor({ rehypePlugins: [rehypeApiLinks], syntaxHighlight: false })
+    const html = (await processor.render(source, { frontmatter: { port: 'go' } })).code
+    const markdown = linkProseMarkdown(source, 'go')
+    for (const command of ['resize-pane', 'run-shell', 'display-message']) {
+      expect(html).toContain(`href="/tmux/latest/manual/${command}/"`)
+      expect(urls(markdown)).toContain(`/tmux/latest/manual/${command}/`)
+    }
+    expect(markdown).toContain('Keep tmux has many panes.')
+    expect(html).not.toContain('/manual/has-session/')
+    expect(urls(markdown)).not.toContain('/tmux/latest/manual/has-session/')
+    expect(markdown).toContain('[Keep `run-shell`](https://example.com/authored)')
+    expect(markdown).toContain('<code><a href="https://example.com/native">run-shell</a></code>')
+    expect(html).not.toMatch(/<a[^>]*>\s*<code>\s*<a/)
+    expect(exampleBytes(markdown)).toEqual(exampleBytes(source))
+  })
+
+  it('retains native Documenter heading IDs in headings, row links and collected navigation', async () => {
+    const renderer = await createMarkdownProcessor({ remarkPlugins: [remarkDocumenterHeadings],
+      rehypePlugins: [rehypeHeadingIds, rehypeRowAnchors], syntaxHighlight: false })
+    const content = '### [Cancellation `callback`](@id overview-cancellation-callback)\n\n'
+      + '## [I/O and cancellation](@id overview)\n\n'
+      + '| Resource | Owner |\n| --- | --- |\n| Control clients | Caller |\n\n'
+      + '```markdown\n### [Example](@id example-only)\n```'
+    const rendered = await renderer.render(content, { frontmatter: { port: 'julia' } })
+    expect(rendered.code).toContain('<h3 id="overview-cancellation-callback">Cancellation <code>callback</code></h3>')
+    expect(rendered.code).toContain('<h2 id="overview">I/O and cancellation</h2>')
+    expect(rendered.code).toContain('<tr id="overview-control-clients"')
+    expect(rendered.metadata.headings.map((heading) => heading.slug)).toEqual(['overview-cancellation-callback', 'overview'])
+    expect(rendered.code).toContain('### [Example](@id example-only)')
+    expect(rendered.code).not.toContain('<h3 id="example-only">')
+    const other = await renderer.render(content, { frontmatter: { port: 'ruby' } })
+    expect(other.code).not.toContain('<h2 id="overview">')
+  })
+
+  it('exports native heading IDs as CommonMark-compatible aliases with clean heading labels', () => {
+    const body = '### [Cancellation callback](@id overview-cancellation-callback)\n\n'
+      + '## [I/O and cancellation](@id overview)\n\n'
+      + '```markdown\n### [Example](@id example-only)\n```\n'
+    const projected = linkProseMarkdown(body, 'julia')
+    expect(projected).toContain('<a id="overview-cancellation-callback"></a>\n\n### Cancellation callback')
+    expect(projected).toContain('<a id="overview"></a>\n\n## I/O and cancellation')
+    expect(projected).not.toContain('### [Cancellation callback](@id')
+    expect(exampleBytes(projected)).toEqual(exampleBytes(body))
+    expect(linkProseMarkdown(body, 'ruby')).toBe(body)
+    const authored = vi.fn((href: string, owner?: string) => `/projected/${owner}/${href}`)
+    expect(linkProseMarkdown('### [Read [guide](guides/setup.md)](@id setup)', 'julia', undefined, { authored }))
+      .toBe('<a id="setup"></a>\n\n### Read [guide](/projected/julia/guides/setup.md)')
+    expect(authored).toHaveBeenCalledWith('guides/setup.md', 'julia')
+    const entry = { id: '_staged/julia/topics/ownership/index', body,
+      data: { title: 'Ownership and I/O', port: 'julia', route: 'topics/ownership', sidebar: { group: 'Topics' } },
+    } as CollectionEntry<'docs'>
+    expect(llmsPage(entry, 'https://libtmux.org', '/en/julia/latest/').body).toBe(projected)
+  })
+
+  it('retains native heading IDs after the HTML pipeline selects port regions', async () => {
+    vi.stubEnv('LIBTMUX_DOCS_PORT', 'julia')
+    const renderer = await createMarkdownProcessor({ remarkPlugins: [remarkPortCode, remarkDocumenterHeadings],
+      rehypePlugins: [rehypeHeadingIds, rehypeRowAnchors], syntaxHighlight: false })
+    const content = '<!-- port:ruby -->\nRuby only.\n<!-- /port -->\n\n'
+      + '<!-- port:julia -->\n## [I/O and cancellation](@id overview)\n\n'
+      + '| Resource | Owner |\n| --- | --- |\n| Control clients | Caller |\n\n'
+      + '```markdown\n### [Example](@id example-only)\n```\n<!-- /port -->\n'
+    const rendered = await renderer.render(content, { frontmatter: { port: 'julia' } })
+    expect(rendered.code).toContain('<h2 id="overview">I/O and cancellation</h2>')
+    expect(rendered.code).toContain('<tr id="overview-control-clients"')
+    expect(rendered.metadata.headings.map((heading) => heading.slug)).toEqual(['overview'])
+    expect(rendered.code).not.toContain('Ruby only.')
+    expect(rendered.code).not.toContain('<h3 id="example-only">')
+    const projected = linkProseMarkdown(content, 'julia')
+    expect(projected).toContain('<a id="overview"></a>\n\n## I/O and cancellation')
+    expect(projected).toContain('### [Example](@id example-only)')
+    expect(projected).not.toContain('Ruby only.')
+  })
+
   it('uses the native Concepts page in routes, exports, sidebar and breadcrumbs', async () => {
     vi.stubEnv('LIBTMUX_DOCS_PORT', 'ruby')
     vi.stubEnv('LIBTMUX_DOCS_LOCALE', 'en')
@@ -42,8 +120,9 @@ describe('prose Markdown links', () => {
     try {
       expect(localeProse(entries, 'en', 'ruby')).toEqual([{ entry: native, route: 'concepts' }])
       const exported = await llmsPages('https://libtmux.org', '/en/ruby/latest/')
-      expect(exported).toHaveLength(1)
-      expect(exported[0]).toMatchObject({ title: 'Ruby concepts', body: 'Ruby concepts.', url: 'https://libtmux.org/en/ruby/latest/concepts/' })
+      const prose = exported.filter((page) => !page.url.endsWith('/reference/glossary/'))
+      expect(prose).toHaveLength(1)
+      expect(prose[0]).toMatchObject({ title: 'Ruby concepts', body: 'Ruby concepts.', url: 'https://libtmux.org/en/ruby/latest/concepts/' })
       const sidebar = await getSidebar('ruby', 'latest')
       const concepts = sidebar.find((entry) => entry.type === 'group' && entry.label === 'Concepts')
       expect(concepts).toMatchObject({ href: expect.stringContaining('/ruby/latest/concepts/'), items: [] })
@@ -68,7 +147,8 @@ describe('prose Markdown links', () => {
     expect(rendered.code.match(/data-api-kind="function"/g)).toHaveLength(2)
     expect(rendered.code.match(/data-api-kind="class"/g)).toHaveLength(1)
     expect(rendered.code.match(/data-api-kind="struct"/g)).toHaveLength(1)
-    expect(rendered.code).toContain('aria-hidden="true" title="cmdlet"><span class="api-badge__label">f</span></span><code>New-TmuxSession</code>')
+    expect(rendered.code).toContain('aria-hidden="true" title="cmdlet"><span class="api-badge__label">f</span></span><span class="api-symbol-link__name"><code>New-TmuxSession</code></span>')
+    expect(rendered.code.match(/class="api-symbol-link__name"/g)).toHaveLength(4)
     expect(rendered.code).toContain('<pre><code class="language-powershell">New-TmuxSession\n</code></pre>')
     expect(linkProseMarkdown(content, 'powershell')).not.toContain('data-api-kind')
     const repeated = await createMarkdownProcessor({ rehypePlugins: [rehypeApiLinks, rehypeApiLinks], syntaxHighlight: false })
@@ -174,9 +254,9 @@ describe('prose Markdown links', () => {
     vi.resetModules()
     const { llmsPage: deployedPage } = await import('../src/lib/llms')
     const pages = [
-      ['topics/architecture', ['go/next/concepts/queries', 'java/latest/concepts/queries']],
-      ['concepts/server-session-window-pane', ['go/next/topics/errors-and-exceptions']],
-      ['topics/waiting-and-retry', ['ts/next/concepts/transports']],
+      ['ports/go/topics/architecture', ['go/next/concepts/queries']],
+      ['ports/java/topics/architecture', ['java/latest/concepts/queries']],
+      ['ports/ts/topics/waiting-and-retry', ['ts/next/concepts/transports']],
     ] as const
     for (const [id, targets] of pages) {
       const { content, frontmatter } = parseFrontmatter(readFileSync(new URL(`../src/content/docs/${id}.md`, import.meta.url), 'utf8'))
@@ -205,31 +285,31 @@ describe('prose Markdown links', () => {
     const { rehypeApiLinks: deployedApiLinks } = await import('../src/plugins/rehype-api-links')
     const { rehypeSiteRoot } = await import('../src/plugins/rehype-site-root.mjs')
     const { remarkPortCode: deployedPortCode } = await import('../src/plugins/remark-port-code.mjs')
-    const { content, frontmatter } = parseFrontmatter(readFileSync(new URL('../src/content/docs/concepts/workspaces.md', import.meta.url), 'utf8'))
-    const entry = { id: 'concepts/workspaces', body: content, data: frontmatter } as CollectionEntry<'docs'>
-
-    for (const port of ['go', 'py', 'rs', 'java', 'csharp', '']) {
+    const cases = ['go', 'py', 'rs', 'java', 'csharp'].flatMap((owner) => [
+      { owner, port: owner }, { owner, port: '' },
+    ])
+    for (const { owner, port } of cases) {
+      const id = `ports/${owner}/concepts/workspaces`
+      const { content, frontmatter } = parseFrontmatter(readFileSync(new URL(`../src/content/docs/${id}.md`, import.meta.url), 'utf8'))
+      const entry = { id, body: content, data: frontmatter } as CollectionEntry<'docs'>
       vi.stubEnv('LIBTMUX_DOCS_PORT', port)
       const base = port ? `${root}/${port}/next/` : `${root}/`
       const exported = deployedPage(entry, 'https://libtmux.org', base)
       const renderer = await createMarkdownProcessor({
         remarkPlugins: [deployedPortCode], rehypePlugins: [rehypeSiteRoot, deployedApiLinks], syntaxHighlight: false,
       })
-      const html = (await renderer.render(content)).code
+      const html = (await renderer.render(content, { frontmatter })).code
       const htmlLinks = [...html.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map((match) => new URL(match[1], 'https://libtmux.org').href)
-      const expectedOwners = port ? [port] : ['py', 'go', 'rs', 'java', 'csharp']
       const defaults: Record<string, string> = { py: 'stable', rs: 'v0.1' }
-      for (const owner of expectedOwners) {
-        const version = owner === port ? 'next' : defaults[owner] ?? 'latest'
-        const target = `https://libtmux.org${ports}/${owner}/${version}/workspace/`
-        expect(htmlLinks, `${port || 'shared'} HTML`).toContain(target)
-        expect(urls(exported.body), `${port || 'shared'} Markdown`).toContain(target)
-      }
+      const version = owner === port ? 'next' : defaults[owner] ?? 'latest'
+      const target = `https://libtmux.org${ports}/${owner}/${version}/workspace/`
+      expect(htmlLinks, `${owner}/${port || 'root'} HTML`).toContain(target)
+      expect(urls(exported.body), `${owner}/${port || 'root'} Markdown`).toContain(target)
       for (const target of htmlLinks.filter((href) => href.includes('/reference/'))) {
         expect(urls(exported.body), `${port || 'shared'} API ${target}`).toContain(target)
       }
       expect(exported.body).not.toContain(`${root}${ports}/`)
-      expect(exampleBytes(exported.body)).toEqual(exampleBytes(resolvePortCode(content, port || undefined)))
+      expect(exampleBytes(exported.body)).toEqual(exampleBytes(resolvePortCode(content, port || undefined, owner)))
     }
   })
 
@@ -292,8 +372,8 @@ describe('prose Markdown links', () => {
   it('exports the architecture links that HTML renders, without changing programs or anchors', async () => {
     vi.stubEnv('LIBTMUX_DOCS_PORT', 'rs')
     vi.stubEnv('LIBTMUX_DOCS_VERSION', 'next')
-    const { content, frontmatter } = parseFrontmatter(readFileSync(new URL('../src/content/docs/topics/architecture.md', import.meta.url), 'utf8'))
-    const entry = { id: 'topics/architecture', body: content, data: frontmatter } as CollectionEntry<'docs'>
+    const { content, frontmatter } = parseFrontmatter(readFileSync(new URL('../src/content/docs/ports/rs/topics/architecture.md', import.meta.url), 'utf8'))
+    const entry = { id: 'ports/rs/topics/architecture', body: content, data: frontmatter } as CollectionEntry<'docs'>
     const exported = llmsPage(entry, 'https://libtmux.org', '/en/rs/next/')
     const renderer = await createMarkdownProcessor({ remarkPlugins: [remarkPortCode], rehypePlugins: [rehypeApiLinks], syntaxHighlight: false })
     const html = (await renderer.render(content)).code

@@ -4,6 +4,7 @@ import { buildsTmuxDocumentation, tmuxCommandNotes, tmuxCommandsFor, tmuxGuidesF
 import { highlightTmuxManual, linkTmuxManualEntries } from '../src/lib/tmux-manual'
 import { fromHtml } from 'hast-util-from-html'
 import { select, selectAll, type Nodes } from 'astro-expressive-code/hast'
+import pins from '../src/data/tmux/versions.json'
 
 const contents = (node: Nodes): string => node.type === 'text' ? node.value
   : 'children' in node ? node.children.map(contents).join('') : ''
@@ -12,6 +13,17 @@ afterEach(() => { vi.unstubAllEnvs(); vi.resetModules() })
 
 describe('versioned tmux manual', () => {
   beforeAll(async () => { await highlightTmuxManual('<pre>set -g status off</pre>') })
+  it.each([
+    { version: '3.2a', sourceCommit: '3b929f332aafa7f1080eacc31feb11ffbb1d1841',
+      sourceTree: '97d85a509a253bccf8d70766b63e13a4a562901d' },
+    { version: '3.7c', sourceCommit: 'e476c1230b958df0cb12977517d24b3dc931375b',
+      sourceTree: 'ad5fe15a4b84ae9489eb4bb643f932ffab949ed2' },
+  ])('retains the original $version pin and its verified commit and tree separately', (source) => {
+    const reference = tmuxManual(source.version)
+    expect(reference).toMatchObject(source)
+    expect(reference.revision).toBe(pins.versions.find((pin) => pin.version === source.version)!.revision)
+    expect(reference.sourceCommit).not.toBe(reference.revision)
+  })
   it.each(['3.2a', '3.7c'])('links every %s definition without colliding keys or losing old targets', (version) => {
     const original = fromHtml(tmuxManual(version).manual, { fragment: true })
     const linked = fromHtml(linkTmuxManualEntries(tmuxManual(version).manual), { fragment: true })

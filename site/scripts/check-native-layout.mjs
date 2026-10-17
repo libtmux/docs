@@ -1,5 +1,154 @@
 import assert from 'node:assert/strict'
 
+/** Measure the code width left by first-line or stacked declaration metadata. */
+export async function checkNativeSignatureGeometry(header) {
+  const geometry = await header.evaluate((element) => {
+    const pixels = (value) => value === 'normal' ? 0 : Number.parseFloat(value)
+    const read = (region) => {
+      if (!region) return null
+      const rect = region.getBoundingClientRect()
+      const style = element.ownerDocument.defaultView.getComputedStyle(region)
+      return {
+        left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom,
+        width: rect.width, height: rect.height,
+        insets: {
+          left: pixels(style.paddingLeft) + pixels(style.borderLeftWidth),
+          right: pixels(style.paddingRight) + pixels(style.borderRightWidth),
+          top: pixels(style.paddingTop) + pixels(style.borderTopWidth),
+          bottom: pixels(style.paddingBottom) + pixels(style.borderBottomWidth),
+        },
+        rowGap: pixels(style.rowGap), columnGap: pixels(style.columnGap),
+      }
+    }
+    const row = element.querySelector(':scope > .gp-sphinx-api-layout')
+    return {
+      header: read(element), row: read(row),
+      code: read(row?.querySelector(':scope > .gp-sphinx-api-layout-left')),
+      controls: read(row?.querySelector(':scope > .gp-sphinx-api-layout-right')),
+      firstSignature: read(row?.querySelector('.api-native-signature')),
+    }
+  })
+  // Allow subpixel layout rounding, not an unused strip of code width.
+  const tolerance = 1 / 16
+  const near = (a, b) => Math.abs(a - b) <= tolerance
+  const content = (region) => ({
+    left: region.left + region.insets.left, right: region.right - region.insets.right,
+    top: region.top + region.insets.top, bottom: region.bottom - region.insets.bottom,
+  })
+  const contained = (inner, outer) => inner.left >= outer.left - tolerance && inner.right <= outer.right + tolerance
+    && inner.top >= outer.top - tolerance && inner.bottom <= outer.bottom + tolerance
+  for (const [name, region] of Object.entries(geometry)) {
+    assert(region, `Native signature ${name} region is present`)
+    assert(Object.values(region.insets).every(Number.isFinite)
+      && [region.left, region.right, region.top, region.bottom, region.width, region.height].every(Number.isFinite)
+      && region.width > 0 && region.height > 0
+      && near(region.width, region.right - region.left) && near(region.height, region.bottom - region.top),
+    `Native signature ${name} has measurable bounds and insets`)
+  }
+  const { row, code, controls, firstSignature } = geometry
+  const headerContent = content(geometry.header)
+  const rowContent = content(row)
+  assert(contained(row, headerContent), 'Native signature row is contained in the padded header')
+  assert(near(row.left, headerContent.left) && near(row.right, headerContent.right),
+    'Native signature row uses the available header width')
+  assert(contained(code, rowContent), 'Native signature code is contained in its layout row')
+  assert(contained(controls, rowContent), 'Native signature metadata is contained in its layout row')
+  assert(contained(firstSignature, content(code)), 'Native first signature is contained in the code region')
+  assert(near(code.left, rowContent.left) && near(code.top, rowContent.top),
+    'Native signature code begins at the layout row origin')
+  assert(near(controls.right, rowContent.right), 'Native signature metadata reaches the layout row edge')
+  assert(Number.isFinite(row.rowGap) && row.rowGap >= 0 && Number.isFinite(row.columnGap) && row.columnGap >= 0,
+    'Native signature row has measurable gaps')
+  const below = controls.top >= code.bottom - tolerance
+  const beside = controls.left >= code.right - tolerance
+  assert(below || beside, 'Native signature code and metadata do not overlap')
+  if (!below) {
+    assert(near(controls.top, code.top) && near(firstSignature.top, code.top)
+      && controls.bottom <= firstSignature.bottom + tolerance,
+    'Native signature metadata aligns with the first line')
+  }
+  const availableCodeWidth = rowContent.right - rowContent.left - (below ? 0 : controls.width + row.columnGap)
+  assert(near(code.width, availableCodeWidth), 'Native signature uses the available code width')
+  assert(near(below ? controls.top - code.bottom : controls.left - code.right, below ? row.rowGap : row.columnGap),
+    'Native signature metadata follows the computed layout gap')
+  await checkNativeSignatureLines(header)
+  return { ...geometry, mode: below ? 'stacked' : 'inline', availableCodeWidth }
+}
+
+/** A formatter's logical line must occupy one painted row, even when it scrolls. */
+export async function checkNativeSignatureLines(header) {
+  const signatures = await header.evaluate((element) => {
+    const document = element.ownerDocument
+    return [...element.querySelectorAll('.api-native-signature--formatted')].map((signature) => {
+      const walk = document.createTreeWalker(signature, document.defaultView.NodeFilter.SHOW_TEXT)
+      const lines = [{ text: '', tops: [] }]
+      let node
+      while ((node = walk.nextNode())) {
+        if (node.parentElement.closest('[popover]') || !node.parentElement.checkVisibility({ visibilityProperty: true })) continue
+        for (let offset = 0; offset < node.textContent.length;) {
+          const char = String.fromCodePoint(node.textContent.codePointAt(offset))
+          const end = offset + char.length
+          if (char === '\n') lines.push({ text: '', tops: [] })
+          else {
+            const line = lines.at(-1)
+            line.text += char
+            if (!/\s/.test(char)) {
+              const range = document.createRange()
+              range.setStart(node, offset)
+              range.setEnd(node, end)
+              const rect = range.getBoundingClientRect()
+              if (rect.width && rect.height) line.tops.push(rect.top)
+            }
+          }
+          offset = end
+        }
+      }
+      return { text: lines.map((line) => line.text).join('\n'), rows: lines.map((line, index) => ({
+        line: index + 1, text: line.text, glyphs: line.tops.length,
+        topSpread: line.tops.length ? Math.max(...line.tops) - Math.min(...line.tops) : 0,
+      })) }
+    })
+  })
+  for (const [index, signature] of signatures.entries()) {
+    assert(signature.text.trim(), `Formatted signature ${index + 1} has visible text`)
+    for (const line of signature.rows) {
+      if (!line.text.trim()) continue
+      assert(line.glyphs > 0, `Formatted signature ${index + 1} line ${line.line} has painted text`)
+      assert(Number.isFinite(line.topSpread) && line.topSpread <= 1,
+        `Formatted signature ${index + 1} line ${line.line} stays on one painted row: ${line.text}`)
+    }
+  }
+  return signatures
+}
+
+/** Bind native parameter anchors to their displayed overload and local fields. */
+export async function checkNativeSignatureLinks(header, symbol) {
+  assert(symbol?.signatures.length > 0, 'Native signature owner is present in the model')
+  const { parameterId } = await import('../../packages/api-model/src/link.ts')
+  const displayed = await header.evaluate((element) => ({
+    owner: element.getAttribute('data-symbol-id'),
+    signatures: [...element.querySelectorAll('.api-native-signature')].map((signature) =>
+      [...signature.querySelectorAll('a')].map((link) => ({
+        name: link.textContent, href: link.getAttribute('href'), parameter: link.classList.contains('api-parameter-name'),
+      }))),
+    targets: [...element.ownerDocument.querySelectorAll('[id]')].map((target) => target.id),
+  }))
+  assert.equal(displayed.owner, symbol.id, 'Native signature owner matches the displayed declaration')
+  assert.equal(displayed.signatures.length, symbol.signatures.length, 'Every native overload is displayed')
+  for (const [index, links] of displayed.signatures.entries()) {
+    const parameters = links.filter((link) => link.parameter)
+    assert.deepEqual(parameters.map((link) => link.name), symbol.signatures[index].params.map((parameter) => parameter.name),
+      `Native parameter links match overload ${index + 1}`)
+    for (const link of parameters) {
+      const target = parameterId(symbol, link.name)
+      assert.equal(link.href, `#${encodeURIComponent(target)}`, `Native parameter ${link.name} has its exact local destination`)
+      assert.equal(displayed.targets.filter((id) => id === target).length, 1,
+        `Native parameter ${link.name} resolves to one local target`)
+    }
+  }
+  return displayed.signatures.flat()
+}
+
 /** Keep one page picker and visible native header controls. */
 export async function checkNativeHeader(page) {
   assert.equal(await page.locator('[data-lt-shell]').count(), 0)

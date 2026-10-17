@@ -5,6 +5,7 @@ import { basename, dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Resolver, parentInventory, decideMention, isLikelyReference, notASymbol, notApiReason, proseMentions, pageSlug } from '../packages/api-model/src/index.ts'
 import { isLocale } from '../site/src/i18n/locales.ts'
+import { isTmuxProse } from '../site/src/lib/docs-paths.ts'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const contentDir = join(root, 'site/src/content/docs')
@@ -175,6 +176,7 @@ for (const { file, source } of [...realEntries, ...sharedWorkspaceEntries(realFi
   const route = frontmatterValue(source, 'route')
   const section = route?.split('/')[0] ?? file.split('/')[0]
   const authoredPort = frontmatterValue(source, 'port') ?? /^ports\/([^/]+)\//.exec(file)?.[1]
+  const nativeTmux = isTmuxProse({ id: file.replace(/\.mdx?$/, ''), data: { port: authoredPort, route } })
   // These guides link to native wrapper references, outside the shared API
   // model. Do not infer backlinks to similarly named core-language symbols.
   if (PORT_DEFS.find((port) => port.slug === authoredPort)?.referenceKind === 'guide') continue
@@ -183,6 +185,7 @@ for (const { file, source } of [...realEntries, ...sharedWorkspaceEntries(realFi
   const selected = resolvePortContent(source, authoredPort)
   for (const { port: contextPort, text, line, before, linked, href } of proseMentions(selected.body, PORT_BY_LABEL, selected.portAt)) {
     const pagePort = authoredPort ?? contextPort
+    if (!linked && nativeTmux) continue
     if (notASymbol(text)) continue
     let target
     if (linked) {

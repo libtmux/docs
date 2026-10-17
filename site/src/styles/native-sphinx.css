@@ -27,6 +27,10 @@ html[data-native-shell] body {
   --font-stack: var(--font-sans);
   --font-stack--monospace: var(--font-mono);
 }
+/* Keep managed native declarations on the shared themed signature surface. */
+html[data-native-shell] dl.gp-sphinx-api-container:not(.fixture) > dt.gp-sphinx-api-header:not(:target) {
+  background: color-mix(in srgb, var(--background-color), var(--text-color) 6%);
+}
 html[data-native-shell] .sidebar-sticky,
 html[data-native-shell] .toc-sticky {
   top: var(--native-header-height);

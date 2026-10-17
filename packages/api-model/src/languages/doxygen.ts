@@ -102,6 +102,39 @@ function cDeclaration(block: string, nativeKind: string, name: string): string |
   return `${storage}${declarator}${bitfield ? ` : ${bitfield}` : ''}${initializer ? ` ${initializer.startsWith('=') ? initializer : `= ${initializer}`}` : ''};`.trim()
 }
 
+/** Remove Doxygen's template padding without rewriting expressions or literals. */
+export function normalizeCppTemplateSpacing(declaration: string): string {
+  // Keep strings (including raw strings), comments and compound operators whole.
+  const tokens = [...declaration.matchAll(/(?:u8|u|U|L)?R"([^ ()\\\t\r\n]{0,16})\([\s\S]*?\)\1"|(?:u8|u|U|L)?(?:"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*')|\/\*[\s\S]*?\*\/|\/\/[^\n]*|[A-Za-z_]\w*|\d[\w'.]*|<=>|<<=?|>>=|->\*?|>=|<=|[^\s]/g)]
+  const templates: { token: number; group: number }[] = []
+  const remove = new Set<number>()
+  let group = 0
+  const padding = (start: number, end: number) => {
+    if (/[\r\n]/.test(declaration.slice(start, end))) return
+    for (let i = start; i < end; i++) if (/[ \t]/.test(declaration[i])) remove.add(i)
+  }
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i]
+    const text = token[0]
+    if (/^[([{]$/.test(text)) group++
+    else if (/^[)\]}]$/.test(text)) {
+      group--
+      while (templates.length && templates.at(-1)!.group > group) templates.pop()
+    } else if (text === '<') {
+      const previous = tokens[i - 1]
+      if (previous && /^[A-Za-z_]\w*$/.test(previous[0]) && previous[0] !== 'operator' &&
+          (previous.index! + previous[0].length === token.index || previous[0] === 'template')) {
+        templates.push({ token: i, group })
+      }
+    } else if (text === '>' && templates.at(-1)?.group === group) {
+      const opening = templates.pop()!.token
+      padding(tokens[opening].index! + 1, tokens[opening + 1].index!)
+      padding(tokens[i - 1].index! + tokens[i - 1][0].length, token.index!)
+    }
+  }
+  return declaration.split('').filter((_, i) => !remove.has(i)).join('')
+}
+
 /**
  * Doxygen's spelling of a template specialisation, normalised to C++'s.
  *
@@ -285,14 +318,14 @@ function paramsOf(block: string, docs: Map<string, string>, c = false): Param[] 
   const runtime = block.replace(/<templateparamlist>[\s\S]*?<\/templateparamlist>/g, '')
   for (const m of runtime.matchAll(/<param>([\s\S]*?)<\/param>/g)) {
     const name = textOf(tag(m[1], 'declname') ?? (c ? tag(m[1], 'defname') : undefined) ?? '')
-    const type = textOf(tag(m[1], 'type') ?? '')
+    const type = c ? textOf(tag(m[1], 'type') ?? '') : normalizeCppTemplateSpacing(codeOf(tag(m[1], 'type') ?? ''))
     const def = tag(m[1], 'defval')
     if (!name && (!type || (c && type === 'void'))) continue
     out.push({
       name: c ? name : name || type,
       type: c || name ? type : undefined,
       // The default argument, which is exactly what tree-sitter dropped.
-      default: def ? textOf(def) : undefined,
+      default: def ? c ? textOf(def) : normalizeCppTemplateSpacing(codeOf(def)) : undefined,
       doc: docs.get(name),
     })
   }
@@ -333,7 +366,7 @@ function cppTemplateParameters(block: string): string[] {
     const type = codeOf(tag(match[1], 'type') ?? '')
     const name = codeOf(tag(match[1], 'declname') ?? '')
     const value = tag(match[1], 'defval')
-    return `${type}${name ? ` ${name}` : ''}${value ? ` = ${codeOf(value)}` : ''}`
+    return normalizeCppTemplateSpacing(`${type}${name ? ` ${name}` : ''}${value ? ` = ${codeOf(value)}` : ''}`)
   })
 }
 
@@ -358,7 +391,7 @@ function cppSignature(block: string): string | undefined {
       : declaration.replace(/(\s*=\s*(?:default|delete|0))?$/, (_, ending = '') => ` requires ${constraint}${ending}`)
   }
   if (template.length) declaration = `template <${template.join(', ')}>\n${declaration}`
-  return `${declaration};`
+  return normalizeCppTemplateSpacing(`${declaration};`)
 }
 
 /**
@@ -442,7 +475,7 @@ export function extractDoxygen(xmlDir: string, sourceRoot = '', options: Doxygen
       // Public members remain independently eligible below.
       const bases = [...xml.matchAll(/<basecompoundref([^>]*)>([\s\S]*?)<\/basecompoundref>/g)]
         .filter((m) => attr(m[1], 'prot') === 'public')
-        .map((m) => textOf(m[2]))
+        .map((m) => c ? textOf(m[2]) : normalizeCppTemplateSpacing(codeOf(m[2])))
       if (!seen.has(ownerId)) {
         const sym: ApiSymbol = {
           id: ownerId,
@@ -516,7 +549,7 @@ export function extractDoxygen(xmlDir: string, sourceRoot = '', options: Doxygen
       // A template's first <type> and a parameter's <type> cannot stand in for
       // the member's own (possibly empty, for constructors) return type.
       const memberType = block.replace(/<(templateparamlist|param)>[\s\S]*?<\/\1>/g, '')
-      const returnType = textOf(tag(memberType, 'type') ?? '')
+      const returnType = c ? textOf(tag(memberType, 'type') ?? '') : normalizeCppTemplateSpacing(codeOf(tag(memberType, 'type') ?? ''))
       const returnDoc = textOf(tag(block, 'simplesect') ?? '')
       const templateParameters = c ? [] : cppTemplateParameters(block)
 

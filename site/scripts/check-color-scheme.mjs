@@ -61,10 +61,13 @@ export async function checkColorScheme(browser, base) {
   const reader = await browser.newContext({ viewport: { width: 1062, height: 789 }, colorScheme: 'light', reducedMotion: 'reduce' })
   try {
     const page = await reader.newPage()
-    await page.goto(`${base}/tmux/concepts/server-session-window-pane/`)
+    await page.goto(`${base}/code-tabs-probe/`)
     await page.locator('[data-scheme-cycle]').waitFor({ state: 'attached' })
     await page.waitForFunction(() => customElements.get('libtmux-code-tabs'))
     await page.locator('.code-tab[data-port="cxx"]').first().click()
+    assert.equal(await page.locator('.code-tab[data-port="cxx"]').first().getAttribute('aria-selected'), 'true')
+    assert.equal(await page.locator('.code-tab-panel[data-port="cxx"]:not([hidden])').count(), 2,
+      'The reading fixture keeps both C++ panels selected')
     await page.evaluate(() => window.scrollTo({ top: 1200, behavior: 'instant' }))
     const position = await page.evaluate(() => scrollY)
     assert(position > 500, 'Exercise the sticky scheme controls while reading down the page')

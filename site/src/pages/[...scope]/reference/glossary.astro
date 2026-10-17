@@ -1,23 +1,9 @@
 ---
 import ApiGlossary from '../../../components/api/ApiGlossary.astro'
-import { API_MODELS } from '../../../lib/api-models'
-import { symbolsForProduct } from '@libtmux/api-model'
-import { buildTarget } from '../../../lib/versions'
-import { buildLocale, DEFAULT_LOCALE } from '../../../i18n/locales'
+import { productGlossaryPaths } from '../../../lib/api-glossary-routes'
 import type { DocProduct } from '../../../lib/ports'
 
-export function getStaticPaths() {
-  if (buildLocale() !== DEFAULT_LOCALE) return []
-  const buildPort = process.env.LIBTMUX_DOCS_PORT
-  const version = buildTarget(process.env).version
-  let defaults: Record<string, string> = {}
-  try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults use latest. */ }
-  return Object.entries(API_MODELS).filter(([port]) => !buildPort || port === buildPort).flatMap(([port, model]) => {
-    const targetVersion = buildPort ? version : defaults[port] ?? 'latest'
-    return (['mcp', 'workspace'] as const).filter((product) => symbolsForProduct(model, product).length)
-      .map((product) => ({ params: { scope: buildPort ? product : `${port}/${targetVersion}/${product}` }, props: { port, product, version: targetVersion } }))
-  })
-}
+export const getStaticPaths = productGlossaryPaths
 interface Props { port: string; product: DocProduct; version: string }
 ---
 <ApiGlossary {...Astro.props} />

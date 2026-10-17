@@ -6,7 +6,7 @@ import { pagePortLinks, type PagePortLink } from '../src/lib/page-port-links'
 import { API_MODELS } from '../src/lib/api-models'
 import { PORTS, productAvailable } from '../src/lib/ports'
 import ts from 'typescript'
-import { Window, type HTMLElement } from 'happy-dom'
+import { Window, type HTMLAnchorElement, type HTMLElement } from 'happy-dom'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { initDocumentationNavigation } from '../src/components/docs/documentation-navigation'
 
@@ -133,6 +133,48 @@ async function renderPicker(entries: PagePortLink[], portSlug = 'julia') {
   const container = await experimental_AstroContainer.create()
   win.document.body.innerHTML = await container.renderToString(await pickerComponent, { props: { entries, portSlug } })
 }
+
+it('renders safe native glossary destinations without JavaScript', async () => {
+  const entries = pagePortLinks({ pagePath: 'reference/glossary', portSlug: 'scala', version: 'latest', defaults: {}, docs: [] })
+  await renderPicker(entries, 'scala')
+  for (const port of ['powershell', 'java']) {
+    const link = win.document.querySelector<HTMLAnchorElement>(`a[data-port="${port}"]`)!
+    expect(link).not.toBeNull()
+    expect(link.hash).toBe('')
+    expect(link.getAttribute('href')).toBe(entries.find((entry) => entry.port === port)!.links[0].href)
+    expect(link.hasAttribute('aria-disabled')).toBe(false)
+    expect(link.hasAttribute('data-fragment-ids')).toBe(true)
+    expect(link.getAttribute('data-fragment-ids')?.split(' ')).toContain('symbol-kinds')
+  }
+  expect(win.document.querySelector('a[data-port="powershell"]')!.getAttribute('data-fragment-ids')?.split(' ')).not.toContain('method')
+  expect(win.document.querySelector('a[data-port="java"]')!.getAttribute('data-fragment-ids')?.split(' ')).toContain('method')
+})
+
+it('keeps matching native glossary fragments and drops absent terms during keyboard activation', async () => {
+  win.history.replaceState(null, '', '/en/scala/latest/reference/glossary/#method')
+  const entries = pagePortLinks({ pagePath: 'reference/glossary', portSlug: 'scala', version: 'latest', defaults: {}, docs: [] })
+  await renderPicker(entries, 'scala')
+  initDocumentationNavigation()
+  const picker = win.document.querySelector('details')!
+  picker.open = true
+  picker.dispatchEvent(new win.Event('toggle'))
+  const input = win.document.querySelector('input')!
+  for (const link of win.document.querySelectorAll('a')) link.addEventListener('click', (event) => event.preventDefault())
+  for (const [port, source, expected] of [
+    ['powershell', '#method', ''], ['java', '#method', '#method'],
+    ['powershell', '#function', '#function'], ['powershell', '#symbol-kinds', '#symbol-kinds'],
+    ['powershell', '#%66unction', '#%66unction'], ['powershell', '#%', ''], ['powershell', '', ''],
+  ]) {
+    win.location.hash = source
+    input.value = port
+    input.dispatchEvent(new win.Event('input'))
+    input.dispatchEvent(new win.KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }))
+    const link = win.document.querySelector<HTMLAnchorElement>(`a[data-port="${port}"]`)!
+    expect(win.document.activeElement).toBe(link)
+    input.dispatchEvent(new win.KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+    expect(link.hash, `${port}:${source}`).toBe(expected)
+  }
+})
 
 it('renders section fallbacks as truthful overview exits without repeated destination titles', async () => {
   const entries: PagePortLink[] = [

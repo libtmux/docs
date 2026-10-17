@@ -1,5 +1,5 @@
 /* The mask is our own drawing. currentColor supports light, dark and forced colors. */
-a[data-external-link]::after {
+a[data-external-link]:not([data-external-link-icon])::after {
   content: "";
   display: inline-block;
   inline-size: 0.8em;
@@ -10,5 +10,5 @@ a[data-external-link]::after {
   mask: url("./external-link.svg") center / contain no-repeat;
 }
 @media (forced-colors: active) {
-  a[data-external-link]::after { background-color: LinkText; forced-color-adjust: none; }
+  a[data-external-link]:not([data-external-link-icon])::after { background-color: LinkText; forced-color-adjust: none; }
 }

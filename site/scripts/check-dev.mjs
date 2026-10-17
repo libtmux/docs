@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict'
-import { cpSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { dev } from 'astro'
@@ -14,6 +14,7 @@ import { checkHomeTaskReset } from './check-home-task-reset.mjs'
 import { checkColorScheme } from './check-color-scheme.mjs'
 import { checkHomeExampleOptions } from './check-home-example-options.mjs'
 import { checkDevSample } from './check-dev-sample.mjs'
+import { checkNativeSignatureGeometry, checkNativeSignatureLinks } from './check-native-layout.mjs'
 import { checkRequiredAppearance, checkWebAnalytics, checkWebAnalyticsTransitions } from './check-page-readiness.mjs'
 
 const apiNavigationOnly = process.argv.includes('--api-navigation')
@@ -28,6 +29,11 @@ const globalHeaderOnly = process.argv.includes('--global-header')
 const homeLauncherOnly = process.argv.includes('--home-launcher')
 const homeControlsOnly = process.argv.includes('--home-controls')
 const sampleOnly = process.argv.includes('--sample')
+const serveOnly = process.argv.includes('--serve')
+const requestedBrowserPort = process.env.LIBTMUX_DOCS_BROWSER_PORT
+assert(requestedBrowserPort === undefined || /^\d+$/.test(requestedBrowserPort)
+  && Number(requestedBrowserPort) >= 1 && Number(requestedBrowserPort) <= 65535,
+  'LIBTMUX_DOCS_BROWSER_PORT must be an integer from 1 to 65535')
 const documentationNavigationOnly = process.argv.includes('--documentation-navigation')
 const workspacePortCount = PORTS.filter((port) => productAvailable(port, 'workspace')).length
 
@@ -58,6 +64,19 @@ import DocsLayout from '../layouts/DocsLayout.astro'
 for (const file of ['astro.config.ts', 'ec.config.mjs', 'package.json', 'tsconfig.json']) cpSync(join(source, file), join(root, file))
 for (const file of ['public', 'node_modules']) symlinkSync(join(source, file), join(root, file), 'dir')
 for (const file of ['scripts', 'packages', 'node_modules']) symlinkSync(join(source, '..', file), join(mirror, file), 'dir')
+// Keep browser component fixtures outside the native tmux content tree.
+mkdirSync(join(root, 'src/browser-probes'))
+cpSync(join(source, 'test/fixtures/browser-code-tabs.md'), join(root, 'src/browser-probes/code-tabs.md'))
+writeFileSync(join(root, 'src/pages/code-tabs-probe.astro'), `---
+import DocsLayout from '../layouts/DocsLayout.astro'
+import { Content } from '../browser-probes/code-tabs.md'
+import { withRoot } from '../lib/site-root'
+---
+<DocsLayout title="Code tabs browser fixture" pagePath="code-tabs-probe" tableOfContents={false}>
+  <p><a href={withRoot('/code-tabs-probe/?from=client')}>Open the code tabs fixture</a></p>
+  <Content />
+</DocsLayout>
+`)
 const analyticsProbe = join(root, 'src/pages/analytics-router-probe')
 mkdirSync(analyticsProbe)
 writeFileSync(join(analyticsProbe, '[page].astro'), `---
@@ -87,11 +106,34 @@ const owner = model.symbols.find((symbol) => symbol.id === 'pane.Pane.capture')
 ---
 <Reference model={model} owner={owner} />
 `)
+writeFileSync(join(root, 'src/pages/api-body-probe.astro'), `---
+import ApiEntry from '../components/api/ApiEntry.astro'
+import DocsLayout from '../layouts/DocsLayout.astro'
+import { API_MODELS, indexFor } from '../lib/api-models'
+import '../styles/api.css'
+import '../styles/vendor/gp-sphinx-api.css'
+const model = API_MODELS.scala
+const owner = model.symbols.find((symbol) => symbol.name === 'PaneFields')
+const cases = [
+  { name: 'hidden', showSummary: false },
+  { name: 'visible', showSummary: true },
+  { name: 'description', showSummary: false, body: 'Retained declaration description.' },
+]
+---
+<DocsLayout title="Declaration body visibility" tableOfContents={false}>
+  {cases.map(({ name, showSummary, body }) => <section data-body-case={name}>
+    <ApiEntry symbol={{ ...owner, id: 'body.' + name, doc: { ...owner.doc, body } }}
+      index={indexFor(model, (entry) => '#' + entry.id)} language="scala" showSummary={showSummary} />
+  </section>)}
+</DocsLayout>
+`)
 writeFileSync(join(root, 'src/pages/api-signature-probe.astro'), `---
 import ApiEntry from '../components/api/ApiEntry.astro'
 import DocsLayout from '../layouts/DocsLayout.astro'
 import { API_MODELS, indexFor } from '../lib/api-models'
 import { API_MODEL_PORTS, referenceUrl } from '../lib/ports'
+import { apiSignatureLayouts } from '../lib/code-layout'
+import { nativeSignatureText, usesNativeSignatures } from '../lib/api-sections'
 import '../styles/api.css'
 import '../styles/vendor/gp-sphinx-api.css'
 const entries = API_MODEL_PORTS.filter(({ slug }) => ${JSON.stringify(signaturePorts.map((port) => port.slug))}.includes(slug))
@@ -99,14 +141,29 @@ const entries = API_MODEL_PORTS.filter(({ slug }) => ${JSON.stringify(signatureP
   const model = API_MODELS[port]
   const callable = model.symbols.filter((symbol) => symbol.signatures.some((signature) =>
     signature.params.length > 0 && signature.returns))
-  const symbol = callable.find((symbol) => /capture/i.test(symbol.name)) ?? callable[0]
+  let symbol = callable.find((symbol) => /capture/i.test(symbol.name)) ?? callable[0]
+  if (!symbol) {
+    // Native method records can omit inferred return types, as Julia does.
+    const native = model.symbols.filter((entry) => usesNativeSignatures(entry, port) &&
+      entry.signatures.some((signature) => signature.params.length > 0) &&
+      entry.signatures.every((signature) => typeof signature.raw === 'string' && signature.raw.trim()))
+    symbol = native.find((entry) => entry.kind === 'function' && /capture/i.test(entry.name)) ?? native[0]
+  }
+  if (!symbol) throw new Error('API signature fixture is missing a parameterized callable for ' + port)
   const scalar = model.symbols.find((symbol) => symbol.signatures.length === 0 && symbol.type && symbol.value)
   return [symbol, scalar].filter(Boolean).map((symbol) => ({ port, model, symbol }))
 })
+const nativeDeclarations = new Map()
+for (const { port, symbol } of entries) {
+  const layouts = await apiSignatureLayouts(symbol, port)
+  nativeDeclarations.set(symbol, symbol.signatures.map((signature) =>
+    layouts.get(signature)?.text ?? nativeSignatureText(symbol, signature, port)))
+}
 ---
 <DocsLayout title="API signature layout" tableOfContents={false}>
   {entries.map(({ port, model, symbol }) => (
-    <section data-signature-port={port} data-signature-model={JSON.stringify(symbol)}>
+    <section data-signature-port={port} data-signature-model={JSON.stringify(symbol)}
+      data-signature-native={JSON.stringify(nativeDeclarations.get(symbol))}>
       <ApiEntry symbol={{ ...symbol, doc: undefined }} index={indexFor(model, (entry) => referenceUrl(port, entry.slug))} port={port} />
     </section>
   ))}
@@ -118,14 +175,48 @@ for (const { slug: port } of PORTS) {
   writeFileSync(join(directory, '[...slug].astro'), `---
 import Reference from '../../../reference/[...slug].astro'
 import { API_MODELS } from '../../../../lib/api-models'
+import { coreApiSymbols } from '../../../../lib/product-api'
 export function getStaticPaths() {
   const model = API_MODELS.${port}
   return [{ params: { slug: undefined }, props: { model } },
-    ...model.symbols.map((owner) => ({ params: { slug: owner.slug }, props: { model, owner } }))]
+    ...coreApiSymbols(model).map((owner) => ({ params: { slug: owner.slug }, props: { model, owner } }))]
 }
 const { model, owner } = Astro.props
 ---
 <Reference model={model} owner={owner} />
+`)
+  writeFileSync(join(directory, '[...slug].md.ts'), `
+import { API_MODELS } from '../../../../lib/api-models'
+import { coreApiSymbols } from '../../../../lib/product-api'
+export { GET } from '../../../reference/[...slug].md'
+export function getStaticPaths() {
+  const model = API_MODELS.${port}
+  return coreApiSymbols(model).map((owner) => ({ params: { slug: owner.slug },
+    props: { port: '${port}', id: owner.id } }))
+}
+`)
+  writeFileSync(join(directory, 'glossary.astro'), `---
+import ApiReference from '../../../../components/api/ApiReference.astro'
+import { API_MODELS } from '../../../../lib/api-models'
+---
+<ApiReference model={API_MODELS.${port}} glossary />
+`)
+  for (const format of ['json', 'md']) writeFileSync(join(directory, `glossary.${format}.ts`), `
+export { GET } from '../../../reference/glossary.${format}'
+`)
+  writeFileSync(join(directory, '[...slug].preview.json.ts'), `
+import { API_MODELS } from '../../../../lib/api-models'
+import { symbolPreview, glossaryPreview } from '../../../../lib/link-preview'
+import { PORT_BY_SLUG, referenceUrl } from '../../../../lib/ports'
+import { coreApiSymbols } from '../../../../lib/product-api'
+export { GET } from '../../../[...slug].preview.json'
+export function getStaticPaths() {
+  const model = API_MODELS.${port}
+  const glossary = referenceUrl(PORT_BY_SLUG.${port}, 'latest') + 'glossary/'
+  return [{ params: { slug: 'glossary' }, props: { preview: glossaryPreview(glossary) } },
+    ...coreApiSymbols(model).map((owner) => ({ params: { slug: owner.slug },
+      props: { preview: symbolPreview(model, owner, 'latest') } }))]
+}
 `)
   writeFileSync(join(directory, 'tree.json.ts'), `
 import { referenceTree } from '../../../../lib/api-tree'
@@ -149,10 +240,16 @@ process.on('SIGTERM', terminate)
 process.on('SIGINT', terminate)
 const startServer = () => dev({ root, cacheDir: join(mirror, 'cache'),
   devToolbar: { enabled: false },
-  vite: { cacheDir: join(mirror, 'vite') }, logLevel: 'error',
-  server: { host: '127.0.0.1', port: 0 } })
+  vite: { cacheDir: join(mirror, 'vite'),
+    ...(requestedBrowserPort === undefined ? {} : { server: { strictPort: true } }) }, logLevel: 'error',
+  server: { host: '127.0.0.1', port: requestedBrowserPort === undefined
+    ? (serveOnly ? 53971 : 0) : Number(requestedBrowserPort) } })
 server = await startServer()
 const base = `http://127.0.0.1:${server.address.port}/en`
+if (serveOnly) {
+  console.log(`Combined source preview: ${base}/`)
+  await new Promise(() => {})
+}
 
 // Vite can reload once after its initial dependency optimization.
 async function retryReload(check, page) {
@@ -193,7 +290,11 @@ async function checkSignatureLayouts(browser, base) {
         }
         const visibleText = clean(await signature.innerText())
         if (await signature.locator('.api-native-signature').count()) {
-          for (const declaration of model.signatures) assert(visibleText.includes(clean(declaration.raw)),
+          const declarations = JSON.parse(await entry.getAttribute('data-signature-native'))
+          assert(Array.isArray(declarations) && declarations.every((text) => typeof text === 'string' && text.trim()),
+            `${port}: prepared native declarations are bound to the fixture`)
+          assert.equal(declarations.length, model.signatures.length, `${port}: every native declaration is checked`)
+          for (const declaration of declarations) assert(visibleText.includes(clean(declaration)),
             `${port}: native declaration survives at ${width}px`)
         } else {
           assert.deepEqual(await signature.locator('.sig-param > :is(.n, .api-parameter-name)').allTextContents(),
@@ -392,6 +493,53 @@ async function checkReferenceAndHeroes(browser, base) {
   const page = await browser.newPage({ reducedMotion: 'reduce' })
   page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
   try {
+    await page.goto(`${base}/api-body-probe/`)
+    await page.locator('[data-body-case="visible"] .gp-sphinx-api-summary').waitFor({ state: 'visible' })
+    assert.equal(await page.locator('[data-body-case="hidden"] dl.py > dd').count(), 0,
+      'A suppressed summary does not create an empty declaration body')
+    assert.match(await page.locator('[data-body-case="visible"] dl.py > dd').innerText(), /Typed fields/,
+      'A visible summary retains its declaration body')
+    assert.match(await page.locator('[data-body-case="description"] dl.py > dd').innerText(), /Retained declaration description/,
+      'Other body content remains when the summary is suppressed')
+    await page.goto(`${base}/scala/latest/reference/io-github-libtmux-scaladsl-generated-panefields/`)
+    assert.equal(await page.locator('.api-overview dl.py > dd').count(), 0,
+      'PaneFields has a compact declaration without an empty body')
+    assert.equal(await page.locator('.api-member-link').count(), 14, 'PaneFields keeps its members')
+    const footerIcon = page.locator('footer a[aria-label="GitHub"]')
+    await page.waitForFunction(() => document.querySelector('footer a[aria-label="GitHub"]')?.hasAttribute('data-external-link'))
+    assert.equal(await footerIcon.evaluate((link) => getComputedStyle(link, '::after').content), 'none',
+      'The external footer icon has no additional glyph')
+    assert.match(await footerIcon.getAttribute('aria-description'), /^External site:/,
+      'Icon links retain the external destination description')
+    await page.goto(`${base}/go/latest/reference/tmuxq-matching/`)
+    const descriptionLink = page.getByRole('link', { name: 'Link to Description', exact: true })
+    await descriptionLink.waitFor({ state: 'visible' })
+    for (const width of [1035, 518, 390]) {
+      await page.setViewportSize({ width, height: 897 })
+      const placement = await descriptionLink.evaluate((link) => {
+        const range = document.createRange()
+        range.selectNodeContents(link.parentElement.firstChild)
+        const label = range.getBoundingClientRect()
+        const box = link.getBoundingClientRect()
+        return { gap: box.left - label.right, width: box.width, height: box.height }
+      })
+      assert(placement.gap >= 0 && placement.gap <= 16, `${width}px: section permalink stays beside its heading`)
+      assert(placement.width >= 24 && placement.height >= 24, `${width}px: section permalink has a comfortable target`)
+    }
+    await descriptionLink.focus()
+    assert(await descriptionLink.evaluate((link) => parseFloat(getComputedStyle(link).outlineWidth) >= 2),
+      'Section permalinks retain visible keyboard focus')
+    await page.keyboard.press('Enter')
+    assert.equal(new URL(page.url()).hash, '#tmuxq.Matching.description', 'The section permalink keeps its destination')
+    await page.goto(`${base}/scala/latest/reference/io-github-libtmux-scaladsl-window/`)
+    const controls = page.locator('dt.api-native-header .gp-sphinx-api-layout-right').first()
+    await controls.waitFor({ state: 'visible' })
+    const centers = await controls.evaluate((row) => [...row.children].filter((node) => node.checkVisibility()).map((node) => {
+      const box = node.getBoundingClientRect()
+      return box.top + box.height / 2
+    }))
+    assert(centers.length >= 2 && Math.max(...centers) - Math.min(...centers) <= 1,
+      'Declaration toolbar controls align vertically within their row')
     await checkApiExampleOwnership(page, base, 'api-example-probe/')
     for (const path of ['ts/latest/workspace/', 'ruby/latest/mcp/', 'cxx/latest/workspace/', 'cxx/latest/mcp/']) {
       await page.goto(`${base}/${path}`, { waitUntil: 'load' })
@@ -487,10 +635,11 @@ async function checkReferenceAndHeroes(browser, base) {
     console.log('Reference contents: section targets, active links, related declarations and grouped member order pass')
     await page.goto(`${base}/scala/latest/reference/io-github-libtmux-scaladsl-server-windows/`)
     const signature = page.locator('dt.api-native-header').first()
-    const links = await signature.locator('.api-native-signature a').evaluateAll((elements) =>
-      elements.map((element) => ({ name: element.textContent, href: element.getAttribute('href') })))
+    const links = await checkNativeSignatureLinks(signature,
+      JSON.parse(readFileSync(join(source, 'src/data/api/scala.json'), 'utf8')).symbols
+        .find((symbol) => symbol.id === 'io.github.libtmux.scaladsl.Server.windows'))
     for (const name of ['def', 'extension', 'self', 'windows', 'id', 'expression']) {
-      assert(!links.some((link) => link.name === name), `${name} is a declaration token, not an API link`)
+      assert(!links.some((link) => link.name === name && !link.parameter), `${name} is a declaration token, not an API link`)
     }
     for (const name of ['Server', 'Window', 'io.github.libtmux.WindowId']) {
       assert(links.some((link) => link.name === name), `Scala signature links ${name}`)
@@ -500,13 +649,11 @@ async function checkReferenceAndHeroes(browser, base) {
     'Scala Vector links to its own collection type')
     for (const width of [1440, 768, 390]) {
       await page.setViewportSize({ width, height: 900 })
-      const header = await signature.boundingBox()
-      const code = await signature.locator('.gp-sphinx-api-layout-left:visible, .gp-sphinx-api-layout-bottom:visible').boundingBox()
-      assert(code.width >= header.width - 36, `Scala overloads use the signature width at ${width}px`)
+      await checkNativeSignatureGeometry(signature)
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
         `Scala overloads fit at ${width}px`)
     }
-    console.log('Scala overloads: only API symbols link, Vector resolves to Scala, and badges leave the full code width')
+    console.log('Scala overloads: local parameter targets, API links and available code width pass with aligned metadata')
     await page.goto(`${base}/kotlin/latest/reference/io-github-libtmux-kotlin-server-session/`)
     const errors = page.locator('[id="io.github.libtmux.kotlin.Server.session.errors"] + dd')
     assert.match(await errors.innerText(), /NoMatch/)
@@ -576,16 +723,18 @@ async function checkReferenceAndHeroes(browser, base) {
 }
 
 try {
-  // Compile the first page during setup; navigation assertions measure
+  // Compile the initial pages during setup; navigation assertions measure
   // the running app. The outer loop still budgets this initial compilation.
   const firstPage = homeLauncherOnly || homeControlsOnly ? '/'
     : keywordHelpOnly ? '/kotlin/latest/reference/io-github-libtmux-kotlin-withserver/'
     : documentationNavigationOnly ? '/py/latest/' : apiSignaturesOnly ? '/api-signature-probe/'
     : apiNavigationOnly ? '/lua/latest/reference/libtmux-server/' : '/tmux/concepts/server-session-window-pane/'
-  const ready = fetch(`${base}${firstPage}`).then(async (response) => {
-    assert(response.ok, `Browser setup: HTTP ${response.status} at ${firstPage}`)
+  const setupPages = sampleOnly ? [firstPage, '/demo/widgets/pickers/'] : [firstPage]
+  const ready = Promise.all(setupPages.map(async (path) => {
+    const response = await fetch(`${base}${path}`)
+    assert(response.ok, `Browser setup: HTTP ${response.status} at ${path}`)
     await response.text()
-  })
+  }))
   const engine = process.env.LIBTMUX_DOCS_BROWSER ?? 'chromium'
   const driver = { chromium, firefox, webkit }[engine]
   if (!driver) throw new Error(`Unknown browser: ${engine}`)

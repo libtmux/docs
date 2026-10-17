@@ -1,7 +1,7 @@
 ---
-supportedPorts: [py, ts, rs, go, java, csharp, cxx, swift]
+supportedPorts: []
 title: Environment
-description: Locate tmux objects from process variables and manage the environment inherited by new panes.
+description: Inspect and set native tmux server and session environments, and override a new pane process.
 sidebar:
   label: Environment
   group: Topics
@@ -9,413 +9,112 @@ sidebar:
 tableOfContents: true
 ---
 
-tmux exposes two environment APIs. Process variables such as `TMUX` and
-`TMUX_PANE` let code inside a pane identify its server and pane. The server also
-stores variables through `set-environment` and `show-environment` for new
-processes to inherit. Like the tables in [Options and
-hooks](../options-and-hooks/), this persistent store has explicit scopes.
+tmux stores a global environment and a separate environment for each session.
+When it starts a pane process, it merges the global and session values; a
+session value takes precedence. Changing those stores affects future pane
+processes. It does not change the environment of processes already running.
 
-## Locating yourself from inside a pane
+## Set defaults and a one-pane override
 
-Inside a pane, `TMUX` contains `<socket path>,<server pid>,<session id>`, and
-`TMUX_PANE` contains the pane ID, such as `%1`. Use these variables to locate
-the current tmux objects. Select the object your operation needs:
+Save this complete script as `environment.sh`. It requires tmux 3.2a or newer
+and a POSIX shell. It inspects global and session values, launches new panes,
+and checks the environment each process receives on a private server.
 
-<!-- port:py -->
-<!-- port:root -->
-### Python
-<!-- /port -->
+```sh title="environment.sh"
+#!/bin/sh
+set -eu
+directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-environment.XXXXXX")
+socket="$directory/tmux.sock"
 
-**Server:** `Server.from_env()`
-
-**Session:** `Session.from_env()`
-
-**Window:** `Window.from_env()`
-
-**Pane:** `Pane.from_env()`
-<!-- /port -->
-
-<!-- port:ts -->
-<!-- port:root -->
-### TypeScript
-<!-- /port -->
-
-**Server:** Not listed.
-
-**Session:** `Session.fromEnv()`
-
-**Window:** Not listed.
-
-**Pane:** Not listed.
-<!-- /port -->
-
-<!-- port:go -->
-<!-- port:root -->
-### Go
-<!-- /port -->
-
-**Server:** `NewServerFromEnv(env)`
-
-**Session:** `SessionFromEnv(ctx, env)`
-
-**Window:** `WindowFromEnv(ctx, env)`
-
-**Pane:** `PaneFromEnv(ctx, env)`
-<!-- /port -->
-
-<!-- port:rs -->
-<!-- port:root -->
-### Rust
-<!-- /port -->
-
-**Server:** `Server::from_env()`
-
-**Session:** `Session::from_env(&server)`
-
-**Window:** `Window::from_env(&server)`
-
-**Pane:** `Pane::from_env(&server)`
-<!-- /port -->
-
-<!-- port:java -->
-<!-- port:root -->
-### Java
-<!-- /port -->
-
-**Server:** Not listed.
-
-**Session:** Not listed.
-
-**Window:** Not listed.
-
-**Pane:** See the Java context example below.
-<!-- /port -->
-
-<!-- port:csharp -->
-<!-- port:root -->
-### C#
-<!-- /port -->
-
-**Server:** `Server.FromEnvironment(env)`
-
-**Session:** `Session.FromEnvironmentAsync()`
-
-**Window:** `Window.FromEnvironmentAsync()`
-
-**Pane:** `Pane.FromEnvironmentAsync()`
-<!-- /port -->
-
-<!-- port:cxx -->
-<!-- port:root -->
-### C++
-<!-- /port -->
-
-**Server:** `Server::from_env()`
-
-**Session:** Not listed.
-
-**Window:** Not listed.
-
-**Pane:** Not listed.
-<!-- /port -->
-
-<!-- port:swift -->
-<!-- port:root -->
-### Swift
-<!-- /port -->
-
-**Server:** `TmuxContext.current()`
-
-**Session:** `TmuxContext.current()` (same call: see below)
-
-**Window:** Not listed.
-
-**Pane:** Not listed.
-<!-- /port -->
-
-### Examples
-
-<!-- port:rs -->
-`Session`, `Window`, and `Pane::from_env` require an existing `&Server`.
-<!-- /port -->
-<!-- port:ts -->
-Use `Session.fromEnv()` to resolve the session of the current process.
-<!-- /port -->
-
-```python
-Pane.from_env().pane_id
-Window.from_env().window_id
-Session.from_env().session_id
-Server.from_env().sessions
-```
-
-```typescript
-const session = await Session.fromEnv();
-```
-
-```go
-pane, err := tmux.PaneFromEnv(ctx, nil)
-if err != nil {
-    return err
+cleanup() {
+    status=$?
+    trap - 0 HUP INT TERM
+    if [ -S "$socket" ] && ! tmux -S "$socket" kill-server; then
+        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
+        exit 1
+    fi
+    rm -rf "$directory" || status=$?
+    exit "$status"
 }
-fmt.Println("current pane:", pane.ID())
+trap cleanup 0
+trap 'exit 1' HUP INT TERM
+
+tmux -S "$socket" -f /dev/null new-session -d -s work 'cat'
+tmux -S "$socket" set-environment -g DEMO_VALUE global
+tmux -S "$socket" set-environment -t '=work' DEMO_VALUE session
+global=$(tmux -S "$socket" show-environment -g DEMO_VALUE)
+session=$(tmux -S "$socket" show-environment -t '=work' DEMO_VALUE)
+[ "$global" = DEMO_VALUE=global ] && [ "$session" = DEMO_VALUE=session ]
+printf 'server: %s\nsession: %s\n' "$global" "$session"
+
+tmux -S "$socket" new-window -d -t '=work:' -n inherited \
+    -e "RESULT=$directory/inherited.txt" \
+    'printf "%s\n" "$DEMO_VALUE" > "$RESULT"; exec cat'
+tmux -S "$socket" new-window -d -t '=work:' -n overridden \
+    -e DEMO_VALUE=override -e "RESULT=$directory/overridden.txt" \
+    'printf "%s\n" "$DEMO_VALUE" > "$RESULT"; exec cat'
+ready=no
+for attempt in 1 2 3 4 5; do
+    if [ -f "$directory/inherited.txt" ] && \
+        [ -f "$directory/overridden.txt" ] && \
+        grep -Fx session "$directory/inherited.txt" > /dev/null && \
+        grep -Fx override "$directory/overridden.txt" > /dev/null; then
+        ready=yes
+        break
+    fi
+    if [ "$attempt" -lt 5 ]; then
+        sleep 1
+    fi
+done
+[ "$ready" = yes ]
+printf 'new pane: session\none-pane override: override\n'
 ```
 
-```rust
-let server = libtmux::Server::from_env()?;
-let session = libtmux::Session::from_env(&server).await?; // Option<Session>
-let window = libtmux::Window::from_env(&server).await?;
-let pane = libtmux::Pane::from_env(&server).await?;
+Run the saved script:
+
+```console
+$ sh environment.sh
 ```
 
-```csharp
-Server server = Server.FromEnvironment(null);
-Session session = await Session.FromEnvironmentAsync();
-Window window = await Window.FromEnvironmentAsync();
-Pane pane = await Pane.FromEnvironmentAsync();
-```
+The output is `server: DEMO_VALUE=global`, `session: DEMO_VALUE=session`,
+`new pane: session`, and `one-pane override: override` on separate lines.
+The bounded loop waits for the pane processes to write their result files.
+The cleanup trap then stops the private server and removes those files.
 
-Environment lookup requires valid tmux targeting variables. If your process
-can run outside tmux, handle that case before using the result.
+## Choose the environment store
 
-<!-- port:py -->
-`NotInsideTmux` reports a missing or invalid tmux environment.
-<!-- /port -->
-<!-- port:go -->
-Check the returned `error`. A `FromEnvError` identifies a missing or malformed
-variable. Passing `nil` reads the process environment; pass an explicit map to
-resolve a captured environment.
-<!-- /port -->
-<!-- port:csharp -->
-Handle `TmuxObjectNotFoundException` when the environment cannot identify an
-object.
-<!-- /port -->
+[`set-environment -g`](/tmux/latest/manual/set-environment/) changes the
+global store. Without `-g`, `-t` selects a session's store.
+[`show-environment`](/tmux/latest/manual/show-environment/) reads the chosen
+store. Its ordinary output uses `NAME=value` rows; `-s` prints shell commands
+that can set those values.
 
-<!-- port:cxx -->
-<a id="java-and-c-stop-short-of-the-pane"></a>
+[`new-window -e`](/tmux/latest/manual/new-window/) adds or overrides a value
+for that new pane's process. The script's `DEMO_VALUE=override` leaves the
+session store unchanged. [`split-window`](/tmux/latest/manual/split-window/)
+also supports `-e` when starting a new pane process.
 
-### Resolve the server socket
+## Distinguish removal from an unset marker
 
-`Server::from_env()` selects the socket. Use the resulting server to resolve
-sessions or panes.
-<!-- /port -->
+`set-environment -u` removes an entry from a store. `-r` marks a variable to be
+removed from the environment passed to new processes; `show-environment`
+prints those removed variables with a leading `-`. Use the
+[environment section](/tmux/latest/manual/full/#GLOBAL_AND_SESSION_ENVIRONMENT)
+for merge rules and the `update-environment` option.
 
-<!-- port:java -->
-### Resolve context identifiers
+`update-environment` selects variables copied from an attaching client's
+environment into the session. Read the selected release's option defaults
+before depending on a value surviving a later attach.
 
-`TmuxEnvironment` parses `TMUX` and `TMUX_PANE` into identifiers: socket path, server
-  PID, `SessionId`, and `Optional<PaneId>`. It returns context data rather than
-  a live pane handle:
+## Identify the current pane process
 
-```java
-TmuxEnvironment here = TmuxEnvironment.current().orElseThrow();
+Inside a tmux pane, `TMUX` identifies the server connection context and
+`TMUX_PANE` contains that pane's ID. Use explicit sockets and targets in
+scripts that manage another server; the caller's current pane can belong to
+a different one. [Socket and servers](../socket-and-servers/) explains server
+selection, and [format-token fields](../format-tokens/) covers live state
+read through `display-message`.
 
-try (Server server = Server.open(here.config())) {
-    Session mine = server.sessions().stream()
-          .filter(session -> session.id().equals(here.session()))
-          .findFirst()
-          .orElseThrow();
-}
-```
-<!-- /port -->
-
-<!-- port:swift -->
-<a id="swift-reads-less-than-it-could"></a>
-
-### Swift context fields
-
-Swift's `TmuxContext.current()` parses the socket path, server PID, and session
-ID from `TMUX`. It does not read `TMUX_PANE`, so it cannot identify the current
-pane:
-
-```swift
-let context = TmuxContext.current()! // socket path, server pid, session id
-let server = try context.server()
-```
-
-Read `TMUX_PANE` separately if you need the pane ID; `TmuxContext` does not
-provide it.
-<!-- /port -->
-
-## tmux's own environment variable store
-
-Like [Options and hooks](../options-and-hooks/),
-tmux's persistent environment store has global and per-session scopes. It is
-read with `show-environment` and updated with `set-environment`. Newly spawned
-processes inherit it; existing processes retain their own environments.
-
-<!-- port:py -->
-<!-- port:root -->
-### Python
-<!-- /port -->
-
-**Set:** `server.set_environment(name, value)`, `session.set_environment(...)`
-
-**Read all:** `server.show_environment()`, `session.show_environment()`
-
-**Unset:** `server.unset_environment(name)`. See below for `.remove_environment()`.
-<!-- /port -->
-
-<!-- port:ts -->
-<!-- port:root -->
-### TypeScript
-<!-- /port -->
-
-**Set:** `server.setEnvironment(name, value)`, `session.setEnvironment(...)`
-
-**Read all:** `server.showEnvironment()`, `session.showEnvironment()`
-
-**Unset:** `server.unsetEnvironment(name)`, `session.unsetEnvironment(name)`
-<!-- /port -->
-
-<!-- port:go -->
-<!-- port:root -->
-### Go
-<!-- /port -->
-
-**Set:** `server.SetEnvironment(ctx, name, value, opts)` (global, `-g`)
-
-**Read all:** `server.ShowEnvironment(ctx)`
-
-**Unset:** `server.UnsetEnvironment(ctx, name)`
-<!-- /port -->
-
-<!-- port:rs -->
-<!-- port:root -->
-### Rust
-<!-- /port -->
-
-**Set:** `server.set_environment(...)`, `session.set_environment(...)`
-
-**Read all:** `server.environment_all()`, `session.environment_all()`
-
-**Unset:** `server.unset_environment(name)`, `session.unset_environment(name)`
-<!-- /port -->
-
-<!-- port:java -->
-<!-- port:root -->
-### Java
-<!-- /port -->
-
-**Set:** Not documented here; see the process-environment note below.
-
-**Read all:** Not documented here; see the process-environment note below.
-
-**Unset:** Not documented here; see the process-environment note below.
-<!-- /port -->
-
-<!-- port:csharp -->
-<!-- port:root -->
-### C#
-<!-- /port -->
-
-**Set:** `server.Environment.SetAsync(name, value)`,
-`session.Environment.SetAsync(...)`
-
-**Read all:** `server.Environment.GetAllAsync()`
-
-**Unset:** `server.Environment.UnsetAsync(name)`, `.RemoveAsync(name)`
-<!-- /port -->
-
-<!-- port:cxx -->
-<!-- port:root -->
-### C++
-<!-- /port -->
-
-**Set:** Not documented here; see the process-environment note below.
-
-**Read all:** Not documented here; see the process-environment note below.
-
-**Unset:** Not documented here; see the process-environment note below.
-<!-- /port -->
-
-<!-- port:swift -->
-<!-- port:root -->
-### Swift
-<!-- /port -->
-
-**Set:** `server.setEnvironment(name, to: value, in: scope)`
-
-**Read all:** `server.environment(scope)`
-
-**Unset:** `server.unsetEnvironment(name, in: scope)`, `.removeEnvironment(name,
-in:)`
-<!-- /port -->
-
-<!-- port:py,ts,go,rs,csharp,swift -->
-### Examples
-
-```python
-server.set_environment("EDITOR", "vim")     # global
-session.set_environment("EDITOR", "hx")     # this session only
-session.show_environment()
-```
-
-```typescript
-await server.setEnvironment("EDITOR", "vim");
-await session.setEnvironment("EDITOR", "hx");
-await session.showEnvironment();
-```
-
-```go
-if err := session.SetEnvironment(ctx, "EDITOR", "hx", tmux.SetEnvironmentOptions{}); err != nil {
-    return err
-}
-values, err := session.ShowEnvironment(ctx)
-if err != nil {
-    return err
-}
-fmt.Println(values)
-```
-
-```rust
-server.set_environment("EDITOR", "vim").await?;
-session.set_environment("EDITOR", "hx").await?;
-session.environment_all().await?;
-```
-
-```csharp
-await server.Environment.SetAsync("EDITOR", "vim");
-await session.Environment.SetAsync("EDITOR", "hx");
-await session.Environment.GetAllAsync();
-```
-
-```swift
-try await server.setEnvironment("EDITOR", to: "vim", in: .global)
-try await server.setEnvironment("EDITOR", to: "hx", in: .session(session.id.rawValue))
-try await server.environment(.session(session.id.rawValue))
-```
-
-<!-- /port -->
-
-`set-environment` writes a value. Its `-u` flag removes the entry, while `-r`
-marks the variable for exclusion from new processes, including values tmux
-inherited at startup. The listing retains an excluded variable as `-NAME`.
-
-<!-- port:py -->
-Use `unset_environment` for `-u`, or `remove_environment` for `-r`.
-<!-- /port -->
-<!-- port:swift -->
-Use `unsetEnvironment` for `-u`, or `removeEnvironment` for `-r`.
-<!-- /port -->
-<!-- port:csharp -->
-Use `.UnsetAsync` for `-u`, or `.RemoveAsync` for `-r`.
-<!-- /port -->
-
-<!-- port:java -->
-<a id="java-and-c-no-verified-access-to-this-table-at-all"></a>
-
-### Process environment
-
-`SessionSpec.Builder.environment(Map)`, `WindowSpec.Builder.environment(Map)`,
-and `SplitSpec.Builder.environment(Map)` pass initial variables to
-`new-session -e`, `new-window -e`, and `split-window -e`. These creation options
-do not change the stored environment of an existing session.
-<!-- /port -->
-<!-- port:cxx -->
-### Process environment
-
-Creation-time environment values affect the new process. They do not update
-an existing process's environment. To change tmux's persistent table, use
-`set-environment` on the same socket as the server handle.
-<!-- /port -->
+The pinned
+[tmux manual](https://github.com/tmux/tmux/blob/e476c1230b958df0cb12977517d24b3dc931375b/tmux.1)
+documents the commands and formats used here.

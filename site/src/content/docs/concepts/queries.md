@@ -1,7 +1,7 @@
 ---
-supportedPorts: [py, java, csharp, cxx, swift]
+supportedPorts: []
 title: Filtering and queries
-description: How you get from every session on the server to the one pane you mean, and what happens when zero or several match.
+description: Select tmux sessions, windows, and panes with native format filters and exact targets.
 sidebar:
   label: Filtering and queries
   group: Concepts
@@ -9,228 +9,143 @@ sidebar:
 tableOfContents: true
 ---
 
-Use a collection filter to find matching sessions, windows, or panes. Use an
-exactly-one lookup when your next operation requires a single target.
+Use [`list-sessions`](/tmux/latest/manual/list-sessions/),
+[`list-windows`](/tmux/latest/manual/list-windows/), and
+[`list-panes`](/tmux/latest/manual/list-panes/) to query a running tmux server.
+Their `-f` flag selects rows with a boolean format expression. Their `-F` flag
+chooses the fields printed in each row. A listing can return zero, one, or many
+rows; an empty listing is a successful command.
 
-- **Filtering returns a collection; exactly-one lookup checks the result
-  count.** A filter returns zero or more matches. An exactly-one operation
-  returns one object or reports a missing or ambiguous match.
+## Match names and choose fields
 
-- **Choose where to filter.** Filter a snapshot in your program when you need
-  several queries over the same data. A tmux format filter can reduce the rows
-  returned by a live read. The cost depends on the data and queries you need.
+Save this complete script as `queries.sh`. It requires tmux 3.2a or newer and
+a POSIX shell. It creates a private server, runs the queries, and stops that
+server on exit.
 
-<!-- port:py -->
-<a id="python-filter-and-get-django-style"></a>
+```sh title="queries.sh"
+#!/bin/sh
+set -eu
+directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-query.XXXXXX")
+socket="$directory/tmux.sock"
 
-## Filter collections and select one object
-
-`server.sessions`, `session.windows`, and `window.panes` are `QueryList`
-collections. Call `.filter()` with field names and optional lookup suffixes:
-
-```python
->>> session.windows.filter(window_name__startswith='api')
-[Window(@... ...:api-server, Session($... ...))]
-
->>> session.windows.filter(window_name__iregex=r'n?vim')
-```
-
-Lookups include `exact`, `contains`, `startswith`, `endswith`, `regex`, and
-their case-insensitive `i`-prefixed variants. Multiple keywords and chained
-`.filter()` calls combine with AND. `.get()` requires exactly one match. Its
-`default` argument handles an absent result; multiple matches still raise
-`MultipleObjectsReturned`.
-
-Server-wide collections (`server.windows`, `server.panes`) enumerate window
-links. A window linked to two sessions appears once per session, so a lookup can
-be ambiguous even when the window ID is unique. Use `Window.linked_sessions` to
-find its sessions. For a known ID, use `Pane.from_pane_id()` or
-`Window.from_window_id()` to resolve the object directly.
-
-For servers with hundreds or thousands of panes, `.filter()` still builds
-every object before you discard the ones that don't match. `search_sessions`,
-`search_windows`, and `search_panes` push a tmux `-f` filter expression down
-to the server instead, so libtmux builds objects only for the matches:
-
-```python
->>> server.search_sessions(filter='#{==:#{session_name},alpha-1}')
-```
-
-Python-side lookups work with the library's supported tmux versions. The tmux
-filter grammar requires tmux 3.2 or newer. An unknown format token expands to an
-empty value, so a malformed filter can look like a valid filter with no matches.
-If `search_*()` unexpectedly returns no results, try `#{m:*,#{session_name}}` to
-check that the session data is available.
-<!-- /port -->
-
-<!-- port:ts -->
-<a id="typescript-criteria-as-data"></a>
-
-## TypeScript criteria
-
-The [TypeScript filtering guide](/ts/latest/concepts/queries/) includes complete
-programs for matching names, handling result counts, traversing linked windows,
-refreshing snapshots, validating query documents, and filtering live tmux rows.
-<!-- /port -->
-
-<!-- port:go,rs,java,cxx,csharp,swift -->
-<a id="go-rust-java-c-typed-fields-that-fail-queries-at-compile-time"></a>
-
-## Typed and local filters
-
-Typed field operations let the compiler reject incompatible comparisons:
-
-<!-- port:go -->
-`tmux.PaneFilter` describes a typed predicate over captured values. Use
-`tmuxq.Matching` or compile its `PaneFilter.Predicate()` for local queries. To filter a
-live tmux listing, pass a `TmuxFilter` expression to `Server.SearchPanes`.
-<!-- /port -->
-<!-- port:rs -->
-Typed fields reject invalid comparisons: `fields.pane_active.eq(true)` is
-valid, while `.gt(...)` on a boolean field fails to compile. Compose
-expressions with `.and()`. The `serde` feature supports versioned query
-JSON for configuration or MCP.
-<!-- /port -->
-<!-- port:java -->
-`Pane_`, `Window_`, and `Session_` expose typed field accessors for stream
-predicates. A numeric field has no `startsWith` operation. Use
-`Selections.exactlyOne` to reject absent or ambiguous matches.
-<!-- /port -->
-<!-- port:cxx -->
-Compose `FilterExpr` values with `&&`, `||`, and `!`. For example,
-`pane::command.starts_with("nv") && pane::active` is valid, while
-`pane::active.starts_with("x")` fails to compile.
-<!-- /port -->
-
-Examples of typed and local filters:
-
-```rust
-use libtmux::query::{Filterable as _, QueryIteratorExt as _};
-
-let fields = libtmux::Pane::filter_fields();
-
-// `pane_active` is a flag, so `.eq(true)` compiles; `.gt(..)` would not.
-let active = fields
-    .pane_current_command
-    .starts_with("sh")
-    .and(fields.pane_active.eq(true));
-
-let panes = server.panes().await?;
-let matched: Vec<_> = panes.iter().matching(&active).collect();
-```
-
-```go
-// Read once, filter in Go: several answers from one read.
-snapshot, err := server.Snapshot(ctx)
-if err != nil {
-	return err
+cleanup() {
+    status=$?
+    trap - 0 HUP INT TERM
+    if [ -S "$socket" ] && ! tmux -S "$socket" kill-server; then
+        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
+        exit 1
+    fi
+    rm -rf "$directory" || status=$?
+    exit "$status"
 }
-predicate, err := tmux.PaneActiveIs(true).Predicate()
-if err != nil {
-	return err
-}
-active := tmuxq.Where(snapshot.Panes(), predicate)
-fmt.Println("active panes:", len(active))
+trap cleanup 0
+trap 'exit 1' HUP INT TERM
 
-// Or push the filter down: tmux returns only the matches.
-filter := tmux.TmuxFilter("#{==:#{pane_active},1}")
-panes, err := server.SearchPanes(ctx, &filter)
-if err != nil {
-	return err
-}
-fmt.Println("live matches:", len(panes))
+tmux -S "$socket" -f /dev/null new-session -d -s work -n editor 'cat'
+tmux -S "$socket" new-session -d -s worker -n editor 'cat'
+tmux -S "$socket" new-window -d -t '=work:' -n logs 'cat'
+
+exact=$(tmux -S "$socket" list-sessions \
+    -f '#{==:#{session_name},work}' -F '#{session_name}')
+[ "$exact" = work ]
+printf 'exact: %s\n' "$exact"
+
+casefold=$(tmux -S "$socket" list-sessions \
+    -f '#{m/i:WORK,#{session_name}}' -F '#{session_name}')
+[ "$casefold" = work ]
+printf 'case insensitive: %s\n' "$casefold"
+
+windows=$(tmux -S "$socket" list-windows -t '=work' \
+    -f '#{m/r:^edit,#{window_name}}' -F '#{session_name}:#{window_name}')
+[ "$windows" = work:editor ]
+printf 'regex: %s\n' "$windows"
+
+panes=$(tmux -S "$socket" list-panes -a \
+    -f '#{&&:#{==:#{session_name},work},#{pane_active}}' \
+    -F '#{pane_id}')
+# Pane IDs contain no whitespace; split the rows to count matches.
+# shellcheck disable=SC2086
+set -- $panes
+[ "$#" -eq 2 ]
+printf 'active panes in work: %s\n' "$#"
+
+missing=$(tmux -S "$socket" list-sessions \
+    -f '#{==:#{session_name},absent}' -F '#{session_id}')
+[ -z "$missing" ]
+printf 'no matching sessions\n'
+
+tmux -S "$socket" has-session -t '=work'
+if tmux -S "$socket" has-session -t '=wor' 2>/dev/null; then
+    printf 'An exact target unexpectedly matched a prefix\n' >&2
+    exit 1
+fi
+printf 'exact target checked\n'
 ```
 
-```java
-List<Window> editors = server.windows().stream()
-        .filter(Window_.name().startsWith("edit"))
-        .toList();
+Run the saved script:
 
-// Selections.exactlyOne() is the `.get()`-shaped call.
-Session build = Selections.exactlyOne(
-        server.sessions().stream().filter(Session_.name().is("build")).toList());
+```console
+$ sh queries.sh
 ```
 
-```csharp
-IReadOnlyList<Window> windows = await session.GetWindowsAsync(ct);
-IEnumerable<Window> building = windows.Where(
-    each => each.Name.StartsWith("build", StringComparison.Ordinal));
+The output is:
 
-// A declarative query is a document, not just a lambda run in place.
-IReadOnlyList<Session> sessions = await server.GetSessionsAsync(ct);
-IReadOnlyList<Session> matched = sessions.Matching<Session>(
-    session => session.Name.StartsWith("build", StringComparison.Ordinal));
+```text
+exact: work
+case insensitive: work
+regex: work:editor
+active panes in work: 2
+no matching sessions
+exact target checked
 ```
 
-```cpp
-// A filter is a value built from typed fields; `window::active.starts_with(...)`
-// would not compile: a flag has no string operations.
-const auto interesting =
-    libtmux::window::name.starts_with("e") || libtmux::window::name == "logs";
+`#{==:#{session_name},work}` compares the complete session name with case
+sensitivity. The `m` operator uses shell patterns; its `i` modifier ignores
+case. The `r` modifier selects an extended regular expression instead of a
+shell pattern. `&&` requires both nested conditions to be true. Single quotes
+keep the shell from interpreting the format before tmux receives it.
 
-auto matched = *windows | libtmux::matching(interesting);
+## Choose the listing scope
 
-// "Exactly one, or say why not" is a question the library answers directly.
-auto logs = *windows | libtmux::matching(libtmux::window::name == "logs");
-if (const auto only = libtmux::exactly_one(logs); only.has_value()) {
-  std::printf("exactly one: %s\n", std::string{only->get().id()}.c_str());
-}
-```
+`list-sessions` lists the server's sessions. `list-windows -t '=work'` lists
+windows in exactly the session named `work`; `list-windows -a` visits all
+sessions. `list-panes` normally lists one window. Add `-s` to list every window
+in a session, or `-a` to visit all sessions on the server.
 
-```swift
-// Filter locally with the standard library:
-let editors = try await server.panes().filter { $0.currentCommand == "nvim" }
+`pane_active` identifies the active pane in each window. It does not identify
+one pane for the entire server. In the script, `work` has two windows, so the
+filter returns two pane IDs.
 
-// Or build a filter that travels: stored, sent, replayed elsewhere:
-let expression = try FilterExpr<Pane>.where(\.currentCommand, .isIn(["nvim", "vim"]))
-let matching = try await server.panes().filter(expression)
-```
-<!-- /port -->
+A window can be linked into more than one session. Server-wide window and pane
+listings visit those links, so the same window or pane ID can appear more than
+once. Keep the session fields when the link matters, or deduplicate IDs before
+applying an operation once per object.
 
-<a id="the-cardinality-contract-side-by-side"></a>
+## Require one target
 
-## Result counts
+An exact session target begins with `=`. The
+[`has-session`](/tmux/latest/manual/has-session/) command exits with zero if
+that session exists and one if it does not. Without `=`, tmux can match name
+prefixes or shell patterns. The [target syntax](/tmux/latest/manual/full/#COMMANDS)
+describes how it resolves sessions, windows, and panes.
 
-<!-- port:py,ts,java -->
-<!-- port:py -->
-<!-- port:root -->
-### Python
-<!-- /port -->
-Use `QueryList.filter` to keep matching objects and `QueryList.get` when
-exactly one must match. An empty result raises `ObjectDoesNotExist` unless
-you supply `default=`. Several matches raise `MultipleObjectsReturned`.
-<!-- /port -->
+A filter has no exactly-one guarantee. Count the returned IDs before passing
+one to the next command. The [querying guide](/guides/querying-and-filtering/)
+shows that check and uses
+[`display-message`](/tmux/latest/manual/display-message/) with the selected ID.
+Objects can disappear between commands, so keep errors from the later command
+visible too.
 
-<!-- port:ts -->
-<!-- port:root -->
-### TypeScript
-<!-- /port -->
-Use `where()` or `filter()` to select matches and `one()` to require exactly
-one. No match raises `NoMatchError`; `oneOrUndefined()` accepts that case.
-Several matches raise `MultipleMatchesError`.
-<!-- /port -->
+## Diagnose an empty result
 
-<!-- port:java -->
-<!-- port:root -->
-### Java
-<!-- /port -->
-Filter with `Stream.filter` and require one match with
-`Selections.exactlyOne`. Empty and multiple results raise
-`CardinalityException.NoMatch` and `CardinalityException.MultipleMatches`,
-respectively.
-<!-- /port -->
+Formats treat an empty string or `0` as false. Unknown format variables expand
+to an empty string, which can make a misspelled field look like a valid query
+with no matches. Inspect the same fields with `-F` before adding `-f`, and check
+the [format variables and operators](/tmux/latest/manual/full/#FORMATS).
 
-<!-- /port -->
+Each listing reads live server state. Saving its output lets several local
+decisions use the same rows, but does not reserve the sessions, windows, or
+panes. Run another listing when the decision needs fresh state.
 
-[Filtering and querying](/guides/querying-and-filtering/) shows exactly-one
-lookups and their error handling. Do not index the first result until the
-operation has established that a match exists.
-
-<!-- port:root -->
-## tmux command reference
-
-The tmux [list-panes](/tmux/latest/manual/list-panes/) and
-[list-windows](/tmux/latest/manual/list-windows/) references describe native
-format filters. See [formats](/tmux/latest/manual/full/#FORMATS) for
-expressions and available variables.
-<!-- /port -->
+These commands and expressions are documented in the pinned
+[tmux manual](https://github.com/tmux/tmux/blob/e476c1230b958df0cb12977517d24b3dc931375b/tmux.1).

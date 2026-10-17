@@ -382,11 +382,12 @@ const cooldownGroup = (slug: string) => `cooldown-mode-${packageId}-${slug}`
   }
 
   /**
-   * Arrow keys along a tab strip.
+   * Keyboard navigation along a tab strip.
    *
    * `role="tablist"` is a promise that Left and Right move between the tabs;
    * without it a keyboard reader Tabs through every tab in the strip to reach
-   * the content, which is what the roles exist to avoid. Shared by both strips
+   * the content, which is what the roles exist to avoid. Home and End select
+   * the first and last tabs. Shared by both strips
    * because the mechanism is the same either way — only the selector and what
    * a selection means differ.
    */
@@ -397,9 +398,11 @@ const cooldownGroup = (slug: string) => `cooldown-mode-${packageId}-${slug}`
     select: (tab: HTMLButtonElement) => void,
   ) {
     const delta = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0
-    if (!delta || tabs.length < 2) return
+    if ((!delta && event.key !== 'Home' && event.key !== 'End') || tabs.length < 2) return
     event.preventDefault()
-    const next = tabs[(tabs.indexOf(current) + delta + tabs.length) % tabs.length]!
+    const index = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1
+      : (tabs.indexOf(current) + delta + tabs.length) % tabs.length
+    const next = tabs[index]!
     select(next)
     next.focus()
   }
