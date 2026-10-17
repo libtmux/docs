@@ -394,6 +394,10 @@ a trailing period. Do not copy an automated dependency bot's colon form.
 
 Subjects name the deliverable, not the editing activity. A changelog commit
 should name the behavior documented rather than say "refresh CHANGES".
+Pin and merge messages describe the net capabilities or fixes adopted from
+upstream. Inspect the actual old and new trees; ancestry alone can include
+work already delivered. Identify language-specific scope and keep source
+refs in the body for traceability.
 Use `why:` to record the problem or constraint; use `what:` for the changes
 that resolve it. Include a triggering input, failure, or tradeoff when it
 helps explain the decision. Scale the body to the change.
