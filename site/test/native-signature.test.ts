@@ -87,6 +87,7 @@ const cases = [
   ['ts', 'types.ConnectedServer.[Symbol.asyncDispose]'],
   ['ts', 'server.Server.constructor'],
   ['cxx', 'libtmux::Server::sessions'],
+  ['swift', 'Server.capture(_:since:limit:)'],
   ['scala', 'io.github.libtmux.scaladsl.Server.sessions'],
   ['kotlin', 'io.github.libtmux.kotlin.Server.sessions'],
   ['fsharp', 'LibTmux.FSharp.Server.newSession'],
@@ -675,6 +676,7 @@ describe('native signature emission', () => {
     ['java', 'io.github.libtmux.Server.Server.sessions', 'containment'],
     ['fsharp', 'LibTmux.FSharp.Server.capture', 'containment'],
     ['cxx', 'libtmux::Server::sessions', 'containment'],
+    ['swift', 'Server.capture(_:since:limit:)', 'containment'],
     ['ts', 'server.Server.setHook', 'keyboard'],
     ['scala', 'io.github.libtmux.scaladsl.Server.sessions', 'keyboard'],
     ['kotlin', 'io.github.libtmux.kotlin.Server.sessions', 'keyboard'],
@@ -682,6 +684,7 @@ describe('native signature emission', () => {
     ['java', 'io.github.libtmux.Server.Server.sessions', 'keyboard'],
     ['fsharp', 'LibTmux.FSharp.Server.capture', 'keyboard'],
     ['cxx', 'libtmux::Server::sessions', 'keyboard'],
+    ['swift', 'Server.capture(_:since:limit:)', 'keyboard'],
   ] as const)('gives formatted %s declaration %s local %s access', async (port, id, check) => {
     const model = JSON.parse(readFileSync(new URL(`../src/data/api/${port}.json`, import.meta.url), 'utf8')) as ApiModel
     const symbol = model.symbols.find((entry) => entry.id === id)!

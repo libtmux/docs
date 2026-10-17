@@ -155,6 +155,13 @@ export function supportsJavaSignatures(symbol: ApiSymbol, language?: string): bo
     symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
 }
 
+/** The reference spells a Swift callable as its name and typed parameters, with no source declaration. */
+export function supportsSwiftSignatures(symbol: ApiSymbol, language?: string): boolean {
+  return language === 'swift' && ['method', 'function'].includes(symbol.kind) && symbol.signatures.length > 0 &&
+    symbol.signatures.every((signature) => signature.params.every((param) =>
+      typeof param.type === 'string' && !param.variadic && !param.optional && param.default === undefined))
+}
+
 export function supportsRustSignatures(symbol: ApiSymbol, language?: string): boolean {
   return language === 'rs' && ['method', 'function'].includes(symbol.kind) && symbol.signatures.length > 0 &&
     symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
@@ -277,6 +284,11 @@ export async function apiSignatureLayouts(symbol: ApiSymbol, language?: string):
     const { jvmSignatureLayout } = await import('./jvm-code-layout')
     return new Map(await Promise.all(symbol.signatures.filter((signature) => signature.raw).map(async (signature) =>
       [signature, await jvmSignatureLayout(signature, language)] as const)))
+  }
+  if (supportsSwiftSignatures(symbol, language)) {
+    const { swiftSignatureLayout } = await import('./swift-code-layout')
+    return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
+      [signature, await swiftSignatureLayout(symbol, signature)] as const)))
   }
   if (language === 'cxx' && ['method', 'function'].includes(symbol.kind) && symbol.signatures.length > 0 &&
     symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))) {

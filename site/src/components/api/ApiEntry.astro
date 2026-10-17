@@ -78,10 +78,12 @@ const { symbol, index, sourceUrl, port, language = port, manualLinks, alternativ
 const anchor = symbol.publicId ?? symbol.id
 const kind = symbol.kind
 const nativeEntries = language === 'c' ? symbol.signatures.filter((signature) => signature.raw) : symbol.signatures
-const nativeSignatures = usesNativeSignatures(symbol, language)
 const signatureLayouts = await apiSignatureLayouts(symbol, language)
 const nativeSignatureText: typeof unformattedNativeSignatureText = (entry, signature, port) =>
   signatureLayouts.get(signature)?.text ?? unformattedNativeSignatureText(entry, signature, port)
+
+// A prepared layout is the declaration, even where the port documents few parameters.
+const nativeSignatures = usesNativeSignatures(symbol, language) || signatureLayouts.size > 0
 
 /**
  * The Sphinx domain this port's symbols belong to.
