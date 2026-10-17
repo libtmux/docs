@@ -16,7 +16,7 @@ expansion and listing commands' `-F` flag to choose fields for each row.
 
 ## Read fields from a pane
 
-Save this complete script as `formats.sh`. It requires tmux 3.2a or newer and
+Save this complete script as `formats.sh`. It requires tmux 3.3a or newer and
 a POSIX shell. It reads the context of a private pane, evaluates a conditional,
 and checks the format inventory before cleaning up.
 
