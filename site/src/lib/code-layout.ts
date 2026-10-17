@@ -241,6 +241,11 @@ export async function apiSignatureLayouts(symbol: ApiSymbol, language?: string):
     return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
       [signature, await powershellSignatureLayout(symbol, signature)] as const)))
   }
+  if (language === 'julia' && symbol.signatures.some((signature) => signature.raw?.trim())) {
+    const { juliaSignatureLayout } = await import('./julia-code-layout')
+    return new Map(await Promise.all(symbol.signatures.filter((signature) => signature.raw?.trim()).map(async (signature) =>
+      [signature, await juliaSignatureLayout(symbol, signature)] as const)))
+  }
   if ((language === 'scala' || language === 'kotlin') && ['method', 'function'].includes(symbol.kind)) {
     const { jvmSignatureLayout } = await import('./jvm-code-layout')
     return new Map(await Promise.all(symbol.signatures.filter((signature) => signature.raw).map(async (signature) =>

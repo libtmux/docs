@@ -1,0 +1,1091 @@
+{
+ "formatter": {
+  "package": "JuliaFormatter.jl",
+  "version": "2.14.0",
+  "julia": "1.13.1",
+  "options": {
+   "style": "DefaultStyle()",
+   "indent": 4,
+   "margin": 60,
+   "format_docstrings": false,
+   "whitespace_in_kwargs": false
+  },
+  "settings_source": "libtmux-julia dev/check-quality.jl formats its sources with these options at margin 92; the documentation surface uses margin 60 (CODE_COLUMNS.api).",
+  "method": "Each input is the extracted signature normalized by format_text at margin 100000, so only its line breaks are left to decide. The formatter then ran at margin 60. The extractor spells types with spaces and bare where variables, which the formatter rewrites; layouts keep those tokens, so inputs use the formatter spelling.",
+  "regenerate": "julia --project=<scratch> -e 'using JuliaFormatter; fmt(s; margin) = JuliaFormatter.format_text(s; style=DefaultStyle(), indent=4, margin=margin, format_docstrings=false, whitespace_in_kwargs=false); input = strip(fmt(raw; margin=100000)); formatted = strip(fmt(input; margin=60))'"
+ },
+ "source": {
+  "repository": "libtmux/libtmux-julia",
+  "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
+  "model": "site/src/data/api/julia.json"
+ },
+ "shapes": [
+  {
+   "name": "keyword-only list that wraps after the leading semicolon",
+   "input": "open_server(; tmux, env, timeout, cancel, another_keyword_argument, final)",
+   "formatted": "open_server(;\n    tmux,\n    env,\n    timeout,\n    cancel,\n    another_keyword_argument,\n    final,\n)"
+  },
+  {
+   "name": "keyword-only list that fits",
+   "input": "open_server(; tmux, env)",
+   "formatted": "open_server(; tmux, env)"
+  },
+  {
+   "name": "optional positional and keyword defaults with a return type",
+   "input": "run(connection::LibTmux.ControlConnection, command::Cmd, x::Int=1; timeout::Real=5.0, cancel=nothing)::LibTmux.CommandResult",
+   "formatted": "run(\n    connection::LibTmux.ControlConnection,\n    command::Cmd,\n    x::Int=1;\n    timeout::Real=5.0,\n    cancel=nothing,\n)::LibTmux.CommandResult"
+  },
+  {
+   "name": "nested defaults, character literals, interpolation and command literals",
+   "input": "configure(connection::LibTmux.ControlConnection; value::Tuple{T,String}=(map(identity, [1, 2]), \"a, b\"), transpose=matrix', message=\"$(join([\"a\", \"b\"], \",\"))\", command=`printf \"a,b\"`, rest...) where {T<:Real}",
+   "formatted": "configure(\n    connection::LibTmux.ControlConnection;\n    value::Tuple{T,String}=(map(identity, [1, 2]), \"a, b\"),\n    transpose=matrix',\n    message=\"$(join([\"a\", \"b\"], \",\"))\",\n    command=`printf \"a,b\"`,\n    rest...,\n) where {T<:Real}"
+  },
+  {
+   "name": "keyword-only defaults with raw and escaped strings",
+   "input": "configure(; path=\"C:\\\\tmp\\\\\\\\\", pattern=raw\"a,b\", label=\"first, \\\"second\\\"\", long_argument_name=nothing)",
+   "formatted": "configure(;\n    path=\"C:\\\\tmp\\\\\\\\\",\n    pattern=raw\"a,b\",\n    label=\"first, \\\"second\\\"\",\n    long_argument_name=nothing,\n)"
+  },
+  {
+   "name": "macro call keeps its arguments exactly",
+   "input": "@sync_command(connection::LibTmux.ControlConnection, target::LibTmux.PaneRef, extra...)",
+   "formatted": "@sync_command(\n    connection::LibTmux.ControlConnection,\n    target::LibTmux.PaneRef,\n    extra...\n)"
+  },
+  {
+   "name": "short macro call",
+   "input": "@sync_command(connection, target)",
+   "formatted": "@sync_command(connection, target)"
+  },
+  {
+   "name": "where clause with bounds wraps the call before the braces",
+   "input": "f(a::T, b::T) where {T<:Union{LibTmux.SessionRef,LibTmux.WindowRef,LibTmux.PaneRef},U<:AbstractString}",
+   "formatted": "f(\n    a::T,\n    b::T,\n) where {\n    T<:Union{\n        LibTmux.SessionRef,\n        LibTmux.WindowRef,\n        LibTmux.PaneRef,\n    },\n    U<:AbstractString,\n}"
+  },
+  {
+   "name": "varargs type with keyword arguments",
+   "input": "f(args::Vararg{Union{LibTmux.SessionRef,LibTmux.WindowRef}}; keyword_one::Int, keyword_two::String, rest...)",
+   "formatted": "f(\n    args::Vararg{\n        Union{LibTmux.SessionRef,LibTmux.WindowRef},\n    };\n    keyword_one::Int,\n    keyword_two::String,\n    rest...,\n)"
+  },
+  {
+   "name": "callee longer than the budget",
+   "input": "LibTmux.very_long_module_name.another_very_long_module_name.some_function_name_that_is_long_indeed(x)",
+   "formatted": "LibTmux.very_long_module_name.another_very_long_module_name.some_function_name_that_is_long_indeed(\n    x,\n)"
+  },
+  {
+   "name": "nested calls wrap from the outside in",
+   "input": "f(a, g(b, c), h(d::Vector{LibTmux.SessionReference}, e::Dict{String,Vector{LibTmux.WindowReference}}))",
+   "formatted": "f(\n    a,\n    g(b, c),\n    h(\n        d::Vector{LibTmux.SessionReference},\n        e::Dict{String,Vector{LibTmux.WindowReference}},\n    ),\n)"
+  },
+  {
+   "name": "short call before a where clause that fits",
+   "input": "f(a, b) where {T<:LibTmux.SessionRef,U<:AbstractString,V<:Any}",
+   "formatted": "f(\n    a,\n    b,\n) where {T<:LibTmux.SessionRef,U<:AbstractString,V<:Any}"
+  },
+  {
+   "name": "where clause after a call that wraps",
+   "input": "much_longer_function_name(a::T, b::U) where {T<:LibTmux.SessionRef,U<:AbstractString}",
+   "formatted": "much_longer_function_name(\n    a::T,\n    b::U,\n) where {T<:LibTmux.SessionRef,U<:AbstractString}"
+  },
+  {
+   "name": "constructor with type parameters and a bounded where clause",
+   "input": "LibTmux.EntityRef{I}(server::LibTmux.ServerIdentity, id) where {I<:EntityID}",
+   "formatted": "LibTmux.EntityRef{I}(\n    server::LibTmux.ServerIdentity,\n    id,\n) where {I<:EntityID}"
+  },
+  {
+   "name": "operator method with a where clause",
+   "input": "==(a::LibTmux.TmuxID{K}, b::LibTmux.TmuxID{K}) where {K}",
+   "formatted": "==(a::LibTmux.TmuxID{K}, b::LibTmux.TmuxID{K}) where {K}"
+  },
+  {
+   "name": "keyword arguments with type annotations",
+   "input": "capture_pane(server::LibTmux.Server, pane::LibTmux.PaneRef; start_line::Union{Nothing,Int}, end_line::Union{Nothing,Int}, kwargs...)",
+   "formatted": "capture_pane(\n    server::LibTmux.Server,\n    pane::LibTmux.PaneRef;\n    start_line::Union{Nothing,Int},\n    end_line::Union{Nothing,Int},\n    kwargs...,\n)"
+  },
+  {
+   "name": "literal defaults and nested brackets",
+   "input": "check(value=(1, 2), other=[1, 2, 3], label=\"first\", function_with_a_long_name=identity, final_argument_here=nothing)",
+   "formatted": "check(\n    value=(1, 2),\n    other=[1, 2, 3],\n    label=\"first\",\n    function_with_a_long_name=identity,\n    final_argument_here=nothing,\n)"
+  },
+  {
+   "name": "multi-line string default stays verbatim",
+   "input": "configure(connection::LibTmux.ControlConnection; message=\"\"\"first,\nsecond; (third)\"\"\", nested=Dict(:a => (1, 2)))",
+   "formatted": "configure(\n    connection::LibTmux.ControlConnection;\n    message=\"\"\"first,\nsecond; (third)\"\"\",\n    nested=Dict(:a => (1, 2)),\n)"
+  },
+  {
+   "name": "adjoint and character literals in nested calls",
+   "input": "tuple_default(value=tuple(matrix', ')', ','), very_long_argument_name_to_force_multiline=nothing)",
+   "formatted": "tuple_default(\n    value=tuple(matrix', ')', ','),\n    very_long_argument_name_to_force_multiline=nothing,\n)"
+  },
+  {
+   "name": "unicode identifiers",
+   "input": "α₁(x::Int, ∑::Float64, rest_of_the_argument_list_is_long::Vector{Int}, more_arguments::String)",
+   "formatted": "α₁(\n    x::Int,\n    ∑::Float64,\n    rest_of_the_argument_list_is_long::Vector{Int},\n    more_arguments::String,\n)"
+  },
+  {
+   "name": "single positional parameter",
+   "input": "f(x)",
+   "formatted": "f(x)"
+  },
+  {
+   "name": "empty call",
+   "input": "f()",
+   "formatted": "f()"
+  },
+  {
+   "name": "empty keyword list",
+   "input": "f(;)",
+   "formatted": "f(;)"
+  },
+  {
+   "name": "string-macro and MIME parameters",
+   "input": "show(io::IO, ::MIME\"text/plain\", x::LibTmux.ControlConnection; context=nothing, verbose=false)",
+   "formatted": "show(\n    io::IO,\n    ::MIME\"text/plain\",\n    x::LibTmux.ControlConnection;\n    context=nothing,\n    verbose=false,\n)"
+  },
+  {
+   "name": "indexing-style type parameters with a where tuple",
+   "input": "getindex(x::LibTmux.Selection{T}, i::Int, j::Union{Int,Colon}, k::Vararg{Int,N}) where {T,N}",
+   "formatted": "getindex(\n    x::LibTmux.Selection{T},\n    i::Int,\n    j::Union{Int,Colon},\n    k::Vararg{Int,N},\n) where {T,N}"
+  },
+  {
+   "name": "callable receiver that fits",
+   "input": "(q::LibTmux.Criterion)(item)",
+   "formatted": "(q::LibTmux.Criterion)(item)"
+  },
+  {
+   "name": "callable constructor receiver that fits",
+   "input": "(self::Type{LibTmux.ControlSignal{C}} where {C})(connection, name, state)",
+   "formatted": "(self::Type{LibTmux.ControlSignal{C}} where {C})(\n    connection,\n    name,\n    state,\n)"
+  },
+  {
+   "name": "callable constructor receiver that wraps",
+   "input": "(self::Type{LibTmux.SomeVeryLongTypeName{C}} where {C})(connection, name, state, notified, request)",
+   "formatted": "(self::Type{LibTmux.SomeVeryLongTypeName{C}} where {C})(\n    connection,\n    name,\n    state,\n    notified,\n    request,\n)"
+  },
+  {
+   "name": "single parameter whose name cannot fit",
+   "input": "a_function_with_one_extremely_long_positional_argument_name_that_cannot_fit(argument_with_an_extremely_long_name_that_overflows::Int)",
+   "formatted": "a_function_with_one_extremely_long_positional_argument_name_that_cannot_fit(\n    argument_with_an_extremely_long_name_that_overflows::Int,\n)"
+  }
+ ],
+ "corpus": [
+  {
+   "input": "LibTmux.BatchResult(operations::Vector{LibTmux.OperationResult})",
+   "formatted": "LibTmux.BatchResult(\n    operations::Vector{LibTmux.OperationResult},\n)"
+  },
+  {
+   "input": "LibTmux.EntityRef{I}(server::LibTmux.ServerIdentity, id) where {I<:EntityID}",
+   "formatted": "LibTmux.EntityRef{I}(\n    server::LibTmux.ServerIdentity,\n    id,\n) where {I<:EntityID}"
+  },
+  {
+   "input": "LibTmux.CancellationSubscription(token::LibTmux.CancellationToken, key::UInt64, lock::ReentrantLock, closed::Bool)",
+   "formatted": "LibTmux.CancellationSubscription(\n    token::LibTmux.CancellationToken,\n    key::UInt64,\n    lock::ReentrantLock,\n    closed::Bool,\n)"
+  },
+  {
+   "input": "LibTmux.CancellationToken(lock::ReentrantLock, cancelled::Bool, next_id::UInt64, hooks::Dict{UInt64,Function})",
+   "formatted": "LibTmux.CancellationToken(\n    lock::ReentrantLock,\n    cancelled::Bool,\n    next_id::UInt64,\n    hooks::Dict{UInt64,Function},\n)"
+  },
+  {
+   "input": "LibTmux.CaptureDecodeError(cause::LibTmux.InvalidUTF8Error, bytes::AbstractVector{UInt8})",
+   "formatted": "LibTmux.CaptureDecodeError(\n    cause::LibTmux.InvalidUTF8Error,\n    bytes::AbstractVector{UInt8},\n)"
+  },
+  {
+   "input": "LibTmux.ClientID(name::AbstractString, incarnation::AbstractString)",
+   "formatted": "LibTmux.ClientID(\n    name::AbstractString,\n    incarnation::AbstractString,\n)"
+  },
+  {
+   "input": "LibTmux.ClientSnapshot(_snapshot::LibTmux.Snapshot, _index::Int64)",
+   "formatted": "LibTmux.ClientSnapshot(\n    _snapshot::LibTmux.Snapshot,\n    _index::Int64,\n)"
+  },
+  {
+   "input": "LibTmux.ClientWhere(clauses::Tuple{Vararg{LibTmux._FieldClause}}, ::Val{:validated})",
+   "formatted": "LibTmux.ClientWhere(\n    clauses::Tuple{Vararg{LibTmux._FieldClause}},\n    ::Val{:validated},\n)"
+  },
+  {
+   "input": "LibTmux.CommandError(result::LibTmux.CommandResult, command::String)",
+   "formatted": "LibTmux.CommandError(\n    result::LibTmux.CommandResult,\n    command::String,\n)"
+  },
+  {
+   "input": "LibTmux.CommandResult(stdout::Vector{UInt8}, stderr::Vector{UInt8}, exitcode::Int64, termsignal::Int64)",
+   "formatted": "LibTmux.CommandResult(\n    stdout::Vector{UInt8},\n    stderr::Vector{UInt8},\n    exitcode::Int64,\n    termsignal::Int64,\n)"
+  },
+  {
+   "input": "LibTmux.ControlBufferCleanupError(buffer::LibTmux.BufferRef, cause::Exception)",
+   "formatted": "LibTmux.ControlBufferCleanupError(\n    buffer::LibTmux.BufferRef,\n    cause::Exception,\n)"
+  },
+  {
+   "input": "LibTmux.ControlCommandError(result::LibTmux.ControlResult, command::String)",
+   "formatted": "LibTmux.ControlCommandError(\n    result::LibTmux.ControlResult,\n    command::String,\n)"
+  },
+  {
+   "input": "LibTmux.ControlConnection(server::LibTmux.Server, session::LibTmux.SessionRef, identity::LibTmux.ServerIdentity, lock::ReentrantLock, changed::Base.GenericCondition{ReentrantLock}, process::Base.Process, input::Pipe, output::Pipe, errors::Pipe, workers::Vector{Task}, supervisor::Union{Nothing,Task}, pending::Vector{LibTmux._ControlRequest}, events::Vector{LibTmux._ControlEvent}, stderr::Vector{UInt8}, capacity::Int64, state::Symbol, reason::Symbol, startup::Bool, startup_failed::Bool, submitted::Int64, stop_timer::Union{Nothing,Timer}, stop_timer_task::Union{Nothing,Task}, cleanup::Union{Nothing,LibTmux.ControlConnection}, parent::Union{Nothing,LibTmux.ControlConnection}, signals::Vector{LibTmux.ControlSignal}, cleanup_queue::Vector{LibTmux.ControlSignal}, cleanup_worker::Union{Nothing,Task}, closing_requested::Bool, cleanup_error::Union{Nothing,LibTmux.ControlCleanupError}, observation::Union{Nothing,LibTmux._ControlObservationState})",
+   "formatted": "LibTmux.ControlConnection(\n    server::LibTmux.Server,\n    session::LibTmux.SessionRef,\n    identity::LibTmux.ServerIdentity,\n    lock::ReentrantLock,\n    changed::Base.GenericCondition{ReentrantLock},\n    process::Base.Process,\n    input::Pipe,\n    output::Pipe,\n    errors::Pipe,\n    workers::Vector{Task},\n    supervisor::Union{Nothing,Task},\n    pending::Vector{LibTmux._ControlRequest},\n    events::Vector{LibTmux._ControlEvent},\n    stderr::Vector{UInt8},\n    capacity::Int64,\n    state::Symbol,\n    reason::Symbol,\n    startup::Bool,\n    startup_failed::Bool,\n    submitted::Int64,\n    stop_timer::Union{Nothing,Timer},\n    stop_timer_task::Union{Nothing,Task},\n    cleanup::Union{Nothing,LibTmux.ControlConnection},\n    parent::Union{Nothing,LibTmux.ControlConnection},\n    signals::Vector{LibTmux.ControlSignal},\n    cleanup_queue::Vector{LibTmux.ControlSignal},\n    cleanup_worker::Union{Nothing,Task},\n    closing_requested::Bool,\n    cleanup_error::Union{\n        Nothing,\n        LibTmux.ControlCleanupError,\n    },\n    observation::Union{\n        Nothing,\n        LibTmux._ControlObservationState,\n    },\n)"
+  },
+  {
+   "input": "LibTmux.ControlConnection(server, session, identity, lock, changed, process, input, output, errors, workers, supervisor, pending, events, stderr, capacity, state, reason, startup, startup_failed, submitted, stop_timer, stop_timer_task, cleanup, parent, signals, cleanup_queue, cleanup_worker, closing_requested, cleanup_error, observation)",
+   "formatted": "LibTmux.ControlConnection(\n    server,\n    session,\n    identity,\n    lock,\n    changed,\n    process,\n    input,\n    output,\n    errors,\n    workers,\n    supervisor,\n    pending,\n    events,\n    stderr,\n    capacity,\n    state,\n    reason,\n    startup,\n    startup_failed,\n    submitted,\n    stop_timer,\n    stop_timer_task,\n    cleanup,\n    parent,\n    signals,\n    cleanup_queue,\n    cleanup_worker,\n    closing_requested,\n    cleanup_error,\n    observation,\n)"
+  },
+  {
+   "input": "LibTmux.ControlResult(stdout::Vector{UInt8}, failed::Bool, timestamp::UInt64, number::UInt64, flags::UInt64)",
+   "formatted": "LibTmux.ControlResult(\n    stdout::Vector{UInt8},\n    failed::Bool,\n    timestamp::UInt64,\n    number::UInt64,\n    flags::UInt64,\n)"
+  },
+  {
+   "input": "LibTmux.ControlResult(stdout, failed, timestamp, number, flags)",
+   "formatted": "LibTmux.ControlResult(\n    stdout,\n    failed,\n    timestamp,\n    number,\n    flags,\n)"
+  },
+  {
+   "input": "(var\"#ctor-self#\"::Type{LibTmux.ControlSignal{C}} where {C})(connection, name, state, notified, request, cleanup_queued, cleanup_done, error)",
+   "formatted": "(var\"#ctor-self#\"::Type{LibTmux.ControlSignal{C}} where {C})(\n    connection,\n    name,\n    state,\n    notified,\n    request,\n    cleanup_queued,\n    cleanup_done,\n    error,\n)"
+  },
+  {
+   "input": "LibTmux.ControlSignal(connection::C, name::String, state::Symbol, notified::Bool, request::Union{Nothing,LibTmux._ControlRequest}, cleanup_queued::Bool, cleanup_done::Bool, error::Union{Nothing,Exception}) where {C}",
+   "formatted": "LibTmux.ControlSignal(\n    connection::C,\n    name::String,\n    state::Symbol,\n    notified::Bool,\n    request::Union{Nothing,LibTmux._ControlRequest},\n    cleanup_queued::Bool,\n    cleanup_done::Bool,\n    error::Union{Nothing,Exception},\n) where {C}"
+  },
+  {
+   "input": "LibTmux.CreationResponseError(result::R, cause::Exception) where {R}",
+   "formatted": "LibTmux.CreationResponseError(\n    result::R,\n    cause::Exception,\n) where {R}"
+  },
+  {
+   "input": "LibTmux.DeadlineExceeded(timeout::Float64, sent::Bool, result::Union{Nothing,LibTmux.CommandResult})",
+   "formatted": "LibTmux.DeadlineExceeded(\n    timeout::Float64,\n    sent::Bool,\n    result::Union{Nothing,LibTmux.CommandResult},\n)"
+  },
+  {
+   "input": "LibTmux.EnvironmentValue(value::Union{Nothing,String}, hidden::Bool, inherited::Bool)",
+   "formatted": "LibTmux.EnvironmentValue(\n    value::Union{Nothing,String},\n    hidden::Bool,\n    inherited::Bool,\n)"
+  },
+  {
+   "input": "LibTmux.FormatField(name::AbstractString, ::Type{T}) where {T}",
+   "formatted": "LibTmux.FormatField(\n    name::AbstractString,\n    ::Type{T},\n) where {T}"
+  },
+  {
+   "input": "LibTmux.FormatHints(candidate_names::Vector{String}, result::LibTmux.CommandResult, availability::Symbol, complete::Bool)",
+   "formatted": "LibTmux.FormatHints(\n    candidate_names::Vector{String},\n    result::LibTmux.CommandResult,\n    availability::Symbol,\n    complete::Bool,\n)"
+  },
+  {
+   "input": "LibTmux.FormatHints(candidate_names, result, availability, complete)",
+   "formatted": "LibTmux.FormatHints(\n    candidate_names,\n    result,\n    availability,\n    complete,\n)"
+  },
+  {
+   "input": "(var\"#ctor-self#\"::Type{LibTmux.FormatObservation{T}} where {T})(field, raw, value, availability)",
+   "formatted": "(\n    var\"#ctor-self#\"::Type{\n        LibTmux.FormatObservation{T},\n    } where {T}\n)(\n    field,\n    raw,\n    value,\n    availability,\n)"
+  },
+  {
+   "input": "LibTmux.FormatObservation(field::LibTmux.FormatField{T}, raw::String, value::Union{Nothing,T}, availability::Symbol) where {T}",
+   "formatted": "LibTmux.FormatObservation(\n    field::LibTmux.FormatField{T},\n    raw::String,\n    value::Union{Nothing,T},\n    availability::Symbol,\n) where {T}"
+  },
+  {
+   "input": "LibTmux.FormatUpdate(field::String, bytes::Vector{UInt8}, session::LibTmux.SessionRef, window::Union{Nothing,LibTmux.WindowRef}, window_index::Union{Nothing,Int64}, pane::Union{Nothing,LibTmux.PaneRef}, cursor::LibTmux.ObservationCursor)",
+   "formatted": "LibTmux.FormatUpdate(\n    field::String,\n    bytes::Vector{UInt8},\n    session::LibTmux.SessionRef,\n    window::Union{Nothing,LibTmux.WindowRef},\n    window_index::Union{Nothing,Int64},\n    pane::Union{Nothing,LibTmux.PaneRef},\n    cursor::LibTmux.ObservationCursor,\n)"
+  },
+  {
+   "input": "LibTmux.FormatUpdate(field, bytes, session, window, window_index, pane, cursor)",
+   "formatted": "LibTmux.FormatUpdate(\n    field,\n    bytes,\n    session,\n    window,\n    window_index,\n    pane,\n    cursor,\n)"
+  },
+  {
+   "input": "(var\"#ctor-self#\"::Type{LibTmux.FormatValueError{R}} where {R})(field, expected, raw, result)",
+   "formatted": "(\n    var\"#ctor-self#\"::Type{\n        LibTmux.FormatValueError{R},\n    } where {R}\n)(\n    field,\n    expected,\n    raw,\n    result,\n)"
+  },
+  {
+   "input": "LibTmux.FormatValueError(field::String, expected::DataType, raw::String, result::R) where {R}",
+   "formatted": "LibTmux.FormatValueError(\n    field::String,\n    expected::DataType,\n    raw::String,\n    result::R,\n) where {R}"
+  },
+  {
+   "input": "LibTmux.GroupResult(operations::Vector{LibTmux.OperationResult}, aggregate::Union{Nothing,LibTmux.CommandResult,LibTmux.ControlResult}, error::Union{Nothing,Exception}, retired::Bool, opaque::Bool)",
+   "formatted": "LibTmux.GroupResult(\n    operations::Vector{LibTmux.OperationResult},\n    aggregate::Union{\n        Nothing,\n        LibTmux.CommandResult,\n        LibTmux.ControlResult,\n    },\n    error::Union{Nothing,Exception},\n    retired::Bool,\n    opaque::Bool,\n)"
+  },
+  {
+   "input": "LibTmux.GroupResult(operations, aggregate, error, retired, opaque)",
+   "formatted": "LibTmux.GroupResult(\n    operations,\n    aggregate,\n    error,\n    retired,\n    opaque,\n)"
+  },
+  {
+   "input": "LibTmux.HookCommand(index::Int64, command::String, inherited::Bool)",
+   "formatted": "LibTmux.HookCommand(\n    index::Int64,\n    command::String,\n    inherited::Bool,\n)"
+  },
+  {
+   "input": "LibTmux.NotificationEvent(name::Symbol, bytes::Vector{UInt8}, cursor::LibTmux.ObservationCursor)",
+   "formatted": "LibTmux.NotificationEvent(\n    name::Symbol,\n    bytes::Vector{UInt8},\n    cursor::LibTmux.ObservationCursor,\n)"
+  },
+  {
+   "input": "LibTmux.ObservationBaseline(bytes::Vector{UInt8}, before::LibTmux.ObservationCursor, after::LibTmux.ObservationCursor, continuity::Symbol)",
+   "formatted": "LibTmux.ObservationBaseline(\n    bytes::Vector{UInt8},\n    before::LibTmux.ObservationCursor,\n    after::LibTmux.ObservationCursor,\n    continuity::Symbol,\n)"
+  },
+  {
+   "input": "LibTmux.ObservationBaseline(bytes, before, after, continuity)",
+   "formatted": "LibTmux.ObservationBaseline(\n    bytes,\n    before,\n    after,\n    continuity,\n)"
+  },
+  {
+   "input": "LibTmux.ObservationCursor(server::LibTmux.ServerIdentity, pane::Union{Nothing,LibTmux.PaneID}, epoch::String, kind::Symbol, sequence::UInt64)",
+   "formatted": "LibTmux.ObservationCursor(\n    server::LibTmux.ServerIdentity,\n    pane::Union{Nothing,LibTmux.PaneID},\n    epoch::String,\n    kind::Symbol,\n    sequence::UInt64,\n)"
+  },
+  {
+   "input": "LibTmux.ObservationCursor(server, pane, epoch, kind, sequence)",
+   "formatted": "LibTmux.ObservationCursor(\n    server,\n    pane,\n    epoch,\n    kind,\n    sequence,\n)"
+  },
+  {
+   "input": "LibTmux.ObservationLost(reason::Symbol, cursor::LibTmux.ObservationCursor)",
+   "formatted": "LibTmux.ObservationLost(\n    reason::Symbol,\n    cursor::LibTmux.ObservationCursor,\n)"
+  },
+  {
+   "input": "LibTmux.ObservationStream(connection::LibTmux.ControlConnection, kind::Symbol, pane::Union{Nothing,LibTmux.PaneRef}, names::Tuple, subscription::Union{Nothing,String}, field::Union{Nothing,String}, queue::Vector{LibTmux.ObservationEvent}, bytes::Int64, capacity::Int64, max_bytes::Int64, cursor::LibTmux.ObservationCursor, consumer::Union{Nothing,Task}, open::Bool, error::Union{Nothing,Exception}, cleanup_done::Bool, reserved::Bool)",
+   "formatted": "LibTmux.ObservationStream(\n    connection::LibTmux.ControlConnection,\n    kind::Symbol,\n    pane::Union{Nothing,LibTmux.PaneRef},\n    names::Tuple,\n    subscription::Union{Nothing,String},\n    field::Union{Nothing,String},\n    queue::Vector{LibTmux.ObservationEvent},\n    bytes::Int64,\n    capacity::Int64,\n    max_bytes::Int64,\n    cursor::LibTmux.ObservationCursor,\n    consumer::Union{Nothing,Task},\n    open::Bool,\n    error::Union{Nothing,Exception},\n    cleanup_done::Bool,\n    reserved::Bool,\n)"
+  },
+  {
+   "input": "LibTmux.ObservationStream(connection, kind, pane, names, subscription, field, queue, bytes, capacity, max_bytes, cursor, consumer, open, error, cleanup_done, reserved)",
+   "formatted": "LibTmux.ObservationStream(\n    connection,\n    kind,\n    pane,\n    names,\n    subscription,\n    field,\n    queue,\n    bytes,\n    capacity,\n    max_bytes,\n    cursor,\n    consumer,\n    open,\n    error,\n    cleanup_done,\n    reserved,\n)"
+  },
+  {
+   "input": "LibTmux.OperationResult(index::Int64, command::LibTmux.TmuxCommand, status::Symbol, result::Union{Nothing,LibTmux.CommandResult,LibTmux.ControlResult}, error::Union{Nothing,Exception}, acknowledged::Bool, completed::Bool)",
+   "formatted": "LibTmux.OperationResult(\n    index::Int64,\n    command::LibTmux.TmuxCommand,\n    status::Symbol,\n    result::Union{\n        Nothing,\n        LibTmux.CommandResult,\n        LibTmux.ControlResult,\n    },\n    error::Union{Nothing,Exception},\n    acknowledged::Bool,\n    completed::Bool,\n)"
+  },
+  {
+   "input": "LibTmux.OperationResult(index, command, status, result, error, acknowledged, completed)",
+   "formatted": "LibTmux.OperationResult(\n    index,\n    command,\n    status,\n    result,\n    error,\n    acknowledged,\n    completed,\n)"
+  },
+  {
+   "input": "LibTmux.OutputLimitExceeded(stream::Symbol, limit::Int64, result::Union{Nothing,LibTmux.CommandResult})",
+   "formatted": "LibTmux.OutputLimitExceeded(\n    stream::Symbol,\n    limit::Int64,\n    result::Union{Nothing,LibTmux.CommandResult},\n)"
+  },
+  {
+   "input": "LibTmux.OwnedServer(_server::LibTmux.Server, _directory::String, _token::String, _process::Base.Process, _monitor::FileWatching.FolderMonitor, _watcher::Task, _stderr_pipe::Pipe, _stderr_task::Task, _lock::ReentrantLock, _closed::Bool)",
+   "formatted": "LibTmux.OwnedServer(\n    _server::LibTmux.Server,\n    _directory::String,\n    _token::String,\n    _process::Base.Process,\n    _monitor::FileWatching.FolderMonitor,\n    _watcher::Task,\n    _stderr_pipe::Pipe,\n    _stderr_task::Task,\n    _lock::ReentrantLock,\n    _closed::Bool,\n)"
+  },
+  {
+   "input": "LibTmux.OwnedServer(_server, _directory, _token, _process, _monitor, _watcher, _stderr_pipe, _stderr_task, _lock, _closed)",
+   "formatted": "LibTmux.OwnedServer(\n    _server,\n    _directory,\n    _token,\n    _process,\n    _monitor,\n    _watcher,\n    _stderr_pipe,\n    _stderr_task,\n    _lock,\n    _closed,\n)"
+  },
+  {
+   "input": "LibTmux.OwnedServerCleanupError(reason, result, stderr_truncated)",
+   "formatted": "LibTmux.OwnedServerCleanupError(\n    reason,\n    result,\n    stderr_truncated,\n)"
+  },
+  {
+   "input": "LibTmux.OwnedServerCleanupError(reason::Symbol, result::LibTmux.CommandResult, stderr_truncated::Bool)",
+   "formatted": "LibTmux.OwnedServerCleanupError(\n    reason::Symbol,\n    result::LibTmux.CommandResult,\n    stderr_truncated::Bool,\n)"
+  },
+  {
+   "input": "LibTmux.OwnedServerStartError(reason::Symbol, result::LibTmux.CommandResult, stderr_truncated::Bool, probe::Union{Nothing,LibTmux.CommandResult})",
+   "formatted": "LibTmux.OwnedServerStartError(\n    reason::Symbol,\n    result::LibTmux.CommandResult,\n    stderr_truncated::Bool,\n    probe::Union{Nothing,LibTmux.CommandResult},\n)"
+  },
+  {
+   "input": "LibTmux.OwnedServerStartError(reason, result, stderr_truncated, probe)",
+   "formatted": "LibTmux.OwnedServerStartError(\n    reason,\n    result,\n    stderr_truncated,\n    probe,\n)"
+  },
+  {
+   "input": "LibTmux.PaneOccurrence(pane::LibTmux.PaneSnapshot, link::LibTmux.WindowLink)",
+   "formatted": "LibTmux.PaneOccurrence(\n    pane::LibTmux.PaneSnapshot,\n    link::LibTmux.WindowLink,\n)"
+  },
+  {
+   "input": "LibTmux.PaneOutput(pane::LibTmux.PaneRef, bytes::Vector{UInt8}, age_ms::Union{Nothing,UInt64}, cursor::LibTmux.ObservationCursor)",
+   "formatted": "LibTmux.PaneOutput(\n    pane::LibTmux.PaneRef,\n    bytes::Vector{UInt8},\n    age_ms::Union{Nothing,UInt64},\n    cursor::LibTmux.ObservationCursor,\n)"
+  },
+  {
+   "input": "LibTmux.PaneSnapshot(_snapshot::LibTmux.Snapshot, _index::Int64)",
+   "formatted": "LibTmux.PaneSnapshot(\n    _snapshot::LibTmux.Snapshot,\n    _index::Int64,\n)"
+  },
+  {
+   "input": "LibTmux.PaneWhere(clauses::Tuple{Vararg{LibTmux._FieldClause}}, ::Val{:validated})",
+   "formatted": "LibTmux.PaneWhere(\n    clauses::Tuple{Vararg{LibTmux._FieldClause}},\n    ::Val{:validated},\n)"
+  },
+  {
+   "input": "LibTmux.PaneWhere(; id, index, active, dead, width, height, current_command, current_path, title, window)",
+   "formatted": "LibTmux.PaneWhere(;\n    id,\n    index,\n    active,\n    dead,\n    width,\n    height,\n    current_command,\n    current_path,\n    title,\n    window,\n)"
+  },
+  {
+   "input": "LibTmux.ProcessIOError(stream::Symbol, cause::Exception, result::Union{Nothing,LibTmux.CommandResult})",
+   "formatted": "LibTmux.ProcessIOError(\n    stream::Symbol,\n    cause::Exception,\n    result::Union{Nothing,LibTmux.CommandResult},\n)"
+  },
+  {
+   "input": "LibTmux.ProcessSpawnError(executable::String, cause::Exception)",
+   "formatted": "LibTmux.ProcessSpawnError(\n    executable::String,\n    cause::Exception,\n)"
+  },
+  {
+   "input": "LibTmux.RequestCancelled(sent::Bool, result::Union{Nothing,LibTmux.CommandResult})",
+   "formatted": "LibTmux.RequestCancelled(\n    sent::Bool,\n    result::Union{Nothing,LibTmux.CommandResult},\n)"
+  },
+  {
+   "input": "(var\"#ctor-self#\"::Type{LibTmux.RowProjection{R,S}} where {R<:NamedTuple,S<:LibTmux.Selection})(_selection)",
+   "formatted": "(\n    var\"#ctor-self#\"::Type{\n        LibTmux.RowProjection{R,S},\n    } where {R<:NamedTuple,S<:LibTmux.Selection}\n)(\n    _selection,\n)"
+  },
+  {
+   "input": "LibTmux.Selection{T}(items::AbstractVector{T}, snapshot::Union{Nothing,LibTmux.Snapshot}) where {T}",
+   "formatted": "LibTmux.Selection{T}(\n    items::AbstractVector{T},\n    snapshot::Union{Nothing,LibTmux.Snapshot},\n) where {T}"
+  },
+  {
+   "input": "LibTmux.Selection(items::AbstractVector{T}; snapshot) where {T}",
+   "formatted": "LibTmux.Selection(\n    items::AbstractVector{T};\n    snapshot,\n) where {T}"
+  },
+  {
+   "input": "LibTmux.SessionSnapshot(_snapshot::LibTmux.Snapshot, _index::Int64)",
+   "formatted": "LibTmux.SessionSnapshot(\n    _snapshot::LibTmux.Snapshot,\n    _index::Int64,\n)"
+  },
+  {
+   "input": "LibTmux.SessionWhere(clauses::Tuple{Vararg{LibTmux._FieldClause}}, ::Val{:validated})",
+   "formatted": "LibTmux.SessionWhere(\n    clauses::Tuple{Vararg{LibTmux._FieldClause}},\n    ::Val{:validated},\n)"
+  },
+  {
+   "input": "LibTmux.SessionWhere(; id, name, attached_clients, windows, windowlinks)",
+   "formatted": "LibTmux.SessionWhere(;\n    id,\n    name,\n    attached_clients,\n    windows,\n    windowlinks,\n)"
+  },
+  {
+   "input": "LibTmux.Snapshot(identity::LibTmux.ServerIdentity, acquired::Tuple{Float64,Float64}, _sessions::Vector{LibTmux._CapturedRecord}, _windows::Vector{LibTmux._CapturedRecord}, _panes::Vector{LibTmux._CapturedRecord}, _clients::Vector{LibTmux._CapturedRecord}, _windowlinks::Vector{LibTmux._CapturedRecord}, _complete::Set{Any})",
+   "formatted": "LibTmux.Snapshot(\n    identity::LibTmux.ServerIdentity,\n    acquired::Tuple{Float64,Float64},\n    _sessions::Vector{LibTmux._CapturedRecord},\n    _windows::Vector{LibTmux._CapturedRecord},\n    _panes::Vector{LibTmux._CapturedRecord},\n    _clients::Vector{LibTmux._CapturedRecord},\n    _windowlinks::Vector{LibTmux._CapturedRecord},\n    _complete::Set{Any},\n)"
+  },
+  {
+   "input": "LibTmux.Snapshot(identity, acquired, _sessions, _windows, _panes, _clients, _windowlinks, _complete)",
+   "formatted": "LibTmux.Snapshot(\n    identity,\n    acquired,\n    _sessions,\n    _windows,\n    _panes,\n    _clients,\n    _windowlinks,\n    _complete,\n)"
+  },
+  {
+   "input": "LibTmux.SnapshotCoverageError(entity::Symbol, id::Union{Nothing,String}, field::Symbol)",
+   "formatted": "LibTmux.SnapshotCoverageError(\n    entity::Symbol,\n    id::Union{Nothing,String},\n    field::Symbol,\n)"
+  },
+  {
+   "input": "LibTmux.UnsupportedCapability(operation::Symbol, detail::String)",
+   "formatted": "LibTmux.UnsupportedCapability(\n    operation::Symbol,\n    detail::String,\n)"
+  },
+  {
+   "input": "LibTmux.UnsupportedCriterion(profile::Symbol, path::String, reason::String)",
+   "formatted": "LibTmux.UnsupportedCriterion(\n    profile::Symbol,\n    path::String,\n    reason::String,\n)"
+  },
+  {
+   "input": "LibTmux.WhereLimits(; max_depth, max_nodes, max_string_bytes, max_items, max_bytes)",
+   "formatted": "LibTmux.WhereLimits(;\n    max_depth,\n    max_nodes,\n    max_string_bytes,\n    max_items,\n    max_bytes,\n)"
+  },
+  {
+   "input": "LibTmux.WindowLink(_snapshot::LibTmux.Snapshot, _index::Int64)",
+   "formatted": "LibTmux.WindowLink(\n    _snapshot::LibTmux.Snapshot,\n    _index::Int64,\n)"
+  },
+  {
+   "input": "LibTmux.WindowLinkRef(session::LibTmux.SessionRef, window::LibTmux.WindowRef, index::Integer)",
+   "formatted": "LibTmux.WindowLinkRef(\n    session::LibTmux.SessionRef,\n    window::LibTmux.WindowRef,\n    index::Integer,\n)"
+  },
+  {
+   "input": "LibTmux.WindowLinkWhere(clauses::Tuple{Vararg{LibTmux._FieldClause}}, ::Val{:validated})",
+   "formatted": "LibTmux.WindowLinkWhere(\n    clauses::Tuple{Vararg{LibTmux._FieldClause}},\n    ::Val{:validated},\n)"
+  },
+  {
+   "input": "LibTmux.WindowSnapshot(_snapshot::LibTmux.Snapshot, _index::Int64)",
+   "formatted": "LibTmux.WindowSnapshot(\n    _snapshot::LibTmux.Snapshot,\n    _index::Int64,\n)"
+  },
+  {
+   "input": "LibTmux.WindowWhere(clauses::Tuple{Vararg{LibTmux._FieldClause}}, ::Val{:validated})",
+   "formatted": "LibTmux.WindowWhere(\n    clauses::Tuple{Vararg{LibTmux._FieldClause}},\n    ::Val{:validated},\n)"
+  },
+  {
+   "input": "LibTmux.WindowWhere(; id, name, width, height, panes, windowlinks)",
+   "formatted": "LibTmux.WindowWhere(;\n    id,\n    name,\n    width,\n    height,\n    panes,\n    windowlinks,\n)"
+  },
+  {
+   "input": "LibTmux.WireCriteriaError(code::Symbol, path::String, message::String)",
+   "formatted": "LibTmux.WireCriteriaError(\n    code::Symbol,\n    path::String,\n    message::String,\n)"
+  },
+  {
+   "input": "capture_baseline(stream::LibTmux.ObservationStream; kwargs...)",
+   "formatted": "capture_baseline(\n    stream::LibTmux.ObservationStream;\n    kwargs...,\n)"
+  },
+  {
+   "input": "capture_bytes(connection::LibTmux.ControlConnection, pane::LibTmux.PaneRef; start_line, end_line, join_wrapped, preserve_trailing, escapes, alternate, max_bytes, timeout, cancel)",
+   "formatted": "capture_bytes(\n    connection::LibTmux.ControlConnection,\n    pane::LibTmux.PaneRef;\n    start_line,\n    end_line,\n    join_wrapped,\n    preserve_trailing,\n    escapes,\n    alternate,\n    max_bytes,\n    timeout,\n    cancel,\n)"
+  },
+  {
+   "input": "capture_bytes(server::LibTmux.Server, pane::LibTmux.PaneRef; start_line, end_line, join_wrapped, preserve_trailing, escapes, alternate, max_bytes, kwargs...)",
+   "formatted": "capture_bytes(\n    server::LibTmux.Server,\n    pane::LibTmux.PaneRef;\n    start_line,\n    end_line,\n    join_wrapped,\n    preserve_trailing,\n    escapes,\n    alternate,\n    max_bytes,\n    kwargs...,\n)"
+  },
+  {
+   "input": "capture_pane(connection::LibTmux.ControlConnection, pane::LibTmux.PaneRef; invalid, kwargs...)",
+   "formatted": "capture_pane(\n    connection::LibTmux.ControlConnection,\n    pane::LibTmux.PaneRef;\n    invalid,\n    kwargs...,\n)"
+  },
+  {
+   "input": "capture_pane(server::LibTmux.Server, pane::LibTmux.PaneRef; invalid, kwargs...)",
+   "formatted": "capture_pane(\n    server::LibTmux.Server,\n    pane::LibTmux.PaneRef;\n    invalid,\n    kwargs...,\n)"
+  },
+  {
+   "input": "decode!(decoder::LibTmux.TextDecoder, chunk::AbstractVector{UInt8}; final)",
+   "formatted": "decode!(\n    decoder::LibTmux.TextDecoder,\n    chunk::AbstractVector{UInt8};\n    final,\n)"
+  },
+  {
+   "input": "delete_buffer(connection::LibTmux.ControlConnection, buffer::LibTmux.BufferRef; kwargs...)",
+   "formatted": "delete_buffer(\n    connection::LibTmux.ControlConnection,\n    buffer::LibTmux.BufferRef;\n    kwargs...,\n)"
+  },
+  {
+   "input": "delete_buffer(server::LibTmux.Server, buffer::LibTmux.BufferRef; kwargs...)",
+   "formatted": "delete_buffer(\n    server::LibTmux.Server,\n    buffer::LibTmux.BufferRef;\n    kwargs...,\n)"
+  },
+  {
+   "input": "detach_client(connection::LibTmux.ControlConnection, client::LibTmux.ClientRef; kwargs...)",
+   "formatted": "detach_client(\n    connection::LibTmux.ControlConnection,\n    client::LibTmux.ClientRef;\n    kwargs...,\n)"
+  },
+  {
+   "input": "detach_client(server::LibTmux.Server, client::LibTmux.ClientRef; kwargs...)",
+   "formatted": "detach_client(\n    server::LibTmux.Server,\n    client::LibTmux.ClientRef;\n    kwargs...,\n)"
+  },
+  {
+   "input": "format_hints(server::LibTmux.Server, target; max_output_bytes, kwargs...)",
+   "formatted": "format_hints(\n    server::LibTmux.Server,\n    target;\n    max_output_bytes,\n    kwargs...,\n)"
+  },
+  {
+   "input": "get_environment(connection::LibTmux.ControlConnection, scope, name::AbstractString; inherit, kwargs...)",
+   "formatted": "get_environment(\n    connection::LibTmux.ControlConnection,\n    scope,\n    name::AbstractString;\n    inherit,\n    kwargs...,\n)"
+  },
+  {
+   "input": "get_environment(server::LibTmux.Server, scope, name::AbstractString; inherit, kwargs...)",
+   "formatted": "get_environment(\n    server::LibTmux.Server,\n    scope,\n    name::AbstractString;\n    inherit,\n    kwargs...,\n)"
+  },
+  {
+   "input": "get_hook(connection::LibTmux.ControlConnection, scope, name::AbstractString; inherit, kwargs...)",
+   "formatted": "get_hook(\n    connection::LibTmux.ControlConnection,\n    scope,\n    name::AbstractString;\n    inherit,\n    kwargs...,\n)"
+  },
+  {
+   "input": "get_hook(server::LibTmux.Server, scope, name::AbstractString; inherit, kwargs...)",
+   "formatted": "get_hook(\n    server::LibTmux.Server,\n    scope,\n    name::AbstractString;\n    inherit,\n    kwargs...,\n)"
+  },
+  {
+   "input": "get_option(connection::LibTmux.ControlConnection, scope, name::AbstractString; index, inherit, kwargs...)",
+   "formatted": "get_option(\n    connection::LibTmux.ControlConnection,\n    scope,\n    name::AbstractString;\n    index,\n    inherit,\n    kwargs...,\n)"
+  },
+  {
+   "input": "get_option(server::LibTmux.Server, scope, name::AbstractString; index, inherit, kwargs...)",
+   "formatted": "get_option(\n    server::LibTmux.Server,\n    scope,\n    name::AbstractString;\n    index,\n    inherit,\n    kwargs...,\n)"
+  },
+  {
+   "input": "kill_pane(connection::LibTmux.ControlConnection, target::LibTmux.PaneRef; kwargs...)",
+   "formatted": "kill_pane(\n    connection::LibTmux.ControlConnection,\n    target::LibTmux.PaneRef;\n    kwargs...,\n)"
+  },
+  {
+   "input": "kill_pane(server::LibTmux.Server, target::LibTmux.PaneRef; kwargs...)",
+   "formatted": "kill_pane(\n    server::LibTmux.Server,\n    target::LibTmux.PaneRef;\n    kwargs...,\n)"
+  },
+  {
+   "input": "kill_session(connection::LibTmux.ControlConnection, target::LibTmux.SessionRef; kwargs...)",
+   "formatted": "kill_session(\n    connection::LibTmux.ControlConnection,\n    target::LibTmux.SessionRef;\n    kwargs...,\n)"
+  },
+  {
+   "input": "kill_session(server::LibTmux.Server, target::LibTmux.SessionRef; kwargs...)",
+   "formatted": "kill_session(\n    server::LibTmux.Server,\n    target::LibTmux.SessionRef;\n    kwargs...,\n)"
+  },
+  {
+   "input": "kill_window(connection::LibTmux.ControlConnection, target::LibTmux.WindowRef; kwargs...)",
+   "formatted": "kill_window(\n    connection::LibTmux.ControlConnection,\n    target::LibTmux.WindowRef;\n    kwargs...,\n)"
+  },
+  {
+   "input": "kill_window(server::LibTmux.Server, target::LibTmux.WindowRef; kwargs...)",
+   "formatted": "kill_window(\n    server::LibTmux.Server,\n    target::LibTmux.WindowRef;\n    kwargs...,\n)"
+  },
+  {
+   "input": "link_window(connection::LibTmux.ControlConnection, source::LibTmux.WindowLinkRef, destination::LibTmux.SessionRef; index, replace, select, kwargs...)",
+   "formatted": "link_window(\n    connection::LibTmux.ControlConnection,\n    source::LibTmux.WindowLinkRef,\n    destination::LibTmux.SessionRef;\n    index,\n    replace,\n    select,\n    kwargs...,\n)"
+  },
+  {
+   "input": "link_window(server::LibTmux.Server, source::LibTmux.WindowLinkRef, destination::LibTmux.SessionRef; index, replace, select, kwargs...)",
+   "formatted": "link_window(\n    server::LibTmux.Server,\n    source::LibTmux.WindowLinkRef,\n    destination::LibTmux.SessionRef;\n    index,\n    replace,\n    select,\n    kwargs...,\n)"
+  },
+  {
+   "input": "load_buffer(connection::LibTmux.ControlConnection, bytes::AbstractVector{UInt8}; kwargs...)",
+   "formatted": "load_buffer(\n    connection::LibTmux.ControlConnection,\n    bytes::AbstractVector{UInt8};\n    kwargs...,\n)"
+  },
+  {
+   "input": "load_buffer(server::LibTmux.Server, bytes::AbstractVector{UInt8}; kwargs...)",
+   "formatted": "load_buffer(\n    server::LibTmux.Server,\n    bytes::AbstractVector{UInt8};\n    kwargs...,\n)"
+  },
+  {
+   "input": "move_pane(connection::LibTmux.ControlConnection, source::LibTmux.PaneRef, destination::LibTmux.PaneRef; direction, size, select, kwargs...)",
+   "formatted": "move_pane(\n    connection::LibTmux.ControlConnection,\n    source::LibTmux.PaneRef,\n    destination::LibTmux.PaneRef;\n    direction,\n    size,\n    select,\n    kwargs...,\n)"
+  },
+  {
+   "input": "move_pane(server::LibTmux.Server, source::LibTmux.PaneRef, destination::LibTmux.PaneRef; direction, size, select, kwargs...)",
+   "formatted": "move_pane(\n    server::LibTmux.Server,\n    source::LibTmux.PaneRef,\n    destination::LibTmux.PaneRef;\n    direction,\n    size,\n    select,\n    kwargs...,\n)"
+  },
+  {
+   "input": "move_window(connection::LibTmux.ControlConnection, source::LibTmux.WindowLinkRef, destination::LibTmux.SessionRef; index, replace, select, kwargs...)",
+   "formatted": "move_window(\n    connection::LibTmux.ControlConnection,\n    source::LibTmux.WindowLinkRef,\n    destination::LibTmux.SessionRef;\n    index,\n    replace,\n    select,\n    kwargs...,\n)"
+  },
+  {
+   "input": "move_window(server::LibTmux.Server, source::LibTmux.WindowLinkRef, destination::LibTmux.SessionRef; index, replace, select, kwargs...)",
+   "formatted": "move_window(\n    server::LibTmux.Server,\n    source::LibTmux.WindowLinkRef,\n    destination::LibTmux.SessionRef;\n    index,\n    replace,\n    select,\n    kwargs...,\n)"
+  },
+  {
+   "input": "new_session(connection::LibTmux.ControlConnection; name, command, shell_command, start_directory, environment, kwargs...)",
+   "formatted": "new_session(\n    connection::LibTmux.ControlConnection;\n    name,\n    command,\n    shell_command,\n    start_directory,\n    environment,\n    kwargs...,\n)"
+  },
+  {
+   "input": "new_session(server::LibTmux.Server; name, command, shell_command, start_directory, environment, kwargs...)",
+   "formatted": "new_session(\n    server::LibTmux.Server;\n    name,\n    command,\n    shell_command,\n    start_directory,\n    environment,\n    kwargs...,\n)"
+  },
+  {
+   "input": "new_window(connection::LibTmux.ControlConnection, target::LibTmux.SessionRef; name, command, shell_command, start_directory, environment, index, kwargs...)",
+   "formatted": "new_window(\n    connection::LibTmux.ControlConnection,\n    target::LibTmux.SessionRef;\n    name,\n    command,\n    shell_command,\n    start_directory,\n    environment,\n    index,\n    kwargs...,\n)"
+  },
+  {
+   "input": "new_window(server::LibTmux.Server, target::LibTmux.SessionRef; name, command, shell_command, start_directory, environment, index, kwargs...)",
+   "formatted": "new_window(\n    server::LibTmux.Server,\n    target::LibTmux.SessionRef;\n    name,\n    command,\n    shell_command,\n    start_directory,\n    environment,\n    index,\n    kwargs...,\n)"
+  },
+  {
+   "input": "notifications(f, connection::LibTmux.ControlConnection, args...; kwargs...)",
+   "formatted": "notifications(\n    f,\n    connection::LibTmux.ControlConnection,\n    args...;\n    kwargs...,\n)"
+  },
+  {
+   "input": "notifications(connection::LibTmux.ControlConnection; kinds, kwargs...)",
+   "formatted": "notifications(\n    connection::LibTmux.ControlConnection;\n    kinds,\n    kwargs...,\n)"
+  },
+  {
+   "input": "observe_output(f, connection::LibTmux.ControlConnection, args...; kwargs...)",
+   "formatted": "observe_output(\n    f,\n    connection::LibTmux.ControlConnection,\n    args...;\n    kwargs...,\n)"
+  },
+  {
+   "input": "observe_output(connection::LibTmux.ControlConnection, pane::LibTmux.PaneRef; timeout, cancel, kwargs...)",
+   "formatted": "observe_output(\n    connection::LibTmux.ControlConnection,\n    pane::LibTmux.PaneRef;\n    timeout,\n    cancel,\n    kwargs...,\n)"
+  },
+  {
+   "input": "open_control(f, server::LibTmux.Server, session::LibTmux.SessionRef; kwargs...)",
+   "formatted": "open_control(\n    f,\n    server::LibTmux.Server,\n    session::LibTmux.SessionRef;\n    kwargs...,\n)"
+  },
+  {
+   "input": "open_control(server::LibTmux.Server, session::LibTmux.SessionRef; timeout, cancel, capacity)",
+   "formatted": "open_control(\n    server::LibTmux.Server,\n    session::LibTmux.SessionRef;\n    timeout,\n    cancel,\n    capacity,\n)"
+  },
+  {
+   "input": "paste_bytes(connection::LibTmux.ControlConnection, pane::LibTmux.PaneRef, bytes::AbstractVector{UInt8}; bracketed, kwargs...)",
+   "formatted": "paste_bytes(\n    connection::LibTmux.ControlConnection,\n    pane::LibTmux.PaneRef,\n    bytes::AbstractVector{UInt8};\n    bracketed,\n    kwargs...,\n)"
+  },
+  {
+   "input": "paste_bytes(server::LibTmux.Server, pane::LibTmux.PaneRef, bytes::AbstractVector{UInt8}; bracketed, kwargs...)",
+   "formatted": "paste_bytes(\n    server::LibTmux.Server,\n    pane::LibTmux.PaneRef,\n    bytes::AbstractVector{UInt8};\n    bracketed,\n    kwargs...,\n)"
+  },
+  {
+   "input": "paste_text(connection::LibTmux.ControlConnection, pane::LibTmux.PaneRef, text::AbstractString; kwargs...)",
+   "formatted": "paste_text(\n    connection::LibTmux.ControlConnection,\n    pane::LibTmux.PaneRef,\n    text::AbstractString;\n    kwargs...,\n)"
+  },
+  {
+   "input": "paste_text(server::LibTmux.Server, pane::LibTmux.PaneRef, text::AbstractString; kwargs...)",
+   "formatted": "paste_text(\n    server::LibTmux.Server,\n    pane::LibTmux.PaneRef,\n    text::AbstractString;\n    kwargs...,\n)"
+  },
+  {
+   "input": "project_rows(selection::LibTmux.Selection{T}; columns) where {T}",
+   "formatted": "project_rows(\n    selection::LibTmux.Selection{T};\n    columns,\n) where {T}"
+  },
+  {
+   "input": "read_formats(connection::LibTmux.ControlConnection, target, fields::AbstractVector{<:LibTmux.FormatField}; kwargs...)",
+   "formatted": "read_formats(\n    connection::LibTmux.ControlConnection,\n    target,\n    fields::AbstractVector{<:LibTmux.FormatField};\n    kwargs...,\n)"
+  },
+  {
+   "input": "read_formats(connection::LibTmux.ControlConnection, target, fields::LibTmux.FormatField...; kwargs...)",
+   "formatted": "read_formats(\n    connection::LibTmux.ControlConnection,\n    target,\n    fields::LibTmux.FormatField...;\n    kwargs...,\n)"
+  },
+  {
+   "input": "read_formats(server::LibTmux.Server, target, fields::AbstractVector{<:LibTmux.FormatField}; kwargs...)",
+   "formatted": "read_formats(\n    server::LibTmux.Server,\n    target,\n    fields::AbstractVector{<:LibTmux.FormatField};\n    kwargs...,\n)"
+  },
+  {
+   "input": "read_formats(server::LibTmux.Server, target, fields::LibTmux.FormatField...; kwargs...)",
+   "formatted": "read_formats(\n    server::LibTmux.Server,\n    target,\n    fields::LibTmux.FormatField...;\n    kwargs...,\n)"
+  },
+  {
+   "input": "read_where_json(text::AbstractString; limits, max_input_bytes)",
+   "formatted": "read_where_json(\n    text::AbstractString;\n    limits,\n    max_input_bytes,\n)"
+  },
+  {
+   "input": "remove_environment(connection::LibTmux.ControlConnection, scope, name::AbstractString; kwargs...)",
+   "formatted": "remove_environment(\n    connection::LibTmux.ControlConnection,\n    scope,\n    name::AbstractString;\n    kwargs...,\n)"
+  },
+  {
+   "input": "remove_environment(server::LibTmux.Server, scope, name::AbstractString; kwargs...)",
+   "formatted": "remove_environment(\n    server::LibTmux.Server,\n    scope,\n    name::AbstractString;\n    kwargs...,\n)"
+  },
+  {
+   "input": "rename_session(connection::LibTmux.ControlConnection, target::LibTmux.SessionRef, name::AbstractString; kwargs...)",
+   "formatted": "rename_session(\n    connection::LibTmux.ControlConnection,\n    target::LibTmux.SessionRef,\n    name::AbstractString;\n    kwargs...,\n)"
+  },
+  {
+   "input": "rename_session(server::LibTmux.Server, target::LibTmux.SessionRef, name::AbstractString; kwargs...)",
+   "formatted": "rename_session(\n    server::LibTmux.Server,\n    target::LibTmux.SessionRef,\n    name::AbstractString;\n    kwargs...,\n)"
+  },
+  {
+   "input": "rename_window(connection::LibTmux.ControlConnection, target::LibTmux.WindowRef, name::AbstractString; kwargs...)",
+   "formatted": "rename_window(\n    connection::LibTmux.ControlConnection,\n    target::LibTmux.WindowRef,\n    name::AbstractString;\n    kwargs...,\n)"
+  },
+  {
+   "input": "rename_window(server::LibTmux.Server, target::LibTmux.WindowRef, name::AbstractString; kwargs...)",
+   "formatted": "rename_window(\n    server::LibTmux.Server,\n    target::LibTmux.WindowRef,\n    name::AbstractString;\n    kwargs...,\n)"
+  },
+  {
+   "input": "render_format(server::LibTmux.Server, target, expression::LibTmux.RawFormat; max_output_bytes, kwargs...)",
+   "formatted": "render_format(\n    server::LibTmux.Server,\n    target,\n    expression::LibTmux.RawFormat;\n    max_output_bytes,\n    kwargs...,\n)"
+  },
+  {
+   "input": "resize_pane(connection::LibTmux.ControlConnection, target::LibTmux.PaneRef; width, height, kwargs...)",
+   "formatted": "resize_pane(\n    connection::LibTmux.ControlConnection,\n    target::LibTmux.PaneRef;\n    width,\n    height,\n    kwargs...,\n)"
+  },
+  {
+   "input": "resize_pane(server::LibTmux.Server, target::LibTmux.PaneRef; width, height, kwargs...)",
+   "formatted": "resize_pane(\n    server::LibTmux.Server,\n    target::LibTmux.PaneRef;\n    width,\n    height,\n    kwargs...,\n)"
+  },
+  {
+   "input": "resize_window(connection::LibTmux.ControlConnection, target::LibTmux.WindowRef; width, height, kwargs...)",
+   "formatted": "resize_window(\n    connection::LibTmux.ControlConnection,\n    target::LibTmux.WindowRef;\n    width,\n    height,\n    kwargs...,\n)"
+  },
+  {
+   "input": "resize_window(server::LibTmux.Server, target::LibTmux.WindowRef; width, height, kwargs...)",
+   "formatted": "resize_window(\n    server::LibTmux.Server,\n    target::LibTmux.WindowRef;\n    width,\n    height,\n    kwargs...,\n)"
+  },
+  {
+   "input": "respawn_pane(connection::LibTmux.ControlConnection, target::LibTmux.PaneRef; kill_running, command, shell_command, start_directory, kwargs...)",
+   "formatted": "respawn_pane(\n    connection::LibTmux.ControlConnection,\n    target::LibTmux.PaneRef;\n    kill_running,\n    command,\n    shell_command,\n    start_directory,\n    kwargs...,\n)"
+  },
+  {
+   "input": "respawn_pane(server::LibTmux.Server, target::LibTmux.PaneRef; kill_running, command, shell_command, start_directory, kwargs...)",
+   "formatted": "respawn_pane(\n    server::LibTmux.Server,\n    target::LibTmux.PaneRef;\n    kill_running,\n    command,\n    shell_command,\n    start_directory,\n    kwargs...,\n)"
+  },
+  {
+   "input": "respawn_window(connection::LibTmux.ControlConnection, target::LibTmux.WindowRef; kill_running, command, shell_command, start_directory, kwargs...)",
+   "formatted": "respawn_window(\n    connection::LibTmux.ControlConnection,\n    target::LibTmux.WindowRef;\n    kill_running,\n    command,\n    shell_command,\n    start_directory,\n    kwargs...,\n)"
+  },
+  {
+   "input": "respawn_window(server::LibTmux.Server, target::LibTmux.WindowRef; kill_running, command, shell_command, start_directory, kwargs...)",
+   "formatted": "respawn_window(\n    server::LibTmux.Server,\n    target::LibTmux.WindowRef;\n    kill_running,\n    command,\n    shell_command,\n    start_directory,\n    kwargs...,\n)"
+  },
+  {
+   "input": "run_batch(target::Union{LibTmux.ControlConnection,LibTmux.Server}, commands::AbstractVector{LibTmux.TmuxCommand}; concurrency, timeout, cancel)",
+   "formatted": "run_batch(\n    target::Union{LibTmux.ControlConnection,LibTmux.Server},\n    commands::AbstractVector{LibTmux.TmuxCommand};\n    concurrency,\n    timeout,\n    cancel,\n)"
+  },
+  {
+   "input": "run_command(connection::LibTmux.ControlConnection, argv::AbstractString...; timeout, cancel, check)",
+   "formatted": "run_command(\n    connection::LibTmux.ControlConnection,\n    argv::AbstractString...;\n    timeout,\n    cancel,\n    check,\n)"
+  },
+  {
+   "input": "run_command(server::LibTmux.Server, args::AbstractString...; check, env, kwargs...)",
+   "formatted": "run_command(\n    server::LibTmux.Server,\n    args::AbstractString...;\n    check,\n    env,\n    kwargs...,\n)"
+  },
+  {
+   "input": "run_group(connection::LibTmux.ControlConnection, commands::AbstractVector{LibTmux.TmuxCommand}; timeout, cancel)",
+   "formatted": "run_group(\n    connection::LibTmux.ControlConnection,\n    commands::AbstractVector{LibTmux.TmuxCommand};\n    timeout,\n    cancel,\n)"
+  },
+  {
+   "input": "run_group(server::LibTmux.Server, commands::AbstractVector{LibTmux.TmuxCommand}; timeout, cancel)",
+   "formatted": "run_group(\n    server::LibTmux.Server,\n    commands::AbstractVector{LibTmux.TmuxCommand};\n    timeout,\n    cancel,\n)"
+  },
+  {
+   "input": "save_buffer(connection::LibTmux.ControlConnection, buffer::LibTmux.BufferRef; max_bytes, kwargs...)",
+   "formatted": "save_buffer(\n    connection::LibTmux.ControlConnection,\n    buffer::LibTmux.BufferRef;\n    max_bytes,\n    kwargs...,\n)"
+  },
+  {
+   "input": "save_buffer(server::LibTmux.Server, buffer::LibTmux.BufferRef; max_bytes, kwargs...)",
+   "formatted": "save_buffer(\n    server::LibTmux.Server,\n    buffer::LibTmux.BufferRef;\n    max_bytes,\n    kwargs...,\n)"
+  },
+  {
+   "input": "select_layout(connection::LibTmux.ControlConnection, target::LibTmux.WindowRef, layout::Union{AbstractString,Symbol}; kwargs...)",
+   "formatted": "select_layout(\n    connection::LibTmux.ControlConnection,\n    target::LibTmux.WindowRef,\n    layout::Union{AbstractString,Symbol};\n    kwargs...,\n)"
+  },
+  {
+   "input": "select_layout(server::LibTmux.Server, target::LibTmux.WindowRef, layout::Union{AbstractString,Symbol}; kwargs...)",
+   "formatted": "select_layout(\n    server::LibTmux.Server,\n    target::LibTmux.WindowRef,\n    layout::Union{AbstractString,Symbol};\n    kwargs...,\n)"
+  },
+  {
+   "input": "select_pane(connection::LibTmux.ControlConnection, target::LibTmux.PaneRef; kwargs...)",
+   "formatted": "select_pane(\n    connection::LibTmux.ControlConnection,\n    target::LibTmux.PaneRef;\n    kwargs...,\n)"
+  },
+  {
+   "input": "select_pane(server::LibTmux.Server, target::LibTmux.PaneRef; kwargs...)",
+   "formatted": "select_pane(\n    server::LibTmux.Server,\n    target::LibTmux.PaneRef;\n    kwargs...,\n)"
+  },
+  {
+   "input": "select_window(connection::LibTmux.ControlConnection, target::LibTmux.WindowLinkRef; kwargs...)",
+   "formatted": "select_window(\n    connection::LibTmux.ControlConnection,\n    target::LibTmux.WindowLinkRef;\n    kwargs...,\n)"
+  },
+  {
+   "input": "select_window(server::LibTmux.Server, target::LibTmux.WindowLinkRef; kwargs...)",
+   "formatted": "select_window(\n    server::LibTmux.Server,\n    target::LibTmux.WindowLinkRef;\n    kwargs...,\n)"
+  },
+  {
+   "input": "send_keys(connection::LibTmux.ControlConnection, pane::LibTmux.PaneRef, keys::AbstractString...; literal, kwargs...)",
+   "formatted": "send_keys(\n    connection::LibTmux.ControlConnection,\n    pane::LibTmux.PaneRef,\n    keys::AbstractString...;\n    literal,\n    kwargs...,\n)"
+  },
+  {
+   "input": "send_keys(server::LibTmux.Server, pane::LibTmux.PaneRef, keys::AbstractString...; literal, kwargs...)",
+   "formatted": "send_keys(\n    server::LibTmux.Server,\n    pane::LibTmux.PaneRef,\n    keys::AbstractString...;\n    literal,\n    kwargs...,\n)"
+  },
+  {
+   "input": "set_environment(connection::LibTmux.ControlConnection, scope, name::AbstractString, value::AbstractString; hidden, kwargs...)",
+   "formatted": "set_environment(\n    connection::LibTmux.ControlConnection,\n    scope,\n    name::AbstractString,\n    value::AbstractString;\n    hidden,\n    kwargs...,\n)"
+  },
+  {
+   "input": "set_environment(server::LibTmux.Server, scope, name::AbstractString, value::AbstractString; hidden, kwargs...)",
+   "formatted": "set_environment(\n    server::LibTmux.Server,\n    scope,\n    name::AbstractString,\n    value::AbstractString;\n    hidden,\n    kwargs...,\n)"
+  },
+  {
+   "input": "set_hook(connection::LibTmux.ControlConnection, scope, name::AbstractString, command::AbstractString; index, kwargs...)",
+   "formatted": "set_hook(\n    connection::LibTmux.ControlConnection,\n    scope,\n    name::AbstractString,\n    command::AbstractString;\n    index,\n    kwargs...,\n)"
+  },
+  {
+   "input": "set_hook(server::LibTmux.Server, scope, name::AbstractString, command::AbstractString; index, kwargs...)",
+   "formatted": "set_hook(\n    server::LibTmux.Server,\n    scope,\n    name::AbstractString,\n    command::AbstractString;\n    index,\n    kwargs...,\n)"
+  },
+  {
+   "input": "set_option(connection::LibTmux.ControlConnection, scope, name::AbstractString, value::AbstractString; index, kwargs...)",
+   "formatted": "set_option(\n    connection::LibTmux.ControlConnection,\n    scope,\n    name::AbstractString,\n    value::AbstractString;\n    index,\n    kwargs...,\n)"
+  },
+  {
+   "input": "set_option(server::LibTmux.Server, scope, name::AbstractString, value::AbstractString; index, kwargs...)",
+   "formatted": "set_option(\n    server::LibTmux.Server,\n    scope,\n    name::AbstractString,\n    value::AbstractString;\n    index,\n    kwargs...,\n)"
+  },
+  {
+   "input": "snapshot(connection::LibTmux.ControlConnection; timeout, cancel)",
+   "formatted": "snapshot(\n    connection::LibTmux.ControlConnection;\n    timeout,\n    cancel,\n)"
+  },
+  {
+   "input": "split_window(connection::LibTmux.ControlConnection, target::LibTmux.PaneRef; direction, command, shell_command, start_directory, size, environment, kwargs...)",
+   "formatted": "split_window(\n    connection::LibTmux.ControlConnection,\n    target::LibTmux.PaneRef;\n    direction,\n    command,\n    shell_command,\n    start_directory,\n    size,\n    environment,\n    kwargs...,\n)"
+  },
+  {
+   "input": "split_window(server::LibTmux.Server, target::LibTmux.PaneRef; direction, command, shell_command, start_directory, size, environment, kwargs...)",
+   "formatted": "split_window(\n    server::LibTmux.Server,\n    target::LibTmux.PaneRef;\n    direction,\n    command,\n    shell_command,\n    start_directory,\n    size,\n    environment,\n    kwargs...,\n)"
+  },
+  {
+   "input": "subscribe_format(f, connection::LibTmux.ControlConnection, args...; kwargs...)",
+   "formatted": "subscribe_format(\n    f,\n    connection::LibTmux.ControlConnection,\n    args...;\n    kwargs...,\n)"
+  },
+  {
+   "input": "subscribe_format(connection::LibTmux.ControlConnection, target::Union{LibTmux.SessionRef,LibTmux.WindowRef,LibTmux.PaneRef}, field::AbstractString; timeout, cancel, after, kwargs...)",
+   "formatted": "subscribe_format(\n    connection::LibTmux.ControlConnection,\n    target::Union{\n        LibTmux.SessionRef,\n        LibTmux.WindowRef,\n        LibTmux.PaneRef,\n    },\n    field::AbstractString;\n    timeout,\n    cancel,\n    after,\n    kwargs...,\n)"
+  },
+  {
+   "input": "swap_pane(connection::LibTmux.ControlConnection, first::LibTmux.PaneRef, second::LibTmux.PaneRef; select, kwargs...)",
+   "formatted": "swap_pane(\n    connection::LibTmux.ControlConnection,\n    first::LibTmux.PaneRef,\n    second::LibTmux.PaneRef;\n    select,\n    kwargs...,\n)"
+  },
+  {
+   "input": "swap_pane(server::LibTmux.Server, first::LibTmux.PaneRef, second::LibTmux.PaneRef; select, kwargs...)",
+   "formatted": "swap_pane(\n    server::LibTmux.Server,\n    first::LibTmux.PaneRef,\n    second::LibTmux.PaneRef;\n    select,\n    kwargs...,\n)"
+  },
+  {
+   "input": "swap_window(connection::LibTmux.ControlConnection, first::LibTmux.WindowLinkRef, second::LibTmux.WindowLinkRef; select, kwargs...)",
+   "formatted": "swap_window(\n    connection::LibTmux.ControlConnection,\n    first::LibTmux.WindowLinkRef,\n    second::LibTmux.WindowLinkRef;\n    select,\n    kwargs...,\n)"
+  },
+  {
+   "input": "swap_window(server::LibTmux.Server, first::LibTmux.WindowLinkRef, second::LibTmux.WindowLinkRef; select, kwargs...)",
+   "formatted": "swap_window(\n    server::LibTmux.Server,\n    first::LibTmux.WindowLinkRef,\n    second::LibTmux.WindowLinkRef;\n    select,\n    kwargs...,\n)"
+  },
+  {
+   "input": "switch_client(connection::LibTmux.ControlConnection, client::LibTmux.ClientRef, session::LibTmux.SessionRef; update_environment, kwargs...)",
+   "formatted": "switch_client(\n    connection::LibTmux.ControlConnection,\n    client::LibTmux.ClientRef,\n    session::LibTmux.SessionRef;\n    update_environment,\n    kwargs...,\n)"
+  },
+  {
+   "input": "switch_client(server::LibTmux.Server, client::LibTmux.ClientRef, session::LibTmux.SessionRef; update_environment, kwargs...)",
+   "formatted": "switch_client(\n    server::LibTmux.Server,\n    client::LibTmux.ClientRef,\n    session::LibTmux.SessionRef;\n    update_environment,\n    kwargs...,\n)"
+  },
+  {
+   "input": "unlink_window(connection::LibTmux.ControlConnection, target::LibTmux.WindowLinkRef; allow_destroy, kwargs...)",
+   "formatted": "unlink_window(\n    connection::LibTmux.ControlConnection,\n    target::LibTmux.WindowLinkRef;\n    allow_destroy,\n    kwargs...,\n)"
+  },
+  {
+   "input": "unlink_window(server::LibTmux.Server, target::LibTmux.WindowLinkRef; allow_destroy, kwargs...)",
+   "formatted": "unlink_window(\n    server::LibTmux.Server,\n    target::LibTmux.WindowLinkRef;\n    allow_destroy,\n    kwargs...,\n)"
+  },
+  {
+   "input": "unset_environment(connection::LibTmux.ControlConnection, scope, name::AbstractString; kwargs...)",
+   "formatted": "unset_environment(\n    connection::LibTmux.ControlConnection,\n    scope,\n    name::AbstractString;\n    kwargs...,\n)"
+  },
+  {
+   "input": "unset_environment(server::LibTmux.Server, scope, name::AbstractString; kwargs...)",
+   "formatted": "unset_environment(\n    server::LibTmux.Server,\n    scope,\n    name::AbstractString;\n    kwargs...,\n)"
+  },
+  {
+   "input": "unset_hook(connection::LibTmux.ControlConnection, scope, name::AbstractString; index, kwargs...)",
+   "formatted": "unset_hook(\n    connection::LibTmux.ControlConnection,\n    scope,\n    name::AbstractString;\n    index,\n    kwargs...,\n)"
+  },
+  {
+   "input": "unset_hook(server::LibTmux.Server, scope, name::AbstractString; index, kwargs...)",
+   "formatted": "unset_hook(\n    server::LibTmux.Server,\n    scope,\n    name::AbstractString;\n    index,\n    kwargs...,\n)"
+  },
+  {
+   "input": "unset_option(connection::LibTmux.ControlConnection, scope, name::AbstractString; index, kwargs...)",
+   "formatted": "unset_option(\n    connection::LibTmux.ControlConnection,\n    scope,\n    name::AbstractString;\n    index,\n    kwargs...,\n)"
+  },
+  {
+   "input": "unset_option(server::LibTmux.Server, scope, name::AbstractString; index, kwargs...)",
+   "formatted": "unset_option(\n    server::LibTmux.Server,\n    scope,\n    name::AbstractString;\n    index,\n    kwargs...,\n)"
+  },
+  {
+   "input": "windowlinks(parent::Union{LibTmux.SessionSnapshot,LibTmux.WindowSnapshot})",
+   "formatted": "windowlinks(\n    parent::Union{\n        LibTmux.SessionSnapshot,\n        LibTmux.WindowSnapshot,\n    },\n)"
+  },
+  {
+   "input": "LibTmuxMCP.Application(server::LibTmux.Server, caller::Union{Nothing,LibTmux.PaneRef}, allowed_tools::Tuple{Vararg{String}}, allow_create::Bool, timeout::Float64, max_capture_bytes::Int64, max_result_bytes::Int64, _allowed_panes::Union{Nothing,Vector{LibTmux.PaneRef}}, _condition::Base.GenericCondition{ReentrantLock}, _state::Base.RefValue{Symbol}, _next::Base.RefValue{UInt64}, _active::Dict{UInt64,LibTmuxMCP._ApplicationCall}, _owned::Dict{LibTmux.SessionRef,Vector{LibTmux.PaneRef}}, _creating::Base.RefValue{Int64})",
+   "formatted": "LibTmuxMCP.Application(\n    server::LibTmux.Server,\n    caller::Union{Nothing,LibTmux.PaneRef},\n    allowed_tools::Tuple{Vararg{String}},\n    allow_create::Bool,\n    timeout::Float64,\n    max_capture_bytes::Int64,\n    max_result_bytes::Int64,\n    _allowed_panes::Union{Nothing,Vector{LibTmux.PaneRef}},\n    _condition::Base.GenericCondition{ReentrantLock},\n    _state::Base.RefValue{Symbol},\n    _next::Base.RefValue{UInt64},\n    _active::Dict{UInt64,LibTmuxMCP._ApplicationCall},\n    _owned::Dict{\n        LibTmux.SessionRef,\n        Vector{LibTmux.PaneRef},\n    },\n    _creating::Base.RefValue{Int64},\n)"
+  },
+  {
+   "input": "LibTmuxMCP.Application(server::LibTmux.Server; caller, allowed_tools, allowed_panes, allow_create, timeout, max_capture_bytes, max_result_bytes)",
+   "formatted": "LibTmuxMCP.Application(\n    server::LibTmux.Server;\n    caller,\n    allowed_tools,\n    allowed_panes,\n    allow_create,\n    timeout,\n    max_capture_bytes,\n    max_result_bytes,\n)"
+  },
+  {
+   "input": "LibTmuxMCP.Application(server, caller, allowed_tools, allow_create, timeout, max_capture_bytes, max_result_bytes, _allowed_panes, _condition, _state, _next, _active, _owned, _creating)",
+   "formatted": "LibTmuxMCP.Application(\n    server,\n    caller,\n    allowed_tools,\n    allow_create,\n    timeout,\n    max_capture_bytes,\n    max_result_bytes,\n    _allowed_panes,\n    _condition,\n    _state,\n    _next,\n    _active,\n    _owned,\n    _creating,\n)"
+  },
+  {
+   "input": "install_cli(directory::AbstractString; project, julia, julia_flags, force)",
+   "formatted": "install_cli(\n    directory::AbstractString;\n    project,\n    julia,\n    julia_flags,\n    force,\n)"
+  },
+  {
+   "input": "serve(app::LibTmuxMCP.Application; input, output, workers, capacity, logger)",
+   "formatted": "serve(\n    app::LibTmuxMCP.Application;\n    input,\n    output,\n    workers,\n    capacity,\n    logger,\n)"
+  },
+  {
+   "input": "LibTmuxWorkspace.BeforeScriptError(code::Symbol, result::Union{Nothing,LibTmuxWorkspace.ScriptResult}, cause::Union{Nothing,Exception})",
+   "formatted": "LibTmuxWorkspace.BeforeScriptError(\n    code::Symbol,\n    result::Union{Nothing,LibTmuxWorkspace.ScriptResult},\n    cause::Union{Nothing,Exception},\n)"
+  },
+  {
+   "input": "LibTmuxWorkspace.CommandConfig(text::String, enter::Union{Nothing,Bool})",
+   "formatted": "LibTmuxWorkspace.CommandConfig(\n    text::String,\n    enter::Union{Nothing,Bool},\n)"
+  },
+  {
+   "input": "LibTmuxWorkspace.ConfigLimits(; max_bytes, max_depth, max_nodes)",
+   "formatted": "LibTmuxWorkspace.ConfigLimits(;\n    max_bytes,\n    max_depth,\n    max_nodes,\n)"
+  },
+  {
+   "input": "LibTmuxWorkspace.ExpandedPane(commands::Tuple, start_directory::String, environment::Tuple, shell::Union{Nothing,String}, suppress_history::Bool, focus::Bool)",
+   "formatted": "LibTmuxWorkspace.ExpandedPane(\n    commands::Tuple,\n    start_directory::String,\n    environment::Tuple,\n    shell::Union{Nothing,String},\n    suppress_history::Bool,\n    focus::Bool,\n)"
+  },
+  {
+   "input": "LibTmuxWorkspace.ExpandedPane(commands, start_directory, environment, shell, suppress_history, focus)",
+   "formatted": "LibTmuxWorkspace.ExpandedPane(\n    commands,\n    start_directory,\n    environment,\n    shell,\n    suppress_history,\n    focus,\n)"
+  },
+  {
+   "input": "LibTmuxWorkspace.ExpandedWindow(name::String, index::Union{Nothing,Int64}, start_directory::String, options::Tuple, options_after::Tuple, layout::Union{Nothing,String}, focus::Bool, panes::Tuple)",
+   "formatted": "LibTmuxWorkspace.ExpandedWindow(\n    name::String,\n    index::Union{Nothing,Int64},\n    start_directory::String,\n    options::Tuple,\n    options_after::Tuple,\n    layout::Union{Nothing,String},\n    focus::Bool,\n    panes::Tuple,\n)"
+  },
+  {
+   "input": "LibTmuxWorkspace.ExpandedWindow(name, index, start_directory, options, options_after, layout, focus, panes)",
+   "formatted": "LibTmuxWorkspace.ExpandedWindow(\n    name,\n    index,\n    start_directory,\n    options,\n    options_after,\n    layout,\n    focus,\n    panes,\n)"
+  },
+  {
+   "input": "LibTmuxWorkspace.ExpandedWorkspace(session_name::String, start_directory::String, before_script::Union{Nothing,String}, base_directory::String, environment::Tuple, options::Tuple, global_options::Tuple, windows::Tuple)",
+   "formatted": "LibTmuxWorkspace.ExpandedWorkspace(\n    session_name::String,\n    start_directory::String,\n    before_script::Union{Nothing,String},\n    base_directory::String,\n    environment::Tuple,\n    options::Tuple,\n    global_options::Tuple,\n    windows::Tuple,\n)"
+  },
+  {
+   "input": "LibTmuxWorkspace.ExpandedWorkspace(session_name, start_directory, before_script, base_directory, environment, options, global_options, windows)",
+   "formatted": "LibTmuxWorkspace.ExpandedWorkspace(\n    session_name,\n    start_directory,\n    before_script,\n    base_directory,\n    environment,\n    options,\n    global_options,\n    windows,\n)"
+  },
+  {
+   "input": "LibTmuxWorkspace.PaneConfig(commands::Tuple, before::Tuple, start_directory::Union{Nothing,String}, environment::Union{Nothing,Tuple}, shell::Union{Nothing,String}, enter::Bool, suppress_history::Union{Nothing,Bool}, focus::Bool)",
+   "formatted": "LibTmuxWorkspace.PaneConfig(\n    commands::Tuple,\n    before::Tuple,\n    start_directory::Union{Nothing,String},\n    environment::Union{Nothing,Tuple},\n    shell::Union{Nothing,String},\n    enter::Bool,\n    suppress_history::Union{Nothing,Bool},\n    focus::Bool,\n)"
+  },
+  {
+   "input": "LibTmuxWorkspace.PaneConfig(commands, before, start_directory, environment, shell, enter, suppress_history, focus)",
+   "formatted": "LibTmuxWorkspace.PaneConfig(\n    commands,\n    before,\n    start_directory,\n    environment,\n    shell,\n    enter,\n    suppress_history,\n    focus,\n)"
+  },
+  {
+   "input": "LibTmuxWorkspace.PlanStep(action::Symbol, window::Union{Nothing,Int64}, pane::Union{Nothing,Int64}, arguments::NamedTuple)",
+   "formatted": "LibTmuxWorkspace.PlanStep(\n    action::Symbol,\n    window::Union{Nothing,Int64},\n    pane::Union{Nothing,Int64},\n    arguments::NamedTuple,\n)"
+  },
+  {
+   "input": "LibTmuxWorkspace.ScriptResult(pid::Int64, stdout::Vector{UInt8}, stderr::Vector{UInt8}, exitcode::Int64, termsignal::Int64)",
+   "formatted": "LibTmuxWorkspace.ScriptResult(\n    pid::Int64,\n    stdout::Vector{UInt8},\n    stderr::Vector{UInt8},\n    exitcode::Int64,\n    termsignal::Int64,\n)"
+  },
+  {
+   "input": "LibTmuxWorkspace.ScriptResult(pid, stdout, stderr, exitcode, termsignal)",
+   "formatted": "LibTmuxWorkspace.ScriptResult(\n    pid,\n    stdout,\n    stderr,\n    exitcode,\n    termsignal,\n)"
+  },
+  {
+   "input": "LibTmuxWorkspace.WindowConfig(name::String, index::Union{Nothing,Int64}, start_directory::Union{Nothing,String}, before::Tuple, environment::Tuple, options::Tuple, options_after::Tuple, layout::Union{Nothing,String}, shell::Union{Nothing,String}, suppress_history::Union{Nothing,Bool}, focus::Bool, panes::Tuple)",
+   "formatted": "LibTmuxWorkspace.WindowConfig(\n    name::String,\n    index::Union{Nothing,Int64},\n    start_directory::Union{Nothing,String},\n    before::Tuple,\n    environment::Tuple,\n    options::Tuple,\n    options_after::Tuple,\n    layout::Union{Nothing,String},\n    shell::Union{Nothing,String},\n    suppress_history::Union{Nothing,Bool},\n    focus::Bool,\n    panes::Tuple,\n)"
+  },
+  {
+   "input": "LibTmuxWorkspace.WindowConfig(name, index, start_directory, before, environment, options, options_after, layout, shell, suppress_history, focus, panes)",
+   "formatted": "LibTmuxWorkspace.WindowConfig(\n    name,\n    index,\n    start_directory,\n    before,\n    environment,\n    options,\n    options_after,\n    layout,\n    shell,\n    suppress_history,\n    focus,\n    panes,\n)"
+  },
+  {
+   "input": "LibTmuxWorkspace.WorkspaceApplyError(result::LibTmuxWorkspace.WorkspaceApplyResult, cause::Exception)",
+   "formatted": "LibTmuxWorkspace.WorkspaceApplyError(\n    result::LibTmuxWorkspace.WorkspaceApplyResult,\n    cause::Exception,\n)"
+  },
+  {
+   "input": "LibTmuxWorkspace.WorkspaceApplyResult(status::Symbol, session::Union{Nothing,LibTmux.SessionRef}, created::Tuple, borrowed::Tuple, completed::Tuple, unknown_effects::Tuple, removed::Tuple, rollback::Tuple)",
+   "formatted": "LibTmuxWorkspace.WorkspaceApplyResult(\n    status::Symbol,\n    session::Union{Nothing,LibTmux.SessionRef},\n    created::Tuple,\n    borrowed::Tuple,\n    completed::Tuple,\n    unknown_effects::Tuple,\n    removed::Tuple,\n    rollback::Tuple,\n)"
+  },
+  {
+   "input": "LibTmuxWorkspace.WorkspaceApplyResult(status, session, created, borrowed, completed, unknown_effects, removed, rollback)",
+   "formatted": "LibTmuxWorkspace.WorkspaceApplyResult(\n    status,\n    session,\n    created,\n    borrowed,\n    completed,\n    unknown_effects,\n    removed,\n    rollback,\n)"
+  },
+  {
+   "input": "LibTmuxWorkspace.WorkspaceConfig(schema_version::Int64, session_name::String, start_directory::Union{Nothing,String}, before_script::Union{Nothing,String}, before::Tuple, environment::Tuple, options::Tuple, global_options::Tuple, suppress_history::Bool, windows::Tuple, source_path::Union{Nothing,String})",
+   "formatted": "LibTmuxWorkspace.WorkspaceConfig(\n    schema_version::Int64,\n    session_name::String,\n    start_directory::Union{Nothing,String},\n    before_script::Union{Nothing,String},\n    before::Tuple,\n    environment::Tuple,\n    options::Tuple,\n    global_options::Tuple,\n    suppress_history::Bool,\n    windows::Tuple,\n    source_path::Union{Nothing,String},\n)"
+  },
+  {
+   "input": "LibTmuxWorkspace.WorkspaceConfig(schema_version, session_name, start_directory, before_script, before, environment, options, global_options, suppress_history, windows, source_path)",
+   "formatted": "LibTmuxWorkspace.WorkspaceConfig(\n    schema_version,\n    session_name,\n    start_directory,\n    before_script,\n    before,\n    environment,\n    options,\n    global_options,\n    suppress_history,\n    windows,\n    source_path,\n)"
+  },
+  {
+   "input": "LibTmuxWorkspace.WorkspaceConfigError(code::Symbol, path::String, message::String)",
+   "formatted": "LibTmuxWorkspace.WorkspaceConfigError(\n    code::Symbol,\n    path::String,\n    message::String,\n)"
+  },
+  {
+   "input": "LibTmuxWorkspace.WorkspaceDocument(data, source_path, limits)",
+   "formatted": "LibTmuxWorkspace.WorkspaceDocument(\n    data,\n    source_path,\n    limits,\n)"
+  },
+  {
+   "input": "LibTmuxWorkspace.WorkspaceDocument(data, source_path::Union{Nothing,String}, limits::LibTmuxWorkspace.ConfigLimits)",
+   "formatted": "LibTmuxWorkspace.WorkspaceDocument(\n    data,\n    source_path::Union{Nothing,String},\n    limits::LibTmuxWorkspace.ConfigLimits,\n)"
+  },
+  {
+   "input": "LibTmuxWorkspace.WorkspacePlan(workspace::LibTmuxWorkspace.ExpandedWorkspace, steps::Tuple)",
+   "formatted": "LibTmuxWorkspace.WorkspacePlan(\n    workspace::LibTmuxWorkspace.ExpandedWorkspace,\n    steps::Tuple,\n)"
+  },
+  {
+   "input": "apply(server::LibTmux.Server, prepared::LibTmuxWorkspace.WorkspacePlan; timeout, cancel, reuse, rollback, readiness, script_env, on_event)",
+   "formatted": "apply(\n    server::LibTmux.Server,\n    prepared::LibTmuxWorkspace.WorkspacePlan;\n    timeout,\n    cancel,\n    reuse,\n    rollback,\n    readiness,\n    script_env,\n    on_event,\n)"
+  },
+  {
+   "input": "expand(config::LibTmuxWorkspace.WorkspaceConfig; env, home, base_directory, unknown_variables, limits)",
+   "formatted": "expand(\n    config::LibTmuxWorkspace.WorkspaceConfig;\n    env,\n    home,\n    base_directory,\n    unknown_variables,\n    limits,\n)"
+  },
+  {
+   "input": "freeze(server::LibTmux.Server, target::LibTmux.SessionRef; timeout, cancel)",
+   "formatted": "freeze(\n    server::LibTmux.Server,\n    target::LibTmux.SessionRef;\n    timeout,\n    cancel,\n)"
+  },
+  {
+   "input": "parse_config(text::AbstractString; format, source_path, limits)",
+   "formatted": "parse_config(\n    text::AbstractString;\n    format,\n    source_path,\n    limits,\n)"
+  },
+  {
+   "input": "run_before_script(text::AbstractString; base_directory, start_directory, env, timeout, cancel, on_output, max_output_bytes, max_error_bytes)",
+   "formatted": "run_before_script(\n    text::AbstractString;\n    base_directory,\n    start_directory,\n    env,\n    timeout,\n    cancel,\n    on_output,\n    max_output_bytes,\n    max_error_bytes,\n)"
+  },
+  {
+   "input": "validate(document::LibTmuxWorkspace.WorkspaceDocument; limits)",
+   "formatted": "validate(\n    document::LibTmuxWorkspace.WorkspaceDocument;\n    limits,\n)"
+  },
+  {
+   "input": "filter(q::LibTmux.Criterion, xs::LibTmux.Selection{T}) where {T}",
+   "formatted": "filter(\n    q::LibTmux.Criterion,\n    xs::LibTmux.Selection{T},\n) where {T}"
+  },
+  {
+   "input": "getindex(rows::LibTmux.RowProjection{R}, index::Int64) where {R}",
+   "formatted": "getindex(\n    rows::LibTmux.RowProjection{R},\n    index::Int64,\n) where {R}"
+  },
+  {
+   "input": "getproperty(rows::LibTmux.RowProjection{R}, name::Symbol) where {R}",
+   "formatted": "getproperty(\n    rows::LibTmux.RowProjection{R},\n    name::Symbol,\n) where {R}"
+  },
+  {
+   "input": "isequal(a::LibTmux.ServerIdentity, b::LibTmux.ServerIdentity)",
+   "formatted": "isequal(\n    a::LibTmux.ServerIdentity,\n    b::LibTmux.ServerIdentity,\n)"
+  },
+  {
+   "input": "showerror(io::IO, error::LibTmuxWorkspace.WorkspaceApplyError)",
+   "formatted": "showerror(\n    io::IO,\n    error::LibTmuxWorkspace.WorkspaceApplyError,\n)"
+  },
+  {
+   "input": "similar(::LibTmux.RowProjection, ::Type{T}, dims::NTuple{N,Int64} where {N}) where {T}",
+   "formatted": "similar(\n    ::LibTmux.RowProjection,\n    ::Type{T},\n    dims::NTuple{N,Int64} where {N},\n) where {T}"
+  },
+  {
+   "input": "similar(::LibTmux.Selection, ::Type{T}, dims::NTuple{N,Int64} where {N}) where {T}",
+   "formatted": "similar(\n    ::LibTmux.Selection,\n    ::Type{T},\n    dims::NTuple{N,Int64} where {N},\n) where {T}"
+  },
+  {
+   "input": "similar(::LibTmux._FiniteCommandResult, ::Type{T}, dims::NTuple{N,Int64} where {N}) where {T}",
+   "formatted": "similar(\n    ::LibTmux._FiniteCommandResult,\n    ::Type{T},\n    dims::NTuple{N,Int64} where {N},\n) where {T}"
+  },
+  {
+   "input": "write_message(transport::LibTmuxMCP._DispatchTransport, message::String)",
+   "formatted": "write_message(\n    transport::LibTmuxMCP._DispatchTransport,\n    message::String,\n)"
+  },
+  {
+   "input": "write_message(transport::LibTmuxMCP._StdioTransport, message::String)",
+   "formatted": "write_message(\n    transport::LibTmuxMCP._StdioTransport,\n    message::String,\n)"
+  }
+ ]
+}

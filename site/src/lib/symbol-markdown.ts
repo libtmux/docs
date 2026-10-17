@@ -202,7 +202,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     for (const [methodIndex, method] of methods.entries()) {
       const { signature } = method
       if (symbol.signatures.length > 1) {
-        const declaration = nativeSignatureText(symbol, signature, language)
+        const declaration = ctx.signatureLayouts?.get(signature)?.text ?? nativeSignatureText(symbol, signature, language)
         if (declaration.includes('\n')) out.push(`### ${inlineCode(symbol.name)} (overload ${methodIndex + 1})`, '', fencedCode(declaration, language), '')
         else out.push(`### ${inlineCode(method.label)}`, '')
       }
