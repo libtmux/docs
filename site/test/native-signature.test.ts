@@ -674,12 +674,14 @@ describe('native signature emission', () => {
     ['go', 'tmux.Server.ListBuffers', 'containment'],
     ['java', 'io.github.libtmux.Server.Server.sessions', 'containment'],
     ['fsharp', 'LibTmux.FSharp.Server.capture', 'containment'],
+    ['cxx', 'libtmux::Server::sessions', 'containment'],
     ['ts', 'server.Server.setHook', 'keyboard'],
     ['scala', 'io.github.libtmux.scaladsl.Server.sessions', 'keyboard'],
     ['kotlin', 'io.github.libtmux.kotlin.Server.sessions', 'keyboard'],
     ['go', 'tmux.Server.ListBuffers', 'keyboard'],
     ['java', 'io.github.libtmux.Server.Server.sessions', 'keyboard'],
     ['fsharp', 'LibTmux.FSharp.Server.capture', 'keyboard'],
+    ['cxx', 'libtmux::Server::sessions', 'keyboard'],
   ] as const)('gives formatted %s declaration %s local %s access', async (port, id, check) => {
     const model = JSON.parse(readFileSync(new URL(`../src/data/api/${port}.json`, import.meta.url), 'utf8')) as ApiModel
     const symbol = model.symbols.find((entry) => entry.id === id)!
@@ -731,7 +733,6 @@ describe('native signature emission', () => {
   })
 
   it.each([
-    ['cxx', 'libtmux::Server::sessions', 'pre-wrap'],
     ['fsharp', 'LibTmux.FSharp.CaptureState.Uncaptured', 'normal'],
   ] as const)('keeps unformatted %s outside the scroll-region contract', async (port, id, whiteSpace) => {
     const model = JSON.parse(readFileSync(new URL(`../src/data/api/${port}.json`, import.meta.url), 'utf8')) as ApiModel
@@ -775,7 +776,7 @@ describe('native signature emission', () => {
           const label = sig.label && sig.label !== '__AllParameterSets'
             ? `${sig.label}${sig.isDefault ? ' (default)' : ''}: ` : ''
           expect(displayedSignature(signature)).toBe(label + text(symbol, sig, port))
-          if (['ts', 'scala', 'kotlin', 'fsharp'].includes(port)) {
+          if (['ts', 'scala', 'kotlin', 'fsharp', 'cxx'].includes(port)) {
             expect(signature.querySelector('.api-declaration-name')?.textContent).toBe(symbol.name)
             expect(signature.getAttribute('data-code-columns')).toBe('60')
             expect(signature.getAttribute('data-code-width-status')).toBe('fits')

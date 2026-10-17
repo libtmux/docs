@@ -6,6 +6,7 @@ import { experimental_AstroContainer } from 'astro/container'
 import { Window, type Element } from 'happy-dom'
 import { SymbolIndex, type ApiModel, type ApiSymbol } from '@libtmux/api-model'
 import { nativeSignatureText } from '../src/lib/api-sections'
+import { apiSignatureLayouts } from '../src/lib/code-layout'
 
 const model = JSON.parse(readFileSync(new URL('../src/data/api/cxx.json', import.meta.url), 'utf8')) as ApiModel
 const astroRequire = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
@@ -25,9 +26,9 @@ async function signatureComponent() {
     for (const [specifier, url] of Object.entries(imports)) code = code.replaceAll(JSON.stringify(specifier), JSON.stringify(url))
     return `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`
   }
-  // The compiled data module uses the same helper transformed by Vitest.
-  vi.stubGlobal('__cxxSignatureHelpers', { nativeSignatureText })
-  const helpers = 'data:text/javascript,export const { nativeSignatureText } = globalThis.__cxxSignatureHelpers'
+  // The compiled data module uses the same helpers transformed by Vitest.
+  vi.stubGlobal('__cxxSignatureHelpers', { nativeSignatureText, apiSignatureLayouts })
+  const helpers = 'data:text/javascript,export const { nativeSignatureText, apiSignatureLayouts } = globalThis.__cxxSignatureHelpers'
   expect((await import(/* @vite-ignore */ helpers)).nativeSignatureText).toBe(nativeSignatureText)
   const name = await compile('../src/components/api/SymbolName.astro', { '../../lib/word-break': new URL('../src/lib/word-break.ts', import.meta.url).href })
   const preview = await compile('../src/components/LinkPreview.astro')
@@ -50,7 +51,7 @@ async function signatureComponent() {
   const wrapper = `---\nimport ApiType from './ApiType.astro'\nimport { apiSignatureLayouts } from '../../lib/code-layout'\nimport { nativeSignatureText as unformattedNativeSignatureText } from '../../lib/api-sections'\nconst { symbol, sig, port, language, index, nameHref } = Astro.props\n${source.slice(setupStart, setupEnd)}\n---\n${fragment}`
   return (await import(/* @vite-ignore */ await compile('../src/components/api/ApiEntry.astro', {
     './ApiType.astro': type,
-    '../../lib/code-layout': new URL('../src/lib/code-layout.ts', import.meta.url).href,
+    '../../lib/code-layout': helpers,
     '../../lib/api-sections': helpers,
   }, wrapper))).default
 }
@@ -62,13 +63,17 @@ function displayedSignature(element: Element): string {
 }
 
 describe('C++ native signature emission', () => {
-  it('keeps exact boundaries, native indentation and ordinary language links', async () => {
+  it('lays out clang-format boundaries and native indentation with ordinary language links', async () => {
     const component = await signatureComponent()
     const container = await experimental_AstroContainer.create()
     const index = new SymbolIndex(model.symbols, (symbol) => `/en/cxx/latest/reference/${symbol.slug}/`, 'cxx')
     const win = new Window()
     try {
-      for (const name of ['sessions', 'buffers']) {
+      const formatted = {
+        sessions: '[[nodiscard]] expected<std::vector<Session>, CommandFailure>\nsessions() const;',
+        buffers: '[[nodiscard]] expected<std::vector<Buffer>, CommandFailure>\nbuffers() const;',
+      }
+      for (const name of ['sessions', 'buffers'] as const) {
         const symbol = model.symbols.find((symbol) => symbol.id === `libtmux::Server::${name}`)!
         for (const member of [false, true]) {
           win.document.body.innerHTML = await container.renderToString(component, { props: {
@@ -76,7 +81,10 @@ describe('C++ native signature emission', () => {
             nameHref: member ? `/en/cxx/latest/reference/${symbol.slug}/` : undefined,
           } })
           const signature = win.document.querySelector('.api-native-signature')!
-          expect(displayedSignature(signature)).toBe(symbol.signatures[0].raw)
+          expect(displayedSignature(signature)).toBe(formatted[name])
+          expect(signature.classList.contains('api-native-signature--formatted')).toBe(true)
+          expect(signature.getAttribute('data-code-columns')).toBe('60')
+          expect(signature.getAttribute('data-code-width-status')).toBe('fits')
           expect(signature.querySelector('button.api-keyword-trigger')?.textContent).toBe('nodiscard')
           expect(signature.querySelector('[popover] a[href="https://eel.is/c++draft/dcl.attr.nodiscard"]')).not.toBeNull()
           expect(signature.querySelector('a[href="https://en.cppreference.com/w/cpp/container/vector"]')?.textContent).toBe('std::vector')
@@ -88,6 +96,7 @@ describe('C++ native signature emission', () => {
       win.document.body.innerHTML = await container.renderToString(component, { props: {
         symbol, sig: { params: [{ name: 'limit', type: 'std::size_t' }], raw }, port: 'cxx', language: 'cxx', index,
       } })
+      // A declaration the model does not list keeps its source bytes.
       expect(displayedSignature(win.document.querySelector('.api-native-signature')!)).toBe(raw)
     } finally {
       await win.happyDOM.abort()

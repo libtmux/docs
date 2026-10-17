@@ -278,5 +278,11 @@ export async function apiSignatureLayouts(symbol: ApiSymbol, language?: string):
     return new Map(await Promise.all(symbol.signatures.filter((signature) => signature.raw).map(async (signature) =>
       [signature, await jvmSignatureLayout(signature, language)] as const)))
   }
+  if (language === 'cxx' && ['method', 'function'].includes(symbol.kind) && symbol.signatures.length > 0 &&
+    symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))) {
+    const { cxxSignatureLayout } = await import('./cxx-code-layout')
+    return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
+      [signature, await cxxSignatureLayout(symbol, signature)] as const)))
+  }
   return new Map()
 }
