@@ -1,0 +1,24 @@
+---
+/**
+ * Which libtmux ports gate this tmux command, and on which releases.
+ *
+ * Rendered on the command's tmux reference page. Rows come from every port
+ * capability or workaround that names the command; nothing renders when no
+ * port publishes one.
+ */
+import CapabilityMatrix from './CapabilityMatrix.astro'
+import { commandRows, portColumns } from '../../lib/capabilities'
+import { DEFAULT_LOCALE, localeRoot } from '../../i18n/locales'
+
+interface Props { command: string }
+const { command } = Astro.props as Props
+const map = `${localeRoot(DEFAULT_LOCALE)}reference/capabilities/`
+const rows = commandRows(command).map((row) => ({ ...row, href: `${map}#${row.id}` }))
+---
+{rows.length > 0 && (
+  <section aria-labelledby="api-libtmux-support">
+    <h2 class="api-section-heading text-lg font-semibold" id="api-libtmux-support">Support in libtmux<a class="api-heading-link" href="#api-libtmux-support" aria-label="Link to Support in libtmux">#</a></h2>
+    <p>Releases each libtmux port needs before it sends <code>{command}</code> for these features, from each port's capability registry.</p>
+    <CapabilityMatrix caption={`libtmux support for ${command}`} columns={portColumns()} columnWidth="wide" rows={rows} />
+  </section>
+)}

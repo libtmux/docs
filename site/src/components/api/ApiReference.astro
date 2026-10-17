@@ -21,6 +21,9 @@ import { pagePortsFor } from '../../lib/page-ports-for'
 import { pageBreadcrumbs } from '../../lib/sidebar'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import { withRoot } from '../../lib/site-root'
+import CommandSupport from '../capabilities/CommandSupport.astro'
+import { commandRows } from '../../lib/capabilities'
+import { tmuxSourceCommands } from '../../lib/tmux-reference'
 import { API_MODELS, API_NAV, PORT_NAME, indexFor, isMemberOwner, ownersOf, pageSlug, referenceAlternatives, topLevelTypesOf } from '../../lib/api-models'
 import { PORT_BY_SLUG, referenceUrl } from '../../lib/ports'
 import { productApiHref } from '../../lib/product-api'
@@ -357,6 +360,9 @@ const pageSections: ApiSection[] = glossary ? apiGlossaryHeadings(glossaryContex
   ...(otherInherited.length ? [{ id: 'api-inherited', label: 'Inherited members', count: otherInherited.length }] : []),
 ] : []
 const relationshipSections = owner && model ? apiRelationshipSections(model, owner) : []
+const tmuxCommandNames = source && owner ? tmuxSourceCommands(source.version, owner).map((command) => command.name) : []
+const supportedCommands = tmuxCommandNames.filter((name) => commandRows(name).length > 0)
+if (supportedCommands.length) pageSections.push({ id: 'api-libtmux-support', label: 'Support in libtmux', count: supportedCommands.reduce((n, name) => n + commandRows(name).length, 0) })
 const paths = (source?.paths ?? []).filter((path) => !owner || path.symbols.some((symbol) => symbol.id === owner.id))
 if (relationshipSections.some((section) => ['api-calls', 'api-called-by'].includes(section.id))) pageSections.push({ id: 'api-call-network', label: 'Call neighborhood' })
 if (paths.length) pageSections.push({ id: 'api-source-paths', label: 'Paths through the source', count: paths.length })
@@ -827,6 +833,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                 </ul>
               </>
             )}
+            {supportedCommands.map((name) => <CommandSupport command={name} />)}
             <ApiRelationships owner={owner} model={model} sections={relationshipSections} paths={paths} hrefFor={hrefFor} />
             {related.length > 0 && <section class="api-related-types" aria-labelledby="api-related-types">
               <h2 class="api-section-heading text-lg font-semibold" id="api-related-types">Related types<a class="api-heading-link" href="#api-related-types" aria-label="Link to Related types">#</a></h2>
