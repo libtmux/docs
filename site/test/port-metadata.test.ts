@@ -1,7 +1,9 @@
-import { describe, expect, it } from 'vitest'
+import { execFileSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import registry from '../src/data/registry.json'
 import { SERVERS } from '../src/lib/install-matrix'
-import { PORT_BY_SLUG, PORTS, hasPackageInstalls, installCommand, productAvailable } from '../src/lib/ports'
+import { PORT_BY_SLUG, PORTS, hasPackageInstalls, installCommand, portDestinations, portSourceUrl, productAvailable, type DocProduct } from '../src/lib/ports'
 
 describe('Ruby port metadata', () => {
   it('describes the core and companion packages independently', () => {
@@ -129,5 +131,198 @@ describe('workspace CLI availability', () => {
   // and Swift resolves from Git, so none of them installs the executable.
   it.each(['java', 'cxx', 'swift'])('keeps %s local because a build produces its executable', (slug) => {
     expect(PORT_BY_SLUG[slug]!.workspaceCliAvailability).toBe('local')
+  })
+})
+
+type Destination = readonly [name: string, url: string, icon?: string]
+
+// Expected source, package and API destinations for each registered port. Julia and
+// C++ have no registry: their source repository is the destination.
+const DESTINATIONS: Record<string, { source: string; registry?: Destination; api?: Destination }> = {
+  py: { source: 'https://github.com/tmux-python/libtmux', registry: ['PyPI', 'https://pypi.org/project/libtmux/', 'pypi'] },
+  ruby: { source: 'https://github.com/libtmux/libtmux-ruby', registry: ['RubyGems', 'https://rubygems.org/gems/libtmux', 'rubygems'] },
+  lua: { source: 'https://github.com/libtmux/libtmux-lua', registry: ['LuaRocks', 'https://luarocks.org/modules/tony/libtmux', 'luarocks'] },
+  powershell: {
+    source: 'https://github.com/libtmux/libtmux-powershell/tree/master/src/LibTmux.PowerShell',
+    registry: ['PowerShell Gallery', 'https://www.powershellgallery.com/packages/LibTmux', 'powershell'],
+  },
+  julia: { source: 'https://github.com/libtmux/libtmux-julia/tree/master/src' },
+  ts: { source: 'https://github.com/libtmux/libtmux-ts', registry: ['npm', 'https://www.npmjs.com/package/libtmux', 'npm'] },
+  rs: {
+    source: 'https://github.com/libtmux/libtmux-rs',
+    registry: ['crates.io', 'https://crates.io/crates/libtmux', 'crates'],
+    api: ['docs.rs', 'https://docs.rs/libtmux'],
+  },
+  go: {
+    source: 'https://github.com/libtmux/libtmux-go',
+    registry: ['pkg.go.dev', 'https://pkg.go.dev/github.com/libtmux/libtmux-go/tmux', 'go'],
+  },
+  java: {
+    source: 'https://github.com/libtmux/libtmux-java',
+    registry: ['Maven Central', 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux', 'maven'],
+    api: ['javadoc.io', 'https://javadoc.io/doc/io.github.libtmux/libtmux'],
+  },
+  kotlin: {
+    source: 'https://github.com/libtmux/libtmux-java/tree/master/libtmux-kotlin',
+    registry: ['Maven Central', 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-kotlin', 'maven'],
+    api: ['Dokka', 'https://javadoc.io/doc/io.github.libtmux/libtmux-kotlin'],
+  },
+  scala: {
+    source: 'https://github.com/libtmux/libtmux-java/tree/master/libtmux-scala',
+    registry: ['Maven Central', 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-scala_3', 'maven'],
+    api: ['Scaladoc', 'https://javadoc.io/doc/io.github.libtmux/libtmux-scala_3'],
+  },
+  csharp: { source: 'https://github.com/libtmux/libtmux-dotnet', registry: ['NuGet', 'https://www.nuget.org/packages/LibTmux', 'nuget'] },
+  fsharp: { source: 'https://github.com/libtmux/libtmux-dotnet', registry: ['NuGet', 'https://www.nuget.org/packages/LibTmux.FSharp', 'nuget'] },
+  cxx: { source: 'https://github.com/libtmux/libtmux-cxx' },
+  swift: {
+    source: 'https://github.com/libtmux/libtmux-swift',
+    registry: ['Swift Package Index', 'https://swiftpackageindex.com/libtmux/libtmux-swift', 'swift'],
+  },
+}
+
+describe('port destinations', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs()
+    vi.resetModules()
+  })
+
+  it.each(Object.entries(DESTINATIONS))('resolves the %s source, package and API links', (slug, expected) => {
+    const { source, registry: packageRegistry, ecosystem } = portDestinations({ port: PORT_BY_SLUG[slug] })
+    expect(source.url).toBe(expected.source)
+    expect(packageRegistry && [packageRegistry.name, packageRegistry.url, packageRegistry.icon]).toEqual(expected.registry)
+    expect(ecosystem && [ecosystem.name, ecosystem.url]).toEqual(expected.api)
+  })
+
+  it('has an expectation for every registered port and no other', () => {
+    expect(Object.keys(DESTINATIONS).sort()).toEqual(PORTS.map(({ slug }) => slug).sort())
+  })
+
+  it('never offers a second link to the registry URL', () => {
+    const go = PORT_BY_SLUG.go!
+    expect(go.ecosystemHost?.url).toBe(go.registry?.url)
+    expect(portDestinations({ port: go }).ecosystem).toBeUndefined()
+    for (const port of PORTS) {
+      const { registry: packageRegistry, ecosystem } = portDestinations({ port })
+      if (ecosystem) expect(ecosystem.url, port.slug).not.toBe(packageRegistry?.url)
+    }
+  })
+
+  it('keeps Kotlin, Scala and F# on their own packages and source without parent companions', () => {
+    for (const [slug, parent] of [['kotlin', 'java'], ['scala', 'java'], ['fsharp', 'csharp']] as const) {
+      const wrapper = portDestinations({ port: PORT_BY_SLUG[slug] })
+      const library = portDestinations({ port: PORT_BY_SLUG[parent] })
+      expect(wrapper.source.repo, slug).toBe(PORT_BY_SLUG[parent]!.repo)
+      expect(wrapper.registry?.url, slug).toContain(PORT_BY_SLUG[slug]!.packageName.split(':').pop())
+      expect(wrapper.registry?.url, slug).not.toBe(library.registry?.url)
+      expect(wrapper.ecosystem?.url ?? '', slug).not.toBe(library.ecosystem?.url)
+      expect(PORT_BY_SLUG[slug]!.packages, slug).toBeUndefined()
+      for (const product of ['mcp', 'workspace'] as const) {
+        const inherited = portDestinations({ port: PORT_BY_SLUG[slug], product })
+        expect(inherited.registry, `${slug} ${product}`).toBeUndefined()
+        expect(inherited.source.url, `${slug} ${product}`).toBe(`https://github.com/${wrapper.source.repo}`)
+      }
+    }
+  })
+
+  it('opens a library directory at the revision, tag or default branch', () => {
+    const powershell = PORT_BY_SLUG.powershell!
+    const tree = (ref: string) => `https://github.com/libtmux/libtmux-powershell/tree/${ref}/src/LibTmux.PowerShell`
+    expect(portDestinations({ port: powershell, version: 'latest' }).source).toMatchObject({ url: tree('master'), path: 'src/LibTmux.PowerShell', ref: 'master' })
+    expect(portDestinations({ port: powershell, version: 'stable' }).source.url).toBe(tree('master'))
+    expect(portDestinations({ port: powershell, version: 'v0.1.0-alpha2' }).source).toMatchObject({ url: tree('v0.1.0-alpha2'), ref: 'v0.1.0-alpha2' })
+    expect(portDestinations({ port: powershell, version: 'v0.1.0-alpha2', revision: 'abc123' }).source.url).toBe(tree('abc123'))
+    expect(portDestinations({ port: powershell, version: 'latest', revision: 'abc123' }).source.url).toBe(tree('abc123'))
+    const prefixed = { ...powershell, tagPrefix: 'libtmux@' }
+    expect(portDestinations({ port: prefixed, version: 'v1.2.3' }).source.url).toBe(tree('libtmux%40v1.2.3'))
+    for (const version of ['latest', 'v1.2.3']) {
+      expect(portDestinations({ port: powershell, version, revision: 'abc123' }).source.url).toBe(portSourceUrl(powershell, version, 'abc123'))
+    }
+  })
+
+  it('points a product in its own repository at that repository and package', () => {
+    const py = PORT_BY_SLUG.py!
+    const tmuxp = portDestinations({ port: py, product: 'workspace' })
+    expect(tmuxp.source).toEqual({ url: 'https://github.com/tmux-python/tmuxp/tree/master/src/tmuxp', repo: 'tmux-python/tmuxp', path: 'src/tmuxp', ref: 'master' })
+    expect(tmuxp.registry).toMatchObject({ name: 'PyPI', url: 'https://pypi.org/project/tmuxp/', icon: 'pypi' })
+    expect(tmuxp.ecosystem).toBeUndefined()
+    const mcp = portDestinations({ port: py, product: 'mcp' })
+    expect(mcp.source.url).toBe('https://github.com/tmux-python/libtmux-mcp/tree/main/src/libtmux_mcp')
+    expect(mcp.registry?.url).toBe('https://pypi.org/project/libtmux-mcp/')
+    // A separate repository has its own releases: the library's tag does not name a ref there.
+    expect(portDestinations({ port: py, product: 'workspace', version: 'v0.62.0' }).source.ref).toBe('master')
+    expect(portDestinations({ port: py, product: 'workspace', version: 'v0.62.0', revision: 'abc123' }).source.ref).toBe('abc123')
+  })
+
+  it('tags a product that shares the library repository with the library version', () => {
+    const ts = PORT_BY_SLUG.ts!
+    const tree = (ref: string) => `https://github.com/libtmux/libtmux-ts/tree/${ref}/packages/mcp`
+    expect(portDestinations({ port: ts, product: 'mcp', version: 'latest', revision: 'abc123' }).source.url).toBe(tree('master'))
+    expect(portDestinations({ port: ts, product: 'mcp', version: 'v0.1.0-alpha.12' }).source.url).toBe(tree('v0.1.0-alpha.12'))
+    expect(portDestinations({ port: ts, product: 'mcp', version: 'v0.1.0-alpha.12', revision: 'abc123' }).source.url).toBe(tree('v0.1.0-alpha.12'))
+    expect(portDestinations({ port: ts, product: 'mcp', version: 'stable', revision: 'abc123' }).source.url).toBe(tree('abc123'))
+  })
+
+  it('links only the repository for a product without a directory or package', () => {
+    const lua = portDestinations({ port: PORT_BY_SLUG.lua, product: 'mcp' })
+    expect(lua).toEqual({ source: { url: 'https://github.com/libtmux/libtmux-lua', repo: 'libtmux/libtmux-lua' } })
+    const cxx = portDestinations({ port: PORT_BY_SLUG.cxx, product: 'workspace' })
+    expect(cxx.source.url).toBe('https://github.com/libtmux/libtmux-cxx/tree/master/apps/workspace')
+    expect(cxx.registry).toBeUndefined()
+  })
+
+  it('names a project by its repository', () => {
+    const project = { name: 'tmux', repo: 'tmux/tmux', homepage: 'https://github.com/tmux/tmux/wiki' }
+    expect(portDestinations({ project })).toEqual({ source: { url: 'https://github.com/tmux/tmux', repo: 'tmux/tmux' } })
+    expect(() => portDestinations({})).toThrow('a port or project is required')
+  })
+
+  it('follows a layout-supplied source URL and reads its repository and directory', () => {
+    const py = PORT_BY_SLUG.py!
+    const fromLayout = (sourceUrl: string) => portDestinations({ port: py, sourceUrl })
+    expect(fromLayout('https://github.com/tmux-python/tmuxp/').source).toEqual({ url: 'https://github.com/tmux-python/tmuxp/', repo: 'tmux-python/tmuxp' })
+    expect(fromLayout('https://github.com/tmux-python/libtmux/tree/0123abcd').source)
+      .toEqual({ url: 'https://github.com/tmux-python/libtmux/tree/0123abcd', repo: 'tmux-python/libtmux' })
+    expect(fromLayout('https://github.com/libtmux/libtmux-java/tree/master/libtmux-kotlin').source)
+      .toEqual({ url: 'https://github.com/libtmux/libtmux-java/tree/master/libtmux-kotlin', repo: 'libtmux/libtmux-java', path: 'libtmux-kotlin' })
+    // The package destinations stay the port's own whatever repository the page documents.
+    expect(fromLayout('https://github.com/tmux-python/tmuxp/').registry?.url).toBe('https://pypi.org/project/libtmux/')
+    expect(fromLayout('https://example.com/elsewhere').source).toMatchObject({ url: 'https://example.com/elsewhere', repo: 'tmux-python/libtmux' })
+  })
+
+  it('keeps every external URL free of locale and preview prefixes', async () => {
+    vi.stubEnv('LIBTMUX_DOCS_ROOT', '/pr-42/ja')
+    vi.stubEnv('LIBTMUX_DOCS_PORT_ROOT', '/pr-42/en')
+    vi.stubEnv('LIBTMUX_DOCS_LOCALES_ROOT', '/pr-42')
+    vi.resetModules()
+    const { PORTS: ports, portDestinations: destinations, portHomeUrl } = await import('../src/lib/ports')
+    // The same environment prefixes this site's own routes, so the check can fail.
+    expect(portHomeUrl(ports[0]!, 'latest')).toMatch(/^\/pr-42\/en\//)
+    for (const port of ports) {
+      for (const product of [undefined, 'mcp', 'workspace'] as (DocProduct | undefined)[]) {
+        for (const version of ['latest', 'stable', 'v1.2.3']) {
+          const { source, registry: packageRegistry, ecosystem } = destinations({ port, product, version })
+          for (const url of [source.url, packageRegistry?.url, ecosystem?.url]) {
+            if (!url) continue
+            const { protocol, hostname, pathname } = new URL(url)
+            expect([protocol, hostname.endsWith('libtmux.org')], url).toEqual(['https:', false])
+            expect(pathname, url).not.toMatch(/^\/(?:pr-\d+\/)?(?:(?:en|ja)\/|pr-\d+\/)/)
+            expect(pathname, url).not.toMatch(/\/pr-\d+\//)
+          }
+        }
+      }
+    }
+  })
+
+  it('loads and resolves under bare Node, which build-site.sh uses', () => {
+    const module = new URL('../src/lib/ports.ts', import.meta.url).href
+    const script = `const { PORT_BY_SLUG, portDestinations } = await import(${JSON.stringify(module)}); `
+      + 'console.log(JSON.stringify(portDestinations({ port: PORT_BY_SLUG.go })))'
+    const output = execFileSync(process.execPath, ['--input-type=module', '-e', script], { encoding: 'utf8', cwd: fileURLToPath(new URL('..', import.meta.url)) })
+    expect(JSON.parse(output)).toMatchObject({
+      source: { url: 'https://github.com/libtmux/libtmux-go' },
+      registry: { name: 'pkg.go.dev' },
+    })
+    expect(JSON.parse(output)).not.toHaveProperty('ecosystem')
   })
 })

@@ -1276,13 +1276,105 @@ export const PORT_BY_SLUG: Readonly<Record<string, Port>> = Object.fromEntries(
   PORTS.map((p) => [p.slug, p]),
 )
 
+/** The tag a numeric docs version names, with the library's tag prefix. */
+function releaseTag(port: Port, version: string): string | undefined {
+  return /^v?\d/.test(version) ? `${port.tagPrefix ?? ''}${version}` : undefined
+}
+
+/** Where a library's directory is read: a revision, else its release tag, else its default branch. */
+function portSourceRef(port: Port, version: string, revision?: string): string | undefined {
+  return port.source && (revision ?? releaseTag(port, version) ?? port.source.ref)
+}
+
 /** Open a library's directory at its documented revision, tag, or default branch. */
 export function portSourceUrl(port: Port, version = 'latest', revision?: string): string {
   const root = `https://github.com/${port.repo}`
-  if (!port.source) return root
-  const tag = /^v?\d/.test(version) ? `${port.tagPrefix ?? ''}${version}` : undefined
-  const ref = revision ?? tag ?? port.source.ref
-  return `${root}/tree/${encodeURIComponent(ref)}/${port.source.path}`
+  const ref = portSourceRef(port, version, revision)
+  return port.source && ref ? `${root}/tree/${encodeURIComponent(ref)}/${port.source.path}` : root
+}
+
+/** A project outside the port catalog, such as tmux, that a links row can name. */
+export interface ProjectLinks {
+  name: string
+  /** Source repository, `owner/name`. */
+  repo: string
+  homepage: string
+}
+
+export interface DestinationRequest {
+  port?: Port
+  /** Names the project's repository instead of a port's. */
+  project?: ProjectLinks
+  /** A companion product, whose own directory and package replace the library's. */
+  product?: DocProduct
+  version?: string
+  /** Commit that the page's source citations are bound to. */
+  revision?: string
+  /** An already computed GitHub URL, such as a layout's, that replaces the derived source. */
+  sourceUrl?: string
+}
+
+export interface SourceDestination {
+  url: string
+  /** Repository the link opens, `owner/name`. */
+  repo: string
+  /** Directory within that repository, when the link opens one. */
+  path?: string
+  /** Branch, tag or commit of `path`; absent when `sourceUrl` supplied the link. */
+  ref?: string
+}
+
+/** Where a page's reader goes to read the source, install the package, or browse its API. */
+export interface PortDestinations {
+  source: SourceDestination
+  /** The package's page on its registry, never a versioned release. */
+  registry?: PackageRegistry
+  /** An API host that is not the registry itself. */
+  ecosystem?: EcosystemHost
+}
+
+/** A product's directory, or its repository when it has none of its own. */
+function productSource(port: Port, source: PortPackage['source'], version: string, revision?: string): SourceDestination {
+  const repo = source?.repo ?? port.repo
+  if (!source) return { url: `https://github.com/${repo}`, repo }
+  // An app in a separate repository has its own release history.
+  const tag = repo === port.repo ? releaseTag(port, version) : undefined
+  const ref = version === 'latest' ? source.ref : tag ?? revision ?? source.ref
+  return { url: `https://github.com/${repo}/tree/${ref}/${source.path}`, repo, path: source.path, ref }
+}
+
+/** `owner/name`, and the directory below it, of a GitHub repository or tree URL. */
+function githubLocation(url: string): { repo: string; path?: string } | undefined {
+  const match = /^https:\/\/github\.com\/([^/]+\/[^/]+?)(?:\/tree\/[^/]+(?:\/(.+?))?)?\/?$/.exec(url)
+  return match ? { repo: match[1]!, ...(match[2] && { path: match[2] }) } : undefined
+}
+
+/**
+ * The source, package and API destinations for a port, product or project.
+ *
+ * Every URL is external and carries no locale or preview prefix, so it is the
+ * same from `/en/`, `/ja/` and `/pr-42/`. Registry and API URLs name the
+ * package's page, not a release: the version this site documents is not
+ * evidence that a package of that version exists.
+ */
+export function portDestinations({ port, project, product, version = 'latest', revision, sourceUrl }: DestinationRequest): PortDestinations {
+  if (!port && !project) throw new Error('portDestinations: a port or project is required')
+  const pkg = product ? port?.packages?.find((entry) => entry.id === product) : undefined
+  const derived: SourceDestination = project ? { url: `https://github.com/${project.repo}`, repo: project.repo }
+    : product ? productSource(port!, pkg?.source, version, revision)
+      : { url: portSourceUrl(port!, version, revision), repo: port!.repo,
+          ...(port!.source && { path: port!.source.path, ref: portSourceRef(port!, version, revision) }) }
+  const given = sourceUrl ? githubLocation(sourceUrl) : undefined
+  const registry = product
+    ? pkg?.registry && port?.registry ? { ...port.registry, url: pkg.registry } : undefined
+    : port?.registry
+
+  return {
+    source: sourceUrl ? { url: sourceUrl, repo: given?.repo ?? derived.repo, ...(given?.path && { path: given.path }) } : derived,
+    registry,
+    // Go's registry and reference host are the same destination.
+    ecosystem: !product && port?.ecosystemHost && port.ecosystemHost.url !== registry?.url ? port.ecosystemHost : undefined,
+  }
 }
 
 /** Whether a companion product has a published implementation for a port. */
