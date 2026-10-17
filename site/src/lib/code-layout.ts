@@ -166,6 +166,37 @@ export function supportsFSharpSignatures(symbol: ApiSymbol, language?: string): 
     symbol.signatures.every((signature) => /^(?:val|member)\s/.test(signature.raw ?? ''))
 }
 
+export interface CSharpParameter { name: string; /** Position in `Signature.params`, which anchors link to. */ index: number; text: string }
+
+/**
+ * The parameters of an extracted C# callable as declared. Extraction splits
+ * `params T[] name` into a typeless name that follows the array type, which
+ * becomes a name of its own; this shape is rejoined and nothing else is guessed.
+ */
+export function csharpParameters(signature: Signature): CSharpParameter[] | undefined {
+  const identifier = /^[A-Za-z_]\w*$/
+  const parameters: CSharpParameter[] = []
+  for (let at = 0; at < signature.params.length; at++) {
+    const param = signature.params[at]!
+    const next = signature.params[at + 1]
+    if (param.type && identifier.test(param.name)) {
+      parameters.push({ name: param.name, index: at, text: `${param.type} ${param.name}${param.default !== undefined ? ` = ${param.default}` : ''}` })
+    } else if (param.name.endsWith('[]') && param.default === undefined && next && !next.type && next.default === undefined && identifier.test(next.name)) {
+      parameters.push({ name: next.name, index: at + 1, text: `params ${param.name} ${next.name}` })
+      at++
+    } else return undefined
+  }
+  return parameters
+}
+
+/** Members are projected from the extracted callable; records keep their source header. */
+export function supportsCSharpSignatures(symbol: ApiSymbol, language?: string): boolean {
+  if (language !== 'csharp' || !symbol.signatures.length) return false
+  if (['class', 'struct'].includes(symbol.kind)) return symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
+  return symbol.kind === 'method' && symbol.signatures.every((signature) => Boolean(signature.raw?.trim()) ||
+    (csharpParameters(signature) !== undefined && (signature.typeParams ?? []).every((param) => /^(?:(?:in|out)\s+)?[A-Za-z_]\w*$/.test(param))))
+}
+
 /** Prepare one layout per overload for both HTML and the Markdown twin. */
 export async function apiSignatureLayouts(symbol: ApiSymbol, language?: string): Promise<Map<Signature, CodeLayout>> {
   if (language === 'rs' && ['method', 'function'].includes(symbol.kind) && symbol.signatures.length && !supportsRustSignatures(symbol, language)) {
@@ -194,6 +225,11 @@ export async function apiSignatureLayouts(symbol: ApiSymbol, language?: string):
     const { fsharpSignatureLayout } = await import('./fsharp-code-layout')
     return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
       [signature, await fsharpSignatureLayout(signature)] as const)))
+  }
+  if (supportsCSharpSignatures(symbol, language)) {
+    const { csharpSignatureLayout } = await import('./csharp-code-layout')
+    return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
+      [signature, await csharpSignatureLayout(symbol, signature)] as const)))
   }
   if ((language === 'scala' || language === 'kotlin') && ['method', 'function'].includes(symbol.kind)) {
     const { jvmSignatureLayout } = await import('./jvm-code-layout')
