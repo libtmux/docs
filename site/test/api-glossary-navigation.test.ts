@@ -297,7 +297,7 @@ function hydrateDrawers(win: Window) {
 function drawerState(win: Window, open: boolean) {
   const doc = win.document
   expect(doc.getElementById('mobile-toc-toggle')?.getAttribute('aria-expanded')).toBe(String(open))
-  expect(doc.getElementById('mobile-toc')?.inert).toBe(!open)
+  expect((doc.getElementById('mobile-toc') as HTMLElement | null)?.inert).toBe(!open)
   expect(doc.getElementById('mobile-toc')?.classList.contains('translate-x-full')).toBe(!open)
   expect(doc.getElementById('mobile-toc-overlay')?.classList.contains('invisible')).toBe(!open)
   expect(doc.body.style.overflow).toBe(open ? 'hidden' : '')
@@ -306,7 +306,7 @@ function drawerState(win: Window, open: boolean) {
 it('keeps open contents through the sidebar handoff and cleans up at its desktop handoff', async () => {
   const win = await contentsPage('mcp', 1023)
   hydrateDrawers(win)
-  win.document.getElementById('mobile-toc-toggle')!.click()
+  ;(win.document.getElementById('mobile-toc-toggle') as HTMLElement)!.click()
   drawerState(win, true)
   for (const width of [1024, 1036, 1279]) {
     win.happyDOM.setWindowSize({ width, height: 899 })
@@ -320,14 +320,14 @@ it.each([undefined, 'mcp' as const])('retains %s drawer focus, dismissal and one
   const win = await contentsPage(product, 390)
   hydrateDrawers(win)
   const doc = win.document
-  const toggle = doc.getElementById('mobile-toc-toggle')!
+  const toggle = doc.getElementById('mobile-toc-toggle')! as HTMLElement
   const open = () => { toggle.focus(); toggle.click(); drawerState(win, true); expect(doc.activeElement?.id).toBe('mobile-toc-close') }
   open()
   doc.dispatchEvent(new win.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
   drawerState(win, false)
   expect(doc.activeElement).toBe(toggle)
   open()
-  doc.getElementById('mobile-toc-overlay')!.click()
+  ;(doc.getElementById('mobile-toc-overlay') as HTMLElement)!.click()
   drawerState(win, false)
   expect(doc.activeElement).toBe(toggle)
   open()
@@ -335,12 +335,12 @@ it.each([undefined, 'mcp' as const])('retains %s drawer focus, dismissal and one
   drawerState(win, false)
   expect(doc.activeElement).toBe(toggle)
   open()
-  doc.getElementById('mobile-sidebar-toggle')!.click()
-  expect(doc.getElementById('mobile-toc')?.inert).toBe(true)
-  expect(doc.getElementById('mobile-sidebar')?.inert).toBe(false)
+  ;(doc.getElementById('mobile-sidebar-toggle') as HTMLElement)!.click()
+  expect((doc.getElementById('mobile-toc') as HTMLElement | null)?.inert).toBe(true)
+  expect((doc.getElementById('mobile-sidebar') as HTMLElement | null)?.inert).toBe(false)
   expect(doc.body.style.overflow).toBe('hidden')
   win.happyDOM.setWindowSize({ width: 1036, height: 899 })
-  expect(doc.getElementById('mobile-sidebar')?.inert).toBe(true)
+  expect((doc.getElementById('mobile-sidebar') as HTMLElement | null)?.inert).toBe(true)
   expect(doc.body.style.overflow).toBe('')
   let opened = 0
   doc.addEventListener('libtmux:drawer-open', () => opened++)
