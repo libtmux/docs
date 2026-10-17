@@ -38,13 +38,29 @@ const MEMBER_KIND: Record<string, SymbolKind> = {
   define: 'constant',
 }
 
-/** Strip Doxygen's inline markup, keeping the text a reader would see. */
+/** A Markdown mark around `inner`, with the whitespace it started with left outside. */
+const marked = (inner: string, mark: string): string =>
+  inner.replace(/^(\s*)([\s\S]*?)(\s*)$/, (_, before: string, text: string, after: string) =>
+    text ? `${before}${mark}${text}${mark}${after}` : inner)
+
+/**
+ * Strip Doxygen's inline markup, keeping the text a reader would see.
+ *
+ * Bold, emphasis and headings come back out as Markdown, the dialect every
+ * other port's prose is read in. A section's `<title>` sits against the next
+ * `<para>`, so it gets a blank line of its own; a `@par` title is a bold line.
+ */
 function textOf(xml: string): string {
   return xml
     .replace(/<ref[^>]*>/g, '')
     .replace(/<\/ref>/g, '')
     .replace(/<computeroutput>/g, '`')
     .replace(/<\/computeroutput>/g, '`')
+    .replace(/<bold>([\s\S]*?)<\/bold>/g, (_, inner: string) => marked(inner, '**'))
+    .replace(/<emphasis>([\s\S]*?)<\/emphasis>/g, (_, inner: string) => marked(inner, '*'))
+    .replace(/<sect([1-4])\b[^>]*>\s*<title>([\s\S]*?)<\/title>/g, (_, level: string, title: string) =>
+      `\n\n${'#'.repeat(Number(level))} ${title.replace(/\s+/g, ' ').trim()}\n\n`)
+    .replace(/<title>([\s\S]*?)<\/title>/g, (_, title: string) => `\n\n${marked(title.replace(/\s+/g, ' ').trim(), '**')}\n\n`)
     .replace(/<para>/g, '\n')
     .replace(/<\/para>/g, '\n')
     .replace(/<[^>]+>/g, '')
