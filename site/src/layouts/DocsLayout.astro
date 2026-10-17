@@ -179,18 +179,18 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
     <PagePortSwitcher entries={pagePorts} portSlug={port} tmux={!port} reserveLabelWidth />
   </div>}
   {hasContext && <DocumentationContext slot="context" port={port} version={contextVersion} locale={locale}
-    sourcePath={localeSourcePath(Astro.url.pathname, locale)} localeStatuses={localeStatuses}>
+    sourcePath={localeSourcePath(Astro.url.pathname, locale)} localeStatuses={localeStatuses} tableOfContents={tocItems.length > 0}>
     <DocumentationNavigationButtons slot="navigation" tableOfContents={tocItems.length > 0} />
   </DocumentationContext>}
   <CodeTabs />
-  {!hasContext && <div class="mobile-toolbar lg:hidden"><DocumentationNavigationButtons tableOfContents={tocItems.length > 0} /></div>}
+  {!hasContext && <div class:list={['mobile-toolbar', tocItems.length > 0 && 'mobile-toolbar--contents']}><DocumentationNavigationButtons tableOfContents={tocItems.length > 0} /></div>}
 
   <noscript>
     <style is:inline>
       .mobile-toolbar, .documentation-context-navigation, #mobile-sidebar, #mobile-toc { display: none !important; }
     </style>
-    <div class="mobile-fallback lg:hidden" data-pagefind-ignore="all">
-      <details>
+    <div class:list={['mobile-fallback', tocItems.length > 0 ? 'xl:hidden' : 'lg:hidden']} data-pagefind-ignore="all">
+      <details class="lg:hidden">
         <summary>Browse documentation</summary>
         <Sidebar locale={locale} port={port} product={product} version={version} currentPath={currentPath} navigation={sidebarNavigation} />
       </details>
@@ -367,7 +367,10 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
        * page that could not be scrolled and no visible control to release it.
        */
       const desktop = window.matchMedia('(min-width: 1024px)')
-      desktop.addEventListener('change', (e) => e.matches && close(), { signal })
+      desktop.addEventListener('change', (e) => {
+        // Contents can stay open until 80rem and still owns its scroll lock.
+        if (e.matches && sidebar && !sidebar.classList.contains('-translate-x-full')) close()
+      }, { signal })
       if (desktop.matches) close()
     }
 
@@ -394,15 +397,7 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
     .product-hero { display: block; }
     .product-hero img { margin-bottom: 1rem; }
   }
-  /*
-   * The breakpoint is stated here, not left to `lg:hidden` on the element.
-   *
-   * Astro scopes this rule to `.mobile-toolbar[data-astro-cid-…]`, which is
-   * specificity (0,2,0) against Tailwind's `.lg\:hidden` at (0,1,0) — so the
-   * utility never won and the toolbar rendered at every width. A hamburger
-   * and a contents button sat above the three-column desktop layout on all
-   * 394 pages that use this shell.
-   */
+  /* Scoped display rules use the same breakpoints as the replacement columns. */
   .mobile-toolbar {
     position: sticky;
     top: 0;
@@ -415,7 +410,12 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
     color: var(--text-color);
     padding: 0.5rem 1rem;
   }
-  @media (min-width: 1024px) {
+  @media (min-width: 64rem) {
+    .mobile-toolbar:not(.mobile-toolbar--contents) {
+      display: none;
+    }
+  }
+  @media (min-width: 80rem) {
     .mobile-toolbar {
       display: none;
     }
