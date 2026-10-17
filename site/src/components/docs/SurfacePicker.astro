@@ -68,7 +68,7 @@ const artwork = (id: string) => {
             target={item.external ? '_blank' : undefined} rel={item.external ? 'noopener noreferrer' : undefined}>
             <DocumentationIcon name="reference" /><span>{item.label}</span>
             {entry.id === surface.id && item === alternative && <span class="doc-picker-check" aria-hidden="true">✓</span>}
-            {item.external && <><span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></>}
+            {item.external && <span class="sr-only"> (opens in a new tab)</span>}
           </a>)}
         </div>}
       </details>)}
