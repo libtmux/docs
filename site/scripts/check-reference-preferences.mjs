@@ -115,6 +115,58 @@ export async function checkReferencePreferences(browser, base) {
   console.log('Source disclosure stays usable without JavaScript or localStorage')
 }
 
+/**
+ * The port's GitHub and package menus sit in the bar from 48rem and in the Menu
+ * panel below it, so the bar never grows and exactly one copy is displayed.
+ */
+async function checkHeaderPickers(page, path, width, scripted) {
+  const compact = width < 768
+  const where = `${path} at ${width}px`
+  const state = await page.evaluate(() => {
+    const shown = (placement) => [...document.querySelectorAll(`details[data-header-picker][data-placement="${placement}"] > summary`)]
+      .filter((summary) => summary.checkVisibility()).map((summary) => {
+        const { left, right, width, height } = summary.getBoundingClientRect()
+        return { kind: summary.parentElement.dataset.headerPicker, left, right, width, height, name: summary.getAttribute('aria-label') }
+      })
+    const edges = (selector) => { const { left, right } = document.querySelector(selector).getBoundingClientRect(); return { left, right } }
+    return {
+      bar: shown('bar'), menu: shown('menu'), brand: edges('.site-header__mark'), controls: edges('.site-header__always'),
+      height: document.querySelector('.site-header__bar').getBoundingClientRect().height,
+      language: Boolean(document.querySelector('.site-header-language [data-page-port-switcher]')),
+    }
+  })
+  const [exposed, hidden] = compact ? [state.menu, state.bar] : [state.bar, state.menu]
+  assert.deepEqual(exposed.map(({ kind }) => kind), ['github', 'packages'], `${where}: the displayed menus`)
+  assert.equal(hidden.length, 0, `${where}: the other copy is not displayed`)
+  assert(state.height <= (state.language && width <= 560 ? 97 : 53), `${where}: the menus leave the header height unchanged (${state.height}px)`)
+  for (const entry of exposed) {
+    assert(entry.width >= 24 && entry.height >= 24, `${where}: ${entry.kind} trigger is at least 24px square`)
+    assert(entry.name, `${where}: ${entry.kind} trigger has an accessible name`)
+  }
+  if (!compact) {
+    assert(state.brand.right <= exposed[0].left && exposed.at(-1).right <= state.controls.left, `${where}: bar menus sit between the wordmark and the controls`)
+  }
+  const placement = compact ? 'menu' : 'bar'
+  for (const { kind } of exposed) {
+    const picker = page.locator(`details[data-header-picker="${kind}"][data-placement="${placement}"]`)
+    await picker.locator(':scope > summary').click()
+    const opened = await picker.evaluate((element) => {
+      const { left, right } = element.querySelector('[data-picker-panel]').getBoundingClientRect()
+      const rows = [...element.querySelectorAll('a[data-picker-option]')]
+      return { open: element.open, shown: element.querySelector('[data-picker-panel]').checkVisibility(), left, right,
+        fits: document.documentElement.scrollWidth <= innerWidth + 1, width: innerWidth,
+        // One glyph per row: the shared hint's mask, and no arrow of the row's own.
+        masks: rows.map((row) => getComputedStyle(row, '::after').maskImage),
+        arrows: rows.filter((row) => /[↗⇗]/.test(row.textContent)).length }
+    })
+    assert(opened.open && opened.shown, `${where}: the ${kind} menu opens`)
+    assert(opened.fits && opened.left >= -0.5 && opened.right <= opened.width + 0.5, `${where}: the open ${kind} menu stays inside the viewport`)
+    assert.equal(opened.arrows, 0, `${where}: ${kind} rows draw no arrow of their own`)
+    if (scripted) assert(opened.masks.length > 0 && opened.masks.every((mask) => mask !== 'none'), `${where}: every ${kind} row has the shared external-link glyph`)
+    await picker.locator(':scope > summary').click()
+  }
+}
+
 /** The global header has no repeated destination strip, including without JS. */
 export async function checkGlobalHeader(browser, base) {
   for (const javaScriptEnabled of [false, true]) {
@@ -125,7 +177,7 @@ export async function checkGlobalHeader(browser, base) {
       for (const path of ['/', '/tmux/latest/manual/capture-pane/', '/py/latest/', '/ts/latest/', '/api-example-probe/']) {
         await page.goto(`${base}${path}`)
         await page.waitForFunction(() => document.fonts.status === 'loaded')
-        for (const width of [280, 304, 390, 768, 784, 1024, 1440, 1600, 1920]) {
+        for (const width of [280, 304, 320, 360, 390, 560, 561, 640, 767, 768, 784, 1024, 1440, 1600, 1920]) {
           await page.setViewportSize({ width, height: 900 })
           assert.equal(await page.locator('header nav[aria-label="Documentation destinations"]').count(), 0)
           const menu = page.locator('.site-header__menu')
@@ -144,6 +196,9 @@ export async function checkGlobalHeader(browser, base) {
           })
           assert(geometry.fits && geometry.separate, `${path} at ${width}px: header controls fit without overlap`)
           assert(geometry.wordmarkVisible, `${path} at ${width}px: the wordmark remains a visible home link`)
+          // The probe renders a TypeScript reference page, so it has a port.
+          if (/^\/(?:py\/|ts\/|api-example-probe\/)/.test(path)) await checkHeaderPickers(page, path, width, javaScriptEnabled)
+          else assert.equal(await page.locator('details[data-header-picker]').count(), 0, `${path}: pages without a port have no menus`)
           if (width >= 1600) {
             if (!headerFrames.has(width)) headerFrames.set(width, geometry.frame)
             assert.deepEqual(geometry.frame, headerFrames.get(width), `${path} at ${width}px: global controls keep their homepage positions`)
