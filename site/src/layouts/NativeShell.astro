@@ -31,7 +31,6 @@ const entries = PORTS.map((entry) => ({
       : matches.filter((match, index, all) => match.port === entry.slug && all.findIndex((other) => other.href === match.href) === index),
 }))
 const equivalents = { port, primary: page.signatures[0], symbols, indexes: page.path ? undefined : references.indexes }
-const sourceUrl = `https://github.com/${context.source.repository}/tree/${context.source.sha}`
 ---
 <!doctype html>
 <html data-native-shell-export>
@@ -53,7 +52,7 @@ const sourceUrl = `https://github.com/${context.source.repository}/tree/${contex
       document.documentElement.classList.remove('no-js');
       document.body.dataset.theme = document.documentElement.dataset.themeMode || 'auto';
     </script>
-    <SiteHeader documentationContext portSlug={port} version={version} locale={locale} sourcePath={page.sourcePath} sourceUrl={sourceUrl}>
+    <SiteHeader documentationContext portSlug={port} version={version} locale={locale} sourcePath={page.sourcePath}>
       <div slot="navigation" class="site-header-language">
         <PagePortSwitcher entries={entries} portSlug={port} reserveLabelWidth />
       </div>
@@ -65,7 +64,7 @@ const sourceUrl = `https://github.com/${context.source.repository}/tree/${contex
     <template data-native-boundary="header-end"></template>
     <template data-native-boundary="footer-start"></template>
     <SiteFooter locale={locale} source={page.source} markdownHref={page.markdownHref} llmsRoot={base}
-      githubUrl={sourceUrl} flush />
+      githubUrl={`https://github.com/${context.source.repository}/tree/${context.source.sha}`} flush />
     <BackToTop />
     <SearchModal port={port} version={version} />
     <script type="application/json" data-native-page-ports set:html={JSON.stringify(equivalents).replaceAll('<', '\\u003c')} />

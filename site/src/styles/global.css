@@ -1081,42 +1081,55 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
 }
 
 /*
- * The current port's source, package and API links, at the height of the
- * search, colour and menu controls. The marks are icon-only: see SiteHeader.astro.
+ * The current port's GitHub, package and reference menus, at the height of the
+ * search, colour and menu controls. Each is a picker (documentation-picker.css)
+ * whose trigger is a chip like its neighbours; the label shows from 70rem and
+ * the mark alone, with its accessible name, carries the 48rem to 70rem range.
  */
-.site-header__ports {
+.site-header__pickers {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   flex: none;
 }
 
-.site-header__port-link {
+.site-header .header-picker > summary {
   box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 1.75rem;
   height: 1.75rem;
+  min-height: 0;
+  gap: 0.35rem;
+  padding: 0 0.5rem;
   border: 1px solid var(--color-background-border);
-  padding: 0 0.3rem;
+  border-radius: var(--radius-md, 0.375rem);
+  background: color-mix(in oklab, var(--topnav-background), var(--topnav-text-color) 7%);
+  color: var(--topnav-link-color);
   font-size: 0.875rem;
   line-height: 1;
-  text-decoration: none;
-  white-space: nowrap;
 }
 
-.site-header__port-link--api {
-  padding-inline: 0.5rem;
+.site-header .header-picker > summary:is(:hover, :focus-visible),
+.site-header .header-picker[open] > summary {
+  background: color-mix(in oklab, var(--topnav-background), var(--topnav-text-color) 16%);
+  color: var(--topnav-link-hover-color);
+}
+
+.site-header .header-picker .doc-picker-caret {
+  margin-left: 0;
 }
 
 /* The brand colour arrives on interaction, as on the links in a port's hero. */
-.site-header__port-link:is(:hover, :focus-visible) .registry-icon {
+.site-header .header-picker > summary:is(:hover, :focus-visible) .registry-icon {
   color: var(--icon-brand);
 }
 
-html[data-theme-mode='dark'] .site-header__port-link:is(:hover, :focus-visible) .registry-icon {
+html[data-theme-mode='dark'] .site-header .header-picker > summary:is(:hover, :focus-visible) .registry-icon {
   color: var(--icon-brand-dark);
+}
+
+/* A panel with no script hangs from its trigger's right edge, never off the viewport. */
+.site-header__pickers .header-picker:not([data-enhanced]) > .doc-picker-panel {
+  left: auto;
+  right: 0;
 }
 
 .site-header__search {
@@ -1270,6 +1283,12 @@ html[data-theme-mode='dark'] .site-header__port-link:is(:hover, :focus-visible) 
   align-items: stretch;
 }
 
+/* A scripted picker floats over the page, so opening one leaves the row alone. */
+.site-header__panel-pickers:has(details[open][data-enhanced]) {
+  flex-direction: row;
+  align-items: center;
+}
+
 .site-header__panel details {
   min-width: 0;
 }
@@ -1313,12 +1332,20 @@ html[data-theme-mode='dark'] .site-header__port-link:is(:hover, :focus-visible) 
   transform: rotate(180deg);
 }
 
-/* The API host is text, which a phone-width bar cannot spare; the menu has it. */
+/*
+ * Three triggers do not fit a phone bar beside the wordmark, search, colour and
+ * menu controls: the no-script colour switch alone is wider than the space
+ * they would need. The Menu panel holds a second copy below 48rem and the bar
+ * holds the menus from there, so exactly one copy is displayed and focusable.
+ */
 @media (max-width: 47.999rem) {
-  .site-header__port-link--api { display: none; }
+  .site-header__pickers { display: none; }
 }
 @media (min-width: 48rem) {
-  .site-header__api-menu { display: none; }
+  .site-header__panel-pickers { display: none; }
+}
+@media (max-width: 69.999rem) {
+  .site-header__pickers .header-picker__label { display: none; }
 }
 @media (max-width: 95.999rem) {
   .site-header__menu-label { display: none; }

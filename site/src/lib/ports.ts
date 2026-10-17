@@ -1368,8 +1368,6 @@ export interface DestinationRequest {
   version?: string
   /** Commit that the page's source citations are bound to. */
   revision?: string
-  /** An already computed GitHub URL, such as a layout's, that replaces the derived source. Its trailing slash is dropped. */
-  sourceUrl?: string
 }
 
 export interface SourceDestination {
@@ -1378,7 +1376,7 @@ export interface SourceDestination {
   repo: string
   /** Directory within that repository, when the link opens one. */
   path?: string
-  /** Branch, tag or commit of `path`; absent when `sourceUrl` supplied the link. */
+  /** Branch, tag or commit of `path`. */
   ref?: string
 }
 
@@ -1401,12 +1399,6 @@ function productSource(port: Port, source: PortPackage['source'], version: strin
   return { url: `https://github.com/${repo}/tree/${ref}/${source.path}`, repo, path: source.path, ref }
 }
 
-/** `owner/name`, and the directory below it, of a GitHub repository or tree URL. */
-function githubLocation(url: string): { repo: string; path?: string } | undefined {
-  const match = /^https:\/\/github\.com\/([^/]+\/[^/]+?)(?:\/tree\/[^/]+(?:\/(.+?))?)?\/?$/.exec(url)
-  return match ? { repo: match[1]!, ...(match[2] && { path: match[2] }) } : undefined
-}
-
 /**
  * The source, package and API destinations for a port, product or project.
  *
@@ -1415,20 +1407,19 @@ function githubLocation(url: string): { repo: string; path?: string } | undefine
  * package's page, not a release: the version this site documents is not
  * evidence that a package of that version exists.
  */
-export function portDestinations({ port, project, product, version = 'latest', revision, sourceUrl }: DestinationRequest): PortDestinations {
+export function portDestinations({ port, project, product, version = 'latest', revision }: DestinationRequest): PortDestinations {
   if (!port && !project) throw new Error('portDestinations: a port or project is required')
   const pkg = product ? port?.packages?.find((entry) => entry.id === product) : undefined
-  const derived: SourceDestination = project ? { url: `https://github.com/${project.repo}`, repo: project.repo }
+  const source: SourceDestination = project ? { url: `https://github.com/${project.repo}`, repo: project.repo }
     : product ? productSource(port!, pkg?.source, version, revision)
       : { url: portSourceUrl(port!, version, revision), repo: port!.repo,
           ...(port!.source && { path: port!.source.path, ref: portSourceRef(port!, version, revision) }) }
-  const given = sourceUrl ? githubLocation(sourceUrl) : undefined
   const registry = product
     ? pkg?.registry && port?.registry ? { ...port.registry, url: pkg.registry } : undefined
     : port?.registry
 
   return {
-    source: sourceUrl ? { url: sourceUrl.replace(/\/+$/, ''), repo: given?.repo ?? derived.repo, ...(given?.path && { path: given.path }) } : derived,
+    source,
     registry,
     // Go's registry and reference host are the same destination.
     ecosystem: !product && port?.ecosystemHost && port.ecosystemHost.url !== registry?.url ? port.ecosystemHost : undefined,

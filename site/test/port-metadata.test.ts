@@ -233,19 +233,6 @@ describe('port destinations', () => {
     expect(() => portDestinations({})).toThrow('a port or project is required')
   })
 
-  it('follows a layout-supplied source URL and reads its repository and directory', () => {
-    const py = PORT_BY_SLUG.py!
-    const fromLayout = (sourceUrl: string) => portDestinations({ port: py, sourceUrl })
-    expect(fromLayout('https://github.com/tmux-python/tmuxp/').source).toEqual({ url: 'https://github.com/tmux-python/tmuxp', repo: 'tmux-python/tmuxp' })
-    expect(fromLayout('https://github.com/tmux-python/libtmux/tree/0123abcd').source)
-      .toEqual({ url: 'https://github.com/tmux-python/libtmux/tree/0123abcd', repo: 'tmux-python/libtmux' })
-    expect(fromLayout('https://github.com/libtmux/libtmux-java/tree/master/libtmux-kotlin').source)
-      .toEqual({ url: 'https://github.com/libtmux/libtmux-java/tree/master/libtmux-kotlin', repo: 'libtmux/libtmux-java', path: 'libtmux-kotlin' })
-    // The package destinations stay the port's own whatever repository the page documents.
-    expect(fromLayout('https://github.com/tmux-python/tmuxp/').registry?.url).toBe('https://pypi.org/project/libtmux/')
-    expect(fromLayout('https://example.com/elsewhere').source).toMatchObject({ url: 'https://example.com/elsewhere', repo: 'tmux-python/libtmux' })
-  })
-
   it('keeps every external URL free of locale and preview prefixes', async () => {
     vi.stubEnv('LIBTMUX_DOCS_ROOT', '/pr-42/ja')
     vi.stubEnv('LIBTMUX_DOCS_PORT_ROOT', '/pr-42/en')

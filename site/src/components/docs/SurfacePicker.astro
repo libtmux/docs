@@ -3,7 +3,7 @@ import DocumentationIcon from './DocumentationIcon.astro'
 import ConceptBadge from '../ConceptBadge.astro'
 import { currentDocumentation, type DocumentationSurface } from '../../lib/documentation-navigation'
 import { branding } from '../../lib/branding'
-import { CONCEPT_DESCRIPTION, PORT_BY_SLUG } from '../../lib/ports'
+import { CONCEPT_DESCRIPTION, PICKER_GROUP_SUMMARY, PORT_BY_SLUG } from '../../lib/ports'
 import { withRoot } from '../../lib/site-root'
 import type { Locale } from '../../i18n/locales'
 import '../../styles/documentation-picker.css'
@@ -12,7 +12,7 @@ interface Props { surfaces: DocumentationSurface[]; currentPath: string; port?: 
 const { surfaces, currentPath, port, version, locale, solutionsOnly = false } = Astro.props
 const { surface, section, alternative } = currentDocumentation(surfaces, currentPath)
 const currentLabel = alternative?.label ?? section.label
-const descriptions: Record<string, string> = { core: 'API reference and guides', mcp: 'Tools for connected assistants', workspace: 'Repeatable development environments', tmux: 'Commands, configuration and terminal workflows' }
+const descriptions: Record<string, string> = { ...PICKER_GROUP_SUMMARY, tmux: 'Commands, configuration and terminal workflows' }
 const artwork = (id: string) => {
   const path = branding(port, id === 'core' ? '' : id).asset('logo.svg')
   return withRoot(path)
