@@ -186,6 +186,16 @@ const EMPHASIS_RE = /(?<![\w*\\])\*(?![\s*])([^*\n]+?)(?<![\s\\])\*(?![\w*])/g
 const doccTarget = (text: string): string =>
   text.replace(/^[^(]*/, (path) => path.replace(/(?<=\w)\/(?=\w)/g, '.'))
 
+/**
+ * YARD's brace link: `{Class}`, `{Class#m}`, `{Class.m}`, `{#m}`, each with an
+ * optional label.
+ *
+ * Only a constant path or a method name opens one, and a label starts like a
+ * word. That leaves a hash literal (`{Foo => 1}`, `{a: 1}`), an RBS record
+ * (`{ closed: bool }`) and string interpolation (`#{Foo}`) as text.
+ */
+const YARD_LINK_RE = /(?<!#)\{(#[A-Za-z_]\w*[?!=]?|(?:::)?[A-Z]\w*(?:::[A-Z]\w*)*(?:[#.][A-Za-z_]\w*[?!=]?)?)(?:[ \t]+(?=[\w`"'([])([^}\n]*[^}\s]))?\}/g
+
 /** A bare double-backtick literal, which is never a link. */
 const LITERAL_RE = /``([^`]+)``/g
 /** reST literals can contain single backticks without enabling nested markup. */
@@ -265,6 +275,7 @@ const SYNTAX: Record<string, ReadonlySet<string>> = {
   // DocC gives double backticks a meaning reST reserves for a literal: in a
   // Swift doc comment ``Server`` is a symbol link, not code.
   swift: new Set(['docc']),
+  ruby: new Set(['yard']),
   cxx: new Set([]),
   kotlin: new Set(['kdoc', 'jsdoc']),
   scala: new Set(['scaladoc', 'jsdoc']),
@@ -404,6 +415,16 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
         end: m.index + m[0].length,
         span: { kind: 'ref', role: 'any', target, label: m[2]?.trim() || m[1] },
       })
+    }
+  }
+
+  if (syntax.has('yard')) {
+    // A code span is a literal, whatever it holds.
+    const literal = markdownCode(text, text)
+    for (const m of text.matchAll(YARD_LINK_RE)) {
+      const end = m.index + m[0].length
+      if (literal.some((code) => code.start < end && code.end > m.index)) continue
+      hits.push({ start: m.index, end, span: { kind: 'ref', role: 'any', target: m[1], label: m[2] ?? m[1] } })
     }
   }
 

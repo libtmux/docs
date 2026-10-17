@@ -384,6 +384,35 @@ describe('each language gets its own spelling of a cross-reference', () => {
     expect(targets('``/(_:_:)``')).toEqual([['/(_:_:)', '/(_:_:)']])
   })
 
+  it('YARD brace links carry their target and label, in every spelling', () => {
+    const links = (text: string) => tokenizeDoc(text, 'ruby').filter((s) => s.kind === 'ref')
+      .map((s) => [(s as { target: string }).target, (s as { label: string }).label])
+    expect(links('See {Server}, {Server#run}, {Server.open}, {#run} and {LibTmux::Server#run}.')).toEqual([
+      ['Server', 'Server'], ['Server#run', 'Server#run'], ['Server.open', 'Server.open'],
+      ['#run', '#run'], ['LibTmux::Server#run', 'LibTmux::Server#run'],
+    ])
+    expect(links('{Selection#empty?} and {#save!}, {Pane#title= the setter}, {::LibTmux label with words}.')).toEqual([
+      ['Selection#empty?', 'Selection#empty?'], ['#save!', '#save!'],
+      ['Pane#title=', 'the setter'], ['::LibTmux', 'label with words'],
+    ])
+    expect(tokenizeDoc('Use {#run} now.', 'ruby')).toEqual([
+      { kind: 'text', text: 'Use ' },
+      { kind: 'ref', role: 'any', target: '#run', label: '#run' },
+      { kind: 'text', text: ' now.' },
+    ])
+  })
+
+  it('braces that are not a YARD link tokenize as they did without the syntax', () => {
+    for (const text of [
+      'A hash `{Foo => 1}` and `{a: 1, "b" => 2}` in code.',
+      'Code spans keep a link-shaped `{#run}` and ``{Server#run}`` literal.',
+      'An empty {} and a record { closed: bool } and {closed: bool} in prose.',
+      'A constant key {Foo => 1}, {Foo: 1}, {Foo, Bar} and { Foo } is a literal.',
+      'A string "#{Server}" interpolates; {"a": {"b": 1}} is data; {lower} is not a constant.',
+      '{#} and {Foo#} and {#1} and {Foo.} are not targets.',
+    ]) expect(tokenizeDoc(text, 'ruby')).toEqual(tokenizeDoc(text, 'lua'))
+  })
+
   it('an undeclared language still gets reST, which the Python corpus needs', () => {
     expect(ref(tokenizeDoc('See :meth:`Pane.send_keys` now.'))).toEqual(['Pane.send_keys'])
   })

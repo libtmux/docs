@@ -198,6 +198,8 @@ export class SymbolIndex {
   private readonly byName = new Map<string, ApiSymbol[]>()
   /** Swift declarations that take labels, under the path without them: `Server.sessions`. */
   private readonly swiftCallables = new Map<string, ApiSymbol[]>()
+  /** The outermost namespaces a Ruby id starts with, for a name written without one. */
+  private readonly rubyRoots = new Set<string>()
 
   // A plain field, not a constructor parameter property. Node's
   // --experimental-strip-types rejects parameter properties outright
@@ -257,6 +259,7 @@ export class SymbolIndex {
       const list = this.byName.get(s.name) ?? []
       list.push(s)
       this.byName.set(s.name, list)
+      if (this.lang === 'ruby' && pub.includes('::')) this.rubyRoots.add(pub.slice(0, pub.indexOf('::')))
       const labels = this.lang === 'swift' ? pub.indexOf('(') : -1
       if (labels > 0) {
         const overloads = this.swiftCallables.get(pub.slice(0, labels)) ?? []
@@ -386,6 +389,10 @@ export class SymbolIndex {
   resolve(target: string, role = 'any', context?: ApiSymbol): LinkTarget | undefined {
     const relative = target.startsWith('.')
     const goType = this.lang === 'go' && role === 'class'
+    if (this.lang === 'ruby') {
+      const yard = this.resolveYard(target, context)
+      if (yard) return yard
+    }
     let clean = target.replace(/^[~.]/, '')
     // Swift ids keep their argument labels, so `isRunning()` names `Server.isRunning()`.
     if (this.lang !== 'swift') clean = clean.replace(/\(\)$/, '')
@@ -594,6 +601,41 @@ export class SymbolIndex {
     }
 
     return undefined
+  }
+
+  /**
+   * A YARD target: `Class`, `Class#m`, `Class.m` or `#m`.
+   *
+   * A constant is looked up the way Ruby looks one up, from the namespace of
+   * the documented class outward, so `Selection` written inside
+   * `LibTmux::Server` reaches `LibTmux::Selection`. `#` names an instance
+   * method and `.` a singleton one, and neither stands in for the other. A
+   * bare `#m` belongs to the class being documented. Only the class is
+   * searched for outward; once it is found, a missing member ends the lookup.
+   */
+  private resolveYard(target: string, context?: ApiSymbol): LinkTarget | undefined {
+    const parts = /^(::)?([A-Z]\w*(?:::[A-Z]\w*)*)?(?:([#.])([A-Za-z_]\w*[?!=]?))?$/.exec(target)
+    if (!parts || (!parts[2] && parts[3] !== '#')) return undefined
+    const [, absolute, path, separator, member] = parts
+    const classOf = (symbol: ApiSymbol) =>
+      ['class', 'module'].includes(symbol.kind) ? symbol : this.byDeclared.get(symbol.parent ?? '')
+    const within = context && classOf(context)
+    let owner: ApiSymbol | undefined
+    if (path) {
+      const namespaces = (within?.publicId ?? within?.id ?? '').split('::').filter(Boolean)
+      const prefixes = absolute ? [''] : [
+        ...namespaces.map((_, i) => `${namespaces.slice(0, namespaces.length - i).join('::')}::`),
+        '', ...[...this.rubyRoots].map((root) => `${root}::`),
+      ]
+      for (const prefix of prefixes) {
+        owner = this.byPublic.get(`${prefix}${path}`)
+        if (owner) break
+      }
+    } else {
+      owner = within
+    }
+    const hit = !owner || !separator ? owner : this.byPublic.get(`${owner.publicId ?? owner.id}${separator}${member}`)
+    return hit && { href: this.hrefFor(hit), external: false, symbol: hit }
   }
 
   /** Resolve every ref span in place; unresolved ones become plain text. */
