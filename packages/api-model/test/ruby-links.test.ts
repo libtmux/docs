@@ -14,6 +14,7 @@ const SYMBOLS = [
   symbol('LibTmux::Server#run', 'method', 'LibTmux::Server'),
   symbol('LibTmux::Server#list_sessions', 'method', 'LibTmux::Server'),
   symbol('LibTmux::Server.open', 'method', 'LibTmux::Server'),
+  symbol('LibTmux::Server.new', 'method', 'LibTmux::Server'),
   symbol('LibTmux::Session', 'class'),
   symbol('LibTmux::Session#run', 'method', 'LibTmux::Session'),
   symbol('LibTmux::Selection', 'class'),
@@ -32,6 +33,12 @@ const resolved = (text: string, context?: string) =>
     .map((span) => span.link?.symbol?.id)
 
 describe('YARD links resolve to the declaration they name', () => {
+  it('reads #initialize as the .new constructor Ruby callers use', () => {
+    expect(resolved('{#initialize} and {Server#initialize Server.new}', 'LibTmux::Server')).toEqual([
+      'LibTmux::Server.new', 'LibTmux::Server.new',
+    ])
+  })
+
   it('reads #m as a method of the class being documented', () => {
     expect(resolved('{#list_sessions} and {#run}', 'LibTmux::Server')).toEqual([
       'LibTmux::Server#list_sessions', 'LibTmux::Server#run',

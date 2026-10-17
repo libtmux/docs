@@ -424,7 +424,9 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
     for (const m of text.matchAll(YARD_LINK_RE)) {
       const end = m.index + m[0].length
       if (literal.some((code) => code.start < end && code.end > m.index)) continue
-      hits.push({ start: m.index, end, span: { kind: 'ref', role: 'any', target: m[1], label: m[2] ?? m[1] } })
+      // YARD documents a constructor as `#initialize`; Ruby callers, and the model, use `.new`.
+      const target = m[1].replace(/#initialize$/, '.new')
+      hits.push({ start: m.index, end, span: { kind: 'ref', role: 'any', target, label: m[2] ?? target } })
     }
   }
 
