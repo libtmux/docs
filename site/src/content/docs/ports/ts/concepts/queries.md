@@ -20,7 +20,7 @@ requires exactly one target.
 
 These are independent programs with imports, assertions, and cleanup. Each
 creates a private tmux server, runs `cat` in its panes to keep them alive, and
-stops its server before exiting. They require Bun 1.4.2 or newer, tmux 3.2a
+stops its server before exiting. They require Bun 1.4.2 or newer, tmux 3.3a
 or newer, and a Unix environment. You do not need an existing tmux session.
 
 In an empty directory, save this file as `package.json`:

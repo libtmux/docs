@@ -13,7 +13,7 @@ tableOfContents: true
 These pages document tmuxp 1.74.0 at the source revision linked below. Install
 tmuxp in its own Python environment and let its dependency resolver select a
 compatible libtmux release. The walkthroughs use Python 3.10 or newer and
-tmux 3.2a or newer.
+tmux 3.3a or newer. A daemon older than 3.3a is refused before any effect; see [tmux support](../../../../../tmux/guides/tmux-support/).
 
 ## Configuration and extensions
 

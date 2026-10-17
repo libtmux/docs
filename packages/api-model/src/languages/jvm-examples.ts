@@ -76,7 +76,7 @@ export function attachCompleteJvmExamples(
     }
     const blocks: NonNullable<DocBlock['examples']> = [{
       lang: 'console',
-      intro: `${program.description.replace(/\n/g, ' ')} Use JDK 25, Git, and tmux 3.2a through 3.7c on Linux, with /bin/cat and /bin/sh available. In an empty directory, fetch the documented library revision:`,
+      intro: `${program.description.replace(/\n/g, ' ')} Use JDK 25, Git, and tmux 3.3a through 3.7c on Linux, with /bin/cat and /bin/sh available. In an empty directory, fetch the documented library revision:`,
       code: `$ git clone https://github.com/${source.repo}.git libtmux-source && \\\n  git -C libtmux-source checkout ${source.revision}\n`,
     }]
     for (const file of files) blocks.push({

@@ -16,7 +16,7 @@ can be handled as a branch in a shell script.
 
 ## Check absence and partial work
 
-Save this complete script as `failures.sh`. It requires tmux 3.2a or newer
+Save this complete script as `failures.sh`. It requires tmux 3.3a or newer
 and a POSIX shell. It checks a missing session, deliberately fails a grouped
 command, and inspects what remains on its private server.
 

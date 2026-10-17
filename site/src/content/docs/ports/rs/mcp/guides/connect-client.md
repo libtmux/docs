@@ -13,7 +13,7 @@ sidebar:
 the executable and exchanges JSON-RPC messages over stdin and stdout.
 The launcher writes diagnostics to stderr.
 
-Use Rust 1.88 or newer, Git, and tmux 3.2a or newer on Linux or macOS.
+Use Rust 1.88 or newer, Git, and tmux 3.3a or newer on Linux or macOS.
 The command below uses the tested Rust 1.97.1 toolchain and installs the
 source revision used by this documentation's MCP reference. Cargo's
 binary directory must be on the path available to your MCP client.

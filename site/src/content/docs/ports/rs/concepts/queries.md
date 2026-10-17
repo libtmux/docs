@@ -19,7 +19,7 @@ next operation needs one unambiguous target.
 ## Setup and run
 
 Use an empty directory with Git, rustup with the 1.97.1 toolchain installed,
-tmux 3.2a or newer, and a Unix environment. Each program below creates its own private server, uses `cat` to
+tmux 3.3a or newer, and a Unix environment. Each program below creates its own private server, uses `cat` to
 keep its panes alive, and stops that server before exiting. No existing session,
 socket, or environment variable is required.
 

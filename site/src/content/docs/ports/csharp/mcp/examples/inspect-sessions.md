@@ -15,7 +15,7 @@ client. The program stops its owned server when the request succeeds or fails.
 
 ## Run the example
 
-Use the .NET 10 SDK and tmux 3.2a or newer on Linux, macOS, or WSL. The project
+Use the .NET 10 SDK and tmux 3.3a or newer on Linux, macOS, or WSL. The project
 pins the library and tool to the same published alpha release. The package
 source is [libtmux-dotnet at the documented release](https://github.com/libtmux/libtmux-dotnet/tree/ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc).
 

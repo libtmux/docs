@@ -61,7 +61,7 @@ export function attachCompleteSwiftExamples(
     const blocks: NonNullable<DocBlock['examples']> = [
       {
         lang: 'console',
-        intro: `${example.title}. ${example.description.replace(/\n/g, ' ')} Use Swift 6.2.4 on Linux or Xcode 26's Swift 6.3 toolchain on macOS, Git, and tmux 3.2a or newer. In an empty directory, fetch the documented library revision:`,
+        intro: `${example.title}. ${example.description.replace(/\n/g, ' ')} Use Swift 6.2.4 on Linux or Xcode 26's Swift 6.3 toolchain on macOS, Git, and tmux 3.3a or newer. In an empty directory, fetch the documented library revision:`,
         code: `$ git clone https://github.com/${source.repo}.git libtmux-source && \\\n  git -C libtmux-source checkout ${source.revision}\n`,
       },
       {

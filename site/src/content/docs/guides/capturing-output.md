@@ -19,7 +19,7 @@ This example forces output into scrollback: it prints 40 numbered lines in a
 pane with 10 rows. A normal capture shows the last screenful. Adding `-S -`
 also retrieves earlier lines, including `row-1`.
 
-Save the script as `history.sh`. It needs tmux 3.2a or newer, a POSIX shell and
+Save the script as `history.sh`. It needs tmux 3.3a or newer, a POSIX shell and
 fractional `sleep` support.
 
 ```sh title="history.sh"
