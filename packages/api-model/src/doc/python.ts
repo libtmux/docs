@@ -54,7 +54,7 @@ function sections(text: string): { intro: string; named: Map<string, string[]> }
   return { intro: intro.join('\n').trim(), named }
 }
 
-/** reST literal blocks and doctests become Markdown without moving their prose. */
+/** reST literal blocks, doctests and rubrics become Markdown without moving their prose. */
 export function pythonDocBody(text: string): string {
   const lines = text.split('\n')
   const out: string[] = []
@@ -81,6 +81,19 @@ export function pythonDocBody(text: string): string {
       const indent = line.length - line.trimStart().length
       fence(code.map((entry) => entry.slice(indent)), 'python', ' '.repeat(indent))
       continue
+    }
+    // A rubric with no body is a heading. Lifted out as a directive it would
+    // leave its place in the prose and become an aside.
+    const rubric = /^(\s*)\.\.\s+rubric::\s*(\S.*?)\s*$/.exec(line)
+    if (rubric) {
+      let next = i + 1
+      while (/^\s+:[\w-]+:/.test(lines[next] ?? '')) next++
+      const following = lines.slice(next).find((entry) => entry.trim())
+      if (!following || following.length - following.trimStart().length <= rubric[1].length) {
+        out.push('', `${rubric[1]}# ${rubric[2]}`, '')
+        i = next - 1
+        continue
+      }
     }
     const directive = /^(\s*)\.\.\s+(?:code-block|sourcecode|code)::\s*(\S*)\s*$/.exec(line)
     const literal = !/^\s*\.\.\s+[a-z-]+::/.test(line) && /::\s*$/.test(line)
