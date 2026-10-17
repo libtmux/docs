@@ -674,9 +674,16 @@ html:has(:is(.api-reference-layout--symbol, .api-reference-layout--glossary)) {
   scroll-padding-top: var(--api-reading-top);
 }
 html:has(:is(.api-reference-layout--symbol, .api-reference-layout--glossary)):has(.site-header :focus) { scroll-padding-top: 0; }
-/* Sticky controls need measured clearance when text wraps or grows. */
+/*
+ * Sticky controls need measured clearance when text wraps or grows. A header
+ * that is not stuck needs no backdrop blur, and the blur would make it a
+ * stacking context without a z-index: its open menus would sit under the
+ * documentation context bar. The blur is an inline style, so only !important
+ * overrides it.
+ */
 html:has(:is(.api-reference-layout--symbol, .api-reference-layout--glossary)):not([data-api-sections-measured]) .site-header {
   position: static;
+  backdrop-filter: none !important;
 }
 @media (min-width: 56rem) {
   .api-reference-layout:has(> .api-nav-column) { grid-template-columns: 16rem minmax(0, 1fr); }
