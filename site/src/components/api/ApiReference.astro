@@ -779,7 +779,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
               — which is what learn.microsoft.com puts here too.
             */}
             {listed.length > 0 && (
-              <div class="mt-8">
+              <div class="api-members mt-8">
                 <h2 class="api-section-heading text-lg font-semibold" id="api-members">{membersLabel}<span class="api-section-count">{listed.length}</span><a class="api-heading-link" href="#api-members" aria-label={`Link to ${membersLabel}`}>#</a></h2>
                 {scalarMembers ? <ApiScalarMembers owner={owner} members={listed} index={index} hrefFor={hrefFor} /> : memberGroups.map((group) => <section id={showMemberGroups ? undefined : group.id} class:list={['api-member-group', !showMemberGroups && 'api-member-group--single']} aria-labelledby={showMemberGroups ? group.id : 'api-members'}>
                 {showMemberGroups && <h3 id={group.id}>{group.label}<span class="api-section-count">{group.members.length}</span><a class="api-heading-link" href={`#${group.id}`} aria-label={`Link to ${group.label}`}>#</a></h3>}

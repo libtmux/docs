@@ -217,6 +217,36 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
 .api-scalar-members th[scope="row"] { font-weight: inherit; }
 .api-member-group { margin-block: 1.5rem 2rem; }
 .api-member-group--single { margin-top: 0.75rem; }
+.api-members { display: flow-root; }
+.api-members > h2,
+.api-members > .api-member-group > h3 {
+  --api-member-bar: color-mix(in srgb, var(--background-color), var(--text-color) 6%);
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-edge);
+  border-radius: 0.35rem;
+  background: var(--api-member-bar);
+  overflow-wrap: anywhere;
+}
+/* The arrival cue tints the opaque bar instead of replacing it, so content never shows through. */
+.api-members > h2[data-anchor-arrival],
+.api-members > .api-member-group > h3[data-anchor-arrival] {
+  animation-name: api-member-bar-arrival;
+}
+@keyframes api-member-bar-arrival {
+  0%, 55% {
+    background-color: color-mix(in srgb, var(--color-link, #2879d0) 18%, var(--api-member-bar));
+    box-shadow: 0 0 0 .25rem color-mix(in srgb, var(--color-link, #2879d0) 18%, transparent);
+  }
+  100% { background-color: var(--api-member-bar); box-shadow: 0 0 0 .25rem transparent; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .api-members > h2[data-anchor-arrival],
+  .api-members > .api-member-group > h3[data-anchor-arrival] {
+    background-color: color-mix(in srgb, var(--color-link, #2879d0) 18%, var(--api-member-bar)) !important;
+  }
+}
 .api-member-type { font: 0.875em var(--font-mono, ui-monospace, monospace); overflow-wrap: anywhere; }
 .api-member-group h3 {
   display: flex;
@@ -935,6 +965,42 @@ html[data-api-sections-measured] .api-section-links {
 .api-source-details > summary { cursor: pointer; color: var(--color-muted); }
 :is(.api-reference-layout--symbol, .api-reference-layout--glossary) .api-reference-content [id] {
   scroll-margin-top: 0;
+}
+@media screen {
+  .api-members[data-api-sticky-members] > h2 {
+    position: sticky;
+    top: var(--api-member-heading-top);
+    z-index: 18;
+    clip-path: inset(var(--api-member-heading-clip) 0 0);
+  }
+  .api-members[data-api-sticky-members] > .api-member-group > h3 {
+    position: sticky;
+    top: var(--api-group-heading-top);
+    z-index: 17;
+    clip-path: inset(var(--api-group-heading-clip) 0 0);
+  }
+  /* Keyboard focus returns a heading to its source box. A pointer press must not move it away. */
+  .api-members[data-api-sticky-members] > h2:has(:focus-visible),
+  .api-members[data-api-sticky-members] > .api-member-group > h3:has(:focus-visible) {
+    position: static;
+    clip-path: none;
+  }
+  /* Firefox misplaces scrollIntoView on a sticky heading, so the anchor handler's startup scroll runs with the bars in flow. */
+  html:is(.fonts-pending, .link-hints-pending) .api-members[data-api-sticky-members] > h2,
+  html:is(.fonts-pending, .link-hints-pending) .api-members[data-api-sticky-members] > .api-member-group > h3 {
+    position: static;
+    clip-path: none;
+  }
+  .api-members[data-api-sticky-members] [id] {
+    scroll-margin-top: var(--api-member-heading-height);
+  }
+  .api-members[data-api-sticky-members] .api-member-group [id] {
+    scroll-margin-top: calc(var(--api-member-heading-height) + var(--api-group-heading-height, 0px));
+  }
+  .api-members[data-api-sticky-members] .api-member-group > h3[id] {
+    scroll-margin-top: var(--api-member-heading-height);
+  }
+  .api-members[data-api-sticky-members] > #api-members { scroll-margin-top: 0; }
 }
 @media print {
   .api-page-contents, .api-glossary-contents, .api-section-links { display: none; }
