@@ -230,6 +230,7 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     Type: dotnet('system.type'),
   },
   rs: {
+    'std::io::Error': rust('io/struct.Error.html'),
     Result: rust('result/enum.Result.html'),
     Option: rust('option/enum.Option.html'),
     Vec: rust('vec/struct.Vec.html'),

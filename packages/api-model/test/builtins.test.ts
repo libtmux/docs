@@ -144,6 +144,29 @@ describe('standard types in product signatures', () => {
     expect(builtinHref('rs', 'Data')).toBeUndefined()
   })
 
+  it('links fully qualified Rust I/O errors without claiming local Error', () => {
+    const model = JSON.parse(readFileSync(new URL('../../../site/src/data/api/rs.json', import.meta.url), 'utf8')) as ApiModel
+    const field = model.symbols.find((symbol) => symbol.id === 'config.ConfigError.Read.source')!
+    expect(field.type).toBe('std::io::Error')
+    const index = new SymbolIndex(model.symbols, (symbol) => `#${symbol.id}`, 'rs')
+    const spans = index.linkType(field.type!, field)
+    expect(spans.map((span) => span.text).join('')).toBe(field.type)
+    expect(spans.filter((span) => span.link)).toMatchObject([{
+      text: 'std::io::Error',
+      link: { href: 'https://doc.rust-lang.org/std/io/struct.Error.html', external: true },
+    }])
+    const local: ApiSymbol = {
+      id: 'example.Error', name: 'Error', kind: 'class', modifiers: [],
+      signatures: [], source: { file: 'example.rs' },
+    }
+    const localIndex = new SymbolIndex([local], (symbol) => `#${symbol.id}`, 'rs')
+    expect(localIndex.resolve('Error')).toMatchObject({ href: '#example.Error', external: false })
+    for (const name of ['Error', 'io::Error', 'other::io::Error']) {
+      expect(builtinHref('rs', name)).toBeUndefined()
+    }
+    expect(builtinHref('cxx', 'std::io::Error')).toBeUndefined()
+  })
+
   it('keeps Swift existential any as syntax while resolving the error protocol', () => {
     const swift = new SymbolIndex([], () => '#', 'swift')
     const spans = swift.linkType('any Error')
