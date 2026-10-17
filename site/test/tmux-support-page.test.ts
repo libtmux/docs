@@ -4,23 +4,18 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 /**
- * The optional-feature requirements stay on one page, in the contract's terms.
+ * The guide explains optional features; it does not keep their facts.
  *
- * Each optional feature states its own tmux requirement, the support states
- * use the five contract names, and port results are named, not counted.
+ * Which release a feature needs and what each port does are generated from
+ * the ports' capability registries onto the capability pages. A table typed
+ * into this guide would drift from them, so the guide links there instead.
  */
 const PAGE = join(dirname(fileURLToPath(import.meta.url)), '../src/content/docs/guides/tmux-support.md')
 
-export const STATES = ['Non-operative', 'Timing-sensitive', 'Operative with synchronization', 'Qualified', 'Unverified']
-export const FEATURES: [string, RegExp][] = [
-  ['control acquisition', /\| Library-managed control mode[^|]*\| tmux 3\.7 \|/],
-  ['named buffer deletion and rename', /\| Named buffer deletion and rename[^|]*\| tmux 3\.4 \|/],
-  ['run-shell captured stdout', /\| Captured standard output of `run-shell` \| Not 3\.3 or 3\.4 \|/],
-  ['exact 3.7 break-pane', /\| `break-pane` \| Not exact 3\.7 \|/],
-  ['exact 3.7 names', /\| Session and window names containing `:` or `\.` \| Not exact 3\.7 \|/],
-  ['percentage splits', /\| Percentage splits \|[^|]*`-l N%`/],
-  ['layout validation', /\| Layout strings \| tmux 3\.4 for unchecked input \|/],
-]
+/** Markdown table rows that state a tmux release, which only generated pages may hold. */
+export function releaseRows(text: string): string[] {
+  return text.split('\n').filter((line) => /^\|.*\b3\.\d+[a-z]?\b.*\|\s*$/.test(line))
+}
 
 /** A count of ports such as "5/8" or "five of eight" summarizes instead of naming. */
 export function ratios(text: string): string[] {
@@ -36,21 +31,20 @@ describe('tmux support page', () => {
     expect(ratios('Python needs 3.7 and Go needs 3.4')).toEqual([])
   })
 
-  it.each(FEATURES)('states the requirement for %s', (_name, row) => {
-    expect(page).toMatch(row)
+  it('detects a hand-kept release row', () => {
+    expect(releaseRows('| Named buffers | tmux 3.4 | refused |')).toHaveLength(1)
+    expect(releaseRows('Named buffers need tmux 3.4.')).toEqual([])
   })
 
-  it.each(STATES)('defines the %s state', (state) => {
-    expect(page).toMatch(new RegExp(`^\\| ${state} \\|`, 'm'))
+  it('keeps no table of release requirements', () => {
+    expect(releaseRows(page)).toEqual([])
+  })
+
+  it('links to the generated capability map', () => {
+    expect(page).toContain('(/reference/capabilities/)')
   })
 
   it('names port results instead of counting them', () => {
     expect(ratios(page)).toEqual([])
-  })
-
-  it('keeps every port in the port table', () => {
-    for (const port of ['Python', 'tmuxp', 'Go', 'Rust', 'Java, Kotlin, Scala', 'C#, F#, PowerShell', 'C++, Swift, TypeScript, Ruby, Lua, Julia']) {
-      expect(page).toContain(`| ${port}`)
-    }
   })
 })
