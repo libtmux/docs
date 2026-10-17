@@ -49,7 +49,7 @@ export function attachCompleteLuaExamples(
     const blocks: NonNullable<DocBlock['examples']> = [
       {
         lang: 'console',
-        intro: `${example.description} Use Lua ${manifest.setup.lua}, LuaRocks, Git, tmux 3.2a or newer, a C compiler, and CMake on Linux. In a new directory, install the documented source and standalone runtime dependency:`,
+        intro: `${example.description} Use Lua ${manifest.setup.lua}, LuaRocks, Git, tmux 3.3a or newer, a C compiler, and CMake on Linux. In a new directory, install the documented source and standalone runtime dependency:`,
         code: `$ git clone https://github.com/${source.repository}.git libtmux-source &&\n` +
           `  git -C libtmux-source checkout ${source.revision} &&\n` +
           `  luarocks --tree ./rocks install luv ${manifest.setup.luv} &&\n` +

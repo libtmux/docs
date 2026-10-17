@@ -20,7 +20,7 @@ server, use the [client guide](../../guides/connect-client/).
 ## Prepare the project
 
 Use Ruby 4.0.7 with its development headers, Bundler, Git, a C compiler and
-Make, and tmux 3.2a or newer on a Unix host. The locked bundle includes native
+Make, and tmux 3.3a or newer on a Unix host. The locked bundle includes native
 extensions. Start with an empty directory:
 
 ```console

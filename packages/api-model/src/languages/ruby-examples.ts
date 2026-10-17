@@ -50,7 +50,7 @@ export function attachCompleteRubyExamples(
     const blocks: NonNullable<DocBlock['examples']> = [
       {
         lang: 'console',
-        intro: `${api.description.replace(/\n/g, ' ')} Use Ruby 4.0.7, Bundler, Git and tmux 3.2a or newer on Unix, with /bin/cat and /bin/sh available. In an empty directory, fetch the documented library revision:`,
+        intro: `${api.description.replace(/\n/g, ' ')} Use Ruby 4.0.7, Bundler, Git and tmux 3.3a or newer on Unix, with /bin/cat and /bin/sh available. In an empty directory, fetch the documented library revision:`,
         code: `$ git clone https://github.com/${source.repository}.git libtmux-source && \\\n  git -C libtmux-source checkout ${source.revision}\n`,
       },
       {

@@ -10,7 +10,7 @@ sidebar:
 ---
 
 Configure the client to launch `libtmux-mcp` with a named tmux socket.
-Install [uv](https://docs.astral.sh/uv/) first, and make tmux 3.2a or newer
+Install [uv](https://docs.astral.sh/uv/) first, and make tmux 3.3a or newer
 available in the environment the client passes to the server.
 
 ## Launch the server

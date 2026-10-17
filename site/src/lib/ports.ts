@@ -639,7 +639,7 @@ const CORE_PORTS: readonly Port[] = [
       prerelease: { code: 'using Pkg\nPkg.add(PackageSpec(name="LibTmux", version="{version}"))', lang: 'julia' },
       git: { code: 'using Pkg\nPkg.add(PackageSpec(url="https://github.com/libtmux/libtmux-julia.git", rev="{tag}"))', lang: 'julia' },
     },
-    installNote: 'Julia 1.10+ and tmux 3.2a+ are compatibility targets; see the compatibility guide for tested versions. Companion packages share the core source release.',
+    installNote: 'Julia 1.10+ and tmux 3.3a+ are compatibility targets; see the compatibility guide for tested versions. Companion packages share the core source release.',
   },
   {
     slug: 'ts',

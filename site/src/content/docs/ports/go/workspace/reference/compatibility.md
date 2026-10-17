@@ -13,7 +13,7 @@ tableOfContents: true
 `tmux-workspace` is the Go command for loading and capturing tmux
 workspaces. The [installation guide](../../guides/installation/) builds the
 documented source revision and runs a session on a private socket. The
-walkthroughs require tmux 3.2a or newer.
+walkthroughs require tmux 3.3a or newer. A daemon older than 3.3a is refused before any effect; see [tmux support](/guides/tmux-support/).
 
 ## Runtime and execution
 

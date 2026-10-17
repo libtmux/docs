@@ -19,7 +19,7 @@ that server before exiting. The socket lives in a temporary directory under
 
 ## Run the example
 
-Use Git, Rust 1.97.1, and tmux 3.2a or newer on Linux or macOS. Both libtmux
+Use Git, Rust 1.97.1, and tmux 3.3a or newer on Linux or macOS. Both libtmux
 crates below use the source revision documented by the MCP reference.
 The example was run on Linux with tmux 3.2a and 3.7c.
 

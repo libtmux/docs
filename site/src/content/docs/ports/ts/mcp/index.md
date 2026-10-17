@@ -13,7 +13,7 @@ TypeScript factory. Clients can inspect topology, capture output, run framed
 shell commands, and create or arrange panes.
 
 The package requires Node 22 or newer, or Bun 1.3.14 or newer, plus tmux
-3.2a or newer. Real tmux operation is supported on Linux; the package's
+3.3a or newer. Real tmux operation is supported on Linux; the package's
 macOS artifact checks do not establish runtime support.
 
 ## Start here

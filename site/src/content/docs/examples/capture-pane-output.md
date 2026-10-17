@@ -20,7 +20,7 @@ captures until the expected line appears. It removes the server on exit and
 fails after 100 unsuccessful checks with 50-millisecond pauses.
 
 Save it as `capture.sh` and run `sh capture.sh`, or paste the whole block into
-a POSIX shell. It requires tmux 3.2 or newer and `sleep` with fractional seconds.
+a POSIX shell. It requires tmux 3.3a or newer and `sleep` with fractional seconds.
 
 ```sh title="capture.sh"
 (

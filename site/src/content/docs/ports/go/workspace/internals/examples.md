@@ -17,7 +17,7 @@ application or log file.
 
 ## Prepare the project
 
-Use Go 1.26, Git, and tmux 3.2a or newer on Unix. Create an empty project and
+Use Go 1.26, Git, and tmux 3.3a or newer on Unix. Create an empty project and
 fetch the source revision used by this example:
 
 ```console

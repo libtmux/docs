@@ -70,7 +70,7 @@ export function attachCompleteCSharpExamples(
     ids.add(program.id)
     const blocks: NonNullable<DocBlock['examples']> = [{
       lang: 'console',
-      intro: `${program.description.replace(/\n/g, ' ')} Use Linux or macOS with Git, tmux 3.2a or newer, .NET SDK ${sdk}, and the .NET 8 and 10 runtimes. In an empty directory, fetch the documented library revision:`,
+      intro: `${program.description.replace(/\n/g, ' ')} Use Linux or macOS with Git, tmux 3.3a or newer, .NET SDK ${sdk}, and the .NET 8 and 10 runtimes. In an empty directory, fetch the documented library revision:`,
       code: `$ git clone https://github.com/${source.repo}.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ${source.revision}\n`,
     }]
     for (const file of setup) blocks.push({

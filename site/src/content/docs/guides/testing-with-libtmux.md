@@ -16,7 +16,7 @@ a test run separate from your interactive sessions.
 ## Run an isolated test
 
 This complete shell test creates a session and a window, checks their names,
-and prints `tmux fixture passed` on success. It requires tmux 3.2a or newer and
+and prints `tmux fixture passed` on success. It requires tmux 3.3a or newer and
 a POSIX shell. Save it as `test-tmux.sh`.
 
 ```sh title="test-tmux.sh"

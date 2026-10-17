@@ -19,7 +19,7 @@ and selecting an existing socket.
 
 ## Install the command
 
-Build the executable with Go 1.26 or newer and run it with tmux 3.2a or newer.
+Build the executable with Go 1.26 or newer and run it with tmux 3.3a or newer.
 Follow the [installation steps](connect-client/#install-the-command), or use
 the [complete client example](../examples/inspect-sessions/) to install into
 an isolated project directory.

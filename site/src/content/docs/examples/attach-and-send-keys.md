@@ -16,7 +16,7 @@ in your terminal. A shell script can find its pane, send input with
 
 ## Find a pane and send a command
 
-Save this complete script as `send-command.sh`. It requires tmux 3.2a or newer
+Save this complete script as `send-command.sh`. It requires tmux 3.3a or newer
 and a POSIX shell. It creates a private session, selects one pane by its ID,
 sends a shell command, and checks its output before cleaning up the server.
 

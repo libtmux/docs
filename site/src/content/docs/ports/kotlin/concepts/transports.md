@@ -16,7 +16,7 @@ Choose command calls for bounded operations and a control connection when you ne
 
 ## Setup and run
 
-Use an empty directory on Linux with Git, tmux 3.2a or newer, and JDK 25. Save the project files and launcher below, then save any complete program on this page. Each program has its own imports and entry point.
+Use an empty directory on Linux with Git, tmux 3.3a or newer, and JDK 25. Save the project files and launcher below, then save any complete program on this page. Each program has its own imports and entry point.
 
 The pinned source checkout supplies the Gradle wrapper and the library dependency.
 
