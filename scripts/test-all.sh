@@ -165,6 +165,12 @@ node scripts/gen-shell-ports.negative.mjs
 step 'mcp tool matrix'
 node scripts/gen-mcp-tools.mjs --check
 
+# /reference/capabilities/ and the per-command tables are generated from each
+# port's capabilities.json, which the port emits from its typed registry.
+# Every API name in a manifest must resolve in that port's model.
+step 'capability manifests'
+node scripts/gen-capabilities.mjs --check
+
 # Each port's own MCP server, built and run to compare its live tool,
 # resource and prompt schemas against the committed snapshot in
 # site/src/data/mcp-protocol/. Skips when the sibling checkouts are absent,
