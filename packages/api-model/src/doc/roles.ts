@@ -562,7 +562,8 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
 
   if (lang === 'powershell') {
     // Native help stores these references as plain text rather than Markdown.
-    const names = /(?<![\w$])(?:\$[A-Za-z_]\w*|(?:LibTmux|System)(?:\.[A-Za-z_]\w*)+|(?:[A-Za-z_]\w*\\)?[A-Z][a-z]+-[A-Z][A-Za-z0-9]*|-[A-Z][A-Za-z0-9]*)(?!\w)/g
+    // A cmdlet is Verb-Noun, and a verb may be several words: `ConvertTo`.
+    const names = /(?<![\w$])(?:\$[A-Za-z_]\w*|(?:LibTmux|System)(?:\.[A-Za-z_]\w*)+|(?:[A-Za-z_]\w*\\)?[A-Z][a-z]+(?:[A-Z][a-z]+)*-[A-Z][A-Za-z0-9]*|-[A-Z][A-Za-z0-9]*)(?!\w)/g
     for (const match of text.matchAll(names)) {
       const start = match.index
       const end = start + match[0].length
