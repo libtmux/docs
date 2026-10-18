@@ -23,8 +23,13 @@ revisions together when you adapt one.
 or fixing an example does not change its concept scope. An alpha core library
 can have concept examples alongside it.
 
-Python's `tmuxp` workspace loader and Python MCP server keep their own
-documented status. A language without an implementation has no concept badge.
+A badge names the release stage that a package's registry declares, or the
+stage in its newest version: **pre-alpha**, **alpha**, **beta**, **rc** or
+**stable**. A package with no published release shows **unreleased**.
+
+Python's `tmuxp` workspace loader and Python MCP server show the stage their
+PyPI projects declare instead of **concept**. A language without an
+implementation has no badge.
 
 ## Use an example
 

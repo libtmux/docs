@@ -1,10 +1,11 @@
 ---
 import { ALL_TRANSLATED } from '../../i18n/resolve'
 import Aside from '../Aside.astro'
-import ConceptBadge from '../ConceptBadge.astro'
+import StatusBadge from '../StatusBadge.astro'
 import McpInstall from '../../components/widgets/McpInstall.astro'
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import { CONCEPT_DESCRIPTION, PORTS, portPageUrl, productAvailable, productIsConcept } from '../../lib/ports'
+import { CONCEPT_DESCRIPTION, PORTS, portPageUrl, productAvailable, productStatus } from '../../lib/ports'
+import { REGISTRY } from '../../lib/registry'
 import { API_MODELS } from '../../lib/api-models'
 import mcpTools from '../../data/mcp-tools.json'
 import { withRoot } from '../../lib/site-root'
@@ -94,7 +95,7 @@ try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } ca
             <a class="font-medium hover:underline" href={portPageUrl(p, defaults[p.slug] ?? 'latest', 'mcp')}>
               {p.name}
             </a>
-            {productIsConcept(p, 'mcp') && <>{' '}<ConceptBadge /></>}
+            {productStatus(p, 'mcp', REGISTRY) && <>{' '}<StatusBadge status={productStatus(p, 'mcp', REGISTRY)!} product={`${p.name} MCP`} id={`mcp-status-${p.slug}`} /></>}
             <span class="ml-2 font-mono text-sm opacity-70">{API_MODELS[p.slug]?.sources?.find((source) => source.product === 'mcp')?.package}</span>
             <span class="ml-2 text-sm opacity-60">{toolCount[p.slug]?.tools.length ?? 0} tools</span>
           </li>

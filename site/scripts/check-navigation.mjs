@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
-import { CONCEPT_DESCRIPTION, PORTS, productAvailable } from '../src/lib/ports.ts'
+import { PORTS, productAvailable, productStatus } from '../src/lib/ports.ts'
+import registry from '../src/data/registry.json' with { type: 'json' }
 import mcpCatalogs from '../src/data/mcp-tools.json' with { type: 'json' }
 import { checkPickerFilters } from './check-picker-filters.mjs'
 
@@ -202,7 +203,8 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
       assert.equal(await page.locator('.port-hero h1').count(), 1, `${slug}: one port heading`)
       const picker = desktopPicker(page)
       await picker.locator(':scope > summary').waitFor({ state: 'visible' })
-      assert.equal((await picker.locator('.surface-current').innerText()).replace(/\s+/g, ' ').trim(), 'Core Library Home')
+      assert.equal((await picker.locator('.surface-current .surface-label, .surface-current small').allInnerTexts()).join(' '), 'Core Library Home')
+      assert.equal(await picker.locator('.surface-current .status-badge').getAttribute('data-status'), productStatus(port, 'core', registry), `${slug}: the trigger states the library's status`)
       await openPicker(picker)
       const core = group(picker, 'Core Library')
       const sections = await core.locator('.surface-options a').evaluateAll((links) =>
@@ -221,13 +223,17 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
         ...(productAvailable(port, 'workspace') ? ['Workspace Manager'] : []),
       ]
       assert.deepEqual(names.slice(1).sort(), appNames, `${slug}: only available applications appear`)
-      assert.equal(await core.locator(':scope > summary .concept-badge').count(), 0, `${slug}: core has no example scope badge`)
+      // A badge is the group's sibling, never inside its summary.
+      const badgeOf = (entry) => entry.locator('xpath=..').locator(':scope > .status-toggletip > .status-badge')
+      assert.equal(await core.locator('.status-badge').count(), 0, `${slug}: no badge inside the core summary`)
+      assert.equal(await badgeOf(core).getAttribute('data-status'), productStatus(port, 'core', registry), `${slug}: core states its release stage`)
+      assert.notEqual(await badgeOf(core).getAttribute('data-status'), 'concept', `${slug}: core has no example scope badge`)
       for (const label of appNames) {
         const app = group(picker, label)
-        const badge = app.locator(':scope > summary .concept-badge')
-        assert.equal(await badge.count(), slug === 'py' ? 0 : 1, `${slug}: ${label} concept scope`)
+        const badge = badgeOf(app)
+        assert.equal(await badge.count(), 1, `${slug}: ${label} badge`)
+        assert.equal(await badge.getAttribute('data-status'), productStatus(port, label === 'MCP' ? 'mcp' : 'workspace', registry), `${slug}: ${label} status`)
         if (slug !== 'py') {
-          assert.equal(await badge.getAttribute('title'), CONCEPT_DESCRIPTION)
           await app.locator(':scope > summary').click()
           assert(await app.locator('.surface-concept-description').isVisible(), `${slug}: scope is readable after expanding`)
           await app.locator(':scope > summary').click()
@@ -316,7 +322,7 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
             && Math.abs(item.top - layout.header[0].top) < .1), `${width}: Search, scheme and menu have equal heights`)
           assert.equal((await picker.locator('.surface-current .surface-label').innerText()).trim(), 'Workspace Manager')
           assert.equal((await picker.locator('.surface-current small').innerText()).trim(), 'Home')
-          assert.equal(await picker.locator('.surface-current .concept-badge').count(), 1)
+          assert.equal(await picker.locator('.surface-current .status-badge[data-status="concept"]').count(), 1)
           await openPicker(picker, javaScriptEnabled)
           if (javaScriptEnabled) {
             const search = picker.locator('[data-surface-search]')

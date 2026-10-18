@@ -3,7 +3,8 @@ import { join } from 'node:path'
 import { createHash } from 'node:crypto'
 import { Window } from 'happy-dom'
 import { describe, expect, it } from 'vitest'
-import { CONCEPT_DESCRIPTION, PORTS, productAvailable, productDescription, productIsConcept, productInDevelopment, workspaceOverviewNotice, type Port } from '../src/lib/ports'
+import { CONCEPT_DESCRIPTION, PORTS, productAvailable, productDescription, productIsConcept, productInDevelopment, productStatus, workspaceOverviewNotice, type Port } from '../src/lib/ports'
+import { REGISTRY } from '../src/lib/registry'
 import { LANG_TO_PORT } from '../src/plugins/remark-port-code.mjs'
 import { SITE_BUILT, SITE_PREFIX, PREVIEW_PREFIX, productionPath, publishedPath, sitePath } from './site-root'
 import { MCP_REFERENCE, MCP_SECTIONS, mcpObjects } from '../src/lib/mcp-catalog'
@@ -262,7 +263,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     await inspect('powershell/latest/guides/mcp/', (document) => {
       expect(document.querySelector('article h1')?.textContent).toBe('Using the .NET MCP server')
       expect(document.querySelector('[data-pagefind-body]')).not.toBeNull()
-      expect(document.querySelector('[data-surface-picker] .surface-current strong')?.textContent).toBe('Core Library')
+      expect(document.querySelector('[data-surface-picker] .surface-current .surface-label')?.textContent).toBe('Core Library')
     })
   })
 
@@ -311,7 +312,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
           }
         }
         if (section) {
-          expect(document.querySelector('[data-surface-picker] .surface-current strong')?.textContent).toBe('Core Library')
+          expect(document.querySelector('[data-surface-picker] .surface-current .surface-label')?.textContent).toBe('Core Library')
           const current = document.querySelector('[data-surface-picker] [aria-current="location"]')
           expect(current?.getAttribute('href'), `${path} selected section`).toBe(urlFor(path).pathname)
           for (const nav of document.querySelectorAll('[data-section-navigation] nav')) {
@@ -448,7 +449,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       const picker = document.querySelector('[data-surface-picker]')
       if (!productAvailable(port, page.product)) {
         expect(document.querySelector('article')!.textContent, `${page.path} availability`).toMatch(/not published|no published/i)
-        expect(picker?.querySelector('.surface-current strong')?.textContent, `${page.path} available app`).toBe('Core Library')
+        expect(picker?.querySelector('.surface-current .surface-label')?.textContent, `${page.path} available app`).toBe('Core Library')
         expect(picker?.querySelector('.surface-current small')?.textContent, `${page.path} available section`).toBe('Home')
         const current = picker?.querySelectorAll('[aria-current="location"]')
         expect(current, `${page.path} one available destination`).toHaveLength(1)
@@ -464,7 +465,9 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       const section = page.section === 'source-guide' ? 'guides' : page.section.split('/')[0] || 'home'
       const sectionLabel = section === 'reference' ? 'API Reference' : section[0].toUpperCase() + section.slice(1)
       expect(picker?.querySelector('.surface-current .surface-label')?.textContent, `${page.path} current app`).toBe(surface)
-      expect(picker?.querySelectorAll('.surface-current .concept-badge').length).toBe(productIsConcept(port, page.product) ? 1 : 0)
+      expect(picker?.querySelectorAll('.surface-current .status-badge').length).toBe(1)
+      expect(picker?.querySelector('.surface-current .status-badge')?.getAttribute('data-status'), `${page.path} badge`)
+        .toBe(productStatus(port, page.product, REGISTRY))
       expect(picker?.querySelector('.surface-current small')?.textContent, `${page.path} current section`).toBe(sectionLabel)
       const current = picker?.querySelectorAll('[aria-current="location"]')
       expect(current, `${page.path} one current section`).toHaveLength(1)

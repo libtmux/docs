@@ -1,0 +1,65 @@
+---
+import { PRODUCT_STATUS_GUIDE, PRODUCT_STATUS_SUMMARY, type ProductStatus } from '../lib/ports'
+import { withRoot } from '../lib/site-root'
+
+/**
+ * A product's status: `concept` for a working example, else its release stage.
+ *
+ * With an `id` the badge is a toggletip: a button that opens a card with a
+ * one-line explanation and a link to the guide. The card sits beside the button
+ * rather than inside it, so a badge never nests a link in a control. Inside a
+ * control (a summary or a link) leave `id` off: the badge is then a plain label
+ * and the control's own name carries the status.
+ */
+interface Props {
+  status: ProductStatus
+  /** Names the product for assistive technology; required for a toggletip. */
+  product?: string
+  id?: string
+  class?: string
+}
+const { status, product, id, class: className } = Astro.props
+---
+{id ? <span class:list={['status-toggletip', className]} data-status-toggletip>
+  <button type="button" class="status-badge" data-status={status} popovertarget={id} aria-expanded="false" aria-controls={id}>{status}<span class="sr-only"> status of {product}</span></button>
+  <span id={id} class="status-toggletip__card" popover="manual" role="group" aria-label={`${status}: ${product}`}>
+    <span>{PRODUCT_STATUS_SUMMARY[status]}</span>
+    <a href={withRoot(PRODUCT_STATUS_GUIDE)}>What {status} means</a>
+  </span>
+</span> : <span class:list={['status-badge', className]} data-status={status}>{status}</span>}
+<style is:global>
+  .status-badge {
+    display: inline-block;
+    margin: 0;
+    padding: 0 .35rem;
+    border: 1px solid var(--color-edge);
+    border-radius: .25rem;
+    color: var(--text-color);
+    background: var(--color-surface);
+    font: inherit;
+    font-size: .625rem;
+    font-weight: 500;
+    line-height: 1.4;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+  button.status-badge { cursor: pointer; }
+  button.status-badge:hover { background: var(--color-surface-hover); }
+  button.status-badge:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
+  .status-toggletip { display: inline-block; }
+  .status-toggletip__card {
+    inset: auto; margin: 0; padding: .6rem .75rem;
+    width: min(17rem, calc(100vw - 1rem));
+    border: 1px solid var(--color-edge); border-radius: .5rem;
+    background: var(--background-color); color: var(--text-color);
+    box-shadow: 0 .6rem 2rem #0003;
+    font-size: .75rem; font-weight: 400; line-height: 1.5; white-space: normal;
+  }
+  .status-toggletip__card:popover-open { display: block; }
+  .status-toggletip__card > a { display: block; margin-top: .35rem; color: var(--color-link); text-decoration: underline; }
+  .status-toggletip__card > a:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
+</style>
+<script>
+  import { initStatusToggletips } from '../lib/status-toggletip'
+  initStatusToggletips()
+</script>
