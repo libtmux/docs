@@ -4,6 +4,7 @@ import { buildLocale } from '../../../i18n/resolve'
 import type { ApiSymbol } from '@libtmux/api-model'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import PageToolbar from '../../../components/PageToolbar.astro'
+import ApiBadge from '../../../components/api/ApiBadge.astro'
 import { withRoot } from '../../../lib/site-root'
 import { API_MODELS, PORT_NAME, referenceHref } from '../../../lib/api-models'
 import '../../../styles/api.css'
@@ -136,7 +137,7 @@ for (const { port, symbol } of entries) {
                 <span class="ml-2 truncate font-mono text-xs opacity-50">{id}</span>
               </span>
               <span class="whitespace-nowrap text-xs opacity-60">
-                {symbol.kind}
+                <ApiBadge label={symbol.kind === 'typealias' ? 'type alias' : symbol.kind} variant="kind" value={symbol.kind} plain />
                 <span class="ml-2">{PORT_NAME[port] ?? port}</span>
                 {shared && <span class="ml-2 opacity-70" title="Also in other ports">·shared</span>}
               </span>
