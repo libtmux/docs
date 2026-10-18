@@ -39,7 +39,7 @@ async function component() {
   return (await import(/* @vite-ignore */ url)).default
 }
 
-async function render(props: { name: string; namespace?: string; href?: string }) {
+async function render(props: { name: string }) {
   const win = new Window()
   windows.push(win)
   const container = await experimental_AstroContainer.create()
@@ -83,54 +83,72 @@ describe('qualified namespace labels', () => {
     expect(abbreviateNamespace(name)).toBe(name)
   })
 
-  it('renders libtmux.common fully, with its original link and fully qualified copy value', async () => {
+  it('renders the full name with a button that copies it', async () => {
     const name = 'libtmux.common.EnvironmentMixin'
-    const href = '/en/py/stable/reference/#libtmux.common'
-    const win = await render({ name, namespace: 'libtmux.common', href })
-    expect(win.document.querySelector('.api-qualified-namespace')?.textContent.trim()).toBe('libtmux.common')
-    expect(win.document.querySelector('.api-qualified-namespace a')?.getAttribute('href')).toBe(href)
-    expect(win.document.querySelector('.api-qualified-namespace a')?.getAttribute('aria-label')).toBe('libtmux.common')
-    expect(win.document.querySelector('.api-namespace-short')).toBeNull()
-    expect(win.document.querySelector('.api-namespace-full')).toBeNull()
-    expect(win.document.querySelector('[data-api-expand-name]')).toBeNull()
-    expect(win.document.querySelector('[data-api-copy-name]')?.getAttribute('data-api-copy-name')).toBe(name)
+    const win = await render({ name })
+    expect(win.document.querySelector('.api-qualified-name code')?.textContent.trim()).toBe(name)
+    const button = win.document.querySelector<HTMLButtonElement>('[data-api-copy-name]')!
+    expect(button.getAttribute('data-api-copy-name')).toBe(name)
+    expect(button.getAttribute('aria-label')).toBe('Copy fully qualified name')
+    expect(win.document.querySelector('[data-api-expand-name], .api-namespace-short, .api-qualified-label')).toBeNull()
   })
 
-  it('retains accessible expansion and full-name copying for long namespaces', async () => {
-    const namespace = 'company.product.services.execution.workspaces.management.runtime'
-    const name = `${namespace}.Server`
-    const win = await render({ name, namespace, href: '/reference/#runtime' })
-    const full = win.document.querySelector('.api-namespace-full')!
-    const short = win.document.querySelector('.api-namespace-short')!
-    const expand = win.document.querySelector<HTMLButtonElement>('[data-api-expand-name]')!
-    expect(full.textContent).toBe(namespace)
-    expect(short.textContent).toBe('c.p.s.e.w.m.runtime')
-    expect(short.getAttribute('aria-hidden')).toBe('true')
-    expect(expand.getAttribute('aria-controls')).toBe('api-namespace-path')
-    expect(expand.getAttribute('aria-expanded')).toBe('false')
+  it('copies the name and reports it, and says so when the clipboard refuses', async () => {
+    const name = 'company.product.services.execution.workspaces.management.runtime.Server'
+    const win = await render({ name })
     const copied: string[] = []
-    Object.defineProperty(win.navigator, 'clipboard', { value: { writeText: async (text: string) => { copied.push(text) } } })
+    let refuse = false
+    Object.defineProperty(win.navigator, 'clipboard', { value: { writeText: async (text: string) => { if (refuse) throw new Error('denied'); copied.push(text) } } })
     const script = /<script>([\s\S]*?)<\/script>/.exec(componentSource)?.[1]
     if (!script) throw new Error('Qualified-name client script is missing')
     win.eval(ts.transpileModule(script, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText)
-    expand.click()
-    expect(expand.getAttribute('aria-expanded')).toBe('true')
-    expect(win.document.querySelector('.api-qualified-name')?.hasAttribute('data-expanded')).toBe(true)
-    expect(expand.textContent).toBe('Collapse')
     win.document.querySelector<HTMLButtonElement>('[data-api-copy-name]')!.click()
-    await Promise.resolve()
-    expect(copied).toEqual([name])
     await expect.poll(() => win.document.querySelector('[role="status"]')?.textContent, { timeout: 1000 }).toBe('Name copied')
-    expand.click()
-    expect(expand.getAttribute('aria-expanded')).toBe('false')
-    expect(expand.textContent).toBe('Show full name')
+    expect(copied).toEqual([name])
+    refuse = true
+    win.document.querySelector<HTMLButtonElement>('[data-api-copy-name]')!.click()
+    await expect.poll(() => win.document.querySelector('[role="status"]')?.textContent, { timeout: 1000 }).toBe(`Copy failed. Select and copy: ${name}`)
   })
 
-  it('retains the existing no-JS full-name fallback', async () => {
-    const namespace = 'company.product.services.execution.workspaces.management.runtime'
-    const win = await render({ name: `${namespace}.Server`, namespace })
-    const nojs = win.document.querySelector('noscript')?.textContent ?? ''
-    expect(nojs).toContain('.api-copy-name, .api-expand-name, .api-namespace-short { display: none; }')
-    expect(nojs).toContain('.api-qualified-name .api-namespace-full { display: inline; }')
+  it('hides the copy button without scripting', async () => {
+    const win = await render({ name: 'libtmux.Server' })
+    expect(win.document.querySelector('noscript')?.textContent ?? '').toContain('.api-copy-name { display: none; }')
+  })
+})
+
+/**
+ * The qualified name lives in the source and package disclosure, not under the
+ * heading: the heading carries the name, and the disclosure carries where it is.
+ * Returns what breaks that, so a control can prove the check is able to fail.
+ */
+function placement(source: string): string[] {
+  const problems: string[] = []
+  const header = source.slice(source.indexOf('<header'), source.indexOf('</header>'))
+  if (/ApiQualifiedName|api-qualified-name/.test(header)) problems.push('the heading still carries the qualified name')
+  const panel = source.slice(source.indexOf('<details class="api-source-details"'), source.indexOf('</details>', source.indexOf('<details class="api-source-details"')))
+  if (!/<dt>Qualified name<\/dt>\s*<dd><ApiQualifiedName name=\{qualifiedNameOf\(owner\)\} \/><\/dd>/.test(panel)) problems.push('the disclosure has no qualified name row')
+  if (!/<dt>\{moduleLabel\}<\/dt>/.test(panel)) problems.push('the disclosure does not label its module row for the port')
+  return problems
+}
+
+describe('where the qualified name lives', () => {
+  const reference = readFileSync(new URL('../src/components/api/ApiReference.astro', import.meta.url), 'utf8')
+
+  it('is a row of the source and package disclosure, with the module row named for the port', () => {
+    expect(placement(reference)).toEqual([])
+  })
+
+  it('gives the distribution row another name where the module row says Package', () => {
+    expect(reference).toContain("<dt>{moduleLabel === 'Package' ? 'Distribution' : 'Package'}</dt>")
+  })
+
+  describe('negative controls', () => {
+    it('notices the line back under the heading', () => {
+      const regressed = reference.replace('<h1 ', '<ApiQualifiedName name="x" /><h1 ')
+      expect(placement(regressed)).toContain('the heading still carries the qualified name')
+    })
+    it('notices a disclosure with no qualified name', () => {
+      expect(placement(reference.replace('<dt>Qualified name</dt>', '<dt>Name</dt>'))).toContain('the disclosure has no qualified name row')
+    })
   })
 })

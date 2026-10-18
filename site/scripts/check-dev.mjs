@@ -596,27 +596,24 @@ async function checkReferenceAndHeroes(browser, base) {
       await page.setViewportSize({ width, height: 900 })
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
         `Kotlin parameter and exception fields fit at ${width}px`)
-      const namespace = await page.locator('.api-qualified-namespace').boundingBox()
       const copy = await page.getByRole('button', { name: 'Copy fully qualified name' }).boundingBox()
-      const row = await page.locator('.api-qualified-name').boundingBox()
-      const title = await page.locator('.api-reference-heading h1').boundingBox()
-      assert(Math.abs(namespace.y + namespace.height / 2 - copy.y - copy.height / 2) < 2,
-        `Package and copy control share a center line at ${width}px`)
-      assert(row.height <= 32 && row.y - title.y - title.height <= 8,
-        `Package stays in one compact row beneath the heading at ${width}px`)
+      const row = await page.locator('.api-source-details .api-qualified-name').boundingBox()
+      assert(copy.y >= row.y - 1 && copy.y + copy.height <= row.y + row.height + 1,
+        `The copy control sits inside the qualified-name row at ${width}px`)
+      assert.equal(await page.locator('.api-reference-heading .api-qualified-name').count(), 0,
+        `The heading carries no qualified-name line at ${width}px`)
     }
     for (const name of ['config', 'defaultTimeout', 'toKotlinDuration', 'Duration', 'CoroutineScope', 'StateFlow']) {
       assert(await page.locator('main a').filter({ hasText: new RegExp(`^${name}$`) }).count() > 0,
         `Kotlin liveState links ${name}`)
     }
     console.log('Native API: Kotlin call-chain links and parameter layout pass at 1440/768/390px')
-    const qualified = page.locator('.api-qualified-name')
+    const qualified = page.locator('.api-source-details .api-qualified-name')
     const fullName = 'io.github.libtmux.kotlin.Server.liveState'
-    const namespace = qualified.locator('.api-qualified-namespace')
-    assert.equal(await namespace.innerText(), 'io.github.libtmux.kotlin')
-    assert.equal(await namespace.getAttribute('title'), 'io.github.libtmux.kotlin')
-    assert.equal(await qualified.locator('[data-api-expand-name]').count(), 0,
-      'Ordinary package names remain fully visible without an expansion control')
+    const packageRow = page.locator('.api-source-details dt', { hasText: /^Package$/ }).locator('xpath=following-sibling::dd[1]')
+    assert.equal(await packageRow.innerText(), 'io.github.libtmux.kotlin',
+      'The source and package disclosure names the Kotlin package, which the heading no longer repeats')
+    assert.equal(await qualified.locator('code').innerText(), fullName)
     for (const reject of [false, true]) {
       await page.evaluate((reject) => {
         Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
@@ -633,7 +630,7 @@ async function checkReferenceAndHeroes(browser, base) {
     }
     const anchors = await page.locator('[id]').evaluateAll((elements) => elements.map((element) => element.id))
     assert.equal(anchors.filter((id) => id === fullName).length, 1, 'Page title and declaration have distinct anchors')
-    console.log('Qualified names: compact package row, exact copied identity and clipboard refusal pass')
+    console.log('Qualified names: a row of the source and package disclosure, exact copied identity and clipboard refusal pass')
     await page.setViewportSize({ width: 1440, height: 900 })
     const contents = page.getByRole('navigation', { name: 'On this page', exact: true })
     assert(await contents.isVisible(), 'Wide reference pages show section navigation')
@@ -694,9 +691,8 @@ async function checkReferenceAndHeroes(browser, base) {
     ]) {
       await page.goto(`${base}/java/latest/reference/io-github-libtmux-${slug}/`)
       assert.equal(await page.title(), `${qualifiedName} | libtmux-java`)
-      assert.equal(await page.locator('.api-qualified-namespace').innerText(), 'io.github.libtmux')
-      assert.equal(await page.locator('[data-api-expand-name]').count(), 0,
-        'Ordinary Java package names remain fully visible without an expansion control')
+      assert.equal(await page.locator('.api-source-details dt', { hasText: /^Package$/ }).locator('xpath=following-sibling::dd[1]').innerText(), 'io.github.libtmux',
+        'The source and package disclosure names the Java package')
       assert.equal(await page.locator('[data-api-copy-name]').getAttribute('data-api-copy-name'), qualifiedName)
       const legacyId = qualifiedName.replace('libtmux.Server', 'libtmux.Server.Server')
       assert(await page.locator(`[id="${legacyId}"]`).evaluate((element) => element.matches('dt.gp-sphinx-api-header')),

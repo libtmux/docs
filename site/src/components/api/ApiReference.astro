@@ -454,12 +454,6 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
           <SymbolName name={displayName} />
         </h1>
         {owner && <>
-          <ApiQualifiedName
-            name={qualifiedNameOf(owner)}
-            namespace={ownerModule || undefined}
-            label={moduleLabel}
-            href={ownerModule && moduleAnchors.has(ownerModule) ? `${refBase}#${ownerModule}` : undefined}
-          />
           {owner.doc?.summary && <p class="api-reference-summary">
             <ApiDoc text={owner.doc.summary} index={index} context={owner} />
           </p>}
@@ -691,9 +685,12 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
               </script>
               <summary>{source ? 'Source' : 'Source and package'}</summary>
               <dl class="api-definition">
+              {/* The module, namespace or package this symbol is in, and its full name with a button to copy it; the page heading above carries neither. */}
+              <dt>Qualified name</dt>
+              <dd><ApiQualifiedName name={qualifiedNameOf(owner)} /></dd>
               {ownerModule && (
                 <>
-                  <dt>Module</dt>
+                  <dt>{moduleLabel}</dt>
                   <dd>
                     {moduleAnchors.has(ownerModule) ? (
                       <a href={`${refBase}#${ownerModule}`}>{ownerModule}</a>
@@ -711,7 +708,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
               )}
               {ownerPackage && (
                 <>
-                  <dt>Package</dt>
+                  <dt>{moduleLabel === 'Package' ? 'Distribution' : 'Package'}</dt>
                   <dd><a href={packageUrl}>{ownerPackage}</a></dd>
                 </>
               )}
