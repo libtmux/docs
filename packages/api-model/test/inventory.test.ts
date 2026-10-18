@@ -23,6 +23,11 @@ describe('inventory records', () => {
     expect(result.entries[0].uri).toBe('')
     expect(result.entries[0].dispname).toBe('Example')
   })
+  it.each(['', '   '])('keeps a record whose display text is %j', (dispname) => {
+    const result = readInventory(writeInventoryEntries([{ ...entry, dispname }], options))
+    expect(result.entries).toHaveLength(1)
+    expect(result.entries[0].dispname).toBe(entry.name)
+  })
   it.each(['cpp:struct', 'cpp:var', 'cpp:namespace', 'rs:struct', 'mcp:tool', 'py:label'])('rejects the unregistered type %s', (type) => {
     expect(() => writeInventoryEntries([{ ...entry, type }], options)).toThrow('unsupported object type')
   })
