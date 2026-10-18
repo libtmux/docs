@@ -207,7 +207,8 @@ export async function checkStatusBadges(browser, base, options = {}) {
           await page.setViewportSize({ width, height: 900 })
           for (const menu of menus) {
             const solutions = menu === 'solutions'
-            const root = solutions ? '[data-home-launcher] .home-launcher-solution:not([hidden])' : '[data-documentation-context]'
+            // The homepage opens on its default language and switches to ?port= once its script runs, so wait for this port's menu.
+            const root = solutions ? `[data-home-launcher] .home-launcher-solution[data-home-language="${slug}"]:not([hidden])` : '[data-documentation-context]'
             // The development server can replace a page while it optimizes dependencies; load it again once.
             for (const attempt of [1, 2]) {
               try {
@@ -219,7 +220,6 @@ export async function checkStatusBadges(browser, base, options = {}) {
                 if (attempt === 2) throw error
               }
             }
-            if (solutions) assert.equal(await page.locator(root).getAttribute('data-home-language'), slug, `${slug}: the homepage shows this port's solutions`)
             await applySabotage(page, sabotage)
             const picker = page.locator(`${root} [data-surface-picker]`)
             const where = `${solutions ? 'solution menu' : 'picker'} ${slug} at ${width}px (${scheme})`
