@@ -89,10 +89,11 @@ $ pnpm test
 The outer loop includes the `*.outer.test.ts` integration suites, which seed
 the full API catalog or exercise subprocess shutdown. It also adds type
 checks and starts its own Astro development server
-from current source. Browser checks cover prose, an MCP table, API equivalents,
-and phone dropdown placement at 1440, 768, and 390 pixels. The sampled renderer
-also checks homepage choices and uses `node site/scripts/check-dev.mjs --sample`.
-It does not reuse `_site`. The runtime budgets are under 2, 10, and 60 seconds for inner,
+from current source. Browser checks cover prose, an MCP table, row permalinks,
+API equivalents, and phone dropdown placement at 1440, 768, and 390 pixels. The
+sampled renderer also checks homepage choices and uses
+`node site/scripts/check-dev.mjs --sample`. It does not reuse `_site`. The
+runtime budgets are under 2, 10, and 60 seconds for inner,
 medium, and outer respectively; measure the complete pnpm command when
 changing a loop. `test:fast` aliases medium. The runner stops an over-budget
 loop and fails.

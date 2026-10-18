@@ -267,19 +267,23 @@ html:has(.site-header :focus) {
 }
 .anchored-entry:is(:hover, :target, :focus-within) .row-label-link::after { opacity: 1; }
 .section-anchor-alias { position: absolute; }
+/* A table row's permalink trails its first cell's text and stays quiet until
+   the row is hovered, focused or targeted, as the section ¶ does. It keeps its
+   static position at the end of the last line and leaves the flow, so it never
+   takes room from the label or wraps onto a line of its own. */
 .prose .row-anchor-cell { position: relative; }
 .prose .row-anchor-link {
-  /* Fit the existing cell padding without widening columns or wrapping labels. */
   position: absolute;
-  inset-inline-end: 0;
-  top: .45rem;
-  width: .5rem;
-  font-size: .75rem;
+  margin-inline-start: .3em;
+  padding-inline: .2em;
+  color: var(--theme-primary);
   font-weight: 400;
   text-decoration: none;
-  opacity: .65;
+  opacity: 0;
 }
-.prose .row-anchor-link:hover, .prose .row-anchor-link:focus-visible { opacity: 1; }
+.prose .row-anchor-link:hover { color: var(--theme-secondary); }
+html[data-theme-mode="dark"] .prose .row-anchor-link:hover { color: var(--theme-accent); }
+.anchored-entry:is(:hover, :target, :focus-within) .row-anchor-link { opacity: 1; }
 .prose :is(.row-anchor-link, .row-label-link):focus-visible {
   outline: 2px solid var(--theme-primary);
   outline-offset: 3px;
@@ -749,6 +753,16 @@ html[data-theme="purple"][data-theme-mode="dark"] {
 
   .prose :where(tbody tr:hover) {
     background: var(--color-api-background-hover);
+  }
+}
+
+/* Typography zeroes the outer side of a table's first and last column, leaving
+   their text flush against the row's hover background. Markdown tables carry no
+   class, so component tables keep their own padding. Like the headings above,
+   this outranks typography from the utilities layer. */
+@layer utilities {
+  .prose table:not([class]) :is(th, td) {
+    padding-inline: 0.75rem;
   }
 }
 

@@ -4,11 +4,167 @@ import { checkPickerFilters } from './check-picker-filters.mjs'
 import { checkNavigationBeforeAnalytics } from './check-navigation.mjs'
 import { checkRequiredAppearance } from './check-page-readiness.mjs'
 
+// Row-anchored tables with different first-cell shapes: plain text, code, a
+// comma-separated flag pair, and code that wraps in a narrow column.
+const ROW_PERMALINK_PAGES = [
+  'rs/latest/concepts/server-session-window-pane/',
+  'tmux/concepts/server-session-window-pane/',
+  'ruby/latest/workspace/cli/',
+]
+
+/** Where each row's permalink and text sit, measured in the browser. */
+function measureRowPermalinks() {
+  const first = (rects) => Math.min(...rects.map((rect) => rect.left))
+  const contentRects = (cell, link) => {
+    const range = document.createRange()
+    range.setStart(cell, 0)
+    if (link) range.setEndBefore(link)
+    else range.setEnd(cell, cell.childNodes.length)
+    return [...range.getClientRects()].filter((rect) => rect.width > 0 && rect.height > 0)
+  }
+  return [...document.querySelectorAll('table:has(tr.anchored-entry)')].map((table) => {
+    const header = table.tHead?.rows[0]?.cells[0]
+    const headerRects = header ? contentRects(header) : []
+    return {
+      headerInset: headerRects.length ? first(headerRects) - header.getBoundingClientRect().left : null,
+      rows: [...table.querySelectorAll('tr.anchored-entry')].map((row) => {
+        const [cell, ...others] = row.cells
+        const link = cell.querySelector('a[data-row-permalink]')
+        const label = cell.textContent.replace('¶', '').trim()
+        if (!link) return { label, link: false }
+        const linkBox = link.getBoundingClientRect()
+        const text = contentRects(cell, link)
+        const y = linkBox.top + linkBox.height / 2
+        const line = text.filter((rect) => rect.top - 1 <= y && y <= rect.bottom + 1)
+        const last = text.at(-1)
+        const inset = (target, rects) => rects.length ? first(rects) - target.getBoundingClientRect().left : null
+        return {
+          label,
+          link: true,
+          em: parseFloat(getComputedStyle(cell).fontSize),
+          gap: line.length ? linkBox.left - Math.max(...line.map((rect) => rect.right)) : null,
+          trailing: Boolean(last) && y >= last.top - 1 && y <= last.bottom + 1,
+          inset: inset(cell, text),
+          otherInsets: others.map((other) => inset(other, contentRects(other))),
+          opacity: getComputedStyle(link).opacity,
+        }
+      }),
+    }
+  })
+}
+
+/** The revealed permalink's contrast against what is behind it. */
+function revealedContrast(id) {
+  const link = document.getElementById(id).querySelector('a[data-row-permalink]')
+  const canvas = document.createElement('canvas')
+  canvas.width = canvas.height = 1
+  const context = canvas.getContext('2d', { willReadFrequently: true })
+  const rgba = (css) => {
+    context.clearRect(0, 0, 1, 1)
+    context.fillStyle = '#000'
+    context.fillStyle = css
+    context.fillRect(0, 0, 1, 1)
+    const [r, g, b, a] = context.getImageData(0, 0, 1, 1).data
+    return [r, g, b, a / 255]
+  }
+  const over = ([r, g, b, a], [br, bg, bb]) => [r * a + br * (1 - a), g * a + bg * (1 - a), b * a + bb * (1 - a)]
+  const layers = []
+  for (let node = link; node; node = node.parentElement) layers.push(rgba(getComputedStyle(node).backgroundColor))
+  let ground = [255, 255, 255]
+  for (const layer of layers.reverse()) ground = over(layer, ground)
+  const luminance = (channels) => {
+    const [r, g, b] = channels.map((value) => {
+      const unit = value / 255
+      return unit <= 0.03928 ? unit / 12.92 : ((unit + 0.055) / 1.055) ** 2.4
+    })
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+  }
+  const text = over(rgba(getComputedStyle(link).color), ground)
+  const [light, dark] = [luminance(text), luminance(ground)].sort((a, b) => b - a)
+  return (light + 0.05) / (dark + 0.05)
+}
+
+/**
+ * A row's permalink trails the end of its first cell's text with a small gap,
+ * stays quiet until the row is hovered, focused or targeted, and every cell
+ * of the row shares one left inset.
+ */
+export async function checkRowPermalinks(browser, base, pages = ROW_PERMALINK_PAGES) {
+  let rows = 0
+  for (const colorScheme of ['light', 'dark']) {
+    const context = await browser.newContext({ colorScheme, reducedMotion: 'reduce' })
+    const page = await context.newPage()
+    page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
+    try {
+      for (const path of pages) {
+        const response = await page.goto(`${base}/${path}`)
+        assert(response?.ok(), `${path}: HTTP ${response?.status()}`)
+        await page.locator('[data-scheme-cycle]:not([hidden])').waitFor({ state: 'attached' })
+        await page.waitForFunction(() => document.fonts.status === 'loaded')
+        for (const width of [1440, 768, 390]) {
+          const where = `${colorScheme}/${path}/${width}px`
+          await page.setViewportSize({ width, height: 1000 })
+          await page.mouse.move(0, 0)
+          const tables = await page.evaluate(measureRowPermalinks)
+          assert(tables.length > 0, `${where}: the page has row-anchored tables`)
+          for (const table of tables) {
+            for (const row of table.rows) {
+              assert(row.link, `${where}: row "${row.label}" has a permalink`)
+              if (colorScheme === 'light' && width === 1440) rows++
+              assert(row.gap !== null && row.trailing,
+                `${where}: row "${row.label}" permalink is not on the last line of its text`)
+              assert(row.gap >= 0.1 * row.em && row.gap <= 0.5 * row.em,
+                `${where}: row "${row.label}" permalink starts ${row.gap.toFixed(1)}px after its text, outside 0.1em to 0.5em`)
+              assert(row.inset >= 0.25 * row.em,
+                `${where}: row "${row.label}" first-column text sits ${row.inset.toFixed(1)}px from the cell edge`)
+              for (const inset of row.otherInsets.filter((value) => value !== null)) {
+                assert(Math.abs(inset - row.inset) <= 1,
+                  `${where}: row "${row.label}" first-column inset ${row.inset.toFixed(1)}px differs from another column's ${inset.toFixed(1)}px`)
+              }
+              assert.equal(row.opacity, '0', `${where}: row "${row.label}" permalink is quiet at rest`)
+            }
+            if (table.headerInset !== null) {
+              assert(Math.abs(table.headerInset - table.rows[0].inset) <= 1,
+                `${where}: header and body text share one inset in the first column`)
+            }
+          }
+          const cell = page.locator('tr.anchored-entry > :first-child').first()
+          const firstRow = page.locator('tr.anchored-entry').first()
+          const id = await firstRow.getAttribute('id')
+          const link = firstRow.locator('a[data-row-permalink]')
+          const reveal = async (state) => {
+            assert.equal(await link.evaluate((node) => getComputedStyle(node).opacity), '1',
+              `${where}: the permalink appears when its row is ${state}`)
+            assert(await page.evaluate(revealedContrast, id) >= 3,
+              `${where}: the permalink stays legible when its row is ${state}`)
+          }
+          await cell.evaluate((node) => node.scrollIntoView({ block: 'center' }))
+          const box = await cell.boundingBox()
+          await page.mouse.move(box.x + 4, box.y + box.height / 2)
+          await reveal('hovered')
+          await page.mouse.move(0, 0)
+          await link.focus()
+          await reveal('focused')
+          await link.evaluate((node) => node.blur())
+          if (width === 390) {
+            await page.evaluate((target) => { location.hash = target }, id)
+            await reveal('targeted')
+          }
+        }
+      }
+    } finally {
+      await context.close()
+    }
+  }
+  console.log(`Row permalinks: ${rows} rows on ${pages.length} pages trail their text, share one inset and reveal on hover, focus and target in light and dark`)
+}
+
 /** A bounded rendering sample; the publication audit runs the full matrix. */
 export async function checkDevSample(browser, base) {
   await checkPickerFilters(browser, base)
   await checkNavigationBeforeAnalytics(browser, base)
   await checkRequiredAppearance(browser, base)
+  await checkRowPermalinks(browser, base)
   const context = await browser.newContext({ reducedMotion: 'reduce' })
   const page = await context.newPage()
   const errors = []

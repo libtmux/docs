@@ -13,7 +13,7 @@ import { checkHomeLauncher } from './check-home-launcher.mjs'
 import { checkHomeTaskReset } from './check-home-task-reset.mjs'
 import { checkColorScheme } from './check-color-scheme.mjs'
 import { checkHomeExampleOptions } from './check-home-example-options.mjs'
-import { checkDevSample } from './check-dev-sample.mjs'
+import { checkDevSample, checkRowPermalinks } from './check-dev-sample.mjs'
 import { checkNativeSignatureGeometry, checkNativeSignatureLinks } from './check-native-layout.mjs'
 import { checkRequiredAppearance, checkWebAnalytics, checkWebAnalyticsTransitions } from './check-page-readiness.mjs'
 
@@ -778,6 +778,7 @@ try {
     await retryReload(() => checkRequiredAppearance(browser, base))
     await checkWebAnalytics(browser, base)
     await checkWebAnalyticsTransitions(browser, base)
+    await retryReload(() => checkRowPermalinks(browser, base))
     // Timed page loads share Vite's compiler. Finish each browser matrix
     // before starting the next, including the main page walk below.
     let previous = Promise.resolve()
