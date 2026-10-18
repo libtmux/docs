@@ -368,7 +368,7 @@ async function negativeControl(page, base, results) {
   assert(results.railControl > 0, 'The rail check did not notice a chip that does not contain its content')
 
   // A modifier word shifted two pixels inside its chip.
-  await page.goto(`${base}${PAGES[9].path}`, { waitUntil: 'load' })
+  await page.goto(`${base}${PAGES[10].path}`, { waitUntil: 'load' })
   await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
   await page.addStyleTag({ content: MEASURING_STYLE })
   const chip = page.locator('.api-badge--mod').filter({ visible: true }).first()
