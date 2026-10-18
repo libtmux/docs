@@ -181,6 +181,31 @@
 }
 .api-nav__results strong > .api-kind-word { margin-inline-start: auto; padding-inline-start: .5rem; font-weight: 400; }
 
+/* ---- A mark that leads a bare name ---- */
+
+/*
+ * One rule for every place a compact mark precedes a name that is not in a code
+ * chip: index and tool cards, and the rows of a member list. The mark and the
+ * name are one run, centred as a unit: a gap clear of the name, and the mark's
+ * baseline raised by half the difference between the name's capital height and
+ * the mark's ink, so the two share a centre. A card's link is a row that holds
+ * the mark on the first line's baseline when a long name wraps. (The name's own
+ * code chip, in prose, supplies part of that gap with its padding.)
+ */
+:root { --mark-gap: .5em; }
+:is(.api-index-card:not(.api-related-card) .api-index-card__link, .api-member-list li > span:first-child) > .api-nav__kind:first-child {
+  align-self: baseline;
+  vertical-align: baseline;
+  position: relative;
+  top: calc(-1 * round(calc((1cap - var(--mk-gh)) / 2), var(--mark-step)));
+  margin-inline-end: var(--mark-gap);
+}
+.api-index-card:not(.api-related-card) .api-index-card__link:has(> .api-nav__kind:first-child) {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+}
+
 /* ---- A split chip: the mark and the name bound into one token ---- */
 
 /*

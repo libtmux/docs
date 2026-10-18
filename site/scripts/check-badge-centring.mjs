@@ -26,29 +26,50 @@ const PAGES = [
   { label: 'TypeScript reference', path: '/ts/latest/reference/client-client/' },
   { label: 'Go reference', path: '/go/latest/reference/tmux-server-server/' },
   { label: 'tmux manual', path: '/tmux/latest/manual/list-clients/' },
+  { label: 'Rust reference index', path: '/rs/latest/reference/' },
+  { label: 'Rust type page', path: '/rs/latest/reference/server-server/' },
+  { label: 'Rust MCP tools', path: '/rs/latest/mcp/tools/' },
 ]
 const SPLIT = '.api-elsewhere-value, .api-command-related, nav.api-related'
+// A compact mark that leads a bare name: an index or tool card, and a member list row.
+const ROW_MARKS = '.api-index-card:not(.api-related-card) .api-index-card__link > .api-nav__kind:first-child, .api-member-list li > span:first-child > .api-nav__kind:first-child'
 const PER_GROUP = 12
+// The preview card is out of the way, and the dotted preview underline is ink below the baseline that the measurement would read as the word.
+const MEASURING_STYLE = '.reference-link-preview { display: none !important; } *, *::before, *::after { text-decoration: none !important; }'
 const SKIP = new Set(['p', '$'])
 
 /** The device pixels of an element and a margin around it, with what the measurement needs to know about it. */
 export async function sample(page, handle, kind) {
   await handle.scrollIntoViewIfNeeded()
   const info = await handle.evaluate((element, kind) => {
-    const pick = kind === 'mark' ? element.querySelector('.api-badge__label') : kind === 'leg' ? element.querySelector('.api-leg__g') : element.querySelector(':scope > .api-nav__kind > .api-badge__label')
+    const pick = kind === 'mark' || kind === 'row' ? element.querySelector('.api-badge__label') : kind === 'leg' ? element.querySelector('.api-leg__g') : element.querySelector(':scope > .api-nav__kind > .api-badge__label')
     const word = kind === 'leg' ? element.querySelector('.api-leg__wl') : kind === 'split' ? element.querySelector(':scope > .api-nav__kind + code') : null
     const style = getComputedStyle(element)
     // Document coordinates: the screenshot clip is relative to the page, not to the scrolled viewport.
     const rectOf = (node) => { const r = node.getBoundingClientRect(); return { x: r.x + scrollX, y: r.y + scrollY, w: r.width, h: r.height } }
+    const plain = (r) => ({ x: r.x + scrollX, y: r.y + scrollY, w: r.width, h: r.height })
+    // A mark that leads a name: the name is whatever follows it, and its first line is what the mark must centre on.
+    let name = null
+    if (kind === 'row') {
+      const range = document.createRange()
+      range.setStartAfter(element)
+      range.setEndAfter(element.parentElement.lastChild)
+      const first = [...range.getClientRects()].find((r) => r.width > 1 && r.height > 1)
+      if (first) name = plain(first)
+    }
+    const box = rectOf(element)
     return {
-      box: rectOf(element), label: pick && rectOf(pick), word: word && rectOf(word),
-      text: pick?.textContent ?? '', wordFont: word ? parseFloat(getComputedStyle(word).fontSize) : 0,
+      box, label: pick && rectOf(pick), word: name ?? (word && rectOf(word)),
+      gap: name ? name.x - (box.x + box.w) : undefined,
+      text: pick?.textContent ?? '', wordFont: kind === 'row' ? parseFloat(getComputedStyle(element.parentElement).fontSize) : word ? parseFloat(getComputedStyle(word).fontSize) : 0,
       border: { top: parseFloat(style.borderTopWidth), bottom: parseFloat(style.borderBottomWidth) },
       dpr: devicePixelRatio,
     }
   }, kind)
   const margin = 6
-  const clip = { x: Math.max(0, info.box.x - margin), y: Math.max(0, info.box.y - margin), width: info.box.w + margin * 2, height: info.box.h + margin * 2 }
+  // A row's clip spans the mark and the first line of its name.
+  const right = info.gap === undefined ? info.box.x + info.box.w : info.word.x + info.word.w
+  const clip = { x: Math.max(0, info.box.x - margin), y: Math.max(0, info.box.y - margin), width: right - info.box.x + margin * 2, height: info.box.h + margin * 2 }
   const png = PNG.sync.read(await page.screenshot({ clip, fullPage: true }))
   return { info, clip, png }
 }
@@ -99,12 +120,23 @@ export function measure({ info, clip, png }, kind) {
   const subTop = inner.top + faint[0] + (1 - coverage(faint[0]))
   const subBottom = inner.top + faint.at(-1) + coverage(faint.at(-1))
   out.fine = (subTop - inner.top) - (inner.bottom - subBottom)
+  if (info.gap !== undefined) { out.gap = info.gap; out.font = info.wordFont }
   if (kind !== 'mark' && info.word) {
     const [wx0, wx1] = columns(info.word)
     const word = rowsOf(wx0, wx1)
     const density = word.region.map((row) => row.filter((pixel) => distance(pixel, word.mode) >= 0.5 * word.peak).length)
     const densest = Math.max(...density)
-    const baseline = inner.top + Math.max(...density.map((value, index) => (value >= 0.35 * densest ? index : -1))) + 1
+    let baseline = inner.top + Math.max(...density.map((value, index) => (value >= 0.35 * densest ? index : -1))) + 1
+    if (kind === 'row') {
+      // A name carries descenders (g, p, y, _), which fool the densest-rows rule. Most letters end on the baseline, so it is the row where the most columns of ink end.
+      const ends = new Map()
+      for (let column = 0; column < word.region[0].length; column++) {
+        for (let y = word.region.length - 1; y >= 0; y--) {
+          if (distance(word.region[y][column], word.mode) >= 0.5 * word.peak) { ends.set(y, (ends.get(y) ?? 0) + 1); break }
+        }
+      }
+      baseline = inner.top + [...ends.entries()].sort((a, b) => b[1] - a[1])[0][0] + 1
+    }
     const cap = info.wordFont * 0.698 * dpr
     out.baselineGap = baseline - inkBottom
     out.runCentre = (baseline - cap / 2) - (inner.top + inner.bottom) / 2
@@ -116,9 +148,15 @@ export function measure({ info, clip, png }, kind) {
 export function judge(label, result, kind, { skipBaseline = false } = {}) {
   if (!result) return []
   const failures = []
-  if (kind === 'mark') {
+  if (kind === 'mark' || kind === 'row') {
     if (Math.abs(result.whole) > 1 && Math.abs(result.fine) > 1.25) failures.push(`${label}: ink is ${result.whole} device px off centre`)
-  } else {
+  }
+  if (kind === 'row') {
+    // The name's capitals centre on the mark, and the two do not touch.
+    if (Math.abs(result.runCentre) > 1.25) failures.push(`${label}: the name is ${result.runCentre.toFixed(1)} device px off the mark's centre`)
+    if (result.gap < 4) failures.push(`${label}: the mark is ${result.gap.toFixed(1)}px from the name`)
+    else if (result.gap > 0.75 * result.font) failures.push(`${label}: the mark is ${result.gap.toFixed(1)}px from the name, more than the gap rule allows`)
+  } else if (kind !== 'mark') {
     if (!skipBaseline && result.baselineGap !== undefined && Math.abs(result.baselineGap) > 0.5) failures.push(`${label}: the mark and the word are ${result.baselineGap} device px apart on the baseline`)
     if (result.runCentre !== undefined && Math.abs(result.runCentre) > 1) failures.push(`${label}: the text run is ${result.runCentre.toFixed(1)} device px off the chip's centre`)
   }
@@ -129,12 +167,39 @@ const GROUPS = [
   { kind: 'mark', selector: `.api-nav__kind:not(:is(${SPLIT.split(', ').map((s) => `${s} a > .api-nav__kind`).join(', ')}))`, name: 'mark' },
   { kind: 'leg', selector: '.api-leg', name: 'legend chip' },
   { kind: 'split', selector: SPLIT.split(', ').map((s) => `${s} a:has(> .api-nav__kind)`).join(', '), name: 'split chip' },
+  { kind: 'row', selector: ROW_MARKS, name: 'card and list mark' },
 ]
+
+
+/**
+ * A group heading is one line: the title, the count and the permalink share a baseline.
+ * Each is probed with a zero-size inline box, which sits on the baseline of the line it is in.
+ */
+export async function headingProblems(page) {
+  const found = await page.evaluate(() => [...document.querySelectorAll('h2.api-index-summary')].filter((h) => h.offsetParent && h.querySelector('.headerlink')).slice(0, 6).map((heading) => {
+    const baseline = (host) => {
+      const probe = document.createElement('span')
+      probe.style.cssText = 'display:inline-block;width:0;height:0'
+      host.prepend(probe)
+      const y = probe.getBoundingClientRect().bottom
+      probe.remove()
+      return y
+    }
+    const parts = { title: heading, count: heading.querySelector(':scope > span'), permalink: heading.querySelector(':scope > .headerlink') }
+    return { text: heading.firstChild?.textContent?.trim() ?? '', baselines: Object.fromEntries(Object.entries(parts).filter(([, node]) => node).map(([name, node]) => [name, baseline(node)])) }
+  }))
+  const problems = []
+  for (const { text, baselines } of found) {
+    const values = Object.values(baselines)
+    if (Math.max(...values) - Math.min(...values) > 0.5) problems.push(`group heading "${text}": title, count and permalink are not on one baseline (${Object.entries(baselines).map(([name, y]) => `${name} ${y.toFixed(1)}`).join(', ')})`)
+  }
+  return { headings: found.length, problems }
+}
 
 async function checkPage(page, base, entry, scheme, results) {
   await page.goto(`${base}${entry.path}`, { waitUntil: 'load' })
   await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
-  await page.addStyleTag({ content: '.reference-link-preview { display: none !important; }' })
+  await page.addStyleTag({ content: MEASURING_STYLE })
   for (const group of GROUPS) {
     const handles = page.locator(group.selector).filter({ visible: true })
     const count = Math.min(await handles.count(), PER_GROUP)
@@ -142,38 +207,59 @@ async function checkPage(page, base, entry, scheme, results) {
       const handle = handles.nth(index)
       const measured = measure(await sample(page, await handle.elementHandle(), group.kind), group.kind)
       const text = await handle.evaluate((element) => element.textContent.trim().slice(0, 12))
-      if (SKIP.has(text.charAt(0)) && group.kind === 'mark') continue
+      if (SKIP.has(text.charAt(0)) && (group.kind === 'mark' || group.kind === 'row')) continue
       results.measured++
       results.failures.push(...judge(`${entry.label} (${scheme}) ${group.name} "${text}"`, measured, group.kind, { skipBaseline: SKIP.has(text.charAt(0)) }))
     }
     results.counts[group.name] = (results.counts[group.name] ?? 0) + count
   }
+  const headings = await headingProblems(page)
+  results.counts['group heading'] = (results.counts['group heading'] ?? 0) + headings.headings
+  results.failures.push(...headings.problems.map((problem) => `${entry.label} (${scheme}) ${problem}`))
 }
 
 /**
  * Prove the gate can fail: shift every label and every chip word two pixels and require the same measurement to notice.
  */
 async function negativeControl(page, base, results) {
-  const entry = PAGES[1]
+  const entry = PAGES[6]
   await page.goto(`${base}${entry.path}`, { waitUntil: 'load' })
   await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
-  await page.addStyleTag({ content: '.reference-link-preview { display: none !important; }' })
+  await page.addStyleTag({ content: MEASURING_STYLE })
   const style = await page.addStyleTag({ content: '.api-nav__kind > .api-badge__label, .api-leg__wl { translate: 0 2px !important; }' })
   let noticed = 0
+  let tested = 0
   const marks = page.locator('.api-nav__kind').filter({ visible: true })
   for (let index = 0; index < Math.min(await marks.count(), 6); index++) {
     const handle = marks.nth(index)
     const text = await handle.evaluate((element) => element.textContent.trim())
     if (SKIP.has(text)) continue
+    tested++
     noticed += judge('control', measure(await sample(page, await handle.elementHandle(), 'mark'), 'mark'), 'mark').length
   }
   await style.evaluate((node) => node.remove())
   results.control = noticed
+  results.controlTested = tested
   assert(noticed > 0, 'The centring gate noticed no mark shifted by 2px: it cannot fail')
+
+  // A permalink lifted off the line, and a mark pushed against its name and off its centre.
+  await page.goto(`${base}${PAGES[7].path}`, { waitUntil: 'load' })
+  await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
+  await page.addStyleTag({ content: MEASURING_STYLE })
+  assert((await headingProblems(page)).problems.length === 0, 'The group headings are not clean before the control')
+  const lifted = await page.addStyleTag({ content: 'h2.api-index-summary > .headerlink { vertical-align: 4px !important; }' })
+  results.headingControl = (await headingProblems(page)).problems.length
+  await lifted.evaluate((node) => node.remove())
+  assert(results.headingControl > 0, 'The heading check did not notice a permalink off the baseline')
+  const mark = page.locator(ROW_MARKS).filter({ visible: true }).first()
+  const touching = await page.addStyleTag({ content: `${ROW_MARKS} { margin-inline-end: 0 !important; top: 3px !important; }` })
+  results.rowControl = judge('control', measure(await sample(page, await mark.elementHandle(), 'row'), 'row'), 'row').length
+  await touching.evaluate((node) => node.remove())
+  assert(results.rowControl > 0, 'The row check did not notice a mark that touches its name and sits off its centre')
 }
 
 export async function checkBadgeCentring(browser, base, { sample: bounded = false } = {}) {
-  const results = { measured: 0, failures: [], counts: {}, control: 0 }
+  const results = { measured: 0, failures: [], counts: {}, control: 0, headingControl: 0, rowControl: 0 }
   const pages = bounded ? PAGES.slice(0, 2) : PAGES
   const hi = await chromium.launch({ args: ['--force-device-scale-factor=2'] })
   try {
@@ -192,7 +278,7 @@ export async function checkBadgeCentring(browser, base, { sample: bounded = fals
   } finally { await hi.close() }
   assert(results.measured > 20, `Only ${results.measured} badge samples were measurable`)
   assert.deepEqual(results.failures, [], `Badge centring:\n${results.failures.join('\n')}`)
-  console.log(`Badge centring: ${results.measured} samples at 1x and a real 2x, light and dark (${Object.entries(results.counts).map(([k, v]) => `${v} ${k}`).join(', ')}); negative control caught ${results.control} shifted marks PASS`)
+  console.log(`Badge centring: ${results.measured} samples at 1x and a real 2x, light and dark (${Object.entries(results.counts).map(([k, v]) => `${v} ${k}`).join(', ')}); negative controls caught ${results.control} of ${results.controlTested} shifted marks, ${results.headingControl} heading problem and ${results.rowControl} row problems PASS`)
 }
 
 /**
