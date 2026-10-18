@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict'
+import pixelmatch from 'pixelmatch'
+import { PNG } from 'pngjs'
 
 /** Real font selection, link drawing and geometry at the first visible frame. */
 async function observeAppearance(context) {
@@ -277,6 +279,7 @@ const BADGE_GAP = { min: .21, max: .29 }
  */
 const BADGE_LINKS = [
   { label: 'prose link', path: '/rs/latest/concepts/server-session-window-pane/', badges: 'p a > .api-link-kind', line: true, fixtures: true, sample: true },
+  { label: 'guide prose link', path: '/py/stable/guides/attaching-to-tmux/', badges: 'p a > .api-link-kind', line: true, sample: true },
   { label: 'MCP prose link', path: '/py/stable/mcp/tools/capture_pane/', badges: 'p a > .api-link-kind', line: true },
   { label: 'MCP index card', path: '/py/stable/mcp/tools/', badges: '.api-index-card a > .api-nav__kind', sample: true },
   { label: 'MCP catalog heading', path: '/py/stable/mcp/tools/', badges: 'h2 a > .api-nav__kind' },
@@ -344,7 +347,12 @@ async function describeBadgeLink(badge) {
   })
 }
 
-/** The badge's own pixels, and a strip under it, with and without any decoration. */
+/**
+ * The badge's own pixels, and a strip under it, with and without any
+ * decoration. A badge's rounded corners sit at a fractional offset, and
+ * repaints rasterize them a channel unit apart, so compare perceptible
+ * change; an underline changes whole pixels.
+ */
 async function paintsBadgeDecoration(page, badge) {
   await badge.scrollIntoViewIfNeeded()
   const box = await badge.boundingBox()
@@ -353,7 +361,9 @@ async function paintsBadgeDecoration(page, badge) {
   const style = await page.addStyleTag({ content: '*, *::before, *::after { text-decoration: none !important; }' })
   const bare = await page.screenshot({ clip })
   await style.evaluate((node) => node.remove())
-  return !drawn.equals(bare)
+  if (drawn.equals(bare)) return false
+  const [before, after] = [PNG.sync.read(drawn), PNG.sync.read(bare)]
+  return pixelmatch(before.data, after.data, null, before.width, before.height, { threshold: .1 }) > 0
 }
 
 /** Clone the first prose link into headings and a table, the contexts real pages vary in. */
