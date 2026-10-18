@@ -159,9 +159,11 @@ function parameterRanges(owner: NativeNode, symbol: ApiSymbol, signature: Signat
     node?.text.replace(/^[&*]+/, '') !== signature.params[index]!.name && node?.text !== signature.params[index]!.name)) {
     throw new Error(`Rust parameter names do not match ${symbol.id}`)
   }
-  return [{ start: name.startIndex, end: name.endIndex, kind: 'name' }, ...names.map((node, parameter) => ({
-    start: node!.startIndex, end: node!.endIndex, kind: 'parameter' as const, parameter,
-  }))]
+  // apiEntryFields leaves an undocumented `self` receiver out of the parameter list, so it has no entry to link.
+  return [{ start: name.startIndex, end: name.endIndex, kind: 'name' }, ...names.map((node, parameter): CodeSyntax =>
+    parameter === 0 && signature.params[0]!.name === 'self' && !signature.params[0]!.doc
+      ? { start: node!.startIndex, end: node!.endIndex, kind: 'keyword' }
+      : { start: node!.startIndex, end: node!.endIndex, kind: 'parameter', parameter })]
 }
 
 async function formatHeader(symbol: ApiSymbol, signature: Signature): Promise<CodeLayout> {

@@ -126,6 +126,18 @@ describe('Rust callable layouts', () => {
       expect(output.rootNode.toString()).toBe(input.rootNode.toString())
     } finally { input.delete(); output.delete(); parser.delete() }
   })
+
+  it('links only the parameters the entry lists, leaving an undocumented self receiver plain', async () => {
+    const symbol = method('pub fn kill(self, reason: &str) -> Result<(), Error>', [
+      { name: 'self' }, { name: 'reason', type: '&str' },
+    ], 'kill')
+    const layout = await layoutFor(symbol)
+    const index = new SymbolIndex([symbol], (entry) => `/${entry.id}/`, 'rs')
+    const spans = signatureSpans(layout, index, symbol, symbol.signatures[0]!)
+    const anchors = spans.filter((span) => span.link?.href.startsWith('#')).map((span) => span.link!.href)
+    expect(apiEntryFields(symbol, 'rs').params.map((param) => param.name)).toEqual(['reason'])
+    expect(anchors).toEqual(['#server.Server.kill.parameter.reason'])
+  })
 })
 
 const extract = (source: string) => extractSourceWithSpec(RUST, source, 'probe.rs', 'probe')
