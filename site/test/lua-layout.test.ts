@@ -168,21 +168,22 @@ describe('LuaCATS function layouts', () => {
       expect(spans.find((span) => 'declarationName' in span)?.text).toBe('spawn')
       expect(spans.filter((span) => 'keyword' in span && span.keyword).map((span) => span.text)).toEqual(['fun', 'fun'])
       const literals = spans.filter((span) => 'nonReference' in span && span.nonReference && !('keyword' in span)).map((span) => span.text)
-      expect(literals).toEqual(['self', 'body', 'runtime', 'T', 'T'])
+      // `body` is a parameter now; the unlisted receiver `self` stays plain.
+      expect(literals).toEqual(['self', 'runtime', 'T', 'T'])
       expect(spans.filter((span) => span.link?.href === '/libtmux.Runtime/').map((span) => span.text)).toEqual(['libtmux.Runtime', 'libtmux.Runtime'])
       expect(spans.filter((span) => span.link?.href === '/libtmux.Error/').map((span) => span.text)).toEqual(['libtmux.Error'])
-      expect(spans.some((span) => span.link?.href.startsWith('#'))).toBe(false)
+      expect(spans.filter((span) => span.link?.href.startsWith('#')).map((span) => span.text)).toEqual(['body'])
     })
 
-    it('links a documented parameter to its anchor and lists only documented parameters', async () => {
+    it('lists and links every parameter, documented or not', async () => {
       const symbol = model.symbols.find((entry) => entry.id === 'libtmux.Pane:move_to')!
       const documented = symbol.signatures[0]!.params.filter((param) => param.doc).map((param) => param.name)
       expect(documented).toEqual(['other'])
       const index = new SymbolIndex(model.symbols, (entry) => `/${entry.id}/`, 'lua')
       const spans = signatureSpans((await layoutOf(symbol))[0]!, index, symbol, symbol.signatures[0]!)
       expect(spans.filter((span) => span.link?.href.startsWith('#')).map((span) => [span.text, span.link!.href]))
-        .toEqual([['other', `#${encodeURIComponent(parameterId(symbol, 'other'))}`]])
-      expect(apiEntryFields(symbol, 'lua').params.map((param) => param.name)).toEqual(['other'])
+        .toEqual(['other', 'options'].map((name) => [name, `#${encodeURIComponent(parameterId(symbol, name))}`]))
+      expect(apiEntryFields(symbol, 'lua').params.map((param) => param.name)).toEqual(['other', 'options'])
     })
 
     it('renders the page declaration, with every overload, from the Markdown layout', async () => {

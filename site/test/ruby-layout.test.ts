@@ -136,25 +136,25 @@ describe('Ruby RBS layouts', () => {
       expect(spans.map((span) => span.text).join('')).toBe(layout!.text)
       expect(spans[0]).toMatchObject({ text: 'def', keyword: true, nonReference: true })
       expect(spans.find((span) => 'declarationName' in span)?.text).toBe('new_session')
-      const names = spans.filter((span) => 'nonReference' in span && span.nonReference && !('keyword' in span)).map((span) => span.text)
-      expect(names).toContain('name')
-      expect(names).toContain('cancel')
+      // Every keyword name is a parameter link, whether or not YARD documents it.
+      const parameters = spans.filter((span) => span.link?.href.startsWith('#')).map((span) => span.text)
+      expect(parameters).toContain('name')
+      expect(parameters).toContain('cancel')
       expect(spans.filter((span) => span.link?.href === '/LibTmux::CreationReceipt/').map((span) => span.text)).toEqual(['LibTmux::CreationReceipt'])
-      expect(spans.some((span) => span.link?.href.startsWith('#'))).toBe(false)
       const generic = model.symbols.find((entry) => entry.id === 'LibTmux::Selection#filter')!
       const type = signatureSpans((await layouts(generic))[0]!, index, generic, generic.signatures[0]!)
       expect(type.filter((span) => span.text === 'Elem').every((span) => 'nonReference' in span && span.nonReference)).toBe(true)
     })
 
-    it('links a documented keyword parameter to its anchor and no other', async () => {
+    it('lists and links every keyword parameter, documented or not', async () => {
       const symbol = method('capture', ['(?start: ::Integer, ?finish: ::Integer) -> ::String'], {
         params: [{ name: 'start', type: '::Integer', doc: 'First row.' }, { name: 'finish', type: '::Integer' }],
       })
       const index = new SymbolIndex([symbol], (entry) => `/${entry.id}/`, 'ruby')
       const spans = signatureSpans((await layouts(symbol))[0]!, index, symbol, symbol.signatures[0]!)
       expect(spans.filter((span) => span.link?.href.startsWith('#')).map((span) => [span.text, span.link!.href]))
-        .toEqual([['start', `#${encodeURIComponent(parameterId(symbol, 'start'))}`]])
-      expect(apiEntryFields(symbol, 'ruby').params.map((param) => param.name)).toEqual(['start'])
+        .toEqual(['start', 'finish'].map((name) => [name, `#${encodeURIComponent(parameterId(symbol, name))}`]))
+      expect(apiEntryFields(symbol, 'ruby').params.map((param) => param.name)).toEqual(['start', 'finish'])
     })
 
     it('renders the page declaration and the Markdown export from one layout', async () => {

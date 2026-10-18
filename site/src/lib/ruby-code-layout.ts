@@ -205,7 +205,7 @@ function methodName(name: string): string {
   return KEYWORDS.has(name) || !(/^_?[A-Za-z_]\w*[?!=]?$/.test(name) || OPERATORS.has(name)) ? `\`${name}\`` : name
 }
 
-function syntaxRanges(text: string, from: number, signature: Signature, documented: ReadonlySet<string>): CodeSyntax[] {
+function syntaxRanges(text: string, from: number, signature: Signature): CodeSyntax[] {
   const syntax: CodeSyntax[] = []
   const declaration = /^def (self\.)?(`?)([^:`]+)\2:/.exec(text)!
   syntax.push({ start: 0, end: 3, kind: 'keyword' })
@@ -221,7 +221,7 @@ function syntaxRanges(text: string, from: number, signature: Signature, document
     if (Array.isArray(current.parameters)) for (const entry of current.parameters) {
       if (entry.key) {
         const index = top ? signature.params.findIndex((param) => param.name === entry.key!.text) : -1
-        if (index !== -1 && documented.has(entry.key.text)) syntax.push({ start: entry.key.start, end: entry.key.end, kind: 'parameter', parameter: index })
+        if (index !== -1) syntax.push({ start: entry.key.start, end: entry.key.end, kind: 'parameter', parameter: index })
         else literal(entry.key)
       }
       visit(entry.value)
@@ -267,7 +267,6 @@ async function formatHeader(symbol: ApiSymbol, signature: Signature): Promise<Co
   if (JSON.stringify(tokensOf(text, prefix.length)) !== JSON.stringify(tokensOf(signature.raw!, 0))) {
     throw new Error(`Formatting changed Ruby method type grammar: ${signature.raw}`)
   }
-  const documented = new Set(signature.params.filter((param) => param.doc).map((param) => param.name))
   return { text, limit: CODE_COLUMNS.api, failures: await codeWidthFailures(text, 'api'),
-    syntax: syntaxRanges(text, prefix.length, signature, documented) }
+    syntax: syntaxRanges(text, prefix.length, signature) }
 }

@@ -395,7 +395,7 @@ export function swiftSignatureLayout(symbol: ApiSymbol, signature: Signature): P
       const printed = printPieces(headPieces(declarationHead(symbol, signature)), CODE_COLUMNS.api)
       const syntax: CodeSyntax[] = [...printed.roles].map(([role, range]) => role === 'name'
         ? { ...range, kind: 'name' as const }
-        : signature.params[role]!.doc !== undefined ? { ...range, kind: 'parameter' as const, parameter: role } : { ...range, kind: 'literal' as const })
+        : { ...range, kind: 'parameter' as const, parameter: role })
       return { text: printed.text, limit: CODE_COLUMNS.api, failures: await codeWidthFailures(printed.text, 'api'), syntax: syntax.sort((a, b) => a.start - b.start) }
     })()
     layouts.set(key, pending)
