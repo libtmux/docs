@@ -1,6 +1,6 @@
 import type { LinkPreview } from './link-preview'
 import type { CodeHighlight } from './highlight'
-import { linkPreviewTarget, linkPreviewCandidate, markLinkPreview } from './link-preview-paint'
+import { linkPreviewTarget, linkPreviewCandidate, linkPreviewBlockLink, markLinkPreview } from './link-preview-paint'
 import { abbreviateNamespace } from './api-labels'
 import { wordBreak } from './word-break'
 export { linkPreviewTarget } from './link-preview-paint'
@@ -116,7 +116,7 @@ export function initLinkPreviews() {
   const candidate = (target: EventTarget | null) => linkPreviewCandidate(target, location.href)
   // Signal the same preview behavior on every eligible link without fetching it.
   for (const link of document.querySelectorAll<HTMLAnchorElement>('a[href]')) {
-    if (link.closest('.api-index-card')) {
+    if (link.closest('.api-index-card') || linkPreviewBlockLink(link)) {
       delete link.dataset.linkPreview
       continue
     }

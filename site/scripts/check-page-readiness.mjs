@@ -422,7 +422,7 @@ export async function checkKindBadgeLinks(browser, base, { sample = false } = {}
             const measured = await describeBadgeLink(badge)
             const where = `${label} "${measured.name}"`
             if (measured.badgeOwners.length) failures.push(`${where}: a decoration reaches the badge (${measured.badgeOwners.join('; ')})`)
-            if (measured.preview && (measured.nameOwners.length !== 1 || !/underline dotted$/.test(measured.nameOwners[0]))) {
+            if (measured.preview && (measured.nameOwners.length !== 1 || !measured.nameOwners[0].endsWith('underline dotted'))) {
               failures.push(`${where}: the name needs exactly one dotted underline (${measured.nameOwners.join('; ') || 'none'})`)
             }
             if (Math.abs(measured.centre) > 1) failures.push(`${where}: badge centre is ${measured.centre.toFixed(2)}px from the text centre`)
@@ -440,6 +440,68 @@ export async function checkKindBadgeLinks(browser, base, { sample = false } = {}
     }
     assert.deepEqual(failures, [], 'Kind badges inside links')
     console.log(`Kind badges: ${sample ? 'sampled' : 'every'} link variant has no underline on the badge, a centred badge and a quarter-em gap PASS`)
+  } finally {
+    await context.close()
+  }
+}
+
+/** Overview pages with cards, then a prose page whose inline preview links must keep their line. */
+const BLOCK_LINK_PAGES = [
+  { path: '/ts/latest/workspace/', sample: true },
+  { path: '/rs/latest/' },
+  { path: '/go/latest/mcp/' },
+  { path: '/rs/latest/concepts/server-session-window-pane/', inline: true, sample: true },
+]
+
+/** Link elements whose own text decoration is dotted, with why each is not an inline text run. */
+function dottedDecorations() {
+  const blocks = 'h1, h2, h3, h4, h5, h6, p, div, ul, ol, li, table, pre, section, article, aside, blockquote, dl'
+  const found = []
+  for (const element of document.body.querySelectorAll('*')) {
+    const style = getComputedStyle(element)
+    if (!style.textDecorationLine.includes('underline') || style.textDecorationStyle !== 'dotted') continue
+    // An abbreviation's own dotted line is not a preview.
+    const link = element.closest('a')
+    if (!link) continue
+    const display = getComputedStyle(link).display
+    const wrapped = link.querySelector(blocks)
+    const reason = !/^(inline|inline-flex|inline-block)$/.test(display) ? `a ${display} link`
+      : wrapped ? `a link wrapping <${wrapped.tagName.toLowerCase()}>` : ''
+    found.push({ element: `${element.tagName.toLowerCase()}${element.className ? `.${String(element.className).split(' ')[0]}` : ''}`,
+      href: link.getAttribute('href'), reason })
+  }
+  return found
+}
+
+/**
+ * A card or other block link shows its own summary, so it takes no preview
+ * line; only inline text runs carry the dotted underline.
+ */
+export async function checkBlockLinksUndecorated(browser, base, { sample = false } = {}) {
+  const context = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 1440, height: 1000 } })
+  const page = await context.newPage()
+  page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
+  const failures = []
+  try {
+    for (const { path, inline } of BLOCK_LINK_PAGES.filter((entry) => !sample || entry.sample)) {
+      await page.goto(`${base}${path}`, { waitUntil: 'load' })
+      await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready')
+      // Hovering is what asks for a preview, so exercise every block link on the page.
+      const cards = page.locator('main a[href]').filter({ has: page.locator('h1, h2, h3, h4, h5, h6, p') })
+      for (let index = 0; index < Math.min(await cards.count(), 8); index++) {
+        await cards.nth(index).hover()
+        // The preview waits 180ms before it marks a link, so wait past that dwell.
+        await page.waitForTimeout(400)
+      }
+      await page.mouse.move(0, 0)
+      const dotted = await page.evaluate(dottedDecorations)
+      for (const { element, href, reason } of dotted) {
+        if (reason) failures.push(`${path}: ${element} (${href}) carries a dotted line but is ${reason}`)
+      }
+      if (inline) assert(dotted.some(({ reason }) => !reason), `${path}: an inline preview link keeps its dotted line`)
+    }
+    assert.deepEqual(failures, [], 'Block links with a preview line')
+    console.log(`Block links: ${sample ? 'sampled' : 'every'} overview card page keeps preview lines on inline links only PASS`)
   } finally {
     await context.close()
   }

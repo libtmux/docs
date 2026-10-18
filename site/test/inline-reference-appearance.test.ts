@@ -48,7 +48,8 @@ it('assigns one dotted decoration to each real preview link, including nested an
     <a id="kind-name" href="../server/">${kindMark('S')}<span class="api-symbol-link__name">Server</span></a>
     <a id="kind-code" href="../server/">${kindMark('M')}<code>Server</code></a>
     </p><nav><a id="nav" href="../server/">Server</a></nav>
-    <div class="api-index-card"><a id="card" href="../server/"><code>Server</code></a></div>`
+    <div class="api-index-card"><a id="card" href="../server/"><code>Server</code></a></div>
+    <a id="doc-card" class="doc-card" href="../server/"><h3>Server</h3><p>Runtime requirements.</p></a>`
   const original = win.document.body.textContent
   markPreviews()
   for (const id of ['nested', 'bare', 'plain', 'mixed', 'go', 'badge', 'kind-chip', 'kind-name', 'kind-code']) {
@@ -69,7 +70,7 @@ it('assigns one dotted decoration to each real preview link, including nested an
     expect(win.getComputedStyle(link).color).toBe(win.getComputedStyle(link.querySelector('code')!).color)
     expect(win.getComputedStyle(link.querySelector('code')!).borderTopStyle).toBe('solid')
   }
-  for (const id of ['nav', 'card']) {
+  for (const id of ['nav', 'card', 'doc-card']) {
     const link = win.document.getElementById(id)!
     expect(link.hasAttribute('data-link-preview')).toBe(false)
     expect(win.getComputedStyle(link).textDecorationStyle).not.toBe('dotted')

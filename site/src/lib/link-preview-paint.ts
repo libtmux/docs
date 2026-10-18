@@ -11,10 +11,15 @@ export function createLinkPreviewPolicy() {
     if (url.origin !== origin || url.search || (!reference && !protocolObject && !manual)) return undefined
     return { url, endpoint: `${url.pathname.slice(0, -1)}.preview.json`, glossary: url.pathname.endsWith('/reference/glossary/') }
   }
+  /** A link that wraps blocks, such as a card, shows its own summary and is no inline text run. */
+  function blockLink(link: Element) {
+    return link.matches('.doc-card') || link.querySelector(
+      'address, article, aside, blockquote, details, dl, div, fieldset, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hr, main, nav, ol, p, pre, section, table, ul') !== null
+  }
   function candidate(eventTarget: EventTarget | null, base: string): HTMLAnchorElement | undefined {
     const link = eventTarget instanceof Element ? eventTarget.closest<HTMLAnchorElement>('a[href]') : null
     if (!link || link.matches('[data-preview-skip], [href^="#"], .api-heading-link, .api-index-card__link, .headerlink, .permalink')
-      || link.closest('nav, footer, [data-doc-picker], .api-index-card, .cli-command-list, .reference-link-preview')) return undefined
+      || link.closest('nav, footer, [data-doc-picker], .api-index-card, .cli-command-list, .reference-link-preview') || blockLink(link)) return undefined
     try {
       const url = new URL(link.getAttribute('href')!, base)
       return target(url.href, new URL(base).origin) ? link : undefined
@@ -27,10 +32,10 @@ export function createLinkPreviewPolicy() {
     link.title = ''
     for (const child of link.querySelectorAll('[title]')) child.removeAttribute('title')
   }
-  return { target, candidate, mark }
+  return { target, candidate, mark, blockLink }
 }
 
-export const { target: linkPreviewTarget, candidate: linkPreviewCandidate, mark: markLinkPreview } = createLinkPreviewPolicy()
+export const { target: linkPreviewTarget, candidate: linkPreviewCandidate, mark: markLinkPreview, blockLink: linkPreviewBlockLink } = createLinkPreviewPolicy()
 
 /** Serialized into the shared head; keep dependencies in the supplied policy. */
 export function initializeLinkPreviewPaint(policy: ReturnType<typeof createLinkPreviewPolicy>) {
@@ -41,7 +46,7 @@ export function initializeLinkPreviewPaint(policy: ReturnType<typeof createLinkP
       ? [enclosing, ...root.querySelectorAll<HTMLAnchorElement>('a[href]')]
       : root.querySelectorAll<HTMLAnchorElement>('a[href]')
     for (const link of links) {
-      if (link.closest('.api-index-card')) delete link.dataset.linkPreview
+      if (link.closest('.api-index-card') || policy.blockLink(link)) delete link.dataset.linkPreview
       else if (policy.candidate(link, base)) policy.mark(link)
     }
   }

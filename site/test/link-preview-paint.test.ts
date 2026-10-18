@@ -69,6 +69,8 @@ it.each([
   '<div class="reference-link-preview"><a id="excluded" href="../libtmux-from_env/">preview</a></div>',
   '<a id="excluded" data-preview-skip href="../libtmux-from_env/">skip</a>',
   '<a id="excluded" class="api-index-card__link" href="../libtmux-from_env/">card</a>',
+  '<a id="excluded" class="doc-card" href="../libtmux-from_env/">card</a>',
+  '<a id="excluded" href="../libtmux-from_env/"><h3>Runtime support</h3><p>Requirements and behavior.</p></a>',
   '<a id="excluded" class="api-heading-link" href="../libtmux-from_env/">heading</a>',
   '<a id="excluded" class="headerlink" href="../libtmux-from_env/">permalink</a>',
   '<a id="excluded" href="#from_env">fragment</a>',
@@ -77,6 +79,17 @@ it.each([
 ])('preserves the preview exclusion: %s', async (html) => {
   initializeLinkPreviewPaint(policy()); append(html); await parsed()
   expect(marked('excluded')).toBe(false)
+})
+
+it('unmarks a link that gains block content after the parser marked it', async () => {
+  let relayout = () => {}
+  Object.assign(win, { __libtmuxAppearance: { layout: (callback: () => void) => { relayout = callback } } })
+  initializeLinkPreviewPaint(policy())
+  append('<a id="late" href="../libtmux-from_env/"></a>')
+  await parsed(); expect(marked('late')).toBe(true)
+  anchor('late').innerHTML = '<h3>Runtime support</h3><p>Requirements and behavior.</p>'
+  relayout()
+  expect(marked('late')).toBe(false)
 })
 
 it('replaces native glossary tooltips while preserving the link name and destination', async () => {
