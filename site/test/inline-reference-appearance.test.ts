@@ -7,6 +7,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { API_MODELS } from '../src/lib/api-models'
 import { productApiIndex } from '../src/lib/product-api'
 import { linkTmuxDoc } from '../src/lib/tmux-links'
+import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { createLinkPreviewPolicy } from '../src/lib/link-preview-paint'
 
 const preview = readFileSync(new URL('../src/components/LinkPreview.astro', import.meta.url), 'utf8')
@@ -129,6 +130,24 @@ it('renders the WhereOf generic as one code expression with independent native l
     expect(owners).toHaveLength(1)
     expect(win.getComputedStyle(owners[0]).textDecorationStyle).toBe('dotted')
   }
+})
+
+it('keeps a keyword argument plain while its bare name still links', async () => {
+  const model = API_MODELS.ruby
+  const index = productApiIndex(model, 'latest')
+  const container = await experimental_AstroContainer.create()
+  const text = '`cancel:` `clients: true` `where:` `cancel`'
+  win.document.body.innerHTML = await container.renderToString(await docComponent(), { props: { text, index } })
+  const codes = [...win.document.querySelectorAll('code.api-literal')]
+  expect(codes.map((code) => code.textContent)).toEqual(['cancel:', 'clients: true', 'where:', 'cancel'])
+  expect(codes.slice(0, 3).map((code) => code.querySelectorAll('a').length)).toEqual([0, 0, 0])
+  expect(win.document.querySelectorAll('a[href*="cancellation-cancel"]')).toHaveLength(1)
+  // Markdown links code literals for TypeScript; the same rule keeps an option key plain there.
+  const ts = API_MODELS.ts
+  const summary = '`socketPath:` `socketPath`'
+  const server = { ...ts.symbols.find((entry) => entry.id === 'server.Server')!, doc: { summary } }
+  const markdown = symbolMarkdown({ model: ts, symbol: server, index: productApiIndex(ts, 'latest') })
+  expect(markdown).toContain('`socketPath:` [`socketPath`](')
 })
 
 it('leaves unrelated hashes, source comments and URL fragments unchanged', async () => {
