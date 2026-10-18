@@ -44,6 +44,10 @@ describe('rendered inventory targets', () => {
     expect(targets.map((target) => target.category)).toEqual(['doc', 'heading'])
     expect(targets.some((target) => target.href.endsWith('#_top'))).toBe(false)
   })
+  it('uses a fragment name when its heading has no display text', () => {
+    const targets = renderedTargets(html(page, '<h2 id="empty"><a class="headerlink" href="#empty">#</a></h2>'), '/en/manual/')
+    expect(targets[1].display).toBe('empty')
+  })
   it('retains historical keys while moving a page and changing its title', () => {
     const original = renderedTargets(html(page, '<h2 id="arguments">Arguments</h2>'), '/en/old/')[0]
     const moved = { ...original, href: '/en/moved/', display: 'New title', identity: 'renamed' }
