@@ -1,6 +1,15 @@
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { resolvePortBody, resolvePortContent } from '../lib/workspace-shared-slots.ts'
+import {
+  EXCERPT_ATTRIBUTES,
+  ExcerptError,
+  excerptRequest,
+  pageSource,
+  parseFenceAttributes,
+  sliceExcerpt,
+  withoutAttributes,
+} from '../lib/example-excerpt.ts'
 /** Static import keeps source bytes available in bundled HTML and Markdown exports. */
 import CACHE from '../data/example-sources.json' with { type: 'json' }
 import { visit } from 'unist-util-visit'
@@ -67,33 +76,89 @@ export function checkoutFor(owner) {
 }
 
 /**
- * Parse `file="examples/x.py"` and `region="name"` out of a fence's meta.
+ * Parse `file="examples/x.py"`, `region="name"` and the excerpt attributes
+ * `excerpt`, `from` and `to` out of a fence's meta.
  * @param {string | null | undefined} meta
- * @returns {{ file?: string, region?: string }}
+ * @returns {{ file?: string, region?: string, excerpt?: string, from?: string, to?: string }}
  */
 export function parseMeta(meta) {
-  if (!meta) return {}
-  /** @type {Record<string, string>} */
-  const out = {}
-  for (const m of meta.matchAll(/(\w+)="([^"]*)"/g)) out[m[1]] = m[2]
-  return out
+  return parseFenceAttributes(meta)
+}
+
+/**
+ * The excerpt a fence asks for, if any. A malformed one fails the build with
+ * the page's path, like a missing source.
+ */
+function excerptOf(meta, pagePath) {
+  try {
+    return excerptRequest(meta)
+  } catch (error) {
+    throw failure(error, pagePath)
+  }
+}
+
+function failure(error, pagePath) {
+  return error instanceof ExcerptError ? new Error(`${pagePath ?? 'page'}: ${error.message}`) : error
+}
+
+/**
+ * The text of an excerpt fence. A page source is a titled block of the same
+ * page, which is the program its native run and hash check cover; a file
+ * source is read from the port's revision-bound cache.
+ */
+function readExcerpt(owner, request, blocks, pagePath) {
+  const { source } = request
+  const label = `${pagePath ?? 'page'}: excerpt of ${source.name}`
+  try {
+    if (source.kind === 'file' && !owner) throw new ExcerptError(`${label}: file= needs a fence in a port's language`)
+    const text = source.kind === 'page'
+      ? pageSource(blocks, source.name, label)
+      : readFence(owner, { file: source.name }, pagePath)
+    return sliceExcerpt(text, request, label)
+  } catch (error) {
+    if (error instanceof ExcerptError) throw new Error(error.message)
+    throw error
+  }
+}
+
+/** Every fenced block of a Markdown body with its info string and text. */
+function fencedBlocks(body) {
+  const blocks = []
+  let fence
+  for (const line of body.split('\n')) {
+    const marker = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(line)
+    if (!fence && marker && !(marker[1][0] === '`' && marker[2].includes('`'))) {
+      fence = { marker: marker[1][0], length: marker[1].length, meta: /^\S*(.*)$/.exec(marker[2].trimStart())[1], lines: [] }
+    } else if (fence && marker && marker[1][0] === fence.marker
+      && marker[1].length >= fence.length && !marker[2].trim()) {
+      blocks.push({ meta: fence.meta, value: fence.lines.join('\n') })
+      fence = undefined
+    } else if (fence) fence.lines.push(line)
+  }
+  return blocks
 }
 
 /** The Markdown twin uses the same prose ownership and source reader as HTML. */
 export function resolvePortCode(body, port, authoredPort, link = (href) => href) {
   const out = []
   let fence
-  for (const line of resolvePortBody(body, authoredPort || port).split('\n')) {
+  const selected = resolvePortBody(body, authoredPort || port)
+  const blocks = fencedBlocks(selected)
+  for (const line of selected.split('\n')) {
     const marker = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(line)
     if (!fence && marker && !(marker[1][0] === '`' && marker[2].includes('`'))) {
       const [, language = '', metadata = ''] = /^(\S*)(.*)$/.exec(marker[2].trimStart())
       const owner = LANG_TO_PORT[language.toLowerCase()]
       const dropping = Boolean(port && owner && owner !== port && authoredPort !== port)
       const meta = parseMeta(metadata)
-      fence = { marker: marker[1][0], length: marker[1].length, dropping, replaced: Boolean(meta.file && owner) }
+      const excerpt = dropping ? undefined : excerptOf(meta, 'Markdown export')
+      fence = { marker: marker[1][0], length: marker[1].length, dropping, replaced: Boolean(excerpt || (meta.file && owner)) }
       if (dropping) continue
-      out.push(line)
-      if (fence.replaced) out.push(readFence(owner, meta, 'Markdown export'))
+      // The anchors name lines of the source; the export carries the lines.
+      const info = excerpt ? [language, withoutAttributes(metadata, EXCERPT_ATTRIBUTES)].filter(Boolean).join(' ') : undefined
+      out.push(info === undefined ? line : line.slice(0, line.length - marker[2].length) + info)
+      if (excerpt) out.push(readExcerpt(owner, excerpt, blocks, 'Markdown export'))
+      else if (fence.replaced) out.push(readFence(owner, meta, 'Markdown export'))
     } else if (fence && marker && marker[1][0] === fence.marker
       && marker[1].length >= fence.length && !marker[2].trim()) {
       if (!fence.dropping) out.push(line)
@@ -150,6 +215,10 @@ export function remarkPortCode() {
       node.data.hProperties = { ...node.data.hProperties, dataDocPort: owner }
     })
 
+    // An excerpt quotes a titled block of its own page, wherever the block sits.
+    const blocks = []
+    visit(tree, 'code', (node) => { blocks.push({ meta: node.meta, value: node.value }) })
+
     visit(tree, 'code', (node, _index, parent) => {
       const lang = (node.lang || '').toLowerCase()
       const owner = LANG_TO_PORT[lang]
@@ -157,6 +226,13 @@ export function remarkPortCode() {
 
       if (port && owner && owner !== port && authoredPort !== port) {
         removals.push([parent, node])
+        return
+      }
+
+      const excerpt = excerptOf(meta, file?.path)
+      if (excerpt) {
+        node.value = readExcerpt(owner, excerpt, blocks, file?.path)
+        node.meta = withoutAttributes(node.meta, EXCERPT_ATTRIBUTES)
         return
       }
 
