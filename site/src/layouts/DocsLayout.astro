@@ -141,7 +141,8 @@ const productBrand = port && product && pagePath === product && productAvailable
 const workspaceInternals = product === 'workspace' && pagePath.startsWith('workspace/internals/')
 const surfaces = port ? await getDocumentationSurfaces(port, version, locale) : []
 const selectedSection = surfaces.length ? currentDocumentation(surfaces, currentPath)?.section : undefined
-const sidebarNavigation = navigation ?? selectedSection?.items ?? await getSidebar(port, version, locale, product)
+// A tmux page's sidebar links tmux releases; the build slug names a docs build.
+const sidebarNavigation = navigation ?? selectedSection?.items ?? await getSidebar(port, contextVersion, locale, product)
 const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && port ? [
   { name: PORT_BY_SLUG[port].name, url: portPageUrl(PORT_BY_SLUG[port], version) },
   { name: DOC_PRODUCTS[product].label, url: portPageUrl(PORT_BY_SLUG[port], version, product) },

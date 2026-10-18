@@ -45,8 +45,11 @@ afterEach(async () => {
   vi.unstubAllEnvs()
 })
 
-/** Keep the edited templates, native catalogs, API tree and both contents renderers real. */
-async function components() {
+/**
+ * Keep the edited templates, native catalogs, API tree and both contents renderers real.
+ * `stubs` replaces a stubbed child, keyed by its path below `src/components`.
+ */
+async function components(stubs: Readonly<Record<string, string>> = {}) {
   const modules: Record<string, object> = {
     '@libtmux/api-model': model,
     ...Object.fromEntries(Object.entries({
@@ -84,6 +87,14 @@ async function components() {
     resolvePath: (specifier: string) => specifier,
   })).code.replaceAll('"astro/compiler-runtime"', JSON.stringify(runtime))
   const chrome = `data:text/javascript;base64,${Buffer.from(shell).toString('base64')}`
+  const replacements = new Map<string, string>()
+  for (const [name, source] of Object.entries(stubs)) {
+    const code = (await transform(source, {
+      filename: `stub-${name}`, internalURL: 'astro/compiler-runtime', resultScopedSlot: true,
+      resolvePath: (specifier: string) => specifier,
+    })).code.replaceAll('"astro/compiler-runtime"', JSON.stringify(runtime))
+    replacements.set(new URL(`../src/components/${name}`, import.meta.url).href, `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`)
+  }
 
   async function compile(file: URL): Promise<string> {
     if (compiled.has(file.href)) return compiled.get(file.href)!
@@ -102,7 +113,7 @@ async function components() {
       const path = specifier.startsWith('.') ? new URL(specifier, file) : undefined
       let replacement: string
       if (specifier.endsWith('.astro')) {
-        replacement = realTemplates.has(path!.href) ? await compile(path!) : chrome
+        replacement = realTemplates.has(path!.href) ? await compile(path!) : replacements.get(path!.href) ?? chrome
       } else {
         const key = path ? `${path.href}${/\.(?:ts|json)$/.test(path.pathname) ? '' : '.ts'}` : specifier
         const exports = modules[key]
@@ -401,4 +412,30 @@ it.each([895, 896, 1036])('preserves native/reference controls and their 56rem c
     expect(control.getAttribute('tabindex')).toBe('0')
     expect(displayed(win, control)).toBe(width < 896)
   }
+})
+
+// Renders the navigation the layout hands its sidebar as plain links.
+const SIDEBAR_LINKS = `---
+const { navigation = [] } = Astro.props
+const links = (items) => items.flatMap((item) => item.type === 'group' ? links(item.items ?? []) : [item])
+---
+<nav data-sidebar-links>{links(navigation).map((item) => <a href={item.href}>{item.label}</a>)}</nav>`
+
+it('points the tmux sidebar at tmux releases, not at the docs build slug', async () => {
+  // A pull-request preview builds every page under its own slug.
+  vi.stubEnv('LIBTMUX_DOCS_VERSION', 'pr-157')
+  const templates = await components({ 'docs/Sidebar.astro': SIDEBAR_LINKS })
+  const container = await experimental_AstroContainer.create()
+  const html = await container.renderToString(await templates('../../layouts/DocsLayout'), {
+    props: { title: 'Topics', pagePath: 'tmux/topics', pagePorts: [], breadcrumbs: [] },
+    request: new Request('https://libtmux.org/tmux/topics/'),
+  })
+  const win = new Window({ url: 'https://libtmux.org/tmux/topics/' })
+  windows.push(win)
+  win.document.body.innerHTML = html
+  const hrefs = [...win.document.querySelectorAll('[data-sidebar-links] a')].map((link) => link.getAttribute('href'))
+  expect(hrefs).toContain(manual.tmuxManualUrl())
+  expect(hrefs).toContain(catalog.tmuxCatalogUrl())
+  expect(hrefs).toContain(reference.tmuxReferenceUrl())
+  expect(hrefs.filter((href) => href?.includes('pr-157'))).toEqual([])
 })
