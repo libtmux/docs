@@ -82,8 +82,9 @@ const signatureLayouts = await apiSignatureLayouts(symbol, language)
 const nativeSignatureText: typeof unformattedNativeSignatureText = (entry, signature, port) =>
   signatureLayouts.get(signature)?.text ?? unformattedNativeSignatureText(entry, signature, port)
 
-// A prepared layout is the declaration, even where the port documents few parameters.
-const nativeSignatures = usesNativeSignatures(symbol, language) || signatureLayouts.size > 0
+// A Swift layout is the declaration, even where the port documents few parameters.
+// A Python layout only spaces the parameter list, which keeps its own markup.
+const nativeSignatures = usesNativeSignatures(symbol, language) || (language === 'swift' && signatureLayouts.size > 0)
 
 /**
  * The Sphinx domain this port's symbols belong to.

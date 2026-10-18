@@ -185,4 +185,11 @@ describe('Swift callable layouts', () => {
     expect(await rendersNatively(modelSymbol('TmuxBuffer.name'), 'swift')).toBe(false)
     expect(await rendersNatively(callable('apply(_:)', [{ name: 'count', type: 'Int', default: '1' }]), 'swift')).toBe(false)
   })
+
+  it('leaves a laid out Python callable on its parameter-list rendering', async () => {
+    const python = JSON.parse(readFileSync(new URL('../src/data/api/py.json', import.meta.url), 'utf8')) as ApiModel
+    const symbol = python.symbols.find((entry) => entry.id === 'libtmux.server.Server.new_session')!
+    expect((await apiSignatureLayouts(symbol, 'py')).size).toBeGreaterThan(0)
+    expect(await rendersNatively(symbol, 'py')).toBe(false)
+  })
 })
