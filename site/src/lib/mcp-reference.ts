@@ -101,7 +101,8 @@ function rehypeMcpToolLinks() {
       children: [{ type: 'element', tagName: 'span', properties: {
         className: ['api-link-kind', 'api-nav__kind', `api-badge--kind-${object.kind}`],
         ariaHidden: 'true', dataApiKind: object.kind, title: object.kind,
-      }, children: [{ type: 'element', tagName: 'span', properties: { className: ['api-badge__label'] }, children: [{ type: 'text', value: kindMark(object.kind) }] }] }, node],
+      }, children: [{ type: 'element', tagName: 'span', properties: { className: ['api-badge__label'] }, children: [{ type: 'text', value: kindMark(object.kind) }] }] },
+      { type: 'element', tagName: 'span', properties: { className: ['api-symbol-link__name'] }, children: [node] }],
     })
     const walk = (node: HtmlNode) => {
       if (!node.children || ['a', 'pre', 'script', 'style'].includes(node.tagName ?? '')) return

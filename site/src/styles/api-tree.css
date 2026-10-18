@@ -262,6 +262,10 @@ a:has(> .api-link-kind) {
 .api-symbol-link__name { min-inline-size: 0; overflow-wrap: anywhere; }
 a > .api-link-kind { flex-shrink: 0; }
 .api-link-kind { user-select: none; text-decoration: none; }
+/* The link's own line would run through its badge, since an ancestor's
+ * decoration reaches every in-flow descendant. The name draws it instead. */
+a:has(> .api-link-kind) { text-decoration-line: none; }
+.api-link-kind ~ .api-symbol-link__name { text-decoration-line: underline; }
 
 .api-nav__count {
   flex: none;

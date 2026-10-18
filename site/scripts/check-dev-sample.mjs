@@ -3,7 +3,7 @@ import { checkHomeResponsiveLayout } from './check-home-launcher.mjs'
 import { checkPickerFilters } from './check-picker-filters.mjs'
 import { checkNavigationBeforeAnalytics } from './check-navigation.mjs'
 import { checkDeclarationControlsLevel } from './check-native-layout.mjs'
-import { checkRequiredAppearance } from './check-page-readiness.mjs'
+import { checkKindBadgeLinks, checkRequiredAppearance } from './check-page-readiness.mjs'
 import { checkTmuxKeys } from './check-tmux-keys.mjs'
 
 // Row-anchored tables with different first-cell shapes: plain text, code, a
@@ -167,6 +167,7 @@ export async function checkDevSample(browser, base) {
   await checkNavigationBeforeAnalytics(browser, base)
   await checkRequiredAppearance(browser, base)
   await checkRowPermalinks(browser, base)
+  await checkKindBadgeLinks(browser, base, { sample: true })
   await checkTmuxKeys(browser, base)
   const context = await browser.newContext({ reducedMotion: 'reduce' })
   const page = await context.newPage()

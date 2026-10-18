@@ -34,6 +34,8 @@ function markPreviews() {
   }
 }
 
+const kindMark = (label: string) => `<span class="api-link-kind api-nav__kind api-badge--kind-class" aria-hidden="true"><span class="api-badge__label">${label}</span></span>`
+
 it('assigns one dotted decoration to each real preview link, including nested and mixed labels', () => {
   win.document.body.innerHTML = `<p>
     <a id="nested" class="api-xref" href="../observation-close/"><code class="api-literal api-literal--link">close()</code></a>
@@ -42,15 +44,25 @@ it('assigns one dotted decoration to each real preview link, including nested an
     <a id="mixed" href="../server/">See <code class="api-literal api-literal--link">Server</code> now</a>
     <a id="go" class="api-xref" href="/en/go/latest/reference/tmux-pane/"><code class="api-literal api-literal--link">Pane</code></a>
     <a id="badge" class="api-badge api-badge--kind-class" href="../glossary/#class"><span class="api-badge__label">class</span></a>
+    <a id="kind-chip" class="api-mention" href="../server/">${kindMark('C')}<span class="api-symbol-link__name"><code>Server</code></span></a>
+    <a id="kind-name" href="../server/">${kindMark('S')}<span class="api-symbol-link__name">Server</span></a>
+    <a id="kind-code" href="../server/">${kindMark('M')}<code>Server</code></a>
     </p><nav><a id="nav" href="../server/">Server</a></nav>
     <div class="api-index-card"><a id="card" href="../server/"><code>Server</code></a></div>`
   const original = win.document.body.textContent
   markPreviews()
-  for (const id of ['nested', 'bare', 'plain', 'mixed', 'go', 'badge']) {
+  for (const id of ['nested', 'bare', 'plain', 'mixed', 'go', 'badge', 'kind-chip', 'kind-name', 'kind-code']) {
     const link = win.document.getElementById(id)!
     const owners = [link, ...link.querySelectorAll('*')].filter((node) => win.getComputedStyle(node).textDecorationLine.includes('underline'))
     expect(owners, id).toHaveLength(1)
     expect(win.getComputedStyle(owners[0]).textDecorationStyle).toBe('dotted')
+  }
+  // A decoration on the link would also run under the kind badge, so the name carries it.
+  for (const id of ['kind-chip', 'kind-name', 'kind-code']) {
+    const link = win.document.getElementById(id)!
+    const [owner] = [link, ...link.querySelectorAll('*')].filter((node) => win.getComputedStyle(node).textDecorationLine.includes('underline'))
+    expect(owner.matches('.api-symbol-link__name, code'), id).toBe(true)
+    expect(link.querySelector('.api-nav__kind')!.contains(owner), id).toBe(false)
   }
   for (const id of ['nested', 'mixed']) {
     const link = win.document.getElementById(id)!

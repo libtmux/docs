@@ -266,3 +266,155 @@ export async function checkRequiredAppearance(browser, base) {
   } finally { await legacy.close() }
   console.log('Appearance: held font/module/effect, first visible fonts/icons/dotted links, stable geometry, failure and Reload PASS')
 }
+
+/** Every link that leads with a kind badge, by the badge's selector; `sample` keeps an entry in the bounded sample. */
+const BADGE_LINKS = [
+  { label: 'prose link', path: '/rs/latest/concepts/server-session-window-pane/', badges: 'p a > .api-link-kind', fixtures: true, sample: true },
+  { label: 'MCP prose link', path: '/py/stable/mcp/tools/capture_pane/', badges: 'p a > .api-link-kind' },
+  { label: 'MCP index card', path: '/py/stable/mcp/tools/', badges: '.api-index-card a > .api-nav__kind', sample: true },
+  { label: 'MCP catalog heading', path: '/py/stable/mcp/tools/', badges: 'h2 a > .api-nav__kind' },
+  { label: 'API equivalent', path: '/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/', badges: '.api-elsewhere-value a > .api-nav__kind', sample: true },
+  { label: 'sidebar link', path: '/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/', badges: 'a.sidebar-link > .api-nav__kind' },
+  { label: 'sidebar section', path: '/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/', badges: 'summary a > .api-nav__kind' },
+  { label: 'navigation tree link', path: '/py/stable/mcp/tools/capture_pane/', badges: 'a.api-nav__leaf > .api-nav__kind' },
+  { label: 'navigation tree row', path: '/java/latest/reference/io-github-libtmux-server-server/', badges: 'div.api-nav__row > .api-nav__kind' },
+  { label: 'related type card', path: '/java/latest/reference/io-github-libtmux-server-server/', badges: '.api-related-card a > .api-nav__kind' },
+  { label: 'related API contents', path: '/java/latest/reference/io-github-libtmux-server-server/', badges: 'nav.api-related a > .api-nav__kind' },
+  { label: 'command related API', path: '/powershell/latest/reference/libtmux-enter-tmuxsession/', badges: '.api-command-related a > .api-nav__kind' },
+  { label: 'navigation search result', path: '/lua/latest/reference/libtmux-server/', badges: '[data-api-search-results] a strong > .api-nav__kind',
+    prepare: async (page) => {
+      await page.getByRole('searchbox', { name: 'Find a type or member' }).fill('Server')
+      await page.locator('[data-api-search-results] a').first().waitFor()
+    } },
+]
+
+/** Read the decorations that reach a badge and its name. */
+async function describeBadgeLink(badge) {
+  return badge.evaluate((badge) => {
+    // Atomic inline boxes keep their contents clear of an ancestor's decoration.
+    const atomic = (element) => {
+      const style = getComputedStyle(element)
+      return /^inline-(block|flex|grid|table)$/.test(style.display) || style.float !== 'none'
+        || style.position === 'absolute' || style.position === 'fixed'
+    }
+    const owners = (node) => {
+      const found = []
+      let blocked = false
+      for (let element = node; element && element !== document.body; element = element.parentElement) {
+        const style = getComputedStyle(element)
+        if (style.textDecorationLine !== 'none' && (element === node || !blocked)) {
+          found.push(`${element.tagName.toLowerCase()}${element.className ? `.${String(element.className).split(' ')[0]}` : ''} ${style.textDecorationLine} ${style.textDecorationStyle}`)
+        }
+        if (atomic(element)) blocked = true
+      }
+      return found
+    }
+    let name = badge.nextSibling
+    while (name && name.nodeType !== 1 && !name.textContent.trim()) name = name.nextSibling
+    let text = name.nodeType === 3 ? name : null
+    const walker = document.createTreeWalker(name, NodeFilter.SHOW_TEXT)
+    for (let node = walker.nextNode(); !text && node; node = walker.nextNode()) if (node.textContent.trim()) text = node
+    const link = badge.closest('a') ?? badge.parentElement
+    return {
+      name: text.textContent.trim().slice(0, 24),
+      preview: link.hasAttribute('data-link-preview'),
+      badgeOwners: owners(badge),
+      nameOwners: owners(text.parentElement),
+    }
+  })
+}
+
+/** The badge's own pixels, and a strip under it, with and without any decoration. */
+async function paintsBadgeDecoration(page, badge) {
+  await badge.scrollIntoViewIfNeeded()
+  const box = await badge.boundingBox()
+  const clip = { x: box.x, y: box.y, width: box.width, height: box.height + 4 }
+  const drawn = await page.screenshot({ clip })
+  const style = await page.addStyleTag({ content: '*, *::before, *::after { text-decoration: none !important; }' })
+  const bare = await page.screenshot({ clip })
+  await style.evaluate((node) => node.remove())
+  return !drawn.equals(bare)
+}
+
+/** Clone the first prose link into headings and a table, the contexts real pages vary in. */
+async function addBadgeLinkFixtures(page) {
+  await page.evaluate(() => {
+    const source = document.querySelector('p a:has(> .api-link-kind)')
+    const article = source.closest('p').parentElement
+    const variant = (plain) => {
+      const clone = source.cloneNode(true)
+      if (plain) clone.querySelector('.api-symbol-link__name').textContent = 'Session'
+      return clone
+    }
+    for (const tag of ['h2', 'h3', 'h4']) for (const plain of [false, true]) {
+      const heading = document.createElement(tag)
+      heading.append('Heading ', variant(plain))
+      heading.dataset.fixture = 'heading'
+      article.append(heading)
+    }
+    const table = document.createElement('table')
+    table.dataset.fixture = 'table'
+    table.innerHTML = '<thead><tr><th></th></tr></thead><tbody><tr><td></td></tr><tr><td></td></tr></tbody>'
+    table.querySelector('th').append(variant(true))
+    const cells = table.querySelectorAll('td')
+    cells[0].append(variant(false))
+    cells[1].append(variant(true))
+    article.append(table)
+  })
+}
+
+/** A kind badge inside a link carries no underline; the name keeps one dotted line. */
+export async function checkKindBadgeLinks(browser, base, { sample = false } = {}) {
+  const context = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 1600, height: 1000 } })
+  const page = await context.newPage()
+  page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
+  const failures = []
+  try {
+    for (const path of new Set(BADGE_LINKS.filter((entry) => !sample || entry.sample).map((entry) => entry.path))) {
+      await page.goto(`${base}${path}`, { waitUntil: 'load' })
+      await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready')
+      // A hover preview opens over the page and would differ between the two paints.
+      await page.addStyleTag({ content: '.reference-link-preview { display: none !important; }' })
+      for (const entry of BADGE_LINKS.filter((candidate) => candidate.path === path && (!sample || candidate.sample))) {
+        await entry.prepare?.(page)
+        const variants = [{ label: entry.label, badges: entry.badges }]
+        if (entry.fixtures) {
+          await addBadgeLinkFixtures(page)
+          variants.push(
+            { label: `${entry.label} in a heading`, badges: '[data-fixture="heading"] .api-link-kind' },
+            { label: `${entry.label} in a table`, badges: '[data-fixture="table"] .api-link-kind' })
+        }
+        for (const { label, badges } of variants) {
+          // A closed disclosure lays out nothing to measure.
+          await page.evaluate((selector) => {
+            for (const badge of document.querySelectorAll(selector)) {
+              for (let fold = badge.closest('details'); fold; fold = fold.parentElement?.closest('details')) fold.open = true
+            }
+          }, badges)
+          const found = page.locator(badges).filter({ visible: true })
+          const count = Math.min(await found.count(), 6)
+          assert(count > 0, `${path}: no ${label} badge to measure`)
+          for (let index = 0; index < count; index++) {
+            const badge = found.nth(index)
+            const measured = await describeBadgeLink(badge)
+            const where = `${label} "${measured.name}"`
+            if (measured.badgeOwners.length) failures.push(`${where}: a decoration reaches the badge (${measured.badgeOwners.join('; ')})`)
+            if (measured.preview && (measured.nameOwners.length !== 1 || !/underline dotted$/.test(measured.nameOwners[0]))) {
+              failures.push(`${where}: the name needs exactly one dotted underline (${measured.nameOwners.join('; ') || 'none'})`)
+            }
+          }
+          // The rendered badge, hovered or not, must match the same page drawn without decorations.
+          const first = found.first()
+          if (await paintsBadgeDecoration(page, first)) failures.push(`${label}: the badge's rendered box is underlined`)
+          await first.hover()
+          if (await paintsBadgeDecoration(page, first)) failures.push(`${label}: the badge is underlined while hovered`)
+          await page.mouse.move(0, 0)
+        }
+      }
+    }
+    assert.deepEqual(failures, [], 'Kind badges inside links')
+    console.log(`Kind badges: ${sample ? 'sampled' : 'every'} link variant has no underline on the badge and one dotted line on the name PASS`)
+  } finally {
+    await context.close()
+  }
+}

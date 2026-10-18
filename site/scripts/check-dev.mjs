@@ -15,7 +15,7 @@ import { checkColorScheme } from './check-color-scheme.mjs'
 import { checkHomeExampleOptions } from './check-home-example-options.mjs'
 import { checkDevSample, checkRowPermalinks } from './check-dev-sample.mjs'
 import { checkDeclarationControlAlignment, checkDeclarationControlsLevel, checkNativeSignatureGeometry, checkNativeSignatureLinks } from './check-native-layout.mjs'
-import { checkRequiredAppearance, checkWebAnalytics, checkWebAnalyticsTransitions } from './check-page-readiness.mjs'
+import { checkKindBadgeLinks, checkRequiredAppearance, checkWebAnalytics, checkWebAnalyticsTransitions } from './check-page-readiness.mjs'
 import { checkTypeParameters } from './check-type-parameters.mjs'
 import { checkTmuxKeys, TMUX_KEY_PAGES } from './check-tmux-keys.mjs'
 
@@ -843,6 +843,7 @@ try {
     apiNavigationPage.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     const apiNavigation = schedule(() => retryReload(() => checkApiNavigation(apiNavigationPage, base)).finally(() => apiNavigationPage.close()))
     const apiAnchors = schedule(() => retryReload(() => checkApiAnchorArrival(browser, base)))
+    const kindBadges = schedule(() => retryReload(() => checkKindBadgeLinks(browser, base)))
     await apiAnchors
     const apiSticky = schedule(() => retryReload(() => checkApiStickyHeadings(browser, base))
       .then(() => checkApiStickyHeadingsFail(browser, base)))
@@ -1143,7 +1144,7 @@ try {
     await page.close()
     const failures = (await Promise.all([
       navigation, apiExamples, reference, preferences, globalHeader, apiNavigation,
-      clipboard, documentationNavigation, homeLauncher, apiAnchors, apiSticky, typeParameters,
+      clipboard, documentationNavigation, homeLauncher, apiAnchors, apiSticky, typeParameters, kindBadges,
     ])).filter(Boolean)
     if (failures.length) throw new AggregateError(failures, 'Browser checks failed')
   }

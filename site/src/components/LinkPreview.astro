@@ -20,7 +20,10 @@ const { id = 'reference-link-preview', title = 'Reference preview', description 
   <a href={href} data-preview-open data-preview-skip>{actionLabel}</a>
 </span>
 <style is:global>
-  a[data-link-preview]:not(.api-badge) {
+  /* A line on the link would run through its kind badge, since an ancestor's
+     decoration reaches every in-flow descendant. The name carries it instead. */
+  a[data-link-preview]:not(.api-badge):not(:has(> .api-nav__kind)),
+  a[data-link-preview]:not(.api-badge) > .api-nav__kind ~ :is(.api-symbol-link__name, code) {
     text-decoration-line: underline;
     text-decoration-style: dotted;
     text-decoration-color: currentColor;
