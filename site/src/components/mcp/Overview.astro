@@ -4,7 +4,7 @@ import Aside from '../Aside.astro'
 import ConceptBadge from '../ConceptBadge.astro'
 import McpInstall from '../../components/widgets/McpInstall.astro'
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import { CONCEPT_DESCRIPTION, PORTS, portPageUrl, productAvailable, productIsConcept } from '../../lib/ports'
+import { PORTS, portPageUrl, productAvailable, productIsConcept } from '../../lib/ports'
 import { API_MODELS } from '../../lib/api-models'
 import mcpTools from '../../data/mcp-tools.json'
 import { withRoot } from '../../lib/site-root'
@@ -58,9 +58,8 @@ try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } ca
         and behavior can change between releases.
       </p>
       <p class="mb-0">
-        Non-Python servers are concept examples. {CONCEPT_DESCRIPTION}{' '}
-        <a href={withRoot('/tmux/guides/concept-examples/')}>Concept and alpha</a>
-        describe support scope and release maturity separately.
+        Non-Python servers are <a href={withRoot('/tmux/guides/concept-examples/')}>concept examples</a>:
+        working examples of the core library that can change without notice.
       </p>
     </Aside>
 

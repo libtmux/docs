@@ -3,7 +3,7 @@ import DocumentationIcon from './DocumentationIcon.astro'
 import ConceptBadge from '../ConceptBadge.astro'
 import { currentDocumentation, type DocumentationSurface } from '../../lib/documentation-navigation'
 import { branding } from '../../lib/branding'
-import { CONCEPT_DESCRIPTION, PICKER_GROUP_SUMMARY, PORT_BY_SLUG } from '../../lib/ports'
+import { CONCEPT_SUMMARY, PICKER_GROUP_SUMMARY, PORT_BY_SLUG } from '../../lib/ports'
 import { withRoot } from '../../lib/site-root'
 import type { Locale } from '../../i18n/locales'
 import '../../styles/documentation-picker.css'
@@ -20,7 +20,7 @@ const artwork = (id: string) => {
 ---
 <details class="surface-picker doc-picker" data-surface-picker data-doc-picker data-pagefind-ignore="all">
   <summary aria-label={solutionsOnly ? 'Choose a solution' : `Choose documentation: ${surface.label}, ${currentLabel}${surface.concept ? ', concept example' : ''}`}
-    aria-description={!solutionsOnly && surface.concept ? CONCEPT_DESCRIPTION : undefined}>
+    aria-description={!solutionsOnly && surface.concept ? CONCEPT_SUMMARY : undefined}>
     {port ? <img class="surface-artwork" src={artwork(surface.id)} width="30" height="30" alt="" /> : <TmuxLogo />}
     <span class="surface-current"><strong><span class="surface-label">{!solutionsOnly && surface.id === 'tmux'
       ? <><span class="surface-name-full">{surface.label}</span><span class="surface-name-short">tmux</span></>
@@ -38,14 +38,13 @@ const artwork = (id: string) => {
       {surfaces.map((entry) => solutionsOnly ? <a class="surface-destination doc-picker-option" href={entry.href}
         data-picker-option data-match={`${entry.label} ${descriptions[entry.id]}`}>
         <img class="surface-artwork" src={artwork(entry.id)} width="30" height="30" alt="" />
-        <span class="surface-group-name"><strong><span class="surface-label">{entry.label}</span>{entry.concept && <>{' '}<ConceptBadge /></>}</strong>{' '}<small>{entry.concept ? CONCEPT_DESCRIPTION : descriptions[entry.id]}</small></span>
+        <span class="surface-group-name"><strong><span class="surface-label">{entry.label}</span>{entry.concept && <>{' '}<ConceptBadge /></>}</strong>{' '}<small>{entry.concept ? CONCEPT_SUMMARY : descriptions[entry.id]}</small></span>
         <span class="surface-destination-arrow" aria-hidden="true">→</span>
       </a> : <details class="surface-group" data-surface-group data-picker-group open={entry.id === surface.id}>
         <summary>{port ? <img class="surface-artwork" src={artwork(entry.id)} width="30" height="30" alt="" /> : <TmuxLogo />}
-          <span class="surface-group-name"><strong><span class="surface-label">{entry.label}</span>{entry.concept && <>{' '}<ConceptBadge /></>}</strong>{' '}<small>{entry.concept ? 'Working example of the core library' : descriptions[entry.id]}</small></span>
+          <span class="surface-group-name"><strong><span class="surface-label">{entry.label}</span>{entry.concept && <>{' '}<ConceptBadge /></>}</strong>{' '}<small>{entry.concept ? CONCEPT_SUMMARY : descriptions[entry.id]}</small></span>
           <svg class="surface-chevron" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m6 4 4 4-4 4" /></svg>
         </summary>
-        {entry.concept && <p class="surface-concept-description">{CONCEPT_DESCRIPTION}</p>}
         <div class="surface-options doc-picker-options">
           {entry.sections.map((item) => {
             const Tag = item.disabled ? 'span' : 'a'
@@ -99,7 +98,7 @@ const artwork = (id: string) => {
   .surface-artwork { flex: none; width: 1.875rem; height: 1.875rem; object-fit: contain; }
   .surface-chevron { flex: none; margin-left: auto; color: var(--color-muted); }
   .surface-group[open] > summary .surface-chevron { transform: rotate(90deg); }
-  .surface-concept-description, .surface-status-key { margin: .35rem .4rem .65rem; font-size: .75rem; line-height: 1.5; color: var(--color-muted); }
+  .surface-status-key { margin: .35rem .4rem .65rem; font-size: .75rem; line-height: 1.5; color: var(--color-muted); }
   .surface-status-key { margin-bottom: .15rem; }
   .surface-status-key a { color: var(--color-link); text-decoration: underline; }
   .surface-panel > nav { display: grid; gap: .25rem; padding-bottom: .25rem; }

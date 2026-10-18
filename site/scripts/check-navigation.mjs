@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { CONCEPT_DESCRIPTION, PORTS, productAvailable } from '../src/lib/ports.ts'
+import { CONCEPT_SUMMARY, PORTS, productAvailable } from '../src/lib/ports.ts'
 import mcpCatalogs from '../src/data/mcp-tools.json' with { type: 'json' }
 import { checkPickerFilters } from './check-picker-filters.mjs'
 
@@ -227,9 +227,11 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
         const badge = app.locator(':scope > summary .concept-badge')
         assert.equal(await badge.count(), slug === 'py' ? 0 : 1, `${slug}: ${label} concept scope`)
         if (slug !== 'py') {
-          assert.equal(await badge.getAttribute('title'), CONCEPT_DESCRIPTION)
+          assert.equal(await badge.getAttribute('title'), CONCEPT_SUMMARY)
+          assert.equal((await app.locator(':scope > summary small').textContent())?.trim(), CONCEPT_SUMMARY, `${slug}: ${label} has a one-line summary`)
           await app.locator(':scope > summary').click()
-          assert(await app.locator('.surface-concept-description').isVisible(), `${slug}: scope is readable after expanding`)
+          // A menu row is a label, a one-line summary and a badge; explanations live on the concept page.
+          assert.equal(await app.locator('p').count(), 0, `${slug}: ${label} shows no paragraph when expanded`)
           await app.locator(':scope > summary').click()
         }
       }

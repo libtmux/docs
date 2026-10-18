@@ -20,7 +20,10 @@ export const DOC_PRODUCTS = {
 export type DocProduct = keyof typeof DOC_PRODUCTS
 
 /** Support scope is independent of a package's release maturity. */
-export const CONCEPT_DESCRIPTION = 'Maintained as a working example of core library usage and deployment. Example APIs, tools and configuration may change without a compatibility or product support commitment.'
+export const CONCEPT_DESCRIPTION = 'A working example of the core library. It can change without notice.'
+
+/** The one-line summary a concept product shows in menus. */
+export const CONCEPT_SUMMARY = 'Working example of the core library'
 
 /**
  * Where a port's package is published, for the links row on its pages.

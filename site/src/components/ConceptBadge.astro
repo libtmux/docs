@@ -1,7 +1,7 @@
 ---
-import { CONCEPT_DESCRIPTION } from '../lib/ports'
+import { CONCEPT_SUMMARY } from '../lib/ports'
 ---
-<span class="concept-badge" title={CONCEPT_DESCRIPTION} aria-label={`Concept example. ${CONCEPT_DESCRIPTION}`}>concept</span>
+<span class="concept-badge" title={CONCEPT_SUMMARY} aria-label={`Concept: ${CONCEPT_SUMMARY.toLowerCase()}`}>concept</span>
 <style>
   .concept-badge {
     display: inline-block;
