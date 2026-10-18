@@ -22,9 +22,6 @@ export type DocProduct = keyof typeof DOC_PRODUCTS
 /** Support scope is independent of a package's release maturity. */
 export const CONCEPT_DESCRIPTION = 'A working example of the core library. It can change without notice.'
 
-/** The one-line summary a concept product shows in menus. */
-export const CONCEPT_SUMMARY = 'Working example of the core library'
-
 /**
  * Where a port's package is published, for the links row on its pages.
  *
@@ -1804,16 +1801,22 @@ export function releaseMaturity(entry: RegistryEntry): Maturity {
 /** What a product's badge states: its release maturity, or `concept` for a working example. */
 export type ProductStatus = 'concept' | Maturity
 
-/** One sentence per badge, shown in its toggletip. Concept is a support scope; the rest are release stages. */
-export const PRODUCT_STATUS_SUMMARY: Readonly<Record<ProductStatus, string>> = {
-  concept: 'A working example of core library usage; its API can change without a support commitment.',
-  'pre-alpha': 'Early development: interfaces change without notice and parts may not work yet.',
-  alpha: 'An alpha prerelease: its API can change between releases.',
-  beta: 'A beta prerelease: features are in place, but its API can still change.',
-  rc: 'A release candidate: expected to ship as it is unless testing finds a problem.',
-  stable: 'Has a stable release on its package registry.',
-  unreleased: 'Not published to a package registry yet: install it from the repository.',
+/**
+ * The one short line under each badge's toggletip and in the picker's
+ * description. The full explanation lives on the guide that the toggletip links to.
+ */
+export const PRODUCT_STATUS_LINE: Readonly<Record<ProductStatus, string>> = {
+  concept: 'Working example; may change without notice.',
+  'pre-alpha': 'Early development; expect breaking changes.',
+  alpha: 'Alpha release; the API may change.',
+  beta: 'Beta release; the API may still change.',
+  rc: 'Release candidate; close to final.',
+  stable: 'Stable release on its package registry.',
+  unreleased: 'Not published yet; install from source.',
 }
+
+/** The link under every toggletip line. */
+export const PRODUCT_STATUS_LINK = 'Read more'
 
 /** The page that explains each badge, and the section that does. */
 export const PRODUCT_STATUS_GUIDE = '/tmux/guides/concept-examples/#concept-and-alpha'

@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
 vi.mock('astro:content', () => ({ getCollection: vi.fn(async () => []) }))
 import { buildDocumentationSurfaces, currentDocumentation, getDocumentationSurfaces } from '../src/lib/documentation-navigation'
-import { PORTS, portPageUrl, type DocProduct } from '../src/lib/ports'
+import { PORTS, portPageUrl, productStatus, releaseMaturity, type DocProduct, type ProductStatus } from '../src/lib/ports'
+import { REGISTRY } from '../src/lib/registry'
 import type { SidebarItem } from '../src/lib/sidebar'
 import { mcpObjects, MCP_REFERENCE } from '../src/lib/mcp-reference'
 
@@ -25,6 +26,26 @@ describe('documentation surface navigation', () => {
     }
     if (port.parentLibrary || port.slug === 'lua') expect(surfaces.map((surface) => surface.id)).toEqual(['core'])
     if (port.slug === 'ruby') expect(surfaces.find((surface) => surface.id === 'workspace')?.concept).toBe(true)
+  })
+
+  it.each(PORTS)('badges every product row of $slug with its status', (port) => {
+    const surfaces = buildDocumentationSurfaces(port.slug, 'latest', menus(port, 'latest'))
+    for (const surface of surfaces) {
+      const expected: ProductStatus | undefined = surface.id === 'core' ? releaseMaturity(REGISTRY.ports[port.slug]!)
+        : port.slug === 'py' ? REGISTRY.ports.py!.packages![surface.id === 'mcp' ? 'libtmux-mcp' : 'tmuxp']!.maturity : 'concept'
+      expect(surface.status, `${port.slug} ${surface.id}`).toBe(expected)
+      expect(surface.status, `${port.slug} ${surface.id}`).toBe(productStatus(port, surface.id as 'core' | DocProduct, REGISTRY))
+      // Concept is a support scope that leads a companion's release stage; the flag and the badge agree.
+      expect(surface.status === 'concept', `${port.slug} ${surface.id}`).toBe(Boolean(surface.concept))
+    }
+  })
+
+  it('shows Python the stage its PyPI projects declare and every other port a concept companion', () => {
+    const status = (slug: string) => Object.fromEntries(buildDocumentationSurfaces(slug, 'latest', menus(PORTS.find((port) => port.slug === slug)!, 'latest'))
+      .map((surface) => [surface.id, surface.status]))
+    expect(status('py')).toEqual({ core: 'stable', mcp: 'pre-alpha', workspace: 'stable' })
+    expect(status('go')).toEqual({ core: 'alpha', mcp: 'concept', workspace: 'concept' })
+    expect(status('java')).toEqual({ core: 'alpha', mcp: 'concept', workspace: 'concept' })
   })
 
   it('offers the tmux area without inventing a library port or empty prose sections', async () => {

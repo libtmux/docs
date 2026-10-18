@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
-  PORTS, PRODUCT_STATUS_GUIDE, PRODUCT_STATUS_SUMMARY, productAvailable, productStatus, releaseMaturity,
+  CONCEPT_DESCRIPTION, PORTS, PRODUCT_STATUS_GUIDE, PRODUCT_STATUS_LINE, PRODUCT_STATUS_LINK, productAvailable, productStatus, releaseMaturity,
   type ProductStatus, type RegistryEntry,
 } from '../src/lib/ports'
 import { REGISTRY } from '../src/lib/registry'
@@ -67,14 +67,20 @@ describe('product status', () => {
       if (product !== 'core' && !productAvailable(port, product)) continue
       const status = productStatus(port, product, REGISTRY)
       expect(status, `${port.slug} ${product}`).toBeDefined()
-      expect(PRODUCT_STATUS_SUMMARY[status as ProductStatus].length).toBeGreaterThan(20)
+      expect(PRODUCT_STATUS_LINE[status as ProductStatus].length).toBeGreaterThan(20)
     }
   })
 
-  it('explains each badge in one sentence and points at the section that covers it', () => {
-    for (const [status, summary] of Object.entries(PRODUCT_STATUS_SUMMARY)) {
-      expect(summary, status).toMatch(/^[A-Z][^.]*\.$/)
+  it('keeps each badge line short, apart from the long description that only the guide and data carry', () => {
+    for (const [status, line] of Object.entries(PRODUCT_STATUS_LINE)) {
+      // About eight words and sixty characters: a toggletip is a label, not a paragraph.
+      expect(line.length, status).toBeLessThanOrEqual(60)
+      expect(line.split(/\s+/).length, status).toBeLessThanOrEqual(8)
+      expect(line, status).toMatch(/^[A-Z][^.]*\.$/)
+      expect(line, status).not.toBe(CONCEPT_DESCRIPTION)
     }
+    expect(Object.keys(PRODUCT_STATUS_LINE).sort()).toEqual(['alpha', 'beta', 'concept', 'pre-alpha', 'rc', 'stable', 'unreleased'])
+    expect(PRODUCT_STATUS_LINK).toBe('Read more')
     expect(PRODUCT_STATUS_GUIDE).toBe('/tmux/guides/concept-examples/#concept-and-alpha')
   })
 })
