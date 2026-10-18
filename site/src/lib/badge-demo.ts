@@ -5,7 +5,7 @@
  * families, tuned per mode. The functions here only produce data and CSS text;
  * nothing in the site's own badge styles reads them.
  */
-import { kindMark, markHeight } from './api-labels'
+import { kindMark, markClass, markHeight } from './api-labels'
 
 export type Scheme = 'light' | 'dark'
 export const SCHEMES: Scheme[] = ['light', 'dark']
@@ -73,6 +73,7 @@ export interface Kind {
   word: string
   mark: string
   x: boolean
+  cls: string
   fam: string
   shape: string
   geo: string
@@ -108,7 +109,7 @@ const shapeOf = (mark: string) => (/^[A-Z#:]$/.test(mark) ? 'sq' : /^[$!]$/.test
 
 export const KINDS: Kind[] = DEFS.map(([kind, word, fam, geo]) => {
   const mark = kindMark(kind)!
-  return { kind, word, mark, x: markHeight(mark) === 'x', fam, shape: shapeOf(mark), geo }
+  return { kind, word, mark, x: markHeight(mark) === 'x', cls: markClass(mark), fam, shape: shapeOf(mark), geo }
 })
 export const kindOf = (kind: string) => KINDS.find((k) => k.kind === kind)!
 

@@ -16,6 +16,13 @@ export const kindMark = (kind: string) => KIND_MARKS[kind as SymbolKind] ?? PROT
 /** Marks drawn at x-height; the rest stand at cap height. A badge lifts these to centre their ink. */
 export const markHeight = (mark: string): 'x' | undefined => /^[acemnorsuvwxz:]$|^p$/.test(mark) ? 'x' : undefined
 
+/**
+ * How a mark's ink sits on its baseline, so a badge can centre it by font metrics:
+ * `x` for a m o p r, `col` for the colon (x-height, no overshoot), `asc` for the ascenders f h k, `tee` for the short t, `cap` for the rest.
+ */
+export type MarkClass = 'x' | 'col' | 'asc' | 'tee' | 'cap'
+export const markClass = (mark: string): MarkClass => mark === ':' ? 'col' : markHeight(mark) ?? (/^[fhk]$/.test(mark) ? 'asc' : mark === 't' ? 'tee' : 'cap')
+
 const namespaceSegments = new Intl.Segmenter('en', { granularity: 'grapheme' })
 const FULL_NAMESPACE_LENGTH = 48
 

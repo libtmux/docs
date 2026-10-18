@@ -39,7 +39,7 @@ function b(t: string, kind: string, o: BadgeOpts = {}): string {
   if (live) at.push(`data-word="${k.word}"`, 'tabindex="0"', 'role="img"', `aria-label="${o.aria ?? k.word}"`)
   else at.push('aria-hidden="true"')
   const cls = ['ic-b', word && 'ic-b--word', o.open && 'is-open'].filter(Boolean).join(' ')
-  const marks = `data-m1="${esc(k.mark)}"`
+  const marks = `data-m1="${esc(k.mark)}" data-mark="${k.cls}"`
   const inner = word
     ? `<span class="ic-b__l">${esc(k.word)}</span>`
     : t === 'SR'
@@ -56,7 +56,7 @@ function m(t: string, kind: string, text: string, o: BadgeOpts = {}): string {
   if (t === 'TEXT') return `<a class="ic-m" href="#"><code>[${esc(k.mark)}] ${esc(text)}</code></a>`
   if (t === 'AB') {
     const ring = RING_FAMS.has(k.fam) ? ' data-ring' : ''
-    return `<a class="ic-split" href="#" data-fam="${k.fam}"${ring}><span class="ic-split__k">${esc(k.mark)}</span><span class="ic-split__n">${code}</span></a>`
+    return `<a class="ic-split" href="#" data-fam="${k.fam}"${ring}><span class="ic-split__k" data-mark="${k.cls}"><span class="ic-split__kl">${esc(k.mark)}</span></span><span class="ic-split__n"><span class="ic-split__nl">${code}</span></span></a>`
   }
   return `<a class="ic-m" href="#">${b(t, kind, o)}${code}</a>`
 }
@@ -70,7 +70,7 @@ function later(kind: string, text: string, open = false): string {
 /** The legend chip: one box, a mark segment and a word segment of equal height, split by a divider. */
 function leg(kind: string): string {
   const k = kindOf(kind)
-  return `<span class="ic-leg" data-fam="${k.fam}"><span class="ic-leg__m" aria-hidden="true"><span class="ic-leg__g" data-m1="${esc(k.mark)}"></span></span><span class="ic-leg__w">${esc(k.word)}</span></span>`
+  return `<span class="ic-leg" data-fam="${k.fam}" data-mark="${k.cls}"><span class="ic-leg__m" aria-hidden="true"><span class="ic-leg__g" data-m1="${esc(k.mark)}" data-mark="${k.cls}"></span></span><span class="ic-leg__w">${esc(k.word)}</span></span>`
 }
 const quiet = (kind: string) => `<span class="ic-quiet">${esc(kindOf(kind).word)}</span>`
 
@@ -196,7 +196,7 @@ const statusDemo = () =>
   `<div class="ic-stat"><p class="ic-def">${m('M', 'method', 'legacy_attach()')} <span class="ic-pill ic-pill--warn">deprecated</span></p><p class="ic-def">${m('M', 'struct', 'Selection')} <span class="ic-pill ic-pill--neutral">experimental</span> <span class="ic-pill ic-pill--neutral">since 0.14</span></p></div>`
 
 const heroDemo = () =>
-  `<div class="ic-hero"><span class="ic-b ic-b--hero" data-t="SOLID" data-fam="types" aria-hidden="true"><span class="ic-b__l" data-m1="S"></span></span><div><div class="ic-hero__t">Server</div><div class="ic-hero__s">libtmux · struct</div></div></div><div class="ic-empty"><span class="ic-b ic-b--hero ic-b--empty" data-t="SOLID" data-fam="callables" aria-hidden="true"><span class="ic-b__l" data-m1="m"></span></span><div><div class="ic-hero__t ic-hero__t--s">No methods match</div><div class="ic-hero__s">Try a shorter name.</div></div></div>`
+  `<div class="ic-hero"><span class="ic-b ic-b--hero" data-t="SOLID" data-fam="types" aria-hidden="true"><span class="ic-b__l" data-m1="S" data-mark="cap"></span></span><div><div class="ic-hero__t">Server</div><div class="ic-hero__s">libtmux · struct</div></div></div><div class="ic-empty"><span class="ic-b ic-b--hero ic-b--empty" data-t="SOLID" data-fam="callables" data-x aria-hidden="true"><span class="ic-b__l" data-m1="m" data-mark="x"></span></span><div><div class="ic-hero__t ic-hero__t--s">No methods match</div><div class="ic-hero__s">Try a shorter name.</div></div></div>`
 
 const printDemo = () =>
   `<div class="ic-paper">${proseFirst('U')}</div>`
@@ -608,37 +608,51 @@ const modeCss = `@media print{.ic-bar{display:none!important}${printRules('.ic-r
   .ic-m--later:is(:hover, :focus-visible, .is-open)::after { display: block; }
 
   /* The mark: em-scaled, tuned tint on the family palette. Treatments change a few variables. */
+  /* Snap the box to an even height and the baseline to a whole pixel, so the ink centres at any sub-pixel position and zoom.
+     The label's block is trimmed to the cap height (or the x-height for a m o p r a :) and sits on the box floor. */
+  :root { --step: 1px; }
+  @media (min-resolution: 2dppx) { :root { --step: .5px; } }
+  @media (min-resolution: 3dppx) { :root { --step: .3333px; } }
   .ic-b {
-    --w: 1.35em; --r: .2em; --bw: 1px;
-    display: inline-grid; place-items: center; flex: none; box-sizing: border-box;
-    min-width: var(--w); height: var(--h, var(--w)); padding: var(--py, 0) var(--px, 0);
+    --w: 1.35em; --r: .2em; --bw: 1px; --gh: calc(.8 * 1cap);
+    --bh: round(var(--h, var(--w)), 2px);
+    display: inline-flex; align-items: flex-end; justify-content: center; flex: none; box-sizing: border-box;
+    min-width: round(var(--w), 2px); height: var(--bh);
+    padding: 0 var(--px, 0) round(calc((var(--bh) - 2 * var(--bwv, var(--bw)) - var(--gh)) / 2), var(--step));
     border: var(--bw) solid var(--bdv, color-mix(in srgb, var(--fh) var(--ba), transparent)); border-radius: var(--r);
     background: var(--bgv, var(--fb)); color: var(--fgv, var(--ff));
     font: 600 1em/1 var(--font-sans); white-space: nowrap; user-select: none; box-shadow: var(--sh, none);
   }
-  .ic-b__l { display: block; font-size: .8em; line-height: 1; }
+  .ic-b[data-x] { --gh: calc(.8 * (1ex + var(--xo, .01em))); }
+  .ic-b:has(> [data-mark='col']) { --gh: calc(.8 * 1ex); }
+  .ic-b:has(> [data-mark='asc']) { --gh: calc(.8 * (1cap + var(--asc, .04em))); }
+  .ic-b:has(> [data-mark='tee']) { --gh: calc(.8 * (1cap - var(--tee, .035em))); }
+  .ic-b__l { display: block; font-size: .8em; line-height: 1; text-box: trim-both cap alphabetic; }
+  .ic-b__l[data-mark='x'], .ic-b__l[data-mark='col'] { text-box: trim-both ex alphabetic; }
   .ic-b__l::before { content: attr(data-m1); }
-  .ic-b[data-x] > .ic-b__l { translate: 0 -.09em; }
 
   /* V soft tint, W soft tint + border, T outline, U ink, X medium solid */
-  .ic-b[data-t='V'] { --w: 1.5em; --r: .3em; --bw: 0; --bgv: color-mix(in srgb, var(--fh) 14%, var(--bd-bg)); --fgv: var(--f8); }
+  .ic-b[data-t='V'] { --w: 1.5em; --r: .3em; --bw: 0px; --bgv: color-mix(in srgb, var(--fh) 14%, var(--bd-bg)); --fgv: var(--f8); }
   .ic-b[data-t='W'] { --bgv: color-mix(in srgb, var(--fh) 8%, var(--bd-bg)); --bdv: color-mix(in srgb, var(--fh) 45%, transparent); }
   .ic-b[data-t='T'] { --bgv: transparent; --bdv: color-mix(in srgb, var(--fh) 60%, transparent); }
   .ic-b[data-t='T'][data-opaque] { --bgv: var(--bd-bg); }
   .ic-b[data-t='U'] { --bgv: color-mix(in srgb, var(--bd-fg) 7%, transparent); --bdv: color-mix(in srgb, var(--bd-fg) 14%, transparent); --fgv: var(--bd-fg); }
-  .ic-b[data-t='X'] { --bw: 0; --bgv: var(--fm); --fgv: var(--f9); }
+  .ic-b[data-t='X'] { --bw: 0px; --bgv: var(--fm); --fgv: var(--f9); }
   /* AD left-accent tag (table alternative only), AE silhouettes */
   .ic-b[data-t='AE'] { --w: 1.45em; }
-  .ic-b[data-t='AD'] { --w: 1.5em; --r: .15em; --bgv: var(--bd-nbg); --fgv: var(--bd-fg); border-width: 0 0 0 .2em; border-color: var(--fh); }
+  .ic-b[data-t='AD'] { --w: 1.5em; --r: .15em; --bwv: 0px; --bgv: var(--bd-nbg); --fgv: var(--bd-fg); border-width: 0 0 0 .2em; border-color: var(--fh); }
   .ic-b[data-t='AE'][data-f='calls'] { --r: 999px; }
   .ic-b[data-t='AE'][data-f='data'] {
     --bgv: color-mix(in srgb, var(--bd-fg) 6%, transparent); --bdv: color-mix(in srgb, var(--bd-fg) 16%, transparent); --fgv: var(--bd-fg);
-    --w: auto; display: inline-flex; align-items: center; justify-content: center; gap: .3em; padding: 0 .45em;
+    --w: 1.45em; --px: .45em; gap: .3em;
   }
   .ic-b[data-t='AE'][data-f='data']::before { content: ''; flex: none; width: .3em; height: .3em; border-radius: 50%; background: var(--fh); }
   /* K gp-sphinx word chip */
-  .ic-b--word { --w: auto; --h: auto; --px: 8px; --py: 2.6px; --r: 3.5px; font: 700 11px/1 var(--font-sans); letter-spacing: .01em; }
-  .ic-b--word .ic-b__l { font-size: 1em; }
+  .ic-b--word {
+    --w: auto; --h: auto; --px: 8px; --py: 2.6px; --r: 3.5px; display: inline-grid; place-items: center; min-width: 0; height: auto; padding: var(--py) var(--px);
+    font: 700 11px/1 var(--font-sans); letter-spacing: .01em;
+  }
+  .ic-b--word .ic-b__l { font-size: 1em; text-box: normal; }
   .ic-b--word .ic-b__l::before { content: none; }
 
   /* The Monograms and Shape toggles */
@@ -660,7 +674,10 @@ const modeCss = `@media print{.ic-bar{display:none!important}${printRules('.ic-r
   .ic-b[data-t='SR']:is(:hover, :focus-visible, .is-open) .ic-b__m, .ic-m:is(:hover, :focus-visible) .ic-b[data-t='SR'] .ic-b__m { display: none; }
   .ic-b[data-t='SR']:is(:hover, :focus-visible, .is-open) .ic-b__w, .ic-m:is(:hover, :focus-visible) .ic-b[data-t='SR'] .ic-b__w { display: block; }
   .ic-b[data-t='AF'], .ic-b[data-tap] { position: relative; }
-  .ic-b[data-t='AF'] > .ic-b__l { font: 700 .72em/1 var(--font-mono); translate: none; }
+  .ic-b[data-t='AF'] { --gh: calc(.72 * 1cap); }
+  .ic-b[data-t='AF'][data-x] { --gh: calc(.72 * 1ex); }
+  .ic-b[data-t='AF']:has(> [data-mark='asc']) { --gh: calc(.72 * (1cap + var(--asc, .04em))); }
+  .ic-b[data-t='AF'] > .ic-b__l { font: 700 .72em/1 var(--font-mono); }
   .ic-b[data-t='AF'] > .ic-b__l::before { content: attr(data-m1); }
   .ic-b[data-t='AF']::after, .ic-b[data-tap]::after {
     content: attr(data-word); position: absolute; bottom: calc(100% + 6px); left: 50%; translate: -50% 0; z-index: 5; display: none;
@@ -675,36 +692,60 @@ const modeCss = `@media print{.ic-bar{display:none!important}${printRules('.ic-r
   .ic-b[data-t='AF']:is(:hover, :focus-visible, .is-open)::after, .ic-m:is(:hover, :focus-visible) .ic-b[data-t='AF']::after, .ic-b[data-tap].is-open::after { display: block; }
   .ic-b:focus-visible { outline: 2px solid var(--fh); outline-offset: 1px; }
 
-  /* AB split chip */
+  /* AB split chip: one outlined box; the cap and the name are equal-height segments */
+  @property --ic-sh { syntax: '<length>'; inherits: true; initial-value: 0px; }
+  @property --ic-kp { syntax: '<length>'; inherits: true; initial-value: 0px; }
+  @property --ic-np { syntax: '<length>'; inherits: true; initial-value: 0px; }
   .ic-split {
-    display: inline-flex; align-items: stretch; vertical-align: middle; white-space: nowrap; overflow: hidden;
+    --ic-sh: round(1.6em, 2px);
+    --ic-np: round(calc((var(--ic-sh) - 2px - .875 * 1cap) / 2), var(--step));
+    --ic-kp: round(calc((var(--ic-sh) - 2px - .75 * 1cap) / 2), var(--step));
+    display: inline-flex; align-items: stretch; box-sizing: border-box; height: var(--ic-sh); vertical-align: middle; white-space: nowrap; overflow: hidden;
     border: 1px solid color-mix(in srgb, var(--fh) 30%, transparent); border-radius: .25em; text-decoration: none;
   }
+  .ic-split:has(> :is([data-mark='x'], [data-mark='col'])) { --ic-kp: round(calc((var(--ic-sh) - 2px - .75 * 1ex) / 2), var(--step)); }
+  .ic-split:has(> [data-mark='asc']) { --ic-kp: round(calc((var(--ic-sh) - 2px - .75 * (1cap + var(--asc, .04em))) / 2), var(--step)); }
   .ic-split__k {
-    display: grid; place-items: center; min-width: 1.6em; padding: 0 .3em; box-sizing: border-box;
+    display: flex; align-items: flex-end; justify-content: center; min-width: 1.6em; padding: 0 .3em var(--ic-kp); box-sizing: border-box;
     border-right: 1px solid color-mix(in srgb, var(--fh) 30%, transparent);
     background: color-mix(in srgb, var(--fh) 18%, var(--bd-bg)); color: var(--ff); font: 700 .75em/1 var(--font-mono);
   }
-  .ic-split__n { display: inline-flex; align-items: center; padding: .05em .45em; background: color-mix(in srgb, var(--bd-fg) 4%, transparent); }
-  .ic-split code { padding: 0; border: 0; background: none; }
+  .ic-split__kl, .ic-split__nl { display: block; text-box: trim-both cap alphabetic; }
+  .ic-split__k:is([data-mark='x'], [data-mark='col']) > .ic-split__kl { text-box: trim-both ex alphabetic; }
+  .ic-split__n {
+    display: flex; align-items: flex-end; padding: 0 .45em var(--ic-np); background: color-mix(in srgb, var(--bd-fg) 4%, transparent);
+    font: 400 .875em/1 var(--font-mono);
+  }
+  .ic-split code { padding: 0; border: 0; background: none; font: inherit; }
   .ic-split:hover:not([data-ring]) .ic-split__k, .ic-split:focus-visible:not([data-ring]) .ic-split__k { background: var(--fs); color: #fff; }
   .ic-split[data-ring]:is(:hover, :focus-visible) { outline: 2px solid var(--fh); outline-offset: 1px; }
   .ic-adm .ic-split__n { background: var(--bd-bg); }
 
-  /* Q legend chip: one box with one border and radius; the mark and the word are equal-height segments inside it */
+  /* Q legend chip: one box with one border and radius; the mark and the word are equal-height segments inside it.
+     Both sit on one baseline, centred by the mark's class (cap or x-height); registered lengths resolve the units once, on the chip. */
+  @property --ic-lh { syntax: '<length>'; inherits: true; initial-value: 0px; }
+  @property --ic-gh { syntax: '<length>'; inherits: true; initial-value: 0px; }
+  @property --ic-pb { syntax: '<length>'; inherits: true; initial-value: 0px; }
   .ic-leg {
-    display: inline-flex; align-items: stretch; box-sizing: border-box; height: 1.35em; vertical-align: middle; overflow: hidden;
+    --ic-lh: round(1.35em, 2px); --ic-gh: calc(.8 * 1cap);
+    --ic-pb: round(calc((var(--ic-lh) - 2px - var(--ic-gh)) / 2), var(--step));
+    display: inline-flex; align-items: stretch; box-sizing: border-box; height: var(--ic-lh); vertical-align: middle; overflow: hidden;
     border: 1px solid color-mix(in srgb, var(--fh) var(--ba), transparent); border-radius: .2em;
     background: var(--fb); color: var(--ff); font: 600 1em/1 var(--font-sans); white-space: nowrap;
   }
+  .ic-leg[data-mark='x'] { --ic-gh: calc(.8 * 1ex); }
+  .ic-leg[data-mark='col'] { --ic-gh: calc(.8 * 1ex); }
+  .ic-leg[data-mark='asc'] { --ic-gh: calc(.8 * (1cap + var(--asc, .04em))); }
+  .ic-leg[data-mark='tee'] { --ic-gh: calc(.8 * (1cap - var(--tee, .035em))); }
   .ic-leg__m {
-    display: grid; place-items: center; min-width: 1.3em; padding: 0 .4em;
+    display: flex; align-items: flex-end; justify-content: center; min-width: 1.3em; padding: 0 .4em var(--ic-pb);
     border-right: 1px solid color-mix(in srgb, var(--fh) var(--ba), transparent);
     background: color-mix(in srgb, var(--fh) 22%, var(--fb));
   }
-  .ic-leg__g { font-size: .8em; line-height: 1; }
+  .ic-leg__g { display: block; font-size: .8em; line-height: 1; text-box: trim-both cap alphabetic; }
+  :is(.ic-leg[data-mark='x'], .ic-leg[data-mark='col']) :is(.ic-leg__g, .ic-leg__w) { text-box: trim-both ex alphabetic; }
   .ic-leg__g::before { content: attr(data-m1); }
-  .ic-leg__w { display: grid; place-items: center; padding: 0 .55em 0 .5em; font-size: .8em; line-height: 1; }
+  .ic-leg__w { display: flex; align-items: flex-end; padding: 0 .55em var(--ic-pb) .5em; font-size: .8em; line-height: 1; text-box: trim-both cap alphabetic; }
   .ic-quiet { margin-right: .55em; color: var(--bd-muted); font: 600 .5em/1 var(--font-sans); text-transform: uppercase; letter-spacing: .08em; vertical-align: middle; }
   .ic-pill { display: inline-block; padding: .1em .65em; border-radius: 999px; font: 600 .75rem/1.5 var(--font-sans); vertical-align: middle; }
   .ic-pill--warn { background: var(--pw-bg); color: var(--pw-fg); }

@@ -11,7 +11,7 @@
  * fragment, so a candidate is a config entry plus a few CSS variables.
  */
 import DemoLayout from '../../components/demo/DemoLayout.astro'
-import { kindMark, markHeight } from '../../lib/api-labels'
+import { kindMark, markClass, markHeight } from '../../lib/api-labels'
 import '../../styles/api-tree.css'
 
 // Light bg, fg, border, then dark bg, fg, border: a snapshot of api-kinds.css,
@@ -177,6 +177,7 @@ interface Kind {
   word: string
   mark: string
   x: boolean
+  cls: string
   mono: string
   abbr: string
   fam: string
@@ -240,7 +241,7 @@ const shapeOf = (mark: string) => (/^[A-Z#:]$/.test(mark) ? 'sq' : /^[$!]$/.test
 
 const KINDS: Kind[] = KIND_DEFS.map(([kind, group, word]) => {
   const mark = kindMark(kind)!
-  return { kind, group, word, mark, x: markHeight(mark) === 'x', mono: MONO[kind]!, abbr: ABBR[kind]!, fam: FAMILY[kind]!, geo: GEO[kind]!, shape: shapeOf(mark) }
+  return { kind, group, word, mark, x: markHeight(mark) === 'x', cls: markClass(mark), mono: MONO[kind]!, abbr: ABBR[kind]!, fam: FAMILY[kind]!, geo: GEO[kind]!, shape: shapeOf(mark) }
 })
 const kindOf = (kind: string) => KINDS.find((k) => k.kind === kind)!
 
@@ -348,13 +349,17 @@ function badge(c: Candidate, k: Kind, ctx: Ctx, link = false): string {
   if (c.shape) attrs.push(`data-s="${k.shape}"`)
   if (c.geo) attrs.push(`data-f="${k.geo}"`)
   if (label === 'mark' && k.x) attrs.push('data-x')
+  if (label === 'mono' && /^[acemnorsuvwxz]+$/.test(k.mono)) attrs.push('data-x')
   if (c.ring && RING.has(k.group)) attrs.push('data-ring')
   const live = c.reveal || c.popover
   if (live) attrs.push(`data-word="${k.word}"`, 'tabindex="0"', 'role="img"', `aria-label="${k.word}"`)
   else attrs.push('aria-hidden="true"', `title="${k.kind}"`)
+  // A two-letter monogram is centred by its own letters: x-height only, a taller ascender, or capital height.
+  const monoClass = /^[acemnorsuvwxz]+$/.test(k.mono) ? 'x' : /[bdfhklt]/.test(k.mono) && !/[A-Z!#$:]/.test(k.mono) ? 'asc' : 'cap'
+  const dm = label === 'mark' ? ` data-mark="${k.cls}"` : label === 'mono' ? ` data-mark="${monoClass}"` : ''
   const inner = c.reveal
-    ? `<span class="bd-b__l bd-b__m">${esc(text)}</span><span class="bd-b__l bd-b__w">${esc(k.word)}</span>`
-    : `<span class="bd-b__l">${esc(text)}</span>`
+    ? `<span class="bd-b__l bd-b__m"${dm}>${esc(text)}</span><span class="bd-b__l bd-b__w">${esc(k.word)}</span>`
+    : `<span class="bd-b__l"${dm}>${esc(text)}</span>`
   return `<span class="${cls}" ${attrs.join(' ')}>${inner}</span>`
 }
 
@@ -633,15 +638,29 @@ const bar = `<div class="bd-bar">${SETS.map((s) => {
   .bd-legend__n { color: var(--bd-muted); font: .6875rem/1.4 var(--font-mono); }
 
   /* The candidate badge: every look is a few variables, set per candidate below */
+  /* Snap the box to an even height and the baseline to a whole pixel, so the ink centres at any sub-pixel position.
+     The label's block is trimmed to the cap height (or the x-height for a m o r :) and sits on the box floor. */
+  :root { --step: 1px; }
+  @media (min-resolution: 2dppx) { :root { --step: .5px; } }
+  @media (min-resolution: 3dppx) { :root { --step: .3333px; } }
   .bd-b {
-    display: inline-grid; place-items: center; flex: none; box-sizing: border-box;
-    min-width: var(--w, 20px); height: var(--h, var(--w, 20px)); padding: var(--py, 0) var(--px, 0);
+    --bh: round(var(--h, var(--w, 20px)), 2px); --gh: calc(var(--lr, 1) * 1cap);
+    display: inline-flex; align-items: flex-end; justify-content: center; flex: none; box-sizing: border-box;
+    min-width: round(var(--w, 20px), 2px); height: var(--bh);
+    padding: 0 var(--px, 0) round(calc((var(--bh) - 2 * var(--bwv, var(--bw, 1px)) - var(--gh)) / 2), var(--step));
     border: var(--bw, 1px) solid var(--bdv, var(--tbd)); border-radius: var(--r, 4px);
     background: var(--bgv, var(--tbg)); color: var(--fgv, var(--tfg));
     font: var(--fw, 600) var(--fs, 12px)/1 var(--ff, var(--font-sans)); letter-spacing: var(--ls, 0);
     box-shadow: var(--sh, none); white-space: nowrap; user-select: none; text-decoration: none;
   }
-  .bd-b[data-x] > .bd-b__l { translate: 0 var(--lift, -.09em); }
+  .bd-b[data-x] { --gh: calc(var(--lr, 1) * (1ex + var(--xo, .01em))); }
+  .bd-b:has(> [data-mark='col']) { --gh: calc(var(--lr, 1) * 1ex); }
+  .bd-b:has(> [data-mark='asc']) { --gh: calc(var(--lr, 1) * (1cap + var(--asc, .04em))); }
+  .bd-b:has(> [data-mark='tee']) { --gh: calc(var(--lr, 1) * (1cap - var(--tee, .035em))); }
+  .bd-b__l { display: block; line-height: 1; text-box: trim-both cap alphabetic; }
+  .bd-b__l[data-mark='x'], .bd-b__l[data-mark='col'] { text-box: trim-both ex alphabetic; }
+  .bd-b--word { --w: auto; --h: auto; display: inline-grid; place-items: center; min-width: 0; height: auto; padding: var(--py, 0) var(--px, 0); }
+  .bd-b--word .bd-b__l { text-box: normal; }
 
   /* B 12px mono, C 13px mono bold, D 12px sans, E 13px sans bold, F wide pill */
   .bd-c-b .bd-b { --w: 20px; --fs: 12px; --fw: 600; --ff: var(--font-mono); --r: 4px; }
@@ -653,7 +672,7 @@ const bar = `<div class="bd-bar">${SETS.map((s) => {
   /* G solid, H soft tint, I libtmux-mcp box */
   .bd-c-g .bd-b, .bd-c-l .bd-b { --w: 22px; --fs: 13px; --fw: 700; --r: 5px; --bgv: var(--sbg); --bdv: var(--sbd); --fgv: #fff; --sh: var(--bd-shade); }
   .bd-c-h .bd-b {
-    --w: 22px; --fs: 13px; --fw: 600; --r: 6px; --bw: 0;
+    --w: 22px; --fs: 13px; --fw: 600; --r: 6px; --bw: 0px;
     --bgv: color-mix(in srgb, var(--tbd) 20%, var(--bd-bg));
   }
   .bd-c-i .bd-b { --w: 16px; --fs: 10px; --fw: 700; --r: 3px; --bgv: var(--sbg); --bdv: var(--sbd); --fgv: #fff; --sh: var(--bd-shade); }
@@ -674,13 +693,13 @@ const bar = `<div class="bd-bar">${SETS.map((s) => {
     --bgv: var(--ub); --fgv: var(--uf); --bdv: color-mix(in srgb, var(--uh) var(--ba), transparent);
   }
   /* N em-scaled: the square and glyph follow the surrounding text, centred on the x-height */
-  .bd-c-n .bd-b { --fs: 1em; --w: 1.35em; --r: .2em; }
+  .bd-c-n .bd-b { --fs: 1em; --w: 1.35em; --r: .2em; --lr: .8; }
   .bd-c-n .bd-b__l { font-size: .8em; }
   .bd-c-n .bd-m { display: inline; white-space: nowrap; }
   .bd-c-n .bd-m > .bd-b { align-self: auto; vertical-align: middle; margin-right: .25em; }
   /* O shape-encoded case: squares for types, circles for members, diamonds for $ and ! */
-  .bd-c-o .bd-b[data-s='ci'] { --w: 21px; --r: 999px; }
-  .bd-c-o .bd-b[data-s='di'] { --w: 15px; --r: 2px; --fs: 11px; --fw: 700; rotate: 45deg; margin-inline: 3px; }
+  .bd-c-o .bd-b[data-s='ci'] { --w: 22px; --r: 999px; }
+  .bd-c-o .bd-b[data-s='di'] { --w: 14px; --r: 2px; --fs: 11px; --fw: 700; rotate: 45deg; margin-inline: 3px; }
   .bd-c-o .bd-b[data-s='di'] > .bd-b__l { rotate: -45deg; }
   /* P hue families */
   .bd-c-p .bd-b { --bgv: var(--fmb); --fgv: var(--fmf); --bdv: color-mix(in srgb, var(--fmh) var(--ba), transparent); }
@@ -714,11 +733,11 @@ const bar = `<div class="bd-bar">${SETS.map((s) => {
   .bd-c-u .bd-b.bd-b--ink { --bgv: color-mix(in srgb, var(--bd-fg) 7%, transparent); --bdv: color-mix(in srgb, var(--bd-fg) 14%, transparent); --fgv: var(--bd-fg); }
 
   /* ---- Set 2 ---- */
-  .bd-c-v .bd-b { --w: 22px; --fs: 13px; --fw: 600; --r: 5px; --bw: 0; --bgv: color-mix(in srgb, var(--uh) 14%, var(--bd-bg)); --fgv: var(--u8); }
+  .bd-c-v .bd-b { --w: 22px; --fs: 13px; --fw: 600; --r: 5px; --bw: 0px; --bgv: color-mix(in srgb, var(--uh) 14%, var(--bd-bg)); --fgv: var(--u8); }
   .bd-c-w .bd-b { --w: 20px; --fs: 13px; --fw: 600; --r: 4px; --bgv: color-mix(in srgb, var(--uh) 8%, var(--bd-bg)); --bdv: color-mix(in srgb, var(--uh) 45%, transparent); --fgv: var(--uf); }
-  .bd-c-x .bd-b { --w: 20px; --fs: 12px; --fw: 600; --r: 4px; --bw: 0; --bgv: var(--um); --fgv: var(--u9); }
-  .bd-c-y .bd-b { --w: 24px; --h: 18px; --fs: 12px; --fw: 600; --r: 9px; --bw: 0; --bgv: color-mix(in srgb, var(--uh) 10%, var(--bd-bg)); --fgv: var(--uf); }
-  .bd-c-z .bd-b { --w: 22px; --fs: 13px; --fw: 600; --r: 6px; --bw: 0; --bgv: color-mix(in srgb, var(--tbd) 20%, var(--bd-bg)); }
+  .bd-c-x .bd-b { --w: 20px; --fs: 12px; --fw: 600; --r: 4px; --bw: 0px; --bgv: var(--um); --fgv: var(--u9); }
+  .bd-c-y .bd-b { --w: 24px; --h: 18px; --fs: 12px; --fw: 600; --r: 9px; --bw: 0px; --bgv: color-mix(in srgb, var(--uh) 10%, var(--bd-bg)); --fgv: var(--uf); }
+  .bd-c-z .bd-b { --w: 22px; --fs: 13px; --fw: 600; --r: 6px; --bw: 0px; --bgv: color-mix(in srgb, var(--tbd) 20%, var(--bd-bg)); }
   .bd-c-z .bd-b--word {
     --w: auto; --h: auto; --px: 8px; --py: 3px; --fs: 11px; --fw: 600; --r: 3px; --bw: 1px;
     --bgv: var(--sbg); --bdv: var(--sbd); --fgv: #fff;
@@ -745,7 +764,7 @@ const bar = `<div class="bd-bar">${SETS.map((s) => {
   .bd-hrow .bd-split__n { font-size: 1rem; }
   .bd-c-ac .bd-b { --w: 24px; --h: 20px; --fs: 12px; --fw: 700; --ff: var(--font-mono); --r: 4px; }
   .bd-c-ad .bd-b {
-    --w: 26px; --h: 20px; --fs: 12px; --fw: 700; --ff: var(--font-mono); --r: 2px; --bgv: var(--bd-nbg); --fgv: var(--bd-fg);
+    --w: 26px; --h: 20px; --fs: 12px; --fw: 700; --ff: var(--font-mono); --r: 2px; --bwv: 0px; --bgv: var(--bd-nbg); --fgv: var(--bd-fg);
     border-width: 0 0 0 2.5px; border-color: var(--uh);
   }
   .bd-c-ae .bd-b { --w: 28px; --h: 20px; --fs: 12px; --fw: 700; --ff: var(--font-mono); }
@@ -753,7 +772,7 @@ const bar = `<div class="bd-bar">${SETS.map((s) => {
   .bd-c-ae .bd-b[data-f='calls'] { --r: 999px; }
   .bd-c-ae .bd-b[data-f='data'] {
     --r: 4px; --bgv: color-mix(in srgb, var(--bd-fg) 6%, transparent); --bdv: color-mix(in srgb, var(--bd-fg) 16%, transparent); --fgv: var(--bd-fg);
-    display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 0 6px;
+    --px: 6px; gap: 4px;
   }
   .bd-c-ae .bd-b[data-f='data']::before { content: ''; flex: none; width: 4px; height: 4px; border-radius: 50%; background: var(--uh); }
   /* AF expand on focus: C's mark, with the word in a popover */
@@ -768,7 +787,7 @@ const bar = `<div class="bd-bar">${SETS.map((s) => {
 
   /* ---- Set 4: em units, so the badge scales with its text ---- */
   .bd-c-ag .bd-b, .bd-c-ah .bd-b, .bd-c-ai .bd-b, .bd-c-aj .bd-b, .bd-c-ak .bd-b {
-    --fs: 1em; --w: 1.125em; --fw: 600; --r: .16em; --bw: 0;
+    --fs: 1em; --w: 1.125em; --fw: 600; --r: .16em; --bw: 0px; --lr: .8125;
   }
   .bd-c-ag .bd-b__l, .bd-c-ah .bd-b__l, .bd-c-ai .bd-b__l, .bd-c-aj .bd-b__l, .bd-c-ak .bd-b__l { font-size: .8125em; }
   .bd-c-ag .bd-m, .bd-c-ah .bd-m, .bd-c-ai .bd-m, .bd-c-aj .bd-m, .bd-c-ak .bd-m { gap: .1875em; }
