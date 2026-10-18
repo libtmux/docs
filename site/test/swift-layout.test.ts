@@ -3,7 +3,7 @@ import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { experimental_AstroContainer } from 'astro/container'
-import { SymbolIndex, type ApiModel, type ApiSymbol, type Param } from '@libtmux/api-model'
+import { parameterId, SymbolIndex, type ApiModel, type ApiSymbol, type Param } from '@libtmux/api-model'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { apiSignatureLayouts, CODE_COLUMNS, codeWidthFailures, signatureSpans, type CodeLayout } from '../src/lib/code-layout'
 import { nativeSignatureText, usesNativeSignatures } from '../src/lib/api-sections'
@@ -115,8 +115,11 @@ describe('Swift callable layouts', () => {
         const spans = signatureSpans(layout, index, symbol, signature)
         expect(spans.map((span) => span.text).join(''), symbol.id).toBe(layout.text)
         expect(spans.filter((span) => span.declarationName).map((span) => span.text), symbol.id).toEqual([symbol.name])
-        // Undocumented parameters have no anchor to link to.
-        expect(spans.filter((span) => span.link?.href.startsWith('#')), symbol.id).toEqual([])
+        // Every parameter is listed, so each parameter name links to its own anchor.
+        const anchors = new Set(signature.params.map((param) => `#${encodeURIComponent(parameterId(symbol, param.name))}`))
+        const local = spans.filter((span) => span.link?.href.startsWith('#'))
+        expect(local.length, symbol.id).toBe(signature.params.length)
+        expect(local.every((span) => anchors.has(span.link!.href)), symbol.id).toBe(true)
         const links = (parts: { text: string; link?: { href: string } }[]) => parts.flatMap((part) => part.link ? [`${part.text}|${part.link.href}`] : [])
         const before = links([...signature.params.flatMap((param) => index.linkType(param.type!, symbol, signature)), ...(signature.returns ? index.linkType(signature.returns, symbol, signature) : [])])
         const after = links(spans)

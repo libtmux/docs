@@ -232,14 +232,15 @@ function withoutTrailingCommas(texts: string[]): string[] {
   return texts.filter((text, index) => !(text === ',' && [')', '}', ']'].includes(texts[index + 1] ?? '')))
 }
 
-function syntaxRanges(parsed: Parsed, name: string, signature: Signature, documented: ReadonlySet<string>): CodeSyntax[] {
+function syntaxRanges(parsed: Parsed, name: string, signature: Signature): CodeSyntax[] {
   const syntax: CodeSyntax[] = [{ start: 0, end: name.length, kind: 'name' }]
   const literal = (token: Token) => syntax.push({ start: token.start, end: token.end, kind: 'literal' })
   for (const token of parsed.keywords) syntax.push({ start: token.start, end: token.end, kind: 'keyword' })
   const top = new Set(parsed.root.arguments.map((argument) => argument.name.start))
   for (const token of parsed.labels) {
     const index = top.has(token.start) ? signature.params.findIndex((param) => param.name === token.text) : -1
-    if (index !== -1 && documented.has(token.text)) syntax.push({ start: token.start, end: token.end, kind: 'parameter', parameter: index })
+    // The receiver is spelled as a parameter but never listed, so it has no anchor.
+    if (index !== -1 && !(index === 0 && token.text === 'self' && !signature.params[0]!.doc)) syntax.push({ start: token.start, end: token.end, kind: 'parameter', parameter: index })
     else literal(token)
   }
   parsed.literals.forEach(literal)
@@ -267,7 +268,6 @@ async function formatHeader(symbol: ApiSymbol, signature: Signature): Promise<Co
   if (JSON.stringify(withoutTrailingCommas(written)) !== JSON.stringify(withoutTrailingCommas(parsed.tokens.map((token) => token.text)))) {
     throw new Error(`Formatting changed Lua function type grammar: ${signature.raw}`)
   }
-  const documented = new Set(signature.params.filter((param) => param.doc).map((param) => param.name))
   return { text, limit: CODE_COLUMNS.api, failures: await codeWidthFailures(text, 'api'),
-    syntax: syntaxRanges(parseFunctionType(text, prefix.length), symbol.name, signature, documented) }
+    syntax: syntaxRanges(parseFunctionType(text, prefix.length), symbol.name, signature) }
 }

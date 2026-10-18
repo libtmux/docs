@@ -122,18 +122,16 @@ function signatureLabels(symbol: ApiSymbol, port?: string): string[] {
 
 /** The fields shown by ApiEntry, shared with its section navigation. */
 export function apiEntryFields(symbol: ApiSymbol, port?: string) {
-  // RBS positionals are unnamed and the extractor numbers them, and the LuaCATS bar links only
-  // documented parameters, so both lists stay documented-only.
-  const native = port === 'ts' || (usesNativeSignatures(symbol, port) && port !== 'ruby' && port !== 'lua')
+  // Every parameter the declaration has is listed with its type, documented or not.
   const labels = signatureLabels(symbol, port)
   // Python's extractor merges @overload stubs followed by their implementation.
   // The implementation docstring documents the complete callable, not one stub.
   const familyDocumentation = port === 'py' && !symbol.modifiers.includes('overload')
     ? symbol.signatures.length - 1 : -1
-  const collect = <T>(read: (signature: Signature) => T[]) => {
+  const collect = <T>(read: (signature: Signature, index: number) => T[]) => {
     const fields = new Map<string, { value: T; signatures: Set<number> }>()
     symbol.signatures.forEach((signature, i) => {
-      for (const value of read(signature)) {
+      for (const value of read(signature, i)) {
         const key = JSON.stringify(value)
         const field = fields.get(key) ?? { value, signatures: new Set<number>() }
         field.signatures.add(i)
@@ -147,10 +145,16 @@ export function apiEntryFields(symbol: ApiSymbol, port?: string) {
     }))
   }
   return {
-    params: collect((signature) => {
+    params: collect((signature, i) => {
+      // The implementation is the complete callable; its @overload stubs repeat narrower parameters.
+      if (familyDocumentation > 0 && i !== familyDocumentation) return []
       // A C# params array is extracted as two entries; only the declared name is a parameter.
       const declared = port === 'csharp' ? csharpParameters(signature) : undefined
-      return signature.params.filter((param, i) => (native || param.doc) && (!declared || declared.some((entry) => entry.index === i)))
+      // Python and Lua spell the receiver as a first parameter; the call never passes it.
+      const receiver = (param: Param, position: number) => position === 0 && !param.doc &&
+        (param.name === 'self' || (port === 'py' && param.name === 'cls'))
+      return signature.params.filter((param, position) => !receiver(param, position) &&
+        (!declared || declared.some((entry) => entry.index === position)))
     }),
     returns: collect((signature) => signature.returnsDoc ? [{ doc: signature.returnsDoc }] : []),
     raises: collect((signature) => signature.raises ?? []),
