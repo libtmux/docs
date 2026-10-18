@@ -29,6 +29,7 @@ const PAGES = [
   { label: 'Rust reference index', path: '/rs/latest/reference/' },
   { label: 'Rust type page', path: '/rs/latest/reference/server-server/' },
   { label: 'Rust MCP tools', path: '/rs/latest/mcp/tools/' },
+  { label: 'Rust MCP tool', path: '/rs/latest/mcp/tools/create_window/' },
 ]
 const SPLIT = '.api-elsewhere-value, .api-command-related, nav.api-related'
 // A compact mark that leads a bare name: an index or tool card, and a member list row.
@@ -224,6 +225,74 @@ export async function headingProblems(page) {
   return { headings: found.length, problems }
 }
 
+
+/**
+ * The protocol sidebar (MCP tools, prompts, resources): its groups name their
+ * kind, so a row carries a mark only in a group that mixes kinds, and the mark
+ * is inline at the row's normal gap. There is no gutter: a row without a mark
+ * starts its text at the row's indent. The kind stays on every row for
+ * assistive technology (`aria-description`).
+ */
+export function protocolSidebarProblems(page) {
+  return page.evaluate(() => {
+    const nav = document.querySelector('.api-nav[data-marks="mixed"]')
+    if (!nav) return { groups: 0, marks: 0, rows: 0, problems: [] }
+    const problems = []
+    let groups = 0, marks = 0, rows = 0
+    for (const group of nav.querySelectorAll('ul[role="group"]')) {
+      const entries = [...group.querySelectorAll(':scope > li > a.api-nav__row, :scope > li > div.api-nav__row')].filter((row) => row.offsetParent)
+      if (!entries.length) continue
+      groups++
+      const label = group.closest('li[role="treeitem"]')?.querySelector(':scope > .api-nav__row .api-nav__label')?.textContent?.trim() ?? 'a group'
+      const kindOf = (row) => row.getAttribute('aria-description') ?? row.closest('li[role="treeitem"]')?.getAttribute('aria-description') ?? undefined
+      const kinds = new Set(entries.map(kindOf).filter(Boolean))
+      for (const row of entries) {
+        rows++
+        const mark = row.querySelector(':scope > .api-nav__kind')
+        const name = row.querySelector(':scope .api-nav__label')?.textContent?.trim() ?? ''
+        if (kindOf(row) === undefined) continue
+        if (mark) marks++
+        if (kinds.size <= 1 && mark) problems.push(`"${name}" under "${label}" repeats a kind the group already names`)
+        if (kinds.size > 1 && !mark) problems.push(`"${name}" under "${label}" has no mark in a group that mixes kinds`)
+        if (!row.matches('a')) continue
+        // No gutter: the first thing in the row starts at the row's own indent, and a mark is one gap from the name.
+        const indent = row.getBoundingClientRect().left + parseFloat(getComputedStyle(row).paddingLeft)
+        const text = row.querySelector(':scope > .api-nav__label')
+        const textStart = text.getBoundingClientRect().left + parseFloat(getComputedStyle(text).paddingLeft)
+        const lead = mark ? mark.getBoundingClientRect().left : textStart
+        if (Math.abs(lead - indent) > 1) problems.push(`"${name}" under "${label}" starts ${(lead - indent).toFixed(1)}px from its indent: a gutter`)
+        if (mark) {
+          const gap = textStart - mark.getBoundingClientRect().right
+          if (gap < 3 || gap > 6) problems.push(`"${name}" under "${label}": the mark is ${gap.toFixed(1)}px from the name`)
+        }
+      }
+    }
+    return { groups, marks, rows, problems }
+  })
+}
+
+/**
+ * The API tree keeps its fixed gutter: every mark sits at the same distance
+ * from the left of its row, whatever the row's level, so a reader scans down
+ * one column.
+ */
+export function apiTreeGutterProblems(page) {
+  return page.evaluate(() => {
+    const nav = document.querySelector('.api-nav:not([data-marks])')
+    if (!nav) return { marks: 0, problems: [] }
+    const found = [...nav.querySelectorAll('.api-nav__row > .api-nav__kind')].filter((mark) => mark.offsetParent).map((mark) => {
+      const row = mark.parentElement
+      return { offset: mark.getBoundingClientRect().left - row.getBoundingClientRect().left, level: Number(getComputedStyle(row).getPropertyValue('--level')) }
+    })
+    const problems = []
+    if (found.length) {
+      const offsets = found.map((entry) => entry.offset)
+      if (Math.max(...offsets) - Math.min(...offsets) > 1) problems.push(`marks do not share one gutter: offsets run ${Math.min(...offsets).toFixed(1)} to ${Math.max(...offsets).toFixed(1)}px across levels ${[...new Set(found.map((entry) => entry.level))].join(', ')}`)
+    }
+    return { marks: found.length, problems }
+  })
+}
+
 async function checkPage(page, base, entry, scheme, results) {
   await page.goto(`${base}${entry.path}`, { waitUntil: 'load' })
   await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
@@ -244,6 +313,13 @@ async function checkPage(page, base, entry, scheme, results) {
   const rail = await railProblems(page)
   results.counts['related chip row'] = (results.counts['related chip row'] ?? 0) + rail.rows
   results.failures.push(...rail.problems.map((problem) => `${entry.label} (${scheme}) related APIs: ${problem}`))
+  const protocol = await protocolSidebarProblems(page)
+  results.counts['protocol sidebar group'] = (results.counts['protocol sidebar group'] ?? 0) + protocol.groups
+  results.counts['protocol sidebar row'] = (results.counts['protocol sidebar row'] ?? 0) + protocol.rows
+  results.failures.push(...protocol.problems.map((problem) => `${entry.label} (${scheme}) sidebar: ${problem}`))
+  const gutter = await apiTreeGutterProblems(page)
+  results.counts['API tree mark'] = (results.counts['API tree mark'] ?? 0) + gutter.marks
+  results.failures.push(...gutter.problems.map((problem) => `${entry.label} (${scheme}) API tree: ${problem}`))
   const headings = await headingProblems(page)
   results.counts['group heading'] = (results.counts['group heading'] ?? 0) + headings.headings
   results.failures.push(...headings.problems.map((problem) => `${entry.label} (${scheme}) ${problem}`))
@@ -283,6 +359,53 @@ async function negativeControl(page, base, results) {
   await padded.evaluate((node) => node.remove())
   assert(results.railControl > 0, 'The rail check did not notice a chip that does not contain its content')
 
+  // The protocol sidebar: a redundant mark under a group of one kind must fail, and a mark in a mixed group must pass.
+  await page.goto(`${base}${PAGES[8].path}`, { waitUntil: 'load' })
+  await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
+  const sidebar = await protocolSidebarProblems(page)
+  assert(sidebar.groups > 0 && sidebar.problems.length === 0, `The protocol sidebar is not clean before the control (${sidebar.groups} groups): ${sidebar.problems.join('; ')}`)
+  // Rows copied out of an open group, with the kinds and marks the control gives them.
+  const addGroup = (kinds, drawn) => page.evaluate(([kinds, drawn]) => {
+    const source = [...document.querySelectorAll('.api-nav[data-marks="mixed"] ul[role="group"]')].find((group) => group.querySelector(':scope > li > a.api-nav__leaf'))
+    const group = source.cloneNode(true)
+    group.dataset.control = ''
+    const leaves = [...group.querySelectorAll(':scope > li > a.api-nav__leaf')].slice(0, kinds.length)
+    for (const item of group.querySelectorAll(':scope > li')) if (!leaves.includes(item.querySelector('a'))) item.remove()
+    leaves.forEach((leaf, index) => {
+      leaf.querySelector('.api-nav__kind')?.remove()
+      leaf.setAttribute('aria-description', kinds[index])
+      if (drawn) {
+        const mark = document.createElement('span')
+        mark.className = `api-nav__kind api-badge--kind-${kinds[index]}`
+        mark.innerHTML = '<span class="api-badge__label" data-mark="cap">t</span>'
+        leaf.prepend(mark)
+      }
+    })
+    source.after(group)
+  }, [kinds, drawn])
+  const control = async (kinds, drawn) => {
+    await addGroup(kinds, drawn)
+    const found = (await protocolSidebarProblems(page)).problems
+    await page.evaluate(() => { document.querySelectorAll('[data-control]').forEach((node) => node.remove()) })
+    return found
+  }
+  results.sidebarRedundant = (await control(['tool', 'tool'], true)).length
+  assert(results.sidebarRedundant > 0, 'The sidebar check did not notice a redundant mark under a group of one kind')
+  results.sidebarMixedBare = (await control(['tool', 'prompt'], false)).length
+  assert(results.sidebarMixedBare > 0, 'The sidebar check did not notice a mixed group without marks')
+  results.sidebarMixedMarked = (await control(['tool', 'prompt'], true)).length
+  assert(results.sidebarMixedMarked === 0, 'The sidebar check rejected marks in a group that mixes kinds')
+
+  // The API tree: breaking the shared gutter must fail.
+  await page.goto(`${base}${PAGES[6].path}`, { waitUntil: 'load' })
+  await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
+  const gutter = await apiTreeGutterProblems(page)
+  assert(gutter.marks > 1 && gutter.problems.length === 0, `The API tree gutter is not clean before the control (${gutter.marks} marks): ${gutter.problems.join('; ')}`)
+  const ragged = await page.addStyleTag({ content: '.api-nav__row { padding-inline-start: calc(.75rem + (var(--level) - 1) * var(--api-nav-indent)) !important; }' })
+  results.gutterControl = (await apiTreeGutterProblems(page)).problems.length
+  await ragged.evaluate((node) => node.remove())
+  assert(results.gutterControl > 0, 'The gutter check did not notice marks that stopped sharing a column')
+
   // A permalink lifted off the line, and a mark pushed against its name and off its centre.
   await page.goto(`${base}${PAGES[7].path}`, { waitUntil: 'load' })
   await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
@@ -300,7 +423,7 @@ async function negativeControl(page, base, results) {
 }
 
 export async function checkBadgeCentring(browser, base, { sample: bounded = false } = {}) {
-  const results = { measured: 0, failures: [], counts: {}, control: 0, railControl: 0, headingControl: 0, rowControl: 0 }
+  const results = { measured: 0, failures: [], counts: {}, control: 0, railControl: 0, headingControl: 0, rowControl: 0, sidebarRedundant: 0, sidebarMixedBare: 0, sidebarMixedMarked: 0, gutterControl: 0 }
   const pages = bounded ? PAGES.slice(0, 2) : PAGES
   const hi = await chromium.launch({ args: ['--force-device-scale-factor=2', '--window-size=1440,1000'] })
   try {
@@ -318,8 +441,10 @@ export async function checkBadgeCentring(browser, base, { sample: bounded = fals
     }
   } finally { await hi.close() }
   assert(results.measured > 20, `Only ${results.measured} badge samples were measurable`)
+  assert((results.counts['protocol sidebar group'] ?? 0) > 0, 'No protocol sidebar group was measured')
+  assert((results.counts['API tree mark'] ?? 0) > 0, 'No API tree mark was measured, so the gutter was not checked')
   assert.deepEqual(results.failures, [], `Badge centring:\n${results.failures.join('\n')}`)
-  console.log(`Badge centring: ${results.measured} samples at 1x and a real 2x, light and dark (${Object.entries(results.counts).map(([k, v]) => `${v} ${k}`).join(', ')}); negative controls caught ${results.control} of ${results.controlTested} shifted marks, ${results.railControl} chip problems, ${results.headingControl} heading problem and ${results.rowControl} row problems PASS`)
+  console.log(`Badge centring: ${results.measured} samples at 1x and a real 2x, light and dark (${Object.entries(results.counts).map(([k, v]) => `${v} ${k}`).join(', ')}); negative controls caught ${results.control} of ${results.controlTested} shifted marks, ${results.railControl} chip problems, ${results.headingControl} heading problem and ${results.rowControl} row problems, ${results.sidebarRedundant} redundant sidebar mark (a mixed group's marks: ${results.sidebarMixedMarked} complaints), ${results.gutterControl} broken gutter PASS`)
 }
 
 /**

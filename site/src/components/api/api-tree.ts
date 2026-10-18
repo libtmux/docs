@@ -140,19 +140,23 @@ function initSearch(nav: HTMLElement, tree: HTMLElement, signal: AbortSignal) {
       const found = searchApi(json, query, kind)
       status.textContent = found.length > 100 ? `Showing 100 of ${found.length} results. Refine your search.`
         : `${found.length} ${found.length === 1 ? 'result' : 'results'}`
+      // A result set of one kind needs no mark in a tree whose groups name their kind: the filter or the query already did.
+      const quiet = nav.dataset.marks === 'mixed' && new Set(found.map((record) => record.kind)).size <= 1
       for (const record of found.slice(0, 100)) {
         const li = document.createElement('li')
         const link = document.createElement('a')
         link.href = apiTreeHref(nav.dataset.base ?? '/', record, json.hrefs)
         const name = document.createElement('strong')
         name.textContent = record.name
-        const mark = kindBadge(record.kind)
+        const mark = quiet ? undefined : kindBadge(record.kind)
         if (mark) name.prepend(mark, ' ')
         // The word trails the name: a result is a menu row, and a menu cannot be hovered for it.
-        const word = document.createElement('span')
-        word.className = 'api-kind-word'
-        word.textContent = record.kind.replace(/-/g, ' ')
-        name.append(word)
+        if (!quiet) {
+          const word = document.createElement('span')
+          word.className = 'api-kind-word'
+          word.textContent = record.kind.replace(/-/g, ' ')
+          name.append(word)
+        }
         link.setAttribute('aria-description', record.kind)
         const path = document.createElement('small')
         path.textContent = record.qualifiedName
@@ -270,7 +274,7 @@ function kindBadge(kind?: string): HTMLSpanElement | undefined {
   return badge
 }
 
-function leaf(name: string, href: string, level: number, kind?: string, shortcut = false): HTMLLIElement {
+function leaf(name: string, href: string, level: number, kind?: string, shortcut = false, quiet = false): HTMLLIElement {
   const li = document.createElement('li')
   li.setAttribute('role', 'none')
   const a = document.createElement('a')
@@ -283,14 +287,14 @@ function leaf(name: string, href: string, level: number, kind?: string, shortcut
   if (kind) a.setAttribute('aria-description', kind)
   if (shortcut) a.setAttribute('data-api-shortcut', '')
   if (!shortcut && new URL(href, location.href).pathname === location.pathname) a.setAttribute('aria-current', 'page')
-  const mark = kindBadge(kind)
+  const mark = quiet ? undefined : kindBadge(kind)
   if (mark) a.append(mark)
   a.append(label(name))
   li.append(a)
   return li
 }
 
-function branch(name: string, href: string | undefined, level: number, lazy: string, count?: number, kind?: string, shortcut = false): HTMLLIElement {
+function branch(name: string, href: string | undefined, level: number, lazy: string, count?: number, kind?: string, shortcut = false, quiet = false): HTMLLIElement {
   const id = `api-nav-c${++seq}`
   const li = document.createElement('li')
   li.setAttribute('role', 'treeitem')
@@ -308,7 +312,7 @@ function branch(name: string, href: string | undefined, level: number, lazy: str
   chevron.className = 'api-nav__chevron'
   chevron.setAttribute('aria-hidden', 'true')
   row.append(chevron)
-  const mark = kindBadge(kind)
+  const mark = quiet ? undefined : kindBadge(kind)
   if (mark) row.append(mark)
   if (href) {
     const a = document.createElement('a')
@@ -339,6 +343,14 @@ function branch(name: string, href: string | undefined, level: number, lazy: str
   return li
 }
 
+/**
+ * A tree whose groups name their kind (MCP) shows a mark only where a group mixes kinds.
+ * The API tree keeps its gutter of marks, so it never quietens a group.
+ */
+function kindsAgree(nav: HTMLElement, kinds: (string | undefined)[]): boolean {
+  return nav.dataset.marks === 'mixed' && new Set(kinds.filter(Boolean)).size <= 1
+}
+
 function findBucket(buckets: JsonBucket[], id: string): JsonBucket | undefined {
   for (const b of buckets) {
     if (b.id === id) return b
@@ -361,19 +373,22 @@ async function build(nav: HTMLElement, item: HTMLElement): Promise<HTMLElement |
   if (kind === 'bucket') {
     const bucket = findBucket(json.buckets, id)
     if (!bucket) return undefined
+    const quiet = kindsAgree(nav, bucket.types.map((t) => t.kind))
     for (const t of bucket.types) {
       const href = apiTreeHref(base, t, json.hrefs)
-      children.push(t.m ? branch(t.name, href, level, `type:${t.id}`, undefined, t.kind, t.shortcut) : leaf(t.name, href, level, t.kind, t.shortcut))
+      children.push(t.m ? branch(t.name, href, level, `type:${t.id}`, undefined, t.kind, t.shortcut, quiet) : leaf(t.name, href, level, t.kind, t.shortcut, quiet))
     }
     for (const c of bucket.children) {
       children.push(branch(c.label, c.slug ? `${base}${c.slug}/` : undefined, level, `bucket:${c.id}`, c.types.length))
     }
   } else {
-    for (const [name, slug, memberId, kind] of json.members[id] ?? []) {
+    const members = json.members[id] ?? []
+    const quiet = kindsAgree(nav, members.map((member) => member[3]))
+    for (const [name, slug, memberId, kind] of members) {
       const href = apiTreeHref(base, { id: memberId, slug }, json.hrefs)
       children.push(memberId && json.members[memberId]?.length
-        ? branch(name, href, level, `type:${memberId}`, undefined, kind)
-        : leaf(name, href, level, kind))
+        ? branch(name, href, level, `type:${memberId}`, undefined, kind, false, quiet)
+        : leaf(name, href, level, kind, false, quiet))
     }
   }
   const group = document.createElement('ul')

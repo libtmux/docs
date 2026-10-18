@@ -16,6 +16,8 @@ export interface TreeNode {
   id: string
   label: string
   kind?: string
+  /** The kind stays on the row for assistive technology, and its mark is not drawn. */
+  quiet?: boolean
   href?: string
   count?: number
   level: number
@@ -62,7 +64,7 @@ const { nodes } = Astro.props as Props
       >
         <div class="api-nav__row" style={`--level:${node.level}`}>
           <span class="api-nav__chevron" aria-hidden="true" />
-          {node.kind && <ApiBadge label={node.kind} variant="kind" value={node.kind} compact />}
+          {node.kind && !node.quiet && <ApiBadge label={node.kind} variant="kind" value={node.kind} compact />}
           {node.href ? (
             <a class="api-nav__label" id={node.id} href={node.href} data-api-shortcut={node.shortcut || undefined} tabindex="-1" aria-current={node.current ? 'page' : undefined}>
               <SymbolName name={node.label} />
@@ -99,7 +101,7 @@ const { nodes } = Astro.props as Props
           aria-description={node.kind}
           style={`--level:${node.level}`}
         >
-          {node.kind && <ApiBadge label={node.kind} variant="kind" value={node.kind} compact />}
+          {node.kind && !node.quiet && <ApiBadge label={node.kind} variant="kind" value={node.kind} compact />}
           <span class="api-nav__label">
             <SymbolName name={node.label} />
           </span>

@@ -118,7 +118,7 @@ const summaries = new Map(await Promise.all(entries.map(async (entry) => [entry.
     <ApiTree referenceBase={base} glossaryHref={`${base}reference/glossary/`} glossaryLabel={MCP_GLOSSARY_TITLE} portName={info.name} tree={navigation.tree} currentRoot={section}
       currentBucket={currentBucket} currentIndex={object ? undefined : section} ownerId={object?.id}
       members={[]} withMembers={new Set()} currentPath={Astro.url.pathname} version={navigation.version}
-      indexLabel="" treeLabel={`${info.name} MCP reference`} searchLabel="Find an MCP object" searchPlaceholder="Find tool, prompt, resource"
+      indexLabel="" marks="mixed" treeLabel={`${info.name} MCP reference`} searchLabel="Find an MCP object" searchPlaceholder="Find tool, prompt, resource"
       filters={[{ id: 'all', label: 'All' }, ...Object.entries(MCP_SECTIONS).map(([id, label]) => ({ id, label,
         disabled: !mcpObjects(port).some((entry) => entry.section === id) }))]} />
     <div class="api-reference-content min-w-0 px-4 py-6 lg:px-6">
