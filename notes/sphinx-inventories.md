@@ -26,6 +26,10 @@ declaration identity, so changing a page slug does not rename its examples or
 parameter sections. Named C enumerators use file and spelling rather than
 Doxygen's anonymous-enum hash. Unnamed declarations retain producer identities
 and need explicit aliases when those identities change.
+Signatures use native method identities when supplied, otherwise a hash of
+normalized native syntax or structured parameter semantics. Native syntax
+keeps qualifiers and companion declarations distinct even when shared fields
+omit them. Layout whitespace does not change these keys.
 
 The record contract lives in `packages/api-model/src/targets.ts`. Logical
 identity, display, final URL, version, and provenance are separate fields.
