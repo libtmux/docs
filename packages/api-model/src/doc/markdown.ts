@@ -44,6 +44,23 @@ const RUST_ATTRS = new Set([
 ])
 
 /**
+ * The lines of a Rust code block that rustdoc shows.
+ *
+ * Rust hides setup lines from rendered docs with a leading `#`: a line that
+ * starts `# ` or is a bare `#` is part of the compiled doctest and not part
+ * of the example a reader is being shown, and `##` escapes to a literal `#`.
+ * Only a Rust block is read this way; `# comment` is code in a shell, Python
+ * or Ruby block.
+ */
+function rustdocVisible(lines: string[]): string[] {
+  return lines.flatMap((line) => {
+    const trimmed = line.trim()
+    if (trimmed.startsWith('##')) return [line.replace('##', '#')]
+    return trimmed === '#' || trimmed.startsWith('# ') ? [] : [line]
+  })
+}
+
+/**
  * A Rust-style section heading: `# Examples`, `# Panics`, `# Errors`.
  *
  * Matched only at the start of a line and only for the handful of headings
@@ -196,11 +213,8 @@ export function parseMarkdownDocFull(raw: string, defaultLang = 'text'): ParsedM
         const open = fence
         examples.push({
           lang: !open.lang || RUST_ATTRS.has(open.lang) ? defaultLang : open.lang,
-          // Rust hides setup lines from rendered docs with a leading `#`.
-          // They are part of the compiled doctest and not part of the example
-          // a reader is being shown.
-          code: open.code
-            .filter((l) => !/^\s*#\s/.test(l) && l.trim() !== '#')
+          code: (defaultLang === 'rust' && (!open.lang || open.lang === 'rust' || RUST_ATTRS.has(open.lang))
+            ? rustdocVisible(open.code) : open.code)
             .map((l) => l.slice(open.indent))
             .join('\n')
             .replace(/\s+$/, ''),
