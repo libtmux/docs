@@ -17,7 +17,7 @@ without reading shell startup files or requiring another application.
 
 ## Prepare the project
 
-Use Swift 6.2.4, Git, and tmux 3.2a or newer on Linux. Create an empty project
+Use Swift 6.2.4, Git, and tmux 3.3a or newer on Linux. Create an empty project
 and the executable's source directory:
 
 ```console
