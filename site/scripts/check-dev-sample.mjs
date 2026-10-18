@@ -3,6 +3,7 @@ import { checkHomeResponsiveLayout } from './check-home-launcher.mjs'
 import { checkPickerFilters } from './check-picker-filters.mjs'
 import { checkNavigationBeforeAnalytics } from './check-navigation.mjs'
 import { checkHeaderMenuSections } from './check-header-menu-sections.mjs'
+import { checkStatusBadges } from './check-status-badges.mjs'
 import { checkDeclarationControlsLevel } from './check-native-layout.mjs'
 import { checkBlockLinksUndecorated, checkKindBadgeLinks, checkRequiredAppearance } from './check-page-readiness.mjs'
 import { checkTmuxKeys } from './check-tmux-keys.mjs'
@@ -166,6 +167,7 @@ export async function checkRowPermalinks(browser, base, pages = ROW_PERMALINK_PA
 export async function checkDevSample(browser, base) {
   await checkPickerFilters(browser, base)
   await checkHeaderMenuSections(browser, base, { ports: ['py', 'java', 'csharp'], schemes: ['light'] })
+  await checkStatusBadges(browser, base, { widths: [1440], schemes: ['light'], touch: false, home: false })
   await checkNavigationBeforeAnalytics(browser, base)
   await checkRequiredAppearance(browser, base)
   await checkRowPermalinks(browser, base)
@@ -255,7 +257,7 @@ export async function checkDevSample(browser, base) {
     assert.equal(new URL(page.url()).searchParams.get('cleanup'), '1')
     for (const width of [1440, 628, 390]) await checkHomeResponsiveLayout(page, width, 'rs')
     assert.deepEqual(errors, [], 'Sampled pages have no runtime errors')
-    console.log('Fresh browser sample: prose, MCP table, API equivalents, phone picker, header menu sections and homepage controls PASS')
+    console.log('Fresh browser sample: prose, MCP table, API equivalents, phone picker, header menu sections, status badges and homepage controls PASS')
   } finally {
     await context.close()
   }

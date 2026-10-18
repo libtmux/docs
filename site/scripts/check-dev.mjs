@@ -10,6 +10,7 @@ import { checkClipboard, checkCompleteApiExamples } from './check-clipboard.mjs'
 import { checkApiAnchorArrival, checkApiExampleOwnership, checkApiNavigation, checkApiStickyHeadings, checkApiStickyHeadingsFail, checkDocumentationNavigation, checkNavigation } from './check-navigation.mjs'
 import { checkReferencePreferences, checkGlobalHeader } from './check-reference-preferences.mjs'
 import { checkHeaderMenuSections, checkHeaderMenuSectionsFail } from './check-header-menu-sections.mjs'
+import { checkStatusBadges, checkStatusBadgesFail } from './check-status-badges.mjs'
 import { checkHomeLauncher } from './check-home-launcher.mjs'
 import { checkHomeTaskReset } from './check-home-task-reset.mjs'
 import { checkColorScheme } from './check-color-scheme.mjs'
@@ -33,6 +34,7 @@ const signaturePorts = apiSignaturesOnly ? API_MODEL_PORTS
 const referencePreferencesOnly = process.argv.includes('--reference-preferences')
 const globalHeaderOnly = process.argv.includes('--global-header')
 const headerMenuSectionsOnly = process.argv.includes('--header-menu-sections')
+const statusBadgesOnly = process.argv.includes('--status-badges')
 const homeLauncherOnly = process.argv.includes('--home-launcher')
 const homeControlsOnly = process.argv.includes('--home-controls')
 const sampleOnly = process.argv.includes('--sample')
@@ -745,10 +747,10 @@ try {
   const firstPage = homeLauncherOnly || homeControlsOnly ? '/'
     : keywordHelpOnly ? '/kotlin/latest/reference/io-github-libtmux-kotlin-withserver/'
     : apiStickyOnly ? '/swift/latest/reference/server/'
-    : documentationNavigationOnly || headerMenuSectionsOnly ? '/py/latest/' : apiSignaturesOnly ? '/api-signature-probe/'
+    : documentationNavigationOnly || headerMenuSectionsOnly || statusBadgesOnly ? '/py/latest/' : apiSignaturesOnly ? '/api-signature-probe/'
     : apiNavigationOnly ? '/lua/latest/reference/libtmux-server/'
     : typeParametersOnly ? '/ts/latest/reference/selection-selection-where/' : '/tmux/concepts/server-session-window-pane/'
-  const fullRun = ![homeLauncherOnly, homeControlsOnly, keywordHelpOnly, apiSignaturesOnly, referenceLayoutOnly, globalHeaderOnly, headerMenuSectionsOnly,
+  const fullRun = ![homeLauncherOnly, homeControlsOnly, keywordHelpOnly, apiSignaturesOnly, referenceLayoutOnly, globalHeaderOnly, headerMenuSectionsOnly, statusBadgesOnly,
     referencePreferencesOnly, documentationNavigationOnly, apiNavigationOnly, apiAnchorsOnly, typeParametersOnly].some(Boolean)
   const setupPages = sampleOnly ? [firstPage, '/demo/widgets/pickers/', ...TMUX_KEY_PAGES]
     : [firstPage, ...(fullRun ? TMUX_KEY_PAGES : [])]
@@ -791,6 +793,9 @@ try {
   } else if (headerMenuSectionsOnly) {
     await retryReload(() => checkHeaderMenuSections(browser, base))
     await checkHeaderMenuSectionsFail(browser, base)
+  } else if (statusBadgesOnly) {
+    await retryReload(() => checkStatusBadges(browser, base))
+    await checkStatusBadgesFail(browser, base)
   } else if (referencePreferencesOnly) {
     await retryReload(() => checkReferencePreferences(browser, base))
     await retryReload(() => checkGlobalHeader(browser, base))
@@ -855,6 +860,8 @@ try {
     const globalHeader = schedule(() => checkGlobalHeader(browser, base))
     const headerMenuSections = schedule(() => checkHeaderMenuSections(browser, base)
       .then(() => checkHeaderMenuSectionsFail(browser, base)))
+    const statusBadges = schedule(() => checkStatusBadges(browser, base)
+      .then(() => checkStatusBadgesFail(browser, base)))
     const homeLauncher = schedule(() => checkHomeLauncher(browser, base))
     const documentationNavigation = schedule(() => retryReload(() => checkDocumentationNavigation(browser, base)))
     const apiNavigationPage = await browser.newPage({ reducedMotion: 'reduce' })
@@ -1162,7 +1169,7 @@ try {
     console.log('Fresh Astro + browser: prose, workspace, MCP tools, API equivalents, 390–1600px header and dark hue PASS')
     await page.close()
     const failures = (await Promise.all([
-      navigation, apiExamples, reference, preferences, globalHeader, headerMenuSections, apiNavigation,
+      navigation, apiExamples, reference, preferences, globalHeader, headerMenuSections, statusBadges, apiNavigation,
       clipboard, documentationNavigation, homeLauncher, apiAnchors, apiSticky, typeParameters, kindBadges, blockLinks,
     ])).filter(Boolean)
     if (failures.length) throw new AggregateError(failures, 'Browser checks failed')
