@@ -231,6 +231,7 @@ export async function checkDevSample(browser, base) {
           await page.keyboard.press('Escape')
           await tip.waitFor({ state: 'hidden' })
           assert(await help.evaluate((node) => node === document.activeElement), 'Escape dismisses the inventory tooltip without moving focus')
+          await help.evaluate((node) => node.blur())
         }
       }
       if (path.startsWith('tmux/')) {
