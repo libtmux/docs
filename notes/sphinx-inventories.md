@@ -13,6 +13,8 @@ It exports documents and actual fragment destinations, including headings,
 tables, examples, parameter lists, and nested protocol schemas. Demo pages,
 search, redirects, and translation placeholders have no exported ownership.
 Native Sphinx pages receive the same metadata through `NativeShell`.
+Copies of site-wide pages inside port builds remain owned by the shared tree
+and are excluded from those copies' inventories.
 
 Specialized renderers attach `data-inventory-id`, `data-inventory-category`,
 and `data-inventory-display` to their existing anchor elements. Native aliases

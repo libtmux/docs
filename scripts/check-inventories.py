@@ -46,6 +46,35 @@ class Page(HTMLParser):
             self.links.add(attrs["href"])
 
 
+class Metadata(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.value = None
+        self.done = False
+        self.shell_export = False
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag == "html" and "data-native-shell-export" in attrs:
+            self.shell_export = True
+        if tag == "meta" and attrs.get("name") == "libtmux-inventory":
+            self.value = json.loads(attrs["content"])
+
+    def handle_endtag(self, tag):
+        if tag == "head":
+            self.done = True
+
+
+def metadata(path: Path):
+    parser = Metadata()
+    with path.open() as source:
+        while chunk := source.read(4096):
+            parser.feed(chunk)
+            if parser.value is not None or parser.done:
+                break
+    return None if parser.shell_export else parser.value
+
+
 @lru_cache(maxsize=None)
 def page(path: Path) -> Page:
     return Page(path.read_text(), links=False)
@@ -136,6 +165,7 @@ def audit(root: Path, prefix: str, consumers: bool):
     assert catalogs[0][1]["base"] == prefix, "Full inventory catalog has the wrong deployment prefix"
     manifest = json.loads((root / "versions.json").read_text())
     total = 0
+    owned_documents = 0
     for path, catalog in catalogs:
         full = path.parent == root
         base = catalog["base"]
@@ -154,6 +184,19 @@ def audit(root: Path, prefix: str, consumers: bool):
         for uri in sorted({item.uri for item in inventory.values()}):
             destination(root, prefix, uri)
         total += len(inventory)
+        documents = {target["href"] for target in catalog["targets"] if target["category"] == "doc"}
+        for file in path.parent.rglob("*.html"):
+            relative = file.relative_to(path.parent)
+            if full and relative.parts[0] in manifest["ports"]:
+                continue  # Scoped catalogs cover all built versions, including nondefaults.
+            owner = metadata(file)
+            if not owner or owner.get("exclude"):
+                continue
+            assert full or (owner["scope"] == catalog["scope"] and owner.get("version") == catalog["version"]), f"Wrong document ownership: {file}"
+            relative_url = relative.as_posix()
+            href = base + (relative_url.removesuffix("index.html") if relative.name == "index.html" else relative_url)
+            assert href in documents, f"Owned document is absent from its inventory: {href}"
+            owned_documents += 1
     # Compatibility exports use their historical mapping directory as the base.
     legacy = []
     for path in root.rglob("objects.inv"):
@@ -168,7 +211,7 @@ def audit(root: Path, prefix: str, consumers: bool):
         for uri in sorted({item.uri for item in items.values()}):
             destination(root, prefix, uri)
         legacy.append({"path": str(path.relative_to(root)), "records": len(items)})
-    result = {"catalogs": len(catalogs), "records": total, "legacy": legacy}
+    result = {"catalogs": len(catalogs), "records": total, "owned_documents": owned_documents, "legacy": legacy}
     if consumers:
         class Handler(BaseHTTPRequestHandler):
             def do_GET(self):
