@@ -603,7 +603,7 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
 /* Keep code first; move the whole toolbar below it when both no longer fit. */
 dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header > .gp-sphinx-api-layout--responsive {
   flex-flow: row wrap;
-  align-items: flex-start;
+  align-items: baseline;
   gap: 0.375rem 1rem;
 }
 dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header .gp-sphinx-api-layout-left {
@@ -616,8 +616,26 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header .gp-sphin
   max-width: 100%;
   margin-left: auto;
 }
-dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-layout-right {
-  align-items: center;
+/*
+ * Declaration controls share the vertical centre of the signature's first
+ * line. The row aligns the first baseline of the code with the first baseline
+ * of the controls, so padding on a formatted signature, a wrapped signature
+ * and a heading taller than the controls all leave the controls level with
+ * line one rather than the block's middle. Text controls share that baseline
+ * and badges centre on its line. A control group that wraps onto a row of its
+ * own has no code beside it and keeps its place. Below the container
+ * breakpoint the vendored column layout keeps its stretch.
+ */
+@container gp-sphinx-api-entry (width > 36rem) {
+  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:not(.api-native-header) > .gp-sphinx-api-layout--responsive {
+    align-items: baseline;
+  }
+}
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .gp-sphinx-api-layout-right {
+  align-items: baseline;
+}
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .gp-sphinx-api-layout-right > :is(.gp-sphinx-api-slot, .api-badge) {
+  align-self: center;
 }
 .api-native-signature {
   display: block;

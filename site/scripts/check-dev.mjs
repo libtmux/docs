@@ -14,7 +14,7 @@ import { checkHomeTaskReset } from './check-home-task-reset.mjs'
 import { checkColorScheme } from './check-color-scheme.mjs'
 import { checkHomeExampleOptions } from './check-home-example-options.mjs'
 import { checkDevSample } from './check-dev-sample.mjs'
-import { checkNativeSignatureGeometry, checkNativeSignatureLinks } from './check-native-layout.mjs'
+import { checkDeclarationControlAlignment, checkDeclarationControlsLevel, checkNativeSignatureGeometry, checkNativeSignatureLinks } from './check-native-layout.mjs'
 import { checkRequiredAppearance, checkWebAnalytics, checkWebAnalyticsTransitions } from './check-page-readiness.mjs'
 
 const apiNavigationOnly = process.argv.includes('--api-navigation')
@@ -382,8 +382,8 @@ async function checkSignatureLayouts(browser, base) {
         const code = await kotlin.locator('.gp-sphinx-api-layout-left').boundingBox()
         const toolbar = await kotlin.locator('.gp-sphinx-api-layout-right').boundingBox()
         if (width === 803 || width === 1920) {
-          assert(Math.abs(code.y - toolbar.y) < 2,
-            `${colorScheme}/${width}px: toolbar shares the declaration's first row when it fits`)
+          const level = await checkDeclarationControlsLevel(kotlin, `${colorScheme}/${width}px: toolbar shares the declaration's first line`)
+          assert.equal(level.mode, 'beside', `${colorScheme}/${width}px: toolbar shares the declaration's first row when it fits`)
           assert(code.x + code.width <= toolbar.x,
             `${colorScheme}/${width}px: declaration leaves room for its toolbar`)
         }
@@ -397,6 +397,8 @@ async function checkSignatureLayouts(browser, base) {
       }
     }
     console.log('Native browse layout: compact F# modules and linked Kotlin function cards work without JavaScript')
+    const { measured } = await checkDeclarationControlAlignment(browser, base)
+    console.log(`Declaration controls: ${measured.length} sampled headers keep their controls level with the first signature line at 1440/768/500/390px`)
   } finally {
     await page.close()
   }

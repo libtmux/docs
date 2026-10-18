@@ -7,7 +7,7 @@ import * as nativeLayoutChecks from '../scripts/check-native-layout.mjs'
 
 interface Region {
   left: number; right: number; top: number; bottom: number; width: number; height: number
-  padding: string; gap: string
+  padding: string; gap: string; lineHeight?: number
 }
 interface Measurement {
   viewport: number; pageWidth: number
@@ -38,7 +38,8 @@ async function runHostedGeometry(measurement: Measurement) {
     for (const [element, region] of regions) {
       if (!element) continue
       if (!region) { element.remove(); continue }
-      element.setAttribute('style', `padding:${region.padding};gap:${region.gap};border:0 solid;`)
+      element.setAttribute('style', `padding:${region.padding};gap:${region.gap};border:0 solid;`
+        + (region.lineHeight ? `line-height:${region.lineHeight}px;` : ''))
       const [rowGap, columnGap = rowGap] = region.gap.split(' ')
       const style = (element as HTMLElement).style
       style.rowGap = rowGap
@@ -71,8 +72,24 @@ async function runHostedGeometry(measurement: Measurement) {
   } finally { await win.happyDOM.abort() }
 }
 
+/** The recorded Scala signature is one line inside 4px of padding. */
+function observed(viewport: number): Measurement {
+  const measurement = structuredClone(measured.find((record) => record.viewport === viewport)!)
+  measurement.signatures[0].lineHeight = measurement.signatures[0].height - 8
+  return measurement
+}
+
+/** Move metadata beside the code so it centres on the first signature line. */
+function level(measurement: Measurement): Measurement {
+  const { left, right, signatures: [signature] } = measurement
+  if (left && right && signature && right.top < left.bottom) {
+    shift(right, 0, signature.top + Number.parseFloat(signature.padding) + signature.lineHeight! / 2 - (right.top + right.height / 2))
+  }
+  return measurement
+}
+
 function sample(viewport: number): Measurement {
-  return structuredClone(measured.find((record) => record.viewport === viewport)!)
+  return level(observed(viewport))
 }
 
 function resize(region: Region, width: number) {
@@ -85,8 +102,14 @@ function shift(region: Region, dx: number, dy: number) {
 }
 
 describe('hosted native signature geometry', () => {
-  it('accepts the observed first-line metadata beside a 1440px Scala header', async () => {
+  it('accepts metadata centred on the first line beside a 1440px Scala header', async () => {
     await runHostedGeometry(sample(1440))
+  })
+
+  it('rejects the observed 1440px metadata that sat on the padded signature\'s top edge', async () => {
+    const measurement = observed(1440)
+    expect(measurement.right!.top).toBe(measurement.left!.top)
+    await expect(runHostedGeometry(measurement)).rejects.toThrow(/centres on the first line/)
   })
 
   it.each([768, 390])('accepts the observed full-width code above metadata at %ipx', async (width) => {
@@ -187,6 +210,52 @@ describe('hosted native signature geometry', () => {
     const measurement = sample(768)
     measurement.pageWidth = measurement.viewport + 2
     await expect(runHostedGeometry(measurement)).rejects.toThrow('Scala overloads fit at 768px')
+  })
+})
+
+describe('declaration controls beside a signature', () => {
+  /** A 22.4px first line starting at 100px, followed by more lines of code. */
+  const declaration = (mode: 'beside' | 'stacked', centres: number[]) => ({
+    id: 'sample', mode, line: { top: 100, height: 22.4, centre: 111.2 },
+    controls: centres.map((centre, index) => ({ name: ['method', 'async', '[source]', '¶'][index], centre })),
+  })
+
+  it('accepts controls on the centre of the first line of a multi-line signature', () => {
+    nativeLayoutChecks.assertDeclarationControlsLevel(declaration('beside', [111.2, 111.2, 111.2, 111.2]), 'control')
+  })
+
+  it('accepts a centre exactly the tolerance away and rejects one beyond it', () => {
+    nativeLayoutChecks.assertDeclarationControlsLevel(declaration('beside', [112.2]), 'edge')
+    expect(() => nativeLayoutChecks.assertDeclarationControlsLevel(declaration('beside', [112.21]), 'edge'))
+      .toThrow(/control "method" centre is 1\.01px from the first signature line/)
+  })
+
+  it('rejects controls sitting above the centre of a padded signature line', () => {
+    expect(() => nativeLayoutChecks.assertDeclarationControlsLevel(declaration('beside', [106.7, 107.2]), 'ts'))
+      .toThrow(/ts: control "method" centre is -4\.50px from the first signature line/)
+  })
+
+  it('rejects controls centred on the middle of the whole code block', () => {
+    expect(() => nativeLayoutChecks.assertDeclarationControlsLevel(declaration('beside', [111.2, 245]), 'block'))
+      .toThrow(/control "async" centre is 133\.80px/)
+  })
+
+  it('compares stacked controls with each other, not with the code above or below', () => {
+    nativeLayoutChecks.assertDeclarationControlsLevel(declaration('stacked', [240.4, 240.9]), 'stacked')
+    expect(() => nativeLayoutChecks.assertDeclarationControlsLevel(declaration('stacked', [240.4, 243.4]), 'stacked'))
+      .toThrow(/stacked controls share their row centre, spread 3\.00px/)
+  })
+
+  it('compares controls that wrap onto several rows within each row', () => {
+    nativeLayoutChecks.assertDeclarationControlsLevel(declaration('stacked', [240.4, 240.9, 270.8, 271.3]), 'wrapped')
+    expect(() => nativeLayoutChecks.assertDeclarationControlsLevel(declaration('stacked', [240.4, 240.9, 270.8, 273.8]), 'wrapped'))
+      .toThrow(/spread 3\.00px/)
+  })
+
+  it('rejects a declaration with no measurable controls', () => {
+    expect(() => nativeLayoutChecks.assertDeclarationControlsLevel(null, 'missing')).toThrow(/visible controls/)
+    expect(() => nativeLayoutChecks.assertDeclarationControlsLevel(declaration('beside', []), 'empty')).toThrow(/visible controls/)
+    expect(() => nativeLayoutChecks.assertDeclarationControlsLevel(declaration('beside', [Number.NaN]), 'nan')).toThrow(/measurable centres/)
   })
 })
 
