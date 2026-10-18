@@ -17,6 +17,7 @@ import { checkDevSample, checkRowPermalinks } from './check-dev-sample.mjs'
 import { checkDeclarationControlAlignment, checkDeclarationControlsLevel, checkNativeSignatureGeometry, checkNativeSignatureLinks } from './check-native-layout.mjs'
 import { checkRequiredAppearance, checkWebAnalytics, checkWebAnalyticsTransitions } from './check-page-readiness.mjs'
 import { checkTypeParameters } from './check-type-parameters.mjs'
+import { checkTmuxKeys, TMUX_KEY_PAGES } from './check-tmux-keys.mjs'
 
 const apiNavigationOnly = process.argv.includes('--api-navigation')
 const apiAnchorsOnly = process.argv.includes('--api-anchors')
@@ -32,6 +33,7 @@ const globalHeaderOnly = process.argv.includes('--global-header')
 const homeLauncherOnly = process.argv.includes('--home-launcher')
 const homeControlsOnly = process.argv.includes('--home-controls')
 const sampleOnly = process.argv.includes('--sample')
+const tmuxKeysOnly = process.argv.includes('--tmux-keys')
 const serveOnly = process.argv.includes('--serve')
 const requestedBrowserPort = process.env.LIBTMUX_DOCS_BROWSER_PORT
 assert(requestedBrowserPort === undefined || /^\d+$/.test(requestedBrowserPort)
@@ -738,7 +740,10 @@ try {
     : documentationNavigationOnly ? '/py/latest/' : apiSignaturesOnly ? '/api-signature-probe/'
     : apiNavigationOnly ? '/lua/latest/reference/libtmux-server/'
     : typeParametersOnly ? '/ts/latest/reference/selection-selection-where/' : '/tmux/concepts/server-session-window-pane/'
-  const setupPages = sampleOnly ? [firstPage, '/demo/widgets/pickers/'] : [firstPage]
+  const fullRun = ![homeLauncherOnly, homeControlsOnly, keywordHelpOnly, apiSignaturesOnly, referenceLayoutOnly, globalHeaderOnly,
+    referencePreferencesOnly, documentationNavigationOnly, apiNavigationOnly, apiAnchorsOnly, typeParametersOnly].some(Boolean)
+  const setupPages = sampleOnly ? [firstPage, '/demo/widgets/pickers/', ...TMUX_KEY_PAGES]
+    : [firstPage, ...(fullRun ? TMUX_KEY_PAGES : [])]
   const ready = Promise.all(setupPages.map(async (path) => {
     const response = await fetch(`${base}${path}`)
     assert(response.ok, `Browser setup: HTTP ${response.status} at ${path}`)
@@ -753,6 +758,8 @@ try {
     await retryReload(() => checkDevSample(browser, base))
     await checkWebAnalytics(browser, base)
     await checkWebAnalyticsTransitions(browser, base)
+  } else if (tmuxKeysOnly) {
+    await retryReload(() => checkTmuxKeys(browser, base))
   } else if (homeLauncherOnly) {
     await checkHomeLauncher(browser, base)
   } else if (homeControlsOnly) {
@@ -798,6 +805,7 @@ try {
     await retryReload(() => checkTypeParameters(browser, base))
   } else {
     await retryReload(() => checkRequiredAppearance(browser, base))
+    await retryReload(() => checkTmuxKeys(browser, base))
     await checkWebAnalytics(browser, base)
     await checkWebAnalyticsTransitions(browser, base)
     await retryReload(() => checkRowPermalinks(browser, base))
