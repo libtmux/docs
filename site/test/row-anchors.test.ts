@@ -39,6 +39,20 @@ describe('section and item permalinks', () => {
     ])
   })
 
+  it('keeps hidden kind marks out of configuration inventory names', () => {
+    const tree = fromHtml('<h2 id="config">Configuration</h2><table><tr><td><span aria-hidden="true"><span>c</span></span><code>layout</code></td><td>Layout</td></tr></table>', { fragment: true })
+    rehypeRowAnchors()(tree, { data: { astro: { frontmatter: { inventoryTables: {
+      config: { type: 'std:confval', identity: 'schema/session', prefix: 'session.' },
+    } } } } })
+    const entries: unknown[] = []
+    visit(tree, 'element', (node) => {
+      if (node.properties.dataInventoryTargets) entries.push(...JSON.parse(String(node.properties.dataInventoryTargets)))
+    })
+    expect(entries).toEqual([
+      { category: 'confval', identity: 'schema/session:layout', display: 'session.layout', native: [{ type: 'std:confval', name: 'session.layout' }] },
+    ])
+  })
+
   it('names option rows consistently across tmux versions', () => {
     const rows = (version: string) => tmuxCommandNotes(version, 'capture-pane')!.groups
       .flatMap((group) => group.options)
