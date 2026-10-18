@@ -339,6 +339,16 @@ Run the workspace linter:
 $ pnpm run lint
 ```
 
+### tmux keys
+
+Write a tmux key in tmux's notation, in backticks: `C-b d` for a sequence,
+`M-x`, `C-c`. The site renders it as a key cap; Markdown and agent exports
+keep the backticks. A modified key, and any key in a list with one, always
+qualifies. A bare name or character such as `Enter` or `q` qualifies beside the
+word "key" ("the `Enter` key") or "press". Text typed into a pane, like the
+word `Enter`, stays code. [`tmux-keys.ts`](site/src/lib/tmux-keys.ts) holds the
+rule, and the manual pages apply it to the manual's own key tables and bindings.
+
 ### Durable links
 
 Link to repository-relative files for local guidance. For external source

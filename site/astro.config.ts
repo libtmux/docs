@@ -19,6 +19,7 @@ import { danglingReport } from './src/integrations/dangling-report'
 import { inventory } from './src/integrations/inventory'
 import { rehypeApiLinks } from './src/plugins/rehype-api-links'
 import { rehypeRowAnchors } from './src/plugins/rehype-row-anchors'
+import { rehypeTmuxKeys } from './src/plugins/rehype-tmux-keys'
 import { remarkDocumenterHeadings } from './src/plugins/remark-documenter-headings'
 import { PORT_BY_SLUG, PORTS } from './src/lib/ports.ts'
 import { tmuxProsePath, workspaceRedirectPath } from './src/lib/docs-paths.ts'
@@ -330,6 +331,8 @@ export default defineConfig({
         // fences are still plain `pre > code.language-*`. Wrapping them here
         // is what lets expressive-code render inside the panels.
         rehypeCodeTabs,
+        // Before the API linker, so a key such as `C-c` is never read as a reference.
+        rehypeTmuxKeys,
         // After the tab grouping, before the autolinker: the tables it reads
         // are untouched by both, and running last keeps its <a> wrappers out
         // of the heading-anchor pass.
