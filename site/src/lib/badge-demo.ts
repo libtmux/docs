@@ -112,3 +112,14 @@ export const KINDS: Kind[] = DEFS.map(([kind, word, mono, fam, geo]) => {
   return { kind, word, mark, x: markHeight(mark) === 'x', mono, fam, shape: shapeOf(mark), geo }
 })
 export const kindOf = (kind: string) => KINDS.find((k) => k.kind === kind)!
+
+/** The lowest glyph-on-fill ratio among the families in a scheme, with the family that sets it. */
+export function famWorst(scheme: Scheme): string {
+  let low = { r: Infinity, f: '' }
+  for (const [f, v] of Object.entries(FAMS)) {
+    const [bg, fg] = v[scheme]
+    const r = ratio(hx(v.hue, fg), hx(v.hue, bg))
+    if (r < low.r) low = { r, f }
+  }
+  return `${low.r.toFixed(2)}:1 ${low.f}`
+}

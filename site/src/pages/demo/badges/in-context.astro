@@ -9,7 +9,7 @@
  * one render function and a list of variants.
  */
 import DemoLayout from '../../../components/demo/DemoLayout.astro'
-import { FAMS, KINDS, RING_FAMS, familyCss, kindOf, pillCss, type Scheme } from '../../../lib/badge-demo'
+import { FAMS, KINDS, RING_FAMS, familyCss, famWorst, kindOf, pillCss, type Scheme } from '../../../lib/badge-demo'
 
 const esc = (text: string) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
@@ -67,13 +67,14 @@ function later(kind: string, text: string, open = false): string {
   return `<a class="ic-m ic-m--later${open ? ' is-open' : ''}" href="#" data-kind="${k.word}" aria-label="${k.word}: ${esc(text)}"><code>${esc(text)}</code></a>`
 }
 
-/** The legend chip: the prose mark, then the word, in one chip. */
+/** The legend chip: one box, a mark segment and a word segment of equal height, split by a divider. */
 function leg(kind: string): string {
   const k = kindOf(kind)
-  return `<span class="ic-leg" data-fam="${k.fam}">${b('Q', kind)}<span class="ic-leg__w">${esc(k.word)}</span></span>`
+  return `<span class="ic-leg" data-fam="${k.fam}"><span class="ic-leg__m" aria-hidden="true"><span class="ic-leg__g" data-m1="${esc(k.mark)}" data-m2="${esc(k.mono)}"></span></span><span class="ic-leg__w">${esc(k.word)}</span></span>`
 }
 const quiet = (kind: string) => `<span class="ic-quiet">${esc(kindOf(kind).word)}</span>`
 
+const RING_LIST = Object.keys(FAMS).filter((f) => RING_FAMS.has(f)).join(', ')
 const SIG = 'fn new_session(&self, name: Option<&str>) -> Result<Session, Error>'
 
 // ---- the miniatures, one per context ----
@@ -211,7 +212,7 @@ const plainDemo = (t: string) =>
 const touchDemo = () => {
   const tap = (kind: string, name: string, open = false) =>
     `<span class="ic-tapm">${b('M', kind, { tap: true, open })}<a class="ic-m" href="#"><code>${name}</code></a></span>`
-  return `<div class="ic-phone"><h3 class="ic-def ic-def--s">${leg('method')}<span>new_session</span></h3><p class="ic-prose">${tap('method', 'new_session()', true)} returns a ${tap('struct', 'Session')}; read ${tap('property', 'session_name')}. Tap a mark for its kind.</p></div>`
+  return `<div class="ic-phone"><h3 class="ic-def ic-def--s">${leg('method')}<span>new_session</span></h3><p class="ic-prose">${tap('method', 'new_session()')} returns a ${tap('struct', 'Session', true)}; read ${tap('property', 'session_name')}. Tap a mark for its kind.</p></div>`
 }
 
 const legendDemo = (t: string) =>
@@ -373,7 +374,7 @@ const CONTEXTS: Context[] = [
   },
   {
     n: 18, title: 'Active state: selected node, target heading, hovered link', rule: 'Rule 3 · solid is a state; a ring where white is under 4.5:1',
-    variants: [{ t: 'R', label: 'R', rec: true, caption: 'solid on selected, :target, hover, focus · 600-step fill, white glyph · 2px ring on callables, members, tools' }],
+    variants: [{ t: 'R', label: 'R', rec: true, caption: `solid on selected, :target, hover, focus · 600-step fill, white glyph · 2px ring on ${RING_LIST}` }],
     render: (_v, s) => activeDemo(s),
   },
   {
@@ -446,6 +447,7 @@ const RULES: [string, string][] = [
   ['Rule 1', 'fill follows crowding: alone, tint · a short run or a column, outline or split chip · a long run, chrome, no colour budget, ink'],
   ['Rule 2', 'the word appears wherever the reader cannot hover: headings, menus, tooltips, tables'],
   ['Rule 3', 'solid is a state or a hero, never a default · a pill is status, never kind'],
+  ['Contrast', `worst glyph on fill: light ${famWorst('light')}, dark ${famWorst('dark')} · white on solid under 4.5:1 takes a ring: ${RING_LIST}`],
 ]
 const system = `<section id="system" class="ic-sec ic-sys"><header class="ic-sh"><h2>The system</h2></header><dl class="ic-rules">${RULES.map(([k, d]) => `<div><dt>${k}</dt><dd>${d}</dd></div>`).join('')}</dl><div class="ic-panes">${sysPane('light')}${sysPane('dark')}</div></section>`
 
@@ -457,16 +459,18 @@ const bar = `<div class="ic-bar"><span class="ic-bar__grp"><a class="ic-bar__lab
 
 // Print and forced-colours rules, written once and applied twice: under the media query and under the toggle.
 const printRules = (root: string) => `
-${root} .ic-b,${root} .ic-leg__w,${root} .ic-split,${root} .ic-split__k,${root} .ic-split__n,${root} .ic-pill,${root} .ic-fam,${root} .ic-b__l{background:transparent!important;color:#000!important;border:1px solid #000!important;box-shadow:none!important;outline:0!important;translate:none}
+${root} .ic-b,${root} .ic-leg,${root} .ic-split,${root} .ic-split__k,${root} .ic-split__n,${root} .ic-pill,${root} .ic-fam,${root} .ic-b__l{background:transparent!important;color:#000!important;border:1px solid #000!important;box-shadow:none!important;outline:0!important;translate:none}
 ${root} .ic-b__l,${root} .ic-split__k,${root} .ic-split__n{border:0!important}
-${root} .ic-leg__w,${root} .ic-leg>.ic-b{border-color:#000!important}
+${root} .ic-leg__m,${root} .ic-leg__w,${root} .ic-leg__g{background:transparent!important;color:#000!important;border:0!important}
+${root} .ic-leg__m{border-right:1px solid #000!important}
 ${root} .ic-pane{background:#fff!important;color:#000!important;border-color:#999!important}
 ${root} .ic-pane a,${root} .ic-pane code,${root} a,${root} code{color:#000!important}
 ${root} code{background:transparent!important;border-color:#999!important}
 `
 const forcedRules = (root: string) => `
-${root} .ic-b,${root} .ic-leg__w,${root} .ic-split,${root} .ic-pill,${root} .ic-fam{background:Canvas!important;color:CanvasText!important;border:1px solid CanvasText!important;box-shadow:none!important;forced-color-adjust:none}
-${root} .ic-b__l,${root} .ic-split__k,${root} .ic-split__n{background:transparent!important;color:CanvasText!important;border-color:CanvasText!important}
+${root} .ic-b,${root} .ic-leg,${root} .ic-split,${root} .ic-pill,${root} .ic-fam{background:Canvas!important;color:CanvasText!important;border:1px solid CanvasText!important;box-shadow:none!important;forced-color-adjust:none}
+${root} .ic-b__l,${root} .ic-split__k,${root} .ic-split__n,${root} .ic-leg__g,${root} .ic-leg__w{background:transparent!important;color:CanvasText!important;border-color:CanvasText!important}
+${root} .ic-leg__m{background:transparent!important;color:CanvasText!important;border-color:CanvasText!important}
 ${root} :is(.ic-m:hover,.ic-m:focus-visible,.ic-sel,:target) .ic-b{background:Highlight!important;color:HighlightText!important;border-color:Highlight!important}
 ${root} :is(.ic-m:hover,.ic-m:focus-visible,.ic-sel,:target) .ic-b .ic-b__l{color:HighlightText!important}
 ${root} .ic-pane{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}
@@ -675,6 +679,11 @@ const modeCss = `@media print{.ic-bar{display:none!important}${printRules('.ic-r
     padding: 3px 8px; border-radius: 3.5px; background: var(--tip-bg); color: var(--tip-fg); font: 600 11px/1 var(--font-sans); letter-spacing: .01em;
   }
   .ic-b[data-tap]::after { left: 0; translate: none; }
+  .ic-b[data-t='AF']::before, .ic-b[data-tap]::before {
+    content: ''; position: absolute; bottom: calc(100% + 1px); left: 50%; translate: -50% 0; z-index: 5; display: none;
+    border: 5px solid transparent; border-bottom: 0; border-top-color: var(--tip-bg);
+  }
+  .ic-b[data-t='AF']:is(:hover, :focus-visible, .is-open)::before, .ic-m:is(:hover, :focus-visible) .ic-b[data-t='AF']::before, .ic-b[data-tap].is-open::before { display: block; }
   .ic-b[data-t='AF']:is(:hover, :focus-visible, .is-open)::after, .ic-m:is(:hover, :focus-visible) .ic-b[data-t='AF']::after, .ic-b[data-tap].is-open::after { display: block; }
   .ic-b:focus-visible { outline: 2px solid var(--fh); outline-offset: 1px; }
 
@@ -694,14 +703,20 @@ const modeCss = `@media print{.ic-bar{display:none!important}${printRules('.ic-r
   .ic-split[data-ring]:is(:hover, :focus-visible) { outline: 2px solid var(--fh); outline-offset: 1px; }
   .ic-adm .ic-split__n { background: var(--bd-bg); }
 
-  /* Q legend chip, quiet word, pill */
-  .ic-leg { display: inline-flex; align-items: stretch; vertical-align: middle; }
-  .ic-leg > .ic-b { border-right-width: 0; border-radius: .2em 0 0 .2em; }
-  .ic-leg__w {
-    display: inline-grid; align-items: center; height: 1.35em; padding: 0 .55em 0 .3em; box-sizing: border-box;
-    border: 1px solid color-mix(in srgb, var(--fh) var(--ba), transparent); border-left-width: 0; border-radius: 0 .2em .2em 0;
-    background: var(--fb); color: var(--ff); font: 600 .8em/1 var(--font-sans);
+  /* Q legend chip: one box with one border and radius; the mark and the word are equal-height segments inside it */
+  .ic-leg {
+    display: inline-flex; align-items: stretch; box-sizing: border-box; height: 1.35em; vertical-align: middle; overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--fh) var(--ba), transparent); border-radius: .2em;
+    background: var(--fb); color: var(--ff); font: 600 1em/1 var(--font-sans); white-space: nowrap;
   }
+  .ic-leg__m {
+    display: grid; place-items: center; min-width: 1.3em; padding: 0 .4em;
+    border-right: 1px solid color-mix(in srgb, var(--fh) var(--ba), transparent);
+    background: color-mix(in srgb, var(--fh) 22%, var(--fb));
+  }
+  .ic-leg__g { font-size: .8em; line-height: 1; }
+  .ic-leg__g::before { content: attr(data-m1); }
+  .ic-leg__w { display: grid; place-items: center; padding: 0 .55em 0 .5em; font-size: .8em; line-height: 1; }
   .ic-quiet { margin-right: .55em; color: var(--bd-muted); font: 600 .5em/1 var(--font-sans); text-transform: uppercase; letter-spacing: .08em; vertical-align: middle; }
   .ic-pill { display: inline-block; padding: .1em .65em; border-radius: 999px; font: 600 .75rem/1.5 var(--font-sans); vertical-align: middle; }
   .ic-pill--warn { background: var(--pw-bg); color: var(--pw-fg); }
@@ -794,8 +809,8 @@ const modeCss = `@media print{.ic-bar{display:none!important}${printRules('.ic-r
   .ic-hero__s { margin-top: .2rem; color: var(--bd-muted); font: .8125rem/1.3 var(--font-mono); }
   .ic-paper { padding: 1rem 1.2rem; border: 1px solid #ccc; background: #fff; color: #000; box-shadow: 0 1px 4px rgb(0 0 0 / .15); font-family: var(--font-sans); }
   .ic-forcedbox { padding: .9rem 1.1rem; border: 2px solid CanvasText; background: Canvas; color: CanvasText; }
-  .ic-phone { width: min(100%, 17rem); display: grid; gap: 1.5rem; padding: .9rem 1rem; border: 1px solid var(--bd-edge); border-radius: 1.25rem; background: var(--bd-bg); font-size: .9375rem; }
-  .ic-phone .ic-prose { font-size: .9375rem; line-height: 2; }
+  .ic-phone { width: min(100%, 17rem); display: grid; gap: 1.1rem; padding: .9rem 1rem; border: 1px solid var(--bd-edge); border-radius: 1.25rem; background: var(--bd-bg); font-size: .9375rem; }
+  .ic-phone .ic-prose { font-size: .9375rem; line-height: 2.7; }
   .ic-tapm { display: inline-flex; align-items: center; gap: .25em; position: relative; }
   .ic-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(8.2rem, 1fr)); gap: .5rem .6rem; font-size: .9375rem; }
   .ic-cell { display: flex; align-items: center; }
