@@ -76,28 +76,51 @@ export function renderedTargets(html: string, href: string): RenderedTarget[] {
   let page: InventoryPage | undefined
   let main: Node | undefined
   let shellExport = false
-  const ids = new Map<string, number>()
+  let nativePage = false
+  const ids = new Map<string, Node[]>()
+  const notes = new Set<string>()
   walk(tree, (node) => {
     const props = properties(node)
     if (node.tagName === 'meta' && props.name === 'libtmux-inventory') page = JSON.parse(attribute(props, 'content') ?? '{}') as InventoryPage
     if (node.tagName === 'html' && node.attrs?.some((attr) => attr.name === 'data-native-shell-export')) shellExport = true
+    if (node.tagName === 'html' && node.attrs?.some((attr) => attr.name === 'data-native-shell')) nativePage = true
     if (node.tagName === 'main' || props.role === 'main') main = node
-    if (typeof props.id === 'string') ids.set(props.id, (ids.get(props.id) ?? 0) + 1)
+    if (typeof props.id === 'string') {
+      const matches = ids.get(props.id) ?? []
+      matches.push(node)
+      ids.set(props.id, matches)
+      if (['doc-biblioentry', 'doc-footnote'].includes(String(props.role))) notes.add(props.id)
+    }
   })
   if (!page || page.exclude || shellExport) return []
   const context = { scope: page.scope, product: page.product, version: page.version, source: page.source }
   const targets: RenderedTarget[] = [{ ...context, category: 'doc', identity: page.identity,
     display: page.title, href, aliases: page.aliases }]
-  const collect = (node: Node, inheritedOwner?: string, inheritedAnchor?: string) => {
+  const noteReference = (node: Node) => {
+    if (!nativePage || !notes.size || node.tagName !== 'a' || properties(node).dataInventoryId) return false
+    const link = node.attrs?.find((attr) => attr.name === 'href')?.value
+    if (!link?.startsWith('#')) return false
+    try { return notes.has(decodeURIComponent(link.slice(1))) } catch { return false }
+  }
+  const collect = (node: Node, inheritedOwner?: string, inheritedAnchor?: string, parent?: Node) => {
     const props = properties(node)
-    if (DROP.has(node.tagName ?? '') || CONTROL_ROLES.has(attribute(props, 'role') ?? '') || Object.hasOwn(props, 'dataInventoryIgnore')) return
+    if (DROP.has(node.tagName ?? '') || CONTROL_ROLES.has(attribute(props, 'role') ?? '') || Object.hasOwn(props, 'dataInventoryIgnore') || noteReference(node)) return
     const owner = attribute(props, 'dataInventoryOwner') ?? inheritedOwner
     const anchor = attribute(props, 'dataInventoryAnchor') ?? inheritedAnchor
     const owned = (id: string) => Boolean(owner && anchor && (id === anchor || id.startsWith(`${anchor}.`)))
     const logical = (id: string) => owned(id) ? owner! + id.slice(anchor!.length) : id
     if (typeof props.id === 'string' && props.id !== '_top' && (props.role !== 'tabpanel' || props.dataInventoryId)) {
       const id = props.id
-      if (ids.get(id) !== 1) throw new Error(`Inventory destination has duplicate HTML IDs: ${href}#${id}`)
+      const matches = ids.get(id)!
+      if (matches.length !== 1) {
+        // Docutils can reuse a citation ID for an empty alias beside a named heading.
+        const section = parent && properties(parent).id
+        if (nativePage && !props.dataInventoryId && node.tagName === 'span' && !children(node).length && /^id\d+$/.test(id) &&
+          parent?.tagName === 'section' && typeof section === 'string' && section !== id && ids.get(section)?.length === 1 &&
+          children(parent).some((child) => /^h[1-6]$/.test(child.tagName ?? '')) &&
+          matches.every((other) => other === node || noteReference(other))) return
+        throw new Error(`Inventory destination has duplicate HTML IDs: ${href}#${id}`)
+      }
       const explicit = typeof props.dataInventoryId === 'string'
       const category = attribute(props, 'dataInventoryCategory') ?? (owned(id) ? 'section' : /^h[1-6]$/.test(node.tagName ?? '') ? 'heading' : 'anchor')
       const identity = explicit ? logical(attribute(props, 'dataInventoryId')!) : owned(id) ? logical(id) : `${owner ?? page!.identity}#${id}`
@@ -114,7 +137,7 @@ export function renderedTargets(html: string, href: string): RenderedTarget[] {
         for (const entry of entries) targets.push({ ...context, ...entry, href: `${href}#${encodeURIComponent(id)}` })
       }
     }
-    for (const child of children(node)) collect(child, owner, anchor)
+    for (const child of children(node)) collect(child, owner, anchor, node)
   }
   if (main) collect(main)
   // Detach attribute substrings so retained targets cannot pin complete HTML buffers.
