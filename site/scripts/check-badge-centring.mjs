@@ -30,6 +30,10 @@ const PAGES = [
   { label: 'Rust type page', path: '/rs/latest/reference/server-server/' },
   { label: 'Rust MCP tools', path: '/rs/latest/mcp/tools/' },
   { label: 'Rust MCP tool', path: '/rs/latest/mcp/tools/create_window/' },
+  { label: 'Rust struct', path: '/rs/latest/reference/session-session/' },
+  { label: 'TypeScript async method', path: '/ts/latest/reference/server-server-withconnection/' },
+  { label: 'TypeScript static attribute', path: '/ts/latest/reference/errors-libtmuxerror-code/' },
+  { label: 'TypeScript readonly attribute', path: '/ts/latest/reference/client-client-clientbrand/' },
 ]
 const SPLIT = '.api-elsewhere-value, .api-command-related, nav.api-related'
 // A compact mark that leads a bare name: an index or tool card, and a member list row.
@@ -43,8 +47,8 @@ const SKIP = new Set(['p', '$'])
 export async function sample(page, handle, kind) {
   await handle.scrollIntoViewIfNeeded()
   const info = await handle.evaluate((element, kind) => {
-    const pick = kind === 'mark' || kind === 'row' ? element.querySelector('.api-badge__label') : kind === 'leg' ? element.querySelector('.api-leg__g') : element.querySelector(':scope > .api-nav__kind > .api-badge__label')
-    const word = kind === 'leg' ? element.querySelector('.api-leg__wl') : kind === 'split' ? element.querySelector(':scope > .api-nav__kind + code') : null
+    const pick = kind === 'mark' || kind === 'row' || kind === 'mod' ? element.querySelector(':scope > .api-badge__label, .api-badge__label') : kind === 'leg' ? element.querySelector('.api-leg__g') : element.querySelector(':scope > .api-nav__kind > .api-badge__label')
+    const word = kind === 'mod' ? pick : kind === 'leg' ? element.querySelector('.api-leg__wl') : kind === 'split' ? element.querySelector(':scope > .api-nav__kind + code') : null
     const style = getComputedStyle(element)
     // Document coordinates: the screenshot clip is relative to the page, not to the scrolled viewport.
     const rectOf = (node) => { const r = node.getBoundingClientRect(); return { x: r.x + scrollX, y: r.y + scrollY, w: r.width, h: r.height } }
@@ -152,7 +156,10 @@ export function judge(label, result, kind, { skipBaseline = false } = {}) {
   if (kind === 'mark' || kind === 'row') {
     if (Math.abs(result.whole) > 1 && Math.abs(result.fine) > 1.25) failures.push(`${label}: ink is ${result.whole} device px off centre`)
   }
-  if (kind === 'row') {
+  if (kind === 'mod') {
+    // A modifier is one word in an outline: its capitals centre in the chip, as the legend chip's run does.
+    if (Math.abs(result.runCentre) > 1) failures.push(`${label}: the word is ${result.runCentre.toFixed(1)} device px off the chip's centre`)
+  } else if (kind === 'row') {
     // The name's capitals centre on the mark, and the two do not touch.
     if (Math.abs(result.runCentre) > 1.25) failures.push(`${label}: the name is ${result.runCentre.toFixed(1)} device px off the mark's centre`)
     if (result.gap < 4) failures.push(`${label}: the mark is ${result.gap.toFixed(1)}px from the name`)
@@ -169,6 +176,7 @@ const GROUPS = [
   { kind: 'leg', selector: '.api-leg', name: 'legend chip' },
   { kind: 'split', selector: SPLIT.split(', ').map((s) => `${s} a:has(> .api-nav__kind)`).join(', '), name: 'split chip' },
   { kind: 'row', selector: ROW_MARKS, name: 'card and list mark' },
+  { kind: 'mod', selector: '.api-badge--mod', name: 'modifier chip' },
 ]
 
 
@@ -359,6 +367,17 @@ async function negativeControl(page, base, results) {
   await padded.evaluate((node) => node.remove())
   assert(results.railControl > 0, 'The rail check did not notice a chip that does not contain its content')
 
+  // A modifier word shifted two pixels inside its chip.
+  await page.goto(`${base}${PAGES[9].path}`, { waitUntil: 'load' })
+  await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
+  await page.addStyleTag({ content: MEASURING_STYLE })
+  const chip = page.locator('.api-badge--mod').filter({ visible: true }).first()
+  assert.deepEqual(judge('control', measure(await sample(page, await chip.elementHandle(), 'mod'), 'mod'), 'mod'), [], 'The modifier chip is not centred before the control')
+  const shifted = await page.addStyleTag({ content: '.api-badge--mod > .api-badge__label { translate: 0 2px !important; }' })
+  results.modControl = judge('control', measure(await sample(page, await chip.elementHandle(), 'mod'), 'mod'), 'mod').length
+  await shifted.evaluate((node) => node.remove())
+  assert(results.modControl > 0, 'The modifier check did not notice a word shifted off its chip\'s centre')
+
   // The protocol sidebar: a redundant mark under a group of one kind must fail, and a mark in a mixed group must pass.
   await page.goto(`${base}${PAGES[8].path}`, { waitUntil: 'load' })
   await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
@@ -423,7 +442,7 @@ async function negativeControl(page, base, results) {
 }
 
 export async function checkBadgeCentring(browser, base, { sample: bounded = false } = {}) {
-  const results = { measured: 0, failures: [], counts: {}, control: 0, railControl: 0, headingControl: 0, rowControl: 0, sidebarRedundant: 0, sidebarMixedBare: 0, sidebarMixedMarked: 0, gutterControl: 0 }
+  const results = { measured: 0, failures: [], counts: {}, control: 0, railControl: 0, headingControl: 0, rowControl: 0, sidebarRedundant: 0, sidebarMixedBare: 0, sidebarMixedMarked: 0, gutterControl: 0, modControl: 0 }
   const pages = bounded ? PAGES.slice(0, 2) : PAGES
   const hi = await chromium.launch({ args: ['--force-device-scale-factor=2', '--window-size=1440,1000'] })
   try {
@@ -444,7 +463,7 @@ export async function checkBadgeCentring(browser, base, { sample: bounded = fals
   assert((results.counts['protocol sidebar group'] ?? 0) > 0, 'No protocol sidebar group was measured')
   assert((results.counts['API tree mark'] ?? 0) > 0, 'No API tree mark was measured, so the gutter was not checked')
   assert.deepEqual(results.failures, [], `Badge centring:\n${results.failures.join('\n')}`)
-  console.log(`Badge centring: ${results.measured} samples at 1x and a real 2x, light and dark (${Object.entries(results.counts).map(([k, v]) => `${v} ${k}`).join(', ')}); negative controls caught ${results.control} of ${results.controlTested} shifted marks, ${results.railControl} chip problems, ${results.headingControl} heading problem and ${results.rowControl} row problems, ${results.sidebarRedundant} redundant sidebar mark (a mixed group's marks: ${results.sidebarMixedMarked} complaints), ${results.gutterControl} broken gutter PASS`)
+  console.log(`Badge centring: ${results.measured} samples at 1x and a real 2x, light and dark (${Object.entries(results.counts).map(([k, v]) => `${v} ${k}`).join(', ')}); negative controls caught ${results.control} of ${results.controlTested} shifted marks, ${results.railControl} chip problems, ${results.headingControl} heading problem and ${results.rowControl} row problems, ${results.sidebarRedundant} redundant sidebar mark (a mixed group's marks: ${results.sidebarMixedMarked} complaints), ${results.gutterControl} broken gutter, ${results.modControl} shifted modifier word PASS`)
 }
 
 /**

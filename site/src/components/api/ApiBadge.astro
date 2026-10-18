@@ -49,7 +49,7 @@ const mark = legend ? kindMark(palette) : undefined
     `api-badge--${variant}`,
     `api-badge--${variant}-${palette}`,
   ]}
-  title={preview ? compact ? value : variant === 'kind' ? `${label} (kind)` : label : undefined}
+  title={preview ? compact ? value : variant === 'kind' ? `${label} (kind)` : label : variant === 'mod' && !compact ? label : undefined}
   aria-label={href ? `${label}: read the ${variant === 'kind' ? label : value} definition in the API glossary` : undefined}
   aria-hidden={compact ? 'true' : undefined}
 ><span class="api-badge__label" data-mark={compact ? markClass(text) : undefined}>{text}</span></Tag>}

@@ -71,7 +71,7 @@
  * members and tools).
  */
 .api-badge--kind-class, .api-badge--kind-struct, .api-badge--kind-enum, .api-badge--kind-union,
-.api-badge--kind-typealias, .api-badge--kind-module, .api-badge.api-badge--mod-package {
+.api-badge--kind-typealias, .api-badge--kind-module {
   --mk-bg: var(--mark-types-bg); --mk-fg: var(--mark-types-fg); --mk-hue: var(--mark-types-hue);
   --mk-act-bg: var(--mark-types-solid); --mk-act-fg: #fff; --mk-act-ring: 0 0 0 0 transparent;
 }
@@ -103,11 +103,4 @@
   text-decoration-style: dotted;
   text-decoration-color: currentColor;
   text-underline-offset: .2em;
-}
-
-/* A package modifier keeps the module's colour: it is a kind in modifier clothing. */
-.api-badge.api-badge--mod-package {
-  background: var(--mk-bg);
-  color: var(--mk-fg);
-  border-color: var(--mk-hue);
 }

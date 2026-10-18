@@ -272,11 +272,67 @@
   border-inline-end-color: color-mix(in srgb, var(--color-foreground-primary, currentColor) 14%, transparent);
 }
 
+/* ---- Modifier chips: outline-only, on the legend chip's geometry ---- */
+
+/*
+ * Kind is filled and a modifier is an outline, so an entry has one loud thing.
+ * A modifier keeps its gp-sphinx hue (async violet, abstract indigo, classmethod
+ * and static amber, final and readonly green, the rest a readable grey), taken
+ * from the tokens in the vendored stylesheet, which scopes them to `dl.py`; they
+ * apply here wherever a modifier sits. Text is the token's ink, never a muted
+ * grey on a transparent fill. Deprecated is a status and takes the warning ink.
+ * A package names the container of a type, so it takes the types hue.
+ *
+ * The chip is the legend chip's box: the same snapped height, radius and sans
+ * 600 word, trimmed to its cap height on a whole-pixel baseline, so a row of
+ * kind and modifiers reads as one family.
+ */
+/* gp-sphinx's light amber ink is 4.4:1 on the declaration band; five percent darker clears 4.5:1 and keeps the hue. Dark takes the token as it is. */
+:root { --md-amber-fg: color-mix(in srgb, var(--gp-sphinx-badge-mod-classmethod-fg) 95%, #000); }
+[data-theme-mode='dark'] { --md-amber-fg: var(--gp-sphinx-badge-mod-classmethod-fg); }
+.api-badge--mod {
+  --md-fg: var(--gp-sphinx-badge-mod-default-fg);
+  --md-bd: var(--gp-sphinx-badge-mod-default-border);
+}
+.api-badge--mod-async { --md-fg: var(--gp-sphinx-badge-mod-async-fg); --md-bd: var(--gp-sphinx-badge-mod-async-border); }
+.api-badge--mod-abstract { --md-fg: var(--gp-sphinx-badge-mod-abstract-fg); --md-bd: var(--gp-sphinx-badge-mod-abstract-border); }
+.api-badge--mod-classmethod, .api-badge--mod-static { --md-fg: var(--md-amber-fg); --md-bd: var(--gp-sphinx-badge-mod-classmethod-border); }
+.api-badge--mod-final, .api-badge--mod-readonly { --md-fg: var(--gp-sphinx-badge-mod-final-fg); --md-bd: var(--gp-sphinx-badge-mod-final-border); }
+.api-badge--mod-deprecated { --md-fg: var(--api-ink-keyword); --md-bd: var(--api-ink-danger-border); }
+.api-badge--mod-package { --md-fg: var(--mark-types-fg); --md-bd: var(--mark-types-hue); }
+
+/* The doubled class outranks the vendored `dl.py .api-badge--mod`, which would otherwise repaint a deprecated or package chip grey. */
+.api-badge.api-badge--mod.api-badge--mod {
+  --leg-h: round(1.35em, 2px);
+  --leg-pb: round(calc((var(--leg-h) - 2px - .8 * 1cap) / 2), var(--mark-step));
+  display: inline-flex;
+  align-items: flex-end;
+  box-sizing: border-box;
+  height: var(--leg-h);
+  max-inline-size: 100%;
+  padding: 0 .4em var(--leg-pb);
+  overflow: hidden;
+  vertical-align: middle;
+  border: 1px solid var(--md-bd);
+  border-radius: .2em;
+  background: transparent;
+  color: var(--md-fg);
+  font: 600 .8125rem/1 var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+  letter-spacing: 0;
+  text-transform: none;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.api-badge--mod > .api-badge__label { display: block; font-size: .8em; line-height: 1; text-box: trim-both cap alphabetic; }
+@supports not (text-box: trim-both cap alphabetic) {
+  .api-badge.api-badge--mod.api-badge--mod { align-items: center; padding-bottom: 0; }
+}
+
 /* ---- Print, forced colours and increased contrast ---- */
 
 /* Print is ink: tints stripped, a 1px border, the glyph in black. */
 @media print {
-  .api-nav__kind, .api-badge.api-leg, .api-leg__m {
+  .api-nav__kind, .api-badge.api-leg, .api-leg__m, .api-badge.api-badge--mod.api-badge--mod {
     background: transparent !important;
     color: #000 !important;
     border-color: #000 !important;
@@ -287,7 +343,7 @@
 
 /* Forced colours: an outline in system colours, Highlight where active. */
 @media (forced-colors: active) {
-  .api-nav__kind, .api-badge.api-leg {
+  .api-nav__kind, .api-badge.api-leg, .api-badge.api-badge--mod.api-badge--mod {
     forced-color-adjust: none;
     background: Canvas;
     color: CanvasText;
@@ -306,8 +362,9 @@
 
 /* More contrast: the border at full strength. */
 @media (prefers-contrast: more) {
-  .api-nav__kind, .api-badge.api-leg {
+  .api-nav__kind, .api-badge.api-leg, .api-badge.api-badge--mod.api-badge--mod {
     --mk-bd: currentColor;
+    --md-bd: currentColor;
     border-color: currentColor;
   }
   .api-leg__m { border-inline-end-color: currentColor; }

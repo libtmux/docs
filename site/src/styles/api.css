@@ -98,9 +98,7 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
   text-transform: lowercase;
   white-space: nowrap;
 }
-/* Modifiers are outline-only, so a kind badge stays the loudest thing. */
-.api-badge--mod { background: transparent; color: var(--api-muted); border-color: var(--api-border); }
-.api-badge--mod-deprecated { color: var(--api-ink-keyword); border-color: var(--api-ink-danger-border); }
+/* Modifiers are outline-only, so a kind badge stays the loudest thing; `kind-marks.css` draws them. */
 
 /* --- Field lists -------------------------------------------------------- */
 
@@ -604,13 +602,8 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
   gap: .35rem .5rem;
 }
 
-.api-index-card__context > .api-badge {
-  display: inline-flex;
-  align-items: center;
-  text-transform: none;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
+.api-index-card__context { min-width: 0; max-width: 100%; }
+.api-index-card__context > .api-badge { max-inline-size: 100%; }
 
 /*
  * `Bases:` — every conformance, wrapped.
