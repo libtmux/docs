@@ -187,6 +187,12 @@ node scripts/gen-registry.negative.mjs
 step 'source links'
 node scripts/check-source-links.mjs
 
+step 'example indentation'
+node scripts/check-example-indentation.mjs
+
+step 'example indentation (negative)'
+node scripts/check-example-indentation.negative.mjs
+
 step 'unit tests'
 LIBTMUX_DOCS_TEST_SOURCE_ONLY=1 pnpm run --recursive --if-present test
 
