@@ -34,6 +34,11 @@ normalized native syntax or structured parameter semantics. Native syntax
 keeps qualifiers and companion declarations distinct even when shared fields
 omit them. Layout whitespace does not change these keys.
 
+Native citation links are navigation controls; the named citations remain
+targets. When Docutils reuses their automatic ID for an empty heading alias,
+the catalog uses the heading's unique section fragment. Duplicate content IDs
+still fail publication. Native article bytes remain unchanged.
+
 The record contract lives in `packages/api-model/src/targets.ts`. Logical
 identity, display, final URL, version, and provenance are separate fields.
 The serializer does not derive page slugs. Portable keys escape bytes outside
