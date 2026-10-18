@@ -39,6 +39,19 @@ describe('rendered inventory targets', () => {
   it('fails when a targeted fragment occurs more than once in the HTML', () => {
     expect(() => renderedTargets(html(page, '<h2 id="same">A</h2><h2 id="same">B</h2>'), '/en/guide/')).toThrow('duplicate HTML IDs')
   })
+  it('exports native headings and citations without their colliding navigation aliases', () => {
+    const content = html(page, '<section id="panes"><span id="id1"></span><h1>Panes</h1></section><p><a id="id1" class="reference internal" href="#pane-manual">[pane_manual]</a></p><div id="pane-manual" role="doc-biblioentry">Pane manual</div>').replace('<html>', '<html data-native-shell>')
+    const targets = renderedTargets(content, '/en/py/stable/api/api/libtmux.pane/')
+    expect(targets.map((target) => target.href)).toEqual(['/en/py/stable/api/api/libtmux.pane/', '/en/py/stable/api/api/libtmux.pane/#panes', '/en/py/stable/api/api/libtmux.pane/#pane-manual'])
+  })
+  it('keeps unique native aliases and rejects duplicate content IDs beside citation links', () => {
+    const native = (content: string) => html(page, content).replace('<html>', '<html data-native-shell>')
+    const citation = '<a id="cite" href="#manual">[manual]</a><div id="manual" role="doc-biblioentry">Manual</div>'
+    const targets = renderedTargets(native(`<section id="panes"><span id="id1"></span><h1>Panes</h1></section>${citation}`), '/en/guide/')
+    expect(targets.some((target) => target.href.endsWith('#id1'))).toBe(true)
+    expect(targets.some((target) => target.href.endsWith('#cite'))).toBe(false)
+    expect(() => renderedTargets(native(`<h2 id="id1">Authored heading</h2>${citation.replace('id="cite"', 'id="id1"')}`), '/en/guide/')).toThrow('duplicate HTML IDs')
+  })
   it('uses the document target instead of a repeated imported page-top anchor', () => {
     const targets = renderedTargets(html(page, '<h1 id="_top">Manual</h1><div id="_top"></div><h2 id="commands">Commands</h2>'), '/en/manual/')
     expect(targets.map((target) => target.category)).toEqual(['doc', 'heading'])
