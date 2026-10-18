@@ -70,7 +70,7 @@ function later(kind: string, text: string, open = false): string {
 /** The legend chip: one box, a mark segment and a word segment of equal height, split by a divider. */
 function leg(kind: string): string {
   const k = kindOf(kind)
-  return `<span class="ic-leg" data-fam="${k.fam}" data-mark="${k.cls}"><span class="ic-leg__m" aria-hidden="true"><span class="ic-leg__g" data-m1="${esc(k.mark)}" data-mark="${k.cls}"></span></span><span class="ic-leg__w">${esc(k.word)}</span></span>`
+  return `<span class="ic-leg" data-fam="${k.fam}" data-mark="${k.cls}"><span class="ic-leg__m" aria-hidden="true"><span class="ic-leg__g" data-m1="${esc(k.mark)}" data-mark="${k.cls}"></span></span><span class="ic-leg__w"><span class="ic-leg__wl">${esc(k.word)}</span></span></span>`
 }
 const quiet = (kind: string) => `<span class="ic-quiet">${esc(kindOf(kind).word)}</span>`
 
@@ -725,15 +725,19 @@ const modeCss = `@media print{.ic-bar{display:none!important}${printRules('.ic-r
      Both sit on one baseline, centred by the mark's class (cap or x-height); registered lengths resolve the units once, on the chip. */
   @property --ic-lh { syntax: '<length>'; inherits: true; initial-value: 0px; }
   @property --ic-gh { syntax: '<length>'; inherits: true; initial-value: 0px; }
+  @property --ic-lh { syntax: '<length>'; inherits: true; initial-value: 0px; }
+  @property --ic-gh { syntax: '<length>'; inherits: true; initial-value: 0px; }
   @property --ic-pb { syntax: '<length>'; inherits: true; initial-value: 0px; }
+  @property --ic-wb { syntax: '<length>'; inherits: true; initial-value: 0px; }
   .ic-leg {
     --ic-lh: round(1.35em, 2px); --ic-gh: calc(.8 * 1cap);
     --ic-pb: round(calc((var(--ic-lh) - 2px - var(--ic-gh)) / 2), var(--step));
+    --ic-wb: round(calc((var(--ic-lh) - 2px - .8 * 1ex) / 2), var(--step));
     display: inline-flex; align-items: stretch; box-sizing: border-box; height: var(--ic-lh); vertical-align: middle; overflow: hidden;
     border: 1px solid color-mix(in srgb, var(--fh) var(--ba), transparent); border-radius: .2em;
     background: var(--fb); color: var(--ff); font: 600 1em/1 var(--font-sans); white-space: nowrap;
   }
-  .ic-leg[data-mark='x'] { --ic-gh: calc(.8 * 1ex); }
+  .ic-leg[data-mark='x'] { --ic-gh: calc(.8 * (1ex + var(--xo, .01em))); }
   .ic-leg[data-mark='col'] { --ic-gh: calc(.8 * 1ex); }
   .ic-leg[data-mark='asc'] { --ic-gh: calc(.8 * (1cap + var(--asc, .04em))); }
   .ic-leg[data-mark='tee'] { --ic-gh: calc(.8 * (1cap - var(--tee, .035em))); }
@@ -743,9 +747,10 @@ const modeCss = `@media print{.ic-bar{display:none!important}${printRules('.ic-r
     background: color-mix(in srgb, var(--fh) 22%, var(--fb));
   }
   .ic-leg__g { display: block; font-size: .8em; line-height: 1; text-box: trim-both cap alphabetic; }
-  :is(.ic-leg[data-mark='x'], .ic-leg[data-mark='col']) :is(.ic-leg__g, .ic-leg__w) { text-box: trim-both ex alphabetic; }
+  :is(.ic-leg[data-mark='x'], .ic-leg[data-mark='col']) .ic-leg__g { text-box: trim-both ex alphabetic; }
   .ic-leg__g::before { content: attr(data-m1); }
-  .ic-leg__w { display: flex; align-items: flex-end; padding: 0 .55em var(--ic-pb) .5em; font-size: .8em; line-height: 1; text-box: trim-both cap alphabetic; }
+  .ic-leg__w { display: flex; align-items: flex-end; padding: 0 .55em var(--ic-wb) .5em; font-size: .8em; line-height: 1; }
+  .ic-leg__wl { display: block; text-box: trim-both ex alphabetic; }
   .ic-quiet { margin-right: .55em; color: var(--bd-muted); font: 600 .5em/1 var(--font-sans); text-transform: uppercase; letter-spacing: .08em; vertical-align: middle; }
   .ic-pill { display: inline-block; padding: .1em .65em; border-radius: 999px; font: 600 .75rem/1.5 var(--font-sans); vertical-align: middle; }
   .ic-pill--warn { background: var(--pw-bg); color: var(--pw-fg); }
