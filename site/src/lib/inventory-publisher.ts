@@ -7,7 +7,7 @@ import type { VersionManifest } from './versions.ts'
 export function collectInventoryTargets(out: string, base: string): RenderedTarget[] {
   const targets: RenderedTarget[] = []
   for (const file of readdirSync(out, { recursive: true }).filter((file): file is string => typeof file === 'string' && file.endsWith('.html'))) {
-    const path = file.replaceAll('\\', '/').replace(/index\.html$/, '')
+    const path = file.replaceAll('\\', '/').replace(/(^|\/)index\.html$/, '$1')
     targets.push(...renderedTargets(readFileSync(join(out, file), 'utf8'), `${base}${path}`))
   }
   return mergeTargets(targets)
