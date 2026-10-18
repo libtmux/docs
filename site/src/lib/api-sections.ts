@@ -190,6 +190,18 @@ export function apiEntrySections(symbol: ApiSymbol, port?: string, index?: Symbo
   return sections
 }
 
+/** Signature identities survive display formatting and overload reordering. */
+export function apiOverloadIdentity(signature: Signature): string {
+  return signature.identity ?? JSON.stringify({
+    params: signature.params.map((param) => ({ type: param.type?.replace(/\s+/g, ' ').trim(), variadic: param.variadic, optional: param.optional })),
+    returns: signature.returns?.replace(/\s+/g, ' ').trim(), typeParams: signature.typeParams,
+  })
+}
+
+export function apiOverloadId(symbol: ApiSymbol, signature: Signature): string {
+  return `${symbol.publicId ?? symbol.id}.overload-${createHash('sha256').update(apiOverloadIdentity(signature)).digest('hex').slice(0, 16)}`
+}
+
 /** Dispatch methods retain their own documentation and stable fragment identities. */
 export function apiMethodDetails(symbol: ApiSymbol) {
   const labels = signatureLabels(symbol)

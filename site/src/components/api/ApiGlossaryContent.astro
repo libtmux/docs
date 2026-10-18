@@ -11,7 +11,7 @@ const jsonHref = `${glossary.path.slice(0, -1)}.json`
     <h2 id={group.id}>{group.title}<a class="api-heading-link" href={`#${group.id}`} aria-label={`Link to ${group.title}`} data-pagefind-ignore="all">#</a></h2>
     <p>{group.description}</p>
     {group.terms.map((term) => <section aria-labelledby={term.id}>
-      <h3 id={term.id}><code>{term.id}</code><a class="api-heading-link" href={`#${term.id}`} aria-label={`Link to ${term.id}`} data-pagefind-ignore="all">#</a></h3>
+      <h3 id={term.id} data-inventory-category="term" data-inventory-id={term.id} data-inventory-display={term.id} data-inventory-native={JSON.stringify([{ type: 'std:term', name: term.id }])}><code>{term.id}</code><a class="api-heading-link" href={`#${term.id}`} aria-label={`Link to ${term.id}`} data-pagefind-ignore="all">#</a></h3>
       <p>{term.definition}</p>
       {term.detail && <p>{term.detail}</p>}
       <p>References: {term.references.map((reference, index) => <>

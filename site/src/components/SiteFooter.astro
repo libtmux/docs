@@ -5,6 +5,7 @@ import { PORTS, portHomeUrl } from '../lib/ports'
 import { rawSourceUrl, type PageSource } from '../lib/markdown-twins'
 import { withRoot } from '../lib/site-root'
 import { defaultVersionFor } from '../lib/versions'
+import { inventoryLinks } from '../lib/inventory-links'
 
 /**
  * The shared footer. Its last line is the one gp-sphinx gives every page of
@@ -13,6 +14,8 @@ import { defaultVersionFor } from '../lib/versions'
  */
 interface Props {
   locale: Locale
+  port?: string
+  version?: string
   /** Generated native indexes may have neither a source file nor a Markdown twin. */
   source?: PageSource
   markdownHref?: string
@@ -24,7 +27,8 @@ interface Props {
   flush?: boolean
 }
 
-const { locale, source, markdownHref, llmsRoot, githubUrl, flush = false } = Astro.props
+const { locale, port, version, source, markdownHref, llmsRoot, githubUrl, flush = false } = Astro.props
+const inventories = inventoryLinks(port, version)
 ---
 
 <footer class:list={[!flush && 'mt-16', 'border-t border-edge']}>
@@ -48,7 +52,13 @@ const { locale, source, markdownHref, llmsRoot, githubUrl, flush = false } = Ast
         {source && <><a class="muted-link underline" href={rawSourceUrl(source)}>{t(locale, 'footer.rawSource')}</a>, </>}
         <a class="muted-link underline" href={`${llmsRoot}docs.json`}>docs.json</a>,
         <a class="muted-link underline" href={`${llmsRoot}llms.txt`}>llms.txt</a>,
-        <a class="muted-link underline" href={`${llmsRoot}llms-full.txt`}>llms-full.txt</a>
+        <a class="muted-link underline" href={`${llmsRoot}llms-full.txt`}>llms-full.txt</a>,
+        {inventories.scoped && <><a class="muted-link underline" href={inventories.scoped}>objects.inv</a>, </>}
+        <a class="muted-link underline" href={inventories.full}>objects-full.inv</a>
+        <span class="inventory-help">
+          <a class="inventory-help-link" href={inventories.help} aria-label="About Sphinx inventories" aria-describedby="inventory-tooltip">?</a>
+          <span class="inventory-tooltip" role="tooltip" id="inventory-tooltip">Sphinx inventories. Learn how to link to this documentation.</span>
+        </span>
       </div>
       <div class="icons shrink-0">
         <a class="muted-link" href={githubUrl} aria-label="GitHub">
@@ -58,3 +68,37 @@ const { locale, source, markdownHref, llmsRoot, githubUrl, flush = false } = Ast
     </div>
   </div>
 </footer>
+
+<style>
+  .inventory-help { position: relative; display: inline-flex; vertical-align: middle; margin-left: .25rem; }
+  .inventory-help-link { display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; border: 1px solid currentColor; border-radius: 50%; font-size: .75rem; }
+  .inventory-help-link:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+  .inventory-tooltip { position: fixed; bottom: 3.5rem; right: 1rem; width: 15rem; max-width: calc(100vw - 2rem); padding: .5rem .75rem; border: 1px solid var(--color-edge); border-radius: .25rem; background: var(--color-surface); color: var(--color-fg); font-size: .75rem; opacity: 0; visibility: hidden; z-index: 10; transition: opacity .1s, visibility .1s; transition-delay: .1s; }
+  .inventory-help:hover .inventory-tooltip, .inventory-help:focus-within .inventory-tooltip { opacity: 1; visibility: visible; transition-delay: 0s; }
+  .inventory-help[data-dismissed] .inventory-tooltip { opacity: 0; visibility: hidden; pointer-events: none; transition: none; }
+</style>
+
+<script>
+  function position(help: Element) {
+    const link = help.querySelector('a')
+    const tip = help.querySelector<HTMLElement>('[role="tooltip"]')
+    if (!link || !tip) return
+    const anchor = link.getBoundingClientRect()
+    const left = Math.max(16, Math.min(anchor.right - tip.offsetWidth, document.documentElement.clientWidth - tip.offsetWidth - 16))
+    const above = anchor.top - tip.offsetHeight - 8
+    const top = above >= 8 ? above : Math.min(innerHeight - tip.offsetHeight - 8, anchor.bottom + 8)
+    Object.assign(tip.style, { left: `${left}px`, top: `${top}px`, right: 'auto', bottom: 'auto' })
+  }
+  for (const type of ['pointerover', 'focusin']) document.addEventListener(type, (event) => {
+    const help = event.target instanceof Element ? event.target.closest('.inventory-help') : null
+    if (!help || event instanceof MouseEvent && event.relatedTarget instanceof Node && help.contains(event.relatedTarget)) return
+    help.removeAttribute('data-dismissed')
+    position(help)
+  })
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && event.target instanceof Element) event.target.closest('.inventory-help')?.setAttribute('data-dismissed', '')
+  })
+  const reposition = () => document.querySelectorAll('.inventory-help:hover, .inventory-help:focus-within').forEach(position)
+  document.addEventListener('scroll', reposition, { capture: true, passive: true })
+  window.addEventListener('resize', reposition)
+</script>

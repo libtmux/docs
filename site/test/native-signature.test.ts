@@ -49,7 +49,7 @@ async function signatureComponent() {
   expect(start).toBeGreaterThan(0)
   expect(end).toBeGreaterThan(start)
   const fragment = source.slice(start, end)
-  const wrapper = `---\nimport ApiType from './ApiType.astro'\nconst { symbol, sig, port, language, index, nameHref, nativeSignatureText, signatureLayouts = new Map() } = Astro.props\n---\n${fragment}`
+  const wrapper = `---\nimport ApiType from './ApiType.astro'\nconst { symbol, sig, port, language, index, nameHref, nativeSignatureText, signatureLayouts = new Map(), signatureTargets = [{}], i = 0 } = Astro.props\n---\n${fragment}`
   return (await import(/* @vite-ignore */ await compile('../src/components/api/ApiEntry.astro', { './ApiType.astro': type }, wrapper))).default
 }
 
