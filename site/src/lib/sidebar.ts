@@ -28,6 +28,8 @@ import { docsEntriesAvailable } from './page-port-links'
 import { API_MODELS, API_NAV } from './api-models'
 import { navTree, referenceBreadcrumbs } from './api-tree'
 import { productApiHref } from './product-api'
+import { tmuxManualUrl } from './tmux-manual-data'
+import { tmuxReferenceUrl } from './tmux-reference'
 
 export interface BreadcrumbItem {
   name: string
@@ -335,7 +337,11 @@ export async function getSidebar(
    * is the notices page and nothing else — so sending it to the end is the
    * general form of "notices last" rather than a special case for one file.
    */
-  if (port === undefined) return [...groups, ...ungrouped]
+  // The tmux docs end with the two references every section points into.
+  if (port === undefined) return [...groups,
+    { type: 'link', label: 'CLI Manual', href: tmuxManualUrl(version) },
+    { type: 'link', label: 'C source reference', href: tmuxReferenceUrl(version) },
+    ...ungrouped]
   if (product) {
     if (product === 'mcp' && productAvailable(PORT_BY_SLUG[port], 'mcp') && MCP_REFERENCE[port]) ungrouped.splice(1, 0,
       ...Object.entries(MCP_SECTIONS).map(([section, label]) => ({

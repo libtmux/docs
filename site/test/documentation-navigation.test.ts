@@ -35,6 +35,14 @@ describe('documentation surface navigation', () => {
     expect(PORTS.some((port) => port.slug === 'tmux')).toBe(false)
   })
 
+  it('links the CLI Manual and C source reference from the tmux sidebar', async () => {
+    const { getSidebar } = await import('../src/lib/sidebar')
+    expect((await getSidebar(undefined, '3.2a')).map((item) => [item.label, 'href' in item ? item.href : undefined])).toEqual([
+      ['CLI Manual', expect.stringMatching(/\/tmux\/3\.2a\/manual\/$/)],
+      ['C source reference', expect.stringMatching(/\/tmux\/3\.2a\/reference\/$/)],
+    ])
+  })
+
   it('selects shared sections inside the tmux hub', () => {
     const surfaces = [{ id: 'tmux', label: 'tmux', href: '/tmux/', sections: [
       { id: 'home', label: 'Home', href: '/tmux/', items: [] },
