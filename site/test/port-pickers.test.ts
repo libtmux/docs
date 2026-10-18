@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { PICKER_GROUPS, PORTS, PORT_BY_SLUG, portPickers, type Port, type PortPicker } from '../src/lib/ports'
+import { PICKER_GROUPS, PICKER_GROUP_LABEL, PORTS, PORT_BY_SLUG, pickerSections, portPickers, type Port, type PortPicker } from '../src/lib/ports'
 import { PICKERS } from './fixtures/port-pickers'
 
 const picker = (port: Port, kind: PortPicker['kind']) => portPickers(port).find((entry) => entry.kind === kind)
@@ -120,5 +120,36 @@ describe('port pickers', () => {
       'https://github.com/tmux-python/libtmux', 'https://github.com/tmux-python/libtmux-mcp', 'https://github.com/tmux-python/tmuxp',
     ])
     expect(tuples(PORT_BY_SLUG.rs!, 'github')!.slice(1).every(([, , , url]) => String(url).includes('/tree/master/crates/'))).toBe(true)
+  })
+
+  describe('sections', () => {
+    it.each(Object.entries(PICKERS))('groups the %s rows under their products in product order', (slug, expected) => {
+      const port = PORT_BY_SLUG[slug]!
+      for (const kind of ['github', 'packages', 'docs'] as const) {
+        const entry = picker(port, kind)
+        if (!entry) continue
+        const sections = pickerSections(entry)
+        const groups = [...new Set(expected[kind]!.map(([group]) => group))]
+        expect(sections.map((section) => section.group), `${slug} ${kind}`).toEqual(groups)
+        expect(sections.map((section) => section.label)).toEqual(groups.map((group) => PICKER_GROUP_LABEL[group]))
+        // Every row lands in exactly one section, in its menu order.
+        expect(sections.flatMap((section) => section.rows)).toEqual(entry.rows)
+        for (const section of sections) {
+          expect(section.rows.length).toBeGreaterThan(0)
+          expect(section.rows.every((row) => row.group === section.group)).toBe(true)
+        }
+      }
+    })
+
+    it('has no section for a product without rows and names which menus need headings', () => {
+      const titled = (slug: string, kind: PortPicker['kind']) => pickerSections(picker(PORT_BY_SLUG[slug]!, kind)!).length > 1
+      // Three products, a library and a companion, or the library alone.
+      expect(['py', 'rs', 'java', 'csharp'].map((slug) => titled(slug, 'github'))).toEqual([true, true, true, true])
+      expect(titled('powershell', 'packages')).toBe(true)
+      expect(titled('java', 'docs')).toBe(true)
+      for (const slug of ['lua', 'kotlin', 'scala', 'fsharp']) expect(titled(slug, 'github'), slug).toBe(false)
+      expect(titled('swift', 'packages')).toBe(false)
+      expect(pickerSections({ kind: 'github', label: 'GitHub', icon: 'github', context: '', rows: [] })).toEqual([])
+    })
   })
 })
