@@ -28,6 +28,7 @@ import * as pagePorts from '../src/lib/page-ports-for'
 import * as markdown from '../src/lib/markdown-twins'
 import * as manual from '../src/lib/tmux-manual-data'
 import * as reference from '../src/lib/tmux-reference'
+import * as catalog from '../src/lib/tmux-catalog'
 import * as locales from '../src/i18n/locales'
 import * as resolve from '../src/i18n/resolve'
 import * as contribute from '../src/i18n/contribute'
@@ -53,7 +54,7 @@ async function components() {
       'api-relationships': relationships, 'api-tree': tree, 'api-search': search,
       'api-labels': labels, 'word-break': wordBreak, ports, 'product-api': products,
       versions, 'site-root': roots, sidebar, 'documentation-navigation': documentation,
-      'page-ports-for': pagePorts, 'markdown-twins': markdown, 'tmux-manual-data': manual, 'tmux-reference': reference,
+      'page-ports-for': pagePorts, 'markdown-twins': markdown, 'tmux-manual-data': manual, 'tmux-reference': reference, 'tmux-catalog': catalog,
       branding,
     }).map(([name, exports]) => [new URL(`../src/lib/${name}.ts`, import.meta.url).href, exports])),
     ...Object.fromEntries(Object.entries({ locales, resolve, contribute, ui }).map(([name, exports]) =>

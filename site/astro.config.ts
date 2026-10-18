@@ -149,7 +149,7 @@ export default defineConfig({
               !page.includes('/pr-') && !page.includes('/demo') && !isPlaceholder(page) &&
               !isWorkspaceRedirect(page) && !isSourceGuideRedirect(page) && !isPortRoot(page) &&
               !isLegacyTmuxManualPath(new URL(page).pathname) &&
-              !/\/tmux\/(?!latest\/)[^/]+\/(?:manual|reference)\//.test(new URL(page).pathname),
+              !/\/tmux\/(?!latest\/)[^/]+\/(?:manual|reference|catalog)\//.test(new URL(page).pathname),
           }),
         ]
       : []),

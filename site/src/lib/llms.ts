@@ -19,6 +19,7 @@ import { MCP_REFERENCE } from './mcp-reference'
 import { productApiHref, productApiRoots } from './product-api.ts'
 import { tmuxReferenceUrl } from './tmux-reference'
 import { buildsTmuxDocumentation, tmuxManualUrl } from './tmux-manual-data.ts'
+import { CATALOG_TITLE, tmuxCatalogUrl } from './tmux-catalog.ts'
 import { selectPortCards } from './workspace-shared-slots.ts'
 import { linkProseMarkdown } from './prose-markdown'
 import { apiGlossaryBody } from './api-glossary.ts'
@@ -172,7 +173,7 @@ export function llmsHeader(): { title: string; blurb: string } {
  * ecosystem host, so only the former needs the origin.
  */
 export function referenceLine(origin: string): string | null {
-  if (buildsTmuxDocumentation()) return `- [tmux manual](${origin}${tmuxManualUrl()}): versioned command syntax and the tmux manual.\n- [tmux C source reference](${origin}${tmuxReferenceUrl()}): internal C declarations, members and source links by tmux version.`
+  if (buildsTmuxDocumentation()) return `- [tmux manual](${origin}${tmuxManualUrl()}): versioned command syntax and the tmux manual.\n- [tmux ${CATALOG_TITLE.toLowerCase()}](${origin}${tmuxCatalogUrl()}): every tmux option, hook and format variable with its type, scope, default and release history.\n- [tmux C source reference](${origin}${tmuxReferenceUrl()}): internal C declarations, members and source links by tmux version.`
   const port = process.env.LIBTMUX_DOCS_PORT || undefined
   const p = port ? PORT_BY_SLUG[port] : undefined
   if (!p || !hasReference(p)) return null

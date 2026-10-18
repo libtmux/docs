@@ -4,6 +4,7 @@ import DocCard from '../../components/DocCard.astro'
 import { withPortRoot, withRoot } from '../../lib/site-root'
 import { tmuxReferenceUrl } from '../../lib/tmux-reference'
 import { tmuxManualUrl } from '../../lib/tmux-manual-data'
+import { CATALOG_TITLE, tmuxCatalogUrl } from '../../lib/tmux-catalog'
 import { pagePortsFor } from '../../lib/page-ports-for'
 import DocumentationHero from '../DocumentationHero.astro'
 import PortLinks from '../PortLinks.astro'
@@ -14,6 +15,7 @@ const pages = [
   { label: 'Concepts', href: withRoot('/tmux/concepts/'), body: 'Learn how servers, sessions, windows and panes fit together.' },
   { label: 'Examples', href: withRoot('/tmux/examples/'), body: 'Run complete programs with setup, expected results and cleanup.' },
   { label: 'CLI Manual', href: tmuxManualUrl(), body: 'Look up command syntax, flags and behavior for your tmux version.' },
+  { label: CATALOG_TITLE, href: tmuxCatalogUrl(), body: 'Look up what an option, hook or format variable does, with its type, default and release history.' },
   { label: 'C source reference', href: tmuxReferenceUrl(), body: 'Browse the C declarations and implementation in each tmux release.' },
 ]
 ---

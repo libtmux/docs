@@ -8,7 +8,8 @@ export function createLinkPreviewPolicy() {
       && !url.pathname.endsWith('/mcp/resources/templates/')
     // Command pages, and the full manual, whose fragments name options, hooks and format variables.
     const manual = /\/tmux\/[^/]+\/manual\/(?:full|[a-z]+(?:-[a-z]+)*)\/$/.test(url.pathname)
-    if (url.origin !== origin || url.search || (!reference && !protocolObject && !manual)) return undefined
+    const catalogEntry = /\/tmux\/[^/]+\/catalog\/(?:options|hooks|formats)\/[^/]+\/$/.test(url.pathname)
+    if (url.origin !== origin || url.search || (!reference && !protocolObject && !manual && !catalogEntry)) return undefined
     return { url, endpoint: `${url.pathname.slice(0, -1)}.preview.json`, glossary: url.pathname.endsWith('/reference/glossary/') }
   }
   /** A link that wraps blocks, such as a card, shows its own summary and is no inline text run. */

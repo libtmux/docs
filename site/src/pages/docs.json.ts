@@ -14,6 +14,7 @@ import { documentationAreas } from '../lib/port-documentation.ts'
 import { buildTarget } from '../lib/versions.ts'
 import { tmuxReferenceContext, tmuxReferenceUrl } from '../lib/tmux-reference'
 import { buildsTmuxDocumentation, TMUX_VERSIONS } from '../lib/tmux-manual-data'
+import { catalogKindForSegment, tmuxCatalogDescription, tmuxCatalogPageTitle, tmuxCatalogRoutes, tmuxCatalogUrl } from '../lib/tmux-catalog'
 import { referenceIndexSections, referenceIndexSectionsFor } from '../lib/api-tree.ts'
 import { tmuxManualDescription, tmuxManualHeadings, tmuxManualTitle, tmuxManualRoutes, tmuxManualUrl } from '../lib/tmux-manual-data.ts'
 import { glossaryPages } from '../lib/api-glossary-routes.ts'
@@ -127,6 +128,15 @@ export const GET: APIRoute = async ({ site }) => {
     pages.push({ title: tmuxManualTitle(version, slug), description: tmuxManualDescription(version, slug),
       section: 'tmux manual', url, markdownUrl: markdownPath(url, !slug),
       headings: tmuxManualHeadings(version, slug).map((heading) => ({ id: heading.slug, level: heading.depth, text: heading.text })) })
+  }
+
+  for (const { version, slug } of tmuxCatalogRoutes()) {
+    const [segment, name] = (slug ?? '').split('/')
+    const kind = catalogKindForSegment(segment)
+    const url = `${origin}${tmuxCatalogUrl(version, kind, name)}`
+    pages.push({ title: tmuxCatalogPageTitle(version, kind, name), description: tmuxCatalogDescription(version, kind, name),
+      section: 'tmux catalog', url, markdownUrl: markdownPath(url, !name),
+      headings: name ? ['Description', 'Releases', 'Source'].map((text) => ({ id: text.toLowerCase(), level: 2, text })) : [] })
   }
 
   if (buildsTmuxDocumentation()) for (const version of TMUX_VERSIONS) {

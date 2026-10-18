@@ -30,15 +30,18 @@ describe('documentation surface navigation', () => {
   it('offers the tmux area without inventing a library port or empty prose sections', async () => {
     const surfaces = await getDocumentationSurfaces(undefined, 'latest')
     expect(surfaces.map((surface) => surface.id)).toEqual(['tmux'])
-    expect(surfaces[0].sections.map((section) => section.id)).toEqual(['home', 'manual', 'reference'])
+    expect(surfaces[0].sections.map((section) => section.id)).toEqual(['home', 'manual', 'catalog', 'reference'])
     expect(currentDocumentation(surfaces, '/tmux/latest/manual/capture-pane/').section.id).toBe('manual')
+    expect(currentDocumentation(surfaces, '/tmux/latest/catalog/options/status-left/').section.id).toBe('catalog')
+    expect(currentDocumentation(surfaces, '/tmux/latest/reference/c-struct-session/').section.id).toBe('reference')
     expect(PORTS.some((port) => port.slug === 'tmux')).toBe(false)
   })
 
-  it('links the CLI Manual and C source reference from the tmux sidebar', async () => {
+  it('links the CLI Manual, the catalog and the C source reference from the tmux sidebar', async () => {
     const { getSidebar } = await import('../src/lib/sidebar')
     expect((await getSidebar(undefined, '3.2a')).map((item) => [item.label, 'href' in item ? item.href : undefined])).toEqual([
       ['CLI Manual', expect.stringMatching(/\/tmux\/3\.2a\/manual\/$/)],
+      ['Options, hooks and formats', expect.stringMatching(/\/tmux\/3\.2a\/catalog\/$/)],
       ['C source reference', expect.stringMatching(/\/tmux\/3\.2a\/reference\/$/)],
     ])
   })
@@ -56,6 +59,7 @@ describe('documentation surface navigation', () => {
     expect(surfaces[0].sections.map(({ label, href }) => ({ label, href }))).toEqual([
       { label: 'Current docs →', href: '/tmux/' },
       { label: 'CLI Manual', href: '/tmux/3.2a/manual/' },
+      { label: 'Options, hooks and formats', href: '/tmux/3.2a/catalog/' },
       { label: 'C source reference', href: '/tmux/3.2a/reference/' },
     ])
     expect(currentDocumentation(surfaces, '/tmux/3.2a/manual/capture-pane/').section.id).toBe('manual')

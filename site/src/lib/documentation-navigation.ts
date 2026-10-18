@@ -8,6 +8,7 @@ import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import { withPortRoot } from './site-root'
 import { tmuxReferenceUrl } from './tmux-reference'
 import { tmuxManualUrl } from './tmux-manual-data'
+import { CATALOG_TITLE, tmuxCatalogUrl } from './tmux-catalog'
 import { mcpObjects, MCP_SECTIONS, type McpSection } from './mcp-reference'
 
 export interface DocumentationSection {
@@ -141,6 +142,7 @@ export function getDocumentationSurfaces(port: string | undefined, version: stri
         ...(current ? menus : []).flatMap((item) => item.type === 'group' && item.href
           ? [{ id: item.label.toLowerCase(), label: item.label, href: item.href, items: item.items }] : []),
         { id: 'manual', label: 'CLI Manual', href: tmuxManualUrl(version), items: [] },
+        { id: 'catalog', label: CATALOG_TITLE, shortLabel: 'Catalog', href: tmuxCatalogUrl(version), items: [] },
         { id: 'reference', label: 'C source reference', shortLabel: 'C reference', href: tmuxReferenceUrl(version), items: [] },
       ]
       sections[0].items = sections.filter((section) => section.href).map((section) => ({
