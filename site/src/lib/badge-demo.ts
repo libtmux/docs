@@ -73,43 +73,42 @@ export interface Kind {
   word: string
   mark: string
   x: boolean
-  mono: string
   fam: string
   shape: string
   geo: string
 }
 
-// kind, word, two-letter monogram (Title case types, lower case members, sigil symbols), family, silhouette family
-const DEFS: [string, string, string, string, string][] = [
-  ['class', 'class', 'Cl', 'types', 'types'],
-  ['interface', 'interface', 'In', 'traits', 'types'],
-  ['struct', 'struct', 'St', 'types', 'types'],
-  ['union', 'union', 'Un', 'types', 'types'],
-  ['enum', 'enum', 'En', 'types', 'types'],
-  ['trait', 'trait', 'Tr', 'traits', 'types'],
-  ['module', 'module', 'Mo', 'types', 'types'],
-  ['typealias', 'type alias', 'Ta', 'types', 'types'],
-  ['prompt', 'prompt', 'Pm', 'meta', 'types'],
-  ['resource-template', 'template', 'Rt', 'meta', 'types'],
-  ['exception', 'exception', '!e', 'meta', 'types'],
-  ['format', 'format', '#f', 'meta', 'data'],
-  ['command', 'command', '$c', 'callables', 'calls'],
-  ['key', 'key', ':k', 'members', 'data'],
-  ['function', 'function', 'fn', 'callables', 'calls'],
-  ['method', 'method', 'mt', 'callables', 'calls'],
-  ['property', 'property', 'pr', 'members', 'data'],
-  ['attribute', 'attribute', 'at', 'members', 'data'],
-  ['constant', 'constant', 'cn', 'members', 'data'],
-  ['tool', 'tool', 'tl', 'tools', 'calls'],
-  ['resource', 'resource', 'rs', 'tools', 'data'],
-  ['option', 'option', 'op', 'members', 'data'],
-  ['hook', 'hook', 'hk', 'tools', 'calls'],
+// kind, word, family, silhouette family
+const DEFS: [string, string, string, string][] = [
+  ['class', 'class', 'types', 'types'],
+  ['interface', 'interface', 'traits', 'types'],
+  ['struct', 'struct', 'types', 'types'],
+  ['union', 'union', 'types', 'types'],
+  ['enum', 'enum', 'types', 'types'],
+  ['trait', 'trait', 'traits', 'types'],
+  ['module', 'module', 'types', 'types'],
+  ['typealias', 'type alias', 'types', 'types'],
+  ['prompt', 'prompt', 'meta', 'types'],
+  ['resource-template', 'template', 'meta', 'types'],
+  ['exception', 'exception', 'meta', 'types'],
+  ['format', 'format', 'meta', 'data'],
+  ['command', 'command', 'callables', 'calls'],
+  ['key', 'key', 'members', 'data'],
+  ['function', 'function', 'callables', 'calls'],
+  ['method', 'method', 'callables', 'calls'],
+  ['property', 'property', 'members', 'data'],
+  ['attribute', 'attribute', 'members', 'data'],
+  ['constant', 'constant', 'members', 'data'],
+  ['tool', 'tool', 'tools', 'calls'],
+  ['resource', 'resource', 'tools', 'data'],
+  ['option', 'option', 'members', 'data'],
+  ['hook', 'hook', 'tools', 'calls'],
 ]
 const shapeOf = (mark: string) => (/^[A-Z#:]$/.test(mark) ? 'sq' : /^[$!]$/.test(mark) ? 'di' : 'ci')
 
-export const KINDS: Kind[] = DEFS.map(([kind, word, mono, fam, geo]) => {
+export const KINDS: Kind[] = DEFS.map(([kind, word, fam, geo]) => {
   const mark = kindMark(kind)!
-  return { kind, word, mark, x: markHeight(mark) === 'x', mono, fam, shape: shapeOf(mark), geo }
+  return { kind, word, mark, x: markHeight(mark) === 'x', fam, shape: shapeOf(mark), geo }
 })
 export const kindOf = (kind: string) => KINDS.find((k) => k.kind === kind)!
 

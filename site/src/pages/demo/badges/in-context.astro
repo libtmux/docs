@@ -39,7 +39,7 @@ function b(t: string, kind: string, o: BadgeOpts = {}): string {
   if (live) at.push(`data-word="${k.word}"`, 'tabindex="0"', 'role="img"', `aria-label="${o.aria ?? k.word}"`)
   else at.push('aria-hidden="true"')
   const cls = ['ic-b', word && 'ic-b--word', o.open && 'is-open'].filter(Boolean).join(' ')
-  const marks = `data-m1="${esc(k.mark)}" data-m2="${esc(k.mono)}"`
+  const marks = `data-m1="${esc(k.mark)}"`
   const inner = word
     ? `<span class="ic-b__l">${esc(k.word)}</span>`
     : t === 'SR'
@@ -56,7 +56,7 @@ function m(t: string, kind: string, text: string, o: BadgeOpts = {}): string {
   if (t === 'TEXT') return `<a class="ic-m" href="#"><code>[${esc(k.mark)}] ${esc(text)}</code></a>`
   if (t === 'AB') {
     const ring = RING_FAMS.has(k.fam) ? ' data-ring' : ''
-    return `<a class="ic-split" href="#" data-fam="${k.fam}"${ring}><span class="ic-split__k">${esc(k.mono)}</span><span class="ic-split__n">${code}</span></a>`
+    return `<a class="ic-split" href="#" data-fam="${k.fam}"${ring}><span class="ic-split__k">${esc(k.mark)}</span><span class="ic-split__n">${code}</span></a>`
   }
   return `<a class="ic-m" href="#">${b(t, kind, o)}${code}</a>`
 }
@@ -70,7 +70,7 @@ function later(kind: string, text: string, open = false): string {
 /** The legend chip: one box, a mark segment and a word segment of equal height, split by a divider. */
 function leg(kind: string): string {
   const k = kindOf(kind)
-  return `<span class="ic-leg" data-fam="${k.fam}"><span class="ic-leg__m" aria-hidden="true"><span class="ic-leg__g" data-m1="${esc(k.mark)}" data-m2="${esc(k.mono)}"></span></span><span class="ic-leg__w">${esc(k.word)}</span></span>`
+  return `<span class="ic-leg" data-fam="${k.fam}"><span class="ic-leg__m" aria-hidden="true"><span class="ic-leg__g" data-m1="${esc(k.mark)}"></span></span><span class="ic-leg__w">${esc(k.word)}</span></span>`
 }
 const quiet = (kind: string) => `<span class="ic-quiet">${esc(kindOf(kind).word)}</span>`
 
@@ -196,7 +196,7 @@ const statusDemo = () =>
   `<div class="ic-stat"><p class="ic-def">${m('M', 'method', 'legacy_attach()')} <span class="ic-pill ic-pill--warn">deprecated</span></p><p class="ic-def">${m('M', 'struct', 'Selection')} <span class="ic-pill ic-pill--neutral">experimental</span> <span class="ic-pill ic-pill--neutral">since 0.14</span></p></div>`
 
 const heroDemo = () =>
-  `<div class="ic-hero"><span class="ic-b ic-b--hero" data-t="SOLID" data-fam="types" aria-hidden="true"><span class="ic-b__l" data-m1="S" data-m2="St"></span></span><div><div class="ic-hero__t">Server</div><div class="ic-hero__s">libtmux · struct</div></div></div><div class="ic-empty"><span class="ic-b ic-b--hero ic-b--empty" data-t="SOLID" data-fam="callables" aria-hidden="true"><span class="ic-b__l" data-m1="m" data-m2="mt"></span></span><div><div class="ic-hero__t ic-hero__t--s">No methods match</div><div class="ic-hero__s">Try a shorter name.</div></div></div>`
+  `<div class="ic-hero"><span class="ic-b ic-b--hero" data-t="SOLID" data-fam="types" aria-hidden="true"><span class="ic-b__l" data-m1="S"></span></span><div><div class="ic-hero__t">Server</div><div class="ic-hero__s">libtmux · struct</div></div></div><div class="ic-empty"><span class="ic-b ic-b--hero ic-b--empty" data-t="SOLID" data-fam="callables" aria-hidden="true"><span class="ic-b__l" data-m1="m"></span></span><div><div class="ic-hero__t ic-hero__t--s">No methods match</div><div class="ic-hero__s">Try a shorter name.</div></div></div>`
 
 const printDemo = () =>
   `<div class="ic-paper">${proseFirst('U')}</div>`
@@ -204,10 +204,8 @@ const printDemo = () =>
 const forcedDemo = () =>
   `<div class="ic-forcedbox">${proseFirst('T')}</div>`
 
-const plainDemo = (t: string) =>
-  t === 'TEXT'
-    ? `<pre class="ic-plain">[m] Server.new_session(name) -> [S] Session\n    Create a detached session called name.\n[p] Session.name -> str\n[!] Error: raised when tmux exits non-zero</pre>`
-    : `<pre class="ic-plain">mt Server.new_session(name) -> St Session\n   Create a detached session called name.\npr Session.name -> str\n!e Error: raised when tmux exits non-zero</pre>`
+const plainDemo = () =>
+  `<pre class="ic-plain">[m] Server.new_session(name) -> [S] Session\n    Create a detached session called name.\n[p] Session.name -> str\n[!] Error: raised when tmux exits non-zero</pre>`
 
 const touchDemo = () => {
   const tap = (kind: string, name: string, open = false) =>
@@ -273,25 +271,21 @@ const CONTEXTS: Context[] = [
   {
     n: 5, title: 'Dense trees, API index, member grids', rule: 'Rule 1 · a column of marks: a fixed gutter; the selected node goes solid',
     variants: [
-      { t: 'AD', label: 'AD + R', rec: true, caption: 'left-accent tag in a fixed gutter · mono 2-char · selected node solid (R), ring where white fails' },
-      { t: 'T', label: 'T + P', caption: 'outline mark in the family hue · same gutter' },
-      { t: 'X', label: 'X', caption: 'medium solid · hue-400 fill, hue-950 glyph' },
+      { t: 'T', label: 'T + P + R', rec: true, caption: 'outline in a fixed gutter · family hue (P) · selected node solid (R), ring where white fails' },
+      { t: 'X', label: 'X', caption: 'medium solid · hue-400 fill, hue-950 glyph · same gutter' },
     ],
     render: (v) => treeDemo(v.t),
   },
   {
     n: 6, title: 'Sidebars, "On this page"', rule: 'Rule 1 · chrome has no colour budget: ink',
-    variants: [
-      { t: 'U', label: 'U', rec: true, caption: 'ink · current entry goes solid in its family hue' },
-      { t: 'AD', label: 'AD', caption: 'left-accent tag · mono 2-char' },
-    ],
+    variants: [{ t: 'U', label: 'U', rec: true, caption: 'ink · current entry goes solid in its family hue' }],
     render: (v) => tocDemo(v.t),
   },
   {
     n: 7, title: 'Menus, command palette, search results', rule: 'Rule 2 · a leading gutter for the mark, the word trails',
     variants: [
       { t: 'T', label: 'T', rec: true, caption: 'outline in a fixed leading gutter · muted trailing word' },
-      { t: 'AE', label: 'AE', caption: 'silhouettes · squircle types, capsule callables, dotted chip for data' },
+      { t: 'AE', label: 'AE', caption: 'silhouettes · squircle types, round callables, dotted chip for data · single marks' },
       { t: 'W', label: 'W', caption: 'soft tint + border · 8% hue, 1px border at 45%' },
     ],
     render: (v) => paletteDemo(v.t),
@@ -300,7 +294,7 @@ const CONTEXTS: Context[] = [
     n: 8, title: 'Tables', rule: 'Rule 2 · a kind column spells the word; the mark before the name is ink',
     variants: [
       { t: 'U', label: 'U', rec: true, caption: 'kind column as plain word · ink mark before the name' },
-      { t: 'AD', label: 'AD', caption: 'left-accent tag before the name · kind column kept' },
+      { t: 'AD', label: 'AD', caption: 'kept for reference: may suit tables later' },
       { t: 'X', label: 'X', caption: 'medium solid · hue-400 fill, hue-950 glyph' },
     ],
     render: (v) => tableDemo(v.t),
@@ -401,9 +395,8 @@ const CONTEXTS: Context[] = [
     n: 23, title: 'Plain text, RSS, README, search snippets', rule: 'No colour, no boxes: the mark is text',
     variants: [
       { t: 'TEXT', label: '[m]', rec: true, caption: 'bracketed single mark' },
-      { t: 'AC', label: 'AC', caption: 'case-encoded two-letter text · Title case types, lower case members' },
     ],
-    render: (v) => plainDemo(v.t),
+    render: () => plainDemo(),
   },
   {
     n: 24, title: 'Touch', rule: 'Nothing is hover-only · headings teach, a tap shows the word',
@@ -455,7 +448,7 @@ const board = system + '\n' + CONTEXTS.map(section).join('\n')
 
 const bar = `<div class="ic-bar"><span class="ic-bar__grp"><a class="ic-bar__lab" href="../">Board</a><a class="ic-bar__lab" href="#system">System</a>${CONTEXTS.map(
   (c) => `<a href="#c${c.n}" class="ic-jump" title="${esc(c.title)}">${c.n}</a>`,
-).join('')}</span><span class="ic-bar__tools"><button type="button" class="ic-tool" data-ic-toggle="print" aria-pressed="false">Print</button><button type="button" class="ic-tool" data-ic-toggle="forced" aria-pressed="false">Forced colors</button><button type="button" class="ic-tool" data-ic-toggle="mono" aria-pressed="false">Monograms</button><button type="button" class="ic-tool" data-ic-toggle="shape" aria-pressed="false">Shape</button></span></div>`
+).join('')}</span><span class="ic-bar__tools"><button type="button" class="ic-tool" data-ic-toggle="print" aria-pressed="false">Print</button><button type="button" class="ic-tool" data-ic-toggle="forced" aria-pressed="false">Forced colors</button><button type="button" class="ic-tool" data-ic-toggle="shape" aria-pressed="false">Shape</button></span></div>`
 
 // Print and forced-colours rules, written once and applied twice: under the media query and under the toggle.
 const printRules = (root: string) => `
@@ -518,7 +511,7 @@ const modeCss = `@media print{.ic-bar{display:none!important}${printRules('.ic-r
     button.addEventListener('click', () => apply(button.dataset.icToggle, button.getAttribute('aria-pressed') !== 'true'))
   }
   const query = new URLSearchParams(location.search)
-  for (const name of ['print', 'forced', 'mono', 'shape']) if (query.get(name) === '1') apply(name, true)
+  for (const name of ['print', 'forced', 'shape']) if (query.get(name) === '1') apply(name, true)
   if (query.get('fonts') === 'fallback' && root) root.dataset.fonts = 'fallback'
 </script>
 
@@ -634,26 +627,21 @@ const modeCss = `@media print{.ic-bar{display:none!important}${printRules('.ic-r
   .ic-b[data-t='T'][data-opaque] { --bgv: var(--bd-bg); }
   .ic-b[data-t='U'] { --bgv: color-mix(in srgb, var(--bd-fg) 7%, transparent); --bdv: color-mix(in srgb, var(--bd-fg) 14%, transparent); --fgv: var(--bd-fg); }
   .ic-b[data-t='X'] { --bw: 0; --bgv: var(--fm); --fgv: var(--f9); }
-  /* AD left-accent tag, AE silhouettes: two-letter monograms in mono */
-  .ic-b[data-t='AD'], .ic-b[data-t='AE'] { --w: 2.1em; --h: 1.45em; }
-  .ic-b[data-t='AD'] { --r: .15em; --bgv: var(--bd-nbg); --fgv: var(--bd-fg); border-width: 0 0 0 .2em; border-color: var(--fh); }
+  /* AD left-accent tag (table alternative only), AE silhouettes */
+  .ic-b[data-t='AE'] { --w: 1.45em; }
+  .ic-b[data-t='AD'] { --w: 1.5em; --r: .15em; --bgv: var(--bd-nbg); --fgv: var(--bd-fg); border-width: 0 0 0 .2em; border-color: var(--fh); }
   .ic-b[data-t='AE'][data-f='calls'] { --r: 999px; }
   .ic-b[data-t='AE'][data-f='data'] {
     --bgv: color-mix(in srgb, var(--bd-fg) 6%, transparent); --bdv: color-mix(in srgb, var(--bd-fg) 16%, transparent); --fgv: var(--bd-fg);
-    display: inline-flex; align-items: center; justify-content: center; gap: .3em; padding: 0 .45em;
+    --w: auto; display: inline-flex; align-items: center; justify-content: center; gap: .3em; padding: 0 .45em;
   }
   .ic-b[data-t='AE'][data-f='data']::before { content: ''; flex: none; width: .3em; height: .3em; border-radius: 50%; background: var(--fh); }
-  .ic-b[data-t='AD'] > .ic-b__l, .ic-b[data-t='AE'] > .ic-b__l { font: 700 .72em/1 var(--font-mono); translate: none; }
-  .ic-b[data-t='AD'] > .ic-b__l::before, .ic-b[data-t='AE'] > .ic-b__l::before { content: attr(data-m2); }
   /* K gp-sphinx word chip */
   .ic-b--word { --w: auto; --h: auto; --px: 8px; --py: 2.6px; --r: 3.5px; font: 700 11px/1 var(--font-sans); letter-spacing: .01em; }
   .ic-b--word .ic-b__l { font-size: 1em; }
   .ic-b--word .ic-b__l::before { content: none; }
 
   /* The Monograms and Shape toggles */
-  .ic-root[data-mono] .ic-b:not(.ic-b--word, [data-t='AD'], [data-t='AE'], [data-t='SOLID']) { --w: 1.9em; }
-  .ic-root[data-mono] .ic-b:not(.ic-b--word) > .ic-b__l { font: 700 .72em/1 var(--font-mono); translate: none; }
-  .ic-root[data-mono] .ic-b:not(.ic-b--word) > .ic-b__l::before { content: attr(data-m2); }
   .ic-root[data-shape] .ic-b[data-s='ci']:not(.ic-b--word, [data-t='AD'], [data-t='AE']) { --r: 999px; --w: 1.45em; }
   .ic-root[data-shape] .ic-b[data-s='di']:not(.ic-b--word, [data-t='AD'], [data-t='AE']) { --w: 1.05em; --r: .12em; rotate: 45deg; margin-inline: .22em; }
   .ic-root[data-shape] .ic-b[data-s='di']:not(.ic-b--word, [data-t='AD'], [data-t='AE']) > .ic-b__l { rotate: -45deg; }
@@ -693,7 +681,7 @@ const modeCss = `@media print{.ic-bar{display:none!important}${printRules('.ic-r
     border: 1px solid color-mix(in srgb, var(--fh) 30%, transparent); border-radius: .25em; text-decoration: none;
   }
   .ic-split__k {
-    display: grid; place-items: center; min-width: 2em; padding: 0 .3em; box-sizing: border-box;
+    display: grid; place-items: center; min-width: 1.6em; padding: 0 .3em; box-sizing: border-box;
     border-right: 1px solid color-mix(in srgb, var(--fh) 30%, transparent);
     background: color-mix(in srgb, var(--fh) 18%, var(--bd-bg)); color: var(--ff); font: 700 .75em/1 var(--font-mono);
   }
@@ -736,7 +724,7 @@ const modeCss = `@media print{.ic-bar{display:none!important}${printRules('.ic-r
   .ic-perma { margin-left: .25rem; color: var(--bd-muted) !important; font: 400 .875rem/1 var(--font-mono); }
   .ic-tree { padding: .25rem; border: 1px solid var(--bd-edge); border-radius: .375rem; background: var(--bd-surface); font-size: .8125rem; }
   .ic-tree--s { width: min(100%, 15rem); }
-  .ic-trow { display: grid; grid-template-columns: 2.5em 1fr; align-items: center; gap: .3em; padding: .15rem .45rem; border-radius: .25rem; font: 400 1em/1.3 var(--font-sans); }
+  .ic-trow { display: grid; grid-template-columns: 1.9em 1fr; align-items: center; gap: .3em; padding: .15rem .45rem; border-radius: .25rem; font: 400 1em/1.3 var(--font-sans); }
   .ic-trow .ic-tn { padding-left: calc(var(--d, 0) * 1em); color: inherit; }
   .ic-gut { display: flex; align-items: center; }
   .ic-sel { background: var(--bd-hover); font-weight: 500; }
