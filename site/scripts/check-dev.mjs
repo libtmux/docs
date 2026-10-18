@@ -7,7 +7,7 @@ import { dev } from 'astro'
 import { chromium, firefox, webkit } from 'playwright'
 import { API_MODEL_PORTS, PORTS, productAvailable } from '../src/lib/ports.ts'
 import { checkClipboard, checkCompleteApiExamples } from './check-clipboard.mjs'
-import { checkApiAnchorArrival, checkApiExampleOwnership, checkApiNavigation, checkDocumentationNavigation, checkNavigation } from './check-navigation.mjs'
+import { checkApiAnchorArrival, checkApiExampleOwnership, checkApiNavigation, checkApiStickyHeadings, checkApiStickyHeadingsFail, checkDocumentationNavigation, checkNavigation } from './check-navigation.mjs'
 import { checkReferencePreferences, checkGlobalHeader } from './check-reference-preferences.mjs'
 import { checkHomeLauncher } from './check-home-launcher.mjs'
 import { checkHomeTaskReset } from './check-home-task-reset.mjs'
@@ -19,6 +19,7 @@ import { checkRequiredAppearance, checkWebAnalytics, checkWebAnalyticsTransition
 
 const apiNavigationOnly = process.argv.includes('--api-navigation')
 const apiAnchorsOnly = process.argv.includes('--api-anchors')
+const apiStickyOnly = process.argv.includes('--api-sticky')
 const apiSignaturesOnly = process.argv.includes('--api-signatures')
 const referenceLayoutOnly = process.argv.includes('--reference-layout')
 const keywordHelpOnly = process.argv.includes('--keyword-help')
@@ -729,6 +730,7 @@ try {
   // the running app. The outer loop still budgets this initial compilation.
   const firstPage = homeLauncherOnly || homeControlsOnly ? '/'
     : keywordHelpOnly ? '/kotlin/latest/reference/io-github-libtmux-kotlin-withserver/'
+    : apiStickyOnly ? '/swift/latest/reference/server/'
     : documentationNavigationOnly ? '/py/latest/' : apiSignaturesOnly ? '/api-signature-probe/'
     : apiNavigationOnly ? '/lua/latest/reference/libtmux-server/' : '/tmux/concepts/server-session-window-pane/'
   const setupPages = sampleOnly ? [firstPage, '/demo/widgets/pickers/'] : [firstPage]
@@ -774,6 +776,19 @@ try {
     await retryReload(() => checkApiNavigation(page, base))
   } else if (apiAnchorsOnly) {
     await retryReload(() => checkApiAnchorArrival(browser, base))
+  } else if (apiStickyOnly) {
+    // Each engine aligns a sticky heading differently, so this mode runs all three.
+    const sticky = (engineBrowser) => retryReload(() => checkApiStickyHeadings(engineBrowser, base))
+      .then(() => checkApiStickyHeadingsFail(engineBrowser, base))
+    await sticky(browser)
+    for (const other of [chromium, firefox, webkit].filter((candidate) => candidate !== driver)) {
+      const extra = await other.launch(other === chromium ? { channel: process.env.LIBTMUX_DOCS_BROWSER_CHANNEL } : {})
+      try {
+        await sticky(extra)
+      } finally {
+        await extra.close()
+      }
+    }
   } else {
     await retryReload(() => checkRequiredAppearance(browser, base))
     await checkWebAnalytics(browser, base)
@@ -813,6 +828,9 @@ try {
     const apiNavigation = schedule(() => retryReload(() => checkApiNavigation(apiNavigationPage, base)).finally(() => apiNavigationPage.close()))
     const apiAnchors = schedule(() => retryReload(() => checkApiAnchorArrival(browser, base)))
     await apiAnchors
+    const apiSticky = schedule(() => retryReload(() => checkApiStickyHeadings(browser, base))
+      .then(() => checkApiStickyHeadingsFail(browser, base)))
+    await apiSticky
     const paths = ['tmux/concepts/server-session-window-pane', 'tmux/examples/attach-and-send-keys', 'mcp/tools', 'ts/latest/workspace/reference/builder-applyworkspace',
       'ts/latest/workspace/internals/guides', 'py/stable/workspace/guides',
       'ts/latest/mcp/tools', 'csharp/latest/mcp/tools/capture_pane']
@@ -1107,7 +1125,7 @@ try {
     await page.close()
     const failures = (await Promise.all([
       navigation, apiExamples, reference, preferences, globalHeader, apiNavigation,
-      clipboard, documentationNavigation, homeLauncher, apiAnchors,
+      clipboard, documentationNavigation, homeLauncher, apiAnchors, apiSticky,
     ])).filter(Boolean)
     if (failures.length) throw new AggregateError(failures, 'Browser checks failed')
   }

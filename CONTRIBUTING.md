@@ -131,6 +131,21 @@ Install the pinned Chromium build for local browser checks with
 that build and its system dependencies before the publication audit.
 The standard ten-second browser timeout increases to twenty seconds on CI.
 
+Each engine aligns the sticky Members and group headings of a reference page
+differently. The publication audit checks them in Chromium; install Firefox
+and WebKit to check all three:
+
+```console
+$ pnpm --filter @libtmux/site exec playwright install firefox webkit
+```
+
+Then run the sticky heading check, which starts its own server and drives
+focus, link, repeated link and typed hash arrivals in each engine:
+
+```console
+$ node site/scripts/check-dev.mjs --api-sticky
+```
+
 Keep the complete assembly, all output suites, link audits, source/model
 freshness, and full browser matrix in the publication audit:
 
