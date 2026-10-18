@@ -269,7 +269,11 @@ export async function checkRequiredAppearance(browser, base) {
   console.log('Appearance: held font/module/effect, first visible fonts/icons/dotted links, stable geometry, failure and Reload PASS')
 }
 
-/** A quarter em; navigation rows keep their 4px, which is .286em at 14px. */
+/**
+ * A quarter em; navigation rows keep their 4px, which is .286em at 14px.
+ * Split chips (the mark is the cap of one outlined token) and the tree's fixed
+ * gutter (names indent after the mark column) have no such gap and say `gap: false`.
+ */
 const BADGE_GAP = { min: .21, max: .29 }
 
 /**
@@ -283,15 +287,15 @@ const BADGE_LINKS = [
   { label: 'MCP prose link', path: '/py/stable/mcp/tools/capture_pane/', badges: 'p a > .api-link-kind', line: true },
   { label: 'MCP index card', path: '/py/stable/mcp/tools/', badges: '.api-index-card a > .api-nav__kind', sample: true },
   { label: 'MCP catalog heading', path: '/py/stable/mcp/tools/', badges: 'h2 a > .api-nav__kind' },
-  { label: 'API equivalent', path: '/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/', badges: '.api-elsewhere-value a > .api-nav__kind', sample: true },
+  { label: 'API equivalent', path: '/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/', badges: '.api-elsewhere-value a > .api-nav__kind', gap: false, sample: true },
   { label: 'sidebar link', path: '/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/', badges: 'a.sidebar-link > .api-nav__kind' },
   { label: 'sidebar section', path: '/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/', badges: 'summary a > .api-nav__kind' },
-  { label: 'navigation tree link', path: '/py/stable/mcp/tools/capture_pane/', badges: 'a.api-nav__leaf > .api-nav__kind' },
-  { label: 'navigation tree row', path: '/java/latest/reference/io-github-libtmux-server-server/', badges: 'div.api-nav__row > .api-nav__kind' },
+  { label: 'navigation tree link', path: '/py/stable/mcp/tools/capture_pane/', badges: 'a.api-nav__leaf > .api-nav__kind', gap: false },
+  { label: 'navigation tree row', path: '/java/latest/reference/io-github-libtmux-server-server/', badges: 'div.api-nav__row > .api-nav__kind', gap: false },
   { label: 'related type card', path: '/java/latest/reference/io-github-libtmux-server-server/', badges: '.api-related-card a > .api-nav__kind' },
-  { label: 'related API contents', path: '/java/latest/reference/io-github-libtmux-server-server/', badges: 'nav.api-related a > .api-nav__kind' },
-  { label: 'command related API', path: '/powershell/latest/reference/libtmux-enter-tmuxsession/', badges: '.api-command-related a > .api-nav__kind' },
-  { label: 'navigation search result', path: '/lua/latest/reference/libtmux-server/', badges: '[data-api-search-results] a strong > .api-nav__kind',
+  { label: 'related API contents', path: '/java/latest/reference/io-github-libtmux-server-server/', badges: 'nav.api-related a > .api-nav__kind', gap: false },
+  { label: 'command related API', path: '/powershell/latest/reference/libtmux-enter-tmuxsession/', badges: '.api-command-related a > .api-nav__kind', gap: false },
+  { label: 'navigation search result', path: '/lua/latest/reference/libtmux-server/', badges: '[data-api-search-results] a strong > .api-nav__kind', gap: false,
     prepare: async (page) => {
       await page.getByRole('searchbox', { name: 'Find a type or member' }).fill('Server')
       await page.locator('[data-api-search-results] a').first().waitFor()
@@ -410,14 +414,14 @@ export async function checkKindBadgeLinks(browser, base, { sample = false } = {}
       await page.addStyleTag({ content: '.reference-link-preview { display: none !important; }' })
       for (const entry of BADGE_LINKS.filter((candidate) => candidate.path === path && (!sample || candidate.sample))) {
         await entry.prepare?.(page)
-        const variants = [{ label: entry.label, badges: entry.badges, line: entry.line }]
+        const variants = [{ label: entry.label, badges: entry.badges, line: entry.line, gap: entry.gap }]
         if (entry.fixtures) {
           await addBadgeLinkFixtures(page)
           variants.push(
             { label: `${entry.label} in a heading`, badges: '[data-fixture="heading"] .api-link-kind', line: true },
             { label: `${entry.label} in a table`, badges: '[data-fixture="table"] .api-link-kind', line: true })
         }
-        for (const { label, badges, line } of variants) {
+        for (const { label, badges, line, gap: checkGap } of variants) {
           // A closed disclosure lays out nothing to measure.
           await page.evaluate((selector) => {
             for (const badge of document.querySelectorAll(selector)) {
@@ -436,7 +440,7 @@ export async function checkKindBadgeLinks(browser, base, { sample = false } = {}
               failures.push(`${where}: the name needs exactly one dotted underline (${measured.nameOwners.join('; ') || 'none'})`)
             }
             if (Math.abs(measured.centre) > 1) failures.push(`${where}: badge centre is ${measured.centre.toFixed(2)}px from the text centre`)
-            if (measured.gap < BADGE_GAP.min || measured.gap > BADGE_GAP.max) failures.push(`${where}: badge gap is ${measured.gap.toFixed(3)}em, not about .25em`)
+            if (checkGap !== false && (measured.gap < BADGE_GAP.min || measured.gap > BADGE_GAP.max)) failures.push(`${where}: badge gap is ${measured.gap.toFixed(3)}em, not about .25em`)
             if (line && measured.lineExcess > 1) failures.push(`${where}: the link is ${measured.lineExcess.toFixed(2)}px taller than its line`)
           }
           // The rendered badge, hovered or not, must match the same page drawn without decorations.

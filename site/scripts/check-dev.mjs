@@ -17,6 +17,7 @@ import { checkColorScheme } from './check-color-scheme.mjs'
 import { checkHomeExampleOptions } from './check-home-example-options.mjs'
 import { checkDevSample, checkRowPermalinks } from './check-dev-sample.mjs'
 import { checkDeclarationControlAlignment, checkDeclarationControlsLevel, checkMemberBodyInsets, checkNativeSignatureGeometry, checkNativeSignatureLinks } from './check-native-layout.mjs'
+import { checkBadgeCentring, checkMentionDensity } from './check-badge-centring.mjs'
 import { checkBlockLinksUndecorated, checkKindBadgeLinks, checkRequiredAppearance, checkWebAnalytics, checkWebAnalyticsTransitions } from './check-page-readiness.mjs'
 import { checkTypeParameters } from './check-type-parameters.mjs'
 import { checkTmuxKeys, TMUX_KEY_PAGES } from './check-tmux-keys.mjs'
@@ -35,6 +36,7 @@ const referencePreferencesOnly = process.argv.includes('--reference-preferences'
 const globalHeaderOnly = process.argv.includes('--global-header')
 const headerMenuSectionsOnly = process.argv.includes('--header-menu-sections')
 const statusBadgesOnly = process.argv.includes('--status-badges')
+const badgeCentringOnly = process.argv.includes('--badge-centring')
 const homeLauncherOnly = process.argv.includes('--home-launcher')
 const homeControlsOnly = process.argv.includes('--home-controls')
 const sampleOnly = process.argv.includes('--sample')
@@ -747,10 +749,11 @@ try {
   const firstPage = homeLauncherOnly || homeControlsOnly ? '/'
     : keywordHelpOnly ? '/kotlin/latest/reference/io-github-libtmux-kotlin-withserver/'
     : apiStickyOnly ? '/swift/latest/reference/server/'
+    : badgeCentringOnly ? '/py/stable/guides/attaching-to-tmux/'
     : documentationNavigationOnly || headerMenuSectionsOnly || statusBadgesOnly ? '/py/latest/' : apiSignaturesOnly ? '/api-signature-probe/'
     : apiNavigationOnly ? '/lua/latest/reference/libtmux-server/'
     : typeParametersOnly ? '/ts/latest/reference/selection-selection-where/' : '/tmux/concepts/server-session-window-pane/'
-  const fullRun = ![homeLauncherOnly, homeControlsOnly, keywordHelpOnly, apiSignaturesOnly, referenceLayoutOnly, globalHeaderOnly, headerMenuSectionsOnly, statusBadgesOnly,
+  const fullRun = ![homeLauncherOnly, homeControlsOnly, keywordHelpOnly, apiSignaturesOnly, referenceLayoutOnly, globalHeaderOnly, headerMenuSectionsOnly, statusBadgesOnly, badgeCentringOnly,
     referencePreferencesOnly, documentationNavigationOnly, apiNavigationOnly, apiAnchorsOnly, typeParametersOnly].some(Boolean)
   const setupPages = sampleOnly ? [firstPage, '/demo/widgets/pickers/', ...TMUX_KEY_PAGES]
     : [firstPage, ...(fullRun ? TMUX_KEY_PAGES : [])]
@@ -796,6 +799,9 @@ try {
   } else if (statusBadgesOnly) {
     await retryReload(() => checkStatusBadges(browser, base))
     await checkStatusBadgesFail(browser, base)
+  } else if (badgeCentringOnly) {
+    await retryReload(() => checkBadgeCentring(browser, base))
+    await checkMentionDensity(browser, base)
   } else if (referencePreferencesOnly) {
     await retryReload(() => checkReferencePreferences(browser, base))
     await retryReload(() => checkGlobalHeader(browser, base))
@@ -869,6 +875,8 @@ try {
     const apiNavigation = schedule(() => retryReload(() => checkApiNavigation(apiNavigationPage, base)).finally(() => apiNavigationPage.close()))
     const apiAnchors = schedule(() => retryReload(() => checkApiAnchorArrival(browser, base)))
     const kindBadges = schedule(() => retryReload(() => checkKindBadgeLinks(browser, base)))
+    const badgeCentring = schedule(() => retryReload(() => checkBadgeCentring(browser, base, { sample: sampleOnly }))
+      .then(() => checkMentionDensity(browser, base)))
     const blockLinks = schedule(() => retryReload(() => checkBlockLinksUndecorated(browser, base)))
     await apiAnchors
     const apiSticky = schedule(() => retryReload(() => checkApiStickyHeadings(browser, base))
@@ -1170,7 +1178,7 @@ try {
     await page.close()
     const failures = (await Promise.all([
       navigation, apiExamples, reference, preferences, globalHeader, headerMenuSections, statusBadges, apiNavigation,
-      clipboard, documentationNavigation, homeLauncher, apiAnchors, apiSticky, typeParameters, kindBadges, blockLinks,
+      clipboard, documentationNavigation, homeLauncher, apiAnchors, apiSticky, typeParameters, kindBadges, badgeCentring, blockLinks,
     ])).filter(Boolean)
     if (failures.length) throw new AggregateError(failures, 'Browser checks failed')
   }
