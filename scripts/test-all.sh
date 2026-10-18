@@ -71,6 +71,11 @@ node scripts/check-api-links.mjs
 step 'mention index'
 node scripts/gen-mentions.mjs --check
 
+# The commands, options and keys that workspace prose links to, read from the
+# CLI Manual and Configuration pages. The negative case is a unit test.
+step 'workspace entity index'
+node scripts/gen-workspace-entities.mjs --check
+
 # The curated reference sidebar, against the model it curates: a symbol no
 # bucket claims, a bucket no port fills, a symbol two buckets claim, and an
 # exemption that has started matching again.

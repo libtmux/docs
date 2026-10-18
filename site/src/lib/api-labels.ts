@@ -9,7 +9,8 @@ const KIND_MARKS: Record<SymbolKind, string> = {
 
 const PROTOCOL_MARKS: Record<string, string> = { tool: 't', prompt: 'P', resource: 'r', 'resource-template': 'R' }
 // tmux names borrow the sigils people already type: a shell prompt for commands, `#` for formats.
-const TMUX_MARKS: Record<string, string> = { command: '$', option: 'o', hook: 'h', format: '#' }
+// A workspace command and option take the tmux marks; a configuration key takes the colon that follows it in YAML.
+const TMUX_MARKS: Record<string, string> = { command: '$', option: 'o', hook: 'h', format: '#', key: ':' }
 export const kindMark = (kind: string) => KIND_MARKS[kind as SymbolKind] ?? PROTOCOL_MARKS[kind] ?? TMUX_MARKS[kind]
 
 const namespaceSegments = new Intl.Segmenter('en', { granularity: 'grapheme' })

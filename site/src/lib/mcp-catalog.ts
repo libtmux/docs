@@ -108,10 +108,13 @@ export type McpMentionDecision =
   | { kind: 'skip'; why: string }
   | { kind: 'unresolved'; why: string; tried: string[] }
 
+/** A resource URI is never a library symbol, so the workspace guides that inspect through MCP can name it bare. */
+const RESOURCE_URI = /^[a-z][a-z0-9+.-]*:\/\/\S+$/i
+
 /** Shared by the renderer and source lint; undefined delegates to the language API. */
 export function decideMcpMention(text: string, context: Pick<MentionContext, 'pagePort' | 'before' | 'product'>): McpMentionDecision | undefined {
   const explicit = text.startsWith('mcp:')
-  if (!explicit && context.product !== 'mcp') return undefined
+  if (!explicit && context.product !== 'mcp' && !(context.product === 'workspace' && RESOURCE_URI.test(text))) return undefined
   const owner = (context.before && portFromSentence(context.before)) || context.pagePort
   const ports = owner ? [owner] : Object.keys(MCP_REFERENCE)
   const matches = ports.flatMap((port) => {
@@ -129,4 +132,20 @@ export function decideMcpMention(text: string, context: Pick<MentionContext, 'pa
     return { kind: 'skip', why: 'MCP reference needs an object kind' }
   }
   return undefined
+}
+
+export interface McpRunMention { start: number; end: number; object: McpObject }
+
+/**
+ * Tool and prompt names inside a longer code run, such as `--enable-tool
+ * tmux_capture` or `list_sessions,capture_pane`. A whole-span name is
+ * `decideMcpMention`'s; a call such as `capture_pane(...)` is code, not a name.
+ */
+export function mcpRunMentions(text: string, port: string): McpRunMention[] {
+  return [...text.matchAll(/[A-Za-z][A-Za-z0-9_]*/g)].flatMap((token) => {
+    const end = token.index + token[0].length
+    if (/[\w./:$-]/.test(text[token.index - 1] ?? '') || /^[\w/(-]|^\.[A-Za-z]/.test(text.slice(end))) return []
+    const object = resolveMcpObject(port, token[0])
+    return object && object.kind !== 'resource' && object.kind !== 'resource-template' ? [{ start: token.index, end, object }] : []
+  })
 }

@@ -85,14 +85,39 @@ export function tmuxCommandMentions(text: string, { code = false, version = 'lat
   return [...found.values()].sort((a, b) => a.start - b.start)
 }
 
-/** A documented tmux name found in text, whatever its kind. */
-export interface TmuxReference {
+/**
+ * A name in text that has a page or anchor of its own, whatever documents it.
+ * tmux names, workspace commands and keys, and MCP tools all link through it,
+ * so one renderer badges them and one exporter writes them as plain links.
+ */
+export interface Mention {
   start: number
   end: number
   text: string
-  kind: TmuxEntityKind
+  /** The badge kind: a tmux kind, a workspace `key`, or an MCP object kind. */
+  kind: string
   name: string
   href: string
+  /** Names the kind in the badge's tooltip when the kind alone does not. */
+  title?: string
+  /** Which documentation owns the name; unset means tmux. */
+  family?: 'workspace' | 'mcp'
+  /** Link just the name, not the code span around it, however many names the span holds. */
+  inline?: boolean
+}
+
+/** A documented tmux name found in text, whatever its kind. */
+export interface TmuxReference extends Mention {
+  kind: TmuxEntityKind
+}
+
+/**
+ * Names from `preferred` plus every name of `others` that does not overlap one.
+ * The caller decides which source the page itself owns.
+ */
+export function mergeMentions<T extends Mention>(preferred: T[], others: T[]): T[] {
+  const free = others.filter((other) => !preferred.some((mention) => other.start < mention.end && mention.start < other.end))
+  return [...preferred, ...free].sort((a, b) => a.start - b.start)
 }
 
 // Plain words stay plain: only a hyphenated option or hook and an underscored
@@ -179,9 +204,8 @@ export function linkTmuxDoc(spans: LinkedDocSpan[], version = 'latest'): LinkedD
   })
 }
 
-/** Link one Markdown prose node without touching executable fences. */
-export function tmuxMentionMarkdown(text: string, code: boolean, project: (href: string) => string = (href) => href): string | undefined {
-  const mentions = tmuxMentions(text, { code })
+/** Link the given names of one Markdown prose node without touching executable fences. */
+export function mentionMarkdown(text: string, code: boolean, mentions: Mention[], project: (href: string) => string = (href) => href): string | undefined {
   if (!mentions.length) return undefined
   const literal = (value: string) => {
     if (!code) return value
@@ -189,7 +213,7 @@ export function tmuxMentionMarkdown(text: string, code: boolean, project: (href:
     const pad = /^`|`$|^ .* $/.test(value) ? ' ' : ''
     return `${fence}${pad}${value}${pad}${fence}`
   }
-  if (code && mentions.length === 1) return `[${literal(text)}](${project(mentions[0].href)})`
+  if (code && mentions.length === 1 && !mentions[0].inline) return `[${literal(text)}](${project(mentions[0].href)})`
   let linked = ''
   let end = 0
   for (const mention of mentions) {
@@ -199,4 +223,9 @@ export function tmuxMentionMarkdown(text: string, code: boolean, project: (href:
   }
   if (end < text.length) linked += literal(text.slice(end))
   return linked
+}
+
+/** Link one Markdown prose node's tmux names. */
+export function tmuxMentionMarkdown(text: string, code: boolean, project?: (href: string) => string): string | undefined {
+  return mentionMarkdown(text, code, tmuxMentions(text, { code }), project)
 }

@@ -193,6 +193,21 @@ the index:
 $ node scripts/gen-mentions.mjs
 ```
 
+Workspace prose links a code span that names a CLI command, option or
+configuration key to its entry in the port's CLI Manual or Configuration
+reference. Those destinations come from an index of the workspace pages. After
+adding or renaming a CLI page, a table of options, or a table of keys,
+regenerate it:
+
+```console
+$ node scripts/gen-workspace-entities.mjs
+```
+
+A bare name links only on a user-facing workspace page, where it outranks a
+library symbol or tmux name of the same spelling. `<program> <command>` links
+on any page of a port that ships the program. Internals pages and the language
+API index keep their library symbols.
+
 The publication audit checks index freshness, rendered links, navigation targets,
 and table layout at desktop, tablet, and phone widths.
 

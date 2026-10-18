@@ -1,0 +1,133 @@
+{
+ "groups": [
+  {
+   "ports": ["py"],
+   "program": "tmuxp",
+   "commands": [
+    ["completion","workspace/cli/completion",false],
+    ["convert","workspace/cli/convert",true],
+    ["debug-info","workspace/cli/debug-info",true],
+    ["edit","workspace/cli/edit",true],
+    ["freeze","workspace/cli/freeze",true],
+    ["import","workspace/cli/import",true],
+    ["import teamocil","workspace/cli/import-teamocil",false],
+    ["import tmuxinator","workspace/cli/import-tmuxinator",false],
+    ["load","workspace/cli/load",true],
+    ["ls","workspace/cli/ls",true],
+    ["search","workspace/cli/search",true],
+    ["shell","workspace/cli/shell",true]
+   ],
+   "options": [
+    ["-L","workspace/cli/load","arguments-and-flags-l"],
+    ["-S","workspace/cli/load","arguments-and-flags-s"],
+    ["-f","workspace/cli/load","arguments-and-flags-f"],
+    ["-s","workspace/cli/load","arguments-and-flags-s-2"],
+    ["--yes","workspace/cli/load","arguments-and-flags-yes-y"],
+    ["-y","workspace/cli/load","arguments-and-flags-yes-y"],
+    ["-d","workspace/cli/load","arguments-and-flags-d"],
+    ["-a","workspace/cli/load","arguments-and-flags-a-append"],
+    ["--append","workspace/cli/load","arguments-and-flags-a-append"],
+    ["-2","workspace/cli/load","arguments-and-flags-2"],
+    ["-8","workspace/cli/load","arguments-and-flags-8"],
+    ["--log-file","workspace/cli/load","arguments-and-flags-log-file"],
+    ["--progress-format","workspace/cli/load","arguments-and-flags-progress-format"],
+    ["--progress-lines","workspace/cli/load","arguments-and-flags-progress-lines"],
+    ["--no-progress","workspace/cli/load","arguments-and-flags-no-progress"]
+   ],
+   "keys": [
+    ["session_name","workspace/configuration/session","root-keys-session-name"],
+    ["windows","workspace/configuration/session","root-keys-windows"],
+    ["start_directory","workspace/configuration/session","root-keys-start-directory"],
+    ["options","workspace/configuration/session","root-keys-options"],
+    ["global_options","workspace/configuration/session","root-keys-global-options"],
+    ["environment","workspace/configuration/session","root-keys-environment"],
+    ["shell_command_before","workspace/configuration/session","root-keys-shell-command-before"],
+    ["suppress_history","workspace/configuration/session","root-keys-suppress-history"],
+    ["before_script","workspace/configuration/session","root-keys-before-script"],
+    ["plugins","workspace/configuration/session","root-keys-plugins"],
+    ["workspace_builder","workspace/configuration/session","root-keys-workspace-builder"],
+    ["workspace_builder_paths","workspace/configuration/session","root-keys-workspace-builder-paths"],
+    ["workspace_builder_options","workspace/configuration/session","root-keys-workspace-builder-options"],
+    ["window_name","workspace/configuration/windows","window-keys-window-name"],
+    ["window_index","workspace/configuration/windows","window-keys-window-index"],
+    ["panes","workspace/configuration/windows","window-keys-panes"],
+    ["layout","workspace/configuration/windows","window-keys-layout"],
+    ["start_directory","workspace/configuration/windows","window-keys-start-directory"],
+    ["window_shell","workspace/configuration/windows","window-keys-window-shell"],
+    ["focus","workspace/configuration/windows","window-keys-focus"],
+    ["options","workspace/configuration/windows","window-keys-options"],
+    ["options_after","workspace/configuration/windows","window-keys-options-after"],
+    ["environment","workspace/configuration/windows","window-keys-environment"],
+    ["shell_command_before","workspace/configuration/windows","window-keys-shell-command-before"],
+    ["suppress_history","workspace/configuration/windows","window-keys-suppress-history"],
+    ["shell_command","workspace/configuration/panes","pane-keys-shell-command"],
+    ["shell_command_before","workspace/configuration/panes","pane-keys-shell-command-before"],
+    ["start_directory","workspace/configuration/panes","pane-keys-start-directory"],
+    ["shell","workspace/configuration/panes","pane-keys-shell"],
+    ["focus","workspace/configuration/panes","pane-keys-focus"],
+    ["environment","workspace/configuration/panes","pane-keys-environment"],
+    ["suppress_history","workspace/configuration/panes","pane-keys-suppress-history"],
+    ["enter","workspace/configuration/panes","pane-keys-enter"],
+    ["sleep_before","workspace/configuration/panes","pane-keys-sleep-before-sleep-after"],
+    ["sleep_after","workspace/configuration/panes","pane-keys-sleep-before-sleep-after"],
+    ["enter","workspace/configuration/commands","enter-and-delays-enter"],
+    ["sleep_before","workspace/configuration/commands","enter-and-delays-sleep-before"],
+    ["sleep_after","workspace/configuration/commands","enter-and-delays-sleep-after"]
+   ]
+  },
+  {
+   "ports": ["ruby"],
+   "program": "libtmux-workspace",
+   "commands": [
+    ["load","workspace/cli/load",true],
+    ["plan","workspace/cli/plan",true],
+    ["validate","workspace/cli/validate",true]
+   ],
+   "options": [
+    ["--json","workspace/cli","input-and-common-options-json"],
+    ["--expand-environment","workspace/cli","input-and-common-options-expand-environment"],
+    ["--env","workspace/cli","input-and-common-options-env-name-value"],
+    ["-h","workspace/cli","input-and-common-options-h-help"],
+    ["--help","workspace/cli","input-and-common-options-h-help"],
+    ["--version","workspace/cli","input-and-common-options-version"],
+    ["--socket","workspace/cli/load","options-socket-path"],
+    ["--timeout","workspace/cli/load","options-timeout-seconds"],
+    ["--compensate","workspace/cli/load","options-compensate"],
+    ["--attach","workspace/cli/load","options-attach"],
+    ["--switch","workspace/cli/load","options-switch-client"]
+   ],
+   "keys": []
+  },
+  {
+   "ports": ["ts","rs","go","java","csharp","cxx","swift"],
+   "program": "tmux-workspace",
+   "commands": [
+    ["completion","workspace/cli/completion",true],
+    ["convert","workspace/cli/convert",true],
+    ["debug-info","workspace/cli/debug-info",true],
+    ["edit","workspace/cli/edit",true],
+    ["freeze","workspace/cli/freeze",true],
+    ["import","workspace/cli/import",true],
+    ["import teamocil","workspace/cli/import-teamocil",false],
+    ["import tmuxinator","workspace/cli/import-tmuxinator",false],
+    ["load","workspace/cli/load",true],
+    ["ls","workspace/cli/ls",true],
+    ["search","workspace/cli/search",true],
+    ["shell","workspace/cli/shell",false]
+   ],
+   "options": [],
+   "keys": [
+    ["session_name","workspace/configuration/session","session-fields-session-name"],
+    ["windows","workspace/configuration/session","session-fields-windows"],
+    ["start_directory","workspace/configuration/session","session-fields-start-directory"],
+    ["environment","workspace/configuration/session","session-fields-environment"],
+    ["options","workspace/configuration/session","session-fields-options"],
+    ["global_options","workspace/configuration/session","session-fields-global-options"],
+    ["shell_command_before","workspace/configuration/session","session-fields-shell-command-before"],
+    ["suppress_history","workspace/configuration/session","session-fields-suppress-history"],
+    ["before_script","workspace/configuration/session","session-fields-before-script"],
+    ["workspace_builder_options","workspace/configuration/session","session-fields-workspace-builder-options"]
+   ]
+  }
+ ]
+}

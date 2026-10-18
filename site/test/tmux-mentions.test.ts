@@ -249,3 +249,190 @@ describe('tmux badge palette', () => {
     expect(kindMark(kind)).toHaveLength(1)
   })
 })
+
+describe('workspace and MCP mentions render like tmux mentions', () => {
+  const page = async (source: string, frontmatter: Record<string, unknown>) =>
+    fromHtml((await (await processor).render(source, { frontmatter })).code, { fragment: true })
+  const workspace = (source: string, port = 'py', route = 'workspace/topics', extra: Record<string, unknown> = {}) =>
+    page(source, { port, product: 'workspace', route, ...extra })
+  const hrefs = (tree: Nodes) => selectAll('a', tree).map((anchor) => String(anchor.properties.href))
+  const exported = (source: string, port: string, product: 'workspace' | 'mcp' | undefined, id: string, group?: string) => {
+    const urls: string[] = []
+    visit(fromMarkdown(linkProseMarkdown(source, port, product, { page: { id, data: { port, product, sidebar: { group } } } })), 'link', (node) => { urls.push(node.url) })
+    return urls
+  }
+
+  // The sentences from the Python workspace topics page that prompted the links.
+  const REPORTED = '`tmuxp load` handles attachment. `tmuxp freeze` writes the structure. `shell_command_before` supplies setup.'
+
+  describe('a command or key named in code', () => {
+    it('links to the CLI Manual and the Configuration reference with the badge a tmux mention carries', async () => {
+      const tree = await workspace(REPORTED)
+      expect(hrefs(tree)).toEqual([
+        '/py/latest/workspace/cli/load/', '/py/latest/workspace/cli/freeze/',
+        '/py/latest/workspace/configuration/session/#root-keys-shell-command-before',
+      ])
+      const anchors = selectAll('a.workspace-mention', tree)
+      expect(anchors.map((anchor) => select('.api-link-kind', anchor)!.properties.dataApiKind)).toEqual(['command', 'command', 'key'])
+      expect(anchors.map((anchor) => text(select('.api-badge__label', anchor)))).toEqual(['$', '$', ':'])
+      expect(anchors.map((anchor) => select('.api-link-kind', anchor)!.properties.title)).toEqual(['tmuxp command', 'tmuxp command', 'workspace configuration key'])
+      expect(anchors.map((anchor) => text(select('.api-symbol-link__name code', anchor)))).toEqual(['tmuxp load', 'tmuxp freeze', 'shell_command_before'])
+      const api = select('.api-link-kind', await render('Read `Client`.'))!
+      expect(classes(select('.api-link-kind', anchors[0])!)).toEqual(classes(api))
+    })
+
+    it('keeps the badge clear of the dotted preview underline', async () => {
+      const [anchor] = selectAll('a', await workspace('`tmuxp load`'))
+      const policy = createLinkPreviewPolicy()
+      expect(anchor.properties.dataLinkPreview).toBeUndefined()
+      expect(policy.target(String(anchor.properties.href), 'https://libtmux.org')).toBeUndefined()
+      expect(readFileSync(new URL('../src/styles/api-tree.css', import.meta.url), 'utf8')).toMatch(/\.api-link-kind\s*\{[^}]*text-decoration:\s*none/)
+    })
+
+    it.each([
+      ['ts', 'tmux-workspace load', '/ts/latest/workspace/cli/load/'],
+      ['go', 'tmux-workspace import teamocil', '/go/latest/workspace/cli/import-teamocil/'],
+      ['ruby', 'libtmux-workspace validate workspace.yaml', '/ruby/latest/workspace/cli/validate/'],
+    ])('resolves `%s` in the port that owns the program: %s', async (port, code, href) => {
+      expect(hrefs(await workspace(`Run \`${code}\`.`, port, 'workspace/guides'))).toEqual([href])
+    })
+
+    it.each([['ts', 'tmuxp load'], ['py', 'tmux-workspace load'], ['ruby', 'tmux-workspace load'], ['py', 'tmuxp unknown']])(
+      'leaves `%s` plain when the port has no such program or command: %s', async (port, code) => {
+        expect(hrefs(await workspace(`Run \`${code}\`.`, port, 'workspace/guides'))).toEqual([])
+      })
+
+    it('names a command on any page by program, and a bare name only on a workspace page', async () => {
+      const source = 'Run `tmuxp load`. Set `window_name` and `load`.'
+      expect(hrefs(await page(source, { port: 'py', route: 'guides/getting-started' }))).toEqual(['/py/latest/workspace/cli/load/', '/tmux/latest/manual/full/#window_name'])
+      expect(hrefs(await workspace(source, 'py', 'workspace/guides')))
+        .toEqual(['/py/latest/workspace/cli/load/', '/py/latest/workspace/configuration/windows/#window-keys-window-name', '/py/latest/workspace/cli/load/'])
+    })
+  })
+
+  describe('precedence when a name is also a library symbol, a stdlib name or a tmux format', () => {
+    const SOURCE = 'Run `freeze` or `search`; set `session_name`.'
+
+    it('lets the workspace page win over the library, the standard library and tmux', async () => {
+      expect(hrefs(await workspace(SOURCE, 'py', 'workspace/guides'))).toEqual([
+        '/py/latest/workspace/cli/freeze/', '/py/latest/workspace/cli/search/', '/py/latest/workspace/configuration/session/#root-keys-session-name',
+      ])
+    })
+
+    it.each([
+      ['an internals page', 'workspace/internals/topics', undefined],
+      ['a page in the Internals group', 'workspace/topics', 'Internals'],
+      ['the library API index', 'workspace/reference', undefined],
+    ])('lets the library win on %s, where freeze is the function', async (_name, route, group) => {
+      const found = hrefs(await workspace(SOURCE, 'py', route, group ? { sidebar: { group } } : {}))
+      expect(found[0]).toMatch(/\/py\/latest\/workspace\/reference\/tmuxp-workspace-freezer-freeze\/$/)
+      expect(found[1]).toMatch(/^https:\/\/docs\.python\.org\//)
+      expect(found.some((href) => href.includes('/workspace/cli/') || href.includes('/workspace/configuration/'))).toBe(false)
+      expect(exported(SOURCE, 'py', 'workspace', `ports/py/${route}`, group)).toEqual(found.map((href) => href))
+    })
+
+    it('keeps tmux and the library on pages that are not workspace pages', async () => {
+      const found = hrefs(await page('Set `session_name`.', { port: 'java', route: 'guides/getting-started' }))
+      expect(found).toEqual(['/tmux/latest/manual/full/#session_name'])
+    })
+
+    it.each([
+      ['a configuration page', 'workspace/configuration/panes', '`shell`', '/py/latest/workspace/configuration/panes/#pane-keys-shell'],
+      ['a CLI page', 'workspace/cli/ls', '`shell`', '/py/latest/workspace/cli/shell/'],
+      ['a guide, unquoted', 'workspace/guides', '`shell`', '/py/latest/workspace/cli/shell/'],
+      ['a guide, quoted', 'workspace/guides', '`"shell"`', '/py/latest/workspace/configuration/panes/#pane-keys-shell'],
+    ])('resolves a name that is a command and a key by its section: %s', async (_name, route, code, href) => {
+      expect(hrefs(await workspace(code, 'py', route))).toEqual([href])
+    })
+
+    it('prefers the entry on its own page when a key is defined at several levels', async () => {
+      const entry = async (route: string) => hrefs(await workspace('`start_directory`', 'py', route))
+      expect(await entry('workspace/configuration/windows')).toEqual(['/py/latest/workspace/configuration/windows/#window-keys-start-directory'])
+      expect(await entry('workspace/configuration/panes')).toEqual(['/py/latest/workspace/configuration/panes/#pane-keys-start-directory'])
+      expect(await entry('workspace/topics')).toEqual(['/py/latest/workspace/configuration/session/#root-keys-start-directory'])
+      expect(hrefs(await workspace('`start_directory`', 'ts', 'workspace/configuration/windows')))
+        .toEqual(['/ts/latest/workspace/configuration/session/#session-fields-start-directory'])
+    })
+  })
+
+  describe('a name that is defined where it is written', () => {
+    it('does not link the first cell of its own row, but links the same key elsewhere on the page', async () => {
+      const source = '| Key | Meaning |\n| --- | --- |\n| `session_name` | Names the session; `windows` follows it |\n'
+      // Not to the tmux format variable of the same name either.
+      expect(hrefs(await workspace(source, 'py', 'workspace/configuration/session')))
+        .toEqual(['/py/latest/workspace/configuration/session/#root-keys-windows'])
+      expect(exported(source, 'py', 'workspace', 'ports/py/workspace/configuration/session'))
+        .toEqual(['/py/latest/workspace/configuration/session/#root-keys-windows'])
+      expect(hrefs(await workspace(source, 'py', 'workspace/guides')))
+        .toEqual(['/py/latest/workspace/configuration/session/#root-keys-session-name', '/py/latest/workspace/configuration/session/#root-keys-windows'])
+    })
+
+    it('does not link a command to its own page, the library or a heading, but links its option row', async () => {
+      const source = '## The `load` command\n\n`load` applies; `-d` avoids attachment.'
+      expect(hrefs(await workspace(source, 'ruby', 'workspace/cli/load'))).toEqual([])
+      expect(hrefs(await workspace(source, 'py', 'workspace/cli/load'))).toEqual(['/py/latest/workspace/cli/load/#arguments-and-flags-d'])
+    })
+  })
+
+  describe('a name inside a longer code run', () => {
+    it('links the command and the options it defines, keeping the code font and no badge', async () => {
+      const tree = await workspace('Run `load -d workspace.yaml` or `search -S`.', 'py', 'workspace/guides')
+      expect(hrefs(tree)).toEqual(['/py/latest/workspace/cli/load/', '/py/latest/workspace/cli/load/#arguments-and-flags-d', '/py/latest/workspace/cli/search/'])
+      expect(selectAll('code', tree).map(text)).toEqual(['load -d workspace.yaml', 'search -S'])
+      // Two names split the first span and take no badge; the one name of the second takes the span.
+      expect(selectAll('code', tree).map((code) => selectAll('.api-link-kind', code).length)).toEqual([0, 0])
+      expect(selectAll('.api-link-kind', tree).map((badge) => badge.properties.dataApiKind)).toEqual(['command'])
+      expect(hrefs(await workspace('Run `load -d workspace.yaml`.', 'ts', 'workspace/guides'))).toEqual(['/ts/latest/workspace/cli/load/'])
+    })
+
+    it('links just the key of a mapping entry', async () => {
+      const tree = await workspace('Set `focus: true`.', 'py', 'workspace/guides')
+      expect(selectAll('a', tree).map(text)).toEqual(['focus'])
+      expect(text(select('code', tree))).toBe('focus: true')
+      expect(selectAll('.api-link-kind', tree)).toHaveLength(0)
+    })
+
+    it('exports the same destinations as plain Markdown links', async () => {
+      const source = `${REPORTED} Run \`load -d workspace.yaml\` and set \`focus: true\`.`
+      const found = hrefs(await workspace(source, 'py', 'workspace/guides'))
+      const urls = exported(source, 'py', 'workspace', 'ports/py/workspace/guides')
+      expect(found).toHaveLength(6)
+      expect(urls).toEqual(found)
+      const markdown = linkProseMarkdown(source, 'py', 'workspace', { page: { id: 'ports/py/workspace/guides', data: { port: 'py', product: 'workspace' } } })
+      expect(markdown).not.toMatch(/api-link-kind|data-api-kind|workspace-mention|<span/)
+      expect(linkProseMarkdown(REPORTED, 'py', 'workspace', { page: { id: 'ports/py/workspace/topics', data: { port: 'py', product: 'workspace' } } })
+        .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')).toBe(REPORTED)
+    })
+  })
+
+  describe('MCP names', () => {
+    const mcp = (source: string, port: string) => page(source, { port, product: 'mcp', route: 'mcp/guides' })
+
+    it('links tools named inside a code run, keeping calls and unknown names plain', async () => {
+      const tree = await mcp('Pass `--enable-tool tmux_capture`, `LIBTMUX_TOOLS=list_sessions,capture_pane` and `capture_pane(pane_id)`.', 'ts')
+      expect(selectAll('code', tree).map(text)).toEqual(['--enable-tool tmux_capture', 'LIBTMUX_TOOLS=list_sessions,capture_pane', 'capture_pane(pane_id)'])
+      expect(hrefs(tree)).toEqual(['/ts/latest/mcp/tools/list_sessions/', '/ts/latest/mcp/tools/capture_pane/'])
+      expect(hrefs(await mcp('Pass `--enable-tool tmux_capture`.', 'ruby'))).toEqual(['/ruby/latest/mcp/tools/tmux_capture/'])
+      expect(selectAll('.api-link-kind', tree)).toHaveLength(0)
+      expect(hrefs(await page('Pass `LIBTMUX_TOOLS=list_sessions,capture_pane`.', { port: 'ts', route: 'guides/getting-started' }))).toEqual([])
+    })
+
+    it('exports the run mentions as Markdown links', () => {
+      const source = 'Pass `LIBTMUX_TOOLS=list_sessions,capture_pane`.'
+      expect(exported(source, 'ts', 'mcp', 'ports/ts/mcp/guides')).toEqual(['/ts/latest/mcp/tools/list_sessions/', '/ts/latest/mcp/tools/capture_pane/'])
+    })
+
+    it('names a resource URI on a workspace page, not on a library page', async () => {
+      const source = 'Read the `tmux://capabilities` resource.'
+      expect(hrefs(await workspace(source, 'ts', 'workspace/guides/inspect-with-mcp'))).toEqual(['/ts/latest/mcp/resources/capabilities/'])
+      expect(exported(source, 'ts', 'workspace', 'ports/ts/workspace/guides/inspect-with-mcp')).toEqual(['/ts/latest/mcp/resources/capabilities/'])
+      expect(hrefs(await page(source, { port: 'ts', route: 'guides/getting-started' }))).toEqual([])
+    })
+  })
+
+  it('takes the key badge from the property palette and gives it one glyph', () => {
+    const css = readFileSync(new URL('../src/styles/api-kinds.css', import.meta.url), 'utf8')
+    expect(css).toMatch(/\.api-badge--kind-key[^{]*\{[^}]*var\(--api-kind-property-bg\)/)
+    expect(kindMark('key')).toBe(':')
+  })
+})

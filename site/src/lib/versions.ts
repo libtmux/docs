@@ -322,3 +322,16 @@ export function defaultVersionFor(port: string): string {
   }
   return portDefaults[port] ?? 'latest'
 }
+
+/**
+ * The version a link from this build to `port`'s pages targets: this build's
+ * own version for the port it renders, the assembly's default for the others.
+ */
+export function linkedVersionFor(port: string, env: Record<string, string | undefined> = process.env): string {
+  if (port === env.LIBTMUX_DOCS_PORT) return buildTarget(env).version
+  try {
+    return (JSON.parse(env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') as Record<string, string>)[port] ?? 'latest'
+  } catch {
+    return 'latest'
+  }
+}

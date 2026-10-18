@@ -127,7 +127,7 @@
 .api-badge--kind-exception { background: var(--api-kind-exception-bg); color: var(--api-kind-exception-fg); border-color: var(--api-kind-exception-border); }
 .api-badge--kind-function, .api-badge--kind-tool { background: var(--api-kind-function-bg); color: var(--api-kind-function-fg); border-color: var(--api-kind-function-border); }
 .api-badge--kind-method { background: var(--api-kind-method-bg); color: var(--api-kind-method-fg); border-color: var(--api-kind-method-border); }
-.api-badge--kind-property, .api-badge--kind-resource, .api-badge--kind-resource-template { background: var(--api-kind-property-bg); color: var(--api-kind-property-fg); border-color: var(--api-kind-property-border); }
+.api-badge--kind-property, .api-badge--kind-resource, .api-badge--kind-resource-template, .api-badge--kind-key { background: var(--api-kind-property-bg); color: var(--api-kind-property-fg); border-color: var(--api-kind-property-border); }
 .api-badge--kind-attribute { background: var(--api-kind-attribute-bg); color: var(--api-kind-attribute-fg); border-color: var(--api-kind-attribute-border); }
 .api-badge--kind-constant { background: var(--api-kind-constant-bg); color: var(--api-kind-constant-fg); border-color: var(--api-kind-constant-border); }
 .api-badge--kind-module, .api-badge.api-badge--mod-package { background: var(--api-kind-module-bg); color: var(--api-kind-module-fg); border-color: var(--api-kind-module-border); }

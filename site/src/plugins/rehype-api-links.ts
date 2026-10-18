@@ -3,13 +3,14 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { visit } from 'unist-util-visit'
 import { isLikelyReference, notApiReason, type ApiProduct } from '@libtmux/api-model'
-import { createProseLinker, PORT_BY_LABEL } from '../lib/prose-resolver'
+import { createProseLinker, PORT_BY_LABEL, protocolRunMentions } from '../lib/prose-resolver'
 import { PORT_BY_SLUG } from '../lib/ports'
 import { API_MODELS, pageSlug } from '../lib/api-models'
 import { kindMark } from '../lib/api-labels'
 import { docsPath, isTmuxProse } from '../lib/docs-paths'
 import { MCP_REFERENCE, mcpObjects } from '../lib/mcp-reference'
-import { tmuxMentions, type TmuxReference } from '../lib/tmux-links'
+import { mergeMentions, tmuxMentions, type Mention } from '../lib/tmux-links'
+import { isLibraryPage, workspaceNames } from '../lib/workspace-links'
 
 /** Link inline API and source references using their prose ownership. */
 const here = dirname(fileURLToPath(import.meta.url))
@@ -94,7 +95,7 @@ type El = { type?: string; tagName?: string; value?: string; properties?: Record
 const containsAnchor = (node: El): boolean => node.tagName === 'a' || Boolean(node.children?.some(containsAnchor))
 
 /** tmux kinds read as words in the badge's tooltip; the glyph stays in `kindMark`. */
-const TMUX_KIND_TITLES: Record<TmuxReference['kind'], string> = {
+const TMUX_KIND_TITLES: Record<string, string> = {
   command: 'tmux command', option: 'tmux option', hook: 'tmux hook', format: 'tmux format variable',
 }
 
@@ -110,20 +111,20 @@ function withKindBadge(anchor: El, kind: string, mark: string, title?: string): 
   return anchor
 }
 
-function tmuxAnchor(mention: TmuxReference, children: El[], badge = true): El {
+function mentionAnchor(mention: Mention, children: El[], badge = true): El {
   const anchor: El = { type: 'element', tagName: 'a', properties: { href: mention.href }, children }
   if (!badge) return anchor
-  anchor.properties!.className = ['tmux-mention']
-  return withKindBadge(anchor, mention.kind, kindMark(mention.kind)!, TMUX_KIND_TITLES[mention.kind])
+  anchor.properties!.className = [`${mention.family ?? 'tmux'}-mention`]
+  return withKindBadge(anchor, mention.kind, kindMark(mention.kind)!, mention.title ?? TMUX_KIND_TITLES[mention.kind])
 }
 
 /** Names in prose carry a badge; inside one code run they keep the run's own flow. */
-function mentionNodes(text: string, code = false): El[] {
+function mentionNodes(text: string, mentions: Mention[], code = false): El[] {
   const linked: El[] = []
   let end = 0
-  for (const mention of tmuxMentions(text, { code })) {
+  for (const mention of mentions) {
     if (mention.start > end) linked.push({ type: 'text', value: text.slice(end, mention.start) })
-    linked.push(tmuxAnchor(mention, [{ type: 'text', value: mention.text }], !code))
+    linked.push(mentionAnchor(mention, [{ type: 'text', value: mention.text }], !code))
     end = mention.end
   }
   if (end < text.length) linked.push({ type: 'text', value: text.slice(end) })
@@ -189,7 +190,7 @@ function addKindBadge(anchor: El, port?: string, route?: string): void {
  * language of the fence above, then the port this build is for.
  */
 export function rehypeApiLinks() {
-  return (tree: unknown, file?: { path?: string; data?: { astro?: { frontmatter?: { port?: string; product?: ApiProduct; route?: string } } } }) => {
+  return (tree: unknown, file?: { path?: string; data?: { astro?: { frontmatter?: { port?: string; product?: ApiProduct; route?: string; sidebar?: { group?: string } } } } }) => {
     const frontmatter = file?.data?.astro?.frontmatter
     const buildPort = frontmatter?.port ?? (process.env.LIBTMUX_DOCS_PORT || undefined)
     const source = file?.path?.replaceAll('\\', '/').match(/\/content\/(docs|_workspace-shared)\/(.+)\.mdx?$/)
@@ -200,8 +201,16 @@ export function rehypeApiLinks() {
     const nativeTmux = isTmuxProse({ id: id ?? '', data: { ...frontmatter, port: buildPort } })
     const resolveMentions = !nativeTmux && (!buildPort || PORT_BY_SLUG[buildPort]?.referenceKind !== 'guide')
     begin()
-    const link = createProseLinker(file?.data?.astro?.frontmatter?.product)
+    const product = file?.data?.astro?.frontmatter?.product
+    const link = createProseLinker(product)
     const sections: { depth: number; port?: string }[] = []
+    // A bare `load` or `start_directory` is a workspace name on a user-facing workspace page.
+    // Library pages talk about the function and the field, so only `<program> <command>` is evidence there.
+    const bareWorkspaceNames = product === 'workspace' && !isLibraryPage(route, frontmatter?.sidebar?.group)
+    // The first cell of a table row defines the entry it names, and a heading names its own section.
+    const definitionCells = new WeakSet<El>()
+    let definitions = 0
+    let headings = 0
 
     const walk = (node: El, inLink: boolean, rowPort: string | undefined, fence: { lang?: string }, before: { text: string }) => {
       const kids = node.children
@@ -212,6 +221,7 @@ export function rehypeApiLinks() {
         const cells = kids.filter((c) => c.tagName === 'td')
         const label = cells.length ? textOf(cells[0]!).trim() : ''
         rowPort = PORT_BY_LABEL[label] ?? rowPort
+        if (cells[0]) definitionCells.add(cells[0])
       }
       // A fence sets the language for the prose that follows it.
       if (node.tagName === 'pre') {
@@ -237,8 +247,9 @@ export function rehypeApiLinks() {
       for (let i = 0; i < kids.length; i++) {
         const child = kids[i]!
         if (child.type === 'text') {
-          if (!inLink && tmuxMentions(child.value ?? '').length) {
-            const linked = mentionNodes(child.value ?? '')
+          const mentions = inLink ? [] : tmuxMentions(child.value ?? '')
+          if (mentions.length) {
+            const linked = mentionNodes(child.value ?? '', mentions)
             kids.splice(i, 1, ...linked)
             i += linked.length - 1
           }
@@ -259,18 +270,32 @@ export function rehypeApiLinks() {
           continue
         }
         if (child.tagName === 'code' && !inLink) {
-          const text = textOf(child).trim()
+          const raw = textOf(child)
+          const text = raw.trim()
           if (containsAnchor(child)) { scope.text += text; continue }
-          const mentions = tmuxMentions(text, { code: true })
+          const explicitPort = child.properties?.dataDocPort
+          const pagePort = (typeof explicitPort === 'string' ? explicitPort : undefined)
+            ?? buildPort ?? rowPort ?? fence.lang ?? sections.at(-1)?.port
+          // The page's own product and port name things the language API and tmux also name.
+          const names = pagePort
+            ? workspaceNames(text, { port: pagePort, route, bare: bareWorkspaceNames, definition: definitions > 0 })
+            : { mentions: [], defined: false }
+          // A heading names its own section, so it links nothing; neither does the place that defines a name.
+          const own = headings ? [] : names.mentions
+          if (!own.length && (names.defined || names.mentions.length)) { scope.text += text; continue }
+          const tmux = tmuxMentions(text, { code: true })
+          const mentions = mergeMentions(own, mergeMentions(tmux, product === 'mcp' && pagePort ? protocolRunMentions(link, text, pagePort) : []))
           // One name takes the whole span; several split it and keep its code font.
           const linkMentions = () => {
-            if (mentions.length === 1) kids[i] = tmuxAnchor(mentions[0], [child])
-            else if (mentions.length > 1 && child.children?.every((node) => node.type === 'text')) child.children = mentionNodes(textOf(child), true)
-            else return false
+            const lead = raw.length - raw.trimStart().length
+            if (mentions.length === 1 && !mentions[0].inline) kids[i] = mentionAnchor(mentions[0], [child])
+            else if (mentions.length && child.children?.every((node) => node.type === 'text')) {
+              child.children = mentionNodes(raw, mentions.map((mention) => ({ ...mention, start: mention.start + lead, end: mention.end + lead })), true)
+            } else return false
             return true
           }
-          // A command claims its span; a library symbol outranks an option, hook or format variable.
-          if (mentions.some((mention) => mention.kind === 'command') && linkMentions()) {
+          // A command or a workspace name claims its span; a library symbol outranks an option, hook or format variable.
+          if ((own.length || tmux.some((mention) => mention.kind === 'command')) && linkMentions()) {
             scope.text += text
             continue
           }
@@ -278,9 +303,6 @@ export function rehypeApiLinks() {
             linkMentions()
             continue
           }
-          const explicitPort = child.properties?.dataDocPort
-          const pagePort = (typeof explicitPort === 'string' ? explicitPort : undefined)
-            ?? buildPort ?? rowPort ?? fence.lang ?? sections.at(-1)?.port
           const decision = link(text, { pagePort, before: scope.text })
           if (decision.kind === 'link') {
             kids[i] = {
@@ -303,7 +325,13 @@ export function rehypeApiLinks() {
           scope.text += text
           continue
         }
+        const heading = /^h[1-6]$/.test(child.tagName ?? '')
+        const definition = definitionCells.has(child)
+        if (heading) headings++
+        if (definition) definitions++
         walk(child, inLink, rowPort, fence, scope)
+        if (heading) headings--
+        if (definition) definitions--
         scope.text += textOf(child)
       }
     }
