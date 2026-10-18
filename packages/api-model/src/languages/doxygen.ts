@@ -48,7 +48,16 @@ const MEMBER_KIND: Record<string, SymbolKind> = {
  * `<para>`, so it gets a blank line of its own; a `@par` title is a bold line.
  */
 function textOf(xml: string): string {
-  return xml
+  // A `\code` block is kept apart from the whitespace folding below: its
+  // lines and indentation are the example.
+  const listings: string[] = []
+  const text = xml.replace(/<programlisting\b[^>]*>([\s\S]*?)<\/programlisting>/g, (_, listing: string) => {
+    const lines = [...listing.matchAll(/<codeline\b[^>]*>([\s\S]*?)<\/codeline>/g)]
+      .map((line) => decodeEntities(line[1].replace(/<sp\s*\/>/g, ' ').replace(/<[^>]+>/g, '')))
+    listings.push(`\n\n\`\`\`cpp\n${lines.join('\n').replace(/\s+$/, '')}\n\`\`\`\n\n`)
+    return `\uE000${listings.length - 1}\uE001`
+  })
+  return text
     .replace(/<ref[^>]*>/g, '')
     .replace(/<\/ref>/g, '')
     .replace(/<computeroutput>/g, '`')
@@ -69,16 +78,23 @@ function textOf(xml: string): string {
     .replace(/[ \t]+/g, ' ')
     .replace(/\n{3,}/g, '\n\n')
     .trim()
+    .replace(/\uE000(\d+)\uE001/g, (_, at: string) => listings[Number(at)])
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
+function decodeEntities(text: string): string {
+  const entities: Record<string, string> = { lt: '<', gt: '>', amp: '&', quot: '"', apos: "'" }
+  return text.replace(/&(lt|gt|amp|quot|apos|#\d+|#x[\da-f]+);/gi, (_, entity: string) => {
+    if (entity.startsWith('#x')) return String.fromCodePoint(Number.parseInt(entity.slice(2), 16))
+    if (entity.startsWith('#')) return String.fromCodePoint(Number(entity.slice(1)))
+    return entities[entity]
+  })
 }
 
 /** Code XML keeps literal whitespace and decodes each entity exactly once. */
 function codeOf(xml: string): string {
-  const entities: Record<string, string> = { lt: '<', gt: '>', amp: '&', quot: '"', apos: "'" }
-  return xml.replace(/<[^>]+>/g, '').replace(/&(lt|gt|amp|quot|apos|#\d+|#x[\da-f]+);/gi, (_, entity: string) => {
-    if (entity.startsWith('#x')) return String.fromCodePoint(Number.parseInt(entity.slice(2), 16))
-    if (entity.startsWith('#')) return String.fromCodePoint(Number(entity.slice(1)))
-    return entities[entity]
-  }).trim()
+  return decodeEntities(xml.replace(/<[^>]+>/g, '')).trim()
 }
 
 const syntheticCName = (name: string): boolean => /\[(?:struct|union)\]|__unnamed\d+__|@[\da-f]+/i.test(name)

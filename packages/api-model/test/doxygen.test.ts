@@ -498,3 +498,19 @@ describe('Doxygen description markup', () => {
     })
   })
 })
+
+describe('Doxygen code listings', () => {
+  const listing = (lines: string[]) => lines.map((line) =>
+    `<codeline><highlight class="normal">${line.replace(/</g, '&lt;').replace(/^ +/, (spaces) => '<sp/>'.repeat(spaces.length))}</highlight></codeline>`).join('')
+
+  it('keeps the lines and indentation of a \\code block as a fenced block', () => {
+    const symbols = extractCompound(`<compounddef kind="class"><compoundname>sample::Box</compoundname>
+      <briefdescription><para>A box.</para></briefdescription>
+      <detaileddescription><para>Use it:</para><para><programlisting filename=".cpp">${listing([
+        'auto box = Box::open();', 'if (box) {', '    box->run([](auto&amp; x) {', '        x.go();', '    });', '}',
+      ])}</programlisting></para><para>Then   close it.</para></detaileddescription>
+      <location file="box.hpp" line="1"/></compounddef>`)
+    const doc = symbols.find((symbol) => symbol.name === 'Box')!.doc!
+    expect(doc.body).toBe('Use it:\n\n```cpp\nauto box = Box::open();\nif (box) {\n    box->run([](auto& x) {\n        x.go();\n    });\n}\n```\n\nThen close it.')
+  })
+})
