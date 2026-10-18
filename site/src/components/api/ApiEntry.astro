@@ -571,16 +571,8 @@ const hasBody =
                       <li id={params.findIndex((entry) => entry.name === p.name) === i ? parameterId(symbol, p.name) : undefined}>
                         <p class:list={[(language === 'julia' || language === 'ts') && 'api-parameter-heading']}>
                           <span class="api-parameter-signature">
-                            <strong><a href={`#${encodeURIComponent(parameterId(symbol, p.name))}`}><code>{p.name}</code></a></strong>
-                            {p.optional && '?'}
-                            {(language === 'julia' || language === 'ts') && p.default !== undefined && <>{' = '}<code>{p.default}</code></>}
-                            {p.type && (
-                              <>
-                                {' ('}
-                                <ApiType type={p.type} index={index} context={symbol} />
-                                {') '}
-                              </>
-                            )}
+                            {/* One line: Astro turns a line break between these parts into a space. */}
+                            <strong><a href={`#${encodeURIComponent(parameterId(symbol, p.name))}`}><code>{p.name}</code></a></strong>{p.optional && '?'}{(language === 'julia' || language === 'ts') && p.default !== undefined && <>{' = '}<code>{p.default}</code></>}{p.type && <>{' ('}<ApiType type={p.type} index={index} context={symbol} />{') '}</>}
                           </span>
                           <a class="api-heading-link" href={`#${encodeURIComponent(parameterId(symbol, p.name))}`} aria-label={`Link to ${p.name} parameter`} data-pagefind-ignore="all">#</a>
                           {p.doc && !['julia', 'ts'].includes(language ?? '') && <>{' – '}<ApiDoc text={p.doc} index={index} context={symbol} /></>}
