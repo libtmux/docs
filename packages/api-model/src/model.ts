@@ -120,6 +120,36 @@ export interface Param {
   }
 }
 
+/**
+ * One parameter of a generic declaration, split into the parts a reader asks
+ * about: what it is called, what it must satisfy, what it falls back to.
+ *
+ * `typeParams` keeps the declaration text as written, which the signature
+ * layouts splice back into a header; this is the same list read apart, plus
+ * the documentation the doc comment attaches to each name. A bound that the
+ * language writes outside the list — C# `where T : class`, a Rust `where T:
+ * Clone` — is merged in, because to a reader it is still a bound on `T`.
+ */
+export interface TypeParameter {
+  /** The bound name: `Model`, `T`, `'a`, `N`. */
+  name: string
+  /** What the language lets precede the name: `in`, `out`, `const`, `reified`, `+`, `-`. */
+  modifier?: string
+  /** `lifetime` and `const` parameters share the list but are not type variables. */
+  kind?: 'lifetime' | 'const'
+  /**
+   * Bound or constraint without its introducer: `Clone + Send` for `T: Clone +
+   * Send`, `Foo & Bar` for `T extends Foo & Bar`. A const parameter's bound is
+   * the type of its value. A lower bound keeps its `>:` because it is not the
+   * upper bound every other language means.
+   */
+  bound?: string
+  /** Default type or value, as written. */
+  default?: string
+  /** `@typeParam`, `@param <T>`, `<typeparam>`, `@tparam`: what the doc comment says it is for. */
+  doc?: string
+}
+
 /** One callable signature. A symbol has several only when it is overloaded. */
 export interface Signature {
   /** Native method identity or command parameter-set identity. */
@@ -147,6 +177,12 @@ export interface Signature {
   typeParams?: string[]
   /** Names bound by native type-parameter declarations, without annotations or bounds. */
   typeParamNames?: string[]
+  /**
+   * The same parameters read apart, with bounds, defaults and documentation.
+   * Absent in models extracted before it existed; `typeParametersOf` then
+   * derives it from `typeParams`.
+   */
+  typeParameters?: TypeParameter[]
   /** Whether this overload excludes enclosing type variables; false retains instance scope. */
   typeScopeBoundary?: boolean
   /** Named or implicit receiver of a native extension declaration. */
@@ -290,6 +326,8 @@ export interface ApiSymbol {
   typeParams?: string[]
   /** Names bound by native type-parameter declarations, without annotations or bounds. */
   typeParamNames?: string[]
+  /** The declaration's type parameters read apart; see `Signature.typeParameters`. */
+  typeParameters?: TypeParameter[]
   /** Command behavior beyond its individual parameter sets. */
   command?: {
     kind: 'cmdlet' | 'function'

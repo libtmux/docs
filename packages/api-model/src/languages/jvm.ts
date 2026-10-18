@@ -3,7 +3,8 @@ import { join } from 'node:path'
 import type { Node } from 'web-tree-sitter'
 import { parserFor } from '../parser.ts'
 import { parseMarkdownDocFull } from '../doc/markdown.ts'
-import type { ApiModel, ApiSymbol, Param, Signature, SymbolKind } from '../model.ts'
+import type { ApiModel, ApiSymbol, Param, Signature, SymbolKind, TypeParameter } from '../model.ts'
+import { parseTypeParameters, splitTopLevel, withTypeParameterDocs } from '../type-params.ts'
 
 type Language = 'kotlin' | 'scala'
 const childrenOf = (node: Node): Node[] => node.namedChildren.filter((child): child is Node => child !== null)
@@ -39,6 +40,16 @@ function documentation(node: Node, language: Language, signature: Signature, com
   // from generic brackets inside code such as `Execution[F]`.
   const parsed = parseMarkdownDocFull(raw, language)
   for (const param of signature.params) param.doc = parsed.params.get(param.name)
+  // KDoc documents a type parameter with `@param T`, Scaladoc with `@tparam T`.
+  if (signature.typeParameters) {
+    const named = new Map(parsed.typeParams)
+    for (const parameter of signature.typeParameters) {
+      const text = named.get(parameter.name) ?? (language === 'kotlin' && !signature.params.some((param) => param.name === parameter.name)
+        ? parsed.params.get(parameter.name) : undefined)
+      if (text) named.set(parameter.name, text)
+    }
+    signature.typeParameters = withTypeParameterDocs(signature.typeParameters, named)
+  }
   if (parsed.returnsDoc) signature.returnsDoc = parsed.returnsDoc
   if (parsed.raises.length) signature.raises = parsed.raises
   return parsed.doc
@@ -74,6 +85,24 @@ function typeParameters(node: Node, language: Language): string[] {
       : param.type === 'identifier' ? param : /^(co|contra)variant_type_parameter$/.test(param.type) ? field(param, 'name') : undefined
     return name ? [name.text] : []
   }) : []
+}
+
+/**
+ * The same list with its bounds and variance: `[F[_], +A <: Other]` or
+ * `<in T : Comparable<T>, reified Q>`, plus a Kotlin `where` clause, whose
+ * bounds belong to the parameter they restrict.
+ */
+function typeParameterDetails(node: Node, language: Language): TypeParameter[] {
+  const group = named(node, 'type_parameters')
+  if (!group) return []
+  const parameters = parseTypeParameters(language, splitTopLevel(group.text.trim().replace(/^[<[]|[>\]]$/g, ''), ','))
+  const where = new Map<string, string[]>()
+  for (const constraint of childrenOf(named(node, 'type_constraints') ?? node).filter((child) => child.type === 'type_constraint')) {
+    const [target, ...bound] = compact(constraint.text).split(/\s*:\s*/)
+    if (target && bound.length) where.set(target, [...where.get(target) ?? [], bound.join(': ')])
+  }
+  return parameters.map((parameter) => where.has(parameter.name)
+    ? { ...parameter, bound: [parameter.bound, ...where.get(parameter.name)!].filter(Boolean).join(', ') } : parameter)
 }
 
 function upperBounds(node: Node): string[] {
@@ -162,7 +191,7 @@ export async function extractJvm(port: Language, roots: string[], revision?: str
         checkSyntax(root)
 
         const walk = (body: Node, parent?: string, receiver?: string, extensionHeader?: string,
-          extensionTypes: string[] = [], extensionReceiver?: Param): void => {
+          extensionTypes: string[] = [], extensionReceiver?: Param, extensionDetails: TypeParameter[] = []): void => {
           for (const node of declarations(body, port)) {
             if (!visible(node)) continue
             if (node.type === 'export_declaration') {
@@ -178,7 +207,7 @@ export async function extractJvm(port: Language, roots: string[], revision?: str
               if (params.length !== 1 || !params[0].type) throw new Error(`Unsupported extension receiver: ${node.text}`)
               const end = Math.max(...childrenOf(node).filter((child) => ['parameters', 'type_parameters'].includes(child.type)).map((child) => child.endIndex))
               const header = node.text.slice(0, end - node.startIndex).trim()
-              walk(node, parent, receiverId(params[0].type), header, typeParameters(node, port), params[0])
+              walk(node, parent, receiverId(params[0].type), header, typeParameters(node, port), params[0], typeParameterDetails(node, port))
               continue
             }
             const variable = named(node, 'variable_declaration')
@@ -233,6 +262,9 @@ export async function extractJvm(port: Language, roots: string[], revision?: str
             }
             const generics = [...new Set([...extensionTypes, ...typeParameters(node, port)])]
             if (generics.length) signature.typeParams = generics
+            const details = [...extensionDetails, ...typeParameterDetails(node, port)]
+              .filter((parameter, at, all) => all.findIndex((entry) => entry.name === parameter.name) === at)
+            if (details.length) signature.typeParameters = details
             // A private constructor is not a public callable signature.
             if (privateConstructor) signature.params = []
             const symbol: ApiSymbol = {

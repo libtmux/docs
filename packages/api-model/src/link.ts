@@ -1,8 +1,9 @@
 import { tokenizeDoc, type DocSpan } from './doc/roles.ts'
 import type { InventoryEntry } from './inventory.ts'
-import type { ApiSymbol, Signature, SymbolKind } from './model.ts'
+import type { ApiSymbol, Signature, SymbolKind, TypeParameter } from './model.ts'
 import { builtinHref } from './builtins.ts'
 import { qualifiedNameOf } from './modules.ts'
+import { findTopLevel, splitTopLevel, typeParametersOf } from './type-params.ts'
 
 /**
  * Turn reference targets into links, and type annotations into linked spans.
@@ -174,10 +175,85 @@ export interface LinkTarget {
   external: boolean
   /** The symbol it resolved to, when it resolved locally. */
   symbol?: ApiSymbol
+  /**
+   * Set when the target is a type parameter's anchor on its declaring symbol's
+   * page. `symbol` stays unset: the declaring type is not what the name refers to.
+   */
+  typeParameter?: { owner: ApiSymbol; parameter: TypeParameter }
 }
 
 /** Stable parameter anchors shared by prose links and the definition list. */
 export const parameterId = (symbol: ApiSymbol, name: string) => `${symbol.publicId ?? symbol.id}.parameter.${name}`
+
+/** The anchor of a type parameter on the page of the symbol that declares it. */
+export const typeParameterId = (symbol: ApiSymbol, name: string) => `${symbol.publicId ?? symbol.id}.type-parameter.${name}`
+
+/**
+ * What a name written in a declaration means when it is a type parameter.
+ * `owner` and `parameter` are absent when the model records that a name is
+ * bound but not where it is declared, as with a Rust impl that renames the
+ * type's parameter.
+ */
+export interface TypeParameterBinding {
+  owner?: ApiSymbol
+  parameter?: TypeParameter
+}
+
+const TYPE_KINDS: ReadonlySet<SymbolKind> = new Set(['class', 'interface', 'struct', 'union', 'enum', 'trait', 'typealias', 'exception'])
+/** Roles whose target may name a type parameter; `typeparam` names nothing else. */
+const TYPE_PARAMETER_ROLES: ReadonlySet<string> = new Set(['any', 'class', 'obj', 'typeparam'])
+
+/** Index of the bracket closing the one at `open`, counting only the same kind. */
+function closingBracket(text: string, open: number): number {
+  const pairs: Record<string, string> = { '<': '>', '[': ']', '(': ')', '{': '}' }
+  const opener = text[open]!
+  let depth = 0
+  for (let i = open; i < text.length; i++) {
+    if (text.startsWith('->', i) || text.startsWith('=>', i)) { i++; continue }
+    if (text[i] === opener) depth++
+    else if (text[i] === pairs[opener]) {
+      depth--
+      if (!depth) return i
+    }
+  }
+  return -1
+}
+
+/**
+ * Whether `name: Type` here declares a value, not names a type: a colon after
+ * the name inside parentheses, as in Scala's `(using F: Async[F])`. A type
+ * parameter list is bracketed, so its `C : Ordering` is not caught.
+ */
+function declaresValue(before: string, after: string): boolean {
+  if (!/^\s*\??:(?!:)/.test(after)) return false
+  const open: string[] = []
+  for (const char of before) {
+    if ('([{<'.includes(char)) open.push(char)
+    else if (')]}>'.includes(char)) open.pop()
+  }
+  return open.at(-1) === '('
+}
+
+/**
+ * The arguments a Rust `impl` header gives its self type: `T` in
+ * `impl<T: Clone> Slot<T> where T: Send`. Undefined for a header that is not
+ * an `impl`, where the members are written inside the declaring type.
+ */
+function implSelfArguments(header: string): string[] | undefined {
+  const text = header.replace(/^(?:\s*#\[[^\n]*\]\s*)+/, '').trim()
+  const start = /^(?:unsafe\s+)?impl\b\s*/.exec(text)
+  if (!start) return undefined
+  let rest = text.slice(start[0].length)
+  if (rest.startsWith('<')) rest = rest.slice(closingBracket(rest, 0) + 1)
+  const trait = findTopLevel(rest, [' for '])
+  if (trait) rest = rest.slice(trait.index + 5)
+  const where = findTopLevel(rest, [' where ', '\nwhere'])
+  if (where) rest = rest.slice(0, where.index)
+  rest = rest.trim().replace(/^&\s*(?:'\w+\s+)?(?:mut\s+)?/, '')
+  const open = rest.indexOf('<')
+  const close = open < 0 ? -1 : closingBracket(rest, open)
+  return close < 0 ? [] : splitTopLevel(rest.slice(open + 1, close), ',')
+}
 
 /**
  * An index built once per port and queried per span.
@@ -380,6 +456,143 @@ export class SymbolIndex {
     return top.length === 1 ? top[0].c : undefined
   }
 
+  private readonly sharedBindings = new WeakMap<ApiSymbol, Map<string, TypeParameterBinding>>()
+
+  /** What a declaration introduces: its own list, plus a Kotlin or Scala type's constructor-shaped signatures. */
+  private declaredBy(symbol: ApiSymbol): TypeParameter[] {
+    const own = typeParametersOf(symbol, this.lang)
+    if ((this.lang !== 'kotlin' && this.lang !== 'scala') || !TYPE_KINDS.has(symbol.kind)) return own
+    return [...own, ...symbol.signatures.flatMap((entry) => typeParametersOf(entry, this.lang))]
+  }
+
+  /**
+   * Bind an impl's or receiver's spelling of the declaring type's parameters
+   * to the declared ones, by position. `impl<U> Slot<U>` renames `T`, and an
+   * `impl<T> From<T> for Slot<String>` introduces a `T` the type never declared.
+   */
+  private bindEnclosing(found: Map<string, TypeParameterBinding>, context: ApiSymbol, signature: Signature): void {
+    const owner = context.parent ? this.byDeclared.get(context.parent) : undefined
+    const declared = owner ? this.declaredBy(owner) : []
+    const bind = (name: string, parameter?: TypeParameter) => {
+      if (!found.has(name)) found.set(name, parameter ? { owner, parameter } : {})
+    }
+    if (this.lang === 'go') {
+      const spelled = /\[([^\]]*)\]\s*$/.exec(signature.receiver?.type ?? '')?.[1]
+      if (spelled) splitTopLevel(spelled, ',').forEach((name, at) => { if (name !== '_') bind(name, declared[at]) })
+      return
+    }
+    const names = signature.enclosingTypeParamNames ?? []
+    const positional = implSelfArguments(signature.enclosingDeclaration ?? '')
+    for (const name of names) {
+      if (!positional) bind(name, declared.find((parameter) => parameter.name === name))
+      else bind(name, declared[positional.indexOf(name)])
+    }
+  }
+
+  /**
+   * The names a declaration binds as type parameters, innermost first.
+   *
+   * Without a `signature` this is shared prose, which has no selected
+   * overload, so every overload's parameters count. A name bound anywhere
+   * must not link to a same-named global type.
+   */
+  typeParameterBindings(context?: ApiSymbol, signature?: Signature): Map<string, TypeParameterBinding> {
+    if (!context) return new Map()
+    const cached = signature ? undefined : this.sharedBindings.get(context)
+    if (cached) return cached
+    const found = new Map<string, TypeParameterBinding>()
+    const add = (owner: ApiSymbol, parameters: readonly TypeParameter[]) => {
+      for (const parameter of parameters) if (!found.has(parameter.name)) found.set(parameter.name, { owner, parameter })
+    }
+    const signatures = signature ? [signature] : context.signatures
+    // Kotlin and Scala record a type's own parameters on its signature, which the scope walk below reads.
+    const typeShaped = (this.lang === 'kotlin' || this.lang === 'scala') && TYPE_KINDS.has(context.kind)
+    if (!typeShaped) for (const entry of signatures) add(context, typeParametersOf(entry, this.lang))
+    const insideImpl = this.lang === 'rs' && context.signatures.some((entry) => entry.enclosingDeclaration)
+    if (insideImpl || this.lang === 'go') for (const entry of signatures) this.bindEnclosing(found, context, entry)
+    if (!insideImpl) {
+      const detached = signatures.length > 0 && signatures.every((entry) => entry.typeScopeBoundary === true)
+      for (let scope: ApiSymbol | undefined = context; scope; scope = scope.parent ? this.byDeclared.get(scope.parent) : undefined) {
+        add(scope, this.declaredBy(scope))
+        if (scope.typeScopeBoundary || (scope === context && detached)) break
+      }
+    }
+    if (!signature) this.sharedBindings.set(context, found)
+    return found
+  }
+
+  private bindingLink(binding: TypeParameterBinding): LinkTarget | undefined {
+    const { owner, parameter } = binding
+    if (!owner || !parameter) return undefined
+    const page = this.hrefFor(owner).split('#')[0]
+    return { href: `${page}#${encodeURIComponent(typeParameterId(owner, parameter.name))}`, external: false, typeParameter: { owner, parameter } }
+  }
+
+  /**
+   * A name as spans when it is a bound type parameter, or a projection from
+   * one: `F::Output` and `T.Element` name an associated type of the parameter.
+   */
+  private boundSpans(text: string, bindings: Map<string, TypeParameterBinding>): TypeSpan[] | undefined {
+    const spanFor = (name: string, binding: TypeParameterBinding): TypeSpan => {
+      const link = this.bindingLink(binding)
+      return { text: name, declaration: true, ...(link ? { link } : {}) }
+    }
+    const direct = bindings.get(text)
+    if (direct) return [spanFor(text, direct)]
+    const separator = this.lang === 'swift' ? '.' : this.lang === 'rs' || this.lang === 'cxx' ? '::' : undefined
+    const head = separator ? text.split(separator)[0]! : undefined
+    const binding = head && head !== text ? bindings.get(head) : undefined
+    return binding ? [spanFor(head!, binding), { text: text.slice(head!.length) }] : undefined
+  }
+
+  /** `text` as spans when it names a type parameter bound where `context` is written; otherwise undefined. */
+  typeParameterSpans(text: string, context?: ApiSymbol, signature?: Signature): TypeSpan[] | undefined {
+    return this.boundSpans(text, this.typeParameterBindings(context, signature))
+  }
+
+  /** The anchor of the type parameter `name` names where `context` is written, if it names one. */
+  typeParameterLink(name: string, context?: ApiSymbol, signature?: Signature): LinkTarget | undefined {
+    const binding = this.typeParameterBindings(context, signature).get(name)
+    return binding && this.bindingLink(binding)
+  }
+
+  /** The parameters a symbol declares on itself, as its own page lists them. */
+  typeParametersDeclaredBy(symbol: ApiSymbol): TypeParameter[] {
+    return this.declaredBy(symbol)
+  }
+
+  /**
+   * Type parameters declared by an enclosing symbol that this symbol's own
+   * types mention. Read through `linkType`, so the list and the links in the
+   * signature cannot disagree about which name means which declaration.
+   */
+  inheritedTypeParameters(symbol: ApiSymbol): { owner: ApiSymbol; parameter: TypeParameter; href: string }[] {
+    const used = new Map<string, { owner: ApiSymbol; parameter: TypeParameter; href: string }>()
+    const scan = (text: string | undefined, signature?: Signature) => {
+      if (!text) return
+      for (const span of this.linkType(text, symbol, signature)) {
+        const target = span.link?.typeParameter
+        if (target && target.owner.id !== symbol.id) used.set(`${target.owner.id}\0${target.parameter.name}`, { ...target, href: span.link!.href })
+      }
+    }
+    scan(symbol.type)
+    for (const base of symbol.extends ?? []) scan(base)
+    for (const entry of symbol.signatures) {
+      scan(entry.raw, entry)
+      scan(entry.returns, entry)
+      scan(entry.receiver?.type, entry)
+      for (const param of entry.params) scan(param.type, entry)
+      for (const parameter of typeParametersOf(entry, this.lang)) { scan(parameter.bound, entry); scan(parameter.default, entry) }
+    }
+    const depth = (owner: ApiSymbol) => {
+      let count = 0
+      for (let scope: ApiSymbol | undefined = symbol; scope && scope.id !== owner.id; scope = scope.parent ? this.byDeclared.get(scope.parent) : undefined) count++
+      return count
+    }
+    return [...used.values()].sort((a, b) => depth(a.owner) - depth(b.owner) ||
+      this.declaredBy(a.owner).indexOf(a.parameter) - this.declaredBy(b.owner).indexOf(b.parameter))
+  }
+
   /**
    * Resolve a reference, optionally from inside a symbol.
    *
@@ -390,6 +603,16 @@ export class SymbolIndex {
    * turned 59 dead references into links, most of the remaining gap.
    */
   resolve(target: string, role = 'any', context?: ApiSymbol): LinkTarget | undefined {
+    // A name the context binds as a type parameter is that parameter, never a
+    // same-named global.
+    if (context && TYPE_PARAMETER_ROLES.has(role) && /^[A-Za-z_$][\w$]*$/.test(target)) {
+      const parameter = this.typeParameterLink(target, context)
+      if (parameter) return parameter
+    }
+    return role === 'typeparam' ? undefined : this.resolveSymbol(target, role, context)
+  }
+
+  private resolveSymbol(target: string, role: string, context?: ApiSymbol): LinkTarget | undefined {
     const relative = target.startsWith('.')
     const goType = this.lang === 'go' && role === 'class'
     if (this.lang === 'ruby') {
@@ -444,11 +667,6 @@ export class SymbolIndex {
       return { href: `${this.hrefFor(context).split('#')[0]}#${encodeURIComponent(parameterId(context, clean))}`, external: false }
     }
     if (context && ['kotlin', 'scala'].includes(this.lang ?? '')) {
-      for (let scope: ApiSymbol | undefined = context; scope; scope = scope.parent ? this.byDeclared.get(scope.parent) : undefined) {
-        if (scope.signatures.some((sig) => sig.typeParams?.includes(clean))) {
-          return { href: this.hrefFor(scope), external: false, symbol: scope }
-        }
-      }
       const receiver = context.signatures.find((sig) => sig.receiver?.name === clean)?.receiver
       const receiverType = receiver?.type?.replace(/[<[].*$/, '')
       if (receiverType && receiverType !== clean) return this.resolve(receiverType, 'class', context)
@@ -673,11 +891,12 @@ export class SymbolIndex {
   }
 
   linkDoc(spans: DocSpan[], context?: ApiSymbol): (DocSpan & { link?: LinkTarget })[] {
-    return spans.map((span) =>
-      span.kind === 'ref'
-        ? { ...span, link: this.resolve(span.target, span.role, context) }
-        : span,
-    )
+    return spans.map((span) => {
+      if (span.kind !== 'ref') return span
+      const link = this.resolve(span.target, span.role, context)
+      // A `typeparam` reference that names nothing in scope is a literal, not a lookup of a global.
+      return !link && span.role === 'typeparam' ? { kind: 'code' as const, text: span.label } : { ...span, link }
+    })
   }
 
   /**
@@ -702,42 +921,10 @@ export class SymbolIndex {
    */
   linkType(annotation: string, context?: ApiSymbol, signature?: Signature): TypeSpan[] {
     const out: TypeSpan[] = []
-    const boundTypes = new Set<string>()
     const rustPayload = this.lang === 'rs' && (context?.variant || (context?.parent && this.byDeclared.get(context.parent)?.variant))
     const variantDelimiters: string[] = []
-    if (this.lang === 'ts') {
-      // Shared prose has no selected overload; a local binding makes a global match ambiguous.
-      const parameters = signature ? [...signature.typeParams ?? []]
-        : context?.signatures.flatMap((sig) => sig.typeParams ?? []) ?? []
-      for (let scope = context; scope; scope = scope.parent ? this.byDeclared.get(scope.parent) : undefined) {
-        parameters.push(...scope.typeParams ?? [])
-      }
-      for (const parameter of parameters) {
-        const name = /^\s*<?\s*(?:(?:const|in|out)\s+)*([A-Za-z_$][\w$]*)(?=\s*(?:extends\b|=|>|$))/.exec(parameter)?.[1]
-        if (name) boundTypes.add(name)
-      }
-    }
-    if (this.lang === 'java') {
-      const signatures = signature ? [signature] : context?.signatures ?? []
-      for (const name of signatures.flatMap((entry) => entry.typeParamNames ?? [])) boundTypes.add(name)
-      for (let scope = context; scope; scope = scope.parent ? this.byDeclared.get(scope.parent) : undefined) {
-        for (const name of scope.typeParamNames ?? []) boundTypes.add(name)
-        const staticBoundary = scope === context && signatures.length && signatures.every((entry) => entry.typeScopeBoundary === true)
-        if (scope.typeScopeBoundary || staticBoundary) break
-      }
-    }
-    if (this.lang === 'rs') {
-      const signatures = signature ? [signature] : context?.signatures ?? []
-      for (const name of signatures.flatMap((entry) => [...entry.typeParamNames ?? [], ...entry.enclosingTypeParamNames ?? []])) boundTypes.add(name)
-    }
-    if (rustPayload) {
-      for (let scope: ApiSymbol | undefined = context; scope; scope = scope.parent ? this.byDeclared.get(scope.parent) : undefined) {
-        for (const parameter of scope.typeParams ?? []) {
-          const name = /^\s*(?:const\s+)?((?:r#)?[A-Za-z_][A-Za-z0-9_]*)(?=\s*(?::|=|$))/.exec(parameter)?.[1]
-          if (name) boundTypes.add(name)
-        }
-      }
-    }
+    // A bound name never takes a same-named global type's URL; it links to its declaration instead.
+    const bindings = this.typeParameterBindings(context, signature)
     // Identifiers, including dotted ones; everything else is punctuation,
     // whitespace or a string literal and passes through untouched.
     // `::` is part of a name, not punctuation between two. Splitting there
@@ -798,8 +985,10 @@ export class SymbolIndex {
         out.push({ text: ident })
         continue
       }
-      if (boundTypes.has(ident)) {
-        out.push({ text: ident, declaration: true })
+      const bound = declaresValue(annotation.slice(0, m.index), annotation.slice(m.index! + ident.length))
+        ? undefined : this.boundSpans(ident, bindings)
+      if (bound) {
+        out.push(...bound)
         continue
       }
       if (this.lang === 'cxx' && ident === 'nodiscard' &&
@@ -862,13 +1051,10 @@ export class SymbolIndex {
         out.push({ text: context.name, declaration: true })
         continue
       }
-      if (signature && (
-        ((signature.params.some((param) => param.name === ident) || signature.receiver?.name === ident) &&
+      if (signature && (signature.params.some((param) => param.name === ident) || signature.receiver?.name === ident) &&
           (/^\s*\??\s*:(?!:)/.test(annotation.slice(m.index! + ident.length)) ||
             (this.lang === 'julia' && /(?:^|[(,;])\s*$/.test(annotation.slice(0, m.index)) &&
-              /^\s*(?:::|[=,;)]|\.\.\.)/.test(annotation.slice(m.index! + ident.length))))) ||
-        signature.typeParams?.includes(ident)
-      )) {
+              /^\s*(?:::|[=,;)]|\.\.\.)/.test(annotation.slice(m.index! + ident.length))))) {
         const parameter = this.lang === 'julia' && context && signature.params.some((param) => param.name === ident)
         out.push({ text: ident, declaration: true, ...(parameter ? { link: {
           href: `${this.hrefFor(context).split('#')[0]}#${encodeURIComponent(parameterId(context, ident))}`, external: false,
@@ -886,7 +1072,7 @@ export class SymbolIndex {
       // renders unlinked in a signature is a builtin — `bool`, `Task`,
       // `Result`, `string` — which nothing here defines and no intersphinx
       // inventory covers for five of the eight ports.
-      const link = this.resolve(ident, 'class', context)
+      const link = this.resolveSymbol(ident, 'class', context)
       if (link || !['kotlin', 'scala'].includes(this.lang ?? '') || !ident.includes('.')) {
         out.push({ text: ident, link })
         continue
@@ -898,8 +1084,8 @@ export class SymbolIndex {
         // Follow only an explicit declared return type. Imported extension
         // functions can resolve independently after a call's parentheses.
         const returns = previous?.symbol?.signatures[0]?.returns
-        const member = returns ? this.resolve(`${returns}.${part}`, 'any', previous?.symbol) : undefined
-        const resolved = member ?? (position === 0 ? this.resolve(part, 'any', context) : undefined)
+        const member = returns ? this.resolveSymbol(`${returns}.${part}`, 'any', previous?.symbol) : undefined
+        const resolved = member ?? (position === 0 ? this.resolveSymbol(part, 'any', context) : undefined)
         out.push({ text: part, link: resolved })
         previous = resolved
       }

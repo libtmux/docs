@@ -24,6 +24,11 @@ async function extract(source: string, privateMembers = false, module = 'example
   return extractWithSpec(JAVA, file, module, { privateMembers })
 }
 
+/** A bound type variable is a declaration that links to its own anchor, never to a global type. */
+const bound = (name: string) => [expect.objectContaining({
+  text: name, declaration: true, link: expect.objectContaining({ typeParameter: expect.anything() }),
+})]
+
 describe('Java record components', () => {
   it('retains documented components and their implicit public accessors', async () => {
     const symbols = await extract(`package io.github.libtmux.batch;
@@ -433,7 +438,7 @@ describe('Java native annotation and lexical type identities', () => {
     const symbol = symbols.find((entry) => entry.id === member)!
     const signature = symbol.signatures[0]
     const index = new SymbolIndex(symbols, (entry) => `/${entry.id}/`, 'java')
-    expect(index.linkType('T', symbol, signature)).toEqual([{ text: 'T', declaration: true }])
+    expect(index.linkType('T', symbol, signature)).toEqual(bound('T'))
     const boundary = _label === 'inner owner' ? symbols.find((entry) => entry.name === 'Inner')! : signature ?? symbol
     expect(boundary.typeScopeBoundary).toBe(false)
     expect(index.linkType('example.T', symbol, signature)[0].link?.symbol?.id).toBe('example.T')
@@ -467,13 +472,13 @@ describe('Java native annotation and lexical type identities', () => {
     expect(byId('Inner.Inner').signatures[0]?.typeScopeBoundary).toBe(false)
     for (const id of ['Inner.Inner', 'Inner.value']) {
       const symbol = byId(id)
-      expect(index.linkType('T', symbol, symbol.signatures[0])).toEqual([{ text: 'T', declaration: true }])
+      expect(index.linkType('T', symbol, symbol.signatures[0])).toEqual(bound('T'))
     }
     for (const id of ['Nested', 'field', 'Contract', 'Record', 'Mode', 'Mode.VALUE']) expect(byId(id).typeScopeBoundary).toBe(true)
     expect(byId('read').signatures[0]?.typeScopeBoundary).toBe(true)
     expect(byId('Nested.Nested').signatures[0]?.typeScopeBoundary).toBe(false)
     const constructor = byId('Nested.Nested')
-    expect(index.linkType('R', constructor, constructor.signatures[0])).toEqual([{ text: 'R', declaration: true }])
+    expect(index.linkType('R', constructor, constructor.signatures[0])).toEqual(bound('R'))
     for (const id of ['Nested.read', 'field', 'read']) {
       const symbol = byId(id)
       expect(index.linkType('example.T', symbol, symbol.signatures[0])[0].link?.symbol?.id).toBe('example.T')
@@ -488,7 +493,7 @@ describe('Java native annotation and lexical type identities', () => {
     const index = new SymbolIndex(symbols, (symbol) => `/${symbol.id}/`, 'java')
     expect(signature.typeScopeBoundary).toBe(false)
     expect(signature.raw).toBe(`${prefix} T read()`)
-    expect(index.linkType('T', method, signature)).toEqual([{ text: 'T', declaration: true }])
+    expect(index.linkType('T', method, signature)).toEqual(bound('T'))
     expect(index.linkType('Unknown', method, signature)).toEqual([{ text: 'Unknown', link: undefined }])
   })
 
@@ -497,11 +502,11 @@ describe('Java native annotation and lexical type identities', () => {
     const method = symbols.find((symbol) => symbol.id === 'example.Outer.value')!
     const instance = method.signatures.find((signature) => signature.params.length === 0)!
     const index = new SymbolIndex(symbols, (symbol) => `/${symbol.id}/`, 'java')
-    expect(index.linkType('T', method, instance)).toEqual([{ text: 'T', declaration: true }])
+    expect(index.linkType('T', method, instance)).toEqual(bound('T'))
     expect(instance).toEqual({ params: [], returns: 'T', typeScopeBoundary: false })
     expect(instance.raw).toBeUndefined()
     expect(method.modifiers).toEqual(['static', 'overload'])
-    expect(index.linkType('T', method)).toEqual([{ text: 'T', declaration: true }])
+    expect(index.linkType('T', method)).toEqual(bound('T'))
   })
 
   it('uses the selected overload static boundary in either source order', async () => {
@@ -514,10 +519,10 @@ describe('Java native annotation and lexical type identities', () => {
       const detached = method.signatures.find((signature) => signature.returns === 'void')!
       expect(instance.typeScopeBoundary).toBe(false)
       expect(detached.typeScopeBoundary).toBe(true)
-      expect(index.linkType('T', method, instance)).toEqual([{ text: 'T', declaration: true }])
+      expect(index.linkType('T', method, instance)).toEqual(bound('T'))
       // A lookup-only negative: an enclosing T would be illegal in this static declaration.
       expect(index.linkType('T', method, detached)[0].link?.symbol?.id).toBe('example.T')
-      expect(index.linkType('T', method)).toEqual([{ text: 'T', declaration: true }])
+      expect(index.linkType('T', method)).toEqual(bound('T'))
       expect(method.signatures.map((signature) => signature.raw)).toEqual(members.map((member) => member.slice(0, member.indexOf('{')).trimEnd()))
       expect(method.modifiers).toEqual(members[0] === declarations[0] ? ['static', 'overload'] : ['overload'])
     }
@@ -532,8 +537,8 @@ describe('Java native annotation and lexical type identities', () => {
       const generic = method.signatures.find((signature) => signature.typeParamNames?.length)!
       const nongeneric = method.signatures.find((signature) => !signature.typeParamNames?.length)!
       expect(index.linkType('T', method, nongeneric)[0].link?.symbol?.id).toBe('example.T')
-      expect(index.linkType('T', method, generic)).toEqual([{ text: 'T', declaration: true }])
-      expect(index.linkType('T', method)).toEqual([{ text: 'T', declaration: true }])
+      expect(index.linkType('T', method, generic)).toEqual(bound('T'))
+      expect(index.linkType('T', method)).toEqual(bound('T'))
       expect(index.linkType('Unknown', method, nongeneric)).toEqual([{ text: 'Unknown', link: undefined }])
     }
   })
@@ -602,7 +607,7 @@ public class Container { private @interface Hidden {} }
     expect(symbols.find((entry) => entry.name === 'Nested')?.modifiers).toEqual(['static'])
     for (const suffix of ['Outer.direct', 'Outer.Inner.outer', 'Outer.rebound']) {
       const symbol = symbols.find((entry) => entry.id === `example.${suffix}`)!
-      expect(index.linkType('T', symbol, symbol.signatures[0])).toEqual([{ text: 'T', declaration: true }])
+      expect(index.linkType('T', symbol, symbol.signatures[0])).toEqual(bound('T'))
     }
     for (const suffix of ['Outer.Nested.unbound', 'Outer.NestedInterface.unbound', 'Outer.NestedRecord.unbound', 'InterfaceOwner.NestedClass.unbound', 'Outer.unbound']) {
       const symbol = symbols.find((entry) => entry.id === `example.${suffix}`)!

@@ -252,6 +252,18 @@ export const RUST: LanguageSpec = {
     ? rustHeader(node) : undefined,
   typeParameterNames: (node) => ['function_item', 'function_signature_item'].includes(node.type)
     ? rustTypeParameterNames(node) : undefined,
+  // `where T: Clone` restricts a parameter declared a few tokens earlier; only plain names are folded in.
+  typeConstraints: (node) => {
+    const byName = new Map<string, string[]>()
+    const clause = node.namedChildren.find((child) => child?.type === 'where_clause')
+    for (const predicate of clause?.namedChildren ?? []) {
+      const left = predicate?.childForFieldName('left')
+      const bounds = predicate?.childForFieldName('bounds')
+      if (left?.type !== 'type_identifier' || !bounds) continue
+      byName.set(left.text, [...byName.get(left.text) ?? [], bounds.text.replace(/^:\s*/, '').replace(/\s+/g, ' ')])
+    }
+    return { joiner: ' + ', byName }
+  },
   enclosingDeclaration: (node) => {
     const owner = node.parent?.parent
     const raw = owner && ['impl_item', 'trait_item'].includes(owner.type) ? rustHeader(owner) : undefined
@@ -444,6 +456,18 @@ export const CSHARP: LanguageSpec = {
   docDialect: 'xml',
   positionalProperties: (node) => ['record_declaration', 'record_struct_declaration'].includes(node.type)
     && Boolean(node.childForFieldName('parameters')),
+  // C# writes bounds in `where` clauses after the header rather than in the parameter list.
+  typeConstraints: (node) => {
+    const byName = new Map<string, string[]>()
+    for (const clause of node.namedChildren) {
+      if (clause?.type !== 'type_parameter_constraints_clause') continue
+      const target = clause.childForFieldName('target')?.text
+      const constraints = clause.childrenForFieldName('constraints').flatMap((constraint) =>
+        constraint?.isNamed ? [constraint.text.replace(/\s+/g, ' ')] : [])
+      if (target) byName.set(target, [...byName.get(target) ?? [], ...constraints])
+    }
+    return { joiner: ', ', byName }
+  },
   rawSignature: (node) => {
     if (!['record_declaration', 'record_struct_declaration'].includes(node.type)) return undefined
     const body = node.childForFieldName('body')

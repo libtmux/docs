@@ -86,7 +86,9 @@ it('links Julia types after annotations without linking declaration names', () =
   expect(spans.map((span) => span.text).join('')).toBe(signature.raw)
   expect(spans.filter((span) => span.link).map((span) => span.link?.href)).toEqual([
     '/LibTmux.Server/#LibTmux.Server.parameter.value', '/LibTmux.TmuxID/',
+    '/LibTmux.Server/#LibTmux.Server.type-parameter.K',
     '/LibTmux.Server/#LibTmux.Server.parameter.socket_path',
+    '/LibTmux.Server/#LibTmux.Server.type-parameter.K',
   ])
   expect(spans.filter((span) => span.declaration).map((span) => span.text)).toEqual(['Server', 'value', 'K', 'socket_path', 'K'])
   expect(spans.find((span) => span.text === 'where')?.keyword).toBe(true)

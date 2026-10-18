@@ -9,8 +9,10 @@ import {
   type Param,
   type Signature,
   type SymbolKind,
+  type TypeParameter,
 } from '../model.ts'
 import { parserFor } from '../parser.ts'
+import { parseTypeParameters, splitTopLevel } from '../type-params.ts'
 
 /**
  * Python extraction.
@@ -94,8 +96,62 @@ function paramsOf(node: Node): Param[] {
   return out
 }
 
-function signatureOf(fn: Node): Signature {
-  return {
+/**
+ * The entries of a PEP 695 list, `[T: int = str, *Ts, **P]`, as written.
+ * The grammar splits a default from its parameter, so the list is read as text.
+ */
+function typeParameterTexts(node: Node): string[] {
+  const list = node.childForFieldName('type_parameters')
+  return list ? splitTopLevel(list.text.trim().replace(/^\[|\]$/g, ''), ',') : []
+}
+
+/** Strip the quotes of a forward reference: `bound="Foo"` bounds by `Foo`. */
+const unquoted = (text: string) => text.trim().replace(/^(["'])([\s\S]*)\1$/, '$2')
+
+/**
+ * Module-level `T = TypeVar("T", bound=Foo)` declarations, spelled the way
+ * PEP 695 would declare them: `T: Foo`, `*Ts`, `**P`. A class or function that
+ * uses the variable is generic in it, and this is where its bound is written.
+ */
+function typeVarsOf(root: Node): Map<string, string> {
+  const found = new Map<string, string>()
+  for (const statement of root.namedChildren) {
+    const assignment = statement?.type === 'expression_statement' ? statement.namedChild(0) : undefined
+    const name = assignment?.type === 'assignment' ? assignment.childForFieldName('left') : undefined
+    const call = assignment?.childForFieldName('right')
+    const kind = call?.type === 'call' ? /(?:^|\.)(TypeVar|ParamSpec|TypeVarTuple)$/.exec(call.childForFieldName('function')?.text ?? '')?.[1] : undefined
+    if (name?.type !== 'identifier' || !kind) continue
+    const keywords = new Map<string, string>()
+    const constraints: string[] = []
+    const args = call!.childForFieldName('arguments')?.namedChildren ?? []
+    for (const [position, arg] of args.entries()) {
+      if (arg?.type === 'keyword_argument') keywords.set(arg.childForFieldName('name')?.text ?? '', arg.childForFieldName('value')?.text ?? '')
+      else if (arg && position > 0) constraints.push(unquoted(arg.text))
+    }
+    const bound = keywords.has('bound') ? unquoted(keywords.get('bound')!) : constraints.join(' | ')
+    const fallback = keywords.get('default')
+    found.set(name.text, `${kind === 'ParamSpec' ? '**' : kind === 'TypeVarTuple' ? '*' : ''}${name.text}${bound ? `: ${bound}` : ''}${fallback ? ` = ${unquoted(fallback)}` : ''}`)
+  }
+  return found
+}
+
+/** What a class is generic in: its PEP 695 list, or the variables its `Generic[...]` base or other bases name. */
+function classTypeParameters(def: Node, bases: string[], typeVars: Map<string, string>): string[] {
+  const own = typeParameterTexts(def)
+  if (own.length) return own
+  const declared = bases.map((base) => /^(?:[\w.]+\.)?(?:Generic|Protocol)\[([\s\S]+)\]$/.exec(base)?.[1]).find(Boolean)
+  const names = declared ? splitTopLevel(declared, ',')
+    : [...new Set(bases.join(' ').match(/[A-Za-z_]\w*/g)?.filter((word) => typeVars.has(word)))]
+  return names.map((name) => typeVars.get(name.replace(/^\*+/, '')) ?? name)
+}
+
+const withTypeParameters = <T extends { typeParams?: string[]; typeParameters?: TypeParameter[] }>(target: T, texts: string[]): T => {
+  if (!texts.length) return target
+  return Object.assign(target, { typeParams: texts, typeParameters: parseTypeParameters('py', texts) })
+}
+
+function signatureOf(fn: Node, ctx: Ctx, parent?: string): Signature {
+  const signature: Signature = {
     params: paramsOf(fn.childForFieldName('parameters') ?? fn),
     returns: fn.childForFieldName('return_type')?.text.replace(/\s+/g, ' '),
     typeParams: fn
@@ -103,6 +159,12 @@ function signatureOf(fn: Node): Signature {
       ?.namedChildren.map((n) => n?.text ?? '')
       .filter(Boolean),
   }
+  const own = typeParameterTexts(fn)
+  // A variable in a signature that no enclosing class binds is bound by the function itself.
+  const bound = new Set(ctx.generics.get(parent ?? '') ?? [])
+  const used = new Set([...signature.params.map((param) => param.type ?? ''), signature.returns ?? ''].join(' ').match(/[A-Za-z_]\w*/g))
+  const implicit = [...ctx.typeVars].filter(([name]) => used.has(name) && !bound.has(name) && !own.some((text) => text.replace(/^\*+/, '').startsWith(name)))
+  return withTypeParameters(signature, [...own, ...implicit.map(([, text]) => text)])
 }
 
 /** `class` unless it inherits from something whose name ends in `Error`/`Exception`. */
@@ -118,6 +180,10 @@ interface Ctx {
   imports: Record<string, string>
   /** Symbols already emitted, so overloads merge instead of duplicating. */
   byId: Map<string, ApiSymbol>
+  /** The file's `TypeVar` declarations, as PEP 695 would write them. */
+  typeVars: Map<string, string>
+  /** Type variable names each class binds for its members, by class id. */
+  generics: Map<string, string[]>
   options: Required<ExtractOptions>
 }
 
@@ -197,7 +263,8 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
           .filter(Boolean) ?? []
       const raw = docstringOf(def.childForFieldName('body'))
       const parsed = raw ? parsePythonDoc(raw) : undefined
-      emit(ctx, {
+      const generics = classTypeParameters(def, bases, ctx.typeVars)
+      const symbol: ApiSymbol = {
         id,
         name,
         kind: classKind(bases),
@@ -207,7 +274,10 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
         doc: parsed?.doc,
         extends: bases.length ? bases : undefined,
         source: { file: ctx.file, line: def.startPosition.row + 1 },
-      })
+      }
+      withTypeParameters(symbol, generics)
+      ctx.generics.set(id, [...ctx.generics.get(parent ?? '') ?? [], ...symbol.typeParameters?.map((parameter) => parameter.name) ?? []])
+      emit(ctx, symbol)
       walk(def.childForFieldName('body') ?? def, { ...ctx, imports: { ...ctx.imports } }, id)
       delete ctx.imports[name]
       continue
@@ -219,7 +289,7 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
       const id = parent ? `${parent}.${name}` : `${ctx.module}.${name}`
       const raw = docstringOf(def.childForFieldName('body'))
       const parsed = raw ? parsePythonDoc(raw) : undefined
-      const sig = parsed ? applyDoc(signatureOf(def), parsed) : signatureOf(def)
+      const sig = parsed ? applyDoc(signatureOf(def, ctx, parent), parsed) : signatureOf(def, ctx, parent)
       const kind: SymbolKind =
         decorators.includes('property') ? 'property' : parent ? 'method' : 'function'
       const isAsync = def.children.some((c) => c?.type === 'async' || c?.text === 'async')
@@ -297,6 +367,8 @@ export async function extractPython(
     symbols: [],
     imports: {},
     byId: new Map(),
+    typeVars: typeVarsOf(tree.rootNode),
+    generics: new Map(),
     options: { ...DEFAULT_EXTRACT_OPTIONS, ...options },
   }
   walk(tree.rootNode, ctx, undefined)

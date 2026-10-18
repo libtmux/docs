@@ -13,8 +13,10 @@ import {
   type DocBlock,
   type Signature,
   type SymbolKind,
+  type TypeParameter,
 } from '../model.ts'
 import { type GrammarName, parserFor } from '../parser.ts'
+import { parseTypeParameters, splitTopLevel, withTypeParameterDocs } from '../type-params.ts'
 import { attachTypeScriptConstants } from './typescript-constants.ts'
 
 /**
@@ -131,6 +133,12 @@ export interface LanguageSpec {
   rawSignature?: (node: Node) => string | undefined
   /** Native binding names stay separate from the source type-parameter text. */
   typeParameterNames?: (node: Node) => string[] | undefined
+  /**
+   * Bounds the language writes outside the parameter list, by parameter name:
+   * a Rust `where T: Clone`, a C# `where T : class`. They belong to the
+   * parameter they restrict, joined in the language's own separator.
+   */
+  typeConstraints?: (node: Node) => { joiner: string; byName: Map<string, string[]> }
   /** Modifiers implied by the native declaration rather than a written keyword. */
   declarationModifiers?: (node: Node) => Modifier[]
   /** Whether a native owner or field excludes enclosing type-variable bindings. */
@@ -155,6 +163,44 @@ export interface LanguageSpec {
 }
 
 const DEFAULT_FIELDS = { name: 'name', params: 'parameters', returns: 'return_type', body: 'body' }
+
+/** The slug the shared model and its linker use for each grammar. */
+const LANGUAGE: Partial<Record<GrammarName, string>> = {
+  typescript: 'ts', rust: 'rs', go: 'go', java: 'java', csharp: 'csharp',
+}
+
+/**
+ * The declaration text of each entry in a node's type-parameter list.
+ *
+ * Read from the list's text rather than its child nodes: Rust's grammar parses
+ * `const N: usize = 3` as a parameter followed by an error node, which would
+ * split a default from its parameter. Go groups names under one constraint, so
+ * its entries stay one per declaration.
+ */
+function typeParameterTexts(node: Node, spec: LanguageSpec): string[] | undefined {
+  const list = node.childForFieldName('type_parameters')
+  if (!list) return undefined
+  // After a parse error the grammar can read the arguments of a base type, `: IParsable<PaneId>`, as a list.
+  if (node.children.some((child) => child?.type === 'ERROR' && child.endIndex <= list.startIndex)) return undefined
+  if (spec.grammar === 'go') return list.namedChildren.flatMap((entry) => entry && !spec.commentTypes.includes(entry.type) ? [entry.text] : [])
+  let text = list.text
+  const comments = list.descendantsOfType(spec.commentTypes).filter((comment): comment is Node => comment !== null)
+  for (const comment of comments.sort((a, b) => b.startIndex - a.startIndex)) {
+    text = text.slice(0, comment.startIndex - list.startIndex) + text.slice(comment.endIndex - list.startIndex)
+  }
+  return splitTopLevel(text.trim().replace(/^[<[]|[>\]]$/g, ''), ',')
+}
+
+/** The same list read apart, with bounds the language writes elsewhere folded in. */
+function typeParametersFrom(node: Node, spec: LanguageSpec, texts: string[]): TypeParameter[] | undefined {
+  const parameters = parseTypeParameters(LANGUAGE[spec.grammar], texts)
+  const constraints = spec.typeConstraints?.(node)
+  const merged = constraints ? parameters.map((parameter) => {
+    const extra = constraints.byName.get(parameter.name)
+    return extra?.length ? { ...parameter, bound: [parameter.bound, ...extra].filter(Boolean).join(constraints.joiner) } : parameter
+  }) : parameters
+  return merged.length ? merged : undefined
+}
 
 /**
  * The doc comment attached to a declaration.
@@ -264,6 +310,7 @@ function signatureOf(node: Node, spec: LanguageSpec, file: string): Signature {
     node.childForFieldName('type')
   const scopeBoundary = spec.signatureTypeScopeBoundary?.(node)
   const enclosing = spec.enclosingDeclaration?.(node)
+  const declared = declaredTypeParameters(node, spec)
   return {
     raw: spec.rawSignature?.(node),
     ...(enclosing ? { enclosingDeclaration: enclosing.raw,
@@ -278,12 +325,21 @@ function signatureOf(node: Node, spec: LanguageSpec, file: string): Signature {
     returns: returns ? spec.typeText?.(returns) ?? returns.text.replace(/\s+/g, ' ').replace(/^\s*(?:->|:)\s*/, '') : undefined,
     ...(spec.typeParameterNames?.(node) ? { typeParamNames: spec.typeParameterNames(node) } : {}),
     ...(scopeBoundary !== undefined ? { typeScopeBoundary: scopeBoundary } : {}),
-    typeParams: node
-      .childForFieldName('type_parameters')
-      ?.namedChildren.map((n) => n?.text ?? '')
-      .filter(Boolean),
+    ...(declared ? { typeParams: declared.typeParams, ...typeParametersOf(declared) } : { typeParams: undefined }),
   }
 }
+
+/** A declaration's parameter list: as written, and read apart for the model. */
+interface DeclaredTypeParameters { typeParams: string[]; typeParameters?: TypeParameter[] }
+
+function declaredTypeParameters(node: Node, spec: LanguageSpec): DeclaredTypeParameters | undefined {
+  const texts = typeParameterTexts(node, spec)
+  if (!texts?.length) return undefined
+  return { typeParams: texts, typeParameters: typeParametersFrom(node, spec, texts) }
+}
+
+const typeParametersOf = (declared: DeclaredTypeParameters): Pick<Signature, 'typeParameters'> =>
+  declared.typeParameters ? { typeParameters: declared.typeParameters } : {}
 
 interface Ctx {
   parser: Parser
@@ -362,6 +418,9 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
       const accessors = spec.recordAccessors?.(child)
       const positional = spec.positionalProperties?.(child) || accessors
       const signatures = positional || (spec.grammar === 'java' && spec.rawSignature?.(child)) ? [signatureOf(child, spec, ctx.file)] : []
+      const generics = declaredTypeParameters(child, spec)
+      const names = generics && spec.typeParameterNames?.(child)
+      const doc = docFor(raw, spec, signatures, ctx.parser, generics)
       emit(ctx, {
         id,
         name,
@@ -370,14 +429,8 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
         parent,
         signatures,
         ...(scopeBoundary !== undefined ? { typeScopeBoundary: scopeBoundary } : {}),
-        ...(spec.typeParameterNames?.(child) ? {
-          typeParams: child.childForFieldName('type_parameters')!.namedChildren.flatMap((node) => node && !spec.commentTypes.includes(node.type) ? [node.text] : []),
-          typeParamNames: spec.typeParameterNames(child),
-        } : {}),
-        ...(spec.grammar === 'rust' && child.type === 'enum_item' && child.childForFieldName('type_parameters')
-          ? { typeParams: child.childForFieldName('type_parameters')!.namedChildren.flatMap((node) => node ? [node.text] : []) }
-          : {}),
-        doc: docFor(raw, spec, signatures, ctx.parser),
+        ...(generics ? { typeParams: generics.typeParams, ...(names ? { typeParamNames: names } : {}), ...typeParametersOf(generics) } : {}),
+        doc,
         source: { file: ctx.file, line: child.startPosition.row + 1 },
       })
       const body = child.childForFieldName(f.body) ?? child
@@ -432,6 +485,9 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
     // onto it: the comment carries them, and nothing else does.
     const variant = spec.enumVariant?.(child)
     const memberSignatures = variant ? [{ raw: variant.raw, params: [] }] : hasParams ? [signatureOf(child, spec, ctx.file)] : []
+    // A type alias carries its parameters on itself; a callable carries them on its signature.
+    const generics = hasParams ? undefined : declaredTypeParameters(child, spec)
+    const memberDoc = docFor(raw, spec, memberSignatures, ctx.parser, generics)
     emit(ctx, {
       id: memberId,
       name,
@@ -447,7 +503,8 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
       value: child.type === 'annotation_type_element_declaration' && spec.grammar === 'java' ? child.childForFieldName('value')?.text : variant ? variant.value : hasParams
         ? undefined
         : child.childForFieldName('declarator')?.childForFieldName('value')?.text.replace(/\s+/g, ' '),
-      doc: docFor(raw, spec, memberSignatures, ctx.parser),
+      ...(generics ? { typeParams: generics.typeParams, ...typeParametersOf(generics) } : {}),
+      doc: memberDoc,
       source: { file: ctx.file, line: child.startPosition.row + 1 },
     })
     for (const field of variant?.fields ?? []) {
@@ -477,6 +534,7 @@ function docFor(
   spec: LanguageSpec,
   signatures: Signature[],
   parser: Parser,
+  owner?: DeclaredTypeParameters,
 ): DocBlock | undefined {
   if (!raw) return undefined
   const parse =
@@ -486,9 +544,13 @@ function docFor(
         ? parseJavadoc
         : spec.docDialect === 'godoc' ? (text: string) => parseGoDoc(text, parser)
           : (text: string) => parseMarkdownDocFull(text, spec.grammar)
-  const { doc, params, returnsDoc, raises } = parse(raw)
+  const { doc, params, typeParams, returnsDoc, raises } = parse(raw)
 
   const sig = signatures[0]
+  // A comment documents the parameters of the one declaration it sits above.
+  if (typeParams.size) for (const target of [sig, owner]) {
+    if (target?.typeParameters) target.typeParameters = withTypeParameterDocs(target.typeParameters, typeParams)
+  }
   if (sig) {
     for (const param of sig.params) {
       const text = params.get(param.name)

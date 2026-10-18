@@ -2,6 +2,7 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { markText } from '../doc/markdown.ts'
 import type { ApiSymbol, Modifier, Param, Signature, SymbolKind } from '../model.ts'
+import { parseTypeParameters, withTypeParameterDocs } from '../type-params.ts'
 
 /**
  * C and C++ from the same Doxygen XML extractor.
@@ -382,6 +383,27 @@ function cppTemplateParameters(block: string): string[] {
   })
 }
 
+/** `\tparam T description`, which Doxygen keeps in its own parameter list beside `\param`. */
+function templateParameterDocs(xml: string): Map<string, string> {
+  const out = new Map<string, string>()
+  for (const list of xml.matchAll(/<parameterlist kind="templateparam">([\s\S]*?)<\/parameterlist>/g)) {
+    for (const item of list[1].matchAll(/<parameteritem>([\s\S]*?)<\/parameteritem>/g)) {
+      const name = textOf(tag(item[1], 'parametername') ?? '')
+      const doc = textOf(tag(item[1], 'parameterdescription') ?? '')
+      if (name && doc) out.set(name, doc)
+    }
+  }
+  return out
+}
+
+/** A declaration's template parameters as the model stores them: as written, and read apart. */
+function cppTypeParameters(declaration: string, documentation: string): Pick<Signature, 'typeParams' | 'typeParameters'> {
+  const typeParams = cppTemplateParameters(declaration)
+  if (!typeParams.length) return {}
+  const typeParameters = withTypeParameterDocs(parseTypeParameters('cxx', typeParams), templateParameterDocs(documentation))
+  return { typeParams, ...(typeParameters.length ? { typeParameters } : {}) }
+}
+
 /** Preserve C++ declaration syntax and specifiers that typed parameter rows cannot express. */
 function cppSignature(block: string): string | undefined {
   const definition = codeOf(tag(block, 'definition') ?? '')
@@ -497,6 +519,8 @@ export function extractDoxygen(xmlDir: string, sourceRoot = '', options: Doxygen
           kind,
           modifiers: [],
           signatures: c && !owner.includes('::') && !syntheticCName(owner) ? [{ raw: `${kind} ${owner};`, params: [] }] : [],
+          // The compound's own list precedes its members', whose lists are their own.
+          ...(c ? {} : cppTypeParameters(xml.split(/<sectiondef|<memberdef/)[0], own.detail)),
           doc:
             brief || detail
               ? { summary: brief, body: detail || undefined }
@@ -563,13 +587,13 @@ export function extractDoxygen(xmlDir: string, sourceRoot = '', options: Doxygen
       const memberType = block.replace(/<(templateparamlist|param)>[\s\S]*?<\/\1>/g, '')
       const returnType = c ? textOf(tag(memberType, 'type') ?? '') : normalizeCppTemplateSpacing(codeOf(tag(memberType, 'type') ?? ''))
       const returnDoc = textOf(tag(block, 'simplesect') ?? '')
-      const templateParameters = c ? [] : cppTemplateParameters(block)
+      const templateParameters = c ? {} : cppTypeParameters(block, tag(scope, 'detaileddescription') ?? '')
 
       const signature: Signature | undefined =
         attr(block, 'kind') === 'function'
           ? {
               params: paramsOf(block, paramDocs(block), c),
-              ...(templateParameters.length ? { typeParams: templateParameters } : {}),
+              ...templateParameters,
               ...(c ? { raw: `${codeOf(tag(block, 'definition') ?? '')}${codeOf(tag(block, 'argsstring') ?? '')}` }
                 : cppSignature(block) ? { raw: cppSignature(block) } : {}),
               returns: returnType || undefined,

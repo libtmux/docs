@@ -162,7 +162,9 @@ const JSDOC_CODE_RE = /\{@(?:code|literal)\s+([^}]+)\}/g
  * part of the name.
  */
 const XML_SEE_RE = /<see(?:also)?\s+cref="(?:[A-Z]:)?([^"]+)"\s*\/?>(?:<\/see(?:also)?>)?/g
-const XML_PARAMREF_RE = /<(?:paramref|typeparamref)\s+name="([^"]+)"\s*\/?>/g
+const XML_PARAMREF_RE = /<paramref\s+name="([^"]+)"\s*\/?>/g
+/** A type parameter is looked up among the ones in scope, never among global names. */
+const XML_TYPEPARAMREF_RE = /<typeparamref\s+name="([^"]+)"\s*\/?>/g
 /**
  * `<see langword="null"/>` names a C# keyword, not a member.
  *
@@ -439,6 +441,9 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
     }
     for (const m of text.matchAll(XML_PARAMREF_RE)) {
       hits.push({ start: m.index, end: m.index + m[0].length, span: { kind: 'code', text: m[1] } })
+    }
+    for (const m of text.matchAll(XML_TYPEPARAMREF_RE)) {
+      hits.push({ start: m.index, end: m.index + m[0].length, span: { kind: 'ref', role: 'typeparam', target: m[1], label: m[1] } })
     }
     for (const m of text.matchAll(XML_SEE_RE)) {
       // `{T}` spells a generic parameter in a compiler-checked cref; ids carry none.

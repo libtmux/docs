@@ -79,13 +79,18 @@ extension [F[_]](self: Box[F, String]) {
     expect(box.signatures[0].typeParams).toEqual(['F', 'A'])
     expect(map.signatures[0]).toMatchObject({ typeParams: ['F', 'B'], receiver: { name: 'self', type: 'Box[F, String]' } })
     const index = new SymbolIndex(model.symbols, (symbol) => `#${symbol.id}`, 'scala')
-    expect(index.resolve('F', 'class', read)?.href).toBe('#example.Box')
-    expect(index.resolve('B', 'class', map)?.href).toBe('#example.Box.map')
+    expect(index.resolve('F', 'class', read)?.href).toBe('#example.Box.type-parameter.F')
+    expect(index.resolve('B', 'class', map)?.href).toBe('#example.Box.map.type-parameter.B')
     expect(index.resolve('self', 'any', map)?.href).toBe('#example.Box')
     expect(index.resolve('UnresolvedType', 'class', map)).toBeUndefined()
     const signature = map.signatures[0]
     const spans = index.linkType(signature.raw!, map, signature)
-    expect(spans.filter((span) => span.link).map((span) => span.text)).toEqual(['Box', 'String'])
+    expect(spans.filter((span) => span.link && !span.link.typeParameter).map((span) => span.text)).toEqual(['Box', 'String'])
+    expect(spans.filter((span) => span.link?.typeParameter).map((span) => [span.text, span.link!.href])).toEqual([
+      ['F', '#example.Box.map.type-parameter.F'], ['F', '#example.Box.map.type-parameter.F'],
+      ['B', '#example.Box.map.type-parameter.B'], ['B', '#example.Box.map.type-parameter.B'],
+      ['F', '#example.Box.map.type-parameter.F'], ['B', '#example.Box.map.type-parameter.B'],
+    ])
     expect(spans.map((span) => span.text).join('')).toBe(signature.raw)
   })
   it('links the types in an overload while leaving its bindings plain', async () => {

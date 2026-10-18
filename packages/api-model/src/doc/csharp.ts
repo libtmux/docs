@@ -77,6 +77,8 @@ function prose(xml: string): string {
 export interface ParsedXmlDoc {
   doc: DocBlock
   params: Map<string, string>
+  /** `<typeparam name="T">`, by parameter name. */
+  typeParams: Map<string, string>
   returnsDoc?: string
   raises: { type: string; doc?: string }[]
 }
@@ -93,6 +95,13 @@ export function parseXmlDoc(raw: string): ParsedXmlDoc {
     const name = attr(s.attrs, 'name')
     const text = prose(s.body)
     if (name && text) params.set(name, text)
+  }
+
+  const typeParams = new Map<string, string>()
+  for (const s of sections(raw, 'typeparam')) {
+    const name = attr(s.attrs, 'name')
+    const text = prose(s.body)
+    if (name && text) typeParams.set(name, text)
   }
 
   const returnsDoc = prose(sections(raw, 'returns')[0]?.body ?? '') || undefined
@@ -136,6 +145,7 @@ export function parseXmlDoc(raw: string): ParsedXmlDoc {
       examples: examples.length ? examples : undefined,
     },
     params,
+    typeParams,
     returnsDoc,
     raises,
   }

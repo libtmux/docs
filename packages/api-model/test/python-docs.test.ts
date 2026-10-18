@@ -215,7 +215,8 @@ describe('source-scoped Python typing bindings', () => {
     const spans = index.linkType('t.Generic[T]', symbol)
     expect(spans.map((span) => span.text).join('')).toBe('t.Generic[T]')
     expect(spans.find((span) => span.text === 't.Generic')?.link?.href).toBe('https://docs.python.org/3/library/typing.html#typing.Generic')
-    expect(spans.find((span) => span.text === 'T')?.link).toBeUndefined()
+    // `T` is the class's own variable, so it links to that declaration and nowhere else.
+    expect(spans.find((span) => span.text === 'T')?.link?.href).toBe('#example.QueryList.type-parameter.T')
   })
 
   it('keeps aliases scoped to imports and invalidates rebound names', async () => {
