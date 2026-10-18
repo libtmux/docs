@@ -64,6 +64,13 @@ function readMenu(root, interactive) {
   return {
     panel: { left: panelRect.left, right: panelRect.right, background: getComputedStyle(panel).backgroundColor },
     overflow: document.documentElement.scrollWidth - innerWidth,
+    // A row is a label and one line under it; a paragraph in a menu belongs on a page.
+    blocks: [...panel.querySelectorAll('p')].filter((block) => !block.hasAttribute('data-picker-status'))
+      .map((block) => ({ text: block.textContent.replace(/\s+/g, ' ').trim(), cls: block.className })),
+    rowText: [...root.querySelectorAll('a[data-picker-option]')].map((row) => ({
+      name: row.querySelector('.header-picker__name').textContent, smalls: row.querySelectorAll('small').length,
+      paragraphs: row.querySelectorAll('p').length, detail: row.querySelector('small')?.textContent.length ?? 0,
+    })),
     groups: [...root.querySelectorAll('[data-picker-group]')].map((group) => {
       const labelId = group.getAttribute('aria-labelledby')
       const heading = labelId ? document.getElementById(labelId) : null
@@ -100,6 +107,12 @@ async function checkStatic(page, picker, where, scheme, expectTitled) {
   const { groups } = menu
   assert(menu.overflow <= 1, `${where}: the open menu leaves the page without horizontal scroll`)
   assert(menu.panel.left >= -0.5 && menu.panel.right <= (await page.evaluate(() => innerWidth)) + 0.5, `${where}: the open menu stays inside the viewport`)
+  for (const row of menu.rowText) {
+    assert(row.paragraphs === 0 && row.smalls === 1 && row.detail <= 60, `${where}: ${row.name} shows its label and one short line, not a paragraph (${row.smalls} lines, ${row.detail} characters)`)
+  }
+  for (const block of menu.blocks) {
+    assert(block.text.length <= 48, `${where}: a text block in the menu holds ${block.text.length} characters: "${block.text.slice(0, 60)}"`)
+  }
   const titled = groups.length > 1
   assert.equal(titled, expectTitled, `${where}: a menu of ${expectTitled ? 'several products has' : 'one product has no'} headings`)
   if (!titled) {
@@ -247,9 +260,17 @@ export async function checkHeaderMenuSections(browser, base, options = {}) {
       for (const port of ports) {
         for (const width of widths) {
           await page.setViewportSize({ width, height: 900 })
-          await page.goto(`${base}/${port}/latest/`, { waitUntil: 'load' })
-          await page.waitForFunction(() => document.fonts.status === 'loaded')
-          await page.waitForSelector('details[data-header-picker][data-enhanced]', { state: 'attached' })
+          // The development server can replace a page while it optimizes dependencies; load it again once.
+          for (const attempt of [1, 2]) {
+            try {
+              await page.goto(`${base}/${port}/latest/`, { waitUntil: 'load' })
+              await page.waitForFunction(() => document.fonts.status === 'loaded')
+              await page.waitForSelector('details[data-header-picker][data-enhanced]', { state: 'attached' })
+              break
+            } catch (error) {
+              if (attempt === 2) throw error
+            }
+          }
           assert.equal(await page.evaluate(() => matchMedia('(prefers-color-scheme: dark)').matches), scheme === 'dark', `${port}: the ${scheme} scheme is in effect`)
           if (sabotage?.css) await page.addStyleTag({ content: sabotage.css })
           if (sabotage?.script) await page.evaluate(sabotage.script)
@@ -291,6 +312,9 @@ export async function checkHeaderMenuSectionsFail(browser, base) {
     ['a heading with a hover state', { css: '.header-picker__heading:hover { background: #f00 !important }' }, /hovering a heading changes nothing/],
     ['item typography on a heading', { css: '.header-picker__heading { font-size: .8125rem !important; text-transform: none !important; color: inherit !important }' }, /heading typography is smaller/],
     ['rows flush with their heading', { css: '.header-picker__group > .header-picker__option { margin-inline-start: 0 !important } .header-picker__heading { margin-inline: 1.2rem !important }' }, /rows are inset under the heading/],
+    ['a paragraph under a product heading', {
+      script: () => document.querySelectorAll('[data-picker-group]').forEach((group) => group.querySelector('a').before(Object.assign(document.createElement('p'), { textContent: 'Maintained as a working example of core library usage and deployment. Example APIs, tools and configuration may change without a compatibility or product support commitment.' }))),
+    }, /a text block in the menu holds/],
     ['headings that filtering leaves behind', {
       script: () => document.querySelectorAll('[data-picker-group]').forEach((group) => group.style.setProperty('display', 'block', 'important')),
     }, /only while its group has matches/],
@@ -298,5 +322,5 @@ export async function checkHeaderMenuSectionsFail(browser, base) {
   for (const [name, sabotage, failure] of controls) {
     await assert.rejects(() => checkHeaderMenuSections(browser, base, { ...only, sabotage }), failure, `the check fails with ${name}`)
   }
-  console.log('Header menu sections: the check fails on origin/main markup and CSS, focusable, pointer, hover, plain-typography, flush and unfiltered headings')
+  console.log('Header menu sections: the check fails on origin/main markup and CSS, a paragraph in a menu, and focusable, pointer, hover, plain-typography, flush and unfiltered headings')
 }
