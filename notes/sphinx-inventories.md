@@ -8,7 +8,8 @@ The [reader guide](../site/src/content/docs/intersphinx.md) shows consumer setup
 ## Target ownership
 
 `BaseLayout` declares a page's scope, product, version, source, and logical
-document identity. The inventory integration reads its rendered `main` element.
+document identity. Every owned page exports a document; its rendered `main`
+element supplies fragment targets when present.
 It exports documents and actual fragment destinations, including headings,
 tables, examples, parameter lists, and nested protocol schemas. Demo pages,
 search, redirects, and translation placeholders have no exported ownership.
