@@ -21,7 +21,8 @@ async function observeAppearance(context) {
           // Icon-only links draw no glyph, and a closed header menu is not what a reader sees first.
           const glyphLinks = [...document.querySelectorAll('a[data-external-link]:not([data-external-link-icon])')]
           const icon = glyphLinks.find((link) => link.checkVisibility()) ?? glyphLinks[0]
-          const dotted = document.querySelector('.api-badge[data-link-preview] > .api-badge__label')
+          // The legend chip's word sits one box deeper than a modifier's, so the word is any label inside the chip.
+          const dotted = document.querySelector('.api-badge[data-link-preview] .api-badge__label')
           window.__appearance.first = {
             readiness: document.documentElement.dataset.pageReadiness,
             fonts: text.every((element) => {
@@ -276,6 +277,14 @@ export async function checkRequiredAppearance(browser, base) {
  */
 const BADGE_GAP = { min: .21, max: .29 }
 
+/*
+ * Cards and list rows lead a bare name, not a code chip, so their mark sits a
+ * half em from it and is centred on the name's capital height rather than on
+ * its line box. `gap: false, centre: false` hands those entries to
+ * check-badge-centring, which measures them from pixels (the cap-centre and the
+ * gap, in both directions) with a negative control.
+ */
+
 /**
  * Every link that leads with a kind badge, by the badge's selector. `line`
  * marks single-line prose links, which must not grow their line; `sample`
@@ -285,12 +294,13 @@ const BADGE_LINKS = [
   { label: 'prose link', path: '/rs/latest/concepts/server-session-window-pane/', badges: 'p a > .api-link-kind', line: true, fixtures: true, sample: true },
   { label: 'guide prose link', path: '/py/stable/guides/attaching-to-tmux/', badges: 'p a > .api-link-kind', line: true, sample: true },
   { label: 'MCP prose link', path: '/py/stable/mcp/tools/capture_pane/', badges: 'p a > .api-link-kind', line: true },
-  { label: 'MCP index card', path: '/py/stable/mcp/tools/', badges: '.api-index-card a > .api-nav__kind', sample: true },
-  { label: 'MCP catalog heading', path: '/py/stable/mcp/tools/', badges: 'h2 a > .api-nav__kind' },
+  { label: 'MCP index card', path: '/py/stable/mcp/tools/', badges: '.api-index-card a > .api-nav__kind', gap: false, centre: false, sample: true },
+  { label: 'MCP catalog heading', path: '/py/stable/mcp/tools/', badges: 'h2 a > .api-nav__kind', gap: false, centre: false },
   { label: 'API equivalent', path: '/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/', badges: '.api-elsewhere-value a > .api-nav__kind', gap: false, sample: true },
   { label: 'sidebar link', path: '/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/', badges: 'a.sidebar-link > .api-nav__kind' },
   { label: 'sidebar section', path: '/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/', badges: 'summary a > .api-nav__kind' },
-  { label: 'navigation tree link', path: '/py/stable/mcp/tools/capture_pane/', badges: 'a.api-nav__leaf > .api-nav__kind', gap: false },
+  // The MCP tree draws no marks under a group of one kind, so its leaf marks are measured on an API tree.
+  { label: 'navigation tree link', path: '/java/latest/reference/io-github-libtmux-server-server/', badges: 'a.api-nav__leaf > .api-nav__kind', gap: false },
   { label: 'navigation tree row', path: '/java/latest/reference/io-github-libtmux-server-server/', badges: 'div.api-nav__row > .api-nav__kind', gap: false },
   { label: 'related type card', path: '/java/latest/reference/io-github-libtmux-server-server/', badges: '.api-related-card a > .api-nav__kind' },
   { label: 'related API contents', path: '/java/latest/reference/io-github-libtmux-server-server/', badges: 'nav.api-related a > .api-nav__kind', gap: false },
@@ -414,14 +424,14 @@ export async function checkKindBadgeLinks(browser, base, { sample = false } = {}
       await page.addStyleTag({ content: '.reference-link-preview { display: none !important; }' })
       for (const entry of BADGE_LINKS.filter((candidate) => candidate.path === path && (!sample || candidate.sample))) {
         await entry.prepare?.(page)
-        const variants = [{ label: entry.label, badges: entry.badges, line: entry.line, gap: entry.gap }]
+        const variants = [{ label: entry.label, badges: entry.badges, line: entry.line, gap: entry.gap, centre: entry.centre }]
         if (entry.fixtures) {
           await addBadgeLinkFixtures(page)
           variants.push(
             { label: `${entry.label} in a heading`, badges: '[data-fixture="heading"] .api-link-kind', line: true },
             { label: `${entry.label} in a table`, badges: '[data-fixture="table"] .api-link-kind', line: true })
         }
-        for (const { label, badges, line, gap: checkGap } of variants) {
+        for (const { label, badges, line, gap: checkGap, centre: checkCentre } of variants) {
           // A closed disclosure lays out nothing to measure.
           await page.evaluate((selector) => {
             for (const badge of document.querySelectorAll(selector)) {
@@ -439,7 +449,7 @@ export async function checkKindBadgeLinks(browser, base, { sample = false } = {}
             if (measured.preview && (measured.nameOwners.length !== 1 || !measured.nameOwners[0].endsWith('underline dotted'))) {
               failures.push(`${where}: the name needs exactly one dotted underline (${measured.nameOwners.join('; ') || 'none'})`)
             }
-            if (Math.abs(measured.centre) > 1) failures.push(`${where}: badge centre is ${measured.centre.toFixed(2)}px from the text centre`)
+            if (checkCentre !== false && Math.abs(measured.centre) > 1) failures.push(`${where}: badge centre is ${measured.centre.toFixed(2)}px from the text centre`)
             if (checkGap !== false && (measured.gap < BADGE_GAP.min || measured.gap > BADGE_GAP.max)) failures.push(`${where}: badge gap is ${measured.gap.toFixed(3)}em, not about .25em`)
             if (line && measured.lineExcess > 1) failures.push(`${where}: the link is ${measured.lineExcess.toFixed(2)}px taller than its line`)
           }

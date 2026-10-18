@@ -443,13 +443,16 @@ async function negativeControl(page, base, results) {
 
 export async function checkBadgeCentring(browser, base, { sample: bounded = false } = {}) {
   const results = { measured: 0, failures: [], counts: {}, control: 0, railControl: 0, headingControl: 0, rowControl: 0, sidebarRedundant: 0, sidebarMixedBare: 0, sidebarMixedMarked: 0, gutterControl: 0, modControl: 0 }
-  const pages = bounded ? PAGES.slice(0, 2) : PAGES
+  // The bounded sample keeps one page for each thing the gate holds: an MCP and a guide page, the API type page (tree gutter, rail, rows) and an MCP tool (sidebar rule).
+  const pages = bounded ? [PAGES[0], PAGES[1], PAGES[6], PAGES[8]] : PAGES
   const hi = await chromium.launch({ args: ['--force-device-scale-factor=2', '--window-size=1440,1000'] })
   try {
     for (const [engine, factor] of [[browser, 1], [hi, 2]]) {
       const context = await engine.newContext(factor === 1 ? { viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce' } : { viewport: null, reducedMotion: 'reduce' })
       const page = await context.newPage()
       page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
+      // The first request for a reference page compiles it in the dev server, and the index and tool pages are large.
+      page.setDefaultNavigationTimeout(60000)
       try {
         for (const scheme of ['light', 'dark']) {
           await page.emulateMedia({ colorScheme: scheme })
@@ -473,6 +476,7 @@ export async function checkBadgeCentring(browser, base, { sample: bounded = fals
 export async function checkMentionDensity(browser, base) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } })
   const page = await context.newPage()
+  page.setDefaultNavigationTimeout(60000)
   try {
     const violations = (target) => target.evaluate(() => {
       const found = []

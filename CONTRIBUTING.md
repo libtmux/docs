@@ -147,13 +147,16 @@ focus, link, repeated link and typed hash arrivals in each engine:
 $ node site/scripts/check-dev.mjs --api-sticky
 ```
 
-Kind marks centre their ink by measurement, and a legend chip or split chip is
-one line of text. The badge gate reads the pixels of real pages at 1x and at a
-real 2x device scale factor (Chromium launched with the factor, because the
-emulated factor snaps text to CSS pixels), in light and dark. It also checks
-that only the first mention of a name in a section carries a mark. Each check
-ends with a negative control that shifts the marks and requires the gate to
-notice:
+Kind marks centre their ink by measurement, and a legend chip, split chip or
+modifier chip is one line of text. The badge gate reads the pixels of real pages
+at 1x and at a real 2x device scale factor (Chromium launched with the factor,
+because the emulated factor snaps text to CSS pixels), in light and dark. It
+measures the mark that leads a name in cards and lists, the related-APIs
+chips, the group headings, the MCP sidebar's rule (a mark only in a group that
+mixes kinds, and no gutter) and that the API tree keeps its gutter, and it
+checks that only the first mention of a name in a section carries a mark. Each
+check ends with a negative control that breaks what it holds and requires the
+gate to notice:
 
 ```console
 $ node site/scripts/check-dev.mjs --badge-centring
