@@ -1,18 +1,23 @@
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { readInventory, targetKey } from '@libtmux/api-model'
 import { apiInventoryIdentity, installFragmentAlias, mergeTargets, renderedTargets, type InventoryPage } from '../src/lib/inventory-targets'
 import type { ApiSymbol } from '@libtmux/api-model'
 import { collectInventoryTargets, publishAssembledInventories } from '../src/lib/inventory-publisher'
 import type { VersionManifest } from '../src/lib/versions'
 import { parse, type DefaultTreeAdapterTypes } from 'parse5'
+import { inventory } from '../src/integrations/inventory'
+import { withPortRoot } from '../src/lib/site-root'
 
 const page: InventoryPage = { scope: 'rs', product: 'mcp', identity: 'tool:inspect', title: 'Inspect', version: 'stable' }
 const html = (page: InventoryPage, content: string) => `<html><head><meta name="libtmux-inventory" content='${JSON.stringify(page)}'></head><body><nav id="chrome">Navigation</nav><main>${content}</main></body></html>`
 const dirs: string[] = []
-afterEach(() => { for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true }) })
+afterEach(() => {
+  for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true })
+  vi.unstubAllEnvs()
+})
 
 describe('rendered inventory targets', () => {
   it('owns API sections independently of route slugs and excludes generated control IDs', () => {
@@ -116,6 +121,21 @@ describe('rendered inventory targets', () => {
 })
 
 describe('assembled inventories', () => {
+  it('runs the port export hook only at its mount and still rejects missing declarations there', () => {
+    const out = mkdtempSync(join(tmpdir(), 'libtmux-inventory-mount-')); dirs.push(out)
+    vi.stubEnv('LIBTMUX_DOCS_PORT', 'py')
+    vi.stubEnv('LIBTMUX_DOCS_VERSION', 'latest')
+    const hooks = inventory().hooks!
+    const configure = hooks['astro:config:done'] as (value: unknown) => void
+    const finish = hooks['astro:build:done'] as (value: unknown) => void
+    const payload = { dir: new URL(`file://${out}/`), logger: { info() {} } }
+    configure({ config: { base: '/en/' } })
+    expect(() => finish(payload)).not.toThrow()
+    expect(existsSync(join(out, 'objects.inv'))).toBe(false)
+    configure({ config: { base: withPortRoot('/py/latest/') } })
+    expect(() => finish(payload)).toThrow('Inventory missed')
+    expect(existsSync(join(out, 'objects.inv'))).toBe(false)
+  })
   it('preserves ordinary HTML filenames such as Sphinx genindex.html', () => {
     const out = mkdtempSync(join(tmpdir(), 'libtmux-inventory-html-')); dirs.push(out)
     mkdirSync(join(out, 'api'))

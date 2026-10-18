@@ -10,6 +10,7 @@ import { markdownPath } from '../src/lib/markdown-twins'
 import { pageBrand, PORT_BY_SLUG, PORTS, portSourceUrl } from '../src/lib/ports'
 import { withPortRoot, withRoot } from '../src/lib/site-root'
 import { buildTarget } from '../src/lib/versions'
+import { renderedTargets } from '../src/lib/inventory-targets'
 
 const astroRequire = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
 const noticeSource = readFileSync(new URL('../src/components/PrereleaseNotice.astro', import.meta.url), 'utf8')
@@ -52,11 +53,11 @@ afterEach(async () => {
 })
 afterAll(() => vi.unstubAllGlobals())
 
-async function render(path: string, pagePath?: string, portSlug?: string, bare = false) {
+async function render(path: string, pagePath?: string, portSlug?: string, bare = false, buildPort = '') {
   const url = new URL(path, 'https://libtmux.org')
   const prefix = /^(\/pr-\d+)?\/(en|ja)\//.exec(url.pathname)
   vi.stubEnv('LIBTMUX_DOCS_BASE', prefix?.[0] ?? '/')
-  vi.stubEnv('LIBTMUX_DOCS_PORT', '')
+  vi.stubEnv('LIBTMUX_DOCS_PORT', buildPort)
   vi.stubEnv('LIBTMUX_DOCS_LOCALE', prefix?.[2] ?? 'en')
   const container = await experimental_AstroContainer.create()
   return container.renderToString(layout, {
@@ -67,6 +68,20 @@ async function render(path: string, pagePath?: string, portSlug?: string, bare =
 }
 
 describe('prerelease notice ownership', () => {
+  it('exports the selected port only inside its version mount', async () => {
+    for (const path of ['/en/', '/pr-42/en/', '/py/', '/py/latestish/']) {
+      const shared = await render(path, '', 'py', false, 'py')
+      expect(renderedTargets(shared, path), path).toEqual([])
+    }
+    const port = await render('/py/latest/', '', 'py', false, 'py')
+    expect(renderedTargets(port, '/py/latest/')).toMatchObject([
+      { scope: 'py', version: 'latest', category: 'doc', identity: 'index', href: '/py/latest/' },
+    ])
+    const root = await render('/en/', '')
+    expect(renderedTargets(root, '/en/')).toMatchObject([
+      { scope: 'site', category: 'doc', identity: 'index', href: '/en/' },
+    ])
+  })
   it('omits the library notice from every tmux area before JavaScript runs', async () => {
     for (const prefix of ['/en/', '/ja/', '/pr-42/en/', '/pr-42/ja/']) {
       for (const page of ['tmux', 'tmux/', 'tmux/guides', 'tmux/topics/environment',
