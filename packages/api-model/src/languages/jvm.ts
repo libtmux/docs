@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import type { Node } from 'web-tree-sitter'
+import { markOverload } from '../overloads.ts'
 import { parserFor } from '../parser.ts'
 import { parseMarkdownDocFull } from '../doc/markdown.ts'
 import type { ApiModel, ApiSymbol, Param, Signature, SymbolKind, TypeParameter } from '../model.ts'
@@ -142,8 +143,9 @@ export async function extractJvm(port: Language, roots: string[], revision?: str
       }
     } else if (previous.kind !== symbol.kind) {
       throw new Error(`Conflicting ${port} declarations for ${symbol.id}`)
-    } else if (!previous.modifiers.includes('overload')) previous.modifiers.push('overload')
+    }
     previous.signatures.push(...symbol.signatures)
+    if (!companion) markOverload(previous)
     previous.extends ??= symbol.extends
     previous.modifiers = [...new Set([...previous.modifiers, ...symbol.modifiers])]
     previous.doc ??= symbol.doc

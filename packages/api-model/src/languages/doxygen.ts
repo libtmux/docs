@@ -2,6 +2,7 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { markText } from '../doc/markdown.ts'
 import type { ApiSymbol, Modifier, Param, Signature, SymbolKind } from '../model.ts'
+import { markOverload } from '../overloads.ts'
 import { parseTypeParameters, withTypeParameterDocs } from '../type-params.ts'
 
 /**
@@ -635,7 +636,7 @@ export function extractDoxygen(xmlDir: string, sourceRoot = '', options: Doxygen
       if (existing && signature) {
         // C++ overload sets: same name, different parameters, one entry.
         existing.signatures.push(signature)
-        if (!existing.modifiers.includes('overload')) existing.modifiers.push('overload')
+        markOverload(existing)
         continue
       }
       if (existing) continue

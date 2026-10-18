@@ -60,7 +60,8 @@ export type SymbolKind =
  * `overload` is the one that pays for the whole set: Python's `@t.overload`,
  * TypeScript's declaration merging, C#'s method groups and C++'s overloads all
  * produce several signatures for one name, and a reference that shows only the
- * first is wrong in a way readers do not notice.
+ * first is wrong in a way readers do not notice. Only a callable with more than
+ * one signature carries it; a type merged from several declarations does not.
  */
 export type Modifier =
   | 'static'

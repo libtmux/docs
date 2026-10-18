@@ -16,6 +16,7 @@ import {
   type PortSlug,
   type SymbolKind,
 } from './model.ts'
+import { markOverload, retractMisplacedOverload } from './overloads.ts'
 
 /**
  * Whole-tree extraction, and the pass that makes coverage complete.
@@ -126,6 +127,10 @@ export function mergeExtensions(symbols: ApiSymbol[], kind: SymbolKind | undefin
  * parts (`Pane.Topology.cs`) undocumented, so preferring a summary usually
  * picks that part; `extends` and `modifiers` are unioned because a partial
  * declaration may name a base or an interface in any part.
+ *
+ * Only a callable becomes an overload set by merging. Rust's `impl` blocks
+ * and C#'s `Result` beside `Result<T>` also arrive here under one id, and a
+ * type that is written more than once is still one type.
  */
 function mergePartials(symbols: ApiSymbol[]): ApiSymbol[] {
   const byId = new Map<string, ApiSymbol>()
@@ -152,10 +157,12 @@ function mergePartials(symbols: ApiSymbol[]): ApiSymbol[] {
     )
     if (fresh.length) {
       seen.signatures.push(...fresh)
-      if (!seen.modifiers?.includes('overload')) {
-        seen.modifiers = [...(seen.modifiers ?? []), 'overload']
-      }
+      markOverload(seen)
     }
+
+    // The union above also carries an `overload` a part earned on its own, as
+    // an `impl` block does when a file holds two of them.
+    retractMisplacedOverload(seen)
 
     // A part with prose beats a part without, whichever arrived first.
     if (!seen.doc?.summary && s.doc?.summary) {

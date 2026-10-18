@@ -15,6 +15,7 @@ import {
   type SymbolKind,
   type TypeParameter,
 } from '../model.ts'
+import { markOverload } from '../overloads.ts'
 import { type GrammarName, parserFor } from '../parser.ts'
 import { parseTypeParameters, splitTopLevel, withTypeParameterDocs } from '../type-params.ts'
 import { attachTypeScriptConstants } from './typescript-constants.ts'
@@ -366,9 +367,13 @@ function emit(ctx: Ctx, sym: ApiSymbol): void {
   }
   // Same name twice in one scope is an overload set — Java, C# and C++ all
   // spell it this way, and rendering only the first is wrong invisibly.
+  //
+  // Only for callables. A type declared twice (`struct X` and `impl X`, `class
+  // X` and `interface X`) or a field beside its accessor merges under one id
+  // too, and keeps what both say, but is not an overload of itself.
   existing.signatures.push(...sym.signatures)
   if (sym.doc && !existing.doc) existing.doc = sym.doc
-  if (!existing.modifiers.includes('overload')) existing.modifiers.push('overload')
+  markOverload(existing)
 }
 
 function walk(node: Node, ctx: Ctx, parent: string | undefined): void {

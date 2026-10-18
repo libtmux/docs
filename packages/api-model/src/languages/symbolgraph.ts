@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import type { ApiSymbol, Modifier, Param, Signature, SymbolKind, TypeParameter } from '../model.ts'
 import { parseMarkdownDocFull } from '../doc/markdown.ts'
+import { markOverload } from '../overloads.ts'
 
 /**
  * Swift from its compiler's own symbol graph, not from tree-sitter.
@@ -278,9 +279,7 @@ export function extractSymbolGraph(files: string[]): ApiSymbol[] {
         } else if (!existing.source.file && inheritedFrom) {
           existing.inheritedFrom ??= inheritedFrom
         }
-        if (existing.signatures.length > 1 && !existing.modifiers.includes('overload')) {
-          existing.modifiers.push('overload')
-        }
+        markOverload(existing)
         continue
       }
 
