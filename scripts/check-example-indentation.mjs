@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Doc-comment examples keep the indentation their source gave them.
+ * Doc-comment examples keep the indentation and the lines their source gave them.
  *
  * Every model stores an example's code as text. Rewriting the comment
  * margin can take more than the margin: the Java `{@code}` converter once
@@ -10,7 +10,9 @@
  *
  * Each multi-line example is found in its declaration's source file at the
  * revision the model records and its relative indentation compared line by
- * line. A block the source does not contain verbatim (a doctest prompt, a
+ * line. A source line between the example's first and last lines that the
+ * example lacks is a dropped line: the shared Markdown parser once removed
+ * every `# comment` line from every language's examples. A block the source does not contain verbatim (a doctest prompt, a
  * fence rewritten on the way in) is counted as unlocated, not as wrong. A port
  * without its checkout is reported as skipped.
  *
@@ -76,7 +78,7 @@ for (const port of PORTS) {
     continue
   }
   const model = JSON.parse(readFileSync(modelPath, 'utf8'))
-  const counts = { blocks: 0, ok: 0, lost: 0, unlocated: 0, single: 0, file: 0 }
+  const counts = { blocks: 0, ok: 0, lost: 0, dropped: 0, unlocated: 0, single: 0, file: 0 }
   const files = new Map()
   const lost = []
   for (const { id, example, source } of examplesOf(model)) {
@@ -89,9 +91,10 @@ for (const port of PORTS) {
       files.set(key, read(repo, source.extractedRevision ?? source.revision, source.file) ??
         read(repo, source.revision, source.file) ?? '')
     }
-    const result = compareIndentation(example.code, files.get(key))
+    const result = compareIndentation(example.code, files.get(key), { rust: port.slug === 'rs' && /^rust$/i.test(example.lang) })
     counts[result.status]++
     if (result.status === 'lost') lost.push(`${id}: "${result.line.trim()}" is ${result.found} deep, its source comment ${result.expected}`)
+    if (result.status === 'dropped') lost.push(`${id}: the example lacks the source line "${result.line}"`)
   }
   rows.push({ port: port.slug, ...counts })
   for (const line of lost.slice(0, 10)) console.error(`check-example-indentation: ${port.slug}: ${line}`)
@@ -100,6 +103,6 @@ for (const port of PORTS) {
 console.table(rows)
 if (skipped) console.log(`check-example-indentation: ${skipped} port(s) skipped`)
 if (failed) {
-  console.error(`check-example-indentation: ${failed} example(s) lost indentation`)
+  console.error(`check-example-indentation: ${failed} example(s) lost indentation or lines`)
   process.exit(1)
 }
