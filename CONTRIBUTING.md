@@ -21,7 +21,8 @@ $ uv sync --locked
 Python tooling lives in `pyproject.toml` and `uv.lock`. The `dev` group
 includes `lint` and `testing`; `.python-version` selects the development
 interpreter. Keep dependency changes in the manifest and regenerate the
-lockfile with `uv lock`.
+lockfile with `uv lock`. The project applies a three-day package cooldown
+so local and CI resolution use the same policy.
 The `docs` group supplies the C++ native Sphinx renderer; the Python port
 keeps its own source-bound uv environment.
 
