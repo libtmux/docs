@@ -442,7 +442,10 @@ it('returns a clipped permalink heading to its source box while it owns keyboard
   expect(win.getComputedStyle(heading).clipPath).toBe('inset(36px 0 0)')
   heading.querySelector<HTMLAnchorElement>('a')!.focus()
   heading.setAttribute('data-keyboard-focus', '')
-  expect(win.getComputedStyle(heading).position).toBe('static')
+  // In flow, but still positioned, so its z-index keeps it above the gap cover.
+  expect(win.getComputedStyle(heading).position).toBe('relative')
+  expect(win.getComputedStyle(heading).top).toBe('auto')
+  expect(win.getComputedStyle(heading).zIndex).toBe('17')
   expect(win.getComputedStyle(heading).clipPath).toBe('none')
 })
 
@@ -470,7 +473,9 @@ it.each(['fonts-pending', 'link-hints-pending'])('keeps the member bars in flow 
   expect(page.members!.hasAttribute('data-api-sticky-members')).toBe(true)
   win.document.documentElement.classList.add(pending)
   const bars = [page.heading!, page.group('collections').querySelector('h3')!]
-  expect(bars.map((bar) => win.getComputedStyle(bar).position)).toEqual(['static', 'static'])
+  expect(bars.map((bar) => win.getComputedStyle(bar).position)).toEqual(['relative', 'relative'])
+  expect(bars.map((bar) => win.getComputedStyle(bar).top)).toEqual(['auto', 'auto'])
+  expect(bars.map((bar) => win.getComputedStyle(bar).zIndex)).toEqual(['18', '17'])
   expect(bars.map((bar) => win.getComputedStyle(bar).clipPath)).toEqual(['none', 'none'])
 })
 
@@ -521,7 +526,7 @@ it.each([['#api-members', 'h2'], ['#api-collections', 'h3']] as const)(
       .dispatchEvent(new win.MouseEvent('click', { bubbles: true, cancelable: true, button: 0 }))
     // The browser aligns the target during the click's default action, so it is in flow by then.
     expect(heading.hasAttribute('data-api-arriving')).toBe(true)
-    expect(win.getComputedStyle(heading).position).toBe('static')
+    expect(win.getComputedStyle(heading).position).toBe('relative')
     expect(win.getComputedStyle(heading).clipPath).toBe('none')
     expect(win.getComputedStyle(sibling).position).toBe('sticky')
     page.flush()

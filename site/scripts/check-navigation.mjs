@@ -718,6 +718,20 @@ export async function checkApiStickyHeadings(browser, base, { only, sabotage } =
           if (engine !== 'firefox') assert(stop.shown[0], `${engine}/${size}: backward tab stop ${stops} starts below the sticky bars: ${JSON.stringify(stop)}`)
         }
         assert(stops >= 10, `${engine}/${size}: tabbing backward crosses a stuck group (${stops} stops)`)
+        // Keyboard focus returns the Members bar to flow; the gap cover must not paint over it.
+        await scrollTo(page, tall.top + tall.height / 2)
+        await page.keyboard.press('Shift')
+        await page.evaluate(() => document.querySelector('.api-members > h2 a.api-heading-link').focus())
+        await quiet(page)
+        const owner = await page.evaluate(() => {
+          const heading = document.querySelector('.api-members > h2')
+          const link = heading.querySelector('a.api-heading-link')
+          const rect = link.getBoundingClientRect()
+          const x = rect.left + rect.width / 2
+          return { visible: link.matches(':focus-visible'), link: heading.contains(document.elementFromPoint(x, rect.top + 1)),
+            bar: heading.contains(document.elementFromPoint(x, heading.getBoundingClientRect().top + 4)) }
+        })
+        assert(owner.visible && owner.link && owner.bar, `${engine}/${size}: the focused Members permalink is covered: ${JSON.stringify(owner)}`)
       } finally {
         await context.close()
       }
@@ -804,11 +818,13 @@ export async function checkApiStickyHeadingsFail(browser, base) {
       /backward tab stop \d+ (is not entirely hidden by|starts below) the sticky bars/],
     ['the Navigation API', { only: ['typed'], sabotage: { script: 'Object.defineProperty(window, "navigation", { value: undefined })' } },
       /a typed hash for [\w-]+ lands at the (reading line|start of its group)/],
+    ['a positioned Members bar in flow', { only: ['focus'], sabotage: { css: '.api-members[data-api-sticky-members] > h2:has(:focus-visible) { position: static !important }' } },
+      /the focused Members permalink is covered/],
   ]
   for (const [name, options, failure] of controls) {
     await assert.rejects(() => checkApiStickyHeadings(browser, base, options), failure, `${engine}: the check fails without ${name}`)
   }
-  console.log(`API sticky headings: ${engine} fails without focus clearance and without typed-hash handling`)
+  console.log(`API sticky headings: ${engine} fails without focus clearance, typed-hash handling or a positioned Members bar`)
 }
 
 /** Check document navigation, persisted preferences and controls at each arrival. */

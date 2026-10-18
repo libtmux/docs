@@ -979,22 +979,26 @@ html[data-api-sections-measured] .api-section-links {
     z-index: 17;
     clip-path: inset(var(--api-group-heading-clip) 0 0);
   }
-  /* Keyboard focus returns a heading to its source box. A pointer press must not move it away. */
+  /* Keyboard focus returns a heading to its source box. A pointer press must not move it away.
+     Each in-flow state stays positioned, so its z-index keeps it above the gap cover below. */
   .api-members[data-api-sticky-members] > h2:has(:focus-visible),
   .api-members[data-api-sticky-members] > .api-member-group > h3:has(:focus-visible) {
-    position: static;
+    position: relative;
+    top: auto;
     clip-path: none;
   }
   /* Firefox misplaces scrollIntoView on a sticky heading, so the anchor handler's startup scroll runs with the bars in flow. */
   html:is(.fonts-pending, .link-hints-pending) .api-members[data-api-sticky-members] > h2,
   html:is(.fonts-pending, .link-hints-pending) .api-members[data-api-sticky-members] > .api-member-group > h3 {
-    position: static;
+    position: relative;
+    top: auto;
     clip-path: none;
   }
   /* A link or hash aligns a sticky box where it is stuck, which for a group above the viewport is the end of the group. */
   .api-members[data-api-sticky-members] > h2[data-api-arriving],
   .api-members[data-api-sticky-members] > .api-member-group > h3[data-api-arriving] {
-    position: static;
+    position: relative;
+    top: auto;
     clip-path: none;
   }
   /* The page background closes the gap between the section row and the bars, so scrolled text does not show in it. */
