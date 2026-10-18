@@ -23,7 +23,7 @@ import * as nativeLayoutChecks from '../scripts/check-native-layout.mjs'
 const astroRequire = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
 
 /** Compile the actual signature fragment and its inline components in isolation. */
-async function signatureComponent() {
+async function signatureComponent(typeOnly = false) {
   const { transform } = await import(astroRequire.resolve('@astrojs/compiler-rs'))
   async function compile(relative: string, imports: Record<string, string> = {}, replacement?: string) {
     const file = new URL(relative, import.meta.url)
@@ -43,6 +43,7 @@ async function signatureComponent() {
     '@libtmux/api-model': new URL('../../packages/api-model/src/index.ts', import.meta.url).href,
     '../../lib/code-layout': new URL('../src/lib/code-layout.ts', import.meta.url).href,
   })
+  if (typeOnly) return (await import(/* @vite-ignore */ type)).default
   const source = readFileSync(new URL('../src/components/api/ApiEntry.astro', import.meta.url), 'utf8')
   const start = source.indexOf("<span class:list={['api-native-signature',")
   const end = source.indexOf('\n          ))', start)
@@ -95,6 +96,35 @@ const cases = [
   ['powershell', 'LibTmux\\Connect-TmuxControl'],
 ] as const
 let componentPromise: ReturnType<typeof signatureComponent> | undefined
+
+it.each(['server.Server.new_session', 'libtmux_tokio.server.Server.new_session'])('audits standalone Rust parameter types in %s', async (id) => {
+  const model = JSON.parse(readFileSync(new URL('../src/data/api/rs.json', import.meta.url), 'utf8')) as ApiModel
+  const symbol = model.symbols.find((entry) => entry.id === id)!
+  const annotation = symbol.signatures[0]!.params.find((parameter) => parameter.type === 'impl Into<NewSessionOptions>')!.type!
+  const index = new SymbolIndex(model.symbols, (entry) => `/${entry.id}/`, 'rs')
+  const component = await signatureComponent(true)
+  const container = await experimental_AstroContainer.create()
+  const win = new Window()
+  try {
+    const html = await container.renderToString(component, { props: { type: annotation, index, context: symbol } })
+    win.document.body.innerHTML = html
+    expect(win.document.body.textContent).toBe(annotation)
+    expect(auditSignature(html).code).toBe(0)
+    const option = win.document.querySelector('a[href$="NewSessionOptions/"]')!
+    expect(option).not.toBeNull()
+    const target = model.symbols.find((entry) => `/${entry.id}/` === option.getAttribute('href'))!
+    expect(target.package).toBe(symbol.package)
+
+    const missing = win.document.createElement('span')
+    missing.className = 'api-punct'
+    missing.textContent = 'MissingOptions'
+    option.replaceWith(missing)
+    const broken = auditSignature(win.document.body.innerHTML)
+    expect(broken.code).not.toBe(0)
+    expect(broken.output).toContain('MissingOptions(1)')
+    expect(auditSignature(html).code).toBe(0)
+  } finally { await win.happyDOM.abort() }
+})
 
 it.each(['generated.PaneFields.index', 'Pane.index'])('renders an unresolved Scala NumberField return in %s', async (suffix) => {
   const model = JSON.parse(readFileSync(new URL('../src/data/api/scala.json', import.meta.url), 'utf8')) as ApiModel

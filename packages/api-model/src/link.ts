@@ -66,13 +66,14 @@ const PY_INTERSPHINX: Record<string, string> = {
 
 const PY_DOCS = 'https://docs.python.org/3/'
 
-/** Syntax words in the native declarations rendered as complete signatures. */
+/** Language keywords in declarations and type annotations. */
 const SIGNATURE_KEYWORDS: Record<string, Set<string>> = Object.fromEntries(Object.entries({
   kotlin: 'public private protected internal class interface object fun val var suspend override abstract open final data sealed enum inline reified crossinline noinline vararg in out where companion constructor operator infix tailrec external expect actual by',
   scala: 'def extension val var class trait object type given using implicit inline transparent opaque override abstract final sealed case lazy private protected open infix export derives end',
   fsharp: 'module namespace type member static abstract override interface inherit let rec mutable inline internal private public of with get set new val and when',
   ts: 'readonly keyof typeof infer extends unique private static async function const',
   go: 'func chan map struct interface',
+  rs: 'as const dyn extern fn for impl mut unsafe',
   swift: 'any',
   julia: 'where struct mutable abstract primitive type function end',
   cxx: 'alignas alignof auto class concept const consteval constexpr constinit decltype default delete enum explicit extern final friend inline mutable namespace noexcept operator override register requires static struct template thread_local typedef typename union using virtual volatile',
