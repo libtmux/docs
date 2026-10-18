@@ -58,7 +58,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 ## Setup and run
 
-Use an empty directory on Linux with Git and tmux 3.2a or newer installed.
+Use an empty directory on Linux with Git and tmux 3.3a or newer installed.
 
 This example was checked with Rust 1.97.1.
 

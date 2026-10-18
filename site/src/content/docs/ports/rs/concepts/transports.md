@@ -56,7 +56,7 @@ would return [`Err`](https://doc.rust-lang.org/std/result/enum.Result.html#varia
 ## Setup and run
 
 Use an empty directory with Git, rustup with the 1.97.1 toolchain installed,
-tmux 3.2a or newer, and a Unix environment. The program creates a private socket under `/tmp/libtmux-rs-dev`,
+tmux 3.3a or newer, and a Unix environment. The program creates a private socket under `/tmp/libtmux-rs-dev`,
 starts `cat` in its panes, and stops only the server it created. No existing
 session, socket, or environment variable is required.
 

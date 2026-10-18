@@ -59,7 +59,7 @@
         "code": "PATH\n  remote: source/gems/libtmux\n  specs:\n    libtmux (0.1.0.alpha.1)\n      fiddle (~> 1.1)\n      io-console (~> 0.8)\n      json (~> 3.0.2)\n      securerandom (~> 0.4)\n      tmpdir (~> 0.3)\n\nGEM\n  remote: https://rubygems.org/\n  specs:\n    fiddle (1.1.8)\n    fileutils (1.8.0)\n    io-console (0.9.4)\n    json (3.0.2)\n    securerandom (0.4.1)\n    tmpdir (0.3.1)\n      fileutils\n\nPLATFORMS\n  ruby\n  x86_64-linux\n\nDEPENDENCIES\n  libtmux!\n\nCHECKSUMS\n  fiddle (1.1.8) sha256=7fa8ee3627271497f3add5503acdbc3f40b32f610fc1cf49634f083ef3f32eee\n  fileutils (1.8.0) sha256=8c6b1df54e2540bdb2f39258f08af78853aa70bad52b4d394bbc6424593c6e02\n  io-console (0.9.4) sha256=a403304f32928ee85e56d457b4612ca43f2703b561a3258844992bd24085fbb1\n  json (3.0.2) sha256=8e6d7e7b11384c21230430cef90b71f14849a34a1f4452796670f7c981bd19df\n  libtmux (0.1.0.alpha.1)\n  securerandom (0.4.1) sha256=cc5193d414a4341b6e225f0cb4446aceca8e50d5e1888743fac16987638ea0b1\n  tmpdir (0.3.1) sha256=908e9729bb31ce104ba27fc03cfc8293a7f858a8dc9e3a1d7cfd112919a3513d\n\nBUNDLED WITH\n  4.0.20\n"
       }
     ],
-    "prerequisites": "POSIX shell, Git, tmux 3.2a or newer, Ruby 4.0.7, Bundler 4.0.20 and a C build toolchain for gems.",
+    "prerequisites": "POSIX shell, Git, tmux 3.3a or newer, Ruby 4.0.7, Bundler 4.0.20 and a C build toolchain for gems.",
     "commands": [
       "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-ruby.git \\\n  9b1545562a112353c2c893a1d3e8c0d9b4b51f8d\ngit -C source checkout -q --detach FETCH_HEAD\nbundle config set --local path vendor/bundle\nbundle install --jobs 2",
       "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\nbundle exec ruby quickstart.rb"
@@ -91,7 +91,7 @@
         "code": "local adapter = require(\"libtmux.runtime.luv\")\nlocal uv = require(\"luv\")\n\nlocal function must(value, err)\n    if err ~= nil then error(err, 0) end\n    return value\nend\n\nlocal binary\nfor directory in (os.getenv(\"PATH\") or \"\"):gmatch(\"[^:]+\") do\n    local candidate = uv.fs_realpath(directory .. \"/tmux\")\n    if candidate and uv.fs_access(candidate, \"X\") then\n        binary = candidate\n        break\n    end\nend\nassert(binary, \"tmux must be installed on PATH\")\n\nlocal directory = assert(uv.fs_mkdtemp(\"/tmp/ltx-lua-home-XXXXXX\"))\nlocal socket = directory .. \"/tmux.sock\"\n\nlocal function tmux(arguments)\n    local args = { \"-S\", socket }\n    for _, argument in ipairs(arguments) do\n        args[#args + 1] = argument\n    end\n\n    local timer = assert(uv.new_timer())\n    local process, status\n    process = assert(uv.spawn(binary, {\n        args = args,\n        stdio = { nil, 1, 2 },\n    }, function(code)\n        status = code\n        process:close()\n        timer:stop()\n        timer:close()\n    end))\n    timer:start(10000, 0, function()\n        process:kill(\"sigkill\")\n    end)\n    uv.run()\n    assert(status == 0, \"tmux command failed or timed out\")\nend\n\nlocal ok, failure = xpcall(function()\n    -- This Lua API connects to an existing daemon. Start our own first.\n    tmux({\n        \"-f\", \"/dev/null\", \"new-session\", \"-d\",\n        \"-s\", \"work\", \"-n\", \"main\", \"/bin/sh\",\n    })\n\n    must(adapter.run(function(runtime)\n        local server = must(runtime:connect({\n            binary = binary,\n            socket_path = socket,\n        }):await())\n\n        local created = must(server:new_session({\n            name = \"quickstart\",\n            window_name = \"main\",\n            argv = { \"/bin/sh\" },\n        }):await())\n\n        local logs = must(created.session:new_window({\n            name = \"logs\",\n            argv = { \"/bin/cat\" },\n        }):await())\n        must(logs.pane:split({\n            direction = \"right\",\n            percent = 40,\n            argv = { \"/bin/cat\" },\n        }):await())\n\n        local marker = \"libtmux-ready\"\n        local quoted = \"'\" .. binary:gsub(\"'\", \"'\\\\''\") .. \"'\"\n        local command = (\"printf '\\\\nlibtmux ready\\\\n'; \"\n            .. \"%s wait-for -S %s\"):format(quoted, marker)\n        must(created.pane:send_text(command):await())\n        must(created.pane:send_keys({ \"Enter\" }):await())\n        must(server:command(\n            { \"wait-for\", marker },\n            { timeout = 10000 }\n        ):await())\n\n        local capture = must(created.pane:capture():await())\n        assert(must(capture:text()):find(\n            \"\\nlibtmux ready\\n\", 1, true\n        ), \"pane output was not captured\")\n        print(\"libtmux ready\")\n\n        must(server:close():await())\n        return true\n    end))\nend, debug.traceback)\n\nlocal cleaned, cleanup_error = pcall(function()\n    if uv.fs_stat(socket) then tmux({ \"kill-server\" }) end\n    local removed, _, code = uv.fs_unlink(socket)\n    assert(removed or code == \"ENOENT\", \"could not remove owned socket\")\n    assert(uv.fs_rmdir(directory))\nend)\n\nif not cleaned then io.stderr:write(tostring(cleanup_error), \"\\n\") end\nif not ok then error(failure, 0) end\nassert(cleaned, \"cleanup failed; retained \" .. directory)\n"
       }
     ],
-    "prerequisites": "POSIX shell, Git, tmux 3.2a or newer, Lua 5.5.1, LuaRocks 3.13.0, CMake and a C compiler; setup installs luv 1.52.1-0.",
+    "prerequisites": "POSIX shell, Git, tmux 3.3a or newer, Lua 5.5.1, LuaRocks 3.13.0, CMake and a C compiler; setup installs luv 1.52.1-0.",
     "commands": [
       "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-lua.git \\\n  0395620d362ef75c74cd488f9577afda68922586\ngit -C source checkout -q --detach FETCH_HEAD\nluarocks --tree .rocks install luv 1.52.1-0\n(cd source && luarocks --tree ../.rocks make \\\n  rockspecs/libtmux-scm-1.rockspec)",
       "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\neval \"$(luarocks --tree .rocks path)\"\nlua quickstart.lua"
@@ -127,7 +127,7 @@
         "code": "{\"type\":\"module\",\"private\":true,\"dependencies\":{\"libtmux\":\"file:./source/packages/libtmux\"}}\n"
       }
     ],
-    "prerequisites": "POSIX shell, Git, tmux 3.2a or newer and Bun 1.4.2.",
+    "prerequisites": "POSIX shell, Git, tmux 3.3a or newer and Bun 1.4.2.",
     "commands": [
       "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-ts.git \\\n  46cccfef2a546de55ce8b308249b8c76339089a0\ngit -C source checkout -q --detach FETCH_HEAD\nbun install",
       "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\nbun run quickstart.ts"
@@ -173,7 +173,7 @@
         "code": "[toolchain]\nchannel = \"1.97.1\"\ncomponents = [\"clippy\", \"rust-src\", \"rustfmt\"]\nprofile = \"minimal\"\n"
       }
     ],
-    "prerequisites": "POSIX shell, Git, tmux 3.2a or newer, rustup with Rust 1.97.1 (rust-toolchain.toml), and a C linker.",
+    "prerequisites": "POSIX shell, Git, tmux 3.3a or newer, rustup with Rust 1.97.1 (rust-toolchain.toml), and a C linker.",
     "commands": [
       "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-rs.git \\\n  a6fc2a65674177b92b17fa380757155d2ba150fd\ngit -C source checkout -q --detach FETCH_HEAD\ncargo build --locked --jobs 2",
       "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\ncargo run --quiet --locked"
@@ -209,7 +209,7 @@
         "code": "module example.com/libtmux-home\n\ngo 1.26.0\n\nrequire github.com/libtmux/libtmux-go v0.0.0\n\nreplace github.com/libtmux/libtmux-go => ./source\n"
       }
     ],
-    "prerequisites": "POSIX shell, Git, tmux 3.2a or newer and Go 1.26.5.",
+    "prerequisites": "POSIX shell, Git, tmux 3.3a or newer and Go 1.26.5.",
     "commands": [
       "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-go.git \\\n  6f3df55f8a41999e41225eefb3940545b834e6a2\ngit -C source checkout -q --detach FETCH_HEAD\ngo build -p 2 -o quickstart quickstart.go",
       "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\n./quickstart"

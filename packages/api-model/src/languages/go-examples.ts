@@ -88,7 +88,7 @@ export function attachCompleteGoExamples(
     const blocks: NonNullable<DocBlock['examples']> = [
       {
         lang: 'console',
-        intro: `${example.intro.replace(/\n/g, ' ')} Use Go ${source.goVersion} or newer and tmux 3.2a or newer on a Unix system, with tmux and cat on PATH. In a new directory, fetch the documented library revision:`,
+        intro: `${example.intro.replace(/\n/g, ' ')} Use Go ${source.goVersion} or newer and tmux 3.3a or newer on a Unix system, with tmux and cat on PATH. In a new directory, fetch the documented library revision:`,
         code: `$ git clone https://github.com/${source.repo}.git libtmux-source && \\\n  git -C libtmux-source checkout ${source.revision}\n`,
       },
       {

@@ -13,7 +13,7 @@ tableOfContents: true
 `tmux-workspace` is the TypeScript command for loading and capturing tmux
 workspaces. The [installation guide](../../guides/installation/) builds the
 documented source revision and runs a session on a private socket. The
-walkthroughs require tmux 3.2a or newer.
+walkthroughs require tmux 3.3a or newer.
 
 ## Runtime and execution
 

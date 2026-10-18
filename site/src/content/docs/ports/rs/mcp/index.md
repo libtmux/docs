@@ -12,7 +12,7 @@ sidebar:
 terminal capture, command execution, bounded waits, and a static capability
 resource.
 
-Building requires Rust 1.88 or newer. Running requires tmux 3.2a or newer.
+Building requires Rust 1.88 or newer. Running requires tmux 3.3a or newer.
 Toolsets select inspection, management, execution, and teardown. Read
 `tmux://capabilities` for the effective startup selection.
 

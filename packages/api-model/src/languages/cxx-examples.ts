@@ -61,7 +61,7 @@ export function attachCompleteCxxExamples(
     const blocks: NonNullable<DocBlock['examples']> = [
       {
         lang: 'console',
-        intro: `${example.title}. ${example.description.replace(/\n/g, ' ')} Use Clang 18 with libc++ 18, CMake 3.25 or newer, Ninja, Git, and tmux 3.2a or newer on Linux. In an empty directory, fetch the documented library revision:`,
+        intro: `${example.title}. ${example.description.replace(/\n/g, ' ')} Use Clang 18 with libc++ 18, CMake 3.25 or newer, Ninja, Git, and tmux 3.3a or newer on Linux. In an empty directory, fetch the documented library revision:`,
         code: `$ git clone https://github.com/${source.repo}.git libtmux-source && \\\n  git -C libtmux-source checkout ${source.revision}\n`,
       },
       {
