@@ -2,7 +2,7 @@
 port: go
 route: examples/capture-pane-output
 title: Capture pane output
-description: Run a complete program that captures a pane and waits for a complete output line.
+description: Build a Go program that sends a command to a pane and captures its screen until a complete line appears.
 sidebar:
   label: Capture pane output
   group: Examples
@@ -14,15 +14,118 @@ A pane runs asynchronously: sending a command does not mean its output is
 already on screen. Capture repeatedly until the expected line appears, with a
 deadline so a failed command cannot leave the program waiting forever.
 
-This complete program creates a private tmux server, captures its output, and
-cleans up. Follow the [setup and run instructions](#setup-and-run) below. You need
-tmux and a Unix environment; no existing tmux session is required.
+The steps below build `main.go` one call at a time. Each block is a range of
+lines from [the complete program](#the-complete-program), which creates a
+private tmux server, captures its output, and cleans up. Each step names the
+tmux command behind the call, which the [native version of this
+example](/examples/capture-pane-output/) builds in shell. Follow the [setup and
+run instructions](#setup-and-run) below. You need tmux and a Unix environment;
+no existing tmux session is required.
 
-## Read what's on screen
+## 1. Get a private server
 
-The program sends `printf` with a leading newline, then waits for the complete
-line `libtmux capture ready`. The newline keeps a late shell prompt off that
-line. Matching the whole line avoids mistaking the echoed command for its output.
+`tmux.NewServer` validates a `tmux.ServerOptions` and does not start tmux.
+`ServerOptions.SocketPath` selects the socket, like `-S`, and
+`ServerOptions.ConfigFile` set to `/dev/null` keeps your tmux configuration
+file out, like `-f /dev/null`. If the call fails, the program removes the
+directory it just made.
+
+```go excerpt="main.go" from="os.MkdirTemp" to="=  })"
+```
+
+## 2. Bound the run
+
+Every call takes a `context.Context`. This deadline also ends the capture loop
+in step 8, so a command that never prints fails the program after five seconds.
+
+```go excerpt="main.go" from="ctx, cancel :=" to="defer cancel()"
+```
+
+## 3. Create the session
+
+`Server.NewSession` creates a detached session, like `new-session -d`, and the
+first command to reach the socket starts the server. `tmux.NewSessionRequest`
+carries the session name and the command its pane runs. Its
+`NewSessionRequest.Environment` entry `ENV=/dev/null` keeps `sh` from loading
+a startup file, like `-e ENV=/dev/null`.
+
+```go excerpt="main.go" from="server.NewSession" to="=  }"
+```
+
+## 4. Pick the pane
+
+`Server.Panes` lists every pane on the server. A private server holds only the
+session from step 3, so the first pane is its pane. On a shared server, list
+through the session instead, with `Session.Panes`. The native
+[pane ID step](/examples/attach-and-send-keys/#4-find-the-pane-by-its-id)
+explains why code addresses a pane by identity and not by position.
+
+```go excerpt="main.go" from="panes, err := server.Panes" to="pane := panes[0]"
+```
+
+## 5. Send the command
+
+`Pane.SendKeys` runs `send-keys` and then sends the Enter key, so the shell
+runs the text. `tmux.SendKeysRequest` takes the text as
+`SendKeysRequest.Command`, a pointer because nil means no operand. Set
+`SendKeysRequest.SkipEnter` to type without submitting, or
+`SendKeysRequest.Literal` to turn off key-name lookup. The leading `\n` in the
+`printf` format puts the output on a fresh row.
+
+```go excerpt="main.go" from="command :=" to="=  }"
+```
+
+<a id="read-whats-on-screen"></a>
+
+## 6. Capture the screen
+
+`Pane.Capture` runs `capture-pane` and returns the printed rows as strings. A
+zero `tmux.CapturePaneRequest` captures the visible screen with tmux's default
+text handling.
+
+```go excerpt="main.go" from="lines, err := pane.Capture" to="=    }"
+```
+
+## 7. Match a complete line
+
+The program accepts only a row equal to `libtmux capture ready`. Matching the
+whole line keeps the echoed `printf` command from satisfying the check.
+
+```go excerpt="main.go" from="for _, line := range lines" to="=    }"
+```
+
+<a id="wait-for-text-instead-of-guessing-a-delay"></a>
+<a id="wait-for-output-or-completion"></a>
+
+## 8. Wait, then capture again
+
+The shell may not have run the command yet, so the loop pauses and captures
+again until the deadline from step 2 ends it. The short pause limits polling;
+the observed output, not a fixed delay, decides when the program finishes. A
+capture is a view of the screen and scrollback, so it can miss output that has
+already scrolled away. [Capturing output](/guides/capturing-output/) covers
+capture options, and
+[Sending keys](/guides/sending-keys/#the-race-you-cant-see-from-the-call-site)
+explains why sending and waiting are separate operations.
+
+```go excerpt="main.go" from="select {" to="=    }"
+```
+
+## 9. Clean up
+
+`Server.Kill` stops the server and every session on it. The program registers
+this `defer` right after step 1, so it runs on every return below it, with its
+own one-second context in case the run's deadline has passed. If tmux cannot
+be stopped, the error reports the retained socket path so the server remains
+reachable. Otherwise the program removes the directory.
+
+```go excerpt="main.go" from="defer func() {" to="=  }()"
+```
+
+## The complete program
+
+In the file, step 9's `defer` comes before step 2 so that it covers every call
+after it. Save the program as `main.go`:
 
 ```go title="main.go"
 package main
@@ -106,23 +209,6 @@ func capture() (err error) {
   }
 }
 ```
-
-Cleanup is registered before session creation. If stopping tmux fails, the error
-reports the retained socket path so the server remains reachable.
-
-<a id="wait-for-text-instead-of-guessing-a-delay"></a>
-
-## Wait for output or completion
-
-The program above checks the captured screen for up to five seconds. The short
-pause between checks limits polling; the observed output determines when the loop
-finishes. A tmux capture is a view of the screen and scrollback, so it can miss
-output that has already scrolled away. Use a stream or a completion signal for
-long-running commands when that distinction matters.
-
-[Capturing output](/guides/capturing-output/) covers capture options, while
-[Sending keys](/guides/sending-keys/#the-race-you-cant-see-from-the-call-site)
-explains why sending and waiting are separate operations.
 
 ## Setup and run
 

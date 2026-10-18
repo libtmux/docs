@@ -3286,6 +3286,13 @@
   {
    "port": "go",
    "symbol": "tmux.CapturePaneRequest",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.CapturePaneRequest",
    "page": "/go/latest/guides/capturing-output/",
    "title": "Capturing output",
    "section": "guides"
@@ -3391,6 +3398,20 @@
   {
    "port": "go",
    "symbol": "tmux.NewServer",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.NewServer",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.NewServer",
    "page": "/go/latest/mcp/examples/inspect-sessions/",
    "title": "List sessions through MCP",
    "section": "ports"
@@ -3408,6 +3429,34 @@
    "page": "/go/latest/topics/environment/",
    "title": "Environment",
    "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.NewSessionRequest",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.NewSessionRequest.Environment",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.NewSessionRequest.WindowName",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.NewWindowRequest.Name",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
   },
   {
    "port": "go",
@@ -3433,9 +3482,23 @@
   {
    "port": "go",
    "symbol": "tmux.Pane",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Pane",
    "page": "/go/latest/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Pane.Capture",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
   },
   {
    "port": "go",
@@ -3482,6 +3545,13 @@
   {
    "port": "go",
    "symbol": "tmux.Pane.Enter",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Pane.Enter",
    "page": "/go/latest/guides/sending-keys/",
    "title": "Sending keys",
    "section": "guides"
@@ -3499,6 +3569,13 @@
    "page": "/go/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Pane.OpenObservation",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
   },
   {
    "port": "go",
@@ -3524,6 +3601,13 @@
   {
    "port": "go",
    "symbol": "tmux.Pane.SendKeys",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Pane.SendKeys",
    "page": "/go/latest/guides/sending-keys/",
    "title": "Sending keys",
    "section": "guides"
@@ -3534,6 +3618,13 @@
    "page": "/go/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Pane.Writer",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
   },
   {
    "port": "go",
@@ -3559,9 +3650,23 @@
   {
    "port": "go",
    "symbol": "tmux.PaneObservation",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.PaneObservation",
    "page": "/go/latest/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.PaneObservation.Reader",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
   },
   {
    "port": "go",
@@ -3587,9 +3692,37 @@
   {
    "port": "go",
    "symbol": "tmux.SendKeysRequest",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.SendKeysRequest",
    "page": "/go/latest/guides/sending-keys/",
    "title": "Sending keys",
    "section": "guides"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.SendKeysRequest.Command",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.SendKeysRequest.Literal",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.SendKeysRequest.SkipEnter",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
   },
   {
    "port": "go",
@@ -3650,6 +3783,13 @@
   {
    "port": "go",
    "symbol": "tmux.Server.Kill",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Server.Kill",
    "page": "/go/latest/mcp/examples/inspect-sessions/",
    "title": "List sessions through MCP",
    "section": "ports"
@@ -3678,6 +3818,20 @@
   {
    "port": "go",
    "symbol": "tmux.Server.NewSession",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Server.NewSession",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Server.NewSession",
    "page": "/go/latest/mcp/examples/inspect-sessions/",
    "title": "List sessions through MCP",
    "section": "ports"
@@ -3688,6 +3842,13 @@
    "page": "/go/latest/concepts/server-session-window-pane/",
    "title": "Server, session, window, pane",
    "section": "concepts"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Server.Panes",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
   },
   {
    "port": "go",
@@ -3768,6 +3929,27 @@
   },
   {
    "port": "go",
+   "symbol": "tmux.ServerOptions",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.ServerOptions",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.ServerOptions.ConfigFile",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "go",
    "symbol": "tmux.ServerOptions.SocketName",
    "page": "/go/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
@@ -3776,9 +3958,30 @@
   {
    "port": "go",
    "symbol": "tmux.ServerOptions.SocketPath",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.ServerOptions.SocketPath",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.ServerOptions.SocketPath",
    "page": "/go/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Session",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
   },
   {
    "port": "go",
@@ -3803,10 +4006,24 @@
   },
   {
    "port": "go",
+   "symbol": "tmux.Session.Kill",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
+  },
+  {
+   "port": "go",
    "symbol": "tmux.Session.NewWindow",
    "page": "/go/latest/concepts/server-session-window-pane/",
    "title": "Server, session, window, pane",
    "section": "concepts"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Session.NewWindow",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
   },
   {
    "port": "go",
@@ -3821,6 +4038,13 @@
    "page": "/go/latest/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Session.Panes",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
   },
   {
    "port": "go",
@@ -3950,6 +4174,13 @@
   },
   {
    "port": "go",
+   "symbol": "tmux.SplitPaneRequest.Command",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
+  },
+  {
+   "port": "go",
    "symbol": "tmux.TmuxFilter",
    "page": "/go/latest/concepts/queries/",
    "title": "Filtering and queries",
@@ -3982,6 +4213,13 @@
    "page": "/go/latest/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Window",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
   },
   {
    "port": "go",
@@ -4038,6 +4276,13 @@
    "page": "/go/latest/concepts/server-session-window-pane/",
    "title": "Server, session, window, pane",
    "section": "concepts"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Window.SplitPane",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
   },
   {
    "port": "go",

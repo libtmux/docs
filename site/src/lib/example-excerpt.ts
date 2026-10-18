@@ -38,10 +38,11 @@ export interface ExcerptRequest {
 /**
  * Lines that match an anchor. Text matches any line that contains it; text
  * after a leading `=` matches only a line equal to it, indentation included,
- * which names a closing `}` or `fi` at the depth of the block it ends.
+ * which names a closing `}` or `fi` at the depth of the block it ends. `\t`
+ * in that text stands for a tab.
  */
 const matching = (lines: readonly string[], anchor: string) => {
-  const exact = anchor.startsWith('=') ? anchor.slice(1) : undefined
+  const exact = anchor.startsWith('=') ? anchor.slice(1).replaceAll('\\t', '\t') : undefined
   return lines.flatMap((line, index) => (exact === undefined ? line.includes(anchor) : line === exact) ? [index] : [])
 }
 
