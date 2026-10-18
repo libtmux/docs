@@ -91,9 +91,9 @@ describe('native tmux prose ownership', () => {
     const markdown = markdownOf(entry)
     for (const name of names) {
       expect(markdown).toContain(`\`${name}\``)
-      // A tmux format variable may link to the manual; never to a library.
+      // A tmux format variable may link to the manual or the catalog; never to a library.
       for (const [, href] of markdown.matchAll(new RegExp(`\\[\`${name}\`\\]\\(([^)]*)\\)`, 'g'))) {
-        expect(href, name).toContain('/tmux/latest/manual/')
+        expect(href, name).toMatch(/\/tmux\/latest\/(?:manual|catalog)\//)
       }
     }
     expect(fences(markdown)).toEqual(fences(entry.body!))

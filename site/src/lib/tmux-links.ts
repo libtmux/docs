@@ -1,5 +1,7 @@
 import type { DocSpan, LinkTarget } from '@libtmux/api-model'
-import { tmuxManual, tmuxManualEntityHref, tmuxManualEntities, type TmuxEntityKind } from './tmux-manual-data'
+import { tmuxCatalogHref } from './tmux-catalog'
+import { tmuxCatalogMentions, tmuxCatalogProseReferences } from './tmux-catalog-links'
+import { tmuxManual, tmuxManualEntityHref, type TmuxEntityKind } from './tmux-manual-data'
 
 export type { TmuxEntityKind } from './tmux-manual-data'
 
@@ -7,10 +9,11 @@ export type { TmuxEntityKind } from './tmux-manual-data'
  * The one place a tmux name becomes a destination.
  *
  * Every command, option, hook and format-variable link resolves here, and an
- * unknown name has none. Swap the body to move them all to another reference.
+ * unknown name has none. Commands live in the CLI Manual; options, hooks and
+ * format variables live in the catalog, which links back to the manual entry.
  */
 export function tmuxEntityHref(kind: TmuxEntityKind, name: string, version = 'latest'): string | undefined {
-  return tmuxManualEntityHref(kind, name, version)
+  return kind === 'command' ? tmuxManualEntityHref(kind, name, version) : tmuxCatalogHref(kind, name, version)
 }
 
 type Command = ReturnType<typeof tmuxManual>['commands'][number]
@@ -120,63 +123,25 @@ export function mergeMentions<T extends Mention>(preferred: T[], others: T[]): T
   return [...preferred, ...free].sort((a, b) => a.start - b.start)
 }
 
-// Plain words stay plain: only a hyphenated option or hook and an underscored
-// format variable are unlikely enough in running code to claim without context.
-const namedEntities = new WeakMap<ReturnType<typeof tmuxManual>, Map<string, Exclude<TmuxEntityKind, 'command'>>>()
-function entityKinds(version: string) {
-  const manual = tmuxManual(version)
-  let kinds = namedEntities.get(manual)
-  if (!kinds) {
-    kinds = new Map(tmuxManualEntities(version)
-      .filter((entity) => entity.name.includes(entity.kind === 'format' ? '_' : '-'))
-      .map((entity) => [entity.name, entity.kind]))
-    namedEntities.set(manual, kinds)
-  }
-  return kinds
+/** Neighbouring text that settles which kind a single word or shared name means. */
+export interface TmuxMentionContext {
+  before?: string
+  after?: string
 }
-
-/** Whether an offset sits inside the braces of a `#{...}` format expression. */
-function insideFormat(text: string, offset: number): boolean {
-  const groups: boolean[] = []
-  for (let index = 0; index < offset; index++) {
-    if (text[index] === '{') groups.push(text[index - 1] === '#')
-    else if (text[index] === '}') groups.pop()
-  }
-  return groups.includes(true)
-}
-
-/**
- * A format variable is a mention when it is the whole span or part of a
- * format expression, quoted or not. A name in a URI template or a call is
- * something else.
- */
-function formatVariable(text: string, start: number, end: number): boolean {
-  if (text.trim() === text.slice(start, end)) return true
-  return insideFormat(text, start) && /[{?!,:]/.test(text[start - 1] ?? '') && !/^[\w/-]|^\.[A-Za-z]/.test(text.slice(end))
-}
-
-const FORMAT_NAME = /[a-z][a-z0-9]*(?:_[a-z0-9]+)+/g
 
 /**
  * Locate every documented tmux name. Commands also match in prose; options,
- * hooks and format variables only inside code, where a name is deliberate.
+ * hooks and format variables only where a name is deliberate: inside code,
+ * in quotes, or in a `#{...}` expression. Which names those are, and which
+ * stay plain, is `tmux-catalog-links.ts`.
  */
-export function tmuxMentions(text: string, { code = false, version = 'latest' } = {}): TmuxReference[] {
+export function tmuxMentions(text: string, { code = false, version = 'latest', before, after }: { code?: boolean; version?: string } & TmuxMentionContext = {}): TmuxReference[] {
   const found: TmuxReference[] = tmuxCommandMentions(text, { code, version })
     .map(({ command, ...mention }) => ({ ...mention, kind: 'command', name: command }))
-  if (!code || !/[-_]/.test(text)) return found
-  const kinds = entityKinds(version)
-  const taken = new Set(found.map((mention) => mention.start))
-  const add = (kind: Exclude<TmuxEntityKind, 'command'>, name: string, start: number) => {
-    const href = tmuxEntityHref(kind, name, version)
-    if (href && !taken.has(start)) found.push({ start, end: start + name.length, text: name, kind, name, href })
-  }
-  for (const token of tokenize(text, true)) {
-    const kind = kinds.get(token.text)
-    if (kind && kind !== 'format' && standalone(text, token)) add(kind, token.text, token.start)
-  }
-  for (const match of text.matchAll(FORMAT_NAME)) {
-    if (kinds.get(match[0]) === 'format' && formatVariable(text, match.index!, match.index! + match[0].length)) add('format', match[0], match.index!)
+  const names = code ? tmuxCatalogMentions(text, { code, version, before, after }) : tmuxCatalogProseReferences(text, version)
+  for (const mention of names) {
+    if (found.some((other) => other.start < mention.end && mention.start < other.end)) continue
+    found.push({ start: mention.start, end: mention.end, text: mention.text, kind: mention.kind, name: mention.name, href: tmuxEntityHref(mention.kind, mention.name, version)! })
   }
   return found.sort((a, b) => a.start - b.start)
 }
@@ -185,11 +150,12 @@ type LinkedDocSpan = DocSpan & { link?: LinkTarget }
 
 /** Add native tmux links after language API and authored-link resolution. */
 export function linkTmuxDoc(spans: LinkedDocSpan[], version = 'latest'): LinkedDocSpan[] {
-  return spans.flatMap((span): LinkedDocSpan[] => {
+  const wording = (span?: LinkedDocSpan) => span && ('text' in span ? span.text : 'label' in span ? span.label : '') || ''
+  return spans.flatMap((span, index): LinkedDocSpan[] => {
     if (!['text', 'code', 'ref'].includes(span.kind) || span.link) return [span]
     const text = 'text' in span ? span.text : span.label
     const code = span.kind !== 'text'
-    const mentions = tmuxMentions(text, { code, version })
+    const mentions = tmuxMentions(text, { code, version, before: wording(spans[index - 1]), after: wording(spans[index + 1]) })
     if (!mentions.length) return [span]
     if (code && mentions.length === 1) return [{ kind: 'link', text, code: true, href: mentions[0].href }]
     const linked: LinkedDocSpan[] = []
@@ -226,6 +192,6 @@ export function mentionMarkdown(text: string, code: boolean, mentions: Mention[]
 }
 
 /** Link one Markdown prose node's tmux names. */
-export function tmuxMentionMarkdown(text: string, code: boolean, project?: (href: string) => string): string | undefined {
-  return mentionMarkdown(text, code, tmuxMentions(text, { code }), project)
+export function tmuxMentionMarkdown(text: string, code: boolean, project?: (href: string) => string, context: TmuxMentionContext = {}): string | undefined {
+  return mentionMarkdown(text, code, tmuxMentions(text, { code, ...context }), project)
 }

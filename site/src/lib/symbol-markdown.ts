@@ -6,6 +6,7 @@ import mentions from '../data/mentions.json'
 import { PORT_NAME, referenceAlternatives } from './api-models'
 import { apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, hasScalarMembers, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures } from './api-sections'
 import { tmuxCommandsFor, tmuxManualUrl } from './tmux-manual-data'
+import { CATALOG_KINDS, tmuxCatalogKindsForSymbol, tmuxCatalogUrl } from './tmux-catalog'
 import { tmuxCommandMentions, tmuxMentionMarkdown } from './tmux-links'
 import { productApiIndex } from './product-api'
 import { defaultVersionFor } from './versions'
@@ -30,6 +31,7 @@ export interface MarkdownContext {
   index?: SymbolIndex
   hrefFor?: (symbol: ApiSymbol) => string
   manualLinks?: { name: string; href: string }[]
+  catalogLinks?: { name: string; href: string }[]
   paths?: ApiRelationshipPath[]
   symbol: ApiSymbol
   /** Absolute URL of the HTML page this describes. */
@@ -79,7 +81,8 @@ function proseMarkdown(markdown: string, index: SymbolIndex, symbol: ApiSymbol, 
       if (htmlDepth) return
       const start = node.position!.start.offset!
       const end = node.position!.end.offset!
-      const tmux = tmuxMentionMarkdown(node.value, node.type === 'inlineCode')
+      const tmux = tmuxMentionMarkdown(node.value, node.type === 'inlineCode', undefined,
+        { before: markdown.slice(Math.max(0, start - 48), start), after: markdown.slice(end, end + 48) })
       if (tmux && (node.type === 'inlineCode' || markdown.slice(start, end) === node.value)) {
         // A command claims its span; a library symbol outranks an option, hook or format variable.
         if (linkApi && node.type === 'inlineCode' && !tmuxCommandMentions(node.value, { code: true }).length) {
@@ -173,6 +176,9 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   const commands = ctx.manualLinks ?? (port ? tmuxCommandsFor(port, symbol.publicId ?? symbol.id)
     .map((command) => ({ ...command, href: tmuxManualUrl('latest', command.name) })) : [])
   for (const command of commands) out.push(`tmux command: [\`${command.name}\`](${command.href})`, '')
+  const catalog = ctx.catalogLinks ?? (port && !ctx.manualLinks ? tmuxCatalogKindsForSymbol(port, symbol)
+    .map((kind) => ({ name: CATALOG_KINDS[kind].label, href: tmuxCatalogUrl('latest', kind) })) : [])
+  if (catalog.length) out.push(`tmux catalog: ${catalog.map((entry) => `[${entry.name}](${entry.href})`).join(', ')}`, '')
   if (symbol.apiScope === 'supporting') {
     out.push('This type appears in public signatures. It is not a package entry point.', '')
   }

@@ -83,7 +83,7 @@ export function linkProseMarkdown(raw: string, port?: string, product?: ApiProdu
       // A heading names its own section, so it links nothing; neither does the place that defines a name.
       const own = parent?.type === 'heading' ? [] : names.mentions
       if (!own.length && (names.defined || names.mentions.length)) return SKIP
-      const tmux = tmuxMentions(node.value, { code })
+      const tmux = tmuxMentions(node.value, { code, before: body.slice(Math.max(0, start - 48), start), after: body.slice(end, end + 48) })
       const native = mentionMarkdown(node.value, code, mergeMentions(own, mergeMentions(tmux,
         code && owner && product === 'mcp' ? protocolRunMentions(link, node.value, owner) : [])), project.resolved)
       if (native && (code || body.slice(start, end) === node.value)) {

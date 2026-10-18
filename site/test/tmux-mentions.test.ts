@@ -12,7 +12,7 @@ import { createLinkPreviewPolicy } from '../src/lib/link-preview-paint'
 import { linkProseMarkdown } from '../src/lib/prose-markdown'
 import { linkTmuxDoc, tmuxEntityHref, tmuxMentions } from '../src/lib/tmux-links'
 import { linkTmuxManualEntries } from '../src/lib/tmux-manual'
-import { TMUX_VERSIONS, tmuxManual, tmuxManualEntities, tmuxManualRoutes, tmuxManualUrl } from '../src/lib/tmux-manual-data'
+import { TMUX_VERSIONS, tmuxManual, tmuxManualEntities, tmuxManualEntityHref, tmuxManualRoutes, tmuxManualUrl } from '../src/lib/tmux-manual-data'
 import { GET, getStaticPaths } from '../src/pages/[...slug].preview.json'
 import { rehypeApiLinks } from '../src/plugins/rehype-api-links'
 
@@ -31,10 +31,10 @@ const SENTENCE = 'A control-mode connection is also a client. It appears in `lis
 describe('tmux mentions render like API mentions', () => {
   it.each([
     { name: 'list-clients', kind: 'command', mark: '$', href: '/tmux/latest/manual/list-clients/' },
-    { name: 'session_attached', kind: 'format', mark: '#', href: '/tmux/latest/manual/full/#session_attached' },
-    { name: 'destroy-unattached', kind: 'option', mark: 'o', href: '/tmux/latest/manual/full/#options-destroy-unattached' },
-    { name: 'session-created', kind: 'hook', mark: 'h', href: '/tmux/latest/manual/full/#hooks-session-created' },
-  ])('badges `$name` as a $kind with its manual destination', async ({ name, kind, mark, href }) => {
+    { name: 'session_attached', kind: 'format', mark: '#', href: '/tmux/latest/catalog/formats/session_attached/' },
+    { name: 'destroy-unattached', kind: 'option', mark: 'o', href: '/tmux/latest/catalog/options/destroy-unattached/' },
+    { name: 'session-created', kind: 'hook', mark: 'h', href: '/tmux/latest/catalog/hooks/session-created/' },
+  ])('badges `$name` as a $kind with its catalog or manual destination', async ({ name, kind, mark, href }) => {
     const tree = await render(`Read \`${name}\`.`)
     const anchor = select('a.tmux-mention', tree)!
     expect(anchor.properties.href).toBe(href)
@@ -65,7 +65,7 @@ describe('tmux mentions render like API mentions', () => {
     const code = select('code', tree)!
     expect(selectAll('a', code).map((anchor) => [text(anchor), anchor.properties.href])).toEqual([
       ['set-option', '/tmux/latest/manual/set-option/'],
-      ['destroy-unattached', '/tmux/latest/manual/full/#options-destroy-unattached'],
+      ['destroy-unattached', '/tmux/latest/catalog/options/destroy-unattached/'],
     ])
     expect(selectAll('.api-link-kind', tree)).toHaveLength(0)
     expect(text(code)).toBe('tmux set-option -g destroy-unattached on')
@@ -77,13 +77,13 @@ describe('tmux mentions render like API mentions', () => {
     const exported: string[] = []
     visit(fromMarkdown(linkProseMarkdown(source, 'rs')), 'link', (node) => { exported.push(node.url) })
     expect(hrefs[0]).toMatch(/^\/rs\/latest\/(?:workspace\/)?reference\//)
-    expect(hrefs[1]).toBe('/tmux/latest/manual/full/#session_attached')
+    expect(hrefs[1]).toBe('/tmux/latest/catalog/formats/session_attached/')
     expect(exported).toEqual(hrefs)
   })
 
   it('links names the manual documents and leaves everything else plain', async () => {
     const tree = await render('Keep `session_unknown`, `destroy-nothing`, `mouse`, `pid` and session_attached in prose. Link `session_attached`.', 'go')
-    expect(selectAll('a', tree).map((anchor) => anchor.properties.href)).toEqual(['/tmux/latest/manual/full/#session_attached'])
+    expect(selectAll('a', tree).map((anchor) => anchor.properties.href)).toEqual(['/tmux/latest/catalog/formats/session_attached/'])
     expect(selectAll('code', tree).map(text)).toEqual(['session_unknown', 'destroy-nothing', 'mouse', 'pid', 'session_attached'])
   })
 
@@ -116,9 +116,13 @@ describe('tmux name detection', () => {
 
   it.each([
     'session_unknown', 'destroy-nothing', 'mouse', 'pid', 'tmux://panes/{pane_id}', 'capture_pane(pane_id)',
-    'pane.session_attached', '$session_attached', '--destroy-unattached', '/tmp/destroy-unattached', '"destroy-unattached"',
+    'pane.session_attached', '$session_attached', '--destroy-unattached', '/tmp/destroy-unattached', '"destroy-unattached" and more',
   ])('does not link `%s`', (code) => {
     expect(tmuxMentions(code, { code: true })).toEqual([])
+  })
+
+  it.each(['"destroy-unattached"', "'session-created'", 'after-new-window[0]'])('links the whole literal `%s`', (code) => {
+    expect(tmuxMentions(code, { code: true })).toHaveLength(1)
   })
 
   it('claims options, hooks and format variables only in code', () => {
@@ -132,7 +136,7 @@ describe('tmux name detection', () => {
       { kind: 'code', text: 'session_attached' }, { kind: 'code', text: 'session_unknown' },
       { kind: 'text', text: 'session_attached is only a word here' },
     ])).toEqual([
-      { kind: 'link', text: 'session_attached', code: true, href: '/tmux/latest/manual/full/#session_attached' },
+      { kind: 'link', text: 'session_attached', code: true, href: '/tmux/latest/catalog/formats/session_attached/' },
       { kind: 'code', text: 'session_unknown' },
       { kind: 'text', text: 'session_attached is only a word here' },
     ])
@@ -142,13 +146,20 @@ describe('tmux name detection', () => {
 describe('tmux entity destinations', () => {
   it('resolves every kind through one function and nothing the release lacks', () => {
     expect(tmuxEntityHref('command', 'list-clients')).toBe('/tmux/latest/manual/list-clients/')
-    expect(tmuxEntityHref('format', 'session_attached')).toBe('/tmux/latest/manual/full/#session_attached')
-    expect(tmuxEntityHref('option', 'destroy-unattached')).toBe('/tmux/latest/manual/full/#options-destroy-unattached')
-    expect(tmuxEntityHref('hook', 'session-created')).toBe('/tmux/latest/manual/full/#hooks-session-created')
+    expect(tmuxEntityHref('format', 'session_attached')).toBe('/tmux/latest/catalog/formats/session_attached/')
+    expect(tmuxEntityHref('option', 'destroy-unattached')).toBe('/tmux/latest/catalog/options/destroy-unattached/')
+    expect(tmuxEntityHref('hook', 'session-created')).toBe('/tmux/latest/catalog/hooks/session-created/')
     expect(tmuxEntityHref('format', 'session_unknown')).toBeUndefined()
     expect(tmuxEntityHref('option', 'session_attached')).toBeUndefined()
-    expect(tmuxEntityHref('option', 'pane-scrollbars', '3.7c')).toBe('/tmux/3.7c/manual/full/#options-pane-scrollbars')
+    expect(tmuxEntityHref('option', 'pane-scrollbars', '3.7c')).toBe('/tmux/3.7c/catalog/options/pane-scrollbars/')
     expect(tmuxEntityHref('option', 'pane-scrollbars', '3.2a')).toBeUndefined()
+  })
+
+  it('keeps the manual destination of each name one function away', () => {
+    expect(tmuxManualEntityHref('format', 'session_attached')).toBe('/tmux/latest/manual/full/#session_attached')
+    expect(tmuxManualEntityHref('option', 'destroy-unattached')).toBe('/tmux/latest/manual/full/#options-destroy-unattached')
+    expect(tmuxManualEntityHref('hook', 'session-created')).toBe('/tmux/latest/manual/full/#hooks-session-created')
+    expect(tmuxManualEntityHref('option', 'pane-scrollbars', '3.2a')).toBeUndefined()
   })
 
   it.each(TMUX_VERSIONS)('anchors every %s option, hook and format variable on the rendered manual', (version) => {
@@ -164,7 +175,8 @@ describe('tmux entity destinations', () => {
       const node = ids.get(entity.anchor)
       expect(node?.tagName, `${entity.kind} ${entity.name}`).toBe(entity.kind === 'format' ? 'tr' : 'dt')
       expect(text(node)).toContain(entity.name)
-      expect(tmuxEntityHref(entity.kind, entity.name, version)).toBe(`${tmuxManualUrl(version, 'full')}#${entity.anchor}`)
+      expect(tmuxManualEntityHref(entity.kind, entity.name, version)).toBe(`${tmuxManualUrl(version, 'full')}#${entity.anchor}`)
+      expect(tmuxEntityHref(entity.kind, entity.name, version), `${entity.kind} ${entity.name} has a catalog page`).toContain(`/tmux/${version === 'latest' ? 'latest' : version}/catalog/`)
       expect(commands.has(entity.name), `${entity.name} is also a command`).toBe(false)
       expect(seen.has(entity.name), `${entity.name} is documented under two kinds`).toBe(false)
       seen.add(entity.name)
@@ -304,7 +316,7 @@ describe('workspace and MCP mentions render like tmux mentions', () => {
 
     it('names a command on any page by program, and a bare name only on a workspace page', async () => {
       const source = 'Run `tmuxp load`. Set `window_name` and `load`.'
-      expect(hrefs(await page(source, { port: 'py', route: 'guides/getting-started' }))).toEqual(['/py/latest/workspace/cli/load/', '/tmux/latest/manual/full/#window_name'])
+      expect(hrefs(await page(source, { port: 'py', route: 'guides/getting-started' }))).toEqual(['/py/latest/workspace/cli/load/', '/tmux/latest/catalog/formats/window_name/'])
       expect(hrefs(await workspace(source, 'py', 'workspace/guides')))
         .toEqual(['/py/latest/workspace/cli/load/', '/py/latest/workspace/configuration/windows/#window-keys-window-name', '/py/latest/workspace/cli/load/'])
     })
@@ -333,7 +345,7 @@ describe('workspace and MCP mentions render like tmux mentions', () => {
 
     it('keeps tmux and the library on pages that are not workspace pages', async () => {
       const found = hrefs(await page('Set `session_name`.', { port: 'java', route: 'guides/getting-started' }))
-      expect(found).toEqual(['/tmux/latest/manual/full/#session_name'])
+      expect(found).toEqual(['/tmux/latest/catalog/formats/session_name/'])
     })
 
     it.each([

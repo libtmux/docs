@@ -284,7 +284,8 @@ export function rehypeApiLinks() {
           // A heading names its own section, so it links nothing; neither does the place that defines a name.
           const own = headings ? [] : names.mentions
           if (!own.length && (names.defined || names.mentions.length)) { scope.text += text; continue }
-          const tmux = tmuxMentions(text, { code: true })
+          const next = kids[i + 1]
+          const tmux = tmuxMentions(text, { code: true, before: scope.text, after: next?.type === 'text' ? next.value : '' })
           const mentions = mergeMentions(own, mergeMentions(tmux, product === 'mcp' && pagePort ? protocolRunMentions(link, text, pagePort) : []))
           // One name takes the whole span; several split it and keep its code font.
           const linkMentions = () => {

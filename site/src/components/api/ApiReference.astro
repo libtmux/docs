@@ -53,6 +53,7 @@ export interface SourceReferenceContext {
   index: SymbolIndex
   pagePorts: PagePortLink[]
   manualLinks?: { name: string; href: string }[]
+  catalogLinks?: { name: string; href: string }[]
   paths?: ApiRelationshipPath[]
 }
 
@@ -761,6 +762,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                 port={port}
                 language={language}
                 manualLinks={source?.manualLinks}
+                catalogLinks={source?.catalogLinks}
                 heading={isMemberOwner(owner)}
                 member={!isMemberOwner(owner)}
                 showSummary={false}

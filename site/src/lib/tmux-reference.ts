@@ -9,6 +9,7 @@ import { apiRelationshipPath } from './api-relationships'
 import { PORTS } from './ports'
 import { withPortRoot } from './site-root'
 import { buildsTmuxDocumentation, TMUX_VERSIONS, tmuxApiLinks, tmuxManualUrl } from './tmux-manual-data'
+import { tmuxCatalogLinksForSource } from './tmux-catalog'
 
 export interface TmuxSourceModel extends SourceApiModel {
   commands: { name: string; entry: string; callback: string }[]
@@ -227,6 +228,7 @@ export function tmuxReferenceContext(version: string, symbol?: ApiSymbol) {
     ],
     ...referenceNavigation, index: tmuxReferenceIndex(version), paths: tmuxReferencePaths(version),
     manualLinks: commands,
+    catalogLinks: symbol ? tmuxCatalogLinksForSource(version, symbol.name) : [],
     pagePorts: PORTS.map((port) => ({ port: port.slug, name: port.name,
       links: [...new Set(equivalents.filter((entry) => entry.name === port.name).map((entry) => entry.href))]
         .map((href) => ({ href })),

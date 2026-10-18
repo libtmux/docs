@@ -3,7 +3,7 @@ import { productApiHref } from './product-api'
 import { apiGlossary } from './api-glossary'
 import { codeLang, highlightTokens, type CodeHighlight } from './highlight'
 import { tmuxEntityHref } from './tmux-links'
-import { tmuxManual, tmuxManualEntities, tmuxManualUrl, type TmuxManualEntity } from './tmux-manual-data'
+import { tmuxManual, tmuxManualEntities, tmuxManualEntityHref, tmuxManualUrl, type TmuxManualEntity } from './tmux-manual-data'
 
 /** Small, inert metadata shared by reference links and their preview cards. */
 export interface LinkPreview {
@@ -57,7 +57,7 @@ function tmuxEntityPreview(entity: TmuxManualEntity, version: string): LinkPrevi
   return {
     schema: 1, title: entity.name, kind: entity.kind, description: entity.summary || entity.detail, detail: entity.detail,
     signature: entity.usage, signatureLanguage: entity.usage ? 'tmux-usage' : undefined,
-    href: tmuxEntityHref(entity.kind, entity.name, version)!, actionLabel: MANUAL_ACTION,
+    href: tmuxManualEntityHref(entity.kind, entity.name, version)!, actionLabel: MANUAL_ACTION,
   }
 }
 

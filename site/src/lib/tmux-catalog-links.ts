@@ -134,6 +134,7 @@ function commandLineMentions(text: string, lookup: Lookup, context: MentionConte
  */
 function formatMentions(text: string, lookup: Lookup, version: string): CatalogMention[] {
   const found: CatalogMention[] = []
+  if (!text.includes('#{')) return found
   for (const match of text.matchAll(/[a-z][a-z0-9_-]*/g)) {
     const start = match.index!
     const end = start + match[0].length
@@ -155,6 +156,7 @@ const QUOTED_NAME = /(?<![\w'"])(["'])([a-z][a-z0-9]*(?:[-_][a-z0-9]+)+)\1(?![\w
  * bare word in a sentence is still only a word.
  */
 export function tmuxCatalogProseReferences(text: string, version = 'latest'): CatalogMention[] {
+  if (!text.includes('#{') && !/["']/.test(text)) return []
   const lookup = lookupFor(version)
   const found = formatMentions(text, lookup, version)
   for (const match of text.matchAll(QUOTED_NAME)) {

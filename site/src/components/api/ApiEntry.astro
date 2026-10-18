@@ -15,6 +15,7 @@ import ApiType from './ApiType.astro'
 import { asideFor } from '../../lib/aside'
 import { apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMethodDetails, anonymousDeclarationLabel, nativeSignatureText as unformattedNativeSignatureText, parameterBindingText, usesNativeSignatures } from '../../lib/api-sections'
 import { tmuxCommandsFor, tmuxManualUrl } from '../../lib/tmux-manual-data'
+import { CATALOG_KINDS, tmuxCatalogKindsForSymbol, tmuxCatalogUrl } from '../../lib/tmux-catalog'
 import ApiFieldOverloads from './ApiFieldOverloads.astro'
 import ApiCommandParameters from './ApiCommandParameters.astro'
 import ApiSignatureParameters from './ApiSignatureParameters.astro'
@@ -43,6 +44,8 @@ interface Props {
   /** Declaration syntax, independent of library-port identity. */
   language?: string
   manualLinks?: { name: string; href: string }[]
+  /** Catalog pages for a declaration in a source reference. */
+  catalogLinks?: { name: string; href: string }[]
   /** Override equivalent links for a product or version context. */
   alternativesFor?: (symbol: ApiSymbol) => ReturnType<typeof referenceAlternatives>
   /**
@@ -73,7 +76,7 @@ interface Props {
   /** Previous fragment for the same declaration. */
   legacyId?: string
 }
-const { symbol, index, sourceUrl, port, language = port, manualLinks, alternativesFor, heading = false, member = false,
+const { symbol, index, sourceUrl, port, language = port, manualLinks, catalogLinks, alternativesFor, heading = false, member = false,
   showSummary = true, showBases = true, legacyId, nameHref } = Astro.props as Props
 const anchor = symbol.publicId ?? symbol.id
 const kind = symbol.kind
@@ -178,6 +181,8 @@ const references = symbol.doc?.references ?? []
  */
 const mentions = port ? mentionsOf(port, symbol.id) : []
 const tmuxCommands = manualLinks ?? (port ? tmuxCommandsFor(port, anchor).map((command) => ({ ...command, href: tmuxManualUrl('latest', command.name) })) : [])
+// Members that wrap options or hooks lead to the catalog of what they take.
+const catalogEntries = catalogLinks ?? (port && !manualLinks ? tmuxCatalogKindsForSymbol(port, symbol).map((kind) => ({ name: CATALOG_KINDS[kind].label, href: tmuxCatalogUrl('latest', kind) })) : [])
 const mentionSections = [...new Set(mentions.map((m) => m.section ?? 'docs'))].sort()
 
 const badges = [
@@ -271,6 +276,7 @@ const hasBody =
   methods.length > 0 ||
   hasFields ||
   tmuxCommands.length > 0 ||
+  catalogEntries.length > 0 ||
   elsewhere.length > 0
 ---
 
@@ -671,6 +677,13 @@ const hasBody =
       {tmuxCommands.map((command, i) => <>
         {i > 0 && ', '}
         <a href={command.href}><code>{command.name}</code></a>
+      </>)}
+    </p>}
+    {catalogEntries.length > 0 && <p class="gp-sphinx-api-mentions">
+      <span class="gp-sphinx-api-mentions-label">tmux catalog</span>
+      {catalogEntries.map((entry, i) => <>
+        {i > 0 && ', '}
+        <a href={entry.href}>{entry.name}</a>
       </>)}
     </p>}
     {
