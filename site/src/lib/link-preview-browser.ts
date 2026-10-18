@@ -24,6 +24,7 @@ function validPreview(value: unknown): value is LinkPreview {
   const data = value as Partial<LinkPreview>
   return data.schema === 1 && typeof data.title === 'string' && typeof data.description === 'string'
     && typeof data.href === 'string' && (!data.detail || typeof data.detail === 'string')
+    && (!data.actionLabel || typeof data.actionLabel === 'string')
     && (!data.signature || typeof data.signature === 'string')
 }
 
@@ -91,6 +92,7 @@ export function initLinkPreviews() {
   let fullTitle = '', shortTitle = ''
   const title = panel.querySelector<HTMLElement>('[data-preview-title]')!
   const expandTitle = panel.querySelector<HTMLButtonElement>('[data-preview-expand]')!
+  const defaultAction = panel.querySelector('[data-preview-open]')!.textContent
   const renderTitle = (expanded: boolean) => {
     title.replaceChildren(...wordBreak(expanded ? fullTitle : shortTitle).flatMap((part, index) =>
       index ? [document.createElement('wbr'), document.createTextNode(part)] : [document.createTextNode(part)]))
@@ -162,6 +164,7 @@ export function initLinkPreviews() {
       renderPreviewSignature(panel.querySelector<HTMLElement>('[data-preview-signature]')!, preview)
       const open = panel.querySelector<HTMLAnchorElement>('[data-preview-open]')!
       open.href = destination.href
+      open.textContent = preview.actionLabel ?? defaultAction
       panel.setAttribute('aria-label', `${preview.title} preview`)
       link.setAttribute('aria-details', panel.id)
       panel.showPopover({ source: link }); shown = true; place()

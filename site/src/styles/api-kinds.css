@@ -27,6 +27,18 @@
   --api-kind-typealias-bg: #f5f3ff;
   --api-kind-typealias-fg: #6d28d9;
   --api-kind-typealias-border: #8b5cf6;
+  --api-kind-command-bg: #fff7ed;
+  --api-kind-command-fg: #c2410c;
+  --api-kind-command-border: #f97316;
+  --api-kind-option-bg: #f7fee7;
+  --api-kind-option-fg: #4d7c0f;
+  --api-kind-option-border: #84cc16;
+  --api-kind-hook-bg: #fdf4ff;
+  --api-kind-hook-fg: #a21caf;
+  --api-kind-hook-border: #d946ef;
+  --api-kind-format-bg: #fffbeb;
+  --api-kind-format-fg: #a16207;
+  --api-kind-format-border: #eab308;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -56,6 +68,18 @@
     --api-kind-typealias-bg: #2e1065;
     --api-kind-typealias-fg: #c4b5fd;
     --api-kind-typealias-border: #a78bfa;
+    --api-kind-command-bg: #431407;
+    --api-kind-command-fg: #fdba74;
+    --api-kind-command-border: #fb923c;
+    --api-kind-option-bg: #1a2e05;
+    --api-kind-option-fg: #bef264;
+    --api-kind-option-border: #a3e635;
+    --api-kind-hook-bg: #4a044e;
+    --api-kind-hook-fg: #f0abfc;
+    --api-kind-hook-border: #e879f9;
+    --api-kind-format-bg: #422006;
+    --api-kind-format-fg: #fde047;
+    --api-kind-format-border: #facc15;
   }
 }
 
@@ -85,6 +109,18 @@
   --api-kind-typealias-bg: #2e1065;
   --api-kind-typealias-fg: #c4b5fd;
   --api-kind-typealias-border: #a78bfa;
+  --api-kind-command-bg: #431407;
+  --api-kind-command-fg: #fdba74;
+  --api-kind-command-border: #fb923c;
+  --api-kind-option-bg: #1a2e05;
+  --api-kind-option-fg: #bef264;
+  --api-kind-option-border: #a3e635;
+  --api-kind-hook-bg: #4a044e;
+  --api-kind-hook-fg: #f0abfc;
+  --api-kind-hook-border: #e879f9;
+  --api-kind-format-bg: #422006;
+  --api-kind-format-fg: #fde047;
+  --api-kind-format-border: #facc15;
 }
 
 .api-badge--kind-class, .api-badge--kind-struct, .api-badge--kind-interface, .api-badge--kind-trait { background: var(--api-kind-class-bg); color: var(--api-kind-class-fg); border-color: var(--api-kind-class-border); }
@@ -96,6 +132,10 @@
 .api-badge--kind-constant { background: var(--api-kind-constant-bg); color: var(--api-kind-constant-fg); border-color: var(--api-kind-constant-border); }
 .api-badge--kind-module, .api-badge.api-badge--mod-package { background: var(--api-kind-module-bg); color: var(--api-kind-module-fg); border-color: var(--api-kind-module-border); }
 .api-badge--kind-typealias, .api-badge--kind-enum, .api-badge--kind-union, .api-badge--kind-prompt { background: var(--api-kind-typealias-bg); color: var(--api-kind-typealias-fg); border-color: var(--api-kind-typealias-border); }
+.api-badge--kind-command { background: var(--api-kind-command-bg); color: var(--api-kind-command-fg); border-color: var(--api-kind-command-border); }
+.api-badge--kind-option { background: var(--api-kind-option-bg); color: var(--api-kind-option-fg); border-color: var(--api-kind-option-border); }
+.api-badge--kind-hook { background: var(--api-kind-hook-bg); color: var(--api-kind-hook-fg); border-color: var(--api-kind-hook-border); }
+.api-badge--kind-format { background: var(--api-kind-format-bg); color: var(--api-kind-format-fg); border-color: var(--api-kind-format-border); }
 
 /* Only interactive preview labels receive the dotted affordance. */
 .api-badge[data-link-preview] > .api-badge__label {

@@ -9,7 +9,7 @@ import { select } from 'astro-expressive-code/hast'
 import { fromHtml } from 'hast-util-from-html'
 import { visit } from 'unist-util-visit'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { symbolPreview, glossaryPreview } from '../src/lib/link-preview'
+import { symbolPreview, glossaryPreview, tmuxManualPreview } from '../src/lib/link-preview'
 import { API_MODELS } from '../src/lib/api-models'
 import { productApiIndex } from '../src/lib/product-api'
 import { apiGlossaryHref } from '../src/lib/api-glossary'
@@ -291,6 +291,24 @@ describe('preview lifecycle', () => {
     expect(title()).toBe('b')
     expect(expand.hidden).toBe(true)
     expect(expand.getAttribute('aria-expanded')).toBe('false')
+  })
+
+  it('opens a manual entry card with its own action and the entry anchor', async () => {
+    const href = '/en/tmux/latest/manual/full/#options-destroy-unattached'
+    link().setAttribute('href', href)
+    requests.mockResolvedValueOnce(new Response(JSON.stringify(tmuxManualPreview('latest', 'full'))))
+    hover(); await settle()
+    expect(requests).toHaveBeenCalledWith('/en/tmux/latest/manual/full.preview.json', expect.anything())
+    const panel = win.document.getElementById('reference-link-preview')!
+    expect(title()).toBe('destroy-unattached')
+    expect(panel.querySelector('[data-preview-description]')!.textContent).toBe('If on, destroy the session after the last client has detached.')
+    expect(panel.querySelector('[data-preview-detail]')!.textContent).toBe('Session option')
+    expect(panel.querySelector('[data-preview-signature]')!.textContent).toBe('destroy-unattached [off | on | keep-last | keep-group]')
+    const open = panel.querySelector<HTMLAnchorElement>('[data-preview-open]')!
+    expect(open.textContent).toBe('Open manual')
+    expect(open.getAttribute('href')).toBe('https://libtmux.org/tmux/latest/manual/full/#options-destroy-unattached')
+    escape(); hover('b'); await settle()
+    expect(open.textContent).toBe('')
   })
 
   it('treats punctuation in a preview name as text when adding break opportunities', async () => {

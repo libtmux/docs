@@ -88,8 +88,11 @@ describe('native tmux prose ownership', () => {
     const entry = sourceEntry(id)
     const markdown = markdownOf(entry)
     for (const name of names) {
-      expect(markdown).not.toContain(`[\`${name}\`](`)
       expect(markdown).toContain(`\`${name}\``)
+      // A tmux format variable may link to the manual; never to a library.
+      for (const [, href] of markdown.matchAll(new RegExp(`\\[\`${name}\`\\]\\(([^)]*)\\)`, 'g'))) {
+        expect(href, name).toContain('/tmux/latest/manual/')
+      }
     }
     expect(fences(markdown)).toEqual(fences(entry.body!))
     expect(links(markdown).some((href) => href.includes('/tmux/latest/manual/'))).toBe(true)

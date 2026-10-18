@@ -1,5 +1,17 @@
 import type { DocSpan, LinkTarget } from '@libtmux/api-model'
-import { tmuxManual, tmuxManualUrl } from './tmux-manual-data'
+import { tmuxManual, tmuxManualEntityHref, tmuxManualEntities, type TmuxEntityKind } from './tmux-manual-data'
+
+export type { TmuxEntityKind } from './tmux-manual-data'
+
+/**
+ * The one place a tmux name becomes a destination.
+ *
+ * Every command, option, hook and format-variable link resolves here, and an
+ * unknown name has none. Swap the body to move them all to another reference.
+ */
+export function tmuxEntityHref(kind: TmuxEntityKind, name: string, version = 'latest'): string | undefined {
+  return tmuxManualEntityHref(kind, name, version)
+}
 
 type Command = ReturnType<typeof tmuxManual>['commands'][number]
 const commandNames = new WeakMap<ReturnType<typeof tmuxManual>, Map<string, Command>>()
@@ -12,6 +24,14 @@ export interface TmuxMention {
   href: string
 }
 
+const CODE_WORDS = /"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|#[^\n]*|[A-Za-z0-9_/-]+|[^\s]/g
+const PROSE_WORDS = /[A-Za-z0-9_/-]+|[^\s]/g
+const tokenize = (text: string, code: boolean) => [...text.matchAll(code ? CODE_WORDS : PROSE_WORDS)]
+  .map((match) => ({ text: match[0], start: match.index!, end: match.index! + match[0].length }))
+/** A word inside a longer path, flag, option value or sentence continuation is not a name. */
+const standalone = (text: string, token: { start: number; end: number }) =>
+  !/[\w./:$-]/.test(text[token.start - 1] ?? '') && !/^[\w/-]|^\.[A-Za-z]/.test(text.slice(token.end))
+
 /** Locate documented command names; aliases need an explicit code invocation. */
 export function tmuxCommandMentions(text: string, { code = false, version = 'latest' } = {}): TmuxMention[] {
   const manual = tmuxManual(version)
@@ -23,17 +43,15 @@ export function tmuxCommandMentions(text: string, { code = false, version = 'lat
     ] as [string, Command][]))
     commandNames.set(manual, byName)
   }
-  const words = code ? /"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|#[^\n]*|[A-Za-z0-9_/-]+|[^\s]/g : /[A-Za-z0-9_/-]+|[^\s]/g
-  const tokens = [...text.matchAll(words)]
-    .map((match) => ({ text: match[0], start: match.index!, end: match.index! + match[0].length }))
+  const tokens = tokenize(text, code)
   const found = new Map<number, TmuxMention>()
   const add = (position: number, aliases = false) => {
     const token = tokens[position]
     if (!token) return
     const command = byName.get(token.text)
     if (!command || (!aliases && command.name !== token.text)) return
-    if (/[\w./:$-]/.test(text[token.start - 1] ?? '') || /^[\w/-]|^\.[A-Za-z]/.test(text.slice(token.end))) return
-    found.set(token.start, { ...token, command: command.name, href: tmuxManualUrl(version, command.name) })
+    if (!standalone(text, token)) return
+    found.set(token.start, { ...token, command: command.name, href: tmuxEntityHref('command', command.name, version)! })
   }
 
   // Global option values are not commands, even when named run-shell.
@@ -67,15 +85,86 @@ export function tmuxCommandMentions(text: string, { code = false, version = 'lat
   return [...found.values()].sort((a, b) => a.start - b.start)
 }
 
+/** A documented tmux name found in text, whatever its kind. */
+export interface TmuxReference {
+  start: number
+  end: number
+  text: string
+  kind: TmuxEntityKind
+  name: string
+  href: string
+}
+
+// Plain words stay plain: only a hyphenated option or hook and an underscored
+// format variable are unlikely enough in running code to claim without context.
+const namedEntities = new WeakMap<ReturnType<typeof tmuxManual>, Map<string, Exclude<TmuxEntityKind, 'command'>>>()
+function entityKinds(version: string) {
+  const manual = tmuxManual(version)
+  let kinds = namedEntities.get(manual)
+  if (!kinds) {
+    kinds = new Map(tmuxManualEntities(version)
+      .filter((entity) => entity.name.includes(entity.kind === 'format' ? '_' : '-'))
+      .map((entity) => [entity.name, entity.kind]))
+    namedEntities.set(manual, kinds)
+  }
+  return kinds
+}
+
+/** Whether an offset sits inside the braces of a `#{...}` format expression. */
+function insideFormat(text: string, offset: number): boolean {
+  const groups: boolean[] = []
+  for (let index = 0; index < offset; index++) {
+    if (text[index] === '{') groups.push(text[index - 1] === '#')
+    else if (text[index] === '}') groups.pop()
+  }
+  return groups.includes(true)
+}
+
+/**
+ * A format variable is a mention when it is the whole span or part of a
+ * format expression, quoted or not. A name in a URI template or a call is
+ * something else.
+ */
+function formatVariable(text: string, start: number, end: number): boolean {
+  if (text.trim() === text.slice(start, end)) return true
+  return insideFormat(text, start) && /[{?!,:]/.test(text[start - 1] ?? '') && !/^[\w/-]|^\.[A-Za-z]/.test(text.slice(end))
+}
+
+const FORMAT_NAME = /[a-z][a-z0-9]*(?:_[a-z0-9]+)+/g
+
+/**
+ * Locate every documented tmux name. Commands also match in prose; options,
+ * hooks and format variables only inside code, where a name is deliberate.
+ */
+export function tmuxMentions(text: string, { code = false, version = 'latest' } = {}): TmuxReference[] {
+  const found: TmuxReference[] = tmuxCommandMentions(text, { code, version })
+    .map(({ command, ...mention }) => ({ ...mention, kind: 'command', name: command }))
+  if (!code || !/[-_]/.test(text)) return found
+  const kinds = entityKinds(version)
+  const taken = new Set(found.map((mention) => mention.start))
+  const add = (kind: Exclude<TmuxEntityKind, 'command'>, name: string, start: number) => {
+    const href = tmuxEntityHref(kind, name, version)
+    if (href && !taken.has(start)) found.push({ start, end: start + name.length, text: name, kind, name, href })
+  }
+  for (const token of tokenize(text, true)) {
+    const kind = kinds.get(token.text)
+    if (kind && kind !== 'format' && standalone(text, token)) add(kind, token.text, token.start)
+  }
+  for (const match of text.matchAll(FORMAT_NAME)) {
+    if (kinds.get(match[0]) === 'format' && formatVariable(text, match.index!, match.index! + match[0].length)) add('format', match[0], match.index!)
+  }
+  return found.sort((a, b) => a.start - b.start)
+}
+
 type LinkedDocSpan = DocSpan & { link?: LinkTarget }
 
-/** Add native command links after language API and authored-link resolution. */
+/** Add native tmux links after language API and authored-link resolution. */
 export function linkTmuxDoc(spans: LinkedDocSpan[], version = 'latest'): LinkedDocSpan[] {
   return spans.flatMap((span): LinkedDocSpan[] => {
     if (!['text', 'code', 'ref'].includes(span.kind) || span.link) return [span]
     const text = 'text' in span ? span.text : span.label
     const code = span.kind !== 'text'
-    const mentions = tmuxCommandMentions(text, { code, version })
+    const mentions = tmuxMentions(text, { code, version })
     if (!mentions.length) return [span]
     if (code && mentions.length === 1) return [{ kind: 'link', text, code: true, href: mentions[0].href }]
     const linked: LinkedDocSpan[] = []
@@ -92,7 +181,7 @@ export function linkTmuxDoc(spans: LinkedDocSpan[], version = 'latest'): LinkedD
 
 /** Link one Markdown prose node without touching executable fences. */
 export function tmuxMentionMarkdown(text: string, code: boolean, project: (href: string) => string = (href) => href): string | undefined {
-  const mentions = tmuxCommandMentions(text, { code })
+  const mentions = tmuxMentions(text, { code })
   if (!mentions.length) return undefined
   const literal = (value: string) => {
     if (!code) return value

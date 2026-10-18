@@ -5,7 +5,7 @@ import { resolvePortContent } from './workspace-shared-slots'
 import { createProseLinker, PORT_BY_LABEL } from './prose-resolver'
 import { PORT_BY_SLUG } from './ports'
 import { rewriteMarkdownLinks } from '../plugins/remark-port-code.mjs'
-import { tmuxMentionMarkdown } from './tmux-links'
+import { tmuxCommandMentions, tmuxMentionMarkdown } from './tmux-links'
 import { isTmuxProse, type DocsPage } from './docs-paths'
 import { documenterHeading } from '../plugins/remark-documenter-headings'
 
@@ -25,6 +25,7 @@ export function linkProseMarkdown(raw: string, port?: string, product?: ApiProdu
     && (!port || PORT_BY_SLUG[port]?.referenceKind !== 'guide')
   const spans = new Set<number>()
   const edits: { start: number; end: number; text: string }[] = []
+  const unclaimed: typeof edits = []
   const link = createProseLinker(product)
   let htmlDepth = 0
   visit(fromMarkdown(body), (node) => {
@@ -69,7 +70,11 @@ export function linkProseMarkdown(raw: string, port?: string, product?: ApiProdu
       const end = node.position.end.offset!
       const native = tmuxMentionMarkdown(node.value, node.type === 'inlineCode', project.resolved)
       if (native && (node.type === 'inlineCode' || body.slice(start, end) === node.value)) {
-        edits.push({ start, end, text: native })
+        // A command claims its span; a library symbol outranks an option, hook or format variable.
+        if (linkApi && node.type === 'inlineCode' && !tmuxCommandMentions(node.value, { code: true }).length) {
+          unclaimed.push({ start, end, text: native })
+          spans.add(start)
+        } else edits.push({ start, end, text: native })
         return SKIP
       }
     }
@@ -85,6 +90,7 @@ export function linkProseMarkdown(raw: string, port?: string, product?: ApiProdu
     const href = (project.resolved?.(decision.href) ?? decision.href).replaceAll('<', '%3C').replaceAll('>', '%3E')
     edits.push({ start: mention.start, end: mention.end, text: `[${body.slice(mention.start, mention.end)}](<${href}>)` })
   }
+  for (const edit of unclaimed) if (!edits.some((claimed) => claimed.start === edit.start)) edits.push(edit)
   let out = body
   for (const edit of edits.sort((a, b) => b.start - a.start)) out = `${out.slice(0, edit.start)}${edit.text}${out.slice(edit.end)}`
   return out

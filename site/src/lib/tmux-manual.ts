@@ -1,7 +1,6 @@
 import { fromHtml } from 'hast-util-from-html'
 import { h, select, toHtml, type Element, type Root } from 'astro-expressive-code/hast'
 import { visit } from 'unist-util-visit'
-import { highlight } from './highlight'
 import { rowAnchor } from './row-anchors'
 
 function text(node: Root['children'][number]): string {
@@ -25,9 +24,8 @@ function entryName(label: string): string {
   return label.replace(/\bC-/g, 'ctrl-').replace(/\bM-/g, 'alt-').split(/\s+/).slice(0, 3).join(' ')
 }
 
-/** Add section-scoped entry links while preserving mandoc's existing anchors. */
-export function linkTmuxManualEntries(html: string, namespace = 'manual'): string {
-  const tree = fromHtml(html, { fragment: true })
+/** Add section-scoped entry links in place, preserving mandoc's existing anchors. */
+export function linkTmuxManualTree(tree: Root, namespace = 'manual'): Root {
   const used = new Set<string>()
   visit(tree, 'element', (node) => { if (node.properties.id) used.add(String(node.properties.id)) })
   function walk(parent: Element | Root, section: string) {
@@ -55,7 +53,12 @@ export function linkTmuxManualEntries(html: string, namespace = 'manual'): strin
     }
   }
   walk(tree, namespace)
-  return toHtml(tree)
+  return tree
+}
+
+/** Add section-scoped entry links while preserving mandoc's existing anchors. */
+export function linkTmuxManualEntries(html: string, namespace = 'manual'): string {
+  return toHtml(linkTmuxManualTree(fromHtml(html, { fragment: true }), namespace))
 }
 
 /** The manual contains both configuration examples and shell transcripts. */
@@ -69,6 +72,8 @@ export function tmuxManualLanguage(code: string): string {
 
 /** Use the site's shared grammars and light/dark palette on pinned man-page HTML. */
 export async function highlightTmuxManual(html: string): Promise<string> {
+  // Link resolution imports this module without loading the highlighter.
+  const { highlight } = await import('./highlight')
   const tree = fromHtml(html, { fragment: true })
   const pending: Promise<void>[] = []
   visit(tree, 'element', (node, index, parent) => {
