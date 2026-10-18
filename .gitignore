@@ -1,4 +1,8 @@
 node_modules/
+.venv/
+.ruff_cache/
+__pycache__/
+*.py[cod]
 dist/
 .astro/
 _site/

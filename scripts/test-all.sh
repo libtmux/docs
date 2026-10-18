@@ -267,8 +267,7 @@ fi
 
 [[ -f "$out$preview/en/index.html" ]] || { echo "missing audited assembly: $out$preview/en" >&2; exit 1; }
 step 'Sphinx inventories and rendered destinations'
-uv run --no-project --python 3.12 --with-requirements scripts/requirements-inventory.txt \
-  python scripts/check-inventories.py "$out$preview/en" "$preview/en/"
+uv run --locked python scripts/check-inventories.py "$out$preview/en" "$preview/en/"
 if [[ -n "$preview" ]]; then
   [[ -f "$LIBTMUX_DOCS_TEST_PRODUCTION_SITE/en/sitemap-index.xml" ]] || { echo 'missing production root render' >&2; exit 1; }
   step 'preview isolation'
