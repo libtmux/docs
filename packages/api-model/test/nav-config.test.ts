@@ -24,6 +24,25 @@ const symbol = (
   source: { file },
 })
 
+it('places Rust package runtime, text and command-budget helpers by their role', () => {
+  const expected = {
+    runtime: ['driver.runtime.Runtime', 'driver.runtime.RuntimeExt', 'driver.runtime.AbortHandle',
+      'driver.runtime.TaskHandle', 'libtmux_tokio.runtime.TokioRuntime', 'libtmux_tokio.blocking.Runtime',
+      'libtmux_tokio.driver.Runtime', 'libtmux_tokio.driver.RuntimeExt', 'libtmux_tokio.driver.AbortHandle'],
+    formats: ['formats.text.TmuxText', 'libtmux_core.text.TmuxText', 'text.TmuxText',
+      'primitives.text.TmuxText', 'libtmux_tokio.TmuxText'],
+    commands: ['limits.OutputLimits', 'libtmux_tokio.OutputLimits', 'libtmux_tokio.limits.OutputLimits',
+      'cancellation.CancellationToken', 'libtmux_tokio.CancellationToken'],
+    control: ['wait.WaitExt'],
+  }
+  const compiled = compileNav(NAV.rs, Object.values(expected).flat().map((id) =>
+    symbol(id, id.split('.').at(-1)!, 'crates/libtmux/src/lib.rs')), { conceptIds: {}, moduleOf: () => '' })
+  for (const [bucket, ids] of Object.entries(expected)) expect(compiled.assignments[bucket]).toEqual(ids)
+  expect(compiled.diagnostics.unmatched).toEqual([])
+  expect(compiled.diagnostics.ambiguous).toEqual([])
+  expect(compiled.diagnostics.staleUnsettled).toEqual([])
+})
+
 describe('Lua reference navigation', () => {
   it('places public tmux objects ahead of their implementation directory', () => {
     const compiled = compileNav(
@@ -200,7 +219,13 @@ describe('navigation checker member ownership', () => {
   it('accepts every native Rust payload field in the current model', () => {
     const model: ApiModel = JSON.parse(readFileSync(new URL('../../../site/src/data/api/rs.json', import.meta.url), 'utf8'))
     const payloads = new Set(model.symbols.filter((entry) => entry.variant === 'struct' || entry.variant === 'tuple').map((entry) => entry.id))
-    expect(model.symbols.filter((entry) => entry.parent && payloads.has(entry.parent))).toHaveLength(163)
+    const fields = model.symbols.filter((entry) => entry.parent && payloads.has(entry.parent))
+    for (const source of model.sources!.filter((source) => ['libtmux', 'libtmux-tokio'].includes(source.package))) {
+      const prefix = source.package === 'libtmux' ? '' : 'libtmux_tokio.'
+      expect(fields.filter((field) => field.parent === `${prefix}control.Event.Output`).map((field) => field.name))
+        .toEqual(['pane', 'bytes'])
+      expect(fields.some((field) => field.id === `${prefix}control.Subscription.Pane.0`)).toBe(true)
+    }
     expect(check(model)).toEqual([])
   })
 })

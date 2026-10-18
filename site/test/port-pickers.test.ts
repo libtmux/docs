@@ -119,6 +119,7 @@ describe('port pickers', () => {
     expect(py.map(([, , , url]) => url)).toEqual([
       'https://github.com/tmux-python/libtmux', 'https://github.com/tmux-python/libtmux-mcp', 'https://github.com/tmux-python/tmuxp',
     ])
-    expect(tuples(PORT_BY_SLUG.rs!, 'github')!.slice(1).every(([, , , url]) => String(url).includes('/tree/master/crates/'))).toBe(true)
+    expect(tuples(PORT_BY_SLUG.rs!, 'github')!.slice(1).every(([, , , url]) =>
+      /^https:\/\/github\.com\/libtmux\/libtmux-rs\/tree\/[^/]+\/crates\//.test(String(url)))).toBe(true)
   })
 })

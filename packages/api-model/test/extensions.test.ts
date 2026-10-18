@@ -43,9 +43,20 @@ describe('an extension block belongs to the type it extends', () => {
       'window.Window.rename',
       'window.Window.panes',
     ])
-    // The block's own container now shares the declaration's id, which is what
-    // `mergePartials` folds; both are still present at this point.
-    expect(merged.filter((s) => s.name === 'Window' && !s.parent)).toHaveLength(2)
+    expect(merged.filter((s) => s.name === 'Window' && !s.parent)).toEqual([sym('window.Window', 'struct')])
+  })
+
+  it('keeps the declaration source and prose when an impl sorts before it', () => {
+    const declaration = { ...sym('primitives.text.TmuxText', 'struct'),
+      source: { file: 'primitives/text.rs', line: 25 }, doc: { summary: 'Immutable text bytes.' } }
+    const extension = { ...sym('options.TmuxText', 'class'),
+      source: { file: 'options.rs', line: 520 }, doc: { summary: 'Parse an option value.' } }
+    const method = { ...member('options.TmuxText.into_option'), source: { file: 'options.rs', line: 530 } }
+    const result = mergeExtensions([extension, method, declaration], 'class')
+    expect(result.filter((symbol) => !symbol.parent)).toEqual([declaration])
+    expect(result.find((symbol) => symbol.name === 'into_option')).toMatchObject({
+      parent: declaration.id, source: method.source,
+    })
   })
 
   it('leaves a block alone when the name is ambiguous', () => {

@@ -66,13 +66,14 @@ const PY_INTERSPHINX: Record<string, string> = {
 
 const PY_DOCS = 'https://docs.python.org/3/'
 
-/** Syntax words in the native declarations rendered as complete signatures. */
+/** Language keywords in declarations and type annotations. */
 const SIGNATURE_KEYWORDS: Record<string, Set<string>> = Object.fromEntries(Object.entries({
   kotlin: 'public private protected internal class interface object fun val var suspend override abstract open final data sealed enum inline reified crossinline noinline vararg in out where companion constructor operator infix tailrec external expect actual by',
   scala: 'def extension val var class trait object type given using implicit inline transparent opaque override abstract final sealed case lazy private protected open infix export derives end',
   fsharp: 'module namespace type member static abstract override interface inherit let rec mutable inline internal private public of with get set new val and when',
   ts: 'readonly keyof typeof infer extends unique private static async function const',
   go: 'func chan map struct interface',
+  rs: 'as const dyn extern fn for impl mut unsafe',
   swift: 'any',
   julia: 'where struct mutable abstract primitive type function end',
   cxx: 'alignas alignof auto class concept const consteval constexpr constinit decltype default delete enum explicit extern final friend inline mutable namespace noexcept operator override register requires static struct template thread_local typedef typename union using virtual volatile',
@@ -396,6 +397,11 @@ export class SymbolIndex {
     let clean = target.replace(/^[~.]/, '')
     // Swift ids keep their argument labels, so `isRunning()` names `Server.isRunning()`.
     if (this.lang !== 'swift') clean = clean.replace(/\(\)$/, '')
+    if (this.lang === 'rs') {
+      clean = clean.replaceAll('::', '.')
+      const crate = context?.source.file.match(/(?:^|\/)crates\/([^/]+)\/src\//)?.[1]
+      if (crate) clean = clean.replace(/^crate\./, `${crate.replaceAll('-', '_')}.`)
+    }
     let opaqueContext = false
     if (this.lang === 'powershell' && context) {
       const prefixed = /^[$-]/.test(clean)
@@ -544,13 +550,18 @@ export class SymbolIndex {
       }
     }
 
-    const bySuffix = this.pick(this.bySuffix.get(clean), role, context)
+    const inPackage = (candidates: ApiSymbol[] | undefined) => {
+      const packageName = context?.package ?? (candidates?.some((symbol) => symbol.package === 'libtmux') ? 'libtmux' : undefined)
+      return this.lang === 'rs' && packageName && ['libtmux', 'libtmux-core', 'libtmux-tokio'].includes(packageName)
+        ? candidates?.filter((symbol) => symbol.package === packageName) : candidates
+    }
+    const bySuffix = this.pick(inPackage(this.bySuffix.get(clean)), role, context)
     if (bySuffix && opaqueContext && !clean.includes('.') && bySuffix.parent &&
         ['method', 'property', 'attribute'].includes(bySuffix.kind)) return undefined
     if (bySuffix) return { href: this.hrefFor(bySuffix), external: false, symbol: bySuffix }
 
     if (!clean.includes('.')) {
-      const byName = this.pick(this.byName.get(clean), role, context)
+      const byName = this.pick(inPackage(this.byName.get(clean)), role, context)
       if (byName) return { href: this.hrefFor(byName), external: false, symbol: byName }
     }
 
@@ -559,7 +570,8 @@ export class SymbolIndex {
     const usingAlias = this.lang === 'scala' && (clean === 'Using' || clean.startsWith('Using.'))
     const shadowedUsing = usingAlias && (this.byName.has('Using') || this.bySuffix.has(clean) ||
       context?.signatures.some((sig) => sig.params.some((param) => param.name === 'Using') || sig.receiver?.name === 'Using'))
-    const builtin = this.lang && !shadowedUsing ? builtinHref(this.lang, clean) : undefined
+    const builtinName = this.lang === 'rs' ? clean.replaceAll('.', '::') : clean
+    const builtin = this.lang && !shadowedUsing ? builtinHref(this.lang, builtinName) : undefined
     if (builtin && ['kotlin', 'scala'].includes(this.lang ?? '')) return { href: builtin, external: true }
 
     // Intersphinx order: exact name, then the shortest suffix. An inventory

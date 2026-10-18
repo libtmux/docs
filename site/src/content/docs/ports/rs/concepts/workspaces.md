@@ -19,7 +19,7 @@ store the layout in a configuration file, such as
 ## Building one imperatively
 
 Create a window, split it into panes, apply a layout, and send each pane its
-command:
+command. These calls use `libtmux_tokio` handles:
 
 ```rust
 let mut window = session.new_window("dev").await?;
@@ -36,7 +36,8 @@ window.select_layout(Layout::MainVertical).await?;
 ```
 
 A split creates a pane; direction and size control its placement. Applying a
-layout rearranges existing panes while their processes continue running. tmux provides `even-horizontal`, `even-vertical`, `main-horizontal`,
+layout rearranges existing panes while their processes continue running. tmux
+provides `even-horizontal`, `even-vertical`, `main-horizontal`,
 `main-vertical`, and `tiled` layouts.
 
 Choose detached creation when the user's current window should retain focus.
@@ -47,7 +48,8 @@ covers their transport costs and batching.
 
 These packages read or build workspace configurations based on tmuxp:
 
-The `tmux-workspace` crate loads tmuxp-shaped configurations.
+The `tmux-workspace` crate loads tmuxp-shaped configurations and takes a
+`libtmux_tokio::Server`. Use that package's handles with its async builder.
 See [Workspace Manager](/workspace/) for the supported fields and CLI.
 
 ```rust

@@ -10,9 +10,9 @@ sidebar:
 tableOfContents: true
 ---
 
-Use [`ControlMode::attach`](../../reference/control-controlmode-attach/) to open
+Use [`ControlMode::attach`](../../reference/libtmux_tokio-control-controlmode-attach/) to open
 a persistent connection to an existing session. Use
-[`Server::over_control_mode`](../../reference/server-server-over_control_mode/)
+[`Server::over_control_mode`](../../reference/libtmux_tokio-server-server-over_control_mode/)
 to obtain a handle whose typed commands use that connection. The original
 server handle keeps its subprocess route.
 
@@ -24,7 +24,8 @@ is still alive, and finally stops its owned daemon.
 ## Setup and run
 
 Use an empty directory with Git, rustup with the 1.97.1 toolchain installed,
-tmux 3.2a or newer, and a Unix environment. The program creates a private socket under `/tmp/libtmux-rs-dev`,
+tmux 3.2a or newer, and Linux. The program creates a private socket under
+`/tmp/libtmux-rs-dev`,
 starts `cat` in its panes, and stops only the server it created. No existing
 session, socket, or environment variable is required.
 
@@ -41,7 +42,7 @@ publish = false
 exclude = ["libtmux-source"]
 
 [dependencies]
-libtmux = { path = "libtmux-source/crates/libtmux", default-features = false, features = ["control-mode"] }
+libtmux-tokio = { path = "libtmux-source/crates/libtmux-tokio", default-features = false, features = ["control-mode"] }
 tempfile = "=3.27.0"
 tokio = { version = "=1.53.1", features = ["macros", "rt", "time"] }
 
@@ -53,11 +54,14 @@ path = "control.rs"
 Fetch the library revision used by the example:
 
 ```console
-$ git clone https://github.com/libtmux/libtmux-rs libtmux-source &&
-  git -C libtmux-source checkout e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4
+$ git init -q libtmux-source &&
+  git -C libtmux-source fetch -q --depth=1 \
+    https://github.com/libtmux/libtmux-rs.git c84ede6448c32bf72aae7126e16e04540d2009aa &&
+  git -C libtmux-source checkout -q --detach FETCH_HEAD
 ```
 
-Only the `control-mode` feature is enabled. It does not require [plan][plan-feature],
+Only the `control-mode` feature is enabled. It does not require
+[plan][plan-feature],
 `query`, or `test-support`.
 
 Save the complete program as `control.rs`:
@@ -66,8 +70,8 @@ Save the complete program as `control.rs`:
 use std::error::Error;
 use std::time::Duration;
 
-use libtmux::control::ControlMode;
-use libtmux::{NewSessionOptions, Server};
+use libtmux_tokio::control::ControlMode;
+use libtmux_tokio::{NewSessionOptions, Server};
 
 type ExampleError = Box<dyn Error>;
 
@@ -220,21 +224,23 @@ connection closed; server still running
 
 ## Route the handles you use
 
-`attach()` returns after the control client has attached. A successfully
+[`attach()`](../../reference/libtmux_tokio-control-controlmode-attach/)
+returns after the control client has attached. A successfully
 started child process alone would not establish that the connection is ready.
 The session must already exist; this program creates it through the ordinary
 subprocess server first.
 
-The routed `Server`, sessions it lists, and panes obtained from those sessions
-all share the connection. An older `Session` or `Pane` from the original
+The routed [`Server`](../../reference/libtmux_tokio-server-server/), sessions it lists, and panes obtained from those sessions
+all share the connection. An older [`Session`](../../reference/libtmux_tokio-session-session/) or [`Pane`](../../reference/libtmux_tokio-pane-pane/) from the original
 server keeps its original route. Opening a control connection does not rewrite
 all existing handles. The routing method checks that sender and server refer
 to the same endpoint and can probe the tmux version during setup.
 
 ## Drain events while awaiting replies
 
-`split()` separates a command sender from an event receiver. The program uses
-[`tokio::select!`](https://docs.rs/tokio/1.53.1/tokio/macro.select.html) to keep polling [`next_event()`](../../reference/control-controlevents-next_event/)
+[`split()`](../../reference/libtmux_tokio-control-controlmode-split/)
+separates a command sender from an event receiver. The program uses
+[`tokio::select!`](https://docs.rs/tokio/1.53.1/tokio/macro.select.html) to keep polling [`next_event()`](../../reference/libtmux_tokio-control-controlevents-next_event/)
 while the command future runs. It discards ordinary notifications because its
 task only needs command results, but it reports a terminal event error or
 unexpected closure.
@@ -248,14 +254,16 @@ error reporting.
 For an observer application, handle the event variants your task needs.
 Pane output is byte data, not necessarily UTF-8 or complete lines. A
 notification stream does not by itself supply a prior screen snapshot; obtain
-one explicitly when needed. `watch_only()` can narrow pane output, but muting
+one explicitly when needed.
+[`watch_only()`](../../reference/libtmux_tokio-control-controlsender-watch_only/)
+can narrow pane output, but muting
 can affect tmux's reading of a pane's pseudo-terminal, so it is not merely a
 local filter over received events.
 
 ## What a successful reply proves
 
 Typed object methods interpret the command result for their documented task.
-The lower-level [`ControlSender::send`](../../reference/control-controlsender-send/)
+The lower-level [`ControlSender::send`](../../reference/libtmux_tokio-control-controlsender-send/)
 returns a `BlockResult`. A tmux `%error` block is a received result, not a
 transport [`Err`](https://doc.rust-lang.org/std/result/enum.Result.html#variant.Err); inspect `succeeded()` before using its output.
 
@@ -274,7 +282,7 @@ its routed operation ten seconds and its overall demonstration twenty seconds.
 A timeout may follow a committed command; inspect state before retrying a
 mutation.
 
-[`ControlEvents::shutdown`](../../reference/control-controlevents-shutdown/)
+[`ControlEvents::shutdown`](../../reference/libtmux_tokio-control-controlevents-shutdown/)
 stops the connection, drains unread notifications for cleanup, and reports an
 undelivered terminal error. It succeeds while other sender handles still
 exist. The program records both an operation error and any shutdown error,
@@ -287,8 +295,8 @@ retains the socket directory for inspection.
 
 See [Command transports](../../concepts/transports/) for the default process
 route and [Batching commands](../batching-commands/) for recorded plans.
-The pinned [control connection contract](https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/libtmux/src/control.rs)
-and [typed routing contract](https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/libtmux/src/server.rs)
+The pinned [control connection contract](https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/libtmux-tokio/src/control.rs)
+and [typed routing contract](https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/libtmux-tokio/src/server.rs)
 describe the source revision used by the program.
 
-[plan-feature]: https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/libtmux/Cargo.toml#L115
+[plan-feature]: https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/libtmux-tokio/Cargo.toml

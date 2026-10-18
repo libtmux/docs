@@ -241,16 +241,16 @@
     {
       "port": "rs",
       "language": "rust",
-      "sourceRevision": "d4e08b4eaab62ef4eeedab79b47973ae9a1de310",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceRepository": "libtmux/libtmux-rs",
       "files": [
         {
           "name": "src/main.rs",
-          "sha256": "a35348dc9fa3b8db147aa11f253324845e6dee0730c9a65dd08314fd946d171a"
+          "sha256": "e70537cda56622f604b77693877e5713f9b9c738db66d229b49cab2d469e2108"
         },
         {
           "name": "Cargo.toml",
-          "sha256": "1255751db8fb75290d2db99649c1be104325c31be652500df07d95ad5cd16ac4"
+          "sha256": "db2c07a99655237e4e3ab20321f9ec89f442aad11a57061424e5f1493e173dc2"
         },
         {
           "name": "workspace.yaml",
@@ -261,14 +261,21 @@
         "Rust 1.97.1"
       ],
       "tmux": [
-        "3.2a",
-        "3.7c"
+        "3.6"
       ],
       "page": "ports/rs/workspace/internals/examples",
       "shellRecipe": [
-        "mkdir rust-workspace-example && cd rust-workspace-example && \\\n    mkdir src",
-        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-rs.git && \\\n    git -C libtmux-source fetch --depth=1 origin d4e08b4eaab62ef4eeedab79b47973ae9a1de310 && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
-        "cargo run --quiet"
+        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-rs.git && \\\n    git -C libtmux-source fetch --depth=1 origin c84ede6448c32bf72aae7126e16e04540d2009aa && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
+        "cargo +1.97.1 run --quiet"
+      ],
+      "verificationScope": "Exact displayed files and setup replayed from public Git on Linux; program checks and expected stdout passed. Only tmux 3.6 was exercised.",
+      "expectedOutputs": [
+        [],
+        [
+          "built: 2 windows",
+          "panes: 3",
+          "captured workspace: YAML round trip passed"
+        ]
       ]
     },
     {
@@ -331,32 +338,36 @@
     {
       "port": "rs",
       "language": "rust",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceRepository": "libtmux/libtmux-rs",
       "files": [
         {
           "name": "Cargo.toml",
-          "sha256": "5ec266b05567cb1799d2df65b3dcf6f5db69cab7c8878616d43f21da192d2562"
+          "sha256": "526e1323d9653d5869cd89553c096b44ffc75058d23a6118c89f785c6309d97e"
         },
         {
           "name": "src/main.rs",
-          "sha256": "e3c7b08830177404e9c6c87b8680398a4983840b8ac3832bb7a461f5eaf6419e"
+          "sha256": "9abf75b82bc9c22e94837787d151e1aa291083f153bd453d05d94fd5f98ae855"
         }
       ],
       "toolchain": [
         "Rust 1.97.1"
       ],
       "tmux": [
-        "3.2a",
-        "3.7c"
+        "3.6"
       ],
       "page": "ports/rs/mcp/examples/inspect-sessions",
       "shellRecipe": [
-        "mkdir inspect-mcp-sessions",
-        "cd inspect-mcp-sessions",
-        "mkdir src",
         "cargo +1.97.1 generate-lockfile",
         "cargo +1.97.1 run --locked --quiet"
+      ],
+      "verificationScope": "Exact displayed files and setup replayed from public Git on Linux; program checks and expected stdout passed. Only tmux 3.6 was exercised.",
+      "expectedOutputs": [
+        [],
+        [
+          "session: build",
+          "session: editor"
+        ]
       ]
     },
     {

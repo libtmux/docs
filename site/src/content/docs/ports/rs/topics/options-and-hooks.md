@@ -13,22 +13,22 @@ tableOfContents: true
 Use options to change tmux behavior, such as `automatic-rename` or the
 status-line format. Use hooks to run commands on events such as
 `session-renamed` or `after-split-window`. Choose the scope supported by the
-option or hook.
+option or hook. The examples below use `libtmux_tokio` handles.
 
 ## Reading and writing options
 
 Read, set, or unset an option at its supported scope. Distinguish a local
 override from the effective value inherited from a parent scope.
 
-**Read all (this scope):** `pane.options()` (typed `BTreeMap`),
-`pane.option_names()`
+**Read all (this scope):** [`pane.options()`](../../reference/libtmux_tokio-pane-pane-options/) (typed `BTreeMap`),
+[`pane.option_names()`](../../reference/libtmux_tokio-pane-pane-option_names/)
 
-**Read effective/inherited:** `pane.typed_option(name)` decodes one value by its
+**Read effective/inherited:** [`pane.typed_option(name)`](../../reference/libtmux_tokio-pane-pane-typed_option/) decodes one value by its
 declared kind
 
-**Set:** `pane.set_option(name, value)`, `pane.append_option(name, value)`
+**Set:** [`pane.set_option(name, value)`](../../reference/libtmux_tokio-pane-pane-set_option/), [`pane.append_option(name, value)`](../../reference/libtmux_tokio-pane-pane-append_option/)
 
-**Unset:** `pane.unset_option(name)`
+**Unset:** [`pane.unset_option(name)`](../../reference/libtmux_tokio-pane-pane-unset_option/)
 
 ### Examples
 
@@ -43,11 +43,11 @@ pane.unset_option("automatic-rename").await?;
 
 ## Hooks
 
-**Set:** `pane.set_hook(name, command)`
+**Set:** [`pane.set_hook(name, command)`](../../reference/libtmux_tokio-pane-pane-set_hook/)
 
-**Unset:** `pane.unset_hook(name)`
+**Unset:** [`pane.unset_hook(name)`](../../reference/libtmux_tokio-pane-pane-unset_hook/)
 
-**List:** `pane.hook(name)`: one name only; **no listing at pane/window scope**,
+**List:** [`pane.hook(name)`](../../reference/libtmux_tokio-pane-pane-hook/): one name only; **no listing at pane/window scope**,
 by design (see below)
 
 **Run now, without the event:** Not listed.
@@ -73,7 +73,7 @@ do not imply a separate window or pane hook table, and `show-hooks` does not
 provide a corresponding listing. Check the event's supported scope if a hook is
 accepted but never fires.
 
-`Pane::set_hook` and `Window::set_hook` return `Error::OptionScopeMismatch`
+[`Pane::set_hook`](../../reference/libtmux_tokio-pane-pane-set_hook/) and [`Window::set_hook`](../../reference/libtmux_tokio-window-window-set_hook/) return [`Error::OptionScopeMismatch`](../../reference/libtmux_tokio-error-error-optionscopemismatch/)
 for an unsupported scope.
 
 Options have window and pane tables of their own. The hook-scope limitation does

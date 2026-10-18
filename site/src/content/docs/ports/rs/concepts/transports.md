@@ -10,10 +10,15 @@ sidebar:
 tableOfContents: true
 ---
 
-Ordinary [`Server`](../../reference/server-server/) calls use tmux subprocesses.
-No optional Cargo feature is required for that route. Add [plan][plan-feature] to record and
+Ordinary [`libtmux_tokio::Server`](../../reference/libtmux_tokio-server-server/)
+calls use tmux subprocesses. No optional Cargo feature is required for that
+route. Add [plan][plan-feature] to record and
 group commands, or `control-mode` to use a persistent connection for commands
 and notifications.
+
+This page uses the native async client. The blocking `libtmux` package offers
+the same transport choices without Tokio; see
+[Standard-library core](../standard-library-core/) for its setup and examples.
 
 <a id="where-each-port-draws-the-line"></a>
 <a id="what-this-costs-in-practice"></a>
@@ -22,11 +27,11 @@ and notifications.
 
 | Your task | Rust API | Cargo feature |
 | --- | --- | --- |
-| List objects, create a session, send keys, or capture a pane | Ordinary `Server`, `Session`, `Window`, and `Pane` methods | None |
-| Send a known command sequence in one invocation | `Server::chain(CommandChain)` | None |
-| Describe operations, validate dependencies, and choose how to group them | `Plan` with `Planner::Sequential`, `Folding`, or `Marked` | [plan][plan-feature] |
-| Attach a persistent command and event connection | `ControlMode::attach` | `control-mode` |
-| Route typed object methods through that connection | `Server::over_control_mode` | `control-mode` |
+| List objects, create a session, send keys, or capture a pane | Ordinary [`Server`](../../reference/libtmux_tokio-server-server/), [`Session`](../../reference/libtmux_tokio-session-session/), [`Window`](../../reference/libtmux_tokio-window-window/), and [`Pane`](../../reference/libtmux_tokio-pane-pane/) methods | None |
+| Send a known command sequence in one invocation | [`Server::chain(CommandChain)`](../../reference/libtmux_tokio-server-server-chain/) | None |
+| Describe operations, validate dependencies, and choose how to group them | `Plan` with [`Planner::Sequential`](../../reference/libtmux_tokio-plan-planner-planner-sequential/), `Folding`, or `Marked` | [plan][plan-feature] |
+| Attach a persistent command and event connection | [`ControlMode::attach`](../../reference/libtmux_tokio-control-controlmode-attach/) | `control-mode` |
+| Route typed object methods through that connection | [`Server::over_control_mode`](../../reference/libtmux_tokio-server-server-over_control_mode/) | `control-mode` |
 
 Choose based on whether your application needs occasional command results,
 a known batch of changes, or an ongoing connection. Start with ordinary calls
@@ -37,14 +42,14 @@ not establish an end-to-end latency improvement.
 
 ## Ordinary calls and command results
 
-A `Server` is a handle to a tmux endpoint. Constructing it does not start a
+A [`Server`](../../reference/libtmux_tokio-server-server/) is a handle to a tmux endpoint. Constructing it does not start a
 daemon; creating the first session does. A typed call can dispatch more than
 one command, for example to read the state of an object it just created.
 Do not equate one Rust method call with exactly one subprocess.
 
 Typed operations report their documented failures through `Result`. The lower
-level [`Server::cmd`](../../reference/server-server-cmd/) instead returns a
-[`CommandResult`](../../reference/command-commandresult/): reaching tmux and
+level [`Server::cmd`](../../reference/libtmux_tokio-server-server-cmd/) instead returns a
+[`CommandResult`](../../reference/libtmux_tokio-command-commandresult/): reaching tmux and
 tmux accepting the command are separate outcomes. Check `success()` or the
 exit status before treating its output as a successful operation.
 
@@ -56,7 +61,8 @@ would return [`Err`](https://doc.rust-lang.org/std/result/enum.Result.html#varia
 ## Setup and run
 
 Use an empty directory with Git, rustup with the 1.97.1 toolchain installed,
-tmux 3.2a or newer, and a Unix environment. The program creates a private socket under `/tmp/libtmux-rs-dev`,
+tmux 3.2a or newer, and Linux. The program creates a private socket under
+`/tmp/libtmux-rs-dev`,
 starts `cat` in its panes, and stops only the server it created. No existing
 session, socket, or environment variable is required.
 
@@ -73,7 +79,7 @@ publish = false
 exclude = ["libtmux-source"]
 
 [dependencies]
-libtmux = { path = "libtmux-source/crates/libtmux", default-features = false }
+libtmux-tokio = { path = "libtmux-source/crates/libtmux-tokio", default-features = false }
 tempfile = "=3.27.0"
 tokio = { version = "=1.53.1", features = ["macros", "rt", "time"] }
 
@@ -85,8 +91,10 @@ path = "subprocess.rs"
 Fetch the library revision used by the example:
 
 ```console
-$ git clone https://github.com/libtmux/libtmux-rs libtmux-source &&
-  git -C libtmux-source checkout e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4
+$ git init -q libtmux-source &&
+  git -C libtmux-source fetch -q --depth=1 \
+    https://github.com/libtmux/libtmux-rs.git c84ede6448c32bf72aae7126e16e04540d2009aa &&
+  git -C libtmux-source checkout -q --detach FETCH_HEAD
 ```
 
 This dependency disables all default features to show that subprocess calls
@@ -98,7 +106,7 @@ Save the complete program as `subprocess.rs`:
 use std::error::Error;
 use std::time::Duration;
 
-use libtmux::{Command, NewSessionOptions, Server};
+use libtmux_tokio::{Command, NewSessionOptions, Server};
 
 type ExampleError = Box<dyn Error>;
 
@@ -187,15 +195,15 @@ missing session: tmux refused the command
 
 ## Group a known sequence
 
-[`Server::chain`](../../reference/server-server-chain/) sends a `CommandChain`
+[`Server::chain`](../../reference/libtmux_tokio-server-server-chain/) sends a [`CommandChain`](../../reference/libtmux_tokio-command-commandchain/)
 as one invocation. It gives the group one exit status and merged output. tmux
 stops at the first refused command; it does not undo earlier commands.
 
-A [`Plan`](../../reference/plan-plan/) adds recorded operations, typed references
+A [`Plan`](../../reference/libtmux_tokio-plan-plan/) adds recorded operations, typed references
 to objects created earlier in the plan, validation, and per-operation reports.
 The planner can retain separate invocations or combine compatible neighbors.
 A failed combined invocation may leave individual outcomes `Unknown`.
-[`Ok(PlanResult)`](../../reference/plan-run-planresult/) therefore does not mean every operation succeeded.
+[`Ok(PlanResult)`](../../reference/libtmux_tokio-plan-run-planresult/) therefore does not mean every operation succeeded.
 
 [Batch commands with a plan](../../guides/batching-commands/) runs one workload
 with each planner, checks the resulting pane output, and handles a refused
@@ -205,12 +213,12 @@ operation. It explains which counts and failure details the result can prove.
 
 ## Notifications and commands are separable
 
-Attaching [`ControlMode`](../../reference/control-controlmode/) opens another
+Attaching [`ControlMode`](../../reference/libtmux_tokio-control-controlmode/) opens another
 real tmux client. It appears in `list-clients` and affects attachment counts,
 client hooks, and options such as `destroy-unattached`.
 
-The original `Server` continues to use subprocesses. Calling
-[`over_control_mode()`](../../reference/server-server-over_control_mode/) returns
+The original [`Server`](../../reference/libtmux_tokio-server-server/) continues to use subprocesses. Calling
+[`over_control_mode()`](../../reference/libtmux_tokio-server-server-over_control_mode/) returns
 another handle; typed objects obtained through that handle inherit its route.
 The sender must address the same endpoint. Setup may probe the tmux version
 through the process route; later routed calls use the connection.
@@ -221,9 +229,9 @@ closes the connection while keeping the daemon alive until final cleanup.
 
 ## Deadlines, partial effects, and cleanup
 
-`ServerBuilder::default_timeout` bounds ordinary subprocess commands and the
+[`ServerBuilder::default_timeout`](../../reference/libtmux_tokio-server-builder-serverbuilder-default_timeout/) bounds ordinary subprocess commands and the
 opening control handshake. A connected sender has its own
-[`reply_timeout`](../../reference/control-controlsender-reply_timeout/), initially
+[`reply_timeout`](../../reference/libtmux_tokio-control-controlsender-reply_timeout/), initially
 copied from that server limit. The control guide sets it explicitly.
 
 A timeout or cancelled future does not roll back an accepted mutation. Inspect
@@ -231,9 +239,9 @@ the server before repeating a creation or another operation that is unsafe to
 run twice. A plan can be partly applied, and dropping its future also loses the
 returned report of which steps completed.
 
-[`Server::shutdown`](../../reference/server-server-shutdown/) closes the client
+[`Server::shutdown`](../../reference/libtmux_tokio-server-server-shutdown/) closes the client
 executor and its connections; it does not kill the daemon. Use
-[`Server::kill`](../../reference/server-server-kill/) only when your application
+[`Server::kill`](../../reference/libtmux_tokio-server-server-kill/) only when your application
 owns that daemon. The example bounds each command to five seconds and its work
 to ten seconds, then attempts both daemon and executor cleanup. A cleanup
 failure reports and retains the private directory for inspection.
@@ -242,10 +250,10 @@ failure reports and retains the private directory for inspection.
 
 ## Read the implementation contract
 
-These examples use the public APIs at
-[`libtmux@0.1.0-alpha.15`](https://github.com/libtmux/libtmux-rs/tree/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4).
-The pinned [Server contract](https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/libtmux/src/server.rs)
+These examples use the unreleased `libtmux-tokio` package from the
+[pinned source tree](https://github.com/libtmux/libtmux-rs/tree/c84ede6448c32bf72aae7126e16e04540d2009aa).
+The pinned [Server contract](https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/libtmux-tokio/src/server.rs)
 describes command outcomes, shutdown, and routing. The guides above explain
 plans and persistent connections as separate application workflows.
 
-[plan-feature]: https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/libtmux/Cargo.toml#L115
+[plan-feature]: https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/libtmux-tokio/Cargo.toml

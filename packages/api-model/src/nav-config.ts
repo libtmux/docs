@@ -644,8 +644,6 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
   },
   rs: {
     unsettled: {
-      'blocking.Runtime': 'the blocking facade’s runtime handle; async plumbing',
-      'limits.OutputLimits': 'output byte and line caps; plumbing',
       'config.Entry': 'workspace config entry; Workspaces covers the plan, not the file it parses',
       'target.EndpointInputs': 'socket endpoint resolution; sits below Server rather than inside it',
       'target.ResolvedEndpoint': 'socket endpoint resolution; sits below Server rather than inside it',
@@ -738,6 +736,17 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
 
 /** Place language-specific public helpers with the task they support. */
 const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
+  rs: {
+    runtime: ['blocking.Runtime', 'driver.runtime.Runtime', 'driver.runtime.RuntimeExt',
+      'driver.runtime.AbortHandle', 'driver.runtime.TaskHandle', 'libtmux_tokio.runtime.TokioRuntime',
+      'libtmux_tokio.blocking.Runtime', 'libtmux_tokio.driver.Runtime', 'libtmux_tokio.driver.RuntimeExt',
+      'libtmux_tokio.driver.AbortHandle', 'libtmux_tokio.driver.TaskHandle'],
+    formats: ['formats.text.TmuxText', 'libtmux_core.text.TmuxText', 'text.TmuxText',
+      'primitives.text.TmuxText', 'libtmux_tokio.TmuxText'],
+    commands: ['limits.OutputLimits', 'libtmux_tokio.OutputLimits', 'libtmux_tokio.limits.OutputLimits',
+      'cancellation.CancellationToken', 'libtmux_tokio.CancellationToken'],
+    control: ['wait.WaitExt', 'libtmux_tokio.wait.WaitExt'],
+  },
   powershell: {
     commands: ['LibTmux\\Invoke-TmuxChain'],
     pane: ['LibTmux\\Send-TmuxText'],

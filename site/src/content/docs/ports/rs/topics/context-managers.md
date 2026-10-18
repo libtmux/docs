@@ -18,17 +18,17 @@ See [Workspaces](/concepts/workspaces/) for a temporary layout example.
 
 ## Explicit asynchronous cleanup
 
-Rust's `Drop` is synchronous and cannot await an async tmux kill. Use
-explicit shutdown when you need to observe cleanup failures:
+The async `libtmux_tokio` handles require explicit shutdown when you need to
+observe cleanup failures. Rust's synchronous `Drop` cannot await a tmux kill:
 
 - **`kill(self)` consumes the handle.** Session, window, and pane kill methods
   take `self` by value, preventing subsequent use of that handle.
-- **`libtmux::test::TestServer` provides a test guard.** Call
-  `TestServer.shutdown` to handle cleanup errors. Its `Drop` implementation
+- **`libtmux_tokio::test::TestServer` provides a test guard.** Call
+  [`TestServer.shutdown`](../../reference/libtmux_tokio-test-testserver-shutdown/) to handle cleanup errors. Its `Drop` implementation
   makes a synchronous cleanup attempt.
 
 ```rust
-use libtmux::test::TestServer;
+use libtmux_tokio::test::TestServer;
 
 let guard = TestServer::new().await?;
 let server = guard.server();

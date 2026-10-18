@@ -29,6 +29,34 @@ async function extract(source: string, privateMembers = false) {
   return extractWithSpec(RUST, join(root, 'query.rs'), 'query', { privateMembers })
 }
 
+describe('Rust test configuration', () => {
+  it('excludes test and doctest declarations while retaining production feature alternatives', async () => {
+    const symbols = await extract(`
+      #[cfg(doctest)]
+      #[doc = include_str!("guide.md")]
+      pub struct Guide;
+      #[cfg(all(feature = "query", doctest))]
+      pub struct QueryGuide;
+      #[cfg(any(test, all(doctest, feature = "query")))]
+      pub struct TestGuide;
+      #[cfg(test)]
+      #[allow(dead_code)]
+      mod tests { pub struct TestHelper; }
+      #[cfg(not(not(test)))]
+      pub fn test_function() {}
+      #[cfg(any(doctest, feature = "query"))]
+      pub struct Query;
+      #[cfg(not(test))]
+      pub struct Production;
+      #[cfg(feature = "doctest")]
+      pub struct FeatureNamedDoctest;
+      /// Discussing cfg(doctest) does not hide a declaration.
+      pub struct Ordinary;
+    `)
+    expect(symbols.map((symbol) => symbol.name)).toEqual(['Query', 'Production', 'FeatureNamedDoctest', 'Ordinary'])
+  })
+})
+
 describe('Rust enum payload fields', () => {
   it('retains named payload fields with native types, docs and source lines', async () => {
     const symbols = await extract(`pub enum Event {
@@ -318,7 +346,7 @@ pub trait Poller<T: Clone = String> { fn required(&self, value: T); }`)
     ]) expect(all.some((symbol) => symbol.id === id)).toBe(true)
   })
 
-  it('omits explicitly hidden trait hooks without hiding adjacent documented methods', async () => {
+  it('omits doc-hidden declarations without hiding adjacent documented methods', async () => {
     const source = `
       pub trait Contract {
         #[doc(hidden)]
@@ -341,6 +369,10 @@ pub trait Poller<T: Clone = String> { fn required(&self, value: T); }`)
       pub trait HiddenOwner { fn required(); fn provided() {} }
       #[doc(alias = "hidden owner", hidden)]
       pub trait HiddenCombinedOwner { fn required(); }
+      #[doc(hidden)]
+      pub struct HiddenRegistration;
+      #[doc(hidden)]
+      pub fn hidden_helper() {}
     `
     expect((await extract(source)).map((symbol) => symbol.id)).toEqual([
       'query.Contract', 'query.Contract.visible_required', 'query.Contract.visible_default',

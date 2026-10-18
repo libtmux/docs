@@ -9,22 +9,30 @@ import { symbolMarkdown } from '../src/lib/symbol-markdown'
 const model = data as unknown as ApiModel
 const examples = receipt.examples.filter((example) => example.port === 'rs')
 const hash = (code: string) => createHash('sha256').update(code).digest('hex')
+const crates = ['libtmux', 'libtmux-tokio'].filter((crate) =>
+  model.sources?.some((source) => source.package === crate))
 
 describe('complete Rust API examples', () => {
-  it('covers all 31 native targets across seven complete task programs', () => {
-    expect(examples).toHaveLength(31)
-    expect(new Set(examples.map((example) => example.sourceFile)).size).toBe(7)
-    expect(new Set(examples.map((example) => example.page)).size).toBe(31)
-    const attached = model.symbols.filter((symbol) => symbol.doc?.examples?.some(
-      (block) => block.sourceUrl?.includes('/crates/libtmux/examples/api_'))).map((symbol) => symbol.id)
-    expect(examples.map((example) => example.symbol).sort()).toEqual(attached.sort())
-    for (const id of ['server.Server', 'server.Server.sessions', 'server.Server.windows',
-      'server.Server.panes', 'server.Server.new_session', 'session.Session.new_window',
-      'pane.Pane.split', 'query.QueryIteratorExt.matching', 'query.QueryIteratorExt.exactly_one',
-      'query.QueryIteratorExt.one_or_none', 'pane.Pane.send_keys', 'pane.Pane.capture']) {
-      expect(attached).toContain(id)
+  it('covers 31 native targets across seven complete task programs for each client', () => {
+    expect(crates).toContain('libtmux')
+    expect(examples).toHaveLength(31 * crates.length)
+    for (const crate of crates) {
+      const owned = examples.filter((example) => example.sourceFile.startsWith(`crates/${crate}/`))
+      expect(owned).toHaveLength(31)
+      expect(new Set(owned.map((example) => example.sourceFile)).size).toBe(7)
+      expect(new Set(owned.map((example) => example.page)).size).toBe(31)
+      const attached = model.symbols.filter((symbol) => symbol.doc?.examples?.some(
+        (block) => block.sourceUrl?.includes(`/crates/${crate}/examples/api_`))).map((symbol) => symbol.id)
+      expect(owned.map((example) => example.symbol).sort()).toEqual(attached.sort())
+      const prefix = crate === 'libtmux' ? '' : 'libtmux_tokio.'
+      for (const id of ['server.Server', 'server.Server.sessions', 'server.Server.windows',
+        'server.Server.panes', 'server.Server.new_session', 'session.Session.new_window',
+        'pane.Pane.split', 'query.QueryIteratorExt.matching', 'query.QueryIteratorExt.exactly_one',
+        'query.QueryIteratorExt.one_or_none', 'pane.Pane.send_keys', 'pane.Pane.capture']) {
+        expect(attached).toContain(prefix + id)
+      }
+      expect(attached).not.toContain(`${prefix}options.OptionScope.Server`)
     }
-    expect(attached).not.toContain('options.OptionScope.Server')
     expect(model.sources?.every((source) => source.revision === model.revision &&
       source.extractedRevision === model.revision)).toBe(true)
   })
@@ -65,10 +73,13 @@ describe('complete Rust API examples', () => {
     expect(example.shellRecipe[1]).toContain('cargo run --quiet')
     expect(blocks.at(-1)?.code).toBe(`${example.expectedOutputs[1].join('\n')}\n`)
     const program = blocks[example.files[2].block]
-    expect(program.code).toContain('async fn main()')
-    expect(program.code).toContain('#[tokio::main')
-    expect(program.code).toContain('server.kill().await')
-    expect(program.code).toContain('server.shutdown().await')
+    const prefix = example.sourceFile.startsWith('crates/libtmux-tokio/') ? 'libtmux_tokio.' : ''
+    const async = model.symbols.find((entry) => entry.id === `${prefix}server.Server.sessions`)!.modifiers.includes('async')
+    expect(program.code.includes('async fn main()')).toBe(async)
+    expect(program.code.includes('#[tokio::main')).toBe(async)
+    expect(program.code).toContain(async ? 'server.kill().await' : 'cleanup.kill()')
+    expect(program.code).toContain(async ? 'server.shutdown().await' : 'server.shutdown()')
+    if (!async) expect(program.code).not.toMatch(/\.await\b|\btokio::/)
     expect(program.code).not.toMatch(/^\s*mod\s+\w+\s*;/m)
   })
 })

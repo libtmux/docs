@@ -81,28 +81,29 @@
     {
       "port": "rs",
       "language": "rust",
-      "sourceRevision": "d4e08b4eaab62ef4eeedab79b47973ae9a1de310",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceRepository": "libtmux/libtmux-rs",
       "files": [
         {
-          "name": "main.rs",
-          "sha256": "a207a4ace3c97f9226503ccc90b03e81cbd1704333ffa6d44d4d6544deef7b67"
+          "name": "src/main.rs",
+          "sha256": "342dd8699311268e21024bbe219f583440e9edf51f299d2fe97e486e3c8a17fc"
         },
         {
           "name": "Cargo.toml",
-          "sha256": "1051eb82a28d7f94b3a57e77102c805db67c384e9e5f1f1f56be901f7b821443"
+          "sha256": "2481656a1df08a792352d39cdf5b55223319fba4372c382e5cf3331cc059fa7f"
         }
       ],
       "toolchain": [
         "Rust 1.97.1"
       ],
       "tmux": [
-        "3.7c"
+        "3.6"
       ],
       "page": "ports/rs/examples/capture-pane-output",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs libtmux &&\n  git -C libtmux checkout d4e08b4eaab62ef4eeedab79b47973ae9a1de310 &&\n  cargo +1.97.1 run"
-      ]
+        "git init -q libtmux &&\n  git -C libtmux fetch -q --depth=1 \\\n    https://github.com/libtmux/libtmux-rs.git c84ede6448c32bf72aae7126e16e04540d2009aa &&\n  git -C libtmux checkout -q --detach FETCH_HEAD &&\n  cargo +1.97.1 run"
+      ],
+      "verificationScope": "Exact displayed files and setup replayed from public Git on Linux; program checks and expected stdout passed. Only tmux 3.6 was exercised."
     },
     {
       "port": "java",

@@ -1,7 +1,7 @@
 /**
  * The rows each registered port's header menus should offer, written from the
- * destinations verified against the live hosts rather than computed from
- * `ports.ts`. A row is `[group, label, detail, url]`; the menus list the core
+ * expected destinations rather than computed from `ports.ts`.
+ * A row is `[group, label, detail, url]`; the menus list the core
  * library first, then the MCP server, then the workspace manager.
  *
  * Julia and C++ publish no package, so they have no package menu. Only Rust,
@@ -93,6 +93,7 @@ export const PICKERS: Record<string, ExpectedPickers> = {
       ['core', 'libtmux-rs', 'libtmux/libtmux-rs', repo('libtmux/libtmux-rs')],
       ['core', 'libtmux', 'libtmux-rs/crates/libtmux', dir('libtmux/libtmux-rs', 'crates/libtmux')],
       ['core', 'libtmux-macros', 'libtmux-rs/crates/libtmux-macros', dir('libtmux/libtmux-rs', 'crates/libtmux-macros')],
+      ['core', 'libtmux-tokio', 'libtmux-rs/crates/libtmux-tokio', 'https://github.com/libtmux/libtmux-rs/tree/standard-library-core/crates/libtmux-tokio'],
       ['mcp', 'tmux-mcp', 'libtmux-rs/crates/tmux-mcp', dir('libtmux/libtmux-rs', 'crates/tmux-mcp')],
       ['workspace', 'tmux-workspace', 'libtmux-rs/crates/tmux-workspace', dir('libtmux/libtmux-rs', 'crates/tmux-workspace')],
     ],

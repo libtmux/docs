@@ -309,23 +309,23 @@
       "port": "rs",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-      "sourceTree": "865aef72a40135bade83eb5d44c0b78ea018a270",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
+      "sourceTree": "adf2978550532a75836612fa8f1339d56d991dc1",
       "files": [
         {
           "name": "src/main.rs",
-          "sha256": "cc41f05f8c8e8457b072913ffa340d43c4042a00bd86824154ba79235b157071",
-          "clipboardSha256": "2322ba9f0427da9f242413dbde8fe60567d2dfa89e5d3fcf3d3a2e4608dc2dd6"
+          "sha256": "f5f881e188664404c7065b316043b017b69b3c0ff2cd921e9254961bc4e0aaf5",
+          "clipboardSha256": "1bd0139eecf9202973441200c41253689b779b0888c9a3b2c5cdc81c283711ff"
         },
         {
           "name": "Cargo.toml",
-          "sha256": "25770faf80da67fd495e9e7a5d525bcdc055b94cab33549739a5159a01dd037a",
-          "clipboardSha256": "87a03c24caaeb6c8957f624b5465633b4794908ad16719a9d4063cca08168f11"
+          "sha256": "22f6c125ab2feda7df904bed9849588033defa1a05091ff08e6d12dd65da1cbe",
+          "clipboardSha256": "8e99935d679af3c33fe5b98060b427f188c4438d4b7a3f88b2323c9cd4eccc0a"
         },
         {
           "name": "Cargo.lock",
-          "sha256": "891b66eec409ff90621097ed80f476ecd0f8f6907776ce6973465f85373e5a43",
-          "clipboardSha256": "9df8639553925b9a72d291720bf12e747378dc75a9348811d9a47c2acabe3b3a"
+          "sha256": "08fa7ae6a6f695573908f038a31576721749f78c893e051e8cb1ad0051624867",
+          "clipboardSha256": "918b39d068751d57c219dee432019222bdd72a9aca4ed75c8a5a1194f964fe2a"
         },
         {
           "name": "rust-toolchain.toml",
@@ -334,7 +334,7 @@
         }
       ],
       "shellRecipe": [
-        "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-rs.git \\\n  a6fc2a65674177b92b17fa380757155d2ba150fd\ngit -C source checkout -q --detach FETCH_HEAD\ncargo build --locked --jobs 2",
+        "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-rs.git \\\n  c84ede6448c32bf72aae7126e16e04540d2009aa\ngit -C source checkout -q --detach FETCH_HEAD\ncargo build --locked --jobs 2",
         "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\ncargo run --quiet --locked"
       ],
       "expectedOutputs": [
@@ -343,28 +343,27 @@
           "hello"
         ]
       ],
-      "excerptSha256": "2322ba9f0427da9f242413dbde8fe60567d2dfa89e5d3fcf3d3a2e4608dc2dd6",
+      "excerptSha256": "1bd0139eecf9202973441200c41253689b779b0888c9a3b2c5cdc81c283711ff",
       "tmuxVersions": [
-        "3.2a",
-        "3.7c"
+        "3.6"
       ],
       "variants": {
         "concise": {
           "files": [
             {
               "name": "src/main.rs",
-              "sha256": "f985139a718982c6c32a391c7872dd28f8b30eb5ccea2529b0ad7a6100ae88c1",
-              "clipboardSha256": "2055335f9e2ebd06b8040b23f81f6004ad45c01982c599c98b612576875d7b0a"
+              "sha256": "02436032f45ef6b3e012f51d78a4742090f189d0a33608b940fd268a82c7772d",
+              "clipboardSha256": "f810372495f7c8c7c756da624f7927eac816c11bd8afc3936852a297ffd345c9"
             },
             {
               "name": "Cargo.toml",
-              "sha256": "25770faf80da67fd495e9e7a5d525bcdc055b94cab33549739a5159a01dd037a",
-              "clipboardSha256": "87a03c24caaeb6c8957f624b5465633b4794908ad16719a9d4063cca08168f11"
+              "sha256": "22f6c125ab2feda7df904bed9849588033defa1a05091ff08e6d12dd65da1cbe",
+              "clipboardSha256": "8e99935d679af3c33fe5b98060b427f188c4438d4b7a3f88b2323c9cd4eccc0a"
             },
             {
               "name": "Cargo.lock",
-              "sha256": "891b66eec409ff90621097ed80f476ecd0f8f6907776ce6973465f85373e5a43",
-              "clipboardSha256": "9df8639553925b9a72d291720bf12e747378dc75a9348811d9a47c2acabe3b3a"
+              "sha256": "08fa7ae6a6f695573908f038a31576721749f78c893e051e8cb1ad0051624867",
+              "clipboardSha256": "918b39d068751d57c219dee432019222bdd72a9aca4ed75c8a5a1194f964fe2a"
             },
             {
               "name": "rust-toolchain.toml",
@@ -372,24 +371,24 @@
               "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
             }
           ],
-          "excerptSha256": "2055335f9e2ebd06b8040b23f81f6004ad45c01982c599c98b612576875d7b0a"
+          "excerptSha256": "f810372495f7c8c7c756da624f7927eac816c11bd8afc3936852a297ffd345c9"
         },
         "errors": {
           "files": [
             {
               "name": "src/main.rs",
-              "sha256": "f1cb391d571ac0848a53642eb84611e812b1bcd045b2f372ad0766c735cf5a5f",
-              "clipboardSha256": "e1a4439e2154b51e24d983a1a447bb52433556c48fd8b26f030ed6a838b6a974"
+              "sha256": "840d3afcd95362da040a7155b4f9db24c6e5a4a4e5a0cce342115b50702ae16f",
+              "clipboardSha256": "504cd08501d016c0209158545b215f0fa4270b8cec2a5b653ae9319abd321ca3"
             },
             {
               "name": "Cargo.toml",
-              "sha256": "25770faf80da67fd495e9e7a5d525bcdc055b94cab33549739a5159a01dd037a",
-              "clipboardSha256": "87a03c24caaeb6c8957f624b5465633b4794908ad16719a9d4063cca08168f11"
+              "sha256": "22f6c125ab2feda7df904bed9849588033defa1a05091ff08e6d12dd65da1cbe",
+              "clipboardSha256": "8e99935d679af3c33fe5b98060b427f188c4438d4b7a3f88b2323c9cd4eccc0a"
             },
             {
               "name": "Cargo.lock",
-              "sha256": "891b66eec409ff90621097ed80f476ecd0f8f6907776ce6973465f85373e5a43",
-              "clipboardSha256": "9df8639553925b9a72d291720bf12e747378dc75a9348811d9a47c2acabe3b3a"
+              "sha256": "08fa7ae6a6f695573908f038a31576721749f78c893e051e8cb1ad0051624867",
+              "clipboardSha256": "918b39d068751d57c219dee432019222bdd72a9aca4ed75c8a5a1194f964fe2a"
             },
             {
               "name": "rust-toolchain.toml",
@@ -397,24 +396,24 @@
               "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
             }
           ],
-          "excerptSha256": "e1a4439e2154b51e24d983a1a447bb52433556c48fd8b26f030ed6a838b6a974"
+          "excerptSha256": "504cd08501d016c0209158545b215f0fa4270b8cec2a5b653ae9319abd321ca3"
         },
         "cleanup": {
           "files": [
             {
               "name": "src/main.rs",
-              "sha256": "40724a1aaf367cff7da5559916dc7af8fbca255fdce6c038772ae99560912b0b",
-              "clipboardSha256": "e17c3430b6a4dbcbfcf42c1d5f699fb7f42a6617a77282e734fd2e47fa2d7c0b"
+              "sha256": "9ee4963e342e5d9a6500a5a58824ff6fa25eb369d8ff0c098626a56f64790fef",
+              "clipboardSha256": "6f2c47513d5d72e7d63ee42c13d63f31b3bfa3da6716c2a4994ba9520cc8ca61"
             },
             {
               "name": "Cargo.toml",
-              "sha256": "25770faf80da67fd495e9e7a5d525bcdc055b94cab33549739a5159a01dd037a",
-              "clipboardSha256": "87a03c24caaeb6c8957f624b5465633b4794908ad16719a9d4063cca08168f11"
+              "sha256": "22f6c125ab2feda7df904bed9849588033defa1a05091ff08e6d12dd65da1cbe",
+              "clipboardSha256": "8e99935d679af3c33fe5b98060b427f188c4438d4b7a3f88b2323c9cd4eccc0a"
             },
             {
               "name": "Cargo.lock",
-              "sha256": "891b66eec409ff90621097ed80f476ecd0f8f6907776ce6973465f85373e5a43",
-              "clipboardSha256": "9df8639553925b9a72d291720bf12e747378dc75a9348811d9a47c2acabe3b3a"
+              "sha256": "08fa7ae6a6f695573908f038a31576721749f78c893e051e8cb1ad0051624867",
+              "clipboardSha256": "918b39d068751d57c219dee432019222bdd72a9aca4ed75c8a5a1194f964fe2a"
             },
             {
               "name": "rust-toolchain.toml",
@@ -422,9 +421,10 @@
               "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
             }
           ],
-          "excerptSha256": "e17c3430b6a4dbcbfcf42c1d5f699fb7f42a6617a77282e734fd2e47fa2d7c0b"
+          "excerptSha256": "6f2c47513d5d72e7d63ee42c13d63f31b3bfa3da6716c2a4994ba9520cc8ca61"
         }
-      }
+      },
+      "verificationScope": "All four displayed views replayed from public Git on Linux. Full and cleanup views must stop their servers; the harness retires servers left by the concise and error-reporting views. Only tmux 3.6 was exercised."
     },
     {
       "port": "go",

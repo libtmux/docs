@@ -122,6 +122,7 @@ describe('header picker behavior', () => {
   it('shows an empty state, restores the list when cleared and resets on close', () => {
     initDocumentationNavigation()
     const github = picker('github')
+    const repositories = ['libtmux-rs', 'libtmux', 'libtmux-macros', 'libtmux-tokio', 'tmux-mcp', 'tmux-workspace']
     open(github)
     const input = github.querySelector<HTMLInputElement>('[data-picker-search]')!
     const empty = github.querySelector<HTMLElement>('[data-picker-empty]')!
@@ -132,13 +133,15 @@ describe('header picker behavior', () => {
     expect(empty.textContent).toBe('No matching repositories.')
     type(input, '')
     expect(empty.hidden).toBe(true)
-    expect(visibleRows(github)).toHaveLength(5)
+    expect(visibleRows(github)).toEqual(repositories)
+    type(input, 'libtmux-tokio')
+    expect(visibleRows(github)).toEqual(['libtmux-tokio'])
     type(input, 'crates/tmux')
     expect(visibleRows(github)).toEqual(['tmux-mcp', 'tmux-workspace'])
     github.open = false
     github.dispatchEvent(new win.Event('toggle'))
     expect(input.value).toBe('')
-    expect(visibleRows(github)).toHaveLength(5)
+    expect(visibleRows(github)).toEqual(repositories)
   })
 
   it('moves between rows with the arrow keys and activates the first match with Enter', () => {

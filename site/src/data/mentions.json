@@ -9159,29 +9159,8 @@
   {
    "port": "rs",
    "symbol": "client.Client",
-   "page": "/rs/latest/concepts/server-session-window-pane/",
-   "title": "Server, session, window, pane",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "command.CommandChain",
-   "page": "/rs/latest/concepts/transports/",
-   "title": "Subprocesses, plans, and control mode",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "command.CommandResult",
-   "page": "/rs/latest/concepts/transports/",
-   "title": "Subprocesses, plans, and control mode",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "command.CommandResult.success",
-   "page": "/rs/latest/concepts/transports/",
-   "title": "Subprocesses, plans, and control mode",
+   "page": "/rs/latest/concepts/standard-library-core/",
+   "title": "Try blocking and Tokio clients",
    "section": "concepts"
   },
   {
@@ -9361,76 +9340,6 @@
   },
   {
    "port": "rs",
-   "symbol": "control.BlockResult",
-   "page": "/rs/latest/guides/control-mode/",
-   "title": "Send commands over control mode",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "control.BlockResult.succeeded",
-   "page": "/rs/latest/guides/control-mode/",
-   "title": "Send commands over control mode",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "control.ControlEvents.next_event",
-   "page": "/rs/latest/guides/control-mode/",
-   "title": "Send commands over control mode",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "control.ControlEvents.shutdown",
-   "page": "/rs/latest/guides/control-mode/",
-   "title": "Send commands over control mode",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "control.ControlMode",
-   "page": "/rs/latest/concepts/transports/",
-   "title": "Subprocesses, plans, and control mode",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "control.ControlMode.attach",
-   "page": "/rs/latest/concepts/transports/",
-   "title": "Subprocesses, plans, and control mode",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "control.ControlMode.attach",
-   "page": "/rs/latest/guides/control-mode/",
-   "title": "Send commands over control mode",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "control.ControlSender.reply_timeout",
-   "page": "/rs/latest/concepts/transports/",
-   "title": "Subprocesses, plans, and control mode",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "control.ControlSender.send",
-   "page": "/rs/latest/guides/control-mode/",
-   "title": "Send commands over control mode",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "control.ControlSender.watch_only",
-   "page": "/rs/latest/guides/control-mode/",
-   "title": "Send commands over control mode",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
    "symbol": "error.ControlModeErrorKind.DispatchTimedOut",
    "page": "/rs/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
@@ -9441,13 +9350,6 @@
    "symbol": "error.Error",
    "page": "/rs/latest/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "error.Error.OptionScopeMismatch",
-   "page": "/rs/latest/topics/options-and-hooks/",
-   "title": "Options and hooks",
    "section": "topics"
   },
   {
@@ -9505,6 +9407,797 @@
    "page": "/rs/latest/topics/architecture/",
    "title": "Architecture",
    "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.client.Client",
+   "page": "/rs/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.command.CommandChain",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.command.CommandResult",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.control.ControlEvents.next_event",
+   "page": "/rs/latest/guides/control-mode/",
+   "title": "Send commands over control mode",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.control.ControlEvents.shutdown",
+   "page": "/rs/latest/guides/control-mode/",
+   "title": "Send commands over control mode",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.control.ControlMode",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.control.ControlMode.attach",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.control.ControlMode.attach",
+   "page": "/rs/latest/guides/control-mode/",
+   "title": "Send commands over control mode",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.control.ControlMode.split",
+   "page": "/rs/latest/guides/control-mode/",
+   "title": "Send commands over control mode",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.control.ControlSender.reply_timeout",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.control.ControlSender.send",
+   "page": "/rs/latest/guides/control-mode/",
+   "title": "Send commands over control mode",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.control.ControlSender.watch_only",
+   "page": "/rs/latest/guides/control-mode/",
+   "title": "Send commands over control mode",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.error.Error.OptionScopeMismatch",
+   "page": "/rs/latest/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.pane.Pane",
+   "page": "/rs/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.pane.Pane",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.pane.Pane",
+   "page": "/rs/latest/guides/control-mode/",
+   "title": "Send commands over control mode",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.pane.Pane",
+   "page": "/rs/latest/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.pane.Pane",
+   "page": "/rs/latest/topics/pane-interaction/",
+   "title": "Pane interaction",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.pane.Pane.append_option",
+   "page": "/rs/latest/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.pane.Pane.capture",
+   "page": "/rs/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.pane.Pane.current_command",
+   "page": "/rs/latest/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.pane.Pane.from_env",
+   "page": "/rs/latest/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.pane.Pane.hook",
+   "page": "/rs/latest/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.pane.Pane.id",
+   "page": "/rs/latest/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.pane.Pane.option_names",
+   "page": "/rs/latest/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.pane.Pane.options",
+   "page": "/rs/latest/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.pane.Pane.send_keys",
+   "page": "/rs/latest/topics/pane-interaction/",
+   "title": "Pane interaction",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.pane.Pane.send_line",
+   "page": "/rs/latest/topics/pane-interaction/",
+   "title": "Pane interaction",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.pane.Pane.set_hook",
+   "page": "/rs/latest/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.pane.Pane.set_option",
+   "page": "/rs/latest/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.pane.Pane.typed_option",
+   "page": "/rs/latest/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.pane.Pane.unset_hook",
+   "page": "/rs/latest/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.pane.Pane.unset_option",
+   "page": "/rs/latest/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.pane.Pane.window",
+   "page": "/rs/latest/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.plan.Plan",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.plan.Plan",
+   "page": "/rs/latest/guides/batching-commands/",
+   "title": "Batch commands with a plan",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.plan.Plan.add",
+   "page": "/rs/latest/guides/batching-commands/",
+   "title": "Batch commands with a plan",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.plan.Plan.validate",
+   "page": "/rs/latest/guides/batching-commands/",
+   "title": "Batch commands with a plan",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.plan.planner.Planner.Sequential",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.plan.run.PlanResult",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.plan.run.PlanResult",
+   "page": "/rs/latest/guides/batching-commands/",
+   "title": "Batch commands with a plan",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.plan.run.PlanResult.is_complete",
+   "page": "/rs/latest/guides/batching-commands/",
+   "title": "Batch commands with a plan",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.plan.Slot.pane",
+   "page": "/rs/latest/guides/batching-commands/",
+   "title": "Batch commands with a plan",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.query.ExactlyOneError",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.query.Filterable",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.query.MultipleItemsError",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.query.QueryIteratorExt.exactly_one",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.query.QueryIteratorExt.matching",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.query.QueryIteratorExt.one_or_none",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.builder.ServerBuilder.default_timeout",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.ChannelWait",
+   "page": "/rs/latest/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server",
+   "page": "/rs/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server",
+   "page": "/rs/latest/concepts/workspaces/",
+   "title": "Workspaces",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server",
+   "page": "/rs/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server",
+   "page": "/rs/latest/guides/batching-commands/",
+   "title": "Batch commands with a plan",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server",
+   "page": "/rs/latest/guides/control-mode/",
+   "title": "Send commands over control mode",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server",
+   "page": "/rs/latest/guides/testing-with-libtmux/",
+   "title": "Testing with libtmux",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server",
+   "page": "/rs/latest/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server",
+   "page": "/rs/latest/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server",
+   "page": "/rs/latest/workspace/internals/",
+   "title": "Rust workspace internals",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server",
+   "page": "/rs/latest/workspace/internals/examples/",
+   "title": "Rust workspace builder examples",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server",
+   "page": "/rs/latest/workspace/internals/guides/",
+   "title": "Use the Rust workspace builder",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server",
+   "page": "/rs/latest/workspace/reference/",
+   "title": "Rust workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server.attached_sessions",
+   "page": "/rs/latest/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server.builder",
+   "page": "/rs/latest/guides/testing-with-libtmux/",
+   "title": "Testing with libtmux",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server.builder",
+   "page": "/rs/latest/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server.chain",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server.check_alive",
+   "page": "/rs/latest/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server.cmd",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server.environment_all",
+   "page": "/rs/latest/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server.from_env",
+   "page": "/rs/latest/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server.is_alive",
+   "page": "/rs/latest/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server.kill",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server.kill",
+   "page": "/rs/latest/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server.new",
+   "page": "/rs/latest/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server.over_control_mode",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server.over_control_mode",
+   "page": "/rs/latest/guides/control-mode/",
+   "title": "Send commands over control mode",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server.sessions",
+   "page": "/rs/latest/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server.set_environment",
+   "page": "/rs/latest/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server.shutdown",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server.signal_channel",
+   "page": "/rs/latest/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server.unset_environment",
+   "page": "/rs/latest/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.server.Server.wait_for_channel",
+   "page": "/rs/latest/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.session.Session",
+   "page": "/rs/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.session.Session",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.session.Session",
+   "page": "/rs/latest/guides/control-mode/",
+   "title": "Send commands over control mode",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.session.Session",
+   "page": "/rs/latest/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.session.Session",
+   "page": "/rs/latest/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.session.Session",
+   "page": "/rs/latest/workspace/reference/",
+   "title": "Rust workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.session.Session.active_window",
+   "page": "/rs/latest/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.session.Session.environment_all",
+   "page": "/rs/latest/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.session.Session.from_env",
+   "page": "/rs/latest/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.session.Session.panes",
+   "page": "/rs/latest/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.session.Session.refresh",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.session.Session.refreshed",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.session.Session.set_environment",
+   "page": "/rs/latest/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.session.Session.unset_environment",
+   "page": "/rs/latest/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.session.Session.windows",
+   "page": "/rs/latest/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.test.retry_until",
+   "page": "/rs/latest/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.test.TestServer",
+   "page": "/rs/latest/topics/context-managers/",
+   "title": "Ownership and cleanup",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.test.TestServer.shutdown",
+   "page": "/rs/latest/topics/context-managers/",
+   "title": "Ownership and cleanup",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.window.Window",
+   "page": "/rs/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.window.Window",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.window.Window",
+   "page": "/rs/latest/guides/batching-commands/",
+   "title": "Batch commands with a plan",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.window.Window",
+   "page": "/rs/latest/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.window.Window",
+   "page": "/rs/latest/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.window.Window.active_pane",
+   "page": "/rs/latest/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.window.Window.from_env",
+   "page": "/rs/latest/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.window.Window.panes",
+   "page": "/rs/latest/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.window.Window.session",
+   "page": "/rs/latest/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "libtmux_tokio.window.Window.set_hook",
+   "page": "/rs/latest/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "limits.DispatchLimits.max_wait_clients",
+   "page": "/rs/latest/concepts/standard-library-core/",
+   "title": "Try blocking and Tokio clients",
+   "section": "concepts"
   },
   {
    "port": "rs",
@@ -9648,45 +10341,10 @@
   },
   {
    "port": "rs",
-   "symbol": "options.generated.EDITOR",
-   "page": "/rs/latest/workspace/configuration/environment/",
-   "title": "Workspace environment",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
    "symbol": "pane.Pane",
-   "page": "/rs/latest/concepts/server-session-window-pane/",
-   "title": "Server, session, window, pane",
+   "page": "/rs/latest/concepts/standard-library-core/",
+   "title": "Try blocking and Tokio clients",
    "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.Pane",
-   "page": "/rs/latest/concepts/transports/",
-   "title": "Subprocesses, plans, and control mode",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.Pane",
-   "page": "/rs/latest/guides/control-mode/",
-   "title": "Send commands over control mode",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.Pane",
-   "page": "/rs/latest/topics/architecture/",
-   "title": "Architecture",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.Pane.append_option",
-   "page": "/rs/latest/topics/options-and-hooks/",
-   "title": "Options and hooks",
-   "section": "topics"
   },
   {
    "port": "rs",
@@ -9698,62 +10356,6 @@
   {
    "port": "rs",
    "symbol": "pane.Pane.capture",
-   "page": "/rs/latest/guides/getting-started/",
-   "title": "Getting started",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.Pane.capture",
-   "page": "/rs/latest/guides/sending-keys/",
-   "title": "Sending keys",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.Pane.current_command",
-   "page": "/rs/latest/topics/architecture/",
-   "title": "Architecture",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.Pane.from_env",
-   "page": "/rs/latest/topics/environment/",
-   "title": "Environment",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.Pane.hook",
-   "page": "/rs/latest/topics/options-and-hooks/",
-   "title": "Options and hooks",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.Pane.id",
-   "page": "/rs/latest/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.Pane.option_names",
-   "page": "/rs/latest/topics/options-and-hooks/",
-   "title": "Options and hooks",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.Pane.options",
-   "page": "/rs/latest/topics/options-and-hooks/",
-   "title": "Options and hooks",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.Pane.send_key_names",
    "page": "/rs/latest/guides/sending-keys/",
    "title": "Sending keys",
    "section": "guides"
@@ -9761,9 +10363,9 @@
   {
    "port": "rs",
    "symbol": "pane.Pane.send_key_names",
-   "page": "/rs/latest/topics/pane-interaction/",
-   "title": "Pane interaction",
-   "section": "topics"
+   "page": "/rs/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
   },
   {
    "port": "rs",
@@ -9774,318 +10376,10 @@
   },
   {
    "port": "rs",
-   "symbol": "pane.Pane.send_keys",
-   "page": "/rs/latest/topics/pane-interaction/",
-   "title": "Pane interaction",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
    "symbol": "pane.Pane.send_line",
    "page": "/rs/latest/guides/sending-keys/",
    "title": "Sending keys",
    "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.Pane.send_line",
-   "page": "/rs/latest/topics/pane-interaction/",
-   "title": "Pane interaction",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.Pane.set_hook",
-   "page": "/rs/latest/topics/options-and-hooks/",
-   "title": "Options and hooks",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.Pane.set_option",
-   "page": "/rs/latest/topics/options-and-hooks/",
-   "title": "Options and hooks",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.Pane.typed_option",
-   "page": "/rs/latest/topics/options-and-hooks/",
-   "title": "Options and hooks",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.Pane.unset_hook",
-   "page": "/rs/latest/topics/options-and-hooks/",
-   "title": "Options and hooks",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.Pane.unset_option",
-   "page": "/rs/latest/topics/options-and-hooks/",
-   "title": "Options and hooks",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.Pane.window",
-   "page": "/rs/latest/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.Pane.window_id",
-   "page": "/rs/latest/topics/format-tokens/",
-   "title": "Format-token fields",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "plan.ops.panes.SendKeys",
-   "page": "/rs/latest/guides/batching-commands/",
-   "title": "Batch commands with a plan",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "plan.ops.timing.Pause",
-   "page": "/rs/latest/guides/batching-commands/",
-   "title": "Batch commands with a plan",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "plan.Plan",
-   "page": "/rs/latest/concepts/transports/",
-   "title": "Subprocesses, plans, and control mode",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "plan.Plan",
-   "page": "/rs/latest/guides/batching-commands/",
-   "title": "Batch commands with a plan",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "plan.Plan.add",
-   "page": "/rs/latest/guides/batching-commands/",
-   "title": "Batch commands with a plan",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "plan.Plan.preview",
-   "page": "/rs/latest/workspace/internals/guides/",
-   "title": "Use the Rust workspace builder",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "plan.Plan.preview",
-   "page": "/rs/latest/workspace/internals/topics/",
-   "title": "Rust workspace builder behavior",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "plan.Plan.run_over_control_mode",
-   "page": "/rs/latest/guides/batching-commands/",
-   "title": "Batch commands with a plan",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "plan.Plan.validate",
-   "page": "/rs/latest/guides/batching-commands/",
-   "title": "Batch commands with a plan",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "plan.planner.Planner.Folding",
-   "page": "/rs/latest/concepts/transports/",
-   "title": "Subprocesses, plans, and control mode",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "plan.planner.Planner.Folding",
-   "page": "/rs/latest/guides/batching-commands/",
-   "title": "Batch commands with a plan",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "plan.planner.Planner.Marked",
-   "page": "/rs/latest/concepts/transports/",
-   "title": "Subprocesses, plans, and control mode",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "plan.planner.Planner.Marked",
-   "page": "/rs/latest/guides/batching-commands/",
-   "title": "Batch commands with a plan",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "plan.planner.Planner.Sequential",
-   "page": "/rs/latest/concepts/transports/",
-   "title": "Subprocesses, plans, and control mode",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "plan.planner.Planner.Sequential",
-   "page": "/rs/latest/guides/batching-commands/",
-   "title": "Batch commands with a plan",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "plan.run.Outcome.Complete",
-   "page": "/rs/latest/guides/batching-commands/",
-   "title": "Batch commands with a plan",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "plan.run.Outcome.Failed",
-   "page": "/rs/latest/guides/batching-commands/",
-   "title": "Batch commands with a plan",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "plan.run.Outcome.Skipped",
-   "page": "/rs/latest/guides/batching-commands/",
-   "title": "Batch commands with a plan",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "plan.run.PlanResult",
-   "page": "/rs/latest/concepts/transports/",
-   "title": "Subprocesses, plans, and control mode",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "plan.run.PlanResult",
-   "page": "/rs/latest/guides/batching-commands/",
-   "title": "Batch commands with a plan",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "plan.run.PlanResult.is_complete",
-   "page": "/rs/latest/guides/batching-commands/",
-   "title": "Batch commands with a plan",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "plan.run.PlanResult.operations",
-   "page": "/rs/latest/guides/batching-commands/",
-   "title": "Batch commands with a plan",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "plan.Slot.pane",
-   "page": "/rs/latest/guides/batching-commands/",
-   "title": "Batch commands with a plan",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "query.ExactlyOneError",
-   "page": "/rs/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "query.fields.ManyRelation.all",
-   "page": "/rs/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "query.fields.ManyRelation.any",
-   "page": "/rs/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "query.fields.ManyRelation.none",
-   "page": "/rs/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "query.fields.OneRelation.is",
-   "page": "/rs/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "query.fields.TextField.contains",
-   "page": "/rs/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "query.fields.TextField.ends_with",
-   "page": "/rs/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "query.fields.TextField.eq_ignore_case",
-   "page": "/rs/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "query.fields.TextField.regex",
-   "page": "/rs/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "query.fields.TextField.starts_with",
-   "page": "/rs/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "query.Filterable",
-   "page": "/rs/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "query.Filterable.filter_fields",
-   "page": "/rs/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
   },
   {
    "port": "rs",
@@ -10096,248 +10390,10 @@
   },
   {
    "port": "rs",
-   "symbol": "query.FilterExpr.and",
-   "page": "/rs/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "query.FilterExpr.not",
-   "page": "/rs/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "query.FilterExpr.or",
-   "page": "/rs/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "query.MultipleItemsError",
-   "page": "/rs/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "query.QueryIteratorExt.exactly_one",
-   "page": "/rs/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "query.QueryIteratorExt.matching",
-   "page": "/rs/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "query.QueryIteratorExt.one_or_none",
-   "page": "/rs/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.builder.ServerBuilder.default_timeout",
-   "page": "/rs/latest/concepts/transports/",
-   "title": "Subprocesses, plans, and control mode",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.ChannelWait",
-   "page": "/rs/latest/topics/waiting-and-retry/",
-   "title": "Waiting and retrying",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
    "symbol": "server.Server",
-   "page": "/rs/latest/concepts/server-session-window-pane/",
-   "title": "Server, session, window, pane",
+   "page": "/rs/latest/concepts/standard-library-core/",
+   "title": "Try blocking and Tokio clients",
    "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server",
-   "page": "/rs/latest/concepts/transports/",
-   "title": "Subprocesses, plans, and control mode",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server",
-   "page": "/rs/latest/guides/attaching-to-tmux/",
-   "title": "Attaching to tmux",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server",
-   "page": "/rs/latest/guides/batching-commands/",
-   "title": "Batch commands with a plan",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server",
-   "page": "/rs/latest/guides/control-mode/",
-   "title": "Send commands over control mode",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server",
-   "page": "/rs/latest/guides/testing-with-libtmux/",
-   "title": "Testing with libtmux",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server",
-   "page": "/rs/latest/mcp/reference/",
-   "title": "Rust MCP API",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server",
-   "page": "/rs/latest/topics/architecture/",
-   "title": "Architecture",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server",
-   "page": "/rs/latest/workspace/internals/",
-   "title": "Rust workspace internals",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server",
-   "page": "/rs/latest/workspace/internals/examples/",
-   "title": "Rust workspace builder examples",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server",
-   "page": "/rs/latest/workspace/reference/",
-   "title": "Rust workspace builder API",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server.attached_sessions",
-   "page": "/rs/latest/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server.builder",
-   "page": "/rs/latest/guides/testing-with-libtmux/",
-   "title": "Testing with libtmux",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server.builder",
-   "page": "/rs/latest/topics/socket-and-servers/",
-   "title": "Socket and servers",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server.chain",
-   "page": "/rs/latest/concepts/transports/",
-   "title": "Subprocesses, plans, and control mode",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server.check_alive",
-   "page": "/rs/latest/topics/socket-and-servers/",
-   "title": "Socket and servers",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server.cmd",
-   "page": "/rs/latest/concepts/transports/",
-   "title": "Subprocesses, plans, and control mode",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server.environment_all",
-   "page": "/rs/latest/topics/environment/",
-   "title": "Environment",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server.from_env",
-   "page": "/rs/latest/topics/environment/",
-   "title": "Environment",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server.is_alive",
-   "page": "/rs/latest/topics/socket-and-servers/",
-   "title": "Socket and servers",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server.kill",
-   "page": "/rs/latest/concepts/transports/",
-   "title": "Subprocesses, plans, and control mode",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server.kill",
-   "page": "/rs/latest/topics/socket-and-servers/",
-   "title": "Socket and servers",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server.new",
-   "page": "/rs/latest/topics/socket-and-servers/",
-   "title": "Socket and servers",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server.over_control_mode",
-   "page": "/rs/latest/concepts/transports/",
-   "title": "Subprocesses, plans, and control mode",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server.over_control_mode",
-   "page": "/rs/latest/guides/batching-commands/",
-   "title": "Batch commands with a plan",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server.over_control_mode",
-   "page": "/rs/latest/guides/control-mode/",
-   "title": "Send commands over control mode",
-   "section": "guides"
   },
   {
    "port": "rs",
@@ -10348,108 +10404,10 @@
   },
   {
    "port": "rs",
-   "symbol": "server.Server.sessions",
-   "page": "/rs/latest/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server.set_environment",
-   "page": "/rs/latest/topics/environment/",
-   "title": "Environment",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server.shutdown",
-   "page": "/rs/latest/concepts/transports/",
-   "title": "Subprocesses, plans, and control mode",
+   "symbol": "session.Session",
+   "page": "/rs/latest/concepts/standard-library-core/",
+   "title": "Try blocking and Tokio clients",
    "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server.signal_channel",
-   "page": "/rs/latest/topics/waiting-and-retry/",
-   "title": "Waiting and retrying",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server.unset_environment",
-   "page": "/rs/latest/topics/environment/",
-   "title": "Environment",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server.wait_for_channel",
-   "page": "/rs/latest/topics/waiting-and-retry/",
-   "title": "Waiting and retrying",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "session.Session",
-   "page": "/rs/latest/concepts/server-session-window-pane/",
-   "title": "Server, session, window, pane",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "session.Session",
-   "page": "/rs/latest/concepts/transports/",
-   "title": "Subprocesses, plans, and control mode",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "session.Session",
-   "page": "/rs/latest/guides/control-mode/",
-   "title": "Send commands over control mode",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "session.Session",
-   "page": "/rs/latest/topics/architecture/",
-   "title": "Architecture",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "session.Session",
-   "page": "/rs/latest/topics/environment/",
-   "title": "Environment",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "session.Session",
-   "page": "/rs/latest/workspace/reference/",
-   "title": "Rust workspace builder API",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "session.Session.active_window",
-   "page": "/rs/latest/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "session.Session.environment_all",
-   "page": "/rs/latest/topics/environment/",
-   "title": "Environment",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "session.Session.from_env",
-   "page": "/rs/latest/topics/environment/",
-   "title": "Environment",
-   "section": "topics"
   },
   {
    "port": "rs",
@@ -10457,48 +10415,6 @@
    "page": "/rs/latest/guides/querying-and-filtering/",
    "title": "Querying and filtering",
    "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "session.Session.panes",
-   "page": "/rs/latest/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "session.Session.refresh",
-   "page": "/rs/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "session.Session.refreshed",
-   "page": "/rs/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "session.Session.set_environment",
-   "page": "/rs/latest/topics/environment/",
-   "title": "Environment",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "session.Session.unset_environment",
-   "page": "/rs/latest/topics/environment/",
-   "title": "Environment",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "session.Session.windows",
-   "page": "/rs/latest/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
   },
   {
    "port": "rs",
@@ -10600,115 +10516,10 @@
   },
   {
    "port": "rs",
-   "symbol": "test.retry_until",
-   "page": "/rs/latest/topics/waiting-and-retry/",
-   "title": "Waiting and retrying",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "test.TestServer",
-   "page": "/rs/latest/guides/testing-with-libtmux/",
-   "title": "Testing with libtmux",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "test.TestServer",
-   "page": "/rs/latest/topics/context-managers/",
-   "title": "Ownership and cleanup",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "test.TestServer",
-   "page": "/rs/latest/workspace/internals/examples/",
-   "title": "Rust workspace builder examples",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "test.TestServer.server",
-   "page": "/rs/latest/workspace/cli/shell/",
-   "title": "Evaluate in a workspace",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "test.TestServer.shutdown",
-   "page": "/rs/latest/topics/context-managers/",
-   "title": "Ownership and cleanup",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
    "symbol": "window.Window",
-   "page": "/rs/latest/concepts/server-session-window-pane/",
-   "title": "Server, session, window, pane",
+   "page": "/rs/latest/concepts/standard-library-core/",
+   "title": "Try blocking and Tokio clients",
    "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "window.Window",
-   "page": "/rs/latest/concepts/transports/",
-   "title": "Subprocesses, plans, and control mode",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "window.Window",
-   "page": "/rs/latest/guides/batching-commands/",
-   "title": "Batch commands with a plan",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "window.Window",
-   "page": "/rs/latest/topics/architecture/",
-   "title": "Architecture",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "window.Window",
-   "page": "/rs/latest/topics/environment/",
-   "title": "Environment",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "window.Window.active_pane",
-   "page": "/rs/latest/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "window.Window.from_env",
-   "page": "/rs/latest/topics/environment/",
-   "title": "Environment",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "window.Window.panes",
-   "page": "/rs/latest/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "window.Window.session",
-   "page": "/rs/latest/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "window.Window.set_hook",
-   "page": "/rs/latest/topics/options-and-hooks/",
-   "title": "Options and hooks",
-   "section": "topics"
   },
   {
    "port": "ruby",

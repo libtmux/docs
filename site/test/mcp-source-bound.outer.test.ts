@@ -1,9 +1,10 @@
 import { execFileSync, spawnSync, type SpawnSyncReturns } from 'node:child_process'
-import { chmodSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { chmodSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { expect, it } from 'vitest'
+import type { ApiModel } from '../../packages/api-model/src/model.ts'
 
 const root = new URL('../../', import.meta.url).pathname
 const files = [
@@ -397,4 +398,49 @@ it('does not inherit another language\'s MCP product for a selected library', ()
     expect(readFileSync(catalog, 'utf8')).toBe(before)
     expect(existsSync(discovery)).toBe(false)
   })
+})
+
+it('pins every same-repository product to a selected source revision', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'libtmux-selected-model-'))
+  try {
+    const checkout = join(directory, 'checkout')
+    for (const path of ['scripts', 'site/src', 'checkout/tmux', 'checkout/mcp']) {
+      mkdirSync(join(directory, path), { recursive: true })
+    }
+    copyFileSync(join(root, 'scripts/gen-api-model.mjs'), join(directory, 'scripts/gen-api-model.mjs'))
+    symlinkSync(join(root, 'packages'), join(directory, 'packages'), 'dir')
+    symlinkSync(join(root, 'site/src/lib'), join(directory, 'site/src/lib'), 'dir')
+    writeFileSync(join(directory, 'package.json'), '{"type":"module"}')
+    writeFileSync(join(checkout, 'tmux/server.go'), 'package tmux\n\n// Server controls tmux.\ntype Server struct {}\n')
+    writeFileSync(join(checkout, 'mcp/server.go'), 'package mcp\n\n// Server exposes tools.\ntype Server struct {}\n')
+    const git = (...args: string[]) => execFileSync('git', ['-C', checkout, ...args], {
+      encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+    }).trim()
+    git('init', '-q')
+    git('add', '.')
+    const commit = () => git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid',
+      '-c', 'commit.gpgsign=false', 'commit', '-qam', 'Source fixture')
+    commit()
+    git('update-ref', 'refs/remotes/origin/main', git('rev-parse', 'HEAD'))
+    writeFileSync(join(checkout, 'mcp/server.go'), 'package mcp\n\n// Server exposes selected tools.\ntype Server struct { Name string }\n')
+    commit()
+    const revision = git('rev-parse', 'HEAD')
+    const result = spawnSync(process.execPath, [join(directory, 'scripts/gen-api-model.mjs'), '--port', 'go'], {
+      encoding: 'utf8', timeout: 10000,
+      env: { ...process.env, LIBTMUX_DOCS_CHECKOUT_GO: checkout,
+        LIBTMUX_DOCS_PORT: 'go', LIBTMUX_DOCS_SOURCE_SHA: revision, LIBTMUX_DOCS_SOURCE_REF: revision },
+    })
+    expect(result.status, result.stderr).toBe(0)
+    const model = JSON.parse(readFileSync(join(directory, 'site/src/data/api/go.json'), 'utf8')) as ApiModel
+    expect(model.sources?.map((source) => source.product).sort()).toEqual(['core', 'mcp'])
+    for (const source of model.sources ?? []) {
+      expect(source.revision, source.package).toBe(revision)
+      expect(source.extractedRevision, source.package).toBe(revision)
+    }
+    const mcp = model.symbols.find((symbol) => symbol.product === 'mcp' && symbol.name === 'Server')!
+    expect(mcp.source).toMatchObject({ revision, extractedRevision: revision, file: 'mcp/server.go', line: 4 })
+    expect(mcp.doc?.summary).toBe('Server exposes selected tools.')
+  } finally {
+    rmSync(directory, { recursive: true, force: true })
+  }
 })

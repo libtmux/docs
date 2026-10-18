@@ -23,14 +23,14 @@ identifies invalid configuration.
 
 ## Builder
 
-[`WorkspaceBuilder`](./src-workspacebuilder/) borrows a `Server`.
+[`WorkspaceBuilder`](./src-workspacebuilder/) borrows a [`Server`](../../reference/libtmux_tokio-server-server/).
 `new` selects that server, `plan` returns the inert construction plan, and
 `build` asynchronously creates the requested session. Keep the server alive
 for the builder's lifetime.
 
 `BuildError` distinguishes configuration errors, underlying libtmux errors,
 refused operations, a missing initial window, and an existing session name.
-Successful completion returns a `Session`; failure does not imply rollback.
+Successful completion returns a [`Session`](../../reference/libtmux_tokio-session-session/); failure does not imply rollback.
 
 ## Export
 
@@ -39,4 +39,4 @@ session. Serialize that result with `to_yaml`. The exported structure is
 suitable for review and editing; it cannot restore process memory or recover
 an original shell command from a running program.
 
-[Public exports and builder](https://github.com/libtmux/libtmux-rs/blob/9331cdf556ea7a1f2589e9c3e6cece6ccdc7765c/crates/tmux-workspace/src/lib.rs); [Freeze API](https://github.com/libtmux/libtmux-rs/blob/9331cdf556ea7a1f2589e9c3e6cece6ccdc7765c/crates/tmux-workspace/src/freeze.rs).
+[Public exports and builder](https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/tmux-workspace/src/lib.rs); [Freeze API](https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/tmux-workspace/src/freeze.rs).

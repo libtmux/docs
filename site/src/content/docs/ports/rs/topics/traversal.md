@@ -13,7 +13,7 @@ tableOfContents: true
 Use relationships to move between sessions, windows, and panes. [Server,
 session, window, pane](/concepts/server-session-window-pane/) explains the
 hierarchy and snapshot model. This page covers relationship calls, collection
-membership, and object identity.
+membership, and object identity for `libtmux_tokio` handles.
 
 ## Down the hierarchy
 
@@ -22,10 +22,10 @@ issues another tmux command depends on the API, independently of whether the
 call is async; see [Server, session, window,
 pane](/concepts/server-session-window-pane/).
 
-Use `Server.sessions`, `Session.windows`, and `Window.panes`
+Use [`Server.sessions`](../../reference/libtmux_tokio-server-server-sessions/), [`Session.windows`](../../reference/libtmux_tokio-session-session-windows/), and [`Window.panes`](../../reference/libtmux_tokio-window-window-panes/)
 to read each level of the hierarchy.
 
-`server.attached_sessions()` lists only sessions with an attached client.
+[`server.attached_sessions()`](../../reference/libtmux_tokio-server-server-attached_sessions/) lists only sessions with an attached client.
 
 ## All panes in a session
 
@@ -34,7 +34,7 @@ as finding a command or capturing output from every pane. A window linked to
 multiple sessions still refers to the same tmux panes. Check whether the API
 reads live state or traverses a captured graph before reusing its result.
 
-`session.Session.panes` performs a live listing and returns a `Result` from
+[`session.Session.panes`](../../reference/libtmux_tokio-session-session-panes/) performs a live listing and returns a `Result` from
 the async call. Handle a command failure before using the returned panes.
 
 ## Up the hierarchy
@@ -43,7 +43,7 @@ Parent lookups may read captured data or query tmux again. Check the method's
 read and failure semantics; [Server, session, window,
 pane](/concepts/server-session-window-pane/) introduces that distinction:
 
-`Pane.window` and `Window.session` asynchronously return
+[`Pane.window`](../../reference/libtmux_tokio-pane-pane-window/) and [`Window.session`](../../reference/libtmux_tokio-window-window-session/) asynchronously return
 `Result<Option<Window>, Error>` and `Result<Option<Session>, Error>`.
 Handle both a command failure and an absent parent.
 
@@ -69,7 +69,7 @@ back.is_some_and(|s| s.id() == session.id())
 The active window and pane identify where untargeted input goes. Use their
 accessors or inspect the active flags in a captured snapshot:
 
-`Session.active_window` and `Window.active_pane` asynchronously
+[`Session.active_window`](../../reference/libtmux_tokio-session-session-active_window/) and [`Window.active_pane`](../../reference/libtmux_tokio-window-window-active_pane/) asynchronously
 return `Result<Option<Window>, Error>` and `Result<Option<Pane>, Error>`.
 Handle errors and the absence of an active object.
 
@@ -91,4 +91,4 @@ Compare IDs to determine whether two handles refer to the same tmux object on
 the same server. Check what handle equality includes before using it as an
 identity test:
 
-Compare `Pane.id` values when checking identity on the same server.
+Compare [`Pane.id`](../../reference/libtmux_tokio-pane-pane-id/) values when checking identity on the same server.

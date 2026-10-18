@@ -10,7 +10,7 @@ sidebar:
 tableOfContents: true
 ---
 
-Use a [`Plan`](../../reference/plan-plan/) when you know the operations before
+Use a [`Plan`](../../reference/libtmux_tokio-plan-plan/) when you know the operations before
 you run them. Recording a plan does not contact tmux. You can inspect its steps,
 validate its dependencies, then select a planner for execution.
 
@@ -22,7 +22,8 @@ on its own private server.
 ## Setup and run
 
 Use an empty directory with Git, rustup with the 1.97.1 toolchain installed,
-tmux 3.2a or newer, and a Unix environment. The program creates a private socket under `/tmp/libtmux-rs-dev`,
+tmux 3.2a or newer, and Linux. The program creates a private socket under
+`/tmp/libtmux-rs-dev`,
 starts `cat` in its panes, and stops only the server it created. No existing
 session, socket, or environment variable is required.
 
@@ -39,7 +40,7 @@ publish = false
 exclude = ["libtmux-source"]
 
 [dependencies]
-libtmux = { path = "libtmux-source/crates/libtmux", default-features = false, features = ["plan"] }
+libtmux-tokio = { path = "libtmux-source/crates/libtmux-tokio", default-features = false, features = ["plan"] }
 tempfile = "=3.27.0"
 tokio = { version = "=1.53.1", features = ["macros", "rt", "time"] }
 
@@ -51,12 +52,15 @@ path = "batching.rs"
 Fetch the library revision used by the example:
 
 ```console
-$ git clone https://github.com/libtmux/libtmux-rs libtmux-source &&
-  git -C libtmux-source checkout e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4
+$ git init -q libtmux-source &&
+  git -C libtmux-source fetch -q --depth=1 \
+    https://github.com/libtmux/libtmux-rs.git c84ede6448c32bf72aae7126e16e04540d2009aa &&
+  git -C libtmux-source checkout -q --detach FETCH_HEAD
 ```
 
-Only the [plan][plan-feature] feature is enabled. `control-mode` is unnecessary for these
-subprocess plans, and the program uses ordinary `Server` construction rather
+Only the [plan][plan-feature] feature is enabled. `control-mode` is unnecessary
+for these
+subprocess plans, and the program uses ordinary [`Server`](../../reference/libtmux_tokio-server-server/) construction rather
 than a testing fixture.
 
 Save the complete program as `batching.rs`:
@@ -65,8 +69,8 @@ Save the complete program as `batching.rs`:
 use std::error::Error;
 use std::time::Duration;
 
-use libtmux::plan::{NewWindow, Outcome, Plan, Planner, SendKeys};
-use libtmux::{NewSessionOptions, Server};
+use libtmux_tokio::plan::{NewWindow, Outcome, Plan, Planner, SendKeys};
+use libtmux_tokio::{NewSessionOptions, Server};
 
 type ExampleError = Box<dyn Error>;
 
@@ -213,14 +217,14 @@ refused plan: failed, skipped
 
 ## References to newly created objects
 
-`Plan::add(NewWindow::new(...))` returns a window slot, not a live `Window`.
-Its [`Slot::pane`](../../reference/plan-slot-pane/) points to the first pane
+[`Plan::add(NewWindow::new(...))`](../../reference/libtmux_tokio-plan-plan-add/) returns a window slot, not a live [`Window`](../../reference/libtmux_tokio-window-window/).
+Its [`Slot::pane`](../../reference/libtmux_tokio-plan-slot-pane/) points to the first pane
 that operation will create. The later
 `SendKeys` operations use that typed reference, so the program does not guess
 an ID or query tmux between recording steps.
 
 Slots belong to their creating plan and must refer to an earlier compatible
-operation. [`validate()`](../../reference/plan-plan-validate/) checks those
+operation. [`validate()`](../../reference/libtmux_tokio-plan-plan-validate/) checks those
 relationships before execution. `run()` validates them again; a rejected
 recording dispatches no recorded operation. Some version-sensitive preflight
 checks may still query metadata.
@@ -236,7 +240,7 @@ checks may still query metadata.
 The example focuses the new window deliberately: the marked planner can then
 address the pane created by that step without another process. The three,
 two, and one counts describe this specific three-operation plan.
-[`dispatches()`](../../reference/plan-run-planresult/) excludes metadata and
+[`dispatches()`](../../reference/libtmux_tokio-plan-run-planresult/) excludes metadata and
 preflight probes; it is not a count of every tmux process the application
 starts. Setup, verification, and cleanup also issue commands.
 
@@ -248,9 +252,9 @@ expected captured lines.
 
 ## Handle refusal and partial effects
 
-[`PlanResult::is_complete()`](../../reference/plan-run-planresult-is_complete/)
+[`PlanResult::is_complete()`](../../reference/libtmux_tokio-plan-run-planresult-is_complete/)
 is true only when every operation is known to have completed. A tmux refusal
-is returned inside [`Ok(PlanResult)`](../../reference/plan-run-planresult/), so checking only the outer `Result` is
+is returned inside [`Ok(PlanResult)`](../../reference/libtmux_tokio-plan-run-planresult/), so checking only the outer `Result` is
 insufficient. `operations()` retains recording order.
 
 | Outcome | What it establishes |
@@ -285,9 +289,9 @@ Blocking plan `Pause` operations are refused on a control connection before
 recorded commands are sent. See [Control mode](../control-mode/) for connection
 ownership and notification draining.
 
-Source contracts: [Plan](https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/libtmux/src/plan.rs),
-[planners](https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/libtmux/src/plan/planner.rs),
-and [execution and outcomes](https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/libtmux/src/plan/run.rs)
+Source contracts: [Plan](https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/libtmux-tokio/src/plan.rs),
+[planners](https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/libtmux-tokio/src/plan/planner.rs),
+and [execution and outcomes](https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/libtmux-tokio/src/plan/run.rs)
 at the displayed library revision.
 
-[plan-feature]: https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/libtmux/Cargo.toml#L115
+[plan-feature]: https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/libtmux-tokio/Cargo.toml

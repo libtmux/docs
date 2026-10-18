@@ -10,6 +10,29 @@ describe('prose mentions', () => {
     expect(mentions.map(({ start, end }) => source.slice(start, end))).toEqual(['``Server``', '`Session.panes`'])
   })
 
+  it('maps non-ASCII and multiline spans back across masked CRLF source', () => {
+    const source = [
+      '---', 'title: 🦀 café', '---', '# Rust', '```rust',
+      'let hidden = "`not_a_reference`";', '```', '',
+      '🦀\tUse `Server::sessions()` and [`Session::kill()`][target].', '',
+      'Read ``café ` name', 'next`` here.', '', '[target]: /native/',
+    ].join('\r\n')
+    const starts: string[] = []
+    const mentions = proseMentions(source, LABELS, (start) => {
+      starts.push(source[start])
+      return 'rs'
+    })
+    expect(starts).toEqual(['`', '`', '`'])
+    expect(mentions.map(({ start, end }) => source.slice(start, end))).toEqual([
+      '`Server::sessions()`', '`Session::kill()`', '``café ` name\r\nnext``',
+    ])
+    expect(mentions.map(({ line, port }) => ({ line, port }))).toEqual([
+      { line: 9, port: 'rs' }, { line: 9, port: 'rs' }, { line: 11, port: 'rs' },
+    ])
+    expect(mentions[0].before).toBe('🦀\tUse ')
+    expect(mentions[1]).toMatchObject({ linked: true, href: '/native/' })
+  })
+
   it('retains port context through nested sections and resets it at sibling sections', () => {
     const source = [
       '## Python',

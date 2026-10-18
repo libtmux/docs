@@ -172,11 +172,13 @@ while (ancestor && model && !ancestorMembers.has(ancestor.publicId ?? ancestor.i
   ancestor = ancestor.parent ? model.symbols.find((symbol) => symbol.id === ancestor!.parent) : undefined
 }
 
-/** This port's package, for the definition block's Package row. */
+/** This declaration's package, for the definition block's Package row. */
 const portMeta = port ? PORT_BY_SLUG[port] : undefined
 const ownerPackage = owner?.package ?? portMeta?.packageName
 const packageMeta = portMeta?.packages?.find((candidate) => candidate.name === ownerPackage)
-const packageUrl = packageMeta?.registry ?? portMeta?.registry?.url ?? withRoot(`/${port}/`)
+const packageSource = packageMeta?.source && owner?.source.revision
+  ? `https://github.com/${packageMeta.source.repo ?? owner.source.repo ?? portMeta!.repo}/tree/${owner.source.revision}/${packageMeta.source.path}` : undefined
+const packageUrl = packageMeta?.registry ?? packageSource ?? portMeta?.registry?.url ?? withRoot(`/${port}/`)
 
 /**
  * The module rows of the definition block.

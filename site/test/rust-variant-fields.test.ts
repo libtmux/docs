@@ -46,7 +46,7 @@ describe('Rust payload documentation surfaces', () => {
         expect(markdown).toContain(owner.doc!.summary)
         expect(markdown).toContain(owner.doc!.body)
         expect(markdown).toContain(owner.doc!.examples![0].code)
-        expect(markdown).toContain(`https://github.com/libtmux/libtmux-rs/blob/${nativeModel.revision}/crates/libtmux/src/target.rs#L${owner.source.line}`)
+        expect(markdown).toContain(`https://github.com/libtmux/libtmux-rs/blob/${nativeModel.revision}/crates/libtmux/src/primitives/target.rs#L${owner.source.line}`)
         expect(markdown).not.toContain('number: u32')
         expect(markdown).not.toContain('later_method')
       }

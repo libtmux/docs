@@ -337,20 +337,28 @@ describe('rendered API badges', () => {
     expect(win.document.querySelector('span')!.textContent).toBe('future-kind')
   })
 
-  it('renders the extracted Rust async contract with its native glossary link', async () => {
+  it.each([
+    ['server.Server.set_hook', 'libtmux', 'server-server-set_hook', false],
+    ['libtmux_tokio.server.Server.set_hook', 'libtmux-tokio', 'libtmux_tokio-server-server-set_hook', true],
+  ] as const)('renders the extracted %s async contract with its native glossary link', async (id, packageName, slug, isAsync) => {
     const model = JSON.parse(readFileSync(new URL('../src/data/api/rs.json', import.meta.url), 'utf8'))
-    const method = model.symbols.find((symbol: { id: string }) => symbol.id === 'server.Server.set_hook')
-    expect(method.modifiers).toContain('async')
+    const method = model.symbols.find((symbol: { id: string }) => symbol.id === id)
+    expect(method.package).toBe(packageName)
+    expect(method.modifiers.includes('async')).toBe(isAsync)
     const container = await experimental_AstroContainer.create()
     const win = new Window()
     windows.push(win)
-    win.document.body.innerHTML = await container.renderToString(await badgeComponent(), {
-      request: new Request('http://localhost:53971/en/rs/latest/reference/server-server-set_hook/'),
-      props: { label: 'async', variant: 'mod', value: 'async' },
-    })
-    const badge = win.document.querySelector('a.api-badge--mod-async')!
-    expect(badge.textContent).toBe('async')
-    expect(badge.getAttribute('href')).toBe('/en/rs/latest/reference/glossary/#async')
-    expect(badge.getAttribute('aria-label')).toContain('async definition')
+    const component = await badgeComponent()
+    win.document.body.innerHTML = (await Promise.all(method.modifiers.map((modifier: string) => container.renderToString(component, {
+      request: new Request(`http://localhost:53971/en/rs/latest/reference/${slug}/`),
+      props: { label: modifier, variant: 'mod', value: modifier },
+    })))).join('')
+    const badges = win.document.querySelectorAll('a.api-badge--mod-async')
+    expect(badges).toHaveLength(isAsync ? 1 : 0)
+    if (isAsync) {
+      expect(badges[0].textContent).toBe('async')
+      expect(badges[0].getAttribute('href')).toBe('/en/rs/latest/reference/glossary/#async')
+      expect(badges[0].getAttribute('aria-label')).toContain('async definition')
+    }
   })
 })

@@ -731,32 +731,31 @@
     {
       "port": "rs",
       "page": "ports/rs/concepts/queries",
-      "sourceRevision": "e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "runtime": "Rust 1.97.1",
       "tmuxVersions": [
-        "3.2a",
-        "3.7c"
+        "3.6"
       ],
       "files": [
         {
           "name": "Cargo.toml",
-          "sha256": "eec2768c91550287d8874e602ab424e1e367b364e6d35be4a1596d979ddbddc9"
+          "sha256": "040fc1b1eaa619755dd1625b0368410252142795dc40ee33ea2386a82cd2e23a"
         },
         {
           "name": "matching.rs",
-          "sha256": "5602d7f469302ca339aec0239f7b24a4f81ced3bdca6c39ade6d303a9b47e6db"
+          "sha256": "cb961adab128b9226909607b49af85b101952cde7e8420bb7d0e8c20261258f3"
         },
         {
           "name": "cardinality.rs",
-          "sha256": "abd96178295e9ac864a10ccdc4d156643d2efe0f0a20761cdee2840161399e7d"
+          "sha256": "0c00632d0697b629d91972ecb7ff2efc23b5bff249601da1fe9d09e73dbea308"
         },
         {
           "name": "refresh.rs",
-          "sha256": "2252dc6a8e77d1c692be5c24cb4b76369325dffb923b11230eab25fb41bc7228"
+          "sha256": "b8109d691c3c1e13179693decc61289b39fd9da337c64ea5bf222b8a98e8f09c"
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs libtmux-source &&\n  git -C libtmux-source checkout e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4",
+        "git init -q libtmux-source &&\n  git -C libtmux-source fetch -q --depth=1 \\\n    https://github.com/libtmux/libtmux-rs.git c84ede6448c32bf72aae7126e16e04540d2009aa &&\n  git -C libtmux-source checkout -q --detach FETCH_HEAD",
         "cargo +1.97.1 run --quiet --bin matching",
         "cargo +1.97.1 run --quiet --bin cardinality",
         "cargo +1.97.1 run --quiet --bin refresh"
@@ -775,29 +774,29 @@
           "fresh listing: renamed"
         ]
       ],
-      "verificationScope": "Each displayed program has its own imports, private server, bounded operations, result assertions, and cleanup. Run through the exact displayed project and pinned library; recorded execution evidence is required."
+      "verificationScope": "Exact displayed files and setup replayed from public Git on Linux; program checks and expected stdout passed. Only tmux 3.6 was exercised.",
+      "sourceRepository": "libtmux/libtmux-rs"
     },
     {
       "port": "rs",
       "page": "ports/rs/concepts/transports",
-      "sourceRevision": "e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "runtime": "Rust 1.97.1",
       "tmuxVersions": [
-        "3.2a",
-        "3.7c"
+        "3.6"
       ],
       "files": [
         {
           "name": "Cargo.toml",
-          "sha256": "8d66d8a077f464653d595acae0e8c3b91967bf2c9bba623bf080f6c58907f3ea"
+          "sha256": "c41c7bdaa4289f6daedabf8fbcec0d270c52a8986310248ede6df6144aeeb029"
         },
         {
           "name": "subprocess.rs",
-          "sha256": "966b8ca918fbf5d3befb4ccfeefc4a6e274ed63e5c7933892d78ffec767b5b6b"
+          "sha256": "54fc5522e228d22b3f8aa53e83722d6de827db3cfafe826de282d380125675a8"
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs libtmux-source &&\n  git -C libtmux-source checkout e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4",
+        "git init -q libtmux-source &&\n  git -C libtmux-source fetch -q --depth=1 \\\n    https://github.com/libtmux/libtmux-rs.git c84ede6448c32bf72aae7126e16e04540d2009aa &&\n  git -C libtmux-source checkout -q --detach FETCH_HEAD",
         "cargo +1.97.1 run --quiet --bin subprocess"
       ],
       "expectedOutputs": [
@@ -807,29 +806,29 @@
           "missing session: tmux refused the command"
         ]
       ],
-      "verificationScope": "Exact displayed program and pinned library setup; native runs and separately recorded command failure and owned-server cleanup checks."
+      "verificationScope": "Exact displayed files and setup replayed from public Git on Linux; program checks and expected stdout passed. Only tmux 3.6 was exercised.",
+      "sourceRepository": "libtmux/libtmux-rs"
     },
     {
       "port": "rs",
       "page": "ports/rs/guides/batching-commands",
-      "sourceRevision": "e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "runtime": "Rust 1.97.1",
       "tmuxVersions": [
-        "3.2a",
-        "3.7c"
+        "3.6"
       ],
       "files": [
         {
           "name": "Cargo.toml",
-          "sha256": "385a4b4d48cdff06c12fc4d4906e0f665f70f19d09b418cd6943b73124ec0565"
+          "sha256": "d203bf3db6c6971c26a15f454f7289e510ce063fb78367ef9898cf171a04804c"
         },
         {
           "name": "batching.rs",
-          "sha256": "aae01800c8c46c11e9a89106d41f8018eb5f52dfce131e6fb38d2184df8c6c50"
+          "sha256": "350f4ad355a4f2a18ea7dee9e96c48b40cce8efe313ead49049647ff5002dfcc"
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs libtmux-source &&\n  git -C libtmux-source checkout e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4",
+        "git init -q libtmux-source &&\n  git -C libtmux-source fetch -q --depth=1 \\\n    https://github.com/libtmux/libtmux-rs.git c84ede6448c32bf72aae7126e16e04540d2009aa &&\n  git -C libtmux-source checkout -q --detach FETCH_HEAD",
         "cargo +1.97.1 run --quiet --bin batching"
       ],
       "expectedOutputs": [
@@ -841,29 +840,29 @@
           "refused plan: failed, skipped"
         ]
       ],
-      "verificationScope": "Exact displayed program and pinned library setup; native runs and separately recorded command failure and owned-server cleanup checks."
+      "verificationScope": "Exact displayed files and setup replayed from public Git on Linux; program checks and expected stdout passed. Only tmux 3.6 was exercised.",
+      "sourceRepository": "libtmux/libtmux-rs"
     },
     {
       "port": "rs",
       "page": "ports/rs/guides/control-mode",
-      "sourceRevision": "e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "runtime": "Rust 1.97.1",
       "tmuxVersions": [
-        "3.2a",
-        "3.7c"
+        "3.6"
       ],
       "files": [
         {
           "name": "Cargo.toml",
-          "sha256": "3e1ab381bffedbfaa6bb11330b2c3c8c8d2ffcf4646f6d1662a66677d1ba1dcd"
+          "sha256": "5c86cea036c298c8cebf61cee20429bf890df0153616b109b5cee03b2e4216dc"
         },
         {
           "name": "control.rs",
-          "sha256": "413bd653689bbb489be5054a06e2e2be75f8e6544674e8455557a2b6eecdeac1"
+          "sha256": "c04e34ec3c901f5aa7f47268f60612fe12a954ba66c9a1d7f3dc255546237922"
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs libtmux-source &&\n  git -C libtmux-source checkout e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4",
+        "git init -q libtmux-source &&\n  git -C libtmux-source fetch -q --depth=1 \\\n    https://github.com/libtmux/libtmux-rs.git c84ede6448c32bf72aae7126e16e04540d2009aa &&\n  git -C libtmux-source checkout -q --detach FETCH_HEAD",
         "cargo +1.97.1 run --quiet --bin control"
       ],
       "expectedOutputs": [
@@ -874,7 +873,8 @@
           "connection closed; server still running"
         ]
       ],
-      "verificationScope": "Exact displayed program and pinned library setup; native runs and separately recorded command failure and owned-server cleanup checks."
+      "verificationScope": "Exact displayed files and setup replayed from public Git on Linux; program checks and expected stdout passed. Only tmux 3.6 was exercised.",
+      "sourceRepository": "libtmux/libtmux-rs"
     }
   ]
 }

@@ -13,7 +13,7 @@ import { parameterId, parentInventory, SymbolIndex, type ApiModel, type ApiSymbo
 import { apiEntryFields, nativeSignatureText, usesNativeSignatures } from '../src/lib/api-sections'
 import { API_MODEL_PORTS } from '../src/lib/ports'
 import { extractSourceWithSpec } from '../../packages/api-model/src/languages/spec'
-import { JAVA } from '../../packages/api-model/src/languages/specs'
+import { JAVA, RUST } from '../../packages/api-model/src/languages/specs'
 import { createApiIndex } from '../src/lib/api-models'
 import { apiSignatureLayouts } from '../src/lib/code-layout'
 import { symbolMarkdownWithLayout } from '../src/lib/symbol-markdown'
@@ -23,7 +23,7 @@ import * as nativeLayoutChecks from '../scripts/check-native-layout.mjs'
 const astroRequire = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
 
 /** Compile the actual signature fragment and its inline components in isolation. */
-async function signatureComponent() {
+async function signatureComponent(typeOnly = false) {
   const { transform } = await import(astroRequire.resolve('@astrojs/compiler-rs'))
   async function compile(relative: string, imports: Record<string, string> = {}, replacement?: string) {
     const file = new URL(relative, import.meta.url)
@@ -43,6 +43,7 @@ async function signatureComponent() {
     '@libtmux/api-model': new URL('../../packages/api-model/src/index.ts', import.meta.url).href,
     '../../lib/code-layout': new URL('../src/lib/code-layout.ts', import.meta.url).href,
   })
+  if (typeOnly) return (await import(/* @vite-ignore */ type)).default
   const source = readFileSync(new URL('../src/components/api/ApiEntry.astro', import.meta.url), 'utf8')
   const start = source.indexOf("<span class:list={['api-native-signature',")
   const end = source.indexOf('\n          ))', start)
@@ -95,6 +96,35 @@ const cases = [
   ['powershell', 'LibTmux\\Connect-TmuxControl'],
 ] as const
 let componentPromise: ReturnType<typeof signatureComponent> | undefined
+
+it.each(['server.Server.new_session', 'libtmux_tokio.server.Server.new_session'])('audits standalone Rust parameter types in %s', async (id) => {
+  const model = JSON.parse(readFileSync(new URL('../src/data/api/rs.json', import.meta.url), 'utf8')) as ApiModel
+  const symbol = model.symbols.find((entry) => entry.id === id)!
+  const annotation = symbol.signatures[0]!.params.find((parameter) => parameter.type === 'impl Into<NewSessionOptions>')!.type!
+  const index = new SymbolIndex(model.symbols, (entry) => `/${entry.id}/`, 'rs')
+  const component = await signatureComponent(true)
+  const container = await experimental_AstroContainer.create()
+  const win = new Window()
+  try {
+    const html = await container.renderToString(component, { props: { type: annotation, index, context: symbol } })
+    win.document.body.innerHTML = html
+    expect(win.document.body.textContent).toBe(annotation)
+    expect(auditSignature(html).code).toBe(0)
+    const option = win.document.querySelector('a[href$="NewSessionOptions/"]')!
+    expect(option).not.toBeNull()
+    const target = model.symbols.find((entry) => `/${entry.id}/` === option.getAttribute('href'))!
+    expect(target.package).toBe(symbol.package)
+
+    const missing = win.document.createElement('span')
+    missing.className = 'api-punct'
+    missing.textContent = 'MissingOptions'
+    option.replaceWith(missing)
+    const broken = auditSignature(win.document.body.innerHTML)
+    expect(broken.code).not.toBe(0)
+    expect(broken.output).toContain('MissingOptions(1)')
+    expect(auditSignature(html).code).toBe(0)
+  } finally { await win.happyDOM.abort() }
+})
 
 it.each(['generated.PaneFields.index', 'Pane.index'])('renders an unresolved Scala NumberField return in %s', async (suffix) => {
   const model = JSON.parse(readFileSync(new URL('../src/data/api/scala.json', import.meta.url), 'utf8')) as ApiModel
@@ -1001,6 +1031,39 @@ it('links recovered annotations and owner type bindings in actual Java headers',
         expect(win.document.querySelector('a[href="/en/java/latest/reference/io-github-libtmux-catalog-operation-operation/"]')?.textContent).toBe('Operation')
         expect([...win.document.querySelectorAll('a')].find((link) => link.textContent === 'ReadOnly')?.getAttribute('href')).toContain('5687445832cd835b4509b9fbc264cdf1a8201093')
       }
+    }
+  } finally { await win.happyDOM.abort() }
+})
+
+it('renders blocking and Tokio signatures with links to their own crate types', async () => {
+  const symbols: ApiSymbol[] = []
+  for (const [crate, namespace, async] of [['libtmux', 'libtmux', ''], ['libtmux-tokio', 'libtmux_tokio', 'async ']] as const) {
+    const entries = await extractSourceWithSpec(RUST,
+      `pub struct Server;\nimpl Server { pub ${async}fn clone_handle(&self) -> crate::Server { todo!() } }`,
+      `crates/${crate}/src/server.rs`, `${namespace}.server`)
+    for (const symbol of entries) {
+      symbol.package = crate
+      symbol.qualifiedName = symbol.id.replace(`${namespace}.server.`, `${namespace}.`)
+    }
+    symbols.push(...entries)
+  }
+  const index = new SymbolIndex(symbols, (symbol) => `/reference/${symbol.id}/`, 'rs')
+  const component = await (componentPromise ??= signatureComponent())
+  const container = await experimental_AstroContainer.create()
+  const win = new Window()
+  try {
+    for (const namespace of ['libtmux', 'libtmux_tokio']) {
+      const symbol = symbols.find((symbol) => symbol.id === `${namespace}.server.Server.clone_handle`)!
+      const signatureLayouts = await apiSignatureLayouts(symbol, 'rs')
+      win.document.body.innerHTML = await container.renderToString(component, { props: {
+        symbol, sig: symbol.signatures[0], port: 'rs', language: 'rs', index, signatureLayouts, nativeSignatureText,
+      } })
+      const text = displayedSignature(win.document.querySelector('.api-native-signature')!)
+      expect(text.includes('async fn')).toBe(namespace === 'libtmux_tokio')
+      const target = win.document.querySelector('a[href="/reference/' + namespace + '.server.Server/"]')
+      expect(target?.textContent).toBe('crate::Server')
+      const other = namespace === 'libtmux' ? 'libtmux_tokio' : 'libtmux'
+      expect(win.document.querySelector('a[href="/reference/' + other + '.server.Server/"]')).toBeNull()
     }
   } finally { await win.happyDOM.abort() }
 })

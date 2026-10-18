@@ -191,12 +191,20 @@ describe('major tmux object domains', () => {
     expect(firstEntry(bucket)?.name).toBe(names[0])
   })
 
-  it('puts Kotlin handles before builders and Rust Server before helpers', () => {
-    for (const [port, bucket, name] of [['rs', 'server', 'Server'], ['kotlin', 'session', 'Session'], ['kotlin', 'window', 'Window']]) {
-      expect(navTree(port).find((entry) => entry.id === bucket)?.entries[0].name).toBe(name)
+  it('puts Kotlin handles before builders', () => {
+    for (const [bucket, name] of [['session', 'Session'], ['window', 'Window']]) {
+      expect(navTree('kotlin').find((entry) => entry.id === bucket)?.entries[0].name).toBe(name)
     }
-    expect(navTree('rs').find((entry) => entry.id === 'server')?.entries.some((entry) => entry.name.startsWith('__fuzz_'))).toBe(false)
-    expect(navTree('rs').find((entry) => entry.id === 'internal')?.entries.some((entry) => entry.name.startsWith('__fuzz_'))).toBe(true)
+  })
+
+  it('puts both Rust Server handles before helpers with distinct package labels', () => {
+    const server = navTree('rs').find((entry) => entry.id === 'server')!
+    expect(server.entries.slice(0, 2).map(({ id, name }) => [id, name])).toEqual([
+      ['server.Server', 'Server (libtmux)'],
+      ['libtmux_tokio.server.Server', 'Server (libtmux-tokio)'],
+    ])
+    expect(server.entries.some((entry) => entry.name.startsWith('__fuzz_'))).toBe(false)
+    expect(API_MODELS.rs.symbols.some((symbol) => symbol.name.startsWith('__fuzz_'))).toBe(false)
   })
   it('distinguishes Scala variants without long package labels', () => {
     const names = navTree('scala').find((entry) => entry.id === 'window')!.entries.map((entry) => entry.name)

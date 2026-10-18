@@ -254,6 +254,46 @@ describe('standard types in product signatures', () => {
     expect(builtinHref('cxx', 'std::io::Error')).toBeUndefined()
   })
 
+  it.each([
+    ['impl AsRef<str>', ['impl']],
+    ['&mut str', ['mut']],
+    ['*const str', ['const']],
+    ['Box<dyn Send>', ['dyn']],
+    ['unsafe extern "C" fn() -> bool', ['unsafe', 'extern', 'fn']],
+    ["for<'a> fn()", ['for', 'fn']],
+    ['<T as Iterator>::Item', ['as']],
+  ] as const)('classifies Rust type syntax in %s without changing its text', (annotation, keywords) => {
+    const index = new SymbolIndex([], () => '#', 'rs')
+    const spans = index.linkType(annotation)
+    expect(spans.map((span) => span.text).join('')).toBe(annotation)
+    expect(spans.filter((span) => span.keyword).map((span) => span.text)).toEqual(keywords)
+  })
+
+  it('keeps Rust unknown types, raw identifiers, and weak keywords eligible for links', () => {
+    const rust = new SymbolIndex([], () => '#', 'rs')
+    const spans = rust.linkType('impl MissingTrait<Item = r#impl>')
+    for (const name of ['MissingTrait', 'Item', 'r#impl']) {
+      expect(spans.find((span) => span.text === name)).toEqual({ text: name, link: undefined })
+    }
+    for (const name of ['union', 'raw', 'safe', 'macro_rules']) {
+      expect(rust.linkType(name)[0]).toEqual({ text: name, link: undefined })
+    }
+    const names = ['Item', 'union', 'raw', 'safe', 'macro_rules', 'r#impl', 'r#type']
+    const symbols: ApiSymbol[] = names.map((name) => ({
+      id: `example.${name}`, name, kind: 'struct', modifiers: [], signatures: [], source: { file: 'example.rs' },
+    }))
+    const declared = new SymbolIndex(symbols, (symbol) => `#${symbol.id}`, 'rs')
+    for (const name of names) {
+      expect(declared.linkType(name)[0].link?.href).toBe(`#example.${name}`)
+      expect(declared.linkType(`example::${name}`)[0].link?.href).toBe(`#example.${name}`)
+    }
+    expect(rust.linkType('"impl mut"')).toEqual([{ text: '"impl mut"' }])
+    expect(rust.linkType('/* impl mut */')).toEqual([{ text: '/* impl mut */' }])
+    for (const port of ['py', 'go', 'ts']) {
+      expect(new SymbolIndex([], () => '#', port).linkType('impl')[0]).toEqual({ text: 'impl', link: undefined })
+    }
+  })
+
   it('keeps Swift existential any as syntax while resolving the error protocol', () => {
     const swift = new SymbolIndex([], () => '#', 'swift')
     const spans = swift.linkType('any Error')

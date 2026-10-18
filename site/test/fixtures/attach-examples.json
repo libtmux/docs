@@ -97,34 +97,34 @@
     {
       "port": "rs",
       "language": "rust",
-      "sourceRevision": "d4e08b4eaab62ef4eeedab79b47973ae9a1de310",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceRepository": "libtmux/libtmux-rs",
       "toolchain": [
         "Rust 1.97.1"
       ],
       "page": "ports/rs/guides/attaching-to-tmux",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs libtmux &&\n  git -C libtmux checkout d4e08b4eaab62ef4eeedab79b47973ae9a1de310 &&\n  sh run.sh cargo +1.97.1 run"
+        "git init -q libtmux &&\n  git -C libtmux fetch -q --depth=1 \\\n    https://github.com/libtmux/libtmux-rs.git c84ede6448c32bf72aae7126e16e04540d2009aa &&\n  git -C libtmux checkout -q --detach FETCH_HEAD &&\n  sh run.sh cargo +1.97.1 run"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "src/main.rs",
-          "sha256": "931e123008ee498523d89f0036ed480f4a9da0a47e0572a75f58df6034dc1ff1"
+          "sha256": "6add98c53f5a9ae5f54b85039b8b1746927083b266c2dea71ffdcf8006249d92"
         },
         {
           "name": "Cargo.toml",
-          "sha256": "b1126e5db8c76db064324255f98bc382a9d2ade716d89f19e8767baeebb170ee"
+          "sha256": "8e8313cf249ac8bc9d7f83690db610de0d62b64a6647d7621821377fd79a0eff"
         },
         {
           "name": "run.sh",
-          "sha256": "d984d9482d78cb452286b071afad4aca2d21ee271d44920b0818fabe8e6cc511"
+          "sha256": "3688f79f84abd97120250101ef92e3434fec0113ca72ff8da3ff77a5fa312d38"
         }
       ],
       "tmux": [
-        "3.2a",
-        "3.7c"
-      ]
+        "3.6"
+      ],
+      "verificationScope": "Exact displayed files and setup replayed from public Git on Linux; program checks and expected stdout passed. Only tmux 3.6 was exercised."
     },
     {
       "port": "java",

@@ -45,4 +45,4 @@ recover original command arguments, scripts, comments or application state.
 pane commands can need additional applications and directories when adapted.
 Use [library internals](../../internals/) for the programmatic builder.
 
-[CLI source](https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/tmux-workspace/docs/cli.md).
+[CLI source](https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/tmux-workspace/docs/cli.md).

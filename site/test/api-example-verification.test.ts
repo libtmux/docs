@@ -16,6 +16,25 @@ ${code}
 `], { cwd: root, encoding: 'utf8' }))
 const hash = (code: string) => createHash('sha256').update(code).digest('hex')
 
+describe('complete companion example selection', () => {
+  it('accepts product replay and keeps workspace and MCP recipes independent', () => {
+    const help = execFileSync('python3', ['-B', 'scripts/check-example-prose.py', '--help'],
+      { cwd: root, encoding: 'utf8' })
+    expect(help).toContain('program,product}')
+    expect(python(`
+manifest = json.loads(pathlib.Path('site/test/fixtures/product-examples.json').read_text())
+pages = ['workspace/internals/examples', 'mcp/examples/inspect-sessions']
+selected = [runner.select_examples(manifest, 'product', 'rs', page) for page in pages]
+assert all(len(examples) == 1 for examples in selected)
+for examples in selected:
+    example = examples[0]
+    assert len(example['expectedOutputs']) == len(example['shellRecipe'])
+    assert not any(re.match(r'^(?:mkdir|cd) ', command) for command in example['shellRecipe'])
+print(json.dumps([examples[0]['page'] for examples in selected]))`))
+      .toEqual(['ports/rs/workspace/internals/examples', 'ports/rs/mcp/examples/inspect-sessions'])
+  })
+})
+
 describe('complete API example selection', () => {
   it('keeps the current fixtures and their exact displayed commands selectable', () => {
     const results = python(`
@@ -70,6 +89,59 @@ print(json.dumps(runner.api_command_blocks(blocks, {})))`)).toEqual(['setup'])
 })
 
 describe('homepage native verification ownership', () => {
+  it.each(['owned', 'foreign owner', 'changed owner', 'replaced directory', 'extra file'])(
+    'retires only its unchanged marked directory: %s', (scenario) => {
+      expect(python(`
+import os, socket, subprocess, sys, tempfile
+from unittest.mock import patch
+sys.path.insert(0, str(pathlib.Path('scripts').resolve()))
+from example_tmux_sandbox import ExampleTmuxSandbox
+scenario = ${JSON.stringify(scenario)}
+fixture_root = pathlib.Path('/tmp/libtmux-rs-test')
+fixture_root.mkdir(exist_ok=True)
+with tempfile.TemporaryDirectory(prefix='docs-owner-', dir=fixture_root) as directory:
+    output = pathlib.Path(directory)
+    parent = output / 'endpoint'
+    parent.mkdir()
+    marker = parent / 'owner'
+    foreign = None
+    try:
+        owner = os.getpid()
+        if scenario == 'foreign owner':
+            foreign = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(30)'],
+                                       start_new_session=True)
+            owner = foreign.pid
+            assert os.getsid(owner) != os.getsid(0)
+        marker.write_text(str(owner))
+        with patch('example_tmux_sandbox.shutil.which', return_value='/bin/true'):
+            sandbox = ExampleTmuxSandbox(output, dict(os.environ))
+        path = parent / 'tmux.sock'
+        subprocess.run([str(output / 'native-tools/tmux'), '-S', str(path), 'list-sessions'],
+                       env=sandbox.env, check=True, process_group=0)
+        trace = json.loads(sandbox.trace.read_text())
+        assert trace['directoryOwner'] == (None if foreign else owner), trace
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener:
+            listener.bind(str(path))
+        if scenario == 'changed owner':
+            marker.write_text(str(owner + 1))
+        elif scenario == 'replaced directory':
+            parent.rename(output / 'old-endpoint')
+            parent.mkdir()
+            marker.write_text(str(owner))
+        elif scenario == 'extra file':
+            (parent / 'keep.txt').write_text('retained')
+        report = sandbox.finish(True)
+        assert parent.exists() == (scenario != 'owned'), report
+        assert report['passed'] == (scenario in ['owned', 'foreign owner']), report
+        print(json.dumps(True))
+    finally:
+        if foreign:
+            foreign.terminate()
+            foreign.wait(timeout=5)
+`)).toBe(true)
+    },
+  )
+
   it('preserves an existing parent when a probed socket was never created', () => {
     expect(python(`
 import os, sys, tempfile

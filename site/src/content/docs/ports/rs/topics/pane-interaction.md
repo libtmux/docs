@@ -10,7 +10,7 @@ sidebar:
 tableOfContents: true
 ---
 
-Send input to a pane and capture its screen to interact with a running program.
+Use `libtmux_tokio::Pane` to send input and capture a running program's screen.
 [Attach and send keys](/examples/attach-and-send-keys/) provides examples.
 [Sending keys](/guides/sending-keys/) and [Capturing
 output](/guides/capturing-output/) are task guides; this page covers input
@@ -23,10 +23,10 @@ press Enter afterward, and should tmux interpret what you sent as key names
 ([`Enter`](/tmux/latest/manual/send-keys/), `C-c`) rather than literal characters? Choose both explicitly when
 a command depends on them.
 
-**Type without Enter:** `pane.send_keys(keys)`: **always literal**, key names
+**Type without Enter:** [`pane.send_keys(keys)`](../../reference/libtmux_tokio-pane-pane-send_keys/): **always literal**, key names
 typed as text
 
-**Type + Enter (default):** `pane.send_line(text)`
+**Type + Enter (default):** [`pane.send_line(text)`](../../reference/libtmux_tokio-pane-pane-send_line/)
 
 **How "literal" is chosen:** `send_keys` sends literal text; `send_key_names`
 interprets tmux key names.
@@ -68,6 +68,7 @@ conditions and timeouts.
 
 The tmux manual defines [key-name and literal input](https://github.com/tmux/tmux/blob/94796f6b1182507efac8a272fc309a79e22e58a5/tmux.1#L4457)
 and [screen and history capture](https://github.com/tmux/tmux/blob/94796f6b1182507efac8a272fc309a79e22e58a5/tmux.1#L2798).
-A send operation delivers input; it does not establish the program's exit status.
+A send operation delivers input; it does not establish the program's exit
+status.
 
 </details>

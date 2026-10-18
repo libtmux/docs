@@ -176,6 +176,49 @@ it.each([{ port: 'go', term: 'struct' }, { port: 'ts', term: 'class' }])('render
   expect(win.document.querySelector('a[href$=".json"]')?.getAttribute('href')).toBe(`${path.slice(0, -1)}.json`)
 })
 
+it('renders each Rust client package and the actual source of shared reexports', async () => {
+  const native = models.API_MODELS.rs
+  const component = await (await components())('ApiReference')
+  const container = await experimental_AstroContainer.create()
+  const win = new Window()
+  windows.push(win)
+  const render = async (id: string) => {
+    const owner = native.symbols.find((symbol) => symbol.id === id)!
+    expect(owner).toBeDefined()
+    const path = ports.referenceUrl(ports.PORT_BY_SLUG.rs, 'latest') + owner.slug + '/'
+    win.document.body.innerHTML = await container.renderToString(component, {
+      props: { model: native, owner }, params: { slug: owner.slug },
+      request: new Request(`https://libtmux.org${path}`),
+    })
+    return owner
+  }
+  const link = (label: string) => [...win.document.querySelectorAll('.api-definition dt')]
+    .find((entry) => entry.textContent === label)?.nextElementSibling?.querySelector('a')
+  const nativePackage = `https://github.com/libtmux/libtmux-rs/tree/${native.revision}/crates/libtmux-tokio`
+  for (const id of ['server.Server', 'libtmux_tokio.server.Server', 'libtmux_tokio.PaneId']) {
+    const owner = await render(id)
+    const packageLink = link('Package')!
+    expect(packageLink.textContent).toBe(owner.package)
+    expect(packageLink.getAttribute('href')).toBe(owner.package === 'libtmux'
+      ? 'https://crates.io/crates/libtmux' : nativePackage)
+    expect(link('Source')?.getAttribute('href')).toBe(
+      `https://github.com/libtmux/libtmux-rs/blob/${native.revision}/${owner.source.file}#L${owner.source.line}`)
+    if (id === 'libtmux_tokio.PaneId') {
+      expect(owner.publicOwner).toBe('target.PaneId')
+      expect(owner.source.file).toBe(native.symbols.find((symbol) => symbol.id === owner.publicOwner)!.source.file)
+      expect(owner.source.file).not.toContain('/libtmux-tokio/')
+    }
+  }
+  const packages = ports.PORT_BY_SLUG.rs.packages
+  try {
+    ports.PORT_BY_SLUG.rs.packages = packages!.filter((entry) => entry.name !== 'libtmux-tokio')
+    await render('libtmux_tokio.server.Server')
+    expect(() => expect(link('Package')?.getAttribute('href')).toBe(nativePackage)).toThrow()
+  } finally {
+    ports.PORT_BY_SLUG.rs.packages = packages
+  }
+})
+
 it.each([undefined, 'mcp', 'workspace'] as const)('preserves real DocsLayout contents and adds %s glossary permalinks', async (product) => {
   const path = product ? `${ports.referenceUrl(ports.PORT_BY_SLUG.go, 'v9-proof', product)}glossary/` : glossary.API_GLOSSARY_PATH
   const component = await (await components())('ApiGlossary')
