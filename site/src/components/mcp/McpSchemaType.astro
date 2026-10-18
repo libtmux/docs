@@ -4,5 +4,5 @@ interface Props { schema: McpSchema; root: McpSchema; scope: string }
 const { schema, root, scope } = Astro.props
 ---
 <span class="api-type">{schemaTypeParts(schema, root, scope).map((part) => part.href
-  ? <a href={part.href} class="api-type-link" title={part.href.startsWith('https:') ? `${part.text} (JSON Schema)` : undefined}>{part.text}</a>
+  ? <a href={part.href} class="api-type-link" rel={part.href.startsWith("https:") ? "nofollow noopener" : undefined} title={part.href.startsWith('https:') ? `${part.href.split('/').at(-1)} (JSON Schema)` : undefined}>{part.text}</a>
   : <span class="api-punct">{part.text}</span>)}</span>

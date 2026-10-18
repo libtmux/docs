@@ -26,9 +26,15 @@ export function schemaTypeParts(schema: McpSchema, root: McpSchema, scope: strin
   if (alternatives) return join(alternatives.map((part) => schemaTypeParts(part, root, scope)), schema.allOf ? ' & ' : ' | ')
   const named = (name: string): SchemaTypePart[] => name === 'array'
     ? [{ ...primitive('array'), text: 'Array' }, { text: '<' }, ...schemaTypeParts(schema.items ?? true, root, scope), { text: '>' }]
-    : [primitive(name)]
+    : name === 'object' && isMap(schema)
+      ? [{ ...primitive('object'), text: 'Record' }, { text: '<string, ' }, ...schemaTypeParts(schema.additionalProperties as McpSchema, root, scope), { text: '>' }]
+      : [primitive(name)]
   return Array.isArray(schema.type) ? join(schema.type.map(named), ' | ') : named(schema.type ?? schemaType(schema))
 }
+
+/** An object whose only shape is the type of its values. */
+const isMap = (schema: McpSchema): boolean => typeof schema === 'object' && !schema.properties &&
+  typeof schema.additionalProperties === 'object' && schema.additionalProperties !== null
 
 export const isSchemaDefinition = (path: string) => /^\/(?:\$defs|definitions)\//.test(path)
 
@@ -40,11 +46,47 @@ export function schemaDefinitions(schema: McpSchema, pointer = ''): { name: stri
   ])
 }
 
-/** A bare array item is already documented by its linked element type. */
+/**
+ * A schema its parent's type line already documents in full: an array item,
+ * a union member or a map's value type with no prose, constraints or fields
+ * of its own.
+ */
 export function inlineSchemaItem(schema: McpSchema): boolean {
-  return !schemaChildren(schema).length && !schemaConstraints(schema).length &&
-    (typeof schema === 'boolean' || !schema.description)
+  if (typeof schema === 'boolean') return true
+  return !schema.description && !schemaConstraints(schema).length && schemaRows(schema).rows.length === 0
 }
+
+export interface SchemaRow { name: string; label: string; path: string; schema: McpSchema; required?: boolean }
+
+const rowLabel = (name: string, path: string): string => {
+  const part = /^\/(anyOf|oneOf|allOf)\/(\d+)$/.exec(path)
+  return part ? `${part[1] === 'allOf' ? 'Part' : 'Variant'} ${Number(part[2]) + 1}` : name
+}
+
+/**
+ * The fields a schema lists beneath its heading, and the pointers it folds into its type line.
+ *
+ * Properties always list. A union member, array item or map value lists only
+ * when it says more than its type; the folded pointers stay addressable so
+ * links to them land on the field that now holds them.
+ */
+export function schemaRows(schema: McpSchema): { rows: SchemaRow[]; aliases: string[] } {
+  const rows: SchemaRow[] = []
+  const aliases: string[] = []
+  const descendants = (child: McpSchema, prefix: string): string[] => schemaChildren(child)
+    .filter((entry) => !isSchemaDefinition(entry.path)).flatMap((entry) => [prefix + entry.path, ...descendants(entry.schema, prefix + entry.path)])
+  for (const child of schemaChildren(schema)) {
+    if (isSchemaDefinition(child.path)) continue
+    if (!child.path.startsWith('/properties/') && inlineSchemaItem(child.schema)) {
+      aliases.push(child.path, ...descendants(child.schema, child.path))
+    } else rows.push({ ...child, label: rowLabel(child.name, child.path) })
+  }
+  return { rows, aliases }
+}
+
+/** A field's declared default, as the JSON it was written in. */
+export const schemaDefault = (schema: McpSchema): string | undefined =>
+  typeof schema === 'object' && Object.hasOwn(schema, 'default') ? JSON.stringify(schema.default) : undefined
 
 export function schemaType(schema: McpSchema): string {
   if (typeof schema === 'boolean') return schema ? 'any value' : 'no value'
@@ -53,7 +95,8 @@ export function schemaType(schema: McpSchema): string {
   if (Array.isArray(schema.enum)) return schema.enum.map((value) => JSON.stringify(value)).join(' | ')
   const alternatives = schema.anyOf ?? schema.oneOf ?? schema.allOf
   if (alternatives) return alternatives.map(schemaType).join(schema.allOf ? ' & ' : ' | ')
-  const named = (name: string) => name === 'array' ? `Array<${schema.items === undefined ? 'any value' : schemaType(schema.items)}>` : name
+  const named = (name: string) => name === 'array' ? `Array<${schema.items === undefined ? 'any value' : schemaType(schema.items)}>`
+    : name === 'object' && isMap(schema) ? `Record<string, ${schemaType(schema.additionalProperties as McpSchema)}>` : name
   return Array.isArray(schema.type) ? schema.type.map(named).join(' | ') : named(schema.type ?? (schema.properties ? 'object' : 'any value'))
 }
 

@@ -1,46 +1,51 @@
 ---
-import { schemaAnchor, schemaChildren, schemaConstraints, inlineSchemaItem, isSchemaDefinition, type McpSchema } from '../../lib/mcp-schema'
-import { renderToolDescription } from '../../lib/mcp-reference'
+import { schemaAnchor, schemaConstraints, schemaDefault, schemaRows, type McpSchema } from '../../lib/mcp-schema'
+import { renderToolDescription, type ToolDescriptionContext } from '../../lib/mcp-reference'
 import McpSchemaType from './McpSchemaType.astro'
-interface Props { schema: McpSchema; root?: McpSchema; scope: string; pointer?: string; port: string; version: string; rootConstraints?: boolean }
-const { schema, root = schema, scope, pointer = '', port, version, rootConstraints = true } = Astro.props
-const children = schemaChildren(schema).filter((row) => !isSchemaDefinition(row.path))
-const displaysItems = typeof schema === 'object' && (schema.type === 'array' || (Array.isArray(schema.type) && schema.type.includes('array')))
-const inlineItems = children.filter((row) => displaysItems && row.path === '/items' && inlineSchemaItem(row.schema))
-const rows = await Promise.all(children.filter((row) => !inlineItems.includes(row)).map(async (row) => ({ ...row,
-  label: row.path.startsWith('/anyOf/') || row.path.startsWith('/oneOf/') ? `Variant ${Number(row.path.split('/').at(-1)) + 1}`
-    : row.path.startsWith('/allOf/') ? `Part ${Number(row.path.split('/').at(-1)) + 1}` : row.name,
+
+/**
+ * The fields of a schema, in the parameter list every API reference uses:
+ * the name, `?` when optional, `= default` and the type on one line with the
+ * permalink beside it, then the description. A union member with nothing to
+ * say beyond its type stays in the type line.
+ */
+interface Props { schema: McpSchema; root?: McpSchema; scope: string; pointer?: string; context: ToolDescriptionContext; rootConstraints?: boolean
+  /** What an object that rejects other fields calls them. */
+  noun?: string }
+const { schema, root = schema, scope, pointer = '', context, rootConstraints = true, noun = 'properties' } = Astro.props
+const { rows: fields, aliases } = schemaRows(schema)
+const rows = await Promise.all(fields.map(async (row) => ({ ...row,
   id: schemaAnchor(scope, pointer + row.path),
-  html: typeof row.schema === 'object' && row.schema.description
-    ? await renderToolDescription(row.schema.description, { port, version }) : '',
+  default: schemaDefault(row.schema),
+  facts: schemaConstraints(row.schema).filter(([key]) => key !== 'default' && key !== 'additionalProperties'),
+  html: typeof row.schema === 'object' && row.schema.description ? await renderToolDescription(row.schema.description, context) : '',
+  nested: schemaRows(row.schema),
 })))
-const composition = typeof schema === 'object' && (schema.oneOf ? 'Matches exactly one variant.' : schema.anyOf ? 'Matches one or more variants.' : schema.allOf ? 'Matches every part.' : '')
+const composition = typeof schema === 'object' && rows.some((row) => /^\/(?:anyOf|oneOf|allOf)\//.test(row.path))
+  ? schema.oneOf ? 'Matches exactly one variant.' : schema.anyOf ? 'Matches one or more variants.' : 'Matches every part.' : ''
+const facts = (value: McpSchema) => schemaConstraints(value).filter(([key]) => key !== 'additionalProperties')
+const closed = typeof schema === 'object' && schema.additionalProperties === false && rows.some((row) => row.path.startsWith('/properties/'))
 ---
-{rootConstraints && schemaConstraints(schema).length > 0 && <dl class="api-definition api-parameter-facts">
-  {schemaConstraints(schema).map(([key, value]) => <><dt>{key === 'default' ? 'Default' : key}</dt><dd><code>{value}</code></dd></>)}
+{rootConstraints && facts(schema).length > 0 && <dl class="api-definition api-parameter-facts">
+  {facts(schema).map(([key, value]) => <><dt>{key === 'default' ? 'Default' : key}</dt><dd><code>{value}</code></dd></>)}
 </dl>}
-{inlineItems.map((row) => <span id={schemaAnchor(scope, pointer + row.path)} class="section-anchor-alias" />)}
-{composition && <p class="mcp-schema-composition">{composition}</p>}
-<ul class="api-parameters api-command-parameters mcp-schema-fields">
+{aliases.map((path) => <span id={schemaAnchor(scope, pointer + path)} class="section-anchor-alias" />)}
+{composition && <p class="mcp-schema-note">{composition}</p>}
+{rows.length > 0 && <ul class="simple api-parameters mcp-parameters">
   {rows.map((row) => <li id={row.id}>
-    <p class="api-parameter-heading"><span class="api-parameter-signature"><a class="api-param-name" href={`#${encodeURIComponent(row.id)}`}><strong>{row.label}</strong></a>{': '}
-      <McpSchemaType schema={row.schema} root={root} scope={scope} /></span>
-      {row.required !== undefined && <span class:list={['mcp-field-requirement', row.required && 'mcp-field-requirement--required']}>{row.required ? 'Required' : 'Optional'}</span>}
-      <a class="api-heading-link" href={`#${encodeURIComponent(row.id)}`} aria-label={`Permalink to ${row.label}`}>#</a>
+    <p class="api-parameter-heading">
+      <span class="api-parameter-signature">
+        {/* One line: Astro turns a line break between these parts into a space. */}
+        <strong><a href={`#${encodeURIComponent(row.id)}`}>{row.path.startsWith('/properties/') ? <code>{row.label}</code> : row.label}</a></strong>{row.required === false && '?'}{row.default !== undefined && <>{' = '}<code>{row.default}</code></>}{' ('}<McpSchemaType schema={row.schema} root={root} scope={scope} />{') '}
+      </span>
+      <a class="api-heading-link" href={`#${encodeURIComponent(row.id)}`} aria-label={`Link to ${row.label} parameter`} data-pagefind-ignore="all">#</a>
     </p>
-    {row.html && <div set:html={row.html} />}
-    {schemaConstraints(row.schema).length > 0 && <dl class="api-definition api-parameter-facts">
-      {schemaConstraints(row.schema).map(([key, value]) => <><dt>{key === 'default' ? 'Default' : key}</dt><dd><code>{value}</code></dd></>)}
+    {row.html && <div class="mcp-parameter-doc" set:html={row.html} />}
+    {row.facts.length > 0 && <dl class="api-definition api-parameter-facts">
+      {row.facts.map(([key, value]) => <><dt>{key}</dt><dd><code>{value}</code></dd></>)}
     </dl>}
-    {schemaChildren(row.schema).length > 0 && <Astro.self schema={row.schema} root={root} scope={scope} pointer={pointer + row.path} port={port} version={version} rootConstraints={false} />}
+    {(row.nested.rows.length > 0 || row.nested.aliases.length > 0) &&
+      <Astro.self schema={row.schema} root={root} scope={scope} pointer={pointer + row.path} context={context} rootConstraints={false} />}
   </li>)}
-</ul>
-<style>
-  .mcp-schema-fields { list-style: none; padding: 0; margin-block: 0; }
-  .api-parameter-heading { flex-wrap: wrap; font-size: .875rem; line-height: 1.7; }
-  .api-type { color: var(--api-kind-class-fg); }
-  .mcp-schema-fields :global(p) { margin-block: .35rem; }
-  .mcp-field-requirement { font: .75rem var(--font-sans, sans-serif); color: var(--color-muted); }
-  .mcp-field-requirement--required { color: var(--color-fg); font-weight: 600; }
-  .mcp-schema-composition { font-size: .875rem; color: var(--color-muted); }
-</style>
+</ul>}
+{closed && <p class="mcp-schema-note">No other {noun} are accepted.</p>}

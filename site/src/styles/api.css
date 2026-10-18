@@ -331,6 +331,21 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
 .api-type-parameter-modifier { opacity: 0.7; }
 .api-type-parameter-owner { margin-left: 0.75rem; font-size: 0.9375rem; }
 .api-parameter-facts { row-gap: 0.35rem; margin-top: 0.5rem; }
+/*
+ * MCP argument, result and type fields take the API parameter list: the
+ * name, its type and the permalink on one line, the description beneath.
+ * A field's own fields sit under a rule, indented once.
+ */
+.mcp-parameters { list-style: none; margin-block: 0; padding: 0; font-size: 0.875rem; line-height: 1.5; }
+.mcp-parameters .mcp-parameters { margin-top: 0.6rem; padding-inline-start: 1rem; border-inline-start: 1px solid var(--color-edge); font-size: inherit; }
+.mcp-parameters .api-parameter-heading { margin: 0 0 0.4rem; overflow-wrap: anywhere; }
+.mcp-parameters .api-parameter-heading code { background: none; border: 0; padding: 0; font-size: inherit; }
+.mcp-parameters .api-parameter-heading .api-type { font-weight: 400; }
+.mcp-parameter-doc > :first-child { margin-top: 0; }
+.mcp-parameter-doc > :last-child { margin-bottom: 0; }
+.mcp-parameter-doc :is(p, ul, ol) { margin-block: 0.5rem; }
+.mcp-schema-note { margin: 0.75rem 0 0; font-size: 0.875rem; color: var(--color-muted); }
+
 .api-parameter-facts dt { opacity: 1; font-weight: 500; }
 .api-common-parameters { margin-top: 1.5rem; border-top: 1px solid var(--color-edge); padding-top: 0.8rem; }
 .api-common-parameters > summary { cursor: pointer; font-weight: 600; }

@@ -4,7 +4,7 @@ import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
 import { experimental_AstroContainer } from 'astro/container'
 import { Window } from 'happy-dom'
-import { inlineSchemaItem, schemaAnchor, schemaChildren, schemaConstraints, schemaDefinitions, schemaReference, schemaType, schemaTypeParts, type McpSchema } from '../src/lib/mcp-schema'
+import { inlineSchemaItem, schemaAnchor, schemaChildren, schemaConstraints, schemaDefault, schemaDefinitions, schemaReference, schemaRows, schemaType, schemaTypeParts, type McpSchema } from '../src/lib/mcp-schema'
 
 describe('MCP structured schemas', () => {
   const schema: McpSchema = {
@@ -74,6 +74,43 @@ describe('MCP structured schemas', () => {
     expect(schemaTypeParts(singleton, schema, 'output').map((part) => part.text).join('')).toBe('Array<integer>')
   })
 
+  it('writes a map by the type of its values', () => {
+    const map: McpSchema = { type: 'object', additionalProperties: { type: 'string' } }
+    expect(schemaType(map)).toBe('Record<string, string>')
+    expect(schemaTypeParts(map, schema, 'input').map((part) => part.text).join('')).toBe('Record<string, string>')
+    expect(schemaTypeParts(map, schema, 'input').filter((part) => part.href).map((part) => part.text)).toEqual(['Record', 'string'])
+    expect(schemaType({ type: 'object', properties: { id: { type: 'string' } }, additionalProperties: { type: 'string' } })).toBe('object')
+  })
+
+  it('folds union members, array items and map values that only name a type into the type line', () => {
+    const environment: McpSchema = {
+      default: null, description: 'Variables.',
+      anyOf: [{ type: 'object', additionalProperties: { type: 'string' } }, { type: 'string' }, { type: 'null' }],
+    }
+    expect(schemaRows(environment)).toEqual({ rows: [], aliases: [
+      '/anyOf/0', '/anyOf/0/additionalProperties', '/anyOf/1', '/anyOf/2',
+    ] })
+    expect(schemaDefault(environment)).toBe('null')
+    expect(schemaDefault({ type: 'boolean', default: false })).toBe('false')
+    expect(schemaDefault({ type: 'string' })).toBeUndefined()
+    expect(schemaRows({ type: 'array', items: { type: 'string' } })).toEqual({ rows: [], aliases: ['/items'] })
+  })
+
+  it('keeps a member that carries its own prose, constraints or fields, labelled by position', () => {
+    const union: McpSchema = { oneOf: [
+      { type: 'string', description: 'A pane id.' },
+      { type: 'integer', minimum: 0 },
+      { type: 'object', properties: { id: { type: 'string' } } },
+      { type: 'null' },
+    ] }
+    const { rows, aliases } = schemaRows(union)
+    expect(rows.map((row) => [row.label, row.path])).toEqual([['Variant 1', '/oneOf/0'], ['Variant 2', '/oneOf/1'], ['Variant 3', '/oneOf/2']])
+    expect(aliases).toEqual(['/oneOf/3'])
+    expect(schemaRows({ allOf: [{ description: 'Base.' }] }).rows.map((row) => row.label)).toEqual(['Part 1'])
+    expect(schemaRows({ type: 'array', items: { type: 'object', properties: { id: { type: 'string' } } } }).rows.map((row) => row.label)).toEqual(['Items'])
+    expect(schemaRows({ properties: { empty: { type: 'string' } } }).rows.map((row) => row.name)).toEqual(['empty'])
+  })
+
   it('separates named types while preserving nested definition paths', () => {
     const nested: McpSchema = { properties: { value: { $defs: { Local: { type: 'string' } } } },
       definitions: { Result: { type: 'object', $defs: { Child: { type: 'boolean' } } } } }
@@ -110,12 +147,17 @@ describe('MCP structured schemas', () => {
     const container = await experimental_AstroContainer.create()
     const win = new Window()
     try {
+      const context = { port: 'rs', version: 'latest' }
       for (const fixture of [{ type: 'integer', format: 'int32' },
         { type: 'object', additionalProperties: false, properties: { height: { type: 'integer', minimum: 1 } } }]) {
-        win.document.body.innerHTML = await container.renderToString(component, { props: { schema: fixture, scope: 'output/$defs/Type', port: 'rs', version: 'latest' } })
+        win.document.body.innerHTML = await container.renderToString(component, { props: { schema: fixture, scope: 'output/$defs/Type', context } })
         const facts = [...win.document.querySelectorAll('dl.api-parameter-facts dt')].map((entry) => [entry.textContent, entry.nextElementSibling?.textContent])
-        expect(facts).toEqual(fixture.format ? [['format', '"int32"']] : [['additionalProperties', 'false'], ['minimum', '1']])
+        expect(facts).toEqual(fixture.format ? [['format', '"int32"']] : [['minimum', '1']])
       }
+      // A closed object says so once, in prose, instead of in a bold fact row.
+      win.document.body.innerHTML = await container.renderToString(component, { props: { schema, scope: 'mcp.tool.test.input', context, noun: 'arguments' } })
+      expect([...win.document.querySelectorAll('.mcp-schema-note')].map((note) => note.textContent)).toEqual(['No other arguments are accepted.'])
+      expect(win.document.body.textContent).not.toContain('additionalProperties')
     } finally { await win.happyDOM.abort() }
   })
 })
