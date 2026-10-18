@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { checkHomeResponsiveLayout } from './check-home-launcher.mjs'
 import { checkPickerFilters } from './check-picker-filters.mjs'
 import { checkNavigationBeforeAnalytics } from './check-navigation.mjs'
+import { checkDeclarationControlsLevel } from './check-native-layout.mjs'
 import { checkRequiredAppearance } from './check-page-readiness.mjs'
 
 /** A bounded rendering sample; the publication audit runs the full matrix. */
@@ -48,6 +49,9 @@ export async function checkDevSample(browser, base) {
           && Math.abs(control.top - layout.controls[0].top) < .1), `${path}/${width}: visible controls align`)
         if (path === 'mcp/tools/') {
           assert(layout.tableColumns > 1 && layout.columns?.every((delta) => delta <= 1), `${width}: MCP table columns align`)
+        }
+        if (path === 'api-example-probe/') {
+          await checkDeclarationControlsLevel(page.locator('dt.gp-sphinx-api-header').first(), `${path}/${width}: declaration controls`)
         }
       }
       if (path.startsWith('tmux/')) {
