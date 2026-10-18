@@ -481,8 +481,8 @@ const hasBody =
           const methodSource = signature.source && sourceUrl?.({ ...symbol, source: signature.source })
           return (
           <section id={id} class="api-method">
-            {symbol.signatures.length > 1 ? <h3 class="api-native-signature"><ApiType type={nativeSignatureText(symbol, signature, language)} index={index} context={symbol} signature={signature} layout={signatureLayouts.get(signature)} />{methodSource && <a class="api-method-source" href={methodSource} aria-label={`Source for ${label}`}>[source]</a>}<a class="api-heading-link" href={`#${id}`} aria-label="Link to method">#</a></h3>
-              : methodSource && methodSource !== source && <p><a class="api-method-source" href={methodSource} aria-label={`Source for ${label}`}>[source]</a></p>}
+            {symbol.signatures.length > 1 ? <h3 class="api-native-signature"><ApiType type={nativeSignatureText(symbol, signature, language)} index={index} context={symbol} signature={signature} layout={signatureLayouts.get(signature)} />{methodSource && <span class="api-method-source">[<a href={methodSource} aria-label={`Source for ${label}`}>source</a>]</span>}<a class="api-heading-link" href={`#${id}`} aria-label="Link to method">#</a></h3>
+              : methodSource && methodSource !== source && <p><span class="api-method-source">[<a href={methodSource} aria-label={`Source for ${label}`}>source</a>]</span></p>}
             {signature.extension && <p>Available when <code>{signature.extension}</code> is loaded.</p>}
             {signature.doc?.summary && <ApiProse text={signature.doc.summary} index={index} context={symbol} />}
             {signature.doc?.body && <ApiProse text={signature.doc.body} index={index} context={symbol} />}

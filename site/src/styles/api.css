@@ -794,6 +794,9 @@ html:has(:is(.api-reference-layout--symbol, .api-reference-layout--glossary)):no
 }
 .page-toolbar-controls--reference select { max-width: 11rem; }
 .api-section-heading { display: flex; align-items: baseline; gap: 0.375rem; }
+/* The member body's padding already separates its first section from the declaration. */
+dl.py > dd > .rubric:first-child,
+dl.py > dd > :first-child > .rubric:first-child { margin-top: 0; }
 .api-related-types { margin-top: 2rem; }
 .api-related-cards { display: grid; gap: 0.75rem; margin-top: 0.75rem; }
 .api-related-card { padding: 0.875rem 1rem; border: 1px solid var(--color-edge); border-radius: 0.4rem; }

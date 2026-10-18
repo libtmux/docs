@@ -4,9 +4,10 @@ const { labels, targets } = Astro.props
 ---
 {labels.length > 0 && (
   <span class="api-field-overloads">
-    {' (for '}{labels.map((label, i) => <>{i > 0 && '; '}{targets?.has(label)
+    {/* A label is itself a call, so parentheses around it would double up. */}
+    {' for '}{labels.map((label, i) => <>{i > 0 && '; '}{targets?.has(label)
       ? <a href={`#${targets.get(label)}`}><code>{label}</code></a>
-      : <code>{label}</code>}</>)}{')'}
+      : <code>{label}</code>}</>)}
   </span>
 )}
 <style>
