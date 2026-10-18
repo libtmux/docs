@@ -4,21 +4,21 @@
 
   // >>> generated from site/src/lib/ports.ts by scripts/gen-shell-ports.mjs
   var PORTS = [
-    {"slug":"py","name":"Python","shortName":"Py","logoLanguage":"python","versionedDocs":true},
-    {"slug":"ruby","name":"Ruby","shortName":"Rb","logoLanguage":"ruby","versionedDocs":true},
-    {"slug":"lua","name":"Lua","shortName":"Lua","logoLanguage":"lua","versionedDocs":true},
-    {"slug":"powershell","name":"PowerShell","shortName":"PowerShell","logoLanguage":"powershell","versionedDocs":true},
-    {"slug":"julia","name":"Julia","shortName":"Julia","logoLanguage":"julia","versionedDocs":true},
-    {"slug":"ts","name":"TypeScript","shortName":"TS","logoLanguage":"typescript","versionedDocs":true},
-    {"slug":"rs","name":"Rust","shortName":"Rs","logoLanguage":"rust","versionedDocs":true},
-    {"slug":"go","name":"Go","shortName":"Go","logoLanguage":"go","versionedDocs":true},
-    {"slug":"java","name":"Java","shortName":"Java","logoLanguage":"java","versionedDocs":true},
-    {"slug":"kotlin","name":"Kotlin","shortName":"Kt","logoLanguage":"kotlin","versionedDocs":true},
-    {"slug":"scala","name":"Scala","shortName":"Sc","logoLanguage":"scala","versionedDocs":true},
-    {"slug":"csharp","name":"C#","shortName":"C#","logoLanguage":"csharp","versionedDocs":true},
-    {"slug":"fsharp","name":"F#","shortName":"F#","logoLanguage":"fsharp","versionedDocs":true},
-    {"slug":"cxx","name":"C++","shortName":"C++","logoLanguage":"cpp","versionedDocs":true},
-    {"slug":"swift","name":"Swift","shortName":"Sw","logoLanguage":"swift","versionedDocs":true},
+    {"slug":"py","name":"Python","shortName":"Py","logoLanguage":"python","versionedDocs":true,"mcp":true},
+    {"slug":"ruby","name":"Ruby","shortName":"Rb","logoLanguage":"ruby","versionedDocs":true,"mcp":true},
+    {"slug":"lua","name":"Lua","shortName":"Lua","logoLanguage":"lua","versionedDocs":true,"mcp":false},
+    {"slug":"powershell","name":"PowerShell","shortName":"PowerShell","logoLanguage":"powershell","versionedDocs":true,"mcp":false},
+    {"slug":"julia","name":"Julia","shortName":"Julia","logoLanguage":"julia","versionedDocs":true,"mcp":true},
+    {"slug":"ts","name":"TypeScript","shortName":"TS","logoLanguage":"typescript","versionedDocs":true,"mcp":true},
+    {"slug":"rs","name":"Rust","shortName":"Rs","logoLanguage":"rust","versionedDocs":true,"mcp":true},
+    {"slug":"go","name":"Go","shortName":"Go","logoLanguage":"go","versionedDocs":true,"mcp":true},
+    {"slug":"java","name":"Java","shortName":"Java","logoLanguage":"java","versionedDocs":true,"mcp":true},
+    {"slug":"kotlin","name":"Kotlin","shortName":"Kt","logoLanguage":"kotlin","versionedDocs":true,"mcp":false},
+    {"slug":"scala","name":"Scala","shortName":"Sc","logoLanguage":"scala","versionedDocs":true,"mcp":false},
+    {"slug":"csharp","name":"C#","shortName":"C#","logoLanguage":"csharp","versionedDocs":true,"mcp":true},
+    {"slug":"fsharp","name":"F#","shortName":"F#","logoLanguage":"fsharp","versionedDocs":true,"mcp":false},
+    {"slug":"cxx","name":"C++","shortName":"C++","logoLanguage":"cpp","versionedDocs":true,"mcp":true},
+    {"slug":"swift","name":"Swift","shortName":"Sw","logoLanguage":"swift","versionedDocs":true,"mcp":true},
   ]
   // <<< end generated
 
@@ -183,10 +183,11 @@
     localeSwitcher.querySelector('ul').appendChild(localeItem)
     pageSwitchers.appendChild(localeSwitcher)
     controls.appendChild(pageSwitchers)
-    ;[['Reference', '/reference/'], ['MCP', '/mcp/'], ['Search', '/search/']].forEach(function (entry) {
+    ;[['Reference', '/reference/', false], ['MCP', '/mcp/', true], ['Search', '/search/', true]].forEach(function (entry) {
+      if (entry[0] === 'MCP' && !(portMeta && portMeta.mcp)) return
       var link = document.createElement('a')
       link.className = 'lt-shell-search-link'
-      link.href = entry[0] === 'Search' && currentPort && currentVersion
+      link.href = entry[2] && currentPort && currentVersion
         ? siteRoot + '/' + currentPort + '/' + currentVersion + entry[1]
         : siteRoot + entry[1]
       link.textContent = entry[0]

@@ -3,7 +3,7 @@
  *
  * Almost always `/`. A PR preview is the exception: the whole site is
  * published under `/pr-42/`, and every root-relative link a component emits
- * — `/mcp/`, `/py/stable/`, `/versions.json` — would otherwise walk the
+ * — `/search/`, `/py/stable/`, `/versions.json` — would otherwise walk the
  * reader straight out of the preview and onto production, silently, with the
  * preview's own header still on screen.
  *

@@ -5,7 +5,7 @@ import VersionSwitcher from './VersionSwitcher.astro'
 import HeaderPicker from './HeaderPicker.astro'
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import type { LocaleStatus } from '../i18n/resolve'
-import { PORT_BY_SLUG, portPickers } from '../lib/ports'
+import { PORT_BY_SLUG, portPageUrl, portPickers, productAvailable } from '../lib/ports'
 import { withPortRoot, withRoot } from '../lib/site-root'
 
 interface Props {
@@ -115,7 +115,7 @@ const pickers = port ? portPickers(port) : []
         </div>}
         <div class="site-header__panel-row site-header__panel-links">
           <a href={withPortRoot('/reference/')} class="topnav-chip px-2 py-1 text-sm">Reference</a>
-          <a href={withRoot('/mcp/')} class="topnav-chip px-2 py-1 text-sm">MCP</a>
+          {port && productAvailable(port, 'mcp') && <a href={portPageUrl(port, version, 'mcp')} class="topnav-chip px-2 py-1 text-sm">MCP</a>}
         </div>
         {port && pickers.length > 0 && <div class="site-header__panel-row site-header__panel-pickers">
           {pickers.map((picker) => <HeaderPicker port={port} picker={picker} placement="menu" />)}

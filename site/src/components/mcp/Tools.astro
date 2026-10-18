@@ -3,7 +3,6 @@ import { ALL_TRANSLATED } from '../../i18n/resolve'
 import Aside from '../Aside.astro'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import { PORTS, PORT_BY_SLUG, portPageUrl, productAvailable } from '../../lib/ports'
-import { withRoot } from '../../lib/site-root'
 import { buildTarget } from '../../lib/versions'
 import mcpTools from '../../data/mcp-tools.json'
 import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO } from '../../i18n/contribute'
@@ -37,6 +36,9 @@ const version = buildTarget(process.env).version
 let defaults: Record<string, string> = {}
 try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
 const toolUrl = (port: Slug, tool = '') => portPageUrl(PORT_BY_SLUG[port], port === buildPort ? version : (defaults[port] ?? 'latest'), `mcp/tools${tool ? `/${data.ports[port].wirePrefix}${tool}` : ''}`)
+// The reference implementation's install page, or the building port's own.
+const installPort = buildPort ?? 'py'
+const installUrl = portPageUrl(PORT_BY_SLUG[installPort], installPort === buildPort ? version : (defaults[installPort] ?? 'latest'), 'mcp')
 
 const counts = SLUGS.map((s) => ({ slug: s, n: data.ports[s].tools.length }))
 const ranked = [...counts].sort((a, b) => b.n - a.n)
@@ -225,7 +227,8 @@ const spread = Math.round((ranked[0].n / ranked[ranked.length - 1].n) * 10) / 10
     </div>
 
     <p class="mt-8 text-sm opacity-80">
-      Install a server from <a class="hover:underline" href={withRoot('/mcp/')}>the MCP page</a>,
+      Install a server from your language's MCP page, such as
+      <a class="hover:underline" href={installUrl}>{PORT_BY_SLUG[installPort].name}'s</a>,
       or read the reference implementation's per-tool documentation in the
       {' '}<a class="hover:underline" href={toolUrl('py')}>Python tool reference</a>.
     </p>

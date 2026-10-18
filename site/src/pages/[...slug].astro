@@ -2,7 +2,6 @@
 import { getCollection, type CollectionEntry } from 'astro:content'
 import DocPage from '../components/docs/DocPage.astro'
 import RedirectPage from '../components/docs/RedirectPage.astro'
-import McpOverview from '../components/mcp/Overview.astro'
 import McpTools from '../components/mcp/Tools.astro'
 import ProductApiPage from '../components/api/ProductApiPage.astro'
 import { API_MODELS } from '../lib/api-models'
@@ -13,7 +12,7 @@ import ProtocolReference from '../components/mcp/ProtocolReference.astro'
 import TmuxOverview from '../components/tmux/Overview.astro'
 import { mcpReferenceRoutes, type McpSection } from '../lib/mcp-reference'
 import { docsEntriesAvailable } from '../lib/page-port-links'
-import { docsRedirects, movedPageRedirects, docsRoutePath, sourceGuideRedirects, workspaceRedirects } from '../lib/docs-paths'
+import { docsRedirects, docsRoutePath, movedPageRedirects, redirectDestination, sourceGuideRedirects, workspaceRedirects } from '../lib/docs-paths'
 import { DEFAULT_LOCALE, localeRoot, type Locale } from '../i18n/locales'
 import { buildLocale, localeOf, placeholderPairs, sourceIdOf } from '../i18n/resolve'
 
@@ -32,7 +31,6 @@ export async function getStaticPaths() {
   const moved = movedPageRedirects(port).map(({ path, target }) => ({ params: { slug: path }, props: { redirect: target } }))
   const global = !port ? [
     { params: { slug: 'tmux' }, props: { globalPage: 'tmux' } },
-    { params: { slug: 'mcp' }, props: { globalPage: 'mcp' } },
     { params: { slug: 'mcp/tools' }, props: { globalPage: 'tools' } },
   ] : []
   const reference = locale === DEFAULT_LOCALE ? productApiRoutes(API_MODELS, port, defaults, buildTarget(process.env).version)
@@ -79,7 +77,7 @@ interface Props {
 const { entry, placeholderLocale, globalPage, version, model, symbol, mcpPort, section, itemSlug, redirect } = Astro.props
 const destination = globalPage === 'tmux' && buildLocale() !== DEFAULT_LOCALE
   ? `${localeRoot(DEFAULT_LOCALE)}tmux/`
-  : redirect ? `${import.meta.env.BASE_URL.replace(/\/$/, '')}/${redirect}/` : undefined
+  : redirect !== undefined ? redirectDestination(import.meta.env.BASE_URL, redirect) : undefined
 ---
 
-{destination ? <RedirectPage destination={destination} title="the documentation" /> : globalPage === 'tmux' ? <TmuxOverview /> : globalPage === 'mcp' ? <McpOverview /> : globalPage === 'tools' ? <McpTools /> : mcpPort ? <ProtocolReference port={mcpPort} section={section!} itemSlug={itemSlug} version={version!} /> : model && symbol ? <ProductApiPage model={model} symbol={symbol} version={version!} /> : entry && <DocPage entry={entry} version={version} placeholderLocale={placeholderLocale} />}
+{destination ? <RedirectPage destination={destination} title="the documentation" /> : globalPage === 'tmux' ? <TmuxOverview /> : globalPage === 'tools' ? <McpTools /> : mcpPort ? <ProtocolReference port={mcpPort} section={section!} itemSlug={itemSlug} version={version!} /> : model && symbol ? <ProductApiPage model={model} symbol={symbol} version={version!} /> : entry && <DocPage entry={entry} version={version} placeholderLocale={placeholderLocale} />}

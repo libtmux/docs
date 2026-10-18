@@ -6,7 +6,7 @@ import type { CollectionEntry } from 'astro:content'
 import { getCollection } from 'astro:content'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
-import { MOVED_PAGES, docsRoutePath, movedPageRedirects } from '../src/lib/docs-paths'
+import { MOVED_PAGES, docsRoutePath, movedPageRedirects, redirectDestination } from '../src/lib/docs-paths'
 import { PORTS, PRODUCT_STATUS_GUIDE } from '../src/lib/ports'
 import { getSidebar, type SidebarItem } from '../src/lib/sidebar'
 
@@ -105,8 +105,8 @@ describe('the moved concept page', () => {
  *
  * Human pages come from three places: `.astro` files and directories in
  * `src/pages`, the first segment of every content route, and the literal
- * routes `[...slug].astro` adds. Endpoints such as `llms.txt.ts` write
- * machine files and are not pages.
+ * routes `[...slug].astro` adds, named by their full route. Endpoints such as
+ * `llms.txt.ts` write machine files and are not pages.
  */
 function rootPages(pages: string, content: string, slugRoute: string): Map<string, string> {
   const found = new Map<string, string>()
@@ -121,7 +121,7 @@ function rootPages(pages: string, content: string, slugRoute: string): Map<strin
     } else if (entry.name.endsWith('.ts') && !/\.[a-z]+\.ts$/.test(entry.name)) add(entry.name.replace(/\.ts$/, ''), 'endpoint without a file extension')
   }
   for (const entry of contentEntries(content)) add(docsRoutePath(entry).split('/')[0]!, `content ${entry.id}`)
-  for (const [, slug] of readFileSync(slugRoute, 'utf8').matchAll(/params: \{ slug: '([^']+)' \}/g)) add(slug!.split('/')[0]!, 'catch-all route')
+  for (const [, slug] of readFileSync(slugRoute, 'utf8').matchAll(/params: \{ slug: '([^']+)' \}/g)) add(slug!, 'catch-all route')
   return found
 }
 
@@ -129,12 +129,14 @@ describe('the site root namespace', () => {
   // Sections and trees; pages about the site itself belong under `meta`.
   const SECTIONS = ['search', 'prompts', 'demo', 'api', 'reference', 'tmux', 'meta']
   const ALLOWED = new Set([...SECTIONS, ...PORTS.map((port) => port.slug)])
-  // Found loose at the root, with no decision yet on where it belongs.
-  const UNDECIDED = ['mcp']
+  // Found loose at the root, with no decision yet on where it belongs: the
+  // cross-port tool catalogue. Its `/mcp/` parent now redirects home.
+  const UNDECIDED = ['mcp/tools']
   // Pages about the site itself, each kept at its old URL by a redirect.
   const META_PAGES = ['support', 'parity', 'translations', 'third-party-notices']
 
-  const loose = (found: Map<string, string>) => [...found].filter(([name]) => !ALLOWED.has(name) && !UNDECIDED.includes(name))
+  const loose = (found: Map<string, string>) => [...found]
+    .filter(([name]) => !ALLOWED.has(name.split('/')[0]!) && !UNDECIDED.includes(name))
 
   it('holds only the allowed sections, port trees and the pages still undecided', () => {
     expect(loose(rootPages(PAGES, CONTENT, SLUG_ROUTE))).toEqual([])
@@ -154,7 +156,23 @@ describe('the site root namespace', () => {
     const found = rootPages(PAGES, CONTENT, SLUG_ROUTE)
     for (const name of [...SECTIONS, ...UNDECIDED]) expect(found.has(name), name).toBe(true)
     expect(PORTS.some((port) => found.has(port.slug))).toBe(true)
-    expect(UNDECIDED.filter((name) => ALLOWED.has(name))).toEqual([])
+    expect(UNDECIDED.filter((name) => ALLOWED.has(name.split('/')[0]!))).toEqual([])
+  })
+
+  it('has no cross-port MCP overview at the root, which redirects to the site home', () => {
+    expect(movedPageRedirects()).toContainEqual({ path: 'mcp', target: '' })
+    expect(existsSync(join(PAGES, '../components/mcp/Overview.astro'))).toBe(false)
+    expect(rootPages(PAGES, CONTENT, SLUG_ROUTE).has('mcp')).toBe(false)
+    expect(redirectDestination('/en/', '')).toBe('/en/')
+    expect(redirectDestination('/pr-42/ja/', '')).toBe('/pr-42/ja/')
+    expect(redirectDestination('/en/', 'meta/support')).toBe('/en/meta/support/')
+
+    // The catch-all route as it was, with the overview added back.
+    const dir = mkdtempSync(join(tmpdir(), 'libtmux-root-route-'))
+    scratch.push(dir)
+    const route = join(dir, '[...slug].astro')
+    writeFileSync(route, `${readFileSync(SLUG_ROUTE, 'utf8')}\n{ params: { slug: 'mcp' }, props: { globalPage: 'mcp' } },\n`)
+    expect(loose(rootPages(PAGES, CONTENT, route)).map(([name]) => name)).toEqual(['mcp'])
   })
 
   it('flags a new page, content route or extensionless endpoint added to the current source', () => {

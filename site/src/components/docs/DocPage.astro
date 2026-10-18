@@ -93,15 +93,11 @@ const isProductApi = entry.data.product && pagePath === productApiPath(entry.dat
 /*
  * The install picker belongs on a port's MCP overview.
  *
- * `/mcp/` has carried it since the widget was ported, but that page installs
- * the *Python* server — so a reader who followed the TypeScript nav to
- * `/ts/latest/mcp/` got eight paragraphs about a server and no way to point a
- * client at it. Every port ships one; they are obtained eight different ways;
- * the client and scope axes are identical. See lib/install-matrix.ts.
+ * Every port ships a server and obtains it differently; the client and scope
+ * axes are identical. See lib/install-matrix.ts.
  *
  * Rendered from here rather than from the Markdown because a content-collection
- * entry cannot import a component, which is the same reason `/mcp/` is an
- * .astro route.
+ * entry cannot import a component.
  */
 const productIsAvailable = port && entry.data.product
   ? productAvailable(PORT_BY_SLUG[port], entry.data.product)

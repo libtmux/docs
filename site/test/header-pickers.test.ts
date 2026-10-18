@@ -165,6 +165,16 @@ describe('header pickers', () => {
     expect(document.querySelectorAll('[data-port-link], .site-header__api-menu, .site-header__ports')).toHaveLength(0)
   })
 
+  it('points the MCP chip at the port MCP home and drops it where there is none', async () => {
+    const mcp = (document: Doc) => [...document.querySelectorAll<HTMLAnchorElement>('.site-header__panel-links a')]
+      .filter((link) => link.textContent.trim() === 'MCP').map((link) => link.getAttribute('href'))
+    expect(mcp((await portPage('rs')).document)).toEqual(['/rs/latest/mcp/'])
+    expect(mcp((await portPage('py')).document)).toEqual(['/py/latest/mcp/'])
+    // Lua has no MCP server, and the homepage belongs to no port.
+    expect(mcp((await portPage('lua')).document)).toEqual([])
+    expect(mcp((await page('/en/', { pagePath: '' })).document)).toEqual([])
+  })
+
   it('shows exactly one copy at a time by width', () => {
     const css = readFileSync(new URL('../src/styles/global.css', import.meta.url), 'utf8')
     expect(css).toMatch(/@media \(max-width: 47\.999rem\) \{\s*\.site-header__pickers \{ display: none; \}/)
