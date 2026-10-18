@@ -1,4 +1,5 @@
 import type { DocBlock } from '../model.ts'
+import { markText } from './markdown.ts'
 
 /**
  * C# documentation comments, which are XML rather than prose.
@@ -48,11 +49,15 @@ const attr = (attrs: string, name: string): string | undefined =>
  *
  * `<para>` becomes a blank line because that is what it means; `<see>` and
  * `<c>` are left alone for the inline tokenizer, which resolves them against
- * the symbol table. Everything else is dropped rather than escaped — an
- * unknown tag is markup, and printing it is what this file exists to stop.
+ * the symbol table. `<b>` and `<em>` become the Markdown marks that tokenizer
+ * reads as strong and emphasis. Everything else is dropped rather than
+ * escaped — an unknown tag is markup, and printing it is what this file
+ * exists to stop.
  */
 function prose(xml: string): string {
   return xml
+    .replace(/<(strong|b)>([\s\S]*?)<\/\1>/g, (_, __, inner: string) => markText(inner, '**'))
+    .replace(/<(em|i)>([\s\S]*?)<\/\1>/g, (_, __, inner: string) => markText(inner, '*'))
     .replace(/<para\s*\/?>/g, '\n\n')
     .replace(/<\/para>/g, '')
     .replace(/<list[^>]*>/g, '\n')

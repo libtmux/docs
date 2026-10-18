@@ -2,6 +2,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { tokenizeDoc } from '../src/doc/roles.ts'
 import { extractDoxygen, normalizeCppTemplateSpacing } from '../src/languages/doxygen.ts'
 
 function extractCompound(xml: string) {
@@ -417,5 +418,83 @@ describe('Doxygen anonymous C display', () => {
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }
+  })
+})
+
+describe('Doxygen description markup', () => {
+  // The XML below is what Doxygen writes for Markdown headings, `**bold**`,
+  // `*emphasis*` and `@par`: a heading's `<title>` sits directly against the
+  // next `<para>`, and a skipped level leaves an empty wrapper section.
+  const described = (detail: string) => extractCompound(`
+    <compounddef kind="class">
+      <compoundname>libtmux::Server</compoundname>
+      <briefdescription><para>One tmux server.</para></briefdescription>
+      <detaileddescription>${detail}</detaileddescription>
+      <location file="include/libtmux/server.hpp" line="76"/>
+    </compounddef>`)[0].doc!.body
+
+  it('keeps a heading as a Markdown heading line and bold and emphasis as marks', () => {
+    expect(described(`
+<para>The entry point.</para>
+<sect1 id="classlibtmux_1_1Server_1autotoc_md0">
+<title>What is on here</title><para>A tmux server does a great many things:</para>
+<para><bold>Connecting.</bold> <computeroutput>at_socket_path</computeroutput> picks a socket, and <emphasis>only</emphasis> a startable handle may create a daemon.</para>
+</sect1>`)).toBe([
+      'The entry point.',
+      '',
+      '# What is on here',
+      '',
+      'A tmux server does a great many things:',
+      '',
+      '**Connecting.** `at_socket_path` picks a socket, and *only* a startable handle may create a daemon.',
+    ].join('\n'))
+  })
+
+  it('reaches the page as a bold lead-in', () => {
+    const body = described('<para><bold>Connecting.</bold> <computeroutput>at_socket_path</computeroutput> picks a socket.</para>')!
+    expect(tokenizeDoc(body, 'cxx')).toEqual([
+      { kind: 'strong', text: 'Connecting.' },
+      { kind: 'text', text: ' ' },
+      { kind: 'ref', role: 'any', target: 'at_socket_path', label: 'at_socket_path' },
+      { kind: 'text', text: ' picks a socket.' },
+    ])
+  })
+
+  it('keeps the depth of a heading, including one that skips a level', () => {
+    expect(described(`
+<sect1 id="a">
+<title>Setext heading</title><para>Text under it.</para>
+<sect2 id="b_1s2"><sect3 id="b">
+<title>Third level</title><para>Under third.</para>
+</sect3></sect2>
+</sect1>`)).toBe('# Setext heading\n\nText under it.\n\n### Third level\n\nUnder third.')
+  })
+
+  it('sets the title of a named paragraph apart from its text', () => {
+    expect(described(`<para><simplesect kind="par"><title>Remember</title><para>Paragraph.</para>
+</simplesect></para>`)).toBe('**Remember**\n\nParagraph.')
+  })
+
+  it('moves the space inside a mark outside it, where Markdown needs it', () => {
+    expect(described('<para>Read <bold>this </bold>now, <emphasis> not</emphasis> later.</para>'))
+      .toBe('Read **this** now, *not* later.')
+  })
+
+  it('leaves stars and hashes that are text alone', () => {
+    expect(described('<para>Match <computeroutput>*.hpp</computeroutput>, 2 * 3, and issue #4.</para>'))
+      .toBe('Match `*.hpp`, 2 * 3, and issue #4.')
+  })
+
+  it('applies to a member description as it does to a type', () => {
+    const symbols = extractCompound(`
+      <compounddef kind="class"><compoundname>libtmux::Server</compoundname><sectiondef kind="public-func">
+        <memberdef kind="function" prot="public"><type>int</type><name>session</name>
+          <briefdescription><para>Find a session.</para></briefdescription>
+          <detaileddescription><para><bold>Note.</bold> Resolved as tmux resolves it.</para></detaileddescription>
+          <location file="include/libtmux/server.hpp" line="9"/></memberdef>
+      </sectiondef><location file="include/libtmux/server.hpp" line="5"/></compounddef>`)
+    expect(symbols.find((symbol) => symbol.name === 'session')?.doc).toEqual({
+      summary: 'Find a session.', body: '**Note.** Resolved as tmux resolves it.',
+    })
   })
 })

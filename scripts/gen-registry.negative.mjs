@@ -148,6 +148,22 @@ for (const [name, mutate] of mutations) {
       result.ports.julia?.version === '0.1.0' && result.ports.julia?.tag === 'v0.1.0', result.error)
     check('an unavailable existing port retains its newer published entry', same(result.ports.csharp, baseline.ports.csharp), result.error)
 
+    // The baseline names a tag the repository never published. Tags the
+    // repository still carries keep their recorded entry; tags it lacks do not.
+    const staleJulia = { status: 'unpublished', version: null, stable: null, tag: 'v0.1.0-alpha.1' }
+    writeFileSync(join(dir, 'published.json'), JSON.stringify({ ...baseline, ports: { ...baseline.ports, julia: staleJulia } }))
+    const julia = 'https://api.github.com/repos/libtmux/libtmux-julia/tags?per_page=100'
+    result = invoke({ ...replies, [julia]: { body: '[]' }, [general]: { status: 404, body: '404: Not Found' } })
+    check('a recorded tag the repository lacks is dropped', result.ports.julia?.tag === null, `${JSON.stringify(result.ports.julia)} ${result.error}`)
+    result = invoke({
+      ...replies,
+      [julia]: { body: JSON.stringify([{ name: 'v0.1.0-alpha.1' }, { name: 'v0.2.0' }]) },
+      [general]: { body: `["0.1.0"]\ngit-tree-sha1 = "${'a'.repeat(40)}"\n` },
+    })
+    check('a recorded tag the repository carries survives until its package lands',
+      result.ports.julia?.tag === 'v0.1.0-alpha.1', `${JSON.stringify(result.ports.julia)} ${result.error}`)
+    writeFileSync(join(dir, 'published.json'), JSON.stringify(baseline))
+
     result = invoke({ ...replies, [core]: { body: feed('') }, [workspace]: { body: feed('') }, [general]: { status: 404, body: '404: Not Found' } })
     check('empty Gallery feeds and a missing General package are unpublished',
       result.ports.powershell?.status === 'unpublished' && result.ports.julia?.status === 'unpublished', result.error)

@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { Resolver, notASymbol } from '../src/resolver.ts'
 import { tokenizeDoc, docSummaryText } from '../src/doc/roles.ts'
+import { SymbolIndex } from '../src/link.ts'
 import { javadocToMarkdown, parseJavadoc } from '../src/doc/javadoc.ts'
 import { tableMentions } from '../src/mentions.ts'
 import { readInventory, writeInventory } from '../src/inventory.ts'
@@ -286,6 +287,54 @@ describe('each language gets its own spelling of a cross-reference', () => {
     ])
   })
 
+  it('a PowerShell cmdlet is a reference whatever the capitals inside its verb', () => {
+    const cmdlets = (text: string) => ref(tokenizeDoc(text, 'powershell'))
+    expect(cmdlets('Serialized by ConvertTo-TmuxQueryJson, read by ConvertFrom-Json.')).toEqual([
+      'ConvertTo-TmuxQueryJson', 'ConvertFrom-Json',
+    ])
+    expect(cmdlets('Run Get-TmuxPane, Where-Object and ForEach-Object, or LibTmux\\New-TmuxSession.')).toEqual([
+      'Get-TmuxPane', 'Where-Object', 'ForEach-Object', 'LibTmux\\New-TmuxSession',
+    ])
+  })
+
+  it('hyphenated prose is not a PowerShell cmdlet', () => {
+    for (const text of [
+      'Read-only and Built-in, whitespace-only, case-insensitive and per-owner.',
+      'A Whitespace-only value, a Session-only option and an Equal-count check.',
+      'POSIX-compatible and NUL-containing, or POSIX-Compatible and NUL-Containing.',
+      'The C-a prefix, a pre-ConvertTo step, and PowerShell-native output.',
+      'A trailing dash- or a -leading one, and a lone - between words.',
+    ]) expect(ref(tokenizeDoc(text, 'powershell'))).toEqual([])
+  })
+
+  const powershell = load('powershell')
+  it.runIf(powershell)('recognizes every command the PowerShell model declares', () => {
+    const names = powershell!.symbols.map((symbol) => symbol.name).filter((name) => /^[A-Z]\w*-[A-Z]\w*$/.test(name))
+    expect(names.length).toBeGreaterThan(0)
+    for (const name of names) expect(ref(tokenizeDoc(`Use ${name} now.`, 'powershell'))).toEqual([name])
+  })
+
+  it.runIf(powershell)('links a command whose verb has an inner capital from a real description', () => {
+    const { symbols } = powershell!
+    const index = new SymbolIndex(symbols, (symbol) => `/${symbol.id}/`, 'powershell')
+    const owner = symbols.find((symbol) => symbol.id === 'LibTmux\\New-TmuxQuery')!
+    const json = owner.signatures.flatMap((signature) => signature.params).find((param) => param.name === 'Json')!
+    const refs = index.linkText(json.doc!, owner).filter((span) => span.kind === 'ref')
+    expect(refs.map((span) => span.link?.symbol?.id)).toContain('LibTmux\\ConvertTo-TmuxQueryJson')
+  })
+
+  it.runIf(powershell)('adds only declared commands to what descriptions already referenced', () => {
+    const declared = new Set(powershell!.symbols.map((symbol) => symbol.name))
+    const texts = powershell!.symbols.flatMap((symbol) => [
+      symbol.doc?.summary, symbol.doc?.body,
+      ...symbol.signatures.flatMap((signature) => [signature.returnsDoc, ...signature.params.map((param) => param.doc)]),
+    ]).filter((text): text is string => Boolean(text))
+    const innerCapital = texts.flatMap((text) => ref(tokenizeDoc(text, 'powershell')))
+      .filter((target) => /^(?:\w+\\)?[A-Z][a-z]+[A-Z]\w*-[A-Z]/.test(target))
+    expect(innerCapital.length).toBeGreaterThan(0)
+    for (const target of innerCapital) expect(declared.has(target.replace(/^\w+\\/, ''))).toBe(true)
+  })
+
   it('Go doc links resolve, Rust-style ones do not leak into Go', () => {
     expect(ref(tokenizeDoc('See [GlobalWindowScope.Options] for this.', 'go'))).toEqual([
       'GlobalWindowScope.Options',
@@ -329,6 +378,24 @@ describe('each language gets its own spelling of a cross-reference', () => {
     ])
   })
 
+  it('a generic doc-ID cref is labelled without its arity marker', () => {
+    for (const lang of ['csharp', 'fsharp']) {
+      expect(tokenizeDoc('See <see cref="T:LibTmux.FSharp.Query`1"/> first.', lang)[1]).toMatchObject({
+        kind: 'ref', target: 'LibTmux.FSharp.Query`1', label: 'Query',
+      })
+    }
+    // Only a trailing marker goes; a name that merely contains digits stays whole.
+    expect(tokenizeDoc('<see cref="T:LibTmux.Utf8Text"/>', 'csharp')[0]).toMatchObject({ label: 'Utf8Text' })
+  })
+
+  it('a compiler-checked generic cref names the member without its type parameters', () => {
+    // `{T}` is how a C# cref spells a generic parameter; the member's id has none.
+    expect(tokenizeDoc('<see cref="M:LibTmux.Query.QueryExtensions.Matching{T}(System.Collections.Generic.IEnumerable{T})"/>', 'csharp')[0])
+      .toMatchObject({ kind: 'ref', target: 'LibTmux.Query.QueryExtensions.Matching', label: 'Matching' })
+    expect(tokenizeDoc('<see cref="T:LibTmux.QueryPlan{T}"/>', 'csharp')[0])
+      .toMatchObject({ target: 'LibTmux.QueryPlan', label: 'QueryPlan' })
+  })
+
   it('a C# keyword is a literal, not a member', () => {
     const spans = tokenizeDoc('Or <see langword="null" /> for the default.', 'csharp')
     expect(spans.filter((s) => s.kind === 'code').map((s) => (s as { text: string }).text)).toEqual([
@@ -356,9 +423,51 @@ describe('each language gets its own spelling of a cross-reference', () => {
 
   it('DocC gives double backticks the meaning reST gives single ones', () => {
     // ``Server`` is a symbol link in a Swift doc comment and a literal in reST.
-    expect(ref(tokenizeDoc('Call ``Server/kill()`` first.', 'swift'))).toEqual(['Server/kill'])
+    expect(ref(tokenizeDoc('Call ``Server/kill()`` first.', 'swift'))).toEqual(['Server.kill()'])
     const asRest = tokenizeDoc('Call ``Server`` first.', 'py')
     expect(asRest.some((s) => s.kind === 'code')).toBe(true)
+  })
+
+  it('a DocC link keeps its argument labels and spells a path with dots', () => {
+    const targets = (text: string) => tokenizeDoc(text, 'swift').filter((s) => s.kind === 'ref')
+      .map((s) => [(s as { target: string }).target, (s as { label: string }).label])
+    expect(targets('``using(_:_:)`` and ``isRunning()``')).toEqual([
+      ['using(_:_:)', 'using(_:_:)'], ['isRunning()', 'isRunning()'],
+    ])
+    expect(targets('``TmuxMode/direct`` and ``Snapshot/windows(of:)``')).toEqual([
+      ['TmuxMode.direct', 'TmuxMode/direct'], ['Snapshot.windows(of:)', 'Snapshot/windows(of:)'],
+    ])
+    // Only a slash between two names is a path; an operator's own slash is not.
+    expect(targets('``/(_:_:)``')).toEqual([['/(_:_:)', '/(_:_:)']])
+  })
+
+  it('YARD brace links carry their target and label, in every spelling', () => {
+    const links = (text: string) => tokenizeDoc(text, 'ruby').filter((s) => s.kind === 'ref')
+      .map((s) => [(s as { target: string }).target, (s as { label: string }).label])
+    expect(links('See {Server}, {Server#run}, {Server.open}, {#run} and {LibTmux::Server#run}.')).toEqual([
+      ['Server', 'Server'], ['Server#run', 'Server#run'], ['Server.open', 'Server.open'],
+      ['#run', '#run'], ['LibTmux::Server#run', 'LibTmux::Server#run'],
+    ])
+    expect(links('{Selection#empty?} and {#save!}, {Pane#title= the setter}, {::LibTmux label with words}.')).toEqual([
+      ['Selection#empty?', 'Selection#empty?'], ['#save!', '#save!'],
+      ['Pane#title=', 'the setter'], ['::LibTmux', 'label with words'],
+    ])
+    expect(tokenizeDoc('Use {#run} now.', 'ruby')).toEqual([
+      { kind: 'text', text: 'Use ' },
+      { kind: 'ref', role: 'any', target: '#run', label: '#run' },
+      { kind: 'text', text: ' now.' },
+    ])
+  })
+
+  it('braces that are not a YARD link tokenize as they did without the syntax', () => {
+    for (const text of [
+      'A hash `{Foo => 1}` and `{a: 1, "b" => 2}` in code.',
+      'Code spans keep a link-shaped `{#run}` and ``{Server#run}`` literal.',
+      'An empty {} and a record { closed: bool } and {closed: bool} in prose.',
+      'A constant key {Foo => 1}, {Foo: 1}, {Foo, Bar} and { Foo } is a literal.',
+      'A string "#{Server}" interpolates; {"a": {"b": 1}} is data; {lower} is not a constant.',
+      '{#} and {Foo#} and {#1} and {Foo.} are not targets.',
+    ]) expect(tokenizeDoc(text, 'ruby')).toEqual(tokenizeDoc(text, 'lua'))
   })
 
   it('an undeclared language still gets reST, which the Python corpus needs', () => {

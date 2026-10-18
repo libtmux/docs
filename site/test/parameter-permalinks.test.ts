@@ -108,6 +108,15 @@ it('keeps the ordinary parameter permalink before its prose and lifecycle metada
   expect(follows(permalink, paragraph.querySelector('.api-field-overloads')!)).toBe(true)
 })
 
+it('keeps the parameter type tight inside its parentheses', async () => {
+  for (const [language, heading] of [['py', 'target? (Session)'], ['julia', 'target? = None (Session)']]) {
+    const { paragraph } = await render(false, language)
+    expect(paragraph.querySelector('.api-parameter-signature')!.textContent!.replace(/\s+/g, ' ').trim(), language).toBe(heading)
+    // The overload label is a call, so it carries its own parentheses.
+    expect(paragraph.querySelector('.api-field-overloads')!.textContent!.replace(/\s+/g, ' ').trim(), language).toBe('for read(target)')
+  }
+})
+
 it('keeps command parameter controls beside their signature instead of the far edge', async () => {
   const { win } = await render(true)
   const permalinks = [...win.document.querySelectorAll('a.api-heading-link')]

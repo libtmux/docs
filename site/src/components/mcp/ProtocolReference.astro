@@ -137,7 +137,7 @@ const summaries = new Map(await Promise.all(entries.map(async (entry) => [entry.
               <div class="gp-sphinx-api-layout-left"><span class="gp-sphinx-api-signature">
                 {declaration ? <code class="api-native-signature">{declaration}</code> : <span class="mcp-signature"><strong class="sig-name descname">{object.name}</strong>({fields.length || parameterRows.length ? '\n' : ''}{fields.length ? fields.map(([name, value]) => <span>{'  '}<a href={`#${encodeURIComponent(`${object.id}.input/properties/${name.replaceAll('~', '~0').replaceAll('/', '~1')}`)}`}>{name}</a>{schema?.required?.includes(name) ? '' : '?'}: <McpSchemaType schema={value} root={input!} scope={`${object.id}.input`} />{','}{'\n'}</span>) : parameterRows.map((arg) => <span>{'  '}<a href={`#${encodeURIComponent(arg.id)}`}>{arg.name}</a>{arg.required ? '' : '?'},{'\n'}</span>)})</span>}
               </span></div>
-              <div class="gp-sphinx-api-layout-right"><ApiBadge label={object.kind.replace('-', ' ')} variant="kind" value={object.kind} />{sourceUrl && <a href={sourceUrl}>[source]</a>}<a class="headerlink" href={`#${encodeURIComponent(object.id)}`} aria-label={`Permalink to ${object.name}`}>¶</a></div>
+              <div class="gp-sphinx-api-layout-right"><ApiBadge label={object.kind.replace('-', ' ')} variant="kind" value={object.kind} />{sourceUrl && <span>[<a href={sourceUrl}>source</a>]</span>}<a class="headerlink" href={`#${encodeURIComponent(object.id)}`} aria-label={`Permalink to ${object.name}`}>¶</a></div>
             </div>
           </dt>
           <dd class="api-overview mcp-overview">

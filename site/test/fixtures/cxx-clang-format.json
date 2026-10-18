@@ -1,0 +1,2037 @@
+{
+ "formatter": "Ubuntu clang-format version 21.1.8 (6ubuntu1)",
+ "style": {
+  "source": "libtmux/libtmux-cxx .clang-format at 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f, the revision cxx.json is extracted from",
+  "options": {
+   "BasedOnStyle": "LLVM",
+   "PointerAlignment": "Left",
+   "SortIncludes": "CaseSensitive",
+   "Standard": "Latest",
+   "ColumnLimit": "88 in the project; columns + 2 here"
+  }
+ },
+ "context": "Each raw declaration is a member of \"struct ApiDeclarations { ... };\" formatted with --assume-filename=include/libtmux.hpp, the same wrapper scripts/gen-api-model.mjs uses, and the struct indent is removed. The two columns of struct indent are why the project limit of 88 printed 86 columns, and why a printed budget of N columns uses ColumnLimit N + 2.",
+ "groups": {
+  "corpus": "declarations from site/src/data/api/cxx.json, one per distinct layout shape",
+  "synthetic": "hand-written declarations with trailing returns, variadics, defaults, requires clauses and noexcept expressions that cxx.json does not contain",
+  "narrow": "both groups at an unusually narrow budget"
+ },
+ "cases": [
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "AttachCommand(const AttachCommand&) noexcept;",
+   "text": "AttachCommand(const AttachCommand&) noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "~AttachCommand();",
+   "text": "~AttachCommand();"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] const std::vector<std::string>& argv() const noexcept;",
+   "text": "[[nodiscard]] const std::vector<std::string>&\nargv() const noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "Buffer(std::shared_ptr<const Snapshot> snapshot, std::size_t row) noexcept;",
+   "text": "Buffer(std::shared_ptr<const Snapshot> snapshot,\n       std::size_t row) noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] std::string_view name() const noexcept;",
+   "text": "[[nodiscard]] std::string_view name() const noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] expected<std::string, CommandFailure> contents() const;",
+   "text": "[[nodiscard]] expected<std::string, CommandFailure>\ncontents() const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] expected<void, CommandFailure> remove() const;",
+   "text": "[[nodiscard]] expected<void, CommandFailure> remove() const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "Chain& new_session(std::string_view name, bool detached = true);",
+   "text": "Chain& new_session(std::string_view name,\n                   bool detached = true);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "Chain& new_window(std::string_view session, std::string_view name);",
+   "text": "Chain& new_window(std::string_view session,\n                  std::string_view name);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "Chain& command(std::vector<std::string> argv);",
+   "text": "Chain& command(std::vector<std::string> argv);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "CommandArgument(const char* value);",
+   "text": "CommandArgument(const char* value);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] static CommandArgument sensitive(std::string value);",
+   "text": "[[nodiscard]] static CommandArgument\nsensitive(std::string value);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] static CommandArgument\nsensitive_range(std::string value, std::size_t offset, std::size_t size);",
+   "text": "[[nodiscard]] static CommandArgument\nsensitive_range(std::string value, std::size_t offset,\n                std::size_t size);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "CommandExecutor() = default;",
+   "text": "CommandExecutor() = default;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "CommandExecutor(const CommandExecutor&) = delete;",
+   "text": "CommandExecutor(const CommandExecutor&) = delete;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "virtual ~CommandExecutor() = default;",
+   "text": "virtual ~CommandExecutor() = default;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] virtual expected<std::string, CommandFailure>\nrun(const CommandRequest& command, std::optional<std::chrono::milliseconds> timeout,\n    std::optional<std::size_t> output_limit) const = 0;",
+   "text": "[[nodiscard]] virtual expected<std::string, CommandFailure>\nrun(const CommandRequest& command,\n    std::optional<std::chrono::milliseconds> timeout,\n    std::optional<std::size_t> output_limit) const = 0;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] expected<std::string, CommandFailure> wait() &&;",
+   "text": "[[nodiscard]] expected<std::string, CommandFailure>\nwait() &&;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] expected<bool, CommandFailure>\nwait_until(std::chrono::steady_clock::time_point deadline) const;",
+   "text": "[[nodiscard]] expected<bool, CommandFailure> wait_until(\n    std::chrono::steady_clock::time_point deadline) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "void detach() && noexcept;",
+   "text": "void detach() && noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] bool request_cancel();",
+   "text": "[[nodiscard]] bool request_cancel();"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "CommandRequest(std::initializer_list<CommandArgument> arguments);",
+   "text": "CommandRequest(\n    std::initializer_list<CommandArgument> arguments);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "static expected<CommandRuntime, CommandFailure>\nstart(CommandRuntimeConfig config = {});",
+   "text": "static expected<CommandRuntime, CommandFailure>\nstart(CommandRuntimeConfig config = {});"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] ReadyStatus\nwait_ready(std::chrono::steady_clock::time_point deadline =\n               std::chrono::steady_clock::time_point::max());",
+   "text": "[[nodiscard]] ReadyStatus wait_ready(\n    std::chrono::steady_clock::time_point deadline =\n        std::chrono::steady_clock::time_point::max());"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] ReadyStatus wait_ready_for(std::chrono::milliseconds timeout);",
+   "text": "[[nodiscard]] ReadyStatus\nwait_ready_for(std::chrono::milliseconds timeout);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "static expected<Connection, ProtocolError> connect(ConnectionOptions options);",
+   "text": "static expected<Connection, ProtocolError>\nconnect(ConnectionOptions options);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "~Connection() noexcept;",
+   "text": "~Connection() noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "ControlRequestResult execute(ControlRequest request,\n                             std::chrono::steady_clock::time_point deadline);",
+   "text": "ControlRequestResult\nexecute(ControlRequest request,\n        std::chrono::steady_clock::time_point deadline);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] std::vector<Notification>\nwait_for_notifications(std::chrono::steady_clock::time_point deadline);",
+   "text": "[[nodiscard]] std::vector<Notification>\nwait_for_notifications(\n    std::chrono::steady_clock::time_point deadline);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "expected<void, ProtocolError>\nset_pane_output(std::string_view pane, bool deliver,\n                std::chrono::steady_clock::time_point deadline);",
+   "text": "expected<void, ProtocolError> set_pane_output(\n    std::string_view pane, bool deliver,\n    std::chrono::steady_clock::time_point deadline);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] expected<void, ProtocolError>\nmute_pane_output(std::string_view pane,\n                 std::chrono::steady_clock::time_point deadline);",
+   "text": "[[nodiscard]] expected<void, ProtocolError>\nmute_pane_output(\n    std::string_view pane,\n    std::chrono::steady_clock::time_point deadline);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "expected<void, ProtocolError>\nshutdown(std::chrono::steady_clock::time_point deadline);",
+   "text": "expected<void, ProtocolError>\nshutdown(std::chrono::steady_clock::time_point deadline);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "libtmux::EntityId<Kind>::EntityId() = default;",
+   "text": "libtmux::EntityId<Kind>::EntityId() = default;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "constexpr explicit libtmux::EntityId<Kind>::EntityId(std::string_view value) noexcept;",
+   "text": "constexpr explicit libtmux::EntityId<Kind>::EntityId(\n    std::string_view value) noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] constexpr std::string_view\nlibtmux::EntityId<Kind>::value() const noexcept;",
+   "text": "[[nodiscard]] constexpr std::string_view\nlibtmux::EntityId<Kind>::value() const noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "explicit libtmux::FilterExpr<Entity>::FilterExpr(Node node);",
+   "text": "explicit libtmux::FilterExpr<Entity>::FilterExpr(Node node);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "libtmux::FilterExpr<Entity>::FilterExpr(const FilterExpr& other);",
+   "text": "libtmux::FilterExpr<Entity>::FilterExpr(\n    const FilterExpr& other);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "libtmux::FilterExpr<Entity>::FilterExpr(FilterExpr&&) noexcept = default;",
+   "text": "libtmux::FilterExpr<Entity>::FilterExpr(\n    FilterExpr&&) noexcept = default;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "libtmux::FilterExpr<Entity>::~FilterExpr() = default;",
+   "text": "libtmux::FilterExpr<Entity>::~FilterExpr() = default;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] const Node& libtmux::FilterExpr<Entity>::node() const noexcept;",
+   "text": "[[nodiscard]] const Node&\nlibtmux::FilterExpr<Entity>::node() const noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "void string_test(std::string_view field, std::string_view op,\n                 std::string_view operand);",
+   "text": "void string_test(std::string_view field,\n                 std::string_view op,\n                 std::string_view operand);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "NotificationRange(Connection& connection,\n                  std::chrono::steady_clock::time_point deadline) noexcept;",
+   "text": "NotificationRange(Connection& connection,\n                  std::chrono::steady_clock::time_point\n                      deadline) noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "explicit iterator(NotificationRange* range);",
+   "text": "explicit iterator(NotificationRange* range);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] expected<Pane, CommandFailure> split(SplitOptions options = {}) const;",
+   "text": "[[nodiscard]] expected<Pane, CommandFailure>\nsplit(SplitOptions options = {}) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] expected<WaitResult, CommandFailure>\nwait_for_text(std::string_view wanted, const WaitOptions& options = {}) const;",
+   "text": "[[nodiscard]] expected<WaitResult, CommandFailure>\nwait_for_text(std::string_view wanted,\n              const WaitOptions& options = {}) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] expected<void, CommandFailure>\nrespawn(bool replace_running = false) const;",
+   "text": "[[nodiscard]] expected<void, CommandFailure>\nrespawn(bool replace_running = false) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] expected<std::vector<OptionEntry>, CommandFailure> options() const;",
+   "text": "[[nodiscard]] expected<std::vector<OptionEntry>,\n                       CommandFailure>\noptions() const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] expected<void, CommandFailure> set_option(std::string_view name,\n                                                        std::string_view value) const;",
+   "text": "[[nodiscard]] expected<void, CommandFailure>\nset_option(std::string_view name,\n           std::string_view value) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] static expected<Server, CommandFailure>\nat_socket_path(std::string_view path, CommandObserver observer = {},\n               ExecutionPolicy policy = {});",
+   "text": "[[nodiscard]] static expected<Server, CommandFailure>\nat_socket_path(std::string_view path,\n               CommandObserver observer = {},\n               ExecutionPolicy policy = {});"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "template <typename Path>\n  requires std::same_as<std::remove_cvref_t<Path>, std::filesystem::path>\n[[nodiscard]] static expected<Server, CommandFailure>\nat_socket_path(Path&& path, CommandObserver observer = {},\n               ExecutionPolicy policy = {});",
+   "text": "template <typename Path>\n  requires std::same_as<std::remove_cvref_t<Path>,\n                        std::filesystem::path>\n[[nodiscard]] static expected<Server, CommandFailure>\nat_socket_path(Path&& path, CommandObserver observer = {},\n               ExecutionPolicy policy = {});"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] static expected<Server, CommandFailure>\nstartable_at_socket_path(std::string_view path,\n                         std::optional<std::filesystem::path> configuration,\n                         CommandObserver observer = {}, ExecutionPolicy policy = {});",
+   "text": "[[nodiscard]] static expected<Server, CommandFailure>\nstartable_at_socket_path(\n    std::string_view path,\n    std::optional<std::filesystem::path> configuration,\n    CommandObserver observer = {},\n    ExecutionPolicy policy = {});"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "template <typename Path>\n  requires std::same_as<std::remove_cvref_t<Path>, std::filesystem::path>\n[[nodiscard]] static expected<Server, CommandFailure>\nstartable_at_socket_path(Path&& path,\n                         std::optional<std::filesystem::path> configuration,\n                         CommandObserver observer = {}, ExecutionPolicy policy = {});",
+   "text": "template <typename Path>\n  requires std::same_as<std::remove_cvref_t<Path>,\n                        std::filesystem::path>\n[[nodiscard]] static expected<Server, CommandFailure>\nstartable_at_socket_path(\n    Path&& path,\n    std::optional<std::filesystem::path> configuration,\n    CommandObserver observer = {},\n    ExecutionPolicy policy = {});"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] static expected<Server, CommandFailure>\nfrom_env(CommandObserver observer = {}, ExecutionPolicy policy = {});",
+   "text": "[[nodiscard]] static expected<Server, CommandFailure>\nfrom_env(CommandObserver observer = {},\n         ExecutionPolicy policy = {});"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] static expected<Server, CommandFailure>\nover(std::shared_ptr<const CommandExecutor> executor, ExecutorOptions options = {},\n     CommandObserver observer = {}, ExecutionPolicy policy = {});",
+   "text": "[[nodiscard]] static expected<Server, CommandFailure>\nover(std::shared_ptr<const CommandExecutor> executor,\n     ExecutorOptions options = {},\n     CommandObserver observer = {},\n     ExecutionPolicy policy = {});"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] expected<std::string, CommandFailure>\nrun(const CommandRequest& command,\n    std::optional<std::chrono::milliseconds> timeout = {},\n    std::optional<std::size_t> output_limit = {}) const;",
+   "text": "[[nodiscard]] expected<std::string, CommandFailure>\nrun(const CommandRequest& command,\n    std::optional<std::chrono::milliseconds> timeout = {},\n    std::optional<std::size_t> output_limit = {}) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] expected<CommandOperation, CommandFailure>\ntry_submit(CommandRuntime& runtime, CommandRequest command,\n           std::optional<std::chrono::milliseconds> timeout = {},\n           std::optional<std::size_t> output_limit = {}) const;",
+   "text": "[[nodiscard]] expected<CommandOperation, CommandFailure>\ntry_submit(\n    CommandRuntime& runtime, CommandRequest command,\n    std::optional<std::chrono::milliseconds> timeout = {},\n    std::optional<std::size_t> output_limit = {}) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] expected<Server, ProtocolError>\nover_control(std::string_view session, std::size_t connections = 1) const;",
+   "text": "[[nodiscard]] expected<Server, ProtocolError>\nover_control(std::string_view session,\n             std::size_t connections = 1) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] expected<void, LayoutFailure>\nvalidate_layouts(std::span<const LayoutRequest> layouts) const;",
+   "text": "[[nodiscard]] expected<void, LayoutFailure>\nvalidate_layouts(\n    std::span<const LayoutRequest> layouts) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] expected<void, CommandFailure>\nwait_for(std::string_view channel,\n         std::optional<std::chrono::milliseconds> timeout = {}) const;",
+   "text": "[[nodiscard]] expected<void, CommandFailure>\nwait_for(std::string_view channel,\n         std::optional<std::chrono::milliseconds> timeout =\n             {}) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] expected<void, CommandFailure>\nbind_key(std::string_view table, std::string_view key,\n         const std::vector<std::string>& command, bool repeatable = false) const;",
+   "text": "[[nodiscard]] expected<void, CommandFailure>\nbind_key(std::string_view table, std::string_view key,\n         const std::vector<std::string>& command,\n         bool repeatable = false) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] expected<std::vector<OptionEntry>, CommandFailure>\noptions(std::string_view target = {}) const;",
+   "text": "[[nodiscard]] expected<std::vector<OptionEntry>,\n                       CommandFailure>\noptions(std::string_view target = {}) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] static expected<std::shared_ptr<const Snapshot>, CommandFailure>\ntake(std::shared_ptr<const detail::Backend> backend,\n     std::span<const std::string_view> fields, CommandRequest request,\n     FormatArgument placement = FormatArgument::flag);",
+   "text": "[[nodiscard]] static expected<\n    std::shared_ptr<const Snapshot>, CommandFailure>\ntake(std::shared_ptr<const detail::Backend> backend,\n     std::span<const std::string_view> fields,\n     CommandRequest request,\n     FormatArgument placement = FormatArgument::flag);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] static expected<std::shared_ptr<const Snapshot>, CommandFailure>\ntake_in_session(std::shared_ptr<const detail::Backend> backend,\n                std::span<const std::string_view> fields, CommandRequest request,\n                FormatArgument placement, std::string_view session_id,\n                std::string_view session_name);",
+   "text": "[[nodiscard]] static expected<\n    std::shared_ptr<const Snapshot>, CommandFailure>\ntake_in_session(\n    std::shared_ptr<const detail::Backend> backend,\n    std::span<const std::string_view> fields,\n    CommandRequest request, FormatArgument placement,\n    std::string_view session_id,\n    std::string_view session_name);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] const std::vector<std::vector<std::string_view>>& rows() const noexcept;",
+   "text": "[[nodiscard]] const std::vector<\n    std::vector<std::string_view>>&\nrows() const noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "Row(std::shared_ptr<const Snapshot> snapshot, std::size_t row) noexcept;",
+   "text": "Row(std::shared_ptr<const Snapshot> snapshot,\n    std::size_t row) noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] constexpr std::string_view\nto_string(ServerImplementation implementation) noexcept;",
+   "text": "[[nodiscard]] constexpr std::string_view\nto_string(ServerImplementation implementation) noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "template <typename Text>\n  requires std::same_as<std::remove_cvref_t<Text>, std::string> &&\n               (!std::is_lvalue_reference_v<Text>)\nstd::vector<std::string_view> capture_lines(Text&&) = delete;",
+   "text": "template <typename Text>\n  requires std::same_as<std::remove_cvref_t<Text>,\n                        std::string> &&\n               (!std::is_lvalue_reference_v<Text>)\nstd::vector<std::string_view>\ncapture_lines(Text&&) = delete;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] bool output_confirms(std::string_view captured, std::string_view wanted,\n                                   const std::vector<std::string>& sent = {});",
+   "text": "[[nodiscard]] bool\noutput_confirms(std::string_view captured,\n                std::string_view wanted,\n                const std::vector<std::string>& sent = {});"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "template <ReferenceRange Range>\n[[nodiscard]] std::optional<Referenced<Range>> first(Range& range);",
+   "text": "template <ReferenceRange Range>\n[[nodiscard]] std::optional<Referenced<Range>>\nfirst(Range& range);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "template <std::ranges::input_range Range>\n  requires std::constructible_from<std::ranges::range_value_t<Range>,\n                                   std::ranges::range_reference_t<Range>>\n[[nodiscard]] std::optional<std::ranges::range_value_t<Range>>\nfirst_owned(Range&& range);",
+   "text": "template <std::ranges::input_range Range>\n  requires std::constructible_from<\n      std::ranges::range_value_t<Range>,\n      std::ranges::range_reference_t<Range>>\n[[nodiscard]] std::optional<\n    std::ranges::range_value_t<Range>>\nfirst_owned(Range&& range);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "template <typename Reason>\n  requires is_validation_reason<Reason>\n[[nodiscard]] CommandFailure as_command_failure(Reason reason);",
+   "text": "template <typename Reason>\n  requires is_validation_reason<Reason>\n[[nodiscard]] CommandFailure\nas_command_failure(Reason reason);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "template <typename Error> [[nodiscard]] constexpr auto unexpected(Error&& error);",
+   "text": "template <typename Error>\n[[nodiscard]] constexpr auto unexpected(Error&& error);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] expected<void, CommandFailure>\nvalidate_layout(std::string_view layout, std::size_t minimum_panes = 1);",
+   "text": "[[nodiscard]] expected<void, CommandFailure>\nvalidate_layout(std::string_view layout,\n                std::size_t minimum_panes = 1);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "template <typename Entity>\n[[nodiscard]] expected<FilterExpr<Entity>, LookupParseError>\nparse_lookup(std::string_view term,\n             std::span<const StringFieldHandle<Entity>> fields);",
+   "text": "template <typename Entity>\n[[nodiscard]] expected<FilterExpr<Entity>, LookupParseError>\nparse_lookup(\n    std::string_view term,\n    std::span<const StringFieldHandle<Entity>> fields);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "template <typename Sink> void replay(const LoweredExpression& nodes, Sink& sink);",
+   "text": "template <typename Sink>\nvoid replay(const LoweredExpression& nodes, Sink& sink);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "ParsedNotification parse(Notification&&) = delete;",
+   "text": "ParsedNotification parse(Notification&&) = delete;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] std::optional<bool>\nlayout_contains_pane(std::string_view layout_change_text, std::string_view pane_id);",
+   "text": "[[nodiscard]] std::optional<bool>\nlayout_contains_pane(std::string_view layout_change_text,\n                     std::string_view pane_id);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "template <typename Parent, typename Child>\n[[nodiscard]] auto children_of(const std::vector<Child>& rows,\n                               StringFieldHandle<Child> foreign_key,\n                               StringFieldHandle<Parent> key);",
+   "text": "template <typename Parent, typename Child>\n[[nodiscard]] auto\nchildren_of(const std::vector<Child>& rows,\n            StringFieldHandle<Child> foreign_key,\n            StringFieldHandle<Parent> key);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "template <typename Parent, typename Child>\nauto children_of(const std::vector<Child>&&, StringFieldHandle<Child>,\n                 StringFieldHandle<Parent>) = delete;",
+   "text": "template <typename Parent, typename Child>\nauto children_of(const std::vector<Child>&&,\n                 StringFieldHandle<Child>,\n                 StringFieldHandle<Parent>) = delete;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "template <typename Entity>\n[[nodiscard]] FilterExpr<Entity> quantified(std::string name, Quantifier quantifier,\n                                            auto read, auto predicate);",
+   "text": "template <typename Entity>\n[[nodiscard]] FilterExpr<Entity>\nquantified(std::string name, Quantifier quantifier,\n           auto read, auto predicate);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] expected<std::vector<std::string>, SocketError>\nsocket_name_arguments(std::string_view name);",
+   "text": "[[nodiscard]] expected<std::vector<std::string>,\n                       SocketError>\nsocket_name_arguments(std::string_view name);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] bool same_entity_id(bool scoped_by_session, std::string_view left_id,\n                                  std::string_view left_session_id,\n                                  std::string_view right_id,\n                                  std::string_view right_session_id) noexcept;",
+   "text": "[[nodiscard]] bool\nsame_entity_id(bool scoped_by_session,\n               std::string_view left_id,\n               std::string_view left_session_id,\n               std::string_view right_id,\n               std::string_view right_session_id) noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] Version running_tmux(const std::filesystem::path& tmux_binary = \"tmux\");",
+   "text": "[[nodiscard]] Version running_tmux(\n    const std::filesystem::path& tmux_binary = \"tmux\");"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "template <typename Entity> [[nodiscard]] auto matching(FilterExpr<Entity> expr);",
+   "text": "template <typename Entity>\n[[nodiscard]] auto matching(FilterExpr<Entity> expr);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] FilterExpr<Entity>\nlibtmux::StringFieldHandle<Entity>::iequals(std::string_view operand) const;",
+   "text": "[[nodiscard]] FilterExpr<Entity>\nlibtmux::StringFieldHandle<Entity>::iequals(\n    std::string_view operand) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] static SocketNamespace internal();",
+   "text": "[[nodiscard]] static SocketNamespace internal();"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "template <typename Context>\nauto format(const libtmux::Client& value, Context& context) const;",
+   "text": "template <typename Context>\nauto format(const libtmux::Client& value,\n            Context& context) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] static libtmux::expected<ToolRegistry, std::string>\ncreate(std::vector<ToolDefinition> definitions, const ToolSelection& selection);",
+   "text": "[[nodiscard]] static libtmux::expected<ToolRegistry,\n                                       std::string>\ncreate(std::vector<ToolDefinition> definitions,\n       const ToolSelection& selection);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] const ToolDefinition* find_nested(const ToolDefinition& caller,\n                                                std::string_view name) const noexcept;",
+   "text": "[[nodiscard]] const ToolDefinition*\nfind_nested(const ToolDefinition& caller,\n            std::string_view name) const noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] libtmux::expected<ToolSelection, std::string> parse_tool_selection(\n    std::optional<std::string_view> toolsets, std::optional<std::string_view> include,\n    std::optional<std::string_view> exclude, bool teardown_enabled_by_default = true);",
+   "text": "[[nodiscard]] libtmux::expected<ToolSelection, std::string>\nparse_tool_selection(\n    std::optional<std::string_view> toolsets,\n    std::optional<std::string_view> include,\n    std::optional<std::string_view> exclude,\n    bool teardown_enabled_by_default = true);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "[[nodiscard]] libtmux::expected<libtmux::Session, BuildError>\nbuild(const Server& server, const Workspace& description,\n      const BeforeBuild& before = {}, const BuildObserver& observer = {},\n      std::optional<int> width = std::nullopt,\n      std::optional<int> height = std::nullopt);",
+   "text": "[[nodiscard]] libtmux::expected<libtmux::Session,\n                                BuildError>\nbuild(const Server& server, const Workspace& description,\n      const BeforeBuild& before = {},\n      const BuildObserver& observer = {},\n      std::optional<int> width = std::nullopt,\n      std::optional<int> height = std::nullopt);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "Arguments(\n    std::initializer_list<std::pair<std::string_view, std::string_view>> values);",
+   "text": "Arguments(std::initializer_list<\n          std::pair<std::string_view, std::string_view>>\n              values);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "void report(double completed, std::optional<double> total, std::string message) const;",
+   "text": "void report(double completed, std::optional<double> total,\n            std::string message) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "template <std::integral Integer>\n  requires(!std::same_as<std::remove_cv_t<Integer>, bool>)\nStructuredValue(Integer item);",
+   "text": "template <std::integral Integer>\n  requires(!std::same_as<std::remove_cv_t<Integer>, bool>)\nStructuredValue(Integer item);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "raw": "BuildStop(std::string text, bool keep = false);",
+   "text": "BuildStop(std::string text, bool keep = false);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "AttachCommand(const AttachCommand&) noexcept;",
+   "text": "AttachCommand(\n    const AttachCommand&) noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "~AttachCommand();",
+   "text": "~AttachCommand();"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] const std::vector<std::string>& argv() const noexcept;",
+   "text": "[[nodiscard]] const std::vector<\n    std::string>&\nargv() const noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "Buffer(std::shared_ptr<const Snapshot> snapshot, std::size_t row) noexcept;",
+   "text": "Buffer(std::shared_ptr<const Snapshot>\n           snapshot,\n       std::size_t row) noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] std::string_view name() const noexcept;",
+   "text": "[[nodiscard]] std::string_view\nname() const noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] expected<std::string, CommandFailure> contents() const;",
+   "text": "[[nodiscard]] expected<std::string,\n                       CommandFailure>\ncontents() const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] expected<void, CommandFailure> remove() const;",
+   "text": "[[nodiscard]] expected<void,\n                       CommandFailure>\nremove() const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "Chain& new_session(std::string_view name, bool detached = true);",
+   "text": "Chain&\nnew_session(std::string_view name,\n            bool detached = true);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "Chain& new_window(std::string_view session, std::string_view name);",
+   "text": "Chain&\nnew_window(std::string_view session,\n           std::string_view name);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "Chain& command(std::vector<std::string> argv);",
+   "text": "Chain&\ncommand(std::vector<std::string> argv);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "CommandArgument(const char* value);",
+   "text": "CommandArgument(const char* value);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] static CommandArgument sensitive(std::string value);",
+   "text": "[[nodiscard]] static CommandArgument\nsensitive(std::string value);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] static CommandArgument\nsensitive_range(std::string value, std::size_t offset, std::size_t size);",
+   "text": "[[nodiscard]] static CommandArgument\nsensitive_range(std::string value,\n                std::size_t offset,\n                std::size_t size);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "CommandExecutor() = default;",
+   "text": "CommandExecutor() = default;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "CommandExecutor(const CommandExecutor&) = delete;",
+   "text": "CommandExecutor(\n    const CommandExecutor&) = delete;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "virtual ~CommandExecutor() = default;",
+   "text": "virtual ~CommandExecutor() = default;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] virtual expected<std::string, CommandFailure>\nrun(const CommandRequest& command, std::optional<std::chrono::milliseconds> timeout,\n    std::optional<std::size_t> output_limit) const = 0;",
+   "text": "[[nodiscard]] virtual expected<\n    std::string, CommandFailure>\nrun(const CommandRequest& command,\n    std::optional<\n        std::chrono::milliseconds>\n        timeout,\n    std::optional<std::size_t>\n        output_limit) const = 0;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] expected<std::string, CommandFailure> wait() &&;",
+   "text": "[[nodiscard]] expected<std::string,\n                       CommandFailure>\nwait() &&;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] expected<bool, CommandFailure>\nwait_until(std::chrono::steady_clock::time_point deadline) const;",
+   "text": "[[nodiscard]] expected<bool,\n                       CommandFailure>\nwait_until(\n    std::chrono::steady_clock::\n        time_point deadline) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "void detach() && noexcept;",
+   "text": "void detach() && noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] bool request_cancel();",
+   "text": "[[nodiscard]] bool request_cancel();"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "CommandRequest(std::initializer_list<CommandArgument> arguments);",
+   "text": "CommandRequest(std::initializer_list<\n               CommandArgument>\n                   arguments);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "static expected<CommandRuntime, CommandFailure>\nstart(CommandRuntimeConfig config = {});",
+   "text": "static expected<CommandRuntime,\n                CommandFailure>\nstart(CommandRuntimeConfig config = {});"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] ReadyStatus\nwait_ready(std::chrono::steady_clock::time_point deadline =\n               std::chrono::steady_clock::time_point::max());",
+   "text": "[[nodiscard]] ReadyStatus wait_ready(\n    std::chrono::steady_clock::\n        time_point deadline =\n            std::chrono::steady_clock::\n                time_point::max());"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] ReadyStatus wait_ready_for(std::chrono::milliseconds timeout);",
+   "text": "[[nodiscard]] ReadyStatus\nwait_ready_for(\n    std::chrono::milliseconds timeout);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "static expected<Connection, ProtocolError> connect(ConnectionOptions options);",
+   "text": "static expected<Connection,\n                ProtocolError>\nconnect(ConnectionOptions options);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "~Connection() noexcept;",
+   "text": "~Connection() noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "ControlRequestResult execute(ControlRequest request,\n                             std::chrono::steady_clock::time_point deadline);",
+   "text": "ControlRequestResult\nexecute(ControlRequest request,\n        std::chrono::steady_clock::\n            time_point deadline);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] std::vector<Notification>\nwait_for_notifications(std::chrono::steady_clock::time_point deadline);",
+   "text": "[[nodiscard]] std::vector<Notification>\nwait_for_notifications(\n    std::chrono::steady_clock::\n        time_point deadline);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "expected<void, ProtocolError>\nset_pane_output(std::string_view pane, bool deliver,\n                std::chrono::steady_clock::time_point deadline);",
+   "text": "expected<void, ProtocolError>\nset_pane_output(\n    std::string_view pane, bool deliver,\n    std::chrono::steady_clock::\n        time_point deadline);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] expected<void, ProtocolError>\nmute_pane_output(std::string_view pane,\n                 std::chrono::steady_clock::time_point deadline);",
+   "text": "[[nodiscard]] expected<void,\n                       ProtocolError>\nmute_pane_output(\n    std::string_view pane,\n    std::chrono::steady_clock::\n        time_point deadline);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "expected<void, ProtocolError>\nshutdown(std::chrono::steady_clock::time_point deadline);",
+   "text": "expected<void, ProtocolError>\nshutdown(std::chrono::steady_clock::\n             time_point deadline);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "libtmux::EntityId<Kind>::EntityId() = default;",
+   "text": "libtmux::EntityId<Kind>::EntityId() =\n    default;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "constexpr explicit libtmux::EntityId<Kind>::EntityId(std::string_view value) noexcept;",
+   "text": "constexpr explicit libtmux::EntityId<\n    Kind>::EntityId(std::string_view\n                        value) noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] constexpr std::string_view\nlibtmux::EntityId<Kind>::value() const noexcept;",
+   "text": "[[nodiscard]] constexpr std::string_view\nlibtmux::EntityId<Kind>::value()\n    const noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "explicit libtmux::FilterExpr<Entity>::FilterExpr(Node node);",
+   "text": "explicit libtmux::FilterExpr<\n    Entity>::FilterExpr(Node node);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "libtmux::FilterExpr<Entity>::FilterExpr(const FilterExpr& other);",
+   "text": "libtmux::FilterExpr<Entity>::FilterExpr(\n    const FilterExpr& other);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "libtmux::FilterExpr<Entity>::FilterExpr(FilterExpr&&) noexcept = default;",
+   "text": "libtmux::FilterExpr<Entity>::FilterExpr(\n    FilterExpr&&) noexcept = default;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "libtmux::FilterExpr<Entity>::~FilterExpr() = default;",
+   "text": "libtmux::FilterExpr<\n    Entity>::~FilterExpr() = default;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] const Node& libtmux::FilterExpr<Entity>::node() const noexcept;",
+   "text": "[[nodiscard]] const Node&\nlibtmux::FilterExpr<Entity>::node()\n    const noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "void string_test(std::string_view field, std::string_view op,\n                 std::string_view operand);",
+   "text": "void\nstring_test(std::string_view field,\n            std::string_view op,\n            std::string_view operand);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "NotificationRange(Connection& connection,\n                  std::chrono::steady_clock::time_point deadline) noexcept;",
+   "text": "NotificationRange(\n    Connection& connection,\n    std::chrono::steady_clock::\n        time_point deadline) noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "explicit iterator(NotificationRange* range);",
+   "text": "explicit iterator(\n    NotificationRange* range);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] expected<Pane, CommandFailure> split(SplitOptions options = {}) const;",
+   "text": "[[nodiscard]] expected<Pane,\n                       CommandFailure>\nsplit(SplitOptions options = {}) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] expected<WaitResult, CommandFailure>\nwait_for_text(std::string_view wanted, const WaitOptions& options = {}) const;",
+   "text": "[[nodiscard]] expected<WaitResult,\n                       CommandFailure>\nwait_for_text(std::string_view wanted,\n              const WaitOptions&\n                  options = {}) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] expected<void, CommandFailure>\nrespawn(bool replace_running = false) const;",
+   "text": "[[nodiscard]] expected<void,\n                       CommandFailure>\nrespawn(\n    bool replace_running = false) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] expected<std::vector<OptionEntry>, CommandFailure> options() const;",
+   "text": "[[nodiscard]] expected<\n    std::vector<OptionEntry>,\n    CommandFailure>\noptions() const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] expected<void, CommandFailure> set_option(std::string_view name,\n                                                        std::string_view value) const;",
+   "text": "[[nodiscard]] expected<void,\n                       CommandFailure>\nset_option(\n    std::string_view name,\n    std::string_view value) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] static expected<Server, CommandFailure>\nat_socket_path(std::string_view path, CommandObserver observer = {},\n               ExecutionPolicy policy = {});",
+   "text": "[[nodiscard]] static expected<\n    Server, CommandFailure>\nat_socket_path(\n    std::string_view path,\n    CommandObserver observer = {},\n    ExecutionPolicy policy = {});"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "template <typename Path>\n  requires std::same_as<std::remove_cvref_t<Path>, std::filesystem::path>\n[[nodiscard]] static expected<Server, CommandFailure>\nat_socket_path(Path&& path, CommandObserver observer = {},\n               ExecutionPolicy policy = {});",
+   "text": "template <typename Path>\n  requires std::same_as<\n      std::remove_cvref_t<Path>,\n      std::filesystem::path>\n[[nodiscard]] static expected<\n    Server, CommandFailure>\nat_socket_path(\n    Path&& path,\n    CommandObserver observer = {},\n    ExecutionPolicy policy = {});"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] static expected<Server, CommandFailure>\nstartable_at_socket_path(std::string_view path,\n                         std::optional<std::filesystem::path> configuration,\n                         CommandObserver observer = {}, ExecutionPolicy policy = {});",
+   "text": "[[nodiscard]] static expected<\n    Server, CommandFailure>\nstartable_at_socket_path(\n    std::string_view path,\n    std::optional<std::filesystem::path>\n        configuration,\n    CommandObserver observer = {},\n    ExecutionPolicy policy = {});"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "template <typename Path>\n  requires std::same_as<std::remove_cvref_t<Path>, std::filesystem::path>\n[[nodiscard]] static expected<Server, CommandFailure>\nstartable_at_socket_path(Path&& path,\n                         std::optional<std::filesystem::path> configuration,\n                         CommandObserver observer = {}, ExecutionPolicy policy = {});",
+   "text": "template <typename Path>\n  requires std::same_as<\n      std::remove_cvref_t<Path>,\n      std::filesystem::path>\n[[nodiscard]] static expected<\n    Server, CommandFailure>\nstartable_at_socket_path(\n    Path&& path,\n    std::optional<std::filesystem::path>\n        configuration,\n    CommandObserver observer = {},\n    ExecutionPolicy policy = {});"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] static expected<Server, CommandFailure>\nfrom_env(CommandObserver observer = {}, ExecutionPolicy policy = {});",
+   "text": "[[nodiscard]] static expected<\n    Server, CommandFailure>\nfrom_env(CommandObserver observer = {},\n         ExecutionPolicy policy = {});"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] static expected<Server, CommandFailure>\nover(std::shared_ptr<const CommandExecutor> executor, ExecutorOptions options = {},\n     CommandObserver observer = {}, ExecutionPolicy policy = {});",
+   "text": "[[nodiscard]] static expected<\n    Server, CommandFailure>\nover(\n    std::shared_ptr<\n        const CommandExecutor> executor,\n    ExecutorOptions options = {},\n    CommandObserver observer = {},\n    ExecutionPolicy policy = {});"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] expected<std::string, CommandFailure>\nrun(const CommandRequest& command,\n    std::optional<std::chrono::milliseconds> timeout = {},\n    std::optional<std::size_t> output_limit = {}) const;",
+   "text": "[[nodiscard]] expected<std::string,\n                       CommandFailure>\nrun(const CommandRequest& command,\n    std::optional<\n        std::chrono::milliseconds>\n        timeout = {},\n    std::optional<std::size_t>\n        output_limit = {}) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] expected<CommandOperation, CommandFailure>\ntry_submit(CommandRuntime& runtime, CommandRequest command,\n           std::optional<std::chrono::milliseconds> timeout = {},\n           std::optional<std::size_t> output_limit = {}) const;",
+   "text": "[[nodiscard]] expected<CommandOperation,\n                       CommandFailure>\ntry_submit(\n    CommandRuntime& runtime,\n    CommandRequest command,\n    std::optional<\n        std::chrono::milliseconds>\n        timeout = {},\n    std::optional<std::size_t>\n        output_limit = {}) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] expected<Server, ProtocolError>\nover_control(std::string_view session, std::size_t connections = 1) const;",
+   "text": "[[nodiscard]] expected<Server,\n                       ProtocolError>\nover_control(\n    std::string_view session,\n    std::size_t connections = 1) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] expected<void, LayoutFailure>\nvalidate_layouts(std::span<const LayoutRequest> layouts) const;",
+   "text": "[[nodiscard]] expected<void,\n                       LayoutFailure>\nvalidate_layouts(\n    std::span<const LayoutRequest>\n        layouts) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] expected<void, CommandFailure>\nwait_for(std::string_view channel,\n         std::optional<std::chrono::milliseconds> timeout = {}) const;",
+   "text": "[[nodiscard]] expected<void,\n                       CommandFailure>\nwait_for(std::string_view channel,\n         std::optional<\n             std::chrono::milliseconds>\n             timeout = {}) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] expected<void, CommandFailure>\nbind_key(std::string_view table, std::string_view key,\n         const std::vector<std::string>& command, bool repeatable = false) const;",
+   "text": "[[nodiscard]] expected<void,\n                       CommandFailure>\nbind_key(std::string_view table,\n         std::string_view key,\n         const std::vector<std::string>&\n             command,\n         bool repeatable = false) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] expected<std::vector<OptionEntry>, CommandFailure>\noptions(std::string_view target = {}) const;",
+   "text": "[[nodiscard]] expected<\n    std::vector<OptionEntry>,\n    CommandFailure>\noptions(\n    std::string_view target = {}) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] static expected<std::shared_ptr<const Snapshot>, CommandFailure>\ntake(std::shared_ptr<const detail::Backend> backend,\n     std::span<const std::string_view> fields, CommandRequest request,\n     FormatArgument placement = FormatArgument::flag);",
+   "text": "[[nodiscard]] static expected<\n    std::shared_ptr<const Snapshot>,\n    CommandFailure>\ntake(std::shared_ptr<\n         const detail::Backend> backend,\n     std::span<const std::string_view>\n         fields,\n     CommandRequest request,\n     FormatArgument placement =\n         FormatArgument::flag);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] static expected<std::shared_ptr<const Snapshot>, CommandFailure>\ntake_in_session(std::shared_ptr<const detail::Backend> backend,\n                std::span<const std::string_view> fields, CommandRequest request,\n                FormatArgument placement, std::string_view session_id,\n                std::string_view session_name);",
+   "text": "[[nodiscard]] static expected<\n    std::shared_ptr<const Snapshot>,\n    CommandFailure>\ntake_in_session(\n    std::shared_ptr<\n        const detail::Backend> backend,\n    std::span<const std::string_view>\n        fields,\n    CommandRequest request,\n    FormatArgument placement,\n    std::string_view session_id,\n    std::string_view session_name);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] const std::vector<std::vector<std::string_view>>& rows() const noexcept;",
+   "text": "[[nodiscard]] const std::vector<\n    std::vector<std::string_view>>&\nrows() const noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "Row(std::shared_ptr<const Snapshot> snapshot, std::size_t row) noexcept;",
+   "text": "Row(std::shared_ptr<const Snapshot>\n        snapshot,\n    std::size_t row) noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] constexpr std::string_view\nto_string(ServerImplementation implementation) noexcept;",
+   "text": "[[nodiscard]] constexpr std::string_view\nto_string(ServerImplementation\n              implementation) noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "template <typename Text>\n  requires std::same_as<std::remove_cvref_t<Text>, std::string> &&\n               (!std::is_lvalue_reference_v<Text>)\nstd::vector<std::string_view> capture_lines(Text&&) = delete;",
+   "text": "template <typename Text>\n  requires std::same_as<\n               std::remove_cvref_t<\n                   Text>,\n               std::string> &&\n               (!std::\n                    is_lvalue_reference_v<\n                        Text>)\nstd::vector<std::string_view>\ncapture_lines(Text&&) = delete;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] bool output_confirms(std::string_view captured, std::string_view wanted,\n                                   const std::vector<std::string>& sent = {});",
+   "text": "[[nodiscard]] bool output_confirms(\n    std::string_view captured,\n    std::string_view wanted,\n    const std::vector<std::string>&\n        sent = {});"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "template <ReferenceRange Range>\n[[nodiscard]] std::optional<Referenced<Range>> first(Range& range);",
+   "text": "template <ReferenceRange Range>\n[[nodiscard]] std::optional<\n    Referenced<Range>>\nfirst(Range& range);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "template <std::ranges::input_range Range>\n  requires std::constructible_from<std::ranges::range_value_t<Range>,\n                                   std::ranges::range_reference_t<Range>>\n[[nodiscard]] std::optional<std::ranges::range_value_t<Range>>\nfirst_owned(Range&& range);",
+   "text": "template <\n    std::ranges::input_range Range>\n  requires std::constructible_from<\n      std::ranges::range_value_t<Range>,\n      std::ranges::range_reference_t<\n          Range>>\n[[nodiscard]] std::optional<\n    std::ranges::range_value_t<Range>>\nfirst_owned(Range&& range);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "template <typename Reason>\n  requires is_validation_reason<Reason>\n[[nodiscard]] CommandFailure as_command_failure(Reason reason);",
+   "text": "template <typename Reason>\n  requires is_validation_reason<Reason>\n[[nodiscard]] CommandFailure\nas_command_failure(Reason reason);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "template <typename Error> [[nodiscard]] constexpr auto unexpected(Error&& error);",
+   "text": "template <typename Error>\n[[nodiscard]] constexpr auto\nunexpected(Error&& error);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] expected<void, CommandFailure>\nvalidate_layout(std::string_view layout, std::size_t minimum_panes = 1);",
+   "text": "[[nodiscard]] expected<void,\n                       CommandFailure>\nvalidate_layout(\n    std::string_view layout,\n    std::size_t minimum_panes = 1);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "template <typename Entity>\n[[nodiscard]] expected<FilterExpr<Entity>, LookupParseError>\nparse_lookup(std::string_view term,\n             std::span<const StringFieldHandle<Entity>> fields);",
+   "text": "template <typename Entity>\n[[nodiscard]] expected<\n    FilterExpr<Entity>,\n    LookupParseError>\nparse_lookup(\n    std::string_view term,\n    std::span<\n        const StringFieldHandle<Entity>>\n        fields);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "template <typename Sink> void replay(const LoweredExpression& nodes, Sink& sink);",
+   "text": "template <typename Sink>\nvoid\nreplay(const LoweredExpression& nodes,\n       Sink& sink);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "ParsedNotification parse(Notification&&) = delete;",
+   "text": "ParsedNotification\nparse(Notification&&) = delete;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] std::optional<bool>\nlayout_contains_pane(std::string_view layout_change_text, std::string_view pane_id);",
+   "text": "[[nodiscard]] std::optional<bool>\nlayout_contains_pane(\n    std::string_view layout_change_text,\n    std::string_view pane_id);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "template <typename Parent, typename Child>\n[[nodiscard]] auto children_of(const std::vector<Child>& rows,\n                               StringFieldHandle<Child> foreign_key,\n                               StringFieldHandle<Parent> key);",
+   "text": "template <typename Parent,\n          typename Child>\n[[nodiscard]] auto children_of(\n    const std::vector<Child>& rows,\n    StringFieldHandle<Child>\n        foreign_key,\n    StringFieldHandle<Parent> key);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "template <typename Parent, typename Child>\nauto children_of(const std::vector<Child>&&, StringFieldHandle<Child>,\n                 StringFieldHandle<Parent>) = delete;",
+   "text": "template <typename Parent,\n          typename Child>\nauto children_of(\n    const std::vector<Child>&&,\n    StringFieldHandle<Child>,\n    StringFieldHandle<Parent>) = delete;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "template <typename Entity>\n[[nodiscard]] FilterExpr<Entity> quantified(std::string name, Quantifier quantifier,\n                                            auto read, auto predicate);",
+   "text": "template <typename Entity>\n[[nodiscard]] FilterExpr<Entity>\nquantified(std::string name,\n           Quantifier quantifier,\n           auto read, auto predicate);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] expected<std::vector<std::string>, SocketError>\nsocket_name_arguments(std::string_view name);",
+   "text": "[[nodiscard]] expected<\n    std::vector<std::string>,\n    SocketError>\nsocket_name_arguments(\n    std::string_view name);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] bool same_entity_id(bool scoped_by_session, std::string_view left_id,\n                                  std::string_view left_session_id,\n                                  std::string_view right_id,\n                                  std::string_view right_session_id) noexcept;",
+   "text": "[[nodiscard]] bool same_entity_id(\n    bool scoped_by_session,\n    std::string_view left_id,\n    std::string_view left_session_id,\n    std::string_view right_id,\n    std::string_view\n        right_session_id) noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] Version running_tmux(const std::filesystem::path& tmux_binary = \"tmux\");",
+   "text": "[[nodiscard]] Version running_tmux(\n    const std::filesystem::path&\n        tmux_binary = \"tmux\");"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "template <typename Entity> [[nodiscard]] auto matching(FilterExpr<Entity> expr);",
+   "text": "template <typename Entity>\n[[nodiscard]] auto\nmatching(FilterExpr<Entity> expr);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] FilterExpr<Entity>\nlibtmux::StringFieldHandle<Entity>::iequals(std::string_view operand) const;",
+   "text": "[[nodiscard]] FilterExpr<Entity>\nlibtmux::StringFieldHandle<\n    Entity>::iequals(std::string_view\n                         operand) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] static SocketNamespace internal();",
+   "text": "[[nodiscard]] static SocketNamespace\ninternal();"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "template <typename Context>\nauto format(const libtmux::Client& value, Context& context) const;",
+   "text": "template <typename Context>\nauto\nformat(const libtmux::Client& value,\n       Context& context) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] static libtmux::expected<ToolRegistry, std::string>\ncreate(std::vector<ToolDefinition> definitions, const ToolSelection& selection);",
+   "text": "[[nodiscard]] static libtmux::expected<\n    ToolRegistry, std::string>\ncreate(std::vector<ToolDefinition>\n           definitions,\n       const ToolSelection& selection);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] const ToolDefinition* find_nested(const ToolDefinition& caller,\n                                                std::string_view name) const noexcept;",
+   "text": "[[nodiscard]] const ToolDefinition*\nfind_nested(\n    const ToolDefinition& caller,\n    std::string_view name)\n    const noexcept;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] libtmux::expected<ToolSelection, std::string> parse_tool_selection(\n    std::optional<std::string_view> toolsets, std::optional<std::string_view> include,\n    std::optional<std::string_view> exclude, bool teardown_enabled_by_default = true);",
+   "text": "[[nodiscard]] libtmux::expected<\n    ToolSelection, std::string>\nparse_tool_selection(\n    std::optional<std::string_view>\n        toolsets,\n    std::optional<std::string_view>\n        include,\n    std::optional<std::string_view>\n        exclude,\n    bool teardown_enabled_by_default =\n        true);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "[[nodiscard]] libtmux::expected<libtmux::Session, BuildError>\nbuild(const Server& server, const Workspace& description,\n      const BeforeBuild& before = {}, const BuildObserver& observer = {},\n      std::optional<int> width = std::nullopt,\n      std::optional<int> height = std::nullopt);",
+   "text": "[[nodiscard]] libtmux::expected<\n    libtmux::Session, BuildError>\nbuild(\n    const Server& server,\n    const Workspace& description,\n    const BeforeBuild& before = {},\n    const BuildObserver& observer = {},\n    std::optional<int> width =\n        std::nullopt,\n    std::optional<int> height =\n        std::nullopt);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "Arguments(\n    std::initializer_list<std::pair<std::string_view, std::string_view>> values);",
+   "text": "Arguments(std::initializer_list<\n          std::pair<std::string_view,\n                    std::string_view>>\n              values);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "void report(double completed, std::optional<double> total, std::string message) const;",
+   "text": "void report(double completed,\n            std::optional<double> total,\n            std::string message) const;"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "template <std::integral Integer>\n  requires(!std::same_as<std::remove_cv_t<Integer>, bool>)\nStructuredValue(Integer item);",
+   "text": "template <std::integral Integer>\n  requires(!std::same_as<\n           std::remove_cv_t<Integer>,\n           bool>)\nStructuredValue(Integer item);"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "raw": "BuildStop(std::string text, bool keep = false);",
+   "text": "BuildStop(std::string text,\n          bool keep = false);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "auto size() const noexcept -> std::size_t;",
+   "text": "auto size() const noexcept -> std::size_t;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "[[nodiscard]] auto make_session(std::string_view name, std::string_view start_directory) const -> expected<Session, CommandFailure>;",
+   "text": "[[nodiscard]] auto\nmake_session(std::string_view name,\n             std::string_view start_directory) const\n    -> expected<Session, CommandFailure>;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "auto f(int x) -> std::vector<std::string>;",
+   "text": "auto f(int x) -> std::vector<std::string>;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "template <typename T> auto first(const std::vector<T>& values) -> std::optional<T>;",
+   "text": "template <typename T>\nauto first(const std::vector<T>& values)\n    -> std::optional<T>;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "void swap(Foo& other) noexcept(std::is_nothrow_move_constructible_v<Bar>);",
+   "text": "void swap(Foo& other) noexcept(\n    std::is_nothrow_move_constructible_v<Bar>);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "template <typename... Args> void emplace(Args&&... args);",
+   "text": "template <typename... Args> void emplace(Args&&... args);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "template <typename T, typename... Rest> [[nodiscard]] expected<std::tuple<T, Rest...>, CommandFailure> collect(T first, Rest... rest);",
+   "text": "template <typename T, typename... Rest>\n[[nodiscard]] expected<std::tuple<T, Rest...>,\n                       CommandFailure>\ncollect(T first, Rest... rest);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "template <typename T = int, std::size_t N = 4> [[nodiscard]] std::array<T, N> make_array(T fill = T{}, std::size_t offset = 0);",
+   "text": "template <typename T = int, std::size_t N = 4>\n[[nodiscard]] std::array<T, N>\nmake_array(T fill = T{}, std::size_t offset = 0);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "void run() override;",
+   "text": "void run() override;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "[[nodiscard]] std::string describe_the_current_state_of_the_server() const override;",
+   "text": "[[nodiscard]] std::string\ndescribe_the_current_state_of_the_server() const override;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "virtual void run_the_whole_pipeline_with_everything(const CommandRequest& request, CommandObserver observer) = 0;",
+   "text": "virtual void run_the_whole_pipeline_with_everything(\n    const CommandRequest& request,\n    CommandObserver observer) = 0;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "virtual ~Runner() = default;",
+   "text": "virtual ~Runner() = default;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "Runner(const Runner&) = delete;",
+   "text": "Runner(const Runner&) = delete;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "Runner& operator_assign_placeholder(Runner&&) = delete;",
+   "text": "Runner& operator_assign_placeholder(Runner&&) = delete;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "static constexpr std::size_t compute_the_maximum_number_of_columns(std::size_t rows, std::size_t cells) noexcept;",
+   "text": "static constexpr std::size_t\ncompute_the_maximum_number_of_columns(\n    std::size_t rows, std::size_t cells) noexcept;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "inline expected<void, CommandFailure> wait_until_the_pane_has_finished_running(const Pane& pane, std::chrono::milliseconds timeout);",
+   "text": "inline expected<void, CommandFailure>\nwait_until_the_pane_has_finished_running(\n    const Pane& pane, std::chrono::milliseconds timeout);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "[[nodiscard]] std::chrono::duration<std::int64_t, std::ratio<1, 1000>> elapsed_since_the_session_was_created() const noexcept;",
+   "text": "[[nodiscard]] std::chrono::duration<std::int64_t,\n                                    std::ratio<1, 1000>>\nelapsed_since_the_session_was_created() const noexcept;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "void on_event(std::function<void(Pane&, const std::string&)> callback);",
+   "text": "void on_event(std::function<void(Pane&, const std::string&)>\n                  callback);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "[[nodiscard]] expected<std::unique_ptr<Connection>, ProtocolError> connect_to_the_server(std::function<void(Pane&, const std::string&)> on_output, std::chrono::milliseconds timeout);",
+   "text": "[[nodiscard]] expected<std::unique_ptr<Connection>,\n                       ProtocolError>\nconnect_to_the_server(\n    std::function<void(Pane&, const std::string&)>\n        on_output,\n    std::chrono::milliseconds timeout);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "void write(const char* data, std::size_t length);",
+   "text": "void write(const char* data, std::size_t length);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "int run(int argc, char** argv);",
+   "text": "int run(int argc, char** argv);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "void take(std::unique_ptr<Foo>&& other, std::shared_ptr<const Bar> shared);",
+   "text": "void take(std::unique_ptr<Foo>&& other,\n          std::shared_ptr<const Bar> shared);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "void wait(std::chrono::milliseconds timeout = std::chrono::milliseconds{250});",
+   "text": "void wait(std::chrono::milliseconds timeout =\n              std::chrono::milliseconds{250});"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "void greet(std::string_view who = \"world\", int times = 42, const Foo* foo = nullptr, bool loud = true);",
+   "text": "void greet(std::string_view who = \"world\", int times = 42,\n           const Foo* foo = nullptr, bool loud = true);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "[[nodiscard]] std::map<std::string, std::vector<std::pair<std::string, std::string>>> group_all_of_the_options_by_scope(const Options& options);",
+   "text": "[[nodiscard]] std::map<\n    std::string,\n    std::vector<std::pair<std::string, std::string>>>\ngroup_all_of_the_options_by_scope(const Options& options);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "template <typename T> requires std::is_integral_v<T> T add(T a, T b);",
+   "text": "template <typename T>\n  requires std::is_integral_v<T>\nT add(T a, T b);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "template <typename T> requires std::is_integral_v<T> && std::is_signed_v<T> [[nodiscard]] T negate_and_add_the_following_values(T a, T b, T c);",
+   "text": "template <typename T>\n  requires std::is_integral_v<T> && std::is_signed_v<T>\n[[nodiscard]] T\nnegate_and_add_the_following_values(T a, T b, T c);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "template <typename T> requires (std::is_integral_v<T> || std::is_floating_point_v<T>) T scale(T value);",
+   "text": "template <typename T>\n  requires(std::is_integral_v<T> ||\n           std::is_floating_point_v<T>)\nT scale(T value);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "template <std::integral T> T add(T a, T b);",
+   "text": "template <std::integral T> T add(T a, T b);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "template <std::ranges::range Range, typename Projection> [[nodiscard]] auto project_every_element_of_the_range(Range&& range, Projection projection);",
+   "text": "template <std::ranges::range Range, typename Projection>\n[[nodiscard]] auto\nproject_every_element_of_the_range(Range&& range,\n                                   Projection projection);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "void f(int, int);",
+   "text": "void f(int, int);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "void f(const std::string&, std::size_t, bool = false);",
+   "text": "void f(const std::string&, std::size_t, bool = false);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "explicit Server(std::filesystem::path socket_path, ExecutionPolicy policy, CommandObserver observer = {});",
+   "text": "explicit Server(std::filesystem::path socket_path,\n                ExecutionPolicy policy,\n                CommandObserver observer = {});"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "Server(Server&&) noexcept = default;",
+   "text": "Server(Server&&) noexcept = default;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "[[nodiscard]] bool operator_placeholder() const volatile && noexcept;",
+   "text": "[[nodiscard]] bool operator_placeholder() const\n    volatile&& noexcept;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "[[nodiscard]] const std::vector<std::string>& names() const& noexcept;",
+   "text": "[[nodiscard]] const std::vector<std::string>&\nnames() const& noexcept;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "[[nodiscard]] std::vector<std::string> names() && noexcept;",
+   "text": "[[nodiscard]] std::vector<std::string> names() && noexcept;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "void a_function_with_a_very_long_name_that_cannot_possibly_fit_on_a_line_by_itself_at_all();",
+   "text": "void\na_function_with_a_very_long_name_that_cannot_possibly_fit_on_a_line_by_itself_at_all();"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "void another(std::unordered_map<std::string, std::vector<std::chrono::steady_clock::time_point>> a_parameter_with_a_long_type);",
+   "text": "void\nanother(std::unordered_map<\n        std::string,\n        std::vector<std::chrono::steady_clock::time_point>>\n            a_parameter_with_a_long_type);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "template <typename Sink, typename Entity> void lower_the_expression_into_the_sink(const FilterExpr<Entity>& expression, Sink& sink);",
+   "text": "template <typename Sink, typename Entity>\nvoid lower_the_expression_into_the_sink(\n    const FilterExpr<Entity>& expression, Sink& sink);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "std::string_view name() const;",
+   "text": "std::string_view name() const;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "bool ok() const noexcept;",
+   "text": "bool ok() const noexcept;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "int count();",
+   "text": "int count();"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "void reset();",
+   "text": "void reset();"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "[[nodiscard]] static Server connect_to_an_existing_server_over_a_unix_socket(const std::filesystem::path& socket_path);",
+   "text": "[[nodiscard]] static Server\nconnect_to_an_existing_server_over_a_unix_socket(\n    const std::filesystem::path& socket_path);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "constexpr explicit EntityId(std::string_view value) noexcept;",
+   "text": "constexpr explicit EntityId(\n    std::string_view value) noexcept;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "template <typename Kind> [[nodiscard]] constexpr bool operator_placeholder_two(const EntityId<Kind>& other) const noexcept;",
+   "text": "template <typename Kind>\n[[nodiscard]] constexpr bool operator_placeholder_two(\n    const EntityId<Kind>& other) const noexcept;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "Pane::Pane(std::shared_ptr<const Snapshot> snapshot, std::size_t row) noexcept;",
+   "text": "Pane::Pane(std::shared_ptr<const Snapshot> snapshot,\n           std::size_t row) noexcept;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "[[nodiscard]] std::size_t libtmux::Snapshot::row_count_for_all_of_the_sessions() const noexcept;",
+   "text": "[[nodiscard]] std::size_t\nlibtmux::Snapshot::row_count_for_all_of_the_sessions()\n    const noexcept;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "[[deprecated(\"use the other\")]] void old_function(int value);",
+   "text": "[[deprecated(\"use the other\")]] void\nold_function(int value);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "template <typename T> void accept(T&& value) requires std::copyable<std::remove_cvref_t<T>>;",
+   "text": "template <typename T>\nvoid accept(T&& value)\n  requires std::copyable<std::remove_cvref_t<T>>;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 60,
+   "raw": "void configure(const Options& options, std::optional<std::chrono::milliseconds> timeout = std::nullopt, Observer observer = {}, Policy policy = Policy::default_policy());",
+   "text": "void configure(const Options& options,\n               std::optional<std::chrono::milliseconds>\n                   timeout = std::nullopt,\n               Observer observer = {},\n               Policy policy = Policy::default_policy());"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "auto size() const noexcept -> std::size_t;",
+   "text": "auto size() const noexcept\n    -> std::size_t;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "[[nodiscard]] auto make_session(std::string_view name, std::string_view start_directory) const -> expected<Session, CommandFailure>;",
+   "text": "[[nodiscard]] auto make_session(\n    std::string_view name,\n    std::string_view\n        start_directory) const\n    -> expected<Session,\n                CommandFailure>;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "auto f(int x) -> std::vector<std::string>;",
+   "text": "auto f(int x)\n    -> std::vector<std::string>;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "template <typename T> auto first(const std::vector<T>& values) -> std::optional<T>;",
+   "text": "template <typename T>\nauto\nfirst(const std::vector<T>& values)\n    -> std::optional<T>;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "void swap(Foo& other) noexcept(std::is_nothrow_move_constructible_v<Bar>);",
+   "text": "void swap(Foo& other) noexcept(\n    std::\n        is_nothrow_move_constructible_v<\n            Bar>);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "template <typename... Args> void emplace(Args&&... args);",
+   "text": "template <typename... Args>\nvoid emplace(Args&&... args);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "template <typename T, typename... Rest> [[nodiscard]] expected<std::tuple<T, Rest...>, CommandFailure> collect(T first, Rest... rest);",
+   "text": "template <typename T,\n          typename... Rest>\n[[nodiscard]] expected<\n    std::tuple<T, Rest...>,\n    CommandFailure>\ncollect(T first, Rest... rest);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "template <typename T = int, std::size_t N = 4> [[nodiscard]] std::array<T, N> make_array(T fill = T{}, std::size_t offset = 0);",
+   "text": "template <typename T = int,\n          std::size_t N = 4>\n[[nodiscard]] std::array<T, N>\nmake_array(T fill = T{},\n           std::size_t offset = 0);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "void run() override;",
+   "text": "void run() override;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "[[nodiscard]] std::string describe_the_current_state_of_the_server() const override;",
+   "text": "[[nodiscard]] std::string\ndescribe_the_current_state_of_the_server()\n    const override;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "virtual void run_the_whole_pipeline_with_everything(const CommandRequest& request, CommandObserver observer) = 0;",
+   "text": "virtual void\nrun_the_whole_pipeline_with_everything(\n    const CommandRequest& request,\n    CommandObserver observer) = 0;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "virtual ~Runner() = default;",
+   "text": "virtual ~Runner() = default;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "Runner(const Runner&) = delete;",
+   "text": "Runner(const Runner&) = delete;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "Runner& operator_assign_placeholder(Runner&&) = delete;",
+   "text": "Runner& operator_assign_placeholder(\n    Runner&&) = delete;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "static constexpr std::size_t compute_the_maximum_number_of_columns(std::size_t rows, std::size_t cells) noexcept;",
+   "text": "static constexpr std::size_t\ncompute_the_maximum_number_of_columns(\n    std::size_t rows,\n    std::size_t cells) noexcept;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "inline expected<void, CommandFailure> wait_until_the_pane_has_finished_running(const Pane& pane, std::chrono::milliseconds timeout);",
+   "text": "inline expected<void,\n                CommandFailure>\nwait_until_the_pane_has_finished_running(\n    const Pane& pane,\n    std::chrono::milliseconds\n        timeout);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "[[nodiscard]] std::chrono::duration<std::int64_t, std::ratio<1, 1000>> elapsed_since_the_session_was_created() const noexcept;",
+   "text": "[[nodiscard]] std::chrono::duration<\n    std::int64_t,\n    std::ratio<1, 1000>>\nelapsed_since_the_session_was_created()\n    const noexcept;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "void on_event(std::function<void(Pane&, const std::string&)> callback);",
+   "text": "void on_event(\n    std::function<void(\n        Pane&, const std::string&)>\n        callback);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "[[nodiscard]] expected<std::unique_ptr<Connection>, ProtocolError> connect_to_the_server(std::function<void(Pane&, const std::string&)> on_output, std::chrono::milliseconds timeout);",
+   "text": "[[nodiscard]] expected<\n    std::unique_ptr<Connection>,\n    ProtocolError>\nconnect_to_the_server(\n    std::function<void(\n        Pane&, const std::string&)>\n        on_output,\n    std::chrono::milliseconds\n        timeout);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "void write(const char* data, std::size_t length);",
+   "text": "void write(const char* data,\n           std::size_t length);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "int run(int argc, char** argv);",
+   "text": "int run(int argc, char** argv);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "void take(std::unique_ptr<Foo>&& other, std::shared_ptr<const Bar> shared);",
+   "text": "void\ntake(std::unique_ptr<Foo>&& other,\n     std::shared_ptr<const Bar>\n         shared);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "void wait(std::chrono::milliseconds timeout = std::chrono::milliseconds{250});",
+   "text": "void\nwait(std::chrono::milliseconds\n         timeout = std::chrono::\n             milliseconds{250});"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "void greet(std::string_view who = \"world\", int times = 42, const Foo* foo = nullptr, bool loud = true);",
+   "text": "void greet(\n    std::string_view who = \"world\",\n    int times = 42,\n    const Foo* foo = nullptr,\n    bool loud = true);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "[[nodiscard]] std::map<std::string, std::vector<std::pair<std::string, std::string>>> group_all_of_the_options_by_scope(const Options& options);",
+   "text": "[[nodiscard]] std::map<\n    std::string,\n    std::vector<std::pair<\n        std::string, std::string>>>\ngroup_all_of_the_options_by_scope(\n    const Options& options);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "template <typename T> requires std::is_integral_v<T> T add(T a, T b);",
+   "text": "template <typename T>\n  requires std::is_integral_v<T>\nT add(T a, T b);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "template <typename T> requires std::is_integral_v<T> && std::is_signed_v<T> [[nodiscard]] T negate_and_add_the_following_values(T a, T b, T c);",
+   "text": "template <typename T>\n  requires std::is_integral_v<T> &&\n           std::is_signed_v<T>\n[[nodiscard]] T\nnegate_and_add_the_following_values(\n    T a, T b, T c);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "template <typename T> requires (std::is_integral_v<T> || std::is_floating_point_v<T>) T scale(T value);",
+   "text": "template <typename T>\n  requires(\n      std::is_integral_v<T> ||\n      std::is_floating_point_v<T>)\nT scale(T value);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "template <std::integral T> T add(T a, T b);",
+   "text": "template <std::integral T>\nT add(T a, T b);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "template <std::ranges::range Range, typename Projection> [[nodiscard]] auto project_every_element_of_the_range(Range&& range, Projection projection);",
+   "text": "template <std::ranges::range Range,\n          typename Projection>\n[[nodiscard]] auto\nproject_every_element_of_the_range(\n    Range&& range,\n    Projection projection);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "void f(int, int);",
+   "text": "void f(int, int);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "void f(const std::string&, std::size_t, bool = false);",
+   "text": "void f(const std::string&,\n       std::size_t, bool = false);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "explicit Server(std::filesystem::path socket_path, ExecutionPolicy policy, CommandObserver observer = {});",
+   "text": "explicit Server(\n    std::filesystem::path\n        socket_path,\n    ExecutionPolicy policy,\n    CommandObserver observer = {});"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "Server(Server&&) noexcept = default;",
+   "text": "Server(Server&&) noexcept = default;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "[[nodiscard]] bool operator_placeholder() const volatile && noexcept;",
+   "text": "[[nodiscard]] bool\noperator_placeholder() const\n    volatile&& noexcept;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "[[nodiscard]] const std::vector<std::string>& names() const& noexcept;",
+   "text": "[[nodiscard]] const std::vector<\n    std::string>&\nnames() const& noexcept;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "[[nodiscard]] std::vector<std::string> names() && noexcept;",
+   "text": "[[nodiscard]] std::vector<\n    std::string>\nnames() && noexcept;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "void a_function_with_a_very_long_name_that_cannot_possibly_fit_on_a_line_by_itself_at_all();",
+   "text": "void\na_function_with_a_very_long_name_that_cannot_possibly_fit_on_a_line_by_itself_at_all();"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "void another(std::unordered_map<std::string, std::vector<std::chrono::steady_clock::time_point>> a_parameter_with_a_long_type);",
+   "text": "void another(\n    std::unordered_map<\n        std::string,\n        std::vector<\n            std::chrono::\n                steady_clock::\n                    time_point>>\n        a_parameter_with_a_long_type);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "template <typename Sink, typename Entity> void lower_the_expression_into_the_sink(const FilterExpr<Entity>& expression, Sink& sink);",
+   "text": "template <typename Sink,\n          typename Entity>\nvoid\nlower_the_expression_into_the_sink(\n    const FilterExpr<Entity>&\n        expression,\n    Sink& sink);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "std::string_view name() const;",
+   "text": "std::string_view name() const;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "bool ok() const noexcept;",
+   "text": "bool ok() const noexcept;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "int count();",
+   "text": "int count();"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "void reset();",
+   "text": "void reset();"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "[[nodiscard]] static Server connect_to_an_existing_server_over_a_unix_socket(const std::filesystem::path& socket_path);",
+   "text": "[[nodiscard]] static Server\nconnect_to_an_existing_server_over_a_unix_socket(\n    const std::filesystem::path&\n        socket_path);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "constexpr explicit EntityId(std::string_view value) noexcept;",
+   "text": "constexpr explicit EntityId(\n    std::string_view\n        value) noexcept;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "template <typename Kind> [[nodiscard]] constexpr bool operator_placeholder_two(const EntityId<Kind>& other) const noexcept;",
+   "text": "template <typename Kind>\n[[nodiscard]] constexpr bool\noperator_placeholder_two(\n    const EntityId<Kind>& other)\n    const noexcept;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "Pane::Pane(std::shared_ptr<const Snapshot> snapshot, std::size_t row) noexcept;",
+   "text": "Pane::Pane(\n    std::shared_ptr<const Snapshot>\n        snapshot,\n    std::size_t row) noexcept;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "[[nodiscard]] std::size_t libtmux::Snapshot::row_count_for_all_of_the_sessions() const noexcept;",
+   "text": "[[nodiscard]] std::size_t\nlibtmux::Snapshot::\n    row_count_for_all_of_the_sessions()\n        const noexcept;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "[[deprecated(\"use the other\")]] void old_function(int value);",
+   "text": "[[deprecated(\"use the other\")]] void\nold_function(int value);"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "template <typename T> void accept(T&& value) requires std::copyable<std::remove_cvref_t<T>>;",
+   "text": "template <typename T>\nvoid accept(T&& value)\n  requires std::copyable<\n      std::remove_cvref_t<T>>;"
+  },
+  {
+   "group": "synthetic",
+   "columns": 36,
+   "raw": "void configure(const Options& options, std::optional<std::chrono::milliseconds> timeout = std::nullopt, Observer observer = {}, Policy policy = Policy::default_policy());",
+   "text": "void configure(\n    const Options& options,\n    std::optional<\n        std::chrono::milliseconds>\n        timeout = std::nullopt,\n    Observer observer = {},\n    Policy policy =\n        Policy::default_policy());"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "AttachCommand(const AttachCommand&) noexcept;",
+   "text": "AttachCommand(\n    const AttachCommand&) noexcept;"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "~AttachCommand();",
+   "text": "~AttachCommand();"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "[[nodiscard]] const std::vector<std::string>& argv() const noexcept;",
+   "text": "[[nodiscard]] const std::\n    vector<std::string>&\n    argv()\n        const noexcept;"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "Buffer(std::shared_ptr<const Snapshot> snapshot, std::size_t row) noexcept;",
+   "text": "Buffer(\n    std::shared_ptr<\n        const Snapshot>\n        snapshot,\n    std::size_t\n        row) noexcept;"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "[[nodiscard]] std::string_view name() const noexcept;",
+   "text": "[[nodiscard]] std::\n    string_view\n    name()\n        const noexcept;"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "[[nodiscard]] expected<std::string, CommandFailure> contents() const;",
+   "text": "[[nodiscard]] expected<\n    std::string,\n    CommandFailure>\ncontents() const;"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "[[nodiscard]] expected<void, CommandFailure> remove() const;",
+   "text": "[[nodiscard]] expected<\n    void,\n    CommandFailure>\nremove() const;"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "Chain& new_session(std::string_view name, bool detached = true);",
+   "text": "Chain& new_session(\n    std::string_view\n        name,\n    bool detached =\n        true);"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "Chain& new_window(std::string_view session, std::string_view name);",
+   "text": "Chain& new_window(\n    std::string_view\n        session,\n    std::string_view\n        name);"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "Chain& command(std::vector<std::string> argv);",
+   "text": "Chain&\ncommand(std::vector<\n        std::string>\n            argv);"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "CommandArgument(const char* value);",
+   "text": "CommandArgument(\n    const char* value);"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "[[nodiscard]] static CommandArgument sensitive(std::string value);",
+   "text": "[[nodiscard]] static CommandArgument\nsensitive(\n    std::string value);"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "[[nodiscard]] static CommandArgument\nsensitive_range(std::string value, std::size_t offset, std::size_t size);",
+   "text": "[[nodiscard]] static CommandArgument\nsensitive_range(\n    std::string value,\n    std::size_t offset,\n    std::size_t size);"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "CommandExecutor() = default;",
+   "text": "CommandExecutor() =\n    default;"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "CommandExecutor(const CommandExecutor&) = delete;",
+   "text": "CommandExecutor(\n    const CommandExecutor&) =\n    delete;"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "virtual ~CommandExecutor() = default;",
+   "text": "virtual ~CommandExecutor() =\n    default;"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "[[nodiscard]] virtual expected<std::string, CommandFailure>\nrun(const CommandRequest& command, std::optional<std::chrono::milliseconds> timeout,\n    std::optional<std::size_t> output_limit) const = 0;",
+   "text": "[[nodiscard]] virtual expected<\n    std::string,\n    CommandFailure>\nrun(const CommandRequest&\n        command,\n    std::optional<\n        std::chrono::\n            milliseconds>\n        timeout,\n    std::optional<\n        std::size_t>\n        output_limit)\n    const = 0;"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "[[nodiscard]] expected<std::string, CommandFailure> wait() &&;",
+   "text": "[[nodiscard]] expected<\n    std::string,\n    CommandFailure>\nwait() &&;"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "[[nodiscard]] expected<bool, CommandFailure>\nwait_until(std::chrono::steady_clock::time_point deadline) const;",
+   "text": "[[nodiscard]] expected<\n    bool,\n    CommandFailure>\nwait_until(\n    std::chrono::\n        steady_clock::\n            time_point\n                deadline)\n    const;"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "void detach() && noexcept;",
+   "text": "void\ndetach() && noexcept;"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "[[nodiscard]] bool request_cancel();",
+   "text": "[[nodiscard]] bool\nrequest_cancel();"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "CommandRequest(std::initializer_list<CommandArgument> arguments);",
+   "text": "CommandRequest(\n    std::initializer_list<\n        CommandArgument>\n        arguments);"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "static expected<CommandRuntime, CommandFailure>\nstart(CommandRuntimeConfig config = {});",
+   "text": "static expected<\n    CommandRuntime,\n    CommandFailure>\nstart(\n    CommandRuntimeConfig\n        config = {});"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "[[nodiscard]] ReadyStatus\nwait_ready(std::chrono::steady_clock::time_point deadline =\n               std::chrono::steady_clock::time_point::max());",
+   "text": "[[nodiscard]] ReadyStatus\nwait_ready(\n    std::chrono::steady_clock::time_point\n        deadline = std::chrono::\n            steady_clock::\n                time_point::\n                    max());"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "[[nodiscard]] ReadyStatus wait_ready_for(std::chrono::milliseconds timeout);",
+   "text": "[[nodiscard]] ReadyStatus\nwait_ready_for(\n    std::chrono::\n        milliseconds\n            timeout);"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "static expected<Connection, ProtocolError> connect(ConnectionOptions options);",
+   "text": "static expected<\n    Connection,\n    ProtocolError>\nconnect(\n    ConnectionOptions\n        options);"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "~Connection() noexcept;",
+   "text": "~Connection() noexcept;"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "ControlRequestResult execute(ControlRequest request,\n                             std::chrono::steady_clock::time_point deadline);",
+   "text": "ControlRequestResult\nexecute(\n    ControlRequest\n        request,\n    std::chrono::\n        steady_clock::\n            time_point\n                deadline);"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "[[nodiscard]] std::vector<Notification>\nwait_for_notifications(std::chrono::steady_clock::time_point deadline);",
+   "text": "[[nodiscard]] std::vector<\n    Notification>\nwait_for_notifications(\n    std::chrono::\n        steady_clock::\n            time_point\n                deadline);"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "expected<void, ProtocolError>\nset_pane_output(std::string_view pane, bool deliver,\n                std::chrono::steady_clock::time_point deadline);",
+   "text": "expected<void,\n         ProtocolError>\nset_pane_output(\n    std::string_view\n        pane,\n    bool deliver,\n    std::chrono::\n        steady_clock::\n            time_point\n                deadline);"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "auto size() const noexcept -> std::size_t;",
+   "text": "auto\nsize() const noexcept\n    -> std::size_t;"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "[[nodiscard]] auto make_session(std::string_view name, std::string_view start_directory) const -> expected<Session, CommandFailure>;",
+   "text": "[[nodiscard]] auto\nmake_session(\n    std::string_view\n        name,\n    std::string_view\n        start_directory)\n    const -> expected<\n        Session,\n        CommandFailure>;"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "auto f(int x) -> std::vector<std::string>;",
+   "text": "auto f(int x)\n    -> std::vector<\n        std::string>;"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "template <typename T> auto first(const std::vector<T>& values) -> std::optional<T>;",
+   "text": "template <typename T>\nauto\nfirst(const std::vector<\n      T>& values)\n    -> std::optional<T>;"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "void swap(Foo& other) noexcept(std::is_nothrow_move_constructible_v<Bar>);",
+   "text": "void\nswap(Foo& other) noexcept(\n    std::\n        is_nothrow_move_constructible_v<\n            Bar>);"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "template <typename... Args> void emplace(Args&&... args);",
+   "text": "template <\n    typename... Args>\nvoid\nemplace(Args&&... args);"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "template <typename T, typename... Rest> [[nodiscard]] expected<std::tuple<T, Rest...>, CommandFailure> collect(T first, Rest... rest);",
+   "text": "template <\n    typename T,\n    typename... Rest>\n[[nodiscard]] expected<\n    std::tuple<T,\n               Rest...>,\n    CommandFailure>\ncollect(T first,\n        Rest... rest);"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "template <typename T = int, std::size_t N = 4> [[nodiscard]] std::array<T, N> make_array(T fill = T{}, std::size_t offset = 0);",
+   "text": "template <\n    typename T = int,\n    std::size_t N = 4>\n[[nodiscard]] std::\n    array<T, N>\n    make_array(\n        T fill = T{},\n        std::size_t\n            offset = 0);"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "void run() override;",
+   "text": "void run() override;"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "[[nodiscard]] std::string describe_the_current_state_of_the_server() const override;",
+   "text": "[[nodiscard]] std::string\ndescribe_the_current_state_of_the_server()\n    const override;"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "virtual void run_the_whole_pipeline_with_everything(const CommandRequest& request, CommandObserver observer) = 0;",
+   "text": "virtual void\nrun_the_whole_pipeline_with_everything(\n    const CommandRequest&\n        request,\n    CommandObserver\n        observer) = 0;"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "raw": "virtual ~Runner() = default;",
+   "text": "virtual ~Runner() =\n    default;"
+  }
+ ]
+}

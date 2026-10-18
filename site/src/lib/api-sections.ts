@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import { builtinHref, memberTier, type ApiSymbol, type MemberSignals, type Param, type Signature, type SymbolIndex } from '@libtmux/api-model'
 import { apiGlossaryHref } from './api-glossary'
-import { supportsGoSignatures, supportsJavaSignatures, supportsRustSignatures, supportsTypeScriptSignatures } from './code-layout'
+import { csharpParameters, supportsCSharpSignatures, supportsGoSignatures, supportsJavaSignatures, supportsLuaSignatures, supportsRubySignatures, supportsRustSignatures, supportsTypeScriptSignatures } from './code-layout'
 
 export interface ApiSection {
   id: string
@@ -30,7 +30,7 @@ export function signatureMultiline(symbol: ApiSymbol, signature: Signature, port
 
 /** Keep native declaration syntax consistent in HTML and copied Markdown. */
 export function usesNativeSignatures(symbol: ApiSymbol, port?: string): boolean {
-  return (port === 'rs' && Boolean(symbol.variant)) || supportsRustSignatures(symbol, port) || supportsTypeScriptSignatures(symbol, port) || supportsGoSignatures(symbol, port) || supportsJavaSignatures(symbol, port) || ['kotlin', 'scala', 'fsharp', 'c', 'powershell', 'julia'].includes(port ?? '') ||
+  return (port === 'rs' && Boolean(symbol.variant)) || supportsRustSignatures(symbol, port) || supportsTypeScriptSignatures(symbol, port) || supportsGoSignatures(symbol, port) || supportsJavaSignatures(symbol, port) || supportsCSharpSignatures(symbol, port) || supportsRubySignatures(symbol, port) || supportsLuaSignatures(symbol, port) || ['kotlin', 'scala', 'fsharp', 'c', 'powershell', 'julia'].includes(port ?? '') ||
     (port === 'cxx' && symbol.signatures.length > 0 && symbol.signatures.every((signature) => Boolean(signature.raw)))
 }
 
@@ -122,7 +122,9 @@ function signatureLabels(symbol: ApiSymbol, port?: string): string[] {
 
 /** The fields shown by ApiEntry, shared with its section navigation. */
 export function apiEntryFields(symbol: ApiSymbol, port?: string) {
-  const native = port === 'ts' || usesNativeSignatures(symbol, port)
+  // RBS positionals are unnamed and the extractor numbers them, and the LuaCATS bar links only
+  // documented parameters, so both lists stay documented-only.
+  const native = port === 'ts' || (usesNativeSignatures(symbol, port) && port !== 'ruby' && port !== 'lua')
   const labels = signatureLabels(symbol, port)
   // Python's extractor merges @overload stubs followed by their implementation.
   // The implementation docstring documents the complete callable, not one stub.
@@ -145,7 +147,11 @@ export function apiEntryFields(symbol: ApiSymbol, port?: string) {
     }))
   }
   return {
-    params: collect((signature) => signature.params.filter((param) => native || param.doc)),
+    params: collect((signature) => {
+      // A C# params array is extracted as two entries; only the declared name is a parameter.
+      const declared = port === 'csharp' ? csharpParameters(signature) : undefined
+      return signature.params.filter((param, i) => (native || param.doc) && (!declared || declared.some((entry) => entry.index === i)))
+    }),
     returns: collect((signature) => signature.returnsDoc ? [{ doc: signature.returnsDoc }] : []),
     raises: collect((signature) => signature.raises ?? []),
   }

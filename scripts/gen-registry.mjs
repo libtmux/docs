@@ -410,7 +410,9 @@ for (const port of PORTS) {
   // recorded until the package lands.
   let tag = newestPublishedTag(tags, port, versions)
   if (!tag) {
-    tag = previous?.tag ?? null
+    // A tag recorded before its package landed stays. One the repository does
+    // not carry is stale, and would send readers to a ref that does not exist.
+    tag = previous?.tag && tags.includes(previous.tag) ? previous.tag : null
     if (!tag) notes.push(`${port.slug}: no git tag found`)
   }
   const entry = classify(port, versions, tag)

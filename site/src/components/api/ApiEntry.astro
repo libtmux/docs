@@ -19,6 +19,7 @@ import ApiFieldOverloads from './ApiFieldOverloads.astro'
 import ApiCommandParameters from './ApiCommandParameters.astro'
 import ApiSignatureParameters from './ApiSignatureParameters.astro'
 import { apiSignatureLayouts } from '../../lib/code-layout'
+import { pythonSignatureLayout } from '../../lib/python-code-layout'
 
 /**
  * One documented symbol, in the shape gp-sphinx's stylesheet expects.
@@ -77,10 +78,13 @@ const { symbol, index, sourceUrl, port, language = port, manualLinks, alternativ
 const anchor = symbol.publicId ?? symbol.id
 const kind = symbol.kind
 const nativeEntries = language === 'c' ? symbol.signatures.filter((signature) => signature.raw) : symbol.signatures
-const nativeSignatures = usesNativeSignatures(symbol, language)
 const signatureLayouts = await apiSignatureLayouts(symbol, language)
 const nativeSignatureText: typeof unformattedNativeSignatureText = (entry, signature, port) =>
   signatureLayouts.get(signature)?.text ?? unformattedNativeSignatureText(entry, signature, port)
+
+// A Swift layout is the declaration, even where the port documents few parameters.
+// A Python layout only spaces the parameter list, which keeps its own markup.
+const nativeSignatures = usesNativeSignatures(symbol, language) || (language === 'swift' && signatureLayouts.size > 0)
 
 /**
  * The Sphinx domain this port's symbols belong to.
@@ -157,6 +161,10 @@ const prename = heading && qualifiedName.endsWith(symbol.name)
   : ''
 
 const bases = heading && showBases ? ((symbol as { extends?: string[] }).extends ?? []) : []
+
+/** Python wraps by the columns the bar spends before its parameters, which differ by heading and member. */
+const pythonLayouts = language === 'py' ? new Map(await Promise.all(symbol.signatures.map(async (signature) =>
+  [signature, await pythonSignatureLayout(signature, { name: `${keyword ? `${keyword} ` : ''}${prename}${symbol.name}` })] as const))) : undefined
 
 const examples = symbol.doc?.examples ?? []
 const references = symbol.doc?.references ?? []
@@ -344,17 +352,19 @@ const hasBody =
                       <span class="sig-paren">)</span>
                     </summary>
                     <span class="gp-sphinx-api-signature-expanded">
-                      <ApiSignatureParameters signature={sig} symbol={symbol} index={index} language={language} />
+                      <ApiSignatureParameters signature={sig} symbol={symbol} index={index} language={language} layout={pythonLayouts?.get(sig)} />
                     </span>
                   </details>
                 ) : (
-                  <ApiSignatureParameters signature={sig} symbol={symbol} index={index} language={language} />
+                  <ApiSignatureParameters signature={sig} symbol={symbol} index={index} language={language} layout={pythonLayouts?.get(sig)} />
                 )}
                 {sig.returns && (
                   <span class="sig-return">
                     <span class="sig-return-icon">{language === 'ts' ? ':' : '→'}</span>{' '}
                     <span class="sig-return-typehint">
-                      <ApiType type={sig.returns} index={index} context={symbol} signature={sig} />
+                      {pythonLayouts?.get(sig)?.returns?.includes('\n')
+                        ? <span class="api-signature-parameters--multiline"><ApiType type={pythonLayouts.get(sig)!.returns!} index={index} context={symbol} signature={sig} /></span>
+                        : <ApiType type={pythonLayouts?.get(sig)?.returns ?? sig.returns} index={index} context={symbol} signature={sig} />}
                     </span>
                   </span>
                 )}
@@ -471,8 +481,8 @@ const hasBody =
           const methodSource = signature.source && sourceUrl?.({ ...symbol, source: signature.source })
           return (
           <section id={id} class="api-method">
-            {symbol.signatures.length > 1 ? <h3 class="api-native-signature"><ApiType type={nativeSignatureText(symbol, signature, language)} index={index} context={symbol} signature={signature} layout={signatureLayouts.get(signature)} />{methodSource && <a class="api-method-source" href={methodSource} aria-label={`Source for ${label}`}>[source]</a>}<a class="api-heading-link" href={`#${id}`} aria-label="Link to method">#</a></h3>
-              : methodSource && methodSource !== source && <p><a class="api-method-source" href={methodSource} aria-label={`Source for ${label}`}>[source]</a></p>}
+            {symbol.signatures.length > 1 ? <h3 class="api-native-signature"><ApiType type={nativeSignatureText(symbol, signature, language)} index={index} context={symbol} signature={signature} layout={signatureLayouts.get(signature)} />{methodSource && <span class="api-method-source">[<a href={methodSource} aria-label={`Source for ${label}`}>source</a>]</span>}<a class="api-heading-link" href={`#${id}`} aria-label="Link to method">#</a></h3>
+              : methodSource && methodSource !== source && <p><span class="api-method-source">[<a href={methodSource} aria-label={`Source for ${label}`}>source</a>]</span></p>}
             {signature.extension && <p>Available when <code>{signature.extension}</code> is loaded.</p>}
             {signature.doc?.summary && <ApiProse text={signature.doc.summary} index={index} context={symbol} />}
             {signature.doc?.body && <ApiProse text={signature.doc.body} index={index} context={symbol} />}
@@ -561,16 +571,8 @@ const hasBody =
                       <li id={params.findIndex((entry) => entry.name === p.name) === i ? parameterId(symbol, p.name) : undefined}>
                         <p class:list={[(language === 'julia' || language === 'ts') && 'api-parameter-heading']}>
                           <span class="api-parameter-signature">
-                            <strong><a href={`#${encodeURIComponent(parameterId(symbol, p.name))}`}><code>{p.name}</code></a></strong>
-                            {p.optional && '?'}
-                            {(language === 'julia' || language === 'ts') && p.default !== undefined && <>{' = '}<code>{p.default}</code></>}
-                            {p.type && (
-                              <>
-                                {' ('}
-                                <ApiType type={p.type} index={index} context={symbol} />
-                                {') '}
-                              </>
-                            )}
+                            {/* One line: Astro turns a line break between these parts into a space. */}
+                            <strong><a href={`#${encodeURIComponent(parameterId(symbol, p.name))}`}><code>{p.name}</code></a></strong>{p.optional && '?'}{(language === 'julia' || language === 'ts') && p.default !== undefined && <>{' = '}<code>{p.default}</code></>}{p.type && <>{' ('}<ApiType type={p.type} index={index} context={symbol} />{') '}</>}
                           </span>
                           <a class="api-heading-link" href={`#${encodeURIComponent(parameterId(symbol, p.name))}`} aria-label={`Link to ${p.name} parameter`} data-pagefind-ignore="all">#</a>
                           {p.doc && !['julia', 'ts'].includes(language ?? '') && <>{' – '}<ApiDoc text={p.doc} index={index} context={symbol} /></>}
