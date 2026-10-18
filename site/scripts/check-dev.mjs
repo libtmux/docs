@@ -16,10 +16,12 @@ import { checkHomeExampleOptions } from './check-home-example-options.mjs'
 import { checkDevSample, checkRowPermalinks } from './check-dev-sample.mjs'
 import { checkDeclarationControlAlignment, checkDeclarationControlsLevel, checkNativeSignatureGeometry, checkNativeSignatureLinks } from './check-native-layout.mjs'
 import { checkRequiredAppearance, checkWebAnalytics, checkWebAnalyticsTransitions } from './check-page-readiness.mjs'
+import { checkTypeParameters } from './check-type-parameters.mjs'
 
 const apiNavigationOnly = process.argv.includes('--api-navigation')
 const apiAnchorsOnly = process.argv.includes('--api-anchors')
 const apiStickyOnly = process.argv.includes('--api-sticky')
+const typeParametersOnly = process.argv.includes('--type-parameters')
 const apiSignaturesOnly = process.argv.includes('--api-signatures')
 const referenceLayoutOnly = process.argv.includes('--reference-layout')
 const keywordHelpOnly = process.argv.includes('--keyword-help')
@@ -734,7 +736,8 @@ try {
     : keywordHelpOnly ? '/kotlin/latest/reference/io-github-libtmux-kotlin-withserver/'
     : apiStickyOnly ? '/swift/latest/reference/server/'
     : documentationNavigationOnly ? '/py/latest/' : apiSignaturesOnly ? '/api-signature-probe/'
-    : apiNavigationOnly ? '/lua/latest/reference/libtmux-server/' : '/tmux/concepts/server-session-window-pane/'
+    : apiNavigationOnly ? '/lua/latest/reference/libtmux-server/'
+    : typeParametersOnly ? '/ts/latest/reference/selection-selection-where/' : '/tmux/concepts/server-session-window-pane/'
   const setupPages = sampleOnly ? [firstPage, '/demo/widgets/pickers/'] : [firstPage]
   const ready = Promise.all(setupPages.map(async (path) => {
     const response = await fetch(`${base}${path}`)
@@ -791,6 +794,8 @@ try {
         await extra.close()
       }
     }
+  } else if (typeParametersOnly) {
+    await retryReload(() => checkTypeParameters(browser, base))
   } else {
     await retryReload(() => checkRequiredAppearance(browser, base))
     await checkWebAnalytics(browser, base)
@@ -834,6 +839,8 @@ try {
     const apiSticky = schedule(() => retryReload(() => checkApiStickyHeadings(browser, base))
       .then(() => checkApiStickyHeadingsFail(browser, base)))
     await apiSticky
+    const typeParameters = schedule(() => retryReload(() => checkTypeParameters(browser, base)))
+    await typeParameters
     const paths = ['tmux/concepts/server-session-window-pane', 'tmux/examples/attach-and-send-keys', 'mcp/tools', 'ts/latest/workspace/reference/builder-applyworkspace',
       'ts/latest/workspace/internals/guides', 'py/stable/workspace/guides',
       'ts/latest/mcp/tools', 'csharp/latest/mcp/tools/capture_pane']
@@ -1128,7 +1135,7 @@ try {
     await page.close()
     const failures = (await Promise.all([
       navigation, apiExamples, reference, preferences, globalHeader, apiNavigation,
-      clipboard, documentationNavigation, homeLauncher, apiAnchors, apiSticky,
+      clipboard, documentationNavigation, homeLauncher, apiAnchors, apiSticky, typeParameters,
     ])).filter(Boolean)
     if (failures.length) throw new AggregateError(failures, 'Browser checks failed')
   }

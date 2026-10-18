@@ -58,7 +58,8 @@ it('renders each overload parameter in its own TypeScript type scope', async () 
     win.document.body.innerHTML = await container.renderToString(component, { props: { signature, symbol: context, index, language: 'ts' } })
     expect(win.document.body.textContent).toBe('(value: Pane)')
     const links = [...win.document.querySelectorAll('a.api-type-link')].map((link) => link.getAttribute('href'))
-    expect(links).toEqual(signature === generic ? [] : ['/pane.Pane/'])
+    // The generic overload's `Pane` is its own type parameter, so it links to that declaration and not to pane.Pane.
+    expect(links).toEqual(signature === generic ? ['/selection.pick/#selection.pick.type-parameter.Pane'] : ['/pane.Pane/'])
   }
 })
 

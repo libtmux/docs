@@ -351,7 +351,7 @@ const pageSections: ApiSection[] = glossary ? apiGlossaryHeadings(glossaryContex
   id: heading.slug, label: heading.text, nested: heading.depth === 3,
 })) : owner ? [
   { id: 'api-overview', label: 'Overview' },
-  ...apiEntrySections(owner, language),
+  ...apiEntrySections(owner, language, index),
   ...(listed.length ? [{ id: 'api-members', label: membersLabel, count: listed.length },
     ...(showMemberGroups ? memberGroups.map((group) => ({ id: group.id, label: group.label, nested: true })) : [])] : []),
   ...(otherInherited.length ? [{ id: 'api-inherited', label: 'Inherited members', count: otherInherited.length }] : []),

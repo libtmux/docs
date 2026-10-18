@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { builtinHref, memberTier, type ApiSymbol, type MemberSignals, type Param, type Signature, type SymbolIndex } from '@libtmux/api-model'
+import { builtinHref, memberTier, typeParametersOf, type ApiSymbol, type MemberSignals, type Param, type Signature, type SymbolIndex } from '@libtmux/api-model'
 import { apiGlossaryHref } from './api-glossary'
 import { csharpParameters, supportsCSharpSignatures, supportsGoSignatures, supportsJavaSignatures, supportsLuaSignatures, supportsRubySignatures, supportsRustSignatures, supportsTypeScriptSignatures } from './code-layout'
 
@@ -144,7 +144,12 @@ export function apiEntryFields(symbol: ApiSymbol, port?: string) {
         ? [...signatures].map((i) => labels[i]) : [],
     }))
   }
+  // A type's own parameters apply to every signature; a callable's belong to the overload that declares them.
+  const own = typeParametersOf(symbol, port).map((parameter) => ({ ...parameter, overloads: [] as string[] }))
+  const declared = new Set(own.map((parameter) => JSON.stringify([parameter.name, parameter.bound, parameter.default])))
   return {
+    typeParameters: [...own, ...collect((signature) => typeParametersOf(signature, port)
+      .filter((parameter) => !declared.has(JSON.stringify([parameter.name, parameter.bound, parameter.default]))))],
     params: collect((signature, i) => {
       // The implementation is the complete callable; its @overload stubs repeat narrower parameters.
       if (familyDocumentation > 0 && i !== familyDocumentation) return []
@@ -161,8 +166,13 @@ export function apiEntryFields(symbol: ApiSymbol, port?: string) {
   }
 }
 
+/** The parameters of enclosing declarations that the symbol's own types mention. */
+export function apiInheritedTypeParameters(symbol: ApiSymbol, index?: SymbolIndex) {
+  return index?.inheritedTypeParameters(symbol) ?? []
+}
+
 /** Only sections that the declaration actually renders, in reading order. */
-export function apiEntrySections(symbol: ApiSymbol, port?: string): ApiSection[] {
+export function apiEntrySections(symbol: ApiSymbol, port?: string, index?: SymbolIndex): ApiSection[] {
   const anchor = symbol.publicId ?? symbol.id
   const fields = apiEntryFields(symbol, port)
   const sections: ApiSection[] = []
@@ -171,6 +181,9 @@ export function apiEntrySections(symbol: ApiSymbol, port?: string): ApiSection[]
   if (apiMethodDetails(symbol).length) sections.push({ id: `${anchor}.methods`, label: 'Methods' })
   if (symbol.doc?.examples?.length) sections.push({ id: `${anchor}.examples`, label: 'Examples' })
   if (symbol.doc?.references?.length) sections.push({ id: `${anchor}.references`, label: 'References' })
+  if (fields.typeParameters.length || apiInheritedTypeParameters(symbol, index).length) {
+    sections.push({ id: `${anchor}.type-parameters`, label: 'Type parameters' })
+  }
   if (fields.params.length) sections.push({ id: `${anchor}.parameters`, label: 'Parameters' })
   if (fields.returns.length) sections.push({ id: `${anchor}.returns`, label: 'Returns' })
   if (fields.raises.length) sections.push({ id: `${anchor}.errors`, label: 'Errors' })

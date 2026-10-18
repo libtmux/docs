@@ -206,8 +206,11 @@ describe('C# links, roles and exports', () => {
     const layout = (await apiSignatureLayouts(symbol, 'csharp')).get(signature)!
     const spans = signatureSpans(layout, scoped, symbol, signature)
     expect(spans.map((span) => span.text).join('')).toBe(layout.text)
-    expect(spans.filter((span) => span.text === 'T').every((span) => span.nonReference && !span.link)).toBe(true)
-    expect(spans.filter((span) => span.text === 'T')).toHaveLength(3)
+    const bound = spans.filter((span) => span.text === 'T')
+    expect(bound).toHaveLength(3)
+    // A bound parameter links to its own declaration, never to the unrelated global T.
+    expect(bound.map((span) => span.link?.href)).toEqual(bound.map(() => `${hrefFor(symbol)}#${encodeURIComponent(`${symbol.publicId ?? symbol.id}.type-parameter.T`)}`))
+    expect(bound.some((span) => span.link?.href.startsWith(hrefFor(unrelated)))).toBe(false)
     expect(spans.find((span) => span.text === 'default')).toMatchObject({ nonReference: true })
     expect(spans.find((span) => span.link?.href === hrefFor(find('LibTmux.TmuxOptionKey')))?.text).toBe('TmuxOptionKey')
     const literal = await formatCSharpDeclaration('void M(string tool = "tmux", int count = 1, Mode mode = Mode.Auto)',

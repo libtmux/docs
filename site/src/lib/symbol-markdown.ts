@@ -1,7 +1,7 @@
 import type { ApiModel, ApiSymbol, Signature, SourceApiModel, SymbolIndex } from '@libtmux/api-model'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { toMarkdown } from 'mdast-util-to-markdown'
-import { keywordArgument, membersOf, memberSignals, memberTier, moduleOf, qualifiedNameOf } from '@libtmux/api-model'
+import { boundLabel, keywordArgument, membersOf, memberSignals, memberTier, moduleOf, qualifiedNameOf, typeParameterList, type TypeParameter } from '@libtmux/api-model'
 import mentions from '../data/mentions.json'
 import { PORT_NAME, referenceAlternatives } from './api-models'
 import { apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, hasScalarMembers, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures } from './api-sections'
@@ -246,8 +246,26 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     out.push(`> **${note.kind}:** ${note.text.replaceAll('\n', '\n> ')}`, '')
   }
 
-  const { params, returns, raises } = apiEntryFields(symbol, language)
+  const { params, returns, raises, typeParameters } = apiEntryFields(symbol, language)
   const overloads = (labels: string[]) => labels.length ? ` (for ${labels.map(inlineCode).join('; ')})` : ''
+  const inheritedTypeParameters = index?.inheritedTypeParameters(symbol) ?? []
+  if (typeParameters.length || inheritedTypeParameters.length) {
+    out.push('## Type parameters', '')
+    const label = (p: TypeParameter) => `${p.modifier ? `${p.modifier}${/^[+-]$/.test(p.modifier) ? '' : ' '}` : ''}${p.name}`
+    // The page's own facts, in the order it shows them.
+    const facts = (p: TypeParameter) => {
+      const found = [p.bound && `${boundLabel(language, p).toLowerCase()} ${inlineCode(p.bound.replaceAll('\n', ' '))}`,
+        p.default && `default ${inlineCode(p.default.replaceAll('\n', ' '))}`].filter(Boolean)
+      return found.length ? ` (${found.join(', ')})` : ''
+    }
+    const doc = (p: TypeParameter) => p.doc ? `: ${p.doc.replace(/\s+/g, ' ')}` : ''
+    for (const p of typeParameters) out.push(`- ${inlineCode(label(p))}${facts(p)}${doc(p)}${overloads(p.overloads)}`)
+    for (const { owner, parameter: p, href } of inheritedTypeParameters) {
+      const declared = `${owner.name}${typeParameterList(language, index?.typeParametersDeclaredBy(owner) ?? [])}`
+      out.push(`- [${inlineCode(label(p))}](${href}), declared by [${inlineCode(declared)}](${href.split('#')[0]})${facts(p)}${doc(p)}`)
+    }
+    out.push('')
+  }
   if (params.length) {
     out.push('## Parameters', '')
     for (const p of params) {

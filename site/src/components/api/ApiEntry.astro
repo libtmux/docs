@@ -1,5 +1,5 @@
 ---
-import { parameterId, qualifiedNameOf, type ApiSymbol, type SymbolIndex } from '@libtmux/api-model'
+import { boundLabel, parameterId, qualifiedNameOf, typeParameterId, typeParameterList, type ApiSymbol, type SymbolIndex } from '@libtmux/api-model'
 import { API_MODELS, mentionsOf, referenceAlternatives } from '../../lib/api-models'
 import { productApiIndex } from '../../lib/product-api'
 import { defaultVersionFor } from '../../lib/versions'
@@ -228,10 +228,23 @@ const FOLD_THRESHOLD = 10
 const folds = (sig: { params: unknown[] }) => sig.params.length >= FOLD_THRESHOLD
 const foldable = symbol.signatures.some(folds)
 
-const { params, returns, raises } = apiEntryFields(symbol, language)
+const { params, returns, raises, typeParameters } = apiEntryFields(symbol, language)
 const methods = apiMethodDetails(symbol)
 const overloadTargets = new Map(methods.map((method) => [method.overloadLabel, method.id]))
-const hasFields = params.length > 0 || returns.length > 0 || raises.length > 0
+/**
+ * Parameters declared by an enclosing type that this symbol's signature uses.
+ * Their anchors live on the declaring page, so these entries link there instead of
+ * repeating an id.
+ */
+const inheritedTypeParameters = index.inheritedTypeParameters(symbol).map((entry) => ({
+  ...entry,
+  ownerHref: entry.href.split('#')[0],
+  ownerLabel: `${entry.owner.name}${typeParameterList(language, index.typeParametersDeclaredBy(entry.owner))}`,
+}))
+const hasTypeParameters = typeParameters.length > 0 || inheritedTypeParameters.length > 0
+/** `const`, `in`, `out` and variance marks read as part of the name; `+` and `-` attach without a space. */
+const modifierOf = (p: { modifier?: string }) => p.modifier ? (/^[+-]$/.test(p.modifier) ? p.modifier : `${p.modifier} `) : ''
+const hasFields = hasTypeParameters || params.length > 0 || returns.length > 0 || raises.length > 0
 
 /**
  * Whether there is a description at all.
@@ -562,6 +575,51 @@ const hasBody =
       hasFields && (
         <div class="gp-sphinx-api-parameters">
           <dl class="field-list simple">
+            {hasTypeParameters && (
+              <>
+                <dt class="field-odd" id={`${anchor}.type-parameters`}>Type parameters</dt>
+                <dd class="field-odd">
+                  <ul class="simple api-parameters api-type-parameters">
+                    {typeParameters.map((p, i) => (
+                      <li id={typeParameters.findIndex((entry) => entry.name === p.name) === i ? typeParameterId(symbol, p.name) : undefined}>
+                        <p class="api-parameter-heading">
+                          <span class="api-parameter-signature">
+                            {/* One line: Astro turns a line break between these parts into a space. */}
+                            {p.modifier && <span class="api-type-parameter-modifier">{modifierOf(p)}</span>}<strong><a href={`#${encodeURIComponent(typeParameterId(symbol, p.name))}`}><code>{p.name}</code></a></strong>
+                          </span>
+                          <a class="api-heading-link" href={`#${encodeURIComponent(typeParameterId(symbol, p.name))}`} aria-label={`Link to ${p.name} type parameter`} data-pagefind-ignore="all">#</a>
+                          <ApiFieldOverloads labels={p.overloads} targets={overloadTargets} />
+                        </p>
+                        {(p.bound || p.default) && (
+                          <p class="api-type-parameter-facts">
+                            {p.bound && <span class="api-type-parameter-fact"><span class="api-type-parameter-label">{boundLabel(language, p)}</span>{' '}<ApiType type={p.bound} index={index} context={symbol} /></span>}
+                            {p.default && <span class="api-type-parameter-fact"><span class="api-type-parameter-label">Default</span>{' '}<ApiType type={p.default} index={index} context={symbol} /></span>}
+                          </p>
+                        )}
+                        {p.doc && <ApiProse text={p.doc} index={index} context={symbol} />}
+                      </li>
+                    ))}
+                    {inheritedTypeParameters.map(({ owner, parameter: p, href, ownerHref, ownerLabel }) => (
+                      <li>
+                        <p class="api-parameter-heading">
+                          <span class="api-parameter-signature">
+                            {p.modifier && <span class="api-type-parameter-modifier">{modifierOf(p)}</span>}<strong><a href={href}><code>{p.name}</code></a></strong>
+                          </span>
+                          <span class="api-type-parameter-owner">declared by <a href={ownerHref}><code>{ownerLabel}</code></a></span>
+                        </p>
+                        {(p.bound || p.default) && (
+                          <p class="api-type-parameter-facts">
+                            {p.bound && <span class="api-type-parameter-fact"><span class="api-type-parameter-label">{boundLabel(language, p)}</span>{' '}<ApiType type={p.bound} index={index} context={owner} /></span>}
+                            {p.default && <span class="api-type-parameter-fact"><span class="api-type-parameter-label">Default</span>{' '}<ApiType type={p.default} index={index} context={owner} /></span>}
+                          </p>
+                        )}
+                        {p.doc && <ApiProse text={p.doc} index={index} context={owner} />}
+                      </li>
+                    ))}
+                  </ul>
+                </dd>
+              </>
+            )}
             {params.length > 0 && (
               <>
                 <dt class="field-odd" id={`${anchor}.parameters`}>Parameters</dt>
