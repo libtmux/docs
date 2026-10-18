@@ -6,7 +6,7 @@ import { tmuxCommandSources, tmuxReferenceUrl } from '../../../../lib/tmux-refer
 import { withRoot } from '../../../../lib/site-root'
 import type { PageSource } from '../../../../lib/markdown-twins'
 import { rowAnchor } from '../../../../lib/row-anchors'
-import { highlightTmuxManual, linkTmuxManualEntries } from '../../../../lib/tmux-manual'
+import { highlightTmuxManual, linkTmuxManualEntries, markTmuxManualKeys } from '../../../../lib/tmux-manual'
 import type { SidebarItem } from '../../../../lib/sidebar'
 import { pagePortsFor } from '../../../../lib/page-ports-for'
 import { PORTS } from '../../../../lib/ports'
@@ -50,7 +50,7 @@ const notes = tmuxCommandNotes(version, slug)
 const implementations = command ? tmuxCommandSources(version, command.name) : []
 const source: PageSource = { repo: TMUX_REPOSITORY, path: 'tmux.1', ref: reference.sourceCommit }
 const manualHtml = command || isManual
-  ? await highlightTmuxManual(linkTmuxManualEntries(tmuxManualHtml(command?.html ?? reference.manual, version), command?.name))
+  ? await highlightTmuxManual(linkTmuxManualEntries(markTmuxManualKeys(tmuxManualHtml(command?.html ?? reference.manual, version), command?.name), command?.name))
   : ''
 ---
 

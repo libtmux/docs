@@ -695,6 +695,36 @@ html[data-theme="purple"][data-theme-mode="dark"] {
 }
 
 /*
+ * Key caps. The manual and the guides mark tmux keys as <kbd>; a key sequence
+ * is an outer <kbd> around one cap per key, so only the inner caps are drawn.
+ * Both tokens switch with the colour scheme, so neither mode needs its own rule.
+ * In `utilities`, where the typography plugin's own kbd rule lives.
+ */
+@layer utilities {
+  .prose kbd {
+    display: inline-block;
+    padding: 0.05em 0.4em;
+    border: 1px solid var(--color-edge);
+    border-bottom-width: 2px;
+    border-radius: 0.3em;
+    background: var(--color-surface);
+    box-shadow: none;
+    color: var(--text-color);
+    font: 500 0.875em/1.35 var(--font-ibm-plex-mono, ui-monospace, monospace);
+    white-space: nowrap;
+  }
+
+  .prose kbd:has(> kbd) {
+    display: inline;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    white-space: normal;
+  }
+}
+
+/*
  * Panel surfaces that slide over the page.
  *
  * The drawers were `bg-surface`, which pinned them to a grey
