@@ -86,6 +86,8 @@ describe('sliceExcerpt', () => {
     expect(sliceExcerpt(go, { from: 'if x', to: '=    }' }, 'x')).toBe('if x {\n  y()\n}')
     expect(() => sliceExcerpt(go, { from: 'for {', to: '=}}' }, 'x')).toThrow(/matches no line/)
     expect(() => sliceExcerpt(go, { from: '=  for {' }, 'x')).not.toThrow()
+    const tabs = 'func f() {\n\tif x {\n\t\ty()\n\t}\n}'
+    expect(sliceExcerpt(tabs, { from: 'if x', to: '=\\t}' }, 'x')).toBe('if x {\n\ty()\n}')
   })
 
   it('reads CRLF sources as lines', () => {
