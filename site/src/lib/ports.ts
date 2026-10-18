@@ -1761,6 +1761,9 @@ export function portHomeUrl(port: Port, version: string): string {
  */
 export type RegistryStatus = 'stable' | 'prerelease' | 'unpublished'
 
+/** How far along a package's releases are, as its registry or its version names the stage. */
+export type Maturity = 'pre-alpha' | 'alpha' | 'beta' | 'rc' | 'stable' | 'unreleased'
+
 export interface RegistryEntry {
   status: RegistryStatus
   /** Newest installable version, or null when the registry has no package. */
@@ -1769,6 +1772,8 @@ export interface RegistryEntry {
   stable: string | null
   /** Newest release tag in the repository, prefix included where one is used. */
   tag: string | null
+  /** The stage the registry itself declares, such as PyPI's Development Status classifier. */
+  maturity?: Maturity
   /** Independently published packages documented under this port. */
   packages?: Record<string, RegistryEntry>
 }
@@ -1776,6 +1781,55 @@ export interface RegistryEntry {
 export interface RegistryData {
   schema: 1
   ports: Record<string, RegistryEntry>
+}
+
+/**
+ * A package's release maturity: the stage its registry declares, else the one
+ * its version names, else its repository tag. A package with no release and no
+ * tag is unreleased. Throws on a prerelease whose stage cannot be read, so a
+ * new version spelling fails a test rather than a reader's badge.
+ */
+export function releaseMaturity(entry: RegistryEntry): Maturity {
+  if (entry.maturity) return entry.maturity
+  if (entry.status === 'stable') return 'stable'
+  const name = entry.version ?? entry.tag
+  if (!name) return 'unreleased'
+  const stage = /alpha|beta|rc(?=[\d.-]|$)|(?<=\d)[ab](?=\d)/i.exec(name)?.[0].toLowerCase()
+  if (stage === 'alpha' || stage === 'a') return 'alpha'
+  if (stage === 'beta' || stage === 'b') return 'beta'
+  if (stage === 'rc') return 'rc'
+  throw new Error(`releaseMaturity: no release stage in "${name}"`)
+}
+
+/** What a product's badge states: its release maturity, or `concept` for a working example. */
+export type ProductStatus = 'concept' | Maturity
+
+/** One sentence per badge, shown in its toggletip. Concept is a support scope; the rest are release stages. */
+export const PRODUCT_STATUS_SUMMARY: Readonly<Record<ProductStatus, string>> = {
+  concept: 'A working example of core library usage; its API can change without a support commitment.',
+  'pre-alpha': 'Early development: interfaces change without notice and parts may not work yet.',
+  alpha: 'An alpha prerelease: its API can change between releases.',
+  beta: 'A beta prerelease: features are in place, but its API can still change.',
+  rc: 'A release candidate: expected to ship as it is unless testing finds a problem.',
+  stable: 'Has a stable release on its package registry.',
+  unreleased: 'Not published to a package registry yet: install it from the repository.',
+}
+
+/** The page that explains each badge, and the section that does. */
+export const PRODUCT_STATUS_GUIDE = '/tmux/guides/concept-examples/#concept-and-alpha'
+
+/**
+ * The badge a product row carries, from the same data as its install command.
+ *
+ * A companion in a port other than Python is a concept example, so `concept`
+ * leads its release stage. Python's own companions state the stage their PyPI
+ * project declares. The core library states its registry stage.
+ */
+export function productStatus(port: Port, product: 'core' | DocProduct, registry: RegistryData): ProductStatus | undefined {
+  if (product !== 'core' && productIsConcept(port, product)) return 'concept'
+  const entry = registry.ports[port.slug]
+  const found = product === 'core' ? entry : entry?.packages?.[port.packages?.find((item) => item.id === product)?.name ?? '']
+  return found ? releaseMaturity(found) : undefined
 }
 
 /**
