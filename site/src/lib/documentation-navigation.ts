@@ -1,4 +1,4 @@
-import { getSidebar, type SidebarItem, type SidebarLinkItem } from './sidebar'
+import { getSidebar, sharesOneKind, type SidebarItem, type SidebarLinkItem } from './sidebar'
 import { documentationAreas } from './port-documentation'
 import { PORT_BY_SLUG, portPageUrl, productIsConcept, productStatus, referenceUrl, type DocProduct, type ProductStatus } from './ports'
 import { REGISTRY } from './registry'
@@ -109,8 +109,11 @@ export function buildDocumentationSurfaces(
       section.label = label
       const objects = mcpObjects(port).filter((object) => object.section === key as McpSection)
       section.disabled = objects.length === 0
+      // A section named for its kind needs no mark on each row; one that mixes kinds keeps them.
+      const quiet = sharesOneKind(objects.map((object) => object.kind))
       section.items.push(...objects.map((object) => ({
         type: 'link' as const, label: object.name, kind: object.kind, href: portPageUrl(info, version, object.path),
+        ...(quiet ? { quiet } : {}),
       })))
     }
     // Some named areas have no overview. Their first real page is a useful

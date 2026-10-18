@@ -3,7 +3,7 @@ vi.mock('astro:content', () => ({ getCollection: vi.fn(async () => []) }))
 import { buildDocumentationSurfaces, currentDocumentation, getDocumentationSurfaces } from '../src/lib/documentation-navigation'
 import { PORTS, portPageUrl, productStatus, releaseMaturity, type DocProduct, type ProductStatus } from '../src/lib/ports'
 import { REGISTRY } from '../src/lib/registry'
-import type { SidebarItem } from '../src/lib/sidebar'
+import { sharesOneKind, type SidebarItem } from '../src/lib/sidebar'
 import { mcpObjects, MCP_REFERENCE } from '../src/lib/mcp-reference'
 
 const link = (label: string, href: string): SidebarItem => ({ type: 'link', label, href })
@@ -221,8 +221,26 @@ describe('documentation surface navigation', () => {
         .find((item) => item.type === 'link' && item.href === section.href)
       expect(homeLink?.type === 'link' && Boolean(homeLink.disabled)).toBe(objects.length === 0)
       expect(section.href).toBe(`/${slug}/next/mcp/${id}/`)
-      expect(section.items.slice(1)).toEqual(objects.map((object) => ({ type: 'link', label: object.name, kind: object.kind, href: `/${slug}/next/${object.path}/` })))
+      // A section named for its kind needs no mark on each row, and the kind stays on the link; a section that mixes kinds keeps its marks.
+      const quiet = new Set(objects.map((object) => object.kind)).size <= 1
+      expect(section.items.slice(1)).toEqual(objects.map((object) => ({ type: 'link', label: object.name, kind: object.kind, href: `/${slug}/next/${object.path}/`, ...(quiet ? { quiet: true } : {}) })))
       for (const object of objects) expect(currentDocumentation(surfaces, `/${slug}/next/${object.path}/`).section.id).toBe(id)
+    }
+  })
+
+  it('quiets a protocol section of one kind and marks a section that mixes kinds', () => {
+    // No advertised registration set mixes kinds today, so the rule is held on its own, and the real sections on the data.
+    expect(sharesOneKind(['tool', 'tool', 'tool'])).toBe(true)
+    expect(sharesOneKind([])).toBe(true)
+    expect(sharesOneKind(['resource', 'resource-template'])).toBe(false)
+    expect(sharesOneKind(['tool', 'prompt'])).toBe(false)
+    const quieted = Object.keys(MCP_REFERENCE).flatMap((slug) => ['tools', 'prompts', 'resources']
+      .filter((id) => mcpObjects(slug).some((object) => object.section === id)).map((id) => ({ slug, id })))
+    expect(quieted.length).toBeGreaterThan(0)
+    for (const { slug, id } of quieted) {
+      const port = PORTS.find((entry) => entry.slug === slug)!
+      const section = buildDocumentationSurfaces(slug, 'next', menus(port, 'next')).find((surface) => surface.id === 'mcp')!.sections.find((entry) => entry.id === id)!
+      for (const link of section.items.slice(1)) expect(link.type === 'link' && link.quiet && link.kind, `${slug} ${id}`).toBeTruthy()
     }
   })
 

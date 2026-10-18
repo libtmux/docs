@@ -47,6 +47,8 @@ export interface SidebarLinkItem {
   external?: boolean
   disabled?: boolean
   kind?: string
+  /** The kind stays on the row for assistive technology, and its mark is not drawn: the group names it. */
+  quiet?: boolean
 }
 
 export interface SidebarGroupItem {
@@ -59,6 +61,9 @@ export interface SidebarGroupItem {
 }
 
 export type SidebarItem = SidebarLinkItem | SidebarGroupItem
+
+/** A group whose rows all share one kind says nothing with a mark per row: the group's own name already says it. */
+export const sharesOneKind = (kinds: Iterable<string | undefined>): boolean => new Set([...kinds].filter(Boolean)).size <= 1
 
 /** Find a page's actual navigation ancestry, retaining groups without destinations. */
 export function sidebarBreadcrumbs(items: SidebarItem[], currentUrl: string): BreadcrumbItem[] {

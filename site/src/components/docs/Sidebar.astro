@@ -51,7 +51,7 @@ const navigationScope = selected?.section.href ?? `tree:${createHash('sha256').u
       item.type === 'group' ? (
         <SidebarSection label={item.label} href={item.href} kind={item.kind} items={item.items} currentPath={currentPath} />
       ) : (
-        <SidebarLink href={item.href} label={item.href === selected?.section.href && item.label === selected.section.label ? 'Overview' : item.label} external={item.external} kind={item.kind} disabled={item.disabled} isActive={isActivePath(item.href, currentPath)} />
+        <SidebarLink href={item.href} label={item.href === selected?.section.href && item.label === selected.section.label ? 'Overview' : item.label} external={item.external} kind={item.kind} quiet={item.quiet} disabled={item.disabled} isActive={isActivePath(item.href, currentPath)} />
       ),
     )
   }
