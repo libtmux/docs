@@ -204,6 +204,10 @@ jobs:
           cp scripts/publish-default-versions.sh publish-default-versions.sh
           cp scripts/merge-version-manifests.mjs merge-version-manifests.mjs
           cp scripts/skip-unchanged.mjs skip-unchanged.mjs
+          cp scripts/compose-published-inventory.mjs compose-published-inventory.mjs
+          mkdir inventory-runtime
+          cp packages/api-model/src/{inventory,targets,modules}.ts inventory-runtime/
+          echo '{"type":"module"}' > inventory-runtime/package.json
           cat reserved-prefixes.txt
 
       - uses: actions/upload-artifact@v7
@@ -225,6 +229,8 @@ jobs:
             publish-default-versions.sh
             merge-version-manifests.mjs
             skip-unchanged.mjs
+            compose-published-inventory.mjs
+            inventory-runtime/
           retention-days: 1
 
   check-publish:
@@ -330,6 +336,19 @@ jobs:
             find published-manifests -name '*.json' -printf '%f\n' \
               | sed 's/\.json$//' | sort | sed 's/^/- /'
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/setup-node@v7
+        if: matrix.locale == 'en'
+        with:
+          node-version: '26'
+
+      - name: Compose inventories from the published default versions
+        if: matrix.locale == 'en'
+        env:
+          BUCKET: ${{ secrets.LIBTMUX_DOCS_BUCKET }}
+        run: |
+          node compose-published-inventory.mjs --directory dist \
+            --runtime inventory-runtime --bucket "$BUCKET" --locale en
 
       # Without this every deploy re-uploads the whole locale, unchanged or
       # not. PUBLISH_POLICY_SINCE is the date publish-root.sh last changed a

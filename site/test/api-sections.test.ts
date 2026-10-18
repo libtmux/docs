@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { compareMembers, extractPowerShell, memberSignals, SymbolIndex, type ApiSymbol } from '@libtmux/api-model'
-import { apiCommandFacts, apiEntryFields, apiEntrySections, apiMemberGroups, apiMethodDetails, parameterBindingFacts, parameterBindingText, relatedApiTypes } from '../src/lib/api-sections'
+import { apiCommandFacts, apiEntryFields, apiEntrySections, apiMemberGroups, apiMethodDetails, apiOverloadId, parameterBindingFacts, parameterBindingText, relatedApiTypes } from '../src/lib/api-sections'
 import { API_MODELS } from '../src/lib/api-models'
 
 const symbol = (id: string, overrides: Partial<ApiSymbol> = {}): ApiSymbol => ({
@@ -10,6 +10,15 @@ const symbol = (id: string, overrides: Partial<ApiSymbol> = {}): ApiSymbol => ({
 })
 
 describe('reference page navigation', () => {
+  it('keeps overload fragments stable through insertion, reordering, and signature formatting', () => {
+    const owner = symbol('Server.open')
+    const first = { params: [{ name: 'name', type: 'string' }], returns: 'Server', raw: 'open(name: string): Server' }
+    const other = { params: [{ name: 'number', type: 'number' }], returns: 'Server' }
+    const key = apiOverloadId(owner, first)
+    expect([other, first].map((signature) => apiOverloadId(owner, signature))[1]).toBe(key)
+    expect(apiOverloadId(owner, { ...first, raw: 'open(\n name: string\n): Server' })).toBe(key)
+    expect(apiOverloadId(owner, other)).not.toBe(key)
+  })
   it('connects Julia overload qualifiers to their distinct methods', () => {
     for (const id of ['LibTmux.SessionID', 'LibTmux.HookCommand']) {
       const owner = API_MODELS.julia.symbols.find((symbol) => symbol.id === id)!

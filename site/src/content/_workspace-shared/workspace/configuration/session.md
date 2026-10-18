@@ -1,4 +1,9 @@
 ---
+inventoryTables:
+  root-keys:
+    type: std:confval
+    identity: schema/session
+    prefix: "session."
 description: Name a workspace and apply session options and environment.
 product: workspace
 sidebar:

@@ -1206,6 +1206,9 @@ if [ "$had_failure" -eq 1 ]; then
   exit 1
 fi
 
+log "publishing inventories from assembled pages"
+node "$script_dir/publish-inventories.mjs" "$site_out" "$LIBTMUX_DOCS_PORT_ROOT/"
+
 # Only here is a whole-site link check meaningful. Every `/py/stable/` path is
 # written by a different `astro build`, so any single build reports thousands
 # of them missing and is right to; the assembly is the first moment all of

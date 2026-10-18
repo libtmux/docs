@@ -39,6 +39,11 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          enable-cache: false
+          python-version: '3.12'
+
       - name: Install browser for the rendering audit
         run: pnpm --filter @libtmux/site exec playwright install --with-deps chromium
 

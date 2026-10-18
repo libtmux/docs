@@ -1,6 +1,7 @@
 ---
 import { buildLocale } from '../i18n/resolve'
 import { localeSourcePath } from '../i18n/locales'
+import type { InventoryPage } from '../lib/inventory-targets'
 import BackToTop from '../components/BackToTop.astro'
 import Seo from '../components/Seo.astro'
 import BrandIcons from '../components/BrandIcons.astro'
@@ -31,6 +32,9 @@ import type { LocaleStatus } from '../i18n/resolve'
  */
 interface Props {
   title: string
+  inventoryId?: string
+  inventoryAliases?: string[]
+  inventoryExclude?: boolean
   description?: string
   /** Path within the current port+version, e.g. 'guides/panes'. */
   pagePath?: string
@@ -77,6 +81,9 @@ interface Props {
 
 const {
   title,
+  inventoryId,
+  inventoryAliases,
+  inventoryExclude = false,
   description,
   pagePath: requestedPagePath,
   portSlug,
@@ -174,6 +181,15 @@ const homeBrands = homeLauncher
   ? Object.fromEntries(Object.values(PORT_BY_SLUG).map((port) => [port.slug, port.logoLanguage]))
   : undefined
 
+const tmuxInventoryVersion = pagePath.match(/^tmux\/([^/]+)\/(?:reference|manual)/)?.[1]
+const inventoryPage: InventoryPage = {
+  scope: portSlug ?? (tmuxInventoryVersion ? `tmux@${tmuxInventoryVersion}` : 'site'),
+  product: /^(?:mcp|workspace)(?:\/|$)/.exec(pagePath)?.[0].replace(/\/$/, '') ?? 'core',
+  identity: inventoryId ?? (pagePath || 'index'),
+  title, version: portSlug ? target.version : tmuxInventoryVersion, source,
+  aliases: inventoryAliases, exclude: inventoryExclude || bare || /^(?:demo(?:\/|$)|404$|search$)/.test(routePath),
+}
+
 ---
 
 <!doctype html>
@@ -181,6 +197,7 @@ const homeBrands = homeLauncher
   data-home-ports={homeLauncher ? Object.keys(PORT_BY_SLUG).join(' ') : undefined}
   data-home-brands={homeBrands ? JSON.stringify(homeBrands) : undefined}>
   <head>
+    <meta name="libtmux-inventory" content={JSON.stringify(inventoryPage)} />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <BrandIcons portSlug={navPort} pagePath={pagePath} />
@@ -249,7 +266,7 @@ const homeBrands = homeLauncher
       <div data-pagefind-filter={`section:${section}`} data-pagefind-ignore="all" hidden></div>
       <slot />
     </div>
-    {!bare && <SiteFooter locale={locale as Locale} source={source} markdownHref={markdownHref} llmsRoot={llmsRoot} githubUrl={githubUrl} flush={flush} />}
+    {!bare && <SiteFooter locale={locale as Locale} source={source} markdownHref={markdownHref} llmsRoot={llmsRoot} port={portSlug} version={target.version} githubUrl={githubUrl} flush={flush} />}
     <BackToTop />
     <SearchModal port={navPort} version={navVersion} />
     <LinkPreview />

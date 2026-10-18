@@ -24,6 +24,21 @@ const render = (html: string) => {
 }
 
 describe('section and item permalinks', () => {
+  it('exports individually named options from an explicitly typed table', () => {
+    const tree = fromHtml('<h2 id="flags">Flags</h2><table><tr><td><code>--append</code>, <code>-a</code></td><td>Append</td></tr></table>', { fragment: true })
+    rehypeRowAnchors()(tree, { data: { astro: { frontmatter: { inventoryTables: {
+      flags: { type: 'std:cmdoption', identity: 'cli/load', prefix: 'tmuxp load ' },
+    } } } } })
+    const entries: unknown[] = []
+    visit(tree, 'element', (node) => {
+      if (node.properties.dataInventoryTargets) entries.push(...JSON.parse(String(node.properties.dataInventoryTargets)))
+    })
+    expect(entries).toEqual([
+      { category: 'cmdoption', identity: 'cli/load:--append', display: 'tmuxp load --append', native: [{ type: 'std:cmdoption', name: 'tmuxp load --append' }] },
+      { category: 'cmdoption', identity: 'cli/load:-a', display: 'tmuxp load -a', native: [{ type: 'std:cmdoption', name: 'tmuxp load -a' }] },
+    ])
+  })
+
   it('names option rows consistently across tmux versions', () => {
     const rows = (version: string) => tmuxCommandNotes(version, 'capture-pane')!.groups
       .flatMap((group) => group.options)
