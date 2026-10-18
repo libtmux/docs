@@ -121,6 +121,9 @@ const KEYWORD_HELP: Record<string, Record<string, KeywordHelp>> = {
   },
 }
 
+/** A keyword argument (`cancel:`, `clients: true`) names a parameter, not a member. */
+export const keywordArgument = /^[A-Za-z_]\w*[?!]?:(?:\s|$)/
+
 interface TypeSpan {
   text: string
   link?: LinkTarget
@@ -675,6 +678,17 @@ export class SymbolIndex {
         ? { ...span, link: this.resolve(span.target, span.role, context) }
         : span,
     )
+  }
+
+  /**
+   * Link the names in a prose code literal.
+   *
+   * A keyword argument such as `cancel:` or `clients: true` names a parameter
+   * of the call being described, not the member elsewhere that shares its
+   * name, so it stays plain code.
+   */
+  linkLiteral(text: string, context?: ApiSymbol): TypeSpan[] {
+    return keywordArgument.test(text) ? [{ text }] : this.linkType(text, context)
   }
 
   /**
