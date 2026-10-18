@@ -8914,9 +8914,9 @@
   {
    "port": "py",
    "symbol": "libtmux.pane.Pane",
-   "page": "/intersphinx/",
+   "page": "/meta/intersphinx/",
    "title": "Link to libtmux from Sphinx",
-   "section": "intersphinx.md"
+   "section": "meta"
   },
   {
    "port": "py",
@@ -13984,7 +13984,7 @@
   {
    "port": "py",
    "text": "objects.inv",
-   "page": "/intersphinx/",
+   "page": "/meta/intersphinx/",
    "line": 29,
    "why": "not defined in the stated port"
   },

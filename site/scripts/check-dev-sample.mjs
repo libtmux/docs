@@ -192,7 +192,7 @@ export async function checkDevSample(browser, base) {
       assert.deepEqual(inventoryLinks, path === 'api-example-probe/'
         ? [`${rootPath}/ts/latest/objects.inv`, `${rootPath}/objects-full.inv`]
         : [`${rootPath}/objects-full.inv`], `${path}: inventory links follow page scope`)
-      assert.equal(await page.getByRole('link', { name: 'About Sphinx inventories', exact: true }).getAttribute('href'), `${rootPath}/intersphinx/`)
+      assert.equal(await page.getByRole('link', { name: 'About Sphinx inventories', exact: true }).getAttribute('href'), `${rootPath}/meta/intersphinx/`)
       for (const width of [1440, 768, 390]) {
         await page.setViewportSize({ width, height: 1000 })
         const layout = await page.evaluate(() => {
@@ -273,7 +273,7 @@ export async function checkDevSample(browser, base) {
     assert.equal(new URL(page.url()).searchParams.get('cleanup'), '1')
     for (const width of [1440, 628, 390]) await checkHomeResponsiveLayout(page, width, 'rs')
     await page.getByRole('link', { name: 'About Sphinx inventories', exact: true }).click()
-    await page.waitForURL(`${base}/intersphinx/`)
+    await page.waitForURL(`${base}/meta/intersphinx/`)
     assert.equal(await page.locator('main h1').innerText(), 'Link to libtmux from Sphinx', 'The inventory help link opens the setup guide')
     assert.deepEqual(errors, [], 'Sampled pages have no runtime errors')
     console.log('Fresh browser sample: prose, MCP table, API equivalents, phone picker, header menu sections, status badges and homepage controls PASS')

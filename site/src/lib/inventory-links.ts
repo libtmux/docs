@@ -5,6 +5,6 @@ export function inventoryLinks(port?: string, version?: string) {
   return {
     scoped: port && version ? withPortRoot(`/${port}/${version}/objects.inv`) : undefined,
     full: withPortRoot('/objects-full.inv'),
-    help: withPortRoot('/intersphinx/'),
+    help: withPortRoot('/meta/intersphinx/'),
   }
 }
