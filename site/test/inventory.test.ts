@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { readInventory, targetKey } from '@libtmux/api-model'
 import { apiInventoryIdentity, installFragmentAlias, mergeTargets, renderedTargets, type InventoryPage } from '../src/lib/inventory-targets'
 import type { ApiSymbol } from '@libtmux/api-model'
-import { publishAssembledInventories } from '../src/lib/inventory-publisher'
+import { collectInventoryTargets, publishAssembledInventories } from '../src/lib/inventory-publisher'
 import type { VersionManifest } from '../src/lib/versions'
 import { parse, type DefaultTreeAdapterTypes } from 'parse5'
 
@@ -88,6 +88,12 @@ describe('rendered inventory targets', () => {
 })
 
 describe('assembled inventories', () => {
+  it('preserves ordinary HTML filenames such as Sphinx genindex.html', () => {
+    const out = mkdtempSync(join(tmpdir(), 'libtmux-inventory-html-')); dirs.push(out)
+    mkdirSync(join(out, 'api'))
+    writeFileSync(join(out, 'api/genindex.html'), html(page, '<h1 id="index">Index</h1>'))
+    expect(collectInventoryTargets(out, '/en/rs/stable/')[0].href).toBe('/en/rs/stable/api/genindex.html')
+  })
   it('selects configured defaults, keeps tmux versions distinct, and makes each port discoverable', () => {
     const out = mkdtempSync(join(tmpdir(), 'libtmux-inventories-')); dirs.push(out)
     const writePage = (path: string, metadata: InventoryPage, body = '<h2 id="details">Details</h2>') => {
