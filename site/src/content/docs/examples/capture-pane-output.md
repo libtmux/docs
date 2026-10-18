@@ -1,7 +1,7 @@
 ---
 supportedPorts: []
 title: Capture pane output
-description: Capture a tmux pane's screen and wait for a complete output line.
+description: Build a script that sends a command, captures a tmux pane's screen, and waits for a complete output line.
 sidebar:
   label: Capture pane output
   group: Examples
@@ -11,16 +11,106 @@ tableOfContents: true
 
 `capture-pane -p` prints a pane's visible screen. Sending a command and reading
 its result are separate operations: the pane's shell may still be processing
-input when the first capture runs.
+input when the first capture runs. The steps below build `capture.sh` around
+that gap. It sends a command, captures the screen until one complete line
+appears, and removes its server. [The complete script](#the-complete-script)
+follows the last step. It requires tmux 3.2 or newer and `sleep` with
+fractional seconds.
 
-## Read what's on screen
+## 1. Choose a private socket
 
-This complete shell program starts a private tmux server, sends a command, and
-captures until the expected line appears. It removes the server on exit and
-fails after 100 unsuccessful checks with 50-millisecond pauses.
+Like the [attach example](/examples/attach-and-send-keys/), the script puts
+its server's socket in a fresh directory. A command that names that socket
+reaches only that server, never the one you already use.
 
-Save it as `capture.sh` and run `sh capture.sh`, or paste the whole block into
-a POSIX shell. It requires tmux 3.2 or newer and `sleep` with fractional seconds.
+```sh excerpt="capture.sh" from='directory=$(mktemp' to="tmux.sock"
+```
+
+## 2. Start a detached session
+
+`new-session -d` creates a session without attaching a terminal. `-f /dev/null`
+keeps your `tmux.conf` out of the private server, `-s capture` names the
+session, and `'sh'` is the program in its pane.
+
+```sh excerpt="capture.sh" from="new-session -d" to="'sh'"
+```
+
+`-e ENV=/dev/null` stops `sh` from loading a startup file, so nothing but the
+command's own output reaches the screen. The command returns once the session
+exists.
+
+## 3. Type a command that starts on a fresh row
+
+`send-keys -l` types its argument literally. The target `capture:0.0` reads as
+session `capture`, window `0`, pane `0`. A new session has exactly one of each,
+and its server holds no other session, so the bare name is unambiguous. Use
+`=capture` on a server that may hold others.
+
+```sh excerpt="capture.sh" from="capture:0.0 -l" to="libtmux capture ready"
+```
+
+The leading `\n` in the `printf` format puts the output on a fresh row even
+if the shell's first prompt arrives late.
+
+## 4. Press Enter
+
+Without `-l`, `send-keys` reads `Enter` as the `Enter` key, so the shell runs
+the text from step 3.
+
+```sh excerpt="capture.sh" from="capture:0.0 Enter"
+```
+
+## 5. Read the screen
+
+`capture-pane -p` prints the pane's visible rows to standard output, and
+`$(...)` stores them in `screen`.
+
+```sh excerpt="capture.sh" from="capture-pane"
+```
+
+Run alone, this capture may show only the echoed command, or an empty screen.
+The next step is why.
+
+<a id="wait-for-text-instead-of-guessing-a-delay"></a>
+<a id="wait-for-output-or-completion"></a>
+
+## 6. Capture until the line appears
+
+The shell may not have run the command yet, so the script captures again, up to
+100 times with a 50 millisecond pause. `grep -Fx` accepts only the complete
+line `libtmux capture ready`, so the echoed command cannot satisfy the check,
+and `-q` keeps grep quiet. On a match the script prints the screen and exits
+with status 0. The captured output, not a fixed delay, decides when the program
+finishes.
+
+```sh excerpt="capture.sh" from="attempt=0" to="done"
+```
+
+## 7. Fail when the line never appears
+
+If every attempt fails, the script reports the timeout on standard error and
+exits with status 1.
+
+```sh excerpt="capture.sh" from="Timed out" to="exit 1"
+```
+
+## 8. Clean up
+
+`kill-server` stops the private server, and `trap cleanup EXIT` runs `cleanup`
+on every exit, including the timeout in step 7. The second `trap` makes `HUP`,
+`INT`, and `TERM` exit normally so cleanup still runs. If tmux cannot be
+stopped, the script keeps its socket directory and prints the path, so you can
+inspect or stop that server.
+
+```sh excerpt="capture.sh" from="cleanup() {" to="trap 'exit 1'"
+```
+
+## The complete script
+
+In the file, `cleanup` comes before the first tmux command so that it covers
+every command after it. Save the script as `capture.sh`, or paste the whole
+block into a POSIX shell. The parentheses run it in a subshell, so its `exit`
+and traps leave your shell alone.
 
 ```sh title="capture.sh"
 (
@@ -62,22 +152,17 @@ a POSIX shell. It requires tmux 3.2 or newer and `sleep` with fractional seconds
 )
 ```
 
-Cleanup also runs if startup fails after creating the server. If tmux cannot
-be stopped, the script reports the error and keeps its socket directory so
-you can inspect or stop that server.
+Run the saved script:
 
-<a id="wait-for-text-instead-of-guessing-a-delay"></a>
+```console
+$ sh capture.sh
+```
 
-## Wait for output or completion
-
-The leading newline puts the output on a fresh screen row even if the shell's
-first prompt arrives late. `grep -Fx` matches the complete line, so the echoed
-command cannot satisfy the check. The short pause limits polling; the captured
-output determines when the program finishes.
-
-Capture reads screen state, so it can miss output that has scrolled away.
-[Capturing output](/guides/capturing-output/) covers history and streaming;
-[Sending keys](/guides/sending-keys/) explains input and completion.
+The output is the captured screen, which includes the line
+`libtmux capture ready`. Capture reads screen state, so it can miss output that
+has scrolled away. [Capturing output](/guides/capturing-output/) covers history
+and streaming; [Sending keys](/guides/sending-keys/) explains input and
+completion.
 
 ## Use a language library
 

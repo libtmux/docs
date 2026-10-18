@@ -19,8 +19,9 @@ cards:
 ---
 
 Run these complete shell scripts to send input, capture output, and build
-workspace layouts. Each example states its requirements, includes its setup,
-and cleans up the private tmux server it creates.
+workspace layouts. Each page builds its script one tmux command at a time,
+then shows the whole file. Each example states its requirements, includes its
+setup, and cleans up the private tmux server it creates.
 
 Save the displayed files with their shown names and run the command below
 them. The scripts use explicit sockets and targets so their commands reach
@@ -37,7 +38,9 @@ Use [`send-keys`](/tmux/latest/manual/send-keys/),
 ## Source and verification
 
 The displayed shell files are the source for these native tmux examples;
-a site build does not execute them. Each page links the tmux manual for
+a site build does not execute them. Each step block is a range of lines
+quoted from the page's complete file when the site is built, and the build
+fails if the range no longer resolves. Each page links the tmux manual for
 the commands it uses.
 
 For a page listed in

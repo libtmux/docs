@@ -57,7 +57,7 @@ describe('keys in the guides', () => {
     // The name typed into a pane and the name sent as a key are different in one guide.
     ['guides/sending-keys.md', ['Enter', 'C-c', 'Up']],
     ['topics/pane-interaction.md', ['Enter', 'C-c', 'Up', 'Enter']],
-    ['examples/attach-and-send-keys.md', ['Enter']],
+    ['examples/attach-and-send-keys.md', ['Enter', 'Enter', 'C-c', 'Up']],
     ['ports/py/topics/pane-interaction.md', ['Enter', 'C-c']],
   ])('%s marks %j', (path, keys) => {
     expect(keysIn(path)).toEqual(keys)

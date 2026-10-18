@@ -14,6 +14,7 @@ import { remarkPortCode, resolvePortCode } from '../src/plugins/remark-port-code
 import { rehypeCodeTabs } from '../src/plugins/rehype-code-tabs.mjs'
 import { sessionLines } from '../src/plugins/ec-shell-prompt.mjs'
 import { docsEntryAvailable, pagePortLinks } from '../src/lib/page-port-links'
+import { tmuxCommandMentions } from '../src/lib/tmux-links'
 import { docsPath, docsRedirects, docsRoutePath } from '../src/lib/docs-paths'
 
 const readPage = (page: string) => readFileSync(new URL(`../src/content/docs/${page}.md`, import.meta.url), 'utf8')
@@ -143,8 +144,14 @@ describe('verified complete programs', () => {
     expect(frontmatter.supportedPorts).toEqual([])
     expect(fences(content).every((block) => ['sh', 'text', 'console'].includes(block.language))).toBe(true)
     expect(content).not.toMatch(/QueryList|server\.sessions|Selections\.|FilterExpr/)
+    // A command reaches the manual through an authored link or, in inline
+    // code, through the mention pipeline that links and badges it.
+    const prose = content.replace(/^ {0,3}```[\s\S]*?^ {0,3}```/gm, '')
+    const inlineCode = [...prose.matchAll(/`([^`\n]+)`/g)].map((match) => match[1])
     for (const command of commands) {
-      expect(content).toContain(`/tmux/latest/manual/${command}/`)
+      const linked = content.includes(`/tmux/latest/manual/${command}/`)
+        || inlineCode.some((code) => tmuxCommandMentions(code, { code: true }).some((mention) => mention.command === command))
+      expect(linked, `${page} links ${command}`).toBe(true)
     }
     const docs = [{ id: page, data: frontmatter }, ...ports.map((port) => {
       const id = `ports/${port}/${page}`

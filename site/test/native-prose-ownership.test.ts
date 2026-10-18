@@ -11,6 +11,7 @@ import { API_MODELS } from '../src/lib/api-models'
 import { getResolver } from '../src/lib/prose-resolver'
 import { llmsPage } from '../src/lib/llms'
 import { rehypeApiLinks } from '../src/plugins/rehype-api-links'
+import { resolvePortCode } from '../src/plugins/remark-port-code.mjs'
 
 beforeEach(() => vi.stubEnv('LIBTMUX_DOCS_PORT', ''))
 afterEach(() => vi.unstubAllEnvs())
@@ -67,9 +68,10 @@ describe('native tmux prose ownership', () => {
     expect(entries.length).toBeGreaterThan(0)
     for (const entry of entries) {
       const markdown = markdownOf(entry)
-      expect(fences(markdown), entry.id).toEqual(fences(entry.body!))
+      // An excerpt fence is authored as anchors; the export carries its lines.
+      expect(fences(markdown), entry.id).toEqual(fences(resolvePortCode(entry.body!)))
       // llmsPage appends authored frontmatter cards after the source body.
-      expect(proseText(markdown).startsWith(proseText(entry.body!)), entry.id).toBe(true)
+      expect(proseText(markdown).startsWith(proseText(resolvePortCode(entry.body!))), entry.id).toBe(true)
       const html = await htmlOf(entry)
       const plainHtml = (await (await plainProcessor).render(entry.body ?? '')).code
       expect(html, entry.id).not.toContain('api-mention')
