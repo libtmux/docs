@@ -371,7 +371,7 @@ function mention(c: Candidate, kind: string, text: string, ctx: Ctx = 'prose'): 
     return `<a class="api-mention${sig}" href="#">${badge(c, k, ctx, true)}<span class="api-symbol-link__name">${name}</span></a>`
   }
   if (c.form === 'split') {
-    return `<a class="bd-split${sig}" href="#" data-g="${k.group}"><span class="bd-split__k">${esc(k.mono)}</span><span class="bd-split__n">${name}</span></a>`
+    return `<a class="bd-split${sig}" href="#" data-g="${k.group}"><span class="bd-split__k"><span class="bd-split__kl">${esc(k.mono)}</span></span><span class="bd-split__n"><span class="bd-split__nl">${name}</span></span></a>`
   }
   return `<a class="bd-m${sig}" href="#">${badge(c, k, ctx)}<span class="bd-name">${name}</span></a>`
 }
@@ -659,8 +659,12 @@ const bar = `<div class="bd-bar">${SETS.map((s) => {
   .bd-b:has(> [data-mark='tee']) { --gh: calc(var(--lr, 1) * (1cap - var(--tee, .035em))); }
   .bd-b__l { display: block; line-height: 1; text-box: trim-both cap alphabetic; }
   .bd-b__l[data-mark='x'], .bd-b__l[data-mark='col'] { text-box: trim-both ex alphabetic; }
-  .bd-b--word { --w: auto; --h: auto; display: inline-grid; place-items: center; min-width: 0; height: auto; padding: var(--py, 0) var(--px, 0); }
-  .bd-b--word .bd-b__l { text-box: normal; }
+  .bd-b--word {
+    --w: auto; --wh: 18px;
+    display: inline-flex; align-items: flex-end; justify-content: center; min-width: 0; height: round(var(--wh), 2px);
+    padding: 0 var(--px, 0) round(calc((round(var(--wh), 2px) - 2 * var(--bw, 1px) - 1cap) / 2), var(--step));
+  }
+  .bd-b--word .bd-b__l { text-box: trim-both cap alphabetic; }
 
   /* B 12px mono, C 13px mono bold, D 12px sans, E 13px sans bold, F wide pill */
   .bd-c-b .bd-b { --w: 20px; --fs: 12px; --fw: 600; --ff: var(--font-mono); --r: 4px; }
@@ -684,7 +688,7 @@ const bar = `<div class="bd-bar">${SETS.map((s) => {
   }
   .bd-c-k .bd-b--word { --w: auto; --h: auto; --px: 8px; --py: 2.6px; --fs: 11px; --fw: 700; --r: 3.5px; --ls: .01em; }
   .bd-c-k .bd-b__l { text-decoration: underline dotted; text-underline-offset: .18em; }
-  .bd-c-l .bd-b--word { --fs: 12px; }
+  .bd-c-l .bd-b--word { --fs: 12px; --wh: 20px; }
 
   /* ---- Set 1 ---- */
   /* M tuned tint: D's geometry, a colour system per mode. The tuned vars below are shared by the candidates that build on it. */
@@ -704,15 +708,18 @@ const bar = `<div class="bd-bar">${SETS.map((s) => {
   /* P hue families */
   .bd-c-p .bd-b { --bgv: var(--fmb); --fgv: var(--fmf); --bdv: color-mix(in srgb, var(--fmh) var(--ba), transparent); }
   .bd-c-p .bd-legend .bd-b { --w: auto; --h: 20px; --px: 7px; --fs: 11px; }
-  /* Q legend chip: the prose mark, then the word, in one chip. Each is centred by its ink: the mark by its own class, the word by its x-height. */
-  .bd-leg { display: inline-flex; align-items: stretch; }
-  .bd-leg > .bd-b { border-right-width: 0; border-radius: 4px 0 0 4px; }
+  /* Q legend chip: the prose mark, then the word, in one chip. One line of text: both sit on the same snapped baseline,
+     and the run is centred as a whole by its cap height. */
+  @property --bd-lpb { syntax: '<length>'; inherits: true; initial-value: 0px; }
+  .bd-leg { font: 600 11px/1 var(--font-sans); --bd-lpb: round(calc((20px - 2px - 1cap) / 2), var(--step)); display: inline-flex; align-items: stretch; }
+  .bd-leg > .bd-b { border-right-width: 0; border-radius: 4px 0 0 4px; padding-bottom: var(--bd-lpb); }
+  .bd-leg > .bd-b > .bd-b__l { text-box: trim-both cap alphabetic; }
   .bd-leg__w {
-    display: flex; align-items: flex-end; height: 20px; padding: 0 8px round(calc((20px - 2px - 1ex) / 2), var(--step)) 3px; box-sizing: border-box;
+    display: flex; align-items: flex-end; height: 20px; padding: 0 8px var(--bd-lpb) 3px; box-sizing: border-box;
     border: 1px solid color-mix(in srgb, var(--uh) var(--ba), transparent); border-left-width: 0; border-radius: 0 4px 4px 0;
     background: var(--ub); color: var(--uf); font: 600 11px/1 var(--font-sans);
   }
-  .bd-leg__wl { display: block; text-box: trim-both ex alphabetic; }
+  .bd-leg__wl { display: block; text-box: trim-both cap alphabetic; }
   .bd-quiet { margin-right: .6rem; color: var(--bd-muted); font: 600 .625rem/1 var(--font-sans); text-transform: uppercase; letter-spacing: .08em; }
   /* R solid as a state: the active mark goes solid, or ringed where white is under 5:1 */
   .bd-c-r .bd-m:hover .bd-b, .bd-c-r .bd-m:focus-visible .bd-b, .bd-c-r .bd-row--on .bd-b, .bd-c-r .bd-hrow:target .bd-b {
@@ -740,29 +747,31 @@ const bar = `<div class="bd-bar">${SETS.map((s) => {
   .bd-c-y .bd-b { --w: 24px; --h: 18px; --fs: 12px; --fw: 600; --r: 9px; --bw: 0px; --bgv: color-mix(in srgb, var(--uh) 10%, var(--bd-bg)); --fgv: var(--uf); }
   .bd-c-z .bd-b { --w: 22px; --fs: 13px; --fw: 600; --r: 6px; --bw: 0px; --bgv: color-mix(in srgb, var(--tbd) 20%, var(--bd-bg)); }
   .bd-c-z .bd-b--word {
-    --w: auto; --h: auto; --px: 8px; --py: 3px; --fs: 11px; --fw: 600; --r: 3px; --bw: 1px;
+    --w: auto; --wh: 20px; --px: 8px; --fs: 11px; --fw: 600; --r: 3px; --bw: 1px;
     --bgv: var(--sbg); --bdv: var(--sbd); --fgv: #fff;
   }
 
   /* ---- Set 3 ---- */
   .bd-c-aa .bd-b { --w: 26px; --h: 20px; --fs: 12px; --fw: 700; --ff: var(--font-mono); --r: 4px; --bgv: color-mix(in srgb, var(--uh) 12%, var(--bd-bg)); --bdv: color-mix(in srgb, var(--uh) 25%, transparent); --fgv: var(--uf); }
-  .bd-c-aa .bd-b--word { --w: auto; --px: 7px; }
+  .bd-c-aa .bd-b--word { --w: auto; --px: 7px; --wh: 20px; }
   .bd-c-ab .bd-b { --w: 26px; --h: 20px; --fs: 12px; --fw: 700; --ff: var(--font-mono); --r: 4px; --bgv: color-mix(in srgb, var(--uh) 18%, var(--bd-bg)); --bdv: color-mix(in srgb, var(--uh) 30%, transparent); --fgv: var(--uf); }
+  @property --bd-sp { syntax: '<length>'; inherits: true; initial-value: 0px; }
   .bd-split {
-    display: inline-flex; align-items: stretch; vertical-align: middle; white-space: nowrap; overflow: hidden;
+    --bd-sp: round(calc((22px - 2px - 1cap) / 2), var(--step));
+    display: inline-flex; align-items: stretch; box-sizing: border-box; height: 22px; font-size: 14px; vertical-align: middle; white-space: nowrap; overflow: hidden;
     border: 1px solid color-mix(in srgb, var(--uh) 30%, transparent); border-radius: 4px; text-decoration: none;
   }
+  /* The cap and the name are one line of text on one baseline. */
   .bd-split__k {
-    display: grid; place-items: center; min-width: 26px; padding: 0 5px; box-sizing: border-box;
+    display: flex; align-items: flex-end; justify-content: center; min-width: 26px; padding: 0 5px var(--bd-sp); box-sizing: border-box;
     border-right: 1px solid color-mix(in srgb, var(--uh) 30%, transparent);
     background: color-mix(in srgb, var(--uh) 18%, var(--bd-bg)); color: var(--uf); font: 700 12px/1 var(--font-mono);
   }
-  .bd-split__n { display: inline-flex; align-items: center; padding: 1px 7px; background: color-mix(in srgb, var(--bd-fg) 4%, transparent); }
-  .bd-split code { padding: 0; border: 0; background: none; }
+  .bd-split__kl, .bd-split__nl { display: block; text-box: trim-both cap alphabetic; }
+  .bd-split__n { display: flex; align-items: flex-end; padding: 0 7px var(--bd-sp); background: color-mix(in srgb, var(--bd-fg) 4%, transparent); font: 400 14px/1 var(--font-mono); }
+  .bd-split code { padding: 0; border: 0; background: none; font: inherit; }
   .bd-split:hover .bd-split__n { background: color-mix(in srgb, var(--bd-fg) 9%, transparent); }
   .bd-split:focus-visible { outline: 2px solid var(--uh); outline-offset: 1px; }
-  .bd-split--sig .bd-split__k { min-width: 22px; padding: 0 4px; font-size: 11px; }
-  .bd-hrow .bd-split__n { font-size: 1rem; }
   .bd-c-ac .bd-b { --w: 24px; --h: 20px; --fs: 12px; --fw: 700; --ff: var(--font-mono); --r: 4px; }
   .bd-c-ad .bd-b {
     --w: 26px; --h: 20px; --fs: 12px; --fw: 700; --ff: var(--font-mono); --r: 2px; --bwv: 0px; --bgv: var(--bd-nbg); --fgv: var(--bd-fg);
@@ -797,7 +806,7 @@ const bar = `<div class="bd-bar">${SETS.map((s) => {
   .bd-c-ah .bd-b { --ff: var(--font-mono); --bgv: color-mix(in srgb, var(--uh) 16%, var(--bd-bg)); --fgv: var(--u8); }
   .bd-c-ai .bd-b { --bgv: var(--bd-neutral); --fgv: var(--u8); }
   .bd-c-aj .bd-b { --bgv: var(--u2); --fgv: var(--bd-ink); }
-  .bd-c-ak .bd-b--word { --w: auto; --h: auto; --fs: 12px; --px: 7px; --py: 3px; --r: 3px; }
+  .bd-c-ak .bd-b--word { --w: auto; --wh: 18px; --fs: 12px; --px: 7px; --r: 3px; }
   .bd-c-ak .bd-b--word .bd-b__l { font-size: 1em; }
   .bd-c-ak .bd-hitem { gap: .5rem; }
 </style>

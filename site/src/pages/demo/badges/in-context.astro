@@ -649,10 +649,12 @@ const modeCss = `@media print{.ic-bar{display:none!important}${printRules('.ic-r
   .ic-b[data-t='AE'][data-f='data']::before { content: ''; flex: none; width: .3em; height: .3em; border-radius: 50%; background: var(--fh); }
   /* K gp-sphinx word chip */
   .ic-b--word {
-    --w: auto; --h: auto; --px: 8px; --py: 2.6px; --r: 3.5px; display: inline-grid; place-items: center; min-width: 0; height: auto; padding: var(--py) var(--px);
+    --w: auto; --h: auto; --px: 8px; --r: 3.5px; --bh: 18px;
+    display: inline-flex; align-items: flex-end; justify-content: center; min-width: 0; height: 18px;
+    padding: 0 var(--px) round(calc((18px - 2px - 1cap) / 2), var(--step));
     font: 700 11px/1 var(--font-sans); letter-spacing: .01em;
   }
-  .ic-b--word .ic-b__l { font-size: 1em; text-box: normal; }
+  .ic-b--word .ic-b__l { font-size: 1em; text-box: trim-both cap alphabetic; }
   .ic-b--word .ic-b__l::before { content: none; }
 
   /* The Monograms and Shape toggles */
@@ -694,24 +696,20 @@ const modeCss = `@media print{.ic-bar{display:none!important}${printRules('.ic-r
 
   /* AB split chip: one outlined box; the cap and the name are equal-height segments */
   @property --ic-sh { syntax: '<length>'; inherits: true; initial-value: 0px; }
-  @property --ic-kp { syntax: '<length>'; inherits: true; initial-value: 0px; }
   @property --ic-np { syntax: '<length>'; inherits: true; initial-value: 0px; }
   .ic-split {
     --ic-sh: round(1.6em, 2px);
     --ic-np: round(calc((var(--ic-sh) - 2px - .875 * 1cap) / 2), var(--step));
-    --ic-kp: round(calc((var(--ic-sh) - 2px - .75 * 1cap) / 2), var(--step));
     display: inline-flex; align-items: stretch; box-sizing: border-box; height: var(--ic-sh); vertical-align: middle; white-space: nowrap; overflow: hidden;
     border: 1px solid color-mix(in srgb, var(--fh) 30%, transparent); border-radius: .25em; text-decoration: none;
   }
-  .ic-split:has(> :is([data-mark='x'], [data-mark='col'])) { --ic-kp: round(calc((var(--ic-sh) - 2px - .75 * 1ex) / 2), var(--step)); }
-  .ic-split:has(> [data-mark='asc']) { --ic-kp: round(calc((var(--ic-sh) - 2px - .75 * (1cap + var(--asc, .04em))) / 2), var(--step)); }
+  /* The cap and the name are one line of text: both sit on the name's snapped baseline. */
   .ic-split__k {
-    display: flex; align-items: flex-end; justify-content: center; min-width: 1.6em; padding: 0 .3em var(--ic-kp); box-sizing: border-box;
+    display: flex; align-items: flex-end; justify-content: center; min-width: 1.6em; padding: 0 .3em var(--ic-np); box-sizing: border-box;
     border-right: 1px solid color-mix(in srgb, var(--fh) 30%, transparent);
     background: color-mix(in srgb, var(--fh) 18%, var(--bd-bg)); color: var(--ff); font: 700 .75em/1 var(--font-mono);
   }
   .ic-split__kl, .ic-split__nl { display: block; text-box: trim-both cap alphabetic; }
-  .ic-split__k:is([data-mark='x'], [data-mark='col']) > .ic-split__kl { text-box: trim-both ex alphabetic; }
   .ic-split__n {
     display: flex; align-items: flex-end; padding: 0 .45em var(--ic-np); background: color-mix(in srgb, var(--bd-fg) 4%, transparent);
     font: 400 .875em/1 var(--font-mono);
@@ -724,33 +722,24 @@ const modeCss = `@media print{.ic-bar{display:none!important}${printRules('.ic-r
   /* Q legend chip: one box with one border and radius; the mark and the word are equal-height segments inside it.
      Both sit on one baseline, centred by the mark's class (cap or x-height); registered lengths resolve the units once, on the chip. */
   @property --ic-lh { syntax: '<length>'; inherits: true; initial-value: 0px; }
-  @property --ic-gh { syntax: '<length>'; inherits: true; initial-value: 0px; }
-  @property --ic-lh { syntax: '<length>'; inherits: true; initial-value: 0px; }
-  @property --ic-gh { syntax: '<length>'; inherits: true; initial-value: 0px; }
   @property --ic-pb { syntax: '<length>'; inherits: true; initial-value: 0px; }
-  @property --ic-wb { syntax: '<length>'; inherits: true; initial-value: 0px; }
   .ic-leg {
-    --ic-lh: round(1.35em, 2px); --ic-gh: calc(.8 * 1cap);
-    --ic-pb: round(calc((var(--ic-lh) - 2px - var(--ic-gh)) / 2), var(--step));
-    --ic-wb: round(calc((var(--ic-lh) - 2px - .8 * 1ex) / 2), var(--step));
+    --ic-lh: round(1.35em, 2px);
+    --ic-pb: round(calc((var(--ic-lh) - 2px - .8 * 1cap) / 2), var(--step));
     display: inline-flex; align-items: stretch; box-sizing: border-box; height: var(--ic-lh); vertical-align: middle; overflow: hidden;
     border: 1px solid color-mix(in srgb, var(--fh) var(--ba), transparent); border-radius: .2em;
     background: var(--fb); color: var(--ff); font: 600 1em/1 var(--font-sans); white-space: nowrap;
   }
-  .ic-leg[data-mark='x'] { --ic-gh: calc(.8 * (1ex + var(--xo, .01em))); }
-  .ic-leg[data-mark='col'] { --ic-gh: calc(.8 * 1ex); }
-  .ic-leg[data-mark='asc'] { --ic-gh: calc(.8 * (1cap + var(--asc, .04em))); }
-  .ic-leg[data-mark='tee'] { --ic-gh: calc(.8 * (1cap - var(--tee, .035em))); }
+  /* One line of text: the mark and the word sit on the same snapped baseline, and the run is centred as a whole by its cap height. */
   .ic-leg__m {
     display: flex; align-items: flex-end; justify-content: center; min-width: 1.3em; padding: 0 .4em var(--ic-pb);
     border-right: 1px solid color-mix(in srgb, var(--fh) var(--ba), transparent);
     background: color-mix(in srgb, var(--fh) 22%, var(--fb));
   }
   .ic-leg__g { display: block; font-size: .8em; line-height: 1; text-box: trim-both cap alphabetic; }
-  :is(.ic-leg[data-mark='x'], .ic-leg[data-mark='col']) .ic-leg__g { text-box: trim-both ex alphabetic; }
   .ic-leg__g::before { content: attr(data-m1); }
-  .ic-leg__w { display: flex; align-items: flex-end; padding: 0 .55em var(--ic-wb) .5em; font-size: .8em; line-height: 1; }
-  .ic-leg__wl { display: block; text-box: trim-both ex alphabetic; }
+  .ic-leg__w { display: flex; align-items: flex-end; padding: 0 .55em var(--ic-pb) .5em; font-size: .8em; line-height: 1; }
+  .ic-leg__wl { display: block; text-box: trim-both cap alphabetic; }
   .ic-quiet { margin-right: .55em; color: var(--bd-muted); font: 600 .5em/1 var(--font-sans); text-transform: uppercase; letter-spacing: .08em; vertical-align: middle; }
   .ic-pill { display: inline-block; padding: .1em .65em; border-radius: 999px; font: 600 .75rem/1.5 var(--font-sans); vertical-align: middle; }
   .ic-pill--warn { background: var(--pw-bg); color: var(--pw-fg); }
