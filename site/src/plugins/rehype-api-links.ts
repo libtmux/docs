@@ -8,7 +8,7 @@ import { PORT_BY_SLUG } from '../lib/ports'
 import { API_MODELS, pageSlug } from '../lib/api-models'
 import { kindMark } from '../lib/api-labels'
 import { docsPath, isTmuxProse } from '../lib/docs-paths'
-import { MCP_REFERENCE, mcpObjects } from '../lib/mcp-reference'
+import { MCP_REFERENCE, mcpObjects } from '../lib/mcp-catalog'
 import { mergeMentions, tmuxMentions, type Mention } from '../lib/tmux-links'
 import { isLibraryPage, workspaceNames } from '../lib/workspace-links'
 
@@ -190,7 +190,7 @@ function addKindBadge(anchor: El, port?: string, route?: string): void {
  * language of the fence above, then the port this build is for.
  */
 export function rehypeApiLinks() {
-  return (tree: unknown, file?: { path?: string; data?: { astro?: { frontmatter?: { port?: string; product?: ApiProduct; route?: string; sidebar?: { group?: string } } } } }) => {
+  return (tree: unknown, file?: { path?: string; data?: { astro?: { frontmatter?: { port?: string; product?: ApiProduct; route?: string; symbols?: boolean; sidebar?: { group?: string } } } } }) => {
     const frontmatter = file?.data?.astro?.frontmatter
     const buildPort = frontmatter?.port ?? (process.env.LIBTMUX_DOCS_PORT || undefined)
     const source = file?.path?.replaceAll('\\', '/').match(/\/content\/(docs|_workspace-shared)\/(.+)\.mdx?$/)
@@ -199,7 +199,8 @@ export function rehypeApiLinks() {
     // Native tmux prose and wrapper references own their names; a library's
     // similarly named symbol is not evidence for a link from those pages.
     const nativeTmux = isTmuxProse({ id: id ?? '', data: { ...frontmatter, port: buildPort } })
-    const resolveMentions = !nativeTmux && (!buildPort || PORT_BY_SLUG[buildPort]?.referenceKind !== 'guide')
+    // `symbols: false` is for generated text whose names are arguments, not library symbols.
+    const resolveMentions = !nativeTmux && frontmatter?.symbols !== false && (!buildPort || PORT_BY_SLUG[buildPort]?.referenceKind !== 'guide')
     begin()
     const product = file?.data?.astro?.frontmatter?.product
     const link = createProseLinker(product)

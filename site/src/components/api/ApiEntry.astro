@@ -12,7 +12,7 @@ import ApiBadge from './ApiBadge.astro'
 import ApiDoc from './ApiDoc.astro'
 import ApiProse from './ApiProse.astro'
 import ApiType from './ApiType.astro'
-import type { AsideType } from '../../lib/aside'
+import { asideFor } from '../../lib/aside'
 import { apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMethodDetails, anonymousDeclarationLabel, nativeSignatureText as unformattedNativeSignatureText, parameterBindingText, usesNativeSignatures } from '../../lib/api-sections'
 import { tmuxCommandsFor, tmuxManualUrl } from '../../lib/tmux-manual-data'
 import ApiFieldOverloads from './ApiFieldOverloads.astro'
@@ -254,31 +254,6 @@ const hasFields = hasTypeParameters || params.length > 0 || returns.length > 0 |
  * term and no description is valid and reads correctly; a blank one is a gap
  * the reader has to interpret.
  */
-/**
- * A docstring admonition as an `<Aside>`.
- *
- * Sphinx and rustdoc name a dozen kinds; the aside has four types, so each
- * kind maps to the one whose colour and icon carry the same weight, and the
- * title keeps the word the author wrote. An unknown kind is a note rather
- * than nothing: the text is still worth setting apart.
- */
-const ASIDE_KINDS: Record<string, { type: AsideType; title: string }> = {
-  note: { type: 'note', title: 'Note' },
-  seealso: { type: 'note', title: 'See also' },
-  important: { type: 'note', title: 'Important' },
-  versionchanged: { type: 'note', title: 'Changed' },
-  hint: { type: 'tip', title: 'Hint' },
-  tip: { type: 'tip', title: 'Tip' },
-  warning: { type: 'caution', title: 'Warning' },
-  attention: { type: 'caution', title: 'Attention' },
-  caution: { type: 'caution', title: 'Caution' },
-  deprecated: { type: 'caution', title: 'Deprecated' },
-  danger: { type: 'danger', title: 'Danger' },
-  error: { type: 'danger', title: 'Error' },
-}
-const asideFor = (kind: string) =>
-  ASIDE_KINDS[kind.toLowerCase()] ?? { type: 'note' as AsideType, title: kind.charAt(0).toUpperCase() + kind.slice(1) }
-
 const hasBody =
   mentions.length > 0 ||
   (symbol.doc?.admonitions?.length ?? 0) > 0 ||
