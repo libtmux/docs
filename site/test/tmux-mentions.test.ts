@@ -6,7 +6,7 @@ import { Window } from 'happy-dom'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { visit } from 'unist-util-visit'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { kindMark, markHeight } from '../src/lib/api-labels'
+import { kindMark, markClass, markHeight } from '../src/lib/api-labels'
 import { tmuxManualPreview } from '../src/lib/link-preview'
 import { createLinkPreviewPolicy } from '../src/lib/link-preview-paint'
 import { linkProseMarkdown } from '../src/lib/prose-markdown'
@@ -254,11 +254,21 @@ describe('tmux hover cards', () => {
 
 describe('tmux badge palette', () => {
   const css = readFileSync(new URL('../src/styles/api-kinds.css', import.meta.url), 'utf8')
-  it.each(['command', 'option', 'hook', 'format'])('defines the %s badge once per theme and keeps its mark to one glyph', (kind) => {
+  const family: Record<string, string> = { command: 'callables', option: 'members', hook: 'tools', format: 'meta' }
+  it.each(Object.keys(family))('puts the %s badge in a hue family and keeps its mark to one glyph', (kind) => {
+    const fam = family[kind]!
     // Light, the system dark preference, and an explicit dark choice.
-    for (const part of ['bg', 'fg', 'border']) expect(css.match(new RegExp(`--api-kind-${kind}-${part}:`, 'g')), `${kind} ${part}`).toHaveLength(3)
-    expect(css).toMatch(new RegExp(`\\.api-badge--kind-${kind}\\s*\\{[^}]*var\\(--api-kind-${kind}-bg\\)[^}]*var\\(--api-kind-${kind}-fg\\)`))
+    for (const part of ['bg', 'fg']) expect(css.match(new RegExp(`--mark-${fam}-${part}:`, 'g')), `${fam} ${part}`).toHaveLength(3)
+    expect(css).toMatch(new RegExp(`\\.api-badge--kind-${kind}[^{]*\\{[^}]*var\\(--mark-${fam}-bg\\)[^}]*var\\(--mark-${fam}-fg\\)`))
     expect(kindMark(kind)).toHaveLength(1)
+  })
+
+  it('has six families, each with a fill, a glyph, a hue and a solid step', () => {
+    for (const fam of ['types', 'traits', 'callables', 'members', 'meta', 'tools']) {
+      for (const part of ['bg', 'fg', 'hue', 'solid']) expect(css, `${fam} ${part}`).toMatch(new RegExp(`--mark-${fam}-${part}:`))
+    }
+    // No hue per kind any more: the per-kind tokens are gone.
+    expect(css).not.toMatch(/--api-kind-[a-z-]+-bg:/)
   })
 })
 
@@ -444,7 +454,7 @@ describe('workspace and MCP mentions render like tmux mentions', () => {
 
   it('takes the key badge from the property palette and gives it one glyph', () => {
     const css = readFileSync(new URL('../src/styles/api-kinds.css', import.meta.url), 'utf8')
-    expect(css).toMatch(/\.api-badge--kind-key[^{]*\{[^}]*var\(--api-kind-property-bg\)/)
+    expect(css).toMatch(/\.api-badge--kind-key[^{]*\{[^}]*var\(--mark-members-bg\)/)
     expect(kindMark('key')).toBe(':')
   })
 })
@@ -457,10 +467,22 @@ describe('badge mark heights', () => {
     expect(markHeight(kindMark('struct')!)).toBeUndefined()
   })
 
-  it('sizes the badge to an even inside height and lifts x-height marks a pixel', () => {
-    const css = readFileSync(new URL('../src/styles/api-tree.css', import.meta.url), 'utf8')
-    expect(css).toMatch(/width: 1\.125rem;\n  height: 1\.125rem;/)
-    expect(css).toMatch(/\.api-badge__label\[data-mark='x'\] \{ translate: 0 -1px; \}/)
-    expect(css).not.toMatch(/text-box:/)
+  it('classes each mark by how its ink sits on the baseline', () => {
+    expect(['m', 'a', 'o', 'r', 'p'].map(markClass)).toEqual(['x', 'x', 'x', 'x', 'x'])
+    expect(markClass(':')).toBe('col')
+    expect(['f', 'h', 'k'].map(markClass)).toEqual(['asc', 'asc', 'asc'])
+    expect(markClass('t')).toBe('tee')
+    expect(['C', 'S', '$', '#', '!'].map(markClass)).toEqual(['cap', 'cap', 'cap', 'cap', 'cap'])
+  })
+
+  it('snaps the box to an even height and trims the label to its cap or x-height', () => {
+    const css = readFileSync(new URL('../src/styles/kind-marks.css', import.meta.url), 'utf8')
+    expect(css).toMatch(/--mk-bh: round\(var\(--mk-w\), 2px\);/)
+    expect(css).toMatch(/padding: 0 0 round\(calc\(/)
+    expect(css).toMatch(/text-box: trim-both cap alphabetic;/)
+    expect(css).toMatch(/\[data-mark='x'\][\s\S]*text-box: trim-both ex alphabetic;/)
+    // The old lift and the fixed 18px box are gone.
+    expect(css).not.toMatch(/translate: 0 -1px/)
+    expect(readFileSync(new URL('../src/styles/api-tree.css', import.meta.url), 'utf8')).not.toMatch(/api-nav__kind \{/)
   })
 })

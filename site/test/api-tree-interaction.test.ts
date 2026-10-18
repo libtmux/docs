@@ -2,6 +2,7 @@ import { type HTMLButtonElement, type HTMLElement, type HTMLInputElement, Window
 import { afterEach, expect, it, vi } from 'vitest'
 import type { ApiTreeJson } from '../src/lib/api-search'
 import { initializeApiTree } from '../src/components/api/api-tree-state'
+import { markClass } from '../src/lib/api-labels'
 
 let win: Window
 afterEach(async () => {
@@ -95,6 +96,10 @@ it('restores cached expanded rows synchronously before the module or tree reques
   expect(tree.querySelector('[data-lazy="type:c:args_entry"]')?.getAttribute('aria-expanded')).toBe('true')
   expect(tree.querySelector('a[href="/en/tmux/3.7c/reference/value/"]')?.textContent).toContain('value')
   expect(tree.querySelectorAll('[tabindex="0"]')).toHaveLength(1)
+  // A restored mark is classed like a rendered one, so it centres the same way.
+  const labels = [...tree.querySelectorAll<HTMLElement>('.api-nav__kind > .api-badge__label')]
+  expect(labels.length).toBeGreaterThan(0)
+  for (const label of labels) expect(label.dataset.mark, label.textContent ?? '').toBe(markClass(label.textContent ?? ''))
   expect(n.fetch).not.toHaveBeenCalled()
 })
 

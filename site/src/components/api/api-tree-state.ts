@@ -127,6 +127,8 @@ export function initializeApiTree(nav: HTMLElement | null, restoreState = true):
           badge.setAttribute('aria-hidden', 'true')
           const label = element('span', 'api-badge__label')
           label.textContent = entry.mark
+          // Serialised into the page head, so it cannot import `markClass`; this mirrors it.
+          label.dataset.mark = entry.mark === ':' ? 'col' : /^[acemnorsuvwxz]$|^p$/.test(entry.mark) ? 'x' : /^[fhk]$/.test(entry.mark) ? 'asc' : entry.mark === 't' ? 'tee' : 'cap'
           badge.append(label)
           row.append(badge)
         }

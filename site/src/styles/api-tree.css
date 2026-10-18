@@ -223,35 +223,6 @@
   text-decoration: none;
 }
 
-/* Kind palette classes own the border, regardless of stylesheet order. */
-:where(.api-nav__kind) {
-  border-color: var(--color-edge);
-}
-
-.api-nav__kind {
-  display: inline-grid;
-  place-items: center;
-  flex: 0 0 1.125rem;
-  width: 1.125rem;
-  height: 1.125rem;
-  border-width: 1px;
-  border-style: solid;
-  border-radius: 0.2rem;
-  font: 0.6875rem/1 var(--font-mono, ui-monospace, monospace);
-  vertical-align: middle;
-  align-self: center;
-}
-.api-nav__kind:is(.api-badge--kind-interface, .api-badge--kind-struct, .api-badge--kind-trait) {
-  background: var(--api-kind-class-bg);
-  color: var(--api-kind-class-fg);
-  border-color: var(--api-kind-class-border);
-}
-.api-nav__kind.api-badge--kind-enum {
-  background: var(--api-kind-typealias-bg);
-  color: var(--api-kind-typealias-fg);
-  border-color: var(--api-kind-typealias-border);
-}
-
 /* Keep the kind beside the name while long identifiers wrap within the link.
  * The name holds the baseline, so the line keeps its height and position. */
 a:has(> .api-link-kind) {
@@ -495,8 +466,3 @@ html[data-api-nav] .api-nav__item[aria-expanded='false'] > [role='group']:not([d
   cursor: default;
   background: none;
 }
-
-/* An 18px badge leaves an even 16px inside its border, so capitals and
- * symbols sit centred on whole pixels. Marks drawn at x-height (a, m, o, p, r
- * and the colon) would sit a pixel low; lift them by one. */
-.api-nav__kind > .api-badge__label[data-mark='x'] { translate: 0 -1px; }

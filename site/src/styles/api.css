@@ -78,7 +78,7 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
 .api-signature-name-link:hover { text-decoration: underline; }
 .api-name { font-weight: 600; }
 .api-punct, .api-type-label { opacity: 0.65; }
-.api-param-name { color: var(--api-kind-attribute-fg); }
+.api-param-name { color: var(--api-ink-param); }
 .api-default { opacity: 0.75; }
 
 /* Overloads stack; each gets its own line but shares the entry. */
@@ -100,7 +100,7 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
 }
 /* Modifiers are outline-only, so a kind badge stays the loudest thing. */
 .api-badge--mod { background: transparent; color: var(--api-muted); border-color: var(--api-border); }
-.api-badge--mod-deprecated { color: var(--api-kind-exception-fg); border-color: var(--api-kind-exception-border); }
+.api-badge--mod-deprecated { color: var(--api-ink-keyword); border-color: var(--api-ink-danger-border); }
 
 /* --- Field lists -------------------------------------------------------- */
 
@@ -719,8 +719,8 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .
   color: var(--color-foreground-primary);
   opacity: 1;
 }
-.api-native-signature .api-keyword { color: var(--api-kind-exception-fg); }
-.api-native-signature .api-declaration-name { color: var(--api-kind-function-fg); }
+.api-native-signature .api-keyword { color: var(--api-ink-keyword); }
+.api-native-signature .api-declaration-name { color: var(--api-ink-name); }
 .api-native-signature .api-signature-context { color: var(--color-foreground-secondary); }
 .api-native-signature .api-operator { white-space: nowrap; }
 .api-method > h3 { font-size: 0.875rem; line-height: 1.7; }
@@ -885,7 +885,7 @@ dl.py.gp-sphinx-api-container > dd > .gp-sphinx-api-parameters:last-child > dl.f
 .api-related-card { padding: 0.875rem 1rem; border: 1px solid var(--color-edge); border-radius: 0.4rem; }
 .api-related-card:hover { background: var(--color-surface); }
 .api-related-card > a { display: flex; align-items: baseline; gap: 0.6rem; }
-.api-related-card p { margin: 0.375rem 0 0 1.3125rem; color: var(--color-muted); font-size: 0.875rem; line-height: 1.6; }
+.api-related-card p { margin: 0.375rem 0 0 calc(round(1.35em, 2px) + 0.6rem); color: var(--color-muted); font-size: 0.875rem; line-height: 1.6; }
 .api-example-source { white-space: nowrap; font-size: 0.8125rem; margin-left: 0.75rem; }
 .api-reference-summary {
   max-width: 76ch;

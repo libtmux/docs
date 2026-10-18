@@ -1,146 +1,113 @@
-/* Symbol colors shared by prose links, navigation and reference badges. */
+/*
+ * Symbol colours shared by prose links, navigation and reference badges.
+ *
+ * Colour says the category and the mark says the kind: six hue families,
+ * tuned per mode, instead of one hue per kind. A new kind joins a family
+ * rather than inventing a colour. Each family names its fill, its glyph, a
+ * mid hue for borders, and a solid step for the active state; the family's
+ * `fg` on its `bg` clears 4.5:1 in both modes.
+ *
+ * `--mark-border-alpha` fades the border where it is not needed: a touch
+ * firmer in light, softer in dark.
+ */
 :root {
-  --api-kind-class-bg: #eef2ff;
-  --api-kind-class-fg: #4338ca;
-  --api-kind-class-border: #6366f1;
-  --api-kind-exception-bg: #fff1f2;
-  --api-kind-exception-fg: #be123c;
-  --api-kind-exception-border: #f43f5e;
-  --api-kind-function-bg: #e8f0fe;
-  --api-kind-function-fg: #1a56db;
-  --api-kind-function-border: #3b82f6;
-  --api-kind-method-bg: #ecfeff;
-  --api-kind-method-fg: #0e7490;
-  --api-kind-method-border: #06b6d4;
-  --api-kind-property-bg: #f0fdfa;
-  --api-kind-property-fg: #0f766e;
-  --api-kind-property-border: #14b8a6;
-  --api-kind-attribute-bg: #f1f5f9;
-  --api-kind-attribute-fg: #475569;
-  --api-kind-attribute-border: #94a3b8;
-  --api-kind-constant-bg: #f5f5f5;
-  --api-kind-constant-fg: #525252;
-  --api-kind-constant-border: #a3a3a3;
-  --api-kind-module-bg: #f0fdf4;
-  --api-kind-module-fg: #166534;
-  --api-kind-module-border: #22c55e;
-  --api-kind-typealias-bg: #f5f3ff;
-  --api-kind-typealias-fg: #6d28d9;
-  --api-kind-typealias-border: #8b5cf6;
-  --api-kind-command-bg: #fff7ed;
-  --api-kind-command-fg: #c2410c;
-  --api-kind-command-border: #f97316;
-  --api-kind-option-bg: #f7fee7;
-  --api-kind-option-fg: #4d7c0f;
-  --api-kind-option-border: #84cc16;
-  --api-kind-hook-bg: #fdf4ff;
-  --api-kind-hook-fg: #a21caf;
-  --api-kind-hook-border: #d946ef;
-  --api-kind-format-bg: #fffbeb;
-  --api-kind-format-fg: #a16207;
-  --api-kind-format-border: #eab308;
+  --mark-border-alpha: 30%;
+
+  --mark-types-bg: #bfdbfe; --mark-types-fg: #1e3a8a; --mark-types-hue: #3b82f6; --mark-types-solid: #2563eb;
+  --mark-traits-bg: #ede9fe; --mark-traits-fg: #6d28d9; --mark-traits-hue: #8b5cf6; --mark-traits-solid: #7c3aed;
+  --mark-callables-bg: #fde68a; --mark-callables-fg: #78350f; --mark-callables-hue: #f59e0b; --mark-callables-solid: #d97706;
+  --mark-members-bg: #dcfce7; --mark-members-fg: #166534; --mark-members-hue: #22c55e; --mark-members-solid: #16a34a;
+  --mark-meta-bg: #ffe4e6; --mark-meta-fg: #be123c; --mark-meta-hue: #f43f5e; --mark-meta-solid: #e11d48;
+  --mark-tools-bg: #a5f3fc; --mark-tools-fg: #164e63; --mark-tools-hue: #06b6d4; --mark-tools-solid: #0891b2;
+
+  /* Signature and prose accents that are not badges keep their own inks. */
+  --api-ink-param: #475569;
+  --api-ink-keyword: #be123c;
+  --api-ink-name: #1a56db;
+  --api-ink-type: #4338ca;
+  --api-ink-danger-border: #f43f5e;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-color-scheme='light']) {
-    --api-kind-class-bg: #1e1b4b;
-    --api-kind-class-fg: #a5b4fc;
-    --api-kind-exception-bg: #4c0519;
-    --api-kind-exception-fg: #fda4af;
-    --api-kind-exception-border: #fb7185;
-    --api-kind-function-bg: #172554;
-    --api-kind-function-fg: #93c5fd;
-    --api-kind-method-bg: #083344;
-    --api-kind-method-fg: #67e8f9;
-    --api-kind-method-border: #22d3ee;
-    --api-kind-property-bg: #042f2e;
-    --api-kind-property-fg: #5eead4;
-    --api-kind-property-border: #2dd4bf;
-    --api-kind-attribute-bg: #1e293b;
-    --api-kind-attribute-fg: #cbd5e1;
-    --api-kind-attribute-border: #64748b;
-    --api-kind-constant-bg: #262626;
-    --api-kind-constant-fg: #d4d4d4;
-    --api-kind-constant-border: #737373;
-    --api-kind-module-bg: #052e16;
-    --api-kind-module-fg: #86efac;
-    --api-kind-module-border: #4ade80;
-    --api-kind-typealias-bg: #2e1065;
-    --api-kind-typealias-fg: #c4b5fd;
-    --api-kind-typealias-border: #a78bfa;
-    --api-kind-command-bg: #431407;
-    --api-kind-command-fg: #fdba74;
-    --api-kind-command-border: #fb923c;
-    --api-kind-option-bg: #1a2e05;
-    --api-kind-option-fg: #bef264;
-    --api-kind-option-border: #a3e635;
-    --api-kind-hook-bg: #4a044e;
-    --api-kind-hook-fg: #f0abfc;
-    --api-kind-hook-border: #e879f9;
-    --api-kind-format-bg: #422006;
-    --api-kind-format-fg: #fde047;
-    --api-kind-format-border: #facc15;
+    --mark-border-alpha: 18%;
+
+    --mark-types-bg: #1e40af; --mark-types-fg: #dbeafe;
+    --mark-traits-bg: #4c1d95; --mark-traits-fg: #c4b5fd;
+    --mark-callables-bg: #78350f; --mark-callables-fg: #fde68a;
+    --mark-members-bg: #14532d; --mark-members-fg: #bbf7d0;
+    --mark-meta-bg: #881337; --mark-meta-fg: #fda4af;
+    --mark-tools-bg: #155e75; --mark-tools-fg: #cffafe;
+
+    --api-ink-param: #cbd5e1;
+    --api-ink-keyword: #fda4af;
+    --api-ink-name: #93c5fd;
+    --api-ink-type: #a5b4fc;
+    --api-ink-danger-border: #fb7185;
   }
 }
 
 [data-color-scheme='dark'] {
-  --api-kind-class-bg: #1e1b4b;
-  --api-kind-class-fg: #a5b4fc;
-  --api-kind-exception-bg: #4c0519;
-  --api-kind-exception-fg: #fda4af;
-  --api-kind-exception-border: #fb7185;
-  --api-kind-function-bg: #172554;
-  --api-kind-function-fg: #93c5fd;
-  --api-kind-method-bg: #083344;
-  --api-kind-method-fg: #67e8f9;
-  --api-kind-method-border: #22d3ee;
-  --api-kind-property-bg: #042f2e;
-  --api-kind-property-fg: #5eead4;
-  --api-kind-property-border: #2dd4bf;
-  --api-kind-attribute-bg: #1e293b;
-  --api-kind-attribute-fg: #cbd5e1;
-  --api-kind-attribute-border: #64748b;
-  --api-kind-constant-bg: #262626;
-  --api-kind-constant-fg: #d4d4d4;
-  --api-kind-constant-border: #737373;
-  --api-kind-module-bg: #052e16;
-  --api-kind-module-fg: #86efac;
-  --api-kind-module-border: #4ade80;
-  --api-kind-typealias-bg: #2e1065;
-  --api-kind-typealias-fg: #c4b5fd;
-  --api-kind-typealias-border: #a78bfa;
-  --api-kind-command-bg: #431407;
-  --api-kind-command-fg: #fdba74;
-  --api-kind-command-border: #fb923c;
-  --api-kind-option-bg: #1a2e05;
-  --api-kind-option-fg: #bef264;
-  --api-kind-option-border: #a3e635;
-  --api-kind-hook-bg: #4a044e;
-  --api-kind-hook-fg: #f0abfc;
-  --api-kind-hook-border: #e879f9;
-  --api-kind-format-bg: #422006;
-  --api-kind-format-fg: #fde047;
-  --api-kind-format-border: #facc15;
+  --mark-border-alpha: 18%;
+
+  --mark-types-bg: #1e40af; --mark-types-fg: #dbeafe;
+  --mark-traits-bg: #4c1d95; --mark-traits-fg: #c4b5fd;
+  --mark-callables-bg: #78350f; --mark-callables-fg: #fde68a;
+  --mark-members-bg: #14532d; --mark-members-fg: #bbf7d0;
+  --mark-meta-bg: #881337; --mark-meta-fg: #fda4af;
+  --mark-tools-bg: #155e75; --mark-tools-fg: #cffafe;
+
+  --api-ink-param: #cbd5e1;
+  --api-ink-keyword: #fda4af;
+  --api-ink-name: #93c5fd;
+  --api-ink-type: #a5b4fc;
+  --api-ink-danger-border: #fb7185;
 }
 
-.api-badge--kind-class, .api-badge--kind-struct, .api-badge--kind-interface, .api-badge--kind-trait { background: var(--api-kind-class-bg); color: var(--api-kind-class-fg); border-color: var(--api-kind-class-border); }
-.api-badge--kind-exception { background: var(--api-kind-exception-bg); color: var(--api-kind-exception-fg); border-color: var(--api-kind-exception-border); }
-.api-badge--kind-function, .api-badge--kind-tool { background: var(--api-kind-function-bg); color: var(--api-kind-function-fg); border-color: var(--api-kind-function-border); }
-.api-badge--kind-method { background: var(--api-kind-method-bg); color: var(--api-kind-method-fg); border-color: var(--api-kind-method-border); }
-.api-badge--kind-property, .api-badge--kind-resource, .api-badge--kind-resource-template, .api-badge--kind-key { background: var(--api-kind-property-bg); color: var(--api-kind-property-fg); border-color: var(--api-kind-property-border); }
-.api-badge--kind-attribute { background: var(--api-kind-attribute-bg); color: var(--api-kind-attribute-fg); border-color: var(--api-kind-attribute-border); }
-.api-badge--kind-constant { background: var(--api-kind-constant-bg); color: var(--api-kind-constant-fg); border-color: var(--api-kind-constant-border); }
-.api-badge--kind-module, .api-badge.api-badge--mod-package { background: var(--api-kind-module-bg); color: var(--api-kind-module-fg); border-color: var(--api-kind-module-border); }
-.api-badge--kind-typealias, .api-badge--kind-enum, .api-badge--kind-union, .api-badge--kind-prompt { background: var(--api-kind-typealias-bg); color: var(--api-kind-typealias-fg); border-color: var(--api-kind-typealias-border); }
-.api-badge--kind-command { background: var(--api-kind-command-bg); color: var(--api-kind-command-fg); border-color: var(--api-kind-command-border); }
-.api-badge--kind-option { background: var(--api-kind-option-bg); color: var(--api-kind-option-fg); border-color: var(--api-kind-option-border); }
-.api-badge--kind-hook { background: var(--api-kind-hook-bg); color: var(--api-kind-hook-fg); border-color: var(--api-kind-hook-border); }
-.api-badge--kind-format { background: var(--api-kind-format-bg); color: var(--api-kind-format-fg); border-color: var(--api-kind-format-border); }
+/*
+ * A kind joins a family. The badge, the mark and the legend chip read
+ * `--mk-*`; the active state reads `--mk-act-*`: solid in the family hue, or
+ * only a ring where white on the solid step is under 4.5:1 (callables,
+ * members and tools).
+ */
+.api-badge--kind-class, .api-badge--kind-struct, .api-badge--kind-enum, .api-badge--kind-union,
+.api-badge--kind-typealias, .api-badge--kind-module, .api-badge.api-badge--mod-package {
+  --mk-bg: var(--mark-types-bg); --mk-fg: var(--mark-types-fg); --mk-hue: var(--mark-types-hue);
+  --mk-act-bg: var(--mark-types-solid); --mk-act-fg: #fff; --mk-act-ring: 0 0 0 0 transparent;
+}
+.api-badge--kind-interface, .api-badge--kind-trait {
+  --mk-bg: var(--mark-traits-bg); --mk-fg: var(--mark-traits-fg); --mk-hue: var(--mark-traits-hue);
+  --mk-act-bg: var(--mark-traits-solid); --mk-act-fg: #fff; --mk-act-ring: 0 0 0 0 transparent;
+}
+.api-badge--kind-function, .api-badge--kind-method, .api-badge--kind-command {
+  --mk-bg: var(--mark-callables-bg); --mk-fg: var(--mark-callables-fg); --mk-hue: var(--mark-callables-hue);
+  --mk-act-bg: var(--mk-fill, var(--mark-callables-bg)); --mk-act-fg: var(--mark-callables-fg); --mk-act-ring: 0 0 0 2px var(--mark-callables-hue);
+}
+.api-badge--kind-property, .api-badge--kind-attribute, .api-badge--kind-constant, .api-badge--kind-key, .api-badge--kind-option {
+  --mk-bg: var(--mark-members-bg); --mk-fg: var(--mark-members-fg); --mk-hue: var(--mark-members-hue);
+  --mk-act-bg: var(--mk-fill, var(--mark-members-bg)); --mk-act-fg: var(--mark-members-fg); --mk-act-ring: 0 0 0 2px var(--mark-members-hue);
+}
+.api-badge--kind-exception, .api-badge--kind-prompt, .api-badge--kind-resource-template, .api-badge--kind-format {
+  --mk-bg: var(--mark-meta-bg); --mk-fg: var(--mark-meta-fg); --mk-hue: var(--mark-meta-hue);
+  --mk-act-bg: var(--mark-meta-solid); --mk-act-fg: #fff; --mk-act-ring: 0 0 0 0 transparent;
+}
+.api-badge--kind-tool, .api-badge--kind-resource, .api-badge--kind-hook {
+  --mk-bg: var(--mark-tools-bg); --mk-fg: var(--mark-tools-fg); --mk-hue: var(--mark-tools-hue);
+  --mk-act-bg: var(--mk-fill, var(--mark-tools-bg)); --mk-act-fg: var(--mark-tools-fg); --mk-act-ring: 0 0 0 2px var(--mark-tools-hue);
+}
 
 /* Only interactive preview labels receive the dotted affordance. */
-.api-badge[data-link-preview] > .api-badge__label {
+.api-badge[data-link-preview] > .api-badge__label,
+.api-badge[data-link-preview] .api-leg__wl {
   text-decoration-line: underline;
   text-decoration-style: dotted;
   text-decoration-color: currentColor;
   text-underline-offset: .2em;
+}
+
+/* A package modifier keeps the module's colour: it is a kind in modifier clothing. */
+.api-badge.api-badge--mod-package {
+  background: var(--mk-bg);
+  color: var(--mk-fg);
+  border-color: var(--mk-hue);
 }

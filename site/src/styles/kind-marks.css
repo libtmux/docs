@@ -1,0 +1,281 @@
+/*
+ * The kind mark and the treatments that adapt it to its context.
+ *
+ * One mark everywhere: a tuned per-mode tint on the six-family palette in
+ * `api-kinds.css`, built em-scaled, sans 600. Three rules choose how loud it is:
+ *
+ * 1. Fill follows crowding. Alone, a tint; a short run or a column, an outline
+ *    or a split chip; a long run, chrome, or no colour budget, ink.
+ * 2. The word appears wherever the reader cannot hover: headings (the legend
+ *    chip), menus, tables, tooltips.
+ * 3. Solid is a state or a hero, never a default. A pill is status, never kind.
+ *
+ * Centring. A mark's box snaps to an even height with `round()`, and its
+ * baseline snaps to a whole pixel from the box floor, so the ink centres at any
+ * sub-pixel position and zoom. The label is trimmed to the cap height, or the
+ * x-height for a m o r and the colon (`data-mark`), and sits on that floor.
+ * Centring the em box instead leaves capitals about half a pixel high and
+ * x-height letters low, and the baseline and the box edge round apart.
+ */
+
+:root { --mark-step: 1px; }
+@media (min-resolution: 2dppx) { :root { --mark-step: .5px; } }
+@media (min-resolution: 3dppx) { :root { --mark-step: .3333px; } }
+
+/* ---- The mark ---- */
+
+.api-nav__kind {
+  --mk-w: 1.35em; --mk-r: .2em; --mk-bw: 1px; --mk-gh: calc(.8 * 1cap);
+  --mk-bh: round(var(--mk-w), 2px);
+  display: inline-flex;
+  align-items: flex-end;
+  justify-content: center;
+  flex: none;
+  box-sizing: border-box;
+  min-width: var(--mk-bh);
+  height: var(--mk-bh);
+  padding: 0 0 round(calc((var(--mk-bh) - 2 * var(--mk-bwv, var(--mk-bw)) - var(--mk-gh)) / 2), var(--mark-step));
+  border: var(--mk-bw) solid var(--mk-bd, color-mix(in srgb, var(--mk-hue, currentColor) var(--mark-border-alpha), transparent));
+  border-radius: var(--mk-r);
+  background: var(--mk-fill, var(--mk-bg, transparent));
+  color: var(--mk-ink, var(--mk-fg, inherit));
+  box-shadow: var(--mk-shadow, none);
+  font: 600 min(1em, 1.25rem)/1 var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+  white-space: nowrap;
+  vertical-align: middle;
+  align-self: center;
+}
+.api-nav__kind > .api-badge__label {
+  display: block;
+  font-size: .8em;
+  line-height: 1;
+  text-box: trim-both cap alphabetic;
+}
+.api-nav__kind > .api-badge__label[data-mark='x'],
+.api-nav__kind > .api-badge__label[data-mark='col'] { text-box: trim-both ex alphabetic; }
+.api-nav__kind:has(> [data-mark='x']) { --mk-gh: calc(.8 * (1ex + .01em)); }
+.api-nav__kind:has(> [data-mark='col']) { --mk-gh: calc(.8 * 1ex); }
+.api-nav__kind:has(> [data-mark='asc']) { --mk-gh: calc(.8 * (1cap + .04em)); }
+.api-nav__kind:has(> [data-mark='tee']) { --mk-gh: calc(.8 * (1cap - .035em)); }
+
+/* Without text-box, centre the em box and lift the x-height marks. */
+@supports not (text-box: trim-both cap alphabetic) {
+  .api-nav__kind { align-items: center; padding-bottom: 0; }
+  .api-nav__kind > .api-badge__label[data-mark='x'] { translate: 0 -.06em; }
+}
+
+/* ---- Treatments by context ---- */
+
+/* T outline, in a fixed gutter: the navigation tree, its search results, and member and index lists. */
+:is(.api-nav, .api-member-list, .api-index-card__heading, .api-related-cards) .api-nav__kind {
+  --mk-fill: transparent;
+  --mk-bd: color-mix(in srgb, var(--mk-hue, currentColor) 60%, transparent);
+}
+
+/* U ink: secondary navigation, the contents column, and tables. No hue, so chrome stays calm. */
+:is(a.sidebar-link, summary a, .api-page-contents, .api-contents, table) .api-nav__kind {
+  --mk-fill: color-mix(in srgb, var(--color-foreground-primary, currentColor) 7%, transparent);
+  --mk-bd: color-mix(in srgb, var(--color-foreground-primary, currentColor) 14%, transparent);
+  --mk-ink: var(--color-foreground-primary, currentColor);
+}
+
+/* T outline on an opaque base: a callout tints its own surface, so the mark keeps the page colour under its outline. */
+:is(.aside, aside[role='note']) .api-nav__kind {
+  --mk-fill: var(--background-color, Canvas);
+  --mk-bd: color-mix(in srgb, var(--mk-hue, currentColor) 60%, transparent);
+}
+
+/* ---- The active state ---- */
+
+/*
+ * The selected node, the targeted heading and the hovered or focused link:
+ * the one loud mark. Solid in the family hue, or a 2px ring where white on the
+ * solid step is under 4.5:1.
+ */
+.api-nav__leaf[aria-current='page'] > .api-nav__kind,
+.api-nav__row:has(> [aria-current='page']) > .api-nav__kind,
+:is(a, summary):is(:hover, :focus-visible) > .api-nav__kind,
+:is(h1, h2, h3, h4, h5, h6):target .api-nav__kind {
+  background: var(--mk-act-bg, var(--mk-fill, var(--mk-bg)));
+  color: var(--mk-act-fg, var(--mk-fg));
+  border-color: var(--mk-hue, currentColor);
+  box-shadow: var(--mk-act-ring, none);
+}
+
+/* ---- The legend chip: mark and word in one token ---- */
+
+/*
+ * One box with one border and radius. The mark and the word are equal-height
+ * segments inside it, split by a 1px divider with the mark on a darker tint.
+ * They are one line of text: both sit on the same snapped baseline, and the run
+ * is centred as a whole by its cap height, never each segment on its own.
+ * Registered lengths resolve the em units once, on the chip.
+ */
+@property --leg-h { syntax: '<length>'; inherits: true; initial-value: 0px; }
+@property --leg-pb { syntax: '<length>'; inherits: true; initial-value: 0px; }
+
+.api-badge.api-leg {
+  --leg-h: round(1.35em, 2px);
+  --leg-pb: round(calc((var(--leg-h) - 2px - .8 * 1cap) / 2), var(--mark-step));
+  display: inline-flex;
+  align-items: stretch;
+  box-sizing: border-box;
+  height: var(--leg-h);
+  padding: 0;
+  overflow: hidden;
+  vertical-align: middle;
+  border: 1px solid color-mix(in srgb, var(--mk-hue, currentColor) var(--mark-border-alpha), transparent);
+  border-radius: .2em;
+  background: var(--mk-bg, transparent);
+  color: var(--mk-fg, inherit);
+  font: 600 .8125rem/1 var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+  letter-spacing: 0;
+  text-transform: none;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.api-leg__m {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-width: 1.3em;
+  padding: 0 .4em var(--leg-pb);
+  border-inline-end: 1px solid color-mix(in srgb, var(--mk-hue, currentColor) var(--mark-border-alpha), transparent);
+  background: color-mix(in srgb, var(--mk-hue, currentColor) 22%, var(--mk-bg, transparent));
+}
+.api-leg__g { display: block; font-size: .8em; line-height: 1; text-box: trim-both cap alphabetic; }
+.api-leg__w {
+  display: flex;
+  align-items: flex-end;
+  padding: 0 .55em var(--leg-pb) .5em;
+  font-size: .8em;
+  line-height: 1;
+}
+.api-leg__wl { display: block; text-box: trim-both cap alphabetic; }
+@supports not (text-box: trim-both cap alphabetic) {
+  .api-leg__m, .api-leg__w { align-items: center; padding-bottom: 0; }
+}
+
+/* A plain kind word, for a table's kind column and the trailing word of a list row or a result. */
+.api-kind-word {
+  color: var(--color-foreground-muted);
+  font: .75rem/1.3 var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* ---- Navigation: the gutter, and the word that trails a result ---- */
+
+/*
+ * Marks sit in one fixed column and the names indent after them, so a reader
+ * scans down the left edge to filter methods from properties.
+ */
+.api-nav .api-nav__row {
+  padding-inline-start: .5rem;
+}
+.api-nav .api-nav__row > .api-nav__label {
+  padding-inline-start: calc((var(--level, 1) - 1) * var(--api-nav-indent));
+}
+.api-nav .api-nav__row:not(:has(> .api-nav__kind)) > .api-nav__label {
+  padding-inline-start: calc(1.35em + .25rem + (var(--level, 1) - 1) * var(--api-nav-indent));
+}
+.api-nav__results strong > .api-kind-word { margin-inline-start: auto; padding-inline-start: .5rem; font-weight: 400; }
+
+/* ---- A split chip: the mark and the name bound into one token ---- */
+
+/*
+ * Contiguous runs ("In other ports", related APIs): the mark is the cap of a
+ * single outlined chip, the name sits on a quiet surface, and the chip replaces
+ * the link underline. The cap and the name are one line of text: both sit on
+ * the name's snapped baseline.
+ */
+@property --sp-h { syntax: '<length>'; inherits: true; initial-value: 0px; }
+@property --sp-pb { syntax: '<length>'; inherits: true; initial-value: 0px; }
+:is(.api-elsewhere-value, .api-command-related, nav.api-related) a:has(> .api-nav__kind) {
+  --sp-h: round(1.6em, 2px);
+  --sp-pb: round(calc((var(--sp-h) - 2px - .875 * 1cap) / 2), var(--mark-step));
+  display: inline-flex;
+  align-items: stretch;
+  gap: 0;
+  box-sizing: border-box;
+  height: var(--sp-h);
+  max-inline-size: 100%;
+  overflow: hidden;
+  vertical-align: middle;
+  border: 1px solid color-mix(in srgb, var(--color-foreground-primary, currentColor) 16%, transparent);
+  border-radius: .25em;
+  background: color-mix(in srgb, var(--color-foreground-primary, currentColor) 4%, transparent);
+  text-decoration: none;
+}
+:is(.api-elsewhere-value, .api-command-related, nav.api-related) a > .api-nav__kind {
+  --mk-w: 1.6em; --mk-bwv: 0px;
+  --mk-fill: color-mix(in srgb, var(--mk-hue, currentColor) 18%, var(--background-color, transparent));
+  align-self: stretch;
+  height: auto;
+  min-width: 1.6em;
+  padding-bottom: var(--sp-pb);
+  border-width: 0;
+  border-inline-end: 1px solid color-mix(in srgb, var(--mk-hue, currentColor) 30%, transparent);
+  border-radius: 0;
+}
+:is(.api-elsewhere-value, .api-command-related, nav.api-related) a > .api-nav__kind + code {
+  align-self: flex-end;
+  margin: 0 0 var(--sp-pb);
+  padding: 0 .45em;
+  border: 0;
+  background: none;
+  font-size: .875em;
+  line-height: 1;
+  text-box: trim-both cap alphabetic;
+  text-decoration: none;
+}
+:is(.api-elsewhere-value, .api-command-related, nav.api-related) a:has(> .api-nav__kind):is(:hover, :focus-visible) {
+  background: color-mix(in srgb, var(--color-foreground-primary, currentColor) 9%, transparent);
+}
+/* In the contents column the cap is ink, like the rest of the chrome. */
+.api-page-contents nav.api-related a > .api-nav__kind {
+  --mk-fill: color-mix(in srgb, var(--color-foreground-primary, currentColor) 7%, transparent);
+  --mk-ink: var(--color-foreground-primary, currentColor);
+  border-inline-end-color: color-mix(in srgb, var(--color-foreground-primary, currentColor) 14%, transparent);
+}
+
+/* ---- Print, forced colours and increased contrast ---- */
+
+/* Print is ink: tints stripped, a 1px border, the glyph in black. */
+@media print {
+  .api-nav__kind, .api-badge.api-leg, .api-leg__m {
+    background: transparent !important;
+    color: #000 !important;
+    border-color: #000 !important;
+    box-shadow: none !important;
+  }
+  .api-leg__m { border-inline-end-color: #000 !important; }
+}
+
+/* Forced colours: an outline in system colours, Highlight where active. */
+@media (forced-colors: active) {
+  .api-nav__kind, .api-badge.api-leg {
+    forced-color-adjust: none;
+    background: Canvas;
+    color: CanvasText;
+    border-color: CanvasText;
+    box-shadow: none;
+  }
+  .api-leg__m { background: Canvas; border-inline-end-color: CanvasText; }
+  .api-nav__leaf[aria-current='page'] > .api-nav__kind,
+  .api-nav__row:has(> [aria-current='page']) > .api-nav__kind,
+  :is(a, summary):is(:hover, :focus-visible) > .api-nav__kind {
+    background: Highlight;
+    color: HighlightText;
+    border-color: Highlight;
+  }
+}
+
+/* More contrast: the border at full strength. */
+@media (prefers-contrast: more) {
+  .api-nav__kind, .api-badge.api-leg {
+    --mk-bd: currentColor;
+    border-color: currentColor;
+  }
+  .api-leg__m { border-inline-end-color: currentColor; }
+}

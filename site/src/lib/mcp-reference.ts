@@ -7,7 +7,7 @@ import { rehypeApiLinks } from '../plugins/rehype-api-links'
 import { createHash } from 'node:crypto'
 import type { TreeBucket } from './api-tree'
 import type { ApiTreeJson } from './api-search'
-import { kindMark, markHeight } from './api-labels'
+import { kindMark, markClass } from './api-labels'
 
 export * from './mcp-catalog'
 
@@ -104,7 +104,7 @@ function rehypeMcpToolLinks() {
       children: [{ type: 'element', tagName: 'span', properties: {
         className: ['api-link-kind', 'api-nav__kind', `api-badge--kind-${object.kind}`],
         ariaHidden: 'true', dataApiKind: object.kind, title: object.kind,
-      }, children: [{ type: 'element', tagName: 'span', properties: { className: ['api-badge__label'], dataMark: markHeight(kindMark(object.kind) ?? '') }, children: [{ type: 'text', value: kindMark(object.kind) }] }] },
+      }, children: [{ type: 'element', tagName: 'span', properties: { className: ['api-badge__label'], dataMark: markClass(kindMark(object.kind) ?? '') }, children: [{ type: 'text', value: kindMark(object.kind) }] }] },
       { type: 'element', tagName: 'span', properties: { className: ['api-symbol-link__name'] }, children: [node] }],
     })
     const walk = (node: HtmlNode) => {

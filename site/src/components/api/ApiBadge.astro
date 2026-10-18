@@ -2,13 +2,13 @@
 /**
  * A kind or modifier badge.
  *
- * gp-sphinx puts one on every entry and it is most of what makes its
- * reference scannable: you can tell a property from a method from an
- * inherited attribute without reading a signature. Kinds are filled and
- * coloured; modifiers are outline-only, so exactly one thing per entry is
- * loud.
+ * A kind has three forms. In a heading or a declaration header it is the
+ * legend chip: the mark and the word in one token, so the heading teaches the
+ * letter every time. Inside a link or a navigation row it is the compact mark.
+ * Beside a name in a list or a table it is the plain word. Modifiers are
+ * outline-only words, so kind stays the loudest thing.
  */
-import { kindMark, markHeight } from '../../lib/api-labels'
+import { kindMark, markClass } from '../../lib/api-labels'
 import { apiGlossaryHref } from '../../lib/api-glossary'
 interface Props {
   label: string
@@ -17,18 +17,31 @@ interface Props {
   value: string
   /** The small symbol mark shared by navigation and related APIs. */
   compact?: boolean
+  /** A kind beside a name in a list or a table: the plain word, no chip. */
+  plain?: boolean
   /** Cards already provide context; their badges keep ordinary glossary links. */
   preview?: boolean
 }
-const { label, variant, value, compact = false, preview = true } = Astro.props as Props
+const { label, variant, value, compact = false, plain = false, preview = true } = Astro.props as Props
 const palette = value === 'cmdlet' ? 'function' : value
 const text = compact ? kindMark(palette) : label
 // Cmdlets use the function palette but retain their PowerShell command kind.
-const href = compact ? undefined : apiGlossaryHref(variant === 'kind' ? label : value, Astro.url.pathname)
+const href = compact || plain ? undefined : apiGlossaryHref(variant === 'kind' ? label : value, Astro.url.pathname)
 // Compact marks already sit inside navigation links.
 const Tag = href ? 'a' : 'span'
+const legend = variant === 'kind' && !compact && !plain
+const mark = legend ? kindMark(palette) : undefined
 ---
-{text && <Tag
+{plain && variant === 'kind' && label && <span class={`api-kind-word api-badge--kind-${palette}`}>{label}</span>}
+{legend && label && <Tag
+  href={href}
+  data-link-preview={href && preview ? '' : undefined}
+  class:list={['api-badge', 'api-badge--kind', `api-badge--kind-${palette}`, 'api-leg']}
+  data-mark={mark ? markClass(mark) : undefined}
+  title={preview ? `${label} (kind)` : undefined}
+  aria-label={href ? `${label}: read the ${label} definition in the API glossary` : undefined}
+>{mark && <span class="api-leg__m" aria-hidden="true"><span class="api-leg__g" data-mark={markClass(mark)}>{mark}</span></span>}<span class="api-leg__w"><span class="api-badge__label api-leg__wl">{label}</span></span></Tag>}
+{!plain && !legend && text && <Tag
   href={href}
   data-link-preview={href && preview ? '' : undefined}
   class:list={compact ? ['api-nav__kind', `api-badge--kind-${palette}`] : [
@@ -39,4 +52,4 @@ const Tag = href ? 'a' : 'span'
   title={preview ? compact ? value : variant === 'kind' ? `${label} (kind)` : label : undefined}
   aria-label={href ? `${label}: read the ${variant === 'kind' ? label : value} definition in the API glossary` : undefined}
   aria-hidden={compact ? 'true' : undefined}
-><span class="api-badge__label" data-mark={compact ? markHeight(text) : undefined}>{text}</span></Tag>}
+><span class="api-badge__label" data-mark={compact ? markClass(text) : undefined}>{text}</span></Tag>}
