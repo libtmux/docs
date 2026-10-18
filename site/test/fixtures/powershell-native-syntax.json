@@ -1,0 +1,832 @@
+{
+ "tools": {
+  "powershell": "7.6.6",
+  "platyPS": "0.14.2",
+  "Microsoft.PowerShell.PlatyPS": "1.0.3",
+  "module": "LibTmux 0.1.0, the package build recorded under libtmux-powershell artifacts/benchmarks/standalone-core-agent-final-20260927",
+  "install": "Save-Module -Name platyPS -Path <scratch>; Save-Module -Name Microsoft.PowerShell.PlatyPS -AllowPrerelease -Path <scratch>; the two modules load in separate pwsh processes",
+  "generation": {
+   "syntax": "Get-Command -Module LibTmux -Syntax, split into one string per parameter set; PowerShell does not wrap it.",
+   "platyps014": "New-MarkdownHelp -Module LibTmux, the fenced blocks under SYNTAX; it wraps at group boundaries and indents continuations one space.",
+   "platyps103": "New-CommandHelp | Export-MarkdownCommandHelp, the fenced blocks under SYNTAX; same wrapping, without CommonParameters.",
+   "getHelp60": "Get-Help <name> | Out-String -Width 60, the SYNTAX section; it wraps at the column, inside words, and indents continuations four spaces."
+  }
+ },
+ "commands": [
+  {
+   "name": "Connect-TmuxControl",
+   "syntax": [
+    "Connect-TmuxControl [-Server] <Server> [-Target] <string> [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Connect-TmuxControl [-Server] <Server> [-Target] <String> [-ProgressAction <ActionPreference>] [-WhatIf]\n [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Connect-TmuxControl [-Server] <Server> [-Target] <string> [-WhatIf] [-Confirm]"
+   ],
+   "getHelp60": "    Connect-TmuxControl [-Server] <Server> [-Target] <String\n    > [-WhatIf] [-Confirm] [<CommonParameters>]"
+  },
+  {
+   "name": "Connect-TmuxServer",
+   "syntax": [
+    "Connect-TmuxServer [-Server] <Server> [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Connect-TmuxServer [-Server] <Server> [-ProgressAction <ActionPreference>] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Connect-TmuxServer [-Server] <Server>"
+   ],
+   "getHelp60": "    Connect-TmuxServer [-Server] <Server> [<CommonParameters\n    >]"
+  },
+  {
+   "name": "ConvertTo-TmuxQueryJson",
+   "syntax": [
+    "ConvertTo-TmuxQueryJson [-Query] <QueryDocument> [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "ConvertTo-TmuxQueryJson [-Query] <QueryDocument> [-ProgressAction <ActionPreference>] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "ConvertTo-TmuxQueryJson [-Query] <QueryDocument>"
+   ],
+   "getHelp60": "    ConvertTo-TmuxQueryJson [-Query] <QueryDocument> [<Commo\n    nParameters>]"
+  },
+  {
+   "name": "Disconnect-TmuxControl",
+   "syntax": [
+    "Disconnect-TmuxControl [-Connection] <IControlModeSession> [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Disconnect-TmuxControl [-Connection] <IControlModeSession> [-ProgressAction <ActionPreference>] [-WhatIf]\n [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Disconnect-TmuxControl [-Connection] <IControlModeSession> [-WhatIf] [-Confirm]"
+   ],
+   "getHelp60": "    Disconnect-TmuxControl [-Connection] <IControlModeSessio\n    n> [-WhatIf] [-Confirm] [<CommonParameters>]"
+  },
+  {
+   "name": "Enter-TmuxSession",
+   "syntax": [
+    "Enter-TmuxSession [-Session] <Session> [-ReadOnly] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Enter-TmuxSession [-Session] <Session> [-ReadOnly] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm]\n [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Enter-TmuxSession [-Session] <Session> [-ReadOnly] [-WhatIf] [-Confirm]"
+   ],
+   "getHelp60": "    Enter-TmuxSession [-Session] <Session> [-ReadOnly] [-Wha\n    tIf] [-Confirm] [<CommonParameters>]"
+  },
+  {
+   "name": "Get-TmuxClient",
+   "syntax": [
+    "Get-TmuxClient [-Server] <Server> [-Name <string>] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Get-TmuxClient [-Server] <Server> [-Name <String>] [-ProgressAction <ActionPreference>] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Get-TmuxClient [-Server] <Server> [-Name <string>]"
+   ],
+   "getHelp60": "    Get-TmuxClient [-Server] <Server> [-Name <String>] [<Com\n    monParameters>]"
+  },
+  {
+   "name": "Get-TmuxClientAttachment",
+   "syntax": [
+    "Get-TmuxClientAttachment [-Client] <Client> [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Get-TmuxClientAttachment [-Client] <Client> [-ProgressAction <ActionPreference>] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Get-TmuxClientAttachment [-Client] <Client>"
+   ],
+   "getHelp60": "    Get-TmuxClientAttachment [-Client] <Client> [<CommonPara\n    meters>]"
+  },
+  {
+   "name": "Get-TmuxEnvironment",
+   "syntax": [
+    "Get-TmuxEnvironment [-Server] <Server> [-Name <string>] [<CommonParameters>]",
+    "Get-TmuxEnvironment [-Session] <Session> [-Name <string>] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Get-TmuxEnvironment [-Server] <Server> [-Name <String>] [-ProgressAction <ActionPreference>]\n [<CommonParameters>]",
+    "Get-TmuxEnvironment [-Session] <Session> [-Name <String>] [-ProgressAction <ActionPreference>]\n [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Get-TmuxEnvironment [-Server] <Server> [-Name <string>]",
+    "Get-TmuxEnvironment [-Session] <Session> [-Name <string>]"
+   ],
+   "getHelp60": "    Get-TmuxEnvironment [-Server] <Server> [-Name <String>]\n    [<CommonParameters>]\n\n    Get-TmuxEnvironment [-Session] <Session> [-Name <String>\n    ] [<CommonParameters>]"
+  },
+  {
+   "name": "Get-TmuxHook",
+   "syntax": [
+    "Get-TmuxHook [-Server] <Server> [-Name <string>] [-Scope <OptionScope>] [-Global] [<CommonParameters>]",
+    "Get-TmuxHook [-Session] <Session> [-Name <string>] [-Scope <OptionScope>] [-Global] [<CommonParameters>]",
+    "Get-TmuxHook [-Window] <Window> [-Name <string>] [-Scope <OptionScope>] [-Global] [<CommonParameters>]",
+    "Get-TmuxHook [-Pane] <Pane> [-Name <string>] [-Scope <OptionScope>] [-Global] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Get-TmuxHook [-Server] <Server> [-Name <String>] [-Scope <OptionScope>] [-Global]\n [-ProgressAction <ActionPreference>] [<CommonParameters>]",
+    "Get-TmuxHook [-Session] <Session> [-Name <String>] [-Scope <OptionScope>] [-Global]\n [-ProgressAction <ActionPreference>] [<CommonParameters>]",
+    "Get-TmuxHook [-Window] <Window> [-Name <String>] [-Scope <OptionScope>] [-Global]\n [-ProgressAction <ActionPreference>] [<CommonParameters>]",
+    "Get-TmuxHook [-Pane] <Pane> [-Name <String>] [-Scope <OptionScope>] [-Global]\n [-ProgressAction <ActionPreference>] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Get-TmuxHook [-Server] <Server> [-Name <string>] [-Scope <OptionScope>] [-Global]",
+    "Get-TmuxHook [-Session] <Session> [-Name <string>] [-Scope <OptionScope>] [-Global]",
+    "Get-TmuxHook [-Window] <Window> [-Name <string>] [-Scope <OptionScope>] [-Global]",
+    "Get-TmuxHook [-Pane] <Pane> [-Name <string>] [-Scope <OptionScope>] [-Global]"
+   ],
+   "getHelp60": "    Get-TmuxHook [-Server] <Server> [-Name <String>] [-Scope\n     <OptionScope>] [-Global] [<CommonParameters>]\n\n    Get-TmuxHook [-Session] <Session> [-Name <String>] [-Sco\n    pe <OptionScope>] [-Global] [<CommonParameters>]\n\n    Get-TmuxHook [-Window] <Window> [-Name <String>] [-Scope\n     <OptionScope>] [-Global] [<CommonParameters>]\n\n    Get-TmuxHook [-Pane] <Pane> [-Name <String>] [-Scope <Op\n    tionScope>] [-Global] [<CommonParameters>]"
+  },
+  {
+   "name": "Get-TmuxOption",
+   "syntax": [
+    "Get-TmuxOption [-Server] <Server> [-Name <string>] [-Scope <OptionScope>] [-Global] [-IncludeInherited] [-IncludeHooks] [-Quiet] [<CommonParameters>]",
+    "Get-TmuxOption [-Session] <Session> [-Name <string>] [-Scope <OptionScope>] [-Global] [-IncludeInherited] [-IncludeHooks] [-Quiet] [<CommonParameters>]",
+    "Get-TmuxOption [-Window] <Window> [-Name <string>] [-Scope <OptionScope>] [-Global] [-IncludeInherited] [-IncludeHooks] [-Quiet] [<CommonParameters>]",
+    "Get-TmuxOption [-Pane] <Pane> [-Name <string>] [-Scope <OptionScope>] [-Global] [-IncludeInherited] [-IncludeHooks] [-Quiet] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Get-TmuxOption [-Server] <Server> [-Name <String>] [-Scope <OptionScope>] [-Global] [-IncludeInherited]\n [-IncludeHooks] [-Quiet] [-ProgressAction <ActionPreference>] [<CommonParameters>]",
+    "Get-TmuxOption [-Session] <Session> [-Name <String>] [-Scope <OptionScope>] [-Global] [-IncludeInherited]\n [-IncludeHooks] [-Quiet] [-ProgressAction <ActionPreference>] [<CommonParameters>]",
+    "Get-TmuxOption [-Window] <Window> [-Name <String>] [-Scope <OptionScope>] [-Global] [-IncludeInherited]\n [-IncludeHooks] [-Quiet] [-ProgressAction <ActionPreference>] [<CommonParameters>]",
+    "Get-TmuxOption [-Pane] <Pane> [-Name <String>] [-Scope <OptionScope>] [-Global] [-IncludeInherited]\n [-IncludeHooks] [-Quiet] [-ProgressAction <ActionPreference>] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Get-TmuxOption [-Server] <Server> [-Name <string>] [-Scope <OptionScope>] [-Global]\n [-IncludeInherited] [-IncludeHooks] [-Quiet]",
+    "Get-TmuxOption [-Session] <Session> [-Name <string>] [-Scope <OptionScope>] [-Global]\n [-IncludeInherited] [-IncludeHooks] [-Quiet]",
+    "Get-TmuxOption [-Window] <Window> [-Name <string>] [-Scope <OptionScope>] [-Global]\n [-IncludeInherited] [-IncludeHooks] [-Quiet]",
+    "Get-TmuxOption [-Pane] <Pane> [-Name <string>] [-Scope <OptionScope>] [-Global] [-IncludeInherited]\n [-IncludeHooks] [-Quiet]"
+   ],
+   "getHelp60": "    Get-TmuxOption [-Server] <Server> [-Name <String>] [-Sco\n    pe <OptionScope>] [-Global] [-IncludeInherited] [-Includ\n    eHooks] [-Quiet] [<CommonParameters>]\n\n    Get-TmuxOption [-Session] <Session> [-Name <String>] [-S\n    cope <OptionScope>] [-Global] [-IncludeInherited] [-Incl\n    udeHooks] [-Quiet] [<CommonParameters>]\n\n    Get-TmuxOption [-Window] <Window> [-Name <String>] [-Sco\n    pe <OptionScope>] [-Global] [-IncludeInherited] [-Includ\n    eHooks] [-Quiet] [<CommonParameters>]\n\n    Get-TmuxOption [-Pane] <Pane> [-Name <String>] [-Scope <\n    OptionScope>] [-Global] [-IncludeInherited] [-IncludeHoo\n    ks] [-Quiet] [<CommonParameters>]"
+  },
+  {
+   "name": "Get-TmuxPane",
+   "syntax": [
+    "Get-TmuxPane [-Server] <Server> [-Id <string>] [<CommonParameters>]",
+    "Get-TmuxPane [-Session] <Session> [-Id <string>] [<CommonParameters>]",
+    "Get-TmuxPane [-Window] <Window> [-Id <string>] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Get-TmuxPane [-Server] <Server> [-Id <String>] [-ProgressAction <ActionPreference>] [<CommonParameters>]",
+    "Get-TmuxPane [-Session] <Session> [-Id <String>] [-ProgressAction <ActionPreference>] [<CommonParameters>]",
+    "Get-TmuxPane [-Window] <Window> [-Id <String>] [-ProgressAction <ActionPreference>] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Get-TmuxPane [-Server] <Server> [-Id <string>]",
+    "Get-TmuxPane [-Session] <Session> [-Id <string>]",
+    "Get-TmuxPane [-Window] <Window> [-Id <string>]"
+   ],
+   "getHelp60": "    Get-TmuxPane [-Server] <Server> [-Id <string>] [<CommonP\n    arameters>]\n\n    Get-TmuxPane [-Session] <Session> [-Id <string>] [<Commo\n    nParameters>]\n\n    Get-TmuxPane [-Window] <Window> [-Id <string>] [<CommonP\n    arameters>]"
+  },
+  {
+   "name": "Get-TmuxPaneContent",
+   "syntax": [
+    "Get-TmuxPaneContent [-Pane] <Pane> [-StartLine <int>] [-EndLine <int>] [-Raw] [-EscapeSequences] [-EscapeNonPrintable] [-JoinWrappedLines] [-PreserveTrailingSpaces] [-TrimTrailingSpaces] [-AlternateScreen] [-Quiet] [-ModeScreen] [-Pending] [-Hyperlinks] [-LineNumbers] [-LineFlags] [<CommonParameters>]",
+    "Get-TmuxPaneContent [-Pane] <Pane> -History [-EndLine <int>] [-Raw] [-EscapeSequences] [-EscapeNonPrintable] [-JoinWrappedLines] [-PreserveTrailingSpaces] [-TrimTrailingSpaces] [-AlternateScreen] [-Quiet] [-ModeScreen] [-Pending] [-Hyperlinks] [-LineNumbers] [-LineFlags] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Get-TmuxPaneContent [-Pane] <Pane> [-StartLine <Int32>] [-EndLine <Int32>] [-Raw] [-EscapeSequences]\n [-EscapeNonPrintable] [-JoinWrappedLines] [-PreserveTrailingSpaces] [-TrimTrailingSpaces] [-AlternateScreen]\n [-Quiet] [-ModeScreen] [-Pending] [-Hyperlinks] [-LineNumbers] [-LineFlags]\n [-ProgressAction <ActionPreference>] [<CommonParameters>]",
+    "Get-TmuxPaneContent [-Pane] <Pane> [-EndLine <Int32>] [-History] [-Raw] [-EscapeSequences]\n [-EscapeNonPrintable] [-JoinWrappedLines] [-PreserveTrailingSpaces] [-TrimTrailingSpaces] [-AlternateScreen]\n [-Quiet] [-ModeScreen] [-Pending] [-Hyperlinks] [-LineNumbers] [-LineFlags]\n [-ProgressAction <ActionPreference>] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Get-TmuxPaneContent [-Pane] <Pane> [-StartLine <int>] [-EndLine <int>] [-Raw] [-EscapeSequences]\n [-EscapeNonPrintable] [-JoinWrappedLines] [-PreserveTrailingSpaces] [-TrimTrailingSpaces]\n [-AlternateScreen] [-Quiet] [-ModeScreen] [-Pending] [-Hyperlinks] [-LineNumbers] [-LineFlags]",
+    "Get-TmuxPaneContent [-Pane] <Pane> -History [-EndLine <int>] [-Raw] [-EscapeSequences]\n [-EscapeNonPrintable] [-JoinWrappedLines] [-PreserveTrailingSpaces] [-TrimTrailingSpaces]\n [-AlternateScreen] [-Quiet] [-ModeScreen] [-Pending] [-Hyperlinks] [-LineNumbers] [-LineFlags]"
+   ],
+   "getHelp60": "    Get-TmuxPaneContent [-Pane] <Pane> [-StartLine <int>] [-\n    EndLine <int>] [-Raw] [-EscapeSequences] [-EscapeNonPrin\n    table] [-JoinWrappedLines] [-PreserveTrailingSpaces] [-T\n    rimTrailingSpaces] [-AlternateScreen] [-Quiet] [-ModeScr\n    een] [-Pending] [-Hyperlinks] [-LineNumbers] [-LineFlags\n    ] [<CommonParameters>]\n\n    Get-TmuxPaneContent [-Pane] <Pane> -History [-EndLine <i\n    nt>] [-Raw] [-EscapeSequences] [-EscapeNonPrintable] [-J\n    oinWrappedLines] [-PreserveTrailingSpaces] [-TrimTrailin\n    gSpaces] [-AlternateScreen] [-Quiet] [-ModeScreen] [-Pen\n    ding] [-Hyperlinks] [-LineNumbers] [-LineFlags] [<Common\n    Parameters>]"
+  },
+  {
+   "name": "Get-TmuxQueryField",
+   "syntax": [
+    "Get-TmuxQueryField [-Target] <QueryTarget> [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Get-TmuxQueryField [-Target] <QueryTarget> [-ProgressAction <ActionPreference>] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Get-TmuxQueryField [-Target] <QueryTarget>"
+   ],
+   "getHelp60": "    Get-TmuxQueryField [-Target] {Session | Window | Pane |\n    Client} [<CommonParameters>]"
+  },
+  {
+   "name": "Get-TmuxQueryPlan",
+   "syntax": [
+    "Get-TmuxQueryPlan [-Query] <QueryDocument> -DaemonVersion <TmuxVersion> [-Pushdown <QueryPushdown>] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Get-TmuxQueryPlan [-Query] <QueryDocument> -DaemonVersion <TmuxVersion> [-Pushdown <QueryPushdown>]\n [-ProgressAction <ActionPreference>] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Get-TmuxQueryPlan [-Query] <QueryDocument> -DaemonVersion <TmuxVersion> [-Pushdown <QueryPushdown>]"
+   ],
+   "getHelp60": "    Get-TmuxQueryPlan [-Query] <QueryDocument> -DaemonVersio\n    n <TmuxVersion> [-Pushdown {Auto | Never | Require}] [<C\n    ommonParameters>]"
+  },
+  {
+   "name": "Get-TmuxServer",
+   "syntax": [
+    "Get-TmuxServer [-Server] <Server> [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Get-TmuxServer [-Server] <Server> [-ProgressAction <ActionPreference>] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Get-TmuxServer [-Server] <Server>"
+   ],
+   "getHelp60": "    Get-TmuxServer [-Server] <Server> [<CommonParameters>]"
+  },
+  {
+   "name": "Get-TmuxSession",
+   "syntax": [
+    "Get-TmuxSession [-Server] <Server> [-Id <string>] [-Name <string>] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Get-TmuxSession [-Server] <Server> [-Id <String>] [-Name <String>] [-ProgressAction <ActionPreference>]\n [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Get-TmuxSession [-Server] <Server> [-Id <string>] [-Name <string>]"
+   ],
+   "getHelp60": "    Get-TmuxSession [-Server] <Server> [-Id <string>] [-Name\n     <string>] [<CommonParameters>]"
+  },
+  {
+   "name": "Get-TmuxSnapshot",
+   "syntax": [
+    "Get-TmuxSnapshot [-Server] <Server> [-Depth <SnapshotDepth>] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Get-TmuxSnapshot [-Server] <Server> [-Depth <SnapshotDepth>] [-ProgressAction <ActionPreference>]\n [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Get-TmuxSnapshot [-Server] <Server> [-Depth <SnapshotDepth>]"
+   ],
+   "getHelp60": "    Get-TmuxSnapshot [-Server] <Server> [-Depth <SnapshotDep\n    th>] [<CommonParameters>]"
+  },
+  {
+   "name": "Get-TmuxWindow",
+   "syntax": [
+    "Get-TmuxWindow [-Server] <Server> [-Id <string>] [-Name <string>] [<CommonParameters>]",
+    "Get-TmuxWindow [-Session] <Session> [-Id <string>] [-Name <string>] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Get-TmuxWindow [-Server] <Server> [-Id <String>] [-Name <String>] [-ProgressAction <ActionPreference>]\n [<CommonParameters>]",
+    "Get-TmuxWindow [-Session] <Session> [-Id <String>] [-Name <String>] [-ProgressAction <ActionPreference>]\n [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Get-TmuxWindow [-Server] <Server> [-Id <string>] [-Name <string>]",
+    "Get-TmuxWindow [-Session] <Session> [-Id <string>] [-Name <string>]"
+   ],
+   "getHelp60": "    Get-TmuxWindow [-Server] <Server> [-Id <string>] [-Name\n    <string>] [<CommonParameters>]\n\n    Get-TmuxWindow [-Session] <Session> [-Id <string>] [-Nam\n    e <string>] [<CommonParameters>]"
+  },
+  {
+   "name": "Invoke-TmuxChain",
+   "syntax": [
+    "Invoke-TmuxChain [-Server] <Server> [-Command] <TmuxCommand[]> [-MaxCommands <int>] [-MaxInputBytes <long>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Invoke-TmuxChain [-Server] <Server> [-Command] <TmuxCommand[]> [-MaxCommands <Int32>] [-MaxInputBytes <Int64>]\n [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Invoke-TmuxChain [-Server] <Server> [-Command] <TmuxCommand[]> [-MaxCommands <int>]\n [-MaxInputBytes <long>] [-WhatIf] [-Confirm]"
+   ],
+   "getHelp60": "    Invoke-TmuxChain [-Server] <Server> [-Command] <TmuxComm\n    and[]> [-MaxCommands <Int32>] [-MaxInputBytes <Int64>] [\n    -WhatIf] [-Confirm] [<CommonParameters>]"
+  },
+  {
+   "name": "Invoke-TmuxCommand",
+   "syntax": [
+    "Invoke-TmuxCommand [-Server] <Server> [-Arguments] <string[]> [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Invoke-TmuxCommand [-Server] <Server> [-Arguments] <String[]> [-ProgressAction <ActionPreference>] [-WhatIf]\n [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Invoke-TmuxCommand [-Server] <Server> [-Arguments] <string[]> [-WhatIf] [-Confirm]"
+   ],
+   "getHelp60": "    Invoke-TmuxCommand [-Server] <Server> [-Arguments] <stri\n    ng[]> [-WhatIf] [-Confirm] [<CommonParameters>]"
+  },
+  {
+   "name": "Invoke-TmuxControlCommand",
+   "syntax": [
+    "Invoke-TmuxControlCommand [-Connection] <IControlModeSession> [-Command] <TmuxCommand> [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Invoke-TmuxControlCommand [-Connection] <IControlModeSession> [-Command] <TmuxCommand>\n [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Invoke-TmuxControlCommand [-Connection] <IControlModeSession> [-Command] <TmuxCommand> [-WhatIf]\n [-Confirm]"
+   ],
+   "getHelp60": "    Invoke-TmuxControlCommand [-Connection] <IControlModeSes\n    sion> [-Command] <TmuxCommand> [-WhatIf] [-Confirm] [<Co\n    mmonParameters>]"
+  },
+  {
+   "name": "Invoke-TmuxHook",
+   "syntax": [
+    "Invoke-TmuxHook [-Server] <Server> -Name <string> [-Scope <OptionScope>] [-Global] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Invoke-TmuxHook [-Session] <Session> -Name <string> [-Scope <OptionScope>] [-Global] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Invoke-TmuxHook [-Window] <Window> -Name <string> [-Scope <OptionScope>] [-Global] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Invoke-TmuxHook [-Pane] <Pane> -Name <string> [-Scope <OptionScope>] [-Global] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Invoke-TmuxHook [-Server] <Server> -Name <String> [-Scope <OptionScope>] [-Global]\n [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Invoke-TmuxHook [-Session] <Session> -Name <String> [-Scope <OptionScope>] [-Global]\n [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Invoke-TmuxHook [-Window] <Window> -Name <String> [-Scope <OptionScope>] [-Global]\n [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Invoke-TmuxHook [-Pane] <Pane> -Name <String> [-Scope <OptionScope>] [-Global]\n [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Invoke-TmuxHook [-Server] <Server> -Name <string> [-Scope <OptionScope>] [-Global] [-WhatIf]\n [-Confirm]",
+    "Invoke-TmuxHook [-Session] <Session> -Name <string> [-Scope <OptionScope>] [-Global] [-WhatIf]\n [-Confirm]",
+    "Invoke-TmuxHook [-Window] <Window> -Name <string> [-Scope <OptionScope>] [-Global] [-WhatIf]\n [-Confirm]",
+    "Invoke-TmuxHook [-Pane] <Pane> -Name <string> [-Scope <OptionScope>] [-Global] [-WhatIf] [-Confirm]"
+   ],
+   "getHelp60": "    Invoke-TmuxHook [-Server] <Server> -Name <String> [-Scop\n    e <OptionScope>] [-Global] [-WhatIf] [-Confirm] [<Common\n    Parameters>]\n\n    Invoke-TmuxHook [-Session] <Session> -Name <String> [-Sc\n    ope <OptionScope>] [-Global] [-WhatIf] [-Confirm] [<Comm\n    onParameters>]\n\n    Invoke-TmuxHook [-Window] <Window> -Name <String> [-Scop\n    e <OptionScope>] [-Global] [-WhatIf] [-Confirm] [<Common\n    Parameters>]\n\n    Invoke-TmuxHook [-Pane] <Pane> -Name <String> [-Scope <O\n    ptionScope>] [-Global] [-WhatIf] [-Confirm] [<CommonPara\n    meters>]"
+  },
+  {
+   "name": "Invoke-TmuxQuery",
+   "syntax": [
+    "Invoke-TmuxQuery [-Server] <Server> -Query <QueryDocument> [-Pushdown <QueryPushdown>] [-AsResult] [<CommonParameters>]",
+    "Invoke-TmuxQuery [-Server] <Server> -Plan <Object> [-AsResult] [<CommonParameters>]",
+    "Invoke-TmuxQuery [-Server] <Server> -Target <QueryTarget> -NativeFilter <string> [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Invoke-TmuxQuery [-Server] <Server> -Query <QueryDocument> [-Pushdown <QueryPushdown>] [-AsResult]\n [-ProgressAction <ActionPreference>] [<CommonParameters>]",
+    "Invoke-TmuxQuery [-Server] <Server> -Plan <Object> [-AsResult] [-ProgressAction <ActionPreference>]\n [<CommonParameters>]",
+    "Invoke-TmuxQuery [-Server] <Server> -Target <QueryTarget> -NativeFilter <String>\n [-ProgressAction <ActionPreference>] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Invoke-TmuxQuery [-Server] <Server> -Query <QueryDocument> [-Pushdown <QueryPushdown>] [-AsResult]",
+    "Invoke-TmuxQuery [-Server] <Server> -Plan <Object> [-AsResult]",
+    "Invoke-TmuxQuery [-Server] <Server> -Target <QueryTarget> -NativeFilter <string>"
+   ],
+   "getHelp60": "    Invoke-TmuxQuery [-Server] <Server> -Query <QueryDocumen\n    t> [-Pushdown {Auto | Never | Require}] [-AsResult] [<Co\n    mmonParameters>]\n\n    Invoke-TmuxQuery [-Server] <Server> -Plan <Object> [-AsR\n    esult] [<CommonParameters>]\n\n    Invoke-TmuxQuery [-Server] <Server> -Target {Session | W\n    indow | Pane} -NativeFilter <String> [<CommonParameters>\n    ]"
+  },
+  {
+   "name": "Move-TmuxWindow",
+   "syntax": [
+    "Move-TmuxWindow [-Window] <Window> [-DestinationSession <Session>] [-Index <int>] [-Direction <WindowDirection>] [-NoSelect] [-ReplaceExisting] [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Move-TmuxWindow [-Window] <Window> [-DestinationSession <Session>] [-Index <Int32>]\n [-Direction <WindowDirection>] [-NoSelect] [-ReplaceExisting] [-PassThru] [-ProgressAction <ActionPreference>]\n [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Move-TmuxWindow [-Window] <Window> [-DestinationSession <Session>] [-Index <int>]\n [-Direction <WindowDirection>] [-NoSelect] [-ReplaceExisting] [-PassThru] [-WhatIf] [-Confirm]"
+   ],
+   "getHelp60": "    Move-TmuxWindow [-Window] <Window> [-DestinationSession\n    <Session>] [-Index <int>] [-Direction <WindowDirection>]\n     [-NoSelect] [-ReplaceExisting] [-PassThru] [-WhatIf] [-\n    Confirm] [<CommonParameters>]"
+  },
+  {
+   "name": "New-TmuxCommand",
+   "syntax": [
+    "New-TmuxCommand [-Name] <string> [[-Arguments] <string[]>] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "New-TmuxCommand [-Name] <String> [[-Arguments] <String[]>] [-ProgressAction <ActionPreference>]\n [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "New-TmuxCommand [-Name] <string> [[-Arguments] <string[]>]"
+   ],
+   "getHelp60": "    New-TmuxCommand [-Name] <String> [[-Arguments] <String[]\n    >] [<CommonParameters>]"
+  },
+  {
+   "name": "New-TmuxQuery",
+   "syntax": [
+    "New-TmuxQuery -Target <QueryTarget> -Criteria <IDictionary> [<CommonParameters>]",
+    "New-TmuxQuery -Json <string> [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "New-TmuxQuery -Target <QueryTarget> -Criteria <IDictionary> [-ProgressAction <ActionPreference>]\n [<CommonParameters>]",
+    "New-TmuxQuery -Json <String> [-ProgressAction <ActionPreference>] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "New-TmuxQuery -Target <QueryTarget> -Criteria <IDictionary>",
+    "New-TmuxQuery -Json <string>"
+   ],
+   "getHelp60": "    New-TmuxQuery -Target {Session | Window | Pane} -Criteri\n    a <IDictionary> [<CommonParameters>]\n\n    New-TmuxQuery -Json <String> [<CommonParameters>]"
+  },
+  {
+   "name": "New-TmuxServer",
+   "syntax": [
+    "New-TmuxServer [-SocketName <string>] [-TmuxBinaryPath <string>] [-ConfigurationFile <string>] [<CommonParameters>]",
+    "New-TmuxServer -SocketPath <string> [-TmuxBinaryPath <string>] [-ConfigurationFile <string>] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "New-TmuxServer [-SocketName <String>] [-TmuxBinaryPath <String>] [-ConfigurationFile <String>]\n [-ProgressAction <ActionPreference>] [<CommonParameters>]",
+    "New-TmuxServer -SocketPath <String> [-TmuxBinaryPath <String>] [-ConfigurationFile <String>]\n [-ProgressAction <ActionPreference>] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "New-TmuxServer [-SocketName <string>] [-TmuxBinaryPath <string>] [-ConfigurationFile <string>]",
+    "New-TmuxServer -SocketPath <string> [-TmuxBinaryPath <string>] [-ConfigurationFile <string>]"
+   ],
+   "getHelp60": "    New-TmuxServer [-SocketName <string>] [-TmuxBinaryPath <\n    string>] [-ConfigurationFile <string>] [<CommonParameter\n    s>]\n\n    New-TmuxServer -SocketPath <string> [-TmuxBinaryPath <st\n    ring>] [-ConfigurationFile <string>] [<CommonParameters>\n    ]"
+  },
+  {
+   "name": "New-TmuxSession",
+   "syntax": [
+    "New-TmuxSession [-Server] <Server> [-Name <string>] [-WindowName <string>] [-StartDirectory <string>] [-Command <string>] [-Width <int>] [-Height <int>] [-Environment <IDictionary>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "New-TmuxSession [-Server] <Server> [-Name <String>] [-WindowName <String>] [-StartDirectory <String>]\n [-Command <String>] [-Width <Int32>] [-Height <Int32>] [-Environment <IDictionary>]\n [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "New-TmuxSession [-Server] <Server> [-Name <string>] [-WindowName <string>]\n [-StartDirectory <string>] [-Command <string>] [-Width <int>] [-Height <int>]\n [-Environment <IDictionary>] [-WhatIf] [-Confirm]"
+   ],
+   "getHelp60": "    New-TmuxSession [-Server] <Server> [-Name <string>] [-Wi\n    ndowName <string>] [-StartDirectory <string>] [-Command\n    <string>] [-Width <int>] [-Height <int>] [-Environment <\n    IDictionary>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+  },
+  {
+   "name": "New-TmuxWindow",
+   "syntax": [
+    "New-TmuxWindow [-Session] <Session> [-Name <string>] [-Index <int>] [-StartDirectory <string>] [-Command <string>] [-Environment <IDictionary>] [-Activate] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "New-TmuxWindow [-Session] <Session> [-Name <String>] [-Index <Int32>] [-StartDirectory <String>]\n [-Command <String>] [-Environment <IDictionary>] [-Activate] [-ProgressAction <ActionPreference>] [-WhatIf]\n [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "New-TmuxWindow [-Session] <Session> [-Name <string>] [-Index <int>] [-StartDirectory <string>]\n [-Command <string>] [-Environment <IDictionary>] [-Activate] [-WhatIf] [-Confirm]"
+   ],
+   "getHelp60": "    New-TmuxWindow [-Session] <Session> [-Name <string>] [-I\n    ndex <int>] [-StartDirectory <string>] [-Command <string\n    >] [-Environment <IDictionary>] [-Activate] [-WhatIf] [-\n    Confirm] [<CommonParameters>]"
+  },
+  {
+   "name": "New-TmuxWindowLink",
+   "syntax": [
+    "New-TmuxWindowLink [-Window] <Window> -Session <Session> [-Index <int>] [-Direction <WindowDirection>] [-ReplaceExisting] [-NoSelect] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "New-TmuxWindowLink [-Window] <Window> -Session <Session> [-Index <Int32>] [-Direction <WindowDirection>]\n [-ReplaceExisting] [-NoSelect] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "New-TmuxWindowLink [-Window] <Window> -Session <Session> [-Index <int>]\n [-Direction <WindowDirection>] [-ReplaceExisting] [-NoSelect] [-WhatIf] [-Confirm]"
+   ],
+   "getHelp60": "    New-TmuxWindowLink [-Window] <Window> -Session <Session>\n     [-Index <int>] [-Direction <WindowDirection>] [-Replace\n    Existing] [-NoSelect] [-WhatIf] [-Confirm] [<CommonParam\n    eters>]"
+  },
+  {
+   "name": "Remove-TmuxEnvironment",
+   "syntax": [
+    "Remove-TmuxEnvironment [-Server] <Server> -Name <string> [-MarkRemoved] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Remove-TmuxEnvironment [-Session] <Session> -Name <string> [-MarkRemoved] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Remove-TmuxEnvironment [-Server] <Server> -Name <String> [-MarkRemoved] [-ProgressAction <ActionPreference>]\n [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Remove-TmuxEnvironment [-Session] <Session> -Name <String> [-MarkRemoved] [-ProgressAction <ActionPreference>]\n [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Remove-TmuxEnvironment [-Server] <Server> -Name <string> [-MarkRemoved] [-WhatIf] [-Confirm]",
+    "Remove-TmuxEnvironment [-Session] <Session> -Name <string> [-MarkRemoved] [-WhatIf] [-Confirm]"
+   ],
+   "getHelp60": "    Remove-TmuxEnvironment [-Server] <Server> -Name <String>\n     [-MarkRemoved] [-WhatIf] [-Confirm] [<CommonParameters>\n    ]\n\n    Remove-TmuxEnvironment [-Session] <Session> -Name <Strin\n    g> [-MarkRemoved] [-WhatIf] [-Confirm] [<CommonParameter\n    s>]"
+  },
+  {
+   "name": "Remove-TmuxHook",
+   "syntax": [
+    "Remove-TmuxHook [-Server] <Server> -Name <string> [-Scope <OptionScope>] [-Global] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Remove-TmuxHook [-Session] <Session> -Name <string> [-Scope <OptionScope>] [-Global] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Remove-TmuxHook [-Window] <Window> -Name <string> [-Scope <OptionScope>] [-Global] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Remove-TmuxHook [-Pane] <Pane> -Name <string> [-Scope <OptionScope>] [-Global] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Remove-TmuxHook [-Server] <Server> -Name <String> [-Scope <OptionScope>] [-Global]\n [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Remove-TmuxHook [-Session] <Session> -Name <String> [-Scope <OptionScope>] [-Global]\n [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Remove-TmuxHook [-Window] <Window> -Name <String> [-Scope <OptionScope>] [-Global]\n [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Remove-TmuxHook [-Pane] <Pane> -Name <String> [-Scope <OptionScope>] [-Global]\n [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Remove-TmuxHook [-Server] <Server> -Name <string> [-Scope <OptionScope>] [-Global] [-WhatIf]\n [-Confirm]",
+    "Remove-TmuxHook [-Session] <Session> -Name <string> [-Scope <OptionScope>] [-Global] [-WhatIf]\n [-Confirm]",
+    "Remove-TmuxHook [-Window] <Window> -Name <string> [-Scope <OptionScope>] [-Global] [-WhatIf]\n [-Confirm]",
+    "Remove-TmuxHook [-Pane] <Pane> -Name <string> [-Scope <OptionScope>] [-Global] [-WhatIf] [-Confirm]"
+   ],
+   "getHelp60": "    Remove-TmuxHook [-Server] <Server> -Name <String> [-Scop\n    e <OptionScope>] [-Global] [-WhatIf] [-Confirm] [<Common\n    Parameters>]\n\n    Remove-TmuxHook [-Session] <Session> -Name <String> [-Sc\n    ope <OptionScope>] [-Global] [-WhatIf] [-Confirm] [<Comm\n    onParameters>]\n\n    Remove-TmuxHook [-Window] <Window> -Name <String> [-Scop\n    e <OptionScope>] [-Global] [-WhatIf] [-Confirm] [<Common\n    Parameters>]\n\n    Remove-TmuxHook [-Pane] <Pane> -Name <String> [-Scope <O\n    ptionScope>] [-Global] [-WhatIf] [-Confirm] [<CommonPara\n    meters>]"
+  },
+  {
+   "name": "Remove-TmuxOption",
+   "syntax": [
+    "Remove-TmuxOption [-Server] <Server> -Name <string> [-Scope <OptionScope>] [-Global] [-UnsetPaneOverrides] [-Quiet] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Remove-TmuxOption [-Session] <Session> -Name <string> [-Scope <OptionScope>] [-Global] [-UnsetPaneOverrides] [-Quiet] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Remove-TmuxOption [-Window] <Window> -Name <string> [-Scope <OptionScope>] [-Global] [-UnsetPaneOverrides] [-Quiet] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Remove-TmuxOption [-Pane] <Pane> -Name <string> [-Scope <OptionScope>] [-Global] [-UnsetPaneOverrides] [-Quiet] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Remove-TmuxOption [-Server] <Server> -Name <String> [-Scope <OptionScope>] [-Global] [-UnsetPaneOverrides]\n [-Quiet] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Remove-TmuxOption [-Session] <Session> -Name <String> [-Scope <OptionScope>] [-Global] [-UnsetPaneOverrides]\n [-Quiet] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Remove-TmuxOption [-Window] <Window> -Name <String> [-Scope <OptionScope>] [-Global] [-UnsetPaneOverrides]\n [-Quiet] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Remove-TmuxOption [-Pane] <Pane> -Name <String> [-Scope <OptionScope>] [-Global] [-UnsetPaneOverrides] [-Quiet]\n [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Remove-TmuxOption [-Server] <Server> -Name <string> [-Scope <OptionScope>] [-Global]\n [-UnsetPaneOverrides] [-Quiet] [-WhatIf] [-Confirm]",
+    "Remove-TmuxOption [-Session] <Session> -Name <string> [-Scope <OptionScope>] [-Global]\n [-UnsetPaneOverrides] [-Quiet] [-WhatIf] [-Confirm]",
+    "Remove-TmuxOption [-Window] <Window> -Name <string> [-Scope <OptionScope>] [-Global]\n [-UnsetPaneOverrides] [-Quiet] [-WhatIf] [-Confirm]",
+    "Remove-TmuxOption [-Pane] <Pane> -Name <string> [-Scope <OptionScope>] [-Global]\n [-UnsetPaneOverrides] [-Quiet] [-WhatIf] [-Confirm]"
+   ],
+   "getHelp60": "    Remove-TmuxOption [-Server] <Server> -Name <String> [-Sc\n    ope <OptionScope>] [-Global] [-UnsetPaneOverrides] [-Qui\n    et] [-WhatIf] [-Confirm] [<CommonParameters>]\n\n    Remove-TmuxOption [-Session] <Session> -Name <String> [-\n    Scope <OptionScope>] [-Global] [-UnsetPaneOverrides] [-Q\n    uiet] [-WhatIf] [-Confirm] [<CommonParameters>]\n\n    Remove-TmuxOption [-Window] <Window> -Name <String> [-Sc\n    ope <OptionScope>] [-Global] [-UnsetPaneOverrides] [-Qui\n    et] [-WhatIf] [-Confirm] [<CommonParameters>]\n\n    Remove-TmuxOption [-Pane] <Pane> -Name <String> [-Scope\n    <OptionScope>] [-Global] [-UnsetPaneOverrides] [-Quiet]\n    [-WhatIf] [-Confirm] [<CommonParameters>]"
+  },
+  {
+   "name": "Remove-TmuxPane",
+   "syntax": [
+    "Remove-TmuxPane [-Pane] <Pane> [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Remove-TmuxPane [-Pane] <Pane> [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Remove-TmuxPane [-Pane] <Pane> [-WhatIf] [-Confirm]"
+   ],
+   "getHelp60": "    Remove-TmuxPane [-Pane] <Pane> [-WhatIf] [-Confirm] [<Co\n    mmonParameters>]"
+  },
+  {
+   "name": "Remove-TmuxSession",
+   "syntax": [
+    "Remove-TmuxSession [-Session] <Session> [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Remove-TmuxSession [-Session] <Session> [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm]\n [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Remove-TmuxSession [-Session] <Session> [-WhatIf] [-Confirm]"
+   ],
+   "getHelp60": "    Remove-TmuxSession [-Session] <Session> [-WhatIf] [-Conf\n    irm] [<CommonParameters>]"
+  },
+  {
+   "name": "Remove-TmuxWindow",
+   "syntax": [
+    "Remove-TmuxWindow [-Window] <Window> [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Remove-TmuxWindow [-Window] <Window> [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm]\n [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Remove-TmuxWindow [-Window] <Window> [-WhatIf] [-Confirm]"
+   ],
+   "getHelp60": "    Remove-TmuxWindow [-Window] <Window> [-WhatIf] [-Confirm\n    ] [<CommonParameters>]"
+  },
+  {
+   "name": "Remove-TmuxWindowLink",
+   "syntax": [
+    "Remove-TmuxWindowLink [-Window] <Window> [-KillIfLast] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Remove-TmuxWindowLink [-Window] <Window> [-KillIfLast] [-ProgressAction <ActionPreference>] [-WhatIf]\n [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Remove-TmuxWindowLink [-Window] <Window> [-KillIfLast] [-WhatIf] [-Confirm]"
+   ],
+   "getHelp60": "    Remove-TmuxWindowLink [-Window] <Window> [-KillIfLast] [\n    -WhatIf] [-Confirm] [<CommonParameters>]"
+  },
+  {
+   "name": "Select-TmuxPane",
+   "syntax": [
+    "Select-TmuxPane [-InputObject] <Object[]> -Criteria <IDictionary> [-ExactlyOne] [<CommonParameters>]",
+    "Select-TmuxPane [-InputObject] <Object[]> -Query <QueryDocument> [-ExactlyOne] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Select-TmuxPane [-InputObject] <Object[]> -Criteria <IDictionary> [-ExactlyOne]\n [-ProgressAction <ActionPreference>] [<CommonParameters>]",
+    "Select-TmuxPane [-InputObject] <Object[]> -Query <QueryDocument> [-ExactlyOne]\n [-ProgressAction <ActionPreference>] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Select-TmuxPane [-InputObject] <Object[]> -Criteria <IDictionary> [-ExactlyOne]",
+    "Select-TmuxPane [-InputObject] <Object[]> -Query <QueryDocument> [-ExactlyOne]"
+   ],
+   "getHelp60": "    Select-TmuxPane [-InputObject] <Object[]> -Criteria <IDi\n    ctionary> [-ExactlyOne] [<CommonParameters>]\n\n    Select-TmuxPane [-InputObject] <Object[]> -Query <QueryD\n    ocument> [-ExactlyOne] [<CommonParameters>]"
+  },
+  {
+   "name": "Select-TmuxSession",
+   "syntax": [
+    "Select-TmuxSession [-InputObject] <Object[]> -Criteria <IDictionary> [-ExactlyOne] [<CommonParameters>]",
+    "Select-TmuxSession [-InputObject] <Object[]> -Query <QueryDocument> [-ExactlyOne] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Select-TmuxSession [-InputObject] <Object[]> -Criteria <IDictionary> [-ExactlyOne]\n [-ProgressAction <ActionPreference>] [<CommonParameters>]",
+    "Select-TmuxSession [-InputObject] <Object[]> -Query <QueryDocument> [-ExactlyOne]\n [-ProgressAction <ActionPreference>] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Select-TmuxSession [-InputObject] <Object[]> -Criteria <IDictionary> [-ExactlyOne]",
+    "Select-TmuxSession [-InputObject] <Object[]> -Query <QueryDocument> [-ExactlyOne]"
+   ],
+   "getHelp60": "    Select-TmuxSession [-InputObject] <Object[]> -Criteria <\n    IDictionary> [-ExactlyOne] [<CommonParameters>]\n\n    Select-TmuxSession [-InputObject] <Object[]> -Query <Que\n    ryDocument> [-ExactlyOne] [<CommonParameters>]"
+  },
+  {
+   "name": "Select-TmuxWindow",
+   "syntax": [
+    "Select-TmuxWindow [-InputObject] <Object[]> -Criteria <IDictionary> [-ExactlyOne] [<CommonParameters>]",
+    "Select-TmuxWindow [-InputObject] <Object[]> -Query <QueryDocument> [-ExactlyOne] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Select-TmuxWindow [-InputObject] <Object[]> -Criteria <IDictionary> [-ExactlyOne]\n [-ProgressAction <ActionPreference>] [<CommonParameters>]",
+    "Select-TmuxWindow [-InputObject] <Object[]> -Query <QueryDocument> [-ExactlyOne]\n [-ProgressAction <ActionPreference>] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Select-TmuxWindow [-InputObject] <Object[]> -Criteria <IDictionary> [-ExactlyOne]",
+    "Select-TmuxWindow [-InputObject] <Object[]> -Query <QueryDocument> [-ExactlyOne]"
+   ],
+   "getHelp60": "    Select-TmuxWindow [-InputObject] <Object[]> -Criteria <I\n    Dictionary> [-ExactlyOne] [<CommonParameters>]\n\n    Select-TmuxWindow [-InputObject] <Object[]> -Query <Quer\n    yDocument> [-ExactlyOne] [<CommonParameters>]"
+  },
+  {
+   "name": "Send-TmuxKey",
+   "syntax": [
+    "Send-TmuxKey [-Pane] <Pane> [-Key] <string[]> [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Send-TmuxKey [-Pane] <Pane> [-Key] <String[]> [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm]\n [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Send-TmuxKey [-Pane] <Pane> [-Key] <string[]> [-WhatIf] [-Confirm]"
+   ],
+   "getHelp60": "    Send-TmuxKey [-Pane] <Pane> [-Key] <String[]> [-WhatIf]\n    [-Confirm] [<CommonParameters>]"
+  },
+  {
+   "name": "Send-TmuxText",
+   "syntax": [
+    "Send-TmuxText [-Pane] <Pane> [-Text] <string> [-Enter] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Send-TmuxText [-Pane] <Pane> [-Text] <String> [-Enter] [-ProgressAction <ActionPreference>] [-WhatIf]\n [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Send-TmuxText [-Pane] <Pane> [-Text] <string> [-Enter] [-WhatIf] [-Confirm]"
+   ],
+   "getHelp60": "    Send-TmuxText [-Pane] <Pane> [-Text] <String> [-Enter] [\n    -WhatIf] [-Confirm] [<CommonParameters>]"
+  },
+  {
+   "name": "Set-TmuxEnvironment",
+   "syntax": [
+    "Set-TmuxEnvironment [-Server] <Server> -Name <string> -Value <string> [-ExpandFormats] [-Hidden] [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Set-TmuxEnvironment [-Session] <Session> -Name <string> -Value <string> [-ExpandFormats] [-Hidden] [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Set-TmuxEnvironment [-Server] <Server> -Name <String> -Value <String> [-ExpandFormats] [-Hidden] [-PassThru]\n [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Set-TmuxEnvironment [-Session] <Session> -Name <String> -Value <String> [-ExpandFormats] [-Hidden] [-PassThru]\n [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Set-TmuxEnvironment [-Server] <Server> -Name <string> -Value <string> [-ExpandFormats] [-Hidden]\n [-PassThru] [-WhatIf] [-Confirm]",
+    "Set-TmuxEnvironment [-Session] <Session> -Name <string> -Value <string> [-ExpandFormats] [-Hidden]\n [-PassThru] [-WhatIf] [-Confirm]"
+   ],
+   "getHelp60": "    Set-TmuxEnvironment [-Server] <Server> -Name <String> -V\n    alue <String> [-ExpandFormats] [-Hidden] [-PassThru] [-W\n    hatIf] [-Confirm] [<CommonParameters>]\n\n    Set-TmuxEnvironment [-Session] <Session> -Name <String>\n    -Value <String> [-ExpandFormats] [-Hidden] [-PassThru] [\n    -WhatIf] [-Confirm] [<CommonParameters>]"
+  },
+  {
+   "name": "Set-TmuxHook",
+   "syntax": [
+    "Set-TmuxHook [-Server] <Server> -Name <string> -Command <string> [-Scope <OptionScope>] [-Global] [-Append] [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Set-TmuxHook [-Session] <Session> -Name <string> -Command <string> [-Scope <OptionScope>] [-Global] [-Append] [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Set-TmuxHook [-Window] <Window> -Name <string> -Command <string> [-Scope <OptionScope>] [-Global] [-Append] [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Set-TmuxHook [-Pane] <Pane> -Name <string> -Command <string> [-Scope <OptionScope>] [-Global] [-Append] [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Set-TmuxHook [-Server] <Server> -Name <String> [-Scope <OptionScope>] [-Global] -Command <String> [-Append]\n [-PassThru] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Set-TmuxHook [-Session] <Session> -Name <String> [-Scope <OptionScope>] [-Global] -Command <String> [-Append]\n [-PassThru] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Set-TmuxHook [-Window] <Window> -Name <String> [-Scope <OptionScope>] [-Global] -Command <String> [-Append]\n [-PassThru] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Set-TmuxHook [-Pane] <Pane> -Name <String> [-Scope <OptionScope>] [-Global] -Command <String> [-Append]\n [-PassThru] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Set-TmuxHook [-Server] <Server> -Name <string> -Command <string> [-Scope <OptionScope>] [-Global]\n [-Append] [-PassThru] [-WhatIf] [-Confirm]",
+    "Set-TmuxHook [-Session] <Session> -Name <string> -Command <string> [-Scope <OptionScope>] [-Global]\n [-Append] [-PassThru] [-WhatIf] [-Confirm]",
+    "Set-TmuxHook [-Window] <Window> -Name <string> -Command <string> [-Scope <OptionScope>] [-Global]\n [-Append] [-PassThru] [-WhatIf] [-Confirm]",
+    "Set-TmuxHook [-Pane] <Pane> -Name <string> -Command <string> [-Scope <OptionScope>] [-Global]\n [-Append] [-PassThru] [-WhatIf] [-Confirm]"
+   ],
+   "getHelp60": "    Set-TmuxHook [-Server] <Server> -Name <String> -Command\n    <String> [-Scope <OptionScope>] [-Global] [-Append] [-Pa\n    ssThru] [-WhatIf] [-Confirm] [<CommonParameters>]\n\n    Set-TmuxHook [-Session] <Session> -Name <String> -Comman\n    d <String> [-Scope <OptionScope>] [-Global] [-Append] [-\n    PassThru] [-WhatIf] [-Confirm] [<CommonParameters>]\n\n    Set-TmuxHook [-Window] <Window> -Name <String> -Command\n    <String> [-Scope <OptionScope>] [-Global] [-Append] [-Pa\n    ssThru] [-WhatIf] [-Confirm] [<CommonParameters>]\n\n    Set-TmuxHook [-Pane] <Pane> -Name <String> -Command <Str\n    ing> [-Scope <OptionScope>] [-Global] [-Append] [-PassTh\n    ru] [-WhatIf] [-Confirm] [<CommonParameters>]"
+  },
+  {
+   "name": "Set-TmuxLayout",
+   "syntax": [
+    "Set-TmuxLayout [-Window] <Window> -Layout <string> [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Set-TmuxLayout [-Window] <Window> -Mode <SelectLayoutMode> [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Set-TmuxLayout [-Window] <Window> -Layout <String> [-PassThru] [-ProgressAction <ActionPreference>] [-WhatIf]\n [-Confirm] [<CommonParameters>]",
+    "Set-TmuxLayout [-Window] <Window> -Mode <SelectLayoutMode> [-PassThru] [-ProgressAction <ActionPreference>]\n [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Set-TmuxLayout [-Window] <Window> -Layout <string> [-PassThru] [-WhatIf] [-Confirm]",
+    "Set-TmuxLayout [-Window] <Window> -Mode <SelectLayoutMode> [-PassThru] [-WhatIf] [-Confirm]"
+   ],
+   "getHelp60": "    Set-TmuxLayout [-Window] <Window> -Layout <String> [-Pas\n    sThru] [-WhatIf] [-Confirm] [<CommonParameters>]\n\n    Set-TmuxLayout [-Window] <Window> -Mode <SelectLayoutMod\n    e> [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>]"
+  },
+  {
+   "name": "Set-TmuxOption",
+   "syntax": [
+    "Set-TmuxOption [-Server] <Server> -Name <string> -Value <string> [-Scope <OptionScope>] [-Global] [-Append] [-ExpandFormat] [-PreventOverwrite] [-PassThru] [-Quiet] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Set-TmuxOption [-Session] <Session> -Name <string> -Value <string> [-Scope <OptionScope>] [-Global] [-Append] [-ExpandFormat] [-PreventOverwrite] [-PassThru] [-Quiet] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Set-TmuxOption [-Window] <Window> -Name <string> -Value <string> [-Scope <OptionScope>] [-Global] [-Append] [-ExpandFormat] [-PreventOverwrite] [-PassThru] [-Quiet] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Set-TmuxOption [-Pane] <Pane> -Name <string> -Value <string> [-Scope <OptionScope>] [-Global] [-Append] [-ExpandFormat] [-PreventOverwrite] [-PassThru] [-Quiet] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Set-TmuxOption [-Server] <Server> -Name <String> [-Scope <OptionScope>] [-Global] -Value <String> [-Append]\n [-ExpandFormat] [-PreventOverwrite] [-PassThru] [-Quiet] [-ProgressAction <ActionPreference>] [-WhatIf]\n [-Confirm] [<CommonParameters>]",
+    "Set-TmuxOption [-Session] <Session> -Name <String> [-Scope <OptionScope>] [-Global] -Value <String> [-Append]\n [-ExpandFormat] [-PreventOverwrite] [-PassThru] [-Quiet] [-ProgressAction <ActionPreference>] [-WhatIf]\n [-Confirm] [<CommonParameters>]",
+    "Set-TmuxOption [-Window] <Window> -Name <String> [-Scope <OptionScope>] [-Global] -Value <String> [-Append]\n [-ExpandFormat] [-PreventOverwrite] [-PassThru] [-Quiet] [-ProgressAction <ActionPreference>] [-WhatIf]\n [-Confirm] [<CommonParameters>]",
+    "Set-TmuxOption [-Pane] <Pane> -Name <String> [-Scope <OptionScope>] [-Global] -Value <String> [-Append]\n [-ExpandFormat] [-PreventOverwrite] [-PassThru] [-Quiet] [-ProgressAction <ActionPreference>] [-WhatIf]\n [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Set-TmuxOption [-Server] <Server> -Name <string> -Value <string> [-Scope <OptionScope>] [-Global]\n [-Append] [-ExpandFormat] [-PreventOverwrite] [-PassThru] [-Quiet] [-WhatIf] [-Confirm]",
+    "Set-TmuxOption [-Session] <Session> -Name <string> -Value <string> [-Scope <OptionScope>] [-Global]\n [-Append] [-ExpandFormat] [-PreventOverwrite] [-PassThru] [-Quiet] [-WhatIf] [-Confirm]",
+    "Set-TmuxOption [-Window] <Window> -Name <string> -Value <string> [-Scope <OptionScope>] [-Global]\n [-Append] [-ExpandFormat] [-PreventOverwrite] [-PassThru] [-Quiet] [-WhatIf] [-Confirm]",
+    "Set-TmuxOption [-Pane] <Pane> -Name <string> -Value <string> [-Scope <OptionScope>] [-Global]\n [-Append] [-ExpandFormat] [-PreventOverwrite] [-PassThru] [-Quiet] [-WhatIf] [-Confirm]"
+   ],
+   "getHelp60": "    Set-TmuxOption [-Server] <Server> -Name <String> -Value\n    <String> [-Scope <OptionScope>] [-Global] [-Append] [-Ex\n    pandFormat] [-PreventOverwrite] [-Quiet] [-PassThru] [-W\n    hatIf] [-Confirm] [<CommonParameters>]\n\n    Set-TmuxOption [-Session] <Session> -Name <String> -Valu\n    e <String> [-Scope <OptionScope>] [-Global] [-Append] [-\n    ExpandFormat] [-PreventOverwrite] [-Quiet] [-PassThru] [\n    -WhatIf] [-Confirm] [<CommonParameters>]\n\n    Set-TmuxOption [-Window] <Window> -Name <String> -Value\n    <String> [-Scope <OptionScope>] [-Global] [-Append] [-Ex\n    pandFormat] [-PreventOverwrite] [-Quiet] [-PassThru] [-W\n    hatIf] [-Confirm] [<CommonParameters>]\n\n    Set-TmuxOption [-Pane] <Pane> -Name <String> -Value <Str\n    ing> [-Scope <OptionScope>] [-Global] [-Append] [-Expand\n    Format] [-PreventOverwrite] [-Quiet] [-PassThru] [-WhatI\n    f] [-Confirm] [<CommonParameters>]"
+  },
+  {
+   "name": "Set-TmuxPaneSize",
+   "syntax": [
+    "Set-TmuxPaneSize [-Pane] <Pane> [-Width <string>] [-Height <string>] [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Set-TmuxPaneSize [-Pane] <Pane> -Direction <ResizeDirection> -Adjustment <int> [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Set-TmuxPaneSize [-Pane] <Pane> -Zoom [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Set-TmuxPaneSize [-Pane] <Pane> [-Width <String>] [-Height <String>] [-PassThru]\n [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Set-TmuxPaneSize [-Pane] <Pane> -Direction <ResizeDirection> -Adjustment <Int32> [-PassThru]\n [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Set-TmuxPaneSize [-Pane] <Pane> [-Zoom] [-PassThru] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm]\n [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Set-TmuxPaneSize [-Pane] <Pane> [-Width <string>] [-Height <string>] [-PassThru] [-WhatIf]\n [-Confirm]",
+    "Set-TmuxPaneSize [-Pane] <Pane> -Direction <ResizeDirection> -Adjustment <int> [-PassThru] [-WhatIf]\n [-Confirm]",
+    "Set-TmuxPaneSize [-Pane] <Pane> -Zoom [-PassThru] [-WhatIf] [-Confirm]"
+   ],
+   "getHelp60": "    Set-TmuxPaneSize [-Pane] <Pane> [-Width <String>] [-Heig\n    ht <String>] [-PassThru] [-WhatIf] [-Confirm] [<CommonPa\n    rameters>]\n\n    Set-TmuxPaneSize [-Pane] <Pane> -Direction <ResizeDirect\n    ion> -Adjustment <Int32> [-PassThru] [-WhatIf] [-Confirm\n    ] [<CommonParameters>]\n\n    Set-TmuxPaneSize [-Pane] <Pane> -Zoom [-PassThru] [-What\n    If] [-Confirm] [<CommonParameters>]"
+  },
+  {
+   "name": "Set-TmuxWindowSize",
+   "syntax": [
+    "Set-TmuxWindowSize [-Window] <Window> [-Width <int>] [-Height <int>] [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Set-TmuxWindowSize [-Window] <Window> -Direction <ResizeDirection> -Adjustment <int> [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Set-TmuxWindowSize [-Window] <Window> -Mode <WindowResizeMode> [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Set-TmuxWindowSize [-Window] <Window> [-Width <Int32>] [-Height <Int32>] [-PassThru]\n [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Set-TmuxWindowSize [-Window] <Window> -Direction <ResizeDirection> -Adjustment <Int32> [-PassThru]\n [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Set-TmuxWindowSize [-Window] <Window> -Mode <WindowResizeMode> [-PassThru] [-ProgressAction <ActionPreference>]\n [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Set-TmuxWindowSize [-Window] <Window> [-Width <int>] [-Height <int>] [-PassThru] [-WhatIf]\n [-Confirm]",
+    "Set-TmuxWindowSize [-Window] <Window> -Direction <ResizeDirection> -Adjustment <int> [-PassThru]\n [-WhatIf] [-Confirm]",
+    "Set-TmuxWindowSize [-Window] <Window> -Mode <WindowResizeMode> [-PassThru] [-WhatIf] [-Confirm]"
+   ],
+   "getHelp60": "    Set-TmuxWindowSize [-Window] <Window> [-Width <Int32>] [\n    -Height <Int32>] [-PassThru] [-WhatIf] [-Confirm] [<Comm\n    onParameters>]\n\n    Set-TmuxWindowSize [-Window] <Window> -Direction <Resize\n    Direction> -Adjustment <Int32> [-PassThru] [-WhatIf] [-C\n    onfirm] [<CommonParameters>]\n\n    Set-TmuxWindowSize [-Window] <Window> -Mode <WindowResiz\n    eMode> [-PassThru] [-WhatIf] [-Confirm] [<CommonParamete\n    rs>]"
+  },
+  {
+   "name": "Split-TmuxPane",
+   "syntax": [
+    "Split-TmuxPane [-Pane] <Pane> [-Horizontal] [-Before] [-Size <int>] [-StartDirectory <string>] [-Command <string>] [-Environment <IDictionary>] [-Activate] [-FullWindow] [-Zoom] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Split-TmuxPane [-Pane] <Pane> -Percentage <int> [-Horizontal] [-Before] [-StartDirectory <string>] [-Command <string>] [-Environment <IDictionary>] [-Activate] [-FullWindow] [-Zoom] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Split-TmuxPane [-Pane] <Pane> [-Horizontal] [-Before] [-Size <Int32>] [-StartDirectory <String>]\n [-Command <String>] [-Environment <IDictionary>] [-Activate] [-FullWindow] [-Zoom]\n [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Split-TmuxPane [-Pane] <Pane> [-Horizontal] [-Before] -Percentage <Int32> [-StartDirectory <String>]\n [-Command <String>] [-Environment <IDictionary>] [-Activate] [-FullWindow] [-Zoom]\n [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Split-TmuxPane [-Pane] <Pane> [-Horizontal] [-Before] [-Size <int>] [-StartDirectory <string>]\n [-Command <string>] [-Environment <IDictionary>] [-Activate] [-FullWindow] [-Zoom] [-WhatIf]\n [-Confirm]",
+    "Split-TmuxPane [-Pane] <Pane> -Percentage <int> [-Horizontal] [-Before] [-StartDirectory <string>]\n [-Command <string>] [-Environment <IDictionary>] [-Activate] [-FullWindow] [-Zoom] [-WhatIf]\n [-Confirm]"
+   ],
+   "getHelp60": "    Split-TmuxPane [-Pane] <Pane> [-Horizontal] [-Before] [-\n    Size <int>] [-StartDirectory <string>] [-Command <string\n    >] [-Environment <IDictionary>] [-Activate] [-FullWindow\n    ] [-Zoom] [-WhatIf] [-Confirm] [<CommonParameters>]\n\n    Split-TmuxPane [-Pane] <Pane> -Percentage <int> [-Horizo\n    ntal] [-Before] [-StartDirectory <string>] [-Command <st\n    ring>] [-Environment <IDictionary>] [-Activate] [-FullWi\n    ndow] [-Zoom] [-WhatIf] [-Confirm] [<CommonParameters>]"
+  },
+  {
+   "name": "Update-TmuxClient",
+   "syntax": [
+    "Update-TmuxClient [-Client] <Client> [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Update-TmuxClient [-Client] <Client> [-ProgressAction <ActionPreference>] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Update-TmuxClient [-Client] <Client>"
+   ],
+   "getHelp60": "    Update-TmuxClient [-Client] <Client> [<CommonParameters>\n    ]"
+  },
+  {
+   "name": "Update-TmuxPane",
+   "syntax": [
+    "Update-TmuxPane [-Pane] <Pane> [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Update-TmuxPane [-Pane] <Pane> [-ProgressAction <ActionPreference>] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Update-TmuxPane [-Pane] <Pane>"
+   ],
+   "getHelp60": "    Update-TmuxPane [-Pane] <Pane> [<CommonParameters>]"
+  },
+  {
+   "name": "Wait-TmuxChannel",
+   "syntax": [
+    "Wait-TmuxChannel [-Server] <Server> [-Channel] <string> [-Timeout <double>] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Wait-TmuxChannel [-Server] <Server> [-Channel] <String> [-Timeout <Double>]\n [-ProgressAction <ActionPreference>] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Wait-TmuxChannel [-Server] <Server> [-Channel] <string> [-Timeout <double>]"
+   ],
+   "getHelp60": "    Wait-TmuxChannel [-Server] <Server> [-Channel] <String>\n    [-Timeout <Double>] [<CommonParameters>]"
+  },
+  {
+   "name": "Watch-TmuxEvent",
+   "syntax": [
+    "Watch-TmuxEvent [-Connection] <IControlModeSession> [-MaxEventBytes <int>] [-MaxEvents <long>] [-MaxOutputBytes <long>] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Watch-TmuxEvent [-Server] <Server> [-Target] <string> [-MaxEventBytes <int>] [-MaxEvents <long>] [-MaxOutputBytes <long>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps014": [
+    "Watch-TmuxEvent [-Connection] <IControlModeSession> [-MaxEventBytes <Int32>] [-MaxEvents <Int64>]\n [-MaxOutputBytes <Int64>] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]",
+    "Watch-TmuxEvent [-Server] <Server> [-Target] <String> [-MaxEventBytes <Int32>] [-MaxEvents <Int64>]\n [-MaxOutputBytes <Int64>] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+   ],
+   "platyps103": [
+    "Watch-TmuxEvent [-Connection] <IControlModeSession> [-MaxEventBytes <int>] [-MaxEvents <long>]\n [-MaxOutputBytes <long>] [-WhatIf] [-Confirm]",
+    "Watch-TmuxEvent [-Server] <Server> [-Target] <string> [-MaxEventBytes <int>] [-MaxEvents <long>]\n [-MaxOutputBytes <long>] [-WhatIf] [-Confirm]"
+   ],
+   "getHelp60": "    Watch-TmuxEvent [-Connection] <IControlModeSession> [-Ma\n    xEventBytes <Int32>] [-MaxEvents <Int64>] [-MaxOutputByt\n    es <Int64>] [-WhatIf] [-Confirm] [<CommonParameters>]\n\n    Watch-TmuxEvent [-Server] <Server> [-Target] <String> [-\n    MaxEventBytes <Int32>] [-MaxEvents <Int64>] [-MaxOutputB\n    ytes <Int64>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+  }
+ ]
+}

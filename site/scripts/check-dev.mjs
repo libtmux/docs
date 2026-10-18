@@ -353,10 +353,12 @@ async function checkSignatureLayouts(browser, base) {
         assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
           `${colorScheme}/${width}px: F# signature fits`)
         if (width === 803) {
+          // The formatted declaration breaks after the name, so the first argument is one row below.
           const first = await keyword.boundingBox()
           const parameter = await declaration.locator('.api-parameter-name').first().boundingBox()
-          assert(Math.abs(first.y + first.height / 2 - parameter.y - parameter.height / 2) < 2,
-            'F# source indentation does not force an empty signature row')
+          const lineHeight = await declaration.locator('.api-native-signature').evaluate((element) => Number.parseFloat(getComputedStyle(element).lineHeight))
+          const rows = (parameter.y + parameter.height / 2 - first.y - first.height / 2) / lineHeight
+          assert(Math.abs(rows - 1) < 0.25, 'F# source indentation does not force an empty signature row')
         }
       }
     }
@@ -903,7 +905,7 @@ try {
           overflow: document.documentElement.scrollWidth - innerWidth,
           headerHeight: document.querySelector('.site-header__bar').getBoundingClientRect().height,
           headerPicker: Boolean(document.querySelector('.site-header-language [data-page-port-switcher]')),
-          badgeForeground: getComputedStyle(document.querySelector('.prerelease-notice__badge')).color,
+          badgeForeground: ((badge) => badge && getComputedStyle(badge).color)(document.querySelector('.prerelease-notice__badge')),
           schemeLabelWidth: document.querySelector('.scheme-switch__label').getBoundingClientRect().width,
           headerControls: ['.site-header__search', '.scheme-switch, .scheme-cycle', '.site-header__menu-button'].map((selector) => {
             const control = [...document.querySelectorAll(selector)].find((node) => node.checkVisibility())
@@ -922,7 +924,9 @@ try {
         assert.equal(result.redundantHeaderLinks, 0, 'Surface destinations are absent from the header bar')
         assert(result.headerControls.every((control) => Math.abs(control.height - result.headerControls[0].height) < 0.1
           && Math.abs(control.top - result.headerControls[0].top) < 0.1), `${path} at ${width}px: header controls align at equal heights`)
-        assert.equal(result.badgeForeground, 'rgb(255, 255, 255)', 'Filled badge uses white foreground')
+        // tmux pages document tmux itself, so the libtmux alpha notice is absent there.
+        if (path.startsWith('tmux/')) assert.equal(result.badgeForeground, null, `${path}: no libtmux alpha notice`)
+        else assert.equal(result.badgeForeground, 'rgb(255, 255, 255)', 'Filled badge uses white foreground')
         if (width < 1536) assert(result.schemeLabelWidth <= 1, 'Compact color-scheme controls hide their text visually')
         assert(result.overflow <= 1, `${path} at ${width}px: page overflow ${result.overflow}px`)
         assert(result.columns.every((delta) => delta <= 1), `${path} at ${width}px: table columns misaligned`)

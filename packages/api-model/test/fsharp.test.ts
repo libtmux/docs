@@ -1,5 +1,9 @@
+import { existsSync, readFileSync } from 'node:fs'
 import { expect, it } from 'vitest'
+import { docSummaryText, tokenizeDoc } from '../src/doc/roles.ts'
+import { SymbolIndex } from '../src/link.ts'
 import { extractFSharpArtifact } from '../src/languages/fsharp.ts'
+import type { ApiModel } from '../src/model.ts'
 import { ownersOf } from '../src/prose.ts'
 
 const declaration = {
@@ -36,4 +40,67 @@ it('rejects empty, unversioned, duplicate or incomplete F# compiler output', () 
     { ...artifact, declarations: [declaration, declaration] },
     { ...artifact, declarations: [{ ...declaration, signature: '' }] },
   ]) expect(() => extractFSharpArtifact(invalid)).toThrow()
+})
+
+const documented = (id: string, kind: string, parent: string, documentation: string) => ({
+  ...declaration, id, name: id.split('.').at(-1)!, kind, parent,
+  signature: kind === 'function' ? 'val f: unit -> unit' : `${kind} ${id}`, documentation,
+})
+
+it('reads F# XML doc tags as code and cross-references', () => {
+  const model = extractFSharpArtifact({
+    ...artifact,
+    declarations: [
+      documented('LibTmux.FSharp.Server', 'module', 'LibTmux.FSharp', '<summary>Starts servers.</summary>'),
+      documented('LibTmux.FSharp.Server.sessions', 'function', 'LibTmux.FSharp.Server', '<summary>Lists sessions.</summary>'),
+      documented('LibTmux.FSharp.Query', 'class', 'LibTmux.FSharp', '<summary>A listing.</summary>'),
+      documented('LibTmux.FSharp.Server.within', 'function', 'LibTmux.FSharp.Server', [
+        '<summary>Bounds <c>retries</c> and returns a <see cref="T:LibTmux.FSharp.Query`1"/>.</summary>',
+        '<remarks><para>See <see cref="M:LibTmux.FSharp.Server.sessions"/> and ',
+        '<see cref="M:LibTmux.FSharp.Server.missing"/>.</para></remarks>',
+      ].join('')),
+    ],
+  }, 'a'.repeat(40))
+  const index = new SymbolIndex(model.symbols, (symbol) => `/${symbol.id}/`, 'fsharp')
+  const within = model.symbols.find((symbol) => symbol.id === 'LibTmux.FSharp.Server.within')!
+
+  const summary = index.linkText(within.doc!.summary, within)
+  expect(summary.filter((span) => span.kind === 'code')).toEqual([{ kind: 'code', text: 'retries' }])
+  expect(summary.some((span) => span.kind === 'text' && span.text.includes('<'))).toBe(false)
+
+  const refs = [...summary, ...index.linkText(within.doc!.body!, within)].filter((span) => span.kind === 'ref')
+  expect(refs.map((span) => [span.target, span.link?.symbol?.id])).toEqual([
+    ['LibTmux.FSharp.Query`1', 'LibTmux.FSharp.Query'],
+    ['LibTmux.FSharp.Server.sessions', 'LibTmux.FSharp.Server.sessions'],
+    ['LibTmux.FSharp.Server.missing', undefined],
+  ])
+})
+
+const MODEL = new URL('../../../site/src/data/api/fsharp.json', import.meta.url)
+it.runIf(existsSync(MODEL))('leaves no XML tag in any description of the F# reference', () => {
+  const { symbols } = JSON.parse(readFileSync(MODEL, 'utf8')) as ApiModel
+  const prose = symbols.flatMap((symbol) => [
+    symbol.doc?.summary, symbol.doc?.body,
+    ...symbol.signatures.flatMap((sig) => [
+      sig.returnsDoc, ...sig.params.map((param) => param.doc), ...(sig.raises ?? []).map((raise) => raise.doc),
+    ]),
+  ]).filter((text): text is string => Boolean(text))
+  const printed = prose.filter((text) => /<\/?[a-z]+[ />]/.test(docSummaryText(text, 'fsharp')))
+  expect(printed.slice(0, 3)).toEqual([])
+  // The control: the model does carry tags, so the check above can fail.
+  expect(prose.some((text) => tokenizeDoc(text, 'fsharp').some((span) => span.kind === 'code'))).toBe(true)
+})
+
+it('reads <b> and <em> in an F# description as marks, as C# does', () => {
+  const model = extractFSharpArtifact({
+    ...artifact,
+    declarations: [documented('LibTmux.FSharp.Server', 'module', 'LibTmux.FSharp',
+      '<summary>Starts servers.</summary><remarks><para><b>Connecting.</b> Opens <em>one</em> server.</para></remarks>')],
+  }, 'a'.repeat(40))
+  const body = model.symbols[0].doc!.body!
+  expect(body).toBe('**Connecting.** Opens *one* server.')
+  expect(tokenizeDoc(body, 'fsharp').filter((span) => span.kind === 'strong' || span.kind === 'emphasis')).toEqual([
+    { kind: 'strong', text: 'Connecting.' },
+    { kind: 'emphasis', text: 'one' },
+  ])
 })

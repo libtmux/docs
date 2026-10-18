@@ -47,6 +47,22 @@ describe('Python docstring structure', () => {
     expect(doc.body).toBe('After.')
   })
 
+  it('keeps a bodiless rubric where it stands, as a heading line', () => {
+    const doc = parsePythonDoc('Summary.\n\nLead.\n\n.. rubric:: What is on here\n\n**Connecting.** :meth:`Server.new`.\n\n.. rubric:: Escape hatch\n   :class: extra\n\nLast.').doc
+    expect(doc.body).toBe('Lead.\n\n# What is on here\n\n**Connecting.** :meth:`Server.new`.\n\n# Escape hatch\n\nLast.')
+    expect(doc.admonitions).toBeUndefined()
+  })
+
+  it('leaves a rubric that has a body, and the other directives, as they were', () => {
+    const withBody = parsePythonDoc('Summary.\n\n.. rubric:: Titled\n\n   Indented body.\n\nAfter.').doc
+    expect(withBody.body).toBe('After.')
+    expect(withBody.admonitions).toEqual([{ kind: 'rubric', text: 'Titled\n\nIndented body.' }])
+    const note = parsePythonDoc('Summary.\n\nLead.\n\n.. note:: A real note.\n\nAfter.').doc
+    expect(note.body).toBe('Lead.\n\nAfter.')
+    expect(note.admonitions).toEqual([{ kind: 'note', text: 'A real note.' }])
+    expect(pythonDocBody('.. rubric::\n\nText.')).toBe('.. rubric::\n\nText.')
+  })
+
   it('does not mistake an argumentless admonition for a literal introducer', () => {
     const doc = parsePythonDoc('Summary.\n\n.. warning::\n\n    Use :class:`Server`.\n\n    It owns the connection.').doc
     expect(doc.body).toBeUndefined()

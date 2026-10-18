@@ -1,0 +1,2698 @@
+{
+ "formatter": "swift-format 6.2.4 (swift-6.2.4-RELEASE)",
+ "config": {
+  "source": "libtmux/libtmux-swift .swift-format at 7993e7044347629b08020e9b02ae8bcffa0e5898, the revision swift.json is extracted from",
+  "options": {
+   "indentation": {
+    "spaces": 4
+   },
+   "lineLength": "columns",
+   "tabWidth": 4,
+   "rules": {
+    "DoNotUseSemicolons": true,
+    "OrderedImports": true
+   }
+  }
+ },
+ "context": "Each case is a bodyless declaration \"func <name>(<parameters>) -> <returns>\" formatted by swift-format; the name is a run of x as wide as the reference name, since only its width reaches the printer. The layout under test prints the same token stream with the func keyword, which the site omits.",
+ "groups": {
+  "corpus": "declarations from site/src/data/api/swift.json, one per distinct layout shape",
+  "narrow": "corpus declarations at an unusually narrow budget",
+  "generated": "generated declarations with closures, generics, tuples, dictionaries, compositions and member types"
+ },
+ "cases": [
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 6,
+   "parameters": [],
+   "text": "func xxxxxx()"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 9,
+   "parameters": [],
+   "returns": "[TmuxBuffer]",
+   "text": "func xxxxxxxxx() -> [TmuxBuffer]"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 14,
+   "parameters": [
+    {
+     "name": "named",
+     "type": "String?"
+    }
+   ],
+   "returns": "String?",
+   "text": "func xxxxxxxxxxxxxx(named: String?) -> String?"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 16,
+   "parameters": [
+    {
+     "name": "name",
+     "type": "String"
+    },
+    {
+     "name": "size",
+     "type": "Int"
+    }
+   ],
+   "text": "func xxxxxxxxxxxxxxxx(name: String, size: Int)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 18,
+   "parameters": [
+    {
+     "name": "window",
+     "type": "Window"
+    },
+    {
+     "name": "layout",
+     "type": "String"
+    }
+   ],
+   "returns": "()",
+   "text": "func xxxxxxxxxxxxxxxxxx(window: Window, layout: String) -> (\n)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 19,
+   "parameters": [
+    {
+     "name": "contents",
+     "type": "String"
+    },
+    {
+     "name": "named",
+     "type": "String?"
+    }
+   ],
+   "returns": "()",
+   "text": "func xxxxxxxxxxxxxxxxxxx(contents: String, named: String?)\n    -> ()"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 19,
+   "parameters": [
+    {
+     "name": "id",
+     "type": "String"
+    }
+   ],
+   "returns": "FilterSchema.ValueType?",
+   "text": "func xxxxxxxxxxxxxxxxxxx(id: String) -> FilterSchema\n    .ValueType?"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 19,
+   "parameters": [],
+   "returns": "ControlNotificationStream.Iterator",
+   "text": "func xxxxxxxxxxxxxxxxxxx()\n    -> ControlNotificationStream.Iterator"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 11,
+   "parameters": [
+    {
+     "name": "pattern",
+     "type": "RegexPattern"
+    }
+   ],
+   "returns": "FilterOperator<Value>",
+   "text": "func xxxxxxxxxxx(pattern: RegexPattern) -> FilterOperator<\n    Value\n>"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 27,
+   "parameters": [
+    {
+     "name": "number",
+     "type": "Int"
+    },
+    {
+     "name": "lines",
+     "type": "[String]"
+    },
+    {
+     "name": "isError",
+     "type": "Bool"
+    }
+   ],
+   "text": "func xxxxxxxxxxxxxxxxxxxxxxxxxxx(\n    number: Int, lines: [String], isError: Bool)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 17,
+   "parameters": [
+    {
+     "name": "token",
+     "type": "JSONValue?"
+    },
+    {
+     "name": "emit",
+     "type": "@escaping (String) async -> Void"
+    }
+   ],
+   "text": "func xxxxxxxxxxxxxxxxx(\n    token: JSONValue?,\n    emit: @escaping (String) async -> Void)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 17,
+   "parameters": [
+    {
+     "name": "to",
+     "type": "String"
+    },
+    {
+     "name": "emit",
+     "type": "@escaping (String) async -> Void"
+    }
+   ],
+   "returns": "String?",
+   "text": "func xxxxxxxxxxxxxxxxx(\n    to: String, emit: @escaping (String) async -> Void\n) -> String?"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 77,
+   "parameters": [],
+   "returns": "Int",
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx()\n    -> Int"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 11,
+   "parameters": [
+    {
+     "name": "mode",
+     "type": "TmuxMode"
+    },
+    {
+     "name": "body",
+     "type": "@escaping (Server) async throws -> Result"
+    }
+   ],
+   "returns": "Result",
+   "text": "func xxxxxxxxxxx(\n    mode: TmuxMode,\n    body: @escaping (Server) async throws -> Result\n) -> Result"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 23,
+   "parameters": [
+    {
+     "name": "pane",
+     "type": "Pane"
+    },
+    {
+     "name": "since",
+     "type": "CaptureCursor?"
+    },
+    {
+     "name": "limit",
+     "type": "Int"
+    }
+   ],
+   "returns": "IncrementalCapture",
+   "text": "func xxxxxxxxxxxxxxxxxxxxxxx(\n    pane: Pane, since: CaptureCursor?, limit: Int\n) -> IncrementalCapture"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 27,
+   "parameters": [
+    {
+     "name": "unicodeScalarLiteral",
+     "type": "Self.ExtendedGraphemeClusterLiteralType"
+    }
+   ],
+   "text": "func xxxxxxxxxxxxxxxxxxxxxxxxxxx(\n    unicodeScalarLiteral: Self\n        .ExtendedGraphemeClusterLiteralType)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 28,
+   "parameters": [
+    {
+     "name": "operation",
+     "type": "(isolated Self) throws -> T"
+    },
+    {
+     "name": "file",
+     "type": "StaticString"
+    },
+    {
+     "name": "line",
+     "type": "UInt"
+    }
+   ],
+   "returns": "T",
+   "text": "func xxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n    operation: (isolated Self) throws -> T,\n    file: StaticString, line: UInt\n) -> T"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 46,
+   "parameters": [
+    {
+     "name": "endpoint",
+     "type": "Endpoint"
+    },
+    {
+     "name": "socketPath",
+     "type": "String"
+    },
+    {
+     "name": "processID",
+     "type": "Int"
+    },
+    {
+     "name": "startedAt",
+     "type": "Int"
+    }
+   ],
+   "text": "func xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n    endpoint: Endpoint, socketPath: String, processID: Int,\n    startedAt: Int)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 12,
+   "parameters": [
+    {
+     "name": "initialResult",
+     "type": "Result"
+    },
+    {
+     "name": "nextPartialResult",
+     "type": "(Result, Self.Element) async throws -> Result"
+    }
+   ],
+   "returns": "Result",
+   "text": "func xxxxxxxxxxxx(\n    initialResult: Result,\n    nextPartialResult: (Result, Self.Element) async throws\n        -> Result\n) -> Result"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 15,
+   "parameters": [
+    {
+     "name": "into",
+     "type": "Result"
+    },
+    {
+     "name": "updateAccumulatingResult",
+     "type": "(inout Result, Self.Element) async throws -> Void"
+    }
+   ],
+   "returns": "Result",
+   "text": "func xxxxxxxxxxxxxxx(\n    into: Result,\n    updateAccumulatingResult: (inout Result, Self.Element)\n        async throws -> Void\n) -> Result"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 13,
+   "parameters": [
+    {
+     "name": "handler",
+     "type": "@escaping @Sendable (Result<[String: [Int]], Error>) async throws -> Void"
+    }
+   ],
+   "returns": "Task<Void, Never>",
+   "text": "func xxxxxxxxxxxxx(\n    handler:\n        @escaping @Sendable (Result<[String: [Int]], Error>)\n        async throws -> Void\n) -> Task<Void, Never>"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 25,
+   "parameters": [
+    {
+     "name": "attachingTo",
+     "type": "String"
+    },
+    {
+     "name": "body",
+     "type": "@escaping (Server, ControlSession) async throws -> Result"
+    }
+   ],
+   "returns": "Result",
+   "text": "func xxxxxxxxxxxxxxxxxxxxxxxxx(\n    attachingTo: String,\n    body:\n        @escaping (Server, ControlSession) async throws ->\n        Result\n) -> Result"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 16,
+   "parameters": [
+    {
+     "name": "path",
+     "type": "String"
+    },
+    {
+     "name": "mode",
+     "type": "FileMode?"
+    }
+   ],
+   "returns": "Swift.Result<AnotherQuiteLongModuleName.SomeNestedType.Inner, any Error>",
+   "text": "func xxxxxxxxxxxxxxxx(path: String, mode: FileMode?)\n    -> Swift.Result<\n        AnotherQuiteLongModuleName.SomeNestedType.Inner,\n        any Error\n    >"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 53,
+   "parameters": [
+    {
+     "name": "server",
+     "type": "Server"
+    },
+    {
+     "name": "authority",
+     "type": "ToolAuthority"
+    },
+    {
+     "name": "waitCeiling",
+     "type": "Duration"
+    },
+    {
+     "name": "caller",
+     "type": "CallerIdentity?"
+    },
+    {
+     "name": "provenance",
+     "type": "ServerProvenance"
+    }
+   ],
+   "text": "func xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n    server: Server, authority: ToolAuthority,\n    waitCeiling: Duration, caller: CallerIdentity?,\n    provenance: ServerProvenance)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 59,
+   "parameters": [
+    {
+     "name": "id",
+     "type": "SessionID"
+    },
+    {
+     "name": "name",
+     "type": "String"
+    },
+    {
+     "name": "windowCount",
+     "type": "Int"
+    },
+    {
+     "name": "isAttached",
+     "type": "Bool"
+    },
+    {
+     "name": "createdAt",
+     "type": "Int"
+    },
+    {
+     "name": "incarnation",
+     "type": "ServerIncarnation"
+    }
+   ],
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        id: SessionID, name: String, windowCount: Int,\n        isAttached: Bool, createdAt: Int,\n        incarnation: ServerIncarnation)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 69,
+   "parameters": [
+    {
+     "name": "pane",
+     "type": "Pane"
+    },
+    {
+     "name": "startingAt",
+     "type": "Int?"
+    },
+    {
+     "name": "endingAt",
+     "type": "Int?"
+    },
+    {
+     "name": "joiningWrappedLines",
+     "type": "Bool"
+    },
+    {
+     "name": "maximumLines",
+     "type": "Int"
+    }
+   ],
+   "returns": "PaneCapture",
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        pane: Pane, startingAt: Int?, endingAt: Int?,\n        joiningWrappedLines: Bool, maximumLines: Int\n    ) -> PaneCapture"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 11,
+   "parameters": [
+    {
+     "name": "lhs",
+     "type": "Dictionary<String, Array<Optional<SomeVeryLongTypeName>>>"
+    },
+    {
+     "name": "rhs",
+     "type": "[(first: String, second: Int, third: [Double])]"
+    }
+   ],
+   "returns": "Dictionary<String, Array<Optional<SomeVeryLongTypeName>>>",
+   "text": "func xxxxxxxxxxx(\n    lhs: Dictionary<\n        String, Array<Optional<SomeVeryLongTypeName>>\n    >, rhs: [(first: String, second: Int, third: [Double])]\n) -> Dictionary<\n    String, Array<Optional<SomeVeryLongTypeName>>\n>"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 75,
+   "parameters": [
+    {
+     "name": "named",
+     "type": "String"
+    },
+    {
+     "name": "startDirectory",
+     "type": "String?"
+    },
+    {
+     "name": "windowName",
+     "type": "String?"
+    },
+    {
+     "name": "width",
+     "type": "Int?"
+    },
+    {
+     "name": "height",
+     "type": "Int?"
+    },
+    {
+     "name": "environment",
+     "type": "[String : String]"
+    },
+    {
+     "name": "shell",
+     "type": "String?"
+    }
+   ],
+   "returns": "Session",
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        named: String, startDirectory: String?,\n        windowName: String?, width: Int?, height: Int?,\n        environment: [String: String], shell: String?\n    ) -> Session"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 83,
+   "parameters": [
+    {
+     "name": "outcome",
+     "type": "Outcome"
+    },
+    {
+     "name": "matched",
+     "type": "String?"
+    },
+    {
+     "name": "matchedIndex",
+     "type": "Int?"
+    },
+    {
+     "name": "sawNewOutput",
+     "type": "Bool"
+    },
+    {
+     "name": "matchedAtEntry",
+     "type": "Bool"
+    },
+    {
+     "name": "tail",
+     "type": "[String]"
+    },
+    {
+     "name": "cursor",
+     "type": "CaptureCursor?"
+    },
+    {
+     "name": "seconds",
+     "type": "Double"
+    }
+   ],
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        outcome: Outcome, matched: String?,\n        matchedIndex: Int?, sawNewOutput: Bool,\n        matchedAtEntry: Bool, tail: [String],\n        cursor: CaptureCursor?, seconds: Double)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 87,
+   "parameters": [
+    {
+     "name": "windowName",
+     "type": "String?"
+    },
+    {
+     "name": "startDirectory",
+     "type": "String?"
+    },
+    {
+     "name": "layout",
+     "type": "String?"
+    },
+    {
+     "name": "panes",
+     "type": "[PanePlan]"
+    },
+    {
+     "name": "windowIndex",
+     "type": "Int?"
+    },
+    {
+     "name": "focus",
+     "type": "Bool?"
+    },
+    {
+     "name": "environment",
+     "type": "[String : String]?"
+    },
+    {
+     "name": "windowShell",
+     "type": "String?"
+    }
+   ],
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        windowName: String?, startDirectory: String?,\n        layout: String?, panes: [PanePlan],\n        windowIndex: Int?, focus: Bool?,\n        environment: [String: String]?, windowShell: String?\n    )"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 88,
+   "parameters": [
+    {
+     "name": "in",
+     "type": "Pane"
+    },
+    {
+     "name": "matching",
+     "type": "[RegexPattern]"
+    },
+    {
+     "name": "stoppingAt",
+     "type": "[RegexPattern]"
+    },
+    {
+     "name": "requiringFreshOutput",
+     "type": "Bool"
+    },
+    {
+     "name": "startingAt",
+     "type": "CaptureCursor?"
+    },
+    {
+     "name": "timeout",
+     "type": "Duration"
+    },
+    {
+     "name": "tailLimit",
+     "type": "Int"
+    }
+   ],
+   "returns": "OutputWait",
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        in: Pane, matching: [RegexPattern],\n        stoppingAt: [RegexPattern],\n        requiringFreshOutput: Bool,\n        startingAt: CaptureCursor?, timeout: Duration,\n        tailLimit: Int\n    ) -> OutputWait"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "nameWidth": 102,
+   "parameters": [
+    {
+     "name": "name",
+     "type": "String"
+    },
+    {
+     "name": "tty",
+     "type": "String"
+    },
+    {
+     "name": "processID",
+     "type": "Int"
+    },
+    {
+     "name": "width",
+     "type": "Int?"
+    },
+    {
+     "name": "height",
+     "type": "Int?"
+    },
+    {
+     "name": "isControlMode",
+     "type": "Bool"
+    },
+    {
+     "name": "sessionID",
+     "type": "SessionID"
+    },
+    {
+     "name": "activePaneID",
+     "type": "PaneID?"
+    },
+    {
+     "name": "isWindowZoomed",
+     "type": "Bool?"
+    },
+    {
+     "name": "incarnation",
+     "type": "ServerIncarnation"
+    }
+   ],
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        name: String, tty: String, processID: Int,\n        width: Int?, height: Int?, isControlMode: Bool,\n        sessionID: SessionID, activePaneID: PaneID?,\n        isWindowZoomed: Bool?,\n        incarnation: ServerIncarnation)"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 6,
+   "parameters": [],
+   "text": "func xxxxxx()"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 9,
+   "parameters": [],
+   "returns": "[TmuxBuffer]",
+   "text": "func xxxxxxxxx() -> [TmuxBuffer]"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 11,
+   "parameters": [
+    {
+     "name": "from",
+     "type": "any Decoder"
+    }
+   ],
+   "text": "func xxxxxxxxxxx(from: any Decoder)"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 11,
+   "parameters": [
+    {
+     "name": "root",
+     "type": "Root"
+    }
+   ],
+   "returns": "Bool",
+   "text": "func xxxxxxxxxxx(root: Root) -> Bool"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 14,
+   "parameters": [
+    {
+     "name": "window",
+     "type": "Window"
+    }
+   ],
+   "returns": "()",
+   "text": "func xxxxxxxxxxxxxx(window: Window) -> (\n)"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 13,
+   "parameters": [],
+   "returns": "ServerIncarnation",
+   "text": "func xxxxxxxxxxxxx()\n    -> ServerIncarnation"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 3,
+   "parameters": [],
+   "returns": "[String : [Int : Set<UInt8>]]",
+   "text": "func xxx() -> [String: [Int: Set<\n    UInt8\n>]]"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 14,
+   "parameters": [
+    {
+     "name": "named",
+     "type": "String?"
+    }
+   ],
+   "returns": "String?",
+   "text": "func xxxxxxxxxxxxxx(named: String?)\n    -> String?"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 16,
+   "parameters": [
+    {
+     "name": "name",
+     "type": "String"
+    },
+    {
+     "name": "size",
+     "type": "Int"
+    }
+   ],
+   "text": "func xxxxxxxxxxxxxxxx(\n    name: String, size: Int)"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 19,
+   "parameters": [
+    {
+     "name": "contents",
+     "type": "String"
+    },
+    {
+     "name": "named",
+     "type": "String?"
+    }
+   ],
+   "returns": "()",
+   "text": "func xxxxxxxxxxxxxxxxxxx(\n    contents: String, named: String?\n) -> ()"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 19,
+   "parameters": [],
+   "returns": "ControlNotificationStream.Iterator",
+   "text": "func xxxxxxxxxxxxxxxxxxx()\n    -> ControlNotificationStream\n    .Iterator"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 27,
+   "parameters": [
+    {
+     "name": "number",
+     "type": "Int"
+    },
+    {
+     "name": "lines",
+     "type": "[String]"
+    },
+    {
+     "name": "isError",
+     "type": "Bool"
+    }
+   ],
+   "text": "func xxxxxxxxxxxxxxxxxxxxxxxxxxx(\n    number: Int, lines: [String],\n    isError: Bool)"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 16,
+   "parameters": [
+    {
+     "name": "where",
+     "type": "(Self.Element) async throws -> Bool"
+    }
+   ],
+   "returns": "Bool",
+   "text": "func xxxxxxxxxxxxxxxx(\n    where: (Self.Element) async throws\n        -> Bool\n) -> Bool"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 17,
+   "parameters": [
+    {
+     "name": "token",
+     "type": "JSONValue?"
+    },
+    {
+     "name": "emit",
+     "type": "@escaping (String) async -> Void"
+    }
+   ],
+   "text": "func xxxxxxxxxxxxxxxxx(\n    token: JSONValue?,\n    emit:\n        @escaping (String) async -> Void\n)"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 77,
+   "parameters": [],
+   "returns": "Int",
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx()\n    -> Int"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 17,
+   "parameters": [
+    {
+     "name": "to",
+     "type": "String"
+    },
+    {
+     "name": "emit",
+     "type": "@escaping (String) async -> Void"
+    }
+   ],
+   "returns": "String?",
+   "text": "func xxxxxxxxxxxxxxxxx(\n    to: String,\n    emit:\n        @escaping (String) async -> Void\n) -> String?"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 23,
+   "parameters": [
+    {
+     "name": "pane",
+     "type": "Pane"
+    },
+    {
+     "name": "since",
+     "type": "CaptureCursor?"
+    },
+    {
+     "name": "limit",
+     "type": "Int"
+    }
+   ],
+   "returns": "IncrementalCapture",
+   "text": "func xxxxxxxxxxxxxxxxxxxxxxx(\n    pane: Pane, since: CaptureCursor?,\n    limit: Int\n) -> IncrementalCapture"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 27,
+   "parameters": [
+    {
+     "name": "unicodeScalarLiteral",
+     "type": "Self.ExtendedGraphemeClusterLiteralType"
+    }
+   ],
+   "text": "func xxxxxxxxxxxxxxxxxxxxxxxxxxx(\n    unicodeScalarLiteral: Self\n        .ExtendedGraphemeClusterLiteralType\n)"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 11,
+   "parameters": [
+    {
+     "name": "mode",
+     "type": "TmuxMode"
+    },
+    {
+     "name": "body",
+     "type": "@escaping (Server) async throws -> Result"
+    }
+   ],
+   "returns": "Result",
+   "text": "func xxxxxxxxxxx(\n    mode: TmuxMode,\n    body:\n        @escaping (Server) async throws\n        -> Result\n) -> Result"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 10,
+   "parameters": [
+    {
+     "name": "newMember",
+     "type": "Self.Element"
+    }
+   ],
+   "returns": "(inserted: Bool, memberAfterInsert: Self.Element)",
+   "text": "func xxxxxxxxxx(newMember: Self.Element)\n    -> (\n        inserted: Bool,\n        memberAfterInsert: Self.Element\n    )"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 37,
+   "parameters": [
+    {
+     "name": "extendedGraphemeClusterLiteral",
+     "type": "Self.StringLiteralType"
+    }
+   ],
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        extendedGraphemeClusterLiteral:\n            Self.StringLiteralType)"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 7,
+   "parameters": [
+    {
+     "name": "work",
+     "type": "(inout Result, Self.Element) async throws -> Result"
+    },
+    {
+     "name": "queue",
+     "type": "any DispatchQueue & Sendable"
+    }
+   ],
+   "text": "func xxxxxxx(\n    work: (inout Result, Self.Element)\n        async throws -> Result,\n    queue: any DispatchQueue & Sendable)"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 28,
+   "parameters": [
+    {
+     "name": "operation",
+     "type": "(isolated Self) throws -> T"
+    },
+    {
+     "name": "file",
+     "type": "StaticString"
+    },
+    {
+     "name": "line",
+     "type": "UInt"
+    }
+   ],
+   "returns": "T",
+   "text": "func xxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n    operation: (isolated Self) throws ->\n        T, file: StaticString,\n    line: UInt\n) -> T"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 40,
+   "parameters": [
+    {
+     "name": "socketPath",
+     "type": "String"
+    },
+    {
+     "name": "processID",
+     "type": "Int?"
+    },
+    {
+     "name": "sessionCount",
+     "type": "Int"
+    }
+   ],
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        socketPath: String,\n        processID: Int?,\n        sessionCount: Int)"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 7,
+   "parameters": [
+    {
+     "name": "transform",
+     "type": "(Self.Element) async throws -> Transformed"
+    }
+   ],
+   "returns": "AsyncThrowingMapSequence<Self, Transformed>",
+   "text": "func xxxxxxx(\n    transform: (Self.Element)\n        async throws -> Transformed\n) -> AsyncThrowingMapSequence<\n    Self, Transformed\n>"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 12,
+   "parameters": [
+    {
+     "name": "initialResult",
+     "type": "Result"
+    },
+    {
+     "name": "nextPartialResult",
+     "type": "(Result, Self.Element) async throws -> Result"
+    }
+   ],
+   "returns": "Result",
+   "text": "func xxxxxxxxxxxx(\n    initialResult: Result,\n    nextPartialResult: (\n        Result, Self.Element\n    ) async throws -> Result\n) -> Result"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 31,
+   "parameters": [
+    {
+     "name": "attachingTo",
+     "type": "String"
+    },
+    {
+     "name": "body",
+     "type": "@escaping (ControlSession) async throws -> Result"
+    }
+   ],
+   "returns": "Result",
+   "text": "func xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n    attachingTo: String,\n    body:\n        @escaping (ControlSession)\n        async throws -> Result\n) -> Result"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 25,
+   "parameters": [
+    {
+     "name": "attachingTo",
+     "type": "String"
+    },
+    {
+     "name": "body",
+     "type": "@escaping (Server, ControlSession) async throws -> Result"
+    }
+   ],
+   "returns": "Result",
+   "text": "func xxxxxxxxxxxxxxxxxxxxxxxxx(\n    attachingTo: String,\n    body:\n        @escaping (\n            Server, ControlSession\n        ) async throws -> Result\n) -> Result"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 16,
+   "parameters": [
+    {
+     "name": "path",
+     "type": "String"
+    },
+    {
+     "name": "mode",
+     "type": "FileMode?"
+    }
+   ],
+   "returns": "Swift.Result<AnotherQuiteLongModuleName.SomeNestedType.Inner, any Error>",
+   "text": "func xxxxxxxxxxxxxxxx(\n    path: String, mode: FileMode?\n)\n    -> Swift.Result<\n        AnotherQuiteLongModuleName\n            .SomeNestedType.Inner,\n        any Error\n    >"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 50,
+   "parameters": [
+    {
+     "name": "pane",
+     "type": "Pane"
+    },
+    {
+     "name": "running",
+     "type": "[String]"
+    },
+    {
+     "name": "killingExisting",
+     "type": "Bool"
+    },
+    {
+     "name": "startDirectory",
+     "type": "String?"
+    }
+   ],
+   "returns": "()",
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        pane: Pane, running: [String],\n        killingExisting: Bool,\n        startDirectory: String?\n    ) -> ()"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 13,
+   "parameters": [
+    {
+     "name": "handler",
+     "type": "@escaping @Sendable (Result<[String: [Int]], Error>) async throws -> Void"
+    }
+   ],
+   "returns": "Task<Void, Never>",
+   "text": "func xxxxxxxxxxxxx(\n    handler:\n        @escaping @Sendable (\n            Result<\n                [String: [Int]], Error\n            >\n        ) async throws -> Void\n) -> Task<Void, Never>"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 49,
+   "parameters": [
+    {
+     "name": "id",
+     "type": "WindowID"
+    },
+    {
+     "name": "name",
+     "type": "String"
+    },
+    {
+     "name": "paneCount",
+     "type": "Int"
+    },
+    {
+     "name": "width",
+     "type": "Int"
+    },
+    {
+     "name": "height",
+     "type": "Int"
+    },
+    {
+     "name": "incarnation",
+     "type": "ServerIncarnation"
+    }
+   ],
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        id: WindowID, name: String,\n        paneCount: Int, width: Int,\n        height: Int,\n        incarnation: ServerIncarnation)"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 61,
+   "parameters": [
+    {
+     "name": "incarnation",
+     "type": "ServerIncarnation"
+    },
+    {
+     "name": "sessions",
+     "type": "[Session]"
+    },
+    {
+     "name": "windows",
+     "type": "[Window]"
+    },
+    {
+     "name": "windowLinks",
+     "type": "[WindowLink]"
+    },
+    {
+     "name": "panes",
+     "type": "[Pane]"
+    },
+    {
+     "name": "clients",
+     "type": "[Client]"
+    }
+   ],
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        incarnation: ServerIncarnation,\n        sessions: [Session],\n        windows: [Window],\n        windowLinks: [WindowLink],\n        panes: [Pane], clients: [Client]\n    )"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 75,
+   "parameters": [
+    {
+     "name": "named",
+     "type": "String"
+    },
+    {
+     "name": "startDirectory",
+     "type": "String?"
+    },
+    {
+     "name": "windowName",
+     "type": "String?"
+    },
+    {
+     "name": "width",
+     "type": "Int?"
+    },
+    {
+     "name": "height",
+     "type": "Int?"
+    },
+    {
+     "name": "environment",
+     "type": "[String : String]"
+    },
+    {
+     "name": "shell",
+     "type": "String?"
+    }
+   ],
+   "returns": "Session",
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        named: String,\n        startDirectory: String?,\n        windowName: String?,\n        width: Int?, height: Int?,\n        environment: [String: String],\n        shell: String?\n    ) -> Session"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 82,
+   "parameters": [
+    {
+     "name": "shellCommands",
+     "type": "[TmuxShellCommand]"
+    },
+    {
+     "name": "startDirectory",
+     "type": "String?"
+    },
+    {
+     "name": "focus",
+     "type": "Bool?"
+    },
+    {
+     "name": "environment",
+     "type": "[String : String]?"
+    },
+    {
+     "name": "shell",
+     "type": "String?"
+    },
+    {
+     "name": "sleepBefore",
+     "type": "Double?"
+    },
+    {
+     "name": "sleepAfter",
+     "type": "Double?"
+    }
+   ],
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        shellCommands:\n            [TmuxShellCommand],\n        startDirectory: String?,\n        focus: Bool?,\n        environment: [String: String]?,\n        shell: String?,\n        sleepBefore: Double?,\n        sleepAfter: Double?)"
+  },
+  {
+   "group": "corpus",
+   "columns": 40,
+   "nameWidth": 102,
+   "parameters": [
+    {
+     "name": "name",
+     "type": "String"
+    },
+    {
+     "name": "tty",
+     "type": "String"
+    },
+    {
+     "name": "processID",
+     "type": "Int"
+    },
+    {
+     "name": "width",
+     "type": "Int?"
+    },
+    {
+     "name": "height",
+     "type": "Int?"
+    },
+    {
+     "name": "isControlMode",
+     "type": "Bool"
+    },
+    {
+     "name": "sessionID",
+     "type": "SessionID"
+    },
+    {
+     "name": "activePaneID",
+     "type": "PaneID?"
+    },
+    {
+     "name": "isWindowZoomed",
+     "type": "Bool?"
+    },
+    {
+     "name": "incarnation",
+     "type": "ServerIncarnation"
+    }
+   ],
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        name: String, tty: String,\n        processID: Int, width: Int?,\n        height: Int?,\n        isControlMode: Bool,\n        sessionID: SessionID,\n        activePaneID: PaneID?,\n        isWindowZoomed: Bool?,\n        incarnation: ServerIncarnation)"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "nameWidth": 13,
+   "parameters": [
+    {
+     "name": "handler",
+     "type": "@escaping @Sendable (Result<[String: [Int]], Error>) async throws -> Void"
+    }
+   ],
+   "returns": "Task<Void, Never>",
+   "text": "func xxxxxxxxxxxxx(\n    handler:\n        @escaping\n        @Sendable (\n            Result<\n                [String:\n                    [Int]],\n                Error\n            >\n        ) async throws\n        -> Void\n) -> Task<Void, Never>"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "nameWidth": 25,
+   "parameters": [
+    {
+     "name": "attachingTo",
+     "type": "String"
+    },
+    {
+     "name": "body",
+     "type": "@escaping (Server, ControlSession) async throws -> Result"
+    }
+   ],
+   "returns": "Result",
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxx(\n        attachingTo:\n            String,\n        body:\n            @escaping (\n                Server,\n                ControlSession\n            )\n            async throws\n            -> Result\n    ) -> Result"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "nameWidth": 64,
+   "parameters": [
+    {
+     "name": "toolsets",
+     "type": "Set<Toolset>"
+    },
+    {
+     "name": "includedTools",
+     "type": "Set<String>"
+    },
+    {
+     "name": "excludedTools",
+     "type": "Set<String>"
+    },
+    {
+     "name": "usedExplicitToolsets",
+     "type": "Bool"
+    }
+   ],
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        toolsets: Set<\n            Toolset\n        >,\n        includedTools:\n            Set<String>,\n        excludedTools:\n            Set<String>,\n        usedExplicitToolsets:\n            Bool)"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "nameWidth": 7,
+   "parameters": [
+    {
+     "name": "transform",
+     "type": "(Self.Element) async throws -> Transformed"
+    }
+   ],
+   "returns": "AsyncThrowingMapSequence<Self, Transformed>",
+   "text": "func xxxxxxx(\n    transform: (\n        Self.Element\n    ) async throws ->\n        Transformed\n)\n    -> AsyncThrowingMapSequence<\n        Self,\n        Transformed\n    >"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "nameWidth": 16,
+   "parameters": [
+    {
+     "name": "path",
+     "type": "String"
+    },
+    {
+     "name": "mode",
+     "type": "FileMode?"
+    }
+   ],
+   "returns": "Swift.Result<AnotherQuiteLongModuleName.SomeNestedType.Inner, any Error>",
+   "text": "func xxxxxxxxxxxxxxxx(\n    path: String,\n    mode: FileMode?\n)\n    -> Swift.Result<\n        AnotherQuiteLongModuleName\n            .SomeNestedType\n            .Inner,\n        any Error\n    >"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "nameWidth": 15,
+   "parameters": [
+    {
+     "name": "lines",
+     "type": "AsyncStream<String>"
+    },
+    {
+     "name": "write",
+     "type": "@escaping (String) async -> Void"
+    }
+   ],
+   "returns": "()",
+   "text": "func xxxxxxxxxxxxxxx(\n    lines: AsyncStream<\n        String\n    >,\n    write:\n        @escaping (\n            String\n        ) async -> Void\n) -> ()"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "nameWidth": 7,
+   "parameters": [
+    {
+     "name": "work",
+     "type": "(inout Result, Self.Element) async throws -> Result"
+    },
+    {
+     "name": "queue",
+     "type": "any DispatchQueue & Sendable"
+    }
+   ],
+   "text": "func xxxxxxx(\n    work: (\n        inout Result,\n        Self.Element\n    ) async throws ->\n        Result,\n    queue:\n        any DispatchQueue\n        & Sendable)"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "nameWidth": 12,
+   "parameters": [
+    {
+     "name": "initialResult",
+     "type": "Result"
+    },
+    {
+     "name": "nextPartialResult",
+     "type": "(Result, Self.Element) async throws -> Result"
+    }
+   ],
+   "returns": "Result",
+   "text": "func xxxxxxxxxxxx(\n    initialResult:\n        Result,\n    nextPartialResult: (\n        Result,\n        Self.Element\n    ) async throws ->\n        Result\n) -> Result"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "nameWidth": 11,
+   "parameters": [
+    {
+     "name": "keyPath",
+     "type": "KeyPath<Root, Value> & Sendable"
+    },
+    {
+     "name": "operation",
+     "type": "FilterOperator<Value>"
+    }
+   ],
+   "returns": "FilterExpr<Root>",
+   "text": "func xxxxxxxxxxx(\n    keyPath: KeyPath<\n        Root, Value\n    > & Sendable,\n    operation:\n        FilterOperator<\n            Value\n        >\n) -> FilterExpr<Root>"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "nameWidth": 15,
+   "parameters": [
+    {
+     "name": "into",
+     "type": "Result"
+    },
+    {
+     "name": "updateAccumulatingResult",
+     "type": "(inout Result, Self.Element) async throws -> Void"
+    }
+   ],
+   "returns": "Result",
+   "text": "func xxxxxxxxxxxxxxx(\n    into: Result,\n    updateAccumulatingResult:\n        (\n            inout Result,\n            Self.Element\n        ) async throws\n        -> Void\n) -> Result"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "nameWidth": 10,
+   "parameters": [
+    {
+     "name": "newMember",
+     "type": "Self.Element"
+    }
+   ],
+   "returns": "(inserted: Bool, memberAfterInsert: Self.Element)",
+   "text": "func xxxxxxxxxx(\n    newMember: Self\n        .Element\n) -> (\n    inserted: Bool,\n    memberAfterInsert:\n        Self.Element\n)"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "nameWidth": 7,
+   "parameters": [
+    {
+     "name": "transform",
+     "type": "(Self.Element) async -> Transformed"
+    }
+   ],
+   "returns": "AsyncMapSequence<Self, Transformed>",
+   "text": "func xxxxxxx(\n    transform: (\n        Self.Element\n    ) async ->\n        Transformed\n) -> AsyncMapSequence<\n    Self, Transformed\n>"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "nameWidth": 11,
+   "parameters": [
+    {
+     "name": "mode",
+     "type": "TmuxMode"
+    },
+    {
+     "name": "body",
+     "type": "@escaping (Server) async throws -> Result"
+    }
+   ],
+   "returns": "Result",
+   "text": "func xxxxxxxxxxx(\n    mode: TmuxMode,\n    body:\n        @escaping (\n            Server\n        ) async throws\n        -> Result\n) -> Result"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "nameWidth": 9,
+   "parameters": [
+    {
+     "name": "first",
+     "type": "Int"
+    },
+    {
+     "name": "second",
+     "type": "(Int, Int) -> (Int, Int) -> (Int, Int)"
+    },
+    {
+     "name": "third",
+     "type": "() async -> Void"
+    }
+   ],
+   "returns": "()",
+   "text": "func xxxxxxxxx(\n    first: Int,\n    second: (Int, Int)\n        -> (Int, Int) ->\n        (Int, Int),\n    third: () async ->\n        Void\n) -> ()"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "nameWidth": 23,
+   "parameters": [
+    {
+     "name": "pane",
+     "type": "Pane"
+    },
+    {
+     "name": "since",
+     "type": "CaptureCursor?"
+    },
+    {
+     "name": "limit",
+     "type": "Int"
+    }
+   ],
+   "returns": "IncrementalCapture",
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxx(\n        pane: Pane,\n        since:\n            CaptureCursor?,\n        limit: Int\n    )\n    -> IncrementalCapture"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "nameWidth": 34,
+   "parameters": [
+    {
+     "name": "message",
+     "type": "() -> String"
+    },
+    {
+     "name": "file",
+     "type": "StaticString"
+    },
+    {
+     "name": "line",
+     "type": "UInt"
+    }
+   ],
+   "returns": "()",
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        message: () ->\n            String,\n        file:\n            StaticString,\n        line: UInt\n    ) -> ()"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "nameWidth": 33,
+   "parameters": [
+    {
+     "name": "socketFileName",
+     "type": "String"
+    },
+    {
+     "name": "body",
+     "type": "(Server) async throws -> Result"
+    }
+   ],
+   "returns": "Result",
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        socketFileName:\n            String,\n        body: (Server)\n            async throws\n            -> Result\n    ) -> Result"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "nameWidth": 8,
+   "parameters": [
+    {
+     "name": "by",
+     "type": "(Self.Element, Self.Element) async throws -> Bool"
+    }
+   ],
+   "returns": "Self.Element?",
+   "text": "func xxxxxxxx(\n    by: (\n        Self.Element,\n        Self.Element\n    ) async throws ->\n        Bool\n) -> Self.Element?"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "nameWidth": 19,
+   "parameters": [
+    {
+     "name": "for",
+     "type": "PartialKeyPath<Self>"
+    }
+   ],
+   "returns": "String?",
+   "text": "func\n    xxxxxxxxxxxxxxxxxxx(\n        for:\n            PartialKeyPath<\n                Self\n            >\n    ) -> String?"
+  },
+  {
+   "group": "narrow",
+   "columns": 24,
+   "nameWidth": 17,
+   "parameters": [
+    {
+     "name": "to",
+     "type": "String"
+    },
+    {
+     "name": "emit",
+     "type": "@escaping (String) async -> Void"
+    }
+   ],
+   "returns": "String?",
+   "text": "func xxxxxxxxxxxxxxxxx(\n    to: String,\n    emit:\n        @escaping (\n            String\n        ) async -> Void\n) -> String?"
+  },
+  {
+   "group": "generated",
+   "columns": 30,
+   "nameWidth": 28,
+   "parameters": [
+    {
+     "name": "requestNameValue",
+     "type": "some Bool"
+    },
+    {
+     "name": "targetValue",
+     "type": "OptionPaneLimit"
+    }
+   ],
+   "returns": "Array<Pane, [Double : @escaping (Swift.Result) throws -> CommandPolicy]>",
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        requestNameValue:\n            some Bool,\n        targetValue:\n            OptionPaneLimit\n    ) -> Array<\n        Pane,\n        [Double:\n            @escaping (\n                Swift.Result\n            ) throws ->\n            CommandPolicy]\n    >"
+  },
+  {
+   "group": "generated",
+   "columns": 30,
+   "nameWidth": 5,
+   "parameters": [
+    {
+     "name": "option",
+     "type": "[inout any String : Session]"
+    },
+    {
+     "name": "limitServerLimit",
+     "type": "[Double : Self.Element & Swift.Result & Self]"
+    }
+   ],
+   "returns": "@escaping (Pane) throws -> @escaping (any ValueDeadline, (Double, Self, Self), inout Int) throws -> Self?",
+   "text": "func xxxxx(\n    option: [inout any String:\n        Session],\n    limitServerLimit: [Double:\n        Self.Element & Swift\n        .Result & Self]\n)\n    -> @escaping (Pane) throws\n    ->\n    @escaping (\n        any ValueDeadline,\n        (Double, Self, Self),\n        inout Int\n    ) throws -> Self?"
+  },
+  {
+   "group": "generated",
+   "columns": 30,
+   "nameWidth": 28,
+   "parameters": [],
+   "returns": "Set<[Self.Element : Session]?, Bool, [@escaping (Self.Element, Self.Element, Swift.Result) async throws -> Window : [Swift.Result : Foundation.URL]]>",
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxx()\n    -> Set<\n        [Self.Element:\n            Session]?, Bool,\n        [@escaping (\n            Self.Element,\n            Self.Element,\n            Swift.Result\n        ) async throws ->\n            Window: [Swift\n            .Result:\n            Foundation.URL]]\n    >"
+  },
+  {
+   "group": "generated",
+   "columns": 30,
+   "nameWidth": 70,
+   "parameters": [],
+   "returns": "Set<((server: TimeoutHookHook), request: some Session, @escaping () async -> Pane)>",
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx()\n    -> Set<\n        (\n            (\n                server:\n                    TimeoutHookHook\n            ),\n            request:\n                some Session,\n            @escaping () async\n                -> Pane\n        )\n    >"
+  },
+  {
+   "group": "generated",
+   "columns": 30,
+   "nameWidth": 70,
+   "parameters": [],
+   "returns": "(some Window?, [@escaping (Window) -> Swift.Result : (Window, Bool, Self)], [(resultTargetPolicy: Self.Element)])",
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx()\n    -> (\n        some Window?,\n        [@escaping (Window) ->\n            Swift.Result: (\n                Window, Bool,\n                Self\n            )],\n        [(\n            resultTargetPolicy:\n                Self.Element\n        )]\n    )"
+  },
+  {
+   "group": "generated",
+   "columns": 30,
+   "nameWidth": 70,
+   "parameters": [
+    {
+     "name": "deadline",
+     "type": "some Swift.Result"
+    },
+    {
+     "name": "size",
+     "type": "inout [String : Session]?"
+    },
+    {
+     "name": "optionSession",
+     "type": "any String"
+    },
+    {
+     "name": "request",
+     "type": "String & Bool & Bool?"
+    },
+    {
+     "name": "hookSession",
+     "type": "inout Self.Element"
+    }
+   ],
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        deadline: some Swift\n            .Result,\n        size:\n            inout [String:\n            Session]?,\n        optionSession:\n            any String,\n        request: String & Bool\n            & Bool?,\n        hookSession:\n            inout Self.Element\n    )"
+  },
+  {
+   "group": "generated",
+   "columns": 30,
+   "nameWidth": 70,
+   "parameters": [
+    {
+     "name": "clientBuffer",
+     "type": "(window: (commandTimeoutOption: Bool, name: Window)?, Session)"
+    },
+    {
+     "name": "format",
+     "type": "Set<[inout Swift.Result]>"
+    }
+   ],
+   "returns": "[any Foundation.URL]",
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        clientBuffer: (\n            window: (\n                commandTimeoutOption:\n                    Bool,\n                name: Window\n            )?, Session\n        ),\n        format: Set<\n            [inout Swift\n                .Result]\n        >\n    ) -> [any Foundation.URL]"
+  },
+  {
+   "group": "generated",
+   "columns": 30,
+   "nameWidth": 55,
+   "parameters": [
+    {
+     "name": "hookResult",
+     "type": "String & Double & Bool"
+    },
+    {
+     "name": "optionTargetSession",
+     "type": "[Dictionary<Window, Session.Result<Pane>, Double>]"
+    },
+    {
+     "name": "targetValueObserver",
+     "type": "inout some Window"
+    }
+   ],
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        hookResult: String\n            & Double & Bool,\n        optionTargetSession:\n            [Dictionary<\n                Window,\n                Session\n                    .Result<\n                        Pane\n                    >, Double\n            >],\n        targetValueObserver:\n            inout some Window)"
+  },
+  {
+   "group": "generated",
+   "columns": 30,
+   "nameWidth": 14,
+   "parameters": [
+    {
+     "name": "hook",
+     "type": "Window"
+    },
+    {
+     "name": "clientTarget",
+     "type": "Task<Bool, String>"
+    },
+    {
+     "name": "option",
+     "type": "any Pane"
+    },
+    {
+     "name": "indexLimitDeadline",
+     "type": "()"
+    },
+    {
+     "name": "timeoutServer",
+     "type": "String"
+    }
+   ],
+   "returns": "inout ([String : ObserverTimeoutPane], [Window : Window])",
+   "text": "func xxxxxxxxxxxxxx(\n    hook: Window,\n    clientTarget: Task<\n        Bool, String\n    >, option: any Pane,\n    indexLimitDeadline: (),\n    timeoutServer: String\n)\n    -> inout (\n        [String:\n            ObserverTimeoutPane],\n        [Window: Window]\n    )"
+  },
+  {
+   "group": "generated",
+   "columns": 30,
+   "nameWidth": 20,
+   "parameters": [
+    {
+     "name": "indexIndexRequest",
+     "type": "String"
+    },
+    {
+     "name": "clientPaneCommand",
+     "type": "String & Int & Pane?"
+    },
+    {
+     "name": "size",
+     "type": "Foundation.URL"
+    }
+   ],
+   "returns": "String.Value<([Foundation.URL : Pane], Session, Window?)>",
+   "text": "func xxxxxxxxxxxxxxxxxxxx(\n    indexIndexRequest: String,\n    clientPaneCommand: String\n        & Int & Pane?,\n    size: Foundation.URL\n)\n    -> String.Value<\n        (\n            [Foundation.URL:\n                Pane],\n            Session, Window?\n        )\n    >"
+  },
+  {
+   "group": "generated",
+   "columns": 30,
+   "nameWidth": 9,
+   "parameters": [],
+   "returns": "(observerServerClient: @escaping (Window?, some Window, (Swift.Result)) -> Set<PolicyHookPane, PaneLimitTimeout>, Double & Swift.Result & Double)",
+   "text": "func xxxxxxxxx() -> (\n    observerServerClient:\n        @escaping (\n            Window?,\n            some Window,\n            (Swift.Result)\n        ) -> Set<\n            PolicyHookPane,\n            PaneLimitTimeout\n        >,\n    Double & Swift.Result\n        & Double\n)"
+  },
+  {
+   "group": "generated",
+   "columns": 30,
+   "nameWidth": 40,
+   "parameters": [
+    {
+     "name": "sessionTimeout",
+     "type": "inout [Pane]"
+    },
+    {
+     "name": "sizeCommandIndex",
+     "type": "[Window]"
+    },
+    {
+     "name": "windowValue",
+     "type": "(String, deadlineFormat: Session)??"
+    },
+    {
+     "name": "session",
+     "type": "Swift.Result?"
+    }
+   ],
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        sessionTimeout:\n            inout [Pane],\n        sizeCommandIndex:\n            [Window],\n        windowValue: (\n            String,\n            deadlineFormat:\n                Session\n        )??,\n        session: Swift.Result?\n    )"
+  },
+  {
+   "group": "generated",
+   "columns": 45,
+   "nameWidth": 9,
+   "parameters": [
+    {
+     "name": "deadline",
+     "type": "@escaping (Foundation.URL, @escaping (any Pane, some String) -> [Double : Foundation.URL], [()]) throws -> some Self.Element"
+    }
+   ],
+   "returns": "Value.PaneBufferCommand<Double.SessionDeadlineSize<ClientCommandObserver?>>",
+   "text": "func xxxxxxxxx(\n    deadline:\n        @escaping (\n            Foundation.URL,\n            @escaping (any Pane, some String)\n                -> [Double: Foundation.URL],\n            [()]\n        ) throws -> some Self.Element\n)\n    -> Value.PaneBufferCommand<\n        Double.SessionDeadlineSize<\n            ClientCommandObserver?\n        >\n    >"
+  },
+  {
+   "group": "generated",
+   "columns": 45,
+   "nameWidth": 28,
+   "parameters": [
+    {
+     "name": "resultSizePolicy",
+     "type": "Self.Element & Self.Element & Self.Element"
+    },
+    {
+     "name": "policyPane",
+     "type": "inout any Foundation.URL"
+    },
+    {
+     "name": "optionWindowHook",
+     "type": "some RequestTimeoutDeadline?"
+    },
+    {
+     "name": "targetRequest",
+     "type": "Self"
+    }
+   ],
+   "returns": "[String : Optional<Double & Foundation.URL & Bool, (formatTarget: Double, name: Foundation.URL)>]",
+   "text": "func xxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n    resultSizePolicy: Self.Element & Self\n        .Element & Self.Element,\n    policyPane: inout any Foundation.URL,\n    optionWindowHook:\n        some RequestTimeoutDeadline?,\n    targetRequest: Self\n) -> [String: Optional<\n    Double & Foundation.URL & Bool,\n    (\n        formatTarget: Double,\n        name: Foundation.URL\n    )\n>]"
+  },
+  {
+   "group": "generated",
+   "columns": 45,
+   "nameWidth": 14,
+   "parameters": [
+    {
+     "name": "request",
+     "type": "some Foundation.URL"
+    },
+    {
+     "name": "targetResult",
+     "type": "Self?"
+    },
+    {
+     "name": "paneBufferWindow",
+     "type": "SessionRequestTimeout"
+    },
+    {
+     "name": "session",
+     "type": "@escaping (some Self) async -> @escaping (inout Self, Double.Pane<FormatSession>, ()) async -> Result<Window>"
+    },
+    {
+     "name": "client",
+     "type": "CommandObserverIndex"
+    }
+   ],
+   "returns": "@escaping (some Foundation.URL) async -> [Int]?",
+   "text": "func xxxxxxxxxxxxxx(\n    request: some Foundation.URL,\n    targetResult: Self?,\n    paneBufferWindow: SessionRequestTimeout,\n    session:\n        @escaping (some Self) async ->\n        @escaping (\n            inout Self,\n            Double.Pane<FormatSession>, ()\n        ) async -> Result<Window>,\n    client: CommandObserverIndex\n)\n    -> @escaping (some Foundation.URL) async\n    -> [Int]?"
+  },
+  {
+   "group": "generated",
+   "columns": 45,
+   "nameWidth": 5,
+   "parameters": [
+    {
+     "name": "timeoutFormatSize",
+     "type": "[([Self], command: Pane?) : [some Swift.Result]]"
+    },
+    {
+     "name": "targetClient",
+     "type": "()"
+    },
+    {
+     "name": "bufferRequest",
+     "type": "Window"
+    },
+    {
+     "name": "timeout",
+     "type": "@escaping (Swift.Result.Hook<Set<Int, Pane>>, Set<[Pane : ClientBuffer], Pane>) -> [@escaping () async -> Deadline : Result<Pane, Int>]"
+    }
+   ],
+   "returns": "[inout some Self : Bool]",
+   "text": "func xxxxx(\n    timeoutFormatSize: [(\n        [Self], command: Pane?\n    ): [some Swift.Result]],\n    targetClient: (), bufferRequest: Window,\n    timeout:\n        @escaping (\n            Swift.Result.Hook<\n                Set<Int, Pane>\n            >,\n            Set<[Pane: ClientBuffer], Pane>\n        ) -> [@escaping () async -> Deadline:\n        Result<Pane, Int>]\n) -> [inout some Self: Bool]"
+  },
+  {
+   "group": "generated",
+   "columns": 45,
+   "nameWidth": 14,
+   "parameters": [
+    {
+     "name": "observer",
+     "type": "(paneDeadlinePane: Pane.DeadlineCommandRequest<Pane>, Int, name: @escaping (Bool, Window, Pane) async -> Int)?"
+    },
+    {
+     "name": "paneClientTimeout",
+     "type": "Bool"
+    },
+    {
+     "name": "windowRequestTimeout",
+     "type": "[any Window? : @escaping (inout Foundation.URL) async -> inout Self]"
+    },
+    {
+     "name": "optionDeadline",
+     "type": "any String"
+    },
+    {
+     "name": "option",
+     "type": "any Int"
+    }
+   ],
+   "text": "func xxxxxxxxxxxxxx(\n    observer: (\n        paneDeadlinePane: Pane\n            .DeadlineCommandRequest<Pane>,\n        Int,\n        name:\n            @escaping (Bool, Window, Pane)\n            async -> Int\n    )?, paneClientTimeout: Bool,\n    windowRequestTimeout: [any Window?:\n        @escaping (inout Foundation.URL)\n        async -> inout Self],\n    optionDeadline: any String,\n    option: any Int)"
+  },
+  {
+   "group": "generated",
+   "columns": 45,
+   "nameWidth": 40,
+   "parameters": [
+    {
+     "name": "request",
+     "type": "inout Session.Limit<String.Deadline<Pane>>"
+    },
+    {
+     "name": "indexTargetTimeout",
+     "type": "inout [Foundation.URL?]"
+    },
+    {
+     "name": "sessionFormatBuffer",
+     "type": "Foundation.URL & Double & Self.Element"
+    },
+    {
+     "name": "bufferHook",
+     "type": "inout Foundation.URL"
+    }
+   ],
+   "returns": "[Foundation.URL.IndexTimeoutName<String>]?",
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        request:\n            inout Session.Limit<\n                String.Deadline<Pane>\n            >,\n        indexTargetTimeout:\n            inout [Foundation.URL?],\n        sessionFormatBuffer: Foundation.URL\n            & Double & Self.Element,\n        bufferHook: inout Foundation.URL\n    ) -> [Foundation.URL.IndexTimeoutName<\n        String\n    >]?"
+  },
+  {
+   "group": "generated",
+   "columns": 45,
+   "nameWidth": 28,
+   "parameters": [
+    {
+     "name": "sessionSession",
+     "type": "inout some Int"
+    },
+    {
+     "name": "serverWindowWindow",
+     "type": "some Foundation.URL"
+    },
+    {
+     "name": "valueObserverRequest",
+     "type": "Window.CommandRequestLimit<(resultPane: any Bool)>"
+    },
+    {
+     "name": "policyValueCommand",
+     "type": "Double & Bool & Value"
+    },
+    {
+     "name": "limitTarget",
+     "type": "(@escaping (Self, String) async throws -> Window?, clientResult: some Window)"
+    }
+   ],
+   "text": "func xxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n    sessionSession: inout some Int,\n    serverWindowWindow: some Foundation.URL,\n    valueObserverRequest: Window\n        .CommandRequestLimit<\n            (resultPane: any Bool)\n        >,\n    policyValueCommand: Double & Bool\n        & Value,\n    limitTarget: (\n        @escaping (Self, String) async throws\n            -> Window?,\n        clientResult: some Window\n    ))"
+  },
+  {
+   "group": "generated",
+   "columns": 45,
+   "nameWidth": 5,
+   "parameters": [
+    {
+     "name": "session",
+     "type": "inout Self.Element"
+    },
+    {
+     "name": "resultServerSize",
+     "type": "Double.PaneSessionOption<@escaping (Self & Session & Bool, Session, Pane) async throws -> Swift.Result & Self.Element & Session>"
+    },
+    {
+     "name": "optionTimeout",
+     "type": "any Window?"
+    }
+   ],
+   "returns": "inout @escaping (Self.Element, some Bool) throws -> (optionCommand: Self.Element)",
+   "text": "func xxxxx(\n    session: inout Self.Element,\n    resultServerSize: Double\n        .PaneSessionOption<\n            @escaping (\n                Self & Session & Bool,\n                Session, Pane\n            ) async throws -> Swift.Result\n                & Self.Element & Session\n        >, optionTimeout: any Window?\n)\n    -> inout @escaping (\n        Self.Element, some Bool\n    ) throws -> (optionCommand: Self.Element)"
+  },
+  {
+   "group": "generated",
+   "columns": 45,
+   "nameWidth": 70,
+   "parameters": [
+    {
+     "name": "indexTargetOption",
+     "type": "Self"
+    },
+    {
+     "name": "commandServer",
+     "type": "Swift.Result & Swift.Result & CommandSessionRequest?"
+    }
+   ],
+   "returns": "Set<inout [Bool], @escaping (Self.Element?, Timeout, inout Double) async throws -> @escaping (String) async -> Self.Element, Bool>",
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        indexTargetOption: Self,\n        commandServer: Swift.Result & Swift\n            .Result & CommandSessionRequest?\n    ) -> Set<\n        inout [Bool],\n        @escaping (\n            Self.Element?, Timeout,\n            inout Double\n        ) async throws ->\n            @escaping (String) async ->\n            Self.Element, Bool\n    >"
+  },
+  {
+   "group": "generated",
+   "columns": 45,
+   "nameWidth": 70,
+   "parameters": [
+    {
+     "name": "formatValue",
+     "type": "Swift.Result"
+    },
+    {
+     "name": "optionBuffer",
+     "type": "Session.ClientIndexCommand<any ClientRequestCommand>"
+    },
+    {
+     "name": "optionValue",
+     "type": "any Self.Element"
+    },
+    {
+     "name": "pane",
+     "type": "any Window"
+    },
+    {
+     "name": "limitDeadline",
+     "type": "Optional<inout [Foundation.URL : BufferServer], any Swift.Result, some Self.Element?>"
+    }
+   ],
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        formatValue: Swift.Result,\n        optionBuffer: Session\n            .ClientIndexCommand<\n                any ClientRequestCommand\n            >, optionValue: any Self.Element,\n        pane: any Window,\n        limitDeadline: Optional<\n            inout [Foundation.URL:\n                BufferServer],\n            any Swift.Result,\n            some Self.Element?\n        >)"
+  },
+  {
+   "group": "generated",
+   "columns": 45,
+   "nameWidth": 70,
+   "parameters": [
+    {
+     "name": "paneName",
+     "type": "Dictionary<Window, any Foundation.URL>"
+    },
+    {
+     "name": "sizeDeadline",
+     "type": "Self.Element?"
+    },
+    {
+     "name": "policyHook",
+     "type": "[inout Bool?]"
+    },
+    {
+     "name": "timeout",
+     "type": "RequestValueName.ValueWindowPane<[@escaping (Self, Pane) async -> Foundation.URL]>"
+    },
+    {
+     "name": "targetValueSession",
+     "type": "Pane"
+    }
+   ],
+   "returns": "[[Foundation.URL.Size<Foundation.URL> : [Swift.Result]] : Self]",
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        paneName: Dictionary<\n            Window, any Foundation.URL\n        >, sizeDeadline: Self.Element?,\n        policyHook: [inout Bool?],\n        timeout: RequestValueName\n            .ValueWindowPane<\n                [@escaping (Self, Pane) async\n                    -> Foundation.URL]\n            >, targetValueSession: Pane\n    ) -> [[Foundation.URL.Size<\n        Foundation.URL\n    >: [Swift.Result]]: Self]"
+  },
+  {
+   "group": "generated",
+   "columns": 45,
+   "nameWidth": 40,
+   "parameters": [
+    {
+     "name": "sizeBuffer",
+     "type": "Self"
+    },
+    {
+     "name": "timeoutObserver",
+     "type": "Pane"
+    },
+    {
+     "name": "command",
+     "type": "Bool.NameFormat<@escaping (Double?) async -> some Session>"
+    }
+   ],
+   "returns": "[inout (Window, sessionSessionServer: Window, Window)]",
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        sizeBuffer: Self,\n        timeoutObserver: Pane,\n        command: Bool.NameFormat<\n            @escaping (Double?) async ->\n                some Session\n        >\n    )\n    -> [inout (\n        Window, sessionSessionServer: Window,\n        Window\n    )]"
+  },
+  {
+   "group": "generated",
+   "columns": 60,
+   "nameWidth": 55,
+   "parameters": [
+    {
+     "name": "requestResult",
+     "type": "(Int.TimeoutValue<Session & Self.Element & Foundation.URL>)"
+    }
+   ],
+   "returns": "Bool.Index<([String], Double & Pane & Double, Foundation.URL & Self & String)>",
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        requestResult: (\n            Int.TimeoutValue<\n                Session & Self.Element & Foundation.URL\n            >\n        )\n    )\n    -> Bool.Index<\n        (\n            [String], Double & Pane & Double,\n            Foundation.URL & Self & String\n        )\n    >"
+  },
+  {
+   "group": "generated",
+   "columns": 60,
+   "nameWidth": 5,
+   "parameters": [
+    {
+     "name": "format",
+     "type": "Array<Swift.Result, [Session.HookSession<Foundation.URL> : Bool.ClientOption<Window>]>"
+    },
+    {
+     "name": "nameObserverRequest",
+     "type": "Int & Pane & Swift.Result"
+    },
+    {
+     "name": "target",
+     "type": "((), indexCommand: Double, (Self.Element, Dictionary<Pane, Pane>, client: Pane.Pane<Swift.Result>))"
+    }
+   ],
+   "returns": "Window",
+   "text": "func xxxxx(\n    format: Array<\n        Swift.Result,\n        [Session.HookSession<Foundation.URL>: Bool\n            .ClientOption<Window>]\n    >, nameObserverRequest: Int & Pane & Swift.Result,\n    target: (\n        (), indexCommand: Double,\n        (\n            Self.Element, Dictionary<Pane, Pane>,\n            client: Pane.Pane<Swift.Result>\n        )\n    )\n) -> Window"
+  },
+  {
+   "group": "generated",
+   "columns": 60,
+   "nameWidth": 20,
+   "parameters": [
+    {
+     "name": "limit",
+     "type": "any Server"
+    },
+    {
+     "name": "hookRequest",
+     "type": "()"
+    },
+    {
+     "name": "serverOption",
+     "type": "@escaping ([Int & Bool & Self.Element : Session & String & Double], some Pane) async -> Bool"
+    },
+    {
+     "name": "server",
+     "type": "(policySessionSession: Foundation.URL & Foundation.URL & Int)"
+    }
+   ],
+   "returns": "[inout Int? : @escaping ([Self], any Self.Element) async throws -> Swift.Result]",
+   "text": "func xxxxxxxxxxxxxxxxxxxx(\n    limit: any Server, hookRequest: (),\n    serverOption:\n        @escaping (\n            [Int & Bool & Self.Element: Session & String\n                & Double], some Pane\n        ) async -> Bool,\n    server: (\n        policySessionSession: Foundation.URL & Foundation\n            .URL & Int\n    )\n) -> [inout Int?:\n    @escaping ([Self], any Self.Element) async throws ->\n    Swift.Result]"
+  },
+  {
+   "group": "generated",
+   "columns": 60,
+   "nameWidth": 40,
+   "parameters": [
+    {
+     "name": "serverPane",
+     "type": "(Optional<Swift.Result?, any Int, some Int>, Array<Bool>, Self.Element.IndexDeadlineIndex<DeadlineDeadlineServer>?)"
+    },
+    {
+     "name": "index",
+     "type": "[[inout String]]"
+    },
+    {
+     "name": "name",
+     "type": "any Session"
+    },
+    {
+     "name": "sizeResult",
+     "type": "some Session"
+    },
+    {
+     "name": "sessionNameName",
+     "type": "inout Task<inout Swift.Result, [Foundation.URL], [Self.Element]>"
+    }
+   ],
+   "text": "func xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n    serverPane: (\n        Optional<Swift.Result?, any Int, some Int>,\n        Array<Bool>,\n        Self.Element.IndexDeadlineIndex<\n            DeadlineDeadlineServer\n        >?\n    ), index: [[inout String]], name: any Session,\n    sizeResult: some Session,\n    sessionNameName:\n        inout Task<\n            inout Swift.Result, [Foundation.URL],\n            [Self.Element]\n        >)"
+  },
+  {
+   "group": "generated",
+   "columns": 60,
+   "nameWidth": 14,
+   "parameters": [
+    {
+     "name": "hookSizeIndex",
+     "type": "Self.Element"
+    },
+    {
+     "name": "formatSessionResult",
+     "type": "[Self.Element.RequestResultObserver<Optional<Foundation.URL, Self>>]"
+    },
+    {
+     "name": "serverNamePolicy",
+     "type": "inout (requestCommandRequest: Self.Format<DeadlineResultTimeout>, any Pane, limit: Self.Element & Session & Window)"
+    },
+    {
+     "name": "paneLimit",
+     "type": "Array<Session, some HookSizeCommand>"
+    }
+   ],
+   "returns": "Session & String & Session",
+   "text": "func xxxxxxxxxxxxxx(\n    hookSizeIndex: Self.Element,\n    formatSessionResult: [Self.Element\n        .RequestResultObserver<\n            Optional<Foundation.URL, Self>\n        >],\n    serverNamePolicy:\n        inout (\n            requestCommandRequest: Self.Format<\n                DeadlineResultTimeout\n            >, any Pane,\n            limit: Self.Element & Session & Window\n        ), paneLimit: Array<Session, some HookSizeCommand>\n) -> Session & String & Session"
+  },
+  {
+   "group": "generated",
+   "columns": 60,
+   "nameWidth": 14,
+   "parameters": [
+    {
+     "name": "sessionIndex",
+     "type": "[[(formatFormatValue: Bool, limitSession: Swift.Result) : @escaping (NameDeadlineCommand, Int) throws -> Session] : Int]"
+    },
+    {
+     "name": "format",
+     "type": "Foundation.URL"
+    },
+    {
+     "name": "pane",
+     "type": "Result<@escaping () async throws -> Self, Foundation.URL>"
+    },
+    {
+     "name": "valueClient",
+     "type": "Foundation.URL.ResultObserver<[@escaping (Int, Swift.Result) async -> Bool : some Self.Element]>"
+    },
+    {
+     "name": "limitOption",
+     "type": "[Int]"
+    }
+   ],
+   "returns": "some Double",
+   "text": "func xxxxxxxxxxxxxx(\n    sessionIndex: [[(\n        formatFormatValue: Bool, limitSession: Swift.Result\n    ):\n        @escaping (NameDeadlineCommand, Int) throws ->\n        Session]: Int], format: Foundation.URL,\n    pane: Result<\n        @escaping () async throws -> Self, Foundation.URL\n    >,\n    valueClient: Foundation.URL.ResultObserver<\n        [@escaping (Int, Swift.Result) async -> Bool:\n            some Self.Element]\n    >, limitOption: [Int]\n) -> some Double"
+  },
+  {
+   "group": "generated",
+   "columns": 60,
+   "nameWidth": 70,
+   "parameters": [
+    {
+     "name": "bufferSessionSession",
+     "type": "Swift.Result & String & Session"
+    },
+    {
+     "name": "policyBufferObserver",
+     "type": "(@escaping (inout String, (), Window.FormatPane<Foundation.URL>) async throws -> Window, Bool?)"
+    },
+    {
+     "name": "windowRequest",
+     "type": "[String : Foundation.URL.ValuePolicyHook<Window>]"
+    },
+    {
+     "name": "server",
+     "type": "Session"
+    },
+    {
+     "name": "nameWindow",
+     "type": "some String"
+    }
+   ],
+   "returns": "some Int?",
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        bufferSessionSession: Swift.Result & String\n            & Session,\n        policyBufferObserver: (\n            @escaping (\n                inout String, (),\n                Window.FormatPane<Foundation.URL>\n            ) async throws -> Window, Bool?\n        ),\n        windowRequest: [String: Foundation.URL\n            .ValuePolicyHook<Window>], server: Session,\n        nameWindow: some String\n    ) -> some Int?"
+  },
+  {
+   "group": "generated",
+   "columns": 60,
+   "nameWidth": 14,
+   "parameters": [
+    {
+     "name": "requestClientWindow",
+     "type": "(clientDeadline: any SizeTimeout, buffer: (), [[Bool : Double]])"
+    }
+   ],
+   "returns": "Optional<Set<inout Int, [Self : Session], Set<Window, Session>>, PaneOption, Result<@escaping (Bool) async throws -> Pane, @escaping (Pane) async throws -> String>>",
+   "text": "func xxxxxxxxxxxxxx(\n    requestClientWindow: (\n        clientDeadline: any SizeTimeout, buffer: (),\n        [[Bool: Double]]\n    )\n) -> Optional<\n    Set<inout Int, [Self: Session], Set<Window, Session>>,\n    PaneOption,\n    Result<\n        @escaping (Bool) async throws -> Pane,\n        @escaping (Pane) async throws -> String\n    >\n>"
+  },
+  {
+   "group": "generated",
+   "columns": 60,
+   "nameWidth": 9,
+   "parameters": [
+    {
+     "name": "request",
+     "type": "String"
+    },
+    {
+     "name": "client",
+     "type": "String"
+    },
+    {
+     "name": "sessionDeadlineObserver",
+     "type": "Int"
+    },
+    {
+     "name": "policy",
+     "type": "@escaping (@escaping (Bool & Self.Element & Self.Element) -> @escaping () async -> String) async -> inout any Swift.Result"
+    },
+    {
+     "name": "timeoutSession",
+     "type": "[(value: @escaping (Int, String, Self) -> Session, SizeServerTimeout)]"
+    }
+   ],
+   "returns": "Self.Element",
+   "text": "func xxxxxxxxx(\n    request: String, client: String,\n    sessionDeadlineObserver: Int,\n    policy:\n        @escaping (\n            @escaping (Bool & Self.Element & Self.Element)\n                -> @escaping () async -> String\n        ) async -> inout any Swift.Result,\n    timeoutSession: [(\n        value: @escaping (Int, String, Self) -> Session,\n        SizeServerTimeout\n    )]\n) -> Self.Element"
+  },
+  {
+   "group": "generated",
+   "columns": 60,
+   "nameWidth": 70,
+   "parameters": [
+    {
+     "name": "targetClientIndex",
+     "type": "some String"
+    },
+    {
+     "name": "observerSizeFormat",
+     "type": "some Foundation.URL"
+    },
+    {
+     "name": "target",
+     "type": "(Self.Element, HookServerHook & Bool & Self.Element)"
+    },
+    {
+     "name": "clientPolicySession",
+     "type": "Swift.Result"
+    }
+   ],
+   "returns": "@escaping (some Bool) async -> inout (session: Swift.Result, Int, bufferObserverName: Bool)",
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        targetClientIndex: some String,\n        observerSizeFormat: some Foundation.URL,\n        target: (\n            Self.Element,\n            HookServerHook & Bool & Self.Element\n        ), clientPolicySession: Swift.Result\n    )\n    -> @escaping (some Bool) async ->\n    inout (\n        session: Swift.Result, Int, bufferObserverName: Bool\n    )"
+  },
+  {
+   "group": "generated",
+   "columns": 60,
+   "nameWidth": 55,
+   "parameters": [
+    {
+     "name": "valuePane",
+     "type": "@escaping (Int.LimitSizeName<Self>, String.SessionOption<[Window : IndexRequestServer]>, BufferName & NameIndexSession & Target) throws -> any Self.Element"
+    },
+    {
+     "name": "pane",
+     "type": "String & Double & Int"
+    },
+    {
+     "name": "option",
+     "type": "[Task<Swift.Result?, Int>]"
+    }
+   ],
+   "returns": "[Foundation.URL.Session<IndexCommandRequest> : Swift.Result?]",
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        valuePane:\n            @escaping (\n                Int.LimitSizeName<Self>,\n                String.SessionOption<\n                    [Window: IndexRequestServer]\n                >, BufferName & NameIndexSession & Target\n            ) throws -> any Self.Element,\n        pane: String & Double & Int,\n        option: [Task<Swift.Result?, Int>]\n    ) -> [Foundation.URL.Session<IndexCommandRequest>: Swift\n    .Result?]"
+  },
+  {
+   "group": "generated",
+   "columns": 60,
+   "nameWidth": 9,
+   "parameters": [
+    {
+     "name": "windowIndex",
+     "type": "@escaping (inout @escaping (Session, Window, Bool) throws -> Session, @escaping (Session, Self.Element.Hook<Int>) -> [Self], some Swift.Result) async throws -> Self.Element??"
+    },
+    {
+     "name": "sessionBufferIndex",
+     "type": "some Foundation.URL"
+    },
+    {
+     "name": "client",
+     "type": "(Swift.Result, serverName: inout Window)"
+    },
+    {
+     "name": "sessionRequest",
+     "type": "Foundation.URL.SizeTimeout<some Foundation.URL>"
+    },
+    {
+     "name": "buffer",
+     "type": "inout some TimeoutTarget"
+    }
+   ],
+   "text": "func xxxxxxxxx(\n    windowIndex:\n        @escaping (\n            inout @escaping (Session, Window, Bool) throws\n                -> Session,\n            @escaping (Session, Self.Element.Hook<Int>) ->\n                [Self], some Swift.Result\n        ) async throws -> Self.Element??,\n    sessionBufferIndex: some Foundation.URL,\n    client: (Swift.Result, serverName: inout Window),\n    sessionRequest: Foundation.URL.SizeTimeout<\n        some Foundation.URL\n    >, buffer: inout some TimeoutTarget)"
+  },
+  {
+   "group": "generated",
+   "columns": 75,
+   "nameWidth": 5,
+   "parameters": [
+    {
+     "name": "deadlineTimeout",
+     "type": "Self"
+    },
+    {
+     "name": "requestWindowPane",
+     "type": "Pane.ObserverSizeSize<@escaping ([Window], @escaping (Swift.Result) async throws -> String, Set<Window, Self, Double>) throws -> (Self)>"
+    },
+    {
+     "name": "timeout",
+     "type": "Self.WindowValueFormat<inout Swift.Result & Double & Self>"
+    }
+   ],
+   "returns": "inout (session: [Double], bufferFormatClient: some Double, limitBufferCommand: [Window : Bool])",
+   "text": "func xxxxx(\n    deadlineTimeout: Self,\n    requestWindowPane: Pane.ObserverSizeSize<\n        @escaping (\n            [Window], @escaping (Swift.Result) async throws -> String,\n            Set<Window, Self, Double>\n        ) throws -> (Self)\n    >, timeout: Self.WindowValueFormat<inout Swift.Result & Double & Self>\n)\n    -> inout (\n        session: [Double], bufferFormatClient: some Double,\n        limitBufferCommand: [Window: Bool]\n    )"
+  },
+  {
+   "group": "generated",
+   "columns": 75,
+   "nameWidth": 14,
+   "parameters": [
+    {
+     "name": "target",
+     "type": "Int.NameTimeout<some Double>"
+    },
+    {
+     "name": "observerObserver",
+     "type": "@escaping (Swift.Result, some Bool, Self.Element) async throws -> [inout Self.Element]"
+    },
+    {
+     "name": "deadlineIndex",
+     "type": "@escaping () -> Int & Double & Double?"
+    },
+    {
+     "name": "policyBuffer",
+     "type": "(Result<Session, inout Pane>, sessionName: some Swift.Result, [Session & Int & Self.Element : Self])"
+    },
+    {
+     "name": "formatName",
+     "type": "Array<Pane.RequestBufferPane<[PolicyOptionWindow : Swift.Result]>>"
+    }
+   ],
+   "text": "func xxxxxxxxxxxxxx(\n    target: Int.NameTimeout<some Double>,\n    observerObserver:\n        @escaping (Swift.Result, some Bool, Self.Element) async throws ->\n        [inout Self.Element],\n    deadlineIndex: @escaping () -> Int & Double & Double?,\n    policyBuffer: (\n        Result<Session, inout Pane>, sessionName: some Swift.Result,\n        [Session & Int & Self.Element: Self]\n    ),\n    formatName: Array<\n        Pane.RequestBufferPane<[PolicyOptionWindow: Swift.Result]>\n    >)"
+  },
+  {
+   "group": "generated",
+   "columns": 75,
+   "nameWidth": 70,
+   "parameters": [
+    {
+     "name": "bufferOptionOption",
+     "type": "@escaping (@escaping (some Swift.Result) throws -> (paneName: Pane, Self, observer: Session), Pane) throws -> [Bool? : [Swift.Result : Swift.Result]]"
+    }
+   ],
+   "returns": "@escaping (String & Pane & String, Self) async throws -> (any String)",
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        bufferOptionOption:\n            @escaping (\n                @escaping (some Swift.Result) throws -> (\n                    paneName: Pane, Self, observer: Session\n                ), Pane\n            ) throws -> [Bool?: [Swift.Result: Swift.Result]]\n    )\n    -> @escaping (String & Pane & String, Self) async throws -> (\n        any String\n    )"
+  },
+  {
+   "group": "generated",
+   "columns": 75,
+   "nameWidth": 28,
+   "parameters": [
+    {
+     "name": "deadline",
+     "type": "[String : OptionIndex & Window & Double]"
+    },
+    {
+     "name": "value",
+     "type": "Int.TargetSession<Self.Element>"
+    },
+    {
+     "name": "timeoutTargetPane",
+     "type": "inout inout RequestServer"
+    },
+    {
+     "name": "timeoutNameIndex",
+     "type": "Swift.Result.TargetHook<inout Swift.Result>"
+    },
+    {
+     "name": "commandHook",
+     "type": "any Double"
+    }
+   ],
+   "returns": "@escaping (ClientName?) throws -> @escaping (Window & Swift.Result & Window, any Bool, @escaping (String, Self) -> Int) async -> some Double",
+   "text": "func xxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n    deadline: [String: OptionIndex & Window & Double],\n    value: Int.TargetSession<Self.Element>,\n    timeoutTargetPane: inout inout RequestServer,\n    timeoutNameIndex: Swift.Result.TargetHook<inout Swift.Result>,\n    commandHook: any Double\n)\n    -> @escaping (ClientName?) throws ->\n    @escaping (\n        Window & Swift.Result & Window, any Bool,\n        @escaping (String, Self) -> Int\n    ) async -> some Double"
+  },
+  {
+   "group": "generated",
+   "columns": 75,
+   "nameWidth": 28,
+   "parameters": [
+    {
+     "name": "timeout",
+     "type": "Result<@escaping (Double?) async throws -> Bool?, [inout Window : Result<String, Foundation.URL>], inout [Bool : Self.Element]>"
+    },
+    {
+     "name": "formatLimit",
+     "type": "@escaping (String.Name<String>) async throws -> [[String]]"
+    },
+    {
+     "name": "buffer",
+     "type": "[(@escaping (Double, Self.Element, Window) -> Int, [Int]) : Bool.CommandPolicy<OptionCommand>]"
+    },
+    {
+     "name": "valueLimitObserver",
+     "type": "[Int : Self]"
+    },
+    {
+     "name": "indexPolicy",
+     "type": "some Self.Element"
+    }
+   ],
+   "returns": "Dictionary<[Double : Int], Bool.NameTimeoutObserver<any Window>>",
+   "text": "func xxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n    timeout: Result<\n        @escaping (Double?) async throws -> Bool?,\n        [inout Window: Result<String, Foundation.URL>],\n        inout [Bool: Self.Element]\n    >,\n    formatLimit:\n        @escaping (String.Name<String>) async throws -> [[String]],\n    buffer: [(@escaping (Double, Self.Element, Window) -> Int, [Int]): Bool\n        .CommandPolicy<OptionCommand>], valueLimitObserver: [Int: Self],\n    indexPolicy: some Self.Element\n) -> Dictionary<[Double: Int], Bool.NameTimeoutObserver<any Window>>"
+  },
+  {
+   "group": "generated",
+   "columns": 75,
+   "nameWidth": 14,
+   "parameters": [
+    {
+     "name": "requestServerFormat",
+     "type": "Window"
+    }
+   ],
+   "returns": "@escaping (some SizeSize, Foundation.URL, ((paneOption: Bool), (Double, nameCommandName: ValueValue, timeoutNameSession: Window))) throws -> Hook",
+   "text": "func xxxxxxxxxxxxxx(requestServerFormat: Window)\n    -> @escaping (\n        some SizeSize, Foundation.URL,\n        (\n            (paneOption: Bool),\n            (\n                Double, nameCommandName: ValueValue,\n                timeoutNameSession: Window\n            )\n        )\n    ) throws -> Hook"
+  },
+  {
+   "group": "generated",
+   "columns": 75,
+   "nameWidth": 9,
+   "parameters": [
+    {
+     "name": "deadline",
+     "type": "@escaping (Foundation.URL, @escaping (any Pane, some String) -> [Double : Foundation.URL], [()]) throws -> some Self.Element"
+    }
+   ],
+   "returns": "Value.PaneBufferCommand<Double.SessionDeadlineSize<ClientCommandObserver?>>",
+   "text": "func xxxxxxxxx(\n    deadline:\n        @escaping (\n            Foundation.URL,\n            @escaping (any Pane, some String) -> [Double: Foundation.URL],\n            [()]\n        ) throws -> some Self.Element\n)\n    -> Value.PaneBufferCommand<\n        Double.SessionDeadlineSize<ClientCommandObserver?>\n    >"
+  },
+  {
+   "group": "generated",
+   "columns": 75,
+   "nameWidth": 70,
+   "parameters": [
+    {
+     "name": "timeout",
+     "type": "any Session"
+    },
+    {
+     "name": "requestTargetValue",
+     "type": "([[Double : Double] : @escaping (String, Double) throws -> Swift.Result])"
+    },
+    {
+     "name": "paneSession",
+     "type": "any Self.Element"
+    }
+   ],
+   "returns": "inout @escaping ((), Set<Swift.Result, Swift.Result>) -> Array<String, Bool, Pane>",
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        timeout: any Session,\n        requestTargetValue: (\n            [[Double: Double]:\n                @escaping (String, Double) throws -> Swift.Result]\n        ), paneSession: any Self.Element\n    )\n    -> inout @escaping ((), Set<Swift.Result, Swift.Result>) -> Array<\n        String, Bool, Pane\n    >"
+  },
+  {
+   "group": "generated",
+   "columns": 75,
+   "nameWidth": 14,
+   "parameters": [
+    {
+     "name": "observerSessionWindow",
+     "type": "[[(paneObserver: Pane, Self.Element, deadline: Int)]]"
+    },
+    {
+     "name": "policyIndex",
+     "type": "Self"
+    },
+    {
+     "name": "commandOptionResult",
+     "type": "[Optional<Optional<Swift.Result, Double, Foundation.URL>> : inout inout Bool]"
+    },
+    {
+     "name": "bufferPolicy",
+     "type": "(client: inout Swift.Result, Foundation.URL.ServerRequest<Swift.Result>, some Double?)"
+    },
+    {
+     "name": "buffer",
+     "type": "(Session)"
+    }
+   ],
+   "text": "func xxxxxxxxxxxxxx(\n    observerSessionWindow: [[(\n        paneObserver: Pane, Self.Element, deadline: Int\n    )]], policyIndex: Self,\n    commandOptionResult: [Optional<\n        Optional<Swift.Result, Double, Foundation.URL>\n    >: inout inout Bool],\n    bufferPolicy: (\n        client: inout Swift.Result,\n        Foundation.URL.ServerRequest<Swift.Result>, some Double?\n    ), buffer: (Session))"
+  },
+  {
+   "group": "generated",
+   "columns": 75,
+   "nameWidth": 14,
+   "parameters": [
+    {
+     "name": "hookSizeIndex",
+     "type": "Self.Element"
+    },
+    {
+     "name": "formatSessionResult",
+     "type": "[Self.Element.RequestResultObserver<Optional<Foundation.URL, Self>>]"
+    },
+    {
+     "name": "serverNamePolicy",
+     "type": "inout (requestCommandRequest: Self.Format<DeadlineResultTimeout>, any Pane, limit: Self.Element & Session & Window)"
+    },
+    {
+     "name": "paneLimit",
+     "type": "Array<Session, some HookSizeCommand>"
+    }
+   ],
+   "returns": "Session & String & Session",
+   "text": "func xxxxxxxxxxxxxx(\n    hookSizeIndex: Self.Element,\n    formatSessionResult: [Self.Element.RequestResultObserver<\n        Optional<Foundation.URL, Self>\n    >],\n    serverNamePolicy:\n        inout (\n            requestCommandRequest: Self.Format<DeadlineResultTimeout>,\n            any Pane, limit: Self.Element & Session & Window\n        ), paneLimit: Array<Session, some HookSizeCommand>\n) -> Session & String & Session"
+  },
+  {
+   "group": "generated",
+   "columns": 75,
+   "nameWidth": 14,
+   "parameters": [
+    {
+     "name": "request",
+     "type": "@escaping (inout Self.Element?, Pane) -> (some Pane, hookWindowValue: Self, valueTarget: inout Swift.Result)"
+    },
+    {
+     "name": "sizeSessionFormat",
+     "type": "inout Self.Element"
+    },
+    {
+     "name": "commandWindow",
+     "type": "(inout Foundation.URL, any Swift.Result, ValueLimit.NameTarget<BufferObserverObserver>)?"
+    },
+    {
+     "name": "serverResultOption",
+     "type": "Result<[Self?], [Pane.Timeout<Session>]>"
+    }
+   ],
+   "returns": "Request",
+   "text": "func xxxxxxxxxxxxxx(\n    request:\n        @escaping (inout Self.Element?, Pane) -> (\n            some Pane, hookWindowValue: Self,\n            valueTarget: inout Swift.Result\n        ), sizeSessionFormat: inout Self.Element,\n    commandWindow: (\n        inout Foundation.URL, any Swift.Result,\n        ValueLimit.NameTarget<BufferObserverObserver>\n    )?, serverResultOption: Result<[Self?], [Pane.Timeout<Session>]>\n) -> Request"
+  },
+  {
+   "group": "generated",
+   "columns": 75,
+   "nameWidth": 70,
+   "parameters": [
+    {
+     "name": "pane",
+     "type": "Foundation.URL?"
+    },
+    {
+     "name": "format",
+     "type": "[[[Self : Foundation.URL] : some Window] : [Double & Self.Element & String : Self.Element]]"
+    },
+    {
+     "name": "timeoutSessionSession",
+     "type": "Double.Limit<([String], formatFormatServer: some Session, formatWindow: Self)>"
+    },
+    {
+     "name": "target",
+     "type": "Pane.Limit<Session>"
+    }
+   ],
+   "text": "func\n    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(\n        pane: Foundation.URL?,\n        format: [[[Self: Foundation.URL]: some Window]: [Double & Self\n            .Element & String: Self.Element]],\n        timeoutSessionSession: Double.Limit<\n            (\n                [String], formatFormatServer: some Session,\n                formatWindow: Self\n            )\n        >, target: Pane.Limit<Session>)"
+  }
+ ]
+}

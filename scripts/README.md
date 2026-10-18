@@ -207,7 +207,9 @@ back to its seed.
 
 A tag is recorded only once the registry carries its version. A port tags
 first and publishes minutes later, and a tag with no package behind it would
-send an install command to nothing.
+send an install command to nothing. A baseline tag the repository does not
+carry is dropped, so a port with no release tag records none and installs from
+its default branch.
 
 Release tags are read per port. Rust is a Cargo workspace and tags each crate
 (`libtmux@v0.1.0-alpha.10`); Go is multi-module and tags submodules under a

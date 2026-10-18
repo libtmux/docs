@@ -2,6 +2,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
+import { tokenizeDoc } from '../src/doc/roles.ts'
 import { extractWithSpec } from '../src/languages/spec.ts'
 import { CSHARP } from '../src/languages/specs.ts'
 
@@ -97,5 +98,42 @@ public ${declaration} Result(
   it('does not turn ordinary class parameters or private records into public properties', async () => {
     const symbols = await extract('public class Result(int Value) {}\ninternal record Hidden(int Secret);')
     expect(symbols.map((symbol) => symbol.id)).toEqual(['LibTmux.Result'])
+  })
+})
+
+describe('C# inline formatting in XML docs', () => {
+  const documented = (remarks: string) => extract(`namespace LibTmux;
+public class Accessor {
+    /// <summary>Forgets a cached server.</summary>
+    /// <remarks>
+${remarks.split('\n').map((line) => `    /// ${line}`).join('\n')}
+    /// </remarks>
+    public void Invalidate() {}
+}`).then((symbols) => symbols.find((symbol) => symbol.id === 'LibTmux.Accessor.Invalidate')!.doc!.body!)
+
+  it('writes <em> and <b> as Markdown marks the page reads as emphasis and bold', async () => {
+    const body = await documented('A handle names one tmux <em>process</em>. Killing the\nserver is <b>final</b>, <i>quiet</i> and <strong>total</strong>.')
+    expect(body).toBe('A handle names one tmux *process*. Killing the\nserver is **final**, *quiet* and **total**.')
+    expect(tokenizeDoc(body, 'csharp').filter((span) => span.kind === 'strong' || span.kind === 'emphasis')).toEqual([
+      { kind: 'emphasis', text: 'process' },
+      { kind: 'strong', text: 'final' },
+      { kind: 'emphasis', text: 'quiet' },
+      { kind: 'strong', text: 'total' },
+    ])
+  })
+
+  it('moves a space inside a mark outside it, where Markdown needs it', async () => {
+    expect(await documented('Read <b>this </b>now, then<em> not</em> later.')).toBe('Read **this** now, then *not* later.')
+  })
+
+  it('drops a mark with nothing inside it', async () => {
+    expect(await documented('Read <b></b>this <em></em>now.')).toBe('Read this now.')
+  })
+
+  it('leaves <c> and a bare star as they were', async () => {
+    const body = await documented('Match <c>*.cs</c> and 2 * 3.')
+    expect(body).toBe('Match <c>*.cs</c> and 2 * 3.')
+    expect(tokenizeDoc(body, 'csharp').filter((span) => span.kind === 'code')).toEqual([{ kind: 'code', text: '*.cs' }])
+    expect(tokenizeDoc(body, 'csharp').some((span) => span.kind === 'strong' || span.kind === 'emphasis')).toBe(false)
   })
 })

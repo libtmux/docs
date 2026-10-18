@@ -16,7 +16,9 @@ async function observeAppearance(context) {
         window.__appearance.positions.push([rect.x, rect.y, rect.width, rect.height])
         if (!window.__appearance.first) {
           const text = [heading, document.querySelector('main code')].filter(Boolean)
-          const icon = document.querySelector('a[data-external-link]')
+          // Icon-only links draw no glyph, and a closed header menu is not what a reader sees first.
+          const glyphLinks = [...document.querySelectorAll('a[data-external-link]:not([data-external-link-icon])')]
+          const icon = glyphLinks.find((link) => link.checkVisibility()) ?? glyphLinks[0]
           const dotted = document.querySelector('.api-badge[data-link-preview] > .api-badge__label')
           window.__appearance.first = {
             readiness: document.documentElement.dataset.pageReadiness,

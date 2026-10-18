@@ -69,7 +69,7 @@
       "status": "unpublished",
       "version": null,
       "stable": null,
-      "tag": "v0.1.0-alpha.1"
+      "tag": null
     },
     "ts": {
       "status": "prerelease",

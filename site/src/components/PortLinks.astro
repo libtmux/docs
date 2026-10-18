@@ -1,10 +1,10 @@
 ---
 import RegistryIcon from './icons/RegistryIcon.astro'
-import { portSourceUrl, type DocProduct, type Port } from '../lib/ports'
+import { portDestinations, type DocProduct, type Port, type ProjectLinks } from '../lib/ports'
 
 interface Props {
   port?: Port
-  project?: { name: string; repo: string; homepage: string }
+  project?: ProjectLinks
   product?: DocProduct
   version?: string
   revision?: string
@@ -12,32 +12,14 @@ interface Props {
 }
 
 const { port, project, product, version = 'latest', revision, class: className = '' } = Astro.props as Props
-const pkg = product ? port?.packages?.find((entry) => entry.id === product) : undefined
-const source = pkg?.source
-const repo = project?.repo ?? source?.repo ?? port!.repo
-// An app in a separate repository has its own release history.
-const taggedVersion = /^v?\d/.test(version) && repo === port?.repo
-  ? `${port?.tagPrefix ?? ''}${version}` : undefined
-const ref = version === 'latest' ? source?.ref : taggedVersion ?? revision ?? source?.ref
-const sourceUrl = project ? `https://github.com/${repo}` : product
-  ? source ? `https://github.com/${repo}/tree/${ref}/${source.path}` : `https://github.com/${repo}`
-  : portSourceUrl(port!, version, revision)
-const registry = product
-  ? pkg?.registry && port?.registry ? { ...port.registry, url: pkg.registry } : undefined
-  : port?.registry
-
-// Go's registry and reference host are the same destination.
-const ecosystem =
-  !product && port?.ecosystemHost && port.ecosystemHost.url !== registry?.url
-    ? port.ecosystemHost
-    : undefined
+const { source, registry, ecosystem } = portDestinations({ port, project, product, version, revision })
 ---
 
 <nav class:list={['port-links', className]} aria-label={project ? `${project.name} website and source` : `${port!.name} package and source`}>
   {project && <a class="port-link" href={project.homepage} rel="noopener"><span>Official website</span></a>}
-  <a class="port-link" href={sourceUrl} title={source ? `${repo}/${source.path} (${ref})` : undefined} rel="noopener">
+  <a class="port-link" href={source.url} title={product && source.path ? `${source.repo}/${source.path} (${source.ref})` : undefined} rel="noopener">
     <RegistryIcon icon="github" decorative />
-    <span>{product ? 'GitHub' : repo}</span>
+    <span>{product ? 'GitHub' : source.repo}</span>
   </a>
   {
     registry && (

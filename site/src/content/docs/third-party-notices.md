@@ -95,14 +95,20 @@ Doxygen or any modified version of it.
 The [PyPI blocks logo](https://pypi.org/trademarks/) is a trademark of the
 Python Software Foundation and identifies links to the Python Package Index.
 Other package-host icons use [Simple Icons](https://simpleicons.org/)
-(CC0-1.0).
+(CC0-1.0). The docs.rs mark is its
+[`docsdotrs` icon](https://github.com/simple-icons/simple-icons/blob/16.35.0/icons/docsdotrs.svg),
+inlined unchanged. The book beside javadoc.io links is original artwork for
+this site: the host publishes no vector logo, and the mark does not imitate
+its favicon.
 
-Three ports deep-link to the canonical host their ecosystem already uses,
+Some ports deep-link to the canonical host their ecosystem already uses,
 rather than duplicating it here:
 
-- Rust: [docs.rs](https://docs.rs/libtmux)
+- Rust: [docs.rs](https://docs.rs/libtmux), for each published crate
 - Go: [pkg.go.dev](https://pkg.go.dev/github.com/libtmux/libtmux-go/tmux)
-- Java and Kotlin: [javadoc.io](https://javadoc.io/doc/io.github.libtmux/libtmux)
+- Java, Kotlin and Scala: [javadoc.io](https://javadoc.io/doc/io.github.libtmux/libtmux)
+- Swift: the [Swift Package Index](https://swiftpackageindex.com/libtmux/libtmux-swift/documentation/libtmux)
+  copy of the DocC reference
 
 Those sites are operated independently of this project and carry their own
 terms.

@@ -1,4 +1,4 @@
-import { parameterId, type ApiSymbol, type Signature, type SymbolIndex } from '@libtmux/api-model'
+import { parameterId, qualifiedNameOf, type ApiSymbol, type Signature, type SymbolIndex } from '@libtmux/api-model'
 
 /** Documentation surface budgets, independent of a port's source formatter. */
 export const CODE_COLUMNS = { api: 60, example: 80 } as const
@@ -155,8 +155,67 @@ export function supportsJavaSignatures(symbol: ApiSymbol, language?: string): bo
     symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
 }
 
+/** The reference spells a Swift callable as its name and typed parameters, with no source declaration. */
+export function supportsSwiftSignatures(symbol: ApiSymbol, language?: string): boolean {
+  return language === 'swift' && ['method', 'function'].includes(symbol.kind) && symbol.signatures.length > 0 &&
+    symbol.signatures.every((signature) => signature.params.every((param) =>
+      typeof param.type === 'string' && !param.variadic && !param.optional && param.default === undefined))
+}
+
 export function supportsRustSignatures(symbol: ApiSymbol, language?: string): boolean {
   return language === 'rs' && ['method', 'function'].includes(symbol.kind) && symbol.signatures.length > 0 &&
+    symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
+}
+
+/** F# `val` and `member` signatures; union cases, fields and type headers keep their native one-line text. */
+export function supportsFSharpSignatures(symbol: ApiSymbol, language?: string): boolean {
+  return language === 'fsharp' && ['function', 'method', 'constant'].includes(symbol.kind) && symbol.signatures.length > 0 &&
+    symbol.signatures.every((signature) => /^(?:val|member)\s/.test(signature.raw ?? ''))
+}
+
+export interface CSharpParameter { name: string; /** Position in `Signature.params`, which anchors link to. */ index: number; text: string }
+
+/**
+ * The parameters of an extracted C# callable as declared. Extraction splits
+ * `params T[] name` into a typeless name that follows the array type, which
+ * becomes a name of its own; this shape is rejoined and nothing else is guessed.
+ */
+export function csharpParameters(signature: Signature): CSharpParameter[] | undefined {
+  const identifier = /^[A-Za-z_]\w*$/
+  const parameters: CSharpParameter[] = []
+  for (let at = 0; at < signature.params.length; at++) {
+    const param = signature.params[at]!
+    const next = signature.params[at + 1]
+    if (param.type && identifier.test(param.name)) {
+      parameters.push({ name: param.name, index: at, text: `${param.type} ${param.name}${param.default !== undefined ? ` = ${param.default}` : ''}` })
+    } else if (param.name.endsWith('[]') && param.default === undefined && next && !next.type && next.default === undefined && identifier.test(next.name)) {
+      parameters.push({ name: next.name, index: at + 1, text: `params ${param.name} ${next.name}` })
+      at++
+    } else return undefined
+  }
+  return parameters
+}
+
+/** Members are projected from the extracted callable; records keep their source header. */
+export function supportsCSharpSignatures(symbol: ApiSymbol, language?: string): boolean {
+  if (language !== 'csharp' || !symbol.signatures.length) return false
+  if (['class', 'struct'].includes(symbol.kind)) return symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
+  return symbol.kind === 'method' && symbol.signatures.every((signature) => Boolean(signature.raw?.trim()) ||
+    (csharpParameters(signature) !== undefined && (signature.typeParams ?? []).every((param) => /^(?:(?:in|out)\s+)?[A-Za-z_]\w*$/.test(param))))
+}
+
+/** Help syntax is source text for the command; it has no formatter of its own. */
+export function supportsPowerShellSignatures(symbol: ApiSymbol, language?: string): boolean {
+  return language === 'powershell' && symbol.signatures.length > 0 && symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
+}
+
+export function supportsRubySignatures(symbol: ApiSymbol, language?: string): boolean {
+  return language === 'ruby' && symbol.kind === 'method' && symbol.signatures.length > 0 &&
+    symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
+}
+
+export function supportsLuaSignatures(symbol: ApiSymbol, language?: string): boolean {
+  return language === 'lua' && ['method', 'function'].includes(symbol.kind) && symbol.signatures.length > 0 &&
     symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
 }
 
@@ -184,10 +243,58 @@ export async function apiSignatureLayouts(symbol: ApiSymbol, language?: string):
     return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
       [signature, await javaSignatureLayout(symbol, signature)] as const)))
   }
+  if (supportsFSharpSignatures(symbol, language)) {
+    const { fsharpSignatureLayout } = await import('./fsharp-code-layout')
+    return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
+      [signature, await fsharpSignatureLayout(signature)] as const)))
+  }
+  if (supportsCSharpSignatures(symbol, language)) {
+    const { csharpSignatureLayout } = await import('./csharp-code-layout')
+    return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
+      [signature, await csharpSignatureLayout(symbol, signature)] as const)))
+  }
+  if (supportsPowerShellSignatures(symbol, language)) {
+    const { powershellSignatureLayout } = await import('./powershell-code-layout')
+    return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
+      [signature, await powershellSignatureLayout(symbol, signature)] as const)))
+  }
+  if (language === 'py' && symbol.signatures.length) {
+    // The export prints the qualified name, so the layout reserves its columns.
+    const { pythonSignatureLayout } = await import('./python-code-layout')
+    const name = qualifiedNameOf(symbol)
+    return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
+      [signature, await pythonSignatureLayout(signature, { name })] as const)))
+  }
+  if (language === 'julia' && symbol.signatures.some((signature) => signature.raw?.trim())) {
+    const { juliaSignatureLayout } = await import('./julia-code-layout')
+    return new Map(await Promise.all(symbol.signatures.filter((signature) => signature.raw?.trim()).map(async (signature) =>
+      [signature, await juliaSignatureLayout(symbol, signature)] as const)))
+  }
+  if (supportsRubySignatures(symbol, language)) {
+    const { rubySignatureLayout } = await import('./ruby-code-layout')
+    return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
+      [signature, await rubySignatureLayout(symbol, signature)] as const)))
+  }
+  if (supportsLuaSignatures(symbol, language)) {
+    const { luaSignatureLayout } = await import('./lua-code-layout')
+    return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
+      [signature, await luaSignatureLayout(symbol, signature)] as const)))
+  }
   if ((language === 'scala' || language === 'kotlin') && ['method', 'function'].includes(symbol.kind)) {
     const { jvmSignatureLayout } = await import('./jvm-code-layout')
     return new Map(await Promise.all(symbol.signatures.filter((signature) => signature.raw).map(async (signature) =>
       [signature, await jvmSignatureLayout(signature, language)] as const)))
+  }
+  if (supportsSwiftSignatures(symbol, language)) {
+    const { swiftSignatureLayout } = await import('./swift-code-layout')
+    return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
+      [signature, await swiftSignatureLayout(symbol, signature)] as const)))
+  }
+  if (language === 'cxx' && ['method', 'function'].includes(symbol.kind) && symbol.signatures.length > 0 &&
+    symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))) {
+    const { cxxSignatureLayout } = await import('./cxx-code-layout')
+    return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
+      [signature, await cxxSignatureLayout(symbol, signature)] as const)))
   }
   return new Map()
 }

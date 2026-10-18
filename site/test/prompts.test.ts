@@ -1,7 +1,7 @@
 import { existsSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { installCommand, PORTS, releaseWording, type Port } from '../src/lib/ports'
+import { installCommand, PORT_BY_SLUG, PORTS, releaseWording, type Port, type RegistryEntry } from '../src/lib/ports'
 import {
   composeFromParts,
   composePrompt,
@@ -153,7 +153,7 @@ describe('prompt composition', () => {
       expect(text, 'names the prerelease').toContain(entry.version!)
     }
     if (entry.status === 'unpublished') {
-      expect(text, 'names the tag it installs from').toContain(entry.tag!)
+      expect(text, 'names the ref it installs from').toContain(entry.tag ?? 'default branch')
     }
   })
 
@@ -322,10 +322,23 @@ describe('registry data', () => {
       }
       if (entry.status === 'unpublished') {
         expect(entry.version, `${port.slug} is unpublished yet names a version`).toBeNull()
-        // The git form is the only one left, and it needs a tag to name.
-        expect(entry.tag, `${port.slug} is unpublished with no tag to install from`).toBeTruthy()
+        // The git form is the only one left. It names a release tag, or fixes
+        // its own ref when the repository has none.
+        const names = entry.tag ?? (port.installForms.git.code.includes('{tag}') ? null : 'fixed ref')
+        expect(names, `${port.slug} is unpublished with no ref to install from`).toBeTruthy()
       }
     }
+  })
+
+  it('refuses a tag-less entry whose git form needs a tag', () => {
+    const base = PORT_BY_SLUG.py!
+    const withGit = (code: string): Port => ({ ...base, installForms: { ...base.installForms, git: { code, lang: 'console' } } })
+    const tagless: RegistryEntry = { status: 'unpublished', version: null, stable: null, tag: null }
+    expect(() => installCommand(withGit('git clone --branch {tag} repo'), tagless)).toThrow(/no release tag/)
+    const fixed = withGit('git clone --branch main repo')
+    expect(installCommand(fixed, tagless).code).toBe('git clone --branch main repo')
+    expect(releaseWording(fixed, tagless)).toContain('default branch')
+    expect(installCommand(withGit('git clone --branch {tag} repo'), { ...tagless, tag: 'v1' }).code).toBe('git clone --branch v1 repo')
   })
 
   it('composes an install command for every port without throwing', () => {

@@ -162,6 +162,9 @@ export function extractLua(input: unknown, expectedRevision?: string): ApiModel 
       product: 'core',
       apiScope: 'exported',
       type: declaration.fields.length ? undefined : declaration.view,
+      // The declaration's own text, not `defines`: an alias's define holds the
+      // generated listing of its values.
+      doc: doc(declaration.rawdesc ?? declaration.desc),
       source: source(ownerSource, artifact),
     })
     for (const field of declaration.fields) {

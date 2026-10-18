@@ -2,8 +2,10 @@
 import ColorSchemeSwitcher from './ColorSchemeSwitcher.astro'
 import LocaleSwitcher from './LocaleSwitcher.astro'
 import VersionSwitcher from './VersionSwitcher.astro'
+import HeaderPicker from './HeaderPicker.astro'
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import type { LocaleStatus } from '../i18n/resolve'
+import { PORT_BY_SLUG, portPickers } from '../lib/ports'
 import { withPortRoot, withRoot } from '../lib/site-root'
 
 interface Props {
@@ -32,6 +34,13 @@ const {
   localeStatuses,
   documentationContext = false,
 } = Astro.props as Props
+
+/*
+ * Source, package and reference menus belong to a port's pages. A page with no
+ * port, such as the homepage or the tmux manual, has no package to name.
+ */
+const port = portSlug ? PORT_BY_SLUG[portSlug] : undefined
+const pickers = port ? portPickers(port) : []
 ---
 
 <header
@@ -46,6 +55,20 @@ const {
     <slot name="navigation" />
 
     <div class="site-header__spacer"></div>
+
+    {/*
+      Disclosures, never links: each is a native details of ordinary external
+      links, so the bar offers a port's repositories, packages and off-site
+      references without a script. They fit the bar from 48rem; below that
+      the Menu panel holds a second copy and CSS leaves one of the two shown.
+    */}
+    {
+      port && pickers.length > 0 && (
+        <div class="site-header__pickers">
+          {pickers.map((picker) => <HeaderPicker port={port} picker={picker} placement="bar" />)}
+        </div>
+      )
+    }
 
     {/* Keep search and colour controls visible at every width. */}
     <div class="site-header__always">
@@ -94,6 +117,9 @@ const {
           <a href={withPortRoot('/reference/')} class="topnav-chip px-2 py-1 text-sm">Reference</a>
           <a href={withRoot('/mcp/')} class="topnav-chip px-2 py-1 text-sm">MCP</a>
         </div>
+        {port && pickers.length > 0 && <div class="site-header__panel-row site-header__panel-pickers">
+          {pickers.map((picker) => <HeaderPicker port={port} picker={picker} placement="menu" />)}
+        </div>}
       </div>
     </details>
   </div>

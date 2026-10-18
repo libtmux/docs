@@ -1,0 +1,1666 @@
+{
+ "formatter": {
+  "name": "CSharpier",
+  "version": "1.3.0",
+  "dotnetSdk": "10.0.400",
+  "install": "dotnet tool install csharpier --version 1.3.0 --tool-path <scratch>",
+  "source": "https://github.com/belav/csharpier/tree/1.3.0/Src/CSharpier.Core/CSharp/SyntaxPrinter",
+  "options": {
+   "printWidth": "the case width",
+   "useTabs": false,
+   "indentSize": 4,
+   "endOfLine": "lf"
+  },
+  "generation": "Type declarations are formatted at the top level with the namespace file-scoped and a non-empty body, or their own semicolon. Members are formatted in a class at printWidth + 4 with a non-empty body and dedented four spaces. Each expected value is the text before the body."
+ },
+ "corpus": {
+  "model": "site/src/data/api/csharp.json",
+  "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+  "width": 60,
+  "note": "One declaration for each distinct output shape in the extracted model, plus every declaration CSharpier leaves over the width. Members are the declarations projected from extracted callables.",
+  "cases": [
+   {
+    "kind": "record",
+    "id": "LibTmux.ClientAttachment#0",
+    "input": "public sealed record ClientAttachment(Session? Session, Window? Window, Pane? Pane);",
+    "expected": "public sealed record ClientAttachment(\n    Session? Session,\n    Window? Window,\n    Pane? Pane\n);"
+   },
+   {
+    "kind": "record",
+    "id": "LibTmux.TmuxPaneGoneEvent#0",
+    "input": "public sealed record TmuxPaneGoneEvent(PaneId PaneId) : TmuxEvent;",
+    "expected": "public sealed record TmuxPaneGoneEvent(PaneId PaneId)\n    : TmuxEvent;"
+   },
+   {
+    "kind": "record",
+    "id": "LibTmux.TmuxOutputEvent#0",
+    "input": "public sealed record TmuxOutputEvent(PaneId PaneId, string Data) : TmuxEvent;",
+    "expected": "public sealed record TmuxOutputEvent(\n    PaneId PaneId,\n    string Data\n) : TmuxEvent;"
+   },
+   {
+    "kind": "record",
+    "id": "LibTmux.TmuxNotificationEvent#0",
+    "input": "public sealed record TmuxNotificationEvent(\n    string Name,\n    IReadOnlyList<string> Arguments) : TmuxEvent;",
+    "expected": "public sealed record TmuxNotificationEvent(\n    string Name,\n    IReadOnlyList<string> Arguments\n) : TmuxEvent;"
+   },
+   {
+    "kind": "record",
+    "id": "LibTmux.TmuxEventsDroppedEvent#0",
+    "input": "public sealed record TmuxEventsDroppedEvent(long Count, long TotalDropped) : TmuxEvent",
+    "expected": "public sealed record TmuxEventsDroppedEvent(\n    long Count,\n    long TotalDropped\n) : TmuxEvent"
+   },
+   {
+    "kind": "record",
+    "id": "LibTmux.TmuxExitEvent#0",
+    "input": "public sealed record TmuxExitEvent(string? Reason) : TmuxEvent;",
+    "expected": "public sealed record TmuxExitEvent(string? Reason)\n    : TmuxEvent;"
+   },
+   {
+    "kind": "record",
+    "id": "LibTmux.ServerMirrorView#0",
+    "input": "public sealed record ServerMirrorView(long Epoch, Server Server, IReadOnlyList<Client> Clients);",
+    "expected": "public sealed record ServerMirrorView(\n    long Epoch,\n    Server Server,\n    IReadOnlyList<Client> Clients\n);"
+   },
+   {
+    "kind": "record",
+    "id": "LibTmux.WindowEntityKey#0",
+    "input": "public readonly record struct WindowEntityKey(SessionId SessionId, WindowId WindowId, int WindowIndex)",
+    "expected": "public readonly record struct WindowEntityKey(\n    SessionId SessionId,\n    WindowId WindowId,\n    int WindowIndex\n)"
+   },
+   {
+    "kind": "record",
+    "id": "LibTmux.PaneOutputSince#0",
+    "input": "public sealed record PaneOutputSince(IReadOnlyList<string> Lines, PaneOutputPosition Position, bool LinesMissed);",
+    "expected": "public sealed record PaneOutputSince(\n    IReadOnlyList<string> Lines,\n    PaneOutputPosition Position,\n    bool LinesMissed\n);"
+   },
+   {
+    "kind": "record",
+    "id": "LibTmux.PaneRunResult#0",
+    "input": "public sealed record PaneRunResult(\n    int? ExitStatus,\n    bool TimedOut,\n    IReadOnlyList<string> Output,\n    TimeSpan Elapsed,\n    bool Started,\n    bool LinesMissed)",
+    "expected": "public sealed record PaneRunResult(\n    int? ExitStatus,\n    bool TimedOut,\n    IReadOnlyList<string> Output,\n    TimeSpan Elapsed,\n    bool Started,\n    bool LinesMissed\n)"
+   },
+   {
+    "kind": "record",
+    "id": "LibTmux.PaneWaitResult#0",
+    "input": "public sealed record PaneWaitResult(PaneWaitOutcome Outcome, string? Pattern, TimeSpan Elapsed)",
+    "expected": "public sealed record PaneWaitResult(\n    PaneWaitOutcome Outcome,\n    string? Pattern,\n    TimeSpan Elapsed\n)"
+   },
+   {
+    "kind": "record",
+    "id": "LibTmux.UnsafeTmuxFilter#0",
+    "input": "public sealed record UnsafeTmuxFilter(string Value);",
+    "expected": "public sealed record UnsafeTmuxFilter(string Value);"
+   },
+   {
+    "kind": "record",
+    "id": "LibTmux.Query.Json.QueryJsonLimits#0",
+    "input": "public sealed record QueryJsonLimits(\n    int MaximumDepth,\n    int MaximumNodes,\n    int MaximumStringLength,\n    int MaximumPatternLength,\n    int MaximumUtf8Bytes)",
+    "expected": "public sealed record QueryJsonLimits(\n    int MaximumDepth,\n    int MaximumNodes,\n    int MaximumStringLength,\n    int MaximumPatternLength,\n    int MaximumUtf8Bytes\n)"
+   },
+   {
+    "kind": "record",
+    "id": "LibTmux.Mcp.BoundedText#0",
+    "input": "public sealed record BoundedText(\n    IReadOnlyList<string> Lines,\n    bool Truncated,\n    int DroppedLines,\n    int DroppedBytes)",
+    "expected": "public sealed record BoundedText(\n    IReadOnlyList<string> Lines,\n    bool Truncated,\n    int DroppedLines,\n    int DroppedBytes\n)"
+   },
+   {
+    "kind": "record",
+    "id": "LibTmux.Mcp.PaneInfo#0",
+    "input": "[UnsupportedOSPlatform(\"windows\")]\npublic sealed record PaneInfo(\n    string PaneId,\n    string WindowId,\n    string SessionId,\n    int Index,\n    int Width,\n    int Height,\n    string? Title,\n    bool Active,\n    bool Dead,\n    bool Zoomed,\n    bool InMode,\n    string? CurrentCommand,\n    string? CurrentPath,\n    int? Pid,\n    int? HistorySize,\n    int? HistoryLimit,\n    bool IsCaller)",
+    "expected": "[UnsupportedOSPlatform(\"windows\")]\npublic sealed record PaneInfo(\n    string PaneId,\n    string WindowId,\n    string SessionId,\n    int Index,\n    int Width,\n    int Height,\n    string? Title,\n    bool Active,\n    bool Dead,\n    bool Zoomed,\n    bool InMode,\n    string? CurrentCommand,\n    string? CurrentPath,\n    int? Pid,\n    int? HistorySize,\n    int? HistoryLimit,\n    bool IsCaller\n)"
+   },
+   {
+    "kind": "record",
+    "id": "LibTmux.Mcp.WindowInfo#0",
+    "input": "[UnsupportedOSPlatform(\"windows\")]\npublic sealed record WindowInfo(\n    string WindowId,\n    string SessionId,\n    int Index,\n    string Name,\n    int Width,\n    int Height,\n    bool Active,\n    int? PaneCount,\n    string? Layout)",
+    "expected": "[UnsupportedOSPlatform(\"windows\")]\npublic sealed record WindowInfo(\n    string WindowId,\n    string SessionId,\n    int Index,\n    string Name,\n    int Width,\n    int Height,\n    bool Active,\n    int? PaneCount,\n    string? Layout\n)"
+   },
+   {
+    "kind": "record",
+    "id": "LibTmux.Mcp.SessionInfo#0",
+    "input": "[UnsupportedOSPlatform(\"windows\")]\npublic sealed record SessionInfo(\n    string SessionId,\n    string Name,\n    bool Attached,\n    int? WindowCount)",
+    "expected": "[UnsupportedOSPlatform(\"windows\")]\npublic sealed record SessionInfo(\n    string SessionId,\n    string Name,\n    bool Attached,\n    int? WindowCount\n)"
+   },
+   {
+    "kind": "record",
+    "id": "LibTmux.Mcp.TmuxServerInfo#0",
+    "input": "public sealed record TmuxServerInfo(\n    string? SocketName,\n    string? SocketPath,\n    string? Version,\n    int SessionCount,\n    int WindowCount,\n    int PaneCount,\n    string? CallerPaneId,\n    string? CallerPaneSocket);",
+    "expected": "public sealed record TmuxServerInfo(\n    string? SocketName,\n    string? SocketPath,\n    string? Version,\n    int SessionCount,\n    int WindowCount,\n    int PaneCount,\n    string? CallerPaneId,\n    string? CallerPaneSocket\n);"
+   },
+   {
+    "kind": "record",
+    "id": "LibTmux.Mcp.PaneSnapshot#0",
+    "input": "public sealed record PaneSnapshot(\n    PaneInfo Pane,\n    BoundedText Content,\n    int? CursorX,\n    int? CursorY,\n    bool AlternateScreen);",
+    "expected": "public sealed record PaneSnapshot(\n    PaneInfo Pane,\n    BoundedText Content,\n    int? CursorX,\n    int? CursorY,\n    bool AlternateScreen\n);"
+   },
+   {
+    "kind": "record",
+    "id": "LibTmux.Mcp.CaptureResult#0",
+    "input": "public sealed record CaptureResult(string PaneId, BoundedText Content);",
+    "expected": "public sealed record CaptureResult(\n    string PaneId,\n    BoundedText Content\n);"
+   },
+   {
+    "kind": "record",
+    "id": "LibTmux.Mcp.WaitResult#0",
+    "input": "public sealed record WaitResult(\n    string PaneId,\n    WaitOutcome Outcome,\n    string? MatchedPattern,\n    BoundedText Tail,\n    double ElapsedSeconds,\n    double EffectiveTimeoutSeconds)",
+    "expected": "public sealed record WaitResult(\n    string PaneId,\n    WaitOutcome Outcome,\n    string? MatchedPattern,\n    BoundedText Tail,\n    double ElapsedSeconds,\n    double EffectiveTimeoutSeconds\n)"
+   },
+   {
+    "kind": "record",
+    "id": "LibTmux.Mcp.RunResult#0",
+    "input": "public sealed record RunResult(\n    string PaneId,\n    int? ExitStatus,\n    bool TimedOut,\n    BoundedText Output,\n    double ElapsedSeconds,\n    double EffectiveTimeoutSeconds,\n    bool LinesMissed = false,\n    bool AnchorLost = false,\n    bool Started = true,\n    bool PaneExited = false);",
+    "expected": "public sealed record RunResult(\n    string PaneId,\n    int? ExitStatus,\n    bool TimedOut,\n    BoundedText Output,\n    double ElapsedSeconds,\n    double EffectiveTimeoutSeconds,\n    bool LinesMissed = false,\n    bool AnchorLost = false,\n    bool Started = true,\n    bool PaneExited = false\n);"
+   },
+   {
+    "kind": "record",
+    "id": "LibTmux.Mcp.MatchedLine#0",
+    "input": "public sealed record MatchedLine(int Row, string Text);",
+    "expected": "public sealed record MatchedLine(int Row, string Text);"
+   },
+   {
+    "kind": "record",
+    "id": "LibTmux.Mcp.SearchResult#0",
+    "input": "public sealed record SearchResult(\n    string Pattern,\n    int PanesSearched,\n    IReadOnlyList<PaneMatch> Panes,\n    bool Truncated);",
+    "expected": "public sealed record SearchResult(\n    string Pattern,\n    int PanesSearched,\n    IReadOnlyList<PaneMatch> Panes,\n    bool Truncated\n);"
+   },
+   {
+    "kind": "record",
+    "id": "LibTmux.Mcp.ActionResult#0",
+    "input": "public sealed record ActionResult(\n    string Changed,\n    string? PaneId = null,\n    string? WindowId = null,\n    string? SessionId = null);",
+    "expected": "public sealed record ActionResult(\n    string Changed,\n    string? PaneId = null,\n    string? WindowId = null,\n    string? SessionId = null\n);"
+   },
+   {
+    "kind": "record",
+    "id": "LibTmux.Mcp.OptionEntry#0",
+    "input": "public sealed record OptionEntry(\n    string Name,\n    string? Value,\n    OptionScope Scope,\n    bool Inherited);",
+    "expected": "public sealed record OptionEntry(\n    string Name,\n    string? Value,\n    OptionScope Scope,\n    bool Inherited\n);"
+   },
+   {
+    "kind": "record",
+    "id": "LibTmux.Mcp.KeyStep#0",
+    "input": "public sealed record KeyStep(\n    string Keys,\n    bool Enter = false,\n    bool Literal = true,\n    int? DelayMilliseconds = null);",
+    "expected": "public sealed record KeyStep(\n    string Keys,\n    bool Enter = false,\n    bool Literal = true,\n    int? DelayMilliseconds = null\n);"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxBuffers.SetAsync#0",
+    "input": "Task SetAsync(string data, string? name = null, bool append = false, CancellationToken cancellationToken = default)",
+    "expected": "Task SetAsync(\n    string data,\n    string? name = null,\n    bool append = false,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxBuffers.LoadAsync#0",
+    "input": "Task LoadAsync(string path, string? name = null, CancellationToken cancellationToken = default)",
+    "expected": "Task LoadAsync(\n    string path,\n    string? name = null,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxBuffers.GetAsync#0",
+    "input": "Task<string> GetAsync(string? name = null, CancellationToken cancellationToken = default)",
+    "expected": "Task<string> GetAsync(\n    string? name = null,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxBuffers.DeleteAsync#0",
+    "input": "Task DeleteAsync(string? name = null, CancellationToken cancellationToken = default)",
+    "expected": "Task DeleteAsync(\n    string? name = null,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxBuffers.GetAllAsync#0",
+    "input": "Task<IReadOnlyList<TmuxBuffer>> GetAllAsync(CancellationToken cancellationToken = default)",
+    "expected": "Task<IReadOnlyList<TmuxBuffer>> GetAllAsync(\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxBuffers.GetLinesAsync#0",
+    "input": "Task<IReadOnlyList<string>> GetLinesAsync(ListBuffersRequest? request = null, CancellationToken cancellationToken = default)",
+    "expected": "Task<IReadOnlyList<string>> GetLinesAsync(\n    ListBuffersRequest? request = null,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.ITmuxRequest.ToCommand#0",
+    "input": "TmuxCommand ToCommand(TTarget target)",
+    "expected": "TmuxCommand ToCommand(TTarget target)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxChain.Then#1",
+    "input": "TmuxChain Then(IEnumerable<TmuxCommand> commands)",
+    "expected": "TmuxChain Then(IEnumerable<TmuxCommand> commands)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxChain.Then#2",
+    "input": "TmuxChain Then(string name, params string[] arguments)",
+    "expected": "TmuxChain Then(string name, params string[] arguments)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxChain.ExecuteAsync#0",
+    "input": "async Task<TmuxCommandResult> ExecuteAsync(CancellationToken cancellationToken = default)",
+    "expected": "async Task<TmuxCommandResult> ExecuteAsync(\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxChaining.ToRunCommand#0",
+    "input": "static TmuxCommand ToRunCommand(HookRequest request, TmuxHooks hooks)",
+    "expected": "static TmuxCommand ToRunCommand(\n    HookRequest request,\n    TmuxHooks hooks\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxChaining.ExecuteAsync#0",
+    "input": "static Task<TmuxCommandResult> ExecuteAsync(HookRequest request, TmuxHooks hooks, Server server, CancellationToken cancellationToken = default)",
+    "expected": "static Task<TmuxCommandResult> ExecuteAsync(\n    HookRequest request,\n    TmuxHooks hooks,\n    Server server,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxChaining.ExecuteAsync#2",
+    "input": "static Task<TmuxCommandResult> ExecuteAsync(ITmuxRequest<Pane> request, Pane pane, CancellationToken cancellationToken = default)",
+    "expected": "static Task<TmuxCommandResult> ExecuteAsync(\n    ITmuxRequest<Pane> request,\n    Pane pane,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxChaining.ExecuteAsync#9",
+    "input": "static Task<IReadOnlyList<string>> ExecuteAsync(SendKeysRequest request, Pane pane, IControlModeSession control, CancellationToken cancellationToken = default)",
+    "expected": "static Task<IReadOnlyList<string>> ExecuteAsync(\n    SendKeysRequest request,\n    Pane pane,\n    IControlModeSession control,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxChaining.ToCommands#0",
+    "input": "static IReadOnlyList<TmuxCommand> ToCommands(SetHooksRequest request, TmuxHooks hooks)",
+    "expected": "static IReadOnlyList<TmuxCommand> ToCommands(\n    SetHooksRequest request,\n    TmuxHooks hooks\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxCommand.TmuxCommand#0",
+    "input": "TmuxCommand(string Name, IReadOnlyList<string> Arguments)",
+    "expected": "TmuxCommand(string Name, IReadOnlyList<string> Arguments)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxCommand.Create#0",
+    "input": "static TmuxCommand Create(string name, params string[] arguments)",
+    "expected": "static TmuxCommand Create(\n    string name,\n    params string[] arguments\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxCommand.ToArguments#0",
+    "input": "IReadOnlyList<string> ToArguments()",
+    "expected": "IReadOnlyList<string> ToArguments()"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxCommand.Equals#0",
+    "input": "bool Equals(TmuxCommand? other)",
+    "expected": "bool Equals(TmuxCommand? other)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxCommand.GetHashCode#0",
+    "input": "int GetHashCode()",
+    "expected": "int GetHashCode()"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxCommand.Deconstruct#0",
+    "input": "void Deconstruct(string Name, IReadOnlyList<string> Arguments)",
+    "expected": "void Deconstruct(\n    string Name,\n    IReadOnlyList<string> Arguments\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Client.GetAsync#0",
+    "input": "static async Task<Client> GetAsync(Server server, string name, CancellationToken cancellationToken = default)",
+    "expected": "static async Task<Client> GetAsync(\n    Server server,\n    string name,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Client.RefreshAsync#0",
+    "input": "Task<Client> RefreshAsync(CancellationToken cancellationToken = default)",
+    "expected": "Task<Client> RefreshAsync(\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Client.ResolveAttachmentAsync#0",
+    "input": "async Task<ClientAttachment?> ResolveAttachmentAsync(CancellationToken cancellationToken = default)",
+    "expected": "async Task<ClientAttachment?> ResolveAttachmentAsync(\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.ServerGeneration.ServerGeneration#0",
+    "input": "ServerGeneration(int processId, long startTime)",
+    "expected": "ServerGeneration(int processId, long startTime)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.ServerGeneration.Parse#0",
+    "input": "static ServerGeneration Parse(string text)",
+    "expected": "static ServerGeneration Parse(string text)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.IControlModeSession.SendAsync#0",
+    "input": "Task<IReadOnlyList<string>> SendAsync(TmuxCommand command, CancellationToken cancellationToken = default)",
+    "expected": "Task<IReadOnlyList<string>> SendAsync(\n    TmuxCommand command,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.PaneObservation.WatchAsync#1",
+    "input": "static IAsyncEnumerable<TmuxEvent> WatchAsync(IControlModeSession session, IReadOnlyCollection<Pane> panes, CancellationToken cancellationToken = default)",
+    "expected": "static IAsyncEnumerable<TmuxEvent> WatchAsync(\n    IControlModeSession session,\n    IReadOnlyCollection<Pane> panes,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxEnvironmentEntry.TmuxEnvironmentEntry#0",
+    "input": "TmuxEnvironmentEntry(string name, string? value, bool isRemoved)",
+    "expected": "TmuxEnvironmentEntry(\n    string name,\n    string? value,\n    bool isRemoved\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxEnvironment.GetAllAsync#0",
+    "input": "async Task<IReadOnlyList<TmuxEnvironmentEntry>> GetAllAsync(CancellationToken cancellationToken = default)",
+    "expected": "async Task<IReadOnlyList<TmuxEnvironmentEntry>> GetAllAsync(\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxEnvironment.GetAsync#0",
+    "input": "async Task<TmuxEnvironmentEntry?> GetAsync(string name, CancellationToken cancellationToken = default)",
+    "expected": "async Task<TmuxEnvironmentEntry?> GetAsync(\n    string name,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxEnvironment.SetAsync#0",
+    "input": "async Task<TmuxEnvironmentEntry> SetAsync(string name, string value, bool expandFormats = false, bool hidden = false, CancellationToken cancellationToken = default)",
+    "expected": "async Task<TmuxEnvironmentEntry> SetAsync(\n    string name,\n    string value,\n    bool expandFormats = false,\n    bool hidden = false,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxEnvironment.RemoveAsync#0",
+    "input": "async Task RemoveAsync(string name, CancellationToken cancellationToken = default)",
+    "expected": "async Task RemoveAsync(\n    string name,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.ControlModeCommandException.ControlModeCommandException#0",
+    "input": "ControlModeCommandException(string message, TmuxCommand command, IReadOnlyList<string> outputLines, IReadOnlyList<string> errorLines, Exception? innerException = null)",
+    "expected": "ControlModeCommandException(\n    string message,\n    TmuxCommand command,\n    IReadOnlyList<string> outputLines,\n    IReadOnlyList<string> errorLines,\n    Exception? innerException = null\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.IncompleteSnapshotException.IncompleteSnapshotException#0",
+    "input": "IncompleteSnapshotException(string relation, SnapshotDepth capturedDepth)",
+    "expected": "IncompleteSnapshotException(\n    string relation,\n    SnapshotDepth capturedDepth\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.LibTmuxException.LibTmuxException#0",
+    "input": "LibTmuxException(string message, Exception? innerException = null)",
+    "expected": "LibTmuxException(\n    string message,\n    Exception? innerException = null\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxTransportException.TmuxTransportException#1",
+    "input": "TmuxTransportException(string message, IReadOnlyList<string> arguments, TmuxDispatchState dispatch, Exception? innerException = null)",
+    "expected": "TmuxTransportException(\n    string message,\n    IReadOnlyList<string> arguments,\n    TmuxDispatchState dispatch,\n    Exception? innerException = null\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.UnsupportedQueryExpressionException.UnsupportedQueryExpressionException#0",
+    "input": "UnsupportedQueryExpressionException(string message)",
+    "expected": "UnsupportedQueryExpressionException(string message)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxHooks.SetAsync#0",
+    "input": "async Task<TmuxHook> SetAsync(SetHookRequest request, CancellationToken cancellationToken = default)",
+    "expected": "async Task<TmuxHook> SetAsync(\n    SetHookRequest request,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxHooks.RunAsync#0",
+    "input": "Task RunAsync(HookRequest request, CancellationToken cancellationToken = default)",
+    "expected": "Task RunAsync(\n    HookRequest request,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxOptionKey.Text#0",
+    "input": "static TmuxOptionKey<string> Text(string name)",
+    "expected": "static TmuxOptionKey<string> Text(string name)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxOptionValue.TmuxOptionValue#0",
+    "input": "TmuxOptionValue(string? raw, TmuxOptionState state, bool? boolean, long? integer)",
+    "expected": "TmuxOptionValue(\n    string? raw,\n    TmuxOptionState state,\n    bool? boolean,\n    long? integer\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxOption.TmuxOption#0",
+    "input": "TmuxOption(string name, TmuxOptionValue value, int? index, bool inherited = false)",
+    "expected": "TmuxOption(\n    string name,\n    TmuxOptionValue value,\n    int? index,\n    bool inherited = false\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxOptions.GetAsync#0",
+    "input": "async Task<IReadOnlyList<TmuxOption>> GetAsync(GetOptionRequest request, CancellationToken cancellationToken = default)",
+    "expected": "async Task<IReadOnlyList<TmuxOption>> GetAsync(\n    GetOptionRequest request,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxOptions.GetAsync#1",
+    "input": "async Task<T> GetAsync<T>(TmuxOptionKey<T> key, CancellationToken cancellationToken = default)",
+    "expected": "async Task<T> GetAsync<T>(\n    TmuxOptionKey<T> key,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxOptions.SetAsync#0",
+    "input": "Task SetAsync<T>(TmuxOptionKey<T> key, T value, CancellationToken cancellationToken = default)",
+    "expected": "Task SetAsync<T>(\n    TmuxOptionKey<T> key,\n    T value,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxOptions.SetAsync#1",
+    "input": "Task<TmuxOptionValue> SetAsync(SetOptionRequest request, CancellationToken cancellationToken = default)",
+    "expected": "Task<TmuxOptionValue> SetAsync(\n    SetOptionRequest request,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxOptions.GetAllAsync#0",
+    "input": "async Task<IReadOnlyList<TmuxOption>> GetAllAsync(GetOptionsRequest? request = null, CancellationToken cancellationToken = default)",
+    "expected": "async Task<IReadOnlyList<TmuxOption>> GetAllAsync(\n    GetOptionsRequest? request = null,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Pane.ReadOutputSinceAsync#0",
+    "input": "async Task<PaneOutputSince> ReadOutputSinceAsync(PaneOutputPosition? position = null, CancellationToken cancellationToken = default)",
+    "expected": "async Task<PaneOutputSince> ReadOutputSinceAsync(\n    PaneOutputPosition? position = null,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Pane.ExecuteCommandAsync#0",
+    "input": "Task<TmuxCommandResult> ExecuteCommandAsync(IReadOnlyList<string> arguments, string? targetOverride = null, CancellationToken cancellationToken = default)",
+    "expected": "Task<TmuxCommandResult> ExecuteCommandAsync(\n    IReadOnlyList<string> arguments,\n    string? targetOverride = null,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Pane.DisplayPaneNumbersAsync#0",
+    "input": "Task DisplayPaneNumbersAsync(TimeSpan? duration = null, bool noSelect = false, CancellationToken cancellationToken = default)",
+    "expected": "Task DisplayPaneNumbersAsync(\n    TimeSpan? duration = null,\n    bool noSelect = false,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Pane.DisplayMessageAsync#0",
+    "input": "async Task<IReadOnlyList<string>?> DisplayMessageAsync(DisplayMessageRequest request, CancellationToken cancellationToken = default)",
+    "expected": "async Task<IReadOnlyList<string>?> DisplayMessageAsync(\n    DisplayMessageRequest request,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Pane.EnterClockModeAsync#0",
+    "input": "Task EnterClockModeAsync(CancellationToken cancellationToken = default)",
+    "expected": "Task EnterClockModeAsync(\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Pane.FromEnvironmentAsync#0",
+    "input": "static async Task<Pane> FromEnvironmentAsync(IReadOnlyDictionary<string, string>? environment = null, CancellationToken cancellationToken = default)",
+    "expected": "static async Task<Pane> FromEnvironmentAsync(\n    IReadOnlyDictionary<string, string>? environment = null,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Pane.SendTextAsync#0",
+    "input": "Task SendTextAsync(string text, bool enter = true, CancellationToken cancellationToken = default)",
+    "expected": "Task SendTextAsync(\n    string text,\n    bool enter = true,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Pane.SendPrefixAsync#0",
+    "input": "Task SendPrefixAsync(bool secondary = false, CancellationToken cancellationToken = default)",
+    "expected": "Task SendPrefixAsync(\n    bool secondary = false,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Pane.BreakAsync#0",
+    "input": "async Task<Window> BreakAsync(string? windowName = null, bool detach = true, CancellationToken cancellationToken = default)",
+    "expected": "async Task<Window> BreakAsync(\n    string? windowName = null,\n    bool detach = true,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Pane.WaitUntilAsync#0",
+    "input": "async Task<PaneWaitResult> WaitUntilAsync(Func<IReadOnlyList<string>, bool> condition, TimeSpan timeout, CancellationToken cancellationToken = default)",
+    "expected": "async Task<PaneWaitResult> WaitUntilAsync(\n    Func<IReadOnlyList<string>, bool> condition,\n    TimeSpan timeout,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.PaneId.Parse#1",
+    "input": "static PaneId Parse(ReadOnlySpan<char> text)",
+    "expected": "static PaneId Parse(ReadOnlySpan<char> text)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.PaneId.TryParse#0",
+    "input": "static bool TryParse(string? text, PaneId result)",
+    "expected": "static bool TryParse(string? text, PaneId result)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.PaneId.TryParse#1",
+    "input": "static bool TryParse(ReadOnlySpan<char> text, PaneId result)",
+    "expected": "static bool TryParse(ReadOnlySpan<char> text, PaneId result)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.PsmuxCaptureOptions.PsmuxCaptureOptions#0",
+    "input": "PsmuxCaptureOptions(CapturePanePosition? startLine = null, CapturePanePosition? endLine = null, bool escapeSequences = false, bool joinWrappedLines = false)",
+    "expected": "PsmuxCaptureOptions(\n    CapturePanePosition? startLine = null,\n    CapturePanePosition? endLine = null,\n    bool escapeSequences = false,\n    bool joinWrappedLines = false\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.ConfirmBeforeRequest.ConfirmBeforeRequest#0",
+    "input": "ConfirmBeforeRequest(IReadOnlyList<string> command)",
+    "expected": "ConfirmBeforeRequest(IReadOnlyList<string> command)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.IfShellRequest.IfShellRequest#0",
+    "input": "IfShellRequest(string shellCommand, IReadOnlyList<string> thenCommand)",
+    "expected": "IfShellRequest(\n    string shellCommand,\n    IReadOnlyList<string> thenCommand\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.PaneWaitRequest.FromTextPatterns#0",
+    "input": "static PaneWaitRequest FromTextPatterns(IReadOnlyList<string>? patterns = null, IReadOnlyList<string>? stopPatterns = null, bool ignoreCase = false, bool simpleMatch = false)",
+    "expected": "static PaneWaitRequest FromTextPatterns(\n    IReadOnlyList<string>? patterns = null,\n    IReadOnlyList<string>? stopPatterns = null,\n    bool ignoreCase = false,\n    bool simpleMatch = false\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.SendKeysRequest.ToCommands#0",
+    "input": "IReadOnlyList<TmuxCommand> ToCommands(Pane pane)",
+    "expected": "IReadOnlyList<TmuxCommand> ToCommands(Pane pane)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.SetHooksRequest.SetHooksRequest#0",
+    "input": "SetHooksRequest(string name, IReadOnlyDictionary<int, string> values)",
+    "expected": "SetHooksRequest(\n    string name,\n    IReadOnlyDictionary<int, string> values\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Server.SourceFileAsync#0",
+    "input": "Task SourceFileAsync(string path, bool quiet = false, bool parseOnly = false, bool verbose = false, CancellationToken cancellationToken = default)",
+    "expected": "Task SourceFileAsync(\n    string path,\n    bool quiet = false,\n    bool parseOnly = false,\n    bool verbose = false,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Server.GetMessagesAsync#0",
+    "input": "async Task<IReadOnlyList<string>> GetMessagesAsync(string? targetClient = null, ShowMessagesMode mode = ShowMessagesMode.Messages, CancellationToken cancellationToken = default)",
+    "expected": "async Task<IReadOnlyList<string>> GetMessagesAsync(\n    string? targetClient = null,\n    ShowMessagesMode mode = ShowMessagesMode.Messages,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Server.ExecuteCommandAsync#0",
+    "input": "Task<TmuxCommandResult> ExecuteCommandAsync(IReadOnlyList<string> arguments, CancellationToken cancellationToken = default)",
+    "expected": "Task<TmuxCommandResult> ExecuteCommandAsync(\n    IReadOnlyList<string> arguments,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Server.BuildGuardedCommandLine#0",
+    "input": "static IReadOnlyList<string> BuildGuardedCommandLine(ServerGeneration expected, string mismatchCommand, params IReadOnlyList<string>[] commands)",
+    "expected": "static IReadOnlyList<string> BuildGuardedCommandLine(\n    ServerGeneration expected,\n    string mismatchCommand,\n    params IReadOnlyList<string>[] commands\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Server.FromEnvironment#0",
+    "input": "static Server FromEnvironment(IReadOnlyDictionary<string, string>? environment = null)",
+    "expected": "static Server FromEnvironment(\n    IReadOnlyDictionary<string, string>? environment = null\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Server.Open#0",
+    "input": "static Server Open(ServerConnectionOptions? options = null)",
+    "expected": "static Server Open(ServerConnectionOptions? options = null)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Server.ConnectAsync#0",
+    "input": "static Task<Server> ConnectAsync(ServerConnectionOptions? options = null, CancellationToken cancellationToken = default)",
+    "expected": "static Task<Server> ConnectAsync(\n    ServerConnectionOptions? options = null,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Server.ConnectAsync#1",
+    "input": "static Task<Server> ConnectAsync(CancellationToken cancellationToken = default)",
+    "expected": "static Task<Server> ConnectAsync(\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Server.ValidateLayoutsAsync#0",
+    "input": "Task ValidateLayoutsAsync(IEnumerable<(string Layout, int PaneCount)> layouts, CancellationToken cancellationToken = default)",
+    "expected": "Task ValidateLayoutsAsync(\n    IEnumerable<(string Layout, int PaneCount)> layouts,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Server.StartServerAsync#0",
+    "input": "async Task StartServerAsync(CancellationToken cancellationToken = default)",
+    "expected": "async Task StartServerAsync(\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Server.HasSessionAsync#0",
+    "input": "async Task<bool> HasSessionAsync(string target, bool exact = true, CancellationToken cancellationToken = default)",
+    "expected": "async Task<bool> HasSessionAsync(\n    string target,\n    bool exact = true,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Server.CreateSessionWithReceiptAsync#0",
+    "input": "async Task<SessionCreationResult> CreateSessionWithReceiptAsync(NewSessionRequest? request = null, CancellationToken cancellationToken = default)",
+    "expected": "async Task<SessionCreationResult> CreateSessionWithReceiptAsync(\n    NewSessionRequest? request = null,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Server.CreateOwnedAsync#0",
+    "input": "static async Task<OwnedServerScope> CreateOwnedAsync(ServerConnectionOptions? options = null, CancellationToken cancellationToken = default)",
+    "expected": "static async Task<OwnedServerScope> CreateOwnedAsync(\n    ServerConnectionOptions? options = null,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Server.CaptureSnapshotAsync#0",
+    "input": "Task<Server> CaptureSnapshotAsync(SnapshotDepth depth = SnapshotDepth.Panes, CancellationToken cancellationToken = default)",
+    "expected": "Task<Server> CaptureSnapshotAsync(\n    SnapshotDepth depth = SnapshotDepth.Panes,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Session.CreateWindowWithReceiptAsync#0",
+    "input": "async Task<WindowCreationResult> CreateWindowWithReceiptAsync(NewWindowRequest? request = null, CancellationToken cancellationToken = default)",
+    "expected": "async Task<WindowCreationResult> CreateWindowWithReceiptAsync(\n    NewWindowRequest? request = null,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.OwnedSessionScope.DisposeAsync#0",
+    "input": "async ValueTask DisposeAsync()",
+    "expected": "async ValueTask DisposeAsync()"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.SessionId.TryParse#1",
+    "input": "static bool TryParse(ReadOnlySpan<char> text, SessionId result)",
+    "expected": "static bool TryParse(\n    ReadOnlySpan<char> text,\n    SessionId result\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.CapturedValue.OrNull#0",
+    "input": "T? OrNull()",
+    "expected": "T? OrNull()"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.ServerMirror.OpenAsync#0",
+    "input": "static async Task<ServerMirror> OpenAsync(Session anchor, TimeSpan refreshEvery = default, CancellationToken cancellationToken = default)",
+    "expected": "static async Task<ServerMirror> OpenAsync(\n    Session anchor,\n    TimeSpan refreshEvery = default,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.ServerMirror.WaitUntilAsync#0",
+    "input": "async Task<ServerMirrorView> WaitUntilAsync(Func<ServerMirrorView, bool> condition, TimeSpan timeout, CancellationToken cancellationToken = default)",
+    "expected": "async Task<ServerMirrorView> WaitUntilAsync(\n    Func<ServerMirrorView, bool> condition,\n    TimeSpan timeout,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxCommandResult.TmuxCommandResult#0",
+    "input": "TmuxCommandResult(IReadOnlyList<string> arguments, int exitCode, ReadOnlyMemory<byte> standardOutput, ReadOnlyMemory<byte> standardError, IReadOnlyList<string> standardOutputLines, IReadOnlyList<string> standardErrorLines)",
+    "expected": "TmuxCommandResult(\n    IReadOnlyList<string> arguments,\n    int exitCode,\n    ReadOnlyMemory<byte> standardOutput,\n    ReadOnlyMemory<byte> standardError,\n    IReadOnlyList<string> standardOutputLines,\n    IReadOnlyList<string> standardErrorLines\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxBuffer.TmuxBuffer#0",
+    "input": "TmuxBuffer(string name, long size, string? sample)",
+    "expected": "TmuxBuffer(string name, long size, string? sample)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxMenuItem.TmuxMenuItem#0",
+    "input": "TmuxMenuItem(string name, string key, string command)",
+    "expected": "TmuxMenuItem(string name, string key, string command)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxVersion.DetectStringAsync#0",
+    "input": "static async Task<string> DetectStringAsync(string tmuxBinaryPath = \"tmux\", CancellationToken cancellationToken = default)",
+    "expected": "static async Task<string> DetectStringAsync(\n    string tmuxBinaryPath = \"tmux\",\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxVersion.IsInstalledNewerThanAsync#0",
+    "input": "static async Task<bool> IsInstalledNewerThanAsync(TmuxVersion version, string tmuxBinaryPath = \"tmux\", CancellationToken cancellationToken = default)",
+    "expected": "static async Task<bool> IsInstalledNewerThanAsync(\n    TmuxVersion version,\n    string tmuxBinaryPath = \"tmux\",\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxVersion.CheckMinimumSupportedVersionAsync#0",
+    "input": "static async Task<bool> CheckMinimumSupportedVersionAsync(bool throwIfUnsupported = true, string tmuxBinaryPath = \"tmux\", CancellationToken cancellationToken = default)",
+    "expected": "static async Task<bool> CheckMinimumSupportedVersionAsync(\n    bool throwIfUnsupported = true,\n    string tmuxBinaryPath = \"tmux\",\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxVersion.IsMinimumSupportedVersionInstalledAsync#0",
+    "input": "static Task<bool> IsMinimumSupportedVersionInstalledAsync(string tmuxBinaryPath = \"tmux\", CancellationToken cancellationToken = default)",
+    "expected": "static Task<bool> IsMinimumSupportedVersionInstalledAsync(\n    string tmuxBinaryPath = \"tmux\",\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxVersion.EnsureMinimumSupportedVersionAsync#0",
+    "input": "static async Task EnsureMinimumSupportedVersionAsync(string tmuxBinaryPath = \"tmux\", CancellationToken cancellationToken = default)",
+    "expected": "static async Task EnsureMinimumSupportedVersionAsync(\n    string tmuxBinaryPath = \"tmux\",\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxWait.UntilAsync#0",
+    "input": "static async Task<bool> UntilAsync(Func<CancellationToken, Task<bool>> probe, TimeSpan timeout, TimeSpan interval, bool throwOnTimeout = true, CancellationToken cancellationToken = default)",
+    "expected": "static async Task<bool> UntilAsync(\n    Func<CancellationToken, Task<bool>> probe,\n    TimeSpan timeout,\n    TimeSpan interval,\n    bool throwOnTimeout = true,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.TmuxWait.UntilAsync#1",
+    "input": "static async Task<T> UntilAsync<T>(Func<CancellationToken, Task<T>> probe, Func<T, bool> predicate, TimeSpan timeout, TimeSpan interval, CancellationToken cancellationToken = default)",
+    "expected": "static async Task<T> UntilAsync<T>(\n    Func<CancellationToken, Task<T>> probe,\n    Func<T, bool> predicate,\n    TimeSpan timeout,\n    TimeSpan interval,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Window.RotateAsync#0",
+    "input": "async Task<Window> RotateAsync(WindowRotationDirection? direction = null, bool keepZoom = false, CancellationToken cancellationToken = default)",
+    "expected": "async Task<Window> RotateAsync(\n    WindowRotationDirection? direction = null,\n    bool keepZoom = false,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Window.UnlinkAsync#1",
+    "input": "Task UnlinkAsync(bool killIfLast, IReadOnlyList<PaneId> expectedPaneIds, CancellationToken cancellationToken = default)",
+    "expected": "Task UnlinkAsync(\n    bool killIfLast,\n    IReadOnlyList<PaneId> expectedPaneIds,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Window.SelectLastPaneAsync#0",
+    "input": "async Task<Pane?> SelectLastPaneAsync(PaneInputMode? inputMode = null, bool keepZoom = false, CancellationToken cancellationToken = default)",
+    "expected": "async Task<Pane?> SelectLastPaneAsync(\n    PaneInputMode? inputMode = null,\n    bool keepZoom = false,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Query.QueryExtensions.Translate#0",
+    "input": "static QueryDocument Translate<T>(Expression<Func<T, bool>> predicate)",
+    "expected": "static QueryDocument Translate<T>(\n    Expression<Func<T, bool>> predicate\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Query.QueryExtensions.Plan#0",
+    "input": "static QueryPlan<T> Plan<T>(QueryDocument document, TmuxVersion daemonVersion, QueryPushdown pushdown = QueryPushdown.Auto)",
+    "expected": "static QueryPlan<T> Plan<T>(\n    QueryDocument document,\n    TmuxVersion daemonVersion,\n    QueryPushdown pushdown = QueryPushdown.Auto\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Query.QueryExtensions.Compile#0",
+    "input": "static Func<T, bool> Compile<T>(QueryDocument document)",
+    "expected": "static Func<T, bool> Compile<T>(QueryDocument document)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Query.QueryExtensions.Matching#0",
+    "input": "static IReadOnlyList<T> Matching<T>(IEnumerable<T> source, Expression<Func<T, bool>> predicate)",
+    "expected": "static IReadOnlyList<T> Matching<T>(\n    IEnumerable<T> source,\n    Expression<Func<T, bool>> predicate\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Query.QueryExtensions.Matching#1",
+    "input": "static IReadOnlyList<T> Matching<T>(IEnumerable<T> source, QueryDocument document)",
+    "expected": "static IReadOnlyList<T> Matching<T>(\n    IEnumerable<T> source,\n    QueryDocument document\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Query.QueryExtensions.Matching#2",
+    "input": "static IReadOnlyList<T> Matching<T>(IEnumerable<T> source, QueryDocument document, CancellationToken cancellationToken)",
+    "expected": "static IReadOnlyList<T> Matching<T>(\n    IEnumerable<T> source,\n    QueryDocument document,\n    CancellationToken cancellationToken\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Query.QueryFieldCatalog.GetFields#0",
+    "input": "static IReadOnlyList<QueryFieldDescriptor> GetFields(QueryTarget target)",
+    "expected": "static IReadOnlyList<QueryFieldDescriptor> GetFields(\n    QueryTarget target\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Workspace.WorkspaceBuildException.WorkspaceBuildException#0",
+    "input": "WorkspaceBuildException(WorkspaceResult? partialResult, Exception failure)",
+    "expected": "WorkspaceBuildException(\n    WorkspaceResult? partialResult,\n    Exception failure\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Workspace.WorkspaceBuilder.Validate#0",
+    "input": "static void Validate(WorkspaceFile workspace, WorkspacePlanOptions? options = null)",
+    "expected": "static void Validate(\n    WorkspaceFile workspace,\n    WorkspacePlanOptions? options = null\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Workspace.WorkspaceBuilder.PlanAsync#0",
+    "input": "async Task<WorkspacePlan> PlanAsync(WorkspaceFile workspace, WorkspacePlanOptions? options = null, CancellationToken cancellationToken = default)",
+    "expected": "async Task<WorkspacePlan> PlanAsync(\n    WorkspaceFile workspace,\n    WorkspacePlanOptions? options = null,\n    CancellationToken cancellationToken = default\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Workspace.WorkspaceCommand.WorkspaceCommand#0",
+    "input": "WorkspaceCommand(string text, bool? enter = null)",
+    "expected": "WorkspaceCommand(string text, bool? enter = null)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Workspace.WorkspacePane.WorkspacePane#0",
+    "input": "WorkspacePane(IReadOnlyList<string>? shellCommands = null, string? startDirectory = null, bool focus = false, IReadOnlyDictionary<string, string>? options = null, IReadOnlyList<WorkspaceCommand>? commands = null, bool? enter = null)",
+    "expected": "WorkspacePane(\n    IReadOnlyList<string>? shellCommands = null,\n    string? startDirectory = null,\n    bool focus = false,\n    IReadOnlyDictionary<string, string>? options = null,\n    IReadOnlyList<WorkspaceCommand>? commands = null,\n    bool? enter = null\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Workspace.WorkspacePane.WithDefaults#0",
+    "input": "WorkspacePane WithDefaults(IReadOnlyDictionary<string, string>? environment = null, IReadOnlyList<string>? shellCommandsBefore = null, IReadOnlyList<WorkspaceCommand>? beforeCommands = null)",
+    "expected": "WorkspacePane WithDefaults(\n    IReadOnlyDictionary<string, string>? environment = null,\n    IReadOnlyList<string>? shellCommandsBefore = null,\n    IReadOnlyList<WorkspaceCommand>? beforeCommands = null\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Workspace.WorkspaceWindow.WorkspaceWindow#0",
+    "input": "WorkspaceWindow(string? windowName = null, string? startDirectory = null, string? layout = null, bool focus = false, IReadOnlyDictionary<string, string>? options = null, IReadOnlyList<WorkspacePane>? panes = null, int? windowIndex = null, IReadOnlyDictionary<string, string>? optionsAfter = null)",
+    "expected": "WorkspaceWindow(\n    string? windowName = null,\n    string? startDirectory = null,\n    string? layout = null,\n    bool focus = false,\n    IReadOnlyDictionary<string, string>? options = null,\n    IReadOnlyList<WorkspacePane>? panes = null,\n    int? windowIndex = null,\n    IReadOnlyDictionary<string, string>? optionsAfter = null\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Workspace.WorkspaceFile.WorkspaceFile#0",
+    "input": "WorkspaceFile(string? sessionName = null, string? startDirectory = null, IReadOnlyDictionary<string, string>? options = null, IReadOnlyList<WorkspaceWindow>? windows = null, string? beforeScript = null, IReadOnlyDictionary<string, string>? globalOptions = null)",
+    "expected": "WorkspaceFile(\n    string? sessionName = null,\n    string? startDirectory = null,\n    IReadOnlyDictionary<string, string>? options = null,\n    IReadOnlyList<WorkspaceWindow>? windows = null,\n    string? beforeScript = null,\n    IReadOnlyDictionary<string, string>? globalOptions =\n        null\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Workspace.WorkspaceFile.Resolve#0",
+    "input": "WorkspaceFile Resolve(string baseDirectory, IReadOnlyDictionary<string, string>? variables = null)",
+    "expected": "WorkspaceFile Resolve(\n    string baseDirectory,\n    IReadOnlyDictionary<string, string>? variables = null\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Workspace.WorkspaceOperationCanceledException.WorkspaceOperationCanceledException#0",
+    "input": "WorkspaceOperationCanceledException(WorkspaceResult? partialResult, OperationCanceledException failure, CancellationToken cancellationToken)",
+    "expected": "WorkspaceOperationCanceledException(\n    WorkspaceResult? partialResult,\n    OperationCanceledException failure,\n    CancellationToken cancellationToken\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Workspace.WorkspacePlanOptions.WorkspacePlanOptions#0",
+    "input": "WorkspacePlanOptions()",
+    "expected": "WorkspacePlanOptions()"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Workspace.WorkspaceResult.WorkspaceResult#0",
+    "input": "WorkspaceResult(Session Session, IReadOnlyList<Window> Windows, IReadOnlyList<string> Unsupported)",
+    "expected": "WorkspaceResult(\n    Session Session,\n    IReadOnlyList<Window> Windows,\n    IReadOnlyList<string> Unsupported\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Workspace.WorkspaceResult.Deconstruct#0",
+    "input": "void Deconstruct(Session Session, IReadOnlyList<Window> Windows, IReadOnlyList<string> Unsupported)",
+    "expected": "void Deconstruct(\n    Session Session,\n    IReadOnlyList<Window> Windows,\n    IReadOnlyList<string> Unsupported\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Testing.TestEnvironment.TestEnvironment#0",
+    "input": "TestEnvironment(string workingDirectory, IReadOnlyDictionary<string, string?> variables)",
+    "expected": "TestEnvironment(\n    string workingDirectory,\n    IReadOnlyDictionary<string, string?> variables\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Testing.TestEnvironment.WithVariable#0",
+    "input": "TestEnvironment WithVariable(string name, string value)",
+    "expected": "TestEnvironment WithVariable(string name, string value)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Testing.TmuxNameGenerator.TmuxNameGenerator#0",
+    "input": "TmuxNameGenerator(string prefix = \"lt\")",
+    "expected": "TmuxNameGenerator(string prefix = \"lt\")"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Testing.TmuxTestOptions.TmuxTestOptions#0",
+    "input": "TmuxTestOptions(ServerConnectionOptions? connectionOptions = null, TimeSpan? timeout = null, TimeSpan? pollInterval = null, string sessionNamePrefix = \"lt\")",
+    "expected": "TmuxTestOptions(\n    ServerConnectionOptions? connectionOptions = null,\n    TimeSpan? timeout = null,\n    TimeSpan? pollInterval = null,\n    string sessionNamePrefix = \"lt\"\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Mcp.TmuxConnectionAccessor.TmuxConnectionAccessor#0",
+    "input": "TmuxConnectionAccessor(ServerConnectionOptions? template = null, string? defaultSocketName = null, ILogger? logger = null)",
+    "expected": "TmuxConnectionAccessor(\n    ServerConnectionOptions? template = null,\n    string? defaultSocketName = null,\n    ILogger? logger = null\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Mcp.TmuxConnectionAccessor.Invalidate#0",
+    "input": "void Invalidate(string? socketName = null)",
+    "expected": "void Invalidate(string? socketName = null)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Mcp.McpServerComposition.Add#0",
+    "input": "static IMcpServerBuilder Add(IServiceCollection services, ServerPolicy policy, ServerConnectionOptions connectionOptions, string? callerPaneId)",
+    "expected": "static IMcpServerBuilder Add(\n    IServiceCollection services,\n    ServerPolicy policy,\n    ServerConnectionOptions connectionOptions,\n    string? callerPaneId\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Mcp.ServerPolicy.FromEnvironment#0",
+    "input": "static ServerPolicy FromEnvironment(Func<string, string?> read, ILogger? logger = null)",
+    "expected": "static ServerPolicy FromEnvironment(\n    Func<string, string?> read,\n    ILogger? logger = null\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Mcp.BoundedText.Fit#0",
+    "input": "static BoundedText Fit(IReadOnlyList<string> lines, int? maxLines, int maxBytes)",
+    "expected": "static BoundedText Fit(\n    IReadOnlyList<string> lines,\n    int? maxLines,\n    int maxBytes\n)"
+   },
+   {
+    "kind": "member",
+    "id": "LibTmux.Mcp.PaneInfo.From#0",
+    "input": "static PaneInfo From(Pane pane, string? callerPaneId = null)",
+    "expected": "static PaneInfo From(Pane pane, string? callerPaneId = null)"
+   }
+  ]
+ },
+ "shapes": {
+  "widths": [
+   40,
+   60,
+   80,
+   100
+  ],
+  "cases": [
+   {
+    "kind": "record",
+    "input": "public sealed record Tiny;",
+    "expected": {
+     "40": "public sealed record Tiny;",
+     "60": "public sealed record Tiny;",
+     "80": "public sealed record Tiny;",
+     "100": "public sealed record Tiny;"
+    }
+   },
+   {
+    "kind": "record",
+    "input": "public sealed record Empty();",
+    "expected": {
+     "40": "public sealed record Empty();",
+     "60": "public sealed record Empty();",
+     "80": "public sealed record Empty();",
+     "100": "public sealed record Empty();"
+    }
+   },
+   {
+    "kind": "record",
+    "input": "public sealed record Pair<T, U>(T First, U Second);",
+    "expected": {
+     "40": "public sealed record Pair<T, U>(\n    T First,\n    U Second\n);",
+     "60": "public sealed record Pair<T, U>(T First, U Second);",
+     "80": "public sealed record Pair<T, U>(T First, U Second);",
+     "100": "public sealed record Pair<T, U>(T First, U Second);"
+    }
+   },
+   {
+    "kind": "record",
+    "input": "public sealed record Wide<TFirstKey, TSecondValue, TThirdThing>(TFirstKey First);",
+    "expected": {
+     "40": "public sealed record Wide<\n    TFirstKey,\n    TSecondValue,\n    TThirdThing\n>(TFirstKey First);",
+     "60": "public sealed record Wide<\n    TFirstKey,\n    TSecondValue,\n    TThirdThing\n>(TFirstKey First);",
+     "80": "public sealed record Wide<TFirstKey, TSecondValue, TThirdThing>(\n    TFirstKey First\n);",
+     "100": "public sealed record Wide<TFirstKey, TSecondValue, TThirdThing>(TFirstKey First);"
+    }
+   },
+   {
+    "kind": "record",
+    "input": "public sealed record Box<T>(T Value) : IEquatable<Box<T>> where T : class;",
+    "expected": {
+     "40": "public sealed record Box<T>(T Value)\n    : IEquatable<Box<T>>\n    where T : class;",
+     "60": "public sealed record Box<T>(T Value) : IEquatable<Box<T>>\n    where T : class;",
+     "80": "public sealed record Box<T>(T Value) : IEquatable<Box<T>>\n    where T : class;",
+     "100": "public sealed record Box<T>(T Value) : IEquatable<Box<T>>\n    where T : class;"
+    }
+   },
+   {
+    "kind": "record",
+    "input": "public sealed record Keyed<TKey, TValue>(TKey Key, TValue Value) : Base<TKey>, IKeyed<TKey, TValue> where TKey : notnull where TValue : class, new();",
+    "expected": {
+     "40": "public sealed record Keyed<\n    TKey,\n    TValue\n>(TKey Key, TValue Value)\n    : Base<TKey>,\n        IKeyed<TKey, TValue>\n    where TKey : notnull\n    where TValue : class, new();",
+     "60": "public sealed record Keyed<TKey, TValue>(\n    TKey Key,\n    TValue Value\n) : Base<TKey>, IKeyed<TKey, TValue>\n    where TKey : notnull\n    where TValue : class, new();",
+     "80": "public sealed record Keyed<TKey, TValue>(TKey Key, TValue Value)\n    : Base<TKey>,\n        IKeyed<TKey, TValue>\n    where TKey : notnull\n    where TValue : class, new();",
+     "100": "public sealed record Keyed<TKey, TValue>(TKey Key, TValue Value) : Base<TKey>, IKeyed<TKey, TValue>\n    where TKey : notnull\n    where TValue : class, new();"
+    }
+   },
+   {
+    "kind": "record",
+    "input": "public readonly record struct Point(int X, int Y);",
+    "expected": {
+     "40": "public readonly record struct Point(\n    int X,\n    int Y\n);",
+     "60": "public readonly record struct Point(int X, int Y);",
+     "80": "public readonly record struct Point(int X, int Y);",
+     "100": "public readonly record struct Point(int X, int Y);"
+    }
+   },
+   {
+    "kind": "record",
+    "input": "public readonly record struct WindowEntityKey(SessionId SessionId, WindowId WindowId, int WindowIndex) : IComparable<WindowEntityKey>",
+    "expected": {
+     "40": "public readonly record struct WindowEntityKey(\n    SessionId SessionId,\n    WindowId WindowId,\n    int WindowIndex\n) : IComparable<WindowEntityKey>",
+     "60": "public readonly record struct WindowEntityKey(\n    SessionId SessionId,\n    WindowId WindowId,\n    int WindowIndex\n) : IComparable<WindowEntityKey>",
+     "80": "public readonly record struct WindowEntityKey(\n    SessionId SessionId,\n    WindowId WindowId,\n    int WindowIndex\n) : IComparable<WindowEntityKey>",
+     "100": "public readonly record struct WindowEntityKey(\n    SessionId SessionId,\n    WindowId WindowId,\n    int WindowIndex\n) : IComparable<WindowEntityKey>"
+    }
+   },
+   {
+    "kind": "record",
+    "input": "public sealed record Derived(string Name, int Count) : Base(Name), IFoo",
+    "expected": {
+     "40": "public sealed record Derived(\n    string Name,\n    int Count\n) : Base(Name), IFoo",
+     "60": "public sealed record Derived(string Name, int Count)\n    : Base(Name),\n        IFoo",
+     "80": "public sealed record Derived(string Name, int Count) : Base(Name), IFoo",
+     "100": "public sealed record Derived(string Name, int Count) : Base(Name), IFoo"
+    }
+   },
+   {
+    "kind": "record",
+    "input": "public abstract record Event(PaneId PaneId, DateTimeOffset Timestamp, IReadOnlyDictionary<string, IReadOnlyList<string>> Properties)",
+    "expected": {
+     "40": "public abstract record Event(\n    PaneId PaneId,\n    DateTimeOffset Timestamp,\n    IReadOnlyDictionary<\n        string,\n        IReadOnlyList<string>\n    > Properties\n)",
+     "60": "public abstract record Event(\n    PaneId PaneId,\n    DateTimeOffset Timestamp,\n    IReadOnlyDictionary<\n        string,\n        IReadOnlyList<string>\n    > Properties\n)",
+     "80": "public abstract record Event(\n    PaneId PaneId,\n    DateTimeOffset Timestamp,\n    IReadOnlyDictionary<string, IReadOnlyList<string>> Properties\n)",
+     "100": "public abstract record Event(\n    PaneId PaneId,\n    DateTimeOffset Timestamp,\n    IReadOnlyDictionary<string, IReadOnlyList<string>> Properties\n)"
+    }
+   },
+   {
+    "kind": "record",
+    "input": "[Obsolete] public sealed record Marked(int A);",
+    "expected": {
+     "40": "[Obsolete]\npublic sealed record Marked(int A);",
+     "60": "[Obsolete]\npublic sealed record Marked(int A);",
+     "80": "[Obsolete]\npublic sealed record Marked(int A);",
+     "100": "[Obsolete]\npublic sealed record Marked(int A);"
+    }
+   },
+   {
+    "kind": "record",
+    "input": "[Obsolete(\"Use the replacement type that carries a message\", true)] public sealed record Marked2(int A);",
+    "expected": {
+     "40": "[Obsolete(\n    \"Use the replacement type that carries a message\",\n    true\n)]\npublic sealed record Marked2(int A);",
+     "60": "[Obsolete(\n    \"Use the replacement type that carries a message\",\n    true\n)]\npublic sealed record Marked2(int A);",
+     "80": "[Obsolete(\"Use the replacement type that carries a message\", true)]\npublic sealed record Marked2(int A);",
+     "100": "[Obsolete(\"Use the replacement type that carries a message\", true)]\npublic sealed record Marked2(int A);"
+    }
+   },
+   {
+    "kind": "record",
+    "input": "[Serializable, Obsolete(\"Use the replacement type that carries a message\")] public sealed record Marked3(int A);",
+    "expected": {
+     "40": "[\n    Serializable,\n    Obsolete(\n        \"Use the replacement type that carries a message\"\n    )\n]\npublic sealed record Marked3(int A);",
+     "60": "[\n    Serializable,\n    Obsolete(\n        \"Use the replacement type that carries a message\"\n    )\n]\npublic sealed record Marked3(int A);",
+     "80": "[Serializable, Obsolete(\"Use the replacement type that carries a message\")]\npublic sealed record Marked3(int A);",
+     "100": "[Serializable, Obsolete(\"Use the replacement type that carries a message\")]\npublic sealed record Marked3(int A);"
+    }
+   },
+   {
+    "kind": "record",
+    "input": "[A] [B(1, Name = \"x\")] public sealed record Marked4(int A);",
+    "expected": {
+     "40": "[A]\n[B(1, Name = \"x\")]\npublic sealed record Marked4(int A);",
+     "60": "[A]\n[B(1, Name = \"x\")]\npublic sealed record Marked4(int A);",
+     "80": "[A]\n[B(1, Name = \"x\")]\npublic sealed record Marked4(int A);",
+     "100": "[A]\n[B(1, Name = \"x\")]\npublic sealed record Marked4(int A);"
+    }
+   },
+   {
+    "kind": "record",
+    "input": "public sealed record WithTuple((string Layout, int PaneCount) Entry, IEnumerable<(string Layout, int PaneCount)> Entries);",
+    "expected": {
+     "40": "public sealed record WithTuple(\n    (\n        string Layout,\n        int PaneCount\n    ) Entry,\n    IEnumerable<(\n        string Layout,\n        int PaneCount\n    )> Entries\n);",
+     "60": "public sealed record WithTuple(\n    (string Layout, int PaneCount) Entry,\n    IEnumerable<(string Layout, int PaneCount)> Entries\n);",
+     "80": "public sealed record WithTuple(\n    (string Layout, int PaneCount) Entry,\n    IEnumerable<(string Layout, int PaneCount)> Entries\n);",
+     "100": "public sealed record WithTuple(\n    (string Layout, int PaneCount) Entry,\n    IEnumerable<(string Layout, int PaneCount)> Entries\n);"
+    }
+   },
+   {
+    "kind": "record",
+    "input": "public sealed record WithDefaults(int Count = 0, string? Name = null, TimeSpan Timeout = default, ShowMessagesMode Mode = ShowMessagesMode.Messages);",
+    "expected": {
+     "40": "public sealed record WithDefaults(\n    int Count = 0,\n    string? Name = null,\n    TimeSpan Timeout = default,\n    ShowMessagesMode Mode =\n        ShowMessagesMode.Messages\n);",
+     "60": "public sealed record WithDefaults(\n    int Count = 0,\n    string? Name = null,\n    TimeSpan Timeout = default,\n    ShowMessagesMode Mode = ShowMessagesMode.Messages\n);",
+     "80": "public sealed record WithDefaults(\n    int Count = 0,\n    string? Name = null,\n    TimeSpan Timeout = default,\n    ShowMessagesMode Mode = ShowMessagesMode.Messages\n);",
+     "100": "public sealed record WithDefaults(\n    int Count = 0,\n    string? Name = null,\n    TimeSpan Timeout = default,\n    ShowMessagesMode Mode = ShowMessagesMode.Messages\n);"
+    }
+   },
+   {
+    "kind": "record",
+    "input": "public sealed record Nullable(Session? Session, Window? Window, Pane? Pane, int?[] Counts, string[]? Names, int[,] Grid);",
+    "expected": {
+     "40": "public sealed record Nullable(\n    Session? Session,\n    Window? Window,\n    Pane? Pane,\n    int?[] Counts,\n    string[]? Names,\n    int[,] Grid\n);",
+     "60": "public sealed record Nullable(\n    Session? Session,\n    Window? Window,\n    Pane? Pane,\n    int?[] Counts,\n    string[]? Names,\n    int[,] Grid\n);",
+     "80": "public sealed record Nullable(\n    Session? Session,\n    Window? Window,\n    Pane? Pane,\n    int?[] Counts,\n    string[]? Names,\n    int[,] Grid\n);",
+     "100": "public sealed record Nullable(\n    Session? Session,\n    Window? Window,\n    Pane? Pane,\n    int?[] Counts,\n    string[]? Names,\n    int[,] Grid\n);"
+    }
+   },
+   {
+    "kind": "record",
+    "input": "public sealed record Qualified(System.Collections.Generic.Dictionary<string, System.Threading.Tasks.Task<int>> Map);",
+    "expected": {
+     "40": "public sealed record Qualified(\n    System.Collections.Generic.Dictionary<\n        string,\n        System.Threading.Tasks.Task<int>\n    > Map\n);",
+     "60": "public sealed record Qualified(\n    System.Collections.Generic.Dictionary<\n        string,\n        System.Threading.Tasks.Task<int>\n    > Map\n);",
+     "80": "public sealed record Qualified(\n    System.Collections.Generic.Dictionary<\n        string,\n        System.Threading.Tasks.Task<int>\n    > Map\n);",
+     "100": "public sealed record Qualified(\n    System.Collections.Generic.Dictionary<string, System.Threading.Tasks.Task<int>> Map\n);"
+    }
+   },
+   {
+    "kind": "record",
+    "input": "public class Service(IOptions<ServiceOptions> options, ILogger<Service> logger) : BackgroundService",
+    "expected": {
+     "40": "public class Service(\n    IOptions<ServiceOptions> options,\n    ILogger<Service> logger\n) : BackgroundService",
+     "60": "public class Service(\n    IOptions<ServiceOptions> options,\n    ILogger<Service> logger\n) : BackgroundService",
+     "80": "public class Service(IOptions<ServiceOptions> options, ILogger<Service> logger)\n    : BackgroundService",
+     "100": "public class Service(IOptions<ServiceOptions> options, ILogger<Service> logger) : BackgroundService"
+    }
+   },
+   {
+    "kind": "record",
+    "input": "public interface IThing<in TIn, out TOut> where TIn : class",
+    "expected": {
+     "40": "public interface IThing<\n    in TIn,\n    out TOut\n>\n    where TIn : class",
+     "60": "public interface IThing<in TIn, out TOut>\n    where TIn : class",
+     "80": "public interface IThing<in TIn, out TOut>\n    where TIn : class",
+     "100": "public interface IThing<in TIn, out TOut>\n    where TIn : class"
+    }
+   },
+   {
+    "kind": "record",
+    "input": "public struct Holder<T> where T : struct, IComparable<T>",
+    "expected": {
+     "40": "public struct Holder<T>\n    where T : struct, IComparable<T>",
+     "60": "public struct Holder<T>\n    where T : struct, IComparable<T>",
+     "80": "public struct Holder<T>\n    where T : struct, IComparable<T>",
+     "100": "public struct Holder<T>\n    where T : struct, IComparable<T>"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "Task M1(string a)",
+    "expected": {
+     "40": "Task M1(string a)",
+     "60": "Task M1(string a)",
+     "80": "Task M1(string a)",
+     "100": "Task M1(string a)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "static void M2()",
+    "expected": {
+     "40": "static void M2()",
+     "60": "static void M2()",
+     "80": "static void M2()",
+     "100": "static void M2()"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "static async Task<IReadOnlyList<string>> M3Async(string data, string? name = null, bool append = false, CancellationToken cancellationToken = default)",
+    "expected": {
+     "40": "static async Task<\n    IReadOnlyList<string>\n> M3Async(\n    string data,\n    string? name = null,\n    bool append = false,\n    CancellationToken cancellationToken =\n        default\n)",
+     "60": "static async Task<IReadOnlyList<string>> M3Async(\n    string data,\n    string? name = null,\n    bool append = false,\n    CancellationToken cancellationToken = default\n)",
+     "80": "static async Task<IReadOnlyList<string>> M3Async(\n    string data,\n    string? name = null,\n    bool append = false,\n    CancellationToken cancellationToken = default\n)",
+     "100": "static async Task<IReadOnlyList<string>> M3Async(\n    string data,\n    string? name = null,\n    bool append = false,\n    CancellationToken cancellationToken = default\n)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "async Task<IReadOnlyDictionary<string, IReadOnlyList<TmuxSomething>>> M4Async(string a)",
+    "expected": {
+     "40": "async Task<\n    IReadOnlyDictionary<\n        string,\n        IReadOnlyList<TmuxSomething>\n    >\n> M4Async(string a)",
+     "60": "async Task<\n    IReadOnlyDictionary<\n        string,\n        IReadOnlyList<TmuxSomething>\n    >\n> M4Async(string a)",
+     "80": "async Task<IReadOnlyDictionary<string, IReadOnlyList<TmuxSomething>>> M4Async(\n    string a\n)",
+     "100": "async Task<IReadOnlyDictionary<string, IReadOnlyList<TmuxSomething>>> M4Async(string a)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "Task M5Async(IReadOnlyDictionary<string, IReadOnlyList<TmuxSomething>> longParameterName)",
+    "expected": {
+     "40": "Task M5Async(\n    IReadOnlyDictionary<\n        string,\n        IReadOnlyList<TmuxSomething>\n    > longParameterName\n)",
+     "60": "Task M5Async(\n    IReadOnlyDictionary<\n        string,\n        IReadOnlyList<TmuxSomething>\n    > longParameterName\n)",
+     "80": "Task M5Async(\n    IReadOnlyDictionary<string, IReadOnlyList<TmuxSomething>> longParameterName\n)",
+     "100": "Task M5Async(IReadOnlyDictionary<string, IReadOnlyList<TmuxSomething>> longParameterName)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "static QueryPlan<T> Plan<T>(this QueryDocument document, TmuxVersion daemonVersion, QueryPushdown pushdown = QueryPushdown.Auto)",
+    "expected": {
+     "40": "static QueryPlan<T> Plan<T>(\n    this QueryDocument document,\n    TmuxVersion daemonVersion,\n    QueryPushdown pushdown =\n        QueryPushdown.Auto\n)",
+     "60": "static QueryPlan<T> Plan<T>(\n    this QueryDocument document,\n    TmuxVersion daemonVersion,\n    QueryPushdown pushdown = QueryPushdown.Auto\n)",
+     "80": "static QueryPlan<T> Plan<T>(\n    this QueryDocument document,\n    TmuxVersion daemonVersion,\n    QueryPushdown pushdown = QueryPushdown.Auto\n)",
+     "100": "static QueryPlan<T> Plan<T>(\n    this QueryDocument document,\n    TmuxVersion daemonVersion,\n    QueryPushdown pushdown = QueryPushdown.Auto\n)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "static QueryPlan<T> PlanWithConstraint<T>(this QueryDocument document, TmuxVersion daemonVersion) where T : class",
+    "expected": {
+     "40": "static QueryPlan<T> PlanWithConstraint<T>(\n    this QueryDocument document,\n    TmuxVersion daemonVersion\n)\n    where T : class",
+     "60": "static QueryPlan<T> PlanWithConstraint<T>(\n    this QueryDocument document,\n    TmuxVersion daemonVersion\n)\n    where T : class",
+     "80": "static QueryPlan<T> PlanWithConstraint<T>(\n    this QueryDocument document,\n    TmuxVersion daemonVersion\n)\n    where T : class",
+     "100": "static QueryPlan<T> PlanWithConstraint<T>(this QueryDocument document, TmuxVersion daemonVersion)\n    where T : class"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "static T Compile<T>(QueryDocument document) where T : class, IFoo, new()",
+    "expected": {
+     "40": "static T Compile<T>(\n    QueryDocument document\n)\n    where T : class, IFoo, new()",
+     "60": "static T Compile<T>(QueryDocument document)\n    where T : class, IFoo, new()",
+     "80": "static T Compile<T>(QueryDocument document)\n    where T : class, IFoo, new()",
+     "100": "static T Compile<T>(QueryDocument document)\n    where T : class, IFoo, new()"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "static T CompileVeryLongNameIndeedForTesting<T, TOther>(QueryDocument document) where T : class, IFoo, new() where TOther : struct",
+    "expected": {
+     "40": "static T CompileVeryLongNameIndeedForTesting<\n    T,\n    TOther\n>(QueryDocument document)\n    where T : class, IFoo, new()\n    where TOther : struct",
+     "60": "static T CompileVeryLongNameIndeedForTesting<T, TOther>(\n    QueryDocument document\n)\n    where T : class, IFoo, new()\n    where TOther : struct",
+     "80": "static T CompileVeryLongNameIndeedForTesting<T, TOther>(QueryDocument document)\n    where T : class, IFoo, new()\n    where TOther : struct",
+     "100": "static T CompileVeryLongNameIndeedForTesting<T, TOther>(QueryDocument document)\n    where T : class, IFoo, new()\n    where TOther : struct"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "static IReadOnlyList<T> Matching<T>(this IEnumerable<T> source, Expression<Func<T, bool>> predicate)",
+    "expected": {
+     "40": "static IReadOnlyList<T> Matching<T>(\n    this IEnumerable<T> source,\n    Expression<Func<T, bool>> predicate\n)",
+     "60": "static IReadOnlyList<T> Matching<T>(\n    this IEnumerable<T> source,\n    Expression<Func<T, bool>> predicate\n)",
+     "80": "static IReadOnlyList<T> Matching<T>(\n    this IEnumerable<T> source,\n    Expression<Func<T, bool>> predicate\n)",
+     "100": "static IReadOnlyList<T> Matching<T>(this IEnumerable<T> source, Expression<Func<T, bool>> predicate)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "static T Short<T>(T value) where T : class",
+    "expected": {
+     "40": "static T Short<T>(T value)\n    where T : class",
+     "60": "static T Short<T>(T value)\n    where T : class",
+     "80": "static T Short<T>(T value)\n    where T : class",
+     "100": "static T Short<T>(T value)\n    where T : class"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "IEnumerable<(string Layout, int PaneCount)> Layouts(string name = \"tmux\", int x = 0)",
+    "expected": {
+     "40": "IEnumerable<(\n    string Layout,\n    int PaneCount\n)> Layouts(\n    string name = \"tmux\",\n    int x = 0\n)",
+     "60": "IEnumerable<(string Layout, int PaneCount)> Layouts(\n    string name = \"tmux\",\n    int x = 0\n)",
+     "80": "IEnumerable<(string Layout, int PaneCount)> Layouts(\n    string name = \"tmux\",\n    int x = 0\n)",
+     "100": "IEnumerable<(string Layout, int PaneCount)> Layouts(string name = \"tmux\", int x = 0)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "Task<Pane> SplitAsync(IEnumerable<(string Layout, int PaneCount)> longParameterNameHere, int x)",
+    "expected": {
+     "40": "Task<Pane> SplitAsync(\n    IEnumerable<(\n        string Layout,\n        int PaneCount\n    )> longParameterNameHere,\n    int x\n)",
+     "60": "Task<Pane> SplitAsync(\n    IEnumerable<(\n        string Layout,\n        int PaneCount\n    )> longParameterNameHere,\n    int x\n)",
+     "80": "Task<Pane> SplitAsync(\n    IEnumerable<(string Layout, int PaneCount)> longParameterNameHere,\n    int x\n)",
+     "100": "Task<Pane> SplitAsync(IEnumerable<(string Layout, int PaneCount)> longParameterNameHere, int x)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "TmuxCommand(string name, IReadOnlyList<string> arguments)",
+    "expected": {
+     "40": "TmuxCommand(\n    string name,\n    IReadOnlyList<string> arguments\n)",
+     "60": "TmuxCommand(string name, IReadOnlyList<string> arguments)",
+     "80": "TmuxCommand(string name, IReadOnlyList<string> arguments)",
+     "100": "TmuxCommand(string name, IReadOnlyList<string> arguments)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "LibTmuxException(string message, TmuxDispatchState dispatch, Exception? innerException = null)",
+    "expected": {
+     "40": "LibTmuxException(\n    string message,\n    TmuxDispatchState dispatch,\n    Exception? innerException = null\n)",
+     "60": "LibTmuxException(\n    string message,\n    TmuxDispatchState dispatch,\n    Exception? innerException = null\n)",
+     "80": "LibTmuxException(\n    string message,\n    TmuxDispatchState dispatch,\n    Exception? innerException = null\n)",
+     "100": "LibTmuxException(string message, TmuxDispatchState dispatch, Exception? innerException = null)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "static void F([A] int a, ref int b, out int c, params int[] d, int[] e = null, in Span<byte> f = default)",
+    "expected": {
+     "40": "static void F(\n    [A] int a,\n    ref int b,\n    out int c,\n    params int[] d,\n    int[] e = null,\n    in Span<byte> f = default\n)",
+     "60": "static void F(\n    [A] int a,\n    ref int b,\n    out int c,\n    params int[] d,\n    int[] e = null,\n    in Span<byte> f = default\n)",
+     "80": "static void F(\n    [A] int a,\n    ref int b,\n    out int c,\n    params int[] d,\n    int[] e = null,\n    in Span<byte> f = default\n)",
+     "100": "static void F(\n    [A] int a,\n    ref int b,\n    out int c,\n    params int[] d,\n    int[] e = null,\n    in Span<byte> f = default\n)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "static void G([NotNull] string a, [CallerMemberName] string? member = null, [Description(\"long text here\")] int other = 0)",
+    "expected": {
+     "40": "static void G(\n    [NotNull] string a,\n    [CallerMemberName]\n        string? member = null,\n    [Description(\"long text here\")]\n        int other = 0\n)",
+     "60": "static void G(\n    [NotNull] string a,\n    [CallerMemberName] string? member = null,\n    [Description(\"long text here\")] int other = 0\n)",
+     "80": "static void G(\n    [NotNull] string a,\n    [CallerMemberName] string? member = null,\n    [Description(\"long text here\")] int other = 0\n)",
+     "100": "static void G(\n    [NotNull] string a,\n    [CallerMemberName] string? member = null,\n    [Description(\"long text here\")] int other = 0\n)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "Task<List<SomeVeryLongTypeNameForTesting>> VeryLongMethodNameNumberSixXXXXXXXX(int a)",
+    "expected": {
+     "40": "Task<\n    List<SomeVeryLongTypeNameForTesting>\n> VeryLongMethodNameNumberSixXXXXXXXX(\n    int a\n)",
+     "60": "Task<\n    List<SomeVeryLongTypeNameForTesting>\n> VeryLongMethodNameNumberSixXXXXXXXX(int a)",
+     "80": "Task<List<SomeVeryLongTypeNameForTesting>> VeryLongMethodNameNumberSixXXXXXXXX(\n    int a\n)",
+     "100": "Task<List<SomeVeryLongTypeNameForTesting>> VeryLongMethodNameNumberSixXXXXXXXX(int a)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "Dictionary<string, List<int>> Nested(Dictionary<string, Dictionary<string, List<int>>> value)",
+    "expected": {
+     "40": "Dictionary<string, List<int>> Nested(\n    Dictionary<\n        string,\n        Dictionary<string, List<int>>\n    > value\n)",
+     "60": "Dictionary<string, List<int>> Nested(\n    Dictionary<string, Dictionary<string, List<int>>> value\n)",
+     "80": "Dictionary<string, List<int>> Nested(\n    Dictionary<string, Dictionary<string, List<int>>> value\n)",
+     "100": "Dictionary<string, List<int>> Nested(Dictionary<string, Dictionary<string, List<int>>> value)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "void Defaults(int a = SomeVeryLongTypeName.SomeVeryLongMemberName, int b = 1)",
+    "expected": {
+     "40": "void Defaults(\n    int a =\n        SomeVeryLongTypeName.SomeVeryLongMemberName,\n    int b = 1\n)",
+     "60": "void Defaults(\n    int a = SomeVeryLongTypeName.SomeVeryLongMemberName,\n    int b = 1\n)",
+     "80": "void Defaults(int a = SomeVeryLongTypeName.SomeVeryLongMemberName, int b = 1)",
+     "100": "void Defaults(int a = SomeVeryLongTypeName.SomeVeryLongMemberName, int b = 1)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "void Defaults2(string a = \"some really long string literal value here for testing\", int b = 1)",
+    "expected": {
+     "40": "void Defaults2(\n    string a =\n        \"some really long string literal value here for testing\",\n    int b = 1\n)",
+     "60": "void Defaults2(\n    string a =\n        \"some really long string literal value here for testing\",\n    int b = 1\n)",
+     "80": "void Defaults2(\n    string a = \"some really long string literal value here for testing\",\n    int b = 1\n)",
+     "100": "void Defaults2(string a = \"some really long string literal value here for testing\", int b = 1)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "void Defaults3(TimeSpan a = default, Func<int, int> b = null, int c = -1, double d = 1.5e3, char e = 'x', string f = \"a\\\"b\")",
+    "expected": {
+     "40": "void Defaults3(\n    TimeSpan a = default,\n    Func<int, int> b = null,\n    int c = -1,\n    double d = 1.5e3,\n    char e = 'x',\n    string f = \"a\\\"b\"\n)",
+     "60": "void Defaults3(\n    TimeSpan a = default,\n    Func<int, int> b = null,\n    int c = -1,\n    double d = 1.5e3,\n    char e = 'x',\n    string f = \"a\\\"b\"\n)",
+     "80": "void Defaults3(\n    TimeSpan a = default,\n    Func<int, int> b = null,\n    int c = -1,\n    double d = 1.5e3,\n    char e = 'x',\n    string f = \"a\\\"b\"\n)",
+     "100": "void Defaults3(\n    TimeSpan a = default,\n    Func<int, int> b = null,\n    int c = -1,\n    double d = 1.5e3,\n    char e = 'x',\n    string f = \"a\\\"b\"\n)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "void Generic<TFirstTypeParameter, TSecondTypeParameter, TThirdTypeParameter>(TFirstTypeParameter a)",
+    "expected": {
+     "40": "void Generic<\n    TFirstTypeParameter,\n    TSecondTypeParameter,\n    TThirdTypeParameter\n>(TFirstTypeParameter a)",
+     "60": "void Generic<\n    TFirstTypeParameter,\n    TSecondTypeParameter,\n    TThirdTypeParameter\n>(TFirstTypeParameter a)",
+     "80": "void Generic<TFirstTypeParameter, TSecondTypeParameter, TThirdTypeParameter>(\n    TFirstTypeParameter a\n)",
+     "100": "void Generic<TFirstTypeParameter, TSecondTypeParameter, TThirdTypeParameter>(TFirstTypeParameter a)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "static string ThisIsAVeryLongMethodNameWithoutAnyParametersAtAllSoItCannotBreak()",
+    "expected": {
+     "40": "static string ThisIsAVeryLongMethodNameWithoutAnyParametersAtAllSoItCannotBreak()",
+     "60": "static string ThisIsAVeryLongMethodNameWithoutAnyParametersAtAllSoItCannotBreak()",
+     "80": "static string ThisIsAVeryLongMethodNameWithoutAnyParametersAtAllSoItCannotBreak()",
+     "100": "static string ThisIsAVeryLongMethodNameWithoutAnyParametersAtAllSoItCannotBreak()"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "static string ThisIsAVeryLongMethodNameWithAnyParametersAtAllSoItCannotBreak(int a)",
+    "expected": {
+     "40": "static string ThisIsAVeryLongMethodNameWithAnyParametersAtAllSoItCannotBreak(\n    int a\n)",
+     "60": "static string ThisIsAVeryLongMethodNameWithAnyParametersAtAllSoItCannotBreak(\n    int a\n)",
+     "80": "static string ThisIsAVeryLongMethodNameWithAnyParametersAtAllSoItCannotBreak(\n    int a\n)",
+     "100": "static string ThisIsAVeryLongMethodNameWithAnyParametersAtAllSoItCannotBreak(int a)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "async Task<SessionCreationResult> CreateSessionWithReceiptAsync(NewSessionRequest? request = null, CancellationToken cancellationToken = default)",
+    "expected": {
+     "40": "async Task<SessionCreationResult> CreateSessionWithReceiptAsync(\n    NewSessionRequest? request = null,\n    CancellationToken cancellationToken =\n        default\n)",
+     "60": "async Task<SessionCreationResult> CreateSessionWithReceiptAsync(\n    NewSessionRequest? request = null,\n    CancellationToken cancellationToken = default\n)",
+     "80": "async Task<SessionCreationResult> CreateSessionWithReceiptAsync(\n    NewSessionRequest? request = null,\n    CancellationToken cancellationToken = default\n)",
+     "100": "async Task<SessionCreationResult> CreateSessionWithReceiptAsync(\n    NewSessionRequest? request = null,\n    CancellationToken cancellationToken = default\n)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "abstract Task<string> AbstractAsync(string name);",
+    "expected": {
+     "40": "abstract Task<string> AbstractAsync(\n    string name\n);",
+     "60": "abstract Task<string> AbstractAsync(string name);",
+     "80": "abstract Task<string> AbstractAsync(string name);",
+     "100": "abstract Task<string> AbstractAsync(string name);"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "Task<T> H<T>(string a, int b = 1);",
+    "expected": {
+     "40": "Task<T> H<T>(string a, int b = 1);",
+     "60": "Task<T> H<T>(string a, int b = 1);",
+     "80": "Task<T> H<T>(string a, int b = 1);",
+     "100": "Task<T> H<T>(string a, int b = 1);"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<System.String>> Qualified(System.Text.StringBuilder builder)",
+    "expected": {
+     "40": "System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<System.String>> Qualified(\n    System.Text.StringBuilder builder\n)",
+     "60": "System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<System.String>> Qualified(\n    System.Text.StringBuilder builder\n)",
+     "80": "System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<System.String>> Qualified(\n    System.Text.StringBuilder builder\n)",
+     "100": "System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<System.String>> Qualified(\n    System.Text.StringBuilder builder\n)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "Task<IReadOnlyList<string>?> NullableArgs(IReadOnlyDictionary<string, string>? env, CancellationToken token = default)",
+    "expected": {
+     "40": "Task<IReadOnlyList<string>?> NullableArgs(\n    IReadOnlyDictionary<\n        string,\n        string\n    >? env,\n    CancellationToken token = default\n)",
+     "60": "Task<IReadOnlyList<string>?> NullableArgs(\n    IReadOnlyDictionary<string, string>? env,\n    CancellationToken token = default\n)",
+     "80": "Task<IReadOnlyList<string>?> NullableArgs(\n    IReadOnlyDictionary<string, string>? env,\n    CancellationToken token = default\n)",
+     "100": "Task<IReadOnlyList<string>?> NullableArgs(\n    IReadOnlyDictionary<string, string>? env,\n    CancellationToken token = default\n)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "int[] Arrays(int[] a, string[][] b, int[,] c)",
+    "expected": {
+     "40": "int[] Arrays(\n    int[] a,\n    string[][] b,\n    int[,] c\n)",
+     "60": "int[] Arrays(int[] a, string[][] b, int[,] c)",
+     "80": "int[] Arrays(int[] a, string[][] b, int[,] c)",
+     "100": "int[] Arrays(int[] a, string[][] b, int[,] c)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "void Tiny()",
+    "expected": {
+     "40": "void Tiny()",
+     "60": "void Tiny()",
+     "80": "void Tiny()",
+     "100": "void Tiny()"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "[Obsolete] static void Marked(int a)",
+    "expected": {
+     "40": "[Obsolete]\nstatic void Marked(int a)",
+     "60": "[Obsolete]\nstatic void Marked(int a)",
+     "80": "[Obsolete]\nstatic void Marked(int a)",
+     "100": "[Obsolete]\nstatic void Marked(int a)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "[RequiresUnreferencedCode(QueryInterpreter.TrimmingMessage)] static IReadOnlyList<T> Matching<T>(this IEnumerable<T> source, Expression<Func<T, bool>> predicate)",
+    "expected": {
+     "40": "[RequiresUnreferencedCode(\n    QueryInterpreter.TrimmingMessage\n)]\nstatic IReadOnlyList<T> Matching<T>(\n    this IEnumerable<T> source,\n    Expression<Func<T, bool>> predicate\n)",
+     "60": "[RequiresUnreferencedCode(QueryInterpreter.TrimmingMessage)]\nstatic IReadOnlyList<T> Matching<T>(\n    this IEnumerable<T> source,\n    Expression<Func<T, bool>> predicate\n)",
+     "80": "[RequiresUnreferencedCode(QueryInterpreter.TrimmingMessage)]\nstatic IReadOnlyList<T> Matching<T>(\n    this IEnumerable<T> source,\n    Expression<Func<T, bool>> predicate\n)",
+     "100": "[RequiresUnreferencedCode(QueryInterpreter.TrimmingMessage)]\nstatic IReadOnlyList<T> Matching<T>(this IEnumerable<T> source, Expression<Func<T, bool>> predicate)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "[Obsolete(\"Use the replacement method that carries a long message\", true)] void M()",
+    "expected": {
+     "40": "[Obsolete(\n    \"Use the replacement method that carries a long message\",\n    true\n)]\nvoid M()",
+     "60": "[Obsolete(\n    \"Use the replacement method that carries a long message\",\n    true\n)]\nvoid M()",
+     "80": "[Obsolete(\"Use the replacement method that carries a long message\", true)]\nvoid M()",
+     "100": "[Obsolete(\"Use the replacement method that carries a long message\", true)]\nvoid M()"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "ref readonly int RefReturn(in int a)",
+    "expected": {
+     "40": "ref readonly int RefReturn(in int a)",
+     "60": "ref readonly int RefReturn(in int a)",
+     "80": "ref readonly int RefReturn(in int a)",
+     "100": "ref readonly int RefReturn(in int a)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "unsafe int* Pointer(int* p)",
+    "expected": {
+     "40": "unsafe int* Pointer(int* p)",
+     "60": "unsafe int* Pointer(int* p)",
+     "80": "unsafe int* Pointer(int* p)",
+     "100": "unsafe int* Pointer(int* p)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "void DefaultNew(SomeLongTypeName valueParameter = new())",
+    "expected": {
+     "40": "void DefaultNew(\n    SomeLongTypeName valueParameter =\n        new()\n)",
+     "60": "void DefaultNew(SomeLongTypeName valueParameter = new())",
+     "80": "void DefaultNew(SomeLongTypeName valueParameter = new())",
+     "100": "void DefaultNew(SomeLongTypeName valueParameter = new())"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "void DefaultCreation(SomeLongTypeName valueParameter = new SomeLongTypeName())",
+    "expected": {
+     "40": "void DefaultCreation(\n    SomeLongTypeName valueParameter = new SomeLongTypeName()\n)",
+     "60": "void DefaultCreation(\n    SomeLongTypeName valueParameter = new SomeLongTypeName()\n)",
+     "80": "void DefaultCreation(SomeLongTypeName valueParameter = new SomeLongTypeName())",
+     "100": "void DefaultCreation(SomeLongTypeName valueParameter = new SomeLongTypeName())"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "void DefaultDefault(SomeLongTypeName valueParameter = default(SomeLongTypeName))",
+    "expected": {
+     "40": "void DefaultDefault(\n    SomeLongTypeName valueParameter =\n        default(SomeLongTypeName)\n)",
+     "60": "void DefaultDefault(\n    SomeLongTypeName valueParameter =\n        default(SomeLongTypeName)\n)",
+     "80": "void DefaultDefault(SomeLongTypeName valueParameter = default(SomeLongTypeName))",
+     "100": "void DefaultDefault(SomeLongTypeName valueParameter = default(SomeLongTypeName))"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "void DefaultTypeof(SomeLongTypeName valueParameter = typeof(SomeLongTypeName))",
+    "expected": {
+     "40": "void DefaultTypeof(\n    SomeLongTypeName valueParameter =\n        typeof(SomeLongTypeName)\n)",
+     "60": "void DefaultTypeof(\n    SomeLongTypeName valueParameter =\n        typeof(SomeLongTypeName)\n)",
+     "80": "void DefaultTypeof(SomeLongTypeName valueParameter = typeof(SomeLongTypeName))",
+     "100": "void DefaultTypeof(SomeLongTypeName valueParameter = typeof(SomeLongTypeName))"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "void DefaultLambda(Func<int, int> valueParameter = x => x + 1)",
+    "expected": {
+     "40": "void DefaultLambda(\n    Func<int, int> valueParameter =\n        x => x + 1\n)",
+     "60": "void DefaultLambda(\n    Func<int, int> valueParameter = x => x + 1\n)",
+     "80": "void DefaultLambda(Func<int, int> valueParameter = x => x + 1)",
+     "100": "void DefaultLambda(Func<int, int> valueParameter = x => x + 1)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "void DefaultNegative(int valueParameterLongName = -1000000000)",
+    "expected": {
+     "40": "void DefaultNegative(\n    int valueParameterLongName =\n        -1000000000\n)",
+     "60": "void DefaultNegative(\n    int valueParameterLongName = -1000000000\n)",
+     "80": "void DefaultNegative(int valueParameterLongName = -1000000000)",
+     "100": "void DefaultNegative(int valueParameterLongName = -1000000000)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "void DefaultArray(int[] valueParameterLongName = new int[] { 1 })",
+    "expected": {
+     "40": "void DefaultArray(\n    int[] valueParameterLongName =\n        new int[] { 1 }\n)",
+     "60": "void DefaultArray(\n    int[] valueParameterLongName = new int[] { 1 }\n)",
+     "80": "void DefaultArray(int[] valueParameterLongName = new int[] { 1 })",
+     "100": "void DefaultArray(int[] valueParameterLongName = new int[] { 1 })"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "void DefaultConcat(string valueParameterLongName = \"a\" + \"b\")",
+    "expected": {
+     "40": "void DefaultConcat(\n    string valueParameterLongName =\n        \"a\" + \"b\"\n)",
+     "60": "void DefaultConcat(\n    string valueParameterLongName = \"a\" + \"b\"\n)",
+     "80": "void DefaultConcat(string valueParameterLongName = \"a\" + \"b\")",
+     "100": "void DefaultConcat(string valueParameterLongName = \"a\" + \"b\")"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "void DefaultCast(int valueParameterLongName = (int)Mode.Auto)",
+    "expected": {
+     "40": "void DefaultCast(\n    int valueParameterLongName =\n        (int)Mode.Auto\n)",
+     "60": "void DefaultCast(\n    int valueParameterLongName = (int)Mode.Auto\n)",
+     "80": "void DefaultCast(int valueParameterLongName = (int)Mode.Auto)",
+     "100": "void DefaultCast(int valueParameterLongName = (int)Mode.Auto)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "TmuxChain Then(string name, params string[] arguments)",
+    "expected": {
+     "40": "TmuxChain Then(\n    string name,\n    params string[] arguments\n)",
+     "60": "TmuxChain Then(string name, params string[] arguments)",
+     "80": "TmuxChain Then(string name, params string[] arguments)",
+     "100": "TmuxChain Then(string name, params string[] arguments)"
+    }
+   },
+   {
+    "kind": "member",
+    "input": "static IReadOnlyList<string> BuildGuardedCommandLine(ServerGeneration expected, string mismatchCommand, params IReadOnlyList<string>[] commands)",
+    "expected": {
+     "40": "static IReadOnlyList<string> BuildGuardedCommandLine(\n    ServerGeneration expected,\n    string mismatchCommand,\n    params IReadOnlyList<string>[] commands\n)",
+     "60": "static IReadOnlyList<string> BuildGuardedCommandLine(\n    ServerGeneration expected,\n    string mismatchCommand,\n    params IReadOnlyList<string>[] commands\n)",
+     "80": "static IReadOnlyList<string> BuildGuardedCommandLine(\n    ServerGeneration expected,\n    string mismatchCommand,\n    params IReadOnlyList<string>[] commands\n)",
+     "100": "static IReadOnlyList<string> BuildGuardedCommandLine(\n    ServerGeneration expected,\n    string mismatchCommand,\n    params IReadOnlyList<string>[] commands\n)"
+    }
+   }
+  ]
+ }
+}

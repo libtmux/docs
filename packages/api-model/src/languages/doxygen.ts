@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
+import { markText } from '../doc/markdown.ts'
 import type { ApiSymbol, Modifier, Param, Signature, SymbolKind } from '../model.ts'
 
 /**
@@ -38,13 +39,24 @@ const MEMBER_KIND: Record<string, SymbolKind> = {
   define: 'constant',
 }
 
-/** Strip Doxygen's inline markup, keeping the text a reader would see. */
+/**
+ * Strip Doxygen's inline markup, keeping the text a reader would see.
+ *
+ * Bold, emphasis and headings come back out as Markdown, the dialect every
+ * other port's prose is read in. A section's `<title>` sits against the next
+ * `<para>`, so it gets a blank line of its own; a `@par` title is a bold line.
+ */
 function textOf(xml: string): string {
   return xml
     .replace(/<ref[^>]*>/g, '')
     .replace(/<\/ref>/g, '')
     .replace(/<computeroutput>/g, '`')
     .replace(/<\/computeroutput>/g, '`')
+    .replace(/<bold>([\s\S]*?)<\/bold>/g, (_, inner: string) => markText(inner, '**'))
+    .replace(/<emphasis>([\s\S]*?)<\/emphasis>/g, (_, inner: string) => markText(inner, '*'))
+    .replace(/<sect([1-4])\b[^>]*>\s*<title>([\s\S]*?)<\/title>/g, (_, level: string, title: string) =>
+      `\n\n${'#'.repeat(Number(level))} ${title.replace(/\s+/g, ' ').trim()}\n\n`)
+    .replace(/<title>([\s\S]*?)<\/title>/g, (_, title: string) => `\n\n${markText(title.replace(/\s+/g, ' ').trim(), '**')}\n\n`)
     .replace(/<para>/g, '\n')
     .replace(/<\/para>/g, '\n')
     .replace(/<[^>]+>/g, '')

@@ -293,7 +293,7 @@ export const SERVERS: Readonly<Record<string, ServerSpec>> = {
       return {
         command: '/absolute/path/to/project/bin/libtmux-mcp',
         args: ['--socket', '/absolute/path/to/tmux.sock'],
-        prereq: `julia --startup-file=no -e 'using Pkg; Pkg.activate("."); repo="https://github.com/libtmux/libtmux-julia.git"; tag="v0.1.0-alpha.1"; Pkg.add([Pkg.PackageSpec(url=repo, rev=tag), Pkg.PackageSpec(url=repo, rev=tag, subdir="packages/LibTmuxMCP")]); using LibTmuxMCP; println(LibTmuxMCP.install_cli("bin"))'`,
+        prereq: `julia --startup-file=no -e 'using Pkg; Pkg.activate("."); repo="https://github.com/libtmux/libtmux-julia.git"; ref="master"; Pkg.add([Pkg.PackageSpec(url=repo, rev=ref), Pkg.PackageSpec(url=repo, rev=ref, subdir="packages/LibTmuxMCP")]); using LibTmuxMCP; println(LibTmuxMCP.install_cli("bin"))'`,
         note: 'Run the setup in a consumer project directory. Replace the launcher and socket paths with absolute paths on your machine. The server borrows an existing tmux daemon. Configure tool permissions as described in the MCP server guide.',
       }
     },

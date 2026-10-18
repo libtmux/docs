@@ -1,0 +1,1423 @@
+{
+ "formatter": {
+  "package": "ruff",
+  "version": "0.16.10",
+  "python": "target-version py310",
+  "command": "ruff format --line-length 60 --target-version py310 --stdin-filename x.py",
+  "options": {
+   "line-length": 60,
+   "target-version": "py310",
+   "indent-width": 4,
+   "quote-style": "double",
+   "magic-trailing-comma": "respect"
+  },
+  "settings_source": "libtmux pins ruff 0.16.10 in uv.lock and sets only target-version py310 for the formatter; the documentation surface applies line-length 60 (CODE_COLUMNS.api).",
+  "method": "Each stub is a def whose body is `...`, so ruff measures four more columns before the name and five more after the last bracket than the displayed bar shows. Tests lay out the displayed bar with those columns reserved and compare it with the formatter output minus `def ` and `: ...`. Corpus stubs are the extracted Python declarations; a `*` separator is added where the model records keyword-only parameters and `*`/`**` where a trailing parameter is the catch-all, because ruff rejects the reordered defaults the model alone would give."
+ },
+ "source": {
+  "repository": "tmux-python/libtmux",
+  "model": "site/src/data/api/py.json"
+ },
+ "shapes": [
+  {
+   "name": "a flat declaration stays on one line",
+   "stub": "def cmd(self, *args: str) -> tmux_cmd: ...",
+   "formatted": "def cmd(self, *args: str) -> tmux_cmd: ..."
+  },
+  {
+   "name": "a single parameter takes its own line with a trailing comma",
+   "stub": "def resolve_env(env: t.Mapping[str, str] | None = None) -> t.Mapping[str, str]: ...",
+   "formatted": "def resolve_env(\n    env: t.Mapping[str, str] | None = None,\n) -> t.Mapping[str, str]: ..."
+  },
+  {
+   "name": "several parameters share one indented line when they fit",
+   "stub": "def __init__(self, server: Server, session: Session) -> None: ...",
+   "formatted": "def __init__(\n    self, server: Server, session: Session\n) -> None: ..."
+  },
+  {
+   "name": "parameters that do not share a line explode one per line",
+   "stub": "def select_pane(self, target_pane: str | int | None = None, *, direction: PaneDirection | None = None, last: bool | None = None, keys: str | None = None) -> Pane | None: ...",
+   "formatted": "def select_pane(\n    self,\n    target_pane: str | int | None = None,\n    *,\n    direction: PaneDirection | None = None,\n    last: bool | None = None,\n    keys: str | None = None,\n) -> Pane | None: ..."
+  },
+  {
+   "name": "a long union breaks before each bar",
+   "stub": "def lookup_exact(data: str | list[str] | Mapping[str, str], rhs: str | list[str] | Mapping[str, str] | re.Pattern[str]) -> bool: ...",
+   "formatted": "def lookup_exact(\n    data: str | list[str] | Mapping[str, str],\n    rhs: str\n    | list[str]\n    | Mapping[str, str]\n    | re.Pattern[str],\n) -> bool: ..."
+  },
+  {
+   "name": "a union keeps its default after the last operand",
+   "stub": "def run_hook(self, hook: str, scope: OptionScope | _DefaultOptionScope | None = DEFAULT_OPTION_SCOPE) -> Self: ...",
+   "formatted": "def run_hook(\n    self,\n    hook: str,\n    scope: OptionScope\n    | _DefaultOptionScope\n    | None = DEFAULT_OPTION_SCOPE,\n) -> Self: ..."
+  },
+  {
+   "name": "a union breaks even when only its last operand is short",
+   "stub": "def pick(self, value: dict[str, list[tuple[int, str, float]]] | None = None) -> None: ...",
+   "formatted": "def pick(\n    self,\n    value: dict[str, list[tuple[int, str, float]]]\n    | None = None,\n) -> None: ..."
+  },
+  {
+   "name": "a bracket hugs its contents when they fit on one line",
+   "stub": "def show_prompt_history(self, prompt_type: t.Literal[\"command\", \"search\", \"target\", \"window-target\"] | None = None) -> list[str]: ...",
+   "formatted": "def show_prompt_history(\n    self,\n    prompt_type: t.Literal[\n        \"command\", \"search\", \"target\", \"window-target\"\n    ]\n    | None = None,\n) -> list[str]: ..."
+  },
+  {
+   "name": "a bracket explodes with a trailing comma when its contents do not fit",
+   "stub": "def select_pane(pane_id: str | None = None, direction: t.Literal[\"up\", \"down\", \"left\", \"right\", \"last\", \"next\", \"previous\"] | None = None) -> PaneInfo: ...",
+   "formatted": "def select_pane(\n    pane_id: str | None = None,\n    direction: t.Literal[\n        \"up\",\n        \"down\",\n        \"left\",\n        \"right\",\n        \"last\",\n        \"next\",\n        \"previous\",\n    ]\n    | None = None,\n) -> PaneInfo: ..."
+  },
+  {
+   "name": "a bracketed annotation keeps its default after the closing bracket",
+   "stub": "def mode(self, a: int, *, b: t.Literal[\"alpha\", \"beta\", \"gamma\", \"delta\", \"epsilon\", \"zeta\"] = \"alpha\") -> None: ...",
+   "formatted": "def mode(\n    self,\n    a: int,\n    *,\n    b: t.Literal[\n        \"alpha\", \"beta\", \"gamma\", \"delta\", \"epsilon\", \"zeta\"\n    ] = \"alpha\",\n) -> None: ..."
+  },
+  {
+   "name": "a nested callable breaks at its outer bracket first",
+   "stub": "def listen(self, callback: t.Callable[[str, int, float], t.Awaitable[t.Mapping[str, t.Any]]]) -> None: ...",
+   "formatted": "def listen(\n    self,\n    callback: t.Callable[\n        [str, int, float],\n        t.Awaitable[t.Mapping[str, t.Any]],\n    ],\n) -> None: ..."
+  },
+  {
+   "name": "a union of subscripts breaks at the bars",
+   "stub": "def collect(self, items: list[dict[str, t.Any]] | tuple[dict[str, t.Any], ...] | None = None) -> None: ...",
+   "formatted": "def collect(\n    self,\n    items: list[dict[str, t.Any]]\n    | tuple[dict[str, t.Any], ...]\n    | None = None,\n) -> None: ..."
+  },
+  {
+   "name": "a long return annotation splits after the parameters share a line",
+   "stub": "def mapping(a: int, b: str) -> t.Mapping[str, t.Sequence[t.Awaitable[t.Mapping[str, t.Any]]]]: ...",
+   "formatted": "def mapping(\n    a: int, b: str\n) -> t.Mapping[\n    str, t.Sequence[t.Awaitable[t.Mapping[str, t.Any]]]\n]: ..."
+  },
+  {
+   "name": "a long return annotation splits after a single parameter",
+   "stub": "def mapping_self(self) -> t.Mapping[str, t.Sequence[t.Awaitable[t.Mapping[str, t.Any]]]]: ...",
+   "formatted": "def mapping_self(\n    self,\n) -> t.Mapping[\n    str, t.Sequence[t.Awaitable[t.Mapping[str, t.Any]]]\n]: ..."
+  },
+  {
+   "name": "a long return annotation without parameters splits on the declaration line",
+   "stub": "def get_workspace_dir_candidates() -> list[dict[str, t.Any]]: ...",
+   "formatted": "def get_workspace_dir_candidates() -> list[\n    dict[str, t.Any]\n]: ..."
+  },
+  {
+   "name": "variadic parameters keep their stars",
+   "stub": "def forward(self, *args: t.Any, **kwargs: t.Any) -> None: ...",
+   "formatted": "def forward(\n    self, *args: t.Any, **kwargs: t.Any\n) -> None: ..."
+  },
+  {
+   "name": "a long string default stays whole",
+   "stub": "def label(self, value: str = \"a very long default string that cannot be split anywhere\", other: int = 1) -> None: ...",
+   "formatted": "def label(\n    self,\n    value: str = \"a very long default string that cannot be split anywhere\",\n    other: int = 1,\n) -> None: ..."
+  },
+  {
+   "name": "a long parameter name stays whole",
+   "stub": "def long_name(self, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa: int) -> None: ...",
+   "formatted": "def long_name(\n    self,\n    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa: int,\n) -> None: ..."
+  },
+  {
+   "name": "tuple and list defaults are not split when they fit",
+   "stub": "def defaults(self, value: tuple[int, str] = (1, \"two\"), other: list[int] = [1, 2, 3]) -> None: ...",
+   "formatted": "def defaults(\n    self,\n    value: tuple[int, str] = (1, \"two\"),\n    other: list[int] = [1, 2, 3],\n) -> None: ..."
+  }
+ ],
+ "divergences": [
+  {
+   "name": "a long union return is not parenthesized",
+   "stub": "def either(self, a: int) -> aaaaaaaaaaaaaaaa | bbbbbbbbbbbbbbbbbbbbbb | ccccccccccccccccccc | dddddddddddd: ...",
+   "formatted": "def either(\n    self, a: int\n) -> (\n    aaaaaaaaaaaaaaaa\n    | bbbbbbbbbbbbbbbbbbbbbb\n    | ccccccccccccccccccc\n    | dddddddddddd\n): ..."
+  }
+ ],
+ "corpus": [
+  {
+   "stub": "def __init__(self, server: Server, session: Session) -> None: ...",
+   "formatted": "def __init__(\n    self, server: Server, session: Session\n) -> None: ..."
+  },
+  {
+   "stub": "def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: types.TracebackType | None) -> None: ...",
+   "formatted": "def __exit__(\n    self,\n    exc_type: type[BaseException] | None,\n    exc_val: BaseException | None,\n    exc_tb: types.TracebackType | None,\n) -> None: ..."
+  },
+  {
+   "stub": "def resolve_env(env: t.Mapping[str, str] | None = None) -> t.Mapping[str, str]: ...",
+   "formatted": "def resolve_env(\n    env: t.Mapping[str, str] | None = None,\n) -> t.Mapping[str, str]: ..."
+  },
+  {
+   "stub": "def socket_path_from_env(env: t.Mapping[str, str] | None = None) -> str: ...",
+   "formatted": "def socket_path_from_env(\n    env: t.Mapping[str, str] | None = None,\n) -> str: ..."
+  },
+  {
+   "stub": "def pane_id_from_env(env: t.Mapping[str, str] | None = None) -> str: ...",
+   "formatted": "def pane_id_from_env(\n    env: t.Mapping[str, str] | None = None,\n) -> str: ..."
+  },
+  {
+   "stub": "def keygetter(obj: Mapping[str, t.Any], path: str) -> t.Any | str | list[str] | Mapping[str, str] | None: ...",
+   "formatted": "def keygetter(\n    obj: Mapping[str, t.Any], path: str\n) -> t.Any | str | list[str] | Mapping[str, str] | None: ..."
+  },
+  {
+   "stub": "def parse_lookup(obj: Mapping[str, t.Any], path: str, lookup: str) -> t.Any | None: ...",
+   "formatted": "def parse_lookup(\n    obj: Mapping[str, t.Any], path: str, lookup: str\n) -> t.Any | None: ..."
+  },
+  {
+   "stub": "def lookup_exact(data: str | list[str] | Mapping[str, str], rhs: str | list[str] | Mapping[str, str] | re.Pattern[str]) -> bool: ...",
+   "formatted": "def lookup_exact(\n    data: str | list[str] | Mapping[str, str],\n    rhs: str\n    | list[str]\n    | Mapping[str, str]\n    | re.Pattern[str],\n) -> bool: ..."
+  },
+  {
+   "stub": "def lookup_iexact(data: str | list[str] | Mapping[str, str], rhs: str | list[str] | Mapping[str, str] | re.Pattern[str]) -> bool: ...",
+   "formatted": "def lookup_iexact(\n    data: str | list[str] | Mapping[str, str],\n    rhs: str\n    | list[str]\n    | Mapping[str, str]\n    | re.Pattern[str],\n) -> bool: ..."
+  },
+  {
+   "stub": "def lookup_contains(data: str | list[str] | Mapping[str, str], rhs: str | list[str] | Mapping[str, str] | re.Pattern[str]) -> bool: ...",
+   "formatted": "def lookup_contains(\n    data: str | list[str] | Mapping[str, str],\n    rhs: str\n    | list[str]\n    | Mapping[str, str]\n    | re.Pattern[str],\n) -> bool: ..."
+  },
+  {
+   "stub": "def lookup_icontains(data: str | list[str] | Mapping[str, str], rhs: str | list[str] | Mapping[str, str] | re.Pattern[str]) -> bool: ...",
+   "formatted": "def lookup_icontains(\n    data: str | list[str] | Mapping[str, str],\n    rhs: str\n    | list[str]\n    | Mapping[str, str]\n    | re.Pattern[str],\n) -> bool: ..."
+  },
+  {
+   "stub": "def lookup_startswith(data: str | list[str] | Mapping[str, str], rhs: str | list[str] | Mapping[str, str] | re.Pattern[str]) -> bool: ...",
+   "formatted": "def lookup_startswith(\n    data: str | list[str] | Mapping[str, str],\n    rhs: str\n    | list[str]\n    | Mapping[str, str]\n    | re.Pattern[str],\n) -> bool: ..."
+  },
+  {
+   "stub": "def lookup_istartswith(data: str | list[str] | Mapping[str, str], rhs: str | list[str] | Mapping[str, str] | re.Pattern[str]) -> bool: ...",
+   "formatted": "def lookup_istartswith(\n    data: str | list[str] | Mapping[str, str],\n    rhs: str\n    | list[str]\n    | Mapping[str, str]\n    | re.Pattern[str],\n) -> bool: ..."
+  },
+  {
+   "stub": "def lookup_endswith(data: str | list[str] | Mapping[str, str], rhs: str | list[str] | Mapping[str, str] | re.Pattern[str]) -> bool: ...",
+   "formatted": "def lookup_endswith(\n    data: str | list[str] | Mapping[str, str],\n    rhs: str\n    | list[str]\n    | Mapping[str, str]\n    | re.Pattern[str],\n) -> bool: ..."
+  },
+  {
+   "stub": "def lookup_iendswith(data: str | list[str] | Mapping[str, str], rhs: str | list[str] | Mapping[str, str] | re.Pattern[str]) -> bool: ...",
+   "formatted": "def lookup_iendswith(\n    data: str | list[str] | Mapping[str, str],\n    rhs: str\n    | list[str]\n    | Mapping[str, str]\n    | re.Pattern[str],\n) -> bool: ..."
+  },
+  {
+   "stub": "def lookup_in(data: str | list[str] | Mapping[str, str], rhs: str | list[str] | Mapping[str, str] | re.Pattern[str]) -> bool: ...",
+   "formatted": "def lookup_in(\n    data: str | list[str] | Mapping[str, str],\n    rhs: str\n    | list[str]\n    | Mapping[str, str]\n    | re.Pattern[str],\n) -> bool: ..."
+  },
+  {
+   "stub": "def lookup_nin(data: str | list[str] | Mapping[str, str], rhs: str | list[str] | Mapping[str, str] | re.Pattern[str]) -> bool: ...",
+   "formatted": "def lookup_nin(\n    data: str | list[str] | Mapping[str, str],\n    rhs: str\n    | list[str]\n    | Mapping[str, str]\n    | re.Pattern[str],\n) -> bool: ..."
+  },
+  {
+   "stub": "def lookup_regex(data: str | list[str] | Mapping[str, str], rhs: str | list[str] | Mapping[str, str] | re.Pattern[str]) -> bool: ...",
+   "formatted": "def lookup_regex(\n    data: str | list[str] | Mapping[str, str],\n    rhs: str\n    | list[str]\n    | Mapping[str, str]\n    | re.Pattern[str],\n) -> bool: ..."
+  },
+  {
+   "stub": "def lookup_iregex(data: str | list[str] | Mapping[str, str], rhs: str | list[str] | Mapping[str, str] | re.Pattern[str]) -> bool: ...",
+   "formatted": "def lookup_iregex(\n    data: str | list[str] | Mapping[str, str],\n    rhs: str\n    | list[str]\n    | Mapping[str, str]\n    | re.Pattern[str],\n) -> bool: ..."
+  },
+  {
+   "stub": "def __init__(self, items: Iterable[T] | None = None) -> None: ...",
+   "formatted": "def __init__(\n    self, items: Iterable[T] | None = None\n) -> None: ..."
+  },
+  {
+   "stub": "def filter(self, matcher: Callable[[T], bool] | T | None = None, **kwargs: t.Any) -> QueryList[T]: ...",
+   "formatted": "def filter(\n    self,\n    matcher: Callable[[T], bool] | T | None = None,\n    **kwargs: t.Any,\n) -> QueryList[T]: ..."
+  },
+  {
+   "stub": "def get(self, matcher: Callable[[T], bool] | T | None = None, default: t.Any | None = no_arg, **kwargs: t.Any) -> T | None: ...",
+   "formatted": "def get(\n    self,\n    matcher: Callable[[T], bool] | T | None = None,\n    default: t.Any | None = no_arg,\n    **kwargs: t.Any,\n) -> T | None: ..."
+  },
+  {
+   "stub": "def is_sparse_array_list(items: ExplodedComplexUntypedOptionsDict) -> TypeGuard[HookArray]: ...",
+   "formatted": "def is_sparse_array_list(\n    items: ExplodedComplexUntypedOptionsDict,\n) -> TypeGuard[HookArray]: ..."
+  },
+  {
+   "stub": "def from_client_name(cls, server: Server, client_name: str) -> Client: ...",
+   "formatted": "def from_client_name(\n    cls, server: Server, client_name: str\n) -> Client: ..."
+  },
+  {
+   "stub": "def _resolve_attached(self) -> tuple[Session | None, Window | None, Pane | None]: ...",
+   "formatted": "def _resolve_attached(\n    self,\n) -> tuple[Session | None, Window | None, Pane | None]: ..."
+  },
+  {
+   "stub": "def __call__(self, cmd: str, args: t.Any, kwargs: t.Any) -> tmux_cmd: ...",
+   "formatted": "def __call__(\n    self, cmd: str, args: t.Any, kwargs: t.Any\n) -> tmux_cmd: ..."
+  },
+  {
+   "stub": "def __init__(self, add_option: str | None = None) -> None: ...",
+   "formatted": "def __init__(\n    self, add_option: str | None = None\n) -> None: ..."
+  },
+  {
+   "stub": "def set_environment(self, name: str, value: str, *, expand_format: bool | None = None, hidden: bool | None = None) -> None: ...",
+   "formatted": "def set_environment(\n    self,\n    name: str,\n    value: str,\n    *,\n    expand_format: bool | None = None,\n    hidden: bool | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def raise_if_stderr(proc: tmux_cmd, subcommand: str) -> None: ...",
+   "formatted": "def raise_if_stderr(\n    proc: tmux_cmd, subcommand: str\n) -> None: ..."
+  },
+  {
+   "stub": "def __init__(self, args: t.Any, tmux_bin: str | None = None) -> None: ...",
+   "formatted": "def __init__(\n    self, args: t.Any, tmux_bin: str | None = None\n) -> None: ..."
+  },
+  {
+   "stub": "def get_version(tmux_bin: str | None = None) -> LooseVersion: ...",
+   "formatted": "def get_version(\n    tmux_bin: str | None = None,\n) -> LooseVersion: ..."
+  },
+  {
+   "stub": "def has_version(version: str, tmux_bin: str | None = None) -> bool: ...",
+   "formatted": "def has_version(\n    version: str, tmux_bin: str | None = None\n) -> bool: ..."
+  },
+  {
+   "stub": "def has_gt_version(min_version: str, tmux_bin: str | None = None) -> bool: ...",
+   "formatted": "def has_gt_version(\n    min_version: str, tmux_bin: str | None = None\n) -> bool: ..."
+  },
+  {
+   "stub": "def has_gte_version(min_version: str, tmux_bin: str | None = None) -> bool: ...",
+   "formatted": "def has_gte_version(\n    min_version: str, tmux_bin: str | None = None\n) -> bool: ..."
+  },
+  {
+   "stub": "def has_lte_version(max_version: str, tmux_bin: str | None = None) -> bool: ...",
+   "formatted": "def has_lte_version(\n    max_version: str, tmux_bin: str | None = None\n) -> bool: ..."
+  },
+  {
+   "stub": "def has_lt_version(max_version: str, tmux_bin: str | None = None) -> bool: ...",
+   "formatted": "def has_lt_version(\n    max_version: str, tmux_bin: str | None = None\n) -> bool: ..."
+  },
+  {
+   "stub": "def has_minimum_version(raises: bool = True, tmux_bin: str | None = None) -> bool: ...",
+   "formatted": "def has_minimum_version(\n    raises: bool = True, tmux_bin: str | None = None\n) -> bool: ..."
+  },
+  {
+   "stub": "def session_check_name(session_name: str | None) -> None: ...",
+   "formatted": "def session_check_name(\n    session_name: str | None,\n) -> None: ..."
+  },
+  {
+   "stub": "def __init__(self, args: object, subcommand: str | None = None) -> None: ...",
+   "formatted": "def __init__(\n    self, args: object, subcommand: str | None = None\n) -> None: ..."
+  },
+  {
+   "stub": "def __init__(self, *, deprecated: str, replacement: str, version: str) -> None: ...",
+   "formatted": "def __init__(\n    self, *, deprecated: str, replacement: str, version: str\n) -> None: ..."
+  },
+  {
+   "stub": "def __init__(self, variable: str | None = None, *args: object, reason: str = \"unset or empty\") -> None: ...",
+   "formatted": "def __init__(\n    self,\n    variable: str | None = None,\n    *args: object,\n    reason: str = \"unset or empty\",\n) -> None: ..."
+  },
+  {
+   "stub": "def __init__(self, args: object, query: t.Mapping[str, t.Any] | None = None) -> None: ...",
+   "formatted": "def __init__(\n    self,\n    args: object,\n    query: t.Mapping[str, t.Any] | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def __init__(self, args: object, count: int | None = None, query: t.Mapping[str, t.Any] | None = None) -> None: ...",
+   "formatted": "def __init__(\n    self,\n    args: object,\n    count: int | None = None,\n    query: t.Mapping[str, t.Any] | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def __init__(self, obj_key: str | None = None, obj_id: str | None = None, list_cmd: str | None = None, list_extra_args: ListExtraArgs | None = None, *args: object) -> None: ...",
+   "formatted": "def __init__(\n    self,\n    obj_key: str | None = None,\n    obj_id: str | None = None,\n    list_cmd: str | None = None,\n    list_extra_args: ListExtraArgs | None = None,\n    *args: object,\n) -> None: ..."
+  },
+  {
+   "stub": "def __init__(self, reason: str, session_name: str | None = None, *args: object) -> None: ...",
+   "formatted": "def __init__(\n    self,\n    reason: str,\n    session_name: str | None = None,\n    *args: object,\n) -> None: ..."
+  },
+  {
+   "stub": "def __init__(self, variable: t.Any | None = None, *args: object) -> None: ...",
+   "formatted": "def __init__(\n    self, variable: t.Any | None = None, *args: object\n) -> None: ..."
+  },
+  {
+   "stub": "def __init__(self, pane_id: str | None = None, *args: object) -> None: ...",
+   "formatted": "def __init__(\n    self, pane_id: str | None = None, *args: object\n) -> None: ..."
+  },
+  {
+   "stub": "def __init__(self, default_hook_scope: OptionScope | None) -> None: ...",
+   "formatted": "def __init__(\n    self, default_hook_scope: OptionScope | None\n) -> None: ..."
+  },
+  {
+   "stub": "def run_hook(self, hook: str, global_: bool | None = None, scope: OptionScope | _DefaultOptionScope | None = DEFAULT_OPTION_SCOPE) -> Self: ...",
+   "formatted": "def run_hook(\n    self,\n    hook: str,\n    global_: bool | None = None,\n    scope: OptionScope\n    | _DefaultOptionScope\n    | None = DEFAULT_OPTION_SCOPE,\n) -> Self: ..."
+  },
+  {
+   "stub": "def set_hook(self, hook: str, value: int | str, unset: bool | None = None, run: bool | None = None, append: bool | None = None, g: bool | None = None, global_: bool | None = None, scope: OptionScope | _DefaultOptionScope | None = DEFAULT_OPTION_SCOPE) -> Self: ...",
+   "formatted": "def set_hook(\n    self,\n    hook: str,\n    value: int | str,\n    unset: bool | None = None,\n    run: bool | None = None,\n    append: bool | None = None,\n    g: bool | None = None,\n    global_: bool | None = None,\n    scope: OptionScope\n    | _DefaultOptionScope\n    | None = DEFAULT_OPTION_SCOPE,\n) -> Self: ..."
+  },
+  {
+   "stub": "def unset_hook(self, hook: str, global_: bool | None = None, scope: OptionScope | _DefaultOptionScope | None = DEFAULT_OPTION_SCOPE) -> Self: ...",
+   "formatted": "def unset_hook(\n    self,\n    hook: str,\n    global_: bool | None = None,\n    scope: OptionScope\n    | _DefaultOptionScope\n    | None = DEFAULT_OPTION_SCOPE,\n) -> Self: ..."
+  },
+  {
+   "stub": "def show_hooks(self, global_: bool | None = False, scope: OptionScope | _DefaultOptionScope | None = DEFAULT_OPTION_SCOPE) -> HookDict: ...",
+   "formatted": "def show_hooks(\n    self,\n    global_: bool | None = False,\n    scope: OptionScope\n    | _DefaultOptionScope\n    | None = DEFAULT_OPTION_SCOPE,\n) -> HookDict: ..."
+  },
+  {
+   "stub": "def _show_hook(self, hook: str, global_: bool = False, scope: OptionScope | _DefaultOptionScope | None = DEFAULT_OPTION_SCOPE) -> list[str] | None: ...",
+   "formatted": "def _show_hook(\n    self,\n    hook: str,\n    global_: bool = False,\n    scope: OptionScope\n    | _DefaultOptionScope\n    | None = DEFAULT_OPTION_SCOPE,\n) -> list[str] | None: ..."
+  },
+  {
+   "stub": "def show_hook(self, hook: str, global_: bool = False, scope: OptionScope | _DefaultOptionScope | None = DEFAULT_OPTION_SCOPE) -> str | int | SparseArray[str] | None: ...",
+   "formatted": "def show_hook(\n    self,\n    hook: str,\n    global_: bool = False,\n    scope: OptionScope\n    | _DefaultOptionScope\n    | None = DEFAULT_OPTION_SCOPE,\n) -> str | int | SparseArray[str] | None: ..."
+  },
+  {
+   "stub": "def set_hooks(self, hook: str, values: HookValues, *, clear_existing: bool = False, global_: bool | None = None, scope: OptionScope | _DefaultOptionScope | None = DEFAULT_OPTION_SCOPE) -> Self: ...",
+   "formatted": "def set_hooks(\n    self,\n    hook: str,\n    values: HookValues,\n    *,\n    clear_existing: bool = False,\n    global_: bool | None = None,\n    scope: OptionScope\n    | _DefaultOptionScope\n    | None = DEFAULT_OPTION_SCOPE,\n) -> Self: ..."
+  },
+  {
+   "stub": "def _normalize_tmux_version(version: str) -> LooseVersion: ...",
+   "formatted": "def _normalize_tmux_version(\n    version: str,\n) -> LooseVersion: ..."
+  },
+  {
+   "stub": "def _refresh(self, obj_key: str, obj_id: str, list_cmd: ListCmd = \"list-panes\", list_extra_args: ListExtraArgs = None) -> None: ...",
+   "formatted": "def _refresh(\n    self,\n    obj_key: str,\n    obj_id: str,\n    list_cmd: ListCmd = \"list-panes\",\n    list_extra_args: ListExtraArgs = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def get_output_format(list_cmd: str = \"list-panes\", tmux_version: str = \"3.2a\") -> tuple[tuple[str, ...], str]: ...",
+   "formatted": "def get_output_format(\n    list_cmd: str = \"list-panes\", tmux_version: str = \"3.2a\"\n) -> tuple[tuple[str, ...], str]: ..."
+  },
+  {
+   "stub": "def parse_output(output: str, list_cmd: str = \"list-panes\", tmux_version: str = \"3.2a\") -> OutputRaw: ...",
+   "formatted": "def parse_output(\n    output: str,\n    list_cmd: str = \"list-panes\",\n    tmux_version: str = \"3.2a\",\n) -> OutputRaw: ..."
+  },
+  {
+   "stub": "def _is_target_not_found_error(stderr_text: str) -> bool: ...",
+   "formatted": "def _is_target_not_found_error(\n    stderr_text: str,\n) -> bool: ..."
+  },
+  {
+   "stub": "def fetch_obj(server: Server, obj_key: str, obj_id: str, list_cmd: ListCmd = \"list-panes\", list_extra_args: ListExtraArgs = None) -> OutputRaw: ...",
+   "formatted": "def fetch_obj(\n    server: Server,\n    obj_key: str,\n    obj_id: str,\n    list_cmd: ListCmd = \"list-panes\",\n    list_extra_args: ListExtraArgs = None,\n) -> OutputRaw: ..."
+  },
+  {
+   "stub": "def handle_option_error(error: str) -> type[exc.OptionError]: ...",
+   "formatted": "def handle_option_error(\n    error: str,\n) -> type[exc.OptionError]: ..."
+  },
+  {
+   "stub": "def convert_value(value: _V | None) -> ConvertedValue | _V | None: ...",
+   "formatted": "def convert_value(\n    value: _V | None,\n) -> ConvertedValue | _V | None: ..."
+  },
+  {
+   "stub": "def convert_values(value: _V | None) -> ConvertedValues | _V | None: ...",
+   "formatted": "def convert_values(\n    value: _V | None,\n) -> ConvertedValues | _V | None: ..."
+  },
+  {
+   "stub": "def parse_options_to_dict(stdout: t.IO[str]) -> UntypedOptionsDict: ...",
+   "formatted": "def parse_options_to_dict(\n    stdout: t.IO[str],\n) -> UntypedOptionsDict: ..."
+  },
+  {
+   "stub": "def explode_arrays(_dict: UntypedOptionsDict, force_array: bool = False) -> ExplodedUntypedOptionsDict: ...",
+   "formatted": "def explode_arrays(\n    _dict: UntypedOptionsDict, force_array: bool = False\n) -> ExplodedUntypedOptionsDict: ..."
+  },
+  {
+   "stub": "def explode_complex(_dict: ExplodedUntypedOptionsDict) -> ExplodedComplexUntypedOptionsDict: ...",
+   "formatted": "def explode_complex(\n    _dict: ExplodedUntypedOptionsDict,\n) -> ExplodedComplexUntypedOptionsDict: ..."
+  },
+  {
+   "stub": "def __init__(self, default_option_scope: OptionScope | None = None) -> None: ...",
+   "formatted": "def __init__(\n    self, default_option_scope: OptionScope | None = None\n) -> None: ..."
+  },
+  {
+   "stub": "def set_option(self, option: str, value: int | str, _format: bool | None = None, prevent_overwrite: bool | None = None, ignore_errors: bool | None = None, suppress_warnings: bool | None = None, append: bool | None = None, g: bool | None = None, global_: bool | None = None, scope: OptionScope | _DefaultOptionScope | None = DEFAULT_OPTION_SCOPE) -> Self: ...",
+   "formatted": "def set_option(\n    self,\n    option: str,\n    value: int | str,\n    _format: bool | None = None,\n    prevent_overwrite: bool | None = None,\n    ignore_errors: bool | None = None,\n    suppress_warnings: bool | None = None,\n    append: bool | None = None,\n    g: bool | None = None,\n    global_: bool | None = None,\n    scope: OptionScope\n    | _DefaultOptionScope\n    | None = DEFAULT_OPTION_SCOPE,\n) -> Self: ..."
+  },
+  {
+   "stub": "def unset_option(self, option: str, unset_panes: bool | None = None, global_: bool | None = None, ignore_errors: bool | None = None, scope: OptionScope | _DefaultOptionScope | None = DEFAULT_OPTION_SCOPE) -> Self: ...",
+   "formatted": "def unset_option(\n    self,\n    option: str,\n    unset_panes: bool | None = None,\n    global_: bool | None = None,\n    ignore_errors: bool | None = None,\n    scope: OptionScope\n    | _DefaultOptionScope\n    | None = DEFAULT_OPTION_SCOPE,\n) -> Self: ..."
+  },
+  {
+   "stub": "def _show_options_raw(self, g: bool | None = False, global_: bool | None = False, scope: OptionScope | _DefaultOptionScope | None = DEFAULT_OPTION_SCOPE, include_hooks: bool | None = None, include_inherited: bool | None = None, quiet: bool | None = None, values_only: bool | None = None) -> tmux_cmd: ...",
+   "formatted": "def _show_options_raw(\n    self,\n    g: bool | None = False,\n    global_: bool | None = False,\n    scope: OptionScope\n    | _DefaultOptionScope\n    | None = DEFAULT_OPTION_SCOPE,\n    include_hooks: bool | None = None,\n    include_inherited: bool | None = None,\n    quiet: bool | None = None,\n    values_only: bool | None = None,\n) -> tmux_cmd: ..."
+  },
+  {
+   "stub": "def _show_options_dict(self, g: bool | None = False, global_: bool | None = False, scope: OptionScope | _DefaultOptionScope | None = DEFAULT_OPTION_SCOPE, include_hooks: bool | None = None, include_inherited: bool | None = None, quiet: bool | None = None) -> UntypedOptionsDict: ...",
+   "formatted": "def _show_options_dict(\n    self,\n    g: bool | None = False,\n    global_: bool | None = False,\n    scope: OptionScope\n    | _DefaultOptionScope\n    | None = DEFAULT_OPTION_SCOPE,\n    include_hooks: bool | None = None,\n    include_inherited: bool | None = None,\n    quiet: bool | None = None,\n) -> UntypedOptionsDict: ..."
+  },
+  {
+   "stub": "def _show_options(self, g: bool | None = False, global_: bool | None = False, scope: OptionScope | _DefaultOptionScope | None = DEFAULT_OPTION_SCOPE, include_hooks: bool | None = None, include_inherited: bool | None = None, quiet: bool | None = None) -> ExplodedComplexUntypedOptionsDict: ...",
+   "formatted": "def _show_options(\n    self,\n    g: bool | None = False,\n    global_: bool | None = False,\n    scope: OptionScope\n    | _DefaultOptionScope\n    | None = DEFAULT_OPTION_SCOPE,\n    include_hooks: bool | None = None,\n    include_inherited: bool | None = None,\n    quiet: bool | None = None,\n) -> ExplodedComplexUntypedOptionsDict: ..."
+  },
+  {
+   "stub": "def show_options(self, global_: bool = False, scope: OptionScope | _DefaultOptionScope | None = DEFAULT_OPTION_SCOPE, include_hooks: bool | None = None, include_inherited: bool | None = None, quiet: bool | None = None) -> ExplodedComplexUntypedOptionsDict: ...",
+   "formatted": "def show_options(\n    self,\n    global_: bool = False,\n    scope: OptionScope\n    | _DefaultOptionScope\n    | None = DEFAULT_OPTION_SCOPE,\n    include_hooks: bool | None = None,\n    include_inherited: bool | None = None,\n    quiet: bool | None = None,\n) -> ExplodedComplexUntypedOptionsDict: ..."
+  },
+  {
+   "stub": "def _show_option_raw(self, option: str, global_: bool = False, g: bool = False, scope: OptionScope | _DefaultOptionScope | None = DEFAULT_OPTION_SCOPE, ignore_errors: bool | None = None, include_hooks: bool | None = None, include_inherited: bool | None = None) -> tmux_cmd: ...",
+   "formatted": "def _show_option_raw(\n    self,\n    option: str,\n    global_: bool = False,\n    g: bool = False,\n    scope: OptionScope\n    | _DefaultOptionScope\n    | None = DEFAULT_OPTION_SCOPE,\n    ignore_errors: bool | None = None,\n    include_hooks: bool | None = None,\n    include_inherited: bool | None = None,\n) -> tmux_cmd: ..."
+  },
+  {
+   "stub": "def _show_option(self, option: str, global_: bool = False, g: bool = False, scope: OptionScope | _DefaultOptionScope | None = DEFAULT_OPTION_SCOPE, ignore_errors: bool | None = None, include_hooks: bool | None = None, include_inherited: bool | None = None) -> ConvertedValue | None: ...",
+   "formatted": "def _show_option(\n    self,\n    option: str,\n    global_: bool = False,\n    g: bool = False,\n    scope: OptionScope\n    | _DefaultOptionScope\n    | None = DEFAULT_OPTION_SCOPE,\n    ignore_errors: bool | None = None,\n    include_hooks: bool | None = None,\n    include_inherited: bool | None = None,\n) -> ConvertedValue | None: ..."
+  },
+  {
+   "stub": "def show_option(self, option: str, global_: bool = False, g: bool = False, scope: OptionScope | _DefaultOptionScope | None = DEFAULT_OPTION_SCOPE, ignore_errors: bool | None = None, include_hooks: bool | None = None, include_inherited: bool | None = None) -> t.Any | None: ...",
+   "formatted": "def show_option(\n    self,\n    option: str,\n    global_: bool = False,\n    g: bool = False,\n    scope: OptionScope\n    | _DefaultOptionScope\n    | None = DEFAULT_OPTION_SCOPE,\n    ignore_errors: bool | None = None,\n    include_hooks: bool | None = None,\n    include_inherited: bool | None = None,\n) -> t.Any | None: ..."
+  },
+  {
+   "stub": "def __exit__(self, exc_type: type[BaseException] | None, exc_value: BaseException | None, exc_tb: types.TracebackType | None) -> None: ...",
+   "formatted": "def __exit__(\n    self,\n    exc_type: type[BaseException] | None,\n    exc_value: BaseException | None,\n    exc_tb: types.TracebackType | None,\n) -> None: ..."
+  },
+  {
+   "stub": "def from_pane_id(cls, server: Server, pane_id: str) -> Pane: ...",
+   "formatted": "def from_pane_id(\n    cls, server: Server, pane_id: str\n) -> Pane: ..."
+  },
+  {
+   "stub": "def from_env(cls, env: t.Mapping[str, str] | None = None) -> Pane: ...",
+   "formatted": "def from_env(\n    cls, env: t.Mapping[str, str] | None = None\n) -> Pane: ..."
+  },
+  {
+   "stub": "def cmd(self, cmd: str, args: t.Any, target: str | int | None = None) -> tmux_cmd: ...",
+   "formatted": "def cmd(\n    self,\n    cmd: str,\n    args: t.Any,\n    target: str | int | None = None,\n) -> tmux_cmd: ..."
+  },
+  {
+   "stub": "def capture_pane(self, start: t.Literal[\"-\"] | int | None = ..., end: t.Literal[\"-\"] | int | None = ..., *, escape_sequences: bool = ..., escape_non_printable: bool = ..., join_wrapped: bool = ..., preserve_trailing: bool = ..., trim_trailing: bool = ..., alternate_screen: bool = ..., quiet: bool = ..., mode_screen: bool = ..., pending: bool = ..., hyperlinks: bool = ..., line_numbers: bool = ..., line_flags: bool = ..., to_buffer: str) -> None: ...",
+   "formatted": "def capture_pane(\n    self,\n    start: t.Literal[\"-\"] | int | None = ...,\n    end: t.Literal[\"-\"] | int | None = ...,\n    *,\n    escape_sequences: bool = ...,\n    escape_non_printable: bool = ...,\n    join_wrapped: bool = ...,\n    preserve_trailing: bool = ...,\n    trim_trailing: bool = ...,\n    alternate_screen: bool = ...,\n    quiet: bool = ...,\n    mode_screen: bool = ...,\n    pending: bool = ...,\n    hyperlinks: bool = ...,\n    line_numbers: bool = ...,\n    line_flags: bool = ...,\n    to_buffer: str,\n) -> None: ..."
+  },
+  {
+   "stub": "def capture_pane(self, start: t.Literal[\"-\"] | int | None = ..., end: t.Literal[\"-\"] | int | None = ..., *, escape_sequences: bool = ..., escape_non_printable: bool = ..., join_wrapped: bool = ..., preserve_trailing: bool = ..., trim_trailing: bool = ..., alternate_screen: bool = ..., quiet: bool = ..., mode_screen: bool = ..., pending: bool = ..., hyperlinks: bool = ..., line_numbers: bool = ..., line_flags: bool = ..., to_buffer: None = ...) -> list[str]: ...",
+   "formatted": "def capture_pane(\n    self,\n    start: t.Literal[\"-\"] | int | None = ...,\n    end: t.Literal[\"-\"] | int | None = ...,\n    *,\n    escape_sequences: bool = ...,\n    escape_non_printable: bool = ...,\n    join_wrapped: bool = ...,\n    preserve_trailing: bool = ...,\n    trim_trailing: bool = ...,\n    alternate_screen: bool = ...,\n    quiet: bool = ...,\n    mode_screen: bool = ...,\n    pending: bool = ...,\n    hyperlinks: bool = ...,\n    line_numbers: bool = ...,\n    line_flags: bool = ...,\n    to_buffer: None = ...,\n) -> list[str]: ..."
+  },
+  {
+   "stub": "def capture_pane(self, start: t.Literal[\"-\"] | int | None = None, end: t.Literal[\"-\"] | int | None = None, *, escape_sequences: bool = False, escape_non_printable: bool = False, join_wrapped: bool = False, preserve_trailing: bool = False, trim_trailing: bool = False, alternate_screen: bool = False, quiet: bool = False, mode_screen: bool = False, pending: bool = False, hyperlinks: bool = False, line_numbers: bool = False, line_flags: bool = False, to_buffer: str | None = None) -> list[str] | None: ...",
+   "formatted": "def capture_pane(\n    self,\n    start: t.Literal[\"-\"] | int | None = None,\n    end: t.Literal[\"-\"] | int | None = None,\n    *,\n    escape_sequences: bool = False,\n    escape_non_printable: bool = False,\n    join_wrapped: bool = False,\n    preserve_trailing: bool = False,\n    trim_trailing: bool = False,\n    alternate_screen: bool = False,\n    quiet: bool = False,\n    mode_screen: bool = False,\n    pending: bool = False,\n    hyperlinks: bool = False,\n    line_numbers: bool = False,\n    line_flags: bool = False,\n    to_buffer: str | None = None,\n) -> list[str] | None: ..."
+  },
+  {
+   "stub": "def send_keys(self, cmd: str | None = None, enter: bool | None = True, suppress_history: bool | None = False, literal: bool | None = False, reset: bool | None = None, copy_mode_cmd: str | None = None, repeat: int | None = None, expand_formats: bool | None = None, hex_keys: bool | None = None, target_client: str | None = None, key_name: bool | None = None) -> None: ...",
+   "formatted": "def send_keys(\n    self,\n    cmd: str | None = None,\n    enter: bool | None = True,\n    suppress_history: bool | None = False,\n    literal: bool | None = False,\n    reset: bool | None = None,\n    copy_mode_cmd: str | None = None,\n    repeat: int | None = None,\n    expand_formats: bool | None = None,\n    hex_keys: bool | None = None,\n    target_client: str | None = None,\n    key_name: bool | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def display_message(self, cmd: str, get_text: t.Literal[True], *, format_string: str | None = ..., all_formats: bool | None = ..., verbose: bool | None = ..., no_expand: bool | None = ..., target_client: str | None = ..., delay: int | None = ..., notify: bool | None = ..., update_pane: bool | None = ...) -> list[str]: ...",
+   "formatted": "def display_message(\n    self,\n    cmd: str,\n    get_text: t.Literal[True],\n    *,\n    format_string: str | None = ...,\n    all_formats: bool | None = ...,\n    verbose: bool | None = ...,\n    no_expand: bool | None = ...,\n    target_client: str | None = ...,\n    delay: int | None = ...,\n    notify: bool | None = ...,\n    update_pane: bool | None = ...,\n) -> list[str]: ..."
+  },
+  {
+   "stub": "def display_message(self, cmd: str, get_text: t.Literal[False] = ..., *, format_string: str | None = ..., all_formats: bool | None = ..., verbose: bool | None = ..., no_expand: bool | None = ..., target_client: str | None = ..., delay: int | None = ..., notify: bool | None = ..., update_pane: bool | None = ...) -> None: ...",
+   "formatted": "def display_message(\n    self,\n    cmd: str,\n    get_text: t.Literal[False] = ...,\n    *,\n    format_string: str | None = ...,\n    all_formats: bool | None = ...,\n    verbose: bool | None = ...,\n    no_expand: bool | None = ...,\n    target_client: str | None = ...,\n    delay: int | None = ...,\n    notify: bool | None = ...,\n    update_pane: bool | None = ...,\n) -> None: ..."
+  },
+  {
+   "stub": "def display_message(self, cmd: str, get_text: bool = False, *, format_string: str | None = None, all_formats: bool | None = None, verbose: bool | None = None, no_expand: bool | None = None, target_client: str | None = None, delay: int | None = None, notify: bool | None = None, update_pane: bool | None = None) -> list[str] | None: ...",
+   "formatted": "def display_message(\n    self,\n    cmd: str,\n    get_text: bool = False,\n    *,\n    format_string: str | None = None,\n    all_formats: bool | None = None,\n    verbose: bool | None = None,\n    no_expand: bool | None = None,\n    target_client: str | None = None,\n    delay: int | None = None,\n    notify: bool | None = None,\n    update_pane: bool | None = None,\n) -> list[str] | None: ..."
+  },
+  {
+   "stub": "def select(self, *, direction: ResizeAdjustmentDirection | None = None, last: bool | None = None, keep_zoom: bool | None = None, mark: bool | None = None, clear_mark: bool | None = None, disable_input: bool | None = None, enable_input: bool | None = None) -> Pane: ...",
+   "formatted": "def select(\n    self,\n    *,\n    direction: ResizeAdjustmentDirection | None = None,\n    last: bool | None = None,\n    keep_zoom: bool | None = None,\n    mark: bool | None = None,\n    clear_mark: bool | None = None,\n    disable_input: bool | None = None,\n    enable_input: bool | None = None,\n) -> Pane: ..."
+  },
+  {
+   "stub": "def split(self, target: int | str | None = None, start_directory: StrPath | None = None, attach: bool = False, direction: PaneDirection | None = None, full_window_split: bool | None = None, zoom: bool | None = None, shell: str | None = None, size: str | int | None = None, percentage: int | None = None, environment: dict[str, str] | None = None, empty: bool | None = None, style: str | None = None, active_border_style: str | None = None, inactive_border_style: str | None = None, message: str | None = None, keep: bool | None = None) -> Pane: ...",
+   "formatted": "def split(\n    self,\n    target: int | str | None = None,\n    start_directory: StrPath | None = None,\n    attach: bool = False,\n    direction: PaneDirection | None = None,\n    full_window_split: bool | None = None,\n    zoom: bool | None = None,\n    shell: str | None = None,\n    size: str | int | None = None,\n    percentage: int | None = None,\n    environment: dict[str, str] | None = None,\n    empty: bool | None = None,\n    style: str | None = None,\n    active_border_style: str | None = None,\n    inactive_border_style: str | None = None,\n    message: str | None = None,\n    keep: bool | None = None,\n) -> Pane: ..."
+  },
+  {
+   "stub": "def new_pane(self, target: int | str | None = None, start_directory: StrPath | None = None, attach: bool = False, shell: str | None = None, environment: dict[str, str] | None = None, width: int | None = None, height: int | None = None, x: int | None = None, y: int | None = None, zoom: bool | None = None, empty: bool | None = None, style: str | None = None, active_border_style: str | None = None, inactive_border_style: str | None = None, message: str | None = None, keep: bool | None = None) -> Pane: ...",
+   "formatted": "def new_pane(\n    self,\n    target: int | str | None = None,\n    start_directory: StrPath | None = None,\n    attach: bool = False,\n    shell: str | None = None,\n    environment: dict[str, str] | None = None,\n    width: int | None = None,\n    height: int | None = None,\n    x: int | None = None,\n    y: int | None = None,\n    zoom: bool | None = None,\n    empty: bool | None = None,\n    style: str | None = None,\n    active_border_style: str | None = None,\n    inactive_border_style: str | None = None,\n    message: str | None = None,\n    keep: bool | None = None,\n) -> Pane: ..."
+  },
+  {
+   "stub": "def display_popup(self, command: str | None = None, *, close_on_exit: bool | None = None, close_on_success: bool | None = None, close_existing: bool | None = None, target_client: str | None = None, width: int | str | None = None, height: int | str | None = None, x: int | str | None = None, y: int | str | None = None, start_directory: StrPath | None = None, title: str | None = None, border_lines: str | None = None, style: str | None = None, border_style: str | None = None, environment: dict[str, str] | None = None, no_border: bool | None = None, close_on_any_key: bool | None = None, no_keys: bool | None = None) -> None: ...",
+   "formatted": "def display_popup(\n    self,\n    command: str | None = None,\n    *,\n    close_on_exit: bool | None = None,\n    close_on_success: bool | None = None,\n    close_existing: bool | None = None,\n    target_client: str | None = None,\n    width: int | str | None = None,\n    height: int | str | None = None,\n    x: int | str | None = None,\n    y: int | str | None = None,\n    start_directory: StrPath | None = None,\n    title: str | None = None,\n    border_lines: str | None = None,\n    style: str | None = None,\n    border_style: str | None = None,\n    environment: dict[str, str] | None = None,\n    no_border: bool | None = None,\n    close_on_any_key: bool | None = None,\n    no_keys: bool | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def paste_buffer(self, *, buffer_name: str | None = None, delete_after: bool | None = None, linefeed_separator: bool | None = None, bracket: bool | None = None, separator: str | None = None, no_vis: bool | None = None) -> None: ...",
+   "formatted": "def paste_buffer(\n    self,\n    *,\n    buffer_name: str | None = None,\n    delete_after: bool | None = None,\n    linefeed_separator: bool | None = None,\n    bracket: bool | None = None,\n    separator: str | None = None,\n    no_vis: bool | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def pipe(self, command: str | None = None, *, output_only: bool | None = None, input_only: bool | None = None, toggle: bool | None = None) -> None: ...",
+   "formatted": "def pipe(\n    self,\n    command: str | None = None,\n    *,\n    output_only: bool | None = None,\n    input_only: bool | None = None,\n    toggle: bool | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def copy_mode(self, *, scroll_up: bool | None = None, exit_on_bottom: bool | None = None, mouse_drag: bool | None = None, cancel: bool | None = None, page_down: bool | None = None, source_pane: str | None = None) -> None: ...",
+   "formatted": "def copy_mode(\n    self,\n    *,\n    scroll_up: bool | None = None,\n    exit_on_bottom: bool | None = None,\n    mouse_drag: bool | None = None,\n    cancel: bool | None = None,\n    page_down: bool | None = None,\n    source_pane: str | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def display_panes(self, *, duration: int | None = None, no_select: bool | None = None) -> None: ...",
+   "formatted": "def display_panes(\n    self,\n    *,\n    duration: int | None = None,\n    no_select: bool | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def choose_tree(self, *, sessions_collapsed: bool | None = None, windows_collapsed: bool | None = None, format_string: str | None = None, filter_expression: str | None = None, sort_order: t.Literal[\"index\", \"name\", \"time\", \"size\"] | None = None, reverse: bool | None = None, zoom: bool | None = None) -> None: ...",
+   "formatted": "def choose_tree(\n    self,\n    *,\n    sessions_collapsed: bool | None = None,\n    windows_collapsed: bool | None = None,\n    format_string: str | None = None,\n    filter_expression: str | None = None,\n    sort_order: t.Literal[\"index\", \"name\", \"time\", \"size\"]\n    | None = None,\n    reverse: bool | None = None,\n    zoom: bool | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def find_window(self, match_string: str, *, match_content: bool | None = None, case_insensitive: bool | None = None, match_name: bool | None = None, regex: bool | None = None, match_title: bool | None = None) -> None: ...",
+   "formatted": "def find_window(\n    self,\n    match_string: str,\n    *,\n    match_content: bool | None = None,\n    case_insensitive: bool | None = None,\n    match_name: bool | None = None,\n    regex: bool | None = None,\n    match_title: bool | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def send_prefix(self, *, secondary: bool | None = None) -> None: ...",
+   "formatted": "def send_prefix(\n    self, *, secondary: bool | None = None\n) -> None: ..."
+  },
+  {
+   "stub": "def respawn(self, *, shell: str | None = None, start_directory: StrPath | None = None, environment: dict[str, str] | None = None, kill: bool | None = None) -> None: ...",
+   "formatted": "def respawn(\n    self,\n    *,\n    shell: str | None = None,\n    start_directory: StrPath | None = None,\n    environment: dict[str, str] | None = None,\n    kill: bool | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def move(self, target: str | Pane | Window, *, vertical: bool = True, detach: bool = True, full_window: bool | None = None, size: str | int | None = None, before: bool | None = None) -> None: ...",
+   "formatted": "def move(\n    self,\n    target: str | Pane | Window,\n    *,\n    vertical: bool = True,\n    detach: bool = True,\n    full_window: bool | None = None,\n    size: str | int | None = None,\n    before: bool | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def join(self, target: str | Pane | Window, *, vertical: bool = True, detach: bool = True, full_window: bool | None = None, size: str | int | None = None, before: bool | None = None) -> None: ...",
+   "formatted": "def join(\n    self,\n    target: str | Pane | Window,\n    *,\n    vertical: bool = True,\n    detach: bool = True,\n    full_window: bool | None = None,\n    size: str | int | None = None,\n    before: bool | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def break_pane(self, *, detach: bool = True, window_name: str | None = None) -> Window: ...",
+   "formatted": "def break_pane(\n    self,\n    *,\n    detach: bool = True,\n    window_name: str | None = None,\n) -> Window: ..."
+  },
+  {
+   "stub": "def swap(self, target: str | Pane | None = None, *, detach: bool | None = None, move_up: bool | None = None, move_down: bool | None = None, keep_zoom: bool | None = None) -> None: ...",
+   "formatted": "def swap(\n    self,\n    target: str | Pane | None = None,\n    *,\n    detach: bool | None = None,\n    move_up: bool | None = None,\n    move_down: bool | None = None,\n    keep_zoom: bool | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def clear_history(self, *, reset_hyperlinks: bool | None = None) -> None: ...",
+   "formatted": "def clear_history(\n    self, *, reset_hyperlinks: bool | None = None\n) -> None: ..."
+  },
+  {
+   "stub": "def get(self, key: str, default: t.Any | None = None) -> t.Any: ...",
+   "formatted": "def get(\n    self, key: str, default: t.Any | None = None\n) -> t.Any: ..."
+  },
+  {
+   "stub": "def home_path(tmp_path_factory: pytest.TempPathFactory) -> pathlib.Path: ...",
+   "formatted": "def home_path(\n    tmp_path_factory: pytest.TempPathFactory,\n) -> pathlib.Path: ..."
+  },
+  {
+   "stub": "def user_path(home_path: pathlib.Path, home_user_name: str) -> pathlib.Path: ...",
+   "formatted": "def user_path(\n    home_path: pathlib.Path, home_user_name: str\n) -> pathlib.Path: ..."
+  },
+  {
+   "stub": "def config_file(user_path: pathlib.Path) -> pathlib.Path: ...",
+   "formatted": "def config_file(\n    user_path: pathlib.Path,\n) -> pathlib.Path: ..."
+  },
+  {
+   "stub": "def server(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch, config_file: pathlib.Path) -> Server: ...",
+   "formatted": "def server(\n    request: pytest.FixtureRequest,\n    monkeypatch: pytest.MonkeyPatch,\n    config_file: pathlib.Path,\n) -> Server: ..."
+  },
+  {
+   "stub": "def session(request: pytest.FixtureRequest, session_params: dict[str, t.Any], server: Server) -> Session: ...",
+   "formatted": "def session(\n    request: pytest.FixtureRequest,\n    session_params: dict[str, t.Any],\n    server: Server,\n) -> Session: ..."
+  },
+  {
+   "stub": "def control_mode(server: Server, session: Session) -> t.Callable[[], ControlMode]: ...",
+   "formatted": "def control_mode(\n    server: Server, session: Session\n) -> t.Callable[[], ControlMode]: ..."
+  },
+  {
+   "stub": "def TestServer(request: pytest.FixtureRequest) -> type[Server]: ...",
+   "formatted": "def TestServer(\n    request: pytest.FixtureRequest,\n) -> type[Server]: ..."
+  },
+  {
+   "stub": "def _fetch_or_empty(server: Server, list_cmd: str, kwargs: t.Any) -> list[dict[str, t.Any]]: ...",
+   "formatted": "def _fetch_or_empty(\n    server: Server, list_cmd: str, kwargs: t.Any\n) -> list[dict[str, t.Any]]: ..."
+  },
+  {
+   "stub": "def __init__(self, socket_name: str | None = None, socket_path: str | pathlib.Path | None = None, config_file: str | None = None, colors: int | None = None, on_init: t.Callable[[Server], None] | None = None, socket_name_factory: t.Callable[[], str] | None = None, tmux_bin: str | pathlib.Path | None = None, **kwargs: t.Any) -> None: ...",
+   "formatted": "def __init__(\n    self,\n    socket_name: str | None = None,\n    socket_path: str | pathlib.Path | None = None,\n    config_file: str | None = None,\n    colors: int | None = None,\n    on_init: t.Callable[[Server], None] | None = None,\n    socket_name_factory: t.Callable[[], str] | None = None,\n    tmux_bin: str | pathlib.Path | None = None,\n    **kwargs: t.Any,\n) -> None: ..."
+  },
+  {
+   "stub": "def from_env(cls, env: t.Mapping[str, str] | None = None) -> Server: ...",
+   "formatted": "def from_env(\n    cls, env: t.Mapping[str, str] | None = None\n) -> Server: ..."
+  },
+  {
+   "stub": "def has_session(self, target_session: str, exact: bool = True) -> bool: ...",
+   "formatted": "def has_session(\n    self, target_session: str, exact: bool = True\n) -> bool: ..."
+  },
+  {
+   "stub": "def kill_session(self, target_session: str | int) -> Server: ...",
+   "formatted": "def kill_session(\n    self, target_session: str | int\n) -> Server: ..."
+  },
+  {
+   "stub": "def run_shell(self, command: str, *, background: bool | None = None, delay: str | None = None, as_tmux_command: bool | None = None, target_pane: str | None = None, cwd: StrPath | None = None, show_stderr: bool | None = None, args: list[str] | None = None) -> list[str] | None: ...",
+   "formatted": "def run_shell(\n    self,\n    command: str,\n    *,\n    background: bool | None = None,\n    delay: str | None = None,\n    as_tmux_command: bool | None = None,\n    target_pane: str | None = None,\n    cwd: StrPath | None = None,\n    show_stderr: bool | None = None,\n    args: list[str] | None = None,\n) -> list[str] | None: ..."
+  },
+  {
+   "stub": "def wait_for(self, channel: str, *, lock: bool | None = None, unlock: bool | None = None, set_flag: bool | None = None) -> None: ...",
+   "formatted": "def wait_for(\n    self,\n    channel: str,\n    *,\n    lock: bool | None = None,\n    unlock: bool | None = None,\n    set_flag: bool | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def bind_key(self, key: str, command: str, *, key_table: str | None = None, note: str | None = None, repeat: bool | None = None) -> None: ...",
+   "formatted": "def bind_key(\n    self,\n    key: str,\n    command: str,\n    *,\n    key_table: str | None = None,\n    note: str | None = None,\n    repeat: bool | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def unbind_key(self, key: str | None = None, *, key_table: str | None = None, all_keys: bool | None = None, quiet: bool | None = None) -> None: ...",
+   "formatted": "def unbind_key(\n    self,\n    key: str | None = None,\n    *,\n    key_table: str | None = None,\n    all_keys: bool | None = None,\n    quiet: bool | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def list_keys(self, *, key_table: str | None = None, format_: str | None = None) -> list[str]: ...",
+   "formatted": "def list_keys(\n    self,\n    *,\n    key_table: str | None = None,\n    format_: str | None = None,\n) -> list[str]: ..."
+  },
+  {
+   "stub": "def list_commands(self, *, command_name: str | None = None) -> list[str]: ...",
+   "formatted": "def list_commands(\n    self, *, command_name: str | None = None\n) -> list[str]: ..."
+  },
+  {
+   "stub": "def server_access(self, *, allow: str | None = None, deny: str | None = None, list_access: bool | None = None, read_only: bool | None = None, write: bool | None = None) -> list[str] | None: ...",
+   "formatted": "def server_access(\n    self,\n    *,\n    allow: str | None = None,\n    deny: str | None = None,\n    list_access: bool | None = None,\n    read_only: bool | None = None,\n    write: bool | None = None,\n) -> list[str] | None: ..."
+  },
+  {
+   "stub": "def refresh_client(self, *, target_client: str | None = None, request_clipboard: bool = False) -> None: ...",
+   "formatted": "def refresh_client(\n    self,\n    *,\n    target_client: str | None = None,\n    request_clipboard: bool = False,\n) -> None: ..."
+  },
+  {
+   "stub": "def suspend_client(self, *, target_client: str | None = None) -> None: ...",
+   "formatted": "def suspend_client(\n    self, *, target_client: str | None = None\n) -> None: ..."
+  },
+  {
+   "stub": "def lock_client(self, *, target_client: str | None = None) -> None: ...",
+   "formatted": "def lock_client(\n    self, *, target_client: str | None = None\n) -> None: ..."
+  },
+  {
+   "stub": "def detach_client(self, *, target_client: str | None = None, shell_command: str | None = None) -> None: ...",
+   "formatted": "def detach_client(\n    self,\n    *,\n    target_client: str | None = None,\n    shell_command: str | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def detach_all_clients(self, *, keep_client: str | None = None, shell_command: str | None = None) -> None: ...",
+   "formatted": "def detach_all_clients(\n    self,\n    *,\n    keep_client: str | None = None,\n    shell_command: str | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def confirm_before(self, command: str, *, prompt: str | None = None, confirm_key: str | None = None, default_yes: bool | None = None, target_client: str | None = None) -> None: ...",
+   "formatted": "def confirm_before(\n    self,\n    command: str,\n    *,\n    prompt: str | None = None,\n    confirm_key: str | None = None,\n    default_yes: bool | None = None,\n    target_client: str | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def command_prompt(self, template: str, *, prompt: str | None = None, inputs: str | None = None, target_client: str | None = None, one_key: bool | None = None, key_only: bool | None = None, on_input_change: bool | None = None, numeric: bool | None = None, prompt_type: t.Literal[\"command\", \"search\", \"target\", \"window-target\"] | None = None, expand_format: bool | None = None, literal: bool | None = None, bspace_exit: bool | None = None, no_freeze: bool | None = None) -> None: ...",
+   "formatted": "def command_prompt(\n    self,\n    template: str,\n    *,\n    prompt: str | None = None,\n    inputs: str | None = None,\n    target_client: str | None = None,\n    one_key: bool | None = None,\n    key_only: bool | None = None,\n    on_input_change: bool | None = None,\n    numeric: bool | None = None,\n    prompt_type: t.Literal[\n        \"command\", \"search\", \"target\", \"window-target\"\n    ]\n    | None = None,\n    expand_format: bool | None = None,\n    literal: bool | None = None,\n    bspace_exit: bool | None = None,\n    no_freeze: bool | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def display_menu(self, items: str, title: str | None = None, target_pane: str | None = None, target_client: str | None = None, x: int | str | None = None, y: int | str | None = None, starting_choice: int | str | None = None, border_lines: str | None = None, style: str | None = None, border_style: str | None = None, selected_style: str | None = None, mouse: bool | None = None, stay_open: bool | None = None) -> None: ...",
+   "formatted": "def display_menu(\n    self,\n    items: str,\n    title: str | None = None,\n    target_pane: str | None = None,\n    target_client: str | None = None,\n    x: int | str | None = None,\n    y: int | str | None = None,\n    starting_choice: int | str | None = None,\n    border_lines: str | None = None,\n    style: str | None = None,\n    border_style: str | None = None,\n    selected_style: str | None = None,\n    mouse: bool | None = None,\n    stay_open: bool | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def show_messages(self, *, target_client: str | None = None, terminals: bool | None = None, jobs: bool | None = None) -> list[str]: ...",
+   "formatted": "def show_messages(\n    self,\n    *,\n    target_client: str | None = None,\n    terminals: bool | None = None,\n    jobs: bool | None = None,\n) -> list[str]: ..."
+  },
+  {
+   "stub": "def display_message(self, cmd: str, get_text: t.Literal[True], *, format_string: str | None = ..., all_formats: bool | None = ..., verbose: bool | None = ..., no_expand: bool | None = ..., target_client: str | None = ..., delay: int | None = ..., notify: bool | None = ...) -> list[str]: ...",
+   "formatted": "def display_message(\n    self,\n    cmd: str,\n    get_text: t.Literal[True],\n    *,\n    format_string: str | None = ...,\n    all_formats: bool | None = ...,\n    verbose: bool | None = ...,\n    no_expand: bool | None = ...,\n    target_client: str | None = ...,\n    delay: int | None = ...,\n    notify: bool | None = ...,\n) -> list[str]: ..."
+  },
+  {
+   "stub": "def display_message(self, cmd: str, get_text: t.Literal[False] = ..., *, format_string: str | None = ..., all_formats: bool | None = ..., verbose: bool | None = ..., no_expand: bool | None = ..., target_client: str | None = ..., delay: int | None = ..., notify: bool | None = ...) -> None: ...",
+   "formatted": "def display_message(\n    self,\n    cmd: str,\n    get_text: t.Literal[False] = ...,\n    *,\n    format_string: str | None = ...,\n    all_formats: bool | None = ...,\n    verbose: bool | None = ...,\n    no_expand: bool | None = ...,\n    target_client: str | None = ...,\n    delay: int | None = ...,\n    notify: bool | None = ...,\n) -> None: ..."
+  },
+  {
+   "stub": "def display_message(self, cmd: str, get_text: bool = False, *, format_string: str | None = None, all_formats: bool | None = None, verbose: bool | None = None, no_expand: bool | None = None, target_client: str | None = None, delay: int | None = None, notify: bool | None = None) -> list[str] | None: ...",
+   "formatted": "def display_message(\n    self,\n    cmd: str,\n    get_text: bool = False,\n    *,\n    format_string: str | None = None,\n    all_formats: bool | None = None,\n    verbose: bool | None = None,\n    no_expand: bool | None = None,\n    target_client: str | None = None,\n    delay: int | None = None,\n    notify: bool | None = None,\n) -> list[str] | None: ..."
+  },
+  {
+   "stub": "def show_prompt_history(self, *, prompt_type: t.Literal[\"command\", \"search\", \"target\", \"window-target\"] | None = None) -> list[str]: ...",
+   "formatted": "def show_prompt_history(\n    self,\n    *,\n    prompt_type: t.Literal[\n        \"command\", \"search\", \"target\", \"window-target\"\n    ]\n    | None = None,\n) -> list[str]: ..."
+  },
+  {
+   "stub": "def clear_prompt_history(self, *, prompt_type: t.Literal[\"command\", \"search\", \"target\", \"window-target\"] | None = None) -> None: ...",
+   "formatted": "def clear_prompt_history(\n    self,\n    *,\n    prompt_type: t.Literal[\n        \"command\", \"search\", \"target\", \"window-target\"\n    ]\n    | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def set_buffer(self, data: str, *, buffer_name: str | None = None, append: bool | None = None) -> None: ...",
+   "formatted": "def set_buffer(\n    self,\n    data: str,\n    *,\n    buffer_name: str | None = None,\n    append: bool | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def show_buffer(self, *, buffer_name: str | None = None) -> str: ...",
+   "formatted": "def show_buffer(\n    self, *, buffer_name: str | None = None\n) -> str: ..."
+  },
+  {
+   "stub": "def delete_buffer(self, *, buffer_name: str | None = None) -> None: ...",
+   "formatted": "def delete_buffer(\n    self, *, buffer_name: str | None = None\n) -> None: ..."
+  },
+  {
+   "stub": "def save_buffer(self, path: StrPath, *, buffer_name: str | None = None, append: bool | None = None) -> None: ...",
+   "formatted": "def save_buffer(\n    self,\n    path: StrPath,\n    *,\n    buffer_name: str | None = None,\n    append: bool | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def load_buffer(self, path: StrPath, *, buffer_name: str | None = None) -> None: ...",
+   "formatted": "def load_buffer(\n    self, path: StrPath, *, buffer_name: str | None = None\n) -> None: ..."
+  },
+  {
+   "stub": "def if_shell(self, shell_command: str, tmux_command: str, *, else_command: str | None = None, background: bool | None = None, target_pane: str | None = None) -> None: ...",
+   "formatted": "def if_shell(\n    self,\n    shell_command: str,\n    tmux_command: str,\n    *,\n    else_command: str | None = None,\n    background: bool | None = None,\n    target_pane: str | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def source_file(self, path: StrPath, *, quiet: bool | None = None, parse_only: bool | None = None, verbose: bool | None = None) -> None: ...",
+   "formatted": "def source_file(\n    self,\n    path: StrPath,\n    *,\n    quiet: bool | None = None,\n    parse_only: bool | None = None,\n    verbose: bool | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def attach_session(self, target_session: str | None = None) -> None: ...",
+   "formatted": "def attach_session(\n    self, target_session: str | None = None\n) -> None: ..."
+  },
+  {
+   "stub": "def new_session(self, session_name: str | None = None, kill_session: bool = False, attach: bool = False, start_directory: StrPath | None = None, window_name: str | None = None, window_command: str | None = None, x: int | DashLiteral | None = None, y: int | DashLiteral | None = None, environment: dict[str, str] | None = None, *args: t.Any, detach_others: bool | None = None, no_size: bool | None = None, client_flags: str | None = None, **kwargs: t.Any) -> Session: ...",
+   "formatted": "def new_session(\n    self,\n    session_name: str | None = None,\n    kill_session: bool = False,\n    attach: bool = False,\n    start_directory: StrPath | None = None,\n    window_name: str | None = None,\n    window_command: str | None = None,\n    x: int | DashLiteral | None = None,\n    y: int | DashLiteral | None = None,\n    environment: dict[str, str] | None = None,\n    *args: t.Any,\n    detach_others: bool | None = None,\n    no_size: bool | None = None,\n    client_flags: str | None = None,\n    **kwargs: t.Any,\n) -> Session: ..."
+  },
+  {
+   "stub": "def where(self, kwargs: dict[str, t.Any]) -> list[Session]: ...",
+   "formatted": "def where(\n    self, kwargs: dict[str, t.Any]\n) -> list[Session]: ..."
+  },
+  {
+   "stub": "def find_where(self, kwargs: dict[str, t.Any]) -> Session | None: ...",
+   "formatted": "def find_where(\n    self, kwargs: dict[str, t.Any]\n) -> Session | None: ..."
+  },
+  {
+   "stub": "def from_session_id(cls, server: Server, session_id: str) -> Session: ...",
+   "formatted": "def from_session_id(\n    cls, server: Server, session_id: str\n) -> Session: ..."
+  },
+  {
+   "stub": "def from_env(cls, env: t.Mapping[str, str] | None = None) -> Session: ...",
+   "formatted": "def from_env(\n    cls, env: t.Mapping[str, str] | None = None\n) -> Session: ..."
+  },
+  {
+   "stub": "def detach_client(self, *, shell_command: str | None = None) -> None: ...",
+   "formatted": "def detach_client(\n    self, *, shell_command: str | None = None\n) -> None: ..."
+  },
+  {
+   "stub": "def select_window(self, target_window: str | int) -> Window: ...",
+   "formatted": "def select_window(\n    self, target_window: str | int\n) -> Window: ..."
+  },
+  {
+   "stub": "def attach(self, exit_: bool | None = None, flags_: list[str] | None = None) -> Session: ...",
+   "formatted": "def attach(\n    self,\n    exit_: bool | None = None,\n    flags_: list[str] | None = None,\n) -> Session: ..."
+  },
+  {
+   "stub": "def kill(self, all_except: bool | None = None, clear: bool | None = None, group: bool | None = None) -> None: ...",
+   "formatted": "def kill(\n    self,\n    all_except: bool | None = None,\n    clear: bool | None = None,\n    group: bool | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def new_window(self, window_name: str | None = None, *, start_directory: StrPath | None = None, attach: bool = False, window_index: str = \"\", window_shell: str | None = None, environment: dict[str, str] | None = None, direction: WindowDirection | None = None, target_window: str | None = None, kill_existing: bool | None = None, select_existing: bool | None = None) -> Window: ...",
+   "formatted": "def new_window(\n    self,\n    window_name: str | None = None,\n    *,\n    start_directory: StrPath | None = None,\n    attach: bool = False,\n    window_index: str = \"\",\n    window_shell: str | None = None,\n    environment: dict[str, str] | None = None,\n    direction: WindowDirection | None = None,\n    target_window: str | None = None,\n    kill_existing: bool | None = None,\n    select_existing: bool | None = None,\n) -> Window: ..."
+  },
+  {
+   "stub": "def kill_window(self, target_window: str | int | None = None) -> None: ...",
+   "formatted": "def kill_window(\n    self, target_window: str | int | None = None\n) -> None: ..."
+  },
+  {
+   "stub": "def where(self, kwargs: dict[str, t.Any]) -> list[Window]: ...",
+   "formatted": "def where(\n    self, kwargs: dict[str, t.Any]\n) -> list[Window]: ..."
+  },
+  {
+   "stub": "def find_where(self, kwargs: dict[str, t.Any]) -> Window | None: ...",
+   "formatted": "def find_where(\n    self, kwargs: dict[str, t.Any]\n) -> Window | None: ..."
+  },
+  {
+   "stub": "def from_window_id(cls, server: Server, window_id: str) -> Window: ...",
+   "formatted": "def from_window_id(\n    cls, server: Server, window_id: str\n) -> Window: ..."
+  },
+  {
+   "stub": "def from_env(cls, env: t.Mapping[str, str] | None = None) -> Window: ...",
+   "formatted": "def from_env(\n    cls, env: t.Mapping[str, str] | None = None\n) -> Window: ..."
+  },
+  {
+   "stub": "def select_pane(self, target_pane: str | int) -> Pane | None: ...",
+   "formatted": "def select_pane(\n    self, target_pane: str | int\n) -> Pane | None: ..."
+  },
+  {
+   "stub": "def last_pane(self, *, disable_input: bool | None = None, enable_input: bool | None = None, keep_zoom: bool | None = None) -> Pane | None: ...",
+   "formatted": "def last_pane(\n    self,\n    *,\n    disable_input: bool | None = None,\n    enable_input: bool | None = None,\n    keep_zoom: bool | None = None,\n) -> Pane | None: ..."
+  },
+  {
+   "stub": "def select_layout(self, layout: str | None = None, *, spread: bool | None = None, next_layout: bool | None = None, previous_layout: bool | None = None) -> Window: ...",
+   "formatted": "def select_layout(\n    self,\n    layout: str | None = None,\n    *,\n    spread: bool | None = None,\n    next_layout: bool | None = None,\n    previous_layout: bool | None = None,\n) -> Window: ..."
+  },
+  {
+   "stub": "def link(self, target_session: str | Session, *, target_index: str | None = None, kill_existing: bool | None = None, after: bool | None = None, before: bool | None = None, detach: bool | None = None) -> None: ...",
+   "formatted": "def link(\n    self,\n    target_session: str | Session,\n    *,\n    target_index: str | None = None,\n    kill_existing: bool | None = None,\n    after: bool | None = None,\n    before: bool | None = None,\n    detach: bool | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def unlink(self, *, kill_if_last: bool | None = None) -> None: ...",
+   "formatted": "def unlink(\n    self, *, kill_if_last: bool | None = None\n) -> None: ..."
+  },
+  {
+   "stub": "def rotate(self, *, upward: bool | None = None, downward: bool | None = None, keep_zoom: bool | None = None) -> Window: ...",
+   "formatted": "def rotate(\n    self,\n    *,\n    upward: bool | None = None,\n    downward: bool | None = None,\n    keep_zoom: bool | None = None,\n) -> Window: ..."
+  },
+  {
+   "stub": "def swap(self, target: str | Window, *, detach: bool | None = None) -> None: ...",
+   "formatted": "def swap(\n    self,\n    target: str | Window,\n    *,\n    detach: bool | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def move_window(self, destination: str = \"\", session: str | None = None, *, after: bool | None = None, before: bool | None = None, no_select: bool | None = None, kill_target: bool | None = None, renumber: bool | None = None) -> Window: ...",
+   "formatted": "def move_window(\n    self,\n    destination: str = \"\",\n    session: str | None = None,\n    *,\n    after: bool | None = None,\n    before: bool | None = None,\n    no_select: bool | None = None,\n    kill_target: bool | None = None,\n    renumber: bool | None = None,\n) -> Window: ..."
+  },
+  {
+   "stub": "def new_window(self, window_name: str | None = None, *, start_directory: None = None, attach: bool = False, window_index: str = \"\", window_shell: str | None = None, environment: dict[str, str] | None = None, direction: WindowDirection | None = None) -> Window: ...",
+   "formatted": "def new_window(\n    self,\n    window_name: str | None = None,\n    *,\n    start_directory: None = None,\n    attach: bool = False,\n    window_index: str = \"\",\n    window_shell: str | None = None,\n    environment: dict[str, str] | None = None,\n    direction: WindowDirection | None = None,\n) -> Window: ..."
+  },
+  {
+   "stub": "def set_window_option(self, option: str, value: int | str) -> Window: ...",
+   "formatted": "def set_window_option(\n    self, option: str, value: int | str\n) -> Window: ..."
+  },
+  {
+   "stub": "def show_window_options(self, g: bool | None = False) -> WindowOptionDict: ...",
+   "formatted": "def show_window_options(\n    self, g: bool | None = False\n) -> WindowOptionDict: ..."
+  },
+  {
+   "stub": "def show_window_option(self, option: str, g: bool = False) -> str | int | None: ...",
+   "formatted": "def show_window_option(\n    self, option: str, g: bool = False\n) -> str | int | None: ..."
+  },
+  {
+   "stub": "def find_where(self, kwargs: dict[str, t.Any]) -> Pane | None: ...",
+   "formatted": "def find_where(\n    self, kwargs: dict[str, t.Any]\n) -> Pane | None: ..."
+  },
+  {
+   "stub": "def create_convert_subparser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser: ...",
+   "formatted": "def create_convert_subparser(\n    parser: argparse.ArgumentParser,\n) -> argparse.ArgumentParser: ..."
+  },
+  {
+   "stub": "def __init__(self, ext: str, args: object, kwargs: object) -> None: ...",
+   "formatted": "def __init__(\n    self, ext: str, args: object, kwargs: object\n) -> None: ..."
+  },
+  {
+   "stub": "def command_convert(workspace_file: str | pathlib.Path, answer_yes: bool, parser: argparse.ArgumentParser | None = None, color: CLIColorModeLiteral | None = None) -> None: ...",
+   "formatted": "def command_convert(\n    workspace_file: str | pathlib.Path,\n    answer_yes: bool,\n    parser: argparse.ArgumentParser | None = None,\n    color: CLIColorModeLiteral | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def create_debug_info_subparser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser: ...",
+   "formatted": "def create_debug_info_subparser(\n    parser: argparse.ArgumentParser,\n) -> argparse.ArgumentParser: ..."
+  },
+  {
+   "stub": "def command_debug_info(args: CLIDebugInfoNamespace | None = None, parser: argparse.ArgumentParser | None = None) -> None: ...",
+   "formatted": "def command_debug_info(\n    args: CLIDebugInfoNamespace | None = None,\n    parser: argparse.ArgumentParser | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def create_edit_subparser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser: ...",
+   "formatted": "def create_edit_subparser(\n    parser: argparse.ArgumentParser,\n) -> argparse.ArgumentParser: ..."
+  },
+  {
+   "stub": "def command_edit(workspace_file: str | pathlib.Path, parser: argparse.ArgumentParser | None = None, color: CLIColorModeLiteral | None = None) -> None: ...",
+   "formatted": "def command_edit(\n    workspace_file: str | pathlib.Path,\n    parser: argparse.ArgumentParser | None = None,\n    color: CLIColorModeLiteral | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def create_freeze_subparser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser: ...",
+   "formatted": "def create_freeze_subparser(\n    parser: argparse.ArgumentParser,\n) -> argparse.ArgumentParser: ..."
+  },
+  {
+   "stub": "def command_freeze(args: CLIFreezeNamespace, parser: argparse.ArgumentParser | None = None) -> None: ...",
+   "formatted": "def command_freeze(\n    args: CLIFreezeNamespace,\n    parser: argparse.ArgumentParser | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def command_import(workspace_file: str, print_list: str, parser: argparse.ArgumentParser) -> None: ...",
+   "formatted": "def command_import(\n    workspace_file: str,\n    print_list: str,\n    parser: argparse.ArgumentParser,\n) -> None: ..."
+  },
+  {
+   "stub": "def create_import_subparser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser: ...",
+   "formatted": "def create_import_subparser(\n    parser: argparse.ArgumentParser,\n) -> argparse.ArgumentParser: ..."
+  },
+  {
+   "stub": "def __call__(self, workspace_dict: dict[str, t.Any]) -> dict[str, t.Any]: ...",
+   "formatted": "def __call__(\n    self, workspace_dict: dict[str, t.Any]\n) -> dict[str, t.Any]: ..."
+  },
+  {
+   "stub": "def import_config(workspace_file: str, importfunc: ImportConfigFn, parser: argparse.ArgumentParser | None = None, colors: Colors | None = None) -> None: ...",
+   "formatted": "def import_config(\n    workspace_file: str,\n    importfunc: ImportConfigFn,\n    parser: argparse.ArgumentParser | None = None,\n    colors: Colors | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def command_import_tmuxinator(workspace_file: str, parser: argparse.ArgumentParser | None = None, color: CLIColorModeLiteral | None = None) -> None: ...",
+   "formatted": "def command_import_tmuxinator(\n    workspace_file: str,\n    parser: argparse.ArgumentParser | None = None,\n    color: CLIColorModeLiteral | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def command_import_teamocil(workspace_file: str, parser: argparse.ArgumentParser | None = None, color: CLIColorModeLiteral | None = None) -> None: ...",
+   "formatted": "def command_import_teamocil(\n    workspace_file: str,\n    parser: argparse.ArgumentParser | None = None,\n    color: CLIColorModeLiteral | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def load_plugins(session_config: dict[str, t.Any], colors: Colors | None = None) -> list[t.Any]: ...",
+   "formatted": "def load_plugins(\n    session_config: dict[str, t.Any],\n    colors: Colors | None = None,\n) -> list[t.Any]: ..."
+  },
+  {
+   "stub": "def load_workspace(workspace_file: StrPath, socket_name: str | None = None, socket_path: str | None = None, tmux_config_file: str | None = None, new_session_name: str | None = None, colors: int | None = None, detached: bool = False, answer_yes: bool = False, append: bool = False, cli_colors: Colors | None = None, progress_format: str | None = None, panel_lines: int | None = None, no_progress: bool = False) -> Session | None: ...",
+   "formatted": "def load_workspace(\n    workspace_file: StrPath,\n    socket_name: str | None = None,\n    socket_path: str | None = None,\n    tmux_config_file: str | None = None,\n    new_session_name: str | None = None,\n    colors: int | None = None,\n    detached: bool = False,\n    answer_yes: bool = False,\n    append: bool = False,\n    cli_colors: Colors | None = None,\n    progress_format: str | None = None,\n    panel_lines: int | None = None,\n    no_progress: bool = False,\n) -> Session | None: ..."
+  },
+  {
+   "stub": "def create_load_subparser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser: ...",
+   "formatted": "def create_load_subparser(\n    parser: argparse.ArgumentParser,\n) -> argparse.ArgumentParser: ..."
+  },
+  {
+   "stub": "def command_load(args: CLILoadNamespace, parser: argparse.ArgumentParser | None = None) -> None: ...",
+   "formatted": "def command_load(\n    args: CLILoadNamespace,\n    parser: argparse.ArgumentParser | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def create_ls_subparser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser: ...",
+   "formatted": "def create_ls_subparser(\n    parser: argparse.ArgumentParser,\n) -> argparse.ArgumentParser: ..."
+  },
+  {
+   "stub": "def command_ls(args: CLILsNamespace | None = None, parser: argparse.ArgumentParser | None = None) -> None: ...",
+   "formatted": "def command_ls(\n    args: CLILsNamespace | None = None,\n    parser: argparse.ArgumentParser | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def normalize_fields(fields: list[str] | None) -> tuple[str, ...]: ...",
+   "formatted": "def normalize_fields(\n    fields: list[str] | None,\n) -> tuple[str, ...]: ..."
+  },
+  {
+   "stub": "def parse_query_terms(terms: list[str], *, default_fields: tuple[str, ...] = DEFAULT_FIELDS) -> list[SearchToken]: ...",
+   "formatted": "def parse_query_terms(\n    terms: list[str],\n    *,\n    default_fields: tuple[str, ...] = DEFAULT_FIELDS,\n) -> list[SearchToken]: ..."
+  },
+  {
+   "stub": "def compile_search_patterns(tokens: list[SearchToken], *, ignore_case: bool = False, smart_case: bool = False, fixed_strings: bool = False, word_regexp: bool = False) -> list[SearchPattern]: ...",
+   "formatted": "def compile_search_patterns(\n    tokens: list[SearchToken],\n    *,\n    ignore_case: bool = False,\n    smart_case: bool = False,\n    fixed_strings: bool = False,\n    word_regexp: bool = False,\n) -> list[SearchPattern]: ..."
+  },
+  {
+   "stub": "def extract_workspace_fields(filepath: pathlib.Path) -> WorkspaceFields: ...",
+   "formatted": "def extract_workspace_fields(\n    filepath: pathlib.Path,\n) -> WorkspaceFields: ..."
+  },
+  {
+   "stub": "def evaluate_match(fields: WorkspaceFields, patterns: list[SearchPattern], *, match_any: bool = False) -> tuple[bool, dict[str, list[str]]]: ...",
+   "formatted": "def evaluate_match(\n    fields: WorkspaceFields,\n    patterns: list[SearchPattern],\n    *,\n    match_any: bool = False,\n) -> tuple[bool, dict[str, list[str]]]: ..."
+  },
+  {
+   "stub": "def find_search_matches(workspaces: list[tuple[pathlib.Path, str]], patterns: list[SearchPattern], *, match_any: bool = False, invert_match: bool = False) -> list[WorkspaceSearchResult]: ...",
+   "formatted": "def find_search_matches(\n    workspaces: list[tuple[pathlib.Path, str]],\n    patterns: list[SearchPattern],\n    *,\n    match_any: bool = False,\n    invert_match: bool = False,\n) -> list[WorkspaceSearchResult]: ..."
+  },
+  {
+   "stub": "def highlight_matches(text: str, patterns: list[SearchPattern], *, colors: Colors) -> str: ...",
+   "formatted": "def highlight_matches(\n    text: str,\n    patterns: list[SearchPattern],\n    *,\n    colors: Colors,\n) -> str: ..."
+  },
+  {
+   "stub": "def create_search_subparser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser: ...",
+   "formatted": "def create_search_subparser(\n    parser: argparse.ArgumentParser,\n) -> argparse.ArgumentParser: ..."
+  },
+  {
+   "stub": "def command_search(args: CLISearchNamespace | None = None, parser: argparse.ArgumentParser | None = None) -> None: ...",
+   "formatted": "def command_search(\n    args: CLISearchNamespace | None = None,\n    parser: argparse.ArgumentParser | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def create_shell_subparser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser: ...",
+   "formatted": "def create_shell_subparser(\n    parser: argparse.ArgumentParser,\n) -> argparse.ArgumentParser: ..."
+  },
+  {
+   "stub": "def command_shell(args: CLIShellNamespace, parser: argparse.ArgumentParser | None = None) -> None: ...",
+   "formatted": "def command_shell(\n    args: CLIShellNamespace,\n    parser: argparse.ArgumentParser | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def prompt(name: str, default: str | None = None, value_proc: Callable[[str], str] | None = None, *, color_mode: ColorMode | None = None) -> str: ...",
+   "formatted": "def prompt(\n    name: str,\n    default: str | None = None,\n    value_proc: Callable[[str], str] | None = None,\n    *,\n    color_mode: ColorMode | None = None,\n) -> str: ..."
+  },
+  {
+   "stub": "def prompt_bool(name: str, default: bool = False, yes_choices: Sequence[t.Any] | None = None, no_choices: Sequence[t.Any] | None = None, *, color_mode: ColorMode | None = None) -> bool: ...",
+   "formatted": "def prompt_bool(\n    name: str,\n    default: bool = False,\n    yes_choices: Sequence[t.Any] | None = None,\n    no_choices: Sequence[t.Any] | None = None,\n    *,\n    color_mode: ColorMode | None = None,\n) -> bool: ..."
+  },
+  {
+   "stub": "def prompt_yes_no(name: str, default: bool = True, *, color_mode: ColorMode | None = None) -> bool: ...",
+   "formatted": "def prompt_yes_no(\n    name: str,\n    default: bool = True,\n    *,\n    color_mode: ColorMode | None = None,\n) -> bool: ..."
+  },
+  {
+   "stub": "def prompt_choices(name: str, choices: Sequence[str | tuple[str, str]], default: str | None = None, no_choice: Sequence[str] = (\"none\",), *, color_mode: ColorMode | None = None) -> str | None: ...",
+   "formatted": "def prompt_choices(\n    name: str,\n    choices: Sequence[str | tuple[str, str]],\n    default: str | None = None,\n    no_choice: Sequence[str] = (\"none\",),\n    *,\n    color_mode: ColorMode | None = None,\n) -> str | None: ..."
+  },
+  {
+   "stub": "def __init__(self, session_target: str | None = None, *args: object, **kwargs: object) -> None: ...",
+   "formatted": "def __init__(\n    self,\n    session_target: str | None = None,\n    *args: object,\n    **kwargs: object,\n) -> None: ..."
+  },
+  {
+   "stub": "def __init__(self, window_target: str | None = None, *args: object, **kwargs: object) -> None: ...",
+   "formatted": "def __init__(\n    self,\n    window_target: str | None = None,\n    *args: object,\n    **kwargs: object,\n) -> None: ..."
+  },
+  {
+   "stub": "def __init__(self, pane_target: str | None = None, *args: object, **kwargs: object) -> None: ...",
+   "formatted": "def __init__(\n    self,\n    pane_target: str | None = None,\n    *args: object,\n    **kwargs: object,\n) -> None: ..."
+  },
+  {
+   "stub": "def __init__(self, args: object, kwargs: object) -> None: ...",
+   "formatted": "def __init__(\n    self, args: object, kwargs: object\n) -> None: ..."
+  },
+  {
+   "stub": "def __init__(self, target: str, available: list[str] | None = None, *args: object, **kwargs: object) -> None: ...",
+   "formatted": "def __init__(\n    self,\n    target: str,\n    available: list[str] | None = None,\n    *args: object,\n    **kwargs: object,\n) -> None: ..."
+  },
+  {
+   "stub": "def __init__(self, target: str, reason: str | None = None, paths: list[str] | None = None, *args: object, **kwargs: object) -> None: ...",
+   "formatted": "def __init__(\n    self,\n    target: str,\n    reason: str | None = None,\n    paths: list[str] | None = None,\n    *args: object,\n    **kwargs: object,\n) -> None: ..."
+  },
+  {
+   "stub": "def __init__(self, target: str, reason: str | None = None, *args: object, **kwargs: object) -> None: ...",
+   "formatted": "def __init__(\n    self,\n    target: str,\n    reason: str | None = None,\n    *args: object,\n    **kwargs: object,\n) -> None: ..."
+  },
+  {
+   "stub": "def __init__(self, path: str, reason: str | None = None, *args: object, **kwargs: object) -> None: ...",
+   "formatted": "def __init__(\n    self,\n    path: str,\n    reason: str | None = None,\n    *args: object,\n    **kwargs: object,\n) -> None: ..."
+  },
+  {
+   "stub": "def __init__(self, reason: str, args: object, kwargs: object) -> None: ...",
+   "formatted": "def __init__(\n    self, reason: str, args: object, kwargs: object\n) -> None: ..."
+  },
+  {
+   "stub": "def __init__(self, returncode: int, cmd: str, output: str | None = None) -> None: ...",
+   "formatted": "def __init__(\n    self,\n    returncode: int,\n    cmd: str,\n    output: str | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def process(self, msg: t.Any, kwargs: t.MutableMapping[str, t.Any]) -> tuple[t.Any, t.MutableMapping[str, t.Any]]: ...",
+   "formatted": "def process(\n    self, msg: t.Any, kwargs: t.MutableMapping[str, t.Any]\n) -> tuple[t.Any, t.MutableMapping[str, t.Any]]: ..."
+  },
+  {
+   "stub": "def setup_logger(logger: logging.Logger | None = None, level: str = \"INFO\") -> None: ...",
+   "formatted": "def setup_logger(\n    logger: logging.Logger | None = None,\n    level: str = \"INFO\",\n) -> None: ..."
+  },
+  {
+   "stub": "def set_style(message: str, stylized: bool, style_before: str = \"\", style_after: str = \"\", prefix: str = \"\", suffix: str = \"\") -> str: ...",
+   "formatted": "def set_style(\n    message: str,\n    stylized: bool,\n    style_before: str = \"\",\n    style_after: str = \"\",\n    prefix: str = \"\",\n    suffix: str = \"\",\n) -> str: ..."
+  },
+  {
+   "stub": "def template(self: logging.Formatter, record: logging.LogRecord, stylized: bool = False, **kwargs: t.Any) -> str: ...",
+   "formatted": "def template(\n    self: logging.Formatter,\n    record: logging.LogRecord,\n    stylized: bool = False,\n    **kwargs: t.Any,\n) -> str: ..."
+  },
+  {
+   "stub": "def __init__(self, color: bool = True, **kwargs: t.Any) -> None: ...",
+   "formatted": "def __init__(\n    self, color: bool = True, **kwargs: t.Any\n) -> None: ..."
+  },
+  {
+   "stub": "def debug_log_template(self: type[logging.Formatter], record: logging.LogRecord, stylized: bool | None = False, **kwargs: t.Any) -> str: ...",
+   "formatted": "def debug_log_template(\n    self: type[logging.Formatter],\n    record: logging.LogRecord,\n    stylized: bool | None = False,\n    **kwargs: t.Any,\n) -> str: ..."
+  },
+  {
+   "stub": "def setup_log_file(log_file: str, level: str = \"INFO\") -> None: ...",
+   "formatted": "def setup_log_file(\n    log_file: str, level: str = \"INFO\"\n) -> None: ..."
+  },
+  {
+   "stub": "def tmuxp_echo(message: str | None = None, file: t.TextIO | None = None) -> None: ...",
+   "formatted": "def tmuxp_echo(\n    message: str | None = None, file: t.TextIO | None = None\n) -> None: ..."
+  },
+  {
+   "stub": "def validate_plugin_config(config: PluginConfigSchema) -> TypeGuard[Config]: ...",
+   "formatted": "def validate_plugin_config(\n    config: PluginConfigSchema,\n) -> TypeGuard[Config]: ..."
+  },
+  {
+   "stub": "def setup_plugin_config(config: PluginConfigSchema, default_config: Config = DEFAULT_CONFIG) -> Config: ...",
+   "formatted": "def setup_plugin_config(\n    config: PluginConfigSchema,\n    default_config: Config = DEFAULT_CONFIG,\n) -> Config: ..."
+  },
+  {
+   "stub": "def __init__(self, kwargs: Unpack[PluginConfigSchema]) -> None: ...",
+   "formatted": "def __init__(\n    self, kwargs: Unpack[PluginConfigSchema]\n) -> None: ..."
+  },
+  {
+   "stub": "def before_workspace_builder(self, session: Session) -> None: ...",
+   "formatted": "def before_workspace_builder(\n    self, session: Session\n) -> None: ..."
+  },
+  {
+   "stub": "def get_bpython(options: LaunchOptionalImports, extra_args: dict[str, t.Any] | None = None) -> Callable[[], None]: ...",
+   "formatted": "def get_bpython(\n    options: LaunchOptionalImports,\n    extra_args: dict[str, t.Any] | None = None,\n) -> Callable[[], None]: ..."
+  },
+  {
+   "stub": "def get_ipython(options: LaunchOptionalImports, extra_args: dict[str, t.Any]) -> t.Any: ...",
+   "formatted": "def get_ipython(\n    options: LaunchOptionalImports,\n    extra_args: dict[str, t.Any],\n) -> t.Any: ..."
+  },
+  {
+   "stub": "def get_ptpython(options: LaunchOptionalImports, vi_mode: bool = False) -> t.Any: ...",
+   "formatted": "def get_ptpython(\n    options: LaunchOptionalImports, vi_mode: bool = False\n) -> t.Any: ..."
+  },
+  {
+   "stub": "def get_ptipython(options: LaunchOptionalImports, vi_mode: bool = False) -> t.Any: ...",
+   "formatted": "def get_ptipython(\n    options: LaunchOptionalImports, vi_mode: bool = False\n) -> t.Any: ..."
+  },
+  {
+   "stub": "def get_launch_args(kwargs: Unpack[LaunchOptionalImports]) -> LaunchImports: ...",
+   "formatted": "def get_launch_args(\n    kwargs: Unpack[LaunchOptionalImports],\n) -> LaunchImports: ..."
+  },
+  {
+   "stub": "def get_code(use_pythonrc: bool, imported_objects: LaunchImports) -> t.Any: ...",
+   "formatted": "def get_code(\n    use_pythonrc: bool, imported_objects: LaunchImports\n) -> t.Any: ..."
+  },
+  {
+   "stub": "def launch(shell: CLIShellLiteral | None = \"best\", use_pythonrc: bool = False, use_vi_mode: bool = False, **kwargs: Unpack[LaunchOptionalImports]) -> None: ...",
+   "formatted": "def launch(\n    shell: CLIShellLiteral | None = \"best\",\n    use_pythonrc: bool = False,\n    use_vi_mode: bool = False,\n    **kwargs: Unpack[LaunchOptionalImports],\n) -> None: ..."
+  },
+  {
+   "stub": "def run_before_script(script_file: str | pathlib.Path, cwd: pathlib.Path | None = None, on_line: t.Callable[[str], None] | None = None) -> int: ...",
+   "formatted": "def run_before_script(\n    script_file: str | pathlib.Path,\n    cwd: pathlib.Path | None = None,\n    on_line: t.Callable[[str], None] | None = None,\n) -> int: ..."
+  },
+  {
+   "stub": "def get_session(server: Server, session_name: str | None = None, current_pane: Pane | None = None) -> Session: ...",
+   "formatted": "def get_session(\n    server: Server,\n    session_name: str | None = None,\n    current_pane: Pane | None = None,\n) -> Session: ..."
+  },
+  {
+   "stub": "def get_window(session: Session, window_name: str | None = None, current_pane: Pane | None = None) -> Window: ...",
+   "formatted": "def get_window(\n    session: Session,\n    window_name: str | None = None,\n    current_pane: Pane | None = None,\n) -> Window: ..."
+  },
+  {
+   "stub": "def get_pane(window: Window, current_pane: Pane | None = None) -> Pane: ...",
+   "formatted": "def get_pane(\n    window: Window, current_pane: Pane | None = None\n) -> Pane: ..."
+  },
+  {
+   "stub": "def __init__(self, session_config: dict[str, t.Any], server: Server, plugins: list[t.Any] | None = None, on_progress: t.Callable[[str], None] | None = None, on_before_script: t.Callable[[], None] | None = None, on_script_output: t.Callable[[str], None] | None = None, on_build_event: t.Callable[[dict[str, t.Any]], None] | None = None) -> None: ...",
+   "formatted": "def __init__(\n    self,\n    session_config: dict[str, t.Any],\n    server: Server,\n    plugins: list[t.Any] | None = None,\n    on_progress: t.Callable[[str], None] | None = None,\n    on_before_script: t.Callable[[], None] | None = None,\n    on_script_output: t.Callable[[str], None] | None = None,\n    on_build_event: t.Callable[[dict[str, t.Any]], None]\n    | None = None,\n) -> None: ..."
+  },
+  {
+   "stub": "def build(self, session: Session | None = None, append: bool = False) -> None: ...",
+   "formatted": "def build(\n    self,\n    session: Session | None = None,\n    append: bool = False,\n) -> None: ..."
+  },
+  {
+   "stub": "def iter_create_windows(self, session: Session, append: bool = False) -> Iterator[t.Any]: ...",
+   "formatted": "def iter_create_windows(\n    self, session: Session, append: bool = False\n) -> Iterator[t.Any]: ..."
+  },
+  {
+   "stub": "def iter_create_panes(self, window: Window, window_config: dict[str, t.Any]) -> Iterator[t.Any]: ...",
+   "formatted": "def iter_create_panes(\n    self, window: Window, window_config: dict[str, t.Any]\n) -> Iterator[t.Any]: ..."
+  },
+  {
+   "stub": "def config_after_window(self, window: Window, window_config: dict[str, t.Any]) -> None: ...",
+   "formatted": "def config_after_window(\n    self, window: Window, window_config: dict[str, t.Any]\n) -> None: ..."
+  },
+  {
+   "stub": "def first_window_pass(self, i: int, session: Session, append: bool) -> bool: ...",
+   "formatted": "def first_window_pass(\n    self, i: int, session: Session, append: bool\n) -> bool: ..."
+  },
+  {
+   "stub": "def resolve_builder_paths(session_config: dict[str, t.Any], workspace_file: str | os.PathLike[str] | None = None) -> list[pathlib.Path]: ...",
+   "formatted": "def resolve_builder_paths(\n    session_config: dict[str, t.Any],\n    workspace_file: str | os.PathLike[str] | None = None,\n) -> list[pathlib.Path]: ..."
+  },
+  {
+   "stub": "def prepended_sys_path(paths: list[pathlib.Path] | None) -> Iterator[None]: ...",
+   "formatted": "def prepended_sys_path(\n    paths: list[pathlib.Path] | None,\n) -> Iterator[None]: ..."
+  },
+  {
+   "stub": "def resolve_builder_class(session_config: dict[str, t.Any]) -> type[WorkspaceBuilderProtocol]: ...",
+   "formatted": "def resolve_builder_class(\n    session_config: dict[str, t.Any],\n) -> type[WorkspaceBuilderProtocol]: ..."
+  },
+  {
+   "stub": "def is_workspace_file(filename: str, extensions: ValidExtensions | list[ValidExtensions] | None = None) -> bool: ...",
+   "formatted": "def is_workspace_file(\n    filename: str,\n    extensions: ValidExtensions\n    | list[ValidExtensions]\n    | None = None,\n) -> bool: ..."
+  },
+  {
+   "stub": "def in_dir(workspace_dir: pathlib.Path | str | None = None, extensions: list[ValidExtensions] | None = None) -> list[str]: ...",
+   "formatted": "def in_dir(\n    workspace_dir: pathlib.Path | str | None = None,\n    extensions: list[ValidExtensions] | None = None,\n) -> list[str]: ..."
+  },
+  {
+   "stub": "def find_local_workspace_files(start_dir: pathlib.Path | str | None = None, *, stop_at_home: bool = True) -> list[pathlib.Path]: ...",
+   "formatted": "def find_local_workspace_files(\n    start_dir: pathlib.Path | str | None = None,\n    *,\n    stop_at_home: bool = True,\n) -> list[pathlib.Path]: ..."
+  },
+  {
+   "stub": "def get_workspace_dir_candidates() -> list[dict[str, t.Any]]: ...",
+   "formatted": "def get_workspace_dir_candidates() -> list[\n    dict[str, t.Any]\n]: ..."
+  },
+  {
+   "stub": "def find_workspace_file(workspace_file: StrPath, workspace_dir: StrPath | None = None) -> str: ...",
+   "formatted": "def find_workspace_file(\n    workspace_file: StrPath,\n    workspace_dir: StrPath | None = None,\n) -> str: ..."
+  },
+  {
+   "stub": "def import_tmuxinator(workspace_dict: dict[str, t.Any]) -> dict[str, t.Any]: ...",
+   "formatted": "def import_tmuxinator(\n    workspace_dict: dict[str, t.Any],\n) -> dict[str, t.Any]: ..."
+  },
+  {
+   "stub": "def import_teamocil(workspace_dict: dict[str, t.Any]) -> dict[str, t.Any]: ...",
+   "formatted": "def import_teamocil(\n    workspace_dict: dict[str, t.Any],\n) -> dict[str, t.Any]: ..."
+  },
+  {
+   "stub": "def expand(workspace_dict: dict[str, t.Any], cwd: pathlib.Path | str | None = None, parent: t.Any | None = None) -> dict[str, t.Any]: ...",
+   "formatted": "def expand(\n    workspace_dict: dict[str, t.Any],\n    cwd: pathlib.Path | str | None = None,\n    parent: t.Any | None = None,\n) -> dict[str, t.Any]: ..."
+  },
+  {
+   "stub": "def trickle(workspace_dict: dict[str, t.Any]) -> dict[str, t.Any]: ...",
+   "formatted": "def trickle(\n    workspace_dict: dict[str, t.Any],\n) -> dict[str, t.Any]: ..."
+  },
+  {
+   "stub": "def from_config(cls, session_config: dict[str, t.Any]) -> WorkspaceBuilderOptions: ...",
+   "formatted": "def from_config(\n    cls, session_config: dict[str, t.Any]\n) -> WorkspaceBuilderOptions: ..."
+  },
+  {
+   "stub": "def resolve_session_shell(session: t.Any, env: t.Mapping[str, str] | None = None) -> str: ...",
+   "formatted": "def resolve_session_shell(\n    session: t.Any, env: t.Mapping[str, str] | None = None\n) -> str: ..."
+  },
+  {
+   "stub": "def __init__(self, plugins: t.Any, args: object, kwargs: object) -> None: ...",
+   "formatted": "def __init__(\n    self, plugins: t.Any, args: object, kwargs: object\n) -> None: ..."
+  },
+  {
+   "stub": "def __init__(self, toolsets: t.AbstractSet[str], tools: t.AbstractSet[str] = frozenset(), exclude_tools: t.AbstractSet[str] = frozenset()) -> None: ...",
+   "formatted": "def __init__(\n    self,\n    toolsets: t.AbstractSet[str],\n    tools: t.AbstractSet[str] = frozenset(),\n    exclude_tools: t.AbstractSet[str] = frozenset(),\n) -> None: ..."
+  },
+  {
+   "stub": "def on_list_tools(self, context: MiddlewareContext, call_next: t.Any) -> t.Any: ...",
+   "formatted": "def on_list_tools(\n    self, context: MiddlewareContext, call_next: t.Any\n) -> t.Any: ..."
+  },
+  {
+   "stub": "def on_call_tool(self, context: MiddlewareContext, call_next: t.Any) -> t.Any: ...",
+   "formatted": "def on_call_tool(\n    self, context: MiddlewareContext, call_next: t.Any\n) -> t.Any: ..."
+  },
+  {
+   "stub": "def __init__(self, logger_name: str = \"libtmux_mcp.audit\") -> None: ...",
+   "formatted": "def __init__(\n    self, logger_name: str = \"libtmux_mcp.audit\"\n) -> None: ..."
+  },
+  {
+   "stub": "def run_and_wait(command: str, pane_id: str, timeout: float = 60.0) -> str: ...",
+   "formatted": "def run_and_wait(\n    command: str, pane_id: str, timeout: float = 60.0\n) -> str: ..."
+  },
+  {
+   "stub": "def build_dev_workspace(session_name: str, log_command: str = \"watch -n 1 date\") -> str: ...",
+   "formatted": "def build_dev_workspace(\n    session_name: str, log_command: str = \"watch -n 1 date\"\n) -> str: ..."
+  },
+  {
+   "stub": "def call_read_tools_batch(operations: list[ToolCallOperation], on_error: _OnError = \"stop\", ctx: Context | None = None) -> ToolCallBatchResult: ...",
+   "formatted": "def call_read_tools_batch(\n    operations: list[ToolCallOperation],\n    on_error: _OnError = \"stop\",\n    ctx: Context | None = None,\n) -> ToolCallBatchResult: ..."
+  },
+  {
+   "stub": "def load_buffer(content: str, logical_name: str | None = None, socket_name: str | None = None) -> BufferRef: ...",
+   "formatted": "def load_buffer(\n    content: str,\n    logical_name: str | None = None,\n    socket_name: str | None = None,\n) -> BufferRef: ..."
+  },
+  {
+   "stub": "def paste_buffer(buffer_name: str, pane_id: str | None = None, bracket: bool = True, session_name: str | None = None, session_id: str | None = None, window_id: str | None = None, socket_name: str | None = None) -> str: ...",
+   "formatted": "def paste_buffer(\n    buffer_name: str,\n    pane_id: str | None = None,\n    bracket: bool = True,\n    session_name: str | None = None,\n    session_id: str | None = None,\n    window_id: str | None = None,\n    socket_name: str | None = None,\n) -> str: ..."
+  },
+  {
+   "stub": "def show_buffer(buffer_name: str, max_lines: int | None = SHOW_BUFFER_DEFAULT_MAX_LINES, socket_name: str | None = None) -> BufferContent: ...",
+   "formatted": "def show_buffer(\n    buffer_name: str,\n    max_lines: int | None = SHOW_BUFFER_DEFAULT_MAX_LINES,\n    socket_name: str | None = None,\n) -> BufferContent: ..."
+  },
+  {
+   "stub": "def delete_buffer(buffer_name: str, socket_name: str | None = None) -> str: ...",
+   "formatted": "def delete_buffer(\n    buffer_name: str, socket_name: str | None = None\n) -> str: ..."
+  },
+  {
+   "stub": "def show_environment(session_name: str | None = None, session_id: str | None = None, socket_name: str | None = None) -> EnvironmentResult: ...",
+   "formatted": "def show_environment(\n    session_name: str | None = None,\n    session_id: str | None = None,\n    socket_name: str | None = None,\n) -> EnvironmentResult: ..."
+  },
+  {
+   "stub": "def set_environment(name: str, value: str, session_name: str | None = None, session_id: str | None = None, socket_name: str | None = None) -> EnvironmentSetResult: ...",
+   "formatted": "def set_environment(\n    name: str,\n    value: str,\n    session_name: str | None = None,\n    session_id: str | None = None,\n    socket_name: str | None = None,\n) -> EnvironmentSetResult: ..."
+  },
+  {
+   "stub": "def show_hooks(scope: t.Literal[\"server\", \"session\", \"window\", \"pane\"] | None = None, target: str | None = None, global_: bool = False, socket_name: str | None = None) -> HookListResult: ...",
+   "formatted": "def show_hooks(\n    scope: t.Literal[\"server\", \"session\", \"window\", \"pane\"]\n    | None = None,\n    target: str | None = None,\n    global_: bool = False,\n    socket_name: str | None = None,\n) -> HookListResult: ..."
+  },
+  {
+   "stub": "def show_hook(hook_name: str, scope: t.Literal[\"server\", \"session\", \"window\", \"pane\"] | None = None, target: str | None = None, global_: bool = False, socket_name: str | None = None) -> HookListResult: ...",
+   "formatted": "def show_hook(\n    hook_name: str,\n    scope: t.Literal[\"server\", \"session\", \"window\", \"pane\"]\n    | None = None,\n    target: str | None = None,\n    global_: bool = False,\n    socket_name: str | None = None,\n) -> HookListResult: ..."
+  },
+  {
+   "stub": "def show_option(option: str, scope: t.Literal[\"server\", \"session\", \"window\", \"pane\"] | None = None, target: str | None = None, global_: bool = False, socket_name: str | None = None) -> OptionResult: ...",
+   "formatted": "def show_option(\n    option: str,\n    scope: t.Literal[\"server\", \"session\", \"window\", \"pane\"]\n    | None = None,\n    target: str | None = None,\n    global_: bool = False,\n    socket_name: str | None = None,\n) -> OptionResult: ..."
+  },
+  {
+   "stub": "def set_option(option: str, value: str, scope: t.Literal[\"server\", \"session\", \"window\", \"pane\"] | None = None, target: str | None = None, global_: bool = False, socket_name: str | None = None) -> OptionSetResult: ...",
+   "formatted": "def set_option(\n    option: str,\n    value: str,\n    scope: t.Literal[\"server\", \"session\", \"window\", \"pane\"]\n    | None = None,\n    target: str | None = None,\n    global_: bool = False,\n    socket_name: str | None = None,\n) -> OptionSetResult: ..."
+  },
+  {
+   "stub": "def capture_since(cursor: str | None = None, pane_id: str | None = None, session_name: str | None = None, session_id: str | None = None, window_id: str | None = None, max_lines: int | None = CAPTURE_SINCE_DEFAULT_MAX_LINES, max_bytes: int | None = CAPTURE_SINCE_DEFAULT_MAX_BYTES, socket_name: str | None = None) -> CaptureSinceResult: ...",
+   "formatted": "def capture_since(\n    cursor: str | None = None,\n    pane_id: str | None = None,\n    session_name: str | None = None,\n    session_id: str | None = None,\n    window_id: str | None = None,\n    max_lines: int | None = CAPTURE_SINCE_DEFAULT_MAX_LINES,\n    max_bytes: int | None = CAPTURE_SINCE_DEFAULT_MAX_BYTES,\n    socket_name: str | None = None,\n) -> CaptureSinceResult: ..."
+  },
+  {
+   "stub": "def enter_copy_mode(pane_id: str | None = None, scroll_up: int | None = None, session_name: str | None = None, session_id: str | None = None, window_id: str | None = None, socket_name: str | None = None) -> PaneInfo: ...",
+   "formatted": "def enter_copy_mode(\n    pane_id: str | None = None,\n    scroll_up: int | None = None,\n    session_name: str | None = None,\n    session_id: str | None = None,\n    window_id: str | None = None,\n    socket_name: str | None = None,\n) -> PaneInfo: ..."
+  },
+  {
+   "stub": "def exit_copy_mode(pane_id: str | None = None, session_name: str | None = None, session_id: str | None = None, window_id: str | None = None, socket_name: str | None = None) -> PaneInfo: ...",
+   "formatted": "def exit_copy_mode(\n    pane_id: str | None = None,\n    session_name: str | None = None,\n    session_id: str | None = None,\n    window_id: str | None = None,\n    socket_name: str | None = None,\n) -> PaneInfo: ..."
+  },
+  {
+   "stub": "def send_keys(keys: str, pane_id: str | None = None, session_name: str | None = None, session_id: str | None = None, window_id: str | None = None, enter: bool = True, literal: bool = False, suppress_history: bool = False, socket_name: str | None = None) -> str: ...",
+   "formatted": "def send_keys(\n    keys: str,\n    pane_id: str | None = None,\n    session_name: str | None = None,\n    session_id: str | None = None,\n    window_id: str | None = None,\n    enter: bool = True,\n    literal: bool = False,\n    suppress_history: bool = False,\n    socket_name: str | None = None,\n) -> str: ..."
+  },
+  {
+   "stub": "def send_keys_batch(operations: list[SendKeysOperation], on_error: t.Literal[\"stop\", \"continue\"] = \"stop\", timeout: float | None = None, socket_name: str | None = None) -> SendKeysBatchResult: ...",
+   "formatted": "def send_keys_batch(\n    operations: list[SendKeysOperation],\n    on_error: t.Literal[\"stop\", \"continue\"] = \"stop\",\n    timeout: float | None = None,\n    socket_name: str | None = None,\n) -> SendKeysBatchResult: ..."
+  },
+  {
+   "stub": "def run_command(command: str, pane_id: str | None = None, session_name: str | None = None, session_id: str | None = None, window_id: str | None = None, timeout: float = 30.0, max_lines: int | None = None, suppress_history: bool = False, socket_name: str | None = None) -> RunCommandResult: ...",
+   "formatted": "def run_command(\n    command: str,\n    pane_id: str | None = None,\n    session_name: str | None = None,\n    session_id: str | None = None,\n    window_id: str | None = None,\n    timeout: float = 30.0,\n    max_lines: int | None = None,\n    suppress_history: bool = False,\n    socket_name: str | None = None,\n) -> RunCommandResult: ..."
+  },
+  {
+   "stub": "def capture_pane(pane_id: str | None = None, session_name: str | None = None, session_id: str | None = None, window_id: str | None = None, start: int | None = None, end: int | None = None, max_lines: int | None = CAPTURE_DEFAULT_MAX_LINES, socket_name: str | None = None) -> str: ...",
+   "formatted": "def capture_pane(\n    pane_id: str | None = None,\n    session_name: str | None = None,\n    session_id: str | None = None,\n    window_id: str | None = None,\n    start: int | None = None,\n    end: int | None = None,\n    max_lines: int | None = CAPTURE_DEFAULT_MAX_LINES,\n    socket_name: str | None = None,\n) -> str: ..."
+  },
+  {
+   "stub": "def clear_pane(pane_id: str | None = None, session_name: str | None = None, session_id: str | None = None, window_id: str | None = None, socket_name: str | None = None) -> str: ...",
+   "formatted": "def clear_pane(\n    pane_id: str | None = None,\n    session_name: str | None = None,\n    session_id: str | None = None,\n    window_id: str | None = None,\n    socket_name: str | None = None,\n) -> str: ..."
+  },
+  {
+   "stub": "def paste_text(text: str, pane_id: str | None = None, bracket: bool = True, session_name: str | None = None, session_id: str | None = None, window_id: str | None = None, socket_name: str | None = None) -> str: ...",
+   "formatted": "def paste_text(\n    text: str,\n    pane_id: str | None = None,\n    bracket: bool = True,\n    session_name: str | None = None,\n    session_id: str | None = None,\n    window_id: str | None = None,\n    socket_name: str | None = None,\n) -> str: ..."
+  },
+  {
+   "stub": "def resize_pane(pane_id: str | None = None, session_name: str | None = None, session_id: str | None = None, window_id: str | None = None, height: int | None = None, width: int | None = None, zoom: bool | None = None, socket_name: str | None = None) -> PaneInfo: ...",
+   "formatted": "def resize_pane(\n    pane_id: str | None = None,\n    session_name: str | None = None,\n    session_id: str | None = None,\n    window_id: str | None = None,\n    height: int | None = None,\n    width: int | None = None,\n    zoom: bool | None = None,\n    socket_name: str | None = None,\n) -> PaneInfo: ..."
+  },
+  {
+   "stub": "def select_pane(pane_id: str | None = None, direction: t.Literal[\"up\", \"down\", \"left\", \"right\", \"last\", \"next\", \"previous\"] | None = None, window_id: str | None = None, window_index: str | None = None, session_name: str | None = None, session_id: str | None = None, socket_name: str | None = None) -> PaneInfo: ...",
+   "formatted": "def select_pane(\n    pane_id: str | None = None,\n    direction: t.Literal[\n        \"up\",\n        \"down\",\n        \"left\",\n        \"right\",\n        \"last\",\n        \"next\",\n        \"previous\",\n    ]\n    | None = None,\n    window_id: str | None = None,\n    window_index: str | None = None,\n    session_name: str | None = None,\n    session_id: str | None = None,\n    socket_name: str | None = None,\n) -> PaneInfo: ..."
+  },
+  {
+   "stub": "def swap_pane(source_pane_id: str, target_pane_id: str, socket_name: str | None = None) -> PaneInfo: ...",
+   "formatted": "def swap_pane(\n    source_pane_id: str,\n    target_pane_id: str,\n    socket_name: str | None = None,\n) -> PaneInfo: ..."
+  },
+  {
+   "stub": "def kill_pane(pane_id: str, socket_name: str | None = None) -> str: ...",
+   "formatted": "def kill_pane(\n    pane_id: str, socket_name: str | None = None\n) -> str: ..."
+  },
+  {
+   "stub": "def respawn_pane(pane_id: str, kill: bool = True, shell: str | None = None, start_directory: str | None = None, environment: dict[str, str] | str | None = None, socket_name: str | None = None, *, suppress_persistent_history: bool = False) -> PaneInfo: ...",
+   "formatted": "def respawn_pane(\n    pane_id: str,\n    kill: bool = True,\n    shell: str | None = None,\n    start_directory: str | None = None,\n    environment: dict[str, str] | str | None = None,\n    socket_name: str | None = None,\n    *,\n    suppress_persistent_history: bool = False,\n) -> PaneInfo: ..."
+  },
+  {
+   "stub": "def set_pane_title(title: str, pane_id: str | None = None, session_name: str | None = None, session_id: str | None = None, window_id: str | None = None, socket_name: str | None = None) -> PaneInfo: ...",
+   "formatted": "def set_pane_title(\n    title: str,\n    pane_id: str | None = None,\n    session_name: str | None = None,\n    session_id: str | None = None,\n    window_id: str | None = None,\n    socket_name: str | None = None,\n) -> PaneInfo: ..."
+  },
+  {
+   "stub": "def get_pane_info(pane_id: str | None = None, session_name: str | None = None, session_id: str | None = None, window_id: str | None = None, socket_name: str | None = None) -> PaneInfo: ...",
+   "formatted": "def get_pane_info(\n    pane_id: str | None = None,\n    session_name: str | None = None,\n    session_id: str | None = None,\n    window_id: str | None = None,\n    socket_name: str | None = None,\n) -> PaneInfo: ..."
+  },
+  {
+   "stub": "def find_pane_by_position(corner: PaneCorner, window_id: str | None = None, window_index: str | None = None, session_name: str | None = None, session_id: str | None = None, socket_name: str | None = None) -> PaneInfo: ...",
+   "formatted": "def find_pane_by_position(\n    corner: PaneCorner,\n    window_id: str | None = None,\n    window_index: str | None = None,\n    session_name: str | None = None,\n    session_id: str | None = None,\n    socket_name: str | None = None,\n) -> PaneInfo: ..."
+  },
+  {
+   "stub": "def display_message(format_string: str, pane_id: str | None = None, session_name: str | None = None, session_id: str | None = None, window_id: str | None = None, socket_name: str | None = None) -> str: ...",
+   "formatted": "def display_message(\n    format_string: str,\n    pane_id: str | None = None,\n    session_name: str | None = None,\n    session_id: str | None = None,\n    window_id: str | None = None,\n    socket_name: str | None = None,\n) -> str: ..."
+  },
+  {
+   "stub": "def snapshot_pane(pane_id: str | None = None, session_name: str | None = None, session_id: str | None = None, window_id: str | None = None, max_lines: int | None = CAPTURE_DEFAULT_MAX_LINES, socket_name: str | None = None) -> PaneSnapshot: ...",
+   "formatted": "def snapshot_pane(\n    pane_id: str | None = None,\n    session_name: str | None = None,\n    session_id: str | None = None,\n    window_id: str | None = None,\n    max_lines: int | None = CAPTURE_DEFAULT_MAX_LINES,\n    socket_name: str | None = None,\n) -> PaneSnapshot: ..."
+  },
+  {
+   "stub": "def pipe_pane(pane_id: str | None = None, output_path: str | None = None, append: bool = True, session_name: str | None = None, session_id: str | None = None, window_id: str | None = None, socket_name: str | None = None) -> str: ...",
+   "formatted": "def pipe_pane(\n    pane_id: str | None = None,\n    output_path: str | None = None,\n    append: bool = True,\n    session_name: str | None = None,\n    session_id: str | None = None,\n    window_id: str | None = None,\n    socket_name: str | None = None,\n) -> str: ..."
+  },
+  {
+   "stub": "def search_panes(pattern: str, regex: bool = False, session_name: str | None = None, session_id: str | None = None, match_case: bool = False, content_start: int | None = None, content_end: int | None = None, max_matched_lines_per_pane: int = SEARCH_DEFAULT_MAX_LINES_PER_PANE, limit: int | None = SEARCH_DEFAULT_LIMIT, offset: int = 0, socket_name: str | None = None) -> SearchPanesResult: ...",
+   "formatted": "def search_panes(\n    pattern: str,\n    regex: bool = False,\n    session_name: str | None = None,\n    session_id: str | None = None,\n    match_case: bool = False,\n    content_start: int | None = None,\n    content_end: int | None = None,\n    max_matched_lines_per_pane: int = SEARCH_DEFAULT_MAX_LINES_PER_PANE,\n    limit: int | None = SEARCH_DEFAULT_LIMIT,\n    offset: int = 0,\n    socket_name: str | None = None,\n) -> SearchPanesResult: ..."
+  },
+  {
+   "stub": "def wait_for_text(patterns: list[str] | None = None, stop: list[str] | None = None, regex: bool = False, pane_id: str | None = None, session_name: str | None = None, session_id: str | None = None, window_id: str | None = None, timeout: float = 8.0, interval: float = 0.05, match_case: bool = False, socket_name: str | None = None, ctx: Context | None = None) -> WaitForTextResult: ...",
+   "formatted": "def wait_for_text(\n    patterns: list[str] | None = None,\n    stop: list[str] | None = None,\n    regex: bool = False,\n    pane_id: str | None = None,\n    session_name: str | None = None,\n    session_id: str | None = None,\n    window_id: str | None = None,\n    timeout: float = 8.0,\n    interval: float = 0.05,\n    match_case: bool = False,\n    socket_name: str | None = None,\n    ctx: Context | None = None,\n) -> WaitForTextResult: ..."
+  },
+  {
+   "stub": "def list_sessions(socket_name: str | None = None, filters: dict[str, str] | str | None = None) -> list[SessionInfo]: ...",
+   "formatted": "def list_sessions(\n    socket_name: str | None = None,\n    filters: dict[str, str] | str | None = None,\n) -> list[SessionInfo]: ..."
+  },
+  {
+   "stub": "def create_session(session_name: str | None = None, window_name: str | None = None, start_directory: str | None = None, x: int | None = None, y: int | None = None, environment: dict[str, str] | str | None = None, socket_name: str | None = None, *, suppress_persistent_history: bool = False) -> SessionInfo: ...",
+   "formatted": "def create_session(\n    session_name: str | None = None,\n    window_name: str | None = None,\n    start_directory: str | None = None,\n    x: int | None = None,\n    y: int | None = None,\n    environment: dict[str, str] | str | None = None,\n    socket_name: str | None = None,\n    *,\n    suppress_persistent_history: bool = False,\n) -> SessionInfo: ..."
+  },
+  {
+   "stub": "def get_server_info(socket_name: str | None = None) -> ServerInfo: ...",
+   "formatted": "def get_server_info(\n    socket_name: str | None = None,\n) -> ServerInfo: ..."
+  },
+  {
+   "stub": "def list_servers(extra_socket_paths: list[str] | None = None) -> list[ServerInfo]: ...",
+   "formatted": "def list_servers(\n    extra_socket_paths: list[str] | None = None,\n) -> list[ServerInfo]: ..."
+  },
+  {
+   "stub": "def list_windows(session_name: str | None = None, session_id: str | None = None, socket_name: str | None = None, filters: dict[str, str] | str | None = None) -> list[WindowInfo]: ...",
+   "formatted": "def list_windows(\n    session_name: str | None = None,\n    session_id: str | None = None,\n    socket_name: str | None = None,\n    filters: dict[str, str] | str | None = None,\n) -> list[WindowInfo]: ..."
+  },
+  {
+   "stub": "def get_session_info(session_id: str | None = None, session_name: str | None = None, socket_name: str | None = None) -> SessionInfo: ...",
+   "formatted": "def get_session_info(\n    session_id: str | None = None,\n    session_name: str | None = None,\n    socket_name: str | None = None,\n) -> SessionInfo: ..."
+  },
+  {
+   "stub": "def create_window(session_name: str | None = None, session_id: str | None = None, window_name: str | None = None, start_directory: str | None = None, attach: bool = False, direction: t.Literal[\"before\", \"after\"] | None = None, socket_name: str | None = None, *, environment: dict[str, str] | str | None = None, suppress_persistent_history: bool = False) -> WindowInfo: ...",
+   "formatted": "def create_window(\n    session_name: str | None = None,\n    session_id: str | None = None,\n    window_name: str | None = None,\n    start_directory: str | None = None,\n    attach: bool = False,\n    direction: t.Literal[\"before\", \"after\"] | None = None,\n    socket_name: str | None = None,\n    *,\n    environment: dict[str, str] | str | None = None,\n    suppress_persistent_history: bool = False,\n) -> WindowInfo: ..."
+  },
+  {
+   "stub": "def rename_session(new_name: str, session_name: str | None = None, session_id: str | None = None, socket_name: str | None = None) -> SessionInfo: ...",
+   "formatted": "def rename_session(\n    new_name: str,\n    session_name: str | None = None,\n    session_id: str | None = None,\n    socket_name: str | None = None,\n) -> SessionInfo: ..."
+  },
+  {
+   "stub": "def kill_session(session_name: str | None = None, session_id: str | None = None, socket_name: str | None = None) -> str: ...",
+   "formatted": "def kill_session(\n    session_name: str | None = None,\n    session_id: str | None = None,\n    socket_name: str | None = None,\n) -> str: ..."
+  },
+  {
+   "stub": "def select_window(window_id: str | None = None, window_index: str | None = None, direction: t.Literal[\"next\", \"previous\", \"last\"] | None = None, session_name: str | None = None, session_id: str | None = None, socket_name: str | None = None) -> WindowInfo: ...",
+   "formatted": "def select_window(\n    window_id: str | None = None,\n    window_index: str | None = None,\n    direction: t.Literal[\"next\", \"previous\", \"last\"]\n    | None = None,\n    session_name: str | None = None,\n    session_id: str | None = None,\n    socket_name: str | None = None,\n) -> WindowInfo: ..."
+  },
+  {
+   "stub": "def wait_for_channel(channel: str, timeout: float = 30.0, socket_name: str | None = None) -> str: ...",
+   "formatted": "def wait_for_channel(\n    channel: str,\n    timeout: float = 30.0,\n    socket_name: str | None = None,\n) -> str: ..."
+  },
+  {
+   "stub": "def signal_channel(channel: str, socket_name: str | None = None) -> str: ...",
+   "formatted": "def signal_channel(\n    channel: str, socket_name: str | None = None\n) -> str: ..."
+  },
+  {
+   "stub": "def list_panes(session_name: str | None = None, session_id: str | None = None, window_id: str | None = None, window_index: str | None = None, socket_name: str | None = None, filters: dict[str, str] | str | None = None) -> list[PaneInfo]: ...",
+   "formatted": "def list_panes(\n    session_name: str | None = None,\n    session_id: str | None = None,\n    window_id: str | None = None,\n    window_index: str | None = None,\n    socket_name: str | None = None,\n    filters: dict[str, str] | str | None = None,\n) -> list[PaneInfo]: ..."
+  },
+  {
+   "stub": "def get_window_info(window_id: str | None = None, window_index: str | None = None, session_name: str | None = None, session_id: str | None = None, socket_name: str | None = None) -> WindowInfo: ...",
+   "formatted": "def get_window_info(\n    window_id: str | None = None,\n    window_index: str | None = None,\n    session_name: str | None = None,\n    session_id: str | None = None,\n    socket_name: str | None = None,\n) -> WindowInfo: ..."
+  },
+  {
+   "stub": "def split_window(pane_id: str | None = None, session_name: str | None = None, session_id: str | None = None, window_id: str | None = None, window_index: str | None = None, direction: t.Literal[\"above\", \"below\", \"left\", \"right\"] | None = None, size: str | int | None = None, start_directory: str | None = None, shell: str | None = None, socket_name: str | None = None, *, environment: dict[str, str] | str | None = None, suppress_persistent_history: bool = False) -> PaneInfo: ...",
+   "formatted": "def split_window(\n    pane_id: str | None = None,\n    session_name: str | None = None,\n    session_id: str | None = None,\n    window_id: str | None = None,\n    window_index: str | None = None,\n    direction: t.Literal[\"above\", \"below\", \"left\", \"right\"]\n    | None = None,\n    size: str | int | None = None,\n    start_directory: str | None = None,\n    shell: str | None = None,\n    socket_name: str | None = None,\n    *,\n    environment: dict[str, str] | str | None = None,\n    suppress_persistent_history: bool = False,\n) -> PaneInfo: ..."
+  },
+  {
+   "stub": "def rename_window(new_name: str, window_id: str | None = None, window_index: str | None = None, session_name: str | None = None, session_id: str | None = None, socket_name: str | None = None) -> WindowInfo: ...",
+   "formatted": "def rename_window(\n    new_name: str,\n    window_id: str | None = None,\n    window_index: str | None = None,\n    session_name: str | None = None,\n    session_id: str | None = None,\n    socket_name: str | None = None,\n) -> WindowInfo: ..."
+  },
+  {
+   "stub": "def kill_window(window_id: str, socket_name: str | None = None) -> str: ...",
+   "formatted": "def kill_window(\n    window_id: str, socket_name: str | None = None\n) -> str: ..."
+  },
+  {
+   "stub": "def select_layout(layout: str, window_id: str | None = None, window_index: str | None = None, session_name: str | None = None, session_id: str | None = None, socket_name: str | None = None) -> WindowInfo: ...",
+   "formatted": "def select_layout(\n    layout: str,\n    window_id: str | None = None,\n    window_index: str | None = None,\n    session_name: str | None = None,\n    session_id: str | None = None,\n    socket_name: str | None = None,\n) -> WindowInfo: ..."
+  },
+  {
+   "stub": "def resize_window(window_id: str | None = None, window_index: str | None = None, session_name: str | None = None, session_id: str | None = None, height: int | None = None, width: int | None = None, socket_name: str | None = None) -> WindowInfo: ...",
+   "formatted": "def resize_window(\n    window_id: str | None = None,\n    window_index: str | None = None,\n    session_name: str | None = None,\n    session_id: str | None = None,\n    height: int | None = None,\n    width: int | None = None,\n    socket_name: str | None = None,\n) -> WindowInfo: ..."
+  },
+  {
+   "stub": "def move_window(window_id: str | None = None, window_index: str | None = None, session_name: str | None = None, session_id: str | None = None, destination_index: str = \"\", destination_session: str | None = None, socket_name: str | None = None) -> WindowInfo: ...",
+   "formatted": "def move_window(\n    window_id: str | None = None,\n    window_index: str | None = None,\n    session_name: str | None = None,\n    session_id: str | None = None,\n    destination_index: str = \"\",\n    destination_session: str | None = None,\n    socket_name: str | None = None,\n) -> WindowInfo: ..."
+  }
+ ]
+}

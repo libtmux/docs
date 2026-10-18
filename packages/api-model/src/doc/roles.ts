@@ -176,6 +176,26 @@ const STRONG_RE = /\*\*(?!\s)([^*\n]+?)(?<!\s)\*\*/g
 /** Word boundaries keep globs, multiplication and escaped stars literal. */
 const EMPHASIS_RE = /(?<![\w*\\])\*(?![\s*])([^*\n]+?)(?<![\s\\])\*(?![\w*])/g
 
+/**
+ * A DocC symbol link as the symbol index spells it.
+ *
+ * Swift ids keep their argument labels, `Server.using(_:_:)`, so the label
+ * list stays; only the path before it changes, from DocC's `Type/member` to the
+ * dotted form every id uses.
+ */
+const doccTarget = (text: string): string =>
+  text.replace(/^[^(]*/, (path) => path.replace(/(?<=\w)\/(?=\w)/g, '.'))
+
+/**
+ * YARD's brace link: `{Class}`, `{Class#m}`, `{Class.m}`, `{#m}`, each with an
+ * optional label.
+ *
+ * Only a constant path or a method name opens one, and a label starts like a
+ * word. That leaves a hash literal (`{Foo => 1}`, `{a: 1}`), an RBS record
+ * (`{ closed: bool }`) and string interpolation (`#{Foo}`) as text.
+ */
+const YARD_LINK_RE = /(?<!#)\{(#[A-Za-z_]\w*[?!=]?|(?:::)?[A-Z]\w*(?:::[A-Z]\w*)*(?:[#.][A-Za-z_]\w*[?!=]?)?)(?:[ \t]+(?=[\w`"'([])([^}\n]*[^}\s]))?\}/g
+
 /** A bare double-backtick literal, which is never a link. */
 const LITERAL_RE = /``([^`]+)``/g
 /** reST literals can contain single backticks without enabling nested markup. */
@@ -250,9 +270,12 @@ const SYNTAX: Record<string, ReadonlySet<string>> = {
   java: new Set(['jsdoc']),
   ts: new Set(['jsdoc', 'markdown-link']),
   csharp: new Set(['xml-doc']),
+  // `.fsi` doc comments are the same XML, parsed by the same `parseXmlDoc`.
+  fsharp: new Set(['xml-doc']),
   // DocC gives double backticks a meaning reST reserves for a literal: in a
   // Swift doc comment ``Server`` is a symbol link, not code.
   swift: new Set(['docc']),
+  ruby: new Set(['yard']),
   cxx: new Set([]),
   kotlin: new Set(['kdoc', 'jsdoc']),
   scala: new Set(['scaladoc', 'jsdoc']),
@@ -395,6 +418,18 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
     }
   }
 
+  if (syntax.has('yard')) {
+    // A code span is a literal, whatever it holds.
+    const literal = markdownCode(text, text)
+    for (const m of text.matchAll(YARD_LINK_RE)) {
+      const end = m.index + m[0].length
+      if (literal.some((code) => code.start < end && code.end > m.index)) continue
+      // YARD documents a constructor as `#initialize`; Ruby callers, and the model, use `.new`.
+      const target = m[1].replace(/#initialize$/, '.new')
+      hits.push({ start: m.index, end, span: { kind: 'ref', role: 'any', target, label: m[2] ?? target } })
+    }
+  }
+
   if (syntax.has('xml-doc')) {
     for (const m of text.matchAll(XML_LANGWORD_RE)) {
       hits.push({ start: m.index, end: m.index + m[0].length, span: { kind: 'code', text: m[1] } })
@@ -406,11 +441,12 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
       hits.push({ start: m.index, end: m.index + m[0].length, span: { kind: 'code', text: m[1] } })
     }
     for (const m of text.matchAll(XML_SEE_RE)) {
-      const target = m[1].replace(/\(.*$/, '')
+      // `{T}` spells a generic parameter in a compiler-checked cref; ids carry none.
+      const target = m[1].replace(/\(.*$/, '').replace(/\{[^{}]*\}/g, '')
       hits.push({
         start: m.index,
         end: m.index + m[0].length,
-        span: { kind: 'ref', role: 'any', target, label: target.split('.').pop() ?? target },
+        span: { kind: 'ref', role: 'any', target, label: (target.split('.').pop() ?? target).replace(/`+\d+$/, '') },
       })
     }
   }
@@ -513,7 +549,7 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
       const span: DocSpan = code.ticks === 1
         ? { kind: 'ref', role: 'any', target: code.text, label: code.text }
         : syntax.has('docc') && code.ticks === 2
-          ? { kind: 'ref', role: 'any', target: code.text.replace(/\(.*$/, ''), label: code.text }
+          ? { kind: 'ref', role: 'any', target: doccTarget(code.text), label: code.text }
           : { kind: 'code', text: code.text }
       hits.push({ start: code.start, end: code.end, span })
     }
@@ -529,7 +565,8 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
 
   if (lang === 'powershell') {
     // Native help stores these references as plain text rather than Markdown.
-    const names = /(?<![\w$])(?:\$[A-Za-z_]\w*|(?:LibTmux|System)(?:\.[A-Za-z_]\w*)+|(?:[A-Za-z_]\w*\\)?[A-Z][a-z]+-[A-Z][A-Za-z0-9]*|-[A-Z][A-Za-z0-9]*)(?!\w)/g
+    // A cmdlet is Verb-Noun, and a verb may be several words: `ConvertTo`.
+    const names = /(?<![\w$])(?:\$[A-Za-z_]\w*|(?:LibTmux|System)(?:\.[A-Za-z_]\w*)+|(?:[A-Za-z_]\w*\\)?[A-Z][a-z]+(?:[A-Z][a-z]+)*-[A-Z][A-Za-z0-9]*|-[A-Z][A-Za-z0-9]*)(?!\w)/g
     for (const match of text.matchAll(names)) {
       const start = match.index
       const end = start + match[0].length

@@ -47,13 +47,34 @@ export type PortPackageId = 'core' | 'async' | DocProduct
 export interface PortPackage {
   id: PortPackageId
   name: string
+  /** What the registry or build tool resolves, when `name` is only the artifact. */
+  coordinate?: string
   registry?: string
+  /** The package's API reference on an off-site host. */
+  reference?: string
   /** Package or CLI directory, with its default branch for latest pages. */
   source?: { path: string; ref: string; repo?: string }
   /** What a program imports; absent for a package that only ships a command. */
   require?: string
   executable?: string
   installs?: readonly InstallCommand[]
+}
+
+/**
+ * A source directory, published package or API reference that the library and
+ * its documented products do not already name. Only the header's source,
+ * package and reference menus read these: no install widget or documentation
+ * area depends on one.
+ */
+export interface PortComponent {
+  group: 'core' | DocProduct
+  name: string
+  coordinate?: string
+  /** Words a reader may type that the name omits, such as an import path. */
+  aliases?: readonly string[]
+  source?: PortPackage['source']
+  registry?: string
+  reference?: string
 }
 
 export type ProductAvailability = 'available' | 'unpublished'
@@ -250,6 +271,8 @@ export interface Port {
   productDescriptions?: Partial<Record<DocProduct, string>>
   /** Separately published packages whose APIs belong in this port's docs. */
   packages?: readonly PortPackage[]
+  /** Further source directories, packages and references for the header menus. */
+  components?: readonly PortComponent[]
   /**
    * `local` builds from a source checkout; `published` installs a prerelease
    * from the registry but is still in development on the shared native
@@ -443,10 +466,12 @@ const CORE_PORTS: readonly Port[] = [
     workspaceCli: 'libtmux-workspace load',
     workspaceCliAvailability: 'released',
     productAvailability: { workspace: 'available', mcp: 'available' },
+    components: [{ group: 'core', name: 'libtmux', source: { path: 'gems/libtmux', ref: 'master' } }],
     packages: [
       { id: 'core', name: 'libtmux', registry: 'https://rubygems.org/gems/libtmux', require: 'libtmux' },
       {
         id: 'async', name: 'libtmux-async', registry: 'https://rubygems.org/gems/libtmux-async', require: 'libtmux/async',
+        source: { path: 'gems/libtmux-async', ref: 'master' },
         installs: [
           { label: 'gem', lang: 'console', code: 'gem install --version 0.1.0.alpha.1 libtmux-async' },
           { label: 'Bundler', lang: 'ruby', code: 'gem "libtmux-async", "0.1.0.alpha.1"' },
@@ -625,24 +650,25 @@ const CORE_PORTS: readonly Port[] = [
       { id: 'workspace', name: 'LibTmuxWorkspace', source: { path: 'packages/LibTmuxWorkspace', ref: 'master' },
         require: 'LibTmuxWorkspace', executable: 'libtmux-workspace',
         installs: [{ label: 'Pkg (Git)', lang: 'julia',
-          code: 'using Pkg\nPkg.activate(".")\nrepo = "https://github.com/libtmux/libtmux-julia.git"\ntag = "v0.1.0-alpha.1"\nPkg.add([\n    PackageSpec(url=repo, rev=tag),\n    PackageSpec(url=repo, rev=tag, subdir="packages/LibTmuxWorkspace"),\n])',
-          note: 'Run in Julia. The core and workspace packages must use the same source release; neither is registered in General.' }] },
+          code: 'using Pkg\nPkg.activate(".")\nrepo = "https://github.com/libtmux/libtmux-julia.git"\nref = "master"\nPkg.add([\n    PackageSpec(url=repo, rev=ref),\n    PackageSpec(url=repo, rev=ref, subdir="packages/LibTmuxWorkspace"),\n])',
+          note: 'Run in Julia. Neither package is registered in General, so this installs the master branch. Add the core and workspace packages in one call so both use the same revision.' }] },
       { id: 'mcp', name: 'LibTmuxMCP', source: { path: 'packages/LibTmuxMCP', ref: 'master' },
         require: 'LibTmuxMCP', executable: 'libtmux-mcp',
         installs: [{ label: 'Pkg (Git)', lang: 'julia',
-          code: 'using Pkg\nPkg.activate(".")\nrepo = "https://github.com/libtmux/libtmux-julia.git"\ntag = "v0.1.0-alpha.1"\nPkg.add([\n    PackageSpec(url=repo, rev=tag),\n    PackageSpec(url=repo, rev=tag, subdir="packages/LibTmuxMCP"),\n])',
-          note: 'Run in Julia. The core and MCP packages must use the same source release; neither is registered in General.' }] },
+          code: 'using Pkg\nPkg.activate(".")\nrepo = "https://github.com/libtmux/libtmux-julia.git"\nref = "master"\nPkg.add([\n    PackageSpec(url=repo, rev=ref),\n    PackageSpec(url=repo, rev=ref, subdir="packages/LibTmuxMCP"),\n])',
+          note: 'Run in Julia. Neither package is registered in General, so this installs the master branch. Add the core and MCP packages in one call so both use the same revision.' }] },
     ],
     installs: [{ label: 'Pkg (Git)', lang: 'julia',
-      code: 'using Pkg\nPkg.activate(".")\nPkg.add(PackageSpec(\n    url="https://github.com/libtmux/libtmux-julia.git",\n    rev="v0.1.0-alpha.1",\n))',
-      note: 'Run in Julia with tmux on PATH. This alpha release is installed from Git; it is not registered in General.' }],
+      code: 'using Pkg\nPkg.activate(".")\nPkg.add(PackageSpec(\n    url="https://github.com/libtmux/libtmux-julia.git",\n    rev="master",\n))',
+      note: 'Run in Julia with tmux on PATH. The package is not registered in General, so this installs the master branch; Manifest.toml records the package tree hash.' }],
     initProject: { code: 'using Pkg\nPkg.activate(".")', lang: 'julia' },
     installForms: {
       stable: { code: 'using Pkg\nPkg.add("LibTmux")', lang: 'julia' },
       prerelease: { code: 'using Pkg\nPkg.add(PackageSpec(name="LibTmux", version="{version}"))', lang: 'julia' },
-      git: { code: 'using Pkg\nPkg.add(PackageSpec(url="https://github.com/libtmux/libtmux-julia.git", rev="{tag}"))', lang: 'julia' },
+      // The repository has no release tag to substitute, so this form names its default branch.
+      git: { code: 'using Pkg\nPkg.add(PackageSpec(url="https://github.com/libtmux/libtmux-julia.git", rev="master"))', lang: 'julia' },
     },
-    installNote: 'Julia 1.10+ and tmux 3.2a+ are compatibility targets; see the compatibility guide for tested versions. Companion packages share the core source release.',
+    installNote: 'Julia 1.10+ and tmux 3.2a+ are compatibility targets; see the compatibility guide for tested versions. Companion packages install from the same revision as the core.',
   },
   {
     slug: 'ts',
@@ -655,6 +681,11 @@ const CORE_PORTS: readonly Port[] = [
     language: 'TypeScript',
 
     packageName: 'libtmux',
+    components: [
+      { group: 'core', name: 'libtmux', source: { path: 'packages/libtmux', ref: 'master' } },
+      { group: 'workspace', name: '@libtmux/workspace', registry: 'https://www.npmjs.com/package/@libtmux/workspace',
+        source: { path: 'packages/workspace', ref: 'master' } },
+    ],
     packages: [
       {
         id: 'mcp',
@@ -802,19 +833,26 @@ const CORE_PORTS: readonly Port[] = [
   {
     slug: 'rs',
     projectName: 'libtmux-rs',
+    components: [
+      { group: 'core', name: 'libtmux', source: { path: 'crates/libtmux', ref: 'master' } },
+      { group: 'core', name: 'libtmux-macros', registry: 'https://crates.io/crates/libtmux-macros',
+        reference: 'https://docs.rs/libtmux-macros', source: { path: 'crates/libtmux-macros', ref: 'master' } },
+    ],
     packages: [
       { id: 'workspace', name: 'tmux-workspace', registry: 'https://crates.io/crates/tmux-workspace',
+        reference: 'https://docs.rs/tmux-workspace',
         source: { path: 'crates/tmux-workspace', ref: 'master' },
         executable: 'tmux-workspace',
-        installs: [{ label: 'cargo', lang: 'console', code: 'cargo install --locked --path crates/tmux-workspace',
-          note: 'Run from a libtmux-rs checkout with its pinned Rust toolchain. This builds and installs the native CLI; run tmux-workspace --help afterward.' }] },
+        installs: [{ label: 'cargo', lang: 'console', code: 'cargo install --locked --version 0.1.0-alpha.15 tmux-workspace',
+          note: 'Needs Rust 1.85 or newer. cargo install skips prereleases unless asked, so the command names the version. This builds and installs the native CLI; run tmux-workspace --help afterward.' }] },
       { id: 'mcp', name: 'tmux-mcp', registry: 'https://crates.io/crates/tmux-mcp',
+        reference: 'https://docs.rs/tmux-mcp',
         source: { path: 'crates/tmux-mcp', ref: 'master' } },
     ],
     logoLanguage: 'rust',
     shortName: 'Rs',
     workspaceCli: 'tmux-workspace load',
-    workspaceCliAvailability: 'local',
+    workspaceCliAvailability: 'published',
     name: 'Rust',
     language: 'Rust',
     packageName: 'libtmux',
@@ -857,17 +895,26 @@ const CORE_PORTS: readonly Port[] = [
     logoLanguage: 'go',
     shortName: 'Go',
     workspaceCli: 'tmux-workspace load',
-    workspaceCliAvailability: 'local',
+    workspaceCliAvailability: 'published',
     name: 'Go',
     language: 'Go',
     packageName: 'github.com/libtmux/libtmux-go/tmux',
+    components: [
+      { group: 'core', name: 'tmux', source: { path: 'tmux', ref: 'master' } },
+      { group: 'core', name: 'tmuxq', coordinate: 'github.com/libtmux/libtmux-go/tmuxq',
+        reference: 'https://pkg.go.dev/github.com/libtmux/libtmux-go/tmuxq' },
+      { group: 'core', name: 'tmux/tmuxtest', coordinate: 'github.com/libtmux/libtmux-go/tmux/tmuxtest',
+        reference: 'https://pkg.go.dev/github.com/libtmux/libtmux-go/tmux/tmuxtest' },
+    ],
     packages: [
       { id: 'mcp', name: 'github.com/libtmux/libtmux-go/mcp', registry: 'https://pkg.go.dev/github.com/libtmux/libtmux-go/mcp',
+        reference: 'https://pkg.go.dev/github.com/libtmux/libtmux-go/mcp',
         source: { path: 'mcp/cmd/libtmux-mcp', ref: 'master' } },
       {
         id: 'workspace',
         name: 'github.com/libtmux/libtmux-go/workspace',
         registry: 'https://pkg.go.dev/github.com/libtmux/libtmux-go/workspace',
+        reference: 'https://pkg.go.dev/github.com/libtmux/libtmux-go/workspace',
         source: { path: 'workspace/cmd/tmux-workspace', ref: 'master' },
         require: 'github.com/libtmux/libtmux-go/workspace',
         executable: 'tmux-workspace',
@@ -916,13 +963,17 @@ const CORE_PORTS: readonly Port[] = [
   {
     slug: 'java',
     projectName: 'libtmux-java',
+    components: [{ group: 'core', name: 'libtmux', source: { path: 'libtmux', ref: 'master' } }],
     packages: [
-      { id: 'workspace', name: 'libtmux-workspace-cli', registry: 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-workspace-cli',
+      { id: 'workspace', name: 'libtmux-workspace-cli', coordinate: 'io.github.libtmux:libtmux-workspace-cli',
+        registry: 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-workspace-cli',
         source: { path: 'libtmux-workspace-cli', ref: 'master' },
         executable: 'tmux-workspace',
         installs: [{ label: 'Gradle', lang: 'console', code: './gradlew \\\n    --max-workers=2 \\\n    --no-parallel \\\n    :libtmux-workspace-cli:installDist',
           note: 'Run from a libtmux-java checkout with JDK 25 or newer. The launcher is libtmux-workspace-cli/build/install/tmux-workspace/bin/tmux-workspace; keep its adjacent libraries.' }] },
-      { id: 'mcp', name: 'libtmux-mcp', registry: 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-mcp',
+      { id: 'mcp', name: 'libtmux-mcp', coordinate: 'io.github.libtmux:libtmux-mcp',
+        registry: 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-mcp',
+        reference: 'https://javadoc.io/doc/io.github.libtmux/libtmux-mcp',
         source: { path: 'libtmux-mcp', ref: 'master' } },
     ],
     logoLanguage: 'java',
@@ -994,6 +1045,7 @@ const CORE_PORTS: readonly Port[] = [
   {
     slug: 'csharp',
     projectName: 'libtmux-dotnet',
+    components: [{ group: 'core', name: 'LibTmux', source: { path: 'src/LibTmux', ref: 'master' } }],
     logoLanguage: 'csharp',
     shortName: 'C#',
     workspaceCli: 'tmux-workspace load',
@@ -1133,6 +1185,12 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
   {
     slug: 'swift',
     projectName: 'libtmux-swift',
+    components: [
+      { group: 'core', name: 'LibTmux', source: { path: 'Sources/LibTmux', ref: 'master' },
+        reference: 'https://swiftpackageindex.com/libtmux/libtmux-swift/documentation/libtmux' },
+      { group: 'workspace', name: 'TmuxWorkspace', reference: 'https://swiftpackageindex.com/libtmux/libtmux-swift/documentation/tmuxworkspace' },
+      { group: 'mcp', name: 'LibTmuxMCP', reference: 'https://swiftpackageindex.com/libtmux/libtmux-swift/documentation/libtmuxmcp' },
+    ],
     packages: [
       { id: 'workspace', name: 'tmux-workspace', registry: 'https://swiftpackageindex.com/libtmux/libtmux-swift',
         source: { path: 'Sources/TmuxWorkspaceCLI', ref: 'master' },
@@ -1242,6 +1300,7 @@ const WRAPPER_LIBRARIES: readonly WrapperLibrary[] = [
   {
     slug: 'fsharp', logoLanguage: 'fsharp', shortName: 'F#', name: 'F#', language: 'F#',
     projectName: 'libtmux-fsharp',
+    components: [{ group: 'core', name: 'LibTmux.FSharp', source: { path: 'src/LibTmux.FSharp', ref: 'master' } }],
     parentLibrary: { slug: 'csharp', runtime: '.NET' },
     sourceReferenceDirectory: 'docs/fsharp-reference/reference',
     packageName: 'LibTmux.FSharp',
@@ -1275,13 +1334,263 @@ export const PORT_BY_SLUG: Readonly<Record<string, Port>> = Object.fromEntries(
   PORTS.map((p) => [p.slug, p]),
 )
 
+/** The tag a numeric docs version names, with the library's tag prefix. */
+function releaseTag(port: Port, version: string): string | undefined {
+  return /^v?\d/.test(version) ? `${port.tagPrefix ?? ''}${version}` : undefined
+}
+
+/** Where a library's directory is read: a revision, else its release tag, else its default branch. */
+function portSourceRef(port: Port, version: string, revision?: string): string | undefined {
+  return port.source && (revision ?? releaseTag(port, version) ?? port.source.ref)
+}
+
 /** Open a library's directory at its documented revision, tag, or default branch. */
 export function portSourceUrl(port: Port, version = 'latest', revision?: string): string {
   const root = `https://github.com/${port.repo}`
-  if (!port.source) return root
-  const tag = /^v?\d/.test(version) ? `${port.tagPrefix ?? ''}${version}` : undefined
-  const ref = revision ?? tag ?? port.source.ref
-  return `${root}/tree/${encodeURIComponent(ref)}/${port.source.path}`
+  const ref = portSourceRef(port, version, revision)
+  return port.source && ref ? `${root}/tree/${encodeURIComponent(ref)}/${port.source.path}` : root
+}
+
+/** A project outside the port catalog, such as tmux, that a links row can name. */
+export interface ProjectLinks {
+  name: string
+  /** Source repository, `owner/name`. */
+  repo: string
+  homepage: string
+}
+
+export interface DestinationRequest {
+  port?: Port
+  /** Names the project's repository instead of a port's. */
+  project?: ProjectLinks
+  /** A companion product, whose own directory and package replace the library's. */
+  product?: DocProduct
+  version?: string
+  /** Commit that the page's source citations are bound to. */
+  revision?: string
+}
+
+export interface SourceDestination {
+  url: string
+  /** Repository the link opens, `owner/name`. */
+  repo: string
+  /** Directory within that repository, when the link opens one. */
+  path?: string
+  /** Branch, tag or commit of `path`. */
+  ref?: string
+}
+
+/** Where a page's reader goes to read the source, install the package, or browse its API. */
+export interface PortDestinations {
+  source: SourceDestination
+  /** The package's page on its registry, never a versioned release. */
+  registry?: PackageRegistry
+  /** An API host that is not the registry itself. */
+  ecosystem?: EcosystemHost
+}
+
+/** A product's directory, or its repository when it has none of its own. */
+function productSource(port: Port, source: PortPackage['source'], version: string, revision?: string): SourceDestination {
+  const repo = source?.repo ?? port.repo
+  if (!source) return { url: `https://github.com/${repo}`, repo }
+  // An app in a separate repository has its own release history.
+  const tag = repo === port.repo ? releaseTag(port, version) : undefined
+  const ref = version === 'latest' ? source.ref : tag ?? revision ?? source.ref
+  return { url: `https://github.com/${repo}/tree/${ref}/${source.path}`, repo, path: source.path, ref }
+}
+
+/**
+ * The source, package and API destinations for a port, product or project.
+ *
+ * Every URL is external and carries no locale or preview prefix, so it is the
+ * same from `/en/`, `/ja/` and `/pr-42/`. Registry and API URLs name the
+ * package's page, not a release: the version this site documents is not
+ * evidence that a package of that version exists.
+ */
+export function portDestinations({ port, project, product, version = 'latest', revision }: DestinationRequest): PortDestinations {
+  if (!port && !project) throw new Error('portDestinations: a port or project is required')
+  const pkg = product ? port?.packages?.find((entry) => entry.id === product) : undefined
+  const source: SourceDestination = project ? { url: `https://github.com/${project.repo}`, repo: project.repo }
+    : product ? productSource(port!, pkg?.source, version, revision)
+      : { url: portSourceUrl(port!, version, revision), repo: port!.repo,
+          ...(port!.source && { path: port!.source.path, ref: portSourceRef(port!, version, revision) }) }
+  const registry = product
+    ? pkg?.registry && port?.registry ? { ...port.registry, url: pkg.registry } : undefined
+    : port?.registry
+
+  return {
+    source,
+    registry,
+    // Go's registry and reference host are the same destination.
+    ecosystem: !product && port?.ecosystemHost && port.ecosystemHost.url !== registry?.url ? port.ecosystemHost : undefined,
+  }
+}
+
+export type PickerGroup = 'core' | DocProduct
+export type PickerKind = 'github' | 'packages' | 'docs'
+export type PickerIcon = 'github' | PackageRegistry['icon'] | 'docsrs' | 'javadoc'
+
+/** A destination in the header's GitHub, package or documentation menu. */
+export interface PickerRow {
+  group: PickerGroup
+  label: string
+  /** What sits under the label: a coordinate, a repository path or the host. */
+  detail: string
+  url: string
+  icon: PickerIcon
+  /** Everything a reader may type to find the row. */
+  match: string
+}
+
+export interface PortPicker {
+  kind: PickerKind
+  /** The trigger's visible name. */
+  label: string
+  /** The trigger's mark: GitHub, the registry or the documentation host. */
+  icon: PickerIcon
+  /** What the menu lists from: the repository, the registry or the documentation host. */
+  context: string
+  rows: PickerRow[]
+}
+
+export const PICKER_GROUPS: readonly PickerGroup[] = ['core', 'mcp', 'workspace']
+export const PICKER_GROUP_LABEL: Readonly<Record<PickerGroup, string>> = {
+  core: 'Core Library', mcp: DOC_PRODUCTS.mcp.label, workspace: DOC_PRODUCTS.workspace.label,
+}
+/** The line under a group's name in every picker, so a product reads the same in each. */
+export const PICKER_GROUP_SUMMARY: Readonly<Record<PickerGroup, string>> = {
+  core: 'API reference and guides', mcp: 'Tools for connected assistants', workspace: 'Repeatable development environments',
+}
+
+/** Off-site API hosts by hostname. A reference elsewhere has no mark, so it is an error. */
+const REFERENCE_HOSTS: Readonly<Record<string, { name: string; icon: PickerIcon }>> = {
+  'docs.rs': { name: 'docs.rs', icon: 'docsrs' },
+  'javadoc.io': { name: 'javadoc.io', icon: 'javadoc' },
+  'pkg.go.dev': { name: 'pkg.go.dev', icon: 'go' },
+  'swiftpackageindex.com': { name: 'Swift Package Index', icon: 'swift' },
+}
+
+/** One source directory, package or API reference that the menus may list. */
+interface PickerUnit {
+  group: PickerGroup
+  label: string
+  coordinate: string
+  aliases: readonly string[]
+  source?: PortPackage['source']
+  registry?: string
+  reference?: string
+  /** What the reference calls itself when that is not its host, such as Dokka on javadoc.io. */
+  referenceName?: string
+}
+
+type PickerDraft = Omit<PickerRow, 'match'> & { terms: readonly string[] }
+
+/** `libtmux` of `io.github.libtmux:libtmux`, and `tmux` of a Go package path; a scoped npm name stays whole. */
+const lastSegment = (name: string) => name.startsWith('@') ? name : name.split(/[/:]/).pop()!
+
+/** The library first, then each group's components, then its documented packages. */
+function pickerUnits(port: Port): [PickerUnit, ...PickerUnit[]] {
+  const library: PickerUnit = {
+    group: 'core', label: lastSegment(port.packageName), coordinate: port.packageName, aliases: [],
+    source: port.source, registry: port.registry?.url,
+    reference: port.ecosystemHost?.url, referenceName: port.ecosystemHost?.name,
+  }
+  const packages = (port.packages ?? []).filter((entry) => entry.id !== 'core').map((entry): PickerUnit => ({
+    group: entry.id === 'mcp' || entry.id === 'workspace' ? entry.id : 'core',
+    label: lastSegment(entry.name), coordinate: entry.coordinate ?? entry.name,
+    aliases: [entry.require, entry.executable].filter((alias): alias is string => Boolean(alias)),
+    source: entry.source, registry: entry.registry, reference: entry.reference,
+  }))
+  const components = (port.components ?? []).map((entry): PickerUnit => ({
+    group: entry.group, label: entry.name, coordinate: entry.coordinate ?? entry.name, aliases: entry.aliases ?? [],
+    source: entry.source, registry: entry.registry, reference: entry.reference,
+  }))
+  return [library, ...components, ...packages]
+}
+
+/** A unit's repository, or its directory when the repository also holds the library. */
+function sourceDraft(port: Port, unit: PickerUnit, source: NonNullable<PortPackage['source']>): PickerDraft {
+  const repo = source.repo ?? port.repo
+  const name = repo.split('/').pop()!
+  // A directory of another repository is only its import package: open the repository.
+  return repo !== port.repo
+    ? { group: unit.group, label: name, detail: repo, url: `https://github.com/${repo}`, icon: 'github', terms: [repo] }
+    : { group: unit.group, label: unit.label, detail: `${name}/${source.path}`, icon: 'github',
+        url: `https://github.com/${repo}/tree/${source.ref}/${source.path}`, terms: [repo, source.path] }
+}
+
+function githubDrafts(port: Port, [library, ...rest]: readonly [PickerUnit, ...PickerUnit[]]): PickerDraft[] {
+  const name = port.repo.split('/').pop()!
+  const repository: PickerDraft = {
+    group: 'core', label: name, detail: port.repo, url: `https://github.com/${port.repo}`, icon: 'github', terms: [port.repo],
+  }
+  // A wrapper language's library is a directory of its parent's repository.
+  const family = PORTS.flatMap((entry) => {
+    const source = entry.parentLibrary?.slug === port.slug ? entry.source ?? entry.components?.find((unit) => unit.group === 'core' && unit.source)?.source : undefined
+    return source ? [sourceDraft(port, { ...library, label: source.path.split('/').pop()! }, source)] : []
+  })
+  return [
+    // A library that lives in a directory leads with it, then its repository.
+    ...(library.source ? [sourceDraft(port, library, library.source), repository] : [repository]),
+    ...rest.flatMap((unit) => unit.source ? [sourceDraft(port, unit, unit.source)] : []),
+    ...family,
+  ]
+}
+
+function packageDrafts(port: Port, units: readonly PickerUnit[]): PickerDraft[] {
+  const registry = port.registry
+  return units.flatMap((unit): PickerDraft[] => {
+    if (!registry || !unit.registry) return []
+    const repo = unit.source?.repo ?? port.repo
+    return [{
+      group: unit.group, label: unit.label, url: unit.registry, icon: registry.icon,
+      detail: [...(unit.coordinate === unit.label ? [] : [unit.coordinate]), registry.name].join(' · '),
+      terms: [unit.coordinate, ...unit.aliases, registry.name, repo, repo.split('/').pop()!],
+    }]
+  })
+}
+
+function referenceDrafts(units: readonly PickerUnit[]): PickerDraft[] {
+  return units.flatMap((unit): PickerDraft[] => {
+    if (!unit.reference) return []
+    const host = REFERENCE_HOSTS[new URL(unit.reference).hostname]
+    if (!host) throw new Error(`portPickers: ${unit.reference} has no registered reference host`)
+    return [{
+      group: unit.group, label: unit.label, url: unit.reference, icon: host.icon,
+      detail: [...(unit.coordinate === unit.label ? [] : [unit.coordinate]),
+        ...(unit.referenceName && unit.referenceName !== host.name ? [unit.referenceName] : []), host.name].join(' · '),
+      terms: [unit.coordinate, ...unit.aliases, host.name],
+    }]
+  })
+}
+
+/**
+ * The GitHub, package and API-reference menus for a port's header.
+ *
+ * Every row is an unversioned external destination, so it is the same from
+ * any locale, preview or documentation version. A menu with no rows is absent
+ * from the result: Julia and C++ publish no package, and most ports host no
+ * reference off site. Within a menu the core library comes first, then the
+ * MCP server and the workspace manager; a destination appears once.
+ */
+export function portPickers(port: Port): PortPicker[] {
+  const units = pickerUnits(port)
+  const finish = (drafts: PickerDraft[], terms: readonly string[]): PickerRow[] => {
+    const seen = new Set<string>()
+    return drafts.filter((draft) => !seen.has(draft.url) && seen.add(draft.url))
+      .sort((a, b) => PICKER_GROUPS.indexOf(a.group) - PICKER_GROUPS.indexOf(b.group))
+      .map(({ terms: own, ...row }) => ({
+        ...row, match: [...new Set([row.label, row.detail, PICKER_GROUP_LABEL[row.group], ...own, ...terms])].join(' '),
+      }))
+  }
+  const github = finish(githubDrafts(port, units), ['github', 'source', 'repository'])
+  const packages = finish(packageDrafts(port, units), ['package'])
+  const docs = finish(referenceDrafts(units), ['api', 'reference', 'documentation'])
+  return [
+    { kind: 'github', label: 'GitHub', icon: 'github', context: port.repo, rows: github },
+    { kind: 'packages', label: 'Packages', icon: port.registry?.icon ?? 'github', context: port.registry?.name ?? '', rows: packages },
+    { kind: 'docs', label: 'Docs', icon: docs[0]?.icon ?? 'github', context: docs[0] ? REFERENCE_HOSTS[new URL(docs[0].url).hostname]!.name : '', rows: docs },
+  ].filter((picker): picker is PortPicker => picker.rows.length > 0)
 }
 
 /** Whether a companion product has a published implementation for a port. */
@@ -1480,6 +1789,9 @@ export function installCommand(port: Port, entry: RegistryEntry): InstallForm {
   // Unpublished, or published with nothing resolvable. The repository is the
   // only place the code exists, so the tag is the version.
   if (!entry.tag) {
+    // A repository with no release tag installs its default branch, and the
+    // git form then names that branch instead of taking a `{tag}`.
+    if (!forms.git.code.includes('{tag}')) return forms.git
     throw new Error(
       `installCommand: ${port.slug} has no registry version and no release tag; ` +
         'run node scripts/gen-registry.mjs',
@@ -1496,7 +1808,11 @@ export function releaseWording(port: Port, entry: RegistryEntry): string {
   if (entry.status === 'prerelease') {
     return `${port.packageName} has no stable release. ${entry.version} is the newest prerelease on ${port.registry?.name ?? 'its registry'}, and the command below names it because the resolver skips prereleases otherwise.`
   }
-  return `${port.packageName} is not published to ${port.registry?.name ?? 'its registry'} yet, so this installs from the repository at tag ${entry.tag}.`
+  const registry = port.registry?.name ?? 'its registry'
+  if (!entry.tag) {
+    return `${port.packageName} is not published to ${registry} yet and the repository has no release tag, so this installs from its default branch.`
+  }
+  return `${port.packageName} is not published to ${registry} yet, so this installs from the repository at tag ${entry.tag}.`
 }
 
 /** Artwork identity for a port page, reference, or shared product landing. */

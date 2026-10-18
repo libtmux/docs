@@ -16,6 +16,8 @@ import { extractSourceWithSpec } from '../../packages/api-model/src/languages/sp
 import { JAVA } from '../../packages/api-model/src/languages/specs'
 import { createApiIndex } from '../src/lib/api-models'
 import { apiSignatureLayouts } from '../src/lib/code-layout'
+import { symbolMarkdownWithLayout } from '../src/lib/symbol-markdown'
+import { fromMarkdown } from 'mdast-util-from-markdown'
 import * as nativeLayoutChecks from '../scripts/check-native-layout.mjs'
 
 const astroRequire = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
@@ -85,6 +87,7 @@ const cases = [
   ['ts', 'types.ConnectedServer.[Symbol.asyncDispose]'],
   ['ts', 'server.Server.constructor'],
   ['cxx', 'libtmux::Server::sessions'],
+  ['swift', 'Server.capture(_:since:limit:)'],
   ['scala', 'io.github.libtmux.scaladsl.Server.sessions'],
   ['kotlin', 'io.github.libtmux.kotlin.Server.sessions'],
   ['fsharp', 'LibTmux.FSharp.Server.newSession'],
@@ -603,6 +606,36 @@ describe('native signature emission', () => {
     } finally { await win.happyDOM.abort() }
   })
 
+  it('renders a wrapped Julia constructor with its name, parameter targets and linked types', async () => {
+    const model = JSON.parse(readFileSync(new URL('../src/data/api/julia.json', import.meta.url), 'utf8')) as ApiModel
+    const symbol = model.symbols.find((entry) => entry.id === 'LibTmux.GroupResult')!
+    const sig = symbol.signatures[0]!
+    const component = await (componentPromise ??= signatureComponent())
+    const container = await experimental_AstroContainer.create()
+    const index = new SymbolIndex(model.symbols, (entry) => `/en/julia/latest/reference/${entry.slug}/`, 'julia')
+    const signatureLayouts = await apiSignatureLayouts(symbol, 'julia')
+    const text = signatureLayouts.get(sig)!.text
+    const win = new Window()
+    try {
+      win.document.body.innerHTML = await container.renderToString(component, { props: {
+        symbol, sig, port: 'julia', language: 'julia', index, signatureLayouts,
+        nameHref: `/en/julia/latest/reference/${symbol.slug}/`, nativeSignatureText: () => text,
+      } })
+      const signature = win.document.querySelector('.api-native-signature')!
+      expect(signature.classList.contains('api-native-signature--formatted')).toBe(true)
+      expect(signature.getAttribute('data-code-columns')).toBe('60')
+      expect(signature.getAttribute('data-code-width-status')).toBe('fits')
+      expect(displayedSignature(signature)).toBe(text)
+      expect(text.split('\n')).toHaveLength(11)
+      expect(signature.querySelector('.api-signature-name-link')?.textContent).toBe('GroupResult')
+      expect([...signature.querySelectorAll('a.api-parameter-name')].map((link) => link.getAttribute('href')))
+        .toEqual(['operations', 'aggregate', 'error', 'retired', 'opaque'].map((name) => `/en/julia/latest/reference/${symbol.slug}/#LibTmux.GroupResult.parameter.${name}`))
+      expect([...signature.querySelectorAll('a.api-type-link')].map((link) => link.textContent)).toContain('LibTmux.CommandResult')
+      const markdown = await symbolMarkdownWithLayout({ model, symbol, index })
+      expect(fromMarkdown(markdown).children.find((node) => node.type === 'code')).toMatchObject({ value: symbol.signatures.map((entry) => signatureLayouts.get(entry)!.text).join('\n\n') })
+    } finally { await win.happyDOM.abort() }
+  })
+
   it('checks the hosted signature fixture against rendered TypeScript declarations without raw text', () => checkHostedDeclarations('ts'))
 
   it('checks the hosted signature fixture against rendered Julia declarations without return annotations', () => checkHostedDeclarations('julia'))
@@ -641,11 +674,17 @@ describe('native signature emission', () => {
     ['kotlin', 'io.github.libtmux.kotlin.Server.sessions', 'containment'],
     ['go', 'tmux.Server.ListBuffers', 'containment'],
     ['java', 'io.github.libtmux.Server.Server.sessions', 'containment'],
+    ['fsharp', 'LibTmux.FSharp.Server.capture', 'containment'],
+    ['cxx', 'libtmux::Server::sessions', 'containment'],
+    ['swift', 'Server.capture(_:since:limit:)', 'containment'],
     ['ts', 'server.Server.setHook', 'keyboard'],
     ['scala', 'io.github.libtmux.scaladsl.Server.sessions', 'keyboard'],
     ['kotlin', 'io.github.libtmux.kotlin.Server.sessions', 'keyboard'],
     ['go', 'tmux.Server.ListBuffers', 'keyboard'],
     ['java', 'io.github.libtmux.Server.Server.sessions', 'keyboard'],
+    ['fsharp', 'LibTmux.FSharp.Server.capture', 'keyboard'],
+    ['cxx', 'libtmux::Server::sessions', 'keyboard'],
+    ['swift', 'Server.capture(_:since:limit:)', 'keyboard'],
   ] as const)('gives formatted %s declaration %s local %s access', async (port, id, check) => {
     const model = JSON.parse(readFileSync(new URL(`../src/data/api/${port}.json`, import.meta.url), 'utf8')) as ApiModel
     const symbol = model.symbols.find((entry) => entry.id === id)!
@@ -697,8 +736,7 @@ describe('native signature emission', () => {
   })
 
   it.each([
-    ['cxx', 'libtmux::Server::sessions', 'pre-wrap'],
-    ['fsharp', 'LibTmux.FSharp.Server.newSession', 'normal'],
+    ['fsharp', 'LibTmux.FSharp.CaptureState.Uncaptured', 'normal'],
   ] as const)('keeps unformatted %s outside the scroll-region contract', async (port, id, whiteSpace) => {
     const model = JSON.parse(readFileSync(new URL(`../src/data/api/${port}.json`, import.meta.url), 'utf8')) as ApiModel
     const symbol = model.symbols.find((entry) => entry.id === id)!
@@ -741,7 +779,7 @@ describe('native signature emission', () => {
           const label = sig.label && sig.label !== '__AllParameterSets'
             ? `${sig.label}${sig.isDefault ? ' (default)' : ''}: ` : ''
           expect(displayedSignature(signature)).toBe(label + text(symbol, sig, port))
-          if (['ts', 'scala', 'kotlin'].includes(port)) {
+          if (['ts', 'scala', 'kotlin', 'fsharp', 'cxx'].includes(port)) {
             expect(signature.querySelector('.api-declaration-name')?.textContent).toBe(symbol.name)
             expect(signature.getAttribute('data-code-columns')).toBe('60')
             expect(signature.getAttribute('data-code-width-status')).toBe('fits')
