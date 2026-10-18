@@ -225,6 +225,8 @@
   box-sizing: border-box;
   height: var(--sp-h);
   max-inline-size: 100%;
+  /* The contents column pads and flags its links; a chip's box is its own. */
+  padding: 0;
   overflow: hidden;
   vertical-align: middle;
   border: 1px solid color-mix(in srgb, var(--color-foreground-primary, currentColor) 16%, transparent);
@@ -257,6 +259,9 @@
 :is(.api-elsewhere-value, .api-command-related, nav.api-related) a:has(> .api-nav__kind):is(:hover, :focus-visible) {
   background: color-mix(in srgb, var(--color-foreground-primary, currentColor) 9%, transparent);
 }
+/* In the contents column each chip is its own row: as wide as its content, with an even gap between rows. */
+.api-page-contents nav.api-related ul { display: grid; gap: .5rem; justify-items: start; }
+.api-page-contents nav.api-related a:has(> .api-nav__kind) { display: flex; }
 /* In the contents column the cap is ink, like the rest of the chrome. */
 .api-page-contents nav.api-related a > .api-nav__kind {
   --mk-fill: color-mix(in srgb, var(--color-foreground-primary, currentColor) 7%, transparent);

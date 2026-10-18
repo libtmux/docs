@@ -172,6 +172,34 @@ const GROUPS = [
 
 
 /**
+ * The related-APIs chips in the contents column: each is one outlined box that
+ * contains its mark and its name, no box overlaps the next, and the rows are
+ * evenly spaced. Measured from the laid-out boxes, since the failure it guards
+ * is a box that does not hold its content.
+ */
+export async function railProblems(page) {
+  const rows = await page.evaluate(() => [...document.querySelectorAll('nav.api-related a:has(> .api-nav__kind)')].filter((a) => a.offsetParent).map((a) => {
+    const box = (node) => { const r = node.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, left: r.left, right: r.right } }
+    return { chip: box(a), mark: box(a.querySelector(':scope > .api-nav__kind')), name: box(a.querySelector(':scope > code')), text: a.textContent.trim(), clipped: a.scrollHeight > a.clientHeight + 1 || a.scrollWidth > a.clientWidth + 1 }
+  }))
+  const problems = []
+  const slack = 0.51
+  for (const row of rows) {
+    for (const part of ['mark', 'name']) {
+      const inside = row[part].top >= row.chip.top - slack && row[part].bottom <= row.chip.bottom + slack && row[part].left >= row.chip.left - slack && row[part].right <= row.chip.right + slack
+      if (!inside) problems.push(`${row.text}: the chip's box does not contain its ${part}`)
+    }
+    // The mark is the chip's cap: it spans the chip's full height, and nothing is clipped by the chip's edge.
+    if (row.mark.bottom - row.mark.top < row.chip.bottom - row.chip.top - 2 - slack) problems.push(`${row.text}: the mark does not fill the chip's height`)
+    if (row.clipped) problems.push(`${row.text}: the chip clips its content`)
+  }
+  const gaps = rows.slice(1).map((row, index) => row.chip.top - rows[index].chip.bottom)
+  gaps.forEach((gap, index) => { if (gap < 0) problems.push(`${rows[index + 1].text}: overlaps the row above by ${(-gap).toFixed(1)}px`) })
+  if (gaps.length && Math.max(...gaps) - Math.min(...gaps) > 1) problems.push(`rows are unevenly spaced: gaps run ${Math.min(...gaps).toFixed(1)} to ${Math.max(...gaps).toFixed(1)}px`)
+  return { rows: rows.length, problems }
+}
+
+/**
  * A group heading is one line: the title, the count and the permalink share a baseline.
  * Each is probed with a zero-size inline box, which sits on the baseline of the line it is in.
  */
@@ -213,6 +241,9 @@ async function checkPage(page, base, entry, scheme, results) {
     }
     results.counts[group.name] = (results.counts[group.name] ?? 0) + count
   }
+  const rail = await railProblems(page)
+  results.counts['related chip row'] = (results.counts['related chip row'] ?? 0) + rail.rows
+  results.failures.push(...rail.problems.map((problem) => `${entry.label} (${scheme}) related APIs: ${problem}`))
   const headings = await headingProblems(page)
   results.counts['group heading'] = (results.counts['group heading'] ?? 0) + headings.headings
   results.failures.push(...headings.problems.map((problem) => `${entry.label} (${scheme}) ${problem}`))
@@ -242,6 +273,16 @@ async function negativeControl(page, base, results) {
   results.controlTested = tested
   assert(noticed > 0, 'The centring gate noticed no mark shifted by 2px: it cannot fail')
 
+  // A chip that inherits the contents column's link padding no longer holds its content.
+  await page.goto(`${base}${PAGES[6].path}`, { waitUntil: 'load' })
+  await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
+  const clean = await railProblems(page)
+  assert(clean.rows > 1 && clean.problems.length === 0, `The related chips are not clean before the control: ${clean.problems.join('; ')}`)
+  const padded = await page.addStyleTag({ content: 'nav.api-related a:has(> .api-nav__kind) { padding: .4rem .35rem !important; }' })
+  results.railControl = (await railProblems(page)).problems.length
+  await padded.evaluate((node) => node.remove())
+  assert(results.railControl > 0, 'The rail check did not notice a chip that does not contain its content')
+
   // A permalink lifted off the line, and a mark pushed against its name and off its centre.
   await page.goto(`${base}${PAGES[7].path}`, { waitUntil: 'load' })
   await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
@@ -259,9 +300,9 @@ async function negativeControl(page, base, results) {
 }
 
 export async function checkBadgeCentring(browser, base, { sample: bounded = false } = {}) {
-  const results = { measured: 0, failures: [], counts: {}, control: 0, headingControl: 0, rowControl: 0 }
+  const results = { measured: 0, failures: [], counts: {}, control: 0, railControl: 0, headingControl: 0, rowControl: 0 }
   const pages = bounded ? PAGES.slice(0, 2) : PAGES
-  const hi = await chromium.launch({ args: ['--force-device-scale-factor=2'] })
+  const hi = await chromium.launch({ args: ['--force-device-scale-factor=2', '--window-size=1440,1000'] })
   try {
     for (const [engine, factor] of [[browser, 1], [hi, 2]]) {
       const context = await engine.newContext(factor === 1 ? { viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce' } : { viewport: null, reducedMotion: 'reduce' })
@@ -278,7 +319,7 @@ export async function checkBadgeCentring(browser, base, { sample: bounded = fals
   } finally { await hi.close() }
   assert(results.measured > 20, `Only ${results.measured} badge samples were measurable`)
   assert.deepEqual(results.failures, [], `Badge centring:\n${results.failures.join('\n')}`)
-  console.log(`Badge centring: ${results.measured} samples at 1x and a real 2x, light and dark (${Object.entries(results.counts).map(([k, v]) => `${v} ${k}`).join(', ')}); negative controls caught ${results.control} of ${results.controlTested} shifted marks, ${results.headingControl} heading problem and ${results.rowControl} row problems PASS`)
+  console.log(`Badge centring: ${results.measured} samples at 1x and a real 2x, light and dark (${Object.entries(results.counts).map(([k, v]) => `${v} ${k}`).join(', ')}); negative controls caught ${results.control} of ${results.controlTested} shifted marks, ${results.railControl} chip problems, ${results.headingControl} heading problem and ${results.rowControl} row problems PASS`)
 }
 
 /**
