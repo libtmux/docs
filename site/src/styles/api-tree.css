@@ -239,6 +239,7 @@
   border-radius: 0.2rem;
   font: 0.6875rem/1 var(--font-mono, ui-monospace, monospace);
   vertical-align: middle;
+  align-self: center;
 }
 .api-nav__kind:is(.api-badge--kind-interface, .api-badge--kind-struct, .api-badge--kind-trait) {
   background: var(--api-kind-class-bg);
@@ -251,14 +252,18 @@
   border-color: var(--api-kind-typealias-border);
 }
 
-/* Keep the kind beside the name while long identifiers wrap within the link. */
+/* Keep the kind beside the name while long identifiers wrap within the link.
+ * The name holds the baseline, so the line keeps its height and position. */
 a:has(> .api-link-kind) {
   display: inline-flex;
   align-items: baseline;
-  gap: .3em;
   max-inline-size: 100%;
   vertical-align: baseline;
 }
+/* A badge leading a link's name sits one gap before it, centred on its text.
+ * Navigation rows keep their own spacing. */
+:is(a:not(.api-nav__row, .api-nav__label), .api-nav__results strong):has(> .api-nav__kind) { gap: .25em; }
+.api-nav__results strong:has(> .api-nav__kind) { display: flex; align-items: baseline; }
 .api-symbol-link__name { min-inline-size: 0; overflow-wrap: anywhere; }
 a > .api-link-kind { flex-shrink: 0; }
 .api-link-kind { user-select: none; text-decoration: none; }

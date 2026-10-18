@@ -267,10 +267,17 @@ export async function checkRequiredAppearance(browser, base) {
   console.log('Appearance: held font/module/effect, first visible fonts/icons/dotted links, stable geometry, failure and Reload PASS')
 }
 
-/** Every link that leads with a kind badge, by the badge's selector; `sample` keeps an entry in the bounded sample. */
+/** A quarter em; navigation rows keep their 4px, which is .286em at 14px. */
+const BADGE_GAP = { min: .21, max: .29 }
+
+/**
+ * Every link that leads with a kind badge, by the badge's selector. `line`
+ * marks single-line prose links, which must not grow their line; `sample`
+ * keeps an entry in the bounded sample.
+ */
 const BADGE_LINKS = [
-  { label: 'prose link', path: '/rs/latest/concepts/server-session-window-pane/', badges: 'p a > .api-link-kind', fixtures: true, sample: true },
-  { label: 'MCP prose link', path: '/py/stable/mcp/tools/capture_pane/', badges: 'p a > .api-link-kind' },
+  { label: 'prose link', path: '/rs/latest/concepts/server-session-window-pane/', badges: 'p a > .api-link-kind', line: true, fixtures: true, sample: true },
+  { label: 'MCP prose link', path: '/py/stable/mcp/tools/capture_pane/', badges: 'p a > .api-link-kind', line: true },
   { label: 'MCP index card', path: '/py/stable/mcp/tools/', badges: '.api-index-card a > .api-nav__kind', sample: true },
   { label: 'MCP catalog heading', path: '/py/stable/mcp/tools/', badges: 'h2 a > .api-nav__kind' },
   { label: 'API equivalent', path: '/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/', badges: '.api-elsewhere-value a > .api-nav__kind', sample: true },
@@ -288,7 +295,7 @@ const BADGE_LINKS = [
     } },
 ]
 
-/** Read the decorations that reach a badge and its name. */
+/** Read the decorations that reach a badge and its name, and the badge's centring and gap. */
 async function describeBadgeLink(badge) {
   return badge.evaluate((badge) => {
     // Atomic inline boxes keep their contents clear of an ancestor's decoration.
@@ -314,12 +321,25 @@ async function describeBadgeLink(badge) {
     let text = name.nodeType === 3 ? name : null
     const walker = document.createTreeWalker(name, NodeFilter.SHOW_TEXT)
     for (let node = walker.nextNode(); !text && node; node = walker.nextNode()) if (node.textContent.trim()) text = node
+    const range = document.createRange()
+    const first = text.textContent.search(/\S/)
+    range.setStart(text, first)
+    range.setEnd(text, first + 1)
+    const glyph = range.getBoundingClientRect()
+    const box = badge.getBoundingClientRect()
+    const chip = name.nodeType === 1 ? (name.matches('code') ? name : name.querySelector('code')) : null
     const link = badge.closest('a') ?? badge.parentElement
+    const holder = badge.parentElement
+    const fontSize = parseFloat(getComputedStyle(holder).fontSize)
+    const gap = (chip ? chip.getClientRects()[0].left : glyph.left) - box.right
     return {
       name: text.textContent.trim().slice(0, 24),
       preview: link.hasAttribute('data-link-preview'),
       badgeOwners: owners(badge),
       nameOwners: owners(text.parentElement),
+      centre: (box.top + box.height / 2) - (glyph.top + glyph.height / 2),
+      gap: gap / fontSize,
+      lineExcess: link.getBoundingClientRect().height - parseFloat(getComputedStyle(link).lineHeight),
     }
   })
 }
@@ -363,7 +383,10 @@ async function addBadgeLinkFixtures(page) {
   })
 }
 
-/** A kind badge inside a link carries no underline; the name keeps one dotted line. */
+/**
+ * A kind badge inside a link carries no dotted line, sits centred on the
+ * name's text, and leads it by about a quarter em.
+ */
 export async function checkKindBadgeLinks(browser, base, { sample = false } = {}) {
   const context = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 1600, height: 1000 } })
   const page = await context.newPage()
@@ -377,14 +400,14 @@ export async function checkKindBadgeLinks(browser, base, { sample = false } = {}
       await page.addStyleTag({ content: '.reference-link-preview { display: none !important; }' })
       for (const entry of BADGE_LINKS.filter((candidate) => candidate.path === path && (!sample || candidate.sample))) {
         await entry.prepare?.(page)
-        const variants = [{ label: entry.label, badges: entry.badges }]
+        const variants = [{ label: entry.label, badges: entry.badges, line: entry.line }]
         if (entry.fixtures) {
           await addBadgeLinkFixtures(page)
           variants.push(
-            { label: `${entry.label} in a heading`, badges: '[data-fixture="heading"] .api-link-kind' },
-            { label: `${entry.label} in a table`, badges: '[data-fixture="table"] .api-link-kind' })
+            { label: `${entry.label} in a heading`, badges: '[data-fixture="heading"] .api-link-kind', line: true },
+            { label: `${entry.label} in a table`, badges: '[data-fixture="table"] .api-link-kind', line: true })
         }
-        for (const { label, badges } of variants) {
+        for (const { label, badges, line } of variants) {
           // A closed disclosure lays out nothing to measure.
           await page.evaluate((selector) => {
             for (const badge of document.querySelectorAll(selector)) {
@@ -402,6 +425,9 @@ export async function checkKindBadgeLinks(browser, base, { sample = false } = {}
             if (measured.preview && (measured.nameOwners.length !== 1 || !/underline dotted$/.test(measured.nameOwners[0]))) {
               failures.push(`${where}: the name needs exactly one dotted underline (${measured.nameOwners.join('; ') || 'none'})`)
             }
+            if (Math.abs(measured.centre) > 1) failures.push(`${where}: badge centre is ${measured.centre.toFixed(2)}px from the text centre`)
+            if (measured.gap < BADGE_GAP.min || measured.gap > BADGE_GAP.max) failures.push(`${where}: badge gap is ${measured.gap.toFixed(3)}em, not about .25em`)
+            if (line && measured.lineExcess > 1) failures.push(`${where}: the link is ${measured.lineExcess.toFixed(2)}px taller than its line`)
           }
           // The rendered badge, hovered or not, must match the same page drawn without decorations.
           const first = found.first()
@@ -413,7 +439,7 @@ export async function checkKindBadgeLinks(browser, base, { sample = false } = {}
       }
     }
     assert.deepEqual(failures, [], 'Kind badges inside links')
-    console.log(`Kind badges: ${sample ? 'sampled' : 'every'} link variant has no underline on the badge and one dotted line on the name PASS`)
+    console.log(`Kind badges: ${sample ? 'sampled' : 'every'} link variant has no underline on the badge, a centred badge and a quarter-em gap PASS`)
   } finally {
     await context.close()
   }
