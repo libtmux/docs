@@ -193,6 +193,12 @@ node scripts/check-example-indentation.mjs
 step 'example indentation (negative)'
 node scripts/check-example-indentation.negative.mjs
 
+step 'example blocks'
+node scripts/check-example-blocks.mjs
+
+step 'example blocks (negative)'
+node scripts/check-example-blocks.negative.mjs
+
 step 'unit tests'
 LIBTMUX_DOCS_TEST_SOURCE_ONLY=1 pnpm run --recursive --if-present test
 

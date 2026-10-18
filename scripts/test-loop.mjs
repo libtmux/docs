@@ -72,6 +72,8 @@ try {
     pnpm('exec', 'oxlint', 'scripts'),
     node('scripts/check-api-links.mjs'),
     node('scripts/check-nav.mjs'),
+    node('scripts/check-example-blocks.mjs'),
+    node('scripts/check-example-blocks.negative.mjs'),
     node('scripts/gen-mentions.mjs', '--check'),
     node('scripts/gen-workspace-entities.mjs', '--check'),
     node('scripts/gen-tmux-catalog.mjs', '--check'),

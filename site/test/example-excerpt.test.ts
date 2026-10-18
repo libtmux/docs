@@ -80,6 +80,14 @@ describe('sliceExcerpt', () => {
     expect(sliceExcerpt(nested, { from: 'first()', to: 'second()' }, 'x')).toBe('first()\n\tsecond()')
   })
 
+  it('ends a nested block at the closing line of its own depth with an = anchor', () => {
+    const go = ['func f() {', '  for {', '    if x {', '      y()', '    }', '  }', '}'].join('\n')
+    expect(sliceExcerpt(go, { from: 'for {', to: '=  }' }, 'x')).toBe('for {\n  if x {\n    y()\n  }\n}')
+    expect(sliceExcerpt(go, { from: 'if x', to: '=    }' }, 'x')).toBe('if x {\n  y()\n}')
+    expect(() => sliceExcerpt(go, { from: 'for {', to: '=}}' }, 'x')).toThrow(/matches no line/)
+    expect(() => sliceExcerpt(go, { from: '=  for {' }, 'x')).not.toThrow()
+  })
+
   it('reads CRLF sources as lines', () => {
     expect(sliceExcerpt('a\r\nb\r\nc', { from: 'b', to: 'c' }, 'x')).toBe('b\nc')
   })
