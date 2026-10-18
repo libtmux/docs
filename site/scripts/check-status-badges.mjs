@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { CONCEPT_DESCRIPTION, PICKER_GROUP_SUMMARY, PORT_BY_SLUG, PRODUCT_STATUS_GUIDE, PRODUCT_STATUS_LINE, PRODUCT_STATUS_LINK, productAvailable, productStatus } from '../src/lib/ports.ts'
 import registry from '../src/data/registry.json' with { type: 'json' }
+import { HOVER_OPEN } from '../src/lib/status-toggletip.ts'
 
 /**
  * Every product (Core Library, MCP, Workspace Manager) in the documentation
@@ -167,9 +168,11 @@ async function checkToggletip(page, picker, badge, status, label, where) {
   // Moving focus away closes it.
   await picker.locator('[data-picker-search]').focus()
   await closed(card, `${where}: leaving the badge closes the card`)
-  // Hover opens it, stays open over the card, and Escape closes it without moving the pointer.
+  // Hover opens it only after the pointer rests, stays open over the card, and Escape closes it without moving the pointer.
   await page.mouse.move(2, 2)
   await badge.hover()
+  await page.waitForTimeout(HOVER_OPEN / 2)
+  assert.equal(await isOpen(card), false, `${where}: a passing pointer leaves the card closed for ${HOVER_OPEN}ms`)
   await card.waitFor({ state: 'visible' })
   await link.hover()
   await page.waitForTimeout(400)
@@ -325,6 +328,12 @@ export async function checkStatusBadgesFail(browser, base) {
       script: () => document.querySelectorAll('.surface-entry__badge').forEach((badge) => badge.closest('.surface-entry').querySelector('summary').append(badge)),
     }, /no interactive element sits inside another/],
     ['a card that never shows', picker, { css: '.status-toggletip__card { display: none !important }' }, /(?:Timeout|focus opens)/],
+    ['a card that opens the moment the pointer arrives', picker, {
+      window: () => window.addEventListener('pointerover', (event) => {
+        const card = event.target.closest?.('[data-status-toggletip]')?.querySelector(':scope > [popover]')
+        if (card && !card.matches(':popover-open')) card.showPopover()
+      }, true),
+    }, /a passing pointer leaves the card closed/],
     ['hover opening', picker, {
       window: () => window.addEventListener('pointerover', (event) => { if (event.target.closest?.('[data-status-toggletip]')) event.stopImmediatePropagation() }, true),
     }, /(?:Timeout|stays open under the pointer)/],
@@ -341,5 +350,5 @@ export async function checkStatusBadgesFail(browser, base) {
   for (const [name, scope, sabotage, failure] of controls) {
     await assert.rejects(() => checkStatusBadges(browser, base, { ...scope, sabotage }), failure, `the check fails with ${name}`)
   }
-  console.log('Status badges: the check fails on the pre-badge picker and solution menu (no badge on Core Library), a second or wrong badge, a distant badge, a trigger badge closer to its name than in the list, a paragraph or long summary in a row, a long toggletip line, the footer line, a nested badge, a card that never shows, no hover, no Escape, an unreachable link and a broken section link')
+  console.log('Status badges: the check fails on the pre-badge picker and solution menu (no badge on Core Library), a second or wrong badge, a distant badge, a trigger badge closer to its name than in the list, a paragraph or long summary in a row, a long toggletip line, the footer line, a nested badge, a card that never shows, a card that opens without the hover delay, no hover, no Escape, an unreachable link and a broken section link')
 }

@@ -8,7 +8,9 @@
  * pointer or focus already opened. One set of delegated listeners serves
  * every badge, so a swapped page needs no rebinding.
  */
-const HOVER_OPEN = 120
+// The delay before a native `title` tooltip: Windows' default, which Chrome there uses, and Firefox's.
+// A pointer passing over a badge on its way through the menu leaves its card closed.
+export const HOVER_OPEN = 500
 const HOVER_CLOSE = 250
 
 let installed = false
