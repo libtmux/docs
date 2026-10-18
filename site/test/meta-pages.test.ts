@@ -194,3 +194,22 @@ describe('the site root namespace', () => {
     expect(loose(found).map(([name]) => name).sort()).toEqual(['about', 'status', 'widgets'])
   })
 })
+
+describe('meta pages in another locale', () => {
+  it('link the English-only tmux manual from the Japanese build', async () => {
+    // A preview's Japanese build: its own root, with the port trees and tmux manual under English.
+    vi.stubEnv('LIBTMUX_DOCS_ROOT', '/pr-1/ja')
+    vi.stubEnv('LIBTMUX_DOCS_PORT_ROOT', '/pr-1/en')
+    vi.resetModules()
+    try {
+      const page = await loadAstroTemplate('pages/meta/support.astro')
+      const html = await renderAstroTemplate(page, {})
+      const manual = [...html.matchAll(/href="([^"]*\/tmux\/[^"/]+\/(?:manual|reference|catalog)\/[^"]*)"/g)].map((match) => match[1])
+      expect(manual.length).toBeGreaterThan(0)
+      expect(manual.filter((href) => !href.startsWith('/pr-1/en/'))).toEqual([])
+    } finally {
+      vi.unstubAllEnvs()
+      vi.resetModules()
+    }
+  })
+})
