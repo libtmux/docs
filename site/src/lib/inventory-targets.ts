@@ -1,4 +1,5 @@
 import { fromHtml } from 'hast-util-from-html'
+import { parse } from 'parse5'
 import { inventoryType, qualifiedNameOf, targetKey, type ApiSymbol, type InventoryTarget, type SymbolKind } from '@libtmux/api-model'
 
 export interface InventoryPage {
@@ -33,14 +34,29 @@ export function apiInventoryAttributes(symbol: ApiSymbol, language: string, pare
   }
 }
 
-type Node = { type: string; tagName?: string; value?: string; properties?: Record<string, unknown>; children?: Node[]; position?: { start: { offset?: number } } }
+type Node = { type?: string; nodeName?: string; tagName?: string; value?: string; properties?: Record<string, unknown>; children?: Node[]; childNodes?: Node[]; attrs?: { name: string; value: string }[]; position?: { start: { offset?: number } } }
 const attribute = (props: Record<string, unknown>, key: string) => typeof props[key] === 'string' ? props[key] : undefined
+const EMPTY_PROPERTIES = Object.freeze({})
+const children = (node: Node) => node.children ?? node.childNodes ?? []
+function properties(node: Node): Record<string, unknown> {
+  if (node.properties) return node.properties
+  let props: Record<string, unknown> = EMPTY_PROPERTIES
+  for (const { name, value } of node.attrs ?? []) {
+    if (name !== 'id' && name !== 'role' && !name.startsWith('data-inventory-') &&
+        !(node.tagName === 'meta' && (name === 'name' || name === 'content')) &&
+        !(name === 'class' && ['a', 'button'].includes(node.tagName ?? ''))) continue
+    if (props === EMPTY_PROPERTIES) props = {}
+    const key = name === 'class' ? 'className' : name.replace(/-([a-z])/g, (_, letter: string) => letter.toUpperCase())
+    props[key] = value
+  }
+  return node.properties = props
+}
 const DROP = new Set(['script', 'style', 'template', 'noscript', 'nav', 'aside', 'button', 'input', 'select', 'dialog', 'svg'])
 const CONTROL_ROLES = new Set(['dialog', 'tooltip', 'menu', 'menubar', 'tablist', 'tab', 'combobox', 'listbox', 'button', 'checkbox', 'radio', 'switch', 'slider', 'spinbutton'])
-const text = (node: Node): string => node.type === 'text' ? node.value ?? ''
-  : (node.children ?? []).filter((child) => !['a', 'button'].includes(child.tagName ?? '') ||
-    !String(child.properties?.className).includes('link')).map(text).join('')
-const walk = (node: Node, visit: (node: Node) => void) => { visit(node); for (const child of node.children ?? []) walk(child, visit) }
+const text = (node: Node): string => node.type === 'text' || node.nodeName === '#text' ? node.value ?? ''
+  : children(node).filter((child) => !['a', 'button'].includes(child.tagName ?? '') ||
+    !String(properties(child).className).includes('link')).map(text).join('')
+const walk = (node: Node, visit: (node: Node) => void) => { visit(node); for (const child of children(node)) walk(child, visit) }
 
 export interface RenderedTarget extends InventoryTarget {
   legacy?: { type: string; name: string }[]
@@ -55,12 +71,13 @@ export function renderedTargets(html: string, href: string): RenderedTarget[] {
   // Parse content once; repeated navigation can dwarf an API declaration.
   const content = mainStart >= 0 && mainEnd > mainStart && headEnd >= 0
     ? `${html.slice(0, headEnd + 7)}<body>${html.slice(mainStart, mainEnd + 7)}</body></html>` : html
-  const tree: Node = fromHtml(content)
+  // Use the same HTML parser without source positions or a second full AST.
+  const tree: Node = parse(content, { scriptingEnabled: false })
   let page: InventoryPage | undefined
   let main: Node | undefined
   const ids = new Map<string, number>()
   walk(tree, (node) => {
-    const props = node.properties ?? {}
+    const props = properties(node)
     if (node.tagName === 'meta' && props.name === 'libtmux-inventory') page = JSON.parse(attribute(props, 'content') ?? '{}') as InventoryPage
     if (node.tagName === 'main' || props.role === 'main') main = node
     if (typeof props.id === 'string') ids.set(props.id, (ids.get(props.id) ?? 0) + 1)
@@ -70,7 +87,7 @@ export function renderedTargets(html: string, href: string): RenderedTarget[] {
   const targets: RenderedTarget[] = [{ ...context, category: 'doc', identity: page.identity,
     display: page.title, href, aliases: page.aliases }]
   const collect = (node: Node, inheritedOwner?: string, inheritedAnchor?: string) => {
-    const props = node.properties ?? {}
+    const props = properties(node)
     if (DROP.has(node.tagName ?? '') || CONTROL_ROLES.has(attribute(props, 'role') ?? '') || Object.hasOwn(props, 'dataInventoryIgnore')) return
     const owner = attribute(props, 'dataInventoryOwner') ?? inheritedOwner
     const anchor = attribute(props, 'dataInventoryAnchor') ?? inheritedAnchor
@@ -95,7 +112,7 @@ export function renderedTargets(html: string, href: string): RenderedTarget[] {
         for (const entry of entries) targets.push({ ...context, ...entry, href: `${href}#${encodeURIComponent(id)}` })
       }
     }
-    for (const child of node.children ?? []) collect(child, owner, anchor)
+    for (const child of children(node)) collect(child, owner, anchor)
   }
   collect(main)
   // Detach attribute substrings so retained targets cannot pin complete HTML buffers.
