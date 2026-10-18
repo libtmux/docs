@@ -164,12 +164,27 @@ describe('native tmux prose ownership', () => {
   it.each([
     ['ports/py/workspace/reference', { port: 'py', product: 'workspace' }, 'Use `loader.trickle`.', 'tmuxp-workspace-loader-trickle'],
     ['_staged/lua/method', { port: 'lua', route: 'guides/runtime' }, 'Use `server:new_session`.', 'libtmux-server-new_session'],
-    ['ports/rs/queries', { port: 'rs' }, 'Use `Session::filter_fields()`.', 'query-filterable-filter_fields'],
+    ['ports/rs/queries-blocking', { port: 'rs' }, 'Use `libtmux::query::Filterable::filter_fields()`.',
+      '/rs/latest/reference/query-filterable-filter_fields/'],
+    ['ports/rs/queries-tokio', { port: 'rs' }, 'Use `libtmux_tokio::query::Filterable::filter_fields()`.',
+      '/rs/latest/reference/libtmux_tokio-query-filterable-filter_fields/'],
     ['parity', {}, "Python uses `Window.split_window`.", 'libtmux-window-split_window'],
   ] as const)('preserves non-native inference for %s', async (id, data, body, destination) => {
     const entry = fixture(id, body, data)
     expect(await htmlOf(entry)).toContain(destination)
     expect(markdownOf(entry)).toContain(destination)
+  })
+
+  it.each([
+    ['Session::filter_fields()', 'ambiguous'],
+    ['libtmux::Session::filter_fields()', 'no-symbol'],
+    ['libtmux_tokio::Session::filter_fields()', 'no-symbol'],
+  ] as const)('leaves an unverified Rust implementor path plain: %s', async (name, reason) => {
+    const body = `Use \`${name}\`.`
+    const entry = fixture('ports/rs/queries', body, { port: 'rs' })
+    expect(getResolver().resolve('rs', name)).toMatchObject({ how: reason })
+    expect(await htmlOf(entry)).toBe(`<p>Use <code>${name}</code>.</p>`)
+    expect(markdownOf(entry)).toContain(body)
   })
 
   it('retains a selected port build on an otherwise shared route', async () => {

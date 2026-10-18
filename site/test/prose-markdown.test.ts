@@ -395,7 +395,7 @@ describe('prose Markdown links', () => {
     expect(exported.body).toContain('id="a-generated-data-table-under-a-hand-written-surface"')
     expect(exported.body).not.toMatch(/\| Port \||\*\*Rust\*\*|<!-- port:/)
     const inventory = JSON.parse(readFileSync(new URL('../src/data/api/rs.paths.json', import.meta.url), 'utf8'))
-    expect(urls(exported.body)).toContain(`https://github.com/${inventory.repo}/blob/${inventory.revision}/crates/libtmux/src/formats.rs`)
+    expect(urls(exported.body)).toContain(`https://github.com/${inventory.repo}/blob/${inventory.revision}/crates/libtmux-tokio/src/formats.rs`)
   })
 
   it('rewrites angle destinations without corrupting parentheses or literal code', () => {

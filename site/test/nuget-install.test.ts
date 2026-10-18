@@ -236,9 +236,35 @@ describe('package tab keyboard navigation', () => {
   })
 
   it('omits tab strips when the rendered port has one install choice', async () => {
-    const win = await render('rs')
+    const win = await render('go')
     expect(win.document.querySelectorAll('[role="tab"]')).toHaveLength(0)
     expect(win.document.querySelectorAll('.lm-pkg-install__cmd')).toHaveLength(1)
+  })
+
+  it('selects and copies both Rust clients through the install tabs', async () => {
+    const win = await render('rs'), doc = win.document, copied: string[] = []
+    const tabs = [...doc.querySelectorAll<HTMLButtonElement>('.lm-pkg-install__manager')]
+    const commands = forms('rs')
+    expect(tabs.map((tab) => tab.textContent?.trim())).toEqual(['Async (Git)', 'Blocking (Git)'])
+    expect(doc.querySelectorAll('.lm-pkg-install__tabs')).toHaveLength(0)
+    expect(doc.querySelectorAll('.lm-pkg-install__cmd')).toHaveLength(2)
+    expect(commands[0].code).toMatch(/^cargo add libtmux-tokio --git /)
+    expect(commands[1].code).toMatch(/^cargo add libtmux --git /)
+    expect(commands[1].code).toContain('--no-default-features')
+    Object.defineProperty(win.navigator, 'clipboard', { value: { writeText: async (text: string) => { copied.push(text) } } })
+    hydrate(win, packageFile); hydrate(win, copyFile)
+    expectSelected(tabs, 0)
+    for (const [key, index] of [['End', 1], ['Home', 0]] as const) {
+      const current = tabs.find((tab) => tab.getAttribute('aria-selected') === 'true')!
+      expect(pressKey(win, current, key).defaultPrevented).toBe(true)
+      expectSelected(tabs, index)
+      expect(win.localStorage.getItem('libtmux-docs.package-install.manager.rs')).toBe(String(index))
+      const panel = doc.querySelector(`.lm-pkg-install__cmd[data-manager="${index}"]`)!
+      expect(win.getComputedStyle(panel).display).toBe('block')
+      panel.querySelector<HTMLButtonElement>('button[data-action="copy"]')!.click()
+      await Promise.resolve()
+      expect(copied.splice(0)).toEqual([commands[index].code])
+    }
   })
 })
 

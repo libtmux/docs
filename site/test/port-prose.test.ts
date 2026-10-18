@@ -281,11 +281,11 @@ describe('port prose ownership', () => {
     const html = (await renderer.render(content, { frontmatter: data })).code
     const inventory = JSON.parse(readFileSync(new URL('../src/data/api/rs.paths.json', import.meta.url), 'utf8'))
     for (const file of ['formats.rs', 'snapshot.rs', 'hooks.rs', 'options.rs', 'server/settings.rs', 'session/settings.rs', 'window/settings.rs', 'pane/settings.rs']) {
-      expect(html).toContain(`href="https://github.com/${inventory.repo}/blob/${inventory.revision}/crates/libtmux/src/${file}"`)
+      expect(html).toContain(`href="https://github.com/${inventory.repo}/blob/${inventory.revision}/crates/libtmux-tokio/src/${file}"`)
     }
     for (const object of ['server', 'session', 'window', 'pane']) {
-      expect(html).toContain(`href="https://github.com/${inventory.repo}/tree/${inventory.revision}/crates/libtmux/src/${object}"`)
-      expect(html).toContain(`href="/rs/latest/reference/${object}-${object}/"`)
+      expect(html).toContain(`href="https://github.com/${inventory.repo}/tree/${inventory.revision}/crates/libtmux-tokio/src/${object}"`)
+      expect(html).toContain(`href="../../reference/libtmux_tokio-${object}-${object}/"`)
     }
     expect(html).toContain('id="a-generated-data-table-under-a-hand-written-surface"')
     expect(html).not.toContain('<table>')
