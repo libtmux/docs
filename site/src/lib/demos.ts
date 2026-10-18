@@ -40,6 +40,11 @@ export const DEMO_SECTIONS: DemoSection[] = [
         title: 'Kind badges',
         description: 'Twelve looks for the kind marks, in light and dark.',
       },
+      {
+        href: '/demo/badges/in-context/',
+        title: 'Badges in context',
+        description: 'One badge system across 25 contexts, with the recommended treatment and its alternatives.',
+      },
     ],
   },
   {

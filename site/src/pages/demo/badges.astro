@@ -501,7 +501,7 @@ const bar = `<div class="bd-bar">${SETS.map((s) => {
     .map((c) => `<a href="#${c.id}" class="bd-jump" title="${c.name}">${c.id.toUpperCase()}</a>`)
     .join('')
   return `<span class="bd-bar__grp"><a href="#${s.id}" class="bd-bar__lab">${s.label}</a>${pills}</span>`
-}).join('')}<span class="bd-bar__tools"><button type="button" class="bd-tool" data-bd-toggle="fonts" aria-pressed="false">Fallback fonts</button><button type="button" class="bd-tool" data-bd-toggle="zoom" aria-pressed="false">200%</button></span></div>`
+}).join('')}<span class="bd-bar__tools"><a class="bd-tool" href="in-context/">Badges in context</a><button type="button" class="bd-tool" data-bd-toggle="fonts" aria-pressed="false">Fallback fonts</button><button type="button" class="bd-tool" data-bd-toggle="zoom" aria-pressed="false">200%</button></span></div>`
 ---
 
 <DemoLayout title="Badge demo" description="Kind badge candidates in light and dark." current="/demo/badges/">
@@ -549,6 +549,7 @@ const bar = `<div class="bd-bar">${SETS.map((s) => {
     font: 500 .6875rem/1 var(--font-sans); cursor: pointer;
   }
   .bd-tool[aria-pressed='true'] { background: var(--color-surface-hover); font-weight: 700; }
+  a.bd-tool { color: inherit; text-decoration: none; }
   .bd-jump {
     display: inline-grid; place-items: center; min-width: 1.5rem; height: 1.5rem; padding: 0 .3rem;
     border: 1px solid var(--color-edge); border-radius: .3rem; background: var(--color-surface);
