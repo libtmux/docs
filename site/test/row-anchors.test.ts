@@ -53,6 +53,11 @@ describe('section and item permalinks', () => {
     expect(permalinks).toEqual(['#filters-server'])
   })
 
+  it('names a row by its visible label, leaving out a hidden kind mark', () => {
+    const { rows } = render('<h2 id="hooks">Hooks</h2><table><tbody><tr><td><a href="/hooks/x/"><span class="api-nav__kind" aria-hidden="true"><span class="api-badge__label">h</span></span><code>pane-title-changed</code></a> hook</td><td>yes</td></tr></tbody></table>')
+    expect(rows.map((row) => row.id)).toEqual(['hooks-pane-title-changed-hook'])
+  })
+
   it('preserves explicit IDs and avoids collisions with headings and repeated rows', () => {
     const { rows } = render('<h2 id="flags">Flags</h2><span id="flags-p"></span><table><tr><td>-p</td><td>First</td></tr><tr><td>-p</td><td>Second</td></tr><tr id="stable-option"><td>-q</td><td>Third</td></tr></table>')
     expect(rows.map((row) => row.id)).toEqual(['flags-p-2', 'flags-p-3', 'stable-option'])

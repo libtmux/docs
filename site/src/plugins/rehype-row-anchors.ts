@@ -5,8 +5,11 @@ import { createRowAnchors } from '../lib/row-anchors'
 type Root = ReturnType<typeof fromHtml>
 type Element = Extract<Root['children'][number], { type: 'element' }>
 
+// A kind mark is aria-hidden decoration; a row's permalink follows the words a reader sees named.
+const hidden = (node: Element | Element['children'][number]) =>
+  node.type === 'element' && [true, 'true'].includes(node.properties.ariaHidden as boolean | string)
 const textOf = (node: Element | Element['children'][number]): string =>
-  node.type === 'text' ? node.value : 'children' in node ? node.children.map(textOf).join('') : ''
+  node.type === 'text' ? node.value : 'children' in node && !hidden(node) ? node.children.map(textOf).join('') : ''
 
 /** Give prose table rows shareable links without wrapping existing API links. */
 export function rehypeRowAnchors() {
