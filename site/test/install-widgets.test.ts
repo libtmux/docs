@@ -6,6 +6,7 @@ import { ModuleKind, ScriptTarget, transpileModule } from 'typescript'
 import { pickerPaintRules } from '../src/lib/picker-paint'
 import { PORTS } from '../src/lib/ports'
 import { SITE_BUILT, SITE_ROOT, SITE_PREFIX, publishedPath } from './site-root'
+import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
 /**
  * The two install pickers, driven the way a reader drives them.
@@ -24,7 +25,6 @@ const TS_MCP = join(SITE_ROOT, 'ts/latest/mcp/index.html')
 const TS_WORKSPACE = join(SITE_ROOT, 'ts/latest/workspace/index.html')
 const GO_WORKSPACE = join(SITE_ROOT, 'go/latest/workspace/index.html')
 const GO_MCP = join(SITE_ROOT, 'go/latest/mcp/index.html')
-const PY_MCP = join(SITE_ROOT, 'mcp/index.html')
 
 const isJs = (el: Element) => {
   const type = el.getAttribute('type')
@@ -439,11 +439,14 @@ describeIfGoMcp('MCP install picker, Go', () => {
   })
 })
 
-const describeIfPyMcp = SITE_BUILT && existsSync(PY_MCP) ? describe : describe.skip
-
-describeIfPyMcp('MCP install picker, Python', () => {
-  it('still offers uvx and its cooldown control', () => {
-    const { document } = load(PY_MCP, `https://libtmux.org/${SITE_PREFIX}mcp/`)
+// No page in an assembled preview carries the Python picker since the cross-port /mcp/
+// page went away: Python's MCP page is built from its own Sphinx tree. Render the picker.
+describe('MCP install picker, Python', () => {
+  it('still offers uvx and its cooldown control', async () => {
+    const picker = await loadAstroTemplate('components/widgets/McpInstall.astro')
+    const window = new Window()
+    const document = window.document as unknown as Document
+    document.body.innerHTML = await renderAstroTemplate(picker, { props: { port: 'py' } })
     expect(document.querySelector('.lm-mcp-install')?.getAttribute('data-port')).toBe('py')
     const methods = [
       ...document.querySelectorAll('.lm-mcp-install__tab[data-tab-kind="method"]'),
