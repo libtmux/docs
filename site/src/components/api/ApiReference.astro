@@ -20,6 +20,7 @@ import type { PagePortLink } from '../../lib/page-port-links'
 import { pagePortsFor } from '../../lib/page-ports-for'
 import { pageBreadcrumbs } from '../../lib/sidebar'
 import BaseLayout from '../../layouts/BaseLayout.astro'
+import { apiInventoryIdentity } from '../../lib/inventory-targets'
 import { withRoot } from '../../lib/site-root'
 import { API_MODELS, API_NAV, PORT_NAME, indexFor, isMemberOwner, ownersOf, pageSlug, referenceAlternatives, topLevelTypesOf } from '../../lib/api-models'
 import { PORT_BY_SLUG, referenceUrl } from '../../lib/ports'
@@ -381,6 +382,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
 ---
 
 <BaseLayout
+  inventoryId={owner ? `api:${apiInventoryIdentity(owner, language ?? '', declaringType?.kind)}` : undefined}
   title={title}
   description={
     owner
@@ -754,6 +756,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
               */}
               <ApiEntry
                 symbol={owner}
+                parentKind={declaringType?.kind}
                 index={index}
                 sourceUrl={sourceUrl}
                 port={port}

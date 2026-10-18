@@ -29,10 +29,10 @@ const closed = typeof schema === 'object' && schema.additionalProperties === fal
 {rootConstraints && facts(schema).length > 0 && <dl class="api-definition api-parameter-facts">
   {facts(schema).map(([key, value]) => <><dt>{key === 'default' ? 'Default' : key}</dt><dd><code>{value}</code></dd></>)}
 </dl>}
-{aliases.map((path) => <span id={schemaAnchor(scope, pointer + path)} class="section-anchor-alias" />)}
+{aliases.map((path) => <span id={schemaAnchor(scope, pointer + path)} data-inventory-id={schemaAnchor(scope, pointer + path)} data-inventory-category="schema" data-inventory-display={`${scope}${pointer + path}`} class="section-anchor-alias" />)}
 {composition && <p class="mcp-schema-note">{composition}</p>}
 {rows.length > 0 && <ul class="simple api-parameters mcp-parameters">
-  {rows.map((row) => <li id={row.id}>
+  {rows.map((row) => <li id={row.id} data-inventory-id={row.id} data-inventory-category="schema" data-inventory-display={`${scope}${pointer + row.path}`}>
     <p class="api-parameter-heading">
       <span class="api-parameter-signature">
         {/* One line: Astro turns a line break between these parts into a space. */}

@@ -27,6 +27,7 @@ const alternativesFor = (entry: ApiSymbol) => productApiAlternatives(model, entr
 ---
 
 <DocsLayout title={qualifiedNameOf(symbol)} symbolTitle breadcrumbs={breadcrumbs} description={symbol.doc?.summary ? docSummaryText(symbol.doc.summary, model.port) : `${symbol.name} API documentation.`}
+  inventoryId={`api:${symbol.publicId ?? symbol.id}`}
   port={model.port} product={product} version={version} pagePath={pagePath} tableOfContents={false}
   pageSource={symbolSource(model, symbol)} markdown="source">
   <div class="api-reference-content not-prose">

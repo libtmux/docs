@@ -18,7 +18,7 @@ async function rendersNatively(symbol: ApiSymbol, language: string): Promise<boo
   const { transform } = await import(astroRequire.resolve('@astrojs/compiler-rs'))
   const source = readFileSync(new URL('../src/components/api/ApiEntry.astro', import.meta.url), 'utf8')
   const start = source.indexOf('const signatureLayouts = await apiSignatureLayouts(symbol, language)')
-  const end = source.indexOf('\n\n/**', source.indexOf('const nativeSignatures', start))
+  const end = source.indexOf('\n', source.indexOf('const nativeSignatures', start))
   expect(start).toBeGreaterThan(0)
   expect(end).toBeGreaterThan(start)
   vi.stubGlobal('__swiftEntryHelpers', { apiSignatureLayouts, nativeSignatureText, usesNativeSignatures })

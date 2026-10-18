@@ -1,4 +1,9 @@
 ---
+inventoryTables:
+  arguments-and-flags:
+    type: std:cmdoption
+    identity: cli/import-teamocil
+    prefix: "tmuxp import teamocil "
 description: Translate Teamocil windows and pane commands into a workspace document.
 product: workspace
 sidebar:

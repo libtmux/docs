@@ -219,7 +219,7 @@ describe('Python layouts in the rendered declaration', () => {
     const wrapper = `---
 import ApiType from './ApiType.astro'
 import ApiSignatureParameters from './ApiSignatureParameters.astro'
-const { symbol, index, language, keyword, prename, nameHref, value, pythonLayouts } = Astro.props
+const { symbol, index, language, keyword, prename, nameHref, value, pythonLayouts, signatureTargets = [] } = Astro.props
 const folds = (sig) => sig.params.length >= 10
 ---
 <>

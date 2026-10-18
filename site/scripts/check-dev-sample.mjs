@@ -187,6 +187,12 @@ export async function checkDevSample(browser, base) {
       // Vite's first dependency reload may replace the document while fonts load.
       await page.waitForFunction(() => document.fonts.status === 'loaded')
       assert.equal(await page.locator('main h1').count(), 1, `${path}: one main heading`)
+      const rootPath = new URL(base).pathname.replace(/\/$/, '')
+      const inventoryLinks = await page.locator('footer a[href$=".inv"]').evaluateAll((links) => links.map((link) => link.getAttribute('href')))
+      assert.deepEqual(inventoryLinks, path === 'api-example-probe/'
+        ? [`${rootPath}/py/latest/objects.inv`, `${rootPath}/objects-full.inv`]
+        : [`${rootPath}/objects-full.inv`], `${path}: inventory links follow page scope`)
+      assert.equal(await page.getByRole('link', { name: 'About Sphinx inventories', exact: true }).getAttribute('href'), `${rootPath}/intersphinx/`)
       for (const width of [1440, 768, 390]) {
         await page.setViewportSize({ width, height: 1000 })
         const layout = await page.evaluate(() => {
@@ -216,6 +222,15 @@ export async function checkDevSample(browser, base) {
         }
         if (path === 'api-example-probe/') {
           await checkDeclarationControlsLevel(page.locator('dt.gp-sphinx-api-header').first(), `${path}/${width}: declaration controls`)
+          const help = page.getByRole('link', { name: 'About Sphinx inventories', exact: true })
+          await help.focus()
+          const tip = page.locator('footer #inventory-tooltip')
+          await tip.waitFor({ state: 'visible' })
+          const bounds = await tip.boundingBox()
+          assert(bounds && bounds.x >= 0 && bounds.x + bounds.width <= width, `${width}: inventory tooltip fits the viewport`)
+          await page.keyboard.press('Escape')
+          await tip.waitFor({ state: 'hidden' })
+          assert(await help.evaluate((node) => node === document.activeElement), 'Escape dismisses the inventory tooltip without moving focus')
         }
       }
       if (path.startsWith('tmux/')) {
@@ -237,7 +252,7 @@ export async function checkDevSample(browser, base) {
         const identity = await declaration.getAttribute('id')
         assert.equal(await declaration.locator('a.headerlink').getAttribute('href'), `#${identity}`,
           'A declaration permalink lands on its signature bar')
-        assert.equal(await declaration.locator('.section-anchor-alias').getAttribute('id'), `${identity}.declaration`,
+        assert.equal(await declaration.locator(':scope > .section-anchor-alias').getAttribute('id'), `${identity}.declaration`,
           'The previous declaration fragment remains available')
         const equivalents = page.locator('.api-elsewhere a')
         const hrefs = await equivalents.evaluateAll((links) => links.map((link) => link.getAttribute('href')))
@@ -256,6 +271,9 @@ export async function checkDevSample(browser, base) {
     assert(await example.locator('[data-home-view="full"]').isVisible())
     assert.equal(new URL(page.url()).searchParams.get('cleanup'), '1')
     for (const width of [1440, 628, 390]) await checkHomeResponsiveLayout(page, width, 'rs')
+    await page.getByRole('link', { name: 'About Sphinx inventories', exact: true }).click()
+    await page.waitForURL(`${base}/intersphinx/`)
+    assert.equal(await page.locator('main h1').innerText(), 'Link to libtmux from Sphinx', 'The inventory help link opens the setup guide')
     assert.deepEqual(errors, [], 'Sampled pages have no runtime errors')
     console.log('Fresh browser sample: prose, MCP table, API equivalents, phone picker, header menu sections, status badges and homepage controls PASS')
   } finally {

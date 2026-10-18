@@ -1,4 +1,9 @@
 ---
+inventoryTables:
+  arguments-and-flags:
+    type: std:cmdoption
+    identity: cli/load
+    prefix: "tmuxp load "
 description: Create or reuse a session from a workspace file, with explicit attachment and output choices.
 product: workspace
 sidebar:

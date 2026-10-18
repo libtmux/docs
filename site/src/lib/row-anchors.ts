@@ -15,6 +15,8 @@ export function createRowAnchors(taken: Iterable<string> = []) {
   const sections: string[] = []
   let section = 'overview'
   return {
+    /** The section identity shared by row anchors and typed inventory tables. */
+    get section(): string { return section },
     /** Enter a heading at `depth`; `id` is its anchor, or its text without one. */
     heading(depth: number, id: string): void {
       sections.length = depth
