@@ -64,7 +64,7 @@ export function buildDocumentationSurfaces(
       const route = link.href.startsWith(base) ? link.href.slice(base.length).replace(/\/$/, '') : undefined
       const relative = route === domain.route ? '' : route?.startsWith(prefix) ? route.slice(prefix.length) : undefined
       let key = relative?.split('/')[0] || 'home'
-      if (key === 'third-party-notices') continue
+      if (key === 'meta') continue
       if (key === 'source-guide') key = 'guides'
       if (id === 'workspace' && (key === 'cli' || /^reference\/(?:exit-codes|output)$/.test(relative ?? ''))) key = 'manual'
       else if (link.external || key === 'cli' || key === 'api') key = 'reference'

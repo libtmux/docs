@@ -92,6 +92,7 @@ export const MOVED_PAGES: readonly DocsRedirect[] = [
   { path: 'parity', target: 'meta/parity' },
   { path: 'translations', target: 'meta/translations' },
   { path: 'tmux/guides/concept-examples', target: 'meta/support' },
+  { path: 'third-party-notices', target: 'meta/third-party-notices' },
 ]
 
 /** Root builds redirect; no link ever pointed into a port tree's copy of these pages. */

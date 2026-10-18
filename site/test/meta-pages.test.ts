@@ -44,6 +44,10 @@ function contentEntries(root: string, skip = ['ja']): CollectionEntry<'docs'>[] 
     })
 }
 
+/** A route's page file: an Astro page, or a Markdown page in the docs collection. */
+const hasSource = (route: string) => existsSync(join(PAGES, `${route || 'index'}.astro`))
+  || (route !== '' && existsSync(join(CONTENT, `${route}.md`)))
+
 const hrefs = (items: SidebarItem[]): string[] => items.flatMap((item) =>
   item.type === 'link' ? [item.href] : [...(item.href ? [item.href] : []), ...hrefs(item.items)])
 
@@ -53,7 +57,7 @@ describe('the moved concept page', () => {
   it('redirects the old URL to the support page in the root build only', () => {
     expect(movedPageRedirects()).toContainEqual({ path: OLD, target: 'meta/support' })
     expect(movedPageRedirects('py')).toEqual([])
-    for (const { target } of MOVED_PAGES) expect(existsSync(join(PAGES, `${target}.astro`)), target).toBe(true)
+    for (const { target } of MOVED_PAGES) expect(hasSource(target), target).toBe(true)
   })
 
   it('is no longer a tmux page', () => {
@@ -125,13 +129,25 @@ describe('the site root namespace', () => {
   // Sections and trees; pages about the site itself belong under `meta`.
   const SECTIONS = ['search', 'prompts', 'demo', 'api', 'reference', 'tmux', 'meta']
   const ALLOWED = new Set([...SECTIONS, ...PORTS.map((port) => port.slug)])
-  // Found loose at the root, with no decision yet on where they belong.
-  const UNDECIDED = ['mcp', 'third-party-notices']
+  // Found loose at the root, with no decision yet on where it belongs.
+  const UNDECIDED = ['mcp']
+  // Pages about the site itself, each kept at its old URL by a redirect.
+  const META_PAGES = ['support', 'parity', 'translations', 'third-party-notices']
 
   const loose = (found: Map<string, string>) => [...found].filter(([name]) => !ALLOWED.has(name) && !UNDECIDED.includes(name))
 
   it('holds only the allowed sections, port trees and the pages still undecided', () => {
     expect(loose(rootPages(PAGES, CONTENT, SLUG_ROUTE))).toEqual([])
+  })
+
+  it('keeps every page about the site under meta, with its old URL redirecting there', () => {
+    const redirected = new Map(movedPageRedirects().map(({ path, target }) => [target, path]))
+    for (const name of META_PAGES) {
+      expect(hasSource(`meta/${name}`), name).toBe(true)
+      expect(redirected.has(`meta/${name}`), `${name} keeps a redirect`).toBe(true)
+      expect(rootPages(PAGES, CONTENT, SLUG_ROUTE).has(name), `${name} left the root`).toBe(false)
+    }
+    expect(redirected.get('meta/third-party-notices')).toBe('third-party-notices')
   })
 
   it('lists no entry that has left the root, so the allowlist cannot go stale', () => {

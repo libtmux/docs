@@ -212,7 +212,7 @@
     })
     var item = document.createElement('li')
     var link = document.createElement('a')
-    link.href = siteRoot + '/third-party-notices/'
+    link.href = siteRoot + '/meta/third-party-notices/'
     link.textContent = 'Third-party notices'
     item.appendChild(link)
     list.appendChild(item)
