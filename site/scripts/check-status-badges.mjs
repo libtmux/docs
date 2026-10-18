@@ -81,6 +81,7 @@ async function checkRows(page, picker, slug, where, kind) {
   }
   assert.deepEqual(await picker.evaluate(nestedInteractive, INTERACTIVE), [], `${where}: no interactive element sits inside another`)
   assert.equal(await picker.locator('.surface-status-key').count(), 0, `${where}: the footer status line is gone`)
+  let listGap
   for (const [index, { label, status }] of rows.entries()) {
     const entry = entries.nth(index)
     const badge = entry.locator('.status-badge').first()
@@ -89,6 +90,7 @@ async function checkRows(page, picker, slug, where, kind) {
     const badgeBox = await badge.boundingBox()
     assert(badgeBox.x >= labelBox.x + labelBox.width + 2, `${where}: the ${label} badge clears its name`)
     if (anchored) {
+      listGap ??= badgeBox.x - (labelBox.x + labelBox.width)
       assert(badgeBox.x - (labelBox.x + labelBox.width) <= 16, `${where}: the ${label} badge sits beside its name (${Math.round(badgeBox.x - labelBox.x - labelBox.width)}px away)`)
       assert(Math.abs(badgeBox.y + badgeBox.height / 2 - labelBox.y - labelBox.height / 2) <= 4, `${where}: the ${label} badge shares its name's line`)
     }
@@ -118,6 +120,12 @@ async function checkRows(page, picker, slug, where, kind) {
     assert.equal(await current.getAttribute('data-status'), rows[0].status, `${where}: the trigger states ${rows[0].status}`)
     assert.equal(await current.evaluate((element) => element.tagName), 'SPAN', `${where}: the trigger's badge is a label`)
     assert.equal(await current.getAttribute('tabindex'), null, `${where}: the trigger's badge takes no focus`)
+    // The trigger repeats the list's row, so its name and badge sit the same distance apart.
+    if (listGap !== undefined) {
+      const name = await picker.locator(':scope > summary .surface-label').boundingBox()
+      const gap = (await current.boundingBox()).x - (name.x + name.width)
+      assert(Math.abs(gap - listGap) <= 1, `${where}: the trigger's badge sits ${gap.toFixed(1)}px from its name, the list's ${listGap.toFixed(1)}px`)
+    }
     const description = await picker.locator(':scope > summary').getAttribute('aria-description')
     assert.equal(description, PRODUCT_STATUS_LINE[rows[0].status], `${where}: the trigger is described by the short line`)
   }
@@ -289,6 +297,9 @@ export async function checkStatusBadgesFail(browser, base) {
     ['a badge far from its name', picker, {
       css: '.surface-entry > .surface-entry__badge { left: auto !important; right: 2.1rem !important; top: 1.15rem !important; translate: none !important }',
     }, /badge sits beside its name/],
+    ['a trigger badge pressed against its name', picker, {
+      css: '.surface-current .surface-current__badge { margin-inline-start: 0 !important }',
+    }, /trigger's badge sits .*px from its name/],
     ['the concept paragraph in the picker', picker, {
       script: () => document.querySelectorAll('.surface-entry .surface-group').forEach((group, index) => {
         if (index > 0) group.querySelector('.surface-options').before(Object.assign(document.createElement('p'), { className: 'surface-concept-description', textContent: 'Maintained as a working example of core library usage and deployment. Example APIs, tools and configuration may change without a compatibility or product support commitment.' }))
@@ -330,5 +341,5 @@ export async function checkStatusBadgesFail(browser, base) {
   for (const [name, scope, sabotage, failure] of controls) {
     await assert.rejects(() => checkStatusBadges(browser, base, { ...scope, sabotage }), failure, `the check fails with ${name}`)
   }
-  console.log('Status badges: the check fails on the pre-badge picker and solution menu (no badge on Core Library), a second or wrong badge, a distant badge, a paragraph or long summary in a row, a long toggletip line, the footer line, a nested badge, a card that never shows, no hover, no Escape, an unreachable link and a broken section link')
+  console.log('Status badges: the check fails on the pre-badge picker and solution menu (no badge on Core Library), a second or wrong badge, a distant badge, a trigger badge closer to its name than in the list, a paragraph or long summary in a row, a long toggletip line, the footer line, a nested badge, a card that never shows, no hover, no Escape, an unreachable link and a broken section link')
 }
