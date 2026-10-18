@@ -100,7 +100,7 @@ const entryCards = (items: ReturnType<typeof tmuxCatalogEntries>) => items.map((
       <header id={entry ? 'api-overview' : undefined} class:list={[entry && 'api-reference-heading']}>
         {entry && <div class="api-reference-eyebrow">
           <ApiBadge label={info!.singular} variant="kind" value={entry.kind} />
-          <span>tmux</span><span class="api-reference-version">{model.version}</span>
+          <span>tmux</span><span class="api-badge api-badge--mod api-reference-version"><span class="api-badge__label">{model.version}</span></span>
         </div>}
         <h1 class="scroll-mt-24 font-mono text-2xl font-semibold tracking-tight">
           {entry ? <code><SymbolName name={entry.name} /></code> : title}

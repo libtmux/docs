@@ -124,7 +124,7 @@ const summaries = new Map(await Promise.all(entries.map(async (entry) => [entry.
     <div class="api-reference-content min-w-0 px-4 py-6 lg:px-6">
       <PageToolbar breadcrumbs={breadcrumbs} />
       <header id={object ? 'api-overview' : section} class:list={[object && 'api-reference-heading']}>
-        {object && <div class="api-reference-eyebrow"><ApiBadge label={object.kind.replace('-', ' ')} variant="kind" value={object.kind} /><span>MCP</span><span class="api-reference-version">{version}</span></div>}
+        {object && <div class="api-reference-eyebrow"><ApiBadge label={object.kind.replace('-', ' ')} variant="kind" value={object.kind} /><span>MCP</span><span class="api-badge api-badge--mod api-reference-version"><span class="api-badge__label">{version}</span></span></div>}
         <h1 class="scroll-mt-24 font-mono text-2xl font-semibold tracking-tight">{object ? <code><SymbolName name={title} /></code> : title}</h1>
         {!object && <p class="mt-3">{introductions[section]}</p>}
       </header>

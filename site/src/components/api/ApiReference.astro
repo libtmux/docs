@@ -448,7 +448,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
           <ApiBadge label={owner.command?.kind ?? owner.kind} variant="kind" value={owner.kind} />
           <span>{source?.model.project ?? portMeta?.projectName}</span>
           {owner.doc?.since && <span>Since {owner.doc.since}</span>}
-          <span class="api-reference-version">{version}</span>
+          <span class="api-badge api-badge--mod api-reference-version"><span class="api-badge__label">{version}</span></span>
         </div>}
         <h1 class="scroll-mt-24 font-mono text-2xl font-semibold tracking-tight">
           <SymbolName name={displayName} />
@@ -728,7 +728,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                   <dd class="api-definition-langs">
                     {counterparts.map((c) =>
                       c.href ? (
-                        <a href={c.href}>{c.label}{c.note && c.kind && <small class="api-lang-kind"> ({c.kind})</small>}</a>
+                        <span class="api-lang"><a href={c.href}>{c.label}</a>{c.note && c.kind && <ApiBadge label={c.kind} variant="kind" value={c.kind} plain />}</span>
                       ) : (
                         <span class="api-lang-absent" title={`No ${c.label} counterpart is mapped`}>
                           {c.label}

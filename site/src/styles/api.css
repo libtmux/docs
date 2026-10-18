@@ -357,7 +357,7 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
   flex-wrap: wrap;
   gap: 0 0.75rem;
 }
-.api-lang-kind { font-size: .875em; }
+.api-definition-langs .api-kind-word { margin-inline-start: .3em; }
 
 @container (max-width: 36rem) {
   .api-definition {
@@ -831,13 +831,8 @@ html:has(:is(.api-reference-layout--symbol, .api-reference-layout--glossary)):no
   color: var(--color-muted);
   font-size: 0.8125rem;
 }
-.api-reference-version {
-  margin-left: auto;
-  border-radius: 0.35rem;
-  padding: 0.1rem 0.4rem;
-  background: var(--color-surface);
-  font: 0.6875rem/1.5 var(--font-mono, monospace);
-}
+/* The version is a grey modifier chip, on the legend chip's box, at the row's far edge. */
+.api-reference-version { margin-left: auto; }
 .api-reference-relationships {
   display: flex;
   flex-wrap: wrap;
