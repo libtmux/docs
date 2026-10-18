@@ -138,6 +138,19 @@ node scripts/gen-example-sources.mjs --check
 step 'example sources (negative)'
 node scripts/gen-example-sources.negative.mjs
 
+# The tmux catalog is extracted from the C tables at the pinned tags and
+# committed. Without a tmux checkout this verifies its digests and shape; set
+# LIBTMUX_TMUX_SOURCE to a clone to regenerate and compare as well.
+step 'tmux catalog'
+if [ -n "${LIBTMUX_TMUX_SOURCE:-}" ]; then
+  node scripts/gen-tmux-catalog.mjs --check --source "$LIBTMUX_TMUX_SOURCE"
+else
+  node scripts/gen-tmux-catalog.mjs --check
+fi
+
+step 'tmux catalog (negative)'
+node scripts/gen-tmux-catalog.negative.mjs
+
 step 'shell port table'
 node scripts/gen-shell-ports.mjs --check
 

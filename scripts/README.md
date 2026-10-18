@@ -143,6 +143,28 @@ $ node scripts/gen-tmux-manual.mjs --source ~/study/c/tmux \
 The formatter's build date and host labels are excluded. Command syntax,
 descriptions, manual anchors and the source hashes remain version-specific.
 
+### tmux options, hooks and format variables
+
+`gen-tmux-catalog.mjs` extracts the catalog behind `/tmux/<version>/catalog/`
+for each release in `site/src/data/tmux/versions.json`. Existence, scope, type,
+defaults, ranges and source lines come from `options-table.c` and `format.c`
+at the pinned commit, with hook firing sites found in the C sources.
+Descriptions come from the manual snapshot, whose `manualSha256` must match
+`tmux.1` at that commit. It needs a tmux checkout, not mandoc or binaries.
+
+```console
+$ node scripts/gen-tmux-catalog.mjs --source ~/study/c/tmux
+```
+
+Verify the committed data. Without `--source` this checks digests and shape;
+with it, the script regenerates and fails when the committed JSON is stale:
+
+```console
+$ node scripts/gen-tmux-catalog.mjs --check --source ~/study/c/tmux
+```
+
+`gen-tmux-catalog.negative.mjs` proves the check fails on stale data.
+
 ### Site checks
 
 Four scripts assert things the build itself cannot notice. None of them needs
