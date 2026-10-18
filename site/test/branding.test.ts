@@ -43,6 +43,10 @@ describe('route branding', () => {
     expect(documentationTitle('libtmux-scala', 'libtmux-scala')).toBe('libtmux-scala')
     expect(documentationTitle('Server | LibTmux.jl | LibTmux.jl', 'LibTmux.jl')).toBe('Server | LibTmux.jl')
     expect(documentationTitle('LibTmux.jl', 'LibTmux.jl')).toBe('LibTmux.jl')
+    // The home page's title leads with the project name and keeps no suffix; other colons still get one.
+    expect(documentationTitle('libtmux: pilot tmux in your language', 'libtmux')).toBe('libtmux: pilot tmux in your language')
+    expect(documentationTitle('Targets: pane and window', 'libtmux')).toBe('Targets: pane and window | libtmux')
+    expect(documentationTitle('libtmux-ts: queries', 'libtmux')).toBe('libtmux-ts: queries | libtmux')
   })
   it('publishes the size and digest of every catalogued asset', () => {
     const catalog = JSON.parse(readFileSync(publicFile('/brand/catalog.json'), 'utf8')) as {
