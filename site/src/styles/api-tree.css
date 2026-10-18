@@ -231,9 +231,9 @@
 .api-nav__kind {
   display: inline-grid;
   place-items: center;
-  flex: 0 0 1.0625rem;
-  width: 1.0625rem;
-  height: 1.0625rem;
+  flex: 0 0 1.125rem;
+  width: 1.125rem;
+  height: 1.125rem;
   border-width: 1px;
   border-style: solid;
   border-radius: 0.2rem;
@@ -496,7 +496,7 @@ html[data-api-nav] .api-nav__item[aria-expanded='false'] > [role='group']:not([d
   background: none;
 }
 
-/* Centre each badge mark on its own ink: capitals and symbols on cap height,
- * x-height letters on x-height. Without text-box support the em box stays centred. */
-.api-nav__kind > .api-badge__label { text-box: trim-both cap alphabetic; }
-.api-nav__kind > .api-badge__label[data-mark='x'] { text-box: trim-both ex alphabetic; }
+/* An 18px badge leaves an even 16px inside its border, so capitals and
+ * symbols sit centred on whole pixels. Marks drawn at x-height (a, m, o, p, r
+ * and the colon) would sit a pixel low; lift them by one. */
+.api-nav__kind > .api-badge__label[data-mark='x'] { translate: 0 -1px; }

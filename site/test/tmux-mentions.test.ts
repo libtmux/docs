@@ -452,14 +452,15 @@ describe('workspace and MCP mentions render like tmux mentions', () => {
 describe('badge mark heights', () => {
   it('centres x-height marks on x-height and every other mark on cap height', () => {
     const marks = ['C', 'S', 'E', 'm', 'f', 'p', 'a', 'k', 't', 'r', 'o', 'h', '$', '#', ':', '!']
-    expect(marks.filter((mark) => markHeight(mark) === 'x')).toEqual(['m', 'p', 'a', 'r', 'o'])
+    expect(marks.filter((mark) => markHeight(mark) === 'x')).toEqual(['m', 'p', 'a', 'r', 'o', ':'])
     expect(kindMark('method')).toBe('m')
     expect(markHeight(kindMark('struct')!)).toBeUndefined()
   })
 
-  it('trims a mark to its own height so the badge centres its ink', () => {
+  it('sizes the badge to an even inside height and lifts x-height marks a pixel', () => {
     const css = readFileSync(new URL('../src/styles/api-tree.css', import.meta.url), 'utf8')
-    expect(css).toMatch(/\.api-badge__label \{ text-box: trim-both cap alphabetic; \}/)
-    expect(css).toMatch(/\.api-badge__label\[data-mark='x'\] \{ text-box: trim-both ex alphabetic; \}/)
+    expect(css).toMatch(/width: 1\.125rem;\n  height: 1\.125rem;/)
+    expect(css).toMatch(/\.api-badge__label\[data-mark='x'\] \{ translate: 0 -1px; \}/)
+    expect(css).not.toMatch(/text-box:/)
   })
 })
