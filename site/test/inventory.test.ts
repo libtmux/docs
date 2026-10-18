@@ -7,6 +7,7 @@ import { apiInventoryIdentity, installFragmentAlias, mergeTargets, renderedTarge
 import type { ApiSymbol } from '@libtmux/api-model'
 import { publishAssembledInventories } from '../src/lib/inventory-publisher'
 import type { VersionManifest } from '../src/lib/versions'
+import { parse, type DefaultTreeAdapterTypes } from 'parse5'
 
 const page: InventoryPage = { scope: 'rs', product: 'mcp', identity: 'tool:inspect', title: 'Inspect', version: 'stable' }
 const html = (page: InventoryPage, content: string) => `<html><head><meta name="libtmux-inventory" content='${JSON.stringify(page)}'></head><body><nav id="chrome">Navigation</nav><main>${content}</main></body></html>`
@@ -73,6 +74,16 @@ describe('rendered inventory targets', () => {
     expect(installFragmentAlias(updated, target, alias)).toBe(updated)
     expect(renderedTargets(updated, '/en/guide/')).toEqual(renderedTargets(content, '/en/guide/'))
     expect(() => installFragmentAlias(content, target, { ...alias, fragment: 'occupied' })).toThrow('conflicts')
+  })
+  it('places a retired row fragment inside its cell instead of outside the table', () => {
+    const content = html(page, '<table><tbody><tr><td>Earlier</td></tr><tr id="current"><td>Configuration</td></tr></tbody></table>')
+    const target = renderedTargets(content, '/en/config/').find((target) => target.href.endsWith('#current'))!
+    const updated = installFragmentAlias(content, target, { scope: 'rs', from: 'old-key', to: targetKey(target), fragment: 'old-row' })
+    const nodes = (node: DefaultTreeAdapterTypes.Node): DefaultTreeAdapterTypes.Node[] => [node, ...('childNodes' in node ? node.childNodes.flatMap(nodes) : [])]
+    const alias = nodes(parse(updated)).find((node): node is DefaultTreeAdapterTypes.Element => 'attrs' in node && node.attrs.some((attr) => attr.name === 'id' && attr.value === 'old-row'))!
+    const cell = alias.parentNode as DefaultTreeAdapterTypes.Element
+    expect(cell.tagName).toBe('td')
+    expect((cell.parentNode as DefaultTreeAdapterTypes.Element).attrs).toContainEqual({ name: 'id', value: 'current' })
   })
 })
 

@@ -137,7 +137,10 @@ export function installFragmentAlias(html: string, target: RenderedTarget, alias
     if (fragment === alias.fragment || existing.properties?.dataInventoryAliasFor === alias.to) return html
     throw new Error(`Inventory fragment alias conflicts with an existing ID: ${alias.fragment}`)
   }
-  const start = destination?.position?.start.offset
+  // A span directly inside a row would be moved outside the table by HTML parsing.
+  const container = destination?.tagName === 'tr'
+    ? destination.children?.find((node) => node.tagName === 'td' || node.tagName === 'th') : destination
+  const start = container?.position?.start.offset
   if (start === undefined) throw new Error(`Inventory fragment alias destination is missing: ${target.href}`)
   let quote = ''
   let end = start
