@@ -6,7 +6,7 @@ import { Window } from 'happy-dom'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { visit } from 'unist-util-visit'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { kindMark } from '../src/lib/api-labels'
+import { kindMark, markHeight } from '../src/lib/api-labels'
 import { tmuxManualPreview } from '../src/lib/link-preview'
 import { createLinkPreviewPolicy } from '../src/lib/link-preview-paint'
 import { linkProseMarkdown } from '../src/lib/prose-markdown'
@@ -446,5 +446,20 @@ describe('workspace and MCP mentions render like tmux mentions', () => {
     const css = readFileSync(new URL('../src/styles/api-kinds.css', import.meta.url), 'utf8')
     expect(css).toMatch(/\.api-badge--kind-key[^{]*\{[^}]*var\(--api-kind-property-bg\)/)
     expect(kindMark('key')).toBe(':')
+  })
+})
+
+describe('badge mark heights', () => {
+  it('centres x-height marks on x-height and every other mark on cap height', () => {
+    const marks = ['C', 'S', 'E', 'm', 'f', 'p', 'a', 'k', 't', 'r', 'o', 'h', '$', '#', ':', '!']
+    expect(marks.filter((mark) => markHeight(mark) === 'x')).toEqual(['m', 'p', 'a', 'r', 'o'])
+    expect(kindMark('method')).toBe('m')
+    expect(markHeight(kindMark('struct')!)).toBeUndefined()
+  })
+
+  it('trims a mark to its own height so the badge centres its ink', () => {
+    const css = readFileSync(new URL('../src/styles/api-tree.css', import.meta.url), 'utf8')
+    expect(css).toMatch(/\.api-badge__label \{ text-box: trim-both cap alphabetic; \}/)
+    expect(css).toMatch(/\.api-badge__label\[data-mark='x'\] \{ text-box: trim-both ex alphabetic; \}/)
   })
 })

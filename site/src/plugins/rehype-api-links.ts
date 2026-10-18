@@ -6,7 +6,7 @@ import { isLikelyReference, notApiReason, type ApiProduct } from '@libtmux/api-m
 import { createProseLinker, PORT_BY_LABEL, protocolRunMentions } from '../lib/prose-resolver'
 import { PORT_BY_SLUG } from '../lib/ports'
 import { API_MODELS, pageSlug } from '../lib/api-models'
-import { kindMark } from '../lib/api-labels'
+import { kindMark, markHeight } from '../lib/api-labels'
 import { docsPath, isTmuxProse } from '../lib/docs-paths'
 import { MCP_REFERENCE, mcpObjects } from '../lib/mcp-catalog'
 import { mergeMentions, tmuxMentions, type Mention } from '../lib/tmux-links'
@@ -107,7 +107,7 @@ function withKindBadge(anchor: El, kind: string, mark: string, title?: string): 
   anchor.children.unshift({ type: 'element', tagName: 'span', properties: {
     className: ['api-link-kind', 'api-nav__kind', `api-badge--kind-${kind}`],
     dataApiKind: kind, ariaHidden: 'true', title,
-  }, children: [{ type: 'element', tagName: 'span', properties: { className: ['api-badge__label'] }, children: [{ type: 'text', value: mark }] }] })
+  }, children: [{ type: 'element', tagName: 'span', properties: { className: ['api-badge__label'], dataMark: markHeight(mark) }, children: [{ type: 'text', value: mark }] }] })
   return anchor
 }
 

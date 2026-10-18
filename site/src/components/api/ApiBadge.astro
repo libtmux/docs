@@ -8,7 +8,7 @@
  * coloured; modifiers are outline-only, so exactly one thing per entry is
  * loud.
  */
-import { kindMark } from '../../lib/api-labels'
+import { kindMark, markHeight } from '../../lib/api-labels'
 import { apiGlossaryHref } from '../../lib/api-glossary'
 interface Props {
   label: string
@@ -39,4 +39,4 @@ const Tag = href ? 'a' : 'span'
   title={preview ? compact ? value : variant === 'kind' ? `${label} (kind)` : label : undefined}
   aria-label={href ? `${label}: read the ${variant === 'kind' ? label : value} definition in the API glossary` : undefined}
   aria-hidden={compact ? 'true' : undefined}
-><span class="api-badge__label">{text}</span></Tag>}
+><span class="api-badge__label" data-mark={compact ? markHeight(text) : undefined}>{text}</span></Tag>}

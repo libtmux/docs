@@ -495,3 +495,8 @@ html[data-api-nav] .api-nav__item[aria-expanded='false'] > [role='group']:not([d
   cursor: default;
   background: none;
 }
+
+/* Centre each badge mark on its own ink: capitals and symbols on cap height,
+ * x-height letters on x-height. Without text-box support the em box stays centred. */
+.api-nav__kind > .api-badge__label { text-box: trim-both cap alphabetic; }
+.api-nav__kind > .api-badge__label[data-mark='x'] { text-box: trim-both ex alphabetic; }

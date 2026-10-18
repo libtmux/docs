@@ -11,7 +11,7 @@
  */
 import { waitForAppearance, layoutBeforeAppearance } from '../../lib/page-readiness'
 import { wordBreak } from '../../lib/word-break'
-import { kindMark } from '../../lib/api-labels'
+import { kindMark, markHeight } from '../../lib/api-labels'
 import { apiTreeHref, searchApi, type ApiTreeBucket as JsonBucket, type ApiTreeJson as TreeJson } from '../../lib/api-search'
 import { apiTreePath, captureApiTree, initializeApiTree, type ApiTreeSelection, type ApiTreeState } from './api-tree-state'
 
@@ -260,6 +260,8 @@ function kindBadge(kind?: string): HTMLSpanElement | undefined {
   const label = document.createElement('span')
   label.className = 'api-badge__label'
   label.textContent = mark
+  const height = markHeight(mark)
+  if (height) label.dataset.mark = height
   badge.append(label)
   return badge
 }

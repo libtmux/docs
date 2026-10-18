@@ -13,6 +13,9 @@ const PROTOCOL_MARKS: Record<string, string> = { tool: 't', prompt: 'P', resourc
 const TMUX_MARKS: Record<string, string> = { command: '$', option: 'o', hook: 'h', format: '#', key: ':' }
 export const kindMark = (kind: string) => KIND_MARKS[kind as SymbolKind] ?? PROTOCOL_MARKS[kind] ?? TMUX_MARKS[kind]
 
+/** Marks set in x-height letters; the rest stand at cap height. A badge centres each on its own ink. */
+export const markHeight = (mark: string): 'x' | undefined => /^[acemnorsuvwxz]$|^p$/.test(mark) ? 'x' : undefined
+
 const namespaceSegments = new Intl.Segmenter('en', { granularity: 'grapheme' })
 const FULL_NAMESPACE_LENGTH = 48
 
