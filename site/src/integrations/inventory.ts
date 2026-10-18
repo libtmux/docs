@@ -7,6 +7,7 @@ import { API_MODELS, PORT_NAME } from '../lib/api-models'
 import { productApiHref } from '../lib/product-api'
 import { collectInventoryTargets, publishPortInventory } from '../lib/inventory-publisher'
 import { buildTarget, defaultVersionFor } from '../lib/versions'
+import { withPortRoot } from '../lib/site-root'
 import { DEFAULT_LOCALE } from '../i18n/locales'
 
 /** Port exports follow rendering; the full export follows final site assembly. */
@@ -17,14 +18,16 @@ export function inventory(): AstroIntegration {
     hooks: {
       'astro:config:done': ({ config }) => { base = `${config.base.replace(/\/$/, '')}/` },
       'astro:build:done': ({ dir, logger }) => {
+        const port = process.env.LIBTMUX_DOCS_PORT
+        const version = buildTarget(process.env).version
+        if (port && base !== withPortRoot(`/${port}/${version}/`)) return
         const out = fileURLToPath(dir)
         const targets = collectInventoryTargets(out, base)
-        const port = process.env.LIBTMUX_DOCS_PORT
         if (port) {
           const actual = new Set(targets.filter((target) => target.scope === port && target.category === 'api').map((target) => target.identity))
           const missing = API_MODELS[port]?.symbols.filter((symbol) => !actual.has(symbol.publicId ?? symbol.id)) ?? []
           if (missing.length) throw new Error(`Inventory missed ${missing.length} API declarations for ${port}: ${missing.slice(0, 10).map((symbol) => symbol.publicId ?? symbol.id).join(', ')}`)
-          const result = publishPortInventory(out, base, targets, port, buildTarget(process.env).version)
+          const result = publishPortInventory(out, base, targets, port, version)
           logger.info(`objects.inv: ${result.targets} rendered targets for ${port}/${result.version}`)
           return
         }
