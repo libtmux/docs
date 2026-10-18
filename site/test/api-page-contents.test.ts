@@ -474,6 +474,140 @@ it.each(['fonts-pending', 'link-hints-pending'])('keeps the member bars in flow 
   expect(bars.map((bar) => win.getComputedStyle(bar).clipPath)).toEqual(['none', 'none'])
 })
 
+it('keeps focus scrolling clear of the bars above each control and follows their measured height', () => {
+  const page = mountMembers()
+  const margin = (element: HTMLElement) => win.getComputedStyle(element).getPropertyValue('scroll-margin-top')
+  const member = page.group('operations').querySelector<HTMLElement>('li a')!
+  const permalink = page.group('operations').querySelector<HTMLElement>('h3 a')!
+  const owner = page.heading!.querySelector<HTMLElement>('a')!
+  // A control in a group clears the Members bar and that group's bar; a heading link only the bars above it.
+  expect(margin(member)).toBe('calc(41px + 36px)')
+  expect(margin(permalink)).toBe('41px')
+  expect(margin(owner)).toBe('0px')
+  page.stack.ownerHeight = 60
+  page.stack.groupHeight = 55
+  page.resize(); page.flush()
+  expect(margin(member)).toBe('calc(60px + 55px)')
+  expect(margin(permalink)).toBe('60px')
+  // Bars that stay in flow take no clearance.
+  page.members!.removeAttribute('data-api-sticky-members')
+  expect(margin(member)).toBe('')
+})
+
+it('covers the gap between the section row and the stuck bars with the page background', () => {
+  const cover = css.match(/\.api-members\[data-api-sticky-members\]::before \{([\s\S]*?)\n  \}/)![1]
+  const top = cover.match(/top: calc\(var\(--api-header-height\) \+ var\(--api-sections-height\) - (\d+)px\)/)
+  const height = cover.match(/height: calc\(0\.75rem \+ (\d+)px\)/)
+  // The cover ends where the measured reading top (row bottom plus 0.75rem) begins, and overlaps the row by the same amount it starts above it.
+  expect(top?.[1]).toBeDefined()
+  expect(height?.[1]).toBe(top![1])
+  expect(cover).toContain('margin-bottom: calc(-0.75rem - ' + top![1] + 'px)')
+  expect(cover).toMatch(/z-index: 16;/)
+  expect(cover).toContain('background: var(--background-color)')
+  expect(script).toContain('* 0.75')
+})
+
+it.each([['#api-members', 'h2'], ['#api-collections', 'h3']] as const)(
+  'keeps a linked %s heading in flow until the browser and anchor handler have aligned it', (hash, tag) => {
+    const page = mountMembers()
+    page.stack.top = -500
+    page.stack.collections.top = -300
+    page.resize(); page.flush()
+    vi.spyOn(win, 'scrollBy').mockImplementation(() => {})
+    const heading = page.members!.querySelector<HTMLElement>(`${tag}[id="${hash.slice(1)}"]`)!
+    const sibling = tag === 'h2' ? page.group('collections').querySelector('h3')! : page.heading!
+    expect(win.getComputedStyle(heading).position).toBe('sticky')
+    win.document.querySelector(`api-page-contents a[href="${hash}"]`)!
+      .dispatchEvent(new win.MouseEvent('click', { bubbles: true, cancelable: true, button: 0 }))
+    // The browser aligns the target during the click's default action, so it is in flow by then.
+    expect(heading.hasAttribute('data-api-arriving')).toBe(true)
+    expect(win.getComputedStyle(heading).position).toBe('static')
+    expect(win.getComputedStyle(heading).clipPath).toBe('none')
+    expect(win.getComputedStyle(sibling).position).toBe('sticky')
+    page.flush()
+    expect(heading.hasAttribute('data-api-arriving')).toBe(true)
+    page.flush()
+    expect(heading.hasAttribute('data-api-arriving')).toBe(false)
+    expect(win.getComputedStyle(heading).position).toBe('sticky')
+  },
+)
+
+it('counts two frames from the last navigation signal before returning the heading to the bars', () => {
+  const page = mountMembers()
+  page.stack.top = -500
+  page.stack.collections.top = -300
+  page.resize(); page.flush()
+  vi.spyOn(win, 'scrollBy').mockImplementation(() => {})
+  const heading = page.group('collections').querySelector('h3')!
+  win.document.querySelector('api-page-contents a[href="#api-collections"]')!
+    .dispatchEvent(new win.MouseEvent('click', { bubbles: true, cancelable: true, button: 0 }))
+  page.flush()
+  // Some browsers update the URL after the first frame.
+  win.history.replaceState(null, '', '#api-collections')
+  win.dispatchEvent(new win.HashChangeEvent('hashchange'))
+  page.flush()
+  expect(heading.hasAttribute('data-api-arriving')).toBe(true)
+  page.flush()
+  expect(heading.hasAttribute('data-api-arriving')).toBe(false)
+})
+
+it('releases an arriving heading when the reference is left', () => {
+  const page = mountMembers()
+  vi.spyOn(win, 'scrollBy').mockImplementation(() => {})
+  const heading = page.group('collections').querySelector('h3')!
+  win.document.querySelector('api-page-contents a[href="#api-collections"]')!
+    .dispatchEvent(new win.MouseEvent('click', { bubbles: true, cancelable: true, button: 0 }))
+  expect(heading.hasAttribute('data-api-arriving')).toBe(true)
+  win.document.querySelector('api-page-contents')!.remove()
+  expect(heading.hasAttribute('data-api-arriving')).toBe(false)
+})
+
+function mountNavigating() {
+  const page = mountMembers({ scripting: false })
+  const navigation = new win.EventTarget()
+  Object.defineProperty(win, 'navigation', { value: navigation, configurable: true })
+  win.eval(script)
+  page.stack.top = -500
+  page.stack.collections.top = -300
+  page.resize(); page.flush()
+  const scroll = vi.spyOn(win, 'scrollBy').mockImplementation(() => {})
+  const navigate = (hash: string, init: Record<string, unknown> = {}) => navigation.dispatchEvent(Object.assign(new win.Event('navigate'), {
+    hashChange: true, navigationType: 'push',
+    destination: { sameDocument: true, url: `https://libtmux.org/en/scala/latest/reference/window/${hash}` }, ...init,
+  }))
+  const arriving = () => page.members!.querySelectorAll('[data-api-arriving]').length
+  return { ...page, scroll, navigate, arriving }
+}
+
+it.each(['#api-members', '#api-collections'])('puts a heading in flow before the browser scrolls to a typed %s', (hash) => {
+  const page = mountNavigating()
+  page.navigate(hash)
+  expect(page.members!.querySelector(`[data-api-arriving][id="${hash.slice(1)}"]`)).not.toBeNull()
+  expect(page.arriving()).toBe(1)
+})
+
+it.each([
+  ['a history traversal', '#api-collections', { navigationType: 'traverse' }],
+  ['a replaced entry without a fragment change', '#api-collections', { navigationType: 'replace', hashChange: false }],
+  ['another document', '#api-collections', { destination: { sameDocument: false, url: 'https://libtmux.org/en/other/#api-collections' } }],
+  ['a fragment that is not a sticky heading', '#member-collections', {}],
+] as const)('leaves %s to the browser', (_, hash, init) => {
+  const page = mountNavigating()
+  page.navigate(hash, init as Record<string, unknown>)
+  win.history.replaceState(null, '', hash)
+  win.dispatchEvent(new win.HashChangeEvent('hashchange')); page.flush()
+  expect(page.arriving()).toBe(0)
+  expect(page.scroll).not.toHaveBeenCalled()
+})
+
+it('returns a typed sticky group to its source boundary if the browser aligned its stuck bar', () => {
+  const page = mountNavigating()
+  page.navigate('#api-collections')
+  win.history.replaceState(null, '', '#api-collections')
+  win.dispatchEvent(new win.HashChangeEvent('hashchange')); page.flush()
+  expect(page.scroll).toHaveBeenCalledExactlyOnceWith({ top: -454, behavior: 'instant' })
+})
+
 it('leaves the member bars in ordinary flow when a short viewport cannot fit them and the article', () => {
   const page = mountMembers({ height: 400, header: 97, row: 96, fontSize: 32 })
   expect(page.members!.hasAttribute('data-api-sticky-members')).toBe(false)

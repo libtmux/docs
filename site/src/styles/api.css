@@ -991,6 +991,23 @@ html[data-api-sections-measured] .api-section-links {
     position: static;
     clip-path: none;
   }
+  /* A link or hash aligns a sticky box where it is stuck, which for a group above the viewport is the end of the group. */
+  .api-members[data-api-sticky-members] > h2[data-api-arriving],
+  .api-members[data-api-sticky-members] > .api-member-group > h3[data-api-arriving] {
+    position: static;
+    clip-path: none;
+  }
+  /* The page background closes the gap between the section row and the bars, so scrolled text does not show in it. */
+  .api-members[data-api-sticky-members]::before {
+    content: "";
+    display: block;
+    position: sticky;
+    top: calc(var(--api-header-height) + var(--api-sections-height) - 2px);
+    z-index: 16;
+    height: calc(0.75rem + 2px);
+    margin-bottom: calc(-0.75rem - 2px);
+    background: var(--background-color);
+  }
   .api-members[data-api-sticky-members] [id] {
     scroll-margin-top: var(--api-member-heading-height);
   }
@@ -1001,6 +1018,16 @@ html[data-api-sections-measured] .api-section-links {
     scroll-margin-top: var(--api-member-heading-height);
   }
   .api-members[data-api-sticky-members] > #api-members { scroll-margin-top: 0; }
+  /* Focus scrolls clear the bars above a control, as they do above an identified box. */
+  .api-members[data-api-sticky-members] { --api-bar-clearance: var(--api-member-heading-height); }
+  .api-members[data-api-sticky-members] > h2 { --api-bar-clearance: 0px; }
+  .api-members[data-api-sticky-members] .api-member-group {
+    --api-bar-clearance: calc(var(--api-member-heading-height) + var(--api-group-heading-height, 0px));
+  }
+  .api-members[data-api-sticky-members] .api-member-group > h3 { --api-bar-clearance: var(--api-member-heading-height); }
+  .api-members[data-api-sticky-members] :where(a[href], button, summary, input, select, textarea, [tabindex]) {
+    scroll-margin-top: var(--api-bar-clearance);
+  }
 }
 @media print {
   .api-page-contents, .api-glossary-contents, .api-section-links { display: none; }

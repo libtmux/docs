@@ -35,6 +35,7 @@ const { sections, related } = Astro.props as Props
     observer
     resetMembers
     frame = 0
+    arrivalFrame = 0
 
     connectedCallback() {
       this.controller = new AbortController()
@@ -61,6 +62,33 @@ const { sections, related } = Astro.props as Props
         const group = groupHeadings.find((entry) => entry.group.contains(target))
         return readingTop + memberHeight + (group && target !== group.heading ? group.height : 0)
       }
+      const stickyHeadings = [memberHeading, ...groupHeadings.map(({ heading }) => heading)].filter(Boolean)
+      let arriving
+      const endArrival = () => {
+        cancelAnimationFrame(this.arrivalFrame)
+        arriving?.removeAttribute('data-api-arriving')
+        arriving = undefined
+      }
+      // The browser and the anchor handler align a sticky heading where it is stuck, which for a group
+      // above the viewport is the end of its box. The target stays in flow while they scroll, so they
+      // align its source box. Frames end the hold, and every navigation signal restarts it, because
+      // some browsers update the URL after a frame.
+      const settleArrival = () => {
+        cancelAnimationFrame(this.arrivalFrame)
+        this.arrivalFrame = requestAnimationFrame(() => {
+          this.arrivalFrame = requestAnimationFrame(() => { endArrival(); update() })
+        })
+      }
+      const beginArrival = (fragment) => {
+        const heading = stickyMembers ? stickyHeadings.find((candidate) => candidate.id === fragment) : undefined
+        if (!heading) return
+        if (arriving !== heading) {
+          endArrival()
+          heading.setAttribute('data-api-arriving', '')
+          arriving = heading
+        }
+        settleArrival()
+      }
       const measureMembers = (readingTop) => {
         if (!memberHeading || !members) return
         memberHeight = Math.ceil(memberHeading.getBoundingClientRect().height)
@@ -86,6 +114,7 @@ const { sections, related } = Astro.props as Props
         }
       }
       this.resetMembers = () => {
+        endArrival()
         members?.removeAttribute('data-api-sticky-members')
         for (const name of ['height', 'top', 'clip']) {
           members?.style.removeProperty(`--api-member-heading-${name}`)
@@ -169,7 +198,16 @@ const { sections, related } = Astro.props as Props
         this.frame = requestAnimationFrame(() => update())
       }
       window.addEventListener('scroll', schedule, { passive: true, signal })
-      window.addEventListener('hashchange', schedule, { signal })
+      window.addEventListener('hashchange', () => {
+        if (arriving) settleArrival()
+        schedule()
+      }, { signal })
+      // Fragment navigations that no click in this layout started: a typed or scripted hash.
+      window.navigation?.addEventListener('navigate', (event) => {
+        if (!event.hashChange || event.navigationType === 'traverse' || !event.destination.sameDocument) return
+        requestedFragment = decode(new URL(event.destination.url).hash)
+        beginArrival(requestedFragment)
+      }, { signal })
       layout?.addEventListener('click', (event) => {
         const link = event.target instanceof Element ? event.target.closest('a[href]') : null
         if (!(link instanceof HTMLAnchorElement) || event.defaultPrevented || event.button !== 0 ||
@@ -178,6 +216,7 @@ const { sections, related } = Astro.props as Props
         const target = new URL(link.href, location.href)
         if (!target.hash || target.origin !== location.origin || target.pathname !== location.pathname || target.search !== location.search) return
         requestedFragment = decode(target.hash)
+        beginArrival(requestedFragment)
         schedule()
       }, { signal })
       window.addEventListener('resize', schedule, { signal })
