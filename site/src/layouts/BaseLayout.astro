@@ -187,7 +187,8 @@ const inventoryPage: InventoryPage = {
   product: /^(?:mcp|workspace)(?:\/|$)/.exec(pagePath)?.[0].replace(/\/$/, '') ?? 'core',
   identity: inventoryId ?? (pagePath || 'index'),
   title, version: portSlug ? target.version : tmuxInventoryVersion, source,
-  aliases: inventoryAliases, exclude: inventoryExclude || bare || /^(?:demo(?:\/|$)|404$|search$)/.test(routePath),
+  aliases: inventoryAliases, exclude: inventoryExclude || bare ||
+    Boolean(process.env.LIBTMUX_DOCS_PORT && !portSlug) || /^(?:demo(?:\/|$)|404$|search$)/.test(routePath),
 }
 
 ---
