@@ -103,7 +103,7 @@ export function renderedTargets(html: string, href: string): RenderedTarget[] {
       const legacy = props.dataInventoryLegacyType ? [{ type: attribute(props, 'dataInventoryLegacyType')!, name: attribute(props, 'dataInventoryLegacyName')! }] : undefined
       targets.push({ ...context, category, identity,
         display: (attribute(props, 'dataInventoryDisplay') ?? (/^h[1-6]$/.test(node.tagName ?? '') || node.tagName === 'tr'
-          ? text(node) : id)).replace(/\s+/g, ' ').trim(), href: `${href}#${encodeURIComponent(id)}`,
+          ? text(node) : id)).replace(/\s+/g, ' ').trim() || id, href: `${href}#${encodeURIComponent(id)}`,
         ...(native ? { native } : {}), ...(legacy ? { legacy, formerType: attribute(props, 'dataInventoryFormerType') } : {}),
         ...(props.dataInventoryAliases ? { aliases: JSON.parse(attribute(props, 'dataInventoryAliases')!) } : {}),
       })

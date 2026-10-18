@@ -132,7 +132,7 @@ export function writeInventoryEntries(entries: readonly InventoryEntry[], option
     // A terminal dollar is substitution syntax even when it is a literal URI byte.
     let uri = entry.uri.replace(/\$$/, '%24')
     if (entry.uri.endsWith(`#${name}`) && !name.endsWith('$')) uri = `${entry.uri.slice(0, -name.length)}$`
-    return `${name} ${type} ${priority} ${uri} ${dispname === name ? '-' : dispname}\n`
+    return `${name} ${type} ${priority} ${uri} ${dispname === name || !dispname.trim() ? '-' : dispname}\n`
   })
   return Buffer.concat([Buffer.from(header), deflateSync(Buffer.from(lines.join('')), { level: 9 })])
 }
