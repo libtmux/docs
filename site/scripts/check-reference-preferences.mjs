@@ -150,6 +150,8 @@ async function checkHeaderPickers(page, path, width, scripted) {
   for (const { kind } of exposed) {
     const picker = page.locator(`details[data-header-picker="${kind}"][data-placement="${placement}"]`)
     await picker.locator(':scope > summary').click()
+    // With JS the panel opens from the asynchronous toggle event, not the click.
+    await picker.locator('[data-picker-panel]').waitFor({ state: 'visible' })
     const opened = await picker.evaluate((element) => {
       const { left, right } = element.querySelector('[data-picker-panel]').getBoundingClientRect()
       const rows = [...element.querySelectorAll('a[data-picker-option]')]
@@ -164,6 +166,7 @@ async function checkHeaderPickers(page, path, width, scripted) {
     assert.equal(opened.arrows, 0, `${where}: ${kind} rows draw no arrow of their own`)
     if (scripted) assert(opened.masks.length > 0 && opened.masks.every((mask) => mask !== 'none'), `${where}: every ${kind} row has the shared external-link glyph`)
     await picker.locator(':scope > summary').click()
+    await picker.locator('[data-picker-panel]').waitFor({ state: 'hidden' })
   }
 }
 

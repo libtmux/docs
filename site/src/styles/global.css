@@ -1333,8 +1333,8 @@ html[data-theme-mode='dark'] .site-header .header-picker > summary:is(:hover, :f
 }
 
 /*
- * Three triggers do not fit a phone bar beside the wordmark, search, colour and
- * menu controls: the no-script colour switch alone is wider than the space
+ * The menu triggers do not fit a phone bar beside the wordmark, search, colour
+ * and menu controls: the no-script colour switch alone is wider than the space
  * they would need. The Menu panel holds a second copy below 48rem and the bar
  * holds the menus from there, so exactly one copy is displayed and focusable.
  */
