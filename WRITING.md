@@ -87,6 +87,11 @@ revision recorded by the API model or wrapper guide artifact. Working-tree
 edits and a newer HEAD do not change the documented example. Port mutations follow
 [Repository boundaries](AGENTS.md#repository-boundaries).
 
+Build an example page up to its program in numbered steps whose blocks are
+excerpts of the tested source, not copies. [Building an example page up to its
+program](notes/example-build-up.md) defines the syntax and the check that
+fails on a hand-typed block.
+
 Preserve source metadata, region markers, doctest prompts, and expected
 output that a port's own tests collect. Edit generated examples at their
 source. A fence that renders is not proof that its code runs:
