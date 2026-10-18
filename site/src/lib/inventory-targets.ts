@@ -75,14 +75,16 @@ export function renderedTargets(html: string, href: string): RenderedTarget[] {
   const tree: Node = parse(content, { scriptingEnabled: false })
   let page: InventoryPage | undefined
   let main: Node | undefined
+  let shellExport = false
   const ids = new Map<string, number>()
   walk(tree, (node) => {
     const props = properties(node)
     if (node.tagName === 'meta' && props.name === 'libtmux-inventory') page = JSON.parse(attribute(props, 'content') ?? '{}') as InventoryPage
+    if (node.tagName === 'html' && node.attrs?.some((attr) => attr.name === 'data-native-shell-export')) shellExport = true
     if (node.tagName === 'main' || props.role === 'main') main = node
     if (typeof props.id === 'string') ids.set(props.id, (ids.get(props.id) ?? 0) + 1)
   })
-  if (!page || page.exclude || !main) return []
+  if (!page || page.exclude || shellExport) return []
   const context = { scope: page.scope, product: page.product, version: page.version, source: page.source }
   const targets: RenderedTarget[] = [{ ...context, category: 'doc', identity: page.identity,
     display: page.title, href, aliases: page.aliases }]
@@ -114,7 +116,7 @@ export function renderedTargets(html: string, href: string): RenderedTarget[] {
     }
     for (const child of children(node)) collect(child, owner, anchor)
   }
-  collect(main)
+  if (main) collect(main)
   // Detach attribute substrings so retained targets cannot pin complete HTML buffers.
   return JSON.parse(JSON.stringify(targets)) as RenderedTarget[]
 }
@@ -131,6 +133,7 @@ export function installFragmentAlias(html: string, target: RenderedTarget, alias
   let existing: Node | undefined
   walk(tree, (node) => {
     if (node.properties?.id === alias.fragment) existing = node
+    if (!fragment && node.tagName === 'body' && !destination) destination = node
     if (fragment ? node.properties?.id === fragment : node.tagName === 'main') destination = node
   })
   if (existing) {

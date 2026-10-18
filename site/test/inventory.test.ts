@@ -60,6 +60,17 @@ describe('rendered inventory targets', () => {
     expect(renderedTargets(html({ ...page, exclude: true }, '<h2 id="x">X</h2>'), '/ja/guide/')).toEqual([])
     expect(renderedTargets('<main id="unowned">An upstream redirect</main>', '/en/old/')).toEqual([])
   })
+  it('exports an owned document without a main element and preserves a retired fragment', () => {
+    const content = html(page, '<h1 id="title">Status</h1>').replace('<main>', '<div>').replace('</main>', '</div>')
+    const targets = renderedTargets(content, '/en/status/')
+    expect(targets.map((target) => target.category)).toEqual(['doc'])
+    const updated = installFragmentAlias(content, targets[0], { scope: 'rs', from: 'old-document', to: targetKey(targets[0]), fragment: 'retired' })
+    expect(updated).toContain('<body><span id="retired"')
+  })
+  it('does not export native chrome helpers as documents', () => {
+    const content = html(page, '').replace('<html>', '<html data-native-shell-export>')
+    expect(renderedTargets(content, '/en/api/chrome/')).toEqual([])
+  })
   it('keeps an old declaration in archived snapshots while aliasing its renamed latest identity', () => {
     const old = renderedTargets(html(page, ''), '/en/rs/stable/old/')[0]
     const current = { ...old, identity: 'renamed', href: '/en/rs/latest/new/', version: 'latest' }
