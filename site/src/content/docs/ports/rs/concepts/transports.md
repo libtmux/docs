@@ -93,7 +93,7 @@ Fetch the library revision used by the example:
 ```console
 $ git init -q libtmux-source &&
   git -C libtmux-source fetch -q --depth=1 \
-    https://github.com/libtmux/libtmux-rs.git c26bcbb5127352d80dd2a8e9527494f21baa5fd6 &&
+    https://github.com/libtmux/libtmux-rs.git c84ede6448c32bf72aae7126e16e04540d2009aa &&
   git -C libtmux-source checkout -q --detach FETCH_HEAD
 ```
 
@@ -251,9 +251,9 @@ failure reports and retains the private directory for inspection.
 ## Read the implementation contract
 
 These examples use the unreleased `libtmux-tokio` package from the
-[pinned source tree](https://github.com/libtmux/libtmux-rs/tree/c26bcbb5127352d80dd2a8e9527494f21baa5fd6).
-The pinned [Server contract](https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/libtmux-tokio/src/server.rs)
+[pinned source tree](https://github.com/libtmux/libtmux-rs/tree/c84ede6448c32bf72aae7126e16e04540d2009aa).
+The pinned [Server contract](https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/libtmux-tokio/src/server.rs)
 describes command outcomes, shutdown, and routing. The guides above explain
 plans and persistent connections as separate application workflows.
 
-[plan-feature]: https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/libtmux-tokio/Cargo.toml
+[plan-feature]: https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/libtmux-tokio/Cargo.toml

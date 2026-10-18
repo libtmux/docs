@@ -23,7 +23,7 @@ directory and fetch the source revision used by this example:
 ```console
 $ git init libtmux-source && \
     git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-rs.git && \
-    git -C libtmux-source fetch --depth=1 origin c26bcbb5127352d80dd2a8e9527494f21baa5fd6 && \
+    git -C libtmux-source fetch --depth=1 origin c84ede6448c32bf72aae7126e16e04540d2009aa && \
     git -C libtmux-source checkout --detach FETCH_HEAD
 ```
 
@@ -145,5 +145,5 @@ choose its own shutdown point.
 <a id="where-this-comes-from"></a>
 <a id="source-inclusion"></a>
 
-[Builder source](https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/tmux-workspace/src/lib.rs);
-[capture source](https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/tmux-workspace/src/freeze.rs).
+[Builder source](https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/tmux-workspace/src/lib.rs);
+[capture source](https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/tmux-workspace/src/freeze.rs).

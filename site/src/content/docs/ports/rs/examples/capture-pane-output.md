@@ -131,7 +131,7 @@ tokio = { version = "1.53.1", features = ["macros", "rt-multi-thread", "time"] }
 ```console
 $ git init -q libtmux &&
   git -C libtmux fetch -q --depth=1 \
-    https://github.com/libtmux/libtmux-rs.git c26bcbb5127352d80dd2a8e9527494f21baa5fd6 &&
+    https://github.com/libtmux/libtmux-rs.git c84ede6448c32bf72aae7126e16e04540d2009aa &&
   git -C libtmux checkout -q --detach FETCH_HEAD &&
   cargo +1.97.1 run
 ```

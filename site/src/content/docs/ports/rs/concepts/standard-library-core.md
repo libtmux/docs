@@ -53,7 +53,7 @@ $ cd libtmux-rs
 Select the revision used by this preview:
 
 ```console
-$ git checkout c26bcbb5127352d80dd2a8e9527494f21baa5fd6
+$ git checkout c84ede6448c32bf72aae7126e16e04540d2009aa
 ```
 
 Run a complete blocking capture program:
@@ -130,7 +130,7 @@ Select the shared-client revision in a separate checkout, or after saving any
 local changes:
 
 ```console
-$ git checkout a45e1f82996bc96f88ebb8239ea017ea3a303e32
+$ git checkout 4e0f6ea6e3efb73a90b2ab4e65205266d07ef102
 ```
 
 Run the same two capture commands from above. The default client's program uses
@@ -172,13 +172,13 @@ process supervision, cancellation, and control-mode correlation also need
 matching implementations and tests. Passing examples establish their tested
 workloads; adoption still requires the full package and operational checks.
 
-[blocking-branch]: https://github.com/libtmux/libtmux-rs/tree/c26bcbb5127352d80dd2a8e9527494f21baa5fd6
-[shared-branch]: https://github.com/libtmux/libtmux-rs/tree/a45e1f82996bc96f88ebb8239ea017ea3a303e32
-[blocking-capture]: https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/libtmux/examples/api_capture.rs
-[tokio-capture]: https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/libtmux-tokio/examples/api_capture.rs
-[blocking-examples]: https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/libtmux/examples/api/README.md
-[tokio-examples]: https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/libtmux-tokio/examples/api/README.md
-[package-contract]: https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/libtmux/docs/packages.md
+[blocking-branch]: https://github.com/libtmux/libtmux-rs/tree/c84ede6448c32bf72aae7126e16e04540d2009aa
+[shared-branch]: https://github.com/libtmux/libtmux-rs/tree/4e0f6ea6e3efb73a90b2ab4e65205266d07ef102
+[blocking-capture]: https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/libtmux/examples/api_capture.rs
+[tokio-capture]: https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/libtmux-tokio/examples/api_capture.rs
+[blocking-examples]: https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/libtmux/examples/api/README.md
+[tokio-examples]: https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/libtmux-tokio/examples/api/README.md
+[package-contract]: https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/libtmux/docs/packages.md
 [quinn]: https://github.com/quinn-rs/quinn/blob/eaec0db4bcb698f76df736d89938743c88a2ad5f/quinn-proto/src/lib.rs
 [tungstenite]: https://github.com/snapview/tokio-tungstenite/blob/6ee9b33f76d35f9cc7125c3c7511bce4b1e829c4/src/compat.rs
 [postgres]: https://github.com/sfackler/rust-postgres/blob/e47a75e72af0a31c7e581f3ccf91e17063f3efc6/postgres/src/lib.rs

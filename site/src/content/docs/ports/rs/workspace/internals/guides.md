@@ -16,7 +16,7 @@ Install tmux first, then add the crate to a Rust project:
 ```console
 $ cargo add tmux-workspace \
     --git https://github.com/libtmux/libtmux-rs \
-    --rev c26bcbb5127352d80dd2a8e9527494f21baa5fd6
+    --rev c84ede6448c32bf72aae7126e16e04540d2009aa
 ```
 
 The runnable [example](../examples/) also uses `libtmux-tokio`'s isolated test server.
@@ -25,7 +25,7 @@ Enable its `test-support` feature:
 ```console
 $ cargo add libtmux-tokio \
     --git https://github.com/libtmux/libtmux-rs \
-    --rev c26bcbb5127352d80dd2a8e9527494f21baa5fd6 \
+    --rev c84ede6448c32bf72aae7126e16e04540d2009aa \
     --features test-support
 ```
 
@@ -69,4 +69,4 @@ Use `freeze(&session).await` to produce a new `Workspace`, then write its
 loading the file later. [Topics](../topics/) explains what the export can
 recover.
 
-[Crate usage and dependencies](https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/tmux-workspace/README.md)
+[Crate usage and dependencies](https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/tmux-workspace/README.md)

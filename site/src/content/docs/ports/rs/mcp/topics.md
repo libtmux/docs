@@ -53,4 +53,4 @@ The server exposes the static `tmux://capabilities` resource. Read live
 hierarchy and terminal state through tools. The current surface has no
 workflow prompts or dynamic resource templates.
 
-[Configuration and lifecycle contract](https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/tmux-mcp/README.md).
+[Configuration and lifecycle contract](https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/tmux-mcp/README.md).

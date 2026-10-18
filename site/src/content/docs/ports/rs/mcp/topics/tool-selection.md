@@ -149,6 +149,6 @@ the tmux user's authority, and MCP annotations give the client hints
 for its approval policy. Neither mechanism confines a pane's command
 to a filesystem or network sandbox.
 
-[Selection source](https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/tmux-mcp/src/policy.rs)
-and [tool registration](https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/tmux-mcp/src/manifest.rs)
+[Selection source](https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/tmux-mcp/src/policy.rs)
+and [tool registration](https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/tmux-mcp/src/manifest.rs)
 define these rules.

@@ -39,4 +39,4 @@ session. Serialize that result with `to_yaml`. The exported structure is
 suitable for review and editing; it cannot restore process memory or recover
 an original shell command from a running program.
 
-[Public exports and builder](https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/tmux-workspace/src/lib.rs); [Freeze API](https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/tmux-workspace/src/freeze.rs).
+[Public exports and builder](https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/tmux-workspace/src/lib.rs); [Freeze API](https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/tmux-workspace/src/freeze.rs).

@@ -14013,7 +14013,7 @@
         "libtmux::Server"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_construction.rs",
       "files": [
         {
@@ -14046,7 +14046,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_construction.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14071,7 +14071,7 @@
         "libtmux::Server::builder"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_construction.rs",
       "files": [
         {
@@ -14104,7 +14104,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_construction.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14129,7 +14129,7 @@
         "libtmux::ServerBuilder::socket_path"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_construction.rs",
       "files": [
         {
@@ -14162,7 +14162,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_construction.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14187,7 +14187,7 @@
         "libtmux::ServerBuilder::config_file"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_construction.rs",
       "files": [
         {
@@ -14220,7 +14220,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_construction.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14245,7 +14245,7 @@
         "libtmux::ServerBuilder::default_timeout"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_construction.rs",
       "files": [
         {
@@ -14278,7 +14278,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_construction.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14303,7 +14303,7 @@
         "libtmux::ServerBuilder::build"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_construction.rs",
       "files": [
         {
@@ -14336,7 +14336,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_construction.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14361,7 +14361,7 @@
         "libtmux::Server::sessions"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_listings.rs",
       "files": [
         {
@@ -14394,7 +14394,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_listings.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14419,7 +14419,7 @@
         "libtmux::Server::windows"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_listings.rs",
       "files": [
         {
@@ -14452,7 +14452,7 @@
         4
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_listings.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14477,7 +14477,7 @@
         "libtmux::Server::panes"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_listings.rs",
       "files": [
         {
@@ -14510,7 +14510,7 @@
         4
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_listings.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14535,7 +14535,7 @@
         "libtmux::Server::hierarchy"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_listings.rs",
       "files": [
         {
@@ -14568,7 +14568,7 @@
         4
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_listings.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14593,7 +14593,7 @@
         "libtmux::Session::windows"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_listings.rs",
       "files": [
         {
@@ -14626,7 +14626,7 @@
         4
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_listings.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14651,7 +14651,7 @@
         "libtmux::Session::panes"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_listings.rs",
       "files": [
         {
@@ -14684,7 +14684,7 @@
         4
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_listings.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14709,7 +14709,7 @@
         "libtmux::Window::panes"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_listings.rs",
       "files": [
         {
@@ -14742,7 +14742,7 @@
         4
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_listings.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14767,7 +14767,7 @@
         "libtmux::Server::new_session"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_creation.rs",
       "files": [
         {
@@ -14800,7 +14800,7 @@
         4
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_creation.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14825,7 +14825,7 @@
         "libtmux::NewSessionOptions"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_creation.rs",
       "files": [
         {
@@ -14858,7 +14858,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_creation.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14883,7 +14883,7 @@
         "libtmux::Session::new_window"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_creation.rs",
       "files": [
         {
@@ -14916,7 +14916,7 @@
         4
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_creation.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14941,7 +14941,7 @@
         "libtmux::NewWindowOptions"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_creation.rs",
       "files": [
         {
@@ -14974,7 +14974,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_creation.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14999,7 +14999,7 @@
         "libtmux::Window::split"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_creation.rs",
       "files": [
         {
@@ -15032,7 +15032,7 @@
         4
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_creation.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -15057,7 +15057,7 @@
         "libtmux::Pane::split"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_creation.rs",
       "files": [
         {
@@ -15090,7 +15090,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_creation.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -15115,7 +15115,7 @@
         "libtmux::SplitOptions"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_creation.rs",
       "files": [
         {
@@ -15148,7 +15148,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_creation.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -15173,7 +15173,7 @@
         "libtmux::query::Filterable"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_query.rs",
       "files": [
         {
@@ -15206,7 +15206,7 @@
         6
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_query.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -15231,7 +15231,7 @@
         "libtmux::query::QueryIteratorExt::matching"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_query.rs",
       "files": [
         {
@@ -15264,7 +15264,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_query.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -15289,7 +15289,7 @@
         "libtmux::query::QueryIteratorExt::exactly_one"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_cardinality.rs",
       "files": [
         {
@@ -15322,7 +15322,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_cardinality.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -15347,7 +15347,7 @@
         "libtmux::query::QueryIteratorExt::one_or_none"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_cardinality.rs",
       "files": [
         {
@@ -15380,7 +15380,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_cardinality.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -15405,7 +15405,7 @@
         "libtmux::query::ExactlyOneError"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_cardinality.rs",
       "files": [
         {
@@ -15438,7 +15438,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_cardinality.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -15463,7 +15463,7 @@
         "libtmux::query::MultipleItemsError"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_cardinality.rs",
       "files": [
         {
@@ -15496,7 +15496,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_cardinality.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -15521,7 +15521,7 @@
         "libtmux::Pane::send_keys"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_input.rs",
       "files": [
         {
@@ -15554,7 +15554,7 @@
         4
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_input.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -15579,7 +15579,7 @@
         "libtmux::Pane::send_key_names"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_input.rs",
       "files": [
         {
@@ -15612,7 +15612,7 @@
         4
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_input.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -15637,7 +15637,7 @@
         "libtmux::Pane::send_line"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_capture.rs",
       "files": [
         {
@@ -15670,7 +15670,7 @@
         4
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_capture.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -15695,7 +15695,7 @@
         "libtmux::Pane::capture"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_capture.rs",
       "files": [
         {
@@ -15728,7 +15728,7 @@
         4
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_capture.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -15753,7 +15753,7 @@
         "libtmux::Pane::wait_for_text"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux/examples/api_capture.rs",
       "files": [
         {
@@ -15786,7 +15786,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_capture.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -15811,7 +15811,7 @@
         "libtmux_tokio::Server"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_construction.rs",
       "files": [
         {
@@ -15844,7 +15844,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_construction.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -15869,7 +15869,7 @@
         "libtmux_tokio::Server::builder"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_construction.rs",
       "files": [
         {
@@ -15902,7 +15902,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_construction.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -15927,7 +15927,7 @@
         "libtmux_tokio::ServerBuilder::socket_path"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_construction.rs",
       "files": [
         {
@@ -15960,7 +15960,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_construction.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -15985,7 +15985,7 @@
         "libtmux_tokio::ServerBuilder::config_file"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_construction.rs",
       "files": [
         {
@@ -16018,7 +16018,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_construction.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -16043,7 +16043,7 @@
         "libtmux_tokio::ServerBuilder::default_timeout"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_construction.rs",
       "files": [
         {
@@ -16076,7 +16076,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_construction.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -16101,7 +16101,7 @@
         "libtmux_tokio::ServerBuilder::build"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_construction.rs",
       "files": [
         {
@@ -16134,7 +16134,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_construction.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -16159,7 +16159,7 @@
         "libtmux_tokio::Server::sessions"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_listings.rs",
       "files": [
         {
@@ -16192,7 +16192,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_listings.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -16217,7 +16217,7 @@
         "libtmux_tokio::Server::windows"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_listings.rs",
       "files": [
         {
@@ -16250,7 +16250,7 @@
         4
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_listings.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -16275,7 +16275,7 @@
         "libtmux_tokio::Server::panes"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_listings.rs",
       "files": [
         {
@@ -16308,7 +16308,7 @@
         4
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_listings.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -16333,7 +16333,7 @@
         "libtmux_tokio::Server::hierarchy"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_listings.rs",
       "files": [
         {
@@ -16366,7 +16366,7 @@
         4
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_listings.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -16391,7 +16391,7 @@
         "libtmux_tokio::Session::windows"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_listings.rs",
       "files": [
         {
@@ -16424,7 +16424,7 @@
         4
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_listings.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -16449,7 +16449,7 @@
         "libtmux_tokio::Session::panes"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_listings.rs",
       "files": [
         {
@@ -16482,7 +16482,7 @@
         4
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_listings.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -16507,7 +16507,7 @@
         "libtmux_tokio::Window::panes"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_listings.rs",
       "files": [
         {
@@ -16540,7 +16540,7 @@
         4
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_listings.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -16565,7 +16565,7 @@
         "libtmux_tokio::Server::new_session"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_creation.rs",
       "files": [
         {
@@ -16598,7 +16598,7 @@
         4
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_creation.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -16623,7 +16623,7 @@
         "libtmux_tokio::NewSessionOptions"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_creation.rs",
       "files": [
         {
@@ -16656,7 +16656,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_creation.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -16681,7 +16681,7 @@
         "libtmux_tokio::Session::new_window"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_creation.rs",
       "files": [
         {
@@ -16714,7 +16714,7 @@
         4
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_creation.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -16739,7 +16739,7 @@
         "libtmux_tokio::NewWindowOptions"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_creation.rs",
       "files": [
         {
@@ -16772,7 +16772,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_creation.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -16797,7 +16797,7 @@
         "libtmux_tokio::Window::split"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_creation.rs",
       "files": [
         {
@@ -16830,7 +16830,7 @@
         4
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_creation.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -16855,7 +16855,7 @@
         "libtmux_tokio::Pane::split"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_creation.rs",
       "files": [
         {
@@ -16888,7 +16888,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_creation.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -16913,7 +16913,7 @@
         "libtmux_tokio::SplitOptions"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_creation.rs",
       "files": [
         {
@@ -16946,7 +16946,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_creation.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -16971,7 +16971,7 @@
         "libtmux_tokio::query::Filterable"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_query.rs",
       "files": [
         {
@@ -17004,7 +17004,7 @@
         6
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_query.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -17029,7 +17029,7 @@
         "libtmux_tokio::query::QueryIteratorExt::matching"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_query.rs",
       "files": [
         {
@@ -17062,7 +17062,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_query.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -17087,7 +17087,7 @@
         "libtmux_tokio::query::QueryIteratorExt::exactly_one"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_cardinality.rs",
       "files": [
         {
@@ -17120,7 +17120,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_cardinality.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -17145,7 +17145,7 @@
         "libtmux_tokio::query::QueryIteratorExt::one_or_none"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_cardinality.rs",
       "files": [
         {
@@ -17178,7 +17178,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_cardinality.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -17203,7 +17203,7 @@
         "libtmux_tokio::query::ExactlyOneError"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_cardinality.rs",
       "files": [
         {
@@ -17236,7 +17236,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_cardinality.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -17261,7 +17261,7 @@
         "libtmux_tokio::query::MultipleItemsError"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_cardinality.rs",
       "files": [
         {
@@ -17294,7 +17294,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_cardinality.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -17319,7 +17319,7 @@
         "libtmux_tokio::Pane::send_keys"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_input.rs",
       "files": [
         {
@@ -17352,7 +17352,7 @@
         4
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_input.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -17377,7 +17377,7 @@
         "libtmux_tokio::Pane::send_key_names"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_input.rs",
       "files": [
         {
@@ -17410,7 +17410,7 @@
         4
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_input.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -17435,7 +17435,7 @@
         "libtmux_tokio::Pane::send_line"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_capture.rs",
       "files": [
         {
@@ -17468,7 +17468,7 @@
         4
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_capture.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -17493,7 +17493,7 @@
         "libtmux_tokio::Pane::capture"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_capture.rs",
       "files": [
         {
@@ -17526,7 +17526,7 @@
         4
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_capture.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -17551,7 +17551,7 @@
         "libtmux_tokio::Pane::wait_for_text"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceFile": "crates/libtmux-tokio/examples/api_capture.rs",
       "files": [
         {
@@ -17584,7 +17584,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach c84ede6448c32bf72aae7126e16e04540d2009aa",
         "mkdir -p src &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux-tokio/examples/api_capture.rs src/main.rs &&\n  cargo run --quiet"
       ],
       "expectedOutputs": [

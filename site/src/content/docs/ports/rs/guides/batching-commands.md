@@ -54,7 +54,7 @@ Fetch the library revision used by the example:
 ```console
 $ git init -q libtmux-source &&
   git -C libtmux-source fetch -q --depth=1 \
-    https://github.com/libtmux/libtmux-rs.git c26bcbb5127352d80dd2a8e9527494f21baa5fd6 &&
+    https://github.com/libtmux/libtmux-rs.git c84ede6448c32bf72aae7126e16e04540d2009aa &&
   git -C libtmux-source checkout -q --detach FETCH_HEAD
 ```
 
@@ -289,9 +289,9 @@ Blocking plan `Pause` operations are refused on a control connection before
 recorded commands are sent. See [Control mode](../control-mode/) for connection
 ownership and notification draining.
 
-Source contracts: [Plan](https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/libtmux-tokio/src/plan.rs),
-[planners](https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/libtmux-tokio/src/plan/planner.rs),
-and [execution and outcomes](https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/libtmux-tokio/src/plan/run.rs)
+Source contracts: [Plan](https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/libtmux-tokio/src/plan.rs),
+[planners](https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/libtmux-tokio/src/plan/planner.rs),
+and [execution and outcomes](https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/libtmux-tokio/src/plan/run.rs)
 at the displayed library revision.
 
-[plan-feature]: https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/libtmux-tokio/Cargo.toml
+[plan-feature]: https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/libtmux-tokio/Cargo.toml

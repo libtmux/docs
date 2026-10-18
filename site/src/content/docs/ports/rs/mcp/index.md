@@ -28,4 +28,4 @@ Toolsets select inspection, management, execution, and teardown. Read
 The Rust [Workspace Manager](../workspace/) is a separate crate. The current MCP catalog does not
 include a workspace-file operation.
 
-[Crate documentation and prerequisites](https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/tmux-mcp/README.md).
+[Crate documentation and prerequisites](https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/tmux-mcp/README.md).

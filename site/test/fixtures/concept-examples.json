@@ -731,7 +731,7 @@
     {
       "port": "rs",
       "page": "ports/rs/concepts/queries",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "runtime": "Rust 1.97.1",
       "tmuxVersions": [
         "3.6"
@@ -755,7 +755,7 @@
         }
       ],
       "shellRecipe": [
-        "git init -q libtmux-source &&\n  git -C libtmux-source fetch -q --depth=1 \\\n    https://github.com/libtmux/libtmux-rs.git c26bcbb5127352d80dd2a8e9527494f21baa5fd6 &&\n  git -C libtmux-source checkout -q --detach FETCH_HEAD",
+        "git init -q libtmux-source &&\n  git -C libtmux-source fetch -q --depth=1 \\\n    https://github.com/libtmux/libtmux-rs.git c84ede6448c32bf72aae7126e16e04540d2009aa &&\n  git -C libtmux-source checkout -q --detach FETCH_HEAD",
         "cargo +1.97.1 run --quiet --bin matching",
         "cargo +1.97.1 run --quiet --bin cardinality",
         "cargo +1.97.1 run --quiet --bin refresh"
@@ -780,7 +780,7 @@
     {
       "port": "rs",
       "page": "ports/rs/concepts/transports",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "runtime": "Rust 1.97.1",
       "tmuxVersions": [
         "3.6"
@@ -796,7 +796,7 @@
         }
       ],
       "shellRecipe": [
-        "git init -q libtmux-source &&\n  git -C libtmux-source fetch -q --depth=1 \\\n    https://github.com/libtmux/libtmux-rs.git c26bcbb5127352d80dd2a8e9527494f21baa5fd6 &&\n  git -C libtmux-source checkout -q --detach FETCH_HEAD",
+        "git init -q libtmux-source &&\n  git -C libtmux-source fetch -q --depth=1 \\\n    https://github.com/libtmux/libtmux-rs.git c84ede6448c32bf72aae7126e16e04540d2009aa &&\n  git -C libtmux-source checkout -q --detach FETCH_HEAD",
         "cargo +1.97.1 run --quiet --bin subprocess"
       ],
       "expectedOutputs": [
@@ -812,7 +812,7 @@
     {
       "port": "rs",
       "page": "ports/rs/guides/batching-commands",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "runtime": "Rust 1.97.1",
       "tmuxVersions": [
         "3.6"
@@ -828,7 +828,7 @@
         }
       ],
       "shellRecipe": [
-        "git init -q libtmux-source &&\n  git -C libtmux-source fetch -q --depth=1 \\\n    https://github.com/libtmux/libtmux-rs.git c26bcbb5127352d80dd2a8e9527494f21baa5fd6 &&\n  git -C libtmux-source checkout -q --detach FETCH_HEAD",
+        "git init -q libtmux-source &&\n  git -C libtmux-source fetch -q --depth=1 \\\n    https://github.com/libtmux/libtmux-rs.git c84ede6448c32bf72aae7126e16e04540d2009aa &&\n  git -C libtmux-source checkout -q --detach FETCH_HEAD",
         "cargo +1.97.1 run --quiet --bin batching"
       ],
       "expectedOutputs": [
@@ -846,7 +846,7 @@
     {
       "port": "rs",
       "page": "ports/rs/guides/control-mode",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "runtime": "Rust 1.97.1",
       "tmuxVersions": [
         "3.6"
@@ -862,7 +862,7 @@
         }
       ],
       "shellRecipe": [
-        "git init -q libtmux-source &&\n  git -C libtmux-source fetch -q --depth=1 \\\n    https://github.com/libtmux/libtmux-rs.git c26bcbb5127352d80dd2a8e9527494f21baa5fd6 &&\n  git -C libtmux-source checkout -q --detach FETCH_HEAD",
+        "git init -q libtmux-source &&\n  git -C libtmux-source fetch -q --depth=1 \\\n    https://github.com/libtmux/libtmux-rs.git c84ede6448c32bf72aae7126e16e04540d2009aa &&\n  git -C libtmux-source checkout -q --detach FETCH_HEAD",
         "cargo +1.97.1 run --quiet --bin control"
       ],
       "expectedOutputs": [

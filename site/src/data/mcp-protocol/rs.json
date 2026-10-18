@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-protocol.mjs",
   "repo": "libtmux/libtmux-rs",
-  "revision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+  "revision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
   "selection": {
     "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
   },

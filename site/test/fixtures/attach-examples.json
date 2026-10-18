@@ -97,14 +97,14 @@
     {
       "port": "rs",
       "language": "rust",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceRepository": "libtmux/libtmux-rs",
       "toolchain": [
         "Rust 1.97.1"
       ],
       "page": "ports/rs/guides/attaching-to-tmux",
       "shellRecipe": [
-        "git init -q libtmux &&\n  git -C libtmux fetch -q --depth=1 \\\n    https://github.com/libtmux/libtmux-rs.git c26bcbb5127352d80dd2a8e9527494f21baa5fd6 &&\n  git -C libtmux checkout -q --detach FETCH_HEAD &&\n  sh run.sh cargo +1.97.1 run"
+        "git init -q libtmux &&\n  git -C libtmux fetch -q --depth=1 \\\n    https://github.com/libtmux/libtmux-rs.git c84ede6448c32bf72aae7126e16e04540d2009aa &&\n  git -C libtmux checkout -q --detach FETCH_HEAD &&\n  sh run.sh cargo +1.97.1 run"
       ],
       "expectedOutput": "work",
       "files": [

@@ -241,7 +241,7 @@
     {
       "port": "rs",
       "language": "rust",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceRepository": "libtmux/libtmux-rs",
       "files": [
         {
@@ -265,7 +265,7 @@
       ],
       "page": "ports/rs/workspace/internals/examples",
       "shellRecipe": [
-        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-rs.git && \\\n    git -C libtmux-source fetch --depth=1 origin c26bcbb5127352d80dd2a8e9527494f21baa5fd6 && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
+        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-rs.git && \\\n    git -C libtmux-source fetch --depth=1 origin c84ede6448c32bf72aae7126e16e04540d2009aa && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
         "cargo +1.97.1 run --quiet"
       ],
       "verificationScope": "Exact displayed files and setup replayed from public Git on Linux; program checks and expected stdout passed. Only tmux 3.6 was exercised.",
@@ -338,12 +338,12 @@
     {
       "port": "rs",
       "language": "rust",
-      "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
+      "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
       "sourceRepository": "libtmux/libtmux-rs",
       "files": [
         {
           "name": "Cargo.toml",
-          "sha256": "daf2445aefc818981d0a0a0db0cf07755b8d7b83daf0add1d68b26cbd7935cbe"
+          "sha256": "526e1323d9653d5869cd89553c096b44ffc75058d23a6118c89f785c6309d97e"
         },
         {
           "name": "src/main.rs",

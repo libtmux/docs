@@ -49,4 +49,4 @@ recover the original command line from the current foreground program alone.
 Review exported commands before using the file as a launcher. Freezing does
 not preserve application memory, terminal history, or files on disk.
 
-[Builder implementation](https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/tmux-workspace/src/lib.rs); [Freeze implementation](https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/tmux-workspace/src/freeze.rs).
+[Builder implementation](https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/tmux-workspace/src/lib.rs); [Freeze implementation](https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/tmux-workspace/src/freeze.rs).

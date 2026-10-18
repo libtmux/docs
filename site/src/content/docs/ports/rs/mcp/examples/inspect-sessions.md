@@ -33,8 +33,8 @@ edition = "2024"
 publish = false
 
 [dependencies]
-libtmux-tokio = { git = "https://github.com/libtmux/libtmux-rs", rev = "c26bcbb5127352d80dd2a8e9527494f21baa5fd6" }
-tmux-mcp = { git = "https://github.com/libtmux/libtmux-rs", rev = "c26bcbb5127352d80dd2a8e9527494f21baa5fd6" }
+libtmux-tokio = { git = "https://github.com/libtmux/libtmux-rs", rev = "c84ede6448c32bf72aae7126e16e04540d2009aa" }
+tmux-mcp = { git = "https://github.com/libtmux/libtmux-rs", rev = "c84ede6448c32bf72aae7126e16e04540d2009aa" }
 rmcp = { version = "=3.1.2", features = ["client", "server", "transport-io"] }
 serde_json = "=1.0.151"
 tempfile = "=3.27.0"

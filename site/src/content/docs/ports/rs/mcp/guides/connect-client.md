@@ -22,7 +22,7 @@ binary directory must be on the path available to your MCP client.
 ```console
 $ cargo +1.97.1 install \
     --git https://github.com/libtmux/libtmux-rs \
-    --rev c26bcbb5127352d80dd2a8e9527494f21baa5fd6 \
+    --rev c84ede6448c32bf72aae7126e16e04540d2009aa \
     --locked \
     tmux-mcp
 ```
@@ -147,6 +147,6 @@ binary's absolute path. If a tool is missing, compare discovery with
 For a missing session or pane, list the objects again before choosing
 another target.
 
-[Launcher source](https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/tmux-mcp/src/bin/tmux-mcp.rs)
+[Launcher source](https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/tmux-mcp/src/bin/tmux-mcp.rs)
 defines socket selection and shutdown.
 

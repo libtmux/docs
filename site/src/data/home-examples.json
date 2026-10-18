@@ -142,8 +142,8 @@
   "rs": {
     "lang": "rust",
     "sourceRepository": "libtmux/libtmux-rs",
-    "sourceRevision": "c26bcbb5127352d80dd2a8e9527494f21baa5fd6",
-    "sourceTree": "1c1b198630369bc82ebf5c29dfda5ba3af8e99e3",
+    "sourceRevision": "c84ede6448c32bf72aae7126e16e04540d2009aa",
+    "sourceTree": "adf2978550532a75836612fa8f1339d56d991dc1",
     "program": "src/main.rs",
     "excerpt": {
       "startLine": 1,
@@ -175,7 +175,7 @@
     ],
     "prerequisites": "Linux, a POSIX shell, Git, tmux 3.2a or newer, rustup with Rust 1.97.1 (rust-toolchain.toml), and a C linker. The example uses the unreleased libtmux-tokio package from pinned source.",
     "commands": [
-      "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-rs.git \\\n  c26bcbb5127352d80dd2a8e9527494f21baa5fd6\ngit -C source checkout -q --detach FETCH_HEAD\ncargo build --locked --jobs 2",
+      "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-rs.git \\\n  c84ede6448c32bf72aae7126e16e04540d2009aa\ngit -C source checkout -q --detach FETCH_HEAD\ncargo build --locked --jobs 2",
       "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\ncargo run --quiet --locked"
     ],
     "expectedOutput": "hello\n",

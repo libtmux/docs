@@ -48,4 +48,4 @@ select an alpha release.
 The parser records unknown keys in `unsupported_keys`. Review those lists
 before building: an unrecognized field does not configure the created session.
 
-[Crate documentation](https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/tmux-workspace/README.md)
+[Crate documentation](https://github.com/libtmux/libtmux-rs/blob/c84ede6448c32bf72aae7126e16e04540d2009aa/crates/tmux-workspace/README.md)
