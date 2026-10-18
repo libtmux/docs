@@ -70,6 +70,7 @@ try {
   if (loop !== 'inner') checks.push(
     pnpm('run', '--recursive', 'lint'),
     pnpm('exec', 'oxlint', 'scripts'),
+    pnpm('run', 'lint:python'),
     node('scripts/check-api-links.mjs'),
     node('scripts/check-nav.mjs'),
     node('scripts/gen-mentions.mjs', '--check'),
@@ -81,6 +82,7 @@ try {
   if (loop === 'outer') checks.push(
     node('scripts/gen-example-sources.mjs', '--check'),
     pnpm('run', '--recursive', 'type-check'),
+    pnpm('run', 'type-check:python'),
     node('site/scripts/check-dev.mjs', '--sample'),
   )
   await Promise.all(checks)
