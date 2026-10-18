@@ -176,7 +176,7 @@ describe('header pickers', () => {
   it('adds none to the homepage, tmux routes or other pages without a port', async () => {
     for (const prefix of ['/en/', '/ja/', '/pr-42/en/', '/pr-42/ja/']) {
       for (const route of ['', 'tmux', 'tmux/', 'tmux/guides', 'tmux/topics/environment', 'tmux/concepts/servers',
-        'tmux/latest/manual', 'tmux/3.2a/manual/full/', 'tmux/latest/reference/server', 'tmux/3.7c/reference/', 'search', 'translations', 'mcp', 'workspace']) {
+        'tmux/latest/manual', 'tmux/3.2a/manual/full/', 'tmux/latest/reference/server', 'tmux/3.7c/reference/', 'search', 'meta/support', 'meta/translations', 'mcp', 'workspace']) {
         for (const pagePath of [route, undefined]) {
           const { document } = await page(`${prefix}${route}?q=server#members`, { pagePath })
           expect(document.querySelector('.site-header__bar'), `${prefix}${route}`).not.toBeNull()

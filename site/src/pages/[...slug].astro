@@ -13,7 +13,7 @@ import ProtocolReference from '../components/mcp/ProtocolReference.astro'
 import TmuxOverview from '../components/tmux/Overview.astro'
 import { mcpReferenceRoutes, type McpSection } from '../lib/mcp-reference'
 import { docsEntriesAvailable } from '../lib/page-port-links'
-import { docsRedirects, docsRoutePath, sourceGuideRedirects, workspaceRedirects } from '../lib/docs-paths'
+import { docsRedirects, movedPageRedirects, docsRoutePath, sourceGuideRedirects, workspaceRedirects } from '../lib/docs-paths'
 import { DEFAULT_LOCALE, localeRoot, type Locale } from '../i18n/locales'
 import { buildLocale, localeOf, placeholderPairs, sourceIdOf } from '../i18n/resolve'
 
@@ -29,6 +29,7 @@ export async function getStaticPaths() {
       params: { slug: docsRoutePath({ ...entry, id: sourceIdOf(entry.id) }, port, defaults) },
       props: { entry, version: entry.data.port && !port ? (defaults[entry.data.port] ?? 'latest') : undefined },
     }))
+  const moved = movedPageRedirects(port).map(({ path, target }) => ({ params: { slug: path }, props: { redirect: target } }))
   const global = !port ? [
     { params: { slug: 'tmux' }, props: { globalPage: 'tmux' } },
     { params: { slug: 'mcp' }, props: { globalPage: 'mcp' } },
@@ -47,7 +48,7 @@ export async function getStaticPaths() {
       ...productApiRedirects(API_MODELS, port, defaults, buildTarget(process.env).version),
     ]
       .map(({ path, target }) => ({ params: { slug: path }, props: { redirect: target } }))
-    const routes = [...real, ...global, ...reference, ...protocol, ...redirects]
+    const routes = [...real, ...global, ...reference, ...protocol, ...redirects, ...moved]
     const paths = routes.map((route) => route.params.slug)
     const duplicates = paths.filter((path, index) => paths.indexOf(path) !== index)
     if (duplicates.length) throw new Error(`Duplicate generated documentation routes: ${[...new Set(duplicates)].join(', ')}`)
@@ -59,7 +60,7 @@ export async function getStaticPaths() {
       params: { slug: docsRoutePath({ ...entries.find((entry) => entry.id === sourceId)!, id: sourceId }, port, defaults) },
       props: { entry: entries.find((entry) => entry.id === sourceId)!, placeholderLocale: locale },
     }))
-  return [...real, ...global, ...placeholders]
+  return [...real, ...global, ...placeholders, ...moved]
 }
 
 interface Props {

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Reduce the four ports' parity ledgers to one schema for site/src/pages/parity.astro.
+// Reduce the four ports' parity ledgers to one schema for site/src/pages/meta/parity.astro.
 //
 // Four self-hosted-or-not ports publish a per-symbol Python-parity ledger, and no two
 // use the same shape:

@@ -84,6 +84,21 @@ export interface DocsRedirect {
   target: string
 }
 
+/**
+ * Pages about libtmux.org itself live under `meta/`, out of the site root's
+ * namespace. Each old URL keeps answering with a redirect to its new home.
+ */
+export const MOVED_PAGES: readonly DocsRedirect[] = [
+  { path: 'parity', target: 'meta/parity' },
+  { path: 'translations', target: 'meta/translations' },
+  { path: 'tmux/guides/concept-examples', target: 'meta/support' },
+]
+
+/** Root builds redirect; no link ever pointed into a port tree's copy of these pages. */
+export function movedPageRedirects(buildPort?: string): DocsRedirect[] {
+  return buildPort ? [] : [...MOVED_PAGES]
+}
+
 /** Preserve incoming links to retired reference summaries without a second API page. */
 export function sourceGuideRedirects(buildPort?: string, defaults: Record<string, string> = {}): DocsRedirect[] {
   return (buildPort ? [buildPort] : SOURCE_GUIDE_PORTS).flatMap((port) =>

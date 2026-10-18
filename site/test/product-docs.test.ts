@@ -766,7 +766,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
 
   it('keeps product storage paths out of shared translation coverage', () => {
     for (const locale of ['en', 'ja']) {
-      const coverage = readFileSync(publishedPath(`${PREVIEW_PREFIX}/${locale}/translations/index.html`), 'utf8')
+      const coverage = readFileSync(publishedPath(`${PREVIEW_PREFIX}/${locale}/meta/translations/index.html`), 'utf8')
       expect(coverage.match(/href="\/(?:pr-\d+\/)?(?:en|ja)\/(?:ports|_staged)\/[^"]*"/g),
         `${locale} coverage links to published shared pages`).toBeNull()
     }

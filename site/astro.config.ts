@@ -22,7 +22,7 @@ import { rehypeRowAnchors } from './src/plugins/rehype-row-anchors'
 import { rehypeTmuxKeys } from './src/plugins/rehype-tmux-keys'
 import { remarkDocumenterHeadings } from './src/plugins/remark-documenter-headings'
 import { PORT_BY_SLUG, PORTS } from './src/lib/ports.ts'
-import { tmuxProsePath, workspaceRedirectPath } from './src/lib/docs-paths.ts'
+import { MOVED_PAGES, tmuxProsePath, workspaceRedirectPath } from './src/lib/docs-paths.ts'
 import { SOURCE_GUIDE_PORTS, sourceGuidesFor, sourceGuideRedirectsFor } from './src/lib/port-documentation.ts'
 import { KNOWN_PORTS } from './src/lib/workspace-shared-slots.ts'
 import { isLegacyTmuxManualPath } from './src/lib/tmux-manual-data.ts'
@@ -116,6 +116,13 @@ const isSourceGuideRedirect = (page: string): boolean => {
   return sourceGuideAliases.get(port)?.has(route.join('/')) ?? false
 }
 
+/** A retired URL that now only redirects to the page's new home. */
+const isMovedPage = (page: string): boolean => {
+  const segments = new URL(page).pathname.split('/').filter(Boolean)
+  const path = (LOCALES.includes(segments[0] as never) ? segments.slice(1) : segments).join('/')
+  return MOVED_PAGES.some((moved) => moved.path === path)
+}
+
 /** `/<locale>/<port>/` itself: a `noindex` redirect, not the tree beneath it. */
 const isPortRoot = (page: string): boolean => {
   const segments = new URL(page).pathname.replace(/^\/+|\/+$/g, '').split('/')
@@ -147,7 +154,7 @@ export default defineConfig({
           sitemap({
             filter: (page) =>
               !page.includes('/pr-') && !page.includes('/demo') && !isPlaceholder(page) &&
-              !isWorkspaceRedirect(page) && !isSourceGuideRedirect(page) && !isPortRoot(page) &&
+              !isWorkspaceRedirect(page) && !isSourceGuideRedirect(page) && !isMovedPage(page) && !isPortRoot(page) &&
               !isLegacyTmuxManualPath(new URL(page).pathname) &&
               !/\/tmux\/(?!latest\/)[^/]+\/(?:manual|reference|catalog)\//.test(new URL(page).pathname),
           }),

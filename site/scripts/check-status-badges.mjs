@@ -64,7 +64,7 @@ const originMainMarkup = (concept) => {
     group.querySelector('.surface-options')?.before(element('p', { className: 'surface-concept-description', textContent: concept }))
   }
   const key = element('p', { className: 'surface-status-key' })
-  key.append(element('a', { href: '/tmux/guides/concept-examples/', textContent: 'Concept and alpha' }), ': example support scope and release maturity.')
+  key.append(element('a', { href: '/meta/support/', textContent: 'Concept and alpha' }), ': example support scope and release maturity.')
   document.querySelector('.surface-picker-footer')?.before(key)
 }
 
@@ -324,7 +324,7 @@ export async function checkStatusBadgesFail(browser, base) {
       script: () => document.querySelectorAll('.status-toggletip__card a').forEach((link) => link.setAttribute('tabindex', '-1')),
     }, /Tab moves from the badge into the card's link/],
     ['a link to a missing section', picker, {
-      script: () => document.querySelectorAll('.status-toggletip__card a').forEach((link) => link.setAttribute('href', '/tmux/guides/concept-examples/#no-such-section')),
+      script: () => document.querySelectorAll('.status-toggletip__card a').forEach((link) => link.setAttribute('href', '/meta/support/#no-such-section')),
     }, /the guide has the #no-such-section section|goes to the concept and alpha section/],
   ]
   for (const [name, scope, sabotage, failure] of controls) {

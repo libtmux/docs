@@ -81,6 +81,6 @@ describe('product status', () => {
     }
     expect(Object.keys(PRODUCT_STATUS_LINE).sort()).toEqual(['alpha', 'beta', 'concept', 'pre-alpha', 'rc', 'stable', 'unreleased'])
     expect(PRODUCT_STATUS_LINK).toBe('Read more')
-    expect(PRODUCT_STATUS_GUIDE).toBe('/tmux/guides/concept-examples/#concept-and-alpha')
+    expect(PRODUCT_STATUS_GUIDE).toBe('/meta/support/#concept-and-alpha')
   })
 })

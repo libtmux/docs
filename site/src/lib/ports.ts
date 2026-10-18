@@ -1803,7 +1803,7 @@ export type ProductStatus = 'concept' | Maturity
 
 /**
  * The one short line under each badge's toggletip and in the picker's
- * description. The full explanation lives on the guide that the toggletip links to.
+ * description. The full explanation lives on the page that the toggletip links to.
  */
 export const PRODUCT_STATUS_LINE: Readonly<Record<ProductStatus, string>> = {
   concept: 'Working example; may change without notice.',
@@ -1819,7 +1819,7 @@ export const PRODUCT_STATUS_LINE: Readonly<Record<ProductStatus, string>> = {
 export const PRODUCT_STATUS_LINK = 'Read more'
 
 /** The page that explains each badge, and the section that does. */
-export const PRODUCT_STATUS_GUIDE = '/tmux/guides/concept-examples/#concept-and-alpha'
+export const PRODUCT_STATUS_GUIDE = '/meta/support/#concept-and-alpha'
 
 /**
  * The badge a product row carries, from the same data as its install command.
