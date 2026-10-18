@@ -15,7 +15,15 @@ Install dependencies from the repository root:
 
 ```console
 $ pnpm install
+$ uv sync --locked
 ```
+
+Python tooling lives in `pyproject.toml` and `uv.lock`. The `dev` group
+includes `lint` and `testing`; `.python-version` selects the development
+interpreter. Keep dependency changes in the manifest and regenerate the
+lockfile with `uv lock`.
+The `docs` group supplies the C++ native Sphinx renderer; the Python port
+keeps its own source-bound uv environment.
 
 Start the Astro development server:
 
@@ -41,6 +49,11 @@ rules. Both are pinned centrally in the pnpm catalog. Package lint scripts
 use `--type-aware` with their own `tsconfig.json`; the root command also runs
 Oxlint over `scripts/`. Preserve each script's scope and exclusions.
 
+The root lint command also runs Ruff's lint and format checks on Python
+tooling under `scripts/`. Run `uv run --locked ruff format .` to format
+those files; generated examples and documentation snippets keep their own
+verification rules.
+
 Run lint across the workspace and build scripts:
 
 ```console
@@ -63,8 +76,9 @@ $ pnpm run type-check
 ```
 
 This runs `astro check` for the site and Oxlint's type-check mode for the
-plain TypeScript packages. The theme also exposes `type-check:tsc` for a
-direct compiler check; it is separate from the root gate.
+plain TypeScript packages, plus `uv run --locked ty check` for Python
+tooling. Ty treats warnings as failures. The theme also exposes
+`type-check:tsc` for a direct compiler check; it is separate from the root gate.
 
 Use the inner loop for cross-port mappings, native navigation, and native
 asset normalization:
