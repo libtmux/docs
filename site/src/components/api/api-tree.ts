@@ -11,7 +11,7 @@
  */
 import { waitForAppearance, layoutBeforeAppearance } from '../../lib/page-readiness'
 import { wordBreak } from '../../lib/word-break'
-import { kindMark, markHeight } from '../../lib/api-labels'
+import { kindMark, markClass } from '../../lib/api-labels'
 import { apiTreeHref, searchApi, type ApiTreeBucket as JsonBucket, type ApiTreeJson as TreeJson } from '../../lib/api-search'
 import { apiTreePath, captureApiTree, initializeApiTree, type ApiTreeSelection, type ApiTreeState } from './api-tree-state'
 
@@ -148,9 +148,14 @@ function initSearch(nav: HTMLElement, tree: HTMLElement, signal: AbortSignal) {
         name.textContent = record.name
         const mark = kindBadge(record.kind)
         if (mark) name.prepend(mark, ' ')
+        // The word trails the name: a result is a menu row, and a menu cannot be hovered for it.
+        const word = document.createElement('span')
+        word.className = 'api-kind-word'
+        word.textContent = record.kind.replace(/-/g, ' ')
+        name.append(word)
         link.setAttribute('aria-description', record.kind)
         const path = document.createElement('small')
-        path.textContent = `${record.kind} · ${record.qualifiedName}`
+        path.textContent = record.qualifiedName
         link.append(name, path)
         li.append(link)
         results.append(li)
@@ -260,8 +265,7 @@ function kindBadge(kind?: string): HTMLSpanElement | undefined {
   const label = document.createElement('span')
   label.className = 'api-badge__label'
   label.textContent = mark
-  const height = markHeight(mark)
-  if (height) label.dataset.mark = height
+  label.dataset.mark = markClass(mark)
   badge.append(label)
   return badge
 }

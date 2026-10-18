@@ -577,8 +577,8 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                       class="api-index-card scroll-mt-24 rounded border border-slate-200 p-3 hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-800">
                       {mod.free.includes(o) && legacyIndexAnchors(o).map((id) => <span id={id} class="sr-only" />)}
                       <div class="api-index-card__heading">
-                        <a class="api-index-card__link font-mono font-semibold" href={hrefFor(o)}>{o.name}</a>
-                        <ApiBadge label={kind === 'typealias' ? 'type alias' : kind} variant="kind" value={kind} preview={false} />
+                        <a class="api-index-card__link font-mono font-semibold" href={hrefFor(o)}><ApiBadge label={kind} variant="kind" value={kind} compact preview={false} />{o.name}</a>
+                        <ApiBadge label={kind === 'typealias' ? 'type alias' : kind} variant="kind" value={kind} plain />
                         {context && <span class="api-index-card__context">
                           <ApiBadge label={context.label} variant="mod" value={context.kind} preview={false} />
                         </span>}
@@ -788,9 +788,9 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                 <ul class="api-member-list mt-3">
                   {group.members.map((m) => (
                     <li>
-                      <span><a class="api-member-link" href={hrefFor(m)}>{m.name}</a>{m.type && <span class="api-member-type">: <ApiType type={m.type} index={index} context={m} /></span>}</span>
+                      <span><ApiBadge label={m.kind} variant="kind" value={m.kind} compact preview={false} /><a class="api-member-link" href={hrefFor(m)}>{m.name}</a>{m.type && <span class="api-member-type">: <ApiType type={m.type} index={index} context={m} /></span>}</span>
                       <span class="api-member-badges">
-                        <ApiBadge label={m.kind} variant="kind" value={m.kind} />
+                        <ApiBadge label={m.kind} variant="kind" value={m.kind} plain />
                         {m.inheritedFrom && <a class="api-badge api-badge--mod" href={apiGlossaryHref('inherited', Astro.url.pathname)} title={`Inherited from ${m.inheritedFrom}`} aria-description={`Inherited from ${m.inheritedFrom}`} data-preview-context={`Inherited from ${m.inheritedFrom}.`}>inherited</a>}
                       </span>
                       {m.doc?.summary && (
@@ -814,9 +814,9 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                 <ul class="api-member-list mt-4">
                   {otherInherited.map((m) => (
                     <li>
-                      <a class="api-member-link" href={hrefFor(m)}>{m.name}</a>
+                      <span><ApiBadge label={m.kind} variant="kind" value={m.kind} compact preview={false} /><a class="api-member-link" href={hrefFor(m)}>{m.name}</a></span>
                       <span class="api-member-badges">
-                        <ApiBadge label={m.kind} variant="kind" value={m.kind} />
+                        <ApiBadge label={m.kind} variant="kind" value={m.kind} plain />
                         <a class="api-badge api-badge--mod" href={apiGlossaryHref('inherited', Astro.url.pathname)} title={`Inherited from ${m.inheritedFrom}`} aria-description={`Inherited from ${m.inheritedFrom}`} data-preview-context={`Inherited from ${m.inheritedFrom}.`}>inherited</a>
                       </span>
                       {m.doc?.summary && (

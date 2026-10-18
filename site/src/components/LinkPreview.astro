@@ -12,7 +12,7 @@ const { id = 'reference-link-preview', title = 'Reference preview', description 
 ---
 <span id={id} popover="auto" role="dialog" aria-label={title}
   class:list={['reference-link-preview not-prose', className]} data-pagefind-ignore="all">
-  <span class="reference-link-preview__heading"><code id={`${id}-title`} data-preview-title>{title}</code><button type="button" data-preview-close popovertarget={id} popovertargetaction="hide" aria-label="Close preview">×</button></span>
+  <span class="reference-link-preview__heading"><span data-preview-kind hidden></span><code id={`${id}-title`} data-preview-title>{title}</code><button type="button" data-preview-close popovertarget={id} popovertargetaction="hide" aria-label="Close preview">×</button></span>
   <button type="button" data-preview-expand hidden aria-expanded="false" aria-controls={`${id}-title`}>Show full name</button>
   <span data-preview-description>{description}</span>
   <span data-preview-detail hidden></span>
@@ -48,6 +48,7 @@ const { id = 'reference-link-preview', title = 'Reference preview', description 
   .reference-link-preview [hidden] { display: none; }
   .reference-link-preview__heading { display: flex; align-items: baseline; gap: .75rem; margin-bottom: .65rem; }
   .reference-link-preview__heading code { flex: 1; min-width: 0; }
+  .reference-link-preview__heading [data-preview-kind]:not([hidden]) { display: inline-flex; align-self: center; flex: none; font-size: 1rem; }
   .reference-link-preview code { font-family: var(--font-mono, ui-monospace, monospace); }
   .reference-link-preview__heading button { flex: none; margin-left: auto; padding: .1rem .4rem; cursor: pointer; }
   .reference-link-preview [data-preview-expand] { margin-bottom: .65rem; color: var(--color-link); text-decoration: underline; cursor: pointer; }

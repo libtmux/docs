@@ -1,7 +1,7 @@
 import type { LinkPreview } from './link-preview'
 import type { CodeHighlight } from './highlight'
 import { linkPreviewTarget, linkPreviewCandidate, linkPreviewBlockLink, markLinkPreview } from './link-preview-paint'
-import { abbreviateNamespace } from './api-labels'
+import { abbreviateNamespace, kindMark, markClass } from './api-labels'
 import { wordBreak } from './word-break'
 export { linkPreviewTarget } from './link-preview-paint'
 
@@ -26,6 +26,38 @@ function validPreview(value: unknown): value is LinkPreview {
     && typeof data.href === 'string' && (!data.detail || typeof data.detail === 'string')
     && (!data.actionLabel || typeof data.actionLabel === 'string')
     && (!data.signature || typeof data.signature === 'string')
+}
+
+/**
+ * The card's header carries the kind as the legend chip, the same token a
+ * heading uses: the mark and the word in one box. A term that is not a kind
+ * (a glossary entry such as "inherited") gets no chip.
+ */
+export function renderPreviewKind(slot: HTMLElement | null, kind?: string) {
+  if (!slot) return
+  slot.replaceChildren()
+  const mark = kind && /^[a-z]+(?:-[a-z]+)*$/.test(kind) ? kindMark(kind) : undefined
+  slot.hidden = !mark
+  if (!mark || !kind) return
+  const chip = document.createElement('span')
+  chip.className = `api-badge api-badge--kind api-badge--kind-${kind} api-leg`
+  chip.dataset.mark = markClass(mark)
+  const markBox = document.createElement('span')
+  markBox.className = 'api-leg__m'
+  markBox.setAttribute('aria-hidden', 'true')
+  const glyph = document.createElement('span')
+  glyph.className = 'api-leg__g'
+  glyph.dataset.mark = markClass(mark)
+  glyph.textContent = mark
+  markBox.append(glyph)
+  const word = document.createElement('span')
+  word.className = 'api-leg__w'
+  const label = document.createElement('span')
+  label.className = 'api-badge__label api-leg__wl'
+  label.textContent = kind.replace(/-/g, ' ')
+  word.append(label)
+  chip.append(markBox, word)
+  slot.append(chip)
 }
 
 /** Optional token metadata can fail independently of the real reference link. */
@@ -157,6 +189,7 @@ export function initLinkPreviews() {
       fullTitle = preview.title
       shortTitle = abbreviateNamespace(fullTitle)
       renderTitle(false)
+      renderPreviewKind(panel.querySelector<HTMLElement>('[data-preview-kind]'), preview.kind)
       panel.querySelector('[data-preview-description]')!.textContent = preview.description || 'Read the reference for this declaration.'
       const detail = panel.querySelector<HTMLElement>('[data-preview-detail]')!
       const context = [link.dataset.previewContext, preview.detail].filter(Boolean).join(' ')

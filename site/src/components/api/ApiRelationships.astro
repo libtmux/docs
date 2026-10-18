@@ -58,8 +58,8 @@ const callSource = (section: ApiRelationshipSection, symbol: ApiSymbol) => !mode
   <h2 class="api-section-heading text-lg font-semibold" id={section.id}>{section.label}<a class="api-heading-link" href={`#${section.id}`} aria-label={`Link to ${section.label}`}>#</a></h2>
   <ul class="api-member-list mt-3">
     {section.items.map((symbol) => <li>
-      <a class="api-member-link" href={hrefFor(symbol)}>{qualifiedNameOf(symbol)}</a>
-      <span class="api-member-badges"><ApiBadge label={symbol.kind} variant="kind" value={symbol.kind} /></span>
+      <span><ApiBadge label={symbol.kind} variant="kind" value={symbol.kind} compact preview={false} /><a class="api-member-link" href={hrefFor(symbol)}>{qualifiedNameOf(symbol)}</a></span>
+      <span class="api-member-badges"><ApiBadge label={symbol.kind} variant="kind" value={symbol.kind} plain /></span>
       {callSource(section, symbol) && <a class="text-xs" href={callSource(section, symbol)}>Call site ↗</a>}
     </li>)}
   </ul>
