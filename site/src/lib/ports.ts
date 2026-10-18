@@ -1462,6 +1462,20 @@ export const PICKER_GROUP_SUMMARY: Readonly<Record<PickerGroup, string>> = {
   core: 'API reference and guides', mcp: 'Tools for connected assistants', workspace: 'Repeatable development environments',
 }
 
+/** One product's rows in a menu. */
+export interface PickerSection {
+  group: PickerGroup
+  label: string
+  rows: PickerRow[]
+}
+
+/** A menu's rows under their products, in product order; a product with no rows has no section. */
+export function pickerSections(picker: PortPicker): PickerSection[] {
+  return PICKER_GROUPS
+    .map((group) => ({ group, label: PICKER_GROUP_LABEL[group], rows: picker.rows.filter((row) => row.group === group) }))
+    .filter((section) => section.rows.length > 0)
+}
+
 /** Off-site API hosts by hostname. A reference elsewhere has no mark, so it is an error. */
 const REFERENCE_HOSTS: Readonly<Record<string, { name: string; icon: PickerIcon }>> = {
   'docs.rs': { name: 'docs.rs', icon: 'docsrs' },
