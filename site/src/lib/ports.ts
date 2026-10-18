@@ -839,6 +839,13 @@ const CORE_PORTS: readonly Port[] = [
         reference: 'https://docs.rs/libtmux-macros', source: { path: 'crates/libtmux-macros', ref: 'master' } },
     ],
     packages: [
+      { id: 'core', name: 'libtmux-core',
+        source: { path: 'crates/libtmux-core', ref: 'master' }, require: 'libtmux_core' },
+      { id: 'async', name: 'libtmux-tokio',
+        source: { path: 'crates/libtmux-tokio', ref: 'standard-library-core' }, require: 'libtmux_tokio',
+        installs: [{ label: 'Async (Git)', lang: 'console',
+          code: 'cargo add libtmux-tokio --git https://github.com/libtmux/libtmux-rs --rev c26bcbb5127352d80dd2a8e9527494f21baa5fd6',
+          note: 'Unreleased native async client. Import libtmux_tokio and add Tokio with the runtime features your application uses.' }] },
       { id: 'workspace', name: 'tmux-workspace', registry: 'https://crates.io/crates/tmux-workspace',
         reference: 'https://docs.rs/tmux-workspace',
         source: { path: 'crates/tmux-workspace', ref: 'master' },
@@ -874,9 +881,16 @@ const CORE_PORTS: readonly Port[] = [
     generator: '',
     installs: [
       {
-        label: 'cargo',
+        label: 'Async (Git)',
         lang: 'console',
-        code: 'cargo add libtmux',
+        code: 'cargo add libtmux-tokio --git https://github.com/libtmux/libtmux-rs --rev c26bcbb5127352d80dd2a8e9527494f21baa5fd6',
+        note: 'Unreleased native async client. Import libtmux_tokio and add Tokio with the runtime features your application uses.',
+      },
+      {
+        label: 'Blocking (Git)',
+        lang: 'console',
+        code: 'cargo add libtmux --git https://github.com/libtmux/libtmux-rs --rev c26bcbb5127352d80dd2a8e9527494f21baa5fd6 --no-default-features',
+        note: 'Unreleased blocking client with zero dependency crates in this configuration. Published libtmux releases still expose the earlier async API.',
       },
     ],
     registry: { name: 'crates.io', url: 'https://crates.io/crates/libtmux', icon: 'crates' },

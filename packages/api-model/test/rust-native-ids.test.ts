@@ -2,12 +2,16 @@ import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { attachNativeRustIdStructs } from '../src/languages/rust-id-structs.ts'
+import { attachRustPackageExports } from '../src/languages/rust-packages.ts'
 import { SymbolIndex } from '../src/link.ts'
 import type { ApiModel, ApiSymbol } from '../src/model.ts'
 
 const model = JSON.parse(readFileSync(new URL('../../../site/src/data/api/rs.json', import.meta.url), 'utf8')) as ApiModel
 const hrefFor = (symbol: ApiSymbol) => `/en/rs/latest/reference/${symbol.slug}/`
 const index = new SymbolIndex(model.symbols, hrefFor, 'rs')
+const declarationFile = model.nativeProvenance?.files.find(({ path }) =>
+  path === 'crates/libtmux-core/src/target.rs' || path === 'crates/libtmux/src/primitives/target.rs')?.path
+  ?? 'crates/libtmux/src/target.rs'
 
 describe('native Rust ID declarations', () => {
   it.each([
@@ -17,7 +21,8 @@ describe('native Rust ID declarations', () => {
     expect(owner, `missing native declaration: ${name}`).toBeDefined()
     expect(owner).toMatchObject({ name, kind: 'struct', publicId: `target.${name}`,
       product: 'core', modifiers: [], signatures: [],
-      source: { file: 'crates/libtmux/src/target.rs', line, repo: 'libtmux/libtmux-rs', revision: model.revision },
+      source: { file: declarationFile, line: declarationFile === 'crates/libtmux/src/target.rs' ? line : line - 1,
+        repo: 'libtmux/libtmux-rs', revision: model.revision },
     })
     expect(owner!.doc?.summary).toContain(`A native tmux ${noun} ID`)
     expect(owner!.doc?.body).toContain('Leading zeroes are accepted but canonicalized to the numeric tmux ID.')
@@ -126,6 +131,23 @@ describe('bounded Rust ID macro projection', () => {
     expect(f.model.nativeProvenance.exporter.existing).toBe('producer')
   })
 
+  it('retains compiler-confirmed macro owners through the package export boundary', async () => {
+    const f = fixture()
+    f.files['crates/libtmux-tokio/src/lib.rs'] = 'pub use libtmux::{ExampleId, OtherId};\n'
+    f.files['crates/libtmux-tokio/docs/public-api.txt'] =
+      'struct libtmux_tokio::ExampleId\nstruct libtmux_tokio::OtherId\n'
+    await attachNativeRustIdStructs(f.model, f.read, f.source)
+    await attachRustPackageExports(f.model, f.read)
+    for (const name of ['ExampleId', 'OtherId']) {
+      expect(f.model.symbols.find((symbol) => symbol.id === `target.${name}`)).toMatchObject({
+        package: 'libtmux', qualifiedName: `libtmux.${name}`,
+      })
+      expect(f.model.symbols.find((symbol) => symbol.id === `libtmux_tokio.${name}`)).toMatchObject({
+        package: 'libtmux-tokio', publicOwner: `target.${name}`, qualifiedName: `libtmux_tokio.${name}`,
+      })
+    }
+  })
+
   const invalid: [string, (f: Fixture) => void][] = [
     ['lookalike macro', (f) => { f.files[target] = f.files[target].replaceAll('define_id', 'define_identifier') }],
     ['scoped external macro call', (f) => { f.files[target] = f.files[target].replaceAll('define_id!(', 'other::define_id!(') }],
@@ -167,4 +189,33 @@ describe('bounded Rust ID macro projection', () => {
     await expect(attachNativeRustIdStructs(f.model, f.read, f.source)).rejects.toThrow('Unsupported Rust define_id contract')
     expect(f.model).toEqual(before)
   })
+})
+
+describe('ID declarations moved into standard-library primitives', () => {
+  it('retains historical IDs while citing the actual macro source', async () => {
+    const f = fixture()
+    f.files['crates/libtmux/src/primitives/target.rs'] = f.files[target]
+    f.files['crates/libtmux/src/primitives/mod.rs'] = 'mod target;\npub use target::{ExampleId, OtherId};\n'
+    f.files[target] = 'pub use crate::primitives::{ExampleId, OtherId};\n'
+    f.files[entry] = 'mod primitives;\nmod target;\npub use target::{ExampleId, OtherId};\n'
+    const added = await attachNativeRustIdStructs(f.model, f.read, f.source)
+    expect(added.map((symbol) => symbol.id)).toEqual(['target.ExampleId', 'target.OtherId'])
+    expect(added.every((symbol) => symbol.source.file === 'crates/libtmux/src/primitives/target.rs')).toBe(true)
+    expect(f.model.nativeProvenance!.files).toHaveLength(5)
+    delete f.model.nativeProvenance
+    f.model.symbols = f.model.symbols.filter((symbol) => !added.includes(symbol))
+    f.files[target] = 'use crate::primitives::{ExampleId, OtherId};\n'
+    await expect(attachNativeRustIdStructs(f.model, f.read, f.source)).rejects.toThrow('expected one reexport')
+  })
+})
+
+it('projects separately packaged core IDs from that crate and its compiler inventory', async () => {
+  const f = fixture()
+  f.files['crates/libtmux-core/src/target.rs'] = f.files[target]
+  f.files['crates/libtmux-core/src/lib.rs'] = f.files[entry]
+  f.files['crates/libtmux-core/docs/public-api.txt'] = f.files[inventory].replaceAll('libtmux::', 'libtmux_core::')
+  f.files[target] = 'pub use libtmux_core::{ExampleId, OtherId};\n'
+  const added = await attachNativeRustIdStructs(f.model, f.read, f.source)
+  expect(added.map((symbol) => symbol.id)).toEqual(['libtmux_core.target.ExampleId', 'libtmux_core.target.OtherId'])
+  expect(added.every((symbol) => symbol.package === 'libtmux-core' && symbol.source.file === 'crates/libtmux-core/src/target.rs')).toBe(true)
 })

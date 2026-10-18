@@ -114,7 +114,11 @@ const distinct = (entries: NavEntry[], model: ApiModelBase, scope: string): NavE
   for (const e of entries) count.set(e.name, (count.get(e.name) ?? 0) + 1)
   return entries.map((entry) => {
     if ((count.get(entry.name) ?? 0) < 2) return entry
-    const label = scope === 'scala'
+    const symbol = model.symbols.find((symbol) => (symbol.publicId ?? symbol.id) === entry.id)
+    const label = scope === 'rs' && symbol?.package && entries.filter((other) => other.name === entry.name &&
+      model.symbols.find((item) => (item.publicId ?? item.id) === other.id)?.package === symbol.package).length === 1
+      ? `${entry.name} (${symbol.package})`
+      : scope === 'scala'
       ? `${entry.name} (${entry.id.includes('.cats.') ? 'Cats Effect' : entry.id.includes('.ox.') ? 'Ox' : 'Direct API'})`
       : model.symbols.find((symbol) => (symbol.publicId ?? symbol.id) === entry.id)?.qualifiedName ?? entry.id
     return { ...entry, name: label }

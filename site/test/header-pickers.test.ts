@@ -39,7 +39,7 @@ const described = (picker: Element) => rowsOf(picker).map((row) => [
 const expectedKinds = (slug: string) => (['github', 'packages', 'docs'] as const).filter((kind) => PICKERS[slug]![kind])
 
 describe('header pickers', () => {
-  it.each(Object.entries(PICKERS))('offers %s the verified rows in the bar and in the menu', async (slug, expected) => {
+  it.each(Object.entries(PICKERS))('offers %s the expected rows in the bar and in the menu', async (slug, expected) => {
     const { document } = await portPage(slug)
     for (const placement of ['bar', 'menu'] as const) {
       const found = pickers(document, placement)
@@ -47,6 +47,23 @@ describe('header pickers', () => {
       for (const picker of found) {
         const kind = picker.dataset.headerPicker as 'github' | 'packages' | 'docs'
         expect(described(picker), `${slug} ${placement} ${kind}`).toEqual(expected[kind]!.map((row) => [...row]))
+      }
+    }
+  })
+
+  it('offers unpublished native Rust source without a package or API-host release', async () => {
+    const { document } = await portPage('rs')
+    for (const placement of ['bar', 'menu'] as const) {
+      for (const picker of pickers(document, placement)) {
+        const native = rowsOf(picker).filter((row) =>
+          row.querySelector('.header-picker__name')!.textContent === 'libtmux-tokio')
+        if (picker.dataset.headerPicker === 'github') {
+          expect(native).toHaveLength(1)
+          expect(native[0]!.getAttribute('href')).toBe('https://github.com/libtmux/libtmux-rs/tree/standard-library-core/crates/libtmux-tokio')
+          expect(native[0]!.closest('[data-picker-group]')!.getAttribute('aria-label')).toBe('Core Library')
+        } else {
+          expect(native).toHaveLength(0)
+        }
       }
     }
   })

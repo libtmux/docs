@@ -98,8 +98,10 @@ export function proseMentions(markdown: string, portByLabel: Record<string, stri
   const out: ProseMention[] = []
   const lines = markdown.split('\n')
   const context: { port?: string; before: string }[] = []
-  // Keep offsets stable when frontmatter, headings and examples are masked.
-  const bodyLines = lines.map((line) => ' '.repeat(line.length))
+  // Preserve line numbers without parsing padding for hidden source blocks.
+  const lineOffsets = [0]
+  for (const line of lines.slice(0, -1)) lineOffsets.push(lineOffsets.at(-1)! + line.length + 1)
+  const bodyLines = lines.map(() => '')
   const sections: { depth: number; port?: string }[] = []
   let fence: string | undefined
   let fencePort: string | undefined
@@ -147,7 +149,7 @@ export function proseMentions(markdown: string, portByLabel: Record<string, stri
     identifier?: string
     url?: string
     children?: MarkdownNode[]
-    position?: { start: { offset?: number }; end: { offset?: number } }
+    position?: { start: { line: number; column: number }; end: { line: number; column: number } }
   }
   const tree = fromMarkdown(body)
   const definitions = new Map<string, string>()
@@ -159,15 +161,16 @@ export function proseMentions(markdown: string, portByLabel: Record<string, stri
     node.children?.forEach(collectDefinitions)
   }
   collectDefinitions(tree)
-  const spans: { text: string; start: number; end: number; href?: string }[] = []
+  const spans: { text: string; start: number; end: number; line: number; href?: string }[] = []
   const collectSpans = (node: MarkdownNode, href?: string) => {
     if (node.type === 'image' || node.type === 'imageReference') return
     if (node.type === 'link') href = node.url
     if (node.type === 'linkReference') href = definitions.get(node.identifier!.toLowerCase())
-    const start = node.position?.start.offset
-    const end = node.position?.end.offset
+    const start = node.position && lineOffsets[node.position.start.line - 1] + node.position.start.column - 1
+    const end = node.position && lineOffsets[node.position.end.line - 1] + node.position.end.column - 1
     if (node.type === 'inlineCode' && start !== undefined && end !== undefined) {
-      spans.push({ text: node.value!, start, end, ...(href !== undefined ? { href } : {}) })
+      spans.push({ text: node.value!, start, end, line: node.position!.start.line,
+        ...(href !== undefined ? { href } : {}) })
     }
     node.children?.forEach((child) => collectSpans(child, href))
   }
@@ -175,11 +178,10 @@ export function proseMentions(markdown: string, portByLabel: Record<string, stri
   for (const span of spans) {
     const text = span.text.replace(/\n/g, ' ').trim()
     if (!text) continue
-    const beforeMatch = body.slice(0, span.start)
-    const line = beforeMatch.split('\n').length
+    const line = span.line
     const ctx = context[line - 1]
     if (!ctx) continue
-    const before = ctx.before + beforeMatch.slice(beforeMatch.lastIndexOf('\n') + 1)
+    const before = ctx.before + lines[line - 1].slice(0, span.start - lineOffsets[line - 1])
     out.push({ text, port: portAt?.(span.start) ?? ctx.port, before, line,
       start: span.start, end: span.end,
       ...(span.href !== undefined ? { linked: true, href: span.href } : {}) })

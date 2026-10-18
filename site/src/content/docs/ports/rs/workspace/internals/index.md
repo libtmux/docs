@@ -17,7 +17,7 @@ library. To load files from a terminal, start with the
 ## Builder pipeline
 
 `Workspace::from_yaml` parses the description. `WorkspaceBuilder` turns it
-into a command plan or builds a new session through a borrowed `Server`.
+into a command plan or builds a new session through a borrowed [`Server`](../../reference/libtmux_tokio-server-server/).
 `freeze` reads a session back into workspace data. The caller supplies file
 reading, the async runtime, command-line handling, and attachment.
 
@@ -48,4 +48,4 @@ select an alpha release.
 The parser records unknown keys in `unsupported_keys`. Review those lists
 before building: an unrecognized field does not configure the created session.
 
-[Crate documentation](https://github.com/libtmux/libtmux-rs/blob/9331cdf556ea7a1f2589e9c3e6cece6ccdc7765c/crates/tmux-workspace/README.md)
+[Crate documentation](https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/tmux-workspace/README.md)

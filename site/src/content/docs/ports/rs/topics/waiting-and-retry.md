@@ -14,22 +14,23 @@ After sending input or starting a process, wait for the state your next step
 requires. [Pane
 interaction](../pane-interaction/#waiting-for-something-to-finish) covers
 waiting for screen text. This page covers arbitrary conditions and tmux's named
-`wait-for` signal channels.
+`wait-for` signal channels through `libtmux_tokio`.
 
 ## Polling a condition
 
 Polling checks a condition repeatedly until it succeeds or a deadline expires.
 Set a deadline and choose an interval that limits unnecessary tmux commands.
 
-**Helper:** `libtmux::test::retry_until(within, condition)`
+**Helper:** `libtmux_tokio::test::retry_until(within, condition)`
 
-**Where it lives:** `crates/libtmux/src/test.rs`, enabled with the `test-support` Cargo
+**Where it lives:** `crates/libtmux-tokio/src/test.rs`, enabled with the
+`test-support` Cargo
 feature.
 
 ### Examples
 
 ```rust
-libtmux::test::retry_until(std::time::Duration::from_secs(5), async || {
+libtmux_tokio::test::retry_until(std::time::Duration::from_secs(5), async || {
     session.windows().await.map(|ws| ws.iter().any(|w| w.name() == "build")).unwrap_or(false)
 })
 .await?;
@@ -41,8 +42,8 @@ Use `tmux wait-for -S <channel>` to signal and `tmux wait-for <channel>` to
 block until signalled. This avoids repeated screen captures when the command can
 announce its own completion:
 
-`Server.signal_channel` signals a channel.
-`Server.wait_for_channel` waits with a timeout and returns a `ChannelWait`
+[`Server.signal_channel`](../../reference/libtmux_tokio-server-server-signal_channel/) signals a channel.
+[`Server.wait_for_channel`](../../reference/libtmux_tokio-server-server-wait_for_channel/) waits with a timeout and returns a [`ChannelWait`](../../reference/libtmux_tokio-server-channelwait/)
 indicating whether it was signalled or timed out.
 
 ```rust

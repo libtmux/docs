@@ -14,14 +14,19 @@ Build a workspace by parsing its YAML and passing it to `WorkspaceBuilder`.
 Install tmux first, then add the crate to a Rust project:
 
 ```console
-$ cargo add tmux-workspace
+$ cargo add tmux-workspace \
+    --git https://github.com/libtmux/libtmux-rs \
+    --rev c26bcbb5127352d80dd2a8e9527494f21baa5fd6
 ```
 
-The runnable [example](../examples/) also uses libtmux's isolated test server.
+The runnable [example](../examples/) also uses `libtmux-tokio`'s isolated test server.
 Enable its `test-support` feature:
 
 ```console
-$ cargo add libtmux --features test-support
+$ cargo add libtmux-tokio \
+    --git https://github.com/libtmux/libtmux-rs \
+    --rev c26bcbb5127352d80dd2a8e9527494f21baa5fd6 \
+    --features test-support
 ```
 
 Add the Tokio runtime used by the example:
@@ -43,7 +48,8 @@ windows:
 
 In an async application, read the file with [`std::fs::read_to_string`](https://doc.rust-lang.org/std/fs/fn.read_to_string.html), parse it
 with `Workspace::from_yaml`, and construct `WorkspaceBuilder::new(&server)`
-using your libtmux server handle. `build(&workspace).await` returns the newly
+using your `libtmux_tokio::Server` handle. `build(&workspace).await` returns the
+newly
 created session.
 
 ## Preview before creating
@@ -63,4 +69,4 @@ Use `freeze(&session).await` to produce a new `Workspace`, then write its
 loading the file later. [Topics](../topics/) explains what the export can
 recover.
 
-[Crate usage and dependencies](https://github.com/libtmux/libtmux-rs/blob/9331cdf556ea7a1f2589e9c3e6cece6ccdc7765c/crates/tmux-workspace/README.md)
+[Crate usage and dependencies](https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/tmux-workspace/README.md)

@@ -38,6 +38,28 @@ def wait_for_socket_exit(path, seconds=2):
     return True
 
 
+def retire_marked_directory(path, entry):
+    """Remove an unchanged directory marked by this replay's process session."""
+    directory = path.parent
+    marker = directory / 'owner'
+    try:
+        current = directory.lstat()
+        if not stat.S_ISDIR(current.st_mode) or [current.st_dev, current.st_ino] != entry['directoryIdentity']:
+            return 'directory identity changed'
+        if marker.read_text().strip() != str(entry['directoryOwner']):
+            return 'owner marker changed'
+        if any(child.name != 'owner' for child in directory.iterdir()):
+            return 'directory has other files'
+        marker.unlink()
+        directory.rmdir()
+    except FileNotFoundError:
+        if directory.exists():
+            return 'owner marker is absent'
+    except OSError as error:
+        return str(error)
+    return None
+
+
 class ExampleTmuxSandbox:
     def __init__(self, output, env):
         self.binary = str(Path(shutil.which('tmux', path=env['PATH'])).resolve())
@@ -72,6 +94,17 @@ while i < len(args) and args[i].startswith('-'):
         i += 1
 if endpoint:
     alias = None
+    directory_owner = None
+    directory_identity = None
+    try:
+        directory = Path(endpoint).parent
+        owner = int((directory / 'owner').read_text().strip())
+        if owner > 0 and os.getsid(owner) == os.getsid(0) and not directory.is_symlink():
+            current = directory.stat()
+            directory_owner = owner
+            directory_identity = [current.st_dev, current.st_ino]
+    except (OSError, ValueError):
+        pass
     trace = Path({str(self.trace)!r})
     if Path(endpoint).exists() and trace.exists():
         current = os.stat(endpoint)
@@ -88,6 +121,8 @@ if endpoint:
                 break
     entry = json.dumps(dict(socket=endpoint,
                             existed=Path(endpoint).exists(), aliasOf=alias,
+                            directoryOwner=directory_owner,
+                            directoryIdentity=directory_identity,
                             args=sys.argv[1:]))
     descriptor = os.open({str(self.trace)!r},
                          os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
@@ -125,11 +160,16 @@ os.execv({self.binary!r}, [{self.binary!r}, *sys.argv[1:]])
                 if not row['runningAfterHarness']:
                     if path.exists() and stat.S_ISSOCK(path.lstat().st_mode):
                         path.unlink(missing_ok=True)
+                    if entry.get('directoryOwner') is not None:
+                        retention = retire_marked_directory(path, entry)
+                        row['directoryRetired'] = retention is None
+                        if retention:
+                            row['directoryRetention'] = retention
             else:
                 row['runningAfterHarness'] = running
             endpoints.append(row)
-        # Only this directory was created by the harness. A program's socket
-        # path alone does not establish ownership of its parent directory.
+        # Unmarked program directories remain untouched: a socket path alone
+        # does not establish ownership of its parent.
         if not any(row['runningAfterHarness'] for row in endpoints):
             shutil.rmtree(self.directory)
         return dict(
@@ -138,6 +178,7 @@ os.execv({self.binary!r}, [{self.binary!r}, *sys.argv[1:]])
             passed=bool(endpoints) and all(
                 (not row['preexisting'] or row['aliasOf'] in first) and
                 not row['runningAfterHarness'] and
+                row.get('directoryRetired', True) and
                 (not require_cleanup or not row['runningAfterProgram'])
                 for row in endpoints
             ),

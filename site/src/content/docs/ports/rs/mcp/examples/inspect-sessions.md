@@ -19,23 +19,9 @@ that server before exiting. The socket lives in a temporary directory under
 
 ## Run the example
 
-Use Git, Rust 1.97.1, and tmux 3.2a or newer on Linux or macOS. Both libtmux
-crates below use the source revision documented by the MCP reference.
-The example was run on Linux with tmux 3.2a and 3.7c.
-
-Create a directory for the program:
-
-```console
-$ mkdir inspect-mcp-sessions
-```
-
-```console
-$ cd inspect-mcp-sessions
-```
-
-```console
-$ mkdir src
-```
+Use Git, Rust 1.97.1, and tmux 3.2a or newer on Linux. Start in an empty
+directory. `tmux-mcp` and the async `libtmux-tokio` client use the same pinned
+source revision.
 
 Save this as `Cargo.toml`:
 
@@ -47,8 +33,8 @@ edition = "2024"
 publish = false
 
 [dependencies]
-libtmux = { git = "https://github.com/libtmux/libtmux-rs", rev = "a6fc2a65674177b92b17fa380757155d2ba150fd" }
-tmux-mcp = { git = "https://github.com/libtmux/libtmux-rs", rev = "a6fc2a65674177b92b17fa380757155d2ba150fd" }
+libtmux-tokio = { git = "https://github.com/libtmux/libtmux-rs", rev = "c26bcbb5127352d80dd2a8e9527494f21baa5fd6" }
+tmux-mcp = { git = "https://github.com/libtmux/libtmux-rs", rev = "c26bcbb5127352d80dd2a8e9527494f21baa5fd6" }
 rmcp = { version = "=3.1.2", features = ["client", "server", "transport-io"] }
 serde_json = "=1.0.151"
 tempfile = "=3.27.0"
@@ -63,7 +49,7 @@ use std::io::ErrorKind;
 use std::path::Path;
 use std::time::Duration;
 
-use libtmux::{NewSessionOptions, Server};
+use libtmux_tokio::{NewSessionOptions, Server};
 use rmcp::model::CallToolRequestParams;
 use rmcp::service::QuitReason;
 use rmcp::{Peer, RoleClient, ServiceExt as _};
@@ -183,6 +169,9 @@ async fn wait_until_stopped(socket: &Path) -> Result<(), ExampleError> {
     loop {
         match tokio::net::UnixStream::connect(socket).await {
             Ok(_) => tokio::time::sleep(Duration::from_millis(20)).await,
+            Err(error) if error.kind() == ErrorKind::ConnectionReset => {
+                tokio::time::sleep(Duration::from_millis(20)).await;
+            }
             Err(error)
                 if matches!(
                     error.kind(),

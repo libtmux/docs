@@ -17,7 +17,7 @@ see [Attaching to tmux](/guides/attaching-to-tmux/).
 The examples include setup, error handling, and cleanup. [Source and
 verification](#where-this-comes-from) identifies their files and checks.
 
-```rust file="crates/libtmux/examples/scratch.rs"
+```rust file="crates/libtmux-tokio/examples/scratch.rs"
 ```
 
 ## Finding an existing session instead
@@ -30,7 +30,7 @@ practice](/guides/querying-and-filtering/) covers absent and ambiguous matches.
 
 ## Where this comes from
 
-**Source:** `crates/libtmux/examples/scratch.rs`
+**Source:** `crates/libtmux-tokio/examples/scratch.rs`
 
 **In this page:** read whole from the file
 

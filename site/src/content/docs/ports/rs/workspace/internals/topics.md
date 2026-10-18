@@ -16,14 +16,16 @@ server.
 
 ## Configuration
 
-`Workspace::from_yaml` accepts session, window and pane data. The configuration supports working directories,
+`Workspace::from_yaml` accepts session, window and pane data. The configuration
+supports working directories,
 commands, environment variables, options, focus, and layouts. Unknown keys are
 listed in `unsupported_keys` and ignored.
 Review `unsupported_keys` before building so an unrecognized field does not
 leave the session missing an expected setting.
 
 A pane's working directory overrides its window's directory, which overrides
-the workspace's directory. The parser and builder own the supported configuration fields.
+the workspace's directory. The parser and builder own the supported
+configuration fields.
 
 ## Preview and execution
 
@@ -47,4 +49,4 @@ recover the original command line from the current foreground program alone.
 Review exported commands before using the file as a launcher. Freezing does
 not preserve application memory, terminal history, or files on disk.
 
-[Builder implementation](https://github.com/libtmux/libtmux-rs/blob/9331cdf556ea7a1f2589e9c3e6cece6ccdc7765c/crates/tmux-workspace/src/lib.rs); [Freeze implementation](https://github.com/libtmux/libtmux-rs/blob/9331cdf556ea7a1f2589e9c3e6cece6ccdc7765c/crates/tmux-workspace/src/freeze.rs).
+[Builder implementation](https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/tmux-workspace/src/lib.rs); [Freeze implementation](https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/tmux-workspace/src/freeze.rs).

@@ -62,8 +62,8 @@ const EXTENDABLE: ReadonlySet<SymbolKind> = new Set([
  * libtmux-rs 16 blocks fold and none is ambiguous, and the 38 blocks on types
  * the crate does not export are left alone for want of anything to fold onto.
  *
- * The ids are rewritten and `mergePartials` below does the folding, which is
- * the same operation C# needed for `partial class`.
+ * Members take the declaration's id. The impl container is discarded so its
+ * file, kind, or prose cannot replace the declaration's metadata.
  */
 export function mergeExtensions(symbols: ApiSymbol[], kind: SymbolKind | undefined): ApiSymbol[] {
   if (!kind) return symbols
@@ -102,7 +102,7 @@ export function mergeExtensions(symbols: ApiSymbol[], kind: SymbolKind | undefin
     }
     return id
   }
-  return symbols.map((s) => ({
+  return symbols.filter((s) => s.parent || s.kind !== kind || !moves.has(s.id)).map((s) => ({
     ...s,
     id: rehome(s.id),
     parent: s.parent ? rehome(s.parent) : s.parent,
@@ -112,14 +112,8 @@ export function mergeExtensions(symbols: ApiSymbol[], kind: SymbolKind | undefin
 /**
  * One symbol per id, merging declarations that the language considers one.
  *
- * Only C# reaches this with anything to do: a `partial class` is a single type
- * the compiler assembles from several files, and each file yields its own
- * type-level symbol with the same id. `partial` methods do the same, declaring
- * in one part and implementing in another.
- *
- * A no-op everywhere else, and measurably so — the other seven ports produce
- * zero duplicate ids, and this is the assertion that keeps it that way rather
- * than a transformation applied on faith.
+ * C# partial classes and methods can span files. Rust impl members can also
+ * share an id after their containers are folded onto the type declaration.
  *
  * The kept declaration is the documented one. C# convention puts the class
  * summary on the part named after the type (`Pane.cs`) and leaves the feature
@@ -432,16 +426,29 @@ export async function extractProject(opts: {
   const roots = opts.roots ?? [opts.root]
   const modules = roots.flatMap((r) => sourceFiles(r, opts.port))
   const symbols: ApiSymbol[] = []
+  const crateSymbols = new Map<string, ApiSymbol[]>()
   for (const { file, module } of modules) {
-    symbols.push(
-      ...(opts.port === 'py'
-        ? await extractPython(file, module, options)
-        : await extractWithSpec(spec, file, module, options)),
-    )
+    const crate = opts.port === 'rs' ? roots.find((root) => file.startsWith(`${root}/`)) : undefined
+    const packageName = crate && /[/\\]crates[/\\]([^/\\]+)[/\\]src$/.exec(crate)?.[1]
+    // Existing crate IDs remain stable. Added library crates need their own
+    // namespace before impl blocks are folded onto declarations.
+    const namespace = packageName && ['libtmux-tokio', 'libtmux-core'].includes(packageName)
+      ? packageName.replaceAll('-', '_') : undefined
+    const extracted = opts.port === 'py'
+      ? await extractPython(file, module, options)
+      : await extractWithSpec(spec, file, namespace ? `${namespace}.${module}` : module, options)
+    if (crate) {
+      for (const symbol of extracted) if (packageName) symbol.package = packageName
+      const owned = crateSymbols.get(crate) ?? []
+      owned.push(...extracted)
+      crateSymbols.set(crate, owned)
+    } else symbols.push(...extracted)
   }
 
-  // Before inheritance, so a base class is one type rather than several.
-  const merged = mergePartials(mergeExtensions(symbols, spec?.extensionKind))
+  // An impl can only extend a declaration in its own Rust crate.
+  const merged = opts.port === 'rs'
+    ? [...crateSymbols.values()].flatMap((owned) => mergePartials(mergeExtensions(owned, spec?.extensionKind)))
+    : mergePartials(mergeExtensions(symbols, spec?.extensionKind))
 
   const resolved = options.inheritedMembers
     ? resolveInheritance(merged, options.inheritanceStopList)

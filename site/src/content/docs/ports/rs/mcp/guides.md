@@ -23,7 +23,7 @@ Let the MCP client launch `tmux-mcp` and communicate over stdin and stdout.
 Choose the tool selection in the client configuration. For an existing tmux
 server, select its socket explicitly.
 
-The [installation steps](connect-client/#install-and-connect) use the tested
+The [installation steps](connect-client/#install-and-connect) pin the
 Rust toolchain and Git revision. The [socket settings](connect-client/#connect-to-an-existing-server)
 distinguish an existing server from the launcher's default dedicated daemon.
 

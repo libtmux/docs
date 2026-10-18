@@ -17,18 +17,13 @@ The `/bin/cat` commands keep panes open without another application or log file.
 
 ## Prepare the project
 
-Use Rust 1.97.1, Git, and tmux 3.2a or newer. These commands use a Unix shell.
-Create an empty project and fetch the source revision used by this example:
-
-```console
-$ mkdir rust-workspace-example && cd rust-workspace-example && \
-    mkdir src
-```
+Use Rust 1.97.1, Git, and tmux 3.2a or newer on Linux. Start in an empty
+directory and fetch the source revision used by this example:
 
 ```console
 $ git init libtmux-source && \
     git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-rs.git && \
-    git -C libtmux-source fetch --depth=1 origin d4e08b4eaab62ef4eeedab79b47973ae9a1de310 && \
+    git -C libtmux-source fetch --depth=1 origin c26bcbb5127352d80dd2a8e9527494f21baa5fd6 && \
     git -C libtmux-source checkout --detach FETCH_HEAD
 ```
 
@@ -36,9 +31,9 @@ Create the project manifest. Both library crates use that source tree. The
 `test-support` feature provides the public `TestServer` helper, which creates
 and owns the isolated server used by this example.
 
-`TestServer` is temporary example scaffolding. In an application, use a
-[`Server`](../../../reference/server-server/) connected to the tmux server you manage.
-Future versions of this example will use that regular server object directly.
+`TestServer` owns this disposable fixture. For a persistent workspace, pass a
+[`libtmux_tokio::Server`](../../../reference/libtmux_tokio-server-server/)
+connected to the tmux server your application manages.
 
 ```toml title="Cargo.toml"
 [package]
@@ -47,7 +42,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-libtmux = { path = "libtmux-source/crates/libtmux", features = ["test-support"] }
+libtmux-tokio = { path = "libtmux-source/crates/libtmux-tokio", features = ["test-support"] }
 tmux-workspace = { path = "libtmux-source/crates/tmux-workspace", default-features = false }
 tokio = { version = "=1.53.1", features = ["macros", "rt-multi-thread", "time"] }
 ```
@@ -74,7 +69,7 @@ checks server shutdown even when an earlier operation fails.
 use std::error::Error;
 use std::time::Duration;
 
-use libtmux::test::TestServer;
+use libtmux_tokio::test::TestServer;
 use tmux_workspace::{Workspace, WorkspaceBuilder, freeze};
 use tokio::time::timeout;
 
@@ -131,7 +126,7 @@ that the captured workspace recreates each application.
 Run the program from the project directory:
 
 ```console
-$ cargo run --quiet
+$ cargo +1.97.1 run --quiet
 ```
 
 Expected output:
@@ -150,5 +145,5 @@ choose its own shutdown point.
 <a id="where-this-comes-from"></a>
 <a id="source-inclusion"></a>
 
-[Builder source](https://github.com/libtmux/libtmux-rs/blob/d4e08b4eaab62ef4eeedab79b47973ae9a1de310/crates/tmux-workspace/src/lib.rs);
-[capture source](https://github.com/libtmux/libtmux-rs/blob/d4e08b4eaab62ef4eeedab79b47973ae9a1de310/crates/tmux-workspace/src/freeze.rs).
+[Builder source](https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/tmux-workspace/src/lib.rs);
+[capture source](https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/tmux-workspace/src/freeze.rs).

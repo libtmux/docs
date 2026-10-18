@@ -5,9 +5,6 @@ import { parserFor } from '../parser.ts'
 import { extractSourceWithSpec } from './spec.ts'
 import { RUST } from './specs.ts'
 
-const targetFile = 'crates/libtmux/src/target.rs'
-const rootFile = 'crates/libtmux/src/lib.rs'
-const inventoryFile = 'crates/libtmux/docs/public-api.txt'
 const macroName = 'define_id'
 const comment = (node: Node) => RUST.commentTypes.includes(node.type)
 const docComment = (node: Node) => node.type === 'line_comment' && /^\/\/\/(?!\/)/.test(node.text)
@@ -39,7 +36,17 @@ export async function attachNativeRustIdStructs(
 ): Promise<ApiSymbol[]> {
   requireContract(model.port === 'rs' && source.repo === 'libtmux/libtmux-rs' && /^[a-f0-9]{40}$/.test(source.revision),
     'source must name the Rust repository and a full revision')
-  const files = [targetFile, rootFile, inventoryFile].map((path) => {
+  const core = read('crates/libtmux-core/src/target.rs')
+  const crate = core?.includes(`macro_rules! ${macroName}`) ? 'libtmux-core' : 'libtmux'
+  const namespace = crate.replaceAll('-', '_')
+  const primitives = read('crates/libtmux/src/primitives/target.rs')
+  const targetFile = crate === 'libtmux-core' ? 'crates/libtmux-core/src/target.rs'
+    : primitives?.includes(`macro_rules! ${macroName}`) ? 'crates/libtmux/src/primitives/target.rs' : 'crates/libtmux/src/target.rs'
+  const rootFile = `crates/${crate}/src/lib.rs`
+  const inventoryFile = `crates/${crate}/docs/public-api.txt`
+  const bridges = targetFile.includes('/primitives/')
+    ? ['crates/libtmux/src/primitives/mod.rs', 'crates/libtmux/src/target.rs'] : []
+  const files = [targetFile, rootFile, inventoryFile, ...bridges].map((path) => {
     const text = read(path)
     requireContract(typeof text === 'string' && text.trim(), `missing source: ${path}`)
     return { path, text, sha256: createHash('sha256').update(text).digest('hex') }
@@ -136,12 +143,12 @@ export async function attachNativeRustIdStructs(
     // Rust doc comments are attributes even across whitespace and ordinary comments.
     const declaration = [...prefixNodes.filter((node) => !comment(node) || docComment(node))
       .map((node) => node.text), owner.text].join('\n')
-    const extracted = await extractSourceWithSpec(RUST, declaration, targetFile, 'target')
+    const extracted = await extractSourceWithSpec(RUST, declaration, targetFile, crate === 'libtmux-core' ? 'libtmux_core.target' : 'target')
     requireContract(extracted.length === 1 && extracted[0].kind === 'struct', 'public fields are outside the owner-only projection')
     const symbol = extracted[0]
     requireContract(![...model.symbols, ...pending].some((entry) => entry.id === symbol.id || entry.publicId === symbol.id),
       `declaration already exists: ${symbol.id}`)
-    const native = `libtmux::${name.text}`
+    const native = `${namespace}::${name.text}`
     requireContract(files[2].text.split('\n').filter((line) => line === `struct ${native}`).length === 1 &&
       files[2].text.split('\n').filter((line) => /^\w+ /.test(line) && line.split(' ')[1] === native).length === 1,
     `native inventory must name one public struct: ${native}`)
@@ -153,6 +160,19 @@ export async function attachNativeRustIdStructs(
     })
     requireContract(exports.length === 1, `expected one unaliased root reexport: ${name.text}`)
     noAttributes(exports[0]!)
+    for (const [index, bridge] of files.slice(3).entries()) {
+      const path = index === 0 ? 'target' : 'crate::primitives'
+      const tree = parse(bridge.text, bridge.path)
+      const reexports = tree.namedChildren.filter((node) => {
+        if (node?.type !== 'use_declaration' || !node.namedChildren.some((child) => child?.type === 'visibility_modifier' && child.text === 'pub')) return false
+        const argument = node.childForFieldName('argument')
+        return argument?.type === 'scoped_use_list' && argument.childForFieldName('path')?.text === path &&
+          argument.childForFieldName('list')?.namedChildren.some((child) => child?.type === 'identifier' && child.text === name.text)
+      })
+      requireContract(reexports.length === 1, `expected one reexport of ${name.text} in ${bridge.path}`)
+      noAttributes(reexports[0]!)
+    }
+    symbol.package = crate
     symbol.publicId = symbol.id
     symbol.source = { ...symbol.source, ...source, line: name.startPosition.row + 1, extractedRevision: source.revision }
     pending.push(symbol)

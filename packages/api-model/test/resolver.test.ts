@@ -1,13 +1,13 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
-import { homedir } from 'node:os'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { readInventory } from '../src/inventory.ts'
+import { parentInventory } from '../src/parent-inventory.ts'
 import type { ApiModel } from '../src/model.ts'
 import { Resolver, notASymbol, toPath } from '../src/resolver.ts'
 import { proseMentions } from '../src/mentions.ts'
 import { portFromSentence } from '../src/prose.ts'
+import { API_MODEL_PORTS } from '../../../site/src/lib/ports.ts'
 
 /**
  * The resolver, against the corpus it exists for.
@@ -19,7 +19,7 @@ import { portFromSentence } from '../src/prose.ts'
  */
 const here = dirname(fileURLToPath(import.meta.url))
 const DATA = join(here, '../../../site/src/data/api')
-const PORTS = ['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'] as const
+const PORTS = API_MODEL_PORTS.map((port) => port.slug)
 const available = existsSync(join(DATA, 'py.json'))
 const d = available ? describe : describe.skip
 
@@ -29,9 +29,23 @@ d('resolver', () => {
   beforeAll(() => {
     const models = PORTS.map((p) => JSON.parse(readFileSync(join(DATA, `${p}.json`), 'utf8')) as ApiModel)
     r = new Resolver(models)
-    const inv = join(here, '../../../site/src/data/inventories/python.inv')
-    if (existsSync(inv)) {
-      r.addInventory('Python', 'https://docs.python.org/3/', readInventory(readFileSync(inv)).entries)
+    for (const [file, project, base, langs] of [
+      ['python', 'Python', 'https://docs.python.org/3/', ['py']],
+      ['jdk', 'Java SE', 'https://docs.oracle.com/en/java/javase/21/docs/api/', ['java', 'kotlin', 'scala']],
+      ['dom', 'MDN', 'https://developer.mozilla.org/', ['ts']],
+      ['julia', 'Julia', 'https://docs.julialang.org/en/v1/', ['julia']],
+    ] as const) {
+      const inventory = JSON.parse(readFileSync(join(here, `../../../site/src/data/inventories/${file}.entries.json`), 'utf8')) as { e: [string, string][] }
+      r.addInventory(project, base, inventory.e.map(([name, uri]) => ({
+        name, uri, type: 'std:label', priority: 1, dispname: '-',
+      })), [...langs])
+    }
+    for (const port of API_MODEL_PORTS) {
+      const dependencies = [...(port.parentLibrary ? [port.parentLibrary.slug] : []), ...(port.apiDependencies ?? [])]
+      for (const dependency of dependencies) {
+        r.addInventory('Library API', '', parentInventory(models.find((model) => model.port === dependency)!,
+          (symbol) => `/reference/${dependency}/${symbol.slug}/`), [port.slug])
+      }
     }
   })
 
@@ -126,16 +140,14 @@ d('resolver', () => {
     expect(r.portsWith('sessions').length).toBeGreaterThan(3)
     // Rust's MCP handler shares the spelling; that does not make it a core
     // Pane API equivalent. Semantic equivalents remain in the concept map.
-    expect(r.portsWith('capture_pane')).toEqual(['py', 'rs'])
+    expect(r.portsWith('capture_pane').sort()).toEqual(['julia', 'py', 'rs'])
     const rust = r.resolve('rs', 'mcp.src.TmuxTools.capture_pane')
     expect('symbol' in rust ? rust.symbol.product : undefined).toBe('mcp')
   })
 
   it('resolves most unlinked references in the real corpus', () => {
-    const LABEL: Record<string, string> = {
-      Python: 'py', Ruby: 'ruby', Lua: 'lua', TypeScript: 'ts', Rust: 'rs', Go: 'go',
-      Java: 'java', '.NET': 'csharp', 'C++': 'cxx', Swift: 'swift',
-    }
+    const LABEL: Record<string, string> = Object.fromEntries(API_MODEL_PORTS.map((port) => [port.name, port.slug]))
+    LABEL['.NET'] = 'csharp'
     const docs = join(here, '../../../site/src/content/docs')
     const walk = (dir: string): string[] =>
       readdirSync(dir, { withFileTypes: true }).flatMap((e) =>

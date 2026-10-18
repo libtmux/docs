@@ -10,7 +10,8 @@ sidebar:
 tableOfContents: true
 ---
 
-Connect a `Server` to an explicit socket and find the existing `work` session.
+Connect a `libtmux_tokio::Server` to an explicit socket and find the existing
+`work` session.
 The program prints its name and leaves the tmux server running. It reports an
 error if the connection fails or the session is absent.
 
@@ -30,7 +31,7 @@ the example.
 use std::error::Error;
 use std::time::Duration;
 
-use libtmux::Server;
+use libtmux_tokio::Server;
 use tokio::time::timeout;
 
 #[tokio::main]
@@ -60,7 +61,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 Use an empty directory on Linux with Git and tmux 3.2a or newer installed.
 
-This example was checked with Rust 1.97.1.
+Use Rust 1.97.1. The async client is the `libtmux-tokio` package; import it as
+`libtmux_tokio`.
 
 Save this file beside the program using the displayed filename.
 
@@ -71,7 +73,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-libtmux = { path = "libtmux/crates/libtmux" }
+libtmux-tokio = { path = "libtmux/crates/libtmux-tokio" }
 tokio = { version = "1.53.1", features = ["macros", "rt-multi-thread", "time"] }
 ```
 
@@ -85,7 +87,9 @@ and prints its location for inspection.
 set -eu
 
 binary=$(command -v tmux)
-directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-rs-attach.XXXXXX")
+mkdir -p /tmp/libtmux-rs-dev
+directory=$(mktemp -d /tmp/libtmux-rs-dev/attach.XXXXXX)
+printf '%s\n' "$$" > "$directory/owner"
 socket="$directory/tmux.sock"
 
 cleanup() {
@@ -108,11 +112,13 @@ export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
 "$binary" -S "$socket" has-session -t '=work'
 ```
 
-Fetch the verified library revision, build, and run:
+Fetch the pinned library revision, build, and run:
 
 ```console
-$ git clone https://github.com/libtmux/libtmux-rs libtmux &&
-  git -C libtmux checkout d4e08b4eaab62ef4eeedab79b47973ae9a1de310 &&
+$ git init -q libtmux &&
+  git -C libtmux fetch -q --depth=1 \
+    https://github.com/libtmux/libtmux-rs.git c26bcbb5127352d80dd2a8e9527494f21baa5fd6 &&
+  git -C libtmux checkout -q --detach FETCH_HEAD &&
   sh run.sh cargo +1.97.1 run
 ```
 

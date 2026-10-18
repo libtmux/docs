@@ -396,6 +396,11 @@ export class SymbolIndex {
     let clean = target.replace(/^[~.]/, '')
     // Swift ids keep their argument labels, so `isRunning()` names `Server.isRunning()`.
     if (this.lang !== 'swift') clean = clean.replace(/\(\)$/, '')
+    if (this.lang === 'rs') {
+      clean = clean.replaceAll('::', '.')
+      const crate = context?.source.file.match(/(?:^|\/)crates\/([^/]+)\/src\//)?.[1]
+      if (crate) clean = clean.replace(/^crate\./, `${crate.replaceAll('-', '_')}.`)
+    }
     let opaqueContext = false
     if (this.lang === 'powershell' && context) {
       const prefixed = /^[$-]/.test(clean)
@@ -544,13 +549,18 @@ export class SymbolIndex {
       }
     }
 
-    const bySuffix = this.pick(this.bySuffix.get(clean), role, context)
+    const inPackage = (candidates: ApiSymbol[] | undefined) => {
+      const packageName = context?.package ?? (candidates?.some((symbol) => symbol.package === 'libtmux') ? 'libtmux' : undefined)
+      return this.lang === 'rs' && packageName && ['libtmux', 'libtmux-core', 'libtmux-tokio'].includes(packageName)
+        ? candidates?.filter((symbol) => symbol.package === packageName) : candidates
+    }
+    const bySuffix = this.pick(inPackage(this.bySuffix.get(clean)), role, context)
     if (bySuffix && opaqueContext && !clean.includes('.') && bySuffix.parent &&
         ['method', 'property', 'attribute'].includes(bySuffix.kind)) return undefined
     if (bySuffix) return { href: this.hrefFor(bySuffix), external: false, symbol: bySuffix }
 
     if (!clean.includes('.')) {
-      const byName = this.pick(this.byName.get(clean), role, context)
+      const byName = this.pick(inPackage(this.byName.get(clean)), role, context)
       if (byName) return { href: this.hrefFor(byName), external: false, symbol: byName }
     }
 
@@ -559,7 +569,8 @@ export class SymbolIndex {
     const usingAlias = this.lang === 'scala' && (clean === 'Using' || clean.startsWith('Using.'))
     const shadowedUsing = usingAlias && (this.byName.has('Using') || this.bySuffix.has(clean) ||
       context?.signatures.some((sig) => sig.params.some((param) => param.name === 'Using') || sig.receiver?.name === 'Using'))
-    const builtin = this.lang && !shadowedUsing ? builtinHref(this.lang, clean) : undefined
+    const builtinName = this.lang === 'rs' ? clean.replaceAll('.', '::') : clean
+    const builtin = this.lang && !shadowedUsing ? builtinHref(this.lang, builtinName) : undefined
     if (builtin && ['kotlin', 'scala'].includes(this.lang ?? '')) return { href: builtin, external: true }
 
     // Intersphinx order: exact name, then the shortest suffix. An inventory

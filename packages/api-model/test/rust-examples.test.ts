@@ -43,6 +43,27 @@ function fixture() {
   return { symbols, manifest, files, read }
 }
 
+function splitFixture(crate: 'libtmux' | 'libtmux-tokio') {
+  const original = fixture()
+  const namespace = crate.replaceAll('-', '_')
+  const replace = (text: string) => text.replaceAll('crates/libtmux', `crates/${crate}`)
+    .replaceAll('libtmux::', `${namespace}::`).replaceAll('libtmux-api-example', `${crate}-api-example`)
+    .replace('\nlibtmux = ', `\n${crate} = `)
+  const manifest = JSON.parse(replace(JSON.stringify(original.manifest))) as typeof original.manifest
+  const files = Object.fromEntries(Object.entries(original.files).map(([path, code]) => [replace(path), replace(code)]))
+  const symbols = original.symbols.map((symbol) => ({ ...symbol, package: crate,
+    source: { file: replace(symbol.source.file) },
+    id: crate === 'libtmux' ? symbol.id : `${namespace}.${symbol.id}`,
+    parent: symbol.parent && (crate === 'libtmux' ? symbol.parent : `${namespace}.${symbol.parent}`),
+  }))
+  if (crate === 'libtmux') {
+    files[manifest.setupFiles[0].sourceFile] = files[manifest.setupFiles[0].sourceFile].replace(/^tokio = .*\n/m, '')
+    files[manifest.examples[0].sourceFile] = 'use libtmux::Server;\nfn main() {}\n'
+  }
+  files[`crates/${crate}/examples/api/manifest.json`] = JSON.stringify(manifest)
+  return { files, symbols, manifest }
+}
+
 describe('complete Rust API programs', () => {
   it('preserves old docs and exact source bytes, and binds native kinds and trait owners', () => {
     const f = fixture()
@@ -63,6 +84,33 @@ describe('complete Rust API programs', () => {
     }
     expect(f.symbols[2].doc!.examples).toHaveLength(1)
     expect(f.symbols[3].doc!.examples).toHaveLength(1)
+  })
+
+  it('attaches both clients to their own pages with exact runtime-specific setup', () => {
+    const blocking = splitFixture('libtmux')
+    const native = splitFixture('libtmux-tokio')
+    const files = { ...blocking.files, ...native.files }
+    const symbols = [...blocking.symbols, ...native.symbols]
+    attachCompleteRustExamples(symbols, (path) => files[path], source)
+    for (const client of [blocking, native]) {
+      const blocks = client.symbols[0].doc!.examples!
+      expect(blocks[2].code).toBe(client.files[client.manifest.setupFiles[0].sourceFile])
+      expect(blocks[4].code).toBe(client.files[client.manifest.examples[0].sourceFile])
+      expect(blocks[5].code).toContain(client.manifest.setupFiles[0].sourceFile)
+    }
+    expect(blocking.symbols[0].doc!.examples![2].code).not.toContain('tokio')
+    expect(native.symbols[0].doc!.examples![2].code).toContain('libtmux-tokio = ')
+  })
+
+  it('rejects a Tokio entrypoint with blocking setup without changing either crate', () => {
+    const blocking = splitFixture('libtmux')
+    const native = splitFixture('libtmux-tokio')
+    native.files[native.manifest.setupFiles[0].sourceFile] = native.files[native.manifest.setupFiles[0].sourceFile].replace(/^tokio = .*\n/m, '')
+    const files = { ...blocking.files, ...native.files }
+    const symbols = [...blocking.symbols, ...native.symbols]
+    const before = structuredClone(symbols)
+    expect(() => attachCompleteRustExamples(symbols, (path) => files[path], source)).toThrow('dependencies')
+    expect(symbols).toEqual(before)
   })
 
   it('leaves source revisions without a manifest unchanged', () => {

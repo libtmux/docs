@@ -13,7 +13,7 @@ import { parameterId, parentInventory, SymbolIndex, type ApiModel, type ApiSymbo
 import { apiEntryFields, nativeSignatureText, usesNativeSignatures } from '../src/lib/api-sections'
 import { API_MODEL_PORTS } from '../src/lib/ports'
 import { extractSourceWithSpec } from '../../packages/api-model/src/languages/spec'
-import { JAVA } from '../../packages/api-model/src/languages/specs'
+import { JAVA, RUST } from '../../packages/api-model/src/languages/specs'
 import { createApiIndex } from '../src/lib/api-models'
 import { apiSignatureLayouts } from '../src/lib/code-layout'
 import { symbolMarkdownWithLayout } from '../src/lib/symbol-markdown'
@@ -1001,6 +1001,39 @@ it('links recovered annotations and owner type bindings in actual Java headers',
         expect(win.document.querySelector('a[href="/en/java/latest/reference/io-github-libtmux-catalog-operation-operation/"]')?.textContent).toBe('Operation')
         expect([...win.document.querySelectorAll('a')].find((link) => link.textContent === 'ReadOnly')?.getAttribute('href')).toContain('5687445832cd835b4509b9fbc264cdf1a8201093')
       }
+    }
+  } finally { await win.happyDOM.abort() }
+})
+
+it('renders blocking and Tokio signatures with links to their own crate types', async () => {
+  const symbols: ApiSymbol[] = []
+  for (const [crate, namespace, async] of [['libtmux', 'libtmux', ''], ['libtmux-tokio', 'libtmux_tokio', 'async ']] as const) {
+    const entries = await extractSourceWithSpec(RUST,
+      `pub struct Server;\nimpl Server { pub ${async}fn clone_handle(&self) -> crate::Server { todo!() } }`,
+      `crates/${crate}/src/server.rs`, `${namespace}.server`)
+    for (const symbol of entries) {
+      symbol.package = crate
+      symbol.qualifiedName = symbol.id.replace(`${namespace}.server.`, `${namespace}.`)
+    }
+    symbols.push(...entries)
+  }
+  const index = new SymbolIndex(symbols, (symbol) => `/reference/${symbol.id}/`, 'rs')
+  const component = await (componentPromise ??= signatureComponent())
+  const container = await experimental_AstroContainer.create()
+  const win = new Window()
+  try {
+    for (const namespace of ['libtmux', 'libtmux_tokio']) {
+      const symbol = symbols.find((symbol) => symbol.id === `${namespace}.server.Server.clone_handle`)!
+      const signatureLayouts = await apiSignatureLayouts(symbol, 'rs')
+      win.document.body.innerHTML = await container.renderToString(component, { props: {
+        symbol, sig: symbol.signatures[0], port: 'rs', language: 'rs', index, signatureLayouts, nativeSignatureText,
+      } })
+      const text = displayedSignature(win.document.querySelector('.api-native-signature')!)
+      expect(text.includes('async fn')).toBe(namespace === 'libtmux_tokio')
+      const target = win.document.querySelector('a[href="/reference/' + namespace + '.server.Server/"]')
+      expect(target?.textContent).toBe('crate::Server')
+      const other = namespace === 'libtmux' ? 'libtmux_tokio' : 'libtmux'
+      expect(win.document.querySelector('a[href="/reference/' + other + '.server.Server/"]')).toBeNull()
     }
   } finally { await win.happyDOM.abort() }
 })

@@ -150,6 +150,37 @@ function rustDocHidden(node: Node): boolean {
   return false
 }
 
+/** Test flags are false for published API; feature and platform flags stay unknown. */
+function rustProductionCfg(nodes: Node[]): boolean | undefined {
+  if (nodes.length === 1 && nodes[0]?.type === 'identifier' && ['test', 'doctest'].includes(nodes[0].text)) return false
+  if (nodes.length !== 2 || nodes[0]?.type !== 'identifier' || nodes[1]?.type !== 'token_tree') return undefined
+  const groups: Node[][] = [[]]
+  for (const node of nodes[1].children.slice(1, -1)) {
+    if (!node || ['line_comment', 'block_comment'].includes(node.type)) continue
+    if (node.type === ',') groups.push([])
+    else groups.at(-1)!.push(node)
+  }
+  const values = groups.filter((group) => group.length).map(rustProductionCfg)
+  if (nodes[0].text === 'all') return values.includes(false) ? false : values.every((value) => value === true) ? true : undefined
+  if (nodes[0].text === 'any') return values.includes(true) ? true : values.every((value) => value === false) ? false : undefined
+  if (nodes[0].text === 'not' && values.length === 1 && values[0] !== undefined) return !values[0]
+  return undefined
+}
+
+function rustTestOnly(node: Node): boolean {
+  for (let sibling = node.previousNamedSibling; sibling; sibling = sibling.previousNamedSibling) {
+    if (sibling.type === 'attribute_item') {
+      const attribute = sibling.namedChildren.find((child) => child?.type === 'attribute')
+      if (attribute?.namedChildren[0]?.text !== 'cfg') continue
+      const args = attribute.namedChildren.find((child) => child?.type === 'token_tree')
+      const tokens = args?.namedChildren.filter((child): child is Node =>
+        child !== null && child.type !== 'line_comment' && child.type !== 'block_comment') ?? []
+      if (rustProductionCfg(tokens) === false) return true
+    } else if (sibling.type !== 'line_comment' && sibling.type !== 'block_comment') break
+  }
+  return false
+}
+
 /** Outer attributes are siblings; doc comments remain in the prose projection. */
 function rustHeader(node: Node): string {
   const body = node.childForFieldName('body')
@@ -222,12 +253,7 @@ export const RUST: LanguageSpec = {
   ],
   commentTypes: ['line_comment', 'block_comment'],
   attributeTypes: ['attribute_item'],
-  // A module compiled only for tests is not API. Rust keeps its unit tests
-  // beside the code they exercise, so this is the whole of `mod tests`.
-  skipNode: (node) =>
-    node.type === 'mod_item' &&
-    node.previousNamedSibling?.type === 'attribute_item' &&
-    /#\[\s*cfg\s*\(\s*test\s*\)\s*\]/.test(node.previousNamedSibling.text),
+  skipNode: rustTestOnly,
   stripDoc: stripSlashDoc,
   modifiers: { async: 'async', unsafe: 'unsafe', 'pub(crate)': 'private' },
   // `impl Pane { … }` names the type it extends in `type`, not `name`. The
@@ -262,11 +288,11 @@ export const RUST: LanguageSpec = {
   // have no visibility keyword, but inherent methods still require `pub`.
   // Restricted `pub(crate)`, `pub(super)` and `pub(in path)` are not public.
   isExported: (node) => {
-    if (node.type === 'trait_item' && rustDocHidden(node)) return false
+    if (rustDocHidden(node)) return false
     if (node.type === 'impl_item' || node.type === 'enum_variant') return true
     if ((node.type === 'function_item' || node.type === 'function_signature_item') &&
       node.parent?.type === 'declaration_list' && node.parent.parent?.type === 'trait_item') {
-      return !rustDocHidden(node)
+      return true
     }
     return node.children.some((c) => c?.type === 'visibility_modifier' && c.text.trim() === 'pub')
   },

@@ -13,9 +13,8 @@ sidebar:
 the executable and exchanges JSON-RPC messages over stdin and stdout.
 The launcher writes diagnostics to stderr.
 
-Use Rust 1.88 or newer, Git, and tmux 3.2a or newer on Linux or macOS.
-The command below uses the tested Rust 1.97.1 toolchain and installs the
-source revision used by this documentation's MCP reference. Cargo's
+Use Rust 1.97.1, Git, and tmux 3.2a or newer on Linux. The command below
+installs the unreleased source revision used by the MCP reference. Cargo's
 binary directory must be on the path available to your MCP client.
 
 ## Install and connect
@@ -23,7 +22,7 @@ binary directory must be on the path available to your MCP client.
 ```console
 $ cargo +1.97.1 install \
     --git https://github.com/libtmux/libtmux-rs \
-    --rev a6fc2a65674177b92b17fa380757155d2ba150fd \
+    --rev c26bcbb5127352d80dd2a8e9527494f21baa5fd6 \
     --locked \
     tmux-mcp
 ```
@@ -148,6 +147,6 @@ binary's absolute path. If a tool is missing, compare discovery with
 For a missing session or pane, list the objects again before choosing
 another target.
 
-[Launcher source](https://github.com/libtmux/libtmux-rs/blob/a6fc2a65674177b92b17fa380757155d2ba150fd/crates/tmux-mcp/src/bin/tmux-mcp.rs)
+[Launcher source](https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/tmux-mcp/src/bin/tmux-mcp.rs)
 defines socket selection and shutdown.
 

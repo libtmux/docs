@@ -30,7 +30,7 @@ Check the reference for the selected accessor and its return type.
 These examples read optional fields, including `pane_dead_signal` on tmux 3.3 or
 newer:
 
-`crates/libtmux/src/formats.rs` marks this token as optional. Consult the
+`crates/libtmux-tokio/src/formats.rs` marks this token as optional. Consult the
 reference for the accessor name.
 
 <a id="a-generated-table-under-the-accessor"></a>
@@ -39,7 +39,7 @@ reference for the accessor name.
 
 Field accessors retain the scope and version requirements of tmux tokens.
 
-`crates/libtmux/src/formats.rs` records each token's tmux name, required
+`crates/libtmux-tokio/src/formats.rs` records each token's tmux name, required
 context, first supported release, decoder, and handling of empty values.
 `pane_dead_signal` requires pane context and tmux 3.3. Its text value
 preserves arbitrary non-NUL bytes.

@@ -97,3 +97,17 @@ describe('source catalog reference navigation', () => {
     expect([...cached]).toEqual(before)
   })
 })
+
+it('labels same-named Rust handles by package while preserving both routes', () => {
+  const symbols = ['libtmux', 'libtmux-tokio'].map((packageName, index) => ({
+    ...symbol(index ? 'libtmux_tokio.server.Server' : 'server.Server', 'struct'),
+    name: 'Server', package: packageName, apiScope: 'exported' as const,
+    qualifiedName: `${packageName.replaceAll('-', '_')}.Server`,
+  }))
+  const entries = symbols.map(({ id, name, kind, slug }) => ({ id, name, kind, slug: slug! }))
+  const rustNav: PortNavData = { port: 'rs', buckets: [{ id: 'server', label: 'Server', collapsed: false }],
+    assignments: { server: entries }, placement: Object.fromEntries(entries.map(({ id }) => [id, 'server'])), unplaced: [] }
+  const tree = navTreeFor({ extractor: 'fixture', symbols }, rustNav, { scope: 'rs' })
+  expect(tree[0].entries.map(({ name }) => name)).toEqual(['Server (libtmux)', 'Server (libtmux-tokio)'])
+  expect(tree[0].entries.map(({ id }) => id)).toEqual(symbols.map(({ id }) => id))
+})

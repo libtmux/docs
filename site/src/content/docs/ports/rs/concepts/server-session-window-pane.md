@@ -20,9 +20,15 @@ Server
 └── Client (attached view)
 ```
 
-A `Server` contains sessions. Each `Session` contains links to windows, and each
-`Window` contains panes. Commands run inside a `Pane`, where you send input and
+A [`Server`](../../reference/libtmux_tokio-server-server/) contains sessions. Each [`Session`](../../reference/libtmux_tokio-session-session/) contains links to windows, and each
+[`Window`](../../reference/libtmux_tokio-window-window/) contains panes. Commands run inside a [`Pane`](../../reference/libtmux_tokio-pane-pane/), where you send input and
 capture output. A window can be linked to more than one session.
+
+Both `libtmux` and `libtmux_tokio` expose this hierarchy. `libtmux` performs
+blocking I/O; `libtmux_tokio` provides the async handles used below. Choose the
+package when constructing your server; the two handle types are distinct.
+See [Standard-library core](../standard-library-core/) for complete examples
+of both clients.
 
 ## Stable identity, not name or index
 
@@ -62,7 +68,7 @@ for branch in server.hierarchy().await? {
 
 ## Client: a view, not a child
 
-A `Client` represents a terminal attached to a session. Several clients can view
+A [`Client`](../../reference/libtmux_tokio-client-client/) represents a terminal attached to a session. Several clients can view
 the same server, and each can switch sessions or windows independently. Client
 fields describe the view at the time of the read.
 

@@ -151,6 +151,7 @@ export class Resolver {
    * anchor on the port index is the name the language actually writes.
    */
   private readonly modules = new Map<string, string>()
+  private readonly rustCrates = new Set<string>()
   private readonly inventories: {
     project: string
     baseUrl: string
@@ -188,6 +189,9 @@ export class Resolver {
       }
       for (const symbol of model.symbols) {
         const qualified = qualifiedNameOf(symbol)
+        const crate = symbol.package?.replaceAll('-', '_')
+        if (model.port === 'rs' && crate && ['libtmux', 'libtmux_core', 'libtmux_tokio'].includes(crate) &&
+            symbol.qualifiedName?.startsWith(`${crate}.`)) this.rustCrates.add(crate)
         const row: Row = { port: model.port, symbol, qualified }
         // Swift's symbol graph names a method by its full selector —
         // `unsetEnvironment(_:in:)` — so prose saying `unsetEnvironment`
@@ -296,6 +300,10 @@ export class Resolver {
     // single largest remaining failure.
     const whole = this.byQualified.get(port + ' ' + parts.join('.'))
     if (whole) return { how: 'module', symbol: whole.symbol, port }
+    if (port === 'rs' && this.rustCrates.has(parts[0])) {
+      const module = this.modules.get(port + ' ' + parts.join('.'))
+      return module ? { how: 'module-index', module, port } : { how: 'no-symbol' }
+    }
 
     // Unqualified core prose uses the port's primary namespace. A nested
     // effect facade stays addressable through its explicit namespace.

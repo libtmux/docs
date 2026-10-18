@@ -23,6 +23,7 @@ import { attachCompleteCSharpExamples } from '../packages/api-model/src/language
 import { attachCompleteFSharpExamples } from '../packages/api-model/src/languages/fsharp-examples.ts'
 import { attachCompleteRustExamples } from '../packages/api-model/src/languages/rust-examples.ts'
 import { attachNativeRustIdStructs } from '../packages/api-model/src/languages/rust-id-structs.ts'
+import { attachRustPackageExports } from '../packages/api-model/src/languages/rust-packages.ts'
 import { attachCompleteCxxExamples } from '../packages/api-model/src/languages/cxx-examples.ts'
 import { attachCompleteJvmExamples } from '../packages/api-model/src/languages/jvm-examples.ts'
 import { attachCompleteSwiftExamples } from '../packages/api-model/src/languages/swift-examples.ts'
@@ -75,12 +76,12 @@ function git(repo, ...args) {
 }
 
 /** Read package versions from their owning manifest, independent of docs URL labels. */
-function packageVersion(checkout, port, product) {
+function packageVersion(checkout, port, product, packageName) {
   const read = (file) => existsSync(join(checkout, file)) ? readFileSync(join(checkout, file), 'utf8') : ''
   if (port === 'py') return /^version\s*=\s*"([^"]+)"/m.exec(read('pyproject.toml'))?.[1]
   if (port === 'ts') return JSON.parse(read(`packages/${product === 'core' ? 'libtmux' : product}/package.json`)).version
   if (port === 'rs') {
-    const crate = product === 'core' ? 'libtmux' : product === 'workspace' ? 'tmux-workspace' : 'tmux-mcp'
+    const crate = packageName ?? (product === 'core' ? 'libtmux' : product === 'workspace' ? 'tmux-workspace' : 'tmux-mcp')
     return /^version\s*=\s*"([^"]+)"/m.exec(read(`crates/${crate}/Cargo.toml`))?.[1]
       ?? /^version\s*=\s*"([^"]+)"/m.exec(read('Cargo.toml'))?.[1]
   }
@@ -240,7 +241,7 @@ const PORTS = {
   },
   rs: {
     checkout: '~/work/libtmux/libtmux-rs',
-    roots: ['crates/libtmux/src', 'crates/tmux-workspace/src'],
+    roots: ['crates/libtmux/src', 'crates/libtmux-core/src', 'crates/libtmux-tokio/src', 'crates/tmux-workspace/src'],
     repo: 'libtmux/libtmux-rs',
     options: { inheritedMembers: false, excludePaths: [/^internal\./] },
   },
@@ -700,6 +701,9 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     }
     if (port === 'rs') {
       for (const symbol of await attachNativeRustIdStructs(model, readSource, { repo: cfg.repo, revision })) citationSymbols.add(symbol)
+      await attachRustPackageExports(model, readSource)
+      const citationOwners = new Set([...citationSymbols].map((symbol) => symbol.id))
+      for (const symbol of model.symbols) if (citationOwners.has(symbol.publicOwner)) citationSymbols.add(symbol)
     }
     attach(model.symbols, readSource, { repo: cfg.repo, revision })
   }
@@ -719,7 +723,8 @@ for (const [port, cfg] of Object.entries(PORTS)) {
   for (const extra of extras) {
     const extraHead = git(extra.checkout, 'rev-parse', 'HEAD')
     if (!extraHead || !existsSync(join(extra.checkout, extra.root))) throw new Error(`Missing ${port} ${extra.product} source`)
-    const extraRevision = publicRevision(extra.checkout, extraHead, port, extra.repo)
+    const extraRevision = extra.checkout === checkout && extra.repo === cfg.repo
+      ? revision : publicRevision(extra.checkout, extraHead, port, extra.repo)
     const extracted = await extractProject({
       port, root: join(extra.checkout, extra.root), revision: extraRevision,
       options: { ...cfg.options, privateMembers: false, specialMembers: true },
@@ -792,6 +797,7 @@ for (const [port, cfg] of Object.entries(PORTS)) {
         model.generatedSources[relativeFile] ??= readFileSync(join(unit.checkout, relativeFile), 'utf8')
       }
       symbol.product ??= productOf(relativeFile)
+      if (port === 'rs') symbol.package ??= unit.package ?? packages[port]?.[symbol.product] ?? portBySlug[port].packageName
       symbol.source = { ...symbol.source, file: relativeFile, repo: unit.repo, revision: unit.revision,
         extractedRevision: citationSymbols.has(symbol) ? unit.revision : unit.head }
       for (const declaration of [...symbol.declarations ?? [], ...symbol.signatures.filter((signature) => signature.source)]) {
@@ -814,11 +820,14 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     // Native macro projections were read at the citation revision already.
     remapLines(unit.checkout, unit.symbols.flatMap((symbol) => citationSymbols.has(symbol)
       ? [] : [symbol, ...(symbol.declarations ?? []), ...symbol.signatures.filter((signature) => signature.source)]), unit.revision, unit.head)
-    for (const product of new Set(unit.symbols.map((symbol) => symbol.product))) {
+    for (const identity of new Set(unit.symbols.map((symbol) => JSON.stringify([
+      symbol.product, unit.package ?? symbol.package ?? packages[port]?.[symbol.product] ?? portBySlug[port].packageName,
+    ])))) {
+      const [product, packageName] = JSON.parse(identity)
       model.sources.push({
-        product, package: unit.package ?? packages[port]?.[product] ?? portBySlug[port].packageName,
+        product, package: packageName,
         repo: unit.repo, revision: unit.revision, extractedRevision: unit.head,
-        version: packageVersion(unit.checkout, port, product),
+        version: packageVersion(unit.checkout, port, product, port === 'rs' ? packageName : undefined),
       })
     }
   }

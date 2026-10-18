@@ -10,16 +10,18 @@ sidebar:
 tableOfContents: true
 ---
 
-Read sessions, windows, or panes once, then filter their captured values in Rust.
-[`matching()`](../../reference/query-queryiteratorext-matching/) evaluates a typed
+Read sessions, windows, or panes with `libtmux_tokio`, then filter their
+captured values in Rust.
+[`matching()`](../../reference/libtmux_tokio-query-queryiteratorext-matching/) evaluates a typed
 predicate locally; it does not ask tmux for another listing. Use
-[`exactly_one()`](../../reference/query-queryiteratorext-exactly_one/) when the
+[`exactly_one()`](../../reference/libtmux_tokio-query-queryiteratorext-exactly_one/) when the
 next operation needs one unambiguous target.
 
 ## Setup and run
 
 Use an empty directory with Git, rustup with the 1.97.1 toolchain installed,
-tmux 3.2a or newer, and a Unix environment. Each program below creates its own private server, uses `cat` to
+tmux 3.2a or newer, and Linux. Each program below creates its own private
+server, uses `cat` to
 keep its panes alive, and stops that server before exiting. No existing session,
 socket, or environment variable is required.
 
@@ -37,7 +39,7 @@ publish = false
 exclude = ["libtmux-source"]
 
 [dependencies]
-libtmux = { path = "libtmux-source/crates/libtmux" }
+libtmux-tokio = { path = "libtmux-source/crates/libtmux-tokio" }
 tempfile = "=3.27.0"
 tokio = { version = "=1.53.1", features = ["macros", "rt", "time"] }
 
@@ -57,8 +59,10 @@ path = "refresh.rs"
 Fetch the library revision used by these programs:
 
 ```console
-$ git clone https://github.com/libtmux/libtmux-rs libtmux-source &&
-  git -C libtmux-source checkout e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4
+$ git init -q libtmux-source &&
+  git -C libtmux-source fetch -q --depth=1 \
+    https://github.com/libtmux/libtmux-rs.git c26bcbb5127352d80dd2a8e9527494f21baa5fd6 &&
+  git -C libtmux-source checkout -q --detach FETCH_HEAD
 ```
 
 The `query` feature is enabled by default. If your application disables default
@@ -76,7 +80,7 @@ hiding the error or removing the address of a possibly running server.
 
 ## Match names and combine conditions
 
-Import [`Filterable`](../../reference/query-filterable/) to call
+Import [`Filterable`](../../reference/libtmux_tokio-query-filterable/) to call
 `Session::filter_fields()` or `Pane::filter_fields()`. The returned fields
 construct [`FilterExpr`](../../reference/query-filterexpr/) values. Text fields
 support text operations; boolean fields support boolean equality and membership.
@@ -106,8 +110,8 @@ active pane in each window, so both one-pane windows have a match.
 use std::error::Error;
 use std::time::Duration;
 
-use libtmux::query::{Filterable as _, QueryIteratorExt as _};
-use libtmux::{NewSessionOptions, Pane, Server, Session};
+use libtmux_tokio::query::{Filterable as _, QueryIteratorExt as _};
+use libtmux_tokio::{NewSessionOptions, Pane, Server, Session};
 
 type ExampleError = Box<dyn Error>;
 
@@ -241,7 +245,7 @@ invalid bytes do not match a text predicate, although an outer `not` can invert
 that result. Use `TmuxText::as_bytes()` when your own predicate must inspect raw
 bytes without a lossy conversion.
 
-Calling [`matching()`](../../reference/query-queryiteratorext-matching/)
+Calling [`matching()`](../../reference/libtmux_tokio-query-queryiteratorext-matching/)
 on a slice iterator borrows the source collection and yields references in
 its original order. It is lazy: consume it with a count, collection, or result
 helper. It neither changes the captured objects nor eagerly creates another
@@ -256,11 +260,11 @@ out of the original collection.
 Choose the result contract before sending input or deleting an object. Taking
 [`next()`](https://doc.rust-lang.org/std/iter/trait.Iterator.html#tymethod.next) would silently accept the first match in an ambiguous collection.
 
-| Matches | `exactly_one()` | `one_or_none()` |
+| Matches | [`exactly_one()`](../../reference/libtmux_tokio-query-queryiteratorext-exactly_one/) | [`one_or_none()`](../../reference/libtmux_tokio-query-queryiteratorext-one_or_none/) |
 | --- | --- | --- |
 | <a id="handle-zero-one-and-several-results-none"></a>None | `Err(ExactlyOneError::NoItems)` | [`Ok(None)`](https://doc.rust-lang.org/std/result/enum.Result.html#variant.Ok) |
 | <a id="handle-zero-one-and-several-results-one"></a>One | [`Ok(item)`](https://doc.rust-lang.org/std/result/enum.Result.html#variant.Ok) | [`Ok(Some(item))`](https://doc.rust-lang.org/std/result/enum.Result.html#variant.Ok) |
-| <a id="handle-zero-one-and-several-results-several"></a>Several | `Err(ExactlyOneError::MultipleItems)` | [`Err(MultipleItemsError)`](../../reference/query-multipleitemserror/) |
+| <a id="handle-zero-one-and-several-results-several"></a>Several | `Err(ExactlyOneError::MultipleItems)` | [`Err(MultipleItemsError)`](../../reference/libtmux_tokio-query-multipleitemserror/) |
 
 Both helpers preserve the iterator's item type and pull at most two items.
 With a [slice iterator](https://doc.rust-lang.org/std/primitive.slice.html#method.iter),
@@ -276,8 +280,8 @@ session is a normal [`None`](https://doc.rust-lang.org/std/option/enum.Option.ht
 use std::error::Error;
 use std::time::Duration;
 
-use libtmux::query::{ExactlyOneError, Filterable as _, MultipleItemsError, QueryIteratorExt as _};
-use libtmux::{NewSessionOptions, Server, Session};
+use libtmux_tokio::query::{ExactlyOneError, Filterable as _, MultipleItemsError, QueryIteratorExt as _};
+use libtmux_tokio::{NewSessionOptions, Server, Session};
 
 type ExampleError = Box<dyn Error>;
 
@@ -395,7 +399,7 @@ cardinality: none, one, multiple
 ```
 
 Propagate the error with `?` when absence or ambiguity should stop your task.
-Match [`ExactlyOneError`](../../reference/query-exactlyoneerror/) when the two
+Match [`ExactlyOneError`](../../reference/libtmux_tokio-query-exactlyoneerror/) when the two
 failure cases need different application behavior. An optional lookup only
 relaxes the absent-result case; it does not choose between several candidates.
 
@@ -405,9 +409,9 @@ A listing captures values at the time it runs. Renaming a session refreshes the
 handle used for the rename, but another handle obtained earlier keeps its old
 snapshot. A local filter over that earlier collection still sees the old name.
 
-[`refreshed()`](../../reference/session-session-refreshed/) returns a new handle
+[`refreshed()`](../../reference/libtmux_tokio-session-session-refreshed/) returns a new handle
 with current values and preserves the original. Use
-[`refresh()`](../../reference/session-session-refresh/) with a mutable handle to
+[`refresh()`](../../reference/libtmux_tokio-session-session-refresh/) with a mutable handle to
 replace its values in place. Both can fail if the session disappeared or its
 listing could not be read.
 
@@ -420,8 +424,8 @@ captured name with a refreshed copy and a new server-wide listing.
 use std::error::Error;
 use std::time::Duration;
 
-use libtmux::query::{Filterable as _, QueryIteratorExt as _};
-use libtmux::{NewSessionOptions, Server, Session};
+use libtmux_tokio::query::{Filterable as _, QueryIteratorExt as _};
+use libtmux_tokio::{NewSessionOptions, Server, Session};
 
 type ExampleError = Box<dyn Error>;
 
@@ -556,7 +560,8 @@ set of objects, or refresh a selected handle when you need its current fields.
 Typed query expressions describe captured data. They do not turn into tmux
 format filters, subscribe to changes, or fetch related objects. Relation
 predicates inspect only relations already loaded in the candidate: an empty
-collection makes `any` false and `all` and `none` true; an absent to-one relation
+collection makes `any` false and `all` and `none` true; an absent to-one
+relation
 makes `is` false.
 
 Use [object listings](../server-session-window-pane/) to obtain the data your
@@ -564,6 +569,6 @@ workflow needs, and [command transports](../transports/) to choose how later
 operations reach tmux. A serialized query remains a local expression; enabling
 `serde` does not make it a remote tmux query.
 
-The [query module](https://github.com/libtmux/libtmux-rs/blob/e9be0b6/crates/libtmux/src/query.rs)
-and [session refresh methods](https://github.com/libtmux/libtmux-rs/blob/e9be0b6/crates/libtmux/src/session.rs)
+The [query module](https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/libtmux/src/query.rs)
+and [session refresh methods](https://github.com/libtmux/libtmux-rs/blob/c26bcbb5127352d80dd2a8e9527494f21baa5fd6/crates/libtmux-tokio/src/session.rs)
 record these contracts for the library revision used above.
