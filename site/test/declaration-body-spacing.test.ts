@@ -2,10 +2,9 @@ import { readFileSync } from 'node:fs'
 import { Window, type Element } from 'happy-dom'
 import { afterEach, expect, it } from 'vitest'
 
-const globalCss = readFileSync(new URL('../src/styles/global.css', import.meta.url), 'utf8')
-// Exercise the ordinary unlayered edge rule without asking Happy DOM to compile Tailwind directives.
-const edgeRules = globalCss.slice(globalCss.indexOf('/* Body padding'), globalCss.indexOf('/* Font-face'))
-const css = edgeRules + readFileSync(new URL('../src/styles/vendor/gp-sphinx-api.css', import.meta.url), 'utf8')
+const api = readFileSync(new URL('../src/styles/api.css', import.meta.url), 'utf8')
+// Mount the sheets in the order the reference pages import them: owned, then vendored.
+const css = api + readFileSync(new URL('../src/styles/vendor/gp-sphinx-api.css', import.meta.url), 'utf8')
 let win: Window
 afterEach(async () => { await win?.happyDOM.abort() })
 
@@ -19,55 +18,58 @@ function mount(bodies: string[]) {
 }
 
 // Happy DOM exposes logical and physical margins separately; box geometry belongs to browser acceptance.
-function start(element: Element) {
-  const style = win.getComputedStyle(element)
-  const value = style.marginBlockStart || style.marginTop
+function margin(element: Element, side: 'Top' | 'Bottom') {
+  const value = win.getComputedStyle(element)[`margin${side}`]
   return value === '0' ? '0px' : value
 }
 
-it('lets body padding own a true first heading or paragraph inside an owned section', () => {
-  const bodies = mount([
-    '<div class="gp-sphinx-api-description" id="Server.description"><h2 class="rubric">Description</h2><p>Swift Server.</p></div>',
-    '<div class="gp-sphinx-api-examples" id="Server.examples"><h2 class="rubric">Examples</h2><p class="gp-sphinx-api-example-intro">Run this.</p><div class="gp-sphinx-api-example"><pre>server.sessions()</pre></div></div>',
-    '<div class="gp-sphinx-api-description"><p>Paragraph-first prose.</p><h2 class="rubric">Later heading</h2></div>',
-    '<div class="gp-sphinx-api-examples"><p class="gp-sphinx-api-example-intro">Paragraph-first example.</p><div class="gp-sphinx-api-example"><pre>server.sessions()</pre></div></div>',
-  ])
-  for (const body of bodies) {
-    const first = body.firstElementChild!.firstElementChild!
-    expect(start(first)).toBe('0px')
-    expect(win.getComputedStyle(first).marginBottom).toBe('8px')
-    const intro = body.querySelector('.gp-sphinx-api-example-intro')
-    if (intro?.previousElementSibling) expect(start(intro)).toBe('12px')
-    const style = win.getComputedStyle(body)
+const description = '<div class="gp-sphinx-api-description"><h2 class="rubric">Description</h2><p>Prose.</p></div>'
+const parameters = '<div class="gp-sphinx-api-parameters"><dl class="field-list simple"><dt>Parameters</dt><dd><ul class="simple api-parameters"><li><p class="api-parameter-heading">name</p></li></ul></dd></dl></div>'
+const examples = '<div class="gp-sphinx-api-examples"><h2 class="rubric">Examples</h2><div class="gp-sphinx-api-example"><div class="expressive-code"><pre>server.sessions()</pre></div></div></div>'
+const elsewhere = '<details class="api-elsewhere"><summary>In other ports</summary><ul><li>Go</li></ul></details>'
+const mentions = '<p class="gp-sphinx-api-mentions">Discussed in <a href="#guide">Guide</a></p>'
+
+it('trims the first and last child of a body and of the wrappers inside it', () => {
+  const [prose, fields, example, other, links] = mount([description, parameters, examples, elsewhere, mentions])
+  const rubric = prose!.querySelector('.rubric')!
+  expect(margin(rubric, 'Top')).toBe('0px')
+  expect(margin(prose!.querySelector('.gp-sphinx-api-description > p')!, 'Bottom')).toBe('0px')
+  const list = win.getComputedStyle(fields!.querySelector('dl.field-list')!)
+  expect([list.marginTop, list.paddingTop, list.borderTopWidth]).toEqual(['0px', '0px', '0px'])
+  expect(margin(fields!.querySelector('.api-parameter-heading')!, 'Bottom')).toBe('0px')
+  expect(margin(example!.querySelector('.rubric')!, 'Top')).toBe('0px')
+  expect(margin(example!.querySelector('.expressive-code')!, 'Bottom')).toBe('0px')
+  expect(margin(other!.firstElementChild!, 'Top')).toBe('0px')
+  expect(margin(links!.firstElementChild!, 'Top')).toBe('0px')
+  expect(margin(links!.firstElementChild!, 'Bottom')).toBe('0px')
+  for (const body of [prose, fields, example, other, links]) {
+    const style = win.getComputedStyle(body!)
     expect([style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft]).toEqual(['12px', '16px', '12px', '16px'])
   }
 })
 
-it('preserves later section headings, prose and example-introduction spacing', () => {
+it('preserves spacing between siblings and inside later sections', () => {
   const [body] = mount([
-    '<p class="gp-sphinx-api-summary">Summary before sections.</p><div class="gp-sphinx-api-description"><h2 class="rubric">Description</h2><p>First paragraph.</p><h3 class="rubric">Interior heading</h3><p>Later paragraph.</p></div><div class="gp-sphinx-api-examples"><h2 class="rubric">Examples</h2><p class="gp-sphinx-api-example-intro">Example introduction.</p><div class="gp-sphinx-api-example"><pre>server.sessions()</pre></div></div>',
+    `<p class="gp-sphinx-api-summary">Summary.</p><div class="gp-sphinx-api-description"><h2 class="rubric">Description</h2><p>First.</p><h3 class="rubric">Interior heading</h3><p>Last.</p></div>${examples}${mentions}${elsewhere}`,
   ])
-  for (const heading of body!.querySelectorAll('.rubric')) {
-    expect(start(heading)).toBe('16px')
-    expect(win.getComputedStyle(heading).marginBottom).toBe('8px')
-  }
-  for (const paragraph of body!.querySelectorAll('.gp-sphinx-api-description p')) {
-    expect(start(paragraph)).toBe('0px')
-    expect(win.getComputedStyle(paragraph).marginBottom).toBe('8px')
-  }
-  expect(start(body!.querySelector('.gp-sphinx-api-example-intro')!)).toBe('12px')
+  const prose = body!.querySelector('.gp-sphinx-api-description')!
+  const [heading, interior] = prose.querySelectorAll('.rubric')
+  expect(margin(heading!, 'Top')).toBe('16px')
+  expect(margin(heading!, 'Bottom')).toBe('8px')
+  expect(margin(interior!, 'Top')).toBe('16px')
+  expect(margin(interior!, 'Bottom')).toBe('8px')
+  const [first, last] = prose.querySelectorAll('p')
+  expect(margin(first!, 'Bottom')).toBe('8px')
+  expect(margin(last!, 'Bottom')).toBe('8px')
+  expect(margin(body!.querySelector('.gp-sphinx-api-examples > .rubric')!, 'Top')).toBe('16px')
+  expect(margin(body!.querySelector('.gp-sphinx-api-mentions')!, 'Top')).toBe('8px')
+  expect(margin(body!.querySelector('.api-elsewhere')!, 'Top')).toBe('8px')
 })
 
-it('keeps compact metadata and excludes wrapped, later and unowned content from the edge reset', () => {
-  const [metadata, wrapped, firstProse, unowned] = mount([
-    '<p class="gp-sphinx-api-mentions">Discussed in <a href="#guide">Guide</a></p><p class="gp-sphinx-api-mentions">In other ports.</p>',
-    '<div class="backlinks"><p class="gp-sphinx-api-mentions">Wrapped backlinks.</p></div>',
-    '<div class="gp-sphinx-api-description"><p>Real prose precedes the heading.</p><h2 class="rubric">Interior heading</h2></div>',
-    '<div class="native-description"><h2 class="rubric">Native-owned heading</h2></div>',
-  ])
-  expect(start(metadata!.firstElementChild!)).toBe('0px')
-  expect(start(metadata!.lastElementChild!)).toBe('8px')
-  expect(start(wrapped!.querySelector('.gp-sphinx-api-mentions')!)).toBe('8px')
-  expect(start(firstProse!.querySelector('.rubric')!)).toBe('16px')
-  expect(start(unowned!.querySelector('.rubric')!)).toBe('16px')
+it('keeps the divider and heading gap of a field list that follows other content', () => {
+  const [body] = mount([`${description}${parameters}${mentions}`])
+  const list = win.getComputedStyle(body!.querySelector('dl.field-list')!)
+  expect([list.marginTop, list.paddingTop]).toEqual(['8px', '8px'])
+  expect(list.borderTopWidth).not.toBe('0px')
+  expect(margin(body!.querySelector('.api-parameter-heading')!, 'Bottom')).toBe('6.4px')
 })

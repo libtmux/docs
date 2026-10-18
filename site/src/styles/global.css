@@ -16,13 +16,6 @@
 @plugin "@tailwindcss/typography";
 @plugin "@libtmux/theme";
 
-/* Body padding supplies the space before leading metadata or section content. */
-dl.py > dd > .gp-sphinx-api-mentions:first-child,
-dl.py > dd > .gp-sphinx-api-description:first-child > :first-child,
-dl.py > dd > .gp-sphinx-api-examples:first-child > :first-child {
-  margin-block-start: 0;
-}
-
 /* Font-face declarations handled by @fontsource imports */
 
 /* Match brand.css before ThemeScript runs, while preserving explicit choices. */

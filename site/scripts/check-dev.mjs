@@ -14,7 +14,7 @@ import { checkHomeTaskReset } from './check-home-task-reset.mjs'
 import { checkColorScheme } from './check-color-scheme.mjs'
 import { checkHomeExampleOptions } from './check-home-example-options.mjs'
 import { checkDevSample, checkRowPermalinks } from './check-dev-sample.mjs'
-import { checkDeclarationControlAlignment, checkDeclarationControlsLevel, checkNativeSignatureGeometry, checkNativeSignatureLinks } from './check-native-layout.mjs'
+import { checkDeclarationControlAlignment, checkDeclarationControlsLevel, checkMemberBodyInsets, checkNativeSignatureGeometry, checkNativeSignatureLinks } from './check-native-layout.mjs'
 import { checkBlockLinksUndecorated, checkKindBadgeLinks, checkRequiredAppearance, checkWebAnalytics, checkWebAnalyticsTransitions } from './check-page-readiness.mjs'
 import { checkTypeParameters } from './check-type-parameters.mjs'
 import { checkTmuxKeys, TMUX_KEY_PAGES } from './check-tmux-keys.mjs'
@@ -25,6 +25,7 @@ const apiStickyOnly = process.argv.includes('--api-sticky')
 const typeParametersOnly = process.argv.includes('--type-parameters')
 const apiSignaturesOnly = process.argv.includes('--api-signatures')
 const referenceLayoutOnly = process.argv.includes('--reference-layout')
+const memberBodiesOnly = process.argv.includes('--member-bodies')
 const keywordHelpOnly = process.argv.includes('--keyword-help')
 const signaturePorts = apiSignaturesOnly ? API_MODEL_PORTS
   : API_MODEL_PORTS.filter((port) => ['py', 'ts'].includes(port.slug))
@@ -498,6 +499,11 @@ async function checkKeywordHelp(browser, base) {
   console.log('Keyword help: official docs, hover, keyboard, dismissal and viewport bounds pass with and without JavaScript')
 }
 
+async function checkMemberBodies(browser, base) {
+  const measured = await checkMemberBodyInsets(browser, base)
+  console.log(`Member bodies: ${measured} measured, padding alone sets the top and bottom inset at 1440/390px`)
+}
+
 async function checkReferenceAndHeroes(browser, base) {
   const page = await browser.newPage({ reducedMotion: 'reduce' })
   page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
@@ -771,8 +777,11 @@ try {
   } else if (apiSignaturesOnly) {
     await checkSignatureLayouts(browser, base)
     await retryReload(() => checkKeywordHelp(browser, base))
+  } else if (memberBodiesOnly) {
+    await retryReload(() => checkMemberBodies(browser, base))
   } else if (referenceLayoutOnly) {
     await retryReload(() => checkReferenceAndHeroes(browser, base))
+    await retryReload(() => checkMemberBodies(browser, base))
     await checkSignatureLayouts(browser, base)
     await retryReload(() => checkKeywordHelp(browser, base))
   } else if (globalHeaderOnly) {
@@ -832,7 +841,9 @@ try {
     const navigationPage = await browser.newPage({ reducedMotion: 'reduce' })
     navigationPage.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     const navigation = schedule(() => retryReload(() => checkNavigation(navigationPage, base)).finally(() => navigationPage.close()))
-    const reference = schedule(() => checkReferenceAndHeroes(browser, base).then(() => checkSignatureLayouts(browser, base))
+    const reference = schedule(() => checkReferenceAndHeroes(browser, base)
+      .then(() => retryReload(() => checkMemberBodies(browser, base)))
+      .then(() => checkSignatureLayouts(browser, base))
       .then(() => retryReload(() => checkKeywordHelp(browser, base)))
     )
     const preferences = schedule(() => checkReferencePreferences(browser, base))

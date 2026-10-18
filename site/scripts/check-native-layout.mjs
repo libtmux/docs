@@ -398,3 +398,113 @@ export async function checkNativeFirstPaint(page, url) {
     await page.unroute('**/_astro/*.js', routeScript)
   }
 }
+
+/**
+ * Measure how far each member body's first and last rendered content sits
+ * from the body's border box. The walk descends through wrappers that paint
+ * nothing on that edge, so space a wrapper cannot absorb still counts.
+ */
+export function measureMemberBodies(page) {
+  return page.evaluate(() => {
+    const px = (value) => Number.parseFloat(value) || 0
+    const rendered = (element) => element.checkVisibility() && element.getBoundingClientRect().height > 0
+    const label = (element) => element.tagName.toLowerCase()
+      + [...element.classList].map((name) => `.${name}`).join('')
+    // A display: contents element has no box of its own; its children stand in.
+    const boxes = (parent) => [...parent.children].flatMap((child) =>
+      getComputedStyle(child).display === 'contents' ? boxes(child) : [child])
+      .filter((child) => rendered(child) && !['absolute', 'fixed'].includes(getComputedStyle(child).position))
+    const painted = (style, side) => px(style[`padding${side}`]) > 0 || px(style[`border${side}Width`]) > 0
+      || style.backgroundImage !== 'none' || !/^rgba\(.*, 0\)$|^transparent$/.test(style.backgroundColor)
+    const edge = (body, side) => {
+      let node = body
+      let found = null
+      for (;;) {
+        const children = boxes(node)
+        const child = side === 'Top' ? children[0] : children.at(-1)
+        if (!child) return found
+        // Inline content sits in line boxes, so its parent is the edge.
+        if (getComputedStyle(child).display.startsWith('inline')) return found ?? child
+        // Text beside the child element sits on the edge itself.
+        const text = [...node.childNodes].filter((n) => n.nodeType === Node.TEXT_NODE && n.textContent.trim())
+        if (text.some((n) => side === 'Top' ? child.compareDocumentPosition(n) & Node.DOCUMENT_POSITION_PRECEDING
+          : child.compareDocumentPosition(n) & Node.DOCUMENT_POSITION_FOLLOWING)) return found
+        found = child
+        if (painted(getComputedStyle(child), side)) return found
+        node = child
+      }
+    }
+    return [...document.querySelectorAll('dl.py > dd')].filter(rendered).map((body) => {
+      const style = getComputedStyle(body)
+      const rect = body.getBoundingClientRect()
+      const first = edge(body, 'Top')
+      const last = edge(body, 'Bottom')
+      return {
+        children: [...body.children].map(label),
+        padding: { top: px(style.paddingTop), bottom: px(style.paddingBottom) },
+        first: first && label(first), last: last && label(last),
+        top: first && first.getBoundingClientRect().top - rect.top - px(style.borderTopWidth),
+        bottom: last && rect.bottom - px(style.borderBottomWidth) - last.getBoundingClientRect().bottom,
+      }
+    })
+  })
+}
+
+/**
+ * Pages that give each port a member body of every common shape: only "In other
+ * ports", parameters first, a description or example last, Methods, a type,
+ * a command and an MCP object. The second field names a direct child the page
+ * must still render, so a content change cannot quietly retire the sample.
+ */
+const MEMBER_BODY_PAGES = [
+  ['go/latest/reference/tmux-server-configfile/', 'details.api-elsewhere'],
+  ['go/latest/reference/tmux-window-setotherpanewidth/', 'div.gp-sphinx-api-parameters'],
+  ['julia/latest/reference/libtmux-snapshot-1gv6/', 'div.gp-sphinx-api-methods'],
+  ['julia/latest/reference/libtmux-kill_window/', 'div.gp-sphinx-api-description'],
+  ['ruby/latest/reference/libtmux-closederror-entity/', 'div.gp-sphinx-api-description'],
+  ['ruby/latest/workspace/reference/libtmux-workspace-configerror/', 'p.gp-sphinx-api-facts'],
+  ['py/latest/reference/libtmux-server-new_session/', 'div.gp-sphinx-api-examples'],
+  ['py/latest/reference/libtmux-common-has_lt_version/', 'div.gp-sphinx-api-parameters'],
+  ['ts/latest/reference/server-server-configfile/', 'details.api-elsewhere'],
+  ['ts/latest/reference/types-newsessionoptions/', 'div.gp-sphinx-api-description'],
+  ['swift/latest/reference/pane-index/', 'details.api-elsewhere'],
+  ['csharp/latest/reference/libtmux-window-height/', 'details.api-elsewhere'],
+  ['csharp/latest/reference/libtmux-server-searchclientsasync/', 'div.gp-sphinx-api-parameters'],
+  ['java/latest/reference/io-github-libtmux-windowlayout-windowlayout/', 'div.gp-sphinx-api-examples'],
+  ['java/latest/mcp/reference/io-github-libtmux-mcp-main-main/', 'div.gp-sphinx-api-examples'],
+  ['ts/latest/mcp/tools/capture_pane/', 'div.api-doc'],
+  ['powershell/latest/reference/libtmux-get-tmuxserver/', 'div.gp-sphinx-api-command'],
+]
+
+/** A body's padding alone sets its inset: top and bottom match each other and the padding. */
+export async function checkMemberBodyInsets(browser, base) {
+  const tolerance = 1
+  const page = await browser.newPage({ reducedMotion: 'reduce' })
+  page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
+  const failures = []
+  let measured = 0
+  try {
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 1000 })
+      for (const [path, shape] of MEMBER_BODY_PAGES) {
+        await page.goto(`${base}/${path}`, { waitUntil: 'load' })
+        await page.evaluate(() => document.fonts.ready)
+        const bodies = await measureMemberBodies(page)
+        assert(bodies.some((body) => body.children.includes(shape)), `${path}: still renders ${shape}`)
+        for (const body of bodies) {
+          measured += 1
+          const { top, bottom, padding } = body
+          const near = (a, b) => Math.abs(a - b) <= tolerance
+          if (!(near(top, padding.top) && near(bottom, padding.bottom) && near(top, bottom))) {
+            failures.push(`${path} at ${width}px (${body.first} to ${body.last}): `
+              + `top inset ${top}px, bottom inset ${bottom}px, padding ${padding.top}px/${padding.bottom}px`)
+          }
+        }
+      }
+    }
+  } finally {
+    await page.close()
+  }
+  assert.deepEqual(failures, [], 'Member body padding alone sets the top and bottom inset')
+  return measured
+}
