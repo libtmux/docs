@@ -3,7 +3,7 @@
 The assembly publishes `objects-full.inv` and `targets.json` at the default
 locale root. Each built port/version publishes `objects.inv` and `targets.json`
 at its own root. Existing reference inventories retain their mapping bases.
-The [reader guide](../site/src/content/docs/intersphinx.md) shows consumer setup.
+The [reader guide](../site/src/content/docs/meta/intersphinx.md) shows consumer setup.
 
 ## Target ownership
 
