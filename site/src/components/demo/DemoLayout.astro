@@ -45,7 +45,7 @@ const subLink = (active: boolean) =>
       </a>
       {
         DEMO_SECTIONS.map((section) => {
-          const open = current.startsWith(section.href)
+          const open = current.startsWith(section.href) || section.demos.some((demo) => demo.href === current)
           return (
             <div class="mt-1">
               <a

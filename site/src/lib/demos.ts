@@ -35,6 +35,11 @@ export const DEMO_SECTIONS: DemoSection[] = [
         title: 'Aside',
         description: 'Notes, tips, cautions and dangers in five container variants.',
       },
+      {
+        href: '/demo/badges/',
+        title: 'Kind badges',
+        description: 'Twelve looks for the kind marks, in light and dark.',
+      },
     ],
   },
   {

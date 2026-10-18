@@ -1,0 +1,310 @@
+---
+/**
+ * Kind badge candidates, each in a light and a dark pane.
+ *
+ * The panes carry their own colours, so both schemes show at once whatever
+ * the page theme is. Candidate A uses the real badge classes with the real
+ * variables re-pointed per pane; the rest are scoped to `.bd-*` here and do
+ * not touch the site's badge styles.
+ */
+import DemoLayout from '../../components/demo/DemoLayout.astro'
+import { kindMark, markHeight } from '../../lib/api-labels'
+import '../../styles/api-tree.css'
+
+// Light bg, fg, border, then dark bg, fg, border: a snapshot of api-kinds.css,
+// held here so one page can show both schemes.
+const GROUPS: Record<string, string[]> = {
+  class: ['#eef2ff', '#4338ca', '#6366f1', '#1e1b4b', '#a5b4fc', '#6366f1'],
+  exception: ['#fff1f2', '#be123c', '#f43f5e', '#4c0519', '#fda4af', '#fb7185'],
+  function: ['#e8f0fe', '#1a56db', '#3b82f6', '#172554', '#93c5fd', '#3b82f6'],
+  method: ['#ecfeff', '#0e7490', '#06b6d4', '#083344', '#67e8f9', '#22d3ee'],
+  property: ['#f0fdfa', '#0f766e', '#14b8a6', '#042f2e', '#5eead4', '#2dd4bf'],
+  attribute: ['#f1f5f9', '#475569', '#94a3b8', '#1e293b', '#cbd5e1', '#64748b'],
+  constant: ['#f5f5f5', '#525252', '#a3a3a3', '#262626', '#d4d4d4', '#737373'],
+  module: ['#f0fdf4', '#166534', '#22c55e', '#052e16', '#86efac', '#4ade80'],
+  typealias: ['#f5f3ff', '#6d28d9', '#8b5cf6', '#2e1065', '#c4b5fd', '#a78bfa'],
+  command: ['#fff7ed', '#c2410c', '#f97316', '#431407', '#fdba74', '#fb923c'],
+  option: ['#f7fee7', '#4d7c0f', '#84cc16', '#1a2e05', '#bef264', '#a3e635'],
+  hook: ['#fdf4ff', '#a21caf', '#d946ef', '#4a044e', '#f0abfc', '#e879f9'],
+  format: ['#fffbeb', '#a16207', '#eab308', '#422006', '#fde047', '#facc15'],
+}
+
+// Tinted colours per scheme, plus a solid fill (the light foreground) for the
+// filled candidates. The real variable names are set too, for candidate A.
+const paletteCss = (
+  [
+    ['light', 0],
+    ['dark', 3],
+  ] as const
+)
+  .map(([scheme, at]) => {
+    const real = Object.entries(GROUPS)
+      .map(([g, v]) => `--api-kind-${g}-bg:${v[at]};--api-kind-${g}-fg:${v[at + 1]};--api-kind-${g}-border:${v[at + 2]};`)
+      .join('')
+    const groups = Object.entries(GROUPS)
+      .map(
+        ([g, v]) =>
+          `.bd-pane[data-pane='${scheme}'] [data-g='${g}']{--tbg:${v[at]};--tfg:${v[at + 1]};--tbd:${v[at + 2]};--sbg:${v[1]};--sbd:${v[at + 2]}}`,
+      )
+      .join('')
+    return `.bd-pane[data-pane='${scheme}']{${real}}${groups}`
+  })
+  .join('')
+
+interface Kind {
+  kind: string
+  group: string
+  word: string
+  mark: string
+  x: boolean
+}
+
+const KIND_DEFS: [string, string, string][] = [
+  ['class', 'class', 'class'],
+  ['interface', 'class', 'interface'],
+  ['struct', 'class', 'struct'],
+  ['union', 'typealias', 'union'],
+  ['enum', 'typealias', 'enum'],
+  ['trait', 'class', 'trait'],
+  ['module', 'module', 'module'],
+  ['typealias', 'typealias', 'type alias'],
+  ['prompt', 'typealias', 'prompt'],
+  ['resource-template', 'property', 'template'],
+  ['exception', 'exception', 'exception'],
+  ['format', 'format', 'format'],
+  ['command', 'command', 'command'],
+  ['key', 'property', 'key'],
+  ['function', 'function', 'function'],
+  ['method', 'method', 'method'],
+  ['property', 'property', 'property'],
+  ['attribute', 'attribute', 'attribute'],
+  ['constant', 'constant', 'constant'],
+  ['tool', 'function', 'tool'],
+  ['resource', 'property', 'resource'],
+  ['option', 'option', 'option'],
+  ['hook', 'hook', 'hook'],
+]
+const KINDS: Kind[] = KIND_DEFS.map(([kind, group, word]) => {
+  const mark = kindMark(kind)!
+  return { kind, group, word, mark, x: markHeight(mark) === 'x' }
+})
+const kindOf = (kind: string) => KINDS.find((k) => k.kind === kind)!
+
+interface Candidate {
+  id: string
+  name: string
+  caption: string
+  /** Shown in prose, the mark row and the tree: a mark, or the kind's word. */
+  label: 'mark' | 'word'
+  /** Shown in the heading row, when it differs. */
+  head?: 'mark' | 'word'
+  /** The site's own classes, so the baseline is the real thing. */
+  real?: boolean
+}
+
+const CANDIDATES: Candidate[] = [
+  { id: 'a', name: 'Current', label: 'mark', real: true, caption: 'mono 11px/400 · 18px square · 1px border · radius 3.2px · tint' },
+  { id: 'b', name: '12px mono', label: 'mark', caption: 'mono 12px/600 · 20px square · 1px border · radius 4px · tint' },
+  { id: 'c', name: '13px mono bold', label: 'mark', caption: 'mono 13px/700 · 22px square · 1px border · radius 5px · tint' },
+  { id: 'd', name: '12px sans', label: 'mark', caption: 'sans 12px/600 · 20px square · 1px border · radius 4px · tint' },
+  { id: 'e', name: '13px sans bold', label: 'mark', caption: 'sans 13px/700 · 22px square · 1px border · radius 5px · tint' },
+  { id: 'f', name: 'Wide pill', label: 'mark', caption: 'sans 12px/700 · 28×20px pill · 1px border · radius 10px · tint' },
+  { id: 'g', name: 'Solid', label: 'mark', caption: 'sans 13px/700 · 22px square · solid fill, white mark · radius 5px · inner shade' },
+  { id: 'h', name: 'Soft tint', label: 'mark', caption: 'sans 13px/600 · 22px square · no border, 20% tint · radius 6px' },
+  { id: 'i', name: 'libtmux-mcp box', label: 'mark', caption: 'sans 10px/700 · 16px square · solid fill, white mark · radius 3px · inner shade' },
+  { id: 'j', name: 'libtmux-mcp chip', label: 'word', caption: 'sans 11px/700 · word · padding 2.6×8.2px · solid fill, 1px border · radius 3.6px' },
+  { id: 'k', name: 'gp-sphinx chip', label: 'word', caption: 'sans 11px/700 · word · padding 2.6×8px · tint, 1px border · radius 3.5px · dotted label' },
+  { id: 'l', name: 'Hybrid', label: 'mark', head: 'word', caption: 'solid marks (G) in prose and tree · word chips (J) in headings' },
+]
+
+const esc = (text: string) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+
+function badge(c: Candidate, k: Kind, label: 'mark' | 'word', link = false): string {
+  if (c.real) {
+    const cls = `${link ? 'api-link-kind ' : ''}api-nav__kind api-badge--kind-${k.kind}`
+    return `<span class="${cls}" aria-hidden="true" title="${k.kind}"><span class="api-badge__label"${k.x ? ' data-mark="x"' : ''}>${esc(k.mark)}</span></span>`
+  }
+  const word = label === 'word'
+  return `<span class="bd-b${word ? ' bd-b--word' : ''}" data-g="${k.group}"${!word && k.x ? ' data-x' : ''} aria-hidden="true" title="${k.kind}"><span class="bd-b__l">${esc(word ? k.word : k.mark)}</span></span>`
+}
+
+function mention(c: Candidate, kind: string, text: string): string {
+  const k = kindOf(kind)
+  const name = `<code>${esc(text)}</code>`
+  return c.real
+    ? `<a class="api-mention" href="#">${badge(c, k, c.label, true)}<span class="api-symbol-link__name">${name}</span></a>`
+    : `<a class="bd-m" href="#">${badge(c, k, c.label)}<span class="bd-name">${name}</span></a>`
+}
+
+const PROSE: (string | [string, string])[] = [
+  ['method', 'TmuxTools::builder(server)'],
+  ' constructs a tool surface over a libtmux ',
+  ['struct', 'Server'],
+  '. Pass a ',
+  ['struct', 'Selection'],
+  ' through ',
+  ['method', '.selection()'],
+  ', then build it. ',
+  ['method', 'offered()'],
+  ' reports the tools in scope.',
+]
+const TREE: [string, string, string][] = [
+  ['struct', 'Server', ''],
+  ['method', 'new_session', 'in'],
+  ['property', 'session_name', 'in'],
+]
+const HEADING: [string, string][] = [
+  ['struct', 'Server'],
+  ['method', 'new_session()'],
+]
+
+function pane(c: Candidate, scheme: 'light' | 'dark'): string {
+  const prose = PROSE.map((part) => (typeof part === 'string' ? esc(part) : mention(c, part[0], part[1]))).join('')
+  const marks = KINDS.map((k) => badge(c, k, c.label)).join('')
+  const tree = TREE.map(([kind, name, indent], i) => {
+    const on = i === 1 ? ' bd-row--on' : ''
+    return `<div class="bd-row${indent ? ' bd-row--in' : ''}${on}">${badge(c, kindOf(kind), c.label)}<span>${name}</span></div>`
+  }).join('')
+  const heading = HEADING.map(([kind, name]) => `<span class="bd-hitem">${badge(c, kindOf(kind), c.head ?? c.label)}<span>${esc(name)}</span></span>`).join('')
+  return `<div class="bd-pane" data-pane="${scheme}">
+<p class="bd-prose">${prose}</p>
+<div class="bd-marks">${marks}</div>
+<div class="bd-tree">${tree}</div>
+<h3 class="bd-hrow">${heading}</h3>
+</div>`
+}
+---
+
+<DemoLayout title="Badge demo" description="Kind badge candidates in light and dark." current="/demo/badges/">
+  <h1 class="text-3xl font-semibold tracking-tight">Kind badges</h1>
+  <p class="mt-2 text-muted">Twelve candidates, light and dark. Pick a letter.</p>
+  <nav class="mt-4 flex flex-wrap gap-1.5" aria-label="Candidates">
+    {
+      CANDIDATES.map((c) => (
+        <a href={`#${c.id}`} class="bd-jump" title={c.name}>
+          {c.id.toUpperCase()}
+        </a>
+      ))
+    }
+  </nav>
+
+  {
+    CANDIDATES.map((c) => (
+      <section id={c.id} class={`bd-cand bd-c-${c.id}`}>
+        <header class="bd-head">
+          <span class="bd-id">{c.id.toUpperCase()}</span>
+          <h2 class="bd-name-h">{c.name}</h2>
+          <p class="bd-cap">{c.caption}</p>
+        </header>
+        <div class="bd-panes">
+          <Fragment set:html={pane(c, 'light')} />
+          <Fragment set:html={pane(c, 'dark')} />
+        </div>
+      </section>
+    ))
+  }
+
+  <style is:inline set:html={paletteCss}></style>
+</DemoLayout>
+
+<script is:inline>
+  document.addEventListener('click', (event) => {
+    if (event.target instanceof Element && event.target.closest('.bd-pane a')) event.preventDefault()
+  })
+</script>
+
+<style is:global>
+  /* Page chrome */
+  .bd-jump {
+    display: inline-grid; place-items: center; min-width: 1.75rem; height: 1.75rem; padding: 0 .4rem;
+    border: 1px solid var(--color-edge); border-radius: .375rem; background: var(--color-surface);
+    font: 600 .8125rem/1 var(--font-mono); text-decoration: none; color: inherit;
+  }
+  .bd-jump:hover { background: var(--color-surface-hover); }
+  .bd-cand { margin-top: 2.5rem; scroll-margin-top: 4.5rem; }
+  .bd-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem .75rem; margin-bottom: .75rem; }
+  .bd-id {
+    align-self: center; display: inline-grid; place-items: center; min-width: 2rem; height: 2rem;
+    border-radius: .5rem; background: var(--color-surface-hover); font: 700 1rem/1 var(--font-mono);
+  }
+  .bd-name-h { margin: 0; font: 600 1.125rem/1.3 var(--font-sans); }
+  .bd-cap { flex: 1 1 100%; margin: 0; color: var(--color-muted); font: .75rem/1.4 var(--font-mono); }
+  .bd-panes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr)); gap: 1rem; }
+
+  /* Panes carry their own scheme */
+  .bd-pane {
+    position: relative; display: flex; flex-direction: column; gap: 1.1rem; min-width: 0;
+    padding: 1.1rem 1.25rem; border: 1px solid var(--bd-edge); border-radius: .5rem;
+    background: var(--bd-bg); color: var(--bd-fg);
+    --color-edge: var(--bd-edge); --color-muted: var(--bd-muted); --color-surface-hover: var(--bd-hover);
+  }
+  .bd-pane::before {
+    content: attr(data-pane); position: absolute; top: .4rem; right: .6rem;
+    color: var(--bd-muted); font: .625rem/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em;
+  }
+  .bd-pane[data-pane='light'] {
+    --bd-bg: #fff; --bd-fg: #1a1c1e; --bd-muted: #6b6f76; --bd-edge: #eeebee; --bd-surface: #f8f9fb;
+    --bd-hover: #efeff4; --bd-link: #2757dd; --bd-shade: inset 0 1px 0 rgb(255 255 255 / .2), inset 0 -1px 2px rgb(0 0 0 / .12);
+    color-scheme: light;
+  }
+  .bd-pane[data-pane='dark'] {
+    --bd-bg: #131416; --bd-fg: #cfd0d0; --bd-muted: #81868d; --bd-edge: #303335; --bd-surface: #1a1c1e;
+    --bd-hover: #1e2124; --bd-link: #5ca5ff; --bd-shade: inset 0 1px 0 rgb(255 255 255 / .1), inset 0 -1px 2px rgb(0 0 0 / .28);
+    color-scheme: dark;
+  }
+  .bd-pane p, .bd-pane h3 { margin: 0; }
+  .bd-prose { font: 400 1rem/1.8 var(--font-sans); }
+  .bd-pane a { color: var(--bd-link); text-decoration: none; }
+  .bd-pane code {
+    padding: .05em .3em; border: 1px solid var(--bd-edge); border-radius: .25rem; background: var(--bd-surface);
+    font: 400 .875em/1.4 var(--font-mono); color: inherit;
+  }
+  .bd-name { text-decoration: underline; text-underline-offset: .2em; text-decoration-thickness: 1px; }
+
+  /* A mention is the badge, then the name, centred as the site does it */
+  .bd-m { display: inline-flex; align-items: baseline; gap: .25em; max-inline-size: 100%; vertical-align: baseline; }
+  .bd-m > .bd-b { align-self: center; }
+
+  .bd-marks { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; }
+  .bd-tree { width: min(100%, 17rem); padding: .25rem; border: 1px solid var(--bd-edge); border-radius: .375rem; background: var(--bd-surface); }
+  .bd-row { display: flex; align-items: center; gap: .5rem; padding: .3rem .5rem; border-radius: .25rem; font: 400 .875rem/1.3 var(--font-sans); }
+  .bd-row--in { padding-left: 1.5rem; }
+  .bd-row--on { background: var(--bd-hover); font-weight: 500; }
+  .bd-hrow { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1.5rem; font: 600 1.375rem/1.3 var(--font-mono); }
+  .bd-hitem { display: inline-flex; align-items: center; gap: .5rem; }
+
+  /* The candidate badge: every look is a few variables, set per candidate below */
+  .bd-b {
+    display: inline-grid; place-items: center; flex: none; box-sizing: border-box;
+    min-width: var(--w, 20px); height: var(--h, var(--w, 20px)); padding: var(--py, 0) var(--px, 0);
+    border: var(--bw, 1px) solid var(--bdv, var(--tbd)); border-radius: var(--r, 4px);
+    background: var(--bgv, var(--tbg)); color: var(--fgv, var(--tfg));
+    font: var(--fw, 600) var(--fs, 12px)/1 var(--ff, var(--font-sans)); letter-spacing: var(--ls, 0);
+    box-shadow: var(--sh, none); white-space: nowrap; user-select: none; text-decoration: none;
+  }
+  .bd-b[data-x] > .bd-b__l { translate: 0 var(--lift, -.09em); }
+
+  /* B 12px mono, C 13px mono bold, D 12px sans, E 13px sans bold, F wide pill */
+  .bd-c-b .bd-b { --w: 20px; --fs: 12px; --fw: 600; --ff: var(--font-mono); --r: 4px; }
+  .bd-c-c .bd-b { --w: 22px; --fs: 13px; --fw: 700; --ff: var(--font-mono); --r: 5px; }
+  .bd-c-d .bd-b { --w: 20px; --fs: 12px; --fw: 600; --r: 4px; }
+  .bd-c-e .bd-b { --w: 22px; --fs: 13px; --fw: 700; --r: 5px; }
+  .bd-c-f .bd-b { --w: 28px; --h: 20px; --fs: 12px; --fw: 700; --r: 10px; }
+
+  /* G solid, H soft tint, I libtmux-mcp box */
+  .bd-c-g .bd-b, .bd-c-l .bd-b { --w: 22px; --fs: 13px; --fw: 700; --r: 5px; --bgv: var(--sbg); --bdv: var(--sbd); --fgv: #fff; --sh: var(--bd-shade); }
+  .bd-c-h .bd-b {
+    --w: 22px; --fs: 13px; --fw: 600; --r: 6px; --bw: 0;
+    --bgv: color-mix(in srgb, var(--tbd) 20%, var(--bd-bg));
+  }
+  .bd-c-i .bd-b { --w: 16px; --fs: 10px; --fw: 700; --r: 3px; --bgv: var(--sbg); --bdv: var(--sbd); --fgv: #fff; --sh: var(--bd-shade); }
+
+  /* J and L-in-headings: libtmux-mcp word chip. K: gp-sphinx tinted word chip */
+  .bd-c-j .bd-b--word, .bd-c-l .bd-b--word {
+    --w: auto; --h: auto; --px: 8.2px; --py: 2.6px; --fs: 11px; --fw: 700; --r: 3.6px; --ls: .01em;
+    --bgv: var(--sbg); --bdv: var(--sbd); --fgv: #fff; --sh: var(--bd-shade);
+  }
+  .bd-c-k .bd-b--word { --w: auto; --h: auto; --px: 8px; --py: 2.6px; --fs: 11px; --fw: 700; --r: 3.5px; --ls: .01em; }
+  .bd-c-k .bd-b__l { text-decoration: underline dotted; text-underline-offset: .18em; }
+  .bd-c-l .bd-b--word { --fs: 12px; }
+</style>
