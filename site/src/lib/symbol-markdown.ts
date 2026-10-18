@@ -63,10 +63,11 @@ function inlineCode(code: string): string {
 }
 
 function proseMarkdown(markdown: string, index: SymbolIndex, symbol: ApiSymbol, linkApi: boolean): string {
-  if (!linkApi && !/\btmux\s/.test(markdown) && !tmuxCommandMentions(markdown).length) return markdown
+  if (!linkApi && !/\btmux\s|[-_]/.test(markdown)) return markdown
   // Use the HTML resolver for prose exports too. Never rewrite runnable code
   // blocks or the contents of an author-supplied link.
   const edits: { start: number; end: number; text: string }[] = []
+  const unclaimed: typeof edits = []
   let htmlDepth = 0
   const visit = (node: ReturnType<typeof fromMarkdown> | ReturnType<typeof fromMarkdown>['children'][number]) => {
     if (node.type === 'link' || node.type === 'linkReference' || node.type === 'code') return
@@ -80,8 +81,13 @@ function proseMarkdown(markdown: string, index: SymbolIndex, symbol: ApiSymbol, 
       const end = node.position!.end.offset!
       const tmux = tmuxMentionMarkdown(node.value, node.type === 'inlineCode')
       if (tmux && (node.type === 'inlineCode' || markdown.slice(start, end) === node.value)) {
-        edits.push({ start, end, text: tmux })
-        return
+        // A command claims its span; a library symbol outranks an option, hook or format variable.
+        if (linkApi && node.type === 'inlineCode' && !tmuxCommandMentions(node.value, { code: true }).length) {
+          unclaimed.push({ start, end, text: tmux })
+        } else {
+          edits.push({ start, end, text: tmux })
+          return
+        }
       }
       if (!linkApi) return
       if (node.type === 'inlineCode') {
@@ -111,6 +117,7 @@ function proseMarkdown(markdown: string, index: SymbolIndex, symbol: ApiSymbol, 
     } else if ('children' in node) for (const child of node.children) visit(child as Parameters<typeof visit>[0])
   }
   visit(fromMarkdown(markdown))
+  for (const edit of unclaimed) if (!edits.some((claimed) => claimed.start === edit.start)) edits.push(edit)
   for (const edit of edits.sort((a, b) => b.start - a.start)) markdown = markdown.slice(0, edit.start) + edit.text + markdown.slice(edit.end)
   return markdown
 }

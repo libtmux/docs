@@ -6,13 +6,15 @@ export function createLinkPreviewPolicy() {
     const reference = /\/reference\/[^/]+\/$/.test(url.pathname)
     const protocolObject = /\/mcp\/(?:tools\/[^/]+|prompts\/[^/]+|resources\/(?:templates\/)?[^/]+)\/$/.test(url.pathname)
       && !url.pathname.endsWith('/mcp/resources/templates/')
-    if (url.origin !== origin || url.search || (!reference && !protocolObject)) return undefined
+    // Command pages, and the full manual, whose fragments name options, hooks and format variables.
+    const manual = /\/tmux\/[^/]+\/manual\/(?:full|[a-z]+(?:-[a-z]+)*)\/$/.test(url.pathname)
+    if (url.origin !== origin || url.search || (!reference && !protocolObject && !manual)) return undefined
     return { url, endpoint: `${url.pathname.slice(0, -1)}.preview.json`, glossary: url.pathname.endsWith('/reference/glossary/') }
   }
   function candidate(eventTarget: EventTarget | null, base: string): HTMLAnchorElement | undefined {
     const link = eventTarget instanceof Element ? eventTarget.closest<HTMLAnchorElement>('a[href]') : null
-    if (!link || link.matches('[data-preview-skip], [href^="#"], .api-heading-link, .api-index-card__link, .headerlink')
-      || link.closest('nav, footer, [data-doc-picker], .api-index-card, .reference-link-preview')) return undefined
+    if (!link || link.matches('[data-preview-skip], [href^="#"], .api-heading-link, .api-index-card__link, .headerlink, .permalink')
+      || link.closest('nav, footer, [data-doc-picker], .api-index-card, .cli-command-list, .reference-link-preview')) return undefined
     try {
       const url = new URL(link.getAttribute('href')!, base)
       return target(url.href, new URL(base).origin) ? link : undefined

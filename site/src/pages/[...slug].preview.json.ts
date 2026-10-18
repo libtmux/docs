@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro'
 import { API_MODELS } from '../lib/api-models'
 import { productApiHref } from '../lib/product-api'
-import { symbolPreview, glossaryPreview, highlightedPreview, type LinkPreview } from '../lib/link-preview'
+import { symbolPreview, glossaryPreview, highlightedPreview, tmuxManualPreview, type LinkPreview } from '../lib/link-preview'
 import { PORT_BY_SLUG, referenceUrl } from '../lib/ports'
 import { symbolsForProduct } from '@libtmux/api-model'
 import { buildTarget } from '../lib/versions'
@@ -9,6 +9,7 @@ import { buildLocale, DEFAULT_LOCALE } from '../i18n/locales'
 import { API_GLOSSARY_PATH } from '../lib/api-glossary'
 import { mcpObjects } from '../lib/mcp-catalog'
 import { mcpObjectPreview } from '../lib/mcp-preview'
+import { tmuxManualRoutes, tmuxManualUrl } from '../lib/tmux-manual-data'
 
 export function getStaticPaths() {
   if (buildLocale() !== DEFAULT_LOCALE) return []
@@ -19,6 +20,9 @@ export function getStaticPaths() {
   try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults use latest. */ }
   const route = (href: string, preview: LinkPreview) => ({ params: { slug: href.slice(buildBase.length).replace(/\/$/, '') }, props: { preview } })
   const paths = !buildPort ? [route(API_GLOSSARY_PATH, glossaryPreview(API_GLOSSARY_PATH))] : []
+  for (const { version, slug } of tmuxManualRoutes()) {
+    if (slug) paths.push(route(tmuxManualUrl(version, slug), tmuxManualPreview(version, slug)))
+  }
   for (const [port, model] of Object.entries(API_MODELS)) {
     if (buildPort && port !== buildPort) continue
     const version = buildPort ? buildVersion : defaults[port] ?? 'latest'

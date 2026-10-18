@@ -1,5 +1,7 @@
 /** Versioned tmux command syntax and manual text, extracted together. */
 import { CONCEPTS, conceptsFor } from '@libtmux/api-model'
+import { fromHtml } from 'hast-util-from-html'
+import { select, selectAll, type Element, type Nodes } from 'astro-expressive-code/hast'
 import pins from '../data/tmux/versions.json'
 import v32 from '../data/tmux/3.2a.json'
 import v37 from '../data/tmux/3.7c.json'
@@ -7,6 +9,7 @@ import { API_MODELS, referenceHref } from './api-models'
 import { PORT_BY_SLUG } from './ports'
 import { withPortRoot } from './site-root'
 import { rowAnchor } from './row-anchors'
+import { linkTmuxManualTree } from './tmux-manual'
 
 export type TmuxManual = typeof v37
 export type TmuxCommand = TmuxManual['commands'][number]
@@ -23,6 +26,107 @@ export function tmuxManual(version: string): TmuxManual {
 /** tmux belongs to the general documentation, outside each library's tree. */
 export function buildsTmuxDocumentation(env: Record<string, string | undefined> = process.env): boolean {
   return !env.LIBTMUX_DOCS_PORT && (!env.LIBTMUX_DOCS_LOCALE || env.LIBTMUX_DOCS_LOCALE === 'en')
+}
+
+/** The kinds of tmux name the manual documents; the tmux catalog shares these names. */
+export type TmuxEntityKind = 'command' | 'option' | 'hook' | 'format'
+export type TmuxManualEntityKind = Exclude<TmuxEntityKind, 'command'>
+export interface TmuxManualEntity {
+  kind: TmuxManualEntityKind
+  name: string
+  /** Fragment on the full manual page. */
+  anchor: string
+  summary: string
+  /** What the name is, such as "Session option". */
+  detail: string
+  /** The manual's own syntax line, when it has one. */
+  usage?: string
+}
+
+const entityTables = new WeakMap<TmuxManual, Map<string, TmuxManualEntity>>()
+const textOf = (node: Nodes): string => node.type === 'text' ? node.value
+  : 'children' in node ? node.children.map(textOf).join('') : ''
+const compact = (node: Nodes) => textOf(node).replace(/\s+/g, ' ').trim()
+const firstSentence = (text: string) => text.match(/^.*?[.!?](?=\s|$)/)?.[0] ?? text
+const elements = (parent: Element) => parent.children.filter((child): child is Element => child.type === 'element')
+const entityKey = (kind: TmuxManualEntityKind, name: string) => `${kind}:${name}`
+
+/** Pair each term of a definition list with the description that follows it. */
+function definitions(list: Element): { term: Element; body: Element }[] {
+  const items = elements(list)
+  return items.flatMap((term, index) => term.tagName === 'dt' && items[index + 1]?.tagName === 'dd'
+    ? [{ term, body: items[index + 1] }] : [])
+}
+
+/**
+ * Options, hooks and format variables as the manual defines them.
+ *
+ * Anchors come from the same linking pass that renders the full manual, so
+ * every entity resolves to a heading the reader can land on.
+ */
+function entityTable(manual: TmuxManual): Map<string, TmuxManualEntity> {
+  const cached = entityTables.get(manual)
+  if (cached) return cached
+  const commands = new Set(manual.commands.map((command) => command.name))
+  const table = new Map<string, TmuxManualEntity>()
+  const add = (entity: TmuxManualEntity) => {
+    const key = entityKey(entity.kind, entity.name)
+    if (!table.has(key)) table.set(key, entity)
+  }
+  const tree = linkTmuxManualTree(fromHtml(manual.manual, { fragment: true }))
+  for (const section of selectAll('section.Sh', tree)) {
+    const title = compact(select('h2', section)!)
+    let scope = ''
+    for (const block of elements(section)) {
+      if (title === 'OPTIONS' && block.tagName === 'p') {
+        scope = /^Available (\w+) options are:/.exec(compact(block))?.[1] ?? scope
+      }
+      if (title === 'OPTIONS' && block.tagName === 'dl' && scope) {
+        // The command forms and the nested value lists carry no option name.
+        for (const { term, body } of definitions(block)) {
+          const code = select('code.Ic', term)
+          const name = code && compact(code).replace(/\[\]$/, '')
+          if (!name || !term.properties.id || commands.has(name)) continue
+          add({ kind: 'option', name, anchor: String(term.properties.id), detail: `${scope[0].toUpperCase()}${scope.slice(1)} option`,
+            summary: firstSentence(compact(body)), usage: compact(term).replace(/\s*#$/, '') })
+        }
+      }
+      if (title === 'HOOKS' && block.tagName === 'dl') {
+        for (const { term, body } of definitions(block)) {
+          const name = compact(term).replace(/\s*#$/, '')
+          if (select('code', term) || !term.properties.id || !/^[a-z]+(?:-[a-z]+)+$/.test(name)) continue
+          add({ kind: 'hook', name, anchor: String(term.properties.id), detail: 'Hook', summary: firstSentence(compact(body)) })
+        }
+      }
+      if (title === 'FORMATS' && block.tagName === 'table' && select('tr#Variable', block)) {
+        for (const row of selectAll('tr', block)) {
+          const code = select('code', row)
+          const name = code && compact(code)
+          const cells = elements(row).filter((cell) => cell.tagName === 'td')
+          if (!name || name !== row.properties.id || cells.length < 3) continue
+          add({ kind: 'format', name, anchor: name, detail: 'Format variable', summary: compact(cells[2]) })
+        }
+      }
+    }
+  }
+  entityTables.set(manual, table)
+  return table
+}
+
+export function tmuxManualEntities(version = 'latest'): TmuxManualEntity[] {
+  return [...entityTable(tmuxManual(version)).values()]
+}
+
+export function tmuxManualEntity(kind: TmuxManualEntityKind, name: string, version = 'latest'): TmuxManualEntity | undefined {
+  return entityTable(tmuxManual(version)).get(entityKey(kind, name))
+}
+
+/** Where the CLI manual documents a name, or nothing when this release does not. */
+export function tmuxManualEntityHref(kind: TmuxEntityKind, name: string, version = 'latest'): string | undefined {
+  if (kind === 'command') return tmuxManual(version).commands.some((command) => command.name === name)
+    ? tmuxManualUrl(version, name) : undefined
+  const entity = tmuxManualEntity(kind, name, version)
+  return entity ? `${tmuxManualUrl(version, 'full')}#${entity.anchor}` : undefined
 }
 
 export function tmuxManualUrl(version = 'latest', command = ''): string {

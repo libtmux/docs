@@ -9,7 +9,7 @@ import { API_MODELS, pageSlug } from '../lib/api-models'
 import { kindMark } from '../lib/api-labels'
 import { docsPath, isTmuxProse } from '../lib/docs-paths'
 import { MCP_REFERENCE, mcpObjects } from '../lib/mcp-reference'
-import { tmuxCommandMentions } from '../lib/tmux-links'
+import { tmuxMentions, type TmuxReference } from '../lib/tmux-links'
 
 /** Link inline API and source references using their prose ownership. */
 const here = dirname(fileURLToPath(import.meta.url))
@@ -93,12 +93,37 @@ const BLOCKS = new Set(['p', 'li', 'td', 'th', 'dd', 'dt', 'figcaption', 'blockq
 type El = { type?: string; tagName?: string; value?: string; properties?: Record<string, unknown>; children?: El[] }
 const containsAnchor = (node: El): boolean => node.tagName === 'a' || Boolean(node.children?.some(containsAnchor))
 
-function commandNodes(text: string, code = false): El[] {
+/** tmux kinds read as words in the badge's tooltip; the glyph stays in `kindMark`. */
+const TMUX_KIND_TITLES: Record<TmuxReference['kind'], string> = {
+  command: 'tmux command', option: 'tmux option', hook: 'tmux hook', format: 'tmux format variable',
+}
+
+/** The same kind badge that API mentions carry, so both inherit one treatment. */
+function withKindBadge(anchor: El, kind: string, mark: string, title?: string): El {
+  anchor.children = [{ type: 'element', tagName: 'span', properties: {
+    className: ['api-symbol-link__name'],
+  }, children: anchor.children }]
+  anchor.children.unshift({ type: 'element', tagName: 'span', properties: {
+    className: ['api-link-kind', 'api-nav__kind', `api-badge--kind-${kind}`],
+    dataApiKind: kind, ariaHidden: 'true', title,
+  }, children: [{ type: 'element', tagName: 'span', properties: { className: ['api-badge__label'] }, children: [{ type: 'text', value: mark }] }] })
+  return anchor
+}
+
+function tmuxAnchor(mention: TmuxReference, children: El[], badge = true): El {
+  const anchor: El = { type: 'element', tagName: 'a', properties: { href: mention.href }, children }
+  if (!badge) return anchor
+  anchor.properties!.className = ['tmux-mention']
+  return withKindBadge(anchor, mention.kind, kindMark(mention.kind)!, TMUX_KIND_TITLES[mention.kind])
+}
+
+/** Names in prose carry a badge; inside one code run they keep the run's own flow. */
+function mentionNodes(text: string, code = false): El[] {
   const linked: El[] = []
   let end = 0
-  for (const mention of tmuxCommandMentions(text, { code })) {
+  for (const mention of tmuxMentions(text, { code })) {
     if (mention.start > end) linked.push({ type: 'text', value: text.slice(end, mention.start) })
-    linked.push({ type: 'element', tagName: 'a', properties: { href: mention.href }, children: [{ type: 'text', value: mention.text }] })
+    linked.push(tmuxAnchor(mention, [{ type: 'text', value: mention.text }], !code))
     end = mention.end
   }
   if (end < text.length) linked.push({ type: 'text', value: text.slice(end) })
@@ -146,13 +171,7 @@ function addKindBadge(anchor: El, port?: string, route?: string): void {
   if (!kind) return
   const mark = kindMark(kind)
   if (!mark) return
-  anchor.children = [{ type: 'element', tagName: 'span', properties: {
-    className: ['api-symbol-link__name'],
-  }, children: anchor.children }]
-  anchor.children.unshift({ type: 'element', tagName: 'span', properties: {
-    className: ['api-link-kind', 'api-nav__kind', `api-badge--kind-${kind}`],
-    dataApiKind: kind, ariaHidden: 'true', title,
-  }, children: [{ type: 'element', tagName: 'span', properties: { className: ['api-badge__label'] }, children: [{ type: 'text', value: mark }] }] })
+  withKindBadge(anchor, kind, mark, title)
 }
 
 /**
@@ -218,9 +237,8 @@ export function rehypeApiLinks() {
       for (let i = 0; i < kids.length; i++) {
         const child = kids[i]!
         if (child.type === 'text') {
-          const mentions = !inLink ? tmuxCommandMentions(child.value ?? '') : []
-          if (mentions.length) {
-            const linked = commandNodes(child.value ?? '')
+          if (!inLink && tmuxMentions(child.value ?? '').length) {
+            const linked = mentionNodes(child.value ?? '')
             kids.splice(i, 1, ...linked)
             i += linked.length - 1
           }
@@ -243,18 +261,23 @@ export function rehypeApiLinks() {
         if (child.tagName === 'code' && !inLink) {
           const text = textOf(child).trim()
           if (containsAnchor(child)) { scope.text += text; continue }
-          const commands = tmuxCommandMentions(text, { code: true })
-          if (commands.length === 1) {
-            kids[i] = { type: 'element', tagName: 'a', properties: { href: commands[0].href }, children: [child] }
+          const mentions = tmuxMentions(text, { code: true })
+          // One name takes the whole span; several split it and keep its code font.
+          const linkMentions = () => {
+            if (mentions.length === 1) kids[i] = tmuxAnchor(mentions[0], [child])
+            else if (mentions.length > 1 && child.children?.every((node) => node.type === 'text')) child.children = mentionNodes(textOf(child), true)
+            else return false
+            return true
+          }
+          // A command claims its span; a library symbol outranks an option, hook or format variable.
+          if (mentions.some((mention) => mention.kind === 'command') && linkMentions()) {
             scope.text += text
             continue
           }
-          if (commands.length > 1 && child.children?.every((node) => node.type === 'text')) {
-            child.children = commandNodes(textOf(child), true)
-            scope.text += text
+          if (!resolveMentions) {
+            linkMentions()
             continue
           }
-          if (!resolveMentions) continue
           const explicitPort = child.properties?.dataDocPort
           const pagePort = (typeof explicitPort === 'string' ? explicitPort : undefined)
             ?? buildPort ?? rowPort ?? fence.lang ?? sections.at(-1)?.port
@@ -270,9 +293,12 @@ export function rehypeApiLinks() {
               },
             }
             addKindBadge(kids[i]!, buildPort, route)
-          } else if (decision.kind === 'unresolved' && !decision.file &&
-            (text.startsWith('mcp:') || (pagePort && isLikelyReference(text) && !notApiReason(text)))) {
-            record({ port: pagePort ?? 'shared', text, why: decision.why })
+          } else {
+            if (decision.kind === 'unresolved' && !decision.file &&
+              (text.startsWith('mcp:') || (pagePort && isLikelyReference(text) && !notApiReason(text)))) {
+              record({ port: pagePort ?? 'shared', text, why: decision.why })
+            }
+            linkMentions()
           }
           scope.text += text
           continue
