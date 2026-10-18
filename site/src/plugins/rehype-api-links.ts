@@ -6,7 +6,7 @@ import { isLikelyReference, notApiReason, type ApiProduct } from '@libtmux/api-m
 import { createProseLinker, PORT_BY_LABEL, protocolRunMentions } from '../lib/prose-resolver'
 import { PORT_BY_SLUG } from '../lib/ports'
 import { API_MODELS, pageSlug } from '../lib/api-models'
-import { kindMark, markHeight } from '../lib/api-labels'
+import { kindMark, markClass } from '../lib/api-labels'
 import { docsPath, isTmuxProse } from '../lib/docs-paths'
 import { MCP_REFERENCE, mcpObjects } from '../lib/mcp-catalog'
 import { mergeMentions, tmuxMentions, type Mention } from '../lib/tmux-links'
@@ -107,24 +107,42 @@ function withKindBadge(anchor: El, kind: string, mark: string, title?: string): 
   anchor.children.unshift({ type: 'element', tagName: 'span', properties: {
     className: ['api-link-kind', 'api-nav__kind', `api-badge--kind-${kind}`],
     dataApiKind: kind, ariaHidden: 'true', title,
-  }, children: [{ type: 'element', tagName: 'span', properties: { className: ['api-badge__label'], dataMark: markHeight(mark) }, children: [{ type: 'text', value: mark }] }] })
+  }, children: [{ type: 'element', tagName: 'span', properties: { className: ['api-badge__label'], dataMark: markClass(mark) }, children: [{ type: 'text', value: mark }] }] })
   return anchor
 }
 
-function mentionAnchor(mention: Mention, children: El[], badge = true): El {
+/** The kind as a word, for a tooltip and an accessible name. */
+const kindWord = (kind: string) => TMUX_KIND_TITLES[kind] ?? kind.replace(/-/g, ' ')
+
+/**
+ * A later mention in a section: the link alone. The kind stays in the tooltip and
+ * the accessible name, so the reader who needs it can hover or listen for it.
+ */
+function plainKind(anchor: El, kind: string, title?: string): El {
+  const word = kindWord(kind)
+  anchor.properties = { ...anchor.properties, title: title ?? word, dataApiKind: kind, ariaLabel: `${word}: ${textOf(anchor).trim()}` }
+  return anchor
+}
+
+/** Mark the first mention of a name in a section; every later one stays a plain code link. */
+type First = (key: string) => boolean
+
+function mentionAnchor(mention: Mention, children: El[], badge = true, first: First = () => true): El {
   const anchor: El = { type: 'element', tagName: 'a', properties: { href: mention.href }, children }
   if (!badge) return anchor
   anchor.properties!.className = [`${mention.family ?? 'tmux'}-mention`]
-  return withKindBadge(anchor, mention.kind, kindMark(mention.kind)!, mention.title ?? TMUX_KIND_TITLES[mention.kind])
+  const title = mention.title ?? TMUX_KIND_TITLES[mention.kind]
+  if (!first(`${mention.kind}:${mention.href}`)) return plainKind(anchor, mention.kind, title)
+  return withKindBadge(anchor, mention.kind, kindMark(mention.kind)!, title)
 }
 
 /** Names in prose carry a badge; inside one code run they keep the run's own flow. */
-function mentionNodes(text: string, mentions: Mention[], code = false): El[] {
+function mentionNodes(text: string, mentions: Mention[], code = false, first: First = () => true): El[] {
   const linked: El[] = []
   let end = 0
   for (const mention of mentions) {
     if (mention.start > end) linked.push({ type: 'text', value: text.slice(end, mention.start) })
-    linked.push(mentionAnchor(mention, [{ type: 'text', value: mention.text }], !code))
+    linked.push(mentionAnchor(mention, [{ type: 'text', value: mention.text }], !code, first))
     end = mention.end
   }
   if (end < text.length) linked.push({ type: 'text', value: text.slice(end) })
@@ -140,9 +158,9 @@ const protocolByPage = new Map(Object.keys(MCP_REFERENCE).flatMap(port => mcpObj
 ] as const)))
 
 /** Only mark links whose actual destination names a known declaration. */
-function addKindBadge(anchor: El, port?: string, route?: string): void {
+function addKindBadge(anchor: El, port?: string, route?: string, first: First = () => true): void {
   const href = anchor.properties?.href
-  if (typeof href !== 'string' || href.startsWith('#') || !anchor.children?.length || anchor.children.some(child => child.properties?.dataApiKind)) return
+  if (typeof href !== 'string' || href.startsWith('#') || !anchor.children?.length || anchor.properties?.dataApiKind || anchor.children.some(child => child.properties?.dataApiKind)) return
   // Relative links require the real page route, including product nesting.
   if (route === undefined && !/^(?:\/|[a-z][a-z0-9+.-]*:)/i.test(href)) return
   let url: URL
@@ -172,7 +190,8 @@ function addKindBadge(anchor: El, port?: string, route?: string): void {
   if (!kind) return
   const mark = kindMark(kind)
   if (!mark) return
-  withKindBadge(anchor, kind, mark, title)
+  if (!first(`${kind}:${url.pathname}${fragment ? `#${fragment}` : ''}`)) plainKind(anchor, kind, title)
+  else withKindBadge(anchor, kind, mark, title)
 }
 
 /**
@@ -212,6 +231,15 @@ export function rehypeApiLinks() {
     const definitionCells = new WeakSet<El>()
     let definitions = 0
     let headings = 0
+    // The first mention of a name in each section carries the mark; the rest are plain code links.
+    // A heading starts a new section and its own names are always marked.
+    const seen = new Set<string>()
+    const first: First = (key) => {
+      if (headings) return true
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    }
 
     const walk = (node: El, inLink: boolean, rowPort: string | undefined, fence: { lang?: string }, before: { text: string }) => {
       const kids = node.children
@@ -236,6 +264,7 @@ export function rehypeApiLinks() {
         return
       }
       if (/^h[1-6]$/.test(node.tagName ?? '')) {
+        seen.clear()
         const depth = Number(node.tagName![1])
         while (sections.length && sections.at(-1)!.depth >= depth) sections.pop()
         sections.push({ depth, port: PORT_BY_LABEL[textOf(node).trim()] ?? sections.at(-1)?.port })
@@ -250,7 +279,7 @@ export function rehypeApiLinks() {
         if (child.type === 'text') {
           const mentions = inLink ? [] : tmuxMentions(child.value ?? '')
           if (mentions.length) {
-            const linked = mentionNodes(child.value ?? '', mentions)
+            const linked = mentionNodes(child.value ?? '', mentions, false, first)
             kids.splice(i, 1, ...linked)
             i += linked.length - 1
           }
@@ -267,7 +296,7 @@ export function rehypeApiLinks() {
           }
           walk(child, true, rowPort, fence, scope)
           scope.text += textOf(child)
-          addKindBadge(child, buildPort, route)
+          addKindBadge(child, buildPort, route, first)
           continue
         }
         if (child.tagName === 'code' && !inLink) {
@@ -290,7 +319,7 @@ export function rehypeApiLinks() {
           // One name takes the whole span; several split it and keep its code font.
           const linkMentions = () => {
             const lead = raw.length - raw.trimStart().length
-            if (mentions.length === 1 && !mentions[0].inline) kids[i] = mentionAnchor(mentions[0], [child])
+            if (mentions.length === 1 && !mentions[0].inline) kids[i] = mentionAnchor(mentions[0], [child], true, first)
             else if (mentions.length && child.children?.every((node) => node.type === 'text')) {
               child.children = mentionNodes(raw, mentions.map((mention) => ({ ...mention, start: mention.start + lead, end: mention.end + lead })), true)
             } else return false
@@ -316,7 +345,7 @@ export function rehypeApiLinks() {
                 ...(decision.external ? { rel: 'nofollow noopener' } : {}),
               },
             }
-            addKindBadge(kids[i]!, buildPort, route)
+            addKindBadge(kids[i]!, buildPort, route, first)
           } else {
             if (decision.kind === 'unresolved' && !decision.file &&
               (text.startsWith('mcp:') || (pagePort && isLikelyReference(text) && !notApiReason(text)))) {
