@@ -67,6 +67,29 @@ describe('durable portable references', () => {
     const entries = targetEntries([{ ...target, native: [{ type: 'std:term', name: 'Blocking Call' }] }], '/pr-42/en/', true)
     expect(entries.filter((entry) => entry.type === 'std:term').map((entry) => entry.name)).toEqual(['cxx:core:blocking call', 'cxx:blocking call', 'blocking call'])
   })
+  it('exports canonical program option names alongside explicit human names', () => {
+    const option = { ...target, scope: 'py', product: 'workspace', native: [{ type: 'std:cmdoption', name: 'tmuxp load --append' }] }
+    const names = targetEntries([option], '/pr-42/en/', true).filter((entry) => entry.type === 'std:cmdoption').map((entry) => entry.name)
+    expect(names).toEqual(expect.arrayContaining([
+      'py:workspace:tmuxp load --append', 'tmuxp load --append',
+      'py:workspace:tmuxp-load.--append', 'py:tmuxp-load.--append', 'tmuxp-load.--append',
+    ]))
+  })
+  it('does not choose between commands whose Sphinx program names collide', () => {
+    const spaced = { ...target, native: [{ type: 'std:cmdoption', name: 'tmuxp load --append' }] }
+    const dashed = { ...spaced, identity: 'other-command', href: target.href + '-other', native: [{ type: 'std:cmdoption', name: 'tmuxp-load --append' }] }
+    const names = targetEntries([spaced, dashed], '/pr-42/en/', true).filter((entry) => entry.type === 'std:cmdoption').map((entry) => entry.name)
+    expect(names).toEqual(expect.arrayContaining(['tmuxp load --append', 'tmuxp-load --append']))
+    for (const name of ['cxx:core:tmuxp-load.--append', 'cxx:tmuxp-load.--append', 'tmuxp-load.--append']) expect(names).not.toContain(name)
+  })
+  it('keeps unqualified options and existing canonical names unchanged', () => {
+    const names = targetEntries([{ ...target, native: [
+      { type: 'std:cmdoption', name: '--help' },
+      { type: 'std:cmdoption', name: 'tmuxp-load.--append' },
+    ] }], '/pr-42/en/', true).filter((entry) => entry.type === 'std:cmdoption').map((entry) => entry.name)
+    expect(names).toHaveLength(6)
+    expect(names).toEqual(expect.arrayContaining(['--help', 'tmuxp-load.--append']))
+  })
   it('rejects a target escaping the configured preview or mapping scope', () => {
     expect(() => targetEntries([target], '/en/')).toThrow('escapes')
     expect(() => targetEntries([target], '/pr-42/en/cxx/latest/')).toThrow('escapes')
