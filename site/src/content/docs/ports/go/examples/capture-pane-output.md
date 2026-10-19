@@ -18,7 +18,7 @@ The steps below build `main.go` one call at a time. Each block is a range of
 lines from [the complete program](#the-complete-program), which creates a
 private tmux server, captures its output, and cleans up. Each step names the
 tmux command behind the call, which the [native version of this
-example](/examples/capture-pane-output/) builds in shell. Follow the [setup and
+example](/tmux/examples/capture-pane-output/) builds in shell. Follow the [setup and
 run instructions](#setup-and-run) below. You need tmux and a Unix environment;
 no existing tmux session is required.
 
@@ -57,7 +57,7 @@ a startup file, like `-e ENV=/dev/null`.
 `Server.Panes` lists every pane on the server. A private server holds only the
 session from step 3, so the first pane is its pane. On a shared server, list
 through the session instead, with `Session.Panes`. The native
-[pane ID step](/examples/attach-and-send-keys/#4-find-the-pane-by-its-id)
+[pane ID step](/tmux/examples/attach-and-send-keys/#4-find-the-pane-by-its-id)
 explains why code addresses a pane by identity and not by position.
 
 ```go excerpt="main.go" from="panes, err := server.Panes" to="pane := panes[0]"

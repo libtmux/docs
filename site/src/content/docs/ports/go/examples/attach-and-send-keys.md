@@ -17,7 +17,7 @@ interactively, see [Attaching to tmux](/guides/attaching-to-tmux/).
 The steps below build the program one call at a time. Each block is a range of
 lines from [the complete program](#the-complete-program), which includes setup,
 error handling, and cleanup. Each step names the tmux command behind the call;
-the [native version of this example](/examples/attach-and-send-keys/) builds
+the [native version of this example](/tmux/examples/attach-and-send-keys/) builds
 the same sequence in shell. [Source and verification](#where-this-comes-from)
 identifies the file and its checks.
 
