@@ -61,6 +61,11 @@ export function publishAssembledInventories(out: string, base: string, manifest:
       const portBase = `${base}${port}/${version.slug}/`
       ports.push(publishPortInventory(join(out, port, version.slug), portBase, targets, port, version.slug))
     }
+    const selected = targets.filter((target) => target.scope === port && target.version === selectedDefault)
+    const compatibility = compatibilityEntries(selected, base).map((entry) => ({ ...entry, uri: `../../${entry.uri}` }))
+    write(out, `reference/${port}/objects.inv`, writeInventoryEntries(compatibility, {
+      project: `libtmux ${port}`, version: selectedDefault, legacyCaseSensitiveLabels: true,
+    }))
   }
   const full = targets.filter((target) => target.scope === 'site' || target.scope.startsWith('tmux@') ||
     manifest.defaultVersion[target.scope] === target.version && manifest.ports[target.scope]?.length)
