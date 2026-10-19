@@ -1,7 +1,7 @@
 ---
 import InstallCode from './InstallCode.astro'
 import './package-install.css'
-import { installsFor, nugetInstallSelection } from '../../lib/registry'
+import { installsFor, installSelection } from '../../lib/registry'
 import { API_MODELS } from '../../lib/api-models'
 import { Code } from 'astro-expressive-code/components'
 import { highlightInline, highlightWithCooldownSlots } from '../../lib/highlight'
@@ -47,10 +47,12 @@ const copyLayout = (code: string) => (copyButton === 'auto' ? (code.includes('\n
 
 const selected = ports && ports.length > 0 ? PORTS.filter((p) => ports.includes(p.slug)) : PORTS
 const items = selected.map((port) => {
-  if (packageId === 'core') return { ...port, installs: installsFor(port, nugetInstallSelection(port, API_MODELS[port.slug]?.sources, process.env)) }
+  const selection = installSelection(port, API_MODELS[port.slug]?.sources, process.env)
+  if (packageId === 'core') return { ...port, installs: installsFor(port, selection) }
   const companion = port.packages?.find((entry) => entry.id === packageId)
   if (!companion?.installs) throw new Error(`PackageInstall: ${port.slug} has no install forms for ${packageId}`)
-  return { ...port, packageName: companion.name, installs: companion.installs }
+  const product = { ...port, packageName: companion.name, installs: companion.installs }
+  return { ...product, installs: port.slug === 'julia' ? installsFor(product, selection) : companion.installs }
 })
 if (items.length === 0) {
   throw new Error('PackageInstall: `ports` matched none of the ten port slugs in ports.ts')

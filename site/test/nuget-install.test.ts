@@ -6,7 +6,7 @@ import { experimental_AstroContainer } from 'astro/container'
 import { Window, type HTMLButtonElement } from 'happy-dom'
 import ts from 'typescript'
 import { PORT_BY_SLUG, PORTS } from '../src/lib/ports'
-import { installsFor, nugetInstallSelection, REGISTRY } from '../src/lib/registry'
+import { installsFor, installSelection, REGISTRY } from '../src/lib/registry'
 import { pickerPaintRules } from '../src/lib/picker-paint'
 import { highlightInline, highlightWithCooldownSlots } from '../src/lib/highlight'
 import csharp from '../src/data/api/csharp.json'
@@ -18,7 +18,7 @@ const windows: Window[] = []
 afterEach(async () => { vi.unstubAllEnvs(); for (const win of windows.splice(0)) await win.happyDOM.abort() })
 const forms = (slug: string, env: Record<string, string> = {}) => {
   const port = PORT_BY_SLUG[slug]
-  return installsFor(port, nugetInstallSelection(port, models[slug as keyof typeof models]?.sources, env))
+  return installsFor(port, installSelection(port, models[slug as keyof typeof models]?.sources, env))
 }
 
 describe('NuGet installation recipes', () => {
@@ -61,7 +61,7 @@ describe('NuGet installation recipes', () => {
 const astroRequire = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
 const packageFile = new URL('../src/components/widgets/PackageInstall.astro', import.meta.url)
 const copyFile = new URL('../src/components/widgets/InstallCode.astro', import.meta.url)
-const bindings = { registry: { installsFor, nugetInstallSelection }, models: { API_MODELS: models },
+const bindings = { registry: { installsFor, installSelection }, models: { API_MODELS: models },
   highlight: { highlightInline, highlightWithCooldownSlots }, ports: { PORTS },
 }
 // The actual source functions stay in the test module; only collection loading and
