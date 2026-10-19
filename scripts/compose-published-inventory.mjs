@@ -18,6 +18,7 @@ export async function compose({ directory, runtime, catalogs, bucket, locale }) 
   if (shared.base !== base) throw new Error(`Published inventory base differs from ${base}`)
   const targets = shared.targets.filter((target) => target.scope === 'site' || target.scope.startsWith('tmux@'))
   const inputs = []
+  const compatibility = []
   for (const [port, versions] of Object.entries(manifest.ports)) {
     if (!versions.length) continue
     const version = manifest.defaultVersion[port]
@@ -46,12 +47,21 @@ export async function compose({ directory, runtime, catalogs, bucket, locale }) 
     }
     targets.push(...catalog.targets)
     inputs.push({ port, version, catalog: `${base}${relative}`, sha256: createHash('sha256').update(bytes).digest('hex') })
+    const entries = compatibilityEntries(catalog.targets, base).map((entry) => ({ ...entry, uri: `../../${entry.uri}` }))
+    compatibility.push({
+      file: resolve(out, 'reference', port, 'objects.inv'),
+      bytes: writeInventoryEntries(entries, { project: `libtmux ${port}`, version, legacyCaseSensitiveLabels: true }),
+    })
   }
   targets.sort((a, b) => a.key < b.key ? -1 : a.key > b.key ? 1 : 0)
   const options = { project: 'libtmux', version: 'all' }
-  // Validate both exports before replacing any artifact file.
+  // Validate all exports before replacing any artifact file.
   const full = writeInventoryEntries(targetEntries(targets, base), options)
   const legacy = writeInventoryEntries(compatibilityEntries(targets, base, true), { ...options, legacyCaseSensitiveLabels: true })
+  for (const { file, bytes } of compatibility) {
+    mkdirSync(resolve(file, '..'), { recursive: true })
+    writeFileSync(file, bytes)
+  }
   writeFileSync(resolve(out, 'objects-full.inv'), full)
   writeFileSync(resolve(out, 'objects.inv'), legacy)
   writeFileSync(resolve(out, 'targets.json'), `${JSON.stringify({ schema: 1, base, defaults: manifest.defaultVersion, coverage: { inputs }, targets })}\n`)

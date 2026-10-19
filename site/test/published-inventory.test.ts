@@ -4,7 +4,7 @@ import { cpSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } f
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { readInventory, targetKey } from '@libtmux/api-model'
+import { readInventory, targetKey, writeInventoryEntries } from '@libtmux/api-model'
 
 const root = resolve(import.meta.dirname, '../..')
 const scratch: string[] = []
@@ -20,7 +20,7 @@ function fixture(published = true, wrongScope = false) {
   write('inventory-runtime/package.json', { type: 'module' })
   const target = (scope: string, version: string) => {
     const value = { scope, version, product: 'core', category: 'api', identity: 'Pane', display: 'Pane', href: `/en/${scope}/${version}/reference/pane/#Pane` }
-    return { ...value, key: targetKey(value) }
+    return { ...value, key: targetKey(value), legacy: [{ type: 'std:label', name: 'Pane' }] }
   }
   write('shell-paths.json', { portTrees: ['rs'] })
   write('dist/versions.json', { schema: 1, ports: { rs: [{ slug: 'stable' }] }, defaultVersion: { rs: 'stable' } })
@@ -43,6 +43,18 @@ describe('published default inventory composition', () => {
     expect(catalog.targets.map((target: { version: string }) => target.version)).toEqual(['stable'])
     expect(readInventory(readFileSync(join(path, 'dist/objects-full.inv'))).entries[0].uri).toContain('rs/stable/')
     expect(result.inputs[0].sha256).toBe(createHash('sha256').update(readFileSync(join(path, 'published/rs/stable/targets.json'))).digest('hex'))
+  })
+  it('replaces stale root compatibility entries with the selected published API', () => {
+    const { path } = fixture()
+    const file = join(path, 'dist/reference/rs/objects.inv')
+    mkdirSync(dirname(file), { recursive: true })
+    writeFileSync(file, writeInventoryEntries(['Pane', 'Retired'].map((name) => ({
+      name, type: 'std:label', priority: 1, uri: `../../rs/latest/reference/old/#${name}`, dispname: name,
+    })), { project: 'libtmux rs', version: 'latest', legacyCaseSensitiveLabels: true }))
+    compose(path)
+    expect(readInventory(readFileSync(file)).entries.map(({ name, type, uri }) => ({ name, type, uri }))).toEqual([
+      { name: 'Pane', type: 'std:label', uri: '../../rs/stable/reference/pane/#Pane' },
+    ])
   })
   it('refuses to advertise a default whose catalog has not been published', () => {
     expect(() => compose(fixture(false).path)).toThrow('Publish en/rs/stable/targets.json before advertising')

@@ -96,6 +96,8 @@ Compatibility exports preserve prior raw API names. The root compatibility
 inventory also retains historical Python-type aliases from the old aggregate;
 new inventories use the correct domains. Historical case-sensitive raw labels
 remain limited by `std:ref` normalization. New consumers use portable keys.
+Root per-port compatibility inventories use the selected default catalogs,
+retain current API destinations, and omit identities absent from those catalogs.
 
 ## Verification
 

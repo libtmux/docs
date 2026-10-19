@@ -148,7 +148,7 @@ describe('assembled inventories', () => {
       const file = join(out, path, 'index.html'); mkdirSync(dirname(file), { recursive: true }); writeFileSync(file, html(metadata, body))
     }
     writePage('', { ...page, scope: 'site', product: 'core', version: undefined, identity: 'index' })
-    for (const version of ['latest', 'stable']) writePage(`rs/${version}/`, { ...page, version })
+    for (const version of ['latest', 'stable']) writePage(`rs/${version}/`, { ...page, version }, '<dt id="Pane" data-inventory-category="api" data-inventory-id="Pane" data-inventory-legacy-type="std:label" data-inventory-legacy-name="Pane">Pane</dt>')
     for (const version of ['3.6', '3.7']) writePage(`tmux/${version}/reference/cmd/`, { ...page, scope: `tmux@${version}`, product: 'core', version }, '<dt id="cmd" data-inventory-id="cmd" data-inventory-category="api" data-inventory-native=\'[{"type":"c:struct","name":"cmd"}]\' data-inventory-legacy-type="c:struct" data-inventory-legacy-name="cmd">cmd</dt>')
     const manifest: VersionManifest = { schema: 1, defaultVersion: { rs: 'stable' }, ports: {
       rs: ['latest', 'stable'].map((slug) => ({ slug, label: slug, kind: 'alias', supported: true })), py: [],
@@ -161,6 +161,8 @@ describe('assembled inventories', () => {
     expect(entries.filter((entry) => entry.type === 'c:struct').map((entry) => entry.name)).toContain('tmux@3.7:cmd')
     const port = readInventory(readFileSync(join(out, 'rs/stable/objects.inv'))).entries
     expect(port.every((entry) => !entry.uri.startsWith('/') && !entry.uri.includes('latest/'))).toBe(true)
+    const compatibility = readInventory(readFileSync(join(out, 'reference/rs/objects.inv'))).entries
+    expect(compatibility.map(({ name, uri }) => ({ name, uri }))).toEqual([{ name: 'Pane', uri: '../../rs/stable/#Pane' }])
     expect(() => publishAssembledInventories(out, '/pr-42/en/', { ...manifest, defaultVersion: { rs: 'missing' } })).toThrow('not assembled')
   })
 })
