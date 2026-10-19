@@ -318,6 +318,9 @@ jobs:
         run: |
           set -euo pipefail
           packages=(tmux)
+          if [[ "$PORT" == julia ]]; then
+            packages=(build-essential pkg-config libevent-dev libncurses-dev bison)
+          fi
           if [[ "$PORT" == cxx ]]; then
             packages+=(clang-18 libc++-18-dev libc++abi-18-dev ninja-build)
           fi
@@ -327,7 +330,15 @@ jobs:
             sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-18 100
             sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-18 100
           fi
-          tmux -V
+          if [[ "$PORT" == julia ]]; then
+            stage="$RUNNER_TEMP/libtmux-julia-docs"
+            python3 "$LIBTMUX_DOCS_GENERATOR_CHECKOUT/dev/check-matrix.py" build-tmux "$stage" 3.7c
+            bin="$stage/tmux/3.7c/bin"
+            "$bin/tmux" -V
+            printf '%s\n' "$bin" >> "$GITHUB_PATH"
+          else
+            tmux -V
+          fi
 
       - name: Install tested Doxygen producer
         if: matrix.port == 'cxx'
