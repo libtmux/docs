@@ -61,6 +61,14 @@ built-in roles. A scoped Python inventory supports:
 :external+libtmux-python:py:class:`libtmux.Pane`
 ```
 
+Command options also work with Sphinx's program context:
+
+```rst
+.. program:: tmuxp load
+
+:external+libtmux-python:option:`--append`
+```
+
 The full inventory qualifies native names by port, such as
 `py:libtmux.Pane`. A fully qualified alias includes the product too:
 `py:core:libtmux.Pane`. Short aliases are offered only when they identify

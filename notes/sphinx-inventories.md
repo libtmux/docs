@@ -45,6 +45,9 @@ The serializer does not derive page slugs. Portable keys escape bytes outside
 lowercase ASCII letters, digits, and `-._~`, preserving case through `std:ref`.
 Native aliases include scope and product; shorter names are emitted only
 when they have one destination.
+Command options include both human spellings and Sphinx's
+`normalized-program.option` names. Subcommand whitespace becomes a hyphen,
+and aliases that become ambiguous under that normalization are omitted.
 
 ## Authored targets
 

@@ -25,6 +25,19 @@ export function targetKey(target: Pick<InventoryTarget, 'scope' | 'product' | 'c
   }).join(':')
 }
 
+function nativeNames(target: InventoryTarget, native: { type: string; name: string }, scoped: boolean): string[] {
+  const names = [native.name]
+  if (native.type === 'std:cmdoption') {
+    const program = native.name.trim().split(/\s+/)
+    const option = program.pop()
+    // Sphinx qualifies subcommands as normalized-program.option.
+    if (program.length && option) names.push(`${program.join('-')}.${option}`)
+  }
+  return names.flatMap((name) => [
+    `${target.scope}:${target.product}:${name}`, `${target.scope}:${name}`, ...(scoped ? [name] : []),
+  ])
+}
+
 /** Record URLs are relative to the mapping base, including preview mounts. */
 export function targetEntries(targets: readonly InventoryTarget[], base: string, scoped = false): InventoryEntry[] {
   if (!base.startsWith('/') || !base.endsWith('/')) throw new Error(`Inventory base must be an absolute directory path: ${base}`)
@@ -46,7 +59,7 @@ export function targetEntries(targets: readonly InventoryTarget[], base: string,
   }
   const nativeDestinations = new Map<string, Set<string>>()
   for (const target of targets) for (const native of target.native ?? []) {
-    for (const name of [`${target.scope}:${target.product}:${native.name}`, `${target.scope}:${native.name}`, ...(scoped ? [native.name] : [])]) {
+    for (const name of nativeNames(target, native, scoped)) {
       const key = `${native.type}\0${native.type === 'std:term' ? name.toLowerCase() : name}`
       const destinations = nativeDestinations.get(key) ?? new Set()
       destinations.add(target.href)
@@ -59,7 +72,7 @@ export function targetEntries(targets: readonly InventoryTarget[], base: string,
     for (const alias of target.aliases ?? []) add(alias, 'std:label', target)
     if (target.category === 'doc') add(key, 'std:doc', target)
     for (const native of target.native ?? []) {
-      for (const name of [`${target.scope}:${target.product}:${native.name}`, `${target.scope}:${native.name}`, ...(scoped ? [native.name] : [])]) {
+      for (const name of nativeNames(target, native, scoped)) {
         const key = `${native.type}\0${native.type === 'std:term' ? name.toLowerCase() : name}`
         if (nativeDestinations.get(key)?.size === 1) add(name, native.type, target)
       }

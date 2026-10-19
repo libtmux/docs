@@ -27,6 +27,13 @@ ID_ATTRIBUTE = re.compile(r"(?:\s)id\s*=", re.IGNORECASE)
 type AuditValue = int | list[dict[str, str | int]]
 
 
+class NativeAlias(TypedDict):
+    """Registered object type and its native reference name."""
+
+    type: str
+    name: str
+
+
 class Target(TypedDict):
     """Rendered destination and its public inventory identities."""
 
@@ -37,6 +44,7 @@ class Target(TypedDict):
     category: str
     version: str
     aliases: NotRequired[list[str]]
+    native: NotRequired[list[NativeAlias]]
 
 
 class Catalog(TypedDict):
@@ -63,6 +71,9 @@ class Page(HTMLParser):
         super().__init__(convert_charrefs=True)
         self.ids: Counter[str] = Counter()
         self.links: set[str] = set()
+        self.references: dict[str, set[str]] = {}
+        self.current_link: str | None = None
+        self.link_text: list[str] = []
         self.collect_links = links
         if links:
             self.feed(html)
@@ -80,6 +91,21 @@ class Page(HTMLParser):
             self.ids[identifier] += 1
         if self.collect_links and tag == "a" and (href := attributes.get("href")):
             self.links.add(href)
+            self.current_link = href
+            self.link_text = []
+
+    def handle_data(self, data: str) -> None:
+        """Retain the visible caption of consumer references."""
+        if self.current_link is not None:
+            self.link_text.append(data)
+
+    def handle_endtag(self, tag: str) -> None:
+        """Associate each reference caption with its resolved destination."""
+        if tag == "a" and self.current_link is not None:
+            label = " ".join("".join(self.link_text).split())
+            self.references.setdefault(label, set()).add(self.current_link)
+            self.current_link = None
+            self.link_text = []
 
 
 class Metadata(HTMLParser):
@@ -177,6 +203,29 @@ def role(kind: str) -> str:
     )
 
 
+def option_contexts(catalog: Catalog) -> list[tuple[str, str, str]]:
+    """Select unambiguous option names for Sphinx program directives."""
+    destinations: dict[tuple[str, str], set[str]] = {}
+    programs = {}
+    for target in catalog["targets"]:
+        for native in target.get("native", []):
+            if native["type"] != "std:cmdoption":
+                continue
+            words = native["name"].split()
+            if len(words) < 2:
+                continue
+            option = words.pop()
+            program = f"{target['scope']}:{target['product']}:{' '.join(words)}"
+            key = ("-".join(program.split()), option)
+            destinations.setdefault(key, set()).add(target["href"])
+            programs.setdefault(key, program)
+    return [
+        (programs[key], key[1], next(iter(urls)))
+        for key, urls in destinations.items()
+        if len(urls) == 1
+    ]
+
+
 def consumer(
     root: Path, prefix: str, catalogs: list[tuple[Path, Catalog]], origin: str, myst: bool
 ) -> int:
@@ -185,7 +234,7 @@ def consumer(
         work = Path(scratch)
         mappings = {}
         references = []
-        expected = set()
+        expected = {}
         for index, (path, catalog) in enumerate(catalogs):
             name = f"libtmux{index}"
             base = origin + catalog["base"]
@@ -216,7 +265,18 @@ def consumer(
                 references.append(
                     f"{{{spec}}}`{label} <{key}>`" if myst else f":{spec}:`{label} <{key}>`"
                 )
-                expected.add(inventory[(kind, key)])
+                expected[label] = inventory[(kind, key)]
+            for number, (program, option, href) in enumerate(option_contexts(catalog)):
+                label = f"Option {index}-{number}"
+                reference = f"{label} <{option}>"
+                references.append(
+                    f"```{{program}} {program}\n```\n\n"
+                    f"{{external+{name}:option}}`{reference}`\n\n```{{program}} None\n```"
+                    if myst
+                    else f".. program:: {program}\n\n"
+                    f":external+{name}:option:`{reference}`\n\n.. program:: None"
+                )
+                expected[label] = origin + href
         config = {
             "extensions": ["sphinx.ext.intersphinx"] + (["myst_parser"] if myst else []),
             "intersphinx_mapping": mappings,
@@ -253,10 +313,13 @@ def consumer(
             check=False,
         )
         assert result.returncode == 0, result.stdout + result.stderr
-        actual = Page((work / "html/index.html").read_text()).links
-        assert expected <= actual, (
-            f"Consumer resolved incorrect URLs: {sorted(expected - actual)[:10]}"
-        )
+        actual = Page((work / "html/index.html").read_text()).references
+        incorrect = {
+            label: (href, sorted(actual.get(label, set())))
+            for label, href in expected.items()
+            if actual.get(label) != {href}
+        }
+        assert not incorrect, f"Consumer resolved incorrect references: {incorrect}"
         return len(references)
 
 
