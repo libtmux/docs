@@ -1,7 +1,7 @@
 ---
 import type { ApiSymbol, Signature, SymbolIndex } from '@libtmux/api-model'
 import { qualifiedNameOf } from '@libtmux/api-model'
-import { signatureSpans, type CodeLayout, type SignatureSpan } from '../../lib/code-layout'
+import { signatureSpans, typeLayout, type SignatureSpan, type SpanLayout } from '../../lib/code-layout'
 import SymbolName from './SymbolName.astro'
 import ApiKeyword from './ApiKeyword.astro'
 
@@ -27,12 +27,15 @@ interface Props {
   chip?: boolean
   signature?: Signature
   /** Grammar ranges from a prepared native declaration. */
-  layout?: CodeLayout
+  layout?: SpanLayout
+  /** The port whose native grammar marks a lone annotation the way its signature marks the same tokens. */
+  language?: string
   /** Link an inline member declaration to its own page. */
   nameHref?: string
 }
-const { type, index, context, chip, signature, nameHref, layout } = Astro.props as Props
-const spans: SignatureSpan[] = layout && context && signature
+const { type, index, context, chip, signature, nameHref, layout: declared, language } = Astro.props as Props
+const layout = declared ?? (language ? await typeLayout(type, language) : undefined)
+const spans: SignatureSpan[] = layout && context
   ? signatureSpans(layout, index, context, signature) : index.linkType(type, context, signature)
 const isDeclarationName = (span: SignatureSpan) => span.declarationName || (!layout && span.declaration && span.text === context?.name)
 /* gp-sphinx renders a type cross-reference as a code chip — `Bases:` and the

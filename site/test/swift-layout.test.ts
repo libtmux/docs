@@ -5,9 +5,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { experimental_AstroContainer } from 'astro/container'
 import { parameterId, SymbolIndex, type ApiModel, type ApiSymbol, type Param } from '@libtmux/api-model'
 import { fromMarkdown } from 'mdast-util-from-markdown'
-import { apiSignatureLayouts, CODE_COLUMNS, codeWidthFailures, signatureSpans, type CodeLayout } from '../src/lib/code-layout'
+import { apiSignatureLayouts, CODE_COLUMNS, codeWidthFailures, signatureSpans, typeLayout, type CodeLayout, type SpanLayout } from '../src/lib/code-layout'
 import { nativeSignatureText, usesNativeSignatures } from '../src/lib/api-sections'
-import { formatSwiftHead } from '../src/lib/swift-code-layout'
+import { formatSwiftHead, swiftTypeLayout } from '../src/lib/swift-code-layout'
 import { symbolMarkdownWithLayout } from '../src/lib/symbol-markdown'
 
 const astroRequire = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
@@ -131,6 +131,80 @@ describe('Swift callable layouts', () => {
         }
       }
     }
+  })
+
+  /** What the grammar marks, as `kind:text` for each keyword and literal. */
+  const roles = (layout: SpanLayout) => (layout.syntax ?? []).flatMap((range) =>
+    range.kind === 'keyword' || range.kind === 'literal' ? [`${range.kind}:${layout.text.slice(range.start, range.end)}`] : [])
+
+  it('marks the words Swift owns in a type and leaves the type names to the links', async () => {
+    const symbol = callable('run(_:_:)', [
+      { name: 'body', type: '@escaping (inout Self, any Hashable) async throws -> Self.Element' },
+      { name: 'other', type: 'some Hashable' },
+    ], 'Self')
+    const layout = await layoutOf(symbol)
+    expect(roles(layout)).toEqual(['keyword:@escaping', 'keyword:inout', 'literal:Self', 'keyword:any', 'keyword:async', 'keyword:throws', 'literal:Self.Element', 'keyword:some', 'literal:Self'])
+    const spans = signatureSpans(layout, new SymbolIndex([symbol], (entry) => `/${entry.id}/`, 'swift'), symbol, symbol.signatures[0]!)
+    expect(spans.filter((span) => span.nonReference).map((span) => span.text)).toEqual(['@escaping', 'inout', 'Self', 'any', 'async', 'throws', 'Self.Element', 'some', 'Self'])
+    // Hashable is a type, so it stays a reference to resolve.
+    expect(spans.filter((span) => span.text === 'Hashable').every((span) => !span.nonReference)).toBe(true)
+  })
+
+  it('keeps a member of Self whole until a break separates its parts', async () => {
+    const symbol = callable('apply(_:)', [{ name: 'arrayLiteral', type: 'Self.Element...' }])
+    const flat = await layoutOf(symbol)
+    expect(flat.text).toBe('apply(_:)(arrayLiteral: Self.Element...)')
+    expect(roles(flat)).toEqual(['literal:Self.Element'])
+    const original = CODE_COLUMNS.api
+    try {
+      Object.assign(CODE_COLUMNS, { api: 30 })
+      const wrapped = await layoutOf(callable('apply(_:)', [{ name: 'arrayLiteral', type: 'Self.Element...' }]), 0)
+      expect(wrapped.text).toContain('Self\n')
+      expect(roles(wrapped)).toEqual(['literal:Self', 'literal:.Element'])
+    } finally { Object.assign(CODE_COLUMNS, { api: original }) }
+  })
+
+  it('reads a type on its own with the roles it has in a declaration', async () => {
+    const lone = swiftTypeLayout('@escaping (Self) async throws -> Result')!
+    expect(lone.text).toBe('@escaping (Self) async throws -> Result')
+    expect(roles(lone)).toEqual(['keyword:@escaping', 'literal:Self', 'keyword:async', 'keyword:throws'])
+    expect(roles(swiftTypeLayout('Self.Element...')!)).toEqual(['literal:Self.Element'])
+    expect(await typeLayout('inout Self', 'swift')).toEqual(swiftTypeLayout('inout Self'))
+    // A type name alone carries no role; the reference is for the links to resolve.
+    expect(roles(swiftTypeLayout('Hasher')!)).toEqual([])
+    // It prints the way the declaration above it does, and text it could not keep whole has no layout.
+    expect(swiftTypeLayout('[String : String]?')!.text).toBe('[String: String]?')
+    expect(swiftTypeLayout('repeat each Element where Element: Sendable')).toBeUndefined()
+    expect(swiftTypeLayout('`Self`')).toBeUndefined()
+    expect(await typeLayout('inout Self', 'go')).toBeUndefined()
+  })
+
+  it('gives every listed parameter type the roles its declaration gives the same tokens', async () => {
+    let checked = 0
+    for (const symbol of model.symbols) {
+      if (!symbol.signatures.length) continue
+      const prepared = await apiSignatureLayouts(symbol, 'swift')
+      for (const signature of symbol.signatures) {
+        // A member type broken at its dot is two ranges in the declaration and one in the list.
+        const whole = (layout: SpanLayout) => roles(layout).flatMap((role) => {
+          const [kind, text] = role.replace(/\s+/g, '').split(':') as [string, string]
+          return text.split(/(?=\.)/).map((part) => `${kind}:${part}`)
+        })
+        const available = new Map<string, number>()
+        for (const role of whole(prepared.get(signature)!)) available.set(role, (available.get(role) ?? 0) + 1)
+        for (const param of signature.params) {
+          const lone = swiftTypeLayout(param.type!)
+          if (!lone) continue
+          expect(lone.text.replace(/\s+/g, ''), `${symbol.id} ${param.name}`).toBe(param.type!.replace(/\s+/g, ''))
+          for (const role of whole(lone)) {
+            available.set(role, (available.get(role) ?? 0) - 1)
+            expect(available.get(role), `${symbol.id} ${param.name}: ${role}`).toBeGreaterThanOrEqual(0)
+          }
+          checked++
+        }
+      }
+    }
+    expect(checked).toBeGreaterThan(0)
   })
 
   it.each([

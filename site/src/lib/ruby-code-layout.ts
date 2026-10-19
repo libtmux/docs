@@ -1,6 +1,6 @@
 import type { ApiSymbol, Signature } from '@libtmux/api-model'
 import { doc } from 'prettier'
-import { CODE_COLUMNS, codeWidthFailures, type CodeLayout, type CodeSyntax } from './code-layout'
+import { CODE_COLUMNS, codeWidthFailures, type CodeLayout, type CodeSyntax, type SpanLayout } from './code-layout'
 
 type Doc = doc.builders.Doc
 const { group, indent, join, line, softline } = doc.builders
@@ -48,8 +48,12 @@ function tokenize(source: string, from: number): Token[] {
   return tokens
 }
 
-/** Read the method types RBS::MethodType#to_s writes; a result is never a bare union, so it is parsed as an optional type. */
 function parseMethodType(source: string, from: number): MethodShape {
+  return rbsParser(source, from).method()
+}
+
+/** Read the method types RBS::MethodType#to_s writes, or one type on its own; a method result is never a bare union, so it is parsed as an optional type. */
+function rbsParser(source: string, from: number) {
   const tokens = tokenize(source, from)
   let at = 0
   const fail = (): never => { throw new Error(`Invalid RBS method type grammar at ${tokens[at]?.start ?? source.length}: ${source}`) }
@@ -144,9 +148,11 @@ function parseMethodType(source: string, from: number): MethodShape {
     take('->')
     return { typeParameters, parameters, ...(block ? { block } : {}), returns: optional() }
   }
-  const result = signature(true)
-  if (at !== tokens.length) fail()
-  return result
+  const whole = <T>(result: T): T => {
+    if (at !== tokens.length) fail()
+    return result
+  }
+  return { method: () => whole(signature(true)), type: () => whole(typeUnion()) }
 }
 
 function tokensOf(source: string, from: number): string[] {
@@ -205,22 +211,23 @@ function methodName(name: string): string {
   return KEYWORDS.has(name) || !(/^_?[A-Za-z_]\w*[?!=]?$/.test(name) || OPERATORS.has(name)) ? `\`${name}\`` : name
 }
 
-function syntaxRanges(text: string, from: number, signature: Signature): CodeSyntax[] {
-  const syntax: CodeSyntax[] = []
-  const declaration = /^def (self\.)?(`?)([^:`]+)\2:/.exec(text)!
-  syntax.push({ start: 0, end: 3, kind: 'keyword' })
-  if (declaration[1]) syntax.push({ start: 4, end: 8, kind: 'keyword' })
-  const nameStart = 4 + (declaration[1]?.length ?? 0) + declaration[2]!.length
-  syntax.push({ start: nameStart, end: nameStart + declaration[3]!.length, kind: 'name' })
-  const literal = (token: Token) => syntax.push({ start: token.start, end: token.end, kind: 'literal' })
-  const parsed = parseMethodType(text, from)
+/**
+ * The grammar roles of the tokens in a method type: keyword names and type
+ * variables, the RBS keywords that stand as types, and literal types. A
+ * parameter name links to its entry only at the top of a method definition.
+ */
+function typeRanges(syntax: CodeSyntax[], signature?: Signature) {
+  const role = (kind: 'keyword' | 'literal') => (token: Token) => syntax.push({ start: token.start, end: token.end, kind })
+  const literal = role('literal')
+  const keyword = role('keyword')
   const visitSignature = (current: MethodShape, top: boolean) => {
     for (const entry of current.typeParameters) {
+      entry.prefix.forEach(keyword)
       literal(entry.name)
     }
     if (Array.isArray(current.parameters)) for (const entry of current.parameters) {
       if (entry.key) {
-        const index = top ? signature.params.findIndex((param) => param.name === entry.key!.text) : -1
+        const index = top ? signature?.params.findIndex((param) => param.name === entry.key!.text) ?? -1 : -1
         if (index !== -1) syntax.push({ start: entry.key.start, end: entry.key.end, kind: 'parameter', parameter: index })
         else literal(entry.key)
       }
@@ -232,10 +239,14 @@ function syntaxRanges(text: string, from: number, signature: Signature): CodeSyn
   }
   function visit(type: Type) {
     switch (type.type) {
-      case 'atom':
-        // Bare capitalized names are type variables; the exporter qualifies every class.
-        if (type.tokens.length === 1 && (type.tokens[0]!.kind !== 'name' || /^[A-Z]\w*$/.test(type.tokens[0]!.text))) literal(type.tokens[0]!)
+      case 'atom': {
+        const [head] = type.tokens
+        // RBS writes `untyped`, `bool` and `nil` as keywords; a bare capitalized name is a
+        // type variable, since the exporter qualifies every class.
+        if (head!.kind === 'name' && KEYWORDS.has(head!.text)) keyword(head!)
+        else if (type.tokens.length === 1 && (head!.kind !== 'name' || /^[A-Z]\w*$/.test(head!.text))) literal(head!)
         break
+      }
       case 'application': type.args.forEach(visit); break
       case 'optional': visit(type.inner); break
       case 'union': case 'intersection': type.members.forEach(visit); break
@@ -245,8 +256,35 @@ function syntaxRanges(text: string, from: number, signature: Signature): CodeSyn
       case 'proc': visitSignature(type.signature, false); break
     }
   }
-  visitSignature(parsed, true)
+  return { visit, visitSignature }
+}
+
+function syntaxRanges(text: string, from: number, signature: Signature): CodeSyntax[] {
+  const syntax: CodeSyntax[] = []
+  const declaration = /^def (self\.)?(`?)([^:`]+)\2:/.exec(text)!
+  syntax.push({ start: 0, end: 3, kind: 'keyword' })
+  if (declaration[1]) syntax.push({ start: 4, end: 8, kind: 'keyword' })
+  const nameStart = 4 + (declaration[1]?.length ?? 0) + declaration[2]!.length
+  syntax.push({ start: nameStart, end: nameStart + declaration[3]!.length, kind: 'name' })
+  typeRanges(syntax, signature).visitSignature(parseMethodType(text, from), true)
   return syntax.sort((a, b) => a.start - b.start)
+}
+
+const typeLayouts = new Map<string, SpanLayout | undefined>()
+
+/**
+ * A type on its own, as a parameter list prints it, with the roles it has
+ * inside a method definition. A type this grammar cannot read stays unmarked.
+ */
+export function rubyTypeLayout(type: string): SpanLayout | undefined {
+  if (!typeLayouts.has(type)) {
+    let parsed: Type | undefined
+    try { parsed = rbsParser(type, 0).type() } catch { parsed = undefined }
+    const syntax: CodeSyntax[] = []
+    if (parsed) typeRanges(syntax).visit(parsed)
+    typeLayouts.set(type, parsed ? { text: type, syntax: syntax.sort((a, b) => a.start - b.start) } : undefined)
+  }
+  return typeLayouts.get(type)
 }
 
 /** Lay out an RBS method definition: `def name: (parameters) -> result`. */

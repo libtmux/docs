@@ -7,6 +7,8 @@ import { afterEach, expect, it, vi } from 'vitest'
 import { parameterId, SymbolIndex, type ApiSymbol, type Param } from '@libtmux/api-model'
 import { apiEntryFields, parameterBindingFacts, POWER_SHELL_COMMON_HELP } from '../src/lib/api-sections'
 import { linkTmuxDoc } from '../src/lib/tmux-links'
+import { signatureSpans, typeLayout } from '../src/lib/code-layout'
+import { auditTypeLinks } from './type-link-audit'
 
 const astroRequire = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
 const css = ['api-headings.css', 'api.css'].map((name) =>
@@ -30,14 +32,15 @@ async function parameterComponents() {
     for (const [specifier, url] of Object.entries(imports)) code = code.replaceAll(JSON.stringify(specifier), JSON.stringify(url))
     return `data:text/javascript;base64,${Buffer.from(`${code}\n//# sourceURL=${file.pathname}`).toString('base64')}`
   }
-  const bridge = 'data:text/javascript,export const { parameterId, parameterBindingFacts, POWER_SHELL_COMMON_HELP, linkTmuxDoc } = globalThis.__apiParameterPermalinks'
+  const bridge = 'data:text/javascript,export const { parameterId, parameterBindingFacts, POWER_SHELL_COMMON_HELP, linkTmuxDoc, signatureSpans, typeLayout } = globalThis.__apiParameterPermalinks'
   const name = await compile('../src/components/api/SymbolName.astro', { '../../lib/word-break': new URL('../src/lib/word-break.ts', import.meta.url).href })
   const preview = await compile('../src/components/LinkPreview.astro')
   const keyword = await compile('../src/components/api/ApiKeyword.astro', { '../LinkPreview.astro': preview })
   const type = await compile('../src/components/api/ApiType.astro', {
     './SymbolName.astro': name, './ApiKeyword.astro': keyword,
     '@libtmux/api-model': new URL('../../packages/api-model/src/index.ts', import.meta.url).href,
-    '../../lib/code-layout': new URL('../src/lib/code-layout.ts', import.meta.url).href,
+    // A native type layout loads its grammar lazily, which only Vitest's own loader resolves.
+    '../../lib/code-layout': bridge,
   })
   const doc = await compile('../src/components/api/ApiDoc.astro', { '../../lib/tmux-links': bridge })
   const overloads = await compile('../src/components/api/ApiFieldOverloads.astro')
@@ -65,6 +68,7 @@ ${source.slice(start, end)}`
 }
 
 let components: ReturnType<typeof parameterComponents> | undefined
+const bridged = { parameterId, parameterBindingFacts, POWER_SHELL_COMMON_HELP, linkTmuxDoc, signatureSpans, typeLayout }
 const session: ApiSymbol = { id: 'demo.Session', name: 'Session', kind: 'class', modifiers: [], signatures: [], source: { file: 'demo.py' } }
 const parameter: Param = { name: 'target', type: 'Session', optional: true, default: 'None',
   doc: 'Choose the Session whose windows should be read.', since: '1.2', deprecated: 'Use selection instead.' }
@@ -78,7 +82,7 @@ const symbol: ApiSymbol = { id: 'internal.Probe.read', publicId: 'demo.Probe.rea
 
 async function render(command = false, language = 'py') {
   // Bridge the real Vitest-loaded helpers into compiled Astro's native imports.
-  vi.stubGlobal('__apiParameterPermalinks', { parameterId, parameterBindingFacts, POWER_SHELL_COMMON_HELP, linkTmuxDoc })
+  vi.stubGlobal('__apiParameterPermalinks', bridged)
   const loaded = await (components ??= parameterComponents())
   const win = new Window({ url: 'https://libtmux.org/en/py/latest/reference/demo-probe-read/' })
   windows.push(win)
@@ -159,4 +163,53 @@ it('preserves command and common-parameter targets and native links', async () =
     expect(row.querySelector('a.api-type-link')?.getAttribute('href')).toBe('/reference/demo.Session/')
     expect(row.querySelectorAll('a a')).toHaveLength(0)
   }
+})
+
+/** The parameter paragraph a reference page prints for a parameter declared with `type`. */
+async function renderType(language: string, type: string) {
+  vi.stubGlobal('__apiParameterPermalinks', bridged)
+  const loaded = await (components ??= parameterComponents())
+  const win = new Window({ url: 'https://libtmux.org/en/py/latest/reference/demo-probe-read/' })
+  windows.push(win)
+  const probe: ApiSymbol = { ...symbol, signatures: [{ params: [{ name: 'value', type }] }] }
+  const index = new SymbolIndex([probe], (row) => `/reference/${row.id}/`, language)
+  const container = await experimental_AstroContainer.create()
+  win.document.body.innerHTML = await container.renderToString(loaded.ordinary, { props: {
+    symbol: probe, index, p: apiEntryFields(probe, language).params[0], language, overloadTargets: new Map(),
+  } })
+  const spans = [...win.document.querySelectorAll('.api-type span')]
+  return {
+    html: win.document.body.innerHTML,
+    syntax: spans.filter((span) => span.getAttribute('data-api-role') === 'syntax').map((span) => span.textContent),
+    plain: spans.filter((span) => span.className === 'api-punct' && !span.hasAttribute('data-api-role') && /^\w+$/.test(span.textContent ?? '')).map((span) => span.textContent),
+  }
+}
+
+it.each([
+  ['ruby', 'untyped', ['untyped']],
+  ['ruby', 'bool | nil', ['bool', 'nil']],
+  ['ruby', ':horizontal | :vertical', [':horizontal', ':vertical']],
+  ['swift', 'Self', ['Self']],
+  ['swift', '@escaping (inout Self) async throws -> Self.Element', ['@escaping', 'inout', 'Self', 'async', 'throws', 'Self.Element']],
+  ['swift', 'some Self', ['some', 'Self']],
+])('lists a %s parameter typed %s with the grammar roles its signature gives', async (language, type, syntax) => {
+  const rendered = await renderType(language, type)
+  expect(rendered.syntax).toEqual(syntax)
+  expect(rendered.plain).toEqual([])
+  // The real type-link check counts none of it.
+  expect(auditTypeLinks(rendered.html)).toMatchObject({ code: 0 })
+})
+
+it.each([
+  ['ruby', '::Hash[::String, untyped]', ['untyped'], ['Hash', 'String']],
+  ['swift', '(Hasher) async -> Self', ['async', 'Self'], ['Hasher']],
+])('keeps a %s type name no model entry resolves plain in %s', async (language, type, syntax, plain) => {
+  const rendered = await renderType(language, type)
+  expect(rendered.syntax).toEqual(syntax)
+  expect(rendered.plain).toEqual(plain)
+  // The check still counts every unresolved name, and only those.
+  const audit = auditTypeLinks(rendered.html)
+  expect(audit.code).toBe(1)
+  for (const name of plain) expect(audit.output).toContain(`${name}(1)`)
+  for (const word of syntax) expect(audit.output).not.toContain(`${word}(`)
 })

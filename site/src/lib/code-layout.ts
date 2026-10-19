@@ -16,12 +16,14 @@ export interface CodeLayout {
   contextEnd?: number
 }
 export type SignatureSpan = ReturnType<SymbolIndex['linkType']>[number] & { declarationName?: true; nonReference?: true; enclosingContext?: true }
+/** The part of a layout that decides how text becomes spans. */
+export type SpanLayout = Pick<CodeLayout, 'text' | 'syntax' | 'contextEnd'>
 
 /** Resolve references at render time; cached layouts contain grammar, never URLs. */
-export function signatureSpans(layout: CodeLayout, index: SymbolIndex, symbol: ApiSymbol, signature: Signature): SignatureSpan[] {
+export function signatureSpans(layout: SpanLayout, index: SymbolIndex, symbol: ApiSymbol, signature?: Signature): SignatureSpan[] {
   const spans: SignatureSpan[] = []
   // The callable's own bindings do not exist in its enclosing declaration.
-  const ownerScope: Signature = { params: [], enclosingTypeParamNames: signature.enclosingTypeParamNames, enclosingDeclaration: signature.enclosingDeclaration }
+  const ownerScope: Signature | undefined = signature && { params: [], enclosingTypeParamNames: signature.enclosingTypeParamNames, enclosingDeclaration: signature.enclosingDeclaration }
   const linkText = (start: number, end: number): SignatureSpan[] => {
     if (layout.contextEnd === undefined || start >= layout.contextEnd) return index.linkType(layout.text.slice(start, end), symbol, signature)
     const boundary = Math.min(end, layout.contextEnd)
@@ -37,7 +39,7 @@ export function signatureSpans(layout: CodeLayout, index: SymbolIndex, symbol: A
       ? index.typeParameterSpans(text, symbol, layout.contextEnd !== undefined && range.start < layout.contextEnd ? ownerScope : signature) : undefined
     if (bound) spans.push(...bound)
     else if (range.kind === 'name') spans.push({ text, declaration: true, declarationName: true })
-    else if (range.kind === 'parameter') spans.push({ text, declaration: true, link: {
+    else if (range.kind === 'parameter' && signature) spans.push({ text, declaration: true, link: {
       href: `#${encodeURIComponent(parameterId(symbol, signature.params[range.parameter]!.name))}`, external: false,
     } })
     else if (range.kind === 'keyword') spans.push({ text, keyword: true, nonReference: true })
@@ -53,6 +55,17 @@ export function signatureSpans(layout: CodeLayout, index: SymbolIndex, symbol: A
     return end === 0 ? [span] : end === span.text.length ? [{ ...span, enclosingContext: true as const }]
       : [{ ...span, text: span.text.slice(0, end), enclosingContext: true as const }, { ...span, text: span.text.slice(end) }]
   })
+}
+
+/**
+ * A lone type annotation, such as a parameter's type, with the grammar roles its
+ * port's signature layout gives the same tokens. A port whose layout reads no
+ * type of its own, or a type that layout cannot read, has none and renders unmarked.
+ */
+export async function typeLayout(type: string, language?: string): Promise<SpanLayout | undefined> {
+  if (language === 'ruby') return (await import('./ruby-code-layout')).rubyTypeLayout(type)
+  if (language === 'swift') return (await import('./swift-code-layout')).swiftTypeLayout(type)
+  return undefined
 }
 
 /** Measure printed columns after tab expansion; font and viewport checks are separate. */
