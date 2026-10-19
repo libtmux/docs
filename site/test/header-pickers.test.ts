@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import type { Element, HTMLAnchorElement, HTMLDetailsElement, HTMLImageElement, Window } from 'happy-dom'
+import type { Element, HTMLAnchorElement, HTMLDetailsElement, HTMLElement, Window } from 'happy-dom'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { installExternalLinks } from '../public/_shell/external-links.js'
 import { PORTS } from '../src/lib/ports'
@@ -31,7 +31,7 @@ const pickers = (document: Doc, placement: 'bar' | 'menu') =>
   [...document.querySelectorAll<HTMLDetailsElement>(`details[data-header-picker][data-placement="${placement}"]`)]
 const rowsOf = (picker: Element) => [...picker.querySelectorAll<HTMLAnchorElement>('a[data-picker-option]')]
 const described = (picker: Element) => rowsOf(picker).map((row) => [
-  row.closest('[data-picker-group]')!.getAttribute('aria-label')!.replace('Core Library', 'core').replace('MCP', 'mcp').replace('Workspace Manager', 'workspace'),
+  row.closest('[data-picker-group]')!.getAttribute('data-group'),
   row.querySelector('.header-picker__name')!.textContent,
   row.querySelector('small')!.textContent,
   row.getAttribute('href'),
@@ -54,7 +54,7 @@ describe('header pickers', () => {
   it('keeps the bar and menu copies identical apart from placement', async () => {
     for (const slug of ['rs', 'py', 'swift']) {
       const { document } = await portPage(slug)
-      const text = (picker: Element) => picker.outerHTML.replace(/data-placement="\w+"/, '')
+      const text = (picker: Element) => picker.outerHTML.replace(/data-placement="\w+"/, '').replaceAll(/header-picker-(?:bar|menu)-/g, 'header-picker-')
       expect(pickers(document, 'bar').map(text)).toEqual(pickers(document, 'menu').map(text))
     }
   })
@@ -124,8 +124,8 @@ describe('header pickers', () => {
     const { document } = await portPage('rs')
     const packages = pickers(document, 'bar').find((picker) => picker.dataset.headerPicker === 'packages')!
     expect(packages.querySelector('.doc-picker-count')!.textContent).toBe('4')
-    expect([...packages.querySelectorAll('[data-picker-group]')].map((group) => group.getAttribute('aria-label')))
-      .toEqual(['Core Library', 'MCP', 'Workspace Manager'])
+    expect([...packages.querySelectorAll('[data-picker-group]')].map((group) => group.getAttribute('data-group')))
+      .toEqual(['core', 'mcp', 'workspace'])
     expect(packages.querySelector('.doc-picker-title')!.textContent).toContain('Packages on crates.io')
     expect(packages.querySelector('.header-picker__footer')!.textContent.replace(/\s+/g, ' ')).toBe('Rust · crates.io')
   })
@@ -165,6 +165,16 @@ describe('header pickers', () => {
     expect(document.querySelectorAll('[data-port-link], .site-header__api-menu, .site-header__ports')).toHaveLength(0)
   })
 
+  it('points the MCP chip at the port MCP home and drops it where there is none', async () => {
+    const mcp = (document: Doc) => [...document.querySelectorAll<HTMLAnchorElement>('.site-header__panel-links a')]
+      .filter((link) => link.textContent.trim() === 'MCP').map((link) => link.getAttribute('href'))
+    expect(mcp((await portPage('rs')).document)).toEqual(['/rs/latest/mcp/'])
+    expect(mcp((await portPage('py')).document)).toEqual(['/py/latest/mcp/'])
+    // Lua has no MCP server, and the homepage belongs to no port.
+    expect(mcp((await portPage('lua')).document)).toEqual([])
+    expect(mcp((await page('/en/', { pagePath: '' })).document)).toEqual([])
+  })
+
   it('shows exactly one copy at a time by width', () => {
     const css = readFileSync(new URL('../src/styles/global.css', import.meta.url), 'utf8')
     expect(css).toMatch(/@media \(max-width: 47\.999rem\) \{\s*\.site-header__pickers \{ display: none; \}/)
@@ -176,7 +186,7 @@ describe('header pickers', () => {
   it('adds none to the homepage, tmux routes or other pages without a port', async () => {
     for (const prefix of ['/en/', '/ja/', '/pr-42/en/', '/pr-42/ja/']) {
       for (const route of ['', 'tmux', 'tmux/', 'tmux/guides', 'tmux/topics/environment', 'tmux/concepts/servers',
-        'tmux/latest/manual', 'tmux/3.2a/manual/full/', 'tmux/latest/reference/server', 'tmux/3.7c/reference/', 'search', 'translations', 'mcp', 'workspace']) {
+        'tmux/latest/manual', 'tmux/3.2a/manual/full/', 'tmux/latest/reference/server', 'tmux/3.7c/reference/', 'search', 'meta/support', 'meta/translations', 'mcp', 'workspace']) {
         for (const pagePath of [route, undefined]) {
           const { document } = await page(`${prefix}${route}?q=server#members`, { pagePath })
           expect(document.querySelector('.site-header__bar'), `${prefix}${route}`).not.toBeNull()
@@ -221,15 +231,47 @@ describe('header pickers', () => {
     expect(urls(library.document)[0]!.map(([, , , href]) => href)).toContain('https://github.com/tmux-python/tmuxp')
   })
 
-  it('draws the product art lazily and decoratively', async () => {
+  it('names each product with a plain-text heading that its group is labelled by', async () => {
     const { document } = await portPage('rs')
-    const art = [...pickers(document, 'bar')[0]!.querySelectorAll<HTMLImageElement>('.header-picker__group-title img')]
-    expect(art.map((image) => image.getAttribute('src'))).toEqual([
-      '/brand/rust/library/logo.svg', '/brand/rust/mcp/logo.svg', '/brand/rust/workspace/logo.svg',
-    ])
-    for (const image of art) {
-      expect(image.getAttribute('alt')).toBe('')
-      expect(image.getAttribute('loading')).toBe('lazy')
+    for (const picker of [...pickers(document, 'bar'), ...pickers(document, 'menu')]) {
+      const kind = picker.dataset.headerPicker
+      const groups = [...picker.querySelectorAll<HTMLElement>('[data-picker-group]')]
+      expect(groups.map((group) => group.getAttribute('data-group')), kind).toEqual(['core', 'mcp', 'workspace'].slice(0, groups.length))
+      for (const group of groups) {
+        const heading = group.querySelector<HTMLElement>('[data-picker-heading]')!
+        // The group is named by its heading, which is text and nothing else.
+        expect(group.getAttribute('role')).toBe('group')
+        expect(group.getAttribute('aria-label')).toBeNull()
+        expect(heading.id).toBe(`header-picker-${picker.dataset.placement}-${kind}-${group.dataset.group}`)
+        expect(group.getAttribute('aria-labelledby')).toBe(heading.id)
+        expect(heading.tagName).toBe('P')
+        expect(heading.textContent).toBe({ core: 'Core Library', mcp: 'MCP', workspace: 'Workspace Manager' }[group.dataset.group as 'core'])
+        expect(heading.querySelectorAll('*'), 'no icon, link or summary line in a heading').toHaveLength(0)
+        expect(heading.hasAttribute('tabindex')).toBe(false)
+        expect(heading.closest('a, button, summary')).toBeNull()
+        // Rows follow their heading inside the group.
+        expect(group.firstElementChild).toBe(heading)
+        expect(group.querySelectorAll('[data-picker-option]').length).toBeGreaterThan(0)
+      }
+    }
+    // Headings are the only thing that tells the products apart, so a menu of one product has none.
+    for (const slug of ['lua', 'kotlin', 'scala', 'fsharp']) {
+      const { document: single } = await portPage(slug)
+      for (const picker of pickers(single, 'bar')) {
+        expect(picker.querySelectorAll('[data-picker-heading], [role="group"], [aria-labelledby]'), `${slug} ${picker.dataset.headerPicker}`).toHaveLength(0)
+        expect(picker.querySelectorAll('[data-picker-group]').length).toBe(1)
+      }
+    }
+  })
+
+  it('gives every heading on a page its own id, so the bar and Menu copies cannot share one', async () => {
+    for (const slug of Object.keys(PICKERS)) {
+      const { document } = await portPage(slug)
+      const ids = [...document.querySelectorAll('[data-picker-heading]')].map((heading) => heading.id)
+      expect(new Set(ids).size, slug).toBe(ids.length)
+      for (const group of document.querySelectorAll('[role="group"][aria-labelledby]')) {
+        expect(document.getElementById(group.getAttribute('aria-labelledby')!)?.closest('[data-picker-group]'), slug).toBe(group)
+      }
     }
   })
 

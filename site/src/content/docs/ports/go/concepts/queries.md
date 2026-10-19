@@ -25,7 +25,7 @@ still supplies a criterion. `tmux.Ptr` is useful for these pointer fields.
 ## Setup and run
 
 Use an empty directory on Linux or macOS with Git, Go 1.26 or newer, and
-tmux 3.2a or newer. Save these two files and any complete Go program below.
+tmux 3.3a or newer. Save these two files and any complete Go program below.
 Each program includes its imports and entry point; run it by filename so
 other examples in the directory do not introduce duplicate `main` functions.
 

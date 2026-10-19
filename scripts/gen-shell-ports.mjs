@@ -26,7 +26,7 @@ const fileArg = process.argv.indexOf('--file')
 const target = fileArg === -1 ? join(root, 'site/public/_shell/shell.js') : process.argv[fileArg + 1]
 const check = process.argv.includes('--check')
 
-const { PORTS } = await import(`file://${resolve(root, 'site/src/lib/ports.ts')}`)
+const { PORTS, productAvailable } = await import(`file://${resolve(root, 'site/src/lib/ports.ts')}`)
 
 const BEGIN = '  // >>> generated from site/src/lib/ports.ts by scripts/gen-shell-ports.mjs'
 const END = '  // <<< end generated'
@@ -37,6 +37,7 @@ const rows = PORTS.map((p) => ({
   shortName: p.shortName,
   logoLanguage: p.logoLanguage,
   versionedDocs: p.versionedDocs,
+  mcp: productAvailable(p, 'mcp'),
 }))
 
 // Two spaces of body indent inside the IIFE, matching the file around it.

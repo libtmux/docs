@@ -1,0 +1,812 @@
+---
+/**
+ * Kind badge candidates, each in a light and a dark pane.
+ *
+ * The panes carry their own colours, so both schemes show at once whatever
+ * the page theme is. Candidate A uses the real badge classes with the real
+ * variables re-pointed per pane; the rest are scoped to `.bd-*` here and do
+ * not touch the site's badge styles.
+ *
+ * The board is built as HTML strings below and rendered through one
+ * fragment, so a candidate is a config entry plus a few CSS variables.
+ */
+import DemoLayout from '../../components/demo/DemoLayout.astro'
+import { kindMark, markClass, markHeight } from '../../lib/api-labels'
+import '../../styles/api-tree.css'
+
+// Light bg, fg, border, then dark bg, fg, border: a snapshot of api-kinds.css,
+// held here so one page can show both schemes.
+const GROUPS: Record<string, string[]> = {
+  class: ['#eef2ff', '#4338ca', '#6366f1', '#1e1b4b', '#a5b4fc', '#6366f1'],
+  exception: ['#fff1f2', '#be123c', '#f43f5e', '#4c0519', '#fda4af', '#fb7185'],
+  function: ['#e8f0fe', '#1a56db', '#3b82f6', '#172554', '#93c5fd', '#3b82f6'],
+  method: ['#ecfeff', '#0e7490', '#06b6d4', '#083344', '#67e8f9', '#22d3ee'],
+  property: ['#f0fdfa', '#0f766e', '#14b8a6', '#042f2e', '#5eead4', '#2dd4bf'],
+  attribute: ['#f1f5f9', '#475569', '#94a3b8', '#1e293b', '#cbd5e1', '#64748b'],
+  constant: ['#f5f5f5', '#525252', '#a3a3a3', '#262626', '#d4d4d4', '#737373'],
+  module: ['#f0fdf4', '#166534', '#22c55e', '#052e16', '#86efac', '#4ade80'],
+  typealias: ['#f5f3ff', '#6d28d9', '#8b5cf6', '#2e1065', '#c4b5fd', '#a78bfa'],
+  command: ['#fff7ed', '#c2410c', '#f97316', '#431407', '#fdba74', '#fb923c'],
+  option: ['#f7fee7', '#4d7c0f', '#84cc16', '#1a2e05', '#bef264', '#a3e635'],
+  hook: ['#fdf4ff', '#a21caf', '#d946ef', '#4a044e', '#f0abfc', '#e879f9'],
+  format: ['#fffbeb', '#a16207', '#eab308', '#422006', '#fde047', '#facc15'],
+}
+
+// Tailwind steps 100 to 950 per hue, for the tuned palettes. Each kind group
+// keeps the hue it has today.
+const SCALE: Record<string, string[]> = {
+  indigo: ['#e0e7ff', '#c7d2fe', '#a5b4fc', '#818cf8', '#6366f1', '#4f46e5', '#4338ca', '#3730a3', '#312e81', '#1e1b4b'],
+  rose: ['#ffe4e6', '#fecdd3', '#fda4af', '#fb7185', '#f43f5e', '#e11d48', '#be123c', '#9f1239', '#881337', '#4c0519'],
+  blue: ['#dbeafe', '#bfdbfe', '#93c5fd', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8', '#1e40af', '#1e3a8a', '#172554'],
+  cyan: ['#cffafe', '#a5f3fc', '#67e8f9', '#22d3ee', '#06b6d4', '#0891b2', '#0e7490', '#155e75', '#164e63', '#083344'],
+  teal: ['#ccfbf1', '#99f6e4', '#5eead4', '#2dd4bf', '#14b8a6', '#0d9488', '#0f766e', '#115e59', '#134e4a', '#042f2e'],
+  slate: ['#f1f5f9', '#e2e8f0', '#cbd5e1', '#94a3b8', '#64748b', '#475569', '#334155', '#1e293b', '#0f172a', '#020617'],
+  neutral: ['#f5f5f5', '#e5e5e5', '#d4d4d4', '#a3a3a3', '#737373', '#525252', '#404040', '#262626', '#171717', '#0a0a0a'],
+  green: ['#dcfce7', '#bbf7d0', '#86efac', '#4ade80', '#22c55e', '#16a34a', '#15803d', '#166534', '#14532d', '#052e16'],
+  violet: ['#ede9fe', '#ddd6fe', '#c4b5fd', '#a78bfa', '#8b5cf6', '#7c3aed', '#6d28d9', '#5b21b6', '#4c1d95', '#2e1065'],
+  orange: ['#ffedd5', '#fed7aa', '#fdba74', '#fb923c', '#f97316', '#ea580c', '#c2410c', '#9a3412', '#7c2d12', '#431407'],
+  lime: ['#ecfccb', '#d9f99d', '#bef264', '#a3e635', '#84cc16', '#65a30d', '#4d7c0f', '#3f6212', '#365314', '#1a2e05'],
+  fuchsia: ['#fae8ff', '#f5d0fe', '#f0abfc', '#e879f9', '#d946ef', '#c026d3', '#a21caf', '#86198f', '#701a75', '#4a044e'],
+  yellow: ['#fef9c3', '#fef08a', '#fde047', '#facc15', '#eab308', '#ca8a04', '#a16207', '#854d0e', '#713f12', '#422006'],
+  amber: ['#fef3c7', '#fde68a', '#fcd34d', '#fbbf24', '#f59e0b', '#d97706', '#b45309', '#92400e', '#78350f', '#451a03'],
+}
+const hx = (hue: string, step: number): string => SCALE[hue]![step === 950 ? 9 : step / 100 - 1]!
+const HUE: Record<string, string> = {
+  class: 'indigo', exception: 'rose', function: 'blue', method: 'cyan', property: 'teal', attribute: 'slate',
+  constant: 'neutral', module: 'green', typealias: 'violet', command: 'orange', option: 'lime', hook: 'fuchsia', format: 'yellow',
+}
+
+type Scheme = 'light' | 'dark'
+const SCHEMES: Scheme[] = ['light', 'dark']
+const PAGE: Record<Scheme, string> = { light: '#ffffff', dark: '#131416' }
+const NEUTRAL: Record<Scheme, string> = { light: '#eceef1', dark: '#2b2e33' }
+const INK: Record<Scheme, string> = { light: '#14161a', dark: '#f4f5f6' }
+
+const rgb = (hex: string): number[] => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16))
+const lin = (c: number) => ((c / 255) <= 0.04045 ? c / 255 / 12.92 : (((c / 255) + 0.055) / 1.055) ** 2.4)
+const lum = (hex: string) => {
+  const [r, g, b] = rgb(hex)
+  return 0.2126 * lin(r!) + 0.7152 * lin(g!) + 0.0722 * lin(b!)
+}
+const ratio = (a: string, b: string) => {
+  const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x)
+  return (hi! + 0.05) / (lo! + 0.05)
+}
+/** `color-mix(in srgb, over pct%, under)`, resolved. */
+const mixHex = (over: string, pct: number, under: string) =>
+  '#' + rgb(over).map((c, i) => Math.round((c * pct) / 100 + rgb(under)[i]! * (1 - pct / 100)).toString(16).padStart(2, '0')).join('')
+
+// The tuned palette: glyph 700 on 100 in light, 300 on 900 in dark. A hue that
+// misses 4.5:1 takes the next step in, so no pair ships below the floor.
+const tunedFg = (group: string, scheme: Scheme): string => {
+  const hue = HUE[group]!
+  const [base, alt] = scheme === 'light' ? [700, 800] : [300, 200]
+  const bg = hx(hue, scheme === 'light' ? 100 : 900)
+  return ratio(hx(hue, base), bg) >= 4.5 ? hx(hue, base) : hx(hue, alt)
+}
+const tunedBase = (group: string, scheme: Scheme) => hx(HUE[group]!, scheme === 'light' ? 700 : 300)
+const firmFg = (group: string, scheme: Scheme) => hx(HUE[group]!, scheme === 'light' ? 800 : 200)
+// White on the 700 fill: a hue under 5:1 takes a ring for the active state instead.
+const RING = new Set(Object.keys(GROUPS).filter((g) => ratio('#ffffff', hx(HUE[g]!, 700)) < 5))
+
+// Hue families: colour says the category, the glyph says the kind. Families
+// differ in lightness as well as hue: types and tools sit a step heavier.
+const FAMS: Record<string, { hue: string; light: [number, number]; dark: [number, number] }> = {
+  types: { hue: 'blue', light: [200, 900], dark: [800, 100] },
+  traits: { hue: 'violet', light: [100, 700], dark: [900, 300] },
+  callables: { hue: 'amber', light: [200, 900], dark: [900, 200] },
+  members: { hue: 'green', light: [100, 800], dark: [900, 200] },
+  meta: { hue: 'rose', light: [100, 700], dark: [900, 300] },
+  tools: { hue: 'cyan', light: [200, 900], dark: [800, 100] },
+}
+const famPair = (fam: string, scheme: Scheme): [string, string] => {
+  const f = FAMS[fam]!
+  const [bg, fg] = f[scheme]
+  return [hx(f.hue, fg), hx(f.hue, bg)]
+}
+
+// glyph, fill per candidate, for the contrast line under it
+const CONTRAST: Record<string, (group: string, scheme: Scheme) => [string, string]> = {
+  m: (g, s) => [tunedFg(g, s), hx(HUE[g]!, s === 'light' ? 100 : 900)],
+  t: (g, s) => [tunedFg(g, s), PAGE[s]],
+  v: (g, s) => [firmFg(g, s), mixHex(hx(HUE[g]!, 500), 14, PAGE[s])],
+  w: (g, s) => [tunedFg(g, s), mixHex(hx(HUE[g]!, 500), 8, PAGE[s])],
+  x: (g) => [hx(HUE[g]!, 950), hx(HUE[g]!, 400)],
+  y: (g, s) => [tunedFg(g, s), mixHex(hx(HUE[g]!, 500), 10, PAGE[s])],
+  ag: (g, s) => [firmFg(g, s), mixHex(hx(HUE[g]!, 500), 16, PAGE[s])],
+  ah: (g, s) => [firmFg(g, s), mixHex(hx(HUE[g]!, 500), 16, PAGE[s])],
+  ai: (g, s) => [firmFg(g, s), NEUTRAL[s]],
+  aj: (g, s) => [INK[s], hx(HUE[g]!, s === 'light' ? 200 : 800)],
+}
+function worstBase(scheme: Scheme) {
+  let low = { r: Infinity, g: '' }
+  for (const g of Object.keys(GROUPS)) {
+    const r = ratio(tunedBase(g, scheme), hx(HUE[g]!, scheme === 'light' ? 100 : 900))
+    if (r < low.r) low = { r, g }
+  }
+  return `${low.r.toFixed(2)}:1 ${low.g}`
+}
+function worstContrast(id: string, scheme: Scheme) {
+  const pair = CONTRAST[id]!
+  let low = { r: Infinity, g: '' }
+  for (const g of Object.keys(GROUPS)) {
+    const [fg, bg] = pair(g, scheme)
+    const r = ratio(fg, bg)
+    if (r < low.r) low = { r, g }
+  }
+  return `${low.r.toFixed(2)}:1 ${low.g}`
+}
+const famWorst = (scheme: Scheme) => {
+  let low = { r: Infinity, f: '' }
+  for (const f of Object.keys(FAMS)) {
+    const [fg, bg] = famPair(f, scheme)
+    const r = ratio(fg, bg)
+    if (r < low.r) low = { r, f }
+  }
+  return `${low.r.toFixed(2)}:1 ${low.f}`
+}
+
+// Tinted colours per scheme, plus a solid fill (the light foreground) for the
+// filled candidates, plus the tuned and family variables. The real variable
+// names are set too, for candidate A.
+const paletteCss = SCHEMES.map((scheme, si) => {
+  const at = si * 3
+  const real = Object.entries(GROUPS)
+    .map(([g, v]) => `--api-kind-${g}-bg:${v[at]};--api-kind-${g}-fg:${v[at + 1]};--api-kind-${g}-border:${v[at + 2]};`)
+    .join('')
+  const light = scheme === 'light'
+  const groups = Object.entries(GROUPS)
+    .map(([g, v]) => {
+      const h = HUE[g]!
+      const tuned = `--ub:${hx(h, light ? 100 : 900)};--uf:${tunedFg(g, scheme)};--uh:${hx(h, 500)};--u2:${hx(h, light ? 200 : 800)};--u8:${firmFg(g, scheme)};--um:${hx(h, 400)};--u9:${hx(h, 950)};--us:${hx(h, 700)};`
+      return `.bd-pane[data-pane='${scheme}'] [data-g='${g}']{--tbg:${v[at]};--tfg:${v[at + 1]};--tbd:${v[at + 2]};--sbg:${v[1]};--sbd:${v[at + 2]};${tuned}}`
+    })
+    .join('')
+  const fams = Object.keys(FAMS)
+    .map((f) => {
+      const [fg, bg] = famPair(f, scheme)
+      return `.bd-pane[data-pane='${scheme}'] [data-fam='${f}']{--fmb:${bg};--fmf:${fg};--fmh:${hx(FAMS[f]!.hue, 500)}}`
+    })
+    .join('')
+  return `.bd-pane[data-pane='${scheme}']{${real}}${groups}${fams}`
+}).join('')
+
+interface Kind {
+  kind: string
+  group: string
+  word: string
+  mark: string
+  x: boolean
+  cls: string
+  mono: string
+  abbr: string
+  fam: string
+  geo: string
+  shape: string
+}
+
+const KIND_DEFS: [string, string, string][] = [
+  ['class', 'class', 'class'],
+  ['interface', 'class', 'interface'],
+  ['struct', 'class', 'struct'],
+  ['union', 'typealias', 'union'],
+  ['enum', 'typealias', 'enum'],
+  ['trait', 'class', 'trait'],
+  ['module', 'module', 'module'],
+  ['typealias', 'typealias', 'type alias'],
+  ['prompt', 'typealias', 'prompt'],
+  ['resource-template', 'property', 'template'],
+  ['exception', 'exception', 'exception'],
+  ['format', 'format', 'format'],
+  ['command', 'command', 'command'],
+  ['key', 'property', 'key'],
+  ['function', 'function', 'function'],
+  ['method', 'method', 'method'],
+  ['property', 'property', 'property'],
+  ['attribute', 'attribute', 'attribute'],
+  ['constant', 'constant', 'constant'],
+  ['tool', 'function', 'tool'],
+  ['resource', 'property', 'resource'],
+  ['option', 'option', 'option'],
+  ['hook', 'hook', 'hook'],
+]
+// Two-character monograms: Title case for types, lower case for members and
+// callables, a sigil first for the symbol kinds.
+const MONO: Record<string, string> = {
+  class: 'Cl', interface: 'In', struct: 'St', union: 'Un', enum: 'En', trait: 'Tr', module: 'Mo', typealias: 'Ta',
+  prompt: 'Pm', 'resource-template': 'Rt', exception: '!e', format: '#f', command: '$c', key: ':k',
+  function: 'fn', method: 'mt', property: 'pr', attribute: 'at', constant: 'cn', tool: 'tl', resource: 'rs', option: 'op', hook: 'hk',
+}
+const ABBR: Record<string, string> = {
+  class: 'class', interface: 'iface', struct: 'struct', union: 'union', enum: 'enum', trait: 'trait', module: 'mod', typealias: 'alias',
+  prompt: 'prompt', 'resource-template': 'tmpl', exception: 'exc', format: 'fmt', command: 'cmd', key: 'key',
+  function: 'func', method: 'meth', property: 'prop', attribute: 'attr', constant: 'const', tool: 'tool', resource: 'res', option: 'opt', hook: 'hook',
+}
+const FAMILY: Record<string, string> = {
+  class: 'types', struct: 'types', enum: 'types', union: 'types', typealias: 'types', module: 'types',
+  interface: 'traits', trait: 'traits',
+  function: 'callables', method: 'callables', command: 'callables',
+  property: 'members', attribute: 'members', constant: 'members', key: 'members', option: 'members',
+  exception: 'meta', prompt: 'meta', 'resource-template': 'meta', format: 'meta',
+  tool: 'tools', resource: 'tools', hook: 'tools',
+}
+// Silhouette families for the geometry candidate.
+const GEO: Record<string, string> = {
+  class: 'types', interface: 'types', struct: 'types', union: 'types', enum: 'types', trait: 'types', module: 'types',
+  typealias: 'types', exception: 'types', prompt: 'types', 'resource-template': 'types',
+  function: 'calls', method: 'calls', command: 'calls', tool: 'calls', hook: 'calls',
+  property: 'data', attribute: 'data', constant: 'data', key: 'data', option: 'data', resource: 'data', format: 'data',
+}
+const shapeOf = (mark: string) => (/^[A-Z#:]$/.test(mark) ? 'sq' : /^[$!]$/.test(mark) ? 'di' : 'ci')
+
+const KINDS: Kind[] = KIND_DEFS.map(([kind, group, word]) => {
+  const mark = kindMark(kind)!
+  return { kind, group, word, mark, x: markHeight(mark) === 'x', cls: markClass(mark), mono: MONO[kind]!, abbr: ABBR[kind]!, fam: FAMILY[kind]!, geo: GEO[kind]!, shape: shapeOf(mark) }
+})
+const kindOf = (kind: string) => KINDS.find((k) => k.kind === kind)!
+
+type Ctx = 'prose' | 'marks' | 'tree' | 'head' | 'table' | 'sig'
+type Label = 'mark' | 'mono' | 'word' | 'abbr' | 'legend'
+
+interface Candidate {
+  id: string
+  name: string
+  caption: string
+  /** Round and set: 0 is the first round. */
+  set: number
+  /** The spec this implements, for sets 1 to 4. */
+  spec?: string
+  /** Shown in prose, the mark row, the tree, the table and the signature. */
+  label: Label
+  /** Shown in the heading row, when it differs. */
+  head?: Label
+  /** The site's own classes, so the baseline is the real thing. */
+  real?: boolean
+  fam?: boolean
+  shape?: boolean
+  geo?: boolean
+  ring?: boolean
+  reveal?: boolean
+  popover?: boolean
+  form?: 'split'
+  ink?: Ctx[]
+  density?: boolean
+  target?: boolean
+  hoverMarks?: boolean
+  quiet?: boolean
+  legend?: 'contrast' | 'fams'
+}
+
+const CANDIDATES: Candidate[] = [
+  { id: 'a', set: 0, name: 'Current', label: 'mark', real: true, caption: 'mono 11px/400 · 18px square · 1px border · radius 3.2px · tint' },
+  { id: 'b', set: 0, name: '12px mono', label: 'mark', caption: 'mono 12px/600 · 20px square · 1px border · radius 4px · tint' },
+  { id: 'c', set: 0, name: '13px mono bold', label: 'mark', caption: 'mono 13px/700 · 22px square · 1px border · radius 5px · tint' },
+  { id: 'd', set: 0, name: '12px sans', label: 'mark', caption: 'sans 12px/600 · 20px square · 1px border · radius 4px · tint' },
+  { id: 'e', set: 0, name: '13px sans bold', label: 'mark', caption: 'sans 13px/700 · 22px square · 1px border · radius 5px · tint' },
+  { id: 'f', set: 0, name: 'Wide pill', label: 'mark', caption: 'sans 12px/700 · 28×20px pill · 1px border · radius 10px · tint' },
+  { id: 'g', set: 0, name: 'Solid', label: 'mark', caption: 'sans 13px/700 · 22px square · solid fill, white mark · radius 5px · inner shade' },
+  { id: 'h', set: 0, name: 'Soft tint', label: 'mark', caption: 'sans 13px/600 · 22px square · no border, 20% tint · radius 6px' },
+  { id: 'i', set: 0, name: 'libtmux-mcp box', label: 'mark', caption: 'sans 10px/700 · 16px square · solid fill, white mark · radius 3px · inner shade' },
+  { id: 'j', set: 0, name: 'libtmux-mcp chip', label: 'word', caption: 'sans 11px/700 · word · padding 2.6×8.2px · solid fill, 1px border · radius 3.6px' },
+  { id: 'k', set: 0, name: 'gp-sphinx chip', label: 'word', caption: 'sans 11px/700 · word · padding 2.6×8px · tint, 1px border · radius 3.5px · dotted label' },
+  { id: 'l', set: 0, name: 'Hybrid', label: 'mark', head: 'word', caption: 'solid marks (G) in prose and tree · word chips (J) in headings' },
+
+  // Set 1
+  { id: 'm', set: 1, spec: 'Set 1 · 1 Tuned tint mark', name: 'Tuned tint mark', label: 'mark', legend: 'contrast', caption: 'sans 12px/600 · 20px square · border hue 30% / 18% dark · radius 4px · bg hue-100 / 900 · glyph 700 / 300' },
+  { id: 'n', set: 1, spec: 'Set 1 · 2 Em-scaled mark', name: 'Em-scaled mark', label: 'mark', caption: '1.35em square · glyph .8em/600 · radius .2em · vertical-align middle · tuned colours' },
+  { id: 'o', set: 1, spec: 'Set 1 · 3 Shape-encoded case', name: 'Shape-encoded case', label: 'mark', shape: true, caption: 'tuned mark · square types 20px · circle members 21px · diamond for $ and ! · glyph 12px/600' },
+  { id: 'p', set: 1, spec: 'Set 1 · 4 Hue families', name: 'Hue families', label: 'mark', fam: true, legend: 'fams', caption: 'tuned mark · six family hues, glyph names the kind · families differ in lightness' },
+  { id: 'q', set: 1, spec: 'Set 1 · 5 Legend chip for headings', name: 'Legend chip', label: 'mark', head: 'legend', quiet: true, caption: 'tuned mark in prose · heading chip = mark + word 11px/600 · same tint, border, radius · quiet sibling below' },
+  { id: 'r', set: 1, spec: 'Set 1 · 6 Solid as a state', name: 'Solid as a state', label: 'mark', ring: true, target: true, hoverMarks: true, caption: 'tuned marks · solid on selected row, :target heading, hovered link or mark · 2px ring where white is under 5:1' },
+  { id: 's', set: 1, spec: 'Set 1 · 7 Density rule + reveal', name: 'Density rule + reveal', label: 'mark', reveal: true, density: true, caption: 'first mention marked · hover or focus widens the mark into the word · aria-label always' },
+  { id: 't', set: 1, spec: 'Set 1 · 8 Hairline outline mark', name: 'Hairline outline', label: 'mark', legend: 'contrast', caption: 'sans 12px/600 · 20px square · border hue 60% · no tint · glyph 700 / 300' },
+  { id: 'u', set: 1, spec: 'Set 1 · 9 Ink mark', name: 'Ink mark', label: 'mark', ink: ['prose', 'table', 'sig'], caption: 'bg fg 7% · border fg 14% · glyph fg 600 · hue only in the tree, the mark row and headings' },
+
+  // Set 2
+  { id: 'v', set: 2, spec: 'Set 2 · 1 Soft tint, 22px, 14%', name: 'Soft tint, firmer', label: 'mark', legend: 'contrast', caption: 'sans 13px/600 · 22px square · no border, 14% tint · radius 5px · glyph hue-800 / 200' },
+  { id: 'w', set: 2, spec: 'Set 2 · 2 Soft tint with hue border', name: 'Soft tint + border', label: 'mark', legend: 'contrast', caption: 'sans 13px/600 · 20px square · 8% tint, 1px border hue 45% · radius 4px' },
+  { id: 'x', set: 2, spec: 'Set 2 · 3 Medium solid, dark text', name: 'Mid solid', label: 'mark', legend: 'contrast', caption: 'sans 12px/600 · 20px square · hue-400 fill, hue-950 glyph · no border or shade · radius 4px' },
+  { id: 'y', set: 2, spec: 'Set 2 · 4 Fixed-width soft pill', name: 'Fixed soft pill', label: 'mark', legend: 'contrast', caption: 'sans 12px/600 · 24×18px pill · 10% tint, no border · radius 9px' },
+  { id: 'z', set: 2, spec: 'Set 2 · 5 Two-tier: soft square, heading chip', name: 'Two-tier', label: 'mark', head: 'word', caption: 'soft tint squares (H) in prose and tree · heading chip 11px/600 solid, 1px border, radius 3px' },
+
+  // Set 3
+  { id: 'aa', set: 3, spec: 'Set 3 · 1 Tinted contextual hybrid', name: 'Tinted contextual hybrid', label: 'mono', head: 'abbr', caption: 'mono 12px/700 · 26×20px · 12% tint, 25% border · radius 4px · 4–5 letter heading chip · (2-letter parts dropped)' },
+  { id: 'ab', set: 3, spec: 'Set 3 · 2 Unified split chip', name: 'Split chip', label: 'mono', form: 'split', caption: 'cap: mono 12px/700, 18% tint · name: 4% fg surface · 1px hairline between · nowrap, no underline' },
+  { id: 'ac', set: 3, spec: 'Set 3 · 3 Case-encoded monograms', name: 'Case-encoded monograms', label: 'mono', caption: 'mono 12px/700 · 24×20px · tint, 1px border · radius 4px · Title case types, lower case members · (dropped)' },
+  { id: 'ad', set: 3, spec: 'Set 3 · 4 Left-accent micro-tag', name: 'Left-accent tag', label: 'mono', caption: 'mono 12px/700 · 26×20px · 5% grey fill · 2.5px hue bar on the left · radius 2px · (dropped; table alternative only)' },
+  { id: 'ae', set: 3, spec: 'Set 3 · 5 Geometric silhouette encoding', name: 'Silhouette encoding', label: 'mono', geo: true, caption: 'mono 12px/700 · tint, 1px border · types radius 3px · callables capsule · data neutral chip with a 4px dot' },
+  { id: 'af', set: 3, spec: 'Set 3 · 6 Expand-on-focus monogram', name: 'Expand on focus', label: 'mark', popover: true, caption: 'mono 13px/700 (C) · hover or focus pops the kind word, 11px/700 solid · aria-label always' },
+
+  // Set 4
+  { id: 'ag', set: 4, spec: 'Set 4 · 1 Soft tint, firm sans letter', name: 'Soft tint, firm sans', label: 'mark', legend: 'contrast', caption: 'sans .8125em/600 in 1.125em square · 16% tint, no border · radius .16em · glyph hue-800 / 200' },
+  { id: 'ah', set: 4, spec: 'Set 4 · 2 Soft tint, firm mono letter', name: 'Soft tint, firm mono', label: 'mark', legend: 'contrast', caption: 'same as AG with mono .8125em/600 (C’s letter) · square, tint, radius and gap unchanged' },
+  { id: 'ai', set: 4, spec: 'Set 4 · 3 Neutral fill, coloured letter', name: 'Neutral fill, hue letter', label: 'mark', legend: 'contrast', caption: 'one grey fill (#eceef1 / #2b2e33) · glyph hue-800 / 200 · no outline · AG geometry' },
+  { id: 'aj', set: 4, spec: 'Set 4 · 4 Tinted fill, ink letter', name: 'Tinted fill, ink letter', label: 'mark', legend: 'contrast', caption: 'hue-200 / 800 fill · one ink glyph (#14161a / #f4f5f6) · AG geometry · no outline' },
+  { id: 'ak', set: 4, spec: 'Set 4 · 5 Compact marks, quiet word labels', name: 'Compact + word labels', label: 'mark', head: 'word', caption: 'AG marks in prose and tree · heading label 12px/600 word, 16% tint, radius 3px (K shape)' },
+]
+
+const esc = (text: string) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+
+const labelFor = (c: Candidate, ctx: Ctx): Label => (ctx === 'head' && c.head ? c.head : c.label)
+
+function legendChip(c: Candidate, k: Kind): string {
+  const mark = badge({ ...c, head: undefined, label: 'mark' }, k, 'prose')
+  return `<span class="bd-leg" data-g="${k.group}">${mark}<span class="bd-leg__w"><span class="bd-leg__wl">${esc(k.word)}</span></span></span>`
+}
+
+function badge(c: Candidate, k: Kind, ctx: Ctx, link = false): string {
+  const label = labelFor(c, ctx)
+  if (c.real) {
+    const cls = `${link ? 'api-link-kind ' : ''}api-nav__kind api-badge--kind-${k.kind}`
+    return `<span class="${cls}" aria-hidden="true" title="${k.kind}"><span class="api-badge__label"${k.x ? ' data-mark="x"' : ''}>${esc(k.mark)}</span></span>`
+  }
+  if (label === 'legend') return legendChip(c, k)
+  const word = label === 'word' || label === 'abbr'
+  const text = { mark: k.mark, mono: k.mono, word: k.word, abbr: k.abbr }[label]
+  const cls = ['bd-b', word && 'bd-b--word', label === 'mono' && 'bd-b--mono', c.ink?.includes(ctx) && 'bd-b--ink'].filter(Boolean).join(' ')
+  const attrs = [`data-g="${k.group}"`]
+  if (c.fam) attrs.push(`data-fam="${k.fam}"`)
+  if (c.shape) attrs.push(`data-s="${k.shape}"`)
+  if (c.geo) attrs.push(`data-f="${k.geo}"`)
+  if (label === 'mark' && k.x) attrs.push('data-x')
+  if (label === 'mono' && /^[acemnorsuvwxz]+$/.test(k.mono)) attrs.push('data-x')
+  if (c.ring && RING.has(k.group)) attrs.push('data-ring')
+  const live = c.reveal || c.popover
+  if (live) attrs.push(`data-word="${k.word}"`, 'tabindex="0"', 'role="img"', `aria-label="${k.word}"`)
+  else attrs.push('aria-hidden="true"', `title="${k.kind}"`)
+  // A two-letter monogram is centred by its own letters: x-height only, a taller ascender, or capital height.
+  const monoClass = /^[acemnorsuvwxz]+$/.test(k.mono) ? 'x' : /[bdfhklt]/.test(k.mono) && !/[A-Z!#$:]/.test(k.mono) ? 'asc' : 'cap'
+  const dm = label === 'mark' ? ` data-mark="${k.cls}"` : label === 'mono' ? ` data-mark="${monoClass}"` : ''
+  const inner = c.reveal
+    ? `<span class="bd-b__l bd-b__m"${dm}>${esc(text)}</span><span class="bd-b__l bd-b__w">${esc(k.word)}</span>`
+    : `<span class="bd-b__l"${dm}>${esc(text)}</span>`
+  return `<span class="${cls}" ${attrs.join(' ')}>${inner}</span>`
+}
+
+function mention(c: Candidate, kind: string, text: string, ctx: Ctx = 'prose'): string {
+  const k = kindOf(kind)
+  const name = `<code>${esc(text)}</code>`
+  const sig = ctx === 'sig' ? ' bd-m--sig' : ''
+  if (c.real) {
+    return `<a class="api-mention${sig}" href="#">${badge(c, k, ctx, true)}<span class="api-symbol-link__name">${name}</span></a>`
+  }
+  if (c.form === 'split') {
+    return `<a class="bd-split${sig}" href="#" data-g="${k.group}"><span class="bd-split__k"><span class="bd-split__kl">${esc(k.mono)}</span></span><span class="bd-split__n"><span class="bd-split__nl">${name}</span></span></a>`
+  }
+  return `<a class="bd-m${sig}" href="#">${badge(c, k, ctx)}<span class="bd-name">${name}</span></a>`
+}
+
+const plainMention = (text: string) => `<a class="bd-m bd-m--plain" href="#"><span class="bd-name"><code>${esc(text)}</code></span></a>`
+
+type Part = string | [string, string] | [string, string, 'plain']
+
+const PROSE: Part[] = [
+  ['method', 'TmuxTools::builder(server)'],
+  ' constructs a tool surface over a libtmux ',
+  ['struct', 'Server'],
+  '. Pass a ',
+  ['struct', 'Selection'],
+  ' through ',
+  ['method', '.selection()'],
+  ', then build it. ',
+  ['method', 'offered()'],
+  ' reports the tools in scope.',
+]
+// Later mentions of the same names stay plain code links under the density rule.
+const PROSE_DENSITY: Part[] = [
+  ...PROSE,
+  ' Each ',
+  ['struct', 'Selection', 'plain'],
+  ' narrows the ',
+  ['struct', 'Server', 'plain'],
+  '; call ',
+  ['method', '.selection()', 'plain'],
+  ' again to replace it.',
+]
+const TREE: [string, string, string][] = [
+  ['struct', 'Server', ''],
+  ['method', 'new_session', 'in'],
+  ['property', 'session_name', 'in'],
+]
+const HEADING: [string, string][] = [
+  ['struct', 'Server'],
+  ['method', 'new_session()'],
+]
+const TABLE: [[string, string], [string, string]][] = [
+  [['method', 'new_session'], ['struct', 'Session']],
+  [['property', 'session_name'], ['enum', 'Option']],
+]
+// fn new_session(&self, name: Option<&str>) -> Result<Session, Error>
+type SigPart = string | [string, string]
+const SIGNATURE: SigPart[] = [
+  'fn ', ['method', 'new_session'], '(&self, name: ', ['enum', 'Option'], '<&str>) -> ',
+  ['enum', 'Result'], '<', ['struct', 'Session'], ', ', ['enum', 'Error'], '>',
+]
+
+function renderParts(c: Candidate, parts: Part[]): string {
+  return parts
+    .map((part) => {
+      if (typeof part === 'string') return esc(part)
+      return part.length === 3 ? plainMention(part[1]) : mention(c, part[0], part[1])
+    })
+    .join('')
+}
+
+function legendFor(c: Candidate, scheme: Scheme): string {
+  if (c.legend === 'fams') {
+    const chips = Object.entries(FAMS)
+      .map(([f, v]) => `<span class="bd-b bd-b--word" data-fam="${f}">${f} · ${v.hue}</span>`)
+      .join('')
+    return `<div class="bd-legend">${chips}<span class="bd-legend__n">worst glyph on fill ${famWorst(scheme)}</span></div>`
+  }
+  if (c.legend === 'contrast') {
+    const base = c.id === 'm' && worstBase(scheme) !== worstContrast('m', scheme) ? ` · 700 on 100 alone: ${worstBase(scheme)}` : ''
+    return `<div class="bd-legend"><span class="bd-legend__n">worst glyph on fill ${worstContrast(c.id, scheme)}${base}</span></div>`
+  }
+  return ''
+}
+
+function pane(c: Candidate, scheme: Scheme): string {
+  const prose = renderParts(c, c.density ? PROSE_DENSITY : PROSE)
+  const marks = KINDS.map((k) => {
+    const b = badge(c, k, 'marks')
+    return c.hoverMarks ? `<a class="bd-m" href="#" aria-label="${k.word}">${b}</a>` : b
+  }).join('')
+  const tree = TREE.map(([kind, name, indent], i) => {
+    const on = i === 1 ? ' bd-row--on' : ''
+    const body = c.form === 'split' ? mention(c, kind, name, 'tree') : `${badge(c, kindOf(kind), 'tree')}<span>${name}</span>`
+    return `<div class="bd-row${indent ? ' bd-row--in' : ''}${on}">${body}</div>`
+  }).join('')
+  const heading = HEADING.map(([kind, name]) => {
+    const body = c.form === 'split' ? mention(c, kind, name, 'head') : `${badge(c, kindOf(kind), 'head')}<span>${esc(name)}</span>`
+    return `<span class="bd-hitem">${body}</span>`
+  }).join('')
+  const hid = c.target ? ` id="${c.id}-h-${scheme}"` : ''
+  const perma = c.target ? `<a class="bd-perma" href="#${c.id}-h-${scheme}" aria-label="Target this heading">#</a>` : ''
+  const quiet = c.quiet
+    ? `<h3 class="bd-hrow bd-hrow--quiet">${HEADING.map(([, name], i) => `<span class="bd-hitem"><span class="bd-quiet">${i ? 'method' : 'struct'}</span><span>${esc(name)}</span></span>`).join('')}</h3>`
+    : ''
+  const table = `<table class="bd-table"><thead><tr><th>Member</th><th>Type</th></tr></thead><tbody>${TABLE.map(
+    ([a, b]) => `<tr><td>${mention(c, a[0], a[1], 'table')}</td><td>${mention(c, b[0], b[1], 'table')}</td></tr>`,
+  ).join('')}</tbody></table>`
+  const sig = `<p class="bd-sig">${SIGNATURE.map((p) => (typeof p === 'string' ? esc(p) : mention(c, p[0], p[1], 'sig'))).join('')}</p>`
+  return `<div class="bd-pane" data-pane="${scheme}">
+<p class="bd-prose">${prose}</p>
+<div class="bd-marks">${marks}</div>
+<div class="bd-tree">${tree}</div>
+<h3 class="bd-hrow"${hid}>${heading}${perma}</h3>${quiet}
+${table}
+${sig}
+${legendFor(c, scheme)}</div>`
+}
+
+const SETS = [
+  { n: 0, id: 'round-1', label: 'Round 1' },
+  { n: 1, id: 'set-1', label: 'Set 1' },
+  { n: 2, id: 'set-2', label: 'Set 2' },
+  { n: 3, id: 'set-3', label: 'Set 3' },
+  { n: 4, id: 'set-4', label: 'Set 4' },
+]
+
+const board = SETS.map((s) => {
+  const items = CANDIDATES.filter((c) => c.set === s.n)
+  const cards = items
+    .map(
+      (c) => `<section id="${c.id}" class="bd-cand bd-c-${c.id}">
+<header class="bd-head"><span class="bd-id">${c.id.toUpperCase()}</span><h3 class="bd-name-h">${c.name}</h3><p class="bd-cap">${c.caption}</p>${c.spec ? `<p class="bd-spec">${c.spec}</p>` : ''}</header>
+<div class="bd-panes">${pane(c, 'light')}${pane(c, 'dark')}</div>
+</section>`,
+    )
+    .join('\n')
+  return `<h2 id="${s.id}" class="bd-set">${s.label} <span>${items.length} candidates</span></h2>\n${cards}`
+}).join('\n')
+
+const bar = `<div class="bd-bar">${SETS.map((s) => {
+  const pills = CANDIDATES.filter((c) => c.set === s.n)
+    .map((c) => `<a href="#${c.id}" class="bd-jump" title="${c.name}">${c.id.toUpperCase()}</a>`)
+    .join('')
+  return `<span class="bd-bar__grp"><a href="#${s.id}" class="bd-bar__lab">${s.label}</a>${pills}</span>`
+}).join('')}<span class="bd-bar__tools"><a class="bd-tool" href="in-context/">Badges in context</a><button type="button" class="bd-tool" data-bd-toggle="fonts" aria-pressed="false">Fallback fonts</button><button type="button" class="bd-tool" data-bd-toggle="zoom" aria-pressed="false">200%</button></span></div>`
+---
+
+<DemoLayout title="Badge demo" description="Kind badge candidates in light and dark." current="/demo/badges/">
+  <h1 class="text-3xl font-semibold tracking-tight">Kind badges</h1>
+  <p class="mt-2 text-muted">{CANDIDATES.length} candidates, light and dark. Pick a letter.</p>
+  <Fragment set:html={bar} />
+  <div class="bd-root" data-bd-root>
+    <Fragment set:html={board} />
+  </div>
+
+  <style is:inline set:html={paletteCss}></style>
+</DemoLayout>
+
+<script is:inline>
+  document.addEventListener('click', (event) => {
+    if (event.target instanceof Element && event.target.closest('.bd-pane a:not(.bd-perma)')) event.preventDefault()
+  })
+  // Fallback fonts and 200% zoom, for the case-only pairs and the em-versus-px question.
+  const root = document.querySelector('[data-bd-root]')
+  const apply = (name, on) => {
+    if (!root) return
+    if (name === 'fonts') root.dataset.fonts = on ? 'fallback' : ''
+    else root.dataset.zoom = on ? '2' : ''
+    document.querySelector(`[data-bd-toggle="${name}"]`)?.setAttribute('aria-pressed', String(on))
+  }
+  for (const button of document.querySelectorAll('[data-bd-toggle]')) {
+    button.addEventListener('click', () => apply(button.dataset.bdToggle, button.getAttribute('aria-pressed') !== 'true'))
+  }
+  const query = new URLSearchParams(location.search)
+  if (query.get('fonts') === 'fallback') apply('fonts', true)
+  if (query.get('zoom') === '2') apply('zoom', true)
+</script>
+
+<style is:global>
+  /* Page chrome */
+  .bd-bar {
+    position: sticky; top: 3.3rem; z-index: 30; display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .9rem;
+    margin: 1rem 0 0; padding: .5rem 0; border-bottom: 1px solid var(--color-edge); background: var(--background-color, canvas);
+  }
+  .bd-bar__grp { display: inline-flex; flex-wrap: wrap; align-items: center; gap: .2rem; }
+  .bd-bar__lab { margin-right: .2rem; color: var(--color-muted); font: 600 .625rem/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; text-decoration: none; }
+  .bd-bar__tools { display: inline-flex; gap: .3rem; margin-left: auto; }
+  .bd-tool {
+    padding: .25rem .5rem; border: 1px solid var(--color-edge); border-radius: .375rem; background: var(--color-surface);
+    font: 500 .6875rem/1 var(--font-sans); cursor: pointer;
+  }
+  .bd-tool[aria-pressed='true'] { background: var(--color-surface-hover); font-weight: 700; }
+  a.bd-tool { color: inherit; text-decoration: none; }
+  .bd-jump {
+    display: inline-grid; place-items: center; min-width: 1.5rem; height: 1.5rem; padding: 0 .3rem;
+    border: 1px solid var(--color-edge); border-radius: .3rem; background: var(--color-surface);
+    font: 600 .6875rem/1 var(--font-mono); text-decoration: none; color: inherit;
+  }
+  .bd-jump:hover { background: var(--color-surface-hover); }
+  .bd-set {
+    margin: 3rem 0 0; padding-bottom: .5rem; border-bottom: 1px solid var(--color-edge); scroll-margin-top: 7rem;
+    font: 700 .8125rem/1 var(--font-mono); text-transform: uppercase; letter-spacing: .08em;
+  }
+  .bd-set span { margin-left: .5rem; color: var(--color-muted); font-weight: 400; letter-spacing: 0; text-transform: none; }
+  .bd-root[data-fonts='fallback'] { --font-sans: 'DejaVu Sans', Verdana, sans-serif; --font-mono: 'DejaVu Sans Mono', Menlo, Consolas, monospace; }
+  .bd-root[data-zoom='2'] { zoom: 2; }
+  .bd-cand { margin-top: 2.5rem; scroll-margin-top: 7rem; }
+  .bd-set + .bd-cand { margin-top: 1.5rem; }
+  .bd-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem .75rem; margin-bottom: .75rem; }
+  .bd-id {
+    align-self: center; display: inline-grid; place-items: center; min-width: 2rem; height: 2rem; padding: 0 .4rem;
+    border-radius: .5rem; background: var(--color-surface-hover); font: 700 1rem/1 var(--font-sans);
+  }
+  .bd-name-h { margin: 0; font: 600 1.125rem/1.3 var(--font-sans); }
+  .bd-cap { flex: 1 1 100%; margin: 0; color: var(--color-muted); font: .75rem/1.4 var(--font-mono); }
+  .bd-spec { flex: 1 1 100%; margin: 0; color: var(--color-muted); font: .75rem/1.4 var(--font-sans); }
+  .bd-panes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr)); gap: 1rem; }
+
+  /* Panes carry their own scheme */
+  .bd-pane {
+    position: relative; display: flex; flex-direction: column; gap: 1.1rem; min-width: 0;
+    padding: 1.1rem 1.25rem; border: 1px solid var(--bd-edge); border-radius: .5rem;
+    background: var(--bd-bg); color: var(--bd-fg);
+    --color-edge: var(--bd-edge); --color-muted: var(--bd-muted); --color-surface-hover: var(--bd-hover);
+  }
+  .bd-pane::before {
+    content: attr(data-pane); position: absolute; top: .4rem; right: .6rem;
+    color: var(--bd-muted); font: .625rem/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em;
+  }
+  .bd-pane[data-pane='light'] {
+    --bd-bg: #fff; --bd-fg: #1a1c1e; --bd-muted: #6b6f76; --bd-edge: #eeebee; --bd-surface: #f8f9fb;
+    --bd-hover: #efeff4; --bd-link: #2757dd; --bd-shade: inset 0 1px 0 rgb(255 255 255 / .2), inset 0 -1px 2px rgb(0 0 0 / .12);
+    --ba: 30%; --bd-neutral: #eceef1; --bd-ink: #14161a; --bd-nbg: rgb(0 0 0 / .05);
+    color-scheme: light;
+  }
+  .bd-pane[data-pane='dark'] {
+    --bd-bg: #131416; --bd-fg: #cfd0d0; --bd-muted: #81868d; --bd-edge: #303335; --bd-surface: #1a1c1e;
+    --bd-hover: #1e2124; --bd-link: #5ca5ff; --bd-shade: inset 0 1px 0 rgb(255 255 255 / .1), inset 0 -1px 2px rgb(0 0 0 / .28);
+    --ba: 18%; --bd-neutral: #2b2e33; --bd-ink: #f4f5f6; --bd-nbg: rgb(255 255 255 / .08);
+    color-scheme: dark;
+  }
+  .bd-pane p, .bd-pane h3 { margin: 0; }
+  .bd-prose { font: 400 1rem/1.8 var(--font-sans); }
+  .bd-pane a { color: var(--bd-link); text-decoration: none; }
+  .bd-pane code {
+    padding: .05em .3em; border: 1px solid var(--bd-edge); border-radius: .25rem; background: var(--bd-surface);
+    font: 400 .875em/1.4 var(--font-mono); color: inherit;
+  }
+  .bd-name { text-decoration: underline; text-underline-offset: .2em; text-decoration-thickness: 1px; }
+
+  /* A mention is the badge, then the name, centred as the site does it */
+  .bd-m { display: inline-flex; align-items: baseline; gap: .25em; max-inline-size: 100%; vertical-align: baseline; }
+  .bd-m > .bd-b { align-self: center; }
+  .bd-m--plain { display: inline; }
+
+  .bd-marks { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; }
+  .bd-tree { width: min(100%, 17rem); padding: .25rem; border: 1px solid var(--bd-edge); border-radius: .375rem; background: var(--bd-surface); }
+  .bd-row { display: flex; align-items: center; gap: .5rem; padding: .3rem .5rem; border-radius: .25rem; font: 400 .875rem/1.3 var(--font-sans); }
+  .bd-row--in { padding-left: 1.5rem; }
+  .bd-row--on { background: var(--bd-hover); font-weight: 500; }
+  .bd-hrow { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1.5rem; font: 600 1.375rem/1.3 var(--font-mono); scroll-margin-top: 7rem; }
+  .bd-hitem { display: inline-flex; align-items: center; gap: .5rem; }
+  .bd-hrow--quiet { font-size: 1.125rem; }
+
+  /* Contexts the specs added: a table cell and a dense signature */
+  .bd-table { width: 100%; border-collapse: collapse; font: 400 .8125rem/1.4 var(--font-sans); }
+  .bd-table th { padding: .3rem .5rem; border-bottom: 1px solid var(--bd-edge); color: var(--bd-muted); font: 600 .625rem/1 var(--font-mono); text-align: left; text-transform: uppercase; letter-spacing: .06em; }
+  .bd-table td { padding: .4rem .5rem; border-bottom: 1px solid var(--bd-edge); }
+  .bd-sig { font: 400 .8125rem/2.1 var(--font-mono); overflow-wrap: anywhere; }
+  .bd-sig code { padding: 0; border: 0; background: none; font: inherit; }
+  .bd-sig .bd-name, .bd-sig .api-symbol-link__name { text-decoration: none; }
+  .bd-sig .api-link-kind ~ .api-symbol-link__name { text-decoration-line: none; }
+  .bd-legend { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; }
+  .bd-legend__n { color: var(--bd-muted); font: .6875rem/1.4 var(--font-mono); }
+
+  /* The candidate badge: every look is a few variables, set per candidate below */
+  /* Snap the box to an even height and the baseline to a whole pixel, so the ink centres at any sub-pixel position.
+     The label's block is trimmed to the cap height (or the x-height for a m o r :) and sits on the box floor. */
+  :root { --step: 1px; }
+  @media (min-resolution: 2dppx) { :root { --step: .5px; } }
+  @media (min-resolution: 3dppx) { :root { --step: .3333px; } }
+  .bd-b {
+    --bh: round(var(--h, var(--w, 20px)), 2px); --gh: calc(var(--lr, 1) * 1cap);
+    display: inline-flex; align-items: flex-end; justify-content: center; flex: none; box-sizing: border-box;
+    min-width: round(var(--w, 20px), 2px); height: var(--bh);
+    padding: 0 var(--px, 0) round(calc((var(--bh) - 2 * var(--bwv, var(--bw, 1px)) - var(--gh)) / 2), var(--step));
+    border: var(--bw, 1px) solid var(--bdv, var(--tbd)); border-radius: var(--r, 4px);
+    background: var(--bgv, var(--tbg)); color: var(--fgv, var(--tfg));
+    font: var(--fw, 600) var(--fs, 12px)/1 var(--ff, var(--font-sans)); letter-spacing: var(--ls, 0);
+    box-shadow: var(--sh, none); white-space: nowrap; user-select: none; text-decoration: none;
+  }
+  .bd-b[data-x] { --gh: calc(var(--lr, 1) * (1ex + var(--xo, .01em))); }
+  .bd-b:has(> [data-mark='col']) { --gh: calc(var(--lr, 1) * 1ex); }
+  .bd-b:has(> [data-mark='asc']) { --gh: calc(var(--lr, 1) * (1cap + var(--asc, .04em))); }
+  .bd-b:has(> [data-mark='tee']) { --gh: calc(var(--lr, 1) * (1cap - var(--tee, .035em))); }
+  .bd-b__l { display: block; line-height: 1; text-box: trim-both cap alphabetic; }
+  .bd-b__l[data-mark='x'], .bd-b__l[data-mark='col'] { text-box: trim-both ex alphabetic; }
+  .bd-b--word {
+    --w: auto; --wh: 18px;
+    display: inline-flex; align-items: flex-end; justify-content: center; min-width: 0; height: round(var(--wh), 2px);
+    padding: 0 var(--px, 0) round(calc((round(var(--wh), 2px) - 2 * var(--bw, 1px) - 1cap) / 2), var(--step));
+  }
+  .bd-b--word .bd-b__l { text-box: trim-both cap alphabetic; }
+
+  /* B 12px mono, C 13px mono bold, D 12px sans, E 13px sans bold, F wide pill */
+  .bd-c-b .bd-b { --w: 20px; --fs: 12px; --fw: 600; --ff: var(--font-mono); --r: 4px; }
+  .bd-c-c .bd-b { --w: 22px; --fs: 13px; --fw: 700; --ff: var(--font-mono); --r: 5px; }
+  .bd-c-d .bd-b { --w: 20px; --fs: 12px; --fw: 600; --r: 4px; }
+  .bd-c-e .bd-b { --w: 22px; --fs: 13px; --fw: 700; --r: 5px; }
+  .bd-c-f .bd-b { --w: 28px; --h: 20px; --fs: 12px; --fw: 700; --r: 10px; }
+
+  /* G solid, H soft tint, I libtmux-mcp box */
+  .bd-c-g .bd-b, .bd-c-l .bd-b { --w: 22px; --fs: 13px; --fw: 700; --r: 5px; --bgv: var(--sbg); --bdv: var(--sbd); --fgv: #fff; --sh: var(--bd-shade); }
+  .bd-c-h .bd-b {
+    --w: 22px; --fs: 13px; --fw: 600; --r: 6px; --bw: 0px;
+    --bgv: color-mix(in srgb, var(--tbd) 20%, var(--bd-bg));
+  }
+  .bd-c-i .bd-b { --w: 16px; --fs: 10px; --fw: 700; --r: 3px; --bgv: var(--sbg); --bdv: var(--sbd); --fgv: #fff; --sh: var(--bd-shade); }
+
+  /* J and L-in-headings: libtmux-mcp word chip. K: gp-sphinx tinted word chip */
+  .bd-c-j .bd-b--word, .bd-c-l .bd-b--word {
+    --w: auto; --h: auto; --px: 8.2px; --py: 2.6px; --fs: 11px; --fw: 700; --r: 3.6px; --ls: .01em;
+    --bgv: var(--sbg); --bdv: var(--sbd); --fgv: #fff; --sh: var(--bd-shade);
+  }
+  .bd-c-k .bd-b--word { --w: auto; --h: auto; --px: 8px; --py: 2.6px; --fs: 11px; --fw: 700; --r: 3.5px; --ls: .01em; }
+  .bd-c-k .bd-b__l { text-decoration: underline dotted; text-underline-offset: .18em; }
+  .bd-c-l .bd-b--word { --fs: 12px; --wh: 20px; }
+
+  /* ---- Set 1 ---- */
+  /* M tuned tint: D's geometry, a colour system per mode. The tuned vars below are shared by the candidates that build on it. */
+  .bd-c-m .bd-b, .bd-c-n .bd-b, .bd-c-o .bd-b, .bd-c-p .bd-b, .bd-c-q .bd-b, .bd-c-r .bd-b, .bd-c-s .bd-b, .bd-c-u .bd-b {
+    --w: 20px; --fs: 12px; --fw: 600; --r: 4px;
+    --bgv: var(--ub); --fgv: var(--uf); --bdv: color-mix(in srgb, var(--uh) var(--ba), transparent);
+  }
+  /* N em-scaled: the square and glyph follow the surrounding text, centred on the x-height */
+  .bd-c-n .bd-b { --fs: 1em; --w: 1.35em; --r: .2em; --lr: .8; }
+  .bd-c-n .bd-b__l { font-size: .8em; }
+  .bd-c-n .bd-m { display: inline; white-space: nowrap; }
+  .bd-c-n .bd-m > .bd-b { align-self: auto; vertical-align: middle; margin-right: .25em; }
+  /* O shape-encoded case: squares for types, circles for members, diamonds for $ and ! */
+  .bd-c-o .bd-b[data-s='ci'] { --w: 22px; --r: 999px; }
+  .bd-c-o .bd-b[data-s='di'] { --w: 14px; --r: 2px; --fs: 11px; --fw: 700; rotate: 45deg; margin-inline: 3px; }
+  .bd-c-o .bd-b[data-s='di'] > .bd-b__l { rotate: -45deg; }
+  /* P hue families */
+  .bd-c-p .bd-b { --bgv: var(--fmb); --fgv: var(--fmf); --bdv: color-mix(in srgb, var(--fmh) var(--ba), transparent); }
+  .bd-c-p .bd-legend .bd-b { --w: auto; --h: 20px; --px: 7px; --fs: 11px; }
+  /* Q legend chip: the prose mark, then the word, in one chip. One line of text: both sit on the same snapped baseline,
+     and the run is centred as a whole by its cap height. */
+  @property --bd-lpb { syntax: '<length>'; inherits: true; initial-value: 0px; }
+  .bd-leg { font: 600 11px/1 var(--font-sans); --bd-lpb: round(calc((20px - 2px - 1cap) / 2), var(--step)); display: inline-flex; align-items: stretch; }
+  .bd-leg > .bd-b { border-right-width: 0; border-radius: 4px 0 0 4px; padding-bottom: var(--bd-lpb); }
+  .bd-leg > .bd-b > .bd-b__l { text-box: trim-both cap alphabetic; }
+  .bd-leg__w {
+    display: flex; align-items: flex-end; height: 20px; padding: 0 8px var(--bd-lpb) 3px; box-sizing: border-box;
+    border: 1px solid color-mix(in srgb, var(--uh) var(--ba), transparent); border-left-width: 0; border-radius: 0 4px 4px 0;
+    background: var(--ub); color: var(--uf); font: 600 11px/1 var(--font-sans);
+  }
+  .bd-leg__wl { display: block; text-box: trim-both cap alphabetic; }
+  .bd-quiet { margin-right: .6rem; color: var(--bd-muted); font: 600 .625rem/1 var(--font-sans); text-transform: uppercase; letter-spacing: .08em; }
+  /* R solid as a state: the active mark goes solid, or ringed where white is under 5:1 */
+  .bd-c-r .bd-m:hover .bd-b, .bd-c-r .bd-m:focus-visible .bd-b, .bd-c-r .bd-row--on .bd-b, .bd-c-r .bd-hrow:target .bd-b {
+    --bgv: var(--us); --fgv: #fff; --bdv: var(--uh);
+  }
+  .bd-c-r .bd-m:hover .bd-b[data-ring], .bd-c-r .bd-m:focus-visible .bd-b[data-ring], .bd-c-r .bd-row--on .bd-b[data-ring], .bd-c-r .bd-hrow:target .bd-b[data-ring] {
+    --bgv: var(--ub); --fgv: var(--uf); --sh: 0 0 0 2px var(--uh);
+  }
+  .bd-perma { margin-left: .25rem; color: var(--bd-muted) !important; font: 400 .875rem/1 var(--font-mono); }
+  /* S density rule + reveal: the word replaces the mark on hover or focus */
+  .bd-c-s .bd-b__w { display: none; }
+  .bd-c-s .bd-b:hover, .bd-c-s .bd-b:focus-visible, .bd-c-s .bd-m:hover .bd-b, .bd-c-s .bd-m:focus-visible .bd-b { --w: auto; --px: 7px; }
+  .bd-c-s .bd-b:hover .bd-b__m, .bd-c-s .bd-b:focus-visible .bd-b__m, .bd-c-s .bd-m:hover .bd-b__m, .bd-c-s .bd-m:focus-visible .bd-b__m { display: none; }
+  .bd-c-s .bd-b:hover .bd-b__w, .bd-c-s .bd-b:focus-visible .bd-b__w, .bd-c-s .bd-m:hover .bd-b__w, .bd-c-s .bd-m:focus-visible .bd-b__w { display: block; translate: 0; }
+  .bd-c-s .bd-b:focus-visible { outline: 2px solid var(--uh); outline-offset: 1px; }
+  /* T hairline outline */
+  .bd-c-t .bd-b { --bgv: transparent; --bdv: color-mix(in srgb, var(--uh) 60%, transparent); }
+  /* U ink mark: no hue in prose; hue in the tree, the mark row and headings */
+  .bd-c-u .bd-b.bd-b--ink { --bgv: color-mix(in srgb, var(--bd-fg) 7%, transparent); --bdv: color-mix(in srgb, var(--bd-fg) 14%, transparent); --fgv: var(--bd-fg); }
+
+  /* ---- Set 2 ---- */
+  .bd-c-v .bd-b { --w: 22px; --fs: 13px; --fw: 600; --r: 5px; --bw: 0px; --bgv: color-mix(in srgb, var(--uh) 14%, var(--bd-bg)); --fgv: var(--u8); }
+  .bd-c-w .bd-b { --w: 20px; --fs: 13px; --fw: 600; --r: 4px; --bgv: color-mix(in srgb, var(--uh) 8%, var(--bd-bg)); --bdv: color-mix(in srgb, var(--uh) 45%, transparent); --fgv: var(--uf); }
+  .bd-c-x .bd-b { --w: 20px; --fs: 12px; --fw: 600; --r: 4px; --bw: 0px; --bgv: var(--um); --fgv: var(--u9); }
+  .bd-c-y .bd-b { --w: 24px; --h: 18px; --fs: 12px; --fw: 600; --r: 9px; --bw: 0px; --bgv: color-mix(in srgb, var(--uh) 10%, var(--bd-bg)); --fgv: var(--uf); }
+  .bd-c-z .bd-b { --w: 22px; --fs: 13px; --fw: 600; --r: 6px; --bw: 0px; --bgv: color-mix(in srgb, var(--tbd) 20%, var(--bd-bg)); }
+  .bd-c-z .bd-b--word {
+    --w: auto; --wh: 20px; --px: 8px; --fs: 11px; --fw: 600; --r: 3px; --bw: 1px;
+    --bgv: var(--sbg); --bdv: var(--sbd); --fgv: #fff;
+  }
+
+  /* ---- Set 3 ---- */
+  .bd-c-aa .bd-b { --w: 26px; --h: 20px; --fs: 12px; --fw: 700; --ff: var(--font-mono); --r: 4px; --bgv: color-mix(in srgb, var(--uh) 12%, var(--bd-bg)); --bdv: color-mix(in srgb, var(--uh) 25%, transparent); --fgv: var(--uf); }
+  .bd-c-aa .bd-b--word { --w: auto; --px: 7px; --wh: 20px; }
+  .bd-c-ab .bd-b { --w: 26px; --h: 20px; --fs: 12px; --fw: 700; --ff: var(--font-mono); --r: 4px; --bgv: color-mix(in srgb, var(--uh) 18%, var(--bd-bg)); --bdv: color-mix(in srgb, var(--uh) 30%, transparent); --fgv: var(--uf); }
+  @property --bd-sp { syntax: '<length>'; inherits: true; initial-value: 0px; }
+  .bd-split {
+    --bd-sp: round(calc((22px - 2px - 1cap) / 2), var(--step));
+    display: inline-flex; align-items: stretch; box-sizing: border-box; height: 22px; font-size: 14px; vertical-align: middle; white-space: nowrap; overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--uh) 30%, transparent); border-radius: 4px; text-decoration: none;
+  }
+  /* The cap and the name are one line of text on one baseline. */
+  .bd-split__k {
+    display: flex; align-items: flex-end; justify-content: center; min-width: 26px; padding: 0 5px var(--bd-sp); box-sizing: border-box;
+    border-right: 1px solid color-mix(in srgb, var(--uh) 30%, transparent);
+    background: color-mix(in srgb, var(--uh) 18%, var(--bd-bg)); color: var(--uf); font: 700 12px/1 var(--font-mono);
+  }
+  .bd-split__kl, .bd-split__nl { display: block; text-box: trim-both cap alphabetic; }
+  .bd-split__n { display: flex; align-items: flex-end; padding: 0 7px var(--bd-sp); background: color-mix(in srgb, var(--bd-fg) 4%, transparent); font: 400 14px/1 var(--font-mono); }
+  .bd-split code { padding: 0; border: 0; background: none; font: inherit; }
+  .bd-split:hover .bd-split__n { background: color-mix(in srgb, var(--bd-fg) 9%, transparent); }
+  .bd-split:focus-visible { outline: 2px solid var(--uh); outline-offset: 1px; }
+  .bd-c-ac .bd-b { --w: 24px; --h: 20px; --fs: 12px; --fw: 700; --ff: var(--font-mono); --r: 4px; }
+  .bd-c-ad .bd-b {
+    --w: 26px; --h: 20px; --fs: 12px; --fw: 700; --ff: var(--font-mono); --r: 2px; --bwv: 0px; --bgv: var(--bd-nbg); --fgv: var(--bd-fg);
+    border-width: 0 0 0 2.5px; border-color: var(--uh);
+  }
+  .bd-c-ae .bd-b { --w: 28px; --h: 20px; --fs: 12px; --fw: 700; --ff: var(--font-mono); }
+  .bd-c-ae .bd-b[data-f='types'] { --r: 3px; }
+  .bd-c-ae .bd-b[data-f='calls'] { --r: 999px; }
+  .bd-c-ae .bd-b[data-f='data'] {
+    --r: 4px; --bgv: color-mix(in srgb, var(--bd-fg) 6%, transparent); --bdv: color-mix(in srgb, var(--bd-fg) 16%, transparent); --fgv: var(--bd-fg);
+    --px: 6px; gap: 4px;
+  }
+  .bd-c-ae .bd-b[data-f='data']::before { content: ''; flex: none; width: 4px; height: 4px; border-radius: 50%; background: var(--uh); }
+  /* AF expand on focus: C's mark, with the word in a popover */
+  .bd-c-af .bd-b { --w: 22px; --fs: 13px; --fw: 700; --ff: var(--font-mono); --r: 5px; position: relative; }
+  .bd-c-af .bd-b::after {
+    content: attr(data-word); position: absolute; bottom: calc(100% + 6px); left: 50%; translate: -50% 0; z-index: 5; display: none;
+    padding: 3px 8px; border: 1px solid var(--sbd); border-radius: 3.5px; background: var(--sbg); color: #fff;
+    font: 700 11px/1 var(--font-sans); letter-spacing: .01em; box-shadow: var(--bd-shade);
+  }
+  .bd-c-af .bd-b:hover::after, .bd-c-af .bd-b:focus-visible::after, .bd-c-af .bd-m:hover .bd-b::after, .bd-c-af .bd-m:focus-visible .bd-b::after { display: block; }
+  .bd-c-af .bd-b:focus-visible { outline: 2px solid var(--tbd); outline-offset: 1px; }
+
+  /* ---- Set 4: em units, so the badge scales with its text ---- */
+  .bd-c-ag .bd-b, .bd-c-ah .bd-b, .bd-c-ai .bd-b, .bd-c-aj .bd-b, .bd-c-ak .bd-b {
+    --fs: 1em; --w: 1.125em; --fw: 600; --r: .16em; --bw: 0px; --lr: .8125;
+  }
+  .bd-c-ag .bd-b__l, .bd-c-ah .bd-b__l, .bd-c-ai .bd-b__l, .bd-c-aj .bd-b__l, .bd-c-ak .bd-b__l { font-size: .8125em; }
+  .bd-c-ag .bd-m, .bd-c-ah .bd-m, .bd-c-ai .bd-m, .bd-c-aj .bd-m, .bd-c-ak .bd-m { gap: .1875em; }
+  .bd-c-ag .bd-row, .bd-c-ah .bd-row, .bd-c-ai .bd-row, .bd-c-aj .bd-row, .bd-c-ak .bd-row, .bd-c-ag .bd-hitem, .bd-c-ah .bd-hitem, .bd-c-ai .bd-hitem, .bd-c-aj .bd-hitem, .bd-c-ak .bd-hitem { gap: .1875em; }
+  .bd-c-ag .bd-b, .bd-c-ak .bd-b { --bgv: color-mix(in srgb, var(--uh) 16%, var(--bd-bg)); --fgv: var(--u8); }
+  .bd-c-ah .bd-b { --ff: var(--font-mono); --bgv: color-mix(in srgb, var(--uh) 16%, var(--bd-bg)); --fgv: var(--u8); }
+  .bd-c-ai .bd-b { --bgv: var(--bd-neutral); --fgv: var(--u8); }
+  .bd-c-aj .bd-b { --bgv: var(--u2); --fgv: var(--bd-ink); }
+  .bd-c-ak .bd-b--word { --w: auto; --wh: 18px; --fs: 12px; --px: 7px; --r: 3px; }
+  .bd-c-ak .bd-b--word .bd-b__l { font-size: 1em; }
+  .bd-c-ak .bd-hitem { gap: .5rem; }
+</style>

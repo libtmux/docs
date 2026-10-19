@@ -89,10 +89,11 @@ $ pnpm test
 The outer loop includes the `*.outer.test.ts` integration suites, which seed
 the full API catalog or exercise subprocess shutdown. It also adds type
 checks and starts its own Astro development server
-from current source. Browser checks cover prose, an MCP table, API equivalents,
-and phone dropdown placement at 1440, 768, and 390 pixels. The sampled renderer
-also checks homepage choices and uses `node site/scripts/check-dev.mjs --sample`.
-It does not reuse `_site`. The runtime budgets are under 2, 10, and 60 seconds for inner,
+from current source. Browser checks cover prose, an MCP table, row permalinks,
+API equivalents, and phone dropdown placement at 1440, 768, and 390 pixels. The
+sampled renderer also checks homepage choices and uses
+`node site/scripts/check-dev.mjs --sample`. It does not reuse `_site`. The
+runtime budgets are under 2, 10, and 60 seconds for inner,
 medium, and outer respectively; measure the complete pnpm command when
 changing a loop. `test:fast` aliases medium. The runner stops an over-budget
 loop and fails.
@@ -130,6 +131,36 @@ Install the pinned Chromium build for local browser checks with
 `pnpm --filter @libtmux/site exec playwright install chromium`. CI installs
 that build and its system dependencies before the publication audit.
 The standard ten-second browser timeout increases to twenty seconds on CI.
+
+Each engine aligns the sticky Members and group headings of a reference page
+differently. The publication audit checks them in Chromium; install Firefox
+and WebKit to check all three:
+
+```console
+$ pnpm --filter @libtmux/site exec playwright install firefox webkit
+```
+
+Then run the sticky heading check, which starts its own server and drives
+focus, link, repeated link and typed hash arrivals in each engine:
+
+```console
+$ node site/scripts/check-dev.mjs --api-sticky
+```
+
+Kind marks centre their ink by measurement, and a legend chip, split chip or
+modifier chip is one line of text. The badge gate reads the pixels of real pages
+at 1x and at a real 2x device scale factor (Chromium launched with the factor,
+because the emulated factor snaps text to CSS pixels), in light and dark. It
+measures the mark that leads a name in cards and lists, the related-APIs
+chips, the group headings, the MCP sidebar's rule (a mark only in a group that
+mixes kinds, and no gutter) and that the API tree keeps its gutter, and it
+checks that only the first mention of a name in a section carries a mark. Each
+check ends with a negative control that breaks what it holds and requires the
+gate to notice:
+
+```console
+$ node site/scripts/check-dev.mjs --badge-centring
+```
 
 Keep the complete assembly, all output suites, link audits, source/model
 freshness, and full browser matrix in the publication audit:
@@ -176,6 +207,21 @@ the index:
 ```console
 $ node scripts/gen-mentions.mjs
 ```
+
+Workspace prose links a code span that names a CLI command, option or
+configuration key to its entry in the port's CLI Manual or Configuration
+reference. Those destinations come from an index of the workspace pages. After
+adding or renaming a CLI page, a table of options, or a table of keys,
+regenerate it:
+
+```console
+$ node scripts/gen-workspace-entities.mjs
+```
+
+A bare name links only on a user-facing workspace page, where it outranks a
+library symbol or tmux name of the same spelling. `<program> <command>` links
+on any page of a port that ships the program. Internals pages and the language
+API index keep their library symbols.
 
 The publication audit checks index freshness, rendered links, navigation targets,
 and table layout at desktop, tablet, and phone widths.

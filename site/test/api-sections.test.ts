@@ -79,6 +79,12 @@ describe('reference page navigation', () => {
     expect(apiEntrySections(method, 'kotlin').map((section) => section.label)).toEqual(['Parameters', 'Returns', 'Errors'])
   })
 
+  it('lists a method receiver nowhere, and every other parameter', () => {
+    const method = symbol('Pane.resize', { kind: 'method', signatures: [{ params: [{ name: 'self' }, { name: 'width', type: 'int' }] }] })
+    expect(apiEntryFields(method, 'py').params.map((param) => param.name)).toEqual(['width'])
+    expect(apiEntryFields(method, 'lua').params.map((param) => param.name)).toEqual(['width'])
+  })
+
   it('treats the Python implementation docstring as documentation for every overload', () => {
     const capture = API_MODELS.py.symbols.find((entry) => entry.id === 'libtmux.pane.Pane.capture_pane')!
     const fields = apiEntryFields(capture, 'py')
@@ -106,9 +112,11 @@ describe('reference page navigation', () => {
     expect(fields.raises).toEqual([{ type: 'TransportError', doc: 'The server is unavailable.', overloads: [] }])
   })
 
-  it('offers parameter sections only when the port renders those parameters', () => {
+  it('offers a parameter section in every port, documented or not', () => {
     const method = symbol('Server.capture', { signatures: [{ params: [{ name: 'limit', type: 'number' }] }] })
-    expect(apiEntrySections(method, 'py')).toEqual([])
+    for (const port of ['py', 'ruby', 'lua', 'swift']) {
+      expect(apiEntrySections(method, port), port).toEqual([{ id: 'Server.capture.parameters', label: 'Parameters' }])
+    }
     expect(apiEntrySections(method, 'ts')).toEqual([{ id: 'Server.capture.parameters', label: 'Parameters' }])
     expect(apiEntrySections(method, 'kotlin')).toEqual([{ id: 'Server.capture.parameters', label: 'Parameters' }])
     method.signatures[0].params[0].doc = 'Maximum lines to capture.'

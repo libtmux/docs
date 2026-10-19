@@ -22,8 +22,8 @@ const pageLinks = {
   },
 }
 
-async function load(path: string, body = '', head = '') {
-  const window = new Window({ url: `https://libtmux.org${base}/py/latest/${path}` })
+async function load(path: string, body = '', head = '', port = 'py') {
+  const window = new Window({ url: `https://libtmux.org${base}/${port}/latest/${path}` })
   windows.push(window)
   window.document.body.innerHTML = body
   window.document.head.innerHTML = head
@@ -70,6 +70,15 @@ describe('native API page switchers', () => {
     expect([...document.querySelectorAll('.lt-shell-search-link')].find((link) => link.textContent === 'Search')?.getAttribute('href'))
       .toBe(`${base}/py/latest/search/`)
     expect(requests).toEqual([`${base}/versions.json`, `${base}/page-links.json`])
+  })
+
+  it('links MCP to the current port and drops it where the port has no server', async () => {
+    const links = async (port: string) => [...(await load('api/libtmux.session/', '', '', port)).document.querySelectorAll('.lt-shell-search-link')]
+      .map((link) => [link.textContent, link.getAttribute('href')])
+    expect(await links('py')).toContainEqual(['MCP', `${base}/py/latest/mcp/`])
+    expect(await links('rs')).toContainEqual(['MCP', `${base}/rs/latest/mcp/`])
+    expect((await links('lua')).map(([label]) => label)).toEqual(['Reference', 'Search'])
+    expect((await links('py')).filter(([, href]) => href === `${base}/mcp/`)).toEqual([])
   })
 
   it('keeps the page equivalents when following an ordinary section heading', async () => {

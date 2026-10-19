@@ -319,7 +319,9 @@ describe('rendered API badges', () => {
       const link = win.document.querySelector('a')!
       expect(link, label).not.toBeNull()
       expect(link.getAttribute('href')).toBe(`${API_GLOSSARY_PATH}#${target}`)
-      expect(link.textContent).toBe(label)
+      // A kind in a heading is the legend chip: the mark, then the word. The label is the word.
+      expect(link.querySelector('.api-badge__label')!.textContent, label).toBe(label)
+      expect(link.classList.contains('api-leg'), label).toBe(variant === 'kind')
       expect(link.getAttribute('aria-label')).toContain(`${target} definition`)
       expect(link.classList.contains(`api-badge--${variant}-${value}`)).toBe(true)
     }

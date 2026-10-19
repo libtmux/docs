@@ -1,8 +1,6 @@
 ---
 import RegistryIcon from './icons/RegistryIcon.astro'
-import { branding } from '../lib/branding'
-import { PICKER_GROUPS, PICKER_GROUP_LABEL, PICKER_GROUP_SUMMARY, type Port, type PortPicker } from '../lib/ports'
-import { withRoot } from '../lib/site-root'
+import { pickerSections, type Port, type PortPicker } from '../lib/ports'
 import '../styles/documentation-picker.css'
 
 /**
@@ -10,6 +8,10 @@ import '../styles/documentation-picker.css'
  * picker: a native disclosure, a searchable list of ordinary links and the
  * shared initializer's Escape, outside-click and positioning behavior. Every
  * row is an external link, so the shared link hint draws its one glyph.
+ *
+ * The product a row belongs to is a plain-text heading naming its group, never
+ * a link, so it takes no focus and no arrow-key stop. A menu of one product
+ * has nothing to tell apart and carries no heading.
  */
 interface Props {
   port: Port
@@ -32,9 +34,10 @@ const copy = picker.kind === 'github' ? {
   trigger: 'Docs: choose an API reference', title: 'API reference', search: 'Find an API reference',
   placeholder: 'Find an API reference…', empty: 'No matching references.',
 }
-const groups = PICKER_GROUPS.map((group) => ({ group, rows: picker.rows.filter((row) => row.group === group) }))
-  .filter((entry) => entry.rows.length > 0)
-const artwork = (group: string) => withRoot(branding(port.slug, group === 'core' ? '' : group).asset('logo.svg'))
+const sections = pickerSections(picker)
+const titled = sections.length > 1
+// The bar and Menu copies share a page, so each heading id carries its placement.
+const headingId = (group: string) => `header-picker-${placement}-${picker.kind}-${group}`
 // A single destination needs no search.
 const searchable = picker.rows.length > 1
 ---
@@ -51,11 +54,9 @@ const searchable = picker.rows.length > 1
       <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3.5 3.5"/></svg>
       <input type="search" placeholder={copy.placeholder} autocomplete="off" data-picker-search />
     </label>}
-    {groups.map(({ group, rows }) => <div class="header-picker__group" role="group" aria-label={PICKER_GROUP_LABEL[group]} data-picker-group>
-      <p class="header-picker__group-title">
-        <img src={artwork(group)} width="24" height="24" alt="" loading="lazy" decoding="async" />
-        <span><strong>{PICKER_GROUP_LABEL[group]}</strong><small>{PICKER_GROUP_SUMMARY[group]}</small></span>
-      </p>
+    {sections.map(({ group, label, rows }) => <div class="header-picker__group" data-picker-group data-group={group}
+      role={titled ? 'group' : undefined} aria-labelledby={titled ? headingId(group) : undefined}>
+      {titled && <p class="header-picker__heading" id={headingId(group)} data-picker-heading>{label}</p>}
       {rows.map((row) => <a class="doc-picker-option header-picker__option" href={row.url} rel="noopener" data-picker-option data-match={row.match}>
         <span class="header-picker__icon"><RegistryIcon icon={row.icon} decorative /></span>
         <span class="header-picker__text"><span class="header-picker__name">{row.label}</span><small>{row.detail}</small></span>

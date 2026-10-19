@@ -12,10 +12,12 @@ interface Props {
   external?: boolean
   level?: number
   kind?: string
+  /** The kind stays on the row for assistive technology; its mark is not drawn. */
+  quiet?: boolean
   disabled?: boolean
 }
 
-const { href, label, isActive = false, external = false, level = 1, kind, disabled = false } = Astro.props
+const { href, label, isActive = false, external = false, level = 1, kind, quiet = false, disabled = false } = Astro.props
 const Tag = disabled ? 'span' : 'a'
 ---
 
@@ -32,7 +34,7 @@ const Tag = disabled ? 'span' : 'a'
   target={external ? '_blank' : undefined}
   rel={external ? 'noopener noreferrer' : undefined}
 >
-  {kind && <ApiBadge label={kind} variant="kind" value={kind} compact />}
+  {kind && !quiet && <ApiBadge label={kind} variant="kind" value={kind} compact />}
   <span>{label}</span>
   {
     external && (

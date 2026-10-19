@@ -17,7 +17,7 @@ without depending on an application or log file.
 
 ## Prepare the project
 
-Use Bun 1.4.2 or newer, Git, and tmux 3.2a or newer on Unix. Create an empty
+Use Bun 1.4.2 or newer, Git, and tmux 3.3a or newer on Unix. Create an empty
 consumer directory:
 
 ```console

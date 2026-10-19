@@ -71,5 +71,5 @@ export function parseGoDoc(raw: string, parser: Parser): ParsedMarkdownDoc {
   }
   const first = blocks[0]?.kind === 'prose' ? blocks.shift()!.text : ''
   return { doc: { summary: first.replace(/\s+/g, ' ').trim(), body: blocks.map((block) => block.text).join('\n\n') || undefined },
-    params: new Map(), raises: [] }
+    params: new Map(), typeParams: new Map(), raises: [] }
 }

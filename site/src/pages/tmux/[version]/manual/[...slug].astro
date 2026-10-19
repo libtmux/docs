@@ -6,7 +6,8 @@ import { tmuxCommandSources, tmuxReferenceUrl } from '../../../../lib/tmux-refer
 import { withRoot } from '../../../../lib/site-root'
 import type { PageSource } from '../../../../lib/markdown-twins'
 import { rowAnchor } from '../../../../lib/row-anchors'
-import { highlightTmuxManual, linkTmuxManualEntries } from '../../../../lib/tmux-manual'
+import { highlightTmuxManual, linkTmuxManualEntries, markTmuxManualKeys } from '../../../../lib/tmux-manual'
+import { linkTmuxManualCatalog } from '../../../../lib/tmux-catalog-html'
 import type { SidebarItem } from '../../../../lib/sidebar'
 import { pagePortsFor } from '../../../../lib/page-ports-for'
 import { PORTS } from '../../../../lib/ports'
@@ -50,7 +51,9 @@ const notes = tmuxCommandNotes(version, slug)
 const implementations = command ? tmuxCommandSources(version, command.name) : []
 const source: PageSource = { repo: TMUX_REPOSITORY, path: 'tmux.1', ref: reference.sourceCommit }
 const manualHtml = command || isManual
-  ? await highlightTmuxManual(linkTmuxManualEntries(tmuxManualHtml(command?.html ?? reference.manual, version), command?.name))
+  ? await highlightTmuxManual(linkTmuxManualCatalog(
+    linkTmuxManualEntries(markTmuxManualKeys(tmuxManualHtml(command?.html ?? reference.manual, version), command?.name), command?.name),
+    version, undefined, { definitions: true }))
   : ''
 ---
 
@@ -141,4 +144,5 @@ const manualHtml = command || isManual
   .tmux-manual :global(.Pp) { margin-block: 1em; }
   .tmux-manual :global(.manual-entry-permalink) { margin-left: .5rem; font-weight: 400; text-decoration: none; opacity: .55; }
   .tmux-manual :global(.manual-entry-permalink:is(:hover, :focus-visible)) { opacity: 1; text-decoration: underline; }
+  .tmux-manual :global(.manual-catalog-link) { margin-left: .5rem; font-size: .8125rem; font-weight: 400; }
 </style>

@@ -69,7 +69,13 @@ $ tmux -L workspace-guide kill-session -t '=workspace-guide'
 
 <!-- port:ts,rs,go,java,csharp,cxx,swift -->
 Build the documented `tmux-workspace` revision, then load a small session on a
-private socket. Use a Unix shell with tmux 3.2a or newer on `PATH`.
+private socket.
+<!-- port:ts,rs,go,csharp,cxx,swift -->
+Use a Unix shell with tmux 3.3a or newer on `PATH`.
+<!-- /port -->
+<!-- port:java -->
+Use a Unix shell with tmux 3.2a or newer on `PATH`.
+<!-- /port -->
 
 ## Build the command
 

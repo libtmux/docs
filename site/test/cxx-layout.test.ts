@@ -135,7 +135,9 @@ describe('C++ callable layouts', () => {
     expect(model.symbols.some((entry) => entry.name === 'Path')).toBe(true)
     const bound = spans.filter((span) => span.text === 'Path')
     expect(bound).toHaveLength(3)
-    expect(bound.every((span) => !span.link && 'nonReference' in span && span.nonReference)).toBe(true)
+    // They link to the template's own declaration, not to that type, and are not runtime parameters.
+    expect(bound.map((span) => span.link?.typeParameter?.parameter.name)).toEqual(['Path', 'Path', 'Path'])
+    expect(bound.every((span) => span.link?.typeParameter?.owner.id === symbol.id)).toBe(true)
     expect(spans.find((span) => span.text === 'nodiscard')).toMatchObject({ keyword: true })
     expect(spans.find((span) => span.text === 'expected')?.link?.href).toBe('/libtmux-expected/')
   })

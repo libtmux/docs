@@ -120,7 +120,7 @@ export function attachCompleteRustExamples(
       'program depends on a hidden source helper')
     const blocks: NonNullable<DocBlock['examples']> = [{
       lang: 'console',
-      intro: `${program.title}. ${program.description} Use a Unix environment with Git, rustup, and tmux 3.2a or newer. The toolchain file below pins Rust ${channel}. In an empty directory, fetch the documented source:`,
+      intro: `${program.title}. ${program.description} Use a Unix environment with Git, rustup, and tmux 3.3a or newer. The toolchain file below pins Rust ${channel}. In an empty directory, fetch the documented source:`,
       code: `$ git clone https://github.com/${source.repo}.git libtmux-source &&\n  git -C libtmux-source checkout --detach ${source.revision}\n`,
     }, ...setup.map((file, index) => ({
       lang: 'toml', intro: `Save this complete consumer setup as ${file.name}:`,

@@ -22,7 +22,7 @@ const symbolsByRoute = new Map<string, ApiSymbol>(Object.entries(API_MODELS).fla
 ))
 
 /** Static routes emitted in each port build, verified against assembled pages. */
-export const SHARED_PAGE_PATHS = ['mcp', 'mcp/tools', 'parity', 'search', 'translations'] as const
+export const SHARED_PAGE_PATHS = ['mcp', 'mcp/tools', 'meta/parity', 'meta/support', 'meta/translations', 'search'] as const
 
 export interface PagePortLink {
   port: string

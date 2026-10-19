@@ -44,7 +44,8 @@ export function documentationTitle(title: string, projectName: string): string {
   while (page.endsWith(suffix)) page = page.slice(0, -suffix.length)
   page = page.replace(/ \| libtmux(?:-[a-z]+)?$/, '')
     .replace(/ [-–—] libtmux(?:-[a-z]+)?(?: v?\d[\w.+-]*)? documentation$/, '')
-  return page === projectName ? page : `${page} | ${projectName}`
+  // A title that already leads with the project name, as the home page's does, needs no suffix.
+  return page === projectName || page.startsWith(`${projectName}: `) ? page : `${page} | ${projectName}`
 }
 
 /** JSON-LD is data inside an HTML script element; never allow a closing tag. */

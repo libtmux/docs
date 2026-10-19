@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { javadocToMarkdown, parseJavadoc } from '../src/doc/javadoc.ts'
 import { javadocSymbols } from '../src/javadoc.ts'
+import { extractWithSpec } from '../src/languages/spec.ts'
+import { JAVA } from '../src/languages/specs.ts'
 
 describe('Javadoc search-index URLs', () => {
   it('preserves module ownership, nested classes and authoritative fragments', () => {
@@ -35,5 +41,62 @@ describe('Javadoc search-index URLs', () => {
     expect(() => javadocSymbols(packages, type, [])).toThrow('missing or ambiguous module')
     expect(() => javadocSymbols(packages, [{ ...type[0], m: 'missing' }], [])).toThrow('unknown module missing')
     expect(javadocSymbols(packages, [{ ...type[0], m: 'two' }], [])[0].uri).toBe('two/example/shared/Type.html')
+  })
+})
+
+describe('Javadoc <pre> blocks keep their own indentation', () => {
+  const code = 'try (Server server = Server.open(config)) {\n    Session mine = server.sessions().stream()\n            .filter(session -> session.id().equals(id))\n            .findFirst();\n}'
+
+  it('removes only the comment margin and the block\'s common indent', () => {
+    expect(parseJavadoc(`Summary.\n\n<pre>{@code\n${code}\n}</pre>`).doc.examples).toEqual([{ lang: 'java', code, intro: undefined }])
+    // The same block indented as a whole loses that shared indent and nothing else.
+    const shared = code.split('\n').map((line) => `   ${line}`).join('\n')
+    expect(parseJavadoc(`Summary.\n\n<pre>{@code\n${shared}\n}</pre>`).doc.examples?.[0]?.code).toBe(code)
+  })
+
+  it('keeps the indentation of a first line that is indented and of blank lines between statements', () => {
+    expect(parseJavadoc('Summary.\n\n<pre>{@code\n    first();\n\n        nested();\n    last();\n}</pre>').doc.examples?.[0]?.code)
+      .toBe('first();\n\n    nested();\nlast();')
+    expect(javadocToMarkdown('<pre>{@code\n  a\n\n  b\n}</pre>')).toContain('```java\na\n\nb\n```')
+  })
+
+  it('still reflows prose and leaves an unindented block as it was', () => {
+    const doc = parseJavadoc('First line of the summary\nwraps here.\n\n<p>A second paragraph\nthat wraps.\n\n<pre>{@code\nplain();\n}</pre>').doc
+    expect(doc.summary).toBe('First line of the summary wraps here.')
+    expect(doc.body).toBe('A second paragraph\nthat wraps.')
+    expect(doc.examples?.[0]?.code).toBe('plain();')
+  })
+
+  it('carries the indentation from a source comment through extraction', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'javadoc-indentation-'))
+    try {
+      const file = join(dir, 'Env.java')
+      writeFileSync(file, `package example;
+/**
+ * Where a process runs.
+ *
+ * <pre>{@code
+ * TmuxEnvironment here = TmuxEnvironment.current().orElseThrow();
+ *
+ * try (Server server = Server.open(here.config())) {
+ *     Session mine = server.sessions().stream()
+ *             .filter(session -> session.id().equals(here.session()))
+ *             .findFirst()
+ *             .orElseThrow();
+ * }
+ * }</pre>
+ */
+public final class Env {}
+`)
+      const [symbol] = await extractWithSpec(JAVA, file, 'example')
+      expect(symbol.doc?.examples?.[0]?.code).toBe(`TmuxEnvironment here = TmuxEnvironment.current().orElseThrow();
+
+try (Server server = Server.open(here.config())) {
+    Session mine = server.sessions().stream()
+            .filter(session -> session.id().equals(here.session()))
+            .findFirst()
+            .orElseThrow();
+}`)
+    } finally { rmSync(dir, { recursive: true, force: true }) }
   })
 })

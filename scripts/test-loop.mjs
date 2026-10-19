@@ -73,6 +73,8 @@ try {
     node('scripts/check-api-links.mjs'),
     node('scripts/check-nav.mjs'),
     node('scripts/gen-mentions.mjs', '--check'),
+    node('scripts/gen-workspace-entities.mjs', '--check'),
+    node('scripts/gen-tmux-catalog.mjs', '--check'),
     node('scripts/gen-shell-ports.mjs', '--check'),
     node('scripts/gen-brand-css.mjs', '--check'),
   )

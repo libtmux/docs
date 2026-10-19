@@ -140,7 +140,9 @@ func Generic[T MissingConstraint](value T) T { panic(0) }
       const result = await layout(symbol)
       const spans = signatureSpans(result, index, symbol, symbol.signatures[0]!)
       const literalTexts = spans.filter((span) => 'nonReference' in span && span.nonReference).map((span) => span.text)
-      expect(literalTexts).toEqual(['receiver', 'T', 'T', 'label', 'result', 'err', 'Field', 'Call'])
+      expect(literalTexts).toEqual(['receiver', 'label', 'result', 'err', 'Field', 'Call'])
+      // The receiver's and the parameter's `T` both name the type's own parameter.
+      expect(spans.filter((span) => span.text === 'T').map((span) => span.link?.href)).toEqual(Array(2).fill('/tmux.Box/#tmux.Box.type-parameter.T'))
       expect(spans.filter((span) => span.text === 'Unknown')).toHaveLength(4)
       expect(spans.filter((span) => span.text === 'Unknown').every((span) => !('nonReference' in span) && !span.link)).toBe(true)
       expect(spans.filter((span) => span.link?.href === '/tmux.Known/')).toHaveLength(2)
@@ -148,7 +150,8 @@ func Generic[T MissingConstraint](value T) T { panic(0) }
       const generic = symbols.find((entry) => entry.name === 'Generic')!
       const genericLayout = await layout(generic)
       const genericSpans = signatureSpans(genericLayout, index, generic, generic.signatures[0]!)
-      expect(genericSpans.filter((span) => 'nonReference' in span && span.nonReference).map((span) => span.text)).toEqual(['T', 'T', 'T'])
+      expect(genericSpans.filter((span) => 'nonReference' in span && span.nonReference)).toEqual([])
+      expect(genericSpans.filter((span) => span.text === 'T').map((span) => span.link?.href)).toEqual(Array(3).fill('/tmux.Generic/#tmux.Generic.type-parameter.T'))
       expect(genericSpans.find((span) => span.text === 'MissingConstraint')).toEqual({ text: 'MissingConstraint' })
     } finally { rmSync(directory, { recursive: true, force: true }) }
   })

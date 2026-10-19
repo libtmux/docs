@@ -2,8 +2,9 @@ import { Resolver, decideFilePath, decideMention, notASymbol, parentInventory, t
 import { API_MODELS, PORT_NAME, referenceHref } from './api-models'
 import { productApiHref } from './product-api'
 import { PORTS, PORT_BY_SLUG, portPageUrl, referenceUrl } from './ports'
-import { decideMcpMention } from './mcp-catalog'
-import { buildTarget } from './versions'
+import { decideMcpMention, mcpRunMentions } from './mcp-catalog'
+import type { Mention } from './tmux-links'
+import { linkedVersionFor } from './versions'
 import { withPortRoot } from './site-root'
 import domInv from '../data/inventories/dom.entries.json'
 import jdkInv from '../data/inventories/jdk.entries.json'
@@ -46,10 +47,7 @@ type ProseDecision = MentionDecision & { file?: boolean }
 /** Resolve HTML and Markdown prose against the same version and source tree. */
 export function createProseLinker(product?: ApiProduct) {
   const resolver = getResolver()
-  let defaults: Record<string, string> = {}
-  try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
-  const versionOf = (port: string) => port === process.env.LIBTMUX_DOCS_PORT
-    ? buildTarget(process.env).version : (defaults[port] ?? 'latest')
+  const versionOf = (port: string) => linkedVersionFor(port)
 
   return (text: string, context: Pick<MentionContext, 'pagePort' | 'before'>): ProseDecision => {
     let protocol = decideMcpMention(text, { ...context, product })
@@ -89,6 +87,17 @@ export function createProseLinker(product?: ApiProduct) {
     }
     return decision
   }
+}
+
+/** MCP tools and prompts named inside a longer code run, linked as an explicit `mcp:` reference is. */
+export function protocolRunMentions(link: ReturnType<typeof createProseLinker>, text: string, port: string): Mention[] {
+  return mcpRunMentions(text, port).flatMap(({ start, end, object }) => {
+    const decision = link(`mcp:${object.kind}:${object.name}`, { pagePort: port })
+    return decision.kind === 'link' ? [{
+      start, end, text: text.slice(start, end), kind: object.kind, name: object.name, href: decision.href,
+      family: 'mcp' as const, inline: true,
+    }] : []
+  })
 }
 
 /**

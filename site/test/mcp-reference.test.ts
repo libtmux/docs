@@ -82,8 +82,10 @@ it('links only registered tool mentions in description prose', async () => {
   expect(html).not.toContain('/mcp/tools/missing_tool/')
   expect(html).not.toContain('/mcp/tools/send_keys/')
   expect(html.match(/\/py\/stable\/mcp\/tools\/capture_pane\/"/g)).toHaveLength(1)
+  expect(html).toContain('<span class="api-symbol-link__name"><code class="api-literal api-literal--link">capture_pane</code></span></a>')
   const dotnet = await renderToolDescription('Use capture_pane or `run_shell_command`.', { port: 'csharp', version: 'latest' })
   expect(dotnet).toContain('/csharp/latest/mcp/tools/capture_pane/')
+  expect(dotnet).toContain('<span class="api-symbol-link__name">capture_pane</span></a>')
   expect(dotnet).toContain('/csharp/latest/mcp/tools/run_shell_command/')
 })
 

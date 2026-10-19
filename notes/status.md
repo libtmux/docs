@@ -162,7 +162,7 @@ field at all) — resolves every ledger's cited evidence against that port's
 own checkout (a test file for .NET, a test function for Go, a contract
 test class for Java), and classifies each row `test-verified` / `claimed`
 / `unknown` by what actually resolves, not by how confident the ledger's
-prose sounds. `site/src/pages/parity.astro` renders the result:
+prose sounds. `site/src/pages/meta/parity.astro` renders the result:
 per-port summaries, a cross-port module table, and an explicit note that
 the four ledgers are not pinned to the same Python revision (.NET and Java
 pin `c4a980b`, Swift pins `988b02a`, Go records none). Spot-checked: Java's

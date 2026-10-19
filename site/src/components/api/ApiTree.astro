@@ -52,6 +52,14 @@ interface Props {
   currentIndex?: string
   glossaryHref?: string
   glossaryLabel?: string
+  /**
+   * Where a row shows its kind mark. The API tree keeps a fixed gutter of marks
+   * so a reader can scan down it. A tree whose groups already name their kind
+   * (MCP tools, prompts, resources) shows an inline mark only in a group that
+   * mixes kinds, where it tells siblings apart; the kind stays on the row for
+   * assistive technology either way.
+   */
+  marks?: 'gutter' | 'mixed'
 }
 
 const {
@@ -61,7 +69,7 @@ const {
   searchLabel = 'Find a type or member', searchPlaceholder = 'Find symbol',
   filters = [{ id: 'all', label: 'All' }, { id: 'types', label: 'Types' }, { id: 'members', label: 'Members' }],
   currentIndex,
-  glossaryHref, glossaryLabel = 'API glossary',
+  glossaryHref, glossaryLabel = 'API glossary', marks = 'gutter',
 } = Astro.props as Props
 // The port's own reference root. `withRoot` would give the locale root:
 // Astro's `base` prefixes routes, not strings a component builds.
@@ -121,6 +129,13 @@ const glossaryNode: TreeNode[] = glossaryHref ? [{
 }] : []
 const nodes = [...(indexLabel ? [indexNode] : []), ...glossaryNode, ...tree.map((b) => bucketNode(b, 1, false))]
 
+/** A group whose rows all share one kind says nothing with a mark: the group's own label already names it. */
+const quieten = (list: TreeNode[]) => {
+  if (new Set(list.map((n) => n.kind).filter(Boolean)).size <= 1) for (const n of list) if (n.kind) n.quiet = true
+  for (const n of list) if (n.children) quieten(n.children)
+}
+if (marks === 'mixed') quieten(nodes)
+
 /** The one Tab stop: the page's own row, or the first row on a page with none. */
 const mark = (list: TreeNode[]): boolean =>
   list.some((n) => (n.current ? ((n.tab = true), true) : n.children ? mark(n.children) : false))
@@ -136,7 +151,7 @@ if (!mark(nodes) && nodes[0]) nodes[0].tab = true
     document.documentElement.setAttribute('data-api-nav', '')
   </script>
   <div class="api-nav-overlay" data-api-nav-overlay></div>
-  <div id="api-nav" class="api-nav" data-src={`${base}tree.json`} data-base={base} data-version={version} aria-labelledby="api-nav-title">
+  <div id="api-nav" class="api-nav" data-src={`${base}tree.json`} data-base={base} data-version={version} data-marks={marks === 'mixed' ? 'mixed' : undefined} aria-labelledby="api-nav-title">
     <div class="api-nav__head">
       <p class="api-nav__title" id="api-nav-title">{treeLabel}</p>
       <button type="button" class="api-nav__close" data-api-nav-close aria-label={`Close ${treeLabel} contents`}>

@@ -66,7 +66,7 @@ const HEADING = /^\s*#{1,3}\s+(Examples?|Panics|Errors|Safety|Notes?|Returns?|Ar
  * and none of them reached a field list, because this parser treated the
  * whole comment as prose.
  */
-const BLOCK_TAG = /^\s*@(param|arg|argument|returns?|throws|exception|deprecated|since)\b\s*(.*)$/
+const BLOCK_TAG = /^\s*@(param|arg|argument|returns?|throws|exception|deprecated|since|typeParam|typeparam|template|tparam)\b\s*(.*)$/
 
 /**
  * A Markdown link definition: `` [`Window`]: crate::Window ``.
@@ -124,6 +124,8 @@ function callout(quoted: string[]): { kind: string; text: string } | undefined {
 export interface ParsedMarkdownDoc {
   doc: DocBlock
   params: Map<string, string>
+  /** `@typeParam T`, `@template T`, `@tparam T`, and Javadoc's `@param <T>`, by parameter name. */
+  typeParams: Map<string, string>
   returnsDoc?: string
   raises: { type: string; doc?: string }[]
 }
@@ -157,6 +159,7 @@ export function parseMarkdownDocFull(raw: string, defaultLang = 'text'): ParsedM
   let inExamples = false
 
   const params = new Map<string, string>()
+  const typeParams = new Map<string, string>()
   const raises: { type: string; doc?: string }[] = []
   const admonitions: { kind: string; text: string }[] = []
   /** The blockquote currently collecting lines, callout or not. */
@@ -177,7 +180,10 @@ export function parseMarkdownDocFull(raw: string, defaultLang = 'text'): ParsedM
   const closeTag = () => {
     if (!tag) return
     const text = tag.text.join(' ').replace(/\s+/g, ' ').trim()
-    if (tag.kind === 'param' && tag.name) params.set(tag.name, text)
+    const javadocTypeParam = tag.kind === 'param' ? /^<(\w+)>$/.exec(tag.name ?? '')?.[1] : undefined
+    if (tag.kind === 'typeparam' && tag.name) typeParams.set(tag.name, text.replace(/^-\s*/, ''))
+    else if (javadocTypeParam) typeParams.set(javadocTypeParam, text)
+    else if (tag.kind === 'param' && tag.name) params.set(tag.name, text)
     else if (tag.kind === 'returns') returnsDoc = text || undefined
     else if (tag.kind === 'throws' && tag.name) raises.push({ type: tag.name, doc: text || undefined })
     tag = undefined
@@ -224,15 +230,17 @@ export function parseMarkdownDocFull(raw: string, defaultLang = 'text'): ParsedM
       closeTag()
       const kind = /^(param|arg|argument)$/.test(block[1])
         ? 'param'
-        : /^returns?$/.test(block[1])
-          ? 'returns'
-          : /^(throws|exception)$/.test(block[1])
-            ? 'throws'
-            : block[1]
+        : /^(typeParam|typeparam|template|tparam)$/.test(block[1])
+          ? 'typeparam'
+          : /^returns?$/.test(block[1])
+            ? 'returns'
+            : /^(throws|exception)$/.test(block[1])
+              ? 'throws'
+              : block[1]
       // `@param name description` — the name is the first word for param and
       // throws, and absent for the rest.
       const rest = block[2] ?? ''
-      const needsName = kind === 'param' || kind === 'throws'
+      const needsName = kind === 'param' || kind === 'throws' || kind === 'typeparam'
       const [first, ...tail] = rest.split(/\s+/)
       tag = needsName
         ? { kind, name: first || undefined, text: tail }
@@ -278,6 +286,7 @@ export function parseMarkdownDocFull(raw: string, defaultLang = 'text'): ParsedM
       admonitions: admonitions.length ? admonitions : undefined,
     },
     params,
+    typeParams,
     returnsDoc,
     raises,
   }

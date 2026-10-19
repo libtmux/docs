@@ -1,11 +1,12 @@
 import type { ApiModel, ApiSymbol, Signature, SourceApiModel, SymbolIndex } from '@libtmux/api-model'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { toMarkdown } from 'mdast-util-to-markdown'
-import { membersOf, memberSignals, memberTier, moduleOf, qualifiedNameOf } from '@libtmux/api-model'
+import { boundLabel, keywordArgument, membersOf, memberSignals, memberTier, moduleOf, qualifiedNameOf, typeParameterList, type TypeParameter } from '@libtmux/api-model'
 import mentions from '../data/mentions.json'
 import { PORT_NAME, referenceAlternatives } from './api-models'
 import { apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, hasScalarMembers, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures } from './api-sections'
 import { tmuxCommandsFor, tmuxManualUrl } from './tmux-manual-data'
+import { CATALOG_KINDS, tmuxCatalogKindsForSymbol, tmuxCatalogUrl } from './tmux-catalog'
 import { tmuxCommandMentions, tmuxMentionMarkdown } from './tmux-links'
 import { productApiIndex } from './product-api'
 import { defaultVersionFor } from './versions'
@@ -30,6 +31,7 @@ export interface MarkdownContext {
   index?: SymbolIndex
   hrefFor?: (symbol: ApiSymbol) => string
   manualLinks?: { name: string; href: string }[]
+  catalogLinks?: { name: string; href: string }[]
   paths?: ApiRelationshipPath[]
   symbol: ApiSymbol
   /** Absolute URL of the HTML page this describes. */
@@ -63,10 +65,11 @@ function inlineCode(code: string): string {
 }
 
 function proseMarkdown(markdown: string, index: SymbolIndex, symbol: ApiSymbol, linkApi: boolean): string {
-  if (!linkApi && !/\btmux\s/.test(markdown) && !tmuxCommandMentions(markdown).length) return markdown
+  if (!linkApi && !/\btmux\s|[-_]/.test(markdown)) return markdown
   // Use the HTML resolver for prose exports too. Never rewrite runnable code
   // blocks or the contents of an author-supplied link.
   const edits: { start: number; end: number; text: string }[] = []
+  const unclaimed: typeof edits = []
   let htmlDepth = 0
   const visit = (node: ReturnType<typeof fromMarkdown> | ReturnType<typeof fromMarkdown>['children'][number]) => {
     if (node.type === 'link' || node.type === 'linkReference' || node.type === 'code') return
@@ -78,13 +81,20 @@ function proseMarkdown(markdown: string, index: SymbolIndex, symbol: ApiSymbol, 
       if (htmlDepth) return
       const start = node.position!.start.offset!
       const end = node.position!.end.offset!
-      const tmux = tmuxMentionMarkdown(node.value, node.type === 'inlineCode')
+      const tmux = tmuxMentionMarkdown(node.value, node.type === 'inlineCode', undefined,
+        { before: markdown.slice(Math.max(0, start - 48), start), after: markdown.slice(end, end + 48) })
       if (tmux && (node.type === 'inlineCode' || markdown.slice(start, end) === node.value)) {
-        edits.push({ start, end, text: tmux })
-        return
+        // A command claims its span; a library symbol outranks an option, hook or format variable.
+        if (linkApi && node.type === 'inlineCode' && !tmuxCommandMentions(node.value, { code: true }).length) {
+          unclaimed.push({ start, end, text: tmux })
+        } else {
+          edits.push({ start, end, text: tmux })
+          return
+        }
       }
       if (!linkApi) return
       if (node.type === 'inlineCode') {
+        if (keywordArgument.test(node.value)) return
         if (!index.linkText(markdown.slice(start, end), symbol).some((span) => span.kind === 'ref')) return
         const link = index.resolve(node.value, 'any', symbol)
         if (link) edits.push({ start, end, text: `[${inlineCode(node.value)}](${link.href})` })
@@ -111,6 +121,7 @@ function proseMarkdown(markdown: string, index: SymbolIndex, symbol: ApiSymbol, 
     } else if ('children' in node) for (const child of node.children) visit(child as Parameters<typeof visit>[0])
   }
   visit(fromMarkdown(markdown))
+  for (const edit of unclaimed) if (!edits.some((claimed) => claimed.start === edit.start)) edits.push(edit)
   for (const edit of edits.sort((a, b) => b.start - a.start)) markdown = markdown.slice(0, edit.start) + edit.text + markdown.slice(edit.end)
   return markdown
 }
@@ -165,6 +176,9 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   const commands = ctx.manualLinks ?? (port ? tmuxCommandsFor(port, symbol.publicId ?? symbol.id)
     .map((command) => ({ ...command, href: tmuxManualUrl('latest', command.name) })) : [])
   for (const command of commands) out.push(`tmux command: [\`${command.name}\`](${command.href})`, '')
+  const catalog = ctx.catalogLinks ?? (port && !ctx.manualLinks ? tmuxCatalogKindsForSymbol(port, symbol)
+    .map((kind) => ({ name: CATALOG_KINDS[kind].label, href: tmuxCatalogUrl('latest', kind) })) : [])
+  if (catalog.length) out.push(`tmux catalog: ${catalog.map((entry) => `[${entry.name}](${entry.href})`).join(', ')}`, '')
   if (symbol.apiScope === 'supporting') {
     out.push('This type appears in public signatures. It is not a package entry point.', '')
   }
@@ -238,8 +252,26 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     out.push(`> **${note.kind}:** ${note.text.replaceAll('\n', '\n> ')}`, '')
   }
 
-  const { params, returns, raises } = apiEntryFields(symbol, language)
+  const { params, returns, raises, typeParameters } = apiEntryFields(symbol, language)
   const overloads = (labels: string[]) => labels.length ? ` (for ${labels.map(inlineCode).join('; ')})` : ''
+  const inheritedTypeParameters = index?.inheritedTypeParameters(symbol) ?? []
+  if (typeParameters.length || inheritedTypeParameters.length) {
+    out.push('## Type parameters', '')
+    const label = (p: TypeParameter) => `${p.modifier ? `${p.modifier}${/^[+-]$/.test(p.modifier) ? '' : ' '}` : ''}${p.name}`
+    // The page's own facts, in the order it shows them.
+    const facts = (p: TypeParameter) => {
+      const found = [p.bound && `${boundLabel(language, p).toLowerCase()} ${inlineCode(p.bound.replaceAll('\n', ' '))}`,
+        p.default && `default ${inlineCode(p.default.replaceAll('\n', ' '))}`].filter(Boolean)
+      return found.length ? ` (${found.join(', ')})` : ''
+    }
+    const doc = (p: TypeParameter) => p.doc ? `: ${p.doc.replace(/\s+/g, ' ')}` : ''
+    for (const p of typeParameters) out.push(`- ${inlineCode(label(p))}${facts(p)}${doc(p)}${overloads(p.overloads)}`)
+    for (const { owner, parameter: p, href } of inheritedTypeParameters) {
+      const declared = `${owner.name}${typeParameterList(language, index?.typeParametersDeclaredBy(owner) ?? [])}`
+      out.push(`- [${inlineCode(label(p))}](${href}), declared by [${inlineCode(declared)}](${href.split('#')[0]})${facts(p)}${doc(p)}`)
+    }
+    out.push('')
+  }
   if (params.length) {
     out.push('## Parameters', '')
     for (const p of params) {

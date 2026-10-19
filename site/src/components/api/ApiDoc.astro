@@ -50,7 +50,7 @@ const labelParts = (label: string, qualified: boolean) => qualified ? label.spli
         <span>{span.label}</span>
       )
     }
-    const parts = span.link ? [] : index.linkType(span.label, context)
+    const parts = span.link ? [] : index.linkLiteral(span.label, context)
     const qualified = memberReference.test(span.label) && Boolean(span.link || parts.some((part) => part.link))
     return span.link ? (
       <a class="api-xref" href={span.link.href} rel={span.link.external ? 'nofollow noopener' : undefined}>

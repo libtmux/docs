@@ -1,7 +1,7 @@
 import type { LinkPreview } from './link-preview'
 import type { CodeHighlight } from './highlight'
-import { linkPreviewTarget, linkPreviewCandidate, markLinkPreview } from './link-preview-paint'
-import { abbreviateNamespace } from './api-labels'
+import { linkPreviewTarget, linkPreviewCandidate, linkPreviewBlockLink, markLinkPreview } from './link-preview-paint'
+import { abbreviateNamespace, kindMark, markClass } from './api-labels'
 import { wordBreak } from './word-break'
 export { linkPreviewTarget } from './link-preview-paint'
 
@@ -24,7 +24,40 @@ function validPreview(value: unknown): value is LinkPreview {
   const data = value as Partial<LinkPreview>
   return data.schema === 1 && typeof data.title === 'string' && typeof data.description === 'string'
     && typeof data.href === 'string' && (!data.detail || typeof data.detail === 'string')
+    && (!data.actionLabel || typeof data.actionLabel === 'string')
     && (!data.signature || typeof data.signature === 'string')
+}
+
+/**
+ * The card's header carries the kind as the legend chip, the same token a
+ * heading uses: the mark and the word in one box. A term that is not a kind
+ * (a glossary entry such as "inherited") gets no chip.
+ */
+export function renderPreviewKind(slot: HTMLElement | null, kind?: string) {
+  if (!slot) return
+  slot.replaceChildren()
+  const mark = kind && /^[a-z]+(?:-[a-z]+)*$/.test(kind) ? kindMark(kind) : undefined
+  slot.hidden = !mark
+  if (!mark || !kind) return
+  const chip = document.createElement('span')
+  chip.className = `api-badge api-badge--kind api-badge--kind-${kind} api-leg`
+  chip.dataset.mark = markClass(mark)
+  const markBox = document.createElement('span')
+  markBox.className = 'api-leg__m'
+  markBox.setAttribute('aria-hidden', 'true')
+  const glyph = document.createElement('span')
+  glyph.className = 'api-leg__g'
+  glyph.dataset.mark = markClass(mark)
+  glyph.textContent = mark
+  markBox.append(glyph)
+  const word = document.createElement('span')
+  word.className = 'api-leg__w'
+  const label = document.createElement('span')
+  label.className = 'api-badge__label api-leg__wl'
+  label.textContent = kind.replace(/-/g, ' ')
+  word.append(label)
+  chip.append(markBox, word)
+  slot.append(chip)
 }
 
 /** Optional token metadata can fail independently of the real reference link. */
@@ -91,6 +124,7 @@ export function initLinkPreviews() {
   let fullTitle = '', shortTitle = ''
   const title = panel.querySelector<HTMLElement>('[data-preview-title]')!
   const expandTitle = panel.querySelector<HTMLButtonElement>('[data-preview-expand]')!
+  const defaultAction = panel.querySelector('[data-preview-open]')!.textContent
   const renderTitle = (expanded: boolean) => {
     title.replaceChildren(...wordBreak(expanded ? fullTitle : shortTitle).flatMap((part, index) =>
       index ? [document.createElement('wbr'), document.createTextNode(part)] : [document.createTextNode(part)]))
@@ -114,7 +148,7 @@ export function initLinkPreviews() {
   const candidate = (target: EventTarget | null) => linkPreviewCandidate(target, location.href)
   // Signal the same preview behavior on every eligible link without fetching it.
   for (const link of document.querySelectorAll<HTMLAnchorElement>('a[href]')) {
-    if (link.closest('.api-index-card')) {
+    if (link.closest('.api-index-card') || linkPreviewBlockLink(link)) {
       delete link.dataset.linkPreview
       continue
     }
@@ -155,6 +189,7 @@ export function initLinkPreviews() {
       fullTitle = preview.title
       shortTitle = abbreviateNamespace(fullTitle)
       renderTitle(false)
+      renderPreviewKind(panel.querySelector<HTMLElement>('[data-preview-kind]'), preview.kind)
       panel.querySelector('[data-preview-description]')!.textContent = preview.description || 'Read the reference for this declaration.'
       const detail = panel.querySelector<HTMLElement>('[data-preview-detail]')!
       const context = [link.dataset.previewContext, preview.detail].filter(Boolean).join(' ')
@@ -162,6 +197,7 @@ export function initLinkPreviews() {
       renderPreviewSignature(panel.querySelector<HTMLElement>('[data-preview-signature]')!, preview)
       const open = panel.querySelector<HTMLAnchorElement>('[data-preview-open]')!
       open.href = destination.href
+      open.textContent = preview.actionLabel ?? defaultAction
       panel.setAttribute('aria-label', `${preview.title} preview`)
       link.setAttribute('aria-details', panel.id)
       panel.showPopover({ source: link }); shown = true; place()

@@ -1,13 +1,13 @@
 ---
 import { getCollection } from 'astro:content'
-import BaseLayout from '../layouts/BaseLayout.astro'
-import PageToolbar from '../components/PageToolbar.astro'
-import { withRoot } from '../lib/site-root'
-import { docsRoutePath } from '../lib/docs-paths'
-import { LOCALES, LOCALE_LABEL, DEFAULT_LOCALE, localeRoot } from '../i18n/locales'
-import { ALL_TRANSLATED, buildLocale, localeOf, localeStatusesFor, type LocaleStatus } from '../i18n/resolve'
-import { t } from '../i18n/ui'
-import { contributeLink } from '../i18n/contribute'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import PageToolbar from '../../components/PageToolbar.astro'
+import { withRoot } from '../../lib/site-root'
+import { docsRoutePath } from '../../lib/docs-paths'
+import { LOCALES, LOCALE_LABEL, DEFAULT_LOCALE, localeRoot } from '../../i18n/locales'
+import { ALL_TRANSLATED, buildLocale, localeOf, localeStatusesFor, type LocaleStatus } from '../../i18n/resolve'
+import { t } from '../../i18n/ui'
+import { contributeLink } from '../../i18n/contribute'
 
 /**
  * Translation coverage: every shared prose page, and each locale's status for
@@ -28,7 +28,7 @@ import { contributeLink } from '../i18n/contribute'
  * the placeholder routes already share this helper to avoid.
  */
 const locale = buildLocale()
-const breadcrumbs = [{ name: 'libtmux', url: withRoot('/') }, { name: t(locale, 'i18n.coverage'), url: withRoot('/translations/') }]
+const breadcrumbs = [{ name: 'libtmux', url: withRoot('/') }, { name: t(locale, 'i18n.coverage'), url: withRoot('/meta/translations/') }]
 
 // Source pages, in served order. Every locale's row is a status against one of
 // these — the English tree is the spine, since a translation with no English
@@ -73,8 +73,8 @@ const done = (l: string) => rows.filter((r) => r.statuses[l] === 'translated').l
   title={t(locale, 'i18n.coverage')}
   breadcrumbs={breadcrumbs}
   description={t(locale, 'i18n.coverageIntro')}
-  pagePath="translations"
-  sourcePath="translations"
+  pagePath="meta/translations"
+  sourcePath="meta/translations"
   locale={locale}
   localeStatuses={ALL_TRANSLATED}
 >

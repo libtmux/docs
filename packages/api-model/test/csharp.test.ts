@@ -63,7 +63,7 @@ public ${declaration} Result(
     expect(owner.kind).toBe('class')
     expect(owner.signatures).toEqual([{
       raw: 'public abstract record Result<T>(T? Value) : Base<T> where T : class',
-      params: [{ name: 'Value', type: 'T?' }], typeParams: ['T'],
+      params: [{ name: 'Value', type: 'T?' }], typeParams: ['T'], typeParameters: [{ name: 'T', bound: 'class' }],
     }])
     expect(symbols.find((symbol) => symbol.id === 'LibTmux.Result.OldValue')?.type).toBe('T?')
   })

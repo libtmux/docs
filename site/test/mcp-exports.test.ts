@@ -5,7 +5,7 @@ import { afterEach, expect, it, vi } from 'vitest'
 import { fromHtml } from 'hast-util-from-html'
 import { markdownTwins, writeMcpExports } from '../src/integrations/markdown-twins'
 import { markdownDocument } from '../src/lib/markdown-twins'
-import { MCP_REFERENCE, mcpReferenceRoutes } from '../src/lib/mcp-reference'
+import { MCP_REFERENCE, mcpReferenceRoutes, renderToolDescription } from '../src/lib/mcp-reference'
 
 vi.mock('hast-util-from-html', async (importOriginal) => {
   const actual = await importOriginal<typeof import('hast-util-from-html')>()
@@ -20,7 +20,7 @@ const schema = { type: 'object', properties: { nested: {
 const escape = (text: string) => text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('"', '&quot;')
 const base = '/preview/en/go/v9-proof/'
 
-function fixture(run: (out: string, routes: ReturnType<typeof mcpReferenceRoutes>) => void) {
+function fixture(run: (out: string, routes: ReturnType<typeof mcpReferenceRoutes>) => void, prose = '<p>The nested selection is required.</p>') {
   const out = mkdtempSync(join(tmpdir(), 'libtmux-mcp-exports-'))
   const write = (path: string, text: string) => { mkdirSync(dirname(path), { recursive: true }); writeFileSync(path, text) }
   const routes = mcpReferenceRoutes('go', {}, 'v9-proof')
@@ -38,7 +38,7 @@ function fixture(run: (out: string, routes: ReturnType<typeof mcpReferenceRoutes
 <p>Resolved Go contract for ${route.toolName ?? 'catalog'}.</p>
 <p><a href="../">All tools</a> <a href="../${route.toolName ?? 'tools'}.json">JSON</a>
 ${source ? `<a href="https://github.com/${source.repo}/blob/${source.revision}/${source.file}">Source</a>` : ''}</p>
-<h2 id="arguments">Arguments</h2><p>The nested selection is required.</p>
+<h2 id="arguments">Arguments</h2>${prose}
 <h2 id="schemas">Schemas</h2><details data-pagefind-ignore="all"><summary>Input schema</summary>
 <pre data-language="json"><code>${escape(JSON.stringify(schema, null, 2))}</code></pre></details>
 <button>Copy</button><nav>Other languages</nav></main></body></html>`)
@@ -83,6 +83,19 @@ it.each(['en', 'ja'])('adds every selected-port MCP contract when the requested 
     expect(full).not.toContain('/py/')
     expect(full).not.toContain('/stable/')
   })
+})
+
+it('exports a tmux name in a description as a plain link, with no badge glyph or role text', async () => {
+  const html = await renderToolDescription('Revealed by `show-environment` and :func:`libtmux_mcp._utils._coerce_dict_arg`.', { port: 'go', version: 'v9-proof' })
+  expect(html).toContain('data-api-kind="command"')
+  const route = mcpReferenceRoutes('go', {}, 'v9-proof')[0]
+  fixture((out, routes) => {
+    writeMcpExports(out, base, routes)
+    const twin = readFileSync(join(out, `${route.path}.md`), 'utf8')
+    expect(twin).toContain('[`show-environment`](https://libtmux.org/tmux/latest/manual/show-environment/)')
+    expect(twin).toContain('`libtmux_mcp._utils._coerce_dict_arg`')
+    expect(twin).not.toMatch(/:func:|\$show-environment|aria-hidden|api-link-kind/)
+  }, html)
 })
 
 it('keeps repeated export generation byte-identical', () => {

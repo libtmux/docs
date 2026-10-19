@@ -15,7 +15,7 @@ ID against the session it created, then closes the client and stops its server.
 
 ## Run the example
 
-Use Go 1.26 or newer and tmux 3.2a or newer on Linux, macOS, or WSL.
+Use Go 1.26 or newer and tmux 3.3a or newer on Linux, macOS, or WSL.
 The project pins the [core library](https://github.com/libtmux/libtmux-go/tree/3f6f99dd41f077aaac2fa18acf7c82d99f58c7cd)
 and [MCP executable](https://github.com/libtmux/libtmux-go/tree/6e7420927f4cb717fe089a710328e44e8d551025/mcp)
 to their published releases. The client uses the official Go MCP SDK.

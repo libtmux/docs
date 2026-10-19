@@ -511,7 +511,11 @@ def method[T <: Target](\`a parameter.with spaces\`: Vector[T], timeout: _root_.
       expect(spans.filter((span) => span.link?.href.startsWith('#')).map((span) => [span.text, span.link!.href]))
         .toEqual(signature.params.map((param) => [param.name, `#${encodeURIComponent(`${symbol.id}.parameter.${param.name}`)}`]))
       expect(spans.filter((span) => span.link?.href === '/probe.T/')).toEqual([])
-      expect(spans.filter((span) => span.text === 'self' || span.text === 'F').some((span) => span.link)).toBe(false)
+      expect(spans.find((span) => span.text === 'self')?.link).toBeUndefined()
+      // The extension's own F is a type parameter of the extracted method.
+      const parameter = `/probe.Receiver.method/#${encodeURIComponent('probe.Receiver.method.type-parameter.F')}`
+      // The `F` in `using F: Async[F]` names a value; the five references to the type all link.
+      expect(spans.filter((span) => span.text === 'F' && span.link).map((span) => span.link!.href)).toEqual(Array(5).fill(parameter))
     } finally { rmSync(root, { recursive: true, force: true }) }
   })
 

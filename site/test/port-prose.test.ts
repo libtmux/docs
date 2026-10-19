@@ -12,7 +12,7 @@ import { proseHref } from '../src/lib/docs-paths'
 import { docsEntriesAvailable, docsEntryAvailable } from '../src/lib/page-port-links'
 import { PORT_BY_SLUG } from '../src/lib/ports'
 import { linkProseMarkdown } from '../src/lib/prose-markdown'
-import { tmuxManual } from '../src/lib/tmux-manual-data'
+import { tmuxManual, tmuxManualEntities } from '../src/lib/tmux-manual-data'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { visit } from 'unist-util-visit'
 
@@ -187,7 +187,8 @@ describe('port prose ownership', () => {
         const [, version, command] = /^\/tmux\/([^/]+)\/manual\/(.*?)\/?$/.exec(target.pathname)!
         const manual = tmuxManual(version)
         if (command === 'full') {
-          if (target.hash) expect(manual.sections.map((section) => section.id), href).toContain(target.hash.slice(1))
+          const anchors = [...manual.sections.map((section) => section.id), ...tmuxManualEntities(version).map((entity) => entity.anchor)]
+          if (target.hash) expect(anchors, href).toContain(target.hash.slice(1))
         } else if (command) {
           expect(manual.commands.map((entry) => entry.name), href).toContain(command)
         }

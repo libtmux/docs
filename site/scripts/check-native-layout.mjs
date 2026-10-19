@@ -1,5 +1,11 @@
 import assert from 'node:assert/strict'
 
+/** Controls beside a signature may sit this far from the centre of its first line. */
+const LEVEL_TOLERANCE = 1
+
+/** Centres further apart than this belong to different rows of wrapped controls. */
+const STACKED_ROW_GAP = 8
+
 /** Measure the code width left by first-line or stacked declaration metadata. */
 export async function checkNativeSignatureGeometry(header) {
   const geometry = await header.evaluate((element) => {
@@ -18,6 +24,7 @@ export async function checkNativeSignatureGeometry(header) {
           bottom: pixels(style.paddingBottom) + pixels(style.borderBottomWidth),
         },
         rowGap: pixels(style.rowGap), columnGap: pixels(style.columnGap),
+        lineHeight: pixels(style.lineHeight),
       }
     }
     const row = element.querySelector(':scope > .gp-sphinx-api-layout')
@@ -63,9 +70,13 @@ export async function checkNativeSignatureGeometry(header) {
   const beside = controls.left >= code.right - tolerance
   assert(below || beside, 'Native signature code and metadata do not overlap')
   if (!below) {
-    assert(near(controls.top, code.top) && near(firstSignature.top, code.top)
+    assert(near(firstSignature.top, code.top) && controls.top >= code.top - tolerance
       && controls.bottom <= firstSignature.bottom + tolerance,
-    'Native signature metadata aligns with the first line')
+    'Native signature metadata stays on the first line')
+    assert(firstSignature.lineHeight > 0, 'Native first signature has a measurable line height')
+    const firstLine = content(firstSignature).top + firstSignature.lineHeight / 2
+    assert(Math.abs(controls.top + controls.height / 2 - firstLine) <= LEVEL_TOLERANCE,
+      'Native signature metadata centres on the first line')
   }
   const availableCodeWidth = rowContent.right - rowContent.left - (below ? 0 : controls.width + row.columnGap)
   assert(near(code.width, availableCodeWidth), 'Native signature uses the available code width')
@@ -73,6 +84,149 @@ export async function checkNativeSignatureGeometry(header) {
     'Native signature metadata follows the computed layout gap')
   await checkNativeSignatureLines(header)
   return { ...geometry, mode: below ? 'stacked' : 'inline', availableCodeWidth }
+}
+
+/**
+ * Locate a declaration's first signature line and the vertical centre of each
+ * control in its right-hand group. The first line box starts at the content
+ * edge of the block that owns the first painted glyph and is one used
+ * line-height tall; a heading with `line-height: normal` has no declared
+ * height, so its first glyph's box stands in.
+ */
+export async function measureDeclarationControls(header) {
+  return header.evaluate((element) => {
+    const document = element.ownerDocument
+    const pixels = (value) => Number.parseFloat(value)
+    const row = element.querySelector(':scope > .gp-sphinx-api-layout')
+    const code = row?.querySelector(':scope > .gp-sphinx-api-layout-left')
+    const group = row?.querySelector(':scope > .gp-sphinx-api-layout-right')
+    if (!code || !group?.checkVisibility()) return null
+    const walker = document.createTreeWalker(code, document.defaultView.NodeFilter.SHOW_TEXT)
+    let glyph = null
+    for (let node; !glyph && (node = walker.nextNode());) {
+      const start = node.textContent.search(/\S/)
+      if (start < 0 || node.parentElement.closest('[popover]') || !node.parentElement.checkVisibility()) continue
+      const range = document.createRange()
+      range.setStart(node, start)
+      range.setEnd(node, start + 1)
+      const box = range.getBoundingClientRect()
+      if (box.width && box.height) glyph = { node, box }
+    }
+    if (!glyph) return null
+    const view = document.defaultView
+    let owner = glyph.node.parentElement
+    while (view.getComputedStyle(owner).display.startsWith('inline')) owner = owner.parentElement
+    const style = view.getComputedStyle(owner)
+    const lineHeight = pixels(style.lineHeight)
+    const height = Number.isFinite(lineHeight) ? lineHeight : glyph.box.height
+    const top = owner.getBoundingClientRect().top + pixels(style.paddingTop) + pixels(style.borderTopWidth)
+    const controls = []
+    for (const child of group.children) {
+      if (!child.checkVisibility()) continue
+      for (const control of child.matches('.gp-sphinx-api-slot') ? child.children : [child]) {
+        if (!control.checkVisibility()) continue
+        const box = control.getBoundingClientRect()
+        controls.push({ name: control.textContent.trim().slice(0, 16) || control.className, centre: box.top + box.height / 2 })
+      }
+    }
+    const codeBox = code.getBoundingClientRect()
+    const groupBox = group.getBoundingClientRect()
+    return {
+      id: element.getAttribute('data-symbol-id') ?? element.id,
+      mode: groupBox.top < codeBox.bottom - 1 && groupBox.bottom > codeBox.top + 1 ? 'beside' : 'stacked',
+      line: { top, height, centre: top + height / 2 }, controls,
+    }
+  })
+}
+
+/**
+ * Controls beside the code share the centre of its first line, however many
+ * lines follow. Controls that wrap below or above the code share the centre of
+ * whichever row of controls they sit on.
+ */
+export function assertDeclarationControlsLevel(measurement, label, tolerance = LEVEL_TOLERANCE) {
+  assert(measurement?.controls.length > 0, `${label}: declaration has code and visible controls`)
+  const { mode, line, controls } = measurement
+  assert(Number.isFinite(line.centre) && controls.every((control) => Number.isFinite(control.centre)),
+    `${label}: first line and controls have measurable centres`)
+  if (mode === 'beside') {
+    for (const control of controls) {
+      const offset = control.centre - line.centre
+      assert(Math.abs(offset) <= tolerance,
+        `${label}: control "${control.name}" centre is ${offset.toFixed(2)}px from the first signature line`)
+    }
+    return
+  }
+  // Wrapped controls form rows, and each row is level on its own.
+  const rows = []
+  for (const { centre } of [...controls].sort((a, b) => a.centre - b.centre)) {
+    const row = rows.at(-1)
+    if (row && centre - row.at(-1) <= STACKED_ROW_GAP) row.push(centre)
+    else rows.push([centre])
+  }
+  for (const row of rows) {
+    const spread = row.at(-1) - row[0]
+    assert(spread <= tolerance, `${label}: stacked controls share their row centre, spread ${spread.toFixed(2)}px`)
+  }
+}
+
+export async function checkDeclarationControlsLevel(header, label) {
+  const measurement = await measureDeclarationControls(header)
+  assertDeclarationControlsLevel(measurement, label)
+  return measurement
+}
+
+/** Each sample pairs a page with the declaration shape it contributes. */
+const DECLARATION_SAMPLES = [
+  ['ts/latest/reference/server-server-sessions/', 'TypeScript one-line formatted method'],
+  ['ts/latest/reference/pane-pane-sethook/', 'TypeScript method that fits beside controls at 500px'],
+  ['ts/latest/reference/client-client-tostring/', 'TypeScript short method that fits beside controls at 390px'],
+  ['go/latest/reference/tmux-server-newsessionconnection/', 'Go multi-line method'],
+  ['py/latest/reference/libtmux-hooks-hooksmixin-set_hook/', 'Python wrapped method'],
+  ['py/latest/reference/libtmux-server/', 'Python class'],
+  ['julia/latest/reference/libtmux-capture_bytes/', 'Julia multi-line function'],
+  ['csharp/latest/reference/libtmux-tmuxbuffers-setasync/', 'C# multi-line method'],
+  ['kotlin/latest/reference/io-github-libtmux-kotlin-batch/', 'Kotlin type'],
+  ['scala/latest/reference/io-github-libtmux-scaladsl-server-windows/', 'Scala overloaded method'],
+  ['rs/latest/mcp/tools/get_pane_info/', 'MCP tool and its type definitions'],
+]
+
+/**
+ * Sample declarations across ports at desktop and narrow widths. A header
+ * whose controls fall to a row of their own has no first line to follow, so
+ * the sample must still catch controls beside the code at every width it
+ * names, or the check would pass without measuring anything.
+ */
+export async function checkDeclarationControlAlignment(browser, base, widths = [1440, 768, 500, 390]) {
+  const page = await browser.newPage({ javaScriptEnabled: false })
+  const beside = new Map(widths.map((width) => [width, 0]))
+  const measured = []
+  try {
+    for (const [path, label] of DECLARATION_SAMPLES) {
+      await page.goto(`${base}/${path}`, { waitUntil: 'load' })
+      await page.evaluate(() => document.fonts.ready)
+      const headers = page.locator('dt.gp-sphinx-api-header')
+      const count = Math.min(await headers.count(), 6)
+      assert(count > 0, `${label}: page has declaration headers`)
+      for (const width of widths) {
+        await page.setViewportSize({ width, height: 1000 })
+        for (let index = 0; index < count; index++) {
+          const measurement = await checkDeclarationControlsLevel(headers.nth(index), `${label} #${index + 1} at ${width}px`)
+          if (measurement.mode === 'beside') beside.set(width, beside.get(width) + 1)
+          measured.push({ label, width, index, ...measurement })
+          if (width === widths[0] && index === 0) {
+            assert.equal(measurement.mode, 'beside', `${label}: desktop controls sit beside the first line`)
+          }
+        }
+      }
+    }
+    for (const width of widths) {
+      assert(beside.get(width) > 0, `${width}px: some sampled controls sit beside a first line`)
+    }
+  } finally {
+    await page.close()
+  }
+  return { beside, measured }
 }
 
 /** A formatter's logical line must occupy one painted row, even when it scrolls. */
@@ -243,4 +397,114 @@ export async function checkNativeFirstPaint(page, url) {
     await Promise.all(pendingRoutes)
     await page.unroute('**/_astro/*.js', routeScript)
   }
+}
+
+/**
+ * Measure how far each member body's first and last rendered content sits
+ * from the body's border box. The walk descends through wrappers that paint
+ * nothing on that edge, so space a wrapper cannot absorb still counts.
+ */
+export function measureMemberBodies(page) {
+  return page.evaluate(() => {
+    const px = (value) => Number.parseFloat(value) || 0
+    const rendered = (element) => element.checkVisibility() && element.getBoundingClientRect().height > 0
+    const label = (element) => element.tagName.toLowerCase()
+      + [...element.classList].map((name) => `.${name}`).join('')
+    // A display: contents element has no box of its own; its children stand in.
+    const boxes = (parent) => [...parent.children].flatMap((child) =>
+      getComputedStyle(child).display === 'contents' ? boxes(child) : [child])
+      .filter((child) => rendered(child) && !['absolute', 'fixed'].includes(getComputedStyle(child).position))
+    const painted = (style, side) => px(style[`padding${side}`]) > 0 || px(style[`border${side}Width`]) > 0
+      || style.backgroundImage !== 'none' || !/^rgba\(.*, 0\)$|^transparent$/.test(style.backgroundColor)
+    const edge = (body, side) => {
+      let node = body
+      let found = null
+      for (;;) {
+        const children = boxes(node)
+        const child = side === 'Top' ? children[0] : children.at(-1)
+        if (!child) return found
+        // Inline content sits in line boxes, so its parent is the edge.
+        if (getComputedStyle(child).display.startsWith('inline')) return found ?? child
+        // Text beside the child element sits on the edge itself.
+        const text = [...node.childNodes].filter((n) => n.nodeType === Node.TEXT_NODE && n.textContent.trim())
+        if (text.some((n) => side === 'Top' ? child.compareDocumentPosition(n) & Node.DOCUMENT_POSITION_PRECEDING
+          : child.compareDocumentPosition(n) & Node.DOCUMENT_POSITION_FOLLOWING)) return found
+        found = child
+        if (painted(getComputedStyle(child), side)) return found
+        node = child
+      }
+    }
+    return [...document.querySelectorAll('dl.py > dd')].filter(rendered).map((body) => {
+      const style = getComputedStyle(body)
+      const rect = body.getBoundingClientRect()
+      const first = edge(body, 'Top')
+      const last = edge(body, 'Bottom')
+      return {
+        children: [...body.children].map(label),
+        padding: { top: px(style.paddingTop), bottom: px(style.paddingBottom) },
+        first: first && label(first), last: last && label(last),
+        top: first && first.getBoundingClientRect().top - rect.top - px(style.borderTopWidth),
+        bottom: last && rect.bottom - px(style.borderBottomWidth) - last.getBoundingClientRect().bottom,
+      }
+    })
+  })
+}
+
+/**
+ * Pages that give each port a member body of every common shape: only "In other
+ * ports", parameters first, a description or example last, Methods, a type,
+ * a command and an MCP object. The second field names a direct child the page
+ * must still render, so a content change cannot quietly retire the sample.
+ */
+const MEMBER_BODY_PAGES = [
+  ['go/latest/reference/tmux-server-configfile/', 'details.api-elsewhere'],
+  ['go/latest/reference/tmux-window-setotherpanewidth/', 'div.gp-sphinx-api-parameters'],
+  ['julia/latest/reference/libtmux-snapshot-1gv6/', 'div.gp-sphinx-api-methods'],
+  ['julia/latest/reference/libtmux-kill_window/', 'div.gp-sphinx-api-description'],
+  ['ruby/latest/reference/libtmux-closederror-entity/', 'div.gp-sphinx-api-description'],
+  ['ruby/latest/workspace/reference/libtmux-workspace-configerror/', 'p.gp-sphinx-api-facts'],
+  ['py/latest/reference/libtmux-server-new_session/', 'div.gp-sphinx-api-examples'],
+  ['py/latest/reference/libtmux-common-has_lt_version/', 'div.gp-sphinx-api-parameters'],
+  ['ts/latest/reference/server-server-configfile/', 'details.api-elsewhere'],
+  ['ts/latest/reference/types-newsessionoptions/', 'div.gp-sphinx-api-description'],
+  ['swift/latest/reference/pane-index/', 'details.api-elsewhere'],
+  ['csharp/latest/reference/libtmux-window-height/', 'details.api-elsewhere'],
+  ['csharp/latest/reference/libtmux-server-searchclientsasync/', 'div.gp-sphinx-api-parameters'],
+  ['java/latest/reference/io-github-libtmux-windowlayout-windowlayout/', 'div.gp-sphinx-api-examples'],
+  ['java/latest/mcp/reference/io-github-libtmux-mcp-main-main/', 'div.gp-sphinx-api-examples'],
+  ['ts/latest/mcp/tools/capture_pane/', 'div.api-doc'],
+  ['powershell/latest/reference/libtmux-get-tmuxserver/', 'div.gp-sphinx-api-command'],
+]
+
+/** A body's padding alone sets its inset: top and bottom match each other and the padding. */
+export async function checkMemberBodyInsets(browser, base) {
+  const tolerance = 1
+  const page = await browser.newPage({ reducedMotion: 'reduce' })
+  page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
+  const failures = []
+  let measured = 0
+  try {
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 1000 })
+      for (const [path, shape] of MEMBER_BODY_PAGES) {
+        await page.goto(`${base}/${path}`, { waitUntil: 'load' })
+        await page.evaluate(() => document.fonts.ready)
+        const bodies = await measureMemberBodies(page)
+        assert(bodies.some((body) => body.children.includes(shape)), `${path}: still renders ${shape}`)
+        for (const body of bodies) {
+          measured += 1
+          const { top, bottom, padding } = body
+          const near = (a, b) => Math.abs(a - b) <= tolerance
+          if (!(near(top, padding.top) && near(bottom, padding.bottom) && near(top, bottom))) {
+            failures.push(`${path} at ${width}px (${body.first} to ${body.last}): `
+              + `top inset ${top}px, bottom inset ${bottom}px, padding ${padding.top}px/${padding.bottom}px`)
+          }
+        }
+      }
+    }
+  } finally {
+    await page.close()
+  }
+  assert.deepEqual(failures, [], 'Member body padding alone sets the top and bottom inset')
+  return measured
 }

@@ -102,8 +102,11 @@ describe('Rust enum payload fields', () => {
     expect(spans.find((span) => span.text === 'Output')).toMatchObject({ declaration: true })
     expect(spans.find((span) => span.text === 'pane')?.link?.symbol?.id).toBe('query.Event.Output.pane')
     expect(spans.find((span) => span.text === 'PaneId')?.link?.symbol?.id).toBe('query.PaneId')
-    expect(spans.find((span) => span.text === 'T')?.link).toBeUndefined()
-    expect(index.linkType(field.type!, field).find((span) => span.text === 'T')?.link).toBeUndefined()
+    // The enum's own T, not the unrelated `pub struct T`.
+    expect(spans.find((span) => span.text === 'T')?.link).toMatchObject({
+      href: '/reference/query-event/#query.Event.type-parameter.T', typeParameter: { owner: { id: 'query.Event' } },
+    })
+    expect(index.linkType(field.type!, field).find((span) => span.text === 'T')?.link?.typeParameter?.owner.id).toBe('query.Event')
     expect(index.resolve('Output.pane', 'any', symbols.find((symbol) => symbol.name === 'Event'))?.symbol?.id).toBe('query.Event.Output.pane')
     expect(index.resolve('query.Event.Tuple.0')?.symbol?.name).toBe('0')
   })

@@ -1,0 +1,12 @@
+---
+import Catalog from '../../../../components/tmux/Catalog.astro'
+import { catalogKindForSegment, tmuxCatalogRoutes } from '../../../../lib/tmux-catalog'
+
+export function getStaticPaths() {
+  return tmuxCatalogRoutes().map(({ version, slug }) => ({ params: { version, slug } }))
+}
+const { version = 'latest', slug } = Astro.params
+const [segment, name] = (slug ?? '').split('/')
+const kind = catalogKindForSegment(segment)
+---
+<Catalog version={version} kind={kind} name={name} />

@@ -8,6 +8,10 @@ const symbol = (id: string): ApiSymbol => ({
   modifiers: [], signatures: [], source: { file: 'types.ts' },
 })
 
+/** Each linked span with where it goes: a type parameter's anchor, or a global declaration. */
+const linked = (parts: ReturnType<SymbolIndex['linkType']>) =>
+  parts.filter((part) => part.link).map((part) => [part.text, part.link!.href])
+
 describe('inline code references', () => {
   it('keeps generic code intact before resolving each identifier', () => {
     const text = 'A `Selection<Pane>` preserves its handle.'
@@ -45,16 +49,19 @@ describe('inline code references', () => {
     const owner = { ...symbol('selection.Filter'), typeParams: ['Pane'] }
     const context = { ...symbol('selection.Filter.pick'), parent: owner.id, imports: { Pane: 'pane.Pane' } }
     const index = new SymbolIndex([owner, context, symbol('selection.Selection'), symbol('pane.Pane')], (entry) => `/${entry.id}/`, 'ts')
-    expect(index.linkType('Selection<Pane>', context).filter((part) => part.link).map((part) => part.text)).toEqual(['Selection'])
-    expect(index.linkType('Selection<pane.Pane>', context).filter((part) => part.link).map((part) => part.text)).toEqual(['Selection', 'pane.Pane'])
+    expect(linked(index.linkType('Selection<Pane>', context))).toEqual([
+      ['Selection', '/selection.Selection/'], ['Pane', '/selection.Filter/#selection.Filter.type-parameter.Pane'],
+    ])
+    expect(linked(index.linkType('Selection<pane.Pane>', context)).map(([text]) => text)).toEqual(['Selection', 'pane.Pane'])
   })
 
   it.each(['Pane extends Model', 'const Pane extends Model', 'out Pane = Model'])
     ('recognizes the binding in a TypeScript parameter declaration: %s', (parameter) => {
       const context = { ...symbol('selection.pick'), signatures: [{ params: [], typeParams: [parameter] }] }
       const index = new SymbolIndex([context, symbol('selection.Selection'), symbol('pane.Pane'), symbol('types.Model')], (entry) => `/${entry.id}/`, 'ts')
-      expect(index.linkType('Selection<Pane>', context).filter((part) => part.link).map((part) => part.text)).toEqual(['Selection'])
-      expect(index.linkType(parameter, context).filter((part) => part.link).map((part) => part.text)).toEqual(['Model'])
+      const anchor = '/selection.pick/#selection.pick.type-parameter.Pane'
+      expect(linked(index.linkType('Selection<Pane>', context))).toEqual([['Selection', '/selection.Selection/'], ['Pane', anchor]])
+      expect(linked(index.linkType(parameter, context))).toEqual([['Pane', anchor], ['Model', '/types.Model/']])
     })
 
   it('does not inherit type parameters from a sibling overload or constructor', () => {
@@ -64,7 +71,7 @@ describe('inline code references', () => {
     const context = { ...symbol('selection.Factory.pick'), parent: owner.id, signatures: [generic, concrete] }
     const index = new SymbolIndex([owner, context, symbol('pane.Pane')], (entry) => `/${entry.id}/`, 'ts')
     expect(index.linkType('Pane', context, concrete)[0].link?.href).toBe('/pane.Pane/')
-    expect(index.linkType('Pane', context, generic)[0].link).toBeUndefined()
+    expect(index.linkType('Pane', context, generic)[0].link?.href).toBe('/selection.Factory.pick/#selection.Factory.pick.type-parameter.Pane')
     expect(index.linkType('Pane', { ...context, signatures: [] })[0].link?.href).toBe('/pane.Pane/')
   })
 
@@ -73,8 +80,10 @@ describe('inline code references', () => {
     const other: Signature = { params: [{ name: 'value', type: 'Pane' }], ...(bothGeneric ? { typeParams: ['Pane extends Model'] } : {}) }
     const context = { ...symbol('selection.pick'), signatures: [generic, other] }
     const index = new SymbolIndex([context, symbol('selection.Selection'), symbol('pane.Pane')], (entry) => `/${entry.id}/`, 'ts')
-    expect(index.linkType('Selection<Pane>', context).filter((part) => part.link).map((part) => part.text)).toEqual(['Selection'])
-    expect(index.linkType('Pane', context, other)[0].link?.href).toBe(bothGeneric ? undefined : '/pane.Pane/')
+    // Shared prose has no selected overload, so a name bound by either one stays out of the global lookup.
+    expect(linked(index.linkType('Selection<Pane>', context)).map(([text]) => text)).toEqual(['Selection', 'Pane'])
+    expect(index.linkType('Pane', context, other)[0].link?.href).toBe(bothGeneric
+      ? '/selection.pick/#selection.pick.type-parameter.Pane' : '/pane.Pane/')
   })
 
   it('keeps TypeScript dollar identifiers intact when bound or unresolved', () => {
@@ -83,7 +92,8 @@ describe('inline code references', () => {
     for (const expression of ['Selection<$Pane>', 'Selection<missing.$Pane>', 'Selection<Missing$Pane>']) {
       const parts = index.linkType(expression, context)
       expect(parts.map((part) => part.text).join('')).toBe(expression)
-      expect(parts.filter((part) => part.link).map((part) => part.text)).toEqual(['Selection'])
+      expect(parts.filter((part) => part.link).map((part) => part.text)).toEqual(
+        expression === 'Selection<$Pane>' ? ['Selection', '$Pane'] : ['Selection'])
     }
   })
 

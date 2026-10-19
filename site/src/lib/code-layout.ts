@@ -21,7 +21,7 @@ export type SignatureSpan = ReturnType<SymbolIndex['linkType']>[number] & { decl
 export function signatureSpans(layout: CodeLayout, index: SymbolIndex, symbol: ApiSymbol, signature: Signature): SignatureSpan[] {
   const spans: SignatureSpan[] = []
   // The callable's own bindings do not exist in its enclosing declaration.
-  const ownerScope: Signature = { params: [], enclosingTypeParamNames: signature.enclosingTypeParamNames }
+  const ownerScope: Signature = { params: [], enclosingTypeParamNames: signature.enclosingTypeParamNames, enclosingDeclaration: signature.enclosingDeclaration }
   const linkText = (start: number, end: number): SignatureSpan[] => {
     if (layout.contextEnd === undefined || start >= layout.contextEnd) return index.linkType(layout.text.slice(start, end), symbol, signature)
     const boundary = Math.min(end, layout.contextEnd)
@@ -32,7 +32,11 @@ export function signatureSpans(layout: CodeLayout, index: SymbolIndex, symbol: A
   for (const range of layout.syntax ?? []) {
     spans.push(...linkText(offset, range.start))
     const text = layout.text.slice(range.start, range.end)
-    if (range.kind === 'name') spans.push({ text, declaration: true, declarationName: true })
+    // Layouts keep a bound type name out of the global lookup as a literal; it still links to its declaration.
+    const bound = range.kind === 'literal'
+      ? index.typeParameterSpans(text, symbol, layout.contextEnd !== undefined && range.start < layout.contextEnd ? ownerScope : signature) : undefined
+    if (bound) spans.push(...bound)
+    else if (range.kind === 'name') spans.push({ text, declaration: true, declarationName: true })
     else if (range.kind === 'parameter') spans.push({ text, declaration: true, link: {
       href: `#${encodeURIComponent(parameterId(symbol, signature.params[range.parameter]!.name))}`, external: false,
     } })

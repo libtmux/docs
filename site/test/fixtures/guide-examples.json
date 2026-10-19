@@ -245,6 +245,61 @@
     {
       "port": "tmux",
       "rootOnly": true,
+      "page": "examples/capture-pane-output",
+      "sourceRevision": "94796f6b1182507efac8a272fc309a79e22e58a5",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "capture.sh",
+          "sha256": "3e2891b426741ac3b0537244d345d04ed001dc6dcd03ace2a9a99bf8f08786fe"
+        }
+      ],
+      "shellRecipe": [
+        "sh capture.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "libtmux capture ready"
+        ]
+      ]
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "examples/workspace-from-file",
+      "sourceRevision": "94796f6b1182507efac8a272fc309a79e22e58a5",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "workspace.conf",
+          "sha256": "0d166ecbe8a973649cb10498e69430bca86c647a398a830a8590d8d80f17b1a4"
+        },
+        {
+          "name": "workspace.sh",
+          "sha256": "3c3f550610e34f4b43378700915b189a4a5a37d0987352a94312674a004df411"
+        }
+      ],
+      "shellRecipe": [
+        "sh workspace.sh"
+      ],
+      "expectedOutputs": [
+        [
+          "editor: 2 panes",
+          "logs: 1 panes"
+        ]
+      ]
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
       "page": "topics/socket-and-servers",
       "sourceRevision": "e476c1230b958df0cb12977517d24b3dc931375b",
       "sourceUse": "tmux manual; native runtime versions recorded separately",

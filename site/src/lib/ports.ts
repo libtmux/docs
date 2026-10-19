@@ -20,7 +20,7 @@ export const DOC_PRODUCTS = {
 export type DocProduct = keyof typeof DOC_PRODUCTS
 
 /** Support scope is independent of a package's release maturity. */
-export const CONCEPT_DESCRIPTION = 'Maintained as a working example of core library usage and deployment. Example APIs, tools and configuration may change without a compatibility or product support commitment.'
+export const CONCEPT_DESCRIPTION = 'A working example of the core library. It can change without notice.'
 
 /**
  * Where a port's package is published, for the links row on its pages.
@@ -1462,6 +1462,20 @@ export const PICKER_GROUP_SUMMARY: Readonly<Record<PickerGroup, string>> = {
   core: 'API reference and guides', mcp: 'Tools for connected assistants', workspace: 'Repeatable development environments',
 }
 
+/** One product's rows in a menu. */
+export interface PickerSection {
+  group: PickerGroup
+  label: string
+  rows: PickerRow[]
+}
+
+/** A menu's rows under their products, in product order; a product with no rows has no section. */
+export function pickerSections(picker: PortPicker): PickerSection[] {
+  return PICKER_GROUPS
+    .map((group) => ({ group, label: PICKER_GROUP_LABEL[group], rows: picker.rows.filter((row) => row.group === group) }))
+    .filter((section) => section.rows.length > 0)
+}
+
 /** Off-site API hosts by hostname. A reference elsewhere has no mark, so it is an error. */
 const REFERENCE_HOSTS: Readonly<Record<string, { name: string; icon: PickerIcon }>> = {
   'docs.rs': { name: 'docs.rs', icon: 'docsrs' },
@@ -1744,6 +1758,9 @@ export function portHomeUrl(port: Port, version: string): string {
  */
 export type RegistryStatus = 'stable' | 'prerelease' | 'unpublished'
 
+/** How far along a package's releases are, as its registry or its version names the stage. */
+export type Maturity = 'pre-alpha' | 'alpha' | 'beta' | 'rc' | 'stable' | 'unreleased'
+
 export interface RegistryEntry {
   status: RegistryStatus
   /** Newest installable version, or null when the registry has no package. */
@@ -1752,6 +1769,8 @@ export interface RegistryEntry {
   stable: string | null
   /** Newest release tag in the repository, prefix included where one is used. */
   tag: string | null
+  /** The stage the registry itself declares, such as PyPI's Development Status classifier. */
+  maturity?: Maturity
   /** Independently published packages documented under this port. */
   packages?: Record<string, RegistryEntry>
 }
@@ -1759,6 +1778,61 @@ export interface RegistryEntry {
 export interface RegistryData {
   schema: 1
   ports: Record<string, RegistryEntry>
+}
+
+/**
+ * A package's release maturity: the stage its registry declares, else the one
+ * its version names, else its repository tag. A package with no release and no
+ * tag is unreleased. Throws on a prerelease whose stage cannot be read, so a
+ * new version spelling fails a test rather than a reader's badge.
+ */
+export function releaseMaturity(entry: RegistryEntry): Maturity {
+  if (entry.maturity) return entry.maturity
+  if (entry.status === 'stable') return 'stable'
+  const name = entry.version ?? entry.tag
+  if (!name) return 'unreleased'
+  const stage = /alpha|beta|rc(?=[\d.-]|$)|(?<=\d)[ab](?=\d)/i.exec(name)?.[0].toLowerCase()
+  if (stage === 'alpha' || stage === 'a') return 'alpha'
+  if (stage === 'beta' || stage === 'b') return 'beta'
+  if (stage === 'rc') return 'rc'
+  throw new Error(`releaseMaturity: no release stage in "${name}"`)
+}
+
+/** What a product's badge states: its release maturity, or `concept` for a working example. */
+export type ProductStatus = 'concept' | Maturity
+
+/**
+ * The one short line under each badge's toggletip and in the picker's
+ * description. The full explanation lives on the page that the toggletip links to.
+ */
+export const PRODUCT_STATUS_LINE: Readonly<Record<ProductStatus, string>> = {
+  concept: 'Working example; may change without notice.',
+  'pre-alpha': 'Early development; expect breaking changes.',
+  alpha: 'Alpha release; the API may change.',
+  beta: 'Beta release; the API may still change.',
+  rc: 'Release candidate; close to final.',
+  stable: 'Stable release on its package registry.',
+  unreleased: 'Not published yet; install from source.',
+}
+
+/** The link under every toggletip line. */
+export const PRODUCT_STATUS_LINK = 'Read more'
+
+/** The page that explains each badge, and the section that does. */
+export const PRODUCT_STATUS_GUIDE = '/meta/support/#concept-and-alpha'
+
+/**
+ * The badge a product row carries, from the same data as its install command.
+ *
+ * A companion in a port other than Python is a concept example, so `concept`
+ * leads its release stage. Python's own companions state the stage their PyPI
+ * project declares. The core library states its registry stage.
+ */
+export function productStatus(port: Port, product: 'core' | DocProduct, registry: RegistryData): ProductStatus | undefined {
+  if (product !== 'core' && productIsConcept(port, product)) return 'concept'
+  const entry = registry.ports[port.slug]
+  const found = product === 'core' ? entry : entry?.packages?.[port.packages?.find((item) => item.id === product)?.name ?? '']
+  return found ? releaseMaturity(found) : undefined
 }
 
 /**

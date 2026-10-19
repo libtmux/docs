@@ -55,3 +55,44 @@ export const asideClass = (type: AsideType, variant: AsideVariant): string =>
 
 export const asideIconClass = (style: AsideIconStyle, size: AsideIconSize): string =>
   `lm-aside__icon lm-aside__icon--${style} lm-aside__icon--${size}`
+
+/**
+ * A docstring admonition as an aside.
+ *
+ * Sphinx and rustdoc name a dozen kinds; the aside has four types, so each
+ * kind maps to the one whose colour and icon carry the same weight, and the
+ * title keeps the word the author wrote. An unknown kind is a note rather
+ * than nothing: the text is still worth setting apart.
+ */
+const ASIDE_KINDS: Record<string, { type: AsideType; title: string }> = {
+  note: { type: 'note', title: 'Note' },
+  seealso: { type: 'note', title: 'See also' },
+  important: { type: 'note', title: 'Important' },
+  versionchanged: { type: 'note', title: 'Changed' },
+  hint: { type: 'tip', title: 'Hint' },
+  tip: { type: 'tip', title: 'Tip' },
+  warning: { type: 'caution', title: 'Warning' },
+  attention: { type: 'caution', title: 'Attention' },
+  caution: { type: 'caution', title: 'Caution' },
+  deprecated: { type: 'caution', title: 'Deprecated' },
+  danger: { type: 'danger', title: 'Danger' },
+  error: { type: 'danger', title: 'Error' },
+}
+export const asideFor = (kind: string): { type: AsideType; title: string } =>
+  ASIDE_KINDS[kind.toLowerCase()] ?? { type: 'note', title: kind.charAt(0).toUpperCase() + kind.slice(1) }
+
+/**
+ * The markup of `Aside.astro` for text that a Markdown renderer finishes.
+ *
+ * The body keeps its own blank lines so it is parsed as Markdown, not as raw
+ * HTML.
+ */
+export function asideMarkdown(type: AsideType, title: string, body: string): string {
+  const variant = 'hybrid'
+  const { iconStyle, iconSize } = ASIDE_VARIANT_DEFAULTS[variant]
+  return [
+    `<aside class="${asideClass(type, variant)}" role="note">`,
+    `<p class="lm-aside__title"><span class="${asideIconClass(iconStyle, iconSize)}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${ASIDE_ICONS[type]}"></path></svg></span><span>${title}</span></p>`,
+    '<div class="lm-aside__content">', '', body, '', '</div>', '</aside>',
+  ].join('\n')
+}

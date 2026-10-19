@@ -17,7 +17,7 @@ The `/bin/cat` commands keep panes open without another application or log file.
 
 ## Prepare the project
 
-Use Rust 1.97.1, Git, and tmux 3.2a or newer. These commands use a Unix shell.
+Use Rust 1.97.1, Git, and tmux 3.3a or newer. These commands use a Unix shell.
 Create an empty project and fetch the source revision used by this example:
 
 ```console

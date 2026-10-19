@@ -17,7 +17,7 @@ tmux when the MCP process exits; it does not require an existing tmux session.
 
 ## Build the executable
 
-Use Swift 6.2.4, Git, and tmux 3.2a or newer on Linux. Create an empty directory
+Use Swift 6.2.4, Git, and tmux 3.3a or newer on Linux. Create an empty directory
 for the launcher and source checkout:
 
 ```console

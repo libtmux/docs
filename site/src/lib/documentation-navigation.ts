@@ -1,6 +1,7 @@
-import { getSidebar, type SidebarItem, type SidebarLinkItem } from './sidebar'
+import { getSidebar, sharesOneKind, type SidebarItem, type SidebarLinkItem } from './sidebar'
 import { documentationAreas } from './port-documentation'
-import { PORT_BY_SLUG, portPageUrl, productIsConcept, referenceUrl, type DocProduct } from './ports'
+import { PORT_BY_SLUG, portPageUrl, productIsConcept, productStatus, referenceUrl, type DocProduct, type ProductStatus } from './ports'
+import { REGISTRY } from './registry'
 import { API_MODELS } from './api-models'
 import { productApiNavigation } from './product-api'
 import { API_GLOSSARY_TITLE } from './api-glossary'
@@ -8,6 +9,7 @@ import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import { withPortRoot } from './site-root'
 import { tmuxReferenceUrl } from './tmux-reference'
 import { tmuxManualUrl } from './tmux-manual-data'
+import { CATALOG_TITLE, tmuxCatalogUrl } from './tmux-catalog'
 import { mcpObjects, MCP_SECTIONS, type McpSection } from './mcp-reference'
 
 export interface DocumentationSection {
@@ -27,6 +29,8 @@ export interface DocumentationSurface {
   sections: DocumentationSection[]
   /** Example support scope; release maturity is documented separately. */
   concept?: boolean
+  /** The badge this product carries: `concept` for an example, else its release stage. */
+  status?: ProductStatus
 }
 
 const labels: Record<string, string> = {
@@ -60,7 +64,7 @@ export function buildDocumentationSurfaces(
       const route = link.href.startsWith(base) ? link.href.slice(base.length).replace(/\/$/, '') : undefined
       const relative = route === domain.route ? '' : route?.startsWith(prefix) ? route.slice(prefix.length) : undefined
       let key = relative?.split('/')[0] || 'home'
-      if (key === 'third-party-notices') continue
+      if (key === 'meta') continue
       if (key === 'source-guide') key = 'guides'
       if (id === 'workspace' && (key === 'cli' || /^reference\/(?:exit-codes|output)$/.test(relative ?? ''))) key = 'manual'
       else if (link.external || key === 'cli' || key === 'api') key = 'reference'
@@ -105,8 +109,11 @@ export function buildDocumentationSurfaces(
       section.label = label
       const objects = mcpObjects(port).filter((object) => object.section === key as McpSection)
       section.disabled = objects.length === 0
+      // A section named for its kind needs no mark on each row; one that mixes kinds keeps them.
+      const quiet = sharesOneKind(objects.map((object) => object.kind))
       section.items.push(...objects.map((object) => ({
         type: 'link' as const, label: object.name, kind: object.kind, href: portPageUrl(info, version, object.path),
+        ...(quiet ? { quiet } : {}),
       })))
     }
     // Some named areas have no overview. Their first real page is a useful
@@ -122,8 +129,10 @@ export function buildDocumentationSurfaces(
         .map((section): SidebarLinkItem => ({ type: 'link', label: section.label, href: section.href!,
           ...(section.disabled ? { disabled: true } : {}) })),
     ]
+    const status = productStatus(info, id, REGISTRY)
     return { id, label: domain.id === 'core' ? 'Core Library' : domain.label, href, sections: ordered,
-      ...(domain.product && productIsConcept(info, domain.product) ? { concept: true } : {}) }
+      ...(domain.product && productIsConcept(info, domain.product) ? { concept: true } : {}),
+      ...(status ? { status } : {}) }
   })
 }
 
@@ -141,6 +150,7 @@ export function getDocumentationSurfaces(port: string | undefined, version: stri
         ...(current ? menus : []).flatMap((item) => item.type === 'group' && item.href
           ? [{ id: item.label.toLowerCase(), label: item.label, href: item.href, items: item.items }] : []),
         { id: 'manual', label: 'CLI Manual', href: tmuxManualUrl(version), items: [] },
+        { id: 'catalog', label: CATALOG_TITLE, shortLabel: 'Catalog', href: tmuxCatalogUrl(version), items: [] },
         { id: 'reference', label: 'C source reference', shortLabel: 'C reference', href: tmuxReferenceUrl(version), items: [] },
       ]
       sections[0].items = sections.filter((section) => section.href).map((section) => ({

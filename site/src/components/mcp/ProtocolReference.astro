@@ -14,7 +14,7 @@ import DocumentationContext from '../docs/DocumentationContext.astro'
 import McpSchemaFields from './McpSchema.astro'
 import McpSchemaType from './McpSchemaType.astro'
 import { PORT_BY_SLUG, portPageUrl } from '../../lib/ports'
-import { MCP_REFERENCE, MCP_SECTIONS, mcpObjects, mcpObjectAt, mcpObjectGroup, mcpNavigation, renderToolDescription, toolSummary, type McpSection } from '../../lib/mcp-reference'
+import { MCP_REFERENCE, MCP_SECTIONS, mcpObjects, mcpObjectAt, mcpObjectGroup, mcpNavigation, plainSummary, renderToolDescription, toolSummary, type McpSection } from '../../lib/mcp-reference'
 import { schemaDefinitions, type McpSchema } from '../../lib/mcp-schema'
 import { pagePortsFor } from '../../lib/page-ports-for'
 import { getDocumentationSurfaces } from '../../lib/documentation-navigation'
@@ -103,7 +103,7 @@ const introductions: Record<McpSection, string> = {
 }
 const summaries = new Map(await Promise.all(entries.map(async (entry) => [entry.id, await renderToolDescription(toolSummary(entry.description), { port, version, objectId: entry.id })] as const)))
 ---
-<BaseLayout title={object ? title : `${info.name} MCP ${title}`} description={object ? toolSummary(object.description) : introductions[section]}
+<BaseLayout title={object ? title : `${info.name} MCP ${title}`} description={object ? plainSummary(object.description, port) : introductions[section]}
   portSlug={port} version={version} pagePath={path} pageSource={pageSource}
   documentationLayout="reference" breadcrumbs={breadcrumbs} markdown="rendered" flush>
   <div slot="header-navigation" class="site-header-language"><PagePortSwitcher entries={pagePorts} portSlug={port} reserveLabelWidth /></div>
@@ -118,13 +118,13 @@ const summaries = new Map(await Promise.all(entries.map(async (entry) => [entry.
     <ApiTree referenceBase={base} glossaryHref={`${base}reference/glossary/`} glossaryLabel={MCP_GLOSSARY_TITLE} portName={info.name} tree={navigation.tree} currentRoot={section}
       currentBucket={currentBucket} currentIndex={object ? undefined : section} ownerId={object?.id}
       members={[]} withMembers={new Set()} currentPath={Astro.url.pathname} version={navigation.version}
-      indexLabel="" treeLabel={`${info.name} MCP reference`} searchLabel="Find an MCP object" searchPlaceholder="Find tool, prompt, resource"
+      indexLabel="" marks="mixed" treeLabel={`${info.name} MCP reference`} searchLabel="Find an MCP object" searchPlaceholder="Find tool, prompt, resource"
       filters={[{ id: 'all', label: 'All' }, ...Object.entries(MCP_SECTIONS).map(([id, label]) => ({ id, label,
         disabled: !mcpObjects(port).some((entry) => entry.section === id) }))]} />
     <div class="api-reference-content min-w-0 px-4 py-6 lg:px-6">
       <PageToolbar breadcrumbs={breadcrumbs} />
       <header id={object ? 'api-overview' : section} class:list={[object && 'api-reference-heading']}>
-        {object && <div class="api-reference-eyebrow"><ApiBadge label={object.kind.replace('-', ' ')} variant="kind" value={object.kind} /><span>MCP</span><span class="api-reference-version">{version}</span></div>}
+        {object && <div class="api-reference-eyebrow"><ApiBadge label={object.kind.replace('-', ' ')} variant="kind" value={object.kind} /><span>MCP</span><span class="api-badge api-badge--mod api-reference-version"><span class="api-badge__label">{version}</span></span></div>}
         <h1 class="scroll-mt-24 font-mono text-2xl font-semibold tracking-tight">{object ? <code><SymbolName name={title} /></code> : title}</h1>
         {!object && <p class="mt-3">{introductions[section]}</p>}
       </header>
@@ -152,14 +152,16 @@ const summaries = new Map(await Promise.all(entries.map(async (entry) => [entry.
             <section id={`${object.id}.parameters`}>
               <span id="arguments" class="section-anchor-alias" />
               <h2>{object.kind.startsWith('resource') ? 'URI parameters' : 'Arguments'}<a class="headerlink" href={`#${encodeURIComponent(`${object.id}.parameters`)}`} aria-label="Permalink to arguments">#</a></h2>
-              {input ? <>{fields.length === 0 && <p>No named arguments.</p>}<McpSchemaFields schema={input} scope={`${object.id}.input`} port={port} version={version} /></> : parameterRows.length ? <ul class="api-parameters api-command-parameters">
-                {parameterRows.map((arg) => <li id={arg.id}><p class="api-parameter-heading"><code class="api-param-name"><strong>{arg.name}</strong></code><a class="headerlink" href={`#${encodeURIComponent(arg.id)}`} aria-label={`Permalink to ${arg.name}`}>#</a></p>
-                  {arg.html && <div set:html={arg.html} />}<dl class="api-definition api-parameter-facts"><dt>Binding</dt><dd>{arg.binding}</dd>{arg.required !== undefined && <><dt>Required</dt><dd>{arg.required ? 'Yes' : 'No'}</dd></>}</dl>
+              {input ? <>{fields.length === 0 && <p>No named arguments.</p>}<McpSchemaFields schema={input} scope={`${object.id}.input`} context={context} noun="arguments" /></> : parameterRows.length ? <ul class="simple api-parameters mcp-parameters">
+                {parameterRows.map((arg) => <li id={arg.id}>
+                  <p class="api-parameter-heading"><span class="api-parameter-signature"><strong><a href={`#${encodeURIComponent(arg.id)}`}><code>{arg.name}</code></a></strong>{arg.required === false && '?'}</span><a class="api-heading-link" href={`#${encodeURIComponent(arg.id)}`} aria-label={`Link to ${arg.name} parameter`} data-pagefind-ignore="all">#</a></p>
+                  {arg.html && <div class="mcp-parameter-doc" set:html={arg.html} />}
+                  <dl class="api-definition api-parameter-facts"><dt>Binding</dt><dd>{arg.binding}</dd></dl>
                 </li>)}
               </ul> : <p>{object.kind === 'resource' ? 'Read this resource using its fixed URI.' : 'No arguments are advertised.'}</p>}
             </section>
             <section id={`${object.id}.result`}><h2>Result<a class="headerlink" href={`#${encodeURIComponent(`${object.id}.result`)}`} aria-label="Permalink to result">#</a></h2>
-              {output ? <><p class="mcp-schema-type">Returns <McpSchemaType schema={output} root={output} scope={`${object.id}.output`} /></p><McpSchemaFields schema={output} scope={`${object.id}.output`} port={port} version={version} /></>
+              {output ? <><p class="mcp-schema-type">Returns <McpSchemaType schema={output} root={output} scope={`${object.id}.output`} /></p><McpSchemaFields schema={output} scope={`${object.id}.output`} context={context} /></>
                 : object.kind === 'prompt' ? <p>Returns the prompt’s messages. The client supplies the advertised arguments as strings.</p>
                 : object.kind.startsWith('resource') ? <p>Returns resource contents for the requested URI{object.item?.mimeType && <> with MIME type <code>{object.item.mimeType}</code></>}.</p>
                 : <p>This server does not advertise an output schema for this tool. Its description defines the returned content.</p>}
@@ -175,7 +177,7 @@ const summaries = new Map(await Promise.all(entries.map(async (entry) => [entry.
                       <div class="gp-sphinx-api-layout-right"><ApiBadge label="type" variant="kind" value="typealias" /><a class="headerlink" href={`#${encodeURIComponent(entry.id)}`} aria-label={`Permalink to ${entry.name}`}>¶</a></div>
                     </div>
                   </dt>
-                  <dd class="api-overview"><div class="api-doc" set:html={entry.html} /><McpSchemaFields schema={entry.schema} root={group.schema!} scope={group.scope} pointer={entry.path} port={port} version={version} /></dd>
+                  <dd class="api-overview"><div class="api-doc" set:html={entry.html} /><McpSchemaFields schema={entry.schema} root={group.schema!} scope={group.scope} pointer={entry.path} context={context} /></dd>
                 </dl>)}
               </>)}
             </section>}
@@ -220,14 +222,12 @@ const summaries = new Map(await Promise.all(entries.map(async (entry) => [entry.
 </BaseLayout>
 <style>
   .mcp-signature { white-space: pre-wrap; overflow-wrap: anywhere; }
-  .api-index-card__link { display: flex; align-items: baseline; gap: .35rem; }
   .api-overview section { margin-block-start: 1.5rem; }
   .api-overview h2 { font-size: 1.125rem; font-weight: 600; margin-bottom: .75rem; padding-bottom: .4rem; border-bottom: 1px solid var(--api-border); }
   .mcp-overview { font-size: .9375rem; line-height: 1.65; }
-  .mcp-overview :global(.api-parameter-heading) { flex-wrap: wrap; font-size: .875rem; line-height: 1.7; }
   .mcp-method-description { display: block; margin-top: .25rem; }
   .mcp-schema-type { font-size: .8125rem; color: var(--color-muted); margin-bottom: .75rem; }
-  .mcp-schema-type code { color: var(--api-kind-class-fg); }
+  .mcp-schema-type code { color: var(--api-ink-type); }
   .mcp-type-name { font: 600 .9375rem var(--font-mono, ui-monospace, monospace); margin: 0; }
   .mcp-type-group { margin-block: 1rem .75rem; font-size: .9375rem; }
   .mcp-type-definition { margin-block: 1rem; }
@@ -236,5 +236,4 @@ const summaries = new Map(await Promise.all(entries.map(async (entry) => [entry.
   .api-overview details + details { margin-top: 1rem; }
   .api-overview summary { cursor: pointer; font-weight: 600; margin-bottom: .5rem; }
   .api-overview :global(.headerlink) { margin-inline-start: .4rem; }
-  .api-overview :global(.mcp-schema-fields .mcp-schema-fields) { padding-inline-start: 1rem; border-inline-start: 1px solid var(--color-edge); }
 </style>

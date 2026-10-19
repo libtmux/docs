@@ -15,7 +15,7 @@ go to stderr, which the client should retain in its server log.
 
 ## Install the command
 
-Use Go 1.26 or newer and tmux 3.2a or newer on Linux, macOS, or WSL. Install the
+Use Go 1.26 or newer and tmux 3.3a or newer on Linux, macOS, or WSL. Install the
 [published MCP module](https://github.com/libtmux/libtmux-go/tree/6e7420927f4cb717fe089a710328e44e8d551025/mcp):
 
 ```console

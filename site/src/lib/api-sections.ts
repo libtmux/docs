@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { builtinHref, memberTier, type ApiSymbol, type MemberSignals, type Param, type Signature, type SymbolIndex } from '@libtmux/api-model'
+import { builtinHref, memberTier, typeParametersOf, type ApiSymbol, type MemberSignals, type Param, type Signature, type SymbolIndex } from '@libtmux/api-model'
 import { apiGlossaryHref } from './api-glossary'
 import { csharpParameters, supportsCSharpSignatures, supportsGoSignatures, supportsJavaSignatures, supportsLuaSignatures, supportsRubySignatures, supportsRustSignatures, supportsTypeScriptSignatures } from './code-layout'
 
@@ -122,18 +122,16 @@ function signatureLabels(symbol: ApiSymbol, port?: string): string[] {
 
 /** The fields shown by ApiEntry, shared with its section navigation. */
 export function apiEntryFields(symbol: ApiSymbol, port?: string) {
-  // RBS positionals are unnamed and the extractor numbers them, and the LuaCATS bar links only
-  // documented parameters, so both lists stay documented-only.
-  const native = port === 'ts' || (usesNativeSignatures(symbol, port) && port !== 'ruby' && port !== 'lua')
+  // Every parameter the declaration has is listed with its type, documented or not.
   const labels = signatureLabels(symbol, port)
   // Python's extractor merges @overload stubs followed by their implementation.
   // The implementation docstring documents the complete callable, not one stub.
   const familyDocumentation = port === 'py' && !symbol.modifiers.includes('overload')
     ? symbol.signatures.length - 1 : -1
-  const collect = <T>(read: (signature: Signature) => T[]) => {
+  const collect = <T>(read: (signature: Signature, index: number) => T[]) => {
     const fields = new Map<string, { value: T; signatures: Set<number> }>()
     symbol.signatures.forEach((signature, i) => {
-      for (const value of read(signature)) {
+      for (const value of read(signature, i)) {
         const key = JSON.stringify(value)
         const field = fields.get(key) ?? { value, signatures: new Set<number>() }
         field.signatures.add(i)
@@ -146,19 +144,35 @@ export function apiEntryFields(symbol: ApiSymbol, port?: string) {
         ? [...signatures].map((i) => labels[i]) : [],
     }))
   }
+  // A type's own parameters apply to every signature; a callable's belong to the overload that declares them.
+  const own = typeParametersOf(symbol, port).map((parameter) => ({ ...parameter, overloads: [] as string[] }))
+  const declared = new Set(own.map((parameter) => JSON.stringify([parameter.name, parameter.bound, parameter.default])))
   return {
-    params: collect((signature) => {
+    typeParameters: [...own, ...collect((signature) => typeParametersOf(signature, port)
+      .filter((parameter) => !declared.has(JSON.stringify([parameter.name, parameter.bound, parameter.default]))))],
+    params: collect((signature, i) => {
+      // The implementation is the complete callable; its @overload stubs repeat narrower parameters.
+      if (familyDocumentation > 0 && i !== familyDocumentation) return []
       // A C# params array is extracted as two entries; only the declared name is a parameter.
       const declared = port === 'csharp' ? csharpParameters(signature) : undefined
-      return signature.params.filter((param, i) => (native || param.doc) && (!declared || declared.some((entry) => entry.index === i)))
+      // Python and Lua spell the receiver as a first parameter; the call never passes it.
+      const receiver = (param: Param, position: number) => position === 0 && !param.doc &&
+        (param.name === 'self' || (port === 'py' && param.name === 'cls'))
+      return signature.params.filter((param, position) => !receiver(param, position) &&
+        (!declared || declared.some((entry) => entry.index === position)))
     }),
     returns: collect((signature) => signature.returnsDoc ? [{ doc: signature.returnsDoc }] : []),
     raises: collect((signature) => signature.raises ?? []),
   }
 }
 
+/** The parameters of enclosing declarations that the symbol's own types mention. */
+export function apiInheritedTypeParameters(symbol: ApiSymbol, index?: SymbolIndex) {
+  return index?.inheritedTypeParameters(symbol) ?? []
+}
+
 /** Only sections that the declaration actually renders, in reading order. */
-export function apiEntrySections(symbol: ApiSymbol, port?: string): ApiSection[] {
+export function apiEntrySections(symbol: ApiSymbol, port?: string, index?: SymbolIndex): ApiSection[] {
   const anchor = symbol.publicId ?? symbol.id
   const fields = apiEntryFields(symbol, port)
   const sections: ApiSection[] = []
@@ -167,6 +181,9 @@ export function apiEntrySections(symbol: ApiSymbol, port?: string): ApiSection[]
   if (apiMethodDetails(symbol).length) sections.push({ id: `${anchor}.methods`, label: 'Methods' })
   if (symbol.doc?.examples?.length) sections.push({ id: `${anchor}.examples`, label: 'Examples' })
   if (symbol.doc?.references?.length) sections.push({ id: `${anchor}.references`, label: 'References' })
+  if (fields.typeParameters.length || apiInheritedTypeParameters(symbol, index).length) {
+    sections.push({ id: `${anchor}.type-parameters`, label: 'Type parameters' })
+  }
   if (fields.params.length) sections.push({ id: `${anchor}.parameters`, label: 'Parameters' })
   if (fields.returns.length) sections.push({ id: `${anchor}.returns`, label: 'Returns' })
   if (fields.raises.length) sections.push({ id: `${anchor}.errors`, label: 'Errors' })

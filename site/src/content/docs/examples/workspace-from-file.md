@@ -1,7 +1,7 @@
 ---
 supportedPorts: []
 title: Build a workspace from a file
-description: Create tmux windows and panes from a command file on a private server.
+description: Build a tmux command file that creates windows and panes, then load it on a private server.
 sidebar:
   label: Build a workspace from a file
   group: Examples
@@ -11,12 +11,53 @@ tableOfContents: true
 
 A tmux command file can create a session, arrange its windows, and split its
 panes. This example builds two windows with three panes, prints their names
-and pane counts, then removes its private server. It requires tmux 3.2 or
-newer and a POSIX shell.
+and pane counts, then removes its private server. The first four steps write
+the command file, and the last four load and inspect it. It requires tmux 3.2
+or newer and a POSIX shell.
 
-## Define the layout
+## 1. Create a detached session
 
-Save this command file:
+`new-session -d` creates a session without attaching a terminal. `-s dev` names
+it and `-n editor` names its first window. `-x 100 -y 30` sizes that window,
+because a detached session has no terminal to size it. The final `'sh'` is the
+program in the first pane.
+
+```text excerpt="workspace.conf" from="new-session"
+```
+
+## 2. Split the window
+
+`split-window -h` adds a pane beside the first one. `-t '=dev:editor'` names the
+window with an exact session name, so the split cannot reach a session whose
+name only starts with `dev`.
+
+```text excerpt="workspace.conf" from="split-window"
+```
+
+The `editor` window now has two panes. Each runs `sh`.
+
+## 3. Add a second window
+
+`new-window -n logs` adds a window named `logs` with one pane. A new window
+becomes the current one.
+
+```text excerpt="workspace.conf" from="new-window"
+```
+
+## 4. Choose what is selected
+
+`select-window` and `select-pane` move the focus back to the first pane of the
+`editor` window. `.0` is the pane's index in that window.
+
+```text excerpt="workspace.conf" from="select-window" to="select-pane"
+```
+
+<a id="define-the-layout"></a>
+
+## The complete command file
+
+Explicit targets keep each command tied to the intended session and window.
+Save the four steps together as `workspace.conf`:
 
 ```text title="workspace.conf"
 new-session -d -s dev -n editor -x 100 -y 30 'sh'
@@ -26,12 +67,51 @@ select-window -t '=dev:editor'
 select-pane -t '=dev:editor.0'
 ```
 
-The `editor` window has two panes; `logs` has one. Each pane starts `sh`.
-Explicit targets keep each command tied to the intended session and window.
+## 5. Start a server that stays up
 
-## Build and inspect it
+`start-server` starts the private server before any session exists. The `\;`
+passes a literal semicolon to tmux, so `set-option -s exit-empty off` runs as
+the next command of the same invocation. Without that option the server exits
+when it has no sessions, which would leave nothing to stop if the file failed
+before creating one.
 
-Save this complete program as `workspace.sh` beside the configuration file:
+```sh excerpt="workspace.sh" from="start-server" to="exit-empty off"
+```
+
+## 6. Load the file
+
+`source-file` runs each line of the file as a tmux command on this server.
+Errors stay visible and make the script fail. Paths in the file are relative to
+the directory you run the script from, so keep `workspace.conf` beside it.
+
+```sh excerpt="workspace.sh" from="source-file"
+```
+
+## 7. List what was built
+
+`list-windows` prints one row per window of the exact session `dev`. `-F`
+formats each row with `#{window_name}` and `#{window_panes}`.
+
+```sh excerpt="workspace.sh" from="list-windows" to="window_panes"
+```
+
+## 8. Clean up
+
+`kill-server` stops the private server. `trap cleanup EXIT` runs `cleanup` on
+every exit, including a failed `source-file`, so the server never outlives the
+script. If tmux cannot be stopped, the script keeps the socket directory and
+prints its path.
+
+```sh excerpt="workspace.sh" from="cleanup() {" to="trap 'exit 1'"
+```
+
+<a id="build-and-inspect-it"></a>
+
+## The complete script
+
+In the file, `cleanup` comes first so that it covers every command after it.
+The parentheses run the script in a subshell, so its `exit` and traps leave
+your shell alone. Save it as `workspace.sh` beside the command file:
 
 ```sh title="workspace.sh"
 (
@@ -72,12 +152,6 @@ The result is:
 editor: 2 panes
 logs: 1 panes
 ```
-
-`source-file` executes the configuration on the private server. Setting
-`exit-empty` to `off` keeps that server available for cleanup even when a
-configuration error prevents session creation. Errors remain visible and
-make the program fail. Cleanup runs after partial creation too; if stopping
-tmux fails, the script keeps the socket directory and reports its location.
 
 ## Use a workspace manager
 

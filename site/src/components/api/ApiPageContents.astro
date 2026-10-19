@@ -33,7 +33,9 @@ const { sections, related } = Astro.props as Props
   class ApiPageContents extends HTMLElement {
     controller
     observer
+    resetMembers
     frame = 0
+    arrivalFrame = 0
 
     connectedCallback() {
       this.controller = new AbortController()
@@ -42,10 +44,88 @@ const { sections, related } = Astro.props as Props
       const header = document.querySelector('.site-header')
       const row = layout?.querySelector('.api-section-links')
       const root = document.documentElement
+      const members = layout?.querySelector('.api-members')
+      const memberHeading = members?.querySelector(':scope > h2')
+      const groups = [...(members?.querySelectorAll(':scope > .api-member-group') ?? [])]
+      const groupHeadings = groups.flatMap((group) => {
+        const heading = group.querySelector(':scope > h3')
+        return heading ? [{ group, heading, height: 0 }] : []
+      })
+      let memberHeight = 0
+      let stickyMembers = false
+      const setLength = (element, name, value) => element?.style.setProperty(name, `${value}px`)
+      const boundary = (target) => target === memberHeading ? members
+        : groupHeadings.find(({ heading }) => heading === target)?.group ?? target
+      const topFor = (target) => boundary(target).getBoundingClientRect().top
+      const readingTopFor = (target, readingTop) => {
+        if (!stickyMembers || !target || !members?.contains(target) || target === memberHeading) return readingTop
+        const group = groupHeadings.find((entry) => entry.group.contains(target))
+        return readingTop + memberHeight + (group && target !== group.heading ? group.height : 0)
+      }
+      const stickyHeadings = [memberHeading, ...groupHeadings.map(({ heading }) => heading)].filter(Boolean)
+      let arriving
+      const endArrival = () => {
+        cancelAnimationFrame(this.arrivalFrame)
+        arriving?.removeAttribute('data-api-arriving')
+        arriving = undefined
+      }
+      // The browser and the anchor handler align a sticky heading where it is stuck, which for a group
+      // above the viewport is the end of its box. The target stays in flow while they scroll, so they
+      // align its source box. Frames end the hold, and every navigation signal restarts it, because
+      // some browsers update the URL after a frame.
+      const settleArrival = () => {
+        cancelAnimationFrame(this.arrivalFrame)
+        this.arrivalFrame = requestAnimationFrame(() => {
+          this.arrivalFrame = requestAnimationFrame(() => { endArrival(); update() })
+        })
+      }
+      const beginArrival = (fragment) => {
+        const heading = stickyMembers ? stickyHeadings.find((candidate) => candidate.id === fragment) : undefined
+        if (!heading) return
+        if (arriving !== heading) {
+          endArrival()
+          heading.setAttribute('data-api-arriving', '')
+          arriving = heading
+        }
+        settleArrival()
+      }
+      const measureMembers = (readingTop) => {
+        if (!memberHeading || !members) return
+        memberHeight = Math.ceil(memberHeading.getBoundingClientRect().height)
+        for (const entry of groupHeadings) entry.height = Math.ceil(entry.heading.getBoundingClientRect().height)
+        const groupHeight = Math.max(0, ...groupHeadings.map((entry) => entry.height))
+        const fontSize = Number.parseFloat(getComputedStyle(root).fontSize) || 16
+        // Keep a reading area beside the stacked bars, scaled to text size and viewport.
+        stickyMembers = memberHeight > 0 &&
+          innerHeight - readingTop - memberHeight - groupHeight >= Math.max(fontSize * 6, innerHeight / 3)
+        members.toggleAttribute('data-api-sticky-members', stickyMembers)
+        setLength(members, '--api-member-heading-height', memberHeight)
+        const last = groupHeadings.at(-1)
+        // Release the owner and final group bars together before their content ends.
+        const release = last ? Math.min(0, last.group.getBoundingClientRect().bottom - readingTop - memberHeight - last.height) : 0
+        setLength(members, '--api-member-heading-top', readingTop + release)
+        const ownerBounds = memberHeading.getBoundingClientRect()
+        setLength(members, '--api-member-heading-clip', Math.min(memberHeight, Math.max(0, readingTop - ownerBounds.top)))
+        for (const entry of groupHeadings) {
+          setLength(entry.group, '--api-group-heading-height', entry.height)
+          setLength(entry.group, '--api-group-heading-top', readingTop + memberHeight + release)
+          const bounds = entry.heading.getBoundingClientRect()
+          setLength(entry.group, '--api-group-heading-clip', Math.min(entry.height, Math.max(0, Math.max(readingTop, ownerBounds.bottom) - bounds.top)))
+        }
+      }
+      this.resetMembers = () => {
+        endArrival()
+        members?.removeAttribute('data-api-sticky-members')
+        for (const name of ['height', 'top', 'clip']) {
+          members?.style.removeProperty(`--api-member-heading-${name}`)
+          for (const entry of groupHeadings) entry.group.style.removeProperty(`--api-group-heading-${name}`)
+        }
+      }
       let previousReadingTop
       let previousSection
       let previousWidth
       let previousArrival
+      let requestedFragment
       const measure = () => {
         const headerHeight = Math.ceil(header?.getBoundingClientRect().height ?? 0)
         const rowHeight = Math.ceil(row?.getBoundingClientRect().height ?? 0)
@@ -57,38 +137,47 @@ const { sections, related } = Astro.props as Props
       const decode = (hash) => { try { return decodeURIComponent(hash.slice(1)) } catch { return hash.slice(1) } }
       const update = (initial = false) => {
         const readingTop = measure()
+        measureMembers(readingTop)
         const links = [...(layout?.querySelectorAll('[data-api-section-link]') ?? [])]
         const targets = [...new Set(links.map((link) => decode(link.hash)))]
           .map((id) => document.getElementById(id)).filter(Boolean)
-          .sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top)
+          .sort((a, b) => topFor(a) - topFor(b))
         // A short page cannot scroll its final section up to the sticky header.
         // Keep an explicitly selected section active while it remains visible.
         const fragment = decode(location.hash)
         const destination = document.getElementById(fragment)
-        if (previousReadingTop !== undefined && destination) {
-          const display = destination.querySelector(':scope > :is(h1, h2, h3, h4, h5, h6)') ?? destination
-          const top = display.getBoundingClientRect().top
-          const reflowed = readingTop !== previousReadingTop || innerWidth !== previousWidth
+        const display = destination?.querySelector(':scope > :is(h1, h2, h3, h4, h5, h6)') ?? destination
+        const arrivalTop = readingTopFor(display, readingTop)
+        // Only a link activation is a request. The anchor handler and the browser own
+        // startup arrival and history traversal, using the clearance measured here.
+        const requested = requestedFragment === fragment
+        // Some browsers update the URL after the next frame; keep the request until it arrives.
+        if (requested) requestedFragment = undefined
+        if (destination && requested && boundary(display) !== display && Math.abs(topFor(display) - arrivalTop) > 1) {
+          // Sticky boxes can already be aligned while their section starts above the viewport.
+          window.scrollBy({ top: topFor(display) - arrivalTop, behavior: 'instant' })
+        } else if (previousReadingTop !== undefined && destination) {
+          const top = topFor(display)
+          const reflowed = arrivalTop !== previousReadingTop || innerWidth !== previousWidth
           const wasPinned = previousArrival?.id === fragment &&
             Math.abs(previousArrival.top - previousReadingTop) <= 1 &&
             Math.abs(window.scrollY - previousArrival.scrollY) <= 1
           // Preserve an anchor at the reading edge, not a hash the reader left behind.
-          if ((reflowed && wasPinned && Math.abs(top - readingTop) > 1) ||
-              (readingTop > previousReadingTop && top >= previousReadingTop - 1 && top < readingTop)) {
-            window.scrollBy({ top: top - readingTop, behavior: 'instant' })
+          if ((reflowed && wasPinned && Math.abs(top - arrivalTop) > 1) ||
+              (arrivalTop > previousReadingTop && top >= previousReadingTop - 1 && top < arrivalTop)) {
+            window.scrollBy({ top: top - arrivalTop, behavior: 'instant' })
           }
         }
-        const display = destination?.querySelector(':scope > :is(h1, h2, h3, h4, h5, h6)') ?? destination
-        previousArrival = display ? { id: fragment, top: display.getBoundingClientRect().top, scrollY: window.scrollY } : undefined
-        previousReadingTop = readingTop
+        previousArrival = display ? { id: fragment, top: topFor(display), scrollY: window.scrollY } : undefined
+        previousReadingTop = arrivalTop
         previousWidth = innerWidth
         const selected = targets.findLast((target) => target.id === fragment ||
-          (destination && target.contains(destination)) ||
+          (destination && boundary(target).contains(destination)) ||
           (target.id.endsWith('.parameters') && fragment.startsWith(target.id.replace(/\.parameters$/, '.parameter.'))))
-        const selectedTop = selected?.getBoundingClientRect().top ?? -1
-        const keepSelected = selected && (initial || (selectedTop >= readingTop && selectedTop < innerHeight))
+        const selectedTop = selected ? topFor(selected) : -1
+        const keepSelected = selected && (initial || (selectedTop >= readingTopFor(selected, readingTop) && selectedTop < innerHeight))
         const current = keepSelected ? selected
-          : targets.findLast((target) => target.getBoundingClientRect().top <= readingTop + 1) ?? targets[0]
+          : targets.findLast((target) => topFor(target) <= readingTopFor(target, readingTop) + 1) ?? targets[0]
         for (const link of links) {
           if (decode(link.hash) === current?.id) link.setAttribute('aria-current', 'location')
           else link.removeAttribute('aria-current')
@@ -109,11 +198,34 @@ const { sections, related } = Astro.props as Props
         this.frame = requestAnimationFrame(() => update())
       }
       window.addEventListener('scroll', schedule, { passive: true, signal })
-      window.addEventListener('hashchange', schedule, { signal })
+      window.addEventListener('hashchange', () => {
+        if (arriving) settleArrival()
+        schedule()
+      }, { signal })
+      // Fragment navigations that no click in this layout started: a typed or scripted hash.
+      window.navigation?.addEventListener('navigate', (event) => {
+        if (!event.hashChange || event.navigationType === 'traverse' || !event.destination.sameDocument) return
+        requestedFragment = decode(new URL(event.destination.url).hash)
+        beginArrival(requestedFragment)
+      }, { signal })
+      layout?.addEventListener('click', (event) => {
+        const link = event.target instanceof Element ? event.target.closest('a[href]') : null
+        if (!(link instanceof HTMLAnchorElement) || event.defaultPrevented || event.button !== 0 ||
+            event.metaKey || event.ctrlKey || event.altKey || event.shiftKey || link.hasAttribute('download') ||
+            (link.target && link.target !== '_self')) return
+        const target = new URL(link.href, location.href)
+        if (!target.hash || target.origin !== location.origin || target.pathname !== location.pathname || target.search !== location.search) return
+        requestedFragment = decode(target.hash)
+        beginArrival(requestedFragment)
+        schedule()
+      }, { signal })
       window.addEventListener('resize', schedule, { signal })
       this.observer = new ResizeObserver(schedule)
       if (header) this.observer.observe(header)
       if (row) this.observer.observe(row)
+      if (members) this.observer.observe(members)
+      if (memberHeading) this.observer.observe(memberHeading)
+      for (const entry of groupHeadings) this.observer.observe(entry.heading)
       document.fonts?.ready.then(() => { if (!signal.aborted) schedule() })
       update(true)
     }
@@ -122,6 +234,7 @@ const { sections, related } = Astro.props as Props
       this.controller?.abort()
       this.observer?.disconnect()
       cancelAnimationFrame(this.frame)
+      this.resetMembers?.()
       document.documentElement.style.removeProperty('--api-header-height')
       document.documentElement.style.removeProperty('--api-sections-height')
       document.documentElement.removeAttribute('data-api-sections-measured')

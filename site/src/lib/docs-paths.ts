@@ -84,6 +84,29 @@ export interface DocsRedirect {
   target: string
 }
 
+/**
+ * Pages about libtmux.org itself live under `meta/`, out of the site root's
+ * namespace. Each old URL keeps answering with a redirect to its new home.
+ */
+export const MOVED_PAGES: readonly DocsRedirect[] = [
+  { path: 'parity', target: 'meta/parity' },
+  { path: 'translations', target: 'meta/translations' },
+  { path: 'tmux/guides/concept-examples', target: 'meta/support' },
+  { path: 'third-party-notices', target: 'meta/third-party-notices' },
+  // The site home lists each port's MCP server in its solution menu.
+  { path: 'mcp', target: '' },
+]
+
+/** Root builds redirect; no link ever pointed into a port tree's copy of these pages. */
+export function movedPageRedirects(buildPort?: string): DocsRedirect[] {
+  return buildPort ? [] : [...MOVED_PAGES]
+}
+
+/** Where a redirect lands: its target below the build base, or the base itself for the home page. */
+export function redirectDestination(base: string, target: string): string {
+  return `${base.replace(/\/$/, '')}/${target ? `${target}/` : ''}`
+}
+
 /** Preserve incoming links to retired reference summaries without a second API page. */
 export function sourceGuideRedirects(buildPort?: string, defaults: Record<string, string> = {}): DocsRedirect[] {
   return (buildPort ? [buildPort] : SOURCE_GUIDE_PORTS).flatMap((port) =>

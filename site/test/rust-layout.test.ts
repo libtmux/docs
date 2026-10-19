@@ -126,6 +126,18 @@ describe('Rust callable layouts', () => {
       expect(output.rootNode.toString()).toBe(input.rootNode.toString())
     } finally { input.delete(); output.delete(); parser.delete() }
   })
+
+  it('links only the parameters the entry lists, leaving an undocumented self receiver plain', async () => {
+    const symbol = method('pub fn kill(self, reason: &str) -> Result<(), Error>', [
+      { name: 'self' }, { name: 'reason', type: '&str' },
+    ], 'kill')
+    const layout = await layoutFor(symbol)
+    const index = new SymbolIndex([symbol], (entry) => `/${entry.id}/`, 'rs')
+    const spans = signatureSpans(layout, index, symbol, symbol.signatures[0]!)
+    const anchors = spans.filter((span) => span.link?.href.startsWith('#')).map((span) => span.link!.href)
+    expect(apiEntryFields(symbol, 'rs').params.map((param) => param.name)).toEqual(['reason'])
+    expect(anchors).toEqual(['#server.Server.kill.parameter.reason'])
+  })
 })
 
 const extract = (source: string) => extractSourceWithSpec(RUST, source, 'probe.rs', 'probe')
@@ -139,8 +151,10 @@ describe('Rust source grammar edge cases', () => {
     const layout = await layoutFor(symbol)
     const spans = signatureSpans(layout, index, symbol, signature)
     expect(spans.filter((span) => span.enclosingContext && span.text === 'T').map((span) => span.link?.href)).toEqual(['/probe.T/'])
-    expect(spans.filter((span) => !span.enclosingContext && span.text === 'T').map((span) => span.link)).toEqual([undefined, undefined])
-    expect(index.linkType('T', symbol, signature).find((span) => span.text === 'T')?.link).toBeUndefined()
+    // The method's own `T` shadows the struct `T` the impl names, and links to the method's declaration.
+    const anchor = '/probe.Probe.method/#probe.Probe.method.type-parameter.T'
+    expect(spans.filter((span) => !span.enclosingContext && span.text === 'T').map((span) => span.link?.href)).toEqual([anchor, anchor])
+    expect(index.linkType('T', symbol, signature).find((span) => span.text === 'T')?.link?.href).toBe(anchor)
   })
 
   it('retains grammar keyword roles and links named raw type identifiers', async () => {
@@ -201,8 +215,10 @@ impl<T> Probe<T> { pub fn method(value: T) {} }`)
     const index = new SymbolIndex(symbols, (entry) => `/${entry.id}/`, 'rs')
     expect(symbol.signatures.map((signature) => signature.enclosingTypeParamNames)).toEqual([['U'], ['T']])
     expect(index.linkType('T', symbol, symbol.signatures[0]).find((span) => span.text === 'T')?.link?.href).toBe('/probe.T/')
-    expect(index.linkType('T', symbol, symbol.signatures[1]).find((span) => span.text === 'T')?.link).toBeUndefined()
-    expect(index.linkType('T', symbol).find((span) => span.text === 'T')?.link).toBeUndefined()
+    // The second impl spells the struct's parameter `T`, so there it is that parameter and not the unit struct.
+    const parameter = '/probe.Probe/#probe.Probe.type-parameter.T'
+    expect(index.linkType('T', symbol, symbol.signatures[1]).find((span) => span.text === 'T')?.link?.href).toBe(parameter)
+    expect(index.linkType('T', symbol).find((span) => span.text === 'T')?.link?.href).toBe(parameter)
     const layouts = await apiSignatureLayouts(symbol, 'rs')
     expect([...layouts.values()].map((layout) => layout.text)).toEqual([
       'impl<U> Probe<U>\npub fn method(value: T)',

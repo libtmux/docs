@@ -499,7 +499,7 @@ export const SERVERS: Readonly<Record<string, ServerSpec>> = {
   },
 }
 
-/** The spec for one port, or Python's, which is what `/mcp/` documents. */
+/** The spec for one port, or Python's, the reference implementation. */
 export function serverSpec(port = 'py'): ServerSpec {
   const spec = SERVERS[port]
   if (!spec) throw new Error(`install-matrix.ts: no MCP server spec for port "${port}"`)
@@ -742,10 +742,10 @@ function scopeGroupVisibleSelectors(): string {
  * A port with no cooldown axis leaves the cooldown attributes out of its
  * selectors entirely, rather than pinning them to "off". The attribute on
  * `<html>` is written from one shared key, so a reader who turned a cooldown
- * on over on `/mcp/` would otherwise arrive at a TypeScript page whose every
- * panel selector failed to match — and `PANEL_DEFAULT_OVERRIDE_RULE` has
- * already hidden the server-rendered default by then, leaving a widget with
- * no panel at all.
+ * on over on one port's MCP page would otherwise arrive at a TypeScript page
+ * whose every panel selector failed to match — and
+ * `PANEL_DEFAULT_OVERRIDE_RULE` has already hidden the server-rendered
+ * default by then, leaving a widget with no panel at all.
  */
 function panelActiveSelectors(spec: ServerSpec): string {
   const selectors: string[] = []

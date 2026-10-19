@@ -148,7 +148,8 @@ export async function checkHomeLauncher(browser, base) {
     assert.equal(await logo.count(), 0, 'The top header has no duplicate artwork')
     for (const { slug } of PORTS) {
       await choose(slug)
-      const links = await solution.locator('a').evaluateAll((links) => links.map((link) => link.getAttribute('href')))
+      // Destinations only: a status badge's card links to the shared concept page.
+      const links = await solution.locator('a.surface-destination').evaluateAll((links) => links.map((link) => link.getAttribute('href')))
       assert(links.length > 0 && links.every((href) => href.startsWith(`${new URL(base).pathname}/${slug}/`)), `${slug}: owned solution destinations`)
       if (['kotlin', 'scala', 'fsharp'].includes(slug)) assert.equal(links.length, 1, `${slug}: core library only`)
       assert.match(await prompt.locator(`[data-port="${slug}"] [data-prompt-text]`).innerText(), new RegExp(`/en/${slug}/`))

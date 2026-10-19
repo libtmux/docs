@@ -23,8 +23,9 @@ server. `-f /dev/null` skips personal tmux configuration for this demonstration.
 $ tmux -L libtmux-demo -f /dev/null new-session -A -s work
 ```
 
-Detach with **Ctrl-b**, then **d**. You return to the original shell while
-the tmux session keeps running. List that server's sessions:
+Detach with `C-b d`: press Ctrl-b, release it, then press d. You return to the
+original shell while the tmux session keeps running. List that server's
+sessions:
 
 ```console
 $ tmux -L libtmux-demo list-sessions

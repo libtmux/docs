@@ -32,6 +32,7 @@ import { scopeProductSymbols } from '../packages/api-model/src/product-exports.t
 import { inheritProductFromOwners } from '../packages/api-model/src/products.ts'
 import { pageSlug, recordAccessorSlugOwner } from '../packages/api-model/src/prose.ts'
 import { navSidecar } from '../packages/api-model/src/nav-sidecar.ts'
+import { misplacedOverloads } from '../packages/api-model/src/overloads.ts'
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const portBySlug = Object.fromEntries(PORT_DEFS.map((port) => [port.slug, port]))
@@ -842,6 +843,16 @@ for (const [port, cfg] of Object.entries(PORTS)) {
 
   model.symbols = model.symbols.filter((symbol) => symbol.apiScope !== 'internal' || legacyIds.has(symbol.id))
   if (model.pruned) model.pruned.kept = model.symbols.length
+
+  // `overload` means one callable with several signatures, and the reference
+  // renders it as a badge. An adapter that stamps a type or a field would put
+  // that badge on a page for something nobody calls, so refuse to write it.
+  const misplaced = misplacedOverloads(model.symbols)
+  if (misplaced.length) {
+    console.error(`gen-api-model: ${port} marks ${misplaced.length} symbols as overloads that are not callables with several signatures, such as ` +
+      misplaced.slice(0, 3).map((symbol) => `${symbol.kind} ${symbol.id}`).join(', '))
+    process.exit(1)
+  }
 
   /**
    * A source path a blob URL can use.

@@ -972,12 +972,15 @@ public class Target {} public class Failure {} public class T {}`, 'Probe.java',
     win.document.body.innerHTML = html
     expect(displayedSignature(win.document.querySelector('.api-native-signature')!)).toBe([...signatureLayouts.values()][0]!.text)
     expect([...win.document.querySelectorAll('[data-api-role="syntax"]')].map((element) => element.textContent)).toEqual(['"literal  Unknown"', 'public', 'synchronized', 'throws'])
-    expect([...win.document.querySelectorAll('a')].filter((element) => element.textContent === 'T')).toEqual([])
+    // The class's T links to its own declaration; the unrelated global class T is never a link target.
+    const bound = [...win.document.querySelectorAll('a.api-type-parameter-name')].find((element) => element.textContent === 'T')!
+    expect(bound.getAttribute('href')).toBe('/edge.Probe/#edge.Probe.type-parameter.T')
+    expect([...win.document.querySelectorAll('a')].filter((element) => element.textContent === 'T' && !element.matches('.api-type-parameter-name'))).toEqual([])
     expect(auditSignature(html).code).toBe(0)
-    const bound = [...win.document.querySelectorAll('span.api-parameter-name')].find((element) => element.textContent === 'T')!
-    expect(bound).toBeDefined()
-    bound.className = 'api-punct'
-    bound.textContent = 'Unknown'
+    const unknown = win.document.createElement('span')
+    unknown.className = 'api-punct'
+    unknown.textContent = 'Unknown'
+    bound.replaceWith(unknown)
     expect(auditSignature(win.document.body.innerHTML).code).toBe(1)
     expect(auditSignature(`${html}<span class="api-type"><span class="api-punct">s:s8CopyableP</span></span>`).code).toBe(1)
   } finally { await win.happyDOM.abort() }

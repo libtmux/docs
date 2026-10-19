@@ -2,6 +2,8 @@ import { docSummaryText, qualifiedNameOf, sourceUrl, type ApiModel, type ApiSymb
 import { productApiHref } from './product-api'
 import { apiGlossary } from './api-glossary'
 import { codeLang, highlightTokens, type CodeHighlight } from './highlight'
+import { tmuxEntityHref } from './tmux-links'
+import { tmuxManual, tmuxManualEntities, tmuxManualEntityHref, tmuxManualUrl, type TmuxManualEntity } from './tmux-manual-data'
 
 /** Small, inert metadata shared by reference links and their preview cards. */
 export interface LinkPreview {
@@ -14,6 +16,8 @@ export interface LinkPreview {
   signatureLanguage?: string
   signatureHighlight?: CodeHighlight
   href: string
+  /** Replaces the card's default "Open reference" link text. */
+  actionLabel?: string
   source?: string
   terms?: Record<string, LinkPreview>
 }
@@ -44,5 +48,37 @@ export function glossaryPreview(href: string): LinkPreview {
       schema: 1, title: term.id, kind: term.id, description: term.definition, detail: term.detail,
       href: `${glossary.path}#${term.id}`,
     } satisfies LinkPreview]))),
+  }
+}
+
+const MANUAL_ACTION = 'Open manual'
+
+function tmuxEntityPreview(entity: TmuxManualEntity, version: string): LinkPreview {
+  return {
+    schema: 1, title: entity.name, kind: entity.kind, description: entity.summary || entity.detail, detail: entity.detail,
+    signature: entity.usage, signatureLanguage: entity.usage ? 'tmux-usage' : undefined,
+    href: tmuxManualEntityHref(entity.kind, entity.name, version)!, actionLabel: MANUAL_ACTION,
+  }
+}
+
+/**
+ * Cards for the CLI manual: a command page previews its summary and syntax,
+ * and the full manual previews each option, hook and format variable by anchor.
+ */
+export function tmuxManualPreview(version: string, slug: string): LinkPreview {
+  const reference = tmuxManual(version)
+  if (slug === 'full') {
+    return {
+      schema: 1, title: `tmux ${reference.version} manual`, kind: 'manual', href: tmuxManualUrl(version, 'full'),
+      description: `Command syntax and behavior for tmux ${reference.version}.`, actionLabel: MANUAL_ACTION,
+      terms: Object.fromEntries(tmuxManualEntities(version).map((entity) => [entity.anchor, tmuxEntityPreview(entity, version)])),
+    }
+  }
+  const command = reference.commands.find((entry) => entry.name === slug)
+  if (!command) throw new Error(`Unknown tmux command: ${slug}`)
+  return {
+    schema: 1, title: command.name, kind: 'command', description: command.summary, href: tmuxEntityHref('command', command.name, version)!,
+    signature: `tmux ${command.name}${command.usage ? ` ${command.usage}` : ''}`, signatureLanguage: 'tmux-usage',
+    detail: command.alias ? `Alias: ${command.alias}.` : undefined, actionLabel: MANUAL_ACTION,
   }
 }

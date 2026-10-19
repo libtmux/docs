@@ -96,6 +96,30 @@ per-language table is in `packages/api-model/src/doc/roles.ts`; adding a
 syntax means adding a matcher, not widening an existing one, because the
 guards are what keep `[see below]` from becoming a link.
 
+**Badges: kind is a filled chip, a modifier is an outline on the same box.**
+gp-sphinx draws a modifier as a monospace outline pill at 0.68rem, with its hue
+scoped to `dl.py`. This site draws a kind as the legend chip (the mark and the
+word in one filled token) and a modifier on that chip's geometry: the same
+snapped height, radius, sans 600 word and baseline, so a declaration row reads
+as one family and an entry has one loud thing. Where it differs:
+
+- The modifier keeps gp-sphinx's hue for the same word (async violet, abstract
+  indigo, classmethod and static amber, final and readonly green, the rest a
+  readable grey) from the same `--gp-sphinx-badge-mod-*` tokens, but applies
+  it wherever a modifier sits, not only inside `dl.py`. The member list's
+  `inherited` and a card's context badge are modifiers too.
+- The light amber ink is five percent darker than the token. The token is
+  under 4.5:1 on the declaration band, and the darker ink keeps the hue. Dark
+  mode takes the token as it is.
+- `package` is an outline in the types hue, no longer a second filled badge.
+- `deprecated` is a status and takes the warning ink and border, which the
+  vendored `dl.py` default would otherwise repaint grey.
+- The word is not lowercased by CSS: a package name keeps its case.
+
+`check-style-parity.mjs` compares the eight treatments above and none of them
+is a badge, so this divergence is held by `test/modifier-chips.test.ts` and the
+modifier chips in `check-badge-centring.mjs`, not by that check.
+
 **The page shell is this site's, not Furo's.** Header, footer, search, version
 switcher and port switcher are shared with the rest of libtmux.org. Only the
 reference *content* is held to parity. Under reduced motion the API surface

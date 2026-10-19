@@ -43,11 +43,10 @@
 /* The header's menus of a port's external destinations. */
 .header-picker { --picker-width: 22rem; }
 .header-picker__panel { max-height: min(32rem, calc(100dvh - 5rem)); overflow-y: auto; overscroll-behavior: contain; }
-.header-picker__group + .header-picker__group { margin-top: .4rem; }
-.header-picker__group-title { display: flex; align-items: center; gap: .6rem; margin: .5rem .6rem .25rem; line-height: 1.35; }
-.header-picker__group-title img { flex: none; width: 1.5rem; height: 1.5rem; object-fit: contain; }
-.header-picker__group-title strong { display: block; font-size: .8125rem; font-weight: 500; }
-.header-picker__group-title small { display: block; font-size: .6875rem; color: var(--color-muted); }
+/* A product's heading is a label, not a row: small, muted capitals with no pointer, hover or focus state. Its rows sit inset under it. */
+.header-picker__group + .header-picker__group { margin-top: .5rem; }
+.header-picker__heading { margin: .5rem .6rem .15rem; color: var(--color-muted); cursor: default; font-size: .6875rem; font-weight: 600; letter-spacing: .04em; line-height: 1.35; text-transform: uppercase; }
+.header-picker__group > .header-picker__option { margin-inline-start: .5rem; }
 .header-picker__icon { display: grid; place-items: center; flex: none; width: 1.5rem; color: var(--color-muted); }
 .header-picker__text { display: grid; min-width: 0; }
 .header-picker__name { font-weight: 500; }

@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
-import type { ApiSymbol, Modifier, Param, Signature, SymbolKind } from '../model.ts'
+import type { ApiSymbol, Modifier, Param, Signature, SymbolKind, TypeParameter } from '../model.ts'
 import { parseMarkdownDocFull } from '../doc/markdown.ts'
+import { markOverload } from '../overloads.ts'
 
 /**
  * Swift from its compiler's own symbol graph, not from tree-sitter.
@@ -75,6 +76,7 @@ interface RawSymbol {
     returns?: Fragment[]
   }
   swiftExtension?: { extendedModule?: string }
+  swiftGenerics?: { constraints?: { kind: string; lhs: string; rhs: string }[] }
   declarationFragments?: Fragment[]
 }
 
@@ -126,15 +128,37 @@ function raisesOf(fragments: Fragment[]): Signature['raises'] {
   return undefined
 }
 
+/**
+ * The generic parameters a declaration introduces. The graph's own parameter
+ * list repeats every enclosing type's, so the declaration's `genericParameter`
+ * fragments name the new ones; bounds come from the graph's constraints, which
+ * also carry the ones a `where` clause adds.
+ */
+function typeParametersOf(raw: RawSymbol): TypeParameter[] {
+  const fragments = raw.declarationFragments ?? []
+  const constraints = raw.swiftGenerics?.constraints ?? []
+  return fragments.flatMap((fragment, at) => {
+    if (fragment.kind !== 'genericParameter') return []
+    const own = constraints.filter((constraint) => constraint.lhs === fragment.spelling)
+    const conforms = own.filter((constraint) => constraint.kind !== 'sameType').map((constraint) => constraint.rhs)
+    const equal = own.filter((constraint) => constraint.kind === 'sameType').map((constraint) => `== ${constraint.rhs}`)
+    const bound = [conforms.join(' & '), ...equal].filter(Boolean).join(', ')
+    const pack = fragments[at - 2]?.spelling === 'each' || fragments[at - 1]?.spelling === 'each'
+    return [{ name: fragment.spelling, ...(pack ? { modifier: 'each' } : {}), ...(bound ? { bound } : {}) }]
+  }).filter((parameter, at, all) => all.findIndex((entry) => entry.name === parameter.name) === at)
+}
+
 function signatureOf(raw: RawSymbol): Signature | undefined {
   const fn = raw.functionSignature
   if (!fn) return undefined
+  const typeParameters = typeParametersOf(raw)
   const params: Param[] = (fn.parameters ?? []).map((p) => ({
     name: p.name,
     type: fragmentText(p.declarationFragments)?.replace(/^[^:]*:\s*/, ''),
   }))
   return {
     params,
+    ...(typeParameters.length ? { typeParameters } : {}),
     returns: fragmentText(fn.returns),
     // Typed throws lives in the subHeading rather than in functionSignature —
     // `throws(TmuxError)` — and it is the construct tree-sitter loses, so it
@@ -255,9 +279,7 @@ export function extractSymbolGraph(files: string[]): ApiSymbol[] {
         } else if (!existing.source.file && inheritedFrom) {
           existing.inheritedFrom ??= inheritedFrom
         }
-        if (existing.signatures.length > 1 && !existing.modifiers.includes('overload')) {
-          existing.modifiers.push('overload')
-        }
+        markOverload(existing)
         continue
       }
 
@@ -270,6 +292,7 @@ export function extractSymbolGraph(files: string[]): ApiSymbol[] {
         modifiers: modifiersOf(raw),
         parent: path.length > 1 ? path.slice(0, -1).join('.') : undefined,
         signatures: signature ? [signature] : [],
+        ...(!signature && typeParametersOf(raw).length ? { typeParameters: typeParametersOf(raw) } : {}),
         type: signature ? undefined : fragmentText(raw.names.subHeading),
         doc: parsed?.doc,
         extends: conformedNames(conformances, raw.identifier.precise),

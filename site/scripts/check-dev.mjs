@@ -7,28 +7,40 @@ import { dev } from 'astro'
 import { chromium, firefox, webkit } from 'playwright'
 import { API_MODEL_PORTS, PORTS, productAvailable } from '../src/lib/ports.ts'
 import { checkClipboard, checkCompleteApiExamples } from './check-clipboard.mjs'
-import { checkApiAnchorArrival, checkApiExampleOwnership, checkApiNavigation, checkDocumentationNavigation, checkNavigation } from './check-navigation.mjs'
+import { checkApiAnchorArrival, checkApiExampleOwnership, checkApiNavigation, checkApiStickyHeadings, checkApiStickyHeadingsFail, checkDocumentationNavigation, checkNavigation } from './check-navigation.mjs'
 import { checkReferencePreferences, checkGlobalHeader } from './check-reference-preferences.mjs'
+import { checkHeaderMenuSections, checkHeaderMenuSectionsFail } from './check-header-menu-sections.mjs'
+import { checkStatusBadges, checkStatusBadgesFail } from './check-status-badges.mjs'
 import { checkHomeLauncher } from './check-home-launcher.mjs'
 import { checkHomeTaskReset } from './check-home-task-reset.mjs'
 import { checkColorScheme } from './check-color-scheme.mjs'
 import { checkHomeExampleOptions } from './check-home-example-options.mjs'
-import { checkDevSample } from './check-dev-sample.mjs'
-import { checkNativeSignatureGeometry, checkNativeSignatureLinks } from './check-native-layout.mjs'
-import { checkRequiredAppearance, checkWebAnalytics, checkWebAnalyticsTransitions } from './check-page-readiness.mjs'
+import { checkDevSample, checkRowPermalinks } from './check-dev-sample.mjs'
+import { checkDeclarationControlAlignment, checkDeclarationControlsLevel, checkMemberBodyInsets, checkNativeSignatureGeometry, checkNativeSignatureLinks } from './check-native-layout.mjs'
+import { checkBadgeCentring, checkMentionDensity } from './check-badge-centring.mjs'
+import { checkBlockLinksUndecorated, checkKindBadgeLinks, checkRequiredAppearance, checkWebAnalytics, checkWebAnalyticsTransitions } from './check-page-readiness.mjs'
+import { checkTypeParameters } from './check-type-parameters.mjs'
+import { checkTmuxKeys, TMUX_KEY_PAGES } from './check-tmux-keys.mjs'
 
 const apiNavigationOnly = process.argv.includes('--api-navigation')
 const apiAnchorsOnly = process.argv.includes('--api-anchors')
+const apiStickyOnly = process.argv.includes('--api-sticky')
+const typeParametersOnly = process.argv.includes('--type-parameters')
 const apiSignaturesOnly = process.argv.includes('--api-signatures')
 const referenceLayoutOnly = process.argv.includes('--reference-layout')
+const memberBodiesOnly = process.argv.includes('--member-bodies')
 const keywordHelpOnly = process.argv.includes('--keyword-help')
 const signaturePorts = apiSignaturesOnly ? API_MODEL_PORTS
   : API_MODEL_PORTS.filter((port) => ['py', 'ts'].includes(port.slug))
 const referencePreferencesOnly = process.argv.includes('--reference-preferences')
 const globalHeaderOnly = process.argv.includes('--global-header')
+const headerMenuSectionsOnly = process.argv.includes('--header-menu-sections')
+const statusBadgesOnly = process.argv.includes('--status-badges')
+const badgeCentringOnly = process.argv.includes('--badge-centring')
 const homeLauncherOnly = process.argv.includes('--home-launcher')
 const homeControlsOnly = process.argv.includes('--home-controls')
 const sampleOnly = process.argv.includes('--sample')
+const tmuxKeysOnly = process.argv.includes('--tmux-keys')
 const serveOnly = process.argv.includes('--serve')
 const requestedBrowserPort = process.env.LIBTMUX_DOCS_BROWSER_PORT
 assert(requestedBrowserPort === undefined || /^\d+$/.test(requestedBrowserPort)
@@ -382,8 +394,8 @@ async function checkSignatureLayouts(browser, base) {
         const code = await kotlin.locator('.gp-sphinx-api-layout-left').boundingBox()
         const toolbar = await kotlin.locator('.gp-sphinx-api-layout-right').boundingBox()
         if (width === 803 || width === 1920) {
-          assert(Math.abs(code.y - toolbar.y) < 2,
-            `${colorScheme}/${width}px: toolbar shares the declaration's first row when it fits`)
+          const level = await checkDeclarationControlsLevel(kotlin, `${colorScheme}/${width}px: toolbar shares the declaration's first line`)
+          assert.equal(level.mode, 'beside', `${colorScheme}/${width}px: toolbar shares the declaration's first row when it fits`)
           assert(code.x + code.width <= toolbar.x,
             `${colorScheme}/${width}px: declaration leaves room for its toolbar`)
         }
@@ -397,6 +409,8 @@ async function checkSignatureLayouts(browser, base) {
       }
     }
     console.log('Native browse layout: compact F# modules and linked Kotlin function cards work without JavaScript')
+    const { measured } = await checkDeclarationControlAlignment(browser, base)
+    console.log(`Declaration controls: ${measured.length} sampled headers keep their controls level with the first signature line at 1440/768/500/390px`)
   } finally {
     await page.close()
   }
@@ -491,6 +505,11 @@ async function checkKeywordHelp(browser, base) {
   console.log('Keyword help: official docs, hover, keyboard, dismissal and viewport bounds pass with and without JavaScript')
 }
 
+async function checkMemberBodies(browser, base) {
+  const measured = await checkMemberBodyInsets(browser, base)
+  console.log(`Member bodies: ${measured} measured, padding alone sets the top and bottom inset at 1440/390px`)
+}
+
 async function checkReferenceAndHeroes(browser, base) {
   const page = await browser.newPage({ reducedMotion: 'reduce' })
   page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
@@ -577,27 +596,24 @@ async function checkReferenceAndHeroes(browser, base) {
       await page.setViewportSize({ width, height: 900 })
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
         `Kotlin parameter and exception fields fit at ${width}px`)
-      const namespace = await page.locator('.api-qualified-namespace').boundingBox()
       const copy = await page.getByRole('button', { name: 'Copy fully qualified name' }).boundingBox()
-      const row = await page.locator('.api-qualified-name').boundingBox()
-      const title = await page.locator('.api-reference-heading h1').boundingBox()
-      assert(Math.abs(namespace.y + namespace.height / 2 - copy.y - copy.height / 2) < 2,
-        `Package and copy control share a center line at ${width}px`)
-      assert(row.height <= 32 && row.y - title.y - title.height <= 8,
-        `Package stays in one compact row beneath the heading at ${width}px`)
+      const row = await page.locator('.api-source-details .api-qualified-name').boundingBox()
+      assert(copy.y >= row.y - 1 && copy.y + copy.height <= row.y + row.height + 1,
+        `The copy control sits inside the qualified-name row at ${width}px`)
+      assert.equal(await page.locator('.api-reference-heading .api-qualified-name').count(), 0,
+        `The heading carries no qualified-name line at ${width}px`)
     }
     for (const name of ['config', 'defaultTimeout', 'toKotlinDuration', 'Duration', 'CoroutineScope', 'StateFlow']) {
       assert(await page.locator('main a').filter({ hasText: new RegExp(`^${name}$`) }).count() > 0,
         `Kotlin liveState links ${name}`)
     }
     console.log('Native API: Kotlin call-chain links and parameter layout pass at 1440/768/390px')
-    const qualified = page.locator('.api-qualified-name')
+    const qualified = page.locator('.api-source-details .api-qualified-name')
     const fullName = 'io.github.libtmux.kotlin.Server.liveState'
-    const namespace = qualified.locator('.api-qualified-namespace')
-    assert.equal(await namespace.innerText(), 'io.github.libtmux.kotlin')
-    assert.equal(await namespace.getAttribute('title'), 'io.github.libtmux.kotlin')
-    assert.equal(await qualified.locator('[data-api-expand-name]').count(), 0,
-      'Ordinary package names remain fully visible without an expansion control')
+    const packageRow = page.locator('.api-source-details dt', { hasText: /^Package$/ }).locator('xpath=following-sibling::dd[1]')
+    assert.equal(await packageRow.innerText(), 'io.github.libtmux.kotlin',
+      'The source and package disclosure names the Kotlin package, which the heading no longer repeats')
+    assert.equal(await qualified.locator('code').innerText(), fullName)
     for (const reject of [false, true]) {
       await page.evaluate((reject) => {
         Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
@@ -614,7 +630,7 @@ async function checkReferenceAndHeroes(browser, base) {
     }
     const anchors = await page.locator('[id]').evaluateAll((elements) => elements.map((element) => element.id))
     assert.equal(anchors.filter((id) => id === fullName).length, 1, 'Page title and declaration have distinct anchors')
-    console.log('Qualified names: compact package row, exact copied identity and clipboard refusal pass')
+    console.log('Qualified names: a row of the source and package disclosure, exact copied identity and clipboard refusal pass')
     await page.setViewportSize({ width: 1440, height: 900 })
     const contents = page.getByRole('navigation', { name: 'On this page', exact: true })
     assert(await contents.isVisible(), 'Wide reference pages show section navigation')
@@ -675,9 +691,8 @@ async function checkReferenceAndHeroes(browser, base) {
     ]) {
       await page.goto(`${base}/java/latest/reference/io-github-libtmux-${slug}/`)
       assert.equal(await page.title(), `${qualifiedName} | libtmux-java`)
-      assert.equal(await page.locator('.api-qualified-namespace').innerText(), 'io.github.libtmux')
-      assert.equal(await page.locator('[data-api-expand-name]').count(), 0,
-        'Ordinary Java package names remain fully visible without an expansion control')
+      assert.equal(await page.locator('.api-source-details dt', { hasText: /^Package$/ }).locator('xpath=following-sibling::dd[1]').innerText(), 'io.github.libtmux',
+        'The source and package disclosure names the Java package')
       assert.equal(await page.locator('[data-api-copy-name]').getAttribute('data-api-copy-name'), qualifiedName)
       const legacyId = qualifiedName.replace('libtmux.Server', 'libtmux.Server.Server')
       assert(await page.locator(`[id="${legacyId}"]`).evaluate((element) => element.matches('dt.gp-sphinx-api-header')),
@@ -729,9 +744,15 @@ try {
   // the running app. The outer loop still budgets this initial compilation.
   const firstPage = homeLauncherOnly || homeControlsOnly ? '/'
     : keywordHelpOnly ? '/kotlin/latest/reference/io-github-libtmux-kotlin-withserver/'
-    : documentationNavigationOnly ? '/py/latest/' : apiSignaturesOnly ? '/api-signature-probe/'
-    : apiNavigationOnly ? '/lua/latest/reference/libtmux-server/' : '/tmux/concepts/server-session-window-pane/'
-  const setupPages = sampleOnly ? [firstPage, '/demo/widgets/pickers/'] : [firstPage]
+    : apiStickyOnly ? '/swift/latest/reference/server/'
+    : badgeCentringOnly ? '/py/stable/guides/attaching-to-tmux/'
+    : documentationNavigationOnly || headerMenuSectionsOnly || statusBadgesOnly ? '/py/latest/' : apiSignaturesOnly ? '/api-signature-probe/'
+    : apiNavigationOnly ? '/lua/latest/reference/libtmux-server/'
+    : typeParametersOnly ? '/ts/latest/reference/selection-selection-where/' : '/tmux/concepts/server-session-window-pane/'
+  const fullRun = ![homeLauncherOnly, homeControlsOnly, keywordHelpOnly, apiSignaturesOnly, referenceLayoutOnly, globalHeaderOnly, headerMenuSectionsOnly, statusBadgesOnly, badgeCentringOnly,
+    referencePreferencesOnly, documentationNavigationOnly, apiNavigationOnly, apiAnchorsOnly, typeParametersOnly].some(Boolean)
+  const setupPages = sampleOnly ? [firstPage, '/demo/widgets/pickers/', ...TMUX_KEY_PAGES]
+    : [firstPage, ...(fullRun ? TMUX_KEY_PAGES : [])]
   const ready = Promise.all(setupPages.map(async (path) => {
     const response = await fetch(`${base}${path}`)
     assert(response.ok, `Browser setup: HTTP ${response.status} at ${path}`)
@@ -746,6 +767,8 @@ try {
     await retryReload(() => checkDevSample(browser, base))
     await checkWebAnalytics(browser, base)
     await checkWebAnalyticsTransitions(browser, base)
+  } else if (tmuxKeysOnly) {
+    await retryReload(() => checkTmuxKeys(browser, base))
   } else if (homeLauncherOnly) {
     await checkHomeLauncher(browser, base)
   } else if (homeControlsOnly) {
@@ -757,12 +780,24 @@ try {
   } else if (apiSignaturesOnly) {
     await checkSignatureLayouts(browser, base)
     await retryReload(() => checkKeywordHelp(browser, base))
+  } else if (memberBodiesOnly) {
+    await retryReload(() => checkMemberBodies(browser, base))
   } else if (referenceLayoutOnly) {
     await retryReload(() => checkReferenceAndHeroes(browser, base))
+    await retryReload(() => checkMemberBodies(browser, base))
     await checkSignatureLayouts(browser, base)
     await retryReload(() => checkKeywordHelp(browser, base))
   } else if (globalHeaderOnly) {
     await retryReload(() => checkGlobalHeader(browser, base))
+  } else if (headerMenuSectionsOnly) {
+    await retryReload(() => checkHeaderMenuSections(browser, base))
+    await checkHeaderMenuSectionsFail(browser, base)
+  } else if (statusBadgesOnly) {
+    await retryReload(() => checkStatusBadges(browser, base))
+    await checkStatusBadgesFail(browser, base)
+  } else if (badgeCentringOnly) {
+    await retryReload(() => checkBadgeCentring(browser, base))
+    await checkMentionDensity(browser, base)
   } else if (referencePreferencesOnly) {
     await retryReload(() => checkReferencePreferences(browser, base))
     await retryReload(() => checkGlobalHeader(browser, base))
@@ -774,10 +809,27 @@ try {
     await retryReload(() => checkApiNavigation(page, base))
   } else if (apiAnchorsOnly) {
     await retryReload(() => checkApiAnchorArrival(browser, base))
+  } else if (apiStickyOnly) {
+    // Each engine aligns a sticky heading differently, so this mode runs all three.
+    const sticky = (engineBrowser) => retryReload(() => checkApiStickyHeadings(engineBrowser, base))
+      .then(() => checkApiStickyHeadingsFail(engineBrowser, base))
+    await sticky(browser)
+    for (const other of [chromium, firefox, webkit].filter((candidate) => candidate !== driver)) {
+      const extra = await other.launch(other === chromium ? { channel: process.env.LIBTMUX_DOCS_BROWSER_CHANNEL } : {})
+      try {
+        await sticky(extra)
+      } finally {
+        await extra.close()
+      }
+    }
+  } else if (typeParametersOnly) {
+    await retryReload(() => checkTypeParameters(browser, base))
   } else {
     await retryReload(() => checkRequiredAppearance(browser, base))
+    await retryReload(() => checkTmuxKeys(browser, base))
     await checkWebAnalytics(browser, base)
     await checkWebAnalyticsTransitions(browser, base)
+    await retryReload(() => checkRowPermalinks(browser, base))
     // Timed page loads share Vite's compiler. Finish each browser matrix
     // before starting the next, including the main page walk below.
     let previous = Promise.resolve()
@@ -801,18 +853,33 @@ try {
     const navigationPage = await browser.newPage({ reducedMotion: 'reduce' })
     navigationPage.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     const navigation = schedule(() => retryReload(() => checkNavigation(navigationPage, base)).finally(() => navigationPage.close()))
-    const reference = schedule(() => checkReferenceAndHeroes(browser, base).then(() => checkSignatureLayouts(browser, base))
+    const reference = schedule(() => checkReferenceAndHeroes(browser, base)
+      .then(() => retryReload(() => checkMemberBodies(browser, base)))
+      .then(() => checkSignatureLayouts(browser, base))
       .then(() => retryReload(() => checkKeywordHelp(browser, base)))
     )
     const preferences = schedule(() => checkReferencePreferences(browser, base))
     const globalHeader = schedule(() => checkGlobalHeader(browser, base))
+    const headerMenuSections = schedule(() => checkHeaderMenuSections(browser, base)
+      .then(() => checkHeaderMenuSectionsFail(browser, base)))
+    const statusBadges = schedule(() => checkStatusBadges(browser, base)
+      .then(() => checkStatusBadgesFail(browser, base)))
     const homeLauncher = schedule(() => checkHomeLauncher(browser, base))
     const documentationNavigation = schedule(() => retryReload(() => checkDocumentationNavigation(browser, base)))
     const apiNavigationPage = await browser.newPage({ reducedMotion: 'reduce' })
     apiNavigationPage.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     const apiNavigation = schedule(() => retryReload(() => checkApiNavigation(apiNavigationPage, base)).finally(() => apiNavigationPage.close()))
     const apiAnchors = schedule(() => retryReload(() => checkApiAnchorArrival(browser, base)))
+    const kindBadges = schedule(() => retryReload(() => checkKindBadgeLinks(browser, base)))
+    const badgeCentring = schedule(() => retryReload(() => checkBadgeCentring(browser, base, { sample: sampleOnly }))
+      .then(() => checkMentionDensity(browser, base)))
+    const blockLinks = schedule(() => retryReload(() => checkBlockLinksUndecorated(browser, base)))
     await apiAnchors
+    const apiSticky = schedule(() => retryReload(() => checkApiStickyHeadings(browser, base))
+      .then(() => checkApiStickyHeadingsFail(browser, base)))
+    await apiSticky
+    const typeParameters = schedule(() => retryReload(() => checkTypeParameters(browser, base)))
+    await typeParameters
     const paths = ['tmux/concepts/server-session-window-pane', 'tmux/examples/attach-and-send-keys', 'mcp/tools', 'ts/latest/workspace/reference/builder-applyworkspace',
       'ts/latest/workspace/internals/guides', 'py/stable/workspace/guides',
       'ts/latest/mcp/tools', 'csharp/latest/mcp/tools/capture_pane']
@@ -1106,8 +1173,8 @@ try {
     console.log('Fresh Astro + browser: prose, workspace, MCP tools, API equivalents, 390–1600px header and dark hue PASS')
     await page.close()
     const failures = (await Promise.all([
-      navigation, apiExamples, reference, preferences, globalHeader, apiNavigation,
-      clipboard, documentationNavigation, homeLauncher, apiAnchors,
+      navigation, apiExamples, reference, preferences, globalHeader, headerMenuSections, statusBadges, apiNavigation,
+      clipboard, documentationNavigation, homeLauncher, apiAnchors, apiSticky, typeParameters, kindBadges, badgeCentring, blockLinks,
     ])).filter(Boolean)
     if (failures.length) throw new AggregateError(failures, 'Browser checks failed')
   }

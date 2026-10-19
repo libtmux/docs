@@ -2,11 +2,12 @@ import { fromMarkdown } from 'mdast-util-from-markdown'
 import { SKIP, visit } from 'unist-util-visit'
 import { proseMentions, type ApiProduct } from '@libtmux/api-model'
 import { resolvePortContent } from './workspace-shared-slots'
-import { createProseLinker, PORT_BY_LABEL } from './prose-resolver'
+import { createProseLinker, PORT_BY_LABEL, protocolRunMentions } from './prose-resolver'
 import { PORT_BY_SLUG } from './ports'
 import { rewriteMarkdownLinks } from '../plugins/remark-port-code.mjs'
-import { tmuxMentionMarkdown } from './tmux-links'
-import { isTmuxProse, type DocsPage } from './docs-paths'
+import { mentionMarkdown, mergeMentions, tmuxMentions } from './tmux-links'
+import { isLibraryPage, workspaceNames } from './workspace-links'
+import { docsPath, isTmuxProse, type DocsPage } from './docs-paths'
 import { documenterHeading } from '../plugins/remark-documenter-headings'
 
 interface MarkdownLinkProjection {
@@ -25,9 +26,15 @@ export function linkProseMarkdown(raw: string, port?: string, product?: ApiProdu
     && (!port || PORT_BY_SLUG[port]?.referenceKind !== 'guide')
   const spans = new Set<number>()
   const edits: { start: number; end: number; text: string }[] = []
+  const unclaimed: typeof edits = []
   const link = createProseLinker(product)
+  const route = project.page ? docsPath(project.page) : undefined
+  // The same rule as the rendered page: a bare workspace name is evidence only on a user-facing workspace page.
+  const bareWorkspaceNames = product === 'workspace' && !isLibraryPage(route, project.page?.data.sidebar?.group)
+  // The first cell of a table row defines the entry it names.
+  const inFirstCell = (offset: number) => /^\s*\|[^|]*$/.test(body.slice(body.lastIndexOf('\n', offset - 1) + 1, offset))
   let htmlDepth = 0
-  visit(fromMarkdown(body), (node) => {
+  visit(fromMarkdown(body), (node, _index, parent) => {
     if (node.type === 'heading' && node.position?.start.offset !== undefined && node.position.end.offset !== undefined) {
       const start = node.position.start.offset, end = node.position.end.offset
       const owner = portAt(start) ?? port
@@ -67,9 +74,24 @@ export function linkProseMarkdown(raw: string, port?: string, product?: ApiProdu
     if ((node.type === 'inlineCode' || node.type === 'text') && !htmlDepth && node.position?.start.offset !== undefined) {
       const start = node.position.start.offset
       const end = node.position.end.offset!
-      const native = tmuxMentionMarkdown(node.value, node.type === 'inlineCode', project.resolved)
-      if (native && (node.type === 'inlineCode' || body.slice(start, end) === node.value)) {
-        edits.push({ start, end, text: native })
+      const code = node.type === 'inlineCode'
+      const owner = portAt(start) ?? port
+      // The page's own product and port name things the language API and tmux also name.
+      const names = code && owner
+        ? workspaceNames(node.value, { port: owner, route, bare: bareWorkspaceNames, definition: inFirstCell(start) })
+        : { mentions: [], defined: false }
+      // A heading names its own section, so it links nothing; neither does the place that defines a name.
+      const own = parent?.type === 'heading' ? [] : names.mentions
+      if (!own.length && (names.defined || names.mentions.length)) return SKIP
+      const tmux = tmuxMentions(node.value, { code, before: body.slice(Math.max(0, start - 48), start), after: body.slice(end, end + 48) })
+      const native = mentionMarkdown(node.value, code, mergeMentions(own, mergeMentions(tmux,
+        code && owner && product === 'mcp' ? protocolRunMentions(link, node.value, owner) : [])), project.resolved)
+      if (native && (code || body.slice(start, end) === node.value)) {
+        // A command or a workspace name claims its span; a library symbol outranks an option, hook or format variable.
+        if (linkApi && code && !own.length && !tmux.some((mention) => mention.kind === 'command')) {
+          unclaimed.push({ start, end, text: native })
+          spans.add(start)
+        } else edits.push({ start, end, text: native })
         return SKIP
       }
     }
@@ -85,6 +107,7 @@ export function linkProseMarkdown(raw: string, port?: string, product?: ApiProdu
     const href = (project.resolved?.(decision.href) ?? decision.href).replaceAll('<', '%3C').replaceAll('>', '%3E')
     edits.push({ start: mention.start, end: mention.end, text: `[${body.slice(mention.start, mention.end)}](<${href}>)` })
   }
+  for (const edit of unclaimed) if (!edits.some((claimed) => claimed.start === edit.start)) edits.push(edit)
   let out = body
   for (const edit of edits.sort((a, b) => b.start - a.start)) out = `${out.slice(0, edit.start)}${edit.text}${out.slice(edit.end)}`
   return out

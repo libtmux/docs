@@ -126,7 +126,7 @@ const versionEntry: VersionEntry = {
  * usually wants one of those, not all five.
  */
 const sectionPath = pagePath.startsWith('tmux/')
-  ? pagePath.slice(5).replace(/^[^/]+\/(?=manual|reference)/, '') : pagePath
+  ? pagePath.slice(5).replace(/^[^/]+\/(?=manual|reference|catalog)/, '') : pagePath
 const section = (sectionPath.split('/').filter(Boolean)[0] ?? 'home').toLowerCase()
 
 const routePort = portSlug ?? (process.env.LIBTMUX_DOCS_PORT || undefined) ?? (pagePath.startsWith('reference/') ? pagePath.split('/')[1] : undefined)

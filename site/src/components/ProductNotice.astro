@@ -1,7 +1,7 @@
 ---
 import Aside from './Aside.astro'
 import ProseText from './ProseText.astro'
-import { DOC_PRODUCTS, PORT_BY_SLUG, productConceptNotice, productDescription, productInDevelopment, workspaceOverviewNotice, type DocProduct } from '../lib/ports'
+import { DOC_PRODUCTS, PORT_BY_SLUG, PRODUCT_STATUS_GUIDE, productConceptNotice, productDescription, productInDevelopment, workspaceOverviewNotice, type DocProduct } from '../lib/ports'
 import { withRoot } from '../lib/site-root'
 
 interface Props { port: string; product: DocProduct; overview?: boolean }
@@ -17,5 +17,5 @@ const notice = (overview && product === 'workspace' ? workspaceOverviewNotice(in
 ---
 {notice && <Aside type={concept ? 'note' : 'caution'} title={notice.title}>
   <ProseText text={notice.body} port={port} class="mb-0" />
-  {concept && <p class="mb-0"><a href={withRoot('/tmux/guides/concept-examples/')}>What concept means</a></p>}
+  {concept && <p class="mb-0"><a href={withRoot(PRODUCT_STATUS_GUIDE)}>What concept means</a></p>}
 </Aside>}

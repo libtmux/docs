@@ -1,0 +1,235 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import ApiTree from '../api/ApiTree.astro'
+import ApiBadge from '../api/ApiBadge.astro'
+import ApiPageContents from '../api/ApiPageContents.astro'
+import SymbolName from '../api/SymbolName.astro'
+import PageToolbar from '../PageToolbar.astro'
+import PagePortSwitcher from '../PagePortSwitcher.astro'
+import DocumentationContext from '../docs/DocumentationContext.astro'
+import { buildLocale } from '../../i18n/resolve'
+import { localeSourcePath } from '../../i18n/locales'
+import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO } from '../../i18n/contribute'
+import { pagePortsFor } from '../../lib/page-ports-for'
+import { withPortRoot } from '../../lib/site-root'
+import { highlightTmuxManual } from '../../lib/tmux-manual'
+import { TMUX_REPOSITORY, tmuxManual, tmuxManualHtml, tmuxManualUrl } from '../../lib/tmux-manual-data'
+import { linkTmuxManualCatalog } from '../../lib/tmux-catalog-html'
+import {
+  CATALOG_KINDS, CATALOG_TITLE, OPTION_SCOPE_FLAGS, OPTION_TYPES, tmuxCatalog, tmuxCatalogDefault, tmuxCatalogDescription,
+  tmuxCatalogEntries, tmuxCatalogEntry, tmuxCatalogGroup, tmuxCatalogHistory, tmuxCatalogChangeText, tmuxCatalogManualUrl, tmuxCatalogNavigation,
+  tmuxCatalogPageTitle, tmuxCatalogSourceUrl, tmuxCatalogUrl, tmuxCatalogValues, type CatalogKind,
+} from '../../lib/tmux-catalog'
+import { tmuxCatalogReferences, tmuxCatalogUses } from '../../lib/tmux-catalog-usage'
+import '../../styles/api.css'
+import '../../styles/vendor/gp-sphinx-api.css'
+
+interface Props { version: string; kind?: CatalogKind; name?: string }
+const { version, kind, name } = Astro.props
+const model = tmuxCatalog(version)
+const entry = kind && name ? tmuxCatalogEntry(version, kind, name) : undefined
+if (name && !entry) throw new Error(`Unknown tmux ${kind} ${name} in ${version}`)
+const base = tmuxCatalogUrl(version)
+const navigation = tmuxCatalogNavigation(version)
+const kinds = (Object.keys(CATALOG_KINDS) as CatalogKind[]).filter((candidate) => model.counts[candidate])
+const info = kind ? CATALOG_KINDS[kind] : undefined
+const group = entry ? tmuxCatalogGroup(entry, version) : undefined
+const pagePath = `tmux/${version}/catalog${kind ? `/${info!.segment}` : ''}${name ? `/${name}` : ''}`
+const title = tmuxCatalogPageTitle(version, kind, name)
+const description = tmuxCatalogDescription(version, kind, name)
+
+const breadcrumbs = [
+  { name: 'tmux', url: withPortRoot('/tmux/') },
+  { name: `${CATALOG_TITLE} (${model.version})`, url: base },
+  ...(kind ? [{ name: info!.label, url: tmuxCatalogUrl(version, kind) }] : []),
+  ...(entry ? [{ name: entry.name, url: tmuxCatalogUrl(version, kind, entry.name), symbol: true }] : []),
+]
+
+const manualUrl = entry ? tmuxCatalogManualUrl(version, entry) : undefined
+const history = entry ? tmuxCatalogHistory(entry.kind, entry.name) : []
+const references = entry ? tmuxCatalogReferences(version, entry) : []
+const uses = entry ? tmuxCatalogUses(entry) : []
+const html = entry?.html
+  ? await highlightTmuxManual(linkTmuxManualCatalog(tmuxManualHtml(entry.html, version), version, entry)) : ''
+const pagePorts = entry
+  ? uses.map(({ port, name: portName, symbols }) => ({ port, name: portName, links: symbols.slice(0, 1).map((symbol) => ({ href: symbol.href })) }))
+  : await pagePortsFor('reference')
+const commandLink = (command: string) => tmuxManual(version).commands.some((candidate) => candidate.name === command)
+  ? tmuxManualUrl(version, command) : undefined
+const defaultText = entry ? tmuxCatalogDefault(entry) : undefined
+const values = entry ? tmuxCatalogValues(entry) : undefined
+const flag = entry?.kind === 'option' ? OPTION_SCOPE_FLAGS[entry.scope?.includes('window') ? 'window' : entry.scope![0]] : undefined
+const pageSource = entry
+  ? { repo: TMUX_REPOSITORY, path: entry.source.file, ref: model.sourceCommit }
+  : { repo: CONTRIBUTE_REPO, path: `site/src/data/tmux/catalog/${model.version}.json`, ref: CONTRIBUTE_BRANCH }
+
+const sections = entry ? [
+  { id: 'api-overview', label: 'Overview' },
+  ...(html || entry.summary ? [{ id: 'description', label: 'Description' }] : []),
+  { id: 'releases', label: 'Releases' },
+  { id: 'source', label: 'Source' },
+  ...(uses.length ? [{ id: 'used-by', label: 'Used by' }] : []),
+] : []
+const sectionGroups = kind ? navigation.tree.find((bucket) => bucket.id === info!.segment)!.children : []
+const entryCards = (items: ReturnType<typeof tmuxCatalogEntries>) => items.map((item) => ({
+  item, href: tmuxCatalogUrl(version, item.kind, item.name),
+}))
+---
+<BaseLayout title={title} description={description} pagePath={pagePath} documentationLayout="reference"
+  version={version} noindex={version !== 'latest'} searchable={version === 'latest'} pageSource={pageSource}
+  markdown="rendered" markdownIndex={!entry} flush breadcrumbs={breadcrumbs}
+  canonicalOverride={new URL(tmuxCatalogUrl(version, kind, name), Astro.site).href}>
+  <div slot="header-navigation" class="site-header-language"><PagePortSwitcher entries={pagePorts} tmux reserveLabelWidth /></div>
+  <DocumentationContext slot="context" version={version} locale={buildLocale()}
+    sourcePath={localeSourcePath(Astro.url.pathname, buildLocale())} reference>
+    <button type="button" class="api-nav-toggle" slot="navigation" data-api-nav-toggle data-pagefind-ignore="all" aria-controls="api-nav" aria-expanded="false">
+      <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" d="M2 4h12M2 8h12M2 12h8" /></svg>
+      <span class="sr-only">{CATALOG_TITLE} contents</span>
+    </button>
+  </DocumentationContext>
+  <main class:list={['api-reference-layout grid', entry && 'api-reference-layout--symbol']}>
+    <ApiTree referenceBase={base} portName="tmux" tree={navigation.tree} currentRoot={info?.segment}
+      currentBucket={group ? `${info!.segment}-${group.id}` : undefined} currentIndex={kind && !entry ? info!.segment : undefined}
+      ownerId={entry ? `${entry.kind}.${entry.name}` : undefined} members={[]} withMembers={new Set()}
+      currentPath={Astro.url.pathname} version={navigation.version} indexLabel={CATALOG_TITLE}
+      treeLabel={`tmux ${model.version} ${CATALOG_TITLE.toLowerCase()}`} searchLabel="Find an option, hook or format variable"
+      searchPlaceholder="Find a name"
+      filters={[{ id: 'all', label: 'All' }, ...kinds.map((candidate) => ({ id: CATALOG_KINDS[candidate].segment, label: CATALOG_KINDS[candidate].label }))]} />
+    <div class="api-reference-content min-w-0 px-4 py-6 lg:px-6">
+      <PageToolbar breadcrumbs={breadcrumbs} />
+      <header id={entry ? 'api-overview' : undefined} class:list={[entry && 'api-reference-heading']}>
+        {entry && <div class="api-reference-eyebrow">
+          <ApiBadge label={info!.singular} variant="kind" value={entry.kind} />
+          <span>tmux</span><span class="api-badge api-badge--mod api-reference-version"><span class="api-badge__label">{model.version}</span></span>
+        </div>}
+        <h1 class="scroll-mt-24 font-mono text-2xl font-semibold tracking-tight">
+          {entry ? <code><SymbolName name={entry.name} /></code> : title}
+        </h1>
+        {entry?.summary && <p class="api-reference-summary">{entry.summary}</p>}
+      </header>
+
+      {entry ? <>
+        <nav class="api-section-links" aria-label="Reference sections" data-pagefind-ignore="all">
+          {sections.map((section, i) => <a href={`#${section.id}`} data-api-section-link aria-current={i === 0 ? 'location' : undefined}>{section.label}</a>)}
+        </nav>
+        <dl class="api-definition api-command-facts catalog-facts">
+          {entry.scope && <><dt>Scope</dt><dd>{entry.kind === 'format' ? <>Describes the {entry.scope[0]} being formatted</> : entry.scope.join(', ')}</dd></>}
+          {entry.kind === 'option' && <><dt>Type</dt><dd>{OPTION_TYPES[entry.type!] ?? entry.type}{entry.array && ', array of values'}{entry.style && ', style'}</dd></>}
+          {entry.kind === 'format' && <><dt>Type</dt><dd>{entry.type === 'time' ? 'Time, in seconds since the epoch' : 'Text'}</dd></>}
+          {entry.kind === 'format' && entry.alias && <><dt>Short form</dt><dd><code>{entry.alias}</code></dd></>}
+          {entry.kind === 'format' && <><dt>Usage</dt><dd><code>{`#{${entry.name}}`}</code></dd></>}
+          {defaultText !== undefined && <><dt>Default</dt><dd>{defaultText.length > 120
+            ? <details><summary>Show the default</summary><pre class="catalog-default">{defaultText}</pre></details>
+            : <code>{defaultText}</code>}</dd></>}
+          {values && <><dt>Values</dt><dd>{entry.choices ? entry.choices.map((choice, i) => <>{i > 0 && ' '}<code>{choice}</code></>) : values}</dd></>}
+          {entry.separator && <><dt>Separator</dt><dd><code>{entry.separator}</code></dd></>}
+          {entry.aliases && <><dt>Also spelled</dt><dd>{entry.aliases.map((alias, i) => <>{i > 0 && ', '}<code>{alias}</code></>)}</dd></>}
+          {entry.kind === 'option' && <><dt>Set</dt><dd>
+            {commandLink('set-option') ? <a href={commandLink('set-option')}><code>set-option</code></a> : <code>set-option</code>}{' '}
+            <code>{flag ? `${flag} ` : ''}{entry.name} value</code>
+          </dd><dt>Read</dt><dd>
+            {commandLink('show-options') ? <a href={commandLink('show-options')}><code>show-options</code></a> : <code>show-options</code>}{' '}
+            <code>{flag ? `${flag} ` : ''}{entry.name}</code>
+          </dd></>}
+          {entry.kind === 'hook' && <><dt>Set</dt><dd>
+            {commandLink('set-hook') ? <a href={commandLink('set-hook')}><code>set-hook</code></a> : <code>set-hook</code>}{' '}
+            <code>{entry.name} command</code>
+          </dd><dt>Read</dt><dd>
+            {commandLink('show-hooks') ? <a href={commandLink('show-hooks')}><code>show-hooks</code></a> : <code>show-hooks</code>}{' '}
+            <code>{entry.name}</code>
+          </dd></>}
+          {entry.after && <><dt>Runs</dt><dd>After {commandLink(entry.after) ? <a href={commandLink(entry.after)}><code>{entry.after}</code></a> : <code>{entry.after}</code>} completes</dd></>}
+          {entry.notification && <><dt>Control mode</dt><dd>Also sent to control clients as <code>{entry.notification}</code></dd></>}
+          {entry.kind === 'format' && entry.documented === false && <><dt>Manual</dt><dd>Not listed in the tmux {model.version} manual.</dd></>}
+        </dl>
+
+        <section id="description" class="catalog-section">
+          <h2>Description<a class="headerlink" href="#description" aria-label="Permalink to description">#</a></h2>
+          {html ? <div class="api-doc tmux-manual" set:html={html} />
+            : entry.sourceText ? <p>{entry.sourceText} <span class="catalog-note">Taken from the option table; the {model.version} manual has no entry for it.</span></p>
+            : <p>The tmux {model.version} manual does not describe this {info!.singular}.</p>}
+          {entry.descriptionSource === 'control-mode' && <p class="catalog-note">This text describes the control mode notification <code>{entry.notification}</code>, which tmux sends when this hook fires.</p>}
+          {entry.descriptionSource === 'after-hook' && <p class="catalog-note">Every command that has an after hook shares this text.</p>}
+        </section>
+
+        <section id="releases" class="catalog-section">
+          <h2>Releases<a class="headerlink" href="#releases" aria-label="Permalink to releases">#</a></h2>
+          <ul class="catalog-releases">
+            {[...history].reverse().map((release) => <li>
+              {release.present
+                ? <a href={tmuxCatalogUrl(release.version, entry.kind, entry.name)} aria-current={release.version === model.version ? 'page' : undefined}>tmux {release.version}</a>
+                : <span>tmux {release.version}</span>}
+              {': '}{release.present ? release.changes.length ? release.changes.map(tmuxCatalogChangeText).join('; ') : 'present' : 'not present'}
+            </li>)}
+          </ul>
+        </section>
+
+        <section id="source" class="catalog-section">
+          <h2>Source<a class="headerlink" href="#source" aria-label="Permalink to source">#</a></h2>
+          <dl class="api-definition api-command-facts catalog-facts">
+            <dt>Defined in</dt><dd><a href={tmuxCatalogSourceUrl(version, entry.source)} rel="nofollow noopener"><code>{entry.source.file}:{entry.source.line}</code></a></dd>
+            {entry.firedFrom && <><dt>Fired from</dt><dd><ul class="catalog-sites">{entry.firedFrom.map((site) => <li>
+              <a href={tmuxCatalogSourceUrl(version, site)} rel="nofollow noopener"><code>{site.file}:{site.line}</code></a>{site.call && <> in <code>{site.call}</code></>}
+            </li>)}</ul></dd></>}
+            {references.length > 0 && <><dt>C source reference</dt><dd>{references.map((reference, i) => <>{i > 0 && ', '}<a href={reference.href}><code>{reference.name}</code></a></>)}</dd></>}
+            {manualUrl && <><dt>CLI Manual</dt><dd><a href={manualUrl}>Original manual entry</a></dd></>}
+          </dl>
+        </section>
+
+        {uses.length > 0 && <section id="used-by" class="catalog-section">
+          <h2>Used by<a class="headerlink" href="#used-by" aria-label="Permalink to used by">#</a></h2>
+          <p>Library documentation that names this {info!.singular}.</p>
+          <dl class="api-definition api-command-facts catalog-facts">
+            {uses.map((use) => <><dt>{use.name}</dt><dd>{use.symbols.slice(0, 6).map((symbol, i) => <>{i > 0 && ', '}<a href={symbol.href}><code>{symbol.label}</code></a></>)}{use.symbols.length > 6 && <> and {use.symbols.length - 6} more</>}</dd></>)}
+          </dl>
+        </section>}
+      </> : kind ? <>
+        <p class="mt-3 max-w-3xl">{info!.blurb} The list covers tmux {model.version}, {model.counts[kind]} entries.</p>
+        {sectionGroups.map((bucket) => <section class="mt-8" id={bucket.id}>
+          <h2 class="api-index-summary border-b border-edge pb-1 font-mono">{bucket.label}<span class="ml-2 text-xs font-sans opacity-60">{bucket.entries.length}</span></h2>
+          <div class="mt-3 grid gap-3 sm:grid-cols-2">{entryCards(bucket.entries.map((row) => tmuxCatalogEntry(version, kind, row.name)!)).map(({ item, href }) => <div class="api-index-card scroll-mt-24 rounded border border-edge p-3 hover:bg-surface-hover">
+            <a class="api-index-card__link font-mono font-semibold" href={href}><ApiBadge label={item.kind} variant="kind" value={item.kind} compact /><SymbolName name={item.name} /></a>
+            {item.summary && <div class="mt-1 text-sm opacity-75">{item.summary}</div>}
+          </div>)}</div>
+        </section>)}
+      </> : <>
+        <p class="mt-3 max-w-3xl">
+          Look up what a name in tmux means: the {model.counts.option} options, {model.counts.hook} hooks and
+          {' '}{model.counts.format} format variables of tmux {model.version}. Each entry gives its type, scope, default and
+          the release history, with the manual text and the source line behind it.
+        </p>
+        <div class="mt-6 grid gap-3 sm:grid-cols-3">
+          {kinds.map((candidate) => <section class="api-index-card scroll-mt-24 rounded border border-edge p-3">
+            <h2 class="font-mono font-semibold"><a class="api-index-card__link" href={tmuxCatalogUrl(version, candidate)}><ApiBadge label={candidate} variant="kind" value={candidate} compact />{CATALOG_KINDS[candidate].label}</a></h2>
+            <p class="mt-1 text-sm opacity-75">{model.counts[candidate]} entries. {CATALOG_KINDS[candidate].blurb}</p>
+            <ul class="catalog-groups">{navigation.tree.find((bucket) => bucket.id === CATALOG_KINDS[candidate].segment)!.children.map((bucket) => <li>
+              <a href={`${tmuxCatalogUrl(version, candidate)}#${bucket.id}`}>{bucket.label}</a><span>{bucket.entries.length}</span>
+            </li>)}</ul>
+          </section>)}
+        </div>
+        <p class="mt-6">The <a href={tmuxManualUrl(version)}>CLI Manual</a> documents commands and flags; the catalog documents the names those commands take.</p>
+      </>}
+    </div>
+    {entry && <ApiPageContents sections={sections} related={[]} />}
+  </main>
+</BaseLayout>
+<style>
+  .catalog-facts { margin-block: 1.25rem; }
+  .catalog-section { margin-block-start: 2rem; }
+  .catalog-section h2 { font-size: 1.125rem; font-weight: 600; margin-bottom: .75rem; padding-bottom: .4rem; border-bottom: 1px solid var(--api-border); }
+  .catalog-section :global(.headerlink) { margin-inline-start: .4rem; }
+  .catalog-section a:not(.headerlink) { text-decoration: underline; text-underline-offset: .2em; }
+  .catalog-note { color: var(--color-muted); font-size: .875rem; }
+  .catalog-default { white-space: pre-wrap; overflow-wrap: anywhere; font-size: .8125rem; }
+  .catalog-groups { margin: .75rem 0 0; padding: 0; list-style: none; font-size: .875rem; }
+  .catalog-groups li { display: flex; justify-content: space-between; gap: 1rem; padding-block: .15rem; border-top: 1px solid var(--color-edge); }
+  .catalog-groups span { opacity: .6; }
+  .catalog-releases, .catalog-sites { margin: 0; padding: 0; list-style: none; }
+  .catalog-releases li { padding-block: .2rem; }
+  .tmux-manual :global(pre) { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .tmux-manual :global(pre.lm-highlighted) { background: var(--shiki-light-bg); color: var(--shiki-light); border: 1px solid var(--color-edge); border-radius: .375rem; padding: 1rem; font-family: var(--font-ibm-plex-mono); font-size: .875rem; }
+  :global(html[data-theme-mode="dark"]) .tmux-manual :global(pre.lm-highlighted) { background: var(--shiki-dark-bg); color: var(--shiki-dark); }
+  .tmux-manual :global(table) { display: block; overflow-x: auto; }
+  .tmux-manual :global(dd) { margin-left: 1rem; }
+  .tmux-manual :global(.Pp) { margin-block: 1em; }
+</style>

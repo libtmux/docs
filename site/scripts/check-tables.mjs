@@ -24,8 +24,8 @@ const paths = [
       return `/${docsRoutePath({ id, data: { port, product, route } }, undefined, defaultVersion)}/`
     }),
   '/mcp/tools/',
-  '/parity/',
-  '/translations/',
+  '/meta/parity/',
+  '/meta/translations/',
 ]
 const browser = await chromium.launch({ channel: process.env.LIBTMUX_DOCS_BROWSER_CHANNEL })
 let checked = 0

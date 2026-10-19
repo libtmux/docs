@@ -29,7 +29,7 @@ const expanded = current || containsCurrent(items)
     <div class="sidebar-section__children">
       {items.map((item) => item.type === 'group'
         ? <Astro.self label={item.label} href={item.href} kind={item.kind} items={item.items} currentPath={currentPath} level={level + 1} />
-        : <SidebarLink href={item.href} label={item.label} external={item.external} kind={item.kind} disabled={item.disabled}
+        : <SidebarLink href={item.href} label={item.label} external={item.external} kind={item.kind} quiet={item.quiet} disabled={item.disabled}
             isActive={isActivePath(item.href, currentPath)} level={level + 1} />)}
     </div>
   </details>

@@ -96,6 +96,14 @@ function isPrerelease(version, grammar) {
 const newestFirst = (versions, grammar) =>
   [...versions].sort((a, b) => comparePackageVersions(a, b, grammar))
 
+/** The release stage a PyPI project declares in its Development Status classifier. */
+const PYPI_STAGES = {
+  '2 - Pre-Alpha': 'pre-alpha', '3 - Alpha': 'alpha', '4 - Beta': 'beta', '5 - Production/Stable': 'stable', '6 - Mature': 'stable',
+}
+const declaredStage = (classifiers) => PYPI_STAGES[
+  classifiers?.find((entry) => entry.startsWith('Development Status :: '))?.slice('Development Status :: '.length)
+]
+
 async function getJson(url, headers = {}) {
   const res = await fetch(url, {
     headers: { 'user-agent': 'libtmux-docs gen-registry.mjs', ...headers },
@@ -200,9 +208,18 @@ function generalVersions(body, port) {
  */
 const PROBES = {
   async py() {
-    const { missing, body } = await getJson('https://pypi.org/pypi/libtmux/json')
-    if (missing || !body) return null
-    return Object.keys(body.releases ?? {}).filter((v) => (body.releases[v] ?? []).length > 0)
+    // The MCP server and tmuxp are separate PyPI projects with their own stage.
+    const packages = {}
+    const declared = {}
+    for (const name of ['libtmux', 'libtmux-mcp', 'tmuxp']) {
+      const { missing, body } = await getJson(`https://pypi.org/pypi/${name}/json`)
+      packages[name] = missing || !body
+        ? null
+        : Object.keys(body.releases ?? {}).filter((v) => (body.releases[v] ?? []).length > 0)
+      declared[name] = declaredStage(body?.info?.classifiers)
+    }
+    // Only libtmux is tagged in this repository; the others release from their own.
+    return { versions: packages.libtmux, packages, declared, tagged: ['libtmux'] }
   },
   async ruby() {
     const names = ['libtmux', 'libtmux-async', 'libtmux-mcp', 'libtmux-workspace']
@@ -416,11 +433,15 @@ for (const port of PORTS) {
     if (!tag) notes.push(`${port.slug}: no git tag found`)
   }
   const entry = classify(port, versions, tag)
+  // A registry's own declaration outranks the stage a version string implies.
+  const declared = (name) => (probe && !Array.isArray(probe) ? probe.declared?.[name] : undefined)
+  const withStage = (classified, name) => (declared(name) ? { ...classified, maturity: declared(name) } : classified)
+  if (declared(port.packageName)) entry.maturity = declared(port.packageName)
   if (probe && !Array.isArray(probe) && probe.packages) {
     entry.packages = Object.fromEntries(
       Object.entries(probe.packages).map(([name, packageVersions]) => [
         name,
-        classify(port, packageVersions, tag),
+        withStage(classify(port, packageVersions, probe.tagged && !probe.tagged.includes(name) ? null : tag), name),
       ]),
     )
   }

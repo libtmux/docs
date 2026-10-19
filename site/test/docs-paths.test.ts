@@ -13,7 +13,7 @@ describe('product document URLs', () => {
       expect(isTmuxProse({ id, data: { port: 'go' } })).toBe(false)
     }
     expect(isTmuxProse({ id: '_staged/native/page', data: { route: `${section}/page` } })).toBe(true)
-    expect(isTmuxProse({ id: `${section}/page`, data: { route: 'parity' } })).toBe(false)
+    expect(isTmuxProse({ id: `${section}/page`, data: { route: 'meta/parity' } })).toBe(false)
   })
 
   it.each(['guides', 'topics', 'concepts', 'examples'])('recognizes already canonical tmux %s routes', (section) => {
@@ -37,7 +37,7 @@ describe('product document URLs', () => {
 
   it('keeps product routes and shared pages outside native tmux ownership', () => {
     expect(isTmuxProse(pythonGuide)).toBe(false)
-    for (const id of ['', 'parity', 'third-party-notices', 'unknown/guides/page']) {
+    for (const id of ['', 'meta/parity', 'meta/third-party-notices', 'unknown/guides/page']) {
       expect(isTmuxProse({ id, data: { supportedPorts: [] } })).toBe(false)
     }
     expect(() => isTmuxProse({ id: 'guides/page', data: { route: '../guides/page' } })).toThrow('Invalid staged document route')
@@ -54,7 +54,7 @@ describe('product document URLs', () => {
     for (const path of ['/tmux/latest/manual/full/#FORMATS', '/tmux/3.5a/reference/?q=server#members']) {
       expect(proseHref(path, root, undefined, 'latest', ports)).toBe(`${ports}${path}`)
     }
-    for (const path of ['/tmux/', '/tmux/guides/', '/tmux/latest/manual-notes/', '/constructor/', '/third-party-notices/']) {
+    for (const path of ['/tmux/', '/tmux/guides/', '/tmux/latest/manual-notes/', '/constructor/', '/meta/third-party-notices/']) {
       expect(proseHref(path, root, undefined, 'latest', ports)).toBe(`${root}${path}`)
     }
     expect(proseHref('/guides/attaching-to-tmux/', root, undefined, 'latest', ports)).toBe(`${root}/tmux/guides/attaching-to-tmux/`)
@@ -72,7 +72,7 @@ describe('product document URLs', () => {
       expect(proseHref(`/${id}/?example=one#target`, '/pr-42/en')).toBe(`/pr-42/en/tmux/${id}/?example=one#target`)
       expect(proseHref(`/tmux/${id}/`, '/en')).toBe(`/en/tmux/${id}/`)
     }
-    expect(docsRoutePath({ id: 'third-party-notices', data: {} })).toBe('third-party-notices')
+    expect(docsRoutePath({ id: 'meta/third-party-notices', data: {} })).toBe('meta/third-party-notices')
   })
 
   it('retires duplicate Julia and F# API overviews in root and selected-version builds', () => {

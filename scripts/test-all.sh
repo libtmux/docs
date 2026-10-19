@@ -71,6 +71,11 @@ node scripts/check-api-links.mjs
 step 'mention index'
 node scripts/gen-mentions.mjs --check
 
+# The commands, options and keys that workspace prose links to, read from the
+# CLI Manual and Configuration pages. The negative case is a unit test.
+step 'workspace entity index'
+node scripts/gen-workspace-entities.mjs --check
+
 # The curated reference sidebar, against the model it curates: a symbol no
 # bucket claims, a bucket no port fills, a symbol two buckets claim, and an
 # exemption that has started matching again.
@@ -133,6 +138,19 @@ node scripts/gen-example-sources.mjs --check
 step 'example sources (negative)'
 node scripts/gen-example-sources.negative.mjs
 
+# The tmux catalog is extracted from the C tables at the pinned tags and
+# committed. Without a tmux checkout this verifies its digests and shape; set
+# LIBTMUX_TMUX_SOURCE to a clone to regenerate and compare as well.
+step 'tmux catalog'
+if [ -n "${LIBTMUX_TMUX_SOURCE:-}" ]; then
+  node scripts/gen-tmux-catalog.mjs --check --source "$LIBTMUX_TMUX_SOURCE"
+else
+  node scripts/gen-tmux-catalog.mjs --check
+fi
+
+step 'tmux catalog (negative)'
+node scripts/gen-tmux-catalog.negative.mjs
+
 step 'shell port table'
 node scripts/gen-shell-ports.mjs --check
 
@@ -168,6 +186,12 @@ node scripts/gen-registry.negative.mjs
 
 step 'source links'
 node scripts/check-source-links.mjs
+
+step 'example indentation'
+node scripts/check-example-indentation.mjs
+
+step 'example indentation (negative)'
+node scripts/check-example-indentation.negative.mjs
 
 step 'unit tests'
 LIBTMUX_DOCS_TEST_SOURCE_ONLY=1 pnpm run --recursive --if-present test

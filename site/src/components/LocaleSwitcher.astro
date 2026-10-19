@@ -55,7 +55,7 @@ const entries = Object.entries(localeStatuses) as [Locale, LocaleStatus][]
           </li>
         ))}
         <li class="mt-1 border-t border-edge pt-1">
-          <a class="doc-picker-option" data-picker-option data-match={t(locale, 'i18n.coverage')} href={withRoot('/translations/')} lang={locale}>
+          <a class="doc-picker-option" data-picker-option data-match={t(locale, 'i18n.coverage')} href={withRoot('/meta/translations/')} lang={locale}>
             {t(locale, 'i18n.coverage')}
           </a>
         </li>

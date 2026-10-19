@@ -1,15 +1,16 @@
 import { describe, expect, it, vi } from 'vitest'
 vi.mock('astro:content', () => ({ getCollection: vi.fn(async () => []) }))
 import { buildDocumentationSurfaces, currentDocumentation, getDocumentationSurfaces } from '../src/lib/documentation-navigation'
-import { PORTS, portPageUrl, type DocProduct } from '../src/lib/ports'
-import type { SidebarItem } from '../src/lib/sidebar'
+import { PORTS, portPageUrl, productStatus, releaseMaturity, type DocProduct, type ProductStatus } from '../src/lib/ports'
+import { REGISTRY } from '../src/lib/registry'
+import { sharesOneKind, type SidebarItem } from '../src/lib/sidebar'
 import { mcpObjects, MCP_REFERENCE } from '../src/lib/mcp-reference'
 
 const link = (label: string, href: string): SidebarItem => ({ type: 'link', label, href })
 const menus = (port: typeof PORTS[number], version: string) => Object.fromEntries(['core', 'mcp', 'workspace'].map((surface) => {
   const base = (path = '') => portPageUrl(port, version, [surface === 'core' ? '' : surface, path].filter(Boolean).join('/'))
   return [surface, [link('Overview', base()), link('Guides', base('guides')), link('Examples', base('examples')),
-    link('API', base('reference')), link('Third-party notices', base('third-party-notices')),
+    link('API', base('reference')), link('Third-party notices', base('meta/third-party-notices')),
     ...(surface === 'workspace' ? [link('CLI Manual', base('cli')), link('Load', base('cli/load')),
       link('Installation', base('guides/installation')), link('Internal guides', base('internals/guides')),
       link('Exit codes', base('reference/exit-codes')), link('Output', base('reference/output'))] : []),
@@ -27,12 +28,43 @@ describe('documentation surface navigation', () => {
     if (port.slug === 'ruby') expect(surfaces.find((surface) => surface.id === 'workspace')?.concept).toBe(true)
   })
 
+  it.each(PORTS)('badges every product row of $slug with its status', (port) => {
+    const surfaces = buildDocumentationSurfaces(port.slug, 'latest', menus(port, 'latest'))
+    for (const surface of surfaces) {
+      const expected: ProductStatus | undefined = surface.id === 'core' ? releaseMaturity(REGISTRY.ports[port.slug]!)
+        : port.slug === 'py' ? REGISTRY.ports.py!.packages![surface.id === 'mcp' ? 'libtmux-mcp' : 'tmuxp']!.maturity : 'concept'
+      expect(surface.status, `${port.slug} ${surface.id}`).toBe(expected)
+      expect(surface.status, `${port.slug} ${surface.id}`).toBe(productStatus(port, surface.id as 'core' | DocProduct, REGISTRY))
+      // Concept is a support scope that leads a companion's release stage; the flag and the badge agree.
+      expect(surface.status === 'concept', `${port.slug} ${surface.id}`).toBe(Boolean(surface.concept))
+    }
+  })
+
+  it('shows Python the stage its PyPI projects declare and every other port a concept companion', () => {
+    const status = (slug: string) => Object.fromEntries(buildDocumentationSurfaces(slug, 'latest', menus(PORTS.find((port) => port.slug === slug)!, 'latest'))
+      .map((surface) => [surface.id, surface.status]))
+    expect(status('py')).toEqual({ core: 'stable', mcp: 'pre-alpha', workspace: 'stable' })
+    expect(status('go')).toEqual({ core: 'alpha', mcp: 'concept', workspace: 'concept' })
+    expect(status('java')).toEqual({ core: 'alpha', mcp: 'concept', workspace: 'concept' })
+  })
+
   it('offers the tmux area without inventing a library port or empty prose sections', async () => {
     const surfaces = await getDocumentationSurfaces(undefined, 'latest')
     expect(surfaces.map((surface) => surface.id)).toEqual(['tmux'])
-    expect(surfaces[0].sections.map((section) => section.id)).toEqual(['home', 'manual', 'reference'])
+    expect(surfaces[0].sections.map((section) => section.id)).toEqual(['home', 'manual', 'catalog', 'reference'])
     expect(currentDocumentation(surfaces, '/tmux/latest/manual/capture-pane/').section.id).toBe('manual')
+    expect(currentDocumentation(surfaces, '/tmux/latest/catalog/options/status-left/').section.id).toBe('catalog')
+    expect(currentDocumentation(surfaces, '/tmux/latest/reference/c-struct-session/').section.id).toBe('reference')
     expect(PORTS.some((port) => port.slug === 'tmux')).toBe(false)
+  })
+
+  it('links the CLI Manual, the catalog and the C source reference from the tmux sidebar', async () => {
+    const { getSidebar } = await import('../src/lib/sidebar')
+    expect((await getSidebar(undefined, '3.2a')).map((item) => [item.label, 'href' in item ? item.href : undefined])).toEqual([
+      ['CLI Manual', expect.stringMatching(/\/tmux\/3\.2a\/manual\/$/)],
+      ['Options, hooks and formats', expect.stringMatching(/\/tmux\/3\.2a\/catalog\/$/)],
+      ['C source reference', expect.stringMatching(/\/tmux\/3\.2a\/reference\/$/)],
+    ])
   })
 
   it('selects shared sections inside the tmux hub', () => {
@@ -48,6 +80,7 @@ describe('documentation surface navigation', () => {
     expect(surfaces[0].sections.map(({ label, href }) => ({ label, href }))).toEqual([
       { label: 'Current docs →', href: '/tmux/' },
       { label: 'CLI Manual', href: '/tmux/3.2a/manual/' },
+      { label: 'Options, hooks and formats', href: '/tmux/3.2a/catalog/' },
       { label: 'C source reference', href: '/tmux/3.2a/reference/' },
     ])
     expect(currentDocumentation(surfaces, '/tmux/3.2a/manual/capture-pane/').section.id).toBe('manual')
@@ -61,7 +94,7 @@ describe('documentation surface navigation', () => {
         expect(section.href).toMatch(`/` + port.slug + `/${version}/`)
       }
       expect(surface.sections.map((section) => section.id)).not.toContain('tutorials')
-      expect(surface.sections.map((section) => section.id)).not.toContain('third-party-notices')
+      expect(surface.sections.map((section) => section.id)).not.toContain('meta')
       if (surface.id === 'core') continue
       const selected = currentDocumentation(surfaces, `${surface.href}guides/installation/`)
       expect(selected.surface.id).toBe(surface.id)
@@ -188,8 +221,26 @@ describe('documentation surface navigation', () => {
         .find((item) => item.type === 'link' && item.href === section.href)
       expect(homeLink?.type === 'link' && Boolean(homeLink.disabled)).toBe(objects.length === 0)
       expect(section.href).toBe(`/${slug}/next/mcp/${id}/`)
-      expect(section.items.slice(1)).toEqual(objects.map((object) => ({ type: 'link', label: object.name, kind: object.kind, href: `/${slug}/next/${object.path}/` })))
+      // A section named for its kind needs no mark on each row, and the kind stays on the link; a section that mixes kinds keeps its marks.
+      const quiet = new Set(objects.map((object) => object.kind)).size <= 1
+      expect(section.items.slice(1)).toEqual(objects.map((object) => ({ type: 'link', label: object.name, kind: object.kind, href: `/${slug}/next/${object.path}/`, ...(quiet ? { quiet: true } : {}) })))
       for (const object of objects) expect(currentDocumentation(surfaces, `/${slug}/next/${object.path}/`).section.id).toBe(id)
+    }
+  })
+
+  it('quiets a protocol section of one kind and marks a section that mixes kinds', () => {
+    // No advertised registration set mixes kinds today, so the rule is held on its own, and the real sections on the data.
+    expect(sharesOneKind(['tool', 'tool', 'tool'])).toBe(true)
+    expect(sharesOneKind([])).toBe(true)
+    expect(sharesOneKind(['resource', 'resource-template'])).toBe(false)
+    expect(sharesOneKind(['tool', 'prompt'])).toBe(false)
+    const quieted = Object.keys(MCP_REFERENCE).flatMap((slug) => ['tools', 'prompts', 'resources']
+      .filter((id) => mcpObjects(slug).some((object) => object.section === id)).map((id) => ({ slug, id })))
+    expect(quieted.length).toBeGreaterThan(0)
+    for (const { slug, id } of quieted) {
+      const port = PORTS.find((entry) => entry.slug === slug)!
+      const section = buildDocumentationSurfaces(slug, 'next', menus(port, 'next')).find((surface) => surface.id === 'mcp')!.sections.find((entry) => entry.id === id)!
+      for (const link of section.items.slice(1)) expect(link.type === 'link' && link.quiet && link.kind, `${slug} ${id}`).toBeTruthy()
     }
   })
 

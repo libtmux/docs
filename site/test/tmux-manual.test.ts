@@ -1,9 +1,13 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { parseManual } from '../../scripts/gen-tmux-manual.mjs'
 import { buildsTmuxDocumentation, tmuxCommandNotes, tmuxCommandsFor, tmuxGuidesFor, tmuxManualHtml, tmuxManualHeadings, tmuxManual, tmuxManualUrl, tmuxManualVersionUrl } from '../src/lib/tmux-manual-data'
-import { highlightTmuxManual, linkTmuxManualEntries } from '../src/lib/tmux-manual'
+import { highlightTmuxManual, linkTmuxManualEntries, markTmuxManualKeys } from '../src/lib/tmux-manual'
+import { tmuxKeyList } from '../src/lib/tmux-keys'
 import { fromHtml } from 'hast-util-from-html'
-import { select, selectAll, type Nodes } from 'astro-expressive-code/hast'
+import { select, selectAll, type Element, type Nodes } from 'astro-expressive-code/hast'
+import { toMdast } from 'hast-util-to-mdast'
+import { gfmToMarkdown } from 'mdast-util-gfm'
+import { toMarkdown } from 'mdast-util-to-markdown'
 import pins from '../src/data/tmux/versions.json'
 
 const contents = (node: Nodes): string => node.type === 'text' ? node.value
@@ -147,5 +151,106 @@ describe('versioned tmux manual', () => {
     expect(tmuxGuidesFor('capture-pane').map((guide) => guide.href))
       .toEqual([tmuxManualUrl().replace('/tmux/latest/manual/', '/tmux/guides/capturing-output/')])
     expect(tmuxManualHeadings('3.2a', 'full').some((heading) => heading.slug === 'COMMANDS')).toBe(true)
+  })
+})
+
+describe('tmux manual key notation', () => {
+  const squash = (value: string) => value.replace(/[‘’]/g, '').replace(/\s+/g, ' ').trim()
+  const commandHtml = (version: string, name: string) => tmuxManualHtml(tmuxManual(version).commands.find((command) => command.name === name)!.html, version)
+  const rendered = (version: string) => fromHtml(markTmuxManualKeys(tmuxManualHtml(tmuxManual(version).manual, version)), { fragment: true })
+  const elements = (node: Element) => node.children.filter((child): child is Element => child.type === 'element')
+  // A key cap with caps inside it groups a sequence; it is not itself a key.
+  const isGroup = (node: Element) => elements(node).length > 0
+  const sectionOf = (tree: Nodes) => new Map(selectAll('section.Sh', tree as never).flatMap((section) => {
+    const title = squash(contents(select('h2', section)!))
+    return selectAll('kbd', section).map((node) => [node, title] as const)
+  }))
+
+  it.each(['3.2a', '3.7c'])('renders the %s bind-key sequences as nested kbd and keeps new-window a link', (version) => {
+    const html = commandHtml(version, 'bind-key')
+    const original = fromHtml(html, { fragment: true })
+    const tree = fromHtml(markTmuxManualKeys(html, 'bind-key'), { fragment: true })
+    const caps = selectAll('kbd', tree).filter(isGroup).map((node) => elements(node).map(contents))
+    expect(caps).toEqual([['C-b', 'c']])
+    expect(selectAll('kbd', tree).filter((node) => !isGroup(node)).map(contents)).toEqual(['c', 'C-b', 'c', 'c', 'c'])
+    expect(selectAll('code.Li', tree)).toHaveLength(0)
+    expect(selectAll('a[href$="/new-window/"] > code.Ic', tree).map(contents)).toEqual(['new-window', 'new-window'])
+    expect(selectAll('a', tree).map((node) => node.properties.href)).toEqual(selectAll('a', original).map((node) => node.properties.href))
+    // Only mandoc's quotation marks around a literal go.
+    expect(squash(contents(tree))).toBe(squash(contents(original)))
+  })
+
+  it.each(['3.2a', '3.7c'])('marks %s keys only where the manual uses them as keys', (version) => {
+    const tree = rendered(version)
+    const keys = selectAll('kbd', tree)
+    expect(keys.length).toBeGreaterThan(200)
+    const inner = new Set(keys.flatMap(elements))
+    for (const node of keys.filter((candidate) => !inner.has(candidate))) {
+      expect(tmuxKeyList(contents(node)), contents(node)).toBeDefined()
+    }
+    expect([...new Set(sectionOf(tree).values())].sort()).toEqual(['BUFFERS', 'DEFAULT KEY BINDINGS', 'DESCRIPTION', 'EXAMPLES',
+      'KEY BINDINGS', 'STATUS LINE', 'WINDOWS AND PANES'])
+    // Literals that are not keys stay code, including single letters in formats.
+    const literals = selectAll('code.Li', tree).map(contents).map(squash)
+    for (const literal of ['status-style', 'bg=cyan', '{start}', '%1', '#{session_name}', 'mysession:1', 'vi', 'm']) {
+      expect(literals, literal).toContain(literal)
+    }
+    expect(selectAll('kbd', tree).map(contents).filter((key) => /#\{|status|session|-style|mouse/i.test(key))).toEqual([])
+    expect(selectAll('table.Nm kbd', tree)).toHaveLength(0)
+  })
+
+  it.each(['3.2a', '3.7c'])('describes the %s key tables, default bindings and examples with caps', (version) => {
+    const tree = rendered(version)
+    const terms = new Map(selectAll('dt', tree).map((node) => [squash(contents(node)), node]))
+    expect(selectAll('kbd', terms.get('0 to 9')!).map(contents)).toEqual(['0', '9'])
+    expect(selectAll('kbd', terms.get('Page Up')!).map(contents)).toEqual(['Page Up'])
+    expect(selectAll('kbd', terms.get('C-Up, C-Down')!).map(contents)).toEqual(['C-Up', 'C-Down'])
+    const keys = selectAll('kbd', tree).map(contents)
+    for (const key of ['C-b', 'M-Up', 'NPage', 'Escape', 'Enter', 'BSpace', 'F12']) expect(keys, key).toContain(key)
+    // The permalinks of key names keep pointing at the names.
+    expect(select('kbd#Left', tree)).toBeDefined()
+    expect(select('a[href$="#Left"] > kbd#Left', tree)).toBeDefined()
+    expect(selectAll('span#NPage\\/PageDown\\/PgDn > kbd', tree).map(contents)).toEqual(['NPage', 'PageDown', 'PgDn'])
+  })
+
+  it('renders a key table row of alternatives as one cap each', () => {
+    const tree = fromHtml(markTmuxManualKeys(commandHtml('3.7c', 'choose-client'), 'choose-client'), { fragment: true })
+    expect(selectAll('tr#F1 kbd', tree).map(contents)).toEqual(['F1', 'C-h'])
+    expect(squash(contents(select('tr#F1 td', tree)!))).toBe('F1 or C-h')
+    const prompt = fromHtml(markTmuxManualKeys(commandHtml('3.7c', 'command-prompt'), 'command-prompt'), { fragment: true })
+    expect(selectAll('tr#Cancel kbd', prompt).map(contents)).toEqual(['q', 'Escape'])
+    expect(selectAll('tr#Cancel code.Li', prompt).map((node) => squash(contents(node)))).toEqual(['Cancel command prompt'])
+  })
+
+  it.each(['3.2a', '3.7c'])('gives a command page the same caps as that command in the full %s manual', (version) => {
+    const full = rendered(version)
+    const descriptions = new Map<string, Element>()
+    for (const list of selectAll('dl', full)) {
+      const children = elements(list)
+      children.forEach((child, index) => {
+        const name = child.tagName === 'dt' ? select('code.Ic', child) : undefined
+        if (name && children[index + 1]?.tagName === 'dd') descriptions.set(contents(name).trim(), children[index + 1])
+      })
+    }
+    for (const name of ['bind-key', 'send-keys', 'unbind-key', 'list-keys', 'choose-tree', 'command-prompt', 'display-menu']) {
+      const page = fromHtml(markTmuxManualKeys(commandHtml(version, name), name), { fragment: true })
+      expect(selectAll('kbd', page).map(contents).map(squash), name).toEqual(selectAll('kbd', descriptions.get(name)!).map(contents).map(squash))
+    }
+  })
+
+  it('keeps the entry anchors of the default bindings', () => {
+    const tree = fromHtml(linkTmuxManualEntries(markTmuxManualKeys(tmuxManualHtml(tmuxManual('latest').manual, 'latest'))), { fragment: true })
+    for (const [id, key] of [['default-key-binding-l', 'l'], ['default-key-binding-shift-l', 'L'], ['default-key-binding-left-bracket', '[']]) {
+      expect(selectAll('kbd', select(`#${id}`, tree)!).map(contents)).toEqual([key])
+      expect(select(`#${id} > a[href="#${id}"] > kbd`, tree)).toBeDefined()
+    }
+  })
+
+  it('exports keys as readable inline code', () => {
+    const html = markTmuxManualKeys(commandHtml('3.7c', 'bind-key'), 'bind-key')
+    const markdown = toMarkdown(toMdast(fromHtml(html, { fragment: true }) as never), { extensions: [gfmToMarkdown()] })
+    expect(markdown).toContain('`C-b c` creates a new window')
+    expect(markdown).toContain('`c`')
+    expect(markdown).not.toContain('<kbd')
   })
 })

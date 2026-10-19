@@ -5,7 +5,31 @@
       "status": "stable",
       "version": "0.62.0",
       "stable": "0.62.0",
-      "tag": "v0.62.0"
+      "tag": "v0.62.0",
+      "maturity": "stable",
+      "packages": {
+        "libtmux": {
+          "status": "stable",
+          "version": "0.62.0",
+          "stable": "0.62.0",
+          "tag": "v0.62.0",
+          "maturity": "stable"
+        },
+        "libtmux-mcp": {
+          "status": "prerelease",
+          "version": "0.1.0a22",
+          "stable": null,
+          "tag": null,
+          "maturity": "pre-alpha"
+        },
+        "tmuxp": {
+          "status": "stable",
+          "version": "1.74.0",
+          "stable": "1.74.0",
+          "tag": null,
+          "maturity": "stable"
+        }
+      }
     },
     "ruby": {
       "status": "prerelease",

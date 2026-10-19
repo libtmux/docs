@@ -1,10 +1,13 @@
 import { MCP_REFERENCE, MCP_SECTIONS, mcpObjects, resolveMcpObject, type McpRegistration, type McpObject, type McpSection } from './mcp-catalog'
 import { createMarkdownProcessor } from '@astrojs/markdown-remark'
+import { docSummaryText } from '@libtmux/api-model'
 import { PORT_BY_SLUG, portPageUrl } from './ports'
+import { restToMarkdown } from './mcp-rest'
+import { rehypeApiLinks } from '../plugins/rehype-api-links'
 import { createHash } from 'node:crypto'
 import type { TreeBucket } from './api-tree'
 import type { ApiTreeJson } from './api-search'
-import { kindMark } from './api-labels'
+import { kindMark, markClass } from './api-labels'
 
 export * from './mcp-catalog'
 
@@ -50,7 +53,7 @@ export function mcpNavigation(port: string): { tree: TreeBucket[]; json: ApiTree
     slug: entry.target?.slug ?? entry.entries[0]?.slug ?? null,
     types: entry.entries.map((row) => {
       const object = entries.find((entry) => entry.id === row.id)!
-      return { ...row, m: 0, category: object.section, summary: toolSummary(object.description) }
+      return { ...row, m: 0, category: object.section, summary: plainSummary(object.description, port) }
     }), children: entry.children.map(bucket),
   })
   const json = { port, buckets: tree.map(bucket), members: {} }
@@ -84,7 +87,7 @@ export function mcpReferenceRoutes(buildPort: string | undefined, defaults: Reco
 
 let markdown: ReturnType<typeof createMarkdownProcessor> | undefined
 
-interface ToolDescriptionContext { port: string; version: string; toolName?: string; objectId?: string }
+export interface ToolDescriptionContext { port: string; version: string; toolName?: string; objectId?: string }
 interface HtmlNode { type: string; tagName?: string; value?: string; properties?: Record<string, unknown>; children?: HtmlNode[] }
 
 function rehypeMcpToolLinks() {
@@ -101,7 +104,8 @@ function rehypeMcpToolLinks() {
       children: [{ type: 'element', tagName: 'span', properties: {
         className: ['api-link-kind', 'api-nav__kind', `api-badge--kind-${object.kind}`],
         ariaHidden: 'true', dataApiKind: object.kind, title: object.kind,
-      }, children: [{ type: 'element', tagName: 'span', properties: { className: ['api-badge__label'] }, children: [{ type: 'text', value: kindMark(object.kind) }] }] }, node],
+      }, children: [{ type: 'element', tagName: 'span', properties: { className: ['api-badge__label'], dataMark: markClass(kindMark(object.kind) ?? '') }, children: [{ type: 'text', value: kindMark(object.kind) }] }] },
+      { type: 'element', tagName: 'span', properties: { className: ['api-symbol-link__name'] }, children: [node] }],
     })
     const walk = (node: HtmlNode) => {
       if (!node.children || ['a', 'pre', 'script', 'style'].includes(node.tagName ?? '')) return
@@ -131,12 +135,66 @@ function rehypeMcpToolLinks() {
   }
 }
 
-/** Preserve paragraphs, lists, and examples in the server's description. */
+/**
+ * A route to this object's own page needs no link on that page.
+ *
+ * The shared mention linker has no notion of a current object, so its links
+ * to the page being rendered are unwrapped here.
+ */
+function rehypeMcpSelfLinks() {
+  return (tree: unknown, file: { data: { astro?: { frontmatter?: { mcp?: ToolDescriptionContext } } } }) => {
+    const context = file.data.astro?.frontmatter?.mcp
+    const own = context && (context.objectId ? mcpObjects(context.port).find((object) => object.id === context.objectId)
+      : context.toolName ? resolveMcpObject(context.port, context.toolName, 'tool') : undefined)
+    if (!own) return
+    const suffix = `/${own.path}/`
+    const walk = (node: HtmlNode) => {
+      node.children = node.children?.flatMap((child): HtmlNode[] => {
+        walk(child)
+        const href = child.properties?.href
+        if (child.tagName !== 'a' || typeof href !== 'string' || !href.endsWith(suffix)) return [child]
+        const label = child.children?.find((part) => (part.properties?.className as string[] | undefined)?.includes('api-symbol-link__name'))
+        return label?.children ?? child.children?.filter((part) => !part.properties?.dataApiKind) ?? []
+      })
+    }
+    walk(tree as HtmlNode)
+  }
+}
+
+/** Inline literals take the chip that API doc comments give theirs. */
+function rehypeLiteralChips() {
+  return (tree: unknown) => {
+    const walk = (node: HtmlNode, linked: boolean) => {
+      for (const child of node.children ?? []) {
+        if (child.tagName === 'pre') continue
+        if (child.tagName === 'code') {
+          const classes = (child.properties ??= {}).className
+          child.properties!.className = [...(Array.isArray(classes) ? classes : []), 'api-literal', ...(linked ? ['api-literal--link'] : [])]
+        }
+        walk(child, linked || child.tagName === 'a')
+      }
+    }
+    walk(tree as HtmlNode, false)
+  }
+}
+
+/**
+ * Preserve paragraphs, lists, and examples in the server's description.
+ *
+ * Sphinx roles become Markdown first, then the same mention pipeline as
+ * prose pages links tmux names, MCP objects and API symbols.
+ */
 export async function renderToolDescription(description: string, context?: ToolDescriptionContext): Promise<string> {
-  markdown ??= createMarkdownProcessor({ rehypePlugins: [rehypeMcpToolLinks] })
-  return (await (await markdown).render(description, { frontmatter: { mcp: context } })).code
+  markdown ??= createMarkdownProcessor({ rehypePlugins: [rehypeMcpToolLinks, rehypeApiLinks, rehypeMcpSelfLinks, rehypeLiteralChips] })
+  const frontmatter = { mcp: context, ...(context ? { port: context.port, product: 'mcp', symbols: false } : {}) }
+  return (await (await markdown).render(restToMarkdown(description, context), { frontmatter })).code
 }
 
 export function toolSummary(description: string): string {
   return description.split(/\n\s*\n/, 1)[0].replace(/\s+/g, ' ').trim()
+}
+
+/** The summary as plain text, for places that cannot render Markdown: meta tags and search. */
+export function plainSummary(description: string, port: string): string {
+  return docSummaryText(toolSummary(description), port)
 }

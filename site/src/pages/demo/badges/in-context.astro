@@ -1,0 +1,841 @@
+---
+/**
+ * Kind badges in context: one section per context, each rendered with the
+ * recommended treatment and its alternatives, in a light and a dark pane.
+ *
+ * Every treatment sits on one palette (six hue families, tuned per mode) and
+ * one em-scaled mark; the CSS is scoped to `.ic-*` here and does not touch the
+ * site's badge styles. Section text is built as HTML strings, so a context is
+ * one render function and a list of variants.
+ */
+import DemoLayout from '../../../components/demo/DemoLayout.astro'
+import { FAMS, KINDS, RING_FAMS, familyCss, famWorst, kindOf, pillCss, type Scheme } from '../../../lib/badge-demo'
+
+const esc = (text: string) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+interface BadgeOpts {
+  aria?: string
+  active?: boolean
+  opaque?: boolean
+  open?: boolean
+  tap?: boolean
+}
+
+/**
+ * One mark. `t` is the treatment, written on the badge itself so contexts can
+ * mix treatments without CSS order deciding between them.
+ */
+function b(t: string, kind: string, o: BadgeOpts = {}): string {
+  const k = kindOf(kind)
+  const word = t === 'K'
+  const at = [`data-t="${t}"`, `data-fam="${k.fam}"`, `data-s="${k.shape}"`]
+  if (t === 'AE') at.push(`data-f="${k.geo}"`)
+  if (!word && k.x) at.push('data-x')
+  if (RING_FAMS.has(k.fam)) at.push('data-ring')
+  if (o.opaque) at.push('data-opaque')
+  if (o.active) at.push('data-active')
+  if (o.tap) at.push('data-tap')
+  const live = t === 'AF' || t === 'SR' || o.tap
+  if (live) at.push(`data-word="${k.word}"`, 'tabindex="0"', 'role="img"', `aria-label="${o.aria ?? k.word}"`)
+  else at.push('aria-hidden="true"')
+  const cls = ['ic-b', word && 'ic-b--word', o.open && 'is-open'].filter(Boolean).join(' ')
+  const marks = `data-m1="${esc(k.mark)}" data-mark="${k.cls}"`
+  const inner = word
+    ? `<span class="ic-b__l">${esc(k.word)}</span>`
+    : t === 'SR'
+      ? `<span class="ic-b__l ic-b__m" ${marks}></span><span class="ic-b__l ic-b__w">${esc(k.word)}</span>`
+      : `<span class="ic-b__l" ${marks}></span>`
+  return `<span class="${cls}" ${at.join(' ')}>${inner}</span>`
+}
+
+/** A mention: the mark, then the name as a link. Treatments without a mark change what precedes the name. */
+function m(t: string, kind: string, text: string, o: BadgeOpts = {}): string {
+  const k = kindOf(kind)
+  const code = `<code>${esc(text)}</code>`
+  if (t === 'NONE') return `<a class="ic-m" href="#">${code}</a>`
+  if (t === 'TEXT') return `<a class="ic-m" href="#"><code>[${esc(k.mark)}] ${esc(text)}</code></a>`
+  if (t === 'AB') {
+    const ring = RING_FAMS.has(k.fam) ? ' data-ring' : ''
+    return `<a class="ic-split" href="#" data-fam="${k.fam}"${ring}><span class="ic-split__k" data-mark="${k.cls}"><span class="ic-split__kl">${esc(k.mark)}</span></span><span class="ic-split__n"><span class="ic-split__nl">${code}</span></span></a>`
+  }
+  return `<a class="ic-m" href="#">${b(t, kind, o)}${code}</a>`
+}
+
+/** A later mention: the link alone. The kind is in the tooltip and the accessible name. */
+function later(kind: string, text: string, open = false): string {
+  const k = kindOf(kind)
+  return `<a class="ic-m ic-m--later${open ? ' is-open' : ''}" href="#" data-kind="${k.word}" aria-label="${k.word}: ${esc(text)}"><code>${esc(text)}</code></a>`
+}
+
+/** The legend chip: one box, a mark segment and a word segment of equal height, split by a divider. */
+function leg(kind: string): string {
+  const k = kindOf(kind)
+  return `<span class="ic-leg" data-fam="${k.fam}" data-mark="${k.cls}"><span class="ic-leg__m" aria-hidden="true"><span class="ic-leg__g" data-m1="${esc(k.mark)}" data-mark="${k.cls}"></span></span><span class="ic-leg__w"><span class="ic-leg__wl">${esc(k.word)}</span></span></span>`
+}
+const quiet = (kind: string) => `<span class="ic-quiet">${esc(kindOf(kind).word)}</span>`
+
+const RING_LIST = Object.keys(FAMS).filter((f) => RING_FAMS.has(f)).join(', ')
+const SIG = 'fn new_session(&self, name: Option<&str>) -> Result<Session, Error>'
+
+// ---- the miniatures, one per context ----
+
+const proseFirst = (t: string) =>
+  `<p class="ic-prose">${m(t, 'method', 'TmuxTools::builder(server)')} constructs a tool surface over a libtmux ${m(t, 'struct', 'Server')}. Pass a ${m(t, 'struct', 'Selection')} through ${m(t, 'method', '.selection()')}, then build it. ${m(t, 'method', 'offered()')} reports the tools in scope.</p>`
+
+const laterDemo = (every: boolean) => {
+  const f = (kind: string, text: string, open = false) => (every ? m('M', kind, text) : later(kind, text, open))
+  return `<p class="ic-prose">${m('M', 'struct', 'Server')} owns its ${m('M', 'struct', 'Session')} values; call ${m('M', 'method', 'new_session()')} to add one. Once it exists, ${f('struct', 'Server', true)} lists it, ${f('struct', 'Session')} names it, and ${f('method', 'new_session()')} never reuses a name.</p>`
+}
+
+const RUN: [string, string][] = [
+  ['struct', 'Server'], ['struct', 'Session'], ['struct', 'Window'], ['struct', 'Pane'], ['method', 'attach()'], ['struct', 'Selection'],
+]
+const runDemo = (t: string) =>
+  `<p class="ic-prose"><span class="ic-lead">See also</span> ${RUN.map(([k, n]) => m(t, k, n)).join(' ')}</p>`
+
+const headingDemo = (t: string) => {
+  const chip = (kind: string) => (t === 'Q' ? leg(kind) : t === 'K' ? b('K', kind) : quiet(kind))
+  return `<div class="ic-defs"><h3 class="ic-def">${chip('struct')}<span>Server</span></h3><h3 class="ic-def">${chip('method')}<span>Server::new_session</span></h3><pre class="ic-sig"><code>${esc(SIG)}</code></pre></div>`
+}
+
+const TREE: [number, string, string, boolean?][] = [
+  [0, 'struct', 'Server'], [1, 'method', 'new_session'], [1, 'property', 'sessions'], [1, 'struct', 'Session'],
+  [2, 'method', 'attach'], [2, 'property', 'windows'], [2, 'struct', 'Window'], [3, 'method', 'new_pane'],
+  [3, 'property', 'panes'], [3, 'struct', 'Pane', true], [4, 'method', 'send_keys'], [4, 'method', 'capture'], [0, 'enum', 'ServerError'],
+]
+const treeDemo = (t: string) =>
+  `<div class="ic-tree" role="tree">${TREE.map(
+    ([d, kind, name, sel]) =>
+      `<div class="ic-trow${sel ? ' ic-sel' : ''}" role="treeitem" aria-level="${d + 1}"${sel ? ' aria-selected="true"' : ''} style="--d:${d}"><span class="ic-gut">${b(t, kind)}</span><a class="ic-tn" href="#">${name}</a></div>`,
+  ).join('')}</div>`
+
+const TOC: [string, string, boolean?][] = [
+  ['', 'Overview'], ['struct', 'Server'], ['method', 'new_session'], ['method', 'attach'], ['property', 'session_name'],
+  ['struct', 'Session', true], ['enum', 'Errors'],
+]
+const tocDemo = (t: string) =>
+  `<nav class="ic-toc" aria-label="On this page"><p class="ic-toc__h">On this page</p><ul>${TOC.map(
+    ([kind, name, cur]) =>
+      `<li class="${cur ? 'ic-sel' : ''}"><a class="ic-toc__a" href="#"${cur ? ' aria-current="location"' : ''}>${kind ? b(t, kind) : '<span class="ic-gap"></span>'}<span>${name}</span></a></li>`,
+  ).join('')}</ul></nav>`
+
+const PAL: [string, string, string][] = [
+  ['method', 'attach', 'Session::attach'], ['method', 'attach_session', 'Server::attach_session'],
+  ['enum', 'AttachError', 'errors'], ['command', 'attach-session', 'tmux'], ['struct', 'AttachedClient', 'Client'],
+]
+const paletteDemo = (t: string) =>
+  `<div class="ic-pal"><div class="ic-pal__in">attach<span class="ic-caret"></span></div><div role="listbox">${PAL.map(
+    ([kind, name, path], i) =>
+      `<a class="ic-pr${i === 0 ? ' ic-sel' : ''}" role="option" href="#"${i === 0 ? ' aria-selected="true"' : ''}><span class="ic-gut">${b(t, kind)}</span><span class="ic-pr__n">${name} <span class="ic-pr__p">${path}</span></span><span class="ic-pr__w">${kindOf(kind).word}</span></a>`,
+  ).join('')}</div></div>`
+
+const ROWS: [string, string, string][] = [
+  ['method', 'new_session', 'Create a detached session.'], ['property', 'session_name', 'The name it was created with.'],
+  ['struct', 'Session', 'A tmux session and its windows.'], ['enum', 'Error', 'Raised when tmux fails.'],
+]
+const tableDemo = (t: string) =>
+  `<table class="ic-tbl"><thead><tr><th>Name</th><th>Kind</th><th>Description</th></tr></thead><tbody>${ROWS.map(
+    ([kind, name, desc]) =>
+      `<tr><td><a class="ic-m" href="#">${b(t, kind)}<code>${name}</code></a></td><td class="ic-tbl__k">${kindOf(kind).word}</td><td>${desc}</td></tr>`,
+  ).join('')}</tbody></table>`
+
+const tooltipDemo = () =>
+  `<div class="ic-tips"><div class="ic-tipwrap"><a class="ic-m" href="#"><code>new_session()</code></a><span class="ic-tip" role="tooltip">method</span></div><div class="ic-tipwrap"><a class="ic-m" href="#"><code>Server</code></a><span class="ic-tip" role="tooltip">struct</span></div><div class="ic-tipwrap"><a class="ic-m" href="#"><code>session_name</code></a><span class="ic-tip" role="tooltip">property</span></div></div>`
+
+const cardDemo = (t: string) =>
+  `<div class="ic-card"><div class="ic-card__h">${t === 'Q' ? leg('method') : b('K', 'method')}<strong>Server::new_session</strong></div><pre class="ic-sig"><code>${esc(SIG)}</code></pre><p class="ic-card__p">Creates a detached ${m('M', 'struct', 'Session')} and returns it. Fails with ${m('M', 'enum', 'Error')} when the name is taken.</p><div class="ic-card__f">libtmux · Server</div></div>`
+
+const discoverDemo = (t: string) =>
+  `<p class="ic-prose">Tab to a mark to learn its kind: ${m(t, 'method', 'new_session()', { open: true })} returns a ${m(t, 'struct', 'Session')}, and ${m(t, 'property', 'session_name')} reads its name.</p>`
+
+const kbdDemo = (t: string) =>
+  `<p class="ic-prose">Press <kbd>C-b</kbd> <kbd>c</kbd> to call ${m(t, 'method', 'new_window()')}, or <kbd>C-b</kbd> <kbd>n</kbd> for ${m(t, 'method', 'next_window()')}.</p>`
+
+const codeDemo = (t: string) =>
+  t === 'NONE'
+    ? `<pre class="ic-code"><code><span class="k">let</span> server = <span class="t">Server</span>::<span class="f">new</span>()?;\n<span class="k">let</span> session = server.<span class="f">new_session</span>(<span class="s">"dev"</span>)?;\nsession.<span class="f">send_keys</span>(<span class="s">"cargo test"</span>)?;</code></pre>`
+    : `<pre class="ic-code"><code><span class="c">// completions for "se"</span>\n[m] send_keys(keys)\n[m] select_pane(id)\n[p] session_name</code></pre>`
+
+const admonDemo = (t: string) => {
+  const o = { opaque: true }
+  const box = (cls: string, title: string, body: string) =>
+    `<div class="ic-adm ic-adm--${cls}"><p class="ic-adm__t">${title}</p><p>${body}</p></div>`
+  return (
+    box('note', 'Note', `Pass a ${m(t, 'struct', 'Server', o)} to ${m(t, 'method', '.selection()', o)} before you build.`) +
+    box('warning', 'Warning', `${m(t, 'method', 'new_session()', o)} fails when the name exists; check ${m(t, 'struct', 'Session', o)} first.`) +
+    box('danger', 'Danger', `${m(t, 'method', 'kill_server()', o)} ends every ${m(t, 'struct', 'Session', o)} on the socket.`)
+  )
+}
+
+const logDemo = (t: string) =>
+  t === 'Q'
+    ? `<article class="ic-log"><h4>0.14.0 <span>2026-10-02</span></h4><div class="ic-lg">${leg('method')}<ul><li><code>Server.new_session</code> accepts a start directory.</li><li><code>Pane.capture</code> trims trailing blank lines.</li></ul></div><div class="ic-lg">${leg('property')}<ul><li><code>Session.name</code> is read-only.</li></ul></div><div class="ic-lg">${leg('struct')}<ul><li><code>Selection</code> joins the tool surface.</li></ul></div></article>`
+    : `<article class="ic-log"><h4>0.14.0 <span>2026-10-02</span></h4><h5>Added</h5><ul><li>${b('T', 'method')} <code>Server.new_session</code> accepts a start directory.</li><li>${b('T', 'struct')} <code>Selection</code> joins the tool surface.</li></ul><h5>Changed</h5><ul><li>${b('T', 'method')} <code>Pane.capture</code> trims trailing blank lines.</li><li>${b('T', 'property')} <code>Session.name</code> is read-only.</li></ul></article>`
+
+const crumbDemo = (t: string) =>
+  `<nav class="ic-crumbs" aria-label="Breadcrumb"><a href="#">libtmux</a><span>/</span><a href="#">Server</a><span>/</span><span class="ic-crumb-last" aria-current="page">${t === 'U' ? b('U', 'method') : ''}new_session</span></nav>`
+
+const TABS: [string, string, string, boolean?][] = [
+  ['Struct', 'types', 'Server owns the socket and its sessions.'],
+  ['Methods', 'callables', 'new_session, attach and kill_server.', true],
+  ['Properties', 'members', 'sessions and socket_name.'],
+  ['Errors', 'meta', 'Raised when tmux exits non-zero.'],
+]
+const tabsDemo = () =>
+  `<div class="ic-tabs" data-ic-tabs><div role="tablist">${TABS.map(
+    ([label, fam, , sel]) => `<button type="button" role="tab" class="ic-tab" data-fam="${fam}" data-text="${esc(TABS.find((x) => x[0] === label)![2])}" aria-selected="${sel ? 'true' : 'false'}">${label}</button>`,
+  ).join('')}</div><p class="ic-prose ic-tabs__p" role="tabpanel">${TABS.find((x) => x[3])![2]}</p></div>`
+
+const FAM_KIND: [string, string][] = [['types', 'struct'], ['traits', 'trait'], ['callables', 'method'], ['members', 'property'], ['meta', 'exception'], ['tools', 'tool']]
+const activeDemo = (scheme: Scheme) => {
+  const id = `ic18-h-${scheme}`
+  return `<div class="ic-tree ic-tree--s"><div class="ic-trow" style="--d:0"><span class="ic-gut">${b('M', 'struct')}</span><a class="ic-tn" href="#">Server</a></div><div class="ic-trow ic-sel" style="--d:1"><span class="ic-gut">${b('M', 'struct')}</span><a class="ic-tn" href="#">Session</a></div><div class="ic-trow" style="--d:2"><span class="ic-gut">${b('M', 'method')}</span><a class="ic-tn" href="#">attach</a></div></div><h3 class="ic-def" id="${id}">${b('M', 'struct')}<span>Session</span><a class="ic-perma" href="#${id}" aria-label="Target this heading">#</a></h3><p class="ic-prose">Hover or focus ${m('M', 'method', 'attach()')} or ${m('M', 'struct', 'Server')}.</p><div class="ic-fstrip">${FAM_KIND.map(([f, k]) => `<span class="ic-fs">${b('M', k, { active: true })}<small>${f}${RING_FAMS.has(kindOf(k).fam) ? ' · ring' : ' · solid'}</small></span>`).join('')}</div>`
+}
+
+const statusDemo = () =>
+  `<div class="ic-stat"><p class="ic-def">${m('M', 'method', 'legacy_attach()')} <span class="ic-pill ic-pill--warn">deprecated</span></p><p class="ic-def">${m('M', 'struct', 'Selection')} <span class="ic-pill ic-pill--neutral">experimental</span> <span class="ic-pill ic-pill--neutral">since 0.14</span></p></div>`
+
+const heroDemo = () =>
+  `<div class="ic-hero"><span class="ic-b ic-b--hero" data-t="SOLID" data-fam="types" aria-hidden="true"><span class="ic-b__l" data-m1="S" data-mark="cap"></span></span><div><div class="ic-hero__t">Server</div><div class="ic-hero__s">libtmux · struct</div></div></div><div class="ic-empty"><span class="ic-b ic-b--hero ic-b--empty" data-t="SOLID" data-fam="callables" data-x aria-hidden="true"><span class="ic-b__l" data-m1="m" data-mark="x"></span></span><div><div class="ic-hero__t ic-hero__t--s">No methods match</div><div class="ic-hero__s">Try a shorter name.</div></div></div>`
+
+const printDemo = () =>
+  `<div class="ic-paper">${proseFirst('U')}</div>`
+
+const forcedDemo = () =>
+  `<div class="ic-forcedbox">${proseFirst('T')}</div>`
+
+const plainDemo = () =>
+  `<pre class="ic-plain">[m] Server.new_session(name) -> [S] Session\n    Create a detached session called name.\n[p] Session.name -> str\n[!] Error: raised when tmux exits non-zero</pre>`
+
+const touchDemo = () => {
+  const tap = (kind: string, name: string, open = false) =>
+    `<span class="ic-tapm">${b('M', kind, { tap: true, open })}<a class="ic-m" href="#"><code>${name}</code></a></span>`
+  return `<div class="ic-phone"><h3 class="ic-def ic-def--s">${leg('method')}<span>new_session</span></h3><p class="ic-prose">${tap('method', 'new_session()')} returns a ${tap('struct', 'Session', true)}; read ${tap('property', 'session_name')}. Tap a mark for its kind.</p></div>`
+}
+
+const legendDemo = (t: string) =>
+  `<div class="ic-grid">${KINDS.map((k) => `<span class="ic-cell">${t === 'Q' ? leg(k.kind) : b('K', k.kind)}</span>`).join('')}</div>`
+
+// ---- contexts and their variants ----
+
+interface Variant {
+  t: string
+  label: string
+  caption: string
+  rec?: boolean
+}
+interface Context {
+  n: number
+  title: string
+  rule: string
+  variants: Variant[]
+  render: (v: Variant, scheme: Scheme) => string
+}
+
+const CONTEXTS: Context[] = [
+  {
+    n: 1, title: 'Prose, first mention in a section', rule: 'Rule 1 · alone, a mark gets a tint',
+    variants: [
+      { t: 'M', label: 'M', rec: true, caption: 'tuned tint · 1.35em square · glyph .8em/600 · border hue 30% / 18% · radius .2em' },
+      { t: 'V', label: 'V', caption: 'soft tint · 1.5em · no border · 14% hue · glyph hue-800 / 200 · radius .3em' },
+      { t: 'W', label: 'W', caption: 'soft tint + border · 8% hue · 1px border at 45% · radius .2em' },
+    ],
+    render: (v) => proseFirst(v.t),
+  },
+  {
+    n: 2, title: 'Prose, later mentions', rule: 'Rule 2 · no mark; the kind is in the tooltip and the aria-label',
+    variants: [
+      { t: 'S', label: 'S', rec: true, caption: 'first mention marked (M) · later mentions are link only · hover or focus shows the kind · aria-label' },
+      { t: 'M', label: 'M', caption: 'every mention marked: the same paragraph, for comparison' },
+    ],
+    render: (v) => laterDemo(v.t === 'M'),
+  },
+  {
+    n: 3, title: 'Contiguous runs, "see also"', rule: 'Rule 1 · a short run binds the mark to the name; 5 or more go to ink',
+    variants: [
+      { t: 'AB', label: 'AB', rec: true, caption: 'split chip · cap mono 12px/700, 18% tint · name on a 4% surface · hairline · nowrap' },
+      { t: 'T', label: 'T', caption: 'outline · transparent fill · border hue 60% · the same six items' },
+      { t: 'U', label: 'U', caption: 'ink · fg 7% fill, 14% border, no hue · for 5 or more' },
+    ],
+    render: (v) => runDemo(v.t),
+  },
+  {
+    n: 4, title: 'API definition headings', rule: 'Rule 2 · the word appears where the reader meets the symbol',
+    variants: [
+      { t: 'Q', label: 'Q', rec: true, caption: 'legend chip · the prose mark, then the word .8em/600 · same tint, border, radius · em-scaled' },
+      { t: 'K', label: 'K', caption: 'gp-sphinx word chip · 11px/700 · tint, 1px border · radius 3.5px' },
+      { t: 'Qq', label: 'Q quiet', caption: 'muted uppercase word before the name · no chip' },
+    ],
+    render: (v) => headingDemo(v.t),
+  },
+  {
+    n: 5, title: 'Dense trees, API index, member grids', rule: 'Rule 1 · a column of marks: a fixed gutter; the selected node goes solid',
+    variants: [
+      { t: 'T', label: 'T + P + R', rec: true, caption: 'outline in a fixed gutter · family hue (P) · selected node solid (R), ring where white fails' },
+      { t: 'X', label: 'X', caption: 'medium solid · hue-400 fill, hue-950 glyph · same gutter' },
+    ],
+    render: (v) => treeDemo(v.t),
+  },
+  {
+    n: 6, title: 'Sidebars, "On this page"', rule: 'Rule 1 · chrome has no colour budget: ink',
+    variants: [{ t: 'U', label: 'U', rec: true, caption: 'ink · current entry goes solid in its family hue' }],
+    render: (v) => tocDemo(v.t),
+  },
+  {
+    n: 7, title: 'Menus, command palette, search results', rule: 'Rule 2 · a leading gutter for the mark, the word trails',
+    variants: [
+      { t: 'T', label: 'T', rec: true, caption: 'outline in a fixed leading gutter · muted trailing word' },
+      { t: 'AE', label: 'AE', caption: 'silhouettes · squircle types, round callables, dotted chip for data · single marks' },
+      { t: 'W', label: 'W', caption: 'soft tint + border · 8% hue, 1px border at 45%' },
+    ],
+    render: (v) => paletteDemo(v.t),
+  },
+  {
+    n: 8, title: 'Tables', rule: 'Rule 2 · a kind column spells the word; the mark before the name is ink',
+    variants: [
+      { t: 'U', label: 'U', rec: true, caption: 'kind column as plain word · ink mark before the name' },
+      { t: 'AD', label: 'AD', caption: 'kept for reference: may suit tables later' },
+      { t: 'X', label: 'X', caption: 'medium solid · hue-400 fill, hue-950 glyph' },
+    ],
+    render: (v) => tableDemo(v.t),
+  },
+  {
+    n: 9, title: 'Tooltips', rule: 'Rule 2 · plain word; no badge inside a tooltip',
+    variants: [{ t: 'word', label: 'word', rec: true, caption: 'inverse surface · 11px/500 · the kind word only' }],
+    render: () => tooltipDemo(),
+  },
+  {
+    n: 10, title: 'Hover cards and API previews', rule: 'Rule 2 · the card header carries mark and word; the body keeps tints',
+    variants: [
+      { t: 'Q', label: 'Q + M', rec: true, caption: 'legend chip as the header · M marks in the body' },
+      { t: 'K', label: 'K + M', caption: 'word chip as the header · M marks in the body' },
+    ],
+    render: (v) => cardDemo(v.t),
+  },
+  {
+    n: 11, title: 'Interactive discovery', rule: 'Rule 2 · teach the legend on demand, from the keyboard too',
+    variants: [
+      { t: 'AF', label: 'AF', rec: true, caption: 'expand-on-focus · hover or focus pops the word · mono mark · aria-label' },
+      { t: 'SR', label: 'S reveal', rec: true, caption: 'hover or focus widens the mark into the word, in place · aria-label' },
+    ],
+    render: (v) => discoverDemo(v.t),
+  },
+  {
+    n: 12, title: 'Next to keycaps', rule: 'Keycaps keep their own style; the mark steps back',
+    variants: [
+      { t: 'U', label: 'U', rec: true, caption: 'ink mark beside the keycaps' },
+      { t: 'NONE', label: 'none', rec: true, caption: 'no mark: the link alone' },
+      { t: 'T', label: 'T', caption: 'outline mark' },
+    ],
+    render: (v) => kbdDemo(v.t),
+  },
+  {
+    n: 13, title: 'Code blocks and copyable signatures', rule: 'Highlighting already encodes kind',
+    variants: [
+      { t: 'NONE', label: 'none', rec: true, caption: 'no badge in the block · highlighting carries the kind' },
+      { t: 'TEXT', label: '[m]', caption: 'plain-text [m] only where the kind must appear' },
+    ],
+    render: (v) => codeDemo(v.t),
+  },
+  {
+    n: 14, title: 'Admonitions: note, warning, danger', rule: 'Rule 1 · on a tinted surface the mark needs an opaque base',
+    variants: [
+      { t: 'T', label: 'T', rec: true, caption: 'outline on an opaque base · border hue 60%' },
+      { t: 'AB', label: 'AB', caption: 'split chip · the name sits on an opaque surface' },
+    ],
+    render: (v) => admonDemo(v.t),
+  },
+  {
+    n: 15, title: 'Changelog and release notes', rule: 'Group by kind; the chip is the group header, so items carry no mark',
+    variants: [
+      { t: 'Q', label: 'Q', rec: true, caption: 'group by kind · legend chip as the header · no per-item marks' },
+      { t: 'T', label: 'T', caption: 'grouped by change · outline mark on every item' },
+    ],
+    render: (v) => logDemo(v.t),
+  },
+  {
+    n: 16, title: 'Breadcrumbs', rule: 'Navigation already names the place',
+    variants: [
+      { t: 'NONE', label: 'none', rec: true, caption: 'no mark' },
+      { t: 'U', label: 'U', caption: 'ink mark on the last crumb' },
+    ],
+    render: (v) => crumbDemo(v.t),
+  },
+  {
+    n: 17, title: 'Tabs', rule: 'Rule 2 · the word; the family hue marks the selected tab',
+    variants: [{ t: 'word', label: 'word', rec: true, caption: 'word only · 2px indicator in the family hue · click a tab' }],
+    render: () => tabsDemo(),
+  },
+  {
+    n: 18, title: 'Active state: selected node, target heading, hovered link', rule: 'Rule 3 · solid is a state; a ring where white is under 4.5:1',
+    variants: [{ t: 'R', label: 'R', rec: true, caption: `solid on selected, :target, hover, focus · 600-step fill, white glyph · 2px ring on ${RING_LIST}` }],
+    render: (_v, s) => activeDemo(s),
+  },
+  {
+    n: 19, title: 'Status: deprecated, experimental, since', rule: 'Rule 3 · a pill is status, never kind',
+    variants: [{ t: 'Y', label: 'Y', rec: true, caption: 'soft pill · 12px/600 · radius 999px · neutral or warning hue · the kind stays a mark' }],
+    render: () => statusDemo(),
+  },
+  {
+    n: 20, title: 'Large and alone: social card, hero, empty state', rule: 'Rule 3 · solid is a hero when it stands alone',
+    variants: [{ t: 'SOLID', label: 'solid', rec: true, caption: 'solid 56px · 600-step fill · white glyph · radius .2em' }],
+    render: () => heroDemo(),
+  },
+  {
+    n: 21, title: 'Print and PDF', rule: 'Ink, tints stripped · the Print toggle applies the same rules',
+    variants: [{ t: 'U', label: 'U', rec: true, caption: '@media print · transparent fill, 1px black border, black glyph' }],
+    render: () => printDemo(),
+  },
+  {
+    n: 22, title: 'forced-colors and prefers-contrast: more', rule: 'Outline in system colours · the Forced colors toggle applies the same rules',
+    variants: [{ t: 'T', label: 'T', rec: true, caption: '@media (forced-colors: active) · Canvas fill, CanvasText border, Highlight when active' }],
+    render: () => forcedDemo(),
+  },
+  {
+    n: 23, title: 'Plain text, RSS, README, search snippets', rule: 'No colour, no boxes: the mark is text',
+    variants: [
+      { t: 'TEXT', label: '[m]', rec: true, caption: 'bracketed single mark' },
+    ],
+    render: () => plainDemo(),
+  },
+  {
+    n: 24, title: 'Touch', rule: 'Nothing is hover-only · headings teach, a tap shows the word',
+    variants: [{ t: 'M', label: 'M', rec: true, caption: 'same marks · legend chip in the heading · tap a mark for its word' }],
+    render: () => touchDemo(),
+  },
+  {
+    n: 25, title: 'Legend: every kind', rule: 'Rule 2 · the vocabulary, spelled out',
+    variants: [
+      { t: 'Q', label: 'Q', rec: true, caption: 'legend-chip grid · mark and word for every kind' },
+      { t: 'K', label: 'K', caption: 'word-chip grid' },
+    ],
+    render: (v) => legendDemo(v.t),
+  },
+]
+
+const pane = (c: Context, v: Variant, scheme: Scheme) => `<div class="ic-pane" data-pane="${scheme}" data-ctx="${c.n}">${c.render(v, scheme)}</div>`
+
+const section = (c: Context) => `<section id="c${c.n}" class="ic-sec">
+<header class="ic-sh"><span class="ic-n">${c.n}</span><h2>${c.title}</h2><p class="ic-rule">${c.rule}</p></header>
+${c.variants
+  .map(
+    (v) =>
+      `<div class="ic-var"><div class="ic-vh"><span class="ic-vl">${v.label}</span>${v.rec ? '<span class="ic-vr">Recommended</span>' : ''}<span class="ic-vc">${v.caption}</span></div><div class="ic-panes">${pane(c, v, 'light')}${pane(c, v, 'dark')}</div></div>`,
+  )
+  .join('\n')}
+</section>`
+
+// ---- the system, at the top ----
+
+const famChips = () =>
+  Object.entries(FAMS)
+    .map(([f, v]) => `<span class="ic-fam" data-fam="${f}">${f} · ${v.hue}</span>`)
+    .join('')
+const sysPane = (scheme: Scheme) =>
+  `<div class="ic-pane" data-pane="${scheme}"><div class="ic-marks">${KINDS.map((k) => b('M', k.kind)).join('')}</div><div class="ic-fams">${famChips()}</div></div>`
+const RULES: [string, string][] = [
+  ['Base mark', 'M tuned tint, built em-scaled (N), sans 600, on the global families palette (P)'],
+  ['Palette', 'six hue families, global: types, traits, callables, members, meta, tools; tuned per mode'],
+  ['Size', '1.35em square · glyph .8em · radius .2em · it follows the text it sits in'],
+  ['Rule 1', 'fill follows crowding: alone, tint · a short run or a column, outline or split chip · a long run, chrome, no colour budget, ink'],
+  ['Rule 2', 'the word appears wherever the reader cannot hover: headings, menus, tooltips, tables'],
+  ['Rule 3', 'solid is a state or a hero, never a default · a pill is status, never kind'],
+  ['Contrast', `worst glyph on fill: light ${famWorst('light')}, dark ${famWorst('dark')} · white on solid under 4.5:1 takes a ring: ${RING_LIST}`],
+]
+const system = `<section id="system" class="ic-sec ic-sys"><header class="ic-sh"><h2>The system</h2></header><dl class="ic-rules">${RULES.map(([k, d]) => `<div><dt>${k}</dt><dd>${d}</dd></div>`).join('')}</dl><div class="ic-panes">${sysPane('light')}${sysPane('dark')}</div></section>`
+
+const board = system + '\n' + CONTEXTS.map(section).join('\n')
+
+const bar = `<div class="ic-bar"><span class="ic-bar__grp"><a class="ic-bar__lab" href="../">Board</a><a class="ic-bar__lab" href="#system">System</a>${CONTEXTS.map(
+  (c) => `<a href="#c${c.n}" class="ic-jump" title="${esc(c.title)}">${c.n}</a>`,
+).join('')}</span><span class="ic-bar__tools"><button type="button" class="ic-tool" data-ic-toggle="print" aria-pressed="false">Print</button><button type="button" class="ic-tool" data-ic-toggle="forced" aria-pressed="false">Forced colors</button><button type="button" class="ic-tool" data-ic-toggle="shape" aria-pressed="false">Shape</button></span></div>`
+
+// Print and forced-colours rules, written once and applied twice: under the media query and under the toggle.
+const printRules = (root: string) => `
+${root} .ic-b,${root} .ic-leg,${root} .ic-split,${root} .ic-split__k,${root} .ic-split__n,${root} .ic-pill,${root} .ic-fam,${root} .ic-b__l{background:transparent!important;color:#000!important;border:1px solid #000!important;box-shadow:none!important;outline:0!important;translate:none}
+${root} .ic-b__l,${root} .ic-split__k,${root} .ic-split__n{border:0!important}
+${root} .ic-leg__m,${root} .ic-leg__w,${root} .ic-leg__g{background:transparent!important;color:#000!important;border:0!important}
+${root} .ic-leg__m{border-right:1px solid #000!important}
+${root} .ic-pane{background:#fff!important;color:#000!important;border-color:#999!important}
+${root} .ic-pane a,${root} .ic-pane code,${root} a,${root} code{color:#000!important}
+${root} code{background:transparent!important;border-color:#999!important}
+`
+const forcedRules = (root: string) => `
+${root} .ic-b,${root} .ic-leg,${root} .ic-split,${root} .ic-pill,${root} .ic-fam{background:Canvas!important;color:CanvasText!important;border:1px solid CanvasText!important;box-shadow:none!important;forced-color-adjust:none}
+${root} .ic-b__l,${root} .ic-split__k,${root} .ic-split__n,${root} .ic-leg__g,${root} .ic-leg__w{background:transparent!important;color:CanvasText!important;border-color:CanvasText!important}
+${root} .ic-leg__m{background:transparent!important;color:CanvasText!important;border-color:CanvasText!important}
+${root} :is(.ic-m:hover,.ic-m:focus-visible,.ic-sel,:target) .ic-b{background:Highlight!important;color:HighlightText!important;border-color:Highlight!important}
+${root} :is(.ic-m:hover,.ic-m:focus-visible,.ic-sel,:target) .ic-b .ic-b__l{color:HighlightText!important}
+${root} .ic-pane{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}
+${root} .ic-pane a,${root} a{color:LinkText!important}
+${root} code{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}
+`
+const modeCss = `@media print{.ic-bar{display:none!important}${printRules('.ic-root')}}@media (forced-colors:active){${forcedRules('.ic-root')}}${printRules('.ic-root[data-print]')}${printRules('.ic-paper')}${forcedRules('.ic-root[data-forced]')}${forcedRules('.ic-forcedbox')}`
+---
+
+<DemoLayout title="Badges in context" description="Kind badges in each context they appear in." current="/demo/badges/in-context/">
+  <h1 class="text-3xl font-semibold tracking-tight">Badges in context</h1>
+  <p class="mt-2 text-muted">One system, 25 contexts. Recommended first, alternatives after, light and dark.</p>
+  <Fragment set:html={bar} />
+  <div class="ic-root" data-ic-root>
+    <Fragment set:html={board} />
+  </div>
+
+  <style is:inline set:html={familyCss + pillCss}></style>
+  <style is:inline set:html={modeCss}></style>
+</DemoLayout>
+
+<script is:inline>
+  document.addEventListener('click', (event) => {
+    const target = event.target instanceof Element ? event.target : null
+    if (!target) return
+    const tab = target.closest('.ic-tab')
+    if (tab) {
+      const list = tab.closest('[data-ic-tabs]')
+      for (const t of list.querySelectorAll('.ic-tab')) t.setAttribute('aria-selected', String(t === tab))
+      list.querySelector('.ic-tabs__p').textContent = tab.dataset.text
+      return
+    }
+    const tap = target.closest('.ic-b[data-tap]')
+    if (tap) tap.classList.toggle('is-open')
+    if (target.closest('.ic-pane a:not(.ic-perma)')) event.preventDefault()
+  })
+  const root = document.querySelector('[data-ic-root]')
+  const apply = (name, on) => {
+    if (!root) return
+    if (on) root.setAttribute('data-' + name, '')
+    else root.removeAttribute('data-' + name)
+    document.querySelector('[data-ic-toggle="' + name + '"]')?.setAttribute('aria-pressed', String(on))
+  }
+  for (const button of document.querySelectorAll('[data-ic-toggle]')) {
+    button.addEventListener('click', () => apply(button.dataset.icToggle, button.getAttribute('aria-pressed') !== 'true'))
+  }
+  const query = new URLSearchParams(location.search)
+  for (const name of ['print', 'forced', 'shape']) if (query.get(name) === '1') apply(name, true)
+  if (query.get('fonts') === 'fallback' && root) root.dataset.fonts = 'fallback'
+</script>
+
+<style is:global>
+  /* Page chrome */
+  .ic-bar {
+    position: sticky; top: 3.3rem; z-index: 30; display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .9rem;
+    margin: 1rem 0 0; padding: .5rem 0; border-bottom: 1px solid var(--color-edge); background: var(--background-color, canvas);
+  }
+  .ic-bar__grp { display: inline-flex; flex-wrap: wrap; align-items: center; gap: .2rem; }
+  .ic-bar__lab { margin-right: .35rem; color: var(--color-muted); font: 600 .625rem/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; text-decoration: none; }
+  .ic-bar__lab:hover { color: inherit; }
+  .ic-bar__tools { display: inline-flex; flex-wrap: wrap; gap: .3rem; margin-left: auto; }
+  .ic-tool {
+    padding: .25rem .5rem; border: 1px solid var(--color-edge); border-radius: .375rem; background: var(--color-surface);
+    font: 500 .6875rem/1 var(--font-sans); cursor: pointer;
+  }
+  .ic-tool[aria-pressed='true'] { background: var(--color-surface-hover); font-weight: 700; }
+  .ic-jump {
+    display: inline-grid; place-items: center; min-width: 1.5rem; height: 1.5rem; padding: 0 .3rem;
+    border: 1px solid var(--color-edge); border-radius: .3rem; background: var(--color-surface);
+    font: 600 .6875rem/1 var(--font-mono); text-decoration: none; color: inherit;
+  }
+  .ic-jump:hover { background: var(--color-surface-hover); }
+  .ic-root[data-fonts='fallback'] { --font-sans: 'DejaVu Sans', Verdana, sans-serif; --font-mono: 'DejaVu Sans Mono', Menlo, Consolas, monospace; }
+  .ic-sec { margin-top: 3rem; scroll-margin-top: 7rem; }
+  .ic-sh { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem .75rem; margin-bottom: .6rem; padding-bottom: .5rem; border-bottom: 1px solid var(--color-edge); }
+  .ic-n {
+    align-self: center; display: inline-grid; place-items: center; min-width: 2rem; height: 2rem; padding: 0 .4rem;
+    border-radius: .5rem; background: var(--color-surface-hover); font: 700 .9375rem/1 var(--font-sans);
+  }
+  .ic-sh h2 { margin: 0; font: 600 1.125rem/1.3 var(--font-sans); }
+  .ic-rule { flex: 1 1 100%; margin: 0; color: var(--color-muted); font: .75rem/1.4 var(--font-mono); }
+  .ic-var { margin-top: 1rem; }
+  .ic-vh { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .6rem; margin-bottom: .45rem; }
+  .ic-vl {
+    display: inline-grid; place-items: center; min-width: 1.75rem; height: 1.5rem; padding: 0 .45rem; border-radius: .375rem;
+    background: var(--color-surface-hover); font: 700 .75rem/1 var(--font-sans);
+  }
+  .ic-vr { padding: .15rem .45rem; border-radius: 999px; background: color-mix(in srgb, var(--color-link, #2757dd) 14%, transparent); color: var(--color-link, #2757dd); font: 600 .625rem/1.2 var(--font-sans); text-transform: uppercase; letter-spacing: .06em; }
+  .ic-vc { flex: 1 1 18rem; color: var(--color-muted); font: .75rem/1.4 var(--font-mono); }
+  .ic-panes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr)); gap: 1rem; }
+  .ic-rules { margin: 0 0 1rem; display: grid; gap: .3rem; }
+  .ic-rules > div { display: grid; grid-template-columns: 6rem 1fr; gap: .75rem; align-items: baseline; }
+  .ic-rules dt { color: var(--color-muted); font: 600 .6875rem/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; }
+  .ic-rules dd { margin: 0; font: .8125rem/1.5 var(--font-sans); }
+  .ic-marks { display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; font-size: .9375rem; }
+  .ic-fams { display: flex; flex-wrap: wrap; gap: .35rem; }
+  .ic-fam { padding: .15rem .55rem; border: 1px solid color-mix(in srgb, var(--fh) var(--ba), transparent); border-radius: .25rem; background: var(--fb); color: var(--ff); font: 600 .6875rem/1.3 var(--font-sans); }
+
+  /* Panes carry their own scheme */
+  .ic-pane {
+    position: relative; display: flex; flex-direction: column; gap: .9rem; min-width: 0; padding: 1rem 1.15rem;
+    border: 1px solid var(--bd-edge); border-radius: .5rem; background: var(--bd-bg); color: var(--bd-fg);
+    --color-edge: var(--bd-edge); --color-muted: var(--bd-muted); --color-surface-hover: var(--bd-hover);
+  }
+  .ic-pane::before {
+    content: attr(data-pane); position: absolute; top: .4rem; right: .6rem;
+    color: var(--bd-muted); font: .625rem/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em;
+  }
+  .ic-pane[data-pane='light'] {
+    --bd-bg: #fff; --bd-fg: #1a1c1e; --bd-muted: #6b6f76; --bd-edge: #eeebee; --bd-surface: #f8f9fb; --bd-hover: #efeff4; --bd-link: #2757dd;
+    --ba: 30%; --bd-nbg: rgb(0 0 0 / .05); --tip-bg: #1a1c1e; --tip-fg: #fff;
+    --tk-k: #7c3aed; --tk-f: #b45309; --tk-t: #1d4ed8; --tk-s: #15803d; --tk-c: #6b6f76;
+    color-scheme: light;
+  }
+  .ic-pane[data-pane='dark'] {
+    --bd-bg: #131416; --bd-fg: #cfd0d0; --bd-muted: #81868d; --bd-edge: #303335; --bd-surface: #1a1c1e; --bd-hover: #1e2124; --bd-link: #5ca5ff;
+    --ba: 18%; --bd-nbg: rgb(255 255 255 / .08); --tip-bg: #e4e6e8; --tip-fg: #131416;
+    --tk-k: #c4b5fd; --tk-f: #fcd34d; --tk-t: #93c5fd; --tk-s: #86efac; --tk-c: #81868d;
+    color-scheme: dark;
+  }
+  .ic-pane p, .ic-pane h3, .ic-pane h4, .ic-pane h5, .ic-pane pre, .ic-pane ul { margin: 0; }
+  .ic-prose { font: 400 1rem/1.8 var(--font-sans); }
+  .ic-pane a { color: var(--bd-link); text-decoration: none; }
+  .ic-pane code {
+    padding: .05em .3em; border: 1px solid var(--bd-edge); border-radius: .25rem; background: var(--bd-surface);
+    font: 400 .875em/1.4 var(--font-mono); color: inherit;
+  }
+  .ic-pane kbd {
+    padding: .1em .45em; border: 1px solid var(--bd-edge); border-bottom-width: 2px; border-radius: .3em; background: var(--bd-surface);
+    font: 500 .8125em/1.2 var(--font-mono); color: var(--bd-fg);
+  }
+  .ic-lead { color: var(--bd-muted); font: 600 .6875rem/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; margin-right: .35rem; }
+
+  /* A mention is the mark, then the name, centred as the site does it */
+  .ic-m { display: inline-flex; align-items: baseline; gap: .25em; max-inline-size: 100%; vertical-align: baseline; position: relative; }
+  .ic-m > .ic-b { align-self: center; }
+  .ic-m code { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .2em; }
+  .ic-m--later::after {
+    content: attr(data-kind); position: absolute; left: 0; bottom: calc(100% + 4px); z-index: 6; display: none; padding: 2px 7px; border-radius: .3em;
+    background: var(--tip-bg); color: var(--tip-fg); font: 500 .6875rem/1.3 var(--font-sans); white-space: nowrap; text-decoration: none;
+  }
+  .ic-m--later:is(:hover, :focus-visible, .is-open)::after { display: block; }
+
+  /* The mark: em-scaled, tuned tint on the family palette. Treatments change a few variables. */
+  /* Snap the box to an even height and the baseline to a whole pixel, so the ink centres at any sub-pixel position and zoom.
+     The label's block is trimmed to the cap height (or the x-height for a m o p r a :) and sits on the box floor. */
+  :root { --step: 1px; }
+  @media (min-resolution: 2dppx) { :root { --step: .5px; } }
+  @media (min-resolution: 3dppx) { :root { --step: .3333px; } }
+  .ic-b {
+    --w: 1.35em; --r: .2em; --bw: 1px; --gh: calc(.8 * 1cap);
+    --bh: round(var(--h, var(--w)), 2px);
+    display: inline-flex; align-items: flex-end; justify-content: center; flex: none; box-sizing: border-box;
+    min-width: round(var(--w), 2px); height: var(--bh);
+    padding: 0 var(--px, 0) round(calc((var(--bh) - 2 * var(--bwv, var(--bw)) - var(--gh)) / 2), var(--step));
+    border: var(--bw) solid var(--bdv, color-mix(in srgb, var(--fh) var(--ba), transparent)); border-radius: var(--r);
+    background: var(--bgv, var(--fb)); color: var(--fgv, var(--ff));
+    font: 600 1em/1 var(--font-sans); white-space: nowrap; user-select: none; box-shadow: var(--sh, none);
+  }
+  .ic-b[data-x] { --gh: calc(.8 * (1ex + var(--xo, .01em))); }
+  .ic-b:has(> [data-mark='col']) { --gh: calc(.8 * 1ex); }
+  .ic-b:has(> [data-mark='asc']) { --gh: calc(.8 * (1cap + var(--asc, .04em))); }
+  .ic-b:has(> [data-mark='tee']) { --gh: calc(.8 * (1cap - var(--tee, .035em))); }
+  .ic-b__l { display: block; font-size: .8em; line-height: 1; text-box: trim-both cap alphabetic; }
+  .ic-b__l[data-mark='x'], .ic-b__l[data-mark='col'] { text-box: trim-both ex alphabetic; }
+  .ic-b__l::before { content: attr(data-m1); }
+
+  /* V soft tint, W soft tint + border, T outline, U ink, X medium solid */
+  .ic-b[data-t='V'] { --w: 1.5em; --r: .3em; --bw: 0px; --bgv: color-mix(in srgb, var(--fh) 14%, var(--bd-bg)); --fgv: var(--f8); }
+  .ic-b[data-t='W'] { --bgv: color-mix(in srgb, var(--fh) 8%, var(--bd-bg)); --bdv: color-mix(in srgb, var(--fh) 45%, transparent); }
+  .ic-b[data-t='T'] { --bgv: transparent; --bdv: color-mix(in srgb, var(--fh) 60%, transparent); }
+  .ic-b[data-t='T'][data-opaque] { --bgv: var(--bd-bg); }
+  .ic-b[data-t='U'] { --bgv: color-mix(in srgb, var(--bd-fg) 7%, transparent); --bdv: color-mix(in srgb, var(--bd-fg) 14%, transparent); --fgv: var(--bd-fg); }
+  .ic-b[data-t='X'] { --bw: 0px; --bgv: var(--fm); --fgv: var(--f9); }
+  /* AD left-accent tag (table alternative only), AE silhouettes */
+  .ic-b[data-t='AE'] { --w: 1.45em; }
+  .ic-b[data-t='AD'] { --w: 1.5em; --r: .15em; --bwv: 0px; --bgv: var(--bd-nbg); --fgv: var(--bd-fg); border-width: 0 0 0 .2em; border-color: var(--fh); }
+  .ic-b[data-t='AE'][data-f='calls'] { --r: 999px; }
+  .ic-b[data-t='AE'][data-f='data'] {
+    --bgv: color-mix(in srgb, var(--bd-fg) 6%, transparent); --bdv: color-mix(in srgb, var(--bd-fg) 16%, transparent); --fgv: var(--bd-fg);
+    --w: 1.45em; --px: .45em; gap: .3em;
+  }
+  .ic-b[data-t='AE'][data-f='data']::before { content: ''; flex: none; width: .3em; height: .3em; border-radius: 50%; background: var(--fh); }
+  /* K gp-sphinx word chip */
+  .ic-b--word {
+    --w: auto; --h: auto; --px: 8px; --r: 3.5px; --bh: 18px;
+    display: inline-flex; align-items: flex-end; justify-content: center; min-width: 0; height: 18px;
+    padding: 0 var(--px) round(calc((18px - 2px - 1cap) / 2), var(--step));
+    font: 700 11px/1 var(--font-sans); letter-spacing: .01em;
+  }
+  .ic-b--word .ic-b__l { font-size: 1em; text-box: trim-both cap alphabetic; }
+  .ic-b--word .ic-b__l::before { content: none; }
+
+  /* The Monograms and Shape toggles */
+  .ic-root[data-shape] .ic-b[data-s='ci']:not(.ic-b--word, [data-t='AD'], [data-t='AE']) { --r: 999px; --w: 1.45em; }
+  .ic-root[data-shape] .ic-b[data-s='di']:not(.ic-b--word, [data-t='AD'], [data-t='AE']) { --w: 1.05em; --r: .12em; rotate: 45deg; margin-inline: .22em; }
+  .ic-root[data-shape] .ic-b[data-s='di']:not(.ic-b--word, [data-t='AD'], [data-t='AE']) > .ic-b__l { rotate: -45deg; }
+
+  /* Active state: solid in the family hue, or a ring where white is under 4.5:1 */
+  :is(.ic-m:hover, .ic-m:focus-visible, .ic-sel, :target, .ic-act:hover) .ic-b:not([data-ring], .ic-b--word, [data-t='SOLID']),
+  .ic-b[data-active]:not([data-ring]) {
+    --bgv: var(--fs); --fgv: #fff; --bdv: var(--fs);
+  }
+  :is(.ic-m:hover, .ic-m:focus-visible, .ic-sel, :target, .ic-act:hover) .ic-b[data-ring]:not(.ic-b--word),
+  .ic-b[data-active][data-ring] { --sh: 0 0 0 2px var(--fh); }
+
+  /* S reveal and AF popover */
+  .ic-b[data-t='SR'] .ic-b__w { display: none; font-size: .75em; }
+  .ic-b[data-t='SR']:is(:hover, :focus-visible, .is-open), .ic-m:is(:hover, :focus-visible) .ic-b[data-t='SR'] { --w: auto; --px: .55em; }
+  .ic-b[data-t='SR']:is(:hover, :focus-visible, .is-open) .ic-b__m, .ic-m:is(:hover, :focus-visible) .ic-b[data-t='SR'] .ic-b__m { display: none; }
+  .ic-b[data-t='SR']:is(:hover, :focus-visible, .is-open) .ic-b__w, .ic-m:is(:hover, :focus-visible) .ic-b[data-t='SR'] .ic-b__w { display: block; }
+  .ic-b[data-t='AF'], .ic-b[data-tap] { position: relative; }
+  .ic-b[data-t='AF'] { --gh: calc(.72 * 1cap); }
+  .ic-b[data-t='AF'][data-x] { --gh: calc(.72 * 1ex); }
+  .ic-b[data-t='AF']:has(> [data-mark='asc']) { --gh: calc(.72 * (1cap + var(--asc, .04em))); }
+  .ic-b[data-t='AF'] > .ic-b__l { font: 700 .72em/1 var(--font-mono); }
+  .ic-b[data-t='AF'] > .ic-b__l::before { content: attr(data-m1); }
+  .ic-b[data-t='AF']::after, .ic-b[data-tap]::after {
+    content: attr(data-word); position: absolute; bottom: calc(100% + 6px); left: 50%; translate: -50% 0; z-index: 5; display: none;
+    padding: 3px 8px; border-radius: 3.5px; background: var(--tip-bg); color: var(--tip-fg); font: 600 11px/1 var(--font-sans); letter-spacing: .01em;
+  }
+  .ic-b[data-tap]::after { left: 0; translate: none; }
+  .ic-b[data-t='AF']::before, .ic-b[data-tap]::before {
+    content: ''; position: absolute; bottom: calc(100% + 1px); left: 50%; translate: -50% 0; z-index: 5; display: none;
+    border: 5px solid transparent; border-bottom: 0; border-top-color: var(--tip-bg);
+  }
+  .ic-b[data-t='AF']:is(:hover, :focus-visible, .is-open)::before, .ic-m:is(:hover, :focus-visible) .ic-b[data-t='AF']::before, .ic-b[data-tap].is-open::before { display: block; }
+  .ic-b[data-t='AF']:is(:hover, :focus-visible, .is-open)::after, .ic-m:is(:hover, :focus-visible) .ic-b[data-t='AF']::after, .ic-b[data-tap].is-open::after { display: block; }
+  .ic-b:focus-visible { outline: 2px solid var(--fh); outline-offset: 1px; }
+
+  /* AB split chip: one outlined box; the cap and the name are equal-height segments */
+  @property --ic-sh { syntax: '<length>'; inherits: true; initial-value: 0px; }
+  @property --ic-np { syntax: '<length>'; inherits: true; initial-value: 0px; }
+  .ic-split {
+    --ic-sh: round(1.6em, 2px);
+    --ic-np: round(calc((var(--ic-sh) - 2px - .875 * 1cap) / 2), var(--step));
+    display: inline-flex; align-items: stretch; box-sizing: border-box; height: var(--ic-sh); vertical-align: middle; white-space: nowrap; overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--fh) 30%, transparent); border-radius: .25em; text-decoration: none;
+  }
+  /* The cap and the name are one line of text: both sit on the name's snapped baseline. */
+  .ic-split__k {
+    display: flex; align-items: flex-end; justify-content: center; min-width: 1.6em; padding: 0 .3em var(--ic-np); box-sizing: border-box;
+    border-right: 1px solid color-mix(in srgb, var(--fh) 30%, transparent);
+    background: color-mix(in srgb, var(--fh) 18%, var(--bd-bg)); color: var(--ff); font: 700 .75em/1 var(--font-mono);
+  }
+  .ic-split__kl, .ic-split__nl { display: block; text-box: trim-both cap alphabetic; }
+  .ic-split__n {
+    display: flex; align-items: flex-end; padding: 0 .45em var(--ic-np); background: color-mix(in srgb, var(--bd-fg) 4%, transparent);
+    font: 400 .875em/1 var(--font-mono);
+  }
+  .ic-split code { padding: 0; border: 0; background: none; font: inherit; }
+  .ic-split:hover:not([data-ring]) .ic-split__k, .ic-split:focus-visible:not([data-ring]) .ic-split__k { background: var(--fs); color: #fff; }
+  .ic-split[data-ring]:is(:hover, :focus-visible) { outline: 2px solid var(--fh); outline-offset: 1px; }
+  .ic-adm .ic-split__n { background: var(--bd-bg); }
+
+  /* Q legend chip: one box with one border and radius; the mark and the word are equal-height segments inside it.
+     Both sit on one baseline, centred by the mark's class (cap or x-height); registered lengths resolve the units once, on the chip. */
+  @property --ic-lh { syntax: '<length>'; inherits: true; initial-value: 0px; }
+  @property --ic-pb { syntax: '<length>'; inherits: true; initial-value: 0px; }
+  .ic-leg {
+    --ic-lh: round(1.35em, 2px);
+    --ic-pb: round(calc((var(--ic-lh) - 2px - .8 * 1cap) / 2), var(--step));
+    display: inline-flex; align-items: stretch; box-sizing: border-box; height: var(--ic-lh); vertical-align: middle; overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--fh) var(--ba), transparent); border-radius: .2em;
+    background: var(--fb); color: var(--ff); font: 600 1em/1 var(--font-sans); white-space: nowrap;
+  }
+  /* One line of text: the mark and the word sit on the same snapped baseline, and the run is centred as a whole by its cap height. */
+  .ic-leg__m {
+    display: flex; align-items: flex-end; justify-content: center; min-width: 1.3em; padding: 0 .4em var(--ic-pb);
+    border-right: 1px solid color-mix(in srgb, var(--fh) var(--ba), transparent);
+    background: color-mix(in srgb, var(--fh) 22%, var(--fb));
+  }
+  .ic-leg__g { display: block; font-size: .8em; line-height: 1; text-box: trim-both cap alphabetic; }
+  .ic-leg__g::before { content: attr(data-m1); }
+  .ic-leg__w { display: flex; align-items: flex-end; padding: 0 .55em var(--ic-pb) .5em; font-size: .8em; line-height: 1; }
+  .ic-leg__wl { display: block; text-box: trim-both cap alphabetic; }
+  .ic-quiet { margin-right: .55em; color: var(--bd-muted); font: 600 .5em/1 var(--font-sans); text-transform: uppercase; letter-spacing: .08em; vertical-align: middle; }
+  .ic-pill { display: inline-block; padding: .1em .65em; border-radius: 999px; font: 600 .75rem/1.5 var(--font-sans); vertical-align: middle; }
+  .ic-pill--warn { background: var(--pw-bg); color: var(--pw-fg); }
+  .ic-pill--neutral { background: var(--pn-bg); color: var(--pn-fg); }
+
+  /* Headings, signatures, trees, sidebars */
+  .ic-defs { display: grid; gap: .6rem; }
+  .ic-def { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; font: 600 1.25rem/1.4 var(--font-mono); scroll-margin-top: 7rem; }
+  .ic-def--s { font-size: 1rem; }
+  .ic-def .ic-leg { font-size: .85em; }
+  .ic-card__h .ic-leg { font-size: 1.05em; }
+  .ic-pane[data-ctx='11'], .ic-pane[data-ctx='24'] { padding-top: 2.2rem; }
+  .ic-def .ic-b--word { font-size: 11px; }
+  .ic-defs .ic-quiet { font-size: .55em; }
+  .ic-sig { overflow-x: auto; }
+  .ic-sig code { display: block; padding: .5rem .7rem; font: 400 .8125rem/1.6 var(--font-mono); white-space: pre-wrap; }
+  .ic-perma { margin-left: .25rem; color: var(--bd-muted) !important; font: 400 .875rem/1 var(--font-mono); }
+  .ic-tree { padding: .25rem; border: 1px solid var(--bd-edge); border-radius: .375rem; background: var(--bd-surface); font-size: .8125rem; }
+  .ic-tree--s { width: min(100%, 15rem); }
+  .ic-trow { display: grid; grid-template-columns: 1.9em 1fr; align-items: center; gap: .3em; padding: .15rem .45rem; border-radius: .25rem; font: 400 1em/1.3 var(--font-sans); }
+  .ic-trow .ic-tn { padding-left: calc(var(--d, 0) * 1em); color: inherit; }
+  .ic-gut { display: flex; align-items: center; }
+  .ic-sel { background: var(--bd-hover); font-weight: 500; }
+  .ic-toc { width: min(100%, 15.5rem); font-size: .8125rem; }
+  .ic-toc__h { margin-bottom: .4rem !important; color: var(--bd-muted); font: 600 .625rem/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; }
+  .ic-toc ul { list-style: none; padding: 0; border-left: 1px solid var(--bd-edge); }
+  .ic-toc li { margin-left: -1px; border-left: 2px solid transparent; }
+  .ic-toc li.ic-sel { border-left-color: var(--bd-fg); background: none; }
+  .ic-toc__a { display: flex; align-items: center; gap: .5em; padding: .3rem .6rem; color: var(--bd-fg) !important; }
+  .ic-gap { display: inline-block; width: 1.35em; }
+
+  /* Command palette, table, tooltip, card */
+  .ic-pal { width: min(100%, 27rem); overflow: hidden; border: 1px solid var(--bd-edge); border-radius: .5rem; background: var(--bd-bg); box-shadow: 0 8px 24px rgb(0 0 0 / .12); }
+  .ic-pal__in { display: flex; align-items: center; padding: .55rem .75rem; border-bottom: 1px solid var(--bd-edge); font: 400 .875rem/1.2 var(--font-sans); }
+  .ic-caret { display: inline-block; width: 1px; height: 1em; margin-left: 1px; background: currentColor; }
+  .ic-pr { display: grid; grid-template-columns: 2.6em 1fr auto; align-items: center; gap: .4rem; padding: .4rem .75rem; color: var(--bd-fg) !important; font: 400 .8125rem/1.3 var(--font-sans); }
+  .ic-pr.ic-sel { background: var(--bd-hover); }
+  .ic-pr__p { margin-left: .4rem; color: var(--bd-muted); font: .6875rem/1 var(--font-mono); }
+  .ic-pr__w { color: var(--bd-muted); font: .6875rem/1 var(--font-sans); }
+  .ic-tbl { width: 100%; border-collapse: collapse; font: 400 .8125rem/1.4 var(--font-sans); }
+  .ic-tbl th { padding: .3rem .5rem; border-bottom: 1px solid var(--bd-edge); color: var(--bd-muted); font: 600 .625rem/1 var(--font-mono); text-align: left; text-transform: uppercase; letter-spacing: .06em; }
+  .ic-tbl td { padding: .4rem .5rem; border-bottom: 1px solid var(--bd-edge); vertical-align: middle; }
+  .ic-tbl__k { color: var(--bd-muted); }
+  .ic-tips { display: flex; flex-wrap: wrap; gap: 2.4rem 2rem; padding-bottom: 1.8rem; }
+  .ic-tipwrap { position: relative; }
+  .ic-tip {
+    position: absolute; left: 0; top: calc(100% + 6px); padding: 3px 8px; border-radius: .3em; background: var(--tip-bg); color: var(--tip-fg);
+    font: 500 .6875rem/1.3 var(--font-sans); white-space: nowrap;
+  }
+  .ic-card { width: min(100%, 28rem); border: 1px solid var(--bd-edge); border-radius: .5rem; background: var(--bd-bg); box-shadow: 0 8px 24px rgb(0 0 0 / .12); overflow: hidden; font-size: .875rem; }
+  .ic-card__h { display: flex; align-items: center; gap: .5rem; padding: .55rem .8rem; border-bottom: 1px solid var(--bd-edge); background: var(--bd-surface); font-family: var(--font-mono); }
+  .ic-card .ic-sig code { border: 0; border-radius: 0; }
+  .ic-card__p { padding: .1rem .8rem .7rem !important; font: 400 .8125rem/1.8 var(--font-sans); }
+  .ic-card__f { padding: .4rem .8rem; border-top: 1px solid var(--bd-edge); color: var(--bd-muted); font: .6875rem/1 var(--font-mono); }
+
+  /* Code, admonitions, changelog, crumbs, tabs */
+  .ic-code, .ic-plain { padding: .7rem .9rem; border: 1px solid var(--bd-edge); border-radius: .375rem; background: var(--bd-surface); font: 400 .8125rem/1.7 var(--font-mono); overflow-x: auto; }
+  .ic-code code { padding: 0; border: 0; background: none; font: inherit; }
+  .ic-code .k { color: var(--tk-k); } .ic-code .f { color: var(--tk-f); } .ic-code .t { color: var(--tk-t); } .ic-code .s { color: var(--tk-s); } .ic-code .c { color: var(--tk-c); }
+  .ic-adm { padding: .55rem .8rem; border-left: 3px solid var(--ac); border-radius: .25rem; background: color-mix(in srgb, var(--ac) 9%, var(--bd-bg)); font: 400 .875rem/1.8 var(--font-sans); }
+  .ic-adm__t { margin-bottom: .1rem !important; color: var(--ac); font: 700 .6875rem/1.4 var(--font-sans); text-transform: uppercase; letter-spacing: .06em; }
+  .ic-adm--note { --ac: #2563eb; } .ic-adm--warning { --ac: #d97706; } .ic-adm--danger { --ac: #dc2626; }
+  .ic-pane[data-pane='dark'] .ic-adm--note { --ac: #60a5fa; } .ic-pane[data-pane='dark'] .ic-adm--warning { --ac: #fbbf24; } .ic-pane[data-pane='dark'] .ic-adm--danger { --ac: #f87171; }
+  .ic-log h4 { font: 700 .9375rem/1.4 var(--font-sans); } .ic-log h4 span { margin-left: .5rem; color: var(--bd-muted); font: 400 .75rem/1 var(--font-mono); }
+  .ic-log h5 { margin-top: .5rem !important; color: var(--bd-muted); font: 700 .6875rem/1.4 var(--font-sans); text-transform: uppercase; letter-spacing: .06em; }
+  .ic-lg { display: grid; grid-template-columns: auto 1fr; gap: .2rem .7rem; align-items: baseline; margin-top: .55rem; font-size: .875rem; }
+  .ic-lg ul, .ic-log ul { list-style: none; padding: 0; font: 400 .8125rem/1.8 var(--font-sans); }
+  .ic-log ul li { display: flex; align-items: baseline; gap: .4em; }
+  .ic-log ul li > .ic-b { align-self: center; }
+  .ic-lg ul { grid-column: 2; }
+  .ic-crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; font: 400 .8125rem/1.4 var(--font-sans); }
+  .ic-crumbs > span:not(.ic-crumb-last) { color: var(--bd-muted); }
+  .ic-crumb-last { display: inline-flex; align-items: center; gap: .35em; font-weight: 600; }
+  .ic-tabs [role='tablist'] { display: flex; gap: .15rem; border-bottom: 1px solid var(--bd-edge); }
+  .ic-tab { padding: .45rem .8rem; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--bd-muted); font: 500 .8125rem/1 var(--font-sans); cursor: pointer; margin-bottom: -1px; }
+  .ic-tab[aria-selected='true'] { border-bottom-color: var(--fh); color: var(--bd-fg); font-weight: 600; }
+  .ic-tabs__p { padding-top: .6rem; font-size: .875rem; }
+
+  /* Active state, status, hero, print, forced, touch, legend */
+  .ic-fstrip { display: flex; flex-wrap: wrap; gap: .5rem 1rem; }
+  .ic-fs { display: inline-flex; align-items: center; gap: .4rem; font-size: .9375rem; }
+  .ic-fs small { color: var(--bd-muted); font: .6875rem/1 var(--font-mono); }
+  .ic-stat { display: grid; gap: .5rem; }
+  .ic-stat .ic-def { font: 600 1rem/1.5 var(--font-mono); }
+  .ic-hero, .ic-empty { display: flex; align-items: center; gap: 1.1rem; padding: 1.1rem 1.3rem; border: 1px solid var(--bd-edge); border-radius: .75rem; background: var(--bd-surface); }
+  .ic-empty { border-style: dashed; background: none; }
+  .ic-b--hero { font-size: 2.6rem; --w: 1.35em; --r: .2em; --bgv: var(--fs); --fgv: #fff; --bdv: var(--fs); }
+  .ic-b--empty { font-size: 2rem; }
+  .ic-hero__t { font: 700 1.5rem/1.2 var(--font-sans); } .ic-hero__t--s { font-size: 1rem; font-weight: 600; }
+  .ic-hero__s { margin-top: .2rem; color: var(--bd-muted); font: .8125rem/1.3 var(--font-mono); }
+  .ic-paper { padding: 1rem 1.2rem; border: 1px solid #ccc; background: #fff; color: #000; box-shadow: 0 1px 4px rgb(0 0 0 / .15); font-family: var(--font-sans); }
+  .ic-forcedbox { padding: .9rem 1.1rem; border: 2px solid CanvasText; background: Canvas; color: CanvasText; }
+  .ic-phone { width: min(100%, 17rem); display: grid; gap: 1.1rem; padding: .9rem 1rem; border: 1px solid var(--bd-edge); border-radius: 1.25rem; background: var(--bd-bg); font-size: .9375rem; }
+  .ic-phone .ic-prose { font-size: .9375rem; line-height: 2.7; }
+  .ic-tapm { display: inline-flex; align-items: center; gap: .25em; position: relative; }
+  .ic-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(8.2rem, 1fr)); gap: .5rem .6rem; font-size: .9375rem; }
+  .ic-cell { display: flex; align-items: center; }
+  .ic-plain { white-space: pre-wrap; }
+</style>

@@ -78,7 +78,7 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
 .api-signature-name-link:hover { text-decoration: underline; }
 .api-name { font-weight: 600; }
 .api-punct, .api-type-label { opacity: 0.65; }
-.api-param-name { color: var(--api-kind-attribute-fg); }
+.api-param-name { color: var(--api-ink-param); }
 .api-default { opacity: 0.75; }
 
 /* Overloads stack; each gets its own line but shares the entry. */
@@ -98,9 +98,7 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
   text-transform: lowercase;
   white-space: nowrap;
 }
-/* Modifiers are outline-only, so a kind badge stays the loudest thing. */
-.api-badge--mod { background: transparent; color: var(--api-muted); border-color: var(--api-border); }
-.api-badge--mod-deprecated { color: var(--api-kind-exception-fg); border-color: var(--api-kind-exception-border); }
+/* Modifiers are outline-only, so a kind badge stays the loudest thing; `kind-marks.css` draws them. */
 
 /* --- Field lists -------------------------------------------------------- */
 
@@ -217,6 +215,36 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
 .api-scalar-members th[scope="row"] { font-weight: inherit; }
 .api-member-group { margin-block: 1.5rem 2rem; }
 .api-member-group--single { margin-top: 0.75rem; }
+.api-members { display: flow-root; }
+.api-members > h2,
+.api-members > .api-member-group > h3 {
+  --api-member-bar: color-mix(in srgb, var(--background-color), var(--text-color) 6%);
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-edge);
+  border-radius: 0.35rem;
+  background: var(--api-member-bar);
+  overflow-wrap: anywhere;
+}
+/* The arrival cue tints the opaque bar instead of replacing it, so content never shows through. */
+.api-members > h2[data-anchor-arrival],
+.api-members > .api-member-group > h3[data-anchor-arrival] {
+  animation-name: api-member-bar-arrival;
+}
+@keyframes api-member-bar-arrival {
+  0%, 55% {
+    background-color: color-mix(in srgb, var(--color-link, #2879d0) 18%, var(--api-member-bar));
+    box-shadow: 0 0 0 .25rem color-mix(in srgb, var(--color-link, #2879d0) 18%, transparent);
+  }
+  100% { background-color: var(--api-member-bar); box-shadow: 0 0 0 .25rem transparent; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .api-members > h2[data-anchor-arrival],
+  .api-members > .api-member-group > h3[data-anchor-arrival] {
+    background-color: color-mix(in srgb, var(--color-link, #2879d0) 18%, var(--api-member-bar)) !important;
+  }
+}
 .api-member-type { font: 0.875em var(--font-mono, ui-monospace, monospace); overflow-wrap: anywhere; }
 .api-member-group h3 {
   display: flex;
@@ -296,7 +324,26 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
 .api-parameters .api-parameter-heading { margin-bottom: 0.4rem; }
 .api-parameters > li:has(.api-parameter-heading) + li { margin-top: 1rem; }
 .api-command-parameters .api-parameter-heading code { background: none; padding: 0; font-size: inherit; }
+.api-type-parameter-facts { display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; margin: 0 0 0.4rem; font-size: 0.9375rem; }
+.api-type-parameter-label,
+.api-type-parameter-modifier { opacity: 0.7; }
+.api-type-parameter-owner { margin-left: 0.75rem; font-size: 0.9375rem; }
 .api-parameter-facts { row-gap: 0.35rem; margin-top: 0.5rem; }
+/*
+ * MCP argument, result and type fields take the API parameter list: the
+ * name, its type and the permalink on one line, the description beneath.
+ * A field's own fields sit under a rule, indented once.
+ */
+.mcp-parameters { list-style: none; margin-block: 0; padding: 0; font-size: 0.875rem; line-height: 1.5; }
+.mcp-parameters .mcp-parameters { margin-top: 0.6rem; padding-inline-start: 1rem; border-inline-start: 1px solid var(--color-edge); font-size: inherit; }
+.mcp-parameters .api-parameter-heading { margin: 0 0 0.4rem; overflow-wrap: anywhere; }
+.mcp-parameters .api-parameter-heading code { background: none; border: 0; padding: 0; font-size: inherit; }
+.mcp-parameters .api-parameter-heading .api-type { font-weight: 400; }
+.mcp-parameter-doc > :first-child { margin-top: 0; }
+.mcp-parameter-doc > :last-child { margin-bottom: 0; }
+.mcp-parameter-doc :is(p, ul, ol) { margin-block: 0.5rem; }
+.mcp-schema-note { margin: 0.75rem 0 0; font-size: 0.875rem; color: var(--color-muted); }
+
 .api-parameter-facts dt { opacity: 1; font-weight: 500; }
 .api-common-parameters { margin-top: 1.5rem; border-top: 1px solid var(--color-edge); padding-top: 0.8rem; }
 .api-common-parameters > summary { cursor: pointer; font-weight: 600; }
@@ -310,7 +357,7 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
   flex-wrap: wrap;
   gap: 0 0.75rem;
 }
-.api-lang-kind { font-size: .875em; }
+.api-definition-langs .api-kind-word { margin-inline-start: .3em; }
 
 @container (max-width: 36rem) {
   .api-definition {
@@ -555,13 +602,8 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
   gap: .35rem .5rem;
 }
 
-.api-index-card__context > .api-badge {
-  display: inline-flex;
-  align-items: center;
-  text-transform: none;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
+.api-index-card__context { min-width: 0; max-width: 100%; }
+.api-index-card__context > .api-badge { max-inline-size: 100%; }
 
 /*
  * `Bases:` — every conformance, wrapped.
@@ -603,7 +645,7 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
 /* Keep code first; move the whole toolbar below it when both no longer fit. */
 dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header > .gp-sphinx-api-layout--responsive {
   flex-flow: row wrap;
-  align-items: flex-start;
+  align-items: baseline;
   gap: 0.375rem 1rem;
 }
 dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header .gp-sphinx-api-layout-left {
@@ -616,8 +658,26 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header .gp-sphin
   max-width: 100%;
   margin-left: auto;
 }
-dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-layout-right {
-  align-items: center;
+/*
+ * Declaration controls share the vertical centre of the signature's first
+ * line. The row aligns the first baseline of the code with the first baseline
+ * of the controls, so padding on a formatted signature, a wrapped signature
+ * and a heading taller than the controls all leave the controls level with
+ * line one rather than the block's middle. Text controls share that baseline
+ * and badges centre on its line. A control group that wraps onto a row of its
+ * own has no code beside it and keeps its place. Below the container
+ * breakpoint the vendored column layout keeps its stretch.
+ */
+@container gp-sphinx-api-entry (width > 36rem) {
+  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:not(.api-native-header) > .gp-sphinx-api-layout--responsive {
+    align-items: baseline;
+  }
+}
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .gp-sphinx-api-layout-right {
+  align-items: baseline;
+}
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .gp-sphinx-api-layout-right > :is(.gp-sphinx-api-slot, .api-badge) {
+  align-self: center;
 }
 .api-native-signature {
   display: block;
@@ -652,8 +712,8 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-layout-right
   color: var(--color-foreground-primary);
   opacity: 1;
 }
-.api-native-signature .api-keyword { color: var(--api-kind-exception-fg); }
-.api-native-signature .api-declaration-name { color: var(--api-kind-function-fg); }
+.api-native-signature .api-keyword { color: var(--api-ink-keyword); }
+.api-native-signature .api-declaration-name { color: var(--api-ink-name); }
 .api-native-signature .api-signature-context { color: var(--color-foreground-secondary); }
 .api-native-signature .api-operator { white-space: nowrap; }
 .api-method > h3 { font-size: 0.875rem; line-height: 1.7; }
@@ -771,13 +831,8 @@ html:has(:is(.api-reference-layout--symbol, .api-reference-layout--glossary)):no
   color: var(--color-muted);
   font-size: 0.8125rem;
 }
-.api-reference-version {
-  margin-left: auto;
-  border-radius: 0.35rem;
-  padding: 0.1rem 0.4rem;
-  background: var(--color-surface);
-  font: 0.6875rem/1.5 var(--font-mono, monospace);
-}
+/* The version is a grey modifier chip, on the legend chip's box, at the row's far edge. */
+.api-reference-version { margin-left: auto; }
 .api-reference-relationships {
   display: flex;
   flex-wrap: wrap;
@@ -794,15 +849,31 @@ html:has(:is(.api-reference-layout--symbol, .api-reference-layout--glossary)):no
 }
 .page-toolbar-controls--reference select { max-width: 11rem; }
 .api-section-heading { display: flex; align-items: baseline; gap: 0.375rem; }
-/* The member body's padding already separates its first section from the declaration. */
-dl.py > dd > .rubric:first-child,
-dl.py > dd > :first-child > .rubric:first-child { margin-top: 0; }
+/*
+ * A member body's padding alone sets its inset. A margin on the first or last
+ * child, or on the content of a wrapper around it, would stack onto that
+ * padding and leave the top and bottom unequal. Trim those edges through up to
+ * three wrappers; spacing between siblings stays as it was. The container
+ * class lifts these above the vendored rules that set the margins.
+ */
+dl.py.gp-sphinx-api-container > dd > :first-child,
+dl.py.gp-sphinx-api-container > dd > :first-child > :first-child,
+dl.py.gp-sphinx-api-container > dd > :first-child > :first-child > :first-child { margin-top: 0; }
+dl.py.gp-sphinx-api-container > dd > :last-child,
+dl.py.gp-sphinx-api-container > dd > :last-child > :last-child,
+dl.py.gp-sphinx-api-container > dd > :last-child > :last-child > :last-child { margin-bottom: 0; }
+/* A field list that opens the body has no content above it to divide from. */
+dl.py.gp-sphinx-api-container > dd > dl.field-list:first-child,
+dl.py.gp-sphinx-api-container > dd > :first-child > dl.field-list:first-child { border-top: 0; padding-top: 0; }
+/* The last parameter's heading sits inside a grid item, beyond the reach of the chain above. */
+dl.py.gp-sphinx-api-container > dd > .gp-sphinx-api-parameters:last-child > dl.field-list > dd:last-child >
+  ul.api-parameters > li:last-child > .api-parameter-heading:last-child { margin-bottom: 0; }
 .api-related-types { margin-top: 2rem; }
 .api-related-cards { display: grid; gap: 0.75rem; margin-top: 0.75rem; }
 .api-related-card { padding: 0.875rem 1rem; border: 1px solid var(--color-edge); border-radius: 0.4rem; }
 .api-related-card:hover { background: var(--color-surface); }
 .api-related-card > a { display: flex; align-items: baseline; gap: 0.6rem; }
-.api-related-card p { margin: 0.375rem 0 0 1.7rem; color: var(--color-muted); font-size: 0.875rem; line-height: 1.6; }
+.api-related-card p { margin: 0.375rem 0 0 calc(round(1.35em, 2px) + 0.6rem); color: var(--color-muted); font-size: 0.875rem; line-height: 1.6; }
 .api-example-source { white-space: nowrap; font-size: 0.8125rem; margin-left: 0.75rem; }
 .api-reference-summary {
   max-width: 76ch;
@@ -811,43 +882,17 @@ dl.py > dd > :first-child > .rubric:first-child { margin-top: 0; }
 }
 .api-qualified-name {
   position: relative;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.25rem;
+  max-width: 100%;
   min-width: 0;
-  min-height: 1.875rem;
-  font-size: 0.8125rem;
-  line-height: 1.5;
 }
 .api-qualified-name code {
+  min-width: 0;
   font-family: var(--font-mono, ui-monospace, monospace);
   overflow-wrap: anywhere;
 }
-.api-qualified-namespace {
-  min-width: 0;
-}
-.api-qualified-label {
-  flex: none;
-  color: var(--color-muted);
-  font-size: 0.75rem;
-  white-space: nowrap;
-}
-.api-namespace-full { display: none; }
-.api-qualified-name[data-expanded] .api-namespace-full { display: inline; }
-.api-qualified-name[data-expanded] .api-namespace-short { display: none; }
-.api-expand-name {
-  flex: none;
-  min-height: 1.625rem;
-  padding: 0.125rem 0.375rem;
-  border: 1px solid var(--color-edge);
-  border-radius: 0.25rem;
-  background: var(--color-surface);
-  color: var(--color-foreground-primary);
-  font-size: 0.6875rem;
-  white-space: nowrap;
-  cursor: pointer;
-}
-.api-expand-name:hover { background: var(--color-surface-hover); }
 .api-copy-status:empty { display: none; }
 .api-copy-status {
   position: absolute;
@@ -874,8 +919,7 @@ dl.py > dd > :first-child > .rubric:first-child { margin-top: 0; }
   color: var(--color-muted);
 }
 .api-copy-name:hover { background: var(--color-surface-hover); color: var(--color-link); }
-.api-copy-name:focus-visible,
-.api-expand-name:focus-visible {
+.api-copy-name:focus-visible {
   outline: 2px solid var(--focus-ring-color);
   outline-offset: 2px;
 }
@@ -935,6 +979,73 @@ html[data-api-sections-measured] .api-section-links {
 .api-source-details > summary { cursor: pointer; color: var(--color-muted); }
 :is(.api-reference-layout--symbol, .api-reference-layout--glossary) .api-reference-content [id] {
   scroll-margin-top: 0;
+}
+@media screen {
+  .api-members[data-api-sticky-members] > h2 {
+    position: sticky;
+    top: var(--api-member-heading-top);
+    z-index: 18;
+    clip-path: inset(var(--api-member-heading-clip) 0 0);
+  }
+  .api-members[data-api-sticky-members] > .api-member-group > h3 {
+    position: sticky;
+    top: var(--api-group-heading-top);
+    z-index: 17;
+    clip-path: inset(var(--api-group-heading-clip) 0 0);
+  }
+  /* Keyboard focus returns a heading to its source box. A pointer press must not move it away.
+     Each in-flow state stays positioned, so its z-index keeps it above the gap cover below. */
+  .api-members[data-api-sticky-members] > h2:has(:focus-visible),
+  .api-members[data-api-sticky-members] > .api-member-group > h3:has(:focus-visible) {
+    position: relative;
+    top: auto;
+    clip-path: none;
+  }
+  /* Firefox misplaces scrollIntoView on a sticky heading, so the anchor handler's startup scroll runs with the bars in flow. */
+  html:is(.fonts-pending, .link-hints-pending) .api-members[data-api-sticky-members] > h2,
+  html:is(.fonts-pending, .link-hints-pending) .api-members[data-api-sticky-members] > .api-member-group > h3 {
+    position: relative;
+    top: auto;
+    clip-path: none;
+  }
+  /* A link or hash aligns a sticky box where it is stuck, which for a group above the viewport is the end of the group. */
+  .api-members[data-api-sticky-members] > h2[data-api-arriving],
+  .api-members[data-api-sticky-members] > .api-member-group > h3[data-api-arriving] {
+    position: relative;
+    top: auto;
+    clip-path: none;
+  }
+  /* The page background closes the gap between the section row and the bars, so scrolled text does not show in it. */
+  .api-members[data-api-sticky-members]::before {
+    content: "";
+    display: block;
+    position: sticky;
+    top: calc(var(--api-header-height) + var(--api-sections-height) - 2px);
+    z-index: 16;
+    height: calc(0.75rem + 2px);
+    margin-bottom: calc(-0.75rem - 2px);
+    background: var(--background-color);
+  }
+  .api-members[data-api-sticky-members] [id] {
+    scroll-margin-top: var(--api-member-heading-height);
+  }
+  .api-members[data-api-sticky-members] .api-member-group [id] {
+    scroll-margin-top: calc(var(--api-member-heading-height) + var(--api-group-heading-height, 0px));
+  }
+  .api-members[data-api-sticky-members] .api-member-group > h3[id] {
+    scroll-margin-top: var(--api-member-heading-height);
+  }
+  .api-members[data-api-sticky-members] > #api-members { scroll-margin-top: 0; }
+  /* Focus scrolls clear the bars above a control, as they do above an identified box. */
+  .api-members[data-api-sticky-members] { --api-bar-clearance: var(--api-member-heading-height); }
+  .api-members[data-api-sticky-members] > h2 { --api-bar-clearance: 0px; }
+  .api-members[data-api-sticky-members] .api-member-group {
+    --api-bar-clearance: calc(var(--api-member-heading-height) + var(--api-group-heading-height, 0px));
+  }
+  .api-members[data-api-sticky-members] .api-member-group > h3 { --api-bar-clearance: var(--api-member-heading-height); }
+  .api-members[data-api-sticky-members] :where(a[href], button, summary, input, select, textarea, [tabindex]) {
+    scroll-margin-top: var(--api-bar-clearance);
+  }
 }
 @media print {
   .api-page-contents, .api-glossary-contents, .api-section-links { display: none; }

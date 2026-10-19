@@ -28,6 +28,9 @@ import { docsEntriesAvailable } from './page-port-links'
 import { API_MODELS, API_NAV } from './api-models'
 import { navTree, referenceBreadcrumbs } from './api-tree'
 import { productApiHref } from './product-api'
+import { tmuxManualUrl } from './tmux-manual-data'
+import { tmuxReferenceUrl } from './tmux-reference'
+import { CATALOG_TITLE, tmuxCatalogUrl } from './tmux-catalog'
 
 export interface BreadcrumbItem {
   name: string
@@ -44,6 +47,8 @@ export interface SidebarLinkItem {
   external?: boolean
   disabled?: boolean
   kind?: string
+  /** The kind stays on the row for assistive technology, and its mark is not drawn: the group names it. */
+  quiet?: boolean
 }
 
 export interface SidebarGroupItem {
@@ -56,6 +61,9 @@ export interface SidebarGroupItem {
 }
 
 export type SidebarItem = SidebarLinkItem | SidebarGroupItem
+
+/** A group whose rows all share one kind says nothing with a mark per row: the group's own name already says it. */
+export const sharesOneKind = (kinds: Iterable<string | undefined>): boolean => new Set([...kinds].filter(Boolean)).size <= 1
 
 /** Find a page's actual navigation ancestry, retaining groups without destinations. */
 export function sidebarBreadcrumbs(items: SidebarItem[], currentUrl: string): BreadcrumbItem[] {
@@ -335,7 +343,12 @@ export async function getSidebar(
    * is the notices page and nothing else — so sending it to the end is the
    * general form of "notices last" rather than a special case for one file.
    */
-  if (port === undefined) return [...groups, ...ungrouped]
+  // The tmux docs end with the three references every section points into.
+  if (port === undefined) return [...groups,
+    { type: 'link', label: 'CLI Manual', href: tmuxManualUrl(version) },
+    { type: 'link', label: CATALOG_TITLE, href: tmuxCatalogUrl(version) },
+    { type: 'link', label: 'C source reference', href: tmuxReferenceUrl(version) },
+    ...ungrouped]
   if (product) {
     if (product === 'mcp' && productAvailable(PORT_BY_SLUG[port], 'mcp') && MCP_REFERENCE[port]) ungrouped.splice(1, 0,
       ...Object.entries(MCP_SECTIONS).map(([section, label]) => ({

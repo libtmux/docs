@@ -1,5 +1,5 @@
 ---
-import { parameterId, qualifiedNameOf, type ApiSymbol, type SymbolIndex } from '@libtmux/api-model'
+import { boundLabel, parameterId, qualifiedNameOf, typeParameterId, typeParameterList, type ApiSymbol, type SymbolIndex } from '@libtmux/api-model'
 import { API_MODELS, mentionsOf, referenceAlternatives } from '../../lib/api-models'
 import { productApiIndex } from '../../lib/product-api'
 import { defaultVersionFor } from '../../lib/versions'
@@ -12,9 +12,10 @@ import ApiBadge from './ApiBadge.astro'
 import ApiDoc from './ApiDoc.astro'
 import ApiProse from './ApiProse.astro'
 import ApiType from './ApiType.astro'
-import type { AsideType } from '../../lib/aside'
+import { asideFor } from '../../lib/aside'
 import { apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMethodDetails, anonymousDeclarationLabel, nativeSignatureText as unformattedNativeSignatureText, parameterBindingText, usesNativeSignatures } from '../../lib/api-sections'
 import { tmuxCommandsFor, tmuxManualUrl } from '../../lib/tmux-manual-data'
+import { CATALOG_KINDS, tmuxCatalogKindsForSymbol, tmuxCatalogUrl } from '../../lib/tmux-catalog'
 import ApiFieldOverloads from './ApiFieldOverloads.astro'
 import ApiCommandParameters from './ApiCommandParameters.astro'
 import ApiSignatureParameters from './ApiSignatureParameters.astro'
@@ -43,6 +44,8 @@ interface Props {
   /** Declaration syntax, independent of library-port identity. */
   language?: string
   manualLinks?: { name: string; href: string }[]
+  /** Catalog pages for a declaration in a source reference. */
+  catalogLinks?: { name: string; href: string }[]
   /** Override equivalent links for a product or version context. */
   alternativesFor?: (symbol: ApiSymbol) => ReturnType<typeof referenceAlternatives>
   /**
@@ -73,7 +76,7 @@ interface Props {
   /** Previous fragment for the same declaration. */
   legacyId?: string
 }
-const { symbol, index, sourceUrl, port, language = port, manualLinks, alternativesFor, heading = false, member = false,
+const { symbol, index, sourceUrl, port, language = port, manualLinks, catalogLinks, alternativesFor, heading = false, member = false,
   showSummary = true, showBases = true, legacyId, nameHref } = Astro.props as Props
 const anchor = symbol.publicId ?? symbol.id
 const kind = symbol.kind
@@ -178,6 +181,8 @@ const references = symbol.doc?.references ?? []
  */
 const mentions = port ? mentionsOf(port, symbol.id) : []
 const tmuxCommands = manualLinks ?? (port ? tmuxCommandsFor(port, anchor).map((command) => ({ ...command, href: tmuxManualUrl('latest', command.name) })) : [])
+// Members that wrap options or hooks lead to the catalog of what they take.
+const catalogEntries = catalogLinks ?? (port && !manualLinks ? tmuxCatalogKindsForSymbol(port, symbol).map((kind) => ({ name: CATALOG_KINDS[kind].label, href: tmuxCatalogUrl('latest', kind) })) : [])
 const mentionSections = [...new Set(mentions.map((m) => m.section ?? 'docs'))].sort()
 
 const badges = [
@@ -228,10 +233,23 @@ const FOLD_THRESHOLD = 10
 const folds = (sig: { params: unknown[] }) => sig.params.length >= FOLD_THRESHOLD
 const foldable = symbol.signatures.some(folds)
 
-const { params, returns, raises } = apiEntryFields(symbol, language)
+const { params, returns, raises, typeParameters } = apiEntryFields(symbol, language)
 const methods = apiMethodDetails(symbol)
 const overloadTargets = new Map(methods.map((method) => [method.overloadLabel, method.id]))
-const hasFields = params.length > 0 || returns.length > 0 || raises.length > 0
+/**
+ * Parameters declared by an enclosing type that this symbol's signature uses.
+ * Their anchors live on the declaring page, so these entries link there instead of
+ * repeating an id.
+ */
+const inheritedTypeParameters = index.inheritedTypeParameters(symbol).map((entry) => ({
+  ...entry,
+  ownerHref: entry.href.split('#')[0],
+  ownerLabel: `${entry.owner.name}${typeParameterList(language, index.typeParametersDeclaredBy(entry.owner))}`,
+}))
+const hasTypeParameters = typeParameters.length > 0 || inheritedTypeParameters.length > 0
+/** `const`, `in`, `out` and variance marks read as part of the name; `+` and `-` attach without a space. */
+const modifierOf = (p: { modifier?: string }) => p.modifier ? (/^[+-]$/.test(p.modifier) ? p.modifier : `${p.modifier} `) : ''
+const hasFields = hasTypeParameters || params.length > 0 || returns.length > 0 || raises.length > 0
 
 /**
  * Whether there is a description at all.
@@ -241,31 +259,6 @@ const hasFields = params.length > 0 || returns.length > 0 || raises.length > 0
  * term and no description is valid and reads correctly; a blank one is a gap
  * the reader has to interpret.
  */
-/**
- * A docstring admonition as an `<Aside>`.
- *
- * Sphinx and rustdoc name a dozen kinds; the aside has four types, so each
- * kind maps to the one whose colour and icon carry the same weight, and the
- * title keeps the word the author wrote. An unknown kind is a note rather
- * than nothing: the text is still worth setting apart.
- */
-const ASIDE_KINDS: Record<string, { type: AsideType; title: string }> = {
-  note: { type: 'note', title: 'Note' },
-  seealso: { type: 'note', title: 'See also' },
-  important: { type: 'note', title: 'Important' },
-  versionchanged: { type: 'note', title: 'Changed' },
-  hint: { type: 'tip', title: 'Hint' },
-  tip: { type: 'tip', title: 'Tip' },
-  warning: { type: 'caution', title: 'Warning' },
-  attention: { type: 'caution', title: 'Attention' },
-  caution: { type: 'caution', title: 'Caution' },
-  deprecated: { type: 'caution', title: 'Deprecated' },
-  danger: { type: 'danger', title: 'Danger' },
-  error: { type: 'danger', title: 'Error' },
-}
-const asideFor = (kind: string) =>
-  ASIDE_KINDS[kind.toLowerCase()] ?? { type: 'note' as AsideType, title: kind.charAt(0).toUpperCase() + kind.slice(1) }
-
 const hasBody =
   mentions.length > 0 ||
   (symbol.doc?.admonitions?.length ?? 0) > 0 ||
@@ -283,6 +276,7 @@ const hasBody =
   methods.length > 0 ||
   hasFields ||
   tmuxCommands.length > 0 ||
+  catalogEntries.length > 0 ||
   elsewhere.length > 0
 ---
 
@@ -562,6 +556,51 @@ const hasBody =
       hasFields && (
         <div class="gp-sphinx-api-parameters">
           <dl class="field-list simple">
+            {hasTypeParameters && (
+              <>
+                <dt class="field-odd" id={`${anchor}.type-parameters`}>Type parameters</dt>
+                <dd class="field-odd">
+                  <ul class="simple api-parameters api-type-parameters">
+                    {typeParameters.map((p, i) => (
+                      <li id={typeParameters.findIndex((entry) => entry.name === p.name) === i ? typeParameterId(symbol, p.name) : undefined}>
+                        <p class="api-parameter-heading">
+                          <span class="api-parameter-signature">
+                            {/* One line: Astro turns a line break between these parts into a space. */}
+                            {p.modifier && <span class="api-type-parameter-modifier">{modifierOf(p)}</span>}<strong><a href={`#${encodeURIComponent(typeParameterId(symbol, p.name))}`}><code>{p.name}</code></a></strong>
+                          </span>
+                          <a class="api-heading-link" href={`#${encodeURIComponent(typeParameterId(symbol, p.name))}`} aria-label={`Link to ${p.name} type parameter`} data-pagefind-ignore="all">#</a>
+                          <ApiFieldOverloads labels={p.overloads} targets={overloadTargets} />
+                        </p>
+                        {(p.bound || p.default) && (
+                          <p class="api-type-parameter-facts">
+                            {p.bound && <span class="api-type-parameter-fact"><span class="api-type-parameter-label">{boundLabel(language, p)}</span>{' '}<ApiType type={p.bound} index={index} context={symbol} /></span>}
+                            {p.default && <span class="api-type-parameter-fact"><span class="api-type-parameter-label">Default</span>{' '}<ApiType type={p.default} index={index} context={symbol} /></span>}
+                          </p>
+                        )}
+                        {p.doc && <ApiProse text={p.doc} index={index} context={symbol} />}
+                      </li>
+                    ))}
+                    {inheritedTypeParameters.map(({ owner, parameter: p, href, ownerHref, ownerLabel }) => (
+                      <li>
+                        <p class="api-parameter-heading">
+                          <span class="api-parameter-signature">
+                            {p.modifier && <span class="api-type-parameter-modifier">{modifierOf(p)}</span>}<strong><a href={href}><code>{p.name}</code></a></strong>
+                          </span>
+                          <span class="api-type-parameter-owner">declared by <a href={ownerHref}><code>{ownerLabel}</code></a></span>
+                        </p>
+                        {(p.bound || p.default) && (
+                          <p class="api-type-parameter-facts">
+                            {p.bound && <span class="api-type-parameter-fact"><span class="api-type-parameter-label">{boundLabel(language, p)}</span>{' '}<ApiType type={p.bound} index={index} context={owner} /></span>}
+                            {p.default && <span class="api-type-parameter-fact"><span class="api-type-parameter-label">Default</span>{' '}<ApiType type={p.default} index={index} context={owner} /></span>}
+                          </p>
+                        )}
+                        {p.doc && <ApiProse text={p.doc} index={index} context={owner} />}
+                      </li>
+                    ))}
+                  </ul>
+                </dd>
+              </>
+            )}
             {params.length > 0 && (
               <>
                 <dt class="field-odd" id={`${anchor}.parameters`}>Parameters</dt>
@@ -638,6 +677,13 @@ const hasBody =
       {tmuxCommands.map((command, i) => <>
         {i > 0 && ', '}
         <a href={command.href}><code>{command.name}</code></a>
+      </>)}
+    </p>}
+    {catalogEntries.length > 0 && <p class="gp-sphinx-api-mentions">
+      <span class="gp-sphinx-api-mentions-label">tmux catalog</span>
+      {catalogEntries.map((entry, i) => <>
+        {i > 0 && ', '}
+        <a href={entry.href}>{entry.name}</a>
       </>)}
     </p>}
     {

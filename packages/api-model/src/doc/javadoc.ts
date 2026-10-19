@@ -26,7 +26,7 @@ import { parseMarkdownDocFull, type ParsedMarkdownDoc } from './markdown.ts'
  * the block's spelling rather than an inline literal, and an inline pass that
  * reached it first would leave the fence holding a stray brace.
  */
-const PRE_BLOCK = /<pre>\s*(?:\{@code\b)?\s*\n?([\s\S]*?)\n?\s*\}?\s*<\/pre>/g
+const PRE_BLOCK = /<pre>\s*(?:\{@code\b)?[ \t]*\n?([\s\S]*?)\n?\s*\}?\s*<\/pre>/g
 
 /** Inline formatting, as `[tag, markdown]`. `<code>` is javadoc's `{@code}`. */
 const INLINE: [RegExp, string][] = [
@@ -35,11 +35,16 @@ const INLINE: [RegExp, string][] = [
   [/<code>([\s\S]*?)<\/code>/g, '`$1`'],
 ]
 
+const indentation = (line: string): number => /^[ \t]*/.exec(line)![0].length
+
 /** Translate one javadoc comment body into Markdown. */
 export function javadocToMarkdown(raw: string): string {
   let text = raw.replace(PRE_BLOCK, (_, code: string) => {
-    const lines = code.split('\n').map((l) => l.replace(/^\s*/, ''))
-    return `\n\`\`\`java\n${lines.join('\n')}\n\`\`\`\n`
+    const lines = code.split('\n')
+    const margin = Math.min(...lines.filter((line) => line.trim()).map(indentation))
+    // Only the block's common margin comes off; the rest is the code's own indentation.
+    const body = lines.map((line) => (line.trim() ? line.slice(margin) : '')).join('\n')
+    return `\n\`\`\`java\n${body}\n\`\`\`\n`
   })
 
   // `<p>` opens a paragraph in javadoc and closes nothing; every one of
