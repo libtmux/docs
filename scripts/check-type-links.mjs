@@ -218,3 +218,9 @@ if (over.length) {
 const linked = PORTS.reduce((n, p) => n + results[p].resolved, 0)
 const plain = PORTS.reduce((n, p) => n + results[p].unresolved, 0)
 console.log(`check-type-links: ${linked} type names linked, ${plain} plain, no mangled ids`)
+// A ceiling left above its count lets that many names regress unnoticed.
+const under = PORTS.filter((p) => results[p].unresolved < ceiling[p])
+if (under.length) {
+  console.log('check-type-links: below the ceiling; lower it with node scripts/check-type-links.mjs --update')
+  for (const p of under) console.log(`  ${p.padEnd(7)} ${ceiling[p]} -> ${results[p].unresolved}`)
+}
