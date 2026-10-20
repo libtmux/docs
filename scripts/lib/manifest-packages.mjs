@@ -24,6 +24,8 @@ export function repositoryAt(checkout, revision) {
     files: () => (files ??= git('ls-tree', '-r', '--name-only', revision).split('\n').filter(Boolean)),
     read: (path) => git('show', `${revision}:${path}`),
     has: (path) => { try { git('cat-file', '-e', `${revision}:${path}`); return true } catch { return false } },
+    /** Whether the checkout holds the revision at all. */
+    exists: () => { try { git('cat-file', '-e', `${revision}^{commit}`); return true } catch { return false } },
     /** Tags reachable from the revision: a release is a tag its history contains. */
     tags: () => git('tag', '--merged', revision).split('\n').filter(Boolean),
   }

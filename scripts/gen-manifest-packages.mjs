@@ -16,8 +16,8 @@
  *
  *   --out <path>  Write there (default: site/src/data/manifest-packages.json).
  *   --check       Write nothing; exit 1 if the file is out of date. A port whose
- *                 checkout or revision is absent is skipped and reported, as
- *                 other checks of source checkouts do.
+ *                 checkout or revision is absent cannot be read, so it is named
+ *                 and left unchecked while every other port is compared.
  *
  * LIBTMUX_DOCS_CHECKOUT_<PORT> overrides a port's checkout, and
  * LIBTMUX_DOCS_WORKSPACE_PY and LIBTMUX_DOCS_MCP_PY the Python companions'.
@@ -56,11 +56,8 @@ for (const port of PORTS) {
   const model = JSON.parse(readFileSync(join(root, 'site', 'src', 'data', 'api', `${port.slug}.json`), 'utf8'))
   const checkout = expand(process.env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`] ?? port.checkout)
   const open = (path, revision) => {
-    try {
-      const repo = repositoryAt(path, revision)
-      repo.has('.')
-      return repo
-    } catch { return undefined }
+    const repo = repositoryAt(path, revision)
+    return repo.exists() ? repo : undefined
   }
   const core = open(checkout, model.revision)
   if (!core) { skipped.push(`${port.slug}: no ${model.revision} in ${checkout}`); continue }
@@ -86,12 +83,24 @@ for (const port of PORTS) {
 const text = `${JSON.stringify({ schema: 1, ports }, null, 2)}\n`
 for (const note of skipped) console.error(`skipped ${note}`)
 if (opts.check) {
-  if (skipped.length > 0) { console.log('manifest packages not checked: some checkouts or revisions are absent'); process.exit(0) }
-  if (!existsSync(opts.out) || readFileSync(opts.out, 'utf8') !== text) {
-    console.error(`${opts.out} is out of date. Run: node scripts/gen-manifest-packages.mjs`)
+  if (!existsSync(opts.out)) {
+    console.error(`${opts.out} does not exist. Run: node scripts/gen-manifest-packages.mjs`)
     process.exit(1)
   }
-  console.log(`${opts.out} is current`)
+  const committed = JSON.parse(readFileSync(opts.out, 'utf8'))
+  const drift = []
+  for (const slug of PORTS.map((port) => port.slug)) {
+    if (!committed.ports?.[slug]) drift.push(`${slug}: missing from the file`)
+    else if (ports[slug] && JSON.stringify(ports[slug]) !== JSON.stringify(committed.ports[slug])) drift.push(`${slug}: differs from its manifests`)
+  }
+  for (const slug of Object.keys(committed.ports ?? {})) if (!PORTS.some((port) => port.slug === slug)) drift.push(`${slug}: not a registered port`)
+  if (drift.length > 0) {
+    console.error(`${opts.out} is out of date. Run: node scripts/gen-manifest-packages.mjs`)
+    for (const line of drift) console.error(`  ${line}`)
+    process.exit(1)
+  }
+  const checked = Object.keys(ports).length
+  console.log(`${opts.out} is current for ${checked} of ${PORTS.length} ports${skipped.length > 0 ? `; not checked: ${skipped.map((note) => note.split(':')[0].split(' ')[0]).join(', ')}` : ''}`)
 } else {
   if (skipped.length > 0) throw new Error('refusing to write a partial file; provide the missing checkouts')
   writeFileSync(opts.out, text)
