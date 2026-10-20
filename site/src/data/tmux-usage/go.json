@@ -746,6 +746,15 @@
         "scope": null
       },
       {
+        "command": "list-windows",
+        "evidence": [
+          "tmux/control_observation.go:346",
+          "tmux/control_observation.go:301"
+        ],
+        "reviewed": true,
+        "scope": "session"
+      },
+      {
         "command": "refresh-client",
         "evidence": [
           "tmux/control_observation.go:346",
@@ -1176,7 +1185,8 @@
         "evidence": [
           "tmux/server_interactive.go:301"
         ],
-        "scope": null
+        "scope": null,
+        "when": "except before tmux 3.3"
       }
     ],
     "tmux.Server.ConfirmBefore": [
@@ -1185,7 +1195,8 @@
         "evidence": [
           "tmux/server_interactive.go:223"
         ],
-        "scope": null
+        "scope": null,
+        "when": "except before tmux 3.3"
       }
     ],
     "tmux.Server.DeleteBuffer": [
@@ -2685,7 +2696,8 @@
           "tmux/tmuxtest/resources.go:56"
         ],
         "reviewed": true,
-        "scope": null
+        "scope": null,
+        "when": "the test ends, in t.Cleanup"
       },
       {
         "command": "new-session",

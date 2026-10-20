@@ -153,7 +153,8 @@
           "port": "java",
           "revision": "a0ecbc16da00140e2520462d478a2af470878272",
           "symbol": "io.github.libtmux.Buffers.Buffers.delete"
-        }
+        },
+        "when": "except before tmux 3.4"
       }
     ],
     "io.github.libtmux.kotlin.Buffers.list": [
@@ -1031,7 +1032,8 @@
           "port": "java",
           "revision": "a0ecbc16da00140e2520462d478a2af470878272",
           "symbol": "io.github.libtmux.Pane.Pane.paste"
-        }
+        },
+        "when": "except before tmux 3.4"
       },
       {
         "command": "paste-buffer",
@@ -1047,7 +1049,8 @@
           "port": "java",
           "revision": "a0ecbc16da00140e2520462d478a2af470878272",
           "symbol": "io.github.libtmux.Pane.Pane.paste"
-        }
+        },
+        "when": "except before tmux 3.4"
       }
     ],
     "io.github.libtmux.kotlin.Pane.pasteBuffer": [
@@ -1928,7 +1931,7 @@
           "revision": "a0ecbc16da00140e2520462d478a2af470878272",
           "symbol": "io.github.libtmux.Shell.Shell.capturing"
         },
-        "when": "except on tmux 3.3a and 3.4"
+        "when": "except from tmux 3.3 until 3.5"
       }
     ],
     "io.github.libtmux.kotlin.Shell.choose": [

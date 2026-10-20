@@ -306,6 +306,16 @@
     ],
     "LibTmux::Async::Server#switch_client": [
       {
+        "command": "list-commands",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:137",
+          "gems/libtmux/lib/libtmux/terminal.rb:41"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      },
+      {
         "command": "show-options",
         "evidence": [
           "gems/libtmux/lib/libtmux/options.rb:65",
@@ -819,6 +829,16 @@
     ],
     "LibTmux::Server#switch_client": [
       {
+        "command": "list-commands",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:137",
+          "gems/libtmux/lib/libtmux/terminal.rb:41"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      },
+      {
         "command": "show-options",
         "evidence": [
           "gems/libtmux/lib/libtmux/options.rb:65",
@@ -898,6 +918,18 @@
         ],
         "reviewed": true,
         "scope": null
+      },
+      {
+        "command": "list-commands",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:137",
+          "gems/libtmux/lib/libtmux/operations.rb:165",
+          "gems/libtmux/lib/libtmux/operations.rb:257"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null,
+        "when": "expected windows or panes are given"
       },
       {
         "command": "show-options",
@@ -1075,6 +1107,17 @@
         "scope": null
       },
       {
+        "command": "list-commands",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:137",
+          "gems/libtmux/lib/libtmux/operations.rb:113",
+          "gems/libtmux/lib/libtmux/entity.rb:245"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      },
+      {
         "command": "show-options",
         "evidence": [
           "gems/libtmux/lib/libtmux/options.rb:65",
@@ -1097,6 +1140,17 @@
         "scope": null
       },
       {
+        "command": "list-commands",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:137",
+          "gems/libtmux/lib/libtmux/operations.rb:113",
+          "gems/libtmux/lib/libtmux/entity.rb:228"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      },
+      {
         "command": "show-options",
         "evidence": [
           "gems/libtmux/lib/libtmux/options.rb:65",
@@ -1111,6 +1165,17 @@
       }
     ],
     "LibTmux::WindowLink#move": [
+      {
+        "command": "list-commands",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:137",
+          "gems/libtmux/lib/libtmux/operations.rb:113",
+          "gems/libtmux/lib/libtmux/entity.rb:235"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      },
       {
         "command": "move-window",
         "evidence": [
@@ -1134,6 +1199,17 @@
     ],
     "LibTmux::WindowLink#select": [
       {
+        "command": "list-commands",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:137",
+          "gems/libtmux/lib/libtmux/operations.rb:113",
+          "gems/libtmux/lib/libtmux/entity.rb:220"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      },
+      {
         "command": "select-window",
         "evidence": [
           "gems/libtmux/lib/libtmux/entity.rb:220"
@@ -1156,6 +1232,17 @@
     ],
     "LibTmux::WindowLink#swap": [
       {
+        "command": "list-commands",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:137",
+          "gems/libtmux/lib/libtmux/operations.rb:113",
+          "gems/libtmux/lib/libtmux/entity.rb:240"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      },
+      {
         "command": "show-options",
         "evidence": [
           "gems/libtmux/lib/libtmux/options.rb:65",
@@ -1177,6 +1264,17 @@
       }
     ],
     "LibTmux::WindowLink#unlink": [
+      {
+        "command": "list-commands",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:137",
+          "gems/libtmux/lib/libtmux/operations.rb:113",
+          "gems/libtmux/lib/libtmux/entity.rb:224"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      },
       {
         "command": "show-options",
         "evidence": [

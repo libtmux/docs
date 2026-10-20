@@ -430,8 +430,22 @@
       "symbol": "io.github.libtmux.Shell.Shell.capturing",
       "command": "run-shell",
       "scope": null,
-      "when": "except on tmux 3.3a and 3.4",
+      "when": "except from tmux 3.3 until 3.5",
       "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Shell.java:22",
+          "has": [
+            "OUTPUT_LOST",
+            "new TmuxVersion(3, 3"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Shell.java:24",
+          "has": [
+            "OUTPUT_FOUND",
+            "new TmuxVersion(3, 5"
+          ]
+        },
         {
           "at": "libtmux/src/main/java/io/github/libtmux/Shell.java:50",
           "has": [
@@ -476,6 +490,233 @@
           "at": "tmux/identity.go:212",
           "has": [
             "\"display-message\""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "symbol": "io.github.libtmux.Pane.Pane.paste",
+      "command": "load-buffer",
+      "scope": null,
+      "when": "except before tmux 3.4",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:962",
+          "has": [
+            "running.atLeast(Buffers.EXACT_NAMED_DELETE)"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:963",
+          "has": [
+            "throw new UnsupportedFeatureException("
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Buffers.java:36",
+          "has": [
+            "EXACT_NAMED_DELETE",
+            "new TmuxVersion(3, 4"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:971",
+          "has": [
+            "server.runTogether("
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:1015",
+          "has": [
+            "running.atLeast(Buffers.EXACT_NAMED_DELETE)"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:1016",
+          "has": [
+            "throw new UnsupportedFeatureException("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "symbol": "io.github.libtmux.Pane.Pane.paste",
+      "command": "paste-buffer",
+      "scope": null,
+      "when": "except before tmux 3.4",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:962",
+          "has": [
+            "running.atLeast(Buffers.EXACT_NAMED_DELETE)"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:963",
+          "has": [
+            "throw new UnsupportedFeatureException("
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Buffers.java:36",
+          "has": [
+            "EXACT_NAMED_DELETE",
+            "new TmuxVersion(3, 4"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:971",
+          "has": [
+            "server.runTogether("
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:1015",
+          "has": [
+            "running.atLeast(Buffers.EXACT_NAMED_DELETE)"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:1016",
+          "has": [
+            "throw new UnsupportedFeatureException("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "symbol": "io.github.libtmux.Buffers.Buffers.delete",
+      "command": "delete-buffer",
+      "scope": null,
+      "when": "except before tmux 3.4",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Buffers.java:108",
+          "has": [
+            "running.atLeast(EXACT_NAMED_DELETE)"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Buffers.java:109",
+          "has": [
+            "throw new UnsupportedFeatureException("
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Buffers.java:36",
+          "has": [
+            "EXACT_NAMED_DELETE",
+            "new TmuxVersion(3, 4"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Buffers.java:111",
+          "has": [
+            "\"delete-buffer\""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "symbol": "session.Session.selectWindow",
+      "command": "select-window",
+      "scope": null,
+      "when": "the target is not last, next or previous",
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/operations/session_nav.ts:34",
+          "has": [
+            "target === \"last\""
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/session_nav.ts:35",
+          "has": [
+            "target === \"next\""
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/session_nav.ts:36",
+          "has": [
+            "target === \"previous\""
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/session_nav.ts:40",
+          "has": [
+            "\"select-window\""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "symbol": "tmux.Server.ConfirmBefore",
+      "command": "confirm-before",
+      "scope": null,
+      "when": "except before tmux 3.3",
+      "evidence": [
+        {
+          "at": "tmux/server_interactive.go:9",
+          "has": [
+            "serverInteractiveVersion33",
+            "raw: \"3.3\""
+          ]
+        },
+        {
+          "at": "tmux/server_interactive.go:192",
+          "has": [
+            "current.AtLeast(serverInteractiveVersion33)"
+          ]
+        },
+        {
+          "at": "tmux/server_interactive.go:193",
+          "has": [
+            "&VersionTooLowError{"
+          ]
+        },
+        {
+          "at": "tmux/server_interactive.go:223",
+          "has": [
+            "s.literalCmd(ctx, arguments...)"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "symbol": "tmux.Server.CommandPrompt",
+      "command": "command-prompt",
+      "scope": null,
+      "when": "except before tmux 3.3",
+      "evidence": [
+        {
+          "at": "tmux/server_interactive.go:9",
+          "has": [
+            "serverInteractiveVersion33",
+            "raw: \"3.3\""
+          ]
+        },
+        {
+          "at": "tmux/server_interactive.go:240",
+          "has": [
+            "current.AtLeast(serverInteractiveVersion33)"
+          ]
+        },
+        {
+          "at": "tmux/server_interactive.go:241",
+          "has": [
+            "&VersionTooLowError{"
+          ]
+        },
+        {
+          "at": "tmux/server_interactive.go:301",
+          "has": [
+            "s.literalCmd(ctx, arguments...)"
           ]
         }
       ]

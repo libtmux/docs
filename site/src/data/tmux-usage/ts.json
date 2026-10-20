@@ -126,7 +126,7 @@
         ],
         "reviewed": true,
         "scope": null,
-        "when": "a minimal launch, no explicit selection"
+        "when": "unless an explicit launch finds no server"
       },
       {
         "command": "show-options",
@@ -987,7 +987,8 @@
           "packages/libtmux/src/_internal/operations/session_nav.ts:40",
           "packages/libtmux/src/session.ts:378"
         ],
-        "scope": null
+        "scope": null,
+        "when": "the target is not last, next or previous"
       }
     ],
     "session.Session.setEnvironment": [

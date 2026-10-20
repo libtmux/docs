@@ -118,7 +118,8 @@
         "evidence": [
           "libtmux/src/main/java/io/github/libtmux/Buffers.java:111"
         ],
-        "scope": null
+        "scope": null,
+        "when": "except before tmux 3.4"
       }
     ],
     "io.github.libtmux.Buffers.Buffers.list": [
@@ -484,10 +485,23 @@
       {
         "command": "display-message",
         "evidence": [
-          "libtmux-mcp/src/main/java/io/github/libtmux/mcp/LaunchConfiguration.java:90",
+          "libtmux-mcp/src/main/java/io/github/libtmux/mcp/LaunchConfiguration.java:111",
+          "libtmux-mcp/src/main/java/io/github/libtmux/mcp/LaunchConfiguration.java:88",
           "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Main.java:52"
         ],
+        "reviewed": true,
         "scope": null
+      },
+      {
+        "command": "start-server",
+        "evidence": [
+          "libtmux-mcp/src/main/java/io/github/libtmux/mcp/LaunchConfiguration.java:106",
+          "libtmux-mcp/src/main/java/io/github/libtmux/mcp/LaunchConfiguration.java:88",
+          "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Main.java:52"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the launch chooses no socket"
       }
     ],
     "io.github.libtmux.MessageLog.MessageLog.lines": [
@@ -688,14 +702,16 @@
         "evidence": [
           "libtmux/src/main/java/io/github/libtmux/Pane.java:971"
         ],
-        "scope": null
+        "scope": null,
+        "when": "except before tmux 3.4"
       },
       {
         "command": "paste-buffer",
         "evidence": [
           "libtmux/src/main/java/io/github/libtmux/Pane.java:971"
         ],
-        "scope": null
+        "scope": null,
+        "when": "except before tmux 3.4"
       }
     ],
     "io.github.libtmux.Pane.Pane.pasteBuffer": [
@@ -1162,7 +1178,7 @@
           "libtmux/src/main/java/io/github/libtmux/Shell.java:55"
         ],
         "scope": null,
-        "when": "except on tmux 3.3a and 3.4"
+        "when": "except from tmux 3.3 until 3.5"
       }
     ],
     "io.github.libtmux.Shell.Shell.choose": [

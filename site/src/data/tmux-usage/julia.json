@@ -327,6 +327,15 @@
         "scope": null
       },
       {
+        "command": "list-windows",
+        "evidence": [
+          "src/observation.jl:503",
+          "src/observation.jl:535"
+        ],
+        "reviewed": true,
+        "scope": "session"
+      },
+      {
         "command": "refresh-client",
         "evidence": [
           "src/observation.jl:541"
@@ -572,6 +581,20 @@
           "src/configuration.jl:478"
         ],
         "scope": null
+      },
+      {
+        "command": "show-options",
+        "evidence": [
+          "src/configuration.jl:159",
+          "src/configuration.jl:160",
+          "src/configuration.jl:176",
+          "src/configuration.jl:403",
+          "src/configuration.jl:477"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null,
+        "when": "on a Server"
       }
     ],
     "LibTmux.set_option": [
@@ -581,6 +604,19 @@
           "src/configuration.jl:280"
         ],
         "scope": null
+      },
+      {
+        "command": "show-options",
+        "evidence": [
+          "src/configuration.jl:159",
+          "src/configuration.jl:160",
+          "src/configuration.jl:176",
+          "src/configuration.jl:279"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null,
+        "when": "on a Server"
       }
     ],
     "LibTmux.snapshot": [
@@ -728,6 +764,20 @@
           "src/configuration.jl:486"
         ],
         "scope": null
+      },
+      {
+        "command": "show-options",
+        "evidence": [
+          "src/configuration.jl:159",
+          "src/configuration.jl:160",
+          "src/configuration.jl:176",
+          "src/configuration.jl:403",
+          "src/configuration.jl:485"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null,
+        "when": "on a Server"
       }
     ],
     "LibTmux.unset_option": [
@@ -737,6 +787,19 @@
           "src/configuration.jl:293"
         ],
         "scope": null
+      },
+      {
+        "command": "show-options",
+        "evidence": [
+          "src/configuration.jl:159",
+          "src/configuration.jl:160",
+          "src/configuration.jl:176",
+          "src/configuration.jl:292"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null,
+        "when": "on a Server"
       }
     ]
   }

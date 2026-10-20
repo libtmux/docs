@@ -314,6 +314,64 @@ describe('which sends through a helper are listed', () => {
   })
 })
 
+describe('a release a library refuses to send on', () => {
+  const use = (port: string, symbol: string, command: string) => TMUX_USAGE[port].symbols[symbol]?.find((entry) => entry.command === command)
+
+  it('says so on a command that exists on a supported release and that the library will not send there', () => {
+    // Pane.paste and Buffers.delete throw before tmux 3.4, where deleting a named buffer can remove another; java supports 3.2a.
+    const refused = [
+      ['java', 'io.github.libtmux.Pane.Pane.paste', ['load-buffer', 'paste-buffer']],
+      ['java', 'io.github.libtmux.Buffers.Buffers.delete', ['delete-buffer']],
+      ['kotlin', 'io.github.libtmux.kotlin.Pane.paste', ['load-buffer', 'paste-buffer']],
+      ['kotlin', 'io.github.libtmux.kotlin.Buffers.delete', ['delete-buffer']],
+      ['scala', 'io.github.libtmux.scaladsl.Pane.paste', ['load-buffer', 'paste-buffer']],
+      ['scala', 'io.github.libtmux.scaladsl.cats.Pane.paste', ['load-buffer', 'paste-buffer']],
+      ['scala', 'io.github.libtmux.scaladsl.cats.Buffers.delete', ['delete-buffer']],
+    ] as const
+    const entries = refused.flatMap(([port, symbol, commands]) => commands.map((command) => ({ label: `${port} ${symbol} ${command}`, entry: use(port, symbol, command) })))
+    expect(entries).toHaveLength(11)
+    for (const { label, entry } of entries) expect(entry?.when, label).toBe('except before tmux 3.4')
+    // Lua's delete_buffer refuses the same way; go's confirm-before and command-prompt always send -b, which tmux has from 3.3.
+    expect(use('lua', 'libtmux.Server:delete_buffer', 'delete-buffer')?.when).toBe('except before tmux 3.4')
+    expect(use('go', 'tmux.Server.ConfirmBefore', 'confirm-before')?.when).toBe('except before tmux 3.3')
+    expect(use('go', 'tmux.Server.CommandPrompt', 'command-prompt')?.when).toBe('except before tmux 3.3')
+    // run-shell's output is lost on every release from 3.3 until 3.5, which is a range and not two releases.
+    for (const [port, symbol] of [['java', 'io.github.libtmux.Shell.Shell.capturing'], ['kotlin', 'io.github.libtmux.kotlin.Shell.capturing'], ['scala', 'io.github.libtmux.scaladsl.cats.Shell.capturing']] as const) {
+      expect(use(port, symbol, 'run-shell')?.when, `${port} ${symbol}`).toBe('except from tmux 3.3 until 3.5')
+    }
+    // The controls: a method that pastes a buffer that already exists refuses nothing, and a command that tmux itself lacks before a release needs no qualifier.
+    expect(use('java', 'io.github.libtmux.Pane.Pane.pasteBuffer', 'paste-buffer')?.when).toBeUndefined()
+    for (const [port, symbol] of [['csharp', 'LibTmux.Pane.CreatePaneAsync'], ['csharp', 'LibTmux.Window.CreatePaneAsync'], ['go', 'tmux.Pane.NewPane'], ['go', 'tmux.Window.NewPane'], ['py', 'libtmux.Pane.new_pane'], ['py', 'libtmux.Window.new_pane']] as const) {
+      const entry = use(port, symbol, 'new-pane')
+      expect(entry, `${port} ${symbol}`).toBeDefined()
+      expect(entry?.when, `${port} ${symbol}`).toBeUndefined()
+    }
+  })
+
+  it('says when a launch sends what it sends, from the line the default launch reaches', () => {
+    // ts: only a minimal launch starts the server and reads the owner option; the facts are disclosed whenever the server is there.
+    expect(use('ts', 'mcp.server.main', 'start-server')?.when).toBe('a minimal launch, no explicit selection')
+    expect(use('ts', 'mcp.server.main', 'show-options')?.when).toBe('a minimal launch, no explicit selection')
+    expect(use('ts', 'mcp.server.main', 'display-message')?.when).toBe('unless an explicit launch finds no server')
+    // java: the default launch is the dedicated server, which starts it and reads its metadata; an explicit one only reads it.
+    const main = 'io.github.libtmux.mcp.Main.Main.main'
+    expect(use('java', main, 'start-server')).toMatchObject({ when: 'the launch chooses no socket', reviewed: true })
+    expect(use('java', main, 'start-server')?.evidence[0]).toBe('libtmux-mcp/src/main/java/io/github/libtmux/mcp/LaunchConfiguration.java:106')
+    expect(use('java', main, 'display-message')?.when).toBeUndefined()
+    expect(use('java', main, 'display-message')?.evidence[0]).toBe('libtmux-mcp/src/main/java/io/github/libtmux/mcp/LaunchConfiguration.java:111')
+    // go: the helper registers a kill for the end of the test, which is not a send of the call itself.
+    expect(use('go', 'tmuxtest.NewSession', 'kill-session')?.when).toBe('the test ends, in t.Cleanup')
+  })
+
+  it('records the command-alias inventory of a guarded Ruby call as list-commands and show-options, on the same symbols', () => {
+    const readers = (command: string) => Object.entries(TMUX_USAGE.ruby.symbols).filter(([, entries]) => entries.some((entry) => entry.command === command && entry.incidental)).map(([symbol]) => symbol).sort()
+    expect(readers('show-options')).toHaveLength(9)
+    expect(readers('list-commands')).toEqual(readers('show-options'))
+    // Pane#capture asks list-commands only when a flag it has to check is set, so a default call does not and it stays out.
+    expect(use('ruby', 'LibTmux::Pane#capture', 'list-commands')).toBeUndefined()
+  })
+})
+
 describe('from a method to the command and its C function', () => {
   it('names the scope and links the manual page and the C function behind it', () => {
     const [send] = tmuxSymbolSends('swift', 'Server.panes()')
@@ -404,8 +462,12 @@ describe('from a method to the command and its C function', () => {
     const listed = (port: string, symbol: string, command: string) => tmuxUsage(command)?.groups.flatMap((group) => group.ports).some((cell) => cell.port === port && cell.links.some((link) => link.symbolId === symbol)) ?? false
     expect(listed('java', 'io.github.libtmux.Pane.Pane.sendKeys', 'display-message')).toBe(false)
     // The same holds for the command-alias inventory a guarded Ruby call reads before it sends: on the method, not on the command's pages.
-    expect(tmuxSymbolSends('ruby', 'LibTmux::WindowLink#kill').map((send) => send.command).sort()).toEqual(['kill-window', 'show-options'])
+    expect(tmuxSymbolSends('ruby', 'LibTmux::WindowLink#kill').map((send) => send.command).sort()).toEqual(['kill-window', 'list-commands', 'show-options'])
     expect(listed('ruby', 'LibTmux::WindowLink#kill', 'show-options')).toBe(false)
+    expect(listed('ruby', 'LibTmux::WindowLink#kill', 'list-commands')).toBe(false)
+    // switch_client asks the same two questions before it sends, and neither is an exclusion: a default call sends both.
+    expect(tmuxSymbolSends('ruby', 'LibTmux::Server#switch_client').map((send) => send.command).sort()).toEqual(['list-commands', 'show-options', 'switch-client'])
+    expect(listed('ruby', 'LibTmux::Server#switch_client', 'list-commands')).toBe(false)
     expect(listed('ruby', 'LibTmux::WindowLink#kill', 'kill-window')).toBe(true)
     // The wrapper that stands on it is not listed either, and a claim that is not incidental still is.
     expect(listed('kotlin', 'io.github.libtmux.kotlin.Pane.sendKeys', 'display-message')).toBe(false)
@@ -598,7 +660,7 @@ describe('the rendered lists', () => {
     // The data agrees: no Julia use says it is on a receiver unless some method of the function does not send it.
     for (const [symbol, uses] of Object.entries(TMUX_USAGE.julia.symbols)) {
       for (const use of uses) {
-        if (/^on a (?:Server|ControlConnection)$/.test(use.when ?? '')) expect(['capture_bytes', 'get_environment', 'load_buffer', 'save_buffer', 'snapshot'], `${symbol} ${use.command}`).toContain(symbol.split('.').at(-1))
+        if (/^on a (?:Server|ControlConnection)$/.test(use.when ?? '')) expect(['capture_bytes', 'get_environment', 'load_buffer', 'save_buffer', 'snapshot', 'set_option', 'unset_option', 'set_hook', 'unset_hook'], `${symbol} ${use.command}`).toContain(symbol.split('.').at(-1))
       }
     }
   })
@@ -662,7 +724,9 @@ describe('the rendered lists', () => {
     expect(previous.scopes[0].when).toBe('the target is "previous"')
     const rows = tmuxCommandRows(sends, [])
     expect(rows.find((row) => row.command === 'previous-window')!.when).toBe('the target is "previous"')
-    expect(rows.find((row) => row.command === 'select-window')!.when).toBeUndefined()
+    // The window it selects when the target is none of those three says so too, and a method that selects on every call does not.
+    expect(rows.find((row) => row.command === 'select-window')!.when).toBe('the target is not last, next or previous')
+    expect(tmuxCommandRows(tmuxSymbolSends('ts', 'window.Window.select'), []).find((row) => row.command === 'select-window')!.when).toBeUndefined()
     for (const document of Object.values(TMUX_USAGE)) {
       for (const uses of Object.values(document.symbols)) for (const use of uses) if (use.when) expect(use.when.trim().split(/\s+/).length).toBeLessThanOrEqual(8)
     }

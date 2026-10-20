@@ -255,6 +255,18 @@ type's, a call on a handle named for a type is that type's, and a call on
 anything else is left unresolved, so `Pane.split` calling `options.into_command`
 is not a call of `CaptureOptions::into_command`.
 
+Two limits bound what the scan finds, and each is a limit on recall: what it
+leaves out is not recorded unless a claim records it. `MAX_HOPS` is 1: a send
+that a symbol reaches through two helpers is not credited to it (Julia's
+`set_option` reaches the `show-options` that checks the option exists through
+`_configuration_option_rows` and `_configuration_rows`, so it is a claim).
+`MAX_SHARED_BY` is 4: a helper that more than four public symbols reach is not
+credited to any of them, because its callers cannot be told apart (Julia's
+identity probe at `acquisition.jl:50`). `--report` lists what each limit left out
+(`no public symbol reaches it`, `a helper shared by N public symbols`), and a
+send that is what a method is for, or that it makes on every call, belongs in a
+claim.
+
 Only public API is recorded: a symbol with an underscore name, a `private`
 modifier or an internal scope is left out of the scan and refused in a document.
 So is a member whose signature spells a narrower visibility (`protected`,
@@ -290,7 +302,10 @@ negative script seeds a rule that is wrong:
   `copy-mode` branch of a helper that `enterCopyMode` shares), or a request
   option that a wrapper never sets. Each cites the lines that show the guard,
   an exclusion that removes nothing fails, and `commands` limits it to those
-  commands of the symbols it names.
+  commands of the symbols it names. A send that every default call makes is not an
+  exclusion, even when the method only makes it to prepare the call: it is
+  `incidental`, as the command-alias inventory a guarded Ruby call reads before
+  it sends is (`show-options` and `list-commands`, on the same nine symbols).
 - `dispatchers.json`: the calls that send what they are given, per port, and the
   calls that only build a command value. Each cites the lines of the pinned
   source that show it and, for a call that sends, the chain from there to a
@@ -325,16 +340,41 @@ negative script seeds a rule that is wrong:
 A `when` is at most eight words on one line, because the usage table shows it
 beside the method (a muted qualifier on the chip, and after the command link on
 a method page); a longer reason belongs on a page. An entry that is conditional
-cannot be rendered without it. When a command is sent at two scopes under two
-conditions, each scope says its own beside it; one condition that every scope
-shares follows the command. Writing a `when` for a condition that is always true
-of the method (`Hooks#unset` sending `set-hook` "on a Hooks") qualifies nothing.
+cannot be rendered without it. Each scope of a send says its own condition: on a
+method page the item for that scope ends with it in parentheses
+(`list-panes -s, cmd_list_panes_session (the spec names a first window)`), in the
+Markdown the scope is followed by its own parenthesis, and in the usage table it
+sits beside the chip. A command sent at two scopes under two conditions says each
+beside its own scope, and a condition that every scope shares is said again on each,
+so that no item has to be read with another. Writing a `when` for a condition that
+is always true of the method (`Hooks#unset` sending `set-hook` "on a Hooks")
+qualifies nothing.
 
 The same rule applies to a tmux release. A send made on every supported release
-but some says which in `when` (`Shell.capturing` refuses on 3.3a and 3.4: "except
-on tmux 3.3a and 3.4"). A send made on one release only, such as the rename that
-`breakOut` adds on tmux 3.7 to give the window the name that release ignores, is
-an exclusion, because it is not what a call does on the others.
+but some says which in `when`. That includes a command that exists on a supported
+release and that the library refuses to send there:
+
+- `Shell.capturing` refuses from tmux 3.3 until 3.5, a range (the guard is
+  `atLeast(3.3) && !atLeast(3.5)`, so 3.3, 3.3a and 3.4 all refuse): "except from
+  tmux 3.3 until 3.5".
+- `Pane.paste` and `Buffers.delete` refuse before 3.4, where deleting a buffer by
+  name can remove another, so `load-buffer`, `paste-buffer` and `delete-buffer`
+  say "except before tmux 3.4" in Java, Kotlin and Scala, and so does Lua's
+  `Server:delete_buffer`. Go's `ConfirmBefore` and `CommandPrompt` always send
+  `-b`, which tmux has from 3.3, and refuse before it: "except before tmux 3.3".
+
+A command that does not exist before a release needs no `when`. tmux has no
+`new-pane` before 3.7, so the `new-pane` entries of C# and Go (which refuse by
+version before sending) and of Python (which sends it and lets tmux refuse) carry
+none, and neither does a command the library finds missing in `list-commands`
+(Java's `show-prompt-history`): the command's page is the manual of the releases
+that have it, and a method does not send the command on a release that lacks it
+in a way that differs from what it does on the others. A refusal that depends on
+an argument (a layout preset, a client filter, a flag newer than the release) is
+not what a default call does, and is neither a `when` nor an entry. A send made on
+one release only, such as the rename that `breakOut` adds on tmux 3.7 to give the
+window the name that release ignores, is an exclusion, because it is not what a
+call does on the others.
 
 Go's wrappers that call a method of another type on a handle named for it
 (`p.server.X()`) are credited with that method's entries, as a wrapper on a core
@@ -358,8 +398,10 @@ is `version-gated`, and is recorded as neither; its review cites the gate, both
 branches and the line that sets the supported floor below the gate, so that the
 range the gate splits is shown to be supported. When a later revision raises the
 floor past the gate, the fallback is gone and the method is recorded as sending
-the command that remains. A refusal below some release (`new-pane` before 3.7) is
-not a gate of this kind: the method sends that command whenever it sends.
+the command that remains. A refusal below some release is not a gate of this kind,
+because no other command takes its place: the entry says `when` if the command
+exists on the releases it refuses, and says nothing if the command does not exist
+there (above).
 
 A claim, an exclusion or a review without a `revision` is read against the
 revision its port's model was extracted from. One with a `revision` is read

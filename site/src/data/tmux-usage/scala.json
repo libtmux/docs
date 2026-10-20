@@ -97,6 +97,28 @@
   "revision": "a0ecbc16da00140e2520462d478a2af470878272",
   "schemaVersion": 1,
   "symbols": {
+    "io.github.libtmux.scaladsl.cats.Batch.run": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "libtmux-scala-cats/src/main/scala/io/github/libtmux/scaladsl/cats/Batch.scala:26"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/batch/Batch.java:94",
+            "libtmux/src/main/java/io/github/libtmux/batch/Batch.java:85",
+            "libtmux/src/main/java/io/github/libtmux/batch/Batch.java:82"
+          ],
+          "port": "java",
+          "reviewed": true,
+          "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+          "symbol": "io.github.libtmux.batch.Batch.Batch.run"
+        },
+        "when": "the batch is not empty"
+      }
+    ],
     "io.github.libtmux.scaladsl.cats.Buffers.delete": [
       {
         "command": "delete-buffer",
@@ -113,7 +135,8 @@
           "port": "java",
           "revision": "a0ecbc16da00140e2520462d478a2af470878272",
           "symbol": "io.github.libtmux.Buffers.Buffers.delete"
-        }
+        },
+        "when": "except before tmux 3.4"
       }
     ],
     "io.github.libtmux.scaladsl.cats.Buffers.list": [
@@ -1037,7 +1060,8 @@
           "port": "java",
           "revision": "a0ecbc16da00140e2520462d478a2af470878272",
           "symbol": "io.github.libtmux.Pane.Pane.paste"
-        }
+        },
+        "when": "except before tmux 3.4"
       },
       {
         "command": "paste-buffer",
@@ -1054,7 +1078,8 @@
           "port": "java",
           "revision": "a0ecbc16da00140e2520462d478a2af470878272",
           "symbol": "io.github.libtmux.Pane.Pane.paste"
-        }
+        },
+        "when": "except before tmux 3.4"
       }
     ],
     "io.github.libtmux.scaladsl.cats.Pane.pasteBuffer": [
@@ -1982,7 +2007,7 @@
           "revision": "a0ecbc16da00140e2520462d478a2af470878272",
           "symbol": "io.github.libtmux.Shell.Shell.capturing"
         },
-        "when": "except on tmux 3.3a and 3.4"
+        "when": "except from tmux 3.3 until 3.5"
       }
     ],
     "io.github.libtmux.scaladsl.cats.Shell.choose": [
@@ -2579,7 +2604,8 @@
           "port": "java",
           "revision": "a0ecbc16da00140e2520462d478a2af470878272",
           "symbol": "io.github.libtmux.Pane.Pane.paste"
-        }
+        },
+        "when": "except before tmux 3.4"
       },
       {
         "command": "paste-buffer",
@@ -2596,7 +2622,8 @@
           "port": "java",
           "revision": "a0ecbc16da00140e2520462d478a2af470878272",
           "symbol": "io.github.libtmux.Pane.Pane.paste"
-        }
+        },
+        "when": "except before tmux 3.4"
       }
     ],
     "io.github.libtmux.scaladsl.Pane.pasteBuffer": [
