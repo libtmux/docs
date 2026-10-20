@@ -20,7 +20,13 @@ import { entryCandidates, entryDestinations } from '../../site/src/lib/port-inve
 
 export const USER_AGENT = 'libtmux-docs destination check (+https://libtmux.org)'
 
-/** Evidence older than this many days is stale: a host's answer is not permanent. */
+/**
+ * Evidence older than this many days is stale: a host's answer is not permanent.
+ * Staleness is enforced only where a live run is the natural remedy, which is
+ * the verifier itself (`--check --fresh`, and the end of every live run). The
+ * unit tests and the publication audit report it as a warning, because a PR
+ * that touches none of this should not fail for the passage of time.
+ */
 export const EVIDENCE_MAX_AGE_DAYS = 60
 
 /** Origins a test redirects to a local server, as `{ "https://pypi.org": "http://127.0.0.1:1234/pypi.org" }`. */
@@ -455,22 +461,40 @@ export function collectDestinations(inventory, manifests) {
 const DAY = 24 * 60 * 60 * 1000
 
 /**
+ * The records last checked more than `maxAgeDays` before `today`, oldest first.
+ * This is a measurement, not a verdict: `checkEvidence` never fails on it.
+ */
+export function staleRecords(evidence, { today = new Date(), maxAgeDays = EVIDENCE_MAX_AGE_DAYS } = /** @type {{ today?: Date, maxAgeDays?: number }} */ ({})) {
+  const days = (date) => Math.floor((today.getTime() - new Date(`${date}T00:00:00Z`).getTime()) / DAY)
+  return evidence.destinations.filter((record) => days(record.checkedAt) > maxAgeDays)
+    .map((record) => ({ url: record.url, checkedAt: record.checkedAt, days: days(record.checkedAt) }))
+    .sort((a, b) => a.checkedAt.localeCompare(b.checkedAt) || a.url.localeCompare(b.url))
+}
+
+/** One line per check date for the stale records, with how to refresh them. */
+export function staleWarnings(stale, maxAgeDays = EVIDENCE_MAX_AGE_DAYS) {
+  const byDate = new Map()
+  for (const record of stale) byDate.set(record.checkedAt, (byDate.get(record.checkedAt) ?? 0) + 1)
+  return [...byDate].map(([date, count]) => `${count} destination record${count === 1 ? ' was' : 's were'} last checked ${date}, more than ${maxAgeDays} days ago: run node scripts/verify-destinations.mjs`)
+}
+
+/**
  * Every way the evidence and the inventory can disagree, as sentences.
  *
  * A published entry needs a passing record for each of its destinations. A
  * configured-but-unpublished one needs a failing record, so the day its host
  * starts serving it this reports that it can be enabled. A record that no
- * entry owns is stale, and so is one older than `maxAgeDays`. A record whose
+ * entry owns is stale, and every record carries a check date. A record whose
  * manifest version the host lacks means the code the docs describe was never
  * released; a host that can list versions may not decline to confirm one, and
  * the version a record checked must be the one the manifests declare now.
+ * How old a record is does not appear here: see `staleRecords`.
  */
-export function checkEvidence(inventory, evidence, { manifests, today = new Date(), maxAgeDays = EVIDENCE_MAX_AGE_DAYS } = /** @type {{ manifests?: any, today?: Date, maxAgeDays?: number }} */ ({})) {
+export function checkEvidence(inventory, evidence, { manifests } = /** @type {{ manifests?: any }} */ ({})) {
   const records = new Map(evidence.destinations.map((record) => [record.url, record]))
   const problems = []
-  const age = (date) => Math.floor((today.getTime() - new Date(`${date}T00:00:00Z`).getTime()) / DAY)
   for (const record of evidence.destinations) {
-    if (!record.checkedAt || age(record.checkedAt) > maxAgeDays) problems.push(`${record.url} was checked ${record.checkedAt ?? 'never'}, more than ${maxAgeDays} days ago`)
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(record.checkedAt ?? '')) problems.push(`${record.url} has no valid check date (${record.checkedAt ?? 'none'})`)
   }
   const wanted = collectDestinations(inventory, manifests)
   for (const [url, destination] of wanted) {

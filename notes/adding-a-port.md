@@ -79,8 +79,8 @@ $ node scripts/verify-destinations.mjs
 
 The command exits 1 if a published destination fails or an unlinked one starts
 to answer. Commit the updated `site/src/data/destination-evidence.json`; the
-unit tests and the publication audit hold the inventory to it, and treat
-evidence older than `EVIDENCE_MAX_AGE_DAYS` as stale. Add the port's expected links, with the
+unit tests and the publication audit hold the inventory to it, and warn
+when it is older than `EVIDENCE_MAX_AGE_DAYS`. Add the port's expected links, with the
 entries behind each row, to `site/test/fixtures/header-links.ts`.
 
 ## 2. Add the worktree

@@ -184,10 +184,6 @@ node scripts/gen-registry.mjs --check --offline
 step 'package registry state (negative)'
 node scripts/gen-registry.negative.mjs
 
-# The header links to these package, API and source pages. The evidence is
-# requested by hand (node scripts/verify-destinations.mjs); this compares it
-# with the inventory offline, and the negative case proves the comparison and
-# the identity rules fail on a wrong package, a 404 and a stale record.
 # The inventory's packages and their versions are read from the pinned
 # manifests. Skips when a port checkout is absent, as the tool matrix above does.
 step 'manifest packages'
@@ -196,6 +192,12 @@ node scripts/gen-manifest-packages.mjs --check
 step 'manifest packages (negative)'
 node scripts/gen-manifest-packages.negative.mjs
 
+# The header links to these package, API and source pages. The evidence is
+# requested by hand (node scripts/verify-destinations.mjs); this compares it
+# with the inventory and the manifests offline, and the negative case proves
+# the comparison and the identity rules fail on a wrong package, a 404 and a
+# changed manifest. Old evidence is a printed warning here, not a failure: the
+# live run and --check --fresh are where age is enforced.
 step 'destination evidence'
 node scripts/verify-destinations.mjs --check
 

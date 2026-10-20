@@ -8,8 +8,11 @@
  * real hosts produce: a 200 about a different package (PyPI names another
  * project), a 404, a javadoc.io landing on a version list, a repository that
  * was renamed, an offline comparison with a record dropped or failed or
- * orphaned or stale, and a destination kept out of the links that has started
- * to answer. Each host family then has the same four: the right package, a
+ * orphaned, and a destination kept out of the links that has started to answer.
+ * Age is the exception to failing: evidence past the bound is a warning offline
+ * and a failure only under --fresh or at the end of a live run.
+ *
+ * Each host family then has the same four cases: the right package, a
  * different package under the same URL, the right package filed under a
  * different repository, and a version the manifest declares that the host lacks.
  */
@@ -210,9 +213,10 @@ async function verify(name, inventory, { args = [], expect: expected, evidence, 
     result = { code: error.code, text: `${error.stdout ?? ''}${error.stderr ?? ''}` }
   }
   const ok = result.code === expected.code && expected.matches.every((pattern) => pattern.test(result.text))
+    && (expected.excludes ?? []).every((pattern) => !pattern.test(result.text))
   if (ok) console.log(`ok   ${name}`)
   else {
-    console.error(`FAIL ${name} — exit ${result.code}, wanted ${expected.code} and ${expected.matches}:\n${result.text}`)
+    console.error(`FAIL ${name} — exit ${result.code}, wanted ${expected.code}, ${expected.matches}, not ${expected.excludes ?? []}:\n${result.text}`)
     failures += 1
   }
   return { ...result, out }
@@ -340,11 +344,29 @@ await verify('offline, evidence checked for another version than the manifest de
   args: ['--check'], manifests: manifestFor([['demo-good', '3.0.0']]), evidence: { ...good, destinations: good.destinations.map((item) => (item.host === 'pypi' ? { ...item, expectedVersion: '1.0.0', versionSource: 'demo/demo:m', versionCheck: 'confirmed' } : item)) },
   expect: { code: 1, matches: [/was checked for 1\.0\.0 but the manifests now declare 3\.0\.0/] },
 })
-await verify('offline, fresh evidence passes and stale evidence fails', control, {
-  args: ['--check', '--today', '2026-03-01'], evidence: good, expect: { code: 0, matches: [/agrees with the inventory/] },
+// Age is a warning wherever a change that touches none of this might run it, and a failure only where a live run is the remedy.
+await verify('offline, fresh evidence passes without a warning', control, {
+  args: ['--check', '--today', '2026-03-01'], evidence: good, expect: { code: 0, matches: [/agrees with the inventory/], excludes: [/warning/] },
 })
-await verify('offline, evidence older than the bound fails', control, {
-  args: ['--check', '--today', '2026-06-01'], evidence: good, expect: { code: 1, matches: [/was checked 2026-01-01, more than 60 days ago/] },
+await verify('offline, evidence older than the bound prints a warning with its date and still passes', control, {
+  args: ['--check', '--today', '2026-06-01'], evidence: good,
+  expect: { code: 0, matches: [/warning: \d+ destination records? (?:was|were) last checked 2026-01-01, more than 60 days ago: run node scripts\/verify-destinations\.mjs/, /agrees with the inventory/] },
+})
+await verify('offline, --fresh passes fresh evidence', control, {
+  args: ['--check', '--fresh', '--today', '2026-03-01'], evidence: good, expect: { code: 0, matches: [/agrees with the inventory/], excludes: [/warning/] },
+})
+await verify('offline, --fresh fails evidence older than the bound', control, {
+  args: ['--check', '--fresh', '--today', '2026-06-01'], evidence: good, expect: { code: 1, matches: [/last checked 2026-01-01, more than 60 days ago/] },
+})
+await verify('a live run cannot record a check older than the bound', control, {
+  args: ['--date', '2026-01-01', '--today', '2026-06-01'], expect: { code: 1, matches: [/last checked 2026-01-01, more than 60 days ago/] },
+})
+await verify('a live run that records today passes', control, {
+  args: ['--date', '2026-06-01', '--today', '2026-06-01'], expect: { code: 0, matches: [/wrote /] },
+})
+await verify('offline, a record without a check date fails whatever the age', control, {
+  args: ['--check'], evidence: { ...good, destinations: good.destinations.map((item, index) => (index === 0 ? { ...item, checkedAt: undefined } : item)) },
+  expect: { code: 1, matches: [/has no valid check date/] },
 })
 
 server.close()

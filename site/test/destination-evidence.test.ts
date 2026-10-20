@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
-  EVIDENCE_MAX_AGE_DAYS, REPOSITORY_HOSTS, VERSION_SUPPORT, checkEvidence, collectDestinations, repoOf,
+  EVIDENCE_MAX_AGE_DAYS, REPOSITORY_HOSTS, VERSION_SUPPORT, checkEvidence, collectDestinations, repoOf, staleRecords, staleWarnings,
 } from '../../scripts/lib/destination-verification.mjs'
 import evidence from '../src/data/destination-evidence.json'
 import manifests from '../src/data/manifest-packages.json'
@@ -147,33 +147,56 @@ describe('destination evidence', () => {
     for (const record of javadoc) expect(record.samples, record.url).toBeGreaterThanOrEqual(3)
   })
 
-  describe('recency', () => {
+  describe('age', () => {
     const checked = new Date(`${evidence.checkedAt}T12:00:00Z`)
-    it('is fresh when checked within the bound and stale after it', () => {
-      expect(checkEvidence(INVENTORY, evidence, { manifests, today: new Date(checked.getTime() + (EVIDENCE_MAX_AGE_DAYS - 1) * DAY) })).toEqual([])
-      const stale = checkEvidence(INVENTORY, evidence, { manifests, today: new Date(checked.getTime() + (EVIDENCE_MAX_AGE_DAYS + 2) * DAY) })
-      expect(stale.length).toBeGreaterThan(0)
-      expect(stale[0]).toMatch(new RegExp(`was checked ${evidence.checkedAt}, more than ${EVIDENCE_MAX_AGE_DAYS} days ago`))
+    const later = (days: number) => new Date(checked.getTime() + days * DAY)
+
+    it('is measured, never judged, by the agreement check, so a change that touches none of this cannot fail for the passage of time', () => {
+      const ancient = withEvidence(evidence.destinations.map((record) => ({ ...record, checkedAt: '2001-01-01' })))
+      expect(checkEvidence(INVENTORY, ancient, { manifests })).toEqual([])
+      // Control: the same evidence is stale by the measure that exists for it.
+      expect(staleRecords(ancient, { today: checked })).toHaveLength(evidence.destinations.length)
     })
 
-    it('is measured by each record, not only the file', () => {
+    it('reports a record as stale only after the bound, oldest first, with its date', () => {
+      expect(staleRecords(evidence, { today: later(EVIDENCE_MAX_AGE_DAYS) })).toEqual([])
+      const stale = staleRecords(evidence, { today: later(EVIDENCE_MAX_AGE_DAYS + 2) })
+      expect(stale).toHaveLength(evidence.destinations.length)
+      expect(stale[0]).toMatchObject({ checkedAt: evidence.checkedAt, days: EVIDENCE_MAX_AGE_DAYS + 2 })
       const old = new Date(checked.getTime() - (EVIDENCE_MAX_AGE_DAYS + 5) * DAY).toISOString().slice(0, 10)
       const [first, ...rest] = evidence.destinations
-      expect(checkEvidence(INVENTORY, withEvidence([{ ...first, checkedAt: old }, ...rest]), { manifests, today: checked }))
-        .toEqual([`${first!.url} was checked ${old}, more than ${EVIDENCE_MAX_AGE_DAYS} days ago`])
+      expect(staleRecords(withEvidence([{ ...first, checkedAt: old }, ...rest]), { today: checked }))
+        .toEqual([{ url: first!.url, checkedAt: old, days: EVIDENCE_MAX_AGE_DAYS + 5 }])
+    })
+
+    it('words a warning with the date and the command that clears it', () => {
+      const stale = staleRecords(evidence, { today: later(EVIDENCE_MAX_AGE_DAYS + 2) })
+      expect(staleWarnings(stale)).toEqual([`${evidence.destinations.length} destination records were last checked ${evidence.checkedAt}, more than ${EVIDENCE_MAX_AGE_DAYS} days ago: run node scripts/verify-destinations.mjs`])
+      expect(staleWarnings(stale.slice(0, 1))[0]).toMatch(/^1 destination record was last checked/)
+    })
+
+    it('requires a check date on every record, whatever its age', () => {
+      const [first, ...rest] = evidence.destinations
+      expect(checkEvidence(INVENTORY, withEvidence([{ ...first, checkedAt: undefined }, ...rest]), { manifests }))
+        .toEqual([`${first!.url} has no valid check date (none)`])
+    })
+
+    it('warns when the committed evidence is old, and does not fail', () => {
+      const stale = staleRecords(evidence)
+      for (const line of staleWarnings(stale)) console.warn(`warning: ${line}`)
+      expect(Array.isArray(stale)).toBe(true)
     })
   })
 
   describe('against the inventory', () => {
     const clean = demo({})
     const url = 'https://github.com/libtmux/libtmux-rs'
-    const today = new Date('2026-02-01T12:00:00Z')
     const record = {
       url, kinds: ['source'], host: 'github', ok: true, status: 200, identity: 'libtmux/libtmux-rs', checkedAt: '2026-01-15',
       versionCheck: 'unsupported', versionNote: 'a branch link names no release', entries: ['demo:demo'],
     }
     const good = withEvidence([record])
-    const check = (data: ReturnType<typeof withEvidence>, inventory = clean) => checkEvidence(inventory, data, { manifests, today })
+    const check = (data: ReturnType<typeof withEvidence>, inventory = clean) => checkEvidence(inventory, data, { manifests })
 
     it('passes when every linked destination has a passing record', () => {
       expect(check(good)).toEqual([])
@@ -198,7 +221,7 @@ describe('destination evidence', () => {
       const crates = { url: 'https://crates.io/crates/demo', kinds: ['package'], host: 'crates', ok: true, status: 200, identity: 'demo', repository: 'libtmux/libtmux-rs', checkedAt: '2026-01-15', entries: ['demo:demo'] }
       const confirmed = { ...crates, expectedVersion: '1.0.0', versionSource: 'libtmux/libtmux-rs:Cargo.toml', versionCheck: 'confirmed' }
       const declined = { ...crates, expectedVersion: '1.0.0', versionSource: 'libtmux/libtmux-rs:Cargo.toml', versionCheck: 'unsupported', versionNote: 'skipped' }
-      const run = (records: object[], manifestData = manifest) => checkEvidence(registry, withEvidence([record, ...records]), { manifests: manifestData, today })
+      const run = (records: object[], manifestData = manifest) => checkEvidence(registry, withEvidence([record, ...records]), { manifests: manifestData })
       expect(run([confirmed])).toEqual([])
       expect(run([declined]).join('\n')).toMatch(/could not confirm 1\.0\.0 on crates, which lists versions/)
       // The version checked must be the one the manifests declare now.

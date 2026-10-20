@@ -17,16 +17,24 @@
  * versions; a record says so, or says why the host could not. A published
  * entry whose destination fails makes this exit 1, and so does a configured one
  * whose destination now passes: either way the inventory's status is out of
- * date. Evidence older than a bound is stale and fails the same way.
+ * date.
+ *
+ * Age is enforced here and nowhere else. A live run ends by requiring every
+ * record to be within the bound, so evidence cannot be committed back-dated,
+ * and `--check --fresh` is the explicit gate for a release or publication step.
+ * Plain `--check`, which the tests and the publication audit run, prints stale
+ * records as warnings with their dates and still exits 0: a change that touches
+ * none of this should not fail because time passed, and the remedy is a live run.
  *
  * Usage:
  *   node scripts/verify-destinations.mjs [--out <path>] [--manifests <path>] [--inventory <path>] [--date <YYYY-MM-DD>]
- *   node scripts/verify-destinations.mjs --check [--out <path>] [--manifests <path>] [--inventory <path>] [--today <YYYY-MM-DD>]
+ *   node scripts/verify-destinations.mjs --check [--fresh] [--out <path>] [--manifests <path>] [--inventory <path>] [--today <YYYY-MM-DD>]
  *
  *   --out <path>         The evidence file (default site/src/data/destination-evidence.json).
  *   --manifests <path>   The manifest packages naming each package's version.
  *   --inventory <path>   A JSON inventory in place of the committed one.
  *   --check              Request nothing; compare the evidence file with the inventory.
+ *   --fresh              With --check, also fail on evidence older than the bound.
  *   --date <date>        The day to record (default today, UTC).
  *   --today <date>       The day to measure staleness from (default today, UTC).
  *
@@ -37,7 +45,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { INVENTORY } from '../site/src/lib/port-inventory.ts'
-import { checkEvidence, collectDestinations, createGet, verifyDestination } from './lib/destination-verification.mjs'
+import { checkEvidence, collectDestinations, createGet, staleRecords, staleWarnings, verifyDestination } from './lib/destination-verification.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const DEFAULT_OUT = join(root, 'site', 'src', 'data', 'destination-evidence.json')
@@ -45,7 +53,7 @@ const DEFAULT_MANIFESTS = join(root, 'site', 'src', 'data', 'manifest-packages.j
 
 function parseArgs(argv) {
   const today = new Date().toISOString().slice(0, 10)
-  const opts = { out: DEFAULT_OUT, manifests: DEFAULT_MANIFESTS, inventory: null, check: false, date: today, today }
+  const opts = { out: DEFAULT_OUT, manifests: DEFAULT_MANIFESTS, inventory: null, check: false, fresh: false, date: today, today }
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i]
     if (arg === '--out') opts.out = argv[++i]
@@ -54,6 +62,7 @@ function parseArgs(argv) {
     else if (arg === '--inventory') opts.inventory = argv[++i]
     else if (arg === '--date') opts.date = argv[++i]
     else if (arg === '--check') opts.check = true
+    else if (arg === '--fresh') opts.fresh = true
     else if (arg === '-h' || arg === '--help') opts.help = true
     else throw new Error(`unrecognised argument: ${arg}`)
   }
@@ -79,12 +88,23 @@ function report(problems) {
 const manifests = existsSync(opts.manifests) ? JSON.parse(readFileSync(opts.manifests, 'utf8')) : { ports: {} }
 const today = new Date(`${opts.today}T12:00:00Z`)
 
+/** Age is a failure where a live run is the remedy and a warning elsewhere. */
+function staleness(evidence, enforce) {
+  const stale = staleRecords(evidence, { today })
+  if (stale.length === 0) return []
+  const lines = staleWarnings(stale)
+  if (enforce) return lines.map((line) => line.replace(/: run node.*$/, ''))
+  for (const line of lines) console.warn(`warning: ${line}`)
+  return []
+}
+
 if (opts.check) {
   if (!existsSync(opts.out)) {
     console.error(`${opts.out} does not exist. Run: node scripts/verify-destinations.mjs`)
     process.exit(1)
   }
-  report(checkEvidence(inventory, JSON.parse(readFileSync(opts.out, 'utf8')), { manifests, today }))
+  const evidence = JSON.parse(readFileSync(opts.out, 'utf8'))
+  report([...checkEvidence(inventory, evidence, { manifests }), ...staleness(evidence, opts.fresh)])
   console.log(`${opts.out} agrees with the inventory`)
   process.exit(0)
 }
@@ -105,4 +125,4 @@ records.sort((a, b) => a.url.localeCompare(b.url))
 const evidence = { schema: 1, checkedAt: opts.date, destinations: records }
 writeFileSync(opts.out, `${JSON.stringify(evidence, null, 2)}\n`)
 console.log(`wrote ${opts.out}`)
-report(checkEvidence(inventory, evidence, { manifests, today }))
+report([...checkEvidence(inventory, evidence, { manifests }), ...staleness(evidence, true)])

@@ -252,11 +252,17 @@ identity for the package, not only a 200; a repository that a registry reports
 must be one of the entry's; and the version the manifest declares must be on
 every host that lists versions, with the record saying so where one cannot. It
 rewrites `site/src/data/destination-evidence.json`, which the unit tests and the
-publication audit compare with the inventory offline. Evidence older than
-`EVIDENCE_MAX_AGE_DAYS` in `scripts/lib/destination-verification.mjs` is stale
-and fails the same comparison. The command exits 1 when a
-published destination fails or an unlinked one starts to answer; commit the
+publication audit compare with the inventory offline. The command exits 1 when
+a published destination fails or an unlinked one starts to answer; commit the
 evidence with the inventory change that follows.
+
+Age is enforced only where a live run is the remedy. Evidence older than
+`EVIDENCE_MAX_AGE_DAYS` in `scripts/lib/destination-verification.mjs` makes the
+offline comparison print a warning with the date of the records, and nothing
+more, so a change that touches none of this does not fail because time passed.
+A live run ends by requiring every record to be within the bound, so evidence
+cannot be committed back-dated, and a release step that wants fresh evidence
+runs `node scripts/verify-destinations.mjs --check --fresh`, which fails on it.
 
 ## Building and previewing
 
