@@ -1,6 +1,4 @@
-import { mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
-import { execFileSync } from 'node:child_process'
-import { tmpdir } from 'node:os'
+import { readFileSync, realpathSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { join } from 'node:path'
@@ -19,6 +17,7 @@ import { apiSignatureLayouts } from '../src/lib/code-layout'
 import { symbolMarkdownWithLayout } from '../src/lib/symbol-markdown'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import * as nativeLayoutChecks from '../scripts/check-native-layout.mjs'
+import { auditTypeLinks as auditSignature } from './type-link-audit'
 
 const astroRequire = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
 
@@ -51,26 +50,6 @@ async function signatureComponent() {
   const fragment = source.slice(start, end)
   const wrapper = `---\nimport ApiType from './ApiType.astro'\nconst { symbol, sig, port, language, index, nameHref, nativeSignatureText, signatureLayouts = new Map() } = Astro.props\n---\n${fragment}`
   return (await import(/* @vite-ignore */ await compile('../src/components/api/ApiEntry.astro', { './ApiType.astro': type }, wrapper))).default
-}
-
-function auditSignature(html: string) {
-  const directory = mkdtempSync(join(tmpdir(), 'libtmux-signature-audit-'))
-  try {
-    for (const { slug } of API_MODEL_PORTS) {
-      const destination = join(directory, slug, 'latest', 'reference', 'probe')
-      mkdirSync(destination, { recursive: true })
-      writeFileSync(join(destination, 'index.html'), html)
-    }
-    const ceiling = join(directory, 'ceiling.json')
-    writeFileSync(ceiling, JSON.stringify(Object.fromEntries(API_MODEL_PORTS.map(({ slug }) => [slug, 0]))))
-    try {
-      const output = execFileSync(process.execPath, [fileURLToPath(new URL('../../scripts/check-type-links.mjs', import.meta.url)), directory, '--ceiling', ceiling], { encoding: 'utf8', stdio: 'pipe' })
-      return { code: 0, output }
-    } catch (error) {
-      const result = error as { status: number; stdout: string; stderr: string }
-      return { code: result.status, output: `${result.stdout}${result.stderr}` }
-    }
-  } finally { rmSync(directory, { recursive: true, force: true }) }
 }
 
 function displayedSignature(element: Element): string {

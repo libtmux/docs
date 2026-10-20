@@ -1,9 +1,11 @@
 /**
- * Whether an example kept the indentation its doc comment gave it.
+ * Whether an example kept what its doc comment gave it: the indentation of
+ * each line, and every line.
  *
  * The comment margin (`*`, `///`, `#`, `--`) belongs to the comment; what
  * follows it is the author's code, and a model that flattens it shows
- * `.filter(...)` under `Session mine = ...` at the same column.
+ * `.filter(...)` under `Session mine = ...` at the same column. A model
+ * that drops a `# comment` line has lost part of the example the same way.
  */
 
 const ENTITIES = { '&lt;': '<', '&gt;': '>', '&amp;': '&', '&quot;': '"', '&#39;': "'", '&nbsp;': ' ' }
@@ -17,6 +19,16 @@ export function sourceLine(line) {
   const leader = LEADER.exec(line)
   const rest = leader ? line.slice(leader[0].length) : line
   return { text: decode(rest).trim(), indent: /^[ \t]*/.exec(rest)[0].length }
+}
+
+/**
+ * rustdoc's own rule for a line of a Rust code block: `# ` and a bare `#`
+ * hide it, and `##` escapes to a literal `#`.
+ */
+export function rustdocLine(text) {
+  if (text.startsWith('##')) return { text: text.replace('##', '#') }
+  if (text === '#' || text.startsWith('# ')) return { hidden: true, text }
+  return { text }
 }
 
 /** Positions of each example line in the source, in order, or undefined when the block is not there. */
@@ -34,23 +46,42 @@ function locate(lines, source, start, window) {
 }
 
 /**
- * Compare one example's relative indentation with its source comment's.
+ * Compare one example with its source comment.
  *
- * `ok` and `lost` mean the block was found; `unlocated` means the source does
- * not contain it line for line (a doctest prompt, a rewritten fence), which
- * says nothing about its indentation. `single` has no relative indentation.
+ * `ok`, `lost` and `dropped` mean the block was found: `lost` changed a
+ * line's relative indentation, `dropped` left out a line the source has
+ * between the example's first and last lines. `unlocated` means the source
+ * does not contain the block line for line (a doctest prompt, a rewritten
+ * fence), which says nothing about it. `single` has no relative indentation.
+ * With `rust`, a line rustdoc hides is not expected in the example.
  */
-export function compareIndentation(code, sourceText, window = 8) {
+export function compareIndentation(code, sourceText, { window = 8, rust = false } = {}) {
   const lines = code.split('\n').filter((line) => line.trim())
   if (lines.length < 2) return { status: 'single' }
-  const source = sourceText.split('\n').map(sourceLine)
+  const source = sourceText.split('\n').map(sourceLine).map((line) => {
+    if (!rust) return line
+    const shown = rustdocLine(line.text)
+    return { ...line, text: shown.text, hidden: shown.hidden }
+  })
   const relative = (indents) => indents.map((indent) => indent - Math.min(...indents))
   const expected = relative(lines.map((line) => /^[ \t]*/.exec(line)[0].length))
   let mismatch
   for (let start = 0; start < source.length; start++) {
-    if (!source[start].text || source[start].text !== lines[0].trim()) continue
-    const positions = locate(lines, source, start, window)
+    if (!source[start].text || source[start].hidden || source[start].text !== lines[0].trim()) continue
+    const positions = locate(lines, source.map((line) => (line.hidden ? { ...line, text: '\0' } : line)), start, window)
     if (!positions) continue
+    // A comment line at the block's edge is a dropped line too, not a boundary.
+    const comment = (line) => line && !line.hidden && (line.text === '#' || line.text.startsWith('# '))
+    let from = start
+    while (comment(source[from - 1])) from--
+    let to = positions.at(-1)
+    while (comment(source[to + 1])) to++
+    const skipped = source.slice(from, to + 1)
+      .filter((line, i) => !positions.includes(from + i) && line.text && !line.hidden)
+    if (skipped.length) {
+      mismatch ??= { status: 'dropped', line: skipped[0].text }
+      continue
+    }
     const actual = relative(positions.map((position) => source[position].indent))
     const wrong = actual.findIndex((indent, i) => indent !== expected[i])
     if (wrong === -1) return { status: 'ok' }

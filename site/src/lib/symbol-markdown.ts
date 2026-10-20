@@ -10,7 +10,7 @@ import { CATALOG_KINDS, tmuxCatalogKindsForSymbol, tmuxCatalogUrl } from './tmux
 import { tmuxCommandMentions, tmuxMentionMarkdown } from './tmux-links'
 import { productApiIndex } from './product-api'
 import { defaultVersionFor } from './versions'
-import { apiSignatureLayouts, type CodeLayout } from './code-layout'
+import { apiSignatureLayouts, swiftBaseName, type CodeLayout } from './code-layout'
 import { apiCallSource, apiRelationshipSections, type ApiRelationshipPath } from './api-relationships'
 import { PORT_BY_SLUG, productConceptNotice } from './ports'
 
@@ -50,7 +50,9 @@ function signatureLine(symbol: ApiSymbol, sig: Signature, port?: string): string
     return multiline ? `  ${text.replaceAll('\n', '\n  ')}` : text
   }).join(multiline ? ',\n' : ', ')
   const returns = sig.returns ? `${port === 'ts' ? ':' : ' ->'} ${sig.returns}` : ''
-  return `${qualifiedNameOf(symbol)}(${multiline ? '\n' : ''}${params}${multiline ? '\n' : ''})${returns}`
+  // A Swift id ends in its selector, which the parameter list spells again.
+  const name = port === 'swift' ? swiftBaseName(qualifiedNameOf(symbol)) : qualifiedNameOf(symbol)
+  return `${name}(${multiline ? '\n' : ''}${params}${multiline ? '\n' : ''})${returns}`
 }
 
 function fencedCode(code: string, language = ''): string {

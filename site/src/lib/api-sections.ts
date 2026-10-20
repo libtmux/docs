@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import { builtinHref, memberTier, typeParametersOf, type ApiSymbol, type MemberSignals, type Param, type Signature, type SymbolIndex } from '@libtmux/api-model'
 import { apiGlossaryHref } from './api-glossary'
-import { csharpParameters, supportsCSharpSignatures, supportsGoSignatures, supportsJavaSignatures, supportsLuaSignatures, supportsRubySignatures, supportsRustSignatures, supportsTypeScriptSignatures } from './code-layout'
+import { csharpParameters, supportsCSharpSignatures, supportsGoSignatures, supportsJavaSignatures, supportsLuaSignatures, supportsRubySignatures, supportsRustSignatures, supportsTypeScriptSignatures, swiftBaseName } from './code-layout'
 
 export interface ApiSection {
   id: string
@@ -113,7 +113,7 @@ export function nativeSignatureText(symbol: ApiSymbol, signature: Signature, lan
 }
 
 function signatureLabels(symbol: ApiSymbol, port?: string): string[] {
-  const name = port === 'swift' ? symbol.name.replace(/\([^)]*\)$/, '') : symbol.name
+  const name = port === 'swift' ? swiftBaseName(symbol.name) : symbol.name
   const labels = symbol.signatures.map((signature) =>
     signature.label ?? `${name}(${signature.params.map((param) => param.name).join(', ')})`)
   return labels.map((label, i) => labels.filter((entry) => entry === label).length > 1
@@ -155,8 +155,9 @@ export function apiEntryFields(symbol: ApiSymbol, port?: string) {
       if (familyDocumentation > 0 && i !== familyDocumentation) return []
       // A C# params array is extracted as two entries; only the declared name is a parameter.
       const declared = port === 'csharp' ? csharpParameters(signature) : undefined
-      // Python and Lua spell the receiver as a first parameter; the call never passes it.
-      const receiver = (param: Param, position: number) => position === 0 && !param.doc &&
+      // Python, Rust and Lua spell the receiver as a first parameter; the call never passes it.
+      // A C function's `self` is an argument like any other.
+      const receiver = (param: Param, position: number) => port !== 'c' && position === 0 && !param.doc &&
         (param.name === 'self' || (port === 'py' && param.name === 'cls'))
       return signature.params.filter((param, position) => !receiver(param, position) &&
         (!declared || declared.some((entry) => entry.index === position)))

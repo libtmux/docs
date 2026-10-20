@@ -1,5 +1,5 @@
 import type { ApiSymbol, Signature } from '@libtmux/api-model'
-import { CODE_COLUMNS, codeWidthFailures, type CodeLayout, type CodeSyntax } from './code-layout'
+import { CODE_COLUMNS, cEnumParts, codeWidthFailures, type CodeLayout, type CodeSyntax } from './code-layout'
 
 /*
  * C++ declarations are laid out by clang-format's own search. The generator
@@ -8,14 +8,34 @@ import { CODE_COLUMNS, codeWidthFailures, type CodeLayout, type CodeSyntax } fro
  * budget. It ports the parts of TokenAnnotator, ContinuationIndenter and the
  * line formatter that govern one declaration, so the site needs no formatter
  * at build time.
+ *
+ * tmux's C reference runs through the same search. It differs in four ways
+ * that `Dialect` names: a declaration starts at column zero, `*` binds to the
+ * name as tmux writes it, the source may omit the `;`, and only declarators
+ * with a parameter list are read.
  */
+
+/** What differs between the languages this module lays out. */
+interface Dialect {
+  language: 'c' | 'cxx'
+  /** Column a declaration starts at; the C++ generator formats struct members. */
+  indent: number
+  /** The side `*` and `&` stick to: `T* name` in the C++ project style, `T *name` in tmux's C. */
+  pointer: 'left' | 'right'
+  /**
+   * The source leaves out the `;` a declaration ends with. It is added for
+   * the search, so the line formatter sees the statement clang-format
+   * formats, but it takes no column: the printed text may fill the budget.
+   */
+  omitsTerminator: boolean
+}
 
 type Kind = 'identifier' | 'keyword' | 'number' | 'string' | 'punct'
 type TokenType =
   | 'unknown' | 'templateOpener' | 'templateCloser' | 'pointerOrReference' | 'startOfName'
   | 'functionDeclarationName' | 'ctorDtorDeclName' | 'functionDeclarationLParen' | 'trailingAnnotation'
   | 'binaryOperator' | 'unaryOperator' | 'attributeLSquare' | 'attributeRSquare' | 'requiresClause'
-  | 'trailingReturnArrow' | 'typeDeclarationParen'
+  | 'trailingReturnArrow' | 'typeDeclarationParen' | 'functionTypeLParen'
 
 interface Tok {
   index: number
@@ -43,12 +63,16 @@ interface Tok {
   nextOperator?: Tok
   startsBinaryExpression: boolean
   endsBinaryExpression: boolean
+  /** A `;` the source omits: searched with, but it has no width and is never printed. */
+  phantom?: true
 }
 
 // LLVM style as the project configures it. The generator formats members of a
 // struct, so a declaration starts one indent in and its limit counts that.
 // Penalties are LLVM's defaults; clang-format picks the cheapest set of breaks.
 const INDENT = 2
+const CXX: Dialect = { language: 'cxx', indent: INDENT, pointer: 'left', omitsTerminator: false }
+const C: Dialect = { language: 'c', indent: 0, pointer: 'right', omitsTerminator: true }
 const CONTINUATION = 4
 const PENALTY_RETURN_TYPE = 60
 const PENALTY_ASSIGNMENT = 2
@@ -72,12 +96,18 @@ const TYPE_KEYWORDS = new Set(['bool', 'char', 'char8_t', 'char16_t', 'char32_t'
 const NON_KEYWORD_TYPES = new Set(['clock_t', 'int16_t', 'int32_t', 'int64_t', 'int8_t', 'intptr_t', 'ptrdiff_t', 'size_t', 'time_t', 'uint16_t', 'uint32_t', 'uint64_t', 'uint8_t', 'uintptr_t'])
 const SPECIFIERS = new Set(['friend', 'inline', 'virtual', 'constexpr', 'consteval', 'explicit'])
 const SUPPORTED_PUNCTUATION = new Set(['(', ')', '[', ']', '{', '}', '<', '>', ',', ';', '=', '&', '&&', '||', '*', '!', '~', '::', '->', '...'])
+// A C declarator is a type, a name, pointers, arrays and a parameter list; nothing else is read.
+const C_KEYWORDS = new Set([
+  'auto', 'char', 'const', 'double', 'enum', 'extern', 'float', 'inline', 'int', 'long', 'register', 'restrict', 'short',
+  'signed', 'sizeof', 'static', 'struct', 'typedef', 'union', 'unsigned', 'void', 'volatile',
+])
+const C_PUNCTUATION = new Set(['(', ')', '[', ']', ',', ';', '*', '...'])
 
 function unsupported(raw: string, why: string): never {
-  throw new Error(`Unsupported C++ callable header grammar (${why}): ${raw}`)
+  throw new Error(`Unsupported C or C++ callable header grammar (${why}): ${raw}`)
 }
 
-function lex(raw: string): Tok[] {
+function lex(raw: string, dialect: Dialect): Tok[] {
   const tokens: Tok[] = []
   const pattern = /\s+|(?<identifier>[A-Za-z_]\w*)|(?<number>\d(?:[eEpP][+-]|[\w.'])*)|(?<string>(?:u8|u|U|L)?(?:"(?:\\[\s\S]|[^"\\\n])*"|'(?:\\[\s\S]|[^'\\\n])*'))|(?<punct>\.\.\.|->\*|<=>|->|::|&&|\|\||==|!=|<=|<<|[-+*/%^|&~!=<>,;:.?#()[\]{}@\\`$])/y
   let at = 0
@@ -89,10 +119,10 @@ function lex(raw: string): Tok[] {
     const text = match[0]
     if (/^\s/.test(text)) continue
     const groups = match.groups!
-    const kind: Kind = groups.identifier !== undefined ? (KEYWORDS.has(text) ? 'keyword' : 'identifier')
+    const kind: Kind = groups.identifier !== undefined ? ((dialect.language === 'c' ? C_KEYWORDS : KEYWORDS).has(text) ? 'keyword' : 'identifier')
       : groups.number !== undefined ? 'number' : groups.string !== undefined ? 'string' : 'punct'
-    if (kind === 'punct' && !SUPPORTED_PUNCTUATION.has(text)) unsupported(raw, `operator ${text}`)
-    if (text === 'operator') unsupported(raw, 'operator overload')
+    if (kind === 'punct' && !(dialect.language === 'c' ? C_PUNCTUATION : SUPPORTED_PUNCTUATION).has(text)) unsupported(raw, `operator ${text}`)
+    if (text === 'operator' && dialect.language === 'cxx') unsupported(raw, 'operator overload')
     tokens.push({
       index: tokens.length, text, kind, start: match.index, end: match.index + text.length, type: 'unknown',
       parentBracket: '', nesting: 0, binding: 1, spaces: 0, mustBreak: false, canBreak: false, splitPenalty: 0,
@@ -136,7 +166,7 @@ function precedence(token: Tok): number {
 const isBinaryOperatorKind = (token: Tok): boolean => precedence(token) > 1
 
 /** Match brackets, assign nesting and binding strength, and tell template angles from comparisons. */
-function structure(raw: string, tokens: Tok[]): void {
+function structure(raw: string, tokens: Tok[], dialect: Dialect): void {
   const stack: { open?: Tok; strength: number }[] = [{ strength: 1 }]
   for (const token of tokens) {
     const top = stack.at(-1)!
@@ -160,7 +190,7 @@ function structure(raw: string, tokens: Tok[]): void {
     }
     if (token.text === '(' || token.text === '{') stack.push({ open: token, strength: top.strength + 1 })
     else if (token.text === '[') {
-      if (token.next?.text !== '[' && token.prev?.text !== '[') unsupported(raw, 'array declarator')
+      if (dialect.language === 'cxx' && token.next?.text !== '[' && token.prev?.text !== '[') unsupported(raw, 'array declarator')
       stack.push({ open: token, strength: top.strength + 1 })
     } else if (token.text === '<') {
       if (token.prev?.kind !== 'identifier' && token.prev?.text !== 'template') unsupported(raw, 'comparison')
@@ -215,6 +245,8 @@ interface Declaration {
   virtual: boolean
   /** The opening parenthesis of the parameter list. */
   open: Tok
+  /** The identifier a declaration introduces, when it is not the token before `open`. */
+  name?: Tok
 }
 
 /** Qualifiers such as `A::` or `A<T>::` at the start of a name, as clang's skipNameQualifier. */
@@ -331,7 +363,7 @@ function starAmpType(raw: string, token: Tok, context: Context): TokenType {
 }
 
 /** Token types, in the order clang's AnnotatingParser assigns them. */
-function classify(raw: string, tokens: Tok[]): Declaration {
+function classify(raw: string, tokens: Tok[], dialect: Dialect): Declaration {
   let headerEnd = 0
   while (tokens[headerEnd]?.text === 'template') {
     const open = tokens[headerEnd + 1]
@@ -349,9 +381,18 @@ function classify(raw: string, tokens: Tok[]): Declaration {
     requires.push([token.index, last])
   }
   const inRequires = (token: Tok) => requires.some(([from, to]) => token.index >= from && token.index <= to)
-  const open = tokens.find((token) => token.text === '(' && token.nesting === 0 && !inRequires(token) &&
+  let open = tokens.find((token) => token.text === '(' && token.nesting === 0 && !inRequires(token) &&
     !is(token.prev, 'decltype', 'alignas', 'explicit', 'sizeof', 'typeid', 'noexcept'))
   if (!open) unsupported(raw, 'no parameter list')
+  let declared: Tok | undefined
+  if (dialect.language === 'c' && open.next?.text === '*') {
+    // A function-pointer declarator, `(*name)(parameters)`: the name is inside and the parameter list follows it.
+    const list = open.matching!.next
+    const name: Tok | undefined = open.matching!.prev
+    if (name?.kind !== 'identifier' || list?.text !== '(' || !list.matching) unsupported(raw, 'function-pointer declarator')
+    declared = name
+    open = list
+  }
   const close = open.matching!
   let autoFound = false
   const contexts: Context[] = [{ isExpression: false, templateArgument: false }]
@@ -363,6 +404,7 @@ function classify(raw: string, tokens: Tok[]): Declaration {
     const after = tokens[1]!.matching?.next
     return after !== undefined && !is(after, 'class', 'enum', 'struct', 'using')
   }
+  if (dialect.language === 'c') for (const token of tokens) if (token.text === '(' && token.next?.text === '*') token.type = 'functionTypeLParen'
   for (const token of tokens) {
     const context = contexts.at(-1)!
     const trailing = token.index > close.index
@@ -380,7 +422,7 @@ function classify(raw: string, tokens: Tok[]): Declaration {
       else if (token.text === '->') {
         if (!(autoFound && trailing && token.nesting === 0 && token.prev && token.prev.kind !== 'identifier')) unsupported(raw, 'member access')
         token.type = 'trailingReturnArrow'
-      } else if (isPointerOrReferenceKind(token)) token.type = starAmpType(raw, token, context)
+      } else if (isPointerOrReferenceKind(token)) token.type = dialect.language === 'c' ? 'pointerOrReference' : starAmpType(raw, token, context)
       else if (is(token, '!', '~')) token.type = 'unaryOperator'
       else if (is(token, '=', '&&', '||')) token.type = 'binaryOperator'
       else if ((token.kind === 'identifier' || is(token, 'const', 'noexcept', 'requires')) && token.prev && !is(token.prev, '=', '@') && trailing && token.nesting === 0) token.type = 'trailingAnnotation'
@@ -397,11 +439,11 @@ function classify(raw: string, tokens: Tok[]): Declaration {
     else if (token.text === '[') contexts.push({ open: token, isExpression: false, templateArgument: false })
   }
   // A constructor with a requires clause is not recognised by clang-format and keeps no name role.
-  const constructor = constructorName(tokens)
+  const constructor = dialect.language === 'cxx' ? constructorName(tokens) : undefined
   if (constructor) {
     constructor.name.type = 'ctorDtorDeclName'
     constructor.open.type = 'functionDeclarationLParen'
-  } else {
+  } else if (!declared) {
     for (const token of tokens.slice(1)) {
       const found = startsFunctionName(token)
       if (!found) continue
@@ -410,11 +452,11 @@ function classify(raw: string, tokens: Tok[]): Declaration {
       break
     }
   }
-  return { tokens, virtual: tokens.some((token) => token.text === 'virtual' && token.nesting === 0), open }
+  return { tokens, virtual: tokens.some((token) => token.text === 'virtual' && token.nesting === 0), open, name: declared }
 }
 
 /** TokenAnnotator::spaceRequiredBefore for the tokens a declaration contains. */
-function spaceRequiredBefore(right: Tok): boolean {
+function spaceRequiredBefore(right: Tok, dialect: Dialect): boolean {
   const left = right.prev!
   if (isWordLike(left) && isWordLike(right)) return true
   if (left.text === '{' && right.text === '}') return false
@@ -431,10 +473,10 @@ function spaceRequiredBefore(right: Tok): boolean {
   if ((left.type === 'templateOpener') !== (right.type === 'templateCloser')) return false
   if (left.text === ')' && left.type !== 'typeDeclarationParen' && right.type === 'pointerOrReference' && is(right, '&', '&&')) return true
   if ((right.type === 'binaryOperator' && left.text !== '(') || (left.type === 'binaryOperator' && right.text !== ')')) return true
-  return spaceRequiredBetween(left, right)
+  return spaceRequiredBetween(left, right, dialect)
 }
 
-function spaceRequiredBetween(left: Tok, right: Tok): boolean {
+function spaceRequiredBetween(left: Tok, right: Tok, dialect: Dialect): boolean {
   if (left.text === '(' || right.text === ')') return false
   if (is(right, ';', ',')) return false
   if (right.text === '<' && left.text === 'template') return true
@@ -442,13 +484,20 @@ function spaceRequiredBetween(left: Tok, right: Tok): boolean {
   if (left.text === '::') return false
   if (left.text === '<' || is(right, '>', '<')) return false
   if (right.text === '...') return isLiteral(left)
-  if (right.type === 'pointerOrReference') return (left.text === ')' && left.type !== 'typeDeclarationParen') || isLiteral(left)
+  if (right.type === 'pointerOrReference') {
+    if (isLiteral(left)) return true
+    // Right alignment puts the space before the first `*` and none between stars or after `(`.
+    if (dialect.pointer === 'right') return left.type !== 'pointerOrReference' && left.text !== '('
+    return left.text === ')' && left.type !== 'typeDeclarationParen'
+  }
   if (left.type === 'pointerOrReference') {
     if (isLiteral(right)) return true
     if (is(right, 'noexcept') || right.type === 'requiresClause' || (right.kind === 'identifier' && is(right, 'override', 'final'))) return right.type !== 'startOfName'
     if (right.text === '(') return false
-    return left.prev !== undefined && !is(left.prev, '(', '[')
+    return dialect.pointer === 'left' && left.prev !== undefined && !is(left.prev, '(', '[')
   }
+  // `void (*name)(...)`: the declarator's parenthesis follows the type like a name does.
+  if (right.type === 'functionTypeLParen') return true
   if (left.text === '...' && isPointerOrReferenceKind(left.prev)) return true
   if (left.text === '[' || right.text === ']') return false
   if (right.text === '[' && right.type !== 'attributeLSquare') return false
@@ -467,9 +516,15 @@ function mustBreakBefore(right: Tok): boolean {
 }
 
 /** TokenAnnotator::canBreakBefore for the tokens a declaration contains. */
-function canBreakBefore(declaration: Declaration, right: Tok): boolean {
+function canBreakBefore(declaration: Declaration, right: Tok, dialect: Dialect): boolean {
   const left = right.prev!
-  if (right.text === '}' || right.text === ')' || right.type === 'templateCloser' || right.type === 'pointerOrReference') return false
+  if (right.text === '}' || right.text === ')' || right.type === 'templateCloser') return false
+  // A right-aligned `*` is part of the name that follows it, so the line may end before it. It stays
+  // with a qualifier it is written beside, and with a function's name.
+  if (right.type === 'pointerOrReference') {
+    return dialect.pointer === 'right' && !(right.next && qualifiesPointer(right.next)) &&
+      right.next?.type !== 'functionDeclarationName' && right.next?.type !== 'functionTypeLParen'
+  }
   if (right.type === 'startOfName' || right.type === 'functionDeclarationName') return true
   if (left.type === 'pointerOrReference') return false
   if (right.type === 'requiresClause') return true
@@ -588,15 +643,21 @@ function parseExpressions(declaration: Declaration): void {
   parse()
 }
 
-function annotate(raw: string): Declaration {
-  const tokens = lex(raw)
+function annotate(raw: string, dialect: Dialect): Declaration {
+  const terminated = raw.trimEnd().endsWith(';')
+  const tokens = lex(dialect.omitsTerminator && !terminated ? `${raw.trimEnd()};` : raw, dialect)
   if (tokens.at(-1)?.text !== ';') unsupported(raw, 'missing terminating semicolon')
-  structure(raw, tokens)
-  const declaration = classify(raw, tokens)
+  if (dialect.omitsTerminator && !terminated) {
+    const terminator = tokens.at(-1)!
+    terminator.phantom = true
+    terminator.end = terminator.start
+  }
+  structure(raw, tokens, dialect)
+  const declaration = classify(raw, tokens, dialect)
   for (const token of tokens.slice(1)) {
-    token.spaces = spaceRequiredBefore(token) ? 1 : 0
+    token.spaces = spaceRequiredBefore(token, dialect) ? 1 : 0
     token.mustBreak = mustBreakBefore(token)
-    token.canBreak = token.mustBreak || canBreakBefore(declaration, token)
+    token.canBreak = token.mustBreak || canBreakBefore(declaration, token, dialect)
     token.splitPenalty = splitPenalty(token) + 20 * token.binding
   }
   parseExpressions(declaration)
@@ -711,7 +772,8 @@ class Indenter {
     if (previous.text === ',' && top.variablePos !== 0) return top.variablePos
     if (current.type === 'requiresClause') return top.indent + INDENT
     if (previous.closesTemplate || previous.closesRequires || previous.type === 'attributeRSquare' || current.type === 'functionDeclarationName') return Math.max(top.lastSpace, top.indent)
-    if (current.type === 'startOfName' || current.type === 'pointerOrReference' || is(previous, '::', '=')) return continuation
+    // A `*` that opens a function-pointer declarator is the first token after `(`, not a continuation.
+    if (current.type === 'startOfName' || (current.type === 'pointerOrReference' && previous.text !== '(') || is(previous, '::', '=')) return continuation
     if (previous.text === ')' && !isBinaryOperatorKind(current) && current.text !== ':') return continuation
     if (top.indent === this.firstIndent && !is(previous, '}')) return top.indent + CONTINUATION
     return top.indent
@@ -951,34 +1013,42 @@ interface Formatted {
   offsets: number[]
 }
 
-function format(raw: string, columns: number): Formatted {
-  const declaration = annotate(raw)
+function format(raw: string, columns: number, dialect: Dialect): Formatted {
+  const declaration = annotate(raw, dialect)
   // A declaration that fits keeps one line; the search only runs for the rest.
   const length = declaration.tokens.reduce((total, token) => total + width(token) + (token.index ? token.spaces : 0), 0)
   const fits = !declaration.tokens.some((token) => token.mustBreak) && length <= columns
   const breaks = new Map<number, number>()
   if (!fits) {
-    for (let node: Node | undefined = solve(raw, declaration, columns + INDENT, INDENT); node?.token; node = node.parent) {
-      if (node.newline) breaks.set(node.token.index, node.indent - INDENT)
+    for (let node: Node | undefined = solve(raw, declaration, columns + dialect.indent, dialect.indent); node?.token; node = node.parent) {
+      if (node.newline) breaks.set(node.token.index, node.indent - dialect.indent)
     }
   }
   let text = ''
   const offsets: number[] = []
   for (const token of declaration.tokens) {
+    // The terminator is the last token and takes no space or line of its own.
+    if (token.phantom) { offsets.push(text.length); continue }
     if (token.index) text += breaks.has(token.index) ? `\n${' '.repeat(breaks.get(token.index)!)}` : ' '.repeat(token.spaces)
     offsets.push(text.length)
     text += token.text
   }
-  const again = lex(text)
-  if (again.length !== declaration.tokens.length || again.some((token, index) => token.text !== declaration.tokens[index]!.text)) {
-    throw new Error(`Formatting changed C++ callable header grammar: ${raw}`)
+  const written = declaration.tokens.filter((token) => !token.phantom)
+  const again = lex(text, dialect)
+  if (again.length !== written.length || again.some((token, index) => token.text !== written[index]!.text)) {
+    throw new Error(`Formatting changed ${dialect.language === 'c' ? 'C' : 'C++'} callable header grammar: ${raw}`)
   }
   return { declaration, text, offsets }
 }
 
 /** Format one declaration as clang-format does at `columns` printed columns. */
 export function formatCxxDeclaration(raw: string, columns: number): string {
-  return format(raw, columns).text
+  return format(raw, columns, CXX).text
+}
+
+/** Format one C declaration as clang-format does at `columns` printed columns, with tmux's pointer spacing. */
+export function formatCDeclaration(raw: string, columns: number): string {
+  return format(raw, columns, C).text
 }
 
 /** Items of the bracket pair `open` encloses, split at its top-level commas. */
@@ -996,28 +1066,35 @@ function items(open: Tok): Tok[][] {
 function declaredName(item: Tok[]): Tok | undefined {
   const end = item.findIndex((token) => token.text === '=' && token.nesting === item[0]!.nesting)
   const parts = end === -1 ? item : item.slice(0, end)
+  // A function-pointer parameter is named inside its declarator: `void (*name)(int)`.
+  const declarator = parts.find((token) => token.type === 'functionTypeLParen')
+  if (declarator) return declarator.matching?.prev?.kind === 'identifier' ? declarator.matching.prev : undefined
   const last = parts.at(-1)
-  return parts.length > 1 && last?.kind === 'identifier' && !is(last.prev, '::', '<') ? last : undefined
+  // `struct session` names a type, not a parameter.
+  return parts.length > 1 && last?.kind === 'identifier' && !is(last.prev, '::', '<', 'struct', 'enum', 'union') ? last : undefined
 }
 
 /** Source ranges that are declarations or syntax rather than references, in output coordinates. */
-function syntaxRanges(symbol: ApiSymbol, signature: Signature, { declaration, offsets }: Formatted): CodeSyntax[] {
+function syntaxRanges(symbol: ApiSymbol, signature: Signature, { declaration, offsets }: Formatted, dialect: Dialect): CodeSyntax[] {
   const raw = signature.raw!
   const claimed = new Map<Tok, CodeSyntax>()
   const claim = (from: Tok, to: Tok, syntax: { kind: 'name' | 'literal' } | { kind: 'parameter'; parameter: number }) => {
     const range = { start: offsets[from.index]!, end: offsets[to.index]! + width(to), ...syntax }
     for (let token: Tok | undefined = from; token; token = token === to ? undefined : token.next) claimed.set(token, range)
   }
-  const declared = declaration.open.prev
+  const declared = declaration.name ?? declaration.open.prev
   if (declared?.kind !== 'identifier') return unsupported(raw, 'declaration name')
   const nameStart = declared.prev?.text === '~' ? declared.prev : declared
   const spelling = raw.slice(nameStart.start, declared.end)
-  if (spelling !== symbol.name) throw new Error(`C++ declaration name does not match ${symbol.id}: ${spelling}`)
+  const language = dialect.language === 'c' ? 'C' : 'C++'
+  if (spelling !== symbol.name) throw new Error(`${language} declaration name does not match ${symbol.id}: ${spelling}`)
   claim(nameStart, declared, { kind: 'name' })
 
   let parameters = items(declaration.open)
   if (parameters.length === 1 && parameters[0]!.length === 1 && parameters[0]![0]!.text === 'void') parameters = []
-  if (parameters.length !== signature.params.length) throw new Error(`C++ parameter list does not match ${symbol.id}: ${raw}`)
+  // The model lists the parameters of a function; a function-pointer typedef or member has none to bind.
+  if (dialect.language === 'c' && symbol.kind !== 'function') parameters = []
+  else if (parameters.length !== signature.params.length) throw new Error(`${language} parameter list does not match ${symbol.id}: ${raw}`)
   parameters.forEach((item, parameter) => {
     const name = declaredName(item)
     // An unnamed parameter keeps the model's spelling of its type as its label.
@@ -1040,16 +1117,58 @@ function syntaxRanges(symbol: ApiSymbol, signature: Signature, { declaration, of
 
 const layouts = new Map<string, Promise<CodeLayout>>()
 
-/** Lay out one C++ declaration at the API budget, keeping its source tokens and roles. */
-export function cxxSignatureLayout(symbol: ApiSymbol, signature: Signature): Promise<CodeLayout> {
-  const key = JSON.stringify([symbol.name, signature.raw, signature.params.map((param) => param.name), CODE_COLUMNS.api])
+function signatureLayout(symbol: ApiSymbol, signature: Signature, dialect: Dialect): Promise<CodeLayout> {
+  const key = JSON.stringify([dialect.language, symbol.kind, symbol.name, signature.raw, signature.params.map((param) => param.name), CODE_COLUMNS.api])
   let pending = layouts.get(key)
   if (!pending) {
     pending = (async () => {
-      const formatted = format(signature.raw!, CODE_COLUMNS.api)
-      return { text: formatted.text, limit: CODE_COLUMNS.api, failures: await codeWidthFailures(formatted.text, 'api'), syntax: syntaxRanges(symbol, signature, formatted) }
+      const formatted = format(signature.raw!, CODE_COLUMNS.api, dialect)
+      return { text: formatted.text, limit: CODE_COLUMNS.api, failures: await codeWidthFailures(formatted.text, 'api'), syntax: syntaxRanges(symbol, signature, formatted, dialect) }
     })()
     layouts.set(key, pending)
   }
   return pending
 }
+
+/** Lay out one C++ declaration at the API budget, keeping its source tokens and roles. */
+export function cxxSignatureLayout(symbol: ApiSymbol, signature: Signature): Promise<CodeLayout> {
+  return signatureLayout(symbol, signature, CXX)
+}
+
+/**
+ * An enum that fits stays one line. One that does not takes a line per
+ * enumerator, as clang-format breaks a braced enum.
+ */
+function formatCEnum(raw: string, columns: number): { text: string; tag?: { start: number; end: number } } {
+  const parts = cEnumParts(raw)
+  if (!parts) return unsupported(raw, 'enumerator')
+  const head = `enum${parts.tag ? ` ${parts.tag}` : ''}`
+  const end = parts.terminated ? ';' : ''
+  const tag = parts.tag ? { start: 'enum '.length, end: 'enum '.length + parts.tag.length } : undefined
+  const line = `${head} { ${parts.items.join(', ')} }${end}`
+  return line.length <= columns ? { text: line, tag } : { text: `${head} {\n${parts.items.map((item) => `  ${item}`).join(',\n')}\n}${end}`, tag }
+}
+
+/** Format one C enum as clang-format does at `columns` printed columns. */
+export function formatCEnumDeclaration(raw: string, columns: number): string {
+  return formatCEnum(raw, columns).text
+}
+
+/** Lay out one C declaration the same way, in tmux's own pointer spacing. */
+export function cSignatureLayout(symbol: ApiSymbol, signature: Signature): Promise<CodeLayout> {
+  if (symbol.kind !== 'enum') return signatureLayout(symbol, signature, C)
+  const key = JSON.stringify(['enum', symbol.name, signature.raw, CODE_COLUMNS.api])
+  let pending = layouts.get(key)
+  if (!pending) {
+    pending = (async () => {
+      const { text, tag } = formatCEnum(signature.raw!, CODE_COLUMNS.api)
+      // An anonymous enum has no tag to name.
+      const name = tag && symbol.name === text.slice(tag.start, tag.end) ? tag : undefined
+      return { text, limit: CODE_COLUMNS.api, failures: await codeWidthFailures(text, 'api'),
+        syntax: name ? [{ ...name, kind: 'name' as const }] : [] }
+    })()
+    layouts.set(key, pending)
+  }
+  return pending
+}
+

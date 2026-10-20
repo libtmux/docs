@@ -35,8 +35,16 @@ export interface ExcerptRequest {
   to?: string
 }
 
-const matching = (lines: readonly string[], anchor: string) =>
-  lines.flatMap((line, index) => line.includes(anchor) ? [index] : [])
+/**
+ * Lines that match an anchor. Text matches any line that contains it; text
+ * after a leading `=` matches only a line equal to it, indentation included,
+ * which names a closing `}` or `fi` at the depth of the block it ends. `\t`
+ * in that text stands for a tab.
+ */
+const matching = (lines: readonly string[], anchor: string) => {
+  const exact = anchor.startsWith('=') ? anchor.slice(1).replaceAll('\\t', '\t') : undefined
+  return lines.flatMap((line, index) => (exact === undefined ? line.includes(anchor) : line === exact) ? [index] : [])
+}
 
 /** Leading whitespace shared by every non-blank line. */
 function commonIndent(lines: readonly string[]): string {
@@ -61,7 +69,7 @@ function commonIndent(lines: readonly string[]): string {
  *
  * `from` must match exactly one line. `to` ends the range at its first match
  * after `from`, so a block can end at a closing line such as `fi` or `}` that
- * the file repeats.
+ * the file repeats; `to="=  }"` names the closer at that indentation.
  */
 export function sliceExcerpt(source: string, { from, to }: ExcerptRequest, label: string): string {
   if (!from) throw new ExcerptError(`${label}: empty from anchor`)

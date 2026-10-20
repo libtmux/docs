@@ -149,6 +149,13 @@
   },
   {
    "port": "csharp",
+   "symbol": "LibTmux.Pane",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
    "symbol": "LibTmux.Pane.CaptureAsync",
    "page": "/csharp/latest/guides/capturing-output/",
    "title": "Capturing output",
@@ -233,6 +240,13 @@
   },
   {
    "port": "csharp",
+   "symbol": "LibTmux.PaneRunResult",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
    "symbol": "LibTmux.PaneRunResult.AnchorLost",
    "page": "/powershell/latest/guides/input/",
    "title": "Send input to a pane",
@@ -271,6 +285,13 @@
    "symbol": "LibTmux.PaneWaitOutcome.TimedOut",
    "page": "/powershell/latest/guides/input/",
    "title": "Send input to a pane",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.PaneWaitResult",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -454,6 +475,13 @@
    "page": "/csharp/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Session",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "csharp",
@@ -842,6 +870,13 @@
   },
   {
    "port": "csharp",
+   "symbol": "LibTmux.Window",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
    "symbol": "LibTmux.Window.ActivePane",
    "page": "/csharp/latest/topics/traversal/",
    "title": "Traversal",
@@ -906,9 +941,23 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.Workspace.WorkspaceActionKind.CaptureResult",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceActionKind.CaptureResult",
    "page": "/powershell/latest/workspace/source-guide/",
    "title": "Workspace guide",
    "section": "workspace"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceActionKind.CreateSession",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "csharp",
@@ -1073,6 +1122,13 @@
   },
   {
    "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceFile",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
    "symbol": "LibTmux.Workspace.WorkspaceFile.Parse",
    "page": "/csharp/latest/workspace/internals/",
    "title": "C# workspace internals",
@@ -1196,6 +1252,13 @@
    "page": "/csharp/latest/workspace/reference/",
    "title": "C# workspace builder API",
    "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceResult",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "csharp",
@@ -3286,6 +3349,13 @@
   {
    "port": "go",
    "symbol": "tmux.CapturePaneRequest",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.CapturePaneRequest",
    "page": "/go/latest/guides/capturing-output/",
    "title": "Capturing output",
    "section": "guides"
@@ -3391,6 +3461,20 @@
   {
    "port": "go",
    "symbol": "tmux.NewServer",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.NewServer",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.NewServer",
    "page": "/go/latest/mcp/examples/inspect-sessions/",
    "title": "List sessions through MCP",
    "section": "ports"
@@ -3408,6 +3492,34 @@
    "page": "/go/latest/topics/environment/",
    "title": "Environment",
    "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.NewSessionRequest",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.NewSessionRequest.Environment",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.NewSessionRequest.WindowName",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.NewWindowRequest.Name",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
   },
   {
    "port": "go",
@@ -3433,9 +3545,23 @@
   {
    "port": "go",
    "symbol": "tmux.Pane",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Pane",
    "page": "/go/latest/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Pane.Capture",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
   },
   {
    "port": "go",
@@ -3503,6 +3629,13 @@
   {
    "port": "go",
    "symbol": "tmux.Pane.OpenObservation",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Pane.OpenObservation",
    "page": "/go/latest/topics/pane-interaction/",
    "title": "Pane interaction",
    "section": "topics"
@@ -3524,6 +3657,13 @@
   {
    "port": "go",
    "symbol": "tmux.Pane.SendKeys",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Pane.SendKeys",
    "page": "/go/latest/guides/sending-keys/",
    "title": "Sending keys",
    "section": "guides"
@@ -3534,6 +3674,13 @@
    "page": "/go/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Pane.Writer",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
   },
   {
    "port": "go",
@@ -3559,9 +3706,23 @@
   {
    "port": "go",
    "symbol": "tmux.PaneObservation",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.PaneObservation",
    "page": "/go/latest/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.PaneObservation.Reader",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
   },
   {
    "port": "go",
@@ -3587,9 +3748,37 @@
   {
    "port": "go",
    "symbol": "tmux.SendKeysRequest",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.SendKeysRequest",
    "page": "/go/latest/guides/sending-keys/",
    "title": "Sending keys",
    "section": "guides"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.SendKeysRequest.Command",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.SendKeysRequest.Literal",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.SendKeysRequest.SkipEnter",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
   },
   {
    "port": "go",
@@ -3650,6 +3839,13 @@
   {
    "port": "go",
    "symbol": "tmux.Server.Kill",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Server.Kill",
    "page": "/go/latest/mcp/examples/inspect-sessions/",
    "title": "List sessions through MCP",
    "section": "ports"
@@ -3678,6 +3874,20 @@
   {
    "port": "go",
    "symbol": "tmux.Server.NewSession",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Server.NewSession",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Server.NewSession",
    "page": "/go/latest/mcp/examples/inspect-sessions/",
    "title": "List sessions through MCP",
    "section": "ports"
@@ -3688,6 +3898,13 @@
    "page": "/go/latest/concepts/server-session-window-pane/",
    "title": "Server, session, window, pane",
    "section": "concepts"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Server.Panes",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
   },
   {
    "port": "go",
@@ -3768,6 +3985,27 @@
   },
   {
    "port": "go",
+   "symbol": "tmux.ServerOptions",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.ServerOptions",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.ServerOptions.ConfigFile",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "go",
    "symbol": "tmux.ServerOptions.SocketName",
    "page": "/go/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
@@ -3776,9 +4014,30 @@
   {
    "port": "go",
    "symbol": "tmux.ServerOptions.SocketPath",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.ServerOptions.SocketPath",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.ServerOptions.SocketPath",
    "page": "/go/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Session",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
   },
   {
    "port": "go",
@@ -3803,10 +4062,24 @@
   },
   {
    "port": "go",
+   "symbol": "tmux.Session.Kill",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
+  },
+  {
+   "port": "go",
    "symbol": "tmux.Session.NewWindow",
    "page": "/go/latest/concepts/server-session-window-pane/",
    "title": "Server, session, window, pane",
    "section": "concepts"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Session.NewWindow",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
   },
   {
    "port": "go",
@@ -3821,6 +4094,13 @@
    "page": "/go/latest/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Session.Panes",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
   },
   {
    "port": "go",
@@ -3950,6 +4230,13 @@
   },
   {
    "port": "go",
+   "symbol": "tmux.SplitPaneRequest.Command",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
+  },
+  {
+   "port": "go",
    "symbol": "tmux.TmuxFilter",
    "page": "/go/latest/concepts/queries/",
    "title": "Filtering and queries",
@@ -3982,6 +4269,13 @@
    "page": "/go/latest/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Window",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
   },
   {
    "port": "go",
@@ -4038,6 +4332,13 @@
    "page": "/go/latest/concepts/server-session-window-pane/",
    "title": "Server, session, window, pane",
    "section": "concepts"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Window.SplitPane",
+   "page": "/go/latest/examples/attach-and-send-keys/",
+   "title": "Attach and send keys",
+   "section": "examples"
   },
   {
    "port": "go",
@@ -7646,10 +7947,24 @@
   },
   {
    "port": "powershell",
+   "symbol": "LibTmux.Workspace\\ConvertTo-TmuxWorkspace",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
    "symbol": "LibTmux.Workspace\\ConvertTo-TmuxWorkspaceJson",
    "page": "/powershell/latest/workspace/source-guide/",
    "title": "Workspace guide",
    "section": "workspace"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux.Workspace\\Get-TmuxWorkspace",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "powershell",
@@ -7661,9 +7976,30 @@
   {
    "port": "powershell",
    "symbol": "LibTmux.Workspace\\Get-TmuxWorkspacePlan",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux.Workspace\\Get-TmuxWorkspacePlan",
    "page": "/powershell/latest/workspace/source-guide/",
    "title": "Workspace guide",
    "section": "workspace"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux.Workspace\\Import-TmuxWorkspace",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux.Workspace\\Invoke-TmuxWorkspace",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "powershell",
@@ -7674,10 +8010,31 @@
   },
   {
    "port": "powershell",
+   "symbol": "LibTmux.Workspace\\Resolve-TmuxWorkspace",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux.Workspace\\Test-TmuxWorkspace",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
    "symbol": "LibTmux.Workspace\\Test-TmuxWorkspace",
    "page": "/powershell/latest/workspace/source-guide/",
    "title": "Workspace guide",
    "section": "workspace"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Connect-TmuxControl",
+   "page": "/powershell/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
   },
   {
    "port": "powershell",
@@ -7745,6 +8102,13 @@
   {
    "port": "powershell",
    "symbol": "LibTmux\\Disconnect-TmuxControl",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Disconnect-TmuxControl",
    "page": "/powershell/latest/topics/ownership/",
    "title": "Ownership and cleanup",
    "section": "topics"
@@ -7796,6 +8160,13 @@
    "symbol": "LibTmux\\Get-TmuxPaneContent",
    "page": "/powershell/latest/guides/capture/",
    "title": "Capture, refresh and raw commands",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Get-TmuxPaneContent",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -7922,6 +8293,13 @@
    "symbol": "LibTmux\\Invoke-TmuxControlCommand",
    "page": "/powershell/latest/guides/commands/",
    "title": "Commands and control clients",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Invoke-TmuxControlCommand",
+   "page": "/powershell/latest/guides/compatibility/",
+   "title": "Compatibility",
    "section": "guides"
   },
   {
@@ -8059,9 +8437,23 @@
   },
   {
    "port": "powershell",
+   "symbol": "LibTmux\\New-TmuxSession",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
    "symbol": "LibTmux\\New-TmuxWindow",
    "page": "/powershell/latest/guides/create/",
    "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\New-TmuxWindow",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -8091,6 +8483,13 @@
    "page": "/powershell/latest/examples/wait-for-service/",
    "title": "Wait for a service",
    "section": "examples"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Remove-TmuxSession",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "powershell",
@@ -8143,6 +8542,20 @@
   },
   {
    "port": "powershell",
+   "symbol": "LibTmux\\Select-TmuxWindow",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Send-TmuxKey",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
    "symbol": "LibTmux\\Send-TmuxKey",
    "page": "/powershell/latest/guides/input/",
    "title": "Send input to a pane",
@@ -8154,6 +8567,13 @@
    "page": "/powershell/latest/topics/execution/",
    "title": "Dispatch, completion, and failure",
    "section": "topics"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Send-TmuxText",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "powershell",
@@ -8178,6 +8598,13 @@
   },
   {
    "port": "powershell",
+   "symbol": "LibTmux\\Split-TmuxPane",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
    "symbol": "LibTmux\\Update-TmuxPane",
    "page": "/powershell/latest/guides/capture/",
    "title": "Capture, refresh and raw commands",
@@ -8188,6 +8615,13 @@
    "symbol": "LibTmux\\Update-TmuxPane",
    "page": "/powershell/latest/guides/read/",
    "title": "Read tmux objects",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Wait-TmuxChannel",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -8224,6 +8658,13 @@
    "page": "/powershell/latest/topics/observations/",
    "title": "Watching output and state",
    "section": "topics"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Watch-TmuxEvent",
+   "page": "/powershell/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
   },
   {
    "port": "powershell",

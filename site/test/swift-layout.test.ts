@@ -5,10 +5,12 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { experimental_AstroContainer } from 'astro/container'
 import { parameterId, SymbolIndex, type ApiModel, type ApiSymbol, type Param } from '@libtmux/api-model'
 import { fromMarkdown } from 'mdast-util-from-markdown'
-import { apiSignatureLayouts, CODE_COLUMNS, codeWidthFailures, signatureSpans, type CodeLayout } from '../src/lib/code-layout'
+import { apiSignatureLayouts, CODE_COLUMNS, codeWidthFailures, signatureSpans, typeLayout, type CodeLayout, type SpanLayout } from '../src/lib/code-layout'
 import { nativeSignatureText, usesNativeSignatures } from '../src/lib/api-sections'
-import { formatSwiftHead } from '../src/lib/swift-code-layout'
+import { formatSwiftHead, swiftTypeLayout } from '../src/lib/swift-code-layout'
 import { symbolMarkdownWithLayout } from '../src/lib/symbol-markdown'
+import { referenceTree } from '../src/lib/api-tree'
+import { symbolPreview } from '../src/lib/link-preview'
 
 const astroRequire = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
 afterEach(() => vi.unstubAllGlobals())
@@ -48,8 +50,13 @@ const layoutOf = async (symbol: ApiSymbol, overload = 0): Promise<CodeLayout> =>
   return layout!
 }
 const modelSymbol = (id: string) => model.symbols.find((entry) => entry.id === id)!
+/** A Swift selector spells its labels, which the parameter list spells again; the declaration keeps the base name alone. */
+const baseName = (symbol: ApiSymbol) => {
+  const at = symbol.name.indexOf('(', 1)
+  return at < 0 ? symbol.name : symbol.name.slice(0, at)
+}
 const flat = (symbol: ApiSymbol, signature: ApiSymbol['signatures'][number]) =>
-  `${symbol.name}(${signature.params.map((param) => `${param.name}: ${param.type}`).join(', ')})${signature.returns ? ` -> ${signature.returns}` : ''}`
+  `${baseName(symbol)}(${signature.params.map((param) => `${param.name}: ${param.type}`).join(', ')})${signature.returns ? ` -> ${signature.returns}` : ''}`
 
 describe('Swift layouts reproduce pinned swift-format output', () => {
   it.each([...new Set(fixture.cases.map((entry) => `${entry.group}@${entry.columns}`))])('matches the %s cases', (selection) => {
@@ -93,8 +100,8 @@ describe('Swift callable layouts', () => {
         checked++
         expect(layout.limit).toBe(CODE_COLUMNS.api)
         expect(layout.failures, symbol.id).toEqual(await codeWidthFailures(layout.text, 'api'))
-        // Only the name and its opening parenthesis cannot be broken; everything after them can.
-        const nameFits = symbol.name.length + 1 <= CODE_COLUMNS.api
+        // Only the base name and its opening parenthesis cannot be broken; everything after them can.
+        const nameFits = baseName(symbol).length + 1 <= CODE_COLUMNS.api
         expect(layout.failures.length === 0, symbol.id).toBe(nameFits)
         if (!nameFits) expect(layout.failures.map((failure) => failure.line), symbol.id).toEqual([1])
         // Only whitespace changes, so tokens, punctuation and names stay intact.
@@ -114,7 +121,7 @@ describe('Swift callable layouts', () => {
         const layout = layouts.get(signature)!
         const spans = signatureSpans(layout, index, symbol, signature)
         expect(spans.map((span) => span.text).join(''), symbol.id).toBe(layout.text)
-        expect(spans.filter((span) => span.declarationName).map((span) => span.text), symbol.id).toEqual([symbol.name])
+        expect(spans.filter((span) => span.declarationName).map((span) => span.text), symbol.id).toEqual([baseName(symbol)])
         // Every parameter is listed, so each parameter name links to its own anchor.
         const anchors = new Set(signature.params.map((param) => `#${encodeURIComponent(parameterId(symbol, param.name))}`))
         const local = spans.filter((span) => span.link?.href.startsWith('#'))
@@ -133,17 +140,147 @@ describe('Swift callable layouts', () => {
     }
   })
 
+  /** What the grammar marks, as `kind:text` for each keyword and literal. */
+  const roles = (layout: SpanLayout) => (layout.syntax ?? []).flatMap((range) =>
+    range.kind === 'keyword' || range.kind === 'literal' ? [`${range.kind}:${layout.text.slice(range.start, range.end)}`] : [])
+
+  it('marks the words Swift owns in a type and leaves the type names to the links', async () => {
+    const symbol = callable('run(_:_:)', [
+      { name: 'body', type: '@escaping (inout Self, any Hashable) async throws -> Self.Element' },
+      { name: 'other', type: 'some Hashable' },
+    ], 'Self')
+    const layout = await layoutOf(symbol)
+    expect(roles(layout)).toEqual(['keyword:@escaping', 'keyword:inout', 'literal:Self', 'keyword:any', 'keyword:async', 'keyword:throws', 'literal:Self.Element', 'keyword:some', 'literal:Self'])
+    const spans = signatureSpans(layout, new SymbolIndex([symbol], (entry) => `/${entry.id}/`, 'swift'), symbol, symbol.signatures[0]!)
+    expect(spans.filter((span) => span.nonReference).map((span) => span.text)).toEqual(['@escaping', 'inout', 'Self', 'any', 'async', 'throws', 'Self.Element', 'some', 'Self'])
+    // Hashable is a type, so it stays a reference to resolve.
+    expect(spans.filter((span) => span.text === 'Hashable').every((span) => !span.nonReference)).toBe(true)
+  })
+
+  it('keeps a member of Self whole until a break separates its parts', async () => {
+    const symbol = callable('apply(_:)', [{ name: 'arrayLiteral', type: 'Self.Element...' }])
+    const flat = await layoutOf(symbol)
+    expect(flat.text).toBe('apply(arrayLiteral: Self.Element...)')
+    expect(roles(flat)).toEqual(['literal:Self.Element'])
+    const original = CODE_COLUMNS.api
+    try {
+      Object.assign(CODE_COLUMNS, { api: 30 })
+      const wrapped = await layoutOf(callable('apply(_:)', [{ name: 'arrayLiteral', type: 'Self.Element...' }]), 0)
+      expect(wrapped.text).toContain('Self\n')
+      expect(roles(wrapped)).toEqual(['literal:Self', 'literal:.Element'])
+    } finally { Object.assign(CODE_COLUMNS, { api: original }) }
+  })
+
+  it('reads a type on its own with the roles it has in a declaration', async () => {
+    const lone = swiftTypeLayout('@escaping (Self) async throws -> Result')!
+    expect(lone.text).toBe('@escaping (Self) async throws -> Result')
+    expect(roles(lone)).toEqual(['keyword:@escaping', 'literal:Self', 'keyword:async', 'keyword:throws'])
+    expect(roles(swiftTypeLayout('Self.Element...')!)).toEqual(['literal:Self.Element'])
+    expect(await typeLayout('inout Self', 'swift')).toEqual(swiftTypeLayout('inout Self'))
+    // A type name alone carries no role; the reference is for the links to resolve.
+    expect(roles(swiftTypeLayout('Hasher')!)).toEqual([])
+    // It prints the way the declaration above it does, and text it could not keep whole has no layout.
+    expect(swiftTypeLayout('[String : String]?')!.text).toBe('[String: String]?')
+    expect(swiftTypeLayout('repeat each Element where Element: Sendable')).toBeUndefined()
+    expect(swiftTypeLayout('`Self`')).toBeUndefined()
+    expect(await typeLayout('inout Self', 'go')).toBeUndefined()
+  })
+
+  it('gives every listed parameter type the roles its declaration gives the same tokens', async () => {
+    let checked = 0
+    for (const symbol of model.symbols) {
+      if (!symbol.signatures.length) continue
+      const prepared = await apiSignatureLayouts(symbol, 'swift')
+      for (const signature of symbol.signatures) {
+        // A member type broken at its dot is two ranges in the declaration and one in the list.
+        const whole = (layout: SpanLayout) => roles(layout).flatMap((role) => {
+          const [kind, text] = role.replace(/\s+/g, '').split(':') as [string, string]
+          return text.split(/(?=\.)/).map((part) => `${kind}:${part}`)
+        })
+        const available = new Map<string, number>()
+        for (const role of whole(prepared.get(signature)!)) available.set(role, (available.get(role) ?? 0) + 1)
+        for (const param of signature.params) {
+          const lone = swiftTypeLayout(param.type!)
+          if (!lone) continue
+          expect(lone.text.replace(/\s+/g, ''), `${symbol.id} ${param.name}`).toBe(param.type!.replace(/\s+/g, ''))
+          for (const role of whole(lone)) {
+            available.set(role, (available.get(role) ?? 0) - 1)
+            expect(available.get(role), `${symbol.id} ${param.name}: ${role}`).toBeGreaterThanOrEqual(0)
+          }
+          checked++
+        }
+      }
+    }
+    expect(checked).toBeGreaterThan(0)
+  })
+
   it.each([
-    ['Server.setBuffer(_:named:)', 'setBuffer(_:named:)(contents: String, named: String?) -> ()'],
-    ['Server.capture(_:since:limit:)', 'capture(_:since:limit:)(\n    pane: Pane, since: CaptureCursor?, limit: Int\n) -> IncrementalCapture'],
-    ['Server.connected(attachingTo:_:)', 'connected(attachingTo:_:)(\n    attachingTo: String,\n    body:\n        @escaping (Server, ControlSession) async throws ->\n        Result\n) -> Result'],
-    ['Server.newSession(named:startDirectory:windowName:width:height:environment:shell:)', 'newSession(named:startDirectory:windowName:width:height:environment:shell:)(\n    named: String, startDirectory: String?,\n    windowName: String?, width: Int?, height: Int?,\n    environment: [String: String], shell: String?\n) -> Session'],
+    ['Server.setBuffer(_:named:)', 'setBuffer(contents: String, named: String?) -> ()'],
+    ['Server.capture(_:since:limit:)', 'capture(pane: Pane, since: CaptureCursor?, limit: Int)\n    -> IncrementalCapture'],
+    ['Server.connected(attachingTo:_:)', 'connected(\n    attachingTo: String,\n    body:\n        @escaping (Server, ControlSession) async throws ->\n        Result\n) -> Result'],
+    ['Server.newSession(named:startDirectory:windowName:width:height:environment:shell:)', 'newSession(\n    named: String, startDirectory: String?,\n    windowName: String?, width: Int?, height: Int?,\n    environment: [String: String], shell: String?\n) -> Session'],
+    ['Server.captureRange(_:startingAt:endingAt:joiningWrappedLines:maximumLines:)', 'captureRange(\n    pane: Pane, startingAt: Int?, endingAt: Int?,\n    joiningWrappedLines: Bool, maximumLines: Int\n) -> PaneCapture'],
+    ['Server.init(socketName:tmuxExecutable:configurationFile:)', 'init(\n    socketName: String, tmuxExecutable: String,\n    configurationFile: String?)'],
   ])('lays out %s', async (id, expected) => {
     const symbol = modelSymbol(id)
     const layout = await layoutOf(symbol)
     expect(layout.text).toBe(expected)
-    expect(layout.failures).toEqual(layout.text.split('\n').some((line) => line.length > CODE_COLUMNS.api)
-      ? [{ line: 1, columns: layout.text.split('\n')[0]!.length, limit: CODE_COLUMNS.api }] : [])
+    // The shorter base name leaves every line of a long labelled declaration inside the budget.
+    expect(layout.failures).toEqual([])
+    expect(layout.text.split('\n').every((line) => line.length <= CODE_COLUMNS.api)).toBe(true)
+  })
+
+  it.each([
+    ['Server.panes()', 'panes() -> [Pane]'],
+    ['Server.windows()', 'windows() -> [Window]'],
+    ['Server.windows(named:)', 'windows(named: String) -> [Window]'],
+    ['Server.buffer(named:)', 'buffer(named: String?) -> String?'],
+    ['Server.==(_:_:)', '==(lhs: Server, rhs: Server) -> Bool'],
+    ['Server.!=(_:_:)', '!=(lhs: Self, rhs: Self) -> Bool'],
+  ])('declares %s with its parentheses once', async (id, expected) => {
+    const symbol = modelSymbol(id)
+    const layout = await layoutOf(symbol)
+    expect(layout.text).toBe(expected)
+    expect(layout.failures).toEqual([])
+    // The name range is the base name, so the page marks `panes` and not `panes()`.
+    const name = layout.syntax?.find((range) => range.kind === 'name')
+    expect(layout.text.slice(name!.start, name!.end)).toBe(baseName(symbol))
+  })
+
+  it('never spells a selector inside a declaration, for every callable in the model', async () => {
+    const doubled: string[] = []
+    for (const symbol of model.symbols) {
+      if (!symbol.signatures.length) continue
+      const layouts = await apiSignatureLayouts(symbol, 'swift')
+      for (const signature of symbol.signatures) {
+        const text = layouts.get(signature)!.text
+        // A selector is a parenthesis of bare labels, as in `(named:)`, or one parameter list straight after another.
+        if (/\)\(|\((?:[A-Za-z_]\w*:)+\)/.test(text)) doubled.push(`${symbol.id}: ${text.split('\n')[0]}`)
+      }
+    }
+    expect(doubled).toEqual([])
+  })
+
+  it('keeps the selector where it tells overloads apart', async () => {
+    const plain = modelSymbol('Server.windows()')
+    const labelled = modelSymbol('Server.windows(named:)')
+    const panes = modelSymbol('Server.panes()')
+    // The record, its address and its search and navigation rows are unchanged.
+    expect([plain.name, labelled.name, panes.name]).toEqual(['windows()', 'windows(named:)', 'panes()'])
+    expect([plain.slug, labelled.slug, panes.slug]).toEqual(['server-windows()', 'server-windows(named-)', 'server-panes()'])
+    expect(index.resolve(panes.id)?.href).toBe('/server-panes()/')
+    expect(index.resolve(plain.id)?.href).not.toBe(index.resolve(labelled.id)?.href)
+    const members = referenceTree('swift').members.Server!
+    expect(members.filter(([name]) => ['panes()', 'windows()', 'windows(named:)'].includes(name)).map(([name, slug, id]) => [name, slug, id]))
+      .toEqual(expect.arrayContaining([
+        ['panes()', 'server-panes()', 'Server.panes()'],
+        ['windows()', 'server-windows()', 'Server.windows()'],
+        ['windows(named:)', 'server-windows(named-)', 'Server.windows(named:)'],
+      ]))
+    // The hover card names the symbol by its qualified selector and carries no declaration to repeat.
+    expect(symbolPreview(model, panes, 'latest')).toMatchObject({ title: 'Server.panes()', signature: undefined })
+    // The two overloads stay distinct as declarations too.
+    expect((await layoutOf(plain)).text).not.toBe((await layoutOf(labelled)).text)
   })
 
   it('exports the same declarations in Markdown for an overload set', async () => {

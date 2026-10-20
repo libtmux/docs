@@ -16,12 +16,14 @@ export interface CodeLayout {
   contextEnd?: number
 }
 export type SignatureSpan = ReturnType<SymbolIndex['linkType']>[number] & { declarationName?: true; nonReference?: true; enclosingContext?: true }
+/** The part of a layout that decides how text becomes spans. */
+export type SpanLayout = Pick<CodeLayout, 'text' | 'syntax' | 'contextEnd'>
 
 /** Resolve references at render time; cached layouts contain grammar, never URLs. */
-export function signatureSpans(layout: CodeLayout, index: SymbolIndex, symbol: ApiSymbol, signature: Signature): SignatureSpan[] {
+export function signatureSpans(layout: SpanLayout, index: SymbolIndex, symbol: ApiSymbol, signature?: Signature): SignatureSpan[] {
   const spans: SignatureSpan[] = []
   // The callable's own bindings do not exist in its enclosing declaration.
-  const ownerScope: Signature = { params: [], enclosingTypeParamNames: signature.enclosingTypeParamNames, enclosingDeclaration: signature.enclosingDeclaration }
+  const ownerScope: Signature | undefined = signature && { params: [], enclosingTypeParamNames: signature.enclosingTypeParamNames, enclosingDeclaration: signature.enclosingDeclaration }
   const linkText = (start: number, end: number): SignatureSpan[] => {
     if (layout.contextEnd === undefined || start >= layout.contextEnd) return index.linkType(layout.text.slice(start, end), symbol, signature)
     const boundary = Math.min(end, layout.contextEnd)
@@ -37,7 +39,7 @@ export function signatureSpans(layout: CodeLayout, index: SymbolIndex, symbol: A
       ? index.typeParameterSpans(text, symbol, layout.contextEnd !== undefined && range.start < layout.contextEnd ? ownerScope : signature) : undefined
     if (bound) spans.push(...bound)
     else if (range.kind === 'name') spans.push({ text, declaration: true, declarationName: true })
-    else if (range.kind === 'parameter') spans.push({ text, declaration: true, link: {
+    else if (range.kind === 'parameter' && signature) spans.push({ text, declaration: true, link: {
       href: `#${encodeURIComponent(parameterId(symbol, signature.params[range.parameter]!.name))}`, external: false,
     } })
     else if (range.kind === 'keyword') spans.push({ text, keyword: true, nonReference: true })
@@ -53,6 +55,17 @@ export function signatureSpans(layout: CodeLayout, index: SymbolIndex, symbol: A
     return end === 0 ? [span] : end === span.text.length ? [{ ...span, enclosingContext: true as const }]
       : [{ ...span, text: span.text.slice(0, end), enclosingContext: true as const }, { ...span, text: span.text.slice(end) }]
   })
+}
+
+/**
+ * A lone type annotation, such as a parameter's type, with the grammar roles its
+ * port's signature layout gives the same tokens. A port whose layout reads no
+ * type of its own, or a type that layout cannot read, has none and renders unmarked.
+ */
+export async function typeLayout(type: string, language?: string): Promise<SpanLayout | undefined> {
+  if (language === 'ruby') return (await import('./ruby-code-layout')).rubyTypeLayout(type)
+  if (language === 'swift') return (await import('./swift-code-layout')).swiftTypeLayout(type)
+  return undefined
 }
 
 /** Measure printed columns after tab expansion; font and viewport checks are separate. */
@@ -159,6 +172,14 @@ export function supportsJavaSignatures(symbol: ApiSymbol, language?: string): bo
     symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
 }
 
+/**
+ * A Swift symbol's name is its selector, `windows(named:)`, which tells overloads apart in titles,
+ * trees and addresses. A declaration spells its parameters itself, so it starts from the base name.
+ */
+export function swiftBaseName(name: string): string {
+  return name.replace(/(?<=.)\([^)]*\)$/, '')
+}
+
 /** The reference spells a Swift callable as its name and typed parameters, with no source declaration. */
 export function supportsSwiftSignatures(symbol: ApiSymbol, language?: string): boolean {
   return language === 'swift' && ['method', 'function'].includes(symbol.kind) && symbol.signatures.length > 0 &&
@@ -221,6 +242,33 @@ export function supportsRubySignatures(symbol: ApiSymbol, language?: string): bo
 export function supportsLuaSignatures(symbol: ApiSymbol, language?: string): boolean {
   return language === 'lua' && ['method', 'function'].includes(symbol.kind) && symbol.signatures.length > 0 &&
     symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
+}
+
+/** The parts of `enum tag { A, B = 1 }` whose enumerators are names and integers; a richer value is source the layout keeps whole. */
+export function cEnumParts(raw: string): { tag?: string; items: string[]; terminated: boolean } | undefined {
+  const parts = /^enum(?:\s+([A-Za-z_]\w*))?\s*\{([^{}()]*)\}\s*(;?)$/.exec(raw.trim())
+  if (!parts) return undefined
+  const items = parts[2]!.split(',').map((item) => item.trim()).filter(Boolean)
+    .map((item) => /^([A-Za-z_]\w*)(?:\s*=\s*(-?(?:0[xX][0-9a-fA-F]+|\d+)[uUlL]*))?$/.exec(item))
+  if (!items.length || items.some((item) => !item)) return undefined
+  return { tag: parts[1], items: items.map((item) => item![2] === undefined ? item![1]! : `${item![1]} = ${item![2]}`), terminated: parts[3] === ';' }
+}
+
+/**
+ * tmux's C prototypes, the function-pointer typedefs and members the same
+ * declarator grammar covers, and enums of plain enumerators. Macros, variables
+ * with initializers and structs are source projections the layout does not read.
+ */
+export function supportsCSignatures(symbol: ApiSymbol, language?: string): boolean {
+  if (language !== 'c' || !symbol.signatures.length) return false
+  const declarators = ['typealias', 'attribute'].includes(symbol.kind)
+  return (['function', 'enum'].includes(symbol.kind) || declarators) && symbol.signatures.every((signature) => {
+    const raw = signature.raw?.trim()
+    if (!raw) return false
+    if (symbol.kind === 'enum') return cEnumParts(raw) !== undefined
+    // A member with an initializer or a body is a definition, laid out as its source has it.
+    return !declarators || (/\(\s*\*/.test(raw) && !/[={\n]/.test(raw))
+  })
 }
 
 /** Prepare one layout per overload for both HTML and the Markdown twin. */
@@ -293,6 +341,11 @@ export async function apiSignatureLayouts(symbol: ApiSymbol, language?: string):
     const { swiftSignatureLayout } = await import('./swift-code-layout')
     return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
       [signature, await swiftSignatureLayout(symbol, signature)] as const)))
+  }
+  if (supportsCSignatures(symbol, language)) {
+    const { cSignatureLayout } = await import('./cxx-code-layout')
+    return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
+      [signature, await cSignatureLayout(symbol, signature)] as const)))
   }
   if (language === 'cxx' && ['method', 'function'].includes(symbol.kind) && symbol.signatures.length > 0 &&
     symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))) {

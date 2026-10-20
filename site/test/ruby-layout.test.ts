@@ -3,7 +3,8 @@ import { describe, expect, it } from 'vitest'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { parameterId, SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model'
 import { apiEntryFields, usesNativeSignatures } from '../src/lib/api-sections'
-import { apiSignatureLayouts, codeWidthFailures, signatureSpans, supportsRubySignatures } from '../src/lib/code-layout'
+import { apiSignatureLayouts, codeWidthFailures, signatureSpans, supportsRubySignatures, typeLayout, type SpanLayout } from '../src/lib/code-layout'
+import { rubyTypeLayout } from '../src/lib/ruby-code-layout'
 import { symbolMarkdownWithLayout } from '../src/lib/symbol-markdown'
 import { displayedSignature, renderSignatures } from './signature-fragment'
 
@@ -89,6 +90,35 @@ describe('Ruby RBS layouts', () => {
     }
   })
 
+  /** What the grammar marks, as `kind:text` for each keyword and literal. */
+  const roles = (layout: SpanLayout) => (layout.syntax ?? []).flatMap((range) =>
+    range.kind === 'keyword' || range.kind === 'literal' ? [`${range.kind}:${layout.text.slice(range.start, range.end)}`] : [])
+
+  it('marks the RBS keywords that stand as types and leaves the classes to the links', async () => {
+    const symbol = method('wait', ['[out T] (untyped, ?bool, ::String, :open | nil) -> void'])
+    const [layout] = await layouts(symbol)
+    expect(roles(layout!)).toEqual(['keyword:def', 'keyword:out', 'literal:T', 'keyword:untyped', 'keyword:bool', 'literal::open', 'keyword:nil', 'keyword:void'])
+    // `::String` is a class the model may document, so it is a reference and not syntax.
+    const spans = signatureSpans(layout!, new SymbolIndex([symbol], (entry) => `/${entry.id}/`, 'ruby'), symbol, symbol.signatures[0]!)
+    expect(spans.filter((span) => span.nonReference).map((span) => span.text)).toEqual(['def', 'out', 'T', 'untyped', 'bool', ':open', 'nil', 'void'])
+    expect(spans.find((span) => span.text === 'String')).toMatchObject({ text: 'String' })
+    expect(spans.find((span) => span.text === 'String')).not.toHaveProperty('nonReference')
+  })
+
+  it('reads a type on its own with the roles it has in a method definition', async () => {
+    const lone = rubyTypeLayout('::Hash[::String, untyped]?')!
+    expect(lone.text).toBe('::Hash[::String, untyped]?')
+    expect(roles(lone)).toEqual(['keyword:untyped'])
+    expect(roles(rubyTypeLayout('{ name: ::String, kind: :window | nil }')!)).toEqual(['literal:name', 'literal:kind', 'literal::window', 'keyword:nil'])
+    expect(roles(rubyTypeLayout('^(?) -> void')!)).toEqual(['keyword:void'])
+    expect(await typeLayout('untyped', 'ruby')).toEqual(rubyTypeLayout('untyped'))
+    // A class alone carries no role, and text that is not a type has no layout.
+    expect(roles(rubyTypeLayout('::String')!)).toEqual([])
+    expect(rubyTypeLayout('::Hash[')).toBeUndefined()
+    expect(rubyTypeLayout('() -> void')).toBeUndefined()
+    expect(await typeLayout('untyped', 'go')).toBeUndefined()
+  })
+
   describe('the exported API model', () => {
     const symbols = model.symbols.filter((symbol) => symbol.kind === 'method')
 
@@ -144,6 +174,29 @@ describe('Ruby RBS layouts', () => {
       const generic = model.symbols.find((entry) => entry.id === 'LibTmux::Selection#filter')!
       const type = signatureSpans((await layouts(generic))[0]!, index, generic, generic.signatures[0]!)
       expect(type.filter((span) => span.text === 'Elem').every((span) => 'nonReference' in span && span.nonReference)).toBe(true)
+    })
+
+    it('gives every listed parameter type the roles its definition gives the same tokens', async () => {
+      let checked = 0
+      for (const symbol of symbols) {
+        const prepared = await layouts(symbol)
+        for (const [at, signature] of symbol.signatures.entries()) {
+          const available = new Map<string, number>()
+          for (const role of roles(prepared[at]!)) available.set(role, (available.get(role) ?? 0) + 1)
+          for (const param of signature.params) {
+            if (!param.type) continue
+            const lone = rubyTypeLayout(param.type)
+            expect(lone, `${symbol.id} ${param.name}: ${param.type}`).toBeDefined()
+            expect(lone!.text).toBe(param.type)
+            for (const role of roles(lone!)) {
+              available.set(role, (available.get(role) ?? 0) - 1)
+              expect(available.get(role), `${symbol.id} ${param.name}: ${role}`).toBeGreaterThanOrEqual(0)
+            }
+            checked++
+          }
+        }
+      }
+      expect(checked).toBeGreaterThan(0)
     })
 
     it('lists and links every keyword parameter, documented or not', async () => {

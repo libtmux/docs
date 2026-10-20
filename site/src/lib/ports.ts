@@ -574,9 +574,9 @@ const CORE_PORTS: readonly Port[] = [
     docsDispatch: { workflow: 'docs.yml' },
     apiDependencies: ['csharp'],
     apiDependencyNavigation: [{
-      port: 'csharp', label: '.NET', package: 'LibTmux', version: '0.0.0-alpha.20',
-      revision: 'ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc',
-      declaration: { path: 'Directory.Packages.props', sha256: 'ac7abc834ccaf1c8f93b9f9292d6fa7c54ba35fd891e02e53d2fed49f2b41567' },
+      port: 'csharp', label: '.NET', package: 'LibTmux', version: '0.0.0-alpha.22',
+      revision: '5b486ea9f3df6a882f3fedb36b9373a8161f4d0f',
+      declaration: { path: 'Directory.Packages.props', sha256: 'af06189a48bac1b87369cdea9cd5d0ab214e6317f1f8886c05a1fa1ab7c71cbf' },
       sections: {
         server: ['LibTmux.Server'],
         session: ['LibTmux.Session'],

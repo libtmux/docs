@@ -22,26 +22,47 @@ export const markText = (inner: string, mark: string): string =>
   inner.replace(/^(\s*)([\s\S]*?)(\s*)$/, (_, before: string, text: string, after: string) =>
     text ? `${before}${mark}${text}${mark}${after}` : inner)
 
-/** ` ```lang ` … ` ``` `, with the language optional. */
-const FENCE = /^\s*(?:```|~~~)\s*([\w+-]*)\s*$/
+/**
+ * ` ```info ` … ` ``` `: whatever follows the fence is its info string, which
+ * a closing fence leaves empty. An info string holds no backtick, so a line
+ * of inline code is not a fence.
+ */
+const FENCE = /^\s*(?:```|~~~)\s*([^`]*?)\s*$/
 
 /**
  * Rust spells doctest behaviour where other languages spell a language.
  *
- * ` ```no_run ` and ` ```compile_fail ` say what cargo should do with the
- * block, not what it is written in — it is Rust either way, and a renderer
- * asked to highlight `compile_fail` highlights nothing.
+ * ` ```no_run `, ` ```compile_fail,E0597 ` and ` ```rust,edition2021 ` say
+ * what cargo should do with the block, not what it is written in — it is
+ * Rust either way, and a renderer asked to highlight `compile_fail`
+ * highlights nothing. rustdoc splits the info string at commas and spaces.
  */
-const RUST_ATTRS = new Set([
-  'no_run',
-  'should_panic',
-  'compile_fail',
-  'ignore',
-  'edition2015',
-  'edition2018',
-  'edition2021',
-  'edition2024',
-])
+const DOCTEST_ATTRIBUTE = /^(?:no_run|should_panic|compile_fail|ignore(?:-[\w-]+)?|test_harness|edition\d{4}|E\d{4})$/
+
+/**
+ * What a fence's info string says: the language written in it, if any, with
+ * the doctest attributes set aside. An empty language means the doc's own.
+ */
+function fenceLanguage(info: string): string {
+  return info.split(/[\s,]+/).find((word) => /^[\w+-]+$/.test(word) && !DOCTEST_ATTRIBUTE.test(word)) ?? ''
+}
+
+/**
+ * The lines of a Rust code block that rustdoc shows.
+ *
+ * Rust hides setup lines from rendered docs with a leading `#`: a line that
+ * starts `# ` or is a bare `#` is part of the compiled doctest and not part
+ * of the example a reader is being shown, and `##` escapes to a literal `#`.
+ * Only a Rust block is read this way; `# comment` is code in a shell, Python
+ * or Ruby block.
+ */
+function rustdocVisible(lines: string[]): string[] {
+  return lines.flatMap((line) => {
+    const trimmed = line.trim()
+    if (trimmed.startsWith('##')) return [line.replace('##', '#')]
+    return trimmed === '#' || trimmed.startsWith('# ') ? [] : [line]
+  })
+}
 
 /**
  * A Rust-style section heading: `# Examples`, `# Panics`, `# Errors`.
@@ -195,12 +216,8 @@ export function parseMarkdownDocFull(raw: string, defaultLang = 'text'): ParsedM
       if (fenced) {
         const open = fence
         examples.push({
-          lang: !open.lang || RUST_ATTRS.has(open.lang) ? defaultLang : open.lang,
-          // Rust hides setup lines from rendered docs with a leading `#`.
-          // They are part of the compiled doctest and not part of the example
-          // a reader is being shown.
-          code: open.code
-            .filter((l) => !/^\s*#\s/.test(l) && l.trim() !== '#')
+          lang: open.lang || defaultLang,
+          code: (defaultLang === 'rust' && (!open.lang || open.lang === 'rust') ? rustdocVisible(open.code) : open.code)
             .map((l) => l.slice(open.indent))
             .join('\n')
             .replace(/\s+$/, ''),
@@ -215,7 +232,7 @@ export function parseMarkdownDocFull(raw: string, defaultLang = 'text'): ParsedM
     }
     if (fenced) {
       closeQuote()
-      fence = { lang: fenced[1], code: [], indent: line.length - line.trimStart().length }
+      fence = { lang: fenceLanguage(fenced[1]), code: [], indent: line.length - line.trimStart().length }
       continue
     }
     const quoted = !inExamples && QUOTE.exec(line)

@@ -1,5 +1,5 @@
 import type { ApiSymbol, Signature } from '@libtmux/api-model'
-import { CODE_COLUMNS, codeWidthFailures, type CodeLayout, type CodeSyntax } from './code-layout'
+import { CODE_COLUMNS, codeWidthFailures, swiftBaseName, type CodeLayout, type CodeSyntax, type SpanLayout } from './code-layout'
 
 /*
  * Swift callable headers are laid out by swift-format's own printer. The
@@ -123,18 +123,29 @@ function parseType(source: string): TypeNode | undefined {
   }
 }
 
+/** A grammar word, not a reference: a keyword, or a type Swift spells as one. */
+type Syntax = 'keyword' | 'literal'
+
 type Piece =
-  | { kind: 'text'; text: string; role?: 'name' | number }
+  | { kind: 'text'; text: string; role?: 'name' | number; syntax?: Syntax }
   | { kind: 'open' }
   | { kind: 'close' }
   | { kind: 'break'; style: 'open' | 'close' | 'continue' | 'same'; size: number; mustBreak?: boolean }
   | { kind: 'space'; size: number }
 
 const text = (value: string, role?: 'name' | number): Piece => ({ kind: 'text', text: value, ...(role === undefined ? {} : { role }) })
+const word = (value: string, syntax: Syntax): Piece => ({ kind: 'text', text: value, syntax })
 const open: Piece = { kind: 'open' }
 const close: Piece = { kind: 'close' }
 const space: Piece = { kind: 'space', size: 1 }
 const lineBreak = (style: 'open' | 'close' | 'continue' | 'same' = 'continue', size = 1, mustBreak = false): Piece => ({ kind: 'break', style, size, ...(mustBreak ? { mustBreak } : {}) })
+
+/** The name a member chain starts from: `Self` in `Self.Element.Index`. */
+function rootName(node: TypeNode): string | undefined {
+  let at = node
+  while (at.kind === 'member') at = at.base
+  return at.kind === 'name' ? at.text : undefined
+}
 
 /** The token stream swift-format's TokenStreamCreator builds for a type. */
 function typePieces(node: TypeNode, out: Piece[]): void {
@@ -162,14 +173,18 @@ function typePieces(node: TypeNode, out: Piece[]): void {
   switch (node.kind) {
     case 'atom': out.push(text(node.text)); break
     case 'name':
-      out.push(text(node.text))
+      // `Self` is a keyword written where a type goes, not a name to look up.
+      out.push(node.text === 'Self' ? word(node.text, 'literal') : text(node.text))
       if (node.generics.length) { out.push(text('<')); list(node.generics); out.push(text('>')) }
       break
-    case 'member':
+    case 'member': {
       typePieces(node.base, out)
-      out.push(lineBreak('continue', 0), text('.'), text(node.name))
+      // A member of `Self` is the conforming type's own, which no entry documents.
+      const ofSelf = rootName(node) === 'Self'
+      out.push(lineBreak('continue', 0), ofSelf ? word('.', 'literal') : text('.'), ofSelf ? word(node.name, 'literal') : text(node.name))
       if (node.generics.length) { out.push(text('<')); list(node.generics); out.push(text('>')) }
       break
+    }
     case 'optional': typePieces(node.inner, out); out.push(text(node.mark)); break
     case 'array': out.push(text('[')); typePieces(node.element, out); out.push(text(']')); break
     case 'dictionary': out.push(text('[')); typePieces(node.key, out); out.push(text(':'), lineBreak()); typePieces(node.value, out); out.push(text(']')); break
@@ -179,7 +194,7 @@ function typePieces(node: TypeNode, out: Piece[]): void {
       node.effects.forEach((effect, index) => {
         out.push(lineBreak())
         if (index === 0 && node.effects.length > 1) out.push(open)
-        out.push(text(effect))
+        out.push(word(effect, 'keyword'))
         if (index === node.effects.length - 1 && node.effects.length > 1) out.push(close)
       })
       out.push(lineBreak(), text('->'), lineBreak())
@@ -192,8 +207,8 @@ function typePieces(node: TypeNode, out: Piece[]): void {
     case 'attributed':
       out.push(open)
       for (const item of node.prefix) {
-        if (item.startsWith('@')) out.push(open, text('@'), text(item.slice(1)), close)
-        else out.push(text(item))
+        if (item.startsWith('@')) out.push(open, word('@', 'keyword'), word(item.slice(1), 'keyword'), close)
+        else out.push(word(item, 'keyword'))
         out.push(lineBreak())
       }
       typePieces(node.type, out)
@@ -205,7 +220,7 @@ function typePieces(node: TypeNode, out: Piece[]): void {
         typePieces(part, out)
       })
       break
-    case 'someOrAny': out.push(text(node.specifier), space); typePieces(node.type, out); break
+    case 'someOrAny': out.push(word(node.specifier, 'keyword'), space); typePieces(node.type, out); break
   }
 }
 
@@ -217,6 +232,16 @@ interface Head {
   returns?: string
 }
 
+/** A variadic parameter's ellipsis follows its type inside the parameter's group. Reports whether the type parsed; one that did not stays a single token. */
+function parameterTypePieces(type: string, out: Piece[]): boolean {
+  const variadic = type.endsWith('...')
+  const written = variadic ? type.slice(0, -3) : type
+  const node = parseType(written)
+  typePieces(node ?? { kind: 'atom', text: written }, out)
+  if (variadic) out.push(text('...'))
+  return node !== undefined
+}
+
 function headPieces(head: Head): Piece[] {
   const out: Piece[] = [open, open]
   if (head.keyword) out.push(text(head.keyword), lineBreak())
@@ -226,11 +251,7 @@ function headPieces(head: Head): Piece[] {
     out.push(close, lineBreak('open', 0), open)
     head.parameters.forEach((parameter, index) => {
       out.push(open, text(parameter.name, index), text(':'), lineBreak())
-      // A variadic parameter's ellipsis follows its type inside the parameter's group.
-      const variadic = parameter.type.endsWith('...')
-      const written = variadic ? parameter.type.slice(0, -3) : parameter.type
-      typePieces(parseType(written) ?? { kind: 'atom', text: written }, out)
-      if (variadic) out.push(text('...'))
+      parameterTypePieces(parameter.type, out)
       if (index < head.parameters.length - 1) out.push(text(','), close, lineBreak('same'))
       else out.push(close)
     })
@@ -247,7 +268,12 @@ function headPieces(head: Head): Piece[] {
   return out
 }
 
-interface Printed { text: string; roles: Map<'name' | number, { start: number; end: number }> }
+interface Printed {
+  text: string
+  roles: Map<'name' | number, { start: number; end: number }>
+  /** Grammar words, in order; the words of one token that print together are one range. */
+  words: { start: number; end: number; kind: Syntax }[]
+}
 
 /** swift-format's PrettyPrinter: Oppen's scan for token lengths, then printing with breaks and indentation. */
 function printPieces(pieces: Piece[], lineLength: number): Printed {
@@ -300,6 +326,7 @@ function printPieces(pieces: Piece[], lineLength: number): Printed {
   const activeOpenBreaks: ActiveOpenBreak[] = []
   const continuationStack: boolean[] = []
   const roles: Printed['roles'] = new Map()
+  const words: Printed['words'] = []
   const indentation = () => activeOpenBreaks.reduce((units, active) => units + (active.contributesBlockIndent ? 1 : 0) + (active.contributesContinuationIndent ? 1 : 0), 0) + (continuation ? 1 : 0)
   const canFit = (length = 1) => atStartOfLine || length <= lineLength - column
   const compensatingLine = () => lineNumber - (atStartOfLine ? 1 : 0)
@@ -317,6 +344,11 @@ function printPieces(pieces: Piece[], lineLength: number): Printed {
           atStartOfLine = false
         } else if (pendingSpaces > 0) output += ' '.repeat(pendingSpaces)
         if (piece.role !== undefined) roles.set(piece.role, { start: output.length, end: output.length + piece.text.length })
+        if (piece.syntax) {
+          const previous = words.at(-1)
+          if (previous?.kind === piece.syntax && previous.end === output.length) previous.end += piece.text.length
+          else words.push({ start: output.length, end: output.length + piece.text.length, kind: piece.syntax })
+        }
         output += piece.text
         consecutiveNewlines = 0
         pendingSpaces = 0
@@ -366,7 +398,7 @@ function printPieces(pieces: Piece[], lineLength: number): Printed {
       }
     }
   })
-  return { text: output, roles }
+  return { text: output, roles, words }
 }
 
 /** Format a function head as swift-format does at `columns`. */
@@ -374,31 +406,49 @@ export function formatSwiftHead(head: Head, columns: number): string {
   return printPieces(headPieces(head), columns).text
 }
 
-/** The rendered reference declaration, in the text the page displays. */
+/** The rendered reference declaration, in the text the page displays: the base name, then the parameter list that spells the labels. */
 function declarationHead(symbol: ApiSymbol, signature: Signature): Head {
   for (const parameter of signature.params) {
     if (parameter.variadic || parameter.optional || parameter.default !== undefined || !parameter.type) {
       throw new Error(`Unsupported Swift parameter ${symbol.id}.${parameter.name}`)
     }
   }
-  return { name: symbol.name, parameters: signature.params.map(({ name, type }) => ({ name, type: type! })), ...(signature.returns ? { returns: signature.returns } : {}) }
+  return { name: swiftBaseName(symbol.name), parameters: signature.params.map(({ name, type }) => ({ name, type: type! })), ...(signature.returns ? { returns: signature.returns } : {}) }
 }
 
 const layouts = new Map<string, Promise<CodeLayout>>()
 
 /** Lay out a Swift callable's rendered declaration at the API budget. */
 export function swiftSignatureLayout(symbol: ApiSymbol, signature: Signature): Promise<CodeLayout> {
-  const key = JSON.stringify([symbol.name, signature.params, signature.returns, CODE_COLUMNS.api])
+  const key = JSON.stringify([swiftBaseName(symbol.name), signature.params, signature.returns, CODE_COLUMNS.api])
   let pending = layouts.get(key)
   if (!pending) {
     pending = (async () => {
       const printed = printPieces(headPieces(declarationHead(symbol, signature)), CODE_COLUMNS.api)
-      const syntax: CodeSyntax[] = [...printed.roles].map(([role, range]) => role === 'name'
-        ? { ...range, kind: 'name' as const }
-        : { ...range, kind: 'parameter' as const, parameter: role })
+      const syntax: CodeSyntax[] = [...[...printed.roles].map(([role, range]): CodeSyntax => role === 'name'
+        ? { ...range, kind: 'name' }
+        : { ...range, kind: 'parameter', parameter: role }), ...printed.words]
       return { text: printed.text, limit: CODE_COLUMNS.api, failures: await codeWidthFailures(printed.text, 'api'), syntax: syntax.sort((a, b) => a.start - b.start) }
     })()
     layouts.set(key, pending)
   }
   return pending
+}
+
+const typeLayouts = new Map<string, SpanLayout | undefined>()
+
+/**
+ * A type on its own, as a parameter list prints it, with the roles it has in a
+ * declaration. A type this grammar does not read, or would respell beyond its
+ * whitespace, stays unmarked.
+ */
+export function swiftTypeLayout(type: string): SpanLayout | undefined {
+  if (!typeLayouts.has(type)) {
+    const pieces: Piece[] = []
+    // No width forces a break, so the type prints on one line.
+    const printed = parameterTypePieces(type, pieces) ? printPieces(pieces, Number.MAX_SAFE_INTEGER) : undefined
+    typeLayouts.set(type, printed && printed.text.replace(/\s+/g, '') === type.replace(/\s+/g, '')
+      ? { text: printed.text, syntax: printed.words } : undefined)
+  }
+  return typeLayouts.get(type)
 }

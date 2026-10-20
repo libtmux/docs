@@ -82,7 +82,19 @@ const check = (name, ok, detail) => {
   // case above.
   const dir = site({ n: 5 })
   const { code, out } = run(dir, 5)
-  check('a site at its ceiling passes', code === 0, `exited ${code}:\n${out}`)
+  check('a site at its ceiling passes', code === 0 && !out.includes('below the ceiling'), `exited ${code}:\n${out}`)
+  rmSync(dir, { recursive: true, force: true })
+}
+
+{
+  // A ceiling left above the count passes, and says which record can come down.
+  const dir = site({ n: 3 })
+  const { code, out } = run(dir, 5)
+  check(
+    'a site under its ceiling passes and names the headroom',
+    code === 0 && out.includes('below the ceiling') && /\bgo\s+5 -> 3\b/.test(out),
+    `exited ${code}:\n${out}`,
+  )
   rmSync(dir, { recursive: true, force: true })
 }
 
