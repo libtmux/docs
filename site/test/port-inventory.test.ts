@@ -10,25 +10,49 @@ const coordinates = (slug: string, kinds?: InventoryEntry['kind'][]) =>
   published(slug).filter((entry) => !kinds || kinds.includes(entry.kind)).map((entry) => entry.coordinate)
 
 /**
- * What the owning manifests and release configuration declare, written from
- * their files rather than computed from the inventory: `package.json` and
- * `release_policy.ts`, `Cargo.toml` (`publish`), `go.mod`, the Gradle
- * publication conventions and BOM, the `.csproj` package ids, `Package.swift`,
- * each `Project.toml`, the vcpkg port and CMake targets, and the gemspecs,
- * rockspec publish step and module manifests.
+ * The distributions the owning manifests and release configuration declare,
+ * written from their files rather than computed from the inventory:
+ * `package.json` and `release_policy.ts`, `Cargo.toml` (`publish`), `go.mod`,
+ * the Gradle publication conventions and BOM, the `.csproj` package ids,
+ * `Package.swift`, each `Project.toml`, the vcpkg port, and the gemspecs,
+ * rockspec publish step and module manifests. The comparison is two-sided: an
+ * entry the manifests do not declare is as wrong as one they declare that is
+ * missing.
  */
-const DECLARED_PACKAGES: Record<string, readonly string[]> = {
+const GO = 'github.com/libtmux/libtmux-go'
+const JVM = ['libtmux', 'libtmux-bom', 'libtmux-jackson', 'libtmux-junit5', 'libtmux-kotlin', 'libtmux-mcp', 'libtmux-scala_3',
+  'libtmux-scala-cats_3', 'libtmux-scala-ox_3', 'libtmux-workspace', 'libtmux-workspace-cli'].map((name) => `io.github.libtmux:${name}`)
+const DOTNET = ['LibTmux', 'LibTmux.Query.Json', 'LibTmux.Testing', 'LibTmux.Extensions.DependencyInjection', 'LibTmux.Workspace',
+  'LibTmux.Workspace.Cli', 'LibTmux.Mcp', 'LibTmux.FSharp']
+const DECLARED_DISTRIBUTIONS: Record<string, readonly string[]> = {
   py: ['libtmux', 'tmuxp', 'libtmux-mcp'],
   ruby: ['libtmux', 'libtmux-async', 'libtmux-mcp', 'libtmux-workspace'],
   lua: ['libtmux'],
   powershell: ['LibTmux', 'LibTmux.Workspace'],
+  julia: ['LibTmux', 'LibTmuxMCP', 'LibTmuxWorkspace'],
   ts: ['libtmux', '@libtmux/mcp', '@libtmux/workspace', '@libtmux/workspace-cli'],
   rs: ['libtmux', 'libtmux-macros', 'tmux-mcp', 'tmux-workspace'],
-  java: ['libtmux', 'libtmux-bom', 'libtmux-jackson', 'libtmux-junit5', 'libtmux-kotlin', 'libtmux-mcp', 'libtmux-scala_3',
-    'libtmux-scala-cats_3', 'libtmux-scala-ox_3', 'libtmux-workspace', 'libtmux-workspace-cli'].map((name) => `io.github.libtmux:${name}`),
-  csharp: ['LibTmux', 'LibTmux.Query.Json', 'LibTmux.Testing', 'LibTmux.Extensions.DependencyInjection', 'LibTmux.Workspace',
-    'LibTmux.Workspace.Cli', 'LibTmux.Mcp', 'LibTmux.FSharp'],
+  go: [GO, `${GO}/mcp`, `${GO}/workspace`],
+  java: JVM,
+  csharp: DOTNET,
+  cxx: ['libtmux'],
+  swift: ['libtmux-swift'],
 }
+/** A wrapper lists its own package and the family package it builds on, not the whole family. */
+const WRAPPERS: Record<string, readonly string[]> = {
+  kotlin: ['io.github.libtmux:libtmux-kotlin', 'io.github.libtmux:libtmux'],
+  scala: ['io.github.libtmux:libtmux-scala_3', 'io.github.libtmux:libtmux-scala-cats_3', 'io.github.libtmux:libtmux-scala-ox_3', 'io.github.libtmux:libtmux'],
+  fsharp: ['LibTmux.FSharp', 'LibTmux'],
+}
+/** What ships inside a distribution, by ecosystem word: the Go packages and commands, the SwiftPM products and targets. */
+const DECLARED_UNITS: Record<string, readonly (readonly [unit: string, name: string])[]> = {
+  go: [['package', 'tmux'], ['package', 'tmuxq'], ['package', 'tmux/tmuxtest'], ['command', 'libtmux-mcp'], ['command', 'tmux-workspace']],
+  swift: [['product', 'LibTmux'], ['product', 'TmuxWorkspace'], ['product', 'LibTmuxMCP'], ['product', 'TmuxFixture'],
+    ['executable product', 'libtmux-mcp'], ['executable product', 'tmux-workspace'],
+    ['target', 'LibTmux'], ['target', 'TmuxWorkspace'], ['target', 'LibTmuxMCP'], ['target', 'TmuxFixture'],
+    ['executable target', 'libtmux-mcp'], ['executable target', 'TmuxWorkspaceCLI']],
+}
+const distributions = (slug: string) => published(slug).filter((entry) => !entry.within && entry.kind !== 'source')
 
 describe('port inventory', () => {
   it('covers every registered port and nothing else', () => {
@@ -49,9 +73,30 @@ describe('port inventory', () => {
     }
   })
 
-  it.each(Object.entries(DECLARED_PACKAGES))('includes every package %s declares', (slug, declared) => {
-    const distributions = coordinates(slug, ['library', 'companion', 'cli', 'mcp-server', 'module', 'testing'])
-    for (const name of declared) expect(distributions, `${slug} ${name}`).toContain(name)
+  it.each(Object.entries(DECLARED_DISTRIBUTIONS))('lists exactly the distributions %s declares', (slug, declared) => {
+    expect(distributions(slug).map((entry) => entry.coordinate).sort()).toEqual([...declared].sort())
+  })
+
+  it.each(Object.entries(WRAPPERS))('lists the %s package and the family package it builds on, and nothing else', (slug, declared) => {
+    expect(distributions(slug).map((entry) => entry.coordinate).sort()).toEqual([...declared].sort())
+  })
+
+  it.each(Object.entries(DECLARED_UNITS))('lists exactly the %s units its manifests declare', (slug, declared) => {
+    const found = published(slug).filter((entry) => entry.within && entry.unit && declared.some(([unit]) => unit === entry.unit))
+    const pair = (unit: string | undefined, name: string) => `${unit}: ${name}`
+    expect(found.map((entry) => pair(entry.unit, entry.label)).sort((a, b) => a.localeCompare(b)))
+      .toEqual(declared.map(([unit, name]) => pair(unit, name)).sort((a, b) => a.localeCompare(b)))
+  })
+
+  it('counts an entry that ships inside a distribution once, under the one that holds it', () => {
+    for (const [slug, list] of Object.entries(INVENTORY)) {
+      for (const entry of list.filter((candidate) => candidate.within)) {
+        const holder = list.find((candidate) => candidate.id === entry.within)
+        expect(holder, `${slug}:${entry.id} sits inside ${entry.within}`).toBeDefined()
+        expect(holder!.within, `${slug}:${entry.id} sits inside a distribution, not another entry`).toBeUndefined()
+        expect(holder!.repo, `${slug}:${entry.id}`).toBe(entry.repo)
+      }
+    }
   })
 
   it('lists the distributions the metadata used to omit', () => {
@@ -80,34 +125,74 @@ describe('port inventory', () => {
 
   it('keeps each ecosystem’s own unit of identity', () => {
     const byId = (slug: string, id: string) => entries(slug).find((entry) => entry.id === id)!
-    // Go: a root module, packages inside it, two further modules and a command in each.
-    const go = entries('go').map((entry) => [entry.kind, entry.coordinate])
-    expect(go).toEqual(expect.arrayContaining([
-      ['module', 'github.com/libtmux/libtmux-go'], ['library', 'github.com/libtmux/libtmux-go/tmux'],
-      ['module', 'github.com/libtmux/libtmux-go/tmuxq'], ['testing', 'github.com/libtmux/libtmux-go/tmux/tmuxtest'],
-      ['mcp-server', 'github.com/libtmux/libtmux-go/mcp'], ['cli', 'github.com/libtmux/libtmux-go/mcp/cmd/libtmux-mcp'],
-      ['companion', 'github.com/libtmux/libtmux-go/workspace'], ['cli', 'github.com/libtmux/libtmux-go/workspace/cmd/tmux-workspace'],
-    ]))
-    // Swift: one package, library products with DocC targets, a fixture product and two executables.
-    expect(entries('swift').map((entry) => [entry.kind, entry.label])).toEqual([
-      ['library', 'libtmux-swift'], ['module', 'LibTmux'], ['testing', 'TmuxFixture'], ['module', 'LibTmuxMCP'],
-      ['mcp-server', 'libtmux-mcp'], ['module', 'TmuxWorkspace'], ['cli', 'tmux-workspace'],
+    const shape = (slug: string, ids: string[]) => ids.map((id) => [id, byId(slug, id).kind, byId(slug, id).unit, byId(slug, id).within])
+    // Go: three modules with a go.mod each; the packages and commands inside a module hold no go.mod of their own.
+    expect(shape('go', ['module', 'mcp', 'workspace', 'tmux', 'tmuxq', 'tmuxtest', 'libtmux-mcp', 'tmux-workspace'])).toEqual([
+      ['module', 'module', 'module', undefined], ['mcp', 'mcp-server', 'module', undefined], ['workspace', 'companion', 'module', undefined],
+      ['tmux', 'library', 'package', 'module'], ['tmuxq', 'companion', 'package', 'module'], ['tmuxtest', 'testing', 'package', 'module'],
+      ['libtmux-mcp', 'cli', 'command', 'mcp'], ['tmux-workspace', 'cli', 'command', 'workspace'],
     ])
-    expect(byId('swift', 'TmuxFixture').path).toBe('Tests/TmuxFixture')
-    expect(byId('swift', 'LibTmux').api?.url).toBe('https://swiftpackageindex.com/libtmux/libtmux-swift/documentation/libtmux')
-    expect(byId('swift', 'TmuxFixture').api, 'the fixture has no DocC target').toBeUndefined()
-    // Julia: three packages with their own directories and an embedded module, none registered.
-    expect(entries('julia').map((entry) => [entry.kind, entry.label, entry.package])).toEqual([
-      ['library', 'LibTmux', undefined], ['source', 'libtmux-julia', undefined], ['module', 'LibTmux.Filters', undefined],
-      ['mcp-server', 'LibTmuxMCP', undefined], ['cli', 'LibTmuxWorkspace', undefined],
+    expect(entries('go').filter((entry) => entry.unit === 'module').map((entry) => entry.coordinate)).toEqual([GO, `${GO}/mcp`, `${GO}/workspace`])
+    // Swift: one package; a target and a product for each library, a fixture and two executables.
+    const swift = entries('swift')
+    expect(swift.filter((entry) => !entry.within).map((entry) => [entry.unit, entry.label])).toEqual([['package', 'libtmux-swift']])
+    expect(swift.filter((entry) => entry.unit === 'product').map((entry) => [entry.kind, entry.label])).toEqual([
+      ['module', 'LibTmux'], ['testing', 'TmuxFixture'], ['module', 'LibTmuxMCP'], ['module', 'TmuxWorkspace'],
+    ])
+    expect(swift.filter((entry) => entry.unit === 'executable product').map((entry) => [entry.kind, entry.label])).toEqual([['cli', 'libtmux-mcp'], ['cli', 'tmux-workspace']])
+    expect(swift.filter((entry) => entry.kind === 'target').map((entry) => [entry.unit, entry.label])).toEqual([
+      ['target', 'LibTmux'], ['target', 'TmuxFixture'], ['target', 'LibTmuxMCP'], ['executable target', 'libtmux-mcp'],
+      ['target', 'TmuxWorkspace'], ['executable target', 'TmuxWorkspaceCLI'],
+    ])
+    expect(byId('swift', 'target:TmuxFixture').path).toBe('Tests/TmuxFixture')
+    expect(byId('swift', 'target:LibTmux').api?.url).toBe('https://swiftpackageindex.com/libtmux/libtmux-swift/documentation/libtmux')
+    // Only a target has DocC; a product has none of its own and shares the package page.
+    expect(swift.filter((entry) => entry.api).map((entry) => entry.id)).toEqual(['target:LibTmux', 'target:LibTmuxMCP', 'target:TmuxWorkspace'])
+    expect(new Set(swift.filter((entry) => entry.package).map((entry) => entry.package!.url)).size).toBe(1)
+    // Julia: three packages with their own directories, an embedded module and two extensions, none registered.
+    expect(entries('julia').map((entry) => [entry.kind, entry.unit, entry.label, entry.package])).toEqual([
+      ['library', 'package', 'LibTmux', undefined], ['source', undefined, 'libtmux-julia', undefined],
+      ['module', 'module', 'LibTmux.Filters', undefined], ['module', 'extension', 'LibTmuxJSONExt', undefined],
+      ['module', 'extension', 'LibTmuxTablesExt', undefined], ['mcp-server', 'package', 'LibTmuxMCP', undefined],
+      ['companion', 'package', 'LibTmuxWorkspace', undefined],
     ])
     expect(byId('julia', 'LibTmuxMCP').path).toBe('packages/LibTmuxMCP')
+    expect(byId('julia', 'LibTmuxJSONExt').path).toBe('ext')
     // C++: a custom vcpkg registry port and CMake targets, so no host page names anything.
     expect(entries('cxx').map((entry) => [entry.kind, entry.label])).toEqual([
       ['library', 'libtmux'], ['source', 'libtmux-cxx'], ['source', 'vcpkg port'], ['target', 'libtmux::libtmux'],
-      ['testing', 'libtmux::testing'], ['mcp-server', 'libtmux-mcp-server'], ['cli', 'tmux-workspace'],
+      ['testing', 'libtmux::testing'], ['cli', 'libtmux-mcp-server'], ['cli', 'tmux-workspace'],
     ])
     expect(entries('cxx').filter((entry) => entry.package || entry.api)).toEqual([])
+  })
+
+  it('gives every command one kind, whatever it serves', () => {
+    const commands = Object.entries(INVENTORY).flatMap(([slug, list]) => list.filter((entry) => /^(?:command|executable|executable product)$/.test(entry.unit ?? ''))
+      .map((entry) => [slug, entry.id, entry.kind]))
+    expect(commands).toEqual([
+      ['go', 'libtmux-mcp', 'cli'], ['go', 'tmux-workspace', 'cli'], ['cxx', 'libtmux-mcp-server', 'cli'], ['cxx', 'tmux-workspace', 'cli'],
+      ['swift', 'product:libtmux-mcp', 'cli'], ['swift', 'product:tmux-workspace', 'cli'],
+    ])
+    // A package that offers a library as well as a command is judged by its role.
+    expect(entries('powershell').find((entry) => entry.id === 'LibTmux.Workspace')?.kind).toBe('companion')
+    for (const [slug, id] of [['py', 'tmuxp'], ['ruby', 'libtmux-workspace'], ['rs', 'tmux-workspace'], ['julia', 'LibTmuxWorkspace']]) {
+      expect(entries(slug!).find((entry) => entry.id === id)?.kind, `${slug}:${id}`).toBe('companion')
+    }
+    // A package that only installs a command is a command; the BOM is a standalone artifact.
+    for (const [slug, id] of [['ts', 'workspace-cli'], ['csharp', 'LibTmux.Workspace.Cli'], ['java', 'libtmux-workspace-cli']]) {
+      expect(entries(slug!).find((entry) => entry.id === id)?.kind, `${slug}:${id}`).toBe('cli')
+    }
+    expect(entries('java').find((entry) => entry.id === 'libtmux-bom')).toMatchObject({ kind: 'companion', unit: 'BOM' })
+  })
+
+  it('carries the import names and extensions a reader may type', () => {
+    const aliases = (slug: string, id: string) => entries(slug).find((entry) => entry.id === id)!.aliases
+    expect(aliases('java', 'libtmux-scala')).toContain('io.github.libtmux.scaladsl')
+    expect(aliases('scala', 'libtmux-scala')).toContain('io.github.libtmux.scaladsl')
+    expect(aliases('scala', 'libtmux-scala-cats')).toContain('io.github.libtmux.scaladsl.cats')
+    expect(aliases('scala', 'libtmux-scala-ox')).toContain('io.github.libtmux.scaladsl.ox')
+    expect(entries('py').find((entry) => entry.coordinate === 'libtmux.test')).toMatchObject({ kind: 'testing', path: 'src/libtmux/test' })
+    expect(entries('julia').filter((entry) => entry.unit === 'extension').map((entry) => entry.label)).toEqual(['LibTmuxJSONExt', 'LibTmuxTablesExt'])
   })
 
   it('gives Kotlin, Scala and F# their own primary package and the family’s repository', () => {
@@ -125,27 +210,47 @@ describe('port inventory', () => {
     }
     // Another repository keeps its own: Python’s companions are not directories of the library’s.
     expect(entries('py').map((entry) => entry.repo)).toEqual([
-      'tmux-python/libtmux', 'tmux-python/libtmux', 'tmux-python/tmuxp', 'tmux-python/libtmux-mcp',
+      'tmux-python/libtmux', 'tmux-python/libtmux', 'tmux-python/libtmux', 'tmux-python/tmuxp', 'tmux-python/tmuxp',
+      'tmux-python/libtmux-mcp', 'tmux-python/libtmux-mcp',
     ])
     expect(entries('py').find((entry) => entry.id === 'libtmux-mcp')?.ref).toBe('main')
   })
 
-  it('agrees with the port metadata the hero already shows', () => {
+  it('agrees with every field of the port metadata the hero already shows', () => {
     for (const port of PORTS) {
       const [library] = entries(port.slug)
-      expect(library!.repo, port.slug).toBe(port.repo)
-      expect(library!.package?.url, port.slug).toBe(port.registry?.url)
+      const list = published(port.slug)
+      expect(library!.repo, `${port.slug} repo`).toBe(port.repo)
+      // The vcpkg port is `libtmux`; the metadata's package name is the repository's.
+      expect(library!.coordinate, `${port.slug} packageName`).toBe(port.slug === 'cxx' ? 'libtmux' : port.packageName)
+      if (port.slug === 'cxx') expect(port.packageName).toBe('libtmux-cxx')
+      expect(library!.package?.url, `${port.slug} registry url`).toBe(port.registry?.url)
+      if (port.registry) {
+        expect(PACKAGE_HOSTS[library!.package!.host].name, `${port.slug} registry name`).toBe(port.registry.name)
+        expect(PACKAGE_HOSTS[library!.package!.host].icon, `${port.slug} registry icon`).toBe(port.registry.icon)
+      }
       // Swift's package documents nothing itself; its reference is its main module's DocC, which the hero's metadata does not name.
-      const documented = library!.api ?? entries(port.slug).find((entry) => entry.id === library!.reference)?.api
-      if (port.slug !== 'swift') expect(documented?.url, port.slug).toBe(port.ecosystemHost?.url)
-      if (port.source) expect(library!.path, port.slug).toBe(port.source.path)
-      if (port.registry) expect(PACKAGE_HOSTS[library!.package!.host].name, port.slug).toBe(port.registry.name)
+      const reference = library!.api ?? list.find((entry) => entry.id === library!.reference)?.api
+      if (port.slug !== 'swift') expect(reference?.url, `${port.slug} ecosystem url`).toBe(port.ecosystemHost?.url)
+      if (port.ecosystemHost) expect(reference?.tool ?? API_HOSTS[reference!.host].name, `${port.slug} ecosystem name`).toBe(port.ecosystemHost.name)
+      if (port.source) {
+        expect([library!.path, library!.ref], `${port.slug} source`).toEqual([port.source.path, port.source.ref])
+      }
       for (const documented of port.packages ?? []) {
-        const match = published(port.slug).find((entry) => entry.package?.url === documented.registry
-          || (documented.source && entry.repo === (documented.source.repo ?? port.repo) && entry.path === documented.source.path))
-        expect(match, `${port.slug} ${documented.name}`).toBeDefined()
-        if (documented.registry) expect(match!.package?.url).toBe(documented.registry)
-        if (documented.reference) expect(match!.api?.url).toBe(documented.reference)
+        const where = `${port.slug} ${documented.name}`
+        const coordinate = documented.coordinate ?? documented.name
+        // Every field the metadata gives is held by an entry that carries it; one entry need not hold them all, as Go's
+        // module page and its command directory are separate entries.
+        expect(list.some((entry) => entry.coordinate === coordinate || entry.label === documented.name), `${where} name`).toBe(true)
+        if (documented.registry) expect(list.some((entry) => entry.package?.url === documented.registry && (entry.coordinate === coordinate || entry.label === documented.name)), `${where} registry`).toBe(true)
+        if (documented.reference) expect(list.some((entry) => entry.api?.url === documented.reference), `${where} reference`).toBe(true)
+        if (documented.source) {
+          const { repo = port.repo, path, ref } = documented.source
+          expect(list.some((entry) => entry.repo === repo && entry.path === path && entry.ref === ref), `${where} source`).toBe(true)
+        }
+        for (const word of [documented.require, documented.executable]) {
+          if (word) expect(list.some((entry) => [entry.coordinate, entry.label, ...entry.aliases].includes(word)), `${where} ${word}`).toBe(true)
+        }
       }
     }
   })
@@ -216,7 +321,7 @@ describe('port inventory', () => {
         expect(documented?.status).toBe('published')
       }
     }
-    expect(entries('swift')[0]!.reference).toBe('LibTmux')
+    expect(entries('swift')[0]!.reference).toBe('target:LibTmux')
   })
 
   it('builds a source link from a directory, or the repository when there is none', () => {

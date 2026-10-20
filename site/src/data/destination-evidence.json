@@ -905,6 +905,22 @@
       ]
     },
     {
+      "url": "https://github.com/libtmux/libtmux-julia/tree/master/ext",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-julia/tree/master/ext",
+      "identity": "libtmux/libtmux-julia/ext",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "julia:LibTmuxJSONExt",
+        "julia:LibTmuxTablesExt"
+      ]
+    },
+    {
       "url": "https://github.com/libtmux/libtmux-julia/tree/master/packages/LibTmuxMCP",
       "kinds": [
         "source"
@@ -1187,7 +1203,8 @@
       "identity": "libtmux/libtmux-swift/Sources/LibTmux",
       "checkedAt": "2026-10-20",
       "entries": [
-        "swift:LibTmux"
+        "swift:target:LibTmux",
+        "swift:product:LibTmux"
       ]
     },
     {
@@ -1202,7 +1219,8 @@
       "identity": "libtmux/libtmux-swift/Sources/libtmux-mcp",
       "checkedAt": "2026-10-20",
       "entries": [
-        "swift:libtmux-mcp"
+        "swift:target:libtmux-mcp",
+        "swift:product:libtmux-mcp"
       ]
     },
     {
@@ -1217,7 +1235,8 @@
       "identity": "libtmux/libtmux-swift/Sources/LibTmuxMCP",
       "checkedAt": "2026-10-20",
       "entries": [
-        "swift:LibTmuxMCP"
+        "swift:target:LibTmuxMCP",
+        "swift:product:LibTmuxMCP"
       ]
     },
     {
@@ -1232,7 +1251,8 @@
       "identity": "libtmux/libtmux-swift/Sources/TmuxWorkspace",
       "checkedAt": "2026-10-20",
       "entries": [
-        "swift:TmuxWorkspace"
+        "swift:target:TmuxWorkspace",
+        "swift:product:TmuxWorkspace"
       ]
     },
     {
@@ -1247,7 +1267,8 @@
       "identity": "libtmux/libtmux-swift/Sources/TmuxWorkspaceCLI",
       "checkedAt": "2026-10-20",
       "entries": [
-        "swift:tmux-workspace"
+        "swift:target:TmuxWorkspaceCLI",
+        "swift:product:tmux-workspace"
       ]
     },
     {
@@ -1262,7 +1283,8 @@
       "identity": "libtmux/libtmux-swift/Tests/TmuxFixture",
       "checkedAt": "2026-10-20",
       "entries": [
-        "swift:TmuxFixture"
+        "swift:target:TmuxFixture",
+        "swift:product:TmuxFixture"
       ]
     },
     {
@@ -1369,7 +1391,37 @@
       "identity": "tmux-python/libtmux-mcp",
       "checkedAt": "2026-10-20",
       "entries": [
+        "py:libtmux-mcp-repository"
+      ]
+    },
+    {
+      "url": "https://github.com/tmux-python/libtmux-mcp/tree/main/src/libtmux_mcp",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/tmux-python/libtmux-mcp/tree/main/src/libtmux_mcp",
+      "identity": "tmux-python/libtmux-mcp/src/libtmux_mcp",
+      "checkedAt": "2026-10-20",
+      "entries": [
         "py:libtmux-mcp"
+      ]
+    },
+    {
+      "url": "https://github.com/tmux-python/libtmux/tree/master/src/libtmux/test",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/tmux-python/libtmux/tree/master/src/libtmux/test",
+      "identity": "tmux-python/libtmux/src/libtmux/test",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "py:test-module"
       ]
     },
     {
@@ -1382,6 +1434,21 @@
       "status": 200,
       "requested": "https://github.com/tmux-python/tmuxp",
       "identity": "tmux-python/tmuxp",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "py:tmuxp-repository"
+      ]
+    },
+    {
+      "url": "https://github.com/tmux-python/tmuxp/tree/master/src/tmuxp",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/tmux-python/tmuxp/tree/master/src/tmuxp",
+      "identity": "tmux-python/tmuxp/src/tmuxp",
       "checkedAt": "2026-10-20",
       "entries": [
         "py:tmuxp"
@@ -1795,7 +1862,8 @@
       "checkedAt": "2026-10-20",
       "entries": [
         "py:libtmux",
-        "py:pytest-plugin"
+        "py:pytest-plugin",
+        "py:test-module"
       ]
     },
     {
@@ -1904,12 +1972,12 @@
       "checkedAt": "2026-10-20",
       "entries": [
         "swift:libtmux-swift",
-        "swift:LibTmux",
-        "swift:TmuxFixture",
-        "swift:LibTmuxMCP",
-        "swift:libtmux-mcp",
-        "swift:TmuxWorkspace",
-        "swift:tmux-workspace"
+        "swift:product:LibTmux",
+        "swift:product:TmuxFixture",
+        "swift:product:LibTmuxMCP",
+        "swift:product:libtmux-mcp",
+        "swift:product:TmuxWorkspace",
+        "swift:product:tmux-workspace"
       ]
     },
     {
@@ -1925,7 +1993,7 @@
       "version": "0.1.0-alpha.6",
       "checkedAt": "2026-10-20",
       "entries": [
-        "swift:LibTmux"
+        "swift:target:LibTmux"
       ]
     },
     {
@@ -1941,7 +2009,7 @@
       "version": "0.1.0-alpha.6",
       "checkedAt": "2026-10-20",
       "entries": [
-        "swift:LibTmuxMCP"
+        "swift:target:LibTmuxMCP"
       ]
     },
     {
@@ -1957,7 +2025,7 @@
       "version": "0.1.0-alpha.6",
       "checkedAt": "2026-10-20",
       "entries": [
-        "swift:TmuxWorkspace"
+        "swift:target:TmuxWorkspace"
       ]
     },
     {
@@ -1986,7 +2054,7 @@
       "status": 200,
       "requested": "https://registry.npmjs.org/@libtmux%2fmcp",
       "identity": "@libtmux/mcp",
-      "version": "0.1.0-alpha.13",
+      "version": "0.1.0-alpha.14",
       "pageStatus": 403,
       "checkedAt": "2026-10-20",
       "entries": [
@@ -2003,7 +2071,7 @@
       "status": 200,
       "requested": "https://registry.npmjs.org/@libtmux%2fworkspace",
       "identity": "@libtmux/workspace",
-      "version": "0.1.0-alpha.13",
+      "version": "0.1.0-alpha.14",
       "pageStatus": 403,
       "checkedAt": "2026-10-20",
       "entries": [
@@ -2020,7 +2088,7 @@
       "status": 200,
       "requested": "https://registry.npmjs.org/@libtmux%2fworkspace-cli",
       "identity": "@libtmux/workspace-cli",
-      "version": "0.1.0-alpha.13",
+      "version": "0.1.0-alpha.14",
       "pageStatus": 403,
       "checkedAt": "2026-10-20",
       "entries": [
@@ -2037,7 +2105,7 @@
       "status": 200,
       "requested": "https://registry.npmjs.org/libtmux",
       "identity": "libtmux",
-      "version": "0.1.0-alpha.13",
+      "version": "0.1.0-alpha.14",
       "pageStatus": 403,
       "expectedVersion": "0.1.0-alpha.12",
       "versionFound": true,

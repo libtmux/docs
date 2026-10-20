@@ -18,7 +18,7 @@ describe('header links', () => {
   it.each(Object.entries(LINKS))('offers %s the verified actions and index rows', (slug, expected) => {
     const actual = links(slug)
     expect(actual.actions.map((action) => [action.kind, action.label, action.name, action.url]), `${slug} actions`).toEqual(expected.actions.map((action) => [...action]))
-    expect(actual.rows.map((row) => [row.kind, row.label, row.detail, row.url]), `${slug} rows`).toEqual(expected.rows.map((row) => [...row]))
+    expect(actual.rows.map((row) => [row.kind, row.label, row.detail, row.url, row.entries]), `${slug} rows`).toEqual(expected.rows.map((row) => [...row]))
     expect(actual.indexed, `${slug} lists a destination no direct link opens`).toBe(expected.indexed)
   })
 
@@ -60,8 +60,14 @@ describe('header links', () => {
     }
     // A Swift product has no page apart from its package; each is found by its own name.
     const swift = links('swift').rows.find((row) => row.url === 'https://swiftpackageindex.com/libtmux/libtmux-swift')!
-    expect(swift.entries).toEqual(['libtmux-swift', 'LibTmux', 'TmuxFixture', 'LibTmuxMCP', 'libtmux-mcp', 'TmuxWorkspace', 'tmux-workspace'])
-    for (const name of ['LibTmux', 'TmuxFixture', 'LibTmuxMCP', 'TmuxWorkspace', 'import TmuxWorkspace', 'TmuxWorkspaceCLI']) expect(matchesSearch(swift, name), name).toBe(true)
+    expect(swift.entries).toEqual(['libtmux-swift', 'product:LibTmux', 'product:TmuxFixture', 'product:LibTmuxMCP', 'product:libtmux-mcp',
+      'product:TmuxWorkspace', 'product:tmux-workspace'])
+    for (const name of ['LibTmux', 'TmuxFixture', 'LibTmuxMCP', 'TmuxWorkspace', 'import TmuxWorkspace', 'tmux-workspace']) expect(matchesSearch(swift, name), name).toBe(true)
+    // A target and its product share a directory, so they share a row and the row answers to both words.
+    const target = links('swift').rows.find((row) => row.entries.includes('target:TmuxWorkspaceCLI'))!
+    expect(target.entries).toEqual(['target:TmuxWorkspaceCLI', 'product:tmux-workspace'])
+    expect(target.detail).toBe('executable target · Sources/TmuxWorkspaceCLI')
+    for (const word of ['target', 'product', 'executable', 'TmuxWorkspaceCLI', 'tmux-workspace']) expect(matchesSearch(target, word), word).toBe(true)
     // Python’s pytest plugin ships in the libtmux distribution.
     expect(found('py', 'libtmux.pytest_plugin')).toEqual(['source:libtmux', 'package:libtmux'])
     // A TypeScript subpath export is the library’s page, not a package of its own.
@@ -71,7 +77,7 @@ describe('header links', () => {
   })
 
   it('searches labels, coordinates, import aliases, hosts and repository names', () => {
-    expect(found('py', 'tmuxp')).toEqual(['source:tmuxp', 'package:tmuxp'])
+    expect(found('py', 'tmuxp')).toEqual(['source:tmuxp', 'source:tmuxp', 'package:tmuxp'])
     expect(found('java', 'io.github.libtmux:libtmux-mcp')).toEqual(['source:libtmux-mcp', 'package:libtmux-mcp', 'api:libtmux-mcp'])
     expect(found('ruby', 'libtmux/async')).toEqual(['source:libtmux-async', 'package:libtmux-async'])
     expect(found('ts', '@libtmux/workspace/config')).toEqual(['source:@libtmux/workspace', 'package:@libtmux/workspace'])
@@ -79,7 +85,7 @@ describe('header links', () => {
     expect(found('rs', 'libtmux_macros')).toEqual(['source:libtmux-macros', 'package:libtmux-macros', 'api:libtmux-macros'])
     // A repository name finds everything built from that repository.
     expect(found('rs', 'libtmux-rs')).toHaveLength(links('rs').rows.length)
-    expect(found('py', 'tmux-python/libtmux-mcp')).toEqual(['source:libtmux-mcp', 'package:libtmux-mcp'])
+    expect(found('py', 'tmux-python/libtmux-mcp')).toEqual(['source:libtmux-mcp', 'source:libtmux-mcp', 'package:libtmux-mcp'])
     // A host, a kind of destination and a product narrow the list; every word must match.
     expect(found('rs', 'docs.rs')).toEqual(['api:libtmux', 'api:libtmux-macros', 'api:tmux-mcp', 'api:tmux-workspace'])
     expect(found('rs', 'crates mcp')).toEqual(['source:tmux-mcp', 'package:tmux-mcp'])
@@ -88,7 +94,7 @@ describe('header links', () => {
     // Words match inside names, so a reader need not know the exact spelling.
     expect(found('csharp', 'dependency injection')).toEqual(['source:LibTmux.Extensions.DependencyInjection', 'package:LibTmux.Extensions.DependencyInjection'])
     expect(found('cxx', 'COMPONENTS testing')).toEqual(['source:libtmux::testing'])
-    expect(found('cxx', 'vcpkg')).toEqual(['source:vcpkg port', 'source:libtmux-mcp-server'])
+    expect(found('cxx', 'vcpkg')).toEqual(['source:libtmux', 'source:vcpkg port', 'source:libtmux-mcp-server'])
     // Control: a word nothing carries finds nothing, and an empty query leaves every row.
     expect(found('rs', 'no such destination')).toEqual([])
     expect(found('rs', '   ')).toHaveLength(links('rs').rows.length)
@@ -116,6 +122,83 @@ describe('header links', () => {
       const excluded = INVENTORY[port.slug]!.filter((entry) => entry.status !== 'published')
       for (const entry of excluded) expect(links(port.slug).rows.flatMap((row) => row.entries), `${port.slug} ${entry.id}`).not.toContain(entry.id)
     }
+  })
+
+  it('finds a kind by its words: cli and command line are one search, and a Swift product, target and executable each find theirs', () => {
+    const words = (slug: string, query: string) => found(slug, query).join(' ')
+    expect(found('go', 'cli')).toEqual(found('go', 'command line'))
+    expect(found('go', 'cli')).toEqual(found('go', 'command'))
+    expect(found('go', 'cli')).toEqual(['source:libtmux-mcp', 'source:tmux-workspace', 'package:libtmux-mcp', 'package:tmux-workspace'])
+    expect(found('cxx', 'executable')).toEqual(found('cxx', 'command line'))
+    expect(found('swift', 'executable')).toEqual(found('swift', 'cli'))
+    // Each Swift word returns something, and the three differ.
+    const swift = { product: found('swift', 'product'), target: found('swift', 'target'), executable: found('swift', 'executable') }
+    for (const [word, rows] of Object.entries(swift)) expect(rows.length, word).toBeGreaterThan(0)
+    expect(swift.executable).toEqual(['source:libtmux-mcp', 'source:TmuxWorkspaceCLI', 'package:libtmux-swift'])
+    expect(words('swift', 'executable target')).toContain('source:TmuxWorkspaceCLI')
+    expect(found('swift', 'target')).toContain('api:LibTmux')
+    expect(found('swift', 'product')).toContain('package:libtmux-swift')
+    // A Go module and a Go package are different words for different rows.
+    expect(found('go', 'module')).toEqual(['source:libtmux-go', 'source:mcp', 'source:workspace', 'package:libtmux-go', 'package:mcp', 'package:workspace'])
+    expect(found('go', 'package tmuxq')).toEqual(['source:tmuxq', 'package:tmuxq'])
+    expect(found('java', 'bom')).toEqual(['source:libtmux-bom', 'package:libtmux-bom'])
+  })
+
+  it('shows the ecosystem’s word where the label alone leaves two things alike', () => {
+    const detail = (slug: string, kind: string, label: string) => links(slug).rows.find((row) => row.kind === kind && row.label === label)!.detail
+    expect(detail('go', 'package', 'mcp')).toBe('module · libtmux-go/mcp')
+    expect(detail('go', 'package', 'tmuxq')).toBe('package · libtmux-go/tmuxq')
+    expect(detail('go', 'package', 'tmux-workspace')).toBe('command · libtmux-go/workspace/cmd/tmux-workspace')
+    expect(detail('swift', 'source', 'TmuxFixture')).toBe('target · Tests/TmuxFixture')
+    expect(detail('swift', 'api', 'LibTmuxMCP')).toBe('target · DocC · Swift Package Index')
+    expect(detail('java', 'package', 'libtmux-bom')).toBe('BOM · io.github.libtmux:libtmux-bom')
+    // A path in the port’s own repository drops the repository name; another repository keeps it.
+    expect(detail('rs', 'source', 'tmux-mcp')).toBe('crates/tmux-mcp')
+    expect(detail('py', 'source', 'tmuxp')).toBe('tmuxp/src/tmuxp')
+  })
+
+  it('keeps every detail to one short line, so a panel never wraps one', () => {
+    let longest = ''
+    for (const port of PORTS) {
+      for (const row of links(port.slug).rows) {
+        expect(row.detail.length, `${port.slug} ${row.kind} ${row.label}: ${row.detail}`).toBeLessThanOrEqual(50)
+        if (row.detail.length > longest.length) longest = row.detail
+      }
+    }
+    // Control: the longest line is close to the bound, so the bound is tight enough to bite.
+    expect(longest.length).toBeGreaterThan(38)
+  })
+
+  it('never puts two chips with the same mark side by side', () => {
+    const marks = (slug: string) => links(slug).actions.map((action) => action.icon)
+    for (const port of PORTS) {
+      const icons = marks(port.slug)
+      icons.forEach((icon, index) => { if (index > 0) expect(icon, `${port.slug}: ${icons.join(', ')}`).not.toBe(icons[index - 1]) })
+      // The disclosure's own box follows the last chip, so it is a mark none of them wears.
+      if (links(port.slug).indexed) expect(icons, port.slug).not.toContain('packages')
+    }
+    // Swift's package page wears the Swift mark and its DocC reference does not.
+    expect(marks('swift')).toEqual(['github', 'swift', 'docc'])
+    expect(marks('java')).toEqual(['github', 'maven', 'javadoc'])
+    expect(marks('rs')).toEqual(['github', 'crates', 'docsrs'])
+    // Control: every reference chip wears a mark of the reference, not of the package host it follows.
+    for (const slug of ['rs', 'java', 'kotlin', 'scala', 'swift']) {
+      const [, pack, api] = links(slug).actions
+      expect(api!.icon, slug).not.toBe(pack!.icon)
+    }
+  })
+
+  it('changes a fixture row when an entry gains a destination, even one that adds no row', () => {
+    // A planned entry flipped to published with no path opens the repository, whose row already exists.
+    const flipped = INVENTORY.lua!.map((entry) => (entry.id === 'libtmux-mcp' ? { ...entry, status: 'published' as const } : entry))
+    const actual = portHeaderLinks(PORT_BY_SLUG.lua!, { ...INVENTORY, lua: flipped })
+    const asTuples = (rows: HeaderRow[]) => rows.map((row) => [row.kind, row.label, row.detail, row.url, row.entries])
+    expect(asTuples(actual.rows)).not.toEqual(LINKS.lua!.rows.map((row) => [...row]))
+    // The URLs are all the same; only the entries differ, which is what the fixture now holds.
+    expect(actual.rows.map((row) => row.url)).toEqual(LINKS.lua!.rows.map(([, , , url]) => url))
+    expect(actual.rows[0]!.entries).toEqual(['libtmux', 'libtmux-mcp'])
+    // Control: the unflipped inventory matches the fixture.
+    expect(asTuples(portHeaderLinks(PORT_BY_SLUG.lua!).rows)).toEqual(LINKS.lua!.rows.map((row) => [...row]))
   })
 
   it('links only to https pages on the hosts the inventory names, without version, locale or preview prefix', () => {
