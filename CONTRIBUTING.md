@@ -229,18 +229,32 @@ and table layout at desktop, tablet, and phone widths.
 ### Header destinations
 
 The port header links each repository, package page and API reference that
-[`port-inventory.ts`](site/src/lib/port-inventory.ts) publishes. A status in
-that file is a claim about a live host, so check it against the host after
-changing an entry or when a package is released:
+[`port-inventory.ts`](site/src/lib/port-inventory.ts) publishes. Two generated
+files hold it to the facts. `site/src/data/manifest-packages.json` lists what
+each port's owning manifests declare at the revision its API model is pinned to,
+and the inventory's tests require the two to agree in both directions. After
+changing an entry, or moving a port's pin, regenerate it from the local
+checkouts:
+
+```console
+$ node scripts/gen-manifest-packages.mjs
+```
+
+A status in the inventory is a claim about a live host, so check it against the
+host after changing an entry or when a package is released:
 
 ```console
 $ node scripts/verify-destinations.mjs
 ```
 
-The command requests each URL once, read-only, and requires the host's own
-identity for the package, not only a 200. It rewrites
-`site/src/data/destination-evidence.json`, which the unit tests and the
-publication audit compare with the inventory offline. It exits 1 when a
+The command requests each URL once, read-only. It requires the host's own
+identity for the package, not only a 200; a repository that a registry reports
+must be one of the entry's; and the version the manifest declares must be on
+every host that lists versions, with the record saying so where one cannot. It
+rewrites `site/src/data/destination-evidence.json`, which the unit tests and the
+publication audit compare with the inventory offline. Evidence older than
+`EVIDENCE_MAX_AGE_DAYS` in `scripts/lib/destination-verification.mjs` is stale
+and fails the same comparison. The command exits 1 when a
 published destination fails or an unlinked one starts to answer; commit the
 evidence with the inventory change that follows.
 

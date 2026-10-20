@@ -13,9 +13,11 @@
       "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux/maven-metadata.xml",
       "identity": "io.github.libtmux:libtmux",
       "version": "0.0.1-alpha.18",
+      "repository": "libtmux/libtmux-java",
       "pageStatus": 200,
       "expectedVersion": "0.0.1-alpha.17",
-      "versionFound": true,
+      "versionSource": "libtmux/libtmux-java:libtmux/build.gradle.kts",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "java:libtmux",
@@ -34,7 +36,11 @@
       "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-bom/maven-metadata.xml",
       "identity": "io.github.libtmux:libtmux-bom",
       "version": "0.0.1-alpha.18",
+      "repository": "libtmux/libtmux-java",
       "pageStatus": 200,
+      "expectedVersion": "0.0.1-alpha.17",
+      "versionSource": "libtmux/libtmux-java:libtmux-bom/build.gradle.kts",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "java:libtmux-bom"
@@ -51,7 +57,11 @@
       "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-jackson/maven-metadata.xml",
       "identity": "io.github.libtmux:libtmux-jackson",
       "version": "0.0.1-alpha.18",
+      "repository": "libtmux/libtmux-java",
       "pageStatus": 200,
+      "expectedVersion": "0.0.1-alpha.17",
+      "versionSource": "libtmux/libtmux-java:libtmux-jackson/build.gradle.kts",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "java:libtmux-jackson"
@@ -68,7 +78,11 @@
       "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-junit5/maven-metadata.xml",
       "identity": "io.github.libtmux:libtmux-junit5",
       "version": "0.0.1-alpha.18",
+      "repository": "libtmux/libtmux-java",
       "pageStatus": 200,
+      "expectedVersion": "0.0.1-alpha.17",
+      "versionSource": "libtmux/libtmux-java:libtmux-junit5/build.gradle.kts",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "java:libtmux-junit5"
@@ -85,9 +99,11 @@
       "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-kotlin/maven-metadata.xml",
       "identity": "io.github.libtmux:libtmux-kotlin",
       "version": "0.0.1-alpha.18",
+      "repository": "libtmux/libtmux-java",
       "pageStatus": 200,
       "expectedVersion": "0.0.1-alpha.17",
-      "versionFound": true,
+      "versionSource": "libtmux/libtmux-java:libtmux-kotlin/build.gradle.kts",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "java:libtmux-kotlin",
@@ -105,7 +121,11 @@
       "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-mcp/maven-metadata.xml",
       "identity": "io.github.libtmux:libtmux-mcp",
       "version": "0.0.1-alpha.18",
+      "repository": "libtmux/libtmux-java",
       "pageStatus": 200,
+      "expectedVersion": "0.0.1-alpha.17",
+      "versionSource": "libtmux/libtmux-java:libtmux-mcp/build.gradle.kts",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "java:libtmux-mcp"
@@ -122,9 +142,11 @@
       "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-scala_3/maven-metadata.xml",
       "identity": "io.github.libtmux:libtmux-scala_3",
       "version": "0.0.1-alpha.18",
+      "repository": "libtmux/libtmux-java",
       "pageStatus": 200,
       "expectedVersion": "0.0.1-alpha.17",
-      "versionFound": true,
+      "versionSource": "libtmux/libtmux-java:libtmux-scala/build.gradle.kts",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "java:libtmux-scala",
@@ -142,7 +164,11 @@
       "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-scala-cats_3/maven-metadata.xml",
       "identity": "io.github.libtmux:libtmux-scala-cats_3",
       "version": "0.0.1-alpha.18",
+      "repository": "libtmux/libtmux-java",
       "pageStatus": 200,
+      "expectedVersion": "0.0.1-alpha.17",
+      "versionSource": "libtmux/libtmux-java:libtmux-scala-cats/build.gradle.kts",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "java:libtmux-scala-cats",
@@ -160,7 +186,11 @@
       "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-scala-ox_3/maven-metadata.xml",
       "identity": "io.github.libtmux:libtmux-scala-ox_3",
       "version": "0.0.1-alpha.18",
+      "repository": "libtmux/libtmux-java",
       "pageStatus": 200,
+      "expectedVersion": "0.0.1-alpha.17",
+      "versionSource": "libtmux/libtmux-java:libtmux-scala-ox/build.gradle.kts",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "java:libtmux-scala-ox",
@@ -178,7 +208,11 @@
       "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-workspace/maven-metadata.xml",
       "identity": "io.github.libtmux:libtmux-workspace",
       "version": "0.0.1-alpha.18",
+      "repository": "libtmux/libtmux-java",
       "pageStatus": 200,
+      "expectedVersion": "0.0.1-alpha.17",
+      "versionSource": "libtmux/libtmux-java:libtmux-workspace/build.gradle.kts",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "java:libtmux-workspace"
@@ -195,7 +229,11 @@
       "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-workspace-cli/maven-metadata.xml",
       "identity": "io.github.libtmux:libtmux-workspace-cli",
       "version": "0.0.1-alpha.18",
+      "repository": "libtmux/libtmux-java",
       "pageStatus": 200,
+      "expectedVersion": "0.0.1-alpha.17",
+      "versionSource": "libtmux/libtmux-java:libtmux-workspace-cli/build.gradle.kts",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "java:libtmux-workspace-cli"
@@ -228,9 +266,11 @@
       "requested": "https://crates.io/api/v1/crates/libtmux",
       "identity": "libtmux",
       "version": "0.1.0-alpha.16",
+      "repository": "libtmux/libtmux-rs",
       "pageStatus": 200,
-      "expectedVersion": "0.1.0-alpha.14",
-      "versionFound": true,
+      "expectedVersion": "0.1.0-alpha.15",
+      "versionSource": "libtmux/libtmux-rs:crates/libtmux/Cargo.toml",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "rs:libtmux"
@@ -247,7 +287,11 @@
       "requested": "https://crates.io/api/v1/crates/libtmux-macros",
       "identity": "libtmux-macros",
       "version": "0.1.0-alpha.16",
+      "repository": "libtmux/libtmux-rs",
       "pageStatus": 200,
+      "expectedVersion": "0.1.0-alpha.15",
+      "versionSource": "libtmux/libtmux-rs:crates/libtmux-macros/Cargo.toml",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "rs:libtmux-macros"
@@ -264,7 +308,11 @@
       "requested": "https://crates.io/api/v1/crates/tmux-mcp",
       "identity": "tmux-mcp",
       "version": "0.1.0-alpha.17",
+      "repository": "libtmux/libtmux-rs",
       "pageStatus": 200,
+      "expectedVersion": "0.1.0-alpha.16",
+      "versionSource": "libtmux/libtmux-rs:crates/tmux-mcp/Cargo.toml",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "rs:tmux-mcp"
@@ -281,7 +329,11 @@
       "requested": "https://crates.io/api/v1/crates/tmux-workspace",
       "identity": "tmux-workspace",
       "version": "0.1.0-alpha.16",
+      "repository": "libtmux/libtmux-rs",
       "pageStatus": 200,
+      "expectedVersion": "0.1.0-alpha.15",
+      "versionSource": "libtmux/libtmux-rs:crates/tmux-workspace/Cargo.toml",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "rs:tmux-workspace"
@@ -297,7 +349,9 @@
       "status": 200,
       "requested": "https://docs.rs/libtmux",
       "identity": "libtmux",
-      "version": "latest",
+      "expectedVersion": "0.1.0-alpha.15",
+      "versionSource": "libtmux/libtmux-rs:crates/libtmux/Cargo.toml",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "rs:libtmux"
@@ -313,7 +367,9 @@
       "status": 200,
       "requested": "https://docs.rs/libtmux-macros",
       "identity": "libtmux-macros",
-      "version": "latest",
+      "expectedVersion": "0.1.0-alpha.15",
+      "versionSource": "libtmux/libtmux-rs:crates/libtmux-macros/Cargo.toml",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "rs:libtmux-macros"
@@ -329,7 +385,9 @@
       "status": 200,
       "requested": "https://docs.rs/tmux-mcp",
       "identity": "tmux-mcp",
-      "version": "latest",
+      "expectedVersion": "0.1.0-alpha.16",
+      "versionSource": "libtmux/libtmux-rs:crates/tmux-mcp/Cargo.toml",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "rs:tmux-mcp"
@@ -345,7 +403,9 @@
       "status": 200,
       "requested": "https://docs.rs/tmux-workspace",
       "identity": "tmux-workspace",
-      "version": "latest",
+      "expectedVersion": "0.1.0-alpha.15",
+      "versionSource": "libtmux/libtmux-rs:crates/tmux-workspace/Cargo.toml",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "rs:tmux-workspace"
@@ -361,6 +421,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-cxx",
       "identity": "libtmux/libtmux-cxx",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "cxx:libtmux",
@@ -377,6 +439,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-cxx/tree/master/apps/mcp",
       "identity": "libtmux/libtmux-cxx/apps/mcp",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "cxx:libtmux-mcp-server"
@@ -392,6 +456,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-cxx/tree/master/apps/workspace",
       "identity": "libtmux/libtmux-cxx/apps/workspace",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "cxx:tmux-workspace"
@@ -407,6 +473,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-cxx/tree/master/ports/libtmux",
       "identity": "libtmux/libtmux-cxx/ports/libtmux",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "cxx:vcpkg-registry"
@@ -422,6 +490,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-cxx/tree/master/src",
       "identity": "libtmux/libtmux-cxx/src",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "cxx:libtmux-target"
@@ -437,6 +507,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-cxx/tree/master/src/testing",
       "identity": "libtmux/libtmux-cxx/src/testing",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "cxx:libtmux-testing"
@@ -452,6 +524,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-dotnet",
       "identity": "libtmux/libtmux-dotnet",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "csharp:repository",
@@ -468,6 +542,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux",
       "identity": "libtmux/libtmux-dotnet/src/LibTmux",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "csharp:LibTmux",
@@ -484,6 +560,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux.Extensions.DependencyInjection",
       "identity": "libtmux/libtmux-dotnet/src/LibTmux.Extensions.DependencyInjection",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "csharp:LibTmux.Extensions.DependencyInjection"
@@ -499,6 +577,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux.FSharp",
       "identity": "libtmux/libtmux-dotnet/src/LibTmux.FSharp",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "csharp:LibTmux.FSharp",
@@ -515,6 +595,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux.Mcp",
       "identity": "libtmux/libtmux-dotnet/src/LibTmux.Mcp",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "csharp:LibTmux.Mcp"
@@ -530,6 +612,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux.Query.Json",
       "identity": "libtmux/libtmux-dotnet/src/LibTmux.Query.Json",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "csharp:LibTmux.Query.Json"
@@ -545,6 +629,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux.Testing",
       "identity": "libtmux/libtmux-dotnet/src/LibTmux.Testing",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "csharp:LibTmux.Testing"
@@ -560,6 +646,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux.Workspace",
       "identity": "libtmux/libtmux-dotnet/src/LibTmux.Workspace",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "csharp:LibTmux.Workspace"
@@ -575,6 +663,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux.Workspace.Cli",
       "identity": "libtmux/libtmux-dotnet/src/LibTmux.Workspace.Cli",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "csharp:LibTmux.Workspace.Cli"
@@ -590,6 +680,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-go",
       "identity": "libtmux/libtmux-go",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "go:repository",
@@ -606,6 +698,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-go/tree/master/mcp",
       "identity": "libtmux/libtmux-go/mcp",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "go:mcp"
@@ -621,6 +715,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-go/tree/master/mcp/cmd/libtmux-mcp",
       "identity": "libtmux/libtmux-go/mcp/cmd/libtmux-mcp",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "go:libtmux-mcp"
@@ -636,6 +732,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-go/tree/master/tmux",
       "identity": "libtmux/libtmux-go/tmux",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "go:tmux"
@@ -651,6 +749,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-go/tree/master/tmux/tmuxtest",
       "identity": "libtmux/libtmux-go/tmux/tmuxtest",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "go:tmuxtest"
@@ -666,6 +766,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-go/tree/master/tmuxq",
       "identity": "libtmux/libtmux-go/tmuxq",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "go:tmuxq"
@@ -681,6 +783,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-go/tree/master/workspace",
       "identity": "libtmux/libtmux-go/workspace",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "go:workspace"
@@ -696,6 +800,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-go/tree/master/workspace/cmd/tmux-workspace",
       "identity": "libtmux/libtmux-go/workspace/cmd/tmux-workspace",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "go:tmux-workspace"
@@ -711,6 +817,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-java",
       "identity": "libtmux/libtmux-java",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "java:repository",
@@ -728,6 +836,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-java/tree/master/libtmux",
       "identity": "libtmux/libtmux-java/libtmux",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "java:libtmux",
@@ -745,6 +855,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-bom",
       "identity": "libtmux/libtmux-java/libtmux-bom",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "java:libtmux-bom"
@@ -760,6 +872,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-jackson",
       "identity": "libtmux/libtmux-java/libtmux-jackson",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "java:libtmux-jackson"
@@ -775,6 +889,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-junit5",
       "identity": "libtmux/libtmux-java/libtmux-junit5",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "java:libtmux-junit5"
@@ -790,6 +906,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-kotlin",
       "identity": "libtmux/libtmux-java/libtmux-kotlin",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "java:libtmux-kotlin",
@@ -806,6 +924,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-mcp",
       "identity": "libtmux/libtmux-java/libtmux-mcp",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "java:libtmux-mcp"
@@ -821,6 +941,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-scala",
       "identity": "libtmux/libtmux-java/libtmux-scala",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "java:libtmux-scala",
@@ -837,6 +959,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-scala-cats",
       "identity": "libtmux/libtmux-java/libtmux-scala-cats",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "java:libtmux-scala-cats",
@@ -853,6 +977,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-scala-ox",
       "identity": "libtmux/libtmux-java/libtmux-scala-ox",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "java:libtmux-scala-ox",
@@ -869,6 +995,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-workspace",
       "identity": "libtmux/libtmux-java/libtmux-workspace",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "java:libtmux-workspace"
@@ -884,6 +1012,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-workspace-cli",
       "identity": "libtmux/libtmux-java/libtmux-workspace-cli",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "java:libtmux-workspace-cli"
@@ -899,6 +1029,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-julia",
       "identity": "libtmux/libtmux-julia",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "julia:repository"
@@ -914,6 +1046,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-julia/tree/master/ext",
       "identity": "libtmux/libtmux-julia/ext",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "julia:LibTmuxJSONExt",
@@ -930,6 +1064,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-julia/tree/master/packages/LibTmuxMCP",
       "identity": "libtmux/libtmux-julia/packages/LibTmuxMCP",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "julia:LibTmuxMCP"
@@ -945,6 +1081,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-julia/tree/master/packages/LibTmuxWorkspace",
       "identity": "libtmux/libtmux-julia/packages/LibTmuxWorkspace",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "julia:LibTmuxWorkspace"
@@ -960,6 +1098,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-julia/tree/master/src",
       "identity": "libtmux/libtmux-julia/src",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "julia:LibTmux",
@@ -976,6 +1116,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-lua",
       "identity": "libtmux/libtmux-lua",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "lua:libtmux"
@@ -991,6 +1133,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-powershell",
       "identity": "libtmux/libtmux-powershell",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "powershell:repository"
@@ -1006,6 +1150,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-powershell/tree/master/src/LibTmux.PowerShell",
       "identity": "libtmux/libtmux-powershell/src/LibTmux.PowerShell",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "powershell:LibTmux"
@@ -1021,6 +1167,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-powershell/tree/master/src/LibTmux.Workspace.PowerShell",
       "identity": "libtmux/libtmux-powershell/src/LibTmux.Workspace.PowerShell",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "powershell:LibTmux.Workspace"
@@ -1036,6 +1184,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-rs",
       "identity": "libtmux/libtmux-rs",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "rs:repository"
@@ -1051,6 +1201,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-rs/tree/master/crates/libtmux",
       "identity": "libtmux/libtmux-rs/crates/libtmux",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "rs:libtmux"
@@ -1066,6 +1218,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-rs/tree/master/crates/libtmux-macros",
       "identity": "libtmux/libtmux-rs/crates/libtmux-macros",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "rs:libtmux-macros"
@@ -1081,6 +1235,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-rs/tree/master/crates/tmux-mcp",
       "identity": "libtmux/libtmux-rs/crates/tmux-mcp",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "rs:tmux-mcp"
@@ -1096,6 +1252,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-rs/tree/master/crates/tmux-workspace",
       "identity": "libtmux/libtmux-rs/crates/tmux-workspace",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "rs:tmux-workspace"
@@ -1111,6 +1269,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-ruby",
       "identity": "libtmux/libtmux-ruby",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "ruby:repository"
@@ -1126,6 +1286,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-ruby/tree/master/gems/libtmux",
       "identity": "libtmux/libtmux-ruby/gems/libtmux",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "ruby:libtmux"
@@ -1141,6 +1303,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-ruby/tree/master/gems/libtmux-async",
       "identity": "libtmux/libtmux-ruby/gems/libtmux-async",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "ruby:libtmux-async"
@@ -1156,6 +1320,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-ruby/tree/master/gems/libtmux-mcp",
       "identity": "libtmux/libtmux-ruby/gems/libtmux-mcp",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "ruby:libtmux-mcp"
@@ -1171,6 +1337,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-ruby/tree/master/gems/libtmux-workspace",
       "identity": "libtmux/libtmux-ruby/gems/libtmux-workspace",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "ruby:libtmux-workspace"
@@ -1186,6 +1354,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-swift",
       "identity": "libtmux/libtmux-swift",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "swift:libtmux-swift"
@@ -1201,6 +1371,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-swift/tree/master/Sources/LibTmux",
       "identity": "libtmux/libtmux-swift/Sources/LibTmux",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "swift:target:LibTmux",
@@ -1217,6 +1389,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-swift/tree/master/Sources/libtmux-mcp",
       "identity": "libtmux/libtmux-swift/Sources/libtmux-mcp",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "swift:target:libtmux-mcp",
@@ -1233,6 +1407,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-swift/tree/master/Sources/LibTmuxMCP",
       "identity": "libtmux/libtmux-swift/Sources/LibTmuxMCP",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "swift:target:LibTmuxMCP",
@@ -1249,6 +1425,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-swift/tree/master/Sources/TmuxWorkspace",
       "identity": "libtmux/libtmux-swift/Sources/TmuxWorkspace",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "swift:target:TmuxWorkspace",
@@ -1265,6 +1443,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-swift/tree/master/Sources/TmuxWorkspaceCLI",
       "identity": "libtmux/libtmux-swift/Sources/TmuxWorkspaceCLI",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "swift:target:TmuxWorkspaceCLI",
@@ -1281,6 +1461,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-swift/tree/master/Tests/TmuxFixture",
       "identity": "libtmux/libtmux-swift/Tests/TmuxFixture",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "swift:target:TmuxFixture",
@@ -1297,6 +1479,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-ts",
       "identity": "libtmux/libtmux-ts",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "ts:repository"
@@ -1312,6 +1496,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-ts/tree/master/packages/libtmux",
       "identity": "libtmux/libtmux-ts/packages/libtmux",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "ts:libtmux",
@@ -1328,6 +1514,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-ts/tree/master/packages/mcp",
       "identity": "libtmux/libtmux-ts/packages/mcp",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "ts:mcp"
@@ -1343,6 +1531,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-ts/tree/master/packages/workspace",
       "identity": "libtmux/libtmux-ts/packages/workspace",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "ts:workspace"
@@ -1358,6 +1548,8 @@
       "status": 200,
       "requested": "https://github.com/libtmux/libtmux-ts/tree/master/packages/workspace-cli",
       "identity": "libtmux/libtmux-ts/packages/workspace-cli",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "ts:workspace-cli"
@@ -1373,6 +1565,8 @@
       "status": 200,
       "requested": "https://github.com/tmux-python/libtmux",
       "identity": "tmux-python/libtmux",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "py:libtmux",
@@ -1389,6 +1583,8 @@
       "status": 200,
       "requested": "https://github.com/tmux-python/libtmux-mcp",
       "identity": "tmux-python/libtmux-mcp",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "py:libtmux-mcp-repository"
@@ -1404,6 +1600,8 @@
       "status": 200,
       "requested": "https://github.com/tmux-python/libtmux-mcp/tree/main/src/libtmux_mcp",
       "identity": "tmux-python/libtmux-mcp/src/libtmux_mcp",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "py:libtmux-mcp"
@@ -1419,6 +1617,8 @@
       "status": 200,
       "requested": "https://github.com/tmux-python/libtmux/tree/master/src/libtmux/test",
       "identity": "tmux-python/libtmux/src/libtmux/test",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "py:test-module"
@@ -1434,6 +1634,8 @@
       "status": 200,
       "requested": "https://github.com/tmux-python/tmuxp",
       "identity": "tmux-python/tmuxp",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "py:tmuxp-repository"
@@ -1449,6 +1651,8 @@
       "status": 200,
       "requested": "https://github.com/tmux-python/tmuxp/tree/master/src/tmuxp",
       "identity": "tmux-python/tmuxp/src/tmuxp",
+      "versionCheck": "unsupported",
+      "versionNote": "a branch link names no release",
       "checkedAt": "2026-10-20",
       "entries": [
         "py:tmuxp"
@@ -1465,6 +1669,10 @@
       "requested": "https://javadoc.io/doc/io.github.libtmux/libtmux",
       "identity": "io.github.libtmux:libtmux",
       "version": "0.0.1-alpha.17",
+      "repository": "libtmux/libtmux-java",
+      "expectedVersion": "0.0.1-alpha.17",
+      "versionSource": "libtmux/libtmux-java:libtmux/build.gradle.kts",
+      "versionCheck": "confirmed",
       "samples": 3,
       "checkedAt": "2026-10-20",
       "entries": [
@@ -1501,6 +1709,10 @@
       "requested": "https://javadoc.io/doc/io.github.libtmux/libtmux-jackson",
       "identity": "io.github.libtmux:libtmux-jackson",
       "version": "0.0.1-alpha.17",
+      "repository": "libtmux/libtmux-java",
+      "expectedVersion": "0.0.1-alpha.17",
+      "versionSource": "libtmux/libtmux-java:libtmux-jackson/build.gradle.kts",
+      "versionCheck": "confirmed",
       "samples": 3,
       "checkedAt": "2026-10-20",
       "entries": [
@@ -1518,6 +1730,10 @@
       "requested": "https://javadoc.io/doc/io.github.libtmux/libtmux-junit5",
       "identity": "io.github.libtmux:libtmux-junit5",
       "version": "0.0.1-alpha.17",
+      "repository": "libtmux/libtmux-java",
+      "expectedVersion": "0.0.1-alpha.17",
+      "versionSource": "libtmux/libtmux-java:libtmux-junit5/build.gradle.kts",
+      "versionCheck": "confirmed",
       "samples": 3,
       "checkedAt": "2026-10-20",
       "entries": [
@@ -1535,6 +1751,10 @@
       "requested": "https://javadoc.io/doc/io.github.libtmux/libtmux-kotlin",
       "identity": "io.github.libtmux:libtmux-kotlin",
       "version": "0.0.1-alpha.17",
+      "repository": "libtmux/libtmux-java",
+      "expectedVersion": "0.0.1-alpha.17",
+      "versionSource": "libtmux/libtmux-java:libtmux-kotlin/build.gradle.kts",
+      "versionCheck": "confirmed",
       "samples": 3,
       "checkedAt": "2026-10-20",
       "entries": [
@@ -1553,6 +1773,10 @@
       "requested": "https://javadoc.io/doc/io.github.libtmux/libtmux-mcp",
       "identity": "io.github.libtmux:libtmux-mcp",
       "version": "0.0.1-alpha.17",
+      "repository": "libtmux/libtmux-java",
+      "expectedVersion": "0.0.1-alpha.17",
+      "versionSource": "libtmux/libtmux-java:libtmux-mcp/build.gradle.kts",
+      "versionCheck": "confirmed",
       "samples": 3,
       "checkedAt": "2026-10-20",
       "entries": [
@@ -1570,6 +1794,10 @@
       "requested": "https://javadoc.io/doc/io.github.libtmux/libtmux-scala_3",
       "identity": "io.github.libtmux:libtmux-scala_3",
       "version": "0.0.1-alpha.17",
+      "repository": "libtmux/libtmux-java",
+      "expectedVersion": "0.0.1-alpha.17",
+      "versionSource": "libtmux/libtmux-java:libtmux-scala/build.gradle.kts",
+      "versionCheck": "confirmed",
       "samples": 3,
       "checkedAt": "2026-10-20",
       "entries": [
@@ -1588,6 +1816,10 @@
       "requested": "https://javadoc.io/doc/io.github.libtmux/libtmux-scala-cats_3",
       "identity": "io.github.libtmux:libtmux-scala-cats_3",
       "version": "0.0.1-alpha.17",
+      "repository": "libtmux/libtmux-java",
+      "expectedVersion": "0.0.1-alpha.17",
+      "versionSource": "libtmux/libtmux-java:libtmux-scala-cats/build.gradle.kts",
+      "versionCheck": "confirmed",
       "samples": 3,
       "checkedAt": "2026-10-20",
       "entries": [
@@ -1606,6 +1838,10 @@
       "requested": "https://javadoc.io/doc/io.github.libtmux/libtmux-scala-ox_3",
       "identity": "io.github.libtmux:libtmux-scala-ox_3",
       "version": "0.0.1-alpha.17",
+      "repository": "libtmux/libtmux-java",
+      "expectedVersion": "0.0.1-alpha.17",
+      "versionSource": "libtmux/libtmux-java:libtmux-scala-ox/build.gradle.kts",
+      "versionCheck": "confirmed",
       "samples": 3,
       "checkedAt": "2026-10-20",
       "entries": [
@@ -1624,6 +1860,10 @@
       "requested": "https://javadoc.io/doc/io.github.libtmux/libtmux-workspace",
       "identity": "io.github.libtmux:libtmux-workspace",
       "version": "0.0.1-alpha.17",
+      "repository": "libtmux/libtmux-java",
+      "expectedVersion": "0.0.1-alpha.17",
+      "versionSource": "libtmux/libtmux-java:libtmux-workspace/build.gradle.kts",
+      "versionCheck": "confirmed",
       "samples": 3,
       "checkedAt": "2026-10-20",
       "entries": [
@@ -1657,8 +1897,11 @@
       "status": 200,
       "requested": "https://luarocks.org/modules/tony/libtmux",
       "identity": "tony/libtmux",
-      "expectedVersion": "0.1.0alpha1-1",
-      "versionFound": true,
+      "version": "0.1.0alpha2-1",
+      "repository": "libtmux/libtmux-lua",
+      "expectedVersion": "0.1.0alpha2-1",
+      "versionSource": "libtmux/libtmux-lua:release.json",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "lua:libtmux"
@@ -1707,6 +1950,9 @@
       "status": 200,
       "requested": "https://pkg.go.dev/github.com/libtmux/libtmux-go",
       "identity": "github.com/libtmux/libtmux-go",
+      "expectedVersion": "0.0.1-alpha.9",
+      "versionSource": "libtmux/libtmux-go:go.mod",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "go:module"
@@ -1723,6 +1969,9 @@
       "status": 200,
       "requested": "https://pkg.go.dev/github.com/libtmux/libtmux-go/mcp",
       "identity": "github.com/libtmux/libtmux-go/mcp",
+      "expectedVersion": "0.0.1-alpha.12",
+      "versionSource": "libtmux/libtmux-go:mcp/go.mod",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "go:mcp"
@@ -1739,6 +1988,9 @@
       "status": 200,
       "requested": "https://pkg.go.dev/github.com/libtmux/libtmux-go/mcp/cmd/libtmux-mcp",
       "identity": "github.com/libtmux/libtmux-go/mcp/cmd/libtmux-mcp",
+      "expectedVersion": "0.0.1-alpha.12",
+      "versionSource": "libtmux/libtmux-go:mcp/go.mod",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "go:libtmux-mcp"
@@ -1755,8 +2007,9 @@
       "status": 200,
       "requested": "https://pkg.go.dev/github.com/libtmux/libtmux-go/tmux",
       "identity": "github.com/libtmux/libtmux-go/tmux",
-      "expectedVersion": "v0.0.1-alpha.9",
-      "versionFound": true,
+      "expectedVersion": "0.0.1-alpha.9",
+      "versionSource": "libtmux/libtmux-go:go.mod",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "go:tmux"
@@ -1773,6 +2026,9 @@
       "status": 200,
       "requested": "https://pkg.go.dev/github.com/libtmux/libtmux-go/tmux/tmuxtest",
       "identity": "github.com/libtmux/libtmux-go/tmux/tmuxtest",
+      "expectedVersion": "0.0.1-alpha.9",
+      "versionSource": "libtmux/libtmux-go:go.mod",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "go:tmuxtest"
@@ -1789,6 +2045,9 @@
       "status": 200,
       "requested": "https://pkg.go.dev/github.com/libtmux/libtmux-go/tmuxq",
       "identity": "github.com/libtmux/libtmux-go/tmuxq",
+      "expectedVersion": "0.0.1-alpha.9",
+      "versionSource": "libtmux/libtmux-go:go.mod",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "go:tmuxq"
@@ -1805,6 +2064,9 @@
       "status": 200,
       "requested": "https://pkg.go.dev/github.com/libtmux/libtmux-go/workspace",
       "identity": "github.com/libtmux/libtmux-go/workspace",
+      "expectedVersion": "0.0.1-alpha.9",
+      "versionSource": "libtmux/libtmux-go:workspace/go.mod",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "go:workspace"
@@ -1821,6 +2083,9 @@
       "status": 200,
       "requested": "https://pkg.go.dev/github.com/libtmux/libtmux-go/workspace/cmd/tmux-workspace",
       "identity": "github.com/libtmux/libtmux-go/workspace/cmd/tmux-workspace",
+      "expectedVersion": "0.0.1-alpha.9",
+      "versionSource": "libtmux/libtmux-go:workspace/go.mod",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "go:tmux-workspace"
@@ -1837,9 +2102,11 @@
       "requested": "https://pypi.org/pypi/libtmux-mcp/json",
       "identity": "libtmux-mcp",
       "version": "0.1.0a22",
+      "repository": "tmux-python/libtmux-mcp",
       "pageStatus": 200,
       "expectedVersion": "0.1.0a22",
-      "versionFound": true,
+      "versionSource": "tmux-python/libtmux-mcp:pyproject.toml",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "py:libtmux-mcp"
@@ -1856,9 +2123,11 @@
       "requested": "https://pypi.org/pypi/libtmux/json",
       "identity": "libtmux",
       "version": "0.62.0",
+      "repository": "tmux-python/libtmux",
       "pageStatus": 200,
       "expectedVersion": "0.62.0",
-      "versionFound": true,
+      "versionSource": "tmux-python/libtmux:pyproject.toml",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "py:libtmux",
@@ -1877,9 +2146,11 @@
       "requested": "https://pypi.org/pypi/tmuxp/json",
       "identity": "tmuxp",
       "version": "1.74.0",
+      "repository": "tmux-python/tmuxp",
       "pageStatus": 200,
       "expectedVersion": "1.74.0",
-      "versionFound": true,
+      "versionSource": "tmux-python/tmuxp:pyproject.toml",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "py:tmuxp"
@@ -1896,8 +2167,10 @@
       "requested": "https://rubygems.org/api/v1/gems/libtmux.json",
       "identity": "libtmux",
       "version": "0.1.0.alpha.2",
+      "repository": "libtmux/libtmux-ruby",
       "expectedVersion": "0.1.0.alpha.1",
-      "versionFound": true,
+      "versionSource": "libtmux/libtmux-ruby:gems/libtmux/libtmux.gemspec",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "ruby:libtmux"
@@ -1914,8 +2187,10 @@
       "requested": "https://rubygems.org/api/v1/gems/libtmux-async.json",
       "identity": "libtmux-async",
       "version": "0.1.0.alpha.2",
+      "repository": "libtmux/libtmux-ruby",
       "expectedVersion": "0.1.0.alpha.1",
-      "versionFound": true,
+      "versionSource": "libtmux/libtmux-ruby:gems/libtmux-async/libtmux-async.gemspec",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "ruby:libtmux-async"
@@ -1932,8 +2207,10 @@
       "requested": "https://rubygems.org/api/v1/gems/libtmux-mcp.json",
       "identity": "libtmux-mcp",
       "version": "0.1.0.alpha.2",
+      "repository": "libtmux/libtmux-ruby",
       "expectedVersion": "0.1.0.alpha.1",
-      "versionFound": true,
+      "versionSource": "libtmux/libtmux-ruby:gems/libtmux-mcp/libtmux-mcp.gemspec",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "ruby:libtmux-mcp"
@@ -1950,8 +2227,10 @@
       "requested": "https://rubygems.org/api/v1/gems/libtmux-workspace.json",
       "identity": "libtmux-workspace",
       "version": "0.1.0.alpha.2",
+      "repository": "libtmux/libtmux-ruby",
       "expectedVersion": "0.1.0.alpha.1",
-      "versionFound": true,
+      "versionSource": "libtmux/libtmux-ruby:gems/libtmux-workspace/libtmux-workspace.gemspec",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "ruby:libtmux-workspace"
@@ -1967,8 +2246,10 @@
       "status": 200,
       "requested": "https://swiftpackageindex.com/libtmux/libtmux-swift",
       "identity": "libtmux/libtmux-swift",
+      "repository": "libtmux/libtmux-swift",
       "expectedVersion": "0.1.0-alpha.6",
-      "versionFound": true,
+      "versionSource": "libtmux/libtmux-swift:Package.swift",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "swift:libtmux-swift",
@@ -1991,6 +2272,10 @@
       "requested": "https://swiftpackageindex.com/libtmux/libtmux-swift/documentation/libtmux",
       "identity": "libtmux/libtmux-swift libtmux",
       "version": "0.1.0-alpha.6",
+      "repository": "libtmux/libtmux-swift",
+      "expectedVersion": "0.1.0-alpha.6",
+      "versionSource": "libtmux/libtmux-swift:Package.swift",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "swift:target:LibTmux"
@@ -2007,6 +2292,10 @@
       "requested": "https://swiftpackageindex.com/libtmux/libtmux-swift/documentation/libtmuxmcp",
       "identity": "libtmux/libtmux-swift libtmuxmcp",
       "version": "0.1.0-alpha.6",
+      "repository": "libtmux/libtmux-swift",
+      "expectedVersion": "0.1.0-alpha.6",
+      "versionSource": "libtmux/libtmux-swift:Package.swift",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "swift:target:LibTmuxMCP"
@@ -2023,6 +2312,10 @@
       "requested": "https://swiftpackageindex.com/libtmux/libtmux-swift/documentation/tmuxworkspace",
       "identity": "libtmux/libtmux-swift tmuxworkspace",
       "version": "0.1.0-alpha.6",
+      "repository": "libtmux/libtmux-swift",
+      "expectedVersion": "0.1.0-alpha.6",
+      "versionSource": "libtmux/libtmux-swift:Package.swift",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "swift:target:TmuxWorkspace"
@@ -2055,7 +2348,12 @@
       "requested": "https://registry.npmjs.org/@libtmux%2fmcp",
       "identity": "@libtmux/mcp",
       "version": "0.1.0-alpha.14",
+      "repository": "libtmux/libtmux-ts",
+      "directory": "packages/mcp",
       "pageStatus": 403,
+      "expectedVersion": "0.1.0-alpha.12",
+      "versionSource": "libtmux/libtmux-ts:packages/mcp/package.json",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "ts:mcp"
@@ -2072,7 +2370,12 @@
       "requested": "https://registry.npmjs.org/@libtmux%2fworkspace",
       "identity": "@libtmux/workspace",
       "version": "0.1.0-alpha.14",
+      "repository": "libtmux/libtmux-ts",
+      "directory": "packages/workspace",
       "pageStatus": 403,
+      "expectedVersion": "0.1.0-alpha.12",
+      "versionSource": "libtmux/libtmux-ts:packages/workspace/package.json",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "ts:workspace"
@@ -2089,7 +2392,12 @@
       "requested": "https://registry.npmjs.org/@libtmux%2fworkspace-cli",
       "identity": "@libtmux/workspace-cli",
       "version": "0.1.0-alpha.14",
+      "repository": "libtmux/libtmux-ts",
+      "directory": "packages/workspace-cli",
       "pageStatus": 403,
+      "expectedVersion": "0.1.0-alpha.12",
+      "versionSource": "libtmux/libtmux-ts:packages/workspace-cli/package.json",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "ts:workspace-cli"
@@ -2106,9 +2414,12 @@
       "requested": "https://registry.npmjs.org/libtmux",
       "identity": "libtmux",
       "version": "0.1.0-alpha.14",
+      "repository": "libtmux/libtmux-ts",
+      "directory": "packages/libtmux",
       "pageStatus": 403,
       "expectedVersion": "0.1.0-alpha.12",
-      "versionFound": true,
+      "versionSource": "libtmux/libtmux-ts:packages/libtmux/package.json",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "ts:libtmux",
@@ -2126,8 +2437,10 @@
       "requested": "https://www.nuget.org/packages/LibTmux",
       "identity": "LibTmux",
       "version": "0.0.0-alpha.22",
-      "expectedVersion": "0.0.0-alpha.17",
-      "versionFound": true,
+      "repository": "libtmux/libtmux-dotnet",
+      "expectedVersion": "0.0.0-alpha.22",
+      "versionSource": "libtmux/libtmux-dotnet:src/LibTmux/LibTmux.csproj",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "csharp:LibTmux",
@@ -2145,6 +2458,10 @@
       "requested": "https://www.nuget.org/packages/LibTmux.Extensions.DependencyInjection",
       "identity": "LibTmux.Extensions.DependencyInjection",
       "version": "0.0.0-alpha.22",
+      "repository": "libtmux/libtmux-dotnet",
+      "expectedVersion": "0.0.0-alpha.22",
+      "versionSource": "libtmux/libtmux-dotnet:src/LibTmux.Extensions.DependencyInjection/LibTmux.Extensions.DependencyInjection.csproj",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "csharp:LibTmux.Extensions.DependencyInjection"
@@ -2161,8 +2478,10 @@
       "requested": "https://www.nuget.org/packages/LibTmux.FSharp",
       "identity": "LibTmux.FSharp",
       "version": "0.0.0-alpha.22",
-      "expectedVersion": "0.0.0-alpha.17",
-      "versionFound": true,
+      "repository": "libtmux/libtmux-dotnet",
+      "expectedVersion": "0.0.0-alpha.22",
+      "versionSource": "libtmux/libtmux-dotnet:src/LibTmux.FSharp/LibTmux.FSharp.fsproj",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "csharp:LibTmux.FSharp",
@@ -2180,6 +2499,10 @@
       "requested": "https://www.nuget.org/packages/LibTmux.Mcp",
       "identity": "LibTmux.Mcp",
       "version": "0.0.0-alpha.22",
+      "repository": "libtmux/libtmux-dotnet",
+      "expectedVersion": "0.0.0-alpha.22",
+      "versionSource": "libtmux/libtmux-dotnet:src/LibTmux.Mcp/LibTmux.Mcp.csproj",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "csharp:LibTmux.Mcp"
@@ -2196,6 +2519,10 @@
       "requested": "https://www.nuget.org/packages/LibTmux.Query.Json",
       "identity": "LibTmux.Query.Json",
       "version": "0.0.0-alpha.22",
+      "repository": "libtmux/libtmux-dotnet",
+      "expectedVersion": "0.0.0-alpha.22",
+      "versionSource": "libtmux/libtmux-dotnet:src/LibTmux.Query.Json/LibTmux.Query.Json.csproj",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "csharp:LibTmux.Query.Json"
@@ -2212,6 +2539,10 @@
       "requested": "https://www.nuget.org/packages/LibTmux.Testing",
       "identity": "LibTmux.Testing",
       "version": "0.0.0-alpha.22",
+      "repository": "libtmux/libtmux-dotnet",
+      "expectedVersion": "0.0.0-alpha.22",
+      "versionSource": "libtmux/libtmux-dotnet:src/LibTmux.Testing/LibTmux.Testing.csproj",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "csharp:LibTmux.Testing"
@@ -2228,6 +2559,10 @@
       "requested": "https://www.nuget.org/packages/LibTmux.Workspace",
       "identity": "LibTmux.Workspace",
       "version": "0.0.0-alpha.22",
+      "repository": "libtmux/libtmux-dotnet",
+      "expectedVersion": "0.0.0-alpha.22",
+      "versionSource": "libtmux/libtmux-dotnet:src/LibTmux.Workspace/LibTmux.Workspace.csproj",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "csharp:LibTmux.Workspace"
@@ -2244,6 +2579,10 @@
       "requested": "https://www.nuget.org/packages/LibTmux.Workspace.Cli",
       "identity": "LibTmux.Workspace.Cli",
       "version": "0.0.0-alpha.22",
+      "repository": "libtmux/libtmux-dotnet",
+      "expectedVersion": "0.0.0-alpha.22",
+      "versionSource": "libtmux/libtmux-dotnet:src/LibTmux.Workspace.Cli/LibTmux.Workspace.Cli.csproj",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "csharp:LibTmux.Workspace.Cli"
@@ -2260,8 +2599,10 @@
       "requested": "https://www.powershellgallery.com/packages/LibTmux",
       "identity": "LibTmux",
       "version": "0.1.0-alpha2",
+      "repository": "libtmux/libtmux-powershell",
       "expectedVersion": "0.1.0-alpha2",
-      "versionFound": true,
+      "versionSource": "libtmux/libtmux-powershell:module/LibTmux/LibTmux.psd1",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "powershell:LibTmux"
@@ -2278,8 +2619,10 @@
       "requested": "https://www.powershellgallery.com/packages/LibTmux.Workspace",
       "identity": "LibTmux.Workspace",
       "version": "0.1.0-alpha2",
+      "repository": "libtmux/libtmux-powershell",
       "expectedVersion": "0.1.0-alpha2",
-      "versionFound": true,
+      "versionSource": "libtmux/libtmux-powershell:module/LibTmux.Workspace/LibTmux.Workspace.psd1",
+      "versionCheck": "confirmed",
       "checkedAt": "2026-10-20",
       "entries": [
         "powershell:LibTmux.Workspace"

@@ -57,8 +57,21 @@ an entry `planned` or `configured-unpublished` until its host serves it: only
 `published` entries produce links. List a page an ecosystem suggests and its
 host does not serve as `unavailable`.
 
+Give a package that ships inside another distribution (a Go package, a
+SwiftPM target, an export path) the id of the distribution in `within`, and
+the ecosystem's word for it in `unit`. A command is `cli` in every port.
+
+Add a reader for the port's manifests to `scripts/lib/manifest-packages.mjs`
+and regenerate `site/src/data/manifest-packages.json`, which the inventory's
+tests compare with in both directions:
+
+```console
+$ node scripts/gen-manifest-packages.mjs
+```
+
 Then run the verifier. It requests each URL once, read-only, from the live
-hosts and records what it found:
+hosts, checks that the manifest's version is on every host that lists versions,
+and records what it found:
 
 ```console
 $ node scripts/verify-destinations.mjs
@@ -66,8 +79,9 @@ $ node scripts/verify-destinations.mjs
 
 The command exits 1 if a published destination fails or an unlinked one starts
 to answer. Commit the updated `site/src/data/destination-evidence.json`; the
-unit tests and the publication audit hold the inventory to it. Add the port's
-expected links to `site/test/fixtures/header-links.ts`.
+unit tests and the publication audit hold the inventory to it, and treat
+evidence older than `EVIDENCE_MAX_AGE_DAYS` as stale. Add the port's expected links, with the
+entries behind each row, to `site/test/fixtures/header-links.ts`.
 
 ## 2. Add the worktree
 
