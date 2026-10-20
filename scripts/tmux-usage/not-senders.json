@@ -89,7 +89,7 @@
       "why": "FindWindowAsync sends find-window, which has its own entry; it does not list panes or windows.",
       "evidence": [
         {
-          "at": "src/LibTmux/Pane.Display.cs:136",
+          "at": "src/LibTmux/Pane.Display.cs:135",
           "has": [
             "\"find-window\""
           ]
@@ -211,7 +211,7 @@
       "why": "ClearPromptHistoryAsync sends clear-prompt-history, and not clear-history.",
       "evidence": [
         {
-          "at": "src/LibTmux/Server.Interaction.cs:98",
+          "at": "src/LibTmux/Server.Interaction.cs:70",
           "has": [
             "\"clear-prompt-history\""
           ]
@@ -228,18 +228,18 @@
         "find-window"
       ],
       "kind": "other-command",
-      "why": "FindWindowAsync reads one window by id with list-windows -a or display-message; it does not send find-window.",
+      "why": "FindWindowAsync reads one window by id with display-message -p -t; it does not send find-window.",
       "evidence": [
         {
-          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:136",
+          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:125",
           "has": [
-            "\"list-windows\""
+            "\"display-message\""
           ]
         },
         {
-          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:191",
+          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:107",
           "has": [
-            "\"display-message\""
+            "ReadAsync("
           ]
         }
       ]
@@ -325,13 +325,13 @@
       "why": "These send next-window, previous-window and last-window, which have their own entries, and not select-window.",
       "evidence": [
         {
-          "at": "src/LibTmux/Session.Lifecycle.cs:163",
+          "at": "src/LibTmux/Session.Lifecycle.cs:169",
           "has": [
             "\"next-window\""
           ]
         },
         {
-          "at": "src/LibTmux/Session.Lifecycle.cs:176",
+          "at": "src/LibTmux/Session.Lifecycle.cs:182",
           "has": [
             "\"previous-window\""
           ]
@@ -1758,26 +1758,6 @@
           "at": "src/configuration.jl:439",
           "has": [
             "_configuration_hook_rows("
-          ]
-        }
-      ]
-    },
-    {
-      "port": "julia",
-      "owner": "OwnedServer",
-      "names": [
-        "_lock"
-      ],
-      "commands": [
-        "lock-server"
-      ],
-      "kind": "values",
-      "why": "_lock is the lock field of an OwnedServer, not a command.",
-      "evidence": [
-        {
-          "at": "src/lifecycle.jl:57",
-          "has": [
-            "_lock::ReentrantLock"
           ]
         }
       ]
@@ -4408,6 +4388,98 @@
           "at": "packages/libtmux/src/selection.ts:221",
           "has": [
             "readonly lastFlag?"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "fsharp",
+      "owner": "Server",
+      "names": [
+        "tryFindSession",
+        "tryFindWindow",
+        "tryFindPane"
+      ],
+      "commands": [
+        "list-sessions",
+        "list-windows",
+        "list-panes"
+      ],
+      "kind": "version-gated",
+      "why": "The lookups call FindSessionAsync, FindWindowAsync and FindPaneAsync, which list with -a below tmux 3.3 and send display-message from 3.3. This revision supports 3.2a, so neither command holds on every supported release.",
+      "evidence": [
+        {
+          "at": "src/LibTmux.FSharp/Hierarchy.fs:120",
+          "has": [
+            "server.FindSessionAsync("
+          ]
+        },
+        {
+          "at": "src/LibTmux.FSharp/Hierarchy.fs:126",
+          "has": [
+            "server.FindWindowAsync("
+          ]
+        },
+        {
+          "at": "src/LibTmux.FSharp/Hierarchy.fs:132",
+          "has": [
+            "server.FindPaneAsync("
+          ]
+        },
+        {
+          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:77",
+          "has": [
+            "!TmuxCapabilities.IsSupported("
+          ]
+        },
+        {
+          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:81",
+          "has": [
+            "ReadFromListingAsync("
+          ]
+        },
+        {
+          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:179",
+          "has": [
+            "\"display-message\""
+          ]
+        },
+        {
+          "at": "src/LibTmux/Constants/TmuxConstants.cs:6",
+          "has": [
+            "Parse(\"3.2a\")"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "owner": "Pane",
+      "names": [
+        "killIfWindowUnshared"
+      ],
+      "commands": [
+        "kill-pane"
+      ],
+      "kind": "other-command",
+      "why": "The kill-pane is quoted into the then-branch of an if-shell; the method sends if-shell and tmux runs kill-pane when the condition holds.",
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/operations/plans.ts:195",
+          "has": [
+            "[\"kill-pane\", \"-t\", target]"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/plans.ts:184",
+          "has": [
+            "quoteCommand(command)"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/plans.ts:179",
+          "has": [
+            "\"if-shell\""
           ]
         }
       ]

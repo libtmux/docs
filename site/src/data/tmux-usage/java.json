@@ -275,9 +275,13 @@
       {
         "command": "show-environment",
         "evidence": [
-          "libtmux/src/main/java/io/github/libtmux/Environment.java:201",
+          "libtmux/src/main/java/io/github/libtmux/Environment.java:357",
+          "libtmux/src/main/java/io/github/libtmux/Environment.java:192",
+          "libtmux/src/main/java/io/github/libtmux/Environment.java:194",
           "libtmux/src/main/java/io/github/libtmux/Environment.java:85"
         ],
+        "forwardable": true,
+        "reviewed": true,
         "scope": null
       }
     ],
@@ -285,9 +289,13 @@
       {
         "command": "show-environment",
         "evidence": [
-          "libtmux/src/main/java/io/github/libtmux/Environment.java:201",
+          "libtmux/src/main/java/io/github/libtmux/Environment.java:357",
+          "libtmux/src/main/java/io/github/libtmux/Environment.java:192",
+          "libtmux/src/main/java/io/github/libtmux/Environment.java:194",
           "libtmux/src/main/java/io/github/libtmux/Environment.java:96"
         ],
+        "forwardable": true,
+        "reviewed": true,
         "scope": null
       }
     ],
@@ -397,14 +405,6 @@
     "io.github.libtmux.junit5.NamedServerFixture.NamedServerFixture.close": [
       {
         "command": "if-shell",
-        "evidence": [
-          "libtmux-junit5/src/main/java/io/github/libtmux/junit5/NamedServerFixture.java:150",
-          "libtmux-junit5/src/main/java/io/github/libtmux/junit5/NamedServerFixture.java:129"
-        ],
-        "scope": null
-      },
-      {
-        "command": "kill-server",
         "evidence": [
           "libtmux-junit5/src/main/java/io/github/libtmux/junit5/NamedServerFixture.java:150",
           "libtmux-junit5/src/main/java/io/github/libtmux/junit5/NamedServerFixture.java:129"
@@ -898,15 +898,6 @@
         "command": "wait-for",
         "evidence": [
           "libtmux/src/main/java/io/github/libtmux/Server.java:569"
-        ],
-        "scope": null
-      }
-    ],
-    "io.github.libtmux.Server.Server.control": [
-      {
-        "command": "display-message",
-        "evidence": [
-          "libtmux/src/main/java/io/github/libtmux/Server.java:836"
         ],
         "scope": null
       }

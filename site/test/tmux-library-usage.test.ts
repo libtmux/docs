@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { experimental_AstroContainer } from 'astro/container'
 import { Window } from 'happy-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { documentProblems } from '../../scripts/gen-tmux-usage.mjs'
+import { documentProblems, isPrivateSymbol, publicSymbols, viaRevisionFor } from '../../scripts/gen-tmux-usage.mjs'
 import { API_MODELS } from '../src/lib/api-models'
 import { PORTS } from '../src/lib/ports'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
@@ -33,8 +33,68 @@ describe('the recorded usage', () => {
   /** Every command either pinned manual documents. */
   const manualCommands = [...new Set(Object.values(TMUX_MANUALS).flatMap((manual) => manual.commands.map((command) => command.name)))].sort()
 
+  const forwarders = JSON.parse(readFileSync(new URL('../../scripts/tmux-usage/forwarders.json', import.meta.url), 'utf8')).forwarders
+  const viaRevision = (slug: string) => viaRevisionFor(API_MODELS[slug], forwarders[slug] && API_MODELS[forwarders[slug].parent])
+
   it.each(PORTS.map((port) => port.slug))('is bound to the pinned API model of %s', (slug) => {
-    expect(documentProblems(TMUX_USAGE[slug], API_MODELS[slug], scopeTable, manualCommands)).toEqual([])
+    expect(documentProblems(TMUX_USAGE[slug], API_MODELS[slug], scopeTable, manualCommands, viaRevision(slug))).toEqual([])
+  })
+
+  it('reads the core lines of a wrapper where the wrapper is pinned when both live in one repository', () => {
+    // F# is pinned at a revision older than the C# model, and cites the C# lines as they read there.
+    expect(API_MODELS.fsharp.revision).not.toBe(API_MODELS.csharp.revision)
+    expect(viaRevision('fsharp')).toBe(API_MODELS.fsharp.revision)
+    // PowerShell lives in its own repository and depends on the C# release, so it cites that release's lines.
+    expect(viaRevision('powershell')).toBe(API_MODELS.csharp.revision)
+    expect(viaRevision('kotlin')).toBe(API_MODELS.kotlin.revision)
+    expect(viaRevision('py')).toBeUndefined()
+    for (const [symbol, uses] of Object.entries(TMUX_USAGE.fsharp.symbols)) {
+      for (const use of uses) if (use.via) expect(use.via.revision, `${symbol} ${use.command}`).toBe(API_MODELS.fsharp.revision)
+    }
+  })
+
+  it('refuses a via that cites core lines at a revision other than the one they must be read at', () => {
+    const document = TMUX_USAGE.fsharp
+    const [symbol, uses] = Object.entries(document.symbols).find(([, list]) => list.some((use) => use.via))!
+    const moved = (revision: string | undefined) => ({
+      ...document, symbols: { ...document.symbols, [symbol]: uses.map((use) => (use.via ? { ...use, via: { ...use.via, revision } } : use)) },
+    })
+    expect(documentProblems(moved(API_MODELS.csharp.revision), API_MODELS.fsharp, scopeTable, manualCommands, viaRevision('fsharp')).join('\n'))
+      .toMatch(new RegExp(`cites csharp lines at ${API_MODELS.csharp.revision}, which must be ${API_MODELS.fsharp.revision}`))
+    expect(documentProblems(moved(undefined), API_MODELS.fsharp, scopeTable, manualCommands, viaRevision('fsharp')).join('\n')).toMatch(/at no revision/)
+    // The control: the document as committed.
+    expect(documentProblems(document, API_MODELS.fsharp, scopeTable, manualCommands, viaRevision('fsharp'))).toEqual([])
+  })
+
+  it('records public API only: a private helper is neither read from the model nor accepted in a document', () => {
+    const model = {
+      ...API_MODELS.py,
+      symbols: [
+        ...API_MODELS.py.symbols,
+        { id: 'libtmux.Server._show_option', name: '_show_option', kind: 'method', modifiers: [], parent: 'libtmux.Server', source: { file: 'src/libtmux/server.py', line: 1 } },
+        { id: 'libtmux.Server.__repr__', name: '__repr__', kind: 'method', modifiers: [], parent: 'libtmux.Server', source: { file: 'src/libtmux/server.py', line: 2 } },
+        { id: 'libtmux.Server.hidden', name: 'hidden', kind: 'method', modifiers: ['private'], parent: 'libtmux.Server', source: { file: 'src/libtmux/server.py', line: 3 } },
+        { id: 'libtmux._internal.control_mode.ControlMode.__enter__', name: '__enter__', kind: 'method', modifiers: [], parent: 'libtmux._internal.control_mode.ControlMode', source: { file: 'src/libtmux/_internal/control_mode.py', line: 4 } },
+      ],
+    }
+    const names = publicSymbols(model).map((symbol: { id: string }) => symbol.id)
+    expect(names).not.toContain('libtmux.Server._show_option')
+    expect(names).not.toContain('libtmux.Server.hidden')
+    // A method of a private module is private, whatever its own name.
+    expect(names).not.toContain('libtmux._internal.control_mode.ControlMode.__enter__')
+    // A dunder is the language's protocol, not a helper.
+    expect(names).toContain('libtmux.Server.__repr__')
+    expect(isPrivateSymbol({ name: '_x', id: 'libtmux.Server._x' })).toBe(true)
+    expect(isPrivateSymbol({ name: '__init__', id: 'libtmux.Server.__init__' })).toBe(false)
+    expect(isPrivateSymbol({ name: '__enter__', id: 'libtmux._internal.control_mode.ControlMode.__enter__' })).toBe(true)
+    expect(isPrivateSymbol({ name: 'x', id: 'libtmux.Server.x', apiScope: 'internal' })).toBe(true)
+    const document = { ...TMUX_USAGE.py, symbols: { ...TMUX_USAGE.py.symbols, 'libtmux.Server._show_option': [{ command: 'show-options', scope: null, evidence: ['a.py:1'] }] } }
+    expect(documentProblems(document, model, scopeTable, manualCommands)).toEqual(['libtmux.Server._show_option: is private, and only public API is recorded'])
+    // None of the committed documents records a private symbol.
+    for (const slug of PORTS.map((port) => port.slug)) {
+      const privates = API_MODELS[slug].symbols.filter(isPrivateSymbol).map((symbol: { publicId?: string; id: string }) => symbol.publicId ?? symbol.id)
+      expect(Object.keys(TMUX_USAGE[slug].symbols).filter((id) => privates.includes(id)), slug).toEqual([])
+    }
   })
 
   it('records every command of the manual, for every port', () => {
@@ -45,7 +105,7 @@ describe('the recorded usage', () => {
 
   it('refuses a document that records fewer commands than the manual, or one the model does not have', () => {
     const document = TMUX_USAGE.py
-    expect(documentProblems({ ...document, commands: ['list-panes'] }, API_MODELS.py, scopeTable, manualCommands)).toEqual([expect.stringMatching(/^covers \["list-panes"\]/)])
+    expect(documentProblems({ ...document, commands: ['list-panes'] }, API_MODELS.py, scopeTable, manualCommands, undefined)).toEqual([expect.stringMatching(/^covers \["list-panes"\]/)])
     expect(documentProblems({ ...document, revision: 'stale' }, API_MODELS.py, scopeTable, manualCommands)).toEqual([expect.stringMatching(/^records stale/)])
     const bogus = { ...document, symbols: { ...document.symbols, 'libtmux.Server.nope': [{ command: 'kill-pane', scope: null, evidence: ['a.py:1'] }] } }
     expect(documentProblems(bogus, API_MODELS.py, scopeTable, manualCommands)).toEqual(['libtmux.Server.nope: not a symbol of the API model'])
@@ -91,12 +151,23 @@ describe('the recorded usage', () => {
     expect(cell('server', 'scala')).toEqual(expect.arrayContaining(['cats.Server.panes', 'scaladsl.Server.panes']))
     // F# builds a session and then lists the panes of the session it made, and not of the server.
     expect(cell('session', 'fsharp')).toEqual(['newSession'])
-    // tryFindPane reads one pane by id through Server.FindPaneAsync, a server-wide lookup, and says so in a reviewed claim.
-    expect(cell('server', 'fsharp')).toEqual(['tryFindPane'])
+    // tryFindPane reads one pane by id through Server.FindPaneAsync, which lists below tmux 3.3 and asks display-message
+    // from there, and the F# revision supports 3.2a: neither command holds on every release, so none is recorded.
+    expect(cell('server', 'fsharp')).toBeUndefined()
+    expect(tmuxUsageOf('fsharp', 'LibTmux.FSharp.Server.tryFindPane')).toEqual([])
     const kotlin = tmuxUsageOf('kotlin', 'io.github.libtmux.kotlin.Server.panes')
     expect(kotlin.find((entry) => entry.command === 'list-panes')!.scopes[0]).toMatchObject({
       via: { port: 'java', symbol: 'io.github.libtmux.Server.Server.panes', evidence: ['libtmux/src/main/java/io/github/libtmux/Server.java:998'] },
     })
+  })
+
+  it('lists a lookup by the command it sends, and not by the list name it passes to choose a format', () => {
+    const labels = (port: string, command: string) => tmuxUsage(command)!.groups.flatMap((group) => group.ports.filter((entry) => entry.port === port).flatMap((entry) => entry.links.map((link) => link.label)))
+    // The 3.3a floor of this revision drops the fallback that listed with -a, so every supported release asks display-message.
+    expect(labels('csharp', 'display-message')).toEqual(expect.arrayContaining(['Server.FindPaneAsync', 'Server.GetPaneAsync', 'Server.FindWindowAsync', 'Server.FindSessionAsync']))
+    for (const name of ['Server.FindPaneAsync', 'Server.GetWindowAsync', 'Server.FindSessionAsync', 'Session.RefreshAsync']) {
+      for (const command of ['list-panes', 'list-windows', 'list-sessions']) expect(labels('csharp', command), `${name} ${command}`).not.toContain(name)
+    }
   })
 
   it('lists the object that owns the scope before a method that sends the command for its own purpose', () => {

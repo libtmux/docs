@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { scanSource } from '../../scripts/lib/tmux-usage-scan.mjs'
-import { MAX_SHARED_BY, applyExclusions, classify, definitionsOf, deriveUsage, verifyClaims } from '../../scripts/lib/tmux-usage-derive.mjs'
+import { MAX_SHARED_BY, applyExclusions, classify, definitionsOf, deriveUsage, ruleHolds, verifyClaims } from '../../scripts/lib/tmux-usage-derive.mjs'
+import { auditEvidence } from '../../scripts/lib/tmux-usage-audit.mjs'
 import { forwardUsage } from '../../scripts/lib/tmux-usage-forward.mjs'
 import { carriesCommand, memberWords, selects, settleCandidates, sweepCandidates } from '../../scripts/lib/tmux-usage-sweep.mjs'
 import { scanFSharp, scanJulia } from '../../scripts/lib/tmux-usage-lexical.mjs'
@@ -48,6 +49,61 @@ describe('scanning a send site', () => {
     ].join('\n'))
     // A name given to an error that says it is unsupported is a message too, whether or not flags follow it.
     expect(functions[0].sites.map((site) => [site.line, site.flags])).toEqual([[2, 'Fa']])
+  })
+
+  it('does not read a command named to describe a failure, or quoted for tmux to run inside another command', async () => {
+    const java = await scanSource({
+      grammar: 'java', known: new Set(['show-environment', 'kill-server', 'if-shell']), commands: new Set(['show-environment', 'kill-server', 'if-shell']),
+      text: [
+        'class Environment {',
+        '    Entry entry(String name) {',
+        '        throw server.failed("show-environment", result);',
+        '    }',
+        '    Map listing() {',
+        '        return server.run(List.of("show-environment", "-s"));',
+        '    }',
+        '    void close(long pid) {',
+        '        server.cmd("if-shell", "-F", "#{==:#{pid}," + pid + "}", "kill-server", stale);',
+        '    }',
+        '    void both() {',
+        '        server.request(List.of(List.of("if-shell", "-F", "x", "kill-server"), List.of("kill-server")));',
+        '    }',
+        '}',
+      ].join('\n'),
+    })
+    const sites = (name: string) => java.functions.find((fn) => fn.name === name)!.sites.map((site) => `${site.command}@${site.line}`)
+    // A failure built for a command names it and sends nothing; reading the listing sends it.
+    expect(sites('entry')).toEqual([])
+    expect(sites('listing')).toEqual(['show-environment@6'])
+    // kill-server is the then-command of the if-shell: tmux runs it, and the library sends the if-shell.
+    expect(sites('close')).toEqual(['if-shell@9'])
+    // The control: a second command in a sequence of requests, outside any if-shell, is a send of its own.
+    expect(sites('both')).toEqual(['if-shell@12', 'kill-server@12'])
+
+    const rust = await scanSource({
+      grammar: 'rust', known: new Set(['split-window', 'if-shell', 'resize-pane']), commands: new Set(['split-window', 'if-shell', 'resize-pane']),
+      text: [
+        'fn plan() {',
+        '    let plan = projection(&version).map_err(decode_error("split-window"))?;',
+        '    let refused = Error::from_refused_result("split-window", &result);',
+        '    send(Command::new("resize-pane"));',
+        '}',
+      ].join('\n'),
+    })
+    expect(rust.functions[0].sites.map((site) => `${site.command}@${site.line}`)).toEqual(['resize-pane@4'])
+
+    const typescript = await scanSource({
+      grammar: 'typescript', known: new Set(['if-shell', 'resize-pane']), commands: new Set(['if-shell', 'resize-pane']),
+      text: [
+        'async function unzoom(at) {',
+        '  await runCommand(["if-shell", "-F", ...at, "#{zoomed}", quoteCommand(["resize-pane", "-Z", ...at])])',
+        '}',
+        'async function resize(at) {',
+        '  await runCommands([["select-pane", ...at], ["resize-pane", "-Z", ...at]])',
+        '}',
+      ].join('\n'),
+    })
+    expect(typescript.functions.map((fn) => [fn.name, fn.sites.map((site) => site.command)])).toEqual([['unzoom', ['if-shell']], ['resize', ['resize-pane']]])
   })
 
   it('does not lend a neighbouring command its flags', async () => {
@@ -300,6 +356,33 @@ describe('reviewed claims', () => {
     })
   })
 
+  it('reads the rest of a statement that spans lines, as long as the first text is on the cited line', () => {
+    const wrapped = [
+      'fn set() {',
+      '    run(',
+      '        core,',
+      '        "set-option",',
+      '    )',
+      '}',
+    ].join('\n')
+    const run = (over: Record<string, unknown>) => verifyClaims({
+      claims: [{ port: 'rs', symbol: 'server.Server.panes', command: 'list-panes', scope: 'server', evidence: [{ at: 'set.rs:2', ...over }, { at: 'server.rs:3', in: 'server.Server.panes' }] }] as never,
+      spec, functions, types: [], symbols, readSource: (path: string) => (path === 'server.rs' ? source : path === 'set.rs' ? wrapped : undefined),
+    })
+    // The send call is on the cited line, and the command is two lines below it, inside the same call.
+    expect(run({ has: ['run(', '"set-option"'], span: 3 }).problems).toEqual([])
+    // Without the span the command is not on the cited line, and a command above the cited line is never read.
+    expect(run({ has: ['run(', '"set-option"'] }).problems.join('\n')).toMatch(/does not contain "\\"set-option\\""/)
+    expect(run({ has: ['"set-option"', 'run('], span: 3 }).problems.join('\n')).toMatch(/does not contain "\\"set-option\\""/)
+  })
+
+  it('holds a rule that names a revision for that revision only, and one that names none for the revision its model was extracted at', () => {
+    expect(ruleHolds({}, 'aaa', 'aaa')).toBe(true)
+    expect(ruleHolds({}, 'bbb', 'aaa')).toBe(false)
+    expect(ruleHolds({ revision: 'bbb' }, 'bbb111', 'aaa')).toBe(true)
+    expect(ruleHolds({ revision: 'bbb' }, 'aaa', 'aaa')).toBe(false)
+  })
+
   it.each([
     ['a line that no longer holds the text', { evidence: [{ at: 'server.rs:6', has: ['.arg("-s")'] }, { at: 'server.rs:3', in: 'server.Server.panes' }] }, /does not contain/],
     ['a line past the end of the file', { evidence: [{ at: 'server.rs:99' }, { at: 'server.rs:3', in: 'server.Server.panes' }] }, /not a line of the pinned source/],
@@ -382,6 +465,19 @@ describe('symbols that only build a command', () => {
     expect(apply([exclusion({ owner: undefined })]).problems[0]).toMatch(/neither an owner nor member names/)
   })
 
+  it('removes only the commands an exclusion names, so the other commands of the same symbols stay', () => {
+    const held = new Map([
+      ...found(),
+      ['tmux.Plan.KillPane|display-message', { ...entry('tmux.Plan.KillPane'), command: 'display-message' }],
+    ])
+    const { removed, problems } = apply([exclusion({ commands: ['kill-pane'] })], held)
+    expect(problems).toEqual([])
+    expect(removed.map((item: { symbol: string; command: string }) => `${item.symbol} ${item.command}`)).toEqual(['tmux.Plan.KillPane kill-pane'])
+    expect([...held.values()].map((item: { symbol: string; command: string }) => `${item.symbol} ${item.command}`)).toContain('tmux.Plan.KillPane display-message')
+    // The control: naming a command the symbols do not send removes nothing, and says the exclusion is stale.
+    expect(apply([exclusion({ commands: ['new-window'] })]).problems.join('\n')).toMatch(/removes no entry, so it is stale/)
+  })
+
   it.each([
     ['a line that no longer holds the text', { evidence: [{ at: 'tmux/plan.go:2', has: ['p.steps = append('] }] }, /does not contain/],
     ['a line past the end of the file', { evidence: [{ at: 'tmux/plan.go:99' }] }, /not a line of the pinned source/],
@@ -402,7 +498,7 @@ describe('crediting a wrapper with the core method it calls', () => {
     ['core.Server.snapshot', { name: 'snapshot', parentName: 'Server' }],
   ])
   const coreEntry = (symbol: string, scope: string, over: Record<string, unknown> = {}) => ({ symbol, command: 'list-panes', scope, evidence: ['Core.java:10'], ...over })
-  const core = (entries: ReturnType<typeof coreEntry>[]) => ({ entries, symbols: coreSymbols })
+  const core = (entries: ReturnType<typeof coreEntry>[]) => ({ entries, symbols: coreSymbols, revision: 'c0ffee' })
   const wrapper = (name: string, parentName: string, id = `w.${parentName}.${name}`) => ({ id, name, parentName, file: 'W.kt', line: 1 })
   const fn = (name: string, owner: string, calls: [string, number][], receivers: [string, string[]][] = []) =>
     located({ file: 'W.kt', name, owner, start: 1, nameLine: 1, end: 9, calls: new Map(calls), receivers: new Map(receivers.map(([callee, who]) => [callee, new Set(who)])) })
@@ -413,7 +509,8 @@ describe('crediting a wrapper with the core method it calls', () => {
     const { entries } = forward([fn('panes', 'Server', [['panes', 4]], [['panes', ['server']]])], [wrapper('panes', 'Server')], [coreEntry('core.Server.panes', 'server')])
     expect(entries).toEqual([{
       symbol: 'w.Server.panes', command: 'list-panes', scope: 'server', evidence: ['W.kt:4'], hops: 1,
-      via: { port: 'java', symbol: 'core.Server.panes', evidence: ['Core.java:10'] },
+      // The via says which revision of the core library its lines were read at.
+      via: { port: 'java', symbol: 'core.Server.panes', revision: 'c0ffee', evidence: ['Core.java:10'] },
     }])
   })
 
@@ -535,7 +632,7 @@ describe('finding the methods a scan misses', () => {
       evidence: [{ at: 'src/libtmux/pane.py:2', has: ['send_keys("reset")'] }], ...over,
     })
     const source = (path: string) => (path === 'src/libtmux/pane.py' ? 'def clear(self):\n    self.send_keys("reset")\n' : undefined)
-    const settle = (reviews: unknown[], covering: unknown[] = [], readSource: typeof source | null = source) =>
+    const settle = (reviews: unknown[], covering: unknown[] = [], readSource: ((path: string) => string | undefined) | null = source) =>
       settleCandidates({ port: 'py', candidates, reviews: reviews as Parameters<typeof settleCandidates>[0]['reviews'], covering: covering as never, readSource: readSource ?? undefined })
 
     it('leaves a candidate with no review unreviewed, and settles one whose review holds', () => {
@@ -551,7 +648,7 @@ describe('finding the methods a scan misses', () => {
       ['a review that settles nothing', { names: ['gone'] }, /settles no candidate, so it is stale/],
       ['no reason', { why: ' ' }, /gives no reason/],
       ['no evidence', { evidence: [] }, /cites no evidence/],
-      ['a kind that is not one of the four', { kind: 'probably-fine' }, /is not one of/],
+      ['a kind that is not one of the five', { kind: 'probably-fine' }, /is not one of builds, other-command, values, no-send, version-gated/],
       ['a review that names nothing', { owner: undefined, names: undefined, commands: undefined }, /names no owner, member or command/],
     ])('refuses %s, and leaves the candidate unreviewed', (_name, over, message) => {
       const result = settle([review(over)])
@@ -559,10 +656,150 @@ describe('finding the methods a scan misses', () => {
       expect(result.unreviewed).toEqual(candidates)
     })
 
+    describe('a method that sends one command on some supported releases and another on the rest', () => {
+      const lines = ['def find(self):', '    if version < (3, 3):', '        return self.cmd("list-windows", "-a")', '    return self.cmd("display-message", "-p")', 'FLOOR = (3, 2)']
+      const gated = (over: Record<string, unknown> = {}) => review({
+        kind: 'version-gated', names: ['clear'], why: 'Lists below 3.3 and asks display-message from 3.3; the floor is 3.2.',
+        evidence: [
+          { at: 'src/libtmux/pane.py:2', has: ['version < (3, 3)'] },
+          { at: 'src/libtmux/pane.py:3', has: ['"list-windows"'] },
+          { at: 'src/libtmux/pane.py:4', has: ['"display-message"'] },
+          { at: 'src/libtmux/pane.py:5', has: ['FLOOR = (3, 2)'] },
+        ], ...over,
+      })
+      const read = (path: string) => (path === 'src/libtmux/pane.py' ? lines.join('\n') : undefined)
+
+      it('is settled by a review that shows the gate, both branches and the floor below it', () => {
+        expect(settle([gated()], [], read)).toEqual({ unreviewed: [], reviewed: 1, problems: [] })
+      })
+
+      it.each([
+        ['the floor left out', { evidence: gatedEvidence().slice(0, 3) }],
+        ['a line cited without the text that shows it', { evidence: [...gatedEvidence().slice(0, 3), { at: 'src/libtmux/pane.py:5' }] }],
+        ['the gate left out', { evidence: [{ at: 'src/libtmux/pane.py:3', has: ['"list-windows"'] }] }],
+      ])('refuses %s, and leaves the candidate unreviewed', (_name, over) => {
+        const result = settle([gated(over)], [], read)
+        expect(result.problems.join('\n')).toMatch(/a version-gated review cites the gate, both branches and the supported floor/)
+        expect(result.unreviewed).toEqual(candidates)
+      })
+
+      it('refuses a gate whose cited text is not on the line', () => {
+        const result = settle([gated({ evidence: gatedEvidence().map((item, index) => (index === 0 ? { ...item, has: ['version < (3, 4)'] } : item)) })], [], read)
+        expect(result.problems.join('\n')).toMatch(/does not contain "version < \(3, 4\)"/)
+        expect(result.unreviewed).toEqual(candidates)
+      })
+
+      function gatedEvidence() {
+        return gated().evidence as { at: string; has?: string[] }[]
+      }
+    })
+
     it('does not read the evidence without a checkout, and lets a covering rule settle without being checked', () => {
       expect(settle([review({ evidence: [{ at: 'nowhere.py:1', has: ['x'] }] })], [], null)).toEqual({ unreviewed: [], reviewed: 1, problems: [] })
       expect(settle([], [{ port: 'py', owner: 'Pane', names: ['to_command'] }])).toEqual({ unreviewed: candidates, reviewed: 0, problems: [] })
       expect(settle([], [{ port: 'py', owner: 'Pane', names: ['clear'] }]).unreviewed).toEqual([])
+    })
+  })
+})
+
+describe('reading back the lines an entry cites', () => {
+  const library = ['def panes(self):', '    return fetch("list-panes", ["-a"])', '', 'def search(self):', '    return panes()', '', 'def broken(self):', '    raise Unsupported("list-panes")'].join('\n')
+  const fn = (name: string, start: number, end: number, calls: [string, number][] = []) => ({ file: 'lib.py', name, start, end, calls: new Map(calls) })
+  const sources = { read: (path: string) => (path === 'lib.py' ? library : undefined), functions: [fn('panes', 1, 2), fn('search', 4, 5, [['panes', 5]]), fn('broken', 7, 8)] }
+  const use = (over: Record<string, unknown> = {}) => ({ symbol: 'S.search', command: 'list-panes', scope: 'server', evidence: ['lib.py:2', 'lib.py:5'], ...over })
+  const audit = (uses: unknown[], over: Record<string, unknown> = {}) => auditEvidence({
+    port: 'py', revision: 'r1', uses: uses as never, claimFor: () => undefined, spellings: (command: string) => [command],
+    sourcesAt: (port: string, revision: string) => (port === 'py' && revision === 'r1' ? sources : undefined), ...over,
+  } as never)
+
+  it('accepts a scanned entry whose first line spells the command and whose next line calls the function around it', () => {
+    expect(audit([use()])).toEqual([])
+    // The command may be spelled by its alias.
+    expect(audit([use({ command: 'lsp' })], { spellings: () => ['list-panes', 'lsp'] })).toEqual([])
+  })
+
+  it.each([
+    ['a line past the end of the file', { evidence: ['lib.py:99', 'lib.py:5'] }, /lib.py:99 is not a line of py at r1/],
+    ['a file the revision does not have', { evidence: ['gone.py:1'] }, /gone.py:1 is not a line of py at r1/],
+    ['a first line that does not spell the command', { evidence: ['lib.py:5'] }, /lib.py:5 does not spell list-panes/],
+    ['a later line that does not call the function around the line before it', { evidence: ['lib.py:2', 'lib.py:7'] }, /lib.py:7 does not call panes/],
+    ['a later line that follows a line in no function', { evidence: ['lib.py:3', 'lib.py:5'] }, /not a line of py|is in no function/],
+    ['a first line that throws', { evidence: ['lib.py:8'] }, /lib.py:8 reports a failure and sends nothing/],
+  ])('refuses %s', (_name, over, message) => {
+    expect(audit([use(over)]).join('\n')).toMatch(message)
+  })
+
+  it('reads a reviewed entry against its claim, line by line', () => {
+    const claim = (over: Record<string, unknown> = {}) => ({ evidence: [{ at: 'lib.py:2', has: ['fetch("list-panes"'] }, { at: 'lib.py:5', has: ['panes()'], in: 'S.search' }], ...over })
+    const reviewed = (evidence = ['lib.py:2', 'lib.py:5']) => use({ reviewed: true, evidence })
+    expect(audit([reviewed()], { claimFor: () => claim() })).toEqual([])
+    expect(audit([reviewed()]).join('\n')).toMatch(/reviewed, but no claim of py holds it at r1/)
+    expect(audit([reviewed(['lib.py:2', 'lib.py:4'])], { claimFor: () => claim() }).join('\n')).toMatch(/cites lib.py:4 where its claim cites lib.py:5/)
+    expect(audit([reviewed()], { claimFor: () => claim({ evidence: [{ at: 'lib.py:2', has: ['"list-windows"'] }, { at: 'lib.py:5' }] }) }).join('\n')).toMatch(/does not contain "\\"list-windows\\""/)
+  })
+
+  it('refuses a reviewed first line that only binds the command in a function that goes on to send it, and not one that builds it for a caller', () => {
+    const rust = [
+      'async fn set(core: &Core) {',
+      '    let mut command = scope.apply(Command::new("set-option"));',
+      '    run(core, "set-option", command).await',
+      '}',
+      'fn channel_command() -> Command {',
+      '    let command = Command::new("wait-for");',
+      '    command',
+      '}',
+    ].join('\n')
+    const functions = [
+      { file: 'o.rs', name: 'set', start: 1, end: 4, calls: new Map([['run', 3], ['apply', 2]]) },
+      { file: 'o.rs', name: 'channel_command', start: 5, end: 8, calls: new Map() },
+    ]
+    const rs = { read: () => rust, functions }
+    const run = (line: number) => auditEvidence({
+      port: 'rs', revision: 'r1', claimFor: () => ({ evidence: [] }), spellings: (command: string) => [command],
+      sourcesAt: () => rs, uses: [{ symbol: 'o.set', command: 'set-option', scope: null, reviewed: true, evidence: [`o.rs:${line}`] }] as never,
+    } as never)
+    expect(run(2).join('\n')).toMatch(/o.rs:2 only binds the command to a name in set, which goes on to send it/)
+    expect(run(3)).toEqual([])
+    expect(run(6)).toEqual([])
+  })
+
+  describe('a wrapper that stands on a core library', () => {
+    // The wrapper cites the call, and the core lines are read at the revision the via names.
+    const wrapper = { read: (path: string) => (path === 'w.fs' ? 'let panes server =\n    server.PanesAsync()' : undefined), functions: [] }
+    const core = (text: string) => ({ read: (path: string) => (path === 'Core.cs' ? text : undefined), functions: [{ file: 'Core.cs', name: 'PanesAsync', start: 1, end: 3, calls: new Map() }] })
+    const at = { 'fs@r1': wrapper, 'cs@r1': core('Task PanesAsync() =>\n    Fetch("list-panes");'), 'cs@r2': core('Task PanesAsync() =>\n    Fetch();\n    // list-panes lived here') }
+    const forwarded = (revision: string | undefined, evidence = ['Core.cs:2']) => ({
+      symbol: 'S.Server.newSession', command: 'list-panes', scope: 'session', evidence: ['w.fs:2'],
+      via: { port: 'cs', symbol: 'Lib.Server.PanesAsync', revision, evidence },
+    })
+    const audits = (uses: unknown[]) => auditEvidence({
+      port: 'fs', revision: 'r1', uses: uses as never, claimFor: () => undefined, spellings: (command: string) => [command],
+      sourcesAt: (port: string, revision: string) => (at as unknown as Record<string, never>)[`${port}@${revision}`],
+    } as never)
+
+    it('accepts core lines that read as cited at the revision the via names', () => {
+      expect(audits([forwarded('r1')])).toEqual([])
+    })
+
+    it('refuses core lines read at a revision where they say something else, which is what citing the wrong revision does', () => {
+      expect(audits([forwarded('r2')]).join('\n')).toMatch(/via cs Lib.Server.PanesAsync\): Core.cs:2 does not spell list-panes/)
+    })
+
+    it('refuses a via that names no revision, a revision nothing was scanned at, and a wrapper line that does not call the core method', () => {
+      expect(audits([forwarded(undefined)]).join('\n')).toMatch(/its via names no revision/)
+      expect(audits([forwarded('r9')]).join('\n')).toMatch(/no scan of cs at r9/)
+      expect(audits([{ ...forwarded('r1'), evidence: ['w.fs:1'] }]).join('\n')).toMatch(/w.fs:1 does not call PanesAsync/)
+    })
+
+    it('reads a generated wrapper by its generator lines and the annotation that makes it forward, and not as a call', () => {
+      const generated = { read: (path: string) => (path === 'gen.kt' ? 'java.get(name)' : path === 'Core.java' ? '@Operation(Kind.READ)\npublic get() {}' : undefined), functions: [] }
+      const run = (annotation: string) => auditEvidence({
+        port: 'kt', revision: 'r1', generated: { evidence: ['gen.kt:1'] }, claimFor: () => undefined, spellings: (command: string) => [command],
+        sourcesAt: (port: string) => (port === 'kt' ? generated : { read: () => 'x', functions: [] }) as never,
+        uses: [{ symbol: 'K.get', command: 'show-environment', scope: null, evidence: ['gen.kt:1', annotation], via: { port: 'kt', symbol: 'J.get', revision: 'r1', evidence: ['Core.java:2'] } }] as never,
+      } as never)
+      expect(run('Core.java:1').filter((problem: string) => /Operation/.test(problem))).toEqual([])
+      expect(run('Core.java:2').join('\n')).toMatch(/Core.java:2 is not the @Operation annotation of the core method/)
     })
   })
 })

@@ -179,35 +179,13 @@
     ],
     "libtmux::Pane::break_out": [
       {
-        "command": "break-pane",
-        "evidence": [
-          "src/entities.cpp:1279",
-          "src/entities.cpp:1451"
-        ],
-        "scope": null
-      },
-      {
-        "command": "display-message",
-        "evidence": [
-          "src/entities.cpp:1281",
-          "src/entities.cpp:1451"
-        ],
-        "scope": null
-      },
-      {
         "command": "if-shell",
         "evidence": [
-          "src/entities.cpp:1283",
+          "src/entities.cpp:1287",
+          "src/entities.cpp:1289",
           "src/entities.cpp:1451"
         ],
-        "scope": null
-      },
-      {
-        "command": "rename-window",
-        "evidence": [
-          "src/entities.cpp:1366",
-          "src/entities.cpp:1452"
-        ],
+        "reviewed": true,
         "scope": null
       }
     ],

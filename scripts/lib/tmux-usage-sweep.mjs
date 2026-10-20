@@ -103,9 +103,19 @@ const carriesOwn = (command, member) => memberWords(member).includes(singular(co
 
 /**
  * What a review says it covers: the symbols of one owner or by member name, for some commands, in some files.
- * @typedef {{ port: string, kind: 'builds' | 'other-command' | 'values' | 'no-send', why: string, owner?: string, ownerSuffix?: string, names?: string[], commands?: string[], in?: string, evidence: { at: string, has?: string[] }[] }} Review
+ *
+ * An entry must hold on every tmux release the port supports at its revision. A method that sends one command on
+ * some releases and another on the rest is `version-gated`: it is recorded as neither, because each would be false
+ * on part of the supported range. Its review cites the gate, the branch it opens, the branch it closes, and the
+ * line that sets the supported floor below the gate, so the range the gate splits is shown to be supported. A gate
+ * the floor has moved past is not a review but a plain `other-command`: only the branch that remains is sent.
+ *
+ * @typedef {{ port: string, kind: 'builds' | 'other-command' | 'values' | 'no-send' | 'version-gated', why: string, owner?: string, ownerSuffix?: string, names?: string[], commands?: string[], in?: string, evidence: { at: string, has?: string[] }[] }} Review
  */
-export const REVIEW_KINDS = ['builds', 'other-command', 'values', 'no-send']
+export const REVIEW_KINDS = ['builds', 'other-command', 'values', 'no-send', 'version-gated']
+
+/** A gate review shows the gate, both branches and the floor, each by the text that is on the cited line. */
+const GATE_EVIDENCE = 4
 
 /** Whether a rule that names an owner, member names and a file prefix selects a candidate. */
 export function selects(rule, candidate) {
@@ -134,6 +144,10 @@ export function settleCandidates({ port, candidates, reviews, covering = [], rea
     if (!REVIEW_KINDS.includes(review.kind)) { problems.push(`${label}: kind ${JSON.stringify(review.kind)} is not one of ${REVIEW_KINDS.join(', ')}`); continue }
     if (!review.why?.trim()) { problems.push(`${label}: gives no reason`); continue }
     if (!review.evidence?.length) { problems.push(`${label}: cites no evidence`); continue }
+    if (review.kind === 'version-gated' && (review.evidence.length < GATE_EVIDENCE || review.evidence.some((item) => !item.has?.length))) {
+      problems.push(`${label}: a version-gated review cites the gate, both branches and the supported floor, ${GATE_EVIDENCE} lines at least, each with the text that shows it`)
+      continue
+    }
     let broken = false
     for (const item of readSource ? review.evidence : []) {
       const file = item.at.slice(0, item.at.lastIndexOf(':'))

@@ -217,16 +217,42 @@ function recordCall(fn, name, receiver, line) {
 /**
  * A call that checks a command rather than runs it names it as a label: `validateArgument("select-layout", ...)`
  * says whose argument it is in the error it may raise, `newCommandError("new-session", result)` names the
- * command a failure belongs to, and `ThrowIfFailed(result, "new-session")` says which command failed, and `preflight(ctx, "set-option", name)` checks a command before it is built. The verb ends at a word boundary, so `checkedRun` is a runner and
- * `checkArguments` is not.
+ * command a failure belongs to, `ThrowIfFailed(result, "new-session")` says which command failed, `server.failed("show-environment", result)`
+ * builds the error to throw for it, `map_err(decode_error("new-window"))` names the command a decode error belongs to, and
+ * `preflight(ctx, "set-option", name)` checks a command before it is built. The verb ends at a word boundary,
+ * so `checkedRun` is a runner and `checkArguments` is not.
  */
-const CHECKING = /^(?:[Vv]alidate|[Vv]erify|[Ee]nsure|[Rr]eject|[Rr]equire|[Cc]heck|[Ii]nvalid|[Uu]nsupported|[Tt]hrow|[Pp]reflight)(?![a-z])|(?:Error|Failure|Exception)$/
+const CHECKING = /^(?:[Vv]alidate|[Vv]erify|[Ee]nsure|[Rr]eject|[Rr]equire|[Cc]heck|[Ii]nvalid|[Uu]nsupported|[Tt]hrow|[Pp]reflight|[Ff]ail(?:ed)?)(?![a-z])|(?:[Ee]rror|[Ff]ailure|[Ee]xception|refused_result)$/
 
 /** Whether the nearest call around a literal only checks something about the command it names. */
 function namedForChecking(grammar, node, CALL) {
   for (let cursor = node.parent; cursor; cursor = cursor.parent) {
     if (!CALL.has(cursor.type)) continue
     return CHECKING.test(calleeOf(grammar, cursor)?.name ?? '')
+  }
+  return false
+}
+
+/**
+ * Commands whose arguments are commands for tmux to run later, in the shell or in its own parser. A command named
+ * in their argument list is run by tmux when the outer command runs, and the library sends only the outer one:
+ * `["if-shell", "-F", cond, quoteCommand(["resize-pane", "-Z"])]` sends if-shell.
+ */
+const RUNS_COMMANDS = new Set(['if-shell', 'run-shell', 'set-hook', 'bind-key', 'command-prompt', 'confirm-before', 'display-menu', 'choose-tree', 'choose-buffer', 'choose-client', 'pipe-pane'])
+/** Nodes that only wrap one element of an argument list or array. */
+const ELEMENTS = /^(?:argument|value_argument|literal_element|element|array_element|keyed_element|pair)$/
+
+/** Whether a literal is a later argument of a group that opens with a command that runs commands. */
+function nestedInCommand(node, STR, commandOf) {
+  for (let child = node, cursor = node.parent; cursor && WRAPPERS.has(cursor.type); child = cursor, cursor = cursor.parent) {
+    const first = cursor.descendantsOfType([...STR]).find((literal) => {
+      let at = literal.parent
+      while (at && at.id !== cursor.id && ELEMENTS.test(at.type)) at = at.parent
+      return at?.id === cursor.id
+    })
+    if (!first || first.id === node.id || child.startIndex <= first.startIndex) continue
+    const outer = commandOf(first)
+    if (outer && RUNS_COMMANDS.has(outer.command)) return true
   }
   return false
 }
@@ -366,7 +392,8 @@ export async function scanSource({ grammar, text, commands, known }) {
     }
 
     const literal = commands.size && isCommandLiteral(node)
-    if (literal && commands.has(literal.command) && !inSignature(node) && !onWindowsOnlyPath(node) && !namedForChecking(grammar, node, CALL) && !isComparand(node)) {
+    if (literal && commands.has(literal.command) && !inSignature(node) && !onWindowsOnlyPath(node) && !namedForChecking(grammar, node, CALL) && !isComparand(node)
+      && !nestedInCommand(node, STR, isCommandLiteral)) {
       const { flags } = flagsAround(node, literal.command)
       const site = { command: literal.command, line: row(node), flags: [...flags].sort().join('') }
       ;(stack.at(-1)?.sites ?? orphans).push(site)

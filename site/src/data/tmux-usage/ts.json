@@ -308,9 +308,9 @@
     ],
     "pane.Pane.killIfWindowUnshared": [
       {
-        "command": "kill-pane",
+        "command": "if-shell",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/plans.ts:195",
+          "packages/libtmux/src/_internal/operations/plans.ts:179",
           "packages/libtmux/src/_internal/operations/plans.ts:192",
           "packages/libtmux/src/_internal/operations/mutations.ts:86",
           "packages/libtmux/src/pane.ts:255"
@@ -503,14 +503,6 @@
           "packages/libtmux/src/pane.ts:400"
         ],
         "scope": null
-      },
-      {
-        "command": "resize-pane",
-        "evidence": [
-          "packages/libtmux/src/_internal/operations/topology.ts:297",
-          "packages/libtmux/src/pane.ts:400"
-        ],
-        "scope": null
       }
     ],
     "pane.Pane.zoom": [
@@ -518,14 +510,6 @@
         "command": "if-shell",
         "evidence": [
           "packages/libtmux/src/_internal/operations/topology.ts:272",
-          "packages/libtmux/src/pane.ts:386"
-        ],
-        "scope": null
-      },
-      {
-        "command": "resize-pane",
-        "evidence": [
-          "packages/libtmux/src/_internal/operations/topology.ts:276",
           "packages/libtmux/src/pane.ts:386"
         ],
         "scope": null
@@ -1303,14 +1287,6 @@
     "window.Window.unzoom": [
       {
         "command": "if-shell",
-        "evidence": [
-          "packages/libtmux/src/_internal/operations/topology.ts:297",
-          "packages/libtmux/src/window.ts:387"
-        ],
-        "scope": null
-      },
-      {
-        "command": "resize-pane",
         "evidence": [
           "packages/libtmux/src/_internal/operations/topology.ts:297",
           "packages/libtmux/src/window.ts:387"

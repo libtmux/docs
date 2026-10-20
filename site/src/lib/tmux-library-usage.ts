@@ -36,7 +36,7 @@ export interface UsageUse {
   /** A reviewed claim the generator checked line by line, not a scan result. */
   reviewed?: boolean
   /** The core library symbol a wrapper forwards to, and the lines that show it sends. */
-  via?: { port: string; symbol: string; evidence: string[]; reviewed?: boolean }
+  via?: { port: string; symbol: string; revision?: string; evidence: string[]; reviewed?: boolean }
 }
 
 export interface UsageDocument {

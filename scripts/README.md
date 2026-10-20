@@ -174,8 +174,15 @@ through the port checkouts named in `ports.ts` or
 `LIBTMUX_DOCS_CHECKOUT_<PORT>`. A symbol is credited when a command-name
 literal, with the flags beside it, sits in its own body or in one private
 helper it calls. A literal that is compared against, named by a `case`, or
-passed to a call that checks or fails (`validate...`, `...Error`) names a
-command and does not send it, and is not a site.
+passed to a call that checks or fails (`validate...`, `failed(...)`, `...Error`)
+names a command and does not send it, and is not a site. Neither is a command
+that sits in the arguments of one that runs commands (`if-shell`, `run-shell`,
+`set-hook`, `bind-key`, `command-prompt`, `confirm-before` and the like): in
+`["if-shell", "-F", cond, quoteCommand(["resize-pane", "-Z"])]` the library
+sends `if-shell`, and tmux runs `resize-pane` when the condition holds.
+
+Only public API is recorded: a symbol with an underscore name, a `private`
+modifier or an internal scope is left out of the scan and refused in a document.
 
 Three files beside the script hold what a scan cannot decide, and each line of
 them is verified against the pinned source, so generation fails when one no
@@ -191,12 +198,50 @@ longer holds:
   evidence; a wrapper that only builds a request sends nothing and is named in
   the page's "No method in" line.
 - `exclusions.json`: the symbols that carry a command's name and only build or
-  record it (a plan, a chain, a request that turns itself into a command). Each
-  cites the lines that show it, and an exclusion that removes nothing fails.
+  record it (a plan, a chain, a request that turns itself into a command), or
+  that pass the name of a list command only to choose the format of the row they
+  read. Each cites the lines that show it, an exclusion that removes nothing
+  fails, and `commands` limits it to those commands of the symbols it names.
 - `not-senders.json`: why a public method whose own name carries a command has
   no entry for it, one of `builds`, `other-command` (it sends a different
-  command), `values` (a field or a value holder) or `no-send`. Each cites the
-  lines that show it, and a review that settles nothing is stale and fails.
+  command, or runs it only inside the arguments of one that runs commands),
+  `values` (a field or a value holder), `no-send`, or `version-gated`. Each
+  cites the lines that show it, and a review that settles nothing is stale and
+  fails.
+
+An entry must hold on every tmux release the port supports at its revision. A
+method that sends one command on some of those releases and another on the rest
+is `version-gated`, and is recorded as neither; its review cites the gate, both
+branches and the line that sets the supported floor below the gate, so that the
+range the gate splits is shown to be supported. When a later revision raises the
+floor past the gate, the fallback is gone and the method is recorded as sending
+the command that remains. A refusal below some release (`new-pane` before 3.7) is
+not a gate of this kind: the method sends that command whenever it sends.
+
+A claim, an exclusion or a review without a `revision` is read against the
+revision its port's model was extracted from. One with a `revision` is read
+against that revision instead, which is how a wrapper that shares a repository
+with its core library is given the core as it stood where the wrapper is
+pinned: F# is pinned at an older revision than the C# model, so its entries stand
+on the C# library read there, with the claims and exclusions that carry that
+revision. A wrapper in another repository, such as the PowerShell cmdlets,
+stands on the release it depends on. Every `via` names the revision of the core
+lines it cites.
+
+A claim's evidence names the line that sends, `has` its text, and `span` the
+following lines of the same statement that may hold the rest when a call spans
+lines: the first text must be on the cited line itself.
+
+`--check --source` also reads back every line each entry cites, at the revision
+it names, and refuses the entry when the line does not say what the entry
+claims: a scanned entry's first line spells the command and each later line
+calls the function around the one before it, a reviewed entry's lines hold the
+text its claim names, a forwarded entry's own line calls the core method and its
+`via` is read as an entry of the core at the revision it names, and no entry's
+first line reports a failure (`throw`, an error constructor, `failed(...)`) or,
+for a claim, binds the command to a name in a function that goes on to send it.
+It reads the entries as committed, so an error made in generation that
+regeneration reproduces is still seen.
 
 A method named for a command and recorded as sending nothing of it is how a
 miss is found, and the check refuses it until a claim records the send or a

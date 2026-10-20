@@ -449,8 +449,10 @@
       {
         "command": "resize-pane",
         "evidence": [
-          "src/control_topology.jl:100"
+          "src/control_topology.jl:92",
+          "src/control_topology.jl:102"
         ],
+        "reviewed": true,
         "scope": null
       }
     ],
@@ -458,8 +460,10 @@
       {
         "command": "resize-window",
         "evidence": [
-          "src/control_topology.jl:100"
+          "src/control_topology.jl:92",
+          "src/control_topology.jl:102"
         ],
+        "reviewed": true,
         "scope": null
       }
     ],

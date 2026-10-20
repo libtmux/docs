@@ -240,7 +240,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:165",
+          "crates/libtmux/src/internal/options.rs:172",
           "crates/libtmux/src/pane/settings.rs:147"
         ],
         "reviewed": true,
@@ -260,7 +260,10 @@
       {
         "command": "capture-pane",
         "evidence": [
-          "crates/libtmux/src/pane/observe.rs:174",
+          "crates/libtmux/src/pane.rs:1618",
+          "crates/libtmux/src/pane.rs:1613",
+          "crates/libtmux/src/pane/observe.rs:169",
+          "crates/libtmux/src/pane/observe.rs:171",
           "crates/libtmux/src/pane/observe.rs:121"
         ],
         "reviewed": true,
@@ -280,8 +283,12 @@
       {
         "command": "capture-pane",
         "evidence": [
-          "crates/libtmux/src/pane/observe.rs:174"
+          "crates/libtmux/src/pane.rs:1618",
+          "crates/libtmux/src/pane.rs:1613",
+          "crates/libtmux/src/pane/observe.rs:169",
+          "crates/libtmux/src/pane/observe.rs:171"
         ],
+        "reviewed": true,
         "scope": null
       }
     ],
@@ -451,7 +458,7 @@
       {
         "command": "set-hook",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:266",
+          "crates/libtmux/src/internal/options.rs:261",
           "crates/libtmux/src/pane/settings.rs:177"
         ],
         "reviewed": true,
@@ -462,7 +469,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:165",
+          "crates/libtmux/src/internal/options.rs:172",
           "crates/libtmux/src/pane/settings.rs:87"
         ],
         "reviewed": true,
@@ -482,7 +489,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:165",
+          "crates/libtmux/src/internal/options.rs:172",
           "crates/libtmux/src/internal/options.rs:206",
           "crates/libtmux/src/pane/settings.rs:128"
         ],
@@ -502,7 +509,7 @@
       {
         "command": "split-window",
         "evidence": [
-          "crates/libtmux/src/internal/listing.rs:440",
+          "crates/libtmux/src/internal/listing.rs:444",
           "crates/libtmux/src/pane.rs:515"
         ],
         "scope": null
@@ -530,7 +537,7 @@
       {
         "command": "set-hook",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:283",
+          "crates/libtmux/src/internal/options.rs:278",
           "crates/libtmux/src/pane/settings.rs:190"
         ],
         "reviewed": true,
@@ -541,7 +548,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:222",
+          "crates/libtmux/src/internal/options.rs:220",
           "crates/libtmux/src/pane/settings.rs:160"
         ],
         "reviewed": true,
@@ -549,14 +556,6 @@
       }
     ],
     "pane.Pane.wait_for_quiet": [
-      {
-        "command": "capture-pane",
-        "evidence": [
-          "crates/libtmux/src/pane/observe.rs:491",
-          "crates/libtmux/src/pane/observe.rs:367"
-        ],
-        "scope": null
-      },
       {
         "command": "display-message",
         "evidence": [
@@ -568,14 +567,6 @@
     ],
     "pane.Pane.wait_for_text": [
       {
-        "command": "capture-pane",
-        "evidence": [
-          "crates/libtmux/src/pane/observe.rs:491",
-          "crates/libtmux/src/pane/observe.rs:315"
-        ],
-        "scope": null
-      },
-      {
         "command": "display-message",
         "evidence": [
           "crates/libtmux/src/pane/observe.rs:476",
@@ -585,14 +576,6 @@
       }
     ],
     "pane.Pane.wait_until": [
-      {
-        "command": "capture-pane",
-        "evidence": [
-          "crates/libtmux/src/pane/observe.rs:491",
-          "crates/libtmux/src/pane/observe.rs:446"
-        ],
-        "scope": null
-      },
       {
         "command": "display-message",
         "evidence": [
@@ -625,7 +608,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:165",
+          "crates/libtmux/src/internal/options.rs:172",
           "crates/libtmux/src/server/settings.rs:400"
         ],
         "reviewed": true,
@@ -809,6 +792,7 @@
       {
         "command": "list-panes",
         "evidence": [
+          "crates/libtmux/src/internal/listing.rs:208",
           "crates/libtmux/src/internal/listing.rs:204",
           "crates/libtmux/src/internal/listing.rs:58",
           "crates/libtmux/src/server/discovery.rs:41"
@@ -857,7 +841,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:165",
+          "crates/libtmux/src/internal/options.rs:172",
           "crates/libtmux/src/server/settings.rs:376"
         ],
         "reviewed": true,
@@ -877,7 +861,7 @@
       {
         "command": "set-environment",
         "evidence": [
-          "crates/libtmux/src/internal/environment.rs:47",
+          "crates/libtmux/src/internal/environment.rs:45",
           "crates/libtmux/src/server/settings.rs:258"
         ],
         "reviewed": true,
@@ -888,7 +872,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:165",
+          "crates/libtmux/src/internal/options.rs:172",
           "crates/libtmux/src/server/settings.rs:155"
         ],
         "reviewed": true,
@@ -899,7 +883,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:165",
+          "crates/libtmux/src/internal/options.rs:172",
           "crates/libtmux/src/server/settings.rs:431"
         ],
         "reviewed": true,
@@ -910,7 +894,7 @@
       {
         "command": "set-hook",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:266",
+          "crates/libtmux/src/internal/options.rs:261",
           "crates/libtmux/src/server/settings.rs:473"
         ],
         "reviewed": true,
@@ -921,7 +905,7 @@
       {
         "command": "set-hook",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:582",
+          "crates/libtmux/src/internal/options.rs:607",
           "crates/libtmux/src/server/settings.rs:545"
         ],
         "reviewed": true,
@@ -932,7 +916,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:165",
+          "crates/libtmux/src/internal/options.rs:172",
           "crates/libtmux/src/server/settings.rs:102"
         ],
         "reviewed": true,
@@ -943,7 +927,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:165",
+          "crates/libtmux/src/internal/options.rs:172",
           "crates/libtmux/src/internal/options.rs:206",
           "crates/libtmux/src/server/settings.rs:194"
         ],
@@ -955,7 +939,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:165",
+          "crates/libtmux/src/internal/options.rs:172",
           "crates/libtmux/src/internal/options.rs:206",
           "crates/libtmux/src/server/settings.rs:461"
         ],
@@ -967,7 +951,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:165",
+          "crates/libtmux/src/internal/options.rs:172",
           "crates/libtmux/src/internal/options.rs:206",
           "crates/libtmux/src/server/settings.rs:130"
         ],
@@ -1024,7 +1008,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:222",
+          "crates/libtmux/src/internal/options.rs:220",
           "crates/libtmux/src/server/settings.rs:416"
         ],
         "reviewed": true,
@@ -1035,7 +1019,7 @@
       {
         "command": "set-environment",
         "evidence": [
-          "crates/libtmux/src/internal/environment.rs:76",
+          "crates/libtmux/src/internal/environment.rs:74",
           "crates/libtmux/src/server/settings.rs:315"
         ],
         "reviewed": true,
@@ -1046,7 +1030,7 @@
       {
         "command": "set-hook",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:283",
+          "crates/libtmux/src/internal/options.rs:278",
           "crates/libtmux/src/server/settings.rs:482"
         ],
         "reviewed": true,
@@ -1057,7 +1041,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:222",
+          "crates/libtmux/src/internal/options.rs:220",
           "crates/libtmux/src/server/settings.rs:139"
         ],
         "reviewed": true,
@@ -1081,7 +1065,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:165",
+          "crates/libtmux/src/internal/options.rs:172",
           "crates/libtmux/src/session/settings.rs:170"
         ],
         "reviewed": true,
@@ -1156,7 +1140,7 @@
       {
         "command": "new-window",
         "evidence": [
-          "crates/libtmux/src/internal/listing.rs:423",
+          "crates/libtmux/src/internal/listing.rs:427",
           "crates/libtmux/src/session.rs:495"
         ],
         "scope": null
@@ -1175,6 +1159,7 @@
       {
         "command": "list-panes",
         "evidence": [
+          "crates/libtmux/src/internal/listing.rs:208",
           "crates/libtmux/src/internal/listing.rs:204",
           "crates/libtmux/src/internal/listing.rs:60",
           "crates/libtmux/src/session.rs:440"
@@ -1205,6 +1190,7 @@
       {
         "command": "list-windows",
         "evidence": [
+          "crates/libtmux/src/internal/listing.rs:160",
           "crates/libtmux/src/internal/listing.rs:156",
           "crates/libtmux/src/internal/listing.rs:59",
           "crates/libtmux/src/session.rs:280",
@@ -1218,7 +1204,7 @@
       {
         "command": "set-environment",
         "evidence": [
-          "crates/libtmux/src/internal/environment.rs:47",
+          "crates/libtmux/src/internal/environment.rs:45",
           "crates/libtmux/src/session/settings.rs:373"
         ],
         "reviewed": true,
@@ -1229,7 +1215,7 @@
       {
         "command": "set-hook",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:266",
+          "crates/libtmux/src/internal/options.rs:261",
           "crates/libtmux/src/session/settings.rs:207"
         ],
         "reviewed": true,
@@ -1240,7 +1226,7 @@
       {
         "command": "set-hook",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:582",
+          "crates/libtmux/src/internal/options.rs:607",
           "crates/libtmux/src/session/settings.rs:284"
         ],
         "reviewed": true,
@@ -1251,7 +1237,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:165",
+          "crates/libtmux/src/internal/options.rs:172",
           "crates/libtmux/src/session/settings.rs:90"
         ],
         "reviewed": true,
@@ -1262,7 +1248,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:165",
+          "crates/libtmux/src/internal/options.rs:172",
           "crates/libtmux/src/internal/options.rs:206",
           "crates/libtmux/src/session/settings.rs:151"
         ],
@@ -1274,7 +1260,7 @@
       {
         "command": "set-environment",
         "evidence": [
-          "crates/libtmux/src/internal/environment.rs:76",
+          "crates/libtmux/src/internal/environment.rs:74",
           "crates/libtmux/src/session/settings.rs:538"
         ],
         "reviewed": true,
@@ -1285,7 +1271,7 @@
       {
         "command": "set-hook",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:283",
+          "crates/libtmux/src/internal/options.rs:278",
           "crates/libtmux/src/session/settings.rs:220"
         ],
         "reviewed": true,
@@ -1296,7 +1282,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:222",
+          "crates/libtmux/src/internal/options.rs:220",
           "crates/libtmux/src/session/settings.rs:190"
         ],
         "reviewed": true,
@@ -1307,6 +1293,7 @@
       {
         "command": "list-windows",
         "evidence": [
+          "crates/libtmux/src/internal/listing.rs:160",
           "crates/libtmux/src/internal/listing.rs:156",
           "crates/libtmux/src/internal/listing.rs:59",
           "crates/libtmux/src/session.rs:280"
@@ -1319,7 +1306,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:165",
+          "crates/libtmux/src/internal/options.rs:172",
           "crates/libtmux/src/window/settings.rs:150"
         ],
         "reviewed": true,
@@ -1403,6 +1390,7 @@
       {
         "command": "list-panes",
         "evidence": [
+          "crates/libtmux/src/internal/listing.rs:208",
           "crates/libtmux/src/internal/listing.rs:204",
           "crates/libtmux/src/internal/listing.rs:59",
           "crates/libtmux/src/window/navigation.rs:23"
@@ -1470,6 +1458,7 @@
       {
         "command": "list-panes",
         "evidence": [
+          "crates/libtmux/src/internal/listing.rs:208",
           "crates/libtmux/src/internal/listing.rs:204",
           "crates/libtmux/src/internal/listing.rs:59",
           "crates/libtmux/src/window/navigation.rs:23",
@@ -1501,7 +1490,7 @@
       {
         "command": "set-hook",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:266",
+          "crates/libtmux/src/internal/options.rs:261",
           "crates/libtmux/src/window/settings.rs:187"
         ],
         "reviewed": true,
@@ -1512,7 +1501,7 @@
       {
         "command": "set-hook",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:582",
+          "crates/libtmux/src/internal/options.rs:607",
           "crates/libtmux/src/window/settings.rs:268"
         ],
         "reviewed": true,
@@ -1523,7 +1512,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:165",
+          "crates/libtmux/src/internal/options.rs:172",
           "crates/libtmux/src/window/settings.rs:90"
         ],
         "reviewed": true,
@@ -1534,7 +1523,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:165",
+          "crates/libtmux/src/internal/options.rs:172",
           "crates/libtmux/src/internal/options.rs:206",
           "crates/libtmux/src/window/settings.rs:131"
         ],
@@ -1546,7 +1535,7 @@
       {
         "command": "split-window",
         "evidence": [
-          "crates/libtmux/src/internal/listing.rs:440",
+          "crates/libtmux/src/internal/listing.rs:444",
           "crates/libtmux/src/window.rs:367"
         ],
         "scope": null
@@ -1574,7 +1563,7 @@
       {
         "command": "set-hook",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:283",
+          "crates/libtmux/src/internal/options.rs:278",
           "crates/libtmux/src/window/settings.rs:200"
         ],
         "reviewed": true,
@@ -1585,7 +1574,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "crates/libtmux/src/internal/options.rs:222",
+          "crates/libtmux/src/internal/options.rs:220",
           "crates/libtmux/src/window/settings.rs:170"
         ],
         "reviewed": true,

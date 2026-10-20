@@ -20,9 +20,10 @@ import { bareName, definitionsOf } from './tmux-usage-derive.mjs'
  *   functions: import('./tmux-usage-derive.mjs').LocatedFunction[],
  *   types: { file: string, name?: string, start: number, end: number }[],
  *   symbols: WrapperSymbol[],
- *   core: { entries: CoreEntry[], symbols: Map<string, { name: string, parentName?: string }> },
+ *   core: { entries: CoreEntry[], symbols: Map<string, { name: string, parentName?: string }>, revision: string },
  *   generated?: { under: string[], evidence: string[], forwards: (entry: CoreEntry) => string | undefined },
  * }} input
+ *   `core.revision` is the revision the core lines were read at, and every entry says so in its `via`.
  * @returns {{ entries: object[], silent: string[] }} `silent` names the wrapper symbols that call no core sender.
  */
 export function forwardUsage({ parent, functions, types, symbols, core, generated }) {
@@ -40,7 +41,7 @@ export function forwardUsage({ parent, functions, types, symbols, core, generate
     const key = `${symbol.id}\0${entry.command}\0${entry.scope}`
     const result = {
       symbol: symbol.id, command: entry.command, scope: entry.scope, evidence, hops: 1,
-      via: { port: parent, symbol: entry.symbol, evidence: entry.evidence, ...(entry.reviewed ? { reviewed: true } : {}) },
+      via: { port: parent, symbol: entry.symbol, revision: core.revision, evidence: entry.evidence, ...(entry.reviewed ? { reviewed: true } : {}) },
     }
     if (!entries.has(key)) entries.set(key, result)
     forwarding.add(symbol.id)

@@ -97,15 +97,6 @@
   "revision": "8e0ce38400618bd783e6276270dd7f5d8cb283ea",
   "schemaVersion": 1,
   "symbols": {
-    "libtmux._internal.control_mode.ControlMode.__enter__": [
-      {
-        "command": "attach-session",
-        "evidence": [
-          "src/libtmux/_internal/control_mode.py:78"
-        ],
-        "scope": null
-      }
-    ],
     "libtmux.Client.from_client_name": [
       {
         "command": "list-clients",
@@ -178,15 +169,6 @@
         "scope": null
       }
     ],
-    "libtmux.hooks.HooksMixin._show_hook": [
-      {
-        "command": "show-hooks",
-        "evidence": [
-          "src/libtmux/hooks.py:364"
-        ],
-        "scope": null
-      }
-    ],
     "libtmux.hooks.HooksMixin.run_hook": [
       {
         "command": "set-hook",
@@ -245,58 +227,6 @@
         "scope": null
       }
     ],
-    "libtmux.options.OptionsMixin._show_option": [
-      {
-        "command": "show-options",
-        "evidence": [
-          "src/libtmux/options.py:1134",
-          "src/libtmux/options.py:1185"
-        ],
-        "reviewed": true,
-        "scope": null
-      }
-    ],
-    "libtmux.options.OptionsMixin._show_option_raw": [
-      {
-        "command": "show-options",
-        "evidence": [
-          "src/libtmux/options.py:1134"
-        ],
-        "scope": null
-      }
-    ],
-    "libtmux.options.OptionsMixin._show_options": [
-      {
-        "command": "show-options",
-        "evidence": [
-          "src/libtmux/options.py:886",
-          "src/libtmux/options.py:928",
-          "src/libtmux/options.py:977"
-        ],
-        "reviewed": true,
-        "scope": null
-      }
-    ],
-    "libtmux.options.OptionsMixin._show_options_dict": [
-      {
-        "command": "show-options",
-        "evidence": [
-          "src/libtmux/options.py:886",
-          "src/libtmux/options.py:928"
-        ],
-        "reviewed": true,
-        "scope": null
-      }
-    ],
-    "libtmux.options.OptionsMixin._show_options_raw": [
-      {
-        "command": "show-options",
-        "evidence": [
-          "src/libtmux/options.py:886"
-        ],
-        "scope": null
-      }
-    ],
     "libtmux.options.OptionsMixin.set_option": [
       {
         "command": "set-option",
@@ -336,67 +266,6 @@
         "command": "set-option",
         "evidence": [
           "src/libtmux/options.py:793"
-        ],
-        "scope": null
-      }
-    ],
-    "libtmux.Pane._show_hook": [
-      {
-        "command": "show-hooks",
-        "evidence": [
-          "src/libtmux/hooks.py:364"
-        ],
-        "scope": null
-      }
-    ],
-    "libtmux.Pane._show_option": [
-      {
-        "command": "show-options",
-        "evidence": [
-          "src/libtmux/options.py:1134",
-          "src/libtmux/options.py:1185"
-        ],
-        "reviewed": true,
-        "scope": null
-      }
-    ],
-    "libtmux.Pane._show_option_raw": [
-      {
-        "command": "show-options",
-        "evidence": [
-          "src/libtmux/options.py:1134"
-        ],
-        "scope": null
-      }
-    ],
-    "libtmux.Pane._show_options": [
-      {
-        "command": "show-options",
-        "evidence": [
-          "src/libtmux/options.py:886",
-          "src/libtmux/options.py:928",
-          "src/libtmux/options.py:977"
-        ],
-        "reviewed": true,
-        "scope": null
-      }
-    ],
-    "libtmux.Pane._show_options_dict": [
-      {
-        "command": "show-options",
-        "evidence": [
-          "src/libtmux/options.py:886",
-          "src/libtmux/options.py:928"
-        ],
-        "reviewed": true,
-        "scope": null
-      }
-    ],
-    "libtmux.Pane._show_options_raw": [
-      {
-        "command": "show-options",
-        "evidence": [
-          "src/libtmux/options.py:886"
         ],
         "scope": null
       }
@@ -784,67 +653,6 @@
         "command": "kill-session",
         "evidence": [
           "src/libtmux/pytest_plugin.py:291"
-        ],
-        "scope": null
-      }
-    ],
-    "libtmux.Server._show_hook": [
-      {
-        "command": "show-hooks",
-        "evidence": [
-          "src/libtmux/hooks.py:364"
-        ],
-        "scope": null
-      }
-    ],
-    "libtmux.Server._show_option": [
-      {
-        "command": "show-options",
-        "evidence": [
-          "src/libtmux/options.py:1134",
-          "src/libtmux/options.py:1185"
-        ],
-        "reviewed": true,
-        "scope": null
-      }
-    ],
-    "libtmux.Server._show_option_raw": [
-      {
-        "command": "show-options",
-        "evidence": [
-          "src/libtmux/options.py:1134"
-        ],
-        "scope": null
-      }
-    ],
-    "libtmux.Server._show_options": [
-      {
-        "command": "show-options",
-        "evidence": [
-          "src/libtmux/options.py:886",
-          "src/libtmux/options.py:928",
-          "src/libtmux/options.py:977"
-        ],
-        "reviewed": true,
-        "scope": null
-      }
-    ],
-    "libtmux.Server._show_options_dict": [
-      {
-        "command": "show-options",
-        "evidence": [
-          "src/libtmux/options.py:886",
-          "src/libtmux/options.py:928"
-        ],
-        "reviewed": true,
-        "scope": null
-      }
-    ],
-    "libtmux.Server._show_options_raw": [
-      {
-        "command": "show-options",
-        "evidence": [
-          "src/libtmux/options.py:886"
         ],
         "scope": null
       }
@@ -1414,67 +1222,6 @@
         "scope": "server"
       }
     ],
-    "libtmux.Session._show_hook": [
-      {
-        "command": "show-hooks",
-        "evidence": [
-          "src/libtmux/hooks.py:364"
-        ],
-        "scope": null
-      }
-    ],
-    "libtmux.Session._show_option": [
-      {
-        "command": "show-options",
-        "evidence": [
-          "src/libtmux/options.py:1134",
-          "src/libtmux/options.py:1185"
-        ],
-        "reviewed": true,
-        "scope": null
-      }
-    ],
-    "libtmux.Session._show_option_raw": [
-      {
-        "command": "show-options",
-        "evidence": [
-          "src/libtmux/options.py:1134"
-        ],
-        "scope": null
-      }
-    ],
-    "libtmux.Session._show_options": [
-      {
-        "command": "show-options",
-        "evidence": [
-          "src/libtmux/options.py:886",
-          "src/libtmux/options.py:928",
-          "src/libtmux/options.py:977"
-        ],
-        "reviewed": true,
-        "scope": null
-      }
-    ],
-    "libtmux.Session._show_options_dict": [
-      {
-        "command": "show-options",
-        "evidence": [
-          "src/libtmux/options.py:886",
-          "src/libtmux/options.py:928"
-        ],
-        "reviewed": true,
-        "scope": null
-      }
-    ],
-    "libtmux.Session._show_options_raw": [
-      {
-        "command": "show-options",
-        "evidence": [
-          "src/libtmux/options.py:886"
-        ],
-        "scope": null
-      }
-    ],
     "libtmux.Session.attach": [
       {
         "command": "attach-session",
@@ -1781,67 +1528,6 @@
           "src/libtmux/session.py:282"
         ],
         "scope": "session"
-      }
-    ],
-    "libtmux.Window._show_hook": [
-      {
-        "command": "show-hooks",
-        "evidence": [
-          "src/libtmux/hooks.py:364"
-        ],
-        "scope": null
-      }
-    ],
-    "libtmux.Window._show_option": [
-      {
-        "command": "show-options",
-        "evidence": [
-          "src/libtmux/options.py:1134",
-          "src/libtmux/options.py:1185"
-        ],
-        "reviewed": true,
-        "scope": null
-      }
-    ],
-    "libtmux.Window._show_option_raw": [
-      {
-        "command": "show-options",
-        "evidence": [
-          "src/libtmux/options.py:1134"
-        ],
-        "scope": null
-      }
-    ],
-    "libtmux.Window._show_options": [
-      {
-        "command": "show-options",
-        "evidence": [
-          "src/libtmux/options.py:886",
-          "src/libtmux/options.py:928",
-          "src/libtmux/options.py:977"
-        ],
-        "reviewed": true,
-        "scope": null
-      }
-    ],
-    "libtmux.Window._show_options_dict": [
-      {
-        "command": "show-options",
-        "evidence": [
-          "src/libtmux/options.py:886",
-          "src/libtmux/options.py:928"
-        ],
-        "reviewed": true,
-        "scope": null
-      }
-    ],
-    "libtmux.Window._show_options_raw": [
-      {
-        "command": "show-options",
-        "evidence": [
-          "src/libtmux/options.py:886"
-        ],
-        "scope": null
       }
     ],
     "libtmux.Window.display_message": [

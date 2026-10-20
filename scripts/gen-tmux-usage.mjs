@@ -25,12 +25,14 @@
  *   gen-tmux-usage.mjs --ports a,b    only these ports, and the core libraries their wrappers stand on
  */
 import { spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { homedir } from 'node:os'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { homedir, tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { extractProject } from '../packages/api-model/src/project.ts'
 import { GRAMMARS, isLibrarySource, scanSource } from './lib/tmux-usage-scan.mjs'
-import { applyExclusions, deriveUsage, verifyClaims } from './lib/tmux-usage-derive.mjs'
+import { applyExclusions, deriveUsage, ruleHolds, verifyClaims } from './lib/tmux-usage-derive.mjs'
+import { auditEvidence } from './lib/tmux-usage-audit.mjs'
 import { forwardUsage } from './lib/tmux-usage-forward.mjs'
 import { settleCandidates, sweepCandidates } from './lib/tmux-usage-sweep.mjs'
 import { libraryScopes, scopeProblems } from './lib/tmux-usage-scopes.mjs'
@@ -100,6 +102,17 @@ function knownCommands() {
   return names
 }
 
+/** Every spelling of each command a literal may use, name first: `new-window` is also `neww`. */
+function commandSpellings() {
+  const spellings = new Map()
+  for (const version of readJson(join(dataDir, 'tmux/versions.json')).versions) {
+    for (const command of readJson(join(dataDir, `tmux/${version.version}.json`)).commands) {
+      spellings.set(command.name, [...new Set([...(spellings.get(command.name) ?? [command.name]), ...(command.alias ? [command.alias] : [])])])
+    }
+  }
+  return spellings
+}
+
 const sortKeys = (value) => Array.isArray(value) ? value.map(sortKeys)
   : value && typeof value === 'object' ? Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)).map(([key, item]) => [key, sortKeys(item)])) : value
 
@@ -109,11 +122,21 @@ export const DEFINITION_OPTIONS = { lua: { sharedOwner: true }, julia: { freeFun
 /** A consumer example declares symbols of its own that the library does not. */
 const EXAMPLES = /(?:^|\/)(?:examples?|tests?|benchmarks?|docs?)\//
 
-/** Callable public symbols, in the shape the derivation reads. */
+/**
+ * Whether a model symbol is private by its own marks: an underscore name, an underscore module or type around it
+ * (`libtmux._internal.control_mode`), a `private` modifier, an internal scope. Dunder names are the language's
+ * protocol and stay. The reference orders the same members last, as its private tier.
+ */
+const UNDERSCORE = /^_(?!_)/
+export const isPrivateSymbol = (symbol) => (symbol.name.startsWith('_') && !/^__\w+__$/.test(symbol.name))
+  || (symbol.publicId ?? symbol.id).replace(/\(.*$/s, '').split(/[.:#\\/]+/).slice(0, -1).some((segment) => UNDERSCORE.test(segment))
+  || Boolean(symbol.modifiers?.includes('private')) || symbol.apiScope === 'internal'
+
+/** Callable public symbols, in the shape the derivation reads: a library's private helpers are not API to use. */
 export function publicSymbols(model) {
   const byId = new Map(model.symbols.map((symbol) => [symbol.id, symbol]))
   return model.symbols
-    .filter((symbol) => symbol.apiScope !== 'internal' && symbol.source?.file && !EXAMPLES.test(symbol.source.file)
+    .filter((symbol) => !isPrivateSymbol(symbol) && symbol.source?.file && !EXAMPLES.test(symbol.source.file)
       && ['function', 'method', 'property', 'attribute'].includes(symbol.kind))
     .map((symbol) => ({
       id: symbol.publicId ?? symbol.id,
@@ -191,6 +214,28 @@ function derivePort({ port, scanned, commands, scopes, claims, report, sends }) 
   return { found, problems }
 }
 
+/**
+ * Where a core library keeps the source its public symbols come from, for reading it at another revision than its model.
+ * Only a core that a wrapper shares a repository with, and is pinned apart from, needs this.
+ */
+const CORE_EXTRACTION = { csharp: { roots: ['src/LibTmux'], options: { inheritedMembers: true } } }
+
+/** The public symbols of a core library as they were at a revision, extracted from that revision's own files. */
+async function modelAtRevision({ port, checkout, revision }) {
+  const config = CORE_EXTRACTION[port]
+  if (!config) throw new Error(`${port}: no source roots are configured to read its symbols at ${revision.slice(0, 8)}`)
+  const dir = mkdtempSync(join(tmpdir(), 'tmux-usage-'))
+  try {
+    const unpacked = spawnSync('tar', ['-x', '-C', dir], { input: git(checkout, 'archive', revision, ...config.roots), maxBuffer: 1 << 28 })
+    if (unpacked.status !== 0) throw new Error(`${port}: cannot unpack ${revision.slice(0, 8)}: ${unpacked.stderr}`)
+    const model = await extractProject({ port, root: join(dir, config.roots[0]), roots: config.roots.map((root) => join(dir, root)), revision, options: config.options })
+    for (const symbol of model.symbols) if (symbol.source?.file?.startsWith(`${dir}/`)) symbol.source.file = symbol.source.file.slice(dir.length + 1)
+    return model
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+}
+
 /** The Operation annotation above the core method that sends, the line that makes a generated wrapper forward to it. */
 function operationAnnotation(core, kinds) {
   const pattern = new RegExp(`@Operation\\(\\s*Kind\\.(?:${kinds.join('|')})\\s*\\)`)
@@ -221,7 +266,7 @@ function forwardPort({ port, config, scanned, core, coreScan, readEvidence }) {
   }
   const result = forwardUsage({
     parent: config.parent, functions: scanned.functions, types: scanned.types, symbols: scanned.symbols,
-    core: { entries: core.entries, symbols: core.symbols }, generated,
+    core: { entries: core.entries, symbols: core.symbols, revision: core.revision }, generated,
   })
   return { entries: result.entries, problems }
 }
@@ -237,20 +282,34 @@ export function checkoutFor(port) {
   return expand(override || port.checkout)
 }
 
+/**
+ * The revision a wrapper's cited core lines are read at: the wrapper's own when it shares a repository with the core
+ * library, because the two are built together there, and the core's model otherwise, which is the release the wrapper
+ * depends on. A wrapper with no core library cites none.
+ */
+export const viaRevisionFor = (model, coreModel) => (coreModel ? (coreModel.repo === model.repo ? model.revision : coreModel.revision) : undefined)
+
 /** What a committed file must satisfy without any checkout. */
-export function documentProblems(document, model, scopes, commands) {
+export function documentProblems(document, model, scopes, commands, viaRevision) {
   const problems = []
   if (document.schemaVersion !== SCHEMA_VERSION) problems.push(`schemaVersion ${document.schemaVersion}`)
   if (document.revision !== model.revision) problems.push(`records ${document.revision}, but the API model is at ${model.revision}`)
   if (JSON.stringify(document.commands) !== JSON.stringify([...commands].sort())) problems.push(`covers ${JSON.stringify(document.commands)}, expected ${JSON.stringify([...commands].sort())}`)
   const ids = new Set(model.symbols.map((symbol) => symbol.publicId ?? symbol.id))
+  const privateIds = new Set(model.symbols.filter(isPrivateSymbol).map((symbol) => symbol.publicId ?? symbol.id))
   for (const [symbol, uses] of Object.entries(document.symbols)) {
     if (!ids.has(symbol)) problems.push(`${symbol}: not a symbol of the API model`)
+    else if (privateIds.has(symbol)) problems.push(`${symbol}: is private, and only public API is recorded`)
     for (const use of uses) {
       const scoped = scopes.commands[use.command]?.scopes
       if (!commands.includes(use.command)) problems.push(`${symbol}: ${use.command} is not a recorded command`)
       if (scoped ? !scoped.some((scope) => scope.id === use.scope) : use.scope !== null) problems.push(`${symbol}: ${use.scope} is not a scope of ${use.command}`)
       if (!use.evidence?.length || use.evidence.some((item) => !/^[^:\s][^:]*:\d+$/.test(item))) problems.push(`${symbol}: evidence must be file:line`)
+      if (use.via) {
+        if (!use.via.evidence?.length || use.via.evidence.some((item) => !/^[^:\s][^:]*:\d+$/.test(item))) problems.push(`${symbol}: via evidence must be file:line`)
+        // The lines of a core library are read where the wrapper is pinned when both live in one repository, and where the core's own model is otherwise.
+        if (use.via.revision !== viaRevision) problems.push(`${symbol}: via ${use.via.symbol} cites ${use.via.port} lines at ${use.via.revision ?? 'no revision'}, which must be ${viaRevision ?? 'absent, for a port with no core library'}`)
+      }
     }
   }
   return problems
@@ -282,6 +341,7 @@ export async function main() {
   const report = []
   const failures = []
   const known = regenerate ? knownCommands() : new Set()
+  const spellings = commandSpellings()
   mkdirSync(usageDir, { recursive: true })
 
   for (const command of commandsToRecord) {
@@ -301,15 +361,57 @@ export async function main() {
   const only = args.includes('--ports') ? new Set(option('--ports').split(',')) : undefined
   const wanted = (port) => !only || only.has(port.slug) || [...only].some((slug) => forwarders[slug]?.parent === port.slug)
   const ordered = ports.filter(wanted).sort((a, b) => Number(Boolean(forwarders[a.slug])) - Number(Boolean(forwarders[b.slug])))
-  const byPort = new Map()
+  const models = new Map(ports.map((port) => [port.slug, readJson(join(dataDir, `api/${port.slug}.json`))]))
+  const viaRevisionOf = (slug) => viaRevisionFor(models.get(slug), forwarders[slug] && models.get(forwarders[slug].parent))
+
+  /** Every scan made, by port and revision, for the audit to read the lines an entry cites from. */
+  const scans = new Map()
+  const scanKey = (slug, revision) => `${slug}@${revision}`
+  /** A port's result at its model's revision, and a core library's at the revision a wrapper in its repository is pinned at. */
+  const passes = new Map()
+
+  /** Scan a port's library at a revision and derive what it sends, from the scan and the claims and exclusions that hold there. */
+  async function derivePass({ port, model, core }) {
+    const pinned = models.get(port.slug).revision
+    const rules = (list) => list.filter((rule) => rule.port === port.slug && ruleHolds(rule, model.revision, pinned))
+    const scanned = await scanPort({ port: port.slug, model, commands: commandsToRecord, checkout: checkoutFor(port), known })
+    scans.set(scanKey(port.slug, model.revision), { read: scanned.readSource, functions: scanned.functions })
+    const sends = (parent, symbol, command, scope) => {
+      const entry = core?.found.get(`${symbol}\0${command}\0${scope}`)
+      return parent === core?.port && entry ? { ...entry, revision: core.revision } : undefined
+    }
+    const { found, problems } = derivePort({ port: port.slug, scanned, commands: commandsToRecord, scopes, claims: rules(claims), report, sends })
+    const excluded = applyExclusions({ exclusions: rules(exclusions), found, symbols: scanned.symbols, readSource: scanned.readSource })
+    return { port: port.slug, revision: model.revision, found, scanned, problems: [...problems, ...excluded.problems] }
+  }
+
+  /** The core library as the wrapper sees it: read where the wrapper is pinned if they share a repository, else at the core's model. */
+  async function corePassFor(port, config) {
+    const parent = ports.find((candidate) => candidate.slug === config.parent)
+    const revision = viaRevisionOf(port.slug)
+    if (revision === models.get(parent.slug).revision) return passes.get(parent.slug)
+    const key = scanKey(parent.slug, revision)
+    if (!passes.has(key)) {
+      const model = await modelAtRevision({ port: parent.slug, checkout: checkoutFor(parent), revision })
+      const pass = await derivePass({ port: parent, model, core: undefined })
+      failures.push(...pass.problems)
+      passes.set(key, pass)
+    }
+    return passes.get(key)
+  }
+
+  const claimFor = (slug, symbol, command, scope, revision) => claims.find((claim) => claim.port === slug && claim.symbol === symbol
+    && claim.command === command && claim.scope === scope && ruleHolds(claim, revision, models.get(slug).revision))
+
   let compared = 0
   for (const port of ordered) {
-    const model = readJson(join(dataDir, `api/${port.slug}.json`))
+    const model = models.get(port.slug)
     const path = join(usageDir, `${port.slug}.json`)
+    let committed
     if (check) {
       if (!existsSync(path)) { failures.push(`${port.slug}: no ${path}`); continue }
-      const committed = readJson(path)
-      for (const problem of documentProblems(committed, model, scopes, commandsToRecord)) failures.push(`${port.slug}: ${problem}`)
+      committed = readJson(path)
+      for (const problem of documentProblems(committed, model, scopes, commandsToRecord, viaRevisionOf(port.slug))) failures.push(`${port.slug}: ${problem}`)
       if (!args.includes('--source')) {
         failures.push(...sweepProblems({ port: port.slug, model, document: committed, reviews, exclusions, report }))
         continue
@@ -320,28 +422,31 @@ export async function main() {
       if (check) { console.log(`gen-tmux-usage: ${port.slug}: no checkout at ${checkout}; skipped regeneration`); continue }
       throw new Error(`${port.slug}: no checkout at ${checkout}; set LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`)
     }
-    const scanned = await scanPort({ port: port.slug, model, commands: commandsToRecord, checkout, known })
-    const sends = (parent, symbol, command, scope) => byPort.get(parent)?.found.get(`${symbol}\0${command}\0${scope}`)
-    const { found, problems } = derivePort({ port: port.slug, scanned, commands: commandsToRecord, scopes, claims, report, sends })
-    failures.push(...problems)
-    const excluded = applyExclusions({ exclusions: exclusions.filter((exclusion) => exclusion.port === port.slug), found, symbols: scanned.symbols, readSource: scanned.readSource })
-    failures.push(...excluded.problems)
     const config = forwarders[port.slug]
-    if (config) {
-      const core = byPort.get(config.parent)
-      if (!core) failures.push(`${port.slug}: its core library ${config.parent} was not generated`)
-      else {
-        const forwarded = forwardPort({
-          port: port.slug, config, scanned, coreScan: core.scanned, readEvidence: scanned.readSource,
-          core: { entries: [...core.found.values()], symbols: new Map(core.scanned.symbols.map((symbol) => [symbol.id, symbol])) },
-        })
-        failures.push(...forwarded.problems)
-        mergeEntries(found, forwarded.entries)
-      }
+    const core = config ? await corePassFor(port, config) : undefined
+    if (config && !core) failures.push(`${port.slug}: its core library ${config.parent} was not generated`)
+    const pass = await derivePass({ port, model, core })
+    const { found, scanned } = pass
+    failures.push(...pass.problems)
+    if (config && core) {
+      const forwarded = forwardPort({
+        port: port.slug, config, scanned, coreScan: core.scanned, readEvidence: scanned.readSource,
+        core: { entries: [...core.found.values()], symbols: new Map(core.scanned.symbols.map((symbol) => [symbol.id, symbol])), revision: core.revision },
+      })
+      failures.push(...forwarded.problems)
+      mergeEntries(found, forwarded.entries)
     }
-    byPort.set(port.slug, { found, scanned })
+    passes.set(port.slug, pass)
     const document = portDocument(port.slug, model, [...found.values()], commandsToRecord)
     failures.push(...sweepProblems({ port: port.slug, model, document, reviews, exclusions, report, readSource: scanned.readSource }))
+    // The committed entries are the ones audited, because a check has to read what is published and not what a scan makes of it.
+    const subject = committed ?? document
+    failures.push(...auditEvidence({
+      port: port.slug, revision: model.revision, claimFor, spellings: (command) => spellings.get(command) ?? [command],
+      sourcesAt: (slug, revision) => scans.get(scanKey(slug, revision)),
+      generated: config?.generated && { evidence: config.generated.evidence.map((item) => item.at) },
+      uses: Object.entries(subject.symbols).flatMap(([symbol, uses]) => uses.map((use) => ({ symbol, ...use }))),
+    }))
     const text = `${JSON.stringify(document, null, 2)}\n`
     if (check) {
       if (text !== readFileSync(path, 'utf8')) failures.push(`${port.slug}: stale; run node scripts/gen-tmux-usage.mjs`)

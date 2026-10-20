@@ -1683,15 +1683,6 @@
         "scope": null
       }
     ],
-    "tmux.Session.Start": [
-      {
-        "command": "wait-for",
-        "evidence": [
-          "tmux/session_run.go:162"
-        ],
-        "scope": null
-      }
-    ],
     "tmux.Session.SwitchClient": [
       {
         "command": "switch-client",

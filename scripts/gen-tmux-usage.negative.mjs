@@ -8,9 +8,13 @@
  * revision that moved on, a symbol the model dropped, a scope the command does
  * not have, evidence that is not a line, a port whose file went missing, a
  * command the file does not cover, a file that covers fewer commands than
- * the manual documents, and a method named for a command that nothing records.
+ * the manual documents, a method named for a command that nothing records, a
+ * private helper recorded as API, a wrapper that cites its core library's lines
+ * at a revision other than the one they must be read at, and (with the sources
+ * checked out) core lines that read as something else at the revision cited.
  */
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { homedir } from 'node:os'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { execFileSync } from 'node:child_process'
@@ -23,6 +27,15 @@ const committed = join(here, '..', 'site/src/data/tmux-usage')
 function run(dir) {
   try {
     return { code: 0, out: execFileSync('node', [script, '--check', '--data', dir], { encoding: 'utf8', stdio: 'pipe' }) }
+  } catch (error) {
+    return { code: error.status, out: `${error.stdout ?? ''}${error.stderr ?? ''}` }
+  }
+}
+
+/** The same check with the sources read, for the ports named. */
+function runSource(dir, ports) {
+  try {
+    return { code: 0, out: execFileSync('node', [script, '--check', '--source', '--ports', ports, '--data', dir], { encoding: 'utf8', stdio: 'pipe' }) }
   } catch (error) {
     return { code: error.status, out: `${error.stdout ?? ''}${error.stderr ?? ''}` }
   }
@@ -97,6 +110,43 @@ const covered = fixture()
 edit(covered, 'ruby', (document) => { delete document.symbols['LibTmux::Pane#send_keys'] })
 const coveredRun = run(covered)
 check('the same miss fails in another port, and the other ports stay quiet', coveredRun.code !== 0 && /ruby: .*send_keys/.test(coveredRun.out) && !/py: .*methods named/.test(coveredRun.out), coveredRun.out)
+
+const privateHelper = fixture()
+edit(privateHelper, 'py', (document) => { document.symbols['libtmux.Server._show_option'] = first(document)[1] })
+const privateRun = run(privateHelper)
+check('a private helper recorded as API fails', privateRun.code !== 0 && /py: libtmux.Server._show_option: is private, and only public API is recorded/.test(privateRun.out), privateRun.out)
+
+const viaMoved = fixture()
+edit(viaMoved, 'fsharp', (document) => {
+  const via = Object.values(document.symbols).flat().find((use) => use.via).via
+  via.revision = JSON.parse(readFileSync(join(committed, '..', 'api', 'csharp.json'), 'utf8')).revision
+})
+const viaMovedRun = run(viaMoved)
+check('core lines cited at the core model\'s revision instead of the wrapper\'s fail', viaMovedRun.code !== 0 && /fsharp: .* cites csharp lines at 5b486ea9\w+, which must be 4f1b997b2\w+/.test(viaMovedRun.out), viaMovedRun.out)
+
+const viaUnnamed = fixture()
+edit(viaUnnamed, 'powershell', (document) => { delete Object.values(document.symbols).flat().find((use) => use.via).via.revision })
+const viaUnnamedRun = run(viaUnnamed)
+check('a via that names no revision fails', viaUnnamedRun.code !== 0 && /powershell: .* at no revision/.test(viaUnnamedRun.out), viaUnnamedRun.out)
+
+// Reading the sources needs the checkout the wrapper is pinned in; without it the check skips regeneration and there is nothing to refuse.
+if (existsSync(join(process.env.LIBTMUX_DOCS_CHECKOUT_FSHARP ?? join(homedir(), 'work/libtmux/libtmux-dotnet'), '.git'))) {
+  const control = runSource(fixture(), 'fsharp')
+  check('the committed F# entries read as cited at the F# revision', control.code === 0, control.out)
+  // The first line the F# new-session entry cited before the C# core was read where F# is pinned.
+  const reviewed = fixture()
+  edit(reviewed, 'fsharp', (document) => {
+    document.symbols['LibTmux.FSharp.Server.newSession'].find((candidate) => candidate.command === 'new-session').via.evidence[0] = 'src/LibTmux/Server.Lifecycle.cs:368'
+  })
+  const reviewedRun = runSource(reviewed, 'fsharp')
+  check('a reviewed core line that is not the one its claim cites fails', reviewedRun.code !== 0 && /Server.Lifecycle.cs:368 where its claim cites src\/LibTmux\/Server.Lifecycle.cs:269/.test(reviewedRun.out), reviewedRun.out)
+  const scanned = fixture()
+  edit(scanned, 'fsharp', (document) => {
+    document.symbols['LibTmux.FSharp.Pane.sendKeys'].find((candidate) => candidate.command === 'send-keys').via.evidence[0] = 'src/LibTmux/Pane.Input.cs:8'
+  })
+  const scannedRun = runSource(scanned, 'fsharp')
+  check('a scanned core line that does not spell the command fails', scannedRun.code !== 0 && /src\/LibTmux\/Pane.Input.cs:8 does not spell send-keys/.test(scannedRun.out), scannedRun.out)
+} else console.log('skip core lines read at the revision cited: no checkout of the .NET repository')
 
 for (const dir of dirs) rmSync(dir, { recursive: true, force: true })
 if (failures) process.exit(1)

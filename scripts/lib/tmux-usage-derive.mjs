@@ -24,6 +24,13 @@ export function classify(spec, flags) {
   return 'unknown'
 }
 
+/**
+ * Whether a claim, an exclusion or a review is read against the source at `revision`. One without a `revision` holds
+ * for the revision its port's model was extracted at; one with a `revision` holds for the revision it starts with,
+ * which is how a wrapper that shares a repository with its core library reads the core where the wrapper is pinned.
+ */
+export const ruleHolds = (rule, revision, pinned) => (rule.revision ? revision.startsWith(rule.revision) : revision === pinned)
+
 /** `panes(where:)`, `Server.panes` and `Server#list_panes` all name their last identifier. */
 export function bareName(name) {
   // Kotlin and Scala quote a name that is also a keyword: Buffers.`set`.
@@ -160,7 +167,7 @@ export function deriveUsage({ command, spec, functions, symbols, definitionOptio
  * cannot take on trust, such as one that passes the depth a reviewed claim depends on. It then
  * stands only while that symbol sends the command at the same scope, and keeps that symbol's lines.
  *
- * @typedef {{ at: string, has?: string[], in?: string }} Evidence
+ * @typedef {{ at: string, has?: string[], span?: number, in?: string }} Evidence
  * @typedef {{ port: string, symbol: string, command: string, scope: string | null, evidence: Evidence[], forwardable?: boolean, via?: { port: string, symbol: string } }} Claim
  * @param {{
  *   claims: Claim[],
@@ -169,7 +176,7 @@ export function deriveUsage({ command, spec, functions, symbols, definitionOptio
  *   types: { file: string, name?: string, start: number, end: number }[],
  *   symbols: UsageSymbol[],
  *   readSource: (path: string) => string | undefined,
- *   sends?: (port: string, symbol: string, command: string, scope: string | null) => { evidence: string[], reviewed?: boolean } | undefined,
+ *   sends?: (port: string, symbol: string, command: string, scope: string | null) => { evidence: string[], revision: string, reviewed?: boolean } | undefined,
  * }} input
  * @returns {{ entries: UsageEntry[], problems: string[] }}
  */
@@ -192,11 +199,14 @@ export function verifyClaims({ claims, spec, functions, types, symbols, readSour
     let broken = false
     for (const item of claim.evidence) {
       const [file, line] = [item.at.slice(0, item.at.lastIndexOf(':')), Number(item.at.slice(item.at.lastIndexOf(':') + 1))]
-      const text = readSource(file)
-      const sourceLine = text?.split('\n')[line - 1]
+      const lines = readSource(file)?.split('\n')
+      const sourceLine = lines?.[line - 1]
       if (sourceLine === undefined) { fail(`${item.at} is not a line of the pinned source`); broken = true; continue }
-      for (const needle of item.has ?? []) {
-        if (!sourceLine.includes(needle)) { fail(`${item.at} does not contain ${JSON.stringify(needle)}`); broken = true }
+      // A call that spans lines names its command a few lines below the call: the first text is on the cited
+      // line, which is the one that sends, and the rest are in the next `span` lines of the same statement.
+      const statement = lines.slice(line - 1, line - 1 + (item.span ?? 1)).join('\n')
+      for (const [position, needle] of (item.has ?? []).entries()) {
+        if (!(position === 0 ? sourceLine : statement).includes(needle)) { fail(`${item.at} does not contain ${JSON.stringify(needle)}`); broken = true }
       }
       if (item.in !== undefined) {
         if (item.in !== claim.symbol) { fail(`${item.at} anchors to ${item.in}, not the claimed symbol`); broken = true; continue }
@@ -217,7 +227,7 @@ export function verifyClaims({ claims, spec, functions, types, symbols, readSour
       entries.push({
         symbol: claim.symbol, command: claim.command, scope: claim.scope, evidence: claim.evidence.map((item) => item.at),
         hops: claim.evidence.length - 1, reviewed: true, ...(claim.forwardable ? { forwardable: true } : {}),
-        ...(core ? { via: { port: claim.via.port, symbol: claim.via.symbol, evidence: core.evidence, ...(core.reviewed ? { reviewed: true } : {}) } } : {}),
+        ...(core ? { via: { port: claim.via.port, symbol: claim.via.symbol, revision: core.revision, evidence: core.evidence, ...(core.reviewed ? { reviewed: true } : {}) } } : {}),
       })
     }
   }
@@ -232,7 +242,10 @@ export function verifyClaims({ claims, spec, functions, types, symbols, readSour
  * show they build or record the command, which must still hold at the pinned source. An exclusion
  * that removes nothing has gone stale and fails, as a claim does.
  *
- * @typedef {{ port: string, why: string, owner?: string, names?: string[], in?: string, evidence: Evidence[] }} Exclusion
+ * `commands` limits an exclusion to those commands of the symbols it names: a lookup that passes the name of a list
+ * command only to choose the format of its rows sends another command, and its other entries stay.
+ *
+ * @typedef {{ port: string, why: string, owner?: string, names?: string[], commands?: string[], in?: string, evidence: Evidence[] }} Exclusion
  * @param {{
  *   exclusions: Exclusion[],
  *   found: Map<string, UsageEntry>,
@@ -245,7 +258,7 @@ export function applyExclusions({ exclusions, found, symbols, readSource }) {
   const removed = []
   const problems = []
   for (const exclusion of exclusions) {
-    const label = `${exclusion.port}: exclusion of ${exclusion.owner ?? ''}${exclusion.names ? `.${exclusion.names.join('|')}` : ''}`
+    const label = `${exclusion.port}: exclusion of ${exclusion.owner ?? ''}${exclusion.names ? `.${exclusion.names.join('|')}` : ''}${exclusion.commands ? ` for ${exclusion.commands.join(',')}` : ''}`
     if (!exclusion.owner && !exclusion.names) { problems.push(`${label}: names neither an owner nor member names`); continue }
     if (!exclusion.evidence?.length) { problems.push(`${label}: cites no evidence`); continue }
     let broken = false
@@ -263,7 +276,7 @@ export function applyExclusions({ exclusions, found, symbols, readSource }) {
       && (!exclusion.in || symbol.file.startsWith(exclusion.in))).map((symbol) => symbol.id))
     let count = 0
     for (const [key, entry] of found) {
-      if (matched.has(entry.symbol)) { found.delete(key); removed.push(entry); count++ }
+      if (matched.has(entry.symbol) && (!exclusion.commands || exclusion.commands.includes(entry.command))) { found.delete(key); removed.push(entry); count++ }
     }
     if (!count) problems.push(`${label}: removes no entry, so it is stale`)
   }

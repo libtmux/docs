@@ -160,6 +160,255 @@
           ]
         }
       ]
+    },
+    {
+      "port": "csharp",
+      "owner": "Server",
+      "names": [
+        "FindSessionAsync",
+        "GetSessionAsync",
+        "FindWindowAsync",
+        "GetWindowAsync",
+        "FindPaneAsync",
+        "GetPaneAsync",
+        "CreateSessionWithReceiptAsync"
+      ],
+      "commands": [
+        "list-sessions",
+        "list-windows",
+        "list-panes"
+      ],
+      "why": "A lookup by id passes the name of a list command only to pick the format of the row it reads; it sends display-message -p -t, and the fallback that listed with -a below tmux 3.3 is gone with the 3.3a floor.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.Identity.cs:231",
+          "has": [
+            "\"list-sessions\""
+          ]
+        },
+        {
+          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:124",
+          "has": [
+            "CreateProjection(listCommand)"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:125",
+          "has": [
+            "\"display-message\""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "owner": "Server",
+      "names": [
+        "FindSessionAsync",
+        "GetSessionAsync",
+        "FindWindowAsync",
+        "GetWindowAsync",
+        "FindPaneAsync",
+        "GetPaneAsync",
+        "CreateSessionAsync"
+      ],
+      "commands": [
+        "list-sessions",
+        "list-windows",
+        "list-panes"
+      ],
+      "why": "A lookup by id passes the name of a list command only to pick the format of its row. It lists with -a only below tmux 3.3 and sends display-message from 3.3, and this revision supports 3.2a, so no one command holds on every supported release.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.Identity.cs:152",
+          "has": [
+            "\"list-sessions\""
+          ]
+        },
+        {
+          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:77",
+          "has": [
+            "!TmuxCapabilities.IsSupported("
+          ]
+        },
+        {
+          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:79",
+          "has": [
+            "\"missing_target_format_safety\""
+          ]
+        },
+        {
+          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:81",
+          "has": [
+            "ReadFromListingAsync("
+          ]
+        },
+        {
+          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:179",
+          "has": [
+            "\"display-message\""
+          ]
+        },
+        {
+          "at": "src/LibTmux/Constants/TmuxConstants.cs:6",
+          "has": [
+            "Parse(\"3.2a\")"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "owner": "Session",
+      "names": [
+        "RefreshAsync"
+      ],
+      "commands": [
+        "list-sessions"
+      ],
+      "why": "A session refreshes itself by id and passes the name of a list command only to pick the format of the row; it sends display-message -p -t, and the fallback that listed below tmux 3.3 is gone with the 3.3a floor.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Session.Lifecycle.cs:52",
+          "has": [
+            "\"list-sessions\""
+          ]
+        },
+        {
+          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:124",
+          "has": [
+            "CreateProjection(listCommand)"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:125",
+          "has": [
+            "\"display-message\""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "owner": "Session",
+      "names": [
+        "RefreshAsync"
+      ],
+      "commands": [
+        "list-sessions"
+      ],
+      "why": "A session refreshes itself by id and passes the name of a list command only to pick the format of the row. It lists with -a only below tmux 3.3 and sends display-message from 3.3, and this revision supports 3.2a, so no one command holds on every supported release.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Session.Lifecycle.cs:46",
+          "has": [
+            "\"list-sessions\""
+          ]
+        },
+        {
+          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:77",
+          "has": [
+            "!TmuxCapabilities.IsSupported("
+          ]
+        },
+        {
+          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:81",
+          "has": [
+            "ReadFromListingAsync("
+          ]
+        },
+        {
+          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:179",
+          "has": [
+            "\"display-message\""
+          ]
+        },
+        {
+          "at": "src/LibTmux/Constants/TmuxConstants.cs:6",
+          "has": [
+            "Parse(\"3.2a\")"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "owner": "Session",
+      "names": [
+        "Start"
+      ],
+      "commands": [
+        "wait-for"
+      ],
+      "why": "The signal is the command of a pane-died hook: Start sends set-hook, and tmux runs wait-for -S when the pane dies.",
+      "evidence": [
+        {
+          "at": "tmux/session_run.go:162",
+          "has": [
+            "SetHook(ctx, \"pane-died\", \"wait-for -S \""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "owner": "Server",
+      "names": [
+        "control"
+      ],
+      "commands": [
+        "display-message"
+      ],
+      "why": "The identity read is the then-branch of the fence's if-shell, so Server.control sends if-shell and tmux runs display-message.",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java:836",
+          "has": [
+            "fence.guarded(captured, \"display-message"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java:77",
+          "has": [
+            "List.of(\"if-shell\", \"-F\", condition, command, stale)"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "cxx",
+      "owner": "Pane",
+      "names": [
+        "break_out"
+      ],
+      "commands": [
+        "break-pane",
+        "display-message",
+        "rename-window"
+      ],
+      "why": "Both branches are the then and else commands of the if-shell that break_out sends; tmux runs them.",
+      "evidence": [
+        {
+          "at": "src/entities.cpp:1279",
+          "has": [
+            "\"break-pane -d -s \""
+          ]
+        },
+        {
+          "at": "src/entities.cpp:1287",
+          "has": [
+            "\"if-shell\", \"-F\", \"-t\", target"
+          ]
+        },
+        {
+          "at": "src/entities.cpp:1366",
+          "has": [
+            "\"rename-window -t \""
+          ]
+        }
+      ]
     }
   ]
 }
