@@ -69,11 +69,16 @@ describe('header links', () => {
     expect(target.detail).toBe('executable target · Sources/TmuxWorkspaceCLI')
     for (const word of ['target', 'product', 'executable', 'TmuxWorkspaceCLI', 'tmux-workspace']) expect(matchesSearch(target, word), word).toBe(true)
     // Python’s pytest plugin ships in the libtmux distribution.
-    expect(found('py', 'libtmux.pytest_plugin')).toEqual(['source:libtmux', 'package:libtmux'])
+    expect(found('py', 'libtmux.pytest_plugin')).toEqual(['source:pytest plugin', 'package:libtmux'])
     // A TypeScript subpath export is the library’s page, not a package of its own.
     expect(found('ts', 'libtmux/testing')).toEqual(['source:libtmux', 'package:libtmux'])
-    // Julia’s embedded module opens the directory that holds the core package.
-    expect(found('julia', 'LibTmux.Filters')).toEqual(['source:LibTmux'])
+    // Julia’s embedded module and each extension open the file that defines them, not a directory they share.
+    expect(found('julia', 'LibTmux.Filters')).toEqual(['source:LibTmux.Filters'])
+    expect(found('julia', 'extension')).toEqual(['source:LibTmuxJSONExt', 'source:LibTmuxTablesExt'])
+    expect(links('julia').rows.filter((row) => row.kind === 'source').map((row) => row.url)).toEqual(expect.arrayContaining([
+      'https://github.com/libtmux/libtmux-julia/blob/master/ext/LibTmuxJSONExt.jl', 'https://github.com/libtmux/libtmux-julia/blob/master/ext/LibTmuxTablesExt.jl',
+      'https://github.com/libtmux/libtmux-julia/blob/master/src/criteria.jl',
+    ]))
   })
 
   it('searches labels, coordinates, import aliases, hosts and repository names', () => {

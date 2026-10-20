@@ -35,8 +35,8 @@
  *   --inventory <path>   A JSON inventory in place of the committed one.
  *   --check              Request nothing; compare the evidence file with the inventory.
  *   --fresh              With --check, also fail on evidence older than the bound.
- *   --date <date>        The day to record (default today, UTC).
- *   --today <date>       The day to measure staleness from (default today, UTC).
+ *   --date <date>        The day to record (default today, UTC). It may not be in the future.
+ *   --today <date>       The day to measure age and future dates from (default today, UTC).
  *
  * LIBTMUX_DESTINATION_REWRITE holds a JSON object that maps an origin to a
  * replacement, so a test can answer the hosts from a local server.
@@ -45,7 +45,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { INVENTORY } from '../site/src/lib/port-inventory.ts'
-import { checkEvidence, collectDestinations, createGet, staleRecords, staleWarnings, verifyDestination } from './lib/destination-verification.mjs'
+import { checkEvidence, collectDestinations, createGet, dateProblem, staleRecords, staleWarnings, verifyDestination } from './lib/destination-verification.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const DEFAULT_OUT = join(root, 'site', 'src', 'data', 'destination-evidence.json')
@@ -75,6 +75,16 @@ if (opts.help) {
   process.exit(0)
 }
 
+// A date a caller names is recorded or measured from, so it must be a real day that has happened.
+for (const [flag, value] of [['--today', opts.today], ['--date', opts.date]]) {
+  // The day to measure from is only a day; the day to record must also have happened by then.
+  const problem = dateProblem(value, flag === '--today' ? undefined : new Date(`${opts.today}T12:00:00Z`))
+  if (problem) {
+    console.error(`${flag}: ${problem}`)
+    process.exit(1)
+  }
+}
+
 const inventory = opts.inventory ? JSON.parse(readFileSync(opts.inventory, 'utf8')) : INVENTORY
 
 function report(problems) {
@@ -88,13 +98,19 @@ function report(problems) {
 const manifests = existsSync(opts.manifests) ? JSON.parse(readFileSync(opts.manifests, 'utf8')) : { ports: {} }
 const today = new Date(`${opts.today}T12:00:00Z`)
 
-/** Age is a failure where a live run is the remedy and a warning elsewhere. */
+/**
+ * Age is a failure where a live run is the remedy and a warning elsewhere.
+ * Under GitHub Actions a warning is an annotation, so it shows on the run.
+ */
 function staleness(evidence, enforce) {
   const stale = staleRecords(evidence, { today })
   if (stale.length === 0) return []
   const lines = staleWarnings(stale)
   if (enforce) return lines.map((line) => line.replace(/: run node.*$/, ''))
-  for (const line of lines) console.warn(`warning: ${line}`)
+  for (const line of lines) {
+    if (process.env.GITHUB_ACTIONS === 'true') console.log(`::warning title=Stale destination evidence::${line}`)
+    else console.warn(`warning: ${line}`)
+  }
   return []
 }
 
@@ -104,7 +120,7 @@ if (opts.check) {
     process.exit(1)
   }
   const evidence = JSON.parse(readFileSync(opts.out, 'utf8'))
-  report([...checkEvidence(inventory, evidence, { manifests }), ...staleness(evidence, opts.fresh)])
+  report([...checkEvidence(inventory, evidence, { manifests, today }), ...staleness(evidence, opts.fresh)])
   console.log(`${opts.out} agrees with the inventory`)
   process.exit(0)
 }
@@ -125,4 +141,4 @@ records.sort((a, b) => a.url.localeCompare(b.url))
 const evidence = { schema: 1, checkedAt: opts.date, destinations: records }
 writeFileSync(opts.out, `${JSON.stringify(evidence, null, 2)}\n`)
 console.log(`wrote ${opts.out}`)
-report([...checkEvidence(inventory, evidence, { manifests }), ...staleness(evidence, true)])
+report([...checkEvidence(inventory, evidence, { manifests, today }), ...staleness(evidence, true)])

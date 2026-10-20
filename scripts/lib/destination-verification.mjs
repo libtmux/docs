@@ -125,16 +125,16 @@ const VERIFIERS = {
   },
 
   async github({ url }, { get }) {
-    const [, owner, repo, ref, path] = /^https:\/\/github\.com\/([^/]+)\/([^/]+?)(?:\/tree\/([^/]+)\/(.+))?$/.exec(url) ?? []
+    const [, owner, repo, view, ref, path] = /^https:\/\/github\.com\/([^/]+)\/([^/]+?)(?:\/(tree|blob)\/([^/]+)\/(.+))?$/.exec(url) ?? []
     const response = await get(url)
     const missing = answered(response, url)
     if (missing) return missing
     // GitHub follows a renamed repository to its new name, so where the request ended is part of the identity.
-    const wanted = `/${owner}/${repo}${path ? `/tree/${ref}/${path}` : ''}`.toLowerCase()
+    const wanted = `/${owner}/${repo}${path ? `/${view}/${ref}/${path}` : ''}`.toLowerCase()
     const ended = new URL(response.finalUrl).pathname.replace(/\/$/, '').toLowerCase()
     if (ended !== wanted) return fail('identity', `${url} ended at ${response.finalUrl}: the repository was renamed or moved`, { status: 200, requested: url })
     const title = titleOf(response.text)
-    // Titles read "repo/path at ref · owner/repo · GitHub", or "GitHub - owner/repo: summary · GitHub".
+    // Titles read "repo/path at ref · owner/repo · GitHub" for a directory or a file, or "GitHub - owner/repo: summary · GitHub".
     const matches = path
       ? title.toLowerCase() === `${repo}/${path} at ${ref} · ${owner}/${repo} · GitHub`.toLowerCase()
       : new RegExp(`^GitHub - ${escapeRegExp(`${owner}/${repo}`)}(?:: .*)?(?: · GitHub)?$`, 'i').test(title)
@@ -287,11 +287,17 @@ const VERIFIERS = {
     // "tmux package - github.com/…/tmux - Go Packages", or "module" or "command" for those.
     return title.endsWith(` - ${path} - Go Packages`)
       ? pass({ status: 200, requested: url, identity: path,
-        // A package path is inside a module; the proxy knows only the module, so try the longest prefix first.
+        // A package path is inside a module and the proxy knows only the module. The module is the longest prefix
+        // that lists versions at all; asking a shorter one for the version would let a parent's tag confirm a nested module.
         exact: async (version) => {
           const segments = path.split('/')
           for (let length = segments.length; length >= 3; length -= 1) {
-            if ((await get(`https://proxy.golang.org/${segments.slice(0, length).join('/')}/@v/v${version}.info`)).status === 200) return true
+            const modulePath = segments.slice(0, length).join('/')
+            if ((await get(`https://proxy.golang.org/${modulePath}/@v/list`)).status !== 200) continue
+            const info = await get(`https://proxy.golang.org/${modulePath}/@v/v${version}.info`)
+            // The proxy reports where in the repository the module lives; it must be the directory the path names.
+            const subdir = json(info.text)?.Origin?.Subdir ?? ''
+            return info.status === 200 && subdir === segments.slice(3, length).join('/')
           }
           return false
         } })
@@ -354,22 +360,31 @@ const HOSTNAMES = {
 }
 export const hostOf = (url) => HOSTNAMES[new URL(url).hostname]
 
-/** What a host said about the version the manifest declares. */
-async function versionEvidence(result, destination) {
-  const { expectedVersion } = destination
-  if (!expectedVersion) {
-    return { versionCheck: 'unsupported', versionNote: destination.kinds.every((kind) => kind === 'source') ? 'a branch link names no release' : 'no manifest declares a version for this destination' }
+/**
+ * What a host said about each version a manifest declares for the destination.
+ * Ports that pin different releases of one package (NuGet's LibTmux is
+ * alpha.22 for C# and alpha.18 for F#) each get a check of their own.
+ */
+async function versionChecks(result, destination) {
+  const expected = destination.expected ?? []
+  if (expected.length === 0) {
+    return [{ check: 'unsupported', note: destination.kinds.every((kind) => kind === 'source') ? 'a branch link names no release' : 'no manifest declares a version for this destination' }]
   }
-  if (typeof result.exact === 'function') return { expectedVersion, versionSource: destination.versionSource, versionCheck: (await result.exact(expectedVersion)) ? 'confirmed' : 'absent' }
-  if (Array.isArray(result.versions)) return { expectedVersion, versionSource: destination.versionSource, versionCheck: result.versions.includes(expectedVersion) ? 'confirmed' : 'absent' }
-  return { expectedVersion, versionSource: destination.versionSource, versionCheck: 'unsupported', versionNote: `${destination.host} does not list versions` }
+  const checks = []
+  for (const { version, source, ports } of expected) {
+    const base = { version, source, ports }
+    if (typeof result.exact === 'function') checks.push({ ...base, check: (await result.exact(version)) ? 'confirmed' : 'absent' })
+    else if (Array.isArray(result.versions)) checks.push({ ...base, check: result.versions.includes(version) ? 'confirmed' : 'absent' })
+    else checks.push({ ...base, check: 'unsupported', note: `${destination.host} does not list versions` })
+  }
+  return checks
 }
 
 /**
  * Verify one destination, taking the host's answer as many times as it asks for.
- * `destination` is `{ url, host, kinds, repos, paths, expectedVersion, versionSource }`:
- * the repositories and directories of the entries that own it, and the
- * version their distribution's manifest declares.
+ * `destination` is `{ url, host, kinds, repos, paths, expected }`: the
+ * repositories and directories of the entries that own it, and the versions
+ * their distributions' manifests declare, one per distinct release.
  */
 export async function verifyDestination(destination, { get, samples = SAMPLES }) {
   const verifier = VERIFIERS[destination.host] ?? VERIFIERS.unknown
@@ -384,28 +399,39 @@ export async function verifyDestination(destination, { get, samples = SAMPLES })
   }
   const { exact: _exact, versions: _versions, shell, repository, directory, ...rest } = first
   if (!first.ok) return { ...base, ...rest, ...(count > 1 && { samples: count }) }
-  // A shared namespace names its owner: the host must report a repository that one of the owning entries lives in.
-  const expected = (destination.repos ?? []).map((repo) => repo.toLowerCase())
-  if (repository && expected.length > 0 && !repository.some((repo) => expected.includes(repo))) {
-    return { ...base, ...rest, ok: false, failure: 'repository', detail: `${destination.host} reports ${repository.join(', ') || 'no repository'} for ${destination.url}, expected ${expected.join(' or ')}`, repository }
-  }
+  // A shared namespace names its owner: the host must report a repository, and one that an owning entry lives in.
   if (REPOSITORY_HOSTS.has(destination.host) && !repository?.length) {
     return { ...base, ...rest, ok: false, failure: 'repository', detail: `${destination.host} names no repository for ${destination.url}` }
+  }
+  const expected = (destination.repos ?? []).map((repo) => repo.toLowerCase())
+  if (repository && expected.length > 0 && !repository.some((repo) => expected.includes(repo))) {
+    return { ...base, ...rest, ok: false, failure: 'repository', detail: `${destination.host} reports ${repository.join(', ')} for ${destination.url}, expected ${expected.join(' or ')}`, repository }
   }
   if (directory && (destination.paths ?? []).length > 0 && !destination.paths.includes(directory)) {
     return { ...base, ...rest, ok: false, failure: 'repository', detail: `${destination.host} reports the directory ${directory} for ${destination.url}, expected ${destination.paths.join(' or ')}`, repository }
   }
-  const version = await versionEvidence(first, destination)
+  const checks = await versionChecks(first, destination)
   const pageStatus = shell ? (await get(destination.url)).status : undefined
   return { ...base, ...rest, ...(repository && { repository: repository[0] }), ...(directory && { directory }),
     // These hosts answer the destination page with a shell or a challenge, so what it returns is kept beside the proof.
-    ...(pageStatus !== undefined && { pageStatus }), ...version, ...(count > 1 && { samples: count }) }
+    ...(pageStatus !== undefined && { pageStatus }), versionChecks: checks, ...(count > 1 && { samples: count }) }
 }
 
-/** The distribution an entry ships in: itself, or the entry that holds it. */
+/**
+ * The distribution an entry ships in: itself, or the entry that holds it.
+ * A `within` that names no entry, or that leads back to where it began, is a
+ * mistake in the inventory, so it throws with the chain.
+ */
 function distributionOf(entries, entry) {
+  const chain = [entry.id]
   let current = entry
-  while (current.within) current = entries.find((candidate) => candidate.id === current.within) ?? current
+  while (current.within) {
+    const next = entries.find((candidate) => candidate.id === current.within)
+    if (!next) throw new Error(`${chain.join(' -> ')}: within names ${current.within}, which is not an entry`)
+    chain.push(next.id)
+    if (chain.indexOf(next.id) !== chain.length - 1) throw new Error(`${chain.join(' -> ')}: within leads back to ${next.id}`)
+    current = next
+  }
   return current
 }
 
@@ -431,18 +457,21 @@ export function manifestVersion(manifests, port, entries, entry) {
  * the manifest declares for their distribution.
  */
 export function collectDestinations(inventory, manifests) {
-  /** @type {Map<string, { url: string, host: string, kinds: string[], entries: { port: string, id: string, status: string }[], repos: string[], paths: string[], expectedVersion?: string, versionSource?: string }>} */
+  /** @type {Map<string, { url: string, host: string, kinds: string[], entries: { port: string, id: string, status: string }[], repos: string[], paths: string[], expected: { version: string, source: string, ports: string[] }[] }>} */
   const found = new Map()
   const add = (port, entry, { kind, url, host }, status) => {
-    const known = found.get(url) ?? { url, host, kinds: [], entries: [], repos: [], paths: [] }
+    const known = found.get(url) ?? { url, host, kinds: [], entries: [], repos: [], paths: [], expected: [] }
     if (!known.kinds.includes(kind)) known.kinds.push(kind)
     // An entry whose package page is also its reference names the URL twice.
     if (!known.entries.some((owner) => owner.port === port && owner.id === entry.id)) known.entries.push({ port, id: entry.id, status })
     if (!known.repos.includes(entry.repo)) known.repos.push(entry.repo)
     if (entry.path && !known.paths.includes(entry.path)) known.paths.push(entry.path)
-    if (status === 'published' && kind !== 'source' && !known.expectedVersion) {
+    // Each port that owns the destination pins its own release, so each is checked.
+    if (status === 'published' && kind !== 'source') {
       const declared = manifestVersion(manifests, port, inventory[port], entry)
-      if (declared) Object.assign(known, { expectedVersion: declared.version, versionSource: declared.source })
+      const same = known.expected.find((candidate) => candidate.version === declared?.version)
+      if (declared && same) { if (!same.ports.includes(port)) same.ports.push(port) }
+      else if (declared) known.expected.push({ version: declared.version, source: declared.source, ports: [port] })
     }
     found.set(url, known)
   }
@@ -455,20 +484,39 @@ export function collectDestinations(inventory, manifests) {
       for (const destination of entryCandidates(entry)) add(port, entry, destination, 'candidate')
     }
   }
+  for (const destination of found.values()) destination.expected.sort((a, b) => a.version.localeCompare(b.version))
   return found
 }
 
 const DAY = 24 * 60 * 60 * 1000
+const daysSince = (date, today) => Math.floor((today.getTime() - new Date(`${date}T00:00:00Z`).getTime()) / DAY)
+/** A check date may run a day ahead of the reader's clock; further than that was not a day that had happened. */
+const FUTURE_TOLERANCE_DAYS = 1
 
 /**
  * The records last checked more than `maxAgeDays` before `today`, oldest first.
  * This is a measurement, not a verdict: `checkEvidence` never fails on it.
  */
 export function staleRecords(evidence, { today = new Date(), maxAgeDays = EVIDENCE_MAX_AGE_DAYS } = /** @type {{ today?: Date, maxAgeDays?: number }} */ ({})) {
-  const days = (date) => Math.floor((today.getTime() - new Date(`${date}T00:00:00Z`).getTime()) / DAY)
-  return evidence.destinations.filter((record) => days(record.checkedAt) > maxAgeDays)
-    .map((record) => ({ url: record.url, checkedAt: record.checkedAt, days: days(record.checkedAt) }))
+  return evidence.destinations.filter((record) => daysSince(record.checkedAt, today) > maxAgeDays)
+    .map((record) => ({ url: record.url, checkedAt: record.checkedAt, days: daysSince(record.checkedAt, today) }))
     .sort((a, b) => a.checkedAt.localeCompare(b.checkedAt) || a.url.localeCompare(b.url))
+}
+
+/** The records dated later than `today` and a day's tolerance, which no run could have written. */
+export function futureRecords(evidence, { today = new Date() } = /** @type {{ today?: Date }} */ ({})) {
+  return evidence.destinations.filter((record) => daysSince(record.checkedAt, today) < -FUTURE_TOLERANCE_DAYS)
+    .map((record) => ({ url: record.url, checkedAt: record.checkedAt }))
+}
+
+/**
+ * Why a date a caller names cannot be used, if it cannot: it is not a day, or
+ * with a `today` to measure from, it has not happened.
+ */
+export function dateProblem(date, today) {
+  const parsed = new Date(`${date}T00:00:00Z`)
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date) return `${date} is not a date (YYYY-MM-DD)`
+  return today && daysSince(date, today) < -FUTURE_TOLERANCE_DAYS ? `${date} is in the future` : undefined
 }
 
 /** One line per check date for the stale records, with how to refresh them. */
@@ -484,18 +532,23 @@ export function staleWarnings(stale, maxAgeDays = EVIDENCE_MAX_AGE_DAYS) {
  * A published entry needs a passing record for each of its destinations. A
  * configured-but-unpublished one needs a failing record, so the day its host
  * starts serving it this reports that it can be enabled. A record that no
- * entry owns is stale, and every record carries a check date. A record whose
- * manifest version the host lacks means the code the docs describe was never
- * released; a host that can list versions may not decline to confirm one, and
- * the version a record checked must be the one the manifests declare now.
- * How old a record is does not appear here: see `staleRecords`.
+ * entry owns is stale, and every record carries a check date that is not in
+ * the future. A registry's record must name a repository one of the owning
+ * entries lives in, and an npm directory one of their directories: the
+ * verifier refuses a mismatch when it runs, and this refuses an edited record.
+ * A record whose manifest version the host lacks means the code the docs
+ * describe was never released; a host that can list versions may not decline
+ * to confirm one, and every version a record checked must be one the manifests
+ * declare now, for every port that pins one. How old a record is does not
+ * appear here: see `staleRecords`.
  */
-export function checkEvidence(inventory, evidence, { manifests } = /** @type {{ manifests?: any }} */ ({})) {
+export function checkEvidence(inventory, evidence, { manifests, today = new Date() } = /** @type {{ manifests?: any, today?: Date }} */ ({})) {
   const records = new Map(evidence.destinations.map((record) => [record.url, record]))
   const problems = []
   for (const record of evidence.destinations) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(record.checkedAt ?? '')) problems.push(`${record.url} has no valid check date (${record.checkedAt ?? 'none'})`)
   }
+  for (const { url, checkedAt } of futureRecords(evidence, { today })) problems.push(`${url} was checked ${checkedAt}, which is in the future`)
   const wanted = collectDestinations(inventory, manifests)
   for (const [url, destination] of wanted) {
     const record = records.get(url)
@@ -508,15 +561,29 @@ export function checkEvidence(inventory, evidence, { manifests } = /** @type {{ 
       if (record.ok || record.failure === 'unverifiable') problems.push(`${url} answers, so ${owners} can be published`)
       continue
     }
-    if (record.versionCheck === 'absent') problems.push(`${url} does not carry ${record.expectedVersion}, the version ${record.versionSource} declares`)
-    if (manifests && (record.expectedVersion ?? undefined) !== destination.expectedVersion) {
-      problems.push(`${url} was checked for ${record.expectedVersion ?? 'no version'} but the manifests now declare ${destination.expectedVersion ?? 'none'}`)
+    const checks = record.versionChecks ?? []
+    if (checks.length === 0) problems.push(`${url} says nothing of its version; record why a host cannot confirm one`)
+    for (const check of checks) {
+      if (check.check === 'absent') problems.push(`${url} does not carry ${check.version}, the version ${check.source} declares for ${check.ports.join(', ')}`)
+      else if (check.check !== 'confirmed' && check.version && VERSION_SUPPORT[destination.host]) {
+        problems.push(`${url} could not confirm ${check.version} on ${destination.host}, which lists versions (${check.check}: ${check.note ?? 'no reason given'})`)
+      }
     }
-    if (destination.expectedVersion && VERSION_SUPPORT[destination.host] && record.versionCheck !== 'confirmed') {
-      problems.push(`${url} could not confirm ${destination.expectedVersion} on ${destination.host}, which lists versions (${record.versionCheck}: ${record.versionNote ?? 'no reason given'})`)
+    if (manifests) {
+      const checked = checks.filter((check) => check.version).map((check) => check.version).sort((a, b) => a.localeCompare(b))
+      const declared = destination.expected.map((entry) => entry.version)
+      if (JSON.stringify(checked) !== JSON.stringify(declared)) {
+        problems.push(`${url} was checked for ${checked.join(', ') || 'no version'} but the manifests now declare ${declared.join(', ') || 'none'}`)
+      }
     }
-    if (!record.versionCheck) problems.push(`${url} says nothing of its version; record why a host cannot confirm one`)
-    if (REPOSITORY_HOSTS.has(destination.host) && !record.repository) problems.push(`${url} names no owning repository`)
+    if (REPOSITORY_HOSTS.has(destination.host)) {
+      const repos = destination.repos.map((repo) => repo.toLowerCase())
+      if (!record.repository) problems.push(`${url} names no owning repository`)
+      else if (!repos.includes(record.repository)) problems.push(`${url} was verified against ${record.repository}, but ${owners} live in ${repos.join(', ')}`)
+      if (record.directory && destination.paths.length > 0 && !destination.paths.includes(record.directory)) {
+        problems.push(`${url} reports the directory ${record.directory}, but ${owners} live in ${destination.paths.join(', ')}`)
+      }
+    }
   }
   for (const url of records.keys()) if (!wanted.has(url)) problems.push(`${url} has evidence but no entry names it`)
   return problems

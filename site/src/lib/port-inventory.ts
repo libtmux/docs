@@ -20,10 +20,11 @@ import type { DocProduct } from './ports.ts'
 
 /**
  * What an entry is to a reader. One rule applies in every port: an entry that
- * is a command (an executable target or product, a Go `cmd/` package, a CMake
+ * is a command (an executable product, a Go `cmd/` package, a CMake
  * executable, or a package that exists only to install one) is `cli`, whether
- * the program is a workspace loader or an MCP server. A package that offers a
- * library as well as a command is judged by its role instead.
+ * the program is a workspace loader or an MCP server. The build target that
+ * produces an executable is a `target`, and a package that offers a library as
+ * well as a command is judged by its role instead.
  */
 export type InventoryKind =
   /** The port's own library: the package the install widget adds. */
@@ -138,6 +139,8 @@ export interface InventoryEntry {
   repo: string
   /** Directory within that repository; absent opens the repository itself. */
   path?: string
+  /** `path` names a file, so it opens as a file rather than a directory: an embedded module has one but no directory of its own. */
+  file?: boolean
   /** Branch of `path`. */
   ref: string
   /** The page that names this package on its registry. */
@@ -239,9 +242,9 @@ export interface Destination {
   host: string
 }
 
-/** The entry's directory on GitHub, or its repository when it owns no directory. */
-export function sourceUrl({ repo, path, ref }: Pick<InventoryEntry, 'repo' | 'path' | 'ref'>): string {
-  return path ? `https://github.com/${repo}/tree/${encodeURIComponent(ref)}/${path}` : `https://github.com/${repo}`
+/** The entry's directory or file on GitHub, or its repository when it owns neither. */
+export function sourceUrl({ repo, path, ref, file }: Pick<InventoryEntry, 'repo' | 'path' | 'ref' | 'file'>): string {
+  return path ? `https://github.com/${repo}/${file ? 'blob' : 'tree'}/${encodeURIComponent(ref)}/${path}` : `https://github.com/${repo}`
 }
 
 /** The destinations an entry's ecosystem suggests and its hosts do not serve. */
@@ -269,7 +272,7 @@ export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
     py({ id: 'libtmux', kind: 'library', product: 'core', label: 'libtmux', ...pypi('libtmux'), aliases: ['libtmux'] }),
     // The pytest plugin is an entry point of the libtmux distribution, not a package of its own.
     py({ id: 'pytest-plugin', kind: 'testing', product: 'core', unit: 'plugin', within: 'libtmux', label: 'pytest plugin',
-      ...pypi('libtmux'), aliases: ['libtmux.pytest_plugin', 'pytest11', 'pytest'] }),
+      ...pypi('libtmux'), path: 'src/libtmux/pytest_plugin.py', file: true, aliases: ['libtmux.pytest_plugin', 'pytest11', 'pytest'] }),
     py({ id: 'test-module', kind: 'testing', product: 'core', unit: 'module', within: 'libtmux', label: 'libtmux.test',
       ...pypi('libtmux'), coordinate: 'libtmux.test', path: 'src/libtmux/test', aliases: ['libtmux.test'] }),
     // A library and a command: judged by its role. Each companion has a repository of its own, so its root is listed beside its package.
@@ -315,12 +318,12 @@ export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
     julia({ id: 'repository', kind: 'source', product: 'core', label: 'libtmux-julia', coordinate: 'libtmux/libtmux-julia' }),
     // Defined in src/criteria.jl and loaded with LibTmux.
     julia({ id: 'LibTmux.Filters', kind: 'module', product: 'core', unit: 'module', within: 'LibTmux', label: 'LibTmux.Filters',
-      path: 'src', aliases: ['using LibTmux.Filters'] }),
-    // Package extensions, loaded when JSON or Tables is.
+      path: 'src/criteria.jl', file: true, aliases: ['using LibTmux.Filters'] }),
+    // Package extensions, loaded when JSON or Tables is; each is a file of ext/.
     julia({ id: 'LibTmuxJSONExt', kind: 'module', product: 'core', unit: 'extension', within: 'LibTmux', label: 'LibTmuxJSONExt',
-      path: 'ext', aliases: ['JSON'] }),
+      path: 'ext/LibTmuxJSONExt.jl', file: true, aliases: ['JSON'] }),
     julia({ id: 'LibTmuxTablesExt', kind: 'module', product: 'core', unit: 'extension', within: 'LibTmux', label: 'LibTmuxTablesExt',
-      path: 'ext', aliases: ['Tables'] }),
+      path: 'ext/LibTmuxTablesExt.jl', file: true, aliases: ['Tables'] }),
     julia({ id: 'LibTmuxMCP', kind: 'mcp-server', product: 'mcp', unit: 'package', label: 'LibTmuxMCP', path: 'packages/LibTmuxMCP',
       aliases: ['using LibTmuxMCP', 'libtmux-mcp'] }),
     julia({ id: 'LibTmuxWorkspace', kind: 'companion', product: 'workspace', unit: 'package', label: 'LibTmuxWorkspace',

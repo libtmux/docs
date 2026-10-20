@@ -137,7 +137,8 @@ describe('port inventory', () => {
       ['companion', 'package', 'LibTmuxWorkspace', undefined],
     ])
     expect(byId('julia', 'LibTmuxMCP').path).toBe('packages/LibTmuxMCP')
-    expect(byId('julia', 'LibTmuxJSONExt').path).toBe('ext')
+    expect([byId('julia', 'LibTmuxJSONExt'), byId('julia', 'LibTmuxTablesExt'), byId('julia', 'LibTmux.Filters')].map((entry) => [entry.path, entry.file]))
+      .toEqual([['ext/LibTmuxJSONExt.jl', true], ['ext/LibTmuxTablesExt.jl', true], ['src/criteria.jl', true]])
     // C++: a custom vcpkg registry port and CMake targets, so no host page names anything.
     expect(entries('cxx').map((entry) => [entry.kind, entry.label])).toEqual([
       ['library', 'libtmux'], ['source', 'libtmux-cxx'], ['source', 'vcpkg port'], ['target', 'libtmux::libtmux'],
@@ -304,10 +305,24 @@ describe('port inventory', () => {
     expect(entries('swift')[0]!.reference).toBe('target:LibTmux')
   })
 
-  it('builds a source link from a directory, or the repository when there is none', () => {
+  it('builds a source link from a file, a directory, or the repository when there is none', () => {
+    expect(sourceUrl({ repo: 'libtmux/libtmux-julia', path: 'ext/LibTmuxJSONExt.jl', file: true, ref: 'master' })).toBe('https://github.com/libtmux/libtmux-julia/blob/master/ext/LibTmuxJSONExt.jl')
+    expect(sourceUrl({ repo: 'libtmux/libtmux-julia', path: 'ext', ref: 'master' })).toBe('https://github.com/libtmux/libtmux-julia/tree/master/ext')
     expect(sourceUrl({ repo: 'libtmux/libtmux-rs', path: 'crates/tmux-mcp', ref: 'master' })).toBe('https://github.com/libtmux/libtmux-rs/tree/master/crates/tmux-mcp')
     expect(sourceUrl({ repo: 'libtmux/libtmux-rs', ref: 'master' })).toBe('https://github.com/libtmux/libtmux-rs')
     expect(sourceUrl({ repo: 'tmux-python/libtmux-mcp', path: 'src/libtmux_mcp', ref: 'main' })).toBe('https://github.com/tmux-python/libtmux-mcp/tree/main/src/libtmux_mcp')
     expect(PORT_BY_SLUG.rs).toBeDefined()
+  })
+
+  it('opens a file only where the entry names one, and a directory everywhere else', () => {
+    const all = Object.entries(INVENTORY).flatMap(([port, list]) => list.map((entry) => ({ port, entry })))
+    for (const { port, entry } of all) {
+      const leaf = entry.path?.split('/').at(-1) ?? ''
+      // A file has an extension and is opened as a blob; none of the directories here do.
+      expect(entry.file === true, `${port}:${entry.id} ${entry.path ?? ''}`).toBe(entry.path !== undefined && /\.[a-z]+$/.test(leaf))
+      if (entry.path) expect(sourceUrl(entry)).toContain(`/${entry.file ? 'blob' : 'tree'}/`)
+    }
+    expect(all.filter(({ entry }) => entry.file).map(({ port, entry }) => `${port}:${entry.id}`).sort())
+      .toEqual(['julia:LibTmux.Filters', 'julia:LibTmuxJSONExt', 'julia:LibTmuxTablesExt', 'py:pytest-plugin'])
   })
 })

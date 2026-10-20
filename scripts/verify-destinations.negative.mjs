@@ -4,17 +4,35 @@
  *
  * The hosts are answered by a local server, so no case touches the network.
  * The control is a destination that names what the host serves: a check that
- * failed everything would satisfy every other case. The cases are the ones the
- * real hosts produce: a 200 about a different package (PyPI names another
- * project), a 404, a javadoc.io landing on a version list, a repository that
- * was renamed, an offline comparison with a record dropped or failed or
- * orphaned, and a destination kept out of the links that has started to answer.
- * Age is the exception to failing: evidence past the bound is a warning offline
- * and a failure only under --fresh or at the end of a live run.
+ * failed everything would satisfy every other case.
  *
- * Each host family then has the same four cases: the right package, a
- * different package under the same URL, the right package filed under a
- * different repository, and a version the manifest declares that the host lacks.
+ * Single cases are the ones the real hosts produce: a 200 about a different
+ * package (PyPI names another project), a 404, a javadoc.io landing on a
+ * version list or answering differently across requests, a repository that was
+ * renamed or whose title only begins with the right name, and a destination
+ * kept out of the links that has started to answer. Others are the
+ * inventory's: two ports that pin different releases of one package, a
+ * `within` that dangles or loops, and a Go package in a nested module whose
+ * parent has the tag. The offline comparison is shown a record dropped,
+ * failed, orphaned, edited to another repository or directory, left without a
+ * version it should have confirmed, checked for a version the manifests no
+ * longer declare, and dated in the future. A date a caller names is refused
+ * when it is not a day or has not happened.
+ *
+ * Age is the exception to failing: evidence past the bound is a warning offline
+ * (an annotation under GitHub Actions) and a failure only under --fresh or at
+ * the end of a live run.
+ *
+ * Host families are then run through a fixed set of cases, named per family in
+ * FAMILIES below. Every family gets the right package, a different package
+ * under the same URL, and a version the manifest declares that the host lacks.
+ * The families whose host reports a repository (PyPI, npm, crates.io,
+ * RubyGems, the PowerShell Gallery, NuGet, LuaRocks, Maven Central and
+ * javadoc.io) also get the right package filed under another repository and
+ * one whose host reports no repository at all, and npm a directory that
+ * differs. pkg.go.dev, docs.rs and the Swift Package Index name their
+ * repository only in the URL, so they get none of those; pkg.go.dev instead
+ * gets three nested-module cases.
  */
 import { execFile } from 'node:child_process'
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
@@ -40,6 +58,9 @@ const routes = {
   // A title that begins with the expected name but names a longer one.
   '/github.com/demo/lib-go': () => [200, 'text/html', html('GitHub - demo/lib-golang: a demo · GitHub')],
   '/pypi.org/pypi/demo-good/json': () => text({ info: { name: 'demo-good', version: '1.0.0', project_urls: { Repository: 'https://github.com/demo/demo' } }, releases: { '1.0.0': [{}] } }),
+  // Two releases, for ports that pin different ones of one package.
+  '/pypi.org/pypi/demo-twin/json': () => text({ info: { name: 'demo-twin', version: '2.0.0', project_urls: { Repository: 'https://github.com/demo/demo' } }, releases: { '1.0.0': [{}], '2.0.0': [{}] } }),
+  '/pypi.org/project/demo-twin/': () => [200, 'text/html', html('Client Challenge')],
   '/pypi.org/pypi/demo-wrong/json': () => text({ info: { name: 'another-project', version: '2.0.0', project_urls: {} }, releases: { '2.0.0': [{}] } }),
   '/pypi.org/project/demo-good/': () => [200, 'text/html', html('Client Challenge')],
   '/pypi.org/project/demo-wrong/': () => [200, 'text/html', html('Client Challenge')],
@@ -57,60 +78,66 @@ const routes = {
 }
 
 /**
- * The four variants of every host family. `reported` is what the host calls
- * the package, `repo` the repository it files it under, and `manifest` the
- * version the pinned manifest declares; the host carries 1.0.0.
+ * The variants a family may be run through. `reported` is what the host calls
+ * the package, `repo` the repository it files it under ('' for none),
+ * `manifest` the version the pinned manifest declares (the host carries 1.0.0),
+ * and `directory` the subdirectory npm reports.
  */
 const VARIANTS = {
   good: { reported: (name) => name, repo: 'demo/demo', manifest: '1.0.0', failure: undefined },
   name: { reported: () => 'someone-elses', repo: 'demo/demo', manifest: '1.0.0', failure: 'identity' },
-  repo: { reported: (name) => name, repo: 'someone/else', manifest: '1.0.0', failure: 'repository' },
+  repo: { reported: (name) => name, repo: 'someone/else', manifest: '1.0.0', failure: 'repository', detail: /reports someone\/else/ },
+  bare: { reported: (name) => name, repo: '', manifest: '1.0.0', failure: 'repository', detail: /names no repository/ },
   old: { reported: (name) => name, repo: 'demo/demo', manifest: '2.0.0', failure: 'version' },
+  directory: { reported: (name) => name, repo: 'demo/demo', manifest: '1.0.0', directory: 'packages/other', failure: 'repository', detail: /reports the directory packages\/other/ },
 }
+const REPORTS_REPOSITORY = ['good', 'name', 'repo', 'bare', 'old']
+const NAMED_BY_URL = ['good', 'name', 'old']
 
 /**
- * One host family: how its package is named in the inventory, and how the
- * host answers for a package that reports `shown` under `repo`.
+ * One host family: how its package is named in the inventory, how the host
+ * answers for a package that reports `shown` under `repo`, and which variants
+ * it is run through.
  */
 const FAMILIES = [
   {
-    host: 'pypi', coordinate: (id) => id, destination: (id) => ({ package: { host: 'pypi', url: `https://pypi.org/project/${id}/` } }),
+    host: 'pypi', variants: REPORTS_REPOSITORY, coordinate: (id) => id, destination: (id) => ({ package: { host: 'pypi', url: `https://pypi.org/project/${id}/` } }),
     serve: (id, { shown, repo }) => {
       routes[`/pypi.org/pypi/${id}/json`] = () => text({ info: { name: shown, version: '1.0.0', project_urls: { Repository: `https://github.com/${repo}` } }, releases: { '1.0.0': [{}] } })
       routes[`/pypi.org/project/${id}/`] = () => [200, 'text/html', html('Client Challenge')]
     },
   },
   {
-    host: 'npm', coordinate: (id) => `@demo/${id}`, path: 'packages/x',
+    host: 'npm', variants: [...REPORTS_REPOSITORY, 'directory'], coordinate: (id) => `@demo/${id}`, path: 'packages/x',
     destination: (id) => ({ package: { host: 'npm', url: `https://www.npmjs.com/package/@demo/${id}` } }),
-    serve: (id, { shown, repo }) => {
-      routes[`/registry.npmjs.org/@demo%2f${id}`] = () => text({ name: shown === id ? `@demo/${id}` : shown, 'dist-tags': { latest: '1.0.0' }, versions: { '1.0.0': {} }, repository: { url: `git+https://github.com/${repo}.git`, directory: 'packages/x' } })
+    serve: (id, { shown, repo, directory = 'packages/x' }) => {
+      routes[`/registry.npmjs.org/@demo%2f${id}`] = () => text({ name: shown === id ? `@demo/${id}` : shown, 'dist-tags': { latest: '1.0.0' }, versions: { '1.0.0': {} }, repository: { url: `git+https://github.com/${repo}.git`, directory } })
       routes[`/www.npmjs.com/package/@demo/${id}`] = () => [403, 'text/html', html('Just a moment...')]
     },
   },
   {
-    host: 'crates', coordinate: (id) => id, destination: (id) => ({ package: { host: 'crates', url: `https://crates.io/crates/${id}` } }),
+    host: 'crates', variants: REPORTS_REPOSITORY, coordinate: (id) => id, destination: (id) => ({ package: { host: 'crates', url: `https://crates.io/crates/${id}` } }),
     serve: (id, { shown, repo }) => {
       routes[`/crates.io/api/v1/crates/${id}`] = () => text({ crate: { name: shown, max_version: '1.0.0', repository: `https://github.com/${repo}` }, versions: [{ num: '1.0.0', yanked: false }] })
       routes[`/crates.io/crates/${id}`] = () => [200, 'text/html', html('crates.io: Rust Package Registry')]
     },
   },
   {
-    host: 'rubygems', coordinate: (id) => id, destination: (id) => ({ package: { host: 'rubygems', url: `https://rubygems.org/gems/${id}` } }),
+    host: 'rubygems', variants: REPORTS_REPOSITORY, coordinate: (id) => id, destination: (id) => ({ package: { host: 'rubygems', url: `https://rubygems.org/gems/${id}` } }),
     serve: (id, { shown, repo }) => {
       routes[`/rubygems.org/api/v1/gems/${id}.json`] = () => text({ name: shown, version: '1.0.0', source_code_uri: `https://github.com/${repo}` })
       routes[`/rubygems.org/api/v1/versions/${id}.json`] = () => text([{ number: '1.0.0', yanked_at: null }])
     },
   },
   {
-    host: 'powershell-gallery', coordinate: (id) => id, destination: (id) => ({ package: { host: 'powershell-gallery', url: `https://www.powershellgallery.com/packages/${id}` } }),
+    host: 'powershell-gallery', variants: REPORTS_REPOSITORY, coordinate: (id) => id, destination: (id) => ({ package: { host: 'powershell-gallery', url: `https://www.powershellgallery.com/packages/${id}` } }),
     serve: (id, { shown, repo }) => {
       routes[`/www.powershellgallery.com/packages/${id}`] = () => [200, 'text/html', html(`PowerShell Gallery | ${shown} 1.0.0`)]
       routes[`/www.powershellgallery.com/api/v2/Packages(Id='${id}',Version='1.0.0')`] = () => text(`<entry xmlns:d="d"><d:Id>${id}</d:Id><d:ProjectUrl>https://github.com/${repo}</d:ProjectUrl></entry>`, 'application/xml')
     },
   },
   {
-    host: 'nuget', coordinate: (id) => id, destination: (id) => ({ package: { host: 'nuget', url: `https://www.nuget.org/packages/${id}` } }),
+    host: 'nuget', variants: REPORTS_REPOSITORY, coordinate: (id) => id, destination: (id) => ({ package: { host: 'nuget', url: `https://www.nuget.org/packages/${id}` } }),
     serve: (id, { shown, repo }) => {
       const lower = id.toLowerCase()
       routes[`/www.nuget.org/packages/${id}`] = () => [200, 'text/html', html(`NuGet Gallery | ${shown} 1.0.0`)]
@@ -119,13 +146,13 @@ const FAMILIES = [
     },
   },
   {
-    host: 'luarocks', coordinate: (id) => id, destination: (id) => ({ package: { host: 'luarocks', url: `https://luarocks.org/modules/demo/${id}` } }),
+    host: 'luarocks', variants: REPORTS_REPOSITORY, coordinate: (id) => id, destination: (id) => ({ package: { host: 'luarocks', url: `https://luarocks.org/modules/demo/${id}` } }),
     serve: (id, { shown, repo }) => {
       routes[`/luarocks.org/modules/demo/${id}`] = () => [200, 'text/html', html(`${shown} - LuaRocks`, `<h3>Homepage</h3><a class="external_url" href="https://github.com/${repo}">x</a><a href="/modules/demo/${id}/1.0.0">1.0.0</a>`)]
     },
   },
   {
-    host: 'maven-central', coordinate: (id) => `demo.group:${id}`, destination: (id) => ({ package: { host: 'maven-central', url: `https://central.sonatype.com/artifact/demo.group/${id}` } }),
+    host: 'maven-central', variants: REPORTS_REPOSITORY, coordinate: (id) => `demo.group:${id}`, destination: (id) => ({ package: { host: 'maven-central', url: `https://central.sonatype.com/artifact/demo.group/${id}` } }),
     serve: (id, { shown, repo }) => {
       routes[`/repo1.maven.org/maven2/demo/group/${id}/maven-metadata.xml`] = () => text(`<metadata><groupId>demo.group</groupId><artifactId>${shown}</artifactId><versioning><release>1.0.0</release><versions><version>1.0.0</version></versions></versioning></metadata>`, 'application/xml')
       routes[`/repo1.maven.org/maven2/demo/group/${id}/1.0.0/${id}-1.0.0.pom`] = () => text(`<project><url>https://github.com/${repo}</url><scm><url>https://github.com/${repo}</url></scm></project>`, 'application/xml')
@@ -133,14 +160,23 @@ const FAMILIES = [
     },
   },
   {
-    host: 'pkg-go-dev', coordinate: (id) => `example.com/o/lib/${id}`, destination: (id) => ({ package: { host: 'pkg-go-dev', url: `https://pkg.go.dev/example.com/o/lib/${id}` } }),
-    serve: (id, { shown }) => {
-      routes[`/pkg.go.dev/example.com/o/lib/${id}`] = () => [200, 'text/html', html(`${id} package - example.com/o/lib/${shown} - Go Packages`)]
-      routes['/proxy.golang.org/example.com/o/lib/@v/v1.0.0.info'] = () => text({ Version: 'v1.0.0' })
+    host: 'javadoc-io', variants: REPORTS_REPOSITORY, coordinate: (id) => `demo.group:${id}`, destination: (id) => ({ api: { host: 'javadoc-io', url: `https://javadoc.io/doc/demo.group/${id}` } }),
+    serve: (id, { shown, repo }) => {
+      routes[`/javadoc.io/doc/demo.group/${id}`] = () => [200, 'text/html', html(`${shown} 1.0.0 javadoc (demo.group)`)]
+      routes[`/javadoc.io/doc/demo.group/${id}/1.0.0`] = () => [200, 'text/html', html(`${id} 1.0.0 javadoc (demo.group)`)]
+      // The documentation names no repository; Central's POM for the artifact does.
+      routes[`/repo1.maven.org/maven2/demo/group/${id}/1.0.0/${id}-1.0.0.pom`] = () => text(`<project><url>https://github.com/${repo}</url><scm><url>https://github.com/${repo}</url></scm></project>`, 'application/xml')
     },
   },
   {
-    host: 'docs-rs', coordinate: (id) => id, destination: (id) => ({ api: { host: 'docs-rs', url: `https://docs.rs/${id}` } }),
+    host: 'pkg-go-dev', variants: NAMED_BY_URL, coordinate: (id) => `example.com/o/lib/${id}`, destination: (id) => ({ package: { host: 'pkg-go-dev', url: `https://pkg.go.dev/example.com/o/lib/${id}` } }),
+    serve: (id, { shown }) => {
+      routes[`/pkg.go.dev/example.com/o/lib/${id}`] = () => [200, 'text/html', html(`${id} package - example.com/o/lib/${shown} - Go Packages`)]
+      goModule('example.com/o/lib', ['v1.0.0'], '')
+    },
+  },
+  {
+    host: 'docs-rs', variants: NAMED_BY_URL, coordinate: (id) => id, destination: (id) => ({ api: { host: 'docs-rs', url: `https://docs.rs/${id}` } }),
     serve: (id, { shown }) => {
       routes[`/docs.rs/${id}`] = (_, origin) => [302, '', '', { location: `${origin}/docs.rs/${id}/1.0.0/${id}/` }]
       routes[`/docs.rs/${id}/1.0.0/${id}/`] = () => [200, 'text/html', html(`${shown.replaceAll('-', '_')} - Rust`)]
@@ -148,13 +184,13 @@ const FAMILIES = [
     },
   },
   {
-    host: 'swift-package-index', repoFor: (id) => `demo/${id}`, coordinate: (id) => id, destination: (id) => ({ package: { host: 'swift-package-index', url: `https://swiftpackageindex.com/demo/${id}` } }),
+    host: 'swift-package-index', variants: NAMED_BY_URL, repoFor: (id) => `demo/${id}`, coordinate: (id) => id, destination: (id) => ({ package: { host: 'swift-package-index', url: `https://swiftpackageindex.com/demo/${id}` } }),
     serve: (id, { shown }) => {
       routes[`/swiftpackageindex.com/demo/${id}`] = () => [200, 'text/html', html(`${id} &ndash; Swift Package Index`, `<a href="https://github.com/${shown === id ? `demo/${id}` : 'demo/other'}">source</a> Version 1.0.0`)]
     },
   },
   {
-    host: 'swift-docs', repoFor: (id) => `demo/${id}`, coordinate: (id) => id, destination: (id) => ({ api: { host: 'swift-package-index', url: `https://swiftpackageindex.com/demo/${id}/documentation/lib` } }),
+    host: 'swift-docs', variants: NAMED_BY_URL, repoFor: (id) => `demo/${id}`, coordinate: (id) => id, destination: (id) => ({ api: { host: 'swift-package-index', url: `https://swiftpackageindex.com/demo/${id}/documentation/lib` } }),
     serve: (id, { shown }) => {
       routes[`/swiftpackageindex.com/demo/${id}/documentation/lib`] = (_, origin) => [302, '', '', { location: `${origin}/swiftpackageindex.com/demo/${shown === id ? id : 'other'}/1.0.0/documentation/lib` }]
       routes[`/swiftpackageindex.com/demo/${id}/1.0.0/documentation/lib`] = () => [200, 'text/html', html('lib Documentation &ndash; Swift Package Index')]
@@ -162,12 +198,16 @@ const FAMILIES = [
     },
   },
 ]
-/** The families whose hosts name no repository apart from the one in the URL, so a repository variant has nothing to contradict. */
-const NO_REPOSITORY = new Set(['pkg-go-dev', 'docs-rs', 'swift-package-index', 'swift-docs'])
+
+/** A Go module on the proxy: the versions it lists, and where in its repository the proxy says it lives. */
+function goModule(path, versions, subdir) {
+  routes[`/proxy.golang.org/${path}/@v/list`] = () => text(`${versions.join('\n')}\n`, 'text/plain')
+  for (const version of versions) routes[`/proxy.golang.org/${path}/@v/${version}.info`] = () => text({ Version: version, Origin: { VCS: 'git', ...(subdir && { Subdir: subdir }) } })
+}
 
 /** Any other repository under demo/ is a page titled for itself, and a directory of one is titled as GitHub titles it. */
 function github(path) {
-  const tree = /^\/github\.com\/demo\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(path)
+  const tree = /^\/github\.com\/demo\/([^/]+)\/(?:tree|blob)\/([^/]+)\/(.+)$/.exec(path)
   if (tree) return () => [200, 'text/html', html(`${tree[1]}/${tree[3]} at ${tree[2]} · demo/${tree[1]} · GitHub`)]
   const root = /^\/github\.com\/demo\/([^/]+)$/.exec(path)
   return root ? () => [200, 'text/html', html(`GitHub - demo/${root[1]}: a demo · GitHub`)] : undefined
@@ -196,21 +236,22 @@ const dir = mkdtempSync(join(tmpdir(), 'verify-destinations-'))
 let cases = 0
 let failures = 0
 
-async function verify(name, inventory, { args = [], expect: expected, evidence, manifests = { ports: {} } }) {
+/** Run the command on an inventory: an array is the port `demo`, an object is several ports. */
+async function verify(name, inventory, { args = [], expect: expected, evidence, manifests = { ports: {} }, env = {}, timeout = 60_000 }) {
   cases += 1
   const inventoryFile = join(dir, `inventory-${cases}.json`)
   const out = join(dir, `evidence-${cases}.json`)
   const manifestFile = join(dir, `manifests-${cases}.json`)
-  writeFileSync(inventoryFile, JSON.stringify({ demo: inventory }))
+  writeFileSync(inventoryFile, JSON.stringify(Array.isArray(inventory) ? { demo: inventory } : inventory))
   writeFileSync(manifestFile, JSON.stringify(manifests))
   if (evidence) writeFileSync(out, JSON.stringify(evidence))
   let result
   try {
     const done = await run('node', [script, '--inventory', inventoryFile, '--out', out, '--date', '2026-01-01', '--today', '2026-01-02', '--manifests', manifestFile, ...args],
-      { env: { ...process.env, LIBTMUX_DESTINATION_REWRITE: rewrite } })
+      { timeout, env: { ...process.env, GITHUB_ACTIONS: '', LIBTMUX_DESTINATION_REWRITE: rewrite, ...env } })
     result = { code: 0, text: `${done.stdout}${done.stderr}` }
   } catch (error) {
-    result = { code: error.code, text: `${error.stdout ?? ''}${error.stderr ?? ''}` }
+    result = { code: error.killed ? 'timeout' : error.code, text: `${error.stdout ?? ''}${error.stderr ?? ''}` }
   }
   const ok = result.code === expected.code && expected.matches.every((pattern) => pattern.test(result.text))
     && (expected.excludes ?? []).every((pattern) => !pattern.test(result.text))
@@ -244,6 +285,9 @@ await verify('a renamed repository fails on identity, though its old URL still a
 await verify('a title that begins with the repository name but names a longer one fails', [entry('lib-go', { repo: 'demo/lib-go' })], {
   expect: { code: 1, matches: [/FAIL\s+200\s+source/, /identity: title is "GitHub - demo\/lib-golang/] },
 })
+await verify('a file of a repository is read as a file, not a directory', [entry('a-file', { repo: 'demo/files', path: 'ext/x.jl', file: true })], {
+  expect: { code: 0, matches: [/ok\s+200\s+source\s+https:\/\/github\.com\/demo\/files\/blob\/master\/ext\/x\.jl/] },
+})
 await verify('javadoc.io landing on a version list fails on identity', [entry('demo-bom', { ...doc('demo-bom') })], {
   expect: { code: 1, matches: [/FAIL\s+200\s+api/, /identity: title is "demo\.group:demo-bom versions"/] },
 })
@@ -251,13 +295,42 @@ await verify('javadoc.io answering differently across requests fails as unstable
   expect: { code: 1, matches: [/FAIL\s+200\s+api/, /unstable: 3 requests disagreed/] },
 })
 
-// The manifest's version must be one the host carries.
+// The manifest's version must be one the host carries, for every port that pins one.
 const library = [entry('demo-good', { ...pypi('demo-good') })]
 await verify('a version the manifest declares and the host carries is confirmed', library, {
   manifests: manifestFor([['demo-good', '1.0.0']]), expect: { code: 0, matches: [/ok\s+200\s+package\s+https:\/\/pypi\.org/] },
 })
 await verify('a version the manifest declares and the host lacks fails', library, {
-  manifests: manifestFor([['demo-good', '2.0.0']]), expect: { code: 1, matches: [/does not carry 2\.0\.0, the version demo\/demo:m declares/] },
+  manifests: manifestFor([['demo-good', '2.0.0']]), expect: { code: 1, matches: [/does not carry 2\.0\.0, the version demo\/demo:m declares for demo/] },
+})
+const pins = (demo, other) => ({ ports: {
+  demo: { distributions: [{ name: 'demo-twin', version: demo, repo: 'demo/demo', manifest: 'm' }] },
+  other: { distributions: [{ name: 'demo-twin', version: other, repo: 'demo/demo', manifest: 'n' }] },
+} })
+const twin = { demo: [entry('demo-twin', { ...pypi('demo-twin') })], other: [entry('demo-twin', { ...pypi('demo-twin') })] }
+const shared = await verify('two ports pinning one release of a package are checked once, for both', twin, {
+  manifests: pins('1.0.0', '1.0.0'), expect: { code: 0, matches: [/ok\s+200\s+package\s+https:\/\/pypi\.org\/project\/demo-twin\//] },
+})
+const sharedChecks = JSON.parse(readFileSync(shared.out, 'utf8')).destinations.find((item) => item.host === 'pypi').versionChecks
+if (sharedChecks.length === 1 && sharedChecks[0].ports.join() === 'demo,other') console.log('ok   the record names both ports under the one release')
+else { console.error(`FAIL the record should name both ports: ${JSON.stringify(sharedChecks)}`); failures += 1 }
+await verify('a port pinning a release the host lacks fails even when another port pins one it has', twin, {
+  manifests: pins('1.0.0', '3.0.0'), expect: { code: 1, matches: [/does not carry 3\.0\.0, the version demo\/demo:n declares for other/], excludes: [/does not carry 1\.0\.0/] },
+})
+const both = await verify('ports pinning different releases the host carries are each confirmed', twin, {
+  manifests: pins('1.0.0', '2.0.0'), expect: { code: 0, matches: [/ok\s+200\s+package\s+https:\/\/pypi\.org\/project\/demo-twin\//] },
+})
+const bothChecks = JSON.parse(readFileSync(both.out, 'utf8')).destinations.find((item) => item.host === 'pypi').versionChecks
+if (bothChecks.map((item) => `${item.version}:${item.ports}:${item.check}`).join(' ') === '1.0.0:demo:confirmed 2.0.0:other:confirmed') console.log('ok   each port’s release has a check of its own')
+else { console.error(`FAIL each port needs its own check: ${JSON.stringify(bothChecks)}`); failures += 1 }
+
+// An inventory whose within dangles or loops is refused with its chain, not looped on.
+const loop = (within) => ['a', 'b'].map((id, index) => entry(id, { ...pypi(`demo-${id}`), coordinate: `demo-${id}`, within: within(index) }))
+await verify('a within that leads back to where it began is refused', loop((index) => (index === 0 ? 'b' : 'a')), {
+  manifests: manifestFor([['demo-a', '1.0.0']]), timeout: 30_000, expect: { code: 1, matches: [/a -> b -> a: within leads back to a/] },
+})
+await verify('a within that names no entry is refused', loop((index) => (index === 0 ? 'missing' : undefined)), {
+  manifests: manifestFor([['demo-a', '1.0.0']]), timeout: 30_000, expect: { code: 1, matches: [/a: within names missing, which is not an entry/] },
 })
 await verify('javadoc.io documentation for the artifact passes', [entry('demo-docs', { ...doc('demo-docs') })], {
   expect: { code: 0, matches: [/ok\s+200\s+api\s+https:\/\/javadoc\.io\/doc\/demo\.group\/demo-docs/] },
@@ -277,21 +350,43 @@ await verify('a rejected candidate that 404s passes', [entry('demo-gone', { stat
   expect: { code: 0, matches: [/none\s+404\s+package/, /wrote /] },
 })
 
-// Every host family, once with each variant. One run answers them all, and each URL is read on its own line.
+// Go: a package belongs to the module that lists versions, so a parent's tag cannot confirm a nested module.
+const GO_ROOT = 'example.com/o/lib'
+goModule(GO_ROOT, ['v1.0.0'], '')
+goModule(`${GO_ROOT}/nestok`, ['v1.0.0'], 'nestok')
+goModule(`${GO_ROOT}/nestfall`, ['v0.5.0'], 'nestfall')
+goModule(`${GO_ROOT}/nestdir`, ['v1.0.0'], '')
+const nested = ['nestok', 'nestfall', 'nestdir'].map((name) => {
+  const path = `${GO_ROOT}/${name}/cmd/tool`
+  routes[`/pkg.go.dev/${path}`] = () => [200, 'text/html', html(`tool command - ${path} - Go Packages`)]
+  return { name, path }
+})
+const goRun = await verify('a Go package is confirmed by its own module and by no other', nested.map(({ name, path }) => entry(name, { coordinate: path, package: { host: 'pkg-go-dev', url: `https://pkg.go.dev/${path}` } })), {
+  manifests: manifestFor(nested.map(({ path }) => [path, '1.0.0'])), expect: { code: 1, matches: [/problems? in /] },
+})
+const goProblems = goRun.text.split('\n').filter((line) => /^ {2}https:/.test(line))
+const flagged = (name) => goProblems.some((line) => line.includes(`/${name}/cmd/tool`) && /does not carry 1\.0\.0/.test(line))
+for (const [name, expectation, why] of [['nestok', false, 'the nested module lists the version at its own directory'], ['nestfall', true, 'the parent has v1.0.0 but the nested module lists only v0.5.0'], ['nestdir', true, 'the proxy reports the wrong subdirectory']]) {
+  const ok = flagged(name) === expectation
+  console.log(`${ok ? 'ok  ' : 'FAIL'} go: ${why}: ${expectation ? 'absent' : 'confirmed'}`)
+  if (!ok) { console.error(goRun.text); failures += 1 }
+}
+
+// Every host family, once with each of its variants. One run answers them all, and each URL is read on its own line.
 const inventory = []
 const distributions = []
 const expectations = []
 for (const family of FAMILIES) {
-  for (const [variant, spec] of Object.entries(VARIANTS)) {
-    if (variant === 'repo' && NO_REPOSITORY.has(family.host)) continue
+  for (const variant of family.variants) {
+    const spec = VARIANTS[variant]
     const id = `${family.host.replace('swift-docs', 'swiftdocs')}-${variant}`
     const coordinate = family.coordinate(id)
-    family.serve(id, { shown: spec.reported(id), repo: spec.repo })
+    family.serve(id, { shown: spec.reported(id), repo: spec.repo, directory: spec.directory })
     const destination = family.destination(id)
     inventory.push(entry(id, { coordinate, repo: family.repoFor?.(id) ?? 'demo/demo', ...(family.path && { path: family.path }), ...destination }))
     distributions.push([coordinate, spec.manifest])
     const url = (destination.package ?? destination.api).url
-    expectations.push({ family: family.host, variant, url, failure: spec.failure })
+    expectations.push({ family: family.host, variant, url, failure: spec.failure, detail: spec.detail })
   }
 }
 const families = await verify('every host family reports a different package, repository or version as a failure', inventory, {
@@ -299,7 +394,8 @@ const families = await verify('every host family reports a different package, re
 })
 const lines = new Map([...families.text.matchAll(/^(ok  |FAIL|none) (\d+)\s+(\S+)\s+(\S+)\n?(?:\s+(\w+): (.*))?$/gm)].map((match) => [match[4], { status: match[1].trim(), failure: match[5], detail: match[6] }]))
 const problems = families.text.split('\n').filter((line) => /^ {2}https:/.test(line))
-for (const { family, variant, url, failure } of expectations) {
+const WORDS = { name: 'a different package', repo: 'a different repository', bare: 'no repository at all', old: 'a version the host lacks', directory: 'a different directory' }
+for (const { family, variant, url, failure, detail } of expectations) {
   const found = lines.get(url)
   const mentioned = problems.some((line) => line.includes(url))
   if (!failure) {
@@ -310,8 +406,8 @@ for (const { family, variant, url, failure } of expectations) {
   }
   // A version the host lacks is a record that passes and a problem the comparison reports; the rest fail on the record.
   const ok = failure === 'version' ? found?.status === 'ok' && problems.some((line) => line.includes(url) && /does not carry 2\.0\.0/.test(line))
-    : found?.status === 'FAIL' && found.failure === failure && mentioned
-  console.log(`${ok ? 'ok  ' : 'FAIL'} ${family}: ${variant === 'name' ? 'a different package' : variant === 'repo' ? 'a different repository' : 'a version the host lacks'} fails on ${failure}`)
+    : found?.status === 'FAIL' && found.failure === failure && mentioned && (!detail || detail.test(found.detail))
+  console.log(`${ok ? 'ok  ' : 'FAIL'} ${family}: ${WORDS[variant]} fails on ${failure}`)
   if (!ok) { console.error(`     ${JSON.stringify(found)} ${mentioned}`); failures += 1 }
 }
 
@@ -319,31 +415,53 @@ for (const { family, variant, url, failure } of expectations) {
 const good = JSON.parse(readFileSync(clean.out, 'utf8'))
 const recordFor = (url) => good.destinations.find((candidate) => candidate.url === url)
 const source = recordFor('https://github.com/demo/demo')
+const withPypi = (change) => ({ ...good, destinations: good.destinations.map((item) => (item.host === 'pypi' ? { ...item, ...change } : item)) })
+const check1 = (version, check, extra = {}) => [{ version, source: 'demo/demo:m', ports: ['demo'], check, ...extra }]
 await verify('offline, evidence for every destination passes', control, { args: ['--check'], evidence: good, expect: { code: 0, matches: [/agrees with the inventory/] } })
 await verify('offline, a destination with no record fails', control, {
   args: ['--check'], evidence: { ...good, destinations: [source] }, expect: { code: 1, matches: [/https:\/\/pypi\.org\/project\/demo-good\/ has no evidence/] },
 })
 await verify('offline, a published destination recorded as failing fails', control, {
-  args: ['--check'], evidence: { ...good, destinations: good.destinations.map((item) => (item.host === 'pypi' ? { ...item, ok: false, failure: 'status', detail: '404' } : item)) },
+  args: ['--check'], evidence: withPypi({ ok: false, failure: 'status', detail: '404' }),
   expect: { code: 1, matches: [/is linked by demo:demo-good but failed verification: status/] },
 })
 await verify('offline, a record no entry names fails', control, {
   args: ['--check'], evidence: { ...good, destinations: [...good.destinations, { ...source, url: 'https://github.com/demo/orphan' }] },
   expect: { code: 1, matches: [/https:\/\/github\.com\/demo\/orphan has evidence but no entry names it/] },
 })
+await verify('offline, a record edited to another repository fails', control, {
+  args: ['--check'], evidence: withPypi({ repository: 'someone/else' }), expect: { code: 1, matches: [/was verified against someone\/else, but demo:demo-good live in demo\/demo/] },
+})
+await verify('offline, a record stripped of its repository fails', control, {
+  args: ['--check'], evidence: withPypi({ repository: undefined }), expect: { code: 1, matches: [/names no owning repository/] },
+})
+const pypiRecord = (change) => ({ ...recordFor('https://pypi.org/project/demo-good/'), ...change })
+const inDirectory = [entry('demo-good', { ...pypi('demo-good'), path: 'pkg' })]
+const treeRecord = { ...source, url: 'https://github.com/demo/demo/tree/master/pkg' }
+await verify('offline, a record edited to another directory fails', inDirectory, {
+  args: ['--check'], evidence: { ...good, destinations: [pypiRecord({ directory: 'other' }), treeRecord] },
+  expect: { code: 1, matches: [/reports the directory other, but demo:demo-good live in pkg/] },
+})
+await verify('offline, a record in the directory the entry names passes', inDirectory, {
+  args: ['--check'], evidence: { ...good, destinations: [pypiRecord({ directory: 'pkg' }), treeRecord] },
+  expect: { code: 0, matches: [/agrees with the inventory/] },
+})
 await verify('offline, a version the host lacks fails', control, {
-  args: ['--check'], evidence: { ...good, destinations: good.destinations.map((item) => (item.host === 'pypi' ? { ...item, expectedVersion: '0.0.1', versionSource: 'demo/demo:m', versionCheck: 'absent' } : item)) },
-  expect: { code: 1, matches: [/does not carry 0\.0\.1/] },
+  args: ['--check'], evidence: withPypi({ versionChecks: check1('0.0.1', 'absent') }), expect: { code: 1, matches: [/does not carry 0\.0\.1, the version demo\/demo:m declares for demo/] },
 })
 await verify('offline, a host that lists versions declining to confirm one fails', library, {
-  args: ['--check'], manifests: manifestFor([['demo-good', '1.0.0']]),
-  evidence: { ...good, destinations: good.destinations.map((item) => (item.host === 'pypi' ? { ...item, expectedVersion: '1.0.0', versionSource: 'demo/demo:m', versionCheck: 'unsupported', versionNote: 'skipped' } : item)) },
+  args: ['--check'], manifests: manifestFor([['demo-good', '1.0.0']]), evidence: withPypi({ versionChecks: check1('1.0.0', 'unsupported', { note: 'skipped' }) }),
   expect: { code: 1, matches: [/could not confirm 1\.0\.0 on pypi, which lists versions/] },
 })
 await verify('offline, evidence checked for another version than the manifest declares fails', library, {
-  args: ['--check'], manifests: manifestFor([['demo-good', '3.0.0']]), evidence: { ...good, destinations: good.destinations.map((item) => (item.host === 'pypi' ? { ...item, expectedVersion: '1.0.0', versionSource: 'demo/demo:m', versionCheck: 'confirmed' } : item)) },
+  args: ['--check'], manifests: manifestFor([['demo-good', '3.0.0']]), evidence: withPypi({ versionChecks: check1('1.0.0', 'confirmed') }),
   expect: { code: 1, matches: [/was checked for 1\.0\.0 but the manifests now declare 3\.0\.0/] },
 })
+await verify('offline, evidence that checked one port’s release but not the other’s fails', twin, {
+  args: ['--check'], manifests: pins('1.0.0', '2.0.0'), evidence: { ...good, destinations: [source, { ...recordFor('https://pypi.org/project/demo-good/'), url: 'https://pypi.org/project/demo-twin/', versionChecks: check1('1.0.0', 'confirmed') }] },
+  expect: { code: 1, matches: [/was checked for 1\.0\.0 but the manifests now declare 1\.0\.0, 2\.0\.0/] },
+})
+
 // Age is a warning wherever a change that touches none of this might run it, and a failure only where a live run is the remedy.
 await verify('offline, fresh evidence passes without a warning', control, {
   args: ['--check', '--today', '2026-03-01'], evidence: good, expect: { code: 0, matches: [/agrees with the inventory/], excludes: [/warning/] },
@@ -351,6 +469,10 @@ await verify('offline, fresh evidence passes without a warning', control, {
 await verify('offline, evidence older than the bound prints a warning with its date and still passes', control, {
   args: ['--check', '--today', '2026-06-01'], evidence: good,
   expect: { code: 0, matches: [/warning: \d+ destination records? (?:was|were) last checked 2026-01-01, more than 60 days ago: run node scripts\/verify-destinations\.mjs/, /agrees with the inventory/] },
+})
+await verify('offline, under GitHub Actions the warning is an annotation', control, {
+  args: ['--check', '--today', '2026-06-01'], evidence: good, env: { GITHUB_ACTIONS: 'true' },
+  expect: { code: 0, matches: [/^::warning title=Stale destination evidence::\d+ destination records? (?:was|were) last checked 2026-01-01/m], excludes: [/^warning:/m] },
 })
 await verify('offline, --fresh passes fresh evidence', control, {
   args: ['--check', '--fresh', '--today', '2026-03-01'], evidence: good, expect: { code: 0, matches: [/agrees with the inventory/], excludes: [/warning/] },
@@ -367,6 +489,26 @@ await verify('a live run that records today passes', control, {
 await verify('offline, a record without a check date fails whatever the age', control, {
   args: ['--check'], evidence: { ...good, destinations: good.destinations.map((item, index) => (index === 0 ? { ...item, checkedAt: undefined } : item)) },
   expect: { code: 1, matches: [/has no valid check date/] },
+})
+
+// A date in the future was not a day that had happened, and a day's tolerance covers a clock a little behind.
+const dated = (date) => ({ ...good, destinations: good.destinations.map((item) => ({ ...item, checkedAt: date })) })
+for (const flags of [[], ['--fresh']]) {
+  await verify(`offline${flags.length ? ' with --fresh' : ''}, evidence dated further ahead than the tolerance fails`, control, {
+    args: ['--check', ...flags], evidence: dated('2026-01-05'), expect: { code: 1, matches: [/was checked 2026-01-05, which is in the future/] },
+  })
+  await verify(`offline${flags.length ? ' with --fresh' : ''}, evidence dated a day ahead is tolerated`, control, {
+    args: ['--check', ...flags], evidence: dated('2026-01-03'), expect: { code: 0, matches: [/agrees with the inventory/] },
+  })
+}
+await verify('a live run refuses a date in the future', control, {
+  args: ['--date', '2026-01-09'], expect: { code: 1, matches: [/--date: 2026-01-09 is in the future/], excludes: [/wrote /] },
+})
+await verify('a live run refuses a date that is not a day', control, {
+  args: ['--date', '2026-13-45'], expect: { code: 1, matches: [/--date: 2026-13-45 is not a date/] },
+})
+await verify('a day that is not a date is refused as the day to measure from', control, {
+  args: ['--check', '--today', 'yesterday'], evidence: good, expect: { code: 1, matches: [/--today: yesterday is not a date/] },
 })
 
 server.close()

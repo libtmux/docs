@@ -30,7 +30,8 @@ export const LINKS: Record<string, ExpectedLinks> = {
       ['package', 'PyPI', 'PyPI: libtmux package', 'https://pypi.org/project/libtmux/']],
     indexed: true,
     rows: [
-      ['source', 'libtmux', 'tmux-python/libtmux', 'https://github.com/tmux-python/libtmux', ['libtmux', 'pytest-plugin']],
+      ['source', 'libtmux', 'tmux-python/libtmux', 'https://github.com/tmux-python/libtmux', ['libtmux']],
+      ['source', 'pytest plugin', 'plugin · src/libtmux/pytest_plugin.py', 'https://github.com/tmux-python/libtmux/blob/master/src/libtmux/pytest_plugin.py', ['pytest-plugin']],
       ['source', 'libtmux.test', 'module · src/libtmux/test', 'https://github.com/tmux-python/libtmux/tree/master/src/libtmux/test', ['test-module']],
       ['source', 'libtmux-mcp', 'libtmux-mcp/src/libtmux_mcp', 'https://github.com/tmux-python/libtmux-mcp/tree/main/src/libtmux_mcp', ['libtmux-mcp']],
       ['source', 'libtmux-mcp', 'tmux-python/libtmux-mcp', 'https://github.com/tmux-python/libtmux-mcp', ['libtmux-mcp-repository']],
@@ -82,9 +83,11 @@ export const LINKS: Record<string, ExpectedLinks> = {
     actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-julia/src', 'https://github.com/libtmux/libtmux-julia/tree/master/src']],
     indexed: true,
     rows: [
-      ['source', 'LibTmux', 'package · src', 'https://github.com/libtmux/libtmux-julia/tree/master/src', ['LibTmux', 'LibTmux.Filters']],
+      ['source', 'LibTmux', 'package · src', 'https://github.com/libtmux/libtmux-julia/tree/master/src', ['LibTmux']],
       ['source', 'libtmux-julia', 'libtmux/libtmux-julia', 'https://github.com/libtmux/libtmux-julia', ['repository']],
-      ['source', 'LibTmuxJSONExt', 'extension · ext', 'https://github.com/libtmux/libtmux-julia/tree/master/ext', ['LibTmuxJSONExt', 'LibTmuxTablesExt']],
+      ['source', 'LibTmux.Filters', 'module · src/criteria.jl', 'https://github.com/libtmux/libtmux-julia/blob/master/src/criteria.jl', ['LibTmux.Filters']],
+      ['source', 'LibTmuxJSONExt', 'extension · ext/LibTmuxJSONExt.jl', 'https://github.com/libtmux/libtmux-julia/blob/master/ext/LibTmuxJSONExt.jl', ['LibTmuxJSONExt']],
+      ['source', 'LibTmuxTablesExt', 'extension · ext/LibTmuxTablesExt.jl', 'https://github.com/libtmux/libtmux-julia/blob/master/ext/LibTmuxTablesExt.jl', ['LibTmuxTablesExt']],
       ['source', 'LibTmuxMCP', 'package · packages/LibTmuxMCP', 'https://github.com/libtmux/libtmux-julia/tree/master/packages/LibTmuxMCP', ['LibTmuxMCP']],
       ['source', 'LibTmuxWorkspace', 'package · packages/LibTmuxWorkspace', 'https://github.com/libtmux/libtmux-julia/tree/master/packages/LibTmuxWorkspace', ['LibTmuxWorkspace']],
     ],
