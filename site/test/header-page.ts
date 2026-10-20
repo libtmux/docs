@@ -8,7 +8,7 @@ import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
  * with their sibling components reduced to slots, and parse the result.
  */
 const real = [
-  'components/SiteHeader.astro', 'components/HeaderPicker.astro', 'components/icons/RegistryIcon.astro',
+  'components/SiteHeader.astro', 'components/HeaderLinks.astro', 'components/HeaderPicker.astro', 'components/icons/RegistryIcon.astro',
 ]
 // `i18n/resolve` reads Astro content collections, which a bare vitest run cannot load.
 const modules = { '../i18n/resolve': { buildLocale } }

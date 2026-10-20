@@ -2,10 +2,11 @@
 import ColorSchemeSwitcher from './ColorSchemeSwitcher.astro'
 import LocaleSwitcher from './LocaleSwitcher.astro'
 import VersionSwitcher from './VersionSwitcher.astro'
-import HeaderPicker from './HeaderPicker.astro'
+import HeaderLinks from './HeaderLinks.astro'
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import type { LocaleStatus } from '../i18n/resolve'
-import { PORT_BY_SLUG, portPageUrl, portPickers, productAvailable } from '../lib/ports'
+import { portHeaderLinks } from '../lib/header-links'
+import { PORT_BY_SLUG, portPageUrl, productAvailable } from '../lib/ports'
 import { withPortRoot, withRoot } from '../lib/site-root'
 
 interface Props {
@@ -36,11 +37,11 @@ const {
 } = Astro.props as Props
 
 /*
- * Source, package and reference menus belong to a port's pages. A page with no
+ * Source, package and reference links belong to a port's pages. A page with no
  * port, such as the homepage or the tmux manual, has no package to name.
  */
 const port = portSlug ? PORT_BY_SLUG[portSlug] : undefined
-const pickers = port ? portPickers(port) : []
+const links = port ? portHeaderLinks(port) : undefined
 ---
 
 <header
@@ -57,15 +58,15 @@ const pickers = port ? portPickers(port) : []
     <div class="site-header__spacer"></div>
 
     {/*
-      Disclosures, never links: each is a native details of ordinary external
-      links, so the bar offers a port's repositories, packages and off-site
-      references without a script. They fit the bar from 48rem; below that
-      the Menu panel holds a second copy and CSS leaves one of the two shown.
+      The repository and package host are ordinary links, always one click
+      away; the disclosure beside them lists every other package and source
+      directory. They fit the bar from 48rem; below that the Menu panel holds
+      a second copy and CSS leaves one of the two shown.
     */}
     {
-      port && pickers.length > 0 && (
-        <div class="site-header__pickers">
-          {pickers.map((picker) => <HeaderPicker port={port} picker={picker} placement="bar" />)}
+      port && links && links.actions.length > 0 && (
+        <div class="site-header__destinations" role="group" aria-label="Repository and packages" data-pagefind-ignore="all">
+          <HeaderLinks port={port} links={links} placement="bar" />
         </div>
       )
     }
@@ -117,8 +118,8 @@ const pickers = port ? portPickers(port) : []
           <a href={withPortRoot('/reference/')} class="topnav-chip px-2 py-1 text-sm">Reference</a>
           {port && productAvailable(port, 'mcp') && <a href={portPageUrl(port, version, 'mcp')} class="topnav-chip px-2 py-1 text-sm">MCP</a>}
         </div>
-        {port && pickers.length > 0 && <div class="site-header__panel-row site-header__panel-pickers">
-          {pickers.map((picker) => <HeaderPicker port={port} picker={picker} placement="menu" />)}
+        {port && links && links.actions.length > 0 && <div class="site-header__panel-row site-header__panel-destinations" role="group" aria-label="Repository and packages" data-pagefind-ignore="all">
+          <HeaderLinks port={port} links={links} placement="menu" />
         </div>}
       </div>
     </details>

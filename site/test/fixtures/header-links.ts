@@ -1,219 +1,289 @@
 /**
- * The rows each registered port's header menus should offer, written from the
- * destinations verified against the live hosts rather than computed from
- * `ports.ts`. A row is `[group, label, detail, url]`; the menus list the core
- * library first, then the MCP server, then the workspace manager.
+ * What each registered port's header offers, written from the destinations
+ * verified against the live hosts rather than computed from the inventory.
  *
- * Julia and C++ publish no package, so they have no package menu. Only Rust,
- * Go, Java, Kotlin, Scala, Swift and Elixir have an off-site API reference.
+ * An action is `[kind, label, accessible name, url]`: the repository and
+ * package host as direct links, plus the API reference where the host serves
+ * one apart from the package page. A row is `[kind, label, detail, url]` in
+ * the index's order: source, then packages, then API reference, each in
+ * product order. A URL that several entries share is one row.
+ *
+ * Julia and C++ publish no package, so each has only the repository link.
+ * Only Rust, Java, Kotlin, Scala and Swift link an API reference of their
+ * own; Go's package page is its reference.
  */
-export type ExpectedRow = readonly ['core' | 'mcp' | 'workspace', label: string, detail: string, url: string]
+export type ExpectedAction = readonly [kind: 'source' | 'package' | 'api', label: string, name: string, url: string]
+export type ExpectedRow = readonly [kind: 'source' | 'package' | 'api', label: string, detail: string, url: string]
 
-export interface ExpectedPickers {
-  github: readonly ExpectedRow[]
-  packages?: readonly ExpectedRow[]
-  docs?: readonly ExpectedRow[]
+export interface ExpectedLinks {
+  actions: readonly ExpectedAction[]
+  /** Whether a destination exists that no direct link already opens. */
+  indexed: boolean
+  rows: readonly ExpectedRow[]
 }
 
-const repo = (name: string) => `https://github.com/${name}`
-const dir = (name: string, path: string) => `https://github.com/${name}/tree/master/${path}`
-const spiDocs = (target: string) => `https://swiftpackageindex.com/libtmux/libtmux-swift/documentation/${target}`
-const pkgsite = (path: string) => `https://pkg.go.dev/github.com/libtmux/libtmux-go/${path}`
-const central = (artifact: string) => `https://central.sonatype.com/artifact/io.github.libtmux/${artifact}`
-const javadoc = (artifact: string) => `https://javadoc.io/doc/io.github.libtmux/${artifact}`
-
-export const PICKERS: Record<string, ExpectedPickers> = {
+export const LINKS: Record<string, ExpectedLinks> = {
   py: {
-    github: [
-      ['core', 'libtmux', 'tmux-python/libtmux', repo('tmux-python/libtmux')],
-      ['mcp', 'libtmux-mcp', 'tmux-python/libtmux-mcp', repo('tmux-python/libtmux-mcp')],
-      ['workspace', 'tmuxp', 'tmux-python/tmuxp', repo('tmux-python/tmuxp')],
-    ],
-    packages: [
-      ['core', 'libtmux', 'PyPI', 'https://pypi.org/project/libtmux/'],
-      ['mcp', 'libtmux-mcp', 'PyPI', 'https://pypi.org/project/libtmux-mcp/'],
-      ['workspace', 'tmuxp', 'PyPI', 'https://pypi.org/project/tmuxp/'],
+    actions: [['source', 'GitHub', 'GitHub: tmux-python/libtmux', 'https://github.com/tmux-python/libtmux'],
+      ['package', 'PyPI', 'PyPI: libtmux package', 'https://pypi.org/project/libtmux/']],
+    indexed: true,
+    rows: [
+      ['source', 'libtmux', 'tmux-python/libtmux', 'https://github.com/tmux-python/libtmux'],
+      ['source', 'libtmux-mcp', 'tmux-python/libtmux-mcp', 'https://github.com/tmux-python/libtmux-mcp'],
+      ['source', 'tmuxp', 'tmux-python/tmuxp', 'https://github.com/tmux-python/tmuxp'],
+      ['package', 'libtmux', 'PyPI', 'https://pypi.org/project/libtmux/'],
+      ['package', 'libtmux-mcp', 'PyPI', 'https://pypi.org/project/libtmux-mcp/'],
+      ['package', 'tmuxp', 'PyPI', 'https://pypi.org/project/tmuxp/'],
     ],
   },
   ruby: {
-    github: [
-      ['core', 'libtmux-ruby', 'libtmux/libtmux-ruby', repo('libtmux/libtmux-ruby')],
-      ['core', 'libtmux', 'libtmux-ruby/gems/libtmux', dir('libtmux/libtmux-ruby', 'gems/libtmux')],
-      ['core', 'libtmux-async', 'libtmux-ruby/gems/libtmux-async', dir('libtmux/libtmux-ruby', 'gems/libtmux-async')],
-      ['mcp', 'libtmux-mcp', 'libtmux-ruby/gems/libtmux-mcp', dir('libtmux/libtmux-ruby', 'gems/libtmux-mcp')],
-      ['workspace', 'libtmux-workspace', 'libtmux-ruby/gems/libtmux-workspace', dir('libtmux/libtmux-ruby', 'gems/libtmux-workspace')],
-    ],
-    packages: [
-      ['core', 'libtmux', 'RubyGems', 'https://rubygems.org/gems/libtmux'],
-      ['core', 'libtmux-async', 'RubyGems', 'https://rubygems.org/gems/libtmux-async'],
-      ['mcp', 'libtmux-mcp', 'RubyGems', 'https://rubygems.org/gems/libtmux-mcp'],
-      ['workspace', 'libtmux-workspace', 'RubyGems', 'https://rubygems.org/gems/libtmux-workspace'],
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-ruby', 'https://github.com/libtmux/libtmux-ruby'],
+      ['package', 'RubyGems', 'RubyGems: libtmux package', 'https://rubygems.org/gems/libtmux']],
+    indexed: true,
+    rows: [
+      ['source', 'libtmux', 'libtmux-ruby/gems/libtmux', 'https://github.com/libtmux/libtmux-ruby/tree/master/gems/libtmux'],
+      ['source', 'libtmux-ruby', 'libtmux/libtmux-ruby', 'https://github.com/libtmux/libtmux-ruby'],
+      ['source', 'libtmux-async', 'libtmux-ruby/gems/libtmux-async', 'https://github.com/libtmux/libtmux-ruby/tree/master/gems/libtmux-async'],
+      ['source', 'libtmux-mcp', 'libtmux-ruby/gems/libtmux-mcp', 'https://github.com/libtmux/libtmux-ruby/tree/master/gems/libtmux-mcp'],
+      ['source', 'libtmux-workspace', 'libtmux-ruby/gems/libtmux-workspace', 'https://github.com/libtmux/libtmux-ruby/tree/master/gems/libtmux-workspace'],
+      ['package', 'libtmux', 'RubyGems', 'https://rubygems.org/gems/libtmux'],
+      ['package', 'libtmux-async', 'RubyGems', 'https://rubygems.org/gems/libtmux-async'],
+      ['package', 'libtmux-mcp', 'RubyGems', 'https://rubygems.org/gems/libtmux-mcp'],
+      ['package', 'libtmux-workspace', 'RubyGems', 'https://rubygems.org/gems/libtmux-workspace'],
     ],
   },
   lua: {
-    github: [['core', 'libtmux-lua', 'libtmux/libtmux-lua', repo('libtmux/libtmux-lua')]],
-    packages: [['core', 'libtmux', 'LuaRocks', 'https://luarocks.org/modules/tony/libtmux']],
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-lua', 'https://github.com/libtmux/libtmux-lua'],
+      ['package', 'LuaRocks', 'LuaRocks: libtmux package', 'https://luarocks.org/modules/tony/libtmux']],
+    indexed: false,
+    rows: [
+      ['source', 'libtmux', 'libtmux/libtmux-lua', 'https://github.com/libtmux/libtmux-lua'],
+      ['package', 'libtmux', 'LuaRocks', 'https://luarocks.org/modules/tony/libtmux'],
+    ],
   },
   powershell: {
-    github: [
-      ['core', 'LibTmux', 'libtmux-powershell/src/LibTmux.PowerShell', dir('libtmux/libtmux-powershell', 'src/LibTmux.PowerShell')],
-      ['core', 'libtmux-powershell', 'libtmux/libtmux-powershell', repo('libtmux/libtmux-powershell')],
-      ['workspace', 'LibTmux.Workspace', 'libtmux-powershell/src/LibTmux.Workspace.PowerShell', dir('libtmux/libtmux-powershell', 'src/LibTmux.Workspace.PowerShell')],
-    ],
-    packages: [
-      ['core', 'LibTmux', 'PowerShell Gallery', 'https://www.powershellgallery.com/packages/LibTmux'],
-      ['workspace', 'LibTmux.Workspace', 'PowerShell Gallery', 'https://www.powershellgallery.com/packages/LibTmux.Workspace'],
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-powershell/src/LibTmux.PowerShell', 'https://github.com/libtmux/libtmux-powershell/tree/master/src/LibTmux.PowerShell'],
+      ['package', 'PowerShell Gallery', 'PowerShell Gallery: LibTmux package', 'https://www.powershellgallery.com/packages/LibTmux']],
+    indexed: true,
+    rows: [
+      ['source', 'LibTmux', 'libtmux-powershell/src/LibTmux.PowerShell', 'https://github.com/libtmux/libtmux-powershell/tree/master/src/LibTmux.PowerShell'],
+      ['source', 'libtmux-powershell', 'libtmux/libtmux-powershell', 'https://github.com/libtmux/libtmux-powershell'],
+      ['source', 'LibTmux.Workspace', 'libtmux-powershell/src/LibTmux.Workspace.PowerShell', 'https://github.com/libtmux/libtmux-powershell/tree/master/src/LibTmux.Workspace.PowerShell'],
+      ['package', 'LibTmux', 'PowerShell Gallery', 'https://www.powershellgallery.com/packages/LibTmux'],
+      ['package', 'LibTmux.Workspace', 'PowerShell Gallery', 'https://www.powershellgallery.com/packages/LibTmux.Workspace'],
     ],
   },
   julia: {
-    github: [
-      ['core', 'LibTmux', 'libtmux-julia/src', dir('libtmux/libtmux-julia', 'src')],
-      ['core', 'libtmux-julia', 'libtmux/libtmux-julia', repo('libtmux/libtmux-julia')],
-      ['mcp', 'LibTmuxMCP', 'libtmux-julia/packages/LibTmuxMCP', dir('libtmux/libtmux-julia', 'packages/LibTmuxMCP')],
-      ['workspace', 'LibTmuxWorkspace', 'libtmux-julia/packages/LibTmuxWorkspace', dir('libtmux/libtmux-julia', 'packages/LibTmuxWorkspace')],
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-julia/src', 'https://github.com/libtmux/libtmux-julia/tree/master/src']],
+    indexed: true,
+    rows: [
+      ['source', 'LibTmux', 'libtmux-julia/src', 'https://github.com/libtmux/libtmux-julia/tree/master/src'],
+      ['source', 'libtmux-julia', 'libtmux/libtmux-julia', 'https://github.com/libtmux/libtmux-julia'],
+      ['source', 'LibTmuxMCP', 'libtmux-julia/packages/LibTmuxMCP', 'https://github.com/libtmux/libtmux-julia/tree/master/packages/LibTmuxMCP'],
+      ['source', 'LibTmuxWorkspace', 'libtmux-julia/packages/LibTmuxWorkspace', 'https://github.com/libtmux/libtmux-julia/tree/master/packages/LibTmuxWorkspace'],
     ],
-  },
-  elixir: {
-    github: [
-      ['core', 'libtmux', 'libtmux-elixir/lib', 'https://github.com/libtmux/libtmux-elixir/tree/main/lib'],
-      ['core', 'libtmux-elixir', 'libtmux/libtmux-elixir', repo('libtmux/libtmux-elixir')],
-    ],
-    packages: [['core', 'libtmux', 'Hex', 'https://hex.pm/packages/libtmux']],
-    docs: [['core', 'libtmux', 'HexDocs', 'https://libtmux.hexdocs.pm/']],
   },
   ts: {
-    github: [
-      ['core', 'libtmux-ts', 'libtmux/libtmux-ts', repo('libtmux/libtmux-ts')],
-      ['core', 'libtmux', 'libtmux-ts/packages/libtmux', dir('libtmux/libtmux-ts', 'packages/libtmux')],
-      ['mcp', '@libtmux/mcp', 'libtmux-ts/packages/mcp', dir('libtmux/libtmux-ts', 'packages/mcp')],
-      ['workspace', '@libtmux/workspace', 'libtmux-ts/packages/workspace', dir('libtmux/libtmux-ts', 'packages/workspace')],
-      ['workspace', '@libtmux/workspace-cli', 'libtmux-ts/packages/workspace-cli', dir('libtmux/libtmux-ts', 'packages/workspace-cli')],
-    ],
-    packages: [
-      ['core', 'libtmux', 'npm', 'https://www.npmjs.com/package/libtmux'],
-      ['mcp', '@libtmux/mcp', 'npm', 'https://www.npmjs.com/package/@libtmux/mcp'],
-      ['workspace', '@libtmux/workspace', 'npm', 'https://www.npmjs.com/package/@libtmux/workspace'],
-      ['workspace', '@libtmux/workspace-cli', 'npm', 'https://www.npmjs.com/package/@libtmux/workspace-cli'],
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-ts', 'https://github.com/libtmux/libtmux-ts'],
+      ['package', 'npm', 'npm: libtmux package', 'https://www.npmjs.com/package/libtmux']],
+    indexed: true,
+    rows: [
+      ['source', 'libtmux', 'libtmux-ts/packages/libtmux', 'https://github.com/libtmux/libtmux-ts/tree/master/packages/libtmux'],
+      ['source', 'libtmux-ts', 'libtmux/libtmux-ts', 'https://github.com/libtmux/libtmux-ts'],
+      ['source', '@libtmux/mcp', 'libtmux-ts/packages/mcp', 'https://github.com/libtmux/libtmux-ts/tree/master/packages/mcp'],
+      ['source', '@libtmux/workspace', 'libtmux-ts/packages/workspace', 'https://github.com/libtmux/libtmux-ts/tree/master/packages/workspace'],
+      ['source', '@libtmux/workspace-cli', 'libtmux-ts/packages/workspace-cli', 'https://github.com/libtmux/libtmux-ts/tree/master/packages/workspace-cli'],
+      ['package', 'libtmux', 'npm', 'https://www.npmjs.com/package/libtmux'],
+      ['package', '@libtmux/mcp', 'npm', 'https://www.npmjs.com/package/@libtmux/mcp'],
+      ['package', '@libtmux/workspace', 'npm', 'https://www.npmjs.com/package/@libtmux/workspace'],
+      ['package', '@libtmux/workspace-cli', 'npm', 'https://www.npmjs.com/package/@libtmux/workspace-cli'],
     ],
   },
   rs: {
-    github: [
-      ['core', 'libtmux-rs', 'libtmux/libtmux-rs', repo('libtmux/libtmux-rs')],
-      ['core', 'libtmux', 'libtmux-rs/crates/libtmux', dir('libtmux/libtmux-rs', 'crates/libtmux')],
-      ['core', 'libtmux-macros', 'libtmux-rs/crates/libtmux-macros', dir('libtmux/libtmux-rs', 'crates/libtmux-macros')],
-      ['mcp', 'tmux-mcp', 'libtmux-rs/crates/tmux-mcp', dir('libtmux/libtmux-rs', 'crates/tmux-mcp')],
-      ['workspace', 'tmux-workspace', 'libtmux-rs/crates/tmux-workspace', dir('libtmux/libtmux-rs', 'crates/tmux-workspace')],
-    ],
-    packages: [
-      ['core', 'libtmux', 'crates.io', 'https://crates.io/crates/libtmux'],
-      ['core', 'libtmux-macros', 'crates.io', 'https://crates.io/crates/libtmux-macros'],
-      ['mcp', 'tmux-mcp', 'crates.io', 'https://crates.io/crates/tmux-mcp'],
-      ['workspace', 'tmux-workspace', 'crates.io', 'https://crates.io/crates/tmux-workspace'],
-    ],
-    docs: [
-      ['core', 'libtmux', 'docs.rs', 'https://docs.rs/libtmux'],
-      ['core', 'libtmux-macros', 'docs.rs', 'https://docs.rs/libtmux-macros'],
-      ['mcp', 'tmux-mcp', 'docs.rs', 'https://docs.rs/tmux-mcp'],
-      ['workspace', 'tmux-workspace', 'docs.rs', 'https://docs.rs/tmux-workspace'],
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-rs', 'https://github.com/libtmux/libtmux-rs'],
+      ['package', 'crates.io', 'crates.io: libtmux package', 'https://crates.io/crates/libtmux'],
+      ['api', 'docs.rs', 'docs.rs: libtmux API reference', 'https://docs.rs/libtmux']],
+    indexed: true,
+    rows: [
+      ['source', 'libtmux', 'libtmux-rs/crates/libtmux', 'https://github.com/libtmux/libtmux-rs/tree/master/crates/libtmux'],
+      ['source', 'libtmux-rs', 'libtmux/libtmux-rs', 'https://github.com/libtmux/libtmux-rs'],
+      ['source', 'libtmux-macros', 'libtmux-rs/crates/libtmux-macros', 'https://github.com/libtmux/libtmux-rs/tree/master/crates/libtmux-macros'],
+      ['source', 'tmux-mcp', 'libtmux-rs/crates/tmux-mcp', 'https://github.com/libtmux/libtmux-rs/tree/master/crates/tmux-mcp'],
+      ['source', 'tmux-workspace', 'libtmux-rs/crates/tmux-workspace', 'https://github.com/libtmux/libtmux-rs/tree/master/crates/tmux-workspace'],
+      ['package', 'libtmux', 'crates.io', 'https://crates.io/crates/libtmux'],
+      ['package', 'libtmux-macros', 'crates.io', 'https://crates.io/crates/libtmux-macros'],
+      ['package', 'tmux-mcp', 'crates.io', 'https://crates.io/crates/tmux-mcp'],
+      ['package', 'tmux-workspace', 'crates.io', 'https://crates.io/crates/tmux-workspace'],
+      ['api', 'libtmux', 'docs.rs', 'https://docs.rs/libtmux'],
+      ['api', 'libtmux-macros', 'docs.rs', 'https://docs.rs/libtmux-macros'],
+      ['api', 'tmux-mcp', 'docs.rs', 'https://docs.rs/tmux-mcp'],
+      ['api', 'tmux-workspace', 'docs.rs', 'https://docs.rs/tmux-workspace'],
     ],
   },
   go: {
-    github: [
-      ['core', 'libtmux-go', 'libtmux/libtmux-go', repo('libtmux/libtmux-go')],
-      ['core', 'tmux', 'libtmux-go/tmux', dir('libtmux/libtmux-go', 'tmux')],
-      ['mcp', 'mcp', 'libtmux-go/mcp/cmd/libtmux-mcp', dir('libtmux/libtmux-go', 'mcp/cmd/libtmux-mcp')],
-      ['workspace', 'workspace', 'libtmux-go/workspace/cmd/tmux-workspace', dir('libtmux/libtmux-go', 'workspace/cmd/tmux-workspace')],
-    ],
-    packages: [
-      ['core', 'tmux', 'github.com/libtmux/libtmux-go/tmux · pkg.go.dev', pkgsite('tmux')],
-      ['mcp', 'mcp', 'github.com/libtmux/libtmux-go/mcp · pkg.go.dev', pkgsite('mcp')],
-      ['workspace', 'workspace', 'github.com/libtmux/libtmux-go/workspace · pkg.go.dev', pkgsite('workspace')],
-    ],
-    docs: [
-      ['core', 'tmux', 'github.com/libtmux/libtmux-go/tmux · pkg.go.dev', pkgsite('tmux')],
-      ['core', 'tmuxq', 'github.com/libtmux/libtmux-go/tmuxq · pkg.go.dev', pkgsite('tmuxq')],
-      ['core', 'tmux/tmuxtest', 'github.com/libtmux/libtmux-go/tmux/tmuxtest · pkg.go.dev', pkgsite('tmux/tmuxtest')],
-      ['mcp', 'mcp', 'github.com/libtmux/libtmux-go/mcp · pkg.go.dev', pkgsite('mcp')],
-      ['workspace', 'workspace', 'github.com/libtmux/libtmux-go/workspace · pkg.go.dev', pkgsite('workspace')],
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-go', 'https://github.com/libtmux/libtmux-go'],
+      ['package', 'pkg.go.dev', 'pkg.go.dev: libtmux/libtmux-go/tmux package', 'https://pkg.go.dev/github.com/libtmux/libtmux-go/tmux']],
+    indexed: true,
+    rows: [
+      ['source', 'tmux', 'libtmux-go/tmux', 'https://github.com/libtmux/libtmux-go/tree/master/tmux'],
+      ['source', 'libtmux-go', 'libtmux/libtmux-go', 'https://github.com/libtmux/libtmux-go'],
+      ['source', 'tmuxq', 'libtmux-go/tmuxq', 'https://github.com/libtmux/libtmux-go/tree/master/tmuxq'],
+      ['source', 'tmux/tmuxtest', 'libtmux-go/tmux/tmuxtest', 'https://github.com/libtmux/libtmux-go/tree/master/tmux/tmuxtest'],
+      ['source', 'mcp', 'libtmux-go/mcp', 'https://github.com/libtmux/libtmux-go/tree/master/mcp'],
+      ['source', 'libtmux-mcp', 'libtmux-go/mcp/cmd/libtmux-mcp', 'https://github.com/libtmux/libtmux-go/tree/master/mcp/cmd/libtmux-mcp'],
+      ['source', 'workspace', 'libtmux-go/workspace', 'https://github.com/libtmux/libtmux-go/tree/master/workspace'],
+      ['source', 'tmux-workspace', 'libtmux-go/workspace/cmd/tmux-workspace', 'https://github.com/libtmux/libtmux-go/tree/master/workspace/cmd/tmux-workspace'],
+      ['package', 'tmux', 'libtmux/libtmux-go/tmux · pkg.go.dev', 'https://pkg.go.dev/github.com/libtmux/libtmux-go/tmux'],
+      ['package', 'libtmux-go', 'libtmux/libtmux-go · pkg.go.dev', 'https://pkg.go.dev/github.com/libtmux/libtmux-go'],
+      ['package', 'tmuxq', 'libtmux/libtmux-go/tmuxq · pkg.go.dev', 'https://pkg.go.dev/github.com/libtmux/libtmux-go/tmuxq'],
+      ['package', 'tmux/tmuxtest', 'libtmux/libtmux-go/tmux/tmuxtest · pkg.go.dev', 'https://pkg.go.dev/github.com/libtmux/libtmux-go/tmux/tmuxtest'],
+      ['package', 'mcp', 'libtmux/libtmux-go/mcp · pkg.go.dev', 'https://pkg.go.dev/github.com/libtmux/libtmux-go/mcp'],
+      ['package', 'libtmux-mcp', 'libtmux/libtmux-go/mcp/cmd/libtmux-mcp · pkg.go.dev', 'https://pkg.go.dev/github.com/libtmux/libtmux-go/mcp/cmd/libtmux-mcp'],
+      ['package', 'workspace', 'libtmux/libtmux-go/workspace · pkg.go.dev', 'https://pkg.go.dev/github.com/libtmux/libtmux-go/workspace'],
+      ['package', 'tmux-workspace', 'libtmux/libtmux-go/workspace/cmd/tmux-workspace · pkg.go.dev', 'https://pkg.go.dev/github.com/libtmux/libtmux-go/workspace/cmd/tmux-workspace'],
     ],
   },
   java: {
-    github: [
-      ['core', 'libtmux-java', 'libtmux/libtmux-java', repo('libtmux/libtmux-java')],
-      ['core', 'libtmux', 'libtmux-java/libtmux', dir('libtmux/libtmux-java', 'libtmux')],
-      ['core', 'libtmux-kotlin', 'libtmux-java/libtmux-kotlin', dir('libtmux/libtmux-java', 'libtmux-kotlin')],
-      ['core', 'libtmux-scala', 'libtmux-java/libtmux-scala', dir('libtmux/libtmux-java', 'libtmux-scala')],
-      ['mcp', 'libtmux-mcp', 'libtmux-java/libtmux-mcp', dir('libtmux/libtmux-java', 'libtmux-mcp')],
-      ['workspace', 'libtmux-workspace-cli', 'libtmux-java/libtmux-workspace-cli', dir('libtmux/libtmux-java', 'libtmux-workspace-cli')],
-    ],
-    packages: [
-      ['core', 'libtmux', 'io.github.libtmux:libtmux · Maven Central', central('libtmux')],
-      ['mcp', 'libtmux-mcp', 'io.github.libtmux:libtmux-mcp · Maven Central', central('libtmux-mcp')],
-      ['workspace', 'libtmux-workspace-cli', 'io.github.libtmux:libtmux-workspace-cli · Maven Central', central('libtmux-workspace-cli')],
-    ],
-    // javadoc.io has no documentation for libtmux-workspace-cli, so it has no row.
-    docs: [
-      ['core', 'libtmux', 'io.github.libtmux:libtmux · javadoc.io', javadoc('libtmux')],
-      ['mcp', 'libtmux-mcp', 'io.github.libtmux:libtmux-mcp · javadoc.io', javadoc('libtmux-mcp')],
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-java', 'https://github.com/libtmux/libtmux-java'],
+      ['package', 'Maven Central', 'Maven Central: io.github.libtmux:libtmux package', 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux'],
+      ['api', 'javadoc.io', 'javadoc.io: io.github.libtmux:libtmux API reference', 'https://javadoc.io/doc/io.github.libtmux/libtmux']],
+    indexed: true,
+    rows: [
+      ['source', 'libtmux', 'libtmux-java/libtmux', 'https://github.com/libtmux/libtmux-java/tree/master/libtmux'],
+      ['source', 'libtmux-java', 'libtmux/libtmux-java', 'https://github.com/libtmux/libtmux-java'],
+      ['source', 'libtmux-bom', 'libtmux-java/libtmux-bom', 'https://github.com/libtmux/libtmux-java/tree/master/libtmux-bom'],
+      ['source', 'libtmux-jackson', 'libtmux-java/libtmux-jackson', 'https://github.com/libtmux/libtmux-java/tree/master/libtmux-jackson'],
+      ['source', 'libtmux-junit5', 'libtmux-java/libtmux-junit5', 'https://github.com/libtmux/libtmux-java/tree/master/libtmux-junit5'],
+      ['source', 'libtmux-kotlin', 'libtmux-java/libtmux-kotlin', 'https://github.com/libtmux/libtmux-java/tree/master/libtmux-kotlin'],
+      ['source', 'libtmux-scala_3', 'libtmux-java/libtmux-scala', 'https://github.com/libtmux/libtmux-java/tree/master/libtmux-scala'],
+      ['source', 'libtmux-scala-cats_3', 'libtmux-java/libtmux-scala-cats', 'https://github.com/libtmux/libtmux-java/tree/master/libtmux-scala-cats'],
+      ['source', 'libtmux-scala-ox_3', 'libtmux-java/libtmux-scala-ox', 'https://github.com/libtmux/libtmux-java/tree/master/libtmux-scala-ox'],
+      ['source', 'libtmux-mcp', 'libtmux-java/libtmux-mcp', 'https://github.com/libtmux/libtmux-java/tree/master/libtmux-mcp'],
+      ['source', 'libtmux-workspace', 'libtmux-java/libtmux-workspace', 'https://github.com/libtmux/libtmux-java/tree/master/libtmux-workspace'],
+      ['source', 'libtmux-workspace-cli', 'libtmux-java/libtmux-workspace-cli', 'https://github.com/libtmux/libtmux-java/tree/master/libtmux-workspace-cli'],
+      ['package', 'libtmux', 'io.github.libtmux:libtmux · Maven Central', 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux'],
+      ['package', 'libtmux-bom', 'io.github.libtmux:libtmux-bom · Maven Central', 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-bom'],
+      ['package', 'libtmux-jackson', 'io.github.libtmux:libtmux-jackson · Maven Central', 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-jackson'],
+      ['package', 'libtmux-junit5', 'io.github.libtmux:libtmux-junit5 · Maven Central', 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-junit5'],
+      ['package', 'libtmux-kotlin', 'io.github.libtmux:libtmux-kotlin · Maven Central', 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-kotlin'],
+      ['package', 'libtmux-scala_3', 'io.github.libtmux:libtmux-scala_3 · Maven Central', 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-scala_3'],
+      ['package', 'libtmux-scala-cats_3', 'io.github.libtmux:libtmux-scala-cats_3 · Maven Central', 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-scala-cats_3'],
+      ['package', 'libtmux-scala-ox_3', 'io.github.libtmux:libtmux-scala-ox_3 · Maven Central', 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-scala-ox_3'],
+      ['package', 'libtmux-mcp', 'io.github.libtmux:libtmux-mcp · Maven Central', 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-mcp'],
+      ['package', 'libtmux-workspace', 'io.github.libtmux:libtmux-workspace · Maven Central', 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-workspace'],
+      ['package', 'libtmux-workspace-cli', 'io.github.libtmux:libtmux-workspace-cli · Maven Central', 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-workspace-cli'],
+      ['api', 'libtmux', 'javadoc.io', 'https://javadoc.io/doc/io.github.libtmux/libtmux'],
+      ['api', 'libtmux-jackson', 'javadoc.io', 'https://javadoc.io/doc/io.github.libtmux/libtmux-jackson'],
+      ['api', 'libtmux-junit5', 'javadoc.io', 'https://javadoc.io/doc/io.github.libtmux/libtmux-junit5'],
+      ['api', 'libtmux-kotlin', 'Dokka · javadoc.io', 'https://javadoc.io/doc/io.github.libtmux/libtmux-kotlin'],
+      ['api', 'libtmux-scala_3', 'Scaladoc · javadoc.io', 'https://javadoc.io/doc/io.github.libtmux/libtmux-scala_3'],
+      ['api', 'libtmux-scala-cats_3', 'Scaladoc · javadoc.io', 'https://javadoc.io/doc/io.github.libtmux/libtmux-scala-cats_3'],
+      ['api', 'libtmux-scala-ox_3', 'Scaladoc · javadoc.io', 'https://javadoc.io/doc/io.github.libtmux/libtmux-scala-ox_3'],
+      ['api', 'libtmux-mcp', 'javadoc.io', 'https://javadoc.io/doc/io.github.libtmux/libtmux-mcp'],
+      ['api', 'libtmux-workspace', 'javadoc.io', 'https://javadoc.io/doc/io.github.libtmux/libtmux-workspace'],
     ],
   },
   kotlin: {
-    github: [
-      ['core', 'libtmux-kotlin', 'libtmux-java/libtmux-kotlin', dir('libtmux/libtmux-java', 'libtmux-kotlin')],
-      ['core', 'libtmux-java', 'libtmux/libtmux-java', repo('libtmux/libtmux-java')],
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-java/libtmux-kotlin', 'https://github.com/libtmux/libtmux-java/tree/master/libtmux-kotlin'],
+      ['package', 'Maven Central', 'Maven Central: io.github.libtmux:libtmux-kotlin package', 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-kotlin'],
+      ['api', 'Dokka', 'Dokka: io.github.libtmux:libtmux-kotlin API reference', 'https://javadoc.io/doc/io.github.libtmux/libtmux-kotlin']],
+    indexed: true,
+    rows: [
+      ['source', 'libtmux-kotlin', 'libtmux-java/libtmux-kotlin', 'https://github.com/libtmux/libtmux-java/tree/master/libtmux-kotlin'],
+      ['source', 'libtmux-java', 'libtmux/libtmux-java', 'https://github.com/libtmux/libtmux-java'],
+      ['source', 'libtmux', 'libtmux-java/libtmux', 'https://github.com/libtmux/libtmux-java/tree/master/libtmux'],
+      ['package', 'libtmux-kotlin', 'io.github.libtmux:libtmux-kotlin · Maven Central', 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-kotlin'],
+      ['package', 'libtmux', 'io.github.libtmux:libtmux · Maven Central', 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux'],
+      ['api', 'libtmux-kotlin', 'Dokka · javadoc.io', 'https://javadoc.io/doc/io.github.libtmux/libtmux-kotlin'],
+      ['api', 'libtmux', 'javadoc.io', 'https://javadoc.io/doc/io.github.libtmux/libtmux'],
     ],
-    packages: [['core', 'libtmux-kotlin', 'io.github.libtmux:libtmux-kotlin · Maven Central', central('libtmux-kotlin')]],
-    docs: [['core', 'libtmux-kotlin', 'io.github.libtmux:libtmux-kotlin · Dokka · javadoc.io', javadoc('libtmux-kotlin')]],
   },
   scala: {
-    github: [
-      ['core', 'libtmux-scala_3', 'libtmux-java/libtmux-scala', dir('libtmux/libtmux-java', 'libtmux-scala')],
-      ['core', 'libtmux-java', 'libtmux/libtmux-java', repo('libtmux/libtmux-java')],
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-java/libtmux-scala', 'https://github.com/libtmux/libtmux-java/tree/master/libtmux-scala'],
+      ['package', 'Maven Central', 'Maven Central: io.github.libtmux:libtmux-scala_3 package', 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-scala_3'],
+      ['api', 'Scaladoc', 'Scaladoc: io.github.libtmux:libtmux-scala_3 API reference', 'https://javadoc.io/doc/io.github.libtmux/libtmux-scala_3']],
+    indexed: true,
+    rows: [
+      ['source', 'libtmux-scala_3', 'libtmux-java/libtmux-scala', 'https://github.com/libtmux/libtmux-java/tree/master/libtmux-scala'],
+      ['source', 'libtmux-java', 'libtmux/libtmux-java', 'https://github.com/libtmux/libtmux-java'],
+      ['source', 'libtmux-scala-cats_3', 'libtmux-java/libtmux-scala-cats', 'https://github.com/libtmux/libtmux-java/tree/master/libtmux-scala-cats'],
+      ['source', 'libtmux-scala-ox_3', 'libtmux-java/libtmux-scala-ox', 'https://github.com/libtmux/libtmux-java/tree/master/libtmux-scala-ox'],
+      ['source', 'libtmux', 'libtmux-java/libtmux', 'https://github.com/libtmux/libtmux-java/tree/master/libtmux'],
+      ['package', 'libtmux-scala_3', 'io.github.libtmux:libtmux-scala_3 · Maven Central', 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-scala_3'],
+      ['package', 'libtmux-scala-cats_3', 'io.github.libtmux:libtmux-scala-cats_3 · Maven Central', 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-scala-cats_3'],
+      ['package', 'libtmux-scala-ox_3', 'io.github.libtmux:libtmux-scala-ox_3 · Maven Central', 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-scala-ox_3'],
+      ['package', 'libtmux', 'io.github.libtmux:libtmux · Maven Central', 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux'],
+      ['api', 'libtmux-scala_3', 'Scaladoc · javadoc.io', 'https://javadoc.io/doc/io.github.libtmux/libtmux-scala_3'],
+      ['api', 'libtmux-scala-cats_3', 'Scaladoc · javadoc.io', 'https://javadoc.io/doc/io.github.libtmux/libtmux-scala-cats_3'],
+      ['api', 'libtmux-scala-ox_3', 'Scaladoc · javadoc.io', 'https://javadoc.io/doc/io.github.libtmux/libtmux-scala-ox_3'],
+      ['api', 'libtmux', 'javadoc.io', 'https://javadoc.io/doc/io.github.libtmux/libtmux'],
     ],
-    packages: [['core', 'libtmux-scala_3', 'io.github.libtmux:libtmux-scala_3 · Maven Central', central('libtmux-scala_3')]],
-    docs: [['core', 'libtmux-scala_3', 'io.github.libtmux:libtmux-scala_3 · Scaladoc · javadoc.io', javadoc('libtmux-scala_3')]],
   },
   csharp: {
-    github: [
-      ['core', 'libtmux-dotnet', 'libtmux/libtmux-dotnet', repo('libtmux/libtmux-dotnet')],
-      ['core', 'LibTmux', 'libtmux-dotnet/src/LibTmux', dir('libtmux/libtmux-dotnet', 'src/LibTmux')],
-      ['core', 'LibTmux.FSharp', 'libtmux-dotnet/src/LibTmux.FSharp', dir('libtmux/libtmux-dotnet', 'src/LibTmux.FSharp')],
-      ['mcp', 'LibTmux.Mcp', 'libtmux-dotnet/src/LibTmux.Mcp', dir('libtmux/libtmux-dotnet', 'src/LibTmux.Mcp')],
-      ['workspace', 'LibTmux.Workspace.Cli', 'libtmux-dotnet/src/LibTmux.Workspace.Cli', dir('libtmux/libtmux-dotnet', 'src/LibTmux.Workspace.Cli')],
-    ],
-    packages: [
-      ['core', 'LibTmux', 'NuGet', 'https://www.nuget.org/packages/LibTmux'],
-      ['mcp', 'LibTmux.Mcp', 'NuGet', 'https://www.nuget.org/packages/LibTmux.Mcp'],
-      ['workspace', 'LibTmux.Workspace.Cli', 'NuGet', 'https://www.nuget.org/packages/LibTmux.Workspace.Cli'],
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-dotnet', 'https://github.com/libtmux/libtmux-dotnet'],
+      ['package', 'NuGet', 'NuGet: LibTmux package', 'https://www.nuget.org/packages/LibTmux']],
+    indexed: true,
+    rows: [
+      ['source', 'LibTmux', 'libtmux-dotnet/src/LibTmux', 'https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux'],
+      ['source', 'libtmux-dotnet', 'libtmux/libtmux-dotnet', 'https://github.com/libtmux/libtmux-dotnet'],
+      ['source', 'LibTmux.Query.Json', 'libtmux-dotnet/src/LibTmux.Query.Json', 'https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux.Query.Json'],
+      ['source', 'LibTmux.Extensions.DependencyInjection', 'libtmux-dotnet/src/LibTmux.Extensions.DependencyInjection', 'https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux.Extensions.DependencyInjection'],
+      ['source', 'LibTmux.Testing', 'libtmux-dotnet/src/LibTmux.Testing', 'https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux.Testing'],
+      ['source', 'LibTmux.FSharp', 'libtmux-dotnet/src/LibTmux.FSharp', 'https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux.FSharp'],
+      ['source', 'LibTmux.Mcp', 'libtmux-dotnet/src/LibTmux.Mcp', 'https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux.Mcp'],
+      ['source', 'LibTmux.Workspace', 'libtmux-dotnet/src/LibTmux.Workspace', 'https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux.Workspace'],
+      ['source', 'LibTmux.Workspace.Cli', 'libtmux-dotnet/src/LibTmux.Workspace.Cli', 'https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux.Workspace.Cli'],
+      ['package', 'LibTmux', 'NuGet', 'https://www.nuget.org/packages/LibTmux'],
+      ['package', 'LibTmux.Query.Json', 'NuGet', 'https://www.nuget.org/packages/LibTmux.Query.Json'],
+      ['package', 'LibTmux.Extensions.DependencyInjection', 'NuGet', 'https://www.nuget.org/packages/LibTmux.Extensions.DependencyInjection'],
+      ['package', 'LibTmux.Testing', 'NuGet', 'https://www.nuget.org/packages/LibTmux.Testing'],
+      ['package', 'LibTmux.FSharp', 'NuGet', 'https://www.nuget.org/packages/LibTmux.FSharp'],
+      ['package', 'LibTmux.Mcp', 'NuGet', 'https://www.nuget.org/packages/LibTmux.Mcp'],
+      ['package', 'LibTmux.Workspace', 'NuGet', 'https://www.nuget.org/packages/LibTmux.Workspace'],
+      ['package', 'LibTmux.Workspace.Cli', 'NuGet', 'https://www.nuget.org/packages/LibTmux.Workspace.Cli'],
     ],
   },
   fsharp: {
-    github: [
-      ['core', 'libtmux-dotnet', 'libtmux/libtmux-dotnet', repo('libtmux/libtmux-dotnet')],
-      ['core', 'LibTmux.FSharp', 'libtmux-dotnet/src/LibTmux.FSharp', dir('libtmux/libtmux-dotnet', 'src/LibTmux.FSharp')],
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-dotnet', 'https://github.com/libtmux/libtmux-dotnet'],
+      ['package', 'NuGet', 'NuGet: LibTmux.FSharp package', 'https://www.nuget.org/packages/LibTmux.FSharp']],
+    indexed: true,
+    rows: [
+      ['source', 'LibTmux.FSharp', 'libtmux-dotnet/src/LibTmux.FSharp', 'https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux.FSharp'],
+      ['source', 'libtmux-dotnet', 'libtmux/libtmux-dotnet', 'https://github.com/libtmux/libtmux-dotnet'],
+      ['source', 'LibTmux', 'libtmux-dotnet/src/LibTmux', 'https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux'],
+      ['package', 'LibTmux.FSharp', 'NuGet', 'https://www.nuget.org/packages/LibTmux.FSharp'],
+      ['package', 'LibTmux', 'NuGet', 'https://www.nuget.org/packages/LibTmux'],
     ],
-    packages: [['core', 'LibTmux.FSharp', 'NuGet', 'https://www.nuget.org/packages/LibTmux.FSharp']],
   },
   cxx: {
-    github: [
-      ['core', 'libtmux-cxx', 'libtmux/libtmux-cxx', repo('libtmux/libtmux-cxx')],
-      ['mcp', 'libtmux-mcp-server', 'libtmux-cxx/apps/mcp', dir('libtmux/libtmux-cxx', 'apps/mcp')],
-      ['workspace', 'tmux-workspace', 'libtmux-cxx/apps/workspace', dir('libtmux/libtmux-cxx', 'apps/workspace')],
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-cxx', 'https://github.com/libtmux/libtmux-cxx']],
+    indexed: true,
+    rows: [
+      ['source', 'libtmux', 'libtmux/libtmux-cxx', 'https://github.com/libtmux/libtmux-cxx'],
+      ['source', 'vcpkg port', 'libtmux-cxx/ports/libtmux', 'https://github.com/libtmux/libtmux-cxx/tree/master/ports/libtmux'],
+      ['source', 'libtmux::libtmux', 'libtmux-cxx/src', 'https://github.com/libtmux/libtmux-cxx/tree/master/src'],
+      ['source', 'libtmux::testing', 'libtmux-cxx/src/testing', 'https://github.com/libtmux/libtmux-cxx/tree/master/src/testing'],
+      ['source', 'libtmux-mcp-server', 'libtmux-cxx/apps/mcp', 'https://github.com/libtmux/libtmux-cxx/tree/master/apps/mcp'],
+      ['source', 'tmux-workspace', 'libtmux-cxx/apps/workspace', 'https://github.com/libtmux/libtmux-cxx/tree/master/apps/workspace'],
     ],
   },
   swift: {
-    github: [
-      ['core', 'libtmux-swift', 'libtmux/libtmux-swift', repo('libtmux/libtmux-swift')],
-      ['core', 'LibTmux', 'libtmux-swift/Sources/LibTmux', dir('libtmux/libtmux-swift', 'Sources/LibTmux')],
-      ['mcp', 'libtmux-mcp', 'libtmux-swift/Sources/LibTmuxMCP', dir('libtmux/libtmux-swift', 'Sources/LibTmuxMCP')],
-      ['workspace', 'tmux-workspace', 'libtmux-swift/Sources/TmuxWorkspaceCLI', dir('libtmux/libtmux-swift', 'Sources/TmuxWorkspaceCLI')],
-    ],
-    // One package page: the workspace and MCP entries share the Swift Package Index URL.
-    packages: [['core', 'libtmux-swift', 'Swift Package Index', 'https://swiftpackageindex.com/libtmux/libtmux-swift']],
-    docs: [
-      ['core', 'LibTmux', 'Swift Package Index', spiDocs('libtmux')],
-      ['mcp', 'LibTmuxMCP', 'Swift Package Index', spiDocs('libtmuxmcp')],
-      ['workspace', 'TmuxWorkspace', 'Swift Package Index', spiDocs('tmuxworkspace')],
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-swift', 'https://github.com/libtmux/libtmux-swift'],
+      ['package', 'Swift Package Index', 'Swift Package Index: libtmux-swift package', 'https://swiftpackageindex.com/libtmux/libtmux-swift'],
+      ['api', 'DocC', 'DocC: LibTmux API reference', 'https://swiftpackageindex.com/libtmux/libtmux-swift/documentation/libtmux']],
+    indexed: true,
+    rows: [
+      ['source', 'libtmux-swift', 'libtmux/libtmux-swift', 'https://github.com/libtmux/libtmux-swift'],
+      ['source', 'LibTmux', 'libtmux-swift/Sources/LibTmux', 'https://github.com/libtmux/libtmux-swift/tree/master/Sources/LibTmux'],
+      ['source', 'TmuxFixture', 'libtmux-swift/Tests/TmuxFixture', 'https://github.com/libtmux/libtmux-swift/tree/master/Tests/TmuxFixture'],
+      ['source', 'LibTmuxMCP', 'libtmux-swift/Sources/LibTmuxMCP', 'https://github.com/libtmux/libtmux-swift/tree/master/Sources/LibTmuxMCP'],
+      ['source', 'libtmux-mcp', 'libtmux-swift/Sources/libtmux-mcp', 'https://github.com/libtmux/libtmux-swift/tree/master/Sources/libtmux-mcp'],
+      ['source', 'TmuxWorkspace', 'libtmux-swift/Sources/TmuxWorkspace', 'https://github.com/libtmux/libtmux-swift/tree/master/Sources/TmuxWorkspace'],
+      ['source', 'tmux-workspace', 'libtmux-swift/Sources/TmuxWorkspaceCLI', 'https://github.com/libtmux/libtmux-swift/tree/master/Sources/TmuxWorkspaceCLI'],
+      ['package', 'libtmux-swift', 'Swift Package Index', 'https://swiftpackageindex.com/libtmux/libtmux-swift'],
+      ['api', 'LibTmux', 'DocC · Swift Package Index', 'https://swiftpackageindex.com/libtmux/libtmux-swift/documentation/libtmux'],
+      ['api', 'LibTmuxMCP', 'DocC · Swift Package Index', 'https://swiftpackageindex.com/libtmux/libtmux-swift/documentation/libtmuxmcp'],
+      ['api', 'TmuxWorkspace', 'DocC · Swift Package Index', 'https://swiftpackageindex.com/libtmux/libtmux-swift/documentation/tmuxworkspace'],
     ],
   },
 }
