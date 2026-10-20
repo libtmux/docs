@@ -21,6 +21,7 @@ import { fileURLToPath } from 'node:url'
 const script = join(dirname(fileURLToPath(import.meta.url)), 'verify-destinations.mjs')
 const run = promisify(execFile)
 
+let flaky = 0
 const html = (title) => `<!doctype html><html><head><title>${title}</title></head><body></body></html>`
 const routes = {
   '/github/demo/demo': () => [200, 'text/html', html('GitHub - demo/demo: a demo · GitHub')],
@@ -33,6 +34,10 @@ const routes = {
   '/rubygems/api/v1/gems/demo-back.json': () => [200, 'application/json', JSON.stringify({ name: 'demo-back', version: '1.0.0' })],
   '/rubygems/api/v1/versions/demo-back.json': () => [200, 'application/json', JSON.stringify([{ number: '1.0.0', yanked_at: null }])],
   '/javadoc/doc/demo.group/demo-docs': () => [200, 'text/html', html('demo-docs 1.0.0 javadoc (demo.group)')],
+  // The first request finds documentation and the next lands on a version list, as javadoc.io has done between requests.
+  '/javadoc/doc/demo.group/demo-flaky': (_, origin) => (flaky++ % 2 === 0
+    ? [200, 'text/html', html('demo-flaky 1.0.0 javadoc (demo.group)')]
+    : [302, '', '', { location: `${origin}/javadoc/versions/demo.group/demo-bom` }]),
   '/javadoc/doc/demo.group/demo-bom': (_, origin) => [302, '', '', { location: `${origin}/javadoc/versions/demo.group/demo-bom` }],
   '/javadoc/versions/demo.group/demo-bom': () => [200, 'text/html', html('demo.group:demo-bom versions')],
 }
@@ -57,15 +62,17 @@ const doc = (name) => ({ api: { host: 'javadoc-io', url: `https://javadoc.io/doc
 
 const dir = mkdtempSync(join(tmpdir(), 'verify-destinations-'))
 let cases = 0
-async function verify(name, inventory, { args = [], expect: expected, evidence }) {
+async function verify(name, inventory, { args = [], expect: expected, evidence, registry }) {
   cases += 1
   const inventoryFile = join(dir, `inventory-${cases}.json`)
   const out = join(dir, `evidence-${cases}.json`)
+  const registryFile = join(dir, `registry-${cases}.json`)
   writeFileSync(inventoryFile, JSON.stringify({ demo: inventory }))
+  if (registry) writeFileSync(registryFile, JSON.stringify({ ports: { demo: registry } }))
   if (evidence) writeFileSync(out, JSON.stringify(evidence))
   let result
   try {
-    const done = await run('node', [script, '--inventory', inventoryFile, '--out', out, '--date', '2026-01-01', '--registry', join(dir, 'none.json'), ...args],
+    const done = await run('node', [script, '--inventory', inventoryFile, '--out', out, '--date', '2026-01-01', '--registry', registryFile, ...args],
       { env: { ...process.env, LIBTMUX_DESTINATION_REWRITE: rewrite } })
     result = { code: 0, text: `${done.stdout}${done.stderr}` }
   } catch (error) {
@@ -99,6 +106,17 @@ await verify('a repository page titled for another repository fails on identity'
 })
 await verify('javadoc.io landing on a version list fails on identity', [entry('demo-bom', { ...doc('demo-bom') })], {
   expect: { code: 1, matches: [/FAIL\s+200\s+api/, /identity: title is "demo\.group:demo-bom versions"/] },
+})
+// The registry snapshot's version must be one the host carries.
+const library = [entry('demo-good', { ...pypi('demo-good') })]
+await verify('a version the registry records and the host carries passes', library, {
+  registry: { version: '1.0.0' }, expect: { code: 0, matches: [/ok\s+200\s+package\s+https:\/\/pypi\.org/] },
+})
+await verify('a version the registry records and the host lacks fails', library, {
+  registry: { version: '2.0.0' }, expect: { code: 1, matches: [/does not carry 2\.0\.0, the registry snapshot's version/] },
+})
+await verify('javadoc.io answering differently across requests fails as unstable', [entry('demo-flaky', { ...doc('demo-flaky') })], {
+  expect: { code: 1, matches: [/FAIL\s+200\s+api/, /unstable: 3 requests disagreed/] },
 })
 await verify('javadoc.io documentation for the artifact passes', [entry('demo-docs', { ...doc('demo-docs') })], {
   expect: { code: 0, matches: [/ok\s+200\s+api\s+https:\/\/javadoc\.io\/doc\/demo\.group\/demo-docs/] },

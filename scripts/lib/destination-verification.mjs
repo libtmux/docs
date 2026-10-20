@@ -213,7 +213,9 @@ const VERIFIERS = {
         : fail('identity', `${url} ended at ${response.finalUrl} titled "${title}"`, { status: 200, requested: url })
     }
     return title.endsWith('Swift Package Index') && response.text.includes(`github.com/${owner}/${repo}`)
-      ? pass({ status: 200, requested: url, identity: `${owner}/${repo}` })
+      // The index lists the releases it has built, and a SwiftPM release is a Git tag.
+      ? pass({ status: 200, requested: url, identity: `${owner}/${repo}`,
+        exact: async (version) => new RegExp(`(?<![\\w.-])${version.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w.-])`).test(response.text) })
       : fail('identity', `title is "${title}" and the page does not name ${owner}/${repo}`, { status: 200, requested: url })
   },
 
@@ -300,7 +302,7 @@ export async function verifyDestination(destination, { get, samples = SAMPLES })
   const unstable = answers.some((answer) => answer.ok !== first.ok || answer.identity !== first.identity)
   const base = { url: destination.url, kinds: destination.kinds, host: destination.host }
   if (unstable) {
-    return { ...base, ok: false, failure: 'unstable', detail: `${count} requests disagreed: ${answers.map((answer) => (answer.ok ? answer.identity : answer.detail)).join(' | ')}`, samples: count }
+    return { ...base, ok: false, failure: 'unstable', status: first.status, detail: `${count} requests disagreed: ${answers.map((answer) => (answer.ok ? answer.identity : answer.detail)).join(' | ')}`, samples: count }
   }
   const { exact: _exact, versions: _versions, shell, ...rest } = first
   const evidence = await versionEvidence(first, destination.expectedVersion)
@@ -324,7 +326,8 @@ export function collectDestinations(inventory) {
   const add = (port, entry, { kind, url, host }, status) => {
     const known = found.get(url) ?? { url, host, kinds: [], entries: [] }
     if (!known.kinds.includes(kind)) known.kinds.push(kind)
-    known.entries.push({ port, id: entry.id, status })
+    // An entry whose package page is also its reference names the URL twice.
+    if (!known.entries.some((owner) => owner.port === port && owner.id === entry.id)) known.entries.push({ port, id: entry.id, status })
     found.set(url, known)
   }
   for (const [port, entries] of Object.entries(inventory)) {

@@ -1642,7 +1642,6 @@
       "identity": "github.com/libtmux/libtmux-go",
       "checkedAt": "2026-10-20",
       "entries": [
-        "go:module",
         "go:module"
       ]
     },
@@ -1659,7 +1658,6 @@
       "identity": "github.com/libtmux/libtmux-go/mcp",
       "checkedAt": "2026-10-20",
       "entries": [
-        "go:mcp",
         "go:mcp"
       ]
     },
@@ -1676,7 +1674,6 @@
       "identity": "github.com/libtmux/libtmux-go/mcp/cmd/libtmux-mcp",
       "checkedAt": "2026-10-20",
       "entries": [
-        "go:libtmux-mcp",
         "go:libtmux-mcp"
       ]
     },
@@ -1695,7 +1692,6 @@
       "versionFound": true,
       "checkedAt": "2026-10-20",
       "entries": [
-        "go:tmux",
         "go:tmux"
       ]
     },
@@ -1712,7 +1708,6 @@
       "identity": "github.com/libtmux/libtmux-go/tmux/tmuxtest",
       "checkedAt": "2026-10-20",
       "entries": [
-        "go:tmuxtest",
         "go:tmuxtest"
       ]
     },
@@ -1729,7 +1724,6 @@
       "identity": "github.com/libtmux/libtmux-go/tmuxq",
       "checkedAt": "2026-10-20",
       "entries": [
-        "go:tmuxq",
         "go:tmuxq"
       ]
     },
@@ -1746,7 +1740,6 @@
       "identity": "github.com/libtmux/libtmux-go/workspace",
       "checkedAt": "2026-10-20",
       "entries": [
-        "go:workspace",
         "go:workspace"
       ]
     },
@@ -1763,7 +1756,6 @@
       "identity": "github.com/libtmux/libtmux-go/workspace/cmd/tmux-workspace",
       "checkedAt": "2026-10-20",
       "entries": [
-        "go:tmux-workspace",
         "go:tmux-workspace"
       ]
     },
@@ -1907,6 +1899,8 @@
       "status": 200,
       "requested": "https://swiftpackageindex.com/libtmux/libtmux-swift",
       "identity": "libtmux/libtmux-swift",
+      "expectedVersion": "0.1.0-alpha.6",
+      "versionFound": true,
       "checkedAt": "2026-10-20",
       "entries": [
         "swift:libtmux-swift",
