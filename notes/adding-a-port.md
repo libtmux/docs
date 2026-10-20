@@ -59,7 +59,11 @@ host does not serve as `unavailable`.
 
 Give a package that ships inside another distribution (a Go package, a
 SwiftPM target, an export path) the id of the distribution in `within`, and
-the ecosystem's word for it in `unit`. A command is `cli` in every port.
+the ecosystem's word for it in `unit`. An entry that is a command (an
+executable product, a `cmd/` package, a CMake executable, or a package that
+only installs one) is `cli` in every port, and its build target is a `target`.
+A package that offers a library as well as a command is judged by its role, so
+a workspace library with a CLI is a `companion`.
 
 Add a reader for the port's manifests to `scripts/lib/manifest-packages.mjs`
 and regenerate `site/src/data/manifest-packages.json`, which the inventory's

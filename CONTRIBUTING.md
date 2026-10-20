@@ -258,11 +258,18 @@ evidence with the inventory change that follows.
 
 Age is enforced only where a live run is the remedy. Evidence older than
 `EVIDENCE_MAX_AGE_DAYS` in `scripts/lib/destination-verification.mjs` makes the
-offline comparison print a warning with the date of the records, and nothing
-more, so a change that touches none of this does not fail because time passed.
-A live run ends by requiring every record to be within the bound, so evidence
-cannot be committed back-dated, and a release step that wants fresh evidence
-runs `node scripts/verify-destinations.mjs --check --fresh`, which fails on it.
+offline comparison print a warning with the date of the records (a `::warning::`
+annotation under GitHub Actions), and nothing more, so a change that touches none
+of this does not fail because time passed. A live run ends by requiring every
+record to be within the bound, and a record dated more than a day ahead is
+refused wherever it appears, so evidence cannot be committed back-dated or
+forward-dated. The weekly
+[`verify-destinations.yml`](.github/workflows/verify-destinations.yml) runs the
+live verifier into a temporary file and then
+`node scripts/verify-destinations.mjs --check --fresh` against the committed
+evidence; it fails on a destination that no longer passes or on evidence past
+the bound, and is not a dependency of the test or deploy workflows
+([CI](docs/ci.md#header-destination-check-verify-destinationsyml)).
 
 ## Building and previewing
 
