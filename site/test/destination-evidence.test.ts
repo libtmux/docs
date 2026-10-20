@@ -6,7 +6,7 @@ import { INVENTORY, entryDestinations, type InventoryEntry } from '../src/lib/po
 type Evidence = (typeof evidence.destinations)[number]
 const records = new Map<string, Evidence>(evidence.destinations.map((record) => [record.url, record]))
 const everyEntry = Object.entries(INVENTORY).flatMap(([port, list]) => list.map((entry) => ({ port, entry })))
-const withEvidence = (destinations: unknown[]) => ({ ...evidence, destinations })
+const withEvidence = (destinations: object[]) => ({ ...evidence, destinations })
 const demo = (fields: Partial<InventoryEntry>): Record<string, InventoryEntry[]> => ({
   demo: [{ id: 'demo', kind: 'library', product: 'core', label: 'demo', coordinate: 'demo', aliases: [], repo: 'libtmux/libtmux-rs', ref: 'master', status: 'published', ...fields }],
 })
@@ -78,7 +78,8 @@ describe('destination evidence', () => {
   describe('against the inventory', () => {
     const clean = demo({})
     const url = 'https://github.com/libtmux/libtmux-rs'
-    const good = withEvidence([{ url, kinds: ['source'], host: 'github', ok: true, status: 200, identity: 'libtmux/libtmux-rs', checkedAt: '2026-01-01', entries: ['demo:demo'] }])
+    const record = { url, kinds: ['source'], host: 'github', ok: true, status: 200, identity: 'libtmux/libtmux-rs', checkedAt: '2026-01-01', entries: ['demo:demo'] }
+    const good = withEvidence([record])
 
     it('passes when every linked destination has a passing record', () => {
       expect(checkEvidence(clean, good)).toEqual([])
@@ -86,14 +87,14 @@ describe('destination evidence', () => {
 
     it('fails when a linked destination has no record, a failing record, or the host lacks the snapshot version', () => {
       expect(checkEvidence(clean, withEvidence([]))).toEqual([`${url} has no evidence (demo:demo)`])
-      expect(checkEvidence(clean, withEvidence([{ ...good.destinations[0], ok: false, failure: 'status', detail: '404' }])))
+      expect(checkEvidence(clean, withEvidence([{ ...record, ok: false, failure: 'status', detail: '404' }])))
         .toEqual([`${url} is linked by demo:demo but failed verification: status, 404`])
-      expect(checkEvidence(clean, withEvidence([{ ...good.destinations[0], expectedVersion: '9.9.9', versionFound: false }])))
+      expect(checkEvidence(clean, withEvidence([{ ...record, expectedVersion: '9.9.9', versionFound: false }])))
         .toEqual([`${url} does not carry 9.9.9, the registry snapshot's version`])
     })
 
     it('fails on a record no entry names', () => {
-      expect(checkEvidence(clean, withEvidence([...good.destinations, { ...good.destinations[0], url: 'https://github.com/libtmux/orphan' }])))
+      expect(checkEvidence(clean, withEvidence([record, { ...record, url: 'https://github.com/libtmux/orphan' }])))
         .toEqual(['https://github.com/libtmux/orphan has evidence but no entry names it'])
     })
 
