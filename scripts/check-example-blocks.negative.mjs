@@ -7,10 +7,16 @@
  * changes nothing aborts the case, so a page rewrite cannot turn a case into
  * a second control. The clean copy must exit 0: without it a script that
  * always failed would pass every case here.
+ *
+ * The revision gate (`--port`, `--checkout`, `--revision`) gets a port
+ * repository of its own whose commits hold a program, the same program with
+ * the line a page's `to` anchor names gone, and then no program at all. The page
+ * must pass at the first commit and fail for the named reason at each later
+ * one, which is how a port's trunk moves past the revision its model cites.
  */
 import assert from 'node:assert/strict'
 import { cpSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { spawnSync } from 'node:child_process'
+import { execFileSync, spawnSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -66,6 +72,67 @@ try {
     assert.ok(result.stderr.includes(page.replace(/\.md$/, '')), `${name}: the failure does not name the page`)
     console.log(`ok   fails on ${name}`)
   }
+
+  // The revision gate.
+  const program = (ending) => ['package main', '', 'func start() error {', '\tserver, err := tmux.NewServer(options)', '\tif err != nil {', '\t\treturn err', '\t}', ending, '}', ''].join('\n')
+  const repository = join(scratch, 'port')
+  mkdirSync(join(repository, 'examples/prog'), { recursive: true })
+  const git = (...args) => execFileSync('git', ['-C', repository, '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', ...args], { encoding: 'utf8', stdio: 'pipe' }).trim()
+  git('init', '--quiet')
+  const commit = (message) => (git('commit', '--quiet', '--all', '--allow-empty', '-m', message), git('rev-parse', 'HEAD'))
+  writeFileSync(join(repository, 'examples/prog/main.go'), program('\treturn run(ctx, server)'))
+  writeFileSync(join(repository, 'examples/prog/main.rs'), 'fn main() {}\n')
+  git('add', 'examples/prog')
+  const written = commit('Program')
+  writeFileSync(join(repository, 'examples/prog/main.go'), program('\treturn server.Run(ctx)'))
+  const rewritten = commit('Rewrite the program')
+  git('rm', '--quiet', 'examples/prog/main.go')
+  const deleted = commit('Delete the program')
+
+  const pages = join(scratch, 'revision-pages')
+  mkdirSync(join(pages, 'ports/go/examples'), { recursive: true })
+  writeFileSync(join(pages, 'ports/go/examples/page.md'), [
+    '---', 'route: examples/page', '---', '',
+    '```go file="examples/prog/main.go" from="server, err := tmux.NewServer" to="return run(ctx, server)"', '```', '',
+    '```go file="examples/prog/main.go"', '```', '',
+    '```rust file="examples/prog/main.rs" from="fn main"', '```', '',
+  ].join('\n'))
+  const gate = (port, revision) => spawnSync(process.execPath, [script, '--content', pages, '--port', port, '--checkout', repository, '--revision', revision], { encoding: 'utf8' })
+
+  const control = gate('go', written)
+  assert.equal(control.status, 0, `the page must resolve at the revision it was written against:\n${control.stderr}`)
+  assert.match(control.stdout, /2 file= fences of go resolve at /)
+  console.log('ok   the revision gate passes a page at the revision it quotes')
+
+  for (const { name, revision, trips } of [
+    { name: 'a to anchor the revision no longer holds', revision: rewritten, trips: /examples\/prog\/main\.go: to anchor "return run\(ctx, server\)" matches no line/ },
+    { name: 'a file the revision deleted', revision: deleted, trips: /examples\/prog\/main\.go is not in go at / },
+  ]) {
+    const result = gate('go', revision)
+    assert.equal(result.status, 1, `${name}: expected a failure, got ${result.status}\n${result.stdout}`)
+    assert.match(result.stderr, trips, `${name}: wrong reason\n${result.stderr}`)
+    assert.ok(result.stderr.includes('ports/go/examples/page'), `${name}: the failure does not name the page`)
+    assert.ok(result.stderr.includes(revision), `${name}: the failure does not name the revision`)
+    console.log(`ok   the revision gate fails on ${name}`)
+  }
+
+  const other = gate('rs', rewritten)
+  assert.equal(other.status, 0, `a Rust run must leave Go fences alone:\n${other.stderr}`)
+  assert.match(other.stderr + other.stdout, /1 file= fences of rs/)
+  console.log('ok   the revision gate reads only the named port')
+
+  const unknown = gate('go', 'not-a-revision')
+  assert.equal(unknown.status, 2, `an unknown revision must not pass:\n${unknown.stdout}`)
+  assert.match(unknown.stderr, /not-a-revision is not a commit/)
+  assert.equal(gate('cobol', written).status, 2, 'an unknown port must not pass')
+  console.log('ok   the revision gate refuses an unknown revision or port')
+
+  // A trailing flag with no value must not fall back to the default mode.
+  for (const flag of ['--port', '--checkout', '--revision']) {
+    const bare = spawnSync(process.execPath, [script, '--content', pages, flag], { encoding: 'utf8' })
+    assert.equal(bare.status, 2, `a bare ${flag} must not pass:\n${bare.stdout}`)
+  }
+  console.log('ok   the revision gate refuses a flag without its value')
 } finally {
   rmSync(scratch, { recursive: true, force: true })
 }

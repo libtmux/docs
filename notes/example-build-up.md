@@ -77,6 +77,28 @@ which `scripts/check-example-prose.py` runs. A page without an entry can show
 only excerpts of a cached file. `check-example-blocks.negative.mjs` plants a
 hand-typed block and other defects, and requires a clean copy to pass.
 
+## Check a page against a port's trunk
+
+The cache binds a page to the revision in the port's API model. The port's own
+docs build reads its trunk instead, so an anchor that resolves here can stop
+resolving there, and the port's build fails with `to anchor "..." matches no
+line`. Resolve every `file=` fence of the port against the revision its build
+will read:
+
+```console
+$ node scripts/check-example-blocks.mjs \
+    --port go \
+    --checkout /path/to/libtmux-go \
+    --revision origin/master
+```
+
+The command reads committed bytes with `git show`, so the checkout's branch and
+working tree do not matter. It covers excerpts and whole-file inclusions on
+every content page, names each fence that fails, and exits 1. An unknown port
+or revision exits 2. `check-example-blocks.negative.mjs` builds a port whose
+later revision drops the line an anchor names, and requires the failure beside
+a clean pass at the first revision.
+
 ## Converting a port
 
 1. Pick the tested source: the displayed `main.*` that the page's native run
@@ -98,4 +120,5 @@ hand-typed block and other defects, and requires a clean copy to pass.
    $ node scripts/gen-mentions.mjs
    ```
 
-6. Run the native example for the page again if its displayed bytes changed.
+6. Resolve the page against the port's trunk with the command above.
+7. Run the native example for the page again if its displayed bytes changed.

@@ -9,12 +9,21 @@
  *
  * `--content <dir>` and `--fixtures <dir>` point at other trees, which the
  * negative test uses to plant a hand-typed block.
+ *
+ * `--port <slug> --checkout <dir> --revision <rev>` instead resolves every
+ * `file=` fence of that port, whole or an excerpt, on every content page
+ * against the committed bytes of the checkout at the revision. The example
+ * cache binds a page to the revision recorded in the port's model, but the
+ * port's own docs build reads its trunk, so a page can pass here and fail
+ * there. Run it against a port's trunk before pinning that port.
  */
+import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { LANG_TO_PORT } from '../site/src/plugins/remark-port-code.mjs'
-import { checkExampleBlocks, fencesOf } from '../site/src/lib/example-blocks.ts'
+import { PORTS } from '../site/src/lib/ports.ts'
+import { checkExampleBlocks, checkQuotedSources, fencesOf } from '../site/src/lib/example-blocks.ts'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const option = (name, fallback) => {
@@ -24,6 +33,69 @@ const option = (name, fallback) => {
 const CONTENT = option('--content', join(root, 'site/src/content/docs'))
 const FIXTURES = option('--fixtures', join(root, 'site/test/fixtures'))
 const CACHE = JSON.parse(readFileSync(option('--sources', join(root, 'site/src/data/example-sources.json')), 'utf8'))
+const value = (name) => {
+  const at = process.argv.indexOf(name)
+  return at === -1 ? undefined : process.argv[at + 1]
+}
+
+/** Every Markdown page under a directory. */
+function markdownTree(directory) {
+  return readdirSync(directory, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name)).flatMap((entry) => {
+    const path = join(directory, entry.name)
+    return entry.isDirectory() ? markdownTree(path) : entry.name.endsWith('.md') ? [path] : []
+  })
+}
+
+if (['--port', '--checkout', '--revision'].some((name) => process.argv.includes(name))) {
+  const usage = 'usage: check-example-blocks.mjs --port <slug> --checkout <dir> --revision <rev>'
+  const [port, revision] = [value('--port'), value('--revision')]
+  const checkout = value('--checkout') && resolve(value('--checkout'))
+  if (!port || !checkout || !revision || revision.startsWith('-')) {
+    console.error(usage)
+    process.exit(2)
+  }
+  if (!PORTS.some((known) => known.slug === port)) {
+    console.error(`check-example-blocks: ${port} is not a port; ${usage}`)
+    process.exit(2)
+  }
+  const git = (...args) => execFileSync('git', ['-C', checkout, ...args], { encoding: 'utf8', maxBuffer: 1 << 24, stdio: ['ignore', 'pipe', 'pipe'] })
+  let commit
+  try {
+    commit = git('rev-parse', '--verify', '--quiet', `${revision}^{commit}`).trim()
+  } catch {
+    console.error(`check-example-blocks: ${revision} is not a commit of ${checkout}`)
+    process.exit(2)
+  }
+  const sources = new Map()
+  const readSource = (file) => {
+    if (!sources.has(file)) {
+      try {
+        sources.set(file, git('show', `${commit}:${file}`))
+      } catch {
+        sources.set(file, undefined)
+      }
+    }
+    return sources.get(file)
+  }
+  const where = `${port} at ${commit.slice(0, 8)}`
+  const failures = []
+  let fences = 0
+  for (const file of markdownTree(CONTENT)) {
+    const page = file.slice(CONTENT.length + 1).replace(/\.md$/, '')
+    // Blank lines stand in for the frontmatter, so a line number is the file's.
+    const markdown = readFileSync(file, 'utf8').replace(/^---\n[\s\S]*?\n---\n/, (head) => '\n'.repeat(head.split('\n').length - 1))
+    fences += fencesOf(markdown).filter((fence) => LANG_TO_PORT[fence.language] === port && /\bfile=/.test(fence.meta)).length
+    for (const problem of checkQuotedSources({ markdown, owner: port, ownerOf: (language) => LANG_TO_PORT[language], readSource, where })) {
+      failures.push(`${page}: ${problem}`)
+    }
+  }
+  if (failures.length) {
+    console.error(`check-example-blocks: ${failures.length} of ${fences} file= fences of ${port} do not resolve at ${commit}\n${failures.map((line) => `  ${line}`).join('\n')}`)
+    process.exit(1)
+  }
+  console.log(`check-example-blocks: ${fences} file= fences of ${port} resolve at ${commit}`)
+  process.exit(0)
+}
 
 /** Ports whose example pages are built up from excerpts; add a port as its pages convert. */
 const BUILT_UP_PORTS = ['go']
