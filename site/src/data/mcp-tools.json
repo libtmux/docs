@@ -37552,8 +37552,8 @@
           "wireName": "call_read_tools_batch",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 303
           },
@@ -38768,8 +38768,8 @@
           "wireName": "capture_pane",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 191
           },
@@ -38915,8 +38915,8 @@
           "wireName": "capture_since",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 199
           },
@@ -39080,8 +39080,8 @@
           "wireName": "clear_pane_scrollback",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 565
           },
@@ -39174,8 +39174,8 @@
           "wireName": "create_session",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 435
           },
@@ -39307,8 +39307,8 @@
           "wireName": "create_window",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 452
           },
@@ -39453,8 +39453,8 @@
           "wireName": "find_pane_by_position",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 229
           },
@@ -39627,8 +39627,8 @@
           "wireName": "get_pane_info",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 174
           },
@@ -39927,8 +39927,8 @@
           "wireName": "get_server_info",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 151
           },
@@ -39991,6 +39991,9 @@
               "messagesUnavailable": {
                 "type": "string"
               },
+              "minimumVersion": {
+                "type": "string"
+              },
               "panes": {
                 "type": "integer"
               },
@@ -40012,6 +40015,10 @@
               "version": {
                 "type": "string"
               },
+              "versionRefusal": {
+                "description": "why this tmux is refused and how to fix it; set when the selected tmux is older than minimumVersion, and the counts are then unavailable",
+                "type": "string"
+              },
               "windows": {
                 "type": "integer"
               }
@@ -40019,6 +40026,7 @@
             "required": [
               "socketPath",
               "version",
+              "minimumVersion",
               "alive",
               "sessions",
               "windows",
@@ -40110,6 +40118,9 @@
                   "messagesUnavailable": {
                     "type": "string"
                   },
+                  "minimumVersion": {
+                    "type": "string"
+                  },
                   "panes": {
                     "type": "integer"
                   },
@@ -40131,6 +40142,10 @@
                   "version": {
                     "type": "string"
                   },
+                  "versionRefusal": {
+                    "description": "why this tmux is refused and how to fix it; set when the selected tmux is older than minimumVersion, and the counts are then unavailable",
+                    "type": "string"
+                  },
                   "windows": {
                     "type": "integer"
                   }
@@ -40138,6 +40153,7 @@
                 "required": [
                   "socketPath",
                   "version",
+                  "minimumVersion",
                   "alive",
                   "sessions",
                   "windows",
@@ -40163,8 +40179,8 @@
           "wireName": "get_session_info",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 158
           },
@@ -40399,8 +40415,8 @@
           "wireName": "get_tmux_variables",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 251
           },
@@ -40514,8 +40530,8 @@
           "wireName": "get_window_info",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 166
           },
@@ -40846,8 +40862,8 @@
           "wireName": "kill_pane",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 570
           },
@@ -40957,8 +40973,8 @@
           "wireName": "kill_session",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 578
           },
@@ -41060,8 +41076,8 @@
           "wireName": "kill_window",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 574
           },
@@ -41171,8 +41187,8 @@
           "wireName": "list_panes",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 143
           },
@@ -41477,8 +41493,8 @@
           "wireName": "list_sessions",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 127
           },
@@ -41625,8 +41641,8 @@
           "wireName": "list_windows",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 135
           },
@@ -41801,8 +41817,8 @@
           "wireName": "move_window",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 379
           },
@@ -41936,8 +41952,8 @@
           "wireName": "paste_text",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 527
           },
@@ -42057,8 +42073,8 @@
           "wireName": "rename_session",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 333
           },
@@ -42172,8 +42188,8 @@
           "wireName": "rename_window",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 341
           },
@@ -42287,8 +42303,8 @@
           "wireName": "resize_pane",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 372
           },
@@ -42414,8 +42430,8 @@
           "wireName": "resize_window",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 365
           },
@@ -42541,8 +42557,8 @@
           "wireName": "respawn_pane",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 481
           },
@@ -42653,8 +42669,8 @@
           "wireName": "run_shell_command",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 493
           },
@@ -42737,6 +42753,15 @@
               },
               "timeout_clamped": {
                 "type": "boolean"
+              },
+              "truncated": {
+                "type": "boolean"
+              },
+              "truncated_bytes": {
+                "type": "integer"
+              },
+              "truncated_lines": {
+                "type": "integer"
               }
             },
             "required": [
@@ -42848,6 +42873,15 @@
                   },
                   "timeout_clamped": {
                     "type": "boolean"
+                  },
+                  "truncated": {
+                    "type": "boolean"
+                  },
+                  "truncated_bytes": {
+                    "type": "integer"
+                  },
+                  "truncated_lines": {
+                    "type": "integer"
                   }
                 },
                 "required": [
@@ -42873,8 +42907,8 @@
           "wireName": "search_panes",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 218
           },
@@ -43252,8 +43286,8 @@
           "wireName": "select_layout",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 357
           },
@@ -43365,8 +43399,8 @@
           "wireName": "select_pane",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 353
           },
@@ -43460,8 +43494,8 @@
           "wireName": "select_window",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 349
           },
@@ -43555,8 +43589,8 @@
           "wireName": "send_keys",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 506
           },
@@ -43714,8 +43748,8 @@
           "wireName": "send_keys_batch",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 517
           },
@@ -43961,8 +43995,8 @@
           "wireName": "set_history_limit",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 422
           },
@@ -44089,8 +44123,8 @@
           "wireName": "set_mouse_enabled",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 417
           },
@@ -44201,8 +44235,8 @@
           "wireName": "set_pane_title",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 391
           },
@@ -44316,8 +44350,8 @@
           "wireName": "set_synchronize_panes",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 538
           },
@@ -44442,8 +44476,8 @@
           "wireName": "show_environment",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 275
           },
@@ -44612,8 +44646,8 @@
           "wireName": "show_hooks",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 283
           },
@@ -44776,8 +44810,8 @@
           "wireName": "show_option",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 263
           },
@@ -44941,8 +44975,8 @@
           "wireName": "signal_channel",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 412
           },
@@ -45035,8 +45069,8 @@
           "wireName": "snapshot_pane",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 210
           },
@@ -45334,8 +45368,8 @@
           "wireName": "split_window",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 468
           },
@@ -45469,8 +45503,8 @@
           "wireName": "swap_pane",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 386
           },
@@ -45582,8 +45616,8 @@
           "wireName": "wait_for_channel",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 402
           },
@@ -45708,8 +45742,8 @@
           "wireName": "wait_for_text",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
             "file": "mcp/manifest_catalog.go",
             "line": 239
           },
@@ -45987,8 +46021,8 @@
       "selectable": true,
       "source": "mcp",
       "repo": "libtmux/libtmux-go",
-      "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-      "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+      "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+      "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
       "selection": {
         "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
       },
@@ -46016,7 +46050,7 @@
         "resourceTemplates": [],
         "serverInfo": {
           "name": "libtmux",
-          "version": "v0.0.1-alpha.12"
+          "version": "v0.0.1-alpha.14"
         }
       }
     },

@@ -39,9 +39,9 @@ const cases = [
   { name: 'an excerpt whose range ends inside a block', page: attach, find: 'from="found=no" to="done"', replace: 'from="found=no" to="fi"', trips: /opens do it never closes/ },
   { name: 'an excerpt that carries its own text', page: attach, find: 'from="has-session"\n```', replace: 'from="has-session"\ntmux has-session\n```', trips: /carries no text of its own/ },
   { name: 'an excerpt of a block the page does not have', page: attach, find: 'excerpt="send-command.sh" from="has-session"', replace: 'excerpt="other.sh" from="has-session"', trips: /no code block titled "other\.sh"/ },
-  { name: 'a Go excerpt of a file missing from the example cache', page: goAttach, find: 'file="examples/quickstart/main.go" from="server, err', replace: 'file="examples/gone/main.go" from="server, err', trips: /examples\/gone\/main\.go is not in the go example cache/ },
+  { name: 'a Go excerpt of a file missing from the example cache', page: goAttach, find: 'file="examples/pane-io/main.go" from="ctx, cancel', replace: 'file="examples/gone/main.go" from="ctx, cancel', trips: /examples\/gone\/main\.go is not in the go example cache/ },
   { name: 'a port page linking itself as its native version', page: goAttach, find: '](/tmux/examples/attach-and-send-keys/)', replace: '](/examples/attach-and-send-keys/)', trips: /links to the page itself/ },
-  { name: 'a Go file inclusion missing from the example cache', page: goAttach, find: '```go file="examples/quickstart/main.go"\n```', replace: '```go file="examples/gone/main.go"\n```', trips: /examples\/gone\/main\.go is not in the example cache/ },
+  { name: 'a Go file inclusion missing from the example cache', page: goAttach, find: '```go file="examples/pane-io/main.go"\n```', replace: '```go file="examples/gone/main.go"\n```', trips: /examples\/gone\/main\.go is not in the example cache/ },
 ]
 
 const scratch = mkdtempSync(join(tmpdir(), 'libtmux-example-blocks-'))
