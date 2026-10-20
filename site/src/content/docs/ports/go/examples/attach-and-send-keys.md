@@ -76,7 +76,7 @@ deferred call does.
 
 `Pane.Writer` returns the pane's keyboard as an `io.Writer`. The bytes are typed
 literally and each newline is the Enter key, so `fmt.Fprintln` submits the line
-like `send-keys` followed by the `Enter` key. Open the observation first, as
+like `send-keys` followed by the Enter key. Open the observation first, as
 the program does, so the output cannot arrive before the program is watching.
 
 ```go file="examples/quickstart/main.go" from="fmt.Fprintln(pane.Writer(ctx)" to="=\t}"

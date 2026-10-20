@@ -3608,13 +3608,6 @@
   {
    "port": "go",
    "symbol": "tmux.Pane.Enter",
-   "page": "/go/latest/examples/attach-and-send-keys/",
-   "title": "Attach and send keys",
-   "section": "examples"
-  },
-  {
-   "port": "go",
-   "symbol": "tmux.Pane.Enter",
    "page": "/go/latest/guides/sending-keys/",
    "title": "Sending keys",
    "section": "guides"

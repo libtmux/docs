@@ -35,8 +35,8 @@ directory it just made.
 
 ## 2. Bound the run
 
-Every call takes a `context.Context`. This deadline also ends the capture loop
-in step 8, so a command that never prints fails the program after five seconds.
+Every call that reaches tmux takes a `context.Context`. This deadline also ends
+the capture loop in step 8, so a command that never prints fails the program after five seconds.
 
 ```go excerpt="main.go" from="ctx, cancel :=" to="defer cancel()"
 ```
