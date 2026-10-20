@@ -79,10 +79,18 @@ for (const file of pages) {
     readCached: (owner, source) => CACHE[`${owner}:${source}`]?.content,
   })
   for (const problem of problems) failures.push(`${page}: ${problem}`)
+  // On a port page a bare `/examples/...` link stays in that port, so a link
+  // meant for the shared tmux page can land on the page itself.
+  const route = /^route:\s*(\S+)/m.exec(readFileSync(file, 'utf8'))?.[1]
+  if (page.startsWith('ports/') && route) {
+    for (const [, href] of markdown.matchAll(/\]\((\/[^)\s#]*)[^)]*\)/g)) {
+      if (href.replace(/\/+$/, '') === `/${route}`) failures.push(`${page}: ${href} links to the page itself; link the shared page as /tmux/${route}/`)
+    }
+  }
 }
 
 if (failures.length) {
-  console.error(`check-example-blocks: ${failures.length} code block(s) not backed by a tested source\n${failures.map((line) => `  ${line}`).join('\n')}`)
+  console.error(`check-example-blocks: ${failures.length} problem(s) on example pages\n${failures.map((line) => `  ${line}`).join('\n')}`)
   process.exit(1)
 }
 console.log(`check-example-blocks: ${blocks} code blocks on ${pages.length} example pages are excerpts or recorded runs`)
