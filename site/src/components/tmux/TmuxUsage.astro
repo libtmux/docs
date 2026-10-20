@@ -73,9 +73,14 @@ const headingOf = (group: (typeof usage.groups)[number]) => group.scope ? group.
   /* Chips stack flush at the start of the cell, one to a line, with an even gap. */
   .tmux-usage__links { display: flex; flex-direction: column; align-items: flex-start; gap: 0.35rem; }
   .tmux-usage__links a, .tmux-usage__links code { white-space: nowrap; overflow-wrap: normal; }
-  /* A send that only some calls make says when, beside the method on its line, quieter than the name. */
-  .tmux-usage__item { display: inline-flex; align-items: baseline; gap: 0.5rem; white-space: nowrap; }
-  .tmux-usage__when { opacity: 0.65; font-size: 0.75rem; }
+  /*
+   * A send that only some calls make says when, beside the method on its line, quieter than the name. The chip never gives
+   * up width to it: a chip that shrank wrapped its name to make room, so the qualifier goes under the chip when it does not
+   * fit beside it, and wraps in the cell when it is wider than that.
+   */
+  .tmux-usage__item { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 0.1rem 0.5rem; max-inline-size: 100%; }
+  .tmux-usage__item > a { flex: none; }
+  .tmux-usage__when { opacity: 0.65; font-size: 0.75rem; white-space: normal; }
   /* The scope columns no longer fit beside each other: give each language its own block. */
   @container tmux-usage (max-width: 50rem) {
     .tmux-usage thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }

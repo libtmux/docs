@@ -159,8 +159,11 @@ grows with a name that wraps, so a related chip's mark is held flush with its
 corner and as tall as the first line. The gate measures the Related APIs chips
 on the Scala Server, Session, Window, Pane and Client pages at 1440 pixels,
 where a name wraps onto several lines, and requires each chip to hold its name
-and clear the next. Each check ends with a negative control that breaks what it
-holds and requires the gate to notice, by the problem it names:
+and clear the next. It reads the chips of the usage table on the `list-panes`
+manual page the same way, and requires a chip with a qualifier to keep the width
+its name needs, with the qualifier beside it or under it. Each check ends with a
+negative control that breaks what it holds and requires the gate to notice, by
+the problem it names:
 
 ```console
 $ node site/scripts/check-dev.mjs --badge-centring

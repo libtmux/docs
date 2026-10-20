@@ -895,6 +895,13 @@ function layoutProblems(css: string): string[] {
     const held = rules.some((rule) => chips(rule) && rule.selector.split(',').some((part) => part.trim().endsWith(` ${target}`)) && rule.body['white-space'] === 'nowrap')
     if (!held) problems.push(`a chip's ${target} can wrap`)
   }
+  // A qualifier never takes the chip's width: the chip does not shrink, and the qualifier drops under it and wraps instead.
+  const item = rules.find((rule) => rule.selector.trim() === '.tmux-usage__item')?.body
+  const chip = rules.find((rule) => rule.selector.trim() === '.tmux-usage__item > a')?.body
+  const when = rules.find((rule) => rule.selector.trim() === '.tmux-usage__when')?.body
+  if (!chip || !(chip.flex === 'none' || chip['flex-shrink'] === '0')) problems.push('a chip shrinks to make room for its qualifier')
+  if (item?.['flex-wrap'] !== 'wrap') problems.push('a qualifier cannot drop under its chip')
+  if (item?.['white-space'] === 'nowrap' || when?.['white-space'] !== 'normal') problems.push('a qualifier cannot wrap in the cell')
   for (const rule of rules.filter((candidate) => /(?:^|[\s,])td\b|__links/.test(candidate.selector) && !/__function/.test(candidate.selector))) {
     if (/anywhere|break-word/.test(rule.body['overflow-wrap'] ?? '') || rule.body['word-break'] === 'break-all') problems.push(`${rule.selector} breaks a name anywhere`)
   }
@@ -923,6 +930,12 @@ describe('the chip layout of the usage table', () => {
       .replace(/\.tmux-usage__links a, \.tmux-usage__links code \{[^}]*\}/, '.tmux-usage__links > a + a { margin-inline-start: 0.4rem; }\n  .tmux-usage__links > a { white-space: nowrap; }\n  .tmux-usage td { overflow-wrap: anywhere; }')
       .replace(' overflow-x: auto; container: tmux-usage / inline-size;', '')
       .replace(/@container tmux-usage \(max-width: 50rem\)/, '@media (max-width: 40rem)')
+    // The layout of b8f892310: the chip shrinks beside a qualifier that cannot wrap, so a name of ten characters wraps in a wide cell.
+    const squeezed = css
+      .replace(/\.tmux-usage__item \{[^}]*\}/, '.tmux-usage__item { display: inline-flex; align-items: baseline; gap: 0.5rem; white-space: nowrap; }')
+      .replace(/\s*\.tmux-usage__item > a \{[^}]*\}/, '')
+      .replace(/\.tmux-usage__when \{[^}]*\}/, '.tmux-usage__when { opacity: 0.65; font-size: 0.75rem; }')
+    expect(layoutProblems(squeezed)).toEqual(['a chip shrinks to make room for its qualifier', 'a qualifier cannot drop under its chip', 'a qualifier cannot wrap in the cell'])
     const collision = css.replace(':is(table, tbody, th) {', ':is(table, tbody, th, td) {')
     expect(layoutProblems(collision)).toEqual(['td is both block and grid when stacked'])
     const problems = layoutProblems(before)
