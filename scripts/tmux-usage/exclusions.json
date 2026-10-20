@@ -199,56 +199,6 @@
       "port": "go",
       "owner": "Server",
       "names": [
-        "NewSession"
-      ],
-      "commands": [
-        "list-sessions"
-      ],
-      "why": "NewSession lists sessions to look up a name only when the request carries one.",
-      "evidence": [
-        {
-          "at": "tmux/session_lifecycle.go:208",
-          "has": [
-            "request.Name != \"\""
-          ]
-        },
-        {
-          "at": "tmux/session_lifecycle.go:215",
-          "has": [
-            "sessionNamed("
-          ]
-        }
-      ]
-    },
-    {
-      "port": "go",
-      "owner": "Server",
-      "names": [
-        "NewSessionConnection"
-      ],
-      "commands": [
-        "list-sessions"
-      ],
-      "why": "NewSessionConnection lists sessions to look up a name only when the request carries one.",
-      "evidence": [
-        {
-          "at": "tmux/connection.go:176",
-          "has": [
-            "request.Name != \"\""
-          ]
-        },
-        {
-          "at": "tmux/connection.go:177",
-          "has": [
-            "sessionNamed("
-          ]
-        }
-      ]
-    },
-    {
-      "port": "go",
-      "owner": "Server",
-      "names": [
         "OpenNotifications"
       ],
       "commands": [

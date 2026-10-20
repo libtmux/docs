@@ -12620,6 +12620,35 @@
       "incidental": true
     },
     {
+      "port": "go",
+      "symbol": "tmux.Server.NewSessionConnection",
+      "command": "list-sessions",
+      "scope": null,
+      "when": "a name is given",
+      "evidence": [
+        {
+          "at": "tmux/session_lifecycle.go:155",
+          "has": [
+            "s.literalCmd(ctx, \"list-sessions\""
+          ]
+        },
+        {
+          "at": "tmux/connection.go:176",
+          "has": [
+            "if request.Name != \"\""
+          ]
+        },
+        {
+          "at": "tmux/connection.go:177",
+          "has": [
+            "effective.sessionNamed(ctx, request.Name)"
+          ],
+          "in": "tmux.Server.NewSessionConnection"
+        }
+      ],
+      "incidental": true
+    },
+    {
       "port": "swift",
       "symbol": "Server.capture(_:includingHistory:maximumLines:)",
       "command": "capture-pane",

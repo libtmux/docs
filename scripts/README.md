@@ -296,8 +296,8 @@ negative script seeds a rule that is wrong:
   evidence; a wrapper that only builds a request sends nothing and is named in
   the page's "No method in" line.
 - `exclusions.json`: the symbols whose scanned send is not what a default call
-  does: a probe that runs only when an optional argument, a name or a tmux
-  release asks for it (`capture` asking `list-commands` whether a flag exists),
+  does: a probe that runs only when a flag or a tmux release asks for it
+  (`capture` asking `list-commands` whether a flag exists),
   a branch that the caller's argument never takes (`exitCopyMode` reaching the
   `copy-mode` branch of a helper that `enterCopyMode` shares), or a request
   option that a wrapper never sets. Each cites the lines that show the guard,
@@ -388,8 +388,15 @@ same port.
 An entry records what the default call sends, on every tmux release the port
 supports at its revision. What an argument changes (`new_session` killing an
 existing session of the same name, `breakPane` sending `if-shell` when no
-`named:` is given) belongs to a claim that says the condition in `when`, and an
-auxiliary probe that only an argument asks for belongs to an exclusion. The scan
+`named:` is given) belongs to a claim that says the condition in `when`, and so
+does a read the method makes of the server for its own argument, marked
+`incidental` (go's `NewSession` and `NewSessionConnection` listing sessions to
+find the name they were given). An exclusion is for a probe that asks the
+running tmux whether it knows a flag the caller set (`capture` asking
+`list-commands`), and for a branch the caller's argument never takes. An
+exclusion and a claim for the same symbol, command and scope contradict each
+other: the exclusion removes the claim's entry, which is how a claim recorded
+once and never shown was found. The scan
 does not tell a send guarded by a parameter from an unguarded one, so these were
 found by listing every entry whose cited lines sit under an `if`, a `case` or a
 loop and reading each; a guard written as an early `return` or `next unless`

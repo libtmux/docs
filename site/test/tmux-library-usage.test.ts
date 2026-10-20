@@ -372,6 +372,10 @@ describe('a release a library refuses to send on', () => {
     expect(sends('tmux.Pane.OpenObservation')).toEqual(['capture-pane', 'delete-buffer', 'list-windows', 'refresh-client', 'save-buffer'])
     expect(sends('tmux.Running.StreamTo')).toEqual(expect.arrayContaining(sends('tmux.Pane.OpenObservation')))
     expect(use('go', 'tmux.Running.StreamTo', 'list-windows')).toMatchObject({ scope: 'session', via: { symbol: 'tmux.Pane.OpenObservation' } })
+    // The control: a claim that only some arguments reach is not forwarded, so a wrapper that passes its own does not inherit it.
+    expect(use('go', 'tmux.Server.NewSession', 'list-sessions')).toMatchObject({ when: 'a name is given', incidental: true, reviewed: true })
+    expect(use('go', 'tmux.Server.NewSessionConnection', 'list-sessions')).toMatchObject({ when: 'a name is given', incidental: true, reviewed: true })
+    expect(Object.entries(TMUX_USAGE.go.symbols).filter(([symbol, entries]) => symbol !== 'tmux.Server.NewSession' && entries.some((entry) => entry.via?.symbol === 'tmux.Server.NewSession' && entry.command === 'list-sessions'))).toEqual([])
     // julia's get_hook reads hooks with show-options -H on either receiver, as set_hook and unset_hook check them first; it is what it is for.
     expect(use('julia', 'LibTmux.get_hook', 'show-options')).toMatchObject({ reviewed: true })
     expect(use('julia', 'LibTmux.get_hook', 'show-options')?.incidental).toBeUndefined()

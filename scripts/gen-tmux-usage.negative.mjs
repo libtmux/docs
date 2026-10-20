@@ -263,6 +263,10 @@ const BAD_RULES = [
   }, /rs: plan.Plan.run set-option null: is marked conditional, so it must say when/],
   ['a condition that qualifies no entry', 'fsharp', 'conditions.json', (document) => { document.conditions.find((item) => item.port === 'fsharp').command = 'no-such-command' },
     /fsharp: LibTmux.FSharp.Server.newSession no-such-command session: condition qualifies no entry/],
+  ['an exclusion that removes the entry of a claim for the same send', 'go', 'exclusions.json', (document) => {
+    document.exclusions.push({ port: 'go', owner: 'Server', names: ['NewSession'], commands: ['list-sessions'], why: 'NewSession lists sessions to look up a name only when the request carries one.',
+      evidence: [{ at: 'tmux/session_lifecycle.go:208', has: ['request.Name != ""'] }, { at: 'tmux/session_lifecycle.go:215', has: ['sessionNamed('] }] })
+  }, /go: exclusion of Server\.NewSession for list-sessions: removes the reviewed claim of tmux\.Server\.NewSession list-sessions null, which says it sends it/],
   ['a conditional guard that does not say when', 'go', 'guards.json', (document) => { delete document.guards.find((guard) => guard.port === 'go' && guard.name === 'guardCommand').when },
     /go: guard guardCommand: is conditional, so it must say when/],
   ['a guard whose function builds no if-shell', 'java', 'guards.json', (document) => {

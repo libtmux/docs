@@ -502,7 +502,11 @@ export function applyExclusions({ exclusions, found, symbols, readSource }) {
       && (!exclusion.in || symbol.file.startsWith(exclusion.in))).map((symbol) => symbol.id))
     let count = 0
     for (const [key, entry] of found) {
-      if (matched.has(entry.symbol) && (!exclusion.commands || exclusion.commands.includes(entry.command))) { found.delete(key); removed.push(entry); count++ }
+      if (matched.has(entry.symbol) && (!exclusion.commands || exclusion.commands.includes(entry.command))) {
+        // A claim says the send is made and an exclusion says it is not: the exclusion would win and the claim would never show.
+        if (entry.reviewed) problems.push(`${label}: removes the reviewed claim of ${entry.symbol} ${entry.command} ${entry.scope}, which says it sends it`)
+        found.delete(key); removed.push(entry); count++
+      }
     }
     if (!count) problems.push(`${label}: removes no entry, so it is stale`)
   }

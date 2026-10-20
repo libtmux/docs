@@ -1413,6 +1413,18 @@
         "when": "KillExisting is set, session exists"
       },
       {
+        "command": "list-sessions",
+        "evidence": [
+          "tmux/session_lifecycle.go:155",
+          "tmux/session_lifecycle.go:208",
+          "tmux/session_lifecycle.go:215"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null,
+        "when": "a name is given"
+      },
+      {
         "command": "new-session",
         "evidence": [
           "tmux/session_lifecycle.go:91",
@@ -1426,6 +1438,18 @@
       }
     ],
     "tmux.Server.NewSessionConnection": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "tmux/session_lifecycle.go:155",
+          "tmux/connection.go:176",
+          "tmux/connection.go:177"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null,
+        "when": "a name is given"
+      },
       {
         "command": "new-session",
         "evidence": [
