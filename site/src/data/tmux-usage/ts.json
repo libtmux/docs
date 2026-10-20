@@ -1,0 +1,25 @@
+{
+  "commands": [
+    "list-panes"
+  ],
+  "port": "ts",
+  "repo": "libtmux/libtmux-ts",
+  "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
+  "schemaVersion": 1,
+  "symbols": {
+    "server.Server.snapshot": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/acquire.ts:27",
+          "packages/libtmux/src/_internal/operations/acquire.ts:90",
+          "packages/libtmux/src/_internal/operations/acquire.ts:126",
+          "packages/libtmux/src/_internal/operations/snapshot.ts:42",
+          "packages/libtmux/src/server.ts:533"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ]
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "claims": [
+    {
+      "port": "rs", "symbol": "server.Server.panes", "command": "list-panes", "scope": "server",
+      "evidence": [
+        { "at": "crates/libtmux/src/internal/listing.rs:204", "has": ["LIST_COMMAND: &str = \"list-panes\""] },
+        { "at": "crates/libtmux/src/internal/listing.rs:58", "has": ["Self::Server", ".arg(\"-a\")"] },
+        { "at": "crates/libtmux/src/server/discovery.rs:41", "has": ["listing::panes", "Scope::Server"], "in": "server.Server.panes" }
+      ]
+    },
+    {
+      "port": "rs", "symbol": "session.Session.panes", "command": "list-panes", "scope": "session",
+      "evidence": [
+        { "at": "crates/libtmux/src/internal/listing.rs:204", "has": ["LIST_COMMAND: &str = \"list-panes\""] },
+        { "at": "crates/libtmux/src/internal/listing.rs:60", "has": ["Self::SessionTarget", ".arg(\"-s\")"] },
+        { "at": "crates/libtmux/src/session.rs:440", "has": ["listing::panes", "Scope::SessionTarget"], "in": "session.Session.panes" }
+      ]
+    },
+    {
+      "port": "rs", "symbol": "window.Window.panes", "command": "list-panes", "scope": "window",
+      "evidence": [
+        { "at": "crates/libtmux/src/internal/listing.rs:204", "has": ["LIST_COMMAND: &str = \"list-panes\""] },
+        { "at": "crates/libtmux/src/internal/listing.rs:59", "has": ["Self::Target", ".arg(\"-t\")"] },
+        { "at": "crates/libtmux/src/window/navigation.rs:23", "has": ["listing::panes", "Scope::Target"], "in": "window.Window.panes" }
+      ]
+    },
+    {
+      "port": "ts", "symbol": "server.Server.snapshot", "command": "list-panes", "scope": "server",
+      "evidence": [
+        { "at": "packages/libtmux/src/_internal/operations/acquire.ts:27", "has": ["\"list-panes\"", "[\"-a\"]"] },
+        { "at": "packages/libtmux/src/_internal/operations/acquire.ts:90", "has": ["ACQUISITION_LISTINGS"] },
+        { "at": "packages/libtmux/src/_internal/operations/acquire.ts:126", "has": ["acquireServerGraphAttempt"] },
+        { "at": "packages/libtmux/src/_internal/operations/snapshot.ts:42", "has": ["acquireServerGraph"] },
+        { "at": "packages/libtmux/src/server.ts:533", "has": ["buildServerSnapshot"], "in": "server.Server.snapshot" }
+      ]
+    },
+    {
+      "port": "ruby", "symbol": "LibTmux::Server#list_panes", "command": "list-panes", "scope": "server",
+      "evidence": [
+        { "at": "gems/libtmux/lib/libtmux/server.rb:470", "has": ["\"list-#{kind}s\""] },
+        { "at": "gems/libtmux/lib/libtmux/server.rb:163", "has": ["list_entities(:pane", "[\"-a\"]"], "in": "LibTmux::Server#list_panes" }
+      ]
+    },
+    {
+      "port": "ruby", "symbol": "LibTmux::Session#list_panes", "command": "list-panes", "scope": "session",
+      "evidence": [
+        { "at": "gems/libtmux/lib/libtmux/server.rb:470", "has": ["\"list-#{kind}s\""] },
+        { "at": "gems/libtmux/lib/libtmux/entity.rb:113", "has": [":list_entities, :pane", "[\"-s\", \"-t\""], "in": "LibTmux::Session#list_panes" }
+      ]
+    },
+    {
+      "port": "ruby", "symbol": "LibTmux::Window#list_panes", "command": "list-panes", "scope": "window",
+      "evidence": [
+        { "at": "gems/libtmux/lib/libtmux/server.rb:470", "has": ["\"list-#{kind}s\""] },
+        { "at": "gems/libtmux/lib/libtmux/entity.rb:123", "has": [":list_entities, :pane", "[\"-t\""], "in": "LibTmux::Window#list_panes" }
+      ]
+    },
+    {
+      "port": "lua", "symbol": "libtmux.Server:snapshot", "command": "list-panes", "scope": "server",
+      "evidence": [
+        { "at": "lua/libtmux/_internal/server.lua:22", "has": ["\"list-panes\"", "\"-a\""] },
+        { "at": "lua/libtmux/_internal/server.lua:177", "has": ["ipairs(specs)"] },
+        { "at": "lua/libtmux/_internal/server.lua:309", "has": ["acquire("] },
+        { "at": "lua/libtmux/_internal/server.lua:432", "has": ["capture("], "in": "libtmux.Server:snapshot" }
+      ]
+    },
+    {
+      "port": "java", "symbol": "io.github.libtmux.Server.Server.snapshot", "command": "list-panes", "scope": "server",
+      "evidence": [
+        { "at": "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:183", "has": ["\"list-panes\"", "\"-a\""] },
+        { "at": "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:103", "has": ["capture(process)"] },
+        { "at": "libtmux/src/main/java/io/github/libtmux/Server.java:878", "has": ["capture.attempt()"], "in": "io.github.libtmux.Server.Server.snapshot" }
+      ]
+    },
+    {
+      "port": "csharp", "symbol": "LibTmux.Server.CaptureSnapshotAsync", "command": "list-panes", "scope": "server",
+      "evidence": [
+        { "at": "src/LibTmux/Snapshots/ServerSnapshot.cs:120", "has": ["\"list-panes\"", "[\"-a\""] },
+        { "at": "src/LibTmux/Snapshots/ServerSnapshot.cs:55", "has": ["ReadRowsAsync"] },
+        { "at": "src/LibTmux/Server.Snapshots.cs:119", "has": [".ReadAsync(live, depth, sessionFilter"] },
+        { "at": "src/LibTmux/Server.Snapshots.cs:98", "has": ["CaptureSnapshotAsync(depth, timeProvider, sessionFilter: null"] },
+        { "at": "src/LibTmux/Server.Snapshots.cs:91", "has": ["CaptureSnapshotAsync(depth, TimeProvider.System"], "in": "LibTmux.Server.CaptureSnapshotAsync" }
+      ]
+    },
+    {
+      "port": "powershell", "symbol": "LibTmux\\Get-TmuxPane", "command": "list-panes", "scope": "window",
+      "via": { "port": "csharp", "symbol": "LibTmux.Window.GetPanesAsync" },
+      "evidence": [
+        { "at": "src/LibTmux.PowerShell/GetTmuxPaneCommand.cs:43", "has": ["Window!.GetPanesAsync"], "in": "LibTmux\\Get-TmuxPane" }
+      ]
+    },
+    {
+      "port": "powershell", "symbol": "LibTmux\\Get-TmuxPane", "command": "list-panes", "scope": "session",
+      "via": { "port": "csharp", "symbol": "LibTmux.Session.GetPanesAsync" },
+      "evidence": [
+        { "at": "src/LibTmux.PowerShell/GetTmuxPaneCommand.cs:46", "has": ["Session!.GetPanesAsync"], "in": "LibTmux\\Get-TmuxPane" }
+      ]
+    },
+    {
+      "port": "powershell", "symbol": "LibTmux\\Get-TmuxPane", "command": "list-panes", "scope": "server",
+      "via": { "port": "csharp", "symbol": "LibTmux.Server.CaptureSnapshotAsync" },
+      "evidence": [
+        { "at": "src/LibTmux.PowerShell/GetTmuxPaneCommand.cs:49", "has": ["Server!.CaptureSnapshotAsync(SnapshotDepth.Panes"], "in": "LibTmux\\Get-TmuxPane" }
+      ]
+    },
+    {
+      "port": "julia", "symbol": "LibTmux.snapshot", "command": "list-panes", "scope": "server",
+      "evidence": [
+        { "at": "src/acquisition.jl:120", "has": ["\"list-panes\""] },
+        { "at": "src/acquisition.jl:125", "has": ["args=(\"-a\",)"] },
+        { "at": "src/acquisition.jl:231", "has": ["_capture_graph_rows("], "in": "LibTmux.snapshot" }
+      ]
+    }
+  ]
+}

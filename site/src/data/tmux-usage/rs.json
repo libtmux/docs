@@ -1,0 +1,56 @@
+{
+  "commands": [
+    "list-panes"
+  ],
+  "port": "rs",
+  "repo": "libtmux/libtmux-rs",
+  "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+  "schemaVersion": 1,
+  "symbols": {
+    "control.ControlSender.watch_only": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "crates/libtmux/src/control.rs:1077"
+        ],
+        "scope": "session"
+      }
+    ],
+    "server.Server.panes": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "crates/libtmux/src/internal/listing.rs:204",
+          "crates/libtmux/src/internal/listing.rs:58",
+          "crates/libtmux/src/server/discovery.rs:41"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "session.Session.panes": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "crates/libtmux/src/internal/listing.rs:204",
+          "crates/libtmux/src/internal/listing.rs:60",
+          "crates/libtmux/src/session.rs:440"
+        ],
+        "reviewed": true,
+        "scope": "session"
+      }
+    ],
+    "window.Window.panes": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "crates/libtmux/src/internal/listing.rs:204",
+          "crates/libtmux/src/internal/listing.rs:59",
+          "crates/libtmux/src/window/navigation.rs:23"
+        ],
+        "reviewed": true,
+        "scope": "window"
+      }
+    ]
+  }
+}

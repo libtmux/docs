@@ -1,0 +1,38 @@
+{
+  "commands": [
+    "list-panes"
+  ],
+  "port": "cxx",
+  "repo": "libtmux/libtmux-cxx",
+  "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+  "schemaVersion": 1,
+  "symbols": {
+    "libtmux::Server::panes": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/server.cpp:873"
+        ],
+        "scope": "server"
+      }
+    ],
+    "libtmux::Session::panes": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/entities.cpp:269"
+        ],
+        "scope": "session"
+      }
+    ],
+    "libtmux::Window::panes": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/entities.cpp:561"
+        ],
+        "scope": "window"
+      }
+    ]
+  }
+}

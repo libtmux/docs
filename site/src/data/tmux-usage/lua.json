@@ -1,0 +1,24 @@
+{
+  "commands": [
+    "list-panes"
+  ],
+  "port": "lua",
+  "repo": "libtmux/libtmux-lua",
+  "revision": "0395620d362ef75c74cd488f9577afda68922586",
+  "schemaVersion": 1,
+  "symbols": {
+    "libtmux.Server:snapshot": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "lua/libtmux/_internal/server.lua:22",
+          "lua/libtmux/_internal/server.lua:177",
+          "lua/libtmux/_internal/server.lua:309",
+          "lua/libtmux/_internal/server.lua:432"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ]
+  }
+}

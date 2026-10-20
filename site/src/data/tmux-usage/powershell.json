@@ -1,0 +1,49 @@
+{
+  "commands": [
+    "list-panes"
+  ],
+  "port": "powershell",
+  "repo": "libtmux/libtmux-powershell",
+  "revision": "b06c64f844f3173de66b187eaeaf3915814318c6",
+  "schemaVersion": 1,
+  "symbols": {
+    "LibTmux\\Get-TmuxPane": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/LibTmux.PowerShell/GetTmuxPaneCommand.cs:49"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "via": {
+          "port": "csharp",
+          "symbol": "LibTmux.Server.CaptureSnapshotAsync"
+        }
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/LibTmux.PowerShell/GetTmuxPaneCommand.cs:46"
+        ],
+        "reviewed": true,
+        "scope": "session",
+        "via": {
+          "port": "csharp",
+          "symbol": "LibTmux.Session.GetPanesAsync"
+        }
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/LibTmux.PowerShell/GetTmuxPaneCommand.cs:43"
+        ],
+        "reviewed": true,
+        "scope": "window",
+        "via": {
+          "port": "csharp",
+          "symbol": "LibTmux.Window.GetPanesAsync"
+        }
+      }
+    ]
+  }
+}

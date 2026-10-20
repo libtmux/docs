@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "commands": {
+    "list-panes": {
+      "scopes": [
+        { "id": "server", "label": "Server", "flag": "a", "function": "cmd_list_panes_server" },
+        { "id": "session", "label": "Session", "flag": "s", "function": "cmd_list_panes_session" },
+        { "id": "window", "label": "Window", "flag": "", "target": "t", "function": "cmd_list_panes_window" }
+      ]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "commands": [
+    "list-panes"
+  ],
+  "port": "fsharp",
+  "repo": "libtmux/libtmux-dotnet",
+  "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+  "schemaVersion": 1,
+  "symbols": {}
+}

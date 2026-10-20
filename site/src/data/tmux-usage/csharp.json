@@ -1,0 +1,97 @@
+{
+  "commands": [
+    "list-panes"
+  ],
+  "port": "csharp",
+  "repo": "libtmux/libtmux-dotnet",
+  "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+  "schemaVersion": 1,
+  "symbols": {
+    "LibTmux.Server.CaptureSnapshotAsync": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/LibTmux/Snapshots/ServerSnapshot.cs:120",
+          "src/LibTmux/Snapshots/ServerSnapshot.cs:55",
+          "src/LibTmux/Server.Snapshots.cs:119",
+          "src/LibTmux/Server.Snapshots.cs:98",
+          "src/LibTmux/Server.Snapshots.cs:91"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "LibTmux.Server.GetPanesAsync": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/LibTmux/Server.Collections.cs:72"
+        ],
+        "scope": "server"
+      }
+    ],
+    "LibTmux.Server.SearchPanesAsync": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/LibTmux/Query/NativeFilterSearch.cs:51"
+        ],
+        "scope": "server"
+      }
+    ],
+    "LibTmux.Session.GetActivePaneAsync": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/LibTmux/Session.Relations.cs:184"
+        ],
+        "scope": "session"
+      }
+    ],
+    "LibTmux.Session.GetPanesAsync": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/LibTmux/Session.Relations.cs:167"
+        ],
+        "scope": "session"
+      }
+    ],
+    "LibTmux.Session.SearchPanesAsync": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/LibTmux/Session.Lifecycle.cs:239"
+        ],
+        "scope": "session"
+      }
+    ],
+    "LibTmux.Window.GetActivePaneAsync": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/LibTmux/Window.Relations.cs:141"
+        ],
+        "scope": "window"
+      }
+    ],
+    "LibTmux.Window.GetPanesAsync": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/LibTmux/Window.Relations.cs:123"
+        ],
+        "scope": "window"
+      }
+    ],
+    "LibTmux.Window.SearchPanesAsync": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/LibTmux/Window.Panes.cs:298"
+        ],
+        "scope": "window"
+      }
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "commands": [
+    "list-panes"
+  ],
+  "port": "kotlin",
+  "repo": "libtmux/libtmux-java",
+  "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+  "schemaVersion": 1,
+  "symbols": {}
+}

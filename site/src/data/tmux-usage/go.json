@@ -1,0 +1,57 @@
+{
+  "commands": [
+    "list-panes"
+  ],
+  "port": "go",
+  "repo": "libtmux/libtmux-go",
+  "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+  "schemaVersion": 1,
+  "symbols": {
+    "tmux.Pane.Select": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "tmux/lookup.go:371",
+          "tmux/window_pane_topology.go:199"
+        ],
+        "scope": "window"
+      }
+    ],
+    "tmux.Server.SearchPanes": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "tmux/search.go:79"
+        ],
+        "scope": "server"
+      }
+    ],
+    "tmux.Server.Snapshot": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "tmux/snapshot_capture.go:45"
+        ],
+        "scope": "server"
+      }
+    ],
+    "tmux.Session.SearchPanes": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "tmux/search.go:129"
+        ],
+        "scope": "session"
+      }
+    ],
+    "tmux.Window.SearchPanes": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "tmux/search.go:154"
+        ],
+        "scope": "window"
+      }
+    ]
+  }
+}

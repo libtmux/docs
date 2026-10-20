@@ -1,0 +1,44 @@
+{
+  "commands": [
+    "list-panes"
+  ],
+  "port": "ruby",
+  "repo": "libtmux/libtmux-ruby",
+  "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+  "schemaVersion": 1,
+  "symbols": {
+    "LibTmux::Server#list_panes": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/server.rb:470",
+          "gems/libtmux/lib/libtmux/server.rb:163"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "LibTmux::Session#list_panes": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/server.rb:470",
+          "gems/libtmux/lib/libtmux/entity.rb:113"
+        ],
+        "reviewed": true,
+        "scope": "session"
+      }
+    ],
+    "LibTmux::Window#list_panes": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/server.rb:470",
+          "gems/libtmux/lib/libtmux/entity.rb:123"
+        ],
+        "reviewed": true,
+        "scope": "window"
+      }
+    ]
+  }
+}

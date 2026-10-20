@@ -165,6 +165,38 @@ $ node scripts/gen-tmux-catalog.mjs --check --source ~/study/c/tmux
 
 `gen-tmux-catalog.negative.mjs` proves the check fails on stale data.
 
+### Which library methods send a tmux command
+
+`gen-tmux-usage.mjs` records, per port, the public symbols whose source sends
+each tmux command and at which scope, in `site/src/data/tmux-usage/<port>.json`.
+It reads each port's source at the revision its API model was extracted from,
+through the port checkouts named in `ports.ts` or
+`LIBTMUX_DOCS_CHECKOUT_<PORT>`. A symbol is credited when a command-name
+literal, with the flags beside it, sits in its own body or in one private
+helper it calls. A command named by a template, a scope carried by a typed
+argument, or a call into a snapshot is a reviewed claim in
+`scripts/tmux-usage/claims.json`; each claim cites the lines that make it true
+and generation fails when one no longer holds. The commands covered are
+`COMMANDS` in the script; `site/src/data/tmux-usage/scopes.json` gives a
+command its scopes and C functions, checked against both pinned C models.
+
+```console
+$ node scripts/gen-tmux-usage.mjs
+```
+
+Verify the committed data. Without `--source` this checks shape and revisions;
+with it, the script regenerates from the checkouts and fails when the data is
+stale. `--report` lists the sends that no public symbol was credited with, and
+`--commands a,b` (or `all`) records other commands, which is how a command is
+added to the pages.
+
+```console
+$ node scripts/gen-tmux-usage.mjs --check --source
+```
+
+`gen-tmux-usage.negative.mjs` proves the check fails on each kind of stale
+data.
+
 ### Site checks
 
 Four scripts assert things the build itself cannot notice. None of them needs

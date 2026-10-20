@@ -1,0 +1,111 @@
+{
+  "commands": [
+    "list-panes"
+  ],
+  "port": "java",
+  "repo": "libtmux/libtmux-java",
+  "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+  "schemaVersion": 1,
+  "symbols": {
+    "io.github.libtmux.Pane.Pane.sendKeys": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:668",
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:577"
+        ],
+        "scope": "window"
+      }
+    ],
+    "io.github.libtmux.Pane.Pane.sendLiteral": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:668",
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:619"
+        ],
+        "scope": "window"
+      }
+    ],
+    "io.github.libtmux.Server.Server.paneFields": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Server.java:538"
+        ],
+        "scope": "server"
+      }
+    ],
+    "io.github.libtmux.Server.Server.panes": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Server.java:998"
+        ],
+        "scope": "server"
+      }
+    ],
+    "io.github.libtmux.Server.Server.snapshot": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:183",
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:103",
+          "libtmux/src/main/java/io/github/libtmux/Server.java:878"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "io.github.libtmux.SnapshotCapture.SnapshotCapture.attempt": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:183",
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:103"
+        ],
+        "scope": "server"
+      }
+    ],
+    "io.github.libtmux.SnapshotCapture.SnapshotCapture.oneSession": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:292",
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:227"
+        ],
+        "scope": "server"
+      }
+    ],
+    "io.github.libtmux.SnapshotCapture.SnapshotCapture.sessionsHolding": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:292",
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:342"
+        ],
+        "scope": "server"
+      }
+    ],
+    "io.github.libtmux.SnapshotCapture.SnapshotCapture.sessionsNamed": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:292",
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:251"
+        ],
+        "scope": "server"
+      }
+    ],
+    "io.github.libtmux.SnapshotCapture.SnapshotCapture.sessionsWhere": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:292",
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:276"
+        ],
+        "scope": "server"
+      }
+    ]
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "commands": [
+    "list-panes"
+  ],
+  "port": "julia",
+  "repo": "libtmux/libtmux-julia",
+  "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
+  "schemaVersion": 1,
+  "symbols": {
+    "LibTmux.snapshot": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/acquisition.jl:120",
+          "src/acquisition.jl:125",
+          "src/acquisition.jl:231"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ]
+  }
+}

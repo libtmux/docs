@@ -1,0 +1,29 @@
+{
+  "commands": [
+    "list-panes"
+  ],
+  "port": "swift",
+  "repo": "libtmux/libtmux-swift",
+  "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+  "schemaVersion": 1,
+  "symbols": {
+    "Server.panes()": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "Sources/LibTmux/Server.swift:285"
+        ],
+        "scope": "server"
+      }
+    ],
+    "Server.panes(where:)": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "Sources/LibTmux/FilteredListings.swift:80"
+        ],
+        "scope": "server"
+      }
+    ]
+  }
+}

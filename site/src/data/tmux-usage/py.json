@@ -1,0 +1,74 @@
+{
+  "commands": [
+    "list-panes"
+  ],
+  "port": "py",
+  "repo": "tmux-python/libtmux",
+  "revision": "8e0ce38400618bd783e6276270dd7f5d8cb283ea",
+  "schemaVersion": 1,
+  "symbols": {
+    "libtmux.Pane.from_pane_id": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/libtmux/pane.py:227"
+        ],
+        "scope": "window"
+      }
+    ],
+    "libtmux.Server.panes": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/libtmux/server.py:2463"
+        ],
+        "scope": "server"
+      }
+    ],
+    "libtmux.Server.search_panes": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/libtmux/server.py:2671"
+        ],
+        "scope": "server"
+      }
+    ],
+    "libtmux.Session.panes": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/libtmux/session.py:302"
+        ],
+        "scope": "session"
+      }
+    ],
+    "libtmux.Session.search_panes": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/libtmux/session.py:412"
+        ],
+        "scope": "session"
+      }
+    ],
+    "libtmux.Window.panes": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/libtmux/window.py:401"
+        ],
+        "scope": "window"
+      }
+    ],
+    "libtmux.Window.search_panes": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/libtmux/window.py:456"
+        ],
+        "scope": "window"
+      }
+    ]
+  }
+}
