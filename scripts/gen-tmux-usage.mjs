@@ -10,7 +10,9 @@
  * `scripts/tmux-usage/claims.json`; each one must still be true of the pinned
  * source or generation fails. Symbols that carry a command's name and only
  * build or record it (a plan, a chain, a request) are `exclusions.json`, held
- * to the same standard.
+ * to the same standard. A method whose own name says it sends a command, with
+ * no entry for it, is a candidate that a claim or a review in
+ * `not-senders.json` must settle, so a miss cannot pass unseen.
  *
  * The result is `site/src/data/tmux-usage/<port>.json`, keyed by public symbol.
  *
@@ -30,6 +32,7 @@ import { fileURLToPath } from 'node:url'
 import { GRAMMARS, isLibrarySource, scanSource } from './lib/tmux-usage-scan.mjs'
 import { applyExclusions, deriveUsage, verifyClaims } from './lib/tmux-usage-derive.mjs'
 import { forwardUsage } from './lib/tmux-usage-forward.mjs'
+import { settleCandidates, sweepCandidates } from './lib/tmux-usage-sweep.mjs'
 import { libraryScopes, scopeProblems } from './lib/tmux-usage-scopes.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -38,6 +41,7 @@ const defaultUsageDir = join(dataDir, 'tmux-usage')
 const claimsPath = join(root, 'scripts/tmux-usage/claims.json')
 const forwardersPath = join(root, 'scripts/tmux-usage/forwarders.json')
 const exclusionsPath = join(root, 'scripts/tmux-usage/exclusions.json')
+const reviewsPath = join(root, 'scripts/tmux-usage/not-senders.json')
 export const SCHEMA_VERSION = 1
 /** The commands whose usage is recorded: every command of the pinned manuals, unless `--commands` names some. */
 export const COMMANDS = 'all'
@@ -100,13 +104,13 @@ const sortKeys = (value) => Array.isArray(value) ? value.map(sortKeys)
   : value && typeof value === 'object' ? Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)).map(([key, item]) => [key, sortKeys(item)])) : value
 
 /** How a port's symbols find their definitions: Lua's handles share one implementation, Julia's methods share files. */
-const DEFINITION_OPTIONS = { lua: { sharedOwner: true }, julia: { freeFunctions: true } }
+export const DEFINITION_OPTIONS = { lua: { sharedOwner: true }, julia: { freeFunctions: true } }
 
 /** A consumer example declares symbols of its own that the library does not. */
 const EXAMPLES = /(?:^|\/)(?:examples?|tests?|benchmarks?|docs?)\//
 
 /** Callable public symbols, in the shape the derivation reads. */
-function publicSymbols(model) {
+export function publicSymbols(model) {
   const byId = new Map(model.symbols.map((symbol) => [symbol.id, symbol]))
   return model.symbols
     .filter((symbol) => symbol.apiScope !== 'internal' && symbol.source?.file && !EXAMPLES.test(symbol.source.file)
@@ -118,6 +122,7 @@ function publicSymbols(model) {
       parentName: symbol.parent ? byId.get(symbol.parent)?.name : undefined,
       file: symbol.source.file,
       line: symbol.source.line ?? 0,
+      kind: symbol.kind,
       overloaded: symbol.modifiers?.includes('overload'),
     }))
 }
@@ -135,7 +140,7 @@ export function portDocument(port, model, found, commands) {
 }
 
 /** Read a port's source at its pinned revision: every function, and the public symbols that name them. */
-async function scanPort({ port, model, commands, checkout, known }) {
+export async function scanPort({ port, model, commands, checkout, known }) {
   const grammar = GRAMMARS[port]
   const symbols = publicSymbols(model)
   const functions = []
@@ -222,12 +227,12 @@ function forwardPort({ port, config, scanned, core, coreScan, readEvidence }) {
 }
 
 /** Ports that have a model, in the order the site lists them. */
-async function portsWithModels() {
+export async function portsWithModels() {
   const { PORTS } = await import(`file://${join(root, 'site/src/lib/ports.ts')}`)
   return PORTS.filter((port) => existsSync(join(dataDir, `api/${port.slug}.json`)))
 }
 
-function checkoutFor(port) {
+export function checkoutFor(port) {
   const override = process.env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`]
   return expand(override || port.checkout)
 }
@@ -251,10 +256,28 @@ export function documentProblems(document, model, scopes, commands) {
   return problems
 }
 
+/** The methods named for a command that nothing credits, and the reviews that no longer hold. */
+function sweepProblems({ port, model, document, reviews, exclusions, report, readSource }) {
+  const has = new Set(Object.entries(document.symbols).flatMap(([symbol, uses]) => uses.map((use) => `${symbol}\0${use.command}`)))
+  const { candidates } = sweepCandidates({ port, commands: document.commands, symbols: publicSymbols(model), has })
+  const { unreviewed, problems } = settleCandidates({
+    port, candidates, reviews: reviews.filter((review) => review.port === port), readSource,
+    // An exclusion settles the builders it removed, and is held to its own evidence elsewhere.
+    covering: exclusions.filter((exclusion) => exclusion.port === port),
+  })
+  for (const candidate of unreviewed) report.push(`${port} sweep ${candidate.command}: ${candidate.symbol}`)
+  if (unreviewed.length) {
+    const shown = unreviewed.slice(0, 6).map((candidate) => `${candidate.symbol.split('.').slice(-2).join('.')} (${candidate.command})`).join(', ')
+    problems.push(`${port}: ${unreviewed.length} methods named for a command have no entry for it and no review: ${shown}${unreviewed.length > 6 ? ', ...' : ''}`)
+  }
+  return problems
+}
+
 export async function main() {
   const scopes = readJson(join(usageDir, 'scopes.json'))
   const claims = existsSync(claimsPath) ? readJson(claimsPath).claims : []
   const exclusions = existsSync(exclusionsPath) ? readJson(exclusionsPath).exclusions : []
+  const reviews = existsSync(reviewsPath) ? readJson(reviewsPath).reviews : []
   const ports = await portsWithModels()
   const report = []
   const failures = []
@@ -287,7 +310,10 @@ export async function main() {
       if (!existsSync(path)) { failures.push(`${port.slug}: no ${path}`); continue }
       const committed = readJson(path)
       for (const problem of documentProblems(committed, model, scopes, commandsToRecord)) failures.push(`${port.slug}: ${problem}`)
-      if (!args.includes('--source')) continue
+      if (!args.includes('--source')) {
+        failures.push(...sweepProblems({ port: port.slug, model, document: committed, reviews, exclusions, report }))
+        continue
+      }
     }
     const checkout = checkoutFor(port)
     if (!existsSync(join(checkout, '.git')) && !existsSync(join(checkout, 'HEAD'))) {
@@ -315,6 +341,7 @@ export async function main() {
     }
     byPort.set(port.slug, { found, scanned })
     const document = portDocument(port.slug, model, [...found.values()], commandsToRecord)
+    failures.push(...sweepProblems({ port: port.slug, model, document, reviews, exclusions, report, readSource: scanned.readSource }))
     const text = `${JSON.stringify(document, null, 2)}\n`
     if (check) {
       if (text !== readFileSync(path, 'utf8')) failures.push(`${port.slug}: stale; run node scripts/gen-tmux-usage.mjs`)

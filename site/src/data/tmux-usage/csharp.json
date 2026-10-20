@@ -97,6 +97,100 @@
   "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
   "schemaVersion": 1,
   "symbols": {
+    "LibTmux.Client.GetAsync": [
+      {
+        "command": "list-clients",
+        "evidence": [
+          "src/LibTmux/Server.Clients.cs:36",
+          "src/LibTmux/Server.Clients.cs:22",
+          "src/LibTmux/Client.Administration.cs:79"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux.Client.GetAttachedPaneAsync": [
+      {
+        "command": "list-clients",
+        "evidence": [
+          "src/LibTmux/Server.Clients.cs:36",
+          "src/LibTmux/Server.Clients.cs:22",
+          "src/LibTmux/Client.Administration.cs:114",
+          "src/LibTmux/Client.Administration.cs:172"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/LibTmux/Window.Relations.cs:123",
+          "src/LibTmux/Client.Administration.cs:142",
+          "src/LibTmux/Client.Administration.cs:172"
+        ],
+        "reviewed": true,
+        "scope": "window"
+      }
+    ],
+    "LibTmux.Client.GetAttachedSessionAsync": [
+      {
+        "command": "list-clients",
+        "evidence": [
+          "src/LibTmux/Server.Clients.cs:36",
+          "src/LibTmux/Server.Clients.cs:22",
+          "src/LibTmux/Client.Administration.cs:114",
+          "src/LibTmux/Client.Administration.cs:156"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "src/LibTmux/Server.Collections.cs:18",
+          "src/LibTmux/Client.Administration.cs:123",
+          "src/LibTmux/Client.Administration.cs:156"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux.Client.GetAttachedWindowAsync": [
+      {
+        "command": "list-clients",
+        "evidence": [
+          "src/LibTmux/Server.Clients.cs:36",
+          "src/LibTmux/Server.Clients.cs:22",
+          "src/LibTmux/Client.Administration.cs:114",
+          "src/LibTmux/Client.Administration.cs:164"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "src/LibTmux/Session.Relations.cs:153",
+          "src/LibTmux/Client.Administration.cs:133",
+          "src/LibTmux/Client.Administration.cs:164"
+        ],
+        "reviewed": true,
+        "scope": "session"
+      }
+    ],
+    "LibTmux.Client.ResolveAttachmentAsync": [
+      {
+        "command": "list-clients",
+        "evidence": [
+          "src/LibTmux/Server.Clients.cs:36",
+          "src/LibTmux/Server.Clients.cs:22",
+          "src/LibTmux/Client.Administration.cs:114"
+        ],
+        "forwardable": true,
+        "reviewed": true,
+        "scope": null
+      }
+    ],
     "LibTmux.ControlModeSubscriptions.SubscribeSessionAsync": [
       {
         "command": "refresh-client",
@@ -126,7 +220,8 @@
       {
         "command": "capture-pane",
         "evidence": [
-          "src/LibTmux/Pane.Capture.cs:22"
+          "src/LibTmux/Pane.Capture.cs:144",
+          "src/LibTmux/Pane.Capture.cs:18"
         ],
         "scope": null
       }
@@ -355,6 +450,21 @@
         "scope": null
       }
     ],
+    "LibTmux.Pane.SendKeysAndWaitAsync": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "src/LibTmux/Pane.Input.cs:24",
+          "src/LibTmux/Pane.Input.cs:71",
+          "src/LibTmux/Pane.Input.cs:94",
+          "src/LibTmux/Pane.Input.cs:100",
+          "src/LibTmux/Pane.Waiting.cs:169"
+        ],
+        "forwardable": true,
+        "reviewed": true,
+        "scope": null
+      }
+    ],
     "LibTmux.Pane.SendKeysAsync": [
       {
         "command": "send-keys",
@@ -371,6 +481,37 @@
         "evidence": [
           "src/LibTmux/Pane.Input.cs:129"
         ],
+        "scope": null
+      }
+    ],
+    "LibTmux.Pane.SendTextAndWaitAsync": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "src/LibTmux/Pane.Input.cs:24",
+          "src/LibTmux/Pane.Input.cs:71",
+          "src/LibTmux/Pane.Input.cs:94",
+          "src/LibTmux/Pane.Input.cs:100",
+          "src/LibTmux/Pane.Waiting.cs:169",
+          "src/LibTmux/Pane.Waiting.cs:103"
+        ],
+        "forwardable": true,
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux.Pane.SendTextAsync": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "src/LibTmux/Pane.Input.cs:24",
+          "src/LibTmux/Pane.Input.cs:71",
+          "src/LibTmux/Pane.Input.cs:94",
+          "src/LibTmux/Pane.Input.cs:100",
+          "src/LibTmux/Pane.Input.cs:119"
+        ],
+        "forwardable": true,
+        "reviewed": true,
         "scope": null
       }
     ],
@@ -406,8 +547,12 @@
       {
         "command": "attach-session",
         "evidence": [
-          "src/LibTmux/Server.Lifecycle.cs:355"
+          "src/LibTmux/Session.Lifecycle.cs:418",
+          "src/LibTmux/Server.Lifecycle.cs:352",
+          "src/LibTmux/Server.Lifecycle.cs:351"
         ],
+        "forwardable": true,
+        "reviewed": true,
         "scope": null
       }
     ],
@@ -423,13 +568,38 @@
         ],
         "reviewed": true,
         "scope": "server"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "src/LibTmux/Snapshots/ServerSnapshot.cs:106",
+          "src/LibTmux/Snapshots/ServerSnapshot.cs:55",
+          "src/LibTmux/Server.Snapshots.cs:119",
+          "src/LibTmux/Server.Snapshots.cs:98",
+          "src/LibTmux/Server.Snapshots.cs:91"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "src/LibTmux/Snapshots/ServerSnapshot.cs:115",
+          "src/LibTmux/Snapshots/ServerSnapshot.cs:115",
+          "src/LibTmux/Snapshots/ServerSnapshot.cs:55",
+          "src/LibTmux/Server.Snapshots.cs:119",
+          "src/LibTmux/Server.Snapshots.cs:98",
+          "src/LibTmux/Server.Snapshots.cs:91"
+        ],
+        "reviewed": true,
+        "scope": "server"
       }
     ],
     "LibTmux.Server.ClearPromptHistoryAsync": [
       {
         "command": "clear-prompt-history",
         "evidence": [
-          "src/LibTmux/Server.Interaction.cs:97"
+          "src/LibTmux/Server.Interaction.cs:98"
         ],
         "scope": null
       }
@@ -438,7 +608,7 @@
       {
         "command": "server-access",
         "evidence": [
-          "src/LibTmux/Server.Administration.cs:18",
+          "src/LibTmux/Server.Administration.cs:19",
           "src/LibTmux/Server.Administration.cs:45"
         ],
         "scope": null
@@ -464,6 +634,33 @@
         "scope": null
       }
     ],
+    "LibTmux.Server.CreateOwnedSessionAsync": [
+      {
+        "command": "new-session",
+        "evidence": [
+          "src/LibTmux/Server.Lifecycle.cs:368",
+          "src/LibTmux/Server.Lifecycle.cs:173",
+          "src/LibTmux/Server.Lifecycle.cs:135",
+          "src/LibTmux/Server.Lifecycle.cs:328"
+        ],
+        "forwardable": true,
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux.Server.CreateSessionAsync": [
+      {
+        "command": "new-session",
+        "evidence": [
+          "src/LibTmux/Server.Lifecycle.cs:368",
+          "src/LibTmux/Server.Lifecycle.cs:173",
+          "src/LibTmux/Server.Lifecycle.cs:135"
+        ],
+        "forwardable": true,
+        "reviewed": true,
+        "scope": null
+      }
+    ],
     "LibTmux.Server.CreateSessionWithReceiptAsync": [
       {
         "command": "list-sessions",
@@ -475,7 +672,8 @@
       {
         "command": "new-session",
         "evidence": [
-          "src/LibTmux/Server.Lifecycle.cs:186"
+          "src/LibTmux/Server.Lifecycle.cs:368",
+          "src/LibTmux/Server.Lifecycle.cs:173"
         ],
         "scope": null
       }
@@ -519,6 +717,21 @@
         "scope": null
       }
     ],
+    "LibTmux.Server.FindPaneAsync": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/LibTmux/Server.Identity.cs:305",
+          "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:136",
+          "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:137",
+          "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:93",
+          "src/LibTmux/Materialization/RelationReader.cs:53",
+          "src/LibTmux/Server.Identity.cs:303"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
     "LibTmux.Server.FindSessionAsync": [
       {
         "command": "list-sessions",
@@ -526,6 +739,21 @@
           "src/LibTmux/Server.Identity.cs:231"
         ],
         "scope": null
+      }
+    ],
+    "LibTmux.Server.FindWindowAsync": [
+      {
+        "command": "list-windows",
+        "evidence": [
+          "src/LibTmux/Server.Identity.cs:268",
+          "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:136",
+          "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:137",
+          "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:93",
+          "src/LibTmux/Materialization/RelationReader.cs:53",
+          "src/LibTmux/Server.Identity.cs:266"
+        ],
+        "reviewed": true,
+        "scope": "server"
       }
     ],
     "LibTmux.Server.GetAttachedSessionsAsync": [
@@ -565,6 +793,22 @@
         "scope": null
       }
     ],
+    "LibTmux.Server.GetPaneAsync": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/LibTmux/Server.Identity.cs:305",
+          "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:136",
+          "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:137",
+          "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:93",
+          "src/LibTmux/Materialization/RelationReader.cs:53",
+          "src/LibTmux/Server.Identity.cs:303",
+          "src/LibTmux/Server.Identity.cs:288"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
     "LibTmux.Server.GetPanesAsync": [
       {
         "command": "list-panes",
@@ -578,8 +822,20 @@
       {
         "command": "show-prompt-history",
         "evidence": [
-          "src/LibTmux/Server.Interaction.cs:116"
+          "src/LibTmux/Server.Interaction.cs:117"
         ],
+        "scope": null
+      }
+    ],
+    "LibTmux.Server.GetSessionAsync": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "src/LibTmux/Server.Identity.cs:231",
+          "src/LibTmux/Server.Identity.cs:229",
+          "src/LibTmux/Server.Identity.cs:214"
+        ],
+        "reviewed": true,
         "scope": null
       }
     ],
@@ -590,6 +846,22 @@
           "src/LibTmux/Server.Collections.cs:18"
         ],
         "scope": null
+      }
+    ],
+    "LibTmux.Server.GetWindowAsync": [
+      {
+        "command": "list-windows",
+        "evidence": [
+          "src/LibTmux/Server.Identity.cs:268",
+          "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:136",
+          "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:137",
+          "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:93",
+          "src/LibTmux/Materialization/RelationReader.cs:53",
+          "src/LibTmux/Server.Identity.cs:266",
+          "src/LibTmux/Server.Identity.cs:251"
+        ],
+        "reviewed": true,
+        "scope": "server"
       }
     ],
     "LibTmux.Server.GetWindowsAsync": [
@@ -687,8 +959,22 @@
       {
         "command": "run-shell",
         "evidence": [
-          "src/LibTmux/Server.Execution.cs:85"
+          "src/LibTmux/Server.Execution.cs:17",
+          "src/LibTmux/Server.Execution.cs:80"
         ],
+        "scope": null
+      }
+    ],
+    "LibTmux.Server.SearchClientsAsync": [
+      {
+        "command": "list-clients",
+        "evidence": [
+          "src/LibTmux/Server.Clients.cs:36",
+          "src/LibTmux/Server.Queries.cs:41",
+          "src/LibTmux/Query/NativeFilterSearch.cs:68"
+        ],
+        "forwardable": true,
+        "reviewed": true,
         "scope": null
       }
     ],
@@ -808,8 +1094,24 @@
       {
         "command": "attach-session",
         "evidence": [
-          "src/LibTmux/Session.Lifecycle.cs:275"
+          "src/LibTmux/Session.Lifecycle.cs:418",
+          "src/LibTmux/Session.Lifecycle.cs:273"
         ],
+        "scope": null
+      }
+    ],
+    "LibTmux.Session.CreateOwnedWindowAsync": [
+      {
+        "command": "new-window",
+        "evidence": [
+          "src/LibTmux/Session.Lifecycle.cs:464",
+          "src/LibTmux/Session.Lifecycle.cs:337",
+          "src/LibTmux/Session.Lifecycle.cs:336",
+          "src/LibTmux/Session.Lifecycle.cs:289",
+          "src/LibTmux/Session.WindowNavigation.cs:32"
+        ],
+        "forwardable": true,
+        "reviewed": true,
         "scope": null
       }
     ],
@@ -817,9 +1119,13 @@
       {
         "command": "new-window",
         "evidence": [
-          "src/LibTmux/Session.Lifecycle.cs:340",
+          "src/LibTmux/Session.Lifecycle.cs:464",
+          "src/LibTmux/Session.Lifecycle.cs:337",
+          "src/LibTmux/Session.Lifecycle.cs:336",
           "src/LibTmux/Session.Lifecycle.cs:289"
         ],
+        "forwardable": true,
+        "reviewed": true,
         "scope": null
       }
     ],
@@ -827,9 +1133,13 @@
       {
         "command": "new-window",
         "evidence": [
-          "src/LibTmux/Session.Lifecycle.cs:340",
+          "src/LibTmux/Session.Lifecycle.cs:464",
+          "src/LibTmux/Session.Lifecycle.cs:337",
+          "src/LibTmux/Session.Lifecycle.cs:336",
           "src/LibTmux/Session.Lifecycle.cs:315"
         ],
+        "forwardable": true,
+        "reviewed": true,
         "scope": null
       }
     ],
@@ -866,6 +1176,18 @@
         "evidence": [
           "src/LibTmux/Session.Relations.cs:167"
         ],
+        "scope": "session"
+      }
+    ],
+    "LibTmux.Session.GetWindowAsync": [
+      {
+        "command": "list-windows",
+        "evidence": [
+          "src/LibTmux/Session.Relations.cs:100",
+          "src/LibTmux/Session.Relations.cs:101",
+          "src/LibTmux/Session.Relations.cs:63"
+        ],
+        "reviewed": true,
         "scope": "session"
       }
     ],
@@ -986,6 +1308,19 @@
         "scope": null
       }
     ],
+    "LibTmux.TmuxBuffers.DeleteAsync": [
+      {
+        "command": "delete-buffer",
+        "evidence": [
+          "src/LibTmux/Server.Buffers.cs:71",
+          "src/LibTmux/Server.Buffers.cs:73",
+          "src/LibTmux/Buffers/TmuxBuffers.cs:78"
+        ],
+        "forwardable": true,
+        "reviewed": true,
+        "scope": null
+      }
+    ],
     "LibTmux.TmuxBuffers.GetAllAsync": [
       {
         "command": "list-buffers",
@@ -1003,6 +1338,19 @@
           "src/LibTmux/Server.Buffers.cs:59",
           "src/LibTmux/Buffers/TmuxBuffers.cs:69"
         ],
+        "scope": null
+      }
+    ],
+    "LibTmux.TmuxBuffers.GetLinesAsync": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "src/LibTmux/Server.Buffers.cs:78",
+          "src/LibTmux/Server.Buffers.cs:96",
+          "src/LibTmux/Server.Buffers.cs:97",
+          "src/LibTmux/Buffers/TmuxBuffers.cs:94"
+        ],
+        "reviewed": true,
         "scope": null
       }
     ],
@@ -1129,6 +1477,19 @@
         "scope": null
       }
     ],
+    "LibTmux.TmuxKeys.BindAsync": [
+      {
+        "command": "bind-key",
+        "evidence": [
+          "src/LibTmux/Server.Keys.cs:17",
+          "src/LibTmux/Server.Keys.cs:12",
+          "src/LibTmux/Keys/TmuxKeys.cs:29"
+        ],
+        "forwardable": true,
+        "reviewed": true,
+        "scope": null
+      }
+    ],
     "LibTmux.TmuxKeys.GetAllAsync": [
       {
         "command": "list-keys",
@@ -1136,6 +1497,19 @@
           "src/LibTmux/Server.Keys.cs:61",
           "src/LibTmux/Keys/TmuxKeys.cs:56"
         ],
+        "scope": null
+      }
+    ],
+    "LibTmux.TmuxKeys.UnbindAsync": [
+      {
+        "command": "unbind-key",
+        "evidence": [
+          "src/LibTmux/Server.Keys.cs:39",
+          "src/LibTmux/Server.Keys.cs:33",
+          "src/LibTmux/Keys/TmuxKeys.cs:44"
+        ],
+        "forwardable": true,
+        "reviewed": true,
         "scope": null
       }
     ],
@@ -1205,6 +1579,18 @@
         "scope": null
       }
     ],
+    "LibTmux.Window.FindPaneAsync": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/LibTmux/Window.Relations.cs:123",
+          "src/LibTmux/Window.Panes.cs:112"
+        ],
+        "forwardable": true,
+        "reviewed": true,
+        "scope": "window"
+      }
+    ],
     "LibTmux.Window.GetActivePaneAsync": [
       {
         "command": "list-panes",
@@ -1228,6 +1614,18 @@
           "src/LibTmux/Window.Relations.cs:161"
         ],
         "scope": "server"
+      }
+    ],
+    "LibTmux.Window.GetPaneAsync": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/LibTmux/Window.Relations.cs:123",
+          "src/LibTmux/Window.Panes.cs:112",
+          "src/LibTmux/Window.Panes.cs:98"
+        ],
+        "reviewed": true,
+        "scope": "window"
       }
     ],
     "LibTmux.Window.GetPanesAsync": [

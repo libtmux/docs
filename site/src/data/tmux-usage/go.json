@@ -97,6 +97,196 @@
   "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
   "schemaVersion": 1,
   "symbols": {
+    "tmux.GlobalSessionScope.AppendHook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "tmux/hook_runtime.go:538",
+          "tmux/hook_runtime.go:547",
+          "tmux/option_mutation.go:472",
+          "tmux/hook_runtime.go:526",
+          "tmux/hook_runtime.go:242"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.GlobalSessionScope.AppendOption": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "tmux/option_mutation.go:406",
+          "tmux/option_mutation.go:421",
+          "tmux/option_mutation.go:472",
+          "tmux/option_mutation.go:171"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.GlobalSessionScope.SetHook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "tmux/hook_runtime.go:538",
+          "tmux/hook_runtime.go:547",
+          "tmux/option_mutation.go:472",
+          "tmux/hook_runtime.go:526",
+          "tmux/hook_runtime.go:187"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.GlobalSessionScope.SetHooks": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "tmux/hook_runtime.go:538",
+          "tmux/hook_runtime.go:547",
+          "tmux/option_mutation.go:472",
+          "tmux/hook_runtime.go:602",
+          "tmux/hook_runtime.go:419"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.GlobalSessionScope.SetOption": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "tmux/option_mutation.go:406",
+          "tmux/option_mutation.go:421",
+          "tmux/option_mutation.go:472",
+          "tmux/option_mutation.go:56"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.GlobalSessionScope.UnsetHook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "tmux/hook_runtime.go:538",
+          "tmux/hook_runtime.go:547",
+          "tmux/option_mutation.go:472",
+          "tmux/hook_runtime.go:526",
+          "tmux/hook_runtime.go:297"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.GlobalSessionScope.UnsetOption": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "tmux/option_mutation.go:451",
+          "tmux/option_mutation.go:462",
+          "tmux/option_mutation.go:472",
+          "tmux/option_mutation.go:281"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.GlobalWindowScope.AppendHook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "tmux/hook_runtime.go:538",
+          "tmux/hook_runtime.go:547",
+          "tmux/option_mutation.go:472",
+          "tmux/hook_runtime.go:526",
+          "tmux/hook_runtime.go:249"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.GlobalWindowScope.AppendOption": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "tmux/option_mutation.go:406",
+          "tmux/option_mutation.go:421",
+          "tmux/option_mutation.go:472",
+          "tmux/option_mutation.go:192"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.GlobalWindowScope.SetHook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "tmux/hook_runtime.go:538",
+          "tmux/hook_runtime.go:547",
+          "tmux/option_mutation.go:472",
+          "tmux/hook_runtime.go:526",
+          "tmux/hook_runtime.go:194"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.GlobalWindowScope.SetHooks": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "tmux/hook_runtime.go:538",
+          "tmux/hook_runtime.go:547",
+          "tmux/option_mutation.go:472",
+          "tmux/hook_runtime.go:602",
+          "tmux/hook_runtime.go:432"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.GlobalWindowScope.SetOption": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "tmux/option_mutation.go:406",
+          "tmux/option_mutation.go:421",
+          "tmux/option_mutation.go:472",
+          "tmux/option_mutation.go:77"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.GlobalWindowScope.UnsetHook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "tmux/hook_runtime.go:538",
+          "tmux/hook_runtime.go:547",
+          "tmux/option_mutation.go:472",
+          "tmux/hook_runtime.go:526",
+          "tmux/hook_runtime.go:304"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.GlobalWindowScope.UnsetOption": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "tmux/option_mutation.go:451",
+          "tmux/option_mutation.go:462",
+          "tmux/option_mutation.go:472",
+          "tmux/option_mutation.go:303"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
     "tmux.NotificationStream.ContinuePane": [
       {
         "command": "refresh-client",
@@ -121,6 +311,33 @@
         "evidence": [
           "tmux/notification_stream.go:216"
         ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.AppendHook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "tmux/hook_runtime.go:538",
+          "tmux/hook_runtime.go:547",
+          "tmux/option_mutation.go:472",
+          "tmux/hook_runtime.go:526",
+          "tmux/hook_runtime.go:290"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.Pane.AppendOption": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "tmux/option_mutation.go:406",
+          "tmux/option_mutation.go:421",
+          "tmux/option_mutation.go:472",
+          "tmux/option_mutation.go:253"
+        ],
+        "reviewed": true,
         "scope": null
       }
     ],
@@ -190,6 +407,18 @@
       }
     ],
     "tmux.Pane.CaptureToFile": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "tmux/pane_capture.go:282",
+          "tmux/pane_capture.go:232",
+          "tmux/pane_capture.go:222",
+          "tmux/pane_capture.go:157",
+          "tmux/pane_capture.go:194"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
       {
         "command": "save-buffer",
         "evidence": [
@@ -490,6 +719,47 @@
         "scope": null
       }
     ],
+    "tmux.Pane.SetHook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "tmux/hook_runtime.go:538",
+          "tmux/hook_runtime.go:547",
+          "tmux/option_mutation.go:472",
+          "tmux/hook_runtime.go:526",
+          "tmux/hook_runtime.go:235"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.Pane.SetHooks": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "tmux/hook_runtime.go:538",
+          "tmux/hook_runtime.go:547",
+          "tmux/option_mutation.go:472",
+          "tmux/hook_runtime.go:602",
+          "tmux/hook_runtime.go:492"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.Pane.SetOption": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "tmux/option_mutation.go:406",
+          "tmux/option_mutation.go:421",
+          "tmux/option_mutation.go:472",
+          "tmux/option_mutation.go:138"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
     "tmux.Pane.SetTitle": [
       {
         "command": "select-pane",
@@ -499,12 +769,64 @@
         "scope": null
       }
     ],
+    "tmux.Pane.Split": [
+      {
+        "command": "split-window",
+        "evidence": [
+          "tmux/pane_create.go:421",
+          "tmux/pane_create.go:354",
+          "tmux/pane_create.go:327"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
     "tmux.Pane.Swap": [
       {
         "command": "swap-pane",
         "evidence": [
           "tmux/window_pane_swap.go:146"
         ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.UnsetHook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "tmux/hook_runtime.go:538",
+          "tmux/hook_runtime.go:547",
+          "tmux/option_mutation.go:472",
+          "tmux/hook_runtime.go:526",
+          "tmux/hook_runtime.go:345"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.Pane.UnsetOption": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "tmux/option_mutation.go:451",
+          "tmux/option_mutation.go:462",
+          "tmux/option_mutation.go:472",
+          "tmux/option_mutation.go:370"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.Server.AppendOption": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "tmux/option_mutation.go:406",
+          "tmux/option_mutation.go:421",
+          "tmux/option_mutation.go:472",
+          "tmux/option_mutation.go:150"
+        ],
+        "reviewed": true,
         "scope": null
       }
     ],
@@ -789,6 +1111,17 @@
           "tmux/connection.go:185"
         ],
         "scope": null
+      },
+      {
+        "command": "new-session",
+        "evidence": [
+          "tmux/session_lifecycle.go:91",
+          "tmux/connection.go:185",
+          "tmux/connection.go:299",
+          "tmux/connection.go:169"
+        ],
+        "reviewed": true,
+        "scope": null
       }
     ],
     "tmux.Server.OpenControl": [
@@ -939,6 +1272,19 @@
         "scope": null
       }
     ],
+    "tmux.Server.SetOption": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "tmux/option_mutation.go:406",
+          "tmux/option_mutation.go:421",
+          "tmux/option_mutation.go:472",
+          "tmux/option_mutation.go:35"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
     "tmux.Server.ShowBuffer": [
       {
         "command": "show-buffer",
@@ -1073,12 +1419,52 @@
         "scope": null
       }
     ],
+    "tmux.Server.UnsetOption": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "tmux/option_mutation.go:451",
+          "tmux/option_mutation.go:462",
+          "tmux/option_mutation.go:472",
+          "tmux/option_mutation.go:267"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
     "tmux.Server.WaitFor": [
       {
         "command": "wait-for",
         "evidence": [
           "tmux/server_exec.go:259"
         ],
+        "scope": null
+      }
+    ],
+    "tmux.Session.AppendHook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "tmux/hook_runtime.go:538",
+          "tmux/hook_runtime.go:547",
+          "tmux/option_mutation.go:472",
+          "tmux/hook_runtime.go:526",
+          "tmux/hook_runtime.go:268"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.Session.AppendOption": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "tmux/option_mutation.go:406",
+          "tmux/option_mutation.go:421",
+          "tmux/option_mutation.go:472",
+          "tmux/option_mutation.go:217"
+        ],
+        "reviewed": true,
         "scope": null
       }
     ],
@@ -1108,6 +1494,18 @@
           "tmux/environment.go:279",
           "tmux/environment.go:180"
         ],
+        "scope": null
+      }
+    ],
+    "tmux.Session.Kill": [
+      {
+        "command": "kill-session",
+        "evidence": [
+          "tmux/lifecycle_kill.go:132",
+          "tmux/lifecycle_kill.go:153",
+          "tmux/lifecycle_kill.go:95"
+        ],
+        "reviewed": true,
         "scope": null
       }
     ],
@@ -1234,6 +1632,47 @@
         "scope": null
       }
     ],
+    "tmux.Session.SetHook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "tmux/hook_runtime.go:538",
+          "tmux/hook_runtime.go:547",
+          "tmux/option_mutation.go:472",
+          "tmux/hook_runtime.go:526",
+          "tmux/hook_runtime.go:213"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.Session.SetHooks": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "tmux/hook_runtime.go:538",
+          "tmux/hook_runtime.go:547",
+          "tmux/option_mutation.go:472",
+          "tmux/hook_runtime.go:602",
+          "tmux/hook_runtime.go:458"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.Session.SetOption": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "tmux/option_mutation.go:406",
+          "tmux/option_mutation.go:421",
+          "tmux/option_mutation.go:472",
+          "tmux/option_mutation.go:102"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
     "tmux.Session.ShowEnvironment": [
       {
         "command": "show-environment",
@@ -1269,6 +1708,60 @@
           "tmux/environment.go:234",
           "tmux/environment.go:143"
         ],
+        "scope": null
+      }
+    ],
+    "tmux.Session.UnsetHook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "tmux/hook_runtime.go:538",
+          "tmux/hook_runtime.go:547",
+          "tmux/option_mutation.go:472",
+          "tmux/hook_runtime.go:526",
+          "tmux/hook_runtime.go:323"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.Session.UnsetOption": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "tmux/option_mutation.go:451",
+          "tmux/option_mutation.go:462",
+          "tmux/option_mutation.go:472",
+          "tmux/option_mutation.go:329"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.Window.AppendHook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "tmux/hook_runtime.go:538",
+          "tmux/hook_runtime.go:547",
+          "tmux/option_mutation.go:472",
+          "tmux/hook_runtime.go:526",
+          "tmux/hook_runtime.go:279"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.Window.AppendOption": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "tmux/option_mutation.go:406",
+          "tmux/option_mutation.go:421",
+          "tmux/option_mutation.go:472",
+          "tmux/option_mutation.go:237"
+        ],
+        "reviewed": true,
         "scope": null
       }
     ],
@@ -1444,6 +1937,59 @@
         "scope": null
       }
     ],
+    "tmux.Window.SetHook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "tmux/hook_runtime.go:538",
+          "tmux/hook_runtime.go:547",
+          "tmux/option_mutation.go:472",
+          "tmux/hook_runtime.go:526",
+          "tmux/hook_runtime.go:224"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.Window.SetHooks": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "tmux/hook_runtime.go:538",
+          "tmux/hook_runtime.go:547",
+          "tmux/option_mutation.go:472",
+          "tmux/hook_runtime.go:602",
+          "tmux/hook_runtime.go:475"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.Window.SetOption": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "tmux/option_mutation.go:406",
+          "tmux/option_mutation.go:421",
+          "tmux/option_mutation.go:472",
+          "tmux/option_mutation.go:122"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.Window.SplitPane": [
+      {
+        "command": "split-window",
+        "evidence": [
+          "tmux/pane_create.go:421",
+          "tmux/pane_create.go:354",
+          "tmux/pane_create.go:308"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
     "tmux.Window.Swap": [
       {
         "command": "swap-window",
@@ -1459,6 +2005,33 @@
         "evidence": [
           "tmux/window_link_move.go:154"
         ],
+        "scope": null
+      }
+    ],
+    "tmux.Window.UnsetHook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "tmux/hook_runtime.go:538",
+          "tmux/hook_runtime.go:547",
+          "tmux/option_mutation.go:472",
+          "tmux/hook_runtime.go:526",
+          "tmux/hook_runtime.go:334"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.Window.UnsetOption": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "tmux/option_mutation.go:451",
+          "tmux/option_mutation.go:462",
+          "tmux/option_mutation.go:472",
+          "tmux/option_mutation.go:344"
+        ],
+        "reviewed": true,
         "scope": null
       }
     ],

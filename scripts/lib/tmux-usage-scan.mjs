@@ -216,11 +216,11 @@ function recordCall(fn, name, receiver, line) {
 
 /**
  * A call that checks a command rather than runs it names it as a label: `validateArgument("select-layout", ...)`
- * says whose argument it is in the error it may raise, and `newCommandError("new-session", result)` names the
- * command a failure belongs to. The verb ends at a word boundary, so `checkedRun` is a runner and
+ * says whose argument it is in the error it may raise, `newCommandError("new-session", result)` names the
+ * command a failure belongs to, and `ThrowIfFailed(result, "new-session")` says which command failed, and `preflight(ctx, "set-option", name)` checks a command before it is built. The verb ends at a word boundary, so `checkedRun` is a runner and
  * `checkArguments` is not.
  */
-const CHECKING = /^(?:validate|verify|ensure|reject|require|check|invalid|unsupported)(?![a-z])|(?:Error|Failure|Exception)$/
+const CHECKING = /^(?:[Vv]alidate|[Vv]erify|[Ee]nsure|[Rr]eject|[Rr]equire|[Cc]heck|[Ii]nvalid|[Uu]nsupported|[Tt]hrow|[Pp]reflight)(?![a-z])|(?:Error|Failure|Exception)$/
 
 /** Whether the nearest call around a literal only checks something about the command it names. */
 function namedForChecking(grammar, node, CALL) {

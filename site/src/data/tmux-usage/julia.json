@@ -138,6 +138,17 @@
         "scope": null
       }
     ],
+    "LibTmux.capture_pane": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "src/control_io.jl:101",
+          "src/control_io.jl:173"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
     "LibTmux.delete_buffer": [
       {
         "command": "delete-buffer",
@@ -201,11 +212,38 @@
         "scope": null
       }
     ],
+    "LibTmux.kill_pane": [
+      {
+        "command": "kill-pane",
+        "evidence": [
+          "src/control_topology.jl:66"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.kill_session": [
+      {
+        "command": "kill-session",
+        "evidence": [
+          "src/control_topology.jl:66"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.kill_window": [
+      {
+        "command": "kill-window",
+        "evidence": [
+          "src/control_topology.jl:66"
+        ],
+        "scope": null
+      }
+    ],
     "LibTmux.link_window": [
       {
         "command": "link-window",
         "evidence": [
-          "src/topology.jl:123"
+          "src/control_topology.jl:282"
         ],
         "scope": null
       }
@@ -241,7 +279,7 @@
       {
         "command": "move-window",
         "evidence": [
-          "src/topology.jl:170"
+          "src/control_topology.jl:282"
         ],
         "scope": null
       }
@@ -379,6 +417,24 @@
         "scope": null
       }
     ],
+    "LibTmux.rename_session": [
+      {
+        "command": "rename-session",
+        "evidence": [
+          "src/control_topology.jl:160"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.rename_window": [
+      {
+        "command": "rename-window",
+        "evidence": [
+          "src/control_topology.jl:160"
+        ],
+        "scope": null
+      }
+    ],
     "LibTmux.render_format": [
       {
         "command": "list-panes",
@@ -387,6 +443,42 @@
           "src/formats.jl:177"
         ],
         "scope": "window"
+      }
+    ],
+    "LibTmux.resize_pane": [
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "src/control_topology.jl:100"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.resize_window": [
+      {
+        "command": "resize-window",
+        "evidence": [
+          "src/control_topology.jl:100"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.respawn_pane": [
+      {
+        "command": "respawn-pane",
+        "evidence": [
+          "src/control_topology.jl:229"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.respawn_window": [
+      {
+        "command": "respawn-window",
+        "evidence": [
+          "src/control_topology.jl:229"
+        ],
+        "scope": null
       }
     ],
     "LibTmux.run_command": [

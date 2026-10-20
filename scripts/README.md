@@ -193,6 +193,18 @@ longer holds:
 - `exclusions.json`: the symbols that carry a command's name and only build or
   record it (a plan, a chain, a request that turns itself into a command). Each
   cites the lines that show it, and an exclusion that removes nothing fails.
+- `not-senders.json`: why a public method whose own name carries a command has
+  no entry for it, one of `builds`, `other-command` (it sends a different
+  command), `values` (a field or a value holder) or `no-send`. Each cites the
+  lines that show it, and a review that settles nothing is stale and fails.
+
+A method named for a command and recorded as sending nothing of it is how a
+miss is found, and the check refuses it until a claim records the send or a
+review says why there is none. Nothing is listed by its name: the name only finds
+the candidate, and the lines decide. `--check` runs the sweep from the committed
+data, `--check --source` also reads each review's lines, and a method named for
+one command that the data records as sending the command it also names is not a
+candidate for the other.
 
 The command pages list a method that sends directly, a reviewed claim, and a
 method that sends through one helper when its own name carries the verb of the

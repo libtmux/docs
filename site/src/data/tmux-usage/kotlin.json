@@ -115,6 +115,23 @@
         }
       }
     ],
+    "io.github.libtmux.kotlin.Buffers.`set`": [
+      {
+        "command": "set-buffer",
+        "evidence": [
+          "build-logic/codegen/src/main/kotlin/io/github/libtmux/codegen/kotlin/OperationGenerator.kt:183",
+          "libtmux/src/main/java/io/github/libtmux/Buffers.java:69"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/Buffers.java:71"
+          ],
+          "port": "java",
+          "symbol": "io.github.libtmux.Buffers.Buffers.set"
+        }
+      }
+    ],
     "io.github.libtmux.kotlin.Buffers.delete": [
       {
         "command": "delete-buffer",
@@ -319,6 +336,42 @@
         }
       }
     ],
+    "io.github.libtmux.kotlin.Environment.`get`": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "build-logic/codegen/src/main/kotlin/io/github/libtmux/codegen/kotlin/OperationGenerator.kt:183",
+          "libtmux/src/main/java/io/github/libtmux/Environment.java:83"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/Environment.java:201",
+            "libtmux/src/main/java/io/github/libtmux/Environment.java:85"
+          ],
+          "port": "java",
+          "symbol": "io.github.libtmux.Environment.Environment.get"
+        }
+      }
+    ],
+    "io.github.libtmux.kotlin.Environment.`set`": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "build-logic/codegen/src/main/kotlin/io/github/libtmux/codegen/kotlin/OperationGenerator.kt:183",
+          "libtmux/src/main/java/io/github/libtmux/Environment.java:154"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/Environment.java:353",
+            "libtmux/src/main/java/io/github/libtmux/Environment.java:156"
+          ],
+          "port": "java",
+          "symbol": "io.github.libtmux.Environment.Environment.set"
+        }
+      }
+    ],
     "io.github.libtmux.kotlin.Environment.isRemoved": [
       {
         "command": "show-environment",
@@ -388,6 +441,23 @@
           ],
           "port": "java",
           "symbol": "io.github.libtmux.Environment.Environment.unset"
+        }
+      }
+    ],
+    "io.github.libtmux.kotlin.Hooks.`set`": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "build-logic/codegen/src/main/kotlin/io/github/libtmux/codegen/kotlin/OperationGenerator.kt:183",
+          "libtmux/src/main/java/io/github/libtmux/Hooks.java:64"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/Hooks.java:66"
+          ],
+          "port": "java",
+          "symbol": "io.github.libtmux.Hooks.Hooks.set"
         }
       }
     ],
@@ -612,6 +682,40 @@
         }
       }
     ],
+    "io.github.libtmux.kotlin.Options.get": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "libtmux-kotlin/src/main/kotlin/io/github/libtmux/kotlin/Options.kt:27"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/Options.java:93"
+          ],
+          "port": "java",
+          "symbol": "io.github.libtmux.Options.Options.get"
+        }
+      }
+    ],
+    "io.github.libtmux.kotlin.Options.set": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "libtmux-kotlin/src/main/kotlin/io/github/libtmux/kotlin/Options.kt:35"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/Options.java:325"
+          ],
+          "port": "java",
+          "symbol": "io.github.libtmux.Options.Options.set"
+        }
+      }
+    ],
     "io.github.libtmux.kotlin.Options.setExpanded": [
       {
         "command": "set-option",
@@ -694,6 +798,26 @@
           ],
           "port": "java",
           "symbol": "io.github.libtmux.Pane.Pane.breakOut"
+        }
+      }
+    ],
+    "io.github.libtmux.kotlin.Pane.capture": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "build-logic/codegen/src/main/kotlin/io/github/libtmux/codegen/kotlin/OperationGenerator.kt:183",
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:531"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/CaptureSpec.java:85",
+            "libtmux/src/main/java/io/github/libtmux/CaptureSpec.java:78",
+            "libtmux/src/main/java/io/github/libtmux/Pane.java:533"
+          ],
+          "port": "java",
+          "reviewed": true,
+          "symbol": "io.github.libtmux.Pane.Pane.capture"
         }
       }
     ],
@@ -916,6 +1040,26 @@
         }
       }
     ],
+    "io.github.libtmux.kotlin.Pane.respawnIn": [
+      {
+        "command": "respawn-pane",
+        "evidence": [
+          "build-logic/codegen/src/main/kotlin/io/github/libtmux/codegen/kotlin/OperationGenerator.kt:183",
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:764"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/Pane.java:772",
+            "libtmux/src/main/java/io/github/libtmux/Pane.java:770",
+            "libtmux/src/main/java/io/github/libtmux/Pane.java:767"
+          ],
+          "port": "java",
+          "reviewed": true,
+          "symbol": "io.github.libtmux.Pane.Pane.respawnIn"
+        }
+      }
+    ],
     "io.github.libtmux.kotlin.Pane.retitle": [
       {
         "command": "select-pane",
@@ -947,6 +1091,28 @@
           ],
           "port": "java",
           "symbol": "io.github.libtmux.Pane.Pane.select"
+        }
+      }
+    ],
+    "io.github.libtmux.kotlin.Pane.send": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "build-logic/codegen/src/main/kotlin/io/github/libtmux/codegen/kotlin/OperationGenerator.kt:183",
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:546"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/Pane.java:639",
+            "libtmux/src/main/java/io/github/libtmux/Pane.java:576",
+            "libtmux/src/main/java/io/github/libtmux/Pane.java:583",
+            "libtmux/src/main/java/io/github/libtmux/Pane.java:560",
+            "libtmux/src/main/java/io/github/libtmux/Pane.java:548"
+          ],
+          "port": "java",
+          "reviewed": true,
+          "symbol": "io.github.libtmux.Pane.Pane.send"
         }
       }
     ],
@@ -984,6 +1150,28 @@
         }
       }
     ],
+    "io.github.libtmux.kotlin.Pane.sendLine": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "build-logic/codegen/src/main/kotlin/io/github/libtmux/codegen/kotlin/OperationGenerator.kt:183",
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:649"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/Pane.java:639",
+            "libtmux/src/main/java/io/github/libtmux/Pane.java:617",
+            "libtmux/src/main/java/io/github/libtmux/Pane.java:625",
+            "libtmux/src/main/java/io/github/libtmux/Pane.java:601",
+            "libtmux/src/main/java/io/github/libtmux/Pane.java:652"
+          ],
+          "port": "java",
+          "reviewed": true,
+          "symbol": "io.github.libtmux.Pane.Pane.sendLine"
+        }
+      }
+    ],
     "io.github.libtmux.kotlin.Pane.sendLiteral": [
       {
         "command": "list-panes",
@@ -1015,6 +1203,27 @@
           ],
           "port": "java",
           "symbol": "io.github.libtmux.Pane.Pane.sendLiteral"
+        }
+      }
+    ],
+    "io.github.libtmux.kotlin.Pane.split": [
+      {
+        "command": "split-window",
+        "evidence": [
+          "build-logic/codegen/src/main/kotlin/io/github/libtmux/codegen/kotlin/OperationGenerator.kt:183",
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:891"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/SplitSpec.java:165",
+            "libtmux/src/main/java/io/github/libtmux/SplitSpec.java:162",
+            "libtmux/src/main/java/io/github/libtmux/Pane.java:904",
+            "libtmux/src/main/java/io/github/libtmux/Pane.java:893"
+          ],
+          "port": "java",
+          "reviewed": true,
+          "symbol": "io.github.libtmux.Pane.Pane.split"
         }
       }
     ],
@@ -1199,6 +1408,26 @@
           ],
           "port": "java",
           "symbol": "io.github.libtmux.Server.Server.lock"
+        }
+      }
+    ],
+    "io.github.libtmux.kotlin.Server.newSession": [
+      {
+        "command": "new-session",
+        "evidence": [
+          "build-logic/codegen/src/main/kotlin/io/github/libtmux/codegen/kotlin/OperationGenerator.kt:183",
+          "libtmux/src/main/java/io/github/libtmux/Server.java:154"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/SessionSpec.java:145",
+            "libtmux/src/main/java/io/github/libtmux/SessionSpec.java:137",
+            "libtmux/src/main/java/io/github/libtmux/Server.java:156"
+          ],
+          "port": "java",
+          "reviewed": true,
+          "symbol": "io.github.libtmux.Server.Server.newSession"
         }
       }
     ],
@@ -1389,6 +1618,26 @@
           ],
           "port": "java",
           "symbol": "io.github.libtmux.Session.Session.lastWindow"
+        }
+      }
+    ],
+    "io.github.libtmux.kotlin.Session.newWindow": [
+      {
+        "command": "new-window",
+        "evidence": [
+          "build-logic/codegen/src/main/kotlin/io/github/libtmux/codegen/kotlin/OperationGenerator.kt:183",
+          "libtmux/src/main/java/io/github/libtmux/Session.java:213"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/WindowSpec.java:117",
+            "libtmux/src/main/java/io/github/libtmux/WindowSpec.java:115",
+            "libtmux/src/main/java/io/github/libtmux/Session.java:215"
+          ],
+          "port": "java",
+          "reviewed": true,
+          "symbol": "io.github.libtmux.Session.Session.newWindow"
         }
       }
     ],
@@ -1746,6 +1995,27 @@
           ],
           "port": "java",
           "symbol": "io.github.libtmux.Window.Window.selectLayout"
+        }
+      }
+    ],
+    "io.github.libtmux.kotlin.Window.split": [
+      {
+        "command": "split-window",
+        "evidence": [
+          "build-logic/codegen/src/main/kotlin/io/github/libtmux/codegen/kotlin/OperationGenerator.kt:183",
+          "libtmux/src/main/java/io/github/libtmux/Window.java:189"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/SplitSpec.java:165",
+            "libtmux/src/main/java/io/github/libtmux/SplitSpec.java:162",
+            "libtmux/src/main/java/io/github/libtmux/Pane.java:904",
+            "libtmux/src/main/java/io/github/libtmux/Window.java:191"
+          ],
+          "port": "java",
+          "reviewed": true,
+          "symbol": "io.github.libtmux.Window.Window.split"
         }
       }
     ],

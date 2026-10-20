@@ -122,7 +122,8 @@
         "scope": null,
         "via": {
           "evidence": [
-            "src/LibTmux/Session.Lifecycle.cs:275"
+            "src/LibTmux/Session.Lifecycle.cs:418",
+            "src/LibTmux/Session.Lifecycle.cs:273"
           ],
           "port": "csharp",
           "symbol": "LibTmux.Session.AttachAsync"
@@ -143,6 +144,78 @@
           ],
           "port": "csharp",
           "symbol": "LibTmux.Server.GetClientsAsync"
+        }
+      }
+    ],
+    "LibTmux\\Get-TmuxClientAttachment": [
+      {
+        "command": "list-clients",
+        "evidence": [
+          "src/LibTmux.PowerShell/GetTmuxClientAttachmentCommand.cs:23"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "via": {
+          "evidence": [
+            "src/LibTmux/Server.Clients.cs:36",
+            "src/LibTmux/Server.Clients.cs:22",
+            "src/LibTmux/Client.Administration.cs:114"
+          ],
+          "port": "csharp",
+          "reviewed": true,
+          "symbol": "LibTmux.Client.ResolveAttachmentAsync"
+        }
+      }
+    ],
+    "LibTmux\\Get-TmuxEnvironment": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "src/LibTmux.PowerShell/GetTmuxEnvironmentCommand.cs:39"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "via": {
+          "evidence": [
+            "src/LibTmux/Environment/TmuxEnvironmentOperations.cs:67"
+          ],
+          "port": "csharp",
+          "symbol": "LibTmux.TmuxEnvironment.GetAllAsync"
+        }
+      }
+    ],
+    "LibTmux\\Get-TmuxHook": [
+      {
+        "command": "show-hooks",
+        "evidence": [
+          "src/LibTmux.PowerShell/GetTmuxHookCommand.cs:69"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "via": {
+          "evidence": [
+            "src/LibTmux/Hooks/TmuxHooks.cs:443",
+            "src/LibTmux/Hooks/TmuxHooks.cs:118"
+          ],
+          "port": "csharp",
+          "symbol": "LibTmux.TmuxHooks.GetAllAsync"
+        }
+      }
+    ],
+    "LibTmux\\Get-TmuxOption": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "src/LibTmux.PowerShell/GetTmuxOptionCommand.cs:67"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "via": {
+          "evidence": [
+            "src/LibTmux/Options/TmuxOptions.cs:155"
+          ],
+          "port": "csharp",
+          "symbol": "LibTmux.TmuxOptions.GetAllAsync"
         }
       }
     ],
@@ -205,7 +278,8 @@
         "scope": null,
         "via": {
           "evidence": [
-            "src/LibTmux/Pane.Capture.cs:22"
+            "src/LibTmux/Pane.Capture.cs:144",
+            "src/LibTmux/Pane.Capture.cs:18"
           ],
           "port": "csharp",
           "symbol": "LibTmux.Pane.CaptureAsync"
@@ -225,6 +299,28 @@
           ],
           "port": "csharp",
           "symbol": "LibTmux.Server.InspectAsync"
+        }
+      }
+    ],
+    "LibTmux\\Get-TmuxSession": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "src/LibTmux.PowerShell/GetTmuxSessionCommand.cs:35"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "via": {
+          "evidence": [
+            "src/LibTmux/Snapshots/ServerSnapshot.cs:106",
+            "src/LibTmux/Snapshots/ServerSnapshot.cs:55",
+            "src/LibTmux/Server.Snapshots.cs:119",
+            "src/LibTmux/Server.Snapshots.cs:98",
+            "src/LibTmux/Server.Snapshots.cs:91"
+          ],
+          "port": "csharp",
+          "reviewed": true,
+          "symbol": "LibTmux.Server.CaptureSnapshotAsync"
         }
       }
     ],
@@ -291,6 +387,25 @@
         }
       }
     ],
+    "LibTmux\\New-TmuxSession": [
+      {
+        "command": "new-session",
+        "evidence": [
+          "src/LibTmux.PowerShell/NewTmuxSessionCommand.cs:84"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "src/LibTmux/Server.Lifecycle.cs:368",
+            "src/LibTmux/Server.Lifecycle.cs:173",
+            "src/LibTmux/Server.Lifecycle.cs:135"
+          ],
+          "port": "csharp",
+          "reviewed": true,
+          "symbol": "LibTmux.Server.CreateSessionAsync"
+        }
+      }
+    ],
     "LibTmux\\New-TmuxWindow": [
       {
         "command": "new-window",
@@ -300,10 +415,13 @@
         "scope": null,
         "via": {
           "evidence": [
-            "src/LibTmux/Session.Lifecycle.cs:340",
+            "src/LibTmux/Session.Lifecycle.cs:464",
+            "src/LibTmux/Session.Lifecycle.cs:337",
+            "src/LibTmux/Session.Lifecycle.cs:336",
             "src/LibTmux/Session.Lifecycle.cs:289"
           ],
           "port": "csharp",
+          "reviewed": true,
           "symbol": "LibTmux.Session.CreateWindowAsync"
         }
       }
@@ -390,6 +508,19 @@
         }
       }
     ],
+    "LibTmux\\Send-TmuxKey": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "src/LibTmux.PowerShell/SendTmuxKeyCommand.cs:35",
+          "src/LibTmux.PowerShell/SendTmuxKeyCommand.cs:46",
+          "src/LibTmux.PowerShell/SendTmuxKeyCommand.cs:45",
+          "src/LibTmux.PowerShell/SendTmuxKeyCommand.cs:47"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
     "LibTmux\\Send-TmuxText": [
       {
         "command": "send-keys",
@@ -407,6 +538,42 @@
         }
       }
     ],
+    "LibTmux\\Set-TmuxEnvironment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "src/LibTmux.PowerShell/SetTmuxEnvironmentCommand.cs:59",
+          "src/LibTmux.PowerShell/SetTmuxEnvironmentCommand.cs:66"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "via": {
+          "evidence": [
+            "src/LibTmux/Environment/TmuxEnvironmentOperations.cs:127"
+          ],
+          "port": "csharp",
+          "symbol": "LibTmux.TmuxEnvironment.SetAsync"
+        }
+      }
+    ],
+    "LibTmux\\Set-TmuxHook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "src/LibTmux.PowerShell/SetTmuxHookCommand.cs:74",
+          "src/LibTmux.PowerShell/SetTmuxHookCommand.cs:82"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "via": {
+          "evidence": [
+            "src/LibTmux/Hooks/TmuxHooks.cs:285"
+          ],
+          "port": "csharp",
+          "symbol": "LibTmux.TmuxHooks.SetAsync"
+        }
+      }
+    ],
     "LibTmux\\Set-TmuxLayout": [
       {
         "command": "select-layout",
@@ -421,6 +588,25 @@
           ],
           "port": "csharp",
           "symbol": "LibTmux.Window.SelectLayoutAsync"
+        }
+      }
+    ],
+    "LibTmux\\Set-TmuxOption": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "src/LibTmux.PowerShell/SetTmuxOptionCommand.cs:86",
+          "src/LibTmux.PowerShell/SetTmuxOptionCommand.cs:102"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "via": {
+          "evidence": [
+            "src/LibTmux/Options/TmuxOptions.cs:170",
+            "src/LibTmux/Options/TmuxOptions.cs:200"
+          ],
+          "port": "csharp",
+          "symbol": "LibTmux.TmuxOptions.SetAsync"
         }
       }
     ],

@@ -7,8 +7,8 @@
  * satisfy every other case. Each case is a different way to be stale: a
  * revision that moved on, a symbol the model dropped, a scope the command does
  * not have, evidence that is not a line, a port whose file went missing, a
- * command the file does not cover, and a file that covers fewer commands than
- * the manual documents.
+ * command the file does not cover, a file that covers fewer commands than
+ * the manual documents, and a method named for a command that nothing records.
  */
 import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -87,6 +87,16 @@ const narrow = fixture()
 edit(narrow, 'lua', (document) => { document.commands = ['list-panes'] })
 const narrowRun = run(narrow)
 check('a file that records fewer commands than the manual fails', narrowRun.code !== 0 && /lua: covers \["list-panes"\], expected \["attach-session"/.test(narrowRun.out), narrowRun.out)
+
+const missed = fixture()
+edit(missed, 'py', (document) => { delete document.symbols['libtmux.Pane.send_keys'] })
+const missedRun = run(missed)
+check('a method named for a command that nothing records fails', missedRun.code !== 0 && /py: \d+ methods named for a command have no entry for it and no review: .*Pane\.send_keys \(send-keys\)/.test(missedRun.out), missedRun.out)
+
+const covered = fixture()
+edit(covered, 'ruby', (document) => { delete document.symbols['LibTmux::Pane#send_keys'] })
+const coveredRun = run(covered)
+check('the same miss fails in another port, and the other ports stay quiet', coveredRun.code !== 0 && /ruby: .*send_keys/.test(coveredRun.out) && !/py: .*methods named/.test(coveredRun.out), coveredRun.out)
 
 for (const dir of dirs) rmSync(dir, { recursive: true, force: true })
 if (failures) process.exit(1)

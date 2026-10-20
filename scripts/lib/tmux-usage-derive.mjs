@@ -26,7 +26,8 @@ export function classify(spec, flags) {
 
 /** `panes(where:)`, `Server.panes` and `Server#list_panes` all name their last identifier. */
 export function bareName(name) {
-  return name.replace(/\(.*$/s, '').split(/[.:#\\]+/).filter(Boolean).at(-1) ?? name
+  // Kotlin and Scala quote a name that is also a keyword: Buffers.`set`.
+  return name.replace(/\(.*$/s, '').replace(/`/g, '').split(/[.:#\\]+/).filter(Boolean).at(-1) ?? name
 }
 
 /**

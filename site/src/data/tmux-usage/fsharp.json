@@ -163,6 +163,42 @@
         }
       }
     ],
+    "LibTmux.FSharp.Options.get": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "src/LibTmux.FSharp/Hierarchy.fs:215"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "via": {
+          "evidence": [
+            "src/LibTmux/Options/TmuxOptions.cs:55",
+            "src/LibTmux/Options/TmuxOptions.cs:82"
+          ],
+          "port": "csharp",
+          "symbol": "LibTmux.TmuxOptions.GetAsync"
+        }
+      }
+    ],
+    "LibTmux.FSharp.Options.set": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "src/LibTmux.FSharp/Hierarchy.fs:218"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "via": {
+          "evidence": [
+            "src/LibTmux/Options/TmuxOptions.cs:170",
+            "src/LibTmux/Options/TmuxOptions.cs:200"
+          ],
+          "port": "csharp",
+          "symbol": "LibTmux.TmuxOptions.SetAsync"
+        }
+      }
+    ],
     "LibTmux.FSharp.Pane.capture": [
       {
         "command": "capture-pane",
@@ -172,10 +208,54 @@
         "scope": null,
         "via": {
           "evidence": [
-            "src/LibTmux/Pane.Capture.cs:22"
+            "src/LibTmux/Pane.Capture.cs:144",
+            "src/LibTmux/Pane.Capture.cs:18"
           ],
           "port": "csharp",
           "symbol": "LibTmux.Pane.CaptureAsync"
+        }
+      }
+    ],
+    "LibTmux.FSharp.Pane.sendAndWait": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "src/LibTmux.FSharp/Hierarchy.fs:185"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "src/LibTmux/Pane.Input.cs:24",
+            "src/LibTmux/Pane.Input.cs:71",
+            "src/LibTmux/Pane.Input.cs:94",
+            "src/LibTmux/Pane.Input.cs:100",
+            "src/LibTmux/Pane.Waiting.cs:169",
+            "src/LibTmux/Pane.Waiting.cs:103"
+          ],
+          "port": "csharp",
+          "reviewed": true,
+          "symbol": "LibTmux.Pane.SendTextAndWaitAsync"
+        }
+      }
+    ],
+    "LibTmux.FSharp.Pane.sendAndWaitFor": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "src/LibTmux.FSharp/Hierarchy.fs:193"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "src/LibTmux/Pane.Input.cs:24",
+            "src/LibTmux/Pane.Input.cs:71",
+            "src/LibTmux/Pane.Input.cs:94",
+            "src/LibTmux/Pane.Input.cs:100",
+            "src/LibTmux/Pane.Waiting.cs:169"
+          ],
+          "port": "csharp",
+          "reviewed": true,
+          "symbol": "LibTmux.Pane.SendKeysAndWaitAsync"
         }
       }
     ],
@@ -228,6 +308,22 @@
         }
       },
       {
+        "command": "list-panes",
+        "evidence": [
+          "src/LibTmux.FSharp/Hierarchy.fs:99",
+          "src/LibTmux.FSharp/Hierarchy.fs:109"
+        ],
+        "reviewed": true,
+        "scope": "window",
+        "via": {
+          "evidence": [
+            "src/LibTmux/Window.Relations.cs:123"
+          ],
+          "port": "csharp",
+          "symbol": "LibTmux.Window.GetPanesAsync"
+        }
+      },
+      {
         "command": "list-sessions",
         "evidence": [
           "src/LibTmux.FSharp/Hierarchy.fs:112"
@@ -242,6 +338,23 @@
         }
       },
       {
+        "command": "new-session",
+        "evidence": [
+          "src/LibTmux.FSharp/Hierarchy.fs:74"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "src/LibTmux/Server.Lifecycle.cs:368",
+            "src/LibTmux/Server.Lifecycle.cs:173",
+            "src/LibTmux/Server.Lifecycle.cs:135"
+          ],
+          "port": "csharp",
+          "reviewed": true,
+          "symbol": "LibTmux.Server.CreateSessionAsync"
+        }
+      },
+      {
         "command": "new-window",
         "evidence": [
           "src/LibTmux.FSharp/Hierarchy.fs:99"
@@ -249,10 +362,13 @@
         "scope": null,
         "via": {
           "evidence": [
-            "src/LibTmux/Session.Lifecycle.cs:340",
+            "src/LibTmux/Session.Lifecycle.cs:464",
+            "src/LibTmux/Session.Lifecycle.cs:337",
+            "src/LibTmux/Session.Lifecycle.cs:336",
             "src/LibTmux/Session.Lifecycle.cs:289"
           ],
           "port": "csharp",
+          "reviewed": true,
           "symbol": "LibTmux.Session.CreateWindowAsync"
         }
       }
@@ -274,6 +390,29 @@
         }
       }
     ],
+    "LibTmux.FSharp.Server.tryFindPane": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/LibTmux.FSharp/Hierarchy.fs:132"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "via": {
+          "evidence": [
+            "src/LibTmux/Server.Identity.cs:305",
+            "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:136",
+            "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:137",
+            "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:93",
+            "src/LibTmux/Materialization/RelationReader.cs:53",
+            "src/LibTmux/Server.Identity.cs:303"
+          ],
+          "port": "csharp",
+          "reviewed": true,
+          "symbol": "LibTmux.Server.FindPaneAsync"
+        }
+      }
+    ],
     "LibTmux.FSharp.Server.tryFindSession": [
       {
         "command": "list-sessions",
@@ -287,6 +426,29 @@
           ],
           "port": "csharp",
           "symbol": "LibTmux.Server.FindSessionAsync"
+        }
+      }
+    ],
+    "LibTmux.FSharp.Server.tryFindWindow": [
+      {
+        "command": "list-windows",
+        "evidence": [
+          "src/LibTmux.FSharp/Hierarchy.fs:126"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "via": {
+          "evidence": [
+            "src/LibTmux/Server.Identity.cs:268",
+            "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:136",
+            "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:137",
+            "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:93",
+            "src/LibTmux/Materialization/RelationReader.cs:53",
+            "src/LibTmux/Server.Identity.cs:266"
+          ],
+          "port": "csharp",
+          "reviewed": true,
+          "symbol": "LibTmux.Server.FindWindowAsync"
         }
       }
     ]

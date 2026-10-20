@@ -156,36 +156,90 @@ export function scanJulia(text, { commands, known }) {
     if (above?.doc && !lines.slice(docEnd, line - 1).some((value) => value.trim())) start = above.line
     functions.push({ name: path.at(-1), start, nameLine: line, end, kind: 'function', sites: [], calls: new Map(), receivers: new Map() })
   }
+  /**
+   * A table loop defines one function per row: `for (op, command, Ref) in ((:kill_pane, "kill-pane", PaneRef), ...)`
+   * with an `@eval function $op(...)` body. Each row is a function over the whole loop, and a `$command` in the
+   * body is the command of the row.
+   */
+  const loops = []
+  for (const [line, index] of first) {
+    if (tokens[index].t !== 'id' || tokens[index].v !== 'for' || tokens[index + 1]?.v !== '(') continue
+    const pattern = groups.find((group) => group.open === index + 1)
+    const rowsOpen = pattern && tokens[pattern.close + 1]?.v === 'in' && tokens[pattern.close + 2]?.v === '(' ? pattern.close + 2 : undefined
+    const rowsGroup = rowsOpen && groups.find((group) => group.open === rowsOpen)
+    if (!rowsGroup) continue
+    const vars = tokens.slice(pattern.open + 1, pattern.close).filter((token) => token.t === 'id').map((token) => token.v)
+    const indent = indentOf(lines, line)
+    let end = 0
+    for (let next = tokens[rowsGroup.close].line + 1; next <= lines.length; next++) {
+      if (new RegExp(`^\\s{${indent}}end\\b`).test(lines[next - 1] ?? '')) { end = next; break }
+    }
+    if (!end) continue
+    const rows = []
+    for (let at = rowsGroup.open + 1; at < rowsGroup.close; at++) {
+      const row = tokens[at]?.v === '(' ? groups.find((group) => group.open === at) : undefined
+      if (!row) continue
+      const elements = []
+      let current = []
+      for (let item = row.open + 1; item < row.close; item++) {
+        if (tokens[item].v === ',') { elements.push(current); current = [] } else current.push(tokens[item])
+        if ('([{'.includes(tokens[item].v)) item = groups.find((group) => group.open === item)?.close ?? item
+      }
+      elements.push(current)
+      const name = elements[0]?.length === 2 && elements[0][0].v === ':' ? elements[0][1].v : undefined
+      const spelled = elements.findIndex((parts) => parts.length === 1 && parts[0].t === 'str' && known.has(parts[0].v.split(/\s+/)[0]))
+      if (name && spelled >= 0) rows.push({ name, command: elements[spelled][0].v, commandVar: vars[spelled] })
+      at = row.close
+    }
+    if (!rows.length) continue
+    const fns = rows.map((row) => ({ name: row.name, start: line, nameLine: line, end, kind: 'loop', sites: [], calls: new Map(), receivers: new Map(), synthetic: true, row }))
+    functions.push(...fns)
+    loops.push({ bodyStart: tokens[rowsGroup.close].line + 1, end, fns })
+  }
   /** The name a function is declared with is not a call of it. */
   const isDefinitionName = (token, index, fn) => token.line === fn.nameLine && token.v === fn.name
     && (tokens[index - 1]?.v === 'function' || tokens[index - 1]?.line !== token.line || tokens[index - 1]?.v === '.')
-  const owner = (line) => functions.findLast((fn) => fn.nameLine <= line && line <= fn.end)
+  const owner = (line) => functions.findLast((fn) => !fn.synthetic && fn.nameLine <= line && line <= fn.end)
   const isCommand = (token) => {
     if (token.t !== 'str' || token.doc) return undefined
     const [head, next] = token.v.split(/\s+/)
     return known.has(head) && (next === undefined || next.startsWith('-')) ? head : undefined
   }
+  /** The flags written in the widest bracket group around a token that holds no other command. */
+  const flagsAround = (index, command) => {
+    const holds = (group) => tokens.slice(group.open + 1, group.close).some((other) => {
+      const found = isCommand(other)
+      return found && found !== command
+    })
+    const enclosing = groups.filter((group) => group.open < index && index < group.close).sort((a, b) => (a.close - a.open) - (b.close - b.open))
+    let around = [tokens[index]]
+    for (const group of enclosing) {
+      if (holds(group)) break
+      around = tokens.slice(group.open, group.close + 1)
+    }
+    return [...flagLetters(around)].sort().join('')
+  }
   tokens.forEach((token, index) => {
+    const loop = loops.find((candidate) => candidate.bodyStart <= token.line && token.line <= candidate.end)
+    const targets = loop ? loop.fns : [owner(token.line)].filter(Boolean)
     const command = isCommand(token)
-    const fn = owner(token.line)
-    if (command && commands.has(command) && fn) {
-      const holds = (group) => tokens.slice(group.open + 1, group.close).some((other) => {
-        const found = isCommand(other)
-        return found && found !== command
-      })
-      const enclosing = groups.filter((group) => group.open < index && index < group.close).sort((a, b) => (a.close - a.open) - (b.close - b.open))
-      let around = [token]
-      for (const group of enclosing) {
-        if (holds(group)) break
-        around = tokens.slice(group.open, group.close + 1)
+    if (command && commands.has(command)) for (const fn of targets) fn.sites.push({ command, line: token.line, flags: flagsAround(index, command) })
+    // `$command` in a table loop is the command of each row.
+    if (loop && token.v === '$' && tokens[index + 1]?.t === 'id') {
+      for (const fn of loop.fns) {
+        if (fn.row.commandVar === tokens[index + 1].v && commands.has(fn.row.command.split(/\s+/)[0])) {
+          fn.sites.push({ command: fn.row.command.split(/\s+/)[0], line: token.line, flags: flagsAround(index + 1, fn.row.command.split(/\s+/)[0]) })
+        }
       }
-      fn.sites.push({ command, line: token.line, flags: [...flagLetters(around)].sort().join('') })
     }
     if (token.t === 'id' && !JULIA_KEYWORDS.has(token.v) && tokens[index + 1]?.v === '(' && tokens[index + 1].line === token.line
-      && tokens[index + 1].col === token.col + token.v.length && fn && !isDefinitionName(token, index, fn)) {
-      if (!fn.calls.has(token.v)) fn.calls.set(token.v, token.line)
-      const receiver = tokens[index - 1]?.v === '.' && tokens[index - 2]?.t === 'id' ? tokens[index - 2].v.toLowerCase() : undefined
-      if (receiver) fn.receivers.set(token.v, new Set([...(fn.receivers.get(token.v) ?? []), receiver]))
+      && tokens[index + 1].col === token.col + token.v.length) {
+      for (const fn of targets) {
+        if (isDefinitionName(token, index, fn)) continue
+        if (!fn.calls.has(token.v)) fn.calls.set(token.v, token.line)
+        const receiver = tokens[index - 1]?.v === '.' && tokens[index - 2]?.t === 'id' ? tokens[index - 2].v.toLowerCase() : undefined
+        if (receiver) fn.receivers.set(token.v, new Set([...(fn.receivers.get(token.v) ?? []), receiver]))
+      }
     }
   })
   return { functions, types: [], orphans: [] }

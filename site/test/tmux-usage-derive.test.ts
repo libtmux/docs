@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { scanSource } from '../../scripts/lib/tmux-usage-scan.mjs'
 import { MAX_SHARED_BY, applyExclusions, classify, definitionsOf, deriveUsage, verifyClaims } from '../../scripts/lib/tmux-usage-derive.mjs'
 import { forwardUsage } from '../../scripts/lib/tmux-usage-forward.mjs'
+import { carriesCommand, memberWords, selects, settleCandidates, sweepCandidates } from '../../scripts/lib/tmux-usage-sweep.mjs'
 import { scanFSharp, scanJulia } from '../../scripts/lib/tmux-usage-lexical.mjs'
 import { guardFlag, libraryScopes, scopeProblems } from '../../scripts/lib/tmux-usage-scopes.mjs'
 
@@ -45,7 +46,8 @@ describe('scanning a send site', () => {
       '    raise Unsupported("list-panes")',
       '',
     ].join('\n'))
-    expect(functions[0].sites.map((site) => [site.line, site.flags])).toEqual([[2, 'Fa'], [4, '']])
+    // A name given to an error that says it is unsupported is a message too, whether or not flags follow it.
+    expect(functions[0].sites.map((site) => [site.line, site.flags])).toEqual([[2, 'Fa']])
   })
 
   it('does not lend a neighbouring command its flags', async () => {
@@ -491,5 +493,76 @@ describe('reading Julia and F# by their text', () => {
     expect(byName.newSession.receivers.get('GetPanesAsync')).toEqual(new Set(['session']))
     expect(byName.helper.owner).toBe('Hierarchy')
     expect(byName.helper.calls.size).toBe(0)
+  })
+})
+
+describe('finding the methods a scan misses', () => {
+  const method = (name: string, owner: string, over: Record<string, unknown> = {}) => ({ id: `S.${owner}.${name}`, name, parentName: owner, file: 'src/libtmux/lib.py', kind: 'method', ...over })
+  const find = (symbols: ReturnType<typeof method>[], has: string[] = [], commands = ['new-session', 'new-window', 'kill-pane', 'send-keys']) =>
+    sweepCandidates({ port: 'py', commands, symbols, has: new Set(has) }) as { candidates: { symbol: string; command: string }[]; siblings: number }
+
+  it('reads the verb and the noun of a command in a method name, in whole words', () => {
+    expect(carriesCommand('new-session', 'newSession', 'Server')).toBe(true)
+    expect(carriesCommand('capture-pane', 'capture', 'Pane')).toBe(true)
+    expect(carriesCommand('send-keys', 'sendKeys', 'Pane')).toBe(true)
+    // The controls: another noun, another verb, and a word that only ends like a plural.
+    expect(carriesCommand('kill-window', 'kill', 'Pane')).toBe(false)
+    expect(carriesCommand('list-panes', 'sendKeys', 'Pane')).toBe(false)
+    expect(memberWords('previousLayout')).toEqual(['previous', 'layout'])
+    expect(memberWords('newWindow(in:named:startDirectory:)')).toEqual(['new', 'window'])
+    expect(carriesCommand('previous-window', 'previous', 'Window')).toBe(true)
+  })
+
+  it('finds a method named for a command that has no entry, in the library and not in a test or a consumer', () => {
+    const symbols = [method('new_session', 'Server'), method('helper', 'Server'), method('new_session', 'Fixture', { file: 'tests/fixtures.py' }),
+      method('new_session', 'Plugin', { file: 'src/other_package/plugin.py' }), method('new_session', 'Field', { kind: 'attribute' }), method('GetHashCode', 'Server')]
+    expect(find(symbols).candidates.map((item) => `${item.symbol} ${item.command}`)).toEqual(['S.Server.new_session new-session'])
+    // The control: once the data records an entry for it, there is nothing to find.
+    expect(find(symbols, ['S.Server.new_session\0new-session']).candidates).toEqual([])
+  })
+
+  it('settles a method named for one command by the sibling command it is recorded as sending', () => {
+    const symbols = [method('newWindow', 'Session')]
+    // Session.newWindow carries new-session only through its owner; its own noun is the window's.
+    expect(find(symbols, ['S.Session.newWindow\0new-window'])).toEqual({ candidates: [], siblings: 1 })
+    expect(find(symbols).candidates.map((item) => item.command)).toEqual(['new-session', 'new-window'])
+  })
+
+  describe('settling what is found', () => {
+    const candidates = [{ symbol: 'S.Pane.clear', name: 'clear', owner: 'Pane', command: 'clear-history', file: 'src/libtmux/pane.py' }]
+    const review = (over: Record<string, unknown> = {}) => ({
+      port: 'py', kind: 'other-command', why: 'clear types reset with send-keys.', owner: 'Pane', names: ['clear'], commands: ['clear-history'],
+      evidence: [{ at: 'src/libtmux/pane.py:2', has: ['send_keys("reset")'] }], ...over,
+    })
+    const source = (path: string) => (path === 'src/libtmux/pane.py' ? 'def clear(self):\n    self.send_keys("reset")\n' : undefined)
+    const settle = (reviews: unknown[], covering: unknown[] = [], readSource: typeof source | null = source) =>
+      settleCandidates({ port: 'py', candidates, reviews: reviews as Parameters<typeof settleCandidates>[0]['reviews'], covering: covering as never, readSource: readSource ?? undefined })
+
+    it('leaves a candidate with no review unreviewed, and settles one whose review holds', () => {
+      expect(settle([]).unreviewed).toEqual(candidates)
+      expect(settle([review()])).toEqual({ unreviewed: [], reviewed: 1, problems: [] })
+      expect(selects({ owner: 'Pane', names: ['clear'] }, { ...candidates[0] })).toBe(true)
+      expect(selects({ owner: 'Pane', names: ['reset'] }, { ...candidates[0] })).toBe(false)
+    })
+
+    it.each([
+      ['a line that no longer holds the text', { evidence: [{ at: 'src/libtmux/pane.py:2', has: ['clear-history'] }] }, /does not contain/],
+      ['a line past the end of the file', { evidence: [{ at: 'src/libtmux/pane.py:99' }] }, /not a line of the pinned source/],
+      ['a review that settles nothing', { names: ['gone'] }, /settles no candidate, so it is stale/],
+      ['no reason', { why: ' ' }, /gives no reason/],
+      ['no evidence', { evidence: [] }, /cites no evidence/],
+      ['a kind that is not one of the four', { kind: 'probably-fine' }, /is not one of/],
+      ['a review that names nothing', { owner: undefined, names: undefined, commands: undefined }, /names no owner, member or command/],
+    ])('refuses %s, and leaves the candidate unreviewed', (_name, over, message) => {
+      const result = settle([review(over)])
+      expect(result.problems.join('\n')).toMatch(message)
+      expect(result.unreviewed).toEqual(candidates)
+    })
+
+    it('does not read the evidence without a checkout, and lets a covering rule settle without being checked', () => {
+      expect(settle([review({ evidence: [{ at: 'nowhere.py:1', has: ['x'] }] })], [], null)).toEqual({ unreviewed: [], reviewed: 1, problems: [] })
+      expect(settle([], [{ port: 'py', owner: 'Pane', names: ['to_command'] }])).toEqual({ unreviewed: candidates, reviewed: 0, problems: [] })
+      expect(settle([], [{ port: 'py', owner: 'Pane', names: ['clear'] }]).unreviewed).toEqual([])
+    })
   })
 })

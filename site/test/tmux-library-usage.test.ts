@@ -58,7 +58,9 @@ describe('the recorded usage', () => {
     expect(cell('server', 'py')).toEqual(['Server.panes', 'Server.search_panes'])
     expect(cell('session', 'py')).toEqual(['Session.panes', 'Session.search_panes'])
     expect(cell('window', 'cxx')).toEqual(['Window::panes'])
-    expect(cell('server', 'ruby')).toEqual(['Server#list_panes'])
+    // Ruby's Async scope inherits the core server's methods, so both handles are listed, told apart by their namespace.
+    expect(cell('server', 'ruby')).toEqual(expect.arrayContaining(['Async::Server#list_panes', 'LibTmux::Server#list_panes']))
+    expect(cell('session', 'ruby')).toEqual(['Session#list_panes'])
     expect(cell('window', 'go')).toEqual(['Window.SearchPanes'])
     // A snapshot-based port sends the command in its snapshot call.
     expect(cell('server', 'ts')).toEqual(['Server.snapshot'])
@@ -89,7 +91,8 @@ describe('the recorded usage', () => {
     expect(cell('server', 'scala')).toEqual(expect.arrayContaining(['cats.Server.panes', 'scaladsl.Server.panes']))
     // F# builds a session and then lists the panes of the session it made, and not of the server.
     expect(cell('session', 'fsharp')).toEqual(['newSession'])
-    expect(cell('server', 'fsharp')).toBeUndefined()
+    // tryFindPane reads one pane by id through Server.FindPaneAsync, a server-wide lookup, and says so in a reviewed claim.
+    expect(cell('server', 'fsharp')).toEqual(['tryFindPane'])
     const kotlin = tmuxUsageOf('kotlin', 'io.github.libtmux.kotlin.Server.panes')
     expect(kotlin.find((entry) => entry.command === 'list-panes')!.scopes[0]).toMatchObject({
       via: { port: 'java', symbol: 'io.github.libtmux.Server.Server.panes', evidence: ['libtmux/src/main/java/io/github/libtmux/Server.java:998'] },
@@ -152,6 +155,9 @@ describe('which sends through a helper are listed', () => {
     expect(isListed(use({ reviewed: true }), 'unrelated')).toBe(true)
     expect(isListed(use(), 'unrelated')).toBe(false)
     expect(isListed(use(), 'Pane.sendKeys')).toBe(true)
+    // Swift ids carry argument labels, which hold colons of their own.
+    expect(isListed(use({ command: 'capture-pane' }), 'Server.capture(_:includingHistory:)')).toBe(true)
+    expect(isListed(use({ command: 'list-panes' }), 'Server.sendKeys(_:to:literally:)')).toBe(false)
     // A wrapper is listed by its own name or the core method's, and by a reviewed core entry.
     const wrapped = (over: Partial<NonNullable<UsageUse['via']>> = {}) => use({ evidence: ['w.kt:5'], via: { port: 'java', symbol: 'core.Pane.sendKeys', evidence: ['A.java:1', 'A.java:2'], ...over } })
     expect(isListed(wrapped(), 'wrapper.Pane.run')).toBe(true)

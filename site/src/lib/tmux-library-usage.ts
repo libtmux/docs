@@ -101,7 +101,7 @@ const VERB_ALIASES: Record<string, string[]> = {
 /** The lower-case words of a member name: `sendKeysAsync`, `send_keys` and `Send-TmuxText` each give `send` first. */
 function memberWords(name: string): string[] {
   return name.replace(/([a-z0-9])([A-Z])/g, '$1 $2').split(/[^A-Za-z0-9]+/).map((word) => word.toLowerCase())
-    .filter((word) => word && word !== 'async' && word !== 'tmux').map((word) => word.replace(/s$/, ''))
+    .filter((word) => word && word !== 'async' && word !== 'tmux').map((word) => (/(?:ss|us|is)$/.test(word) ? word : word.replace(/s$/, '')))
 }
 
 /** Whether a member's name carries the verb of the command: `sendKeys` for `send-keys`, `Create` for `new`. */
@@ -111,6 +111,9 @@ export function namesCommand(command: string, member: string): boolean {
   return memberWords(member).some((word) => accepted.includes(word))
 }
 
+/** The member a symbol id ends with, without the owners before it or the argument labels after it: `Server.capture(_:includingHistory:)` gives `capture`. */
+const memberName = (id: string): string => id.replace(/\(.*$/s, '').split(/[.#:\\]+/).at(-1) ?? id
+
 /**
  * Whether a use belongs on the command's own pages, and not only on the method's.
  *
@@ -119,7 +122,7 @@ export function namesCommand(command: string, member: string): boolean {
 export function isListed(use: UsageUse, ...members: string[]): boolean {
   if (use.reviewed) return true
   if (use.via) return isListed({ command: use.command, scope: use.scope, evidence: use.via.evidence, reviewed: use.via.reviewed }, ...members, use.via.symbol)
-  return use.evidence.length - 1 <= LISTED_MAX_HOPS || members.some((member) => namesCommand(use.command, member.split(/[.#:\\]+/).at(-1) ?? member))
+  return use.evidence.length - 1 <= LISTED_MAX_HOPS || members.some((member) => namesCommand(use.command, memberName(member)))
 }
 
 const symbolIndexes = new Map<string, Map<string, ApiSymbol>>()
