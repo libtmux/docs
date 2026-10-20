@@ -330,6 +330,48 @@ describe('from a method to the command and its C function', () => {
     expect(send.scopes.every((use) => use.via?.port === 'csharp')).toBe(true)
   })
 
+  it('sets the command apart from its C function, and one scope from the next, on the line of a method page', async () => {
+    const template = await commandLineTemplate()
+    const line = async (rows: ReturnType<typeof tmuxCommandRows>) => {
+      const document = dom(withoutScope(await renderAstroTemplate(template, { props: { commandRows: rows } })))
+      return { text: document.querySelector('.gp-sphinx-api-mentions')!.textContent!.replace(/\s+/g, ' ').trim(), document }
+    }
+    // One scope: the command and its flag, then the function, as two destinations.
+    const swift = tmuxCommandRows(tmuxSymbolSends('swift', 'Server.panes()'), [])
+    const one = await line(swift)
+    expect(one.text).toBe('tmux command list-panes -a, cmd_list_panes_server')
+    expect([...one.document.querySelectorAll('.gp-sphinx-api-mentions a')].map((a) => a.textContent!.trim())).toEqual(['list-panes', 'cmd_list_panes_server'])
+    expect(one.document.querySelector('.tmux-send')!.textContent!.replace(/\s+/g, ' ').trim()).toBe('-a, cmd_list_panes_server')
+    // Three scopes: each is a whole command and function, and a semicolon, which a comma already inside an item cannot be, divides them.
+    const cmdlet = tmuxCommandRows(tmuxSymbolSends('powershell', 'LibTmux\\Get-TmuxPane'), []).filter((row) => row.command === 'list-panes')
+    expect((await line(cmdlet)).text).toBe(
+      'tmux command list-panes -a, cmd_list_panes_server; list-panes -s, cmd_list_panes_session; list-panes -t, cmd_list_panes_window')
+    // A condition follows the scope it holds for, inside its item.
+    const fsharp = tmuxCommandRows(tmuxSymbolSends('fsharp', 'LibTmux.FSharp.Server.newSession'), []).filter((row) => row.command === 'list-panes')
+    expect((await line(fsharp)).text).toBe(
+      'tmux command list-panes -s, cmd_list_panes_session the spec names a first window; list-panes -t, cmd_list_panes_window the spec has more than one window')
+    // Commands with no C function to name keep the comma, and a line that mixes the two uses the semicolon throughout.
+    const plain = [{ command: 'kill-pane', href: '/tmux/latest/manual/kill-pane/', scopes: [] }, { command: 'kill-window', href: '/tmux/latest/manual/kill-window/', scopes: [] }]
+    expect((await line(plain)).text).toBe('tmux command kill-pane, kill-window')
+    expect((await line([...swift, ...plain])).text).toBe('tmux command list-panes -a, cmd_list_panes_server; kill-pane; kill-window')
+    // The control: a scope with no function has no comma to set it apart.
+    const bare = [{ ...swift[0], scopes: swift[0].scopes.map((use) => ({ ...use, function: undefined })) }]
+    expect((await line(bare)).text).toBe('tmux command list-panes -a Server')
+  })
+
+  it('writes the same line into the Markdown of a method', () => {
+    const model = API_MODELS.powershell
+    const symbol = model.symbols.find((entry) => (entry.publicId ?? entry.id) === 'LibTmux\\Get-TmuxPane')!
+    const text = symbolMarkdown({ model, symbol })
+    const lines = text.split('\n').filter((entry) => entry.startsWith('tmux command: [`list-panes`]'))
+    const manual = tmuxManualUrl('latest', 'list-panes')
+    const of = (scope: string) => `[\`list-panes\`](${manual}) ${scope} scope, [\`cmd_list_panes_${scope}\`](/tmux/latest/reference/c-function-cmd-list-panes-c-cmd_list_panes_${scope}/)`
+    expect(lines).toEqual([['server', 'session', 'window'].map(of).join('; ')].map((entry) => `tmux command: ${entry}`))
+    // The control: a command with no scope is the command alone.
+    const swift = API_MODELS.swift.symbols.find((entry) => (entry.publicId ?? entry.id) === 'Server.panes()')!
+    expect(symbolMarkdown({ model: API_MODELS.swift, symbol: swift })).toContain(`tmux command: [\`list-panes\`](${manual}) server scope, [\`cmd_list_panes_server\`](`)
+  })
+
   it('does not link a method that only reads a capture, whatever the concepts call it equivalent to', () => {
     // The concept map names Window.Panes the Go equivalent of list-panes.
     expect(tmuxSymbolSends('go', 'tmux.Window.Panes')).toEqual([])
@@ -453,6 +495,23 @@ describe('the manual page of a command', () => {
   }
 })
 
+/**
+ * The method page's tmux command line, compiled from the source of `ApiEntry.astro` with nothing around it, and given
+ * rows to render. Its frontmatter is the two lines of the real one that turn rows into items.
+ */
+async function commandLineTemplate() {
+  const source = readFileSync(new URL('../src/components/api/ApiEntry.astro', import.meta.url), 'utf8')
+  const start = source.indexOf('{commandItems.length > 0 && <p')
+  const end = source.indexOf('</p>}', start) + '</p>}'.length
+  expect(start).toBeGreaterThan(0)
+  expect(end).toBeGreaterThan(start)
+  const stub = [
+    '---', "import { tmuxCommandItems, tmuxCommandSeparator } from '../../lib/tmux-reference'", 'const { commandRows } = Astro.props',
+    'const commandItems = tmuxCommandItems(commandRows)', 'const commandSeparator = tmuxCommandSeparator(commandItems)', '---', source.slice(start, end),
+  ].join('\n')
+  return loadAstroTemplate('components/api/ApiEntry.astro', { stubs: { 'components/api/ApiEntry.astro': stub } })
+}
+
 describe('the rendered lists', () => {
   async function render(props: Record<string, unknown>) {
     const template = await loadAstroTemplate('components/tmux/TmuxUsage.astro', { real: ['components/api/ApiBadge.astro', 'components/api/SymbolName.astro'] })
@@ -545,11 +604,7 @@ describe('the rendered lists', () => {
   })
 
   it('cites the line of the core method that sends, and not the generator, beside a generated wrapper', async () => {
-    const source = readFileSync(new URL('../src/components/api/ApiEntry.astro', import.meta.url), 'utf8')
-    const start = source.indexOf('{commandRows.length > 0 && <p')
-    const end = source.indexOf('</p>}', start) + '</p>}'.length
-    const stub = `---\nconst { commandRows } = Astro.props\n---\n${source.slice(start, end)}`
-    const entry = await loadAstroTemplate('components/api/ApiEntry.astro', { stubs: { 'components/api/ApiEntry.astro': stub } })
+    const entry = await commandLineTemplate()
     const rows = tmuxCommandRows(tmuxSymbolSends('kotlin', 'io.github.libtmux.kotlin.Pane.sendKeys'), []).filter((row) => row.scopes.length)
     expect(rows.length).toBeGreaterThan(0)
     const page = await renderAstroTemplate(entry, { props: { commandRows: rows } }).then((text) => dom(withoutScope(text)))
@@ -560,11 +615,7 @@ describe('the rendered lists', () => {
   })
 
   it('cannot render a conditional entry without its qualifier, on a command page or a method page', async () => {
-    const source = readFileSync(new URL('../src/components/api/ApiEntry.astro', import.meta.url), 'utf8')
-    const start = source.indexOf('{commandRows.length > 0 && <p')
-    const end = source.indexOf('</p>}', start) + '</p>}'.length
-    const stub = `---\nconst { commandRows } = Astro.props\n---\n${source.slice(start, end)}`
-    const entry = await loadAstroTemplate('components/api/ApiEntry.astro', { stubs: { 'components/api/ApiEntry.astro': stub } })
+    const entry = await commandLineTemplate()
     const conditional = Object.entries(TMUX_USAGE).flatMap(([port, document]) => Object.entries(document.symbols)
       .flatMap(([symbol, uses]) => uses.filter((use) => use.when).map((use) => ({ port, symbol, use }))))
     expect(conditional.length).toBeGreaterThan(50)
@@ -626,17 +677,11 @@ describe('the rendered lists', () => {
   })
 
   it('adds the command, flag and C function to the declaration card, and no table', async () => {
-    const source = readFileSync(new URL('../src/components/api/ApiEntry.astro', import.meta.url), 'utf8')
-    const start = source.indexOf('{commandRows.length > 0 && <p')
-    const end = source.indexOf('</p>}', start) + '</p>}'.length
-    expect(start).toBeGreaterThan(0)
-    expect(end).toBeGreaterThan(start)
-    const stub = `---\nconst { commandRows } = Astro.props\n---\n${source.slice(start, end)}`
-    const template = await loadAstroTemplate('components/api/ApiEntry.astro', { stubs: { 'components/api/ApiEntry.astro': stub } })
+    const template = await commandLineTemplate()
     const html = (commandRows: ReturnType<typeof tmuxCommandRows>) => renderAstroTemplate(template, { props: { commandRows } }).then((text) => dom(withoutScope(text)))
 
     const method = await html(tmuxCommandRows(tmuxSymbolSends('swift', 'Server.panes()'), []))
-    expect(method.querySelector('.gp-sphinx-api-mentions')!.textContent!.replace(/\s+/g, ' ').trim()).toBe('tmux command list-panes -a cmd_list_panes_server')
+    expect(method.querySelector('.gp-sphinx-api-mentions')!.textContent!.replace(/\s+/g, ' ').trim()).toBe('tmux command list-panes -a, cmd_list_panes_server')
     expect([...method.querySelectorAll('.gp-sphinx-api-mentions a')].map((a) => a.getAttribute('href'))).toEqual([
       '/tmux/latest/manual/list-panes/', '/tmux/latest/reference/c-function-cmd-list-panes-c-cmd_list_panes_server/',
     ])

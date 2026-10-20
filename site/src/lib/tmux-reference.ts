@@ -280,6 +280,39 @@ export function tmuxCommandRows(sends: SymbolSend[], equivalents: { name: string
   ]
 }
 
+/**
+ * One destination pair of a method page's tmux command line: the command with the flag that picks the scope, and the C
+ * function that implements it at that scope. A command sent at three scopes is three items, so each reads whole.
+ */
+export interface CommandItem {
+  command: string
+  href: string
+  /** The scope this item sends the command at; a command with no scope is the command alone. */
+  scope?: NonNullable<SymbolSend['scopes'][number]['scope']>
+  function?: { name: string; href: string }
+  when?: string
+  /** The line that sends, or for a wrapper the core call it makes: what the scope's tooltip cites. */
+  evidence?: string
+}
+
+/** The items of a command line, one for each scope a command is sent at and one for a command with none. */
+export function tmuxCommandItems(rows: CommandRow[]): CommandItem[] {
+  return rows.flatMap((row): CommandItem[] => row.scopes.length
+    ? row.scopes.map((use) => ({
+      command: row.command, href: row.href, scope: use.scope!,
+      ...(use.function ? { function: use.function } : {}),
+      ...(use.when ? { when: use.when } : {}),
+      evidence: use.via ? `Calls ${use.via.symbol}: ${use.via.evidence[0]}` : use.evidence[0],
+    }))
+    : [{ command: row.command, href: row.href, ...(row.when ? { when: row.when } : {}) }])
+}
+
+/**
+ * What goes between the items of one line. A comma already separates a command from its C function, so a line that
+ * has one uses a semicolon between items, and a line of commands alone keeps the comma.
+ */
+export const tmuxCommandSeparator = (items: CommandItem[]) => items.some((item) => item.function) ? '; ' : ', '
+
 /** The commands a library symbol sends, with each scope's manual and C function. */
 export function tmuxSymbolSends(port: string, publicId: string, version = 'latest'): SymbolSend[] {
   return tmuxUsageOf(port, publicId).map((entry) => ({

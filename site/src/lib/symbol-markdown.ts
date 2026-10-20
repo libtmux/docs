@@ -6,7 +6,7 @@ import mentions from '../data/mentions.json'
 import { PORT_NAME, referenceAlternatives } from './api-models'
 import { apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, hasScalarMembers, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures } from './api-sections'
 import { tmuxCommandsFor, tmuxManualUrl } from './tmux-manual-data'
-import { sharedWhen, tmuxSymbolSends, type ResolvedUsage } from './tmux-reference'
+import { tmuxCommandItems, tmuxCommandRows, tmuxCommandSeparator, tmuxSymbolSends, type ResolvedUsage } from './tmux-reference'
 import { CATALOG_KINDS, tmuxCatalogKindsForSymbol, tmuxCatalogUrl } from './tmux-catalog'
 import { tmuxCommandMentions, tmuxMentionMarkdown } from './tmux-links'
 import { productApiIndex } from './product-api'
@@ -193,11 +193,11 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   const commands = ctx.manualLinks ?? (port ? tmuxCommandsFor(port, symbol.publicId ?? symbol.id)
     .map((command) => ({ ...command, href: tmuxManualUrl('latest', command.name) })) : [])
   for (const send of port && !ctx.manualLinks ? tmuxSymbolSends(port, symbol.publicId ?? symbol.id) : []) {
-    // One condition that every scope shares follows the command; scopes that differ each say their own.
-    const shared = sharedWhen(send)
-    const scopes = send.scopes.filter((use) => use.scope).map((use) =>
-      `${use.scope!.label.toLowerCase()} scope${use.function ? ` [\`${use.function.name}\`](${use.function.href})` : ''}${use.when && !shared ? ` (${use.when})` : ''}`)
-    out.push(`tmux command: [\`${send.command}\`](${send.manualHref})${scopes.length ? `, ${scopes.join(', ')}` : ''}${shared ? ` (${shared})` : ''}`, '')
+    // The same items as the method page: each scope names the command and then its C function, set apart by a comma, and
+    // the scopes by a semicolon. A condition follows the scope it holds for.
+    const items = tmuxCommandItems(tmuxCommandRows([send], []))
+    const written = items.map((item) => `[\`${item.command}\`](${item.href})${item.scope ? ` ${item.scope.label.toLowerCase()} scope${item.function ? `, [\`${item.function.name}\`](${item.function.href})` : ''}` : ''}${item.when ? ` (${item.when})` : ''}`)
+    out.push(`tmux command: ${written.join(tmuxCommandSeparator(items))}`, '')
   }
   for (const command of commands) out.push(`tmux command: [\`${command.name}\`](${command.href})`, '')
   const catalog = ctx.catalogLinks ?? (port && !ctx.manualLinks ? tmuxCatalogKindsForSymbol(port, symbol)
