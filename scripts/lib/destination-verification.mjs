@@ -412,7 +412,7 @@ export async function verifyDestination(destination, { get, samples = SAMPLES })
   }
   const checks = await versionChecks(first, destination)
   const pageStatus = shell ? (await get(destination.url)).status : undefined
-  return { ...base, ...rest, ...(repository && { repository: repository[0] }), ...(directory && { directory }),
+  return { ...base, ...rest, ...(repository && { repository: repository.find((repo) => expected.includes(repo)) ?? repository[0] }), ...(directory && { directory }),
     // These hosts answer the destination page with a shell or a challenge, so what it returns is kept beside the proof.
     ...(pageStatus !== undefined && { pageStatus }), versionChecks: checks, ...(count > 1 && { samples: count }) }
 }

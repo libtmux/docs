@@ -61,6 +61,9 @@ const routes = {
   // Two releases, for ports that pin different ones of one package.
   '/pypi.org/pypi/demo-twin/json': () => text({ info: { name: 'demo-twin', version: '2.0.0', project_urls: { Repository: 'https://github.com/demo/demo' } }, releases: { '1.0.0': [{}], '2.0.0': [{}] } }),
   '/pypi.org/project/demo-twin/': () => [200, 'text/html', html('Client Challenge')],
+  // A project whose home page is another repository and whose source is this one: the host lists the other first.
+  '/pypi.org/pypi/demo-multi/json': () => text({ info: { name: 'demo-multi', version: '1.0.0', home_page: 'https://github.com/other/docs', project_urls: { Source: 'https://github.com/demo/demo' } }, releases: { '1.0.0': [{}] } }),
+  '/pypi.org/project/demo-multi/': () => [200, 'text/html', html('Client Challenge')],
   '/pypi.org/pypi/demo-wrong/json': () => text({ info: { name: 'another-project', version: '2.0.0', project_urls: {} }, releases: { '2.0.0': [{}] } }),
   '/pypi.org/project/demo-good/': () => [200, 'text/html', html('Client Challenge')],
   '/pypi.org/project/demo-wrong/': () => [200, 'text/html', html('Client Challenge')],
@@ -270,6 +273,14 @@ const record = JSON.parse(readFileSync(clean.out, 'utf8')).destinations.find((ca
 if (record?.ok === true && record.identity === 'demo-good' && record.status === 200 && record.checkedAt === '2026-01-01' && record.pageStatus === 200 && record.repository === 'demo/demo') console.log('ok   the evidence records the url, status, identity, repository, page status and date')
 else { console.error(`FAIL the evidence record is incomplete: ${JSON.stringify(record)}`); failures += 1 }
 
+// The repository recorded is the one that matched an owner, not the first the host lists, or the run's own
+// closing comparison would fail a destination it had just passed.
+const multi = await verify('a registry that lists another repository first passes on the one that matches', [entry('demo-multi', { ...pypi('demo-multi') })], {
+  manifests: manifestFor([['demo-multi', '1.0.0']]), expect: { code: 0, matches: [/ok\s+200\s+package\s+https:\/\/pypi\.org\/project\/demo-multi\//], excludes: [/problem/] },
+})
+const multiRecord = JSON.parse(readFileSync(multi.out, 'utf8')).destinations.find((candidate) => candidate.url === 'https://pypi.org/project/demo-multi/')
+if (multiRecord?.repository === 'demo/demo') console.log('ok   the evidence names the repository that matched an owner, not the first listed')
+else { console.error(`FAIL the evidence named ${multiRecord?.repository}, not demo/demo`); failures += 1 }
 await verify('a 200 about another package fails on identity', [entry('demo-wrong', { ...pypi('demo-wrong') })], {
   expect: { code: 1, matches: [/FAIL\s+200\s+package/, /identity: PyPI names the project "another-project", expected "demo-wrong"/] },
 })
