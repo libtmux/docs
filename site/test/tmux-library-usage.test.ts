@@ -451,3 +451,70 @@ describe('the chip layout of the usage table', () => {
     ]))
   })
 })
+
+const MARKS_CSS = readFileSync(new URL('../src/styles/kind-marks.css', import.meta.url), 'utf8')
+const CHIP_CONTAINERS = ['.api-elsewhere-value', '.api-command-related', '.tmux-usage', 'nav.api-related']
+const squash = (selector: string) => selector.replace(/\s+/g, ' ').trim()
+
+/**
+ * What a reader sees go wrong when the pointer or the keyboard reaches a split chip: the tree's
+ * selected-node ring around the mark alone, a chip whose surface changes while its border does not,
+ * and a focus outline that is not one ring around the whole chip. Empty means the stylesheet rules
+ * out all three, and keeps the ring where the tree selects a node.
+ */
+function chipStateProblems(css: string): string[] {
+  const all = parseRules(css)
+  const problems: string[] = []
+  const inChip = (rule: { selector: string }) => CHIP_CONTAINERS.every((container) => rule.selector.includes(container)) && rule.selector.includes('a:has(> .api-nav__kind)')
+  const chipRules = all.filter((rule) => !rule.at && inChip(rule))
+  const reachesChip = (rule: { selector: string }, state: string) => squash(rule.selector).includes(state)
+  /** The selector without the `:has(> .api-nav__kind)` that picks out the chip, so `> .api-nav__kind` means its mark. */
+  const targetsMark = (rule: { selector: string }) => squash(rule.selector).replace(/:has\([^)]*\)/g, '').includes('> .api-nav__kind')
+
+  const hovered = chipRules.find((rule) => reachesChip(rule, ':is(:hover, :focus-visible)') && !targetsMark(rule))
+  if (!hovered?.body.background || !hovered.body['border-color']) problems.push('a hovered chip changes its surface but not its border')
+
+  // The active rule lights any hovered link's mark; the chip must put its own mark back.
+  const ring = all.filter((rule) => !rule.at && (rule.body['box-shadow'] ?? '').includes('--mk-act-ring'))
+  const lightsAnyLink = ring.some((rule) => squash(rule.selector).includes(':is(a, summary):is(:hover, :focus-visible) > .api-nav__kind'))
+  const reset = chipRules.find((rule) => reachesChip(rule, ':is(:hover, :focus-visible) > .api-nav__kind'))
+  if (lightsAnyLink && (!reset || (reset.body['box-shadow'] ?? '').includes('--mk-act') || /--mk-act/.test(reset.body.background ?? '') || /--mk-act/.test(reset.body.color ?? ''))) {
+    problems.push("a hovered chip's mark takes the active ring")
+  }
+  if (ring.some((rule) => inChip(rule))) problems.push('a chip rule sets the active ring')
+
+  const focus = chipRules.find((rule) => reachesChip(rule, ':focus-visible') && !reachesChip(rule, ':hover') && !targetsMark(rule))
+  if (!focus || !(focus.body.outline ?? '').startsWith('2px solid ') || !focus.body['outline-offset'] || parseInt(focus.body['outline-offset']) < 1) problems.push('focus is not one outline clear of the whole chip')
+  if (focus && 'box-shadow' in focus.body) problems.push('focus rings the chip with a shadow')
+
+  const forced = all.filter((rule) => /forced-colors/.test(rule.at))
+  const forcedReset = forced.find((rule) => inChip(rule) && reachesChip(rule, ':is(:hover, :focus-visible) > .api-nav__kind'))
+  if (!forcedReset || forcedReset.body.background !== 'Canvas') problems.push("forced colours light a hovered chip's mark alone")
+
+  // The control: the tree still selects a node with the ring.
+  const selected = ring.find((rule) => squash(rule.selector).includes(".api-nav__leaf[aria-current='page'] > .api-nav__kind"))
+  if (!selected) problems.push("the tree's selected node lost its ring")
+  return problems
+}
+
+describe('the hover and focus of a split chip', () => {
+  it('acts on the whole chip, leaves the mark as it rests, and focuses with one outline', () => {
+    expect(chipStateProblems(MARKS_CSS)).toEqual([])
+  })
+
+  it('catches the mark-only ring, the surface-only hover and a focus that rings the mark', () => {
+    const chipReset = /:is\(\.api-elsewhere-value[^{]*a:has\(> \.api-nav__kind\):is\(:hover, :focus-visible\) > \.api-nav__kind \{[^}]*\}\n/
+    expect(MARKS_CSS).toMatch(chipReset)
+    expect(chipStateProblems(MARKS_CSS.replace(chipReset, ''))).toEqual(["a hovered chip's mark takes the active ring"])
+    expect(chipStateProblems(MARKS_CSS.replace(/(a:has\(> \.api-nav__kind\):is\(:hover, :focus-visible\) \{\n[^}]*?)\n  border-color:[^\n]*/, '$1')))
+      .toEqual(['a hovered chip changes its surface but not its border'])
+    expect(chipStateProblems(MARKS_CSS.replace(/(a:has\(> \.api-nav__kind\):focus-visible \{\n)  outline: [^\n]*\n  outline-offset: [^\n]*\n/, '$1  box-shadow: var(--mk-act-ring, none);\n')))
+      .toEqual(expect.arrayContaining(['focus is not one outline clear of the whole chip', 'focus rings the chip with a shadow', 'a chip rule sets the active ring']))
+  })
+
+  it('keeps the ring on the tree, so the fix is not to drop it everywhere', () => {
+    // A fix that deletes the active ring would pass the chip checks and lose the tree's selected node.
+    const noRing = MARKS_CSS.replace('box-shadow: var(--mk-act-ring, none);', '')
+    expect(chipStateProblems(noRing)).toEqual(["the tree's selected node lost its ring"])
+  })
+})

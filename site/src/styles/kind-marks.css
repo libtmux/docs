@@ -270,8 +270,24 @@
 @supports not (text-box: trim-both cap alphabetic) {
   :is(.api-elsewhere-value, .api-command-related, .tmux-usage, nav.api-related) a > .api-nav__kind + code { margin: 0 0 var(--sp-pb); line-height: 1; }
 }
+/*
+ * Hover and focus act on the chip, so it reads as one control: the surface and the border darken together
+ * and the mark keeps the fill it rests with. The loud active mark and its 2px ring are the selected row of
+ * the navigation tree; a ring on the mark alone overhangs the chip's rounded corner. Focus is one outline
+ * around the whole chip, clear of its edge.
+ */
 :is(.api-elsewhere-value, .api-command-related, .tmux-usage, nav.api-related) a:has(> .api-nav__kind):is(:hover, :focus-visible) {
   background: color-mix(in srgb, var(--color-foreground-primary, currentColor) 9%, transparent);
+  border-color: color-mix(in srgb, var(--color-foreground-primary, currentColor) 40%, transparent);
+}
+:is(.api-elsewhere-value, .api-command-related, .tmux-usage, nav.api-related) a:has(> .api-nav__kind):is(:hover, :focus-visible) > .api-nav__kind {
+  background: var(--mk-fill, var(--mk-bg, transparent));
+  color: var(--mk-ink, var(--mk-fg, inherit));
+  box-shadow: var(--mk-shadow, none);
+}
+:is(.api-elsewhere-value, .api-command-related, .tmux-usage, nav.api-related) a:has(> .api-nav__kind):focus-visible {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 /* In the contents column each chip is its own row: as wide as its content, with an even gap between rows. */
 .api-page-contents nav.api-related ul { display: grid; gap: .5rem; justify-items: start; }
@@ -368,6 +384,15 @@
     background: Highlight;
     color: HighlightText;
     border-color: Highlight;
+  }
+  /* A hovered chip changes as a whole, in its border; its mark stays as it rests. */
+  :is(.api-elsewhere-value, .api-command-related, .tmux-usage, nav.api-related) a:has(> .api-nav__kind):is(:hover, :focus-visible) {
+    border-color: Highlight;
+  }
+  :is(.api-elsewhere-value, .api-command-related, .tmux-usage, nav.api-related) a:has(> .api-nav__kind):is(:hover, :focus-visible) > .api-nav__kind {
+    background: Canvas;
+    color: CanvasText;
+    border-color: CanvasText;
   }
 }
 
