@@ -41,6 +41,34 @@ workflow and select their own language.
 in `versions.json` (§4) — pick it once, since changing it later is a URL
 break for every published version.
 
+### Inventory the port's packages and destinations
+
+The header links a port's repository and package host and lists every other
+package, command, module and source directory it ships.
+`site/src/lib/port-inventory.ts` holds that list, one entry per thing a reader
+can depend on, run or read. Write each entry from the owning manifests and
+release configuration, not from the documentation products: the library
+first, then its repository, companions, commands, MCP server and testing
+products. Leave out private workspaces and development tools.
+
+Name a package page or API reference only where the host really serves one.
+A port installed from Git, or from its own registry, names no host page. Set
+an entry `planned` or `configured-unpublished` until its host serves it: only
+`published` entries produce links. List a page an ecosystem suggests and its
+host does not serve as `unavailable`.
+
+Then run the verifier. It requests each URL once, read-only, from the live
+hosts and records what it found:
+
+```console
+$ node scripts/verify-destinations.mjs
+```
+
+The command exits 1 if a published destination fails or an unlinked one starts
+to answer. Commit the updated `site/src/data/destination-evidence.json`; the
+unit tests and the publication audit hold the inventory to it. Add the port's
+expected links to `site/test/fixtures/header-links.ts`.
+
 ## 2. Add the worktree
 
 Every port keeps its docs-tooling changes on a dedicated worktree, branch
@@ -197,6 +225,7 @@ bytes are a no-op and different bytes fail before upload.
 ## Checklist summary
 
 - [ ] `ports.ts`: new `Port` entry, renderer and product availability decided
+- [ ] `port-inventory.ts`: entries from the manifests, verified, with evidence committed
 - [ ] Worktree added on branch `docs-site`, `checkout`/`worktree` paths match
 - [ ] Native exporter and API-model adapter cover the public surface
 - [ ] Source-owned prose/examples stage from the selected revision
