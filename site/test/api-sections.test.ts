@@ -85,6 +85,11 @@ describe('reference page navigation', () => {
     expect(apiEntryFields(method, 'lua').params.map((param) => param.name)).toEqual(['width'])
   })
 
+  it('lists a C function\'s leading self, which the caller passes', () => {
+    const exec = symbol('cmd_show_messages_exec', { kind: 'function', signatures: [{ params: [{ name: 'self', type: 'struct cmd *' }, { name: 'item', type: 'struct cmdq_item *' }] }] })
+    expect(apiEntryFields(exec, 'c').params.map((param) => param.name)).toEqual(['self', 'item'])
+  })
+
   it('treats the Python implementation docstring as documentation for every overload', () => {
     const capture = API_MODELS.py.symbols.find((entry) => entry.id === 'libtmux.pane.Pane.capture_pane')!
     const fields = apiEntryFields(capture, 'py')

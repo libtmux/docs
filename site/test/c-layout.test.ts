@@ -5,7 +5,7 @@ import { Window } from 'happy-dom'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { describe, expect, it } from 'vitest'
 import { parameterId, SymbolIndex, type ApiSymbol, type Param } from '@libtmux/api-model'
-import { nativeSignatureText, usesNativeSignatures } from '../src/lib/api-sections'
+import { apiEntryFields, nativeSignatureText, usesNativeSignatures } from '../src/lib/api-sections'
 import { apiSignatureLayouts, CODE_COLUMNS, codeWidthFailures, signatureSpans, supportsCSignatures, type CodeLayout } from '../src/lib/code-layout'
 import { formatCDeclaration, formatCEnumDeclaration } from '../src/lib/cxx-code-layout'
 import { symbolMarkdownWithLayout } from '../src/lib/symbol-markdown'
@@ -372,6 +372,9 @@ describe('every tmux declaration the C layout reads', () => {
         const links = spans.filter((span) => span.link?.href.startsWith('#'))
         expect(links.map((span) => span.text), symbol.id).toEqual(symbol.kind === 'function' ? declared : [])
         expect(links.map((span) => span.link!.href), symbol.id).toEqual(links.map((span) => `#${encodeURIComponent(parameterId(symbol, span.text))}`))
+        // Each link lands on a parameter row the page lists.
+        const rows = new Set(apiEntryFields(symbol, 'c').params.map((param) => param.name))
+        expect(links.map((span) => span.text).filter((name) => !rows.has(name)), symbol.id).toEqual([])
         if (layout.text !== signature.raw) wrapped++
       }
     }

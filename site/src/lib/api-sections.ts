@@ -155,8 +155,9 @@ export function apiEntryFields(symbol: ApiSymbol, port?: string) {
       if (familyDocumentation > 0 && i !== familyDocumentation) return []
       // A C# params array is extracted as two entries; only the declared name is a parameter.
       const declared = port === 'csharp' ? csharpParameters(signature) : undefined
-      // Python and Lua spell the receiver as a first parameter; the call never passes it.
-      const receiver = (param: Param, position: number) => position === 0 && !param.doc &&
+      // Python, Rust and Lua spell the receiver as a first parameter; the call never passes it.
+      // A C function's `self` is an argument like any other.
+      const receiver = (param: Param, position: number) => port !== 'c' && position === 0 && !param.doc &&
         (param.name === 'self' || (port === 'py' && param.name === 'cls'))
       return signature.params.filter((param, position) => !receiver(param, position) &&
         (!declared || declared.some((entry) => entry.index === position)))
