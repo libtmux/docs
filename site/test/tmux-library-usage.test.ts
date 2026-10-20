@@ -361,6 +361,22 @@ describe('a release a library refuses to send on', () => {
     expect(use('java', main, 'display-message')?.evidence[0]).toBe('libtmux-mcp/src/main/java/io/github/libtmux/mcp/LaunchConfiguration.java:111')
     // go: the helper registers a kill for the end of the test, which is not a send of the call itself.
     expect(use('go', 'tmuxtest.NewSession', 'kill-session')?.when).toBe('the test ends, in t.Cleanup')
+    // ts: an explicit launch asks whether the server is there (list-sessions) and, if it is, for its socket path; the lines that say so are cited.
+    expect(use('ts', 'mcp.server.main', 'list-sessions')).toMatchObject({ when: 'an explicit launch', reviewed: true })
+    expect(use('ts', 'mcp.server.main', 'display-message')?.evidence).toEqual(expect.arrayContaining(['packages/mcp/src/startup.ts:107', 'packages/mcp/src/startup.ts:110', 'packages/mcp/src/startup.ts:124']))
+  })
+
+  it('credits a wrapper with every send of a method it calls, and reads a hook the way it reads an option', () => {
+    // OpenObservation sends list-windows on every call, as it does the other four, so the method that opens one has all five.
+    const sends = (symbol: string) => (TMUX_USAGE.go.symbols[symbol] ?? []).map((entry) => entry.command).sort()
+    expect(sends('tmux.Pane.OpenObservation')).toEqual(['capture-pane', 'delete-buffer', 'list-windows', 'refresh-client', 'save-buffer'])
+    expect(sends('tmux.Running.StreamTo')).toEqual(expect.arrayContaining(sends('tmux.Pane.OpenObservation')))
+    expect(use('go', 'tmux.Running.StreamTo', 'list-windows')).toMatchObject({ scope: 'session', via: { symbol: 'tmux.Pane.OpenObservation' } })
+    // julia's get_hook reads hooks with show-options -H on either receiver, as set_hook and unset_hook check them first; it is what it is for.
+    expect(use('julia', 'LibTmux.get_hook', 'show-options')).toMatchObject({ reviewed: true })
+    expect(use('julia', 'LibTmux.get_hook', 'show-options')?.incidental).toBeUndefined()
+    expect(use('julia', 'LibTmux.get_hook', 'show-options')?.when).toBeUndefined()
+    expect(use('julia', 'LibTmux.set_hook', 'show-options')).toMatchObject({ incidental: true, when: 'on a Server' })
   })
 
   it('records the command-alias inventory of a guarded Ruby call as list-commands and show-options, on the same symbols', () => {

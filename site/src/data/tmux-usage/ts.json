@@ -122,11 +122,26 @@
         "command": "display-message",
         "evidence": [
           "packages/mcp/src/startup.ts:92",
+          "packages/mcp/src/startup.ts:107",
+          "packages/mcp/src/startup.ts:110",
+          "packages/mcp/src/startup.ts:124",
           "packages/mcp/src/server.ts:244"
         ],
         "reviewed": true,
         "scope": null,
         "when": "unless an explicit launch finds no server"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/server_utils.ts:129",
+          "packages/libtmux/src/server.ts:1301",
+          "packages/mcp/src/startup.ts:107",
+          "packages/mcp/src/server.ts:244"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "an explicit launch"
       },
       {
         "command": "show-options",

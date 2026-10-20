@@ -302,10 +302,13 @@ negative script seeds a rule that is wrong:
   `copy-mode` branch of a helper that `enterCopyMode` shares), or a request
   option that a wrapper never sets. Each cites the lines that show the guard,
   an exclusion that removes nothing fails, and `commands` limits it to those
-  commands of the symbols it names. A send that every default call makes is not an
-  exclusion, even when the method only makes it to prepare the call: it is
-  `incidental`, as the command-alias inventory a guarded Ruby call reads before
-  it sends is (`show-options` and `list-commands`, on the same nine symbols).
+  commands of the symbols it names. A send that a call makes whether or not the
+  caller asked for it is not an exclusion, even when the method only makes it to
+  prepare the call: it is `incidental`, as the command-alias inventory a guarded
+  Ruby call reads before it sends is (`show-options` and `list-commands`, on the
+  same nine symbols). `Session#kill` reads it only when it is given expected
+  windows or panes, since its default call takes `super`, so its two entries say
+  `when`.
 - `dispatchers.json`: the calls that send what they are given, per port, and the
   calls that only build a command value. Each cites the lines of the pinned
   source that show it and, for a call that sends, the chain from there to a

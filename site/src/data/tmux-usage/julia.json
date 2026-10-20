@@ -208,6 +208,20 @@
         "when": "on a Server"
       }
     ],
+    "LibTmux.get_hook": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "src/configuration.jl:159",
+          "src/configuration.jl:160",
+          "src/configuration.jl:176",
+          "src/configuration.jl:403",
+          "src/configuration.jl:439"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
     "LibTmux.get_option": [
       {
         "command": "show-options",

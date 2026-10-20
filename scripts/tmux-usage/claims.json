@@ -2022,6 +2022,60 @@
           ]
         },
         {
+          "at": "packages/mcp/src/startup.ts:107",
+          "has": [
+            "server.isAlive()"
+          ]
+        },
+        {
+          "at": "packages/mcp/src/startup.ts:110",
+          "has": [
+            "server.cmd(\"display-message\""
+          ]
+        },
+        {
+          "at": "packages/mcp/src/startup.ts:124",
+          "has": [
+            "return Object.freeze("
+          ]
+        },
+        {
+          "at": "packages/mcp/src/server.ts:244",
+          "has": [
+            "inspectServerStartup("
+          ],
+          "in": "mcp.server.main"
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "symbol": "mcp.server.main",
+      "command": "list-sessions",
+      "scope": null,
+      "when": "an explicit launch",
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/operations/server_utils.ts:129",
+          "has": [
+            "runtime.transport.execute(",
+            "[\"list-sessions\"]"
+          ],
+          "span": 6
+        },
+        {
+          "at": "packages/libtmux/src/server.ts:1301",
+          "has": [
+            "isAlive(runtimeForServer(this))"
+          ]
+        },
+        {
+          "at": "packages/mcp/src/startup.ts:107",
+          "has": [
+            "server.isAlive()"
+          ]
+        },
+        {
           "at": "packages/mcp/src/server.ts:244",
           "has": [
             "inspectServerStartup("
@@ -11017,6 +11071,45 @@
       ]
     },
     {
+      "port": "julia",
+      "symbol": "LibTmux.get_hook",
+      "command": "show-options",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "src/configuration.jl:159",
+          "has": [
+            "\"show-options\""
+          ]
+        },
+        {
+          "at": "src/configuration.jl:160",
+          "has": [
+            "_operation_command(context, args...)"
+          ]
+        },
+        {
+          "at": "src/configuration.jl:176",
+          "has": [
+            "_configuration_rows(context, scope, name)"
+          ]
+        },
+        {
+          "at": "src/configuration.jl:403",
+          "has": [
+            "_configuration_option_rows(context, scope, name)"
+          ]
+        },
+        {
+          "at": "src/configuration.jl:439",
+          "has": [
+            "_configuration_hook_rows(context, scope, args.name)"
+          ],
+          "in": "LibTmux.get_hook"
+        }
+      ]
+    },
+    {
       "port": "cxx",
       "symbol": "libtmux::Connection::set_pane_output",
       "command": "refresh-client",
@@ -13252,6 +13345,7 @@
       "symbol": "tmux.Pane.OpenObservation",
       "command": "list-windows",
       "scope": "session",
+      "forwardable": true,
       "evidence": [
         {
           "at": "tmux/control_observation.go:346",

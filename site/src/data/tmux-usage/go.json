@@ -751,6 +751,7 @@
           "tmux/control_observation.go:346",
           "tmux/control_observation.go:301"
         ],
+        "forwardable": true,
         "reviewed": true,
         "scope": "session"
       },
@@ -1067,6 +1068,23 @@
             "tmux/control_observation.go:301"
           ],
           "port": "go",
+          "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+          "symbol": "tmux.Pane.OpenObservation"
+        }
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "tmux/session_run.go:549"
+        ],
+        "scope": "session",
+        "via": {
+          "evidence": [
+            "tmux/control_observation.go:346",
+            "tmux/control_observation.go:301"
+          ],
+          "port": "go",
+          "reviewed": true,
           "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
           "symbol": "tmux.Pane.OpenObservation"
         }
