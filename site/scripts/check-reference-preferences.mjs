@@ -116,11 +116,23 @@ export async function checkReferencePreferences(browser, base) {
 }
 
 /**
+ * The links each port page shows, in order, and then its disclosure. Rust and
+ * Java have a reference host as well, so they show three chips; the others two.
+ * Written out rather than read from the page, so a missing chip is a failure.
+ */
+const HEADER_PAGES = {
+  '/py/latest/': ['source', 'package', 'destinations'],
+  '/ts/latest/': ['source', 'package', 'destinations'],
+  '/rs/latest/': ['source', 'package', 'api', 'destinations'],
+  '/api-example-probe/': ['source', 'package', 'destinations'],
+}
+
+/**
  * The port's repository and package links and its packages disclosure sit in
  * the bar from 48rem and in the Menu panel below it, so the bar never grows and
  * exactly one copy is displayed.
  */
-async function checkHeaderLinks(page, path, width, scripted) {
+export async function checkHeaderLinks(page, path, width, scripted) {
   const compact = width < 768
   const where = `${path} at ${width}px`
   const state = await page.evaluate(() => {
@@ -141,17 +153,19 @@ async function checkHeaderLinks(page, path, width, scripted) {
     }
   })
   const [exposed, hidden] = compact ? [state.menu, state.bar] : [state.bar, state.menu]
-  assert.deepEqual(exposed.map(({ kind }) => kind), ['source', 'package', 'destinations'], `${where}: the displayed links and disclosure`)
+  assert.deepEqual(exposed.map(({ kind }) => kind), HEADER_PAGES[path], `${where}: the displayed links and disclosure`)
   assert.equal(hidden.length, 0, `${where}: the other copy is not displayed`)
   assert(state.height <= (state.language && width <= 560 ? 97 : 53), `${where}: the links leave the header height unchanged (${state.height}px)`)
   for (const entry of exposed) {
     assert(entry.width >= 24 && entry.height >= 24, `${where}: ${entry.kind} is at least 24px square`)
     assert(entry.name, `${where}: ${entry.kind} has an accessible name`)
-    assert.equal(entry.glyph, 'none', `${where}: ${entry.kind} draws no external-link glyph of its own`)
+    // A pseudo-element with no generated content computes to none, or to normal in some engines.
+    assert(['none', 'normal'].includes(entry.glyph), `${where}: ${entry.kind} draws no external-link glyph of its own (${entry.glyph})`)
   }
   if (!compact) {
     assert(state.brand.right <= exposed[0].left && exposed.at(-1).right <= state.controls.left, `${where}: bar links sit between the wordmark and the controls`)
     assert(exposed.every((entry, index) => index === 0 || exposed[index - 1].right <= entry.left + 0.5), `${where}: the links do not overlap`)
+    assert(exposed.every((entry) => entry.right <= state.controls.left), `${where}: the links end before the controls`)
   }
   const placement = compact ? 'menu' : 'bar'
   const picker = page.locator(`details[data-header-picker="destinations"][data-placement="${placement}"]`)
@@ -174,12 +188,64 @@ async function checkHeaderLinks(page, path, width, scripted) {
   // Escape closes it and returns focus to its trigger.
   await page.keyboard.press('Escape')
   if (scripted) {
-    await picker.locator('[data-picker-panel]').waitFor({ state: 'hidden' })
+    const closed = await picker.locator('[data-picker-panel]').waitFor({ state: 'hidden', timeout: 2000 }).then(() => true, () => false)
+    assert(closed, `${where}: Escape closes the disclosure`)
     assert(await picker.locator(':scope > summary').evaluate((summary) => summary === document.activeElement), `${where}: Escape returns focus to the trigger`)
   } else {
     await picker.locator(':scope > summary').click()
+    await picker.locator('[data-picker-panel]').waitFor({ state: 'hidden' })
   }
-  await picker.locator('[data-picker-panel]').waitFor({ state: 'hidden' })
+}
+
+/**
+ * The check must fail when a chip is missing or hidden, a hint glyph widens a
+ * chip, chips overlap or shrink, the open disclosure leaves the viewport, or
+ * Escape stops closing it or stops returning focus. The control is the same
+ * page and width with nothing broken, so a check that failed everything would
+ * not satisfy the cases.
+ */
+export async function checkHeaderLinksFail(browser, base) {
+  const run = async ({ path = '/rs/latest/', width = 1440, css, script }) => {
+    const context = await browser.newContext({ javaScriptEnabled: true, reducedMotion: 'reduce' })
+    const page = await context.newPage()
+    page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
+    try {
+      await page.goto(`${base}${path}`)
+      await page.waitForFunction(() => document.fonts.status === 'loaded')
+      await page.setViewportSize({ width, height: 900 })
+      await page.waitForSelector('details[data-header-picker][data-enhanced]', { state: 'attached' })
+      if (css) await page.addStyleTag({ content: css })
+      if (script) await page.evaluate(script)
+      await page.locator('.site-header__menu > summary').click()
+      await checkHeaderLinks(page, path, width, true)
+    } finally {
+      await context.close()
+    }
+  }
+  await run({})
+  await run({ path: '/py/latest/', width: 390 })
+  const controls = [
+    ['a hidden package chip', { css: '.header-link[data-header-action="package"] { display: none !important }' }, /the displayed links and disclosure/],
+    ['a hidden reference chip', { css: '.header-link[data-header-action="api"] { display: none !important }' }, /the displayed links and disclosure/],
+    ['a hidden disclosure', { css: '.header-picker { display: none !important }' }, /the displayed links and disclosure/],
+    ['a hint glyph on a chip', { css: '.site-header a.header-link::after { content: "x" !important }' }, /draws no external-link glyph/],
+    ['overlapping chips', { css: '.site-header .header-link { margin-inline-end: -2rem !important }' }, /the links do not overlap/],
+    ['a chip too small to press', { css: '.site-header .header-link { width: 10px !important; min-width: 0 !important; padding: 0 !important; overflow: hidden !important }' }, /at least 24px square/],
+    ['a disclosure that leaves the viewport', { css: '.header-picker__panel { margin-left: 4000px !important }' }, /stays inside the viewport/],
+    ['an Escape that is swallowed', { script: () => document.addEventListener('keydown', (event) => { if (event.key === 'Escape') event.stopImmediatePropagation() }, true) }, /Escape closes the disclosure/],
+    // The disclosure closes, but focus is dropped instead of returned.
+    ['an Escape that loses focus', { script: () => document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return
+      event.stopImmediatePropagation()
+      document.querySelector('details[data-header-picker][open]').open = false
+      document.activeElement.blur()
+    }, true) }, /Escape returns focus to the trigger/],
+    ['a missing menu copy', { path: '/py/latest/', width: 390, css: '.site-header__panel-destinations { display: none !important }' }, /the displayed links and disclosure/],
+  ]
+  for (const [name, options, failure] of controls) {
+    await assert.rejects(() => run(options), failure, `the check fails with ${name}`)
+  }
+  console.log('Header links: the check fails on a hidden or missing chip or disclosure, a hint glyph, overlapping or tiny chips, a disclosure outside the viewport, and an Escape that is swallowed or loses focus')
 }
 
 /** The global header has no repeated destination strip, including without JS. */
@@ -189,7 +255,7 @@ export async function checkGlobalHeader(browser, base) {
     const page = await context.newPage()
     const headerFrames = new Map()
     try {
-      for (const path of ['/', '/tmux/latest/manual/capture-pane/', '/py/latest/', '/ts/latest/', '/api-example-probe/']) {
+      for (const path of ['/', '/tmux/latest/manual/capture-pane/', '/py/latest/', '/ts/latest/', '/rs/latest/', '/api-example-probe/']) {
         await page.goto(`${base}${path}`)
         await page.waitForFunction(() => document.fonts.status === 'loaded')
         for (const width of [280, 304, 320, 360, 390, 560, 561, 640, 767, 768, 784, 1024, 1440, 1600, 1920]) {
@@ -212,7 +278,7 @@ export async function checkGlobalHeader(browser, base) {
           assert(geometry.fits && geometry.separate, `${path} at ${width}px: header controls fit without overlap`)
           assert(geometry.wordmarkVisible, `${path} at ${width}px: the wordmark remains a visible home link`)
           // The probe renders a TypeScript reference page, so it has a port.
-          if (/^\/(?:py\/|ts\/|api-example-probe\/)/.test(path)) await checkHeaderLinks(page, path, width, javaScriptEnabled)
+          if (HEADER_PAGES[path]) await checkHeaderLinks(page, path, width, javaScriptEnabled)
           else assert.equal(await page.locator('details[data-header-picker], a[data-header-action]').count(), 0, `${path}: pages without a port have no repository or package links`)
           if (width >= 1600) {
             if (!headerFrames.has(width)) headerFrames.set(width, geometry.frame)
