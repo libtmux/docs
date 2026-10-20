@@ -173,10 +173,16 @@ A link the page marks for a preview card must have a card to show. The preview
 check hovers the C function link of a method page, then asks for the payload of
 every marked link on four pages. It asks only for destinations the dev build
 serves: one version of each port's reference, as its build target says, so the
-Python reference that the other ports link to at `stable` is not asked for. A
-payload missing on a port the build does serve is reported, and the check fails
-if it would not report one. Both checks run in the publication audit through the
-full `check-dev.mjs` matrix, on its own source mirror and not on the assembly:
+Python reference that the other ports link to at `stable` is not asked for. What
+it leaves out is bounded: only reference trees whose publisher owns the version
+tree (`publishesOwnTree`), at versions the dev build does not serve. A payload
+missing on a port the build does serve is reported, and the check fails if it
+would not report one. Both checks run in the publication audit through the full
+`check-dev.mjs` matrix, on its own source mirror and not on the assembly. The
+trees it leaves out are the shell's own in the assembly (each port's shell build
+renders `<slug>/<version>/reference/`), and `reference-previews.test.ts` reads
+every port and tmux tree there and requires a payload beside each page a link is
+marked for:
 
 ```console
 $ node site/scripts/check-dev.mjs --reference-previews

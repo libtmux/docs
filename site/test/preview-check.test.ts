@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { payloadGaps, servedByBuild } from '../scripts/check-page-readiness.mjs'
+import { ownTreeElsewhere, payloadGaps, servedByBuild } from '../scripts/check-page-readiness.mjs'
 import { PORTS, referenceSegment, referenceUrl } from '../src/lib/ports'
 import { buildTarget, linkedVersionFor } from '../src/lib/versions'
 
@@ -52,5 +52,26 @@ describe('asking for payloads', () => {
     expect(await payloadGaps(asked, 'http://x', hrefs, served)).toEqual({ missing: ['/en/cxx/latest/reference/missing/ answers 404'], skipped: ['/en/py/stable/reference/b/'] })
     // The control: asking for everything reports the destination the build does not contain too, which is the failure this check had.
     expect(await payloadGaps(asked, 'http://x', hrefs, undefined)).toEqual({ missing: ['/en/cxx/latest/reference/missing/ answers 404', '/en/py/stable/reference/b/ answers 404'], skipped: [] })
+  })
+})
+
+describe('what the check leaves out', () => {
+  it('is only a core reference of a port whose publisher owns its tree, at a version the build does not serve', () => {
+    const env = environment({ py: 'stable' })
+    const mounted = { ...build(env), root: '/en' }
+    const links = ['/en/py/stable/reference/libtmux-server-panes/', '/en/cxx/latest/reference/libtmux-server-panes/', '/en/py/stable/mcp/reference/x/', '/en/tmux/latest/reference/c-function-x/', '/en/py/latest/reference/a/']
+    // Every link the check leaves out is of that kind, and every one of that kind is left out: the two rules agree on these links.
+    expect(links.filter((href) => !servedByBuild(href, mounted))).toEqual(['/en/py/stable/reference/libtmux-server-panes/'])
+    expect(links.filter((href) => ownTreeElsewhere(href, mounted))).toEqual(['/en/py/stable/reference/libtmux-server-panes/'])
+    expect(PORTS.filter((port) => !port.publishesOwnTree).map((port) => port.slug)).toEqual([])
+  })
+
+  it('does not call a port tree that its publisher does not own, or one of the version the build serves, one that is left out', () => {
+    const env = environment({ py: 'stable' })
+    const ports = PORTS.map((port) => (port.slug === 'py' ? { ...port, publishesOwnTree: false } : port))
+    expect(ownTreeElsewhere('/py/stable/reference/a/', { ...build(env), ports })).toBe(false)
+    expect(ownTreeElsewhere('/py/latest/reference/a/', build(env))).toBe(false)
+    // A destination the check would leave out with no port tree behind it is the difference the check asserts on.
+    expect(servedByBuild('/py/stable/reference/a/', { ...build(env), ports })).toBe(false)
   })
 })

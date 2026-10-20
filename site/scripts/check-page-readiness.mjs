@@ -532,28 +532,52 @@ export async function checkBlockLinksUndecorated(browser, base, { sample = false
 }
 
 /**
+ * The port and version a link's destination is a core reference of, if it is one.
+ *
+ * A port's core reference is a tree of its own, built for one version of the port. `ports`, `segment` (the part of the path
+ * that makes a page a core reference) and `root` are the site's own: `PORTS`, `referenceSegment` and the mount of the build.
+ *
+ * @param {string} pathname the path of the link, root included
+ * @param {{ root: string, ports: readonly { slug: string, versionedDocs: boolean }[], segment: string }} build
+ */
+function coreReference(pathname, { root, ports, segment }) {
+  const rest = pathname.startsWith(`${root}/`) ? pathname.slice(root.length + 1) : pathname.replace(/^\//, '')
+  const parts = rest.split('/')
+  const port = ports.find((entry) => entry.slug === parts[0])
+  if (!port) return undefined
+  const at = port.versionedDocs ? 2 : 1
+  if (parts.slice(at, at + segment.split('/').length).join('/') !== segment) return undefined
+  return { port, version: port.versionedDocs ? parts[1] : undefined }
+}
+
+/**
  * Whether the build under test contains the destination of a link, as far as a preview payload is concerned.
  *
- * A port's core reference is a tree of its own, built for one version of the port, and the build under test serves
- * one: `version`, the one its own target names. A link to another version of a port's reference leaves for a tree this
- * build does not contain, such as the Python reference that the other ports' pages link to at its default, `stable`
- * (the assembly renders that one with Sphinx, and skips it where there is no checkout). Everything else is served at
- * whatever version a link names: tmux's pages, a product's pages, the glossary.
- *
- * `ports`, `version` and `segment` (the part of the path that makes a page a core reference) are the site's own:
- * `PORTS`, `buildTarget` and `referenceSegment`, so a change to what is built moves this with it.
+ * The build under test serves one version of each port's core reference: `version`, the one its own target names. A link
+ * to another version of a port's reference leaves for a tree this build does not contain, such as the Python reference that
+ * the other ports' pages link to at its default, `stable`. That tree exists in the assembly, where the port's own shell build
+ * renders it at `/<slug>/<version>/reference/` with its payloads; `reference-previews.test.ts` checks them there.
+ * Everything else is served at whatever version a link names: tmux's pages, a product's pages, the glossary.
  *
  * @param {string} pathname the path of the link, root included
  * @param {{ root: string, ports: readonly { slug: string, versionedDocs: boolean }[], version: string, segment: string }} build
  */
-export function servedByBuild(pathname, { root, ports, version, segment }) {
-  const rest = pathname.startsWith(`${root}/`) ? pathname.slice(root.length + 1) : pathname.replace(/^\//, '')
-  const parts = rest.split('/')
-  const port = ports.find((entry) => entry.slug === parts[0])
-  if (!port) return true
-  const at = port.versionedDocs ? 2 : 1
-  if (parts.slice(at, at + segment.split('/').length).join('/') !== segment) return true
-  return !port.versionedDocs || parts[1] === version
+export function servedByBuild(pathname, build) {
+  const target = coreReference(pathname, build)
+  return !target || target.version === undefined || target.version === build.version
+}
+
+/**
+ * Whether a destination is a core reference of a port whose publisher owns its version tree (`publishesOwnTree`), at a
+ * version this build does not serve: the one kind of destination the check leaves out, so that what it leaves out is
+ * bounded by what the site says and not by what the check finds convenient.
+ *
+ * @param {string} pathname the path of the link, root included
+ * @param {{ root: string, ports: readonly { slug: string, versionedDocs: boolean, publishesOwnTree?: boolean }[], version: string, segment: string }} build
+ */
+export function ownTreeElsewhere(pathname, build) {
+  const target = coreReference(pathname, build)
+  return Boolean(target?.port.publishesOwnTree) && target?.version !== undefined && target.version !== build.version
 }
 
 /**
@@ -599,6 +623,7 @@ export async function checkTmuxReferencePreviews(browser, base, { served: build 
     // Every link a page marks for a card, whose destination the build serves, has a payload at the address the card asks for.
     const missing = []
     const skipped = new Set()
+    const questioned = new Set()
     let asked = 0
     for (const path of ['/cxx/latest/reference/libtmux-server-panes/', '/tmux/latest/manual/list-panes/', '/tmux/latest/reference/c-function-cmd-list-panes-c-cmd_list_panes_server/', '/tmux/latest/reference/c-struct-window_pane/']) {
       await page.goto(`${base}${path}`, { waitUntil: 'load' })
@@ -607,10 +632,16 @@ export async function checkTmuxReferencePreviews(browser, base, { served: build 
       const gaps = await payloadGaps(page.request, origin, hrefs, served)
       asked += hrefs.length - gaps.skipped.length
       for (const href of gaps.skipped) skipped.add(href)
+      for (const href of hrefs) if (!gaps.skipped.includes(href)) questioned.add(href)
       missing.push(...gaps.missing.map((gap) => `${path}: ${gap}`))
     }
     assert(asked > 3, `Only ${asked} links were asked for a payload, so the pages were not measured`)
     assert.deepEqual(missing, [], `A link marked for a card that has none:\n${missing.join('\n')}`)
+    // What was left out is bounded by what the site says: only reference trees that a port's publisher owns, at versions this build does not serve.
+    if (build) {
+      assert.deepEqual([...skipped].filter((href) => !ownTreeElsewhere(href, build)), [], 'A destination was left out of the payload check that is not another version of a port tree')
+      assert.deepEqual([...questioned].filter((href) => ownTreeElsewhere(href, build)), [], 'A destination in another version of a port tree was asked for a payload')
+    }
     // The controls. A payload missing on a destination the build serves is reported, and a destination it does not serve is
     // left out and not reported, so the sweep cannot go green by skipping what it should have asked.
     if (served) {
