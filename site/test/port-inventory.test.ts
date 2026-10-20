@@ -66,6 +66,18 @@ describe('port inventory', () => {
     expect(published('ruby').find((entry) => entry.id === 'libtmux-async')?.path).toBe('gems/libtmux-async')
   })
 
+  it('leaves out private workspaces and development tools, which no host serves', () => {
+    // From the manifests: npm `private`, Cargo `publish = false`, Go modules of benchmarks, examples and tools, and unpackable projects.
+    const development = ['@libtmux/repo', 'libtmux-fuzz', 'mcp-swap', 'mcp_swap', 'libtmux_matrix', 'LibTmux.Engineering', 'LibTmux.McpSwap',
+      'integration-tests', 'benchmarks', 'examples', 'internal/tools']
+    const named = Object.values(INVENTORY).flat().flatMap((entry) => [entry.label, entry.coordinate, entry.path ?? ''])
+    for (const name of development) {
+      expect(named.filter((value) => value === name || value.endsWith(`/${name}`)), name).toEqual([])
+    }
+    // Control: the same comparison finds a name that is inventoried.
+    expect(named.filter((value) => value === 'tmux-workspace')).not.toEqual([])
+  })
+
   it('keeps each ecosystem’s own unit of identity', () => {
     const byId = (slug: string, id: string) => entries(slug).find((entry) => entry.id === id)!
     // Go: a root module, packages inside it, two further modules and a command in each.

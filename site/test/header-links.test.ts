@@ -230,6 +230,14 @@ describe('header links in the ordinary shell', () => {
     }
   })
 
+  it('offers the same links in every locale, with the same heading ids', async () => {
+    for (const slug of ['py', 'java', 'cxx']) {
+      const english = await page(`/en/${slug}/latest/`, { pagePath: '', portSlug: slug })
+      const japanese = await page(`/ja/${slug}/latest/`, { pagePath: '', portSlug: slug })
+      for (const placement of PLACEMENTS) expect(container(japanese.document, placement).innerHTML, `${slug} ${placement}`).toBe(container(english.document, placement).innerHTML)
+    }
+  })
+
   it('offers the same links on a companion page as on the library page', async () => {
     const library = await portPage('py')
     const companion = await page('/en/py/latest/workspace/', {
@@ -344,6 +352,17 @@ describe('header links in the native documentation shell', () => {
     // Nothing of it reaches the article or the footer.
     expect(html.slice(end)).not.toMatch(/data-header-action|data-header-picker/)
     expect(html.slice(0, start)).not.toMatch(/data-header-action|data-header-picker/)
+  })
+
+  it('puts the links after the language switcher and before the search and colour controls', async () => {
+    const { document } = await native('rs', 'latest', 'libtmux.server/')
+    const language = document.querySelector('.site-header-language')!
+    const bar = document.querySelector('.site-header__destinations')!
+    expect(language.compareDocumentPosition(bar) & 4).toBeTruthy()
+    expect(bar.compareDocumentPosition(document.querySelector('.site-header__always')!) & 4).toBeTruthy()
+    // The Menu panel in a documentation page carries the links but not the version and locale row.
+    expect(document.querySelector('.site-header__panel-destinations')).not.toBeNull()
+    expect(document.querySelector('.site-header__panel-controls')).toBeNull()
   })
 
   it('offers the same destinations in the native header as in the ordinary one', async () => {
