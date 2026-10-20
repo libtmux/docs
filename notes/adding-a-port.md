@@ -59,7 +59,10 @@ host does not serve as `unavailable`.
 
 Give a package that ships inside another distribution (a Go package, a
 SwiftPM target, an export path) the id of the distribution in `within`, and
-the ecosystem's word for it in `unit`. An entry that is a command (an
+the ecosystem's word for it in `unit`. An entry that is one file of a
+repository, such as a Julia package extension or a Python plugin module, names
+the file in `path` and sets `file: true`, so it opens that file rather than a
+directory it shares with its neighbours. An entry that is a command (an
 executable product, a `cmd/` package, a CMake executable, or a package that
 only installs one) is `cli` in every port, and its build target is a `target`.
 A package that offers a library as well as a command is judged by its role, so
@@ -84,7 +87,8 @@ $ node scripts/verify-destinations.mjs
 The command exits 1 if a published destination fails or an unlinked one starts
 to answer. Commit the updated `site/src/data/destination-evidence.json`; the
 unit tests and the publication audit hold the inventory to it, and warn
-when it is older than `EVIDENCE_MAX_AGE_DAYS`. Add the port's expected links, with the
+when it is older than `EVIDENCE_MAX_AGE_DAYS`; the weekly
+`verify-destinations.yml` re-verifies it and fails once a refresh is due. Add the port's expected links, with the
 entries behind each row, to `site/test/fixtures/header-links.ts`.
 
 ## 2. Add the worktree
