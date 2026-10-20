@@ -15,8 +15,7 @@ import ApiType from './ApiType.astro'
 import { asideFor } from '../../lib/aside'
 import { apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMethodDetails, anonymousDeclarationLabel, nativeSignatureText as unformattedNativeSignatureText, parameterBindingText, usesNativeSignatures } from '../../lib/api-sections'
 import { tmuxCommandsFor, tmuxManualUrl } from '../../lib/tmux-manual-data'
-import { tmuxCommandRows, tmuxSymbolSends, type ResolvedUsage } from '../../lib/tmux-reference'
-import TmuxUsage from '../tmux/TmuxUsage.astro'
+import { tmuxCommandRows, tmuxSymbolSends } from '../../lib/tmux-reference'
 import { CATALOG_KINDS, tmuxCatalogKindsForSymbol, tmuxCatalogUrl } from '../../lib/tmux-catalog'
 import ApiFieldOverloads from './ApiFieldOverloads.astro'
 import ApiCommandParameters from './ApiCommandParameters.astro'
@@ -46,8 +45,6 @@ interface Props {
   /** Declaration syntax, independent of library-port identity. */
   language?: string
   manualLinks?: { name: string; href: string }[]
-  /** The library methods that send the command a C declaration implements. */
-  usage?: ResolvedUsage[]
   /** Catalog pages for a declaration in a source reference. */
   catalogLinks?: { name: string; href: string }[]
   /** Override equivalent links for a product or version context. */
@@ -80,7 +77,7 @@ interface Props {
   /** Previous fragment for the same declaration. */
   legacyId?: string
 }
-const { symbol, index, sourceUrl, port, language = port, manualLinks, usage = [], catalogLinks, alternativesFor, heading = false, member = false,
+const { symbol, index, sourceUrl, port, language = port, manualLinks, catalogLinks, alternativesFor, heading = false, member = false,
   showSummary = true, showBases = true, legacyId, nameHref } = Astro.props as Props
 const anchor = symbol.publicId ?? symbol.id
 const kind = symbol.kind
@@ -282,7 +279,6 @@ const hasBody =
   methods.length > 0 ||
   hasFields ||
   commandRows.length > 0 ||
-  usage.length > 0 ||
   catalogEntries.length > 0 ||
   elsewhere.length > 0
 ---
@@ -690,10 +686,6 @@ const hasBody =
         </span></>)}
       </>)}
     </p>}
-    {usage.map((entry) => <div class="gp-sphinx-api-mentions tmux-usage-block">
-      <span class="gp-sphinx-api-mentions-label">In libtmux</span>
-      <TmuxUsage usage={entry} />
-    </div>)}
     {catalogEntries.length > 0 && <p class="gp-sphinx-api-mentions">
       <span class="gp-sphinx-api-mentions-label">tmux catalog</span>
       {catalogEntries.map((entry, i) => <>

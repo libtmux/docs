@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { experimental_AstroContainer } from 'astro/container'
 import { Window } from 'happy-dom'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { documentProblems } from '../../scripts/gen-tmux-usage.mjs'
 import { API_MODELS } from '../src/lib/api-models'
 import { PORTS } from '../src/lib/ports'
@@ -12,6 +12,8 @@ import {
   tmuxCommandRows, tmuxCommandSources, tmuxReferenceContext, tmuxReferenceIndex, tmuxReferenceUrl, tmuxResolvedUsage, tmuxSourceModel, tmuxSymbolSends,
 } from '../src/lib/tmux-reference'
 import { loadAstroTemplate, renderAstroTemplate, withoutScope } from './astro-templates'
+
+vi.mock('astro:content', () => ({ getCollection: async () => [] }))
 
 const windows: Window[] = []
 afterEach(async () => { for (const win of windows.splice(0)) await win.happyDOM.abort() })
@@ -185,6 +187,12 @@ describe.each(['3.7c', '3.2a'])('the C pages of tmux %s', (version) => {
     expect(text).toContain(`tmux command: [\`list-panes\`](${tmuxManualUrl(version, 'list-panes')})`)
     expect(text).toMatch(/- Session `-s` \(\[`cmd_list_panes_session`\]\([^)]+\)\): .*Python: \[`Session\.panes`\]\(\/py\//)
     expect(text).not.toContain('Server.panes')
+    // It is the last section, after the code around the declaration.
+    const headings = [...text.matchAll(/^## (.+)$/gm)].map((match) => match[1])
+    expect(headings.at(-1)).toBe('In libtmux')
+    expect(headings.filter((heading) => heading === 'In libtmux')).toHaveLength(1)
+    expect(text.slice(text.indexOf('## In libtmux'))).toContain(`These methods send [\`list-panes\`](${tmuxManualUrl(version, 'list-panes')})`)
+    expect(text.slice(0, text.indexOf('## In libtmux'))).not.toContain('Python:')
   })
 })
 
@@ -252,31 +260,66 @@ describe('the rendered lists', () => {
     expect(document.body.textContent).not.toContain('Server.panes')
   })
 
-  it('adds the command, flag and C function to the method page', async () => {
+  it('adds the command, flag and C function to the declaration card, and no table', async () => {
     const source = readFileSync(new URL('../src/components/api/ApiEntry.astro', import.meta.url), 'utf8')
     const start = source.indexOf('{commandRows.length > 0 && <p')
-    const end = source.indexOf('</div>)}', source.indexOf('{usage.map(', start)) + '</div>)}'.length
+    const end = source.indexOf('</p>}', start) + '</p>}'.length
     expect(start).toBeGreaterThan(0)
     expect(end).toBeGreaterThan(start)
-    const stub = `---\nimport TmuxUsage from '../tmux/TmuxUsage.astro'\nconst { commandRows, usage } = Astro.props\n---\n${source.slice(start, end)}`
-    const template = await loadAstroTemplate('components/api/ApiEntry.astro', {
-      real: ['components/tmux/TmuxUsage.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro'], stubs: { 'components/api/ApiEntry.astro': stub },
-    })
-    const html = (props: Record<string, unknown>) => renderAstroTemplate(template, { props: { commandRows: [], usage: [], ...props } }).then((text) => dom(withoutScope(text)))
+    const stub = `---\nconst { commandRows } = Astro.props\n---\n${source.slice(start, end)}`
+    const template = await loadAstroTemplate('components/api/ApiEntry.astro', { stubs: { 'components/api/ApiEntry.astro': stub } })
+    const html = (commandRows: ReturnType<typeof tmuxCommandRows>) => renderAstroTemplate(template, { props: { commandRows } }).then((text) => dom(withoutScope(text)))
 
-    const method = await html({ commandRows: tmuxCommandRows(tmuxSymbolSends('swift', 'Server.panes()'), []) })
+    const method = await html(tmuxCommandRows(tmuxSymbolSends('swift', 'Server.panes()'), []))
     expect(method.querySelector('.gp-sphinx-api-mentions')!.textContent!.replace(/\s+/g, ' ').trim()).toBe('tmux command list-panes -a cmd_list_panes_server')
     expect([...method.querySelectorAll('.gp-sphinx-api-mentions a')].map((a) => a.getAttribute('href'))).toEqual([
       '/tmux/latest/manual/list-panes/', '/tmux/latest/reference/c-function-cmd-list-panes-c-cmd_list_panes_server/',
     ])
+    expect(method.querySelector('.tmux-usage')).toBeNull()
 
     // A reader of a method that does not send the command sees no row for it.
-    const reader = await html({ commandRows: tmuxCommandRows(tmuxSymbolSends('go', 'tmux.Window.Panes'), []) })
+    const reader = await html(tmuxCommandRows(tmuxSymbolSends('go', 'tmux.Window.Panes'), []))
     expect(reader.querySelector('.gp-sphinx-api-mentions')).toBeNull()
+  })
+})
 
-    const declaration = await html({ usage: [tmuxResolvedUsage('latest', 'list-panes', 'session')] })
-    expect(declaration.querySelector('.tmux-usage-block .gp-sphinx-api-mentions-label')!.textContent).toBe('In libtmux')
-    expect(declaration.querySelectorAll('.tmux-usage table').length).toBe(1)
+describe('a C page', () => {
+  async function page(name: string) {
+    const template = await loadAstroTemplate('components/api/ApiReference.astro', {
+      real: ['components/api/ApiPageContents.astro', 'components/tmux/TmuxUsage.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro', 'components/api/ApiRelationships.astro'],
+    })
+    const model = tmuxSourceModel('latest')
+    const symbol = model.symbols.find((entry) => entry.name === name)!
+    const container = await experimental_AstroContainer.create({ astroConfig: { site: 'https://libtmux.org' } } as never)
+    return dom(withoutScope(await container.renderToString(template as never, {
+      request: new Request('https://libtmux.org/'), props: { source: tmuxReferenceContext('latest', symbol), owner: symbol, searchable: false },
+    })))
+  }
+
+  it.each(['cmd_list_panes_exec', 'cmd_list_panes_window'])('ends with In libtmux, after the code around %s', async (name) => {
+    const document = await page(name)
+    const sections = [...document.querySelectorAll('h2[id^="api-"]')].map((heading) => heading.id)
+    // The section is last, after the call neighborhood, its calls, the declarations it references and the related types.
+    expect(sections.at(-1)).toBe('api-tmux-usage')
+    expect(sections).toEqual(expect.arrayContaining(['api-call-network', 'api-calls', 'api-referenced-declarations', 'api-related-types']))
+    expect(sections.filter((id) => id === 'api-tmux-usage')).toHaveLength(1)
+    const heading = document.querySelector('h2#api-tmux-usage')!
+    expect(heading.textContent).toContain('In libtmux')
+    expect(heading.querySelector('a[href="#api-tmux-usage"]')).not.toBeNull()
+    expect(heading.closest('section')!.querySelectorAll('.tmux-usage table')).toHaveLength(1)
+    // It is in the section links and in "On this page", in the same last place.
+    for (const links of [document.querySelector('nav.api-section-links')!, document.querySelector('.api-page-contents')!]) {
+      const targets = [...links.querySelectorAll('a[href^="#api-"]')].map((link) => link.getAttribute('href'))
+      expect(targets.at(-1)).toBe('#api-tmux-usage')
+    }
+    // Nothing of the table is inside the declaration card.
+    expect(document.querySelector('.api-overview .tmux-usage')).toBeNull()
+  })
+
+  it('has no such section for a declaration that no command owns', async () => {
+    const document = await page('options_table')
+    expect(document.querySelector('#api-tmux-usage')).toBeNull()
+    expect(document.querySelector('.tmux-usage')).toBeNull()
   })
 })
 
@@ -306,9 +349,105 @@ describe('the manual page', () => {
     ])
   })
 
+  it('ends with Use from a library, after the C implementation and everything else', async () => {
+    for (const slug of ['list-panes', 'capture-pane']) {
+      const document = await page(slug)
+      const sections = [...document.querySelectorAll('h2[id^="' + slug + '-"]')].map((heading) => heading.id)
+      expect(sections.at(-1), slug).toBe(`${slug}-use-from-a-library`)
+      expect(sections.indexOf(`${slug}-implementation`), slug).toBeLessThan(sections.indexOf(`${slug}-use-from-a-library`))
+    }
+  })
+
   it('keeps the plain list for a command whose usage is not recorded', async () => {
     const document = await page('capture-pane')
     expect(document.querySelector('.tmux-usage')).toBeNull()
     expect([...document.querySelectorAll('h2#capture-pane-use-from-a-library ~ ul a')].map((a) => a.textContent)).toContain('Python')
+  })
+})
+
+/** The rules of a stylesheet as `{ at, selector, body }`, with the at-rule they sit in. */
+function parseRules(css: string, at = ''): { at: string; selector: string; body: Record<string, string> }[] {
+  const text = css.replace(/\/\*[\s\S]*?\*\//g, '')
+  const out: { at: string; selector: string; body: Record<string, string> }[] = []
+  for (let index = 0; index < text.length;) {
+    const open = text.indexOf('{', index)
+    if (open < 0) break
+    let depth = 1
+    let end = open + 1
+    while (depth && end < text.length) depth += text[end++] === '{' ? 1 : text[end - 1] === '}' ? -1 : 0
+    const head = text.slice(index, open).trim()
+    const body = text.slice(open + 1, end - 1)
+    if (head.startsWith('@')) out.push(...parseRules(body, head))
+    else out.push({ at, selector: head, body: Object.fromEntries(body.split(';').flatMap((declaration) => {
+      const colon = declaration.indexOf(':')
+      return colon > 0 ? [[declaration.slice(0, colon).trim(), declaration.slice(colon + 1).trim()]] : []
+    })) })
+    index = end
+  }
+  return out
+}
+
+/**
+ * What a reader sees go wrong in a cell of stacked chips: a chip indented against the first, a
+ * name wrapped inside a chip of fixed height so it spills onto the next line, and a table wider
+ * than its column with nowhere to scroll. Empty means the stylesheet rules out all three.
+ */
+function layoutProblems(css: string): string[] {
+  const rules = parseRules(css).filter((rule) => !rule.at)
+  const problems: string[] = []
+  const chips = (rule: { selector: string }) => /\.tmux-usage__links/.test(rule.selector)
+  const stack = rules.find((rule) => rule.selector.trim() === '.tmux-usage__links')?.body
+  if (stack?.display !== 'flex' || stack['flex-direction'] !== 'column' || stack['align-items'] !== 'flex-start' || !stack.gap) {
+    problems.push('chips do not stack flush at the start of the cell with a gap')
+  }
+  for (const rule of rules.filter(chips)) {
+    for (const property of ['margin-inline-start', 'margin-left', 'padding-inline-start', 'padding-left', 'text-indent']) {
+      if (property in rule.body) problems.push(`${rule.selector} indents a chip with ${property}`)
+    }
+  }
+  for (const target of ['a', 'code']) {
+    const held = rules.some((rule) => chips(rule) && rule.selector.split(',').some((part) => part.trim().endsWith(` ${target}`)) && rule.body['white-space'] === 'nowrap')
+    if (!held) problems.push(`a chip's ${target} can wrap`)
+  }
+  for (const rule of rules.filter((candidate) => /(?:^|[\s,])td\b|__links/.test(candidate.selector) && !/__function/.test(candidate.selector))) {
+    if (/anywhere|break-word/.test(rule.body['overflow-wrap'] ?? '') || rule.body['word-break'] === 'break-all') problems.push(`${rule.selector} breaks a name anywhere`)
+  }
+  const frame = rules.find((rule) => rule.selector.trim() === '.tmux-usage')?.body
+  if (!/^(auto|scroll)$/.test(frame?.['overflow-x'] ?? frame?.overflow ?? '')) problems.push('a table wider than its column cannot scroll')
+  if (!/inline-size/.test(frame?.container ?? frame?.['container-type'] ?? '')) problems.push('the stacked layout has no container to measure')
+  const stacked = parseRules(css).filter((rule) => /^@container .*max-width: *(\d+(?:\.\d+)?)rem/.test(rule.at))
+  for (const rule of stacked) if (/\btd\b/.test(rule.selector) && rule.body.display === 'block') problems.push('td is both block and grid when stacked')
+  if (!stacked.some((rule) => rule.selector.includes('td') && rule.body.display === 'grid') || Math.min(...stacked.map((rule) => Number(/max-width: *(\d+(?:\.\d+)?)rem/.exec(rule.at)![1]))) < 40) {
+    problems.push('the table does not stack when the container is narrow')
+  }
+  return problems
+}
+
+describe('the chip layout of the usage table', () => {
+  const component = readFileSync(new URL('../src/components/tmux/TmuxUsage.astro', import.meta.url), 'utf8')
+  const css = /<style>([\s\S]*)<\/style>/.exec(component)![1]
+
+  it('stacks the chips of a cell flush, keeps each on one line, and scrolls or stacks instead of overlapping', () => {
+    expect(layoutProblems(css)).toEqual([])
+  })
+
+  it('catches the layout that indented the second chip and wrapped a name inside its chip', () => {
+    const before = css
+      .replace(/\.tmux-usage__links \{[^}]*\}/, '')
+      .replace(/\.tmux-usage__links a, \.tmux-usage__links code \{[^}]*\}/, '.tmux-usage__links > a + a { margin-inline-start: 0.4rem; }\n  .tmux-usage__links > a { white-space: nowrap; }\n  .tmux-usage td { overflow-wrap: anywhere; }')
+      .replace(' overflow-x: auto; container: tmux-usage / inline-size;', '')
+      .replace(/@container tmux-usage \(max-width: 50rem\)/, '@media (max-width: 40rem)')
+    const collision = css.replace(':is(table, tbody, th) {', ':is(table, tbody, th, td) {')
+    expect(layoutProblems(collision)).toEqual(['td is both block and grid when stacked'])
+    const problems = layoutProblems(before)
+    expect(problems).toEqual(expect.arrayContaining([
+      'chips do not stack flush at the start of the cell with a gap',
+      '.tmux-usage__links > a + a indents a chip with margin-inline-start',
+      "a chip's code can wrap",
+      '.tmux-usage td breaks a name anywhere',
+      'a table wider than its column cannot scroll',
+      'the stacked layout has no container to measure',
+      'the table does not stack when the container is narrow',
+    ]))
   })
 })

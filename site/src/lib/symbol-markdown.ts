@@ -139,7 +139,7 @@ export async function symbolMarkdownWithLayout(ctx: MarkdownContext): Promise<st
 
 /** The methods that send a command, one line per scope. */
 function usageMarkdown(usage: ResolvedUsage): string[] {
-  const lines = [`In libtmux, these methods send [\`${usage.command}\`](${usage.manualHref}):`, '']
+  const lines = [`These methods send [\`${usage.command}\`](${usage.manualHref}):`, '']
   for (const group of usage.groups) {
     const flag = group.scope && (group.scope.flag || group.scope.target) ? ` \`-${group.scope.flag || group.scope.target}\`` : ''
     const target = group.function ? ` ([\`${group.function.name}\`](${group.function.href}))` : ''
@@ -198,7 +198,6 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     out.push(`tmux command: [\`${send.command}\`](${send.manualHref})${scopes.length ? `, ${scopes.join(', ')}` : ''}`, '')
   }
   for (const command of commands) out.push(`tmux command: [\`${command.name}\`](${command.href})`, '')
-  for (const entry of ctx.usage ?? []) out.push(...usageMarkdown(entry), '')
   const catalog = ctx.catalogLinks ?? (port && !ctx.manualLinks ? tmuxCatalogKindsForSymbol(port, symbol)
     .map((kind) => ({ name: CATALOG_KINDS[kind].label, href: tmuxCatalogUrl('latest', kind) })) : [])
   if (catalog.length) out.push(`tmux catalog: ${catalog.map((entry) => `[${entry.name}](${entry.href})`).join(', ')}`, '')
@@ -383,6 +382,11 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
       }
       out.push('')
     }
+  }
+
+  if (ctx.usage?.length) {
+    out.push('## In libtmux', '')
+    for (const entry of ctx.usage) out.push(...usageMarkdown(entry), '')
   }
 
   // One trailing newline, so the file ends the way a text file should.

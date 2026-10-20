@@ -56,7 +56,8 @@ const headingOf = (group: (typeof usage.groups)[number]) => group.scope ? group.
   {absent.length > 0 && <p class="tmux-usage__absent">No method in {new Intl.ListFormat('en', { type: 'disjunction' }).format(absent)} sends this command{single ? ' at this scope' : ''} itself.</p>}
 </div>
 <style>
-  .tmux-usage { margin-block: 1rem; font-size: 0.8125rem; max-inline-size: 100%; }
+  /* A table wider than its column scrolls inside it; a chip is never cut or wrapped to fit. */
+  .tmux-usage { margin-block: 1rem; font-size: 0.8125rem; max-inline-size: 100%; overflow-x: auto; container: tmux-usage / inline-size; }
   .tmux-usage table { display: table; width: 100%; border-collapse: collapse; table-layout: auto; font-size: inherit; }
   .tmux-usage :is(th, td) { padding: 0.45rem 0.9rem 0.45rem 0; vertical-align: top; text-align: left; border-bottom: 1px solid var(--color-edge, var(--color-background-border)); }
   .tmux-usage thead th { white-space: normal; font-weight: 600; }
@@ -66,13 +67,15 @@ const headingOf = (group: (typeof usage.groups)[number]) => group.scope ? group.
   .tmux-usage__scope { display: block; }
   .tmux-usage__function { display: block; margin-block-start: 0.15rem; font-weight: 400; }
   .tmux-usage__function code { background: none; border: 0; padding: 0; font-size: 0.75rem; overflow-wrap: anywhere; }
-  .tmux-usage td { overflow-wrap: anywhere; }
-  .tmux-usage__links > a + a { margin-inline-start: 0.4rem; }
-  .tmux-usage__links > a { white-space: nowrap; }
-  @media (max-width: 40rem) {
+  /* Chips stack flush at the start of the cell, one to a line, with an even gap. */
+  .tmux-usage__links { display: flex; flex-direction: column; align-items: flex-start; gap: 0.35rem; }
+  .tmux-usage__links a, .tmux-usage__links code { white-space: nowrap; overflow-wrap: normal; }
+  /* The scope columns no longer fit beside each other: give each language its own block. */
+  @container tmux-usage (max-width: 50rem) {
     .tmux-usage thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-    .tmux-usage :is(table, tbody, tr, th, td) { display: block; }
-    .tmux-usage tr { padding-block: 0.5rem; border-bottom: 1px solid var(--color-edge, var(--color-background-border)); }
+    /* tr and td take their display from their own rules below: two rules on one element would tie on specificity. */
+    .tmux-usage :is(table, tbody, th) { display: block; }
+    .tmux-usage tr { display: grid; row-gap: 0.3rem; padding-block: 0.5rem; border-bottom: 1px solid var(--color-edge, var(--color-background-border)); }
     .tmux-usage tbody tr:last-child { border-bottom: 0; }
     .tmux-usage :is(th, td) { padding: 0.1rem 0; border-bottom: 0; }
     .tmux-usage td { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: 0.5rem; }
