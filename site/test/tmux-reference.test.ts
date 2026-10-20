@@ -8,6 +8,8 @@ import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { relatedApiTypes } from '../src/lib/api-sections'
 import { PORTS } from '../src/lib/ports'
 import { linkPreviewTarget } from '../src/lib/link-preview-paint'
+import { highlightedPreview } from '../src/lib/link-preview'
+import { limitPreviewSignature, PREVIEW_SIGNATURE_CHARS, PREVIEW_SIGNATURE_LINES } from '../src/lib/preview-signature'
 import { TMUX_VERSIONS } from '../src/lib/tmux-manual-data'
 import { GET, getStaticPaths } from '../src/pages/tmux/[version]/reference/[...slug].preview.json'
 import { getStaticPaths as genericPreviewPaths } from '../src/pages/[...slug].preview.json'
@@ -168,6 +170,32 @@ describe('the card a link to a C declaration opens', () => {
     expect(tmuxReferencePreview('latest', macro).signature).toBe(macro.signatures[0].raw)
     const bare = model.symbols.find((entry) => !entry.signatures[0]?.raw && entry.value === undefined)!
     expect(tmuxReferencePreview('latest', bare)).toMatchObject({ schema: 1, title: bare.name, signature: undefined, signatureLanguage: undefined })
+  })
+
+  it('shows the head of a declaration too long for a card, and keeps one that fits whole', async () => {
+    expect(limitPreviewSignature('static void f(void)')).toBe('static void f(void)')
+    const lines = Array.from({ length: PREVIEW_SIGNATURE_LINES + 5 }, (_, index) => `line ${index}`)
+    expect(limitPreviewSignature(lines.join('\n'))).toBe(`${lines.slice(0, PREVIEW_SIGNATURE_LINES).join('\n')}\n…`)
+    expect(limitPreviewSignature(lines.slice(0, PREVIEW_SIGNATURE_LINES).join('\n'))).toBe(lines.slice(0, PREVIEW_SIGNATURE_LINES).join('\n'))
+    expect(limitPreviewSignature('x'.repeat(PREVIEW_SIGNATURE_CHARS * 3))).toBe(`${'x'.repeat(PREVIEW_SIGNATURE_CHARS)}\n…`)
+    // The key-code enum of tmux 3.7c is one signature of over three hundred thousand characters: its card carries the head, not all of it.
+    const model = tmuxSourceModel('3.7c')
+    const keycodes = model.symbols.reduce((longest, entry) => (entry.signatures[0]?.raw?.length ?? 0) > (longest.signatures[0]?.raw?.length ?? 0) ? entry : longest)
+    expect(keycodes.signatures[0].raw!.length).toBeGreaterThan(300_000)
+    const card = tmuxReferencePreview('3.7c', keycodes)
+    expect(card.signature!.length).toBeLessThanOrEqual(PREVIEW_SIGNATURE_CHARS + 2)
+    expect(card.signature!.endsWith('\n…')).toBe(true)
+    expect(card.detail).toContain('first lines')
+    expect(JSON.stringify(await highlightedPreview(card)).length).toBeLessThan(40_000)
+    // The control: a function that fits has no cut and says nothing of one.
+    const small = tmuxReferencePreview('3.7c', model.symbols.find((entry) => entry.name === 'cmd_list_panes_server')!)
+    expect(small.signature).toBe('static void cmd_list_panes_server(struct cmd *, struct cmdq_item *)')
+    expect(small.detail).not.toContain('first lines')
+    // No declaration of any version shows more than the limit.
+    for (const version of TMUX_VERSIONS) {
+      const over = tmuxSourceModel(version).symbols.filter((entry) => (tmuxReferencePreview(version, entry).signature ?? '').length > PREVIEW_SIGNATURE_CHARS + 2)
+      expect(over.map((entry) => entry.name), version).toEqual([])
+    }
   })
 
   it('catches a link with no card behind it, and the preview route that the generic one never covered', () => {

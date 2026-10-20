@@ -5,6 +5,7 @@ import v37 from '../data/tmux/api/3.7c.json?raw'
 import pins from '../data/tmux/versions.json'
 import { createApiIndex, type PortNavData } from './api-models'
 import type { LinkPreview } from './link-preview'
+import { limitPreviewSignature } from './preview-signature'
 import { navTreeFor, referenceTreeFor, referenceBreadcrumbs } from './api-tree'
 import { apiRelationshipPath } from './api-relationships'
 import { PORTS } from './ports'
@@ -328,16 +329,18 @@ export function tmuxSymbolSends(port: string, publicId: string, version = 'lates
 /**
  * The card a link to a declaration of tmux's C source opens, from the same record as the page it leads to. tmux's source
  * carries no Doxygen briefs, so the card says where the declaration is and shows it, which is what a reader following a
- * link from a method wants to see before leaving the page.
+ * link from a method wants to see before leaving the page. A declaration longer than a card holds shows its head, and the
+ * page has all of it (`limitPreviewSignature`).
  */
 export function tmuxReferencePreview(version: string, symbol: ApiSymbol): LinkPreview {
   const model = tmuxSourceModel(version)
-  const signature = symbol.signatures[0]?.raw ?? (symbol.value !== undefined ? `${symbol.name} = ${symbol.value}` : undefined)
+  const full = symbol.signatures[0]?.raw ?? (symbol.value !== undefined ? `${symbol.name} = ${symbol.value}` : undefined)
+  const signature = full === undefined ? undefined : limitPreviewSignature(full)
   const summary = symbol.doc?.summary ?? symbol.signatures.find((entry) => entry.doc?.summary)?.doc?.summary
   return {
     schema: 1, title: symbol.name, kind: symbol.kind,
     description: summary ? docSummaryText(summary, 'c') : '',
-    detail: `Defined in ${symbol.source.file}${symbol.source.line ? `, line ${symbol.source.line}` : ''} of tmux ${model.version}.`,
+    detail: `Defined in ${symbol.source.file}${symbol.source.line ? `, line ${symbol.source.line}` : ''} of tmux ${model.version}.${signature !== full ? ' The card shows the first lines of the declaration.' : ''}`,
     signature, signatureLanguage: signature ? 'c' : undefined,
     href: tmuxReferenceUrl(version, symbol), source: sourceUrl(model, symbol),
   }
