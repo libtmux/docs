@@ -149,6 +149,13 @@
   },
   {
    "port": "csharp",
+   "symbol": "LibTmux.Pane",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
    "symbol": "LibTmux.Pane.CaptureAsync",
    "page": "/csharp/latest/guides/capturing-output/",
    "title": "Capturing output",
@@ -233,6 +240,13 @@
   },
   {
    "port": "csharp",
+   "symbol": "LibTmux.PaneRunResult",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
    "symbol": "LibTmux.PaneRunResult.AnchorLost",
    "page": "/powershell/latest/guides/input/",
    "title": "Send input to a pane",
@@ -271,6 +285,13 @@
    "symbol": "LibTmux.PaneWaitOutcome.TimedOut",
    "page": "/powershell/latest/guides/input/",
    "title": "Send input to a pane",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.PaneWaitResult",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -454,6 +475,13 @@
    "page": "/csharp/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Session",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "csharp",
@@ -842,6 +870,13 @@
   },
   {
    "port": "csharp",
+   "symbol": "LibTmux.Window",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
    "symbol": "LibTmux.Window.ActivePane",
    "page": "/csharp/latest/topics/traversal/",
    "title": "Traversal",
@@ -906,9 +941,23 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.Workspace.WorkspaceActionKind.CaptureResult",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceActionKind.CaptureResult",
    "page": "/powershell/latest/workspace/source-guide/",
    "title": "Workspace guide",
    "section": "workspace"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceActionKind.CreateSession",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "csharp",
@@ -1073,6 +1122,13 @@
   },
   {
    "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceFile",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
    "symbol": "LibTmux.Workspace.WorkspaceFile.Parse",
    "page": "/csharp/latest/workspace/internals/",
    "title": "C# workspace internals",
@@ -1196,6 +1252,13 @@
    "page": "/csharp/latest/workspace/reference/",
    "title": "C# workspace builder API",
    "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceResult",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "csharp",
@@ -7891,10 +7954,24 @@
   },
   {
    "port": "powershell",
+   "symbol": "LibTmux.Workspace\\ConvertTo-TmuxWorkspace",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
    "symbol": "LibTmux.Workspace\\ConvertTo-TmuxWorkspaceJson",
    "page": "/powershell/latest/workspace/source-guide/",
    "title": "Workspace guide",
    "section": "workspace"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux.Workspace\\Get-TmuxWorkspace",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "powershell",
@@ -7906,9 +7983,30 @@
   {
    "port": "powershell",
    "symbol": "LibTmux.Workspace\\Get-TmuxWorkspacePlan",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux.Workspace\\Get-TmuxWorkspacePlan",
    "page": "/powershell/latest/workspace/source-guide/",
    "title": "Workspace guide",
    "section": "workspace"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux.Workspace\\Import-TmuxWorkspace",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux.Workspace\\Invoke-TmuxWorkspace",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "powershell",
@@ -7919,10 +8017,31 @@
   },
   {
    "port": "powershell",
+   "symbol": "LibTmux.Workspace\\Resolve-TmuxWorkspace",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux.Workspace\\Test-TmuxWorkspace",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
    "symbol": "LibTmux.Workspace\\Test-TmuxWorkspace",
    "page": "/powershell/latest/workspace/source-guide/",
    "title": "Workspace guide",
    "section": "workspace"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Connect-TmuxControl",
+   "page": "/powershell/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
   },
   {
    "port": "powershell",
@@ -7990,6 +8109,13 @@
   {
    "port": "powershell",
    "symbol": "LibTmux\\Disconnect-TmuxControl",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Disconnect-TmuxControl",
    "page": "/powershell/latest/topics/ownership/",
    "title": "Ownership and cleanup",
    "section": "topics"
@@ -8041,6 +8167,13 @@
    "symbol": "LibTmux\\Get-TmuxPaneContent",
    "page": "/powershell/latest/guides/capture/",
    "title": "Capture, refresh and raw commands",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Get-TmuxPaneContent",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -8167,6 +8300,13 @@
    "symbol": "LibTmux\\Invoke-TmuxControlCommand",
    "page": "/powershell/latest/guides/commands/",
    "title": "Commands and control clients",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Invoke-TmuxControlCommand",
+   "page": "/powershell/latest/guides/compatibility/",
+   "title": "Compatibility",
    "section": "guides"
   },
   {
@@ -8304,9 +8444,23 @@
   },
   {
    "port": "powershell",
+   "symbol": "LibTmux\\New-TmuxSession",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
    "symbol": "LibTmux\\New-TmuxWindow",
    "page": "/powershell/latest/guides/create/",
    "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\New-TmuxWindow",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -8336,6 +8490,13 @@
    "page": "/powershell/latest/examples/wait-for-service/",
    "title": "Wait for a service",
    "section": "examples"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Remove-TmuxSession",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "powershell",
@@ -8388,6 +8549,20 @@
   },
   {
    "port": "powershell",
+   "symbol": "LibTmux\\Select-TmuxWindow",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Send-TmuxKey",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
    "symbol": "LibTmux\\Send-TmuxKey",
    "page": "/powershell/latest/guides/input/",
    "title": "Send input to a pane",
@@ -8399,6 +8574,13 @@
    "page": "/powershell/latest/topics/execution/",
    "title": "Dispatch, completion, and failure",
    "section": "topics"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Send-TmuxText",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "powershell",
@@ -8423,6 +8605,13 @@
   },
   {
    "port": "powershell",
+   "symbol": "LibTmux\\Split-TmuxPane",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
    "symbol": "LibTmux\\Update-TmuxPane",
    "page": "/powershell/latest/guides/capture/",
    "title": "Capture, refresh and raw commands",
@@ -8433,6 +8622,13 @@
    "symbol": "LibTmux\\Update-TmuxPane",
    "page": "/powershell/latest/guides/read/",
    "title": "Read tmux objects",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Wait-TmuxChannel",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -8469,6 +8665,13 @@
    "page": "/powershell/latest/topics/observations/",
    "title": "Watching output and state",
    "section": "topics"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Watch-TmuxEvent",
+   "page": "/powershell/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
   },
   {
    "port": "powershell",
