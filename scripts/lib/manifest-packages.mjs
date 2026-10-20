@@ -210,7 +210,13 @@ const READER_FOR = {
   java: 'java', kotlin: 'java', scala: 'java', csharp: 'dotnet', fsharp: 'dotnet', cxx: 'cxx', swift: 'swift',
 }
 
-/** Read one port's manifests at one revision. `options` names the repository's other inputs. */
+/**
+ * Read one port's manifests at one revision. `options` names the repository's other inputs.
+ * @param {string} slug
+ * @param {{ revision: string, files(): string[], read(path: string): string, has(path: string): boolean, tags(): string[] }} repo
+ * @param {{ identity?: string, repository?: string, manifest?: string }} [options]
+ * @returns {{ distributions: { name: string, version?: string, manifest: string }[], units: { unit: string, name: string, path?: string }[] }}
+ */
 export function readPort(slug, repo, options = {}) {
   const reader = READERS[READER_FOR[slug]]
   if (!reader) throw new Error(`no manifest reader for ${slug}`)

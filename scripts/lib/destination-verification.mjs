@@ -425,6 +425,7 @@ export function manifestVersion(manifests, port, entries, entry) {
  * the manifest declares for their distribution.
  */
 export function collectDestinations(inventory, manifests) {
+  /** @type {Map<string, { url: string, host: string, kinds: string[], entries: { port: string, id: string, status: string }[], repos: string[], paths: string[], expectedVersion?: string, versionSource?: string }>} */
   const found = new Map()
   const add = (port, entry, { kind, url, host }, status) => {
     const known = found.get(url) ?? { url, host, kinds: [], entries: [], repos: [], paths: [] }
@@ -464,7 +465,7 @@ const DAY = 24 * 60 * 60 * 1000
  * released; a host that can list versions may not decline to confirm one, and
  * the version a record checked must be the one the manifests declare now.
  */
-export function checkEvidence(inventory, evidence, { manifests, today = new Date(), maxAgeDays = EVIDENCE_MAX_AGE_DAYS } = {}) {
+export function checkEvidence(inventory, evidence, { manifests, today = new Date(), maxAgeDays = EVIDENCE_MAX_AGE_DAYS } = /** @type {{ manifests?: any, today?: Date, maxAgeDays?: number }} */ ({})) {
   const records = new Map(evidence.destinations.map((record) => [record.url, record]))
   const problems = []
   const age = (date) => Math.floor((today.getTime() - new Date(`${date}T00:00:00Z`).getTime()) / DAY)
