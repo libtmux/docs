@@ -10,6 +10,9 @@
 /** Calls between a send site and the public symbol that wraps it. */
 export const MAX_HOPS = 1
 
+/** Calls a method can make before it is said to reach no send, when it is checked against its sibling methods. */
+export const DEEP_HOPS = 3
+
 /**
  * A helper that this many public symbols call is infrastructure, such as a
  * refresh after every mutation, and crediting each caller would list methods
@@ -33,27 +36,52 @@ export const ruleHolds = (rule, revision, pinned) => (rule.revision ? revision.s
 
 const SELF_RECEIVERS = new Set(['this', 'self', 'base', 'super', 'cls', 'me'])
 
+/** Whether a call can be a call of a function: the arguments it passes fit the parameters it takes, where both are known. */
+export function shapeFits(call, fn) {
+  if (!call || !fn) return true
+  if (call.labels && fn.labels) {
+    let at = 0
+    for (const parameter of fn.labels) {
+      if (call.labels[at] === parameter.label) at++
+      else if (!parameter.optional) return false
+    }
+    return at === call.labels.length
+  }
+  return call.count >= fn.min && call.count <= fn.max
+}
+
 /**
  * Whether a call in `caller` is a call of `callee`. A name that only one function has can be nothing else. A name that
  * several share is resolved by what the call is made on: an unqualified call or one on `self` is the caller's own type's
  * (a free function, when the callee has no type), and a call on a handle named for a type is that type's. A call on
- * anything else is left unresolved, because naming `into_command` is not naming the one in `CaptureOptions`.
+ * anything else is left unresolved, because naming `into_command` is not naming the one in `CaptureOptions`. Among the
+ * overloads of one type, the arguments the call passes pick the one it takes.
  *
- * @param {{ calls: Map<string, number>, receivers: Map<string, Set<string>>, owner?: string }} caller
- * @param {{ name: string, owner?: string, file?: string }} callee
+ * Each call of the name is judged by its own receiver and arguments when the scan kept them; `call` names the one to judge.
+ *
+ * @param {{ calls: Map<string, number>, receivers: Map<string, Set<string>>, callList?: { name: string, receiver?: string, shape?: object }[], owner?: string }} caller
+ * @param {{ name: string, owner?: string, file?: string, shape?: object }} callee
  * @param {{ owner?: string, file?: string }[]} named every function of the port that has the callee's name
+ * @param {{ name: string, receiver?: string, shape?: object }} [call]
  */
-export function callTargets(caller, callee, named) {
+export function callTargets(caller, callee, named, call) {
   if (!caller.calls.has(callee.name)) return false
   if (named.length <= 1) return true
-  const receivers = caller.receivers.get(callee.name)
+  const calls = call ? [call] : (caller.callList ?? []).filter((candidate) => candidate.name === callee.name)
+  // Overloads of one type are not always in one file: a Swift extension and a C# partial class add to the type from another.
+  const overloaded = named.some((other) => other !== callee && other.owner === callee.owner && callee.owner !== undefined)
+  if (!calls.length) return resolves(caller, caller.receivers.get(callee.name), callee, named)
+  return calls.some((one) => resolves(caller, one.receiver ? new Set([one.receiver]) : undefined, callee, named) && (!overloaded || shapeFits(one.shape, callee.shape)))
+}
+
+function resolves(caller, receivers, callee, named) {
   // Go names its receiver, `func (p Pane) ...`, and calls its own methods on it.
   const unqualified = !receivers || [...receivers].every((receiver) => SELF_RECEIVERS.has(receiver) || receiver === caller.selfName)
-  // A call with no handle in front of it is a free function's, and with a second free function of the name it is the one in the
-  // caller's own file or none: which one an import names is not read.
-  if (callee.owner === undefined) return !receivers && (caller.file === callee.file || named.filter((other) => other.owner === undefined).length === 1)
+  // A call with no handle in front of it is a free function's, and with a second free function of the name it is the one in the caller's own file or none: which one an import names is not read.
+  // The overloads of one free function, all in one file, are that file's whichever file the call is in.
+  if (callee.owner === undefined) return !receivers && (caller.file === callee.file || new Set(named.filter((other) => other.owner === undefined).map((other) => other.file)).size === 1)
   if (unqualified) return caller.owner === callee.owner
-  return receivers.has(callee.owner.toLowerCase())
+  return [...receivers].some((receiver) => receiver.replace(/^_+/, '') === callee.owner.toLowerCase())
 }
 
 /** `panes(where:)`, `Server.panes` and `Server#list_panes` all name their last identifier. */
@@ -141,7 +169,7 @@ export function builtSites(functions) {
 }
 
 /**
- * @param {{ command: string, spec?: { scopes?: { id: string, flags: string }[] }, functions: LocatedFunction[], symbols: UsageSymbol[] }} input
+ * @param {{ command: string, spec?: { scopes?: { id: string, flags: string }[] }, functions: LocatedFunction[], symbols: UsageSymbol[], definitionOptions?: { sharedOwner?: boolean, freeFunctions?: boolean } }} input
  * @returns {{ entries: UsageEntry[], unresolved: Unresolved[] }}
  */
 export function deriveUsage({ command, spec, functions, symbols, definitionOptions }) {
@@ -155,15 +183,17 @@ export function deriveUsage({ command, spec, functions, symbols, definitionOptio
     return functions.filter((other) => other !== fn && callTargets(other, fn, named))
   }
 
-  /** Public symbols reached from `fn`, each with the call sites walked to reach it. */
+  /** Public symbols reached from `fn`, each with the call sites walked to reach it and the definition that reaches it. */
   const reach = (fn, trail, depth) => {
     const own = definitions.get(fn)
-    if (own) return own.map((symbol) => ({ symbol, trail }))
+    if (own) return own.map((symbol) => ({ symbol, trail, method: fn }))
     if (depth >= MAX_HOPS) return []
     return callersOf(fn).flatMap((caller) => reach(caller, [...trail, `${caller.file}:${caller.calls.get(fn.name)}`], depth + 1))
   }
 
   const entries = new Map()
+  /** The definitions of a symbol that send an entry's command, by entry: a symbol with several methods is not credited with one's send for all. */
+  const senders = new Map()
   const unresolved = []
   for (const fn of functions) {
     const found = [...fn.sites, ...(built.get(fn) ?? [])].filter((site) => site.command === command)
@@ -198,8 +228,9 @@ export function deriveUsage({ command, spec, functions, symbols, definitionOptio
         unresolved.push({ file: fn.file, line: site.line, function: fn.name, reason: `a helper shared by ${new Set(reached.map(({ symbol }) => symbol.id)).size} public symbols` })
         continue
       }
-      for (const { symbol, trail } of reached) {
+      for (const { symbol, trail, method } of reached) {
         const key = `${symbol.id}\0${scope}`
+        senders.set(key, (senders.get(key) ?? new Set()).add(method))
         // The line to cite is the call that sends, which is where the command is dispatched and not where it is spelled.
         const lines = site.via
           ? [`${fn.file}:${site.dispatch.line}`, `${fn.file}:${site.via.call}`, `${site.via.file}:${site.line}`]
@@ -211,6 +242,45 @@ export function deriveUsage({ command, spec, functions, symbols, definitionOptio
         if (!held || held.hops > entry.hops || (held.hops === entry.hops && held.depth > entry.depth)) entries.set(key, entry)
       }
     }
+  }
+  /**
+   * Whether a function reaches a site that sends the command at the scope within a few calls: by the calls it resolves to, which is
+   * what credits a symbol, or (`liberal`) by every function of the called name, which is what a function that is not credited
+   * could still reach.
+   */
+  const reaches = (start, command, scope, liberal) => {
+    const sends = (fn) => [...fn.sites, ...(built.get(fn) ?? [])].some((site) => site.command === command && site.dispatch !== null && classify(spec, site.flags) === scope)
+    const seen = new Set([start])
+    let frontier = [start]
+    for (let hop = 0; hop <= DEEP_HOPS && frontier.length; hop++) {
+      const next = []
+      for (const fn of frontier) {
+        if (sends(fn)) return true
+        for (const name of fn.calls.keys()) {
+          const named = byName.get(name) ?? []
+          for (const callee of named) if (!seen.has(callee) && (liberal || callTargets(fn, callee, named))) { seen.add(callee); next.push(callee) }
+        }
+      }
+      frontier = next
+    }
+    return false
+  }
+  // Which of a symbol's definitions send the command, for a symbol that has several: those a call credits, and those that
+  // only reach it through more calls than a symbol is credited across.
+  for (const [key, entry] of entries) {
+    const all = [...definitions].filter(([, owned]) => owned.some((symbol) => symbol.id === entry.symbol)).map(([fn]) => fn)
+    const sends = [...senders.get(key)]
+    const others = all.filter((method) => !sends.includes(method))
+    Object.defineProperty(entry, 'methods', {
+      value: {
+        sends, all,
+        // A method no call reaches the command from, however far.
+        lacks: others.filter((method) => !reaches(method, command, entry.scope, true)),
+        // A method that reaches it only through calls the symbol is not credited across, or only by name.
+        deep: others.filter((method) => reaches(method, command, entry.scope, true) && reaches(method, command, entry.scope, false)),
+        unsure: others.filter((method) => reaches(method, command, entry.scope, true) && !reaches(method, command, entry.scope, false)),
+      },
+    })
   }
   return {
     entries: [...entries.values()].sort((a, b) => a.symbol.localeCompare(b.symbol) || String(a.scope).localeCompare(String(b.scope))),
@@ -229,7 +299,7 @@ export function deriveUsage({ command, spec, functions, symbols, definitionOptio
  * stands only while that symbol sends the command at the same scope, and keeps that symbol's lines.
  *
  * @typedef {{ at: string, has?: string[], span?: number, in?: string }} Evidence
- * @typedef {{ port: string, symbol: string, command: string, scope: string | null, evidence: Evidence[], forwardable?: boolean, via?: { port: string, symbol: string } }} Claim
+ * @typedef {{ port: string, symbol: string, command: string, scope: string | null, evidence: Evidence[], forwardable?: boolean, incidental?: boolean, via?: { port: string, symbol: string } }} Claim
  * @param {{
  *   claims: Claim[],
  *   spec?: { scopes?: { id: string }[] },
@@ -289,7 +359,7 @@ export function verifyClaims({ claims, spec, functions, types, symbols, readSour
     if (!broken) {
       entries.push({
         symbol: claim.symbol, command: claim.command, scope: claim.scope, evidence: claim.evidence.map((item) => item.at),
-        hops: claim.evidence.length - 1, reviewed: true, ...(claim.forwardable ? { forwardable: true } : {}), ...(claim.when ? { when: claim.when } : {}),
+        hops: claim.evidence.length - 1, reviewed: true, ...(claim.forwardable ? { forwardable: true } : {}), ...(claim.incidental ? { incidental: true } : {}), ...(claim.when ? { when: claim.when } : {}),
         ...(core ? { via: { port: claim.via.port, symbol: claim.via.symbol, revision: core.revision, evidence: core.evidence, ...(core.reviewed ? { reviewed: true } : {}) } } : {}),
       })
     }
@@ -336,7 +406,56 @@ export function applyConditions({ conditions, found, readSource, lenient = false
     const entry = found.get(`${item.symbol}\0${item.command}\0${item.scope}`)
     if (!entry) { if (!lenient) problems.push(`${label} qualifies no entry`) }
     else if (entry.when && entry.when !== item.when) problems.push(`${label} differs from the one its claim says: ${entry.when}`)
-    else entry.when = item.when
+    else {
+      entry.when = item.when
+      if (!lenient && item.receiver !== undefined) problems.push(...receiverProblems(label, item, entry))
+    }
+  }
+  return problems
+}
+
+/**
+ * A generic function's methods are told apart by the type of the first argument, and a command that only some of them send
+ * is qualified by that type. The qualifier is true when the methods the scan reaches the command from all take the type,
+ * and at least one method that takes another type does not reach it, and the condition cites the body of one of each, so
+ * that both can be read: a signature line that names the type shows neither.
+ *
+ * @param {string} label
+ * @param {{ receiver: string, evidence: { at: string, through?: number }[] }} item
+ * @param {{ methods?: { sends: { file: string, nameLine: number, end: number, receiverType?: string }[], all: { file: string, nameLine: number, end: number, receiverType?: string }[] } }} entry
+ */
+export function receiverProblems(label, item, entry) {
+  if (!entry.methods) return [`${label} names the receiver ${item.receiver}, and the entry was not derived from the methods of a function`]
+  const { sends, lacks, unsure } = entry.methods
+  const problems = []
+  const wrong = sends.filter((method) => method.receiverType !== item.receiver)
+  if (wrong.length) problems.push(`${label} says on a ${item.receiver}, but the ${wrong.map((method) => method.receiverType ?? 'untyped').join(', ')} method at ${wrong[0].file}:${wrong[0].nameLine} sends it too`)
+  if (!lacks.length) problems.push(`${label} says on a ${item.receiver}, but no method of the function is shown not to send it, and a send that every method makes takes no qualifier`)
+  const same = lacks.filter((method) => method.receiverType === item.receiver)
+  if (same.length) problems.push(`${label} says on a ${item.receiver}, but the ${item.receiver} method at ${same[0].file}:${same[0].nameLine} does not send it`)
+  if (unsure.length) problems.push(`${label} cannot say which methods send it: ${unsure[0].file}:${unsure[0].nameLine} may reach it through a call that is not resolved`)
+  const shown = (methods) => (item.evidence ?? []).some((line) => line.through !== undefined
+    && methods.some((method) => line.at === `${method.file}:${method.nameLine}` && line.through === method.end))
+  if (sends.length && !shown(sends)) problems.push(`${label} cites the body of no method that sends it`)
+  if (lacks.length && !shown(lacks)) problems.push(`${label} cites the body of no method that does not send it`)
+  return problems
+}
+/**
+ * A command that some of a generic function's methods send and others do not is qualified, so that no method is credited with
+ * another's send. An entry the scan derived that is sent by a part of the methods says when, in a condition or in a claim.
+ *
+ * @param {Map<string, { symbol: string, command: string, scope: string | null, when?: string, methods?: { sends: object[], all: object[] } }>} found
+ */
+export function partialProblems(found) {
+  const problems = []
+  for (const entry of found.values()) {
+    if (!entry.methods) continue
+    const { sends, lacks, unsure } = entry.methods
+    const where = (methods) => `${methods[0].file}:${methods[0].nameLine}`
+    if (unsure.length) problems.push(`${entry.symbol} ${entry.command} ${entry.scope}: the method at ${where(unsure)} may reach it through a call that is not resolved, so whether it sends it is not known`)
+    if (lacks.length && !entry.when) {
+      problems.push(`${entry.symbol} ${entry.command} ${entry.scope}: only the ${[...new Set(sends.map((method) => method.receiverType ?? 'untyped'))].join(', ')} methods send it, and ${lacks.length} other method${lacks.length > 1 ? 's' : ''} such as ${where(lacks)} do not, so it needs a condition that says when`)
+    }
   }
   return problems
 }

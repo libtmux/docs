@@ -112,8 +112,7 @@
         "evidence": [
           "src/control_io.jl:124"
         ],
-        "scope": null,
-        "when": "on a ControlConnection"
+        "scope": null
       },
       {
         "command": "delete-buffer",
@@ -147,11 +146,12 @@
         "command": "capture-pane",
         "evidence": [
           "src/control_io.jl:101",
-          "src/control_io.jl:173"
+          "src/control_io.jl:173",
+          "src/pane_io.jl:77",
+          "src/pane_io.jl:94"
         ],
         "reviewed": true,
-        "scope": null,
-        "when": "on a ControlConnection"
+        "scope": null
       }
     ],
     "LibTmux.delete_buffer": [
@@ -160,8 +160,7 @@
         "evidence": [
           "src/control_buffers.jl:122"
         ],
-        "scope": null,
-        "when": "on a ControlConnection"
+        "scope": null
       }
     ],
     "LibTmux.detach_client": [
@@ -170,8 +169,7 @@
         "evidence": [
           "src/control_clients.jl:75"
         ],
-        "scope": null,
-        "when": "on a ControlConnection"
+        "scope": null
       },
       {
         "command": "list-clients",
@@ -179,8 +177,7 @@
           "src/control_clients.jl:9",
           "src/control_clients.jl:74"
         ],
-        "scope": null,
-        "when": "on a ControlConnection"
+        "scope": null
       }
     ],
     "LibTmux.format_hints": [
@@ -218,8 +215,7 @@
           "src/configuration.jl:228",
           "src/configuration.jl:257"
         ],
-        "scope": null,
-        "when": "on a Server"
+        "scope": null
       }
     ],
     "LibTmux.kill_pane": [
@@ -255,8 +251,7 @@
         "evidence": [
           "src/control_topology.jl:285"
         ],
-        "scope": null,
-        "when": "on a ControlConnection"
+        "scope": null
       }
     ],
     "LibTmux.load_buffer": [
@@ -275,8 +270,7 @@
           "src/pane_io.jl:128",
           "src/pane_io.jl:187"
         ],
-        "scope": null,
-        "when": "on a Server"
+        "scope": null
       },
       {
         "command": "load-buffer",
@@ -284,8 +278,7 @@
           "src/control_buffers.jl:37",
           "src/control_buffers.jl:71"
         ],
-        "scope": null,
-        "when": "on a ControlConnection"
+        "scope": null
       }
     ],
     "LibTmux.move_pane": [
@@ -294,8 +287,7 @@
         "evidence": [
           "src/control_topology.jl:199"
         ],
-        "scope": null,
-        "when": "on a ControlConnection"
+        "scope": null
       }
     ],
     "LibTmux.move_window": [
@@ -304,28 +296,25 @@
         "evidence": [
           "src/control_topology.jl:285"
         ],
-        "scope": null,
-        "when": "on a ControlConnection"
+        "scope": null
       }
     ],
     "LibTmux.new_session": [
       {
         "command": "new-session",
         "evidence": [
-          "src/operations.jl:191"
+          "src/control_topology.jl:56"
         ],
-        "scope": null,
-        "when": "on a Server"
+        "scope": null
       }
     ],
     "LibTmux.new_window": [
       {
         "command": "new-window",
         "evidence": [
-          "src/operations.jl:230"
+          "src/control_operations.jl:114"
         ],
-        "scope": null,
-        "when": "on a Server"
+        "scope": null
       }
     ],
     "LibTmux.observe_output": [
@@ -383,8 +372,7 @@
           "src/control_io.jl:60",
           "src/control_buffers.jl:189"
         ],
-        "scope": null,
-        "when": "on a ControlConnection"
+        "scope": null
       },
       {
         "command": "list-buffers",
@@ -392,8 +380,7 @@
           "src/pane_io.jl:128",
           "src/pane_io.jl:274"
         ],
-        "scope": null,
-        "when": "on a Server"
+        "scope": null
       },
       {
         "command": "list-commands",
@@ -401,8 +388,7 @@
           "src/control_buffers.jl:132",
           "src/control_buffers.jl:174"
         ],
-        "scope": null,
-        "when": "on a ControlConnection"
+        "scope": null
       },
       {
         "command": "load-buffer",
@@ -410,8 +396,7 @@
           "src/control_buffers.jl:37",
           "src/control_buffers.jl:175"
         ],
-        "scope": null,
-        "when": "on a ControlConnection"
+        "scope": null
       },
       {
         "command": "paste-buffer",
@@ -419,11 +404,14 @@
           "src/pane_io.jl:243",
           "src/pane_io.jl:236",
           "src/pane_io.jl:273",
-          "src/pane_io.jl:278"
+          "src/pane_io.jl:278",
+          "src/control_buffers.jl:178",
+          "src/control_buffers.jl:180",
+          "src/control_buffers.jl:150",
+          "src/control_buffers.jl:174"
         ],
         "reviewed": true,
-        "scope": null,
-        "when": "on a Server"
+        "scope": null
       }
     ],
     "LibTmux.read_formats": [
@@ -433,8 +421,7 @@
           "src/control_formats.jl:19",
           "src/control_formats.jl:56"
         ],
-        "scope": "window",
-        "when": "on a ControlConnection"
+        "scope": "window"
       }
     ],
     "LibTmux.remove_environment": [
@@ -530,8 +517,7 @@
         "evidence": [
           "src/control_buffers.jl:100"
         ],
-        "scope": null,
-        "when": "on a ControlConnection"
+        "scope": null
       }
     ],
     "LibTmux.select_layout": [
@@ -540,8 +526,7 @@
         "evidence": [
           "src/control_topology.jl:141"
         ],
-        "scope": null,
-        "when": "on a ControlConnection"
+        "scope": null
       }
     ],
     "LibTmux.select_pane": [
@@ -550,8 +535,7 @@
         "evidence": [
           "src/control_topology.jl:88"
         ],
-        "scope": null,
-        "when": "on a ControlConnection"
+        "scope": null
       }
     ],
     "LibTmux.select_window": [
@@ -560,8 +544,7 @@
         "evidence": [
           "src/control_topology.jl:362"
         ],
-        "scope": null,
-        "when": "on a ControlConnection"
+        "scope": null
       }
     ],
     "LibTmux.send_keys": [
@@ -570,8 +553,7 @@
         "evidence": [
           "src/control_operations.jl:196"
         ],
-        "scope": null,
-        "when": "on a ControlConnection"
+        "scope": null
       }
     ],
     "LibTmux.set_environment": [
@@ -580,8 +562,7 @@
         "evidence": [
           "src/configuration.jl:375"
         ],
-        "scope": null,
-        "when": "on a Server"
+        "scope": null
       }
     ],
     "LibTmux.set_hook": [
@@ -590,8 +571,7 @@
         "evidence": [
           "src/configuration.jl:478"
         ],
-        "scope": null,
-        "when": "on a Server"
+        "scope": null
       }
     ],
     "LibTmux.set_option": [
@@ -600,8 +580,7 @@
         "evidence": [
           "src/configuration.jl:280"
         ],
-        "scope": null,
-        "when": "on a Server"
+        "scope": null
       }
     ],
     "LibTmux.snapshot": [
@@ -621,18 +600,22 @@
           "src/acquisition.jl:231"
         ],
         "scope": null,
-        "when": "on a Server"
+        "when": "a session exists"
       },
       {
         "command": "list-panes",
         "evidence": [
           "src/acquisition.jl:120",
           "src/acquisition.jl:125",
-          "src/acquisition.jl:231"
+          "src/acquisition.jl:117",
+          "src/acquisition.jl:231",
+          "src/control_io.jl:224",
+          "src/control.jl:538",
+          "src/control_io.jl:249"
         ],
         "reviewed": true,
         "scope": "server",
-        "when": "on a Server"
+        "when": "a session exists"
       },
       {
         "command": "list-sessions",
@@ -640,27 +623,31 @@
           "src/acquisition.jl:104",
           "src/acquisition.jl:231"
         ],
-        "scope": null,
-        "when": "on a Server"
+        "scope": null
       },
       {
         "command": "list-windows",
         "evidence": [
-          "src/acquisition.jl:107",
-          "src/acquisition.jl:231"
+          "src/acquisition.jl:109",
+          "src/acquisition.jl:114",
+          "src/acquisition.jl:106",
+          "src/acquisition.jl:231",
+          "src/control_io.jl:223",
+          "src/control.jl:538",
+          "src/control_io.jl:249"
         ],
+        "reviewed": true,
         "scope": "server",
-        "when": "on a Server"
+        "when": "a session exists"
       }
     ],
     "LibTmux.split_window": [
       {
         "command": "split-window",
         "evidence": [
-          "src/operations.jl:273"
+          "src/control_operations.jl:166"
         ],
-        "scope": null,
-        "when": "on a Server"
+        "scope": null
       }
     ],
     "LibTmux.subscribe_format": [
@@ -686,8 +673,7 @@
         "evidence": [
           "src/control_topology.jl:213"
         ],
-        "scope": null,
-        "when": "on a ControlConnection"
+        "scope": null
       }
     ],
     "LibTmux.swap_window": [
@@ -696,8 +682,7 @@
         "evidence": [
           "src/control_topology.jl:348"
         ],
-        "scope": null,
-        "when": "on a ControlConnection"
+        "scope": null
       }
     ],
     "LibTmux.switch_client": [
@@ -707,16 +692,14 @@
           "src/control_clients.jl:9",
           "src/control_clients.jl:51"
         ],
-        "scope": null,
-        "when": "on a ControlConnection"
+        "scope": null
       },
       {
         "command": "switch-client",
         "evidence": [
           "src/control_clients.jl:54"
         ],
-        "scope": null,
-        "when": "on a ControlConnection"
+        "scope": null
       }
     ],
     "LibTmux.unlink_window": [
@@ -725,8 +708,7 @@
         "evidence": [
           "src/control_topology.jl:319"
         ],
-        "scope": null,
-        "when": "on a ControlConnection"
+        "scope": null
       }
     ],
     "LibTmux.unset_environment": [
@@ -745,8 +727,7 @@
         "evidence": [
           "src/configuration.jl:486"
         ],
-        "scope": null,
-        "when": "on a Server"
+        "scope": null
       }
     ],
     "LibTmux.unset_option": [
@@ -755,8 +736,7 @@
         "evidence": [
           "src/configuration.jl:293"
         ],
-        "scope": null,
-        "when": "on a Server"
+        "scope": null
       }
     ]
   }

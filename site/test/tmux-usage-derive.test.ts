@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { scanSource } from '../../scripts/lib/tmux-usage-scan.mjs'
-import { MAX_SHARED_BY, applyConditions, applyExclusions, builtSites, callTargets, classify, conditionProblem, definitionsOf, deriveUsage, ruleHolds, verifyClaims } from '../../scripts/lib/tmux-usage-derive.mjs'
+import { MAX_SHARED_BY, applyConditions, applyExclusions, builtSites, callTargets, classify, conditionProblem, definitionsOf, deriveUsage, partialProblems, ruleHolds, verifyClaims } from '../../scripts/lib/tmux-usage-derive.mjs'
 import { auditEvidence } from '../../scripts/lib/tmux-usage-audit.mjs'
 import { chainProblems, dispatcherProblems, guardProblems } from '../../scripts/lib/tmux-usage-dispatch.mjs'
 import { forwardUsage } from '../../scripts/lib/tmux-usage-forward.mjs'
@@ -502,7 +502,7 @@ describe('the calls that send', () => {
     expect(problems('cmd', { at: 'lib.py:2', reaches })).toEqual([])
     expect(problems('check_call', { at: 'lib.py:13' })).toEqual([])
     // A hop the scan cannot follow, such as a command put on a queue, says where it leads.
-    const queued = [{ at: 'lib.py:3', has: ['tmux_cmd'], leads: '__init__' }, { at: 'lib.py:7', has: ['subprocess.Popen('] }]
+    const queued = [{ at: 'lib.py:3', has: ['tmux_cmd'], leads: '__init__', why: 'the command goes onto a queue' }, { at: 'lib.py:7', has: ['subprocess.Popen('] }]
     expect(problems('cmd', { at: 'lib.py:2', reaches: queued })).toEqual([])
   })
 
@@ -511,7 +511,7 @@ describe('the calls that send', () => {
     ['a chain that stops short of the process', 'cmd', { at: 'lib.py:2', reaches: [reaches[0]] }, /hop lib.py:3 is not a transport/],
     ['a chain that skips the function between', 'cmd', { at: 'lib.py:2', reaches: [reaches[1]] }, /hop lib.py:7 is not in Server.cmd/],
     ['a hop that does not lead to the next line', 'cmd', { at: 'lib.py:2', reaches: [{ at: 'lib.py:3', has: ['tmux_cmd'], calls: 'tmux_cmd' }, { at: 'lib.py:10', has: ['row'] }] }, /leads to tmux_cmd, but lib.py:10 is not a line of it/],
-    ['a hop whose function does not make the call', 'cmd', { at: 'lib.py:2', reaches: [{ at: 'lib.py:3', has: ['tmux_cmd'], calls: 'Popen' }, reaches[1]] }, /does not call Popen/],
+    ['a hop whose function does not make the call', 'cmd', { at: 'lib.py:2', reaches: [{ at: 'lib.py:3', has: ['tmux_cmd'], calls: 'Popen' }, reaches[1]] }, /leads to Popen, but lib.py:7 is not a line of it/],
     ['a hop whose text is not on its line', 'cmd', { at: 'lib.py:2', reaches: [{ at: 'lib.py:3', has: ['elsewhere'], calls: 'tmux_cmd' }, reaches[1]] }, /does not contain "elsewhere"/],
     ['a definition that is not a function of that name', 'listing', { at: 'lib.py:2', reaches }, /is not a line of a function named listing/],
     ['a hop that names no destination', 'cmd', { at: 'lib.py:2', reaches: [{ at: 'lib.py:3', has: ['tmux_cmd'] }, reaches[1]] }, /names neither the function it calls nor the one it leads to/],
@@ -550,6 +550,133 @@ describe('the calls that send', () => {
       ['no lines', { evidence: [] }, /cites no lines/],
     ])('is refused for %s', (_name, over, message) => {
       expect(check([guard(over)]).join('\n')).toMatch(message)
+    })
+  })
+})
+
+describe('a chain that is resolved by the call each hop makes', () => {
+  type Source = { file: string; text: string }
+  const functionsOf = async (grammar: string, sources: Source[]) => {
+    const all: Record<string, unknown>[] = []
+    for (const { file, text } of sources) {
+      const { functions } = await scanSource({ grammar, text, commands: new Set(['x']), known: new Set(['x']), dispatch: new Set() })
+      all.push(...functions.map((fn: object) => ({ ...fn, file })))
+    }
+    return all as unknown as Parameters<typeof chainProblems>[0]['functions']
+  }
+  const check = async (port: string, grammar: string, sources: Source[], name: string, item: Record<string, unknown>) =>
+    chainProblems({
+      port, rule: { name }, item: item as never, functions: await functionsOf(grammar, sources),
+      readSource: (path: string) => sources.find((source) => source.file === path)?.text,
+    })
+
+  describe('two functions that share a name, and only one of them starts the process', () => {
+    // The shape of the Rust executors: a tracing helper called `run`, and the `run` that spawns.
+    const span = ['impl DispatchSpan {', '    fn run(self, future: F) -> DispatchFuture {', '        DispatchFuture::new(future)', '    }', '}', ''].join('\n')
+    const control = ['impl ControlModeExecutor {', '    fn execute(&self, request: CommandRequest) -> DispatchFuture {', '        let span = DispatchSpan::new(&request, "control");', '        span.run(async move { sender.send_line(line).await })', '    }', '}', ''].join('\n')
+    const subprocess = [
+      'impl SubprocessExecutor {', //                                                   1
+      '    async fn run(self, request: CommandRequest) {', //                            2
+      '        let mut child = process.spawn();', //                                    3
+      '    }', //                                                                       4
+      '    fn execute(&self, request: CommandRequest) -> DispatchFuture {', //           5
+      '        DispatchSpan::new(&request, "subprocess").run(self.clone().run(request))', // 6
+      '    }', //                                                                       7
+      '}', //                                                                           8
+      '',
+    ].join('\n')
+    const sources = [{ file: 'executor.rs', text: span }, { file: 'control_executor.rs', text: control }, { file: 'subprocess.rs', text: subprocess }]
+    const hop = (at: string, over: Record<string, unknown> = {}) => ({ at, has: [], ...over })
+
+    it('refuses a chain that goes through the tracing helper to the spawn', async () => {
+      // `span.run(...)` is DispatchSpan::run, and the spawn is in SubprocessExecutor::run, though both are `run`. Nothing names the
+      // handle for the executor, so the hop has to say what it holds, which is the reader's cue that it holds the tracing span.
+      const wrong = { at: 'control_executor.rs:2', reaches: [hop('control_executor.rs:4', { calls: 'run' }), hop('subprocess.rs:3')] }
+      expect((await check('rs', 'rust', sources, 'execute', wrong)).join('\n')).toMatch(/is a call of span\.run\(\), which resolves to no function the scan has read, and not to SubprocessExecutor\.run at subprocess\.rs:2/)
+    })
+
+    it('refuses a hop that says the call is made on a type its receiver is not', async () => {
+      const core = ['impl Core {', '    fn execute(&self, request: Request) {', '        self.executor.execute(request)', '    }', '}', 'impl Server {', '    fn cmd(&self, command: Command) {', '        self.core.execute(command)', '    }', '}', ''].join('\n')
+      const files = [...sources, { file: 'core.rs', text: core }]
+      // `core.execute` is Core::execute; the chain that goes on in the executor and skips it is not this call.
+      const skipped = { at: 'core.rs:7', reaches: [hop('core.rs:8', { calls: 'execute', on: 'SubprocessExecutor' }), hop('subprocess.rs:6', { calls: 'run', on: 'SubprocessExecutor' }), hop('subprocess.rs:3')] }
+      expect((await check('rs', 'rust', files, 'cmd', skipped)).join('\n')).toMatch(/says the call is made on a SubprocessExecutor, but its receiver resolves it to Core\.execute at core\.rs:2/)
+      const right = { at: 'core.rs:7', reaches: [hop('core.rs:8', { calls: 'execute' }), hop('core.rs:3', { leads: 'execute', why: 'a trait object' }), hop('subprocess.rs:6', { calls: 'run', on: 'SubprocessExecutor' }), hop('subprocess.rs:3')] }
+      expect(await check('rs', 'rust', files, 'cmd', right)).toEqual([])
+    })
+
+    it('accepts the call that does start it, and a hop that says what a field holds', async () => {
+      const right = { at: 'subprocess.rs:5', reaches: [hop('subprocess.rs:6', { calls: 'run', on: 'SubprocessExecutor' }), hop('subprocess.rs:3')] }
+      expect(await check('rs', 'rust', sources, 'execute', right)).toEqual([])
+      // The trait call has no receiver the scan can type, so the chain says why it leads on.
+      const trait = { at: 'control_executor.rs:2', reaches: [hop('control_executor.rs:4', { leads: 'run' }), hop('subprocess.rs:3')] }
+      expect((await check('rs', 'rust', sources, 'execute', trait)).join('\n')).toMatch(/leads to run and says nothing about why the scan cannot follow it/)
+      const said = { at: 'control_executor.rs:2', reaches: [hop('control_executor.rs:4', { leads: 'run', why: 'a trait object' }), hop('subprocess.rs:3')] }
+      expect(await check('rs', 'rust', sources, 'execute', said)).toEqual([])
+    })
+
+    it('refuses a hop whose line has no call of the name it says', async () => {
+      // Line 7 closes `execute`; it makes no call of `run`.
+      const none = { at: 'subprocess.rs:5', reaches: [hop('subprocess.rs:7', { calls: 'run' }), hop('subprocess.rs:3')] }
+      expect((await check('rs', 'rust', sources, 'execute', none)).join('\n')).toMatch(/has no call of run on that line/)
+    })
+  })
+
+  describe('overloads of one type', () => {
+    const java = [
+      'class Server {', //                                                                1
+      '    CommandResult cmd(List<String> argv) {', //                                    2
+      '        return cmd(argv, timeout, "");', //                                        3
+      '    }', //                                                                         4
+      '    CommandResult cmd(ServerSnapshot snapshot, List<String> argv) {', //          5
+      '        return fence.guarded(snapshot, argv);', //                                 6
+      '    }', //                                                                         7
+      '    CommandResult cmd(List<String> argv, Duration timeout, String input) {', //    8
+      '        return starter.start(argv);', //                                           9
+      '    }', //                                                                        10
+      '    CommandResult run(List<String> argv) {', //                                   11
+      '        return cmd(argv);', //                                                    12
+      '    }', //                                                                        13
+      '}', //                                                                            14
+      '',
+    ].join('\n')
+    const sources = [{ file: 'ProcessTransport.java', text: java }]
+    const hop = (at: string, over: Record<string, unknown> = {}) => ({ at, has: [], ...over })
+
+    it('takes the overload that the arguments of the call fit, and refuses the one they do not', async () => {
+      const right = { at: 'ProcessTransport.java:11', reaches: [hop('ProcessTransport.java:12', { calls: 'cmd' }), hop('ProcessTransport.java:3', { calls: 'cmd' }), hop('ProcessTransport.java:9')] }
+      expect(await check('java', 'java', sources, 'run', right)).toEqual([])
+      // `cmd(argv)` passes one argument, so it is not the `cmd(snapshot, argv)` that calls the fence.
+      const wrong = { at: 'ProcessTransport.java:11', reaches: [hop('ProcessTransport.java:12', { calls: 'cmd' }), hop('ProcessTransport.java:6')] }
+      expect((await check('java', 'java', sources, 'run', wrong)).join('\n')).toMatch(/is a call of cmd\(1\), which resolves to Server\.cmd at ProcessTransport\.java:2, and not to Server\.cmd at ProcessTransport\.java:5/)
+    })
+  })
+
+  describe('overloads told apart by their labels', () => {
+    const swift = [
+      'struct Server {', //                                                                       1
+      '    func run(_ command: TmuxCommand) async throws -> TmuxReply {', //                      2
+      '        try await run(rawArguments: command.argumentVector)', //                           3
+      '    }', //                                                                                  4
+      '    func run(rawArguments: [String]) async throws -> TmuxReply {', //                      5
+      '        try await Subprocess.run(rawArguments)', //                                       6
+      '    }', //                                                                                  7
+      '    func send(_ list: TmuxCommandList) async throws -> TmuxReply {', //                    8
+      '        try await run(list)', //                                                           9
+      '    }', //                                                                                 10
+      '}', //                                                                                    11
+      '',
+    ].join('\n')
+    const sources = [{ file: 'Sources/LibTmux/Transport.swift', text: swift }]
+    const hop = (at: string, over: Record<string, unknown> = {}) => ({ at, has: [], ...over })
+
+    it('does not read run(rawArguments:) as the run(_:) that calls it', async () => {
+      const labelled = { at: 'Sources/LibTmux/Transport.swift:2', reaches: [hop('Sources/LibTmux/Transport.swift:3', { calls: 'run' }), hop('Sources/LibTmux/Transport.swift:6')] }
+      expect(await check('swift', 'swift', sources, 'run', labelled)).toEqual([])
+      // `run(list)` has no label: it is the first `run`, which is not where the process is started.
+      const unlabelled = { at: 'Sources/LibTmux/Transport.swift:8', reaches: [hop('Sources/LibTmux/Transport.swift:9', { calls: 'run' }), hop('Sources/LibTmux/Transport.swift:6')] }
+      const named = await check('swift', 'swift', sources, 'send', unlabelled)
+      expect(named.join('\n')).toMatch(/is a call of run\(_\), which resolves to Server\.run at Sources\/LibTmux\/Transport\.swift:2, and not to Server\.run at Sources\/LibTmux\/Transport\.swift:5/)
     })
   })
 })
@@ -812,6 +939,38 @@ describe('reading Julia and F# by their text', () => {
     expect(byName.snapshot.sites).toEqual([])
   })
 
+  it('reads a call that a condition only gates as a send, and a choice between two commands as none', () => {
+    const both = new Set(['list-panes', 'list-windows'])
+    const text = [
+      'function gated(conn, ss)',
+      '    ws = isempty(ss) ? [] : run(conn, "list-windows")',
+      '    pick = flag ? "list-panes" : "list-windows"',
+      '    run(conn, pick)',
+      'end',
+      '',
+    ].join('\n')
+    const { functions } = scanJulia(text, { commands: both, known: both, dispatch: new Set(['run']) }) as unknown as { functions: { sites: { command: string; line: number; dispatch?: { name: string } | null }[] }[] }
+    expect(functions[0].sites.map((found) => [found.line, found.command, found.dispatch?.name ?? null])).toEqual([[2, 'list-windows', 'run'], [3, 'list-panes', null], [3, 'list-windows', null]])
+  })
+
+  it('takes the body of a short-form function from the equals sign, when its arguments span lines', () => {
+    const text = [
+      'read(',
+      '    connection::ControlConnection,',
+      '    fields::AbstractVector;',
+      '    kwargs...,',
+      ') = _read(connection, fields; kwargs...)',
+      '',
+      'other() = nothing',
+      '',
+    ].join('\n')
+    const { functions } = scanJulia(text, { commands, known: commands }) as unknown as { functions: (Scanned & { nameLine: number; receiverType?: string })[] }
+    const read = functions.find((fn) => fn.name === 'read')!
+    expect([read.nameLine, read.end, read.receiverType]).toEqual([1, 5, 'ControlConnection'])
+    expect([...read.calls.keys()]).toContain('_read')
+    expect(functions.find((fn) => fn.name === 'other')!.start).toBe(7)
+  })
+
   it('reads F# members with their owner, and the calls inside with the object they are made on', () => {
     const text = [
       'module Hierarchy',
@@ -832,6 +991,126 @@ describe('reading Julia and F# by their text', () => {
     expect(byName.newSession.receivers.get('GetPanesAsync')).toEqual(new Set(['session']))
     expect(byName.helper.owner).toBe('Hierarchy')
     expect(byName.helper.calls.size).toBe(0)
+  })
+})
+
+describe('the methods of a generic function', () => {
+  const dispatch = new Set(['_operation_command', '_control_effect', '_control_create'])
+  const commands = new Set(['list-panes', 'list-windows', 'list-sessions'])
+  const text = [
+    'function panes(server::Server, pane)', //                                      1
+    '    args = ["list-panes", "-a"]', //                                            2
+    '    _operation_command(server, args...)', //                                    3
+    'end', //                                                                        4
+    '', //                                                                          5
+    'function panes(connection::ControlConnection, pane)', //                       6
+    '    _control_effect(connection, ["list-panes", "-a"])', //                      7
+    'end', //                                                                        8
+    '', //                                                                          9
+    'function windows(server::Server)', //                                         10
+    '    _operation_command(server, "list-windows")', //                            11
+    'end', //                                                                       12
+    '', //                                                                         13
+    'function windows(connection::ControlConnection)', //                           14
+    '    _quiet(connection)', //                                                    15
+    'end', //                                                                       16
+    '', //                                                                         17
+    '_quiet(connection) = nothing', //                                              18
+    '', //                                                                         19
+    'function sessions(server::Server)', //                                        20
+    '    _operation_command(server, "list-sessions")', //                           21
+    'end', //                                                                       22
+    '', //                                                                         23
+    'function sessions(connection::ControlConnection)', //                         24
+    '    _first(connection)', //                                                   25
+    'end', //                                                                       26
+    '', //                                                                         27
+    '_first(handle) = _second(handle)', //                                         28
+    '_second(handle) = _operation_command(handle, "list-sessions")', //            29
+    '', //                                                                         30
+    'function forwarding(server::Server)', //                                      31
+    '    _operation_command(server, "list-windows")', //                           32
+    'end', //                                                                      33
+    '', //                                                                         34
+    'function forwarding(f, server::Server)', //                                   35
+    '    forwarding(server)', //                                                  36
+    'end', //                                                                      37
+    '',
+  ].join('\n')
+  const symbols = ['panes', 'windows', 'sessions', 'forwarding'].map((name) => ({ id: `LibTmux.${name}`, name, file: 'lib.jl', line: 1 }))
+  const methods = async () => {
+    const { functions } = await scanSource({ grammar: 'julia', text, commands, known: commands, dispatch })
+    return functions.map((fn: object) => ({ ...fn, file: 'lib.jl' })) as unknown as Parameters<typeof deriveUsage>[0]['functions']
+  }
+  const entries = async (command: string) => {
+    const result = deriveUsage({ command, spec: undefined, functions: await methods(), symbols, definitionOptions: { freeFunctions: true } })
+    return Object.fromEntries(result.entries.map((entry) => [entry.symbol.replace('LibTmux.', ''), entry as unknown as { methods: { sends: { nameLine: number }[]; lacks: { nameLine: number }[]; deep: { nameLine: number }[]; unsure: unknown[] } }]))
+  }
+  const lines = (names: string[]) => (path: string) => (path === 'lib.jl' ? names.join('\n') : undefined)
+  void lines
+
+  it('tells the methods apart by the type of the first argument', async () => {
+    const found = await methods()
+    expect(found.filter((fn) => fn.name === 'panes').map((fn) => (fn as unknown as { receiverType: string }).receiverType)).toEqual(['Server', 'ControlConnection'])
+  })
+
+  it('finds a send that every method makes, and needs no qualifier for it', async () => {
+    const { panes } = await entries('list-panes')
+    expect(panes.methods.sends.map((method) => method.nameLine)).toEqual([1, 6])
+    expect(panes.methods.lacks).toEqual([])
+    expect(partialProblems(new Map([['panes', panes as never]]))).toEqual([])
+  })
+
+  it('finds a send that only one method makes, and asks for a condition that says when', async () => {
+    const { windows } = await entries('list-windows')
+    expect(windows.methods.sends.map((method) => method.nameLine)).toEqual([10])
+    expect(windows.methods.lacks.map((method) => method.nameLine)).toEqual([14])
+    expect(partialProblems(new Map([['windows', windows as never]])).join('\n')).toMatch(/only the Server methods send it, and 1 other method such as lib.jl:14 do not/)
+  })
+
+  it('does not call a method that only reaches the send through more calls than a symbol is credited across a method that lacks it', async () => {
+    const { sessions } = await entries('list-sessions')
+    expect(sessions.methods.sends.map((method) => method.nameLine)).toEqual([20])
+    expect(sessions.methods.deep.map((method) => method.nameLine)).toEqual([24])
+    expect(sessions.methods.lacks).toEqual([])
+    expect(partialProblems(new Map([['sessions', sessions as never]]))).toEqual([])
+  })
+
+  it('counts a method that forwards to a method of its own name as sending what that one sends', async () => {
+    const { forwarding } = await entries('list-windows')
+    expect(forwarding.methods.sends.map((method) => method.nameLine)).toEqual([31])
+    expect(forwarding.methods.deep.map((method) => method.nameLine)).toEqual([35])
+    expect(forwarding.methods.lacks).toEqual([])
+    expect(partialProblems(new Map([['forwarding', forwarding as never]]))).toEqual([])
+  })
+
+  describe('a receiver qualifier', () => {
+    const found = async () => new Map([['LibTmux.windows\0list-windows\0null', (await entries('list-windows')).windows as never]])
+    const body = (start: number, end: number, has: string) => ({ at: `lib.jl:${start}`, through: end, has: [has] })
+    const condition = (over: Record<string, unknown> = {}) => ({
+      port: 'julia', symbol: 'LibTmux.windows', command: 'list-windows', scope: null, when: 'on a Server', receiver: 'Server',
+      evidence: [body(10, 12, 'function windows('), body(14, 16, 'function windows(')], ...over,
+    })
+    const apply = async (item: Record<string, unknown>) => applyConditions({ conditions: [item as never], found: await found(), readSource: lines(text.split('\n')) })
+
+    it('is accepted when the methods that send take the type, another method does not, and both bodies are cited', async () => {
+      expect(await apply(condition())).toEqual([])
+    })
+
+    it.each([
+      ['a type the sending method does not take', { when: 'on a ControlConnection', receiver: 'ControlConnection' }, /ControlConnection, but the Server method at lib.jl:10 sends it too/],
+      ['a body cited for the sending method only', { evidence: [body(10, 12, 'function windows(')] }, /cites the body of no method that does not send it/],
+      ['a signature line in place of the body', { evidence: [{ at: 'lib.jl:10', has: ['::Server'] }, { at: 'lib.jl:14', has: ['::ControlConnection'] }] }, /cites the body of no method that sends it/],
+      ['a body that ends elsewhere', { evidence: [body(10, 11, 'function windows('), body(14, 16, 'function windows(')] }, /cites the body of no method that sends it/],
+    ])('is refused for %s', async (_name, over, message) => {
+      expect((await apply(condition(over))).join('\n')).toMatch(message)
+    })
+
+    it('is refused for a send that every method makes', async () => {
+      const every = new Map([['LibTmux.panes\0list-panes\0null', (await entries('list-panes')).panes as never]])
+      const item = condition({ symbol: 'LibTmux.panes', command: 'list-panes', evidence: [body(1, 4, 'function panes('), body(6, 8, 'function panes(')] })
+      expect(applyConditions({ conditions: [item as never], found: every, readSource: lines(text.split('\n')) }).join('\n')).toMatch(/no method of the function is shown not to send it/)
+    })
   })
 })
 

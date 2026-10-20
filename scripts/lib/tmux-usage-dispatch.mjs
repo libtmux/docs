@@ -1,3 +1,5 @@
+import { callTargets } from './tmux-usage-derive.mjs'
+
 /**
  * Checks the calls that `dispatchers.json` says send a tmux command.
  *
@@ -8,8 +10,10 @@
  *
  * - The definition is a line of a function with the rule's name.
  * - Each hop is a line of the function the hop before it leads to, and holds the text it cites. It calls the next
- *   function (`calls`), which the scan has read; or it leads to it in a way the scan does not follow (`leads`): a bare
- *   method name in Ruby, or a command put on a queue that another function writes from.
+ *   function (`calls`): the call on that line, with the object it is made on and the arguments it passes, must resolve to the
+ *   function the next hop is in, as a call does in a derivation, so that a tracing helper called `run` is not the `run` of a
+ *   subprocess; or it leads to it in a way the scan does not follow (`leads`), and says why in `why`: dynamic dispatch
+ *   through a trait, or a command put on a queue that another function writes from.
  * - The last line holds the transport: a process start or a write to the control client's input.
  * - A definition whose own line starts the process needs no chain.
  */
@@ -46,6 +50,37 @@ const functionAt = (functions, file, line) => functions
 
 /** Whether a function is the one a call or a hand-off names: a function of that name, or the constructor of a type of that name. */
 const isNamed = (fn, name) => fn.name === name || (fn.owner === name && CONSTRUCTOR.test(fn.name))
+
+/**
+ * Whether the call a hop cites is a call of the function the next hop is in. The call on the hop's line is judged by what it is
+ * made on and the arguments it passes, among the functions of that name. A call made on a field that holds a handle the scan
+ * cannot type (`self.executor.execute(request)`) says what it holds in `on`, which must be the type of the function the chain
+ * goes on in, and which the call's own receiver must not contradict.
+ */
+function callProblems({ where, hop, current, reached, functions, line }) {
+  const name = hop.calls
+  const calls = current.callList?.filter((candidate) => candidate.name === name && (candidate.line === line || candidate.calleeLine === line))
+  if (current.callList && !calls.length) return [`${where} has no call of ${name} on that line`]
+  // A constructor is called by the name of its type.
+  if (reached.name !== name) return reached.owner === name && current.calls.has(name) ? [] : [`${where} does not call ${name}`]
+  const named = functions.filter((candidate) => candidate.name === name)
+  const describe = (candidate) => `${candidate.owner ? `${candidate.owner}.` : ''}${candidate.name} at ${candidate.file}:${candidate.nameLine}`
+  // The type a function is a method of: its owner, or in Julia the type of its first argument, which picks the method of a generic function.
+  // A free function is named by its file, which is how one of two platform builds of it is chosen.
+  const typeOf = (candidate) => candidate.owner ?? candidate.receiverType ?? candidate.file.replace(/^.*\//, '')
+  if (!current.callList) return callTargets(current, reached, named) || (hop.on !== undefined && hop.on === typeOf(reached)) ? [] : [`${where} does not call ${name}`]
+  const resolved = calls.filter((call) => callTargets(current, reached, named, call))
+  const elsewhere = [...new Set(calls.flatMap((call) => named.filter((candidate) => candidate !== reached && callTargets(current, candidate, named, call))))]
+  if (hop.on !== undefined) {
+    if (typeOf(reached) !== hop.on) return [`${where} says the call is made on a ${hop.on}, but the chain goes on in ${describe(reached)}`]
+    if (elsewhere.length && !resolved.length) return [`${where} says the call is made on a ${hop.on}, but its receiver resolves it to ${elsewhere.map(describe).join(' and ')}`]
+    return []
+  }
+  if (resolved.length) return []
+  const call = calls[0]
+  const made = `${call.receiver ? `${call.receiver}.` : ''}${name}(${call.shape ? (call.shape.labels ? call.shape.labels.map((label) => (label === '_' ? '_' : `${label}:`)).join('') : call.shape.count) : ''})`
+  return [`${where} is a call of ${made}, which resolves to ${elsewhere.length ? elsewhere.map(describe).join(' and ') : 'no function the scan has read'}, and not to ${describe(reached)}, where the chain goes on${elsewhere.length ? '' : `; if the object it is made on holds a ${reached.owner ?? 'value'}, say so in on`}`]
+}
 
 /**
  * @param {{ port: string, rule: { name: string }, item: { at: string, has?: string[], reaches?: { at: string, has?: string[], calls?: string, leads?: string }[] },
@@ -90,13 +125,14 @@ export function chainProblems({ port, rule, item, functions, readSource }) {
     }
     const target = hop.calls ?? hop.leads
     if (!target) { problems.push(`${where} names neither the function it calls nor the one it leads to`); break }
-    if (hop.calls && !current.calls.has(hop.calls)) problems.push(`${where} is in a function that does not call ${hop.calls}`)
+    if (hop.leads !== undefined && !hop.calls && !hop.why?.trim()) problems.push(`${where} leads to ${hop.leads} and says nothing about why the scan cannot follow it`)
     const next = split(chain[index + 1].at)
     const reached = functionAt(functions, next.file, next.line)
     if (!reached || !isNamed(reached, target)) {
       problems.push(`${where} leads to ${target}, but ${chain[index + 1].at} is not a line of it`)
       break
     }
+    if (hop.calls) problems.push(...callProblems({ where, hop, current, reached, functions, line: at.line }))
     current = reached
   }
   return problems

@@ -681,9 +681,10 @@ const hasBody =
         {i > 0 && ', '}
         <a href={row.href}><code>{row.command}</code></a>
         {row.when && <>{' '}<span class="tmux-when" data-when={row.when}>{row.when}</span></>}
-        {row.scopes.map((use) => <>{' '}<span class="tmux-send" title={use.evidence[0]}>
+        {row.scopes.map((use) => <>{' '}<span class="tmux-send" title={use.via ? `Calls ${use.via.symbol}: ${use.via.evidence[0]}` : use.evidence[0]}>
           {use.scope!.flag || use.scope!.target ? <code>-{use.scope!.flag || use.scope!.target}</code> : null}
           {use.function ? <a href={use.function.href}><code>{use.function.name}</code></a> : <span>{use.scope!.label}</span>}
+          {use.when && !row.when && <>{' '}<span class="tmux-when" data-when={use.when}>{use.when}</span></>}
         </span></>)}
       </>)}
     </p>}

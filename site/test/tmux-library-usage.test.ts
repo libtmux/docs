@@ -9,7 +9,7 @@ import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { TMUX_MANUALS, tmuxApiLinks, tmuxCommandsFor, tmuxLibrarySection, tmuxManualHeadings, tmuxManualUrl } from '../src/lib/tmux-manual-data'
 import { TMUX_USAGE, isListed, namesCommand, tmuxScopes, tmuxUsage, tmuxUsageOf, type UsageUse } from '../src/lib/tmux-library-usage'
 import {
-  tmuxCommandRows, tmuxCommandSources, tmuxReferenceContext, tmuxReferenceIndex, tmuxReferenceUrl, tmuxResolvedUsage, tmuxSourceModel, tmuxSymbolSends,
+  sharedWhen, tmuxCommandRows, tmuxCommandSources, tmuxReferenceContext, tmuxReferenceIndex, tmuxReferenceUrl, tmuxResolvedUsage, tmuxSourceModel, tmuxSymbolSends,
 } from '../src/lib/tmux-reference'
 import { loadAstroTemplate, renderAstroTemplate, withoutScope } from './astro-templates'
 
@@ -179,7 +179,7 @@ describe('the recorded usage', () => {
     // Ruby's Async scope inherits the core server's methods, so both handles are listed, told apart by their namespace.
     expect(cell('server', 'ruby')).toEqual(expect.arrayContaining(['Async::Server#list_panes', 'LibTmux::Server#list_panes']))
     expect(cell('session', 'ruby')).toEqual(['Session#list_panes'])
-    expect(cell('window', 'go')).toEqual(['Window.SearchPanes'])
+    expect(cell('window', 'go')).toEqual(expect.arrayContaining(['Window.SearchPanes', 'Server.Pane']))
     // A snapshot-based port sends the command in its snapshot call.
     expect(cell('server', 'ts')).toEqual(['Server.snapshot'])
     expect(cell('server', 'lua')).toEqual(['Server:snapshot'])
@@ -347,11 +347,29 @@ describe('from a method to the command and its C function', () => {
     const plain = [{ name: 'capture-pane', href: tmuxManualUrl('latest', 'capture-pane') }]
     // Java's sendKeys sends send-keys through a helper and is named for it, so it leads; the list-panes lookup it makes on the way is last.
     const rows = tmuxCommandRows(tmuxSymbolSends('java', 'io.github.libtmux.Pane.Pane.sendKeys'), plain)
-    expect(rows.map((row) => row.command)).toEqual(['send-keys', 'capture-pane', 'list-panes'])
+    expect(rows.map((row) => row.command)).toEqual(['send-keys', 'capture-pane', 'display-message', 'list-panes'])
     expect(tmuxCommandRows(tmuxSymbolSends('py', 'libtmux.Server.panes'), [{ name: 'send-keys', href: '/x/' }]).map((row) => row.command)).toEqual(['list-panes', 'send-keys'])
     expect(tmuxCommandRows([], plain).map((row) => row.scopes)).toEqual([[]])
     // A command the symbol is recorded as sending is not named twice.
     expect(tmuxCommandRows(tmuxSymbolSends('py', 'libtmux.Server.panes'), [{ name: 'list-panes', href: '/x/' }]).map((row) => row.command)).toEqual(['list-panes'])
+  })
+
+  it('shows a send made on the way on the method, and does not list the method on the command page', () => {
+    // sendKeys reads whether the pane is synchronized before it sends, which asks display-message; that is not what it is for.
+    const probe = TMUX_USAGE.java.symbols['io.github.libtmux.Pane.Pane.sendKeys'].find((use) => use.command === 'display-message')!
+    expect(probe).toMatchObject({ reviewed: true, incidental: true })
+    expect(tmuxSymbolSends('java', 'io.github.libtmux.Pane.Pane.sendKeys').map((send) => send.command)).toContain('display-message')
+    const listed = (port: string, symbol: string, command: string) => tmuxUsage(command)?.groups.flatMap((group) => group.ports).some((cell) => cell.port === port && cell.links.some((link) => link.symbolId === symbol)) ?? false
+    expect(listed('java', 'io.github.libtmux.Pane.Pane.sendKeys', 'display-message')).toBe(false)
+    // The same holds for the command-alias inventory a guarded Ruby call reads before it sends: on the method, not on the command's pages.
+    expect(tmuxSymbolSends('ruby', 'LibTmux::WindowLink#kill').map((send) => send.command).sort()).toEqual(['kill-window', 'show-options'])
+    expect(listed('ruby', 'LibTmux::WindowLink#kill', 'show-options')).toBe(false)
+    expect(listed('ruby', 'LibTmux::WindowLink#kill', 'kill-window')).toBe(true)
+    // The wrapper that stands on it is not listed either, and a claim that is not incidental still is.
+    expect(listed('kotlin', 'io.github.libtmux.kotlin.Pane.sendKeys', 'display-message')).toBe(false)
+    expect(isListed({ command: 'display-message', scope: null, evidence: ['a:1'], reviewed: true, incidental: true })).toBe(false)
+    expect(isListed({ command: 'display-message', scope: null, evidence: ['a:1'], reviewed: true })).toBe(true)
+    expect(isListed({ command: 'display-message', scope: null, evidence: ['a:1', 'a:2', 'a:3'], via: { port: 'java', symbol: 'x', evidence: ['b:1'], reviewed: true, incidental: true } })).toBe(false)
   })
 
   it('lists the call through a helper with the method it belongs to', () => {
@@ -505,6 +523,42 @@ describe('the rendered lists', () => {
     expect(plain?.querySelector('.tmux-usage__when') ?? null).toBeNull()
   })
 
+  it('does not say a Julia function sends a command on one receiver when its methods on both do', async () => {
+    const item = async (command: string, name: string) => {
+      const page = await render({ usage: tmuxResolvedUsage('latest', command) })
+      return [...page.querySelectorAll('tbody tr[data-port="julia"] .tmux-usage__item')]
+        .find((entry) => entry.querySelector('a')!.textContent!.replace(/\s+/g, '').trim().endsWith(name))
+    }
+    // capture_bytes captures through a Server and through a ControlConnection: both send capture-pane, so there is nothing to qualify.
+    const both = await item('capture-pane', 'capture_bytes')
+    expect(both, 'capture_bytes is listed under capture-pane').toBeDefined()
+    expect(both!.querySelector('.tmux-usage__when')).toBeNull()
+    // Only the ControlConnection method spools through a buffer, and the page says so.
+    const spooled = await item('save-buffer', 'capture_bytes')
+    expect(spooled?.querySelector('.tmux-usage__when')?.textContent).toBe('on a ControlConnection')
+    // The data agrees: no Julia use says it is on a receiver unless some method of the function does not send it.
+    for (const [symbol, uses] of Object.entries(TMUX_USAGE.julia.symbols)) {
+      for (const use of uses) {
+        if (/^on a (?:Server|ControlConnection)$/.test(use.when ?? '')) expect(['capture_bytes', 'get_environment', 'load_buffer', 'save_buffer', 'snapshot'], `${symbol} ${use.command}`).toContain(symbol.split('.').at(-1))
+      }
+    }
+  })
+
+  it('cites the line of the core method that sends, and not the generator, beside a generated wrapper', async () => {
+    const source = readFileSync(new URL('../src/components/api/ApiEntry.astro', import.meta.url), 'utf8')
+    const start = source.indexOf('{commandRows.length > 0 && <p')
+    const end = source.indexOf('</p>}', start) + '</p>}'.length
+    const stub = `---\nconst { commandRows } = Astro.props\n---\n${source.slice(start, end)}`
+    const entry = await loadAstroTemplate('components/api/ApiEntry.astro', { stubs: { 'components/api/ApiEntry.astro': stub } })
+    const rows = tmuxCommandRows(tmuxSymbolSends('kotlin', 'io.github.libtmux.kotlin.Pane.sendKeys'), []).filter((row) => row.scopes.length)
+    expect(rows.length).toBeGreaterThan(0)
+    const page = await renderAstroTemplate(entry, { props: { commandRows: rows } }).then((text) => dom(withoutScope(text)))
+    const titles = [...page.querySelectorAll('.tmux-send')].map((send) => send.getAttribute('title'))
+    expect(titles.length).toBeGreaterThan(0)
+    // The entry's own first line is the generator's template; the line that sends is the Java one the entry stands on.
+    for (const title of titles) expect(title).toMatch(/^Calls io\.github\.libtmux\.Pane\.Pane\.sendKeys: libtmux\/src\/main\/java\/.*\/Pane\.java:\d+$/)
+  })
+
   it('cannot render a conditional entry without its qualifier, on a command page or a method page', async () => {
     const source = readFileSync(new URL('../src/components/api/ApiEntry.astro', import.meta.url), 'utf8')
     const start = source.indexOf('{commandRows.length > 0 && <p')
@@ -528,13 +582,24 @@ describe('the rendered lists', () => {
           const rendered = [...html!.querySelectorAll(`tbody tr[data-port="${port}"] .tmux-usage__item`)].filter((item) => item.querySelector('.tmux-usage__when')?.textContent === use.when)
           expect(rendered.length, `${port} ${symbol} ${command} renders ${use.when}`).toBeGreaterThan(0)
         }
-        const row = tmuxCommandRows(tmuxSymbolSends(port, symbol), []).find((candidate) => candidate.command === command)
-        expect(row?.when, `${port} ${symbol} ${command} row`).toBeTruthy()
-        const page = renderAstroTemplate(entry, { props: { commandRows: [row] } }).then((text) => dom(withoutScope(text)))
-        expect((await page).querySelector('.tmux-when')?.textContent, `${port} ${symbol} ${command} page`).toBeTruthy()
+        const row = tmuxCommandRows(tmuxSymbolSends(port, symbol), []).find((candidate) => candidate.command === command)!
+        // The row carries this use's own condition: all of the command's scopes share it, or its scope says it.
+        const own = row.when ?? row.scopes.find((candidate) => candidate.scope?.id === use.scope)?.when ?? (row.scopes.length === 0 ? undefined : '')
+        expect(own, `${port} ${symbol} ${command} row`).toBe(use.when)
+        const page = await renderAstroTemplate(entry, { props: { commandRows: [row] } }).then((text) => dom(withoutScope(text)))
+        expect([...page.querySelectorAll('.tmux-when')].map((element) => element.textContent), `${port} ${symbol} ${command} page`).toContain(use.when)
       }
     }
     // The control: a row whose use carries no qualifier renders none.
+    // A command sent at two scopes under two conditions says each condition beside its own scope, and not the first for both.
+    const fsharp = tmuxCommandRows(tmuxSymbolSends('fsharp', 'LibTmux.FSharp.Server.newSession'), []).find((row) => row.command === 'list-panes')!
+    expect(fsharp.when).toBeUndefined()
+    expect(fsharp.scopes.map((use) => [use.scope?.id, use.when])).toEqual([['session', 'the spec names a first window'], ['window', 'the spec has more than one window']])
+    const twice = await renderAstroTemplate(entry, { props: { commandRows: [fsharp] } }).then((text) => dom(withoutScope(text)))
+    expect([...twice.querySelectorAll('.tmux-send')].map((send) => send.querySelector('.tmux-when')?.textContent)).toEqual(['the spec names a first window', 'the spec has more than one window'])
+    expect(sharedWhen({ scopes: [{ when: 'a' }, { when: 'a' }] as never })).toBe('a')
+    expect(sharedWhen({ scopes: [{ when: 'a' }, { when: 'b' }] as never })).toBeUndefined()
+    expect(sharedWhen({ scopes: [{ when: 'a' }, {}] as never })).toBeUndefined()
     const plain = tmuxCommandRows(tmuxSymbolSends('swift', 'Server.panes()'), [])
     expect(plain.every((row) => row.when === undefined)).toBe(true)
     expect((await renderAstroTemplate(entry, { props: { commandRows: plain } }).then((text) => dom(withoutScope(text)))).querySelector('.tmux-when')).toBeNull()

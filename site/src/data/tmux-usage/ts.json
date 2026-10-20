@@ -157,14 +157,6 @@
           "packages/libtmux/src/pane.ts:517"
         ],
         "scope": null
-      },
-      {
-        "command": "rename-window",
-        "evidence": [
-          "packages/libtmux/src/_internal/operations/shell.ts:159",
-          "packages/libtmux/src/pane.ts:517"
-        ],
-        "scope": null
       }
     ],
     "pane.Pane.capture": [

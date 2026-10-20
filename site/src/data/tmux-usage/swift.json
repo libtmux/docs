@@ -123,8 +123,7 @@
           "Sources/LibTmux/Navigation.swift:144"
         ],
         "reviewed": true,
-        "scope": null,
-        "when": "a name is given"
+        "scope": null
       },
       {
         "command": "if-shell",
@@ -179,8 +178,25 @@
         "command": "capture-pane",
         "evidence": [
           "Sources/LibTmux/PaneInteraction.swift:295",
+          "Sources/LibTmux/PaneInteraction.swift:296",
+          "Sources/LibTmux/PaneInteraction.swift:139",
           "Sources/LibTmux/PaneInteraction.swift:103"
         ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "display-message",
+        "evidence": [
+          "Sources/LibTmux/Formats.swift:364",
+          "Sources/LibTmux/Formats.swift:359",
+          "Sources/LibTmux/Formats.swift:314",
+          "Sources/LibTmux/PaneInteraction.swift:322",
+          "Sources/LibTmux/PaneInteraction.swift:138",
+          "Sources/LibTmux/PaneInteraction.swift:103"
+        ],
+        "incidental": true,
+        "reviewed": true,
         "scope": null
       }
     ],
@@ -191,6 +207,19 @@
           "Sources/LibTmux/PaneInteraction.swift:295",
           "Sources/LibTmux/PaneInteraction.swift:120"
         ],
+        "scope": null
+      },
+      {
+        "command": "display-message",
+        "evidence": [
+          "Sources/LibTmux/Formats.swift:364",
+          "Sources/LibTmux/Formats.swift:359",
+          "Sources/LibTmux/Formats.swift:314",
+          "Sources/LibTmux/PaneInteraction.swift:322",
+          "Sources/LibTmux/PaneInteraction.swift:119"
+        ],
+        "incidental": true,
+        "reviewed": true,
         "scope": null
       }
     ],
@@ -371,8 +400,20 @@
           "Sources/LibTmux/WindowTransfers.swift:27"
         ],
         "reviewed": true,
-        "scope": null,
-        "when": "the window is linked, not moved"
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "Sources/LibTmux/Server.swift:273",
+          "Sources/LibTmux/Server.swift:274",
+          "Sources/LibTmux/Server.swift:269",
+          "Sources/LibTmux/WindowTransfers.swift:82",
+          "Sources/LibTmux/WindowTransfers.swift:20"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": "server"
       }
     ],
     "Server.loadBuffer(from:named:)": [
@@ -386,6 +427,22 @@
     ],
     "Server.move(_:to:at:)": [
       {
+        "command": "list-windows",
+        "evidence": [
+          "Sources/LibTmux/Server.swift:273",
+          "Sources/LibTmux/Server.swift:274",
+          "Sources/LibTmux/Server.swift:269",
+          "Sources/LibTmux/WindowTransfers.swift:82",
+          "Sources/LibTmux/WindowTransfers.swift:79",
+          "Sources/LibTmux/WindowTransfers.swift:46",
+          "Sources/LibTmux/WindowTransfers.swift:10"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": "server",
+        "when": "no index is given"
+      },
+      {
         "command": "move-window",
         "evidence": [
           "Sources/LibTmux/WindowTransfers.swift:75",
@@ -394,8 +451,7 @@
           "Sources/LibTmux/WindowTransfers.swift:10"
         ],
         "reviewed": true,
-        "scope": null,
-        "when": "the window is moved, not linked"
+        "scope": null
       }
     ],
     "Server.newSession(named:startDirectory:windowName:width:height:)": [
@@ -412,7 +468,7 @@
           "Sources/LibTmux/Creation.swift:154"
         ],
         "scope": null,
-        "when": "a width or height is requested"
+        "when": "the requested size differs from the created size"
       }
     ],
     "Server.newWindow(_:_:named:startDirectory:)": [
@@ -548,7 +604,8 @@
         "evidence": [
           "Sources/LibTmux/Mutations.swift:71"
         ],
-        "scope": null
+        "scope": null,
+        "when": "a width or height is given"
       }
     ],
     "Server.resolvedOption(_:scope:)": [

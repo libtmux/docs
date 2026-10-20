@@ -250,8 +250,14 @@ export interface CommandRow {
   command: string
   href: string
   scopes: SymbolSend['scopes']
-  /** When the symbol sends the command, if only some calls do. */
+  /** When the symbol sends the command, if only some calls do and every scope says the same. A scope that says otherwise says it itself. */
   when?: string
+}
+
+/** The one condition every scope of a send carries, or nothing when some scope carries another or none. */
+export function sharedWhen(send: Pick<SymbolSend, 'scopes'>): string | undefined {
+  const first = send.scopes[0]?.when
+  return first !== undefined && send.scopes.every((use) => use.when === first) ? first : undefined
 }
 
 /**
@@ -262,7 +268,7 @@ export interface CommandRow {
 export function tmuxCommandRows(sends: SymbolSend[], equivalents: { name: string; href: string }[]): CommandRow[] {
   const rows = (list: SymbolSend[]) => list.map((send): CommandRow => ({
     command: send.command, href: send.manualHref, scopes: send.scopes.filter((use) => use.scope),
-    ...(send.scopes.find((use) => use.when) ? { when: send.scopes.find((use) => use.when)!.when } : {}),
+    ...(sharedWhen(send) ? { when: sharedWhen(send) } : {}),
   }))
   const direct = (send: SymbolSend) => send.scopes.some((use) => use.listed)
   const sent = new Set(sends.map((send) => send.command))

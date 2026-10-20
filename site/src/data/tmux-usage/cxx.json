@@ -228,7 +228,7 @@
         ],
         "reviewed": true,
         "scope": null,
-        "when": "a name is given"
+        "when": "named, and the window has one pane"
       }
     ],
     "libtmux::Pane::capture": [

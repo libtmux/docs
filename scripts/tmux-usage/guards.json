@@ -27,38 +27,11 @@
       ]
     },
     {
-      "port": "ruby",
-      "name": "kill_session_with_windows",
-      "purpose": "refuses to kill a session that holds windows or panes outside the expected sets",
-      "conditional": true,
-      "when": "expected windows or panes are given",
-      "evidence": [
-        {
-          "at": "gems/libtmux/lib/libtmux/operations.rb:154",
-          "has": [
-            "def kill_session_with_windows("
-          ]
-        },
-        {
-          "at": "gems/libtmux/lib/libtmux/operations.rb:172",
-          "has": [
-            "names.fetch(\"if-shell\")"
-          ]
-        },
-        {
-          "at": "gems/libtmux/lib/libtmux/operations.rb:257",
-          "has": [
-            "kill_session_with_windows"
-          ]
-        }
-      ]
-    },
-    {
       "port": "lua",
       "name": "guard",
-      "purpose": "refuses a window link that was removed or replaced since the handle was read",
+      "purpose": "refuses an operation on a window link that was removed or replaced, or on a pane that left its window",
       "conditional": true,
-      "when": "the operation names a destination window link",
+      "when": "the operation is given a window link",
       "evidence": [
         {
           "at": "lua/libtmux/_internal/topology.lua:147",
@@ -301,7 +274,7 @@
     {
       "port": "swift",
       "name": "guardedAction",
-      "purpose": "refuses a command when the tmux server is not the one the value was read from",
+      "purpose": "runs the command together with a marker that shows it ran, inside the guards that refuse a stale target",
       "evidence": [
         {
           "at": "Sources/LibTmux/GuardedRequest.swift:174",
@@ -326,7 +299,7 @@
     {
       "port": "swift",
       "name": "commandGuard",
-      "purpose": "refuses a command when the target no longer matches what the value was read from",
+      "purpose": "refuses the command when the server restarted or the target no longer matches what the value was read from",
       "evidence": [
         {
           "at": "Sources/LibTmux/GuardedRequest.swift:187",

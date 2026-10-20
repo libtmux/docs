@@ -429,6 +429,37 @@
           ]
         }
       ]
+    },
+    {
+      "port": "ts",
+      "owner": "Pane",
+      "names": [
+        "breakOut"
+      ],
+      "commands": [
+        "rename-window"
+      ],
+      "why": "breakOut renames the window afterwards only when a name is given and the server is exactly tmux 3.7, the release that ignores the name.",
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/operations/shell.ts:141",
+          "has": [
+            "quirks.breakPane37"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/shell.ts:154",
+          "has": [
+            "if (!renames || windowName === undefined) return;"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/shell.ts:160",
+          "has": [
+            "\"rename-window\""
+          ]
+        }
+      ]
     }
   ]
 }

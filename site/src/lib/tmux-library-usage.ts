@@ -35,10 +35,12 @@ export interface UsageUse {
   evidence: string[]
   /** A reviewed claim the generator checked line by line, not a scan result. */
   reviewed?: boolean
+  /** Sent on the way to what the method is for, such as a probe that reads the target first: shown on the method, not listed on the command's pages. */
+  incidental?: boolean
   /** When the method sends it, for a send that only some calls make: a few words, shown beside the method. */
   when?: string
   /** The core library symbol a wrapper forwards to, and the lines that show it sends. */
-  via?: { port: string; symbol: string; revision?: string; evidence: string[]; reviewed?: boolean }
+  via?: { port: string; symbol: string; revision?: string; evidence: string[]; reviewed?: boolean; incidental?: boolean }
 }
 
 export interface UsageDocument {
@@ -122,8 +124,9 @@ const memberName = (id: string): string => id.replace(/\(.*$/s, '').split(/[.#:\
  * @param members the names the use may be listed under: the symbol's own, and for a wrapper the core method's.
  */
 export function isListed(use: UsageUse, ...members: string[]): boolean {
+  if (use.incidental) return false
   if (use.reviewed) return true
-  if (use.via) return isListed({ command: use.command, scope: use.scope, evidence: use.via.evidence, reviewed: use.via.reviewed }, ...members, use.via.symbol)
+  if (use.via) return isListed({ command: use.command, scope: use.scope, evidence: use.via.evidence, reviewed: use.via.reviewed, incidental: use.via.incidental }, ...members, use.via.symbol)
   return use.evidence.length - 1 <= LISTED_MAX_HOPS || members.some((member) => namesCommand(use.command, memberName(member)))
 }
 

@@ -261,21 +261,24 @@
               "has": [
                 "@executor.run("
               ],
-              "calls": "run"
+              "calls": "run",
+              "on": "ProcessExecutor"
             },
             {
               "at": "gems/libtmux/lib/libtmux/process.rb:108",
               "has": [
                 "Execution.new("
               ],
-              "calls": "call"
+              "calls": "call",
+              "on": "Execution"
             },
             {
               "at": "gems/libtmux/lib/libtmux/process.rb:147",
               "has": [
                 "spawn"
               ],
-              "leads": "spawn"
+              "leads": "spawn",
+              "why": "spawn is called by its bare name, which the Ruby scan does not read as a call"
             },
             {
               "at": "gems/libtmux/lib/libtmux/process.rb:189",
@@ -324,21 +327,24 @@
               "has": [
                 "@executor.run("
               ],
-              "calls": "run"
+              "calls": "run",
+              "on": "ProcessExecutor"
             },
             {
               "at": "gems/libtmux/lib/libtmux/process.rb:108",
               "has": [
                 "Execution.new("
               ],
-              "calls": "call"
+              "calls": "call",
+              "on": "Execution"
             },
             {
               "at": "gems/libtmux/lib/libtmux/process.rb:147",
               "has": [
                 "spawn"
               ],
-              "leads": "spawn"
+              "leads": "spawn",
+              "why": "spawn is called by its bare name, which the Ruby scan does not read as a call"
             },
             {
               "at": "gems/libtmux/lib/libtmux/process.rb:189",
@@ -380,21 +386,24 @@
               "has": [
                 "@executor.run("
               ],
-              "calls": "run"
+              "calls": "run",
+              "on": "ProcessExecutor"
             },
             {
               "at": "gems/libtmux/lib/libtmux/process.rb:108",
               "has": [
                 "Execution.new("
               ],
-              "calls": "call"
+              "calls": "call",
+              "on": "Execution"
             },
             {
               "at": "gems/libtmux/lib/libtmux/process.rb:147",
               "has": [
                 "spawn"
               ],
-              "leads": "spawn"
+              "leads": "spawn",
+              "why": "spawn is called by its bare name, which the Ruby scan does not read as a call"
             },
             {
               "at": "gems/libtmux/lib/libtmux/process.rb:189",
@@ -436,21 +445,24 @@
               "has": [
                 "@executor.run("
               ],
-              "calls": "run"
+              "calls": "run",
+              "on": "ProcessExecutor"
             },
             {
               "at": "gems/libtmux/lib/libtmux/process.rb:108",
               "has": [
                 "Execution.new("
               ],
-              "calls": "call"
+              "calls": "call",
+              "on": "Execution"
             },
             {
               "at": "gems/libtmux/lib/libtmux/process.rb:147",
               "has": [
                 "spawn"
               ],
-              "leads": "spawn"
+              "leads": "spawn",
+              "why": "spawn is called by its bare name, which the Ruby scan does not read as a call"
             },
             {
               "at": "gems/libtmux/lib/libtmux/process.rb:189",
@@ -492,21 +504,24 @@
               "has": [
                 "@executor.run("
               ],
-              "calls": "run"
+              "calls": "run",
+              "on": "ProcessExecutor"
             },
             {
               "at": "gems/libtmux/lib/libtmux/process.rb:108",
               "has": [
                 "Execution.new("
               ],
-              "calls": "call"
+              "calls": "call",
+              "on": "Execution"
             },
             {
               "at": "gems/libtmux/lib/libtmux/process.rb:147",
               "has": [
                 "spawn"
               ],
-              "leads": "spawn"
+              "leads": "spawn",
+              "why": "spawn is called by its bare name, which the Ruby scan does not read as a call"
             },
             {
               "at": "gems/libtmux/lib/libtmux/process.rb:189",
@@ -541,7 +556,8 @@
               "has": [
                 "@queue << request"
               ],
-              "leads": "run"
+              "leads": "run",
+              "why": "the request is pushed onto a queue that the connection thread takes it from and writes to the control client"
             },
             {
               "at": "gems/libtmux/lib/libtmux/control.rb:749",
@@ -569,7 +585,8 @@
               "has": [
                 "@queue << request"
               ],
-              "leads": "run"
+              "leads": "run",
+              "why": "the request is pushed onto a queue that the connection thread takes it from and writes to the control client"
             },
             {
               "at": "gems/libtmux/lib/libtmux/control.rb:749",
@@ -611,21 +628,24 @@
               "has": [
                 "@executor.run("
               ],
-              "calls": "run"
+              "calls": "run",
+              "on": "ProcessExecutor"
             },
             {
               "at": "gems/libtmux/lib/libtmux/process.rb:108",
               "has": [
                 "Execution.new("
               ],
-              "calls": "call"
+              "calls": "call",
+              "on": "Execution"
             },
             {
               "at": "gems/libtmux/lib/libtmux/process.rb:147",
               "has": [
                 "spawn"
               ],
-              "leads": "spawn"
+              "leads": "spawn",
+              "why": "spawn is called by its bare name, which the Ruby scan does not read as a call"
             },
             {
               "at": "gems/libtmux/lib/libtmux/process.rb:189",
@@ -667,21 +687,24 @@
               "has": [
                 "@executor.run("
               ],
-              "calls": "run"
+              "calls": "run",
+              "on": "ProcessExecutor"
             },
             {
               "at": "gems/libtmux/lib/libtmux/process.rb:108",
               "has": [
                 "Execution.new("
               ],
-              "calls": "call"
+              "calls": "call",
+              "on": "Execution"
             },
             {
               "at": "gems/libtmux/lib/libtmux/process.rb:147",
               "has": [
                 "spawn"
               ],
-              "leads": "spawn"
+              "leads": "spawn",
+              "why": "spawn is called by its bare name, which the Ruby scan does not read as a call"
             },
             {
               "at": "gems/libtmux/lib/libtmux/process.rb:189",
@@ -712,6 +735,21 @@
               "calls": "execute"
             },
             {
+              "at": "lua/libtmux/_internal/endpoint.lua:291",
+              "has": [
+                "execute(assert(bindings[self]"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "lua/libtmux/_internal/endpoint.lua:270",
+              "has": [
+                "process.execute("
+              ],
+              "calls": "execute",
+              "on": "M"
+            },
+            {
               "at": "lua/libtmux/_internal/process.lua:316",
               "has": [
                 "pcall(uv.spawn"
@@ -731,6 +769,21 @@
                 "execute"
               ],
               "calls": "execute"
+            },
+            {
+              "at": "lua/libtmux/_internal/endpoint.lua:291",
+              "has": [
+                "execute(assert(bindings[self]"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "lua/libtmux/_internal/endpoint.lua:270",
+              "has": [
+                "process.execute("
+              ],
+              "calls": "execute",
+              "on": "M"
             },
             {
               "at": "lua/libtmux/_internal/process.lua:316",
@@ -768,6 +821,21 @@
               "calls": "execute"
             },
             {
+              "at": "lua/libtmux/_internal/endpoint.lua:291",
+              "has": [
+                "execute(assert(bindings[self]"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "lua/libtmux/_internal/endpoint.lua:270",
+              "has": [
+                "process.execute("
+              ],
+              "calls": "execute",
+              "on": "M"
+            },
+            {
               "at": "lua/libtmux/_internal/process.lua:316",
               "has": [
                 "pcall(uv.spawn"
@@ -800,7 +868,8 @@
               "has": [
                 "execute"
               ],
-              "calls": "execute"
+              "calls": "execute",
+              "on": "M"
             },
             {
               "at": "lua/libtmux/_internal/process.lua:316",
@@ -821,7 +890,8 @@
               "has": [
                 "execute"
               ],
-              "calls": "execute"
+              "calls": "execute",
+              "on": "M"
             },
             {
               "at": "lua/libtmux/_internal/process.lua:316",
@@ -877,7 +947,8 @@
               "has": [
                 "run_command"
               ],
-              "calls": "run_command"
+              "calls": "run_command",
+              "on": "Server"
             },
             {
               "at": "src/process.jl:494",
@@ -890,6 +961,42 @@
               "at": "src/process.jl:334",
               "has": [
                 "run("
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "name": "_control_create",
+      "why": "Sends the argument list it is given over the control connection and reads the reference of the object it creates from the reply.",
+      "evidence": [
+        {
+          "at": "src/control_operations.jl:51",
+          "has": [
+            "_control_create"
+          ],
+          "reaches": [
+            {
+              "at": "src/control_operations.jl:52",
+              "has": [
+                "_control_request("
+              ],
+              "calls": "_control_request"
+            },
+            {
+              "at": "src/control.jl:481",
+              "has": [
+                "push!(connection.pending, request)"
+              ],
+              "leads": "_control_writer",
+              "why": "the request is put on the connection's queue, and its writer task takes it from there and writes it to the control client"
+            },
+            {
+              "at": "src/control.jl:354",
+              "has": [
+                "write(connection.input.in"
               ]
             }
           ]
@@ -926,7 +1033,8 @@
               "has": [
                 "push!(connection.pending, request)"
               ],
-              "leads": "_control_writer"
+              "leads": "_control_writer",
+              "why": "the request is put on the connection's queue, and its writer task takes it from there and writes it to the control client"
             },
             {
               "at": "src/control.jl:354",
@@ -961,7 +1069,8 @@
               "has": [
                 "push!(connection.pending, request)"
               ],
-              "leads": "_control_writer"
+              "leads": "_control_writer",
+              "why": "the request is put on the connection's queue, and its writer task takes it from there and writes it to the control client"
             },
             {
               "at": "src/control.jl:354",
@@ -996,7 +1105,8 @@
               "has": [
                 "push!(connection.pending, request)"
               ],
-              "leads": "_control_writer"
+              "leads": "_control_writer",
+              "why": "the request is put on the connection's queue, and its writer task takes it from there and writes it to the control client"
             },
             {
               "at": "src/control.jl:354",
@@ -1038,7 +1148,8 @@
               "has": [
                 "push!(connection.pending, request)"
               ],
-              "leads": "_control_writer"
+              "leads": "_control_writer",
+              "why": "the request is put on the connection's queue, and its writer task takes it from there and writes it to the control client"
             },
             {
               "at": "src/control.jl:354",
@@ -1066,7 +1177,8 @@
               "has": [
                 "run_command"
               ],
-              "calls": "run_command"
+              "calls": "run_command",
+              "on": "Server"
             },
             {
               "at": "src/process.jl:494",
@@ -1115,7 +1227,8 @@
               "has": [
                 "push!(connection.pending, request)"
               ],
-              "leads": "_control_writer"
+              "leads": "_control_writer",
+              "why": "the request is put on the connection's queue, and its writer task takes it from there and writes it to the control client"
             },
             {
               "at": "src/control.jl:354",
@@ -1150,7 +1263,8 @@
               "has": [
                 "push!(connection.pending, request)"
               ],
-              "leads": "_control_writer"
+              "leads": "_control_writer",
+              "why": "the request is put on the connection's queue, and its writer task takes it from there and writes it to the control client"
             },
             {
               "at": "src/control.jl:354",
@@ -1206,7 +1320,8 @@
               "has": [
                 "push!(connection.pending, request)"
               ],
-              "leads": "_control_writer"
+              "leads": "_control_writer",
+              "why": "the request is put on the connection's queue, and its writer task takes it from there and writes it to the control client"
             },
             {
               "at": "src/control.jl:354",
@@ -1234,7 +1349,8 @@
               "has": [
                 "push!(connection.pending, request)"
               ],
-              "leads": "_control_writer"
+              "leads": "_control_writer",
+              "why": "the request is put on the connection's queue, and its writer task takes it from there and writes it to the control client"
             },
             {
               "at": "src/control.jl:354",
@@ -1290,7 +1406,8 @@
               "has": [
                 "execute"
               ],
-              "calls": "execute"
+              "calls": "execute",
+              "on": "NodeSpawnTransport"
             },
             {
               "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
@@ -1318,7 +1435,8 @@
               "has": [
                 "execute"
               ],
-              "calls": "execute"
+              "calls": "execute",
+              "on": "NodeSpawnTransport"
             },
             {
               "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
@@ -1353,7 +1471,8 @@
               "has": [
                 "execute"
               ],
-              "calls": "execute"
+              "calls": "execute",
+              "on": "NodeSpawnTransport"
             },
             {
               "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
@@ -1381,7 +1500,8 @@
               "has": [
                 "execute"
               ],
-              "calls": "execute"
+              "calls": "execute",
+              "on": "NodeSpawnTransport"
             },
             {
               "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
@@ -1409,7 +1529,8 @@
               "has": [
                 "execute"
               ],
-              "calls": "execute"
+              "calls": "execute",
+              "on": "NodeSpawnTransport"
             },
             {
               "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
@@ -1465,7 +1586,8 @@
               "has": [
                 "execute"
               ],
-              "calls": "execute"
+              "calls": "execute",
+              "on": "NodeSpawnTransport"
             },
             {
               "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
@@ -1507,7 +1629,8 @@
               "has": [
                 "execute"
               ],
-              "calls": "execute"
+              "calls": "execute",
+              "on": "NodeSpawnTransport"
             },
             {
               "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
@@ -1535,7 +1658,8 @@
               "has": [
                 "execute"
               ],
-              "calls": "execute"
+              "calls": "execute",
+              "on": "NodeSpawnTransport"
             },
             {
               "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
@@ -1584,7 +1708,8 @@
               "has": [
                 "execute"
               ],
-              "calls": "execute"
+              "calls": "execute",
+              "on": "NodeSpawnTransport"
             },
             {
               "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
@@ -1626,7 +1751,8 @@
               "has": [
                 "execute"
               ],
-              "calls": "execute"
+              "calls": "execute",
+              "on": "NodeSpawnTransport"
             },
             {
               "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
@@ -1668,7 +1794,8 @@
               "has": [
                 "execute"
               ],
-              "calls": "execute"
+              "calls": "execute",
+              "on": "NodeSpawnTransport"
             },
             {
               "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
@@ -1741,16 +1868,25 @@
               "calls": "execute"
             },
             {
-              "at": "crates/libtmux/src/internal/control_executor.rs:37",
+              "at": "crates/libtmux/src/internal/core.rs:438",
               "has": [
-                "run"
+                "self.executor.execute(request)"
               ],
-              "calls": "run"
+              "leads": "execute",
+              "why": "dynamic dispatch through the Executor trait; the process transport implements it as SubprocessExecutor::execute"
+            },
+            {
+              "at": "crates/libtmux/src/internal/subprocess.rs:364",
+              "has": [
+                "self.clone().run(request)"
+              ],
+              "calls": "run",
+              "on": "SubprocessExecutor"
             },
             {
               "at": "crates/libtmux/src/internal/subprocess.rs:290",
               "has": [
-                ".spawn()"
+                "process.spawn()"
               ]
             }
           ]
@@ -1769,34 +1905,6 @@
       "why": "Sends the Command it is given, or the command it is named for, to the server.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/control/actor.rs:432",
-          "has": [
-            "run"
-          ],
-          "reaches": [
-            {
-              "at": "crates/libtmux/src/control/actor.rs:438",
-              "has": [
-                "serve"
-              ],
-              "calls": "serve"
-            },
-            {
-              "at": "crates/libtmux/src/control/actor.rs:541",
-              "has": [
-                "write_line"
-              ],
-              "calls": "write_line"
-            },
-            {
-              "at": "crates/libtmux/src/control/protocol.rs:74",
-              "has": [
-                ".write_all("
-              ]
-            }
-          ]
-        },
-        {
           "at": "crates/libtmux/src/internal/options.rs:363",
           "has": [
             "run"
@@ -1810,16 +1918,25 @@
               "calls": "execute"
             },
             {
-              "at": "crates/libtmux/src/internal/control_executor.rs:37",
+              "at": "crates/libtmux/src/internal/core.rs:438",
               "has": [
-                "run"
+                "self.executor.execute(request)"
               ],
-              "calls": "run"
+              "leads": "execute",
+              "why": "dynamic dispatch through the Executor trait; the process transport implements it as SubprocessExecutor::execute"
+            },
+            {
+              "at": "crates/libtmux/src/internal/subprocess.rs:364",
+              "has": [
+                "self.clone().run(request)"
+              ],
+              "calls": "run",
+              "on": "SubprocessExecutor"
             },
             {
               "at": "crates/libtmux/src/internal/subprocess.rs:290",
               "has": [
-                ".spawn()"
+                "process.spawn()"
               ]
             }
           ]
@@ -1851,16 +1968,25 @@
               "calls": "execute"
             },
             {
-              "at": "crates/libtmux/src/internal/control_executor.rs:37",
+              "at": "crates/libtmux/src/internal/core.rs:438",
               "has": [
-                "run"
+                "self.executor.execute(request)"
               ],
-              "calls": "run"
+              "leads": "execute",
+              "why": "dynamic dispatch through the Executor trait; the process transport implements it as SubprocessExecutor::execute"
+            },
+            {
+              "at": "crates/libtmux/src/internal/subprocess.rs:364",
+              "has": [
+                "self.clone().run(request)"
+              ],
+              "calls": "run",
+              "on": "SubprocessExecutor"
             },
             {
               "at": "crates/libtmux/src/internal/subprocess.rs:290",
               "has": [
-                ".spawn()"
+                "process.spawn()"
               ]
             }
           ]
@@ -1879,16 +2005,25 @@
               "calls": "execute"
             },
             {
-              "at": "crates/libtmux/src/internal/control_executor.rs:37",
+              "at": "crates/libtmux/src/internal/core.rs:438",
               "has": [
-                "run"
+                "self.executor.execute(request)"
               ],
-              "calls": "run"
+              "leads": "execute",
+              "why": "dynamic dispatch through the Executor trait; the process transport implements it as SubprocessExecutor::execute"
+            },
+            {
+              "at": "crates/libtmux/src/internal/subprocess.rs:364",
+              "has": [
+                "self.clone().run(request)"
+              ],
+              "calls": "run",
+              "on": "SubprocessExecutor"
             },
             {
               "at": "crates/libtmux/src/internal/subprocess.rs:290",
               "has": [
-                ".spawn()"
+                "process.spawn()"
               ]
             }
           ]
@@ -1907,16 +2042,25 @@
               "calls": "execute"
             },
             {
-              "at": "crates/libtmux/src/internal/control_executor.rs:37",
+              "at": "crates/libtmux/src/internal/core.rs:438",
               "has": [
-                "run"
+                "self.executor.execute(request)"
               ],
-              "calls": "run"
+              "leads": "execute",
+              "why": "dynamic dispatch through the Executor trait; the process transport implements it as SubprocessExecutor::execute"
+            },
+            {
+              "at": "crates/libtmux/src/internal/subprocess.rs:364",
+              "has": [
+                "self.clone().run(request)"
+              ],
+              "calls": "run",
+              "on": "SubprocessExecutor"
             },
             {
               "at": "crates/libtmux/src/internal/subprocess.rs:290",
               "has": [
-                ".spawn()"
+                "process.spawn()"
               ]
             }
           ]
@@ -1935,16 +2079,39 @@
           ],
           "reaches": [
             {
-              "at": "crates/libtmux/src/internal/control_executor.rs:37",
+              "at": "crates/libtmux/src/internal/control_executor.rs:41",
               "has": [
-                "run"
+                "sender.send_line("
               ],
-              "calls": "run"
+              "calls": "send_line",
+              "on": "ControlSender"
             },
             {
-              "at": "crates/libtmux/src/internal/subprocess.rs:290",
+              "at": "crates/libtmux/src/control.rs:771",
               "has": [
-                ".spawn()"
+                "self.dispatch_line("
+              ],
+              "calls": "dispatch_line"
+            },
+            {
+              "at": "crates/libtmux/src/control.rs:803",
+              "has": [
+                "permit.send(Request"
+              ],
+              "leads": "serve",
+              "why": "the request goes into a channel that Connection::serve reads, and serve writes the line to the control client"
+            },
+            {
+              "at": "crates/libtmux/src/control/actor.rs:541",
+              "has": [
+                "write_line("
+              ],
+              "calls": "write_line"
+            },
+            {
+              "at": "crates/libtmux/src/control/protocol.rs:74",
+              "has": [
+                ".write_all("
               ]
             }
           ]
@@ -1960,19 +2127,21 @@
               "has": [
                 "execute"
               ],
-              "calls": "execute"
+              "leads": "execute",
+              "why": "dynamic dispatch through the Executor trait; the process transport implements it as SubprocessExecutor::execute"
             },
             {
-              "at": "crates/libtmux/src/internal/control_executor.rs:37",
+              "at": "crates/libtmux/src/internal/subprocess.rs:364",
               "has": [
-                "run"
+                "self.clone().run(request)"
               ],
-              "calls": "run"
+              "calls": "run",
+              "on": "SubprocessExecutor"
             },
             {
               "at": "crates/libtmux/src/internal/subprocess.rs:290",
               "has": [
-                ".spawn()"
+                "process.spawn()"
               ]
             }
           ]
@@ -1995,7 +2164,8 @@
               "has": [
                 ".send("
               ],
-              "calls": "send"
+              "calls": "send",
+              "on": "ControlSender"
             },
             {
               "at": "crates/libtmux/src/control.rs:737",
@@ -2016,7 +2186,8 @@
               "has": [
                 "permit.send(Request"
               ],
-              "leads": "serve"
+              "leads": "serve",
+              "why": "the request goes into a channel that Connection::serve reads, and serve writes the line to the control client"
             },
             {
               "at": "crates/libtmux/src/control/actor.rs:541",
@@ -2054,16 +2225,25 @@
               "calls": "execute"
             },
             {
-              "at": "crates/libtmux/src/internal/control_executor.rs:37",
+              "at": "crates/libtmux/src/internal/core.rs:438",
               "has": [
-                "run"
+                "self.executor.execute(request)"
               ],
-              "calls": "run"
+              "leads": "execute",
+              "why": "dynamic dispatch through the Executor trait; the process transport implements it as SubprocessExecutor::execute"
+            },
+            {
+              "at": "crates/libtmux/src/internal/subprocess.rs:364",
+              "has": [
+                "self.clone().run(request)"
+              ],
+              "calls": "run",
+              "on": "SubprocessExecutor"
             },
             {
               "at": "crates/libtmux/src/internal/subprocess.rs:290",
               "has": [
-                ".spawn()"
+                "process.spawn()"
               ]
             }
           ]
@@ -2089,16 +2269,25 @@
               "calls": "execute"
             },
             {
-              "at": "crates/libtmux/src/internal/control_executor.rs:37",
+              "at": "crates/libtmux/src/internal/core.rs:438",
               "has": [
-                "run"
+                "self.executor.execute(request)"
               ],
-              "calls": "run"
+              "leads": "execute",
+              "why": "dynamic dispatch through the Executor trait; the process transport implements it as SubprocessExecutor::execute"
+            },
+            {
+              "at": "crates/libtmux/src/internal/subprocess.rs:364",
+              "has": [
+                "self.clone().run(request)"
+              ],
+              "calls": "run",
+              "on": "SubprocessExecutor"
             },
             {
               "at": "crates/libtmux/src/internal/subprocess.rs:290",
               "has": [
-                ".spawn()"
+                "process.spawn()"
               ]
             }
           ]
@@ -2128,7 +2317,8 @@
               "has": [
                 "permit.send(Request"
               ],
-              "leads": "serve"
+              "leads": "serve",
+              "why": "the request goes into a channel that Connection::serve reads, and serve writes the line to the control client"
             },
             {
               "at": "crates/libtmux/src/control/actor.rs:541",
@@ -2163,19 +2353,21 @@
               "has": [
                 "execute"
               ],
-              "calls": "execute"
+              "leads": "execute",
+              "why": "dynamic dispatch through the Executor trait; the process transport implements it as SubprocessExecutor::execute"
             },
             {
-              "at": "crates/libtmux/src/internal/control_executor.rs:37",
+              "at": "crates/libtmux/src/internal/subprocess.rs:364",
               "has": [
-                "run"
+                "self.clone().run(request)"
               ],
-              "calls": "run"
+              "calls": "run",
+              "on": "SubprocessExecutor"
             },
             {
               "at": "crates/libtmux/src/internal/subprocess.rs:290",
               "has": [
-                ".spawn()"
+                "process.spawn()"
               ]
             }
           ]
@@ -2205,19 +2397,21 @@
               "has": [
                 "execute"
               ],
-              "calls": "execute"
+              "leads": "execute",
+              "why": "dynamic dispatch through the Executor trait; the process transport implements it as SubprocessExecutor::execute"
             },
             {
-              "at": "crates/libtmux/src/internal/control_executor.rs:37",
+              "at": "crates/libtmux/src/internal/subprocess.rs:364",
               "has": [
-                "run"
+                "self.clone().run(request)"
               ],
-              "calls": "run"
+              "calls": "run",
+              "on": "SubprocessExecutor"
             },
             {
               "at": "crates/libtmux/src/internal/subprocess.rs:290",
               "has": [
-                ".spawn()"
+                "process.spawn()"
               ]
             }
           ]
@@ -2250,11 +2444,20 @@
               "calls": "execute"
             },
             {
-              "at": "crates/libtmux/src/internal/control_executor.rs:37",
+              "at": "crates/libtmux/src/internal/core.rs:438",
               "has": [
-                "run("
+                "self.executor.execute(request)"
               ],
-              "calls": "run"
+              "leads": "execute",
+              "why": "dynamic dispatch through the Executor trait; the process transport implements it as SubprocessExecutor::execute"
+            },
+            {
+              "at": "crates/libtmux/src/internal/subprocess.rs:364",
+              "has": [
+                "self.clone().run(request)"
+              ],
+              "calls": "run",
+              "on": "SubprocessExecutor"
             },
             {
               "at": "crates/libtmux/src/internal/subprocess.rs:290",
@@ -2331,7 +2534,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -2373,7 +2577,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -2429,7 +2634,8 @@
               "has": [
                 "c.requests <- request"
               ],
-              "leads": "runRequests"
+              "leads": "runRequests",
+              "why": "the request is sent on a channel that runRequests receives from, and it writes the command to the control client"
             },
             {
               "at": "tmux/control_request.go:240",
@@ -2485,7 +2691,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -2527,7 +2734,8 @@
               "has": [
                 "c.requests <- request"
               ],
-              "leads": "runRequests"
+              "leads": "runRequests",
+              "why": "the request is sent on a channel that runRequests receives from, and it writes the command to the control client"
             },
             {
               "at": "tmux/control_request.go:240",
@@ -2562,7 +2770,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -2618,7 +2827,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -2680,7 +2890,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -2742,7 +2953,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -2804,7 +3016,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -2873,7 +3086,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -2936,7 +3150,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -2992,7 +3207,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -3048,7 +3264,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -3074,21 +3291,21 @@
             {
               "at": "tmux/search.go:175",
               "has": [
-                "searchSnapshotProjected"
+                "s.searchSnapshotProjected("
               ],
               "calls": "searchSnapshotProjected"
             },
             {
-              "at": "tmux/search.go:195",
+              "at": "tmux/search.go:214",
               "has": [
-                "probeSnapshotIdentity"
+                "s.snapshotListing("
               ],
-              "calls": "probeSnapshotIdentity"
+              "calls": "snapshotListing"
             },
             {
-              "at": "tmux/identity.go:210",
+              "at": "tmux/snapshot_capture.go:127",
               "has": [
-                "literalCmdWithRaw"
+                "s.literalCmdWithRaw("
               ],
               "calls": "literalCmdWithRaw"
             },
@@ -3111,7 +3328,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -3135,16 +3353,16 @@
           ],
           "reaches": [
             {
-              "at": "tmux/search.go:195",
+              "at": "tmux/search.go:214",
               "has": [
-                "probeSnapshotIdentity"
+                "s.snapshotListing("
               ],
-              "calls": "probeSnapshotIdentity"
+              "calls": "snapshotListing"
             },
             {
-              "at": "tmux/identity.go:210",
+              "at": "tmux/snapshot_capture.go:127",
               "has": [
-                "literalCmdWithRaw"
+                "s.literalCmdWithRaw("
               ],
               "calls": "literalCmdWithRaw"
             },
@@ -3167,7 +3385,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -3193,21 +3412,21 @@
             {
               "at": "tmux/lookup.go:139",
               "has": [
-                "livePointWithTargetValidation"
+                "s.livePointWithTargetValidation("
               ],
               "calls": "livePointWithTargetValidation"
             },
             {
-              "at": "tmux/lookup.go:179",
+              "at": "tmux/lookup.go:198",
               "has": [
-                "probeSnapshotIdentity"
+                "s.snapshotListing("
               ],
-              "calls": "probeSnapshotIdentity"
+              "calls": "snapshotListing"
             },
             {
-              "at": "tmux/identity.go:210",
+              "at": "tmux/snapshot_capture.go:127",
               "has": [
-                "literalCmdWithRaw"
+                "s.literalCmdWithRaw("
               ],
               "calls": "literalCmdWithRaw"
             },
@@ -3230,7 +3449,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -3254,16 +3474,16 @@
           ],
           "reaches": [
             {
-              "at": "tmux/lookup.go:179",
+              "at": "tmux/lookup.go:198",
               "has": [
-                "probeSnapshotIdentity"
+                "s.snapshotListing("
               ],
-              "calls": "probeSnapshotIdentity"
+              "calls": "snapshotListing"
             },
             {
-              "at": "tmux/identity.go:210",
+              "at": "tmux/snapshot_capture.go:127",
               "has": [
-                "literalCmdWithRaw"
+                "s.literalCmdWithRaw("
               ],
               "calls": "literalCmdWithRaw"
             },
@@ -3286,7 +3506,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -3328,7 +3549,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -3384,7 +3606,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -3440,7 +3663,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -3496,7 +3720,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -3552,7 +3777,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -3608,7 +3834,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -3671,7 +3898,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -3727,7 +3955,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -3783,7 +4012,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -3839,7 +4069,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -3870,6 +4101,21 @@
               "calls": "literalCmd"
             },
             {
+              "at": "tmux/scoped_command.go:35",
+              "has": [
+                "literalPaneCommand(ctx, p, args)"
+              ],
+              "calls": "literalPaneCommand"
+            },
+            {
+              "at": "tmux/exact_target.go:72",
+              "has": [
+                "pane.server.literalCmd("
+              ],
+              "calls": "literalCmd",
+              "on": "Server"
+            },
+            {
               "at": "tmux/server.go:105",
               "has": [
                 "literalCmdWithRaw"
@@ -3895,7 +4141,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -3923,7 +4170,8 @@
               "has": [
                 "literalCmd"
               ],
-              "calls": "literalCmd"
+              "calls": "literalCmd",
+              "on": "Server"
             },
             {
               "at": "tmux/server.go:105",
@@ -3951,7 +4199,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -4000,7 +4249,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -4056,7 +4306,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -4105,7 +4356,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -4126,7 +4378,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -4161,7 +4414,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -4210,7 +4464,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -4259,7 +4514,8 @@
               "has": [
                 "Run"
               ],
-              "calls": "Run"
+              "calls": "Run",
+              "on": "Runner"
             },
             {
               "at": "tmux/internal/tmuxcmd/runner.go:95",
@@ -4397,21 +4653,21 @@
             {
               "at": "libtmux/src/main/java/io/github/libtmux/Environment.java:369",
               "has": [
-                "cmd"
+                "server.cmd(argv)"
               ],
               "calls": "cmd"
             },
             {
-              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1230",
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:772",
               "has": [
-                "guarded"
+                "cmd(argv, config.defaultTimeout())"
               ],
-              "calls": "guarded"
+              "calls": "cmd"
             },
             {
-              "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java:76",
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:778",
               "has": [
-                "server.cmd("
+                "cmd(argv, timeout, \"\")"
               ],
               "calls": "cmd"
             },
@@ -4420,19 +4676,27 @@
               "has": [
                 "transport.execute("
               ],
+              "calls": "execute",
+              "on": "ProcessTransport"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:181",
+              "has": [
+                "execute(request, false)"
+              ],
               "calls": "execute"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:205",
               "has": [
-                "dispatch("
+                "dispatch(asked, waiting, span)"
               ],
               "calls": "dispatch"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:307",
               "has": [
-                "launch("
+                "launch(request, deadline)"
               ],
               "calls": "launch"
             },
@@ -4453,21 +4717,21 @@
             {
               "at": "libtmux/src/main/java/io/github/libtmux/Options.java:374",
               "has": [
-                "cmd"
+                "server.cmd(argv)"
               ],
               "calls": "cmd"
             },
             {
-              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1230",
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:772",
               "has": [
-                "guarded"
+                "cmd(argv, config.defaultTimeout())"
               ],
-              "calls": "guarded"
+              "calls": "cmd"
             },
             {
-              "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java:76",
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:778",
               "has": [
-                "server.cmd("
+                "cmd(argv, timeout, \"\")"
               ],
               "calls": "cmd"
             },
@@ -4476,19 +4740,27 @@
               "has": [
                 "transport.execute("
               ],
+              "calls": "execute",
+              "on": "ProcessTransport"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:181",
+              "has": [
+                "execute(request, false)"
+              ],
               "calls": "execute"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:205",
               "has": [
-                "dispatch("
+                "dispatch(asked, waiting, span)"
               ],
               "calls": "dispatch"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:307",
               "has": [
-                "launch("
+                "launch(request, deadline)"
               ],
               "calls": "launch"
             },
@@ -4509,21 +4781,14 @@
             {
               "at": "libtmux/src/main/java/io/github/libtmux/Server.java:766",
               "has": [
-                "cmd"
+                "cmd(List.of(argv)"
               ],
               "calls": "cmd"
             },
             {
-              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1230",
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:778",
               "has": [
-                "guarded"
-              ],
-              "calls": "guarded"
-            },
-            {
-              "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java:76",
-              "has": [
-                "server.cmd("
+                "cmd(argv, timeout, \"\")"
               ],
               "calls": "cmd"
             },
@@ -4532,19 +4797,27 @@
               "has": [
                 "transport.execute("
               ],
+              "calls": "execute",
+              "on": "ProcessTransport"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:181",
+              "has": [
+                "execute(request, false)"
+              ],
               "calls": "execute"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:205",
               "has": [
-                "dispatch("
+                "dispatch(asked, waiting, span)"
               ],
               "calls": "dispatch"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:307",
               "has": [
-                "launch("
+                "launch(request, deadline)"
               ],
               "calls": "launch"
             },
@@ -4581,14 +4854,16 @@
               "has": [
                 "exchange"
               ],
-              "calls": "exchange"
+              "calls": "exchange",
+              "on": "ControlWriter"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/control/ControlWriter.java:84",
               "has": [
                 "waiting.offer("
               ],
-              "leads": "run"
+              "leads": "run",
+              "why": "the request is put on a queue that the writer thread takes it from, and that thread writes the line to the control client"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/control/ControlWriter.java:237",
@@ -4614,14 +4889,22 @@
             {
               "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1266",
               "has": [
-                "runTogether"
+                "runTogether(snapshot, \"\", commands)"
               ],
               "calls": "runTogether"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1271",
               "has": [
-                "guarded"
+                "fence.guarded(snapshot, CommandStrings.group(commands), input)"
+              ],
+              "calls": "guarded",
+              "on": "IncarnationFence"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java:71",
+              "has": [
+                "guarded(pid, incarnation("
               ],
               "calls": "guarded"
             },
@@ -4637,19 +4920,27 @@
               "has": [
                 "transport.execute("
               ],
+              "calls": "execute",
+              "on": "ProcessTransport"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:181",
+              "has": [
+                "execute(request, false)"
+              ],
               "calls": "execute"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:205",
               "has": [
-                "dispatch("
+                "dispatch(asked, waiting, span)"
               ],
               "calls": "dispatch"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:307",
               "has": [
-                "launch("
+                "launch(request, deadline)"
               ],
               "calls": "launch"
             },
@@ -4677,21 +4968,29 @@
             {
               "at": "libtmux/src/main/java/io/github/libtmux/Server.java:475",
               "has": [
-                "execute"
+                "transport.execute("
+              ],
+              "calls": "execute",
+              "on": "ProcessTransport"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:181",
+              "has": [
+                "execute(request, false)"
               ],
               "calls": "execute"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:205",
               "has": [
-                "dispatch"
+                "dispatch(asked, waiting, span)"
               ],
               "calls": "dispatch"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:307",
               "has": [
-                "launch"
+                "launch(request, deadline)"
               ],
               "calls": "launch"
             },
@@ -4719,7 +5018,7 @@
             {
               "at": "libtmux/src/main/java/io/github/libtmux/Options.java:198",
               "has": [
-                "run"
+                "batch.run()"
               ],
               "calls": "run"
             },
@@ -4728,12 +5027,21 @@
               "has": [
                 "dispatch.apply("
               ],
-              "leads": "batch"
+              "leads": "batch",
+              "why": "a Batch runs the function the Server gave it when it made the batch, and Server.batch made it from a lambda that calls the fence"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1235",
               "has": [
-                "fence.guarded("
+                "fence.guarded(snapshot, CommandStrings.group(commands), \"\")"
+              ],
+              "calls": "guarded",
+              "on": "IncarnationFence"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java:71",
+              "has": [
+                "guarded(pid, incarnation("
               ],
               "calls": "guarded"
             },
@@ -4749,19 +5057,27 @@
               "has": [
                 "transport.execute("
               ],
+              "calls": "execute",
+              "on": "ProcessTransport"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:181",
+              "has": [
+                "execute(request, false)"
+              ],
               "calls": "execute"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:205",
               "has": [
-                "dispatch("
+                "dispatch(asked, waiting, span)"
               ],
               "calls": "dispatch"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:307",
               "has": [
-                "launch("
+                "launch(request, deadline)"
               ],
               "calls": "launch"
             },
@@ -4789,21 +5105,22 @@
             {
               "at": "libtmux/src/main/java/io/github/libtmux/Server.java:886",
               "has": [
-                "sessionsWhere"
+                "capture.sessionsWhere("
               ],
-              "calls": "sessionsWhere"
+              "calls": "sessionsWhere",
+              "on": "SnapshotCapture"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:276",
               "has": [
-                "hydrate"
+                "hydrate(process, holding"
               ],
               "calls": "hydrate"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:293",
               "has": [
-                "run"
+                "batch.run()"
               ],
               "calls": "run"
             },
@@ -4812,14 +5129,16 @@
               "has": [
                 "dispatch.apply("
               ],
-              "leads": "batch"
+              "leads": "batch",
+              "why": "a Batch runs the function the Server gave it when it made the batch, and Server.batch made it from a lambda that calls the fence"
             },
             {
-              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1235",
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1247",
               "has": [
-                "fence.guarded("
+                "fence.guarded(pid, condition, CommandStrings.group(commands), \"\")"
               ],
-              "calls": "guarded"
+              "calls": "guarded",
+              "on": "IncarnationFence"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java:76",
@@ -4833,19 +5152,27 @@
               "has": [
                 "transport.execute("
               ],
+              "calls": "execute",
+              "on": "ProcessTransport"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:181",
+              "has": [
+                "execute(request, false)"
+              ],
               "calls": "execute"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:205",
               "has": [
-                "dispatch("
+                "dispatch(asked, waiting, span)"
               ],
               "calls": "dispatch"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:307",
               "has": [
-                "launch("
+                "launch(request, deadline)"
               ],
               "calls": "launch"
             },
@@ -4954,12 +5281,6 @@
       "why": "Builds the argument list of a command from the command it is given.",
       "evidence": [
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/Environment.java:204",
-          "has": [
-            "listing"
-          ]
-        },
-        {
           "at": "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:424",
           "has": [
             "listing"
@@ -4995,21 +5316,21 @@
             {
               "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1222",
               "has": [
-                "cmd"
+                "cmd(argv)"
               ],
               "calls": "cmd"
             },
             {
-              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1230",
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:772",
               "has": [
-                "guarded"
+                "cmd(argv, config.defaultTimeout())"
               ],
-              "calls": "guarded"
+              "calls": "cmd"
             },
             {
-              "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java:76",
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:778",
               "has": [
-                "server.cmd("
+                "cmd(argv, timeout, \"\")"
               ],
               "calls": "cmd"
             },
@@ -5018,19 +5339,27 @@
               "has": [
                 "transport.execute("
               ],
+              "calls": "execute",
+              "on": "ProcessTransport"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:181",
+              "has": [
+                "execute(request, false)"
+              ],
               "calls": "execute"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:205",
               "has": [
-                "dispatch("
+                "dispatch(asked, waiting, span)"
               ],
               "calls": "dispatch"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:307",
               "has": [
-                "launch("
+                "launch(request, deadline)"
               ],
               "calls": "launch"
             },
@@ -5051,14 +5380,29 @@
             {
               "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1251",
               "has": [
-                "cmd"
+                "cmd(snapshot, argv)"
               ],
               "calls": "cmd"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1230",
               "has": [
-                "guarded"
+                "fence.guarded(snapshot, CommandStrings.stringify(argv))"
+              ],
+              "calls": "guarded",
+              "on": "IncarnationFence"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java:65",
+              "has": [
+                "guarded(snapshot, command, \"\")"
+              ],
+              "calls": "guarded"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java:71",
+              "has": [
+                "guarded(pid, incarnation("
               ],
               "calls": "guarded"
             },
@@ -5074,19 +5418,27 @@
               "has": [
                 "transport.execute("
               ],
+              "calls": "execute",
+              "on": "ProcessTransport"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:181",
+              "has": [
+                "execute(request, false)"
+              ],
               "calls": "execute"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:205",
               "has": [
-                "dispatch("
+                "dispatch(asked, waiting, span)"
               ],
               "calls": "dispatch"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:307",
               "has": [
-                "launch("
+                "launch(request, deadline)"
               ],
               "calls": "launch"
             },
@@ -5107,14 +5459,29 @@
             {
               "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1281",
               "has": [
-                "fence.run("
+                "fence.run(snapshot, expected, argv)"
               ],
-              "calls": "run"
+              "calls": "run",
+              "on": "IncarnationFence"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java:95",
               "has": [
-                "server.cmd("
+                "server.cmd(List.of(\"if-shell\""
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:772",
+              "has": [
+                "cmd(argv, config.defaultTimeout())"
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:778",
+              "has": [
+                "cmd(argv, timeout, \"\")"
               ],
               "calls": "cmd"
             },
@@ -5123,19 +5490,27 @@
               "has": [
                 "transport.execute("
               ],
+              "calls": "execute",
+              "on": "ProcessTransport"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:181",
+              "has": [
+                "execute(request, false)"
+              ],
               "calls": "execute"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:205",
               "has": [
-                "dispatch("
+                "dispatch(asked, waiting, span)"
               ],
               "calls": "dispatch"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:307",
               "has": [
-                "launch("
+                "launch(request, deadline)"
               ],
               "calls": "launch"
             },
@@ -5163,16 +5538,40 @@
             {
               "at": "src/LibTmux/Environment/TmuxEnvironmentOperations.cs:246",
               "has": [
-                "ExecuteAsync"
+                "_dispatcher.ExecuteAsync(arguments, cancellationToken)"
+              ],
+              "calls": "ExecuteAsync",
+              "on": "TmuxCommandDispatcher"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:122",
+              "has": [
+                "ExecuteWithinAsync(arguments, _context?.CommandTimeout"
+              ],
+              "calls": "ExecuteWithinAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:149",
+              "has": [
+                "_execute(copy, deadline.Token)"
+              ],
+              "leads": "ExecuteAsync",
+              "why": "a delegate: the dispatcher made over a process transport binds it to that transport's ExecuteAsync in its constructor (line 24)"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:73",
+              "has": [
+                "ExecuteAsync(TmuxCommandRequest.Single(arguments)"
               ],
               "calls": "ExecuteAsync"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
               "has": [
-                "_launcher.Start("
+                "_launcher.Start(startInfo)"
               ],
-              "calls": "Start"
+              "calls": "Start",
+              "on": "SystemProcessLauncher"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
@@ -5191,23 +5590,47 @@
             {
               "at": "src/LibTmux/Hooks/TmuxHooks.cs:313",
               "has": [
-                "DispatchAsync"
+                "DispatchAsync(BuildRunArguments(request)"
               ],
               "calls": "DispatchAsync"
             },
             {
               "at": "src/LibTmux/Hooks/TmuxHooks.cs:432",
               "has": [
-                "ExecuteAsync"
+                ".ExecuteAsync(arguments, cancellationToken)"
+              ],
+              "calls": "ExecuteAsync",
+              "on": "TmuxCommandDispatcher"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:122",
+              "has": [
+                "ExecuteWithinAsync(arguments, _context?.CommandTimeout"
+              ],
+              "calls": "ExecuteWithinAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:149",
+              "has": [
+                "_execute(copy, deadline.Token)"
+              ],
+              "leads": "ExecuteAsync",
+              "why": "a delegate: the dispatcher made over a process transport binds it to that transport's ExecuteAsync in its constructor (line 24)"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:73",
+              "has": [
+                "ExecuteAsync(TmuxCommandRequest.Single(arguments)"
               ],
               "calls": "ExecuteAsync"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
               "has": [
-                "_launcher.Start("
+                "_launcher.Start(startInfo)"
               ],
-              "calls": "Start"
+              "calls": "Start",
+              "on": "SystemProcessLauncher"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
@@ -5233,16 +5656,40 @@
             {
               "at": "src/LibTmux/Server.Lifecycle.cs:462",
               "has": [
-                "ExecuteAsync"
+                ".ExecuteAsync(arguments, cancellationToken)"
+              ],
+              "calls": "ExecuteAsync",
+              "on": "TmuxCommandDispatcher"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:122",
+              "has": [
+                "ExecuteWithinAsync(arguments, _context?.CommandTimeout"
+              ],
+              "calls": "ExecuteWithinAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:149",
+              "has": [
+                "_execute(copy, deadline.Token)"
+              ],
+              "leads": "ExecuteAsync",
+              "why": "a delegate: the dispatcher made over a process transport binds it to that transport's ExecuteAsync in its constructor (line 24)"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:73",
+              "has": [
+                "ExecuteAsync(TmuxCommandRequest.Single(arguments)"
               ],
               "calls": "ExecuteAsync"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
               "has": [
-                "_launcher.Start("
+                "_launcher.Start(startInfo)"
               ],
-              "calls": "Start"
+              "calls": "Start",
+              "on": "SystemProcessLauncher"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
@@ -5268,16 +5715,49 @@
             {
               "at": "src/LibTmux/Chaining/TmuxChaining.Hooks.cs:63",
               "has": [
-                "ExecuteAsync"
+                ".ExecuteAsync(cancellationToken)"
               ],
-              "calls": "ExecuteAsync"
+              "calls": "ExecuteAsync",
+              "on": "TmuxChain"
+            },
+            {
+              "at": "src/LibTmux/Chaining/TmuxChain.cs:139",
+              "has": [
+                "_dispatcher.ExecuteGroupAsync(arguments, cancellationToken)"
+              ],
+              "calls": "ExecuteGroupAsync",
+              "on": "TmuxCommandDispatcher"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:56",
+              "has": [
+                "ExecuteGroupAsync(commands, _executeGroup, cancellationToken)"
+              ],
+              "calls": "ExecuteGroupAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:91",
+              "has": [
+                "executeGroup(commands, deadline.Token)"
+              ],
+              "leads": "TmuxCommandDispatcher",
+              "why": "a delegate: the dispatcher made over a process transport binds it, in its constructor, to a lambda that calls that transport (line 25)"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:25",
+              "has": [
+                "transport.ExecuteAsync("
+              ],
+              "calls": "ExecuteAsync",
+              "on": "TmuxProcessTransport"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
               "has": [
-                "_launcher.Start("
+                "_launcher.Start(startInfo)"
               ],
-              "calls": "Start"
+              "calls": "Start",
+              "on": "SystemProcessLauncher"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
@@ -5296,16 +5776,49 @@
             {
               "at": "src/LibTmux/Chaining/TmuxChaining.cs:30",
               "has": [
-                "ExecuteAsync"
+                ".ExecuteAsync(cancellationToken)"
               ],
-              "calls": "ExecuteAsync"
+              "calls": "ExecuteAsync",
+              "on": "TmuxChain"
+            },
+            {
+              "at": "src/LibTmux/Chaining/TmuxChain.cs:139",
+              "has": [
+                "_dispatcher.ExecuteGroupAsync(arguments, cancellationToken)"
+              ],
+              "calls": "ExecuteGroupAsync",
+              "on": "TmuxCommandDispatcher"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:56",
+              "has": [
+                "ExecuteGroupAsync(commands, _executeGroup, cancellationToken)"
+              ],
+              "calls": "ExecuteGroupAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:91",
+              "has": [
+                "executeGroup(commands, deadline.Token)"
+              ],
+              "leads": "TmuxCommandDispatcher",
+              "why": "a delegate: the dispatcher made over a process transport binds it, in its constructor, to a lambda that calls that transport (line 25)"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:25",
+              "has": [
+                "transport.ExecuteAsync("
+              ],
+              "calls": "ExecuteAsync",
+              "on": "TmuxProcessTransport"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
               "has": [
-                "_launcher.Start("
+                "_launcher.Start(startInfo)"
               ],
-              "calls": "Start"
+              "calls": "Start",
+              "on": "SystemProcessLauncher"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
@@ -5333,7 +5846,8 @@
               "has": [
                 "SendAsync"
               ],
-              "calls": "SendAsync"
+              "calls": "SendAsync",
+              "on": "ControlModeSession"
             },
             {
               "at": "src/LibTmux/ControlMode/ControlModeSession.cs:294",
@@ -5368,7 +5882,8 @@
               "has": [
                 "WriteLineAsync"
               ],
-              "calls": "WriteLineAsync"
+              "calls": "WriteLineAsync",
+              "on": "SystemControlModeProcess"
             },
             {
               "at": "src/LibTmux/ControlMode/SystemControlModeProcess.cs:69",
@@ -5394,16 +5909,54 @@
             {
               "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:45",
               "has": [
-                "ExecuteAsync"
+                "ExecuteAsync(listCommand, arguments, cancellationToken)"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:214",
+              "has": [
+                "ExecuteAsync(CreateProjection(listCommand)"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:231",
+              "has": [
+                ".ExecuteAsync(arguments, cancellationToken)"
+              ],
+              "calls": "ExecuteAsync",
+              "on": "TmuxCommandDispatcher"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:122",
+              "has": [
+                "ExecuteWithinAsync(arguments, _context?.CommandTimeout"
+              ],
+              "calls": "ExecuteWithinAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:149",
+              "has": [
+                "_execute(copy, deadline.Token)"
+              ],
+              "leads": "ExecuteAsync",
+              "why": "a delegate: the dispatcher made over a process transport binds it to that transport's ExecuteAsync in its constructor (line 24)"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:73",
+              "has": [
+                "ExecuteAsync(TmuxCommandRequest.Single(arguments)"
               ],
               "calls": "ExecuteAsync"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
               "has": [
-                "_launcher.Start("
+                "_launcher.Start(startInfo)"
               ],
-              "calls": "Start"
+              "calls": "Start",
+              "on": "SystemProcessLauncher"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
@@ -5436,16 +5989,54 @@
             {
               "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:45",
               "has": [
-                "ExecuteAsync"
+                "ExecuteAsync(listCommand, arguments, cancellationToken)"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:214",
+              "has": [
+                "ExecuteAsync(CreateProjection(listCommand)"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:231",
+              "has": [
+                ".ExecuteAsync(arguments, cancellationToken)"
+              ],
+              "calls": "ExecuteAsync",
+              "on": "TmuxCommandDispatcher"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:122",
+              "has": [
+                "ExecuteWithinAsync(arguments, _context?.CommandTimeout"
+              ],
+              "calls": "ExecuteWithinAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:149",
+              "has": [
+                "_execute(copy, deadline.Token)"
+              ],
+              "leads": "ExecuteAsync",
+              "why": "a delegate: the dispatcher made over a process transport binds it to that transport's ExecuteAsync in its constructor (line 24)"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:73",
+              "has": [
+                "ExecuteAsync(TmuxCommandRequest.Single(arguments)"
               ],
               "calls": "ExecuteAsync"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
               "has": [
-                "_launcher.Start("
+                "_launcher.Start(startInfo)"
               ],
-              "calls": "Start"
+              "calls": "Start",
+              "on": "SystemProcessLauncher"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
@@ -5471,16 +6062,54 @@
             {
               "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:45",
               "has": [
-                "ExecuteAsync"
+                "ExecuteAsync(listCommand, arguments, cancellationToken)"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:214",
+              "has": [
+                "ExecuteAsync(CreateProjection(listCommand)"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:231",
+              "has": [
+                ".ExecuteAsync(arguments, cancellationToken)"
+              ],
+              "calls": "ExecuteAsync",
+              "on": "TmuxCommandDispatcher"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:122",
+              "has": [
+                "ExecuteWithinAsync(arguments, _context?.CommandTimeout"
+              ],
+              "calls": "ExecuteWithinAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:149",
+              "has": [
+                "_execute(copy, deadline.Token)"
+              ],
+              "leads": "ExecuteAsync",
+              "why": "a delegate: the dispatcher made over a process transport binds it to that transport's ExecuteAsync in its constructor (line 24)"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:73",
+              "has": [
+                "ExecuteAsync(TmuxCommandRequest.Single(arguments)"
               ],
               "calls": "ExecuteAsync"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
               "has": [
-                "_launcher.Start("
+                "_launcher.Start(startInfo)"
               ],
-              "calls": "Start"
+              "calls": "Start",
+              "on": "SystemProcessLauncher"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
@@ -5520,16 +6149,54 @@
             {
               "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:45",
               "has": [
-                "ExecuteAsync"
+                "ExecuteAsync(listCommand, arguments, cancellationToken)"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:214",
+              "has": [
+                "ExecuteAsync(CreateProjection(listCommand)"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:231",
+              "has": [
+                ".ExecuteAsync(arguments, cancellationToken)"
+              ],
+              "calls": "ExecuteAsync",
+              "on": "TmuxCommandDispatcher"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:122",
+              "has": [
+                "ExecuteWithinAsync(arguments, _context?.CommandTimeout"
+              ],
+              "calls": "ExecuteWithinAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:149",
+              "has": [
+                "_execute(copy, deadline.Token)"
+              ],
+              "leads": "ExecuteAsync",
+              "why": "a delegate: the dispatcher made over a process transport binds it to that transport's ExecuteAsync in its constructor (line 24)"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:73",
+              "has": [
+                "ExecuteAsync(TmuxCommandRequest.Single(arguments)"
               ],
               "calls": "ExecuteAsync"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
               "has": [
-                "_launcher.Start("
+                "_launcher.Start(startInfo)"
               ],
-              "calls": "Start"
+              "calls": "Start",
+              "on": "SystemProcessLauncher"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
@@ -5585,7 +6252,8 @@
               "has": [
                 "WriteLineAsync"
               ],
-              "calls": "WriteLineAsync"
+              "calls": "WriteLineAsync",
+              "on": "SystemControlModeProcess"
             },
             {
               "at": "src/LibTmux/ControlMode/SystemControlModeProcess.cs:69",
@@ -5634,7 +6302,8 @@
               "has": [
                 "WriteLineAsync"
               ],
-              "calls": "WriteLineAsync"
+              "calls": "WriteLineAsync",
+              "on": "SystemControlModeProcess"
             },
             {
               "at": "src/LibTmux/ControlMode/SystemControlModeProcess.cs:69",
@@ -5660,16 +6329,40 @@
             {
               "at": "src/LibTmux/Server.Utilities.cs:117",
               "has": [
-                "ExecuteAsync"
+                ".ExecuteAsync(arguments, cancellationToken)"
+              ],
+              "calls": "ExecuteAsync",
+              "on": "TmuxCommandDispatcher"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:122",
+              "has": [
+                "ExecuteWithinAsync(arguments, _context?.CommandTimeout"
+              ],
+              "calls": "ExecuteWithinAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:149",
+              "has": [
+                "_execute(copy, deadline.Token)"
+              ],
+              "leads": "ExecuteAsync",
+              "why": "a delegate: the dispatcher made over a process transport binds it to that transport's ExecuteAsync in its constructor (line 24)"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:73",
+              "has": [
+                "ExecuteAsync(TmuxCommandRequest.Single(arguments)"
               ],
               "calls": "ExecuteAsync"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
               "has": [
-                "_launcher.Start("
+                "_launcher.Start(startInfo)"
               ],
-              "calls": "Start"
+              "calls": "Start",
+              "on": "SystemProcessLauncher"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
@@ -5695,23 +6388,47 @@
             {
               "at": "src/LibTmux/Server.Clients.cs:201",
               "has": [
-                "RunAsync"
+                "RunAsync(arguments, cancellationToken)"
               ],
               "calls": "RunAsync"
             },
             {
               "at": "src/LibTmux/Server.Clients.cs:209",
               "has": [
-                "ExecuteAsync"
+                ".ExecuteAsync(arguments, cancellationToken)"
+              ],
+              "calls": "ExecuteAsync",
+              "on": "TmuxCommandDispatcher"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:122",
+              "has": [
+                "ExecuteWithinAsync(arguments, _context?.CommandTimeout"
+              ],
+              "calls": "ExecuteWithinAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:149",
+              "has": [
+                "_execute(copy, deadline.Token)"
+              ],
+              "leads": "ExecuteAsync",
+              "why": "a delegate: the dispatcher made over a process transport binds it to that transport's ExecuteAsync in its constructor (line 24)"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:73",
+              "has": [
+                "ExecuteAsync(TmuxCommandRequest.Single(arguments)"
               ],
               "calls": "ExecuteAsync"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
               "has": [
-                "_launcher.Start("
+                "_launcher.Start(startInfo)"
               ],
-              "calls": "Start"
+              "calls": "Start",
+              "on": "SystemProcessLauncher"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
@@ -5739,7 +6456,8 @@
               "has": [
                 "SendAsync"
               ],
-              "calls": "SendAsync"
+              "calls": "SendAsync",
+              "on": "ControlModeSession"
             },
             {
               "at": "src/LibTmux/ControlMode/ControlModeSession.cs:294",
@@ -5774,7 +6492,8 @@
               "has": [
                 "WriteLineAsync"
               ],
-              "calls": "WriteLineAsync"
+              "calls": "WriteLineAsync",
+              "on": "SystemControlModeProcess"
             },
             {
               "at": "src/LibTmux/ControlMode/SystemControlModeProcess.cs:69",
@@ -5800,23 +6519,54 @@
             {
               "at": "src/LibTmux/Snapshots/ServerSnapshot.cs:130",
               "has": [
-                "FetchMarkedAsync"
+                "FetchMarkedAsync("
               ],
               "calls": "FetchMarkedAsync"
             },
             {
               "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:61",
               "has": [
-                "ExecuteAsync"
+                "ExecuteAsync(projection, arguments, cancellationToken)"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:231",
+              "has": [
+                ".ExecuteAsync(arguments, cancellationToken)"
+              ],
+              "calls": "ExecuteAsync",
+              "on": "TmuxCommandDispatcher"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:122",
+              "has": [
+                "ExecuteWithinAsync(arguments, _context?.CommandTimeout"
+              ],
+              "calls": "ExecuteWithinAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:149",
+              "has": [
+                "_execute(copy, deadline.Token)"
+              ],
+              "leads": "ExecuteAsync",
+              "why": "a delegate: the dispatcher made over a process transport binds it to that transport's ExecuteAsync in its constructor (line 24)"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:73",
+              "has": [
+                "ExecuteAsync(TmuxCommandRequest.Single(arguments)"
               ],
               "calls": "ExecuteAsync"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
               "has": [
-                "_launcher.Start("
+                "_launcher.Start(startInfo)"
               ],
-              "calls": "Start"
+              "calls": "Start",
+              "on": "SystemProcessLauncher"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
@@ -5842,16 +6592,40 @@
             {
               "at": "src/LibTmux/Server.Utilities.cs:128",
               "has": [
-                "ExecuteAsync"
+                ".ExecuteAsync(arguments, cancellationToken)"
+              ],
+              "calls": "ExecuteAsync",
+              "on": "TmuxCommandDispatcher"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:122",
+              "has": [
+                "ExecuteWithinAsync(arguments, _context?.CommandTimeout"
+              ],
+              "calls": "ExecuteWithinAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:149",
+              "has": [
+                "_execute(copy, deadline.Token)"
+              ],
+              "leads": "ExecuteAsync",
+              "why": "a delegate: the dispatcher made over a process transport binds it to that transport's ExecuteAsync in its constructor (line 24)"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:73",
+              "has": [
+                "ExecuteAsync(TmuxCommandRequest.Single(arguments)"
               ],
               "calls": "ExecuteAsync"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
               "has": [
-                "_launcher.Start("
+                "_launcher.Start(startInfo)"
               ],
-              "calls": "Start"
+              "calls": "Start",
+              "on": "SystemProcessLauncher"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
@@ -5877,16 +6651,47 @@
             {
               "at": "src/LibTmux/Pane.Command.cs:27",
               "has": [
-                "ExecuteAsync"
+                "TargetedCommandArguments.ExecuteAsync("
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Session.Command.cs:57",
+              "has": [
+                "dispatcher.ExecuteAsync(targeted, cancellationToken)"
+              ],
+              "calls": "ExecuteAsync",
+              "on": "TmuxCommandDispatcher"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:122",
+              "has": [
+                "ExecuteWithinAsync(arguments, _context?.CommandTimeout"
+              ],
+              "calls": "ExecuteWithinAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:149",
+              "has": [
+                "_execute(copy, deadline.Token)"
+              ],
+              "leads": "ExecuteAsync",
+              "why": "a delegate: the dispatcher made over a process transport binds it to that transport's ExecuteAsync in its constructor (line 24)"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:73",
+              "has": [
+                "ExecuteAsync(TmuxCommandRequest.Single(arguments)"
               ],
               "calls": "ExecuteAsync"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
               "has": [
-                "_launcher.Start("
+                "_launcher.Start(startInfo)"
               ],
-              "calls": "Start"
+              "calls": "Start",
+              "on": "SystemProcessLauncher"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
@@ -5905,16 +6710,40 @@
             {
               "at": "src/LibTmux/Server.Command.cs:22",
               "has": [
-                "ExecuteAsync"
+                "_commandDispatcher.ExecuteAsync(arguments, cancellationToken)"
+              ],
+              "calls": "ExecuteAsync",
+              "on": "TmuxCommandDispatcher"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:122",
+              "has": [
+                "ExecuteWithinAsync(arguments, _context?.CommandTimeout"
+              ],
+              "calls": "ExecuteWithinAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:149",
+              "has": [
+                "_execute(copy, deadline.Token)"
+              ],
+              "leads": "ExecuteAsync",
+              "why": "a delegate: the dispatcher made over a process transport binds it to that transport's ExecuteAsync in its constructor (line 24)"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:73",
+              "has": [
+                "ExecuteAsync(TmuxCommandRequest.Single(arguments)"
               ],
               "calls": "ExecuteAsync"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
               "has": [
-                "_launcher.Start("
+                "_launcher.Start(startInfo)"
               ],
-              "calls": "Start"
+              "calls": "Start",
+              "on": "SystemProcessLauncher"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
@@ -5933,16 +6762,47 @@
             {
               "at": "src/LibTmux/Session.Command.cs:27",
               "has": [
-                "ExecuteAsync"
+                "TargetedCommandArguments.ExecuteAsync("
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Session.Command.cs:57",
+              "has": [
+                "dispatcher.ExecuteAsync(targeted, cancellationToken)"
+              ],
+              "calls": "ExecuteAsync",
+              "on": "TmuxCommandDispatcher"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:122",
+              "has": [
+                "ExecuteWithinAsync(arguments, _context?.CommandTimeout"
+              ],
+              "calls": "ExecuteWithinAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:149",
+              "has": [
+                "_execute(copy, deadline.Token)"
+              ],
+              "leads": "ExecuteAsync",
+              "why": "a delegate: the dispatcher made over a process transport binds it to that transport's ExecuteAsync in its constructor (line 24)"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:73",
+              "has": [
+                "ExecuteAsync(TmuxCommandRequest.Single(arguments)"
               ],
               "calls": "ExecuteAsync"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
               "has": [
-                "_launcher.Start("
+                "_launcher.Start(startInfo)"
               ],
-              "calls": "Start"
+              "calls": "Start",
+              "on": "SystemProcessLauncher"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
@@ -5968,23 +6828,40 @@
             {
               "at": "src/LibTmux/Connection/TmuxDialect.cs:175",
               "has": [
-                "ExecuteAttachmentAsync"
+                "_generationGuard.ExecuteAttachmentAsync("
               ],
-              "calls": "ExecuteAttachmentAsync"
+              "calls": "ExecuteAttachmentAsync",
+              "on": "TmuxGenerationGuard"
             },
             {
               "at": "src/LibTmux/Internal/TmuxGenerationGuard.Attachment.cs:24",
               "has": [
-                "ExecuteAsync"
+                "ExecuteAsync(expected, [command], fence, token)"
               ],
               "calls": "ExecuteAsync"
             },
             {
+              "at": "src/LibTmux/Internal/TmuxGenerationGuard.cs:27",
+              "has": [
+                "ExecuteRequestAsync(request, logicalArguments, cancellationToken)"
+              ],
+              "calls": "ExecuteRequestAsync"
+            },
+            {
+              "at": "src/LibTmux/Internal/TmuxGenerationGuard.cs:39",
+              "has": [
+                "execute(request, cancellationToken)"
+              ],
+              "leads": "ExecuteAsync",
+              "why": "a delegate: the dialect passes the transport's ExecuteAsync to the guard it makes (TmuxDialect.cs:40)"
+            },
+            {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
               "has": [
-                "_launcher.Start("
+                "_launcher.Start(startInfo)"
               ],
-              "calls": "Start"
+              "calls": "Start",
+              "on": "SystemProcessLauncher"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
@@ -6003,16 +6880,32 @@
             {
               "at": "src/LibTmux/Internal/TmuxGenerationGuard.Attachment.cs:24",
               "has": [
-                "ExecuteAsync"
+                "ExecuteAsync(expected, [command], fence, token)"
               ],
               "calls": "ExecuteAsync"
             },
             {
+              "at": "src/LibTmux/Internal/TmuxGenerationGuard.cs:27",
+              "has": [
+                "ExecuteRequestAsync(request, logicalArguments, cancellationToken)"
+              ],
+              "calls": "ExecuteRequestAsync"
+            },
+            {
+              "at": "src/LibTmux/Internal/TmuxGenerationGuard.cs:39",
+              "has": [
+                "execute(request, cancellationToken)"
+              ],
+              "leads": "ExecuteAsync",
+              "why": "a delegate: the dialect passes the transport's ExecuteAsync to the guard it makes (TmuxDialect.cs:40)"
+            },
+            {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
               "has": [
-                "_launcher.Start("
+                "_launcher.Start(startInfo)"
               ],
-              "calls": "Start"
+              "calls": "Start",
+              "on": "SystemProcessLauncher"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
@@ -6038,23 +6931,34 @@
             {
               "at": "src/LibTmux/Connection/PsmuxDialect.cs:69",
               "has": [
-                "ExecuteGuardedAsync"
+                "_router.ExecuteGuardedAsync("
               ],
-              "calls": "ExecuteGuardedAsync"
+              "calls": "ExecuteGuardedAsync",
+              "on": "PsmuxSessionRouter"
             },
             {
-              "at": "src/LibTmux/Connection/TmuxDialect.cs:164",
+              "at": "src/LibTmux/Internal/PsmuxSessionRouter.cs:123",
               "has": [
-                "ExecuteAsync"
+                "_executeRaw(routed, cancellationToken, command)"
               ],
-              "calls": "ExecuteAsync"
+              "leads": "ExecuteRawSingleAsync",
+              "why": "a delegate: PsmuxDialect makes the router with its ExecuteRawSingleAsync (PsmuxDialect.cs:25)"
+            },
+            {
+              "at": "src/LibTmux/Connection/PsmuxDialect.cs:144",
+              "has": [
+                "Execute(request, cancellationToken)"
+              ],
+              "leads": "ExecuteAsync",
+              "why": "Execute is the delegate the dialect was made with, which is the transport's ExecuteAsync (MultiplexerDialect.cs:22)"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
               "has": [
-                "_launcher.Start("
+                "_launcher.Start(startInfo)"
               ],
-              "calls": "Start"
+              "calls": "Start",
+              "on": "SystemProcessLauncher"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
@@ -6073,16 +6977,33 @@
             {
               "at": "src/LibTmux/Connection/TmuxDialect.cs:164",
               "has": [
-                "ExecuteAsync"
+                "_generationGuard.ExecuteAsync(expected, commands, fence, token)"
               ],
-              "calls": "ExecuteAsync"
+              "calls": "ExecuteAsync",
+              "on": "TmuxGenerationGuard"
+            },
+            {
+              "at": "src/LibTmux/Internal/TmuxGenerationGuard.cs:27",
+              "has": [
+                "ExecuteRequestAsync(request, logicalArguments, cancellationToken)"
+              ],
+              "calls": "ExecuteRequestAsync"
+            },
+            {
+              "at": "src/LibTmux/Internal/TmuxGenerationGuard.cs:39",
+              "has": [
+                "execute(request, cancellationToken)"
+              ],
+              "leads": "ExecuteAsync",
+              "why": "a delegate: the dialect passes the transport's ExecuteAsync to the guard it makes (TmuxDialect.cs:40)"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
               "has": [
-                "_launcher.Start("
+                "_launcher.Start(startInfo)"
               ],
-              "calls": "Start"
+              "calls": "Start",
+              "on": "SystemProcessLauncher"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
@@ -6108,23 +7029,56 @@
             {
               "at": "src/LibTmux/Window.Links.cs:178",
               "has": [
-                "RunPlacementAsync"
+                "RunPlacementAsync(BuildPlacementCommand(arguments)"
               ],
               "calls": "RunPlacementAsync"
             },
             {
               "at": "src/LibTmux/Window.Links.cs:183",
               "has": [
-                "ExecuteAsync"
+                ".ExecuteAsync(cancellationToken)"
               ],
-              "calls": "ExecuteAsync"
+              "calls": "ExecuteAsync",
+              "on": "TmuxChain"
+            },
+            {
+              "at": "src/LibTmux/Chaining/TmuxChain.cs:139",
+              "has": [
+                "_dispatcher.ExecuteGroupAsync(arguments, cancellationToken)"
+              ],
+              "calls": "ExecuteGroupAsync",
+              "on": "TmuxCommandDispatcher"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:56",
+              "has": [
+                "ExecuteGroupAsync(commands, _executeGroup, cancellationToken)"
+              ],
+              "calls": "ExecuteGroupAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:91",
+              "has": [
+                "executeGroup(commands, deadline.Token)"
+              ],
+              "leads": "TmuxCommandDispatcher",
+              "why": "a delegate: the dispatcher made over a process transport binds it, in its constructor, to a lambda that calls that transport (line 25)"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:25",
+              "has": [
+                "transport.ExecuteAsync("
+              ],
+              "calls": "ExecuteAsync",
+              "on": "TmuxProcessTransport"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
               "has": [
-                "_launcher.Start("
+                "_launcher.Start(startInfo)"
               ],
-              "calls": "Start"
+              "calls": "Start",
+              "on": "SystemProcessLauncher"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
@@ -6150,16 +7104,40 @@
             {
               "at": "src/LibTmux/Hooks/TmuxHooks.cs:432",
               "has": [
-                "ExecuteAsync"
+                ".ExecuteAsync(arguments, cancellationToken)"
+              ],
+              "calls": "ExecuteAsync",
+              "on": "TmuxCommandDispatcher"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:122",
+              "has": [
+                "ExecuteWithinAsync(arguments, _context?.CommandTimeout"
+              ],
+              "calls": "ExecuteWithinAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:149",
+              "has": [
+                "_execute(copy, deadline.Token)"
+              ],
+              "leads": "ExecuteAsync",
+              "why": "a delegate: the dispatcher made over a process transport binds it to that transport's ExecuteAsync in its constructor (line 24)"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:73",
+              "has": [
+                "ExecuteAsync(TmuxCommandRequest.Single(arguments)"
               ],
               "calls": "ExecuteAsync"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
               "has": [
-                "_launcher.Start("
+                "_launcher.Start(startInfo)"
               ],
-              "calls": "Start"
+              "calls": "Start",
+              "on": "SystemProcessLauncher"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
@@ -6185,16 +7163,40 @@
             {
               "at": "src/LibTmux/Hooks/TmuxHooks.cs:449",
               "has": [
-                "ExecuteAsync"
+                ".ExecuteAsync(arguments, cancellationToken)"
+              ],
+              "calls": "ExecuteAsync",
+              "on": "TmuxCommandDispatcher"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:122",
+              "has": [
+                "ExecuteWithinAsync(arguments, _context?.CommandTimeout"
+              ],
+              "calls": "ExecuteWithinAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:149",
+              "has": [
+                "_execute(copy, deadline.Token)"
+              ],
+              "leads": "ExecuteAsync",
+              "why": "a delegate: the dispatcher made over a process transport binds it to that transport's ExecuteAsync in its constructor (line 24)"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:73",
+              "has": [
+                "ExecuteAsync(TmuxCommandRequest.Single(arguments)"
               ],
               "calls": "ExecuteAsync"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
               "has": [
-                "_launcher.Start("
+                "_launcher.Start(startInfo)"
               ],
-              "calls": "Start"
+              "calls": "Start",
+              "on": "SystemProcessLauncher"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
@@ -6213,16 +7215,54 @@
             {
               "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:128",
               "has": [
-                "ExecuteAsync"
+                "ExecuteAsync(listCommand, arguments, cancellationToken)"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:214",
+              "has": [
+                "ExecuteAsync(CreateProjection(listCommand)"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:231",
+              "has": [
+                ".ExecuteAsync(arguments, cancellationToken)"
+              ],
+              "calls": "ExecuteAsync",
+              "on": "TmuxCommandDispatcher"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:122",
+              "has": [
+                "ExecuteWithinAsync(arguments, _context?.CommandTimeout"
+              ],
+              "calls": "ExecuteWithinAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:149",
+              "has": [
+                "_execute(copy, deadline.Token)"
+              ],
+              "leads": "ExecuteAsync",
+              "why": "a delegate: the dispatcher made over a process transport binds it to that transport's ExecuteAsync in its constructor (line 24)"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:73",
+              "has": [
+                "ExecuteAsync(TmuxCommandRequest.Single(arguments)"
               ],
               "calls": "ExecuteAsync"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
               "has": [
-                "_launcher.Start("
+                "_launcher.Start(startInfo)"
               ],
-              "calls": "Start"
+              "calls": "Start",
+              "on": "SystemProcessLauncher"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
@@ -6241,16 +7281,40 @@
             {
               "at": "src/LibTmux/Options/TmuxOptions.cs:311",
               "has": [
-                "ExecuteAsync"
+                ".ExecuteAsync(arguments, cancellationToken)"
+              ],
+              "calls": "ExecuteAsync",
+              "on": "TmuxCommandDispatcher"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:122",
+              "has": [
+                "ExecuteWithinAsync(arguments, _context?.CommandTimeout"
+              ],
+              "calls": "ExecuteWithinAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:149",
+              "has": [
+                "_execute(copy, deadline.Token)"
+              ],
+              "leads": "ExecuteAsync",
+              "why": "a delegate: the dispatcher made over a process transport binds it to that transport's ExecuteAsync in its constructor (line 24)"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:73",
+              "has": [
+                "ExecuteAsync(TmuxCommandRequest.Single(arguments)"
               ],
               "calls": "ExecuteAsync"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
               "has": [
-                "_launcher.Start("
+                "_launcher.Start(startInfo)"
               ],
-              "calls": "Start"
+              "calls": "Start",
+              "on": "SystemProcessLauncher"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
@@ -6282,16 +7346,40 @@
             {
               "at": "src/LibTmux/Pane.Topology.cs:576",
               "has": [
-                "ExecuteAsync"
+                "_commandDispatcher.ExecuteAsync(arguments, cancellationToken)"
+              ],
+              "calls": "ExecuteAsync",
+              "on": "TmuxCommandDispatcher"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:122",
+              "has": [
+                "ExecuteWithinAsync(arguments, _context?.CommandTimeout"
+              ],
+              "calls": "ExecuteWithinAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxCommandDispatcher.cs:149",
+              "has": [
+                "_execute(copy, deadline.Token)"
+              ],
+              "leads": "ExecuteAsync",
+              "why": "a delegate: the dispatcher made over a process transport binds it to that transport's ExecuteAsync in its constructor (line 24)"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:73",
+              "has": [
+                "ExecuteAsync(TmuxCommandRequest.Single(arguments)"
               ],
               "calls": "ExecuteAsync"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
               "has": [
-                "_launcher.Start("
+                "_launcher.Start(startInfo)"
               ],
-              "calls": "Start"
+              "calls": "Start",
+              "on": "SystemProcessLauncher"
             },
             {
               "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
@@ -6403,21 +7491,29 @@
             {
               "at": "src/backend.cpp:356",
               "has": [
-                "run_scoped"
+                "run_scoped(command, std::nullopt, timeout, output_limit)"
               ],
               "calls": "run_scoped"
             },
             {
               "at": "src/backend.cpp:682",
               "has": [
-                "run_process"
+                "run_process(request)"
+              ],
+              "calls": "run_process",
+              "on": "process.cpp"
+            },
+            {
+              "at": "src/process.cpp:173",
+              "has": [
+                "run_process(request, {})"
               ],
               "calls": "run_process"
             },
             {
               "at": "src/process.cpp:195",
               "has": [
-                "launch"
+                "PosixChild::launch(request)"
               ],
               "calls": "launch"
             },
@@ -6438,28 +7534,37 @@
             {
               "at": "src/backend.hpp:91",
               "has": [
-                "run"
+                "run(command, std::nullopt, std::nullopt)"
               ],
-              "calls": "run"
+              "leads": "run",
+              "why": "a virtual call: Backend::run is pure, and SubprocessBackend::run is the override that starts the process"
             },
             {
               "at": "src/backend.cpp:356",
               "has": [
-                "run_scoped"
+                "run_scoped(command, std::nullopt, timeout, output_limit)"
               ],
               "calls": "run_scoped"
             },
             {
               "at": "src/backend.cpp:682",
               "has": [
-                "run_process"
+                "run_process(request)"
+              ],
+              "calls": "run_process",
+              "on": "process.cpp"
+            },
+            {
+              "at": "src/process.cpp:173",
+              "has": [
+                "run_process(request, {})"
               ],
               "calls": "run_process"
             },
             {
               "at": "src/process.cpp:195",
               "has": [
-                "launch"
+                "PosixChild::launch(request)"
               ],
               "calls": "launch"
             },
@@ -6478,30 +7583,39 @@
           ],
           "reaches": [
             {
-              "at": "src/entities.cpp:83",
+              "at": "src/entities.cpp:88",
               "has": [
-                "run_in_session"
+                "backend()->run("
               ],
-              "calls": "run_in_session"
+              "leads": "run",
+              "why": "a virtual call: Backend::run is pure, and SubprocessBackend::run is the override that starts the process"
             },
             {
-              "at": "src/backend.cpp:501",
+              "at": "src/backend.cpp:356",
               "has": [
-                "run_scoped"
+                "run_scoped(command, std::nullopt, timeout, output_limit)"
               ],
               "calls": "run_scoped"
             },
             {
               "at": "src/backend.cpp:682",
               "has": [
-                "run_process"
+                "run_process(request)"
+              ],
+              "calls": "run_process",
+              "on": "process.cpp"
+            },
+            {
+              "at": "src/process.cpp:173",
+              "has": [
+                "run_process(request, {})"
               ],
               "calls": "run_process"
             },
             {
               "at": "src/process.cpp:195",
               "has": [
-                "launch"
+                "PosixChild::launch(request)"
               ],
               "calls": "launch"
             },
@@ -6529,35 +7643,44 @@
             {
               "at": "src/acquire.hpp:193",
               "has": [
-                "take_in_session"
+                "Snapshot::take_in_session("
               ],
               "calls": "take_in_session"
             },
             {
               "at": "src/snapshot.cpp:68",
               "has": [
-                "run"
+                "backend->run(request, timeout, output_limit)"
               ],
-              "calls": "run"
+              "leads": "run",
+              "why": "a virtual call: Backend::run is pure, and SubprocessBackend::run is the override that starts the process"
             },
             {
               "at": "src/backend.cpp:356",
               "has": [
-                "run_scoped"
+                "run_scoped(command, std::nullopt, timeout, output_limit)"
               ],
               "calls": "run_scoped"
             },
             {
               "at": "src/backend.cpp:682",
               "has": [
-                "run_process"
+                "run_process(request)"
+              ],
+              "calls": "run_process",
+              "on": "process.cpp"
+            },
+            {
+              "at": "src/process.cpp:173",
+              "has": [
+                "run_process(request, {})"
               ],
               "calls": "run_process"
             },
             {
               "at": "src/process.cpp:195",
               "has": [
-                "launch"
+                "PosixChild::launch(request)"
               ],
               "calls": "launch"
             },
@@ -6585,28 +7708,44 @@
             {
               "at": "src/server.cpp:1365",
               "has": [
-                "run"
+                "run(request)"
               ],
               "calls": "run"
             },
             {
+              "at": "src/server.cpp:574",
+              "has": [
+                "backend_->run("
+              ],
+              "leads": "run",
+              "why": "a virtual call: Backend::run is pure, and SubprocessBackend::run is the override that starts the process"
+            },
+            {
               "at": "src/backend.cpp:356",
               "has": [
-                "run_scoped"
+                "run_scoped(command, std::nullopt, timeout, output_limit)"
               ],
               "calls": "run_scoped"
             },
             {
               "at": "src/backend.cpp:682",
               "has": [
-                "run_process"
+                "run_process(request)"
+              ],
+              "calls": "run_process",
+              "on": "process.cpp"
+            },
+            {
+              "at": "src/process.cpp:173",
+              "has": [
+                "run_process(request, {})"
               ],
               "calls": "run_process"
             },
             {
               "at": "src/process.cpp:195",
               "has": [
-                "launch"
+                "PosixChild::launch(request)"
               ],
               "calls": "launch"
             },
@@ -6634,28 +7773,44 @@
             {
               "at": "src/wait.cpp:111",
               "has": [
-                "run"
+                "wait.server.run(command, *remaining)"
               ],
               "calls": "run"
             },
             {
+              "at": "src/server.cpp:574",
+              "has": [
+                "backend_->run("
+              ],
+              "leads": "run",
+              "why": "a virtual call: Backend::run is pure, and SubprocessBackend::run is the override that starts the process"
+            },
+            {
               "at": "src/backend.cpp:356",
               "has": [
-                "run_scoped"
+                "run_scoped(command, std::nullopt, timeout, output_limit)"
               ],
               "calls": "run_scoped"
             },
             {
               "at": "src/backend.cpp:682",
               "has": [
-                "run_process"
+                "run_process(request)"
+              ],
+              "calls": "run_process",
+              "on": "process.cpp"
+            },
+            {
+              "at": "src/process.cpp:173",
+              "has": [
+                "run_process(request, {})"
               ],
               "calls": "run_process"
             },
             {
               "at": "src/process.cpp:195",
               "has": [
-                "launch"
+                "PosixChild::launch(request)"
               ],
               "calls": "launch"
             },
@@ -6683,35 +7838,44 @@
             {
               "at": "src/acquire.hpp:231",
               "has": [
-                "take_in_session"
+                "Snapshot::take_in_session("
               ],
               "calls": "take_in_session"
             },
             {
               "at": "src/snapshot.cpp:68",
               "has": [
-                "run"
+                "backend->run(request, timeout, output_limit)"
               ],
-              "calls": "run"
+              "leads": "run",
+              "why": "a virtual call: Backend::run is pure, and SubprocessBackend::run is the override that starts the process"
             },
             {
               "at": "src/backend.cpp:356",
               "has": [
-                "run_scoped"
+                "run_scoped(command, std::nullopt, timeout, output_limit)"
               ],
               "calls": "run_scoped"
             },
             {
               "at": "src/backend.cpp:682",
               "has": [
-                "run_process"
+                "run_process(request)"
+              ],
+              "calls": "run_process",
+              "on": "process.cpp"
+            },
+            {
+              "at": "src/process.cpp:173",
+              "has": [
+                "run_process(request, {})"
               ],
               "calls": "run_process"
             },
             {
               "at": "src/process.cpp:195",
               "has": [
-                "launch"
+                "PosixChild::launch(request)"
               ],
               "calls": "launch"
             },
@@ -6767,9 +7931,32 @@
             {
               "at": "Sources/LibTmux/Mutations.swift:129",
               "has": [
-                "run"
+                "run(command)"
               ],
               "calls": "run"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:132",
+              "has": [
+                "run(rawArguments: command.argumentVector)"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:137",
+              "has": [
+                "runtime.run(rawArguments: rawArguments)"
+              ],
+              "calls": "run",
+              "on": "ServerRuntime"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:462",
+              "has": [
+                "transport.run("
+              ],
+              "leads": "run",
+              "why": "a call through the ProcessTransport protocol; SubprocessTransport is the transport the library ships"
             },
             {
               "at": "Sources/LibTmux/Transport.swift:72",
@@ -6788,16 +7975,32 @@
             {
               "at": "Sources/LibTmux/Mutations.swift:139",
               "has": [
-                "runGuarded("
+                "runGuarded(command, by: values)"
               ],
               "calls": "runGuarded"
             },
             {
               "at": "Sources/LibTmux/GuardedRequest.swift:34",
               "has": [
-                "run"
+                "run(rawArguments: request.commands.argumentVector)"
               ],
               "calls": "run"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:137",
+              "has": [
+                "runtime.run(rawArguments: rawArguments)"
+              ],
+              "calls": "run",
+              "on": "ServerRuntime"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:462",
+              "has": [
+                "transport.run("
+              ],
+              "leads": "run",
+              "why": "a call through the ProcessTransport protocol; SubprocessTransport is the transport the library ships"
             },
             {
               "at": "Sources/LibTmux/Transport.swift:72",
@@ -6823,9 +8026,25 @@
             {
               "at": "Sources/LibTmux/CommandList.swift:69",
               "has": [
-                "run"
+                "run(rawArguments: list.argumentVector)"
               ],
               "calls": "run"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:137",
+              "has": [
+                "runtime.run(rawArguments: rawArguments)"
+              ],
+              "calls": "run",
+              "on": "ServerRuntime"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:462",
+              "has": [
+                "transport.run("
+              ],
+              "leads": "run",
+              "why": "a call through the ProcessTransport protocol; SubprocessTransport is the transport the library ships"
             },
             {
               "at": "Sources/LibTmux/Transport.swift:72",
@@ -6844,9 +8063,25 @@
             {
               "at": "Sources/LibTmux/Server.swift:132",
               "has": [
-                "run"
+                "run(rawArguments: command.argumentVector)"
               ],
               "calls": "run"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:137",
+              "has": [
+                "runtime.run(rawArguments: rawArguments)"
+              ],
+              "calls": "run",
+              "on": "ServerRuntime"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:462",
+              "has": [
+                "transport.run("
+              ],
+              "leads": "run",
+              "why": "a call through the ProcessTransport protocol; SubprocessTransport is the transport the library ships"
             },
             {
               "at": "Sources/LibTmux/Transport.swift:72",
@@ -6865,9 +8100,18 @@
             {
               "at": "Sources/LibTmux/Server.swift:137",
               "has": [
-                "run"
+                "runtime.run(rawArguments: rawArguments)"
               ],
-              "calls": "run"
+              "calls": "run",
+              "on": "ServerRuntime"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:462",
+              "has": [
+                "transport.run("
+              ],
+              "leads": "run",
+              "why": "a call through the ProcessTransport protocol; SubprocessTransport is the transport the library ships"
             },
             {
               "at": "Sources/LibTmux/Transport.swift:72",
@@ -6893,9 +8137,32 @@
             {
               "at": "Sources/LibTmux/Options.swift:294",
               "has": [
-                "run"
+                "run(command)"
               ],
               "calls": "run"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:132",
+              "has": [
+                "run(rawArguments: command.argumentVector)"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:137",
+              "has": [
+                "runtime.run(rawArguments: rawArguments)"
+              ],
+              "calls": "run",
+              "on": "ServerRuntime"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:462",
+              "has": [
+                "transport.run("
+              ],
+              "leads": "run",
+              "why": "a call through the ProcessTransport protocol; SubprocessTransport is the transport the library ships"
             },
             {
               "at": "Sources/LibTmux/Transport.swift:72",
@@ -6921,9 +8188,25 @@
             {
               "at": "Sources/LibTmux/Server.swift:372",
               "has": [
-                "run"
+                "run(rawArguments: command.argumentVector)"
               ],
               "calls": "run"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:137",
+              "has": [
+                "runtime.run(rawArguments: rawArguments)"
+              ],
+              "calls": "run",
+              "on": "ServerRuntime"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:462",
+              "has": [
+                "transport.run("
+              ],
+              "leads": "run",
+              "why": "a call through the ProcessTransport protocol; SubprocessTransport is the transport the library ships"
             },
             {
               "at": "Sources/LibTmux/Transport.swift:72",
@@ -6949,9 +8232,18 @@
             {
               "at": "Sources/LibTmux/Server.swift:168",
               "has": [
-                "run"
+                "runtime.run(rawArguments: rawArguments)"
               ],
-              "calls": "run"
+              "calls": "run",
+              "on": "ServerRuntime"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:462",
+              "has": [
+                "transport.run("
+              ],
+              "leads": "run",
+              "why": "a call through the ProcessTransport protocol; SubprocessTransport is the transport the library ships"
             },
             {
               "at": "Sources/LibTmux/Transport.swift:72",
@@ -6977,9 +8269,25 @@
             {
               "at": "Sources/LibTmux/GuardedRequest.swift:34",
               "has": [
-                "run"
+                "run(rawArguments: request.commands.argumentVector)"
               ],
               "calls": "run"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:137",
+              "has": [
+                "runtime.run(rawArguments: rawArguments)"
+              ],
+              "calls": "run",
+              "on": "ServerRuntime"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:462",
+              "has": [
+                "transport.run("
+              ],
+              "leads": "run",
+              "why": "a call through the ProcessTransport protocol; SubprocessTransport is the transport the library ships"
             },
             {
               "at": "Sources/LibTmux/Transport.swift:72",
@@ -7021,7 +8329,8 @@
               "has": [
                 "write("
               ],
-              "leads": "write"
+              "leads": "write",
+              "why": "write is a closure the session keeps from when it was made, and the connection gives it the non-blocking line writer"
             },
             {
               "at": "Sources/LibTmux/NonblockingLineWriter.swift:42",
@@ -7054,9 +8363,18 @@
             {
               "at": "Sources/LibTmux/Server.swift:237",
               "has": [
-                "run"
+                "runtime.run("
               ],
-              "calls": "run"
+              "calls": "run",
+              "on": "ServerRuntime"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:462",
+              "has": [
+                "transport.run("
+              ],
+              "leads": "run",
+              "why": "a call through the ProcessTransport protocol; SubprocessTransport is the transport the library ships"
             },
             {
               "at": "Sources/LibTmux/Transport.swift:72",
@@ -7082,9 +8400,18 @@
             {
               "at": "Sources/LibTmux/Server.swift:175",
               "has": [
-                "run"
+                "runtime.run("
               ],
-              "calls": "run"
+              "calls": "run",
+              "on": "ServerRuntime"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:462",
+              "has": [
+                "transport.run("
+              ],
+              "leads": "run",
+              "why": "a call through the ProcessTransport protocol; SubprocessTransport is the transport the library ships"
             },
             {
               "at": "Sources/LibTmux/Transport.swift:72",
@@ -7110,16 +8437,32 @@
             {
               "at": "Sources/LibTmux/Creation.swift:346",
               "has": [
-                "runGuarded"
+                "runGuarded("
               ],
               "calls": "runGuarded"
             },
             {
               "at": "Sources/LibTmux/GuardedRequest.swift:34",
               "has": [
-                "run"
+                "run(rawArguments: request.commands.argumentVector)"
               ],
               "calls": "run"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:137",
+              "has": [
+                "runtime.run(rawArguments: rawArguments)"
+              ],
+              "calls": "run",
+              "on": "ServerRuntime"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:462",
+              "has": [
+                "transport.run("
+              ],
+              "leads": "run",
+              "why": "a call through the ProcessTransport protocol; SubprocessTransport is the transport the library ships"
             },
             {
               "at": "Sources/LibTmux/Transport.swift:72",
@@ -7145,9 +8488,32 @@
             {
               "at": "Sources/LibTmux/Creation.swift:330",
               "has": [
-                "run"
+                "run(command)"
               ],
               "calls": "run"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:132",
+              "has": [
+                "run(rawArguments: command.argumentVector)"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:137",
+              "has": [
+                "runtime.run(rawArguments: rawArguments)"
+              ],
+              "calls": "run",
+              "on": "ServerRuntime"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:462",
+              "has": [
+                "transport.run("
+              ],
+              "leads": "run",
+              "why": "a call through the ProcessTransport protocol; SubprocessTransport is the transport the library ships"
             },
             {
               "at": "Sources/LibTmux/Transport.swift:72",
@@ -7173,9 +8539,32 @@
             {
               "at": "Sources/LibTmux/FilteredListings.swift:125",
               "has": [
-                "run"
+                "run(command)"
               ],
               "calls": "run"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:132",
+              "has": [
+                "run(rawArguments: command.argumentVector)"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:137",
+              "has": [
+                "runtime.run(rawArguments: rawArguments)"
+              ],
+              "calls": "run",
+              "on": "ServerRuntime"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:462",
+              "has": [
+                "transport.run("
+              ],
+              "leads": "run",
+              "why": "a call through the ProcessTransport protocol; SubprocessTransport is the transport the library ships"
             },
             {
               "at": "Sources/LibTmux/Transport.swift:72",

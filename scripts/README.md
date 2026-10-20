@@ -185,13 +185,22 @@ make a command value: `Command::new`, `TmuxCommand(...)`). A dispatching call is
 a name, and a scan reads every call of that name as a send, so each definition a
 rule cites must reach a transport: the point where the library starts the tmux
 process or writes the command to a control client (`TRANSPORT` in
-`lib/tmux-usage-dispatch.mjs`). The rule cites the chain, one line per hop;
-a hop either calls the next function, which the scan has read, or leads to it
-in a way the scan does not follow (a command put on a queue that another thread
-writes from, a Ruby method called by its bare name), and every hop is read back
-against the pinned source. A function that shares a name with a dispatcher and
-sends nothing (a serializer called `list`, a log helper called `run`) is not one,
-and a rule that cites it fails for citing no chain to a transport.
+`lib/tmux-usage-dispatch.mjs`). The rule cites the chain, one line per hop, and
+every hop is read back against the pinned source. A hop calls the next function
+(`calls`), and the call on its line is resolved as a derivation resolves a call:
+by what it is made on, and among the overloads of one type by the arguments it
+passes (their number, and for Swift their labels), so `cmd(argv)` is not
+`cmd(snapshot, argv)` and `span.run(...)` is not the `run` that spawns. A call
+made on a field that holds a handle the scan cannot type (`self.executor.execute`,
+`_dispatcher.ExecuteAsync`) says what it holds in `on`, which must be the type of
+the function the chain goes on in, and which the call's own receiver must not
+contradict; a free function is named by its file and a Julia method by the type of
+its first argument. A hop that is not a call the scan can resolve (a trait object,
+a delegate, a command put on a queue that another thread writes from, a Ruby
+method called by its bare name) is a `leads`, and says why in `why`. A function
+that shares a name with a dispatcher and sends nothing (a serializer called
+`list`, a log helper called `run`) is not one, and a rule that cites it fails for
+citing no chain to a transport.
 
 A dispatching call may take an argument that only names the command for a
 failure message (`listing::mutate(core, "find-window", command)`). A rule lists
@@ -265,7 +274,10 @@ negative script seeds a rule that is wrong:
   A send that is an alternative of the method's own purpose and that only
   some arguments reach (`selectWindow("next")` sending `next-window`, `new_session`
   killing an existing session when `kill_session` is set) is a claim that says the
-  condition in `when`; `conditional: true` makes the claim fail without one.
+  condition in `when`; `conditional: true` makes the claim fail without one. A send made on the way to
+  what the method is for, such as a read of the target before the keys go to it, is
+  `incidental`: it is on the method's page, and the command's pages do not list the
+  method for it.
 - `forwarders.json`: the wrappers that stand on a core library, Kotlin and
   Scala on Java, F# and the PowerShell cmdlets on C#. A wrapper that calls a
   core method that sends is credited at the core's scope, with both hops as
@@ -289,9 +301,18 @@ negative script seeds a rule that is wrong:
   entry that already exists (a scanned or reviewed one) with a `when` and the
   lines that show the condition, such as `Pane.sendKeys` asking `list-panes` only
   when the pane is synchronized. One that qualifies no entry has gone stale and
-  fails. Julia, whose generic functions take several receiver types, gives the
-  entry that only one method sends a `when` that names the receiver (`on a
-  Server`), so that no method is credited with another's sends.
+  fails. Julia's generic functions take several receiver types, and a symbol is
+  credited with a send only for the methods that make it: the derivation records,
+  for each entry, which methods of the function send it, which only reach it
+  through more calls than a symbol is credited across (`deep`, and the entry
+  stands for them), and which reach it by no call at all (`lacks`). A send that
+  every method makes takes no qualifier. One that some methods demonstrably do not
+  make says `on a Server` or `on a ControlConnection` in a condition with a
+  `receiver`, which fails unless the methods that send it take that type, another
+  method is shown not to reach it, and the condition cites the body of one of each
+  (`through`: the line the method ends on), because a signature line names a type
+  and shows neither. A method that may reach it only through a call the scan does
+  not resolve leaves the question open, and fails until it is settled by a claim.
 - `not-senders.json`: why a public method whose own name carries a command has
   no entry for it, one of `builds` (it builds a command for a caller, or only
   holds one), `other-command` (it sends a different command, or runs it only
@@ -304,7 +325,16 @@ negative script seeds a rule that is wrong:
 A `when` is at most eight words on one line, because the usage table shows it
 beside the method (a muted qualifier on the chip, and after the command link on
 a method page); a longer reason belongs on a page. An entry that is conditional
-cannot be rendered without it.
+cannot be rendered without it. When a command is sent at two scopes under two
+conditions, each scope says its own beside it; one condition that every scope
+shares follows the command. Writing a `when` for a condition that is always true
+of the method (`Hooks#unset` sending `set-hook` "on a Hooks") qualifies nothing.
+
+The same rule applies to a tmux release. A send made on every supported release
+but some says which in `when` (`Shell.capturing` refuses on 3.3a and 3.4: "except
+on tmux 3.3a and 3.4"). A send made on one release only, such as the rename that
+`breakOut` adds on tmux 3.7 to give the window the name that release ignores, is
+an exclusion, because it is not what a call does on the others.
 
 Go's wrappers that call a method of another type on a handle named for it
 (`p.server.X()`) are credited with that method's entries, as a wrapper on a core

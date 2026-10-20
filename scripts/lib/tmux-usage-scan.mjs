@@ -220,10 +220,66 @@ const ownerName = (grammar, node) => {
 
 const row = (node) => node.startPosition.row + 1
 
-/** Note a call once per name, at its first line, and remember every object it was made on. */
-function recordCall(fn, name, receiver, line) {
+/** The grammars of languages that let several functions of one type share a name and tell them apart by their arguments. */
+const OVERLOADING = new Set(['java', 'csharp', 'cpp', 'swift'])
+
+const notComment = (child) => !/comment/.test(child.type)
+
+/**
+ * What a call passes: how many arguments, and for Swift the label of each (`_` for none), which is how `run(rawArguments:)`
+ * is told from `run(_:)`.
+ * @returns {{ count: number, labels?: string[] } | undefined}
+ */
+function callShape(grammar, node) {
+  if (!OVERLOADING.has(grammar)) return undefined
+  if (grammar === 'swift') {
+    const suffix = node.namedChildren.find((child) => child.type === 'call_suffix')
+    const values = suffix?.namedChildren.find((child) => child.type === 'value_arguments')
+    if (!values) return undefined
+    const labels = values.namedChildren.filter((child) => child.type === 'value_argument')
+      .map((argument) => argument.namedChildren.find((child) => child.type === 'value_argument_label')?.text ?? '_')
+    // A trailing closure is one more argument without a label.
+    if (suffix.namedChildren.some((child) => /lambda/.test(child.type))) labels.push('_')
+    return { count: labels.length, labels }
+  }
+  const args = node.childForFieldName('arguments')
+  return args ? { count: args.namedChildren.filter(notComment).length } : undefined
+}
+
+/**
+ * What a function takes: the fewest and the most arguments a call may pass, and for Swift the external label of each parameter
+ * with whether it has a default.
+ * @returns {{ min: number, max: number, labels?: { label: string, optional: boolean }[] } | undefined}
+ */
+function functionShape(grammar, node) {
+  if (!OVERLOADING.has(grammar)) return undefined
+  if (grammar === 'swift') {
+    const labels = []
+    node.children.forEach((child, index) => {
+      if (child.type !== 'parameter') return
+      labels.push({ label: child.namedChildren.find((part) => part.type === 'simple_identifier')?.text ?? '_', optional: node.children[index + 1]?.type === '=' })
+    })
+    return { min: labels.filter((item) => !item.optional).length, max: labels.length, labels }
+  }
+  let list
+  if (grammar === 'cpp') {
+    let declarator = node.childForFieldName('declarator')
+    while (declarator && declarator.type !== 'function_declarator') declarator = declarator.childForFieldName('declarator')
+    list = declarator?.childForFieldName('parameters')
+  } else list = node.childForFieldName('parameters')
+  if (!list) return undefined
+  const items = list.namedChildren.filter(notComment)
+  const variadic = items.some((item) => /spread|variadic/.test(item.type))
+  const optional = items.filter((item) => item.namedChildren.some((part) => part.type === 'equals_value_clause') || /optional/.test(item.type)).length
+  // A C++ default is written where the function is declared, which is a header that is not the definition read here.
+  return { min: grammar === 'cpp' ? 0 : items.length - optional - (variadic ? 1 : 0), max: variadic ? Infinity : items.length }
+}
+
+/** Note a call once per name, at its first line, and remember every object it was made on and the shape of each call. */
+function recordCall(fn, name, receiver, line, shape, calleeLine = line) {
   if (!fn.calls.has(name)) fn.calls.set(name, line)
   if (receiver) fn.receivers.set(name, new Set([...(fn.receivers.get(name) ?? []), receiver]))
+  ;(fn.callList ??= []).push({ name, receiver, line, calleeLine, ...(shape ? { shape } : {}) })
 }
 
 /**
@@ -482,6 +538,38 @@ function argumentNames(node) {
 }
 
 /**
+ * The Swift grammar predates typed throws and the `package` access level; either is an error that takes the type around it, and
+ * every method in it loses its owner. A word of the same length that the grammar reads keeps every line and column.
+ */
+export function withoutNewSwift(text) {
+  return text
+    .replace(/\bthrows[ \t]*\([ \t]*[\w.]+[ \t]*\)/g, (match) => 'throws'.padEnd(match.length))
+    .replace(/\bpackage(?=\s+(?:static|final|func|var|let|init|struct|class|enum|actor|protocol|extension|typealias|subscript|nonisolated|mutating|override|convenience|required|lazy|indirect|import|associatedtype)\b)/g, 'public ')
+}
+
+const CS_ARGUMENTS = String.raw`(?:"(?:[^"\\]|\\.)*"|[^()"]|\((?:"(?:[^"\\]|\\.)*"|[^()"])*\))*`
+const CS_HEADER = String.raw`\b(?:class|struct|record)(?:\s+(?:class|struct))?\s+\w+(?:<[^>]*>)?`
+
+/**
+ * The C# grammar predates primary constructors: `sealed class Failure(Task operation) : Exception("...", operation)` is an error that
+ * takes the rest of the file's classes with it, so every method after it loses its owner. Blanking the parameter list, and the
+ * arguments a base type is constructed with, keeps every line and column and leaves the declaration the grammar reads.
+ */
+export function withoutPrimaryConstructors(text) {
+  const blank = []
+  for (const header of text.matchAll(new RegExp(`(${CS_HEADER})\\s*\\((${CS_ARGUMENTS})\\)(\\s*:\\s*[A-Za-z_][\\w.<>]*)?`, 'g'))) {
+    blank.push([header.index + header[1].length + header[0].slice(header[1].length).indexOf('('), header.index + header[1].length + header[0].slice(header[1].length).indexOf('(') + header[2].length + 2])
+    const after = header.index + header[0].length
+    const constructed = header[3] && new RegExp(`^\\s*(\\(${CS_ARGUMENTS}\\))`).exec(text.slice(after))
+    if (constructed) blank.push([after + constructed[0].length - constructed[1].length, after + constructed[0].length])
+  }
+  if (!blank.length) return text
+  const out = [...text]
+  for (const [from, to] of blank) for (let at = from; at < to; at++) if (out[at] !== '\n' && out[at] !== '\r') out[at] = ' '
+  return out.join('')
+}
+
+/**
  * Every named function of a file with the command sites and calls inside it.
  *
  * With `dispatch`, each site also says whether it is sent: `dispatch: { line, name }` when the literal is an
@@ -516,7 +604,7 @@ export async function scanSource({ grammar, text, commands, known, dispatch, bui
   if (grammar === 'fsharp') return scanFSharp(text)
   const parser = await parserFor(grammar)
   // The Swift grammar predates typed throws; blanking the type keeps every line and column.
-  const tree = parser.parse(grammar === 'swift' ? text.replace(/\bthrows[ \t]*\([ \t]*[\w.]+[ \t]*\)/g, (match) => 'throws'.padEnd(match.length)) : text)
+  const tree = parser.parse(grammar === 'swift' ? withoutNewSwift(text) : grammar === 'csharp' ? withoutPrimaryConstructors(text) : text)
   const functions = []
   const types = []
   const orphans = []
@@ -646,6 +734,7 @@ export async function scanSource({ grammar, text, commands, known, dispatch, bui
       const fn = {
         name, owner: owner ?? owners.filter(Boolean).at(-1), start: row(wrapper), nameLine: row(node.childForFieldName('name') ?? node),
         end: node.endPosition.row + 1, kind: node.type, sites: [], calls: new Map(), receivers: new Map(),
+        ...(functionShape(grammar, node) ? { shape: functionShape(grammar, node) } : {}),
         // A namespace opened by a macro is invisible here, so an empty chain is unknown, not global.
         ...([...namespaces.filter(Boolean), ...scope].length ? { namespace: [...namespaces.filter(Boolean), ...scope].join('::') } : {}),
       }
@@ -671,7 +760,7 @@ export async function scanSource({ grammar, text, commands, known, dispatch, bui
     if (CALL.has(node.type) && stack.length) {
       const callee = calleeOf(grammar, node)
       if (callee?.name) {
-        recordCall(stack.at(-1), callee.name, callee.receiver, row(node))
+        recordCall(stack.at(-1), callee.name, callee.receiver, row(node), callShape(grammar, node), calleeRow(node))
         if (dispatch) {
           const callDepths = (stack.at(-1).callDepths ??= new Map())
           callDepths.set(callee.name, Math.min(callDepths.get(callee.name) ?? Infinity, nesting(grammar, node)))

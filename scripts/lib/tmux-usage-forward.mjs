@@ -10,7 +10,7 @@
 import { bareName, definitionsOf } from './tmux-usage-derive.mjs'
 
 /**
- * @typedef {{ symbol: string, command: string, scope: string | null, evidence: string[], reviewed?: boolean, forwardable?: boolean }} CoreEntry
+ * @typedef {{ symbol: string, command: string, scope: string | null, evidence: string[], reviewed?: boolean, forwardable?: boolean, incidental?: boolean }} CoreEntry
  * @typedef {{ id: string, name: string, parentName?: string, file: string, line: number }} WrapperSymbol
  */
 
@@ -44,7 +44,7 @@ export function forwardUsage({ parent, functions, types, symbols, core, generate
     const key = `${symbol.id}\0${entry.command}\0${entry.scope}`
     const result = {
       symbol: symbol.id, command: entry.command, scope: entry.scope, evidence, hops: 1, ...(entry.when ? { when: entry.when } : {}),
-      via: { port: parent, symbol: entry.symbol, revision: core.revision, evidence: entry.evidence, ...(entry.reviewed ? { reviewed: true } : {}) },
+      via: { port: parent, symbol: entry.symbol, revision: core.revision, evidence: entry.evidence, ...(entry.reviewed ? { reviewed: true } : {}), ...(entry.incidental ? { incidental: true } : {}) },
     }
     if (!entries.has(key)) entries.set(key, result)
     forwarding.add(symbol.id)

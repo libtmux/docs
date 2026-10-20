@@ -23,10 +23,14 @@
  *
  * It then seeds the reviewed rules (`--rules`): a dispatcher whose cited chain stops short of
  * a transport, names a line that does not hold its text, skips a function, or has no chain at
- * all; a label that names a parameter nothing takes, or is dropped, so that a literal the call
+ * all; a hop that calls a field the scan cannot type and does not say what it holds, one that
+ * leads on and does not say why, one that goes to the overload the call's arguments do not fit;
+ * a label that names a parameter nothing takes, or is dropped, so that a literal the call
  * only reports a failure under is read as the command; a guard that builds no if-shell, a
  * conditional guard or claim that does not say when, a condition that qualifies no entry, and a
- * guard dropped, so that the if-shell it wrapped is recorded in place of the command.
+ * guard dropped, so that the if-shell it wrapped is recorded in place of the command; and for a
+ * generic function, a send some methods make with no condition that says so, a receiver
+ * condition that cites a signature in place of the bodies, and one on a send every method makes.
  * Each is refused, and the committed rules beside them are accepted.
  */
 import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
@@ -231,7 +235,23 @@ const BAD_RULES = [
   ['a chain hop whose line does not hold its text', 'rs', 'dispatchers.json', (document) => { dispatcher(document, 'rs', 'send').evidence[0].reaches[0].has = ['.sendx('] },
     /rs: dispatcher send at crates\/libtmux\/src\/control.rs:585: hop crates\/libtmux\/src\/control.rs:586 does not contain "\.sendx\("/],
   ['a chain that skips the function between two hops', 'rs', 'dispatchers.json', (document) => { dispatcher(document, 'rs', 'dispatch').evidence[0].reaches.splice(1, 1) },
-    /rs: dispatcher dispatch at crates\/libtmux\/src\/plan\/run.rs:443: hop crates\/libtmux\/src\/plan\/run.rs:461 leads to cmd, but crates\/libtmux\/src\/internal\/control_executor.rs:37 is not a line of it/],
+    /rs: dispatcher dispatch at crates\/libtmux\/src\/plan\/run.rs:443: hop crates\/libtmux\/src\/plan\/run.rs:461 leads to cmd, but crates\/libtmux\/src\/internal\/core.rs:438 is not a line of it/],
+  ['a chain hop on a field whose type it does not say', 'rs', 'dispatchers.json', (document) => { delete dispatcher(document, 'rs', 'send').evidence[0].reaches[0].on },
+    /rs: dispatcher send at crates\/libtmux\/src\/control.rs:585: hop crates\/libtmux\/src\/control.rs:586 is a call of sender\.send\(\), which resolves to no function the scan has read, and not to ControlSender\.send/],
+  ['a chain hop that leads somewhere and does not say why', 'rs', 'dispatchers.json', (document) => { delete dispatcher(document, 'rs', 'send').evidence[0].reaches.find((hop) => hop.leads).why },
+    /rs: dispatcher send at crates\/libtmux\/src\/control.rs:585: hop crates\/libtmux\/src\/control.rs:803 leads to serve and says nothing about why the scan cannot follow it/],
+  ['a chain that goes to the overload the arguments of the call do not fit', 'java', 'dispatchers.json', (document) => {
+    const run = dispatcher(document, 'java', 'run').evidence.find((item) => item.at.endsWith('Server.java:1221'))
+    run.reaches = [run.reaches[0], { ...run.reaches.find((hop) => hop.at.endsWith('Server.java:1251')), at: run.reaches[0].at.replace(':1222', ':1230'), has: ['fence.guarded(snapshot'] }]
+  }, /java: dispatcher run at .*Server\.java:1221: hop .*Server\.java:1222 is a call of cmd\(1\), which resolves to Server\.cmd at .*Server\.java:765 and Server\.cmd at .*Server\.java:771, and not to Server\.cmd at .*Server\.java:1229/],
+  ['a julia send some methods make, with no condition that says so', 'julia', 'conditions.json', (document) => { document.conditions = document.conditions.filter((item) => !(item.symbol === 'LibTmux.capture_bytes' && item.command === 'list-buffers')) },
+    /julia: LibTmux\.capture_bytes list-buffers null: only the ControlConnection methods send it, and 1 other method such as src\/pane_io\.jl:64 do not, so it needs a condition that says when/],
+  ['a julia receiver condition that cites a signature in place of the bodies', 'julia', 'conditions.json', (document) => {
+    for (const item of document.conditions) if (item.symbol === 'LibTmux.get_environment') for (const line of item.evidence) delete line.through
+  }, /julia: LibTmux\.get_environment show-environment null: condition cites the body of no method that sends it/],
+  ['a julia receiver condition on a send that every method makes', 'julia', 'conditions.json', (document) => {
+    document.conditions.push({ port: 'julia', symbol: 'LibTmux.select_pane', command: 'select-pane', scope: null, when: 'on a Server', receiver: 'Server', evidence: [{ at: 'src/operations.jl:372', through: 375, has: ['function select_pane('] }] })
+  }, /julia: LibTmux\.select_pane select-pane null: condition says on a Server, but no method of the function is shown not to send it/],
   ['a label that names a parameter nothing takes', 'rs', 'dispatchers.json', (document) => { dispatcher(document, 'rs', 'mutate').labels[0].name = 'nope' },
     /rs: dispatcher mutate: no cited definition takes a parameter named nope/],
   ['a label dropped, so a literal that only reports a failure is read as the command', 'rs', 'dispatchers.json', (document) => { delete dispatcher(document, 'rs', 'mutate').labels },

@@ -146,6 +146,8 @@ export function scanJulia(text, { commands, known, dispatch }) {
       let after = close + 1
       if (tokens[after]?.v === 'where') while (tokens[after] && tokens[after].v !== '=' && tokens[after].line === tokens[close].line) after++
       if (tokens[after]?.v !== '=' || tokens[after + 1]?.v === '=') continue
+      // The arguments can span lines, and the body starts where the `=` is.
+      end = Math.max(line, tokens[after].line)
       while (lines[end] !== undefined && lines[end].trim() && indentOf(lines, end + 1) > indent) end++
     } else {
       for (let next = line + 1; next <= lines.length; next++) {
@@ -158,7 +160,9 @@ export function scanJulia(text, { commands, known, dispatch }) {
     const above = tokens.findLast((token) => token.line < line)
     const docEnd = above ? above.line + (above.v.match(/\n/g)?.length ?? 0) : 0
     if (above?.doc && !lines.slice(docEnd, line - 1).some((value) => value.trim())) start = above.line
-    functions.push({ name: path.at(-1), start, nameLine: line, end, kind: 'function', sites: [], calls: new Map(), receivers: new Map() })
+    // A method of a generic function is told apart by the type of its first argument: `server::Server`, `connection::ControlConnection{T}`.
+    const selfType = tokens[at + 1]?.t === 'id' && tokens[at + 2]?.v === ':' && tokens[at + 3]?.v === ':' && tokens[at + 4]?.t === 'id' ? tokens[at + 4].v : undefined
+    functions.push({ name: path.at(-1), start, nameLine: line, end, kind: 'function', sites: [], calls: new Map(), receivers: new Map(), ...(selfType ? { receiverType: selfType } : {}) })
   }
   /**
    * A table loop defines one function per row: `for (op, command, Ref) in ((:kill_pane, "kill-pane", PaneRef), ...)`
@@ -226,10 +230,20 @@ export function scanJulia(text, { commands, known, dispatch }) {
   const adjacentCall = (index) => tokens[index]?.t === 'id' && !JULIA_KEYWORDS.has(tokens[index].v) && tokens[index + 1]?.v === '(' && tokens[index + 1].line === tokens[index].line
     && tokens[index + 1].col === tokens[index].col + tokens[index].v.length
   const symbolAt = (i, ...values) => tokens[i]?.t === 'sym' && values.includes(tokens[i].v)
+  /**
+   * Whether a `?` on the line chooses this command against another one. A condition that only gates the call, `isempty(ss) ? [] : rows("list-windows")`,
+   * leaves a single command on the line and sends it when the condition holds.
+   */
+  const chosenOnLine = (index) => {
+    const line = tokens[index].line
+    if (!tokens.some((other, at) => other.line === line && symbolAt(at, '?'))) return false
+    const here = isCommand(tokens[index])
+    return tokens.some((other) => other.line === line && other !== tokens[index] && isCommand(other) && isCommand(other) !== here)
+  }
   /** A command that is compared with, or one of several a `?:` chooses between, names a command and sends nothing. */
   const chosenOrCompared = (index) => symbolAt(index - 1, '=', '!') && symbolAt(index - 2, '=', '!', '<', '>') || (symbolAt(index + 1, '=', '!') && symbolAt(index + 2, '='))
     || tokens[index - 1]?.v === 'in' || tokens[index - 1]?.v === '∈' || tokens[index + 1]?.v === 'in'
-    || tokens.some((other) => other.line === tokens[index].line && symbolAt(tokens.indexOf(other), '?'))
+    || chosenOnLine(index)
   /** The variables an `=` before the literal, in the same statement, binds it to. */
   const boundNames = (index) => {
     let depth = 0

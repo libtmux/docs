@@ -102,11 +102,14 @@
         "command": "display-message",
         "evidence": [
           "libtmux/src/main/java/io/github/libtmux/batch/Batch.java:94",
-          "libtmux/src/main/java/io/github/libtmux/batch/Batch.java:85"
+          "libtmux/src/main/java/io/github/libtmux/batch/Batch.java:85",
+          "libtmux/src/main/java/io/github/libtmux/batch/Batch.java:82"
         ],
         "forwardable": true,
+        "incidental": true,
         "reviewed": true,
-        "scope": null
+        "scope": null,
+        "when": "the batch is not empty"
       }
     ],
     "io.github.libtmux.Buffers.Buffers.delete": [
@@ -788,6 +791,19 @@
     ],
     "io.github.libtmux.Pane.Pane.sendKeys": [
       {
+        "command": "display-message",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:735",
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:737",
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:656",
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:577"
+        ],
+        "forwardable": true,
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      },
+      {
         "command": "list-panes",
         "evidence": [
           "libtmux/src/main/java/io/github/libtmux/Pane.java:667",
@@ -822,6 +838,19 @@
       }
     ],
     "io.github.libtmux.Pane.Pane.sendLiteral": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:735",
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:737",
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:656",
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:619"
+        ],
+        "forwardable": true,
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      },
       {
         "command": "list-panes",
         "evidence": [
@@ -1132,7 +1161,8 @@
         "evidence": [
           "libtmux/src/main/java/io/github/libtmux/Shell.java:55"
         ],
-        "scope": null
+        "scope": null,
+        "when": "except on tmux 3.3a and 3.4"
       }
     ],
     "io.github.libtmux.Shell.Shell.choose": [

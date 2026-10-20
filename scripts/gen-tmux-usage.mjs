@@ -32,7 +32,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { extractProject } from '../packages/api-model/src/project.ts'
 import { GRAMMARS, isLibrarySource, scanSource } from './lib/tmux-usage-scan.mjs'
-import { applyConditions, applyExclusions, conditionProblem, deriveUsage, ruleHolds, verifyClaims } from './lib/tmux-usage-derive.mjs'
+import { applyConditions, applyExclusions, conditionProblem, deriveUsage, partialProblems, ruleHolds, verifyClaims } from './lib/tmux-usage-derive.mjs'
 import { auditEvidence } from './lib/tmux-usage-audit.mjs'
 import { dispatcherProblems, guardProblems } from './lib/tmux-usage-dispatch.mjs'
 import { forwardUsage } from './lib/tmux-usage-forward.mjs'
@@ -191,7 +191,7 @@ export function portDocument(port, model, found, commands) {
   for (const entry of found) {
     ;(symbols[entry.symbol] ??= []).push({
       command: entry.command, scope: entry.scope, evidence: entry.evidence,
-      ...(entry.reviewed ? { reviewed: true } : {}), ...(entry.forwardable ? { forwardable: true } : {}), ...(entry.when ? { when: entry.when } : {}), ...(entry.via ? { via: entry.via } : {}),
+      ...(entry.reviewed ? { reviewed: true } : {}), ...(entry.forwardable ? { forwardable: true } : {}), ...(entry.incidental ? { incidental: true } : {}), ...(entry.when ? { when: entry.when } : {}), ...(entry.via ? { via: entry.via } : {}),
     })
   }
   for (const list of Object.values(symbols)) list.sort((a, b) => a.command.localeCompare(b.command) || String(a.scope).localeCompare(String(b.scope)))
@@ -505,6 +505,8 @@ export async function main() {
     passes.set(port.slug, pass)
     // A wrapper forwards what it reads from its core's entries, so the core's conditions are in place before it runs.
     failures.push(...applyConditions({ conditions: qualifiers, found, readSource: scanned.readSource }))
+    // A generic function's methods are not credited with each other's sends.
+    if (DEFINITION_OPTIONS[port.slug]?.freeFunctions) failures.push(...partialProblems(found).map((problem) => `${port.slug}: ${problem}`))
     const document = portDocument(port.slug, model, [...found.values()], commandsToRecord)
     failures.push(...sweepProblems({ port: port.slug, model, document, reviews, exclusions, report, readSource: scanned.readSource }))
     // The committed entries are the ones audited, because a check has to read what is published and not what a scan makes of it.
