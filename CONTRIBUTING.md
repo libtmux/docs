@@ -166,6 +166,19 @@ holds and requires the gate to notice, by the problem it names:
 $ node site/scripts/check-dev.mjs --badge-centring
 ```
 
+A link the page marks for a preview card must have a card to show. The preview
+check hovers the C function link of a method page, then asks for the payload of
+every marked link on four pages. It asks only for destinations the dev build
+serves: one version of each port's reference, as its build target says, so the
+Python reference that the other ports link to at `stable` is not asked for. A
+payload missing on a port the build does serve is reported, and the check fails
+if it would not report one. Both checks run in the publication audit through the
+full `check-dev.mjs` matrix, on its own source mirror and not on the assembly:
+
+```console
+$ node site/scripts/check-dev.mjs --reference-previews
+```
+
 Keep the complete assembly, all output suites, link audits, source/model
 freshness, and full browser matrix in the publication audit:
 

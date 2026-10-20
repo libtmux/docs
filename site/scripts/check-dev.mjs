@@ -5,7 +5,8 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { dev } from 'astro'
 import { chromium, firefox, webkit } from 'playwright'
-import { API_MODEL_PORTS, PORTS, productAvailable } from '../src/lib/ports.ts'
+import { API_MODEL_PORTS, PORTS, productAvailable, referenceSegment } from '../src/lib/ports.ts'
+import { buildTarget } from '../src/lib/versions.ts'
 import { checkClipboard, checkCompleteApiExamples } from './check-clipboard.mjs'
 import { checkApiAnchorArrival, checkApiExampleOwnership, checkApiNavigation, checkApiStickyHeadings, checkApiStickyHeadingsFail, checkDocumentationNavigation, checkNavigation } from './check-navigation.mjs'
 import { checkReferencePreferences, checkGlobalHeader, checkHeaderLinksFail } from './check-reference-preferences.mjs'
@@ -56,6 +57,10 @@ Object.assign(process.env, {
   LIBTMUX_DOCS_LOCALES_ROOT: '', LIBTMUX_DOCS_LOCALE: 'en', LIBTMUX_DOCS_PORT: '',
   LIBTMUX_DOCS_VERSION: 'latest', LIBTMUX_DOCS_PORT_DEFAULTS: '{"py":"stable"}',
 })
+// The one version of each port's reference this build serves: its own target, as the site's build target says it. A port's core
+// reference is a tree of its own, so a link to another version of it (the Python reference that the other ports link to at its
+// default, `stable`) names a tree this build does not contain. The routes below and the checks that ask what is served read it here.
+const MIRRORED_VERSION = buildTarget(process.env).version
 // Astro always writes root/.astro, so a separate cacheDir alone cannot isolate it.
 const source = fileURLToPath(new URL('../', import.meta.url))
 // Astro resolves external component styles against the nearest shared path.
@@ -183,7 +188,7 @@ for (const { port, symbol } of entries) {
 </DocsLayout>
 `)
 for (const { slug: port } of PORTS) {
-  const directory = join(root, `src/pages/${port}/latest/reference`)
+  const directory = join(root, `src/pages/${port}/${MIRRORED_VERSION}/reference`)
   mkdirSync(directory, { recursive: true })
   writeFileSync(join(directory, '[...slug].astro'), `---
 import Reference from '../../../reference/[...slug].astro'
@@ -225,10 +230,10 @@ import { coreApiSymbols } from '../../../../lib/product-api'
 export { GET } from '../../../[...slug].preview.json'
 export function getStaticPaths() {
   const model = API_MODELS.${port}
-  const glossary = referenceUrl(PORT_BY_SLUG.${port}, 'latest') + 'glossary/'
+  const glossary = referenceUrl(PORT_BY_SLUG.${port}, '${MIRRORED_VERSION}') + 'glossary/'
   return [{ params: { slug: 'glossary' }, props: { preview: glossaryPreview(glossary) } },
     ...coreApiSymbols(model).map((owner) => ({ params: { slug: owner.slug },
-      props: { preview: symbolPreview(model, owner, 'latest') } }))]
+      props: { preview: symbolPreview(model, owner, '${MIRRORED_VERSION}') } }))]
 }
 `)
   writeFileSync(join(directory, 'tree.json.ts'), `
@@ -237,12 +242,14 @@ export const GET = () => new Response(JSON.stringify(referenceTree('${port}')), 
   headers: { 'Content-Type': 'application/json' },
 })
 `)
-  writeFileSync(join(root, `src/pages/${port}/latest/index.astro`), `---
+  writeFileSync(join(root, `src/pages/${port}/${MIRRORED_VERSION}/index.astro`), `---
 import Home from '../../index.astro'
 ---
 <Home port="${port}" />
 `)
 }
+/** What this build serves, for a check that asks whether a link's destination is in it. */
+const servedBuild = (base) => ({ root: new URL(base).pathname.replace(/\/$/, ''), ports: PORTS, version: MIRRORED_VERSION, segment: referenceSegment('core') })
 let server, browser
 const terminate = async () => {
   await browser?.close()
@@ -803,7 +810,7 @@ try {
     await checkMentionDensity(browser, base)
     await checkChipGrowth(browser, base)
   } else if (referencePreviewsOnly) {
-    await retryReload(() => checkTmuxReferencePreviews(browser, base))
+    await retryReload(() => checkTmuxReferencePreviews(browser, base, { served: servedBuild(base) }))
   } else if (referencePreferencesOnly) {
     await retryReload(() => checkReferencePreferences(browser, base))
     await retryReload(() => checkGlobalHeader(browser, base))
@@ -881,7 +888,7 @@ try {
       .then(() => checkMentionDensity(browser, base))
       .then(() => checkChipGrowth(browser, base)))
     const blockLinks = schedule(() => retryReload(() => checkBlockLinksUndecorated(browser, base)))
-    const referencePreviews = schedule(() => retryReload(() => checkTmuxReferencePreviews(browser, base)))
+    const referencePreviews = schedule(() => retryReload(() => checkTmuxReferencePreviews(browser, base, { served: servedBuild(base) })))
     await apiAnchors
     const apiSticky = schedule(() => retryReload(() => checkApiStickyHeadings(browser, base))
       .then(() => checkApiStickyHeadingsFail(browser, base)))

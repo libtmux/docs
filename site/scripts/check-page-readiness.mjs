@@ -532,15 +532,58 @@ export async function checkBlockLinksUndecorated(browser, base, { sample = false
 }
 
 /**
+ * Whether the build under test contains the destination of a link, as far as a preview payload is concerned.
+ *
+ * A port's core reference is a tree of its own, built for one version of the port, and the build under test serves
+ * one: `version`, the one its own target names. A link to another version of a port's reference leaves for a tree this
+ * build does not contain, such as the Python reference that the other ports' pages link to at its default, `stable`
+ * (the assembly renders that one with Sphinx, and skips it where there is no checkout). Everything else is served at
+ * whatever version a link names: tmux's pages, a product's pages, the glossary.
+ *
+ * `ports`, `version` and `segment` (the part of the path that makes a page a core reference) are the site's own:
+ * `PORTS`, `buildTarget` and `referenceSegment`, so a change to what is built moves this with it.
+ *
+ * @param {string} pathname the path of the link, root included
+ * @param {{ root: string, ports: readonly { slug: string, versionedDocs: boolean }[], version: string, segment: string }} build
+ */
+export function servedByBuild(pathname, { root, ports, version, segment }) {
+  const rest = pathname.startsWith(`${root}/`) ? pathname.slice(root.length + 1) : pathname.replace(/^\//, '')
+  const parts = rest.split('/')
+  const port = ports.find((entry) => entry.slug === parts[0])
+  if (!port) return true
+  const at = port.versionedDocs ? 2 : 1
+  if (parts.slice(at, at + segment.split('/').length).join('/') !== segment) return true
+  return !port.versionedDocs || parts[1] === version
+}
+
+/**
+ * The links of `hrefs` that the build serves and that have no payload, and the ones it does not serve, which are not asked.
+ * A payload is at the path of the page with `.preview.json`, as the preview policy computes it.
+ */
+export async function payloadGaps(request, origin, hrefs, served) {
+  const missing = []
+  const skipped = []
+  for (const href of hrefs) {
+    if (served && !served(href)) { skipped.push(href); continue }
+    const response = await request.get(`${origin}${href.slice(0, -1)}.preview.json`)
+    if (!response.ok()) missing.push(`${href} answers ${response.status()}`)
+  }
+  return { missing, skipped }
+}
+
+/**
  * A link marked for a preview card has a card to show. A C function a method links to carried `data-link-preview` and
  * opened nothing, because no preview payload was served at its address. Hovering the link is what asks for the card,
- * so hover it and read the card, then ask the same of every marked link on the pages, and of one that has no payload.
+ * so hover it and read the card, then ask the same of every marked link on the pages whose destination the build
+ * serves (`served`, from `servedByBuild`; without it every destination is asked), and of one that has no payload.
  */
-export async function checkTmuxReferencePreviews(browser, base) {
+export async function checkTmuxReferencePreviews(browser, base, { served: build } = {}) {
   const context = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 1440, height: 1000 } })
   const page = await context.newPage()
   page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
   const opened = () => page.evaluate(() => document.getElementById('reference-link-preview')?.matches(':popover-open') ?? false)
+  const origin = new URL(base).origin
+  const served = build ? (href) => servedByBuild(href, build) : undefined
   try {
     await page.goto(`${base}/cxx/latest/reference/libtmux-server-panes/`, { waitUntil: 'load' })
     await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready')
@@ -553,22 +596,32 @@ export async function checkTmuxReferencePreviews(browser, base) {
     assert.equal(await page.locator('#reference-link-preview [data-preview-title]').textContent(), 'cmd_list_panes_server')
     assert.match(await page.locator('#reference-link-preview [data-preview-signature]').textContent(), /^static void cmd_list_panes_server\(struct cmd \*, struct cmdq_item \*\)$/)
     assert.match(await page.locator('#reference-link-preview [data-preview-open]').getAttribute('href'), /\/tmux\/latest\/reference\/c-function-cmd-list-panes-c-cmd_list_panes_server\/$/)
-    // Every link a page marks for a card has a payload at the address the card asks for.
+    // Every link a page marks for a card, whose destination the build serves, has a payload at the address the card asks for.
     const missing = []
-    let marked = 0
+    const skipped = new Set()
+    let asked = 0
     for (const path of ['/cxx/latest/reference/libtmux-server-panes/', '/tmux/latest/manual/list-panes/', '/tmux/latest/reference/c-function-cmd-list-panes-c-cmd_list_panes_server/', '/tmux/latest/reference/c-struct-window_pane/']) {
       await page.goto(`${base}${path}`, { waitUntil: 'load' })
       await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready')
       const hrefs = await page.evaluate(() => [...new Set([...document.querySelectorAll('a[data-link-preview]')].map((anchor) => new URL(anchor.href).pathname))])
-      marked += hrefs.length
-      for (const href of hrefs) {
-        const response = await page.request.get(`${base.replace(/\/en$/, '')}${href.slice(0, -1)}.preview.json`)
-        if (!response.ok()) missing.push(`${path}: ${href} answers ${response.status()}`)
-      }
+      const gaps = await payloadGaps(page.request, origin, hrefs, served)
+      asked += hrefs.length - gaps.skipped.length
+      for (const href of gaps.skipped) skipped.add(href)
+      missing.push(...gaps.missing.map((gap) => `${path}: ${gap}`))
     }
-    assert(marked > 3, `Only ${marked} links were marked for a card, so the pages were not measured`)
+    assert(asked > 3, `Only ${asked} links were asked for a payload, so the pages were not measured`)
     assert.deepEqual(missing, [], `A link marked for a card that has none:\n${missing.join('\n')}`)
-    // The control: a link marked for a card whose payload does not exist opens nothing, and the sweep above would name it.
+    // The controls. A payload missing on a destination the build serves is reported, and a destination it does not serve is
+    // left out and not reported, so the sweep cannot go green by skipping what it should have asked.
+    if (served) {
+      const kept = `${build.root}/${build.ports[0].slug}/${build.version}/${build.segment}/no-such-declaration/`
+      const elsewhere = build.version === 'stable' ? 'latest' : 'stable'
+      const away = `${build.root}/${build.ports.find((port) => port.versionedDocs).slug}/${elsewhere}/${build.segment}/no-such-declaration/`
+      const control = await payloadGaps(page.request, origin, [kept, away], served)
+      assert.deepEqual(control.missing, [`${kept} answers 404`], 'A payload missing on a served port was not reported')
+      assert.deepEqual(control.skipped, [away], 'A destination the build does not serve was asked for a payload')
+    }
+    // A link marked for a card whose payload does not exist opens nothing.
     await page.goto(`${base}/tmux/latest/manual/list-panes/`, { waitUntil: 'load' })
     await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready')
     await page.evaluate(() => {
@@ -578,11 +631,12 @@ export async function checkTmuxReferencePreviews(browser, base) {
       anchor.textContent = 'no_such_declaration'
       document.querySelector('main').prepend(anchor)
     })
-    const absent = await page.request.get(`${base.replace(/\/en$/, '')}/en/tmux/latest/reference/c-function-no-such-declaration.preview.json`)
+    const absent = await page.request.get(`${origin}/en/tmux/latest/reference/c-function-no-such-declaration.preview.json`)
     assert.equal(absent.status(), 404, 'The control address answered, so the sweep cannot show a missing payload')
-    await page.locator('#no-card').hover()
+    // The pointer arrives as the browser delivers it, to the link itself, so a sticky header over the top of the page cannot take it.
+    await page.evaluate(() => document.getElementById('no-card').dispatchEvent(new PointerEvent('pointerover', { pointerType: 'mouse', bubbles: true })))
     await page.waitForTimeout(700)
     assert.equal(await opened(), false, 'A link with no payload opened a card')
-    console.log(`Tmux reference previews: the C function link of a method page opens its card with its signature; ${marked} marked links on four pages each have a payload; a link with none opens nothing PASS`)
+    console.log(`Tmux reference previews: the C function link of a method page opens its card with its signature; ${asked} marked links on four pages each have a payload (${skipped.size} to trees this build does not serve were not asked); a payload missing on a served port is reported, and a link with none opens nothing PASS`)
   } finally { await context.close() }
 }
