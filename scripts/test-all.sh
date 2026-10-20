@@ -184,6 +184,16 @@ node scripts/gen-registry.mjs --check --offline
 step 'package registry state (negative)'
 node scripts/gen-registry.negative.mjs
 
+# The header links to these package, API and source pages. The evidence is
+# requested by hand (node scripts/verify-destinations.mjs); this compares it
+# with the inventory offline, and the negative case proves the comparison and
+# the identity rules fail on a wrong package, a 404 and a stale record.
+step 'destination evidence'
+node scripts/verify-destinations.mjs --check
+
+step 'destination verification (negative)'
+node scripts/verify-destinations.negative.mjs
+
 step 'source links'
 node scripts/check-source-links.mjs
 

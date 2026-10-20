@@ -1,0 +1,2227 @@
+{
+  "schema": 1,
+  "checkedAt": "2026-10-20",
+  "destinations": [
+    {
+      "url": "https://central.sonatype.com/artifact/io.github.libtmux/libtmux",
+      "kinds": [
+        "package"
+      ],
+      "host": "maven-central",
+      "ok": true,
+      "status": 200,
+      "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux/maven-metadata.xml",
+      "identity": "io.github.libtmux:libtmux",
+      "version": "0.0.1-alpha.18",
+      "pageStatus": 200,
+      "expectedVersion": "0.0.1-alpha.17",
+      "versionFound": true,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux",
+        "kotlin:libtmux",
+        "scala:libtmux"
+      ]
+    },
+    {
+      "url": "https://central.sonatype.com/artifact/io.github.libtmux/libtmux-bom",
+      "kinds": [
+        "package"
+      ],
+      "host": "maven-central",
+      "ok": true,
+      "status": 200,
+      "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-bom/maven-metadata.xml",
+      "identity": "io.github.libtmux:libtmux-bom",
+      "version": "0.0.1-alpha.18",
+      "pageStatus": 200,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-bom"
+      ]
+    },
+    {
+      "url": "https://central.sonatype.com/artifact/io.github.libtmux/libtmux-jackson",
+      "kinds": [
+        "package"
+      ],
+      "host": "maven-central",
+      "ok": true,
+      "status": 200,
+      "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-jackson/maven-metadata.xml",
+      "identity": "io.github.libtmux:libtmux-jackson",
+      "version": "0.0.1-alpha.18",
+      "pageStatus": 200,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-jackson"
+      ]
+    },
+    {
+      "url": "https://central.sonatype.com/artifact/io.github.libtmux/libtmux-junit5",
+      "kinds": [
+        "package"
+      ],
+      "host": "maven-central",
+      "ok": true,
+      "status": 200,
+      "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-junit5/maven-metadata.xml",
+      "identity": "io.github.libtmux:libtmux-junit5",
+      "version": "0.0.1-alpha.18",
+      "pageStatus": 200,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-junit5"
+      ]
+    },
+    {
+      "url": "https://central.sonatype.com/artifact/io.github.libtmux/libtmux-kotlin",
+      "kinds": [
+        "package"
+      ],
+      "host": "maven-central",
+      "ok": true,
+      "status": 200,
+      "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-kotlin/maven-metadata.xml",
+      "identity": "io.github.libtmux:libtmux-kotlin",
+      "version": "0.0.1-alpha.18",
+      "pageStatus": 200,
+      "expectedVersion": "0.0.1-alpha.17",
+      "versionFound": true,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-kotlin",
+        "kotlin:libtmux-kotlin"
+      ]
+    },
+    {
+      "url": "https://central.sonatype.com/artifact/io.github.libtmux/libtmux-mcp",
+      "kinds": [
+        "package"
+      ],
+      "host": "maven-central",
+      "ok": true,
+      "status": 200,
+      "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-mcp/maven-metadata.xml",
+      "identity": "io.github.libtmux:libtmux-mcp",
+      "version": "0.0.1-alpha.18",
+      "pageStatus": 200,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-mcp"
+      ]
+    },
+    {
+      "url": "https://central.sonatype.com/artifact/io.github.libtmux/libtmux-scala_3",
+      "kinds": [
+        "package"
+      ],
+      "host": "maven-central",
+      "ok": true,
+      "status": 200,
+      "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-scala_3/maven-metadata.xml",
+      "identity": "io.github.libtmux:libtmux-scala_3",
+      "version": "0.0.1-alpha.18",
+      "pageStatus": 200,
+      "expectedVersion": "0.0.1-alpha.17",
+      "versionFound": true,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-scala",
+        "scala:libtmux-scala"
+      ]
+    },
+    {
+      "url": "https://central.sonatype.com/artifact/io.github.libtmux/libtmux-scala-cats_3",
+      "kinds": [
+        "package"
+      ],
+      "host": "maven-central",
+      "ok": true,
+      "status": 200,
+      "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-scala-cats_3/maven-metadata.xml",
+      "identity": "io.github.libtmux:libtmux-scala-cats_3",
+      "version": "0.0.1-alpha.18",
+      "pageStatus": 200,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-scala-cats",
+        "scala:libtmux-scala-cats"
+      ]
+    },
+    {
+      "url": "https://central.sonatype.com/artifact/io.github.libtmux/libtmux-scala-ox_3",
+      "kinds": [
+        "package"
+      ],
+      "host": "maven-central",
+      "ok": true,
+      "status": 200,
+      "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-scala-ox_3/maven-metadata.xml",
+      "identity": "io.github.libtmux:libtmux-scala-ox_3",
+      "version": "0.0.1-alpha.18",
+      "pageStatus": 200,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-scala-ox",
+        "scala:libtmux-scala-ox"
+      ]
+    },
+    {
+      "url": "https://central.sonatype.com/artifact/io.github.libtmux/libtmux-workspace",
+      "kinds": [
+        "package"
+      ],
+      "host": "maven-central",
+      "ok": true,
+      "status": 200,
+      "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-workspace/maven-metadata.xml",
+      "identity": "io.github.libtmux:libtmux-workspace",
+      "version": "0.0.1-alpha.18",
+      "pageStatus": 200,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-workspace"
+      ]
+    },
+    {
+      "url": "https://central.sonatype.com/artifact/io.github.libtmux/libtmux-workspace-cli",
+      "kinds": [
+        "package"
+      ],
+      "host": "maven-central",
+      "ok": true,
+      "status": 200,
+      "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-workspace-cli/maven-metadata.xml",
+      "identity": "io.github.libtmux:libtmux-workspace-cli",
+      "version": "0.0.1-alpha.18",
+      "pageStatus": 200,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-workspace-cli"
+      ]
+    },
+    {
+      "url": "https://conan.io/center/recipes/libtmux",
+      "kinds": [
+        "package"
+      ],
+      "host": "conan-center",
+      "ok": false,
+      "failure": "status",
+      "detail": "https://conan.io/center/recipes/libtmux answered 404",
+      "status": 404,
+      "requested": "https://conan.io/center/recipes/libtmux",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "cxx:libtmux"
+      ]
+    },
+    {
+      "url": "https://crates.io/crates/libtmux",
+      "kinds": [
+        "package"
+      ],
+      "host": "crates",
+      "ok": true,
+      "status": 200,
+      "requested": "https://crates.io/api/v1/crates/libtmux",
+      "identity": "libtmux",
+      "version": "0.1.0-alpha.16",
+      "pageStatus": 200,
+      "expectedVersion": "0.1.0-alpha.14",
+      "versionFound": true,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "rs:libtmux"
+      ]
+    },
+    {
+      "url": "https://crates.io/crates/libtmux-macros",
+      "kinds": [
+        "package"
+      ],
+      "host": "crates",
+      "ok": true,
+      "status": 200,
+      "requested": "https://crates.io/api/v1/crates/libtmux-macros",
+      "identity": "libtmux-macros",
+      "version": "0.1.0-alpha.16",
+      "pageStatus": 200,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "rs:libtmux-macros"
+      ]
+    },
+    {
+      "url": "https://crates.io/crates/tmux-mcp",
+      "kinds": [
+        "package"
+      ],
+      "host": "crates",
+      "ok": true,
+      "status": 200,
+      "requested": "https://crates.io/api/v1/crates/tmux-mcp",
+      "identity": "tmux-mcp",
+      "version": "0.1.0-alpha.17",
+      "pageStatus": 200,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "rs:tmux-mcp"
+      ]
+    },
+    {
+      "url": "https://crates.io/crates/tmux-workspace",
+      "kinds": [
+        "package"
+      ],
+      "host": "crates",
+      "ok": true,
+      "status": 200,
+      "requested": "https://crates.io/api/v1/crates/tmux-workspace",
+      "identity": "tmux-workspace",
+      "version": "0.1.0-alpha.16",
+      "pageStatus": 200,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "rs:tmux-workspace"
+      ]
+    },
+    {
+      "url": "https://docs.rs/libtmux",
+      "kinds": [
+        "api"
+      ],
+      "host": "docs-rs",
+      "ok": true,
+      "status": 200,
+      "requested": "https://docs.rs/libtmux",
+      "identity": "libtmux",
+      "version": "latest",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "rs:libtmux"
+      ]
+    },
+    {
+      "url": "https://docs.rs/libtmux-macros",
+      "kinds": [
+        "api"
+      ],
+      "host": "docs-rs",
+      "ok": true,
+      "status": 200,
+      "requested": "https://docs.rs/libtmux-macros",
+      "identity": "libtmux-macros",
+      "version": "latest",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "rs:libtmux-macros"
+      ]
+    },
+    {
+      "url": "https://docs.rs/tmux-mcp",
+      "kinds": [
+        "api"
+      ],
+      "host": "docs-rs",
+      "ok": true,
+      "status": 200,
+      "requested": "https://docs.rs/tmux-mcp",
+      "identity": "tmux-mcp",
+      "version": "latest",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "rs:tmux-mcp"
+      ]
+    },
+    {
+      "url": "https://docs.rs/tmux-workspace",
+      "kinds": [
+        "api"
+      ],
+      "host": "docs-rs",
+      "ok": true,
+      "status": 200,
+      "requested": "https://docs.rs/tmux-workspace",
+      "identity": "tmux-workspace",
+      "version": "latest",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "rs:tmux-workspace"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-cxx",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-cxx",
+      "identity": "libtmux/libtmux-cxx",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "cxx:libtmux",
+        "cxx:repository"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-cxx/tree/master/apps/mcp",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-cxx/tree/master/apps/mcp",
+      "identity": "libtmux/libtmux-cxx/apps/mcp",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "cxx:libtmux-mcp-server"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-cxx/tree/master/apps/workspace",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-cxx/tree/master/apps/workspace",
+      "identity": "libtmux/libtmux-cxx/apps/workspace",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "cxx:tmux-workspace"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-cxx/tree/master/ports/libtmux",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-cxx/tree/master/ports/libtmux",
+      "identity": "libtmux/libtmux-cxx/ports/libtmux",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "cxx:vcpkg-registry"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-cxx/tree/master/src",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-cxx/tree/master/src",
+      "identity": "libtmux/libtmux-cxx/src",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "cxx:libtmux-target"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-cxx/tree/master/src/testing",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-cxx/tree/master/src/testing",
+      "identity": "libtmux/libtmux-cxx/src/testing",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "cxx:libtmux-testing"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-dotnet",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-dotnet",
+      "identity": "libtmux/libtmux-dotnet",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "csharp:repository",
+        "fsharp:repository"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux",
+      "identity": "libtmux/libtmux-dotnet/src/LibTmux",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "csharp:LibTmux",
+        "fsharp:LibTmux"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux.Extensions.DependencyInjection",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux.Extensions.DependencyInjection",
+      "identity": "libtmux/libtmux-dotnet/src/LibTmux.Extensions.DependencyInjection",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "csharp:LibTmux.Extensions.DependencyInjection"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux.FSharp",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux.FSharp",
+      "identity": "libtmux/libtmux-dotnet/src/LibTmux.FSharp",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "csharp:LibTmux.FSharp",
+        "fsharp:LibTmux.FSharp"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux.Mcp",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux.Mcp",
+      "identity": "libtmux/libtmux-dotnet/src/LibTmux.Mcp",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "csharp:LibTmux.Mcp"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux.Query.Json",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux.Query.Json",
+      "identity": "libtmux/libtmux-dotnet/src/LibTmux.Query.Json",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "csharp:LibTmux.Query.Json"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux.Testing",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux.Testing",
+      "identity": "libtmux/libtmux-dotnet/src/LibTmux.Testing",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "csharp:LibTmux.Testing"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux.Workspace",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux.Workspace",
+      "identity": "libtmux/libtmux-dotnet/src/LibTmux.Workspace",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "csharp:LibTmux.Workspace"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux.Workspace.Cli",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-dotnet/tree/master/src/LibTmux.Workspace.Cli",
+      "identity": "libtmux/libtmux-dotnet/src/LibTmux.Workspace.Cli",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "csharp:LibTmux.Workspace.Cli"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-go",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-go",
+      "identity": "libtmux/libtmux-go",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "go:repository",
+        "go:module"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-go/tree/master/mcp",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-go/tree/master/mcp",
+      "identity": "libtmux/libtmux-go/mcp",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "go:mcp"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-go/tree/master/mcp/cmd/libtmux-mcp",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-go/tree/master/mcp/cmd/libtmux-mcp",
+      "identity": "libtmux/libtmux-go/mcp/cmd/libtmux-mcp",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "go:libtmux-mcp"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-go/tree/master/tmux",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-go/tree/master/tmux",
+      "identity": "libtmux/libtmux-go/tmux",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "go:tmux"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-go/tree/master/tmux/tmuxtest",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-go/tree/master/tmux/tmuxtest",
+      "identity": "libtmux/libtmux-go/tmux/tmuxtest",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "go:tmuxtest"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-go/tree/master/tmuxq",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-go/tree/master/tmuxq",
+      "identity": "libtmux/libtmux-go/tmuxq",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "go:tmuxq"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-go/tree/master/workspace",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-go/tree/master/workspace",
+      "identity": "libtmux/libtmux-go/workspace",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "go:workspace"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-go/tree/master/workspace/cmd/tmux-workspace",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-go/tree/master/workspace/cmd/tmux-workspace",
+      "identity": "libtmux/libtmux-go/workspace/cmd/tmux-workspace",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "go:tmux-workspace"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-java",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-java",
+      "identity": "libtmux/libtmux-java",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:repository",
+        "kotlin:repository",
+        "scala:repository"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-java/tree/master/libtmux",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-java/tree/master/libtmux",
+      "identity": "libtmux/libtmux-java/libtmux",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux",
+        "kotlin:libtmux",
+        "scala:libtmux"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-bom",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-bom",
+      "identity": "libtmux/libtmux-java/libtmux-bom",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-bom"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-jackson",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-jackson",
+      "identity": "libtmux/libtmux-java/libtmux-jackson",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-jackson"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-junit5",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-junit5",
+      "identity": "libtmux/libtmux-java/libtmux-junit5",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-junit5"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-kotlin",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-kotlin",
+      "identity": "libtmux/libtmux-java/libtmux-kotlin",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-kotlin",
+        "kotlin:libtmux-kotlin"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-mcp",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-mcp",
+      "identity": "libtmux/libtmux-java/libtmux-mcp",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-mcp"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-scala",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-scala",
+      "identity": "libtmux/libtmux-java/libtmux-scala",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-scala",
+        "scala:libtmux-scala"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-scala-cats",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-scala-cats",
+      "identity": "libtmux/libtmux-java/libtmux-scala-cats",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-scala-cats",
+        "scala:libtmux-scala-cats"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-scala-ox",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-scala-ox",
+      "identity": "libtmux/libtmux-java/libtmux-scala-ox",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-scala-ox",
+        "scala:libtmux-scala-ox"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-workspace",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-workspace",
+      "identity": "libtmux/libtmux-java/libtmux-workspace",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-workspace"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-workspace-cli",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-workspace-cli",
+      "identity": "libtmux/libtmux-java/libtmux-workspace-cli",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-workspace-cli"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-julia",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-julia",
+      "identity": "libtmux/libtmux-julia",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "julia:repository"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-julia/tree/master/packages/LibTmuxMCP",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-julia/tree/master/packages/LibTmuxMCP",
+      "identity": "libtmux/libtmux-julia/packages/LibTmuxMCP",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "julia:LibTmuxMCP"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-julia/tree/master/packages/LibTmuxWorkspace",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-julia/tree/master/packages/LibTmuxWorkspace",
+      "identity": "libtmux/libtmux-julia/packages/LibTmuxWorkspace",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "julia:LibTmuxWorkspace"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-julia/tree/master/src",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-julia/tree/master/src",
+      "identity": "libtmux/libtmux-julia/src",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "julia:LibTmux",
+        "julia:LibTmux.Filters"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-lua",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-lua",
+      "identity": "libtmux/libtmux-lua",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "lua:libtmux"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-powershell",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-powershell",
+      "identity": "libtmux/libtmux-powershell",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "powershell:repository"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-powershell/tree/master/src/LibTmux.PowerShell",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-powershell/tree/master/src/LibTmux.PowerShell",
+      "identity": "libtmux/libtmux-powershell/src/LibTmux.PowerShell",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "powershell:LibTmux"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-powershell/tree/master/src/LibTmux.Workspace.PowerShell",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-powershell/tree/master/src/LibTmux.Workspace.PowerShell",
+      "identity": "libtmux/libtmux-powershell/src/LibTmux.Workspace.PowerShell",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "powershell:LibTmux.Workspace"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-rs",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-rs",
+      "identity": "libtmux/libtmux-rs",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "rs:repository"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-rs/tree/master/crates/libtmux",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-rs/tree/master/crates/libtmux",
+      "identity": "libtmux/libtmux-rs/crates/libtmux",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "rs:libtmux"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-rs/tree/master/crates/libtmux-macros",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-rs/tree/master/crates/libtmux-macros",
+      "identity": "libtmux/libtmux-rs/crates/libtmux-macros",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "rs:libtmux-macros"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-rs/tree/master/crates/tmux-mcp",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-rs/tree/master/crates/tmux-mcp",
+      "identity": "libtmux/libtmux-rs/crates/tmux-mcp",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "rs:tmux-mcp"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-rs/tree/master/crates/tmux-workspace",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-rs/tree/master/crates/tmux-workspace",
+      "identity": "libtmux/libtmux-rs/crates/tmux-workspace",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "rs:tmux-workspace"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-ruby",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-ruby",
+      "identity": "libtmux/libtmux-ruby",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "ruby:repository"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-ruby/tree/master/gems/libtmux",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-ruby/tree/master/gems/libtmux",
+      "identity": "libtmux/libtmux-ruby/gems/libtmux",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "ruby:libtmux"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-ruby/tree/master/gems/libtmux-async",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-ruby/tree/master/gems/libtmux-async",
+      "identity": "libtmux/libtmux-ruby/gems/libtmux-async",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "ruby:libtmux-async"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-ruby/tree/master/gems/libtmux-mcp",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-ruby/tree/master/gems/libtmux-mcp",
+      "identity": "libtmux/libtmux-ruby/gems/libtmux-mcp",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "ruby:libtmux-mcp"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-ruby/tree/master/gems/libtmux-workspace",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-ruby/tree/master/gems/libtmux-workspace",
+      "identity": "libtmux/libtmux-ruby/gems/libtmux-workspace",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "ruby:libtmux-workspace"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-swift",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-swift",
+      "identity": "libtmux/libtmux-swift",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "swift:libtmux-swift"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-swift/tree/master/Sources/LibTmux",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-swift/tree/master/Sources/LibTmux",
+      "identity": "libtmux/libtmux-swift/Sources/LibTmux",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "swift:LibTmux"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-swift/tree/master/Sources/libtmux-mcp",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-swift/tree/master/Sources/libtmux-mcp",
+      "identity": "libtmux/libtmux-swift/Sources/libtmux-mcp",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "swift:libtmux-mcp"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-swift/tree/master/Sources/LibTmuxMCP",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-swift/tree/master/Sources/LibTmuxMCP",
+      "identity": "libtmux/libtmux-swift/Sources/LibTmuxMCP",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "swift:LibTmuxMCP"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-swift/tree/master/Sources/TmuxWorkspace",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-swift/tree/master/Sources/TmuxWorkspace",
+      "identity": "libtmux/libtmux-swift/Sources/TmuxWorkspace",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "swift:TmuxWorkspace"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-swift/tree/master/Sources/TmuxWorkspaceCLI",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-swift/tree/master/Sources/TmuxWorkspaceCLI",
+      "identity": "libtmux/libtmux-swift/Sources/TmuxWorkspaceCLI",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "swift:tmux-workspace"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-swift/tree/master/Tests/TmuxFixture",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-swift/tree/master/Tests/TmuxFixture",
+      "identity": "libtmux/libtmux-swift/Tests/TmuxFixture",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "swift:TmuxFixture"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-ts",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-ts",
+      "identity": "libtmux/libtmux-ts",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "ts:repository"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-ts/tree/master/packages/libtmux",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-ts/tree/master/packages/libtmux",
+      "identity": "libtmux/libtmux-ts/packages/libtmux",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "ts:libtmux",
+        "ts:libtmux-testing"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-ts/tree/master/packages/mcp",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-ts/tree/master/packages/mcp",
+      "identity": "libtmux/libtmux-ts/packages/mcp",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "ts:mcp"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-ts/tree/master/packages/workspace",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-ts/tree/master/packages/workspace",
+      "identity": "libtmux/libtmux-ts/packages/workspace",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "ts:workspace"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-ts/tree/master/packages/workspace-cli",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-ts/tree/master/packages/workspace-cli",
+      "identity": "libtmux/libtmux-ts/packages/workspace-cli",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "ts:workspace-cli"
+      ]
+    },
+    {
+      "url": "https://github.com/tmux-python/libtmux",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/tmux-python/libtmux",
+      "identity": "tmux-python/libtmux",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "py:libtmux",
+        "py:pytest-plugin"
+      ]
+    },
+    {
+      "url": "https://github.com/tmux-python/libtmux-mcp",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/tmux-python/libtmux-mcp",
+      "identity": "tmux-python/libtmux-mcp",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "py:libtmux-mcp"
+      ]
+    },
+    {
+      "url": "https://github.com/tmux-python/tmuxp",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/tmux-python/tmuxp",
+      "identity": "tmux-python/tmuxp",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "py:tmuxp"
+      ]
+    },
+    {
+      "url": "https://javadoc.io/doc/io.github.libtmux/libtmux",
+      "kinds": [
+        "api"
+      ],
+      "host": "javadoc-io",
+      "ok": true,
+      "status": 200,
+      "requested": "https://javadoc.io/doc/io.github.libtmux/libtmux",
+      "identity": "io.github.libtmux:libtmux",
+      "version": "0.0.1-alpha.17",
+      "samples": 3,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux",
+        "kotlin:libtmux",
+        "scala:libtmux"
+      ]
+    },
+    {
+      "url": "https://javadoc.io/doc/io.github.libtmux/libtmux-bom",
+      "kinds": [
+        "api"
+      ],
+      "host": "javadoc-io",
+      "ok": false,
+      "failure": "identity",
+      "detail": "title is \"io.github.libtmux:libtmux-bom versions\" at https://javadoc.io/versions/io.github.libtmux/libtmux-bom, expected libtmux-bom documentation",
+      "status": 200,
+      "requested": "https://javadoc.io/doc/io.github.libtmux/libtmux-bom",
+      "samples": 3,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-bom"
+      ]
+    },
+    {
+      "url": "https://javadoc.io/doc/io.github.libtmux/libtmux-jackson",
+      "kinds": [
+        "api"
+      ],
+      "host": "javadoc-io",
+      "ok": true,
+      "status": 200,
+      "requested": "https://javadoc.io/doc/io.github.libtmux/libtmux-jackson",
+      "identity": "io.github.libtmux:libtmux-jackson",
+      "version": "0.0.1-alpha.17",
+      "samples": 3,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-jackson"
+      ]
+    },
+    {
+      "url": "https://javadoc.io/doc/io.github.libtmux/libtmux-junit5",
+      "kinds": [
+        "api"
+      ],
+      "host": "javadoc-io",
+      "ok": true,
+      "status": 200,
+      "requested": "https://javadoc.io/doc/io.github.libtmux/libtmux-junit5",
+      "identity": "io.github.libtmux:libtmux-junit5",
+      "version": "0.0.1-alpha.17",
+      "samples": 3,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-junit5"
+      ]
+    },
+    {
+      "url": "https://javadoc.io/doc/io.github.libtmux/libtmux-kotlin",
+      "kinds": [
+        "api"
+      ],
+      "host": "javadoc-io",
+      "ok": true,
+      "status": 200,
+      "requested": "https://javadoc.io/doc/io.github.libtmux/libtmux-kotlin",
+      "identity": "io.github.libtmux:libtmux-kotlin",
+      "version": "0.0.1-alpha.17",
+      "samples": 3,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-kotlin",
+        "kotlin:libtmux-kotlin"
+      ]
+    },
+    {
+      "url": "https://javadoc.io/doc/io.github.libtmux/libtmux-mcp",
+      "kinds": [
+        "api"
+      ],
+      "host": "javadoc-io",
+      "ok": true,
+      "status": 200,
+      "requested": "https://javadoc.io/doc/io.github.libtmux/libtmux-mcp",
+      "identity": "io.github.libtmux:libtmux-mcp",
+      "version": "0.0.1-alpha.17",
+      "samples": 3,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-mcp"
+      ]
+    },
+    {
+      "url": "https://javadoc.io/doc/io.github.libtmux/libtmux-scala_3",
+      "kinds": [
+        "api"
+      ],
+      "host": "javadoc-io",
+      "ok": true,
+      "status": 200,
+      "requested": "https://javadoc.io/doc/io.github.libtmux/libtmux-scala_3",
+      "identity": "io.github.libtmux:libtmux-scala_3",
+      "version": "0.0.1-alpha.17",
+      "samples": 3,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-scala",
+        "scala:libtmux-scala"
+      ]
+    },
+    {
+      "url": "https://javadoc.io/doc/io.github.libtmux/libtmux-scala-cats_3",
+      "kinds": [
+        "api"
+      ],
+      "host": "javadoc-io",
+      "ok": true,
+      "status": 200,
+      "requested": "https://javadoc.io/doc/io.github.libtmux/libtmux-scala-cats_3",
+      "identity": "io.github.libtmux:libtmux-scala-cats_3",
+      "version": "0.0.1-alpha.17",
+      "samples": 3,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-scala-cats",
+        "scala:libtmux-scala-cats"
+      ]
+    },
+    {
+      "url": "https://javadoc.io/doc/io.github.libtmux/libtmux-scala-ox_3",
+      "kinds": [
+        "api"
+      ],
+      "host": "javadoc-io",
+      "ok": true,
+      "status": 200,
+      "requested": "https://javadoc.io/doc/io.github.libtmux/libtmux-scala-ox_3",
+      "identity": "io.github.libtmux:libtmux-scala-ox_3",
+      "version": "0.0.1-alpha.17",
+      "samples": 3,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-scala-ox",
+        "scala:libtmux-scala-ox"
+      ]
+    },
+    {
+      "url": "https://javadoc.io/doc/io.github.libtmux/libtmux-workspace",
+      "kinds": [
+        "api"
+      ],
+      "host": "javadoc-io",
+      "ok": true,
+      "status": 200,
+      "requested": "https://javadoc.io/doc/io.github.libtmux/libtmux-workspace",
+      "identity": "io.github.libtmux:libtmux-workspace",
+      "version": "0.0.1-alpha.17",
+      "samples": 3,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-workspace"
+      ]
+    },
+    {
+      "url": "https://javadoc.io/doc/io.github.libtmux/libtmux-workspace-cli",
+      "kinds": [
+        "api"
+      ],
+      "host": "javadoc-io",
+      "ok": false,
+      "failure": "identity",
+      "detail": "title is \"io.github.libtmux:libtmux-workspace-cli versions\" at https://javadoc.io/versions/io.github.libtmux/libtmux-workspace-cli, expected libtmux-workspace-cli documentation",
+      "status": 200,
+      "requested": "https://javadoc.io/doc/io.github.libtmux/libtmux-workspace-cli",
+      "samples": 3,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "java:libtmux-workspace-cli"
+      ]
+    },
+    {
+      "url": "https://luarocks.org/modules/tony/libtmux",
+      "kinds": [
+        "package"
+      ],
+      "host": "luarocks",
+      "ok": true,
+      "status": 200,
+      "requested": "https://luarocks.org/modules/tony/libtmux",
+      "identity": "tony/libtmux",
+      "expectedVersion": "0.1.0alpha1-1",
+      "versionFound": true,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "lua:libtmux"
+      ]
+    },
+    {
+      "url": "https://luarocks.org/modules/tony/libtmux-mcp",
+      "kinds": [
+        "package"
+      ],
+      "host": "luarocks",
+      "ok": false,
+      "failure": "status",
+      "detail": "https://luarocks.org/modules/tony/libtmux-mcp answered 404",
+      "status": 404,
+      "requested": "https://luarocks.org/modules/tony/libtmux-mcp",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "lua:libtmux-mcp"
+      ]
+    },
+    {
+      "url": "https://luarocks.org/modules/tony/libtmux-workspace",
+      "kinds": [
+        "package"
+      ],
+      "host": "luarocks",
+      "ok": false,
+      "failure": "status",
+      "detail": "https://luarocks.org/modules/tony/libtmux-workspace answered 404",
+      "status": 404,
+      "requested": "https://luarocks.org/modules/tony/libtmux-workspace",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "lua:libtmux-workspace"
+      ]
+    },
+    {
+      "url": "https://pkg.go.dev/github.com/libtmux/libtmux-go",
+      "kinds": [
+        "package",
+        "api"
+      ],
+      "host": "pkg-go-dev",
+      "ok": true,
+      "status": 200,
+      "requested": "https://pkg.go.dev/github.com/libtmux/libtmux-go",
+      "identity": "github.com/libtmux/libtmux-go",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "go:module",
+        "go:module"
+      ]
+    },
+    {
+      "url": "https://pkg.go.dev/github.com/libtmux/libtmux-go/mcp",
+      "kinds": [
+        "package",
+        "api"
+      ],
+      "host": "pkg-go-dev",
+      "ok": true,
+      "status": 200,
+      "requested": "https://pkg.go.dev/github.com/libtmux/libtmux-go/mcp",
+      "identity": "github.com/libtmux/libtmux-go/mcp",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "go:mcp",
+        "go:mcp"
+      ]
+    },
+    {
+      "url": "https://pkg.go.dev/github.com/libtmux/libtmux-go/mcp/cmd/libtmux-mcp",
+      "kinds": [
+        "package",
+        "api"
+      ],
+      "host": "pkg-go-dev",
+      "ok": true,
+      "status": 200,
+      "requested": "https://pkg.go.dev/github.com/libtmux/libtmux-go/mcp/cmd/libtmux-mcp",
+      "identity": "github.com/libtmux/libtmux-go/mcp/cmd/libtmux-mcp",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "go:libtmux-mcp",
+        "go:libtmux-mcp"
+      ]
+    },
+    {
+      "url": "https://pkg.go.dev/github.com/libtmux/libtmux-go/tmux",
+      "kinds": [
+        "package",
+        "api"
+      ],
+      "host": "pkg-go-dev",
+      "ok": true,
+      "status": 200,
+      "requested": "https://pkg.go.dev/github.com/libtmux/libtmux-go/tmux",
+      "identity": "github.com/libtmux/libtmux-go/tmux",
+      "expectedVersion": "v0.0.1-alpha.9",
+      "versionFound": true,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "go:tmux",
+        "go:tmux"
+      ]
+    },
+    {
+      "url": "https://pkg.go.dev/github.com/libtmux/libtmux-go/tmux/tmuxtest",
+      "kinds": [
+        "package",
+        "api"
+      ],
+      "host": "pkg-go-dev",
+      "ok": true,
+      "status": 200,
+      "requested": "https://pkg.go.dev/github.com/libtmux/libtmux-go/tmux/tmuxtest",
+      "identity": "github.com/libtmux/libtmux-go/tmux/tmuxtest",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "go:tmuxtest",
+        "go:tmuxtest"
+      ]
+    },
+    {
+      "url": "https://pkg.go.dev/github.com/libtmux/libtmux-go/tmuxq",
+      "kinds": [
+        "package",
+        "api"
+      ],
+      "host": "pkg-go-dev",
+      "ok": true,
+      "status": 200,
+      "requested": "https://pkg.go.dev/github.com/libtmux/libtmux-go/tmuxq",
+      "identity": "github.com/libtmux/libtmux-go/tmuxq",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "go:tmuxq",
+        "go:tmuxq"
+      ]
+    },
+    {
+      "url": "https://pkg.go.dev/github.com/libtmux/libtmux-go/workspace",
+      "kinds": [
+        "package",
+        "api"
+      ],
+      "host": "pkg-go-dev",
+      "ok": true,
+      "status": 200,
+      "requested": "https://pkg.go.dev/github.com/libtmux/libtmux-go/workspace",
+      "identity": "github.com/libtmux/libtmux-go/workspace",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "go:workspace",
+        "go:workspace"
+      ]
+    },
+    {
+      "url": "https://pkg.go.dev/github.com/libtmux/libtmux-go/workspace/cmd/tmux-workspace",
+      "kinds": [
+        "package",
+        "api"
+      ],
+      "host": "pkg-go-dev",
+      "ok": true,
+      "status": 200,
+      "requested": "https://pkg.go.dev/github.com/libtmux/libtmux-go/workspace/cmd/tmux-workspace",
+      "identity": "github.com/libtmux/libtmux-go/workspace/cmd/tmux-workspace",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "go:tmux-workspace",
+        "go:tmux-workspace"
+      ]
+    },
+    {
+      "url": "https://pypi.org/project/libtmux-mcp/",
+      "kinds": [
+        "package"
+      ],
+      "host": "pypi",
+      "ok": true,
+      "status": 200,
+      "requested": "https://pypi.org/pypi/libtmux-mcp/json",
+      "identity": "libtmux-mcp",
+      "version": "0.1.0a22",
+      "pageStatus": 200,
+      "expectedVersion": "0.1.0a22",
+      "versionFound": true,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "py:libtmux-mcp"
+      ]
+    },
+    {
+      "url": "https://pypi.org/project/libtmux/",
+      "kinds": [
+        "package"
+      ],
+      "host": "pypi",
+      "ok": true,
+      "status": 200,
+      "requested": "https://pypi.org/pypi/libtmux/json",
+      "identity": "libtmux",
+      "version": "0.62.0",
+      "pageStatus": 200,
+      "expectedVersion": "0.62.0",
+      "versionFound": true,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "py:libtmux",
+        "py:pytest-plugin"
+      ]
+    },
+    {
+      "url": "https://pypi.org/project/tmuxp/",
+      "kinds": [
+        "package"
+      ],
+      "host": "pypi",
+      "ok": true,
+      "status": 200,
+      "requested": "https://pypi.org/pypi/tmuxp/json",
+      "identity": "tmuxp",
+      "version": "1.74.0",
+      "pageStatus": 200,
+      "expectedVersion": "1.74.0",
+      "versionFound": true,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "py:tmuxp"
+      ]
+    },
+    {
+      "url": "https://rubygems.org/gems/libtmux",
+      "kinds": [
+        "package"
+      ],
+      "host": "rubygems",
+      "ok": true,
+      "status": 200,
+      "requested": "https://rubygems.org/api/v1/gems/libtmux.json",
+      "identity": "libtmux",
+      "version": "0.1.0.alpha.2",
+      "expectedVersion": "0.1.0.alpha.1",
+      "versionFound": true,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "ruby:libtmux"
+      ]
+    },
+    {
+      "url": "https://rubygems.org/gems/libtmux-async",
+      "kinds": [
+        "package"
+      ],
+      "host": "rubygems",
+      "ok": true,
+      "status": 200,
+      "requested": "https://rubygems.org/api/v1/gems/libtmux-async.json",
+      "identity": "libtmux-async",
+      "version": "0.1.0.alpha.2",
+      "expectedVersion": "0.1.0.alpha.1",
+      "versionFound": true,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "ruby:libtmux-async"
+      ]
+    },
+    {
+      "url": "https://rubygems.org/gems/libtmux-mcp",
+      "kinds": [
+        "package"
+      ],
+      "host": "rubygems",
+      "ok": true,
+      "status": 200,
+      "requested": "https://rubygems.org/api/v1/gems/libtmux-mcp.json",
+      "identity": "libtmux-mcp",
+      "version": "0.1.0.alpha.2",
+      "expectedVersion": "0.1.0.alpha.1",
+      "versionFound": true,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "ruby:libtmux-mcp"
+      ]
+    },
+    {
+      "url": "https://rubygems.org/gems/libtmux-workspace",
+      "kinds": [
+        "package"
+      ],
+      "host": "rubygems",
+      "ok": true,
+      "status": 200,
+      "requested": "https://rubygems.org/api/v1/gems/libtmux-workspace.json",
+      "identity": "libtmux-workspace",
+      "version": "0.1.0.alpha.2",
+      "expectedVersion": "0.1.0.alpha.1",
+      "versionFound": true,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "ruby:libtmux-workspace"
+      ]
+    },
+    {
+      "url": "https://swiftpackageindex.com/libtmux/libtmux-swift",
+      "kinds": [
+        "package"
+      ],
+      "host": "swift-package-index",
+      "ok": true,
+      "status": 200,
+      "requested": "https://swiftpackageindex.com/libtmux/libtmux-swift",
+      "identity": "libtmux/libtmux-swift",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "swift:libtmux-swift",
+        "swift:LibTmux",
+        "swift:TmuxFixture",
+        "swift:LibTmuxMCP",
+        "swift:libtmux-mcp",
+        "swift:TmuxWorkspace",
+        "swift:tmux-workspace"
+      ]
+    },
+    {
+      "url": "https://swiftpackageindex.com/libtmux/libtmux-swift/documentation/libtmux",
+      "kinds": [
+        "api"
+      ],
+      "host": "swift-package-index",
+      "ok": true,
+      "status": 200,
+      "requested": "https://swiftpackageindex.com/libtmux/libtmux-swift/documentation/libtmux",
+      "identity": "libtmux/libtmux-swift libtmux",
+      "version": "0.1.0-alpha.6",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "swift:LibTmux"
+      ]
+    },
+    {
+      "url": "https://swiftpackageindex.com/libtmux/libtmux-swift/documentation/libtmuxmcp",
+      "kinds": [
+        "api"
+      ],
+      "host": "swift-package-index",
+      "ok": true,
+      "status": 200,
+      "requested": "https://swiftpackageindex.com/libtmux/libtmux-swift/documentation/libtmuxmcp",
+      "identity": "libtmux/libtmux-swift libtmuxmcp",
+      "version": "0.1.0-alpha.6",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "swift:LibTmuxMCP"
+      ]
+    },
+    {
+      "url": "https://swiftpackageindex.com/libtmux/libtmux-swift/documentation/tmuxworkspace",
+      "kinds": [
+        "api"
+      ],
+      "host": "swift-package-index",
+      "ok": true,
+      "status": 200,
+      "requested": "https://swiftpackageindex.com/libtmux/libtmux-swift/documentation/tmuxworkspace",
+      "identity": "libtmux/libtmux-swift tmuxworkspace",
+      "version": "0.1.0-alpha.6",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "swift:TmuxWorkspace"
+      ]
+    },
+    {
+      "url": "https://vcpkg.io/en/package/libtmux",
+      "kinds": [
+        "package"
+      ],
+      "host": "vcpkg",
+      "ok": false,
+      "failure": "status",
+      "detail": "https://vcpkg.io/en/package/libtmux answered 404",
+      "status": 404,
+      "requested": "https://vcpkg.io/en/package/libtmux",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "cxx:libtmux"
+      ]
+    },
+    {
+      "url": "https://www.npmjs.com/package/@libtmux/mcp",
+      "kinds": [
+        "package"
+      ],
+      "host": "npm",
+      "ok": true,
+      "status": 200,
+      "requested": "https://registry.npmjs.org/@libtmux%2fmcp",
+      "identity": "@libtmux/mcp",
+      "version": "0.1.0-alpha.13",
+      "pageStatus": 403,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "ts:mcp"
+      ]
+    },
+    {
+      "url": "https://www.npmjs.com/package/@libtmux/workspace",
+      "kinds": [
+        "package"
+      ],
+      "host": "npm",
+      "ok": true,
+      "status": 200,
+      "requested": "https://registry.npmjs.org/@libtmux%2fworkspace",
+      "identity": "@libtmux/workspace",
+      "version": "0.1.0-alpha.13",
+      "pageStatus": 403,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "ts:workspace"
+      ]
+    },
+    {
+      "url": "https://www.npmjs.com/package/@libtmux/workspace-cli",
+      "kinds": [
+        "package"
+      ],
+      "host": "npm",
+      "ok": true,
+      "status": 200,
+      "requested": "https://registry.npmjs.org/@libtmux%2fworkspace-cli",
+      "identity": "@libtmux/workspace-cli",
+      "version": "0.1.0-alpha.13",
+      "pageStatus": 403,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "ts:workspace-cli"
+      ]
+    },
+    {
+      "url": "https://www.npmjs.com/package/libtmux",
+      "kinds": [
+        "package"
+      ],
+      "host": "npm",
+      "ok": true,
+      "status": 200,
+      "requested": "https://registry.npmjs.org/libtmux",
+      "identity": "libtmux",
+      "version": "0.1.0-alpha.13",
+      "pageStatus": 403,
+      "expectedVersion": "0.1.0-alpha.12",
+      "versionFound": true,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "ts:libtmux",
+        "ts:libtmux-testing"
+      ]
+    },
+    {
+      "url": "https://www.nuget.org/packages/LibTmux",
+      "kinds": [
+        "package"
+      ],
+      "host": "nuget",
+      "ok": true,
+      "status": 200,
+      "requested": "https://www.nuget.org/packages/LibTmux",
+      "identity": "LibTmux",
+      "version": "0.0.0-alpha.22",
+      "expectedVersion": "0.0.0-alpha.17",
+      "versionFound": true,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "csharp:LibTmux",
+        "fsharp:LibTmux"
+      ]
+    },
+    {
+      "url": "https://www.nuget.org/packages/LibTmux.Extensions.DependencyInjection",
+      "kinds": [
+        "package"
+      ],
+      "host": "nuget",
+      "ok": true,
+      "status": 200,
+      "requested": "https://www.nuget.org/packages/LibTmux.Extensions.DependencyInjection",
+      "identity": "LibTmux.Extensions.DependencyInjection",
+      "version": "0.0.0-alpha.22",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "csharp:LibTmux.Extensions.DependencyInjection"
+      ]
+    },
+    {
+      "url": "https://www.nuget.org/packages/LibTmux.FSharp",
+      "kinds": [
+        "package"
+      ],
+      "host": "nuget",
+      "ok": true,
+      "status": 200,
+      "requested": "https://www.nuget.org/packages/LibTmux.FSharp",
+      "identity": "LibTmux.FSharp",
+      "version": "0.0.0-alpha.22",
+      "expectedVersion": "0.0.0-alpha.17",
+      "versionFound": true,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "csharp:LibTmux.FSharp",
+        "fsharp:LibTmux.FSharp"
+      ]
+    },
+    {
+      "url": "https://www.nuget.org/packages/LibTmux.Mcp",
+      "kinds": [
+        "package"
+      ],
+      "host": "nuget",
+      "ok": true,
+      "status": 200,
+      "requested": "https://www.nuget.org/packages/LibTmux.Mcp",
+      "identity": "LibTmux.Mcp",
+      "version": "0.0.0-alpha.22",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "csharp:LibTmux.Mcp"
+      ]
+    },
+    {
+      "url": "https://www.nuget.org/packages/LibTmux.Query.Json",
+      "kinds": [
+        "package"
+      ],
+      "host": "nuget",
+      "ok": true,
+      "status": 200,
+      "requested": "https://www.nuget.org/packages/LibTmux.Query.Json",
+      "identity": "LibTmux.Query.Json",
+      "version": "0.0.0-alpha.22",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "csharp:LibTmux.Query.Json"
+      ]
+    },
+    {
+      "url": "https://www.nuget.org/packages/LibTmux.Testing",
+      "kinds": [
+        "package"
+      ],
+      "host": "nuget",
+      "ok": true,
+      "status": 200,
+      "requested": "https://www.nuget.org/packages/LibTmux.Testing",
+      "identity": "LibTmux.Testing",
+      "version": "0.0.0-alpha.22",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "csharp:LibTmux.Testing"
+      ]
+    },
+    {
+      "url": "https://www.nuget.org/packages/LibTmux.Workspace",
+      "kinds": [
+        "package"
+      ],
+      "host": "nuget",
+      "ok": true,
+      "status": 200,
+      "requested": "https://www.nuget.org/packages/LibTmux.Workspace",
+      "identity": "LibTmux.Workspace",
+      "version": "0.0.0-alpha.22",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "csharp:LibTmux.Workspace"
+      ]
+    },
+    {
+      "url": "https://www.nuget.org/packages/LibTmux.Workspace.Cli",
+      "kinds": [
+        "package"
+      ],
+      "host": "nuget",
+      "ok": true,
+      "status": 200,
+      "requested": "https://www.nuget.org/packages/LibTmux.Workspace.Cli",
+      "identity": "LibTmux.Workspace.Cli",
+      "version": "0.0.0-alpha.22",
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "csharp:LibTmux.Workspace.Cli"
+      ]
+    },
+    {
+      "url": "https://www.powershellgallery.com/packages/LibTmux",
+      "kinds": [
+        "package"
+      ],
+      "host": "powershell-gallery",
+      "ok": true,
+      "status": 200,
+      "requested": "https://www.powershellgallery.com/packages/LibTmux",
+      "identity": "LibTmux",
+      "version": "0.1.0-alpha2",
+      "expectedVersion": "0.1.0-alpha2",
+      "versionFound": true,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "powershell:LibTmux"
+      ]
+    },
+    {
+      "url": "https://www.powershellgallery.com/packages/LibTmux.Workspace",
+      "kinds": [
+        "package"
+      ],
+      "host": "powershell-gallery",
+      "ok": true,
+      "status": 200,
+      "requested": "https://www.powershellgallery.com/packages/LibTmux.Workspace",
+      "identity": "LibTmux.Workspace",
+      "version": "0.1.0-alpha2",
+      "expectedVersion": "0.1.0-alpha2",
+      "versionFound": true,
+      "checkedAt": "2026-10-20",
+      "entries": [
+        "powershell:LibTmux.Workspace"
+      ]
+    }
+  ]
+}
