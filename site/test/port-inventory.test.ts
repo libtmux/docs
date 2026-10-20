@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   API_HOSTS, INVENTORY, PACKAGE_HOSTS, entryCandidates, entryDestinations, sourceUrl, type InventoryEntry,
 } from '../src/lib/port-inventory'
+import manifestPackages from '../src/data/manifest-packages.json'
 import { PORTS, PORT_BY_SLUG } from '../src/lib/ports'
 
 const entries = (slug: string) => INVENTORY[slug]!
@@ -10,49 +11,19 @@ const coordinates = (slug: string, kinds?: InventoryEntry['kind'][]) =>
   published(slug).filter((entry) => !kinds || kinds.includes(entry.kind)).map((entry) => entry.coordinate)
 
 /**
- * The distributions the owning manifests and release configuration declare,
- * written from their files rather than computed from the inventory:
- * `package.json` and `release_policy.ts`, `Cargo.toml` (`publish`), `go.mod`,
- * the Gradle publication conventions and BOM, the `.csproj` package ids,
- * `Package.swift`, each `Project.toml`, the vcpkg port, and the gemspecs,
- * rockspec publish step and module manifests. The comparison is two-sided: an
- * entry the manifests do not declare is as wrong as one they declare that is
- * missing.
+ * What the owning manifests and release configuration declare, read at each
+ * port's pinned revision by `scripts/gen-manifest-packages.mjs` rather than
+ * written here. The comparison is two-sided: an entry the manifests do not
+ * declare is as wrong as a declared package the inventory omits.
  */
-const GO = 'github.com/libtmux/libtmux-go'
-const JVM = ['libtmux', 'libtmux-bom', 'libtmux-jackson', 'libtmux-junit5', 'libtmux-kotlin', 'libtmux-mcp', 'libtmux-scala_3',
-  'libtmux-scala-cats_3', 'libtmux-scala-ox_3', 'libtmux-workspace', 'libtmux-workspace-cli'].map((name) => `io.github.libtmux:${name}`)
-const DOTNET = ['LibTmux', 'LibTmux.Query.Json', 'LibTmux.Testing', 'LibTmux.Extensions.DependencyInjection', 'LibTmux.Workspace',
-  'LibTmux.Workspace.Cli', 'LibTmux.Mcp', 'LibTmux.FSharp']
-const DECLARED_DISTRIBUTIONS: Record<string, readonly string[]> = {
-  py: ['libtmux', 'tmuxp', 'libtmux-mcp'],
-  ruby: ['libtmux', 'libtmux-async', 'libtmux-mcp', 'libtmux-workspace'],
-  lua: ['libtmux'],
-  powershell: ['LibTmux', 'LibTmux.Workspace'],
-  julia: ['LibTmux', 'LibTmuxMCP', 'LibTmuxWorkspace'],
-  ts: ['libtmux', '@libtmux/mcp', '@libtmux/workspace', '@libtmux/workspace-cli'],
-  rs: ['libtmux', 'libtmux-macros', 'tmux-mcp', 'tmux-workspace'],
-  go: [GO, `${GO}/mcp`, `${GO}/workspace`],
-  java: JVM,
-  csharp: DOTNET,
-  cxx: ['libtmux'],
-  swift: ['libtmux-swift'],
-}
-/** A wrapper lists its own package and the family package it builds on, not the whole family. */
-const WRAPPERS: Record<string, readonly string[]> = {
-  kotlin: ['io.github.libtmux:libtmux-kotlin', 'io.github.libtmux:libtmux'],
-  scala: ['io.github.libtmux:libtmux-scala_3', 'io.github.libtmux:libtmux-scala-cats_3', 'io.github.libtmux:libtmux-scala-ox_3', 'io.github.libtmux:libtmux'],
-  fsharp: ['LibTmux.FSharp', 'LibTmux'],
-}
-/** What ships inside a distribution, by ecosystem word: the Go packages and commands, the SwiftPM products and targets. */
-const DECLARED_UNITS: Record<string, readonly (readonly [unit: string, name: string])[]> = {
-  go: [['package', 'tmux'], ['package', 'tmuxq'], ['package', 'tmux/tmuxtest'], ['command', 'libtmux-mcp'], ['command', 'tmux-workspace']],
-  swift: [['product', 'LibTmux'], ['product', 'TmuxWorkspace'], ['product', 'LibTmuxMCP'], ['product', 'TmuxFixture'],
-    ['executable product', 'libtmux-mcp'], ['executable product', 'tmux-workspace'],
-    ['target', 'LibTmux'], ['target', 'TmuxWorkspace'], ['target', 'LibTmuxMCP'], ['target', 'TmuxFixture'],
-    ['executable target', 'libtmux-mcp'], ['executable target', 'TmuxWorkspaceCLI']],
-}
+const manifests = manifestPackages.ports as Record<string, {
+  wrapper?: string
+  distributions: { name: string; version: string }[]
+  units: { unit: string; name: string }[]
+}>
 const distributions = (slug: string) => published(slug).filter((entry) => !entry.within && entry.kind !== 'source')
+const declared = (slug: string) => manifests[slug]!.distributions.map((entry) => entry.name)
+const GO = 'github.com/libtmux/libtmux-go'
 
 describe('port inventory', () => {
   it('covers every registered port and nothing else', () => {
@@ -73,19 +44,28 @@ describe('port inventory', () => {
     }
   })
 
-  it.each(Object.entries(DECLARED_DISTRIBUTIONS))('lists exactly the distributions %s declares', (slug, declared) => {
-    expect(distributions(slug).map((entry) => entry.coordinate).sort()).toEqual([...declared].sort())
+  it('has a manifest reading for every port', () => {
+    expect(Object.keys(manifests).sort()).toEqual(PORTS.map(({ slug }) => slug).sort())
   })
 
-  it.each(Object.entries(WRAPPERS))('lists the %s package and the family package it builds on, and nothing else', (slug, declared) => {
-    expect(distributions(slug).map((entry) => entry.coordinate).sort()).toEqual([...declared].sort())
+  it.each(PORTS.filter((port) => !port.parentLibrary).map(({ slug }) => slug))('lists exactly the distributions %s declares', (slug) => {
+    expect(distributions(slug).map((entry) => entry.coordinate).sort((a, b) => a.localeCompare(b))).toEqual(declared(slug).sort((a, b) => a.localeCompare(b)))
   })
 
-  it.each(Object.entries(DECLARED_UNITS))('lists exactly the %s units its manifests declare', (slug, declared) => {
-    const found = published(slug).filter((entry) => entry.within && entry.unit && declared.some(([unit]) => unit === entry.unit))
+  it.each(PORTS.filter((port) => port.parentLibrary).map(({ slug }) => slug))('lists the %s package and the family package it builds on, and nothing the manifests lack', (slug) => {
+    const own = distributions(slug).map((entry) => entry.coordinate)
+    for (const name of own) expect(declared(slug), `${slug} ${name}`).toContain(name)
+    expect(own[0], 'its own primary package leads').toBe(PORT_BY_SLUG[slug]!.packageName)
+    // It does not list the rest of the family.
+    expect(own.length).toBeLessThan(declared(slug).length)
+  })
+
+  it.each(PORTS.map(({ slug }) => slug).filter((slug) => manifests[slug]!.units.length > 0))('lists exactly the %s units its manifests declare', (slug) => {
+    const types = new Set(manifests[slug]!.units.map((unit) => unit.unit))
+    const found = published(slug).filter((entry) => entry.within && entry.unit && types.has(entry.unit))
     const pair = (unit: string | undefined, name: string) => `${unit}: ${name}`
     expect(found.map((entry) => pair(entry.unit, entry.label)).sort((a, b) => a.localeCompare(b)))
-      .toEqual(declared.map(([unit, name]) => pair(unit, name)).sort((a, b) => a.localeCompare(b)))
+      .toEqual(manifests[slug]!.units.map((unit) => pair(unit.unit, unit.name)).sort((a, b) => a.localeCompare(b)))
   })
 
   it('counts an entry that ships inside a distribution once, under the one that holds it', () => {
