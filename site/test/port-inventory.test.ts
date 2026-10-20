@@ -123,7 +123,9 @@ describe('port inventory', () => {
       const [library] = entries(port.slug)
       expect(library!.repo, port.slug).toBe(port.repo)
       expect(library!.package?.url, port.slug).toBe(port.registry?.url)
-      expect(library!.api?.url, port.slug).toBe(port.ecosystemHost?.url)
+      // Swift's package documents nothing itself; its reference is its main module's DocC, which the hero's metadata does not name.
+      const documented = library!.api ?? entries(port.slug).find((entry) => entry.id === library!.reference)?.api
+      if (port.slug !== 'swift') expect(documented?.url, port.slug).toBe(port.ecosystemHost?.url)
       if (port.source) expect(library!.path, port.slug).toBe(port.source.path)
       if (port.registry) expect(PACKAGE_HOSTS[library!.package!.host].name, port.slug).toBe(port.registry.name)
       for (const documented of port.packages ?? []) {
@@ -191,6 +193,18 @@ describe('port inventory', () => {
       expect(entry.api, id).toBeUndefined()
       expect(entryCandidates(entry).map(({ url }) => url), id).toEqual([`https://javadoc.io/doc/io.github.libtmux/${id}`])
     }
+  })
+
+  it('points a package that documents nothing itself at the module that does', () => {
+    for (const [slug, list] of Object.entries(INVENTORY)) {
+      for (const entry of list.filter((candidate) => candidate.reference)) {
+        const documented = list.find((candidate) => candidate.id === entry.reference)
+        expect(documented?.api, `${slug}:${entry.id}`).toBeDefined()
+        expect(entry.api, `${slug}:${entry.id} documents nothing itself`).toBeUndefined()
+        expect(documented?.status).toBe('published')
+      }
+    }
+    expect(entries('swift')[0]!.reference).toBe('LibTmux')
   })
 
   it('builds a source link from a directory, or the repository when there is none', () => {

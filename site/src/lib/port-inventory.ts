@@ -109,6 +109,12 @@ export interface InventoryEntry {
   package?: { host: PackageHostId; url: string }
   /** An API reference hosted off site. */
   api?: { host: ApiHostId; url: string; /** What the host calls the output when it is not Javadoc, such as Dokka. */ tool?: string }
+  /**
+   * The entry whose `api` is this entry's reference, when the entry is a
+   * package that documents none of its own: a Swift package's reference is
+   * the DocC of its main module.
+   */
+  reference?: string
   status: PublicationStatus
   /** Why a configured or planned entry has no link. */
   note?: string
@@ -170,7 +176,7 @@ const SPI = 'https://swiftpackageindex.com/libtmux/libtmux-swift'
 const spiPackage: Located = { coordinate: 'libtmux-swift', package: { host: 'swift-package-index', url: SPI } }
 /** DocC output for one target; the index lowercases the module name. */
 const spiTarget = (target: string): Pick<InventoryEntry, 'api'> => ({
-  api: { host: 'swift-package-index', url: `${SPI}/documentation/${target.toLowerCase()}` },
+  api: { host: 'swift-package-index', url: `${SPI}/documentation/${target.toLowerCase()}`, tool: 'DocC' },
 })
 
 const PY = 'tmux-python/libtmux'
@@ -416,7 +422,8 @@ export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
       aliases: ['workspace-cli'] }),
   ],
   swift: [
-    swift({ id: 'libtmux-swift', kind: 'library', product: 'core', label: 'libtmux-swift', ...spiPackage, aliases: ['libtmux'] }),
+    swift({ id: 'libtmux-swift', kind: 'library', product: 'core', label: 'libtmux-swift', ...spiPackage, reference: 'LibTmux',
+      aliases: ['libtmux'] }),
     swift({ id: 'LibTmux', kind: 'module', product: 'core', label: 'LibTmux', ...spiPackage, coordinate: 'LibTmux',
       ...spiTarget('LibTmux'), path: 'Sources/LibTmux', aliases: ['import LibTmux'] }),
     swift({ id: 'TmuxFixture', kind: 'testing', product: 'core', label: 'TmuxFixture', ...spiPackage, coordinate: 'TmuxFixture',
