@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { proseMentions } from '../src/mentions.ts'
+import { isLikelyReference, notApiReason } from '../src/prose.ts'
 
 const LABELS = { Python: 'py', TypeScript: 'ts', Go: 'go' }
 
@@ -81,5 +82,24 @@ describe('prose mentions', () => {
   it('does not read image alt text or escaped code delimiters as API mentions', () => {
     const source = '![`Server`](server.svg) and \\`Pane\\` beside `Window`.'
     expect(proseMentions(source, LABELS).map(({ text }) => text)).toEqual(['Window'])
+  })
+})
+
+describe('spans that are code but not API', () => {
+  it('names tmux releases and variable expressions, which otherwise read as references', () => {
+    for (const text of ['3.3a', '3.8-rc2', '3.3a-rc', 'next-3.9', 'next-3.3a']) {
+      expect(isLikelyReference(text), text).toBe(true)
+      expect(notApiReason(text), text).toBe('tmux release name')
+    }
+    for (const text of ['$captured.Windows[0]', '$server.Sessions', '$_.Panes.Count']) {
+      expect(isLikelyReference(text), text).toBe(true)
+      expect(notApiReason(text), text).toBe('variable expression')
+    }
+  })
+
+  it('leaves qualified names and versioned identifiers to the resolver', () => {
+    for (const text of ['Server.panes', 'LibTmux.Server', 'v3.3a', '3.3a.Server', 'Version.next', 'TmuxVersion.V3_3a']) {
+      expect(notApiReason(text), text).toBeUndefined()
+    }
   })
 })

@@ -193,6 +193,11 @@ const NOT_API: { why: string; test: RegExp }[] = [
   // belong to tmux or the shell, not to a port.
   { why: 'environment variable', test: /^[A-Z][A-Z0-9_]{2,}$/ },
   { why: 'single-letter flag or type parameter', test: /^[A-Z]$/ },
+  // A tmux release, its candidates and development builds: `3.3a`,
+  // `3.8-rc2`, `next-3.9`. A version names tmux, not a port's symbol.
+  { why: 'tmux release name', test: /^(?:next-)?\d+\.\d+[a-z]?(?:-rc\d*)?$/ },
+  // A shell or PowerShell variable and what it reaches: `$captured.Windows[0]`.
+  { why: 'variable expression', test: /^\$[A-Za-z_]/ },
   // An expression, not a name: it carries arguments, a string, or a glob.
   { why: 'expression, not a symbol', test: /["']|\*|=>|\.\.\./ },
   { why: 'expression, not a symbol', test: /^\(|,\s/ },
