@@ -407,7 +407,7 @@ describe('from a method to the command and its C function', () => {
     // A condition follows the scope it holds for, inside its item.
     const fsharp = tmuxCommandRows(tmuxSymbolSends('fsharp', 'LibTmux.FSharp.Server.newSession'), []).filter((row) => row.command === 'list-panes')
     expect((await line(fsharp)).text).toBe(
-      'tmux command list-panes -s, cmd_list_panes_session the spec names a first window; list-panes -t, cmd_list_panes_window the spec has more than one window')
+      'tmux command list-panes -s, cmd_list_panes_session (the spec names a first window); list-panes -t, cmd_list_panes_window (the spec has more than one window)')
     // Commands with no C function to name keep the comma, and a line that mixes the two uses the semicolon throughout.
     const plain = [{ command: 'kill-pane', href: '/tmux/latest/manual/kill-pane/', scopes: [] }, { command: 'kill-window', href: '/tmux/latest/manual/kill-window/', scopes: [] }]
     expect((await line(plain)).text).toBe('tmux command kill-pane, kill-window')
