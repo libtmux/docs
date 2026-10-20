@@ -172,6 +172,14 @@ export function supportsJavaSignatures(symbol: ApiSymbol, language?: string): bo
     symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
 }
 
+/**
+ * A Swift symbol's name is its selector, `windows(named:)`, which tells overloads apart in titles,
+ * trees and addresses. A declaration spells its parameters itself, so it starts from the base name.
+ */
+export function swiftBaseName(name: string): string {
+  return name.replace(/(?<=.)\([^)]*\)$/, '')
+}
+
 /** The reference spells a Swift callable as its name and typed parameters, with no source declaration. */
 export function supportsSwiftSignatures(symbol: ApiSymbol, language?: string): boolean {
   return language === 'swift' && ['method', 'function'].includes(symbol.kind) && symbol.signatures.length > 0 &&

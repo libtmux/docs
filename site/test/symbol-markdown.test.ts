@@ -5,7 +5,7 @@ import { extractJulia, extractPowerShell, parameterId, SymbolIndex, type ApiSymb
 import { API_MODELS, OWNER_KINDS } from '../src/lib/api-models'
 import { membersByType } from '../src/lib/api-tree'
 import { CONCEPT_DESCRIPTION, PORTS, PORT_BY_SLUG, referenceUrl } from '../src/lib/ports'
-import { symbolMarkdown } from '../src/lib/symbol-markdown'
+import { symbolMarkdown, symbolMarkdownWithLayout } from '../src/lib/symbol-markdown'
 import { nativeSignatureText } from '../src/lib/api-sections'
 
 function inlineCodes(text: string): string[] {
@@ -319,6 +319,30 @@ describe('API Markdown content parity', () => {
     for (const signature of symbol.signatures) expect(text).toContain(signature.raw)
     expect(text).toContain('## Parameters\n\n- `expression`')
     expect(text).toContain('- `id` (`io.github.libtmux.WindowId`)')
+  })
+
+  it('writes a Swift declaration with its parentheses once and keeps the selector in the heading', async () => {
+    const model = API_MODELS.swift
+    const index = new SymbolIndex(model.symbols, (entry) => `/reference/${entry.slug}/`, 'swift')
+    const fence = (text: string) => text.match(/```\n([\s\S]*?)\n```/)?.[1]
+    for (const [id, declaration] of [
+      ['Server.panes()', 'panes() -> [Pane]'],
+      ['Server.windows(named:)', 'windows(named: String) -> [Window]'],
+      ['Server.init(socketName:tmuxExecutable:configurationFile:)', 'init(\n    socketName: String, tmuxExecutable: String,\n    configurationFile: String?)'],
+    ] as const) {
+      const symbol = model.symbols.find((entry) => entry.id === id)!
+      const text = await symbolMarkdownWithLayout({ model, symbol, index })
+      expect(text.startsWith(`# ${id}\n`), id).toBe(true)
+      expect(fence(text), id).toBe(declaration)
+    }
+    // A signature the layout leaves to the plain export keeps one set of parentheses too.
+    const symbol: ApiSymbol = {
+      id: 'Server.apply(_:)', name: 'apply(_:)', kind: 'method', modifiers: [], source: { file: 'Server.swift' },
+      signatures: [{ params: [{ name: 'count', type: 'Int', default: '1' }], returns: 'Int' }],
+    }
+    expect(fence(symbolMarkdown({ model: { ...model, symbols: [symbol] }, symbol, index }))).toBe('Server.apply(count: Int = 1) -> Int')
+    const noArguments: ApiSymbol = { ...symbol, id: 'Server.reset()', name: 'reset()', signatures: [{ params: [{ name: 'to', type: 'Int', default: '0' }] }, { params: [] }] }
+    expect(fence(symbolMarkdown({ model: { ...model, symbols: [noArguments] }, symbol: noArguments, index }))).toBe('Server.reset(to: Int = 0)\n\nServer.reset()')
   })
 
   it('uses the documented signature and keeps all declarations, warnings and provenance', () => {

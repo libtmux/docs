@@ -1,5 +1,5 @@
 import type { ApiSymbol, Signature } from '@libtmux/api-model'
-import { CODE_COLUMNS, codeWidthFailures, type CodeLayout, type CodeSyntax, type SpanLayout } from './code-layout'
+import { CODE_COLUMNS, codeWidthFailures, swiftBaseName, type CodeLayout, type CodeSyntax, type SpanLayout } from './code-layout'
 
 /*
  * Swift callable headers are laid out by swift-format's own printer. The
@@ -406,21 +406,21 @@ export function formatSwiftHead(head: Head, columns: number): string {
   return printPieces(headPieces(head), columns).text
 }
 
-/** The rendered reference declaration, in the text the page displays. */
+/** The rendered reference declaration, in the text the page displays: the base name, then the parameter list that spells the labels. */
 function declarationHead(symbol: ApiSymbol, signature: Signature): Head {
   for (const parameter of signature.params) {
     if (parameter.variadic || parameter.optional || parameter.default !== undefined || !parameter.type) {
       throw new Error(`Unsupported Swift parameter ${symbol.id}.${parameter.name}`)
     }
   }
-  return { name: symbol.name, parameters: signature.params.map(({ name, type }) => ({ name, type: type! })), ...(signature.returns ? { returns: signature.returns } : {}) }
+  return { name: swiftBaseName(symbol.name), parameters: signature.params.map(({ name, type }) => ({ name, type: type! })), ...(signature.returns ? { returns: signature.returns } : {}) }
 }
 
 const layouts = new Map<string, Promise<CodeLayout>>()
 
 /** Lay out a Swift callable's rendered declaration at the API budget. */
 export function swiftSignatureLayout(symbol: ApiSymbol, signature: Signature): Promise<CodeLayout> {
-  const key = JSON.stringify([symbol.name, signature.params, signature.returns, CODE_COLUMNS.api])
+  const key = JSON.stringify([swiftBaseName(symbol.name), signature.params, signature.returns, CODE_COLUMNS.api])
   let pending = layouts.get(key)
   if (!pending) {
     pending = (async () => {

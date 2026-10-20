@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import { builtinHref, memberTier, typeParametersOf, type ApiSymbol, type MemberSignals, type Param, type Signature, type SymbolIndex } from '@libtmux/api-model'
 import { apiGlossaryHref } from './api-glossary'
-import { csharpParameters, supportsCSharpSignatures, supportsGoSignatures, supportsJavaSignatures, supportsLuaSignatures, supportsRubySignatures, supportsRustSignatures, supportsTypeScriptSignatures } from './code-layout'
+import { csharpParameters, supportsCSharpSignatures, supportsGoSignatures, supportsJavaSignatures, supportsLuaSignatures, supportsRubySignatures, supportsRustSignatures, supportsTypeScriptSignatures, swiftBaseName } from './code-layout'
 
 export interface ApiSection {
   id: string
@@ -113,7 +113,7 @@ export function nativeSignatureText(symbol: ApiSymbol, signature: Signature, lan
 }
 
 function signatureLabels(symbol: ApiSymbol, port?: string): string[] {
-  const name = port === 'swift' ? symbol.name.replace(/\([^)]*\)$/, '') : symbol.name
+  const name = port === 'swift' ? swiftBaseName(symbol.name) : symbol.name
   const labels = symbol.signatures.map((signature) =>
     signature.label ?? `${name}(${signature.params.map((param) => param.name).join(', ')})`)
   return labels.map((label, i) => labels.filter((entry) => entry === label).length > 1
