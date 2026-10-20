@@ -200,13 +200,27 @@ describe('destination evidence', () => {
         .toEqual([`${first!.url} has no valid check date (none)`])
     })
 
-    it('warns when the committed evidence is old, one line for each date, and does not fail', () => {
-      const stale = staleRecords(evidence)
-      const lines = staleWarnings(stale)
-      for (const line of lines) console.warn(`warning: ${line}`)
-      expect(lines).toHaveLength(new Set(stale.map(({ checkedAt }: { checkedAt: string }) => checkedAt)).size)
-      for (const { checkedAt } of stale as { checkedAt: string }[]) expect(lines.join('\n'), checkedAt).toContain(checkedAt)
+    it('prints a warning for the committed evidence if it is old, and does not fail', () => {
+      // Against the real clock this is silent until the evidence ages; the next test is what proves the wording.
+      for (const line of staleWarnings(staleRecords(evidence))) console.warn(`warning: ${line}`)
       expect(checkEvidence(INVENTORY, evidence, { manifests })).toEqual([])
+    })
+
+    it('words one line for each check date that is old, oldest first, counting its records and leaving fresh ones out', () => {
+      const dated = (days: number) => new Date(checked.getTime() - days * DAY).toISOString().slice(0, 10)
+      const third = Math.floor(evidence.destinations.length / 3)
+      const mixed = withEvidence(evidence.destinations.map((record, index) => ({
+        ...record, checkedAt: index < third ? dated(EVIDENCE_MAX_AGE_DAYS + 40) : index < 2 * third ? dated(EVIDENCE_MAX_AGE_DAYS + 10) : evidence.checkedAt,
+      })))
+      const stale = staleRecords(mixed, { today: checked })
+      expect(stale).toHaveLength(2 * third)
+      expect(staleWarnings(stale)).toEqual([
+        `${third} destination records were last checked ${dated(EVIDENCE_MAX_AGE_DAYS + 40)}, more than ${EVIDENCE_MAX_AGE_DAYS} days ago: run node scripts/verify-destinations.mjs`,
+        `${third} destination records were last checked ${dated(EVIDENCE_MAX_AGE_DAYS + 10)}, more than ${EVIDENCE_MAX_AGE_DAYS} days ago: run node scripts/verify-destinations.mjs`,
+      ])
+      // Control: with the clock set before any record was checked none is old, and age never fails the agreement check.
+      expect(staleWarnings(staleRecords(mixed, { today: new Date(checked.getTime() - (EVIDENCE_MAX_AGE_DAYS + 41) * DAY) }))).toEqual([])
+      expect(checkEvidence(INVENTORY, mixed, { manifests, today: checked })).toEqual([])
     })
 
     describe('in the future', () => {
