@@ -226,6 +226,24 @@ API index keep their library symbols.
 The publication audit checks index freshness, rendered links, navigation targets,
 and table layout at desktop, tablet, and phone widths.
 
+### Header destinations
+
+The port header links each repository, package page and API reference that
+[`port-inventory.ts`](site/src/lib/port-inventory.ts) publishes. A status in
+that file is a claim about a live host, so check it against the host after
+changing an entry or when a package is released:
+
+```console
+$ node scripts/verify-destinations.mjs
+```
+
+The command requests each URL once, read-only, and requires the host's own
+identity for the package, not only a 200. It rewrites
+`site/src/data/destination-evidence.json`, which the unit tests and the
+publication audit compare with the inventory offline. It exits 1 when a
+published destination fails or an unlinked one starts to answer; commit the
+evidence with the inventory change that follows.
+
 ## Building and previewing
 
 Build the Astro shell:
