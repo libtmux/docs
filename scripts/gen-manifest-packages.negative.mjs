@@ -10,6 +10,8 @@
  * a version bumped, a package dropped or invented, a unit dropped, a port
  * missing from the file, a port that is not registered. Two more hide a
  * checkout and require that the rest is still compared and the hidden port named.
+ * Python is read from three repositories, so hiding either companion must leave
+ * py named and uncompared, not reported as drift from the core alone.
  */
 import { copyFileSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
@@ -83,6 +85,36 @@ if (hidden && other) {
   check('with a checkout absent, the other ports are still compared', partial.code === 1 && new RegExp(`${other}: differs from its manifests`).test(partial.out), `exit ${partial.code}: ${partial.out.trim()}`)
 } else {
   console.log('skip the absent-checkout cases: too few checkouts are present here')
+}
+
+// Python is read from three repositories. With a companion absent the core alone is not the port, so it is
+// named and left unchecked rather than compared and reported as drift; with every source present a change to
+// a companion's package is still caught.
+if (!notChecked.has('py')) {
+  const file = join(dir, 'py.json')
+  copyFileSync(real, file)
+  const data = JSON.parse(readFileSync(file, 'utf8'))
+  const companion = data.ports.py.distributions.find((entry) => entry.repo !== data.ports.py.repo)
+  companion.version = '9.9.9'
+  writeFileSync(file, `${JSON.stringify(data, null, 2)}\n`)
+  const present = run(file)
+  check('a changed companion package is caught when every source is read', present.code === 1 && /py: differs from its manifests/.test(present.out), `exit ${present.code}: ${present.out.trim()}`)
+  for (const variable of ['LIBTMUX_DOCS_WORKSPACE_PY', 'LIBTMUX_DOCS_MCP_PY']) {
+    const env = { [variable]: '/nonexistent' }
+    const untouched = run(real, env)
+    check(`with ${variable} absent, py is named and the committed file passes`, untouched.code === 0 && /not checked: py$/m.test(untouched.out) && !/differs/.test(untouched.out), `exit ${untouched.code}: ${untouched.out.trim()}`)
+    const partial = run(file, env)
+    check(`with ${variable} absent, py is not compared from the core alone`, partial.code === 0 && /not checked: py$/m.test(partial.out), `exit ${partial.code}: ${partial.out.trim()}`)
+  }
+  const other = ['rs', 'ts', 'go', 'swift'].find((slug) => !notChecked.has(slug))
+  if (other) {
+    data.ports[other].distributions[0].version = '9.9.9'
+    writeFileSync(file, `${JSON.stringify(data, null, 2)}\n`)
+    const rest = run(file, { LIBTMUX_DOCS_WORKSPACE_PY: '/nonexistent' })
+    check('with a companion absent, the other ports are still compared', rest.code === 1 && new RegExp(`${other}: differs from its manifests`).test(rest.out) && !/py: differs/.test(rest.out), `exit ${rest.code}: ${rest.out.trim()}`)
+  }
+} else {
+  console.log('skip the companion cases: the py checkouts are absent here')
 }
 rmSync(dir, { recursive: true, force: true })
 if (failures > 0) process.exit(1)

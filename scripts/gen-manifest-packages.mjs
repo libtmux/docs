@@ -17,7 +17,9 @@
  *   --out <path>  Write there (default: site/src/data/manifest-packages.json).
  *   --check       Write nothing; exit 1 if the file is out of date. A port whose
  *                 checkout or revision is absent cannot be read, so it is named
- *                 and left unchecked while every other port is compared.
+ *                 and left unchecked while every other port is compared. So is
+ *                 Python when either companion checkout is absent: the core
+ *                 alone is not the port.
  *
  * LIBTMUX_DOCS_CHECKOUT_<PORT> overrides a port's checkout, and
  * LIBTMUX_DOCS_WORKSPACE_PY and LIBTMUX_DOCS_MCP_PY the Python companions'.
@@ -50,6 +52,7 @@ const COMPANIONS = [
   { product: 'mcp', variable: 'LIBTMUX_DOCS_MCP_PY', fallback: '~/work/python/libtmux-mcp' },
 ]
 
+/** What could not be read, as `{ slug, note }`: a port with any source unread is left out of `ports` whole. */
 const skipped = []
 const ports = {}
 for (const port of PORTS) {
@@ -60,17 +63,20 @@ for (const port of PORTS) {
     return repo.exists() ? repo : undefined
   }
   const core = open(checkout, model.revision)
-  if (!core) { skipped.push(`${port.slug}: no ${model.revision} in ${checkout}`); continue }
+  if (!core) { skipped.push({ slug: port.slug, note: `${port.slug}: no ${model.revision} in ${checkout}` }); continue }
   const read = readPort(port.slug, core, { identity: port.repo.split('/').pop() })
   const distributions = read.distributions.map((entry) => ({ ...entry, repo: port.repo, revision: model.revision }))
+  // A port built from several repositories is compared only when every one was read: the core alone is not the port.
+  let complete = true
   if (port.slug === 'py') {
     for (const { product, variable, fallback } of COMPANIONS) {
       const source = model.sources.find((entry) => entry.product === product)
       const repo = open(expand(process.env[variable] ?? fallback), source.revision)
-      if (!repo) { skipped.push(`py ${product}: no ${source.revision}`); continue }
+      if (!repo) { skipped.push({ slug: 'py', note: `py ${product}: no ${source.revision} (${variable})` }); complete = false; continue }
       distributions.push(...readPort('py', repo, {}).distributions.map((entry) => ({ ...entry, repo: source.repo, revision: source.revision })))
     }
   }
+  if (!complete) continue
   ports[port.slug] = {
     repo: port.repo, revision: model.revision,
     // A wrapper port builds on its parent's repository and lists only part of it.
@@ -81,7 +87,7 @@ for (const port of PORTS) {
 }
 
 const text = `${JSON.stringify({ schema: 1, ports }, null, 2)}\n`
-for (const note of skipped) console.error(`skipped ${note}`)
+for (const { note } of skipped) console.error(`skipped ${note}`)
 if (opts.check) {
   if (!existsSync(opts.out)) {
     console.error(`${opts.out} does not exist. Run: node scripts/gen-manifest-packages.mjs`)
@@ -100,7 +106,7 @@ if (opts.check) {
     process.exit(1)
   }
   const checked = Object.keys(ports).length
-  console.log(`${opts.out} is current for ${checked} of ${PORTS.length} ports${skipped.length > 0 ? `; not checked: ${skipped.map((note) => note.split(':')[0].split(' ')[0]).join(', ')}` : ''}`)
+  console.log(`${opts.out} is current for ${checked} of ${PORTS.length} ports${skipped.length > 0 ? `; not checked: ${[...new Set(skipped.map(({ slug }) => slug))].join(', ')}` : ''}`)
 } else {
   if (skipped.length > 0) throw new Error('refusing to write a partial file; provide the missing checkouts')
   writeFileSync(opts.out, text)
