@@ -31,8 +31,8 @@ export function guardFlag(source, line) {
 
 /**
  * Problems with one command's scope table against one release's C model.
- * @param {{ scopes: { id: string, flag: string, function: string }[] }} entry
- * @param {{ commands: { name: string, callback: string }[], symbols: { id: string, name: string, references?: { target: string, kind: string, sites?: { file: string, line: number }[] }[] }[] }} model
+ * @param {{ scopes: { id: string, flag: string, function: string, inline?: string[] }[] }} entry
+ * @param {{ version?: string, commands: { name: string, callback: string }[], symbols: { id: string, name: string, references?: { target: string, kind: string, sites?: { file: string, line: number }[] }[] }[] }} model
  * @param {string} command
  * @param {(file: string) => string | undefined} [readSource] The release's C source, when a checkout is at hand.
  */
@@ -43,6 +43,11 @@ export function scopeProblems(entry, model, command, readSource) {
   if (!exec) return [`${command}: no registered callback`]
   for (const scope of entry.scopes) {
     const target = model.symbols.find((symbol) => symbol.name === scope.function && symbol.id.startsWith('c:function:'))
+    // A release can dispatch inline, with no function for the scope; the table must say so and the function must really be absent.
+    if (scope.inline?.includes(model.version)) {
+      if (target) problems.push(`${command}: ${scope.function} exists in tmux ${model.version}, so the scope is not inline there`)
+      continue
+    }
     const call = target && exec.references?.find((reference) => reference.kind === 'call' && reference.target === target.id)
     if (!call) { problems.push(`${command}: ${exec.name} does not call ${scope.function}`); continue }
     const site = call.sites?.[0]

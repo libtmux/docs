@@ -2,114 +2,2884 @@
   "schemaVersion": 1,
   "claims": [
     {
-      "port": "rs", "symbol": "server.Server.panes", "command": "list-panes", "scope": "server",
+      "port": "rs",
+      "symbol": "server.Server.panes",
+      "command": "list-panes",
+      "scope": "server",
       "evidence": [
-        { "at": "crates/libtmux/src/internal/listing.rs:204", "has": ["LIST_COMMAND: &str = \"list-panes\""] },
-        { "at": "crates/libtmux/src/internal/listing.rs:58", "has": ["Self::Server", ".arg(\"-a\")"] },
-        { "at": "crates/libtmux/src/server/discovery.rs:41", "has": ["listing::panes", "Scope::Server"], "in": "server.Server.panes" }
+        {
+          "at": "crates/libtmux/src/internal/listing.rs:204",
+          "has": [
+            "LIST_COMMAND: &str = \"list-panes\""
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/internal/listing.rs:58",
+          "has": [
+            "Self::Server",
+            ".arg(\"-a\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/server/discovery.rs:41",
+          "has": [
+            "listing::panes",
+            "Scope::Server"
+          ],
+          "in": "server.Server.panes"
+        }
       ]
     },
     {
-      "port": "rs", "symbol": "session.Session.panes", "command": "list-panes", "scope": "session",
+      "port": "rs",
+      "symbol": "session.Session.panes",
+      "command": "list-panes",
+      "scope": "session",
       "evidence": [
-        { "at": "crates/libtmux/src/internal/listing.rs:204", "has": ["LIST_COMMAND: &str = \"list-panes\""] },
-        { "at": "crates/libtmux/src/internal/listing.rs:60", "has": ["Self::SessionTarget", ".arg(\"-s\")"] },
-        { "at": "crates/libtmux/src/session.rs:440", "has": ["listing::panes", "Scope::SessionTarget"], "in": "session.Session.panes" }
+        {
+          "at": "crates/libtmux/src/internal/listing.rs:204",
+          "has": [
+            "LIST_COMMAND: &str = \"list-panes\""
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/internal/listing.rs:60",
+          "has": [
+            "Self::SessionTarget",
+            ".arg(\"-s\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/session.rs:440",
+          "has": [
+            "listing::panes",
+            "Scope::SessionTarget"
+          ],
+          "in": "session.Session.panes"
+        }
       ]
     },
     {
-      "port": "rs", "symbol": "window.Window.panes", "command": "list-panes", "scope": "window",
+      "port": "rs",
+      "symbol": "window.Window.panes",
+      "command": "list-panes",
+      "scope": "window",
       "evidence": [
-        { "at": "crates/libtmux/src/internal/listing.rs:204", "has": ["LIST_COMMAND: &str = \"list-panes\""] },
-        { "at": "crates/libtmux/src/internal/listing.rs:59", "has": ["Self::Target", ".arg(\"-t\")"] },
-        { "at": "crates/libtmux/src/window/navigation.rs:23", "has": ["listing::panes", "Scope::Target"], "in": "window.Window.panes" }
+        {
+          "at": "crates/libtmux/src/internal/listing.rs:204",
+          "has": [
+            "LIST_COMMAND: &str = \"list-panes\""
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/internal/listing.rs:59",
+          "has": [
+            "Self::Target",
+            ".arg(\"-t\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/window/navigation.rs:23",
+          "has": [
+            "listing::panes",
+            "Scope::Target"
+          ],
+          "in": "window.Window.panes"
+        }
       ]
     },
     {
-      "port": "ts", "symbol": "server.Server.snapshot", "command": "list-panes", "scope": "server",
+      "port": "ts",
+      "symbol": "server.Server.snapshot",
+      "command": "list-panes",
+      "scope": "server",
       "evidence": [
-        { "at": "packages/libtmux/src/_internal/operations/acquire.ts:27", "has": ["\"list-panes\"", "[\"-a\"]"] },
-        { "at": "packages/libtmux/src/_internal/operations/acquire.ts:90", "has": ["ACQUISITION_LISTINGS"] },
-        { "at": "packages/libtmux/src/_internal/operations/acquire.ts:126", "has": ["acquireServerGraphAttempt"] },
-        { "at": "packages/libtmux/src/_internal/operations/snapshot.ts:42", "has": ["acquireServerGraph"] },
-        { "at": "packages/libtmux/src/server.ts:533", "has": ["buildServerSnapshot"], "in": "server.Server.snapshot" }
+        {
+          "at": "packages/libtmux/src/_internal/operations/acquire.ts:27",
+          "has": [
+            "\"list-panes\"",
+            "[\"-a\"]"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/acquire.ts:90",
+          "has": [
+            "ACQUISITION_LISTINGS"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/acquire.ts:126",
+          "has": [
+            "acquireServerGraphAttempt"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/snapshot.ts:42",
+          "has": [
+            "acquireServerGraph"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/server.ts:533",
+          "has": [
+            "buildServerSnapshot"
+          ],
+          "in": "server.Server.snapshot"
+        }
       ]
     },
     {
-      "port": "ruby", "symbol": "LibTmux::Server#list_panes", "command": "list-panes", "scope": "server",
+      "port": "ruby",
+      "symbol": "LibTmux::Server#list_panes",
+      "command": "list-panes",
+      "scope": "server",
       "evidence": [
-        { "at": "gems/libtmux/lib/libtmux/server.rb:470", "has": ["\"list-#{kind}s\""] },
-        { "at": "gems/libtmux/lib/libtmux/server.rb:163", "has": ["list_entities(:pane", "[\"-a\"]"], "in": "LibTmux::Server#list_panes" }
+        {
+          "at": "gems/libtmux/lib/libtmux/server.rb:470",
+          "has": [
+            "\"list-#{kind}s\""
+          ]
+        },
+        {
+          "at": "gems/libtmux/lib/libtmux/server.rb:163",
+          "has": [
+            "list_entities(:pane",
+            "[\"-a\"]"
+          ],
+          "in": "LibTmux::Server#list_panes"
+        }
       ]
     },
     {
-      "port": "ruby", "symbol": "LibTmux::Session#list_panes", "command": "list-panes", "scope": "session",
+      "port": "ruby",
+      "symbol": "LibTmux::Session#list_panes",
+      "command": "list-panes",
+      "scope": "session",
       "evidence": [
-        { "at": "gems/libtmux/lib/libtmux/server.rb:470", "has": ["\"list-#{kind}s\""] },
-        { "at": "gems/libtmux/lib/libtmux/entity.rb:113", "has": [":list_entities, :pane", "[\"-s\", \"-t\""], "in": "LibTmux::Session#list_panes" }
+        {
+          "at": "gems/libtmux/lib/libtmux/server.rb:470",
+          "has": [
+            "\"list-#{kind}s\""
+          ]
+        },
+        {
+          "at": "gems/libtmux/lib/libtmux/entity.rb:113",
+          "has": [
+            ":list_entities, :pane",
+            "[\"-s\", \"-t\""
+          ],
+          "in": "LibTmux::Session#list_panes"
+        }
       ]
     },
     {
-      "port": "ruby", "symbol": "LibTmux::Window#list_panes", "command": "list-panes", "scope": "window",
+      "port": "ruby",
+      "symbol": "LibTmux::Window#list_panes",
+      "command": "list-panes",
+      "scope": "window",
       "evidence": [
-        { "at": "gems/libtmux/lib/libtmux/server.rb:470", "has": ["\"list-#{kind}s\""] },
-        { "at": "gems/libtmux/lib/libtmux/entity.rb:123", "has": [":list_entities, :pane", "[\"-t\""], "in": "LibTmux::Window#list_panes" }
+        {
+          "at": "gems/libtmux/lib/libtmux/server.rb:470",
+          "has": [
+            "\"list-#{kind}s\""
+          ]
+        },
+        {
+          "at": "gems/libtmux/lib/libtmux/entity.rb:123",
+          "has": [
+            ":list_entities, :pane",
+            "[\"-t\""
+          ],
+          "in": "LibTmux::Window#list_panes"
+        }
       ]
     },
     {
-      "port": "lua", "symbol": "libtmux.Server:snapshot", "command": "list-panes", "scope": "server",
+      "port": "go",
+      "symbol": "tmux.Server.NewSession",
+      "command": "new-session",
+      "scope": null,
       "evidence": [
-        { "at": "lua/libtmux/_internal/server.lua:22", "has": ["\"list-panes\"", "\"-a\""] },
-        { "at": "lua/libtmux/_internal/server.lua:177", "has": ["ipairs(specs)"] },
-        { "at": "lua/libtmux/_internal/server.lua:309", "has": ["acquire("] },
-        { "at": "lua/libtmux/_internal/server.lua:432", "has": ["capture("], "in": "libtmux.Server:snapshot" }
+        {
+          "at": "tmux/session_lifecycle.go:91",
+          "has": [
+            "\"new-session\""
+          ]
+        },
+        {
+          "at": "tmux/session_lifecycle.go:62",
+          "has": [
+            "renderNewSessionArguments("
+          ]
+        },
+        {
+          "at": "tmux/session_lifecycle.go:230",
+          "has": [
+            "newSessionArguments(request)"
+          ]
+        },
+        {
+          "at": "tmux/session_lifecycle.go:234",
+          "has": [
+            "literalCmd(ctx, arguments...)"
+          ],
+          "in": "tmux.Server.NewSession"
+        }
       ]
     },
     {
-      "port": "java", "symbol": "io.github.libtmux.Server.Server.snapshot", "command": "list-panes", "scope": "server",
+      "port": "go",
+      "symbol": "tmux.Session.NewWindow",
+      "command": "new-window",
+      "scope": null,
       "evidence": [
-        { "at": "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:183", "has": ["\"list-panes\"", "\"-a\""] },
-        { "at": "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:103", "has": ["capture(process)"] },
-        { "at": "libtmux/src/main/java/io/github/libtmux/Server.java:878", "has": ["capture.attempt()"], "in": "io.github.libtmux.Server.Server.snapshot" }
+        {
+          "at": "tmux/window_lifecycle.go:157",
+          "has": [
+            "\"new-window\""
+          ]
+        },
+        {
+          "at": "tmux/window_lifecycle.go:213",
+          "has": [
+            "newWindowArguments("
+          ]
+        },
+        {
+          "at": "tmux/window_lifecycle.go:224",
+          "has": [
+            "literalCmd(ctx, arguments...)"
+          ]
+        },
+        {
+          "at": "tmux/window_lifecycle.go:88",
+          "has": [
+            "return newWindow("
+          ],
+          "in": "tmux.Session.NewWindow"
+        }
       ]
     },
     {
-      "port": "csharp", "symbol": "LibTmux.Server.CaptureSnapshotAsync", "command": "list-panes", "scope": "server",
+      "port": "go",
+      "symbol": "tmux.Window.NewWindow",
+      "command": "new-window",
+      "scope": null,
       "evidence": [
-        { "at": "src/LibTmux/Snapshots/ServerSnapshot.cs:120", "has": ["\"list-panes\"", "[\"-a\""] },
-        { "at": "src/LibTmux/Snapshots/ServerSnapshot.cs:55", "has": ["ReadRowsAsync"] },
-        { "at": "src/LibTmux/Server.Snapshots.cs:119", "has": [".ReadAsync(live, depth, sessionFilter"] },
-        { "at": "src/LibTmux/Server.Snapshots.cs:98", "has": ["CaptureSnapshotAsync(depth, timeProvider, sessionFilter: null"] },
-        { "at": "src/LibTmux/Server.Snapshots.cs:91", "has": ["CaptureSnapshotAsync(depth, TimeProvider.System"], "in": "LibTmux.Server.CaptureSnapshotAsync" }
+        {
+          "at": "tmux/window_lifecycle.go:157",
+          "has": [
+            "\"new-window\""
+          ]
+        },
+        {
+          "at": "tmux/window_lifecycle.go:213",
+          "has": [
+            "newWindowArguments("
+          ]
+        },
+        {
+          "at": "tmux/window_lifecycle.go:224",
+          "has": [
+            "literalCmd(ctx, arguments...)"
+          ]
+        },
+        {
+          "at": "tmux/window_lifecycle.go:117",
+          "has": [
+            "return newWindow("
+          ],
+          "in": "tmux.Window.NewWindow"
+        }
       ]
     },
     {
-      "port": "powershell", "symbol": "LibTmux\\Get-TmuxPane", "command": "list-panes", "scope": "window",
-      "via": { "port": "csharp", "symbol": "LibTmux.Window.GetPanesAsync" },
+      "port": "go",
+      "symbol": "tmux.Pane.Capture",
+      "command": "capture-pane",
+      "scope": null,
       "evidence": [
-        { "at": "src/LibTmux.PowerShell/GetTmuxPaneCommand.cs:43", "has": ["Window!.GetPanesAsync"], "in": "LibTmux\\Get-TmuxPane" }
+        {
+          "at": "tmux/pane_capture.go:282",
+          "has": [
+            "\"capture-pane\""
+          ]
+        },
+        {
+          "at": "tmux/pane_capture.go:222",
+          "has": [
+            "p.captureArguments("
+          ]
+        },
+        {
+          "at": "tmux/pane_capture.go:232",
+          "has": [
+            "p.literalCmd(ctx, arguments...)"
+          ]
+        },
+        {
+          "at": "tmux/pane_capture.go:127",
+          "has": [
+            "p.capturePane("
+          ],
+          "in": "tmux.Pane.Capture"
+        }
       ]
     },
     {
-      "port": "powershell", "symbol": "LibTmux\\Get-TmuxPane", "command": "list-panes", "scope": "session",
-      "via": { "port": "csharp", "symbol": "LibTmux.Session.GetPanesAsync" },
+      "port": "go",
+      "symbol": "tmux.Pane.CaptureBytes",
+      "command": "capture-pane",
+      "scope": null,
       "evidence": [
-        { "at": "src/LibTmux.PowerShell/GetTmuxPaneCommand.cs:46", "has": ["Session!.GetPanesAsync"], "in": "LibTmux\\Get-TmuxPane" }
+        {
+          "at": "tmux/pane_capture.go:282",
+          "has": [
+            "\"capture-pane\""
+          ]
+        },
+        {
+          "at": "tmux/pane_capture.go:222",
+          "has": [
+            "p.captureArguments("
+          ]
+        },
+        {
+          "at": "tmux/pane_capture.go:232",
+          "has": [
+            "p.literalCmd(ctx, arguments...)"
+          ]
+        },
+        {
+          "at": "tmux/pane_capture.go:141",
+          "has": [
+            "p.capturePane("
+          ],
+          "in": "tmux.Pane.CaptureBytes"
+        }
       ]
     },
     {
-      "port": "powershell", "symbol": "LibTmux\\Get-TmuxPane", "command": "list-panes", "scope": "server",
-      "via": { "port": "csharp", "symbol": "LibTmux.Server.CaptureSnapshotAsync" },
+      "port": "go",
+      "symbol": "tmux.Pane.CaptureToBuffer",
+      "command": "capture-pane",
+      "scope": null,
       "evidence": [
-        { "at": "src/LibTmux.PowerShell/GetTmuxPaneCommand.cs:49", "has": ["Server!.CaptureSnapshotAsync(SnapshotDepth.Panes"], "in": "LibTmux\\Get-TmuxPane" }
+        {
+          "at": "tmux/pane_capture.go:282",
+          "has": [
+            "\"capture-pane\""
+          ]
+        },
+        {
+          "at": "tmux/pane_capture.go:222",
+          "has": [
+            "p.captureArguments("
+          ]
+        },
+        {
+          "at": "tmux/pane_capture.go:232",
+          "has": [
+            "p.literalCmd(ctx, arguments...)"
+          ]
+        },
+        {
+          "at": "tmux/pane_capture.go:157",
+          "has": [
+            "p.capturePane("
+          ],
+          "in": "tmux.Pane.CaptureToBuffer"
+        }
       ]
     },
     {
-      "port": "julia", "symbol": "LibTmux.snapshot", "command": "list-panes", "scope": "server",
+      "port": "java",
+      "symbol": "io.github.libtmux.Server.Server.snapshot",
+      "command": "list-panes",
+      "scope": "server",
       "evidence": [
-        { "at": "src/acquisition.jl:120", "has": ["\"list-panes\""] },
-        { "at": "src/acquisition.jl:125", "has": ["args=(\"-a\",)"] },
-        { "at": "src/acquisition.jl:231", "has": ["_capture_graph_rows("], "in": "LibTmux.snapshot" }
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:183",
+          "has": [
+            "\"list-panes\"",
+            "\"-a\""
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:103",
+          "has": [
+            "capture(process)"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java:878",
+          "has": [
+            "capture.attempt()"
+          ],
+          "in": "io.github.libtmux.Server.Server.snapshot"
+        }
+      ],
+      "forwardable": true
+    },
+    {
+      "port": "csharp",
+      "symbol": "LibTmux.Server.CaptureSnapshotAsync",
+      "command": "list-panes",
+      "scope": "server",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Snapshots/ServerSnapshot.cs:120",
+          "has": [
+            "\"list-panes\"",
+            "[\"-a\""
+          ]
+        },
+        {
+          "at": "src/LibTmux/Snapshots/ServerSnapshot.cs:55",
+          "has": [
+            "ReadRowsAsync"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Server.Snapshots.cs:119",
+          "has": [
+            ".ReadAsync(live, depth, sessionFilter"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Server.Snapshots.cs:98",
+          "has": [
+            "CaptureSnapshotAsync(depth, timeProvider, sessionFilter: null"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Server.Snapshots.cs:91",
+          "has": [
+            "CaptureSnapshotAsync(depth, TimeProvider.System"
+          ],
+          "in": "LibTmux.Server.CaptureSnapshotAsync"
+        }
+      ]
+    },
+    {
+      "port": "powershell",
+      "symbol": "LibTmux\\Get-TmuxPane",
+      "command": "list-panes",
+      "scope": "server",
+      "via": {
+        "port": "csharp",
+        "symbol": "LibTmux.Server.CaptureSnapshotAsync"
+      },
+      "evidence": [
+        {
+          "at": "src/LibTmux.PowerShell/GetTmuxPaneCommand.cs:49",
+          "has": [
+            "Server!.CaptureSnapshotAsync(SnapshotDepth.Panes"
+          ],
+          "in": "LibTmux\\Get-TmuxPane"
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.snapshot",
+      "command": "list-panes",
+      "scope": "server",
+      "evidence": [
+        {
+          "at": "src/acquisition.jl:120",
+          "has": [
+            "\"list-panes\""
+          ]
+        },
+        {
+          "at": "src/acquisition.jl:125",
+          "has": [
+            "args=(\"-a\",)"
+          ]
+        },
+        {
+          "at": "src/acquisition.jl:231",
+          "has": [
+            "_capture_graph_rows("
+          ],
+          "in": "LibTmux.snapshot"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Pane:capture",
+      "command": "capture-pane",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/pane.lua:10",
+          "has": [
+            "capture = \"capture-pane\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/pane.lua:226",
+          "has": [
+            "commands[kind]"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:180",
+          "has": [
+            "\"capture\""
+          ],
+          "in": "libtmux.Pane:capture"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Pane:clear_history",
+      "command": "clear-history",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/pane.lua:12",
+          "has": [
+            "clear_history = \"clear-history\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/pane.lua:226",
+          "has": [
+            "commands[kind]"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:185",
+          "has": [
+            "\"clear_history\""
+          ],
+          "in": "libtmux.Pane:clear_history"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Pane:capture_to_buffer",
+      "command": "capture-pane",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/pane.lua:11",
+          "has": [
+            "capture_to_buffer = \"capture-pane\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/pane.lua:226",
+          "has": [
+            "commands[kind]"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:190",
+          "has": [
+            "\"capture_to_buffer\""
+          ],
+          "in": "libtmux.Pane:capture_to_buffer"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Pane:send_text",
+      "command": "send-keys",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/pane.lua:13",
+          "has": [
+            "send_text = \"send-keys\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/pane.lua:226",
+          "has": [
+            "commands[kind]"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:195",
+          "has": [
+            "\"send_text\""
+          ],
+          "in": "libtmux.Pane:send_text"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Pane:send_keys",
+      "command": "send-keys",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/pane.lua:14",
+          "has": [
+            "send_keys = \"send-keys\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/pane.lua:226",
+          "has": [
+            "commands[kind]"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:200",
+          "has": [
+            "\"send_keys\""
+          ],
+          "in": "libtmux.Pane:send_keys"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Pane:copy_mode",
+      "command": "copy-mode",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/pane.lua:15",
+          "has": [
+            "copy_mode = \"copy-mode\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/pane.lua:226",
+          "has": [
+            "commands[kind]"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:205",
+          "has": [
+            "\"copy_mode\""
+          ],
+          "in": "libtmux.Pane:copy_mode"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Pane:copy_command",
+      "command": "send-keys",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/pane.lua:16",
+          "has": [
+            "copy_command = \"send-keys\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/pane.lua:226",
+          "has": [
+            "commands[kind]"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:213",
+          "has": [
+            "\"copy_command\""
+          ],
+          "in": "libtmux.Pane:copy_command"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Pane:resize",
+      "command": "resize-pane",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/pane.lua:17",
+          "has": [
+            "resize = \"resize-pane\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/pane.lua:226",
+          "has": [
+            "commands[kind]"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:221",
+          "has": [
+            "implementation = ",
+            "pane"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:222",
+          "has": [
+            "\"resize\""
+          ],
+          "in": "libtmux.Pane:resize"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Pane:kill",
+      "command": "kill-pane",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/pane.lua:18",
+          "has": [
+            "kill = \"kill-pane\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/pane.lua:226",
+          "has": [
+            "commands[kind]"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:227",
+          "has": [
+            "implementation = ",
+            "pane"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:228",
+          "has": [
+            "\"kill\""
+          ],
+          "in": "libtmux.Pane:kill"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Pane:respawn",
+      "command": "respawn-pane",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/pane.lua:19",
+          "has": [
+            "respawn = \"respawn-pane\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/pane.lua:226",
+          "has": [
+            "commands[kind]"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:253",
+          "has": [
+            "implementation = ",
+            "pane"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:254",
+          "has": [
+            "\"respawn\""
+          ],
+          "in": "libtmux.Pane:respawn"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Pane:select",
+      "command": "select-pane",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/pane.lua:20",
+          "has": [
+            "select = \"select-pane\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/pane.lua:226",
+          "has": [
+            "commands[kind]"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:259",
+          "has": [
+            "implementation = ",
+            "pane"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:260",
+          "has": [
+            "\"select\""
+          ],
+          "in": "libtmux.Pane:select"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Pane:set_title",
+      "command": "select-pane",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/pane.lua:21",
+          "has": [
+            "set_title = \"select-pane\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/pane.lua:226",
+          "has": [
+            "commands[kind]"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:297",
+          "has": [
+            "\"set_title\""
+          ],
+          "in": "libtmux.Pane:set_title"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Pane:swap",
+      "command": "swap-pane",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/pane.lua:22",
+          "has": [
+            "swap = \"swap-pane\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/pane.lua:226",
+          "has": [
+            "commands[kind]"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:307",
+          "has": [
+            "implementation = ",
+            "pane"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:308",
+          "has": [
+            "\"swap\""
+          ],
+          "in": "libtmux.Pane:swap"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Session:rename",
+      "command": "rename-session",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/topology.lua:64",
+          "has": [
+            "rename = \"rename-session\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/topology.lua:339",
+          "has": [
+            "targets["
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:233",
+          "has": [
+            "\"rename\""
+          ],
+          "in": "libtmux.Session:rename"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Window:rename",
+      "command": "rename-window",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/topology.lua:70",
+          "has": [
+            "rename = \"rename-window\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/topology.lua:339",
+          "has": [
+            "targets["
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:233",
+          "has": [
+            "\"rename\""
+          ],
+          "in": "libtmux.Window:rename"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Session:kill",
+      "command": "kill-session",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/topology.lua:65",
+          "has": [
+            "kill = \"kill-session\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/topology.lua:339",
+          "has": [
+            "targets["
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:227",
+          "has": [
+            "implementation = ",
+            "topology"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:228",
+          "has": [
+            "\"kill\""
+          ],
+          "in": "libtmux.Session:kill"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Window:kill",
+      "command": "kill-window",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/topology.lua:71",
+          "has": [
+            "kill = \"kill-window\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/topology.lua:339",
+          "has": [
+            "targets["
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:227",
+          "has": [
+            "implementation = ",
+            "topology"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:228",
+          "has": [
+            "\"kill\""
+          ],
+          "in": "libtmux.Window:kill"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Window:resize",
+      "command": "resize-window",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/topology.lua:72",
+          "has": [
+            "resize = \"resize-window\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/topology.lua:339",
+          "has": [
+            "targets["
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:221",
+          "has": [
+            "implementation = ",
+            "topology"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:222",
+          "has": [
+            "\"resize\""
+          ],
+          "in": "libtmux.Window:resize"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Window:layout",
+      "command": "select-layout",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/topology.lua:73",
+          "has": [
+            "layout = \"select-layout\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/topology.lua:339",
+          "has": [
+            "targets["
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:248",
+          "has": [
+            "\"layout\""
+          ],
+          "in": "libtmux.Window:layout"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Window:respawn",
+      "command": "respawn-window",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/topology.lua:74",
+          "has": [
+            "respawn = \"respawn-window\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/topology.lua:339",
+          "has": [
+            "targets["
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:253",
+          "has": [
+            "implementation = ",
+            "topology"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:254",
+          "has": [
+            "\"respawn\""
+          ],
+          "in": "libtmux.Window:respawn"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Session:renumber_windows",
+      "command": "move-window",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/topology.lua:66",
+          "has": [
+            "renumber_windows = \"move-window\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/topology.lua:339",
+          "has": [
+            "targets["
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:243",
+          "has": [
+            "\"renumber_windows\""
+          ],
+          "in": "libtmux.Session:renumber_windows"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.WindowLink:select",
+      "command": "select-window",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/topology.lua:77",
+          "has": [
+            "select = \"select-window\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/topology.lua:201",
+          "has": [
+            "targets.window_link[kind]"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:259",
+          "has": [
+            "implementation = ",
+            "topology"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:260",
+          "has": [
+            "\"select\""
+          ],
+          "in": "libtmux.WindowLink:select"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.WindowLink:link",
+      "command": "link-window",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/topology.lua:78",
+          "has": [
+            "link = \"link-window\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/topology.lua:201",
+          "has": [
+            "targets.window_link[kind]"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:265",
+          "has": [
+            "\"link\""
+          ],
+          "in": "libtmux.WindowLink:link"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.WindowLink:move",
+      "command": "move-window",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/topology.lua:79",
+          "has": [
+            "move = \"move-window\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/topology.lua:201",
+          "has": [
+            "targets.window_link[kind]"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:270",
+          "has": [
+            "\"move\""
+          ],
+          "in": "libtmux.WindowLink:move"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.WindowLink:swap",
+      "command": "swap-window",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/topology.lua:80",
+          "has": [
+            "swap = \"swap-window\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/topology.lua:201",
+          "has": [
+            "targets.window_link[kind]"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:307",
+          "has": [
+            "implementation = ",
+            "topology"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:308",
+          "has": [
+            "\"swap\""
+          ],
+          "in": "libtmux.WindowLink:swap"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.WindowLink:unlink",
+      "command": "unlink-window",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/topology.lua:81",
+          "has": [
+            "unlink = \"unlink-window\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/topology.lua:201",
+          "has": [
+            "targets.window_link[kind]"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:275",
+          "has": [
+            "\"unlink\""
+          ],
+          "in": "libtmux.WindowLink:unlink"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Pane:move_to",
+      "command": "join-pane",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/topology.lua:395",
+          "has": [
+            "\"join-pane\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:280",
+          "has": [
+            "\"move_to\""
+          ],
+          "in": "libtmux.Pane:move_to"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Pane:break_out",
+      "command": "break-pane",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/topology.lua:201",
+          "has": [
+            "\"break-pane\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:288",
+          "has": [
+            "\"break_out\""
+          ],
+          "in": "libtmux.Pane:break_out"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Session:navigate_window",
+      "command": "next-window",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/topology.lua:466",
+          "has": [
+            "next-window"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:238",
+          "has": [
+            "\"navigate_window\""
+          ],
+          "in": "libtmux.Session:navigate_window"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Session:navigate_window",
+      "command": "previous-window",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/topology.lua:466",
+          "has": [
+            "previous-window"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:238",
+          "has": [
+            "\"navigate_window\""
+          ],
+          "in": "libtmux.Session:navigate_window"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Session:navigate_window",
+      "command": "last-window",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/topology.lua:466",
+          "has": [
+            "last-window"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:238",
+          "has": [
+            "\"navigate_window\""
+          ],
+          "in": "libtmux.Session:navigate_window"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Session:get_option",
+      "command": "show-options",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:177",
+          "has": [
+            "\"show-options\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:78",
+          "has": [
+            "\"option\", \"get\""
+          ],
+          "in": "libtmux.Session:get_option"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Session:list_options",
+      "command": "show-options",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:177",
+          "has": [
+            "\"show-options\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:83",
+          "has": [
+            "\"option\", \"list\""
+          ],
+          "in": "libtmux.Session:list_options"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Session:set_option",
+      "command": "set-option",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:175",
+          "has": [
+            "\"set-hook\" or \"set-option\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/settings.lua:261",
+          "has": [
+            "argv(verb"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:88",
+          "has": [
+            "\"option\", \"set\""
+          ],
+          "in": "libtmux.Session:set_option"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Session:unset_option",
+      "command": "set-option",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:175",
+          "has": [
+            "\"set-hook\" or \"set-option\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/settings.lua:185",
+          "has": [
+            "\"-u\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:93",
+          "has": [
+            "\"option\", \"unset\""
+          ],
+          "in": "libtmux.Session:unset_option"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Session:get_hook",
+      "command": "show-options",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:177",
+          "has": [
+            "\"show-options\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:98",
+          "has": [
+            "\"hook\", \"get\""
+          ],
+          "in": "libtmux.Session:get_hook"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Session:list_hooks",
+      "command": "show-options",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:177",
+          "has": [
+            "\"show-options\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:103",
+          "has": [
+            "\"hook\", \"list\""
+          ],
+          "in": "libtmux.Session:list_hooks"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Session:set_hook",
+      "command": "set-hook",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:175",
+          "has": [
+            "\"set-hook\" or \"set-option\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/settings.lua:261",
+          "has": [
+            "argv(verb"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:108",
+          "has": [
+            "\"hook\", \"set\""
+          ],
+          "in": "libtmux.Session:set_hook"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Session:unset_hook",
+      "command": "set-hook",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:175",
+          "has": [
+            "\"set-hook\" or \"set-option\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/settings.lua:185",
+          "has": [
+            "\"-u\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:113",
+          "has": [
+            "\"hook\", \"unset\""
+          ],
+          "in": "libtmux.Session:unset_hook"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Session:run_hook",
+      "command": "set-hook",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:190",
+          "has": [
+            "\"set-hook\", \"-R\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:118",
+          "has": [
+            "\"hook\", \"run\""
+          ],
+          "in": "libtmux.Session:run_hook"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Window:get_option",
+      "command": "show-options",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:177",
+          "has": [
+            "\"show-options\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:78",
+          "has": [
+            "\"option\", \"get\""
+          ],
+          "in": "libtmux.Window:get_option"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Window:list_options",
+      "command": "show-options",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:177",
+          "has": [
+            "\"show-options\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:83",
+          "has": [
+            "\"option\", \"list\""
+          ],
+          "in": "libtmux.Window:list_options"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Window:set_option",
+      "command": "set-option",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:175",
+          "has": [
+            "\"set-hook\" or \"set-option\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/settings.lua:261",
+          "has": [
+            "argv(verb"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:88",
+          "has": [
+            "\"option\", \"set\""
+          ],
+          "in": "libtmux.Window:set_option"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Window:unset_option",
+      "command": "set-option",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:175",
+          "has": [
+            "\"set-hook\" or \"set-option\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/settings.lua:185",
+          "has": [
+            "\"-u\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:93",
+          "has": [
+            "\"option\", \"unset\""
+          ],
+          "in": "libtmux.Window:unset_option"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Window:get_hook",
+      "command": "show-options",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:177",
+          "has": [
+            "\"show-options\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:98",
+          "has": [
+            "\"hook\", \"get\""
+          ],
+          "in": "libtmux.Window:get_hook"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Window:list_hooks",
+      "command": "show-options",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:177",
+          "has": [
+            "\"show-options\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:103",
+          "has": [
+            "\"hook\", \"list\""
+          ],
+          "in": "libtmux.Window:list_hooks"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Window:set_hook",
+      "command": "set-hook",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:175",
+          "has": [
+            "\"set-hook\" or \"set-option\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/settings.lua:261",
+          "has": [
+            "argv(verb"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:108",
+          "has": [
+            "\"hook\", \"set\""
+          ],
+          "in": "libtmux.Window:set_hook"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Window:unset_hook",
+      "command": "set-hook",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:175",
+          "has": [
+            "\"set-hook\" or \"set-option\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/settings.lua:185",
+          "has": [
+            "\"-u\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:113",
+          "has": [
+            "\"hook\", \"unset\""
+          ],
+          "in": "libtmux.Window:unset_hook"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Window:run_hook",
+      "command": "set-hook",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:190",
+          "has": [
+            "\"set-hook\", \"-R\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:118",
+          "has": [
+            "\"hook\", \"run\""
+          ],
+          "in": "libtmux.Window:run_hook"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Pane:get_option",
+      "command": "show-options",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:177",
+          "has": [
+            "\"show-options\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:78",
+          "has": [
+            "\"option\", \"get\""
+          ],
+          "in": "libtmux.Pane:get_option"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Pane:list_options",
+      "command": "show-options",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:177",
+          "has": [
+            "\"show-options\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:83",
+          "has": [
+            "\"option\", \"list\""
+          ],
+          "in": "libtmux.Pane:list_options"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Pane:set_option",
+      "command": "set-option",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:175",
+          "has": [
+            "\"set-hook\" or \"set-option\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/settings.lua:261",
+          "has": [
+            "argv(verb"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:88",
+          "has": [
+            "\"option\", \"set\""
+          ],
+          "in": "libtmux.Pane:set_option"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Pane:unset_option",
+      "command": "set-option",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:175",
+          "has": [
+            "\"set-hook\" or \"set-option\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/settings.lua:185",
+          "has": [
+            "\"-u\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:93",
+          "has": [
+            "\"option\", \"unset\""
+          ],
+          "in": "libtmux.Pane:unset_option"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Pane:get_hook",
+      "command": "show-options",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:177",
+          "has": [
+            "\"show-options\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:98",
+          "has": [
+            "\"hook\", \"get\""
+          ],
+          "in": "libtmux.Pane:get_hook"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Pane:list_hooks",
+      "command": "show-options",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:177",
+          "has": [
+            "\"show-options\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:103",
+          "has": [
+            "\"hook\", \"list\""
+          ],
+          "in": "libtmux.Pane:list_hooks"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Pane:set_hook",
+      "command": "set-hook",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:175",
+          "has": [
+            "\"set-hook\" or \"set-option\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/settings.lua:261",
+          "has": [
+            "argv(verb"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:108",
+          "has": [
+            "\"hook\", \"set\""
+          ],
+          "in": "libtmux.Pane:set_hook"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Pane:unset_hook",
+      "command": "set-hook",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:175",
+          "has": [
+            "\"set-hook\" or \"set-option\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/settings.lua:185",
+          "has": [
+            "\"-u\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:113",
+          "has": [
+            "\"hook\", \"unset\""
+          ],
+          "in": "libtmux.Pane:unset_hook"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Pane:run_hook",
+      "command": "set-hook",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:190",
+          "has": [
+            "\"set-hook\", \"-R\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:118",
+          "has": [
+            "\"hook\", \"run\""
+          ],
+          "in": "libtmux.Pane:run_hook"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Server:get_option",
+      "command": "show-options",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:177",
+          "has": [
+            "\"show-options\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:380",
+          "has": [
+            "\"option\", \"get\""
+          ],
+          "in": "libtmux.Server:get_option"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Server:list_options",
+      "command": "show-options",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:177",
+          "has": [
+            "\"show-options\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:384",
+          "has": [
+            "\"option\", \"list\""
+          ],
+          "in": "libtmux.Server:list_options"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Server:set_option",
+      "command": "set-option",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:175",
+          "has": [
+            "\"set-hook\" or \"set-option\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/settings.lua:261",
+          "has": [
+            "argv(verb"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:388",
+          "has": [
+            "\"option\", \"set\""
+          ],
+          "in": "libtmux.Server:set_option"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Server:unset_option",
+      "command": "set-option",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:175",
+          "has": [
+            "\"set-hook\" or \"set-option\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/settings.lua:185",
+          "has": [
+            "\"-u\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:392",
+          "has": [
+            "\"option\", \"unset\""
+          ],
+          "in": "libtmux.Server:unset_option"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Server:get_hook",
+      "command": "show-options",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:177",
+          "has": [
+            "\"show-options\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:396",
+          "has": [
+            "\"hook\", \"get\""
+          ],
+          "in": "libtmux.Server:get_hook"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Server:list_hooks",
+      "command": "show-options",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:177",
+          "has": [
+            "\"show-options\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:400",
+          "has": [
+            "\"hook\", \"list\""
+          ],
+          "in": "libtmux.Server:list_hooks"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Server:set_hook",
+      "command": "set-hook",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:175",
+          "has": [
+            "\"set-hook\" or \"set-option\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/settings.lua:261",
+          "has": [
+            "argv(verb"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:404",
+          "has": [
+            "\"hook\", \"set\""
+          ],
+          "in": "libtmux.Server:set_hook"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Server:unset_hook",
+      "command": "set-hook",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/settings.lua:175",
+          "has": [
+            "\"set-hook\" or \"set-option\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/settings.lua:185",
+          "has": [
+            "\"-u\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:408",
+          "has": [
+            "\"hook\", \"unset\""
+          ],
+          "in": "libtmux.Server:unset_hook"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Session:get_environment",
+      "command": "show-environment",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/environment.lua:31",
+          "has": [
+            "\"show-environment\"",
+            "\"set-environment\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:123",
+          "has": [
+            "\"get\""
+          ],
+          "in": "libtmux.Session:get_environment"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Session:list_environment",
+      "command": "show-environment",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/environment.lua:31",
+          "has": [
+            "\"show-environment\"",
+            "\"set-environment\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:128",
+          "has": [
+            "\"list\""
+          ],
+          "in": "libtmux.Session:list_environment"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Session:set_environment",
+      "command": "set-environment",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/environment.lua:31",
+          "has": [
+            "\"show-environment\"",
+            "\"set-environment\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:133",
+          "has": [
+            "\"set\""
+          ],
+          "in": "libtmux.Session:set_environment"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Session:unset_environment",
+      "command": "set-environment",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/environment.lua:31",
+          "has": [
+            "\"show-environment\"",
+            "\"set-environment\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:138",
+          "has": [
+            "\"unset\""
+          ],
+          "in": "libtmux.Session:unset_environment"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Session:remove_environment",
+      "command": "set-environment",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/environment.lua:31",
+          "has": [
+            "\"show-environment\"",
+            "\"set-environment\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:143",
+          "has": [
+            "\"remove\""
+          ],
+          "in": "libtmux.Session:remove_environment"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Server:get_environment",
+      "command": "show-environment",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/environment.lua:31",
+          "has": [
+            "\"show-environment\"",
+            "\"set-environment\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:412",
+          "has": [
+            "\"get\""
+          ],
+          "in": "libtmux.Server:get_environment"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Server:list_environment",
+      "command": "show-environment",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/environment.lua:31",
+          "has": [
+            "\"show-environment\"",
+            "\"set-environment\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:416",
+          "has": [
+            "\"list\""
+          ],
+          "in": "libtmux.Server:list_environment"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Server:set_environment",
+      "command": "set-environment",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/environment.lua:31",
+          "has": [
+            "\"show-environment\"",
+            "\"set-environment\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:420",
+          "has": [
+            "\"set\""
+          ],
+          "in": "libtmux.Server:set_environment"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Server:unset_environment",
+      "command": "set-environment",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/environment.lua:31",
+          "has": [
+            "\"show-environment\"",
+            "\"set-environment\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:424",
+          "has": [
+            "\"unset\""
+          ],
+          "in": "libtmux.Server:unset_environment"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Server:remove_environment",
+      "command": "set-environment",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/environment.lua:31",
+          "has": [
+            "\"show-environment\"",
+            "\"set-environment\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:428",
+          "has": [
+            "\"remove\""
+          ],
+          "in": "libtmux.Server:remove_environment"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Session:new_window",
+      "command": "new-window",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/domain.lua:7",
+          "has": [
+            "window = \"new-window\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/domain.lua:174",
+          "has": [
+            "commands[kind]"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:313",
+          "has": [
+            "\"window\""
+          ],
+          "in": "libtmux.Session:new_window"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Pane:split",
+      "command": "split-window",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/domain.lua:7",
+          "has": [
+            "pane = \"split-window\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/domain.lua:174",
+          "has": [
+            "commands[kind]"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:318",
+          "has": [
+            "\"pane\""
+          ],
+          "in": "libtmux.Pane:split"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Server:new_session",
+      "command": "new-session",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/domain.lua:7",
+          "has": [
+            "session = \"new-session\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/domain.lua:174",
+          "has": [
+            "commands[kind]"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:460",
+          "has": [
+            "\"session\""
+          ],
+          "in": "libtmux.Server:new_session"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Server:set_buffer",
+      "command": "load-buffer",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/buffer.lua:9",
+          "has": [
+            "set = \"load-buffer\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/buffer.lua:140",
+          "has": [
+            "commands[kind]"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:440",
+          "has": [
+            "\"set\""
+          ],
+          "in": "libtmux.Server:set_buffer"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Server:show_buffer",
+      "command": "show-buffer",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/buffer.lua:9",
+          "has": [
+            "show = \"show-buffer\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/buffer.lua:140",
+          "has": [
+            "commands[kind]"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:444",
+          "has": [
+            "\"show\""
+          ],
+          "in": "libtmux.Server:show_buffer"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Server:delete_buffer",
+      "command": "delete-buffer",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/buffer.lua:9",
+          "has": [
+            "delete = \"delete-buffer\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/buffer.lua:140",
+          "has": [
+            "commands[kind]"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:448",
+          "has": [
+            "\"delete\""
+          ],
+          "in": "libtmux.Server:delete_buffer"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Pane:paste_buffer",
+      "command": "paste-buffer",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/buffer.lua:9",
+          "has": [
+            "paste = \"paste-buffer\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/buffer.lua:140",
+          "has": [
+            "commands[kind]"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/entity.lua:302",
+          "has": [
+            "\"paste\""
+          ],
+          "in": "libtmux.Pane:paste_buffer"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Server:switch_client",
+      "command": "switch-client",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/client.lua:93",
+          "has": [
+            "\"switch-client\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:456",
+          "has": [
+            "\"switch\""
+          ],
+          "in": "libtmux.Server:switch_client"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Server:switch_client",
+      "command": "list-clients",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/client.lua:129",
+          "has": [
+            "\"list-clients\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:456",
+          "has": [
+            "\"switch\""
+          ],
+          "in": "libtmux.Server:switch_client"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Server:detach_client",
+      "command": "detach-client",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/client.lua:103",
+          "has": [
+            "\"detach-client\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:452",
+          "has": [
+            "\"detach\""
+          ],
+          "in": "libtmux.Server:detach_client"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Server:detach_client",
+      "command": "list-clients",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/client.lua:129",
+          "has": [
+            "\"list-clients\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:452",
+          "has": [
+            "\"detach\""
+          ],
+          "in": "libtmux.Server:detach_client"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Server:snapshot",
+      "command": "list-sessions",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/server.lua:20",
+          "has": [
+            "\"list-sessions\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:96",
+          "has": [
+            "ipairs(specs)"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:309",
+          "has": [
+            "acquire("
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:432",
+          "has": [
+            "capture("
+          ],
+          "in": "libtmux.Server:snapshot"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Server:snapshot",
+      "command": "list-windows",
+      "scope": "server",
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/server.lua:21",
+          "has": [
+            "\"list-windows\"",
+            "\"-a\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:96",
+          "has": [
+            "ipairs(specs)"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:309",
+          "has": [
+            "acquire("
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:432",
+          "has": [
+            "capture("
+          ],
+          "in": "libtmux.Server:snapshot"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Server:snapshot",
+      "command": "list-clients",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/server.lua:24",
+          "has": [
+            "\"list-clients\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:96",
+          "has": [
+            "ipairs(specs)"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:309",
+          "has": [
+            "acquire("
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:432",
+          "has": [
+            "capture("
+          ],
+          "in": "libtmux.Server:snapshot"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Server:snapshot",
+      "command": "list-buffers",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/server.lua:25",
+          "has": [
+            "\"list-buffers\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:96",
+          "has": [
+            "ipairs(specs)"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:309",
+          "has": [
+            "acquire("
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:432",
+          "has": [
+            "capture("
+          ],
+          "in": "libtmux.Server:snapshot"
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "symbol": "libtmux.Server:snapshot",
+      "command": "list-panes",
+      "scope": "server",
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/server.lua:22",
+          "has": [
+            "\"list-panes\"",
+            "\"-a\""
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:177",
+          "has": [
+            "ipairs(specs)"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:309",
+          "has": [
+            "acquire("
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/server.lua:432",
+          "has": [
+            "capture("
+          ],
+          "in": "libtmux.Server:snapshot"
+        }
       ]
     }
   ]

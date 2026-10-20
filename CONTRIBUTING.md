@@ -207,7 +207,8 @@ and tests require every mapped target to resolve.
 A tmux command page links the methods that send the command, and a method
 page links the command and the C function behind its scope. Those links come
 from each port's source at the revision its API model was extracted from, not
-from concepts: a method that only reads a captured snapshot has no link. After
+from concepts: a method that only reads a captured snapshot has no link, and a
+plan or chain that only records a command is an exclusion with cited lines. After
 a port's model changes revision, regenerate the usage data with the port
 checkouts present:
 

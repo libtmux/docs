@@ -1,12 +1,223 @@
 {
   "commands": [
-    "list-panes"
+    "attach-session",
+    "bind-key",
+    "break-pane",
+    "capture-pane",
+    "choose-buffer",
+    "choose-client",
+    "choose-tree",
+    "clear-history",
+    "clear-prompt-history",
+    "clock-mode",
+    "command-prompt",
+    "confirm-before",
+    "copy-mode",
+    "customize-mode",
+    "delete-buffer",
+    "detach-client",
+    "display-menu",
+    "display-message",
+    "display-panes",
+    "display-popup",
+    "find-window",
+    "has-session",
+    "if-shell",
+    "join-pane",
+    "kill-pane",
+    "kill-server",
+    "kill-session",
+    "kill-window",
+    "last-pane",
+    "last-window",
+    "link-window",
+    "list-buffers",
+    "list-clients",
+    "list-commands",
+    "list-keys",
+    "list-panes",
+    "list-sessions",
+    "list-windows",
+    "load-buffer",
+    "lock-client",
+    "lock-server",
+    "lock-session",
+    "move-pane",
+    "move-window",
+    "new-pane",
+    "new-session",
+    "new-window",
+    "next-layout",
+    "next-window",
+    "paste-buffer",
+    "pipe-pane",
+    "previous-layout",
+    "previous-window",
+    "refresh-client",
+    "rename-session",
+    "rename-window",
+    "resize-pane",
+    "resize-window",
+    "respawn-pane",
+    "respawn-window",
+    "rotate-window",
+    "run-shell",
+    "save-buffer",
+    "select-layout",
+    "select-pane",
+    "select-window",
+    "send-keys",
+    "send-prefix",
+    "server-access",
+    "set-buffer",
+    "set-environment",
+    "set-hook",
+    "set-option",
+    "set-window-option",
+    "show-buffer",
+    "show-environment",
+    "show-hooks",
+    "show-messages",
+    "show-options",
+    "show-prompt-history",
+    "show-window-options",
+    "source-file",
+    "split-window",
+    "start-server",
+    "suspend-client",
+    "swap-pane",
+    "swap-window",
+    "switch-client",
+    "unbind-key",
+    "unlink-window",
+    "wait-for"
   ],
   "port": "rs",
   "repo": "libtmux/libtmux-rs",
   "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
   "schemaVersion": 1,
   "symbols": {
+    "client.Client.detach": [
+      {
+        "command": "detach-client",
+        "evidence": [
+          "crates/libtmux/src/client.rs:378"
+        ],
+        "scope": null
+      }
+    ],
+    "client.Client.lock": [
+      {
+        "command": "lock-client",
+        "evidence": [
+          "crates/libtmux/src/client.rs:433"
+        ],
+        "scope": null
+      }
+    ],
+    "client.Client.redraw": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "crates/libtmux/src/client.rs:453"
+        ],
+        "scope": null
+      }
+    ],
+    "client.Client.refresh": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "crates/libtmux/src/client.rs:203",
+          "crates/libtmux/src/client.rs:171"
+        ],
+        "scope": null
+      }
+    ],
+    "client.Client.suspend": [
+      {
+        "command": "suspend-client",
+        "evidence": [
+          "crates/libtmux/src/client.rs:405"
+        ],
+        "scope": null
+      }
+    ],
+    "client.Client.switch_to": [
+      {
+        "command": "switch-client",
+        "evidence": [
+          "crates/libtmux/src/client.rs:472"
+        ],
+        "scope": null
+      }
+    ],
+    "control.ControlMode.attach_with_limits": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "crates/libtmux/src/control.rs:543"
+        ],
+        "scope": null
+      }
+    ],
+    "control.ControlSender.mute_pane": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "crates/libtmux/src/control.rs:1135",
+          "crates/libtmux/src/control.rs:866"
+        ],
+        "scope": null
+      }
+    ],
+    "control.ControlSender.pause_after": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "crates/libtmux/src/control.rs:1038"
+        ],
+        "scope": null
+      }
+    ],
+    "control.ControlSender.resume_pane": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "crates/libtmux/src/control.rs:928",
+          "crates/libtmux/src/control.rs:916"
+        ],
+        "scope": null
+      }
+    ],
+    "control.ControlSender.subscribe": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "crates/libtmux/src/control.rs:997"
+        ],
+        "scope": null
+      }
+    ],
+    "control.ControlSender.unmute_pane": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "crates/libtmux/src/control.rs:928",
+          "crates/libtmux/src/control.rs:899"
+        ],
+        "scope": null
+      }
+    ],
+    "control.ControlSender.unsubscribe": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "crates/libtmux/src/control.rs:1018"
+        ],
+        "scope": null
+      }
+    ],
     "control.ControlSender.watch_only": [
       {
         "command": "list-panes",
@@ -14,6 +225,495 @@
           "crates/libtmux/src/control.rs:1077"
         ],
         "scope": "session"
+      }
+    ],
+    "control.PaneOutput.snapshot": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "crates/libtmux/src/control.rs:1468"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.break_out": [
+      {
+        "command": "break-pane",
+        "evidence": [
+          "crates/libtmux/src/pane.rs:1081"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.capture_lines": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "crates/libtmux/src/pane/observe.rs:233"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.capture_with": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "crates/libtmux/src/pane/observe.rs:174"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.clear_history": [
+      {
+        "command": "clear-history",
+        "evidence": [
+          "crates/libtmux/src/pane.rs:924"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.clock_mode": [
+      {
+        "command": "clock-mode",
+        "evidence": [
+          "crates/libtmux/src/pane.rs:1206"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.copy_mode": [
+      {
+        "command": "copy-mode",
+        "evidence": [
+          "crates/libtmux/src/pane.rs:1164"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.display": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "crates/libtmux/src/pane.rs:877"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.exit_mode": [
+      {
+        "command": "copy-mode",
+        "evidence": [
+          "crates/libtmux/src/pane.rs:1189"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.format": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "crates/libtmux/src/pane.rs:841"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.join_into": [
+      {
+        "command": "join-pane",
+        "evidence": [
+          "crates/libtmux/src/pane.rs:1142"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.kill": [
+      {
+        "command": "kill-pane",
+        "evidence": [
+          "crates/libtmux/src/pane.rs:756"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.paste_buffer": [
+      {
+        "command": "paste-buffer",
+        "evidence": [
+          "crates/libtmux/src/pane.rs:940"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.pipe": [
+      {
+        "command": "pipe-pane",
+        "evidence": [
+          "crates/libtmux/src/pane.rs:965"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.resize": [
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "crates/libtmux/src/pane.rs:728"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.resize_by": [
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "crates/libtmux/src/pane.rs:563"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.respawn": [
+      {
+        "command": "respawn-pane",
+        "evidence": [
+          "crates/libtmux/src/pane.rs:988"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.select": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "crates/libtmux/src/pane.rs:707"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.send_key_names": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "crates/libtmux/src/pane.rs:688"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.send_keys": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "crates/libtmux/src/pane.rs:645"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.send_line": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "crates/libtmux/src/pane.rs:672"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.send_prefix": [
+      {
+        "command": "send-prefix",
+        "evidence": [
+          "crates/libtmux/src/pane.rs:1222"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.set_title": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "crates/libtmux/src/pane.rs:901"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.split": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "crates/libtmux/src/pane.rs:1618",
+          "crates/libtmux/src/pane.rs:515"
+        ],
+        "scope": null
+      },
+      {
+        "command": "split-window",
+        "evidence": [
+          "crates/libtmux/src/internal/listing.rs:440",
+          "crates/libtmux/src/pane.rs:515"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.swap_with": [
+      {
+        "command": "swap-pane",
+        "evidence": [
+          "crates/libtmux/src/pane.rs:1016"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.toggle_zoom": [
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "crates/libtmux/src/pane.rs:616"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.wait_for_quiet": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "crates/libtmux/src/pane/observe.rs:491",
+          "crates/libtmux/src/pane/observe.rs:367"
+        ],
+        "scope": null
+      },
+      {
+        "command": "display-message",
+        "evidence": [
+          "crates/libtmux/src/pane/observe.rs:476",
+          "crates/libtmux/src/pane/observe.rs:367"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.wait_for_text": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "crates/libtmux/src/pane/observe.rs:491",
+          "crates/libtmux/src/pane/observe.rs:315"
+        ],
+        "scope": null
+      },
+      {
+        "command": "display-message",
+        "evidence": [
+          "crates/libtmux/src/pane/observe.rs:476",
+          "crates/libtmux/src/pane/observe.rs:315"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.wait_until": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "crates/libtmux/src/pane/observe.rs:491",
+          "crates/libtmux/src/pane/observe.rs:446"
+        ],
+        "scope": null
+      },
+      {
+        "command": "display-message",
+        "evidence": [
+          "crates/libtmux/src/pane/observe.rs:476",
+          "crates/libtmux/src/pane/observe.rs:446"
+        ],
+        "scope": null
+      }
+    ],
+    "plan.Plan.run_over_control_mode": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "crates/libtmux/src/plan/run.rs:787",
+          "crates/libtmux/src/plan/run.rs:846"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.access_rules": [
+      {
+        "command": "server-access",
+        "evidence": [
+          "crates/libtmux/src/server.rs:1406"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.bind_key": [
+      {
+        "command": "bind-key",
+        "evidence": [
+          "crates/libtmux/src/server.rs:1127"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.buffer": [
+      {
+        "command": "show-buffer",
+        "evidence": [
+          "crates/libtmux/src/server.rs:1040"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.buffer_names": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "crates/libtmux/src/server.rs:1070"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.check_alive": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "crates/libtmux/src/server.rs:1688"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.clear_prompt_history": [
+      {
+        "command": "clear-prompt-history",
+        "evidence": [
+          "crates/libtmux/src/server.rs:1364"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.command_prompt": [
+      {
+        "command": "command-prompt",
+        "evidence": [
+          "crates/libtmux/src/server/interactive.rs:105"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.delete_buffer": [
+      {
+        "command": "delete-buffer",
+        "evidence": [
+          "crates/libtmux/src/server.rs:1106"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.display_menu": [
+      {
+        "command": "display-menu",
+        "evidence": [
+          "crates/libtmux/src/server/interactive.rs:61"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.display_panes": [
+      {
+        "command": "display-panes",
+        "evidence": [
+          "crates/libtmux/src/server/interactive.rs:188"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.display_popup": [
+      {
+        "command": "display-popup",
+        "evidence": [
+          "crates/libtmux/src/server/interactive.rs:30"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.find_window": [
+      {
+        "command": "find-window",
+        "evidence": [
+          "crates/libtmux/src/server/interactive.rs:164"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.format": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "crates/libtmux/src/server.rs:1225"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.grant_access": [
+      {
+        "command": "server-access",
+        "evidence": [
+          "crates/libtmux/src/server.rs:1430"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.hide_environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "crates/libtmux/src/internal/environment.rs:62",
+          "crates/libtmux/src/server/settings.rs:306"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.key_bindings": [
+      {
+        "command": "list-keys",
+        "evidence": [
+          "crates/libtmux/src/server.rs:1171"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.kill": [
+      {
+        "command": "kill-server",
+        "evidence": [
+          "crates/libtmux/src/server.rs:924"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.load_buffer": [
+      {
+        "command": "load-buffer",
+        "evidence": [
+          "crates/libtmux/src/server.rs:982"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.lock_all": [
+      {
+        "command": "lock-server",
+        "evidence": [
+          "crates/libtmux/src/server.rs:914"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.new_session": [
+      {
+        "command": "new-session",
+        "evidence": [
+          "crates/libtmux/src/server.rs:2286",
+          "crates/libtmux/src/server.rs:898"
+        ],
+        "scope": null
       }
     ],
     "server.Server.panes": [
@@ -28,6 +728,179 @@
         "scope": "server"
       }
     ],
+    "server.Server.prompt_history": [
+      {
+        "command": "show-prompt-history",
+        "evidence": [
+          "crates/libtmux/src/server.rs:1327"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.revoke_access": [
+      {
+        "command": "server-access",
+        "evidence": [
+          "crates/libtmux/src/server.rs:1455"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.run_shell": [
+      {
+        "command": "run-shell",
+        "evidence": [
+          "crates/libtmux/src/server.rs:1546"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.save_buffer": [
+      {
+        "command": "save-buffer",
+        "evidence": [
+          "crates/libtmux/src/server.rs:1013"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.set_buffer": [
+      {
+        "command": "set-buffer",
+        "evidence": [
+          "crates/libtmux/src/server.rs:954"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.source_file": [
+      {
+        "command": "source-file",
+        "evidence": [
+          "crates/libtmux/src/server.rs:1473"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.spawn_shell": [
+      {
+        "command": "run-shell",
+        "evidence": [
+          "crates/libtmux/src/server.rs:1578"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.start": [
+      {
+        "command": "start-server",
+        "evidence": [
+          "crates/libtmux/src/server.rs:1593"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.typed_key_bindings": [
+      {
+        "command": "list-keys",
+        "evidence": [
+          "crates/libtmux/src/server/keys.rs:160"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.unbind_key": [
+      {
+        "command": "unbind-key",
+        "evidence": [
+          "crates/libtmux/src/server.rs:1146"
+        ],
+        "scope": null
+      }
+    ],
+    "session.Session.detach_clients": [
+      {
+        "command": "detach-client",
+        "evidence": [
+          "crates/libtmux/src/session.rs:744"
+        ],
+        "scope": null
+      }
+    ],
+    "session.Session.display": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "crates/libtmux/src/session.rs:655"
+        ],
+        "scope": null
+      }
+    ],
+    "session.Session.format": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "crates/libtmux/src/session.rs:619"
+        ],
+        "scope": null
+      }
+    ],
+    "session.Session.hide_environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "crates/libtmux/src/internal/environment.rs:62",
+          "crates/libtmux/src/session/settings.rs:524"
+        ],
+        "scope": null
+      }
+    ],
+    "session.Session.kill": [
+      {
+        "command": "kill-session",
+        "evidence": [
+          "crates/libtmux/src/session.rs:539"
+        ],
+        "scope": null
+      }
+    ],
+    "session.Session.last_window": [
+      {
+        "command": "last-window",
+        "evidence": [
+          "crates/libtmux/src/session.rs:384"
+        ],
+        "scope": null
+      }
+    ],
+    "session.Session.lock": [
+      {
+        "command": "lock-session",
+        "evidence": [
+          "crates/libtmux/src/session.rs:701"
+        ],
+        "scope": null
+      }
+    ],
+    "session.Session.new_window": [
+      {
+        "command": "new-window",
+        "evidence": [
+          "crates/libtmux/src/internal/listing.rs:423",
+          "crates/libtmux/src/session.rs:495"
+        ],
+        "scope": null
+      }
+    ],
+    "session.Session.next_window": [
+      {
+        "command": "next-window",
+        "evidence": [
+          "crates/libtmux/src/session.rs:361"
+        ],
+        "scope": null
+      }
+    ],
     "session.Session.panes": [
       {
         "command": "list-panes",
@@ -40,6 +913,97 @@
         "scope": "session"
       }
     ],
+    "session.Session.previous_window": [
+      {
+        "command": "previous-window",
+        "evidence": [
+          "crates/libtmux/src/session.rs:372"
+        ],
+        "scope": null
+      }
+    ],
+    "session.Session.rename": [
+      {
+        "command": "rename-session",
+        "evidence": [
+          "crates/libtmux/src/session.rs:513"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.display": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "crates/libtmux/src/window.rs:834"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.focus_direction": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "crates/libtmux/src/window/navigation.rs:129"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.format": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "crates/libtmux/src/window.rs:798"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.kill": [
+      {
+        "command": "kill-window",
+        "evidence": [
+          "crates/libtmux/src/window.rs:688"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.last_pane": [
+      {
+        "command": "last-pane",
+        "evidence": [
+          "crates/libtmux/src/window/navigation.rs:188"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.link_to": [
+      {
+        "command": "link-window",
+        "evidence": [
+          "crates/libtmux/src/window.rs:1060"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.move_to": [
+      {
+        "command": "move-window",
+        "evidence": [
+          "crates/libtmux/src/window.rs:941"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.next_layout": [
+      {
+        "command": "select-layout",
+        "evidence": [
+          "crates/libtmux/src/window.rs:613",
+          "crates/libtmux/src/window.rs:597"
+        ],
+        "scope": null
+      }
+    ],
     "window.Window.panes": [
       {
         "command": "list-panes",
@@ -50,6 +1014,107 @@
         ],
         "reviewed": true,
         "scope": "window"
+      }
+    ],
+    "window.Window.previous_layout": [
+      {
+        "command": "select-layout",
+        "evidence": [
+          "crates/libtmux/src/window.rs:613",
+          "crates/libtmux/src/window.rs:606"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.rename": [
+      {
+        "command": "rename-window",
+        "evidence": [
+          "crates/libtmux/src/window.rs:387"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.resize": [
+      {
+        "command": "resize-window",
+        "evidence": [
+          "crates/libtmux/src/window.rs:1102"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.resize_by": [
+      {
+        "command": "resize-window",
+        "evidence": [
+          "crates/libtmux/src/window.rs:999"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.respawn": [
+      {
+        "command": "respawn-window",
+        "evidence": [
+          "crates/libtmux/src/window.rs:570"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.rotate": [
+      {
+        "command": "rotate-window",
+        "evidence": [
+          "crates/libtmux/src/window.rs:668"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.select": [
+      {
+        "command": "select-window",
+        "evidence": [
+          "crates/libtmux/src/window.rs:419"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.select_layout": [
+      {
+        "command": "select-layout",
+        "evidence": [
+          "crates/libtmux/src/window.rs:491"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.split": [
+      {
+        "command": "split-window",
+        "evidence": [
+          "crates/libtmux/src/internal/listing.rs:440",
+          "crates/libtmux/src/window.rs:367"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.swap_with": [
+      {
+        "command": "swap-window",
+        "evidence": [
+          "crates/libtmux/src/window.rs:895"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.unlink": [
+      {
+        "command": "unlink-window",
+        "evidence": [
+          "crates/libtmux/src/window.rs:709"
+        ],
+        "scope": null
       }
     ]
   }

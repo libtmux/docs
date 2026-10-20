@@ -1,12 +1,739 @@
 {
   "commands": [
-    "list-panes"
+    "attach-session",
+    "bind-key",
+    "break-pane",
+    "capture-pane",
+    "choose-buffer",
+    "choose-client",
+    "choose-tree",
+    "clear-history",
+    "clear-prompt-history",
+    "clock-mode",
+    "command-prompt",
+    "confirm-before",
+    "copy-mode",
+    "customize-mode",
+    "delete-buffer",
+    "detach-client",
+    "display-menu",
+    "display-message",
+    "display-panes",
+    "display-popup",
+    "find-window",
+    "has-session",
+    "if-shell",
+    "join-pane",
+    "kill-pane",
+    "kill-server",
+    "kill-session",
+    "kill-window",
+    "last-pane",
+    "last-window",
+    "link-window",
+    "list-buffers",
+    "list-clients",
+    "list-commands",
+    "list-keys",
+    "list-panes",
+    "list-sessions",
+    "list-windows",
+    "load-buffer",
+    "lock-client",
+    "lock-server",
+    "lock-session",
+    "move-pane",
+    "move-window",
+    "new-pane",
+    "new-session",
+    "new-window",
+    "next-layout",
+    "next-window",
+    "paste-buffer",
+    "pipe-pane",
+    "previous-layout",
+    "previous-window",
+    "refresh-client",
+    "rename-session",
+    "rename-window",
+    "resize-pane",
+    "resize-window",
+    "respawn-pane",
+    "respawn-window",
+    "rotate-window",
+    "run-shell",
+    "save-buffer",
+    "select-layout",
+    "select-pane",
+    "select-window",
+    "send-keys",
+    "send-prefix",
+    "server-access",
+    "set-buffer",
+    "set-environment",
+    "set-hook",
+    "set-option",
+    "set-window-option",
+    "show-buffer",
+    "show-environment",
+    "show-hooks",
+    "show-messages",
+    "show-options",
+    "show-prompt-history",
+    "show-window-options",
+    "source-file",
+    "split-window",
+    "start-server",
+    "suspend-client",
+    "swap-pane",
+    "swap-window",
+    "switch-client",
+    "unbind-key",
+    "unlink-window",
+    "wait-for"
   ],
   "port": "java",
   "repo": "libtmux/libtmux-java",
   "revision": "a0ecbc16da00140e2520462d478a2af470878272",
   "schemaVersion": 1,
   "symbols": {
+    "io.github.libtmux.batch.Batch.Batch.length": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/batch/Batch.java:94",
+          "libtmux/src/main/java/io/github/libtmux/batch/Batch.java:72"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.batch.Batch.Batch.run": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/batch/Batch.java:94",
+          "libtmux/src/main/java/io/github/libtmux/batch/Batch.java:85"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Buffers.Buffers.delete": [
+      {
+        "command": "delete-buffer",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Buffers.java:111"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Buffers.Buffers.list": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Buffers.java:54"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Buffers.Buffers.load": [
+      {
+        "command": "load-buffer",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Buffers.java:129"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Buffers.Buffers.save": [
+      {
+        "command": "save-buffer",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Buffers.java:123"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Buffers.Buffers.set": [
+      {
+        "command": "set-buffer",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Buffers.java:71"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Buffers.Buffers.show": [
+      {
+        "command": "show-buffer",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Buffers.java:87"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Channel.Channel.signal": [
+      {
+        "command": "wait-for",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Channel.java:49"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Client.Client.detach": [
+      {
+        "command": "detach-client",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Client.java:48"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Client.Client.detachOthers": [
+      {
+        "command": "detach-client",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Client.java:54"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Client.Client.redraw": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Client.java:80"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Client.Client.switchTo": [
+      {
+        "command": "switch-client",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Client.java:69"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Commands.Commands.list": [
+      {
+        "command": "list-commands",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Commands.java:21"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.control.ControlClient.ControlClient.attach": [
+      {
+        "command": "attach-session",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/control/ControlClient.java:217",
+          "libtmux/src/main/java/io/github/libtmux/control/ControlClient.java:196"
+        ],
+        "scope": null
+      },
+      {
+        "command": "display-message",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/control/ControlClient.java:256",
+          "libtmux/src/main/java/io/github/libtmux/control/ControlClient.java:198"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.control.ControlClient.ControlClient.attachUnfenced": [
+      {
+        "command": "attach-session",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/control/ControlClient.java:217",
+          "libtmux/src/main/java/io/github/libtmux/control/ControlClient.java:156"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.control.ControlClient.ControlClient.unwatch": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/control/ControlClient.java:473"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.control.ControlClient.ControlClient.watch": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/control/ControlClient.java:454"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Environment.Environment.get": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Environment.java:201",
+          "libtmux/src/main/java/io/github/libtmux/Environment.java:85"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Environment.Environment.isRemoved": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Environment.java:201",
+          "libtmux/src/main/java/io/github/libtmux/Environment.java:96"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Environment.Environment.remove": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Environment.java:353",
+          "libtmux/src/main/java/io/github/libtmux/Environment.java:179"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Environment.Environment.set": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Environment.java:353",
+          "libtmux/src/main/java/io/github/libtmux/Environment.java:156"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Environment.Environment.setExpanded": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Environment.java:353",
+          "libtmux/src/main/java/io/github/libtmux/Environment.java:162"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Environment.Environment.unset": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Environment.java:353",
+          "libtmux/src/main/java/io/github/libtmux/Environment.java:168"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Hooks.Hooks.all": [
+      {
+        "command": "show-hooks",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Hooks.java:128"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Hooks.Hooks.append": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Hooks.java:97"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Hooks.Hooks.run": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Hooks.java:114"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Hooks.Hooks.set": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Hooks.java:66"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Hooks.Hooks.unset": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Hooks.java:103"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.IncarnationFence.IncarnationFence.guarded": [
+      {
+        "command": "if-shell",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java:77"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.IncarnationFence.IncarnationFence.run": [
+      {
+        "command": "if-shell",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java:95"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.junit5.NamedServerFixture.NamedServerFixture.close": [
+      {
+        "command": "if-shell",
+        "evidence": [
+          "libtmux-junit5/src/main/java/io/github/libtmux/junit5/NamedServerFixture.java:150",
+          "libtmux-junit5/src/main/java/io/github/libtmux/junit5/NamedServerFixture.java:129"
+        ],
+        "scope": null
+      },
+      {
+        "command": "kill-server",
+        "evidence": [
+          "libtmux-junit5/src/main/java/io/github/libtmux/junit5/NamedServerFixture.java:150",
+          "libtmux-junit5/src/main/java/io/github/libtmux/junit5/NamedServerFixture.java:129"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.junit5.NamedServerFixture.NamedServerFixture.own": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "libtmux-junit5/src/main/java/io/github/libtmux/junit5/NamedServerFixture.java:86",
+          "libtmux-junit5/src/main/java/io/github/libtmux/junit5/NamedServerFixture.java:53"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.junit5.TmuxExtension.TmuxExtension.Fixture.start": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "libtmux-junit5/src/main/java/io/github/libtmux/junit5/TmuxExtension.java:361",
+          "libtmux-junit5/src/main/java/io/github/libtmux/junit5/TmuxExtension.java:354"
+        ],
+        "scope": null
+      },
+      {
+        "command": "new-session",
+        "evidence": [
+          "libtmux-junit5/src/main/java/io/github/libtmux/junit5/TmuxExtension.java:350"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Keys.Keys.bind": [
+      {
+        "command": "bind-key",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Keys.java:57"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Keys.Keys.list": [
+      {
+        "command": "list-keys",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Keys.java:88"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Keys.Keys.unbind": [
+      {
+        "command": "unbind-key",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Keys.java:69"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.mcp.Main.Main.main": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "libtmux-mcp/src/main/java/io/github/libtmux/mcp/LaunchConfiguration.java:90",
+          "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Main.java:52"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.MessageLog.MessageLog.lines": [
+      {
+        "command": "show-messages",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/MessageLog.java:32"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Options.Options.all": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Options.java:178",
+          "libtmux/src/main/java/io/github/libtmux/Options.java:140"
+        ],
+        "scope": null
+      },
+      {
+        "command": "show-options",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Options.java:153",
+          "libtmux/src/main/java/io/github/libtmux/Options.java:140"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Options.Options.append": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Options.java:349"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Options.Options.effective": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Options.java:178",
+          "libtmux/src/main/java/io/github/libtmux/Options.java:319"
+        ],
+        "scope": null
+      },
+      {
+        "command": "show-options",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Options.java:153",
+          "libtmux/src/main/java/io/github/libtmux/Options.java:319"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Options.Options.get": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Options.java:196",
+          "libtmux/src/main/java/io/github/libtmux/Options.java:92"
+        ],
+        "scope": null
+      },
+      {
+        "command": "show-options",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Options.java:93"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Options.Options.set": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Options.java:325"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Options.Options.setExpanded": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Options.java:364"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Options.Options.setIfAbsent": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Options.java:338"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Options.Options.unset": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Options.java:370"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Pane.Pane.breakOut": [
+      {
+        "command": "break-pane",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:831",
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:708"
+        ],
+        "scope": null
+      },
+      {
+        "command": "rename-window",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:842",
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:708"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Pane.Pane.clearHistory": [
+      {
+        "command": "clear-history",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:1052"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Pane.Pane.copyMode": [
+      {
+        "command": "copy-mode",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:227"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Pane.Pane.exitMode": [
+      {
+        "command": "copy-mode",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:254"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Pane.Pane.expand": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:737"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Pane.Pane.joinTo": [
+      {
+        "command": "join-pane",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:1072"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Pane.Pane.kill": [
+      {
+        "command": "kill-pane",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:1078"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Pane.Pane.paste": [
+      {
+        "command": "load-buffer",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:975"
+        ],
+        "scope": null
+      },
+      {
+        "command": "paste-buffer",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:979"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Pane.Pane.pasteBuffer": [
+      {
+        "command": "paste-buffer",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:930"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Pane.Pane.pipeTo": [
+      {
+        "command": "pipe-pane",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:810"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Pane.Pane.resize": [
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:215"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Pane.Pane.resizeTo": [
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:285"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Pane.Pane.respawn": [
+      {
+        "command": "respawn-pane",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:757"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Pane.Pane.retitle": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:275"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Pane.Pane.select": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:260"
+        ],
+        "scope": null
+      }
+    ],
     "io.github.libtmux.Pane.Pane.sendKeys": [
       {
         "command": "list-panes",
@@ -15,6 +742,14 @@
           "libtmux/src/main/java/io/github/libtmux/Pane.java:577"
         ],
         "scope": "window"
+      },
+      {
+        "command": "send-keys",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:639",
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:576"
+        ],
+        "scope": null
       }
     ],
     "io.github.libtmux.Pane.Pane.sendLiteral": [
@@ -25,6 +760,137 @@
           "libtmux/src/main/java/io/github/libtmux/Pane.java:619"
         ],
         "scope": "window"
+      },
+      {
+        "command": "send-keys",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:639",
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:617"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Pane.Pane.stopPiping": [
+      {
+        "command": "pipe-pane",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:816"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Pane.Pane.swapWith": [
+      {
+        "command": "swap-pane",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Pane.java:1062"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.PrintedText.PrintedText.framed": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/PrintedText.java:68"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Prompt.Prompt.clear": [
+      {
+        "command": "clear-prompt-history",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Prompt.java:45"
+        ],
+        "scope": null
+      },
+      {
+        "command": "show-prompt-history",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Prompt.java:49",
+          "libtmux/src/main/java/io/github/libtmux/Prompt.java:44"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Prompt.Prompt.history": [
+      {
+        "command": "show-prompt-history",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Prompt.java:34"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Server.Server.awaitChannel": [
+      {
+        "command": "wait-for",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Server.java:569"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Server.Server.control": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Server.java:836"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Server.Server.expand": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Server.java:415"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Server.Server.isAlive": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Server.java:216"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Server.Server.killServer": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Server.java:314"
+        ],
+        "scope": null
+      },
+      {
+        "command": "kill-server",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Server.java:314"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Server.Server.killSession": [
+      {
+        "command": "kill-session",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Server.java:192"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Server.Server.lock": [
+      {
+        "command": "lock-server",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Server.java:447"
+        ],
+        "scope": null
       }
     ],
     "io.github.libtmux.Server.Server.paneFields": [
@@ -45,6 +911,24 @@
         "scope": "server"
       }
     ],
+    "io.github.libtmux.Server.Server.requireAlive": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Server.java:228"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Server.Server.sessions": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Server.java:905"
+        ],
+        "scope": null
+      }
+    ],
     "io.github.libtmux.Server.Server.snapshot": [
       {
         "command": "list-panes",
@@ -53,15 +937,166 @@
           "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:103",
           "libtmux/src/main/java/io/github/libtmux/Server.java:878"
         ],
+        "forwardable": true,
         "reviewed": true,
         "scope": "server"
       }
     ],
+    "io.github.libtmux.Server.Server.sourceFile": [
+      {
+        "command": "source-file",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Server.java:626"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Server.Server.windows": [
+      {
+        "command": "list-windows",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Server.java:960"
+        ],
+        "scope": "server"
+      }
+    ],
+    "io.github.libtmux.Session.Session.detachClients": [
+      {
+        "command": "detach-client",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Session.java:135"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Session.Session.expand": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Session.java:252"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Session.Session.kill": [
+      {
+        "command": "kill-session",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Session.java:271"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Session.Session.lastWindow": [
+      {
+        "command": "last-window",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Session.java:129"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Session.Session.nextWindow": [
+      {
+        "command": "next-window",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Session.java:112"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Session.Session.previousWindow": [
+      {
+        "command": "previous-window",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Session.java:118"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Session.Session.rename": [
+      {
+        "command": "rename-session",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Session.java:264"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Session.Session.selectWindow": [
+      {
+        "command": "select-window",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Session.java:104"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.SessionLookup.SessionLookup.named": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/SessionLookup.java:21"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Shell.Shell.capturing": [
+      {
+        "command": "run-shell",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Shell.java:55"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Shell.Shell.choose": [
+      {
+        "command": "if-shell",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Shell.java:68"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Shell.Shell.run": [
+      {
+        "command": "run-shell",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Shell.java:36"
+        ],
+        "scope": null
+      }
+    ],
     "io.github.libtmux.SnapshotCapture.SnapshotCapture.attempt": [
+      {
+        "command": "list-clients",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:184",
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:103"
+        ],
+        "scope": null
+      },
       {
         "command": "list-panes",
         "evidence": [
           "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:183",
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:103"
+        ],
+        "scope": "server"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:181",
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:103"
+        ],
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:182",
           "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:103"
         ],
         "scope": "server"
@@ -75,6 +1110,42 @@
           "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:227"
         ],
         "scope": "server"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:290",
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:227"
+        ],
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:291",
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:227"
+        ],
+        "scope": "server"
+      }
+    ],
+    "io.github.libtmux.SnapshotCapture.SnapshotCapture.process": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:144",
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:124"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.SnapshotCapture.SnapshotCapture.processForCreation": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:144",
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:140"
+        ],
+        "scope": null
       }
     ],
     "io.github.libtmux.SnapshotCapture.SnapshotCapture.sessionsHolding": [
@@ -82,6 +1153,22 @@
         "command": "list-panes",
         "evidence": [
           "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:292",
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:342"
+        ],
+        "scope": "server"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:290",
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:342"
+        ],
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:291",
           "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:342"
         ],
         "scope": "server"
@@ -95,6 +1182,22 @@
           "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:251"
         ],
         "scope": "server"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:290",
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:251"
+        ],
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:291",
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:251"
+        ],
+        "scope": "server"
       }
     ],
     "io.github.libtmux.SnapshotCapture.SnapshotCapture.sessionsWhere": [
@@ -105,6 +1208,157 @@
           "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:276"
         ],
         "scope": "server"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:290",
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:276"
+        ],
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:291",
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:276"
+        ],
+        "scope": "server"
+      }
+    ],
+    "io.github.libtmux.Window.Window.applyLayout": [
+      {
+        "command": "select-layout",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Window.java:376"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Window.Window.displayPopup": [
+      {
+        "command": "display-popup",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Window.java:397"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Window.Window.expand": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Window.java:209"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Window.Window.kill": [
+      {
+        "command": "kill-window",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Window.java:403"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Window.Window.linkTo": [
+      {
+        "command": "link-window",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Window.java:236"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Window.Window.moveTo": [
+      {
+        "command": "move-window",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Window.java:257"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Window.Window.nextLayout": [
+      {
+        "command": "next-layout",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Window.java:329"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Window.Window.previousLayout": [
+      {
+        "command": "previous-layout",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Window.java:335"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Window.Window.rename": [
+      {
+        "command": "rename-window",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Window.java:225"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Window.Window.resizeTo": [
+      {
+        "command": "resize-window",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Window.java:281"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Window.Window.respawn": [
+      {
+        "command": "respawn-window",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Window.java:382"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Window.Window.rotate": [
+      {
+        "command": "rotate-window",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Window.java:311"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Window.Window.select": [
+      {
+        "command": "select-window",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Window.java:116"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Window.Window.selectLayout": [
+      {
+        "command": "select-layout",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Window.java:323"
+        ],
+        "scope": null
+      }
+    ],
+    "io.github.libtmux.Window.Window.unlink": [
+      {
+        "command": "unlink-window",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Window.java:246"
+        ],
+        "scope": null
       }
     ]
   }

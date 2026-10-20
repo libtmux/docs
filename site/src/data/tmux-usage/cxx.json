@@ -1,12 +1,586 @@
 {
   "commands": [
-    "list-panes"
+    "attach-session",
+    "bind-key",
+    "break-pane",
+    "capture-pane",
+    "choose-buffer",
+    "choose-client",
+    "choose-tree",
+    "clear-history",
+    "clear-prompt-history",
+    "clock-mode",
+    "command-prompt",
+    "confirm-before",
+    "copy-mode",
+    "customize-mode",
+    "delete-buffer",
+    "detach-client",
+    "display-menu",
+    "display-message",
+    "display-panes",
+    "display-popup",
+    "find-window",
+    "has-session",
+    "if-shell",
+    "join-pane",
+    "kill-pane",
+    "kill-server",
+    "kill-session",
+    "kill-window",
+    "last-pane",
+    "last-window",
+    "link-window",
+    "list-buffers",
+    "list-clients",
+    "list-commands",
+    "list-keys",
+    "list-panes",
+    "list-sessions",
+    "list-windows",
+    "load-buffer",
+    "lock-client",
+    "lock-server",
+    "lock-session",
+    "move-pane",
+    "move-window",
+    "new-pane",
+    "new-session",
+    "new-window",
+    "next-layout",
+    "next-window",
+    "paste-buffer",
+    "pipe-pane",
+    "previous-layout",
+    "previous-window",
+    "refresh-client",
+    "rename-session",
+    "rename-window",
+    "resize-pane",
+    "resize-window",
+    "respawn-pane",
+    "respawn-window",
+    "rotate-window",
+    "run-shell",
+    "save-buffer",
+    "select-layout",
+    "select-pane",
+    "select-window",
+    "send-keys",
+    "send-prefix",
+    "server-access",
+    "set-buffer",
+    "set-environment",
+    "set-hook",
+    "set-option",
+    "set-window-option",
+    "show-buffer",
+    "show-environment",
+    "show-hooks",
+    "show-messages",
+    "show-options",
+    "show-prompt-history",
+    "show-window-options",
+    "source-file",
+    "split-window",
+    "start-server",
+    "suspend-client",
+    "swap-pane",
+    "swap-window",
+    "switch-client",
+    "unbind-key",
+    "unlink-window",
+    "wait-for"
   ],
   "port": "cxx",
   "repo": "libtmux/libtmux-cxx",
   "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
   "schemaVersion": 1,
   "symbols": {
+    "libtmux::Buffer::contents": [
+      {
+        "command": "show-buffer",
+        "evidence": [
+          "src/entities.cpp:1648"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Buffer::remove": [
+      {
+        "command": "delete-buffer",
+        "evidence": [
+          "src/entities.cpp:1656"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Client::detach": [
+      {
+        "command": "detach-client",
+        "evidence": [
+          "src/entities.cpp:1688"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Client::refresh": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "src/entities.cpp:1696"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Client::session": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "src/entities.cpp:1667"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Client::switch_to": [
+      {
+        "command": "switch-client",
+        "evidence": [
+          "src/entities.cpp:1680"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Connection::connect": [
+      {
+        "command": "attach-session",
+        "evidence": [
+          "src/connection.cpp:360",
+          "src/connection.cpp:1043"
+        ],
+        "scope": null
+      },
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "src/connection.cpp:1089"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Connection::set_pane_output": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "src/connection.cpp:1249"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Pane::break_out": [
+      {
+        "command": "break-pane",
+        "evidence": [
+          "src/entities.cpp:1279",
+          "src/entities.cpp:1451"
+        ],
+        "scope": null
+      },
+      {
+        "command": "display-message",
+        "evidence": [
+          "src/entities.cpp:1281",
+          "src/entities.cpp:1451"
+        ],
+        "scope": null
+      },
+      {
+        "command": "if-shell",
+        "evidence": [
+          "src/entities.cpp:1283",
+          "src/entities.cpp:1451"
+        ],
+        "scope": null
+      },
+      {
+        "command": "rename-window",
+        "evidence": [
+          "src/entities.cpp:1366",
+          "src/entities.cpp:1452"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Pane::capture": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "src/entities.cpp:1167"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Pane::clear_history": [
+      {
+        "command": "clear-history",
+        "evidence": [
+          "src/entities.cpp:1549"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Pane::enter_copy_mode": [
+      {
+        "command": "copy-mode",
+        "evidence": [
+          "src/entities.cpp:1472"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Pane::join": [
+      {
+        "command": "join-pane",
+        "evidence": [
+          "src/entities.cpp:1464"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Pane::kill": [
+      {
+        "command": "kill-pane",
+        "evidence": [
+          "src/entities.cpp:1580"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Pane::leave_mode": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "src/entities.cpp:1482"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Pane::option": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "src/entities.cpp:1602"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Pane::options": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "src/entities.cpp:1593"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Pane::paste": [
+      {
+        "command": "paste-buffer",
+        "evidence": [
+          "src/entities.cpp:1635"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Pane::pipe_to": [
+      {
+        "command": "pipe-pane",
+        "evidence": [
+          "src/entities.cpp:1496"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Pane::respawn": [
+      {
+        "command": "respawn-pane",
+        "evidence": [
+          "src/entities.cpp:1533"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Pane::select": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "src/entities.cpp:1557"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Pane::send_key": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "src/entities.cpp:1115"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Pane::send_line": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "src/entities.cpp:1096"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Pane::send_text": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "src/entities.cpp:1081"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Pane::set_height": [
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "src/entities.cpp:1218"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Pane::set_option": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "src/entities.cpp:1611"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Pane::set_title": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "src/entities.cpp:1521"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Pane::set_width": [
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "src/entities.cpp:1206"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Pane::show_message": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "src/entities.cpp:1565"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Pane::split": [
+      {
+        "command": "split-window",
+        "evidence": [
+          "src/entities.cpp:1127"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Pane::stop_piping": [
+      {
+        "command": "pipe-pane",
+        "evidence": [
+          "src/entities.cpp:1507"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Pane::swap_with": [
+      {
+        "command": "swap-pane",
+        "evidence": [
+          "src/entities.cpp:1238"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Pane::toggle_zoom": [
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "src/entities.cpp:1226"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Pane::unset_option": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "src/entities.cpp:1622"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Pane::wait_for_text": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "src/wait.cpp:462",
+          "src/wait.cpp:495"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::bind_key": [
+      {
+        "command": "bind-key",
+        "evidence": [
+          "src/server.cpp:1016"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::buffers": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "src/server.cpp:940"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::check_alive": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "src/server.cpp:711"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::check_file": [
+      {
+        "command": "source-file",
+        "evidence": [
+          "src/server.cpp:1080"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::clients": [
+      {
+        "command": "list-clients",
+        "evidence": [
+          "src/server.cpp:881"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::commands": [
+      {
+        "command": "list-commands",
+        "evidence": [
+          "src/server.cpp:933"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::environment": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "src/server.cpp:1310"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::expand": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "src/server.cpp:1087"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::global_hooks": [
+      {
+        "command": "show-hooks",
+        "evidence": [
+          "src/server.cpp:1296"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::global_options": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "src/server.cpp:1271"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::hooks": [
+      {
+        "command": "show-hooks",
+        "evidence": [
+          "src/server.cpp:1289"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::kill": [
+      {
+        "command": "kill-server",
+        "evidence": [
+          "src/server.cpp:810"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::load_buffer": [
+      {
+        "command": "load-buffer",
+        "evidence": [
+          "src/server.cpp:954"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::new_session": [
+      {
+        "command": "new-session",
+        "evidence": [
+          "src/server.cpp:1212"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::options": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "src/server.cpp:1247"
+        ],
+        "scope": null
+      }
+    ],
     "libtmux::Server::panes": [
       {
         "command": "list-panes",
@@ -14,6 +588,222 @@
           "src/server.cpp:873"
         ],
         "scope": "server"
+      }
+    ],
+    "libtmux::Server::remove_environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "src/server.cpp:1356"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::run_shell": [
+      {
+        "command": "run-shell",
+        "evidence": [
+          "src/server.cpp:1053"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::save_buffer": [
+      {
+        "command": "save-buffer",
+        "evidence": [
+          "src/server.cpp:969"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::server_options": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "src/server.cpp:1254"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::sessions": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "src/server.cpp:819"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::set_buffer": [
+      {
+        "command": "set-buffer",
+        "evidence": [
+          "src/server.cpp:1110"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::set_environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "src/server.cpp:1348"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::set_global_hook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "src/server.cpp:1304"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::set_global_option": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "src/server.cpp:1279"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::set_server_option": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "src/server.cpp:1262"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::show_message": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "src/server.cpp:1100"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::signal": [
+      {
+        "command": "wait-for",
+        "evidence": [
+          "src/server.cpp:926"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::source_file": [
+      {
+        "command": "source-file",
+        "evidence": [
+          "src/server.cpp:1067"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::unbind_key": [
+      {
+        "command": "unbind-key",
+        "evidence": [
+          "src/server.cpp:1036"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::unset_environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "src/server.cpp:1352"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::wait_for": [
+      {
+        "command": "wait-for",
+        "evidence": [
+          "src/server.cpp:900"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::wait_for_text": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "src/wait.cpp:520"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::windows": [
+      {
+        "command": "list-windows",
+        "evidence": [
+          "src/server.cpp:846"
+        ],
+        "scope": "server"
+      }
+    ],
+    "libtmux::Session::detach_clients": [
+      {
+        "command": "detach-client",
+        "evidence": [
+          "src/entities.cpp:467"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Session::hooks": [
+      {
+        "command": "show-hooks",
+        "evidence": [
+          "src/entities.cpp:475"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Session::kill": [
+      {
+        "command": "kill-session",
+        "evidence": [
+          "src/entities.cpp:388"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Session::new_window": [
+      {
+        "command": "new-window",
+        "evidence": [
+          "src/entities.cpp:339"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Session::option": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "src/entities.cpp:410"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Session::options": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "src/entities.cpp:401"
+        ],
+        "scope": null
       }
     ],
     "libtmux::Session::panes": [
@@ -25,6 +815,141 @@
         "scope": "session"
       }
     ],
+    "libtmux::Session::rename": [
+      {
+        "command": "rename-session",
+        "evidence": [
+          "src/entities.cpp:376"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Session::select_last_window": [
+      {
+        "command": "last-window",
+        "evidence": [
+          "src/entities.cpp:319"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Session::select_next_window": [
+      {
+        "command": "next-window",
+        "evidence": [
+          "src/entities.cpp:303"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Session::select_previous_window": [
+      {
+        "command": "previous-window",
+        "evidence": [
+          "src/entities.cpp:311"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Session::set_hook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "src/entities.cpp:485"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Session::set_option": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "src/entities.cpp:420"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Session::show_message": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "src/entities.cpp:444"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Session::unset_option": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "src/entities.cpp:431"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Session::windows": [
+      {
+        "command": "list-windows",
+        "evidence": [
+          "src/entities.cpp:264"
+        ],
+        "scope": "session"
+      }
+    ],
+    "libtmux::Window::kill": [
+      {
+        "command": "kill-window",
+        "evidence": [
+          "src/entities.cpp:685"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Window::link_to": [
+      {
+        "command": "link-window",
+        "evidence": [
+          "src/entities.cpp:759"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Window::move_to": [
+      {
+        "command": "move-window",
+        "evidence": [
+          "src/entities.cpp:803"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Window::next_layout": [
+      {
+        "command": "next-layout",
+        "evidence": [
+          "src/entities.cpp:719"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Window::option": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "src/entities.cpp:825"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Window::options": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "src/entities.cpp:817"
+        ],
+        "scope": null
+      }
+    ],
     "libtmux::Window::panes": [
       {
         "command": "list-panes",
@@ -32,6 +957,123 @@
           "src/entities.cpp:561"
         ],
         "scope": "window"
+      }
+    ],
+    "libtmux::Window::previous_layout": [
+      {
+        "command": "previous-layout",
+        "evidence": [
+          "src/entities.cpp:727"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Window::rename": [
+      {
+        "command": "rename-window",
+        "evidence": [
+          "src/entities.cpp:643"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Window::resize": [
+      {
+        "command": "resize-window",
+        "evidence": [
+          "src/entities.cpp:710"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Window::rotate": [
+      {
+        "command": "rotate-window",
+        "evidence": [
+          "src/entities.cpp:735"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Window::select": [
+      {
+        "command": "select-window",
+        "evidence": [
+          "src/entities.cpp:654"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Window::select_last_pane": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "src/entities.cpp:743"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Window::select_layout": [
+      {
+        "command": "select-layout",
+        "evidence": [
+          "src/entities.cpp:698"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Window::set_option": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "src/entities.cpp:837"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Window::show_message": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "src/entities.cpp:669"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Window::split": [
+      {
+        "command": "split-window",
+        "evidence": [
+          "src/entities.cpp:599"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Window::swap_with": [
+      {
+        "command": "swap-window",
+        "evidence": [
+          "src/entities.cpp:780"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Window::unlink": [
+      {
+        "command": "unlink-window",
+        "evidence": [
+          "src/entities.cpp:769"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux::Window::unset_option": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "src/entities.cpp:848"
+        ],
+        "scope": null
       }
     ]
   }

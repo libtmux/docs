@@ -173,12 +173,36 @@ It reads each port's source at the revision its API model was extracted from,
 through the port checkouts named in `ports.ts` or
 `LIBTMUX_DOCS_CHECKOUT_<PORT>`. A symbol is credited when a command-name
 literal, with the flags beside it, sits in its own body or in one private
-helper it calls. A command named by a template, a scope carried by a typed
-argument, or a call into a snapshot is a reviewed claim in
-`scripts/tmux-usage/claims.json`; each claim cites the lines that make it true
-and generation fails when one no longer holds. The commands covered are
-`COMMANDS` in the script; `site/src/data/tmux-usage/scopes.json` gives a
-command its scopes and C functions, checked against both pinned C models.
+helper it calls. A literal that is compared against, named by a `case`, or
+passed to a call that checks or fails (`validate...`, `...Error`) names a
+command and does not send it, and is not a site.
+
+Three files beside the script hold what a scan cannot decide, and each line of
+them is verified against the pinned source, so generation fails when one no
+longer holds:
+
+- `claims.json`: a send the scan cannot see (a command named by a template, a
+  scope carried by a typed argument, a call into a snapshot, a chain of more
+  than one helper). Each claim cites the lines that make it true. A claim that
+  names `via` stands on a core library's entry for the same command and scope.
+- `forwarders.json`: the wrappers that stand on a core library, Kotlin and
+  Scala on Java, F# and the PowerShell cmdlets on C#. A wrapper that calls a
+  core method that sends is credited at the core's scope, with both hops as
+  evidence; a wrapper that only builds a request sends nothing and is named in
+  the page's "No method in" line.
+- `exclusions.json`: the symbols that carry a command's name and only build or
+  record it (a plan, a chain, a request that turns itself into a command). Each
+  cites the lines that show it, and an exclusion that removes nothing fails.
+
+The command pages list a method that sends directly, a reviewed claim, and a
+method that sends through one helper when its own name carries the verb of the
+command (`Pane.sendKeys` for `send-keys`, not a method that lists panes to
+refresh itself). Every send through a helper is on the method's page.
+
+Every command of the pinned manuals is recorded (`COMMANDS` in the script is
+`all`). `site/src/data/tmux-usage/scopes.json` gives the commands that tmux
+dispatches by scope their scopes and C functions, checked against both pinned C
+models; a command without scope helpers has one column.
 
 ```console
 $ node scripts/gen-tmux-usage.mjs

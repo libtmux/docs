@@ -35,8 +35,8 @@ export interface UsageUse {
   evidence: string[]
   /** A reviewed claim the generator checked line by line, not a scan result. */
   reviewed?: boolean
-  /** The library symbol a wrapper's claim stands on. */
-  via?: { port: string; symbol: string }
+  /** The core library symbol a wrapper forwards to, and the lines that show it sends. */
+  via?: { port: string; symbol: string; evidence: string[]; reviewed?: boolean }
 }
 
 export interface UsageDocument {
@@ -57,6 +57,8 @@ export interface TmuxScope {
   target?: string
   /** The C function that lists at this scope. */
   function: string
+  /** Releases that dispatch on the scope inline, with no function for it. */
+  inline?: string[]
 }
 
 export const TMUX_USAGE: Record<string, UsageDocument> = {
@@ -76,12 +78,49 @@ export function tmuxScopes(command: string): TmuxScope[] {
 }
 
 /**
- * A direct sender is the symbol whose own body sends the command. A call
- * through a helper is recorded as evidence and listed with the method, but
- * not on the command's pages, which would otherwise list every method that
- * refreshes a pane afterwards.
+ * A direct sender is the symbol whose own body sends the command, and is
+ * listed. A call through a helper is recorded as evidence and shown with the
+ * method, but is listed on the command's pages only when the method's own name
+ * says it is for that command: `Pane.sendKeys` sends `send-keys` through a
+ * helper and is listed, while a method that refreshes a pane afterwards sends
+ * `list-panes` through one and is not. A wrapper is listed when the core method
+ * it forwards to is.
  */
 export const LISTED_MAX_HOPS = 0
+
+/** Words a method may use for the verb of a command, where the library's wording differs from tmux's. */
+const VERB_ALIASES: Record<string, string[]> = {
+  list: ['list', 'search', 'find', 'get', 'all', 'snapshot', 'read'],
+  show: ['show', 'get', 'read', 'all'],
+  display: ['display', 'show'],
+  new: ['new', 'create', 'open', 'start'],
+  kill: ['kill', 'close', 'destroy', 'remove', 'delete'],
+  set: ['set', 'unset', 'append', 'configure', 'apply'],
+}
+
+/** The lower-case words of a member name: `sendKeysAsync`, `send_keys` and `Send-TmuxText` each give `send` first. */
+function memberWords(name: string): string[] {
+  return name.replace(/([a-z0-9])([A-Z])/g, '$1 $2').split(/[^A-Za-z0-9]+/).map((word) => word.toLowerCase())
+    .filter((word) => word && word !== 'async' && word !== 'tmux').map((word) => word.replace(/s$/, ''))
+}
+
+/** Whether a member's name carries the verb of the command: `sendKeys` for `send-keys`, `Create` for `new`. */
+export function namesCommand(command: string, member: string): boolean {
+  const verb = command.split('-')[0]
+  const accepted = VERB_ALIASES[verb] ?? [verb]
+  return memberWords(member).some((word) => accepted.includes(word))
+}
+
+/**
+ * Whether a use belongs on the command's own pages, and not only on the method's.
+ *
+ * @param members the names the use may be listed under: the symbol's own, and for a wrapper the core method's.
+ */
+export function isListed(use: UsageUse, ...members: string[]): boolean {
+  if (use.reviewed) return true
+  if (use.via) return isListed({ command: use.command, scope: use.scope, evidence: use.via.evidence, reviewed: use.via.reviewed }, ...members, use.via.symbol)
+  return use.evidence.length - 1 <= LISTED_MAX_HOPS || members.some((member) => namesCommand(use.command, member.split(/[.#:\\]+/).at(-1) ?? member))
+}
 
 const symbolIndexes = new Map<string, Map<string, ApiSymbol>>()
 function symbolOf(port: string, publicId: string): ApiSymbol | undefined {
@@ -93,7 +132,7 @@ function symbolOf(port: string, publicId: string): ApiSymbol | undefined {
   return index.get(publicId)
 }
 
-const TYPE_KINDS = new Set(['class', 'interface', 'struct', 'union', 'enum', 'trait', 'exception'])
+const TYPE_KINDS = new Set(['class', 'interface', 'struct', 'union', 'enum', 'trait', 'exception', 'typealias'])
 
 /** The type that owns a member, when it has one. */
 function ownerOf(port: string, symbol: ApiSymbol): ApiSymbol | undefined {
@@ -101,13 +140,39 @@ function ownerOf(port: string, symbol: ApiSymbol): ApiSymbol | undefined {
   return parent && TYPE_KINDS.has(parent.kind) ? parent : undefined
 }
 
+/** Where the segment that names the owner starts in a qualified name, whole segments only: `Pane` is not the end of `NewPane`. */
+function ownerSegment(qualified: string, owner: string): number {
+  const parts = qualified.split(/(\.|::|#|:)/)
+  for (let index = parts.length - 3; index >= 0; index -= 2) {
+    if (parts[index] === owner) return parts.slice(0, index).join('').length
+  }
+  return -1
+}
+
 /** `Server.panes`, `Server#list_panes`, `Server::panes`: the member with the type that owns it. */
 export function usageLabel(port: string, symbol: ApiSymbol): string {
   const owner = ownerOf(port, symbol)
   if (!owner) return symbol.name
   const qualified = qualifiedNameOf(symbol)
-  const at = qualified.lastIndexOf(owner.name)
+  const at = ownerSegment(qualified, owner.name)
   return at >= 0 ? qualified.slice(at) : `${owner.name}.${symbol.name}`
+}
+
+/**
+ * Two methods of one language that share a label, such as Scala's plain and cats `Server.panes`, are told
+ * apart by the namespace that holds their type: `scaladsl.Server.panes` and `cats.Server.panes`.
+ */
+function apart(links: UsageLink[]): UsageLink[] {
+  const counts = Map.groupBy(links, (link) => link.label)
+  return links.map((link) => {
+    if (counts.get(link.label)!.length < 2 || !link.owner) return link
+    const symbol = symbolOf(link.port, link.symbolId)
+    const qualified = symbol ? qualifiedNameOf(symbol) : ''
+    const at = ownerSegment(qualified, link.owner)
+    // The namespace segment before the owner, with the separator that joins it: `cats.Server.panes`, `Async::Server#new_session`.
+    const before = /([A-Za-z_]\w*)(\.|::)$/.exec(qualified.slice(0, at))
+    return before ? { ...link, label: `${before[1]}${before[2]}${qualified.slice(at)}` } : link
+  })
 }
 
 /**
@@ -132,7 +197,7 @@ export interface UsageLink {
   evidence: string[]
   hops: number
   reviewed: boolean
-  via?: { port: string; symbol: string }
+  via?: UsageUse['via']
 }
 
 export interface UsageGroup {
@@ -171,9 +236,9 @@ export function tmuxUsage(command: string, { scope, version }: { scope?: string;
     ports: PORTS.flatMap((port) => {
       const document = TMUX_USAGE[port.slug]
       if (!document) return []
-      const links = Object.entries(document.symbols).flatMap(([publicId, uses]) => uses
-        .filter((use) => use.command === command && use.scope === (group?.id ?? null) && (use.reviewed || use.evidence.length - 1 <= LISTED_MAX_HOPS))
-        .flatMap((use) => linkFor(port.slug, publicId, use, version) ?? []))
+      const links = apart(Object.entries(document.symbols).flatMap(([publicId, uses]) => uses
+        .filter((use) => use.command === command && use.scope === (group?.id ?? null) && isListed(use, publicId))
+        .flatMap((use) => linkFor(port.slug, publicId, use, version) ?? [])))
         .sort((a, b) => ownerRank(group, a.owner, Boolean(a.owner)) - ownerRank(group, b.owner, Boolean(b.owner)) || a.label.localeCompare(b.label))
       return links.length ? [{ port: port.slug, name: PORT_NAME[port.slug] ?? port.name, links }] : []
     }),
@@ -183,7 +248,7 @@ export function tmuxUsage(command: string, { scope, version }: { scope?: string;
 
 export interface SymbolUsage {
   command: string
-  scopes: { scope: TmuxScope | undefined; evidence: string[]; hops: number; reviewed: boolean; via?: { port: string; symbol: string } }[]
+  scopes: { scope: TmuxScope | undefined; evidence: string[]; hops: number; reviewed: boolean; listed: boolean; via?: UsageUse['via'] }[]
 }
 
 /** The commands one symbol sends, with the scope and the lines that show it. Every hop counts here. */
@@ -195,8 +260,8 @@ export function tmuxUsageOf(port: string, publicId: string): SymbolUsage[] {
     return {
       command,
       scopes: scopes.length
-        ? scopes.flatMap((scope) => list.filter((use) => use.scope === scope.id).map((use) => ({ scope, evidence: use.evidence, hops: use.evidence.length - 1, reviewed: Boolean(use.reviewed), via: use.via })))
-        : list.map((use) => ({ scope: undefined, evidence: use.evidence, hops: use.evidence.length - 1, reviewed: Boolean(use.reviewed), via: use.via })),
+        ? scopes.flatMap((scope) => list.filter((use) => use.scope === scope.id).map((use) => ({ scope, evidence: use.evidence, hops: use.evidence.length - 1, reviewed: Boolean(use.reviewed), listed: isListed(use, publicId), via: use.via })))
+        : list.map((use) => ({ scope: undefined, evidence: use.evidence, hops: use.evidence.length - 1, reviewed: Boolean(use.reviewed), listed: isListed(use, publicId), via: use.via })),
     }
   })
 }

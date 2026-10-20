@@ -1,8 +1,13 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { scanSource } from '../../scripts/lib/tmux-usage-scan.mjs'
-import { MAX_SHARED_BY, classify, definitionsOf, deriveUsage, verifyClaims } from '../../scripts/lib/tmux-usage-derive.mjs'
+import { MAX_SHARED_BY, applyExclusions, classify, definitionsOf, deriveUsage, verifyClaims } from '../../scripts/lib/tmux-usage-derive.mjs'
+import { forwardUsage } from '../../scripts/lib/tmux-usage-forward.mjs'
+import { scanFSharp, scanJulia } from '../../scripts/lib/tmux-usage-lexical.mjs'
 import { guardFlag, libraryScopes, scopeProblems } from '../../scripts/lib/tmux-usage-scopes.mjs'
+
+type Forwarded = { symbol: string; command: string; scope: string | null; evidence: string[]; hops: number; via: { port: string; symbol: string; evidence: string[]; reviewed?: boolean } }
+type Scanned = { name: string; owner?: string; start: number; end: number; sites: { command: string; line: number; flags: string }[]; calls: Map<string, number>; receivers: Map<string, Set<string>> }
 
 const known = new Set(['list-panes', 'list-windows', 'list-sessions', 'new-window'])
 const scan = (grammar: string, text: string, command = 'list-panes') => scanSource({ grammar, text, commands: new Set([command]), known })
@@ -73,6 +78,93 @@ describe('scanning a send site', () => {
     expect(functions[0].sites[0].flags).toBe('a')
   })
 
+  it('does not read a command named for a check or a failure as a command that runs', async () => {
+    const { functions } = await scan('python', [
+      'def save(self):',
+      '    validate_args("list-panes", self.name)',
+      '    raise LibTmuxException("list-panes", self.name)',
+      '    return None',
+      '',
+      'def run(self):',
+      '    return checked_run("list-panes", "-a")',
+      '',
+    ].join('\n'))
+    const byName = Object.fromEntries(functions.map((fn) => [fn.name, fn]))
+    expect(byName.save.sites).toEqual([])
+    // The control: a runner whose name only starts with a checking verb still runs the command.
+    expect(byName.run.sites).toEqual([{ command: 'list-panes', line: 7, flags: 'a' }])
+  })
+
+  it('reads the same label in Go, where the failure is built by a constructor', async () => {
+    const { functions } = await scan('go', [
+      'package tmux',
+      'func (s Server) SaveBuffer() error {',
+      '\tif err := validateBufferName("list-panes", s.name); err != nil { return err }',
+      '\treturn newRedactedCommandError("list-panes", s.result)',
+      '}',
+      'func (s Server) Run() error {',
+      '\t_, err := s.literalCmd(ctx, "list-panes", "-a")',
+      '\treturn err',
+      '}',
+      '',
+    ].join('\n'))
+    const byName = Object.fromEntries(functions.map((fn) => [fn.name, fn]))
+    expect(byName.SaveBuffer.sites).toEqual([])
+    expect(byName.Run.sites).toEqual([{ command: 'list-panes', line: 7, flags: 'a' }])
+  })
+
+  it('does not read a command compared against, or named by a case, as one that runs', async () => {
+    const java = await scan('java', [
+      'class A {',
+      '    String format(String[] command, String format) {',
+      '        return switch (command[0]) {',
+      '            case "list-panes" -> format;',
+      '            default -> "";',
+      '        };',
+      '    }',
+      '    void run() { server.run(List.of("list-panes", "-a")); }',
+      '}',
+      '',
+    ].join('\n'))
+    expect(Object.fromEntries(java.functions.map((fn) => [fn.name, fn.sites]))).toEqual({
+      format: [], run: [{ command: 'list-panes', line: 8, flags: 'a' }],
+    })
+    const python = await scan('python', [
+      'def check(name):',
+      '    if name == "list-panes":',
+      '        return 1',
+      '    return run("list-panes", "-a")',
+      '',
+    ].join('\n'))
+    expect(python.functions[0].sites).toEqual([{ command: 'list-panes', line: 4, flags: 'a' }])
+    const rust = await scan('rust', [
+      'fn pick(name: &str) -> u8 {',
+      '    match name { "list-panes" => run(["list-panes", "-a"]), _ => 0 }',
+      '}',
+      '',
+    ].join('\n'))
+    // The arm's pattern is a name being recognised; the command in its body still runs.
+    expect(rust.functions[0].sites).toEqual([{ command: 'list-panes', line: 2, flags: 'a' }])
+  })
+
+  it('credits a local variable\'s send to the function around it, not to a function named for the variable', async () => {
+    const { functions } = await scan('kotlin', [
+      'class Server {',
+      '    fun newSession() {',
+      '        val reply = run(listOf("list-panes", "-a"))',
+      '        println(reply)',
+      '    }',
+      '    val count = run(listOf("list-panes", "-s"))',
+      '}',
+      '',
+    ].join('\n'))
+    const byName = Object.fromEntries(functions.map((fn) => [fn.name, fn.sites.map((site) => site.line)]))
+    expect(byName.newSession).toEqual([3])
+    expect(byName).not.toHaveProperty('reply')
+    // The control: a property of the type itself is still a function-like scope with its own sites.
+    expect(byName.count).toEqual([6])
+  })
+
   it('keeps a site outside any function apart, so a module constant is not credited to a neighbour', async () => {
     const { functions, orphans } = await scan('python', 'LISTINGS = [("list-panes", "-a")]\n\ndef other():\n    return 1\n')
     expect(orphans).toEqual([{ command: 'list-panes', line: 1, flags: 'a' }])
@@ -81,7 +173,7 @@ describe('scanning a send site', () => {
 })
 
 const located = (over: Record<string, unknown>) => ({
-  file: 'lib.py', name: 'f', owner: undefined, start: 1, nameLine: 1, end: 3, kind: 'function_definition', sites: [], calls: new Map<string, number>(), ...over,
+  file: 'lib.py', name: 'f', owner: undefined, start: 1, nameLine: 1, end: 3, kind: 'function_definition', sites: [], calls: new Map<string, number>(), receivers: new Map<string, Set<string>>(), ...over,
 }) as Parameters<typeof deriveUsage>[0]['functions'][number]
 const site = (flags: string, line = 2) => ({ command: 'list-panes', line, flags })
 const symbol = (name: string, line: number, over: Record<string, unknown> = {}) => ({ id: `S.${name}`, name, file: 'lib.py', line, ...over })
@@ -144,6 +236,26 @@ describe('deciding which symbol sends a command', () => {
     expect(unresolved[0].reason).toMatch(/shared by 5 public symbols/)
   })
 
+  describe('a method that forwards to a free function of its own name', () => {
+    const helper = (over: Record<string, unknown> = {}) => located({ file: 'ops/io.ts', name: 'sendKeys', start: 1, nameLine: 1, end: 5, sites: [{ command: 'list-panes', line: 3, flags: 'st' }], ...over })
+    const method = (over: Record<string, unknown> = {}) => located({ file: 'pane.ts', name: 'sendKeys', owner: 'Pane', start: 10, nameLine: 10, end: 12, calls: new Map([['sendKeys', 11]]), ...over })
+    const symbols = [{ id: 'pane.Pane.sendKeys', name: 'sendKeys', parentName: 'Pane', file: 'pane.ts', line: 10 }]
+
+    it('credits the method for the free function it calls without a handle', () => {
+      const { entries } = deriveUsage({ command: 'list-panes', spec, functions: [helper(), method()], symbols })
+      expect(entries).toEqual([{ symbol: 'pane.Pane.sendKeys', command: 'list-panes', scope: 'session', evidence: ['ops/io.ts:3', 'pane.ts:11'], hops: 1 }])
+    })
+
+    it('does not, when the call is made on an object, or when a second free function has the name', () => {
+      const onObject = method({ receivers: new Map([['sendKeys', new Set(['other'])]]) })
+      expect(deriveUsage({ command: 'list-panes', spec, functions: [helper(), onObject], symbols }).entries).toEqual([])
+      const twin = helper({ file: 'mcp/io.ts', start: 1, nameLine: 1, end: 5, sites: [] })
+      const { entries, unresolved } = deriveUsage({ command: 'list-panes', spec, functions: [helper(), twin, method()], symbols })
+      expect(entries).toEqual([])
+      expect(unresolved.map((item: { reason: string }) => item.reason)).toEqual(['no public symbol reaches it'])
+    })
+  })
+
   it('finds a C++ definition from the header that declares it, and not from a same-named type', () => {
     const functions = [located({ file: 'src/entities.cpp', name: 'panes', owner: 'Window', start: 5, nameLine: 5, end: 9, sites: [site('t', 7)] })]
     const symbols = [
@@ -174,9 +286,9 @@ describe('reviewed claims', () => {
     ],
     ...over,
   })
-  const verify = (claims: unknown[], sends?: () => boolean) => verifyClaims({
+  const verify = (claims: unknown[]) => verifyClaims({
     claims: claims as Parameters<typeof verifyClaims>[0]['claims'], spec, functions, types: [], symbols,
-    readSource: (path: string) => (path === 'server.rs' ? source : undefined), sends,
+    readSource: (path: string) => (path === 'server.rs' ? source : undefined),
   })
 
   it('accepts a claim whose lines still say what it says, anchored in the symbol', () => {
@@ -198,12 +310,6 @@ describe('reviewed claims', () => {
     const { entries, problems } = verify([claim(over)])
     expect(entries).toEqual([])
     expect(problems.join('\n')).toMatch(message)
-  })
-
-  it('stands on a library symbol only while that symbol sends the command at that scope', () => {
-    const wrapped = claim({ via: { port: 'csharp', symbol: 'LibTmux.Server.GetPanesAsync' } })
-    expect(verify([wrapped], () => true).problems).toEqual([])
-    expect(verify([wrapped], () => false).problems.join('\n')).toMatch(/does not send list-panes at that scope/)
   })
 })
 
@@ -241,5 +347,149 @@ describe('the scope table against tmux', () => {
     expect(scopeProblems(entry, real, 'list-panes')).toEqual([])
     const gone = { scopes: entry.scopes.map((scope: { id: string }) => scope.id === 'server' ? { ...scope, function: 'cmd_list_panes_gone' } : scope) }
     expect(scopeProblems(gone, real, 'list-panes').join('\n')).toMatch(/does not call cmd_list_panes_gone/)
+  })
+})
+
+describe('symbols that only build a command', () => {
+  const symbols = [
+    { id: 'tmux.Plan.KillPane', name: 'KillPane', parentName: 'Plan', file: 'tmux/plan_pane.go', line: 10 },
+    { id: 'tmux.Plan.Run', name: 'Run', parentName: 'Plan', file: 'tmux/plan.go', line: 5 },
+    { id: 'tmux.Pane.Kill', name: 'Kill', parentName: 'Pane', file: 'tmux/pane.go', line: 1 },
+  ]
+  const entry = (symbol: string) => ({ symbol, command: 'kill-pane', scope: null, evidence: ['x.go:1'], hops: 0 })
+  const found = () => new Map(symbols.map((candidate) => [candidate.id, entry(candidate.id)]))
+  const source = ['func (p *Plan) add(op Op) Ref {', '\tp.ops = append(p.ops, op)', '}'].join('\n')
+  const exclusion = (over: Record<string, unknown> = {}) => ({
+    port: 'go', owner: 'Plan', in: 'tmux/plan_', why: 'A Plan records steps.',
+    evidence: [{ at: 'tmux/plan.go:1', has: ['func (p *Plan) add('] }, { at: 'tmux/plan.go:2', has: ['append(p.ops, op)'] }], ...over,
+  })
+  const apply = (items: unknown[], held = found()) => ({
+    held, ...applyExclusions({ exclusions: items as Parameters<typeof applyExclusions>[0]['exclusions'], found: held, symbols, readSource: (path: string) => (path === 'tmux/plan.go' ? source : undefined) }),
+  })
+
+  it('removes what an owner builds, inside the files it names, and keeps what it does not', () => {
+    const { held, removed, problems } = apply([exclusion()])
+    expect(problems).toEqual([])
+    expect(removed.map((item: { symbol: string }) => item.symbol)).toEqual(['tmux.Plan.KillPane'])
+    // Plan.Run is the owner's, but declared outside the builder files, and Pane.Kill is another type's.
+    expect([...held.keys()]).toEqual(['tmux.Plan.Run', 'tmux.Pane.Kill'])
+  })
+
+  it('selects by member name as well, and needs one of the two', () => {
+    expect(apply([exclusion({ owner: undefined, names: ['Kill'], in: 'tmux/pane' })]).removed.map((item: { symbol: string }) => item.symbol)).toEqual(['tmux.Pane.Kill'])
+    expect(apply([exclusion({ owner: undefined })]).problems[0]).toMatch(/neither an owner nor member names/)
+  })
+
+  it.each([
+    ['a line that no longer holds the text', { evidence: [{ at: 'tmux/plan.go:2', has: ['p.steps = append('] }] }, /does not contain/],
+    ['a line past the end of the file', { evidence: [{ at: 'tmux/plan.go:99' }] }, /not a line of the pinned source/],
+    ['no evidence', { evidence: [] }, /cites no evidence/],
+    ['an owner that has nothing left to remove', { owner: 'Chain' }, /removes no entry, so it is stale/],
+  ])('refuses %s, and removes nothing', (_name, over, message) => {
+    const { held, removed, problems } = apply([exclusion(over)])
+    expect(problems.join('\n')).toMatch(message)
+    expect(removed).toEqual([])
+    expect(held.size).toBe(3)
+  })
+})
+
+describe('crediting a wrapper with the core method it calls', () => {
+  const coreSymbols = new Map([
+    ['core.Server.panes', { name: 'panes', parentName: 'Server' }],
+    ['core.Session.panes', { name: 'panes', parentName: 'Session' }],
+    ['core.Server.snapshot', { name: 'snapshot', parentName: 'Server' }],
+  ])
+  const coreEntry = (symbol: string, scope: string, over: Record<string, unknown> = {}) => ({ symbol, command: 'list-panes', scope, evidence: ['Core.java:10'], ...over })
+  const core = (entries: ReturnType<typeof coreEntry>[]) => ({ entries, symbols: coreSymbols })
+  const wrapper = (name: string, parentName: string, id = `w.${parentName}.${name}`) => ({ id, name, parentName, file: 'W.kt', line: 1 })
+  const fn = (name: string, owner: string, calls: [string, number][], receivers: [string, string[]][] = []) =>
+    located({ file: 'W.kt', name, owner, start: 1, nameLine: 1, end: 9, calls: new Map(calls), receivers: new Map(receivers.map(([callee, who]) => [callee, new Set(who)])) })
+  const forward = (functions: ReturnType<typeof fn>[], symbols: ReturnType<typeof wrapper>[], entries: ReturnType<typeof coreEntry>[]) =>
+    forwardUsage({ parent: 'java', functions, types: [], symbols, core: core(entries) }) as unknown as { entries: Forwarded[]; silent: string[] }
+
+  it('credits the scope the core method sends at, with the line of the call and the core evidence', () => {
+    const { entries } = forward([fn('panes', 'Server', [['panes', 4]], [['panes', ['server']]])], [wrapper('panes', 'Server')], [coreEntry('core.Server.panes', 'server')])
+    expect(entries).toEqual([{
+      symbol: 'w.Server.panes', command: 'list-panes', scope: 'server', evidence: ['W.kt:4'], hops: 1,
+      via: { port: 'java', symbol: 'core.Server.panes', evidence: ['Core.java:10'] },
+    }])
+  })
+
+  it('credits the type the call is made on, and not the type the wrapper method belongs to', () => {
+    // F#'s Server.newSession lists the panes of the session it made, with `session.GetPanesAsync`.
+    const { entries } = forward([fn('newSession', 'Server', [['panes', 4]], [['panes', ['session']]])], [wrapper('newSession', 'Server')],
+      [coreEntry('core.Server.panes', 'server'), coreEntry('core.Session.panes', 'session')])
+    expect(entries.map((entry) => entry.scope)).toEqual(['session'])
+    // The control: with no named handle the call is made on the wrapper's own type.
+    const own = forward([fn('refresh', 'Server', [['panes', 4]])], [wrapper('refresh', 'Server')], [coreEntry('core.Server.panes', 'server'), coreEntry('core.Session.panes', 'session')])
+    expect(own.entries.map((entry) => entry.scope)).toEqual(['server'])
+  })
+
+  it('leaves a wrapper that builds a query and calls no sender out, and names it', () => {
+    const { entries, silent } = forward([fn('plan', 'Server', [['listOf', 3]])], [wrapper('plan', 'Server')], [coreEntry('core.Server.panes', 'server')])
+    expect(entries).toEqual([])
+    expect(silent).toEqual(['w.Server.plan'])
+  })
+
+  it('does not forward a reviewed claim that holds only for the arguments it was read with', () => {
+    const functions = [fn('snapshot', 'Server', [['snapshot', 4]], [['snapshot', ['server']]])]
+    const symbols = [wrapper('snapshot', 'Server')]
+    expect(forward(functions, symbols, [coreEntry('core.Server.snapshot', 'server', { reviewed: true })]).entries).toEqual([])
+    // A claim that says it holds for every call is forwarded, and the forwarded entry says it was reviewed.
+    const [entry] = forward(functions, symbols, [coreEntry('core.Server.snapshot', 'server', { reviewed: true, forwardable: true })]).entries
+    expect(entry.via).toMatchObject({ symbol: 'core.Server.snapshot', reviewed: true })
+  })
+
+  it('forwards a generated operation by the annotation above the core method, and not one without', () => {
+    const generated = { under: ['gen/'], evidence: ['Gen.kt:183'], forwards: (entry: { symbol: string }) => (entry.symbol === 'core.Server.panes' ? 'Core.java:9' : undefined) }
+    const symbols = [{ ...wrapper('panes', 'Server'), file: 'gen/Ops.kt' }, { ...wrapper('snapshot', 'Server'), file: 'gen/Ops.kt' }]
+    const { entries } = forwardUsage({ parent: 'java', functions: [], types: [], symbols, generated,
+      core: core([coreEntry('core.Server.panes', 'server'), coreEntry('core.Server.snapshot', 'server')]) }) as unknown as { entries: Forwarded[] }
+    expect(entries.map((entry) => [entry.symbol, entry.evidence])).toEqual([['w.Server.panes', ['Gen.kt:183', 'Core.java:9']]])
+  })
+})
+
+describe('reading Julia and F# by their text', () => {
+  const commands = new Set(['list-panes'])
+
+  it('finds the sends and calls of Julia functions, short form included, and not a docstring', () => {
+    const text = [
+      '"""Run list-panes -a on the server."""',
+      'function panes(conn)',
+      '    run(conn, ["list-panes", "-a"])',
+      '    return _rows(conn)',
+      'end',
+      '',
+      'snapshot(conn) = _capture(conn; depth=1)',
+      '',
+    ].join('\n')
+    const { functions } = scanJulia(text, { commands, known: commands }) as unknown as { functions: Scanned[] }
+    const byName = Object.fromEntries(functions.map((fn) => [fn.name, fn]))
+    expect(byName.panes.sites).toEqual([{ command: 'list-panes', line: 3, flags: 'a' }])
+    expect([...byName.panes.calls.keys()]).toEqual(expect.arrayContaining(['run', '_rows']))
+    expect([...byName.snapshot.calls.keys()]).toEqual(['_capture'])
+    expect(byName.snapshot.sites).toEqual([])
+  })
+
+  it('reads F# members with their owner, and the calls inside with the object they are made on', () => {
+    const text = [
+      'module Hierarchy',
+      '',
+      'type Server with',
+      '    member server.newSession (spec: Spec) =',
+      '        backgroundTask {',
+      '            let! panes = session.GetPanesAsync(token)',
+      '            return panes',
+      '        }',
+      '',
+      'let helper (x: int) = x',
+      '',
+    ].join('\n')
+    const { functions } = scanFSharp(text) as unknown as { functions: Scanned[] }
+    const byName = Object.fromEntries(functions.map((fn) => [fn.name, fn]))
+    expect(byName.newSession).toMatchObject({ owner: 'Server', start: 4, end: 8 })
+    expect(byName.newSession.receivers.get('GetPanesAsync')).toEqual(new Set(['session']))
+    expect(byName.helper.owner).toBe('Hierarchy')
+    expect(byName.helper.calls.size).toBe(0)
   })
 })

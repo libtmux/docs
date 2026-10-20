@@ -8,7 +8,9 @@
  * functions the symbol answers. Sends a scan cannot see (a command named by a
  * template, a scope passed as a typed argument) are reviewed claims in
  * `scripts/tmux-usage/claims.json`; each one must still be true of the pinned
- * source or generation fails.
+ * source or generation fails. Symbols that carry a command's name and only
+ * build or record it (a plan, a chain, a request) are `exclusions.json`, held
+ * to the same standard.
  *
  * The result is `site/src/data/tmux-usage/<port>.json`, keyed by public symbol.
  *
@@ -18,6 +20,7 @@
  *   gen-tmux-usage.mjs --report       list the sends no public symbol was credited with
  *   gen-tmux-usage.mjs --data <dir>   read and write another copy of the data directory
  *   gen-tmux-usage.mjs --commands a,b record these commands (or `all`) instead of COMMANDS
+ *   gen-tmux-usage.mjs --ports a,b    only these ports, and the core libraries their wrappers stand on
  */
 import { spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
@@ -25,16 +28,19 @@ import { homedir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { GRAMMARS, isLibrarySource, scanSource } from './lib/tmux-usage-scan.mjs'
-import { deriveUsage, verifyClaims } from './lib/tmux-usage-derive.mjs'
+import { applyExclusions, deriveUsage, verifyClaims } from './lib/tmux-usage-derive.mjs'
+import { forwardUsage } from './lib/tmux-usage-forward.mjs'
 import { libraryScopes, scopeProblems } from './lib/tmux-usage-scopes.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const dataDir = join(root, 'site/src/data')
 const defaultUsageDir = join(dataDir, 'tmux-usage')
 const claimsPath = join(root, 'scripts/tmux-usage/claims.json')
+const forwardersPath = join(root, 'scripts/tmux-usage/forwarders.json')
+const exclusionsPath = join(root, 'scripts/tmux-usage/exclusions.json')
 export const SCHEMA_VERSION = 1
-/** The commands whose usage is recorded; the rollout adds names here. */
-export const COMMANDS = ['list-panes']
+/** The commands whose usage is recorded: every command of the pinned manuals, unless `--commands` names some. */
+export const COMMANDS = 'all'
 
 const args = process.argv.slice(2)
 const option = (name) => args[args.indexOf(name) + 1]
@@ -52,8 +58,8 @@ const readJson = (path) => JSON.parse(readFileSync(path, 'utf8'))
 const expand = (path) => (path.startsWith('~/') ? join(homedir(), path.slice(2)) : path)
 const manualCommands = () => [...new Set(readJson(join(dataDir, 'tmux/versions.json')).versions.flatMap(({ version }) =>
   readJson(join(dataDir, `tmux/${version}.json`)).commands.map((command) => command.name)))].sort()
-const commandsToRecord = !args.includes('--commands') ? COMMANDS
-  : option('--commands') === 'all' ? manualCommands() : option('--commands').split(',')
+const commandsFrom = (value) => (value === 'all' ? manualCommands() : value.split(','))
+const commandsToRecord = commandsFrom(args.includes('--commands') ? option('--commands') : COMMANDS)
 
 function git(checkout, ...gitArgs) {
   const result = spawnSync('git', ['-C', checkout, ...gitArgs], { maxBuffer: 1 << 30 })
@@ -93,6 +99,9 @@ function knownCommands() {
 const sortKeys = (value) => Array.isArray(value) ? value.map(sortKeys)
   : value && typeof value === 'object' ? Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)).map(([key, item]) => [key, sortKeys(item)])) : value
 
+/** How a port's symbols find their definitions: Lua's handles share one implementation, Julia's methods share files. */
+const DEFINITION_OPTIONS = { lua: { sharedOwner: true }, julia: { freeFunctions: true } }
+
 /** A consumer example declares symbols of its own that the library does not. */
 const EXAMPLES = /(?:^|\/)(?:examples?|tests?|benchmarks?|docs?)\//
 
@@ -118,14 +127,15 @@ export function portDocument(port, model, found, commands) {
   for (const entry of found) {
     ;(symbols[entry.symbol] ??= []).push({
       command: entry.command, scope: entry.scope, evidence: entry.evidence,
-      ...(entry.reviewed ? { reviewed: true } : {}), ...(entry.via ? { via: entry.via } : {}),
+      ...(entry.reviewed ? { reviewed: true } : {}), ...(entry.forwardable ? { forwardable: true } : {}), ...(entry.via ? { via: entry.via } : {}),
     })
   }
   for (const list of Object.values(symbols)) list.sort((a, b) => a.command.localeCompare(b.command) || String(a.scope).localeCompare(String(b.scope)))
   return sortKeys({ schemaVersion: SCHEMA_VERSION, port, repo: model.repo, revision: model.revision, commands: [...commands].sort(), symbols })
 }
 
-async function derivePort({ port, model, commands, scopes, claims, checkout, known, report, sends }) {
+/** Read a port's source at its pinned revision: every function, and the public symbols that name them. */
+async function scanPort({ port, model, commands, checkout, known }) {
   const grammar = GRAMMARS[port]
   const symbols = publicSymbols(model)
   const functions = []
@@ -146,22 +156,69 @@ async function derivePort({ port, model, commands, scopes, claims, checkout, kno
     }
     return cache.get(path)
   }
+  return { symbols, functions, types, readSource }
+}
+
+/** A reviewed claim stands over what a scan found for the same symbol, command and scope; otherwise the fewer hops win. */
+const mergeEntries = (found, entries) => {
+  for (const entry of entries) {
+    const key = `${entry.symbol}\0${entry.command}\0${entry.scope}`
+    const held = found.get(key)
+    if (!held || (entry.reviewed && !held.reviewed) || (Boolean(entry.reviewed) === Boolean(held.reviewed) && held.hops > entry.hops)) found.set(key, entry)
+  }
+}
+
+/** The sends a scan finds in a port's own source, and the reviewed claims that add to them. */
+function derivePort({ port, scanned, commands, scopes, claims, report, sends }) {
+  const { symbols, functions, types, readSource } = scanned
   const found = new Map()
   const problems = []
   for (const command of commands) {
     const spec = scopes.commands[command] && { scopes: libraryScopes(scopes.commands[command]) }
-    const derived = deriveUsage({ command, spec, functions, symbols })
+    const derived = deriveUsage({ command, spec, functions, symbols, definitionOptions: DEFINITION_OPTIONS[port] })
     const reviewed = verifyClaims({
-      claims: claims.filter((claim) => claim.port === port && claim.command === command), spec, functions, types, symbols, readSource, sends,
+      claims: claims.filter((claim) => claim.port === port && claim.command === command), spec, functions, types, symbols, readSource, definitionOptions: DEFINITION_OPTIONS[port], sends,
     })
     problems.push(...reviewed.problems)
-    for (const entry of [...derived.entries, ...reviewed.entries]) {
-      const key = `${entry.symbol}\0${entry.command}\0${entry.scope}`
-      if (!found.has(key) || found.get(key).hops > entry.hops) found.set(key, entry)
-    }
+    mergeEntries(found, [...derived.entries, ...reviewed.entries])
     for (const item of derived.unresolved) report.push(`${port} ${command}: ${item.file}:${item.line} in ${item.function}: ${item.reason}`)
   }
-  return { found: [...found.values()], problems }
+  return { found, problems }
+}
+
+/** The Operation annotation above the core method that sends, the line that makes a generated wrapper forward to it. */
+function operationAnnotation(core, kinds) {
+  const pattern = new RegExp(`@Operation\\(\\s*Kind\\.(?:${kinds.join('|')})\\s*\\)`)
+  return (entry) => {
+    const last = entry.evidence.at(-1)
+    const file = last.slice(0, last.lastIndexOf(':'))
+    const line = Number(last.slice(last.lastIndexOf(':') + 1))
+    const fn = core.functions.find((candidate) => candidate.file === file && candidate.start <= line && line <= candidate.end)
+    const text = fn && core.readSource(file)?.split('\n')
+    if (!fn || !text) return undefined
+    for (let at = fn.start; at <= fn.nameLine; at++) if (pattern.test(text[at - 1] ?? '')) return `${file}:${at}`
+    return undefined
+  }
+}
+
+/** A wrapper's entries: what it sends through the core method it calls, and the lines that show each hop. */
+function forwardPort({ port, config, scanned, core, coreScan, readEvidence }) {
+  const problems = []
+  let generated
+  if (config.generated) {
+    for (const item of config.generated.evidence) {
+      const [file, line] = [item.at.slice(0, item.at.lastIndexOf(':')), Number(item.at.slice(item.at.lastIndexOf(':') + 1))]
+      const text = readEvidence(file)?.split('\n')[line - 1]
+      if (text === undefined) problems.push(`${port}: forwarder evidence ${item.at} is not a line of the pinned source`)
+      for (const needle of item.has ?? []) if (text !== undefined && !text.includes(needle)) problems.push(`${port}: forwarder evidence ${item.at} does not contain ${JSON.stringify(needle)}`)
+    }
+    generated = { under: config.generated.under, evidence: config.generated.evidence.map((item) => item.at), forwards: operationAnnotation(coreScan, config.generated.kinds) }
+  }
+  const result = forwardUsage({
+    parent: config.parent, functions: scanned.functions, types: scanned.types, symbols: scanned.symbols,
+    core: { entries: core.entries, symbols: core.symbols }, generated,
+  })
+  return { entries: result.entries, problems }
 }
 
 /** Ports that have a model, in the order the site lists them. */
@@ -197,6 +254,7 @@ export function documentProblems(document, model, scopes, commands) {
 export async function main() {
   const scopes = readJson(join(usageDir, 'scopes.json'))
   const claims = existsSync(claimsPath) ? readJson(claimsPath).claims : []
+  const exclusions = existsSync(exclusionsPath) ? readJson(exclusionsPath).exclusions : []
   const ports = await portsWithModels()
   const report = []
   const failures = []
@@ -215,11 +273,12 @@ export async function main() {
     }
   }
 
-  /** A wrapper's claim stands on its parent library's own result, so parents run first. */
+  const forwarders = existsSync(forwardersPath) ? readJson(forwardersPath).forwarders : {}
+  /** A wrapper stands on its core library's own result, so cores run first. */
+  const only = args.includes('--ports') ? new Set(option('--ports').split(',')) : undefined
+  const wanted = (port) => !only || only.has(port.slug) || [...only].some((slug) => forwarders[slug]?.parent === port.slug)
+  const ordered = ports.filter(wanted).sort((a, b) => Number(Boolean(forwarders[a.slug])) - Number(Boolean(forwarders[b.slug])))
   const byPort = new Map()
-  const sends = (port, symbol, command, scope) => byPort.get(port)?.some((entry) => entry.symbol === symbol && entry.command === command && entry.scope === scope) ?? false
-  const ordered = [...ports].sort((a, b) => Number(Boolean(a.parentLibrary)) - Number(Boolean(b.parentLibrary)))
-    .sort((a, b) => Number(claims.some((claim) => claim.port === a.slug && claim.via)) - Number(claims.some((claim) => claim.port === b.slug && claim.via)))
   let compared = 0
   for (const port of ordered) {
     const model = readJson(join(dataDir, `api/${port.slug}.json`))
@@ -235,10 +294,27 @@ export async function main() {
       if (check) { console.log(`gen-tmux-usage: ${port.slug}: no checkout at ${checkout}; skipped regeneration`); continue }
       throw new Error(`${port.slug}: no checkout at ${checkout}; set LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`)
     }
-    const { found, problems } = await derivePort({ port: port.slug, model, commands: commandsToRecord, scopes, claims, checkout, known, report, sends })
-    byPort.set(port.slug, found)
+    const scanned = await scanPort({ port: port.slug, model, commands: commandsToRecord, checkout, known })
+    const sends = (parent, symbol, command, scope) => byPort.get(parent)?.found.get(`${symbol}\0${command}\0${scope}`)
+    const { found, problems } = derivePort({ port: port.slug, scanned, commands: commandsToRecord, scopes, claims, report, sends })
     failures.push(...problems)
-    const document = portDocument(port.slug, model, found, commandsToRecord)
+    const excluded = applyExclusions({ exclusions: exclusions.filter((exclusion) => exclusion.port === port.slug), found, symbols: scanned.symbols, readSource: scanned.readSource })
+    failures.push(...excluded.problems)
+    const config = forwarders[port.slug]
+    if (config) {
+      const core = byPort.get(config.parent)
+      if (!core) failures.push(`${port.slug}: its core library ${config.parent} was not generated`)
+      else {
+        const forwarded = forwardPort({
+          port: port.slug, config, scanned, coreScan: core.scanned, readEvidence: scanned.readSource,
+          core: { entries: [...core.found.values()], symbols: new Map(core.scanned.symbols.map((symbol) => [symbol.id, symbol])) },
+        })
+        failures.push(...forwarded.problems)
+        mergeEntries(found, forwarded.entries)
+      }
+    }
+    byPort.set(port.slug, { found, scanned })
+    const document = portDocument(port.slug, model, [...found.values()], commandsToRecord)
     const text = `${JSON.stringify(document, null, 2)}\n`
     if (check) {
       if (text !== readFileSync(path, 'utf8')) failures.push(`${port.slug}: stale; run node scripts/gen-tmux-usage.mjs`)

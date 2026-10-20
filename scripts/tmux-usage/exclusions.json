@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "exclusions": [
+    {
+      "port": "go",
+      "owner": "Plan",
+      "in": "tmux/plan_",
+      "why": "A Plan records each step; Plan.Run is what sends them.",
+      "evidence": [
+        {
+          "at": "tmux/plan.go:158",
+          "has": [
+            "func (p *Plan) add(op Op) Ref"
+          ]
+        },
+        {
+          "at": "tmux/plan.go:159",
+          "has": [
+            "p.ops = append(p.ops, op)"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "cxx",
+      "owner": "Chain",
+      "in": "include/libtmux/chain.hpp",
+      "why": "A Chain adds each command to a batch that a later call sends.",
+      "evidence": [
+        {
+          "at": "include/libtmux/chain.hpp:89",
+          "has": [
+            "Chain& add(std::vector<std::string> command)"
+          ]
+        },
+        {
+          "at": "include/libtmux/chain.hpp:90",
+          "has": [
+            "batch_.add("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "owner": "CommandChain",
+      "why": "A CommandChain queues each step on its batch; run() is what sends them.",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/CommandChain.java:83",
+          "has": [
+            "public CommandChain then(String... argv)"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/CommandChain.java:84",
+          "has": [
+            "batch.add(argv)"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "owner": "PaneCommand",
+      "names": [
+        "typed"
+      ],
+      "why": "typed returns the line a caller types into a pane; it sends nothing.",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/PaneCommand.java:80",
+          "has": [
+            "public String typed("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "owner": "Pane",
+      "names": [
+        "respawnArgv"
+      ],
+      "why": "respawnArgv returns the argument list; its callers run it.",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:770",
+          "has": [
+            "static List<String> respawnArgv("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "names": [
+        "plan"
+      ],
+      "in": "packages/libtmux/src/",
+      "why": "A plan getter returns operations to hand to Server.batch; it sends nothing.",
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/operations/plans.ts:162",
+          "has": [
+            "export function planKill("
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/plans.ts:165",
+          "has": [
+            "PlannedOperation<void>"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/pane.ts:269",
+          "has": [
+            "get plan(): PanePlans"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/session.ts:324",
+          "has": [
+            "get plan(): SessionPlans"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/window.ts:299",
+          "has": [
+            "get plan(): WindowPlans"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "names": [
+        "ToCommand",
+        "ToCommands"
+      ],
+      "in": "src/LibTmux/",
+      "why": "A request turns itself into a command value for a chain to run; it sends nothing.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Chaining/ITmuxRequest.cs:30",
+          "has": [
+            "Returns this request as one tmux command"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Chaining/ITmuxRequest.cs:34",
+          "has": [
+            "TmuxCommand ToCommand("
+          ]
+        },
+        {
+          "at": "src/LibTmux/Chaining/TmuxChaining.Hooks.cs:77",
+          "has": [
+            "IReadOnlyList<TmuxCommand> ToCommands("
+          ]
+        }
+      ]
+    }
+  ]
+}

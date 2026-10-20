@@ -1,13 +1,524 @@
 {
   "commands": [
-    "list-panes"
+    "attach-session",
+    "bind-key",
+    "break-pane",
+    "capture-pane",
+    "choose-buffer",
+    "choose-client",
+    "choose-tree",
+    "clear-history",
+    "clear-prompt-history",
+    "clock-mode",
+    "command-prompt",
+    "confirm-before",
+    "copy-mode",
+    "customize-mode",
+    "delete-buffer",
+    "detach-client",
+    "display-menu",
+    "display-message",
+    "display-panes",
+    "display-popup",
+    "find-window",
+    "has-session",
+    "if-shell",
+    "join-pane",
+    "kill-pane",
+    "kill-server",
+    "kill-session",
+    "kill-window",
+    "last-pane",
+    "last-window",
+    "link-window",
+    "list-buffers",
+    "list-clients",
+    "list-commands",
+    "list-keys",
+    "list-panes",
+    "list-sessions",
+    "list-windows",
+    "load-buffer",
+    "lock-client",
+    "lock-server",
+    "lock-session",
+    "move-pane",
+    "move-window",
+    "new-pane",
+    "new-session",
+    "new-window",
+    "next-layout",
+    "next-window",
+    "paste-buffer",
+    "pipe-pane",
+    "previous-layout",
+    "previous-window",
+    "refresh-client",
+    "rename-session",
+    "rename-window",
+    "resize-pane",
+    "resize-window",
+    "respawn-pane",
+    "respawn-window",
+    "rotate-window",
+    "run-shell",
+    "save-buffer",
+    "select-layout",
+    "select-pane",
+    "select-window",
+    "send-keys",
+    "send-prefix",
+    "server-access",
+    "set-buffer",
+    "set-environment",
+    "set-hook",
+    "set-option",
+    "set-window-option",
+    "show-buffer",
+    "show-environment",
+    "show-hooks",
+    "show-messages",
+    "show-options",
+    "show-prompt-history",
+    "show-window-options",
+    "source-file",
+    "split-window",
+    "start-server",
+    "suspend-client",
+    "swap-pane",
+    "swap-window",
+    "switch-client",
+    "unbind-key",
+    "unlink-window",
+    "wait-for"
   ],
   "port": "julia",
   "repo": "libtmux/libtmux-julia",
   "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
   "schemaVersion": 1,
   "symbols": {
+    "LibTmux.Base.wait": [
+      {
+        "command": "wait-for",
+        "evidence": [
+          "src/control.jl:869"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.capture_bytes": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "src/control_io.jl:101"
+        ],
+        "scope": null
+      },
+      {
+        "command": "delete-buffer",
+        "evidence": [
+          "src/control_io.jl:60",
+          "src/control_io.jl:150"
+        ],
+        "scope": null
+      },
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "src/control_io.jl:35",
+          "src/control_io.jl:112"
+        ],
+        "scope": null
+      },
+      {
+        "command": "save-buffer",
+        "evidence": [
+          "src/control_io.jl:131"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.delete_buffer": [
+      {
+        "command": "delete-buffer",
+        "evidence": [
+          "src/control_buffers.jl:124"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.detach_client": [
+      {
+        "command": "detach-client",
+        "evidence": [
+          "src/control_clients.jl:77"
+        ],
+        "scope": null
+      },
+      {
+        "command": "list-clients",
+        "evidence": [
+          "src/control_clients.jl:11",
+          "src/control_clients.jl:74"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.format_hints": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "src/formats.jl:210"
+        ],
+        "scope": null
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/formats.jl:69",
+          "src/formats.jl:208"
+        ],
+        "scope": "window"
+      }
+    ],
+    "LibTmux.get_environment": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "src/configuration.jl:299",
+          "src/configuration.jl:353"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.get_option": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "src/configuration.jl:228",
+          "src/configuration.jl:257"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.link_window": [
+      {
+        "command": "link-window",
+        "evidence": [
+          "src/topology.jl:123"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.load_buffer": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "src/pane_io.jl:128",
+          "src/pane_io.jl:187"
+        ],
+        "scope": null
+      },
+      {
+        "command": "load-buffer",
+        "evidence": [
+          "src/control_buffers.jl:39",
+          "src/control_buffers.jl:71"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.move_pane": [
+      {
+        "command": "move-pane",
+        "evidence": [
+          "src/control_topology.jl:189"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.move_window": [
+      {
+        "command": "move-window",
+        "evidence": [
+          "src/topology.jl:170"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.new_session": [
+      {
+        "command": "new-session",
+        "evidence": [
+          "src/control_topology.jl:38"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.new_window": [
+      {
+        "command": "new-window",
+        "evidence": [
+          "src/control_operations.jl:95"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.observe_output": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "src/observation.jl:491",
+          "src/observation.jl:535"
+        ],
+        "scope": null
+      },
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "src/observation.jl:543"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.open_control": [
+      {
+        "command": "attach-session",
+        "evidence": [
+          "src/control.jl:628",
+          "src/control.jl:1095"
+        ],
+        "scope": null
+      },
+      {
+        "command": "display-message",
+        "evidence": [
+          "src/control.jl:744",
+          "src/control.jl:1095"
+        ],
+        "scope": null
+      },
+      {
+        "command": "wait-for",
+        "evidence": [
+          "src/control.jl:966",
+          "src/control.jl:1113"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.open_server": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "src/lifecycle.jl:265",
+          "src/lifecycle.jl:416"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.paste_bytes": [
+      {
+        "command": "delete-buffer",
+        "evidence": [
+          "src/pane_io.jl:141",
+          "src/pane_io.jl:289"
+        ],
+        "scope": null
+      },
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "src/pane_io.jl:128",
+          "src/pane_io.jl:274"
+        ],
+        "scope": null
+      },
+      {
+        "command": "list-commands",
+        "evidence": [
+          "src/control_buffers.jl:135",
+          "src/control_buffers.jl:174"
+        ],
+        "scope": null
+      },
+      {
+        "command": "load-buffer",
+        "evidence": [
+          "src/control_buffers.jl:39",
+          "src/control_buffers.jl:175"
+        ],
+        "scope": null
+      },
+      {
+        "command": "paste-buffer",
+        "evidence": [
+          "src/control_buffers.jl:147",
+          "src/control_buffers.jl:174"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.read_formats": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/control_formats.jl:21",
+          "src/control_formats.jl:56"
+        ],
+        "scope": "window"
+      }
+    ],
+    "LibTmux.remove_environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "src/control_configuration.jl:75",
+          "src/control_configuration.jl:66"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.render_format": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/formats.jl:69",
+          "src/formats.jl:177"
+        ],
+        "scope": "window"
+      }
+    ],
+    "LibTmux.run_command": [
+      {
+        "command": "delete-buffer",
+        "evidence": [
+          "src/control_protocol.jl:435",
+          "src/control.jl:580"
+        ],
+        "scope": null
+      },
+      {
+        "command": "kill-pane",
+        "evidence": [
+          "src/control_protocol.jl:427",
+          "src/control.jl:580"
+        ],
+        "scope": null
+      },
+      {
+        "command": "kill-session",
+        "evidence": [
+          "src/control_protocol.jl:428",
+          "src/control.jl:580"
+        ],
+        "scope": null
+      },
+      {
+        "command": "kill-window",
+        "evidence": [
+          "src/control_protocol.jl:428",
+          "src/control.jl:580"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.save_buffer": [
+      {
+        "command": "save-buffer",
+        "evidence": [
+          "src/control_buffers.jl:102"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.select_layout": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "src/control_topology.jl:134"
+        ],
+        "scope": null
+      },
+      {
+        "command": "select-layout",
+        "evidence": [
+          "src/control_topology.jl:143"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.select_pane": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "src/control_topology.jl:88"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.select_window": [
+      {
+        "command": "select-window",
+        "evidence": [
+          "src/control_topology.jl:362"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.send_keys": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "src/control_operations.jl:188"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.set_environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "src/configuration.jl:375"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.set_hook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "src/configuration.jl:478"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.set_option": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "src/configuration.jl:280"
+        ],
+        "scope": null
+      }
+    ],
     "LibTmux.snapshot": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "src/acquisition.jl:52",
+          "src/acquisition.jl:227"
+        ],
+        "scope": null
+      },
+      {
+        "command": "list-clients",
+        "evidence": [
+          "src/acquisition.jl:129",
+          "src/acquisition.jl:231"
+        ],
+        "scope": null
+      },
       {
         "command": "list-panes",
         "evidence": [
@@ -17,6 +528,120 @@
         ],
         "reviewed": true,
         "scope": "server"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "src/acquisition.jl:104",
+          "src/acquisition.jl:231"
+        ],
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "src/acquisition.jl:109",
+          "src/acquisition.jl:231"
+        ],
+        "scope": "server"
+      }
+    ],
+    "LibTmux.split_window": [
+      {
+        "command": "split-window",
+        "evidence": [
+          "src/control_operations.jl:142"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.subscribe_format": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "src/observation.jl:491",
+          "src/observation.jl:590"
+        ],
+        "scope": null
+      },
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "src/observation.jl:610"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.swap_pane": [
+      {
+        "command": "swap-pane",
+        "evidence": [
+          "src/control_topology.jl:211"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.swap_window": [
+      {
+        "command": "swap-window",
+        "evidence": [
+          "src/control_topology.jl:346"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.switch_client": [
+      {
+        "command": "list-clients",
+        "evidence": [
+          "src/control_clients.jl:11",
+          "src/control_clients.jl:51"
+        ],
+        "scope": null
+      },
+      {
+        "command": "switch-client",
+        "evidence": [
+          "src/control_clients.jl:52"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.unlink_window": [
+      {
+        "command": "unlink-window",
+        "evidence": [
+          "src/control_topology.jl:317"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.unset_environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "src/control_configuration.jl:75",
+          "src/control_configuration.jl:50"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.unset_hook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "src/configuration.jl:486"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux.unset_option": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "src/configuration.jl:293"
+        ],
+        "scope": null
       }
     ]
   }

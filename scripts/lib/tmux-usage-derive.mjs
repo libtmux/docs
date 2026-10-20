@@ -40,9 +40,11 @@ export function bareName(name) {
  * The functions that are each public symbol's own definition, overloads included.
  * @param {LocatedFunction[]} functions
  * @param {UsageSymbol[]} symbols
+ * @param {{ sharedOwner?: boolean, freeFunctions?: boolean }} [options] `sharedOwner` accepts the one same-named function of a file under
+ *   another owner; `freeFunctions` gives a function with no owner every same-named function in the port, as Julia's methods of one function are.
  * @returns {Map<LocatedFunction, UsageSymbol[]>}
  */
-export function definitionsOf(functions, symbols) {
+export function definitionsOf(functions, symbols, { sharedOwner = false, freeFunctions = false } = {}) {
   const byFile = Map.groupBy(functions, (fn) => fn.file)
   const byName = Map.groupBy(functions, (fn) => fn.name)
   const definitions = new Map()
@@ -55,6 +57,10 @@ export function definitionsOf(functions, symbols) {
     const owner = symbol.parentName && bareName(symbol.parentName)
     // A type annotation can sit apart from the function it describes, in the same file.
     if (!hits.length && owner) hits = inFile.filter((fn) => fn.owner === owner)
+    // The methods of one Julia function are spread over files, and all of them answer to its one symbol.
+    if (freeFunctions && !symbol.parentName) hits = (byName.get(name) ?? []).filter((fn) => !fn.owner)
+    // Handles that share one implementation are declared apart from it: `Pane`, `Window` and `Session` methods all defined once on a base.
+    if (!hits.length && sharedOwner && inFile.length === 1) hits = inFile
     // A declaration in a header is defined in another file under the same type name.
     if (!hits.length && owner && !inFile.length) {
       hits = (byName.get(name) ?? []).filter((fn) => fn.owner === owner
@@ -75,15 +81,22 @@ export function definitionsOf(functions, symbols) {
  * @param {{ command: string, spec?: { scopes?: { id: string, flags: string }[] }, functions: LocatedFunction[], symbols: UsageSymbol[] }} input
  * @returns {{ entries: UsageEntry[], unresolved: Unresolved[] }}
  */
-export function deriveUsage({ command, spec, functions, symbols }) {
+export function deriveUsage({ command, spec, functions, symbols, definitionOptions }) {
   const byName = Map.groupBy(functions, (fn) => fn.name)
-  const definitions = definitionsOf(functions, symbols)
+  const definitions = definitionsOf(functions, symbols, definitionOptions)
 
   const callersOf = (fn) => {
     const callers = (functions.filter((other) => other !== fn && other.calls.has(fn.name)))
     const sameFile = callers.filter((other) => other.file === fn.file)
     if (sameFile.length) return sameFile
-    return (byName.get(fn.name) ?? []).length === 1 ? callers : []
+    const sameName = byName.get(fn.name) ?? []
+    if (sameName.length === 1) return callers
+    // A method that forwards to a free function of its own name, `sendKeys(runtime, id, keys)`, makes a call with no
+    // handle in front of it, which only a free function can answer. That settles the name while the free function is the only one.
+    if (fn.owner === undefined && sameName.filter((other) => other.owner === undefined).length === 1) {
+      return callers.filter((other) => !other.receivers.has(fn.name))
+    }
+    return []
   }
 
   /** Public symbols reached from `fn`, each with the call sites walked to reach it. */
@@ -142,11 +155,12 @@ export function deriveUsage({ command, spec, functions, symbols }) {
  * Each claim cites the lines that make it true, and the line text must still
  * say so at the pinned revision.
  *
- * A wrapper's claim can name the library symbol it calls, `via`, and then
- * stands only while that symbol sends the command at the same scope.
+ * A wrapper's claim can name the library symbol it calls, `via`, for a call the forwarding rule
+ * cannot take on trust, such as one that passes the depth a reviewed claim depends on. It then
+ * stands only while that symbol sends the command at the same scope, and keeps that symbol's lines.
  *
  * @typedef {{ at: string, has?: string[], in?: string }} Evidence
- * @typedef {{ port: string, symbol: string, command: string, scope: string | null, evidence: Evidence[], via?: { port: string, symbol: string } }} Claim
+ * @typedef {{ port: string, symbol: string, command: string, scope: string | null, evidence: Evidence[], forwardable?: boolean, via?: { port: string, symbol: string } }} Claim
  * @param {{
  *   claims: Claim[],
  *   spec?: { scopes?: { id: string }[] },
@@ -154,12 +168,12 @@ export function deriveUsage({ command, spec, functions, symbols }) {
  *   types: { file: string, name?: string, start: number, end: number }[],
  *   symbols: UsageSymbol[],
  *   readSource: (path: string) => string | undefined,
- *   sends?: (port: string, symbol: string, command: string, scope: string | null) => boolean,
+ *   sends?: (port: string, symbol: string, command: string, scope: string | null) => { evidence: string[], reviewed?: boolean } | undefined,
  * }} input
  * @returns {{ entries: UsageEntry[], problems: string[] }}
  */
-export function verifyClaims({ claims, spec, functions, types, symbols, readSource, sends = () => false }) {
-  const definitions = definitionsOf(functions, symbols)
+export function verifyClaims({ claims, spec, functions, types, symbols, readSource, definitionOptions, sends = () => undefined }) {
+  const definitions = definitionsOf(functions, symbols, definitionOptions)
   const bySymbol = new Map(symbols.map((symbol) => [symbol.id, symbol]))
   const entries = []
   const problems = []
@@ -193,16 +207,64 @@ export function verifyClaims({ claims, spec, functions, types, symbols, readSour
       }
     }
     if (!broken && !anchored) { fail('no evidence line is anchored in the symbol with "in"'); broken = true }
-    if (!broken && claim.via && !sends(claim.via.port, claim.via.symbol, claim.command, claim.scope)) {
+    const core = claim.via && sends(claim.via.port, claim.via.symbol, claim.command, claim.scope)
+    if (!broken && claim.via && !core) {
       fail(`${claim.via.port} ${claim.via.symbol} does not send ${claim.command} at that scope`)
       broken = true
     }
     if (!broken) {
       entries.push({
         symbol: claim.symbol, command: claim.command, scope: claim.scope, evidence: claim.evidence.map((item) => item.at),
-        hops: claim.evidence.length - 1, reviewed: true, ...(claim.via ? { via: claim.via } : {}),
+        hops: claim.evidence.length - 1, reviewed: true, ...(claim.forwardable ? { forwardable: true } : {}),
+        ...(core ? { via: { port: claim.via.port, symbol: claim.via.symbol, evidence: core.evidence, ...(core.reviewed ? { reviewed: true } : {}) } } : {}),
       })
     }
   }
   return { entries, problems }
+}
+
+/**
+ * Public symbols that carry a command's name and send nothing: a plan or a chain records the command
+ * for a later run, a request turns itself into a command value, a function returns the line to type.
+ * A scan cannot tell these from a sender, because the literal is the same. Each exclusion names the
+ * symbols it removes, by owning type or by member name inside a file prefix, and cites the lines that
+ * show they build or record the command, which must still hold at the pinned source. An exclusion
+ * that removes nothing has gone stale and fails, as a claim does.
+ *
+ * @typedef {{ port: string, why: string, owner?: string, names?: string[], in?: string, evidence: Evidence[] }} Exclusion
+ * @param {{
+ *   exclusions: Exclusion[],
+ *   found: Map<string, UsageEntry>,
+ *   symbols: UsageSymbol[],
+ *   readSource: (path: string) => string | undefined,
+ * }} input
+ * @returns {{ removed: UsageEntry[], problems: string[] }} the entries taken out of `found`
+ */
+export function applyExclusions({ exclusions, found, symbols, readSource }) {
+  const removed = []
+  const problems = []
+  for (const exclusion of exclusions) {
+    const label = `${exclusion.port}: exclusion of ${exclusion.owner ?? ''}${exclusion.names ? `.${exclusion.names.join('|')}` : ''}`
+    if (!exclusion.owner && !exclusion.names) { problems.push(`${label}: names neither an owner nor member names`); continue }
+    if (!exclusion.evidence?.length) { problems.push(`${label}: cites no evidence`); continue }
+    let broken = false
+    for (const item of exclusion.evidence) {
+      const [file, line] = [item.at.slice(0, item.at.lastIndexOf(':')), Number(item.at.slice(item.at.lastIndexOf(':') + 1))]
+      const sourceLine = readSource(file)?.split('\n')[line - 1]
+      if (sourceLine === undefined) { problems.push(`${label}: ${item.at} is not a line of the pinned source`); broken = true; continue }
+      for (const needle of item.has ?? []) {
+        if (!sourceLine.includes(needle)) { problems.push(`${label}: ${item.at} does not contain ${JSON.stringify(needle)}`); broken = true }
+      }
+    }
+    if (broken) continue
+    const matched = new Set(symbols.filter((symbol) => (!exclusion.owner || (symbol.parentName && bareName(symbol.parentName) === exclusion.owner))
+      && (!exclusion.names || exclusion.names.includes(symbol.name))
+      && (!exclusion.in || symbol.file.startsWith(exclusion.in))).map((symbol) => symbol.id))
+    let count = 0
+    for (const [key, entry] of found) {
+      if (matched.has(entry.symbol)) { found.delete(key); removed.push(entry); count++ }
+    }
+    if (!count) problems.push(`${label}: removes no entry, so it is stale`)
+  }
+  return { removed, problems }
 }

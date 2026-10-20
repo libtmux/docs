@@ -6,8 +6,8 @@ import { documentProblems } from '../../scripts/gen-tmux-usage.mjs'
 import { API_MODELS } from '../src/lib/api-models'
 import { PORTS } from '../src/lib/ports'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
-import { tmuxApiLinks, tmuxCommandsFor, tmuxManualHeadings, tmuxManualUrl } from '../src/lib/tmux-manual-data'
-import { TMUX_USAGE, tmuxScopes, tmuxUsage, tmuxUsageOf } from '../src/lib/tmux-library-usage'
+import { TMUX_MANUALS, tmuxApiLinks, tmuxCommandsFor, tmuxLibrarySection, tmuxManualHeadings, tmuxManualUrl } from '../src/lib/tmux-manual-data'
+import { TMUX_USAGE, isListed, namesCommand, tmuxScopes, tmuxUsage, tmuxUsageOf, type UsageUse } from '../src/lib/tmux-library-usage'
 import {
   tmuxCommandRows, tmuxCommandSources, tmuxReferenceContext, tmuxReferenceIndex, tmuxReferenceUrl, tmuxResolvedUsage, tmuxSourceModel, tmuxSymbolSends,
 } from '../src/lib/tmux-reference'
@@ -30,8 +30,27 @@ const usage = tmuxUsage('list-panes')!
 const cell = (scope: string, port: string) => usage.groups.find((group) => group.scope?.id === scope)!.ports.find((entry) => entry.port === port)?.links.map((link) => link.label)
 
 describe('the recorded usage', () => {
+  /** Every command either pinned manual documents. */
+  const manualCommands = [...new Set(Object.values(TMUX_MANUALS).flatMap((manual) => manual.commands.map((command) => command.name)))].sort()
+
   it.each(PORTS.map((port) => port.slug))('is bound to the pinned API model of %s', (slug) => {
-    expect(documentProblems(TMUX_USAGE[slug], API_MODELS[slug], scopeTable, ['list-panes'])).toEqual([])
+    expect(documentProblems(TMUX_USAGE[slug], API_MODELS[slug], scopeTable, manualCommands)).toEqual([])
+  })
+
+  it('records every command of the manual, for every port', () => {
+    expect(manualCommands).toContain('list-panes')
+    expect(manualCommands).toContain('set-window-option')
+    for (const slug of PORTS.map((port) => port.slug)) expect(TMUX_USAGE[slug].commands, slug).toEqual(manualCommands)
+  })
+
+  it('refuses a document that records fewer commands than the manual, or one the model does not have', () => {
+    const document = TMUX_USAGE.py
+    expect(documentProblems({ ...document, commands: ['list-panes'] }, API_MODELS.py, scopeTable, manualCommands)).toEqual([expect.stringMatching(/^covers \["list-panes"\]/)])
+    expect(documentProblems({ ...document, revision: 'stale' }, API_MODELS.py, scopeTable, manualCommands)).toEqual([expect.stringMatching(/^records stale/)])
+    const bogus = { ...document, symbols: { ...document.symbols, 'libtmux.Server.nope': [{ command: 'kill-pane', scope: null, evidence: ['a.py:1'] }] } }
+    expect(documentProblems(bogus, API_MODELS.py, scopeTable, manualCommands)).toEqual(['libtmux.Server.nope: not a symbol of the API model'])
+    const unscoped = { ...document, symbols: { ...document.symbols, 'libtmux.Server.panes': [{ command: 'list-panes', scope: null, evidence: ['a.py:1'] }] } }
+    expect(documentProblems(unscoped, API_MODELS.py, scopeTable, manualCommands)).toEqual(['libtmux.Server.panes: null is not a scope of list-panes'])
   })
 
   it('names the methods that send list-panes at each scope, where the ports differ in design', () => {
@@ -57,10 +76,24 @@ describe('the recorded usage', () => {
     expect(cell('session', 'ts')).toBeUndefined()
     expect(cell('window', 'ts')).toBeUndefined()
     expect(cell('session', 'swift')).toBeUndefined()
-    // Kotlin, Scala and F# have no method of their own that sends it.
-    for (const port of ['kotlin', 'scala', 'fsharp']) {
-      for (const scope of ['server', 'session', 'window']) expect(cell(scope, port)).toBeUndefined()
+    // Kotlin and Scala wrap Java, which sends at the server only: their session and window readers send nothing.
+    for (const port of ['java', 'kotlin', 'scala']) {
+      for (const scope of ['session', 'window']) expect(cell(scope, port), `${port} ${scope}`).toBeUndefined()
     }
+  })
+
+  it('credits a wrapper with the core method it calls, at the scope that method sends', () => {
+    expect(cell('server', 'java')).toEqual(['Server.paneFields', 'Server.panes', 'Server.snapshot'])
+    expect(cell('server', 'kotlin')).toEqual(['Server.paneFields', 'Server.panes', 'Server.snapshot'])
+    // Scala has two handles to one server, and the cell tells them apart.
+    expect(cell('server', 'scala')).toEqual(expect.arrayContaining(['cats.Server.panes', 'scaladsl.Server.panes']))
+    // F# builds a session and then lists the panes of the session it made, and not of the server.
+    expect(cell('session', 'fsharp')).toEqual(['newSession'])
+    expect(cell('server', 'fsharp')).toBeUndefined()
+    const kotlin = tmuxUsageOf('kotlin', 'io.github.libtmux.kotlin.Server.panes')
+    expect(kotlin.find((entry) => entry.command === 'list-panes')!.scopes[0]).toMatchObject({
+      via: { port: 'java', symbol: 'io.github.libtmux.Server.Server.panes', evidence: ['libtmux/src/main/java/io/github/libtmux/Server.java:998'] },
+    })
   })
 
   it('lists the object that owns the scope before a method that sends the command for its own purpose', () => {
@@ -77,7 +110,7 @@ describe('the recorded usage', () => {
   })
 
   it('keeps a call through a helper with the method and off the command pages', () => {
-    const go = tmuxUsageOf('go', 'tmux.Pane.Select')
+    const go = tmuxUsageOf('go', 'tmux.Pane.Select').filter((entry) => entry.command === 'list-panes')
     expect(go).toHaveLength(1)
     expect(go[0].scopes[0]).toMatchObject({ hops: 1, evidence: ['tmux/lookup.go:371', 'tmux/window_pane_topology.go:199'] })
     expect(usage.groups.flatMap((group) => group.ports).flatMap((entry) => entry.links).map((link) => link.symbolId)).not.toContain('tmux.Pane.Select')
@@ -91,9 +124,58 @@ describe('the recorded usage', () => {
   })
 
   it('has no usage for a command it has not recorded', () => {
-    expect(tmuxUsage('kill-pane')).toBeUndefined()
-    expect(tmuxScopes('kill-pane')).toEqual([])
-    expect(tmuxUsageOf('py', 'libtmux.Pane.kill')).toEqual([])
+    expect(tmuxUsage('no-such-command')).toBeUndefined()
+    expect(tmuxScopes('no-such-command')).toEqual([])
+    expect(tmuxUsageOf('py', 'libtmux.Pane.nope')).toEqual([])
+    // A command with no scope helpers has one table with no scope heading.
+    expect(tmuxUsage('kill-pane')!.groups.map((group) => group.scope)).toEqual([undefined])
+  })
+})
+
+describe('which sends through a helper are listed', () => {
+  const use = (over: Partial<UsageUse> = {}): UsageUse => ({ command: 'send-keys', scope: null, evidence: ['a.ts:1', 'b.ts:2'], ...over })
+
+  it('lists a method whose own name carries the verb of the command, and not one that refreshes afterwards', () => {
+    expect(namesCommand('send-keys', 'sendKeysAsync')).toBe(true)
+    expect(namesCommand('send-keys', 'Send-TmuxText')).toBe(true)
+    expect(namesCommand('list-panes', 'GetPanesAsync')).toBe(true)
+    expect(namesCommand('new-window', 'createWindow')).toBe(true)
+    expect(namesCommand('kill-server', 'close')).toBe(true)
+    // The controls: a method that sends the command only to refresh what it changed, or to look something up.
+    expect(namesCommand('list-panes', 'sendKeys')).toBe(false)
+    expect(namesCommand('list-panes', 'splitPane')).toBe(false)
+    expect(namesCommand('send-keys', 'select')).toBe(false)
+  })
+
+  it('applies to a call through a helper only: a direct send and a reviewed claim are listed, whatever the name', () => {
+    expect(isListed(use({ evidence: ['a.ts:1'] }), 'unrelated')).toBe(true)
+    expect(isListed(use({ reviewed: true }), 'unrelated')).toBe(true)
+    expect(isListed(use(), 'unrelated')).toBe(false)
+    expect(isListed(use(), 'Pane.sendKeys')).toBe(true)
+    // A wrapper is listed by its own name or the core method's, and by a reviewed core entry.
+    const wrapped = (over: Partial<NonNullable<UsageUse['via']>> = {}) => use({ evidence: ['w.kt:5'], via: { port: 'java', symbol: 'core.Pane.sendKeys', evidence: ['A.java:1', 'A.java:2'], ...over } })
+    expect(isListed(wrapped(), 'wrapper.Pane.run')).toBe(true)
+    expect(isListed(wrapped({ symbol: 'core.Pane.run' }), 'wrapper.Pane.run')).toBe(false)
+    expect(isListed(wrapped({ symbol: 'core.Pane.run', reviewed: true }), 'wrapper.Pane.run')).toBe(true)
+    expect(isListed(wrapped({ symbol: 'core.Pane.run', evidence: ['A.java:1'] }), 'wrapper.Pane.run')).toBe(true)
+  })
+
+  it('puts the methods that send through a helper on the page of their own command, and not a lookup they make on the way', () => {
+    const labels = (command: string, port: string) => tmuxUsage(command)!.groups.flatMap((group) => group.ports).filter((entry) => entry.port === port).flatMap((entry) => entry.links.map((link) => link.label))
+    expect(labels('send-keys', 'go')).toEqual(expect.arrayContaining(['Pane.SendKeys']))
+    expect(labels('send-keys', 'csharp')).toContain('Pane.SendKeysAsync')
+    expect(labels('send-keys', 'ts')).toContain('Pane.sendKeys')
+    // Go's Pane.Select looks panes up with list-panes first; that stays on its own page.
+    expect(labels('list-panes', 'go')).not.toContain('Pane.Select')
+    expect(labels('select-pane', 'go')).toContain('Pane.Select')
+  })
+
+  it('tells two methods of one language that share a name apart, and names a member by whole segments', () => {
+    const labels = (command: string, port: string) => tmuxUsage(command)!.groups.flatMap((group) => group.ports).filter((entry) => entry.port === port).flatMap((entry) => entry.links.map((link) => link.label))
+    expect(labels('new-session', 'ruby')).toEqual(['Async::Server#new_session', 'LibTmux::Server#new_session'])
+    // `Pane` ends `NewPane`, but the owner is the whole segment before it.
+    expect(labels('new-pane', 'go')).toContain('Pane.NewPane')
+    expect(labels('new-pane', 'go')).not.toContain('Pane')
   })
 })
 
@@ -118,16 +200,22 @@ describe('from a method to the command and its C function', () => {
     expect(tmuxSymbolSends('go', 'tmux.Window.Panes')).toEqual([])
     expect(tmuxCommandsFor('go', 'tmux.Window.Panes').map((command) => command.name)).not.toContain('list-panes')
     expect(tmuxCommandsFor('ts', 'window.Window.panes').map((command) => command.name)).not.toContain('list-panes')
-    // A command whose usage is not recorded keeps its concept link.
-    expect(tmuxCommandsFor('ts', 'pane.Pane.capture').map((command) => command.name)).toEqual(['capture-pane'])
+    // A recorded command is linked by what the code sends, not by the concept map: TypeScript's capture reaches capture-pane through a helper.
+    expect(tmuxCommandsFor('ts', 'pane.Pane.capture')).toEqual([])
+    expect(tmuxSymbolSends('ts', 'pane.Pane.capture').map((send) => [send.command, send.scopes[0].listed])).toEqual([['capture-pane', true]])
+    // Its send-keys is another command's helper: the method sends nothing of the kind, and nothing says so.
+    expect(tmuxSymbolSends('ts', 'pane.Pane.enterCopyMode').map((send) => [send.command, send.scopes[0].listed])).toEqual([['copy-mode', true], ['send-keys', false]])
   })
 
   it('names what the method sends before its equivalents, and what it sends through a helper last', () => {
-    const plain = [{ name: 'send-keys', href: tmuxManualUrl('latest', 'send-keys') }]
+    const plain = [{ name: 'capture-pane', href: tmuxManualUrl('latest', 'capture-pane') }]
+    // Java's sendKeys sends send-keys through a helper and is named for it, so it leads; the list-panes lookup it makes on the way is last.
     const rows = tmuxCommandRows(tmuxSymbolSends('java', 'io.github.libtmux.Pane.Pane.sendKeys'), plain)
-    expect(rows.map((row) => row.command)).toEqual(['send-keys', 'list-panes'])
-    expect(tmuxCommandRows(tmuxSymbolSends('py', 'libtmux.Server.panes'), plain).map((row) => row.command)).toEqual(['list-panes', 'send-keys'])
+    expect(rows.map((row) => row.command)).toEqual(['send-keys', 'capture-pane', 'list-panes'])
+    expect(tmuxCommandRows(tmuxSymbolSends('py', 'libtmux.Server.panes'), [{ name: 'send-keys', href: '/x/' }]).map((row) => row.command)).toEqual(['list-panes', 'send-keys'])
     expect(tmuxCommandRows([], plain).map((row) => row.scopes)).toEqual([[]])
+    // A command the symbol is recorded as sending is not named twice.
+    expect(tmuxCommandRows(tmuxSymbolSends('py', 'libtmux.Server.panes'), [{ name: 'list-panes', href: '/x/' }]).map((row) => row.command)).toEqual(['list-panes'])
   })
 
   it('lists the call through a helper with the method it belongs to', () => {
@@ -230,8 +318,7 @@ describe('the rendered lists', () => {
     const rows = [...document.querySelectorAll('tbody tr')]
     const order = PORTS.map((port) => port.slug)
     const slugs = rows.map((row) => row.getAttribute('data-port')!)
-    expect(slugs).toEqual(order.filter((slug) => slugs.includes(slug)))
-    expect(slugs).not.toContain('kotlin')
+    expect(slugs).toEqual(order)
     const swift = rows.find((row) => row.getAttribute('data-port') === 'swift')!
     const cells = [...swift.querySelectorAll('td')]
     expect(cells.map((td) => [...td.querySelectorAll('a')].map((a) => a.textContent!.replace(/\s+/g, ''))))
@@ -241,15 +328,32 @@ describe('the rendered lists', () => {
   })
 
   it('names the languages that have no method of their own to list', async () => {
-    const document = await render({ usage: tmuxResolvedUsage('latest', 'list-panes') })
-    expect(document.querySelector('.tmux-usage__absent')!.textContent).toBe('No method in Kotlin, Scala, or F# sends this command itself.')
+    // Every language has one somewhere for list-panes, so the table has no such line.
+    expect((await render({ usage: tmuxResolvedUsage('latest', 'list-panes') })).querySelector('.tmux-usage__absent')).toBeNull()
     const windowPage = await render({ usage: tmuxResolvedUsage('latest', 'list-panes', 'window') })
-    expect(windowPage.querySelector('.tmux-usage__absent')!.textContent).toMatch(/^No method in Lua, Julia, TypeScript, .*sends this command at this scope itself\.$/)
-    // The control: a command that every language sends has no such line.
+    expect(windowPage.querySelector('.tmux-usage__absent')!.textContent).toMatch(/^No method in Lua, TypeScript, .*sends this command at this scope itself\.$/)
+    // A command a few languages send names the rest, in the order the site lists them.
+    const choose = await render({ usage: tmuxResolvedUsage('latest', 'choose-tree') })
+    const named = choose.querySelector('.tmux-usage__absent')!.textContent!
+    expect(named).toMatch(/^No method in .* sends this command itself\.$/)
+    const sending = tmuxUsage('choose-tree')!.groups.flatMap((group) => group.ports).map((entry) => entry.name)
+    expect(sending.length).toBeGreaterThan(0)
+    for (const name of sending) expect(named).not.toContain(name)
+    // The control: a table where every language has a method has no such line.
     const everyone = tmuxResolvedUsage('latest', 'list-panes')!
     const full = { ...everyone, groups: everyone.groups.map((group) => ({ ...group, ports: PORTS.map((port) => ({
       port: port.slug, name: port.name, links: group.ports[0].links })) })) }
     expect((await render({ usage: full })).querySelector('.tmux-usage__absent')).toBeNull()
+  })
+
+  it('names the wrappers that send nothing themselves, as the languages with no method', async () => {
+    // Kotlin's CommandChain only builds a chain, and sends nothing until it is run.
+    const document = await render({ usage: tmuxResolvedUsage('latest', 'choose-tree') })
+    const absent = document.querySelector('.tmux-usage__absent')!.textContent!
+    for (const [port, listed] of [['kotlin', 'Kotlin'], ['scala', 'Scala']] as const) {
+      const sends = tmuxUsage('choose-tree')!.groups.flatMap((group) => group.ports).some((entry) => entry.port === port)
+      expect(absent.includes(listed), port).toBe(!sends)
+    }
   })
 
   it('renders only the scope asked for on a scope page', async () => {
@@ -358,10 +462,22 @@ describe('the manual page', () => {
     }
   })
 
-  it('keeps the plain list for a command whose usage is not recorded', async () => {
+  it('lists a command with no scope helpers in one table headed Methods', async () => {
     const document = await page('capture-pane')
+    expect(document.querySelectorAll('.tmux-usage table')).toHaveLength(1)
+    expect([...document.querySelectorAll('.tmux-usage thead th')].map((th) => th.textContent!.replace(/\s+/g, ' ').trim())).toEqual(['Language', 'Methods'])
+    expect(document.querySelector('.tmux-usage tr[data-port="py"] a')!.getAttribute('href')).toMatch(/\/py\/[^/]+\/reference\//)
+    // The language picker no longer needs the plain list: the table is the section.
+    expect(document.querySelector('h2#capture-pane-use-from-a-library ~ ul')).toBeNull()
+  })
+
+  it('has no section for a command that no language sends, rather than a link that is not a sender', async () => {
+    const document = await page('set-window-option')
     expect(document.querySelector('.tmux-usage')).toBeNull()
-    expect([...document.querySelectorAll('h2#capture-pane-use-from-a-library ~ ul a')].map((a) => a.textContent)).toContain('Python')
+    expect(document.querySelector('h2#set-window-option-use-from-a-library')).toBeNull()
+    expect(tmuxLibrarySection('set-window-option')).toBeUndefined()
+    expect(tmuxLibrarySection('capture-pane')).toBe('usage')
+    expect(tmuxLibrarySection('no-such-command')).toBeUndefined()
   })
 })
 

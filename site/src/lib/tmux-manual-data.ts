@@ -221,6 +221,17 @@ export function tmuxApiLinks(command: string) {
   }))]
 }
 
+/**
+ * What a command's "Use from a library" section lists: the recorded senders, or the equivalents the
+ * concepts name for a command whose usage is not recorded. A recorded command that nothing sends has
+ * no section, because an equivalent that does not send it would be a false link.
+ */
+export function tmuxLibrarySection(command: string): 'usage' | 'equivalents' | undefined {
+  if (tmuxUsage(command)) return 'usage'
+  if (tmuxUsageCommands().includes(command)) return undefined
+  return tmuxApiLinks(command).length ? 'equivalents' : undefined
+}
+
 /** Task-oriented notes complement the pinned manual; the native catalog gates flags. */
 export function tmuxCommandNotes(version: string, slug?: string) {
   if (slug !== 'capture-pane') return undefined
@@ -276,7 +287,7 @@ export function tmuxManualHeadings(version: string, slug?: string) {
     { depth: 2, slug: 'behavior', text: notes ? 'Options' : 'Behavior' },
     ...(notes?.groups.map((group) => ({ depth: 3, slug: group.id, text: group.title })) ?? []),
     ...(tmuxGuidesFor(slug).length ? [{ depth: 2, slug: 'guides', text: 'Guides' }] : []),
-    ...(tmuxApiLinks(slug).length ? [{ depth: 2, slug: 'libraries', text: 'Use from a library' }] : []),
+    ...(tmuxLibrarySection(slug) ? [{ depth: 2, slug: 'libraries', text: 'Use from a library' }] : []),
   ].map((heading) => heading.depth === 2 ? { ...heading, slug: rowAnchor(slug, heading.text) } : heading)
   return [...new Set(reference.commands.map((entry) => entry.section))].map((section) => ({
     depth: 2, slug: section.toLowerCase().replaceAll(' ', '-'), text: section[0] + section.slice(1).toLowerCase(),

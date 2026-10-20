@@ -6,7 +6,9 @@
  * The control is the committed data, because a check that always failed would
  * satisfy every other case. Each case is a different way to be stale: a
  * revision that moved on, a symbol the model dropped, a scope the command does
- * not have, evidence that is not a line, and a port whose file went missing.
+ * not have, evidence that is not a line, a port whose file went missing, a
+ * command the file does not cover, and a file that covers fewer commands than
+ * the manual documents.
  */
 import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -64,7 +66,7 @@ check('a symbol the model lacks fails', droppedRun.code !== 0 && /go: tmux.Serve
 const scoped = fixture()
 edit(scoped, 'csharp', (document) => { first(document)[1][0].scope = 'pane' })
 const scopedRun = run(scoped)
-check('a scope the command lacks fails', scopedRun.code !== 0 && /pane is not a scope of list-panes/.test(scopedRun.out), scopedRun.out)
+check('a scope the command lacks fails', scopedRun.code !== 0 && /pane is not a scope of [a-z-]+/.test(scopedRun.out), scopedRun.out)
 
 const evidence = fixture()
 edit(evidence, 'swift', (document) => { first(document)[1][0].evidence = ['Sources/LibTmux/Server.swift'] })
@@ -77,9 +79,14 @@ const missingRun = run(missing)
 check('a port without a file fails', missingRun.code !== 0 && /rs: no /.test(missingRun.out), missingRun.out)
 
 const unrecorded = fixture()
-edit(unrecorded, 'ruby', (document) => { first(document)[1][0].command = 'kill-pane' })
+edit(unrecorded, 'ruby', (document) => { first(document)[1][0].command = 'no-such-command' })
 const unrecordedRun = run(unrecorded)
-check('a command the file does not cover fails', unrecordedRun.code !== 0 && /kill-pane is not a recorded command/.test(unrecordedRun.out), unrecordedRun.out)
+check('a command the file does not cover fails', unrecordedRun.code !== 0 && /no-such-command is not a recorded command/.test(unrecordedRun.out), unrecordedRun.out)
+
+const narrow = fixture()
+edit(narrow, 'lua', (document) => { document.commands = ['list-panes'] })
+const narrowRun = run(narrow)
+check('a file that records fewer commands than the manual fails', narrowRun.code !== 0 && /lua: covers \["list-panes"\], expected \["attach-session"/.test(narrowRun.out), narrowRun.out)
 
 for (const dir of dirs) rmSync(dir, { recursive: true, force: true })
 if (failures) process.exit(1)

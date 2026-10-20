@@ -26,7 +26,7 @@ const rows = PORTS.filter((port) => present.has(port.slug)).map((port) => ({
 // A page for one scope can leave out languages that send the command at another.
 const single = usage.groups.length === 1 && usage.groups[0].scope !== undefined
 const absent = PORTS.filter((port) => !present.has(port.slug)).map((port) => port.name)
-const headingOf = (group: (typeof usage.groups)[number]) => group.scope ? group.scope.label : 'Any scope'
+const headingOf = (group: (typeof usage.groups)[number]) => group.scope ? group.scope.label : 'Methods'
 ---
 <div class="tmux-usage" data-tmux-usage={usage.command}>
   <table>
@@ -43,9 +43,9 @@ const headingOf = (group: (typeof usage.groups)[number]) => group.scope ? group.
     <tbody>
       {rows.map((row) => <tr data-port={row.slug}>
         <th scope="row">{row.name}</th>
-        {row.cells.map((links, index) => <td data-label={`${headingOf(usage.groups[index])}${usage.groups[index].scope && flagOf(usage.groups[index].scope!) ? ` ${flagOf(usage.groups[index].scope!)}` : ''}`}
+        {row.cells.map((links, index) => <td data-label={usage.groups[index].scope ? `${headingOf(usage.groups[index])}${flagOf(usage.groups[index].scope!) ? ` ${flagOf(usage.groups[index].scope!)}` : ''}` : ''}
           class:list={[!links.length && 'tmux-usage__empty']}>
-          <span class="tmux-usage__links">{links.map((link) => <a href={link.href} title={`${link.reviewed ? 'Reviewed: ' : ''}${link.evidence[0]}`}>
+          <span class="tmux-usage__links">{links.map((link) => <a href={link.href} title={link.via ? `Calls ${link.via.symbol}: ${link.via.evidence[0]}` : `${link.reviewed ? 'Reviewed: ' : ''}${link.evidence[0]}`}>
             <ApiBadge label={link.kind} variant="kind" value={link.kind} compact preview={false} />
             <code><SymbolName name={link.label} /></code>
           </a>)}</span>
@@ -80,6 +80,9 @@ const headingOf = (group: (typeof usage.groups)[number]) => group.scope ? group.
     .tmux-usage :is(th, td) { padding: 0.1rem 0; border-bottom: 0; }
     .tmux-usage td { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: 0.5rem; }
     .tmux-usage td::before { content: attr(data-label); opacity: 0.6; }
+    /* A command with no scope has one column, so the cell needs no label. */
+    .tmux-usage td[data-label=''] { grid-template-columns: minmax(0, 1fr); }
+    .tmux-usage td[data-label='']::before { content: none; }
     .tmux-usage td.tmux-usage__empty { display: none; }
   }
 </style>

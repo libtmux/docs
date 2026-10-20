@@ -1,12 +1,447 @@
 {
   "commands": [
-    "list-panes"
+    "attach-session",
+    "bind-key",
+    "break-pane",
+    "capture-pane",
+    "choose-buffer",
+    "choose-client",
+    "choose-tree",
+    "clear-history",
+    "clear-prompt-history",
+    "clock-mode",
+    "command-prompt",
+    "confirm-before",
+    "copy-mode",
+    "customize-mode",
+    "delete-buffer",
+    "detach-client",
+    "display-menu",
+    "display-message",
+    "display-panes",
+    "display-popup",
+    "find-window",
+    "has-session",
+    "if-shell",
+    "join-pane",
+    "kill-pane",
+    "kill-server",
+    "kill-session",
+    "kill-window",
+    "last-pane",
+    "last-window",
+    "link-window",
+    "list-buffers",
+    "list-clients",
+    "list-commands",
+    "list-keys",
+    "list-panes",
+    "list-sessions",
+    "list-windows",
+    "load-buffer",
+    "lock-client",
+    "lock-server",
+    "lock-session",
+    "move-pane",
+    "move-window",
+    "new-pane",
+    "new-session",
+    "new-window",
+    "next-layout",
+    "next-window",
+    "paste-buffer",
+    "pipe-pane",
+    "previous-layout",
+    "previous-window",
+    "refresh-client",
+    "rename-session",
+    "rename-window",
+    "resize-pane",
+    "resize-window",
+    "respawn-pane",
+    "respawn-window",
+    "rotate-window",
+    "run-shell",
+    "save-buffer",
+    "select-layout",
+    "select-pane",
+    "select-window",
+    "send-keys",
+    "send-prefix",
+    "server-access",
+    "set-buffer",
+    "set-environment",
+    "set-hook",
+    "set-option",
+    "set-window-option",
+    "show-buffer",
+    "show-environment",
+    "show-hooks",
+    "show-messages",
+    "show-options",
+    "show-prompt-history",
+    "show-window-options",
+    "source-file",
+    "split-window",
+    "start-server",
+    "suspend-client",
+    "swap-pane",
+    "swap-window",
+    "switch-client",
+    "unbind-key",
+    "unlink-window",
+    "wait-for"
   ],
   "port": "go",
   "repo": "libtmux/libtmux-go",
   "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
   "schemaVersion": 1,
   "symbols": {
+    "tmux.NotificationStream.ContinuePane": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "tmux/notification_stream.go:103"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.NotificationStream.Subscribe": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "tmux/notification_stream.go:196"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.NotificationStream.Unsubscribe": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "tmux/notification_stream.go:216"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.BreakPane": [
+      {
+        "command": "break-pane",
+        "evidence": [
+          "tmux/pane_relocate.go:132"
+        ],
+        "scope": null
+      },
+      {
+        "command": "rename-window",
+        "evidence": [
+          "tmux/pane_relocate.go:182"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.Capture": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "tmux/pane_capture.go:282",
+          "tmux/pane_capture.go:222",
+          "tmux/pane_capture.go:232",
+          "tmux/pane_capture.go:127"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.Pane.CaptureBytes": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "tmux/pane_capture.go:282",
+          "tmux/pane_capture.go:222",
+          "tmux/pane_capture.go:232",
+          "tmux/pane_capture.go:141"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.Pane.CaptureTo": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "tmux/pane_capture.go:282",
+          "tmux/pane_capture.go:396"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.CaptureToBuffer": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "tmux/pane_capture.go:282",
+          "tmux/pane_capture.go:222",
+          "tmux/pane_capture.go:232",
+          "tmux/pane_capture.go:157"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.Pane.CaptureToFile": [
+      {
+        "command": "save-buffer",
+        "evidence": [
+          "tmux/pane_capture.go:185"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.ChooseBuffer": [
+      {
+        "command": "choose-buffer",
+        "evidence": [
+          "tmux/pane_modes.go:178"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.ChooseClient": [
+      {
+        "command": "choose-client",
+        "evidence": [
+          "tmux/pane_modes.go:184"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.ChooseTree": [
+      {
+        "command": "choose-tree",
+        "evidence": [
+          "tmux/pane_modes.go:199"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.ClearHistory": [
+      {
+        "command": "clear-history",
+        "evidence": [
+          "tmux/pane_input.go:405",
+          "tmux/pane_input.go:388"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.ClockMode": [
+      {
+        "command": "clock-mode",
+        "evidence": [
+          "tmux/pane_modes.go:172"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.CopyMode": [
+      {
+        "command": "copy-mode",
+        "evidence": [
+          "tmux/pane_modes.go:121"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.CustomizeMode": [
+      {
+        "command": "customize-mode",
+        "evidence": [
+          "tmux/pane_modes.go:190"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.DisplayMessage": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "tmux/display_message.go:198",
+          "tmux/display_message.go:126"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.DisplayPanes": [
+      {
+        "command": "display-panes",
+        "evidence": [
+          "tmux/pane_modes.go:292"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.DisplayPopup": [
+      {
+        "command": "display-popup",
+        "evidence": [
+          "tmux/pane_popup.go:138"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.Enter": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "tmux/pane_input.go:292"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.FindWindow": [
+      {
+        "command": "find-window",
+        "evidence": [
+          "tmux/pane_modes.go:256"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.Join": [
+      {
+        "command": "join-pane",
+        "evidence": [
+          "tmux/pane_relocate.go:95"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.Kill": [
+      {
+        "command": "kill-pane",
+        "evidence": [
+          "tmux/lifecycle_kill.go:238"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.KillOthers": [
+      {
+        "command": "kill-pane",
+        "evidence": [
+          "tmux/lifecycle_kill.go:248"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.Move": [
+      {
+        "command": "move-pane",
+        "evidence": [
+          "tmux/pane_relocate.go:81"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.NewPane": [
+      {
+        "command": "new-pane",
+        "evidence": [
+          "tmux/pane_create.go:165",
+          "tmux/pane_create.go:138"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.OpenObservation": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "tmux/control_observation.go:351",
+          "tmux/control_observation.go:301"
+        ],
+        "scope": null
+      },
+      {
+        "command": "delete-buffer",
+        "evidence": [
+          "tmux/control_observation.go:353",
+          "tmux/control_observation.go:301"
+        ],
+        "scope": null
+      },
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "tmux/control_observation.go:349",
+          "tmux/control_observation.go:301"
+        ],
+        "scope": null
+      },
+      {
+        "command": "save-buffer",
+        "evidence": [
+          "tmux/control_observation.go:352",
+          "tmux/control_observation.go:301"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.PasteBuffer": [
+      {
+        "command": "paste-buffer",
+        "evidence": [
+          "tmux/pane_process.go:167"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.Pipe": [
+      {
+        "command": "pipe-pane",
+        "evidence": [
+          "tmux/pane_process.go:89",
+          "tmux/pane_process.go:212"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.Reset": [
+      {
+        "command": "clear-history",
+        "evidence": [
+          "tmux/pane_input.go:446"
+        ],
+        "scope": null
+      },
+      {
+        "command": "send-keys",
+        "evidence": [
+          "tmux/pane_input.go:444"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.Resize": [
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "tmux/pane_geometry.go:126",
+          "tmux/pane_geometry.go:96"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.Respawn": [
+      {
+        "command": "respawn-pane",
+        "evidence": [
+          "tmux/pane_process.go:62"
+        ],
+        "scope": null
+      }
+    ],
     "tmux.Pane.Select": [
       {
         "command": "list-panes",
@@ -15,6 +450,420 @@
           "tmux/window_pane_topology.go:199"
         ],
         "scope": "window"
+      },
+      {
+        "command": "select-pane",
+        "evidence": [
+          "tmux/window_pane_topology.go:293",
+          "tmux/window_pane_topology.go:191"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.SendKeys": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "tmux/pane_input.go:203",
+          "tmux/pane_input.go:157"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.SendKeySequence": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "tmux/pane_input.go:94",
+          "tmux/pane_input.go:77"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.SendPrefix": [
+      {
+        "command": "send-prefix",
+        "evidence": [
+          "tmux/pane_input.go:308",
+          "tmux/pane_input.go:350"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.SetTitle": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "tmux/pane_geometry.go:174"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Pane.Swap": [
+      {
+        "command": "swap-pane",
+        "evidence": [
+          "tmux/window_pane_swap.go:146"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.AttachSession": [
+      {
+        "command": "attach-session",
+        "evidence": [
+          "tmux/server_attach.go:117",
+          "tmux/server_attach.go:93"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.BindKey": [
+      {
+        "command": "bind-key",
+        "evidence": [
+          "tmux/server_keys.go:86"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.CheckAlive": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "tmux/server.go:165"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.ClearPromptHistory": [
+      {
+        "command": "clear-prompt-history",
+        "evidence": [
+          "tmux/prompt_history.go:69"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.Client": [
+      {
+        "command": "list-clients",
+        "evidence": [
+          "tmux/lookup.go:94"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.CommandPrompt": [
+      {
+        "command": "command-prompt",
+        "evidence": [
+          "tmux/server_interactive.go:244"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.ConfirmBefore": [
+      {
+        "command": "confirm-before",
+        "evidence": [
+          "tmux/server_interactive.go:196"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.DeleteBuffer": [
+      {
+        "command": "delete-buffer",
+        "evidence": [
+          "tmux/server_buffers.go:161"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.DetachAllClients": [
+      {
+        "command": "detach-client",
+        "evidence": [
+          "tmux/server_clients.go:261"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.DetachClient": [
+      {
+        "command": "detach-client",
+        "evidence": [
+          "tmux/server_clients.go:233"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.DisplayMenu": [
+      {
+        "command": "display-menu",
+        "evidence": [
+          "tmux/server_interactive.go:327"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.DisplayMessage": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "tmux/display_message.go:198",
+          "tmux/display_message.go:85"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.GetEnvironment": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "tmux/environment.go:279",
+          "tmux/environment.go:118"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.HasSession": [
+      {
+        "command": "has-session",
+        "evidence": [
+          "tmux/session_lifecycle.go:141"
+        ],
+        "scope": null
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "tmux/session_lifecycle.go:155",
+          "tmux/session_lifecycle.go:138"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.IfShell": [
+      {
+        "command": "if-shell",
+        "evidence": [
+          "tmux/server_exec.go:302"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.IsAlive": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "tmux/server.go:146"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.Kill": [
+      {
+        "command": "kill-server",
+        "evidence": [
+          "tmux/lifecycle_kill.go:52"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.KillSession": [
+      {
+        "command": "kill-session",
+        "evidence": [
+          "tmux/lifecycle_kill.go:82"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.ListBuffers": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "tmux/server_buffers.go:301"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.ListClients": [
+      {
+        "command": "list-clients",
+        "evidence": [
+          "tmux/server_keys.go:212"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.ListCommands": [
+      {
+        "command": "list-commands",
+        "evidence": [
+          "tmux/server_keys.go:200"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.ListKeys": [
+      {
+        "command": "list-keys",
+        "evidence": [
+          "tmux/server_keys.go:163"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.LoadBuffer": [
+      {
+        "command": "load-buffer",
+        "evidence": [
+          "tmux/server_buffers.go:203"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.LoadBufferFrom": [
+      {
+        "command": "load-buffer",
+        "evidence": [
+          "tmux/server_buffers.go:238"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.LockClient": [
+      {
+        "command": "lock-client",
+        "evidence": [
+          "tmux/server_clients.go:196"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.LockServer": [
+      {
+        "command": "lock-server",
+        "evidence": [
+          "tmux/server_clients.go:152"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.NewSession": [
+      {
+        "command": "kill-session",
+        "evidence": [
+          "tmux/session_lifecycle.go:223"
+        ],
+        "scope": null
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "tmux/session_lifecycle.go:155",
+          "tmux/session_lifecycle.go:215"
+        ],
+        "scope": null
+      },
+      {
+        "command": "new-session",
+        "evidence": [
+          "tmux/session_lifecycle.go:91",
+          "tmux/session_lifecycle.go:62",
+          "tmux/session_lifecycle.go:230",
+          "tmux/session_lifecycle.go:234"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.Server.NewSessionConnection": [
+      {
+        "command": "if-shell",
+        "evidence": [
+          "tmux/identity.go:151",
+          "tmux/connection.go:185"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.OpenControl": [
+      {
+        "command": "attach-session",
+        "evidence": [
+          "tmux/control_startup.go:80",
+          "tmux/control_startup.go:42"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.OpenNotifications": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "tmux/notification_stream.go:82",
+          "tmux/notification_stream.go:73"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.RefreshClient": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "tmux/server_clients.go:179"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.RemoveEnvironment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "tmux/environment.go:234",
+          "tmux/environment.go:100"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.RunShell": [
+      {
+        "command": "run-shell",
+        "evidence": [
+          "tmux/server_exec.go:184"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.SaveBuffer": [
+      {
+        "command": "save-buffer",
+        "evidence": [
+          "tmux/server_buffers.go:178"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.SaveBufferTo": [
+      {
+        "command": "save-buffer",
+        "evidence": [
+          "tmux/server_buffers.go:270"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.SearchClients": [
+      {
+        "command": "list-clients",
+        "evidence": [
+          "tmux/search.go:47"
+        ],
+        "scope": null
       }
     ],
     "tmux.Server.SearchPanes": [
@@ -26,13 +875,326 @@
         "scope": "server"
       }
     ],
+    "tmux.Server.SearchSessions": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "tmux/search.go:29"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.SearchWindows": [
+      {
+        "command": "list-windows",
+        "evidence": [
+          "tmux/search.go:63"
+        ],
+        "scope": "server"
+      }
+    ],
+    "tmux.Server.ServerAccess": [
+      {
+        "command": "server-access",
+        "evidence": [
+          "tmux/server_clients.go:121"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.Session": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "tmux/lookup.go:11"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.SessionByName": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "tmux/lookup.go:38"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.SetBuffer": [
+      {
+        "command": "set-buffer",
+        "evidence": [
+          "tmux/server_buffers.go:97"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.SetEnvironment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "tmux/environment.go:211",
+          "tmux/environment.go:89"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.ShowBuffer": [
+      {
+        "command": "show-buffer",
+        "evidence": [
+          "tmux/server_buffers.go:142",
+          "tmux/server_buffers.go:119"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.ShowBufferBytes": [
+      {
+        "command": "show-buffer",
+        "evidence": [
+          "tmux/server_buffers.go:142",
+          "tmux/server_buffers.go:131"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.ShowEnvironment": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "tmux/environment.go:257",
+          "tmux/environment.go:109"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.ShowMessages": [
+      {
+        "command": "show-messages",
+        "evidence": [
+          "tmux/server_keys.go:237"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.ShowPromptHistory": [
+      {
+        "command": "show-prompt-history",
+        "evidence": [
+          "tmux/prompt_history.go:43"
+        ],
+        "scope": null
+      }
+    ],
     "tmux.Server.Snapshot": [
+      {
+        "command": "list-clients",
+        "evidence": [
+          "tmux/snapshot_capture.go:46"
+        ],
+        "scope": null
+      },
       {
         "command": "list-panes",
         "evidence": [
           "tmux/snapshot_capture.go:45"
         ],
         "scope": "server"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "tmux/snapshot_capture.go:43"
+        ],
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "tmux/snapshot_capture.go:44"
+        ],
+        "scope": "server"
+      }
+    ],
+    "tmux.Server.SourceFile": [
+      {
+        "command": "source-file",
+        "evidence": [
+          "tmux/server_exec.go:353",
+          "tmux/server_exec.go:325"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.Start": [
+      {
+        "command": "start-server",
+        "evidence": [
+          "tmux/server_attach.go:71"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.SuspendClient": [
+      {
+        "command": "suspend-client",
+        "evidence": [
+          "tmux/server_clients.go:210"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.SwitchClient": [
+      {
+        "command": "switch-client",
+        "evidence": [
+          "tmux/server_clients.go:288"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.UnbindKey": [
+      {
+        "command": "unbind-key",
+        "evidence": [
+          "tmux/server_keys.go:125"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.UnsetEnvironment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "tmux/environment.go:234",
+          "tmux/environment.go:95"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Server.WaitFor": [
+      {
+        "command": "wait-for",
+        "evidence": [
+          "tmux/server_exec.go:259"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Session.Attach": [
+      {
+        "command": "attach-session",
+        "evidence": [
+          "tmux/server_attach.go:117",
+          "tmux/server_attach.go:113"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Session.DetachClients": [
+      {
+        "command": "detach-client",
+        "evidence": [
+          "tmux/server_clients.go:335"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Session.GetEnvironment": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "tmux/environment.go:279",
+          "tmux/environment.go:180"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Session.KillWindow": [
+      {
+        "command": "kill-window",
+        "evidence": [
+          "tmux/lifecycle_kill.go:194"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Session.KillWith": [
+      {
+        "command": "kill-session",
+        "evidence": [
+          "tmux/lifecycle_kill.go:132"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Session.LastWindow": [
+      {
+        "command": "last-window",
+        "evidence": [
+          "tmux/session_navigation.go:29"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Session.Lock": [
+      {
+        "command": "lock-session",
+        "evidence": [
+          "tmux/server_clients.go:309"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Session.NewWindow": [
+      {
+        "command": "new-window",
+        "evidence": [
+          "tmux/window_lifecycle.go:157",
+          "tmux/window_lifecycle.go:213",
+          "tmux/window_lifecycle.go:224",
+          "tmux/window_lifecycle.go:88"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.Session.NextWindow": [
+      {
+        "command": "next-window",
+        "evidence": [
+          "tmux/session_navigation.go:38"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Session.PreviousWindow": [
+      {
+        "command": "previous-window",
+        "evidence": [
+          "tmux/session_navigation.go:48"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Session.RemoveEnvironment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "tmux/environment.go:234",
+          "tmux/environment.go:153"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Session.Rename": [
+      {
+        "command": "rename-session",
+        "evidence": [
+          "tmux/session_lifecycle.go:272"
+        ],
+        "scope": null
       }
     ],
     "tmux.Session.SearchPanes": [
@@ -44,6 +1206,208 @@
         "scope": "session"
       }
     ],
+    "tmux.Session.SearchWindows": [
+      {
+        "command": "list-windows",
+        "evidence": [
+          "tmux/search.go:102"
+        ],
+        "scope": "session"
+      }
+    ],
+    "tmux.Session.SelectWindow": [
+      {
+        "command": "select-window",
+        "evidence": [
+          "tmux/session_navigation.go:101"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Session.SetEnvironment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "tmux/environment.go:211",
+          "tmux/environment.go:133"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Session.ShowEnvironment": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "tmux/environment.go:257",
+          "tmux/environment.go:166"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Session.Start": [
+      {
+        "command": "wait-for",
+        "evidence": [
+          "tmux/session_run.go:162"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Session.SwitchClient": [
+      {
+        "command": "switch-client",
+        "evidence": [
+          "tmux/server_clients.go:359"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Session.UnsetEnvironment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "tmux/environment.go:234",
+          "tmux/environment.go:143"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Window.DisplayMessage": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "tmux/display_message.go:198",
+          "tmux/display_message.go:105"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Window.Kill": [
+      {
+        "command": "kill-window",
+        "evidence": [
+          "tmux/lifecycle_kill.go:206"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Window.KillOthers": [
+      {
+        "command": "kill-window",
+        "evidence": [
+          "tmux/lifecycle_kill.go:225"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Window.LastPane": [
+      {
+        "command": "last-pane",
+        "evidence": [
+          "tmux/window_pane_topology.go:224"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Window.Link": [
+      {
+        "command": "link-window",
+        "evidence": [
+          "tmux/window_link_move.go:124",
+          "tmux/window_link_move.go:96"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Window.Move": [
+      {
+        "command": "move-window",
+        "evidence": [
+          "tmux/window_link_move.go:257",
+          "tmux/window_link_move.go:209"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Window.NewPane": [
+      {
+        "command": "new-pane",
+        "evidence": [
+          "tmux/pane_create.go:165",
+          "tmux/pane_create.go:121"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Window.NewWindow": [
+      {
+        "command": "new-window",
+        "evidence": [
+          "tmux/window_lifecycle.go:157",
+          "tmux/window_lifecycle.go:213",
+          "tmux/window_lifecycle.go:224",
+          "tmux/window_lifecycle.go:117"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux.Window.NextLayout": [
+      {
+        "command": "next-layout",
+        "evidence": [
+          "tmux/window_layout.go:332"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Window.PreviousLayout": [
+      {
+        "command": "previous-layout",
+        "evidence": [
+          "tmux/window_layout.go:349"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Window.Rename": [
+      {
+        "command": "rename-window",
+        "evidence": [
+          "tmux/window_lifecycle.go:360"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Window.Resize": [
+      {
+        "command": "resize-window",
+        "evidence": [
+          "tmux/window_resize.go:85",
+          "tmux/window_resize.go:60"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Window.Respawn": [
+      {
+        "command": "respawn-window",
+        "evidence": [
+          "tmux/window_respawn.go:44"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Window.Rotate": [
+      {
+        "command": "rotate-window",
+        "evidence": [
+          "tmux/window_pane_topology.go:329",
+          "tmux/window_pane_topology.go:252"
+        ],
+        "scope": null
+      }
+    ],
     "tmux.Window.SearchPanes": [
       {
         "command": "list-panes",
@@ -51,6 +1415,90 @@
           "tmux/search.go:154"
         ],
         "scope": "window"
+      }
+    ],
+    "tmux.Window.Select": [
+      {
+        "command": "select-window",
+        "evidence": [
+          "tmux/window_lifecycle.go:382"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Window.SelectLayout": [
+      {
+        "command": "select-layout",
+        "evidence": [
+          "tmux/window_layout.go:98"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Window.SelectPane": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "tmux/window_pane_topology.go:150"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Window.Swap": [
+      {
+        "command": "swap-window",
+        "evidence": [
+          "tmux/window_pane_swap.go:91"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux.Window.Unlink": [
+      {
+        "command": "unlink-window",
+        "evidence": [
+          "tmux/window_link_move.go:154"
+        ],
+        "scope": null
+      }
+    ],
+    "tmuxtest.NewControlMode": [
+      {
+        "command": "attach-session",
+        "evidence": [
+          "tmux/tmuxtest/control.go:183",
+          "tmux/tmuxtest/control.go:58"
+        ],
+        "scope": null
+      }
+    ],
+    "tmuxtest.NewServerWithOptions": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "tmux/tmuxtest/harness.go:441",
+          "tmux/tmuxtest/harness.go:326"
+        ],
+        "scope": null
+      }
+    ],
+    "tmuxtest.NewSession": [
+      {
+        "command": "kill-session",
+        "evidence": [
+          "tmux/tmuxtest/resources.go:135",
+          "tmux/tmuxtest/resources.go:56"
+        ],
+        "scope": null
+      }
+    ],
+    "workspace.Pane.Enter": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "tmux/pane_input.go:292"
+        ],
+        "scope": null
       }
     ]
   }

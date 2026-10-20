@@ -1,12 +1,694 @@
 {
   "commands": [
-    "list-panes"
+    "attach-session",
+    "bind-key",
+    "break-pane",
+    "capture-pane",
+    "choose-buffer",
+    "choose-client",
+    "choose-tree",
+    "clear-history",
+    "clear-prompt-history",
+    "clock-mode",
+    "command-prompt",
+    "confirm-before",
+    "copy-mode",
+    "customize-mode",
+    "delete-buffer",
+    "detach-client",
+    "display-menu",
+    "display-message",
+    "display-panes",
+    "display-popup",
+    "find-window",
+    "has-session",
+    "if-shell",
+    "join-pane",
+    "kill-pane",
+    "kill-server",
+    "kill-session",
+    "kill-window",
+    "last-pane",
+    "last-window",
+    "link-window",
+    "list-buffers",
+    "list-clients",
+    "list-commands",
+    "list-keys",
+    "list-panes",
+    "list-sessions",
+    "list-windows",
+    "load-buffer",
+    "lock-client",
+    "lock-server",
+    "lock-session",
+    "move-pane",
+    "move-window",
+    "new-pane",
+    "new-session",
+    "new-window",
+    "next-layout",
+    "next-window",
+    "paste-buffer",
+    "pipe-pane",
+    "previous-layout",
+    "previous-window",
+    "refresh-client",
+    "rename-session",
+    "rename-window",
+    "resize-pane",
+    "resize-window",
+    "respawn-pane",
+    "respawn-window",
+    "rotate-window",
+    "run-shell",
+    "save-buffer",
+    "select-layout",
+    "select-pane",
+    "select-window",
+    "send-keys",
+    "send-prefix",
+    "server-access",
+    "set-buffer",
+    "set-environment",
+    "set-hook",
+    "set-option",
+    "set-window-option",
+    "show-buffer",
+    "show-environment",
+    "show-hooks",
+    "show-messages",
+    "show-options",
+    "show-prompt-history",
+    "show-window-options",
+    "source-file",
+    "split-window",
+    "start-server",
+    "suspend-client",
+    "swap-pane",
+    "swap-window",
+    "switch-client",
+    "unbind-key",
+    "unlink-window",
+    "wait-for"
   ],
   "port": "ts",
   "repo": "libtmux/libtmux-ts",
   "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
   "schemaVersion": 1,
   "symbols": {
+    "client.Client.detach": [
+      {
+        "command": "detach-client",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/shell.ts:246",
+          "packages/libtmux/src/client.ts:95"
+        ],
+        "scope": null
+      }
+    ],
+    "client.Client.switchTo": [
+      {
+        "command": "switch-client",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/shell.ts:256",
+          "packages/libtmux/src/client.ts:107"
+        ],
+        "scope": null
+      }
+    ],
+    "mcp.server.main": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "packages/mcp/src/startup.ts:92",
+          "packages/mcp/src/server.ts:244"
+        ],
+        "scope": null
+      },
+      {
+        "command": "show-options",
+        "evidence": [
+          "packages/mcp/src/startup.ts:89",
+          "packages/mcp/src/server.ts:244"
+        ],
+        "scope": null
+      },
+      {
+        "command": "start-server",
+        "evidence": [
+          "packages/mcp/src/startup.ts:88",
+          "packages/mcp/src/server.ts:244"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.breakOut": [
+      {
+        "command": "break-pane",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/shell.ts:147",
+          "packages/libtmux/src/pane.ts:517"
+        ],
+        "scope": null
+      },
+      {
+        "command": "rename-window",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/shell.ts:160",
+          "packages/libtmux/src/pane.ts:517"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.capture": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/pane_io.ts:47",
+          "packages/libtmux/src/pane.ts:345"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.chooseBuffer": [
+      {
+        "command": "choose-buffer",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/interactive.ts:83",
+          "packages/libtmux/src/pane.ts:609"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.chooseTree": [
+      {
+        "command": "choose-tree",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/interactive.ts:72",
+          "packages/libtmux/src/pane.ts:591"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.clearHistory": [
+      {
+        "command": "clear-history",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/pane_io.ts:65",
+          "packages/libtmux/src/pane.ts:356"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.customizeMode": [
+      {
+        "command": "customize-mode",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/interactive.ts:104",
+          "packages/libtmux/src/pane.ts:659"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.displayMenu": [
+      {
+        "command": "display-menu",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/interactive.ts:51",
+          "packages/libtmux/src/pane.ts:573"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.displayMessage": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/shell.ts:60",
+          "packages/libtmux/src/pane.ts:476"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.displayPopup": [
+      {
+        "command": "display-popup",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/interactive.ts:22",
+          "packages/libtmux/src/pane.ts:562"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.enterCopyMode": [
+      {
+        "command": "copy-mode",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/shell.ts:216",
+          "packages/libtmux/src/pane.ts:540"
+        ],
+        "scope": null
+      },
+      {
+        "command": "send-keys",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/shell.ts:220",
+          "packages/libtmux/src/pane.ts:540"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.exitCopyMode": [
+      {
+        "command": "copy-mode",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/shell.ts:216",
+          "packages/libtmux/src/pane.ts:551"
+        ],
+        "scope": null
+      },
+      {
+        "command": "send-keys",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/shell.ts:220",
+          "packages/libtmux/src/pane.ts:551"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.findWindow": [
+      {
+        "command": "find-window",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/interactive.ts:94",
+          "packages/libtmux/src/pane.ts:627"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.joinTo": [
+      {
+        "command": "join-pane",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/shell.ts:192",
+          "packages/libtmux/src/pane.ts:529"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.kill": [
+      {
+        "command": "kill-pane",
+        "evidence": [
+          "packages/libtmux/src/pane.ts:244"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.pasteBuffer": [
+      {
+        "command": "paste-buffer",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/topology.ts:439",
+          "packages/libtmux/src/pane.ts:452"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.pipeTo": [
+      {
+        "command": "pipe-pane",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/pane_io.ts:93",
+          "packages/libtmux/src/pane.ts:503"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.resize": [
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/topology.ts:317",
+          "packages/libtmux/src/pane.ts:370"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.respawn": [
+      {
+        "command": "respawn-pane",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/shell.ts:80",
+          "packages/libtmux/src/pane.ts:487"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.select": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "packages/libtmux/src/pane.ts:423"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.sendKeys": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/pane_io.ts:30",
+          "packages/libtmux/src/pane.ts:286"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.sendPrefix": [
+      {
+        "command": "send-prefix",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/interactive.ts:99",
+          "packages/libtmux/src/pane.ts:641"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.setHook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/hooks.ts:73",
+          "packages/libtmux/src/pane.ts:154"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.setTitle": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/topology.ts:403",
+          "packages/libtmux/src/pane.ts:438"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.showHooks": [
+      {
+        "command": "show-hooks",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/hooks.ts:31",
+          "packages/libtmux/src/pane.ts:143"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.showResolvedOptions": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/options.ts:150",
+          "packages/libtmux/src/pane.ts:196"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.swapWith": [
+      {
+        "command": "swap-pane",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/topology.ts:380",
+          "packages/libtmux/src/pane.ts:412"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.unsetHook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/hooks.ts:95",
+          "packages/libtmux/src/pane.ts:165"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.unzoom": [
+      {
+        "command": "if-shell",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/topology.ts:297",
+          "packages/libtmux/src/pane.ts:400"
+        ],
+        "scope": null
+      },
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/topology.ts:297",
+          "packages/libtmux/src/pane.ts:400"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.zoom": [
+      {
+        "command": "if-shell",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/topology.ts:272",
+          "packages/libtmux/src/pane.ts:386"
+        ],
+        "scope": null
+      },
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/topology.ts:276",
+          "packages/libtmux/src/pane.ts:386"
+        ],
+        "scope": null
+      },
+      {
+        "command": "select-pane",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/topology.ts:270",
+          "packages/libtmux/src/pane.ts:386"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.checkAlive": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/server_utils.ts:160",
+          "packages/libtmux/src/server.ts:1317"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.deleteBuffer": [
+      {
+        "command": "delete-buffer",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/server_utils.ts:116",
+          "packages/libtmux/src/server.ts:1257"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.getEnvironment": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/environment.ts:71",
+          "packages/libtmux/src/server.ts:1016"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.hasSession": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/server_utils.ts:25",
+          "packages/libtmux/src/server.ts:1148"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.ifShell": [
+      {
+        "command": "if-shell",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/shell.ts:39",
+          "packages/libtmux/src/server.ts:1284"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.isAlive": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/server_utils.ts:132",
+          "packages/libtmux/src/server.ts:1301"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.kill": [
+      {
+        "command": "kill-server",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/mutations.ts:90",
+          "packages/libtmux/src/server.ts:1126"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.listBuffers": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/server_utils.ts:87",
+          "packages/libtmux/src/server.ts:1246"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.listCommands": [
+      {
+        "command": "list-commands",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/server_utils.ts:42",
+          "packages/libtmux/src/server.ts:1177"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.loadBuffer": [
+      {
+        "command": "load-buffer",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/server_utils.ts:69",
+          "packages/libtmux/src/server.ts:1191"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.removeEnvironment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/environment.ts:147",
+          "packages/libtmux/src/server.ts:1050"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.runShell": [
+      {
+        "command": "run-shell",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/shell.ts:19",
+          "packages/libtmux/src/server.ts:1273"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.saveBuffer": [
+      {
+        "command": "save-buffer",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/server_utils.ts:109",
+          "packages/libtmux/src/server.ts:835"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.setBuffer": [
+      {
+        "command": "set-buffer",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/server_utils.ts:54",
+          "packages/libtmux/src/server.ts:1207"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.setEnvironment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/environment.ts:101",
+          "packages/libtmux/src/server.ts:1027"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.setHook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/hooks.ts:73",
+          "packages/libtmux/src/server.ts:917"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.showBuffer": [
+      {
+        "command": "show-buffer",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/server_utils.ts:77",
+          "packages/libtmux/src/server.ts:1219"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.showBufferBytes": [
+      {
+        "command": "show-buffer",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/server_utils.ts:82",
+          "packages/libtmux/src/server.ts:1234"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.showEnvironment": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/environment.ts:43",
+          "packages/libtmux/src/server.ts:1005"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.showHooks": [
+      {
+        "command": "show-hooks",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/hooks.ts:31",
+          "packages/libtmux/src/server.ts:902"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.showResolvedOptions": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/options.ts:150",
+          "packages/libtmux/src/server.ts:798"
+        ],
+        "scope": null
+      }
+    ],
     "server.Server.snapshot": [
       {
         "command": "list-panes",
@@ -19,6 +701,365 @@
         ],
         "reviewed": true,
         "scope": "server"
+      }
+    ],
+    "server.Server.sourceFile": [
+      {
+        "command": "source-file",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/server_utils.ts:37",
+          "packages/libtmux/src/server.ts:1165"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.unsetEnvironment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/environment.ts:124",
+          "packages/libtmux/src/server.ts:1038"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.unsetHook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/hooks.ts:95",
+          "packages/libtmux/src/server.ts:928"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.validateLayouts": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/layout.ts:42",
+          "packages/libtmux/src/server.ts:955"
+        ],
+        "scope": null
+      }
+    ],
+    "session.Session.detach": [
+      {
+        "command": "detach-client",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/shell.ts:246",
+          "packages/libtmux/src/session.ts:418"
+        ],
+        "scope": null
+      }
+    ],
+    "session.Session.getEnvironment": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/environment.ts:71",
+          "packages/libtmux/src/session.ts:223"
+        ],
+        "scope": null
+      }
+    ],
+    "session.Session.kill": [
+      {
+        "command": "kill-session",
+        "evidence": [
+          "packages/libtmux/src/session.ts:339"
+        ],
+        "scope": null
+      }
+    ],
+    "session.Session.removeEnvironment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/environment.ts:147",
+          "packages/libtmux/src/session.ts:257"
+        ],
+        "scope": null
+      }
+    ],
+    "session.Session.rename": [
+      {
+        "command": "rename-session",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/session_nav.ts:11",
+          "packages/libtmux/src/session.ts:367"
+        ],
+        "scope": null
+      }
+    ],
+    "session.Session.selectWindow": [
+      {
+        "command": "last-window",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/session_nav.ts:34",
+          "packages/libtmux/src/session.ts:378"
+        ],
+        "scope": null
+      },
+      {
+        "command": "next-window",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/session_nav.ts:35",
+          "packages/libtmux/src/session.ts:378"
+        ],
+        "scope": null
+      },
+      {
+        "command": "previous-window",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/session_nav.ts:37",
+          "packages/libtmux/src/session.ts:378"
+        ],
+        "scope": null
+      },
+      {
+        "command": "select-window",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/session_nav.ts:40",
+          "packages/libtmux/src/session.ts:378"
+        ],
+        "scope": null
+      }
+    ],
+    "session.Session.setEnvironment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/environment.ts:101",
+          "packages/libtmux/src/session.ts:234"
+        ],
+        "scope": null
+      }
+    ],
+    "session.Session.setHook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/hooks.ts:73",
+          "packages/libtmux/src/session.ts:186"
+        ],
+        "scope": null
+      }
+    ],
+    "session.Session.showEnvironment": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/environment.ts:43",
+          "packages/libtmux/src/session.ts:212"
+        ],
+        "scope": null
+      }
+    ],
+    "session.Session.showHooks": [
+      {
+        "command": "show-hooks",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/hooks.ts:31",
+          "packages/libtmux/src/session.ts:171"
+        ],
+        "scope": null
+      }
+    ],
+    "session.Session.showResolvedOptions": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/options.ts:150",
+          "packages/libtmux/src/session.ts:133"
+        ],
+        "scope": null
+      }
+    ],
+    "session.Session.unsetEnvironment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/environment.ts:124",
+          "packages/libtmux/src/session.ts:245"
+        ],
+        "scope": null
+      }
+    ],
+    "session.Session.unsetHook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/hooks.ts:95",
+          "packages/libtmux/src/session.ts:197"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.kill": [
+      {
+        "command": "kill-window",
+        "evidence": [
+          "packages/libtmux/src/window.ts:398"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.link": [
+      {
+        "command": "link-window",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/topology.ts:61",
+          "packages/libtmux/src/window.ts:439"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.move": [
+      {
+        "command": "move-window",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/topology.ts:48",
+          "packages/libtmux/src/window.ts:427"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.rename": [
+      {
+        "command": "rename-window",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/topology.ts:28",
+          "packages/libtmux/src/window.ts:411"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.resize": [
+      {
+        "command": "resize-window",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/topology.ts:353",
+          "packages/libtmux/src/window.ts:358"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.respawn": [
+      {
+        "command": "respawn-window",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/shell.ts:112",
+          "packages/libtmux/src/window.ts:372"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.rotate": [
+      {
+        "command": "rotate-window",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/topology.ts:427",
+          "packages/libtmux/src/window.ts:343"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.select": [
+      {
+        "command": "select-window",
+        "evidence": [
+          "packages/libtmux/src/window.ts:535"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.selectLayout": [
+      {
+        "command": "select-layout",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/topology.ts:242",
+          "packages/libtmux/src/window.ts:524"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.setHook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/hooks.ts:73",
+          "packages/libtmux/src/window.ts:206"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.showHooks": [
+      {
+        "command": "show-hooks",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/hooks.ts:31",
+          "packages/libtmux/src/window.ts:195"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.showResolvedOptions": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/options.ts:150",
+          "packages/libtmux/src/window.ts:248"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.swapWith": [
+      {
+        "command": "swap-window",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/topology.ts:94",
+          "packages/libtmux/src/window.ts:484"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.unlink": [
+      {
+        "command": "unlink-window",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/topology.ts:71",
+          "packages/libtmux/src/window.ts:461"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.unsetHook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/hooks.ts:95",
+          "packages/libtmux/src/window.ts:217"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.unzoom": [
+      {
+        "command": "if-shell",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/topology.ts:297",
+          "packages/libtmux/src/window.ts:387"
+        ],
+        "scope": null
+      },
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/topology.ts:297",
+          "packages/libtmux/src/window.ts:387"
+        ],
+        "scope": null
       }
     ]
   }

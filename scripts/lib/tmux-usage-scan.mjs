@@ -7,17 +7,18 @@
  * with the command, because the flags choose the scope tmux lists.
  */
 import { parserFor } from '../../packages/api-model/src/parser.ts'
+import { receiverOf, scanFSharp, scanJulia } from './tmux-usage-lexical.mjs'
 
 /** Port to the tree-sitter grammar that reads its source. PowerShell cmdlets are C#. */
 export const GRAMMARS = {
   py: 'python', ts: 'typescript', rs: 'rust', go: 'go', java: 'java', kotlin: 'kotlin', scala: 'scala',
-  csharp: 'csharp', powershell: 'csharp', cxx: 'cpp', swift: 'swift', ruby: 'ruby', lua: 'lua', julia: 'julia',
+  csharp: 'csharp', powershell: 'csharp', cxx: 'cpp', swift: 'swift', ruby: 'ruby', lua: 'lua', julia: 'julia', fsharp: 'fsharp',
 }
 
 /** Source extensions per grammar, minus declaration-only files. */
 export const EXTENSIONS = {
   python: /\.py$/, typescript: /(?<!\.d)\.ts$/, rust: /\.rs$/, go: /\.go$/, java: /\.java$/, kotlin: /\.kt$/,
-  scala: /\.scala$/, csharp: /\.cs$/, cpp: /\.(?:cpp|cc|cxx|hpp|hh|h)$/, swift: /\.swift$/, ruby: /\.rb$/, lua: /\.lua$/, julia: /\.jl$/,
+  scala: /\.scala$/, csharp: /\.cs$/, cpp: /\.(?:cpp|cc|cxx|hpp|hh|h)$/, swift: /\.swift$/, ruby: /\.rb$/, lua: /\.lua$/, julia: /\.jl$/, fsharp: /\.fs$/,
 }
 
 /** Directories and names that hold tests, examples, tooling and build output rather than the library. */
@@ -42,6 +43,9 @@ const FUNCTIONS = {
   ruby: ['method', 'singleton_method'],
   lua: ['function_definition_statement', 'local_function_definition_statement'],
 }
+
+/** Declarations that are functions at the top of a type and only local variables inside a function: `let reply = ...` is not a method named reply. */
+const LOCAL_BINDINGS = new Set(['property_declaration', 'val_definition', 'var_definition'])
 
 /** Declarations that own functions, named so a method can be told from a same-named one elsewhere. */
 const OWNERS = {
@@ -80,7 +84,7 @@ const CALLS = {
  */
 const WRAPPERS = new Set([
   'argument_list', 'arguments', 'argument', 'value_arguments', 'value_argument', 'call_suffix', 'keyword_argument',
-  'array', 'list', 'tuple', 'initializer_list', 'collection_expression', 'array_literal', 'array_creation_expression',
+  'array', 'array_expression', 'list', 'tuple', 'initializer_list', 'collection_expression', 'array_literal', 'array_creation_expression',
   'implicit_array_creation_expression', 'tuple_expression', 'bracketed_argument_list', 'element_binding_expression',
   'object', 'pair', 'literal_value', 'literal_element', 'keyed_element', 'composite_literal', 'table', 'table_constructor',
   'field', 'field_list', 'expression_list', 'parenthesized_expression', 'array_initializer', 'object_creation_expression',
@@ -179,15 +183,21 @@ function declaredName(grammar, node) {
   return undefined
 }
 
-/** What a call invokes: the last identifier of its callee, which is all a one-hop follow needs. */
+/** What a call invokes, and on what: the last identifier of its callee, which is all a one-hop follow needs. */
 function calleeOf(grammar, node) {
-  if (node.type === 'object_creation_expression') return node.childForFieldName('type')?.text
+  if (node.type === 'object_creation_expression') return { name: node.childForFieldName('type')?.text }
   const callee = node.childForFieldName('function') ?? node.childForFieldName('name') ?? node.childForFieldName('method')
     ?? node.namedChildren[0]
   if (!callee) return undefined
-  if (grammar === 'java' && node.type === 'method_invocation') return node.childForFieldName('name')?.text
-  if (grammar === 'ruby') return node.childForFieldName('method')?.text
-  return lastIdentifier(callee.text)
+  if (grammar === 'java' && node.type === 'method_invocation') {
+    const object = node.childForFieldName('object')?.text
+    return { name: node.childForFieldName('name')?.text, receiver: object && receiverOf(`${object}.x`) }
+  }
+  if (grammar === 'ruby') {
+    const receiver = node.childForFieldName('receiver')?.text
+    return { name: node.childForFieldName('method')?.text, receiver: receiver && receiverOf(`${receiver}.x`) }
+  }
+  return { name: lastIdentifier(callee.text), receiver: receiverOf(callee.text) }
 }
 
 const ownerName = (grammar, node) => {
@@ -198,30 +208,52 @@ const ownerName = (grammar, node) => {
 
 const row = (node) => node.startPosition.row + 1
 
+/** Note a call once per name, at its first line, and remember every object it was made on. */
+function recordCall(fn, name, receiver, line) {
+  if (!fn.calls.has(name)) fn.calls.set(name, line)
+  if (receiver) fn.receivers.set(name, new Set([...(fn.receivers.get(name) ?? []), receiver]))
+}
+
 /**
- * Julia has no grammar here, so a function is found by its text: a `function`
- * line, and the `end` that closes it at the same indentation. A docstring
- * directly above belongs to it. Sends in Julia are reviewed claims, so only
- * the extents are needed.
+ * A call that checks a command rather than runs it names it as a label: `validateArgument("select-layout", ...)`
+ * says whose argument it is in the error it may raise, and `newCommandError("new-session", result)` names the
+ * command a failure belongs to. The verb ends at a word boundary, so `checkedRun` is a runner and
+ * `checkArguments` is not.
  */
-function scanJulia(text) {
-  const lines = text.split('\n')
-  const functions = []
-  for (let index = 0; index < lines.length; index++) {
-    const match = /^(\s*)function\s+(?:[A-Za-z_]\w*\.)*([A-Za-z_][\w!]*)\s*(?:\{[^}]*\})?\s*\(/.exec(lines[index])
-    if (!match) continue
-    const closer = new RegExp(`^${match[1]}end\\b`)
-    let end = index
-    for (let next = index + 1; next < lines.length; next++) if (closer.test(lines[next])) { end = next; break }
-    let start = index
-    if (lines[index - 1]?.trim() === '"""') {
-      let opener = index - 2
-      while (opener >= 0 && lines[opener].trim() !== '"""') opener--
-      if (opener >= 0) start = opener
-    }
-    functions.push({ name: match[2], start: start + 1, nameLine: index + 1, end: end + 1, kind: 'function', sites: [], calls: new Map() })
+const CHECKING = /^(?:validate|verify|ensure|reject|require|check|invalid|unsupported)(?![a-z])|(?:Error|Failure|Exception)$/
+
+/** Whether the nearest call around a literal only checks something about the command it names. */
+function namedForChecking(grammar, node, CALL) {
+  for (let cursor = node.parent; cursor; cursor = cursor.parent) {
+    if (!CALL.has(cursor.type)) continue
+    return CHECKING.test(calleeOf(grammar, cursor)?.name ?? '')
   }
-  return { functions, types: [], orphans: [] }
+  return false
+}
+
+/** The part of a `case`, `when` or `match` arm that is tested against, as opposed to the part that runs. */
+const LABELS = /^(?:switch_label|case_switch_label|case_pattern_switch_label|constant_pattern|match_pattern|when_condition|switch_pattern|case_pattern|case_label)$/
+/** Arms whose tested part is a named field: the node under that field is the label. */
+const ARMS = { switch_case: ['value'], expression_case: ['value'], case_statement: ['value'], when: ['pattern'], in_clause: ['pattern'], case_clause: ['pattern', 'value'], switch_expression_arm: ['pattern'] }
+const COMPARISONS = /^(?:binary_expression|comparison_operator|binary_operator|equality_expression|infix_expression)$/
+
+/**
+ * A command name that is compared against, or named by a `case`, is a name being recognised, not a command being
+ * run: `case "list-sessions" -> format` picks a format by the command about to run.
+ */
+function isComparand(node) {
+  for (let child = node, cursor = node.parent; cursor; child = cursor, cursor = cursor.parent) {
+    if (LABELS.test(cursor.type)) return true
+    for (const field of ARMS[cursor.type] ?? []) {
+      if (cursor.childForFieldName(field)?.id === child.id) return true
+    }
+    if (COMPARISONS.test(cursor.type)) {
+      const operator = cursor.childForFieldName('operator')?.text ?? cursor.children.find((part) => !part.isNamed)?.text
+      return ['==', '!=', '===', '!==', 'is', 'is not'].includes(operator ?? '')
+    }
+    if (/(?:^|_)(?:block|body|statement_block|compound_statement|declaration_list)$/.test(cursor.type) || cursor.type.endsWith('_statement')) return false
+  }
+  return false
 }
 
 /** A default value or type literal in a signature is not a call. */
@@ -245,7 +277,8 @@ function inSignature(node) {
  *   a class; `orphans` are the sites outside any named function.
  */
 export async function scanSource({ grammar, text, commands, known }) {
-  if (grammar === 'julia') return scanJulia(text)
+  if (grammar === 'julia') return scanJulia(text, { commands, known })
+  if (grammar === 'fsharp') return scanFSharp(text)
   const parser = await parserFor(grammar)
   // The Swift grammar predates typed throws; blanking the type keeps every line and column.
   const tree = parser.parse(grammar === 'swift' ? text.replace(/\bthrows[ \t]*\([ \t]*[\w.]+[ \t]*\)/g, (match) => 'throws'.padEnd(match.length)) : text)
@@ -315,7 +348,7 @@ export async function scanSource({ grammar, text, commands, known }) {
     } else if (grammar === 'go' && node.type === 'function_declaration') {
       pushFunction(node.childForFieldName('name').text, undefined)
       pushed = true
-    } else if (FN.has(node.type)) {
+    } else if (FN.has(node.type) && !(stack.length && LOCAL_BINDINGS.has(node.type))) {
       const declared = declaredName(grammar, node)
       if (declared?.name) { pushFunction(declared.name, declared.owner, declared.scope); pushed = true }
     }
@@ -324,7 +357,7 @@ export async function scanSource({ grammar, text, commands, known }) {
       const wrapper = node.parent && ['decorated_definition', 'export_statement'].includes(node.parent.type) ? node.parent : node
       const fn = {
         name, owner: owner ?? owners.filter(Boolean).at(-1), start: row(wrapper), nameLine: row(node.childForFieldName('name') ?? node),
-        end: node.endPosition.row + 1, kind: node.type, sites: [], calls: new Map(),
+        end: node.endPosition.row + 1, kind: node.type, sites: [], calls: new Map(), receivers: new Map(),
         // A namespace opened by a macro is invisible here, so an empty chain is unknown, not global.
         ...([...namespaces.filter(Boolean), ...scope].length ? { namespace: [...namespaces.filter(Boolean), ...scope].join('::') } : {}),
       }
@@ -333,14 +366,14 @@ export async function scanSource({ grammar, text, commands, known }) {
     }
 
     const literal = commands.size && isCommandLiteral(node)
-    if (literal && commands.has(literal.command) && !inSignature(node) && !onWindowsOnlyPath(node)) {
+    if (literal && commands.has(literal.command) && !inSignature(node) && !onWindowsOnlyPath(node) && !namedForChecking(grammar, node, CALL) && !isComparand(node)) {
       const { flags } = flagsAround(node, literal.command)
       const site = { command: literal.command, line: row(node), flags: [...flags].sort().join('') }
       ;(stack.at(-1)?.sites ?? orphans).push(site)
     }
     if (CALL.has(node.type) && stack.length) {
       const callee = calleeOf(grammar, node)
-      if (callee && !stack.at(-1).calls.has(callee)) stack.at(-1).calls.set(callee, row(node))
+      if (callee?.name) recordCall(stack.at(-1), callee.name, callee.receiver, row(node))
     }
     for (const child of node.namedChildren) walk(child)
     if (pushed) stack.pop()
@@ -353,6 +386,6 @@ export async function scanSource({ grammar, text, commands, known }) {
 }
 
 /**
- * @typedef {{ name: string, owner?: string, start: number, nameLine: number, end: number, kind: string, sites: Site[], calls: Map<string, number>, namespace?: string }} ScannedFunction
+ * @typedef {{ name: string, owner?: string, start: number, nameLine: number, end: number, kind: string, sites: Site[], calls: Map<string, number>, receivers: Map<string, Set<string>>, namespace?: string }} ScannedFunction
  * @typedef {{ command: string, line: number, flags: string }} Site
  */

@@ -176,15 +176,19 @@ export function tmuxReferenceTree(version = 'latest') {
 }
 const scopeFunctions = new Map<string, ApiSymbol | undefined>()
 
-/** The C function that lists a command at one scope in a release, when that release has it. */
-export function tmuxScopeFunction(version: string, command: string, scope: TmuxScope): ApiSymbol | undefined {
+/**
+ * The C function that lists a command at one scope in a release. A release that dispatches inline has
+ * none, so the scope's column leads to the command's own function, where the dispatch is, unless the
+ * caller asks for the scope's function alone.
+ */
+export function tmuxScopeFunction(version: string, command: string, scope: TmuxScope, { inline = true }: { inline?: boolean } = {}): ApiSymbol | undefined {
   const model = tmuxSourceModel(version)
   const key = `${model.version}\0${command}\0${scope.id}`
+  const exec = model.symbols.find((entry) => entry.id === model.commands.find((candidate) => candidate.name === command)?.callback)
   if (!scopeFunctions.has(key)) {
-    const exec = model.symbols.find((entry) => entry.id === model.commands.find((candidate) => candidate.name === command)?.callback)
     scopeFunctions.set(key, exec && model.symbols.find((entry) => entry.name === scope.function && entry.source.file === exec.source.file && entry.id.startsWith('c:function:')))
   }
-  return scopeFunctions.get(key)
+  return scopeFunctions.get(key) ?? (inline && scope.inline?.includes(model.version) ? exec : undefined)
 }
 
 /**
@@ -196,7 +200,7 @@ export function tmuxSourceUsage(version: string, symbol: ApiSymbol): { command: 
     .filter((command) => command.entry === symbol.id || command.callback === symbol.id)
     .map((command) => ({ command: command.name }))
   const scoped = tmuxUsageCommands().flatMap((command) => tmuxScopes(command)
-    .filter((scope) => tmuxScopeFunction(version, command, scope)?.id === symbol.id)
+    .filter((scope) => tmuxScopeFunction(version, command, scope, { inline: false })?.id === symbol.id)
     .map((scope) => ({ command, scope: scope.id })))
   return [...direct, ...scoped]
 }
@@ -232,7 +236,7 @@ export function tmuxResolvedUsage(version: string, command: string, scope?: stri
 export function tmuxCommandSources(version: string, name: string) {
   const model = tmuxSourceModel(version)
   const command = model.commands.find((entry) => entry.name === name)
-  const scoped = tmuxScopes(name).flatMap((scope) => tmuxScopeFunction(version, name, scope) ?? [])
+  const scoped = tmuxScopes(name).flatMap((scope) => tmuxScopeFunction(version, name, scope, { inline: false }) ?? [])
   return command ? [...[command.entry, command.callback].flatMap((id) => model.symbols.find((entry) => entry.id === id) ?? []), ...scoped]
     .map((symbol) => ({ name: symbol.name, href: tmuxReferenceUrl(version, symbol) })) : []
 }
@@ -255,10 +259,12 @@ export interface CommandRow {
  */
 export function tmuxCommandRows(sends: SymbolSend[], equivalents: { name: string; href: string }[]): CommandRow[] {
   const rows = (list: SymbolSend[]) => list.map((send): CommandRow => ({ command: send.command, href: send.manualHref, scopes: send.scopes.filter((use) => use.scope) }))
-  const direct = (send: SymbolSend) => send.scopes.some((use) => use.reviewed || use.hops === 0)
+  const direct = (send: SymbolSend) => send.scopes.some((use) => use.listed)
+  const sent = new Set(sends.map((send) => send.command))
   return [
     ...rows(sends.filter(direct)),
-    ...equivalents.map((entry): CommandRow => ({ command: entry.name, href: entry.href, scopes: [] })),
+    // A command the symbol is recorded as sending is named once, by what it sends.
+    ...equivalents.filter((entry) => !sent.has(entry.name)).map((entry): CommandRow => ({ command: entry.name, href: entry.href, scopes: [] })),
     ...rows(sends.filter((send) => !direct(send))),
   ]
 }

@@ -1,12 +1,417 @@
 {
   "commands": [
-    "list-panes"
+    "attach-session",
+    "bind-key",
+    "break-pane",
+    "capture-pane",
+    "choose-buffer",
+    "choose-client",
+    "choose-tree",
+    "clear-history",
+    "clear-prompt-history",
+    "clock-mode",
+    "command-prompt",
+    "confirm-before",
+    "copy-mode",
+    "customize-mode",
+    "delete-buffer",
+    "detach-client",
+    "display-menu",
+    "display-message",
+    "display-panes",
+    "display-popup",
+    "find-window",
+    "has-session",
+    "if-shell",
+    "join-pane",
+    "kill-pane",
+    "kill-server",
+    "kill-session",
+    "kill-window",
+    "last-pane",
+    "last-window",
+    "link-window",
+    "list-buffers",
+    "list-clients",
+    "list-commands",
+    "list-keys",
+    "list-panes",
+    "list-sessions",
+    "list-windows",
+    "load-buffer",
+    "lock-client",
+    "lock-server",
+    "lock-session",
+    "move-pane",
+    "move-window",
+    "new-pane",
+    "new-session",
+    "new-window",
+    "next-layout",
+    "next-window",
+    "paste-buffer",
+    "pipe-pane",
+    "previous-layout",
+    "previous-window",
+    "refresh-client",
+    "rename-session",
+    "rename-window",
+    "resize-pane",
+    "resize-window",
+    "respawn-pane",
+    "respawn-window",
+    "rotate-window",
+    "run-shell",
+    "save-buffer",
+    "select-layout",
+    "select-pane",
+    "select-window",
+    "send-keys",
+    "send-prefix",
+    "server-access",
+    "set-buffer",
+    "set-environment",
+    "set-hook",
+    "set-option",
+    "set-window-option",
+    "show-buffer",
+    "show-environment",
+    "show-hooks",
+    "show-messages",
+    "show-options",
+    "show-prompt-history",
+    "show-window-options",
+    "source-file",
+    "split-window",
+    "start-server",
+    "suspend-client",
+    "swap-pane",
+    "swap-window",
+    "switch-client",
+    "unbind-key",
+    "unlink-window",
+    "wait-for"
   ],
   "port": "py",
   "repo": "tmux-python/libtmux",
   "revision": "8e0ce38400618bd783e6276270dd7f5d8cb283ea",
   "schemaVersion": 1,
   "symbols": {
+    "libtmux._internal.control_mode.ControlMode.__enter__": [
+      {
+        "command": "attach-session",
+        "evidence": [
+          "src/libtmux/_internal/control_mode.py:78"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Client.from_client_name": [
+      {
+        "command": "list-clients",
+        "evidence": [
+          "src/libtmux/client.py:128"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Client.refresh": [
+      {
+        "command": "list-clients",
+        "evidence": [
+          "src/libtmux/client.py:119"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.common.EnvironmentMixin.getenv": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "src/libtmux/common.py:226"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.common.EnvironmentMixin.remove_environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "src/libtmux/common.py:159"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.common.EnvironmentMixin.set_environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "src/libtmux/common.py:94"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.common.EnvironmentMixin.show_environment": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "src/libtmux/common.py:190"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.common.EnvironmentMixin.unset_environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "src/libtmux/common.py:130"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.common.tmux_cmd.__init__": [
+      {
+        "command": "has-session",
+        "evidence": [
+          "src/libtmux/common.py:362"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.hooks.HooksMixin._show_hook": [
+      {
+        "command": "show-hooks",
+        "evidence": [
+          "src/libtmux/hooks.py:364"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.hooks.HooksMixin.run_hook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "src/libtmux/hooks.py:108"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.hooks.HooksMixin.set_hook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "src/libtmux/hooks.py:187"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.hooks.HooksMixin.show_hooks": [
+      {
+        "command": "show-hooks",
+        "evidence": [
+          "src/libtmux/hooks.py:304"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.hooks.HooksMixin.unset_hook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "src/libtmux/hooks.py:240"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.options.OptionsMixin._show_option_raw": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "src/libtmux/options.py:1134"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.options.OptionsMixin._show_options_raw": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "src/libtmux/options.py:886"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.options.OptionsMixin.set_option": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "src/libtmux/options.py:705"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.options.OptionsMixin.unset_option": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "src/libtmux/options.py:793"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane._show_hook": [
+      {
+        "command": "show-hooks",
+        "evidence": [
+          "src/libtmux/hooks.py:364"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane._show_option_raw": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "src/libtmux/options.py:1134"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane._show_options_raw": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "src/libtmux/options.py:886"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.break_pane": [
+      {
+        "command": "break-pane",
+        "evidence": [
+          "src/libtmux/pane.py:2493"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.capture_pane": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "src/libtmux/pane.py:632"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.choose_buffer": [
+      {
+        "command": "choose-buffer",
+        "evidence": [
+          "src/libtmux/pane.py:2097"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.choose_client": [
+      {
+        "command": "choose-client",
+        "evidence": [
+          "src/libtmux/pane.py:2106"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.choose_tree": [
+      {
+        "command": "choose-tree",
+        "evidence": [
+          "src/libtmux/pane.py:2168"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.clear_history": [
+      {
+        "command": "clear-history",
+        "evidence": [
+          "src/libtmux/pane.py:2607"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.clock_mode": [
+      {
+        "command": "clock-mode",
+        "evidence": [
+          "src/libtmux/pane.py:2054"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.copy_mode": [
+      {
+        "command": "copy-mode",
+        "evidence": [
+          "src/libtmux/pane.py:2045"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.customize_mode": [
+      {
+        "command": "customize-mode",
+        "evidence": [
+          "src/libtmux/pane.py:2177"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.display_message": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "src/libtmux/pane.py:1012"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.display_panes": [
+      {
+        "command": "display-panes",
+        "evidence": [
+          "src/libtmux/pane.py:2088"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.display_popup": [
+      {
+        "command": "display-popup",
+        "evidence": [
+          "src/libtmux/pane.py:1866"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.enter": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "src/libtmux/pane.py:1666"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.find_window": [
+      {
+        "command": "find-window",
+        "evidence": [
+          "src/libtmux/pane.py:2233"
+        ],
+        "scope": null
+      }
+    ],
     "libtmux.Pane.from_pane_id": [
       {
         "command": "list-panes",
@@ -14,6 +419,477 @@
           "src/libtmux/pane.py:227"
         ],
         "scope": "window"
+      }
+    ],
+    "libtmux.Pane.join": [
+      {
+        "command": "join-pane",
+        "evidence": [
+          "src/libtmux/pane.py:2443"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.kill": [
+      {
+        "command": "kill-pane",
+        "evidence": [
+          "src/libtmux/pane.py:1073"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.move": [
+      {
+        "command": "move-pane",
+        "evidence": [
+          "src/libtmux/pane.py:2372"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.new_pane": [
+      {
+        "command": "new-pane",
+        "evidence": [
+          "src/libtmux/pane.py:1572"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.paste_buffer": [
+      {
+        "command": "paste-buffer",
+        "evidence": [
+          "src/libtmux/pane.py:1933"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.pipe": [
+      {
+        "command": "pipe-pane",
+        "evidence": [
+          "src/libtmux/pane.py:1980"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.reset": [
+      {
+        "command": "clear-history",
+        "evidence": [
+          "src/libtmux/pane.py:2635"
+        ],
+        "scope": null
+      },
+      {
+        "command": "send-keys",
+        "evidence": [
+          "src/libtmux/pane.py:2630"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.resize": [
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "src/libtmux/pane.py:449"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.respawn": [
+      {
+        "command": "respawn-pane",
+        "evidence": [
+          "src/libtmux/pane.py:2301"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.run_hook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "src/libtmux/hooks.py:108"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.select": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "src/libtmux/pane.py:1189"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.send_keys": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "src/libtmux/pane.py:839"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.send_prefix": [
+      {
+        "command": "send-prefix",
+        "evidence": [
+          "src/libtmux/pane.py:2254"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.set_hook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "src/libtmux/hooks.py:187"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.set_option": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "src/libtmux/options.py:705"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.set_title": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "src/libtmux/pane.py:1656"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.show_hooks": [
+      {
+        "command": "show-hooks",
+        "evidence": [
+          "src/libtmux/hooks.py:304"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.split": [
+      {
+        "command": "split-window",
+        "evidence": [
+          "src/libtmux/pane.py:1404"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.swap": [
+      {
+        "command": "swap-pane",
+        "evidence": [
+          "src/libtmux/pane.py:2578"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.unset_hook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "src/libtmux/hooks.py:240"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Pane.unset_option": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "src/libtmux/options.py:793"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.pytest_plugin.session": [
+      {
+        "command": "kill-session",
+        "evidence": [
+          "src/libtmux/pytest_plugin.py:291"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server._show_hook": [
+      {
+        "command": "show-hooks",
+        "evidence": [
+          "src/libtmux/hooks.py:364"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server._show_option_raw": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "src/libtmux/options.py:1134"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server._show_options_raw": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "src/libtmux/options.py:886"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.attach_session": [
+      {
+        "command": "attach-session",
+        "evidence": [
+          "src/libtmux/server.py:2203"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.bind_key": [
+      {
+        "command": "bind-key",
+        "evidence": [
+          "src/libtmux/server.py:713"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.clear_prompt_history": [
+      {
+        "command": "clear-prompt-history",
+        "evidence": [
+          "src/libtmux/server.py:1811"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.clients": [
+      {
+        "command": "list-clients",
+        "evidence": [
+          "src/libtmux/server.py:2498"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.command_prompt": [
+      {
+        "command": "command-prompt",
+        "evidence": [
+          "src/libtmux/server.py:1340"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.confirm_before": [
+      {
+        "command": "confirm-before",
+        "evidence": [
+          "src/libtmux/server.py:1194"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.delete_buffer": [
+      {
+        "command": "delete-buffer",
+        "evidence": [
+          "src/libtmux/server.py:1902"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.detach_all_clients": [
+      {
+        "command": "detach-client",
+        "evidence": [
+          "src/libtmux/server.py:1108"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.detach_client": [
+      {
+        "command": "detach-client",
+        "evidence": [
+          "src/libtmux/server.py:1061"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.display_menu": [
+      {
+        "command": "display-menu",
+        "evidence": [
+          "src/libtmux/server.py:1492"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.display_message": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "src/libtmux/server.py:1728"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.getenv": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "src/libtmux/common.py:226"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.has_session": [
+      {
+        "command": "has-session",
+        "evidence": [
+          "src/libtmux/server.py:460"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.if_shell": [
+      {
+        "command": "if-shell",
+        "evidence": [
+          "src/libtmux/server.py:2104"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.is_alive": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "src/libtmux/server.py:304"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.kill": [
+      {
+        "command": "kill-server",
+        "evidence": [
+          "src/libtmux/server.py:482"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.kill_session": [
+      {
+        "command": "kill-session",
+        "evidence": [
+          "src/libtmux/server.py:507"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.list_buffers": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "src/libtmux/server.py:2055"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.list_clients": [
+      {
+        "command": "list-clients",
+        "evidence": [
+          "src/libtmux/server.py:2166"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.list_commands": [
+      {
+        "command": "list-commands",
+        "evidence": [
+          "src/libtmux/server.py:832"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.list_keys": [
+      {
+        "command": "list-keys",
+        "evidence": [
+          "src/libtmux/server.py:802"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.load_buffer": [
+      {
+        "command": "load-buffer",
+        "evidence": [
+          "src/libtmux/server.py:1974"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.lock_client": [
+      {
+        "command": "lock-client",
+        "evidence": [
+          "src/libtmux/server.py:1012"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.lock_server": [
+      {
+        "command": "lock-server",
+        "evidence": [
+          "src/libtmux/server.py:846"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.new_session": [
+      {
+        "command": "kill-session",
+        "evidence": [
+          "src/libtmux/server.py:2312"
+        ],
+        "scope": null
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "src/libtmux/server.py:2341"
+        ],
+        "scope": null
+      },
+      {
+        "command": "new-session",
+        "evidence": [
+          "src/libtmux/server.py:2328"
+        ],
+        "scope": null
       }
     ],
     "libtmux.Server.panes": [
@@ -25,6 +901,60 @@
         "scope": "server"
       }
     ],
+    "libtmux.Server.raise_if_dead": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "src/libtmux/server.py:331"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.refresh_client": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "src/libtmux/server.py:964"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.remove_environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "src/libtmux/common.py:159"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.run_hook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "src/libtmux/hooks.py:108"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.run_shell": [
+      {
+        "command": "run-shell",
+        "evidence": [
+          "src/libtmux/server.py:619"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.save_buffer": [
+      {
+        "command": "save-buffer",
+        "evidence": [
+          "src/libtmux/server.py:1941"
+        ],
+        "scope": null
+      }
+    ],
     "libtmux.Server.search_panes": [
       {
         "command": "list-panes",
@@ -32,6 +962,330 @@
           "src/libtmux/server.py:2671"
         ],
         "scope": "server"
+      }
+    ],
+    "libtmux.Server.search_sessions": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "src/libtmux/server.py:2556"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.search_windows": [
+      {
+        "command": "list-windows",
+        "evidence": [
+          "src/libtmux/server.py:2611"
+        ],
+        "scope": "server"
+      }
+    ],
+    "libtmux.Server.server_access": [
+      {
+        "command": "server-access",
+        "evidence": [
+          "src/libtmux/server.py:917"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.sessions": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "src/libtmux/server.py:2426"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.set_buffer": [
+      {
+        "command": "set-buffer",
+        "evidence": [
+          "src/libtmux/server.py:1849"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.set_environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "src/libtmux/common.py:94"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.set_hook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "src/libtmux/hooks.py:187"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.set_option": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "src/libtmux/options.py:705"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.show_buffer": [
+      {
+        "command": "show-buffer",
+        "evidence": [
+          "src/libtmux/server.py:1877"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.show_environment": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "src/libtmux/common.py:190"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.show_hooks": [
+      {
+        "command": "show-hooks",
+        "evidence": [
+          "src/libtmux/hooks.py:304"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.show_messages": [
+      {
+        "command": "show-messages",
+        "evidence": [
+          "src/libtmux/server.py:1559"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.show_prompt_history": [
+      {
+        "command": "show-prompt-history",
+        "evidence": [
+          "src/libtmux/server.py:1777"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.source_file": [
+      {
+        "command": "source-file",
+        "evidence": [
+          "src/libtmux/server.py:2149"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.start_server": [
+      {
+        "command": "start-server",
+        "evidence": [
+          "src/libtmux/server.py:1504"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.suspend_client": [
+      {
+        "command": "suspend-client",
+        "evidence": [
+          "src/libtmux/server.py:988"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.switch_client": [
+      {
+        "command": "switch-client",
+        "evidence": [
+          "src/libtmux/server.py:2186"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.unbind_key": [
+      {
+        "command": "unbind-key",
+        "evidence": [
+          "src/libtmux/server.py:757"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.unset_environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "src/libtmux/common.py:130"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.unset_hook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "src/libtmux/hooks.py:240"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.unset_option": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "src/libtmux/options.py:793"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.wait_for": [
+      {
+        "command": "wait-for",
+        "evidence": [
+          "src/libtmux/server.py:667"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Server.windows": [
+      {
+        "command": "list-windows",
+        "evidence": [
+          "src/libtmux/server.py:2444"
+        ],
+        "scope": "server"
+      }
+    ],
+    "libtmux.Session._show_hook": [
+      {
+        "command": "show-hooks",
+        "evidence": [
+          "src/libtmux/hooks.py:364"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Session._show_option_raw": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "src/libtmux/options.py:1134"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Session._show_options_raw": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "src/libtmux/options.py:886"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Session.attach": [
+      {
+        "command": "attach-session",
+        "evidence": [
+          "src/libtmux/session.py:665"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Session.detach_client": [
+      {
+        "command": "detach-client",
+        "evidence": [
+          "src/libtmux/session.py:518"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Session.from_session_id": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "src/libtmux/session.py:206"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Session.getenv": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "src/libtmux/common.py:226"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Session.kill": [
+      {
+        "command": "kill-session",
+        "evidence": [
+          "src/libtmux/session.py:744"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Session.kill_window": [
+      {
+        "command": "kill-window",
+        "evidence": [
+          "src/libtmux/session.py:991"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Session.last_window": [
+      {
+        "command": "last-window",
+        "evidence": [
+          "src/libtmux/session.py:539"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Session.lock_session": [
+      {
+        "command": "lock-session",
+        "evidence": [
+          "src/libtmux/session.py:479"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Session.new_window": [
+      {
+        "command": "new-window",
+        "evidence": [
+          "src/libtmux/session.py:939"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Session.next_window": [
+      {
+        "command": "next-window",
+        "evidence": [
+          "src/libtmux/session.py:561"
+        ],
+        "scope": null
       }
     ],
     "libtmux.Session.panes": [
@@ -43,6 +1297,51 @@
         "scope": "session"
       }
     ],
+    "libtmux.Session.previous_window": [
+      {
+        "command": "previous-window",
+        "evidence": [
+          "src/libtmux/session.py:583"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Session.refresh": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "src/libtmux/session.py:173"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Session.remove_environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "src/libtmux/common.py:159"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Session.rename_session": [
+      {
+        "command": "rename-session",
+        "evidence": [
+          "src/libtmux/session.py:787"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Session.run_hook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "src/libtmux/hooks.py:108"
+        ],
+        "scope": null
+      }
+    ],
     "libtmux.Session.search_panes": [
       {
         "command": "list-panes",
@@ -50,6 +1349,220 @@
           "src/libtmux/session.py:412"
         ],
         "scope": "session"
+      }
+    ],
+    "libtmux.Session.search_windows": [
+      {
+        "command": "list-windows",
+        "evidence": [
+          "src/libtmux/session.py:356"
+        ],
+        "scope": "session"
+      }
+    ],
+    "libtmux.Session.select_window": [
+      {
+        "command": "select-window",
+        "evidence": [
+          "src/libtmux/session.py:613"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Session.set_environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "src/libtmux/common.py:94"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Session.set_hook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "src/libtmux/hooks.py:187"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Session.set_option": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "src/libtmux/options.py:705"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Session.show_environment": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "src/libtmux/common.py:190"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Session.show_hooks": [
+      {
+        "command": "show-hooks",
+        "evidence": [
+          "src/libtmux/hooks.py:304"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Session.switch_client": [
+      {
+        "command": "switch-client",
+        "evidence": [
+          "src/libtmux/session.py:767"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Session.unset_environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "src/libtmux/common.py:130"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Session.unset_hook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "src/libtmux/hooks.py:240"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Session.unset_option": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "src/libtmux/options.py:793"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Session.windows": [
+      {
+        "command": "list-windows",
+        "evidence": [
+          "src/libtmux/session.py:282"
+        ],
+        "scope": "session"
+      }
+    ],
+    "libtmux.Window._show_hook": [
+      {
+        "command": "show-hooks",
+        "evidence": [
+          "src/libtmux/hooks.py:364"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Window._show_option_raw": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "src/libtmux/options.py:1134"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Window._show_options_raw": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "src/libtmux/options.py:886"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Window.display_message": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "src/libtmux/window.py:1357"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Window.from_window_id": [
+      {
+        "command": "list-windows",
+        "evidence": [
+          "src/libtmux/window.py:245"
+        ],
+        "scope": "session"
+      }
+    ],
+    "libtmux.Window.kill": [
+      {
+        "command": "kill-window",
+        "evidence": [
+          "src/libtmux/window.py:1454"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Window.last_pane": [
+      {
+        "command": "last-pane",
+        "evidence": [
+          "src/libtmux/window.py:851"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Window.link": [
+      {
+        "command": "link-window",
+        "evidence": [
+          "src/libtmux/window.py:1034"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Window.linked_sessions": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "src/libtmux/window.py:373"
+        ],
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "src/libtmux/window.py:363"
+        ],
+        "scope": "server"
+      }
+    ],
+    "libtmux.Window.move_window": [
+      {
+        "command": "move-window",
+        "evidence": [
+          "src/libtmux/window.py:1543"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Window.next_layout": [
+      {
+        "command": "next-layout",
+        "evidence": [
+          "src/libtmux/window.py:953"
+        ],
+        "scope": null
       }
     ],
     "libtmux.Window.panes": [
@@ -61,6 +1574,69 @@
         "scope": "window"
       }
     ],
+    "libtmux.Window.previous_layout": [
+      {
+        "command": "previous-layout",
+        "evidence": [
+          "src/libtmux/window.py:967"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Window.refresh": [
+      {
+        "command": "list-windows",
+        "evidence": [
+          "src/libtmux/window.py:204"
+        ],
+        "scope": "session"
+      }
+    ],
+    "libtmux.Window.rename_window": [
+      {
+        "command": "rename-window",
+        "evidence": [
+          "src/libtmux/window.py:1391"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Window.resize": [
+      {
+        "command": "resize-window",
+        "evidence": [
+          "src/libtmux/window.py:796"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Window.respawn": [
+      {
+        "command": "respawn-window",
+        "evidence": [
+          "src/libtmux/window.py:1153"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Window.rotate": [
+      {
+        "command": "rotate-window",
+        "evidence": [
+          "src/libtmux/window.py:1104"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Window.run_hook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "src/libtmux/hooks.py:108"
+        ],
+        "scope": null
+      }
+    ],
     "libtmux.Window.search_panes": [
       {
         "command": "list-panes",
@@ -68,6 +1644,96 @@
           "src/libtmux/window.py:456"
         ],
         "scope": "window"
+      }
+    ],
+    "libtmux.Window.select": [
+      {
+        "command": "select-window",
+        "evidence": [
+          "src/libtmux/window.py:1636"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Window.select_layout": [
+      {
+        "command": "select-layout",
+        "evidence": [
+          "src/libtmux/window.py:925"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Window.select_pane": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "src/libtmux/window.py:527"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Window.set_hook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "src/libtmux/hooks.py:187"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Window.set_option": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "src/libtmux/options.py:705"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Window.show_hooks": [
+      {
+        "command": "show-hooks",
+        "evidence": [
+          "src/libtmux/hooks.py:304"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Window.swap": [
+      {
+        "command": "swap-window",
+        "evidence": [
+          "src/libtmux/window.py:1192"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Window.unlink": [
+      {
+        "command": "unlink-window",
+        "evidence": [
+          "src/libtmux/window.py:1059"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Window.unset_hook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "src/libtmux/hooks.py:240"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux.Window.unset_option": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "src/libtmux/options.py:793"
+        ],
+        "scope": null
       }
     ]
   }
