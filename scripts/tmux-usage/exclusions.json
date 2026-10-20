@@ -2,76 +2,318 @@
   "schemaVersion": 1,
   "exclusions": [
     {
-      "port": "go",
-      "owner": "Plan",
-      "in": "tmux/plan_",
-      "why": "A Plan records each step; Plan.Run is what sends them.",
+      "port": "csharp",
+      "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "owner": "Session",
+      "names": [
+        "CreateWindowAsync"
+      ],
+      "commands": [
+        "display-message"
+      ],
+      "why": "CreateWindowAsync asks display-message to expand a window name only when the request sets SelectExisting. The F# wrapper builds its NewWindowRequest without it, so no F# call sends display-message.",
       "evidence": [
         {
-          "at": "tmux/plan.go:158",
+          "at": "src/LibTmux/Session.Lifecycle.cs:279",
           "has": [
-            "func (p *Plan) add(op Op) Ref"
+            "options.SelectExisting"
           ]
         },
         {
-          "at": "tmux/plan.go:159",
+          "at": "src/LibTmux/Session.Lifecycle.cs:284",
           "has": [
-            "p.ops = append(p.ops, op)"
+            "ExpandWindowNameAsync("
+          ]
+        },
+        {
+          "at": "src/LibTmux.FSharp/Hierarchy.fs:100",
+          "has": [
+            "NewWindowRequest("
+          ]
+        },
+        {
+          "at": "src/LibTmux.FSharp/Hierarchy.fs:104",
+          "has": [
+            "Environment = environment window.Environment"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ruby",
+      "owner": "Pane",
+      "names": [
+        "capture"
+      ],
+      "commands": [
+        "list-commands"
+      ],
+      "why": "capture asks list-commands whether tmux knows a flag only when trim_trailing or mode_screen is set; a default capture does not send it.",
+      "evidence": [
+        {
+          "at": "gems/libtmux/lib/libtmux/entity.rb:183",
+          "has": [
+            "next unless enabled"
+          ]
+        },
+        {
+          "at": "gems/libtmux/lib/libtmux/entity.rb:185",
+          "has": [
+            "require_command_flag"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ruby",
+      "owner": "Pane",
+      "names": [
+        "copy_mode"
+      ],
+      "commands": [
+        "list-commands"
+      ],
+      "why": "copy_mode asks list-commands whether tmux knows a flag only when one of those flags is set; a default copy_mode does not send it.",
+      "evidence": [
+        {
+          "at": "gems/libtmux/lib/libtmux/operations.rb:387",
+          "has": [
+            "next unless enabled"
+          ]
+        },
+        {
+          "at": "gems/libtmux/lib/libtmux/operations.rb:389",
+          "has": [
+            "require_command_flag"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "owner": "Plan",
+      "names": [
+        "run_over_control_mode"
+      ],
+      "commands": [
+        "display-message"
+      ],
+      "why": "run_over_control_mode probes the tmux version with display-message only when the plan holds a layout step whose validity differs between releases.",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:785",
+          "has": [
+            "!pending.is_empty()"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:786",
+          "has": [
+            "sender.send("
           ]
         }
       ]
     },
     {
       "port": "cxx",
-      "owner": "Chain",
-      "in": "include/libtmux/chain.hpp",
-      "why": "A Chain adds each command to a batch that a later call sends.",
-      "evidence": [
-        {
-          "at": "include/libtmux/chain.hpp:89",
-          "has": [
-            "Chain& add(std::vector<std::string> command)"
-          ]
-        },
-        {
-          "at": "include/libtmux/chain.hpp:90",
-          "has": [
-            "batch_.add("
-          ]
-        }
-      ]
-    },
-    {
-      "port": "java",
-      "owner": "CommandChain",
-      "why": "A CommandChain queues each step on its batch; run() is what sends them.",
-      "evidence": [
-        {
-          "at": "libtmux/src/main/java/io/github/libtmux/CommandChain.java:83",
-          "has": [
-            "public CommandChain then(String... argv)"
-          ]
-        },
-        {
-          "at": "libtmux/src/main/java/io/github/libtmux/CommandChain.java:84",
-          "has": [
-            "batch.add(argv)"
-          ]
-        }
-      ]
-    },
-    {
-      "port": "java",
-      "owner": "PaneCommand",
+      "owner": "Window",
       "names": [
-        "typed"
+        "select_layout"
       ],
-      "why": "typed returns the line a caller types into a pane; it sends nothing.",
+      "commands": [
+        "display-message"
+      ],
+      "why": "select_layout probes the running version with display-message only when the layout string needs it (layout_needs_version); a named layout does not.",
       "evidence": [
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/PaneCommand.java:80",
+          "at": "src/layout.cpp:386",
           "has": [
-            "public String typed("
+            "if (!sensitive)"
+          ]
+        },
+        {
+          "at": "src/layout.cpp:390",
+          "has": [
+            "\"display-message\""
+          ]
+        },
+        {
+          "at": "src/entities.cpp:696",
+          "has": [
+            "detail::validate_layouts("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "cxx",
+      "owner": "Pane",
+      "names": [
+        "wait_for_text"
+      ],
+      "commands": [
+        "display-message"
+      ],
+      "why": "wait_for_text asks display-message for the session name only when the wait was not given one.",
+      "evidence": [
+        {
+          "at": "src/wait.cpp:460",
+          "has": [
+            "if (!wait.session_known)"
+          ]
+        },
+        {
+          "at": "src/wait.cpp:462",
+          "has": [
+            "\"display-message\""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "owner": "Pane",
+      "names": [
+        "BreakPane"
+      ],
+      "commands": [
+        "rename-window"
+      ],
+      "why": "BreakPane renames the window afterwards only on the tmux release that ignores the name and when the request names one.",
+      "evidence": [
+        {
+          "at": "tmux/pane_relocate.go:179",
+          "has": [
+            "isBroken37 && request.Name != \"\""
+          ]
+        },
+        {
+          "at": "tmux/pane_relocate.go:182",
+          "has": [
+            "\"rename-window\""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "owner": "Server",
+      "names": [
+        "NewSession"
+      ],
+      "commands": [
+        "list-sessions"
+      ],
+      "why": "NewSession lists sessions to look up a name only when the request carries one.",
+      "evidence": [
+        {
+          "at": "tmux/session_lifecycle.go:208",
+          "has": [
+            "request.Name != \"\""
+          ]
+        },
+        {
+          "at": "tmux/session_lifecycle.go:215",
+          "has": [
+            "sessionNamed("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "owner": "Server",
+      "names": [
+        "NewSessionConnection"
+      ],
+      "commands": [
+        "list-sessions"
+      ],
+      "why": "NewSessionConnection lists sessions to look up a name only when the request carries one.",
+      "evidence": [
+        {
+          "at": "tmux/connection.go:176",
+          "has": [
+            "request.Name != \"\""
+          ]
+        },
+        {
+          "at": "tmux/connection.go:177",
+          "has": [
+            "sessionNamed("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "owner": "Server",
+      "names": [
+        "OpenNotifications"
+      ],
+      "commands": [
+        "refresh-client"
+      ],
+      "why": "OpenNotifications arms the pause hold with refresh-client only when PauseAfter is positive.",
+      "evidence": [
+        {
+          "at": "tmux/notification_stream.go:72",
+          "has": [
+            "options.PauseAfter > 0"
+          ]
+        },
+        {
+          "at": "tmux/notification_stream.go:73",
+          "has": [
+            "armPause("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "names": [
+        "open_control"
+      ],
+      "commands": [
+        "wait-for"
+      ],
+      "why": "The connection releases a wait-for signal from its cleanup worker, in the :release phase, and not as part of opening it.",
+      "evidence": [
+        {
+          "at": "src/control.jl:965",
+          "has": [
+            "phase === :release"
+          ]
+        },
+        {
+          "at": "src/control.jl:966",
+          "has": [
+            "\"wait-for\""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "names": [
+        "select_layout"
+      ],
+      "commands": [
+        "display-message"
+      ],
+      "why": "select_layout asks display-message for the version only for a mirrored layout.",
+      "evidence": [
+        {
+          "at": "src/control_topology.jl:131",
+          "has": [
+            "endswith(text, \"-mirrored\")"
+          ]
+        },
+        {
+          "at": "src/control_topology.jl:134",
+          "has": [
+            "\"display-message\""
           ]
         }
       ]
@@ -80,332 +322,85 @@
       "port": "java",
       "owner": "Pane",
       "names": [
-        "respawnArgv"
+        "breakOut"
       ],
-      "why": "respawnArgv returns the argument list; its callers run it.",
+      "commands": [
+        "rename-window"
+      ],
+      "why": "breakOut renames the window afterwards only on the tmux release that ignores the name.",
       "evidence": [
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:770",
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:839",
           "has": [
-            "static List<String> respawnArgv("
+            "BREAK_PANE_NAMING_BROKEN"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:842",
+          "has": [
+            "\"rename-window\""
           ]
         }
       ]
     },
     {
       "port": "ts",
-      "names": [
-        "plan"
-      ],
-      "in": "packages/libtmux/src/",
-      "why": "A plan getter returns operations to hand to Server.batch; it sends nothing.",
-      "evidence": [
-        {
-          "at": "packages/libtmux/src/_internal/operations/plans.ts:162",
-          "has": [
-            "export function planKill("
-          ]
-        },
-        {
-          "at": "packages/libtmux/src/_internal/operations/plans.ts:165",
-          "has": [
-            "PlannedOperation<void>"
-          ]
-        },
-        {
-          "at": "packages/libtmux/src/pane.ts:269",
-          "has": [
-            "get plan(): PanePlans"
-          ]
-        },
-        {
-          "at": "packages/libtmux/src/session.ts:324",
-          "has": [
-            "get plan(): SessionPlans"
-          ]
-        },
-        {
-          "at": "packages/libtmux/src/window.ts:299",
-          "has": [
-            "get plan(): WindowPlans"
-          ]
-        }
-      ]
-    },
-    {
-      "port": "csharp",
-      "names": [
-        "ToCommand",
-        "ToCommands"
-      ],
-      "in": "src/LibTmux/",
-      "why": "A request turns itself into a command value for a chain to run; it sends nothing.",
-      "evidence": [
-        {
-          "at": "src/LibTmux/Chaining/ITmuxRequest.cs:30",
-          "has": [
-            "Returns this request as one tmux command"
-          ]
-        },
-        {
-          "at": "src/LibTmux/Chaining/ITmuxRequest.cs:34",
-          "has": [
-            "TmuxCommand ToCommand("
-          ]
-        },
-        {
-          "at": "src/LibTmux/Chaining/TmuxChaining.Hooks.cs:77",
-          "has": [
-            "IReadOnlyList<TmuxCommand> ToCommands("
-          ]
-        }
-      ]
-    },
-    {
-      "port": "csharp",
-      "owner": "Server",
-      "names": [
-        "FindSessionAsync",
-        "GetSessionAsync",
-        "FindWindowAsync",
-        "GetWindowAsync",
-        "FindPaneAsync",
-        "GetPaneAsync",
-        "CreateSessionWithReceiptAsync"
-      ],
-      "commands": [
-        "list-sessions",
-        "list-windows",
-        "list-panes"
-      ],
-      "why": "A lookup by id passes the name of a list command only to pick the format of the row it reads; it sends display-message -p -t, and the fallback that listed with -a below tmux 3.3 is gone with the 3.3a floor.",
-      "evidence": [
-        {
-          "at": "src/LibTmux/Server.Identity.cs:231",
-          "has": [
-            "\"list-sessions\""
-          ]
-        },
-        {
-          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:124",
-          "has": [
-            "CreateProjection(listCommand)"
-          ]
-        },
-        {
-          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:125",
-          "has": [
-            "\"display-message\""
-          ]
-        }
-      ]
-    },
-    {
-      "port": "csharp",
-      "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-      "owner": "Server",
-      "names": [
-        "FindSessionAsync",
-        "GetSessionAsync",
-        "FindWindowAsync",
-        "GetWindowAsync",
-        "FindPaneAsync",
-        "GetPaneAsync",
-        "CreateSessionAsync"
-      ],
-      "commands": [
-        "list-sessions",
-        "list-windows",
-        "list-panes"
-      ],
-      "why": "A lookup by id passes the name of a list command only to pick the format of its row. It lists with -a only below tmux 3.3 and sends display-message from 3.3, and this revision supports 3.2a, so no one command holds on every supported release.",
-      "evidence": [
-        {
-          "at": "src/LibTmux/Server.Identity.cs:152",
-          "has": [
-            "\"list-sessions\""
-          ]
-        },
-        {
-          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:77",
-          "has": [
-            "!TmuxCapabilities.IsSupported("
-          ]
-        },
-        {
-          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:79",
-          "has": [
-            "\"missing_target_format_safety\""
-          ]
-        },
-        {
-          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:81",
-          "has": [
-            "ReadFromListingAsync("
-          ]
-        },
-        {
-          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:179",
-          "has": [
-            "\"display-message\""
-          ]
-        },
-        {
-          "at": "src/LibTmux/Constants/TmuxConstants.cs:6",
-          "has": [
-            "Parse(\"3.2a\")"
-          ]
-        }
-      ]
-    },
-    {
-      "port": "csharp",
-      "owner": "Session",
-      "names": [
-        "RefreshAsync"
-      ],
-      "commands": [
-        "list-sessions"
-      ],
-      "why": "A session refreshes itself by id and passes the name of a list command only to pick the format of the row; it sends display-message -p -t, and the fallback that listed below tmux 3.3 is gone with the 3.3a floor.",
-      "evidence": [
-        {
-          "at": "src/LibTmux/Session.Lifecycle.cs:52",
-          "has": [
-            "\"list-sessions\""
-          ]
-        },
-        {
-          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:124",
-          "has": [
-            "CreateProjection(listCommand)"
-          ]
-        },
-        {
-          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:125",
-          "has": [
-            "\"display-message\""
-          ]
-        }
-      ]
-    },
-    {
-      "port": "csharp",
-      "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-      "owner": "Session",
-      "names": [
-        "RefreshAsync"
-      ],
-      "commands": [
-        "list-sessions"
-      ],
-      "why": "A session refreshes itself by id and passes the name of a list command only to pick the format of the row. It lists with -a only below tmux 3.3 and sends display-message from 3.3, and this revision supports 3.2a, so no one command holds on every supported release.",
-      "evidence": [
-        {
-          "at": "src/LibTmux/Session.Lifecycle.cs:46",
-          "has": [
-            "\"list-sessions\""
-          ]
-        },
-        {
-          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:77",
-          "has": [
-            "!TmuxCapabilities.IsSupported("
-          ]
-        },
-        {
-          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:81",
-          "has": [
-            "ReadFromListingAsync("
-          ]
-        },
-        {
-          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:179",
-          "has": [
-            "\"display-message\""
-          ]
-        },
-        {
-          "at": "src/LibTmux/Constants/TmuxConstants.cs:6",
-          "has": [
-            "Parse(\"3.2a\")"
-          ]
-        }
-      ]
-    },
-    {
-      "port": "go",
-      "owner": "Session",
-      "names": [
-        "Start"
-      ],
-      "commands": [
-        "wait-for"
-      ],
-      "why": "The signal is the command of a pane-died hook: Start sends set-hook, and tmux runs wait-for -S when the pane dies.",
-      "evidence": [
-        {
-          "at": "tmux/session_run.go:162",
-          "has": [
-            "SetHook(ctx, \"pane-died\", \"wait-for -S \""
-          ]
-        }
-      ]
-    },
-    {
-      "port": "java",
-      "owner": "Server",
-      "names": [
-        "control"
-      ],
-      "commands": [
-        "display-message"
-      ],
-      "why": "The identity read is the then-branch of the fence's if-shell, so Server.control sends if-shell and tmux runs display-message.",
-      "evidence": [
-        {
-          "at": "libtmux/src/main/java/io/github/libtmux/Server.java:836",
-          "has": [
-            "fence.guarded(captured, \"display-message"
-          ]
-        },
-        {
-          "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java:77",
-          "has": [
-            "List.of(\"if-shell\", \"-F\", condition, command, stale)"
-          ]
-        }
-      ]
-    },
-    {
-      "port": "cxx",
       "owner": "Pane",
       "names": [
-        "break_out"
+        "exitCopyMode"
       ],
       "commands": [
-        "break-pane",
-        "display-message",
-        "rename-window"
+        "copy-mode"
       ],
-      "why": "Both branches are the then and else commands of the if-shell that break_out sends; tmux runs them.",
+      "why": "exitCopyMode calls setCopyMode with active false, which sends send-keys -X cancel; the copy-mode branch is for entering.",
       "evidence": [
         {
-          "at": "src/entities.cpp:1279",
+          "at": "packages/libtmux/src/_internal/operations/shell.ts:215",
           "has": [
-            "\"break-pane -d -s \""
+            "if (active)"
           ]
         },
         {
-          "at": "src/entities.cpp:1287",
+          "at": "packages/libtmux/src/_internal/operations/shell.ts:216",
           "has": [
-            "\"if-shell\", \"-F\", \"-t\", target"
+            "\"copy-mode\""
           ]
         },
         {
-          "at": "src/entities.cpp:1366",
+          "at": "packages/libtmux/src/pane.ts:551",
           "has": [
-            "\"rename-window -t \""
+            "setCopyMode(runtimeForHandle(this), this.id, false)"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "owner": "Pane",
+      "names": [
+        "enterCopyMode"
+      ],
+      "commands": [
+        "send-keys"
+      ],
+      "why": "enterCopyMode calls setCopyMode with active true, which returns after copy-mode; the send-keys -X cancel branch is for leaving.",
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/operations/shell.ts:216",
+          "has": [
+            "\"copy-mode\""
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/shell.ts:217",
+          "has": [
+            "return;"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/pane.ts:540",
+          "has": [
+            "setCopyMode(runtimeForHandle(this), this.id, true)"
           ]
         }
       ]

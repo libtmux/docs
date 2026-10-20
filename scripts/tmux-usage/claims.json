@@ -1204,6 +1204,157 @@
       ]
     },
     {
+      "port": "rs",
+      "symbol": "server.Server.new_session",
+      "command": "new-session",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/server.rs:2286",
+          "has": [
+            "Command::new(\"new-session\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/internal/listing.rs:411",
+          "has": [
+            "create_one(core, \"new-session\", build"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/server.rs:898",
+          "has": [
+            "listing::create_session(",
+            "options.into_command(format)"
+          ],
+          "in": "server.Server.new_session"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "session.Session.new_window",
+      "command": "new-window",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/session.rs:1139",
+          "has": [
+            "Command::new(\"new-window\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/internal/listing.rs:427",
+          "has": [
+            "create_one(core, \"new-window\", build"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/session.rs:495",
+          "has": [
+            "listing::create_window(",
+            "options.into_command(&session, format)"
+          ],
+          "in": "session.Session.new_window"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "window.Window.split",
+      "command": "split-window",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/window.rs:1948",
+          "has": [
+            "Command::new(\"split-window\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/internal/listing.rs:444",
+          "has": [
+            "create_one(core, \"split-window\", build"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/window.rs:367",
+          "has": [
+            "listing::create_pane(",
+            "options.into_command(&window, format)"
+          ],
+          "in": "window.Window.split"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "pane.Pane.split",
+      "command": "split-window",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/window.rs:1948",
+          "has": [
+            "Command::new(\"split-window\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/internal/listing.rs:444",
+          "has": [
+            "create_one(core, \"split-window\", build"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/pane.rs:515",
+          "has": [
+            "listing::create_pane(",
+            "options.into_command(&pane, format)"
+          ],
+          "in": "pane.Pane.split"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "pane.Pane.capture_lines",
+      "command": "capture-pane",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/pane.rs:1618",
+          "has": [
+            "Command::new(\"capture-pane\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/pane.rs:1613",
+          "has": [
+            "self.into_command(pane)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/pane/observe.rs:169",
+          "has": [
+            "options.lower("
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/pane/observe.rs:171",
+          "has": [
+            "self.core.execute(command)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/pane/observe.rs:237",
+          "has": [
+            ".capture_with("
+          ],
+          "in": "pane.Pane.capture_lines"
+        }
+      ]
+    },
+    {
       "port": "ts",
       "symbol": "server.Server.snapshot",
       "command": "list-panes",
@@ -1786,6 +1937,72 @@
             "killPaneIfWindowUnshared("
           ],
           "in": "pane.Pane.killIfWindowUnshared"
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "symbol": "mcp.server.main",
+      "command": "start-server",
+      "scope": null,
+      "when": "the server is launched without an explicit selection, a minimal launch",
+      "evidence": [
+        {
+          "at": "packages/mcp/src/startup.ts:88",
+          "has": [
+            "server.cmd(\"start-server\""
+          ]
+        },
+        {
+          "at": "packages/mcp/src/server.ts:244",
+          "has": [
+            "inspectServerStartup("
+          ],
+          "in": "mcp.server.main"
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "symbol": "mcp.server.main",
+      "command": "show-options",
+      "scope": null,
+      "when": "the server is launched without an explicit selection, a minimal launch",
+      "evidence": [
+        {
+          "at": "packages/mcp/src/startup.ts:89",
+          "has": [
+            "server.cmd(\"show-options\""
+          ]
+        },
+        {
+          "at": "packages/mcp/src/server.ts:244",
+          "has": [
+            "inspectServerStartup("
+          ],
+          "in": "mcp.server.main"
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "symbol": "mcp.server.main",
+      "command": "display-message",
+      "scope": null,
+      "when": "the server is launched without an explicit selection, a minimal launch",
+      "evidence": [
+        {
+          "at": "packages/mcp/src/startup.ts:92",
+          "has": [
+            "server.cmd(\"display-message\""
+          ]
+        },
+        {
+          "at": "packages/mcp/src/server.ts:244",
+          "has": [
+            "inspectServerStartup("
+          ],
+          "in": "mcp.server.main"
         }
       ]
     },
@@ -2494,6 +2711,140 @@
             "super"
           ],
           "in": "LibTmux::Hooks#get"
+        }
+      ]
+    },
+    {
+      "port": "ruby",
+      "symbol": "LibTmux::Options#list",
+      "command": "show-options",
+      "scope": null,
+      "when": "the receiver is an Options",
+      "evidence": [
+        {
+          "at": "gems/libtmux/lib/libtmux/options.rb:61",
+          "has": [
+            "\"show-options\""
+          ]
+        },
+        {
+          "at": "gems/libtmux/lib/libtmux/options.rb:65",
+          "has": [
+            "execute_typed",
+            "args"
+          ],
+          "in": "LibTmux::Options#list"
+        }
+      ]
+    },
+    {
+      "port": "ruby",
+      "symbol": "LibTmux::Hooks#list",
+      "command": "show-hooks",
+      "scope": null,
+      "when": "the receiver is a Hooks",
+      "evidence": [
+        {
+          "at": "gems/libtmux/lib/libtmux/options.rb:61",
+          "has": [
+            "\"show-hooks\""
+          ]
+        },
+        {
+          "at": "gems/libtmux/lib/libtmux/options.rb:65",
+          "has": [
+            "execute_typed",
+            "args"
+          ],
+          "in": "LibTmux::Hooks#list"
+        }
+      ]
+    },
+    {
+      "port": "ruby",
+      "symbol": "LibTmux::Options#unset",
+      "command": "set-option",
+      "scope": null,
+      "when": "the receiver is an Options",
+      "evidence": [
+        {
+          "at": "gems/libtmux/lib/libtmux/options.rb:107",
+          "has": [
+            "\"set-option\""
+          ]
+        },
+        {
+          "at": "gems/libtmux/lib/libtmux/options.rb:108",
+          "has": [
+            "execute_typed",
+            "command"
+          ],
+          "in": "LibTmux::Options#unset"
+        }
+      ]
+    },
+    {
+      "port": "ruby",
+      "symbol": "LibTmux::Hooks#unset",
+      "command": "set-hook",
+      "scope": null,
+      "when": "the receiver is a Hooks",
+      "evidence": [
+        {
+          "at": "gems/libtmux/lib/libtmux/options.rb:107",
+          "has": [
+            "\"set-hook\""
+          ]
+        },
+        {
+          "at": "gems/libtmux/lib/libtmux/options.rb:108",
+          "has": [
+            "execute_typed",
+            "command"
+          ],
+          "in": "LibTmux::Hooks#unset"
+        }
+      ]
+    },
+    {
+      "port": "ruby",
+      "symbol": "LibTmux::Server#switch_client",
+      "command": "switch-client",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "gems/libtmux/lib/libtmux/terminal.rb:41",
+          "has": [
+            "\"switch-client\""
+          ]
+        },
+        {
+          "at": "gems/libtmux/lib/libtmux/terminal.rb:42",
+          "has": [
+            "execute_typed([command"
+          ],
+          "in": "LibTmux::Server#switch_client"
+        }
+      ]
+    },
+    {
+      "port": "ruby",
+      "symbol": "LibTmux::Async::Server#switch_client",
+      "command": "switch-client",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "gems/libtmux/lib/libtmux/terminal.rb:41",
+          "has": [
+            "\"switch-client\""
+          ]
+        },
+        {
+          "at": "gems/libtmux/lib/libtmux/terminal.rb:42",
+          "has": [
+            "execute_typed([command"
+          ],
+          "in": "LibTmux::Async::Server#switch_client"
         }
       ]
     },
@@ -4580,6 +4931,28 @@
       ]
     },
     {
+      "port": "java",
+      "symbol": "io.github.libtmux.batch.Batch.Batch.run",
+      "command": "display-message",
+      "scope": null,
+      "forwardable": true,
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/batch/Batch.java:94",
+          "has": [
+            "\"display-message\""
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/batch/Batch.java:85",
+          "has": [
+            "dispatch.apply(assemble())"
+          ],
+          "in": "io.github.libtmux.batch.Batch.Batch.run"
+        }
+      ]
+    },
+    {
       "port": "csharp",
       "symbol": "LibTmux.Server.CaptureSnapshotAsync",
       "command": "list-panes",
@@ -5863,6 +6236,75 @@
             "_commandDispatcher.ExecuteAsync("
           ],
           "in": "LibTmux.Session.CreateWindowAsync"
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "symbol": "LibTmux.Pane.SendKeysAsync",
+      "command": "send-keys",
+      "scope": null,
+      "forwardable": true,
+      "evidence": [
+        {
+          "at": "src/LibTmux/Pane.Input.cs:24",
+          "has": [
+            "[\"send-keys\", \"-t\", Target]"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Pane.Input.cs:71",
+          "has": [
+            "BuildSendKeysArguments(request)"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Pane.Input.cs:94",
+          "has": [
+            "BuildSendKeysCommands(request)"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Pane.Input.cs:100",
+          "has": [
+            "RunAsync(arguments"
+          ],
+          "in": "LibTmux.Pane.SendKeysAsync"
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "symbol": "LibTmux.Pane.SendKeysAsync",
+      "command": "send-keys",
+      "scope": null,
+      "forwardable": true,
+      "evidence": [
+        {
+          "at": "src/LibTmux/Pane.Input.cs:24",
+          "has": [
+            "[\"send-keys\", \"-t\", Target]"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Pane.Input.cs:71",
+          "has": [
+            "BuildSendKeysArguments(request)"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Pane.Input.cs:94",
+          "has": [
+            "BuildSendKeysCommands(request)"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Pane.Input.cs:100",
+          "has": [
+            "RunAsync(arguments"
+          ],
+          "in": "LibTmux.Pane.SendKeysAsync"
         }
       ]
     },
@@ -8638,15 +9080,17 @@
       "scope": null,
       "evidence": [
         {
-          "at": "src/libtmux/hooks.py:240",
+          "at": "src/libtmux/hooks.py:186",
           "has": [
-            "set-hook"
-          ]
+            "self.cmd(",
+            "\"set-hook\""
+          ],
+          "span": 2
         },
         {
-          "at": "src/libtmux/hooks.py:518",
+          "at": "src/libtmux/hooks.py:525",
           "has": [
-            "unset_hook("
+            "self.set_hook("
           ],
           "in": "libtmux.hooks.HooksMixin.set_hooks"
         }
@@ -8893,15 +9337,17 @@
       "scope": null,
       "evidence": [
         {
-          "at": "src/libtmux/hooks.py:240",
+          "at": "src/libtmux/hooks.py:186",
           "has": [
-            "set-hook"
-          ]
+            "self.cmd(",
+            "\"set-hook\""
+          ],
+          "span": 2
         },
         {
-          "at": "src/libtmux/hooks.py:518",
+          "at": "src/libtmux/hooks.py:525",
           "has": [
-            "unset_hook("
+            "self.set_hook("
           ],
           "in": "libtmux.Pane.set_hooks"
         }
@@ -8995,15 +9441,17 @@
       "scope": null,
       "evidence": [
         {
-          "at": "src/libtmux/hooks.py:240",
+          "at": "src/libtmux/hooks.py:186",
           "has": [
-            "set-hook"
-          ]
+            "self.cmd(",
+            "\"set-hook\""
+          ],
+          "span": 2
         },
         {
-          "at": "src/libtmux/hooks.py:518",
+          "at": "src/libtmux/hooks.py:525",
           "has": [
-            "unset_hook("
+            "self.set_hook("
           ],
           "in": "libtmux.Server.set_hooks"
         }
@@ -9097,15 +9545,17 @@
       "scope": null,
       "evidence": [
         {
-          "at": "src/libtmux/hooks.py:240",
+          "at": "src/libtmux/hooks.py:186",
           "has": [
-            "set-hook"
-          ]
+            "self.cmd(",
+            "\"set-hook\""
+          ],
+          "span": 2
         },
         {
-          "at": "src/libtmux/hooks.py:518",
+          "at": "src/libtmux/hooks.py:525",
           "has": [
-            "unset_hook("
+            "self.set_hook("
           ],
           "in": "libtmux.Session.set_hooks"
         }
@@ -9199,15 +9649,17 @@
       "scope": null,
       "evidence": [
         {
-          "at": "src/libtmux/hooks.py:240",
+          "at": "src/libtmux/hooks.py:186",
           "has": [
-            "set-hook"
-          ]
+            "self.cmd(",
+            "\"set-hook\""
+          ],
+          "span": 2
         },
         {
-          "at": "src/libtmux/hooks.py:518",
+          "at": "src/libtmux/hooks.py:525",
           "has": [
-            "unset_hook("
+            "self.set_hook("
           ],
           "in": "libtmux.Window.set_hooks"
         }
@@ -9304,6 +9756,118 @@
       ]
     },
     {
+      "port": "swift",
+      "symbol": "Server.link(_:into:)",
+      "command": "link-window",
+      "scope": null,
+      "when": "moving is false, which link passes",
+      "evidence": [
+        {
+          "at": "Sources/LibTmux/WindowTransfers.swift:75",
+          "has": [
+            "\"link-window\""
+          ]
+        },
+        {
+          "at": "Sources/LibTmux/WindowTransfers.swift:91",
+          "has": [
+            "runGuarded("
+          ]
+        },
+        {
+          "at": "Sources/LibTmux/WindowTransfers.swift:20",
+          "has": [
+            "transfer("
+          ]
+        },
+        {
+          "at": "Sources/LibTmux/WindowTransfers.swift:27",
+          "has": [
+            "moving: false"
+          ],
+          "in": "Server.link(_:into:)"
+        }
+      ]
+    },
+    {
+      "port": "swift",
+      "symbol": "Server.move(_:to:at:)",
+      "command": "move-window",
+      "scope": null,
+      "when": "moving is true, which move passes",
+      "evidence": [
+        {
+          "at": "Sources/LibTmux/WindowTransfers.swift:75",
+          "has": [
+            "\"move-window\""
+          ]
+        },
+        {
+          "at": "Sources/LibTmux/WindowTransfers.swift:91",
+          "has": [
+            "runGuarded("
+          ]
+        },
+        {
+          "at": "Sources/LibTmux/WindowTransfers.swift:46",
+          "has": [
+            "transfer("
+          ]
+        },
+        {
+          "at": "Sources/LibTmux/WindowTransfers.swift:10",
+          "has": [
+            "moving: true"
+          ],
+          "in": "Server.move(_:to:at:)"
+        }
+      ]
+    },
+    {
+      "port": "swift",
+      "symbol": "Server.breakPane(_:from:named:)",
+      "command": "break-pane",
+      "scope": null,
+      "when": "named is given",
+      "evidence": [
+        {
+          "at": "Sources/LibTmux/Navigation.swift:127",
+          "has": [
+            "TmuxCommand(\"break-pane\""
+          ]
+        },
+        {
+          "at": "Sources/LibTmux/Navigation.swift:144",
+          "has": [
+            "windowAppearance("
+          ],
+          "in": "Server.breakPane(_:from:named:)"
+        }
+      ]
+    },
+    {
+      "port": "swift",
+      "symbol": "Server.breakPane(_:from:named:)",
+      "command": "if-shell",
+      "scope": null,
+      "when": "named is nil, the default: break-pane runs inside the if-shell",
+      "evidence": [
+        {
+          "at": "Sources/LibTmux/Navigation.swift:136",
+          "has": [
+            "\"if-shell\""
+          ]
+        },
+        {
+          "at": "Sources/LibTmux/Navigation.swift:144",
+          "has": [
+            "windowAppearance("
+          ],
+          "in": "Server.breakPane(_:from:named:)"
+        }
+      ]
+    },
+    {
       "port": "kotlin",
       "symbol": "io.github.libtmux.kotlin.Options.get",
       "command": "show-options",
@@ -9376,6 +9940,593 @@
             "self.underlying.set(name, value)"
           ],
           "in": "io.github.libtmux.scaladsl.cats.Options.set"
+        }
+      ]
+    },
+    {
+      "port": "ruby",
+      "symbol": "LibTmux::Server#attach",
+      "command": "attach-session",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "gems/libtmux/lib/libtmux/terminal.rb:60",
+          "has": [
+            "\"attach-session\""
+          ],
+          "in": "LibTmux::Server#attach"
+        },
+        {
+          "at": "gems/libtmux/lib/libtmux/terminal.rb:62",
+          "has": [
+            "TerminalExecution"
+          ]
+        },
+        {
+          "at": "gems/libtmux/lib/libtmux/terminal.rb:88",
+          "has": [
+            "Process.spawn(",
+            "*@argv"
+          ],
+          "span": 2
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "symbol": "tmux.Server.Snapshot",
+      "command": "list-sessions",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "tmux/snapshot_capture.go:43",
+          "has": [
+            "\"list-sessions\""
+          ]
+        },
+        {
+          "at": "tmux/snapshot_capture.go:49",
+          "has": [
+            "s.snapshotListing("
+          ],
+          "in": "tmux.Server.Snapshot"
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "symbol": "tmux.Server.Snapshot",
+      "command": "list-windows",
+      "scope": "server",
+      "evidence": [
+        {
+          "at": "tmux/snapshot_capture.go:44",
+          "has": [
+            "\"list-windows\"",
+            "\"-a\""
+          ]
+        },
+        {
+          "at": "tmux/snapshot_capture.go:49",
+          "has": [
+            "s.snapshotListing("
+          ],
+          "in": "tmux.Server.Snapshot"
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "symbol": "tmux.Server.Snapshot",
+      "command": "list-panes",
+      "scope": "server",
+      "evidence": [
+        {
+          "at": "tmux/snapshot_capture.go:45",
+          "has": [
+            "\"list-panes\"",
+            "\"-a\""
+          ]
+        },
+        {
+          "at": "tmux/snapshot_capture.go:49",
+          "has": [
+            "s.snapshotListing("
+          ],
+          "in": "tmux.Server.Snapshot"
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "symbol": "tmux.Server.Snapshot",
+      "command": "list-clients",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "tmux/snapshot_capture.go:46",
+          "has": [
+            "\"list-clients\""
+          ]
+        },
+        {
+          "at": "tmux/snapshot_capture.go:49",
+          "has": [
+            "s.snapshotListing("
+          ],
+          "in": "tmux.Server.Snapshot"
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "symbol": "tmuxtest.NewControlMode",
+      "command": "attach-session",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "tmux/tmuxtest/control.go:183",
+          "has": [
+            "\"attach-session\""
+          ]
+        },
+        {
+          "at": "tmux/tmuxtest/control.go:185",
+          "has": [
+            "exec.Command(arguments[0]"
+          ]
+        },
+        {
+          "at": "tmux/tmuxtest/control.go:209",
+          "has": [
+            "command.Start()"
+          ]
+        },
+        {
+          "at": "tmux/tmuxtest/control.go:58",
+          "has": [
+            "startControlMode("
+          ],
+          "in": "tmuxtest.NewControlMode"
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "symbol": "tmuxtest.NewSession",
+      "command": "kill-session",
+      "scope": null,
+      "when": "the test ends: the helper registers the kill in t.Cleanup and does not send it when it returns",
+      "evidence": [
+        {
+          "at": "tmux/tmuxtest/resources.go:135",
+          "has": [
+            "runCleanupCommand(server, \"kill-session\""
+          ]
+        },
+        {
+          "at": "tmux/tmuxtest/harness.go:546",
+          "has": [
+            "runCommand(ctx, server, args...)"
+          ]
+        },
+        {
+          "at": "tmux/tmuxtest/harness.go:536",
+          "has": [
+            "server.Cmd(ctx, args...)"
+          ]
+        },
+        {
+          "at": "tmux/tmuxtest/resources.go:56",
+          "has": [
+            "registerSessionCleanup("
+          ],
+          "in": "tmuxtest.NewSession"
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "symbol": "io.github.libtmux.control.ControlClient.ControlClient.attachUnfenced",
+      "command": "attach-session",
+      "scope": null,
+      "forwardable": true,
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/control/ControlClient.java:217",
+          "has": [
+            "\"attach-session\""
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/control/ControlClient.java:224",
+          "has": [
+            "carrier.start(command)"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/control/ControlClient.java:156",
+          "has": [
+            "connect(LOCAL"
+          ],
+          "in": "io.github.libtmux.control.ControlClient.ControlClient.attachUnfenced"
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "symbol": "io.github.libtmux.control.ControlClient.ControlClient.attach",
+      "command": "attach-session",
+      "scope": null,
+      "forwardable": true,
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/control/ControlClient.java:217",
+          "has": [
+            "\"attach-session\""
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/control/ControlClient.java:224",
+          "has": [
+            "carrier.start(command)"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/control/ControlClient.java:196",
+          "has": [
+            "connect(carrier"
+          ],
+          "in": "io.github.libtmux.control.ControlClient.ControlClient.attach"
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "symbol": "io.github.libtmux.Options.Options.all",
+      "command": "display-message",
+      "scope": null,
+      "forwardable": true,
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Options.java:196",
+          "has": [
+            "batch.add(\"display-message\""
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Options.java:198",
+          "has": [
+            "batch.run()"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Options.java:153",
+          "has": [
+            "withVersion("
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Options.java:140",
+          "has": [
+            "read(List.of())"
+          ],
+          "in": "io.github.libtmux.Options.Options.all"
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "symbol": "io.github.libtmux.Options.Options.effective",
+      "command": "display-message",
+      "scope": null,
+      "forwardable": true,
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Options.java:196",
+          "has": [
+            "batch.add(\"display-message\""
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Options.java:198",
+          "has": [
+            "batch.run()"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Options.java:153",
+          "has": [
+            "withVersion("
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Options.java:319",
+          "has": [
+            "read(List.of(\"-A\"))"
+          ],
+          "in": "io.github.libtmux.Options.Options.effective"
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.paste_bytes",
+      "command": "paste-buffer",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "src/pane_io.jl:243",
+          "has": [
+            "args = [\"paste-buffer\""
+          ]
+        },
+        {
+          "at": "src/pane_io.jl:236",
+          "has": [
+            "_paste_flags(usage, pane, bracketed)"
+          ]
+        },
+        {
+          "at": "src/pane_io.jl:273",
+          "has": [
+            "_paste_args(context, pane, bracketed)"
+          ]
+        },
+        {
+          "at": "src/pane_io.jl:278",
+          "has": [
+            "_operation_command(",
+            "args..."
+          ],
+          "span": 4,
+          "in": "LibTmux.paste_bytes"
+        }
+      ]
+    },
+    {
+      "port": "cxx",
+      "symbol": "libtmux::Connection::connect",
+      "command": "attach-session",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "src/connection.cpp:360",
+          "has": [
+            "\"attach-session\""
+          ]
+        },
+        {
+          "at": "src/connection.cpp:369",
+          "has": [
+            "::posix_spawnp("
+          ]
+        },
+        {
+          "at": "src/connection.cpp:1043",
+          "has": [
+            "spawn_client(options)"
+          ],
+          "in": "libtmux::Connection::connect"
+        }
+      ]
+    },
+    {
+      "port": "cxx",
+      "symbol": "libtmux::Connection::connect",
+      "command": "refresh-client",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "src/connection.cpp:1089",
+          "has": [
+            "\"refresh-client\"",
+            "\"new-layouts\""
+          ]
+        },
+        {
+          "at": "src/connection.cpp:1093",
+          "has": [
+            "connection.execute("
+          ],
+          "in": "libtmux::Connection::connect"
+        }
+      ]
+    },
+    {
+      "port": "py",
+      "symbol": "libtmux.Server.new_session",
+      "command": "kill-session",
+      "scope": null,
+      "when": "kill_session is true and a session of that name already exists",
+      "evidence": [
+        {
+          "at": "src/libtmux/server.py:2312",
+          "has": [
+            "self.cmd(\"kill-session\"",
+            "target=session_name"
+          ],
+          "in": "libtmux.Server.new_session"
+        },
+        {
+          "at": "src/libtmux/server.py:2311",
+          "has": [
+            "if kill_session:"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "symbol": "tmux.Server.NewSession",
+      "command": "kill-session",
+      "scope": null,
+      "when": "the request sets KillExisting and a session of that name exists",
+      "evidence": [
+        {
+          "at": "tmux/session_lifecycle.go:223",
+          "has": [
+            "effective.literalCmd(ctx, \"kill-session\""
+          ],
+          "in": "tmux.Server.NewSession"
+        },
+        {
+          "at": "tmux/session_lifecycle.go:219",
+          "has": [
+            "!request.KillExisting"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "symbol": "tmux.Server.HasSession",
+      "command": "has-session",
+      "scope": null,
+      "when": "the request sets Pattern; otherwise the lookup lists sessions",
+      "evidence": [
+        {
+          "at": "tmux/session_lifecycle.go:141",
+          "has": [
+            "s.literalCmd(ctx, \"has-session\""
+          ],
+          "in": "tmux.Server.HasSession"
+        },
+        {
+          "at": "tmux/session_lifecycle.go:137",
+          "has": [
+            "!request.Pattern"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "symbol": "session.Session.selectWindow",
+      "command": "last-window",
+      "scope": null,
+      "when": "the target is the string \"last\"",
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/operations/session_nav.ts:34",
+          "has": [
+            "\"last-window\"",
+            "target === \"last\""
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/session.ts:378",
+          "has": [
+            "selectWindowIn("
+          ],
+          "in": "session.Session.selectWindow"
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "symbol": "session.Session.selectWindow",
+      "command": "next-window",
+      "scope": null,
+      "when": "the target is the string \"next\"",
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/operations/session_nav.ts:35",
+          "has": [
+            "\"next-window\"",
+            "target === \"next\""
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/session.ts:378",
+          "has": [
+            "selectWindowIn("
+          ],
+          "in": "session.Session.selectWindow"
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "symbol": "session.Session.selectWindow",
+      "command": "previous-window",
+      "scope": null,
+      "when": "the target is the string \"previous\"",
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/operations/session_nav.ts:37",
+          "has": [
+            "\"previous-window\""
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/session_nav.ts:36",
+          "has": [
+            "target === \"previous\""
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/session.ts:378",
+          "has": [
+            "selectWindowIn("
+          ],
+          "in": "session.Session.selectWindow"
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "symbol": "server.Server.validateLayouts",
+      "command": "display-message",
+      "scope": null,
+      "when": "a layout parses differently on some tmux releases and no daemon version is bound yet",
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/operations/layout.ts:62",
+          "has": [
+            "[\"display-message\", \"-p\", \"#{version}\"]"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/layout.ts:51",
+          "has": [
+            "needsVersion.length === 0"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/server.ts:955",
+          "has": [
+            "validateLayouts(runtimeForServer(this)"
+          ],
+          "in": "server.Server.validateLayouts"
+        }
+      ]
+    },
+    {
+      "port": "cxx",
+      "symbol": "libtmux::Server::validate_layouts",
+      "command": "display-message",
+      "scope": null,
+      "when": "a layout string needs the running tmux version to be judged (layout_needs_version)",
+      "evidence": [
+        {
+          "at": "src/layout.cpp:390",
+          "has": [
+            "backend.run({\"display-message\""
+          ]
+        },
+        {
+          "at": "src/layout.cpp:386",
+          "has": [
+            "if (!sensitive)"
+          ]
+        },
+        {
+          "at": "src/server.cpp:687",
+          "has": [
+            "detail::validate_layouts(*backend_"
+          ],
+          "in": "libtmux::Server::validate_layouts"
         }
       ]
     }

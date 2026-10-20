@@ -12,6 +12,14 @@
  * private helper recorded as API, a wrapper that cites its core library's lines
  * at a revision other than the one they must be read at, and (with the sources
  * checked out) core lines that read as something else at the revision cited.
+ *
+ * With the sources checked out it also replays, for each way a literal can reach a line
+ * without being sent, an entry that an earlier generation recorded: a comparison, a row
+ * or format selector, a label in a thrown error, a choice made by a condition or by the
+ * class of a receiver, a helper that never dispatches, a generic runner that an allowlist
+ * admits, and a literal cited where only its builder was.
+ * Each is refused by the audit that reads the cited line, and the entry beside it that
+ * does send is accepted.
  */
 import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
@@ -114,7 +122,7 @@ check('the same miss fails in another port, and the other ports stay quiet', cov
 const privateHelper = fixture()
 edit(privateHelper, 'py', (document) => { document.symbols['libtmux.Server._show_option'] = first(document)[1] })
 const privateRun = run(privateHelper)
-check('a private helper recorded as API fails', privateRun.code !== 0 && /py: libtmux.Server._show_option: is private, and only public API is recorded/.test(privateRun.out), privateRun.out)
+check('a private helper recorded as API fails', privateRun.code !== 0 && /py: libtmux.Server._show_option: is private or package-private, and only public API is recorded/.test(privateRun.out), privateRun.out)
 
 const viaMoved = fixture()
 edit(viaMoved, 'fsharp', (document) => {
@@ -142,11 +150,43 @@ if (existsSync(join(process.env.LIBTMUX_DOCS_CHECKOUT_FSHARP ?? join(homedir(), 
   check('a reviewed core line that is not the one its claim cites fails', reviewedRun.code !== 0 && /Server.Lifecycle.cs:368 where its claim cites src\/LibTmux\/Server.Lifecycle.cs:269/.test(reviewedRun.out), reviewedRun.out)
   const scanned = fixture()
   edit(scanned, 'fsharp', (document) => {
-    document.symbols['LibTmux.FSharp.Pane.sendKeys'].find((candidate) => candidate.command === 'send-keys').via.evidence[0] = 'src/LibTmux/Pane.Input.cs:8'
+    document.symbols['LibTmux.FSharp.Pane.capture'].find((candidate) => candidate.command === 'capture-pane').via.evidence[0] = 'src/LibTmux/Pane.Capture.cs:22'
   })
   const scannedRun = runSource(scanned, 'fsharp')
-  check('a scanned core line that does not spell the command fails', scannedRun.code !== 0 && /src\/LibTmux\/Pane.Input.cs:8 does not spell send-keys/.test(scannedRun.out), scannedRun.out)
+  check('a scanned core line that names the command in a failure and does not send it fails', scannedRun.code !== 0 && /src\/LibTmux\/Pane.Capture.cs:22 is not a call that sends capture-pane/.test(scannedRun.out), scannedRun.out)
 } else console.log('skip core lines read at the revision cited: no checkout of the .NET repository')
+
+// A recorded entry is a call that sends, so a line that only spells the command fails whatever kind of line it is. Each case seeds, into
+// a port's committed document, the entry an earlier generation recorded from such a line, and expects the audit of that port to name it.
+const CHECKOUTS = {
+  py: '~/work/python/libtmux', java: '~/work/libtmux/libtmux-java', ts: '~/work/libtmux/libtmux-ts', swift: '~/work/libtmux/libtmux-swift',
+  ruby: '~/work/libtmux/libtmux-ruby', rs: '~/work/libtmux/libtmux-rs', julia: '~/work/libtmux/libtmux-julia', go: '~/work/libtmux/libtmux-go',
+}
+const checkoutOf = (port) => (process.env[`LIBTMUX_DOCS_CHECKOUT_${port.toUpperCase()}`] ?? CHECKOUTS[port]).replace(/^~/, homedir())
+const SENDS_NOTHING = [
+  ['a format selector', 'py', 'libtmux.Server.new_session', 'list-sessions', ['src/libtmux/server.py:2341'], /py: libtmux.Server.new_session list-sessions: src\/libtmux\/server.py:2341 is not a call that sends list-sessions \(it is an argument of get_output_format/],
+  ['a comparison', 'java', 'io.github.libtmux.Prompt.Prompt.clear', 'show-prompt-history', ['libtmux/src/main/java/io/github/libtmux/Prompt.java:49', 'libtmux/src/main/java/io/github/libtmux/Prompt.java:44'], /java: io.github.libtmux.Prompt.Prompt.clear show-prompt-history: libtmux\/src\/main\/java\/io\/github\/libtmux\/Prompt.java:49 is not a call that sends show-prompt-history/],
+  ['a label in a thrown error', 'ts', 'server.Server.validateLayouts', 'display-message', ['packages/libtmux/src/_internal/operations/layout.ts:42', 'packages/libtmux/src/server.ts:955'], /ts: server.Server.validateLayouts display-message: packages\/libtmux\/src\/_internal\/operations\/layout.ts:42 is not a call that sends display-message/],
+  ['a ternary between two commands', 'swift', 'Server.link(_:into:)', 'move-window', ['Sources/LibTmux/WindowTransfers.swift:75', 'Sources/LibTmux/WindowTransfers.swift:20'], /swift: Server.link\(_:into:\) move-window: Sources\/LibTmux\/WindowTransfers.swift:75 is not a call that sends move-window \(a condition chooses it/],
+  ['the class of a receiver choosing the command', 'ruby', 'LibTmux::Hooks#unset', 'set-option', ['gems/libtmux/lib/libtmux/options.rb:107'], /ruby: LibTmux::Hooks#unset set-option: gems\/libtmux\/lib\/libtmux\/options.rb:107 is not a call that sends set-option \(a condition chooses it/],
+  ['a helper that never dispatches', 'java', 'io.github.libtmux.batch.Batch.Batch.length', 'display-message', ['libtmux/src/main/java/io/github/libtmux/batch/Batch.java:94', 'libtmux/src/main/java/io/github/libtmux/batch/Batch.java:72'], /java: io.github.libtmux.batch.Batch.Batch.length display-message: libtmux\/src\/main\/java\/io\/github\/libtmux\/batch\/Batch.java:94 is not a call that sends display-message/],
+  ['a generic runner that an allowlist admits', 'julia', 'LibTmux.run_command', 'kill-pane', ['src/control_protocol.jl:427', 'src/control.jl:580'], /julia: LibTmux.run_command kill-pane: src\/control_protocol.jl:427 is not a call that sends kill-pane/],
+  ['the line that builds the command, where the call that sends is further down', 'rs', 'server.Server.command_prompt', 'command-prompt', ['crates/libtmux/src/server/interactive.rs:105'], /rs: server.Server.command_prompt command-prompt: crates\/libtmux\/src\/server\/interactive.rs:105 is not a call that sends command-prompt/],
+  ['the literal of a builder, with the hop to a method of another type that shares its name', 'rs', 'pane.Pane.split', 'capture-pane', ['crates/libtmux/src/pane.rs:1618', 'crates/libtmux/src/pane.rs:515'], /rs: pane.Pane.split capture-pane: crates\/libtmux\/src\/pane.rs:1618 is not a call that sends capture-pane \(it builds a value for the caller\)/],
+]
+const sourced = new Map()
+for (const [name, port, symbol, command, lines, message] of SENDS_NOTHING) {
+  if (!existsSync(join(checkoutOf(port), '.git'))) { console.log(`skip ${name}: no checkout of ${port}`); continue }
+  if (!sourced.has(port)) {
+    const control = runSource(fixture(), port)
+    sourced.set(port, control.code === 0)
+    check(`the committed ${port} entries read as cited`, control.code === 0, control.out)
+  }
+  const seeded = fixture()
+  edit(seeded, port, (document) => { document.symbols[symbol] = [...(document.symbols[symbol] ?? []), { command, scope: null, evidence: lines }] })
+  const seededRun = runSource(seeded, port)
+  check(`an entry cited at ${name} fails`, seededRun.code !== 0 && message.test(seededRun.out), seededRun.out)
+}
 
 for (const dir of dirs) rmSync(dir, { recursive: true, force: true })
 if (failures) process.exit(1)

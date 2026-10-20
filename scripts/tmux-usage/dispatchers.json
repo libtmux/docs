@@ -1,0 +1,2408 @@
+{
+  "schemaVersion": 1,
+  "dispatchers": [
+    {
+      "port": "py",
+      "name": "check_call",
+      "why": "Runs the tmux binary with the argument list it is given and raises when it fails.",
+      "evidence": [
+        {
+          "at": "src/libtmux/server.py:340",
+          "has": [
+            "subprocess.check_call("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "py",
+      "name": "cmd",
+      "why": "Runs the tmux command it is given: Server.cmd sends it to the server, and the fetch helpers send the list command they are given.",
+      "evidence": [
+        {
+          "at": "src/libtmux/pane.py:315",
+          "has": [
+            "cmd"
+          ]
+        },
+        {
+          "at": "src/libtmux/server.py:347",
+          "has": [
+            "cmd"
+          ]
+        },
+        {
+          "at": "src/libtmux/session.py:425",
+          "has": [
+            "cmd"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "py",
+      "name": "fetch_objs",
+      "why": "Runs the tmux command it is given: Server.cmd sends it to the server, and the fetch helpers send the list command they are given.",
+      "evidence": [
+        {
+          "at": "src/libtmux/neo.py:1039",
+          "has": [
+            "fetch_objs"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "py",
+      "name": "fetch_obj",
+      "why": "Runs the tmux command it is given: Server.cmd sends it to the server, and the fetch helpers send the list command they are given.",
+      "evidence": [
+        {
+          "at": "src/libtmux/neo.py:1275",
+          "has": [
+            "fetch_obj"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "py",
+      "name": "_fetch_or_empty",
+      "why": "Runs the tmux command it is given: Server.cmd sends it to the server, and the fetch helpers send the list command they are given.",
+      "evidence": [
+        {
+          "at": "src/libtmux/server.py:65",
+          "has": [
+            "_fetch_or_empty"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "py",
+      "name": "_refresh",
+      "why": "Runs the tmux command it is given: Server.cmd sends it to the server, and the fetch helpers send the list command they are given.",
+      "evidence": [
+        {
+          "at": "src/libtmux/neo.py:868",
+          "has": [
+            "_refresh"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ruby",
+      "name": "execute_typed",
+      "why": "Sends the argument list it is given to the server.",
+      "evidence": [
+        {
+          "at": "gems/libtmux/lib/libtmux/server.rb:393",
+          "has": [
+            "execute_typed"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ruby",
+      "name": "catalog_read",
+      "why": "Sends the argument list it is given to the server.",
+      "evidence": [
+        {
+          "at": "gems/libtmux/lib/libtmux/capture.rb:98",
+          "has": [
+            "catalog_read"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ruby",
+      "name": "read",
+      "why": "Sends the argument list it is given to the server.",
+      "evidence": [
+        {
+          "at": "gems/libtmux/lib/libtmux/capture.rb:108",
+          "has": [
+            "read"
+          ]
+        },
+        {
+          "at": "gems/libtmux-mcp/lib/libtmux/mcp/enrollment.rb:84",
+          "has": [
+            "read"
+          ]
+        },
+        {
+          "at": "gems/libtmux-mcp/lib/libtmux/mcp/resources.rb:45",
+          "has": [
+            "read"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ruby",
+      "name": "reposition",
+      "why": "Sends the argument list it is given to the server.",
+      "evidence": [
+        {
+          "at": "gems/libtmux/lib/libtmux/operations.rb:405",
+          "has": [
+            "reposition"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ruby",
+      "name": "mutate",
+      "why": "Sends the argument list it is given to the server.",
+      "evidence": [
+        {
+          "at": "gems/libtmux/lib/libtmux/options.rb:138",
+          "has": [
+            "mutate"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ruby",
+      "name": "exchange_request",
+      "why": "Sends the argument list it is given to the server.",
+      "evidence": [
+        {
+          "at": "gems/libtmux-async/lib/libtmux/async/control.rb:71",
+          "has": [
+            "exchange_request"
+          ]
+        },
+        {
+          "at": "gems/libtmux/lib/libtmux/control.rb:428",
+          "has": [
+            "exchange_request"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ruby",
+      "name": "create_entity",
+      "why": "Sends the argument list it is given to the server.",
+      "evidence": [
+        {
+          "at": "gems/libtmux/lib/libtmux/server.rb:456",
+          "has": [
+            "create_entity"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ruby",
+      "name": "execute_link",
+      "why": "Sends the argument list it is given to the server.",
+      "evidence": [
+        {
+          "at": "gems/libtmux/lib/libtmux/operations.rb:110",
+          "has": [
+            "execute_link"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "name": "run",
+      "why": "Sends the argument list it is given to the server.",
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/buffer.lua:206",
+          "has": [
+            "run"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/client.lua:168",
+          "has": [
+            "run"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/environment.lua:398",
+          "has": [
+            "run"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "name": "execute",
+      "why": "Sends the argument list it is given to the server.",
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/command.lua:190",
+          "has": [
+            "execute"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/endpoint.lua:252",
+          "has": [
+            "execute"
+          ]
+        },
+        {
+          "at": "lua/libtmux/_internal/process.lua:143",
+          "has": [
+            "execute"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "lua",
+      "name": "program",
+      "why": "Sends the argument list it is given to the server.",
+      "evidence": [
+        {
+          "at": "lua/libtmux/_internal/topology.lua:138",
+          "has": [
+            "program"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "name": "Cmd",
+      "why": "Builds the process command that runs tmux with the argument list it is given.",
+      "evidence": [
+        {
+          "at": "src/lifecycle.jl:270",
+          "has": [
+            "Cmd(argv)"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "name": "_operation_command",
+      "why": "Sends the argument list it is given over the control connection.",
+      "evidence": [
+        {
+          "at": "src/operations.jl:59",
+          "has": [
+            "_operation_command"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "name": "_control_topology_effect",
+      "why": "Sends the argument list it is given over the control connection.",
+      "evidence": [
+        {
+          "at": "src/control_topology.jl:7",
+          "has": [
+            "_control_topology_effect"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "name": "_control_effect",
+      "why": "Sends the argument list it is given over the control connection.",
+      "evidence": [
+        {
+          "at": "src/control_io.jl:22",
+          "has": [
+            "_control_effect"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "name": "command",
+      "why": "Sends the argument list it is given over the control connection.",
+      "evidence": [
+        {
+          "at": "src/control.jl:931",
+          "has": [
+            "command"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "name": "_control_configuration_effect",
+      "why": "Sends the argument list it is given over the control connection.",
+      "evidence": [
+        {
+          "at": "src/control_options.jl:217",
+          "has": [
+            "_control_configuration_effect"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "name": "_snapshot_rows",
+      "why": "Sends the argument list it is given over the control connection.",
+      "evidence": [
+        {
+          "at": "src/acquisition.jl:73",
+          "has": [
+            "_snapshot_rows"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "name": "rows",
+      "why": "Sends the argument list it is given over the control connection.",
+      "evidence": [
+        {
+          "at": "src/control_io.jl:215",
+          "has": [
+            "rows"
+          ]
+        },
+        {
+          "at": "ext/LibTmuxTablesExt.jl:8",
+          "has": [
+            "rows"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "name": "run_command",
+      "why": "Sends the argument list it is given over the control connection.",
+      "evidence": [
+        {
+          "at": "src/control.jl:572",
+          "has": [
+            "run_command"
+          ]
+        },
+        {
+          "at": "src/process.jl:477",
+          "has": [
+            "run_command"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "name": "_control_rows",
+      "why": "Sends the argument list it is given over the control connection.",
+      "evidence": [
+        {
+          "at": "src/control.jl:502",
+          "has": [
+            "_control_rows"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "name": "_control_request",
+      "why": "Sends the argument list it is given over the control connection.",
+      "evidence": [
+        {
+          "at": "src/control.jl:411",
+          "has": [
+            "_control_request"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "name": "_run_process",
+      "why": "Sends the argument list it is given over the control connection.",
+      "evidence": [
+        {
+          "at": "src/process.jl:293",
+          "has": [
+            "_run_process"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "name": "runCommand",
+      "why": "Sends the tmux command in its argument list through the runtime's transport.",
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/operations/command.ts:89",
+          "has": [
+            "runCommand"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "name": "runCommands",
+      "why": "Sends the tmux command in its argument list through the runtime's transport.",
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/operations/command.ts:113",
+          "has": [
+            "runCommands"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "name": "runCommandBytes",
+      "why": "Sends the tmux command in its argument list through the runtime's transport.",
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/operations/command.ts:98",
+          "has": [
+            "runCommandBytes"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "name": "execute",
+      "why": "Sends the tmux command in its argument list through the runtime's transport.",
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/control/observer_transport.ts:344",
+          "has": [
+            "execute"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/transport/bounded_transport.ts:223",
+          "has": [
+            "execute"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:110",
+          "has": [
+            "execute"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "name": "killTarget",
+      "why": "Sends the tmux command in its argument list through the runtime's transport.",
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/operations/mutations.ts:73",
+          "has": [
+            "killTarget"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "name": "selectTarget",
+      "why": "Sends the tmux command in its argument list through the runtime's transport.",
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/operations/topology.ts:389",
+          "has": [
+            "selectTarget"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "name": "executeGuardedList",
+      "why": "Sends the tmux command in its argument list through the runtime's transport.",
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/codec/guarded_listing.ts:80",
+          "has": [
+            "executeGuardedList"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "name": "cmd",
+      "why": "Sends the tmux command in its argument list through the runtime's transport.",
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/pane.ts:672",
+          "has": [
+            "cmd"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/server.ts:1348",
+          "has": [
+            "cmd"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/session.ts:434",
+          "has": [
+            "cmd"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "name": "prepareInvocationRequest",
+      "kind": "builder",
+      "why": "Builds the argument list of a command from the command it is given.",
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/operations/request.ts:44",
+          "has": [
+            "prepareInvocationRequest"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "name": "prepareCommandRequest",
+      "kind": "builder",
+      "why": "Builds the argument list of a command from the command it is given.",
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/operations/request.ts:30",
+          "has": [
+            "prepareCommandRequest"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "name": "snapshotInvocationRequest",
+      "kind": "builder",
+      "why": "Builds the argument list of a command from the command it is given.",
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/transport/types.ts:25",
+          "has": [
+            "snapshotInvocationRequest"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "name": "freeze",
+      "kind": "builder",
+      "why": "Builds the argument list of a command from the command it is given.",
+      "evidence": [
+        {
+          "at": "packages/workspace-cli/src/tmux.ts:1169",
+          "has": [
+            "freeze"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "name": "mutate",
+      "why": "Sends the Command it is given, or the command it is named for, to the server.",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/internal/listing.rs:452",
+          "has": [
+            "mutate"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "name": "run",
+      "why": "Sends the Command it is given, or the command it is named for, to the server.",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/blocking.rs:72",
+          "has": [
+            "run"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/control/actor.rs:432",
+          "has": [
+            "run"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/internal/executor.rs:63",
+          "has": [
+            "run"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "name": "cmd",
+      "why": "Sends the Command it is given, or the command it is named for, to the server.",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/pane.rs:801",
+          "has": [
+            "cmd"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/server.rs:678",
+          "has": [
+            "cmd"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/session.rs:582",
+          "has": [
+            "cmd"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "name": "execute",
+      "why": "Sends the Command it is given, or the command it is named for, to the server.",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/internal/control_executor.rs:28",
+          "has": [
+            "execute"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/internal/core.rs:423",
+          "has": [
+            "execute"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/internal/listing.rs:494",
+          "has": [
+            "execute"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "name": "send",
+      "why": "Sends the Command it is given, or the command it is named for, to the server.",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/control.rs:585",
+          "has": [
+            "send"
+          ]
+        },
+        {
+          "at": "crates/tmux-mcp/src/bin/tmux-mcp.rs:61",
+          "has": [
+            "send"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "name": "step",
+      "why": "Sends the Command it is given, or the command it is named for, to the server.",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan.rs:171",
+          "has": [
+            "step"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:163",
+          "has": [
+            "step"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/session.rs:388",
+          "has": [
+            "step"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "name": "list",
+      "why": "Sends the Command it is given, or the command it is named for, to the server.",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/internal/listing.rs:92",
+          "has": [
+            "list"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/wire.rs:149",
+          "has": [
+            "list"
+          ]
+        },
+        {
+          "at": "crates/tmux-workspace/src/cli/document/importers.rs:85",
+          "has": [
+            "list"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "name": "send_ordered",
+      "why": "Sends the Command it is given, or the command it is named for, to the server.",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/control.rs:746",
+          "has": [
+            "send_ordered"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "name": "execute_chain",
+      "why": "Sends the Command it is given, or the command it is named for, to the server.",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/internal/core.rs:483",
+          "has": [
+            "execute_chain"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "literalCmd",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/scoped_command.go:26",
+          "has": [
+            "literalCmd"
+          ]
+        },
+        {
+          "at": "tmux/server.go:104",
+          "has": [
+            "literalCmd"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "Cmd",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/control_request.go:95",
+          "has": [
+            "Cmd"
+          ]
+        },
+        {
+          "at": "tmux/plan.go:731",
+          "has": [
+            "Cmd"
+          ]
+        },
+        {
+          "at": "tmux/scoped_command.go:12",
+          "has": [
+            "Cmd"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "cmd",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/control_request.go:129",
+          "has": [
+            "cmd"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "runExactArgv",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/transport.go:156",
+          "has": [
+            "runExactArgv"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "runClientCommand",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/server_clients.go:364",
+          "has": [
+            "runClientCommand"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "runWindowLayoutCommand",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/window_layout.go:354",
+          "has": [
+            "runWindowLayoutCommand"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "runRedactedPaneModeCommand",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/pane_modes.go:325",
+          "has": [
+            "runRedactedPaneModeCommand"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "runServerKeyCommand",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/server_keys.go:250",
+          "has": [
+            "runServerKeyCommand"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "runServerListCommand",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/server_buffers.go:342",
+          "has": [
+            "runServerListCommand"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "runSimplePaneMode",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/pane_modes.go:309",
+          "has": [
+            "runSimplePaneMode"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "navigateWindow",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/session_navigation.go:106",
+          "has": [
+            "navigateWindow"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "relocate",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/pane_relocate.go:205",
+          "has": [
+            "relocate"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "searchSnapshot",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/search.go:167",
+          "has": [
+            "searchSnapshot"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "searchSnapshotProjected",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/search.go:180",
+          "has": [
+            "searchSnapshotProjected"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "livePoint",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/lookup.go:131",
+          "has": [
+            "livePoint"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "livePointWithTargetValidation",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/lookup.go:165",
+          "has": [
+            "livePointWithTargetValidation"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "literalCmdWithRaw",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/server.go:109",
+          "has": [
+            "literalCmdWithRaw"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "runEnvironmentMutation",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/environment.go:240",
+          "has": [
+            "runEnvironmentMutation"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "runOptionMutation",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/option_mutation.go:465",
+          "has": [
+            "runOptionMutation"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "literalPaneCommand",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/exact_target.go:63",
+          "has": [
+            "literalPaneCommand"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "literalScopedCommand",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/scoped_command.go:57",
+          "has": [
+            "literalScopedCommand"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "runServerListCommandWithError",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/server_buffers.go:358",
+          "has": [
+            "runServerListCommandWithError"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "runRedactedServerListCommand",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/server_buffers.go:350",
+          "has": [
+            "runRedactedServerListCommand"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "newPane",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/pane_create.go:141",
+          "has": [
+            "newPane"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "splitPane",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/pane_create.go:330",
+          "has": [
+            "splitPane"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "newWindow",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/window_lifecycle.go:189",
+          "has": [
+            "newWindow"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "capturePane",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/pane_capture.go:216",
+          "has": [
+            "capturePane"
+          ]
+        },
+        {
+          "at": "mcp/capture_tools.go:32",
+          "has": [
+            "capturePane"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "showBuffer",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/server_buffers.go:138",
+          "has": [
+            "showBuffer"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "snapshotListing",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/snapshot_capture.go:113",
+          "has": [
+            "snapshotListing"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "runDisplayMessage",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/display_message.go:182",
+          "has": [
+            "runDisplayMessage"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "runCommand",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/tmuxtest/harness.go:535",
+          "has": [
+            "runCommand"
+          ]
+        },
+        {
+          "at": "tmux/transport.go:40",
+          "has": [
+            "runCommand"
+          ]
+        },
+        {
+          "at": "mcp/run_command_tools.go:89",
+          "has": [
+            "runCommand"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "streamingLiteralCmd",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/server_attach.go:153",
+          "has": [
+            "streamingLiteralCmd"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "streamOut",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/pipe_stream.go:57",
+          "has": [
+            "streamOut"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "startControl",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/control_startup.go:105",
+          "has": [
+            "startControl"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "streamIn",
+      "why": "Sends the tmux arguments or the command it is given to the server.",
+      "evidence": [
+        {
+          "at": "tmux/pipe_stream.go:19",
+          "has": [
+            "streamIn"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "targetedArguments",
+      "kind": "builder",
+      "why": "Builds the argument list of a command from the command it is given.",
+      "evidence": [
+        {
+          "at": "tmux/plan.go:216",
+          "has": [
+            "targetedArguments"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "untargetedArguments",
+      "kind": "builder",
+      "why": "Builds the argument list of a command from the command it is given.",
+      "evidence": [
+        {
+          "at": "tmux/plan.go:234",
+          "has": [
+            "untargetedArguments"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "respawnArguments",
+      "kind": "builder",
+      "why": "Builds the argument list of a command from the command it is given.",
+      "evidence": [
+        {
+          "at": "tmux/pane_process.go:109",
+          "has": [
+            "respawnArguments"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "joinPaneArguments",
+      "kind": "builder",
+      "why": "Builds the argument list of a command from the command it is given.",
+      "evidence": [
+        {
+          "at": "tmux/plan_pane.go:241",
+          "has": [
+            "joinPaneArguments"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "exactPaneCommandArguments",
+      "kind": "builder",
+      "why": "Builds the argument list of a command from the command it is given.",
+      "evidence": [
+        {
+          "at": "tmux/pane_modes.go:317",
+          "has": [
+            "exactPaneCommandArguments"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "respawnRequestArguments",
+      "kind": "builder",
+      "why": "Builds the argument list of a command from the command it is given.",
+      "evidence": [
+        {
+          "at": "tmux/window_respawn.go:63",
+          "has": [
+            "respawnRequestArguments"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "name": "run",
+      "why": "Sends the argument list it is given to the server.",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/CommandChain.java:97",
+          "has": [
+            "run"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Environment.java:372",
+          "has": [
+            "run"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Hooks.java:113",
+          "has": [
+            "run"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "name": "cmd",
+      "why": "Sends the argument list it is given to the server.",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Environment.java:368",
+          "has": [
+            "cmd"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Options.java:373",
+          "has": [
+            "cmd"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java:765",
+          "has": [
+            "cmd"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "name": "send",
+      "why": "Sends the argument list it is given to the server.",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:547",
+          "has": [
+            "send"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/control/ControlClient.java:312",
+          "has": [
+            "send"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "name": "runTogether",
+      "why": "Sends the argument list it is given to the server.",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1265",
+          "has": [
+            "runTogether"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "name": "withoutStartingServer",
+      "why": "Sends the argument list it is given to the server.",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java:471",
+          "has": [
+            "withoutStartingServer"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "name": "withVersion",
+      "why": "Sends the argument list it is given to the server.",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Options.java:194",
+          "has": [
+            "withVersion"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "name": "captured",
+      "why": "Sends the argument list it is given to the server.",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java:884",
+          "has": [
+            "captured"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "name": "execute",
+      "why": "Sends the argument list it is given to the server.",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:180",
+          "has": [
+            "execute"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/transport/TmuxTransport.java:29",
+          "has": [
+            "execute"
+          ]
+        },
+        {
+          "at": "libtmux-junit5/src/main/java/io/github/libtmux/junit5/FakeTmux.java:239",
+          "has": [
+            "execute"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "name": "argv",
+      "kind": "builder",
+      "why": "Builds the argument list of a command from the command it is given.",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Environment.java:352",
+          "has": [
+            "argv"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Hooks.java:146",
+          "has": [
+            "argv"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Options.java:381",
+          "has": [
+            "argv"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "name": "command",
+      "kind": "builder",
+      "why": "Builds the argument list of a command from the command it is given.",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Environment.java:360",
+          "has": [
+            "command"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/PaneStart.java:41",
+          "has": [
+            "command"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/exception/LibTmuxException.java:54",
+          "has": [
+            "command"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "name": "listing",
+      "kind": "builder",
+      "why": "Builds the argument list of a command from the command it is given.",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Environment.java:204",
+          "has": [
+            "listing"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:424",
+          "has": [
+            "listing"
+          ]
+        },
+        {
+          "at": "libtmux-junit5/src/main/java/io/github/libtmux/junit5/FakeTmux.java:471",
+          "has": [
+            "listing"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "name": "request",
+      "kind": "builder",
+      "why": "Builds the argument list of a command from the command it is given.",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java:786",
+          "has": [
+            "request"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/control/EventSubscription.java:451",
+          "has": [
+            "request"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "name": "RunAsync",
+      "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/ControlMode/ControlModePaneFlow.cs:92",
+          "has": [
+            "RunAsync"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Environment/TmuxEnvironmentOperations.cs:243",
+          "has": [
+            "RunAsync"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Hooks/TmuxHooks.cs:310",
+          "has": [
+            "RunAsync"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "name": "Dispatch",
+      "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Exceptions/LibTmuxException.cs:40",
+          "has": [
+            "Dispatch"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Server.Lifecycle.cs:454",
+          "has": [
+            "Dispatch"
+          ]
+        },
+        {
+          "at": "src/LibTmux.Workspace/WorkspaceActionOutcome.cs:36",
+          "has": [
+            "Dispatch"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "name": "ExecuteAsync",
+      "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Chaining/TmuxChain.cs:95",
+          "has": [
+            "ExecuteAsync"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Chaining/TmuxChaining.Hooks.cs:56",
+          "has": [
+            "ExecuteAsync"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Chaining/TmuxChaining.cs:23",
+          "has": [
+            "ExecuteAsync"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "name": "ListAsync",
+      "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/ControlMode/PaneObservation.cs:332",
+          "has": [
+            "ListAsync"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Materialization/RelationReader.cs:13",
+          "has": [
+            "ListAsync"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Server.Collections.cs:81",
+          "has": [
+            "ListAsync"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "name": "FetchAsync",
+      "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:30",
+          "has": [
+            "FetchAsync"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "name": "SearchAsync",
+      "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Query/NativeFilterSearch.cs:73",
+          "has": [
+            "SearchAsync"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "name": "SendAsync",
+      "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/ControlMode/ControlModeSession.cs:281",
+          "has": [
+            "SendAsync"
+          ]
+        },
+        {
+          "at": "src/LibTmux/ControlMode/IControlModeSession.cs:68",
+          "has": [
+            "SendAsync"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "name": "SendRawAsync",
+      "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/ControlMode/ControlModeSession.cs:306",
+          "has": [
+            "SendRawAsync"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "name": "RunUtilityAsync",
+      "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.Utilities.cs:112",
+          "has": [
+            "RunUtilityAsync"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "name": "RunClientAsync",
+      "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.Clients.cs:194",
+          "has": [
+            "RunClientAsync"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "name": "TryThroughControlAsync",
+      "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Streaming/PaneReader.cs:438",
+          "has": [
+            "TryThroughControlAsync"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "name": "Fetch",
+      "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Snapshots/ServerSnapshot.cs:125",
+          "has": [
+            "Fetch"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "name": "ReadUtilityAsync",
+      "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.Utilities.cs:123",
+          "has": [
+            "ReadUtilityAsync"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "name": "ExecuteCommandAsync",
+      "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Pane.Command.cs:22",
+          "has": [
+            "ExecuteCommandAsync"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Server.Command.cs:19",
+          "has": [
+            "ExecuteCommandAsync"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Session.Command.cs:22",
+          "has": [
+            "ExecuteCommandAsync"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "name": "ExecuteAttachmentAsync",
+      "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Connection/TmuxDialect.cs:168",
+          "has": [
+            "ExecuteAttachmentAsync"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Internal/TmuxGenerationGuard.Attachment.cs:11",
+          "has": [
+            "ExecuteAttachmentAsync"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "name": "ExecuteGuardedAsync",
+      "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Connection/MultiplexerDialect.cs:73",
+          "has": [
+            "ExecuteGuardedAsync"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Connection/PsmuxDialect.cs:63",
+          "has": [
+            "ExecuteGuardedAsync"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Connection/TmuxDialect.cs:158",
+          "has": [
+            "ExecuteGuardedAsync"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "name": "RunPlacementAsync",
+      "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Window.Links.cs:177",
+          "has": [
+            "RunPlacementAsync"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "name": "DispatchAsync",
+      "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Hooks/TmuxHooks.cs:426",
+          "has": [
+            "DispatchAsync"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "name": "ReadAsync",
+      "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/ControlMode/PaneObservation.cs:379",
+          "has": [
+            "ReadAsync"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Hooks/TmuxHooks.cs:437",
+          "has": [
+            "ReadAsync"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:117",
+          "has": [
+            "ReadAsync"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "name": "CreatePaneFromAsync",
+      "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Pane.Topology.cs:567",
+          "has": [
+            "CreatePaneFromAsync"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "name": "Build",
+      "kind": "builder",
+      "why": "Builds the argument list of a command from the command it is given.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Environment/TmuxEnvironmentOperations.cs:226",
+          "has": [
+            "Build"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Query/TmuxFilterRenderer.cs:206",
+          "has": [
+            "Build"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Snapshots/ServerSnapshot.cs:147",
+          "has": [
+            "Build"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "name": "Create",
+      "kind": "builder",
+      "why": "Builds the argument list of a command from the command it is given.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Chaining/TmuxCommand.cs:73",
+          "has": [
+            "Create"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Internal/TmuxDispatchLedger.cs:26",
+          "has": [
+            "Create"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Materialization/FormatProjection.cs:95",
+          "has": [
+            "Create"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "name": "BuildRehomeArguments",
+      "kind": "builder",
+      "why": "Builds the argument list of a command from the command it is given.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Pane.Topology.cs:533",
+          "has": [
+            "BuildRehomeArguments"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "name": "BuildGuardedCommandLine",
+      "kind": "builder",
+      "why": "Builds the argument list of a command from the command it is given.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.Command.cs:66",
+          "has": [
+            "BuildGuardedCommandLine"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "cxx",
+      "name": "run",
+      "why": "Sends the argument list it is given to the server.",
+      "evidence": [
+        {
+          "at": "src/backend.cpp:353",
+          "has": [
+            "run"
+          ]
+        },
+        {
+          "at": "src/backend.hpp:90",
+          "has": [
+            "run"
+          ]
+        },
+        {
+          "at": "src/entities.cpp:60",
+          "has": [
+            "run"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "cxx",
+      "name": "list_entities",
+      "why": "Sends the argument list it is given to the server.",
+      "evidence": [
+        {
+          "at": "src/acquire.hpp:185",
+          "has": [
+            "list_entities"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "cxx",
+      "name": "show",
+      "why": "Sends the argument list it is given to the server.",
+      "evidence": [
+        {
+          "at": "src/server.cpp:1360",
+          "has": [
+            "show"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "cxx",
+      "name": "run_before_deadline",
+      "why": "Sends the argument list it is given to the server.",
+      "evidence": [
+        {
+          "at": "src/wait.cpp:102",
+          "has": [
+            "run_before_deadline"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "cxx",
+      "name": "one_entity",
+      "why": "Sends the argument list it is given to the server.",
+      "evidence": [
+        {
+          "at": "src/acquire.hpp:222",
+          "has": [
+            "one_entity"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "cxx",
+      "name": "scoped",
+      "kind": "builder",
+      "why": "Builds the argument list of a command from the command it is given.",
+      "evidence": [
+        {
+          "at": "src/entities.cpp:222",
+          "has": [
+            "scoped"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "swift",
+      "name": "TmuxCommand",
+      "kind": "builder",
+      "why": "The value that names a tmux command and its arguments, which a dispatch call takes.",
+      "evidence": [
+        {
+          "at": "Sources/LibTmux/TmuxCommand.swift:5",
+          "has": [
+            "struct TmuxCommand"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "swift",
+      "name": "expectSuccess",
+      "why": "Sends the TmuxCommand it is given to the server.",
+      "evidence": [
+        {
+          "at": "Sources/LibTmux/Mutations.swift:128",
+          "has": [
+            "expectSuccess"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "swift",
+      "name": "run",
+      "why": "Sends the TmuxCommand it is given to the server.",
+      "evidence": [
+        {
+          "at": "Sources/LibTmux/CommandList.swift:65",
+          "has": [
+            "run"
+          ]
+        },
+        {
+          "at": "Sources/LibTmux/OutputWaitSession.swift:14",
+          "has": [
+            "run"
+          ]
+        },
+        {
+          "at": "Sources/LibTmux/PaneInteraction.swift:50",
+          "has": [
+            "run"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "swift",
+      "name": "runOptionCommand",
+      "why": "Sends the TmuxCommand it is given to the server.",
+      "evidence": [
+        {
+          "at": "Sources/LibTmux/Options.swift:289",
+          "has": [
+            "runOptionCommand"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "swift",
+      "name": "list",
+      "why": "Sends the TmuxCommand it is given to the server.",
+      "evidence": [
+        {
+          "at": "Sources/LibTmux/Server.swift:367",
+          "has": [
+            "list"
+          ]
+        },
+        {
+          "at": "Sources/TmuxWorkspaceCLI/ReadCommands.swift:4",
+          "has": [
+            "list"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "swift",
+      "name": "runInOwnProcess",
+      "why": "Sends the TmuxCommand it is given to the server.",
+      "evidence": [
+        {
+          "at": "Sources/LibTmux/Server.swift:167",
+          "has": [
+            "runInOwnProcess"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "swift",
+      "name": "runGuarded",
+      "why": "Sends the TmuxCommand it is given to the server.",
+      "evidence": [
+        {
+          "at": "Sources/LibTmux/GuardedRequest.swift:19",
+          "has": [
+            "runGuarded"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "swift",
+      "name": "send",
+      "why": "Sends the TmuxCommand it is given to the server.",
+      "evidence": [
+        {
+          "at": "Sources/LibTmux/ControlSession.swift:168",
+          "has": [
+            "send"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "swift",
+      "name": "runTerminatingIsolated",
+      "why": "Sends the TmuxCommand it is given to the server.",
+      "evidence": [
+        {
+          "at": "Sources/LibTmux/Server.swift:226",
+          "has": [
+            "runTerminatingIsolated"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "swift",
+      "name": "runIsolated",
+      "why": "Sends the TmuxCommand it is given to the server.",
+      "evidence": [
+        {
+          "at": "Sources/LibTmux/Server.swift:171",
+          "has": [
+            "runIsolated"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "swift",
+      "name": "windowAppearance",
+      "why": "Sends the TmuxCommand it is given to the server.",
+      "evidence": [
+        {
+          "at": "Sources/LibTmux/Creation.swift:342",
+          "has": [
+            "windowAppearance"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "swift",
+      "name": "identifier",
+      "why": "Sends the TmuxCommand it is given to the server.",
+      "evidence": [
+        {
+          "at": "Sources/LibTmux/Creation.swift:322",
+          "has": [
+            "identifier"
+          ]
+        },
+        {
+          "at": "Sources/LibTmux/Formats.swift:215",
+          "has": [
+            "identifier"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "swift",
+      "name": "filtered",
+      "why": "Sends the TmuxCommand it is given to the server.",
+      "evidence": [
+        {
+          "at": "Sources/LibTmux/FilteredListings.swift:116",
+          "has": [
+            "filtered"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "cxx",
+      "name": "execute",
+      "why": "Renders the control request it is given and writes it to the control client, one command to a line.",
+      "evidence": [
+        {
+          "at": "src/connection.cpp:1114",
+          "has": [
+            "Connection::execute"
+          ]
+        },
+        {
+          "at": "src/connection.cpp:1117",
+          "has": [
+            "render_request(std::move(request))"
+          ]
+        },
+        {
+          "at": "src/connection.cpp:1161",
+          "has": [
+            "write_bytes(*rendered"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "appendPopupVersion33Arguments",
+      "kind": "builder",
+      "why": "Appends the flags a newer tmux accepts to the display-popup argument list it is given and returns the list.",
+      "evidence": [
+        {
+          "at": "tmux/pane_popup.go:326",
+          "has": [
+            "func appendPopupVersion33Arguments("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "appendPopupVersion36Arguments",
+      "kind": "builder",
+      "why": "Appends the flags a newer tmux accepts to the display-popup argument list it is given and returns the list.",
+      "evidence": [
+        {
+          "at": "tmux/pane_popup.go:376",
+          "has": [
+            "func appendPopupVersion36Arguments("
+          ]
+        }
+      ]
+    }
+  ]
+}

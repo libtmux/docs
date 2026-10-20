@@ -21,7 +21,7 @@ import { bareName, definitionsOf } from './tmux-usage-derive.mjs'
  *   types: { file: string, name?: string, start: number, end: number }[],
  *   symbols: WrapperSymbol[],
  *   core: { entries: CoreEntry[], symbols: Map<string, { name: string, parentName?: string }>, revision: string },
- *   generated?: { under: string[], evidence: string[], forwards: (entry: CoreEntry) => string | undefined },
+ *   generated?: { under: string[], evidence: string[], forwards: (entry: CoreEntry, symbol?: { name: string, file: string, line: number }) => string | undefined },
  * }} input
  *   `core.revision` is the revision the core lines were read at, and every entry says so in its `via`.
  * @returns {{ entries: object[], silent: string[] }} `silent` names the wrapper symbols that call no core sender.
@@ -53,7 +53,7 @@ export function forwardUsage({ parent, functions, types, symbols, core, generate
       // A generated operation takes its name and its handle from the core method it forwards to.
       for (const entry of coreByName.get(bareName(symbol.name)) ?? []) {
         const coreSymbol = core.symbols.get(entry.symbol)
-        const annotation = generated.forwards(entry)
+        const annotation = generated.forwards(entry, coreSymbol)
         if (!annotation || !wrapperOwner || bareName(coreSymbol?.parentName ?? '').toLowerCase() !== wrapperOwner) continue
         add(symbol, entry, [...generated.evidence, annotation])
       }

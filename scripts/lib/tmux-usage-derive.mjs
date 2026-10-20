@@ -31,6 +31,31 @@ export function classify(spec, flags) {
  */
 export const ruleHolds = (rule, revision, pinned) => (rule.revision ? revision.startsWith(rule.revision) : revision === pinned)
 
+const SELF_RECEIVERS = new Set(['this', 'self', 'base', 'super', 'cls', 'me'])
+
+/**
+ * Whether a call in `caller` is a call of `callee`. A name that only one function has can be nothing else. A name that
+ * several share is resolved by what the call is made on: an unqualified call or one on `self` is the caller's own type's
+ * (a free function, when the callee has no type), and a call on a handle named for a type is that type's. A call on
+ * anything else is left unresolved, because naming `into_command` is not naming the one in `CaptureOptions`.
+ *
+ * @param {{ calls: Map<string, number>, receivers: Map<string, Set<string>>, owner?: string }} caller
+ * @param {{ name: string, owner?: string, file?: string }} callee
+ * @param {{ owner?: string, file?: string }[]} named every function of the port that has the callee's name
+ */
+export function callTargets(caller, callee, named) {
+  if (!caller.calls.has(callee.name)) return false
+  if (named.length <= 1) return true
+  const receivers = caller.receivers.get(callee.name)
+  // Go names its receiver, `func (p Pane) ...`, and calls its own methods on it.
+  const unqualified = !receivers || [...receivers].every((receiver) => SELF_RECEIVERS.has(receiver) || receiver === caller.selfName)
+  // A call with no handle in front of it is a free function's, and with a second free function of the name it is the one in the
+  // caller's own file or none: which one an import names is not read.
+  if (callee.owner === undefined) return !receivers && (caller.file === callee.file || named.filter((other) => other.owner === undefined).length === 1)
+  if (unqualified) return caller.owner === callee.owner
+  return receivers.has(callee.owner.toLowerCase())
+}
+
 /** `panes(where:)`, `Server.panes` and `Server#list_panes` all name their last identifier. */
 export function bareName(name) {
   // Kotlin and Scala quote a name that is also a keyword: Buffers.`set`.
@@ -86,25 +111,48 @@ export function definitionsOf(functions, symbols, { sharedOwner = false, freeFun
 }
 
 /**
+ * A helper that builds a command and hands it back sends nothing itself: its caller sends the value it gets, by passing the
+ * call to a dispatch call or the variable it binds the call to. That is a send of the caller, made with a command the helper
+ * spelled, and it is recorded at the dispatch call with the call of the helper and the literal after it.
+ *
+ * @returns {Map<object, object[]>} the sites to add to each function that sends through a helper
+ */
+export function builtSites(functions) {
+  const byName = Map.groupBy(functions, (fn) => fn.name)
+  const built = new Map()
+  for (const caller of functions) {
+    for (const call of caller.callsites ?? []) {
+      const candidates = byName.get(call.name) ?? []
+      for (const builder of candidates) {
+        const sites = builder.sites.filter((site) => site.builds)
+        if (builder === caller || !sites.length) continue
+        const pseudo = { file: caller.file, calls: new Map([[call.name, call.line]]), receivers: new Map(call.receiver ? [[call.name, new Set([call.receiver])]] : []), owner: caller.owner }
+        if (!callTargets(pseudo, builder, candidates)) continue
+        for (const site of sites) {
+          const list = built.get(caller) ?? []
+          if (list.some((held) => held.command === site.command && held.line === site.line && held.via.call === call.line)) continue
+          list.push({ command: site.command, line: site.line, flags: site.flags, dispatch: call.flows, via: { call: call.line, file: builder.file, name: builder.name } })
+          built.set(caller, list)
+        }
+      }
+    }
+  }
+  return built
+}
+
+/**
  * @param {{ command: string, spec?: { scopes?: { id: string, flags: string }[] }, functions: LocatedFunction[], symbols: UsageSymbol[] }} input
  * @returns {{ entries: UsageEntry[], unresolved: Unresolved[] }}
  */
 export function deriveUsage({ command, spec, functions, symbols, definitionOptions }) {
+  const built = builtSites(functions)
   const byName = Map.groupBy(functions, (fn) => fn.name)
   const definitions = definitionsOf(functions, symbols, definitionOptions)
 
+  /** The functions that call `fn`, by what each call resolves to and not by the name alone. */
   const callersOf = (fn) => {
-    const callers = (functions.filter((other) => other !== fn && other.calls.has(fn.name)))
-    const sameFile = callers.filter((other) => other.file === fn.file)
-    if (sameFile.length) return sameFile
-    const sameName = byName.get(fn.name) ?? []
-    if (sameName.length === 1) return callers
-    // A method that forwards to a free function of its own name, `sendKeys(runtime, id, keys)`, makes a call with no
-    // handle in front of it, which only a free function can answer. That settles the name while the free function is the only one.
-    if (fn.owner === undefined && sameName.filter((other) => other.owner === undefined).length === 1) {
-      return callers.filter((other) => !other.receivers.has(fn.name))
-    }
-    return []
+    const named = byName.get(fn.name) ?? []
+    return functions.filter((other) => other !== fn && callTargets(other, fn, named))
   }
 
   /** Public symbols reached from `fn`, each with the call sites walked to reach it. */
@@ -118,7 +166,13 @@ export function deriveUsage({ command, spec, functions, symbols, definitionOptio
   const entries = new Map()
   const unresolved = []
   for (const fn of functions) {
-    const sites = fn.sites.filter((site) => site.command === command)
+    const found = [...fn.sites, ...(built.get(fn) ?? [])].filter((site) => site.command === command)
+    if (!found.length) continue
+    // A literal that reaches no call that sends is a label, a comparison or a choice, and records nothing.
+    for (const site of found.filter((candidate) => candidate.dispatch === null)) {
+      unresolved.push({ file: fn.file, line: site.line, function: fn.name, reason: site.why ?? 'it reaches no call that sends' })
+    }
+    const sites = found.filter((site) => site.dispatch !== null)
     if (!sites.length) continue
     const scoped = sites.map((site) => ({ site, scope: classify(spec, site.flags) }))
     for (const { site, scope } of scoped) {
@@ -146,8 +200,15 @@ export function deriveUsage({ command, spec, functions, symbols, definitionOptio
       }
       for (const { symbol, trail } of reached) {
         const key = `${symbol.id}\0${scope}`
-        const entry = { symbol: symbol.id, command, scope, evidence: [`${fn.file}:${site.line}`, ...trail.toReversed()], hops: trail.length }
-        if (!entries.has(key) || entries.get(key).hops > entry.hops) entries.set(key, entry)
+        // The line to cite is the call that sends, which is where the command is dispatched and not where it is spelled.
+        const lines = site.via
+          ? [`${fn.file}:${site.dispatch.line}`, `${fn.file}:${site.via.call}`, `${site.via.file}:${site.line}`]
+          : [`${fn.file}:${site.dispatch?.line ?? site.line}`]
+        const entry = { symbol: symbol.id, command, scope, evidence: [...lines, ...trail.toReversed()], hops: trail.length + lines.length - 1 }
+        // The same command sent on several paths is cited where the fewest calls reach it, then where it is under the fewest branches.
+        Object.defineProperty(entry, 'depth', { value: site.depth ?? 0 })
+        const held = entries.get(key)
+        if (!held || held.hops > entry.hops || (held.hops === entry.hops && held.depth > entry.depth)) entries.set(key, entry)
       }
     }
   }

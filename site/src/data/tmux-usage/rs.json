@@ -101,7 +101,7 @@
       {
         "command": "detach-client",
         "evidence": [
-          "crates/libtmux/src/client.rs:378"
+          "crates/libtmux/src/client.rs:376"
         ],
         "scope": null
       }
@@ -110,7 +110,7 @@
       {
         "command": "lock-client",
         "evidence": [
-          "crates/libtmux/src/client.rs:433"
+          "crates/libtmux/src/client.rs:431"
         ],
         "scope": null
       }
@@ -119,7 +119,7 @@
       {
         "command": "refresh-client",
         "evidence": [
-          "crates/libtmux/src/client.rs:453"
+          "crates/libtmux/src/client.rs:451"
         ],
         "scope": null
       }
@@ -128,7 +128,7 @@
       {
         "command": "display-message",
         "evidence": [
-          "crates/libtmux/src/client.rs:203",
+          "crates/libtmux/src/client.rs:202",
           "crates/libtmux/src/client.rs:171"
         ],
         "scope": null
@@ -138,7 +138,7 @@
       {
         "command": "suspend-client",
         "evidence": [
-          "crates/libtmux/src/client.rs:405"
+          "crates/libtmux/src/client.rs:403"
         ],
         "scope": null
       }
@@ -147,7 +147,7 @@
       {
         "command": "switch-client",
         "evidence": [
-          "crates/libtmux/src/client.rs:472"
+          "crates/libtmux/src/client.rs:470"
         ],
         "scope": null
       }
@@ -165,7 +165,7 @@
       {
         "command": "refresh-client",
         "evidence": [
-          "crates/libtmux/src/control.rs:1135",
+          "crates/libtmux/src/control.rs:1134",
           "crates/libtmux/src/control.rs:866"
         ],
         "scope": null
@@ -175,7 +175,7 @@
       {
         "command": "refresh-client",
         "evidence": [
-          "crates/libtmux/src/control.rs:1038"
+          "crates/libtmux/src/control.rs:1037"
         ],
         "scope": null
       }
@@ -184,7 +184,7 @@
       {
         "command": "refresh-client",
         "evidence": [
-          "crates/libtmux/src/control.rs:928",
+          "crates/libtmux/src/control.rs:927",
           "crates/libtmux/src/control.rs:916"
         ],
         "scope": null
@@ -194,7 +194,7 @@
       {
         "command": "refresh-client",
         "evidence": [
-          "crates/libtmux/src/control.rs:997"
+          "crates/libtmux/src/control.rs:996"
         ],
         "scope": null
       }
@@ -203,7 +203,7 @@
       {
         "command": "refresh-client",
         "evidence": [
-          "crates/libtmux/src/control.rs:928",
+          "crates/libtmux/src/control.rs:927",
           "crates/libtmux/src/control.rs:899"
         ],
         "scope": null
@@ -222,7 +222,7 @@
       {
         "command": "list-panes",
         "evidence": [
-          "crates/libtmux/src/control.rs:1077"
+          "crates/libtmux/src/control.rs:1076"
         ],
         "scope": "session"
       }
@@ -231,7 +231,7 @@
       {
         "command": "capture-pane",
         "evidence": [
-          "crates/libtmux/src/control.rs:1468"
+          "crates/libtmux/src/control.rs:1473"
         ],
         "scope": null
       }
@@ -251,7 +251,7 @@
       {
         "command": "break-pane",
         "evidence": [
-          "crates/libtmux/src/pane.rs:1081"
+          "crates/libtmux/src/pane.rs:1079"
         ],
         "scope": null
       }
@@ -274,8 +274,13 @@
       {
         "command": "capture-pane",
         "evidence": [
-          "crates/libtmux/src/pane/observe.rs:233"
+          "crates/libtmux/src/pane.rs:1618",
+          "crates/libtmux/src/pane.rs:1613",
+          "crates/libtmux/src/pane/observe.rs:169",
+          "crates/libtmux/src/pane/observe.rs:171",
+          "crates/libtmux/src/pane/observe.rs:237"
         ],
+        "reviewed": true,
         "scope": null
       }
     ],
@@ -296,7 +301,7 @@
       {
         "command": "clear-history",
         "evidence": [
-          "crates/libtmux/src/pane.rs:924"
+          "crates/libtmux/src/pane.rs:922"
         ],
         "scope": null
       }
@@ -305,7 +310,7 @@
       {
         "command": "clock-mode",
         "evidence": [
-          "crates/libtmux/src/pane.rs:1206"
+          "crates/libtmux/src/pane.rs:1204"
         ],
         "scope": null
       }
@@ -314,7 +319,7 @@
       {
         "command": "copy-mode",
         "evidence": [
-          "crates/libtmux/src/pane.rs:1164"
+          "crates/libtmux/src/pane.rs:1162"
         ],
         "scope": null
       }
@@ -323,7 +328,7 @@
       {
         "command": "display-message",
         "evidence": [
-          "crates/libtmux/src/pane.rs:877"
+          "crates/libtmux/src/pane.rs:876"
         ],
         "scope": null
       }
@@ -332,7 +337,7 @@
       {
         "command": "copy-mode",
         "evidence": [
-          "crates/libtmux/src/pane.rs:1189"
+          "crates/libtmux/src/pane.rs:1187"
         ],
         "scope": null
       }
@@ -341,7 +346,7 @@
       {
         "command": "display-message",
         "evidence": [
-          "crates/libtmux/src/pane.rs:841"
+          "crates/libtmux/src/pane.rs:840"
         ],
         "scope": null
       }
@@ -350,7 +355,7 @@
       {
         "command": "join-pane",
         "evidence": [
-          "crates/libtmux/src/pane.rs:1142"
+          "crates/libtmux/src/pane.rs:1149"
         ],
         "scope": null
       }
@@ -359,7 +364,17 @@
       {
         "command": "kill-pane",
         "evidence": [
-          "crates/libtmux/src/pane.rs:756"
+          "crates/libtmux/src/pane.rs:754"
+        ],
+        "scope": null
+      }
+    ],
+    "pane.Pane.option_names": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "crates/libtmux/src/internal/options.rs:141",
+          "crates/libtmux/src/pane/settings.rs:29"
         ],
         "scope": null
       }
@@ -368,7 +383,7 @@
       {
         "command": "paste-buffer",
         "evidence": [
-          "crates/libtmux/src/pane.rs:940"
+          "crates/libtmux/src/pane.rs:947"
         ],
         "scope": null
       }
@@ -377,7 +392,7 @@
       {
         "command": "pipe-pane",
         "evidence": [
-          "crates/libtmux/src/pane.rs:965"
+          "crates/libtmux/src/pane.rs:972"
         ],
         "scope": null
       }
@@ -386,7 +401,7 @@
       {
         "command": "resize-pane",
         "evidence": [
-          "crates/libtmux/src/pane.rs:728"
+          "crates/libtmux/src/pane.rs:726"
         ],
         "scope": null
       }
@@ -395,7 +410,7 @@
       {
         "command": "resize-pane",
         "evidence": [
-          "crates/libtmux/src/pane.rs:563"
+          "crates/libtmux/src/pane.rs:561"
         ],
         "scope": null
       }
@@ -404,7 +419,7 @@
       {
         "command": "respawn-pane",
         "evidence": [
-          "crates/libtmux/src/pane.rs:988"
+          "crates/libtmux/src/pane.rs:998"
         ],
         "scope": null
       }
@@ -413,7 +428,7 @@
       {
         "command": "select-pane",
         "evidence": [
-          "crates/libtmux/src/pane.rs:707"
+          "crates/libtmux/src/pane.rs:705"
         ],
         "scope": null
       }
@@ -422,7 +437,7 @@
       {
         "command": "send-keys",
         "evidence": [
-          "crates/libtmux/src/pane.rs:688"
+          "crates/libtmux/src/pane.rs:696"
         ],
         "scope": null
       }
@@ -431,7 +446,7 @@
       {
         "command": "send-keys",
         "evidence": [
-          "crates/libtmux/src/pane.rs:645"
+          "crates/libtmux/src/pane.rs:643"
         ],
         "scope": null
       }
@@ -440,7 +455,7 @@
       {
         "command": "send-keys",
         "evidence": [
-          "crates/libtmux/src/pane.rs:672"
+          "crates/libtmux/src/pane.rs:670"
         ],
         "scope": null
       }
@@ -449,7 +464,7 @@
       {
         "command": "send-prefix",
         "evidence": [
-          "crates/libtmux/src/pane.rs:1222"
+          "crates/libtmux/src/pane.rs:1220"
         ],
         "scope": null
       }
@@ -480,7 +495,7 @@
       {
         "command": "select-pane",
         "evidence": [
-          "crates/libtmux/src/pane.rs:901"
+          "crates/libtmux/src/pane.rs:899"
         ],
         "scope": null
       }
@@ -499,19 +514,13 @@
     ],
     "pane.Pane.split": [
       {
-        "command": "capture-pane",
-        "evidence": [
-          "crates/libtmux/src/pane.rs:1618",
-          "crates/libtmux/src/pane.rs:515"
-        ],
-        "scope": null
-      },
-      {
         "command": "split-window",
         "evidence": [
+          "crates/libtmux/src/window.rs:1948",
           "crates/libtmux/src/internal/listing.rs:444",
           "crates/libtmux/src/pane.rs:515"
         ],
+        "reviewed": true,
         "scope": null
       }
     ],
@@ -519,7 +528,7 @@
       {
         "command": "swap-pane",
         "evidence": [
-          "crates/libtmux/src/pane.rs:1016"
+          "crates/libtmux/src/pane.rs:1014"
         ],
         "scope": null
       }
@@ -528,7 +537,7 @@
       {
         "command": "resize-pane",
         "evidence": [
-          "crates/libtmux/src/pane.rs:616"
+          "crates/libtmux/src/pane.rs:614"
         ],
         "scope": null
       }
@@ -559,7 +568,7 @@
       {
         "command": "display-message",
         "evidence": [
-          "crates/libtmux/src/pane/observe.rs:476",
+          "crates/libtmux/src/pane/observe.rs:488",
           "crates/libtmux/src/pane/observe.rs:367"
         ],
         "scope": null
@@ -569,7 +578,7 @@
       {
         "command": "display-message",
         "evidence": [
-          "crates/libtmux/src/pane/observe.rs:476",
+          "crates/libtmux/src/pane/observe.rs:488",
           "crates/libtmux/src/pane/observe.rs:315"
         ],
         "scope": null
@@ -579,18 +588,8 @@
       {
         "command": "display-message",
         "evidence": [
-          "crates/libtmux/src/pane/observe.rs:476",
+          "crates/libtmux/src/pane/observe.rs:488",
           "crates/libtmux/src/pane/observe.rs:446"
-        ],
-        "scope": null
-      }
-    ],
-    "plan.Plan.run_over_control_mode": [
-      {
-        "command": "display-message",
-        "evidence": [
-          "crates/libtmux/src/plan/run.rs:787",
-          "crates/libtmux/src/plan/run.rs:846"
         ],
         "scope": null
       }
@@ -619,7 +618,7 @@
       {
         "command": "bind-key",
         "evidence": [
-          "crates/libtmux/src/server.rs:1127"
+          "crates/libtmux/src/server.rs:1125"
         ],
         "scope": null
       }
@@ -628,7 +627,7 @@
       {
         "command": "show-buffer",
         "evidence": [
-          "crates/libtmux/src/server.rs:1040"
+          "crates/libtmux/src/server.rs:1039"
         ],
         "scope": null
       }
@@ -637,7 +636,7 @@
       {
         "command": "list-buffers",
         "evidence": [
-          "crates/libtmux/src/server.rs:1070"
+          "crates/libtmux/src/server.rs:1069"
         ],
         "scope": null
       }
@@ -655,7 +654,7 @@
       {
         "command": "clear-prompt-history",
         "evidence": [
-          "crates/libtmux/src/server.rs:1364"
+          "crates/libtmux/src/server.rs:1362"
         ],
         "scope": null
       }
@@ -664,7 +663,7 @@
       {
         "command": "command-prompt",
         "evidence": [
-          "crates/libtmux/src/server/interactive.rs:105"
+          "crates/libtmux/src/server/interactive.rs:117"
         ],
         "scope": null
       }
@@ -673,7 +672,7 @@
       {
         "command": "delete-buffer",
         "evidence": [
-          "crates/libtmux/src/server.rs:1106"
+          "crates/libtmux/src/server.rs:1104"
         ],
         "scope": null
       }
@@ -682,7 +681,7 @@
       {
         "command": "display-menu",
         "evidence": [
-          "crates/libtmux/src/server/interactive.rs:61"
+          "crates/libtmux/src/server/interactive.rs:75"
         ],
         "scope": null
       }
@@ -691,7 +690,7 @@
       {
         "command": "display-panes",
         "evidence": [
-          "crates/libtmux/src/server/interactive.rs:188"
+          "crates/libtmux/src/server/interactive.rs:197"
         ],
         "scope": null
       }
@@ -700,7 +699,7 @@
       {
         "command": "display-popup",
         "evidence": [
-          "crates/libtmux/src/server/interactive.rs:30"
+          "crates/libtmux/src/server/interactive.rs:39"
         ],
         "scope": null
       }
@@ -709,7 +708,7 @@
       {
         "command": "find-window",
         "evidence": [
-          "crates/libtmux/src/server/interactive.rs:164"
+          "crates/libtmux/src/server/interactive.rs:173"
         ],
         "scope": null
       }
@@ -718,7 +717,7 @@
       {
         "command": "display-message",
         "evidence": [
-          "crates/libtmux/src/server.rs:1225"
+          "crates/libtmux/src/server.rs:1233"
         ],
         "scope": null
       }
@@ -727,7 +726,7 @@
       {
         "command": "server-access",
         "evidence": [
-          "crates/libtmux/src/server.rs:1430"
+          "crates/libtmux/src/server.rs:1428"
         ],
         "scope": null
       }
@@ -736,7 +735,7 @@
       {
         "command": "set-environment",
         "evidence": [
-          "crates/libtmux/src/internal/environment.rs:62",
+          "crates/libtmux/src/internal/environment.rs:60",
           "crates/libtmux/src/server/settings.rs:306"
         ],
         "scope": null
@@ -746,7 +745,7 @@
       {
         "command": "list-keys",
         "evidence": [
-          "crates/libtmux/src/server.rs:1171"
+          "crates/libtmux/src/server.rs:1176"
         ],
         "scope": null
       }
@@ -764,7 +763,7 @@
       {
         "command": "load-buffer",
         "evidence": [
-          "crates/libtmux/src/server.rs:982"
+          "crates/libtmux/src/server.rs:987"
         ],
         "scope": null
       }
@@ -783,7 +782,19 @@
         "command": "new-session",
         "evidence": [
           "crates/libtmux/src/server.rs:2286",
+          "crates/libtmux/src/internal/listing.rs:411",
           "crates/libtmux/src/server.rs:898"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "server.Server.option_names": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "crates/libtmux/src/internal/options.rs:141",
+          "crates/libtmux/src/server/settings.rs:48"
         ],
         "scope": null
       }
@@ -805,7 +816,7 @@
       {
         "command": "show-prompt-history",
         "evidence": [
-          "crates/libtmux/src/server.rs:1327"
+          "crates/libtmux/src/server.rs:1326"
         ],
         "scope": null
       }
@@ -814,7 +825,7 @@
       {
         "command": "server-access",
         "evidence": [
-          "crates/libtmux/src/server.rs:1455"
+          "crates/libtmux/src/server.rs:1453"
         ],
         "scope": null
       }
@@ -823,7 +834,7 @@
       {
         "command": "run-shell",
         "evidence": [
-          "crates/libtmux/src/server.rs:1546"
+          "crates/libtmux/src/server.rs:1545"
         ],
         "scope": null
       }
@@ -832,7 +843,7 @@
       {
         "command": "save-buffer",
         "evidence": [
-          "crates/libtmux/src/server.rs:1013"
+          "crates/libtmux/src/server.rs:1018"
         ],
         "scope": null
       }
@@ -852,7 +863,7 @@
       {
         "command": "set-buffer",
         "evidence": [
-          "crates/libtmux/src/server.rs:954"
+          "crates/libtmux/src/server.rs:960"
         ],
         "scope": null
       }
@@ -963,7 +974,7 @@
       {
         "command": "source-file",
         "evidence": [
-          "crates/libtmux/src/server.rs:1473"
+          "crates/libtmux/src/server.rs:1471"
         ],
         "scope": null
       }
@@ -972,7 +983,7 @@
       {
         "command": "run-shell",
         "evidence": [
-          "crates/libtmux/src/server.rs:1578"
+          "crates/libtmux/src/server.rs:1576"
         ],
         "scope": null
       }
@@ -999,7 +1010,17 @@
       {
         "command": "unbind-key",
         "evidence": [
-          "crates/libtmux/src/server.rs:1146"
+          "crates/libtmux/src/server.rs:1144"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.unlock_channel": [
+      {
+        "command": "wait-for",
+        "evidence": [
+          "crates/libtmux/src/internal/wait_for.rs:341",
+          "crates/libtmux/src/server/channels.rs:131"
         ],
         "scope": null
       }
@@ -1085,7 +1106,7 @@
       {
         "command": "display-message",
         "evidence": [
-          "crates/libtmux/src/session.rs:655"
+          "crates/libtmux/src/session.rs:654"
         ],
         "scope": null
       }
@@ -1094,7 +1115,7 @@
       {
         "command": "display-message",
         "evidence": [
-          "crates/libtmux/src/session.rs:619"
+          "crates/libtmux/src/session.rs:618"
         ],
         "scope": null
       }
@@ -1103,7 +1124,7 @@
       {
         "command": "set-environment",
         "evidence": [
-          "crates/libtmux/src/internal/environment.rs:62",
+          "crates/libtmux/src/internal/environment.rs:60",
           "crates/libtmux/src/session/settings.rs:524"
         ],
         "scope": null
@@ -1113,7 +1134,7 @@
       {
         "command": "kill-session",
         "evidence": [
-          "crates/libtmux/src/session.rs:539"
+          "crates/libtmux/src/session.rs:537"
         ],
         "scope": null
       }
@@ -1131,7 +1152,7 @@
       {
         "command": "lock-session",
         "evidence": [
-          "crates/libtmux/src/session.rs:701"
+          "crates/libtmux/src/session.rs:699"
         ],
         "scope": null
       }
@@ -1140,9 +1161,11 @@
       {
         "command": "new-window",
         "evidence": [
+          "crates/libtmux/src/session.rs:1139",
           "crates/libtmux/src/internal/listing.rs:427",
           "crates/libtmux/src/session.rs:495"
         ],
+        "reviewed": true,
         "scope": null
       }
     ],
@@ -1151,6 +1174,16 @@
         "command": "next-window",
         "evidence": [
           "crates/libtmux/src/session.rs:361"
+        ],
+        "scope": null
+      }
+    ],
+    "session.Session.option_names": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "crates/libtmux/src/internal/options.rs:141",
+          "crates/libtmux/src/session/settings.rs:30"
         ],
         "scope": null
       }
@@ -1181,7 +1214,7 @@
       {
         "command": "rename-session",
         "evidence": [
-          "crates/libtmux/src/session.rs:513"
+          "crates/libtmux/src/session.rs:511"
         ],
         "scope": null
       }
@@ -1317,7 +1350,7 @@
       {
         "command": "display-message",
         "evidence": [
-          "crates/libtmux/src/window.rs:834"
+          "crates/libtmux/src/window.rs:833"
         ],
         "scope": null
       }
@@ -1326,7 +1359,7 @@
       {
         "command": "select-pane",
         "evidence": [
-          "crates/libtmux/src/window/navigation.rs:129"
+          "crates/libtmux/src/window/navigation.rs:127"
         ],
         "scope": null
       }
@@ -1335,7 +1368,7 @@
       {
         "command": "display-message",
         "evidence": [
-          "crates/libtmux/src/window.rs:798"
+          "crates/libtmux/src/window.rs:797"
         ],
         "scope": null
       }
@@ -1344,7 +1377,7 @@
       {
         "command": "kill-window",
         "evidence": [
-          "crates/libtmux/src/window.rs:688"
+          "crates/libtmux/src/window.rs:686"
         ],
         "scope": null
       }
@@ -1362,7 +1395,7 @@
       {
         "command": "link-window",
         "evidence": [
-          "crates/libtmux/src/window.rs:1060"
+          "crates/libtmux/src/window.rs:1058"
         ],
         "scope": null
       }
@@ -1371,7 +1404,7 @@
       {
         "command": "move-window",
         "evidence": [
-          "crates/libtmux/src/window.rs:941"
+          "crates/libtmux/src/window.rs:939"
         ],
         "scope": null
       }
@@ -1380,8 +1413,18 @@
       {
         "command": "select-layout",
         "evidence": [
-          "crates/libtmux/src/window.rs:613",
+          "crates/libtmux/src/window.rs:611",
           "crates/libtmux/src/window.rs:597"
+        ],
+        "scope": null
+      }
+    ],
+    "window.Window.option_names": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "crates/libtmux/src/internal/options.rs:141",
+          "crates/libtmux/src/window/settings.rs:29"
         ],
         "scope": null
       }
@@ -1403,7 +1446,7 @@
       {
         "command": "select-layout",
         "evidence": [
-          "crates/libtmux/src/window.rs:613",
+          "crates/libtmux/src/window.rs:611",
           "crates/libtmux/src/window.rs:606"
         ],
         "scope": null
@@ -1413,7 +1456,7 @@
       {
         "command": "rename-window",
         "evidence": [
-          "crates/libtmux/src/window.rs:387"
+          "crates/libtmux/src/window.rs:385"
         ],
         "scope": null
       }
@@ -1422,7 +1465,7 @@
       {
         "command": "resize-window",
         "evidence": [
-          "crates/libtmux/src/window.rs:1102"
+          "crates/libtmux/src/window.rs:1100"
         ],
         "scope": null
       }
@@ -1431,7 +1474,7 @@
       {
         "command": "resize-window",
         "evidence": [
-          "crates/libtmux/src/window.rs:999"
+          "crates/libtmux/src/window.rs:997"
         ],
         "scope": null
       }
@@ -1440,7 +1483,7 @@
       {
         "command": "respawn-window",
         "evidence": [
-          "crates/libtmux/src/window.rs:570"
+          "crates/libtmux/src/window.rs:580"
         ],
         "scope": null
       }
@@ -1449,7 +1492,7 @@
       {
         "command": "rotate-window",
         "evidence": [
-          "crates/libtmux/src/window.rs:668"
+          "crates/libtmux/src/window.rs:666"
         ],
         "scope": null
       }
@@ -1472,7 +1515,7 @@
       {
         "command": "select-window",
         "evidence": [
-          "crates/libtmux/src/window.rs:419"
+          "crates/libtmux/src/window.rs:417"
         ],
         "scope": null
       }
@@ -1481,7 +1524,7 @@
       {
         "command": "select-layout",
         "evidence": [
-          "crates/libtmux/src/window.rs:491"
+          "crates/libtmux/src/window.rs:489"
         ],
         "scope": null
       }
@@ -1535,9 +1578,11 @@
       {
         "command": "split-window",
         "evidence": [
+          "crates/libtmux/src/window.rs:1948",
           "crates/libtmux/src/internal/listing.rs:444",
           "crates/libtmux/src/window.rs:367"
         ],
+        "reviewed": true,
         "scope": null
       }
     ],
@@ -1545,7 +1590,7 @@
       {
         "command": "swap-window",
         "evidence": [
-          "crates/libtmux/src/window.rs:895"
+          "crates/libtmux/src/window.rs:893"
         ],
         "scope": null
       }
@@ -1554,7 +1599,7 @@
       {
         "command": "unlink-window",
         "evidence": [
-          "crates/libtmux/src/window.rs:709"
+          "crates/libtmux/src/window.rs:707"
         ],
         "scope": null
       }

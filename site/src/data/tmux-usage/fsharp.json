@@ -177,8 +177,9 @@
         "scope": null,
         "via": {
           "evidence": [
-            "src/LibTmux/Options/TmuxOptions.cs:55",
-            "src/LibTmux/Options/TmuxOptions.cs:82"
+            "src/LibTmux/Options/TmuxOptions.cs:83",
+            "src/LibTmux/Options/TmuxOptions.cs:82",
+            "src/LibTmux/Options/TmuxOptions.cs:55"
           ],
           "port": "csharp",
           "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
@@ -196,8 +197,9 @@
         "scope": null,
         "via": {
           "evidence": [
-            "src/LibTmux/Options/TmuxOptions.cs:167",
-            "src/LibTmux/Options/TmuxOptions.cs:197"
+            "src/LibTmux/Options/TmuxOptions.cs:201",
+            "src/LibTmux/Options/TmuxOptions.cs:197",
+            "src/LibTmux/Options/TmuxOptions.cs:167"
           ],
           "port": "csharp",
           "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
@@ -214,8 +216,9 @@
         "scope": null,
         "via": {
           "evidence": [
-            "src/LibTmux/Pane.Capture.cs:87",
-            "src/LibTmux/Pane.Capture.cs:18"
+            "src/LibTmux/Pane.Capture.cs:20",
+            "src/LibTmux/Pane.Capture.cs:18",
+            "src/LibTmux/Pane.Capture.cs:87"
           ],
           "port": "csharp",
           "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
@@ -277,10 +280,13 @@
         "scope": null,
         "via": {
           "evidence": [
-            "src/LibTmux/Pane.Input.cs:75",
-            "src/LibTmux/Pane.Input.cs:94"
+            "src/LibTmux/Pane.Input.cs:24",
+            "src/LibTmux/Pane.Input.cs:71",
+            "src/LibTmux/Pane.Input.cs:94",
+            "src/LibTmux/Pane.Input.cs:100"
           ],
           "port": "csharp",
+          "reviewed": true,
           "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
           "symbol": "LibTmux.Pane.SendKeysAsync"
         }
@@ -305,22 +311,6 @@
     ],
     "LibTmux.FSharp.Server.newSession": [
       {
-        "command": "display-message",
-        "evidence": [
-          "src/LibTmux.FSharp/Hierarchy.fs:99"
-        ],
-        "scope": null,
-        "via": {
-          "evidence": [
-            "src/LibTmux/Session.Lifecycle.cs:336",
-            "src/LibTmux/Session.Lifecycle.cs:284"
-          ],
-          "port": "csharp",
-          "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-          "symbol": "LibTmux.Session.CreateWindowAsync"
-        }
-      },
-      {
         "command": "list-panes",
         "evidence": [
           "src/LibTmux.FSharp/Hierarchy.fs:87"
@@ -344,7 +334,7 @@
         "scope": "window",
         "via": {
           "evidence": [
-            "src/LibTmux/Window.Relations.cs:123"
+            "src/LibTmux/Window.Relations.cs:121"
           ],
           "port": "csharp",
           "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",

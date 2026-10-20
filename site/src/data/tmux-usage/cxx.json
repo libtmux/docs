@@ -137,7 +137,7 @@
       {
         "command": "display-message",
         "evidence": [
-          "src/entities.cpp:1667"
+          "src/entities.cpp:1666"
         ],
         "scope": null
       }
@@ -156,15 +156,19 @@
         "command": "attach-session",
         "evidence": [
           "src/connection.cpp:360",
+          "src/connection.cpp:369",
           "src/connection.cpp:1043"
         ],
+        "reviewed": true,
         "scope": null
       },
       {
         "command": "refresh-client",
         "evidence": [
-          "src/connection.cpp:1089"
+          "src/connection.cpp:1089",
+          "src/connection.cpp:1093"
         ],
+        "reviewed": true,
         "scope": null
       }
     ],
@@ -172,7 +176,7 @@
       {
         "command": "refresh-client",
         "evidence": [
-          "src/connection.cpp:1249"
+          "src/connection.cpp:1256"
         ],
         "scope": null
       }
@@ -193,7 +197,7 @@
       {
         "command": "capture-pane",
         "evidence": [
-          "src/entities.cpp:1167"
+          "src/entities.cpp:1189"
         ],
         "scope": null
       }
@@ -220,7 +224,7 @@
       {
         "command": "join-pane",
         "evidence": [
-          "src/entities.cpp:1464"
+          "src/entities.cpp:1463"
         ],
         "scope": null
       }
@@ -265,7 +269,7 @@
       {
         "command": "paste-buffer",
         "evidence": [
-          "src/entities.cpp:1635"
+          "src/entities.cpp:1640"
         ],
         "scope": null
       }
@@ -274,7 +278,7 @@
       {
         "command": "pipe-pane",
         "evidence": [
-          "src/entities.cpp:1496"
+          "src/entities.cpp:1499"
         ],
         "scope": null
       }
@@ -283,7 +287,7 @@
       {
         "command": "respawn-pane",
         "evidence": [
-          "src/entities.cpp:1533"
+          "src/entities.cpp:1541"
         ],
         "scope": null
       }
@@ -310,7 +314,7 @@
       {
         "command": "send-keys",
         "evidence": [
-          "src/entities.cpp:1096"
+          "src/entities.cpp:1101"
         ],
         "scope": null
       }
@@ -319,7 +323,7 @@
       {
         "command": "send-keys",
         "evidence": [
-          "src/entities.cpp:1081"
+          "src/entities.cpp:1083"
         ],
         "scope": null
       }
@@ -337,7 +341,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "src/entities.cpp:1611"
+          "src/entities.cpp:1613"
         ],
         "scope": null
       }
@@ -364,7 +368,7 @@
       {
         "command": "display-message",
         "evidence": [
-          "src/entities.cpp:1565"
+          "src/entities.cpp:1567"
         ],
         "scope": null
       }
@@ -373,7 +377,7 @@
       {
         "command": "split-window",
         "evidence": [
-          "src/entities.cpp:1127"
+          "src/entities.cpp:1154"
         ],
         "scope": null
       }
@@ -414,21 +418,11 @@
         "scope": null
       }
     ],
-    "libtmux::Pane::wait_for_text": [
-      {
-        "command": "display-message",
-        "evidence": [
-          "src/wait.cpp:462",
-          "src/wait.cpp:495"
-        ],
-        "scope": null
-      }
-    ],
     "libtmux::Server::bind_key": [
       {
         "command": "bind-key",
         "evidence": [
-          "src/server.cpp:1016"
+          "src/server.cpp:1025"
         ],
         "scope": null
       }
@@ -491,7 +485,7 @@
       {
         "command": "display-message",
         "evidence": [
-          "src/server.cpp:1087"
+          "src/server.cpp:1089"
         ],
         "scope": null
       }
@@ -545,7 +539,7 @@
       {
         "command": "new-session",
         "evidence": [
-          "src/server.cpp:1212"
+          "src/server.cpp:1237"
         ],
         "scope": null
       }
@@ -581,7 +575,7 @@
       {
         "command": "run-shell",
         "evidence": [
-          "src/server.cpp:1053"
+          "src/server.cpp:1059"
         ],
         "scope": null
       }
@@ -617,7 +611,7 @@
       {
         "command": "set-buffer",
         "evidence": [
-          "src/server.cpp:1110"
+          "src/server.cpp:1118"
         ],
         "scope": null
       }
@@ -635,7 +629,7 @@
       {
         "command": "set-hook",
         "evidence": [
-          "src/server.cpp:1304"
+          "src/server.cpp:1306"
         ],
         "scope": null
       }
@@ -644,7 +638,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "src/server.cpp:1279"
+          "src/server.cpp:1281"
         ],
         "scope": null
       }
@@ -653,7 +647,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "src/server.cpp:1262"
+          "src/server.cpp:1264"
         ],
         "scope": null
       }
@@ -662,7 +656,7 @@
       {
         "command": "display-message",
         "evidence": [
-          "src/server.cpp:1100"
+          "src/server.cpp:1102"
         ],
         "scope": null
       }
@@ -689,7 +683,7 @@
       {
         "command": "unbind-key",
         "evidence": [
-          "src/server.cpp:1036"
+          "src/server.cpp:1039"
         ],
         "scope": null
       }
@@ -700,6 +694,18 @@
         "evidence": [
           "src/server.cpp:1352"
         ],
+        "scope": null
+      }
+    ],
+    "libtmux::Server::validate_layouts": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "src/layout.cpp:390",
+          "src/layout.cpp:386",
+          "src/server.cpp:687"
+        ],
+        "reviewed": true,
         "scope": null
       }
     ],
@@ -761,7 +767,7 @@
       {
         "command": "new-window",
         "evidence": [
-          "src/entities.cpp:339"
+          "src/entities.cpp:361"
         ],
         "scope": null
       }
@@ -788,7 +794,7 @@
       {
         "command": "list-panes",
         "evidence": [
-          "src/entities.cpp:269"
+          "src/entities.cpp:268"
         ],
         "scope": "session"
       }
@@ -797,7 +803,7 @@
       {
         "command": "rename-session",
         "evidence": [
-          "src/entities.cpp:376"
+          "src/entities.cpp:379"
         ],
         "scope": null
       }
@@ -833,7 +839,7 @@
       {
         "command": "set-hook",
         "evidence": [
-          "src/entities.cpp:485"
+          "src/entities.cpp:488"
         ],
         "scope": null
       }
@@ -842,7 +848,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "src/entities.cpp:420"
+          "src/entities.cpp:422"
         ],
         "scope": null
       }
@@ -851,7 +857,7 @@
       {
         "command": "display-message",
         "evidence": [
-          "src/entities.cpp:444"
+          "src/entities.cpp:446"
         ],
         "scope": null
       }
@@ -869,7 +875,7 @@
       {
         "command": "list-windows",
         "evidence": [
-          "src/entities.cpp:264"
+          "src/entities.cpp:263"
         ],
         "scope": "session"
       }
@@ -932,7 +938,7 @@
       {
         "command": "list-panes",
         "evidence": [
-          "src/entities.cpp:561"
+          "src/entities.cpp:560"
         ],
         "scope": "window"
       }
@@ -950,7 +956,7 @@
       {
         "command": "rename-window",
         "evidence": [
-          "src/entities.cpp:643"
+          "src/entities.cpp:646"
         ],
         "scope": null
       }
@@ -1004,7 +1010,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "src/entities.cpp:837"
+          "src/entities.cpp:839"
         ],
         "scope": null
       }
@@ -1013,7 +1019,7 @@
       {
         "command": "display-message",
         "evidence": [
-          "src/entities.cpp:669"
+          "src/entities.cpp:672"
         ],
         "scope": null
       }
@@ -1022,7 +1028,7 @@
       {
         "command": "split-window",
         "evidence": [
-          "src/entities.cpp:599"
+          "src/entities.cpp:631"
         ],
         "scope": null
       }
@@ -1049,7 +1055,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "src/entities.cpp:848"
+          "src/entities.cpp:847"
         ],
         "scope": null
       }

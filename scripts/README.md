@@ -171,18 +171,57 @@ $ node scripts/gen-tmux-catalog.mjs --check --source ~/study/c/tmux
 each tmux command and at which scope, in `site/src/data/tmux-usage/<port>.json`.
 It reads each port's source at the revision its API model was extracted from,
 through the port checkouts named in `ports.ts` or
-`LIBTMUX_DOCS_CHECKOUT_<PORT>`. A symbol is credited when a command-name
-literal, with the flags beside it, sits in its own body or in one private
-helper it calls. A literal that is compared against, named by a `case`, or
-passed to a call that checks or fails (`validate...`, `failed(...)`, `...Error`)
-names a command and does not send it, and is not a site. Neither is a command
-that sits in the arguments of one that runs commands (`if-shell`, `run-shell`,
-`set-hook`, `bind-key`, `command-prompt`, `confirm-before` and the like): in
+`LIBTMUX_DOCS_CHECKOUT_<PORT>`.
+
+A command is recorded for a symbol only where it is sent. A literal that names
+a command is a send when it is an argument of a call that dispatches, in the
+same statement (`self.cmd("list-panes", ...)`, `run(core, Command::new("..."))`),
+or when it builds a command value, bound to a name or returned, that the same
+function then passes to one. The entry cites the line of that dispatch call, not
+the line that spells the command. The dispatching calls of each port are in
+`tmux-usage/dispatchers.json`, each with the lines of the pinned source that
+show it sends what it is given (`kind: "builder"` names the calls that only
+make a command value: `Command::new`, `TmuxCommand(...)`). A literal that
+reaches no dispatching call sends nothing, and is not a site:
+
+- a command compared against or named by a `case`;
+- a row or format selector (`get_output_format("list-sessions", ...)`);
+- a label or the argument of a call that checks or fails (`validate...`,
+  `failed(...)`, `...Error`, a `throw`);
+- a command chosen among others by a ternary, a `match` arm or a receiver's
+  class (`is_a?(Hooks) ? "set-hook" : "set-option"`), unless every alternative is
+  the same command (`detach-client` with and without `-E`);
+- an argument of a helper that never dispatches it.
+
+A helper that builds a command and returns it sends nothing itself: its caller
+sends it, and is credited with three lines, the dispatch call, the call of the
+helper and the literal. A command that sits in the arguments of one that runs
+commands (`if-shell`, `run-shell`, `set-hook`, `bind-key`, `command-prompt`,
+`confirm-before` and the like) is not sent either: in
 `["if-shell", "-F", cond, quoteCommand(["resize-pane", "-Z"])]` the library
 sends `if-shell`, and tmux runs `resize-pane` when the condition holds.
 
+What the scan follows is a literal into a dispatch call in one statement, into
+a variable or collection that a later call in the function takes, and out of a
+helper that returns it to the one call that dispatches it. A command that is
+handed to a helper that dispatches it (`record(names, batch, options)`), that
+passes through a second helper that only returns it, or that is started as a
+process (`Process.spawn`, `posix_spawnp`, `exec.Command(...).Start()`) is a claim,
+because no call named in `dispatchers.json` takes it.
+
+A symbol that calls a function that sends is credited with the command at one
+more hop for each call. A hop is matched by the function the call resolves to,
+not by its name: an unqualified call or one on `self` is the caller's own
+type's, a call on a handle named for a type is that type's, and a call on
+anything else is left unresolved, so `Pane.split` calling `options.into_command`
+is not a call of `CaptureOptions::into_command`.
+
 Only public API is recorded: a symbol with an underscore name, a `private`
 modifier or an internal scope is left out of the scan and refused in a document.
+So is a member whose signature spells a narrower visibility (`protected`,
+`internal`, `fileprivate`, `pub(crate)`), and in Java, which spells no visibility
+for the default, a member declared without `public` (an interface member and an
+enum constant are public without saying so).
 
 Three files beside the script hold what a scan cannot decide, and each line of
 them is verified against the pinned source, so generation fails when one no
@@ -192,25 +231,47 @@ longer holds:
   scope carried by a typed argument, a call into a snapshot, a chain of more
   than one helper). Each claim cites the lines that make it true. A claim that
   names `via` stands on a core library's entry for the same command and scope.
+  A send that is an alternative of the method's own purpose and that only
+  some arguments reach (`selectWindow("next")` sending `next-window`, `new_session`
+  killing an existing session when `kill_session` is set) is a claim that says the
+  condition in `when`.
 - `forwarders.json`: the wrappers that stand on a core library, Kotlin and
   Scala on Java, F# and the PowerShell cmdlets on C#. A wrapper that calls a
   core method that sends is credited at the core's scope, with both hops as
   evidence; a wrapper that only builds a request sends nothing and is named in
   the page's "No method in" line.
-- `exclusions.json`: the symbols that carry a command's name and only build or
-  record it (a plan, a chain, a request that turns itself into a command), or
-  that pass the name of a list command only to choose the format of the row they
-  read. Each cites the lines that show it, an exclusion that removes nothing
-  fails, and `commands` limits it to those commands of the symbols it names.
+- `exclusions.json`: the symbols whose scanned send is not what a default call
+  does: a probe that runs only when an optional argument, a name or a tmux
+  release asks for it (`capture` asking `list-commands` whether a flag exists),
+  a branch that the caller's argument never takes (`exitCopyMode` reaching the
+  `copy-mode` branch of a helper that `enterCopyMode` shares), or a request
+  option that a wrapper never sets. Each cites the lines that show the guard,
+  an exclusion that removes nothing fails, and `commands` limits it to those
+  commands of the symbols it names.
+- `dispatchers.json`: the calls that send what they are given, per port, and the
+  calls that only build a command value. Each cites the lines of the pinned
+  source that show it, and generation fails when one no longer holds.
 - `not-senders.json`: why a public method whose own name carries a command has
-  no entry for it, one of `builds`, `other-command` (it sends a different
-  command, or runs it only inside the arguments of one that runs commands),
+  no entry for it, one of `builds` (it builds a command for a caller, or only
+  holds one), `other-command` (it sends a different command, or runs it only
+  inside the arguments of one that runs commands, or passes its name to choose
+  the format of the row it reads),
   `values` (a field or a value holder), `no-send`, or `version-gated`. Each
   cites the lines that show it, and a review that settles nothing is stale and
   fails.
 
-An entry must hold on every tmux release the port supports at its revision. A
-method that sends one command on some of those releases and another on the rest
+An entry records what the default call sends, on every tmux release the port
+supports at its revision. What an argument changes (`new_session` killing an
+existing session of the same name, `breakPane` sending `if-shell` when no
+`named:` is given) belongs to a claim that says the condition in `when`, and an
+auxiliary probe that only an argument asks for belongs to an exclusion. The scan
+does not tell a send guarded by a parameter from an unguarded one, so these were
+found by listing every entry whose cited lines sit under an `if`, a `case` or a
+loop and reading each; a guard written as an early `return` or `next unless`
+before the send is not found that way. Among several sends of one command in a
+function, the entry cites the one reached by the fewest calls and then under the
+fewest branches. A method that sends one command on some of
+those releases and another on the rest
 is `version-gated`, and is recorded as neither; its review cites the gate, both
 branches and the line that sets the supported floor below the gate, so that the
 range the gate splits is shown to be supported. When a later revision raises the
@@ -234,14 +295,17 @@ lines: the first text must be on the cited line itself.
 
 `--check --source` also reads back every line each entry cites, at the revision
 it names, and refuses the entry when the line does not say what the entry
-claims: a scanned entry's first line spells the command and each later line
-calls the function around the one before it, a reviewed entry's lines hold the
-text its claim names, a forwarded entry's own line calls the core method and its
-`via` is read as an entry of the core at the revision it names, and no entry's
-first line reports a failure (`throw`, an error constructor, `failed(...)`) or,
-for a claim, binds the command to a name in a function that goes on to send it.
-It reads the entries as committed, so an error made in generation that
-regeneration reproduces is still seen.
+claims: a scanned entry's first line is a dispatch site of the scan of that file
+(a call that sends the command, not a line that spells it), and each later line
+is a call of the function around the one before it, resolved by receiver and not
+by name; a reviewed entry's lines hold the text its claim names, a forwarded
+entry's own line calls the core method and its `via` is read as an entry of the
+core at the revision it names, and no entry's first line reports a failure
+(`throw`, an error constructor, `failed(...)`) or, for a claim, binds the command
+to a name in a function that goes on to send it. It reads the entries as
+committed, so an error made in generation that regeneration reproduces is still
+seen. `gen-tmux-usage.negative.mjs` replays an entry cited at each kind of line
+that is not a send, against the sources, and expects the audit to refuse it.
 
 A method named for a command and recorded as sending nothing of it is how a
 miss is found, and the check refuses it until a claim records the send or a

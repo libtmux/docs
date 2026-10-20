@@ -94,6 +94,7 @@ const WRAPPERS = new Set([
   'reference_expression', 'borrow_expression', 'unary_expression', 'prefix_expression', 'generic_function', 'field_expression',
   'member_access_expression', 'navigation_expression', 'navigation_suffix', 'selector_expression', 'member_expression',
   'attribute', 'binary_expression', 'string_concatenation', 'interpolated_string_expression',
+  'spread_element', 'splat_argument', 'list_splat', 'hash_splat_argument', 'spread_expression', 'range_expression', 'compound_literal_expression',
 ])
 
 /** A node that starts a new function-like scope; strings inside it do not describe the call around it. */
@@ -195,9 +196,20 @@ function calleeOf(grammar, node) {
   }
   if (grammar === 'ruby') {
     const receiver = node.childForFieldName('receiver')?.text
-    return { name: node.childForFieldName('method')?.text, receiver: receiver && receiverOf(`${receiver}.x`) }
+    const method = node.childForFieldName('method')?.text
+    // `server.__send__(:execute_typed, [...])` calls execute_typed: the symbol names what is called.
+    const symbol = ['__send__', 'send', 'public_send'].includes(method) ? node.childForFieldName('arguments')?.namedChildren[0] : undefined
+    const sent = symbol && /symbol/.test(symbol.type) ? symbol.text.replace(/^:/, '') : undefined
+    return { name: sent ?? method, receiver: receiver && receiverOf(`${receiver}.x`) }
   }
-  return { name: lastIdentifier(callee.text), receiver: receiverOf(callee.text) }
+  // The callee of a chain, `Command::new("x").arg("-a").arg`, ends with the method that is called: the first parenthesis
+  // it holds belongs to an earlier call of the chain.
+  return { name: lastName(callee.text), receiver: receiverOf(callee.text) }
+}
+
+/** The last identifier of a callee's text, which is the name that is called. */
+function lastName(text) {
+  return /([A-Za-z_][\w-]*)\s*(?:<[^()]*>)?\s*[!?]?$/.exec(text)?.[1]
 }
 
 const ownerName = (grammar, node) => {
@@ -292,18 +304,176 @@ function inSignature(node) {
   return false
 }
 
+/** Expressions that choose between operands: a literal under one is one of several, and only one is sent. */
+const CONDITIONALS = /^(?:ternary_expression|conditional_expression|conditional|if_expression|if_statement_expression|match_expression|switch_expression|switch_expression_arm|elvis_expression|null_coalescing_expression|coalesce_expression)$/
+/** The arm of a `match`, `switch` or `when` that gives a value: the literal under it is the value that arm chooses. */
+const VALUE_ARMS = /^(?:match_arm|switch_expression_arm|switch_case|switch_section|case_clause|expression_case|when_entry|when_clause|in_clause)$/
+const SHORT_CIRCUIT = new Set(['and', 'or', '||', '&&', '??', '?:'])
+
+/** Identifier-like nodes, whose text names a variable. */
+const NAMES = /(?:^|_)identifier$|^name$|^variable_name$|^constant$/
+
+const LAMBDAS = /^(?:lambda|lambda_literal|lambda_expression|closure_expression|arrow_function|anonymous_function|function_expression|func_literal|anonymous_function_expression)$/
+
+/** Whether a closure is its one expression, with no statements around it. */
+function oneExpression(lambda) {
+  const body = lambda.childForFieldName('body') ?? lambda.namedChildren.find((part) => /statements|block|body/.test(part.type))
+  if (!body) return true
+  if (/^(?:block|statement_block|compound_statement)$/.test(body.type)) return false
+  const inner = body.type === 'statements' ? body.namedChildren : [body]
+  return inner.length === 1 && !/_statement$|^return|^throw/.test(inner[0].type)
+}
+
+/**
+ * What a command literal is part of, read from the nodes around it: the calls it is an argument of from the
+ * innermost out, the statement it ends in, whether a condition chooses it, and the variables the statement
+ * binds it to. `dispatchOf` decides from these whether it is sent.
+ */
+function contextOf(grammar, node, CALL) {
+  const calls = []
+  // How many calls were behind the literal when a condition was crossed: a condition inside a call's arguments chooses what the
+  // call is given, and one above the call chooses whether it is made.
+  let conditional
+  let chooser
+  let top = node
+  let cursor = node.parent
+  for (; cursor; cursor = cursor.parent) {
+    // A closure of one expression hands that expression's value to the call it is an argument of.
+    if ((LAMBDAS.test(cursor.type) && oneExpression(cursor)) || (cursor.type === 'statements' && cursor.parent && LAMBDAS.test(cursor.parent.type) && oneExpression(cursor.parent))) { top = cursor; continue }
+    const operator = cursor.type === 'binary_expression' ? (cursor.childForFieldName('operator')?.text ?? cursor.children.find((part) => !part.isNamed)?.text) : undefined
+    if (CONDITIONALS.test(cursor.type) || VALUE_ARMS.test(cursor.type) || (operator !== undefined && SHORT_CIRCUIT.has(operator))) {
+      conditional ??= calls.length
+      chooser = cursor
+    } else if (!WRAPPERS.has(cursor.type)) break
+    if (CALL.has(cursor.type)) {
+      const callee = calleeOf(grammar, cursor)
+      // A literal in the receiver of a call, `Command::new("x").arg("-a")`, passes through it; one in its arguments is handed to it.
+      const args = cursor.childForFieldName('arguments') ?? cursor.namedChildren.find((part) => /argument/.test(part.type))
+      if (callee?.name) calls.push({ name: callee.name, receiver: callee.receiver, node: cursor, line: calleeRow(cursor), argument: !args || holds(args, node) })
+    }
+    top = cursor
+  }
+  return { calls, conditional, chooser, top, boundary: cursor ?? top }
+}
+
+/** The line a call is made on: where its callee ends, which for `sender\n    .send(...)` is the `.send` and not `sender`. */
+function calleeRow(call) {
+  const callee = call.childForFieldName('function') ?? call.childForFieldName('name') ?? call.childForFieldName('method') ?? call.namedChildren[0]
+  return callee ? callee.endPosition.row + 1 : row(call)
+}
+
+/**
+ * The identifiers of the object a method call is made on that a later call can take it by: `argv` in `argv.add("x")`, and both
+ * `request` and `group` in `request.group.push_back(x)`, because the request is what is passed on and the group is what is added to.
+ */
+function receiverNames(grammar, call) {
+  const object = grammar === 'java' ? call.childForFieldName('object') : grammar === 'ruby' ? call.childForFieldName('receiver') : (call.childForFieldName('function') ?? call.namedChildren[0])
+  const text = object?.text
+  if (!text) return []
+  const base = grammar === 'java' || grammar === 'ruby' ? text : text.replace(/[.:]+[A-Za-z_]\w*$/, '').replace(/->[A-Za-z_]\w*$/, '')
+  const plain = base.replace(/\([^()]*\)|\[[^\]]*\]/g, '')
+  const last = /([A-Za-z_]\w*)\W*$/.exec(plain)?.[1]
+  const root = /^\W*([A-Za-z_]\w*)/.exec(plain)?.[1]
+  return [...new Set([last, root])].filter((name) => name && !SELF.has(name))
+}
+
+/**
+ * Calls a command passes through on its way to a dispatch call: they put an element in a collection or make one. A call that
+ * is handed the command and builds from it must be a declared builder, because `get_output_format("list-sessions", v)` is handed
+ * the name of a command too and builds a format.
+ */
+const PASSING = new Set(['add', 'Add', 'push', 'push_back', 'emplace_back', 'append', 'insert', 'extend', 'arg', 'args', 'apply', 'then', 'concat', 'tinsert',
+  'new', 'of', 'List', 'Seq', 'Array', 'Vec', 'asList', 'listOf', 'mutableListOf', 'arrayOf', 'ArrayList', 'LinkedList', 'vec', 'copyOf', 'make', 'string', 'str', 'String', 'Some', 'Ok', 'static_cast', 'move', 'forward', 'unique_ptr', 'make_unique'])
+
+/** The call that is handed a command and is neither a way to put it in a collection nor a declared builder. */
+function blockedBy(calls, builders) {
+  return calls.find((call) => call.argument && !PASSING.has(call.name.replace(/<.*$/s, '')) && !builders.has(call.name))
+}
+
+/** Receivers that are the object a method is called on, not a variable that holds something else. */
+const SELF = new Set(['self', 'this', 'Self', 'cls', 'me', 'base', 'super'])
+/** Calls that add an element to the collection they are called on, or return it with one more: they build a command value. */
+const ADDS = new Set(['add', 'Add', 'push', 'push_back', 'emplace_back', 'append', 'insert', 'extend', 'arg', 'args', 'apply', 'then', 'concat', 'tinsert'])
+/** Statements that run their body only on some paths. A `try` and a `finally` run on every path. */
+const BRANCHING = /(?:^|_)(?:if|elif|elsif|else|unless|switch|case|when|match|guard|conditional|ternary|for|while|until|loop|catch|except|rescue)(?:_|$)/
+
+/** How many branches deep a node is inside its function, so a send on the main path can be told from one on a side path. */
+function nesting(grammar, node) {
+  let depth = 0
+  for (let cursor = node.parent; cursor && !FUNCTIONS[grammar].includes(cursor.type); cursor = cursor.parent) if (BRANCHING.test(cursor.type)) depth++
+  return depth
+}
+
+/** Nodes that end a statement: a binding's names are looked for up to the first of them. */
+const STATEMENT = /(?:_statement|_declaration|_definition|_item|_spec|^statement|^assignment|^declaration)$/
+
+/** The identifier texts at the leaves of a node. */
+function leafNames(node, found = []) {
+  if (NAMES.test(node.type) && node.namedChildCount === 0) found.push(node.text)
+  else for (const child of node.namedChildren) leafNames(child, found)
+  return found
+}
+
+const RETURNING = /^\s*(?:return|yield)\b/
+const holds = (outer, inner) => outer.startIndex <= inner.startIndex && inner.endIndex <= outer.endIndex
+
+/**
+ * The variables a statement binds a command value to: the names on the left of a declaration or assignment that
+ * has the literal on its right, or the object a method that adds to a collection is called on (`argv.add("x")`).
+ */
+function bindingNames(grammar, literal, context) {
+  const names = new Set()
+  const take = (node) => { for (const name of leafNames(node)) if (!SELF.has(name)) names.add(name) }
+  for (let cursor = context.boundary; cursor; cursor = cursor.parent) {
+    for (const field of ['left', 'pattern', 'name', 'declarator']) {
+      const part = cursor.childForFieldName(field)
+      if (part && !holds(part, literal)) take(part)
+    }
+    if (STATEMENT.test(cursor.type)) break
+  }
+  // Grammars that name no field: what is declared or assigned is the first thing in the declaration.
+  if (!names.size) {
+    for (let cursor = context.boundary; cursor; cursor = cursor.parent) {
+      if (/declarator|assignment|declaration|definition|binding|pattern/.test(cursor.type)) {
+        const first = cursor.namedChildren.find((child) => !holds(child, literal) && (NAMES.test(child.type) || /pattern|variable/.test(child.type)))
+        if (first) { take(first); break }
+      }
+      if (STATEMENT.test(cursor.type)) break
+    }
+  }
+  // Whether the names are the ones a declaration or an assignment gives the value, and not the collection it is added to.
+  const assigned = names.size > 0
+  const outer = context.calls.findLast((call) => ADDS.has(call.name))
+  if (!names.size && outer) {
+    for (const receiver of receiverNames(grammar, outer.node)) names.add(receiver)
+  }
+  return Object.assign([...names], { assigned })
+}
+
+/** The name an identifier node is read as in a call's arguments. */
+function argumentNames(node) {
+  const found = new Set()
+  for (const name of leafNames(node)) found.add(name)
+  return found
+}
+
 /**
  * Every named function of a file with the command sites and calls inside it.
  *
- * @param {{ grammar: string, text: string, commands: ReadonlySet<string>, known: ReadonlySet<string> }} input
+ * With `dispatch`, each site also says whether it is sent: `dispatch: { line, name }` when the literal is an
+ * argument of a call to one of those names, or builds a command value that the same function later passes to
+ * one; `dispatch: null`, with `why`, when it is a label, a comparison, a choice made by a condition or a value
+ * that no call in the function sends.
+ *
+ * @param {{ grammar: string, text: string, commands: ReadonlySet<string>, known: ReadonlySet<string>, dispatch?: ReadonlySet<string>, builders?: ReadonlySet<string>, trace?: (site: object, context: object) => void }} input
  *   `commands` are the names to find; `known` are all tmux command names, so
  *   a list that holds a different command is not read as this command's flags.
  * @returns {Promise<{ functions: ScannedFunction[], types: { name?: string, start: number, end: number }[], orphans: Site[] }>}
  *   `types` are the declarations that own functions, so a claim can anchor to
  *   a class; `orphans` are the sites outside any named function.
  */
-export async function scanSource({ grammar, text, commands, known }) {
-  if (grammar === 'julia') return scanJulia(text, { commands, known })
+export async function scanSource({ grammar, text, commands, known, dispatch, builders = new Set(), trace }) {
+  if (grammar === 'julia') return scanJulia(text, { commands, known, dispatch })
   if (grammar === 'fsharp') return scanFSharp(text)
   const parser = await parserFor(grammar)
   // The Swift grammar predates typed throws; blanking the type keeps every line and column.
@@ -351,6 +521,55 @@ export async function scanSource({ grammar, text, commands, known }) {
     return { flags, unit }
   }
 
+  /** Whether a condition, crossed before the dispatch call, picks between different commands: `a ? ["detach-client"] : ["detach-client", "-E"]` does not. */
+  const chooses = (context, at, own) => {
+    if (context.conditional === undefined || (at >= 0 && context.conditional > at)) return false
+    const named = new Set(context.chooser.descendantsOfType([...STR]).map((part) => isCommandLiteral(part)?.command).filter(Boolean))
+    return own === undefined ? true : named.size > 1 || !named.has(own)
+  }
+
+  /** Decide whether a site is sent: now when a dispatcher encloses it, at the end of its function when it is bound. */
+  const classify = (site, node, owner, literal) => {
+    const context = contextOf(grammar, node, CALL)
+    trace?.(site, context)
+    const never = (why, builds = false) => { site.dispatch = null; site.why = why; if (builds) site.builds = true }
+    const at = context.calls.findIndex((call) => dispatch.has(call.name))
+    if (chooses(context, at, literal.command)) return never('a condition chooses it among other commands')
+    const through = at < 0 ? context.calls : context.calls.slice(0, at)
+    const blocked = blockedBy(through, builders)
+    if (blocked) return never(`it is an argument of ${blocked.name}, which neither sends it nor builds a command from it`)
+    if (at >= 0) { site.dispatch = { line: context.calls[at].line, name: context.calls[at].name }; return undefined }
+    // A command put straight into a `return` or a `yield`, or the last expression of a body, is a value built for the caller.
+    const body = context.boundary.parent
+    const bodyLike = (part) => part && /body|block|statements|compound/.test(part.type)
+    // A body whose last child is the expression itself, as Rust's `{ Command::new("x").arg("-a") }`, hands the value back too.
+    const tail = (bodyLike(body) && body.namedChildren.at(-1)?.id === context.boundary.id)
+      || (bodyLike(context.boundary) && FUNCTIONS[grammar].includes(body?.type) && context.boundary.namedChildren.at(-1)?.id === context.top.id)
+    if (RETURNING.test(context.boundary.text) || tail) return never('it builds a value for the caller', true)
+    const names = bindingNames(grammar, node, context)
+    if (!names.length || !owner) return never('it reaches no call that sends')
+    ;(owner.pending ??= []).push({ target: site, names, after: context.boundary.endIndex, command: literal.command })
+    return undefined
+  }
+
+  /**
+   * Decide whether the value of a call is sent: the call is an argument of a dispatch call, or its result is bound to a
+   * variable that a later dispatch call takes. A helper that builds a command and returns it is sent by its caller this way.
+   */
+  const trackCall = (call, node, owner) => {
+    const context = contextOf(grammar, node, CALL)
+    const at = context.calls.findIndex((outer) => dispatch.has(outer.name))
+    if (chooses(context, at)) return
+    if (blockedBy(at < 0 ? context.calls : context.calls.slice(0, at), builders)) return
+    if (at >= 0) { (owner.callsites ??= []).push({ ...call, flows: { line: context.calls[at].line, name: context.calls[at].name } }); return }
+    const names = bindingNames(grammar, node, context)
+    if (names.length) (owner.pending ??= []).push({ target: { ...call }, names, after: context.boundary.endIndex, call: true })
+    // `attach, guard = guard_command(attach)` puts something else under the name: what comes out is not the list that went in.
+    if (names.assigned && !PASSING.has(call.name.replace(/<.*$/s, '')) && !builders.has(call.name)) {
+      (owner.rebinds ??= []).push({ name: call.name, start: node.startIndex, bound: new Set(names), taken: argumentNames(node) })
+    }
+  }
+
   const walk = (node) => {
     let pushed = false
     let owned = false
@@ -370,7 +589,7 @@ export async function scanSource({ grammar, text, commands, known }) {
       const receiver = node.childForFieldName('receiver')?.text
       const name = node.childForFieldName('name')?.text
       const type = receiver && /([A-Za-z_]\w*)\s*\)?$/.exec(receiver.replace(/\[.*\]/, ''))?.[1]
-      if (name) { pushFunction(name, type); pushed = true }
+      if (name) { pushFunction(name, type); pushed = true; stack.at(-1).selfName = /^\(\s*(\w+)\s/.exec(receiver ?? '')?.[1]?.toLowerCase() }
     } else if (grammar === 'go' && node.type === 'function_declaration') {
       pushFunction(node.childForFieldName('name').text, undefined)
       pushed = true
@@ -396,14 +615,71 @@ export async function scanSource({ grammar, text, commands, known }) {
       && !nestedInCommand(node, STR, isCommandLiteral)) {
       const { flags } = flagsAround(node, literal.command)
       const site = { command: literal.command, line: row(node), flags: [...flags].sort().join('') }
-      ;(stack.at(-1)?.sites ?? orphans).push(site)
+      const owner = stack.at(-1)
+      if (dispatch) { site.depth = nesting(grammar, node); classify(site, node, owner, literal) }
+      ;(owner?.sites ?? orphans).push(site)
     }
     if (CALL.has(node.type) && stack.length) {
       const callee = calleeOf(grammar, node)
-      if (callee?.name) recordCall(stack.at(-1), callee.name, callee.receiver, row(node))
+      if (callee?.name) {
+        recordCall(stack.at(-1), callee.name, callee.receiver, row(node))
+        if (dispatch?.has(callee.name)) {
+          const commands = new Set(node.descendantsOfType([...STR]).map((part) => isCommandLiteral(part)?.command).filter(Boolean))
+          ;(stack.at(-1).sends ??= []).push({ name: callee.name, line: calleeRow(node), start: node.startIndex, end: node.endIndex, names: argumentNames(node), commands })
+        } else if (dispatch) {
+          trackCall({ name: callee.name, receiver: callee.receiver, line: calleeRow(node) }, node, stack.at(-1))
+          // `batch.add(std::move(literal))` hands the value to `batch`, so a call that takes `batch` takes it too.
+          if (ADDS.has(callee.name)) {
+            for (const target of receiverNames(grammar, node)) (stack.at(-1).adds ??= []).push({ target, start: node.startIndex, names: argumentNames(node) })
+          }
+        }
+      }
     }
+    if (dispatch && stack.length && /return|yield|jump|control_transfer/.test(node.type) && RETURNING.test(node.text)) (stack.at(-1).returns ??= []).push(argumentNames(node))
     for (const child of node.namedChildren) walk(child)
-    if (pushed) stack.pop()
+    if (pushed) {
+      const done = stack.pop()
+      // The last statement of a body is its value in a language that returns the last expression.
+      const tail = node.childForFieldName('body')?.namedChildren.at(-1)
+      const returned = [...(done.returns ?? []), ...(tail ? [argumentNames(tail)] : [])]
+      // A command value a function builds is sent by the first later call that takes it and names no other command.
+      for (const { target, names: bound, after, command, call: isCall } of done.pending ?? []) {
+        // The names a value goes by: the variables it is bound to, and the collections it is added to after that.
+        const names = new Set(bound)
+        for (let grown = true; grown;) {
+          grown = false
+          for (const added of done.adds ?? []) {
+            if (added.start >= after && !names.has(added.target) && [...names].some((name) => added.names.has(name))) { names.add(added.target); grown = true }
+          }
+        }
+        const takes = (candidate) => candidate.start >= after && [...names].some((name) => candidate.names.has(name))
+          && (isCall ? candidate.commands.size === 0 : [...candidate.commands].every((other) => other === command))
+        const outer = (done.sends ?? []).find(takes)
+        // A dispatch call whose argument is a closure that makes the inner dispatch call is cited at the inner one, which is the call that sends.
+        const sends = outer && (done.sends ?? []).filter((candidate) => takes(candidate) && candidate.start >= outer.start && candidate.end <= outer.end)
+          .reduce((deepest, candidate) => (candidate.start > deepest.start ? candidate : deepest), outer)
+        // A call between the literal and the send that takes the name and binds it again has changed what the name holds.
+        const rebound = sends && (done.rebinds ?? []).find((change) => change.start >= after && change.start < sends.start
+          && [...names].some((name) => change.bound.has(name) && change.taken.has(name)))
+        if (rebound) {
+          target.dispatch = null
+          target.why = `its variable is rebound by ${rebound.name}, which neither sends it nor builds a command from it`
+        } else if (isCall) {
+          if (sends) (done.callsites ??= []).push({ ...target, flows: { line: sends.line, name: sends.name } })
+        } else if (sends) target.dispatch = { line: sends.line, name: sends.name }
+        else {
+          target.dispatch = null
+          target.why = 'it reaches no call that sends'
+          // A command put in a variable that the function hands back is built for its caller.
+          if (returned.some((used) => [...names].some((name) => used.has(name)))) { target.builds = true; target.why = 'it builds a value for the caller' }
+        }
+      }
+      delete done.pending
+      delete done.sends
+      delete done.returns
+      delete done.adds
+      delete done.rebinds
+    }
     if (owned) owners.pop()
     if (namespaced) namespaces.pop()
   }
@@ -414,5 +690,5 @@ export async function scanSource({ grammar, text, commands, known }) {
 
 /**
  * @typedef {{ name: string, owner?: string, start: number, nameLine: number, end: number, kind: string, sites: Site[], calls: Map<string, number>, receivers: Map<string, Set<string>>, namespace?: string }} ScannedFunction
- * @typedef {{ command: string, line: number, flags: string }} Site
+ * @typedef {{ command: string, line: number, flags: string, dispatch?: { line: number, name: string } | null, why?: string, builds?: boolean, depth?: number }} Site
  */

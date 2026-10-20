@@ -345,14 +345,7 @@
       {
         "command": "break-pane",
         "evidence": [
-          "tmux/pane_relocate.go:132"
-        ],
-        "scope": null
-      },
-      {
-        "command": "rename-window",
-        "evidence": [
-          "tmux/pane_relocate.go:182"
+          "tmux/pane_relocate.go:142"
         ],
         "scope": null
       }
@@ -387,8 +380,9 @@
       {
         "command": "capture-pane",
         "evidence": [
-          "tmux/pane_capture.go:282",
-          "tmux/pane_capture.go:396"
+          "tmux/pane_capture.go:400",
+          "tmux/pane_capture.go:396",
+          "tmux/pane_capture.go:282"
         ],
         "scope": null
       }
@@ -418,13 +412,6 @@
         ],
         "reviewed": true,
         "scope": null
-      },
-      {
-        "command": "save-buffer",
-        "evidence": [
-          "tmux/pane_capture.go:185"
-        ],
-        "scope": null
       }
     ],
     "tmux.Pane.ChooseBuffer": [
@@ -449,7 +436,7 @@
       {
         "command": "choose-tree",
         "evidence": [
-          "tmux/pane_modes.go:199"
+          "tmux/pane_modes.go:247"
         ],
         "scope": null
       }
@@ -458,8 +445,9 @@
       {
         "command": "clear-history",
         "evidence": [
-          "tmux/pane_input.go:405",
-          "tmux/pane_input.go:388"
+          "tmux/pane_input.go:395",
+          "tmux/pane_input.go:388",
+          "tmux/pane_input.go:405"
         ],
         "scope": null
       }
@@ -477,7 +465,7 @@
       {
         "command": "copy-mode",
         "evidence": [
-          "tmux/pane_modes.go:121"
+          "tmux/pane_modes.go:167"
         ],
         "scope": null
       }
@@ -495,7 +483,7 @@
       {
         "command": "display-message",
         "evidence": [
-          "tmux/display_message.go:198",
+          "tmux/display_message.go:254",
           "tmux/display_message.go:126"
         ],
         "scope": null
@@ -505,7 +493,7 @@
       {
         "command": "display-panes",
         "evidence": [
-          "tmux/pane_modes.go:292"
+          "tmux/pane_modes.go:305"
         ],
         "scope": null
       }
@@ -514,7 +502,7 @@
       {
         "command": "display-popup",
         "evidence": [
-          "tmux/pane_popup.go:138"
+          "tmux/pane_popup.go:202"
         ],
         "scope": null
       }
@@ -532,7 +520,7 @@
       {
         "command": "find-window",
         "evidence": [
-          "tmux/pane_modes.go:256"
+          "tmux/pane_modes.go:281"
         ],
         "scope": null
       }
@@ -577,7 +565,7 @@
       {
         "command": "new-pane",
         "evidence": [
-          "tmux/pane_create.go:165",
+          "tmux/pane_create.go:213",
           "tmux/pane_create.go:138"
         ],
         "scope": null
@@ -587,7 +575,7 @@
       {
         "command": "capture-pane",
         "evidence": [
-          "tmux/control_observation.go:351",
+          "tmux/control_observation.go:346",
           "tmux/control_observation.go:301"
         ],
         "scope": null
@@ -595,7 +583,7 @@
       {
         "command": "delete-buffer",
         "evidence": [
-          "tmux/control_observation.go:353",
+          "tmux/control_observation.go:346",
           "tmux/control_observation.go:301"
         ],
         "scope": null
@@ -603,7 +591,7 @@
       {
         "command": "refresh-client",
         "evidence": [
-          "tmux/control_observation.go:349",
+          "tmux/control_observation.go:346",
           "tmux/control_observation.go:301"
         ],
         "scope": null
@@ -611,7 +599,7 @@
       {
         "command": "save-buffer",
         "evidence": [
-          "tmux/control_observation.go:352",
+          "tmux/control_observation.go:346",
           "tmux/control_observation.go:301"
         ],
         "scope": null
@@ -621,7 +609,7 @@
       {
         "command": "paste-buffer",
         "evidence": [
-          "tmux/pane_process.go:167"
+          "tmux/pane_process.go:186"
         ],
         "scope": null
       }
@@ -630,8 +618,9 @@
       {
         "command": "pipe-pane",
         "evidence": [
-          "tmux/pane_process.go:89",
-          "tmux/pane_process.go:212"
+          "tmux/pane_process.go:216",
+          "tmux/pane_process.go:212",
+          "tmux/pane_process.go:89"
         ],
         "scope": null
       }
@@ -640,14 +629,14 @@
       {
         "command": "clear-history",
         "evidence": [
-          "tmux/pane_input.go:446"
+          "tmux/pane_input.go:442"
         ],
         "scope": null
       },
       {
         "command": "send-keys",
         "evidence": [
-          "tmux/pane_input.go:444"
+          "tmux/pane_input.go:442"
         ],
         "scope": null
       }
@@ -656,8 +645,9 @@
       {
         "command": "resize-pane",
         "evidence": [
-          "tmux/pane_geometry.go:126",
-          "tmux/pane_geometry.go:96"
+          "tmux/pane_geometry.go:101",
+          "tmux/pane_geometry.go:96",
+          "tmux/pane_geometry.go:126"
         ],
         "scope": null
       }
@@ -666,7 +656,7 @@
       {
         "command": "respawn-pane",
         "evidence": [
-          "tmux/pane_process.go:62"
+          "tmux/pane_process.go:66"
         ],
         "scope": null
       }
@@ -675,7 +665,7 @@
       {
         "command": "list-panes",
         "evidence": [
-          "tmux/lookup.go:371",
+          "tmux/lookup.go:369",
           "tmux/window_pane_topology.go:199"
         ],
         "scope": "window"
@@ -683,8 +673,9 @@
       {
         "command": "select-pane",
         "evidence": [
-          "tmux/window_pane_topology.go:293",
-          "tmux/window_pane_topology.go:191"
+          "tmux/window_pane_topology.go:195",
+          "tmux/window_pane_topology.go:191",
+          "tmux/window_pane_topology.go:293"
         ],
         "scope": null
       }
@@ -693,8 +684,9 @@
       {
         "command": "send-keys",
         "evidence": [
-          "tmux/pane_input.go:203",
-          "tmux/pane_input.go:157"
+          "tmux/pane_input.go:164",
+          "tmux/pane_input.go:157",
+          "tmux/pane_input.go:203"
         ],
         "scope": null
       }
@@ -703,8 +695,9 @@
       {
         "command": "send-keys",
         "evidence": [
-          "tmux/pane_input.go:94",
-          "tmux/pane_input.go:77"
+          "tmux/pane_input.go:81",
+          "tmux/pane_input.go:77",
+          "tmux/pane_input.go:94"
         ],
         "scope": null
       }
@@ -713,8 +706,9 @@
       {
         "command": "send-prefix",
         "evidence": [
-          "tmux/pane_input.go:308",
-          "tmux/pane_input.go:350"
+          "tmux/pane_input.go:354",
+          "tmux/pane_input.go:350",
+          "tmux/pane_input.go:308"
         ],
         "scope": null
       }
@@ -785,7 +779,7 @@
       {
         "command": "swap-pane",
         "evidence": [
-          "tmux/window_pane_swap.go:146"
+          "tmux/window_pane_swap.go:174"
         ],
         "scope": null
       }
@@ -834,7 +828,7 @@
       {
         "command": "attach-session",
         "evidence": [
-          "tmux/server_attach.go:117",
+          "tmux/server_attach.go:139",
           "tmux/server_attach.go:93"
         ],
         "scope": null
@@ -844,7 +838,7 @@
       {
         "command": "bind-key",
         "evidence": [
-          "tmux/server_keys.go:86"
+          "tmux/server_keys.go:97"
         ],
         "scope": null
       }
@@ -862,7 +856,7 @@
       {
         "command": "clear-prompt-history",
         "evidence": [
-          "tmux/prompt_history.go:69"
+          "tmux/prompt_history.go:85"
         ],
         "scope": null
       }
@@ -880,7 +874,7 @@
       {
         "command": "command-prompt",
         "evidence": [
-          "tmux/server_interactive.go:244"
+          "tmux/server_interactive.go:301"
         ],
         "scope": null
       }
@@ -889,7 +883,7 @@
       {
         "command": "confirm-before",
         "evidence": [
-          "tmux/server_interactive.go:196"
+          "tmux/server_interactive.go:223"
         ],
         "scope": null
       }
@@ -898,7 +892,7 @@
       {
         "command": "delete-buffer",
         "evidence": [
-          "tmux/server_buffers.go:161"
+          "tmux/server_buffers.go:165"
         ],
         "scope": null
       }
@@ -907,7 +901,7 @@
       {
         "command": "detach-client",
         "evidence": [
-          "tmux/server_clients.go:261"
+          "tmux/server_clients.go:268"
         ],
         "scope": null
       }
@@ -916,7 +910,7 @@
       {
         "command": "detach-client",
         "evidence": [
-          "tmux/server_clients.go:233"
+          "tmux/server_clients.go:240"
         ],
         "scope": null
       }
@@ -925,7 +919,7 @@
       {
         "command": "display-menu",
         "evidence": [
-          "tmux/server_interactive.go:327"
+          "tmux/server_interactive.go:408"
         ],
         "scope": null
       }
@@ -934,7 +928,7 @@
       {
         "command": "display-message",
         "evidence": [
-          "tmux/display_message.go:198",
+          "tmux/display_message.go:254",
           "tmux/display_message.go:85"
         ],
         "scope": null
@@ -944,7 +938,7 @@
       {
         "command": "show-environment",
         "evidence": [
-          "tmux/environment.go:279",
+          "tmux/environment.go:282",
           "tmux/environment.go:118"
         ],
         "scope": null
@@ -954,8 +948,10 @@
       {
         "command": "has-session",
         "evidence": [
-          "tmux/session_lifecycle.go:141"
+          "tmux/session_lifecycle.go:141",
+          "tmux/session_lifecycle.go:137"
         ],
+        "reviewed": true,
         "scope": null
       },
       {
@@ -971,7 +967,7 @@
       {
         "command": "if-shell",
         "evidence": [
-          "tmux/server_exec.go:302"
+          "tmux/server_exec.go:313"
         ],
         "scope": null
       }
@@ -1007,7 +1003,7 @@
       {
         "command": "list-buffers",
         "evidence": [
-          "tmux/server_buffers.go:301"
+          "tmux/server_buffers.go:308"
         ],
         "scope": null
       }
@@ -1025,7 +1021,7 @@
       {
         "command": "list-commands",
         "evidence": [
-          "tmux/server_keys.go:200"
+          "tmux/server_keys.go:204"
         ],
         "scope": null
       }
@@ -1034,7 +1030,7 @@
       {
         "command": "list-keys",
         "evidence": [
-          "tmux/server_keys.go:163"
+          "tmux/server_keys.go:183"
         ],
         "scope": null
       }
@@ -1043,7 +1039,7 @@
       {
         "command": "load-buffer",
         "evidence": [
-          "tmux/server_buffers.go:203"
+          "tmux/server_buffers.go:212"
         ],
         "scope": null
       }
@@ -1052,7 +1048,7 @@
       {
         "command": "load-buffer",
         "evidence": [
-          "tmux/server_buffers.go:238"
+          "tmux/server_buffers.go:243"
         ],
         "scope": null
       }
@@ -1061,7 +1057,7 @@
       {
         "command": "lock-client",
         "evidence": [
-          "tmux/server_clients.go:196"
+          "tmux/server_clients.go:200"
         ],
         "scope": null
       }
@@ -1079,16 +1075,10 @@
       {
         "command": "kill-session",
         "evidence": [
-          "tmux/session_lifecycle.go:223"
+          "tmux/session_lifecycle.go:223",
+          "tmux/session_lifecycle.go:219"
         ],
-        "scope": null
-      },
-      {
-        "command": "list-sessions",
-        "evidence": [
-          "tmux/session_lifecycle.go:155",
-          "tmux/session_lifecycle.go:215"
-        ],
+        "reviewed": true,
         "scope": null
       },
       {
@@ -1107,8 +1097,9 @@
       {
         "command": "if-shell",
         "evidence": [
-          "tmux/identity.go:151",
-          "tmux/connection.go:185"
+          "tmux/connection.go:191",
+          "tmux/connection.go:185",
+          "tmux/identity.go:151"
         ],
         "scope": null
       },
@@ -1126,9 +1117,11 @@
     ],
     "tmux.Server.OpenControl": [
       {
-        "command": "attach-session",
+        "command": "if-shell",
         "evidence": [
-          "tmux/control_startup.go:80",
+          "tmux/control_startup.go:91",
+          "tmux/control_startup.go:86",
+          "tmux/identity.go:151",
           "tmux/control_startup.go:42"
         ],
         "scope": null
@@ -1136,10 +1129,12 @@
     ],
     "tmux.Server.OpenNotifications": [
       {
-        "command": "refresh-client",
+        "command": "if-shell",
         "evidence": [
-          "tmux/notification_stream.go:82",
-          "tmux/notification_stream.go:73"
+          "tmux/control_startup.go:91",
+          "tmux/control_startup.go:86",
+          "tmux/identity.go:151",
+          "tmux/notification_stream.go:67"
         ],
         "scope": null
       }
@@ -1148,7 +1143,7 @@
       {
         "command": "refresh-client",
         "evidence": [
-          "tmux/server_clients.go:179"
+          "tmux/server_clients.go:186"
         ],
         "scope": null
       }
@@ -1157,7 +1152,7 @@
       {
         "command": "set-environment",
         "evidence": [
-          "tmux/environment.go:234",
+          "tmux/environment.go:237",
           "tmux/environment.go:100"
         ],
         "scope": null
@@ -1167,7 +1162,7 @@
       {
         "command": "run-shell",
         "evidence": [
-          "tmux/server_exec.go:184"
+          "tmux/server_exec.go:235"
         ],
         "scope": null
       }
@@ -1176,7 +1171,7 @@
       {
         "command": "save-buffer",
         "evidence": [
-          "tmux/server_buffers.go:178"
+          "tmux/server_buffers.go:190"
         ],
         "scope": null
       }
@@ -1185,7 +1180,7 @@
       {
         "command": "save-buffer",
         "evidence": [
-          "tmux/server_buffers.go:270"
+          "tmux/server_buffers.go:275"
         ],
         "scope": null
       }
@@ -1194,7 +1189,7 @@
       {
         "command": "list-clients",
         "evidence": [
-          "tmux/search.go:47"
+          "tmux/search.go:46"
         ],
         "scope": null
       }
@@ -1203,7 +1198,7 @@
       {
         "command": "list-panes",
         "evidence": [
-          "tmux/search.go:79"
+          "tmux/search.go:78"
         ],
         "scope": "server"
       }
@@ -1212,7 +1207,7 @@
       {
         "command": "list-sessions",
         "evidence": [
-          "tmux/search.go:29"
+          "tmux/search.go:28"
         ],
         "scope": null
       }
@@ -1221,7 +1216,7 @@
       {
         "command": "list-windows",
         "evidence": [
-          "tmux/search.go:63"
+          "tmux/search.go:62"
         ],
         "scope": "server"
       }
@@ -1230,7 +1225,7 @@
       {
         "command": "server-access",
         "evidence": [
-          "tmux/server_clients.go:121"
+          "tmux/server_clients.go:144"
         ],
         "scope": null
       }
@@ -1248,7 +1243,7 @@
       {
         "command": "list-sessions",
         "evidence": [
-          "tmux/lookup.go:38"
+          "tmux/lookup.go:36"
         ],
         "scope": null
       }
@@ -1257,7 +1252,7 @@
       {
         "command": "set-buffer",
         "evidence": [
-          "tmux/server_buffers.go:97"
+          "tmux/server_buffers.go:105"
         ],
         "scope": null
       }
@@ -1266,7 +1261,7 @@
       {
         "command": "set-environment",
         "evidence": [
-          "tmux/environment.go:211",
+          "tmux/environment.go:220",
           "tmux/environment.go:89"
         ],
         "scope": null
@@ -1289,7 +1284,7 @@
       {
         "command": "show-buffer",
         "evidence": [
-          "tmux/server_buffers.go:142",
+          "tmux/server_buffers.go:148",
           "tmux/server_buffers.go:119"
         ],
         "scope": null
@@ -1299,7 +1294,7 @@
       {
         "command": "show-buffer",
         "evidence": [
-          "tmux/server_buffers.go:142",
+          "tmux/server_buffers.go:148",
           "tmux/server_buffers.go:131"
         ],
         "scope": null
@@ -1309,7 +1304,7 @@
       {
         "command": "show-environment",
         "evidence": [
-          "tmux/environment.go:257",
+          "tmux/environment.go:259",
           "tmux/environment.go:109"
         ],
         "scope": null
@@ -1319,7 +1314,7 @@
       {
         "command": "show-messages",
         "evidence": [
-          "tmux/server_keys.go:237"
+          "tmux/server_keys.go:247"
         ],
         "scope": null
       }
@@ -1328,38 +1323,54 @@
       {
         "command": "show-prompt-history",
         "evidence": [
-          "tmux/prompt_history.go:43"
+          "tmux/prompt_history.go:59"
         ],
         "scope": null
       }
     ],
     "tmux.Server.Snapshot": [
       {
+        "command": "display-message",
+        "evidence": [
+          "tmux/identity.go:210",
+          "tmux/snapshot_capture.go:24"
+        ],
+        "scope": null
+      },
+      {
         "command": "list-clients",
         "evidence": [
-          "tmux/snapshot_capture.go:46"
+          "tmux/snapshot_capture.go:46",
+          "tmux/snapshot_capture.go:49"
         ],
+        "reviewed": true,
         "scope": null
       },
       {
         "command": "list-panes",
         "evidence": [
-          "tmux/snapshot_capture.go:45"
+          "tmux/snapshot_capture.go:45",
+          "tmux/snapshot_capture.go:49"
         ],
+        "reviewed": true,
         "scope": "server"
       },
       {
         "command": "list-sessions",
         "evidence": [
-          "tmux/snapshot_capture.go:43"
+          "tmux/snapshot_capture.go:43",
+          "tmux/snapshot_capture.go:49"
         ],
+        "reviewed": true,
         "scope": null
       },
       {
         "command": "list-windows",
         "evidence": [
-          "tmux/snapshot_capture.go:44"
+          "tmux/snapshot_capture.go:44",
+          "tmux/snapshot_capture.go:49"
         ],
+        "reviewed": true,
         "scope": "server"
       }
     ],
@@ -1367,8 +1378,9 @@
       {
         "command": "source-file",
         "evidence": [
-          "tmux/server_exec.go:353",
-          "tmux/server_exec.go:325"
+          "tmux/server_exec.go:329",
+          "tmux/server_exec.go:325",
+          "tmux/server_exec.go:353"
         ],
         "scope": null
       }
@@ -1386,7 +1398,7 @@
       {
         "command": "suspend-client",
         "evidence": [
-          "tmux/server_clients.go:210"
+          "tmux/server_clients.go:214"
         ],
         "scope": null
       }
@@ -1395,7 +1407,7 @@
       {
         "command": "switch-client",
         "evidence": [
-          "tmux/server_clients.go:288"
+          "tmux/server_clients.go:285"
         ],
         "scope": null
       }
@@ -1404,7 +1416,7 @@
       {
         "command": "unbind-key",
         "evidence": [
-          "tmux/server_keys.go:125"
+          "tmux/server_keys.go:138"
         ],
         "scope": null
       }
@@ -1413,7 +1425,7 @@
       {
         "command": "set-environment",
         "evidence": [
-          "tmux/environment.go:234",
+          "tmux/environment.go:237",
           "tmux/environment.go:95"
         ],
         "scope": null
@@ -1436,7 +1448,7 @@
       {
         "command": "wait-for",
         "evidence": [
-          "tmux/server_exec.go:259"
+          "tmux/server_exec.go:277"
         ],
         "scope": null
       }
@@ -1472,7 +1484,7 @@
       {
         "command": "attach-session",
         "evidence": [
-          "tmux/server_attach.go:117",
+          "tmux/server_attach.go:139",
           "tmux/server_attach.go:113"
         ],
         "scope": null
@@ -1482,7 +1494,7 @@
       {
         "command": "detach-client",
         "evidence": [
-          "tmux/server_clients.go:335"
+          "tmux/server_clients.go:340"
         ],
         "scope": null
       }
@@ -1491,7 +1503,7 @@
       {
         "command": "show-environment",
         "evidence": [
-          "tmux/environment.go:279",
+          "tmux/environment.go:282",
           "tmux/environment.go:180"
         ],
         "scope": null
@@ -1522,7 +1534,7 @@
       {
         "command": "kill-session",
         "evidence": [
-          "tmux/lifecycle_kill.go:132"
+          "tmux/lifecycle_kill.go:153"
         ],
         "scope": null
       }
@@ -1540,7 +1552,7 @@
       {
         "command": "lock-session",
         "evidence": [
-          "tmux/server_clients.go:309"
+          "tmux/server_clients.go:306"
         ],
         "scope": null
       }
@@ -1580,7 +1592,7 @@
       {
         "command": "set-environment",
         "evidence": [
-          "tmux/environment.go:234",
+          "tmux/environment.go:237",
           "tmux/environment.go:153"
         ],
         "scope": null
@@ -1599,7 +1611,7 @@
       {
         "command": "list-panes",
         "evidence": [
-          "tmux/search.go:129"
+          "tmux/search.go:127"
         ],
         "scope": "session"
       }
@@ -1608,7 +1620,7 @@
       {
         "command": "list-windows",
         "evidence": [
-          "tmux/search.go:102"
+          "tmux/search.go:100"
         ],
         "scope": "session"
       }
@@ -1617,7 +1629,7 @@
       {
         "command": "select-window",
         "evidence": [
-          "tmux/session_navigation.go:101"
+          "tmux/session_navigation.go:99"
         ],
         "scope": null
       }
@@ -1626,7 +1638,7 @@
       {
         "command": "set-environment",
         "evidence": [
-          "tmux/environment.go:211",
+          "tmux/environment.go:220",
           "tmux/environment.go:133"
         ],
         "scope": null
@@ -1677,7 +1689,7 @@
       {
         "command": "show-environment",
         "evidence": [
-          "tmux/environment.go:257",
+          "tmux/environment.go:259",
           "tmux/environment.go:166"
         ],
         "scope": null
@@ -1687,7 +1699,7 @@
       {
         "command": "switch-client",
         "evidence": [
-          "tmux/server_clients.go:359"
+          "tmux/server_clients.go:356"
         ],
         "scope": null
       }
@@ -1696,7 +1708,7 @@
       {
         "command": "set-environment",
         "evidence": [
-          "tmux/environment.go:234",
+          "tmux/environment.go:237",
           "tmux/environment.go:143"
         ],
         "scope": null
@@ -1760,7 +1772,7 @@
       {
         "command": "display-message",
         "evidence": [
-          "tmux/display_message.go:198",
+          "tmux/display_message.go:254",
           "tmux/display_message.go:105"
         ],
         "scope": null
@@ -1788,7 +1800,7 @@
       {
         "command": "last-pane",
         "evidence": [
-          "tmux/window_pane_topology.go:224"
+          "tmux/window_pane_topology.go:235"
         ],
         "scope": null
       }
@@ -1797,8 +1809,9 @@
       {
         "command": "link-window",
         "evidence": [
-          "tmux/window_link_move.go:124",
-          "tmux/window_link_move.go:96"
+          "tmux/window_link_move.go:101",
+          "tmux/window_link_move.go:96",
+          "tmux/window_link_move.go:124"
         ],
         "scope": null
       }
@@ -1807,8 +1820,9 @@
       {
         "command": "move-window",
         "evidence": [
-          "tmux/window_link_move.go:257",
-          "tmux/window_link_move.go:209"
+          "tmux/window_link_move.go:214",
+          "tmux/window_link_move.go:209",
+          "tmux/window_link_move.go:257"
         ],
         "scope": null
       }
@@ -1817,7 +1831,7 @@
       {
         "command": "new-pane",
         "evidence": [
-          "tmux/pane_create.go:165",
+          "tmux/pane_create.go:213",
           "tmux/pane_create.go:121"
         ],
         "scope": null
@@ -1840,7 +1854,7 @@
       {
         "command": "next-layout",
         "evidence": [
-          "tmux/window_layout.go:332"
+          "tmux/window_layout.go:329"
         ],
         "scope": null
       }
@@ -1849,7 +1863,7 @@
       {
         "command": "previous-layout",
         "evidence": [
-          "tmux/window_layout.go:349"
+          "tmux/window_layout.go:346"
         ],
         "scope": null
       }
@@ -1867,8 +1881,9 @@
       {
         "command": "resize-window",
         "evidence": [
-          "tmux/window_resize.go:85",
-          "tmux/window_resize.go:60"
+          "tmux/window_resize.go:65",
+          "tmux/window_resize.go:60",
+          "tmux/window_resize.go:85"
         ],
         "scope": null
       }
@@ -1877,7 +1892,7 @@
       {
         "command": "respawn-window",
         "evidence": [
-          "tmux/window_respawn.go:44"
+          "tmux/window_respawn.go:49"
         ],
         "scope": null
       }
@@ -1886,8 +1901,9 @@
       {
         "command": "rotate-window",
         "evidence": [
-          "tmux/window_pane_topology.go:329",
-          "tmux/window_pane_topology.go:252"
+          "tmux/window_pane_topology.go:256",
+          "tmux/window_pane_topology.go:252",
+          "tmux/window_pane_topology.go:329"
         ],
         "scope": null
       }
@@ -1896,7 +1912,7 @@
       {
         "command": "list-panes",
         "evidence": [
-          "tmux/search.go:154"
+          "tmux/search.go:152"
         ],
         "scope": "window"
       }
@@ -1923,7 +1939,7 @@
       {
         "command": "select-pane",
         "evidence": [
-          "tmux/window_pane_topology.go:150"
+          "tmux/window_pane_topology.go:170"
         ],
         "scope": null
       }
@@ -1985,7 +2001,7 @@
       {
         "command": "swap-window",
         "evidence": [
-          "tmux/window_pane_swap.go:91"
+          "tmux/window_pane_swap.go:96"
         ],
         "scope": null
       }
@@ -1994,7 +2010,7 @@
       {
         "command": "unlink-window",
         "evidence": [
-          "tmux/window_link_move.go:154"
+          "tmux/window_link_move.go:160"
         ],
         "scope": null
       }
@@ -2031,8 +2047,11 @@
         "command": "attach-session",
         "evidence": [
           "tmux/tmuxtest/control.go:183",
+          "tmux/tmuxtest/control.go:185",
+          "tmux/tmuxtest/control.go:209",
           "tmux/tmuxtest/control.go:58"
         ],
+        "reviewed": true,
         "scope": null
       }
     ],
@@ -2051,8 +2070,11 @@
         "command": "kill-session",
         "evidence": [
           "tmux/tmuxtest/resources.go:135",
+          "tmux/tmuxtest/harness.go:546",
+          "tmux/tmuxtest/harness.go:536",
           "tmux/tmuxtest/resources.go:56"
         ],
+        "reviewed": true,
         "scope": null
       }
     ],

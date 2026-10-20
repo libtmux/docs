@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
-import { describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { scanSource } from '../../scripts/lib/tmux-usage-scan.mjs'
-import { MAX_SHARED_BY, applyExclusions, classify, definitionsOf, deriveUsage, ruleHolds, verifyClaims } from '../../scripts/lib/tmux-usage-derive.mjs'
+import { MAX_SHARED_BY, applyExclusions, builtSites, callTargets, classify, definitionsOf, deriveUsage, ruleHolds, verifyClaims } from '../../scripts/lib/tmux-usage-derive.mjs'
 import { auditEvidence } from '../../scripts/lib/tmux-usage-audit.mjs'
 import { forwardUsage } from '../../scripts/lib/tmux-usage-forward.mjs'
 import { carriesCommand, memberWords, selects, settleCandidates, sweepCandidates } from '../../scripts/lib/tmux-usage-sweep.mjs'
@@ -702,40 +702,399 @@ describe('finding the methods a scan misses', () => {
   })
 })
 
+/** A file read by the scan that finds the calls that send, in the shape the audit reads its sources. */
+const sourcesOf = async (grammar: string, file: string, text: string, dispatch: string[], commands: string[]) => {
+  const scanned = await scanSource({ grammar, text, commands: new Set(commands), known: new Set(commands), dispatch: new Set(dispatch) })
+  return { read: (path: string) => (path === file ? text : undefined), functions: scanned.functions.map((fn) => ({ ...fn, file })) }
+}
+
+describe('scanning for the call that sends', () => {
+  const sites = async (grammar: string, text: string, dispatch: string[], commands: string[]) => {
+    const { functions } = await scanSource({ grammar, text, commands: new Set(commands), known: new Set(commands), dispatch: new Set(dispatch) })
+    return Object.fromEntries(functions.map((fn) => [fn.name, fn.sites.map((found: { command: string, line: number, dispatch?: { line: number, name: string } | null, why?: string, builds?: boolean }) => (
+      found.dispatch ? `${found.command}@${found.line}->${found.dispatch.name}@${found.dispatch.line}` : `${found.command}@${found.line} ${found.why}${found.builds ? ' (builds)' : ''}`))]))
+  }
+
+  it('records a literal that is an argument of a dispatch call, at the dispatch call, and no other literal in the function', async () => {
+    const found = await sites('python', [
+      'class S:',
+      '    def panes(self):',
+      '        return self.cmd("list-panes", "-a")',
+      '    def selector(self):',
+      '        fmt = get_output_format("list-windows", ["x"])',
+      '        return self.cmd("list-panes", "-F", fmt)',
+      '',
+    ].join('\n'), ['cmd'], ['list-panes', 'list-windows'])
+    expect(found.panes).toEqual(['list-panes@3->cmd@3'])
+    // A row or format selector is an argument of a call that neither sends it nor builds a command from it.
+    expect(found.selector).toEqual(['list-windows@5 it is an argument of get_output_format, which neither sends it nor builds a command from it', 'list-panes@6->cmd@6'])
+  })
+
+  it('does not record a command that a condition picks among others, a label, or a helper that never dispatches', async () => {
+    const found = await sites('python', [
+      'class S:',
+      '    def choose(self, hooks):',
+      '        return self.cmd("list-windows" if hooks else "list-panes")',
+      '    def label(self):',
+      '        return describe("list-panes")',
+      '    def same(self, exit):',
+      '        return self.cmd(["list-panes", "-E", exit] if exit else ["list-panes"])',
+      '',
+    ].join('\n'), ['cmd'], ['list-panes', 'list-windows'])
+    expect(found.choose).toEqual(['list-windows@3 a condition chooses it among other commands', 'list-panes@3 a condition chooses it among other commands'])
+    expect(found.label).toEqual(['list-panes@5 it is an argument of describe, which neither sends it nor builds a command from it'])
+    // The control: a condition between spellings of the same command picks no other command.
+    expect(found.same).toEqual(['list-panes@7->cmd@7', 'list-panes@7->cmd@7'])
+  })
+
+  it('does not record the choice of a receiver class or a value arm either', async () => {
+    const ruby = await sites('ruby', [
+      'class Options',
+      '  def list',
+      '    command = is_a?(Hooks) ? "list-windows" : "list-panes"',
+      '    run(command)',
+      '  end',
+      '  def plain',
+      '    run("list-panes", "-g")',
+      '  end',
+      'end',
+      '',
+    ].join('\n'), ['run'], ['list-panes', 'list-windows'])
+    expect(ruby.list).toEqual(['list-windows@3 a condition chooses it among other commands', 'list-panes@3 a condition chooses it among other commands'])
+    expect(ruby.plain).toEqual(['list-panes@7->run@7'])
+  })
+
+  it('records a command bound to a name at the later call that takes the name, and not the binding', async () => {
+    const found = await sites('rust', [
+      'fn split(core: &Core) {',
+      '    let mut command = Command::new("list-panes");',
+      '    command.arg("-h");',
+      '    run(core, command).await',
+      '}',
+      'fn label(core: &Core) {',
+      '    log(Error::new("list-panes", core.reason()));',
+      '}',
+      '',
+    ].join('\n'), ['run'], ['list-panes'])
+    expect(found.split).toEqual(['list-panes@2->run@4'])
+    expect(found.label).toEqual(['list-panes@7 it is an argument of log, which neither sends it nor builds a command from it'])
+  })
+
+  it('does not record a command whose variable a call that is not a builder has bound again before the send', async () => {
+    const lines = (rebind: string) => [
+      'package tmux',
+      'func (s Server) open() error {',
+      '\tattach := []string{"list-panes"}',
+      '\tattach = append(attach, "-t", "x")',
+      rebind,
+      '\treturn s.startControl(attach)',
+      '}',
+      '',
+    ].join('\n')
+    const guarded = await sites('go', lines('\tattach, guard, err := s.guardCommand(attach, false)'), ['startControl'], ['list-panes'])
+    expect(guarded.open).toEqual(['list-panes@3 its variable is rebound by guardCommand, which neither sends it nor builds a command from it'])
+    // The controls: a rebinding through a way of adding to the list, a call that binds another name, and a declared builder.
+    expect((await sites('go', lines('\tattach = append([]string{"-C"}, attach...)'), ['startControl'], ['list-panes'])).open).toEqual(['list-panes@3->startControl@6'])
+    expect((await sites('go', lines('\tother, err := s.guardCommand(attach, false)'), ['startControl'], ['list-panes'])).open).toEqual(['list-panes@3->startControl@6'])
+    const { functions } = await scanSource({ grammar: 'go', text: lines('\tattach, err = withFlags(attach, false)'), commands: new Set(['list-panes']), known: new Set(['list-panes']), dispatch: new Set(['startControl']), builders: new Set(['withFlags']) })
+    expect(functions[0].sites.map((found) => found.dispatch?.line)).toEqual([6])
+  })
+
+  it('credits a literal in a throw label to nothing, and the real send in the same function to the dispatch call', async () => {
+    const found = await sites('typescript', [
+      'export async function validate(runtime, options) {',
+      '  if (options.signal?.aborted === true)',
+      '    throw new TmuxTransportError("cancelled", {',
+      '      subcommand: "list-panes",',
+      '    });',
+      '  return await runCommand(runtime, ["list-panes", "-p"], options);',
+      '}',
+      '',
+    ].join('\n'), ['runCommand'], ['list-panes'])
+    expect(found.validate).toEqual(['list-panes@4 it reaches no call that sends', 'list-panes@6->runCommand@6'])
+  })
+
+  it('leaves a builder that returns a command to its caller, which sends it with the call of the builder between', async () => {
+    const found = await sites('python', [
+      'class S:',
+      '    def build(self):',
+      '        return ["list-panes", "-a"]',
+      '    def run(self):',
+      '        command = self.build()',
+      '        return self.cmd(*command)',
+      '',
+    ].join('\n'), ['cmd'], ['list-panes'])
+    expect(found.build).toEqual(['list-panes@3 it builds a value for the caller (builds)'])
+    expect(found.run).toEqual([])
+    const { functions } = await scanSource({ grammar: 'python', text: ['class S:', '    def build(self):', '        return ["list-panes", "-a"]', '    def run(self):', '        command = self.build()', '        return self.cmd(*command)', ''].join('\n'), commands: new Set(['list-panes']), known: new Set(['list-panes']), dispatch: new Set(['cmd']) })
+    const located = functions.map((fn: object) => ({ ...fn, file: 'lib.py' }))
+    const credited = [...builtSites(located as never).entries()].map(([fn, list]) => [(fn as { name: string }).name, (list as { line: number, dispatch: { line: number }, via: { call: number } }[]).map((site) => [site.dispatch.line, site.via.call, site.line])])
+    expect(credited).toEqual([['run', [[6, 5, 3]]]])
+  })
+})
+
+describe('scanning for the call that sends, in the shapes of each grammar', () => {
+  const sites = async (grammar: string, text: string, dispatch: string[], commands: string[]) => {
+    const { functions } = await scanSource({ grammar, text, commands: new Set(commands), known: new Set(commands), dispatch: new Set(dispatch) })
+    return Object.fromEntries(functions.map((fn) => [fn.name, fn.sites.map((found: { command: string, line: number, dispatch?: { line: number, name: string } | null, builds?: boolean }) => (
+      found.dispatch ? `${found.command}@${found.line}->${found.dispatch.name}@${found.dispatch.line}` : `${found.command}@${found.line} ${found.builds ? 'builds' : 'sends nothing'}`))]))
+  }
+
+  it('reads the last expression of a Rust body as the value it builds, with or without a return', async () => {
+    const found = await sites('rust', [
+      'fn version_command() -> Command {',
+      '    Command::new("list-panes")',
+      '        .arg("-a")',
+      '}',
+      'fn explicit() -> Command {',
+      '    return Command::new("list-panes").arg("-a");',
+      '}',
+      'async fn version(server: &Server) {',
+      '    server.cmd(version_command()).await',
+      '}',
+      '',
+    ].join('\n'), ['cmd'], ['list-panes'])
+    expect(found.version_command).toEqual(['list-panes@2 builds'])
+    expect(found.explicit).toEqual(['list-panes@6 builds'])
+    // The control: the same literal in the arguments of the dispatch call is sent at once, and not built for anyone.
+    const direct = await sites('rust', 'async fn version(server: &Server) {\n    server.cmd(Command::new("list-panes")).await\n}\n', ['cmd'], ['list-panes'])
+    expect(direct.version).toEqual(['list-panes@2->cmd@2'])
+  })
+
+  it('follows a command put in a struct field of a request to the call that takes the request', async () => {
+    const found = await sites('cpp', [
+      'int Connection::apply(Connection connection) {',
+      '  ControlRequest layout_request;',
+      '  layout_request.group.push_back(',
+      '      ControlCommand{{"list-panes", "-a"}});',
+      '  return connection.execute(std::move(layout_request), deadline);',
+      '}',
+      'int Connection::other(Connection connection) {',
+      '  ControlRequest request;',
+      '  ControlCommand pending{{"list-panes", "-a"}};',
+      '  request.group.push_back(std::move(pending));',
+      '  log(std::move(request));',
+      '  return 0;',
+      '}',
+      '',
+    ].join('\n'), ['execute'], ['list-panes'])
+    expect(found.apply).toEqual(['list-panes@4->execute@5'])
+    // A request handed to a call that does not send is not sent.
+    expect(found.other).toEqual(['list-panes@9 sends nothing'])
+  })
+})
+
+describe('scanning a send made inside a closure', () => {
+  it('cites the inner dispatch call when a runner of the same name wraps a closure that makes it', async () => {
+    const { functions } = await scanSource({
+      grammar: 'csharp', commands: new Set(['rotate-window']), known: new Set(['rotate-window']), dispatch: new Set(['RunAsync']),
+      text: [
+        'class Window {',
+        '    Task RotateAsync(CancellationToken token) {',
+        '        List<string> arguments = ["rotate-window", "-t", "x"];',
+        '        return Sequence.RunAsync(',
+        '            () => RunAsync(arguments, token),',
+        '            () => RefreshAsync(token));',
+        '    }',
+        '}',
+        '',
+      ].join('\n'),
+    })
+    expect(functions[0].sites.map((found) => [found.line, found.dispatch?.line])).toEqual([[3, 5]])
+  })
+})
+
+describe('citing one of several sends of a command', () => {
+  it('cites the send under the fewest branches when the same command is sent on several paths', async () => {
+    const { functions } = await scanSource({
+      grammar: 'python', commands: new Set(['list-panes']), known: new Set(['list-panes']), dispatch: new Set(['cmd']),
+      text: [
+        'def panes(self, mode):',
+        '    if mode:',
+        '        return self.cmd("list-panes", "-a")',
+        '    return self.cmd("list-panes", "-a")',
+        '',
+      ].join('\n'),
+    })
+    const fn = { ...functions[0], file: 'lib.py' }
+    expect(fn.sites.map((found) => found.depth)).toEqual([1, 0])
+    const symbols = [{ id: 'S.panes', name: 'panes', file: 'lib.py', line: 1 }]
+    const { entries } = deriveUsage({ command: 'list-panes', spec, functions: [fn as never], symbols })
+    expect(entries.map((entry: { evidence: string[] }) => entry.evidence)).toEqual([['lib.py:4']])
+  })
+})
+
+describe('resolving a call to the function it calls', () => {
+  const owned = (name: string, owner: string | undefined, file: string) => ({ name, owner, file })
+  const caller = (over: Record<string, unknown> = {}) => ({ file: 'pane.rs', owner: 'Pane', calls: new Map([['into_command', 10]]), receivers: new Map<string, Set<string>>(), ...over })
+  const capture = owned('into_command', 'CaptureOptions', 'options.rs')
+  const split = owned('into_command', 'SplitOptions', 'options.rs')
+
+  it('takes the only function of a name, whatever the call is made on', () => {
+    expect(callTargets(caller(), capture, [capture])).toBe(true)
+    expect(callTargets(caller({ calls: new Map() }), capture, [capture])).toBe(false)
+  })
+
+  it('does not take the function of another type that shares the name, for a call made on something else', () => {
+    // `Pane.split` calls `options.into_command()`, which is not the one in `CaptureOptions`: the name alone is not the callee.
+    const onOptions = caller({ receivers: new Map([['into_command', new Set(['options'])]]) })
+    expect(callTargets(onOptions, capture, [capture, split])).toBe(false)
+    expect(callTargets(onOptions, split, [capture, split])).toBe(false)
+    // A handle named for the type is that type's; a call with no handle is the caller's own type's.
+    expect(callTargets(caller({ receivers: new Map([['into_command', new Set(['captureoptions'])]]) }), capture, [capture, split])).toBe(true)
+    expect(callTargets(caller({ receivers: new Map([['into_command', new Set(['captureoptions'])]]) }), split, [capture, split])).toBe(false)
+    expect(callTargets(caller({ owner: 'SplitOptions' }), split, [capture, split])).toBe(true)
+    expect(callTargets(caller({ owner: 'SplitOptions' }), capture, [capture, split])).toBe(false)
+    expect(callTargets(caller({ receivers: new Map([['into_command', new Set(['self'])]]), owner: 'CaptureOptions' }), capture, [capture, split])).toBe(true)
+  })
+
+  it('takes a Go call on the receiver the method names, and a free function only when no second one could be meant', () => {
+    const go = caller({ file: 'pane.go', owner: 'Pane', selfName: 'p', receivers: new Map([['into_command', new Set(['p'])]]) })
+    expect(callTargets(go, owned('into_command', 'Pane', 'pane.go'), [capture, owned('into_command', 'Pane', 'pane.go')])).toBe(true)
+    const free = owned('into_command', undefined, 'util.rs')
+    const other = owned('into_command', undefined, 'elsewhere.rs')
+    expect(callTargets(caller(), free, [free, capture])).toBe(true)
+    expect(callTargets(caller(), free, [free, other])).toBe(false)
+    expect(callTargets(caller({ file: 'util.rs' }), free, [free, other])).toBe(true)
+    expect(callTargets(caller({ receivers: new Map([['into_command', new Set(['options'])]]) }), free, [free, capture])).toBe(false)
+  })
+
+  it('credits a public method only through the callee its call resolves to', () => {
+    const functions = [
+      located({ file: 'options.rs', name: 'into_command', owner: 'CaptureOptions', start: 1, nameLine: 1, end: 4, sites: [{ command: 'list-panes', line: 2, flags: 'a', dispatch: { line: 2, name: 'run' } }] }),
+      located({ file: 'options.rs', name: 'into_command', owner: 'SplitOptions', start: 5, nameLine: 5, end: 8 }),
+      located({ file: 'pane.rs', name: 'split', owner: 'Pane', start: 1, nameLine: 1, end: 6, calls: new Map([['into_command', 3]]), receivers: new Map([['into_command', new Set(['options'])]]) }),
+    ]
+    const symbols = [{ id: 'pane.Pane.split', name: 'split', parentName: 'Pane', file: 'pane.rs', line: 1 }]
+    expect(deriveUsage({ command: 'list-panes', spec, functions, symbols }).entries).toEqual([])
+    // The control: the same call made on a handle named for the type reaches the site.
+    functions[2].receivers = new Map([['into_command', new Set(['captureoptions'])]])
+    expect(deriveUsage({ command: 'list-panes', spec, functions, symbols }).entries.map((entry: { symbol: string }) => entry.symbol)).toEqual(['pane.Pane.split'])
+  })
+})
+
 describe('reading back the lines an entry cites', () => {
-  const library = ['def panes(self):', '    return fetch("list-panes", ["-a"])', '', 'def search(self):', '    return panes()', '', 'def broken(self):', '    raise Unsupported("list-panes")'].join('\n')
-  const fn = (name: string, start: number, end: number, calls: [string, number][] = []) => ({ file: 'lib.py', name, start, end, calls: new Map(calls) })
-  const sources = { read: (path: string) => (path === 'lib.py' ? library : undefined), functions: [fn('panes', 1, 2), fn('search', 4, 5, [['panes', 5]]), fn('broken', 7, 8)] }
+  const library = [
+    'def panes(self):', //                                      1
+    '    return fetch("list-panes", ["-a"])', //                2
+    '', //                                                      3
+    'def search(self):', //                                     4
+    '    return panes()', //                                    5
+    '', //                                                      6
+    'def broken(self):', //                                     7
+    '    raise Unsupported("list-panes")', //                   8
+    '', //                                                      9
+    'def label(self):', //                                      10
+    '    return describe("list-panes")', //                     11
+    '', //                                                      12
+    'def kind(self, hooks):', //                                13
+    '    return fetch("list-hooks" if hooks else "list-panes")', // 14
+    '', //                                                      15
+    'def build(self):', //                                      16
+    '    return ["list-panes", "-a"]', //                       17
+    '', //                                                      18
+    'def built(self):', //                                      19
+    '    command = build()', //                                 20
+    '    return fetch(command)', //                             21
+    '', //                                                      22
+    'def selector(self):', //                                   23
+    '    fmt = get_output_format("list-panes", ["x"])', //      24
+    '    return fetch("list-windows", "-F", fmt)', //           25
+    '', //                                                      26
+    'def compare(self, name):', //                              27
+    '    if name == "list-panes":', //                          28
+    '        return fetch("list-windows")', //                  29
+  ].join('\n')
+  const commands = ['list-panes', 'list-hooks', 'list-windows']
   const use = (over: Record<string, unknown> = {}) => ({ symbol: 'S.search', command: 'list-panes', scope: 'server', evidence: ['lib.py:2', 'lib.py:5'], ...over })
-  const audit = (uses: unknown[], over: Record<string, unknown> = {}) => auditEvidence({
+  const auditOver = (sources: unknown, uses: unknown[], over: Record<string, unknown> = {}) => auditEvidence({
     port: 'py', revision: 'r1', uses: uses as never, claimFor: () => undefined, spellings: (command: string) => [command],
     sourcesAt: (port: string, revision: string) => (port === 'py' && revision === 'r1' ? sources : undefined), ...over,
   } as never)
+  const audit = async (uses: unknown[], over: Record<string, unknown> = {}) => auditOver(await sourcesOf('python', 'lib.py', library, ['fetch'], commands), uses, over)
 
-  it('accepts a scanned entry whose first line spells the command and whose next line calls the function around it', () => {
-    expect(audit([use()])).toEqual([])
+  it('accepts a scanned entry whose first line is the call that sends and whose next line calls the function around it', async () => {
+    expect(await audit([use()])).toEqual([])
     // The command may be spelled by its alias.
-    expect(audit([use({ command: 'lsp' })], { spellings: () => ['list-panes', 'lsp'] })).toEqual([])
+    expect(await audit([use({ command: 'lsp' })], { spellings: () => ['list-panes', 'lsp'] })).toEqual([])
   })
 
   it.each([
     ['a line past the end of the file', { evidence: ['lib.py:99', 'lib.py:5'] }, /lib.py:99 is not a line of py at r1/],
     ['a file the revision does not have', { evidence: ['gone.py:1'] }, /gone.py:1 is not a line of py at r1/],
-    ['a first line that does not spell the command', { evidence: ['lib.py:5'] }, /lib.py:5 does not spell list-panes/],
-    ['a later line that does not call the function around the line before it', { evidence: ['lib.py:2', 'lib.py:7'] }, /lib.py:7 does not call panes/],
-    ['a later line that follows a line in no function', { evidence: ['lib.py:3', 'lib.py:5'] }, /not a line of py|is in no function/],
-    ['a first line that throws', { evidence: ['lib.py:8'] }, /lib.py:8 reports a failure and sends nothing/],
-  ])('refuses %s', (_name, over, message) => {
-    expect(audit([use(over)]).join('\n')).toMatch(message)
+    ['a first line that is not a call that sends', { evidence: ['lib.py:5'] }, /lib.py:5 is not a call that sends list-panes/],
+    ['a later line that does not call the function around the line before it', { evidence: ['lib.py:2', 'lib.py:7'] }, /lib.py:7 is not a call of panes/],
+    ['a later line that follows a line in no function', { evidence: ['lib.py:3', 'lib.py:5'] }, /not a line of py|is in no function|is not a call that sends/],
+    ['a first line that throws', { evidence: ['lib.py:8'] }, /lib.py:8 is not a call that sends list-panes/],
+    ['a first line that compares the command', { evidence: ['lib.py:28'] }, /lib.py:28 is not a call that sends list-panes/],
+    ['a first line that passes the command to a call that never sends it', { evidence: ['lib.py:11'] }, /lib.py:11 is not a call that sends list-panes \(it is an argument of describe/],
+    ['a first line whose command a condition picks among others', { evidence: ['lib.py:14'] }, /lib.py:14 is not a call that sends list-panes \(a condition chooses it/],
+    ['a first line that is a format selector', { evidence: ['lib.py:24'] }, /lib.py:24 is not a call that sends list-panes \(it is an argument of get_output_format/],
+    ['a first line that only builds the command for a caller', { evidence: ['lib.py:17'] }, /lib.py:17 is not a call that sends list-panes \(it builds a value for the caller/],
+  ])('refuses %s', async (_name, over, message) => {
+    expect((await audit([use(over)])).join('\n')).toMatch(message)
   })
 
-  it('reads a reviewed entry against its claim, line by line', () => {
+  it('accepts what the refused lines are next to: the real send beside a comparison and beside a selector', async () => {
+    expect(await audit([use({ symbol: 'S.compare', command: 'list-windows', evidence: ['lib.py:29'] })])).toEqual([])
+    expect(await audit([use({ symbol: 'S.selector', command: 'list-windows', evidence: ['lib.py:25'] })])).toEqual([])
+  })
+
+  it('reads a command built by a helper as the call that sends, the call of the helper and the literal, in that order', async () => {
+    const built = (evidence: string[]) => use({ symbol: 'S.built', evidence })
+    expect(await audit([built(['lib.py:21', 'lib.py:20', 'lib.py:17'])])).toEqual([])
+    // The builder alone sends nothing; and the triple has to be the one the scan found, in order.
+    expect((await audit([built(['lib.py:17'])])).join('\n')).toMatch(/lib.py:17 is not a call that sends list-panes/)
+    expect((await audit([built(['lib.py:21', 'lib.py:17', 'lib.py:20'])])).join('\n')).toMatch(/not a call/)
+    expect((await audit([built(['lib.py:20'])])).join('\n')).toMatch(/lib.py:20 is not a call that sends list-panes/)
+  })
+
+  it('reads each hop as a call of the function the line before belongs to, resolved by what it is called on and not by its name', async () => {
+    const rust = [
+      'impl CaptureOptions {', //                                            1
+      '    fn into_command(self, pane: &str) -> Command {', //              2
+      '        let command = Command::new("list-panes");', //               3
+      '        run(command)', //                                             4
+      '    }', //                                                           5
+      '}', //                                                               6
+      'impl Pane {', //                                                     7
+      '    fn split(&self, options: SplitOptions) {', //                    8
+      '        options.into_command(&pane)', //                              9
+      '    }', //                                                           10
+      '    fn capture(&self, options: CaptureOptions) {', //                11
+      '        self.into_command(&pane)', //                                 12
+      '    }', //                                                           13
+      '    fn into_command(&self, pane: &str) {', //                         14
+      '        captureoptions.into_command(pane)', //                        15
+      '    }', //                                                           16
+      '}', //                                                               17
+    ].join('\n')
+    const sources = await sourcesOf('rust', 'pane.rs', rust, ['run'], ['list-panes'])
+    const audited = (evidence: string[]) => auditEvidence({
+      port: 'rs', revision: 'r1', uses: [{ symbol: 'pane.Pane.split', command: 'list-panes', scope: null, evidence }] as never, claimFor: () => undefined,
+      spellings: (command: string) => [command], sourcesAt: () => sources as never,
+    } as never)
+    // `Pane.split` calls an `into_command`, but on `options`, which is not the one in `CaptureOptions` that sends.
+    expect(audited(['pane.rs:4', 'pane.rs:9']).join('\n')).toMatch(/pane.rs:9 is not a call of CaptureOptions.into_command, the function around pane.rs:4/)
+    // The control: a call on a handle named for the type is that type's.
+    expect(audited(['pane.rs:4', 'pane.rs:15'])).toEqual([])
+  })
+
+  it('reads a reviewed entry against its claim, line by line', async () => {
     const claim = (over: Record<string, unknown> = {}) => ({ evidence: [{ at: 'lib.py:2', has: ['fetch("list-panes"'] }, { at: 'lib.py:5', has: ['panes()'], in: 'S.search' }], ...over })
     const reviewed = (evidence = ['lib.py:2', 'lib.py:5']) => use({ reviewed: true, evidence })
-    expect(audit([reviewed()], { claimFor: () => claim() })).toEqual([])
-    expect(audit([reviewed()]).join('\n')).toMatch(/reviewed, but no claim of py holds it at r1/)
-    expect(audit([reviewed(['lib.py:2', 'lib.py:4'])], { claimFor: () => claim() }).join('\n')).toMatch(/cites lib.py:4 where its claim cites lib.py:5/)
-    expect(audit([reviewed()], { claimFor: () => claim({ evidence: [{ at: 'lib.py:2', has: ['"list-windows"'] }, { at: 'lib.py:5' }] }) }).join('\n')).toMatch(/does not contain "\\"list-windows\\""/)
+    expect(await audit([reviewed()], { claimFor: () => claim() })).toEqual([])
+    expect((await audit([reviewed()])).join('\n')).toMatch(/reviewed, but no claim of py holds it at r1/)
+    expect((await audit([reviewed(['lib.py:2', 'lib.py:4'])], { claimFor: () => claim() })).join('\n')).toMatch(/cites lib.py:4 where its claim cites lib.py:5/)
+    expect((await audit([reviewed()], { claimFor: () => claim({ evidence: [{ at: 'lib.py:2', has: ['"list-windows"'] }, { at: 'lib.py:5' }] }) })).join('\n')).toMatch(/does not contain "\\"list-windows\\""/)
+  })
+
+  it('refuses a reviewed first line that reports a failure and sends nothing', async () => {
+    const claim = { evidence: [{ at: 'lib.py:8', has: ['Unsupported("list-panes")'] }] }
+    expect((await audit([use({ reviewed: true, evidence: ['lib.py:8'] })], { claimFor: () => claim })).join('\n')).toMatch(/lib.py:8 reports a failure and sends nothing/)
+    // The control: a line that holds a dispatch call sends, whatever else it does with the result.
+    const sends = { evidence: [{ at: 'lib.py:2', has: ['fetch("list-panes"'] }] }
+    expect(await audit([use({ reviewed: true, evidence: ['lib.py:2'] })], { claimFor: () => sends, dispatchFor: () => new Set(['fetch']) })).toEqual([])
   })
 
   it('refuses a reviewed first line that only binds the command in a function that goes on to send it, and not one that builds it for a caller', () => {
@@ -750,13 +1109,14 @@ describe('reading back the lines an entry cites', () => {
       '}',
     ].join('\n')
     const functions = [
-      { file: 'o.rs', name: 'set', start: 1, end: 4, calls: new Map([['run', 3], ['apply', 2]]) },
-      { file: 'o.rs', name: 'channel_command', start: 5, end: 8, calls: new Map() },
+      { file: 'o.rs', name: 'set', start: 1, end: 4, sites: [], calls: new Map([['run', 3], ['apply', 2]]) },
+      { file: 'o.rs', name: 'channel_command', start: 5, end: 8, sites: [], calls: new Map() },
     ]
     const rs = { read: () => rust, functions }
     const run = (line: number) => auditEvidence({
       port: 'rs', revision: 'r1', claimFor: () => ({ evidence: [] }), spellings: (command: string) => [command],
       sourcesAt: () => rs, uses: [{ symbol: 'o.set', command: 'set-option', scope: null, reviewed: true, evidence: [`o.rs:${line}`] }] as never,
+      dispatchFor: () => new Set(['run']),
     } as never)
     expect(run(2).join('\n')).toMatch(/o.rs:2 only binds the command to a name in set, which goes on to send it/)
     expect(run(3)).toEqual([])
@@ -765,16 +1125,20 @@ describe('reading back the lines an entry cites', () => {
 
   describe('a wrapper that stands on a core library', () => {
     // The wrapper cites the call, and the core lines are read at the revision the via names.
-    const wrapper = { read: (path: string) => (path === 'w.fs' ? 'let panes server =\n    server.PanesAsync()' : undefined), functions: [] }
-    const core = (text: string) => ({ read: (path: string) => (path === 'Core.cs' ? text : undefined), functions: [{ file: 'Core.cs', name: 'PanesAsync', start: 1, end: 3, calls: new Map() }] })
-    const at = { 'fs@r1': wrapper, 'cs@r1': core('Task PanesAsync() =>\n    Fetch("list-panes");'), 'cs@r2': core('Task PanesAsync() =>\n    Fetch();\n    // list-panes lived here') }
-    const forwarded = (revision: string | undefined, evidence = ['Core.cs:2']) => ({
+    const wrapper = { read: (path: string) => (path === 'w.fs' ? 'let panes server =\n    server.PanesAsync()' : undefined), functions: [{ file: 'w.fs', name: 'panes', start: 1, end: 2, sites: [], calls: new Map([['PanesAsync', 2]]), receivers: new Map() }] }
+    const core = async (text: string) => sourcesOf('csharp', 'Core.cs', text, ['Fetch'], ['list-panes'])
+    const lines = (body: string) => `class Server {\n    Task PanesAsync() =>\n        ${body};\n}`
+    let at: Record<string, unknown> = {}
+    beforeAll(async () => {
+      at = { 'fs@r1': wrapper, 'cs@r1': await core(lines('Fetch("list-panes")')), 'cs@r2': await core(`${lines('Fetch()')}\n// list-panes lived here`) }
+    })
+    const forwarded = (revision: string | undefined, evidence = ['Core.cs:3']) => ({
       symbol: 'S.Server.newSession', command: 'list-panes', scope: 'session', evidence: ['w.fs:2'],
       via: { port: 'cs', symbol: 'Lib.Server.PanesAsync', revision, evidence },
     })
     const audits = (uses: unknown[]) => auditEvidence({
       port: 'fs', revision: 'r1', uses: uses as never, claimFor: () => undefined, spellings: (command: string) => [command],
-      sourcesAt: (port: string, revision: string) => (at as unknown as Record<string, never>)[`${port}@${revision}`],
+      sourcesAt: (port: string, revision: string) => at[`${port}@${revision}`] as never,
     } as never)
 
     it('accepts core lines that read as cited at the revision the via names', () => {
@@ -782,13 +1146,13 @@ describe('reading back the lines an entry cites', () => {
     })
 
     it('refuses core lines read at a revision where they say something else, which is what citing the wrong revision does', () => {
-      expect(audits([forwarded('r2')]).join('\n')).toMatch(/via cs Lib.Server.PanesAsync\): Core.cs:2 does not spell list-panes/)
+      expect(audits([forwarded('r2')]).join('\n')).toMatch(/via cs Lib.Server.PanesAsync\): Core.cs:3 is not a call that sends list-panes/)
     })
 
     it('refuses a via that names no revision, a revision nothing was scanned at, and a wrapper line that does not call the core method', () => {
       expect(audits([forwarded(undefined)]).join('\n')).toMatch(/its via names no revision/)
       expect(audits([forwarded('r9')]).join('\n')).toMatch(/no scan of cs at r9/)
-      expect(audits([{ ...forwarded('r1'), evidence: ['w.fs:1'] }]).join('\n')).toMatch(/w.fs:1 does not call PanesAsync/)
+      expect(audits([{ ...forwarded('r1'), evidence: ['w.fs:1'] }]).join('\n')).toMatch(/w.fs:1 is not a call of PanesAsync/)
     })
 
     it('reads a generated wrapper by its generator lines and the annotation that makes it forward, and not as a call', () => {

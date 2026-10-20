@@ -44,6 +44,7 @@ const claimsPath = join(root, 'scripts/tmux-usage/claims.json')
 const forwardersPath = join(root, 'scripts/tmux-usage/forwarders.json')
 const exclusionsPath = join(root, 'scripts/tmux-usage/exclusions.json')
 const reviewsPath = join(root, 'scripts/tmux-usage/not-senders.json')
+const dispatchersPath = join(root, 'scripts/tmux-usage/dispatchers.json')
 export const SCHEMA_VERSION = 1
 /** The commands whose usage is recorded: every command of the pinned manuals, unless `--commands` names some. */
 export const COMMANDS = 'all'
@@ -132,11 +133,37 @@ export const isPrivateSymbol = (symbol) => (symbol.name.startsWith('_') && !/^__
   || (symbol.publicId ?? symbol.id).replace(/\(.*$/s, '').split(/[.:#\\/]+/).slice(0, -1).some((segment) => UNDERSCORE.test(segment))
   || Boolean(symbol.modifiers?.includes('private')) || symbol.apiScope === 'internal'
 
+/**
+ * The declaration of a signature up to its parameters, without the annotations and attributes in front of it.
+ * `pub(crate)` is a visibility, not a call, so it is named before the parameters are cut off.
+ */
+const declarationOf = (raw) => raw
+  .replace(/#!?\[[^\]]*\]\s*/g, '')
+  .replace(/@\w+(?:\([^)]*\))?\s*/g, '')
+  .replace(/\bpub\((?:crate|super|self|in\s[^)]*)\)/g, 'pub_restricted')
+  .split('(')[0]
+
+/**
+ * Whether a member is not callable by a library's user, by the visibility its own signature spells: `private`, `protected`,
+ * `internal`, `fileprivate` or a restricted `pub`. Java alone leaves the visibility off for the default, so a member of a class
+ * declared without `public` is package-private there; a member of an interface is public without saying so, and so is an enum
+ * constant. A port whose model carries no signature text keeps the filter of its own extractor.
+ */
+const NON_PUBLIC = /\b(?:private|protected|internal|fileprivate|pub_restricted)\b/
+export const notPublic = (symbol, byId, port) => {
+  const raw = symbol.signatures?.[0]?.raw
+  if (!raw) return false
+  const declaration = declarationOf(raw)
+  if (NON_PUBLIC.test(declaration)) return true
+  if (port !== 'java' || ['interface', 'enum'].includes(byId.get(symbol.parent)?.kind)) return false
+  return !/\bpublic\b/.test(declaration)
+}
+
 /** Callable public symbols, in the shape the derivation reads: a library's private helpers are not API to use. */
 export function publicSymbols(model) {
   const byId = new Map(model.symbols.map((symbol) => [symbol.id, symbol]))
   return model.symbols
-    .filter((symbol) => !isPrivateSymbol(symbol) && symbol.source?.file && !EXAMPLES.test(symbol.source.file)
+    .filter((symbol) => !isPrivateSymbol(symbol) && !notPublic(symbol, byId, model.port) && symbol.source?.file && !EXAMPLES.test(symbol.source.file)
       && ['function', 'method', 'property', 'attribute'].includes(symbol.kind))
     .map((symbol) => ({
       id: symbol.publicId ?? symbol.id,
@@ -163,7 +190,7 @@ export function portDocument(port, model, found, commands) {
 }
 
 /** Read a port's source at its pinned revision: every function, and the public symbols that name them. */
-export async function scanPort({ port, model, commands, checkout, known }) {
+export async function scanPort({ port, model, commands, checkout, known, dispatch, builders, trace }) {
   const grammar = GRAMMARS[port]
   const symbols = publicSymbols(model)
   const functions = []
@@ -171,7 +198,7 @@ export async function scanPort({ port, model, commands, checkout, known }) {
   const sources = grammar ? librarySources(checkout, model.revision, grammar) : new Map()
   const wanted = new Set(commands)
   for (const [path, text] of sources) {
-    const scanned = await scanSource({ grammar, text, commands: wanted, known })
+    const scanned = await scanSource({ grammar, text, commands: wanted, known, dispatch, builders, trace })
     for (const fn of scanned.functions) functions.push({ ...fn, file: path })
     for (const type of scanned.types) types.push({ ...type, file: path })
   }
@@ -239,14 +266,14 @@ async function modelAtRevision({ port, checkout, revision }) {
 /** The Operation annotation above the core method that sends, the line that makes a generated wrapper forward to it. */
 function operationAnnotation(core, kinds) {
   const pattern = new RegExp(`@Operation\\(\\s*Kind\\.(?:${kinds.join('|')})\\s*\\)`)
-  return (entry) => {
-    const last = entry.evidence.at(-1)
-    const file = last.slice(0, last.lastIndexOf(':'))
-    const line = Number(last.slice(last.lastIndexOf(':') + 1))
-    const fn = core.functions.find((candidate) => candidate.file === file && candidate.start <= line && line <= candidate.end)
-    const text = fn && core.readSource(file)?.split('\n')
-    if (!fn || !text) return undefined
-    for (let at = fn.start; at <= fn.nameLine; at++) if (pattern.test(text[at - 1] ?? '')) return `${file}:${at}`
+  return (entry, symbol) => {
+    // The method a wrapper forwards to is the public one the entry belongs to; the lines it cites may be in a helper.
+    const name = symbol?.name.replace(/\(.*$/s, '')
+    const candidates = core.functions.filter((fn) => symbol && fn.file === symbol.file && fn.name === name && fn.start <= (symbol.line ?? 0) + 2 && (symbol.line ?? 0) <= fn.end)
+    for (const fn of candidates.length ? candidates : core.functions.filter((other) => symbol && other.file === symbol.file && other.name === name)) {
+      const text = core.readSource(fn.file)?.split('\n')
+      for (let at = fn.start; text && at <= fn.nameLine; at++) if (pattern.test(text[at - 1] ?? '')) return `${fn.file}:${at}`
+    }
     return undefined
   }
 }
@@ -296,10 +323,11 @@ export function documentProblems(document, model, scopes, commands, viaRevision)
   if (document.revision !== model.revision) problems.push(`records ${document.revision}, but the API model is at ${model.revision}`)
   if (JSON.stringify(document.commands) !== JSON.stringify([...commands].sort())) problems.push(`covers ${JSON.stringify(document.commands)}, expected ${JSON.stringify([...commands].sort())}`)
   const ids = new Set(model.symbols.map((symbol) => symbol.publicId ?? symbol.id))
-  const privateIds = new Set(model.symbols.filter(isPrivateSymbol).map((symbol) => symbol.publicId ?? symbol.id))
+  const byId = new Map(model.symbols.map((symbol) => [symbol.id, symbol]))
+  const privateIds = new Set(model.symbols.filter((symbol) => isPrivateSymbol(symbol) || notPublic(symbol, byId, model.port)).map((symbol) => symbol.publicId ?? symbol.id))
   for (const [symbol, uses] of Object.entries(document.symbols)) {
     if (!ids.has(symbol)) problems.push(`${symbol}: not a symbol of the API model`)
-    else if (privateIds.has(symbol)) problems.push(`${symbol}: is private, and only public API is recorded`)
+    else if (privateIds.has(symbol)) problems.push(`${symbol}: is private or package-private, and only public API is recorded`)
     for (const use of uses) {
       const scoped = scopes.commands[use.command]?.scopes
       if (!commands.includes(use.command)) problems.push(`${symbol}: ${use.command} is not a recorded command`)
@@ -332,11 +360,35 @@ function sweepProblems({ port, model, document, reviews, exclusions, report, rea
   return problems
 }
 
+/**
+ * The dispatch APIs of a port: the calls that take a tmux command and send it. Each names the code that defines it, and
+ * the definition must still be there. A command literal is recorded as a send only where it reaches one of these.
+ */
+export function dispatcherProblems({ port, dispatchers, readSource }) {
+  const problems = []
+  for (const rule of dispatchers) {
+    const label = `${port}: dispatcher ${rule.name}`
+    if (!rule.name || !rule.why?.trim()) { problems.push(`${label}: names no call or gives no reason`); continue }
+    if (!rule.evidence?.length) { problems.push(`${label}: cites no definition`); continue }
+    let defined = false
+    for (const item of rule.evidence) {
+      const cut = item.at.lastIndexOf(':')
+      const line = readSource(item.at.slice(0, cut))?.split('\n')[Number(item.at.slice(cut + 1)) - 1]
+      if (line === undefined) { problems.push(`${label}: ${item.at} is not a line of the pinned source`); continue }
+      for (const needle of item.has ?? []) if (!line.includes(needle)) problems.push(`${label}: ${item.at} does not contain ${JSON.stringify(needle)}`)
+      if ((item.has ?? []).some((needle) => needle.includes(rule.name))) defined = true
+    }
+    if (!defined) problems.push(`${label}: no cited line shows ${rule.name} defined`)
+  }
+  return problems
+}
+
 export async function main() {
   const scopes = readJson(join(usageDir, 'scopes.json'))
   const claims = existsSync(claimsPath) ? readJson(claimsPath).claims : []
   const exclusions = existsSync(exclusionsPath) ? readJson(exclusionsPath).exclusions : []
   const reviews = existsSync(reviewsPath) ? readJson(reviewsPath).reviews : []
+  const dispatchers = existsSync(dispatchersPath) ? readJson(dispatchersPath).dispatchers : []
   const ports = await portsWithModels()
   const report = []
   const failures = []
@@ -374,15 +426,21 @@ export async function main() {
   async function derivePass({ port, model, core }) {
     const pinned = models.get(port.slug).revision
     const rules = (list) => list.filter((rule) => rule.port === port.slug && ruleHolds(rule, model.revision, pinned))
-    const scanned = await scanPort({ port: port.slug, model, commands: commandsToRecord, checkout: checkoutFor(port), known })
+    // A dispatch API is a name, so it holds at any revision of its port; its definition is checked at the model's.
+    const apis = dispatchers.filter((api) => api.port === port.slug && (!api.revision || model.revision.startsWith(api.revision)))
+    const scanned = await scanPort({
+      port: port.slug, model, commands: commandsToRecord, checkout: checkoutFor(port), known,
+      dispatch: new Set(apis.filter((api) => api.kind !== 'builder').map((api) => api.name)), builders: new Set(apis.filter((api) => api.kind === 'builder').map((api) => api.name)),
+    })
     scans.set(scanKey(port.slug, model.revision), { read: scanned.readSource, functions: scanned.functions })
+    const dispatchProblems = model.revision === pinned ? dispatcherProblems({ port: port.slug, dispatchers: apis, readSource: scanned.readSource }) : []
     const sends = (parent, symbol, command, scope) => {
       const entry = core?.found.get(`${symbol}\0${command}\0${scope}`)
       return parent === core?.port && entry ? { ...entry, revision: core.revision } : undefined
     }
     const { found, problems } = derivePort({ port: port.slug, scanned, commands: commandsToRecord, scopes, claims: rules(claims), report, sends })
     const excluded = applyExclusions({ exclusions: rules(exclusions), found, symbols: scanned.symbols, readSource: scanned.readSource })
-    return { port: port.slug, revision: model.revision, found, scanned, problems: [...problems, ...excluded.problems] }
+    return { port: port.slug, revision: model.revision, found, scanned, problems: [...dispatchProblems, ...problems, ...excluded.problems] }
   }
 
   /** The core library as the wrapper sees it: read where the wrapper is pinned if they share a repository, else at the core's model. */
@@ -444,6 +502,7 @@ export async function main() {
     failures.push(...auditEvidence({
       port: port.slug, revision: model.revision, claimFor, spellings: (command) => spellings.get(command) ?? [command],
       sourcesAt: (slug, revision) => scans.get(scanKey(slug, revision)),
+      dispatchFor: (slug) => new Set(dispatchers.filter((api) => api.port === slug).map((api) => api.name)),
       generated: config?.generated && { evidence: config.generated.evidence.map((item) => item.at) },
       uses: Object.entries(subject.symbols).flatMap(([symbol, uses]) => uses.map((use) => ({ symbol, ...use }))),
     }))

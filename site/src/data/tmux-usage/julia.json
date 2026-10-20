@@ -101,7 +101,7 @@
       {
         "command": "wait-for",
         "evidence": [
-          "src/control.jl:869"
+          "src/control.jl:867"
         ],
         "scope": null
       }
@@ -110,7 +110,7 @@
       {
         "command": "capture-pane",
         "evidence": [
-          "src/control_io.jl:101"
+          "src/control_io.jl:124"
         ],
         "scope": null
       },
@@ -125,7 +125,7 @@
       {
         "command": "list-buffers",
         "evidence": [
-          "src/control_io.jl:35",
+          "src/control_io.jl:36",
           "src/control_io.jl:112"
         ],
         "scope": null
@@ -133,7 +133,7 @@
       {
         "command": "save-buffer",
         "evidence": [
-          "src/control_io.jl:131"
+          "src/control_io.jl:129"
         ],
         "scope": null
       }
@@ -153,7 +153,7 @@
       {
         "command": "delete-buffer",
         "evidence": [
-          "src/control_buffers.jl:124"
+          "src/control_buffers.jl:122"
         ],
         "scope": null
       }
@@ -162,14 +162,14 @@
       {
         "command": "detach-client",
         "evidence": [
-          "src/control_clients.jl:77"
+          "src/control_clients.jl:75"
         ],
         "scope": null
       },
       {
         "command": "list-clients",
         "evidence": [
-          "src/control_clients.jl:11",
+          "src/control_clients.jl:9",
           "src/control_clients.jl:74"
         ],
         "scope": null
@@ -186,7 +186,7 @@
       {
         "command": "list-panes",
         "evidence": [
-          "src/formats.jl:69",
+          "src/formats.jl:67",
           "src/formats.jl:208"
         ],
         "scope": "window"
@@ -243,12 +243,20 @@
       {
         "command": "link-window",
         "evidence": [
-          "src/control_topology.jl:282"
+          "src/control_topology.jl:285"
         ],
         "scope": null
       }
     ],
     "LibTmux.load_buffer": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "src/acquisition.jl:50",
+          "src/pane_io.jl:185"
+        ],
+        "scope": null
+      },
       {
         "command": "list-buffers",
         "evidence": [
@@ -260,7 +268,7 @@
       {
         "command": "load-buffer",
         "evidence": [
-          "src/control_buffers.jl:39",
+          "src/control_buffers.jl:37",
           "src/control_buffers.jl:71"
         ],
         "scope": null
@@ -270,7 +278,7 @@
       {
         "command": "move-pane",
         "evidence": [
-          "src/control_topology.jl:189"
+          "src/control_topology.jl:199"
         ],
         "scope": null
       }
@@ -279,7 +287,7 @@
       {
         "command": "move-window",
         "evidence": [
-          "src/control_topology.jl:282"
+          "src/control_topology.jl:285"
         ],
         "scope": null
       }
@@ -288,7 +296,7 @@
       {
         "command": "new-session",
         "evidence": [
-          "src/control_topology.jl:38"
+          "src/operations.jl:191"
         ],
         "scope": null
       }
@@ -297,7 +305,7 @@
       {
         "command": "new-window",
         "evidence": [
-          "src/control_operations.jl:95"
+          "src/operations.jl:230"
         ],
         "scope": null
       }
@@ -306,7 +314,7 @@
       {
         "command": "display-message",
         "evidence": [
-          "src/observation.jl:491",
+          "src/observation.jl:489",
           "src/observation.jl:535"
         ],
         "scope": null
@@ -314,7 +322,7 @@
       {
         "command": "refresh-client",
         "evidence": [
-          "src/observation.jl:543"
+          "src/observation.jl:541"
         ],
         "scope": null
       }
@@ -323,7 +331,7 @@
       {
         "command": "attach-session",
         "evidence": [
-          "src/control.jl:628",
+          "src/control.jl:637",
           "src/control.jl:1095"
         ],
         "scope": null
@@ -331,16 +339,8 @@
       {
         "command": "display-message",
         "evidence": [
-          "src/control.jl:744",
+          "src/control.jl:742",
           "src/control.jl:1095"
-        ],
-        "scope": null
-      },
-      {
-        "command": "wait-for",
-        "evidence": [
-          "src/control.jl:966",
-          "src/control.jl:1113"
         ],
         "scope": null
       }
@@ -349,7 +349,7 @@
       {
         "command": "display-message",
         "evidence": [
-          "src/lifecycle.jl:265",
+          "src/lifecycle.jl:269",
           "src/lifecycle.jl:416"
         ],
         "scope": null
@@ -359,8 +359,8 @@
       {
         "command": "delete-buffer",
         "evidence": [
-          "src/pane_io.jl:141",
-          "src/pane_io.jl:289"
+          "src/control_io.jl:60",
+          "src/control_buffers.jl:189"
         ],
         "scope": null
       },
@@ -375,7 +375,7 @@
       {
         "command": "list-commands",
         "evidence": [
-          "src/control_buffers.jl:135",
+          "src/control_buffers.jl:132",
           "src/control_buffers.jl:174"
         ],
         "scope": null
@@ -383,7 +383,7 @@
       {
         "command": "load-buffer",
         "evidence": [
-          "src/control_buffers.jl:39",
+          "src/control_buffers.jl:37",
           "src/control_buffers.jl:175"
         ],
         "scope": null
@@ -391,9 +391,12 @@
       {
         "command": "paste-buffer",
         "evidence": [
-          "src/control_buffers.jl:147",
-          "src/control_buffers.jl:174"
+          "src/pane_io.jl:243",
+          "src/pane_io.jl:236",
+          "src/pane_io.jl:273",
+          "src/pane_io.jl:278"
         ],
+        "reviewed": true,
         "scope": null
       }
     ],
@@ -401,7 +404,7 @@
       {
         "command": "list-panes",
         "evidence": [
-          "src/control_formats.jl:21",
+          "src/control_formats.jl:19",
           "src/control_formats.jl:56"
         ],
         "scope": "window"
@@ -411,7 +414,7 @@
       {
         "command": "set-environment",
         "evidence": [
-          "src/control_configuration.jl:75",
+          "src/control_configuration.jl:73",
           "src/control_configuration.jl:66"
         ],
         "scope": null
@@ -439,7 +442,7 @@
       {
         "command": "list-panes",
         "evidence": [
-          "src/formats.jl:69",
+          "src/formats.jl:67",
           "src/formats.jl:177"
         ],
         "scope": "window"
@@ -471,7 +474,7 @@
       {
         "command": "respawn-pane",
         "evidence": [
-          "src/control_topology.jl:229"
+          "src/control_topology.jl:236"
         ],
         "scope": null
       }
@@ -480,66 +483,33 @@
       {
         "command": "respawn-window",
         "evidence": [
-          "src/control_topology.jl:229"
-        ],
-        "scope": null
-      }
-    ],
-    "LibTmux.run_command": [
-      {
-        "command": "delete-buffer",
-        "evidence": [
-          "src/control_protocol.jl:435",
-          "src/control.jl:580"
-        ],
-        "scope": null
-      },
-      {
-        "command": "kill-pane",
-        "evidence": [
-          "src/control_protocol.jl:427",
-          "src/control.jl:580"
-        ],
-        "scope": null
-      },
-      {
-        "command": "kill-session",
-        "evidence": [
-          "src/control_protocol.jl:428",
-          "src/control.jl:580"
-        ],
-        "scope": null
-      },
-      {
-        "command": "kill-window",
-        "evidence": [
-          "src/control_protocol.jl:428",
-          "src/control.jl:580"
+          "src/control_topology.jl:236"
         ],
         "scope": null
       }
     ],
     "LibTmux.save_buffer": [
       {
+        "command": "list-buffers",
+        "evidence": [
+          "src/control_io.jl:36",
+          "src/control_buffers.jl:96"
+        ],
+        "scope": null
+      },
+      {
         "command": "save-buffer",
         "evidence": [
-          "src/control_buffers.jl:102"
+          "src/control_buffers.jl:100"
         ],
         "scope": null
       }
     ],
     "LibTmux.select_layout": [
       {
-        "command": "display-message",
-        "evidence": [
-          "src/control_topology.jl:134"
-        ],
-        "scope": null
-      },
-      {
         "command": "select-layout",
         "evidence": [
-          "src/control_topology.jl:143"
+          "src/control_topology.jl:141"
         ],
         "scope": null
       }
@@ -566,7 +536,7 @@
       {
         "command": "send-keys",
         "evidence": [
-          "src/control_operations.jl:188"
+          "src/control_operations.jl:196"
         ],
         "scope": null
       }
@@ -602,7 +572,7 @@
       {
         "command": "display-message",
         "evidence": [
-          "src/acquisition.jl:52",
+          "src/acquisition.jl:50",
           "src/acquisition.jl:227"
         ],
         "scope": null
@@ -636,7 +606,7 @@
       {
         "command": "list-windows",
         "evidence": [
-          "src/acquisition.jl:109",
+          "src/acquisition.jl:107",
           "src/acquisition.jl:231"
         ],
         "scope": "server"
@@ -646,7 +616,7 @@
       {
         "command": "split-window",
         "evidence": [
-          "src/control_operations.jl:142"
+          "src/operations.jl:273"
         ],
         "scope": null
       }
@@ -655,7 +625,7 @@
       {
         "command": "display-message",
         "evidence": [
-          "src/observation.jl:491",
+          "src/observation.jl:489",
           "src/observation.jl:590"
         ],
         "scope": null
@@ -663,7 +633,7 @@
       {
         "command": "refresh-client",
         "evidence": [
-          "src/observation.jl:610"
+          "src/observation.jl:608"
         ],
         "scope": null
       }
@@ -672,7 +642,7 @@
       {
         "command": "swap-pane",
         "evidence": [
-          "src/control_topology.jl:211"
+          "src/control_topology.jl:213"
         ],
         "scope": null
       }
@@ -681,7 +651,7 @@
       {
         "command": "swap-window",
         "evidence": [
-          "src/control_topology.jl:346"
+          "src/control_topology.jl:348"
         ],
         "scope": null
       }
@@ -690,7 +660,7 @@
       {
         "command": "list-clients",
         "evidence": [
-          "src/control_clients.jl:11",
+          "src/control_clients.jl:9",
           "src/control_clients.jl:51"
         ],
         "scope": null
@@ -698,7 +668,7 @@
       {
         "command": "switch-client",
         "evidence": [
-          "src/control_clients.jl:52"
+          "src/control_clients.jl:54"
         ],
         "scope": null
       }
@@ -707,7 +677,7 @@
       {
         "command": "unlink-window",
         "evidence": [
-          "src/control_topology.jl:317"
+          "src/control_topology.jl:319"
         ],
         "scope": null
       }
@@ -716,7 +686,7 @@
       {
         "command": "set-environment",
         "evidence": [
-          "src/control_configuration.jl:75",
+          "src/control_configuration.jl:73",
           "src/control_configuration.jl:50"
         ],
         "scope": null

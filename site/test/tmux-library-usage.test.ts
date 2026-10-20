@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { experimental_AstroContainer } from 'astro/container'
 import { Window } from 'happy-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { documentProblems, isPrivateSymbol, publicSymbols, viaRevisionFor } from '../../scripts/gen-tmux-usage.mjs'
+import { dispatcherProblems, documentProblems, isPrivateSymbol, notPublic, publicSymbols, viaRevisionFor } from '../../scripts/gen-tmux-usage.mjs'
 import { API_MODELS } from '../src/lib/api-models'
 import { PORTS } from '../src/lib/ports'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
@@ -89,12 +89,70 @@ describe('the recorded usage', () => {
     expect(isPrivateSymbol({ name: '__enter__', id: 'libtmux._internal.control_mode.ControlMode.__enter__' })).toBe(true)
     expect(isPrivateSymbol({ name: 'x', id: 'libtmux.Server.x', apiScope: 'internal' })).toBe(true)
     const document = { ...TMUX_USAGE.py, symbols: { ...TMUX_USAGE.py.symbols, 'libtmux.Server._show_option': [{ command: 'show-options', scope: null, evidence: ['a.py:1'] }] } }
-    expect(documentProblems(document, model, scopeTable, manualCommands)).toEqual(['libtmux.Server._show_option: is private, and only public API is recorded'])
+    expect(documentProblems(document, model, scopeTable, manualCommands)).toEqual(['libtmux.Server._show_option: is private or package-private, and only public API is recorded'])
     // None of the committed documents records a private symbol.
     for (const slug of PORTS.map((port) => port.slug)) {
       const privates = API_MODELS[slug].symbols.filter(isPrivateSymbol).map((symbol: { publicId?: string; id: string }) => symbol.publicId ?? symbol.id)
       expect(Object.keys(TMUX_USAGE[slug].symbols).filter((id) => privates.includes(id)), slug).toEqual([])
     }
+  })
+
+  it('records public API only in Java and elsewhere: a member declared without public, or with a narrower visibility, is not recorded', () => {
+    const member = (name: string, raw: string, parent = 'io.libtmux.Type') => ({
+      id: `${parent}.${name}`, name, kind: 'method', modifiers: [], parent, signatures: [{ raw }], source: { file: 'src/main/java/io/libtmux/Type.java', line: 1 },
+    })
+    const model = {
+      ...API_MODELS.java,
+      symbols: [
+        { id: 'io.libtmux.Type', name: 'Type', kind: 'class', modifiers: [], source: { file: 'src/main/java/io/libtmux/Type.java', line: 1 } },
+        { id: 'io.libtmux.Face', name: 'Face', kind: 'interface', modifiers: [], source: { file: 'src/main/java/io/libtmux/Face.java', line: 1 } },
+        member('visible', 'public String visible()'),
+        member('annotated', '@Operation(Kind.READ)\npublic String annotated()'),
+        member('packaged', 'String packaged()'),
+        member('guarded', 'protected String guarded()'),
+        member('implicit', 'String implicit()', 'io.libtmux.Face'),
+      ],
+    }
+    const names = publicSymbols(model).map((symbol: { name: string }) => symbol.name)
+    expect(names).toEqual(expect.arrayContaining(['visible', 'annotated']))
+    // A member declared without `public` cannot be called by the library's user, and an interface member is public without saying so.
+    expect(names).not.toContain('packaged')
+    expect(names).not.toContain('guarded')
+    expect(names).toContain('implicit')
+    const record = (id: string) => ({ ...TMUX_USAGE.java, revision: model.revision, symbols: { [id]: [{ command: 'list-panes', scope: 'server', evidence: ['a.java:1'] }] } })
+    expect(documentProblems(record('io.libtmux.Type.packaged'), model, scopeTable, manualCommands).filter((problem: string) => /packaged/.test(problem)))
+      .toEqual(['io.libtmux.Type.packaged: is private or package-private, and only public API is recorded'])
+    // The control: a public member, and an interface member, are accepted.
+    expect(documentProblems(record('io.libtmux.Type.visible'), model, scopeTable, manualCommands).filter((problem: string) => /visible/.test(problem))).toEqual([])
+    expect(documentProblems(record('io.libtmux.Face.implicit'), model, scopeTable, manualCommands).filter((problem: string) => /implicit/.test(problem))).toEqual([])
+    // The visibility is read off the signature of any port: Kotlin `internal`, Rust `pub(crate)`, Swift `fileprivate`.
+    const byId = new Map<string, never>()
+    expect(notPublic({ signatures: [{ raw: 'internal suspend fun Batch.run(): BatchResult' }] }, byId, 'kotlin')).toBe(true)
+    expect(notPublic({ signatures: [{ raw: '#[cfg(feature = "x")]\npub(crate) async fn run(&self)' }] }, byId, 'rs')).toBe(true)
+    expect(notPublic({ signatures: [{ raw: 'fileprivate func run()' }] }, byId, 'swift')).toBe(true)
+    expect(notPublic({ signatures: [{ raw: '#[cfg(feature = "x")]\npub async fn run(&self)' }] }, byId, 'rs')).toBe(false)
+    expect(notPublic({ signatures: [{ raw: 'public suspend fun Batch.run(): BatchResult' }] }, byId, 'kotlin')).toBe(false)
+    // A default-visibility signature is public in every port but Java.
+    expect(notPublic({ signatures: [{ raw: 'def run(self)' }] }, byId, 'py')).toBe(false)
+    // None of the committed documents records a member its model declares non-public.
+    for (const slug of PORTS.map((port) => port.slug)) {
+      const index = new Map(API_MODELS[slug].symbols.map((symbol: { id: string }) => [symbol.id, symbol]))
+      const hidden = API_MODELS[slug].symbols.filter((symbol) => notPublic(symbol, index as never, slug)).map((symbol: { publicId?: string; id: string }) => symbol.publicId ?? symbol.id)
+      expect(Object.keys(TMUX_USAGE[slug].symbols).filter((id) => hidden.includes(id)), slug).toEqual([])
+    }
+  })
+
+  it('refuses a dispatching call whose cited definition is gone, differs, or does not show the call defined', () => {
+    const source = 'def cmd(self, *args):\n    return run(args)\n'
+    const readSource = (path: string) => (path === 'lib.py' ? source : undefined)
+    const rule = (over: Record<string, unknown> = {}) => ({ name: 'cmd', why: 'Runs the command it is given.', evidence: [{ at: 'lib.py:1', has: ['def cmd('] }], ...over })
+    const problems = (over: Record<string, unknown>) => dispatcherProblems({ port: 'py', dispatchers: [rule(over)], readSource })
+    expect(problems({})).toEqual([])
+    expect(problems({ evidence: [{ at: 'lib.py:9', has: ['def cmd('] }] })).toEqual(['py: dispatcher cmd: lib.py:9 is not a line of the pinned source', 'py: dispatcher cmd: no cited line shows cmd defined'])
+    expect(problems({ evidence: [{ at: 'lib.py:2', has: ['def cmd('] }] }).join('\n')).toMatch(/lib.py:2 does not contain "def cmd\("/)
+    expect(problems({ evidence: [{ at: 'lib.py:2', has: ['run(args)'] }] })).toEqual(['py: dispatcher cmd: no cited line shows cmd defined'])
+    expect(problems({ why: ' ' })).toEqual(['py: dispatcher cmd: names no call or gives no reason'])
+    expect(problems({ evidence: [] })).toEqual(['py: dispatcher cmd: cites no definition'])
   })
 
   it('records every command of the manual, for every port', () => {
@@ -186,7 +244,7 @@ describe('the recorded usage', () => {
   it('keeps a call through a helper with the method and off the command pages', () => {
     const go = tmuxUsageOf('go', 'tmux.Pane.Select').filter((entry) => entry.command === 'list-panes')
     expect(go).toHaveLength(1)
-    expect(go[0].scopes[0]).toMatchObject({ hops: 1, evidence: ['tmux/lookup.go:371', 'tmux/window_pane_topology.go:199'] })
+    expect(go[0].scopes[0]).toMatchObject({ hops: 1, evidence: ['tmux/lookup.go:369', 'tmux/window_pane_topology.go:199'] })
     expect(usage.groups.flatMap((group) => group.ports).flatMap((entry) => entry.links).map((link) => link.symbolId)).not.toContain('tmux.Pane.Select')
   })
 
@@ -280,8 +338,9 @@ describe('from a method to the command and its C function', () => {
     // A recorded command is linked by what the code sends, not by the concept map: TypeScript's capture reaches capture-pane through a helper.
     expect(tmuxCommandsFor('ts', 'pane.Pane.capture')).toEqual([])
     expect(tmuxSymbolSends('ts', 'pane.Pane.capture').map((send) => [send.command, send.scopes[0].listed])).toEqual([['capture-pane', true]])
-    // Its send-keys is another command's helper: the method sends nothing of the kind, and nothing says so.
-    expect(tmuxSymbolSends('ts', 'pane.Pane.enterCopyMode').map((send) => [send.command, send.scopes[0].listed])).toEqual([['copy-mode', true], ['send-keys', false]])
+    // The send-keys that setCopyMode sends to leave copy mode is not what entering does, so entering records copy-mode alone.
+    expect(tmuxSymbolSends('ts', 'pane.Pane.enterCopyMode').map((send) => [send.command, send.scopes[0].listed])).toEqual([['copy-mode', true]])
+    expect(tmuxSymbolSends('ts', 'pane.Pane.exitCopyMode').map((send) => send.command)).toEqual(['send-keys'])
   })
 
   it('names what the method sends before its equivalents, and what it sends through a helper last', () => {
