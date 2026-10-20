@@ -181,7 +181,23 @@ function then passes to one. The entry cites the line of that dispatch call, not
 the line that spells the command. The dispatching calls of each port are in
 `tmux-usage/dispatchers.json`, each with the lines of the pinned source that
 show it sends what it is given (`kind: "builder"` names the calls that only
-make a command value: `Command::new`, `TmuxCommand(...)`). A literal that
+make a command value: `Command::new`, `TmuxCommand(...)`). A dispatching call is
+a name, and a scan reads every call of that name as a send, so each definition a
+rule cites must reach a transport: the point where the library starts the tmux
+process or writes the command to a control client (`TRANSPORT` in
+`lib/tmux-usage-dispatch.mjs`). The rule cites the chain, one line per hop;
+a hop either calls the next function, which the scan has read, or leads to it
+in a way the scan does not follow (a command put on a queue that another thread
+writes from, a Ruby method called by its bare name), and every hop is read back
+against the pinned source. A function that shares a name with a dispatcher and
+sends nothing (a serializer called `list`, a log helper called `run`) is not one,
+and a rule that cites it fails for citing no chain to a transport.
+
+A dispatching call may take an argument that only names the command for a
+failure message (`listing::mutate(core, "find-window", command)`). A rule lists
+those positions as `labels`, each with the parameter that takes it, and a
+literal there is not a send, is ignored when the call is judged to name another
+command, and is skipped by the nested-command rule below. A literal that
 reaches no dispatching call sends nothing, and is not a site:
 
 - a command compared against or named by a `case`;
@@ -199,7 +215,21 @@ helper and the literal. A command that sits in the arguments of one that runs
 commands (`if-shell`, `run-shell`, `set-hook`, `bind-key`, `command-prompt`,
 `confirm-before` and the like) is not sent either: in
 `["if-shell", "-F", cond, quoteCommand(["resize-pane", "-Z"])]` the library
-sends `if-shell`, and tmux runs `resize-pane` when the condition holds.
+sends `if-shell`, and tmux runs `resize-pane` when the condition holds. That is
+the entry for a conditional the method exists to make, such as killing a pane
+only if its window is not shared: the library sends `if-shell`, and the command
+inside it is a conditional entry that says when.
+
+A function that builds the same `if-shell` to make tmux refuse a stale or
+foreign target (`IncarnationFence.guarded`, `guardedAction` in Swift, `execute_link` in Ruby) is
+a guard, and is transparent: the library means the command inside it, so the
+entry is the inner command, cited through the guard's hop, and the `if-shell` is
+not recorded. `tmux-usage/guards.json` declares the guard functions of each port
+with the lines that show each builds the wrapper and where it sits; generation
+fails when a function builds no `if-shell`, when the cited lines do not hold the
+text, or when a guard that only applies on some paths (`conditional`) does not
+say `when`. A wrapper that is not declared is not transparent, and the command
+inside it is not recorded.
 
 What the scan follows is a literal into a dispatch call in one statement, into
 a variable or collection that a later call in the function takes, and out of a
@@ -223,9 +253,10 @@ So is a member whose signature spells a narrower visibility (`protected`,
 for the default, a member declared without `public` (an interface member and an
 enum constant are public without saying so).
 
-Three files beside the script hold what a scan cannot decide, and each line of
+The files in `tmux-usage/` hold what a scan cannot decide, and each line of
 them is verified against the pinned source, so generation fails when one no
-longer holds:
+longer holds. `--rules <dir>` reads another copy of them, which is how the
+negative script seeds a rule that is wrong:
 
 - `claims.json`: a send the scan cannot see (a command named by a template, a
   scope carried by a typed argument, a call into a snapshot, a chain of more
@@ -234,7 +265,7 @@ longer holds:
   A send that is an alternative of the method's own purpose and that only
   some arguments reach (`selectWindow("next")` sending `next-window`, `new_session`
   killing an existing session when `kill_session` is set) is a claim that says the
-  condition in `when`.
+  condition in `when`; `conditional: true` makes the claim fail without one.
 - `forwarders.json`: the wrappers that stand on a core library, Kotlin and
   Scala on Java, F# and the PowerShell cmdlets on C#. A wrapper that calls a
   core method that sends is credited at the core's scope, with both hops as
@@ -250,7 +281,17 @@ longer holds:
   commands of the symbols it names.
 - `dispatchers.json`: the calls that send what they are given, per port, and the
   calls that only build a command value. Each cites the lines of the pinned
-  source that show it, and generation fails when one no longer holds.
+  source that show it and, for a call that sends, the chain from there to a
+  transport; generation fails when one no longer holds.
+- `guards.json`: the functions that wrap a command in `if-shell` to refuse a stale
+  or foreign target, which the scan sees through (above).
+- `conditions.json`: the condition of a send that the scan finds. It qualifies an
+  entry that already exists (a scanned or reviewed one) with a `when` and the
+  lines that show the condition, such as `Pane.sendKeys` asking `list-panes` only
+  when the pane is synchronized. One that qualifies no entry has gone stale and
+  fails. Julia, whose generic functions take several receiver types, gives the
+  entry that only one method sends a `when` that names the receiver (`on a
+  Server`), so that no method is credited with another's sends.
 - `not-senders.json`: why a public method whose own name carries a command has
   no entry for it, one of `builds` (it builds a command for a caller, or only
   holds one), `other-command` (it sends a different command, or runs it only
@@ -259,6 +300,17 @@ longer holds:
   `values` (a field or a value holder), `no-send`, or `version-gated`. Each
   cites the lines that show it, and a review that settles nothing is stale and
   fails.
+
+A `when` is at most eight words on one line, because the usage table shows it
+beside the method (a muted qualifier on the chip, and after the command link on
+a method page); a longer reason belongs on a page. An entry that is conditional
+cannot be rendered without it.
+
+Go's wrappers that call a method of another type on a handle named for it
+(`p.server.X()`) are credited with that method's entries, as a wrapper on a core
+library is, when the call is made on every call of the method and not under a
+branch, a loop or a deferred cleanup; the entry names the callee in `via` of the
+same port.
 
 An entry records what the default call sends, on every tmux release the port
 supports at its revision. What an argument changes (`new_session` killing an
@@ -340,7 +392,10 @@ $ node scripts/gen-tmux-usage.mjs --check --source
 ```
 
 `gen-tmux-usage.negative.mjs` proves the check fails on each kind of stale
-data.
+data, and on each kind of wrong rule: a dispatcher that reaches no transport, a
+hop that does not hold its text, a label that names no parameter, a conditional
+that does not say when, a condition that qualifies nothing, and a guard that is
+not one or has been dropped.
 
 ### Site checks
 

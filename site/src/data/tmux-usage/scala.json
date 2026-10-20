@@ -1253,7 +1253,8 @@
           "port": "java",
           "revision": "a0ecbc16da00140e2520462d478a2af470878272",
           "symbol": "io.github.libtmux.Pane.Pane.sendKeys"
-        }
+        },
+        "when": "the pane is synchronized"
       },
       {
         "command": "send-keys",
@@ -1316,7 +1317,8 @@
           "port": "java",
           "revision": "a0ecbc16da00140e2520462d478a2af470878272",
           "symbol": "io.github.libtmux.Pane.Pane.sendLiteral"
-        }
+        },
+        "when": "the pane is synchronized"
       },
       {
         "command": "send-keys",
@@ -2748,7 +2750,8 @@
           "port": "java",
           "revision": "a0ecbc16da00140e2520462d478a2af470878272",
           "symbol": "io.github.libtmux.Pane.Pane.sendKeys"
-        }
+        },
+        "when": "the pane is synchronized"
       },
       {
         "command": "send-keys",
@@ -2811,7 +2814,8 @@
           "port": "java",
           "revision": "a0ecbc16da00140e2520462d478a2af470878272",
           "symbol": "io.github.libtmux.Pane.Pane.sendLiteral"
-        }
+        },
+        "when": "the pane is synchronized"
       },
       {
         "command": "send-keys",

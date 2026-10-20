@@ -1,0 +1,842 @@
+{
+  "schemaVersion": 1,
+  "conditions": [
+    {
+      "port": "java",
+      "symbol": "io.github.libtmux.Pane.Pane.sendKeys",
+      "command": "list-panes",
+      "scope": "window",
+      "when": "the pane is synchronized",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:656",
+          "has": [
+            "#{pane_synchronized}"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:667",
+          "has": [
+            "server.run("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "symbol": "io.github.libtmux.Pane.Pane.sendLiteral",
+      "command": "list-panes",
+      "scope": "window",
+      "when": "the pane is synchronized",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:656",
+          "has": [
+            "#{pane_synchronized}"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:667",
+          "has": [
+            "server.run("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "swift",
+      "symbol": "Server.newSession(named:startDirectory:windowName:width:height:)",
+      "command": "resize-window",
+      "scope": null,
+      "when": "a width or height is requested",
+      "evidence": [
+        {
+          "at": "Sources/LibTmux/Creation.swift:144",
+          "has": [
+            "guard requestedSize"
+          ]
+        },
+        {
+          "at": "Sources/LibTmux/Creation.swift:149",
+          "has": [
+            "guard widthChanged || heightChanged"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "fsharp",
+      "symbol": "LibTmux.FSharp.Server.newSession",
+      "command": "list-panes",
+      "scope": "session",
+      "when": "the spec names a first window",
+      "evidence": [
+        {
+          "at": "src/LibTmux.FSharp/Hierarchy.fs:85",
+          "has": [
+            "match first with"
+          ]
+        },
+        {
+          "at": "src/LibTmux.FSharp/Hierarchy.fs:87",
+          "has": [
+            "session.GetPanesAsync("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "fsharp",
+      "symbol": "LibTmux.FSharp.Server.newSession",
+      "command": "list-panes",
+      "scope": "window",
+      "when": "the spec has more than one window",
+      "evidence": [
+        {
+          "at": "src/LibTmux.FSharp/Hierarchy.fs:91",
+          "has": [
+            "for window in"
+          ]
+        },
+        {
+          "at": "src/LibTmux.FSharp/Hierarchy.fs:109",
+          "has": [
+            "created.GetPanesAsync("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "fsharp",
+      "symbol": "LibTmux.FSharp.Server.newSession",
+      "command": "new-window",
+      "scope": null,
+      "when": "the spec has more than one window",
+      "evidence": [
+        {
+          "at": "src/LibTmux.FSharp/Hierarchy.fs:91",
+          "has": [
+            "for window in"
+          ]
+        },
+        {
+          "at": "src/LibTmux.FSharp/Hierarchy.fs:99",
+          "has": [
+            "session.CreateWindowAsync("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.observe_output",
+      "command": "refresh-client",
+      "scope": null,
+      "when": "output is not yet enabled",
+      "evidence": [
+        {
+          "at": "src/observation.jl:540",
+          "has": [
+            "if !hub.output_enabled"
+          ]
+        },
+        {
+          "at": "src/observation.jl:543",
+          "has": [
+            "\"refresh-client\""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.capture_bytes",
+      "command": "capture-pane",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_io.jl:85",
+          "has": [
+            "::ControlConnection"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.capture_bytes",
+      "command": "delete-buffer",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_io.jl:85",
+          "has": [
+            "::ControlConnection"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.capture_bytes",
+      "command": "list-buffers",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_io.jl:85",
+          "has": [
+            "::ControlConnection"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.capture_bytes",
+      "command": "save-buffer",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_io.jl:85",
+          "has": [
+            "::ControlConnection"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.capture_pane",
+      "command": "capture-pane",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_io.jl:167",
+          "has": [
+            "::ControlConnection"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.delete_buffer",
+      "command": "delete-buffer",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_buffers.jl:119",
+          "has": [
+            "::ControlConnection"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.detach_client",
+      "command": "detach-client",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_clients.jl:71",
+          "has": [
+            "::ControlConnection"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.detach_client",
+      "command": "list-clients",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_clients.jl:71",
+          "has": [
+            "::ControlConnection"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.get_environment",
+      "command": "show-environment",
+      "scope": null,
+      "when": "on a Server",
+      "evidence": [
+        {
+          "at": "src/configuration.jl:344",
+          "has": [
+            "::Server"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.get_option",
+      "command": "show-options",
+      "scope": null,
+      "when": "on a Server",
+      "evidence": [
+        {
+          "at": "src/configuration.jl:248",
+          "has": [
+            "::Server"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.link_window",
+      "command": "link-window",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_topology.jl:265",
+          "has": [
+            "::ControlConnection"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.load_buffer",
+      "command": "display-message",
+      "scope": null,
+      "when": "on a Server",
+      "evidence": [
+        {
+          "at": "src/pane_io.jl:182",
+          "has": [
+            "::Server"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.load_buffer",
+      "command": "list-buffers",
+      "scope": null,
+      "when": "on a Server",
+      "evidence": [
+        {
+          "at": "src/pane_io.jl:182",
+          "has": [
+            "::Server"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.load_buffer",
+      "command": "load-buffer",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_buffers.jl:68",
+          "has": [
+            "::ControlConnection"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.move_pane",
+      "command": "move-pane",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_topology.jl:179",
+          "has": [
+            "::ControlConnection"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.move_window",
+      "command": "move-window",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_topology.jl:265",
+          "has": [
+            "::ControlConnection"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.new_session",
+      "command": "new-session",
+      "scope": null,
+      "when": "on a Server",
+      "evidence": [
+        {
+          "at": "src/operations.jl:170",
+          "has": [
+            "::Server"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.new_window",
+      "command": "new-window",
+      "scope": null,
+      "when": "on a Server",
+      "evidence": [
+        {
+          "at": "src/operations.jl:206",
+          "has": [
+            "::Server"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.paste_bytes",
+      "command": "delete-buffer",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_buffers.jl:165",
+          "has": [
+            "::ControlConnection"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.paste_bytes",
+      "command": "list-buffers",
+      "scope": null,
+      "when": "on a Server",
+      "evidence": [
+        {
+          "at": "src/pane_io.jl:265",
+          "has": [
+            "::Server"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.paste_bytes",
+      "command": "list-commands",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_buffers.jl:165",
+          "has": [
+            "::ControlConnection"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.paste_bytes",
+      "command": "load-buffer",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_buffers.jl:165",
+          "has": [
+            "::ControlConnection"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.paste_bytes",
+      "command": "paste-buffer",
+      "scope": null,
+      "when": "on a Server",
+      "evidence": [
+        {
+          "at": "src/pane_io.jl:265",
+          "has": [
+            "::Server"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.read_formats",
+      "command": "list-panes",
+      "scope": "window",
+      "when": "on a ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_formats.jl:55",
+          "has": [
+            "::ControlConnection"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.save_buffer",
+      "command": "list-buffers",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_buffers.jl:86",
+          "has": [
+            "::ControlConnection"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.save_buffer",
+      "command": "save-buffer",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_buffers.jl:86",
+          "has": [
+            "::ControlConnection"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.select_layout",
+      "command": "select-layout",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_topology.jl:124",
+          "has": [
+            "::ControlConnection"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.select_pane",
+      "command": "select-pane",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_topology.jl:86",
+          "has": [
+            "::ControlConnection"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.select_window",
+      "command": "select-window",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_topology.jl:358",
+          "has": [
+            "::ControlConnection"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.send_keys",
+      "command": "send-keys",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_operations.jl:179",
+          "has": [
+            "::ControlConnection"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.set_environment",
+      "command": "set-environment",
+      "scope": null,
+      "when": "on a Server",
+      "evidence": [
+        {
+          "at": "src/configuration.jl:363",
+          "has": [
+            "::Server"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.set_hook",
+      "command": "set-hook",
+      "scope": null,
+      "when": "on a Server",
+      "evidence": [
+        {
+          "at": "src/configuration.jl:460",
+          "has": [
+            "::Server"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.set_option",
+      "command": "set-option",
+      "scope": null,
+      "when": "on a Server",
+      "evidence": [
+        {
+          "at": "src/configuration.jl:269",
+          "has": [
+            "::Server"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.snapshot",
+      "command": "display-message",
+      "scope": null,
+      "when": "on a Server",
+      "evidence": [
+        {
+          "at": "src/acquisition.jl:219",
+          "has": [
+            "::Server"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.snapshot",
+      "command": "list-clients",
+      "scope": null,
+      "when": "on a Server",
+      "evidence": [
+        {
+          "at": "src/acquisition.jl:219",
+          "has": [
+            "::Server"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.snapshot",
+      "command": "list-panes",
+      "scope": "server",
+      "when": "on a Server",
+      "evidence": [
+        {
+          "at": "src/acquisition.jl:219",
+          "has": [
+            "::Server"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.snapshot",
+      "command": "list-sessions",
+      "scope": null,
+      "when": "on a Server",
+      "evidence": [
+        {
+          "at": "src/acquisition.jl:219",
+          "has": [
+            "::Server"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.snapshot",
+      "command": "list-windows",
+      "scope": "server",
+      "when": "on a Server",
+      "evidence": [
+        {
+          "at": "src/acquisition.jl:219",
+          "has": [
+            "::Server"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.split_window",
+      "command": "split-window",
+      "scope": null,
+      "when": "on a Server",
+      "evidence": [
+        {
+          "at": "src/operations.jl:243",
+          "has": [
+            "::Server"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.swap_pane",
+      "command": "swap-pane",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_topology.jl:204",
+          "has": [
+            "::ControlConnection"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.swap_window",
+      "command": "swap-window",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_topology.jl:330",
+          "has": [
+            "::ControlConnection"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.switch_client",
+      "command": "list-clients",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_clients.jl:42",
+          "has": [
+            "::ControlConnection"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.switch_client",
+      "command": "switch-client",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_clients.jl:42",
+          "has": [
+            "::ControlConnection"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.unlink_window",
+      "command": "unlink-window",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_topology.jl:309",
+          "has": [
+            "::ControlConnection"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.unset_hook",
+      "command": "set-hook",
+      "scope": null,
+      "when": "on a Server",
+      "evidence": [
+        {
+          "at": "src/configuration.jl:482",
+          "has": [
+            "::Server"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.unset_option",
+      "command": "set-option",
+      "scope": null,
+      "when": "on a Server",
+      "evidence": [
+        {
+          "at": "src/configuration.jl:289",
+          "has": [
+            "::Server"
+          ]
+        }
+      ]
+    }
+  ]
+}

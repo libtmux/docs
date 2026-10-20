@@ -786,7 +786,8 @@
           "lua/libtmux/_internal/entity.lua:238"
         ],
         "reviewed": true,
-        "scope": null
+        "scope": null,
+        "when": "the direction is \"last\""
       },
       {
         "command": "next-window",
@@ -795,7 +796,8 @@
           "lua/libtmux/_internal/entity.lua:238"
         ],
         "reviewed": true,
-        "scope": null
+        "scope": null,
+        "when": "the direction is \"next\""
       },
       {
         "command": "previous-window",
@@ -804,7 +806,8 @@
           "lua/libtmux/_internal/entity.lua:238"
         ],
         "reviewed": true,
-        "scope": null
+        "scope": null,
+        "when": "the direction is \"previous\""
       }
     ],
     "libtmux.Session:new_window": [

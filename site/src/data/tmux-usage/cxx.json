@@ -176,12 +176,38 @@
       {
         "command": "refresh-client",
         "evidence": [
-          "src/connection.cpp:1256"
+          "src/connection.cpp:1256",
+          "src/connection.cpp:1249"
         ],
+        "reviewed": true,
         "scope": null
       }
     ],
     "libtmux::Pane::break_out": [
+      {
+        "command": "break-pane",
+        "evidence": [
+          "src/entities.cpp:1289",
+          "src/entities.cpp:1287",
+          "src/entities.cpp:1279",
+          "src/entities.cpp:1451"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the window has several panes"
+      },
+      {
+        "command": "display-message",
+        "evidence": [
+          "src/entities.cpp:1289",
+          "src/entities.cpp:1287",
+          "src/entities.cpp:1281",
+          "src/entities.cpp:1451"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the window has one pane"
+      },
       {
         "command": "if-shell",
         "evidence": [
@@ -191,6 +217,18 @@
         ],
         "reviewed": true,
         "scope": null
+      },
+      {
+        "command": "rename-window",
+        "evidence": [
+          "src/entities.cpp:1373",
+          "src/entities.cpp:1371",
+          "src/entities.cpp:1366",
+          "src/entities.cpp:1452"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "a name is given"
       }
     ],
     "libtmux::Pane::capture": [
@@ -706,7 +744,8 @@
           "src/server.cpp:687"
         ],
         "reviewed": true,
-        "scope": null
+        "scope": null,
+        "when": "layouts that depend on the tmux version"
       }
     ],
     "libtmux::Server::wait_for": [

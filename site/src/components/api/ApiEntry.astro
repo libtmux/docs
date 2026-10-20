@@ -680,6 +680,7 @@ const hasBody =
       {commandRows.map((row, i) => <>
         {i > 0 && ', '}
         <a href={row.href}><code>{row.command}</code></a>
+        {row.when && <>{' '}<span class="tmux-when" data-when={row.when}>{row.when}</span></>}
         {row.scopes.map((use) => <>{' '}<span class="tmux-send" title={use.evidence[0]}>
           {use.scope!.flag || use.scope!.target ? <code>-{use.scope!.flag || use.scope!.target}</code> : null}
           {use.function ? <a href={use.function.href}><code>{use.function.name}</code></a> : <span>{use.scope!.label}</span>}

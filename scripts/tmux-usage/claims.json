@@ -113,6 +113,12 @@
       "scope": null,
       "evidence": [
         {
+          "at": "crates/libtmux/src/pane/observe.rs:171",
+          "has": [
+            "self.core.execute(command)"
+          ]
+        },
+        {
           "at": "crates/libtmux/src/pane.rs:1618",
           "has": [
             "Command::new(\"capture-pane\")"
@@ -128,12 +134,6 @@
           "at": "crates/libtmux/src/pane/observe.rs:169",
           "has": [
             "options.lower("
-          ]
-        },
-        {
-          "at": "crates/libtmux/src/pane/observe.rs:171",
-          "has": [
-            "self.core.execute(command)"
           ]
         },
         {
@@ -250,15 +250,15 @@
       "scope": null,
       "evidence": [
         {
-          "at": "crates/libtmux/src/internal/wait_for.rs:363",
-          "has": [
-            "wait-for"
-          ]
-        },
-        {
           "at": "crates/libtmux/src/internal/wait_for.rs:248",
           "has": [
             "channel_command("
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/internal/wait_for.rs:363",
+          "has": [
+            "wait-for"
           ]
         },
         {
@@ -1177,6 +1177,13 @@
       "scope": null,
       "evidence": [
         {
+          "at": "crates/libtmux/src/pane/observe.rs:171",
+          "has": [
+            "self.core.execute(command)"
+          ],
+          "in": "pane.Pane.capture_with"
+        },
+        {
           "at": "crates/libtmux/src/pane.rs:1618",
           "has": [
             "Command::new(\"capture-pane\")"
@@ -1193,13 +1200,6 @@
           "has": [
             "options.lower("
           ]
-        },
-        {
-          "at": "crates/libtmux/src/pane/observe.rs:171",
-          "has": [
-            "self.core.execute(command)"
-          ],
-          "in": "pane.Pane.capture_with"
         }
       ]
     },
@@ -1209,6 +1209,12 @@
       "command": "new-session",
       "scope": null,
       "evidence": [
+        {
+          "at": "crates/libtmux/src/internal/listing.rs:362",
+          "has": [
+            "core.execute(command)"
+          ]
+        },
         {
           "at": "crates/libtmux/src/server.rs:2286",
           "has": [
@@ -1238,6 +1244,12 @@
       "scope": null,
       "evidence": [
         {
+          "at": "crates/libtmux/src/internal/listing.rs:362",
+          "has": [
+            "core.execute(command)"
+          ]
+        },
+        {
           "at": "crates/libtmux/src/session.rs:1139",
           "has": [
             "Command::new(\"new-window\")"
@@ -1265,6 +1277,12 @@
       "command": "split-window",
       "scope": null,
       "evidence": [
+        {
+          "at": "crates/libtmux/src/internal/listing.rs:362",
+          "has": [
+            "core.execute(command)"
+          ]
+        },
         {
           "at": "crates/libtmux/src/window.rs:1948",
           "has": [
@@ -1294,6 +1312,12 @@
       "scope": null,
       "evidence": [
         {
+          "at": "crates/libtmux/src/internal/listing.rs:362",
+          "has": [
+            "core.execute(command)"
+          ]
+        },
+        {
           "at": "crates/libtmux/src/window.rs:1948",
           "has": [
             "Command::new(\"split-window\")"
@@ -1322,6 +1346,12 @@
       "scope": null,
       "evidence": [
         {
+          "at": "crates/libtmux/src/pane/observe.rs:171",
+          "has": [
+            "self.core.execute(command)"
+          ]
+        },
+        {
           "at": "crates/libtmux/src/pane.rs:1618",
           "has": [
             "Command::new(\"capture-pane\")"
@@ -1337,12 +1367,6 @@
           "at": "crates/libtmux/src/pane/observe.rs:169",
           "has": [
             "options.lower("
-          ]
-        },
-        {
-          "at": "crates/libtmux/src/pane/observe.rs:171",
-          "has": [
-            "self.core.execute(command)"
           ]
         },
         {
@@ -1945,7 +1969,7 @@
       "symbol": "mcp.server.main",
       "command": "start-server",
       "scope": null,
-      "when": "the server is launched without an explicit selection, a minimal launch",
+      "when": "a minimal launch, no explicit selection",
       "evidence": [
         {
           "at": "packages/mcp/src/startup.ts:88",
@@ -1967,7 +1991,7 @@
       "symbol": "mcp.server.main",
       "command": "show-options",
       "scope": null,
-      "when": "the server is launched without an explicit selection, a minimal launch",
+      "when": "a minimal launch, no explicit selection",
       "evidence": [
         {
           "at": "packages/mcp/src/startup.ts:89",
@@ -1989,7 +2013,7 @@
       "symbol": "mcp.server.main",
       "command": "display-message",
       "scope": null,
-      "when": "the server is launched without an explicit selection, a minimal launch",
+      "when": "a minimal launch, no explicit selection",
       "evidence": [
         {
           "at": "packages/mcp/src/startup.ts:92",
@@ -2879,7 +2903,8 @@
           ],
           "in": "tmux.Server.NewSession"
         }
-      ]
+      ],
+      "forwardable": true
     },
     {
       "port": "go",
@@ -7517,7 +7542,8 @@
           ],
           "in": "libtmux.Session:navigate_window"
         }
-      ]
+      ],
+      "when": "the direction is \"next\""
     },
     {
       "port": "lua",
@@ -7538,7 +7564,8 @@
           ],
           "in": "libtmux.Session:navigate_window"
         }
-      ]
+      ],
+      "when": "the direction is \"previous\""
     },
     {
       "port": "lua",
@@ -7559,7 +7586,8 @@
           ],
           "in": "libtmux.Session:navigate_window"
         }
-      ]
+      ],
+      "when": "the direction is \"last\""
     },
     {
       "port": "lua",
@@ -9760,7 +9788,7 @@
       "symbol": "Server.link(_:into:)",
       "command": "link-window",
       "scope": null,
-      "when": "moving is false, which link passes",
+      "when": "the window is linked, not moved",
       "evidence": [
         {
           "at": "Sources/LibTmux/WindowTransfers.swift:75",
@@ -9794,7 +9822,7 @@
       "symbol": "Server.move(_:to:at:)",
       "command": "move-window",
       "scope": null,
-      "when": "moving is true, which move passes",
+      "when": "the window is moved, not linked",
       "evidence": [
         {
           "at": "Sources/LibTmux/WindowTransfers.swift:75",
@@ -9828,7 +9856,7 @@
       "symbol": "Server.breakPane(_:from:named:)",
       "command": "break-pane",
       "scope": null,
-      "when": "named is given",
+      "when": "a name is given",
       "evidence": [
         {
           "at": "Sources/LibTmux/Navigation.swift:127",
@@ -9850,7 +9878,7 @@
       "symbol": "Server.breakPane(_:from:named:)",
       "command": "if-shell",
       "scope": null,
-      "when": "named is nil, the default: break-pane runs inside the if-shell",
+      "when": "no name is given",
       "evidence": [
         {
           "at": "Sources/LibTmux/Navigation.swift:136",
@@ -9991,7 +10019,8 @@
           ],
           "in": "tmux.Server.Snapshot"
         }
-      ]
+      ],
+      "forwardable": true
     },
     {
       "port": "go",
@@ -10013,7 +10042,8 @@
           ],
           "in": "tmux.Server.Snapshot"
         }
-      ]
+      ],
+      "forwardable": true
     },
     {
       "port": "go",
@@ -10035,7 +10065,8 @@
           ],
           "in": "tmux.Server.Snapshot"
         }
-      ]
+      ],
+      "forwardable": true
     },
     {
       "port": "go",
@@ -10056,7 +10087,8 @@
           ],
           "in": "tmux.Server.Snapshot"
         }
-      ]
+      ],
+      "forwardable": true
     },
     {
       "port": "go",
@@ -10096,7 +10128,7 @@
       "symbol": "tmuxtest.NewSession",
       "command": "kill-session",
       "scope": null,
-      "when": "the test ends: the helper registers the kill in t.Cleanup and does not send it when it returns",
+      "when": "the test ends, in t.Cleanup",
       "evidence": [
         {
           "at": "tmux/tmuxtest/resources.go:135",
@@ -10338,7 +10370,7 @@
       "symbol": "libtmux.Server.new_session",
       "command": "kill-session",
       "scope": null,
-      "when": "kill_session is true and a session of that name already exists",
+      "when": "kill_session is true, session exists",
       "evidence": [
         {
           "at": "src/libtmux/server.py:2312",
@@ -10361,7 +10393,7 @@
       "symbol": "tmux.Server.NewSession",
       "command": "kill-session",
       "scope": null,
-      "when": "the request sets KillExisting and a session of that name exists",
+      "when": "KillExisting is set, session exists",
       "evidence": [
         {
           "at": "tmux/session_lifecycle.go:223",
@@ -10383,7 +10415,7 @@
       "symbol": "tmux.Server.HasSession",
       "command": "has-session",
       "scope": null,
-      "when": "the request sets Pattern; otherwise the lookup lists sessions",
+      "when": "the request sets Pattern",
       "evidence": [
         {
           "at": "tmux/session_lifecycle.go:141",
@@ -10405,7 +10437,7 @@
       "symbol": "session.Session.selectWindow",
       "command": "last-window",
       "scope": null,
-      "when": "the target is the string \"last\"",
+      "when": "the target is \"last\"",
       "evidence": [
         {
           "at": "packages/libtmux/src/_internal/operations/session_nav.ts:34",
@@ -10428,7 +10460,7 @@
       "symbol": "session.Session.selectWindow",
       "command": "next-window",
       "scope": null,
-      "when": "the target is the string \"next\"",
+      "when": "the target is \"next\"",
       "evidence": [
         {
           "at": "packages/libtmux/src/_internal/operations/session_nav.ts:35",
@@ -10451,7 +10483,7 @@
       "symbol": "session.Session.selectWindow",
       "command": "previous-window",
       "scope": null,
-      "when": "the target is the string \"previous\"",
+      "when": "the target is \"previous\"",
       "evidence": [
         {
           "at": "packages/libtmux/src/_internal/operations/session_nav.ts:37",
@@ -10479,7 +10511,7 @@
       "symbol": "server.Server.validateLayouts",
       "command": "display-message",
       "scope": null,
-      "when": "a layout parses differently on some tmux releases and no daemon version is bound yet",
+      "when": "layouts that depend on the tmux version",
       "evidence": [
         {
           "at": "packages/libtmux/src/_internal/operations/layout.ts:62",
@@ -10507,7 +10539,7 @@
       "symbol": "libtmux::Server::validate_layouts",
       "command": "display-message",
       "scope": null,
-      "when": "a layout string needs the running tmux version to be judged (layout_needs_version)",
+      "when": "layouts that depend on the tmux version",
       "evidence": [
         {
           "at": "src/layout.cpp:390",
@@ -10527,6 +10559,1411 @@
             "detail::validate_layouts(*backend_"
           ],
           "in": "libtmux::Server::validate_layouts"
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "symbol": "tmuxtest.NewSession",
+      "command": "new-session",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "tmux/session_lifecycle.go:234",
+          "has": [
+            "effective.literalCmd(ctx, arguments...)"
+          ]
+        },
+        {
+          "at": "tmux/session_lifecycle.go:230",
+          "has": [
+            "newSessionArguments(request)"
+          ]
+        },
+        {
+          "at": "tmux/tmuxtest/resources.go:49",
+          "has": [
+            "server.NewSession(ctx, request)"
+          ],
+          "in": "tmuxtest.NewSession"
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "symbol": "tmux.Server.OpenControl",
+      "command": "attach-session",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "tmux/control_startup.go:122",
+          "has": [
+            "exec.Command(state.config.executable, arguments...)"
+          ]
+        },
+        {
+          "at": "tmux/control_startup.go:91",
+          "has": [
+            "s.startControl("
+          ]
+        },
+        {
+          "at": "tmux/control_startup.go:80",
+          "has": [
+            "\"attach-session\""
+          ]
+        },
+        {
+          "at": "tmux/identity.go:134",
+          "has": [
+            "s.daemon == nil || s.boundToInstance()"
+          ]
+        },
+        {
+          "at": "tmux/control_startup.go:42",
+          "has": [
+            "s.openControl("
+          ],
+          "in": "tmux.Server.OpenControl"
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "symbol": "tmux.Server.OpenControl",
+      "command": "if-shell",
+      "scope": null,
+      "when": "a Server carrying a daemon identity",
+      "evidence": [
+        {
+          "at": "tmux/identity.go:151",
+          "has": [
+            "\"if-shell\", \"-F\", condition, thenCommand, guard.failure"
+          ]
+        },
+        {
+          "at": "tmux/identity.go:134",
+          "has": [
+            "s.daemon == nil || s.boundToInstance()"
+          ]
+        },
+        {
+          "at": "tmux/control_startup.go:86",
+          "has": [
+            "s.guardCommand(attach, false)"
+          ]
+        },
+        {
+          "at": "tmux/control_startup.go:122",
+          "has": [
+            "exec.Command(state.config.executable, arguments...)"
+          ]
+        },
+        {
+          "at": "tmux/control_startup.go:42",
+          "has": [
+            "s.openControl("
+          ],
+          "in": "tmux.Server.OpenControl"
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "symbol": "tmux.Server.OpenNotifications",
+      "command": "attach-session",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "tmux/control_startup.go:122",
+          "has": [
+            "exec.Command(state.config.executable, arguments...)"
+          ]
+        },
+        {
+          "at": "tmux/control_startup.go:91",
+          "has": [
+            "s.startControl("
+          ]
+        },
+        {
+          "at": "tmux/control_startup.go:80",
+          "has": [
+            "\"attach-session\""
+          ]
+        },
+        {
+          "at": "tmux/identity.go:134",
+          "has": [
+            "s.daemon == nil || s.boundToInstance()"
+          ]
+        },
+        {
+          "at": "tmux/notification_stream.go:67",
+          "has": [
+            "s.openControl("
+          ],
+          "in": "tmux.Server.OpenNotifications"
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "symbol": "tmux.Server.OpenNotifications",
+      "command": "if-shell",
+      "scope": null,
+      "when": "a Server carrying a daemon identity",
+      "evidence": [
+        {
+          "at": "tmux/identity.go:151",
+          "has": [
+            "\"if-shell\", \"-F\", condition, thenCommand, guard.failure"
+          ]
+        },
+        {
+          "at": "tmux/identity.go:134",
+          "has": [
+            "s.daemon == nil || s.boundToInstance()"
+          ]
+        },
+        {
+          "at": "tmux/control_startup.go:86",
+          "has": [
+            "s.guardCommand(attach, false)"
+          ]
+        },
+        {
+          "at": "tmux/control_startup.go:122",
+          "has": [
+            "exec.Command(state.config.executable, arguments...)"
+          ]
+        },
+        {
+          "at": "tmux/notification_stream.go:67",
+          "has": [
+            "s.openControl("
+          ],
+          "in": "tmux.Server.OpenNotifications"
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.open_control",
+      "command": "attach-session",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "src/control.jl:642",
+          "has": [
+            "run("
+          ]
+        },
+        {
+          "at": "src/control.jl:628",
+          "has": [
+            "\"attach-session\""
+          ]
+        },
+        {
+          "at": "src/control.jl:1095",
+          "has": [
+            "_open_control_lane("
+          ],
+          "in": "LibTmux.open_control"
+        }
+      ]
+    },
+    {
+      "port": "cxx",
+      "symbol": "libtmux::Connection::set_pane_output",
+      "command": "refresh-client",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "src/connection.cpp:1256",
+          "has": [
+            "execute(std::move(request), deadline)"
+          ],
+          "in": "libtmux::Connection::set_pane_output"
+        },
+        {
+          "at": "src/connection.cpp:1249",
+          "has": [
+            "\"refresh-client\""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "symbol": "LibTmux.Pane.SplitAsync",
+      "command": "split-window",
+      "scope": null,
+      "forwardable": true,
+      "evidence": [
+        {
+          "at": "src/LibTmux/Pane.Topology.cs:576",
+          "has": [
+            "_commandDispatcher.ExecuteAsync(arguments"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Pane.Topology.cs:105",
+          "has": [
+            "\"split-window\""
+          ]
+        },
+        {
+          "at": "src/LibTmux/Pane.Topology.cs:232",
+          "has": [
+            "CreatePaneFromAsync(arguments, \"split-window\""
+          ],
+          "in": "LibTmux.Pane.SplitAsync"
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "symbol": "pane.Pane.killIfWindowUnshared",
+      "command": "kill-pane",
+      "scope": null,
+      "when": "the window has one placement",
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/operations/mutations.ts:86",
+          "has": [
+            "planKillPaneIfUnshared(target).argv"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/plans.ts:195",
+          "has": [
+            "[\"kill-pane\", \"-t\", target]"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/plans.ts:192",
+          "has": [
+            "conditionalTargetMutation("
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/pane.ts:255",
+          "has": [
+            "killPaneIfWindowUnshared("
+          ],
+          "in": "pane.Pane.killIfWindowUnshared"
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "symbol": "pane.Pane.zoom",
+      "command": "resize-pane",
+      "scope": null,
+      "when": "the window is not zoomed",
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/operations/topology.ts:267",
+          "has": [
+            "runCommands("
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/topology.ts:276",
+          "has": [
+            "quoteCommand([\"resize-pane\", \"-Z\", ...at])"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/pane.ts:386",
+          "has": [
+            "zoomPane("
+          ],
+          "in": "pane.Pane.zoom"
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "symbol": "pane.Pane.unzoom",
+      "command": "resize-pane",
+      "scope": null,
+      "when": "the window is zoomed",
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/operations/topology.ts:295",
+          "has": [
+            "runCommand("
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/topology.ts:297",
+          "has": [
+            "quoteCommand([\"resize-pane\", \"-Z\", ...at])"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/pane.ts:400",
+          "has": [
+            "unzoomTarget("
+          ],
+          "in": "pane.Pane.unzoom"
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "symbol": "window.Window.unzoom",
+      "command": "resize-pane",
+      "scope": null,
+      "when": "the window is zoomed",
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/operations/topology.ts:295",
+          "has": [
+            "runCommand("
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/topology.ts:297",
+          "has": [
+            "quoteCommand([\"resize-pane\", \"-Z\", ...at])"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/window.ts:387",
+          "has": [
+            "unzoomTarget("
+          ],
+          "in": "window.Window.unzoom"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "plan.Plan.run",
+      "command": "set-option",
+      "scope": null,
+      "when": "the plan has a set-option step",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:461",
+          "has": [
+            "server.cmd(first)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/ops/options.rs:123",
+          "has": [
+            "Command::new(\"set-option\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:550",
+          "has": [
+            ".render("
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:449",
+          "has": [
+            "self.render_step(step, bound)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:377",
+          "has": [
+            ".dispatch(server, &step, &bound)"
+          ],
+          "in": "plan.Plan.run"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "plan.Plan.run_over_control_mode",
+      "command": "set-option",
+      "scope": null,
+      "when": "the plan has a set-option step",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:869",
+          "has": [
+            ".send(command)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/ops/options.rs:123",
+          "has": [
+            "Command::new(\"set-option\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:856",
+          "has": [
+            ".render(&resolve, ())"
+          ],
+          "in": "plan.Plan.run_over_control_mode"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "plan.Plan.run",
+      "command": "set-environment",
+      "scope": null,
+      "when": "the plan has a set-environment step",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:461",
+          "has": [
+            "server.cmd(first)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/ops/options.rs:210",
+          "has": [
+            "Command::new(\"set-environment\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:550",
+          "has": [
+            ".render("
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:449",
+          "has": [
+            "self.render_step(step, bound)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:377",
+          "has": [
+            ".dispatch(server, &step, &bound)"
+          ],
+          "in": "plan.Plan.run"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "plan.Plan.run_over_control_mode",
+      "command": "set-environment",
+      "scope": null,
+      "when": "the plan has a set-environment step",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:869",
+          "has": [
+            ".send(command)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/ops/options.rs:210",
+          "has": [
+            "Command::new(\"set-environment\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:856",
+          "has": [
+            ".render(&resolve, ())"
+          ],
+          "in": "plan.Plan.run_over_control_mode"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "plan.Plan.run",
+      "command": "split-window",
+      "scope": null,
+      "when": "the plan has a split-window step",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:461",
+          "has": [
+            "server.cmd(first)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/ops/panes.rs:257",
+          "has": [
+            "Command::new(\"split-window\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:550",
+          "has": [
+            ".render("
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:449",
+          "has": [
+            "self.render_step(step, bound)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:377",
+          "has": [
+            ".dispatch(server, &step, &bound)"
+          ],
+          "in": "plan.Plan.run"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "plan.Plan.run_over_control_mode",
+      "command": "split-window",
+      "scope": null,
+      "when": "the plan has a split-window step",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:869",
+          "has": [
+            ".send(command)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/ops/panes.rs:257",
+          "has": [
+            "Command::new(\"split-window\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:856",
+          "has": [
+            ".render(&resolve, ())"
+          ],
+          "in": "plan.Plan.run_over_control_mode"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "plan.Plan.run",
+      "command": "send-keys",
+      "scope": null,
+      "when": "the plan has a send-keys step",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:461",
+          "has": [
+            "server.cmd(first)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/ops/panes.rs:412",
+          "has": [
+            "Command::new(\"send-keys\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:550",
+          "has": [
+            ".render("
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:449",
+          "has": [
+            "self.render_step(step, bound)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:377",
+          "has": [
+            ".dispatch(server, &step, &bound)"
+          ],
+          "in": "plan.Plan.run"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "plan.Plan.run_over_control_mode",
+      "command": "send-keys",
+      "scope": null,
+      "when": "the plan has a send-keys step",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:869",
+          "has": [
+            ".send(command)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/ops/panes.rs:412",
+          "has": [
+            "Command::new(\"send-keys\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:856",
+          "has": [
+            ".render(&resolve, ())"
+          ],
+          "in": "plan.Plan.run_over_control_mode"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "plan.Plan.run",
+      "command": "select-pane",
+      "scope": null,
+      "when": "the plan has a select-pane step",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:461",
+          "has": [
+            "server.cmd(first)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/ops/panes.rs:481",
+          "has": [
+            "Command::new(\"select-pane\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:550",
+          "has": [
+            ".render("
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:449",
+          "has": [
+            "self.render_step(step, bound)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:377",
+          "has": [
+            ".dispatch(server, &step, &bound)"
+          ],
+          "in": "plan.Plan.run"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "plan.Plan.run_over_control_mode",
+      "command": "select-pane",
+      "scope": null,
+      "when": "the plan has a select-pane step",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:869",
+          "has": [
+            ".send(command)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/ops/panes.rs:481",
+          "has": [
+            "Command::new(\"select-pane\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:856",
+          "has": [
+            ".render(&resolve, ())"
+          ],
+          "in": "plan.Plan.run_over_control_mode"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "plan.Plan.run",
+      "command": "capture-pane",
+      "scope": null,
+      "when": "the plan has a capture-pane step",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:461",
+          "has": [
+            "server.cmd(first)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/ops/panes.rs:531",
+          "has": [
+            "Command::new(\"capture-pane\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:550",
+          "has": [
+            ".render("
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:449",
+          "has": [
+            "self.render_step(step, bound)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:377",
+          "has": [
+            ".dispatch(server, &step, &bound)"
+          ],
+          "in": "plan.Plan.run"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "plan.Plan.run_over_control_mode",
+      "command": "capture-pane",
+      "scope": null,
+      "when": "the plan has a capture-pane step",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:869",
+          "has": [
+            ".send(command)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/ops/panes.rs:531",
+          "has": [
+            "Command::new(\"capture-pane\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:856",
+          "has": [
+            ".render(&resolve, ())"
+          ],
+          "in": "plan.Plan.run_over_control_mode"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "plan.Plan.run",
+      "command": "kill-pane",
+      "scope": null,
+      "when": "the plan has a kill-pane step",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:461",
+          "has": [
+            "server.cmd(first)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/ops/panes.rs:580",
+          "has": [
+            "Command::new(\"kill-pane\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:550",
+          "has": [
+            ".render("
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:449",
+          "has": [
+            "self.render_step(step, bound)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:377",
+          "has": [
+            ".dispatch(server, &step, &bound)"
+          ],
+          "in": "plan.Plan.run"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "plan.Plan.run_over_control_mode",
+      "command": "kill-pane",
+      "scope": null,
+      "when": "the plan has a kill-pane step",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:869",
+          "has": [
+            ".send(command)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/ops/panes.rs:580",
+          "has": [
+            "Command::new(\"kill-pane\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:856",
+          "has": [
+            ".render(&resolve, ())"
+          ],
+          "in": "plan.Plan.run_over_control_mode"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "plan.Plan.run",
+      "command": "new-session",
+      "scope": null,
+      "when": "the plan has a new-session step",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:461",
+          "has": [
+            "server.cmd(first)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/ops/sessions.rs:92",
+          "has": [
+            "Command::new(\"new-session\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:550",
+          "has": [
+            ".render("
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:449",
+          "has": [
+            "self.render_step(step, bound)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:377",
+          "has": [
+            ".dispatch(server, &step, &bound)"
+          ],
+          "in": "plan.Plan.run"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "plan.Plan.run_over_control_mode",
+      "command": "new-session",
+      "scope": null,
+      "when": "the plan has a new-session step",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:869",
+          "has": [
+            ".send(command)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/ops/sessions.rs:92",
+          "has": [
+            "Command::new(\"new-session\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:856",
+          "has": [
+            ".render(&resolve, ())"
+          ],
+          "in": "plan.Plan.run_over_control_mode"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "plan.Plan.run",
+      "command": "run-shell",
+      "scope": null,
+      "when": "the plan has a run-shell step",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:461",
+          "has": [
+            "server.cmd(first)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/ops/timing.rs:81",
+          "has": [
+            "Command::new(\"run-shell\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:550",
+          "has": [
+            ".render("
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:449",
+          "has": [
+            "self.render_step(step, bound)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:377",
+          "has": [
+            ".dispatch(server, &step, &bound)"
+          ],
+          "in": "plan.Plan.run"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "plan.Plan.run",
+      "command": "new-window",
+      "scope": null,
+      "when": "the plan has a new-window step",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:461",
+          "has": [
+            "server.cmd(first)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/ops/windows.rs:151",
+          "has": [
+            "Command::new(\"new-window\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:550",
+          "has": [
+            ".render("
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:449",
+          "has": [
+            "self.render_step(step, bound)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:377",
+          "has": [
+            ".dispatch(server, &step, &bound)"
+          ],
+          "in": "plan.Plan.run"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "plan.Plan.run_over_control_mode",
+      "command": "new-window",
+      "scope": null,
+      "when": "the plan has a new-window step",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:869",
+          "has": [
+            ".send(command)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/ops/windows.rs:151",
+          "has": [
+            "Command::new(\"new-window\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:856",
+          "has": [
+            ".render(&resolve, ())"
+          ],
+          "in": "plan.Plan.run_over_control_mode"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "plan.Plan.run",
+      "command": "select-window",
+      "scope": null,
+      "when": "the plan has a select-window step",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:461",
+          "has": [
+            "server.cmd(first)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/ops/windows.rs:223",
+          "has": [
+            "Command::new(\"select-window\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:550",
+          "has": [
+            ".render("
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:449",
+          "has": [
+            "self.render_step(step, bound)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:377",
+          "has": [
+            ".dispatch(server, &step, &bound)"
+          ],
+          "in": "plan.Plan.run"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "plan.Plan.run_over_control_mode",
+      "command": "select-window",
+      "scope": null,
+      "when": "the plan has a select-window step",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:869",
+          "has": [
+            ".send(command)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/ops/windows.rs:223",
+          "has": [
+            "Command::new(\"select-window\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:856",
+          "has": [
+            ".render(&resolve, ())"
+          ],
+          "in": "plan.Plan.run_over_control_mode"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "plan.Plan.run",
+      "command": "rename-window",
+      "scope": null,
+      "when": "the plan has a rename-window step",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:461",
+          "has": [
+            "server.cmd(first)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/ops/windows.rs:271",
+          "has": [
+            "Command::new(\"rename-window\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:550",
+          "has": [
+            ".render("
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:449",
+          "has": [
+            "self.render_step(step, bound)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:377",
+          "has": [
+            ".dispatch(server, &step, &bound)"
+          ],
+          "in": "plan.Plan.run"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "plan.Plan.run_over_control_mode",
+      "command": "rename-window",
+      "scope": null,
+      "when": "the plan has a rename-window step",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:869",
+          "has": [
+            ".send(command)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/ops/windows.rs:271",
+          "has": [
+            "Command::new(\"rename-window\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:856",
+          "has": [
+            ".render(&resolve, ())"
+          ],
+          "in": "plan.Plan.run_over_control_mode"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "plan.Plan.run",
+      "command": "kill-window",
+      "scope": null,
+      "when": "the plan has a kill-window step",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:461",
+          "has": [
+            "server.cmd(first)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/ops/windows.rs:317",
+          "has": [
+            "Command::new(\"kill-window\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:550",
+          "has": [
+            ".render("
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:449",
+          "has": [
+            "self.render_step(step, bound)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:377",
+          "has": [
+            ".dispatch(server, &step, &bound)"
+          ],
+          "in": "plan.Plan.run"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "plan.Plan.run_over_control_mode",
+      "command": "kill-window",
+      "scope": null,
+      "when": "the plan has a kill-window step",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:869",
+          "has": [
+            ".send(command)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/ops/windows.rs:317",
+          "has": [
+            "Command::new(\"kill-window\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:856",
+          "has": [
+            ".render(&resolve, ())"
+          ],
+          "in": "plan.Plan.run_over_control_mode"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "plan.Plan.run",
+      "command": "select-layout",
+      "scope": null,
+      "when": "the plan has a select-layout step",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:461",
+          "has": [
+            "server.cmd(first)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/ops/windows.rs:370",
+          "has": [
+            "Command::new(\"select-layout\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:550",
+          "has": [
+            ".render("
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:449",
+          "has": [
+            "self.render_step(step, bound)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:377",
+          "has": [
+            ".dispatch(server, &step, &bound)"
+          ],
+          "in": "plan.Plan.run"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "plan.Plan.run_over_control_mode",
+      "command": "select-layout",
+      "scope": null,
+      "when": "the plan has a select-layout step",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:869",
+          "has": [
+            ".send(command)"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/ops/windows.rs:370",
+          "has": [
+            "Command::new(\"select-layout\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:856",
+          "has": [
+            ".render(&resolve, ())"
+          ],
+          "in": "plan.Plan.run_over_control_mode"
+        }
+      ]
+    },
+    {
+      "port": "cxx",
+      "symbol": "libtmux::Pane::break_out",
+      "command": "break-pane",
+      "scope": null,
+      "when": "the window has several panes",
+      "evidence": [
+        {
+          "at": "src/entities.cpp:1289",
+          "has": [
+            "executor->run(command"
+          ]
+        },
+        {
+          "at": "src/entities.cpp:1287",
+          "has": [
+            "\"if-shell\", \"-F\", \"-t\", target"
+          ]
+        },
+        {
+          "at": "src/entities.cpp:1279",
+          "has": [
+            "break-pane -d -s"
+          ]
+        },
+        {
+          "at": "src/entities.cpp:1451",
+          "has": [
+            "break_out_unnamed(*this"
+          ],
+          "in": "libtmux::Pane::break_out"
+        }
+      ]
+    },
+    {
+      "port": "cxx",
+      "symbol": "libtmux::Pane::break_out",
+      "command": "rename-window",
+      "scope": null,
+      "when": "a name is given",
+      "evidence": [
+        {
+          "at": "src/entities.cpp:1373",
+          "has": [
+            "executor->run(command"
+          ]
+        },
+        {
+          "at": "src/entities.cpp:1371",
+          "has": [
+            "\"if-shell\", \"-F\", \"-t\", target"
+          ]
+        },
+        {
+          "at": "src/entities.cpp:1366",
+          "has": [
+            "rename-window -t"
+          ]
+        },
+        {
+          "at": "src/entities.cpp:1452",
+          "has": [
+            "break_out_named(*this"
+          ],
+          "in": "libtmux::Pane::break_out"
+        }
+      ]
+    },
+    {
+      "port": "cxx",
+      "symbol": "libtmux::Pane::break_out",
+      "command": "display-message",
+      "scope": null,
+      "when": "the window has one pane",
+      "evidence": [
+        {
+          "at": "src/entities.cpp:1289",
+          "has": [
+            "executor->run(command"
+          ]
+        },
+        {
+          "at": "src/entities.cpp:1287",
+          "has": [
+            "\"if-shell\", \"-F\", \"-t\", target"
+          ]
+        },
+        {
+          "at": "src/entities.cpp:1281",
+          "has": [
+            "display-message -p -t"
+          ]
+        },
+        {
+          "at": "src/entities.cpp:1451",
+          "has": [
+            "break_out_unnamed(*this"
+          ],
+          "in": "libtmux::Pane::break_out"
         }
       ]
     }

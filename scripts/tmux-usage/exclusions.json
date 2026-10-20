@@ -404,6 +404,31 @@
           ]
         }
       ]
+    },
+    {
+      "port": "ruby",
+      "owner": "Server",
+      "names": [
+        "switch_client"
+      ],
+      "commands": [
+        "list-commands"
+      ],
+      "why": "switch_client asks list-commands which spelling of switch-client a configured command-alias leaves alone, as a fence before the command it sends; the caller did not ask for the listing.",
+      "evidence": [
+        {
+          "at": "gems/libtmux/lib/libtmux/terminal.rb:41",
+          "has": [
+            "builtin_spellings(\"switch-client\""
+          ]
+        },
+        {
+          "at": "gems/libtmux/lib/libtmux/operations.rb:137",
+          "has": [
+            "\"list-commands\""
+          ]
+        }
+      ]
     }
   ]
 }

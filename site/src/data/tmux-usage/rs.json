@@ -260,10 +260,10 @@
       {
         "command": "capture-pane",
         "evidence": [
+          "crates/libtmux/src/pane/observe.rs:171",
           "crates/libtmux/src/pane.rs:1618",
           "crates/libtmux/src/pane.rs:1613",
           "crates/libtmux/src/pane/observe.rs:169",
-          "crates/libtmux/src/pane/observe.rs:171",
           "crates/libtmux/src/pane/observe.rs:121"
         ],
         "reviewed": true,
@@ -274,10 +274,10 @@
       {
         "command": "capture-pane",
         "evidence": [
+          "crates/libtmux/src/pane/observe.rs:171",
           "crates/libtmux/src/pane.rs:1618",
           "crates/libtmux/src/pane.rs:1613",
           "crates/libtmux/src/pane/observe.rs:169",
-          "crates/libtmux/src/pane/observe.rs:171",
           "crates/libtmux/src/pane/observe.rs:237"
         ],
         "reviewed": true,
@@ -288,10 +288,10 @@
       {
         "command": "capture-pane",
         "evidence": [
+          "crates/libtmux/src/pane/observe.rs:171",
           "crates/libtmux/src/pane.rs:1618",
           "crates/libtmux/src/pane.rs:1613",
-          "crates/libtmux/src/pane/observe.rs:169",
-          "crates/libtmux/src/pane/observe.rs:171"
+          "crates/libtmux/src/pane/observe.rs:169"
         ],
         "reviewed": true,
         "scope": null
@@ -455,7 +455,9 @@
       {
         "command": "send-keys",
         "evidence": [
-          "crates/libtmux/src/pane.rs:670"
+          "crates/libtmux/src/pane.rs:670",
+          "crates/libtmux/src/pane.rs:673",
+          "crates/libtmux/src/pane.rs:68"
         ],
         "scope": null
       }
@@ -516,6 +518,7 @@
       {
         "command": "split-window",
         "evidence": [
+          "crates/libtmux/src/internal/listing.rs:362",
           "crates/libtmux/src/window.rs:1948",
           "crates/libtmux/src/internal/listing.rs:444",
           "crates/libtmux/src/pane.rs:515"
@@ -592,6 +595,335 @@
           "crates/libtmux/src/pane/observe.rs:446"
         ],
         "scope": null
+      }
+    ],
+    "plan.Plan.run": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "crates/libtmux/src/plan/run.rs:461",
+          "crates/libtmux/src/plan/ops/panes.rs:531",
+          "crates/libtmux/src/plan/run.rs:550",
+          "crates/libtmux/src/plan/run.rs:449",
+          "crates/libtmux/src/plan/run.rs:377"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the plan has a capture-pane step"
+      },
+      {
+        "command": "kill-pane",
+        "evidence": [
+          "crates/libtmux/src/plan/run.rs:461",
+          "crates/libtmux/src/plan/ops/panes.rs:580",
+          "crates/libtmux/src/plan/run.rs:550",
+          "crates/libtmux/src/plan/run.rs:449",
+          "crates/libtmux/src/plan/run.rs:377"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the plan has a kill-pane step"
+      },
+      {
+        "command": "kill-window",
+        "evidence": [
+          "crates/libtmux/src/plan/run.rs:461",
+          "crates/libtmux/src/plan/ops/windows.rs:317",
+          "crates/libtmux/src/plan/run.rs:550",
+          "crates/libtmux/src/plan/run.rs:449",
+          "crates/libtmux/src/plan/run.rs:377"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the plan has a kill-window step"
+      },
+      {
+        "command": "new-session",
+        "evidence": [
+          "crates/libtmux/src/plan/run.rs:461",
+          "crates/libtmux/src/plan/ops/sessions.rs:92",
+          "crates/libtmux/src/plan/run.rs:550",
+          "crates/libtmux/src/plan/run.rs:449",
+          "crates/libtmux/src/plan/run.rs:377"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the plan has a new-session step"
+      },
+      {
+        "command": "new-window",
+        "evidence": [
+          "crates/libtmux/src/plan/run.rs:461",
+          "crates/libtmux/src/plan/ops/windows.rs:151",
+          "crates/libtmux/src/plan/run.rs:550",
+          "crates/libtmux/src/plan/run.rs:449",
+          "crates/libtmux/src/plan/run.rs:377"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the plan has a new-window step"
+      },
+      {
+        "command": "rename-window",
+        "evidence": [
+          "crates/libtmux/src/plan/run.rs:461",
+          "crates/libtmux/src/plan/ops/windows.rs:271",
+          "crates/libtmux/src/plan/run.rs:550",
+          "crates/libtmux/src/plan/run.rs:449",
+          "crates/libtmux/src/plan/run.rs:377"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the plan has a rename-window step"
+      },
+      {
+        "command": "run-shell",
+        "evidence": [
+          "crates/libtmux/src/plan/run.rs:461",
+          "crates/libtmux/src/plan/ops/timing.rs:81",
+          "crates/libtmux/src/plan/run.rs:550",
+          "crates/libtmux/src/plan/run.rs:449",
+          "crates/libtmux/src/plan/run.rs:377"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the plan has a run-shell step"
+      },
+      {
+        "command": "select-layout",
+        "evidence": [
+          "crates/libtmux/src/plan/run.rs:461",
+          "crates/libtmux/src/plan/ops/windows.rs:370",
+          "crates/libtmux/src/plan/run.rs:550",
+          "crates/libtmux/src/plan/run.rs:449",
+          "crates/libtmux/src/plan/run.rs:377"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the plan has a select-layout step"
+      },
+      {
+        "command": "select-pane",
+        "evidence": [
+          "crates/libtmux/src/plan/run.rs:461",
+          "crates/libtmux/src/plan/ops/panes.rs:481",
+          "crates/libtmux/src/plan/run.rs:550",
+          "crates/libtmux/src/plan/run.rs:449",
+          "crates/libtmux/src/plan/run.rs:377"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the plan has a select-pane step"
+      },
+      {
+        "command": "select-window",
+        "evidence": [
+          "crates/libtmux/src/plan/run.rs:461",
+          "crates/libtmux/src/plan/ops/windows.rs:223",
+          "crates/libtmux/src/plan/run.rs:550",
+          "crates/libtmux/src/plan/run.rs:449",
+          "crates/libtmux/src/plan/run.rs:377"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the plan has a select-window step"
+      },
+      {
+        "command": "send-keys",
+        "evidence": [
+          "crates/libtmux/src/plan/run.rs:461",
+          "crates/libtmux/src/plan/ops/panes.rs:412",
+          "crates/libtmux/src/plan/run.rs:550",
+          "crates/libtmux/src/plan/run.rs:449",
+          "crates/libtmux/src/plan/run.rs:377"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the plan has a send-keys step"
+      },
+      {
+        "command": "set-environment",
+        "evidence": [
+          "crates/libtmux/src/plan/run.rs:461",
+          "crates/libtmux/src/plan/ops/options.rs:210",
+          "crates/libtmux/src/plan/run.rs:550",
+          "crates/libtmux/src/plan/run.rs:449",
+          "crates/libtmux/src/plan/run.rs:377"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the plan has a set-environment step"
+      },
+      {
+        "command": "set-option",
+        "evidence": [
+          "crates/libtmux/src/plan/run.rs:461",
+          "crates/libtmux/src/plan/ops/options.rs:123",
+          "crates/libtmux/src/plan/run.rs:550",
+          "crates/libtmux/src/plan/run.rs:449",
+          "crates/libtmux/src/plan/run.rs:377"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the plan has a set-option step"
+      },
+      {
+        "command": "split-window",
+        "evidence": [
+          "crates/libtmux/src/plan/run.rs:461",
+          "crates/libtmux/src/plan/ops/panes.rs:257",
+          "crates/libtmux/src/plan/run.rs:550",
+          "crates/libtmux/src/plan/run.rs:449",
+          "crates/libtmux/src/plan/run.rs:377"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the plan has a split-window step"
+      }
+    ],
+    "plan.Plan.run_over_control_mode": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "crates/libtmux/src/plan/run.rs:869",
+          "crates/libtmux/src/plan/ops/panes.rs:531",
+          "crates/libtmux/src/plan/run.rs:856"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the plan has a capture-pane step"
+      },
+      {
+        "command": "kill-pane",
+        "evidence": [
+          "crates/libtmux/src/plan/run.rs:869",
+          "crates/libtmux/src/plan/ops/panes.rs:580",
+          "crates/libtmux/src/plan/run.rs:856"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the plan has a kill-pane step"
+      },
+      {
+        "command": "kill-window",
+        "evidence": [
+          "crates/libtmux/src/plan/run.rs:869",
+          "crates/libtmux/src/plan/ops/windows.rs:317",
+          "crates/libtmux/src/plan/run.rs:856"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the plan has a kill-window step"
+      },
+      {
+        "command": "new-session",
+        "evidence": [
+          "crates/libtmux/src/plan/run.rs:869",
+          "crates/libtmux/src/plan/ops/sessions.rs:92",
+          "crates/libtmux/src/plan/run.rs:856"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the plan has a new-session step"
+      },
+      {
+        "command": "new-window",
+        "evidence": [
+          "crates/libtmux/src/plan/run.rs:869",
+          "crates/libtmux/src/plan/ops/windows.rs:151",
+          "crates/libtmux/src/plan/run.rs:856"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the plan has a new-window step"
+      },
+      {
+        "command": "rename-window",
+        "evidence": [
+          "crates/libtmux/src/plan/run.rs:869",
+          "crates/libtmux/src/plan/ops/windows.rs:271",
+          "crates/libtmux/src/plan/run.rs:856"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the plan has a rename-window step"
+      },
+      {
+        "command": "select-layout",
+        "evidence": [
+          "crates/libtmux/src/plan/run.rs:869",
+          "crates/libtmux/src/plan/ops/windows.rs:370",
+          "crates/libtmux/src/plan/run.rs:856"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the plan has a select-layout step"
+      },
+      {
+        "command": "select-pane",
+        "evidence": [
+          "crates/libtmux/src/plan/run.rs:869",
+          "crates/libtmux/src/plan/ops/panes.rs:481",
+          "crates/libtmux/src/plan/run.rs:856"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the plan has a select-pane step"
+      },
+      {
+        "command": "select-window",
+        "evidence": [
+          "crates/libtmux/src/plan/run.rs:869",
+          "crates/libtmux/src/plan/ops/windows.rs:223",
+          "crates/libtmux/src/plan/run.rs:856"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the plan has a select-window step"
+      },
+      {
+        "command": "send-keys",
+        "evidence": [
+          "crates/libtmux/src/plan/run.rs:869",
+          "crates/libtmux/src/plan/ops/panes.rs:412",
+          "crates/libtmux/src/plan/run.rs:856"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the plan has a send-keys step"
+      },
+      {
+        "command": "set-environment",
+        "evidence": [
+          "crates/libtmux/src/plan/run.rs:869",
+          "crates/libtmux/src/plan/ops/options.rs:210",
+          "crates/libtmux/src/plan/run.rs:856"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the plan has a set-environment step"
+      },
+      {
+        "command": "set-option",
+        "evidence": [
+          "crates/libtmux/src/plan/run.rs:869",
+          "crates/libtmux/src/plan/ops/options.rs:123",
+          "crates/libtmux/src/plan/run.rs:856"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the plan has a set-option step"
+      },
+      {
+        "command": "split-window",
+        "evidence": [
+          "crates/libtmux/src/plan/run.rs:869",
+          "crates/libtmux/src/plan/ops/panes.rs:257",
+          "crates/libtmux/src/plan/run.rs:856"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the plan has a split-window step"
       }
     ],
     "server.Server.access_rules": [
@@ -781,6 +1113,7 @@
       {
         "command": "new-session",
         "evidence": [
+          "crates/libtmux/src/internal/listing.rs:362",
           "crates/libtmux/src/server.rs:2286",
           "crates/libtmux/src/internal/listing.rs:411",
           "crates/libtmux/src/server.rs:898"
@@ -1020,6 +1353,8 @@
         "command": "wait-for",
         "evidence": [
           "crates/libtmux/src/internal/wait_for.rs:341",
+          "crates/libtmux/src/internal/wait_for.rs:341",
+          "crates/libtmux/src/internal/wait_for.rs:363",
           "crates/libtmux/src/server/channels.rs:131"
         ],
         "scope": null
@@ -1073,8 +1408,8 @@
       {
         "command": "wait-for",
         "evidence": [
-          "crates/libtmux/src/internal/wait_for.rs:363",
           "crates/libtmux/src/internal/wait_for.rs:248",
+          "crates/libtmux/src/internal/wait_for.rs:363",
           "crates/libtmux/src/internal/wait_for.rs:221",
           "crates/libtmux/src/server/channels.rs:225"
         ],
@@ -1161,6 +1496,7 @@
       {
         "command": "new-window",
         "evidence": [
+          "crates/libtmux/src/internal/listing.rs:362",
           "crates/libtmux/src/session.rs:1139",
           "crates/libtmux/src/internal/listing.rs:427",
           "crates/libtmux/src/session.rs:495"
@@ -1578,6 +1914,7 @@
       {
         "command": "split-window",
         "evidence": [
+          "crates/libtmux/src/internal/listing.rs:362",
           "crates/libtmux/src/window.rs:1948",
           "crates/libtmux/src/internal/listing.rs:444",
           "crates/libtmux/src/window.rs:367"

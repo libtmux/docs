@@ -250,6 +250,8 @@ export interface CommandRow {
   command: string
   href: string
   scopes: SymbolSend['scopes']
+  /** When the symbol sends the command, if only some calls do. */
+  when?: string
 }
 
 /**
@@ -258,7 +260,10 @@ export interface CommandRow {
  * then what it sends through a helper, which is rarely why anyone is here.
  */
 export function tmuxCommandRows(sends: SymbolSend[], equivalents: { name: string; href: string }[]): CommandRow[] {
-  const rows = (list: SymbolSend[]) => list.map((send): CommandRow => ({ command: send.command, href: send.manualHref, scopes: send.scopes.filter((use) => use.scope) }))
+  const rows = (list: SymbolSend[]) => list.map((send): CommandRow => ({
+    command: send.command, href: send.manualHref, scopes: send.scopes.filter((use) => use.scope),
+    ...(send.scopes.find((use) => use.when) ? { when: send.scopes.find((use) => use.when)!.when } : {}),
+  }))
   const direct = (send: SymbolSend) => send.scopes.some((use) => use.listed)
   const sent = new Set(sends.map((send) => send.command))
   return [

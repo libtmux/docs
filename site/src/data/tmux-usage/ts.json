@@ -125,7 +125,8 @@
           "packages/mcp/src/server.ts:244"
         ],
         "reviewed": true,
-        "scope": null
+        "scope": null,
+        "when": "a minimal launch, no explicit selection"
       },
       {
         "command": "show-options",
@@ -134,7 +135,8 @@
           "packages/mcp/src/server.ts:244"
         ],
         "reviewed": true,
-        "scope": null
+        "scope": null,
+        "when": "a minimal launch, no explicit selection"
       },
       {
         "command": "start-server",
@@ -143,7 +145,8 @@
           "packages/mcp/src/server.ts:244"
         ],
         "reviewed": true,
-        "scope": null
+        "scope": null,
+        "when": "a minimal launch, no explicit selection"
       }
     ],
     "pane.Pane.breakOut": [
@@ -304,6 +307,18 @@
         ],
         "reviewed": true,
         "scope": null
+      },
+      {
+        "command": "kill-pane",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/mutations.ts:86",
+          "packages/libtmux/src/_internal/operations/plans.ts:195",
+          "packages/libtmux/src/_internal/operations/plans.ts:192",
+          "packages/libtmux/src/pane.ts:255"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the window has one placement"
       }
     ],
     "pane.Pane.pasteBuffer": [
@@ -490,6 +505,17 @@
           "packages/libtmux/src/pane.ts:400"
         ],
         "scope": null
+      },
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/topology.ts:295",
+          "packages/libtmux/src/_internal/operations/topology.ts:297",
+          "packages/libtmux/src/pane.ts:400"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the window is zoomed"
       }
     ],
     "pane.Pane.zoom": [
@@ -500,6 +526,17 @@
           "packages/libtmux/src/pane.ts:386"
         ],
         "scope": null
+      },
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/topology.ts:267",
+          "packages/libtmux/src/_internal/operations/topology.ts:276",
+          "packages/libtmux/src/pane.ts:386"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the window is not zoomed"
       },
       {
         "command": "select-pane",
@@ -853,7 +890,8 @@
           "packages/libtmux/src/server.ts:955"
         ],
         "reviewed": true,
-        "scope": null
+        "scope": null,
+        "when": "layouts that depend on the tmux version"
       }
     ],
     "session.Session.detach": [
@@ -927,7 +965,8 @@
           "packages/libtmux/src/session.ts:378"
         ],
         "reviewed": true,
-        "scope": null
+        "scope": null,
+        "when": "the target is \"last\""
       },
       {
         "command": "next-window",
@@ -936,7 +975,8 @@
           "packages/libtmux/src/session.ts:378"
         ],
         "reviewed": true,
-        "scope": null
+        "scope": null,
+        "when": "the target is \"next\""
       },
       {
         "command": "previous-window",
@@ -946,7 +986,8 @@
           "packages/libtmux/src/session.ts:378"
         ],
         "reviewed": true,
-        "scope": null
+        "scope": null,
+        "when": "the target is \"previous\""
       },
       {
         "command": "select-window",
@@ -1285,6 +1326,17 @@
           "packages/libtmux/src/window.ts:387"
         ],
         "scope": null
+      },
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/topology.ts:295",
+          "packages/libtmux/src/_internal/operations/topology.ts:297",
+          "packages/libtmux/src/window.ts:387"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the window is zoomed"
       }
     ]
   }

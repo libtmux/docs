@@ -4427,38 +4427,6 @@
       ]
     },
     {
-      "port": "ts",
-      "owner": "Pane",
-      "names": [
-        "killIfWindowUnshared"
-      ],
-      "commands": [
-        "kill-pane"
-      ],
-      "kind": "other-command",
-      "why": "The kill-pane is quoted into the then-branch of an if-shell; the method sends if-shell and tmux runs kill-pane when the condition holds.",
-      "evidence": [
-        {
-          "at": "packages/libtmux/src/_internal/operations/plans.ts:195",
-          "has": [
-            "[\"kill-pane\", \"-t\", target]"
-          ]
-        },
-        {
-          "at": "packages/libtmux/src/_internal/operations/plans.ts:184",
-          "has": [
-            "quoteCommand(command)"
-          ]
-        },
-        {
-          "at": "packages/libtmux/src/_internal/operations/plans.ts:179",
-          "has": [
-            "\"if-shell\""
-          ]
-        }
-      ]
-    },
-    {
       "port": "go",
       "owner": "Plan",
       "in": "tmux/plan_",
@@ -4586,40 +4554,6 @@
           "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:125",
           "has": [
             "\"display-message\""
-          ]
-        }
-      ]
-    },
-    {
-      "port": "cxx",
-      "owner": "Pane",
-      "names": [
-        "break_out"
-      ],
-      "commands": [
-        "break-pane",
-        "display-message",
-        "rename-window"
-      ],
-      "kind": "other-command",
-      "why": "Both branches are the then and else commands of the if-shell that break_out sends; tmux runs them.",
-      "evidence": [
-        {
-          "at": "src/entities.cpp:1279",
-          "has": [
-            "\"break-pane -d -s \""
-          ]
-        },
-        {
-          "at": "src/entities.cpp:1287",
-          "has": [
-            "\"if-shell\", \"-F\", \"-t\", target"
-          ]
-        },
-        {
-          "at": "src/entities.cpp:1366",
-          "has": [
-            "\"rename-window -t \""
           ]
         }
       ]

@@ -195,7 +195,8 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   for (const send of port && !ctx.manualLinks ? tmuxSymbolSends(port, symbol.publicId ?? symbol.id) : []) {
     const scopes = send.scopes.filter((use) => use.scope).map((use) =>
       `${use.scope!.label.toLowerCase()} scope${use.function ? ` [\`${use.function.name}\`](${use.function.href})` : ''}`)
-    out.push(`tmux command: [\`${send.command}\`](${send.manualHref})${scopes.length ? `, ${scopes.join(', ')}` : ''}`, '')
+    const when = send.scopes.find((use) => use.when)?.when
+    out.push(`tmux command: [\`${send.command}\`](${send.manualHref})${scopes.length ? `, ${scopes.join(', ')}` : ''}${when ? ` (${when})` : ''}`, '')
   }
   for (const command of commands) out.push(`tmux command: [\`${command.name}\`](${command.href})`, '')
   const catalog = ctx.catalogLinks ?? (port && !ctx.manualLinks ? tmuxCatalogKindsForSymbol(port, symbol)

@@ -35,6 +35,8 @@ export interface UsageUse {
   evidence: string[]
   /** A reviewed claim the generator checked line by line, not a scan result. */
   reviewed?: boolean
+  /** When the method sends it, for a send that only some calls make: a few words, shown beside the method. */
+  when?: string
   /** The core library symbol a wrapper forwards to, and the lines that show it sends. */
   via?: { port: string; symbol: string; revision?: string; evidence: string[]; reviewed?: boolean }
 }
@@ -200,6 +202,8 @@ export interface UsageLink {
   evidence: string[]
   hops: number
   reviewed: boolean
+  /** The condition under which the method sends it, when not every call does. */
+  when?: string
   via?: UsageUse['via']
 }
 
@@ -220,7 +224,7 @@ function linkFor(port: string, publicId: string, use: UsageUse, version?: string
   if (!symbol || !href) return undefined
   return {
     port, symbolId: publicId, label: usageLabel(port, symbol), kind: symbol.kind, href, scope: use.scope, owner: ownerOf(port, symbol)?.name,
-    evidence: use.evidence, hops: use.evidence.length - 1, reviewed: Boolean(use.reviewed), ...(use.via ? { via: use.via } : {}),
+    evidence: use.evidence, hops: use.evidence.length - 1, reviewed: Boolean(use.reviewed), ...(use.when ? { when: use.when } : {}), ...(use.via ? { via: use.via } : {}),
   }
 }
 
@@ -251,7 +255,7 @@ export function tmuxUsage(command: string, { scope, version }: { scope?: string;
 
 export interface SymbolUsage {
   command: string
-  scopes: { scope: TmuxScope | undefined; evidence: string[]; hops: number; reviewed: boolean; listed: boolean; via?: UsageUse['via'] }[]
+  scopes: { scope: TmuxScope | undefined; evidence: string[]; hops: number; reviewed: boolean; listed: boolean; when?: string; via?: UsageUse['via'] }[]
 }
 
 /** The commands one symbol sends, with the scope and the lines that show it. Every hop counts here. */
@@ -263,8 +267,8 @@ export function tmuxUsageOf(port: string, publicId: string): SymbolUsage[] {
     return {
       command,
       scopes: scopes.length
-        ? scopes.flatMap((scope) => list.filter((use) => use.scope === scope.id).map((use) => ({ scope, evidence: use.evidence, hops: use.evidence.length - 1, reviewed: Boolean(use.reviewed), listed: isListed(use, publicId), via: use.via })))
-        : list.map((use) => ({ scope: undefined, evidence: use.evidence, hops: use.evidence.length - 1, reviewed: Boolean(use.reviewed), listed: isListed(use, publicId), via: use.via })),
+        ? scopes.flatMap((scope) => list.filter((use) => use.scope === scope.id).map((use) => ({ scope, evidence: use.evidence, hops: use.evidence.length - 1, reviewed: Boolean(use.reviewed), listed: isListed(use, publicId), when: use.when, via: use.via })))
+        : list.map((use) => ({ scope: undefined, evidence: use.evidence, hops: use.evidence.length - 1, reviewed: Boolean(use.reviewed), listed: isListed(use, publicId), when: use.when, via: use.via })),
     }
   })
 }

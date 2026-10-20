@@ -432,7 +432,7 @@
     ],
     "io.github.libtmux.junit5.NamedServerFixture.NamedServerFixture.close": [
       {
-        "command": "if-shell",
+        "command": "kill-server",
         "evidence": [
           "libtmux-junit5/src/main/java/io/github/libtmux/junit5/NamedServerFixture.java:150",
           "libtmux-junit5/src/main/java/io/github/libtmux/junit5/NamedServerFixture.java:129"
@@ -793,7 +793,8 @@
           "libtmux/src/main/java/io/github/libtmux/Pane.java:667",
           "libtmux/src/main/java/io/github/libtmux/Pane.java:577"
         ],
-        "scope": "window"
+        "scope": "window",
+        "when": "the pane is synchronized"
       },
       {
         "command": "send-keys",
@@ -827,7 +828,8 @@
           "libtmux/src/main/java/io/github/libtmux/Pane.java:667",
           "libtmux/src/main/java/io/github/libtmux/Pane.java:619"
         ],
-        "scope": "window"
+        "scope": "window",
+        "when": "the pane is synchronized"
       },
       {
         "command": "send-keys",

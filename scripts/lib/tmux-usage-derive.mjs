@@ -256,6 +256,8 @@ export function verifyClaims({ claims, spec, functions, types, symbols, readSour
       continue
     }
     if (!claim.evidence?.length) { fail('cites no evidence'); continue }
+    const wrong = conditionProblem(claim.when, claim.conditional)
+    if (wrong) { fail(wrong); continue }
     let anchored = false
     let broken = false
     for (const item of claim.evidence) {
@@ -287,12 +289,56 @@ export function verifyClaims({ claims, spec, functions, types, symbols, readSour
     if (!broken) {
       entries.push({
         symbol: claim.symbol, command: claim.command, scope: claim.scope, evidence: claim.evidence.map((item) => item.at),
-        hops: claim.evidence.length - 1, reviewed: true, ...(claim.forwardable ? { forwardable: true } : {}),
+        hops: claim.evidence.length - 1, reviewed: true, ...(claim.forwardable ? { forwardable: true } : {}), ...(claim.when ? { when: claim.when } : {}),
         ...(core ? { via: { port: claim.via.port, symbol: claim.via.symbol, revision: core.revision, evidence: core.evidence, ...(core.reviewed ? { reviewed: true } : {}) } } : {}),
       })
     }
   }
   return { entries, problems }
+}
+
+/** The longest qualifier a table can carry beside a method: it is one line, and a sentence belongs on a page. */
+export const WHEN_WORDS = 8
+
+/**
+ * What is wrong with the condition of a send, or nothing. A send that only some calls make says when in a few words,
+ * and a send marked conditional that says nothing would be listed as if every call made it.
+ */
+export function conditionProblem(when, conditional) {
+  if (when === undefined) return conditional ? 'is marked conditional, so it must say when' : undefined
+  if (typeof when !== 'string' || !when.trim()) return 'says when with no words'
+  if (/\n/.test(when)) return 'says when on more than one line'
+  const words = when.trim().split(/\s+/).length
+  return words > WHEN_WORDS ? `says when in ${words} words, and a qualifier is at most ${WHEN_WORDS}: ${when}` : undefined
+}
+
+/**
+ * A scanned send that only some calls make, such as the one a method makes under a condition on its argument, says when.
+ * The condition is not a claim about the send, which the scan found and the audit reads back; it qualifies it, and cites the
+ * lines that show the condition. One that qualifies no entry has gone stale and fails.
+ *
+ * @param {{ conditions: { port: string, symbol: string, command: string, scope: string | null, when: string, evidence: { at: string, has?: string[] }[] }[], found: Map<string, object>, readSource: (path: string) => string | undefined, lenient?: boolean }} input
+ *   `lenient` leaves a condition whose entry is not there yet for a later call, which is how an entry that a method inherits from another is qualified like it.
+ */
+export function applyConditions({ conditions, found, readSource, lenient = false }) {
+  const problems = []
+  for (const item of conditions) {
+    const label = `${item.port}: ${item.symbol} ${item.command} ${item.scope}: condition`
+    const wrong = conditionProblem(item.when, true)
+    if (wrong) { problems.push(`${label} ${wrong}`); continue }
+    if (!item.evidence?.length) { problems.push(`${label} cites no lines`); continue }
+    for (const line of item.evidence) {
+      const cut = line.at.lastIndexOf(':')
+      const text = readSource(line.at.slice(0, cut))?.split('\n')[Number(line.at.slice(cut + 1)) - 1]
+      if (text === undefined) { problems.push(`${label} ${line.at} is not a line of the pinned source`); continue }
+      for (const needle of line.has ?? []) if (!text.includes(needle)) problems.push(`${label} ${line.at} does not contain ${JSON.stringify(needle)}`)
+    }
+    const entry = found.get(`${item.symbol}\0${item.command}\0${item.scope}`)
+    if (!entry) { if (!lenient) problems.push(`${label} qualifies no entry`) }
+    else if (entry.when && entry.when !== item.when) problems.push(`${label} differs from the one its claim says: ${entry.when}`)
+    else entry.when = item.when
+  }
+  return problems
 }
 
 /**

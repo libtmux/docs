@@ -182,6 +182,8 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
 /* A method that sends a tmux command names the flag and the C function behind it. */
 .tmux-send { margin-inline-start: 0.25rem; }
 .tmux-send > * + * { margin-inline-start: 0.25rem; }
+/* A command a method sends only on some calls says when, quieter than the command. */
+.tmux-when { margin-inline-start: 0.25rem; opacity: 0.65; font-size: 0.85em; }
 
 /*
  * The member list on a type's page.

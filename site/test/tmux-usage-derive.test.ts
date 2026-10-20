@@ -1,8 +1,9 @@
 import { readFileSync } from 'node:fs'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { scanSource } from '../../scripts/lib/tmux-usage-scan.mjs'
-import { MAX_SHARED_BY, applyExclusions, builtSites, callTargets, classify, definitionsOf, deriveUsage, ruleHolds, verifyClaims } from '../../scripts/lib/tmux-usage-derive.mjs'
+import { MAX_SHARED_BY, applyConditions, applyExclusions, builtSites, callTargets, classify, conditionProblem, definitionsOf, deriveUsage, ruleHolds, verifyClaims } from '../../scripts/lib/tmux-usage-derive.mjs'
 import { auditEvidence } from '../../scripts/lib/tmux-usage-audit.mjs'
+import { chainProblems, dispatcherProblems, guardProblems } from '../../scripts/lib/tmux-usage-dispatch.mjs'
 import { forwardUsage } from '../../scripts/lib/tmux-usage-forward.mjs'
 import { carriesCommand, memberWords, selects, settleCandidates, sweepCandidates } from '../../scripts/lib/tmux-usage-sweep.mjs'
 import { scanFSharp, scanJulia } from '../../scripts/lib/tmux-usage-lexical.mjs'
@@ -395,6 +396,247 @@ describe('reviewed claims', () => {
     const { entries, problems } = verify([claim(over)])
     expect(entries).toEqual([])
     expect(problems.join('\n')).toMatch(message)
+  })
+})
+
+describe('the condition of a send', () => {
+  const claim = (over: Record<string, unknown> = {}) => ({
+    port: 'rs', symbol: 'server.Server.panes', command: 'list-panes', scope: 'server', evidence: [{ at: 'server.rs:2', has: ['list-panes'] }, { at: 'server.rs:1', in: 'server.Server.panes' }], ...over,
+  })
+  const source = ['pub async fn panes() {', '    cmd("list-panes", "-a")', '}'].join('\n')
+  const symbols = [{ id: 'server.Server.panes', name: 'panes', parentName: 'Server', file: 'server.rs', line: 1 }]
+  const functions = [located({ file: 'server.rs', name: 'panes', owner: 'Server', start: 1, nameLine: 1, end: 3 })]
+  const verify = (claims: unknown[]) => verifyClaims({ claims: claims as never, spec, functions, types: [], symbols, readSource: (path: string) => (path === 'server.rs' ? source : undefined) })
+
+  it('accepts a few words and carries them to the entry, and refuses a long one, an empty one and a marked one with none', () => {
+    expect(conditionProblem(undefined, false)).toBeUndefined()
+    expect(conditionProblem('the window is zoomed', true)).toBeUndefined()
+    expect(conditionProblem('one two three four five six seven eight', false)).toBeUndefined()
+    expect(conditionProblem('one two three four five six seven eight nine', false)).toMatch(/9 words, and a qualifier is at most 8/)
+    expect(conditionProblem('  ', false)).toMatch(/with no words/)
+    expect(conditionProblem('one\ntwo', false)).toMatch(/more than one line/)
+    expect(conditionProblem(undefined, true)).toMatch(/is marked conditional, so it must say when/)
+    expect(verify([claim({ when: 'the target is "next"' })]).entries[0]).toMatchObject({ when: 'the target is "next"' })
+    expect(verify([claim()]).entries[0]).not.toHaveProperty('when')
+    expect(verify([claim({ when: 'one two three four five six seven eight nine' })]).problems.join('\n')).toMatch(/at most 8/)
+    expect(verify([claim({ conditional: true })]).problems.join('\n')).toMatch(/marked conditional, so it must say when/)
+  })
+
+  describe('a condition on a scanned send', () => {
+    const found = () => new Map([['S.panes\0list-panes\0server', { symbol: 'S.panes', command: 'list-panes', scope: 'server' } as Record<string, unknown>]])
+    const lines = (path: string) => (path === 'lib.py' ? 'if synchronized:\n    run("list-panes")\n' : undefined)
+    const condition = (over: Record<string, unknown> = {}) => ({ port: 'py', symbol: 'S.panes', command: 'list-panes', scope: 'server', when: 'the pane is synchronized', evidence: [{ at: 'lib.py:1', has: ['synchronized'] }], ...over })
+
+    it('qualifies the entry it names, with the lines that show the condition', () => {
+      const entries = found()
+      expect(applyConditions({ conditions: [condition()], found: entries, readSource: lines })).toEqual([])
+      expect(entries.get('S.panes\0list-panes\0server')).toMatchObject({ when: 'the pane is synchronized' })
+    })
+
+    it.each([
+      ['an entry that is not there', { symbol: 'S.gone' }, /qualifies no entry/],
+      ['a line that does not hold the text', { evidence: [{ at: 'lib.py:1', has: ['unsynchronized'] }] }, /does not contain/],
+      ['a line past the end of the file', { evidence: [{ at: 'lib.py:9', has: ['x'] }] }, /not a line of the pinned source/],
+      ['no lines', { evidence: [] }, /cites no lines/],
+      ['too many words', { when: 'one two three four five six seven eight nine' }, /at most 8/],
+    ])('refuses %s', (_name, over, message) => {
+      expect(applyConditions({ conditions: [condition(over)], found: found(), readSource: lines }).join('\n')).toMatch(message)
+    })
+
+    it('leaves a condition for later when asked, and refuses one that differs from the claim it qualifies', () => {
+      expect(applyConditions({ conditions: [condition({ symbol: 'S.gone' })], found: found(), readSource: lines, lenient: true })).toEqual([])
+      const claimed = found()
+      claimed.get('S.panes\0list-panes\0server')!.when = 'another reason'
+      expect(applyConditions({ conditions: [condition()], found: claimed, readSource: lines }).join('\n')).toMatch(/differs from the one its claim says: another reason/)
+    })
+  })
+
+  it('is kept by the wrapper that forwards the method, and by the method that delegates to another type', () => {
+    const entry = { symbol: 'core.Pane.sendKeys', command: 'send-keys', scope: null, evidence: ['Pane.java:9'], hops: 0, when: 'the pane is synchronized' }
+    const coreSymbols = new Map([[entry.symbol, { name: 'sendKeys', parentName: 'Pane' }]])
+    const wrapper = located({ file: 'Pane.kt', name: 'sendKeys', owner: 'Pane', start: 1, nameLine: 1, end: 3, calls: new Map([['sendKeys', 2]]), receivers: new Map([['sendKeys', new Set(['this'])]]) })
+    const wrapped = forwardUsage({ parent: 'java', functions: [wrapper], types: [], symbols: [{ id: 'kt.Pane.sendKeys', name: 'sendKeys', parentName: 'Pane', file: 'Pane.kt', line: 1 }],
+      core: { entries: [entry], symbols: coreSymbols as never, revision: 'r1' } } as never)
+    expect(wrapped.entries[0]).toMatchObject({ symbol: 'kt.Pane.sendKeys', when: 'the pane is synchronized' })
+    // A method that calls another type's method on a handle named for it is credited with it, on the way and not under a branch.
+    const caller = (depth: number) => located({
+      file: 'pane.go', name: 'Refresh', owner: 'Session', start: 1, nameLine: 1, end: 3,
+      calls: new Map([['Pane', 2]]), receivers: new Map([['Pane', new Set(['server'])]]), callDepths: new Map([['Pane', depth]]),
+    } as never)
+    const sym = { id: 'tmux.Server.Pane', name: 'Pane', parentName: 'Server', file: 'server.go', line: 1 }
+    const run = (depth: number) => forwardUsage({
+      parent: 'go', delegate: true, functions: [caller(depth)], types: [], symbols: [sym, { id: 'tmux.Session.Refresh', name: 'Refresh', parentName: 'Session', file: 'pane.go', line: 1 }],
+      core: { entries: [{ symbol: 'tmux.Server.Pane', command: 'list-panes', scope: 'window', evidence: ['server.go:5'], hops: 0, when: 'any pane' }], symbols: new Map([[sym.id, sym]]) as never, revision: 'r1' },
+    } as never)
+    expect(run(0).entries[0]).toMatchObject({ symbol: 'tmux.Session.Refresh', command: 'list-panes', when: 'any pane', via: { port: 'go', symbol: 'tmux.Server.Pane' } })
+    // The control: the same call under a branch, in a loop or in a cleanup that runs on failure is not credited.
+    expect(run(1).entries).toEqual([])
+  })
+})
+
+describe('the calls that send', () => {
+  const text = [
+    'class Server:', //                                            1
+    '    def cmd(self, *args):', //                                2
+    '        return tmux_cmd(*args)', //                           3
+    '', //                                                          4
+    'class tmux_cmd:', //                                           5
+    '    def __init__(self, *args):', //                          6
+    '        self.process = subprocess.Popen(args)', //            7
+    '', //                                                          8
+    'def listing(rows):', //                                       9
+    '    return [row for row in rows]', //                        10
+    '', //                                                         11
+    'def check_call(args):', //                                   12
+    '    subprocess.check_call(args)', //                         13
+  ].join('\n')
+  const fn = (name: string, start: number, end: number, over: Record<string, unknown> = {}) => ({ file: 'lib.py', name, start, end, calls: new Map<string, number>(), ...over })
+  const functions = [
+    fn('cmd', 2, 3, { owner: 'Server', calls: new Map([['tmux_cmd', 3]]) }), fn('__init__', 6, 7, { owner: 'tmux_cmd' }), fn('listing', 9, 10), fn('check_call', 12, 13),
+  ]
+  const readSource = (path: string) => (path === 'lib.py' ? text : undefined)
+  const problems = (name: string, item: Record<string, unknown>) => chainProblems({ port: 'py', rule: { name }, item: { has: [name], ...item } as never, functions: functions as never, readSource })
+  const reaches = [{ at: 'lib.py:3', has: ['tmux_cmd'], calls: 'tmux_cmd' }, { at: 'lib.py:7', has: ['subprocess.Popen('] }]
+
+  it('accepts a definition that reaches the process through the calls it cites, and one that starts the process itself', () => {
+    expect(problems('cmd', { at: 'lib.py:2', reaches })).toEqual([])
+    expect(problems('check_call', { at: 'lib.py:13' })).toEqual([])
+    // A hop the scan cannot follow, such as a command put on a queue, says where it leads.
+    const queued = [{ at: 'lib.py:3', has: ['tmux_cmd'], leads: '__init__' }, { at: 'lib.py:7', has: ['subprocess.Popen('] }]
+    expect(problems('cmd', { at: 'lib.py:2', reaches: queued })).toEqual([])
+  })
+
+  it.each([
+    ['a function that never reaches a process', 'listing', { at: 'lib.py:9' }, /reaches no transport, and cites no chain to one/],
+    ['a chain that stops short of the process', 'cmd', { at: 'lib.py:2', reaches: [reaches[0]] }, /hop lib.py:3 is not a transport/],
+    ['a chain that skips the function between', 'cmd', { at: 'lib.py:2', reaches: [reaches[1]] }, /hop lib.py:7 is not in Server.cmd/],
+    ['a hop that does not lead to the next line', 'cmd', { at: 'lib.py:2', reaches: [{ at: 'lib.py:3', has: ['tmux_cmd'], calls: 'tmux_cmd' }, { at: 'lib.py:10', has: ['row'] }] }, /leads to tmux_cmd, but lib.py:10 is not a line of it/],
+    ['a hop whose function does not make the call', 'cmd', { at: 'lib.py:2', reaches: [{ at: 'lib.py:3', has: ['tmux_cmd'], calls: 'Popen' }, reaches[1]] }, /does not call Popen/],
+    ['a hop whose text is not on its line', 'cmd', { at: 'lib.py:2', reaches: [{ at: 'lib.py:3', has: ['elsewhere'], calls: 'tmux_cmd' }, reaches[1]] }, /does not contain "elsewhere"/],
+    ['a definition that is not a function of that name', 'listing', { at: 'lib.py:2', reaches }, /is not a line of a function named listing/],
+    ['a hop that names no destination', 'cmd', { at: 'lib.py:2', reaches: [{ at: 'lib.py:3', has: ['tmux_cmd'] }, reaches[1]] }, /names neither the function it calls nor the one it leads to/],
+  ])('refuses %s', (_name, name, item, message) => {
+    expect(problems(name, item).join('\n')).toMatch(message)
+  })
+
+  it('refuses a rule whose argument position names a parameter no cited definition takes', () => {
+    const rule = (labels: unknown) => ({ name: 'cmd', why: 'Runs it.', evidence: [{ at: 'lib.py:2', has: ['cmd'], reaches }], labels })
+    const check = (labels: unknown) => dispatcherProblems({ port: 'py', dispatchers: [rule(labels)] as never, readSource, functions: functions as never })
+    expect(check(undefined)).toEqual([])
+    expect(check([{ at: 1, name: 'args' }])).toEqual([])
+    expect(check([{ at: 1, name: 'subcommand' }]).join('\n')).toMatch(/no cited definition takes a parameter named subcommand/)
+    expect(check([{ at: -1, name: 'args' }]).join('\n')).toMatch(/names no argument position or parameter/)
+  })
+
+  describe('a guard that wraps a command in if-shell', () => {
+    const source = ['def guarded(command):', '    return cmd("if-shell", "-F", check, command, stale)', '', 'def plain(command):', '    return cmd(command)'].join('\n')
+    const functionsOf = [fn('guarded', 1, 2), fn('plain', 4, 5)]
+    const read = (path: string) => (path === 'lib.py' ? source : undefined)
+    const guard = (over: Record<string, unknown> = {}) => ({ name: 'guarded', purpose: 'refuses a stale target', evidence: [{ at: 'lib.py:2', has: ['"if-shell", "-F"'] }], ...over })
+    const check = (guards: unknown[]) => guardProblems({ port: 'py', guards: guards as never, readSource: read, functions: functionsOf as never })
+
+    it('is accepted when the function builds an if-shell and a cited line is that wrapper', () => {
+      expect(check([guard()])).toEqual([])
+      expect(check([guard({ conditional: true, when: 'the handle carries a daemon' })])).toEqual([])
+    })
+
+    it.each([
+      ['a function that builds no if-shell', { name: 'plain', evidence: [{ at: 'lib.py:5', has: ['cmd'] }] }, /no function of that name builds an if-shell/],
+      ['a function that is not there', { name: 'gone' }, /no function of that name in the pinned source/],
+      ['a line that is not the wrapper', { evidence: [{ at: 'lib.py:1', has: ['guarded'] }] }, /no cited line is the if-shell the guard builds/],
+      ['a line that does not hold the text', { evidence: [{ at: 'lib.py:2', has: ['"-t"'] }] }, /does not contain/],
+      ['a purpose left out', { purpose: ' ' }, /states no purpose/],
+      ['a conditional guard that says nothing about when', { conditional: true }, /is conditional, so it must say when/],
+      ['no lines', { evidence: [] }, /cites no lines/],
+    ])('is refused for %s', (_name, over, message) => {
+      expect(check([guard(over)]).join('\n')).toMatch(message)
+    })
+  })
+})
+
+describe('scanning a command that a guard wraps, a conditional and a label', () => {
+  const scanned = async (grammar: string, text: string, options: Record<string, unknown>, commands: string[]) => {
+    const { functions } = await scanSource({ grammar, text, commands: new Set(commands), known: new Set(commands), ...options } as never)
+    return Object.fromEntries(functions.map((found) => [found.name, found.sites.map((site) => (
+      site.dispatch ? `${site.command}@${site.line}->${site.dispatch.name}@${site.dispatch.line}` : `${site.command}@${site.line} ${site.why}`))]))
+  }
+  const java = [
+    'class Fixture {',
+    '    void killOwnedServer() {',
+    '        server.cmd("if-shell", "-F", check, "kill-server", stale);',
+    '    }',
+    '    void wrap(String command) {',
+    '        server.cmd("if-shell", "-F", check, command, "stale");',
+    '    }',
+    '    void use() {',
+    '        wrap("select-pane");',
+    '    }',
+    '}',
+    '',
+  ].join('\n')
+  const commands = ['if-shell', 'kill-server', 'select-pane']
+
+  it('records the command inside a declared guard and not the if-shell, and the if-shell of a conditional that is not one', async () => {
+    const guarded = await scanned('java', java, { dispatch: new Set(['cmd']), guards: [{ name: 'killOwnedServer' }] }, commands)
+    expect(guarded.killOwnedServer).toEqual(['if-shell@3 it is the check a guard wraps a command in', 'kill-server@3->cmd@3'])
+    // The conditional whose purpose is the condition: the library sends if-shell, and tmux runs the command inside it when the condition holds.
+    const conditional = await scanned('java', java, { dispatch: new Set(['cmd']) }, commands)
+    expect(conditional.killOwnedServer).toEqual(['if-shell@3->cmd@3'])
+  })
+
+  it('passes a command through a declared guard that dispatches, and stops it at a wrapper that is not declared', async () => {
+    const declared = await scanned('java', java, { dispatch: new Set(['cmd', 'wrap']), guards: [{ name: 'wrap' }] }, commands)
+    expect(declared.use).toEqual(['select-pane@9->wrap@9'])
+    expect(declared.wrap).toEqual(['if-shell@6 it is the check a guard wraps a command in'])
+    const undeclared = await scanned('java', java, { dispatch: new Set(['cmd']) }, commands)
+    expect(undeclared.use).toEqual(['select-pane@9 it is an argument of wrap, which neither sends it nor builds a command from it'])
+    expect(undeclared.wrap).toEqual(['if-shell@6->cmd@6'])
+  })
+
+  it('does not read an argument that only names the command for a failure message as the command', async () => {
+    const rust = [
+      'async fn find(core: &Core, request: Command) {',
+      '    listing::mutate(',
+      '        core,',
+      '        "find-window",',
+      '        Command::new("find-window").arg("-x"),',
+      '    ).await',
+      '}',
+      'async fn label(core: &Core, request: Command) {',
+      '    listing::mutate(core, "find-window", request).await',
+      '}',
+      '',
+    ].join('\n')
+    const labels = new Map([['mutate', new Set([1])]])
+    const found = await scanned('rust', rust, { dispatch: new Set(['mutate']), labels }, ['find-window'])
+    expect(found.find).toEqual(['find-window@4 it names the command mutate reports a failure under, and is not the command it sends', 'find-window@5->mutate@2'])
+    // With nothing but the label, the command is not sent by this call.
+    expect(found.label).toEqual(['find-window@9 it names the command mutate reports a failure under, and is not the command it sends'])
+    // The control: without the declaration the label counts as the command.
+    expect((await scanned('rust', rust, { dispatch: new Set(['mutate']) }, ['find-window'])).label).toEqual(['find-window@9->mutate@9'])
+  })
+
+  it('counts a call under a branch apart from one that runs on every call, and a header or a one-statement closure with the main path', async () => {
+    const go = [
+      'package tmux',
+      'func (p Pane) Refresh() error {',
+      '\tif err := p.server.Pane(ctx); err != nil {',
+      '\t\treturn err',
+      '\t}',
+      '\tif p.ready {',
+      '\t\tp.server.Session(ctx)',
+      '\t}',
+      '\tdefer func() { _ = p.server.Close(ctx) }()',
+      '\tdefer func() {',
+      '\t\tif failed { p.server.Kill(ctx) }',
+      '\t}()',
+      '\treturn nil',
+      '}',
+      '',
+    ].join('\n')
+    const { functions } = await scanSource({ grammar: 'go', text: go, commands: new Set(['x']), known: new Set(['x']), dispatch: new Set(['literalCmd']) })
+    const depths = Object.fromEntries(functions[0].callDepths as Map<string, number>)
+    expect(depths).toMatchObject({ Pane: 0, Session: 1, Close: 0, Kill: 1 })
   })
 })
 

@@ -255,9 +255,10 @@ const RUNS_COMMANDS = new Set(['if-shell', 'run-shell', 'set-hook', 'bind-key', 
 const ELEMENTS = /^(?:argument|value_argument|literal_element|element|array_element|keyed_element|pair)$/
 
 /** Whether a literal is a later argument of a group that opens with a command that runs commands. */
-function nestedInCommand(node, STR, commandOf) {
+function nestedInCommand(node, STR, commandOf, skip = () => false) {
   for (let child = node, cursor = node.parent; cursor && WRAPPERS.has(cursor.type); child = cursor, cursor = cursor.parent) {
     const first = cursor.descendantsOfType([...STR]).find((literal) => {
+      if (skip(literal)) return false
       let at = literal.parent
       while (at && at.id !== cursor.id && ELEMENTS.test(at.type)) at = at.parent
       return at?.id === cursor.id
@@ -385,6 +386,14 @@ function receiverNames(grammar, call) {
 const PASSING = new Set(['add', 'Add', 'push', 'push_back', 'emplace_back', 'append', 'insert', 'extend', 'arg', 'args', 'apply', 'then', 'concat', 'tinsert',
   'new', 'of', 'List', 'Seq', 'Array', 'Vec', 'asList', 'listOf', 'mutableListOf', 'arrayOf', 'ArrayList', 'LinkedList', 'vec', 'copyOf', 'make', 'string', 'str', 'String', 'Some', 'Ok', 'static_cast', 'move', 'forward', 'unique_ptr', 'make_unique'])
 
+/** Which argument of a call holds a node, counting from zero, or -1 when it is not directly one of them. */
+function argumentIndex(call, node) {
+  const args = call.childForFieldName('arguments') ?? call.namedChildren.find((part) => /argument/.test(part.type))
+  if (!args) return -1
+  const parts = args.namedChildren.filter((part) => !/comment/.test(part.type))
+  return parts.findIndex((part) => holds(part, node))
+}
+
 /** The call that is handed a command and is neither a way to put it in a collection nor a declared builder. */
 function blockedBy(calls, builders) {
   return calls.find((call) => call.argument && !PASSING.has(call.name.replace(/<.*$/s, '')) && !builders.has(call.name))
@@ -397,10 +406,25 @@ const ADDS = new Set(['add', 'Add', 'push', 'push_back', 'emplace_back', 'append
 /** Statements that run their body only on some paths. A `try` and a `finally` run on every path. */
 const BRANCHING = /(?:^|_)(?:if|elif|elsif|else|unless|switch|case|when|match|guard|conditional|ternary|for|while|until|loop|catch|except|rescue)(?:_|$)/
 
-/** How many branches deep a node is inside its function, so a send on the main path can be told from one on a side path. */
+/** The parts of a statement that run before it chooses a branch, so a call in one of them is not under the branch. */
+const HEADS = ['condition', 'initializer', 'init', 'cond', 'value', 'subject', 'selector', 'iterable']
+
+/** A closure of one statement, which a `defer` or a callback runs exactly as written. */
+const singleStatement = (lambda) => {
+  const body = lambda.childForFieldName('body') ?? lambda.namedChildren.at(-1)
+  return Boolean(body) && body.namedChildren.length <= 1
+}
+
+/**
+ * How many branches deep a node is inside its function, so a send on the main path can be told from one on a side path.
+ * A closure of several statements counts as one, because it runs when it is called and not where it is written.
+ */
 function nesting(grammar, node) {
   let depth = 0
-  for (let cursor = node.parent; cursor && !FUNCTIONS[grammar].includes(cursor.type); cursor = cursor.parent) if (BRANCHING.test(cursor.type)) depth++
+  for (let child = node, cursor = node.parent; cursor && !FUNCTIONS[grammar].includes(cursor.type); child = cursor, cursor = cursor.parent) {
+    if (BRANCHING.test(cursor.type) && !HEADS.some((field) => cursor.childForFieldName(field)?.id === child.id)) depth++
+    else if (LAMBDAS.test(cursor.type) && !singleStatement(cursor)) depth++
+  }
   return depth
 }
 
@@ -465,14 +489,29 @@ function argumentNames(node) {
  * one; `dispatch: null`, with `why`, when it is a label, a comparison, a choice made by a condition or a value
  * that no call in the function sends.
  *
- * @param {{ grammar: string, text: string, commands: ReadonlySet<string>, known: ReadonlySet<string>, dispatch?: ReadonlySet<string>, builders?: ReadonlySet<string>, trace?: (site: object, context: object) => void }} input
+ * @param {{ grammar: string, text: string, commands: ReadonlySet<string>, known: ReadonlySet<string>, dispatch?: ReadonlySet<string>, builders?: ReadonlySet<string>, guards?: { name: string, owner?: string }[], labels?: ReadonlyMap<string, ReadonlySet<number>>, trace?: (site: object, context: object) => void }} input
  *   `commands` are the names to find; `known` are all tmux command names, so
  *   a list that holds a different command is not read as this command's flags.
  * @returns {Promise<{ functions: ScannedFunction[], types: { name?: string, start: number, end: number }[], orphans: Site[] }>}
  *   `types` are the declarations that own functions, so a claim can anchor to
  *   a class; `orphans` are the sites outside any named function.
  */
-export async function scanSource({ grammar, text, commands, known, dispatch, builders = new Set(), trace }) {
+export async function scanSource({ grammar, text, commands, known, dispatch, builders: declared = new Set(), guards = [], labels = new Map(), trace }) {
+  // A guard wraps the command it is handed and hands it on, so it passes a command through as a builder does.
+  const builders = new Set([...declared, ...guards.map((guard) => guard.name)])
+  const isGuard = (fn) => guards.some((guard) => guard.name === fn?.name && (!guard.owner || guard.owner === fn.owner))
+  /** Whether a literal is the argument of a dispatching call that only names the command for a failure message. */
+  const isLabel = (literal) => {
+    if (!labels.size) return false
+    for (let cursor = literal.parent; cursor && !FUNCTIONS[grammar].includes(cursor.type); cursor = cursor.parent) {
+      if (!CALL.has(cursor.type)) continue
+      const callee = calleeOf(grammar, cursor)
+      const named = callee && labels.get(callee.name)
+      const index = named ? argumentIndex(cursor, literal) : -1
+      if (index >= 0) return named.has(index)
+    }
+    return false
+  }
   if (grammar === 'julia') return scanJulia(text, { commands, known, dispatch })
   if (grammar === 'fsharp') return scanFSharp(text)
   const parser = await parserFor(grammar)
@@ -534,6 +573,10 @@ export async function scanSource({ grammar, text, commands, known, dispatch, bui
     trace?.(site, context)
     const never = (why, builds = false) => { site.dispatch = null; site.why = why; if (builds) site.builds = true }
     const at = context.calls.findIndex((call) => dispatch.has(call.name))
+    // An argument that only names the command for the dispatcher's failure message is not the command it sends.
+    if (at >= 0 && labels.has(context.calls[at].name) && labels.get(context.calls[at].name).has(argumentIndex(context.calls[at].node, node))) {
+      return never(`it names the command ${context.calls[at].name} reports a failure under, and is not the command it sends`)
+    }
     if (chooses(context, at, literal.command)) return never('a condition chooses it among other commands')
     const through = at < 0 ? context.calls : context.calls.slice(0, at)
     const blocked = blockedBy(through, builders)
@@ -611,20 +654,33 @@ export async function scanSource({ grammar, text, commands, known, dispatch, bui
     }
 
     const literal = commands.size && isCommandLiteral(node)
+    // Inside a declared guard the command wrapped in `if-shell` is the one the library sends: the guard only makes tmux refuse a stale target.
+    const guarded = guards.length > 0 && isGuard(stack.at(-1))
     if (literal && commands.has(literal.command) && !inSignature(node) && !onWindowsOnlyPath(node) && !namedForChecking(grammar, node, CALL) && !isComparand(node)
-      && !nestedInCommand(node, STR, isCommandLiteral)) {
+      && (guarded || !nestedInCommand(node, STR, isCommandLiteral, isLabel))) {
       const { flags } = flagsAround(node, literal.command)
       const site = { command: literal.command, line: row(node), flags: [...flags].sort().join('') }
       const owner = stack.at(-1)
-      if (dispatch) { site.depth = nesting(grammar, node); classify(site, node, owner, literal) }
+      if (dispatch) {
+        site.depth = nesting(grammar, node)
+        if (guarded && literal.command === 'if-shell') { site.dispatch = null; site.why = 'it is the check a guard wraps a command in'; site.guard = true }
+        else classify(site, node, owner, literal)
+      }
       ;(owner?.sites ?? orphans).push(site)
     }
     if (CALL.has(node.type) && stack.length) {
       const callee = calleeOf(grammar, node)
       if (callee?.name) {
         recordCall(stack.at(-1), callee.name, callee.receiver, row(node))
+        if (dispatch) {
+          const callDepths = (stack.at(-1).callDepths ??= new Map())
+          callDepths.set(callee.name, Math.min(callDepths.get(callee.name) ?? Infinity, nesting(grammar, node)))
+        }
         if (dispatch?.has(callee.name)) {
-          const commands = new Set(node.descendantsOfType([...STR]).map((part) => isCommandLiteral(part)?.command).filter(Boolean))
+          const named = labels.get(callee.name)
+          const commands = new Set(node.descendantsOfType([...STR])
+            .filter((part) => !named?.has(argumentIndex(node, part)))
+            .map((part) => isCommandLiteral(part)?.command).filter(Boolean))
           ;(stack.at(-1).sends ??= []).push({ name: callee.name, line: calleeRow(node), start: node.startIndex, end: node.endIndex, names: argumentNames(node), commands })
         } else if (dispatch) {
           trackCall({ name: callee.name, receiver: callee.receiver, line: calleeRow(node) }, node, stack.at(-1))
@@ -689,6 +745,6 @@ export async function scanSource({ grammar, text, commands, known, dispatch, bui
 }
 
 /**
- * @typedef {{ name: string, owner?: string, start: number, nameLine: number, end: number, kind: string, sites: Site[], calls: Map<string, number>, receivers: Map<string, Set<string>>, namespace?: string }} ScannedFunction
+ * @typedef {{ name: string, owner?: string, start: number, nameLine: number, end: number, kind: string, sites: Site[], calls: Map<string, number>, receivers: Map<string, Set<string>>, callDepths?: Map<string, number>, namespace?: string }} ScannedFunction
  * @typedef {{ command: string, line: number, flags: string, dispatch?: { line: number, name: string } | null, why?: string, builds?: boolean, depth?: number }} Site
  */

@@ -21,6 +21,7 @@
  *   gen-tmux-usage.mjs --check --source   also regenerate and compare
  *   gen-tmux-usage.mjs --report       list the sends no public symbol was credited with
  *   gen-tmux-usage.mjs --data <dir>   read and write another copy of the data directory
+ *   gen-tmux-usage.mjs --rules <dir>  read another copy of scripts/tmux-usage, the reviewed rules
  *   gen-tmux-usage.mjs --commands a,b record these commands (or `all`) instead of COMMANDS
  *   gen-tmux-usage.mjs --ports a,b    only these ports, and the core libraries their wrappers stand on
  */
@@ -31,8 +32,9 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { extractProject } from '../packages/api-model/src/project.ts'
 import { GRAMMARS, isLibrarySource, scanSource } from './lib/tmux-usage-scan.mjs'
-import { applyExclusions, deriveUsage, ruleHolds, verifyClaims } from './lib/tmux-usage-derive.mjs'
+import { applyConditions, applyExclusions, conditionProblem, deriveUsage, ruleHolds, verifyClaims } from './lib/tmux-usage-derive.mjs'
 import { auditEvidence } from './lib/tmux-usage-audit.mjs'
+import { dispatcherProblems, guardProblems } from './lib/tmux-usage-dispatch.mjs'
 import { forwardUsage } from './lib/tmux-usage-forward.mjs'
 import { settleCandidates, sweepCandidates } from './lib/tmux-usage-sweep.mjs'
 import { libraryScopes, scopeProblems } from './lib/tmux-usage-scopes.mjs'
@@ -40,17 +42,21 @@ import { libraryScopes, scopeProblems } from './lib/tmux-usage-scopes.mjs'
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const dataDir = join(root, 'site/src/data')
 const defaultUsageDir = join(dataDir, 'tmux-usage')
-const claimsPath = join(root, 'scripts/tmux-usage/claims.json')
-const forwardersPath = join(root, 'scripts/tmux-usage/forwarders.json')
-const exclusionsPath = join(root, 'scripts/tmux-usage/exclusions.json')
-const reviewsPath = join(root, 'scripts/tmux-usage/not-senders.json')
-const dispatchersPath = join(root, 'scripts/tmux-usage/dispatchers.json')
 export const SCHEMA_VERSION = 1
 /** The commands whose usage is recorded: every command of the pinned manuals, unless `--commands` names some. */
 export const COMMANDS = 'all'
 
 const args = process.argv.slice(2)
 const option = (name) => args[args.indexOf(name) + 1]
+/** The reviewed rules live beside the generator, unless `--rules` reads another copy of them. */
+const rulesDir = args.includes('--rules') ? resolve(option('--rules')) : join(root, 'scripts/tmux-usage')
+const claimsPath = join(rulesDir, 'claims.json')
+const forwardersPath = join(rulesDir, 'forwarders.json')
+const exclusionsPath = join(rulesDir, 'exclusions.json')
+const reviewsPath = join(rulesDir, 'not-senders.json')
+const dispatchersPath = join(rulesDir, 'dispatchers.json')
+const guardsPath = join(rulesDir, 'guards.json')
+const conditionsPath = join(rulesDir, 'conditions.json')
 const check = args.includes('--check')
 const regenerate = !check || args.includes('--source')
 const usageDir = args.includes('--data') ? resolve(option('--data')) : defaultUsageDir
@@ -117,6 +123,9 @@ function commandSpellings() {
 const sortKeys = (value) => Array.isArray(value) ? value.map(sortKeys)
   : value && typeof value === 'object' ? Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)).map(([key, item]) => [key, sortKeys(item)])) : value
 
+/** The ports whose handles delegate to another type's public methods through a field, and are credited with what those send. */
+const DELEGATING = new Set(['go'])
+
 /** How a port's symbols find their definitions: Lua's handles share one implementation, Julia's methods share files. */
 export const DEFINITION_OPTIONS = { lua: { sharedOwner: true }, julia: { freeFunctions: true } }
 
@@ -182,7 +191,7 @@ export function portDocument(port, model, found, commands) {
   for (const entry of found) {
     ;(symbols[entry.symbol] ??= []).push({
       command: entry.command, scope: entry.scope, evidence: entry.evidence,
-      ...(entry.reviewed ? { reviewed: true } : {}), ...(entry.forwardable ? { forwardable: true } : {}), ...(entry.via ? { via: entry.via } : {}),
+      ...(entry.reviewed ? { reviewed: true } : {}), ...(entry.forwardable ? { forwardable: true } : {}), ...(entry.when ? { when: entry.when } : {}), ...(entry.via ? { via: entry.via } : {}),
     })
   }
   for (const list of Object.values(symbols)) list.sort((a, b) => a.command.localeCompare(b.command) || String(a.scope).localeCompare(String(b.scope)))
@@ -190,7 +199,7 @@ export function portDocument(port, model, found, commands) {
 }
 
 /** Read a port's source at its pinned revision: every function, and the public symbols that name them. */
-export async function scanPort({ port, model, commands, checkout, known, dispatch, builders, trace }) {
+export async function scanPort({ port, model, commands, checkout, known, dispatch, builders, guards, labels, trace }) {
   const grammar = GRAMMARS[port]
   const symbols = publicSymbols(model)
   const functions = []
@@ -198,7 +207,7 @@ export async function scanPort({ port, model, commands, checkout, known, dispatc
   const sources = grammar ? librarySources(checkout, model.revision, grammar) : new Map()
   const wanted = new Set(commands)
   for (const [path, text] of sources) {
-    const scanned = await scanSource({ grammar, text, commands: wanted, known, dispatch, builders, trace })
+    const scanned = await scanSource({ grammar, text, commands: wanted, known, dispatch, builders, guards, labels, trace })
     for (const fn of scanned.functions) functions.push({ ...fn, file: path })
     for (const type of scanned.types) types.push({ ...type, file: path })
   }
@@ -333,10 +342,13 @@ export function documentProblems(document, model, scopes, commands, viaRevision)
       if (!commands.includes(use.command)) problems.push(`${symbol}: ${use.command} is not a recorded command`)
       if (scoped ? !scoped.some((scope) => scope.id === use.scope) : use.scope !== null) problems.push(`${symbol}: ${use.scope} is not a scope of ${use.command}`)
       if (!use.evidence?.length || use.evidence.some((item) => !/^[^:\s][^:]*:\d+$/.test(item))) problems.push(`${symbol}: evidence must be file:line`)
+      const wrong = conditionProblem(use.when, false)
+      if (wrong) problems.push(`${symbol}: ${use.command} ${wrong}`)
       if (use.via) {
         if (!use.via.evidence?.length || use.via.evidence.some((item) => !/^[^:\s][^:]*:\d+$/.test(item))) problems.push(`${symbol}: via evidence must be file:line`)
         // The lines of a core library are read where the wrapper is pinned when both live in one repository, and where the core's own model is otherwise.
-        if (use.via.revision !== viaRevision) problems.push(`${symbol}: via ${use.via.symbol} cites ${use.via.port} lines at ${use.via.revision ?? 'no revision'}, which must be ${viaRevision ?? 'absent, for a port with no core library'}`)
+        const expected = use.via.port === model.port ? model.revision : viaRevision
+        if (use.via.revision !== expected) problems.push(`${symbol}: via ${use.via.symbol} cites ${use.via.port} lines at ${use.via.revision ?? 'no revision'}, which must be ${expected ?? 'absent, for a port with no core library'}`)
       }
     }
   }
@@ -360,28 +372,7 @@ function sweepProblems({ port, model, document, reviews, exclusions, report, rea
   return problems
 }
 
-/**
- * The dispatch APIs of a port: the calls that take a tmux command and send it. Each names the code that defines it, and
- * the definition must still be there. A command literal is recorded as a send only where it reaches one of these.
- */
-export function dispatcherProblems({ port, dispatchers, readSource }) {
-  const problems = []
-  for (const rule of dispatchers) {
-    const label = `${port}: dispatcher ${rule.name}`
-    if (!rule.name || !rule.why?.trim()) { problems.push(`${label}: names no call or gives no reason`); continue }
-    if (!rule.evidence?.length) { problems.push(`${label}: cites no definition`); continue }
-    let defined = false
-    for (const item of rule.evidence) {
-      const cut = item.at.lastIndexOf(':')
-      const line = readSource(item.at.slice(0, cut))?.split('\n')[Number(item.at.slice(cut + 1)) - 1]
-      if (line === undefined) { problems.push(`${label}: ${item.at} is not a line of the pinned source`); continue }
-      for (const needle of item.has ?? []) if (!line.includes(needle)) problems.push(`${label}: ${item.at} does not contain ${JSON.stringify(needle)}`)
-      if ((item.has ?? []).some((needle) => needle.includes(rule.name))) defined = true
-    }
-    if (!defined) problems.push(`${label}: no cited line shows ${rule.name} defined`)
-  }
-  return problems
-}
+export { dispatcherProblems, guardProblems }
 
 export async function main() {
   const scopes = readJson(join(usageDir, 'scopes.json'))
@@ -389,6 +380,8 @@ export async function main() {
   const exclusions = existsSync(exclusionsPath) ? readJson(exclusionsPath).exclusions : []
   const reviews = existsSync(reviewsPath) ? readJson(reviewsPath).reviews : []
   const dispatchers = existsSync(dispatchersPath) ? readJson(dispatchersPath).dispatchers : []
+  const guards = existsSync(guardsPath) ? readJson(guardsPath).guards : []
+  const conditions = existsSync(conditionsPath) ? readJson(conditionsPath).conditions : []
   const ports = await portsWithModels()
   const report = []
   const failures = []
@@ -428,12 +421,17 @@ export async function main() {
     const rules = (list) => list.filter((rule) => rule.port === port.slug && ruleHolds(rule, model.revision, pinned))
     // A dispatch API is a name, so it holds at any revision of its port; its definition is checked at the model's.
     const apis = dispatchers.filter((api) => api.port === port.slug && (!api.revision || model.revision.startsWith(api.revision)))
+    const wrappers = guards.filter((guard) => guard.port === port.slug)
     const scanned = await scanPort({
       port: port.slug, model, commands: commandsToRecord, checkout: checkoutFor(port), known,
       dispatch: new Set(apis.filter((api) => api.kind !== 'builder').map((api) => api.name)), builders: new Set(apis.filter((api) => api.kind === 'builder').map((api) => api.name)),
+      guards: wrappers.map(({ name, owner }) => ({ name, owner })),
+      labels: new Map(apis.filter((api) => api.labels?.length).map((api) => [api.name, new Set(api.labels.map((label) => label.at))])),
     })
     scans.set(scanKey(port.slug, model.revision), { read: scanned.readSource, functions: scanned.functions })
-    const dispatchProblems = model.revision === pinned ? dispatcherProblems({ port: port.slug, dispatchers: apis, readSource: scanned.readSource }) : []
+    const dispatchProblems = model.revision === pinned
+      ? [...dispatcherProblems({ port: port.slug, dispatchers: apis, readSource: scanned.readSource, functions: scanned.functions }),
+        ...guardProblems({ port: port.slug, guards: wrappers, readSource: scanned.readSource, functions: scanned.functions })] : []
     const sends = (parent, symbol, command, scope) => {
       const entry = core?.found.get(`${symbol}\0${command}\0${scope}`)
       return parent === core?.port && entry ? { ...entry, revision: core.revision } : undefined
@@ -494,7 +492,19 @@ export async function main() {
       failures.push(...forwarded.problems)
       mergeEntries(found, forwarded.entries)
     }
+    const qualifiers = conditions.filter((item) => item.port === port.slug)
+    applyConditions({ conditions: qualifiers, found, readSource: scanned.readSource, lenient: true })
+    // Go keeps one handle per tmux object and delegates to the server's methods, so a method that calls one on its `server` field sends what it sends.
+    if (DELEGATING.has(port.slug)) {
+      const delegated = forwardUsage({
+        parent: port.slug, delegate: true, functions: scanned.functions, types: scanned.types, symbols: scanned.symbols,
+        core: { entries: [...found.values()], symbols: new Map(scanned.symbols.map((symbol) => [symbol.id, symbol])), revision: model.revision },
+      })
+      mergeEntries(found, delegated.entries)
+    }
     passes.set(port.slug, pass)
+    // A wrapper forwards what it reads from its core's entries, so the core's conditions are in place before it runs.
+    failures.push(...applyConditions({ conditions: qualifiers, found, readSource: scanned.readSource }))
     const document = portDocument(port.slug, model, [...found.values()], commandsToRecord)
     failures.push(...sweepProblems({ port: port.slug, model, document, reviews, exclusions, report, readSource: scanned.readSource }))
     // The committed entries are the ones audited, because a check has to read what is published and not what a scan makes of it.
@@ -502,7 +512,7 @@ export async function main() {
     failures.push(...auditEvidence({
       port: port.slug, revision: model.revision, claimFor, spellings: (command) => spellings.get(command) ?? [command],
       sourcesAt: (slug, revision) => scans.get(scanKey(slug, revision)),
-      dispatchFor: (slug) => new Set(dispatchers.filter((api) => api.port === slug).map((api) => api.name)),
+      dispatchFor: (slug) => new Set(dispatchers.filter((api) => api.port === slug && api.kind !== 'builder').map((api) => api.name)),
       generated: config?.generated && { evidence: config.generated.evidence.map((item) => item.at) },
       uses: Object.entries(subject.symbols).flatMap(([symbol, uses]) => uses.map((use) => ({ symbol, ...use }))),
     }))

@@ -306,14 +306,6 @@
     ],
     "LibTmux::Async::Server#switch_client": [
       {
-        "command": "list-commands",
-        "evidence": [
-          "gems/libtmux/lib/libtmux/operations.rb:137",
-          "gems/libtmux/lib/libtmux/terminal.rb:41"
-        ],
-        "scope": null
-      },
-      {
         "command": "switch-client",
         "evidence": [
           "gems/libtmux/lib/libtmux/terminal.rb:41",
@@ -390,7 +382,8 @@
           "gems/libtmux/lib/libtmux/options.rb:65"
         ],
         "reviewed": true,
-        "scope": null
+        "scope": null,
+        "when": "the receiver is a Hooks"
       }
     ],
     "LibTmux::Hooks#run": [
@@ -419,7 +412,8 @@
           "gems/libtmux/lib/libtmux/options.rb:108"
         ],
         "reviewed": true,
-        "scope": null
+        "scope": null,
+        "when": "the receiver is a Hooks"
       }
     ],
     "LibTmux::Options#get": [
@@ -442,7 +436,8 @@
           "gems/libtmux/lib/libtmux/options.rb:65"
         ],
         "reviewed": true,
-        "scope": null
+        "scope": null,
+        "when": "the receiver is an Options"
       }
     ],
     "LibTmux::Options#set": [
@@ -462,7 +457,8 @@
           "gems/libtmux/lib/libtmux/options.rb:108"
         ],
         "reviewed": true,
-        "scope": null
+        "scope": null,
+        "when": "the receiver is an Options"
       }
     ],
     "LibTmux::Pane#break_out": [
@@ -814,14 +810,6 @@
       }
     ],
     "LibTmux::Server#switch_client": [
-      {
-        "command": "list-commands",
-        "evidence": [
-          "gems/libtmux/lib/libtmux/operations.rb:137",
-          "gems/libtmux/lib/libtmux/terminal.rb:41"
-        ],
-        "scope": null
-      },
       {
         "command": "switch-client",
         "evidence": [

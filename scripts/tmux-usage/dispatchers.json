@@ -23,18 +23,77 @@
           "at": "src/libtmux/pane.py:315",
           "has": [
             "cmd"
+          ],
+          "reaches": [
+            {
+              "at": "src/libtmux/pane.py:349",
+              "has": [
+                "cmd"
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "src/libtmux/server.py:418",
+              "has": [
+                "tmux_cmd"
+              ],
+              "calls": "tmux_cmd"
+            },
+            {
+              "at": "src/libtmux/common.py:331",
+              "has": [
+                "subprocess.Popen("
+              ]
+            }
           ]
         },
         {
           "at": "src/libtmux/server.py:347",
           "has": [
             "cmd"
+          ],
+          "reaches": [
+            {
+              "at": "src/libtmux/server.py:418",
+              "has": [
+                "tmux_cmd"
+              ],
+              "calls": "tmux_cmd"
+            },
+            {
+              "at": "src/libtmux/common.py:331",
+              "has": [
+                "subprocess.Popen("
+              ]
+            }
           ]
         },
         {
           "at": "src/libtmux/session.py:425",
           "has": [
             "cmd"
+          ],
+          "reaches": [
+            {
+              "at": "src/libtmux/session.py:468",
+              "has": [
+                "cmd"
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "src/libtmux/server.py:418",
+              "has": [
+                "tmux_cmd"
+              ],
+              "calls": "tmux_cmd"
+            },
+            {
+              "at": "src/libtmux/common.py:331",
+              "has": [
+                "subprocess.Popen("
+              ]
+            }
           ]
         }
       ]
@@ -48,6 +107,21 @@
           "at": "src/libtmux/neo.py:1039",
           "has": [
             "fetch_objs"
+          ],
+          "reaches": [
+            {
+              "at": "src/libtmux/neo.py:1133",
+              "has": [
+                "tmux_cmd"
+              ],
+              "calls": "tmux_cmd"
+            },
+            {
+              "at": "src/libtmux/common.py:331",
+              "has": [
+                "subprocess.Popen("
+              ]
+            }
           ]
         }
       ]
@@ -61,6 +135,28 @@
           "at": "src/libtmux/neo.py:1275",
           "has": [
             "fetch_obj"
+          ],
+          "reaches": [
+            {
+              "at": "src/libtmux/neo.py:1345",
+              "has": [
+                "fetch_objs"
+              ],
+              "calls": "fetch_objs"
+            },
+            {
+              "at": "src/libtmux/neo.py:1133",
+              "has": [
+                "tmux_cmd"
+              ],
+              "calls": "tmux_cmd"
+            },
+            {
+              "at": "src/libtmux/common.py:331",
+              "has": [
+                "subprocess.Popen("
+              ]
+            }
           ]
         }
       ]
@@ -74,6 +170,28 @@
           "at": "src/libtmux/server.py:65",
           "has": [
             "_fetch_or_empty"
+          ],
+          "reaches": [
+            {
+              "at": "src/libtmux/server.py:78",
+              "has": [
+                "fetch_objs"
+              ],
+              "calls": "fetch_objs"
+            },
+            {
+              "at": "src/libtmux/neo.py:1133",
+              "has": [
+                "tmux_cmd"
+              ],
+              "calls": "tmux_cmd"
+            },
+            {
+              "at": "src/libtmux/common.py:331",
+              "has": [
+                "subprocess.Popen("
+              ]
+            }
           ]
         }
       ]
@@ -87,6 +205,35 @@
           "at": "src/libtmux/neo.py:868",
           "has": [
             "_refresh"
+          ],
+          "reaches": [
+            {
+              "at": "src/libtmux/neo.py:895",
+              "has": [
+                "fetch_obj"
+              ],
+              "calls": "fetch_obj"
+            },
+            {
+              "at": "src/libtmux/neo.py:1345",
+              "has": [
+                "fetch_objs"
+              ],
+              "calls": "fetch_objs"
+            },
+            {
+              "at": "src/libtmux/neo.py:1133",
+              "has": [
+                "tmux_cmd"
+              ],
+              "calls": "tmux_cmd"
+            },
+            {
+              "at": "src/libtmux/common.py:331",
+              "has": [
+                "subprocess.Popen("
+              ]
+            }
           ]
         }
       ]
@@ -100,6 +247,42 @@
           "at": "gems/libtmux/lib/libtmux/server.rb:393",
           "has": [
             "execute_typed"
+          ],
+          "reaches": [
+            {
+              "at": "gems/libtmux/lib/libtmux/server.rb:394",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/server.rb:82",
+              "has": [
+                "@executor.run("
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/process.rb:108",
+              "has": [
+                "Execution.new("
+              ],
+              "calls": "call"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/process.rb:147",
+              "has": [
+                "spawn"
+              ],
+              "leads": "spawn"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/process.rb:189",
+              "has": [
+                "Process.spawn(@env"
+              ]
+            }
           ]
         }
       ]
@@ -113,6 +296,56 @@
           "at": "gems/libtmux/lib/libtmux/capture.rb:98",
           "has": [
             "catalog_read"
+          ],
+          "reaches": [
+            {
+              "at": "gems/libtmux/lib/libtmux/capture.rb:100",
+              "has": [
+                "read"
+              ],
+              "calls": "read"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/capture.rb:111",
+              "has": [
+                "execute_typed"
+              ],
+              "calls": "execute_typed"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/server.rb:394",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/server.rb:82",
+              "has": [
+                "@executor.run("
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/process.rb:108",
+              "has": [
+                "Execution.new("
+              ],
+              "calls": "call"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/process.rb:147",
+              "has": [
+                "spawn"
+              ],
+              "leads": "spawn"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/process.rb:189",
+              "has": [
+                "Process.spawn(@env"
+              ]
+            }
           ]
         }
       ]
@@ -126,18 +359,49 @@
           "at": "gems/libtmux/lib/libtmux/capture.rb:108",
           "has": [
             "read"
-          ]
-        },
-        {
-          "at": "gems/libtmux-mcp/lib/libtmux/mcp/enrollment.rb:84",
-          "has": [
-            "read"
-          ]
-        },
-        {
-          "at": "gems/libtmux-mcp/lib/libtmux/mcp/resources.rb:45",
-          "has": [
-            "read"
+          ],
+          "reaches": [
+            {
+              "at": "gems/libtmux/lib/libtmux/capture.rb:111",
+              "has": [
+                "execute_typed"
+              ],
+              "calls": "execute_typed"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/server.rb:394",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/server.rb:82",
+              "has": [
+                "@executor.run("
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/process.rb:108",
+              "has": [
+                "Execution.new("
+              ],
+              "calls": "call"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/process.rb:147",
+              "has": [
+                "spawn"
+              ],
+              "leads": "spawn"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/process.rb:189",
+              "has": [
+                "Process.spawn(@env"
+              ]
+            }
           ]
         }
       ]
@@ -151,6 +415,49 @@
           "at": "gems/libtmux/lib/libtmux/operations.rb:405",
           "has": [
             "reposition"
+          ],
+          "reaches": [
+            {
+              "at": "gems/libtmux/lib/libtmux/operations.rb:409",
+              "has": [
+                "execute_typed"
+              ],
+              "calls": "execute_typed"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/server.rb:394",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/server.rb:82",
+              "has": [
+                "@executor.run("
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/process.rb:108",
+              "has": [
+                "Execution.new("
+              ],
+              "calls": "call"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/process.rb:147",
+              "has": [
+                "spawn"
+              ],
+              "leads": "spawn"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/process.rb:189",
+              "has": [
+                "Process.spawn(@env"
+              ]
+            }
           ]
         }
       ]
@@ -164,6 +471,49 @@
           "at": "gems/libtmux/lib/libtmux/options.rb:138",
           "has": [
             "mutate"
+          ],
+          "reaches": [
+            {
+              "at": "gems/libtmux/lib/libtmux/options.rb:141",
+              "has": [
+                "execute_typed"
+              ],
+              "calls": "execute_typed"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/server.rb:394",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/server.rb:82",
+              "has": [
+                "@executor.run("
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/process.rb:108",
+              "has": [
+                "Execution.new("
+              ],
+              "calls": "call"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/process.rb:147",
+              "has": [
+                "spawn"
+              ],
+              "leads": "spawn"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/process.rb:189",
+              "has": [
+                "Process.spawn(@env"
+              ]
+            }
           ]
         }
       ]
@@ -177,12 +527,56 @@
           "at": "gems/libtmux-async/lib/libtmux/async/control.rb:71",
           "has": [
             "exchange_request"
+          ],
+          "reaches": [
+            {
+              "at": "gems/libtmux-async/lib/libtmux/async/control.rb:85",
+              "has": [
+                "admit"
+              ],
+              "calls": "admit"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/control.rb:687",
+              "has": [
+                "@queue << request"
+              ],
+              "leads": "run"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/control.rb:749",
+              "has": [
+                "@input.write_nonblock(request.wire"
+              ]
+            }
           ]
         },
         {
           "at": "gems/libtmux/lib/libtmux/control.rb:428",
           "has": [
             "exchange_request"
+          ],
+          "reaches": [
+            {
+              "at": "gems/libtmux/lib/libtmux/control.rb:442",
+              "has": [
+                "admit"
+              ],
+              "calls": "admit"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/control.rb:687",
+              "has": [
+                "@queue << request"
+              ],
+              "leads": "run"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/control.rb:749",
+              "has": [
+                "@input.write_nonblock(request.wire"
+              ]
+            }
           ]
         }
       ]
@@ -196,6 +590,49 @@
           "at": "gems/libtmux/lib/libtmux/server.rb:456",
           "has": [
             "create_entity"
+          ],
+          "reaches": [
+            {
+              "at": "gems/libtmux/lib/libtmux/server.rb:457",
+              "has": [
+                "execute_typed"
+              ],
+              "calls": "execute_typed"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/server.rb:394",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/server.rb:82",
+              "has": [
+                "@executor.run("
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/process.rb:108",
+              "has": [
+                "Execution.new("
+              ],
+              "calls": "call"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/process.rb:147",
+              "has": [
+                "spawn"
+              ],
+              "leads": "spawn"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/process.rb:189",
+              "has": [
+                "Process.spawn(@env"
+              ]
+            }
           ]
         }
       ]
@@ -209,6 +646,49 @@
           "at": "gems/libtmux/lib/libtmux/operations.rb:110",
           "has": [
             "execute_link"
+          ],
+          "reaches": [
+            {
+              "at": "gems/libtmux/lib/libtmux/operations.rb:122",
+              "has": [
+                "execute_typed"
+              ],
+              "calls": "execute_typed"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/server.rb:394",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/server.rb:82",
+              "has": [
+                "@executor.run("
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/process.rb:108",
+              "has": [
+                "Execution.new("
+              ],
+              "calls": "call"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/process.rb:147",
+              "has": [
+                "spawn"
+              ],
+              "leads": "spawn"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/process.rb:189",
+              "has": [
+                "Process.spawn(@env"
+              ]
+            }
           ]
         }
       ]
@@ -222,18 +702,77 @@
           "at": "lua/libtmux/_internal/buffer.lua:206",
           "has": [
             "run"
+          ],
+          "reaches": [
+            {
+              "at": "lua/libtmux/_internal/buffer.lua:239",
+              "has": [
+                "execute"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "lua/libtmux/_internal/process.lua:316",
+              "has": [
+                "pcall(uv.spawn"
+              ]
+            }
           ]
         },
         {
           "at": "lua/libtmux/_internal/client.lua:168",
           "has": [
             "run"
+          ],
+          "reaches": [
+            {
+              "at": "lua/libtmux/_internal/client.lua:179",
+              "has": [
+                "execute"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "lua/libtmux/_internal/process.lua:316",
+              "has": [
+                "pcall(uv.spawn"
+              ]
+            }
           ]
         },
         {
           "at": "lua/libtmux/_internal/environment.lua:398",
           "has": [
             "run"
+          ],
+          "reaches": [
+            {
+              "at": "lua/libtmux/_internal/environment.lua:404",
+              "has": [
+                "perform"
+              ],
+              "calls": "perform"
+            },
+            {
+              "at": "lua/libtmux/_internal/environment.lua:388",
+              "has": [
+                "invoke"
+              ],
+              "calls": "invoke"
+            },
+            {
+              "at": "lua/libtmux/_internal/environment.lua:212",
+              "has": [
+                "execute"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "lua/libtmux/_internal/process.lua:316",
+              "has": [
+                "pcall(uv.spawn"
+              ]
+            }
           ]
         }
       ]
@@ -247,18 +786,63 @@
           "at": "lua/libtmux/_internal/command.lua:190",
           "has": [
             "execute"
+          ],
+          "reaches": [
+            {
+              "at": "lua/libtmux/_internal/command.lua:191",
+              "has": [
+                "group"
+              ],
+              "calls": "group"
+            },
+            {
+              "at": "lua/libtmux/_internal/command.lua:187",
+              "has": [
+                "execute"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "lua/libtmux/_internal/process.lua:316",
+              "has": [
+                "pcall(uv.spawn"
+              ]
+            }
           ]
         },
         {
           "at": "lua/libtmux/_internal/endpoint.lua:252",
           "has": [
             "execute"
+          ],
+          "reaches": [
+            {
+              "at": "lua/libtmux/_internal/endpoint.lua:270",
+              "has": [
+                "execute"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "lua/libtmux/_internal/process.lua:316",
+              "has": [
+                "pcall(uv.spawn"
+              ]
+            }
           ]
         },
         {
           "at": "lua/libtmux/_internal/process.lua:143",
           "has": [
             "execute"
+          ],
+          "reaches": [
+            {
+              "at": "lua/libtmux/_internal/process.lua:316",
+              "has": [
+                "pcall(uv.spawn"
+              ]
+            }
           ]
         }
       ]
@@ -274,20 +858,8 @@
             "program"
           ]
         }
-      ]
-    },
-    {
-      "port": "julia",
-      "name": "Cmd",
-      "why": "Builds the process command that runs tmux with the argument list it is given.",
-      "evidence": [
-        {
-          "at": "src/lifecycle.jl:270",
-          "has": [
-            "Cmd(argv)"
-          ]
-        }
-      ]
+      ],
+      "kind": "builder"
     },
     {
       "port": "julia",
@@ -298,6 +870,28 @@
           "at": "src/operations.jl:59",
           "has": [
             "_operation_command"
+          ],
+          "reaches": [
+            {
+              "at": "src/operations.jl:60",
+              "has": [
+                "run_command"
+              ],
+              "calls": "run_command"
+            },
+            {
+              "at": "src/process.jl:494",
+              "has": [
+                "_run_process("
+              ],
+              "calls": "_run_process"
+            },
+            {
+              "at": "src/process.jl:334",
+              "has": [
+                "run("
+              ]
+            }
           ]
         }
       ]
@@ -311,6 +905,35 @@
           "at": "src/control_topology.jl:7",
           "has": [
             "_control_topology_effect"
+          ],
+          "reaches": [
+            {
+              "at": "src/control_topology.jl:8",
+              "has": [
+                "_control_effect"
+              ],
+              "calls": "_control_effect"
+            },
+            {
+              "at": "src/control_io.jl:23",
+              "has": [
+                "_control_request"
+              ],
+              "calls": "_control_request"
+            },
+            {
+              "at": "src/control.jl:481",
+              "has": [
+                "push!(connection.pending, request)"
+              ],
+              "leads": "_control_writer"
+            },
+            {
+              "at": "src/control.jl:354",
+              "has": [
+                "write(connection.input.in"
+              ]
+            }
           ]
         }
       ]
@@ -324,6 +947,28 @@
           "at": "src/control_io.jl:22",
           "has": [
             "_control_effect"
+          ],
+          "reaches": [
+            {
+              "at": "src/control_io.jl:23",
+              "has": [
+                "_control_request"
+              ],
+              "calls": "_control_request"
+            },
+            {
+              "at": "src/control.jl:481",
+              "has": [
+                "push!(connection.pending, request)"
+              ],
+              "leads": "_control_writer"
+            },
+            {
+              "at": "src/control.jl:354",
+              "has": [
+                "write(connection.input.in"
+              ]
+            }
           ]
         }
       ]
@@ -337,6 +982,28 @@
           "at": "src/control.jl:931",
           "has": [
             "command"
+          ],
+          "reaches": [
+            {
+              "at": "src/control.jl:932",
+              "has": [
+                "_control_request"
+              ],
+              "calls": "_control_request"
+            },
+            {
+              "at": "src/control.jl:481",
+              "has": [
+                "push!(connection.pending, request)"
+              ],
+              "leads": "_control_writer"
+            },
+            {
+              "at": "src/control.jl:354",
+              "has": [
+                "write(connection.input.in"
+              ]
+            }
           ]
         }
       ]
@@ -350,6 +1017,35 @@
           "at": "src/control_options.jl:217",
           "has": [
             "_control_configuration_effect"
+          ],
+          "reaches": [
+            {
+              "at": "src/control_options.jl:222",
+              "has": [
+                "_control_effect"
+              ],
+              "calls": "_control_effect"
+            },
+            {
+              "at": "src/control_io.jl:23",
+              "has": [
+                "_control_request"
+              ],
+              "calls": "_control_request"
+            },
+            {
+              "at": "src/control.jl:481",
+              "has": [
+                "push!(connection.pending, request)"
+              ],
+              "leads": "_control_writer"
+            },
+            {
+              "at": "src/control.jl:354",
+              "has": [
+                "write(connection.input.in"
+              ]
+            }
           ]
         }
       ]
@@ -363,6 +1059,28 @@
           "at": "src/acquisition.jl:73",
           "has": [
             "_snapshot_rows"
+          ],
+          "reaches": [
+            {
+              "at": "src/acquisition.jl:74",
+              "has": [
+                "run_command"
+              ],
+              "calls": "run_command"
+            },
+            {
+              "at": "src/process.jl:494",
+              "has": [
+                "_run_process("
+              ],
+              "calls": "_run_process"
+            },
+            {
+              "at": "src/process.jl:334",
+              "has": [
+                "run("
+              ]
+            }
           ]
         }
       ]
@@ -376,12 +1094,35 @@
           "at": "src/control_io.jl:215",
           "has": [
             "rows"
-          ]
-        },
-        {
-          "at": "ext/LibTmuxTablesExt.jl:8",
-          "has": [
-            "rows"
+          ],
+          "reaches": [
+            {
+              "at": "src/control_io.jl:215",
+              "has": [
+                "_control_rows"
+              ],
+              "calls": "_control_rows"
+            },
+            {
+              "at": "src/control.jl:542",
+              "has": [
+                "_control_request"
+              ],
+              "calls": "_control_request"
+            },
+            {
+              "at": "src/control.jl:481",
+              "has": [
+                "push!(connection.pending, request)"
+              ],
+              "leads": "_control_writer"
+            },
+            {
+              "at": "src/control.jl:354",
+              "has": [
+                "write(connection.input.in"
+              ]
+            }
           ]
         }
       ]
@@ -395,12 +1136,49 @@
           "at": "src/control.jl:572",
           "has": [
             "run_command"
+          ],
+          "reaches": [
+            {
+              "at": "src/control.jl:581",
+              "has": [
+                "_control_request"
+              ],
+              "calls": "_control_request"
+            },
+            {
+              "at": "src/control.jl:481",
+              "has": [
+                "push!(connection.pending, request)"
+              ],
+              "leads": "_control_writer"
+            },
+            {
+              "at": "src/control.jl:354",
+              "has": [
+                "write(connection.input.in"
+              ]
+            }
           ]
         },
         {
           "at": "src/process.jl:477",
           "has": [
             "run_command"
+          ],
+          "reaches": [
+            {
+              "at": "src/process.jl:494",
+              "has": [
+                "_run_process"
+              ],
+              "calls": "_run_process"
+            },
+            {
+              "at": "src/process.jl:334",
+              "has": [
+                "                run("
+              ]
+            }
           ]
         }
       ]
@@ -414,6 +1192,28 @@
           "at": "src/control.jl:502",
           "has": [
             "_control_rows"
+          ],
+          "reaches": [
+            {
+              "at": "src/control.jl:542",
+              "has": [
+                "_control_request"
+              ],
+              "calls": "_control_request"
+            },
+            {
+              "at": "src/control.jl:481",
+              "has": [
+                "push!(connection.pending, request)"
+              ],
+              "leads": "_control_writer"
+            },
+            {
+              "at": "src/control.jl:354",
+              "has": [
+                "write(connection.input.in"
+              ]
+            }
           ]
         }
       ]
@@ -427,6 +1227,21 @@
           "at": "src/control.jl:411",
           "has": [
             "_control_request"
+          ],
+          "reaches": [
+            {
+              "at": "src/control.jl:481",
+              "has": [
+                "push!(connection.pending, request)"
+              ],
+              "leads": "_control_writer"
+            },
+            {
+              "at": "src/control.jl:354",
+              "has": [
+                "write(connection.input.in"
+              ]
+            }
           ]
         }
       ]
@@ -440,6 +1255,14 @@
           "at": "src/process.jl:293",
           "has": [
             "_run_process"
+          ],
+          "reaches": [
+            {
+              "at": "src/process.jl:334",
+              "has": [
+                "                run("
+              ]
+            }
           ]
         }
       ]
@@ -453,6 +1276,28 @@
           "at": "packages/libtmux/src/_internal/operations/command.ts:89",
           "has": [
             "runCommand"
+          ],
+          "reaches": [
+            {
+              "at": "packages/libtmux/src/_internal/operations/command.ts:94",
+              "has": [
+                "executeCommand"
+              ],
+              "calls": "executeCommand"
+            },
+            {
+              "at": "packages/libtmux/src/_internal/operations/command.ts:47",
+              "has": [
+                "execute"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
+              "has": [
+                "spawn("
+              ]
+            }
           ]
         }
       ]
@@ -466,6 +1311,21 @@
           "at": "packages/libtmux/src/_internal/operations/command.ts:113",
           "has": [
             "runCommands"
+          ],
+          "reaches": [
+            {
+              "at": "packages/libtmux/src/_internal/operations/command.ts:124",
+              "has": [
+                "execute"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
+              "has": [
+                "spawn("
+              ]
+            }
           ]
         }
       ]
@@ -479,6 +1339,28 @@
           "at": "packages/libtmux/src/_internal/operations/command.ts:98",
           "has": [
             "runCommandBytes"
+          ],
+          "reaches": [
+            {
+              "at": "packages/libtmux/src/_internal/operations/command.ts:103",
+              "has": [
+                "executeCommand"
+              ],
+              "calls": "executeCommand"
+            },
+            {
+              "at": "packages/libtmux/src/_internal/operations/command.ts:47",
+              "has": [
+                "execute"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
+              "has": [
+                "spawn("
+              ]
+            }
           ]
         }
       ]
@@ -492,18 +1374,63 @@
           "at": "packages/libtmux/src/_internal/control/observer_transport.ts:344",
           "has": [
             "execute"
+          ],
+          "reaches": [
+            {
+              "at": "packages/libtmux/src/_internal/control/observer_transport.ts:355",
+              "has": [
+                "execute"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
+              "has": [
+                "spawn("
+              ]
+            }
           ]
         },
         {
           "at": "packages/libtmux/src/_internal/transport/bounded_transport.ts:223",
           "has": [
             "execute"
+          ],
+          "reaches": [
+            {
+              "at": "packages/libtmux/src/_internal/transport/bounded_transport.ts:224",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "packages/libtmux/src/_internal/transport/bounded_transport.ts:239",
+              "has": [
+                "execute"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
+              "has": [
+                "spawn("
+              ]
+            }
           ]
         },
         {
           "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:110",
           "has": [
             "execute"
+          ],
+          "reaches": [
+            {
+              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
+              "has": [
+                "spawn("
+              ]
+            }
           ]
         }
       ]
@@ -517,6 +1444,35 @@
           "at": "packages/libtmux/src/_internal/operations/mutations.ts:73",
           "has": [
             "killTarget"
+          ],
+          "reaches": [
+            {
+              "at": "packages/libtmux/src/_internal/operations/mutations.ts:78",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "packages/libtmux/src/_internal/operations/command.ts:94",
+              "has": [
+                "executeCommand"
+              ],
+              "calls": "executeCommand"
+            },
+            {
+              "at": "packages/libtmux/src/_internal/operations/command.ts:47",
+              "has": [
+                "execute"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
+              "has": [
+                "spawn("
+              ]
+            }
           ]
         }
       ]
@@ -530,6 +1486,35 @@
           "at": "packages/libtmux/src/_internal/operations/topology.ts:389",
           "has": [
             "selectTarget"
+          ],
+          "reaches": [
+            {
+              "at": "packages/libtmux/src/_internal/operations/topology.ts:394",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "packages/libtmux/src/_internal/operations/command.ts:94",
+              "has": [
+                "executeCommand"
+              ],
+              "calls": "executeCommand"
+            },
+            {
+              "at": "packages/libtmux/src/_internal/operations/command.ts:47",
+              "has": [
+                "execute"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
+              "has": [
+                "spawn("
+              ]
+            }
           ]
         }
       ]
@@ -543,6 +1528,21 @@
           "at": "packages/libtmux/src/_internal/codec/guarded_listing.ts:80",
           "has": [
             "executeGuardedList"
+          ],
+          "reaches": [
+            {
+              "at": "packages/libtmux/src/_internal/codec/guarded_listing.ts:102",
+              "has": [
+                "execute"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
+              "has": [
+                "spawn("
+              ]
+            }
           ]
         }
       ]
@@ -556,18 +1556,126 @@
           "at": "packages/libtmux/src/pane.ts:672",
           "has": [
             "cmd"
+          ],
+          "reaches": [
+            {
+              "at": "packages/libtmux/src/pane.ts:677",
+              "has": [
+                "runRawCommand"
+              ],
+              "calls": "runRawCommand"
+            },
+            {
+              "at": "packages/libtmux/src/_internal/operations/raw.ts:27",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "packages/libtmux/src/_internal/operations/command.ts:94",
+              "has": [
+                "executeCommand"
+              ],
+              "calls": "executeCommand"
+            },
+            {
+              "at": "packages/libtmux/src/_internal/operations/command.ts:47",
+              "has": [
+                "execute"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
+              "has": [
+                "spawn("
+              ]
+            }
           ]
         },
         {
           "at": "packages/libtmux/src/server.ts:1348",
           "has": [
             "cmd"
+          ],
+          "reaches": [
+            {
+              "at": "packages/libtmux/src/server.ts:1353",
+              "has": [
+                "runRawCommand"
+              ],
+              "calls": "runRawCommand"
+            },
+            {
+              "at": "packages/libtmux/src/_internal/operations/raw.ts:27",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "packages/libtmux/src/_internal/operations/command.ts:94",
+              "has": [
+                "executeCommand"
+              ],
+              "calls": "executeCommand"
+            },
+            {
+              "at": "packages/libtmux/src/_internal/operations/command.ts:47",
+              "has": [
+                "execute"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
+              "has": [
+                "spawn("
+              ]
+            }
           ]
         },
         {
           "at": "packages/libtmux/src/session.ts:434",
           "has": [
             "cmd"
+          ],
+          "reaches": [
+            {
+              "at": "packages/libtmux/src/session.ts:439",
+              "has": [
+                "runRawCommand"
+              ],
+              "calls": "runRawCommand"
+            },
+            {
+              "at": "packages/libtmux/src/_internal/operations/raw.ts:27",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "packages/libtmux/src/_internal/operations/command.ts:94",
+              "has": [
+                "executeCommand"
+              ],
+              "calls": "executeCommand"
+            },
+            {
+              "at": "packages/libtmux/src/_internal/operations/command.ts:47",
+              "has": [
+                "execute"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
+              "has": [
+                "spawn("
+              ]
+            }
           ]
         }
       ]
@@ -615,20 +1723,6 @@
       ]
     },
     {
-      "port": "ts",
-      "name": "freeze",
-      "kind": "builder",
-      "why": "Builds the argument list of a command from the command it is given.",
-      "evidence": [
-        {
-          "at": "packages/workspace-cli/src/tmux.ts:1169",
-          "has": [
-            "freeze"
-          ]
-        }
-      ]
-    },
-    {
       "port": "rs",
       "name": "mutate",
       "why": "Sends the Command it is given, or the command it is named for, to the server.",
@@ -637,7 +1731,35 @@
           "at": "crates/libtmux/src/internal/listing.rs:452",
           "has": [
             "mutate"
+          ],
+          "reaches": [
+            {
+              "at": "crates/libtmux/src/internal/listing.rs:458",
+              "has": [
+                "execute"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "crates/libtmux/src/internal/control_executor.rs:37",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "crates/libtmux/src/internal/subprocess.rs:290",
+              "has": [
+                ".spawn()"
+              ]
+            }
           ]
+        }
+      ],
+      "labels": [
+        {
+          "at": 1,
+          "name": "command_name"
         }
       ]
     },
@@ -647,22 +1769,66 @@
       "why": "Sends the Command it is given, or the command it is named for, to the server.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/blocking.rs:72",
-          "has": [
-            "run"
-          ]
-        },
-        {
           "at": "crates/libtmux/src/control/actor.rs:432",
           "has": [
             "run"
+          ],
+          "reaches": [
+            {
+              "at": "crates/libtmux/src/control/actor.rs:438",
+              "has": [
+                "serve"
+              ],
+              "calls": "serve"
+            },
+            {
+              "at": "crates/libtmux/src/control/actor.rs:541",
+              "has": [
+                "write_line"
+              ],
+              "calls": "write_line"
+            },
+            {
+              "at": "crates/libtmux/src/control/protocol.rs:74",
+              "has": [
+                ".write_all("
+              ]
+            }
           ]
         },
         {
-          "at": "crates/libtmux/src/internal/executor.rs:63",
+          "at": "crates/libtmux/src/internal/options.rs:363",
           "has": [
             "run"
+          ],
+          "reaches": [
+            {
+              "at": "crates/libtmux/src/internal/options.rs:369",
+              "has": [
+                "execute"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "crates/libtmux/src/internal/control_executor.rs:37",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "crates/libtmux/src/internal/subprocess.rs:290",
+              "has": [
+                ".spawn()"
+              ]
+            }
           ]
+        }
+      ],
+      "labels": [
+        {
+          "at": 1,
+          "name": "command_name"
         }
       ]
     },
@@ -675,18 +1841,84 @@
           "at": "crates/libtmux/src/pane.rs:801",
           "has": [
             "cmd"
+          ],
+          "reaches": [
+            {
+              "at": "crates/libtmux/src/pane.rs:803",
+              "has": [
+                "execute"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "crates/libtmux/src/internal/control_executor.rs:37",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "crates/libtmux/src/internal/subprocess.rs:290",
+              "has": [
+                ".spawn()"
+              ]
+            }
           ]
         },
         {
           "at": "crates/libtmux/src/server.rs:678",
           "has": [
             "cmd"
+          ],
+          "reaches": [
+            {
+              "at": "crates/libtmux/src/server.rs:679",
+              "has": [
+                "execute"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "crates/libtmux/src/internal/control_executor.rs:37",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "crates/libtmux/src/internal/subprocess.rs:290",
+              "has": [
+                ".spawn()"
+              ]
+            }
           ]
         },
         {
           "at": "crates/libtmux/src/session.rs:582",
           "has": [
             "cmd"
+          ],
+          "reaches": [
+            {
+              "at": "crates/libtmux/src/session.rs:584",
+              "has": [
+                "execute"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "crates/libtmux/src/internal/control_executor.rs:37",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "crates/libtmux/src/internal/subprocess.rs:290",
+              "has": [
+                ".spawn()"
+              ]
+            }
           ]
         }
       ]
@@ -700,18 +1932,49 @@
           "at": "crates/libtmux/src/internal/control_executor.rs:28",
           "has": [
             "execute"
+          ],
+          "reaches": [
+            {
+              "at": "crates/libtmux/src/internal/control_executor.rs:37",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "crates/libtmux/src/internal/subprocess.rs:290",
+              "has": [
+                ".spawn()"
+              ]
+            }
           ]
         },
         {
           "at": "crates/libtmux/src/internal/core.rs:423",
           "has": [
             "execute"
-          ]
-        },
-        {
-          "at": "crates/libtmux/src/internal/listing.rs:494",
-          "has": [
-            "execute"
+          ],
+          "reaches": [
+            {
+              "at": "crates/libtmux/src/internal/core.rs:438",
+              "has": [
+                "execute"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "crates/libtmux/src/internal/control_executor.rs:37",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "crates/libtmux/src/internal/subprocess.rs:290",
+              "has": [
+                ".spawn()"
+              ]
+            }
           ]
         }
       ]
@@ -725,12 +1988,49 @@
           "at": "crates/libtmux/src/control.rs:585",
           "has": [
             "send"
-          ]
-        },
-        {
-          "at": "crates/tmux-mcp/src/bin/tmux-mcp.rs:61",
-          "has": [
-            "send"
+          ],
+          "reaches": [
+            {
+              "at": "crates/libtmux/src/control.rs:586",
+              "has": [
+                ".send("
+              ],
+              "calls": "send"
+            },
+            {
+              "at": "crates/libtmux/src/control.rs:737",
+              "has": [
+                "send_ordered("
+              ],
+              "calls": "send_ordered"
+            },
+            {
+              "at": "crates/libtmux/src/control.rs:755",
+              "has": [
+                "dispatch_line("
+              ],
+              "calls": "dispatch_line"
+            },
+            {
+              "at": "crates/libtmux/src/control.rs:803",
+              "has": [
+                "permit.send(Request"
+              ],
+              "leads": "serve"
+            },
+            {
+              "at": "crates/libtmux/src/control/actor.rs:541",
+              "has": [
+                "write_line("
+              ],
+              "calls": "write_line"
+            },
+            {
+              "at": "crates/libtmux/src/control/protocol.rs:74",
+              "has": [
+                ".write_all("
+              ]
+            }
           ]
         }
       ]
@@ -741,21 +2041,31 @@
       "why": "Sends the Command it is given, or the command it is named for, to the server.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan.rs:171",
-          "has": [
-            "step"
-          ]
-        },
-        {
-          "at": "crates/libtmux/src/plan/run.rs:163",
-          "has": [
-            "step"
-          ]
-        },
-        {
           "at": "crates/libtmux/src/session.rs:388",
           "has": [
             "step"
+          ],
+          "reaches": [
+            {
+              "at": "crates/libtmux/src/session.rs:392",
+              "has": [
+                "execute"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "crates/libtmux/src/internal/control_executor.rs:37",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "crates/libtmux/src/internal/subprocess.rs:290",
+              "has": [
+                ".spawn()"
+              ]
+            }
           ]
         }
       ]
@@ -769,18 +2079,28 @@
           "at": "crates/libtmux/src/internal/listing.rs:92",
           "has": [
             "list"
-          ]
-        },
-        {
-          "at": "crates/libtmux/src/plan/wire.rs:149",
-          "has": [
-            "list"
-          ]
-        },
-        {
-          "at": "crates/tmux-workspace/src/cli/document/importers.rs:85",
-          "has": [
-            "list"
+          ],
+          "reaches": [
+            {
+              "at": "crates/libtmux/src/internal/listing.rs:106",
+              "has": [
+                "execute"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "crates/libtmux/src/internal/control_executor.rs:37",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "crates/libtmux/src/internal/subprocess.rs:290",
+              "has": [
+                ".spawn()"
+              ]
+            }
           ]
         }
       ]
@@ -794,6 +2114,35 @@
           "at": "crates/libtmux/src/control.rs:746",
           "has": [
             "send_ordered"
+          ],
+          "reaches": [
+            {
+              "at": "crates/libtmux/src/control.rs:755",
+              "has": [
+                "dispatch_line"
+              ],
+              "calls": "dispatch_line"
+            },
+            {
+              "at": "crates/libtmux/src/control.rs:803",
+              "has": [
+                "permit.send(Request"
+              ],
+              "leads": "serve"
+            },
+            {
+              "at": "crates/libtmux/src/control/actor.rs:541",
+              "has": [
+                "write_line("
+              ],
+              "calls": "write_line"
+            },
+            {
+              "at": "crates/libtmux/src/control/protocol.rs:74",
+              "has": [
+                ".write_all("
+              ]
+            }
           ]
         }
       ]
@@ -807,6 +2156,126 @@
           "at": "crates/libtmux/src/internal/core.rs:483",
           "has": [
             "execute_chain"
+          ],
+          "reaches": [
+            {
+              "at": "crates/libtmux/src/internal/core.rs:496",
+              "has": [
+                "execute"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "crates/libtmux/src/internal/control_executor.rs:37",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "crates/libtmux/src/internal/subprocess.rs:290",
+              "has": [
+                ".spawn()"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "name": "chain",
+      "why": "Sends the CommandChain it is given, one tmux invocation, to the server.",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/server.rs:753",
+          "has": [
+            "chain"
+          ],
+          "reaches": [
+            {
+              "at": "crates/libtmux/src/server.rs:754",
+              "has": [
+                "execute_chain"
+              ],
+              "calls": "execute_chain"
+            },
+            {
+              "at": "crates/libtmux/src/internal/core.rs:496",
+              "has": [
+                "execute"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "crates/libtmux/src/internal/control_executor.rs:37",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "crates/libtmux/src/internal/subprocess.rs:290",
+              "has": [
+                ".spawn()"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "name": "dispatch",
+      "why": "Sends the rendered commands of one plan step to the server, as one chain when the step carries several.",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:443",
+          "has": [
+            "dispatch"
+          ],
+          "reaches": [
+            {
+              "at": "crates/libtmux/src/plan/run.rs:461",
+              "has": [
+                "server.cmd("
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "crates/libtmux/src/server.rs:679",
+              "has": [
+                "execute("
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "crates/libtmux/src/internal/control_executor.rs:37",
+              "has": [
+                "run("
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "crates/libtmux/src/internal/subprocess.rs:290",
+              "has": [
+                "process.spawn()"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "name": "sensitive_arg",
+      "kind": "builder",
+      "why": "Adds one argument, kept out of logs, to the Command it is called on and returns the Command.",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/command.rs:208",
+          "has": [
+            "sensitive_arg"
           ]
         }
       ]
@@ -820,12 +2289,98 @@
           "at": "tmux/scoped_command.go:26",
           "has": [
             "literalCmd"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/scoped_command.go:27",
+              "has": [
+                "literalScopedCommand"
+              ],
+              "calls": "literalScopedCommand"
+            },
+            {
+              "at": "tmux/scoped_command.go:85",
+              "has": [
+                "literalCmd"
+              ],
+              "calls": "literalCmd"
+            },
+            {
+              "at": "tmux/server.go:105",
+              "has": [
+                "literalCmdWithRaw"
+              ],
+              "calls": "literalCmdWithRaw"
+            },
+            {
+              "at": "tmux/server.go:116",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         },
         {
           "at": "tmux/server.go:104",
           "has": [
             "literalCmd"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/server.go:105",
+              "has": [
+                "literalCmdWithRaw"
+              ],
+              "calls": "literalCmdWithRaw"
+            },
+            {
+              "at": "tmux/server.go:116",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         }
       ]
@@ -839,18 +2394,105 @@
           "at": "tmux/control_request.go:95",
           "has": [
             "Cmd"
-          ]
-        },
-        {
-          "at": "tmux/plan.go:731",
-          "has": [
-            "Cmd"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/control_request.go:99",
+              "has": [
+                "Call"
+              ],
+              "calls": "Call"
+            },
+            {
+              "at": "tmux/control_request.go:122",
+              "has": [
+                "cmd"
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "tmux/control_request.go:141",
+              "has": [
+                "cmdUnobserved"
+              ],
+              "calls": "cmdUnobserved"
+            },
+            {
+              "at": "tmux/control_request.go:163",
+              "has": [
+                "submitControlRequest"
+              ],
+              "calls": "submitControlRequest"
+            },
+            {
+              "at": "tmux/control_request.go:184",
+              "has": [
+                "c.requests <- request"
+              ],
+              "leads": "runRequests"
+            },
+            {
+              "at": "tmux/control_request.go:240",
+              "has": [
+                "executeControlRequest("
+              ],
+              "calls": "executeControlRequest"
+            },
+            {
+              "at": "tmux/control_request.go:268",
+              "has": [
+                "io.WriteString(c.stdin"
+              ]
+            }
           ]
         },
         {
           "at": "tmux/scoped_command.go:12",
           "has": [
             "Cmd"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/scoped_command.go:13",
+              "has": [
+                "scopedCommand"
+              ],
+              "calls": "scopedCommand"
+            },
+            {
+              "at": "tmux/scoped_command.go:54",
+              "has": [
+                "Cmd"
+              ],
+              "calls": "Cmd"
+            },
+            {
+              "at": "tmux/server.go:100",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         }
       ]
@@ -864,6 +2506,42 @@
           "at": "tmux/control_request.go:129",
           "has": [
             "cmd"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/control_request.go:141",
+              "has": [
+                "cmdUnobserved"
+              ],
+              "calls": "cmdUnobserved"
+            },
+            {
+              "at": "tmux/control_request.go:163",
+              "has": [
+                "submitControlRequest"
+              ],
+              "calls": "submitControlRequest"
+            },
+            {
+              "at": "tmux/control_request.go:184",
+              "has": [
+                "c.requests <- request"
+              ],
+              "leads": "runRequests"
+            },
+            {
+              "at": "tmux/control_request.go:240",
+              "has": [
+                "executeControlRequest("
+              ],
+              "calls": "executeControlRequest"
+            },
+            {
+              "at": "tmux/control_request.go:268",
+              "has": [
+                "io.WriteString(c.stdin"
+              ]
+            }
           ]
         }
       ]
@@ -877,6 +2555,21 @@
           "at": "tmux/transport.go:156",
           "has": [
             "runExactArgv"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/transport.go:173",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         }
       ]
@@ -890,7 +2583,56 @@
           "at": "tmux/server_clients.go:364",
           "has": [
             "runClientCommand"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/server_clients.go:370",
+              "has": [
+                "literalCmd"
+              ],
+              "calls": "literalCmd"
+            },
+            {
+              "at": "tmux/server.go:105",
+              "has": [
+                "literalCmdWithRaw"
+              ],
+              "calls": "literalCmdWithRaw"
+            },
+            {
+              "at": "tmux/server.go:116",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
+        }
+      ],
+      "labels": [
+        {
+          "at": 2,
+          "name": "subcommand"
         }
       ]
     },
@@ -903,7 +2645,56 @@
           "at": "tmux/window_layout.go:354",
           "has": [
             "runWindowLayoutCommand"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/window_layout.go:360",
+              "has": [
+                "literalCmd"
+              ],
+              "calls": "literalCmd"
+            },
+            {
+              "at": "tmux/server.go:105",
+              "has": [
+                "literalCmdWithRaw"
+              ],
+              "calls": "literalCmdWithRaw"
+            },
+            {
+              "at": "tmux/server.go:116",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
+        }
+      ],
+      "labels": [
+        {
+          "at": 2,
+          "name": "subcommand"
         }
       ]
     },
@@ -916,7 +2707,56 @@
           "at": "tmux/pane_modes.go:325",
           "has": [
             "runRedactedPaneModeCommand"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/pane_modes.go:331",
+              "has": [
+                "literalCmd"
+              ],
+              "calls": "literalCmd"
+            },
+            {
+              "at": "tmux/server.go:105",
+              "has": [
+                "literalCmdWithRaw"
+              ],
+              "calls": "literalCmdWithRaw"
+            },
+            {
+              "at": "tmux/server.go:116",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
+        }
+      ],
+      "labels": [
+        {
+          "at": 2,
+          "name": "subcommand"
         }
       ]
     },
@@ -929,7 +2769,56 @@
           "at": "tmux/server_keys.go:250",
           "has": [
             "runServerKeyCommand"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/server_keys.go:256",
+              "has": [
+                "literalCmd"
+              ],
+              "calls": "literalCmd"
+            },
+            {
+              "at": "tmux/server.go:105",
+              "has": [
+                "literalCmdWithRaw"
+              ],
+              "calls": "literalCmdWithRaw"
+            },
+            {
+              "at": "tmux/server.go:116",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
+        }
+      ],
+      "labels": [
+        {
+          "at": 2,
+          "name": "subcommand"
         }
       ]
     },
@@ -942,6 +2831,56 @@
           "at": "tmux/server_buffers.go:342",
           "has": [
             "runServerListCommand"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/server_buffers.go:347",
+              "has": [
+                "runServerListCommandWithError"
+              ],
+              "calls": "runServerListCommandWithError"
+            },
+            {
+              "at": "tmux/server_buffers.go:364",
+              "has": [
+                "literalCmd"
+              ],
+              "calls": "literalCmd"
+            },
+            {
+              "at": "tmux/server.go:105",
+              "has": [
+                "literalCmdWithRaw"
+              ],
+              "calls": "literalCmdWithRaw"
+            },
+            {
+              "at": "tmux/server.go:116",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         }
       ]
@@ -955,6 +2894,56 @@
           "at": "tmux/pane_modes.go:309",
           "has": [
             "runSimplePaneMode"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/pane_modes.go:314",
+              "has": [
+                "runRedactedPaneModeCommand"
+              ],
+              "calls": "runRedactedPaneModeCommand"
+            },
+            {
+              "at": "tmux/pane_modes.go:331",
+              "has": [
+                "literalCmd"
+              ],
+              "calls": "literalCmd"
+            },
+            {
+              "at": "tmux/server.go:105",
+              "has": [
+                "literalCmdWithRaw"
+              ],
+              "calls": "literalCmdWithRaw"
+            },
+            {
+              "at": "tmux/server.go:116",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         }
       ]
@@ -968,6 +2957,49 @@
           "at": "tmux/session_navigation.go:106",
           "has": [
             "navigateWindow"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/session_navigation.go:116",
+              "has": [
+                "literalCmd"
+              ],
+              "calls": "literalCmd"
+            },
+            {
+              "at": "tmux/server.go:105",
+              "has": [
+                "literalCmdWithRaw"
+              ],
+              "calls": "literalCmdWithRaw"
+            },
+            {
+              "at": "tmux/server.go:116",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         }
       ]
@@ -981,6 +3013,49 @@
           "at": "tmux/pane_relocate.go:205",
           "has": [
             "relocate"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/pane_relocate.go:271",
+              "has": [
+                "literalCmd"
+              ],
+              "calls": "literalCmd"
+            },
+            {
+              "at": "tmux/server.go:105",
+              "has": [
+                "literalCmdWithRaw"
+              ],
+              "calls": "literalCmdWithRaw"
+            },
+            {
+              "at": "tmux/server.go:116",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         }
       ]
@@ -994,6 +3069,56 @@
           "at": "tmux/search.go:167",
           "has": [
             "searchSnapshot"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/search.go:175",
+              "has": [
+                "searchSnapshotProjected"
+              ],
+              "calls": "searchSnapshotProjected"
+            },
+            {
+              "at": "tmux/search.go:195",
+              "has": [
+                "probeSnapshotIdentity"
+              ],
+              "calls": "probeSnapshotIdentity"
+            },
+            {
+              "at": "tmux/identity.go:210",
+              "has": [
+                "literalCmdWithRaw"
+              ],
+              "calls": "literalCmdWithRaw"
+            },
+            {
+              "at": "tmux/server.go:116",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         }
       ]
@@ -1007,6 +3132,49 @@
           "at": "tmux/search.go:180",
           "has": [
             "searchSnapshotProjected"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/search.go:195",
+              "has": [
+                "probeSnapshotIdentity"
+              ],
+              "calls": "probeSnapshotIdentity"
+            },
+            {
+              "at": "tmux/identity.go:210",
+              "has": [
+                "literalCmdWithRaw"
+              ],
+              "calls": "literalCmdWithRaw"
+            },
+            {
+              "at": "tmux/server.go:116",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         }
       ]
@@ -1020,6 +3188,56 @@
           "at": "tmux/lookup.go:131",
           "has": [
             "livePoint"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/lookup.go:139",
+              "has": [
+                "livePointWithTargetValidation"
+              ],
+              "calls": "livePointWithTargetValidation"
+            },
+            {
+              "at": "tmux/lookup.go:179",
+              "has": [
+                "probeSnapshotIdentity"
+              ],
+              "calls": "probeSnapshotIdentity"
+            },
+            {
+              "at": "tmux/identity.go:210",
+              "has": [
+                "literalCmdWithRaw"
+              ],
+              "calls": "literalCmdWithRaw"
+            },
+            {
+              "at": "tmux/server.go:116",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         }
       ]
@@ -1033,6 +3251,49 @@
           "at": "tmux/lookup.go:165",
           "has": [
             "livePointWithTargetValidation"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/lookup.go:179",
+              "has": [
+                "probeSnapshotIdentity"
+              ],
+              "calls": "probeSnapshotIdentity"
+            },
+            {
+              "at": "tmux/identity.go:210",
+              "has": [
+                "literalCmdWithRaw"
+              ],
+              "calls": "literalCmdWithRaw"
+            },
+            {
+              "at": "tmux/server.go:116",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         }
       ]
@@ -1046,6 +3307,35 @@
           "at": "tmux/server.go:109",
           "has": [
             "literalCmdWithRaw"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/server.go:116",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         }
       ]
@@ -1059,6 +3349,49 @@
           "at": "tmux/environment.go:240",
           "has": [
             "runEnvironmentMutation"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/environment.go:241",
+              "has": [
+                "literalCmd"
+              ],
+              "calls": "literalCmd"
+            },
+            {
+              "at": "tmux/server.go:105",
+              "has": [
+                "literalCmdWithRaw"
+              ],
+              "calls": "literalCmdWithRaw"
+            },
+            {
+              "at": "tmux/server.go:116",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         }
       ]
@@ -1072,6 +3405,49 @@
           "at": "tmux/option_mutation.go:465",
           "has": [
             "runOptionMutation"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/option_mutation.go:472",
+              "has": [
+                "literalCmd"
+              ],
+              "calls": "literalCmd"
+            },
+            {
+              "at": "tmux/server.go:105",
+              "has": [
+                "literalCmdWithRaw"
+              ],
+              "calls": "literalCmdWithRaw"
+            },
+            {
+              "at": "tmux/server.go:116",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         }
       ]
@@ -1085,6 +3461,49 @@
           "at": "tmux/exact_target.go:63",
           "has": [
             "literalPaneCommand"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/exact_target.go:72",
+              "has": [
+                "literalCmd"
+              ],
+              "calls": "literalCmd"
+            },
+            {
+              "at": "tmux/server.go:105",
+              "has": [
+                "literalCmdWithRaw"
+              ],
+              "calls": "literalCmdWithRaw"
+            },
+            {
+              "at": "tmux/server.go:116",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         }
       ]
@@ -1098,6 +3517,49 @@
           "at": "tmux/scoped_command.go:57",
           "has": [
             "literalScopedCommand"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/scoped_command.go:85",
+              "has": [
+                "literalCmd"
+              ],
+              "calls": "literalCmd"
+            },
+            {
+              "at": "tmux/server.go:105",
+              "has": [
+                "literalCmdWithRaw"
+              ],
+              "calls": "literalCmdWithRaw"
+            },
+            {
+              "at": "tmux/server.go:116",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         }
       ]
@@ -1111,6 +3573,49 @@
           "at": "tmux/server_buffers.go:358",
           "has": [
             "runServerListCommandWithError"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/server_buffers.go:364",
+              "has": [
+                "literalCmd"
+              ],
+              "calls": "literalCmd"
+            },
+            {
+              "at": "tmux/server.go:105",
+              "has": [
+                "literalCmdWithRaw"
+              ],
+              "calls": "literalCmdWithRaw"
+            },
+            {
+              "at": "tmux/server.go:116",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         }
       ]
@@ -1124,6 +3629,56 @@
           "at": "tmux/server_buffers.go:350",
           "has": [
             "runRedactedServerListCommand"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/server_buffers.go:355",
+              "has": [
+                "runServerListCommandWithError"
+              ],
+              "calls": "runServerListCommandWithError"
+            },
+            {
+              "at": "tmux/server_buffers.go:364",
+              "has": [
+                "literalCmd"
+              ],
+              "calls": "literalCmd"
+            },
+            {
+              "at": "tmux/server.go:105",
+              "has": [
+                "literalCmdWithRaw"
+              ],
+              "calls": "literalCmdWithRaw"
+            },
+            {
+              "at": "tmux/server.go:116",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         }
       ]
@@ -1137,6 +3692,49 @@
           "at": "tmux/pane_create.go:141",
           "has": [
             "newPane"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/pane_create.go:213",
+              "has": [
+                "literalCmd"
+              ],
+              "calls": "literalCmd"
+            },
+            {
+              "at": "tmux/server.go:105",
+              "has": [
+                "literalCmdWithRaw"
+              ],
+              "calls": "literalCmdWithRaw"
+            },
+            {
+              "at": "tmux/server.go:116",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         }
       ]
@@ -1150,6 +3748,49 @@
           "at": "tmux/pane_create.go:330",
           "has": [
             "splitPane"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/pane_create.go:354",
+              "has": [
+                "literalCmd"
+              ],
+              "calls": "literalCmd"
+            },
+            {
+              "at": "tmux/server.go:105",
+              "has": [
+                "literalCmdWithRaw"
+              ],
+              "calls": "literalCmdWithRaw"
+            },
+            {
+              "at": "tmux/server.go:116",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         }
       ]
@@ -1163,6 +3804,49 @@
           "at": "tmux/window_lifecycle.go:189",
           "has": [
             "newWindow"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/window_lifecycle.go:224",
+              "has": [
+                "literalCmd"
+              ],
+              "calls": "literalCmd"
+            },
+            {
+              "at": "tmux/server.go:105",
+              "has": [
+                "literalCmdWithRaw"
+              ],
+              "calls": "literalCmdWithRaw"
+            },
+            {
+              "at": "tmux/server.go:116",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         }
       ]
@@ -1176,12 +3860,49 @@
           "at": "tmux/pane_capture.go:216",
           "has": [
             "capturePane"
-          ]
-        },
-        {
-          "at": "mcp/capture_tools.go:32",
-          "has": [
-            "capturePane"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/pane_capture.go:232",
+              "has": [
+                "literalCmd"
+              ],
+              "calls": "literalCmd"
+            },
+            {
+              "at": "tmux/server.go:105",
+              "has": [
+                "literalCmdWithRaw"
+              ],
+              "calls": "literalCmdWithRaw"
+            },
+            {
+              "at": "tmux/server.go:116",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         }
       ]
@@ -1195,6 +3916,49 @@
           "at": "tmux/server_buffers.go:138",
           "has": [
             "showBuffer"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/server_buffers.go:148",
+              "has": [
+                "literalCmd"
+              ],
+              "calls": "literalCmd"
+            },
+            {
+              "at": "tmux/server.go:105",
+              "has": [
+                "literalCmdWithRaw"
+              ],
+              "calls": "literalCmdWithRaw"
+            },
+            {
+              "at": "tmux/server.go:116",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         }
       ]
@@ -1208,6 +3972,42 @@
           "at": "tmux/snapshot_capture.go:113",
           "has": [
             "snapshotListing"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/snapshot_capture.go:127",
+              "has": [
+                "literalCmdWithRaw"
+              ],
+              "calls": "literalCmdWithRaw"
+            },
+            {
+              "at": "tmux/server.go:116",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         }
       ]
@@ -1221,6 +4021,49 @@
           "at": "tmux/display_message.go:182",
           "has": [
             "runDisplayMessage"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/display_message.go:254",
+              "has": [
+                "literalCmd"
+              ],
+              "calls": "literalCmd"
+            },
+            {
+              "at": "tmux/server.go:105",
+              "has": [
+                "literalCmdWithRaw"
+              ],
+              "calls": "literalCmdWithRaw"
+            },
+            {
+              "at": "tmux/server.go:116",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         }
       ]
@@ -1234,18 +4077,63 @@
           "at": "tmux/tmuxtest/harness.go:535",
           "has": [
             "runCommand"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/tmuxtest/harness.go:536",
+              "has": [
+                "Cmd"
+              ],
+              "calls": "Cmd"
+            },
+            {
+              "at": "tmux/server.go:100",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "tmux/server.go:126",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         },
         {
           "at": "tmux/transport.go:40",
           "has": [
             "runCommand"
-          ]
-        },
-        {
-          "at": "mcp/run_command_tools.go:89",
-          "has": [
-            "runCommand"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         }
       ]
@@ -1259,6 +4147,28 @@
           "at": "tmux/server_attach.go:153",
           "has": [
             "streamingLiteralCmd"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/server_attach.go:161",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         }
       ]
@@ -1272,19 +4182,42 @@
           "at": "tmux/pipe_stream.go:57",
           "has": [
             "streamOut"
-          ]
-        }
-      ]
-    },
-    {
-      "port": "go",
-      "name": "startControl",
-      "why": "Sends the tmux arguments or the command it is given to the server.",
-      "evidence": [
-        {
-          "at": "tmux/control_startup.go:105",
-          "has": [
-            "startControl"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/pipe_stream.go:74",
+              "has": [
+                "runPipeStreamCommand"
+              ],
+              "calls": "runPipeStreamCommand"
+            },
+            {
+              "at": "tmux/pipe_stream.go:153",
+              "has": [
+                "streamingLiteralCmd"
+              ],
+              "calls": "streamingLiteralCmd"
+            },
+            {
+              "at": "tmux/server_attach.go:161",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         }
       ]
@@ -1298,6 +4231,42 @@
           "at": "tmux/pipe_stream.go:19",
           "has": [
             "streamIn"
+          ],
+          "reaches": [
+            {
+              "at": "tmux/pipe_stream.go:37",
+              "has": [
+                "runPipeStreamCommand"
+              ],
+              "calls": "runPipeStreamCommand"
+            },
+            {
+              "at": "tmux/pipe_stream.go:153",
+              "has": [
+                "streamingLiteralCmd"
+              ],
+              "calls": "streamingLiteralCmd"
+            },
+            {
+              "at": "tmux/server_attach.go:161",
+              "has": [
+                "runCommand"
+              ],
+              "calls": "runCommand"
+            },
+            {
+              "at": "tmux/transport.go:85",
+              "has": [
+                "Run"
+              ],
+              "calls": "Run"
+            },
+            {
+              "at": "tmux/internal/tmuxcmd/runner.go:95",
+              "has": [
+                "exec.CommandContext("
+              ]
+            }
           ]
         }
       ]
@@ -1387,26 +4356,29 @@
       ]
     },
     {
-      "port": "java",
-      "name": "run",
-      "why": "Sends the argument list it is given to the server.",
+      "port": "go",
+      "name": "appendPopupVersion33Arguments",
+      "kind": "builder",
+      "why": "Appends the flags a newer tmux accepts to the display-popup argument list it is given and returns the list.",
       "evidence": [
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/CommandChain.java:97",
+          "at": "tmux/pane_popup.go:326",
           "has": [
-            "run"
+            "func appendPopupVersion33Arguments("
           ]
-        },
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "name": "appendPopupVersion36Arguments",
+      "kind": "builder",
+      "why": "Appends the flags a newer tmux accepts to the display-popup argument list it is given and returns the list.",
+      "evidence": [
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/Environment.java:372",
+          "at": "tmux/pane_popup.go:376",
           "has": [
-            "run"
-          ]
-        },
-        {
-          "at": "libtmux/src/main/java/io/github/libtmux/Hooks.java:113",
-          "has": [
-            "run"
+            "func appendPopupVersion36Arguments("
           ]
         }
       ]
@@ -1420,18 +4392,168 @@
           "at": "libtmux/src/main/java/io/github/libtmux/Environment.java:368",
           "has": [
             "cmd"
+          ],
+          "reaches": [
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Environment.java:369",
+              "has": [
+                "cmd"
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1230",
+              "has": [
+                "guarded"
+              ],
+              "calls": "guarded"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java:76",
+              "has": [
+                "server.cmd("
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:783",
+              "has": [
+                "transport.execute("
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:205",
+              "has": [
+                "dispatch("
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:307",
+              "has": [
+                "launch("
+              ],
+              "calls": "launch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:507",
+              "has": [
+                "starter.start("
+              ]
+            }
           ]
         },
         {
           "at": "libtmux/src/main/java/io/github/libtmux/Options.java:373",
           "has": [
             "cmd"
+          ],
+          "reaches": [
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Options.java:374",
+              "has": [
+                "cmd"
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1230",
+              "has": [
+                "guarded"
+              ],
+              "calls": "guarded"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java:76",
+              "has": [
+                "server.cmd("
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:783",
+              "has": [
+                "transport.execute("
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:205",
+              "has": [
+                "dispatch("
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:307",
+              "has": [
+                "launch("
+              ],
+              "calls": "launch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:507",
+              "has": [
+                "starter.start("
+              ]
+            }
           ]
         },
         {
           "at": "libtmux/src/main/java/io/github/libtmux/Server.java:765",
           "has": [
             "cmd"
+          ],
+          "reaches": [
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:766",
+              "has": [
+                "cmd"
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1230",
+              "has": [
+                "guarded"
+              ],
+              "calls": "guarded"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java:76",
+              "has": [
+                "server.cmd("
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:783",
+              "has": [
+                "transport.execute("
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:205",
+              "has": [
+                "dispatch("
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:307",
+              "has": [
+                "launch("
+              ],
+              "calls": "launch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:507",
+              "has": [
+                "starter.start("
+              ]
+            }
           ]
         }
       ]
@@ -1442,15 +4564,38 @@
       "why": "Sends the argument list it is given to the server.",
       "evidence": [
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:547",
-          "has": [
-            "send"
-          ]
-        },
-        {
           "at": "libtmux/src/main/java/io/github/libtmux/control/ControlClient.java:312",
           "has": [
             "send"
+          ],
+          "reaches": [
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/control/ControlClient.java:313",
+              "has": [
+                "send"
+              ],
+              "calls": "send"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/control/ControlClient.java:346",
+              "has": [
+                "exchange"
+              ],
+              "calls": "exchange"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/control/ControlWriter.java:84",
+              "has": [
+                "waiting.offer("
+              ],
+              "leads": "run"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/control/ControlWriter.java:237",
+              "has": [
+                "output.write(request.line)"
+              ]
+            }
           ]
         }
       ]
@@ -1464,6 +4609,56 @@
           "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1265",
           "has": [
             "runTogether"
+          ],
+          "reaches": [
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1266",
+              "has": [
+                "runTogether"
+              ],
+              "calls": "runTogether"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1271",
+              "has": [
+                "guarded"
+              ],
+              "calls": "guarded"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java:76",
+              "has": [
+                "server.cmd("
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:783",
+              "has": [
+                "transport.execute("
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:205",
+              "has": [
+                "dispatch("
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:307",
+              "has": [
+                "launch("
+              ],
+              "calls": "launch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:507",
+              "has": [
+                "starter.start("
+              ]
+            }
           ]
         }
       ]
@@ -1477,6 +4672,35 @@
           "at": "libtmux/src/main/java/io/github/libtmux/Server.java:471",
           "has": [
             "withoutStartingServer"
+          ],
+          "reaches": [
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:475",
+              "has": [
+                "execute"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:205",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:307",
+              "has": [
+                "launch"
+              ],
+              "calls": "launch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:507",
+              "has": [
+                "starter.start("
+              ]
+            }
           ]
         }
       ]
@@ -1490,6 +4714,63 @@
           "at": "libtmux/src/main/java/io/github/libtmux/Options.java:194",
           "has": [
             "withVersion"
+          ],
+          "reaches": [
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Options.java:198",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/batch/Batch.java:85",
+              "has": [
+                "dispatch.apply("
+              ],
+              "leads": "batch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1235",
+              "has": [
+                "fence.guarded("
+              ],
+              "calls": "guarded"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java:76",
+              "has": [
+                "server.cmd("
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:783",
+              "has": [
+                "transport.execute("
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:205",
+              "has": [
+                "dispatch("
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:307",
+              "has": [
+                "launch("
+              ],
+              "calls": "launch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:507",
+              "has": [
+                "starter.start("
+              ]
+            }
           ]
         }
       ]
@@ -1503,6 +4784,77 @@
           "at": "libtmux/src/main/java/io/github/libtmux/Server.java:884",
           "has": [
             "captured"
+          ],
+          "reaches": [
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:886",
+              "has": [
+                "sessionsWhere"
+              ],
+              "calls": "sessionsWhere"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:276",
+              "has": [
+                "hydrate"
+              ],
+              "calls": "hydrate"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:293",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/batch/Batch.java:85",
+              "has": [
+                "dispatch.apply("
+              ],
+              "leads": "batch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1235",
+              "has": [
+                "fence.guarded("
+              ],
+              "calls": "guarded"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java:76",
+              "has": [
+                "server.cmd("
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:783",
+              "has": [
+                "transport.execute("
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:205",
+              "has": [
+                "dispatch("
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:307",
+              "has": [
+                "launch("
+              ],
+              "calls": "launch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:507",
+              "has": [
+                "starter.start("
+              ]
+            }
           ]
         }
       ]
@@ -1516,18 +4868,35 @@
           "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:180",
           "has": [
             "execute"
-          ]
-        },
-        {
-          "at": "libtmux/src/main/java/io/github/libtmux/transport/TmuxTransport.java:29",
-          "has": [
-            "execute"
-          ]
-        },
-        {
-          "at": "libtmux-junit5/src/main/java/io/github/libtmux/junit5/FakeTmux.java:239",
-          "has": [
-            "execute"
+          ],
+          "reaches": [
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:181",
+              "has": [
+                "execute"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:205",
+              "has": [
+                "dispatch"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:307",
+              "has": [
+                "launch"
+              ],
+              "calls": "launch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:507",
+              "has": [
+                "starter.start("
+              ]
+            }
           ]
         }
       ]
@@ -1575,12 +4944,6 @@
           "has": [
             "command"
           ]
-        },
-        {
-          "at": "libtmux/src/main/java/io/github/libtmux/exception/LibTmuxException.java:54",
-          "has": [
-            "command"
-          ]
         }
       ]
     },
@@ -1601,12 +4964,6 @@
           "has": [
             "listing"
           ]
-        },
-        {
-          "at": "libtmux-junit5/src/main/java/io/github/libtmux/junit5/FakeTmux.java:471",
-          "has": [
-            "listing"
-          ]
         }
       ]
     },
@@ -1621,11 +4978,173 @@
           "has": [
             "request"
           ]
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "name": "run",
+      "why": "Sends the argument list it is given to the server, and fails on a nonzero exit.",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1221",
+          "has": [
+            "run"
+          ],
+          "reaches": [
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1222",
+              "has": [
+                "cmd"
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1230",
+              "has": [
+                "guarded"
+              ],
+              "calls": "guarded"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java:76",
+              "has": [
+                "server.cmd("
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:783",
+              "has": [
+                "transport.execute("
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:205",
+              "has": [
+                "dispatch("
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:307",
+              "has": [
+                "launch("
+              ],
+              "calls": "launch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:507",
+              "has": [
+                "starter.start("
+              ]
+            }
+          ]
         },
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/control/EventSubscription.java:451",
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1250",
           "has": [
-            "request"
+            "run"
+          ],
+          "reaches": [
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1251",
+              "has": [
+                "cmd"
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1230",
+              "has": [
+                "guarded"
+              ],
+              "calls": "guarded"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java:76",
+              "has": [
+                "server.cmd("
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:783",
+              "has": [
+                "transport.execute("
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:205",
+              "has": [
+                "dispatch("
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:307",
+              "has": [
+                "launch("
+              ],
+              "calls": "launch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:507",
+              "has": [
+                "starter.start("
+              ]
+            }
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1280",
+          "has": [
+            "run"
+          ],
+          "reaches": [
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1281",
+              "has": [
+                "fence.run("
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java:95",
+              "has": [
+                "server.cmd("
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java:783",
+              "has": [
+                "transport.execute("
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:205",
+              "has": [
+                "dispatch("
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:307",
+              "has": [
+                "launch("
+              ],
+              "calls": "launch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java:507",
+              "has": [
+                "starter.start("
+              ]
+            }
           ]
         }
       ]
@@ -1636,21 +5155,66 @@
       "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
       "evidence": [
         {
-          "at": "src/LibTmux/ControlMode/ControlModePaneFlow.cs:92",
-          "has": [
-            "RunAsync"
-          ]
-        },
-        {
           "at": "src/LibTmux/Environment/TmuxEnvironmentOperations.cs:243",
           "has": [
             "RunAsync"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/Environment/TmuxEnvironmentOperations.cs:246",
+              "has": [
+                "ExecuteAsync"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
+              "has": [
+                "_launcher.Start("
+              ],
+              "calls": "Start"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
+              "has": [
+                "process.Start()"
+              ]
+            }
           ]
         },
         {
           "at": "src/LibTmux/Hooks/TmuxHooks.cs:310",
           "has": [
             "RunAsync"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/Hooks/TmuxHooks.cs:313",
+              "has": [
+                "DispatchAsync"
+              ],
+              "calls": "DispatchAsync"
+            },
+            {
+              "at": "src/LibTmux/Hooks/TmuxHooks.cs:432",
+              "has": [
+                "ExecuteAsync"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
+              "has": [
+                "_launcher.Start("
+              ],
+              "calls": "Start"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
+              "has": [
+                "process.Start()"
+              ]
+            }
           ]
         }
       ]
@@ -1661,21 +5225,31 @@
       "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
       "evidence": [
         {
-          "at": "src/LibTmux/Exceptions/LibTmuxException.cs:40",
-          "has": [
-            "Dispatch"
-          ]
-        },
-        {
           "at": "src/LibTmux/Server.Lifecycle.cs:454",
           "has": [
             "Dispatch"
-          ]
-        },
-        {
-          "at": "src/LibTmux.Workspace/WorkspaceActionOutcome.cs:36",
-          "has": [
-            "Dispatch"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/Server.Lifecycle.cs:462",
+              "has": [
+                "ExecuteAsync"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
+              "has": [
+                "_launcher.Start("
+              ],
+              "calls": "Start"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
+              "has": [
+                "process.Start()"
+              ]
+            }
           ]
         }
       ]
@@ -1686,21 +5260,59 @@
       "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
       "evidence": [
         {
-          "at": "src/LibTmux/Chaining/TmuxChain.cs:95",
-          "has": [
-            "ExecuteAsync"
-          ]
-        },
-        {
           "at": "src/LibTmux/Chaining/TmuxChaining.Hooks.cs:56",
           "has": [
             "ExecuteAsync"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/Chaining/TmuxChaining.Hooks.cs:63",
+              "has": [
+                "ExecuteAsync"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
+              "has": [
+                "_launcher.Start("
+              ],
+              "calls": "Start"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
+              "has": [
+                "process.Start()"
+              ]
+            }
           ]
         },
         {
           "at": "src/LibTmux/Chaining/TmuxChaining.cs:23",
           "has": [
             "ExecuteAsync"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/Chaining/TmuxChaining.cs:30",
+              "has": [
+                "ExecuteAsync"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
+              "has": [
+                "_launcher.Start("
+              ],
+              "calls": "Start"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
+              "has": [
+                "process.Start()"
+              ]
+            }
           ]
         }
       ]
@@ -1714,18 +5326,133 @@
           "at": "src/LibTmux/ControlMode/PaneObservation.cs:332",
           "has": [
             "ListAsync"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/ControlMode/PaneObservation.cs:337",
+              "has": [
+                "SendAsync"
+              ],
+              "calls": "SendAsync"
+            },
+            {
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:294",
+              "has": [
+                "SendCoreAsync"
+              ],
+              "calls": "SendCoreAsync"
+            },
+            {
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:410",
+              "has": [
+                "SendAdmittedAsync"
+              ],
+              "calls": "SendAdmittedAsync"
+            },
+            {
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:455",
+              "has": [
+                "DispatchAndWaitAsync"
+              ],
+              "calls": "DispatchAndWaitAsync"
+            },
+            {
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:509",
+              "has": [
+                "WriteRequestAsync"
+              ],
+              "calls": "WriteRequestAsync"
+            },
+            {
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:557",
+              "has": [
+                "WriteLineAsync"
+              ],
+              "calls": "WriteLineAsync"
+            },
+            {
+              "at": "src/LibTmux/ControlMode/SystemControlModeProcess.cs:69",
+              "has": [
+                "StandardInput.WriteLineAsync"
+              ]
+            }
           ]
         },
         {
           "at": "src/LibTmux/Materialization/RelationReader.cs:13",
           "has": [
             "ListAsync"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/Materialization/RelationReader.cs:21",
+              "has": [
+                "FetchAsync"
+              ],
+              "calls": "FetchAsync"
+            },
+            {
+              "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:45",
+              "has": [
+                "ExecuteAsync"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
+              "has": [
+                "_launcher.Start("
+              ],
+              "calls": "Start"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
+              "has": [
+                "process.Start()"
+              ]
+            }
           ]
         },
         {
           "at": "src/LibTmux/Server.Collections.cs:81",
           "has": [
             "ListAsync"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/Server.Collections.cs:89",
+              "has": [
+                "ListAsync"
+              ],
+              "calls": "ListAsync"
+            },
+            {
+              "at": "src/LibTmux/Materialization/RelationReader.cs:21",
+              "has": [
+                "FetchAsync"
+              ],
+              "calls": "FetchAsync"
+            },
+            {
+              "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:45",
+              "has": [
+                "ExecuteAsync"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
+              "has": [
+                "_launcher.Start("
+              ],
+              "calls": "Start"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
+              "has": [
+                "process.Start()"
+              ]
+            }
           ]
         }
       ]
@@ -1739,6 +5466,28 @@
           "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:30",
           "has": [
             "FetchAsync"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:45",
+              "has": [
+                "ExecuteAsync"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
+              "has": [
+                "_launcher.Start("
+              ],
+              "calls": "Start"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
+              "has": [
+                "process.Start()"
+              ]
+            }
           ]
         }
       ]
@@ -1752,6 +5501,42 @@
           "at": "src/LibTmux/Query/NativeFilterSearch.cs:73",
           "has": [
             "SearchAsync"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/Query/NativeFilterSearch.cs:82",
+              "has": [
+                "ListAsync"
+              ],
+              "calls": "ListAsync"
+            },
+            {
+              "at": "src/LibTmux/Materialization/RelationReader.cs:21",
+              "has": [
+                "FetchAsync"
+              ],
+              "calls": "FetchAsync"
+            },
+            {
+              "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:45",
+              "has": [
+                "ExecuteAsync"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
+              "has": [
+                "_launcher.Start("
+              ],
+              "calls": "Start"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
+              "has": [
+                "process.Start()"
+              ]
+            }
           ]
         }
       ]
@@ -1765,12 +5550,49 @@
           "at": "src/LibTmux/ControlMode/ControlModeSession.cs:281",
           "has": [
             "SendAsync"
-          ]
-        },
-        {
-          "at": "src/LibTmux/ControlMode/IControlModeSession.cs:68",
-          "has": [
-            "SendAsync"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:294",
+              "has": [
+                "SendCoreAsync"
+              ],
+              "calls": "SendCoreAsync"
+            },
+            {
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:410",
+              "has": [
+                "SendAdmittedAsync"
+              ],
+              "calls": "SendAdmittedAsync"
+            },
+            {
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:455",
+              "has": [
+                "DispatchAndWaitAsync"
+              ],
+              "calls": "DispatchAndWaitAsync"
+            },
+            {
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:509",
+              "has": [
+                "WriteRequestAsync"
+              ],
+              "calls": "WriteRequestAsync"
+            },
+            {
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:557",
+              "has": [
+                "WriteLineAsync"
+              ],
+              "calls": "WriteLineAsync"
+            },
+            {
+              "at": "src/LibTmux/ControlMode/SystemControlModeProcess.cs:69",
+              "has": [
+                "StandardInput.WriteLineAsync"
+              ]
+            }
           ]
         }
       ]
@@ -1784,6 +5606,42 @@
           "at": "src/LibTmux/ControlMode/ControlModeSession.cs:306",
           "has": [
             "SendRawAsync"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:327",
+              "has": [
+                "SendAdmittedAsync"
+              ],
+              "calls": "SendAdmittedAsync"
+            },
+            {
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:455",
+              "has": [
+                "DispatchAndWaitAsync"
+              ],
+              "calls": "DispatchAndWaitAsync"
+            },
+            {
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:509",
+              "has": [
+                "WriteRequestAsync"
+              ],
+              "calls": "WriteRequestAsync"
+            },
+            {
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:557",
+              "has": [
+                "WriteLineAsync"
+              ],
+              "calls": "WriteLineAsync"
+            },
+            {
+              "at": "src/LibTmux/ControlMode/SystemControlModeProcess.cs:69",
+              "has": [
+                "StandardInput.WriteLineAsync"
+              ]
+            }
           ]
         }
       ]
@@ -1797,6 +5655,28 @@
           "at": "src/LibTmux/Server.Utilities.cs:112",
           "has": [
             "RunUtilityAsync"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/Server.Utilities.cs:117",
+              "has": [
+                "ExecuteAsync"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
+              "has": [
+                "_launcher.Start("
+              ],
+              "calls": "Start"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
+              "has": [
+                "process.Start()"
+              ]
+            }
           ]
         }
       ]
@@ -1810,6 +5690,35 @@
           "at": "src/LibTmux/Server.Clients.cs:194",
           "has": [
             "RunClientAsync"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/Server.Clients.cs:201",
+              "has": [
+                "RunAsync"
+              ],
+              "calls": "RunAsync"
+            },
+            {
+              "at": "src/LibTmux/Server.Clients.cs:209",
+              "has": [
+                "ExecuteAsync"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
+              "has": [
+                "_launcher.Start("
+              ],
+              "calls": "Start"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
+              "has": [
+                "process.Start()"
+              ]
+            }
           ]
         }
       ]
@@ -1823,6 +5732,56 @@
           "at": "src/LibTmux/Streaming/PaneReader.cs:438",
           "has": [
             "TryThroughControlAsync"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/Streaming/PaneReader.cs:455",
+              "has": [
+                "SendAsync"
+              ],
+              "calls": "SendAsync"
+            },
+            {
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:294",
+              "has": [
+                "SendCoreAsync"
+              ],
+              "calls": "SendCoreAsync"
+            },
+            {
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:410",
+              "has": [
+                "SendAdmittedAsync"
+              ],
+              "calls": "SendAdmittedAsync"
+            },
+            {
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:455",
+              "has": [
+                "DispatchAndWaitAsync"
+              ],
+              "calls": "DispatchAndWaitAsync"
+            },
+            {
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:509",
+              "has": [
+                "WriteRequestAsync"
+              ],
+              "calls": "WriteRequestAsync"
+            },
+            {
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:557",
+              "has": [
+                "WriteLineAsync"
+              ],
+              "calls": "WriteLineAsync"
+            },
+            {
+              "at": "src/LibTmux/ControlMode/SystemControlModeProcess.cs:69",
+              "has": [
+                "StandardInput.WriteLineAsync"
+              ]
+            }
           ]
         }
       ]
@@ -1836,6 +5795,35 @@
           "at": "src/LibTmux/Snapshots/ServerSnapshot.cs:125",
           "has": [
             "Fetch"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/Snapshots/ServerSnapshot.cs:130",
+              "has": [
+                "FetchMarkedAsync"
+              ],
+              "calls": "FetchMarkedAsync"
+            },
+            {
+              "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:61",
+              "has": [
+                "ExecuteAsync"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
+              "has": [
+                "_launcher.Start("
+              ],
+              "calls": "Start"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
+              "has": [
+                "process.Start()"
+              ]
+            }
           ]
         }
       ]
@@ -1849,6 +5837,28 @@
           "at": "src/LibTmux/Server.Utilities.cs:123",
           "has": [
             "ReadUtilityAsync"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/Server.Utilities.cs:128",
+              "has": [
+                "ExecuteAsync"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
+              "has": [
+                "_launcher.Start("
+              ],
+              "calls": "Start"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
+              "has": [
+                "process.Start()"
+              ]
+            }
           ]
         }
       ]
@@ -1862,18 +5872,84 @@
           "at": "src/LibTmux/Pane.Command.cs:22",
           "has": [
             "ExecuteCommandAsync"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/Pane.Command.cs:27",
+              "has": [
+                "ExecuteAsync"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
+              "has": [
+                "_launcher.Start("
+              ],
+              "calls": "Start"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
+              "has": [
+                "process.Start()"
+              ]
+            }
           ]
         },
         {
           "at": "src/LibTmux/Server.Command.cs:19",
           "has": [
             "ExecuteCommandAsync"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/Server.Command.cs:22",
+              "has": [
+                "ExecuteAsync"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
+              "has": [
+                "_launcher.Start("
+              ],
+              "calls": "Start"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
+              "has": [
+                "process.Start()"
+              ]
+            }
           ]
         },
         {
           "at": "src/LibTmux/Session.Command.cs:22",
           "has": [
             "ExecuteCommandAsync"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/Session.Command.cs:27",
+              "has": [
+                "ExecuteAsync"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
+              "has": [
+                "_launcher.Start("
+              ],
+              "calls": "Start"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
+              "has": [
+                "process.Start()"
+              ]
+            }
           ]
         }
       ]
@@ -1887,12 +5963,63 @@
           "at": "src/LibTmux/Connection/TmuxDialect.cs:168",
           "has": [
             "ExecuteAttachmentAsync"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/Connection/TmuxDialect.cs:175",
+              "has": [
+                "ExecuteAttachmentAsync"
+              ],
+              "calls": "ExecuteAttachmentAsync"
+            },
+            {
+              "at": "src/LibTmux/Internal/TmuxGenerationGuard.Attachment.cs:24",
+              "has": [
+                "ExecuteAsync"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
+              "has": [
+                "_launcher.Start("
+              ],
+              "calls": "Start"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
+              "has": [
+                "process.Start()"
+              ]
+            }
           ]
         },
         {
           "at": "src/LibTmux/Internal/TmuxGenerationGuard.Attachment.cs:11",
           "has": [
             "ExecuteAttachmentAsync"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/Internal/TmuxGenerationGuard.Attachment.cs:24",
+              "has": [
+                "ExecuteAsync"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
+              "has": [
+                "_launcher.Start("
+              ],
+              "calls": "Start"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
+              "has": [
+                "process.Start()"
+              ]
+            }
           ]
         }
       ]
@@ -1903,21 +6030,66 @@
       "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
       "evidence": [
         {
-          "at": "src/LibTmux/Connection/MultiplexerDialect.cs:73",
-          "has": [
-            "ExecuteGuardedAsync"
-          ]
-        },
-        {
           "at": "src/LibTmux/Connection/PsmuxDialect.cs:63",
           "has": [
             "ExecuteGuardedAsync"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/Connection/PsmuxDialect.cs:69",
+              "has": [
+                "ExecuteGuardedAsync"
+              ],
+              "calls": "ExecuteGuardedAsync"
+            },
+            {
+              "at": "src/LibTmux/Connection/TmuxDialect.cs:164",
+              "has": [
+                "ExecuteAsync"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
+              "has": [
+                "_launcher.Start("
+              ],
+              "calls": "Start"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
+              "has": [
+                "process.Start()"
+              ]
+            }
           ]
         },
         {
           "at": "src/LibTmux/Connection/TmuxDialect.cs:158",
           "has": [
             "ExecuteGuardedAsync"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/Connection/TmuxDialect.cs:164",
+              "has": [
+                "ExecuteAsync"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
+              "has": [
+                "_launcher.Start("
+              ],
+              "calls": "Start"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
+              "has": [
+                "process.Start()"
+              ]
+            }
           ]
         }
       ]
@@ -1931,6 +6103,35 @@
           "at": "src/LibTmux/Window.Links.cs:177",
           "has": [
             "RunPlacementAsync"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/Window.Links.cs:178",
+              "has": [
+                "RunPlacementAsync"
+              ],
+              "calls": "RunPlacementAsync"
+            },
+            {
+              "at": "src/LibTmux/Window.Links.cs:183",
+              "has": [
+                "ExecuteAsync"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
+              "has": [
+                "_launcher.Start("
+              ],
+              "calls": "Start"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
+              "has": [
+                "process.Start()"
+              ]
+            }
           ]
         }
       ]
@@ -1944,6 +6145,28 @@
           "at": "src/LibTmux/Hooks/TmuxHooks.cs:426",
           "has": [
             "DispatchAsync"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/Hooks/TmuxHooks.cs:432",
+              "has": [
+                "ExecuteAsync"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
+              "has": [
+                "_launcher.Start("
+              ],
+              "calls": "Start"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
+              "has": [
+                "process.Start()"
+              ]
+            }
           ]
         }
       ]
@@ -1954,22 +6177,94 @@
       "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
       "evidence": [
         {
-          "at": "src/LibTmux/ControlMode/PaneObservation.cs:379",
-          "has": [
-            "ReadAsync"
-          ]
-        },
-        {
           "at": "src/LibTmux/Hooks/TmuxHooks.cs:437",
           "has": [
             "ReadAsync"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/Hooks/TmuxHooks.cs:449",
+              "has": [
+                "ExecuteAsync"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
+              "has": [
+                "_launcher.Start("
+              ],
+              "calls": "Start"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
+              "has": [
+                "process.Start()"
+              ]
+            }
           ]
         },
         {
           "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:117",
           "has": [
             "ReadAsync"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:128",
+              "has": [
+                "ExecuteAsync"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
+              "has": [
+                "_launcher.Start("
+              ],
+              "calls": "Start"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
+              "has": [
+                "process.Start()"
+              ]
+            }
           ]
+        },
+        {
+          "at": "src/LibTmux/Options/TmuxOptions.cs:305",
+          "has": [
+            "ReadAsync"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/Options/TmuxOptions.cs:311",
+              "has": [
+                "ExecuteAsync"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
+              "has": [
+                "_launcher.Start("
+              ],
+              "calls": "Start"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
+              "has": [
+                "process.Start()"
+              ]
+            }
+          ]
+        }
+      ],
+      "labels": [
+        {
+          "at": 1,
+          "name": "optionName"
         }
       ]
     },
@@ -1982,7 +6277,35 @@
           "at": "src/LibTmux/Pane.Topology.cs:567",
           "has": [
             "CreatePaneFromAsync"
+          ],
+          "reaches": [
+            {
+              "at": "src/LibTmux/Pane.Topology.cs:576",
+              "has": [
+                "ExecuteAsync"
+              ],
+              "calls": "ExecuteAsync"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:101",
+              "has": [
+                "_launcher.Start("
+              ],
+              "calls": "Start"
+            },
+            {
+              "at": "src/LibTmux/Transport/TmuxProcessTransport.cs:556",
+              "has": [
+                "process.Start()"
+              ]
+            }
           ]
+        }
+      ],
+      "labels": [
+        {
+          "at": 1,
+          "name": "subcommand"
         }
       ]
     },
@@ -2075,18 +6398,119 @@
           "at": "src/backend.cpp:353",
           "has": [
             "run"
+          ],
+          "reaches": [
+            {
+              "at": "src/backend.cpp:356",
+              "has": [
+                "run_scoped"
+              ],
+              "calls": "run_scoped"
+            },
+            {
+              "at": "src/backend.cpp:682",
+              "has": [
+                "run_process"
+              ],
+              "calls": "run_process"
+            },
+            {
+              "at": "src/process.cpp:195",
+              "has": [
+                "launch"
+              ],
+              "calls": "launch"
+            },
+            {
+              "at": "src/posix_child.cpp:367",
+              "has": [
+                "::posix_spawnp("
+              ]
+            }
           ]
         },
         {
           "at": "src/backend.hpp:90",
           "has": [
             "run"
+          ],
+          "reaches": [
+            {
+              "at": "src/backend.hpp:91",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "src/backend.cpp:356",
+              "has": [
+                "run_scoped"
+              ],
+              "calls": "run_scoped"
+            },
+            {
+              "at": "src/backend.cpp:682",
+              "has": [
+                "run_process"
+              ],
+              "calls": "run_process"
+            },
+            {
+              "at": "src/process.cpp:195",
+              "has": [
+                "launch"
+              ],
+              "calls": "launch"
+            },
+            {
+              "at": "src/posix_child.cpp:367",
+              "has": [
+                "::posix_spawnp("
+              ]
+            }
           ]
         },
         {
           "at": "src/entities.cpp:60",
           "has": [
             "run"
+          ],
+          "reaches": [
+            {
+              "at": "src/entities.cpp:83",
+              "has": [
+                "run_in_session"
+              ],
+              "calls": "run_in_session"
+            },
+            {
+              "at": "src/backend.cpp:501",
+              "has": [
+                "run_scoped"
+              ],
+              "calls": "run_scoped"
+            },
+            {
+              "at": "src/backend.cpp:682",
+              "has": [
+                "run_process"
+              ],
+              "calls": "run_process"
+            },
+            {
+              "at": "src/process.cpp:195",
+              "has": [
+                "launch"
+              ],
+              "calls": "launch"
+            },
+            {
+              "at": "src/posix_child.cpp:367",
+              "has": [
+                "::posix_spawnp("
+              ]
+            }
           ]
         }
       ]
@@ -2100,6 +6524,49 @@
           "at": "src/acquire.hpp:185",
           "has": [
             "list_entities"
+          ],
+          "reaches": [
+            {
+              "at": "src/acquire.hpp:193",
+              "has": [
+                "take_in_session"
+              ],
+              "calls": "take_in_session"
+            },
+            {
+              "at": "src/snapshot.cpp:68",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "src/backend.cpp:356",
+              "has": [
+                "run_scoped"
+              ],
+              "calls": "run_scoped"
+            },
+            {
+              "at": "src/backend.cpp:682",
+              "has": [
+                "run_process"
+              ],
+              "calls": "run_process"
+            },
+            {
+              "at": "src/process.cpp:195",
+              "has": [
+                "launch"
+              ],
+              "calls": "launch"
+            },
+            {
+              "at": "src/posix_child.cpp:367",
+              "has": [
+                "::posix_spawnp("
+              ]
+            }
           ]
         }
       ]
@@ -2113,6 +6580,42 @@
           "at": "src/server.cpp:1360",
           "has": [
             "show"
+          ],
+          "reaches": [
+            {
+              "at": "src/server.cpp:1365",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "src/backend.cpp:356",
+              "has": [
+                "run_scoped"
+              ],
+              "calls": "run_scoped"
+            },
+            {
+              "at": "src/backend.cpp:682",
+              "has": [
+                "run_process"
+              ],
+              "calls": "run_process"
+            },
+            {
+              "at": "src/process.cpp:195",
+              "has": [
+                "launch"
+              ],
+              "calls": "launch"
+            },
+            {
+              "at": "src/posix_child.cpp:367",
+              "has": [
+                "::posix_spawnp("
+              ]
+            }
           ]
         }
       ]
@@ -2126,6 +6629,42 @@
           "at": "src/wait.cpp:102",
           "has": [
             "run_before_deadline"
+          ],
+          "reaches": [
+            {
+              "at": "src/wait.cpp:111",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "src/backend.cpp:356",
+              "has": [
+                "run_scoped"
+              ],
+              "calls": "run_scoped"
+            },
+            {
+              "at": "src/backend.cpp:682",
+              "has": [
+                "run_process"
+              ],
+              "calls": "run_process"
+            },
+            {
+              "at": "src/process.cpp:195",
+              "has": [
+                "launch"
+              ],
+              "calls": "launch"
+            },
+            {
+              "at": "src/posix_child.cpp:367",
+              "has": [
+                "::posix_spawnp("
+              ]
+            }
           ]
         }
       ]
@@ -2139,6 +6678,49 @@
           "at": "src/acquire.hpp:222",
           "has": [
             "one_entity"
+          ],
+          "reaches": [
+            {
+              "at": "src/acquire.hpp:231",
+              "has": [
+                "take_in_session"
+              ],
+              "calls": "take_in_session"
+            },
+            {
+              "at": "src/snapshot.cpp:68",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "src/backend.cpp:356",
+              "has": [
+                "run_scoped"
+              ],
+              "calls": "run_scoped"
+            },
+            {
+              "at": "src/backend.cpp:682",
+              "has": [
+                "run_process"
+              ],
+              "calls": "run_process"
+            },
+            {
+              "at": "src/process.cpp:195",
+              "has": [
+                "launch"
+              ],
+              "calls": "launch"
+            },
+            {
+              "at": "src/posix_child.cpp:367",
+              "has": [
+                "::posix_spawnp("
+              ]
+            }
           ]
         }
       ]
@@ -2180,6 +6762,49 @@
           "at": "Sources/LibTmux/Mutations.swift:128",
           "has": [
             "expectSuccess"
+          ],
+          "reaches": [
+            {
+              "at": "Sources/LibTmux/Mutations.swift:129",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "Sources/LibTmux/Transport.swift:72",
+              "has": [
+                "Subprocess.run("
+              ]
+            }
+          ]
+        },
+        {
+          "at": "Sources/LibTmux/Mutations.swift:135",
+          "has": [
+            "expectSuccess"
+          ],
+          "reaches": [
+            {
+              "at": "Sources/LibTmux/Mutations.swift:139",
+              "has": [
+                "runGuarded("
+              ],
+              "calls": "runGuarded"
+            },
+            {
+              "at": "Sources/LibTmux/GuardedRequest.swift:34",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "Sources/LibTmux/Transport.swift:72",
+              "has": [
+                "Subprocess.run("
+              ]
+            }
           ]
         }
       ]
@@ -2193,18 +6818,63 @@
           "at": "Sources/LibTmux/CommandList.swift:65",
           "has": [
             "run"
+          ],
+          "reaches": [
+            {
+              "at": "Sources/LibTmux/CommandList.swift:69",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "Sources/LibTmux/Transport.swift:72",
+              "has": [
+                "Subprocess.run("
+              ]
+            }
           ]
         },
         {
-          "at": "Sources/LibTmux/OutputWaitSession.swift:14",
+          "at": "Sources/LibTmux/Server.swift:131",
           "has": [
             "run"
+          ],
+          "reaches": [
+            {
+              "at": "Sources/LibTmux/Server.swift:132",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "Sources/LibTmux/Transport.swift:72",
+              "has": [
+                "Subprocess.run("
+              ]
+            }
           ]
         },
         {
-          "at": "Sources/LibTmux/PaneInteraction.swift:50",
+          "at": "Sources/LibTmux/Server.swift:135",
           "has": [
             "run"
+          ],
+          "reaches": [
+            {
+              "at": "Sources/LibTmux/Server.swift:137",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "Sources/LibTmux/Transport.swift:72",
+              "has": [
+                "Subprocess.run("
+              ]
+            }
           ]
         }
       ]
@@ -2218,6 +6888,21 @@
           "at": "Sources/LibTmux/Options.swift:289",
           "has": [
             "runOptionCommand"
+          ],
+          "reaches": [
+            {
+              "at": "Sources/LibTmux/Options.swift:294",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "Sources/LibTmux/Transport.swift:72",
+              "has": [
+                "Subprocess.run("
+              ]
+            }
           ]
         }
       ]
@@ -2231,12 +6916,21 @@
           "at": "Sources/LibTmux/Server.swift:367",
           "has": [
             "list"
-          ]
-        },
-        {
-          "at": "Sources/TmuxWorkspaceCLI/ReadCommands.swift:4",
-          "has": [
-            "list"
+          ],
+          "reaches": [
+            {
+              "at": "Sources/LibTmux/Server.swift:372",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "Sources/LibTmux/Transport.swift:72",
+              "has": [
+                "Subprocess.run("
+              ]
+            }
           ]
         }
       ]
@@ -2250,6 +6944,21 @@
           "at": "Sources/LibTmux/Server.swift:167",
           "has": [
             "runInOwnProcess"
+          ],
+          "reaches": [
+            {
+              "at": "Sources/LibTmux/Server.swift:168",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "Sources/LibTmux/Transport.swift:72",
+              "has": [
+                "Subprocess.run("
+              ]
+            }
           ]
         }
       ]
@@ -2263,6 +6972,21 @@
           "at": "Sources/LibTmux/GuardedRequest.swift:19",
           "has": [
             "runGuarded"
+          ],
+          "reaches": [
+            {
+              "at": "Sources/LibTmux/GuardedRequest.swift:34",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "Sources/LibTmux/Transport.swift:72",
+              "has": [
+                "Subprocess.run("
+              ]
+            }
           ]
         }
       ]
@@ -2276,6 +7000,42 @@
           "at": "Sources/LibTmux/ControlSession.swift:168",
           "has": [
             "send"
+          ],
+          "reaches": [
+            {
+              "at": "Sources/LibTmux/ControlSession.swift:170",
+              "has": [
+                "send("
+              ],
+              "calls": "send"
+            },
+            {
+              "at": "Sources/LibTmux/ControlSession.swift:181",
+              "has": [
+                "enqueue("
+              ],
+              "calls": "enqueue"
+            },
+            {
+              "at": "Sources/LibTmux/ControlSession.swift:234",
+              "has": [
+                "write("
+              ],
+              "leads": "write"
+            },
+            {
+              "at": "Sources/LibTmux/NonblockingLineWriter.swift:42",
+              "has": [
+                "systemWrite("
+              ],
+              "calls": "systemWrite"
+            },
+            {
+              "at": "Sources/LibTmux/NonblockingLineWriter.swift:79",
+              "has": [
+                "Glibc.write("
+              ]
+            }
           ]
         }
       ]
@@ -2289,6 +7049,21 @@
           "at": "Sources/LibTmux/Server.swift:226",
           "has": [
             "runTerminatingIsolated"
+          ],
+          "reaches": [
+            {
+              "at": "Sources/LibTmux/Server.swift:237",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "Sources/LibTmux/Transport.swift:72",
+              "has": [
+                "Subprocess.run("
+              ]
+            }
           ]
         }
       ]
@@ -2302,6 +7077,21 @@
           "at": "Sources/LibTmux/Server.swift:171",
           "has": [
             "runIsolated"
+          ],
+          "reaches": [
+            {
+              "at": "Sources/LibTmux/Server.swift:175",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "Sources/LibTmux/Transport.swift:72",
+              "has": [
+                "Subprocess.run("
+              ]
+            }
           ]
         }
       ]
@@ -2315,6 +7105,28 @@
           "at": "Sources/LibTmux/Creation.swift:342",
           "has": [
             "windowAppearance"
+          ],
+          "reaches": [
+            {
+              "at": "Sources/LibTmux/Creation.swift:346",
+              "has": [
+                "runGuarded"
+              ],
+              "calls": "runGuarded"
+            },
+            {
+              "at": "Sources/LibTmux/GuardedRequest.swift:34",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "Sources/LibTmux/Transport.swift:72",
+              "has": [
+                "Subprocess.run("
+              ]
+            }
           ]
         }
       ]
@@ -2328,12 +7140,21 @@
           "at": "Sources/LibTmux/Creation.swift:322",
           "has": [
             "identifier"
-          ]
-        },
-        {
-          "at": "Sources/LibTmux/Formats.swift:215",
-          "has": [
-            "identifier"
+          ],
+          "reaches": [
+            {
+              "at": "Sources/LibTmux/Creation.swift:330",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "Sources/LibTmux/Transport.swift:72",
+              "has": [
+                "Subprocess.run("
+              ]
+            }
           ]
         }
       ]
@@ -2347,59 +7168,21 @@
           "at": "Sources/LibTmux/FilteredListings.swift:116",
           "has": [
             "filtered"
-          ]
-        }
-      ]
-    },
-    {
-      "port": "cxx",
-      "name": "execute",
-      "why": "Renders the control request it is given and writes it to the control client, one command to a line.",
-      "evidence": [
-        {
-          "at": "src/connection.cpp:1114",
-          "has": [
-            "Connection::execute"
-          ]
-        },
-        {
-          "at": "src/connection.cpp:1117",
-          "has": [
-            "render_request(std::move(request))"
-          ]
-        },
-        {
-          "at": "src/connection.cpp:1161",
-          "has": [
-            "write_bytes(*rendered"
-          ]
-        }
-      ]
-    },
-    {
-      "port": "go",
-      "name": "appendPopupVersion33Arguments",
-      "kind": "builder",
-      "why": "Appends the flags a newer tmux accepts to the display-popup argument list it is given and returns the list.",
-      "evidence": [
-        {
-          "at": "tmux/pane_popup.go:326",
-          "has": [
-            "func appendPopupVersion33Arguments("
-          ]
-        }
-      ]
-    },
-    {
-      "port": "go",
-      "name": "appendPopupVersion36Arguments",
-      "kind": "builder",
-      "why": "Appends the flags a newer tmux accepts to the display-popup argument list it is given and returns the list.",
-      "evidence": [
-        {
-          "at": "tmux/pane_popup.go:376",
-          "has": [
-            "func appendPopupVersion36Arguments("
+          ],
+          "reaches": [
+            {
+              "at": "Sources/LibTmux/FilteredListings.swift:125",
+              "has": [
+                "run"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "Sources/LibTmux/Transport.swift:72",
+              "has": [
+                "Subprocess.run("
+              ]
+            }
           ]
         }
       ]

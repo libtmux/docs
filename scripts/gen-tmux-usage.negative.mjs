@@ -20,6 +20,14 @@
  * admits, and a literal cited where only its builder was.
  * Each is refused by the audit that reads the cited line, and the entry beside it that
  * does send is accepted.
+ *
+ * It then seeds the reviewed rules (`--rules`): a dispatcher whose cited chain stops short of
+ * a transport, names a line that does not hold its text, skips a function, or has no chain at
+ * all; a label that names a parameter nothing takes, or is dropped, so that a literal the call
+ * only reports a failure under is read as the command; a guard that builds no if-shell, a
+ * conditional guard or claim that does not say when, a condition that qualifies no entry, and a
+ * guard dropped, so that the if-shell it wrapped is recorded in place of the command.
+ * Each is refused, and the committed rules beside them are accepted.
  */
 import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
@@ -44,6 +52,17 @@ function run(dir) {
 function runSource(dir, ports) {
   try {
     return { code: 0, out: execFileSync('node', [script, '--check', '--source', '--ports', ports, '--data', dir], { encoding: 'utf8', stdio: 'pipe' }) }
+  } catch (error) {
+    return { code: error.status, out: `${error.stdout ?? ''}${error.stderr ?? ''}` }
+  }
+}
+
+const rules = join(here, 'tmux-usage')
+
+/** The same check, for the ports named, reading another copy of the reviewed rules. */
+function runRules(dir, ruleDir, ports) {
+  try {
+    return { code: 0, out: execFileSync('node', [script, '--check', '--source', '--ports', ports, '--data', dir, '--rules', ruleDir], { encoding: 'utf8', stdio: 'pipe' }) }
   } catch (error) {
     return { code: error.status, out: `${error.stdout ?? ''}${error.stderr ?? ''}` }
   }
@@ -161,6 +180,7 @@ if (existsSync(join(process.env.LIBTMUX_DOCS_CHECKOUT_FSHARP ?? join(homedir(), 
 const CHECKOUTS = {
   py: '~/work/python/libtmux', java: '~/work/libtmux/libtmux-java', ts: '~/work/libtmux/libtmux-ts', swift: '~/work/libtmux/libtmux-swift',
   ruby: '~/work/libtmux/libtmux-ruby', rs: '~/work/libtmux/libtmux-rs', julia: '~/work/libtmux/libtmux-julia', go: '~/work/libtmux/libtmux-go',
+  fsharp: '~/work/libtmux/libtmux-dotnet',
 }
 const checkoutOf = (port) => (process.env[`LIBTMUX_DOCS_CHECKOUT_${port.toUpperCase()}`] ?? CHECKOUTS[port]).replace(/^~/, homedir())
 const SENDS_NOTHING = [
@@ -187,6 +207,69 @@ for (const [name, port, symbol, command, lines, message] of SENDS_NOTHING) {
   const seededRun = runSource(seeded, port)
   check(`an entry cited at ${name} fails`, seededRun.code !== 0 && message.test(seededRun.out), seededRun.out)
 }
+
+// The reviewed rules are held to the pinned source as the usage data is. Each case changes one rule in a copy of them and expects the
+// check of that port to name it, and the committed rules in the copy's place to pass.
+function ruleFixture() {
+  const dir = mkdtempSync(join(tmpdir(), 'gen-tmux-rules-'))
+  cpSync(rules, dir, { recursive: true })
+  dirs.push(dir)
+  return dir
+}
+function editRules(dir, name, change) {
+  const file = join(dir, name)
+  const document = JSON.parse(readFileSync(file, 'utf8'))
+  change(document)
+  writeFileSync(file, `${JSON.stringify(document, null, 2)}\n`)
+}
+const dispatcher = (document, port, name) => document.dispatchers.find((rule) => rule.port === port && rule.name === name)
+const BAD_RULES = [
+  ['a dispatcher whose chain was removed', 'rs', 'dispatchers.json', (document) => { delete dispatcher(document, 'rs', 'chain').evidence[0].reaches },
+    /rs: dispatcher chain at crates\/libtmux\/src\/server.rs:753: reaches no transport, and cites no chain to one/],
+  ['a dispatcher that shares its name with a function that sends nothing', 'rs', 'dispatchers.json', (document) => { dispatcher(document, 'rs', 'list').evidence.push({ at: 'crates/libtmux/src/plan/wire.rs:149', has: ['list'] }) },
+    /rs: dispatcher list at crates\/libtmux\/src\/plan\/wire.rs:149: reaches no transport, and cites no chain to one/],
+  ['a chain hop whose line does not hold its text', 'rs', 'dispatchers.json', (document) => { dispatcher(document, 'rs', 'send').evidence[0].reaches[0].has = ['.sendx('] },
+    /rs: dispatcher send at crates\/libtmux\/src\/control.rs:585: hop crates\/libtmux\/src\/control.rs:586 does not contain "\.sendx\("/],
+  ['a chain that skips the function between two hops', 'rs', 'dispatchers.json', (document) => { dispatcher(document, 'rs', 'dispatch').evidence[0].reaches.splice(1, 1) },
+    /rs: dispatcher dispatch at crates\/libtmux\/src\/plan\/run.rs:443: hop crates\/libtmux\/src\/plan\/run.rs:461 leads to cmd, but crates\/libtmux\/src\/internal\/control_executor.rs:37 is not a line of it/],
+  ['a label that names a parameter nothing takes', 'rs', 'dispatchers.json', (document) => { dispatcher(document, 'rs', 'mutate').labels[0].name = 'nope' },
+    /rs: dispatcher mutate: no cited definition takes a parameter named nope/],
+  ['a label dropped, so a literal that only reports a failure is read as the command', 'rs', 'dispatchers.json', (document) => { delete dispatcher(document, 'rs', 'mutate').labels },
+    /rs: pane.Pane.send_line send-keys: .* is not a call of Pane.send_line/],
+  ['a claim marked conditional that does not say when', 'rs', 'claims.json', (document) => {
+    const claim = document.claims.find((candidate) => candidate.port === 'rs' && candidate.when)
+    delete claim.when
+    claim.conditional = true
+  }, /rs: plan.Plan.run set-option null: is marked conditional, so it must say when/],
+  ['a condition that qualifies no entry', 'fsharp', 'conditions.json', (document) => { document.conditions.find((item) => item.port === 'fsharp').command = 'no-such-command' },
+    /fsharp: LibTmux.FSharp.Server.newSession no-such-command session: condition qualifies no entry/],
+  ['a conditional guard that does not say when', 'go', 'guards.json', (document) => { delete document.guards.find((guard) => guard.port === 'go' && guard.name === 'guardCommand').when },
+    /go: guard guardCommand: is conditional, so it must say when/],
+  ['a guard whose function builds no if-shell', 'java', 'guards.json', (document) => {
+    document.guards.push({ port: 'java', name: 'run', owner: 'Server', purpose: 'refuses a stale target', evidence: [{ at: 'libtmux/src/main/java/io/github/libtmux/Server.java:1221', has: ['run'] }] })
+  }, /java: guard Server.run: no function of that name builds an if-shell/],
+  ['a guard dropped, so the if-shell it wraps is recorded in place of the command', 'java', 'guards.json', (document) => { document.guards = document.guards.filter((guard) => !(guard.port === 'java' && guard.name === 'killOwnedServer')) },
+    /java: io.github.libtmux.junit5.NamedServerFixture.NamedServerFixture.close kill-server: .* is not a call that sends kill-server/],
+]
+const ruled = new Set()
+for (const [name, port, file, change, message] of BAD_RULES) {
+  if (!existsSync(join(checkoutOf(port), '.git'))) { console.log(`skip ${name}: no checkout of ${port}`); continue }
+  if (!ruled.has(port)) {
+    ruled.add(port)
+    const control = runRules(fixture(), ruleFixture(), port)
+    check(`the committed ${port} rules, read from a copy, pass`, control.code === 0, control.out)
+  }
+  const seeded = ruleFixture()
+  editRules(seeded, file, change)
+  const seededRun = runRules(fixture(), seeded, port)
+  check(`${name} fails`, seededRun.code !== 0 && message.test(seededRun.out), seededRun.out)
+}
+
+// A qualifier is a short phrase beside a method, so the data that carries one longer than that fails without a checkout.
+const wordy = fixture()
+edit(wordy, 'ts', (document) => { Object.values(document.symbols).flat().find((use) => use.when).when = 'one two three four five six seven eight nine' })
+const wordyRun = run(wordy)
+check('a qualifier of more than eight words fails', wordyRun.code !== 0 && /ts: .* says when in 9 words, and a qualifier is at most 8/.test(wordyRun.out), wordyRun.out)
 
 for (const dir of dirs) rmSync(dir, { recursive: true, force: true })
 if (failures) process.exit(1)

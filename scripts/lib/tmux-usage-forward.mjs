@@ -22,11 +22,14 @@ import { bareName, definitionsOf } from './tmux-usage-derive.mjs'
  *   symbols: WrapperSymbol[],
  *   core: { entries: CoreEntry[], symbols: Map<string, { name: string, parentName?: string }>, revision: string },
  *   generated?: { under: string[], evidence: string[], forwards: (entry: CoreEntry, symbol?: { name: string, file: string, line: number }) => string | undefined },
+ *   delegate?: boolean,
  * }} input
- *   `core.revision` is the revision the core lines were read at, and every entry says so in its `via`.
+ *   `core.revision` is the revision the core lines were read at, and every entry says so in its `via`. With `delegate`, the
+ *   wrapper and the core are one library: a method is credited with what a public method of another type sends, when it
+ *   calls it on a handle named for that type (`p.server.SaveBuffer(...)`), and not for the calls it makes on its own type.
  * @returns {{ entries: object[], silent: string[] }} `silent` names the wrapper symbols that call no core sender.
  */
-export function forwardUsage({ parent, functions, types, symbols, core, generated }) {
+export function forwardUsage({ parent, functions, types, symbols, core, generated, delegate = false }) {
   const definitions = definitionsOf(functions, symbols)
   const owned = new Map()
   for (const [fn, list] of definitions) for (const symbol of list) owned.set(symbol, [...(owned.get(symbol) ?? []), fn])
@@ -40,7 +43,7 @@ export function forwardUsage({ parent, functions, types, symbols, core, generate
   const add = (symbol, entry, evidence) => {
     const key = `${symbol.id}\0${entry.command}\0${entry.scope}`
     const result = {
-      symbol: symbol.id, command: entry.command, scope: entry.scope, evidence, hops: 1,
+      symbol: symbol.id, command: entry.command, scope: entry.scope, evidence, hops: 1, ...(entry.when ? { when: entry.when } : {}),
       via: { port: parent, symbol: entry.symbol, revision: core.revision, evidence: entry.evidence, ...(entry.reviewed ? { reviewed: true } : {}) },
     }
     if (!entries.has(key)) entries.set(key, result)
@@ -74,7 +77,10 @@ export function forwardUsage({ parent, functions, types, symbols, core, generate
           // A call on a handle named for a type is a call on that type: `session.GetPanesAsync()` is Session's, whatever
           // type the wrapper method belongs to. Only a call with no named handle, or on the wrapper's own `this`, is its owner's.
           const own = [...receivers].every((receiver) => ['this', 'self', 'base'].includes(receiver))
-          if (!(receivers.has(coreOwner) || (own && wrapperOwner === coreOwner))) continue
+          if (delegate) {
+            // Only a call on the way to the end of the method, not one under a condition, in a loop or in a cleanup that runs on failure.
+            if (!receivers.has(coreOwner) || wrapperOwner === coreOwner || entry.symbol === symbol.id || fn.callDepths?.get(name) !== 0) continue
+          } else if (!(receivers.has(coreOwner) || (own && wrapperOwner === coreOwner))) continue
           add(symbol, entry, [`${fn.file}:${line}`])
         }
       }

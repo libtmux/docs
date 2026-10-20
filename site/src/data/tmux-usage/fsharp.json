@@ -301,7 +301,9 @@
         "scope": null,
         "via": {
           "evidence": [
-            "src/LibTmux/Pane.Topology.cs:231"
+            "src/LibTmux/Pane.Topology.cs:231",
+            "src/LibTmux/Pane.Topology.cs:229",
+            "src/LibTmux/Pane.Topology.cs:105"
           ],
           "port": "csharp",
           "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
@@ -323,7 +325,8 @@
           "port": "csharp",
           "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
           "symbol": "LibTmux.Session.GetPanesAsync"
-        }
+        },
+        "when": "the spec names a first window"
       },
       {
         "command": "list-panes",
@@ -339,7 +342,8 @@
           "port": "csharp",
           "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
           "symbol": "LibTmux.Window.GetPanesAsync"
-        }
+        },
+        "when": "the spec has more than one window"
       },
       {
         "command": "new-session",
@@ -374,7 +378,8 @@
           "reviewed": true,
           "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
           "symbol": "LibTmux.Session.CreateWindowAsync"
-        }
+        },
+        "when": "the spec has more than one window"
       }
     ],
     "LibTmux.FSharp.Server.tryFindClient": [

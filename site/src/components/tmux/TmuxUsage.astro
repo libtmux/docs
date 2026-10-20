@@ -45,10 +45,13 @@ const headingOf = (group: (typeof usage.groups)[number]) => group.scope ? group.
         <th scope="row">{row.name}</th>
         {row.cells.map((links, index) => <td data-label={usage.groups[index].scope ? `${headingOf(usage.groups[index])}${flagOf(usage.groups[index].scope!) ? ` ${flagOf(usage.groups[index].scope!)}` : ''}` : ''}
           class:list={[!links.length && 'tmux-usage__empty']}>
-          <span class="tmux-usage__links">{links.map((link) => <a href={link.href} title={link.via ? `Calls ${link.via.symbol}: ${link.via.evidence[0]}` : `${link.reviewed ? 'Reviewed: ' : ''}${link.evidence[0]}`}>
-            <ApiBadge label={link.kind} variant="kind" value={link.kind} compact preview={false} />
-            <code><SymbolName name={link.label} /></code>
-          </a>)}</span>
+          <span class="tmux-usage__links">{links.map((link) => <span class="tmux-usage__item">
+            <a href={link.href} title={link.via ? `Calls ${link.via.symbol}: ${link.via.evidence[0]}` : `${link.reviewed ? 'Reviewed: ' : ''}${link.evidence[0]}`}>
+              <ApiBadge label={link.kind} variant="kind" value={link.kind} compact preview={false} />
+              <code><SymbolName name={link.label} /></code>
+            </a>
+            {link.when && <span class="tmux-usage__when" data-when={link.when}>{link.when}</span>}
+          </span>)}</span>
         </td>)}
       </tr>)}
     </tbody>
@@ -70,6 +73,9 @@ const headingOf = (group: (typeof usage.groups)[number]) => group.scope ? group.
   /* Chips stack flush at the start of the cell, one to a line, with an even gap. */
   .tmux-usage__links { display: flex; flex-direction: column; align-items: flex-start; gap: 0.35rem; }
   .tmux-usage__links a, .tmux-usage__links code { white-space: nowrap; overflow-wrap: normal; }
+  /* A send that only some calls make says when, beside the method on its line, quieter than the name. */
+  .tmux-usage__item { display: inline-flex; align-items: baseline; gap: 0.5rem; white-space: nowrap; }
+  .tmux-usage__when { opacity: 0.65; font-size: 0.75rem; }
   /* The scope columns no longer fit beside each other: give each language its own block. */
   @container tmux-usage (max-width: 50rem) {
     .tmux-usage thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }

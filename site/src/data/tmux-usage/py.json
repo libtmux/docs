@@ -863,7 +863,8 @@
           "src/libtmux/server.py:2311"
         ],
         "reviewed": true,
-        "scope": null
+        "scope": null,
+        "when": "kill_session is true, session exists"
       },
       {
         "command": "new-session",

@@ -492,6 +492,66 @@ describe('the rendered lists', () => {
     }
   })
 
+  it('says beside a method when it sends the command only on some calls', async () => {
+    // TypeScript's selectWindow sends previous-window only for the target "previous"; the row says so and links the method.
+    const document = await render({ usage: tmuxResolvedUsage('latest', 'previous-window') })
+    const row = document.querySelector('tbody tr[data-port="ts"]')!
+    const item = row.querySelector('.tmux-usage__item')!
+    expect(item.querySelector('a')!.textContent!.replace(/\s+/g, '')).toContain('Session.selectWindow')
+    expect(item.querySelector('.tmux-usage__when')!.textContent).toBe('the target is "previous"')
+    // The control: a method that sends the command on every call has no qualifier.
+    const everyCall = await render({ usage: tmuxResolvedUsage('latest', 'select-window') })
+    const plain = [...everyCall.querySelectorAll('tbody tr[data-port="ts"] .tmux-usage__item')].find((entry) => entry.querySelector('a')!.textContent!.replace(/\s+/g, '').trim().endsWith('Window.select'))
+    expect(plain?.querySelector('.tmux-usage__when') ?? null).toBeNull()
+  })
+
+  it('cannot render a conditional entry without its qualifier, on a command page or a method page', async () => {
+    const source = readFileSync(new URL('../src/components/api/ApiEntry.astro', import.meta.url), 'utf8')
+    const start = source.indexOf('{commandRows.length > 0 && <p')
+    const end = source.indexOf('</p>}', start) + '</p>}'.length
+    const stub = `---\nconst { commandRows } = Astro.props\n---\n${source.slice(start, end)}`
+    const entry = await loadAstroTemplate('components/api/ApiEntry.astro', { stubs: { 'components/api/ApiEntry.astro': stub } })
+    const conditional = Object.entries(TMUX_USAGE).flatMap(([port, document]) => Object.entries(document.symbols)
+      .flatMap(([symbol, uses]) => uses.filter((use) => use.when).map((use) => ({ port, symbol, use }))))
+    expect(conditional.length).toBeGreaterThan(50)
+    // Every conditional entry carries its qualifier to the command page's link and to the method page's row.
+    const byCommand = Map.groupBy(conditional, ({ use }) => use.command)
+    for (const [command, entries] of byCommand) {
+      const usage = tmuxUsage(command)
+      const links = usage?.groups.flatMap((group) => group.ports).flatMap((cell) => cell.links) ?? []
+      const html = usage ? await render({ usage: tmuxResolvedUsage('latest', command) }) : undefined
+      for (const { port, symbol, use } of entries) {
+        const link = links.find((candidate) => candidate.port === port && candidate.symbolId === symbol && candidate.scope === use.scope)
+        // A use that is not listed on the command page is a row of its method's page only.
+        if (link) {
+          expect(link.when, `${port} ${symbol} ${command}`).toBe(use.when)
+          const rendered = [...html!.querySelectorAll(`tbody tr[data-port="${port}"] .tmux-usage__item`)].filter((item) => item.querySelector('.tmux-usage__when')?.textContent === use.when)
+          expect(rendered.length, `${port} ${symbol} ${command} renders ${use.when}`).toBeGreaterThan(0)
+        }
+        const row = tmuxCommandRows(tmuxSymbolSends(port, symbol), []).find((candidate) => candidate.command === command)
+        expect(row?.when, `${port} ${symbol} ${command} row`).toBeTruthy()
+        const page = renderAstroTemplate(entry, { props: { commandRows: [row] } }).then((text) => dom(withoutScope(text)))
+        expect((await page).querySelector('.tmux-when')?.textContent, `${port} ${symbol} ${command} page`).toBeTruthy()
+      }
+    }
+    // The control: a row whose use carries no qualifier renders none.
+    const plain = tmuxCommandRows(tmuxSymbolSends('swift', 'Server.panes()'), [])
+    expect(plain.every((row) => row.when === undefined)).toBe(true)
+    expect((await renderAstroTemplate(entry, { props: { commandRows: plain } }).then((text) => dom(withoutScope(text)))).querySelector('.tmux-when')).toBeNull()
+  }, 120_000)
+
+  it('names the condition in a method page and in its markdown, in a few words', async () => {
+    const sends = tmuxSymbolSends('ts', 'session.Session.selectWindow')
+    const previous = sends.find((send) => send.command === 'previous-window')!
+    expect(previous.scopes[0].when).toBe('the target is "previous"')
+    const rows = tmuxCommandRows(sends, [])
+    expect(rows.find((row) => row.command === 'previous-window')!.when).toBe('the target is "previous"')
+    expect(rows.find((row) => row.command === 'select-window')!.when).toBeUndefined()
+    for (const document of Object.values(TMUX_USAGE)) {
+      for (const uses of Object.values(document.symbols)) for (const use of uses) if (use.when) expect(use.when.trim().split(/\s+/).length).toBeLessThanOrEqual(8)
+    }
+  })
+
   it('renders only the scope asked for on a scope page', async () => {
     const document = await render({ usage: tmuxResolvedUsage('latest', 'list-panes', 'window') })
     expect([...document.querySelectorAll('thead th')].map((th) => th.textContent!.replace(/\s+/g, ' ').trim()))

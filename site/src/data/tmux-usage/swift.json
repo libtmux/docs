@@ -123,7 +123,8 @@
           "Sources/LibTmux/Navigation.swift:144"
         ],
         "reviewed": true,
-        "scope": null
+        "scope": null,
+        "when": "a name is given"
       },
       {
         "command": "if-shell",
@@ -132,7 +133,8 @@
           "Sources/LibTmux/Navigation.swift:144"
         ],
         "reviewed": true,
-        "scope": null
+        "scope": null,
+        "when": "no name is given"
       }
     ],
     "Server.buffer(named:)": [
@@ -369,7 +371,8 @@
           "Sources/LibTmux/WindowTransfers.swift:27"
         ],
         "reviewed": true,
-        "scope": null
+        "scope": null,
+        "when": "the window is linked, not moved"
       }
     ],
     "Server.loadBuffer(from:named:)": [
@@ -391,7 +394,8 @@
           "Sources/LibTmux/WindowTransfers.swift:10"
         ],
         "reviewed": true,
-        "scope": null
+        "scope": null,
+        "when": "the window is moved, not linked"
       }
     ],
     "Server.newSession(named:startDirectory:windowName:width:height:)": [
@@ -407,7 +411,8 @@
         "evidence": [
           "Sources/LibTmux/Creation.swift:154"
         ],
-        "scope": null
+        "scope": null,
+        "when": "a width or height is requested"
       }
     ],
     "Server.newWindow(_:_:named:startDirectory:)": [
