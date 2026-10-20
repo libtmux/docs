@@ -10,6 +10,7 @@ import { PORTS } from './ports'
 import { withPortRoot } from './site-root'
 import { buildsTmuxDocumentation, TMUX_VERSIONS, tmuxApiLinks, tmuxManualUrl } from './tmux-manual-data'
 import { tmuxCatalogLinksForSource } from './tmux-catalog'
+import { tmuxScopes, tmuxUsage, tmuxUsageCommands, tmuxUsageOf, type CommandUsage, type SymbolUsage, type TmuxScope, type UsageGroup } from './tmux-library-usage'
 
 export interface TmuxSourceModel extends SourceApiModel {
   commands: { name: string; entry: string; callback: string }[]
@@ -173,18 +174,105 @@ export function tmuxReferenceTree(version = 'latest') {
   const model = tmuxSourceModel(version)
   return referenceTreeFor('tmux', model, navigation(model).tree)
 }
-export function tmuxSourceCommands(version: string, symbol: ApiSymbol) {
-  return tmuxSourceModel(version).commands
+const scopeFunctions = new Map<string, ApiSymbol | undefined>()
+
+/** The C function that lists a command at one scope in a release, when that release has it. */
+export function tmuxScopeFunction(version: string, command: string, scope: TmuxScope): ApiSymbol | undefined {
+  const model = tmuxSourceModel(version)
+  const key = `${model.version}\0${command}\0${scope.id}`
+  if (!scopeFunctions.has(key)) {
+    const exec = model.symbols.find((entry) => entry.id === model.commands.find((candidate) => candidate.name === command)?.callback)
+    scopeFunctions.set(key, exec && model.symbols.find((entry) => entry.name === scope.function && entry.source.file === exec.source.file && entry.id.startsWith('c:function:')))
+  }
+  return scopeFunctions.get(key)
+}
+
+/**
+ * The commands a C declaration belongs to, and for a scope's function, that scope.
+ * A command's entry and callback answer for every scope.
+ */
+export function tmuxSourceUsage(version: string, symbol: ApiSymbol): { command: string; scope?: string }[] {
+  const direct = tmuxSourceModel(version).commands
     .filter((command) => command.entry === symbol.id || command.callback === symbol.id)
-    .map((command) => ({ name: command.name, href: tmuxManualUrl(version, command.name) }))
+    .map((command) => ({ command: command.name }))
+  const scoped = tmuxUsageCommands().flatMap((command) => tmuxScopes(command)
+    .filter((scope) => tmuxScopeFunction(version, command, scope)?.id === symbol.id)
+    .map((scope) => ({ command, scope: scope.id })))
+  return [...direct, ...scoped]
+}
+
+export function tmuxSourceCommands(version: string, symbol: ApiSymbol) {
+  return tmuxSourceUsage(version, symbol)
+    .map(({ command }) => ({ name: command, href: tmuxManualUrl(version, command) }))
+    .filter((entry, index, all) => all.findIndex((other) => other.name === entry.name) === index)
+}
+
+export interface ResolvedUsageGroup extends UsageGroup {
+  /** The C function behind the scope, in the release the page describes. */
+  function?: { name: string; href: string }
+}
+export interface ResolvedUsage extends Omit<CommandUsage, 'groups'> {
+  manualHref: string
+  groups: ResolvedUsageGroup[]
+}
+
+/** A command's usage with each scope's C function linked in one release. */
+export function tmuxResolvedUsage(version: string, command: string, scope?: string): ResolvedUsage | undefined {
+  const usage = tmuxUsage(command, { scope })
+  if (!usage) return undefined
+  return {
+    ...usage,
+    manualHref: tmuxManualUrl(version, command),
+    groups: usage.groups.map((group) => {
+      const target = group.scope && tmuxScopeFunction(version, command, group.scope)
+      return { ...group, ...(target ? { function: { name: target.name, href: tmuxReferenceUrl(version, target) } } : {}) }
+    }),
+  }
 }
 export function tmuxCommandSources(version: string, name: string) {
   const model = tmuxSourceModel(version)
   const command = model.commands.find((entry) => entry.name === name)
-  return command ? [command.entry, command.callback].flatMap((id) => {
-    const symbol = model.symbols.find((entry) => entry.id === id)
-    return symbol ? [{ name: symbol.name, href: tmuxReferenceUrl(version, symbol) }] : []
-  }) : []
+  const scoped = tmuxScopes(name).flatMap((scope) => tmuxScopeFunction(version, name, scope) ?? [])
+  return command ? [...[command.entry, command.callback].flatMap((id) => model.symbols.find((entry) => entry.id === id) ?? []), ...scoped]
+    .map((symbol) => ({ name: symbol.name, href: tmuxReferenceUrl(version, symbol) })) : []
+}
+
+export interface SymbolSend extends Omit<SymbolUsage, 'scopes'> {
+  manualHref: string
+  scopes: (SymbolUsage['scopes'][number] & { function?: { name: string; href: string } })[]
+}
+
+export interface CommandRow {
+  command: string
+  href: string
+  scopes: SymbolSend['scopes']
+}
+
+/**
+ * The commands a symbol page names, in the order a reader should weigh them:
+ * what the symbol itself sends, then the commands it has an equivalent for,
+ * then what it sends through a helper, which is rarely why anyone is here.
+ */
+export function tmuxCommandRows(sends: SymbolSend[], equivalents: { name: string; href: string }[]): CommandRow[] {
+  const rows = (list: SymbolSend[]) => list.map((send): CommandRow => ({ command: send.command, href: send.manualHref, scopes: send.scopes.filter((use) => use.scope) }))
+  const direct = (send: SymbolSend) => send.scopes.some((use) => use.reviewed || use.hops === 0)
+  return [
+    ...rows(sends.filter(direct)),
+    ...equivalents.map((entry): CommandRow => ({ command: entry.name, href: entry.href, scopes: [] })),
+    ...rows(sends.filter((send) => !direct(send))),
+  ]
+}
+
+/** The commands a library symbol sends, with each scope's manual and C function. */
+export function tmuxSymbolSends(port: string, publicId: string, version = 'latest'): SymbolSend[] {
+  return tmuxUsageOf(port, publicId).map((entry) => ({
+    ...entry,
+    manualHref: tmuxManualUrl(version, entry.command),
+    scopes: entry.scopes.map((use) => {
+      const target = use.scope && tmuxScopeFunction(version, entry.command, use.scope)
+      return { ...use, ...(target ? { function: { name: target.name, href: tmuxReferenceUrl(version, target) } } : {}) }
+    }),
+  }))
 }
 export function tmuxReferenceRoutes() {
   return buildsTmuxDocumentation() ? TMUX_VERSIONS.flatMap((version) => [
@@ -214,7 +302,16 @@ export function tmuxReferenceContext(version: string, symbol?: ApiSymbol) {
   const model = tmuxSourceModel(version)
   const referenceNavigation = navigation(model)
   const commands = symbol ? tmuxSourceCommands(version, symbol) : []
-  const equivalents = commands.flatMap((command) => tmuxApiLinks(command.name))
+  const sources = symbol ? tmuxSourceUsage(version, symbol) : []
+  const usage = sources.flatMap(({ command, scope }) => tmuxResolvedUsage(version, command, scope) ?? [])
+  const sent = new Map<string, string>()
+  for (const entry of usage.flatMap((resolved) => resolved.groups.flatMap((group) => group.ports))) {
+    if (!sent.has(entry.port)) sent.set(entry.port, entry.links[0].href)
+  }
+  // The command's own pages offer a language that sends nothing the page of its
+  // equivalent API; a scope's page has no equivalent for a language without that scope.
+  const scopeOnly = sources.length > 0 && sources.every((entry) => entry.scope)
+  const equivalents = scopeOnly ? [] : commands.flatMap((command) => tmuxApiLinks(command.name))
   return {
     model, version, label: 'tmux C', title: 'tmux C source reference',
     description: `C declarations from tmux ${model.version}. These are tmux internals, not a supported external library API.`,
@@ -228,10 +325,11 @@ export function tmuxReferenceContext(version: string, symbol?: ApiSymbol) {
     ],
     ...referenceNavigation, index: tmuxReferenceIndex(version), paths: tmuxReferencePaths(version),
     manualLinks: commands,
+    usage,
     catalogLinks: symbol ? tmuxCatalogLinksForSource(version, symbol.name) : [],
     pagePorts: PORTS.map((port) => ({ port: port.slug, name: port.name,
-      links: [...new Set(equivalents.filter((entry) => entry.name === port.name).map((entry) => entry.href))]
-        .map((href) => ({ href })),
+      links: sent.has(port.slug) ? [{ href: sent.get(port.slug)! }]
+        : [...new Set(equivalents.filter((entry) => entry.name === port.name).map((entry) => entry.href))].map((href) => ({ href })),
     })),
   }
 }

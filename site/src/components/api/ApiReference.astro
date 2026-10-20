@@ -37,6 +37,7 @@ import SymbolName from '../../components/api/SymbolName.astro'
 import '../../styles/api.css'
 import '../../styles/vendor/gp-sphinx-api.css'
 import { tmuxManualUrl } from '../../lib/tmux-manual-data'
+import type { ResolvedUsage } from '../../lib/tmux-reference'
 
 /** Source projects supply identity and navigation to the same API renderer. */
 export interface SourceReferenceContext {
@@ -53,6 +54,7 @@ export interface SourceReferenceContext {
   index: SymbolIndex
   pagePorts: PagePortLink[]
   manualLinks?: { name: string; href: string }[]
+  usage?: ResolvedUsage[]
   catalogLinks?: { name: string; href: string }[]
   paths?: ApiRelationshipPath[]
 }
@@ -759,6 +761,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                 port={port}
                 language={language}
                 manualLinks={source?.manualLinks}
+                usage={source?.usage}
                 catalogLinks={source?.catalogLinks}
                 heading={isMemberOwner(owner)}
                 member={!isMemberOwner(owner)}

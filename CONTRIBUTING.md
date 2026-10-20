@@ -204,6 +204,17 @@ similar names alone do not establish one. An overloaded page can belong to
 several concepts. The page dropdown and "In other ports" use these mappings,
 and tests require every mapped target to resolve.
 
+A tmux command page links the methods that send the command, and a method
+page links the command and the C function behind its scope. Those links come
+from each port's source at the revision its API model was extracted from, not
+from concepts: a method that only reads a captured snapshot has no link. After
+a port's model changes revision, regenerate the usage data with the port
+checkouts present:
+
+```console
+$ node scripts/gen-tmux-usage.mjs
+```
+
 "Discussed in" comes from API mentions in guides, including tables and
 sections headed with a port name. After editing those mentions, regenerate
 the index:

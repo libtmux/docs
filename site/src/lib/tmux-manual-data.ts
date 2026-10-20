@@ -10,6 +10,7 @@ import { PORT_BY_SLUG } from './ports'
 import { withPortRoot } from './site-root'
 import { rowAnchor } from './row-anchors'
 import { linkTmuxManualTree } from './tmux-manual'
+import { tmuxUsage, tmuxUsageCommands } from './tmux-library-usage'
 
 export type TmuxManual = typeof v37
 export type TmuxCommand = TmuxManual['commands'][number]
@@ -197,16 +198,27 @@ export function tmuxGuidesFor(command: string) {
     .map((guide) => ({ title: guide.title, href: withPortRoot(`/tmux/${guide.path}/`) }))
 }
 
-/** Link only declarations present in the integrated library models. */
+/**
+ * One library page per language for a command, for the language picker.
+ *
+ * A command with recorded usage names the symbol that sends it, at the widest
+ * scope the port has one for. A language without one falls back to the
+ * equivalent API that the concepts name, so the picker still lands somewhere.
+ */
 export function tmuxApiLinks(command: string) {
   const seen = new Set<string>()
-  return commandConcepts(command).flatMap((concept) => Object.entries(concept.symbols).flatMap(([port, id]) => {
+  const sent = tmuxUsage(command)?.groups.flatMap((group) => group.ports).flatMap((entry) => {
+    if (seen.has(entry.port)) return []
+    seen.add(entry.port)
+    return [{ name: PORT_BY_SLUG[entry.port].name, href: entry.links[0].href }]
+  }) ?? []
+  return [...sent, ...commandConcepts(command).flatMap((concept) => Object.entries(concept.symbols).flatMap(([port, id]) => {
     if (seen.has(port) || !API_MODELS[port]?.symbols.some((symbol) => (symbol.publicId ?? symbol.id) === id)) return []
     const href = referenceHref(port, id)
     if (!href) return []
     seen.add(port)
     return [{ name: PORT_BY_SLUG[port].name, href }]
-  }))
+  }))]
 }
 
 /** Task-oriented notes complement the pinned manual; the native catalog gates flags. */
@@ -271,8 +283,15 @@ export function tmuxManualHeadings(version: string, slug?: string) {
   }))
 }
 
-/** Match source-verified concepts to commands present in the selected manual. */
+/**
+ * Match source-verified concepts to commands present in the selected manual.
+ *
+ * A command whose usage the data records is left out: a concept names an
+ * equivalent API, and the usage names the symbols that send the command.
+ */
 export function tmuxCommandsFor(port: string, publicId: string): TmuxCommand[] {
   const concepts = conceptsFor(port, publicId)
-  return tmuxManual('latest').commands.filter((command) => commandConcepts(command.name).some((concept) => concepts.includes(concept)))
+  const recorded = tmuxUsageCommands()
+  return tmuxManual('latest').commands.filter((command) => !recorded.includes(command.name)
+    && commandConcepts(command.name).some((concept) => concepts.includes(concept)))
 }

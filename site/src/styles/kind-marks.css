@@ -219,7 +219,7 @@
  */
 @property --sp-h { syntax: '<length>'; inherits: true; initial-value: 0px; }
 @property --sp-pb { syntax: '<length>'; inherits: true; initial-value: 0px; }
-:is(.api-elsewhere-value, .api-command-related, nav.api-related) a:has(> .api-nav__kind) {
+:is(.api-elsewhere-value, .api-command-related, .tmux-usage, nav.api-related) a:has(> .api-nav__kind) {
   --sp-h: round(1.6em, 2px);
   --sp-pb: round(calc((var(--sp-h) - 2px - .875 * 1cap) / 2), var(--mark-step));
   display: inline-flex;
@@ -238,7 +238,7 @@
   background: color-mix(in srgb, var(--color-foreground-primary, currentColor) 4%, transparent);
   text-decoration: none;
 }
-:is(.api-elsewhere-value, .api-command-related, nav.api-related) a > .api-nav__kind {
+:is(.api-elsewhere-value, .api-command-related, .tmux-usage, nav.api-related) a > .api-nav__kind {
   --mk-w: 1.6em; --mk-bwv: 0px;
   --mk-fill: color-mix(in srgb, var(--mk-hue, currentColor) 18%, var(--background-color, transparent));
   /* The mark is one line tall and stays on the first line, however many lines the name takes. */
@@ -250,7 +250,7 @@
   border-inline-end: 1px solid color-mix(in srgb, var(--mk-hue, currentColor) 30%, transparent);
   border-radius: 0;
 }
-:is(.api-elsewhere-value, .api-command-related, nav.api-related) a > .api-nav__kind + code {
+:is(.api-elsewhere-value, .api-command-related, .tmux-usage, nav.api-related) a > .api-nav__kind + code {
   /*
    * The last line's baseline keeps its gap from the bottom edge. The top margin reserves exactly the space the first
    * line has in a one-line chip (a hair less, so a single line never grows it), so the first line sits level with
@@ -268,9 +268,9 @@
   text-decoration: none;
 }
 @supports not (text-box: trim-both cap alphabetic) {
-  :is(.api-elsewhere-value, .api-command-related, nav.api-related) a > .api-nav__kind + code { margin: 0 0 var(--sp-pb); line-height: 1; }
+  :is(.api-elsewhere-value, .api-command-related, .tmux-usage, nav.api-related) a > .api-nav__kind + code { margin: 0 0 var(--sp-pb); line-height: 1; }
 }
-:is(.api-elsewhere-value, .api-command-related, nav.api-related) a:has(> .api-nav__kind):is(:hover, :focus-visible) {
+:is(.api-elsewhere-value, .api-command-related, .tmux-usage, nav.api-related) a:has(> .api-nav__kind):is(:hover, :focus-visible) {
   background: color-mix(in srgb, var(--color-foreground-primary, currentColor) 9%, transparent);
 }
 /* In the contents column each chip is its own row: as wide as its content, with an even gap between rows. */

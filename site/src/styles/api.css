@@ -179,6 +179,11 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
   opacity: 0.6;
 }
 
+/* A method that sends a tmux command names the flag and the C function behind it. */
+.tmux-send { margin-inline-start: 0.25rem; }
+.tmux-send > * + * { margin-inline-start: 0.25rem; }
+.tmux-usage-block { margin-block-start: 0.75rem; }
+
 /*
  * The member list on a type's page.
  *

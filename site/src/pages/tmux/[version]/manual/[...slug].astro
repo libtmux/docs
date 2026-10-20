@@ -2,7 +2,8 @@
 import DocsLayout from '../../../../layouts/DocsLayout.astro'
 import SectionHeading from '../../../../components/SectionHeading.astro'
 import { Code } from 'astro-expressive-code/components'
-import { tmuxCommandSources, tmuxReferenceUrl } from '../../../../lib/tmux-reference'
+import TmuxUsage from '../../../../components/tmux/TmuxUsage.astro'
+import { tmuxCommandSources, tmuxReferenceUrl, tmuxResolvedUsage } from '../../../../lib/tmux-reference'
 import { withRoot } from '../../../../lib/site-root'
 import type { PageSource } from '../../../../lib/markdown-twins'
 import { rowAnchor } from '../../../../lib/row-anchors'
@@ -49,6 +50,7 @@ const guides = tmuxGuidesFor(command?.name ?? '')
 const headings = tmuxManualHeadings(version, slug)
 const notes = tmuxCommandNotes(version, slug)
 const implementations = command ? tmuxCommandSources(version, command.name) : []
+const usage = command ? tmuxResolvedUsage(version, command.name) : undefined
 const source: PageSource = { repo: TMUX_REPOSITORY, path: 'tmux.1', ref: reference.sourceCommit }
 const manualHtml = command || isManual
   ? await highlightTmuxManual(linkTmuxManualCatalog(
@@ -102,8 +104,13 @@ const manualHtml = command || isManual
     </>}
     {equivalents.length > 0 && <>
       <SectionHeading id={rowAnchor(command.name, 'use from a library')} legacyId="libraries">Use from a library</SectionHeading>
-      <p>Each API describes its own defaults, errors and execution model.</p>
-      <ul>{equivalents.map((entry) => <li><a href={entry.href}>{entry.name}</a></li>)}</ul>
+      {usage ? <>
+        <p>These methods send <code>{command.name}</code>. Each describes its own defaults, errors and execution model.</p>
+        <TmuxUsage usage={usage} />
+      </> : <>
+        <p>Each API describes its own defaults, errors and execution model.</p>
+        <ul>{equivalents.map((entry) => <li><a href={entry.href}>{entry.name}</a></li>)}</ul>
+      </>}
     </>}
   </> : isManual ? <div class="tmux-manual" set:html={manualHtml} /> : <>
     <p>Look up the flags and behavior supported by tmux {reference.version}. Choose the version installed on your machine with <code>tmux -V</code>.</p>
