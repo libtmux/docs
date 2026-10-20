@@ -1,0 +1,2075 @@
+{
+ "formatter": "Ubuntu clang-format version 21.1.8 (6ubuntu1)",
+ "style": {
+  "source": "tmux has no .clang-format. LLVM with ColumnLimit 60, AlignAfterOpenBracket Align and BinPackParameters true is the layout the docs maintainer asked for, and the pointer against the name is how tmux writes `struct cmd *self`",
+  "options": {
+   "BasedOnStyle": "LLVM",
+   "PointerAlignment": "Right",
+   "AlignAfterOpenBracket": "Align",
+   "BinPackParameters": "true",
+   "ContinuationIndentWidth": "4",
+   "IndentWidth": "2",
+   "ColumnLimit": "per case: see clangColumnLimit"
+  }
+ },
+ "context": "Each declaration is formatted with `clang-format --assume-filename=declaration.c` as a top-level statement, with no struct indent. A typedef or member already ends in `;`, which the page prints, so its clangColumnLimit is columns. A prototype or enum the extractor writes without `;` is run with one, and the `;` is removed from the output, because the page never prints it. That `;` takes no printed column, so clangColumnLimit is columns + 1: the `;` then sits in the column the printed text leaves free, and a case is kept only when every printed line stays within columns, which makes the run exact. The hand-written cases whose run at columns + 1 would overrun a line use clangColumnLimit = columns, which is a stand-in: the last line leaves the `;` column free, and the layout is checked against it.",
+ "groups": {
+  "corpus": "functions, function-pointer typedefs and members from site/src/data/tmux/api/3.2a.json and 3.7c.json: the shortest, median and longest declaration of each distinct layout shape, where the run is exact",
+  "budget": "a third of the corpus declarations again at 40 and 80 columns",
+  "hand-written": "every other group: the cmd_list_panes_window example, controls that fit, a function-pointer parameter, varargs, a return type on its own line, arrays, qualifiers, very long single parameters, typedefs and members",
+  "enum": "enums of plain enumerators from the same two files, one enumerator per line when the enum does not fit"
+ },
+ "cases": [
+  {
+   "group": "example",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static void cmd_list_panes_window(struct cmd *, struct session *, struct winlink *, struct cmdq_item *, int)",
+   "text": "static void cmd_list_panes_window(struct cmd *,\n                                  struct session *,\n                                  struct winlink *,\n                                  struct cmdq_item *, int)"
+  },
+  {
+   "group": "fits",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static int alerts_enabled(struct window *, int)",
+   "text": "static int alerts_enabled(struct window *, int)"
+  },
+  {
+   "group": "fits",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "struct args * args_create(void)",
+   "text": "struct args *args_create(void)"
+  },
+  {
+   "group": "fits-exactly-60",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void args_set(struct args *args, u_char flag, const char *s)",
+   "text": "void args_set(struct args *args, u_char flag, const char *s)"
+  },
+  {
+   "group": "wraps-at-61",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void args_set(struct args *args, u_char flag, const char *s2)",
+   "text": "void args_set(struct args *args, u_char flag,\n              const char *s2)"
+  },
+  {
+   "group": "function-pointer",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void format_each(struct format_tree *ft, void(*cb)(const char *, const char *, void *), void *arg)",
+   "text": "void format_each(struct format_tree *ft,\n                 void (*cb)(const char *, const char *,\n                            void *),\n                 void *arg)"
+  },
+  {
+   "group": "function-pointer",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void proc_loop(struct tmuxproc *tp, int(*loopcb)(void))",
+   "text": "void proc_loop(struct tmuxproc *tp, int (*loopcb)(void))"
+  },
+  {
+   "group": "function-pointer",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void window_copy_each(struct window_mode_entry *wme, void(*callback)(struct window_mode_entry *, const char *, u_int, void *), void *data)",
+   "text": "void window_copy_each(\n    struct window_mode_entry *wme,\n    void (*callback)(struct window_mode_entry *,\n                     const char *, u_int, void *),\n    void *data)"
+  },
+  {
+   "group": "varargs",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static void args_print_add(char **buf, size_t *len, const char *fmt,...)",
+   "text": "static void args_print_add(char **buf, size_t *len,\n                           const char *fmt, ...)"
+  },
+  {
+   "group": "varargs",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void cmdq_error(struct cmdq_item *item, const char *fmt,...)",
+   "text": "void cmdq_error(struct cmdq_item *item, const char *fmt,\n                ...)"
+  },
+  {
+   "group": "varargs",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void control_write(struct client *c, const char *fmt, ...)",
+   "text": "void control_write(struct client *c, const char *fmt, ...)"
+  },
+  {
+   "group": "return-type",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "enum cmd_retval cmd_attach_session(struct cmdq_item *item, const char *tflag, int dflag, int xflag, int rflag, const char *cflag, int Eflag, const char *fflag)",
+   "text": "enum cmd_retval\ncmd_attach_session(struct cmdq_item *item,\n                   const char *tflag, int dflag, int xflag,\n                   int rflag, const char *cflag, int Eflag,\n                   const char *fflag)"
+  },
+  {
+   "group": "return-type",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static enum window_copy_cmd_action window_copy_cmd_scroll_bottom(struct window_copy_cmd_state *cs)",
+   "text": "static enum window_copy_cmd_action\nwindow_copy_cmd_scroll_bottom(\n    struct window_copy_cmd_state *cs)"
+  },
+  {
+   "group": "array",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static const char * cmd_find_map_table(const char *[][2], const char *)",
+   "text": "static const char *cmd_find_map_table(const char *[][2],\n                                      const char *)"
+  },
+  {
+   "group": "array",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void tty_set_title_buffer(char buf[256], size_t size, const struct tty_ctx *ctx, u_int flags)",
+   "text": "void tty_set_title_buffer(char buf[256], size_t size,\n                          const struct tty_ctx *ctx,\n                          u_int flags)"
+  },
+  {
+   "group": "qualifiers",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "int BSDgetopt(int, char *const *, const char *)",
+   "text": "int BSDgetopt(int, char *const *, const char *)"
+  },
+  {
+   "group": "qualifiers",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void environ_push_all(const char *const *envp, struct environ *env, u_int flags, struct environ_entry **entries)",
+   "text": "void environ_push_all(const char *const *envp,\n                      struct environ *env, u_int flags,\n                      struct environ_entry **entries)"
+  },
+  {
+   "group": "pointer-spacing",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "struct window_pane * window_pane_find_by_id_str(const char *id_string, struct window **w)",
+   "text": "struct window_pane *\nwindow_pane_find_by_id_str(const char *id_string,\n                           struct window **w)"
+  },
+  {
+   "group": "pointer-spacing",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "char ** args_to_vector(struct args *args, int *argc, char ***argv, u_int skip)",
+   "text": "char **args_to_vector(struct args *args, int *argc,\n                      char ***argv, u_int skip)"
+  },
+  {
+   "group": "long-parameter",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "void window_copy_set_the_selection_for_a_very_long_function(const struct window_mode_entry_with_an_unreasonably_long_type_name_for_tests *wme)",
+   "text": "void window_copy_set_the_selection_for_a_very_long_function(\n    const struct\n    window_mode_entry_with_an_unreasonably_long_type_name_for_tests\n        *wme)"
+  },
+  {
+   "group": "long-parameter",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "void f(struct a_structure_whose_name_is_longer_than_the_whole_api_budget_of_sixty_columns *value)",
+   "text": "void f(\n    struct\n    a_structure_whose_name_is_longer_than_the_whole_api_budget_of_sixty_columns\n        *value)"
+  },
+  {
+   "group": "long-parameter",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "int tty_term_describe_the_capability(struct tty_term *term, const char *a_parameter_type_that_is_fairly_long_indeed_x, int quiet)",
+   "text": "int tty_term_describe_the_capability(\n    struct tty_term *term,\n    const char\n        *a_parameter_type_that_is_fairly_long_indeed_x,\n    int quiet)"
+  },
+  {
+   "group": "typedef",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "typedef void(*mode_tree_draw_cb)(void *, void *, struct screen_write_ctx *, u_int, u_int);",
+   "text": "typedef void (*mode_tree_draw_cb)(void *, void *,\n                                  struct screen_write_ctx *,\n                                  u_int, u_int);"
+  },
+  {
+   "group": "typedef",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "typedef struct screen *(*overlay_mode_cb)(struct client *, void *, u_int *, u_int *);",
+   "text": "typedef struct screen *(*overlay_mode_cb)(struct client *,\n                                          void *, u_int *,\n                                          u_int *);"
+  },
+  {
+   "group": "typedef",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "typedef int(*prompt_input_cb)(struct client *, void *, const char *, int);",
+   "text": "typedef int (*prompt_input_cb)(struct client *, void *,\n                               const char *, int);"
+  },
+  {
+   "group": "member",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "void(*command)(struct window_mode_entry *, struct client *, struct session *, struct winlink *, struct args *, struct mouse_event *);",
+   "text": "void (*command)(struct window_mode_entry *, struct client *,\n                struct session *, struct winlink *,\n                struct args *, struct mouse_event *);"
+  },
+  {
+   "group": "member",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "enum cmd_retval(*exec)(struct cmd *, struct cmdq_item *);",
+   "text": "enum cmd_retval (*exec)(struct cmd *, struct cmdq_item *);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "void(*resize)(struct window_mode_entry *, u_int, u_int);",
+   "text": "void (*resize)(struct window_mode_entry *, u_int, u_int);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "enum cmd_retval(*exec)(struct cmd *, struct cmdq_item *);",
+   "text": "enum cmd_retval (*exec)(struct cmd *, struct cmdq_item *);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "struct screen *(*get_screen)(struct window_mode_entry *);",
+   "text": "struct screen *(*get_screen)(struct window_mode_entry *);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "void(*signalcb)(int);",
+   "text": "void (*signalcb)(int);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "void(*free)(struct window_mode_entry *);",
+   "text": "void (*free)(struct window_mode_entry *);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "const char *(*key_table)(struct window_mode_entry *);",
+   "text": "const char *(*key_table)(struct window_mode_entry *);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "void(*mouse_drag_update)(struct client *, struct mouse_event *);",
+   "text": "void (*mouse_drag_update)(struct client *,\n                          struct mouse_event *);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "void(*formats)(struct window_mode_entry *, struct format_tree *);",
+   "text": "void (*formats)(struct window_mode_entry *,\n                struct format_tree *);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "void(*mouse_drag_release)(struct client *, struct mouse_event *);",
+   "text": "void (*mouse_drag_release)(struct client *,\n                           struct mouse_event *);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "enum window_copy_cmd_action(*f)(struct window_copy_cmd_state *);",
+   "text": "enum window_copy_cmd_action (*f)(\n    struct window_copy_cmd_state *);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "struct screen *(*init)(struct window_mode_entry *, struct cmd_find_state *, struct args *);",
+   "text": "struct screen *(*init)(struct window_mode_entry *,\n                       struct cmd_find_state *,\n                       struct args *);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "void(*key)(struct window_mode_entry *, struct client *, struct session *, struct winlink *, key_code, struct mouse_event *);",
+   "text": "void (*key)(struct window_mode_entry *, struct client *,\n            struct session *, struct winlink *, key_code,\n            struct mouse_event *);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "void(*command)(struct window_mode_entry *, struct client *, struct session *, struct winlink *, struct args *, struct mouse_event *);",
+   "text": "void (*command)(struct window_mode_entry *, struct client *,\n                struct session *, struct winlink *,\n                struct args *, struct mouse_event *);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "int colour_palette_get(struct colour_palette *p, int n)",
+   "text": "int colour_palette_get(struct colour_palette *p, int n)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static int status_prompt_space(const struct utf8_data *ud)",
+   "text": "static int status_prompt_space(const struct utf8_data *ud)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "struct window_pane * format_get_pane(struct format_tree *ft)",
+   "text": "struct window_pane *format_get_pane(struct format_tree *ft)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "enum utf8_state utf8_append(struct utf8_data *ud, u_char ch)",
+   "text": "enum utf8_state utf8_append(struct utf8_data *ud, u_char ch)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static char * expand_path(const char *path, const char *home)",
+   "text": "static char *expand_path(const char *path, const char *home)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "struct window_pane * server_client_get_pane(struct client *c)",
+   "text": "struct window_pane *server_client_get_pane(struct client *c)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "int getptmfd(void)",
+   "text": "int getptmfd(void)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void screen_write_make_list(struct screen *s)",
+   "text": "void screen_write_make_list(struct screen *s)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "struct options * options_owner(struct options_entry *o)",
+   "text": "struct options *options_owner(struct options_entry *o)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "int BSDgetopt(int, char *const *, const char *)",
+   "text": "int BSDgetopt(int, char *const *, const char *)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void file_error(struct client *c, const char *fmt,...)",
+   "text": "void file_error(struct client *c, const char *fmt, ...)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "int xsnprintf(char *str, size_t len, const char *fmt,...)",
+   "text": "int xsnprintf(char *str, size_t len, const char *fmt, ...)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void environ_log(struct environ *env, const char *fmt,...)",
+   "text": "void environ_log(struct environ *env, const char *fmt, ...)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void warn(const char *,...)",
+   "text": "void warn(const char *, ...)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void log_debug(const char *msg,...)",
+   "text": "void log_debug(const char *msg, ...)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static char * format_printf(const char *fmt,...)",
+   "text": "static char *format_printf(const char *fmt, ...)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void proc_loop(struct tmuxproc *tp, int(*loopcb)(void))",
+   "text": "void proc_loop(struct tmuxproc *tp, int (*loopcb)(void))"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static void client_dispatch_exit_message(char *data, size_t datalen)",
+   "text": "static void client_dispatch_exit_message(char *data,\n                                         size_t datalen)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void screen_alternate_off(struct screen *s, struct grid_cell *gc, int cursor)",
+   "text": "void screen_alternate_off(struct screen *s,\n                          struct grid_cell *gc, int cursor)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void style_apply(struct grid_cell *gc, struct options *oo, const char *name, struct format_tree *ft)",
+   "text": "void style_apply(struct grid_cell *gc, struct options *oo,\n                 const char *name, struct format_tree *ft)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static enum cmd_retval cmd_bind_key_exec(struct cmd *, struct cmdq_item *)",
+   "text": "static enum cmd_retval cmd_bind_key_exec(struct cmd *,\n                                         struct cmdq_item *)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static void input_set_state(struct input_ctx *, const struct input_transition *)",
+   "text": "static void input_set_state(struct input_ctx *,\n                            const struct input_transition *)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static int utf8_width_cache_cmp(struct utf8_width_item *uw1, struct utf8_width_item *uw2)",
+   "text": "static int utf8_width_cache_cmp(struct utf8_width_item *uw1,\n                                struct utf8_width_item *uw2)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "enum utf8_state utf8_fromwc(wchar_t wc, struct utf8_data *ud)",
+   "text": "enum utf8_state utf8_fromwc(wchar_t wc,\n                            struct utf8_data *ud)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void screen_write_clearscreen(struct screen_write_ctx *ctx, u_int bg)",
+   "text": "void screen_write_clearscreen(struct screen_write_ctx *ctx,\n                              u_int bg)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "int proc_send(struct tmuxpeer *peer, enum msgtype type, int fd, const void *buf, size_t len)",
+   "text": "int proc_send(struct tmuxpeer *peer, enum msgtype type,\n              int fd, const void *buf, size_t len)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static const char * cmd_find_map_table(const char *[][2], const char *)",
+   "text": "static const char *cmd_find_map_table(const char *[][2],\n                                      const char *)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void cmdq_add_format(struct cmdq_state *state, const char *key, const char *fmt,...)",
+   "text": "void cmdq_add_format(struct cmdq_state *state,\n                     const char *key, const char *fmt, ...)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void cmdq_error(struct cmdq_item *item, const char *fmt,...)",
+   "text": "void cmdq_error(struct cmdq_item *item, const char *fmt,\n                ...)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static void args_print_add(char **buf, size_t *len, const char *fmt,...)",
+   "text": "static void args_print_add(char **buf, size_t *len,\n                           const char *fmt, ...)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void environ_set(struct environ *env, const char *name, int flags, const char *fmt,...)",
+   "text": "void environ_set(struct environ *env, const char *name,\n                 int flags, const char *fmt, ...)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void proc_set_signals(struct tmuxproc *tp, void(*signalcb)(int))",
+   "text": "void proc_set_signals(struct tmuxproc *tp,\n                      void (*signalcb)(int))"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static int screen_write_cell_is_single(const struct grid_cell *gc)",
+   "text": "static int\nscreen_write_cell_is_single(const struct grid_cell *gc)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static enum cmd_retval status_prompt_accept(struct cmdq_item *item, void *data)",
+   "text": "static enum cmd_retval\nstatus_prompt_accept(struct cmdq_item *item, void *data)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static void window_copy_synchronize_cursor_end(struct window_mode_entry *wme, int begin, int no_reset)",
+   "text": "static void window_copy_synchronize_cursor_end(\n    struct window_mode_entry *wme, int begin, int no_reset)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static void window_buffer_finish_edit(struct window_buffer_editdata *ed)",
+   "text": "static void\nwindow_buffer_finish_edit(struct window_buffer_editdata *ed)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static enum args_parse_type cmd_command_prompt_args_parse(struct args *, u_int, char **)",
+   "text": "static enum args_parse_type\ncmd_command_prompt_args_parse(struct args *, u_int, char **)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static struct options_array_item * options_array_RB_MINMAX(struct options_array *head, int val)",
+   "text": "static struct options_array_item *\noptions_array_RB_MINMAX(struct options_array *head, int val)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "int window_pane_get_bg_control_client(struct window_pane *wp)",
+   "text": "int window_pane_get_bg_control_client(\n    struct window_pane *wp)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static void * format_cb_client_control_mode(struct format_tree *ft)",
+   "text": "static void *\nformat_cb_client_control_mode(struct format_tree *ft)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "struct window_pane * window_pane_previous_by_number(struct window *w, struct window_pane *wp, u_int n)",
+   "text": "struct window_pane *window_pane_previous_by_number(\n    struct window *w, struct window_pane *wp, u_int n)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static char ** status_prompt_complete_list(u_int *size, const char *s, int at_start)",
+   "text": "static char **status_prompt_complete_list(u_int *size,\n                                          const char *s,\n                                          int at_start)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static int window_copy_search_lr(struct grid *, struct grid *, u_int *, u_int, u_int, u_int, int)",
+   "text": "static int window_copy_search_lr(struct grid *,\n                                 struct grid *, u_int *,\n                                 u_int, u_int, u_int, int)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void screen_write_menu(struct screen_write_ctx *ctx, struct menu *menu, int choice, const struct grid_cell *choice_gc)",
+   "text": "void screen_write_menu(struct screen_write_ctx *ctx,\n                       struct menu *menu, int choice,\n                       const struct grid_cell *choice_gc)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static int window_tree_swap(void *cur_itemdata, void *other_itemdata, struct sort_criteria *sort_crit)",
+   "text": "static int window_tree_swap(void *cur_itemdata,\n                            void *other_itemdata,\n                            struct sort_criteria *sort_crit)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void layout_resize_adjust(struct window *w, struct layout_cell *lc, enum layout_type type, int change)",
+   "text": "void layout_resize_adjust(struct window *w,\n                          struct layout_cell *lc,\n                          enum layout_type type, int change)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "const char * tty_term_string_ss(struct tty_term *term, enum tty_code_code code, const char *a, const char *b)",
+   "text": "const char *tty_term_string_ss(struct tty_term *term,\n                               enum tty_code_code code,\n                               const char *a, const char *b)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static void window_buffer_edit_close_cb(char *buf, size_t len, void *arg)",
+   "text": "static void window_buffer_edit_close_cb(char *buf,\n                                        size_t len,\n                                        void *arg)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "struct winlink * session_attach(struct session *s, struct window *w, int idx, char **cause)",
+   "text": "struct winlink *session_attach(struct session *s,\n                               struct window *w, int idx,\n                               char **cause)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void file_write(struct client *c, const char *path, int flags, const void *bdata, size_t bsize, client_file_cb cb, void *cbdata)",
+   "text": "void file_write(struct client *c, const char *path,\n                int flags, const void *bdata, size_t bsize,\n                client_file_cb cb, void *cbdata)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void status_message_set(struct client *c, int delay, int ignore_styles, int ignore_keys, int no_freeze, const char *fmt,...)",
+   "text": "void status_message_set(struct client *c, int delay,\n                        int ignore_styles, int ignore_keys,\n                        int no_freeze, const char *fmt, ...)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static void format_log1(struct format_expand_state *es, const char *from, const char *fmt,...)",
+   "text": "static void format_log1(struct format_expand_state *es,\n                        const char *from, const char *fmt,\n                        ...)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void screen_write_puts(struct screen_write_ctx *ctx, const struct grid_cell *gcp, const char *fmt,...)",
+   "text": "void screen_write_puts(struct screen_write_ctx *ctx,\n                       const struct grid_cell *gcp,\n                       const char *fmt, ...)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void status_message_set(struct client *c, int delay, int ignore_styles, int ignore_keys, const char *fmt,...)",
+   "text": "void status_message_set(struct client *c, int delay,\n                        int ignore_styles, int ignore_keys,\n                        const char *fmt, ...)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void tty_write(void(*cmdfn)(struct tty *, const struct tty_ctx *), struct tty_ctx *ctx)",
+   "text": "void tty_write(void (*cmdfn)(struct tty *,\n                             const struct tty_ctx *),\n               struct tty_ctx *ctx)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static void cmd_resize_pane_mouse_update_tiled(struct client *, struct mouse_event *)",
+   "text": "static void\ncmd_resize_pane_mouse_update_tiled(struct client *,\n                                   struct mouse_event *)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "struct client_file * file_create_with_client(struct client *c, int stream, client_file_cb cb, void *cbdata)",
+   "text": "struct client_file *\nfile_create_with_client(struct client *c, int stream,\n                        client_file_cb cb, void *cbdata)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "long long args_string_percentage_and_expand(const char *value, long long minval, long long maxval, long long curval, struct cmdq_item *item, char **cause)",
+   "text": "long long args_string_percentage_and_expand(\n    const char *value, long long minval, long long maxval,\n    long long curval, struct cmdq_item *item, char **cause)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static void cmd_source_file_complete(struct client *c, struct cmd_source_file_data *cdata)",
+   "text": "static void\ncmd_source_file_complete(struct client *c,\n                         struct cmd_source_file_data *cdata)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void client_windows_RB_REMOVE_COLOR(struct client_windows *head, struct client_window *parent, struct client_window *elm)",
+   "text": "void client_windows_RB_REMOVE_COLOR(\n    struct client_windows *head,\n    struct client_window *parent, struct client_window *elm)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static void tty_draw_line_clear(struct tty *tty, u_int px, u_int py, u_int nx, const struct grid_cell *defaults, u_int bg, int wrapped)",
+   "text": "static void tty_draw_line_clear(\n    struct tty *tty, u_int px, u_int py, u_int nx,\n    const struct grid_cell *defaults, u_int bg, int wrapped)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static void input_csi_dispatch_sgr_colon(struct input_ctx *ictx, u_int i)",
+   "text": "static void\ninput_csi_dispatch_sgr_colon(struct input_ctx *ictx,\n                             u_int i)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static enum window_copy_cmd_action window_copy_cmd_search_reverse(struct window_copy_cmd_state *cs)",
+   "text": "static enum window_copy_cmd_action\nwindow_copy_cmd_search_reverse(\n    struct window_copy_cmd_state *cs)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "struct args_command_state * args_make_commands_prepare(struct cmd *self, struct cmdq_item *item, u_int idx, const char *default_command, int wait, int expand)",
+   "text": "struct args_command_state *args_make_commands_prepare(\n    struct cmd *self, struct cmdq_item *item, u_int idx,\n    const char *default_command, int wait, int expand)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "struct options_entry * options_set_string(struct options *oo, const char *name, int append, const char *fmt,...)",
+   "text": "struct options_entry *\noptions_set_string(struct options *oo, const char *name,\n                   int append, const char *fmt, ...)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static struct session * server_find_session(struct session *s, int(*f)(struct session *, struct session *))",
+   "text": "static struct session *server_find_session(\n    struct session *s,\n    int (*f)(struct session *, struct session *))"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static int tty_keys_extended_device_attributes(struct tty *, const char *, size_t, size_t *)",
+   "text": "static int tty_keys_extended_device_attributes(struct tty *,\n                                               const char *,\n                                               size_t,\n                                               size_t *)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "char * format_single_from_state(struct cmdq_item *item, const char *fmt, struct client *c, struct cmd_find_state *fs)",
+   "text": "char *format_single_from_state(struct cmdq_item *item,\n                               const char *fmt,\n                               struct client *c,\n                               struct cmd_find_state *fs)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static int args_parse_flags(const struct args_parse *parse, struct args_value *values, u_int count, char **cause, struct args *args, u_int *i)",
+   "text": "static int args_parse_flags(const struct args_parse *parse,\n                            struct args_value *values,\n                            u_int count, char **cause,\n                            struct args *args, u_int *i)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static int mode_tree_filter_callback(struct client *c, void *data, const char *s, int done)",
+   "text": "static int mode_tree_filter_callback(struct client *c,\n                                     void *data,\n                                     const char *s,\n                                     int done)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void tty_attributes(struct tty *tty, const struct grid_cell *gc, const struct grid_cell *defaults, int *palette)",
+   "text": "void tty_attributes(struct tty *tty,\n                    const struct grid_cell *gc,\n                    const struct grid_cell *defaults,\n                    int *palette)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "int load_cfg_from_buffer(const void *buf, size_t len, const char *path, struct client *c, struct cmdq_item *item, int flags, struct cmdq_item **new_item)",
+   "text": "int load_cfg_from_buffer(const void *buf, size_t len,\n                         const char *path, struct client *c,\n                         struct cmdq_item *item, int flags,\n                         struct cmdq_item **new_item)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void cmdq_insert_hook(struct session *s, struct cmdq_item *item, struct cmd_find_state *current, const char *fmt,...)",
+   "text": "void cmdq_insert_hook(struct session *s,\n                      struct cmdq_item *item,\n                      struct cmd_find_state *current,\n                      const char *fmt, ...)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void screen_write_nputs(struct screen_write_ctx *ctx, ssize_t maxlen, const struct grid_cell *gcp, const char *fmt,...)",
+   "text": "void screen_write_nputs(struct screen_write_ctx *ctx,\n                        ssize_t maxlen,\n                        const struct grid_cell *gcp,\n                        const char *fmt, ...)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static void sort_qsort(void *l, u_int len, u_int size, int(*cmp)(const void *, const void *), struct sort_criteria *sort_crit)",
+   "text": "static void sort_qsort(void *l, u_int len, u_int size,\n                       int (*cmp)(const void *,\n                                  const void *),\n                       struct sort_criteria *sort_crit)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void format_each(struct format_tree *ft, void(*cb)(const char *, const char *, void *), void *arg)",
+   "text": "void format_each(struct format_tree *ft,\n                 void (*cb)(const char *, const char *,\n                            void *),\n                 void *arg)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static int window_tree_kill_current_callback(struct client *c, void *modedata, const char *s, int done)",
+   "text": "static int\nwindow_tree_kill_current_callback(struct client *c,\n                                  void *modedata,\n                                  const char *s, int done)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static void wait_channels_RB_REMOVE_COLOR(struct wait_channels *head, struct wait_channel *parent, struct wait_channel *elm)",
+   "text": "static void\nwait_channels_RB_REMOVE_COLOR(struct wait_channels *head,\n                              struct wait_channel *parent,\n                              struct wait_channel *elm)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "struct session * session_create(const char *prefix, const char *name, const char *cwd, struct environ *env, struct options *oo, struct termios *tio)",
+   "text": "struct session *\nsession_create(const char *prefix, const char *name,\n               const char *cwd, struct environ *env,\n               struct options *oo, struct termios *tio)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "struct key_binding ** sort_get_key_bindings_table(struct key_table *table, u_int *n, struct sort_criteria *sort_crit)",
+   "text": "struct key_binding **\nsort_get_key_bindings_table(struct key_table *table,\n                            u_int *n,\n                            struct sort_criteria *sort_crit)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static void cmd_display_panes_put(struct screen_redraw_ctx *ctx, struct window_pane *wp, u_int cx, u_int cy, const char *buf, size_t len)",
+   "text": "static void\ncmd_display_panes_put(struct screen_redraw_ctx *ctx,\n                      struct window_pane *wp, u_int cx,\n                      u_int cy, const char *buf, size_t len)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static void grid_get_extended_cell(struct grid_line *gl, struct grid_cell_entry *gce, int flags)",
+   "text": "static void\ngrid_get_extended_cell(struct grid_line *gl,\n                       struct grid_cell_entry *gce,\n                       int flags)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static struct hyperlinks_uri * hyperlinks_by_inner_tree_RB_FIND(struct hyperlinks_by_inner_tree *, struct hyperlinks_uri *)",
+   "text": "static struct hyperlinks_uri *\nhyperlinks_by_inner_tree_RB_FIND(\n    struct hyperlinks_by_inner_tree *,\n    struct hyperlinks_uri *)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static int window_tree_build_window(struct session *s, struct winlink *wl, void *modedata, struct mode_tree_sort_criteria *sort_crit, struct mode_tree_item *parent, const char *filter)",
+   "text": "static int window_tree_build_window(\n    struct session *s, struct winlink *wl, void *modedata,\n    struct mode_tree_sort_criteria *sort_crit,\n    struct mode_tree_item *parent, const char *filter)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "struct tmuxpeer * proc_add_peer(struct tmuxproc *tp, int fd, void(*dispatchcb)(struct imsg *, void *), void *arg)",
+   "text": "struct tmuxpeer *\nproc_add_peer(struct tmuxproc *tp, int fd,\n              void (*dispatchcb)(struct imsg *, void *),\n              void *arg)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static int recalculate_size_skip_client(struct client *loop, int type, int current, struct session *s, struct window *w)",
+   "text": "static int recalculate_size_skip_client(struct client *loop,\n                                        int type,\n                                        int current,\n                                        struct session *s,\n                                        struct window *w)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static int window_copy_last_regex(struct grid *, u_int, u_int, u_int, u_int, u_int *, u_int *, const char *, const regex_t *, int)",
+   "text": "static int window_copy_last_regex(struct grid *, u_int,\n                                  u_int, u_int, u_int,\n                                  u_int *, u_int *,\n                                  const char *,\n                                  const regex_t *, int)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static int grid_string_cells_add_hyperlink(char *buf, size_t len, const char *id, const char *uri, int flags)",
+   "text": "static int grid_string_cells_add_hyperlink(char *buf,\n                                           size_t len,\n                                           const char *id,\n                                           const char *uri,\n                                           int flags)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static void window_client_key(struct window_mode_entry *, struct client *, struct session *, struct winlink *, key_code, struct mouse_event *)",
+   "text": "static void window_client_key(struct window_mode_entry *,\n                              struct client *,\n                              struct session *,\n                              struct winlink *, key_code,\n                              struct mouse_event *)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void tty_draw_line(struct tty *tty, struct screen *s, u_int px, u_int py, u_int nx, u_int atx, u_int aty, const struct grid_cell *defaults, struct colour_palette *palette)",
+   "text": "void tty_draw_line(struct tty *tty, struct screen *s,\n                   u_int px, u_int py, u_int nx, u_int atx,\n                   u_int aty,\n                   const struct grid_cell *defaults,\n                   struct colour_palette *palette)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static int cmd_display_menu_get_position(struct client *tc, struct cmdq_item *item, struct args *args, u_int *px, u_int *py, u_int w, u_int h)",
+   "text": "static int\ncmd_display_menu_get_position(struct client *tc,\n                              struct cmdq_item *item,\n                              struct args *args, u_int *px,\n                              u_int *py, u_int w, u_int h)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static struct evbuffer * control_append_data(struct client *c, struct control_pane *cp, uint64_t age, struct evbuffer *message, struct window_pane *wp, size_t size)",
+   "text": "static struct evbuffer *\ncontrol_append_data(struct client *c,\n                    struct control_pane *cp, uint64_t age,\n                    struct evbuffer *message,\n                    struct window_pane *wp, size_t size)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "struct format_tree * format_create_defaults(struct cmdq_item *item, struct client *c, struct session *s, struct winlink *wl, struct window_pane *wp)",
+   "text": "struct format_tree *\nformat_create_defaults(struct cmdq_item *item,\n                       struct client *c, struct session *s,\n                       struct winlink *wl,\n                       struct window_pane *wp)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "struct mode_tree_item * mode_tree_add(struct mode_tree_data *mtd, struct mode_tree_item *parent, void *itemdata, uint64_t tag, const char *name, const char *text, int expanded)",
+   "text": "struct mode_tree_item *\nmode_tree_add(struct mode_tree_data *mtd,\n              struct mode_tree_item *parent, void *itemdata,\n              uint64_t tag, const char *name,\n              const char *text, int expanded)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void server_client_set_overlay(struct client *c, u_int delay, overlay_check_cb checkcb, overlay_mode_cb modecb, overlay_draw_cb drawcb, overlay_key_cb keycb, overlay_free_cb freecb, overlay_resize_cb resizecb, void *data)",
+   "text": "void server_client_set_overlay(\n    struct client *c, u_int delay, overlay_check_cb checkcb,\n    overlay_mode_cb modecb, overlay_draw_cb drawcb,\n    overlay_key_cb keycb, overlay_free_cb freecb,\n    overlay_resize_cb resizecb, void *data)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static int cmd_list_keys_print_notes(struct cmdq_item *item, struct args *args, const char *tablename, u_int keywidth, key_code only, const char *prefix)",
+   "text": "static int cmd_list_keys_print_notes(struct cmdq_item *item,\n                                     struct args *args,\n                                     const char *tablename,\n                                     u_int keywidth,\n                                     key_code only,\n                                     const char *prefix)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void screen_write_menu(struct screen_write_ctx *ctx, struct menu *menu, int choice, enum box_lines lines, const struct grid_cell *menu_gc, const struct grid_cell *border_gc, const struct grid_cell *choice_gc)",
+   "text": "void screen_write_menu(struct screen_write_ctx *ctx,\n                       struct menu *menu, int choice,\n                       enum box_lines lines,\n                       const struct grid_cell *menu_gc,\n                       const struct grid_cell *border_gc,\n                       const struct grid_cell *choice_gc)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static void window_copy_command(struct window_mode_entry *, struct client *, struct session *, struct winlink *, struct args *, struct mouse_event *)",
+   "text": "static void window_copy_command(struct window_mode_entry *,\n                                struct client *,\n                                struct session *,\n                                struct winlink *,\n                                struct args *,\n                                struct mouse_event *)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void status_prompt_set(struct client *c, struct cmd_find_state *fs, const char *msg, const char *input, prompt_input_cb inputcb, prompt_free_cb freecb, void *data, int flags)",
+   "text": "void status_prompt_set(struct client *c,\n                       struct cmd_find_state *fs,\n                       const char *msg, const char *input,\n                       prompt_input_cb inputcb,\n                       prompt_free_cb freecb, void *data,\n                       int flags)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "struct job * job_run(const char *cmd, int argc, char **argv, struct environ *e, struct session *s, const char *cwd, job_update_cb updatecb, job_complete_cb completecb, job_free_cb freecb, void *data, int flags, int sx, int sy)",
+   "text": "struct job *job_run(const char *cmd, int argc, char **argv,\n                    struct environ *e, struct session *s,\n                    const char *cwd, job_update_cb updatecb,\n                    job_complete_cb completecb,\n                    job_free_cb freecb, void *data,\n                    int flags, int sx, int sy)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static void window_customize_build_option(struct window_customize_modedata *data, struct mode_tree_item *top, enum window_customize_scope scope, struct options_entry *o, struct format_tree *ft, const char *filter, struct cmd_find_state *fs)",
+   "text": "static void window_customize_build_option(\n    struct window_customize_modedata *data,\n    struct mode_tree_item *top,\n    enum window_customize_scope scope,\n    struct options_entry *o, struct format_tree *ft,\n    const char *filter, struct cmd_find_state *fs)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static void format_draw_put_list(struct screen_write_ctx *octx, u_int ocx, u_int ocy, u_int offset, u_int width, struct screen *list, struct screen *list_left, struct screen *list_right, int focus_start, int focus_end, struct format_ranges *frs)",
+   "text": "static void format_draw_put_list(\n    struct screen_write_ctx *octx, u_int ocx, u_int ocy,\n    u_int offset, u_int width, struct screen *list,\n    struct screen *list_left, struct screen *list_right,\n    int focus_start, int focus_end,\n    struct format_ranges *frs)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static int clients_calculate_size(int type, int current, struct client *c, struct session *s, struct window *w, int(*skip_client)(struct client *, int, int, struct session *, struct window *), u_int *sx, u_int *sy, u_int *xpixel, u_int *ypixel)",
+   "text": "static int clients_calculate_size(\n    int type, int current, struct client *c,\n    struct session *s, struct window *w,\n    int (*skip_client)(struct client *, int, int,\n                       struct session *, struct window *),\n    u_int *sx, u_int *sy, u_int *xpixel, u_int *ypixel)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static void format_draw_none(struct screen_write_ctx *octx, u_int available, u_int ocx, u_int ocy, struct screen *left, struct screen *centre, struct screen *right, struct screen *abs_centre, struct format_ranges *frs)",
+   "text": "static void format_draw_none(struct screen_write_ctx *octx,\n                             u_int available, u_int ocx,\n                             u_int ocy, struct screen *left,\n                             struct screen *centre,\n                             struct screen *right,\n                             struct screen *abs_centre,\n                             struct format_ranges *frs)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "void status_prompt_set(struct client *c, struct cmd_find_state *fs, const char *msg, const char *input, prompt_input_cb inputcb, prompt_free_cb freecb, void *data, int flags, enum prompt_type prompt_type)",
+   "text": "void status_prompt_set(struct client *c,\n                       struct cmd_find_state *fs,\n                       const char *msg, const char *input,\n                       prompt_input_cb inputcb,\n                       prompt_free_cb freecb, void *data,\n                       int flags,\n                       enum prompt_type prompt_type)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "struct menu_data * menu_prepare(struct menu *menu, int flags, int starting_choice, struct cmdq_item *item, u_int px, u_int py, struct client *c, enum box_lines lines, const char *style, const char *selected_style, const char *border_style, struct cmd_find_state *fs, menu_choice_cb cb, void *data)",
+   "text": "struct menu_data *menu_prepare(\n    struct menu *menu, int flags, int starting_choice,\n    struct cmdq_item *item, u_int px, u_int py,\n    struct client *c, enum box_lines lines,\n    const char *style, const char *selected_style,\n    const char *border_style, struct cmd_find_state *fs,\n    menu_choice_cb cb, void *data)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "struct mode_tree_data * mode_tree_start(struct window_pane *wp, struct args *args, mode_tree_build_cb buildcb, mode_tree_draw_cb drawcb, mode_tree_search_cb searchcb, mode_tree_menu_cb menucb, mode_tree_height_cb heightcb, mode_tree_key_cb keycb, void *modedata, const struct menu_item *menu, const char **sort_list, u_int sort_size, struct screen **s)",
+   "text": "struct mode_tree_data *mode_tree_start(\n    struct window_pane *wp, struct args *args,\n    mode_tree_build_cb buildcb, mode_tree_draw_cb drawcb,\n    mode_tree_search_cb searchcb, mode_tree_menu_cb menucb,\n    mode_tree_height_cb heightcb, mode_tree_key_cb keycb,\n    void *modedata, const struct menu_item *menu,\n    const char **sort_list, u_int sort_size,\n    struct screen **s)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "struct mode_tree_data * mode_tree_start(struct window_pane *wp, struct args *args, mode_tree_build_cb buildcb, mode_tree_draw_cb drawcb, mode_tree_search_cb searchcb, mode_tree_menu_cb menucb, mode_tree_height_cb heightcb, mode_tree_key_cb keycb, mode_tree_swap_cb swapcb, mode_tree_sort_cb sortcb, mode_tree_help_cb helpcb, void *modedata, const struct menu_item *menu, struct screen **s)",
+   "text": "struct mode_tree_data *mode_tree_start(\n    struct window_pane *wp, struct args *args,\n    mode_tree_build_cb buildcb, mode_tree_draw_cb drawcb,\n    mode_tree_search_cb searchcb, mode_tree_menu_cb menucb,\n    mode_tree_height_cb heightcb, mode_tree_key_cb keycb,\n    mode_tree_swap_cb swapcb, mode_tree_sort_cb sortcb,\n    mode_tree_help_cb helpcb, void *modedata,\n    const struct menu_item *menu, struct screen **s)"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "typedef void(*overlay_free_cb)(struct client *, void *);",
+   "text": "typedef void (*overlay_free_cb)(struct client *, void *);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "typedef void(*tty_ctx_redraw_cb)(const struct tty_ctx *);",
+   "text": "typedef void (*tty_ctx_redraw_cb)(const struct tty_ctx *);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "typedef void(*overlay_resize_cb)(struct client *, void *);",
+   "text": "typedef void (*overlay_resize_cb)(struct client *, void *);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "typedef key_code(*mode_tree_key_cb)(void *, void *, u_int);",
+   "text": "typedef key_code (*mode_tree_key_cb)(void *, void *, u_int);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "typedef void(*job_free_cb)(void *);",
+   "text": "typedef void (*job_free_cb)(void *);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "typedef void(*job_complete_cb)(struct job *);",
+   "text": "typedef void (*job_complete_cb)(struct job *);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "typedef u_int(*mode_tree_height_cb)(void *, u_int);",
+   "text": "typedef u_int (*mode_tree_height_cb)(void *, u_int);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "typedef const char **(*mode_tree_help_cb)(u_int *, const char **);",
+   "text": "typedef const char **(*mode_tree_help_cb)(u_int *,\n                                          const char **);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "typedef int(*mode_tree_swap_cb)(void *, void *, struct sort_criteria *);",
+   "text": "typedef int (*mode_tree_swap_cb)(void *, void *,\n                                 struct sort_criteria *);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "typedef void(*overlay_draw_cb)(struct client *, struct screen_redraw_ctx *);",
+   "text": "typedef void (*overlay_draw_cb)(struct client *,\n                                struct screen_redraw_ctx *);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "typedef struct screen *(*overlay_mode_cb)(struct client *, u_int *, u_int *);",
+   "text": "typedef struct screen *(*overlay_mode_cb)(struct client *,\n                                          u_int *, u_int *);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "typedef void(*overlay_draw_cb)(struct client *, void *, struct screen_redraw_ctx *);",
+   "text": "typedef void (*overlay_draw_cb)(struct client *, void *,\n                                struct screen_redraw_ctx *);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "typedef void(*popup_finish_edit_cb)(char *, size_t, void *);",
+   "text": "typedef void (*popup_finish_edit_cb)(char *, size_t,\n                                     void *);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "typedef void(*mode_tree_menu_cb)(void *, struct client *, key_code);",
+   "text": "typedef void (*mode_tree_menu_cb)(void *, struct client *,\n                                  key_code);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "typedef int(*prompt_input_cb)(struct client *, void *, const char *, int);",
+   "text": "typedef int (*prompt_input_cb)(struct client *, void *,\n                               const char *, int);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "typedef void(*screen_write_init_ctx_cb)(struct screen_write_ctx *, struct tty_ctx *);",
+   "text": "typedef void (*screen_write_init_ctx_cb)(\n    struct screen_write_ctx *, struct tty_ctx *);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "typedef struct visible_ranges *(*overlay_check_cb)(struct client *, void *, u_int, u_int, u_int);",
+   "text": "typedef struct visible_ranges *(*overlay_check_cb)(\n    struct client *, void *, u_int, u_int, u_int);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "typedef enum args_parse_type(*args_parse_cb)(struct args *, u_int, char **);",
+   "text": "typedef enum args_parse_type (*args_parse_cb)(struct args *,\n                                              u_int,\n                                              char **);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "typedef void(*client_file_cb)(struct client *, const char *, int, int, struct evbuffer *, void *);",
+   "text": "typedef void (*client_file_cb)(struct client *,\n                               const char *, int, int,\n                               struct evbuffer *, void *);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "typedef void(*mode_tree_each_cb)(void *, void *, struct client *, key_code);",
+   "text": "typedef void (*mode_tree_each_cb)(void *, void *,\n                                  struct client *,\n                                  key_code);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "typedef struct screen *(*overlay_mode_cb)(struct client *, void *, u_int *, u_int *);",
+   "text": "typedef struct screen *(*overlay_mode_cb)(struct client *,\n                                          void *, u_int *,\n                                          u_int *);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "typedef void(*mode_tree_draw_cb)(void *, void *, struct screen_write_ctx *, u_int, u_int);",
+   "text": "typedef void (*mode_tree_draw_cb)(void *, void *,\n                                  struct screen_write_ctx *,\n                                  u_int, u_int);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "typedef void(*mode_tree_build_cb)(void *, struct mode_tree_sort_criteria *, uint64_t *, const char *);",
+   "text": "typedef void (*mode_tree_build_cb)(\n    void *, struct mode_tree_sort_criteria *, uint64_t *,\n    const char *);"
+  },
+  {
+   "group": "corpus",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "typedef void(*mode_tree_build_cb)(void *, struct sort_criteria *, uint64_t *, const char *);",
+   "text": "typedef void (*mode_tree_build_cb)(void *,\n                                   struct sort_criteria *,\n                                   uint64_t *,\n                                   const char *);"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 40,
+   "raw": "void(*resize)(struct window_mode_entry *, u_int, u_int);",
+   "text": "void (*resize)(\n    struct window_mode_entry *, u_int,\n    u_int);"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 80,
+   "raw": "void(*resize)(struct window_mode_entry *, u_int, u_int);",
+   "text": "void (*resize)(struct window_mode_entry *, u_int, u_int);"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 40,
+   "raw": "void(*signalcb)(int);",
+   "text": "void (*signalcb)(int);"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 80,
+   "raw": "void(*signalcb)(int);",
+   "text": "void (*signalcb)(int);"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 40,
+   "raw": "void(*mouse_drag_update)(struct client *, struct mouse_event *);",
+   "text": "void (*mouse_drag_update)(\n    struct client *,\n    struct mouse_event *);"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 80,
+   "raw": "void(*mouse_drag_update)(struct client *, struct mouse_event *);",
+   "text": "void (*mouse_drag_update)(struct client *, struct mouse_event *);"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 40,
+   "raw": "enum window_copy_cmd_action(*f)(struct window_copy_cmd_state *);",
+   "text": "enum window_copy_cmd_action (*f)(\n    struct window_copy_cmd_state *);"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 80,
+   "raw": "enum window_copy_cmd_action(*f)(struct window_copy_cmd_state *);",
+   "text": "enum window_copy_cmd_action (*f)(struct window_copy_cmd_state *);"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 40,
+   "raw": "void(*command)(struct window_mode_entry *, struct client *, struct session *, struct winlink *, struct args *, struct mouse_event *);",
+   "text": "void (*command)(\n    struct window_mode_entry *,\n    struct client *, struct session *,\n    struct winlink *, struct args *,\n    struct mouse_event *);"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 80,
+   "raw": "void(*command)(struct window_mode_entry *, struct client *, struct session *, struct winlink *, struct args *, struct mouse_event *);",
+   "text": "void (*command)(struct window_mode_entry *, struct client *, struct session *,\n                struct winlink *, struct args *, struct mouse_event *);"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "struct window_pane * format_get_pane(struct format_tree *ft)",
+   "text": "struct window_pane *\nformat_get_pane(struct format_tree *ft)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "struct window_pane * format_get_pane(struct format_tree *ft)",
+   "text": "struct window_pane *format_get_pane(struct format_tree *ft)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "struct window_pane * server_client_get_pane(struct client *c)",
+   "text": "struct window_pane *\nserver_client_get_pane(struct client *c)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "struct window_pane * server_client_get_pane(struct client *c)",
+   "text": "struct window_pane *server_client_get_pane(struct client *c)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "struct options * options_owner(struct options_entry *o)",
+   "text": "struct options *\noptions_owner(struct options_entry *o)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "struct options * options_owner(struct options_entry *o)",
+   "text": "struct options *options_owner(struct options_entry *o)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "int xsnprintf(char *str, size_t len, const char *fmt,...)",
+   "text": "int xsnprintf(char *str, size_t len,\n              const char *fmt, ...)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "int xsnprintf(char *str, size_t len, const char *fmt,...)",
+   "text": "int xsnprintf(char *str, size_t len, const char *fmt, ...)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "void log_debug(const char *msg,...)",
+   "text": "void log_debug(const char *msg, ...)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "void log_debug(const char *msg,...)",
+   "text": "void log_debug(const char *msg, ...)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "static void client_dispatch_exit_message(char *data, size_t datalen)",
+   "text": "static void client_dispatch_exit_message(char *data, size_t datalen)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "static enum cmd_retval cmd_bind_key_exec(struct cmd *, struct cmdq_item *)",
+   "text": "static enum cmd_retval\ncmd_bind_key_exec(struct cmd *,\n                  struct cmdq_item *)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "static enum cmd_retval cmd_bind_key_exec(struct cmd *, struct cmdq_item *)",
+   "text": "static enum cmd_retval cmd_bind_key_exec(struct cmd *, struct cmdq_item *)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "enum utf8_state utf8_fromwc(wchar_t wc, struct utf8_data *ud)",
+   "text": "enum utf8_state\nutf8_fromwc(wchar_t wc,\n            struct utf8_data *ud)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "enum utf8_state utf8_fromwc(wchar_t wc, struct utf8_data *ud)",
+   "text": "enum utf8_state utf8_fromwc(wchar_t wc, struct utf8_data *ud)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "static const char * cmd_find_map_table(const char *[][2], const char *)",
+   "text": "static const char *\ncmd_find_map_table(const char *[][2],\n                   const char *)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "static const char * cmd_find_map_table(const char *[][2], const char *)",
+   "text": "static const char *cmd_find_map_table(const char *[][2], const char *)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "static void args_print_add(char **buf, size_t *len, const char *fmt,...)",
+   "text": "static void\nargs_print_add(char **buf, size_t *len,\n               const char *fmt, ...)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "static void args_print_add(char **buf, size_t *len, const char *fmt,...)",
+   "text": "static void args_print_add(char **buf, size_t *len, const char *fmt, ...)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "static int screen_write_cell_is_single(const struct grid_cell *gc)",
+   "text": "static int screen_write_cell_is_single(\n    const struct grid_cell *gc)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "static int screen_write_cell_is_single(const struct grid_cell *gc)",
+   "text": "static int screen_write_cell_is_single(const struct grid_cell *gc)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "static void window_buffer_finish_edit(struct window_buffer_editdata *ed)",
+   "text": "static void window_buffer_finish_edit(\n    struct window_buffer_editdata *ed)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "static void window_buffer_finish_edit(struct window_buffer_editdata *ed)",
+   "text": "static void window_buffer_finish_edit(struct window_buffer_editdata *ed)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "int window_pane_get_bg_control_client(struct window_pane *wp)",
+   "text": "int window_pane_get_bg_control_client(\n    struct window_pane *wp)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "int window_pane_get_bg_control_client(struct window_pane *wp)",
+   "text": "int window_pane_get_bg_control_client(struct window_pane *wp)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "static char ** status_prompt_complete_list(u_int *size, const char *s, int at_start)",
+   "text": "static char **\nstatus_prompt_complete_list(\n    u_int *size, const char *s,\n    int at_start)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "static char ** status_prompt_complete_list(u_int *size, const char *s, int at_start)",
+   "text": "static char **status_prompt_complete_list(u_int *size, const char *s,\n                                          int at_start)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "static int window_tree_swap(void *cur_itemdata, void *other_itemdata, struct sort_criteria *sort_crit)",
+   "text": "static int window_tree_swap(\n    void *cur_itemdata,\n    void *other_itemdata,\n    struct sort_criteria *sort_crit)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "static int window_tree_swap(void *cur_itemdata, void *other_itemdata, struct sort_criteria *sort_crit)",
+   "text": "static int window_tree_swap(void *cur_itemdata, void *other_itemdata,\n                            struct sort_criteria *sort_crit)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "static void window_buffer_edit_close_cb(char *buf, size_t len, void *arg)",
+   "text": "static void window_buffer_edit_close_cb(\n    char *buf, size_t len, void *arg)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "static void window_buffer_edit_close_cb(char *buf, size_t len, void *arg)",
+   "text": "static void window_buffer_edit_close_cb(char *buf, size_t len, void *arg)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "void status_message_set(struct client *c, int delay, int ignore_styles, int ignore_keys, int no_freeze, const char *fmt,...)",
+   "text": "void status_message_set(\n    struct client *c, int delay,\n    int ignore_styles, int ignore_keys,\n    int no_freeze, const char *fmt, ...)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "void status_message_set(struct client *c, int delay, int ignore_styles, int ignore_keys, int no_freeze, const char *fmt,...)",
+   "text": "void status_message_set(struct client *c, int delay, int ignore_styles,\n                        int ignore_keys, int no_freeze, const char *fmt, ...)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "void status_message_set(struct client *c, int delay, int ignore_styles, int ignore_keys, const char *fmt,...)",
+   "text": "void status_message_set(\n    struct client *c, int delay,\n    int ignore_styles, int ignore_keys,\n    const char *fmt, ...)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "void status_message_set(struct client *c, int delay, int ignore_styles, int ignore_keys, const char *fmt,...)",
+   "text": "void status_message_set(struct client *c, int delay, int ignore_styles,\n                        int ignore_keys, const char *fmt, ...)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "struct client_file * file_create_with_client(struct client *c, int stream, client_file_cb cb, void *cbdata)",
+   "text": "struct client_file *\nfile_create_with_client(\n    struct client *c, int stream,\n    client_file_cb cb, void *cbdata)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "struct client_file * file_create_with_client(struct client *c, int stream, client_file_cb cb, void *cbdata)",
+   "text": "struct client_file *file_create_with_client(struct client *c, int stream,\n                                            client_file_cb cb, void *cbdata)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "void client_windows_RB_REMOVE_COLOR(struct client_windows *head, struct client_window *parent, struct client_window *elm)",
+   "text": "void client_windows_RB_REMOVE_COLOR(\n    struct client_windows *head,\n    struct client_window *parent,\n    struct client_window *elm)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "void client_windows_RB_REMOVE_COLOR(struct client_windows *head, struct client_window *parent, struct client_window *elm)",
+   "text": "void client_windows_RB_REMOVE_COLOR(struct client_windows *head,\n                                    struct client_window *parent,\n                                    struct client_window *elm)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "static enum window_copy_cmd_action window_copy_cmd_search_reverse(struct window_copy_cmd_state *cs)",
+   "text": "static enum window_copy_cmd_action\nwindow_copy_cmd_search_reverse(\n    struct window_copy_cmd_state *cs)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "static enum window_copy_cmd_action window_copy_cmd_search_reverse(struct window_copy_cmd_state *cs)",
+   "text": "static enum window_copy_cmd_action\nwindow_copy_cmd_search_reverse(struct window_copy_cmd_state *cs)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "static struct session * server_find_session(struct session *s, int(*f)(struct session *, struct session *))",
+   "text": "static struct session *\nserver_find_session(\n    struct session *s,\n    int (*f)(struct session *,\n             struct session *))"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "static struct session * server_find_session(struct session *s, int(*f)(struct session *, struct session *))",
+   "text": "static struct session *server_find_session(struct session *s,\n                                           int (*f)(struct session *,\n                                                    struct session *))"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "static int args_parse_flags(const struct args_parse *parse, struct args_value *values, u_int count, char **cause, struct args *args, u_int *i)",
+   "text": "static int args_parse_flags(\n    const struct args_parse *parse,\n    struct args_value *values,\n    u_int count, char **cause,\n    struct args *args, u_int *i)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "int load_cfg_from_buffer(const void *buf, size_t len, const char *path, struct client *c, struct cmdq_item *item, int flags, struct cmdq_item **new_item)",
+   "text": "int load_cfg_from_buffer(\n    const void *buf, size_t len,\n    const char *path, struct client *c,\n    struct cmdq_item *item, int flags,\n    struct cmdq_item **new_item)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "int load_cfg_from_buffer(const void *buf, size_t len, const char *path, struct client *c, struct cmdq_item *item, int flags, struct cmdq_item **new_item)",
+   "text": "int load_cfg_from_buffer(const void *buf, size_t len, const char *path,\n                         struct client *c, struct cmdq_item *item, int flags,\n                         struct cmdq_item **new_item)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "static void sort_qsort(void *l, u_int len, u_int size, int(*cmp)(const void *, const void *), struct sort_criteria *sort_crit)",
+   "text": "static void sort_qsort(\n    void *l, u_int len, u_int size,\n    int (*cmp)(const void *,\n               const void *),\n    struct sort_criteria *sort_crit)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "static void sort_qsort(void *l, u_int len, u_int size, int(*cmp)(const void *, const void *), struct sort_criteria *sort_crit)",
+   "text": "static void sort_qsort(void *l, u_int len, u_int size,\n                       int (*cmp)(const void *, const void *),\n                       struct sort_criteria *sort_crit)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "static void wait_channels_RB_REMOVE_COLOR(struct wait_channels *head, struct wait_channel *parent, struct wait_channel *elm)",
+   "text": "static void\nwait_channels_RB_REMOVE_COLOR(\n    struct wait_channels *head,\n    struct wait_channel *parent,\n    struct wait_channel *elm)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "static void wait_channels_RB_REMOVE_COLOR(struct wait_channels *head, struct wait_channel *parent, struct wait_channel *elm)",
+   "text": "static void wait_channels_RB_REMOVE_COLOR(struct wait_channels *head,\n                                          struct wait_channel *parent,\n                                          struct wait_channel *elm)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "static void cmd_display_panes_put(struct screen_redraw_ctx *ctx, struct window_pane *wp, u_int cx, u_int cy, const char *buf, size_t len)",
+   "text": "static void cmd_display_panes_put(\n    struct screen_redraw_ctx *ctx,\n    struct window_pane *wp, u_int cx,\n    u_int cy, const char *buf,\n    size_t len)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "static void cmd_display_panes_put(struct screen_redraw_ctx *ctx, struct window_pane *wp, u_int cx, u_int cy, const char *buf, size_t len)",
+   "text": "static void cmd_display_panes_put(struct screen_redraw_ctx *ctx,\n                                  struct window_pane *wp, u_int cx, u_int cy,\n                                  const char *buf, size_t len)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "static int window_tree_build_window(struct session *s, struct winlink *wl, void *modedata, struct mode_tree_sort_criteria *sort_crit, struct mode_tree_item *parent, const char *filter)",
+   "text": "static int window_tree_build_window(\n    struct session *s,\n    struct winlink *wl, void *modedata,\n    struct mode_tree_sort_criteria\n        *sort_crit,\n    struct mode_tree_item *parent,\n    const char *filter)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "static int window_tree_build_window(struct session *s, struct winlink *wl, void *modedata, struct mode_tree_sort_criteria *sort_crit, struct mode_tree_item *parent, const char *filter)",
+   "text": "static int window_tree_build_window(struct session *s, struct winlink *wl,\n                                    void *modedata,\n                                    struct mode_tree_sort_criteria *sort_crit,\n                                    struct mode_tree_item *parent,\n                                    const char *filter)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "static int window_copy_last_regex(struct grid *, u_int, u_int, u_int, u_int, u_int *, u_int *, const char *, const regex_t *, int)",
+   "text": "static int window_copy_last_regex(\n    struct grid *, u_int, u_int, u_int,\n    u_int, u_int *, u_int *,\n    const char *, const regex_t *, int)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "static int window_copy_last_regex(struct grid *, u_int, u_int, u_int, u_int, u_int *, u_int *, const char *, const regex_t *, int)",
+   "text": "static int window_copy_last_regex(struct grid *, u_int, u_int, u_int, u_int,\n                                  u_int *, u_int *, const char *,\n                                  const regex_t *, int)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "void tty_draw_line(struct tty *tty, struct screen *s, u_int px, u_int py, u_int nx, u_int atx, u_int aty, const struct grid_cell *defaults, struct colour_palette *palette)",
+   "text": "void tty_draw_line(\n    struct tty *tty, struct screen *s,\n    u_int px, u_int py, u_int nx,\n    u_int atx, u_int aty,\n    const struct grid_cell *defaults,\n    struct colour_palette *palette)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "void tty_draw_line(struct tty *tty, struct screen *s, u_int px, u_int py, u_int nx, u_int atx, u_int aty, const struct grid_cell *defaults, struct colour_palette *palette)",
+   "text": "void tty_draw_line(struct tty *tty, struct screen *s, u_int px, u_int py,\n                   u_int nx, u_int atx, u_int aty,\n                   const struct grid_cell *defaults,\n                   struct colour_palette *palette)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "struct format_tree * format_create_defaults(struct cmdq_item *item, struct client *c, struct session *s, struct winlink *wl, struct window_pane *wp)",
+   "text": "struct format_tree *\nformat_create_defaults(\n    struct cmdq_item *item,\n    struct client *c, struct session *s,\n    struct winlink *wl,\n    struct window_pane *wp)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "struct format_tree * format_create_defaults(struct cmdq_item *item, struct client *c, struct session *s, struct winlink *wl, struct window_pane *wp)",
+   "text": "struct format_tree *format_create_defaults(struct cmdq_item *item,\n                                           struct client *c, struct session *s,\n                                           struct winlink *wl,\n                                           struct window_pane *wp)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "static int cmd_list_keys_print_notes(struct cmdq_item *item, struct args *args, const char *tablename, u_int keywidth, key_code only, const char *prefix)",
+   "text": "static int cmd_list_keys_print_notes(\n    struct cmdq_item *item,\n    struct args *args,\n    const char *tablename,\n    u_int keywidth, key_code only,\n    const char *prefix)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "static int cmd_list_keys_print_notes(struct cmdq_item *item, struct args *args, const char *tablename, u_int keywidth, key_code only, const char *prefix)",
+   "text": "static int cmd_list_keys_print_notes(struct cmdq_item *item, struct args *args,\n                                     const char *tablename, u_int keywidth,\n                                     key_code only, const char *prefix)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "void status_prompt_set(struct client *c, struct cmd_find_state *fs, const char *msg, const char *input, prompt_input_cb inputcb, prompt_free_cb freecb, void *data, int flags)",
+   "text": "void status_prompt_set(\n    struct client *c,\n    struct cmd_find_state *fs,\n    const char *msg, const char *input,\n    prompt_input_cb inputcb,\n    prompt_free_cb freecb, void *data,\n    int flags)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "void status_prompt_set(struct client *c, struct cmd_find_state *fs, const char *msg, const char *input, prompt_input_cb inputcb, prompt_free_cb freecb, void *data, int flags)",
+   "text": "void status_prompt_set(struct client *c, struct cmd_find_state *fs,\n                       const char *msg, const char *input,\n                       prompt_input_cb inputcb, prompt_free_cb freecb,\n                       void *data, int flags)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "static void format_draw_put_list(struct screen_write_ctx *octx, u_int ocx, u_int ocy, u_int offset, u_int width, struct screen *list, struct screen *list_left, struct screen *list_right, int focus_start, int focus_end, struct format_ranges *frs)",
+   "text": "static void format_draw_put_list(\n    struct screen_write_ctx *octx,\n    u_int ocx, u_int ocy, u_int offset,\n    u_int width, struct screen *list,\n    struct screen *list_left,\n    struct screen *list_right,\n    int focus_start, int focus_end,\n    struct format_ranges *frs)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "static void format_draw_put_list(struct screen_write_ctx *octx, u_int ocx, u_int ocy, u_int offset, u_int width, struct screen *list, struct screen *list_left, struct screen *list_right, int focus_start, int focus_end, struct format_ranges *frs)",
+   "text": "static void format_draw_put_list(struct screen_write_ctx *octx, u_int ocx,\n                                 u_int ocy, u_int offset, u_int width,\n                                 struct screen *list, struct screen *list_left,\n                                 struct screen *list_right, int focus_start,\n                                 int focus_end, struct format_ranges *frs)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "void status_prompt_set(struct client *c, struct cmd_find_state *fs, const char *msg, const char *input, prompt_input_cb inputcb, prompt_free_cb freecb, void *data, int flags, enum prompt_type prompt_type)",
+   "text": "void status_prompt_set(\n    struct client *c,\n    struct cmd_find_state *fs,\n    const char *msg, const char *input,\n    prompt_input_cb inputcb,\n    prompt_free_cb freecb, void *data,\n    int flags,\n    enum prompt_type prompt_type)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "void status_prompt_set(struct client *c, struct cmd_find_state *fs, const char *msg, const char *input, prompt_input_cb inputcb, prompt_free_cb freecb, void *data, int flags, enum prompt_type prompt_type)",
+   "text": "void status_prompt_set(struct client *c, struct cmd_find_state *fs,\n                       const char *msg, const char *input,\n                       prompt_input_cb inputcb, prompt_free_cb freecb,\n                       void *data, int flags, enum prompt_type prompt_type)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 41,
+   "raw": "struct mode_tree_data * mode_tree_start(struct window_pane *wp, struct args *args, mode_tree_build_cb buildcb, mode_tree_draw_cb drawcb, mode_tree_search_cb searchcb, mode_tree_menu_cb menucb, mode_tree_height_cb heightcb, mode_tree_key_cb keycb, mode_tree_swap_cb swapcb, mode_tree_sort_cb sortcb, mode_tree_help_cb helpcb, void *modedata, const struct menu_item *menu, struct screen **s)",
+   "text": "struct mode_tree_data *mode_tree_start(\n    struct window_pane *wp,\n    struct args *args,\n    mode_tree_build_cb buildcb,\n    mode_tree_draw_cb drawcb,\n    mode_tree_search_cb searchcb,\n    mode_tree_menu_cb menucb,\n    mode_tree_height_cb heightcb,\n    mode_tree_key_cb keycb,\n    mode_tree_swap_cb swapcb,\n    mode_tree_sort_cb sortcb,\n    mode_tree_help_cb helpcb,\n    void *modedata,\n    const struct menu_item *menu,\n    struct screen **s)"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 81,
+   "raw": "struct mode_tree_data * mode_tree_start(struct window_pane *wp, struct args *args, mode_tree_build_cb buildcb, mode_tree_draw_cb drawcb, mode_tree_search_cb searchcb, mode_tree_menu_cb menucb, mode_tree_height_cb heightcb, mode_tree_key_cb keycb, mode_tree_swap_cb swapcb, mode_tree_sort_cb sortcb, mode_tree_help_cb helpcb, void *modedata, const struct menu_item *menu, struct screen **s)",
+   "text": "struct mode_tree_data *\nmode_tree_start(struct window_pane *wp, struct args *args,\n                mode_tree_build_cb buildcb, mode_tree_draw_cb drawcb,\n                mode_tree_search_cb searchcb, mode_tree_menu_cb menucb,\n                mode_tree_height_cb heightcb, mode_tree_key_cb keycb,\n                mode_tree_swap_cb swapcb, mode_tree_sort_cb sortcb,\n                mode_tree_help_cb helpcb, void *modedata,\n                const struct menu_item *menu, struct screen **s)"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 40,
+   "raw": "typedef void(*overlay_resize_cb)(struct client *, void *);",
+   "text": "typedef void (*overlay_resize_cb)(\n    struct client *, void *);"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 80,
+   "raw": "typedef void(*overlay_resize_cb)(struct client *, void *);",
+   "text": "typedef void (*overlay_resize_cb)(struct client *, void *);"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 40,
+   "raw": "typedef void(*job_complete_cb)(struct job *);",
+   "text": "typedef void (*job_complete_cb)(\n    struct job *);"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 80,
+   "raw": "typedef void(*job_complete_cb)(struct job *);",
+   "text": "typedef void (*job_complete_cb)(struct job *);"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 40,
+   "raw": "typedef int(*mode_tree_swap_cb)(void *, void *, struct sort_criteria *);",
+   "text": "typedef int (*mode_tree_swap_cb)(\n    void *, void *,\n    struct sort_criteria *);"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 80,
+   "raw": "typedef int(*mode_tree_swap_cb)(void *, void *, struct sort_criteria *);",
+   "text": "typedef int (*mode_tree_swap_cb)(void *, void *, struct sort_criteria *);"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 40,
+   "raw": "typedef void(*overlay_draw_cb)(struct client *, void *, struct screen_redraw_ctx *);",
+   "text": "typedef void (*overlay_draw_cb)(\n    struct client *, void *,\n    struct screen_redraw_ctx *);"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 80,
+   "raw": "typedef void(*overlay_draw_cb)(struct client *, void *, struct screen_redraw_ctx *);",
+   "text": "typedef void (*overlay_draw_cb)(struct client *, void *,\n                                struct screen_redraw_ctx *);"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 40,
+   "raw": "typedef int(*prompt_input_cb)(struct client *, void *, const char *, int);",
+   "text": "typedef int (*prompt_input_cb)(\n    struct client *, void *,\n    const char *, int);"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 80,
+   "raw": "typedef int(*prompt_input_cb)(struct client *, void *, const char *, int);",
+   "text": "typedef int (*prompt_input_cb)(struct client *, void *, const char *, int);"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 40,
+   "raw": "typedef enum args_parse_type(*args_parse_cb)(struct args *, u_int, char **);",
+   "text": "typedef enum args_parse_type (\n    *args_parse_cb)(struct args *,\n                    u_int, char **);"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 80,
+   "raw": "typedef enum args_parse_type(*args_parse_cb)(struct args *, u_int, char **);",
+   "text": "typedef enum args_parse_type (*args_parse_cb)(struct args *, u_int, char **);"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 40,
+   "raw": "typedef struct screen *(*overlay_mode_cb)(struct client *, void *, u_int *, u_int *);",
+   "text": "typedef struct screen *(\n    *overlay_mode_cb)(struct client *,\n                      void *, u_int *,\n                      u_int *);"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 80,
+   "raw": "typedef struct screen *(*overlay_mode_cb)(struct client *, void *, u_int *, u_int *);",
+   "text": "typedef struct screen *(*overlay_mode_cb)(struct client *, void *, u_int *,\n                                          u_int *);"
+  },
+  {
+   "group": "budget",
+   "columns": 40,
+   "clangColumnLimit": 40,
+   "raw": "typedef void(*mode_tree_build_cb)(void *, struct sort_criteria *, uint64_t *, const char *);",
+   "text": "typedef void (*mode_tree_build_cb)(\n    void *, struct sort_criteria *,\n    uint64_t *, const char *);"
+  },
+  {
+   "group": "budget",
+   "columns": 80,
+   "clangColumnLimit": 80,
+   "raw": "typedef void(*mode_tree_build_cb)(void *, struct sort_criteria *, uint64_t *, const char *);",
+   "text": "typedef void (*mode_tree_build_cb)(void *, struct sort_criteria *, uint64_t *,\n                                   const char *);"
+  },
+  {
+   "group": "enum",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "enum { TEXT, CLEAR };",
+   "text": "enum { TEXT, CLEAR };"
+  },
+  {
+   "group": "enum",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "enum { JOB_RUNNING, JOB_DEAD, JOB_CLOSED };",
+   "text": "enum { JOB_RUNNING, JOB_DEAD, JOB_CLOSED };"
+  },
+  {
+   "group": "enum",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "enum { RECENTRE_TOP, RECENTRE_MIDDLE, RECENTRE_BOTTOM };",
+   "text": "enum { RECENTRE_TOP, RECENTRE_MIDDLE, RECENTRE_BOTTOM };"
+  },
+  {
+   "group": "enum",
+   "columns": 40,
+   "clangColumnLimit": 40,
+   "raw": "enum { RECENTRE_TOP, RECENTRE_MIDDLE, RECENTRE_BOTTOM };",
+   "text": "enum {\n  RECENTRE_TOP,\n  RECENTRE_MIDDLE,\n  RECENTRE_BOTTOM\n};"
+  },
+  {
+   "group": "enum",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "enum { LINE_SEL_NONE, LINE_SEL_LEFT_RIGHT, LINE_SEL_RIGHT_LEFT };",
+   "text": "enum {\n  LINE_SEL_NONE,\n  LINE_SEL_LEFT_RIGHT,\n  LINE_SEL_RIGHT_LEFT\n};"
+  },
+  {
+   "group": "enum",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "enum cmd_parse_status { CMD_PARSE_EMPTY, CMD_PARSE_ERROR, CMD_PARSE_SUCCESS };",
+   "text": "enum cmd_parse_status {\n  CMD_PARSE_EMPTY,\n  CMD_PARSE_ERROR,\n  CMD_PARSE_SUCCESS\n};"
+  },
+  {
+   "group": "enum",
+   "columns": 40,
+   "clangColumnLimit": 40,
+   "raw": "enum cmd_parse_status { CMD_PARSE_EMPTY, CMD_PARSE_ERROR, CMD_PARSE_SUCCESS };",
+   "text": "enum cmd_parse_status {\n  CMD_PARSE_EMPTY,\n  CMD_PARSE_ERROR,\n  CMD_PARSE_SUCCESS\n};"
+  },
+  {
+   "group": "enum",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "enum { WINDOW_COPY_REL_POS_ABOVE, WINDOW_COPY_REL_POS_ON_SCREEN, WINDOW_COPY_REL_POS_BELOW };",
+   "text": "enum {\n  WINDOW_COPY_REL_POS_ABOVE,\n  WINDOW_COPY_REL_POS_ON_SCREEN,\n  WINDOW_COPY_REL_POS_BELOW\n};"
+  },
+  {
+   "group": "enum",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "enum format_type { FORMAT_TYPE_UNKNOWN, FORMAT_TYPE_SESSION, FORMAT_TYPE_WINDOW, FORMAT_TYPE_PANE };",
+   "text": "enum format_type {\n  FORMAT_TYPE_UNKNOWN,\n  FORMAT_TYPE_SESSION,\n  FORMAT_TYPE_WINDOW,\n  FORMAT_TYPE_PANE\n};"
+  },
+  {
+   "group": "enum",
+   "columns": 40,
+   "clangColumnLimit": 40,
+   "raw": "enum format_type { FORMAT_TYPE_UNKNOWN, FORMAT_TYPE_SESSION, FORMAT_TYPE_WINDOW, FORMAT_TYPE_PANE };",
+   "text": "enum format_type {\n  FORMAT_TYPE_UNKNOWN,\n  FORMAT_TYPE_SESSION,\n  FORMAT_TYPE_WINDOW,\n  FORMAT_TYPE_PANE\n};"
+  },
+  {
+   "group": "enum",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "enum window_copy_cmd_action { WINDOW_COPY_CMD_NOTHING, WINDOW_COPY_CMD_REDRAW, WINDOW_COPY_CMD_CANCEL };",
+   "text": "enum window_copy_cmd_action {\n  WINDOW_COPY_CMD_NOTHING,\n  WINDOW_COPY_CMD_REDRAW,\n  WINDOW_COPY_CMD_CANCEL\n};"
+  },
+  {
+   "group": "enum",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "enum window_copy_cmd_clear { WINDOW_COPY_CMD_CLEAR_ALWAYS, WINDOW_COPY_CMD_CLEAR_NEVER, WINDOW_COPY_CMD_CLEAR_EMACS_ONLY };",
+   "text": "enum window_copy_cmd_clear {\n  WINDOW_COPY_CMD_CLEAR_ALWAYS,\n  WINDOW_COPY_CMD_CLEAR_NEVER,\n  WINDOW_COPY_CMD_CLEAR_EMACS_ONLY\n};"
+  },
+  {
+   "group": "enum",
+   "columns": 40,
+   "clangColumnLimit": 40,
+   "raw": "enum window_copy_cmd_clear { WINDOW_COPY_CMD_CLEAR_ALWAYS, WINDOW_COPY_CMD_CLEAR_NEVER, WINDOW_COPY_CMD_CLEAR_EMACS_ONLY };",
+   "text": "enum window_copy_cmd_clear {\n  WINDOW_COPY_CMD_CLEAR_ALWAYS,\n  WINDOW_COPY_CMD_CLEAR_NEVER,\n  WINDOW_COPY_CMD_CLEAR_EMACS_ONLY\n};"
+  },
+  {
+   "group": "enum",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "enum prompt_type { PROMPT_TYPE_COMMAND, PROMPT_TYPE_SEARCH, PROMPT_TYPE_TARGET, PROMPT_TYPE_WINDOW_TARGET, PROMPT_TYPE_INVALID = 0xff };",
+   "text": "enum prompt_type {\n  PROMPT_TYPE_COMMAND,\n  PROMPT_TYPE_SEARCH,\n  PROMPT_TYPE_TARGET,\n  PROMPT_TYPE_WINDOW_TARGET,\n  PROMPT_TYPE_INVALID = 0xff\n};"
+  },
+  {
+   "group": "enum",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "enum box_lines { BOX_LINES_DEFAULT = -1, BOX_LINES_SINGLE, BOX_LINES_DOUBLE, BOX_LINES_HEAVY, BOX_LINES_SIMPLE, BOX_LINES_ROUNDED, BOX_LINES_PADDED, BOX_LINES_NONE };",
+   "text": "enum box_lines {\n  BOX_LINES_DEFAULT = -1,\n  BOX_LINES_SINGLE,\n  BOX_LINES_DOUBLE,\n  BOX_LINES_HEAVY,\n  BOX_LINES_SIMPLE,\n  BOX_LINES_ROUNDED,\n  BOX_LINES_PADDED,\n  BOX_LINES_NONE\n};"
+  },
+  {
+   "group": "enum",
+   "columns": 40,
+   "clangColumnLimit": 40,
+   "raw": "enum box_lines { BOX_LINES_DEFAULT = -1, BOX_LINES_SINGLE, BOX_LINES_DOUBLE, BOX_LINES_HEAVY, BOX_LINES_SIMPLE, BOX_LINES_ROUNDED, BOX_LINES_PADDED, BOX_LINES_NONE };",
+   "text": "enum box_lines {\n  BOX_LINES_DEFAULT = -1,\n  BOX_LINES_SINGLE,\n  BOX_LINES_DOUBLE,\n  BOX_LINES_HEAVY,\n  BOX_LINES_SIMPLE,\n  BOX_LINES_ROUNDED,\n  BOX_LINES_PADDED,\n  BOX_LINES_NONE\n};"
+  },
+  {
+   "group": "enum",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "enum screen_redraw_border_type { SCREEN_REDRAW_OUTSIDE, SCREEN_REDRAW_INSIDE, SCREEN_REDRAW_BORDER_LEFT, SCREEN_REDRAW_BORDER_RIGHT, SCREEN_REDRAW_BORDER_TOP, SCREEN_REDRAW_BORDER_BOTTOM };",
+   "text": "enum screen_redraw_border_type {\n  SCREEN_REDRAW_OUTSIDE,\n  SCREEN_REDRAW_INSIDE,\n  SCREEN_REDRAW_BORDER_LEFT,\n  SCREEN_REDRAW_BORDER_RIGHT,\n  SCREEN_REDRAW_BORDER_TOP,\n  SCREEN_REDRAW_BORDER_BOTTOM\n};"
+  },
+  {
+   "group": "enum",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "enum input_esc_type { INPUT_ESC_DECALN, INPUT_ESC_DECKPAM, INPUT_ESC_DECKPNM, INPUT_ESC_DECRC, INPUT_ESC_DECSC, INPUT_ESC_HTS, INPUT_ESC_IND, INPUT_ESC_NEL, INPUT_ESC_RI, INPUT_ESC_RIS, INPUT_ESC_SCSG0_OFF, INPUT_ESC_SCSG0_ON, INPUT_ESC_SCSG1_OFF, INPUT_ESC_SCSG1_ON, INPUT_ESC_ST };",
+   "text": "enum input_esc_type {\n  INPUT_ESC_DECALN,\n  INPUT_ESC_DECKPAM,\n  INPUT_ESC_DECKPNM,\n  INPUT_ESC_DECRC,\n  INPUT_ESC_DECSC,\n  INPUT_ESC_HTS,\n  INPUT_ESC_IND,\n  INPUT_ESC_NEL,\n  INPUT_ESC_RI,\n  INPUT_ESC_RIS,\n  INPUT_ESC_SCSG0_OFF,\n  INPUT_ESC_SCSG0_ON,\n  INPUT_ESC_SCSG1_OFF,\n  INPUT_ESC_SCSG1_ON,\n  INPUT_ESC_ST\n};"
+  },
+  {
+   "group": "enum",
+   "columns": 40,
+   "clangColumnLimit": 40,
+   "raw": "enum input_esc_type { INPUT_ESC_DECALN, INPUT_ESC_DECKPAM, INPUT_ESC_DECKPNM, INPUT_ESC_DECRC, INPUT_ESC_DECSC, INPUT_ESC_HTS, INPUT_ESC_IND, INPUT_ESC_NEL, INPUT_ESC_RI, INPUT_ESC_RIS, INPUT_ESC_SCSG0_OFF, INPUT_ESC_SCSG0_ON, INPUT_ESC_SCSG1_OFF, INPUT_ESC_SCSG1_ON, INPUT_ESC_ST };",
+   "text": "enum input_esc_type {\n  INPUT_ESC_DECALN,\n  INPUT_ESC_DECKPAM,\n  INPUT_ESC_DECKPNM,\n  INPUT_ESC_DECRC,\n  INPUT_ESC_DECSC,\n  INPUT_ESC_HTS,\n  INPUT_ESC_IND,\n  INPUT_ESC_NEL,\n  INPUT_ESC_RI,\n  INPUT_ESC_RIS,\n  INPUT_ESC_SCSG0_OFF,\n  INPUT_ESC_SCSG0_ON,\n  INPUT_ESC_SCSG1_OFF,\n  INPUT_ESC_SCSG1_ON,\n  INPUT_ESC_ST\n};"
+  },
+  {
+   "group": "enum",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "enum msgtype { MSG_VERSION = 12, MSG_IDENTIFY_FLAGS = 100, MSG_IDENTIFY_TERM, MSG_IDENTIFY_TTYNAME, MSG_IDENTIFY_OLDCWD, MSG_IDENTIFY_STDIN, MSG_IDENTIFY_ENVIRON, MSG_IDENTIFY_DONE, MSG_IDENTIFY_CLIENTPID, MSG_IDENTIFY_CWD, MSG_IDENTIFY_FEATURES, MSG_IDENTIFY_STDOUT, MSG_IDENTIFY_LONGFLAGS, MSG_IDENTIFY_TERMINFO, MSG_COMMAND = 200, MSG_DETACH, MSG_DETACHKILL, MSG_EXIT, MSG_EXITED, MSG_EXITING, MSG_LOCK, MSG_READY, MSG_RESIZE, MSG_SHELL, MSG_SHUTDOWN, MSG_OLDSTDERR, MSG_OLDSTDIN, MSG_OLDSTDOUT, MSG_SUSPEND, MSG_UNLOCK, MSG_WAKEUP, MSG_EXEC, MSG_FLAGS, MSG_READ_OPEN = 300, MSG_READ, MSG_READ_DONE, MSG_WRITE_OPEN, MSG_WRITE, MSG_WRITE_READY, MSG_WRITE_CLOSE };",
+   "text": "enum msgtype {\n  MSG_VERSION = 12,\n  MSG_IDENTIFY_FLAGS = 100,\n  MSG_IDENTIFY_TERM,\n  MSG_IDENTIFY_TTYNAME,\n  MSG_IDENTIFY_OLDCWD,\n  MSG_IDENTIFY_STDIN,\n  MSG_IDENTIFY_ENVIRON,\n  MSG_IDENTIFY_DONE,\n  MSG_IDENTIFY_CLIENTPID,\n  MSG_IDENTIFY_CWD,\n  MSG_IDENTIFY_FEATURES,\n  MSG_IDENTIFY_STDOUT,\n  MSG_IDENTIFY_LONGFLAGS,\n  MSG_IDENTIFY_TERMINFO,\n  MSG_COMMAND = 200,\n  MSG_DETACH,\n  MSG_DETACHKILL,\n  MSG_EXIT,\n  MSG_EXITED,\n  MSG_EXITING,\n  MSG_LOCK,\n  MSG_READY,\n  MSG_RESIZE,\n  MSG_SHELL,\n  MSG_SHUTDOWN,\n  MSG_OLDSTDERR,\n  MSG_OLDSTDIN,\n  MSG_OLDSTDOUT,\n  MSG_SUSPEND,\n  MSG_UNLOCK,\n  MSG_WAKEUP,\n  MSG_EXEC,\n  MSG_FLAGS,\n  MSG_READ_OPEN = 300,\n  MSG_READ,\n  MSG_READ_DONE,\n  MSG_WRITE_OPEN,\n  MSG_WRITE,\n  MSG_WRITE_READY,\n  MSG_WRITE_CLOSE\n};"
+  },
+  {
+   "group": "enum",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "enum { KEYC_FOCUS_IN = 0x0000000010e000ULL, KEYC_FOCUS_OUT, KEYC_ANY, KEYC_PASTE_START, KEYC_PASTE_END, KEYC_MOUSE, KEYC_DRAGGING, KEYC_DOUBLECLICK, KEYC_MOUSEMOVE_PANE, KEYC_MOUSEMOVE_STATUS, KEYC_MOUSEMOVE_STATUS_LEFT, KEYC_MOUSEMOVE_STATUS_RIGHT, KEYC_MOUSEMOVE_STATUS_DEFAULT, KEYC_MOUSEMOVE_BORDER, KEYC_MOUSEDOWN1_PANE, KEYC_MOUSEDOWN1_STATUS, KEYC_MOUSEDOWN1_STATUS_LEFT, KEYC_MOUSEDOWN1_STATUS_RIGHT, KEYC_MOUSEDOWN1_STATUS_DEFAULT, KEYC_MOUSEDOWN1_BORDER, KEYC_MOUSEDOWN2_PANE, KEYC_MOUSEDOWN2_STATUS, KEYC_MOUSEDOWN2_STATUS_LEFT, KEYC_MOUSEDOWN2_STATUS_RIGHT, KEYC_MOUSEDOWN2_STATUS_DEFAULT, KEYC_MOUSEDOWN2_BORDER, KEYC_MOUSEDOWN3_PANE, KEYC_MOUSEDOWN3_STATUS, KEYC_MOUSEDOWN3_STATUS_LEFT, KEYC_MOUSEDOWN3_STATUS_RIGHT, KEYC_MOUSEDOWN3_STATUS_DEFAULT, KEYC_MOUSEDOWN3_BORDER, KEYC_MOUSEUP1_PANE, KEYC_MOUSEUP1_STATUS, KEYC_MOUSEUP1_STATUS_LEFT, KEYC_MOUSEUP1_STATUS_RIGHT, KEYC_MOUSEUP1_STATUS_DEFAULT, KEYC_MOUSEUP1_BORDER, KEYC_MOUSEUP2_PANE, KEYC_MOUSEUP2_STATUS, KEYC_MOUSEUP2_STATUS_LEFT, KEYC_MOUSEUP2_STATUS_RIGHT, KEYC_MOUSEUP2_STATUS_DEFAULT, KEYC_MOUSEUP2_BORDER, KEYC_MOUSEUP3_PANE, KEYC_MOUSEUP3_STATUS, KEYC_MOUSEUP3_STATUS_LEFT, KEYC_MOUSEUP3_STATUS_RIGHT, KEYC_MOUSEUP3_STATUS_DEFAULT, KEYC_MOUSEUP3_BORDER, KEYC_MOUSEDRAG1_PANE, KEYC_MOUSEDRAG1_STATUS, KEYC_MOUSEDRAG1_STATUS_LEFT, KEYC_MOUSEDRAG1_STATUS_RIGHT, KEYC_MOUSEDRAG1_STATUS_DEFAULT, KEYC_MOUSEDRAG1_BORDER, KEYC_MOUSEDRAG2_PANE, KEYC_MOUSEDRAG2_STATUS, KEYC_MOUSEDRAG2_STATUS_LEFT, KEYC_MOUSEDRAG2_STATUS_RIGHT, KEYC_MOUSEDRAG2_STATUS_DEFAULT, KEYC_MOUSEDRAG2_BORDER, KEYC_MOUSEDRAG3_PANE, KEYC_MOUSEDRAG3_STATUS, KEYC_MOUSEDRAG3_STATUS_LEFT, KEYC_MOUSEDRAG3_STATUS_RIGHT, KEYC_MOUSEDRAG3_STATUS_DEFAULT, KEYC_MOUSEDRAG3_BORDER, KEYC_MOUSEDRAGEND1_PANE, KEYC_MOUSEDRAGEND1_STATUS, KEYC_MOUSEDRAGEND1_STATUS_LEFT, KEYC_MOUSEDRAGEND1_STATUS_RIGHT, KEYC_MOUSEDRAGEND1_STATUS_DEFAULT, KEYC_MOUSEDRAGEND1_BORDER, KEYC_MOUSEDRAGEND2_PANE, KEYC_MOUSEDRAGEND2_STATUS, KEYC_MOUSEDRAGEND2_STATUS_LEFT, KEYC_MOUSEDRAGEND2_STATUS_RIGHT, KEYC_MOUSEDRAGEND2_STATUS_DEFAULT, KEYC_MOUSEDRAGEND2_BORDER, KEYC_MOUSEDRAGEND3_PANE, KEYC_MOUSEDRAGEND3_STATUS, KEYC_MOUSEDRAGEND3_STATUS_LEFT, KEYC_MOUSEDRAGEND3_STATUS_RIGHT, KEYC_MOUSEDRAGEND3_STATUS_DEFAULT, KEYC_MOUSEDRAGEND3_BORDER, KEYC_WHEELUP_PANE, KEYC_WHEELUP_STATUS, KEYC_WHEELUP_STATUS_LEFT, KEYC_WHEELUP_STATUS_RIGHT, KEYC_WHEELUP_STATUS_DEFAULT, KEYC_WHEELUP_BORDER, KEYC_WHEELDOWN_PANE, KEYC_WHEELDOWN_STATUS, KEYC_WHEELDOWN_STATUS_LEFT, KEYC_WHEELDOWN_STATUS_RIGHT, KEYC_WHEELDOWN_STATUS_DEFAULT, KEYC_WHEELDOWN_BORDER, KEYC_SECONDCLICK1_PANE, KEYC_SECONDCLICK1_STATUS, KEYC_SECONDCLICK1_STATUS_LEFT, KEYC_SECONDCLICK1_STATUS_RIGHT, KEYC_SECONDCLICK1_STATUS_DEFAULT, KEYC_SECONDCLICK1_BORDER, KEYC_SECONDCLICK2_PANE, KEYC_SECONDCLICK2_STATUS, KEYC_SECONDCLICK2_STATUS_LEFT, KEYC_SECONDCLICK2_STATUS_RIGHT, KEYC_SECONDCLICK2_STATUS_DEFAULT, KEYC_SECONDCLICK2_BORDER, KEYC_SECONDCLICK3_PANE, KEYC_SECONDCLICK3_STATUS, KEYC_SECONDCLICK3_STATUS_LEFT, KEYC_SECONDCLICK3_STATUS_RIGHT, KEYC_SECONDCLICK3_STATUS_DEFAULT, KEYC_SECONDCLICK3_BORDER, KEYC_DOUBLECLICK1_PANE, KEYC_DOUBLECLICK1_STATUS, KEYC_DOUBLECLICK1_STATUS_LEFT, KEYC_DOUBLECLICK1_STATUS_RIGHT, KEYC_DOUBLECLICK1_STATUS_DEFAULT, KEYC_DOUBLECLICK1_BORDER, KEYC_DOUBLECLICK2_PANE, KEYC_DOUBLECLICK2_STATUS, KEYC_DOUBLECLICK2_STATUS_LEFT, KEYC_DOUBLECLICK2_STATUS_RIGHT, KEYC_DOUBLECLICK2_STATUS_DEFAULT, KEYC_DOUBLECLICK2_BORDER, KEYC_DOUBLECLICK3_PANE, KEYC_DOUBLECLICK3_STATUS, KEYC_DOUBLECLICK3_STATUS_LEFT, KEYC_DOUBLECLICK3_STATUS_RIGHT, KEYC_DOUBLECLICK3_STATUS_DEFAULT, KEYC_DOUBLECLICK3_BORDER, KEYC_TRIPLECLICK1_PANE, KEYC_TRIPLECLICK1_STATUS, KEYC_TRIPLECLICK1_STATUS_LEFT, KEYC_TRIPLECLICK1_STATUS_RIGHT, KEYC_TRIPLECLICK1_STATUS_DEFAULT, KEYC_TRIPLECLICK1_BORDER, KEYC_TRIPLECLICK2_PANE, KEYC_TRIPLECLICK2_STATUS, KEYC_TRIPLECLICK2_STATUS_LEFT, KEYC_TRIPLECLICK2_STATUS_RIGHT, KEYC_TRIPLECLICK2_STATUS_DEFAULT, KEYC_TRIPLECLICK2_BORDER, KEYC_TRIPLECLICK3_PANE, KEYC_TRIPLECLICK3_STATUS, KEYC_TRIPLECLICK3_STATUS_LEFT, KEYC_TRIPLECLICK3_STATUS_RIGHT, KEYC_TRIPLECLICK3_STATUS_DEFAULT, KEYC_TRIPLECLICK3_BORDER, KEYC_BSPACE, KEYC_F1, KEYC_F2, KEYC_F3, KEYC_F4, KEYC_F5, KEYC_F6, KEYC_F7, KEYC_F8, KEYC_F9, KEYC_F10, KEYC_F11, KEYC_F12, KEYC_IC, KEYC_DC, KEYC_HOME, KEYC_END, KEYC_NPAGE, KEYC_PPAGE, KEYC_BTAB, KEYC_UP, KEYC_DOWN, KEYC_LEFT, KEYC_RIGHT, KEYC_KP_SLASH, KEYC_KP_STAR, KEYC_KP_MINUS, KEYC_KP_SEVEN, KEYC_KP_EIGHT, KEYC_KP_NINE, KEYC_KP_PLUS, KEYC_KP_FOUR, KEYC_KP_FIVE, KEYC_KP_SIX, KEYC_KP_ONE, KEYC_KP_TWO, KEYC_KP_THREE, KEYC_KP_ENTER, KEYC_KP_ZERO, KEYC_KP_PERIOD, KEYC_BASE_END };",
+   "text": "enum {\n  KEYC_FOCUS_IN = 0x0000000010e000ULL,\n  KEYC_FOCUS_OUT,\n  KEYC_ANY,\n  KEYC_PASTE_START,\n  KEYC_PASTE_END,\n  KEYC_MOUSE,\n  KEYC_DRAGGING,\n  KEYC_DOUBLECLICK,\n  KEYC_MOUSEMOVE_PANE,\n  KEYC_MOUSEMOVE_STATUS,\n  KEYC_MOUSEMOVE_STATUS_LEFT,\n  KEYC_MOUSEMOVE_STATUS_RIGHT,\n  KEYC_MOUSEMOVE_STATUS_DEFAULT,\n  KEYC_MOUSEMOVE_BORDER,\n  KEYC_MOUSEDOWN1_PANE,\n  KEYC_MOUSEDOWN1_STATUS,\n  KEYC_MOUSEDOWN1_STATUS_LEFT,\n  KEYC_MOUSEDOWN1_STATUS_RIGHT,\n  KEYC_MOUSEDOWN1_STATUS_DEFAULT,\n  KEYC_MOUSEDOWN1_BORDER,\n  KEYC_MOUSEDOWN2_PANE,\n  KEYC_MOUSEDOWN2_STATUS,\n  KEYC_MOUSEDOWN2_STATUS_LEFT,\n  KEYC_MOUSEDOWN2_STATUS_RIGHT,\n  KEYC_MOUSEDOWN2_STATUS_DEFAULT,\n  KEYC_MOUSEDOWN2_BORDER,\n  KEYC_MOUSEDOWN3_PANE,\n  KEYC_MOUSEDOWN3_STATUS,\n  KEYC_MOUSEDOWN3_STATUS_LEFT,\n  KEYC_MOUSEDOWN3_STATUS_RIGHT,\n  KEYC_MOUSEDOWN3_STATUS_DEFAULT,\n  KEYC_MOUSEDOWN3_BORDER,\n  KEYC_MOUSEUP1_PANE,\n  KEYC_MOUSEUP1_STATUS,\n  KEYC_MOUSEUP1_STATUS_LEFT,\n  KEYC_MOUSEUP1_STATUS_RIGHT,\n  KEYC_MOUSEUP1_STATUS_DEFAULT,\n  KEYC_MOUSEUP1_BORDER,\n  KEYC_MOUSEUP2_PANE,\n  KEYC_MOUSEUP2_STATUS,\n  KEYC_MOUSEUP2_STATUS_LEFT,\n  KEYC_MOUSEUP2_STATUS_RIGHT,\n  KEYC_MOUSEUP2_STATUS_DEFAULT,\n  KEYC_MOUSEUP2_BORDER,\n  KEYC_MOUSEUP3_PANE,\n  KEYC_MOUSEUP3_STATUS,\n  KEYC_MOUSEUP3_STATUS_LEFT,\n  KEYC_MOUSEUP3_STATUS_RIGHT,\n  KEYC_MOUSEUP3_STATUS_DEFAULT,\n  KEYC_MOUSEUP3_BORDER,\n  KEYC_MOUSEDRAG1_PANE,\n  KEYC_MOUSEDRAG1_STATUS,\n  KEYC_MOUSEDRAG1_STATUS_LEFT,\n  KEYC_MOUSEDRAG1_STATUS_RIGHT,\n  KEYC_MOUSEDRAG1_STATUS_DEFAULT,\n  KEYC_MOUSEDRAG1_BORDER,\n  KEYC_MOUSEDRAG2_PANE,\n  KEYC_MOUSEDRAG2_STATUS,\n  KEYC_MOUSEDRAG2_STATUS_LEFT,\n  KEYC_MOUSEDRAG2_STATUS_RIGHT,\n  KEYC_MOUSEDRAG2_STATUS_DEFAULT,\n  KEYC_MOUSEDRAG2_BORDER,\n  KEYC_MOUSEDRAG3_PANE,\n  KEYC_MOUSEDRAG3_STATUS,\n  KEYC_MOUSEDRAG3_STATUS_LEFT,\n  KEYC_MOUSEDRAG3_STATUS_RIGHT,\n  KEYC_MOUSEDRAG3_STATUS_DEFAULT,\n  KEYC_MOUSEDRAG3_BORDER,\n  KEYC_MOUSEDRAGEND1_PANE,\n  KEYC_MOUSEDRAGEND1_STATUS,\n  KEYC_MOUSEDRAGEND1_STATUS_LEFT,\n  KEYC_MOUSEDRAGEND1_STATUS_RIGHT,\n  KEYC_MOUSEDRAGEND1_STATUS_DEFAULT,\n  KEYC_MOUSEDRAGEND1_BORDER,\n  KEYC_MOUSEDRAGEND2_PANE,\n  KEYC_MOUSEDRAGEND2_STATUS,\n  KEYC_MOUSEDRAGEND2_STATUS_LEFT,\n  KEYC_MOUSEDRAGEND2_STATUS_RIGHT,\n  KEYC_MOUSEDRAGEND2_STATUS_DEFAULT,\n  KEYC_MOUSEDRAGEND2_BORDER,\n  KEYC_MOUSEDRAGEND3_PANE,\n  KEYC_MOUSEDRAGEND3_STATUS,\n  KEYC_MOUSEDRAGEND3_STATUS_LEFT,\n  KEYC_MOUSEDRAGEND3_STATUS_RIGHT,\n  KEYC_MOUSEDRAGEND3_STATUS_DEFAULT,\n  KEYC_MOUSEDRAGEND3_BORDER,\n  KEYC_WHEELUP_PANE,\n  KEYC_WHEELUP_STATUS,\n  KEYC_WHEELUP_STATUS_LEFT,\n  KEYC_WHEELUP_STATUS_RIGHT,\n  KEYC_WHEELUP_STATUS_DEFAULT,\n  KEYC_WHEELUP_BORDER,\n  KEYC_WHEELDOWN_PANE,\n  KEYC_WHEELDOWN_STATUS,\n  KEYC_WHEELDOWN_STATUS_LEFT,\n  KEYC_WHEELDOWN_STATUS_RIGHT,\n  KEYC_WHEELDOWN_STATUS_DEFAULT,\n  KEYC_WHEELDOWN_BORDER,\n  KEYC_SECONDCLICK1_PANE,\n  KEYC_SECONDCLICK1_STATUS,\n  KEYC_SECONDCLICK1_STATUS_LEFT,\n  KEYC_SECONDCLICK1_STATUS_RIGHT,\n  KEYC_SECONDCLICK1_STATUS_DEFAULT,\n  KEYC_SECONDCLICK1_BORDER,\n  KEYC_SECONDCLICK2_PANE,\n  KEYC_SECONDCLICK2_STATUS,\n  KEYC_SECONDCLICK2_STATUS_LEFT,\n  KEYC_SECONDCLICK2_STATUS_RIGHT,\n  KEYC_SECONDCLICK2_STATUS_DEFAULT,\n  KEYC_SECONDCLICK2_BORDER,\n  KEYC_SECONDCLICK3_PANE,\n  KEYC_SECONDCLICK3_STATUS,\n  KEYC_SECONDCLICK3_STATUS_LEFT,\n  KEYC_SECONDCLICK3_STATUS_RIGHT,\n  KEYC_SECONDCLICK3_STATUS_DEFAULT,\n  KEYC_SECONDCLICK3_BORDER,\n  KEYC_DOUBLECLICK1_PANE,\n  KEYC_DOUBLECLICK1_STATUS,\n  KEYC_DOUBLECLICK1_STATUS_LEFT,\n  KEYC_DOUBLECLICK1_STATUS_RIGHT,\n  KEYC_DOUBLECLICK1_STATUS_DEFAULT,\n  KEYC_DOUBLECLICK1_BORDER,\n  KEYC_DOUBLECLICK2_PANE,\n  KEYC_DOUBLECLICK2_STATUS,\n  KEYC_DOUBLECLICK2_STATUS_LEFT,\n  KEYC_DOUBLECLICK2_STATUS_RIGHT,\n  KEYC_DOUBLECLICK2_STATUS_DEFAULT,\n  KEYC_DOUBLECLICK2_BORDER,\n  KEYC_DOUBLECLICK3_PANE,\n  KEYC_DOUBLECLICK3_STATUS,\n  KEYC_DOUBLECLICK3_STATUS_LEFT,\n  KEYC_DOUBLECLICK3_STATUS_RIGHT,\n  KEYC_DOUBLECLICK3_STATUS_DEFAULT,\n  KEYC_DOUBLECLICK3_BORDER,\n  KEYC_TRIPLECLICK1_PANE,\n  KEYC_TRIPLECLICK1_STATUS,\n  KEYC_TRIPLECLICK1_STATUS_LEFT,\n  KEYC_TRIPLECLICK1_STATUS_RIGHT,\n  KEYC_TRIPLECLICK1_STATUS_DEFAULT,\n  KEYC_TRIPLECLICK1_BORDER,\n  KEYC_TRIPLECLICK2_PANE,\n  KEYC_TRIPLECLICK2_STATUS,\n  KEYC_TRIPLECLICK2_STATUS_LEFT,\n  KEYC_TRIPLECLICK2_STATUS_RIGHT,\n  KEYC_TRIPLECLICK2_STATUS_DEFAULT,\n  KEYC_TRIPLECLICK2_BORDER,\n  KEYC_TRIPLECLICK3_PANE,\n  KEYC_TRIPLECLICK3_STATUS,\n  KEYC_TRIPLECLICK3_STATUS_LEFT,\n  KEYC_TRIPLECLICK3_STATUS_RIGHT,\n  KEYC_TRIPLECLICK3_STATUS_DEFAULT,\n  KEYC_TRIPLECLICK3_BORDER,\n  KEYC_BSPACE,\n  KEYC_F1,\n  KEYC_F2,\n  KEYC_F3,\n  KEYC_F4,\n  KEYC_F5,\n  KEYC_F6,\n  KEYC_F7,\n  KEYC_F8,\n  KEYC_F9,\n  KEYC_F10,\n  KEYC_F11,\n  KEYC_F12,\n  KEYC_IC,\n  KEYC_DC,\n  KEYC_HOME,\n  KEYC_END,\n  KEYC_NPAGE,\n  KEYC_PPAGE,\n  KEYC_BTAB,\n  KEYC_UP,\n  KEYC_DOWN,\n  KEYC_LEFT,\n  KEYC_RIGHT,\n  KEYC_KP_SLASH,\n  KEYC_KP_STAR,\n  KEYC_KP_MINUS,\n  KEYC_KP_SEVEN,\n  KEYC_KP_EIGHT,\n  KEYC_KP_NINE,\n  KEYC_KP_PLUS,\n  KEYC_KP_FOUR,\n  KEYC_KP_FIVE,\n  KEYC_KP_SIX,\n  KEYC_KP_ONE,\n  KEYC_KP_TWO,\n  KEYC_KP_THREE,\n  KEYC_KP_ENTER,\n  KEYC_KP_ZERO,\n  KEYC_KP_PERIOD,\n  KEYC_BASE_END\n};"
+  },
+  {
+   "group": "enum",
+   "columns": 40,
+   "clangColumnLimit": 40,
+   "raw": "enum { KEYC_FOCUS_IN = 0x0000000010e000ULL, KEYC_FOCUS_OUT, KEYC_ANY, KEYC_PASTE_START, KEYC_PASTE_END, KEYC_MOUSE, KEYC_DRAGGING, KEYC_DOUBLECLICK, KEYC_MOUSEMOVE_PANE, KEYC_MOUSEMOVE_STATUS, KEYC_MOUSEMOVE_STATUS_LEFT, KEYC_MOUSEMOVE_STATUS_RIGHT, KEYC_MOUSEMOVE_STATUS_DEFAULT, KEYC_MOUSEMOVE_BORDER, KEYC_MOUSEDOWN1_PANE, KEYC_MOUSEDOWN1_STATUS, KEYC_MOUSEDOWN1_STATUS_LEFT, KEYC_MOUSEDOWN1_STATUS_RIGHT, KEYC_MOUSEDOWN1_STATUS_DEFAULT, KEYC_MOUSEDOWN1_BORDER, KEYC_MOUSEDOWN2_PANE, KEYC_MOUSEDOWN2_STATUS, KEYC_MOUSEDOWN2_STATUS_LEFT, KEYC_MOUSEDOWN2_STATUS_RIGHT, KEYC_MOUSEDOWN2_STATUS_DEFAULT, KEYC_MOUSEDOWN2_BORDER, KEYC_MOUSEDOWN3_PANE, KEYC_MOUSEDOWN3_STATUS, KEYC_MOUSEDOWN3_STATUS_LEFT, KEYC_MOUSEDOWN3_STATUS_RIGHT, KEYC_MOUSEDOWN3_STATUS_DEFAULT, KEYC_MOUSEDOWN3_BORDER, KEYC_MOUSEUP1_PANE, KEYC_MOUSEUP1_STATUS, KEYC_MOUSEUP1_STATUS_LEFT, KEYC_MOUSEUP1_STATUS_RIGHT, KEYC_MOUSEUP1_STATUS_DEFAULT, KEYC_MOUSEUP1_BORDER, KEYC_MOUSEUP2_PANE, KEYC_MOUSEUP2_STATUS, KEYC_MOUSEUP2_STATUS_LEFT, KEYC_MOUSEUP2_STATUS_RIGHT, KEYC_MOUSEUP2_STATUS_DEFAULT, KEYC_MOUSEUP2_BORDER, KEYC_MOUSEUP3_PANE, KEYC_MOUSEUP3_STATUS, KEYC_MOUSEUP3_STATUS_LEFT, KEYC_MOUSEUP3_STATUS_RIGHT, KEYC_MOUSEUP3_STATUS_DEFAULT, KEYC_MOUSEUP3_BORDER, KEYC_MOUSEDRAG1_PANE, KEYC_MOUSEDRAG1_STATUS, KEYC_MOUSEDRAG1_STATUS_LEFT, KEYC_MOUSEDRAG1_STATUS_RIGHT, KEYC_MOUSEDRAG1_STATUS_DEFAULT, KEYC_MOUSEDRAG1_BORDER, KEYC_MOUSEDRAG2_PANE, KEYC_MOUSEDRAG2_STATUS, KEYC_MOUSEDRAG2_STATUS_LEFT, KEYC_MOUSEDRAG2_STATUS_RIGHT, KEYC_MOUSEDRAG2_STATUS_DEFAULT, KEYC_MOUSEDRAG2_BORDER, KEYC_MOUSEDRAG3_PANE, KEYC_MOUSEDRAG3_STATUS, KEYC_MOUSEDRAG3_STATUS_LEFT, KEYC_MOUSEDRAG3_STATUS_RIGHT, KEYC_MOUSEDRAG3_STATUS_DEFAULT, KEYC_MOUSEDRAG3_BORDER, KEYC_MOUSEDRAGEND1_PANE, KEYC_MOUSEDRAGEND1_STATUS, KEYC_MOUSEDRAGEND1_STATUS_LEFT, KEYC_MOUSEDRAGEND1_STATUS_RIGHT, KEYC_MOUSEDRAGEND1_STATUS_DEFAULT, KEYC_MOUSEDRAGEND1_BORDER, KEYC_MOUSEDRAGEND2_PANE, KEYC_MOUSEDRAGEND2_STATUS, KEYC_MOUSEDRAGEND2_STATUS_LEFT, KEYC_MOUSEDRAGEND2_STATUS_RIGHT, KEYC_MOUSEDRAGEND2_STATUS_DEFAULT, KEYC_MOUSEDRAGEND2_BORDER, KEYC_MOUSEDRAGEND3_PANE, KEYC_MOUSEDRAGEND3_STATUS, KEYC_MOUSEDRAGEND3_STATUS_LEFT, KEYC_MOUSEDRAGEND3_STATUS_RIGHT, KEYC_MOUSEDRAGEND3_STATUS_DEFAULT, KEYC_MOUSEDRAGEND3_BORDER, KEYC_WHEELUP_PANE, KEYC_WHEELUP_STATUS, KEYC_WHEELUP_STATUS_LEFT, KEYC_WHEELUP_STATUS_RIGHT, KEYC_WHEELUP_STATUS_DEFAULT, KEYC_WHEELUP_BORDER, KEYC_WHEELDOWN_PANE, KEYC_WHEELDOWN_STATUS, KEYC_WHEELDOWN_STATUS_LEFT, KEYC_WHEELDOWN_STATUS_RIGHT, KEYC_WHEELDOWN_STATUS_DEFAULT, KEYC_WHEELDOWN_BORDER, KEYC_SECONDCLICK1_PANE, KEYC_SECONDCLICK1_STATUS, KEYC_SECONDCLICK1_STATUS_LEFT, KEYC_SECONDCLICK1_STATUS_RIGHT, KEYC_SECONDCLICK1_STATUS_DEFAULT, KEYC_SECONDCLICK1_BORDER, KEYC_SECONDCLICK2_PANE, KEYC_SECONDCLICK2_STATUS, KEYC_SECONDCLICK2_STATUS_LEFT, KEYC_SECONDCLICK2_STATUS_RIGHT, KEYC_SECONDCLICK2_STATUS_DEFAULT, KEYC_SECONDCLICK2_BORDER, KEYC_SECONDCLICK3_PANE, KEYC_SECONDCLICK3_STATUS, KEYC_SECONDCLICK3_STATUS_LEFT, KEYC_SECONDCLICK3_STATUS_RIGHT, KEYC_SECONDCLICK3_STATUS_DEFAULT, KEYC_SECONDCLICK3_BORDER, KEYC_DOUBLECLICK1_PANE, KEYC_DOUBLECLICK1_STATUS, KEYC_DOUBLECLICK1_STATUS_LEFT, KEYC_DOUBLECLICK1_STATUS_RIGHT, KEYC_DOUBLECLICK1_STATUS_DEFAULT, KEYC_DOUBLECLICK1_BORDER, KEYC_DOUBLECLICK2_PANE, KEYC_DOUBLECLICK2_STATUS, KEYC_DOUBLECLICK2_STATUS_LEFT, KEYC_DOUBLECLICK2_STATUS_RIGHT, KEYC_DOUBLECLICK2_STATUS_DEFAULT, KEYC_DOUBLECLICK2_BORDER, KEYC_DOUBLECLICK3_PANE, KEYC_DOUBLECLICK3_STATUS, KEYC_DOUBLECLICK3_STATUS_LEFT, KEYC_DOUBLECLICK3_STATUS_RIGHT, KEYC_DOUBLECLICK3_STATUS_DEFAULT, KEYC_DOUBLECLICK3_BORDER, KEYC_TRIPLECLICK1_PANE, KEYC_TRIPLECLICK1_STATUS, KEYC_TRIPLECLICK1_STATUS_LEFT, KEYC_TRIPLECLICK1_STATUS_RIGHT, KEYC_TRIPLECLICK1_STATUS_DEFAULT, KEYC_TRIPLECLICK1_BORDER, KEYC_TRIPLECLICK2_PANE, KEYC_TRIPLECLICK2_STATUS, KEYC_TRIPLECLICK2_STATUS_LEFT, KEYC_TRIPLECLICK2_STATUS_RIGHT, KEYC_TRIPLECLICK2_STATUS_DEFAULT, KEYC_TRIPLECLICK2_BORDER, KEYC_TRIPLECLICK3_PANE, KEYC_TRIPLECLICK3_STATUS, KEYC_TRIPLECLICK3_STATUS_LEFT, KEYC_TRIPLECLICK3_STATUS_RIGHT, KEYC_TRIPLECLICK3_STATUS_DEFAULT, KEYC_TRIPLECLICK3_BORDER, KEYC_BSPACE, KEYC_F1, KEYC_F2, KEYC_F3, KEYC_F4, KEYC_F5, KEYC_F6, KEYC_F7, KEYC_F8, KEYC_F9, KEYC_F10, KEYC_F11, KEYC_F12, KEYC_IC, KEYC_DC, KEYC_HOME, KEYC_END, KEYC_NPAGE, KEYC_PPAGE, KEYC_BTAB, KEYC_UP, KEYC_DOWN, KEYC_LEFT, KEYC_RIGHT, KEYC_KP_SLASH, KEYC_KP_STAR, KEYC_KP_MINUS, KEYC_KP_SEVEN, KEYC_KP_EIGHT, KEYC_KP_NINE, KEYC_KP_PLUS, KEYC_KP_FOUR, KEYC_KP_FIVE, KEYC_KP_SIX, KEYC_KP_ONE, KEYC_KP_TWO, KEYC_KP_THREE, KEYC_KP_ENTER, KEYC_KP_ZERO, KEYC_KP_PERIOD, KEYC_BASE_END };",
+   "text": "enum {\n  KEYC_FOCUS_IN = 0x0000000010e000ULL,\n  KEYC_FOCUS_OUT,\n  KEYC_ANY,\n  KEYC_PASTE_START,\n  KEYC_PASTE_END,\n  KEYC_MOUSE,\n  KEYC_DRAGGING,\n  KEYC_DOUBLECLICK,\n  KEYC_MOUSEMOVE_PANE,\n  KEYC_MOUSEMOVE_STATUS,\n  KEYC_MOUSEMOVE_STATUS_LEFT,\n  KEYC_MOUSEMOVE_STATUS_RIGHT,\n  KEYC_MOUSEMOVE_STATUS_DEFAULT,\n  KEYC_MOUSEMOVE_BORDER,\n  KEYC_MOUSEDOWN1_PANE,\n  KEYC_MOUSEDOWN1_STATUS,\n  KEYC_MOUSEDOWN1_STATUS_LEFT,\n  KEYC_MOUSEDOWN1_STATUS_RIGHT,\n  KEYC_MOUSEDOWN1_STATUS_DEFAULT,\n  KEYC_MOUSEDOWN1_BORDER,\n  KEYC_MOUSEDOWN2_PANE,\n  KEYC_MOUSEDOWN2_STATUS,\n  KEYC_MOUSEDOWN2_STATUS_LEFT,\n  KEYC_MOUSEDOWN2_STATUS_RIGHT,\n  KEYC_MOUSEDOWN2_STATUS_DEFAULT,\n  KEYC_MOUSEDOWN2_BORDER,\n  KEYC_MOUSEDOWN3_PANE,\n  KEYC_MOUSEDOWN3_STATUS,\n  KEYC_MOUSEDOWN3_STATUS_LEFT,\n  KEYC_MOUSEDOWN3_STATUS_RIGHT,\n  KEYC_MOUSEDOWN3_STATUS_DEFAULT,\n  KEYC_MOUSEDOWN3_BORDER,\n  KEYC_MOUSEUP1_PANE,\n  KEYC_MOUSEUP1_STATUS,\n  KEYC_MOUSEUP1_STATUS_LEFT,\n  KEYC_MOUSEUP1_STATUS_RIGHT,\n  KEYC_MOUSEUP1_STATUS_DEFAULT,\n  KEYC_MOUSEUP1_BORDER,\n  KEYC_MOUSEUP2_PANE,\n  KEYC_MOUSEUP2_STATUS,\n  KEYC_MOUSEUP2_STATUS_LEFT,\n  KEYC_MOUSEUP2_STATUS_RIGHT,\n  KEYC_MOUSEUP2_STATUS_DEFAULT,\n  KEYC_MOUSEUP2_BORDER,\n  KEYC_MOUSEUP3_PANE,\n  KEYC_MOUSEUP3_STATUS,\n  KEYC_MOUSEUP3_STATUS_LEFT,\n  KEYC_MOUSEUP3_STATUS_RIGHT,\n  KEYC_MOUSEUP3_STATUS_DEFAULT,\n  KEYC_MOUSEUP3_BORDER,\n  KEYC_MOUSEDRAG1_PANE,\n  KEYC_MOUSEDRAG1_STATUS,\n  KEYC_MOUSEDRAG1_STATUS_LEFT,\n  KEYC_MOUSEDRAG1_STATUS_RIGHT,\n  KEYC_MOUSEDRAG1_STATUS_DEFAULT,\n  KEYC_MOUSEDRAG1_BORDER,\n  KEYC_MOUSEDRAG2_PANE,\n  KEYC_MOUSEDRAG2_STATUS,\n  KEYC_MOUSEDRAG2_STATUS_LEFT,\n  KEYC_MOUSEDRAG2_STATUS_RIGHT,\n  KEYC_MOUSEDRAG2_STATUS_DEFAULT,\n  KEYC_MOUSEDRAG2_BORDER,\n  KEYC_MOUSEDRAG3_PANE,\n  KEYC_MOUSEDRAG3_STATUS,\n  KEYC_MOUSEDRAG3_STATUS_LEFT,\n  KEYC_MOUSEDRAG3_STATUS_RIGHT,\n  KEYC_MOUSEDRAG3_STATUS_DEFAULT,\n  KEYC_MOUSEDRAG3_BORDER,\n  KEYC_MOUSEDRAGEND1_PANE,\n  KEYC_MOUSEDRAGEND1_STATUS,\n  KEYC_MOUSEDRAGEND1_STATUS_LEFT,\n  KEYC_MOUSEDRAGEND1_STATUS_RIGHT,\n  KEYC_MOUSEDRAGEND1_STATUS_DEFAULT,\n  KEYC_MOUSEDRAGEND1_BORDER,\n  KEYC_MOUSEDRAGEND2_PANE,\n  KEYC_MOUSEDRAGEND2_STATUS,\n  KEYC_MOUSEDRAGEND2_STATUS_LEFT,\n  KEYC_MOUSEDRAGEND2_STATUS_RIGHT,\n  KEYC_MOUSEDRAGEND2_STATUS_DEFAULT,\n  KEYC_MOUSEDRAGEND2_BORDER,\n  KEYC_MOUSEDRAGEND3_PANE,\n  KEYC_MOUSEDRAGEND3_STATUS,\n  KEYC_MOUSEDRAGEND3_STATUS_LEFT,\n  KEYC_MOUSEDRAGEND3_STATUS_RIGHT,\n  KEYC_MOUSEDRAGEND3_STATUS_DEFAULT,\n  KEYC_MOUSEDRAGEND3_BORDER,\n  KEYC_WHEELUP_PANE,\n  KEYC_WHEELUP_STATUS,\n  KEYC_WHEELUP_STATUS_LEFT,\n  KEYC_WHEELUP_STATUS_RIGHT,\n  KEYC_WHEELUP_STATUS_DEFAULT,\n  KEYC_WHEELUP_BORDER,\n  KEYC_WHEELDOWN_PANE,\n  KEYC_WHEELDOWN_STATUS,\n  KEYC_WHEELDOWN_STATUS_LEFT,\n  KEYC_WHEELDOWN_STATUS_RIGHT,\n  KEYC_WHEELDOWN_STATUS_DEFAULT,\n  KEYC_WHEELDOWN_BORDER,\n  KEYC_SECONDCLICK1_PANE,\n  KEYC_SECONDCLICK1_STATUS,\n  KEYC_SECONDCLICK1_STATUS_LEFT,\n  KEYC_SECONDCLICK1_STATUS_RIGHT,\n  KEYC_SECONDCLICK1_STATUS_DEFAULT,\n  KEYC_SECONDCLICK1_BORDER,\n  KEYC_SECONDCLICK2_PANE,\n  KEYC_SECONDCLICK2_STATUS,\n  KEYC_SECONDCLICK2_STATUS_LEFT,\n  KEYC_SECONDCLICK2_STATUS_RIGHT,\n  KEYC_SECONDCLICK2_STATUS_DEFAULT,\n  KEYC_SECONDCLICK2_BORDER,\n  KEYC_SECONDCLICK3_PANE,\n  KEYC_SECONDCLICK3_STATUS,\n  KEYC_SECONDCLICK3_STATUS_LEFT,\n  KEYC_SECONDCLICK3_STATUS_RIGHT,\n  KEYC_SECONDCLICK3_STATUS_DEFAULT,\n  KEYC_SECONDCLICK3_BORDER,\n  KEYC_DOUBLECLICK1_PANE,\n  KEYC_DOUBLECLICK1_STATUS,\n  KEYC_DOUBLECLICK1_STATUS_LEFT,\n  KEYC_DOUBLECLICK1_STATUS_RIGHT,\n  KEYC_DOUBLECLICK1_STATUS_DEFAULT,\n  KEYC_DOUBLECLICK1_BORDER,\n  KEYC_DOUBLECLICK2_PANE,\n  KEYC_DOUBLECLICK2_STATUS,\n  KEYC_DOUBLECLICK2_STATUS_LEFT,\n  KEYC_DOUBLECLICK2_STATUS_RIGHT,\n  KEYC_DOUBLECLICK2_STATUS_DEFAULT,\n  KEYC_DOUBLECLICK2_BORDER,\n  KEYC_DOUBLECLICK3_PANE,\n  KEYC_DOUBLECLICK3_STATUS,\n  KEYC_DOUBLECLICK3_STATUS_LEFT,\n  KEYC_DOUBLECLICK3_STATUS_RIGHT,\n  KEYC_DOUBLECLICK3_STATUS_DEFAULT,\n  KEYC_DOUBLECLICK3_BORDER,\n  KEYC_TRIPLECLICK1_PANE,\n  KEYC_TRIPLECLICK1_STATUS,\n  KEYC_TRIPLECLICK1_STATUS_LEFT,\n  KEYC_TRIPLECLICK1_STATUS_RIGHT,\n  KEYC_TRIPLECLICK1_STATUS_DEFAULT,\n  KEYC_TRIPLECLICK1_BORDER,\n  KEYC_TRIPLECLICK2_PANE,\n  KEYC_TRIPLECLICK2_STATUS,\n  KEYC_TRIPLECLICK2_STATUS_LEFT,\n  KEYC_TRIPLECLICK2_STATUS_RIGHT,\n  KEYC_TRIPLECLICK2_STATUS_DEFAULT,\n  KEYC_TRIPLECLICK2_BORDER,\n  KEYC_TRIPLECLICK3_PANE,\n  KEYC_TRIPLECLICK3_STATUS,\n  KEYC_TRIPLECLICK3_STATUS_LEFT,\n  KEYC_TRIPLECLICK3_STATUS_RIGHT,\n  KEYC_TRIPLECLICK3_STATUS_DEFAULT,\n  KEYC_TRIPLECLICK3_BORDER,\n  KEYC_BSPACE,\n  KEYC_F1,\n  KEYC_F2,\n  KEYC_F3,\n  KEYC_F4,\n  KEYC_F5,\n  KEYC_F6,\n  KEYC_F7,\n  KEYC_F8,\n  KEYC_F9,\n  KEYC_F10,\n  KEYC_F11,\n  KEYC_F12,\n  KEYC_IC,\n  KEYC_DC,\n  KEYC_HOME,\n  KEYC_END,\n  KEYC_NPAGE,\n  KEYC_PPAGE,\n  KEYC_BTAB,\n  KEYC_UP,\n  KEYC_DOWN,\n  KEYC_LEFT,\n  KEYC_RIGHT,\n  KEYC_KP_SLASH,\n  KEYC_KP_STAR,\n  KEYC_KP_MINUS,\n  KEYC_KP_SEVEN,\n  KEYC_KP_EIGHT,\n  KEYC_KP_NINE,\n  KEYC_KP_PLUS,\n  KEYC_KP_FOUR,\n  KEYC_KP_FIVE,\n  KEYC_KP_SIX,\n  KEYC_KP_ONE,\n  KEYC_KP_TWO,\n  KEYC_KP_THREE,\n  KEYC_KP_ENTER,\n  KEYC_KP_ZERO,\n  KEYC_KP_PERIOD,\n  KEYC_BASE_END\n};"
+  },
+  {
+   "group": "qualifiers",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "int options_table_lookup_the_value(struct options_table_entry_name_long_enough *const *table, const char *name)",
+   "text": "int options_table_lookup_the_value(\n    struct options_table_entry_name_long_enough *const\n        *table,\n    const char *name)"
+  },
+  {
+   "group": "qualifiers",
+   "columns": 60,
+   "clangColumnLimit": 61,
+   "raw": "static void window_tree_set_all_the_items(struct window_tree_item_with_a_long_name_xx *const *items, u_int count, void *data)",
+   "text": "static void window_tree_set_all_the_items(\n    struct window_tree_item_with_a_long_name_xx *const\n        *items,\n    u_int count, void *data)"
+  },
+  {
+   "group": "qualifiers",
+   "columns": 60,
+   "clangColumnLimit": 60,
+   "raw": "void environ_push_all_the_entries(const struct a_structure_with_a_name_long_enough_x *const *entries, int n)",
+   "text": "void environ_push_all_the_entries(\n    const struct\n    a_structure_with_a_name_long_enough_x *const *entries,\n    int n)"
+  }
+ ]
+}

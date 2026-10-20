@@ -244,6 +244,33 @@ export function supportsLuaSignatures(symbol: ApiSymbol, language?: string): boo
     symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
 }
 
+/** The parts of `enum tag { A, B = 1 }` whose enumerators are names and integers; a richer value is source the layout keeps whole. */
+export function cEnumParts(raw: string): { tag?: string; items: string[]; terminated: boolean } | undefined {
+  const parts = /^enum(?:\s+([A-Za-z_]\w*))?\s*\{([^{}()]*)\}\s*(;?)$/.exec(raw.trim())
+  if (!parts) return undefined
+  const items = parts[2]!.split(',').map((item) => item.trim()).filter(Boolean)
+    .map((item) => /^([A-Za-z_]\w*)(?:\s*=\s*(-?(?:0[xX][0-9a-fA-F]+|\d+)[uUlL]*))?$/.exec(item))
+  if (!items.length || items.some((item) => !item)) return undefined
+  return { tag: parts[1], items: items.map((item) => item![2] === undefined ? item![1]! : `${item![1]} = ${item![2]}`), terminated: parts[3] === ';' }
+}
+
+/**
+ * tmux's C prototypes, the function-pointer typedefs and members the same
+ * declarator grammar covers, and enums of plain enumerators. Macros, variables
+ * with initializers and structs are source projections the layout does not read.
+ */
+export function supportsCSignatures(symbol: ApiSymbol, language?: string): boolean {
+  if (language !== 'c' || !symbol.signatures.length) return false
+  const declarators = ['typealias', 'attribute'].includes(symbol.kind)
+  return (['function', 'enum'].includes(symbol.kind) || declarators) && symbol.signatures.every((signature) => {
+    const raw = signature.raw?.trim()
+    if (!raw) return false
+    if (symbol.kind === 'enum') return cEnumParts(raw) !== undefined
+    // A member with an initializer or a body is a definition, laid out as its source has it.
+    return !declarators || (/\(\s*\*/.test(raw) && !/[={\n]/.test(raw))
+  })
+}
+
 /** Prepare one layout per overload for both HTML and the Markdown twin. */
 export async function apiSignatureLayouts(symbol: ApiSymbol, language?: string): Promise<Map<Signature, CodeLayout>> {
   if (language === 'rs' && ['method', 'function'].includes(symbol.kind) && symbol.signatures.length && !supportsRustSignatures(symbol, language)) {
@@ -314,6 +341,11 @@ export async function apiSignatureLayouts(symbol: ApiSymbol, language?: string):
     const { swiftSignatureLayout } = await import('./swift-code-layout')
     return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
       [signature, await swiftSignatureLayout(symbol, signature)] as const)))
+  }
+  if (supportsCSignatures(symbol, language)) {
+    const { cSignatureLayout } = await import('./cxx-code-layout')
+    return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
+      [signature, await cSignatureLayout(symbol, signature)] as const)))
   }
   if (language === 'cxx' && ['method', 'function'].includes(symbol.kind) && symbol.signatures.length > 0 &&
     symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))) {
