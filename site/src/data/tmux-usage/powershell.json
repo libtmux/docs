@@ -94,7 +94,7 @@
   ],
   "port": "powershell",
   "repo": "libtmux/libtmux-powershell",
-  "revision": "00a482f6be0f3b24a0c2bf52018efe401aef8c13",
+  "revision": "48d770503a01e36426839b94951109dea6ce4562",
   "schemaVersion": 1,
   "symbols": {
     "LibTmux\\Connect-TmuxControl": [
