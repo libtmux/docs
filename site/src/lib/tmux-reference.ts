@@ -1,9 +1,10 @@
 /** tmux source data adapted to the shared API reference and navigation. */
-import { navSidecarFor, pageSlug, type ApiSymbol, type SourceApiModel, type SymbolIndex } from '@libtmux/api-model'
+import { docSummaryText, navSidecarFor, pageSlug, sourceUrl, type ApiSymbol, type SourceApiModel, type SymbolIndex } from '@libtmux/api-model'
 import v32 from '../data/tmux/api/3.2a.json?raw'
 import v37 from '../data/tmux/api/3.7c.json?raw'
 import pins from '../data/tmux/versions.json'
 import { createApiIndex, type PortNavData } from './api-models'
+import type { LinkPreview } from './link-preview'
 import { navTreeFor, referenceTreeFor, referenceBreadcrumbs } from './api-tree'
 import { apiRelationshipPath } from './api-relationships'
 import { PORTS } from './ports'
@@ -323,6 +324,23 @@ export function tmuxSymbolSends(port: string, publicId: string, version = 'lates
       return { ...use, ...(target ? { function: { name: target.name, href: tmuxReferenceUrl(version, target) } } : {}) }
     }),
   }))
+}
+/**
+ * The card a link to a declaration of tmux's C source opens, from the same record as the page it leads to. tmux's source
+ * carries no Doxygen briefs, so the card says where the declaration is and shows it, which is what a reader following a
+ * link from a method wants to see before leaving the page.
+ */
+export function tmuxReferencePreview(version: string, symbol: ApiSymbol): LinkPreview {
+  const model = tmuxSourceModel(version)
+  const signature = symbol.signatures[0]?.raw ?? (symbol.value !== undefined ? `${symbol.name} = ${symbol.value}` : undefined)
+  const summary = symbol.doc?.summary ?? symbol.signatures.find((entry) => entry.doc?.summary)?.doc?.summary
+  return {
+    schema: 1, title: symbol.name, kind: symbol.kind,
+    description: summary ? docSummaryText(summary, 'c') : '',
+    detail: `Defined in ${symbol.source.file}${symbol.source.line ? `, line ${symbol.source.line}` : ''} of tmux ${model.version}.`,
+    signature, signatureLanguage: signature ? 'c' : undefined,
+    href: tmuxReferenceUrl(version, symbol), source: sourceUrl(model, symbol),
+  }
 }
 export function tmuxReferenceRoutes() {
   return buildsTmuxDocumentation() ? TMUX_VERSIONS.flatMap((version) => [

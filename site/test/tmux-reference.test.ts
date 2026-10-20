@@ -1,12 +1,16 @@
 import { describe, expect, it } from 'vitest'
 import { readInventory, sourceUrl, writeInventory } from '@libtmux/api-model'
-import { tmuxCommandSources, tmuxReferenceContext, tmuxReferenceIndex, tmuxReferencePaths, tmuxReferenceTree, tmuxReferenceUrl, tmuxReferenceVersionUrl, tmuxSourceCommands, tmuxSourceModel } from '../src/lib/tmux-reference'
+import { tmuxCommandSources, tmuxReferenceContext, tmuxReferenceIndex, tmuxReferencePaths, tmuxReferencePreview, tmuxReferenceTree, tmuxReferenceUrl, tmuxReferenceVersionUrl, tmuxSourceCommands, tmuxSourceModel } from '../src/lib/tmux-reference'
 import { tmuxManual, tmuxManualUrl } from '../src/lib/tmux-manual-data'
 import { referenceIndexSectionsFor } from '../src/lib/api-tree'
 import { searchApi } from '../src/lib/api-search'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { relatedApiTypes } from '../src/lib/api-sections'
 import { PORTS } from '../src/lib/ports'
+import { linkPreviewTarget } from '../src/lib/link-preview-paint'
+import { TMUX_VERSIONS } from '../src/lib/tmux-manual-data'
+import { GET, getStaticPaths } from '../src/pages/tmux/[version]/reference/[...slug].preview.json'
+import { getStaticPaths as genericPreviewPaths } from '../src/pages/[...slug].preview.json'
 
 describe.each(['3.7c', '3.2a'])('tmux %s through the shared API system', (version) => {
   const model = tmuxSourceModel(version)
@@ -115,4 +119,66 @@ it('describes an anonymous C value without converting it to a function signature
   const text = symbolMarkdown({ model, symbol, index: tmuxReferenceIndex() })
   expect(text).toContain('window_copy_cmd_table: anonymous struct.')
   expect(text).not.toContain('window_copy_cmd_table()')
+})
+
+describe('the card a link to a C declaration opens', () => {
+  const origin = 'https://libtmux.org'
+  /** The addresses the preview route answers at: the page's path with `.preview.json`, as the link policy asks for it. */
+  const served = (paths: { params: { version: string; slug: string } }[]) => new Set(paths.map(({ params }) => `/tmux/${params.version}/reference/${params.slug}.preview.json`))
+  /** The links, among `hrefs`, that the policy marks for a card and that no preview address answers. */
+  const unanswered = (hrefs: string[], answered: Set<string>) => hrefs.filter((href) => {
+    const target = linkPreviewTarget(href, origin)
+    return target !== undefined && !answered.has(target.endpoint)
+  })
+  const answered = served(getStaticPaths() as never)
+
+  it('answers for every function, struct, enum, constant and attribute of every version, at the address the policy asks for', () => {
+    expect(TMUX_VERSIONS).toContain('latest')
+    for (const version of TMUX_VERSIONS) {
+      const hrefs = tmuxSourceModel(version).symbols.map((symbol) => tmuxReferenceUrl(version, symbol))
+      expect(hrefs.length, version).toBeGreaterThan(1000)
+      // Every link is marked for a card, so each one must have a payload behind it.
+      expect(hrefs.filter((href) => linkPreviewTarget(href, origin) === undefined), version).toEqual([])
+      expect(unanswered(hrefs, answered), version).toEqual([])
+    }
+    expect(new Set(tmuxSourceModel('latest').symbols.map((symbol) => symbol.kind))).toEqual(new Set(['function', 'struct', 'enum', 'constant', 'attribute', 'typealias', 'union']))
+  })
+
+  it('serves a card for the C function a method links to, with its signature, highlighted as C', async () => {
+    const symbol = tmuxSourceModel('latest').symbols.find((entry) => entry.name === 'cmd_list_panes_server')!
+    const href = tmuxReferenceUrl('latest', symbol)
+    expect(href).toBe('/tmux/latest/reference/c-function-cmd-list-panes-c-cmd_list_panes_server/')
+    const endpoint = linkPreviewTarget(href, origin)!.endpoint
+    expect(endpoint).toBe('/tmux/latest/reference/c-function-cmd-list-panes-c-cmd_list_panes_server.preview.json')
+    const path = getStaticPaths().find(({ params }) => `/tmux/${params.version}/reference/${params.slug}.preview.json` === endpoint)!
+    expect(path).toBeDefined()
+    const response = await GET(path as never)
+    expect(response.headers.get('Content-Type')).toBe('application/json; charset=utf-8')
+    const card = await response.json()
+    // What the browser requires of a payload before it shows a card.
+    expect(card).toMatchObject({ schema: 1, title: 'cmd_list_panes_server', kind: 'function', href, signature: 'static void cmd_list_panes_server(struct cmd *, struct cmdq_item *)', signatureLanguage: 'c' })
+    expect(typeof card.description).toBe('string')
+    expect(new URL(card.href, origin).origin).toBe(origin)
+    expect(card.detail).toMatch(/^Defined in cmd-list-panes\.c, line \d+ of tmux \d/)
+    expect(card.signatureHighlight.language).toBe('c')
+    expect(card.signatureHighlight.lines.map((line: { content: string }[]) => line.map((token) => token.content).join('')).join('\n')).toBe(card.signature)
+    // A macro shows its definition, and a declaration with no signature to show gets a card without one, not an invented one.
+    const model = tmuxSourceModel('latest')
+    const macro = model.symbols.find((entry) => entry.name === 'ARGS_ENTRY_OPTIONAL_VALUE')!
+    expect(tmuxReferencePreview('latest', macro).signature).toBe(macro.signatures[0].raw)
+    const bare = model.symbols.find((entry) => !entry.signatures[0]?.raw && entry.value === undefined)!
+    expect(tmuxReferencePreview('latest', bare)).toMatchObject({ schema: 1, title: bare.name, signature: undefined, signatureLanguage: undefined })
+  })
+
+  it('catches a link with no card behind it, and the preview route that the generic one never covered', () => {
+    const real = tmuxReferenceUrl('latest', tmuxSourceModel('latest').symbols.find((entry) => entry.name === 'cmd_list_panes_server')!)
+    const invented = '/tmux/latest/reference/c-function-no-such-declaration/'
+    // The control: the policy marks the invented address for a card, and nothing answers there.
+    expect(linkPreviewTarget(invented, origin)).toBeDefined()
+    expect(unanswered([real, invented], answered)).toEqual([invented])
+    // Before this route, the generic one was all there was, and it answers at no declaration's address.
+    const generic = new Set(genericPreviewPaths().map((path) => `/${path.params.slug}.preview.json`))
+    expect(generic.size).toBeGreaterThan(100)
+    expect(unanswered([real], generic)).toEqual([real])
+  })
 })

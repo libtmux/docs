@@ -530,3 +530,59 @@ export async function checkBlockLinksUndecorated(browser, base, { sample = false
     await context.close()
   }
 }
+
+/**
+ * A link marked for a preview card has a card to show. A C function a method links to carried `data-link-preview` and
+ * opened nothing, because no preview payload was served at its address. Hovering the link is what asks for the card,
+ * so hover it and read the card, then ask the same of every marked link on the pages, and of one that has no payload.
+ */
+export async function checkTmuxReferencePreviews(browser, base) {
+  const context = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 1440, height: 1000 } })
+  const page = await context.newPage()
+  page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
+  const opened = () => page.evaluate(() => document.getElementById('reference-link-preview')?.matches(':popover-open') ?? false)
+  try {
+    await page.goto(`${base}/cxx/latest/reference/libtmux-server-panes/`, { waitUntil: 'load' })
+    await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready')
+    const link = page.locator('p.gp-sphinx-api-mentions .tmux-send a[data-link-preview]').first()
+    assert.equal(await link.count(), 1, 'The method page has no C function link marked for a preview')
+    assert.equal(await link.textContent(), 'cmd_list_panes_server')
+    await link.hover()
+    // The first request for a declaration's card compiles its route in the dev server.
+    await page.waitForFunction(() => document.getElementById('reference-link-preview')?.matches(':popover-open'), null, { timeout: 60000 })
+    assert.equal(await page.locator('#reference-link-preview [data-preview-title]').textContent(), 'cmd_list_panes_server')
+    assert.match(await page.locator('#reference-link-preview [data-preview-signature]').textContent(), /^static void cmd_list_panes_server\(struct cmd \*, struct cmdq_item \*\)$/)
+    assert.match(await page.locator('#reference-link-preview [data-preview-open]').getAttribute('href'), /\/tmux\/latest\/reference\/c-function-cmd-list-panes-c-cmd_list_panes_server\/$/)
+    // Every link a page marks for a card has a payload at the address the card asks for.
+    const missing = []
+    let marked = 0
+    for (const path of ['/cxx/latest/reference/libtmux-server-panes/', '/tmux/latest/manual/list-panes/', '/tmux/latest/reference/c-function-cmd-list-panes-c-cmd_list_panes_server/', '/tmux/latest/reference/c-struct-window_pane/']) {
+      await page.goto(`${base}${path}`, { waitUntil: 'load' })
+      await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready')
+      const hrefs = await page.evaluate(() => [...new Set([...document.querySelectorAll('a[data-link-preview]')].map((anchor) => new URL(anchor.href).pathname))])
+      marked += hrefs.length
+      for (const href of hrefs) {
+        const response = await page.request.get(`${base.replace(/\/en$/, '')}${href.slice(0, -1)}.preview.json`)
+        if (!response.ok()) missing.push(`${path}: ${href} answers ${response.status()}`)
+      }
+    }
+    assert(marked > 3, `Only ${marked} links were marked for a card, so the pages were not measured`)
+    assert.deepEqual(missing, [], `A link marked for a card that has none:\n${missing.join('\n')}`)
+    // The control: a link marked for a card whose payload does not exist opens nothing, and the sweep above would name it.
+    await page.goto(`${base}/tmux/latest/manual/list-panes/`, { waitUntil: 'load' })
+    await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready')
+    await page.evaluate(() => {
+      const anchor = document.createElement('a')
+      anchor.id = 'no-card'
+      anchor.href = '/en/tmux/latest/reference/c-function-no-such-declaration/'
+      anchor.textContent = 'no_such_declaration'
+      document.querySelector('main').prepend(anchor)
+    })
+    const absent = await page.request.get(`${base.replace(/\/en$/, '')}/en/tmux/latest/reference/c-function-no-such-declaration.preview.json`)
+    assert.equal(absent.status(), 404, 'The control address answered, so the sweep cannot show a missing payload')
+    await page.locator('#no-card').hover()
+    await page.waitForTimeout(700)
+    assert.equal(await opened(), false, 'A link with no payload opened a card')
+    console.log(`Tmux reference previews: the C function link of a method page opens its card with its signature; ${marked} marked links on four pages each have a payload; a link with none opens nothing PASS`)
+  } finally { await context.close() }
+}
