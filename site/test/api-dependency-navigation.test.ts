@@ -88,7 +88,7 @@ describe('PowerShell returned objects in the reference tree', () => {
     expect(() => validateNavigationDependency(API_MODELS.powershell, API_MODELS.csharp, selection)).not.toThrow()
     const changedVersion = structuredClone(API_MODELS.csharp)
     changedVersion.sources!.find((source) => source.product === 'core')!.version = '0.0.0-alpha.21'
-    expect(() => validateNavigationDependency(API_MODELS.powershell, changedVersion, selection)).toThrow('requires LibTmux 0.0.0-alpha.20')
+    expect(() => validateNavigationDependency(API_MODELS.powershell, changedVersion, selection)).toThrow(`requires LibTmux ${selection.version}`)
     const changedRevision = { ...API_MODELS.csharp, revision: '0'.repeat(40) }
     expect(() => validateNavigationDependency(API_MODELS.powershell, changedRevision, selection)).toThrow('requires LibTmux')
     const changedPackageSource = structuredClone(API_MODELS.csharp)
