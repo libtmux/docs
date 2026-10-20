@@ -191,7 +191,7 @@ export async function checkDevSample(browser, base) {
       const inventoryLinks = await page.locator('footer a[href$=".inv"]').evaluateAll((links) => links.map((link) => link.getAttribute('href')))
       assert.deepEqual(inventoryLinks, path === 'api-example-probe/'
         ? [`${rootPath}/ts/latest/objects.inv`, `${rootPath}/objects-full.inv`]
-        : [`${rootPath}/objects-full.inv`], `${path}: inventory links follow page scope`)
+        : [...(path.startsWith('tmux/') ? [`${rootPath}/tmux/objects.inv`] : []), `${rootPath}/objects-full.inv`], `${path}: inventory links follow page scope`)
       assert.equal(await page.getByRole('link', { name: 'About Sphinx inventories', exact: true }).getAttribute('href'), `${rootPath}/meta/intersphinx/`)
       for (const width of [1440, 768, 390]) {
         await page.setViewportSize({ width, height: 1000 })
@@ -228,9 +228,13 @@ export async function checkDevSample(browser, base) {
           await tip.waitFor({ state: 'visible' })
           const bounds = await tip.boundingBox()
           assert(bounds && bounds.x >= 0 && bounds.x + bounds.width <= width, `${width}: inventory tooltip fits the viewport`)
+          const guide = tip.getByRole('link', { name: 'Learn how to link to this documentation.', exact: true })
+          assert.equal(await guide.getAttribute('href'), `${rootPath}/meta/intersphinx/`)
+          await page.keyboard.press('Tab')
+          assert(await guide.evaluate((node) => node === document.activeElement), 'Tab reaches the inventory setup link')
           await page.keyboard.press('Escape')
           await tip.waitFor({ state: 'hidden' })
-          assert(await help.evaluate((node) => node === document.activeElement), 'Escape dismisses the inventory tooltip without moving focus')
+          assert(await help.evaluate((node) => node === document.activeElement), 'Escape dismisses inventory help and returns focus to its trigger')
           await help.evaluate((node) => node.blur())
         }
       }
@@ -272,7 +276,9 @@ export async function checkDevSample(browser, base) {
     assert(await example.locator('[data-home-view="full"]').isVisible())
     assert.equal(new URL(page.url()).searchParams.get('cleanup'), '1')
     for (const width of [1440, 628, 390]) await checkHomeResponsiveLayout(page, width, 'rs')
-    await page.getByRole('link', { name: 'About Sphinx inventories', exact: true }).click()
+    await page.getByRole('link', { name: 'About Sphinx inventories', exact: true }).focus()
+    await page.keyboard.press('Tab')
+    await page.keyboard.press('Enter')
     await page.waitForURL(`${base}/meta/intersphinx/`)
     assert.equal(await page.locator('main h1').innerText(), 'Link to libtmux from Sphinx', 'The inventory help link opens the setup guide')
     assert.deepEqual(errors, [], 'Sampled pages have no runtime errors')

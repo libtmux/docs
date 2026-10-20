@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import json
 import re
 import subprocess
@@ -51,8 +52,9 @@ class Catalog(TypedDict):
     """Inventory targets owned by one deployment prefix."""
 
     base: str
-    scope: str
-    version: str
+    scope: NotRequired[str]
+    version: NotRequired[str]
+    defaults: NotRequired[dict[str, str]]
     targets: list[Target]
 
 
@@ -65,12 +67,15 @@ class DocumentOwner(TypedDict):
 
 
 class Page(HTMLParser):
-    """Count rendered fragment IDs and optionally collect links."""
+    """Read fragments, links, and copyable code from rendered HTML."""
 
     def __init__(self, html: str, links: bool = True) -> None:
         super().__init__(convert_charrefs=True)
         self.ids: Counter[str] = Counter()
         self.links: set[str] = set()
+        self.ordered_links: list[str] = []
+        self.code_blocks: list[tuple[str, str]] = []
+        self.code_language: str | None = None
         self.references: dict[str, set[str]] = {}
         self.current_link: str | None = None
         self.link_text: list[str] = []
@@ -87,10 +92,22 @@ class Page(HTMLParser):
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         """Collect real attributes without counting comments or raw text."""
         attributes = dict(attrs)
+        if self.collect_links and tag == "pre":
+            self.code_language = attributes.get("data-language")
+        if (
+            self.collect_links
+            and tag == "button"
+            and self.code_language
+            and (code := attributes.get("data-code"))
+        ):
+            # Expressive Code encodes line breaks as DEL in copy payloads.
+            self.code_blocks.append((self.code_language, code.replace("\x7f", "\n")))
+            self.code_language = None
         if identifier := attributes.get("id"):
             self.ids[identifier] += 1
         if self.collect_links and tag == "a" and (href := attributes.get("href")):
             self.links.add(href)
+            self.ordered_links.append(href)
             self.current_link = href
             self.link_text = []
 
@@ -106,6 +123,98 @@ class Page(HTMLParser):
             self.references.setdefault(label, set()).add(self.current_link)
             self.current_link = None
             self.link_text = []
+
+
+def authored_examples(root: Path, prefix: str, origin: str) -> int:
+    """Resolve the published examples and compare their displayed destinations."""
+    source = (
+        Path(__file__).resolve().parents[1] / "site/src/content/docs/meta/intersphinx/examples.mdx"
+    )
+    article = source.read_text()
+    rendered = (root / "meta/intersphinx/examples/index.html").read_text()
+    snippets = re.findall(r"^```(rst|markdown)\n(.*?)^```\s*$", article, re.MULTILINE | re.DOTALL)
+    copied = [
+        (language, code)
+        for language, code in Page(rendered).code_blocks
+        if language in ("rst", "markdown")
+    ]
+    assert [(language, code.rstrip("\n")) for language, code in snippets] == copied, (
+        "Published copy buttons must preserve every authored reference snippet"
+    )
+    destinations = re.findall(r"<p>Destinations?:.*?</p>", rendered, re.DOTALL)
+    assert snippets and len(snippets) == len(destinations), (
+        "Every reference example needs a destination paragraph"
+    )
+    configuration = re.search(r"^```python\n(.*?)^```\s*$", article, re.MULTILINE | re.DOTALL)
+    assert configuration is not None, "The examples need a complete Intersphinx configuration"
+    settings = ast.parse(configuration.group(1))
+    mapping = next(
+        ast.literal_eval(statement.value)
+        for statement in settings.body
+        if isinstance(statement, ast.Assign)
+        and any(
+            isinstance(target, ast.Name) and target.id == "intersphinx_mapping"
+            for target in statement.targets
+        )
+    )
+    mappings = {
+        name: (
+            base.replace("https://libtmux.org/en/", origin + prefix),
+            inventory.replace("https://libtmux.org/en/", origin + prefix) if inventory else None,
+        )
+        for name, (base, inventory) in mapping.items()
+    }
+    bodies: dict[str, list[str]] = {"rst": [], "markdown": []}
+    expected: dict[str, list[str]] = {"rst": [], "markdown": []}
+    for (language, snippet), paragraph in zip(snippets, destinations, strict=True):
+        links = Page(paragraph).ordered_links
+        assert links, "An example destination must be a real link"
+        bodies[language].append(snippet)
+        expected[language].extend(origin + href if href.startswith("/") else href for href in links)
+    with tempfile.TemporaryDirectory(prefix="libtmux-authored-intersphinx-") as scratch:
+        work = Path(scratch)
+        config = {
+            "extensions": ["sphinx.ext.intersphinx", "myst_parser"],
+            "intersphinx_mapping": mappings,
+            "master_doc": "index",
+            "project": "Published Intersphinx examples",
+            "source_suffix": {".rst": "restructuredtext", ".md": "markdown"},
+            "html_theme": "basic",
+            "intersphinx_cache_limit": 0,
+        }
+        (work / "conf.py").write_text(
+            "\n".join(f"{key} = {value!r}" for key, value in config.items())
+        )
+        (work / "index.rst").write_text(
+            "Examples\n========\n\n.. toctree::\n\n   rst\n   markdown\n"
+        )
+        (work / "rst.rst").write_text("RST\n===\n\n" + "\n\n".join(bodies["rst"]))
+        (work / "markdown.md").write_text("# MyST\n\n" + "\n\n".join(bodies["markdown"]))
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "sphinx",
+                "-E",
+                "-a",
+                "-n",
+                "-W",
+                "--keep-going",
+                "-b",
+                "html",
+                str(work),
+                str(work / "html"),
+            ],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        assert result.returncode == 0, result.stdout + result.stderr
+        for language, wanted in expected.items():
+            page = Page((work / "html" / f"{language}.html").read_text())
+            actual = [href for href in page.ordered_links if href.startswith(origin + prefix)]
+            assert actual == wanted, {"language": language, "expected": wanted, "actual": actual}
+    return sum(map(len, expected.values()))
 
 
 class Metadata(HTMLParser):
@@ -335,6 +444,8 @@ def audit(root: Path, prefix: str, consumers: bool) -> dict[str, AuditValue]:
         "HTML fragment audit failed its negative controls"
     )
     paths = [root / "targets.json", *sorted(root.glob("*/*/targets.json"))]
+    if (root / "tmux/targets.json").is_file():
+        paths.append(root / "tmux/targets.json")
     catalogs: list[tuple[Path, Catalog]] = [(path, json.loads(path.read_text())) for path in paths]
     assert catalogs[0][1]["base"] == prefix, (
         "Full inventory catalog has the wrong deployment prefix"
@@ -344,6 +455,9 @@ def audit(root: Path, prefix: str, consumers: bool) -> dict[str, AuditValue]:
     owned_documents = 0
     for path, catalog in catalogs:
         full = path.parent == root
+        tmux_default = (
+            catalog.get("defaults", {}).get("tmux") if path.parent == root / "tmux" else None
+        )
         base = catalog["base"]
         inventory = records(
             path.parent / ("objects-full.inv" if full else "objects.inv"),
@@ -361,9 +475,15 @@ def audit(root: Path, prefix: str, consumers: bool) -> dict[str, AuditValue]:
                     f"Wrong full-inventory version: {target['key']}"
                 )
             if not full:
-                assert (
-                    target["scope"] == catalog["scope"] and target["version"] == catalog["version"]
-                ), f"Wrong scoped target: {target['key']}"
+                if tmux_default:
+                    assert target["scope"] == "site" or (
+                        target["scope"] == f"tmux@{tmux_default}"
+                        and target["version"] == tmux_default
+                    ), f"Wrong default tmux target: {target['key']}"
+                else:
+                    assert target["scope"] == catalog.get("scope") and target[
+                        "version"
+                    ] == catalog.get("version"), f"Wrong scoped target: {target['key']}"
             assert (
                 inventory[("std:label", target["key"])]
                 == "https://inventory.invalid" + target["href"]
@@ -380,8 +500,15 @@ def audit(root: Path, prefix: str, consumers: bool) -> dict[str, AuditValue]:
             owner = metadata(file)
             if not owner or owner.get("exclude"):
                 continue
-            assert full or (
-                owner["scope"] == catalog["scope"] and owner.get("version") == catalog["version"]
+            if tmux_default and owner["scope"] not in ("site", f"tmux@{tmux_default}"):
+                continue
+            assert (
+                full
+                or tmux_default
+                or (
+                    owner["scope"] == catalog.get("scope")
+                    and owner.get("version") == catalog.get("version")
+                )
             ), f"Wrong document ownership: {file}"
             relative_url = relative.as_posix()
             href = base + (
@@ -443,6 +570,7 @@ def audit(root: Path, prefix: str, consumers: bool) -> dict[str, AuditValue]:
                 origin = f"http://127.0.0.1:{server.server_port}"
                 result["rst_references"] = consumer(root, prefix, catalogs, origin, False)
                 result["myst_references"] = consumer(root, prefix, catalogs, origin, True)
+                result["example_references"] = authored_examples(root, prefix, origin)
             finally:
                 server.shutdown()
                 worker.join()

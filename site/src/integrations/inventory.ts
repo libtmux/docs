@@ -3,7 +3,7 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { AstroIntegration } from 'astro'
 import { API_MODELS } from '../lib/api-models'
-import { collectInventoryTargets, publishPortInventory } from '../lib/inventory-publisher'
+import { collectInventoryTargets, publishPortInventory, publishTmuxInventories } from '../lib/inventory-publisher'
 import { buildTarget } from '../lib/versions'
 import { withPortRoot } from '../lib/site-root'
 
@@ -30,6 +30,7 @@ export function inventory(): AstroIntegration {
         }
         // A shell alone has no core port trees. It cannot publish the full export.
         writeFileSync(join(out, 'targets.partial.json'), `${JSON.stringify({ schema: 1, base, targets })}\n`)
+        publishTmuxInventories(out, base, targets)
         logger.info(`${targets.length} rendered inventory targets collected; full export awaits assembly`)
       },
     },

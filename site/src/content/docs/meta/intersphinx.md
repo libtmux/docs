@@ -9,7 +9,10 @@ sidebar:
 
 Sphinx can resolve references to libtmux APIs, guides, headings, MCP objects,
 schema fields, and other documented targets. The footer links to the full
-inventory and, on a port page, that port's inventory for the selected version.
+inventory and the inventory for the page's port or tmux version.
+
+Browse [Intersphinx examples](/meta/intersphinx/examples/) for copyable RST
+and MyST references paired with their destinations.
 
 ## Configure Intersphinx
 
@@ -23,6 +26,8 @@ intersphinx_mapping = {
         "https://libtmux.org/en/objects-full.inv",
     ),
     "libtmux-python": ("https://libtmux.org/en/py/latest/", None),
+    "tmux": ("https://libtmux.org/en/tmux/", None),
+    "tmux-3-7c": ("https://libtmux.org/en/tmux/3.7c/", None),
 }
 ```
 
@@ -34,6 +39,12 @@ The full inventory includes shared documentation, the configured default
 version of each assembled port, and distinct tmux reference versions.
 It is generated after site assembly. Each port inventory includes the
 rendered targets in that exact version.
+
+The tmux inventory includes the shared tmux guides and the latest CLI manual,
+options, hooks, formats, and C source reference. A version mapping such as
+`tmux-3-7c` includes only that release's manual, catalog, and C declarations.
+Manual and C reference pages link to the same version inventory in the footer.
+Use mapping names without dots when writing MyST reference roles.
 
 ## Choose a reference
 
@@ -59,6 +70,13 @@ built-in roles. A scoped Python inventory supports:
 
 ```rst
 :external+libtmux-python:py:class:`libtmux.Pane`
+```
+
+The tmux mapping provides native C roles and portable manual references:
+
+```rst
+:external+tmux:c:struct:`cmd`
+:external+tmux:ref:`capture-pane <tmux%40latest:core:doc:tmux%2flatest%2fmanual%2fcapture-pane>`
 ```
 
 Command options also work with Sphinx's program context:
@@ -91,8 +109,9 @@ Contributors preserve renamed keys in the inventory alias catalog and use
 the existing page redirect mechanism for retired routes.
 
 Existing `objects.inv` and `reference/objects.inv` endpoints remain compatibility
-exports. New integrations should use the full inventory or a port's root
-inventory to obtain the complete target catalog and case-safe labels.
+exports. New integrations should use the full inventory, a port's root
+inventory, or a tmux root inventory to obtain the complete target catalog
+and case-safe labels.
 
 See the [Sphinx Intersphinx documentation](https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html)
 for named inventories and cross-reference syntax.

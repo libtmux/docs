@@ -10,6 +10,8 @@ export interface InventoryPage {
   version?: string
   source?: InventoryTarget['source']
   aliases?: string[]
+  /** Keep portable keys when an existing document changes inventory scope. */
+  previousScopes?: string[]
   exclude?: boolean
 }
 
@@ -140,6 +142,9 @@ export function renderedTargets(html: string, href: string): RenderedTarget[] {
     for (const child of children(node)) collect(child, owner, anchor, node)
   }
   if (main) collect(main)
+  if (page.previousScopes?.length) for (const target of targets) {
+    target.aliases = [...new Set([...(target.aliases ?? []), ...page.previousScopes.map((scope) => targetKey({ ...target, scope }))])]
+  }
   // Detach attribute substrings so retained targets cannot pin complete HTML buffers.
   return JSON.parse(JSON.stringify(targets)) as RenderedTarget[]
 }

@@ -2,7 +2,7 @@ import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { readInventory, targetKey } from '@libtmux/api-model'
+import { readInventory, targetEntries, targetKey } from '@libtmux/api-model'
 import { apiInventoryIdentity, installFragmentAlias, mergeTargets, renderedTargets, type InventoryPage } from '../src/lib/inventory-targets'
 import type { ApiSymbol } from '@libtmux/api-model'
 import { collectInventoryTargets, publishAssembledInventories } from '../src/lib/inventory-publisher'
@@ -10,6 +10,7 @@ import type { VersionManifest } from '../src/lib/versions'
 import { parse, type DefaultTreeAdapterTypes } from 'parse5'
 import { inventory } from '../src/integrations/inventory'
 import { withPortRoot } from '../src/lib/site-root'
+import { inventoryLinks, tmuxInventoryVersion } from '../src/lib/inventory-links'
 
 const page: InventoryPage = { scope: 'rs', product: 'mcp', identity: 'tool:inspect', title: 'Inspect', version: 'stable' }
 const html = (page: InventoryPage, content: string) => `<html><head><meta name="libtmux-inventory" content='${JSON.stringify(page)}'></head><body><nav id="chrome">Navigation</nav><main>${content}</main></body></html>`
@@ -20,6 +21,16 @@ afterEach(() => {
 })
 
 describe('rendered inventory targets', () => {
+  it('retains catalog keys when versioned tmux pages leave the shared site scope', () => {
+    const previous = { ...page, scope: 'site', product: 'core', identity: 'tmux/latest/catalog/options/status' }
+    const content = '<h2 id="source">Source</h2>'
+    const old = renderedTargets(html(previous, content), '/en/tmux/latest/catalog/options/status/')
+    const current = renderedTargets(html({ ...previous, scope: 'tmux@latest', version: 'latest', previousScopes: ['site'] }, content), old[0].href)
+    expect(current.map((target) => target.aliases)).toEqual(old.map((target) => [targetKey(target)]))
+    expect(current.every((target) => target.scope === 'tmux@latest')).toBe(true)
+    const entries = targetEntries(current, '/en/tmux/latest/', true)
+    expect(entries.filter((entry) => entry.name === targetKey(old[0])).map((entry) => entry.type)).toEqual(['std:label', 'std:doc'])
+  })
   it('owns API sections independently of route slugs and excludes generated control IDs', () => {
     const content = '<dl data-inventory-owner="Stable.API" data-inventory-anchor="old-id"><dt id="old-id" data-inventory-category="api" data-inventory-id="Stable.API">API</dt><dd><section id="old-id.examples">Example</section><span role="dialog" id="generated-1"><span id="generated-1-title">Help</span></span></dd></dl>'
     const original = renderedTargets(html(page, content), '/en/old/')
@@ -120,7 +131,40 @@ describe('rendered inventory targets', () => {
   })
 })
 
+describe('inventory footer links', () => {
+  it('selects tmux inventories for prose, manuals, catalogs and C source pages', () => {
+    for (const path of ['tmux', 'tmux/guides/capturing-output']) {
+      expect(inventoryLinks(undefined, 'latest', path).scoped).toBe(withPortRoot('/tmux/objects.inv'))
+    }
+    for (const version of ['latest', '3.2a', '3.7c']) for (const section of ['manual', 'catalog', 'reference']) {
+      const path = `tmux/${version}/${section}/entry`
+      expect(tmuxInventoryVersion(path)).toBe(version)
+      expect(inventoryLinks(undefined, 'latest', path).scoped).toBe(withPortRoot(`/tmux/${version}/objects.inv`))
+    }
+    expect(tmuxInventoryVersion('tmux/guides/reference')).toBeUndefined()
+    expect(tmuxInventoryVersion('tmux/latest/manual-other')).toBeUndefined()
+    expect(inventoryLinks(undefined, 'latest', 'guides/capturing-output').scoped).toBeUndefined()
+    expect(inventoryLinks('py', 'stable', 'tmux/latest/manual').scoped).toBe(withPortRoot('/py/stable/objects.inv'))
+  })
+})
+
 describe('assembled inventories', () => {
+  it('publishes discoverable tmux inventories from the ordinary root build hook', () => {
+    const out = mkdtempSync(join(tmpdir(), 'libtmux-tmux-hook-')); dirs.push(out)
+    vi.stubEnv('LIBTMUX_DOCS_PORT', '')
+    const directory = join(out, 'tmux/latest/reference/cmd')
+    mkdirSync(directory, { recursive: true })
+    writeFileSync(join(directory, 'index.html'), html({ ...page, scope: 'tmux@latest', product: 'core', version: 'latest' }, '<h2 id="source">Source</h2>'))
+    const hooks = inventory().hooks!
+    const configure = hooks['astro:config:done'] as (value: unknown) => void
+    const finish = hooks['astro:build:done'] as (value: unknown) => void
+    configure({ config: { base: '/pr-42/en/' } })
+    finish({ dir: new URL(`file://${out}/`), logger: { info() {} } })
+    expect(existsSync(join(out, 'tmux/objects.inv'))).toBe(true)
+    expect(existsSync(join(out, 'tmux/latest/objects.inv'))).toBe(true)
+    expect(existsSync(join(out, 'tmux/latest/reference/objects.inv'))).toBe(true)
+    expect(existsSync(join(out, 'objects-full.inv'))).toBe(false)
+  })
   it('runs the port export hook only at its mount and still rejects missing declarations there', () => {
     const out = mkdtempSync(join(tmpdir(), 'libtmux-inventory-mount-')); dirs.push(out)
     vi.stubEnv('LIBTMUX_DOCS_PORT', 'py')
@@ -149,7 +193,12 @@ describe('assembled inventories', () => {
     }
     writePage('', { ...page, scope: 'site', product: 'core', version: undefined, identity: 'index' })
     for (const version of ['latest', 'stable']) writePage(`rs/${version}/`, { ...page, version }, '<dt id="Pane" data-inventory-category="api" data-inventory-id="Pane" data-inventory-legacy-type="std:label" data-inventory-legacy-name="Pane">Pane</dt>')
-    for (const version of ['3.6', '3.7']) writePage(`tmux/${version}/reference/cmd/`, { ...page, scope: `tmux@${version}`, product: 'core', version }, '<dt id="cmd" data-inventory-id="cmd" data-inventory-category="api" data-inventory-native=\'[{"type":"c:struct","name":"cmd"}]\' data-inventory-legacy-type="c:struct" data-inventory-legacy-name="cmd">cmd</dt>')
+    writePage('tmux/', { ...page, scope: 'site', product: 'core', version: undefined, identity: 'tmux' })
+    for (const version of ['latest', '3.6', '3.7']) {
+      const context = { ...page, scope: `tmux@${version}`, product: 'core', version }
+      writePage(`tmux/${version}/reference/cmd/`, { ...context, identity: `tmux/${version}/reference/cmd` }, '<dt id="cmd" data-inventory-id="cmd" data-inventory-category="api" data-inventory-native=\'[{"type":"c:struct","name":"cmd"}]\' data-inventory-legacy-type="c:struct" data-inventory-legacy-name="cmd">cmd</dt>')
+      for (const section of ['manual', 'catalog']) writePage(`tmux/${version}/${section}/`, { ...context, identity: `tmux/${version}/${section}` })
+    }
     const manifest: VersionManifest = { schema: 1, defaultVersion: { rs: 'stable' }, ports: {
       rs: ['latest', 'stable'].map((slug) => ({ slug, label: slug, kind: 'alias', supported: true })), py: [],
     } }
@@ -159,6 +208,21 @@ describe('assembled inventories', () => {
     expect(entries.some((entry) => entry.uri.startsWith('rs/latest/'))).toBe(false)
     expect(entries.some((entry) => entry.uri.startsWith('rs/stable/'))).toBe(true)
     expect(entries.filter((entry) => entry.type === 'c:struct').map((entry) => entry.name)).toContain('tmux@3.7:cmd')
+    for (const version of ['latest', '3.6', '3.7']) {
+      const scoped = readInventory(readFileSync(join(out, `tmux/${version}/objects.inv`))).entries
+      expect(scoped.find((entry) => entry.type === 'c:struct' && entry.name === 'cmd')?.uri).toBe('reference/cmd/#cmd')
+      expect(scoped.some((entry) => entry.uri.startsWith('manual/'))).toBe(true)
+      expect(scoped.some((entry) => entry.uri.startsWith('catalog/'))).toBe(true)
+      expect(scoped.every((entry) => !entry.uri.startsWith('/') && !entry.uri.includes('../'))).toBe(true)
+      expect(readInventory(readFileSync(join(out, `tmux/${version}/reference/objects.inv`))).entries.find((entry) => entry.type === 'c:struct' && entry.name === 'cmd')?.uri).toBe('cmd/#cmd')
+    }
+    const tmux = readInventory(readFileSync(join(out, 'tmux/objects.inv'))).entries
+    expect(tmux.find((entry) => entry.type === 'c:struct' && entry.name === 'cmd')?.uri).toBe('latest/reference/cmd/#cmd')
+    expect(tmux.some((entry) => entry.uri === '')).toBe(true)
+    expect(tmux.every((entry) => !/^(?:3\.6|3\.7)\//.test(entry.uri))).toBe(true)
+    const tmuxCatalog = JSON.parse(readFileSync(join(out, 'tmux/latest/targets.json'), 'utf8'))
+    expect(tmuxCatalog.scope).toBe('tmux@latest')
+    expect(tmuxCatalog.targets.every((target: { scope: string }) => target.scope === 'tmux@latest')).toBe(true)
     const port = readInventory(readFileSync(join(out, 'rs/stable/objects.inv'))).entries
     expect(port.every((entry) => !entry.uri.startsWith('/') && !entry.uri.includes('latest/'))).toBe(true)
     const compatibility = readInventory(readFileSync(join(out, 'reference/rs/objects.inv'))).entries

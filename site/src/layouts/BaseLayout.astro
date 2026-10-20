@@ -2,6 +2,7 @@
 import { buildLocale } from '../i18n/resolve'
 import { localeSourcePath } from '../i18n/locales'
 import type { InventoryPage } from '../lib/inventory-targets'
+import { tmuxInventoryVersion } from '../lib/inventory-links'
 import BackToTop from '../components/BackToTop.astro'
 import Seo from '../components/Seo.astro'
 import BrandIcons from '../components/BrandIcons.astro'
@@ -181,12 +182,13 @@ const homeBrands = homeLauncher
   ? Object.fromEntries(Object.values(PORT_BY_SLUG).map((port) => [port.slug, port.logoLanguage]))
   : undefined
 
-const tmuxInventoryVersion = pagePath.match(/^tmux\/([^/]+)\/(?:reference|manual)/)?.[1]
+const tmuxVersion = tmuxInventoryVersion(pagePath)
 const inventoryPage: InventoryPage = {
-  scope: portSlug ?? (tmuxInventoryVersion ? `tmux@${tmuxInventoryVersion}` : 'site'),
+  scope: portSlug ?? (tmuxVersion ? `tmux@${tmuxVersion}` : 'site'),
   product: /^(?:mcp|workspace)(?:\/|$)/.exec(pagePath)?.[0].replace(/\/$/, '') ?? 'core',
   identity: inventoryId ?? (pagePath || 'index'),
-  title, version: portSlug ? target.version : tmuxInventoryVersion, source,
+  title, version: portSlug ? target.version : tmuxVersion, source,
+  previousScopes: !portSlug && tmuxVersion && pagePath.startsWith(`tmux/${tmuxVersion}/catalog`) ? ['site'] : undefined,
   aliases: inventoryAliases, exclude: inventoryExclude || bare ||
     Boolean(process.env.LIBTMUX_DOCS_PORT && (!versionRoot || !Astro.url.pathname.startsWith(versionRoot))) ||
     /^(?:demo(?:\/|$)|404$|search$)/.test(routePath),
@@ -268,7 +270,7 @@ const inventoryPage: InventoryPage = {
       <div data-pagefind-filter={`section:${section}`} data-pagefind-ignore="all" hidden></div>
       <slot />
     </div>
-    {!bare && <SiteFooter locale={locale as Locale} source={source} markdownHref={markdownHref} llmsRoot={llmsRoot} port={portSlug} version={target.version} githubUrl={githubUrl} flush={flush} />}
+    {!bare && <SiteFooter locale={locale as Locale} source={source} markdownHref={markdownHref} llmsRoot={llmsRoot} port={portSlug} version={target.version} pagePath={pagePath} githubUrl={githubUrl} flush={flush} />}
     <BackToTop />
     <SearchModal port={navPort} version={navVersion} />
     <LinkPreview />

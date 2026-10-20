@@ -36,6 +36,34 @@ export function publishPortInventory(out: string, base: string, targets: Rendere
   return { scope: port, version, targets: selected.length, base }
 }
 
+/** A tmux mapping resolves the manual, catalog and C declarations from one release. */
+export function publishTmuxInventories(out: string, base: string, targets: RenderedTarget[]) {
+  const versions = [...new Set(targets.filter((target) => target.scope.startsWith('tmux@')).map((target) => target.scope.slice('tmux@'.length)))].sort()
+  const exports = []
+  for (const version of versions) {
+    const scope = `tmux@${version}`
+    const selected = targets.filter((target) => target.scope === scope)
+    const prefix = `tmux/${version}/`
+    const versionBase = `${base}${prefix}`
+    const options = { project: 'tmux', version }
+    write(out, `${prefix}objects.inv`, writeInventoryEntries(targetEntries(selected, versionBase, true), options))
+    catalog(out, `${prefix}targets.json`, selected, { base: versionBase, scope, version })
+    const referenceBase = `${versionBase}reference/`
+    const compatibility = compatibilityEntries(selected.filter((target) => target.href.startsWith(referenceBase)), referenceBase)
+    write(out, `${prefix}reference/objects.inv`, writeInventoryEntries(compatibility, {
+      project: 'tmux C source', version, legacyCaseSensitiveLabels: true,
+    }))
+    exports.push({ scope, version, targets: selected.length, base: versionBase })
+  }
+  const tmuxBase = `${base}tmux/`
+  const selected = targets.filter((target) => target.scope === 'tmux@latest' || target.scope === 'site' && target.href.startsWith(tmuxBase))
+  if (selected.length) {
+    write(out, 'tmux/objects.inv', writeInventoryEntries(targetEntries(selected, tmuxBase, true), { project: 'tmux', version: 'latest' }))
+    catalog(out, 'tmux/targets.json', selected, { base: tmuxBase, defaults: { tmux: 'latest' } })
+  }
+  return exports
+}
+
 /** The full export is assembled only after all advertised default trees exist. */
 export function publishAssembledInventories(out: string, base: string, manifest: VersionManifest, aliases: InventoryAlias[] = []) {
   const all = collectInventoryTargets(out, base)
@@ -74,12 +102,6 @@ export function publishAssembledInventories(out: string, base: string, manifest:
   write(out, 'objects.inv', writeInventoryEntries(compatibilityEntries(full, base, true), {
     project: 'libtmux', version: 'all', legacyCaseSensitiveLabels: true,
   }))
-  for (const scope of new Set(full.filter((target) => target.scope.startsWith('tmux@')).map((target) => target.scope))) {
-    const version = scope.slice('tmux@'.length)
-    const prefix = `tmux/${version}/reference/`
-    write(out, `${prefix}objects.inv`, writeInventoryEntries(compatibilityEntries(full.filter((target) => target.scope === scope), `${base}${prefix}`), {
-      project: 'tmux C source', version, legacyCaseSensitiveLabels: true,
-    }))
-  }
-  return { targets: full.length, ports, excluded }
+  const tmux = publishTmuxInventories(out, base, full)
+  return { targets: full.length, ports, tmux, excluded }
 }

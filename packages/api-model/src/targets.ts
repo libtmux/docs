@@ -69,7 +69,10 @@ export function targetEntries(targets: readonly InventoryTarget[], base: string,
   for (const target of targets) {
     const key = targetKey(target)
     add(key, 'std:label', target)
-    for (const alias of target.aliases ?? []) add(alias, 'std:label', target)
+    for (const alias of target.aliases ?? []) {
+      add(alias, 'std:label', target)
+      if (target.category === 'doc') add(alias, 'std:doc', target)
+    }
     if (target.category === 'doc') add(key, 'std:doc', target)
     for (const native of target.native ?? []) {
       for (const name of nativeNames(target, native, scoped)) {

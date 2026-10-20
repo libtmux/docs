@@ -13985,7 +13985,14 @@
    "port": "py",
    "text": "objects.inv",
    "page": "/meta/intersphinx/",
-   "line": 29,
+   "line": 34,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "py",
+   "text": "objects.inv",
+   "page": "/meta/intersphinx/examples/",
+   "line": 35,
    "why": "not defined in the stated port"
   },
   {
