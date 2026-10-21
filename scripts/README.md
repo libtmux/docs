@@ -233,6 +233,11 @@ send an install command to nothing. A baseline tag the repository does not
 carry is dropped, so a port with no release tag records none and installs from
 its default branch.
 
+`gen-registry.negative.mjs` resolves each state Julia can be in, including a
+final tag that General does not carry yet, and requires every badge to read the
+result. A build fails on an entry its badges cannot read, and only the deploy
+resolves live tags, so a pull request meets that failure here.
+
 Release tags are read per port. Rust is a Cargo workspace and tags each crate
 (`libtmux@v0.1.0-alpha.10`); Go is multi-module and tags submodules under a
 path (`mcp/v0.0.1-alpha.9`) while the library tags bare. `tagPrefix` in

@@ -14,7 +14,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
-import { PORTS } from '../site/src/lib/ports.ts'
+import { PORTS, productAvailable, productStatus, releaseMaturity } from '../site/src/lib/ports.ts'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const script = join(here, 'gen-registry.mjs')
@@ -163,6 +163,57 @@ for (const [name, mutate] of mutations) {
     check('a recorded tag the repository carries survives until its package lands',
       result.ports.julia?.tag === 'v0.1.0-alpha.1', `${JSON.stringify(result.ports.julia)} ${result.error}`)
     writeFileSync(join(dir, 'published.json'), JSON.stringify(baseline))
+
+    // The deploy builds from what the resolver wrote, and a badge that cannot read an entry fails that
+    // build after the registry job has passed. Resolve each state Julia can be in, then read every
+    // port's badges and packages from the result. An incomplete result is not a clean read.
+    const unread = (resolved) => {
+      const count = Object.keys(resolved.ports).length
+      if (count !== PORTS.length) return [`the resolver wrote ${count} of ${PORTS.length} ports: ${resolved.error}`]
+      const registry = { schema: 1, ports: resolved.ports }
+      return PORTS.flatMap((port) => [
+        ...['core', 'mcp', 'workspace'].filter((product) => product === 'core' || productAvailable(port, product))
+          .map((product) => [`${port.slug} ${product}`, () => productStatus(port, product, registry)]),
+        ...Object.entries(registry.ports[port.slug].packages ?? {})
+          .map(([name, item]) => [`${port.slug} ${name}`, () => releaseMaturity(item)]),
+      ].flatMap(([label, read]) => {
+        try {
+          read()
+          return []
+        } catch (err) {
+          return [`${label}: ${err.message}`]
+        }
+      }))
+    }
+    const juliaPort = PORTS.find(({ slug }) => slug === 'julia')
+    const tagged = (...names) => ({ body: JSON.stringify(names.map((name) => ({ name }))) })
+    const notInGeneral = { status: 404, body: '404: Not Found' }
+    const prereleaseOnly = { body: `["0.1.0-alpha.2"]\ngit-tree-sha1 = "${'c'.repeat(40)}"\n` }
+    for (const [state, repository, registry, stage] of [
+      ['a final tag General does not carry yet', ['v0.1.0'], notInGeneral, 'stable'],
+      ['a prerelease tag General does not carry yet', ['v0.1.0-alpha.1'], notInGeneral, 'alpha'],
+      ['a prerelease General carries', ['v0.1.0-alpha.2'], prereleaseOnly, 'alpha'],
+      ['a prerelease General carries beside a final tag it lacks', ['v0.1.0-alpha.2', 'v0.1.0'], prereleaseOnly, 'alpha'],
+      ['no tag and no General package', [], notInGeneral, 'unreleased'],
+    ]) {
+      result = invoke({ ...replies, [julia]: tagged(...repository), [general]: registry })
+      const failures = unread(result)
+      const read = failures.length === 0 ? productStatus(juliaPort, 'core', { schema: 1, ports: result.ports }) : undefined
+      check(`every badge reads ${state} as ${stage}`, read === stage, `${read} ${JSON.stringify(failures)}`)
+    }
+    result = invoke({ ...replies, [julia]: tagged('v0.1.0'), [general]: notInGeneral })
+    check('a final tag General does not carry yet is recorded as the live registry recorded it',
+      same(result.ports.julia, { status: 'unpublished', version: null, stable: null, tag: 'v0.1.0' }), `${JSON.stringify(result.ports.julia)} ${result.error}`)
+    // Once the registry lists a release, a newer tag it lacks is not recorded; the support page says so.
+    result = invoke({ ...replies, [julia]: tagged('v0.1.0-alpha.2', 'v0.1.0'), [general]: prereleaseOnly })
+    check('a final tag beside a registry that lists only a prerelease is not recorded',
+      same(result.ports.julia, { status: 'prerelease', version: '0.1.0-alpha.2', stable: null, tag: 'v0.1.0-alpha.2' }), `${JSON.stringify(result.ports.julia)} ${result.error}`)
+
+    // The reads above pass only if the read can fail, so name the port and the tag it could not place.
+    result = invoke({ ...replies, [julia]: tagged('v0.1.0-dev.3'), [general]: notInGeneral })
+    check('a tag whose marker no stage names is reported with its port and name',
+      same(unread(result), ['julia core: releaseMaturity: no release stage in "v0.1.0-dev.3"']), `${JSON.stringify(unread(result))} ${result.error}`)
+    check('an incomplete result is not read as clean', unread({ ports: { go: seed.ports.go }, error: '' }).length === 1, 'a one-port registry read as clean')
 
     result = invoke({ ...replies, [core]: { body: feed('') }, [workspace]: { body: feed('') }, [general]: { status: 404, body: '404: Not Found' } })
     check('empty Gallery feeds and a missing General package are unpublished',

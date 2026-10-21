@@ -1781,16 +1781,27 @@ export interface RegistryData {
 }
 
 /**
+ * A final release name: `MAJOR.MINOR.PATCH` without leading zeros, an optional
+ * `v`, and an optional package label ending in `@` or `/`, as in
+ * `libtmux@v0.1.0` or `workspace/v0.1.0`. Nothing may follow the patch number,
+ * so a prerelease, dev, post or build marker never matches.
+ */
+const FINAL_RELEASE = /^(?:[A-Za-z][\w.-]*[@/])?v?(?:0|[1-9]\d*)(?:\.(?:0|[1-9]\d*)){2}$/
+
+/**
  * A package's release maturity: the stage its registry declares, else the one
- * its version names, else its repository tag. A package with no release and no
- * tag is unreleased. Throws on a prerelease whose stage cannot be read, so a
- * new version spelling fails a test rather than a reader's badge.
+ * its version or repository tag names. A final release name is stable whether
+ * or not a registry carries it yet. A package with no release and no tag is
+ * unreleased. Throws on a name whose marker is neither a stage nor absent, so
+ * a new spelling fails a test rather than a reader's badge.
  */
 export function releaseMaturity(entry: RegistryEntry): Maturity {
   if (entry.maturity) return entry.maturity
   if (entry.status === 'stable') return 'stable'
   const name = entry.version ?? entry.tag
   if (!name) return 'unreleased'
+  // Before the stage search, so a stage word in a package label is not the release's stage.
+  if (FINAL_RELEASE.test(name)) return 'stable'
   const stage = /alpha|beta|rc(?=[\d.-]|$)|(?<=\d)[ab](?=\d)/i.exec(name)?.[0].toLowerCase()
   if (stage === 'alpha' || stage === 'a') return 'alpha'
   if (stage === 'beta' || stage === 'b') return 'beta'
@@ -1811,7 +1822,7 @@ export const PRODUCT_STATUS_LINE: Readonly<Record<ProductStatus, string>> = {
   alpha: 'Alpha release; the API may change.',
   beta: 'Beta release; the API may still change.',
   rc: 'Release candidate; close to final.',
-  stable: 'Stable release on its package registry.',
+  stable: 'Stable release.',
   unreleased: 'Not published yet; install from source.',
 }
 
@@ -1885,6 +1896,10 @@ export function releaseWording(port: Port, entry: RegistryEntry): string {
   const registry = port.registry?.name ?? 'its registry'
   if (!entry.tag) {
     return `${port.packageName} is not published to ${registry} yet and the repository has no release tag, so this installs from its default branch.`
+  }
+  // A git form with no `{tag}` installs a fixed ref, so the tag is not what runs.
+  if (!port.installForms.git.code.includes('{tag}')) {
+    return `${port.packageName} is not published to ${registry} yet, so this installs from the repository's default branch. The newest release tag is ${entry.tag}.`
   }
   return `${port.packageName} is not published to ${registry} yet, so this installs from the repository at tag ${entry.tag}.`
 }
