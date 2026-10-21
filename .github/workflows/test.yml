@@ -8,8 +8,10 @@ name: test
 # result instead of the run's status.
 #
 # The assembly's immutable preview artifact passes the publisher dry-run
-# before a same-repository PR may publish it. Pushes keep the production
-# assembly audit; deploy-shell owns production.
+# before a same-repository PR may publish it, and publishes after the audits
+# pass. A maintainer label (see .github/EXPEDITE.md) publishes it as soon as
+# the dry-run passes; the audits still run and still decide `test`. Pushes
+# keep the production assembly audit; deploy-shell owns production.
 
 on:
   push:
@@ -286,12 +288,73 @@ jobs:
           set -euo pipefail
           PATH="$PWD/bin:$PATH" bash publish-default-versions.sh
 
-  # Forks are audited but never enter an AWS environment or receive secrets.
-  publish-preview:
-    needs: [test, preview-artifact, check-publish-preview]
-    if: |
+  # Reads the label when the preview is ready to publish, not when the run
+  # started: a label applied during the build counts, and no `labeled` event
+  # starts a run that would cancel this one. Forks never publish, so they are
+  # never expedited.
+  expedite:
+    if: >-
       github.event_name == 'pull_request' &&
       github.event.pull_request.head.repo.full_name == github.repository
+    needs: check-publish-preview
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      expedite: ${{ steps.label.outputs.expedite }}
+    steps:
+      - name: Read the labels on the pull request
+        id: label
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          LABEL: ci:expedite
+        run: |
+          set -euo pipefail
+          expedite=false
+          if pull="$(gh api --method GET "repos/$REPOSITORY/pulls/$PR")"; then
+            if jq -e --arg label "$LABEL" '.state == "open" and (.labels | map(.name) | index($label) != null)' <<< "$pull" > /dev/null; then
+              expedite=true
+            fi
+          else
+            echo "::warning::could not read the labels on #$PR; the preview publishes after the audits" >&2
+          fi
+          echo "expedite=$expedite" >> "$GITHUB_OUTPUT"
+          if [[ "$expedite" == true ]]; then
+            echo "Label \`$LABEL\` is on #$PR: the preview publishes now, and \`test\` still waits for every audit." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  # Forks are audited but never enter an AWS environment or receive secrets.
+  publish-preview:
+    needs: [test, preview-artifact, check-publish-preview, expedite]
+    if: |
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      needs.expedite.outputs.expedite != 'true'
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/reusable-deploy.yml
+    with:
+      path-prefix: pr-${{ github.event.pull_request.number }}
+      artifact: preview-dist
+      artifact-id: ${{ needs.preview-artifact.outputs.artifact-id }}
+      version-kind: pr
+      environment: docs-preview
+    secrets:
+      role-arn: ${{ secrets.LIBTMUX_DOCS_PREVIEW_ROLE_ARN }}
+      bucket: ${{ secrets.LIBTMUX_DOCS_BUCKET }}
+      distribution: ${{ secrets.LIBTMUX_DOCS_DISTRIBUTION }}
+
+  # The same publication, without waiting for the audits. Both publish jobs
+  # read one `expedite` output, so exactly one of them runs.
+  publish-preview-expedited:
+    needs: [preview-artifact, check-publish-preview, expedite]
+    if: |
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      needs.expedite.outputs.expedite == 'true'
     permissions:
       contents: read
       id-token: write

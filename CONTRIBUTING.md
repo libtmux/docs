@@ -178,6 +178,12 @@ Missing port checkouts, a missing local server, or a missing `shellcheck`
 can leave publication checks unexercised. Development loops deliberately exclude assembled-output
 suites; they do not establish publication readiness.
 
+CI runs the audit as parallel jobs, one per `--stage` (`source`, `build`,
+`production`, `output`), and `test` reads red unless every one succeeded. A
+push has no preview, so `production` is not part of that. A maintainer label
+can publish a pull request's preview before the audits finish; see
+[.github/EXPEDITE.md](.github/EXPEDITE.md).
+
 Add focused regression coverage for behavior changes and confirm that a new
 check fails when its intended invariant is broken. Root policy-guide edits
 need link, command, and diff review rather than new tests. Content edits
