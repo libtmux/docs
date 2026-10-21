@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import registry from '../src/data/registry.json'
 import { SERVERS } from '../src/lib/install-matrix'
+import { installsFor } from '../src/lib/registry'
 import { PORT_BY_SLUG, PORTS, hasPackageInstalls, installCommand, portDestinations, portSourceUrl, productAvailable, type DocProduct } from '../src/lib/ports'
 import { DESTINATIONS } from './fixtures/port-destinations'
 
@@ -82,25 +83,24 @@ describe('Julia port metadata', () => {
     const julia = PORT_BY_SLUG.julia!
     const server = SERVERS.julia!
     return [
-      ['core', julia.installs[0]!.code],
+      ['core', installsFor(julia)[0]!.code],
       ['git form', julia.installForms.git.code],
-      ...julia.packages!.map((entry): [string, string] => [entry.id, entry.installs![0]!.code]),
+      ...julia.packages!.map((entry): [string, string] => [entry.id, installsFor({ ...julia, installs: entry.installs! })[0]!.code]),
       ['MCP setup', server.resolve(server.methods[0]!, server.cooldowns[0]!).prereq!],
     ]
   }
 
-  it('installs from the default branch because the repository has no release tag', () => {
-    expect(registry.ports.julia).toMatchObject({ status: 'unpublished', version: null, stable: null, tag: null })
+  it('keeps core and companions on the default branch without a source selection', () => {
     for (const [name, code] of snippets()) expect(code, `${name} names the branch`).toContain('"master"')
     for (const [name, code] of snippets().filter(([name]) => !['core', 'git form'].includes(name))) {
       expect(code.match(/rev=ref/g), `${name} adds the core and companion at one ref`).toHaveLength(2)
     }
   })
 
-  it('names no release tag that was never pushed', () => {
+  it('keeps default source installs independent of release tags', () => {
     for (const [name, code] of snippets()) {
-      expect(code, `${name} cites a nonexistent tag`).not.toMatch(/v\d+\.\d+\.\d+/)
-      expect(code, `${name} cites a nonexistent tag`).not.toMatch(/\btag\b/)
+      expect(code, `${name} uses the source branch`).not.toMatch(/v\d+\.\d+\.\d+/)
+      expect(code, `${name} uses the source branch`).not.toMatch(/\btag\b/)
     }
   })
 

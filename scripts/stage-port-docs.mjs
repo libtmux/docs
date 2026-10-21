@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { toMarkdown } from 'mdast-util-to-markdown'
 import { PORTS } from '../site/src/lib/ports.ts'
-import { defaultVersionFor } from '../site/src/lib/versions.ts'
+import { defaultVersionFor, linkedVersionFor } from '../site/src/lib/versions.ts'
 import { sourceGuidesFor, sourceGuideRedirectsFor, SOURCE_GUIDE_PORTS } from '../site/src/lib/port-documentation.ts'
 import { SymbolIndex, parameterId } from '../packages/api-model/src/link.ts'
 
@@ -171,7 +171,7 @@ export function stagedPortGuides(port, artifact) {
     const title = guide.title ?? sourceTitle
     const linked = port === 'fsharp' && sourcePath === 'docs/fsharp/supported-query-fields.md'
       ? linkSnapshotDepths(body) : body
-    const nativeLinked = port === 'julia' ? linkDocumenter(linked) : linked
+    const nativeLinked = port === 'julia' ? linkDocumenter(linked, artifact.source) : linked
     const rewritten = rewriteLinks(nativeLinked, sourcePath, route, linkRoutes, artifact.source.repository, artifact.source.revision, nativeReferenceFiles)
     const data = {
       title,
@@ -241,7 +241,7 @@ export function expandDocumenter(content, sourcePath, readSource) {
       const module = /Modules = \[(LibTmux(?:MCP|Workspace)?)\]/.exec(code)?.[1]
       if (!module) throw new Error(`Unsupported Documenter module in ${sourcePath}`)
       const product = module === 'LibTmuxMCP' ? 'mcp/' : module === 'LibTmuxWorkspace' ? 'workspace/' : ''
-      return `Browse the [${module} API reference](/julia/${defaultVersionFor('julia')}/${product}reference/).`
+      return `Browse the [${module} API reference](/julia/${linkedVersionFor('julia')}/${product}reference/).`
     }
     const match = /^using Markdown\s+Markdown\.parse\("```julia\\n" \* read\(joinpath\(@__DIR__, ((?:"[^"\n]+"(?:, )?)+)\), String\) \* "\\n```"\)\s*$/.exec(code)
     if (!match) throw new Error(`Unsupported Documenter source include in ${sourcePath}`)
@@ -255,13 +255,18 @@ export function expandDocumenter(content, sourcePath, readSource) {
 }
 
 /** Resolve Documenter references against the same catalog the site renders. */
-function linkDocumenter(content) {
+function linkDocumenter(content, source) {
   const model = JSON.parse(readFileSync(join(root, 'site/src/data/api/julia.json'), 'utf8'))
   const index = new SymbolIndex(model.symbols, (symbol) =>
-    `/julia/${defaultVersionFor('julia')}/${symbol.product && symbol.product !== 'core' ? `${symbol.product}/` : ''}reference/${symbol.slug}/`, 'julia')
+    `/julia/${linkedVersionFor('julia')}/${symbol.product && symbol.product !== 'core' ? `${symbol.product}/` : ''}reference/${symbol.slug}/`, 'julia')
   const edits = []
   const walk = (node) => {
-    if (node.type === 'link' && node.url === '@ref') {
+    if (node.type === 'code' && node.lang === '@raw' && node.meta === 'html') {
+      const html = node.value.replace(/(\bhref\s*=\s*)(["'])\.\.\/source\/([^"'#]+)\.html(#[^"']*)?\2/g,
+        (_link, attribute, quote, path, fragment = '') =>
+          `${attribute}${quote}https://github.com/${source.repository}/blob/${source.revision}/${path}${fragment}${quote}`)
+      edits.push({ start: node.position.start.offset, end: node.position.end.offset, text: html })
+    } else if (node.type === 'link' && node.url === '@ref') {
       const target = node.children.map((child) => child.value ?? '').join('')
       const match = index.resolve(target)
       if (!match) throw new Error(`Unresolved Julia guide reference: ${target}`)

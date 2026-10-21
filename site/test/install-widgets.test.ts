@@ -1,12 +1,44 @@
 import { readFileSync, existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { Window } from 'happy-dom'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { ModuleKind, ScriptTarget, transpileModule } from 'typescript'
 import { pickerPaintRules } from '../src/lib/picker-paint'
 import { PORTS } from '../src/lib/ports'
 import { SITE_BUILT, SITE_ROOT, SITE_PREFIX, publishedPath } from './site-root'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
+
+describe('Julia source installation', () => {
+  const revision = '1234567890abcdef1234567890abcdef12345678'
+
+  it.each(['core', 'workspace', 'mcp', 'mcp-server'])('installs the documented revision for %s', async (product) => {
+    vi.stubEnv('LIBTMUX_DOCS_PORT', 'julia')
+    vi.stubEnv('LIBTMUX_DOCS_SOURCE_SHA', revision)
+    const window = new Window()
+    try {
+      const server = product === 'mcp-server'
+      const template = await loadAstroTemplate(`components/widgets/${server ? 'McpInstall' : 'PackageInstall'}.astro`, {
+        real: ['components/widgets/InstallCode.astro'],
+        modules: {
+          '../../lib/api-models': { API_MODELS: {} },
+          'astro-expressive-code/components': { Code: () => '' },
+        },
+      })
+      window.document.body.innerHTML = await renderAstroTemplate(template, {
+        props: server ? { port: 'julia' } : { ports: ['julia'], packageId: product },
+      })
+      const code = window.document.querySelector(server ? '.lm-mcp-install__code--prereq code' : '.lm-pkg-install__cmd code')?.textContent
+      expect(code, 'the setup command is visible').toBeTruthy()
+      expect(code).toContain(`"${revision}"`)
+      expect(code).not.toContain('"master"')
+      if (product !== 'core') expect(code?.match(/rev=ref/g)).toHaveLength(2)
+      if (server) expect(code).toContain('LibTmuxMCP.install_cli("bin")')
+    } finally {
+      vi.unstubAllEnvs()
+      await window.happyDOM.abort()
+    }
+  })
+})
 
 /**
  * The two install pickers, driven the way a reader drives them.

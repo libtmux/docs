@@ -36,12 +36,17 @@ export function registryFor(port: Port | string): RegistryEntry {
   return entry
 }
 
-/** Select a NuGet version without substituting another port's build identity. */
-export function nugetInstallSelection(
+/** Select an install revision without borrowing another port's build identity. */
+export function installSelection(
   port: Port,
   sources: readonly { product: string; package: string; version?: string }[] = [],
   env: Record<string, string | undefined> = {},
-): { version?: string; pin?: boolean } {
+): { version?: string; pin?: boolean; revision?: string } {
+  if (port.slug === 'julia' && env.LIBTMUX_DOCS_PORT === port.slug && env.LIBTMUX_DOCS_SOURCE_SHA) {
+    const revision = env.LIBTMUX_DOCS_SOURCE_SHA
+    if (!/^[a-f0-9]{40}$/.test(revision)) throw new Error('Julia installation requires the documented source SHA')
+    return { revision }
+  }
   if (port.slug !== 'csharp' && port.slug !== 'fsharp') return {}
   const selected = env.LIBTMUX_DOCS_PORT === port.slug
     ? releaseTag(env.LIBTMUX_DOCS_VERSION ?? '', port) : null
@@ -52,7 +57,11 @@ export function nugetInstallSelection(
 }
 
 /** Resolve package snippets against the selected docs source or registry snapshot. */
-export function installsFor(port: Port, selection: { version?: string; pin?: boolean } = {}): readonly InstallCommand[] {
+export function installsFor(port: Port, selection: { version?: string; pin?: boolean; revision?: string } = {}): readonly InstallCommand[] {
+  if (port.installs.some((command) => command.code.includes('{revision}'))) {
+    const revision = JSON.stringify(selection.revision ?? port.source?.ref ?? 'HEAD')
+    return port.installs.map((command) => ({ ...command, code: command.code.replaceAll('{revision}', revision) }))
+  }
   if (!port.installs.some((command) => command.code.includes('{version}') || command.additionalBlocks?.some((block) => block.code.includes('{version}')))) return port.installs
   const entry = registryFor(port)
   const version = selection.version ?? entry.version

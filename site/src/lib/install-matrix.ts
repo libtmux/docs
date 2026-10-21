@@ -126,7 +126,7 @@ export interface ServerSpec {
   package: string
   methods: readonly Method[]
   cooldowns: readonly Cooldown[]
-  resolve(method: Method, cooldown: Cooldown): ServerCommand
+  resolve(method: Method, cooldown: Cooldown, sourceRevision?: string): ServerCommand
 }
 
 /** Pre-built cell for one (client, method, scope, cooldown) tuple. */
@@ -287,13 +287,13 @@ export const SERVERS: Readonly<Record<string, ServerSpec>> = {
   julia: {
     port: 'julia',
     package: 'LibTmuxMCP',
-    methods: [{ id: 'pkg', label: 'Julia Pkg (Git)', docUrl: 'https://github.com/libtmux/libtmux-julia' }],
+    methods: [{ id: 'pkg', label: 'Julia Pkg (Git)', docUrl: null }],
     cooldowns: NO_COOLDOWN,
-    resolve() {
+    resolve(_method, _cooldown, sourceRevision = 'master') {
       return {
         command: '/absolute/path/to/project/bin/libtmux-mcp',
         args: ['--socket', '/absolute/path/to/tmux.sock'],
-        prereq: `julia --startup-file=no -e 'using Pkg; Pkg.activate("."); repo="https://github.com/libtmux/libtmux-julia.git"; ref="master"; Pkg.add([Pkg.PackageSpec(url=repo, rev=ref), Pkg.PackageSpec(url=repo, rev=ref, subdir="packages/LibTmuxMCP")]); using LibTmuxMCP; println(LibTmuxMCP.install_cli("bin"))'`,
+        prereq: `julia --startup-file=no -e 'using Pkg; Pkg.activate("."); repo="https://github.com/libtmux/libtmux-julia.git"; ref=${JSON.stringify(sourceRevision)}; Pkg.add([Pkg.PackageSpec(url=repo, rev=ref), Pkg.PackageSpec(url=repo, rev=ref, subdir="packages/LibTmuxMCP")]); using LibTmuxMCP; println(LibTmuxMCP.install_cli("bin"))'`,
         note: 'Run the setup in a consumer project directory. Replace the launcher and socket paths with absolute paths on your machine. The server borrows an existing tmux daemon. Configure tool permissions as described in the MCP server guide.',
       }
     },
@@ -616,13 +616,13 @@ function bodyFor(client: Client, scope: Scope, server: ServerCommand): RawBody {
 }
 
 /** Pre-compute every legal (client, method, scope, cooldown) panel for one port. */
-export function buildPanels(spec: ServerSpec): Panel[] {
+export function buildPanels(spec: ServerSpec, sourceRevision?: string): Panel[] {
   const panels: Panel[] = []
   CLIENTS.forEach((client, clientIndex) => {
     spec.methods.forEach((method, methodIndex) => {
       client.scopes.forEach((scope, scopeIndex) => {
         spec.cooldowns.forEach((cooldown, cooldownIndex) => {
-          const server = spec.resolve(method, cooldown)
+          const server = spec.resolve(method, cooldown, sourceRevision)
           const raw = bodyFor(client, scope, server)
           const body = raw.language === 'console' ? `$ ${raw.body}` : raw.body
           panels.push({

@@ -14,6 +14,8 @@ import {
   COOLDOWN_DATE_SENTINEL,
 } from '../../lib/install-matrix'
 import { highlightWithCooldownSlots } from '../../lib/highlight'
+import { installSelection } from '../../lib/registry'
+import { PORT_BY_SLUG } from '../../lib/ports'
 
 /**
  * Client x install-method x config-scope x dependency-cooldown picker for
@@ -58,7 +60,7 @@ const { variant = 'full', port = 'py', copyButton = 'auto' } = Astro.props as Pr
 const copyLayout = (code: string) => (copyButton === 'auto' ? (code.includes('\n') ? 'overlay' : 'gutter') : copyButton)
 
 const spec = serverSpec(port)
-const panels = buildPanels(spec)
+const panels = buildPanels(spec, installSelection(PORT_BY_SLUG[port]!, [], process.env).revision)
 
 /*
  * The config body, highlighted, with its live slots intact.

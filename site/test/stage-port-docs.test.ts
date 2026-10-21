@@ -1,15 +1,18 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
-import { artifactFromRevision, linkSnapshotDepths, rewriteLinks, stagedPortGuides, stagedRoutesFor } from '../../scripts/stage-port-docs.mjs'
+import { artifactFromRevision, expandDocumenter, linkSnapshotDepths, rewriteLinks, stagedPortGuides, stagedRoutesFor } from '../../scripts/stage-port-docs.mjs'
 import { PORTS } from '../src/lib/ports'
 import { SOURCE_GUIDE_PORTS } from '../src/lib/port-documentation'
 import scalaGuides from '../src/data/port-guides/scala.json'
 import fsharpGuides from '../src/data/port-guides/fsharp.json'
 import csharpModel from '../src/data/api/csharp.json'
 import powershellGuides from '../src/data/port-guides/powershell.json'
+import juliaGuides from '../src/data/port-guides/julia.json'
+
+afterEach(() => vi.unstubAllEnvs())
 
 describe('integrated guide inputs', () => {
   const port = PORTS.find((entry) => entry.slug === 'lua')!
@@ -53,6 +56,47 @@ describe('integrated guide inputs', () => {
 })
 
 describe('staged port guide links', () => {
+  it('renders Julia raw HTML with revision-bound source links while preserving code examples', () => {
+    const artifact = structuredClone(juliaGuides)
+    const guide = artifact.guides.find((entry) => entry.path === 'docs/src/queries.md')!
+    const html = '<p><a href="../source/dev/wire-interop/lua.md.html">Lua producer record</a>\n'
+      + '<a href="../source/CONTRIBUTING.md.html#checks">Contributor guide</a>\n'
+      + "<a href='../source/docs/capabilities.toml.html'>Capability manifest</a>\n"
+      + '<a href="https://example.org/evidence.html">External evidence</a></p>'
+    const example = `\`\`\`\`text\n\`\`\`@raw html\n${html}\n\`\`\`\n\`\`\`\``
+    guide.content += `\n\n\`\`\`@raw html\n${html}\n\`\`\`\n\n${example}\n`
+    const page = stagedPortGuides('julia', artifact).get('julia/concepts/queries/index.md')!
+    const source = `https://github.com/${artifact.source.repository}/blob/${artifact.source.revision}/`
+    expect(page).toContain(`<p><a href="${source}dev/wire-interop/lua.md">Lua producer record</a>`)
+    expect(page).toContain(`<a href="${source}CONTRIBUTING.md#checks">Contributor guide</a>`)
+    expect(page).toContain(`<a href='${source}docs/capabilities.toml'>Capability manifest</a>`)
+    expect(page).toContain('<a href="https://example.org/evidence.html">External evidence</a></p>')
+    expect(page).toContain(example)
+    expect(page.split('```@raw html')).toHaveLength(2)
+  })
+
+  it('keeps explicit Julia API links in the selected preview', () => {
+    vi.stubEnv('LIBTMUX_DOCS_PORT', 'julia')
+    vi.stubEnv('LIBTMUX_DOCS_VERSION', 'pr-32')
+    vi.stubEnv('LIBTMUX_DOCS_VERSION_KIND', 'pr')
+    vi.stubEnv('LIBTMUX_DOCS_PORT_DEFAULTS', '{"julia":"stable"}')
+    const page = stagedPortGuides('julia', juliaGuides).get('julia/concepts/queries/index.md')!
+    expect(page).toContain('[`snapshot`](/julia/pr-32/reference/')
+    expect(page).not.toMatch(/\/julia\/(?:latest|stable)\/reference\//)
+  })
+
+  it.each(['selected', 'other-port'])('uses the %s Julia version for native API overview links', (selection) => {
+    vi.stubEnv('LIBTMUX_DOCS_PORT', selection === 'selected' ? 'julia' : 'ruby')
+    vi.stubEnv('LIBTMUX_DOCS_VERSION', 'pr-32')
+    vi.stubEnv('LIBTMUX_DOCS_VERSION_KIND', 'pr')
+    vi.stubEnv('LIBTMUX_DOCS_PORT_DEFAULTS', '{"julia":"stable"}')
+    const version = selection === 'selected' ? 'pr-32' : 'stable'
+    for (const [module, product] of [['LibTmux', ''], ['LibTmuxMCP', 'mcp/'], ['LibTmuxWorkspace', 'workspace/']]) {
+      const page = expandDocumenter(`\`\`\`@autodocs\nModules = [${module}]\n\`\`\``, 'docs/src/api.md')
+      expect(page).toBe(`Browse the [${module} API reference](/julia/${version}/${product}reference/).`)
+    }
+  })
+
   it('keeps native PowerShell command and parameter links in their actual API product', () => {
     const artifact = structuredClone(powershellGuides)
     const guide = artifact.guides.find((entry) => entry.path === 'docs/capture.md')!
