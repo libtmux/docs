@@ -74,6 +74,8 @@ try {
     node('scripts/check-nav.mjs'),
     node('scripts/check-example-blocks.mjs'),
     node('scripts/check-example-blocks.negative.mjs'),
+    node('scripts/check-ci-coverage.mjs'),
+    node('scripts/check-ci-coverage.negative.mjs'),
     node('scripts/gen-mentions.mjs', '--check'),
     node('scripts/gen-workspace-entities.mjs', '--check'),
     node('scripts/gen-tmux-catalog.mjs', '--check'),

@@ -266,6 +266,14 @@ else
   echo 'zstd not installed; skipped'
 fi
 
+# CI runs each stage as its own job. A stage with no job, or a job the test job
+# does not wait on, drops its checks while every other job stays green.
+step 'ci coverage'
+node scripts/check-ci-coverage.mjs
+
+step 'ci coverage (negative)'
+node scripts/check-ci-coverage.negative.mjs
+
 step 'unit tests'
 LIBTMUX_DOCS_TEST_SOURCE_ONLY=1 pnpm run --recursive --if-present test
 
