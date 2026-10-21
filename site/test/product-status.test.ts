@@ -1,10 +1,12 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import {
-  CONCEPT_DESCRIPTION, PORTS, PRODUCT_STATUS_GUIDE, PRODUCT_STATUS_LINE, PRODUCT_STATUS_LINK, productAvailable, productStatus, releaseMaturity,
+  CONCEPT_DESCRIPTION, PORT_BY_SLUG, PORTS, PRODUCT_STATUS_GUIDE, PRODUCT_STATUS_LINE, PRODUCT_STATUS_LINK, productAvailable, productStatus, releaseMaturity,
   type ProductStatus, type RegistryEntry,
 } from '../src/lib/ports'
 import { REGISTRY } from '../src/lib/registry'
-import { releaseTag, type TagGrammar } from '../src/lib/versions'
+import { newestPublishedTag, releaseTag, type TagGrammar } from '../src/lib/versions'
+import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
 const entry = (overrides: Partial<RegistryEntry>): RegistryEntry => ({ status: 'prerelease', version: null, stable: null, tag: null, ...overrides })
 
@@ -112,8 +114,37 @@ describe('product status', () => {
       if (product !== 'core' && !productAvailable(port, product)) continue
       const status = productStatus(port, product, REGISTRY)
       expect(status, `${port.slug} ${product}`).toBeDefined()
-      expect(PRODUCT_STATUS_LINE[status as ProductStatus].length).toBeGreaterThan(20)
+      expect(PRODUCT_STATUS_LINE[status as ProductStatus].length).toBeGreaterThan(10)
     }
+  })
+
+  it('badges Julia stable from its final tag and states the line without naming a registry', async () => {
+    const julia = PORT_BY_SLUG.julia!
+    const status = productStatus(julia, 'core', { schema: 1, ports: { julia: JULIA_FINAL_TAG } })
+    expect(status).toBe('stable')
+    // Python's stable release is on PyPI and Julia's is not on General; one line has to be true of both.
+    expect(PRODUCT_STATUS_LINE.stable).not.toMatch(/registry/i)
+    const html = await renderAstroTemplate(await loadAstroTemplate('components/StatusBadge.astro'), {
+      props: { status, product: julia.projectName, id: 'julia-core-status' },
+    })
+    expect(html).toContain('data-status="stable"')
+    expect(html).toContain(`<span class="status-toggletip__line">${PRODUCT_STATUS_LINE.stable}</span>`)
+  })
+
+  it.each([
+    ['General lists nothing', null, { status: 'unpublished', version: null, stable: null, tag: 'v0.1.0' }, 'stable'],
+    ['General lists only 0.1.0-alpha.2', ['0.1.0-alpha.2'], { status: 'prerelease', version: '0.1.0-alpha.2', stable: null, tag: 'v0.1.0-alpha.2' }, 'alpha'],
+    ['General lists 0.1.0', ['0.1.0'], { status: 'stable', version: '0.1.0', stable: '0.1.0', tag: 'v0.1.0' }, 'stable'],
+  ] as const)('reads the newest release tag only while the registry lists no release: %s', (_state, published, resolved, stage) => {
+    // The repository carries both tags in every state; the resolver records v0.1.0 only when nothing or v0.1.0 is listed.
+    expect(newestPublishedTag(['v0.1.0-alpha.2', 'v0.1.0'], PORT_BY_SLUG.julia!, published)).toBe(resolved.tag)
+    expect(releaseMaturity(resolved)).toBe(stage)
+  })
+
+  it('keeps the support page to the scope of that rule', () => {
+    const page = readFileSync(new URL('../src/pages/meta/support.astro', import.meta.url), 'utf8').replace(/\s+/g, ' ')
+    expect(page).toContain('lists no release at all')
+    expect(page).toContain('exactly <code>MAJOR.MINOR.PATCH</code>')
   })
 
   it('keeps each badge line short, apart from the long description that only the guide and data carry', () => {

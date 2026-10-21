@@ -1822,7 +1822,7 @@ export const PRODUCT_STATUS_LINE: Readonly<Record<ProductStatus, string>> = {
   alpha: 'Alpha release; the API may change.',
   beta: 'Beta release; the API may still change.',
   rc: 'Release candidate; close to final.',
-  stable: 'Stable release on its package registry.',
+  stable: 'Stable release.',
   unreleased: 'Not published yet; install from source.',
 }
 
