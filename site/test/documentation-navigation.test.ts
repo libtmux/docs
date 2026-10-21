@@ -40,6 +40,20 @@ describe('documentation surface navigation', () => {
     }
   })
 
+  it('builds Julia’s surfaces and badges the library stable from its final tag alone', () => {
+    const julia = PORTS.find((port) => port.slug === 'julia')!
+    const recorded = REGISTRY.ports.julia!
+    // What the deploy's resolver wrote once v0.1.0 was tagged and General did not carry it.
+    REGISTRY.ports.julia = { status: 'unpublished', version: null, stable: null, tag: 'v0.1.0' }
+    try {
+      const surfaces = buildDocumentationSurfaces('julia', 'latest', menus(julia, 'latest'))
+      expect(Object.fromEntries(surfaces.map((surface) => [surface.id, surface.status])))
+        .toEqual({ core: 'stable', mcp: 'concept', workspace: 'concept' })
+    } finally {
+      REGISTRY.ports.julia = recorded
+    }
+  })
+
   it('shows Python the stage its PyPI projects declare and every other port a concept companion', () => {
     const status = (slug: string) => Object.fromEntries(buildDocumentationSurfaces(slug, 'latest', menus(PORTS.find((port) => port.slug === slug)!, 'latest'))
       .map((surface) => [surface.id, surface.status]))

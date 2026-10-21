@@ -4,8 +4,13 @@ import {
   type ProductStatus, type RegistryEntry,
 } from '../src/lib/ports'
 import { REGISTRY } from '../src/lib/registry'
+import { releaseTag, type TagGrammar } from '../src/lib/versions'
 
 const entry = (overrides: Partial<RegistryEntry>): RegistryEntry => ({ status: 'prerelease', version: null, stable: null, tag: null, ...overrides })
+
+// What the registry resolver recorded for Julia when its first final release
+// was tagged and General did not carry it yet.
+const JULIA_FINAL_TAG: RegistryEntry = { status: 'unpublished', version: null, stable: null, tag: 'v0.1.0' }
 
 describe('release maturity', () => {
   it.each([
@@ -23,10 +28,50 @@ describe('release maturity', () => {
   it('lets a registry declaration outrank the version and a stable release outrank the rest', () => {
     expect(releaseMaturity(entry({ version: '0.1.0a22', maturity: 'pre-alpha' }))).toBe('pre-alpha')
     expect(releaseMaturity(entry({ status: 'stable', version: '1.74.0', stable: '1.74.0' }))).toBe('stable')
+    // Neither outcome comes from the name: a declared stage beats a final name, and a stable
+    // status beats a LuaRocks revision (`-1`) that the name grammar refuses.
+    expect(releaseMaturity(entry({ version: '1.74.0', maturity: 'beta' }))).toBe('beta')
+    expect(releaseMaturity(entry({ status: 'stable', version: '0.1.0-1' }))).toBe('stable')
   })
 
   it('refuses a prerelease whose stage it cannot read', () => {
     expect(() => releaseMaturity(entry({ version: '0.1.0-dev.3' }))).toThrow(/no release stage in "0.1.0-dev.3"/)
+  })
+
+  it('reads the live Julia entry, a final tag that General does not carry yet, as stable', () => {
+    expect(releaseMaturity(JULIA_FINAL_TAG)).toBe('stable')
+  })
+
+  it.each([
+    'v0.1.0', '0.1.0', 'v10.20.30', 'libtmux@v0.1.0', 'libtmux@0.1.0', 'tmux-workspace@v0.1.0', 'workspace/v0.1.0', 'mcp/v1.2.3',
+    // A stage word in the package label is not the release's stage.
+    'arc-tools@v1.0.0',
+  ])('reads the final release %s as stable, from a tag or a version', (name) => {
+    expect(releaseMaturity(entry({ status: 'unpublished', tag: name }))).toBe('stable')
+    expect(releaseMaturity(entry({ version: name }))).toBe('stable')
+  })
+
+  it.each([
+    '0.1.0-dev.3', 'v0.1.0-dev.3', '0.1.0.dev1', '0.1.0.post1', '0.1.0+build.5', 'v0.1.0-1', '0.1.0-snapshot', 'libtmux@v0.1.0-dev.3',
+    'workspace/0.1.0-x', 'v1.0', 'v1', '1.0.0.0', '01.0.0', 'latest', 'master', 'v0.1.0 ', '@v0.1.0', 'tmux-workspace@', '/v1.0.0',
+  ])('refuses %j, a name whose marker it cannot place', (name) => {
+    expect(() => releaseMaturity(entry({ status: 'unpublished', tag: name }))).toThrow(`no release stage in "${name}"`)
+    expect(() => releaseMaturity(entry({ version: name }))).toThrow(`no release stage in "${name}"`)
+  })
+
+  const PRERELEASE_TAG: Record<TagGrammar, string> = {
+    semver: 'v0.1.0-alpha.1', pep440: 'v0.1.0a1', rubygems: 'v0.1.0.alpha.1', luarocks: 'v0.1.0alpha1',
+  }
+
+  it.each(PORTS)('reads every tag $slug records, final or alpha, as its stage', (port) => {
+    const prefix = port.tagPrefix ?? ''
+    const final = `${prefix}v0.1.0`
+    const alpha = `${prefix}${PRERELEASE_TAG[port.tagGrammar]}`
+    // The resolver stores a tag only when the port's own grammar accepts it.
+    expect(releaseTag(final, port), final).not.toBeNull()
+    expect(releaseTag(alpha, port), alpha).not.toBeNull()
+    expect(releaseMaturity(entry({ status: 'unpublished', tag: final })), final).toBe('stable')
+    expect(releaseMaturity(entry({ status: 'unpublished', tag: alpha })), alpha).toBe('alpha')
   })
 
   it('reads a stage for every package the registry records', () => {
