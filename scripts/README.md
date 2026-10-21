@@ -89,6 +89,14 @@ generation pass (comma-separated slugs from `site/src/lib/ports.ts`).
 `--versions` overrides the default `latest,stable`. `--skip-refs` builds
 only the shell and search index. `--skip-pagefind` skips the final
 indexing pass, useful while iterating on everything before it.
+`--prepare-only` stages the guides and generated inputs the shell builds
+read, then exits without building, so another process can build from the
+same tree the assembly would have used.
+
+`scripts/test-all.sh --stage source|build|production|output` runs one
+stage of the publication audit; without `--stage` the stages run in that
+order. CI gives each stage its own job. `--stage production` takes the
+default versions from `scripts/port-defaults.sh`.
 
 Port CI binds any named tree to one source checkout. All identity inputs are
 required together; branches, PRs, tags, and aliases are refused without them:

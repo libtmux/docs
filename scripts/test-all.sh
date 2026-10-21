@@ -3,6 +3,15 @@
 # This has no development-loop time budget; use pnpm test for fresh sampled rendering.
 #
 # Usage: scripts/test-all.sh [--skip-build | --preview pr-N | --output-only pr-N]
+#                            [--stage source|build|production|output]
+#
+# Without --stage the four stages run in this order. --stage runs one of them
+# alone, so CI can give each its own job: `source` is every check that reads
+# only the repository, `build` is the assembly, `production` renders the root
+# locales a published preview must not break (previews only), and `output`
+# audits the assembly and those renders. `--stage production` renders against
+# the defaults in LIBTMUX_DOCS_PRODUCTION_DEFAULTS (scripts/port-defaults.sh);
+# `--stage output` checks them against the assembly it audits.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -15,16 +24,35 @@ SERVE_URL="${LIBTMUX_DOCS_SERVE:-http://localhost:8080}"
 preview=""
 skip_build=false
 output_only=false
-case "${1:-}" in
-  '') ;;
-  --skip-build) skip_build=true ;;
-  --preview|--output-only)
-    [[ "${2:-}" =~ ^pr-[1-9][0-9]*$ && $# == 2 ]] || { echo 'expected one preview prefix: pr-N' >&2; exit 1; }
-    preview="/$2"
-    [[ "$1" == --output-only ]] && output_only=true
-    ;;
-  *) echo "unknown publication audit option: $1" >&2; exit 1 ;;
-esac
+only=""
+modes=0
+while (( $# > 0 )); do
+  case "$1" in
+    --skip-build) skip_build=true; modes=$((modes + 1)); shift ;;
+    --preview|--output-only)
+      [[ "${2:-}" =~ ^pr-[1-9][0-9]*$ ]] || { echo 'expected one preview prefix: pr-N' >&2; exit 1; }
+      preview="/$2"
+      [[ "$1" == --output-only ]] && output_only=true
+      modes=$((modes + 1))
+      shift 2
+      ;;
+    --stage)
+      [[ "${2:-}" =~ ^(source|build|production|output)$ ]] || { echo 'expected one stage: source, build, production or output' >&2; exit 1; }
+      only="$2"
+      shift 2
+      ;;
+    *) echo "unknown publication audit option: $1" >&2; exit 1 ;;
+  esac
+done
+(( modes <= 1 )) || { echo 'expected one of --skip-build, --preview pr-N or --output-only pr-N' >&2; exit 1; }
+if [[ -n "$only" ]] && [[ "$skip_build" == true || "$output_only" == true ]]; then
+  echo '--stage replaces --skip-build and --output-only' >&2
+  exit 1
+fi
+if [[ "$only" == production && -z "$preview" ]]; then
+  echo '--stage production renders a preview: pass --preview pr-N' >&2
+  exit 1
+fi
 export LIBTMUX_DOCS_TEST_PREFIX="$preview"
 SERVE_SITE="$SERVE_URL$preview/${LIBTMUX_DOCS_LOCALE:-en}"
 if [[ -n "$preview" ]]; then
@@ -39,9 +67,20 @@ note_skip() { skipped="${skipped:+$skipped, }$1"; }
 
 step() { printf '\n\033[1m== %s\033[0m\n' "$1"; }
 
+# Each stage opens with a `# stage: NAME` line and the guard below it.
+# scripts/check-ci-coverage.mjs reads both to find the workflow job that runs
+# every check, so keep the marker directly above its guard.
+stage_wanted() { [[ -z "$only" || "$only" == "$1" ]]; }
+stage_done() {
+  [[ "$only" == "$1" ]] || return 0
+  printf '\n\033[1m%s stage passed\033[0m%s\n' "$1" "${skipped:+; not run: $skipped}"
+  exit 0
+}
+
 if [[ "$output_only" == true ]]; then note_skip 'source checks and build (explicit --output-only)'; fi
 
-if [[ "$output_only" == false ]]; then
+# stage: source
+if [[ "$output_only" == false ]] && stage_wanted source; then
 step 'cached inventories'
 # The inventories are committed, so this only reports their absence — but a
 # build without them silently produces fewer links rather than failing, which
@@ -202,6 +241,11 @@ node scripts/check-example-blocks.mjs
 step 'example blocks (negative)'
 node scripts/check-example-blocks.negative.mjs
 
+# The output stage runs the check itself only when the roots were rendered
+# apart from the assembly, so here is the proof that it can fail.
+step 'production render check (negative)'
+node scripts/check-production-render.negative.mjs
+
 step 'unit tests'
 LIBTMUX_DOCS_TEST_SOURCE_ONLY=1 pnpm run --recursive --if-present test
 
@@ -213,11 +257,21 @@ pnpm run type-check
 
 step 'fresh browser matrix'
 node site/scripts/check-dev.mjs
+fi
+stage_done source
 
 if [[ "$skip_build" == true ]]; then
   printf '\nskipped the build; link and reference checks did not run\n'
   exit 0
 fi
+
+# build-site.sh as a preview run starts it: the whole assembly under the PR
+# prefix, or with --prepare-only the staging that precedes it.
+build_preview() {
+  LIBTMUX_DOCS_LOCALES_ROOT="$preview" LIBTMUX_DOCS_VERSION="${preview#/}" \
+    LIBTMUX_DOCS_VERSION_KIND=pr LIBTMUX_DOCS_IS_DEFAULT=false \
+    ./scripts/build-site.sh --versions latest,stable "$@"
+}
 
 # The assembly, not one shell build.
 #
@@ -236,18 +290,36 @@ fi
 # seconds and a changed one rebuilds only what moved. It writes `_site`, which
 # is what `scripts/serve.sh` publishes — so what is checked here is the tree a
 # reader gets, not a near-copy of it.
+# stage: build
+if [[ "$output_only" == false ]] && stage_wanted build; then
 step 'build'
 if [[ -n "$preview" ]]; then
-  LIBTMUX_DOCS_LOCALES_ROOT="$preview" LIBTMUX_DOCS_VERSION="${preview#/}" \
-    LIBTMUX_DOCS_VERSION_KIND=pr LIBTMUX_DOCS_IS_DEFAULT=false \
-    ./scripts/build-site.sh --versions latest,stable
+  build_preview
+else
+  ./scripts/build-site.sh
+fi
+fi
+stage_done build
 
-  # Production robots, sitemaps and indexing must still render on a PR.
-  # Two root locale renders cover those contracts without rebuilding ports.
+# Production robots, sitemaps and indexing must still render on a PR.
+# Two root locale renders cover those contracts without rebuilding ports.
+#
+# They read the assembly only for the default versions. A full run takes them
+# from its versions.json; the production stage starts before any assembly
+# exists, so it takes the defaults build-site.sh starts from (see
+# scripts/port-defaults.sh) and stages the same inputs the assembly stages.
+# `--stage output` compares both against the assembly it audits.
+# stage: production
+if [[ -n "$preview" && "$output_only" == false ]] && stage_wanted production; then
   step 'production root renders'
+  if [[ "$only" == production ]]; then
+    defaults="${LIBTMUX_DOCS_PRODUCTION_DEFAULTS:?--stage production needs the defaults from scripts/port-defaults.sh}"
+    build_preview --prepare-only
+  else
+    defaults="$(node -e 'console.log(JSON.stringify(JSON.parse(require("fs").readFileSync(process.argv[1])).defaultVersion))' "$out$preview/en/versions.json")"
+  fi
   (
     flock -x 9
-    defaults="$(node -e 'console.log(JSON.stringify(JSON.parse(require("fs").readFileSync(process.argv[1])).defaultVersion))' "$out$preview/en/versions.json")"
     locales="$(node --input-type=module -e 'import { LOCALES } from "./site/src/i18n/locales.ts"; console.log(LOCALES.join(" "))')"
     for locale in $locales; do
       (cd site && LIBTMUX_DOCS_LOCALES_ROOT='' LIBTMUX_DOCS_PORT='' \
@@ -260,14 +332,19 @@ if [[ -n "$preview" ]]; then
     done
     cp "$LIBTMUX_DOCS_TEST_PRODUCTION_SITE/en/robots.txt" "$LIBTMUX_DOCS_TEST_PRODUCTION_SITE/robots.txt"
   ) 9>.build.lock
-else
-  ./scripts/build-site.sh
 fi
-fi
+stage_done production
 
+# stage: output
+stage_wanted output || exit 0
 [[ -f "$out$preview/en/index.html" ]] || { echo "missing audited assembly: $out$preview/en" >&2; exit 1; }
 if [[ -n "$preview" ]]; then
   [[ -f "$LIBTMUX_DOCS_TEST_PRODUCTION_SITE/en/sitemap-index.xml" ]] || { echo 'missing production root render' >&2; exit 1; }
+  # Rendered by the production stage, before this assembly existed.
+  if [[ "$only" == output ]]; then
+    step 'production render inputs'
+    node scripts/check-production-render.mjs "$out$preview/en/versions.json"
+  fi
   step 'preview isolation'
   bash scripts/check-preview.sh "$out" "${preview#/}"
 fi
