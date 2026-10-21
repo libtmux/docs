@@ -8,9 +8,18 @@ import { API_MODEL_PORTS, PORTS } from '../src/lib/ports'
 const reusable = readFileSync(new URL('../../.github/workflows/reusable-deploy.yml', import.meta.url), 'utf8')
 const shell = readFileSync(new URL('../../.github/workflows/deploy-shell.yml', import.meta.url), 'utf8')
 const testWorkflow = readFileSync(new URL('../../.github/workflows/test.yml', import.meta.url), 'utf8')
+const prepareAction = readFileSync(new URL('../../.github/actions/prepare-audit/action.yml', import.meta.url), 'utf8')
 const publicationAudit = readFileSync(new URL('../../scripts/test-all.sh', import.meta.url), 'utf8')
 const publishRoot = readFileSync(new URL('../../scripts/publish-root.sh', import.meta.url), 'utf8')
 const sourceGuidePorts = ['ruby', 'lua', 'powershell', 'julia']
+
+/** One job of test.yml: from its key to the next job's, comments included. */
+function job(name: string): string {
+  const jobs = testWorkflow.slice(testWorkflow.indexOf('\njobs:\n'))
+  const match = new RegExp(`\\n  ${name}:\\n[\\s\\S]*?(?=\\n  [a-z][a-z-]*:\\n|$)`).exec(jobs)
+  expect(match, `test.yml has no ${name} job`).not.toBeNull()
+  return match![0]
+}
 
 function sourceCheckoutContract(workflow: string): void {
   for (const port of sourceGuidePorts) {
@@ -377,15 +386,15 @@ describe('port publisher contract', () => {
   })
 
   it('stages every source-bound native guide before the publication audit checks backlinks', () => {
-    sourceCheckoutContract(testWorkflow)
-    expect(testWorkflow).toContain('node scripts/stage-port-docs.mjs --from-source')
-    const stage = testWorkflow.slice(testWorkflow.indexOf('- name: Stage integrated source guides'), testWorkflow.indexOf('- name: test-all'))
-    const audit = testWorkflow.slice(testWorkflow.indexOf('- name: test-all'), testWorkflow.indexOf('- name: Upload audited preview'))
+    sourceCheckoutContract(prepareAction)
+    expect(prepareAction).toContain('node scripts/stage-port-docs.mjs --from-source')
+    const stage = prepareAction.slice(prepareAction.indexOf('- name: Stage integrated source guides'))
     for (const port of sourceGuidePorts) {
       expect(stage).toContain(`LIBTMUX_DOCS_CHECKOUT_${port.toUpperCase()}: ` + '${{ github.workspace }}/.port-sources/' + port)
     }
     expect(stage).toContain('node scripts/stage-port-docs.mjs --cached --check')
     expect(stage.indexOf('--cached --check')).toBeGreaterThan(stage.indexOf('--from-source'))
+    const audit = testWorkflow.slice(testWorkflow.indexOf('\nenv:\n'), testWorkflow.indexOf('\njobs:\n'))
     for (const port of ['ruby', 'lua']) {
       expect(audit).toContain(`LIBTMUX_DOCS_CHECKOUT_${port.toUpperCase()}: ` + '${{ github.workspace }}/.port-sources/' + port)
     }
@@ -393,6 +402,15 @@ describe('port publisher contract', () => {
     expect(testWorkflow).toContain('LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS: ' + sourceGuidePorts.join(','))
     expect(publicationAudit).toContain('LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS')
     expect(publicationAudit).toContain('--skip-native-model-ports')
+    // A job that builds or audits without the staging would audit other guides.
+    for (const name of ['source', 'build', 'production', 'output']) {
+      expect(job(name), name).toContain('uses: ./.github/actions/prepare-audit')
+    }
+    // The browser matrix and the output suites drive Chromium; the build jobs do not.
+    for (const name of ['source', 'output']) {
+      expect(job(name), name).toMatch(/uses: \.\/\.github\/actions\/prepare-audit\n {8}with:\n {10}browser: 'true'\n/)
+    }
+    for (const name of ['build', 'production']) expect(job(name), name).not.toContain('browser:')
   })
 
   it.each(sourceGuidePorts)('can explicitly exclude a raw %s guide checkout from native-model freshness', (port) => {
@@ -416,35 +434,104 @@ describe('port publisher contract', () => {
   })
 
   it('assembles previews from the integrated source guide inputs', () => {
-    sourceCheckoutContract(testWorkflow)
+    sourceCheckoutContract(prepareAction)
     expect(testWorkflow).toContain('pnpm test:publication --preview "$PREVIEW_PREFIX"')
     expect(publicationAudit).toContain('./scripts/build-site.sh --versions latest,stable')
     expect(publicationAudit.indexOf("step 'unit tests'")).toBeLessThan(publicationAudit.indexOf("step 'build'"))
     expect(shell).not.toMatch(/^  (pull_request|build-preview|publish-preview|check-publish-preview):/m)
   })
 
-  it('publishes only the same-run artifact that passed both the audit and publisher dry-run', () => {
-    const audit = testWorkflow.slice(testWorkflow.indexOf('  test:'), testWorkflow.indexOf('  check-publish-preview:'))
-    const check = testWorkflow.slice(testWorkflow.indexOf('  check-publish-preview:'), testWorkflow.indexOf('  publish-preview:'))
-    const publish = testWorkflow.slice(testWorkflow.indexOf('  publish-preview:'))
-    expect(audit.indexOf('name: test-all')).toBeLessThan(audit.indexOf('name: Upload audited preview'))
-    expect(audit).toContain('preview-artifact-id: ${{ steps.preview-artifact.outputs.artifact-id }}')
-    expect(check).toContain('needs: test')
-    expect(check).toContain('artifact-ids: ${{ needs.test.outputs.preview-artifact-id }}')
+  it('hands the assembly to every audit through one verified archive', () => {
+    const build = job('build')
+    expect(build.indexOf('--stage build')).toBeLessThan(build.indexOf('site-bundle.mjs pack _site'))
+    expect(build.indexOf('site-bundle.mjs pack _site')).toBeLessThan(build.indexOf('uses: actions/upload-artifact'))
+    expect(build).toContain('tree: ${{ steps.pack.outputs.tree }}')
+    expect(build).toContain('bundle-id: ${{ steps.upload.outputs.artifact-id }}')
+    const production = job('production')
+    expect(production.indexOf('--stage production')).toBeLessThan(production.indexOf('site-bundle.mjs pack _site.production'))
+    expect(production).toContain('tree: ${{ steps.pack.outputs.tree }}')
+    for (const consumer of ['output', 'preview-artifact']) {
+      const text = job(consumer)
+      expect(text, consumer).toContain('artifact-ids: ${{ needs.build.outputs.bundle-id }}')
+      expect(text, consumer).toContain('digest-mismatch: error')
+      expect(text, consumer).toContain('TREE: ${{ needs.build.outputs.tree }}')
+      expect(text, consumer).toContain('site-bundle.mjs unpack "$RUNNER_TEMP/site-bundle" _site --digest "$TREE"')
+    }
+    const output = job('output')
+    expect(output).toContain('artifact-ids: ${{ needs.production.outputs.bundle-id }}')
+    expect(output).toContain('TREE: ${{ needs.production.outputs.tree }}')
+    expect(output).toContain('site-bundle.mjs unpack "$RUNNER_TEMP/production-bundle" _site.production --digest "$TREE"')
+    // The audits start from an unpacked archive, never from a build of their own.
+    expect(output.indexOf('site-bundle.mjs unpack')).toBeLessThan(output.indexOf('--stage output'))
+    expect(output).not.toContain('--stage build')
+  })
+
+  it('publishes only the same-run artifact that passed the audits and the publisher dry-run', () => {
+    const preview = job('preview-artifact')
+    const check = job('check-publish-preview')
+    const publish = job('publish-preview')
+    expect(preview.indexOf('site-bundle.mjs unpack')).toBeLessThan(preview.indexOf('name: preview-dist'))
+    expect(preview).toContain('path: _site/pr-${{ github.event.pull_request.number }}/')
+    expect(preview).toContain('artifact-id: ${{ steps.preview-artifact.outputs.artifact-id }}')
+    expect(check).toContain('needs: preview-artifact')
+    expect(check).toContain('artifact-ids: ${{ needs.preview-artifact.outputs.artifact-id }}')
     expect(check).toContain('digest-mismatch: error')
-    expect(publish).toContain('needs: [test, check-publish-preview]')
-    expect(publish).toContain('artifact-id: ${{ needs.test.outputs.preview-artifact-id }}')
+    expect(publish).toContain('needs: [test, preview-artifact, check-publish-preview]')
+    expect(publish).toContain('artifact-id: ${{ needs.preview-artifact.outputs.artifact-id }}')
     expect(publish).toContain('github.event.pull_request.head.repo.full_name == github.repository')
     expect(publish).toContain('environment: docs-preview')
     expect(testWorkflow).toContain("format('deploy-shell-pr-{0}', github.event.pull_request.number)")
-    expect((audit + check).replace(/^\s*#.*$/gm, '')).not.toMatch(/id-token:|secrets\.|continue-on-error|always\(\)|run-id:|github-token:/)
+    const unprivileged = ['source', 'build', 'production', 'output', 'test', 'preview-artifact', 'check-publish-preview']
+      .map(job).join('\n').replace(/^\s*#.*$/gm, '')
+    expect(unprivileged).not.toMatch(/id-token:|secrets\.|continue-on-error|always\(\)|run-id:|github-token:/)
     expect(testWorkflow + shell).not.toMatch(/pull_request_target:|workflow_run:/)
-    expect(publish).not.toMatch(/continue-on-error|always\(\)/)
+    expect(publish).not.toMatch(/continue-on-error|always\(\)|cancelled\(\)/)
     const download = reusable.slice(reusable.indexOf('      # Without github-token'), reusable.indexOf("      - if: inputs.port == '' && inputs.version-kind != 'pr'"))
     expect(download).toContain('artifact-ids: ${{ inputs.artifact-id }}')
     expect(download).toContain('digest-mismatch: error')
     expect(download).not.toMatch(/^\s*(name|run-id|github-token|repository):/m)
     expect(reusable.indexOf('Validate preview artifact identity')).toBeLessThan(reusable.indexOf('uses: aws-actions/configure-aws-credentials'))
+  })
+
+  describe('the test job', () => {
+    const body = /- name: Require every audit[\s\S]*?        run: \|\n((?: {10}[^\n]*\n|\n)*)/.exec(job('test'))![1]
+      .replace(/^ {10}/gm, '')
+    const result = (value: string) => ({ result: value, outputs: {} })
+    const allPass = { source: result('success'), build: result('success'), production: result('success'), output: result('success') }
+    const run = (needs: Record<string, unknown>, event = 'pull_request') =>
+      spawnSync('bash', ['-c', body], { encoding: 'utf8', env: { ...process.env, NEEDS: JSON.stringify(needs), EVENT: event } })
+
+    it('needs every audit job and runs unless the run was cancelled', () => {
+      const test = job('test')
+      expect(test).toContain('needs: [source, build, production, output]')
+      expect(test).toContain('if: ${{ !cancelled() }}')
+    })
+
+    it('passes when every audit succeeded', () => {
+      expect(run(allPass).status).toBe(0)
+    })
+
+    it('does not need the production renders on a push, which has none', () => {
+      expect(run({ ...allPass, production: result('skipped') }, 'push').status).toBe(0)
+    })
+
+    it.each(['failure', 'skipped', 'cancelled'])('fails when an audit is %s, naming it', (outcome) => {
+      for (const audit of Object.keys(allPass)) {
+        const failed = run({ ...allPass, [audit]: result(outcome) })
+        expect(failed.status, `${audit} ${outcome}`).toBe(1)
+        expect(failed.stderr).toContain(`${audit}: ${outcome}`)
+      }
+    })
+
+    it('fails when the production renders are skipped on a pull request', () => {
+      const failed = run({ ...allPass, production: result('skipped') })
+      expect(failed.status).toBe(1)
+      expect(failed.stderr).toContain('production: skipped')
+    })
+
+    it('fails when it was given no jobs to read', () => {
+      expect(run({}).status).not.toBe(0)
+    })
   })
 
   it.each(['', '0', '-1', '12,13', '12other', '12\n', '12\nMARKER=1', '17'])(

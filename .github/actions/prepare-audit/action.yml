@@ -1,0 +1,80 @@
+name: Prepare the publication audit
+description: >-
+  Install the toolchain and stage the integrated guide sources. Every
+  publication-audit job builds, renders or audits the same inputs, so they
+  share these steps. The caller checks out the repository first.
+
+inputs:
+  browser:
+    description: Install the Chromium that the rendering audits drive.
+    required: false
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@v6
+    - uses: actions/setup-node@v7
+      with:
+        node-version: '26'
+        cache: pnpm
+
+    - name: Install audit tools
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install --no-install-recommends -y ripgrep fd-find
+        sudo ln -s /usr/bin/fdfind /usr/local/bin/fd
+
+    - run: pnpm install --frozen-lockfile
+      shell: bash
+
+    - name: Install browser for the rendering audit
+      if: inputs.browser == 'true'
+      shell: bash
+      run: pnpm --filter @libtmux/site exec playwright install --with-deps chromium
+
+    - name: Resolve integrated guide sources
+      id: integrated-sources
+      shell: bash
+      run: |
+        echo "ruby=$(jq -r .revision site/src/data/api/ruby.json)" >> "$GITHUB_OUTPUT"
+        echo "lua=$(jq -r .revision site/src/data/api/lua.json)" >> "$GITHUB_OUTPUT"
+        echo "powershell=$(jq -r .revision site/src/data/api/powershell.json)" >> "$GITHUB_OUTPUT"
+        echo "julia=$(jq -r .revision site/src/data/api/julia.json)" >> "$GITHUB_OUTPUT"
+
+    - uses: actions/checkout@v7
+      with:
+        repository: libtmux/libtmux-ruby
+        ref: ${{ steps.integrated-sources.outputs.ruby }}
+        path: .port-sources/ruby
+        persist-credentials: false
+    - uses: actions/checkout@v7
+      with:
+        repository: libtmux/libtmux-lua
+        ref: ${{ steps.integrated-sources.outputs.lua }}
+        path: .port-sources/lua
+        persist-credentials: false
+    - uses: actions/checkout@v7
+      with:
+        repository: libtmux/libtmux-powershell
+        ref: ${{ steps.integrated-sources.outputs.powershell }}
+        path: .port-sources/powershell
+        persist-credentials: false
+    - uses: actions/checkout@v7
+      with:
+        repository: libtmux/libtmux-julia
+        ref: ${{ steps.integrated-sources.outputs.julia }}
+        path: .port-sources/julia
+        persist-credentials: false
+
+    - name: Stage integrated source guides
+      shell: bash
+      env:
+        LIBTMUX_DOCS_CHECKOUT_RUBY: ${{ github.workspace }}/.port-sources/ruby
+        LIBTMUX_DOCS_CHECKOUT_LUA: ${{ github.workspace }}/.port-sources/lua
+        LIBTMUX_DOCS_CHECKOUT_POWERSHELL: ${{ github.workspace }}/.port-sources/powershell
+        LIBTMUX_DOCS_CHECKOUT_JULIA: ${{ github.workspace }}/.port-sources/julia
+      run: |
+        node scripts/stage-port-docs.mjs --from-source
+        node scripts/stage-port-docs.mjs --cached --check
