@@ -412,12 +412,35 @@ than depending on IAM alone.
 
 ## PR audit and preview (`test.yml`)
 
-Every PR runs source checks before generators can refresh committed data,
-then assembles one preview under `pr-<n>/`. The publication output tests,
-link audit and preview isolation check read that exact tree. Fresh production
-root renders for each locale retain sitemap, robots and product indexing
-checks without rebuilding every port. Pushes to `main` retain the full
-production assembly audit.
+The publication audit runs as parallel jobs, one per `test-all.sh --stage`.
+`source` runs every check that reads only the repository: the unit tests, the
+fresh browser matrix and the generated-data checks, before generators can
+refresh committed data. `build` assembles one preview under `pr-<n>/`.
+`production` renders each root locale beside it, which retains the sitemap,
+robots and product indexing checks without rebuilding every port. `output`
+runs the publication output tests, link audit and preview isolation check on
+the exact tree `build` produced. Pushes to `main` run the same jobs without
+the production renders and the preview.
+
+`build` and `production` pack what they produce with `scripts/site-bundle.mjs`.
+The job output carries the tree digest, and a consumer unpacks an archive only
+if its files hash to that digest. A digest of the extracted files does not
+cover where the archive writes, so `unpack` first lists the archive with the
+same `tar` and options that extract it, and refuses a name or link that could
+leave the destination, a member that passes through a symlink or a file, a
+hard link to anything but an earlier regular file, a repeated name, and any
+type but file, directory, symlink and hard link. The production renders start
+from the default versions that `scripts/port-defaults.sh` derives before any
+assembly exists. `output` fails if the assembly kept other defaults, or if the
+renders read other build inputs than the assembly did.
+
+The `test` job needs every audit job and reads each result. GitHub reports a
+job skipped by its `if:` as a success and fails nothing for a job skipped
+behind a failure, so the run's status cannot show that an audit ran. Only the
+production renders may be skipped, and only on a push. A failing audit turns
+its own job red when it fails; `test` reads red once every job has finished.
+`scripts/check-ci-coverage.mjs` fails the source stage when a `--stage` has no
+job the `test` job needs.
 
 Run the same PR audit locally:
 
@@ -425,17 +448,22 @@ Run the same PR audit locally:
 $ pnpm test:publication --preview pr-42
 ```
 
-The successful `test` job uploads `preview-dist` and passes its immutable
-artifact ID to `check-publish-preview` and `publish-preview`. Both downloads
-are confined to the same workflow run and fail on a digest mismatch. A missing
-or replaced artifact cannot fall back to another artifact with the same name.
-Publication depends on the audit and both publisher dry-runs succeeding.
-The privileged job treats the artifact as files to publish; it executes no
-script from that artifact.
+`preview-artifact` unpacks the verified assembly, uploads `preview-dist` and
+passes its immutable artifact ID to `check-publish-preview`, `publish-preview`
+and `publish-preview-expedited`. Every download is confined to the same
+workflow run and fails on a digest mismatch. A missing or replaced artifact
+cannot fall back to another artifact with the same name. `publish-preview`
+depends on every audit and the publisher dry-run succeeding. The privileged
+job treats the artifact as files to publish; it executes no script from that
+artifact.
 
-`publish-preview` calls `reusable-deploy.yml` with `version-kind: pr`, the
-artifact ID, and no `port`. Its exclusive prefix is `pr-<n>/`; it writes no
-port manifest. Only callers from `libtmux/docs` or `tony/libtmux-docs` may omit
+A same-repository PR with the `ci:expedite` label publishes through
+`publish-preview-expedited` as soon as the dry-run passes. The audits still run
+and `test` still fails if one does. See [EXPEDITE.md](../.github/EXPEDITE.md).
+
+Both publish jobs call `reusable-deploy.yml` with `version-kind: pr`, the
+artifact ID, and no `port`. The call owns the prefix `pr-<n>/` exclusively and
+writes no port manifest. Only callers from `libtmux/docs` or `tony/libtmux-docs` may omit
 `port`. Port callers retain their source and artifact provenance checks.
 
 Fork PRs run the same audit and dry-run with read-only repository access,
