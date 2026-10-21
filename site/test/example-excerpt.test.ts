@@ -262,4 +262,27 @@ describe('excerpts in a page', () => {
     expect(block).toContain('package main')
     expect(block).toContain('docs:end')
   })
+
+  it('quotes a Ruby file from the revision-bound cache', async () => {
+    const quoted = [
+      '```ruby file="examples/quickstart.rb" from="original_stdout = $stdout" to="$stdout = output"',
+      '```',
+      '',
+    ].join('\n')
+    const [block] = codeOf(await render(quoted))
+    expect(block).toBe([
+      'original_stdout = $stdout',
+      'output = StringIO.new',
+      '$stdout = output',
+      '',
+    ].join('\n'))
+    await expect(render(quoted.replace('original_stdout = $stdout', 'original_stdout = $missing')))
+      .rejects.toThrow(/examples\/quickstart\.rb: from anchor/)
+  })
+
+  it('leaves a Ruby whole-file inclusion alone', async () => {
+    const [block] = codeOf(await render('```ruby file="examples/quickstart.rb"\n```\n'))
+    expect(block).toContain('require "libtmux"')
+    expect(block).toContain('docs:begin main')
+  })
 })
