@@ -79,9 +79,9 @@ describe('route branding', () => {
     expect(branding('rs', 'workspace/', '/pr-42/ja/').asset('logo.svg'))
       .toBe('/pr-42/ja/brand/rust/workspace/logo.svg')
   })
-  it('ships raster and vector fallbacks for every port and product', () => {
-    for (const port of PORTS) for (const product of ['', 'mcp/', 'workspace/']) {
-      const brand = branding(port.slug, product)
+  it('ships raster and vector fallbacks for every palette and product', () => {
+    for (const language of Object.keys(palettes)) for (const product of ['library', 'mcp', 'workspace']) {
+      const brand = { asset: (file: string) => `/brand/${language}/${product}/${file}` }
       for (const file of ['logo.svg', 'favicon.ico', 'logo-32.png', 'logo-512.png', 'apple-touch-icon-light.png', 'opengraph-light.png', 'twitter-light.png', 'site.webmanifest']) {
         expect(existsSync(publicFile(brand.asset(file))), brand.asset(file)).toBe(true)
       }
