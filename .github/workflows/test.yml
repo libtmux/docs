@@ -1,8 +1,17 @@
 name: test
 
-# The publication audit builds the PR preview once. Its immutable artifact
-# passes the publisher dry-run before a same-repository PR may publish it.
-# Pushes keep the production assembly audit; deploy-shell owns production.
+# The publication audit runs one stage per job (scripts/test-all.sh --stage).
+# The checks that read only the repository run while the assembly builds, and
+# the audits of the assembly start from one verified archive of it, so they
+# audit the bytes the build produced. The `test` job reads red unless every
+# stage's job succeeded: a skipped job reports success, so it reads each
+# result instead of the run's status.
+#
+# The assembly's immutable preview artifact passes the publisher dry-run
+# before a same-repository PR may publish it, and publishes after the audits
+# pass. A maintainer label (see .github/EXPEDITE.md) publishes it as soon as
+# the dry-run passes; the audits still run and still decide `test`. Pushes
+# keep the production assembly audit; deploy-shell owns production.
 
 on:
   push:
@@ -16,97 +25,214 @@ concurrency:
   group: ${{ github.event_name == 'pull_request' && format('deploy-shell-pr-{0}', github.event.pull_request.number) || format('test-{0}', github.ref) }}
   cancel-in-progress: true
 
+env:
+  PREVIEW_PREFIX: pr-${{ github.event.pull_request.number }}
+  LIBTMUX_DOCS_CHECKOUT_RUBY: ${{ github.workspace }}/.port-sources/ruby
+  LIBTMUX_DOCS_CHECKOUT_LUA: ${{ github.workspace }}/.port-sources/lua
+  # PowerShell/Julia paths stay scoped to guide staging in prepare-audit, which
+  # checks the cache used by ordinary builds. Native API and MCP export
+  # freshness remain owning-port checks, not claims of this root audit.
+  LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS: ruby,lua,powershell,julia
+
 jobs:
-  test:
+  # Unit tests, lint, type-check, the generated-data checks and the fresh
+  # browser matrix. Nothing here reads the assembly, so it runs beside it.
+  source:
     runs-on: ubuntu-latest
-    outputs:
-      preview-artifact-id: ${{ steps.preview-artifact.outputs.artifact-id }}
     steps:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@v6
+      - uses: ./.github/actions/prepare-audit
+        with:
+          browser: 'true'
+      - name: test-all --stage source
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == pull_request ]]; then
+            pnpm test:publication --preview "$PREVIEW_PREFIX" --stage source
+          else
+            pnpm test:publication --stage source
+          fi
+
+  # The assembly. Everything that audits it receives it from here.
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      bundle-id: ${{ steps.upload.outputs.artifact-id }}
+      tree: ${{ steps.pack.outputs.tree }}
+      inputs: ${{ steps.inputs.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/prepare-audit
+      - name: test-all --stage build
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == pull_request ]]; then
+            pnpm test:publication --preview "$PREVIEW_PREFIX" --stage build
+          else
+            pnpm test:publication --stage build
+          fi
+      # Compared with the production job's digest by `--stage output`.
+      - name: Fingerprint the build inputs
+        id: inputs
+        run: echo "digest=$(node scripts/fingerprint.mjs)" >> "$GITHUB_OUTPUT"
+      - name: Pack the assembly
+        id: pack
+        run: node scripts/site-bundle.mjs pack _site "$RUNNER_TEMP/site-bundle" >> "$GITHUB_OUTPUT"
+      - name: Upload the assembly
+        id: upload
+        uses: actions/upload-artifact@v7
+        with:
+          name: site-bundle
+          path: ${{ runner.temp }}/site-bundle/
+          compression-level: 0
+          overwrite: true
+          if-no-files-found: error
+          retention-days: 1
+
+  # Root locales rendered as production renders them, which a preview must not
+  # break. They read the assembly only for the default versions, so they render
+  # beside it from the defaults the assembly starts from.
+  production:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    outputs:
+      bundle-id: ${{ steps.upload.outputs.artifact-id }}
+      defaults: ${{ steps.defaults.outputs.defaults }}
+      tree: ${{ steps.pack.outputs.tree }}
+      inputs: ${{ steps.inputs.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/prepare-audit
+      - name: Resolve the default versions
+        id: defaults
+        run: echo "defaults=$(scripts/port-defaults.sh)" >> "$GITHUB_OUTPUT"
+      - name: test-all --stage production
+        env:
+          LIBTMUX_DOCS_PRODUCTION_DEFAULTS: ${{ steps.defaults.outputs.defaults }}
+        run: pnpm test:publication --preview "$PREVIEW_PREFIX" --stage production
+      - name: Fingerprint the build inputs
+        id: inputs
+        run: echo "digest=$(node scripts/fingerprint.mjs)" >> "$GITHUB_OUTPUT"
+      - name: Pack the production renders
+        id: pack
+        run: node scripts/site-bundle.mjs pack _site.production "$RUNNER_TEMP/production-bundle" >> "$GITHUB_OUTPUT"
+      - name: Upload the production renders
+        id: upload
+        uses: actions/upload-artifact@v7
+        with:
+          name: production-bundle
+          path: ${{ runner.temp }}/production-bundle/
+          compression-level: 0
+          overwrite: true
+          if-no-files-found: error
+          retention-days: 1
+
+  # The output suites, link audits and reference checks, on the received
+  # assembly. A push has no production renders to wait for.
+  output:
+    needs: [build, production]
+    if: >-
+      !cancelled() && needs.build.result == 'success' &&
+      (needs.production.result == 'success' || github.event_name != 'pull_request')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/prepare-audit
+        with:
+          browser: 'true'
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          artifact-ids: ${{ needs.build.outputs.bundle-id }}
+          digest-mismatch: error
+          path: ${{ runner.temp }}/site-bundle
+      - name: Unpack the assembly
+        env:
+          TREE: ${{ needs.build.outputs.tree }}
+        run: |
+          node scripts/site-bundle.mjs unpack "$RUNNER_TEMP/site-bundle" _site --digest "$TREE"
+          rm -rf "$RUNNER_TEMP/site-bundle"
+      - if: github.event_name == 'pull_request'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          artifact-ids: ${{ needs.production.outputs.bundle-id }}
+          digest-mismatch: error
+          path: ${{ runner.temp }}/production-bundle
+      - name: Unpack the production renders
+        if: github.event_name == 'pull_request'
+        env:
+          TREE: ${{ needs.production.outputs.tree }}
+        run: |
+          node scripts/site-bundle.mjs unpack "$RUNNER_TEMP/production-bundle" _site.production --digest "$TREE"
+          rm -rf "$RUNNER_TEMP/production-bundle"
+      - name: test-all --stage output
+        env:
+          LIBTMUX_DOCS_PRODUCTION_DEFAULTS: ${{ needs.production.outputs.defaults }}
+          LIBTMUX_DOCS_PRODUCTION_INPUTS: ${{ needs.production.outputs.inputs }}
+          LIBTMUX_DOCS_BUILD_INPUTS: ${{ needs.build.outputs.inputs }}
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == pull_request ]]; then
+            pnpm test:publication --preview "$PREVIEW_PREFIX" --stage output
+          else
+            pnpm test:publication --stage output
+          fi
+
+  # Every audit decides this job. GitHub reports a job skipped by its `if:` as a
+  # success, and a job skipped behind a failed one fails nothing, so a green
+  # run would not prove an audit ran. Each result is read instead.
+  test:
+    if: ${{ !cancelled() }}
+    needs: [source, build, production, output]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every audit
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          not_run="$(jq -r --arg event "$EVENT" '
+            to_entries[]
+            | select(.key != "production" or $event == "pull_request")
+            | select(.value.result != "success")
+            | "\(.key): \(.value.result)"
+          ' <<< "$NEEDS")"
+          if [[ -n "$not_run" ]]; then
+            echo "::error::an audit did not succeed: $(tr '\n' ' ' <<< "$not_run")" >&2
+            exit 1
+          fi
+          jq -e 'length > 0' <<< "$NEEDS" > /dev/null
+
+  # Uploads the assembled preview from the verified archive. It runs beside
+  # the audits, so the many-file upload stays off their path.
+  preview-artifact:
+    if: github.event_name == 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    outputs:
+      artifact-id: ${{ steps.preview-artifact.outputs.artifact-id }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v7
         with:
           node-version: '26'
-          cache: pnpm
-
-      - name: Install audit tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends -y ripgrep fd-find
-          sudo ln -s /usr/bin/fdfind /usr/local/bin/fd
-
-      - run: pnpm install --frozen-lockfile
-
-      - name: Install browser for the rendering audit
-        run: pnpm --filter @libtmux/site exec playwright install --with-deps chromium
-
-      - name: Resolve integrated guide sources
-        id: integrated-sources
-        run: |
-          echo "ruby=$(jq -r .revision site/src/data/api/ruby.json)" >> "$GITHUB_OUTPUT"
-          echo "lua=$(jq -r .revision site/src/data/api/lua.json)" >> "$GITHUB_OUTPUT"
-          echo "powershell=$(jq -r .revision site/src/data/api/powershell.json)" >> "$GITHUB_OUTPUT"
-          echo "julia=$(jq -r .revision site/src/data/api/julia.json)" >> "$GITHUB_OUTPUT"
-
-      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          repository: libtmux/libtmux-ruby
-          ref: ${{ steps.integrated-sources.outputs.ruby }}
-          path: .port-sources/ruby
-          persist-credentials: false
-      - uses: actions/checkout@v7
-        with:
-          repository: libtmux/libtmux-lua
-          ref: ${{ steps.integrated-sources.outputs.lua }}
-          path: .port-sources/lua
-          persist-credentials: false
-      - uses: actions/checkout@v7
-        with:
-          repository: libtmux/libtmux-powershell
-          ref: ${{ steps.integrated-sources.outputs.powershell }}
-          path: .port-sources/powershell
-          persist-credentials: false
-      - uses: actions/checkout@v7
-        with:
-          repository: libtmux/libtmux-julia
-          ref: ${{ steps.integrated-sources.outputs.julia }}
-          path: .port-sources/julia
-          persist-credentials: false
-
-      - name: Stage integrated source guides
+          artifact-ids: ${{ needs.build.outputs.bundle-id }}
+          digest-mismatch: error
+          path: ${{ runner.temp }}/site-bundle
+      - name: Unpack the assembly
         env:
-          LIBTMUX_DOCS_CHECKOUT_RUBY: ${{ github.workspace }}/.port-sources/ruby
-          LIBTMUX_DOCS_CHECKOUT_LUA: ${{ github.workspace }}/.port-sources/lua
-          LIBTMUX_DOCS_CHECKOUT_POWERSHELL: ${{ github.workspace }}/.port-sources/powershell
-          LIBTMUX_DOCS_CHECKOUT_JULIA: ${{ github.workspace }}/.port-sources/julia
-        run: |
-          node scripts/stage-port-docs.mjs --from-source
-          node scripts/stage-port-docs.mjs --cached --check
-
-      # Unit tests, lint, type-check, a real shell build, then the suites that
-      # read built HTML, the link check and the API fidelity check — ordered
-      # cheapest-first inside the script so a failure arrives as early as it
-      # can.
-      - name: test-all
-        run: |
-          if [[ "$GITHUB_EVENT_NAME" == pull_request ]]; then
-            pnpm test:publication --preview "$PREVIEW_PREFIX"
-          else
-            pnpm test:publication
-          fi
-        env:
-          PREVIEW_PREFIX: pr-${{ github.event.pull_request.number }}
-          LIBTMUX_DOCS_CHECKOUT_RUBY: ${{ github.workspace }}/.port-sources/ruby
-          LIBTMUX_DOCS_CHECKOUT_LUA: ${{ github.workspace }}/.port-sources/lua
-          # PowerShell/Julia paths stay scoped to guide staging above, which
-          # checks the cache used by ordinary builds. Native API and MCP export
-          # freshness remain owning-port checks, not claims of this root audit.
-          LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS: ruby,lua,powershell,julia
-
-      - name: Upload audited preview
-        if: github.event_name == 'pull_request'
+          TREE: ${{ needs.build.outputs.tree }}
+        run: node scripts/site-bundle.mjs unpack "$RUNNER_TEMP/site-bundle" _site --digest "$TREE"
+      - name: Upload preview
         id: preview-artifact
         uses: actions/upload-artifact@v7
         with:
@@ -118,7 +244,7 @@ jobs:
   # No credentials or OIDC in the audit or dry-run, including fork PRs.
   check-publish-preview:
     if: github.event_name == 'pull_request'
-    needs: test
+    needs: preview-artifact
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -126,7 +252,7 @@ jobs:
           persist-credentials: false
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          artifact-ids: ${{ needs.test.outputs.preview-artifact-id }}
+          artifact-ids: ${{ needs.preview-artifact.outputs.artifact-id }}
           digest-mismatch: error
           path: _site
       - name: Exercise the publisher against the preview assembly
@@ -162,12 +288,50 @@ jobs:
           set -euo pipefail
           PATH="$PWD/bin:$PATH" bash publish-default-versions.sh
 
-  # Forks are audited but never enter an AWS environment or receive secrets.
-  publish-preview:
-    needs: [test, check-publish-preview]
-    if: |
+  # Reads the label when the preview is ready to publish, not when the run
+  # started: a label applied during the build counts, and no `labeled` event
+  # starts a run that would cancel this one. Forks never publish, so they are
+  # never expedited.
+  expedite:
+    if: >-
       github.event_name == 'pull_request' &&
       github.event.pull_request.head.repo.full_name == github.repository
+    needs: check-publish-preview
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      expedite: ${{ steps.label.outputs.expedite }}
+    steps:
+      - name: Read the labels on the pull request
+        id: label
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          LABEL: ci:expedite
+        run: |
+          set -euo pipefail
+          expedite=false
+          if pull="$(gh api --method GET "repos/$REPOSITORY/pulls/$PR")"; then
+            if jq -e --arg label "$LABEL" '.state == "open" and (.labels | map(.name) | index($label) != null)' <<< "$pull" > /dev/null; then
+              expedite=true
+            fi
+          else
+            echo "::warning::could not read the labels on #$PR; the preview publishes after the audits" >&2
+          fi
+          echo "expedite=$expedite" >> "$GITHUB_OUTPUT"
+          if [[ "$expedite" == true ]]; then
+            echo "Label \`$LABEL\` is on #$PR: the preview publishes now, and \`test\` still waits for every audit." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  # Forks are audited but never enter an AWS environment or receive secrets.
+  publish-preview:
+    needs: [test, preview-artifact, check-publish-preview, expedite]
+    if: |
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      needs.expedite.outputs.expedite != 'true'
     permissions:
       contents: read
       id-token: write
@@ -175,7 +339,30 @@ jobs:
     with:
       path-prefix: pr-${{ github.event.pull_request.number }}
       artifact: preview-dist
-      artifact-id: ${{ needs.test.outputs.preview-artifact-id }}
+      artifact-id: ${{ needs.preview-artifact.outputs.artifact-id }}
+      version-kind: pr
+      environment: docs-preview
+    secrets:
+      role-arn: ${{ secrets.LIBTMUX_DOCS_PREVIEW_ROLE_ARN }}
+      bucket: ${{ secrets.LIBTMUX_DOCS_BUCKET }}
+      distribution: ${{ secrets.LIBTMUX_DOCS_DISTRIBUTION }}
+
+  # The same publication, without waiting for the audits. Both publish jobs
+  # read one `expedite` output, so exactly one of them runs.
+  publish-preview-expedited:
+    needs: [preview-artifact, check-publish-preview, expedite]
+    if: |
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      needs.expedite.outputs.expedite == 'true'
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/reusable-deploy.yml
+    with:
+      path-prefix: pr-${{ github.event.pull_request.number }}
+      artifact: preview-dist
+      artifact-id: ${{ needs.preview-artifact.outputs.artifact-id }}
       version-kind: pr
       environment: docs-preview
     secrets:

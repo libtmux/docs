@@ -23,6 +23,7 @@ Usage: scripts/build-site.sh [options]
   --skip-refs           Skip native reference renderers (selected-source MCP is required)
   --no-cache            Rebuild every shell even if its inputs are unchanged
   --skip-pagefind       Skip the final Pagefind indexing pass
+  --prepare-only        Stage the inputs the shell builds read, then stop
   -h, --help            Show this message
 USAGE
 }
@@ -32,6 +33,7 @@ versions_explicit=0
 ports_filter=""
 skip_refs=0
 skip_pagefind=0
+prepare_only=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -50,6 +52,10 @@ while [ $# -gt 0 ]; do
       ;;
     --skip-pagefind)
       skip_pagefind=1
+      shift
+      ;;
+    --prepare-only)
+      prepare_only=1
       shift
       ;;
     --no-cache)
@@ -328,6 +334,14 @@ if [ -n "${LIBTMUX_DOCS_SOURCE_SHA:-}" ]; then
 fi
 node "$script_dir/gen-example-sources.mjs"
 node "$script_dir/gen-mentions.mjs"
+
+# The publication audit renders the root locales in a job of their own, in
+# parallel with the assembly. It runs this far so that job reads the tree the
+# assembly reads.
+if [ "$prepare_only" -eq 1 ]; then
+  log "inputs staged; stopping before the build (--prepare-only)"
+  exit 0
+fi
 
 rm -rf "$out_dir"
 mkdir -p "$out_dir"
