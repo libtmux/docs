@@ -388,5 +388,31 @@
       "solid": "#604691",
       "onSolid": "#ffffff"
     }
+  },
+  "elixir": {
+    "name": "Elixir",
+    "color": "#8847B9",
+    "light": {
+      "background": "#fafbfc",
+      "surface": "#f3f5f7",
+      "hover": "#e9edf1",
+      "border": "#d6dce3",
+      "text": "#202830",
+      "muted": "#53606d",
+      "link": "#54167b",
+      "solid": "#54167b",
+      "onSolid": "#ffffff"
+    },
+    "dark": {
+      "background": "#15191d",
+      "surface": "#1c2229",
+      "hover": "#29323d",
+      "border": "#3e4a57",
+      "text": "#e7edf3",
+      "muted": "#b7c1cd",
+      "link": "#d7b9ef",
+      "solid": "#54167b",
+      "onSolid": "#ffffff"
+    }
   }
 }
