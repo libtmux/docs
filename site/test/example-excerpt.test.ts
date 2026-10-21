@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { createMarkdownProcessor } from '@astrojs/markdown-remark'
 import { Window } from 'happy-dom'
 import { describe, expect, it } from 'vitest'
@@ -242,27 +243,22 @@ describe('excerpts in a page', () => {
     )
   })
 
+  const file = 'examples/pane-io/main.go'
+  const cached: string = JSON.parse(readFileSync(new URL('../src/data/example-sources.json', import.meta.url), 'utf8'))[`go:${file}`].content
+
   it('quotes a port file from the revision-bound cache', async () => {
-    const quoted = [
-      '```go file="examples/quickstart/main.go" from="server, err := tmux.NewServer" to="return run(ctx, server)"',
-      '```',
-      '',
-    ].join('\n')
+    const request = { from: 'server, err := tmux.NewServer', to: 'return run(ctx, server)' }
+    const quoted = [`\`\`\`go file="${file}" from="${request.from}" to="${request.to}"`, '```', ''].join('\n')
     const [block] = codeOf(await render(quoted))
-    expect(block).toBe([
-      'server, err := tmux.NewServer(tmux.ServerOptions{})',
-      'if err != nil {',
-      '\treturn fmt.Errorf("configure tmux server: %w", err)',
-      '}',
-      'return run(ctx, server)',
-      '',
-    ].join('\n'))
+    expect(block).toBe(`${sliceExcerpt(cached, request, file)}\n`)
+    expect(block).toMatch(/^server, err := tmux\.NewServer\(tmux\.ServerOptions\{\n/)
+    expect(block).toMatch(/\nreturn run\(ctx, server\)\n$/)
     await expect(render(quoted.replace('server, err := tmux.NewServer', 'server, err := tmux.NewGizmo')))
-      .rejects.toThrow(/examples\/quickstart\/main\.go: from anchor/)
+      .rejects.toThrow(/examples\/pane-io\/main\.go: from anchor/)
   })
 
   it('leaves a whole-file inclusion alone', async () => {
-    const [block] = codeOf(await render('```go file="examples/quickstart/main.go"\n```\n'))
+    const [block] = codeOf(await render(`\`\`\`go file="${file}"\n\`\`\`\n`))
     expect(block).toContain('package main')
     expect(block).toContain('docs:end')
   })

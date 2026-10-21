@@ -7,7 +7,7 @@
  * other block is hand-typed text that can drift from what the page claims.
  */
 import { createHash } from 'node:crypto'
-import { ExcerptError, excerptRequest, pageSource, parseFenceAttributes, sliceExcerpt } from './example-excerpt.ts'
+import { ExcerptError, excerptRequest, pageSource, parseFenceAttributes, sliceExcerpt, type ExcerptFence } from './example-excerpt.ts'
 
 /** What a recorded native run of a page covers. */
 export interface RunRecord {
@@ -97,6 +97,20 @@ export function unbalanced(text: string, language: string): string | undefined {
   return undefined
 }
 
+/**
+ * Why `source`, the text of a quoted file, cannot supply the excerpt, or
+ * undefined when it supplies whole code.
+ */
+function excerptProblem(source: string, request: ExcerptFence, name: string, language: string): string | undefined {
+  try {
+    const why = unbalanced(sliceExcerpt(source, request, name), language)
+    return why ? `the excerpt of ${name} ${why}; move the end anchor` : undefined
+  } catch (error) {
+    if (error instanceof ExcerptError) return error.message
+    throw error
+  }
+}
+
 export interface PageCheck {
   markdown: string
   /** The recorded native run of this page, if it has one. */
@@ -143,9 +157,8 @@ export function checkExampleBlocks({ markdown, record, ownerOf, readCached }: Pa
           if (cached === undefined) throw new ExcerptError(`${request.source.name} is not in the ${owner ?? fence.language} example cache`)
           source = cached
         }
-        const excerpt = sliceExcerpt(source, request, request.source.name)
-        const why = unbalanced(excerpt, fence.language)
-        if (why) report(fence, `the excerpt of ${request.source.name} ${why}; move the end anchor`)
+        const problem = excerptProblem(source, request, request.source.name, fence.language)
+        if (problem) report(fence, problem)
       } catch (error) {
         if (!(error instanceof ExcerptError)) throw error
         report(fence, error.message)
@@ -176,6 +189,49 @@ export function checkExampleBlocks({ markdown, record, ownerOf, readCached }: Pa
     const lines = fence.body.split('\n').map((line) => line.trim()).filter(Boolean)
     if (fence.language === 'text' && lines.length && lines.every((line) => record?.outputs.has(line))) continue
     report(fence, 'hand-typed block: quote a tested file with an excerpt, or record the run that prints it')
+  }
+  return problems
+}
+
+export interface SourceCheck {
+  markdown: string
+  /** The port whose files are read; a fence in another port's language is not checked. */
+  owner: string
+  ownerOf: (language: string) => string | undefined
+  /** A file of the port at the revision under test, or undefined when that revision has none. */
+  readSource: (file: string) => string | undefined
+  /** Names that revision in messages, such as `go at 2de249b6`. */
+  where: string
+}
+
+/**
+ * Every `file=` fence of the port, whole or an excerpt, that its source cannot
+ * supply at the revision `readSource` reads, one message each. A port's own
+ * build regenerates the example cache at its trunk, so an anchor that
+ * resolves against the cached revision can still fail there.
+ */
+export function checkQuotedSources({ markdown, owner, ownerOf, readSource, where }: SourceCheck): string[] {
+  const problems: string[] = []
+  for (const fence of fencesOf(markdown)) {
+    if (ownerOf(fence.language) !== owner) continue
+    const report = (message: string) => problems.push(`line ${fence.line}: \`\`\`${fence.language}${fence.meta ? ` ${fence.meta}` : ''}: ${message}`)
+    const attributes = parseFenceAttributes(fence.meta)
+    let request
+    try {
+      request = excerptRequest(attributes)
+    } catch (error) {
+      if (!(error instanceof ExcerptError)) throw error
+      report(error.message)
+      continue
+    }
+    const file = request ? (request.source.kind === 'file' ? request.source.name : undefined) : attributes.file
+    if (file === undefined) continue
+    const source = readSource(file)
+    if (source === undefined) report(`${file} is not in ${where}`)
+    else if (request) {
+      const problem = excerptProblem(source, request, file, fence.language)
+      if (problem) report(problem)
+    }
   }
   return problems
 }

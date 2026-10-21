@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-protocol.mjs",
   "repo": "libtmux/libtmux-go",
-  "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+  "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
   "selection": {
     "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
   },
@@ -29,7 +29,7 @@
     "resourceTemplates": [],
     "serverInfo": {
       "name": "libtmux",
-      "version": "v0.0.1-alpha.12"
+      "version": "v0.0.1-alpha.14"
     },
     "tools": [
       {
@@ -2419,6 +2419,9 @@
                 "messagesUnavailable": {
                   "type": "string"
                 },
+                "minimumVersion": {
+                  "type": "string"
+                },
                 "panes": {
                   "type": "integer"
                 },
@@ -2440,6 +2443,10 @@
                 "version": {
                   "type": "string"
                 },
+                "versionRefusal": {
+                  "description": "why this tmux is refused and how to fix it; set when the selected tmux is older than minimumVersion, and the counts are then unavailable",
+                  "type": "string"
+                },
                 "windows": {
                   "type": "integer"
                 }
@@ -2447,6 +2454,7 @@
               "required": [
                 "socketPath",
                 "version",
+                "minimumVersion",
                 "alive",
                 "sessions",
                 "windows",
@@ -2530,6 +2538,9 @@
             "messagesUnavailable": {
               "type": "string"
             },
+            "minimumVersion": {
+              "type": "string"
+            },
             "panes": {
               "type": "integer"
             },
@@ -2551,6 +2562,10 @@
             "version": {
               "type": "string"
             },
+            "versionRefusal": {
+              "description": "why this tmux is refused and how to fix it; set when the selected tmux is older than minimumVersion, and the counts are then unavailable",
+              "type": "string"
+            },
             "windows": {
               "type": "integer"
             }
@@ -2558,6 +2573,7 @@
           "required": [
             "socketPath",
             "version",
+            "minimumVersion",
             "alive",
             "sessions",
             "windows",
@@ -5030,6 +5046,15 @@
                 },
                 "timeout_clamped": {
                   "type": "boolean"
+                },
+                "truncated": {
+                  "type": "boolean"
+                },
+                "truncated_bytes": {
+                  "type": "integer"
+                },
+                "truncated_lines": {
+                  "type": "integer"
                 }
               },
               "required": [
@@ -5133,6 +5158,15 @@
             },
             "timeout_clamped": {
               "type": "boolean"
+            },
+            "truncated": {
+              "type": "boolean"
+            },
+            "truncated_bytes": {
+              "type": "integer"
+            },
+            "truncated_lines": {
+              "type": "integer"
             }
           },
           "required": [

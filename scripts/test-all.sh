@@ -196,6 +196,9 @@ node scripts/check-example-indentation.negative.mjs
 step 'example blocks'
 node scripts/check-example-blocks.mjs
 
+# Also proves the mode that resolves a page's file= fences at a port's own
+# revision. The cache above is bound to the revision in the port's model, which
+# is not the trunk the port's docs build reads.
 step 'example blocks (negative)'
 node scripts/check-example-blocks.negative.mjs
 

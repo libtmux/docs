@@ -42,7 +42,7 @@ describe('shared API prose blocks', () => {
     const model = API_MODELS.go
     const symbol = model.symbols.find((entry) => entry.id === 'tmuxq.Matching')!
     const expected = 'active, err := tmuxq.Matching(snapshot.Panes(), tmux.PaneActiveIs(true))'
-    expect(symbol.source.revision).toBe('6f3df55f8a41999e41225eefb3940545b834e6a2')
+    expect(symbol.source.revision).toBe('2de249b600d65218ee8b8fdc07c6b2b919242151')
     const blocks = parseApiProse(symbol.doc!.body!)
     expect(blocks).toEqual([{ kind: 'code', lang: 'go', code: expected }])
     const block = blocks[0]
