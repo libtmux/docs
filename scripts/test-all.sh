@@ -246,6 +246,26 @@ node scripts/check-example-blocks.negative.mjs
 step 'production render check (negative)'
 node scripts/check-production-render.negative.mjs
 
+# The audit jobs receive the assembly as one archive. It is only safe to audit
+# what was received if a damaged archive fails, so the negative needs zstd.
+step 'site bundle (negative)'
+if zstd --version > /dev/null 2>&1; then
+  node scripts/site-bundle.negative.mjs
+else
+  note_skip 'site bundle (zstd not installed)'
+  echo 'zstd not installed; skipped'
+fi
+
+# And that no refusal in it is there by accident: each rule is switched off in
+# a copy and the negative must then fail.
+step 'site bundle (mutations)'
+if zstd --version > /dev/null 2>&1; then
+  node scripts/site-bundle.mutations.mjs
+else
+  note_skip 'site bundle mutations (zstd not installed)'
+  echo 'zstd not installed; skipped'
+fi
+
 step 'unit tests'
 LIBTMUX_DOCS_TEST_SOURCE_ONLY=1 pnpm run --recursive --if-present test
 
