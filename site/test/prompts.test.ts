@@ -1,7 +1,7 @@
 import { existsSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { installCommand, PORT_BY_SLUG, PORTS, releaseWording, type Port, type RegistryEntry } from '../src/lib/ports'
+import { installCommand, PORT_BY_SLUG, PORTS, releaseMaturity, releaseWording, type Port, type RegistryEntry } from '../src/lib/ports'
 import {
   composeFromParts,
   composePrompt,
@@ -11,7 +11,7 @@ import {
   VERSION_SENTINEL,
   wrap,
 } from '../src/lib/prompts'
-import { registryFor } from '../src/lib/registry'
+import { promptInputs, promptPartsFor, REGISTRY, registryFor } from '../src/lib/registry'
 import { highlightPrompt } from '../src/lib/prompt-highlight'
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
@@ -40,7 +40,7 @@ function partsFor(port: Port) {
   const entry = registryFor(port)
   return portParts({
     port,
-    entry,
+    stable: releaseMaturity(entry) === 'stable',
     install: installCommand(port, entry),
     wording: releaseWording(port, entry),
     ctx,
@@ -64,7 +64,7 @@ function promptFor(port: Port, topicId: string, version = ctx.version, docsBase 
   const entry = registryFor(port)
   const text = composePrompt({
     port,
-    entry,
+    stable: releaseMaturity(entry) === 'stable',
     install: installCommand(port, entry),
     wording: releaseWording(port, entry),
     ctx: { docsBase, version },
@@ -339,6 +339,45 @@ describe('registry data', () => {
     expect(installCommand(fixed, tagless).code).toBe('git clone --branch main repo')
     expect(releaseWording(fixed, tagless)).toContain('default branch')
     expect(installCommand(withGit('git clone --branch {tag} repo'), { ...tagless, tag: 'v1' }).code).toBe('git clone --branch v1 repo')
+  })
+
+  it('names the tag only where the git form installs it', () => {
+    // Julia installs the default branch, so a release tag beside the command is not what runs.
+    const julia = PORT_BY_SLUG.julia!
+    const tagged: RegistryEntry = { status: 'unpublished', version: null, stable: null, tag: 'v0.1.0' }
+    expect(installCommand(julia, tagged).code).toContain('rev="master"')
+    expect(releaseWording(julia, tagged)).toContain('default branch')
+    expect(releaseWording(julia, tagged)).toContain('v0.1.0')
+    expect(releaseWording(julia, tagged)).not.toContain('at tag')
+    const cxx = PORT_BY_SLUG.cxx!
+    const alpha: RegistryEntry = { ...tagged, tag: 'v0.1.0-alpha.12' }
+    expect(installCommand(cxx, alpha).code).toContain('GIT_TAG v0.1.0-alpha.12')
+    expect(releaseWording(cxx, alpha)).toContain('at tag v0.1.0-alpha.12')
+  })
+
+  it('sends an agent looking for a stable release only where the newest tag is not already one', () => {
+    const julia = PORT_BY_SLUG.julia!
+    const prompt = (entry: RegistryEntry) => composePrompt({
+      port: julia, stable: releaseMaturity(entry) === 'stable', install: installCommand(julia, entry),
+      wording: releaseWording(julia, entry), ctx, topicId: 'setup',
+    }).replace(/\s+/g, ' ')
+    const finalTag: RegistryEntry = { status: 'unpublished', version: null, stable: null, tag: 'v0.1.0' }
+    expect(prompt(finalTag)).toContain('if you need a different version.')
+    expect(prompt(finalTag)).not.toContain('prefer a stable release')
+    expect(prompt({ ...finalTag, tag: 'v0.1.0-alpha.2' })).toContain('prefer a stable release over this one if there now is any.')
+  })
+
+  it('composes the site’s prompt from the entry the registry holds', () => {
+    const julia = PORT_BY_SLUG.julia!
+    const recorded = REGISTRY.ports.julia!
+    // What the deploy's resolver wrote once v0.1.0 was tagged and General did not carry it.
+    REGISTRY.ports.julia = { status: 'unpublished', version: null, stable: null, tag: 'v0.1.0' }
+    try {
+      expect(promptInputs(julia, ctx).stable).toBe(true)
+      expect(promptPartsFor(julia, ctx).setup.replace(/\s+/g, ' ')).toContain('if you need a different version.')
+    } finally {
+      REGISTRY.ports.julia = recorded
+    }
   })
 
   it('composes an install command for every port without throwing', () => {

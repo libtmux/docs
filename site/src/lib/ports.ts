@@ -1897,6 +1897,10 @@ export function releaseWording(port: Port, entry: RegistryEntry): string {
   if (!entry.tag) {
     return `${port.packageName} is not published to ${registry} yet and the repository has no release tag, so this installs from its default branch.`
   }
+  // A git form with no `{tag}` installs a fixed ref, so the tag is not what runs.
+  if (!port.installForms.git.code.includes('{tag}')) {
+    return `${port.packageName} is not published to ${registry} yet, so this installs from the repository's default branch. The newest release tag is ${entry.tag}.`
+  }
   return `${port.packageName} is not published to ${registry} yet, so this installs from the repository at tag ${entry.tag}.`
 }
 

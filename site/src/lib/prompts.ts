@@ -17,7 +17,7 @@
  * widget cheap enough to put a whole matrix on the landing page, and it is
  * also the only way the topics stay consistent with each other.
  */
-import type { InstallForm, Port, RegistryEntry } from './ports'
+import type { InstallForm, Port } from './ports'
 
 /**
  * Stands in for the version slug inside a composed prompt.
@@ -377,14 +377,14 @@ function linkList(entries: readonly (readonly [string, string])[], width = 80): 
  * "this is the current release" call for opposite advice about checking for
  * something newer.
  */
-function installStep(port: Port, entry: RegistryEntry, install: InstallForm, wording: string): string {
+function installStep(port: Port, stable: boolean, install: InstallForm, wording: string): string {
   const lines = [wrap(`3. Add the dependency. ${wording}`, 76, '').replace(/\n/g, '\n   ')]
   // Indented as a block rather than prefixed with `$`: half these forms are
   // manifest lines, not shell commands, and a prompt that tells an agent to
   // run `implementation("...")` in a shell gets exactly that.
   lines.push(install.code.split('\n').map((line) => `       ${line}`).join('\n'))
   const check =
-    entry.status === 'stable'
+    stable
       ? `Check ${(port.registry?.url ?? `https://github.com/${port.repo}`)} if you need a different version.`
       : `Check ${(port.registry?.url ?? `https://github.com/${port.repo}`)} for a newer version, and prefer a stable release over this one if there now is any.`
   lines.push(wrap(check, 76, '   '))
@@ -430,13 +430,14 @@ export function sharedParts(ctx: PromptContext): SharedParts {
  */
 export function portParts(args: {
   port: Port
-  entry: RegistryEntry
+  /** `releaseMaturity(entry) === 'stable'`; passed in so this module imports no values. */
+  stable: boolean
   install: InstallForm
   /** `releaseWording(port, entry)`; passed in so this module imports no values. */
   wording: string
   ctx: PromptContext
 }): PortParts {
-  const { port, entry, install, wording, ctx } = args
+  const { port, stable, install, wording, ctx } = args
 
   const reading: (readonly [string, string])[] = [
     [portUrl(ctx, port, 'llms.txt'), `every page for ${port.name}, as a list`],
@@ -471,7 +472,7 @@ export function portParts(args: {
           `       ${port.initProject.code}`,
         ]),
     '   Skip this in a project that already exists, and match what is here.',
-    installStep(port, entry, install, wording),
+    installStep(port, stable, install, wording),
     '4. Write the smallest program that proves the install works: connect to a',
     '   tmux server, create a session, confirm it is there, then kill it. Give',
     '   that server a socket of its own rather than using the default one, so',

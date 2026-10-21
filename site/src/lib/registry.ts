@@ -13,7 +13,7 @@
  * assertion and could drift on how it handles a missing port.
  */
 import data from '../data/registry.json'
-import { installCommand, releaseWording, type InstallCommand, type InstallForm, type Port, type RegistryData, type RegistryEntry } from './ports'
+import { installCommand, releaseMaturity, releaseWording, type InstallCommand, type InstallForm, type Port, type RegistryData, type RegistryEntry } from './ports'
 import { releaseTag } from './versions'
 import { portParts, type PortParts, type PromptContext } from './prompts'
 
@@ -91,7 +91,7 @@ export function promptInputs(port: Port, ctx: PromptContext) {
   const entry = registryFor(port)
   return {
     port,
-    entry,
+    stable: releaseMaturity(entry) === 'stable',
     install: installCommand(port, entry),
     wording: releaseWording(port, entry),
     ctx,
