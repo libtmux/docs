@@ -108,6 +108,51 @@ and explicit HTML fragment IDs when their titles or routes change.
 Contributors preserve renamed keys in the inventory alias catalog and use
 the existing page redirect mechanism for retired routes.
 
+### Preserve published links
+
+If `meta/intersphinx.md` moves to `meta/linking.md`, retain its logical ID
+and list the retired route in the new page's frontmatter:
+
+```yaml
+inventoryId: intersphinx
+aliases:
+  - meta/intersphinx
+```
+
+The document key remains `site:core:doc:intersphinx`, and the old route
+redirects to the new page. Retain existing heading fragment IDs when their
+text changes.
+
+When an identity or fragment changes intentionally, map the former keys to
+current targets in `site/src/data/inventory-aliases.json`. For example,
+choosing `inventoryId: linking` and changing `stable-labels` to
+`stable-references` needs these entries:
+
+```json
+[
+  {
+    "scope": "site",
+    "from": "site:core:doc:intersphinx",
+    "to": "site:core:doc:linking"
+  },
+  {
+    "scope": "site",
+    "from": "site:core:heading:intersphinx%23stable-labels",
+    "to": "site:core:heading:linking%23stable-references",
+    "fragment": "stable-labels"
+  }
+]
+```
+
+The document entry preserves `std:ref` and `std:doc` references. The heading
+entry preserves `std:ref`; `fragment` also installs the retired HTML anchor
+at the new destination. Keep the route alias too: inventory aliases do not
+redirect retired URLs.
+
+Copy `to` from the current target catalog. Retain earlier `from` entries
+and update their destinations when renaming again. Former native role names,
+such as a Python class name, need preservation in the native metadata.
+
 Existing `objects.inv` and `reference/objects.inv` endpoints remain compatibility
 exports. New integrations should use the full inventory, a port's root
 inventory, or a tmux root inventory to obtain the complete target catalog
