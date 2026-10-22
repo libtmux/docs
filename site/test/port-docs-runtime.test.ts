@@ -3,6 +3,8 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync,
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { SOURCE_GUIDE_PORTS } from '../src/lib/port-documentation'
+import { PORT_BY_SLUG } from '../src/lib/ports'
 
 const root = new URL('../../', import.meta.url).pathname
 const workflow = readFileSync(join(root, '.github/workflows/port-docs.yml'), 'utf8')
@@ -267,6 +269,29 @@ if (process.argv[2] === process.env.FAILING_TASK) process.exit(23)
     const artifact = /\belixir: \{[^}]*nativeArtifact: '([^']+)'/.exec(model)?.[1]
     expect(artifact).toBeDefined()
     expect(script('Export Elixir API from the selected source')).toContain(` ${artifact}\n`)
+  })
+})
+
+describe('source-bound guide staging', () => {
+  const build = readFileSync(join(root, 'scripts/build-site.sh'), 'utf8')
+  // Ruby and Lua carry their guides in the exporter artifact, wrappers stage
+  // from their parent library, and the other ports stage from the checkout.
+  const fromSource = (text: string) => {
+    const branch = /\nelif \[ -n "\$\{LIBTMUX_DOCS_SOURCE_SHA:-\}" \] && \{([\s\S]*?)\}; then\n([\s\S]*?)\nelif/.exec(text)
+    expect(branch).not.toBeNull()
+    expect(branch![2]).toContain('stage-port-docs.mjs" --port "$LIBTMUX_DOCS_PORT" --from-source')
+    return [...branch![1].matchAll(/= (\w+) \]/g)].map((match) => match[1])
+  }
+  const unstaged = (text: string) => SOURCE_GUIDE_PORTS
+    .filter((slug) => !PORT_BY_SLUG[slug]?.parentLibrary && !['ruby', 'lua'].includes(slug))
+    .filter((slug) => !fromSource(text).includes(slug))
+
+  it('stages every checkout-sourced port guide from the selected source', () => {
+    expect(unstaged(build)).toEqual([])
+  })
+
+  it('notices a port left on the cached guides', () => {
+    expect(unstaged(build.replace('[ "$LIBTMUX_DOCS_PORT" = elixir ]', '[ "$LIBTMUX_DOCS_PORT" = julia ]'))).toEqual(['elixir'])
   })
 })
 
