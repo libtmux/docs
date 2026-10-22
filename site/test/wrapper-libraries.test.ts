@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { PORTS, PORT_BY_SLUG, portSourceUrl, productAvailable } from '../src/lib/ports'
 import { documentationAreas } from '../src/lib/port-documentation'
 import { LANG_TO_PORT, remarkPortCode } from '../src/plugins/remark-port-code.mjs'
-import { HOME_VIEWS, homeProgram, QUICKSTARTS } from '../src/lib/quickstarts'
+import { HOME_VIEWS, homeProgram, QUICKSTARTS, type HomeExample } from '../src/lib/quickstarts'
 import HOME_EXAMPLES from '../src/data/home-examples.json'
 import HOME_PROOF from './fixtures/home-examples.json'
 import { createHash } from 'node:crypto'
@@ -110,6 +110,20 @@ describe('quickstart display formatting', () => {
   const columns = (line: string) => [...line].reduce(
     (column, char) => column + (char === '\t' ? 8 - column % 8 : 1), 0,
   )
+  // A view that repeats `full` offers nothing to select. A program with no
+  // error handling to add declares so, and then Error handling changes
+  // nothing: `errors` repeats `concise` and `cleanup` repeats `full`.
+  const repeatedViews = (example: HomeExample) => {
+    const absent = example.withoutErrorHandling !== undefined
+    const mirror = (view: string) => absent && view === 'errors' ? homeProgram(example, 'concise')
+      : absent && view === 'cleanup' ? homeProgram(example, 'full') : undefined
+    return HOME_VIEWS.filter((view) => view !== 'full').filter((view) => {
+      const expected = mirror(view)
+      return expected === undefined ? homeProgram(example, view) === homeProgram(example, 'full')
+        : homeProgram(example, view) !== expected
+    })
+  }
+
   it('provides a complete verified program for every registered language', () => {
     expect(Object.keys(HOME_EXAMPLES).sort()).toEqual(PORTS.map((port) => port.slug).sort())
     expect(HOME_PROOF.examples.map((example) => example.port).sort()).toEqual(Object.keys(HOME_EXAMPLES).sort())
@@ -148,8 +162,21 @@ describe('quickstart display formatting', () => {
       const files = complete.files.map((file) => file.name === complete.program ? { ...file, code } : file)
       expect(files.map((file) => ({ name: file.name, sha256: hash(file.code), clipboardSha256: hash(file.code.replace(/\n$/, '')) }))).toEqual(proof.variants[view].files)
       expect(hash(code.replace(/\n$/, ''))).toBe(proof.variants[view].excerptSha256)
-      expect(code, `${proof.port}/${view} must offer a distinct program`).not.toBe(homeProgram(complete, 'full'))
     }
+    expect(repeatedViews(complete as HomeExample), `${proof.port} must offer distinct programs`).toEqual([])
+  })
+
+  it('accepts a repeated view only for a program that declares no error handling', () => {
+    const python = HOME_EXAMPLES.py as HomeExample
+    const declared: HomeExample = {
+      ...python, withoutErrorHandling: 'No error handling to add.',
+      variants: { ...python.variants, errors: python.variants.concise, cleanup: homeProgram(python, 'full') },
+    }
+    expect(repeatedViews(python)).toEqual([])
+    expect(repeatedViews(declared)).toEqual([])
+    expect(repeatedViews({ ...declared, withoutErrorHandling: undefined })).toEqual(['cleanup'])
+    expect(repeatedViews({ ...declared, variants: { ...declared.variants, errors: python.variants.errors } })).toEqual(['errors'])
+    expect(repeatedViews({ ...python, variants: { ...python.variants, errors: homeProgram(python, 'full') } })).toEqual(['errors'])
   })
 
   it('counts tab stops rather than treating tabs as one character', () => {
