@@ -93,6 +93,17 @@ describe('route branding', () => {
       }
     }
   })
+  it('ships a language icon, with its provenance, for every port the switcher lists', () => {
+    for (const { slug } of PORTS) {
+      const dir = `/brand/languages/${slug}`
+      for (const file of ['icon.svg', 'provenance.json']) expect(existsSync(publicFile(`${dir}/${file}`)), `${slug}/${file}`).toBe(true)
+      const provenance = JSON.parse(readFileSync(publicFile(`${dir}/provenance.json`), 'utf8'))
+      const icon = readFileSync(publicFile(`${dir}/icon.svg`))
+      expect(createHash('sha256').update(icon).digest('hex'), `${slug} icon digest`).toBe(provenance.sha256)
+      const license = provenance.license?.localCopy?.file
+      if (license) expect(existsSync(publicFile(`${dir}/${license}`)), `${slug}/${license}`).toBe(true)
+    }
+  })
   it('keeps text and links readable on light and dark surfaces', () => {
     for (const [language, palette] of Object.entries(palettes)) for (const mode of ['light', 'dark'] as const) {
       expect(palette[mode].onSolid).toBe('#ffffff')
