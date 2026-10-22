@@ -10,7 +10,7 @@ const shell = readFileSync(new URL('../../.github/workflows/deploy-shell.yml', i
 const testWorkflow = readFileSync(new URL('../../.github/workflows/test.yml', import.meta.url), 'utf8')
 const publicationAudit = readFileSync(new URL('../../scripts/test-all.sh', import.meta.url), 'utf8')
 const publishRoot = readFileSync(new URL('../../scripts/publish-root.sh', import.meta.url), 'utf8')
-const sourceGuidePorts = ['ruby', 'lua', 'powershell', 'julia']
+const sourceGuidePorts = ['ruby', 'lua', 'powershell', 'julia', 'elixir']
 
 function sourceCheckoutContract(workflow: string): void {
   for (const port of sourceGuidePorts) {
@@ -295,7 +295,7 @@ describe('port publisher contract', () => {
     expect(result.environment).toBe(`PREFIX=en/${slug}/pr-42\n`)
   })
 
-  it.each(['powershell', 'julia'])('accepts %s latest while rejecting bare and cross-port prefixes', (slug) => {
+  it.each(['powershell', 'julia', 'elixir'])('accepts %s latest while rejecting bare and cross-port prefixes', (slug) => {
     const repo = `libtmux/libtmux-${slug}`
     const latest = validatePrefix(repo, slug, `${slug}/latest`, { VERSION_IN: 'latest', KIND_IN: 'trunk' })
     expect(latest.status, latest.stderr).toBe(0)
@@ -389,7 +389,7 @@ describe('port publisher contract', () => {
     for (const port of ['ruby', 'lua']) {
       expect(audit).toContain(`LIBTMUX_DOCS_CHECKOUT_${port.toUpperCase()}: ` + '${{ github.workspace }}/.port-sources/' + port)
     }
-    expect(audit).not.toMatch(/LIBTMUX_DOCS_CHECKOUT_(POWERSHELL|JULIA):/)
+    expect(audit).not.toMatch(/LIBTMUX_DOCS_CHECKOUT_(POWERSHELL|JULIA|ELIXIR):/)
     expect(testWorkflow).toContain('LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS: ' + sourceGuidePorts.join(','))
     expect(publicationAudit).toContain('LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS')
     expect(publicationAudit).toContain('--skip-native-model-ports')
@@ -604,7 +604,7 @@ describe('current PR publication guard', () => {
     expect(reusable.slice(start)).not.toMatch(/always\(\)|!cancelled\(\)|continue-on-error/)
   })
 
-  it.each(['powershell', 'julia'])('allows the current tested same-repository %s preview', (port) => {
+  it.each(['powershell', 'julia', 'elixir'])('allows the current tested same-repository %s preview', (port) => {
     const repo = `libtmux/libtmux-${port}`
     const result = requireCurrentPullRequest({ ...currentPullRequest, head: { repo: { full_name: repo }, sha: testedHead } }, { PORT: port, REPOSITORY: repo })
     expect(result.status, result.stderr).toBe(0)

@@ -108,10 +108,11 @@ jobs:
           PREVIEW_PREFIX: pr-${{ github.event.pull_request.number }}
           LIBTMUX_DOCS_CHECKOUT_RUBY: ${{ github.workspace }}/.port-sources/ruby
           LIBTMUX_DOCS_CHECKOUT_LUA: ${{ github.workspace }}/.port-sources/lua
-          # PowerShell/Julia paths stay scoped to guide staging above, which
-          # checks the cache used by ordinary builds. Native API and MCP export
-          # freshness remain owning-port checks, not claims of this root audit.
-          LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS: ruby,lua,powershell,julia
+          # PowerShell, Julia and Elixir paths stay scoped to guide staging
+          # above, which checks the cache used by ordinary builds. Native API
+          # and MCP export freshness remain owning-port checks, not claims of
+          # this root audit.
+          LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS: ruby,lua,powershell,julia,elixir
 
       - name: Upload audited preview
         if: github.event_name == 'pull_request'
