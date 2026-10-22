@@ -3,7 +3,7 @@ title: Link to libtmux from Sphinx
 description: Use Intersphinx inventories to reference libtmux APIs and documentation.
 inventoryId: intersphinx
 sidebar:
-  group: Contributing
+  group: Linking and consuming our docs
   order: 90
 ---
 
@@ -13,6 +13,9 @@ inventory and the inventory for the page's port or tmux version.
 
 Browse [Intersphinx examples](/meta/intersphinx/examples/) for copyable RST
 and MyST references paired with their destinations.
+
+For Markdown exports, manifests and crawler discovery, see
+[Linking and consuming our docs](/meta/linking/).
 
 ## Configure Intersphinx
 
