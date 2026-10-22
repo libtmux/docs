@@ -1,8 +1,8 @@
 ---
 title: Intersphinx examples
 description: >-
-  Compare Sphinx and MyST references to APIs, tmux manuals, commands,
-  and schema fields.
+  Compare Sphinx and MyST references to APIs, tmux C declarations, hooks,
+  format variables, CLI commands and schema fields.
 inventoryId: intersphinx-examples
 sidebar:
   group: Contributing
@@ -13,7 +13,7 @@ import { referenceHref } from '../../../../lib/api-models'
 
 Copy a reference and compare its destination below. These examples cover
 native language roles, portable labels, full and scoped inventories, and
-links into tmux manuals and C source documentation.
+links into tmux C declarations, hooks, format variables and CLI commands.
 
 ## Configure the inventories
 
@@ -137,13 +137,75 @@ version-qualified native aliases:
 ```rst
 :external+tmux-3-7c:c:func:`cmd_find_target`
 :external+full:c:func:`tmux@3.7c:cmd_find_target`
+:external+full:c:func:`tmux@latest:cmd_find_target`
 ```
 
 Destinations: [Scoped: cmd_find_target in 3.7c](/tmux/3.7c/reference/c-function-cmd_find_target/#c%3Afunction%3Acmd_find_target),
-[Full: cmd_find_target in 3.7c](/tmux/3.7c/reference/c-function-cmd_find_target/#c%3Afunction%3Acmd_find_target).
+[Full: cmd_find_target in 3.7c](/tmux/3.7c/reference/c-function-cmd_find_target/#c%3Afunction%3Acmd_find_target),
+[Full: cmd_find_target in latest](/tmux/latest/reference/c-function-cmd_find_target/#c%3Afunction%3Acmd_find_target).
+
+MyST supports the same C roles and a typed inventory URL:
+
+```markdown
+{external+tmux:c:struct}`cmd`
+{external+tmux:c:func}`cmd_find_target`
+{external+full:c:func}`tmux@3.7c:cmd_find_target`
+[cmd_find_target](inv:tmux:c:function#cmd_find_target)
+```
+
+Destinations: [MyST: cmd](/tmux/latest/reference/c-struct-cmd/#c%3Astruct%3Acmd),
+[MyST: cmd_find_target](/tmux/latest/reference/c-function-cmd_find_target/#c%3Afunction%3Acmd_find_target),
+[MyST full: cmd_find_target in 3.7c](/tmux/3.7c/reference/c-function-cmd_find_target/#c%3Afunction%3Acmd_find_target),
+[Inventory URL: cmd_find_target](/tmux/latest/reference/c-function-cmd_find_target/#c%3Afunction%3Acmd_find_target).
 
 The C reference links each declaration to its source file and revision.
 Portable labels also address its signatures, parameters, and sections.
+
+## tmux hooks
+
+Link a hook name to its catalog page with a portable label. The same key
+works in the scoped tmux inventory and the full inventory:
+
+```rst
+:external+tmux:ref:`after-new-session <tmux%40latest:core:doc:tmux%2flatest%2fcatalog%2fhooks%2fafter-new-session>`
+:external+full:ref:`after-new-session <tmux%40latest:core:doc:tmux%2flatest%2fcatalog%2fhooks%2fafter-new-session>`
+```
+
+Destinations: [Scoped: after-new-session](/tmux/latest/catalog/hooks/after-new-session/),
+[Full: after-new-session](/tmux/latest/catalog/hooks/after-new-session/).
+
+In MyST, use the same key inside a reference role. Preserve its percent
+escapes:
+
+```markdown
+{external+tmux:ref}`after-new-session <tmux%40latest:core:doc:tmux%2flatest%2fcatalog%2fhooks%2fafter-new-session>`
+{external+full:ref}`after-new-session <tmux%40latest:core:doc:tmux%2flatest%2fcatalog%2fhooks%2fafter-new-session>`
+```
+
+Destinations: [MyST scoped: after-new-session](/tmux/latest/catalog/hooks/after-new-session/),
+[MyST full: after-new-session](/tmux/latest/catalog/hooks/after-new-session/).
+
+## tmux formats
+
+Link a format variable such as `#{session_name}` to its catalog entry:
+
+```rst
+:external+tmux:ref:`session_name <tmux%40latest:core:doc:tmux%2flatest%2fcatalog%2fformats%2fsession_name>`
+:external+full:ref:`session_name <tmux%40latest:core:doc:tmux%2flatest%2fcatalog%2fformats%2fsession_name>`
+```
+
+Destinations: [Scoped: session_name](/tmux/latest/catalog/formats/session_name/),
+[Full: session_name](/tmux/latest/catalog/formats/session_name/).
+
+The MyST references select the same scoped or full inventory:
+
+```markdown
+{external+tmux:ref}`session_name <tmux%40latest:core:doc:tmux%2flatest%2fcatalog%2fformats%2fsession_name>`
+{external+full:ref}`session_name <tmux%40latest:core:doc:tmux%2flatest%2fcatalog%2fformats%2fsession_name>`
+```
+
+Destinations: [MyST scoped: session_name](/tmux/latest/catalog/formats/session_name/),
+[MyST full: session_name](/tmux/latest/catalog/formats/session_name/).
 
 ## tmux CLI manual
 
@@ -162,6 +224,27 @@ The document role works when the target is a whole page:
 ```
 
 Destination: [Full tmux manual](/tmux/latest/manual/full/).
+
+Select a command's manual page with the document role. Its portable key
+also works in the full inventory:
+
+```rst
+:external+tmux:doc:`tmux new-session <tmux%40latest:core:doc:tmux%2flatest%2fmanual%2fnew-session>`
+:external+full:doc:`tmux new-session <tmux%40latest:core:doc:tmux%2flatest%2fmanual%2fnew-session>`
+```
+
+Destinations: [Scoped: new-session](/tmux/latest/manual/new-session/),
+[Full: new-session](/tmux/latest/manual/new-session/).
+
+Use the same document role in MyST:
+
+```markdown
+{external+tmux:doc}`tmux new-session <tmux%40latest:core:doc:tmux%2flatest%2fmanual%2fnew-session>`
+{external+full:doc}`tmux new-session <tmux%40latest:core:doc:tmux%2flatest%2fmanual%2fnew-session>`
+```
+
+Destinations: [MyST scoped: new-session](/tmux/latest/manual/new-session/),
+[MyST full: new-session](/tmux/latest/manual/new-session/).
 
 ## Command options, environment variables, and terms
 
