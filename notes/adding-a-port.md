@@ -13,7 +13,9 @@ Add a `Port` object to the `PORTS` array with every required field:
 `versionedDocs`, `tagGrammar`, `renderer`, `generator`, `installs`,
 `initProject`, and `installForms`. Add `registry`, `packages`,
 `productAvailability`, `ecosystemHost`, and `publishesOwnApi` only when their
-contracts apply. Decide the renderer and hosting ownership first:
+contracts apply. Set `publishesOwnTree` on every library whose caller publishes
+its version tree; without it the shell also publishes the port's `latest`
+prefix. Decide the renderer and hosting ownership first:
 
 - **Ecosystem-hosted** (`renderer: 'none'`, `ecosystemHost` set) only when a
   canonical, free, self-updating host for that language's ecosystem already
@@ -77,7 +79,9 @@ In the new worktree, on `docs-site`:
   repository, as F#'s does: `packages/api-model/scripts/export-elixir.exs` runs in the
   checkout through its own Mix toolchain, reads the compiled application's
   documentation chunks and typespecs, and formats each declaration with the
-  language's formatter. Run it, then extract the model:
+  language's formatter. `port-docs.yml` runs it in CI with the Erlang/OTP and
+  Elixir versions that the selected source pins in `priv/tmux/support.json`.
+  Run it locally, then extract the model:
 
   ```console
   $ (cd ~/work/libtmux/libtmux-elixir-docs-site && MIX_ENV=prod mix run --no-start \

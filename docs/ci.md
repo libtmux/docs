@@ -29,6 +29,7 @@ The current ownership split is:
 | Swift (`swift`) | `port-docs.yml`, with the symbol graph | `publishesOwnTree` |
 | Ruby (`ruby`) | its own exporter | `publishesOwnTree` |
 | Lua (`lua`) | its own exporter | `publishesOwnTree` |
+| Elixir (`elixir`) | `port-docs.yml`, with the exporter in `packages/api-model` | `publishesOwnTree` |
 | Python (`py`) | its own Sphinx build | `publishesOwnApi`; the shell publishes the rest |
 
 Python's reviewed caller branch can build and publish a complete tree, but its
@@ -91,9 +92,9 @@ the site inside it.
 
 `path-prefix` is validated inside the reusable workflow: non-empty, no
 leading or trailing slash, no `..` segment, and never a bare reserved name
-(`py`, `ruby`, `lua`, `ts`, `rs`, `go`, `java`, `dotnet`, `cxx`, `swift`, `manifest`,
-`_shell`) — a caller cannot `sync --delete` an entire language root even by
-mistake, because that path never validates.
+(every slug in `site/src/lib/ports.ts`, `manifest` and `_shell`). A caller
+cannot `sync --delete` an entire language root even by mistake, because that
+path never validates.
 
 ## The manifest
 
