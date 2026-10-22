@@ -28,7 +28,7 @@ describe('port pickers', () => {
     // A registry but no off-site reference.
     for (const slug of ['py', 'ruby', 'lua', 'powershell', 'ts', 'csharp', 'fsharp']) expect(kinds(slug), slug).toEqual(['github', 'packages'])
     expect(PORTS.filter((port) => kinds(port.slug).includes('docs')).map(({ slug }) => slug).sort())
-      .toEqual(['go', 'java', 'kotlin', 'rs', 'scala', 'swift'])
+      .toEqual(['elixir', 'go', 'java', 'kotlin', 'rs', 'scala', 'swift'])
     // Control: the same port loses the menu when its data does.
     expect(portPickers(withHosts({ registry: undefined })).map(({ kind }) => kind)).toEqual(['github', 'docs'])
     expect(portPickers(withHosts({ ecosystemHost: undefined, packages: [], components: [] })).map(({ kind }) => kind)).toEqual(['github', 'packages'])
@@ -65,7 +65,7 @@ describe('port pickers', () => {
 
   it('links only to unversioned external hosts, with no locale or preview prefix', () => {
     const hosts = new Set(['github.com', 'pypi.org', 'rubygems.org', 'luarocks.org', 'www.powershellgallery.com', 'www.npmjs.com', 'crates.io',
-      'docs.rs', 'pkg.go.dev', 'central.sonatype.com', 'javadoc.io', 'www.nuget.org', 'swiftpackageindex.com'])
+      'docs.rs', 'pkg.go.dev', 'central.sonatype.com', 'javadoc.io', 'www.nuget.org', 'swiftpackageindex.com', 'hex.pm', 'libtmux.hexdocs.pm'])
     for (const port of PORTS) {
       for (const entry of portPickers(port)) {
         for (const row of entry.rows) {

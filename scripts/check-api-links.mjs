@@ -101,7 +101,7 @@ const EXCEPTIONS = new Map()
   }
 }
 
-const FILE_RE = /^[\w./@-]+\.(py|ts|tsx|js|rs|go|java|cs|cpp|hpp|h|swift|jl|ps1|psm1|psd1|md|toml|json|ya?ml|sh)$/
+const FILE_RE = /^[\w./@-]+\.(py|ts|tsx|js|rs|go|java|cs|cpp|hpp|h|swift|jl|ex|exs|ps1|psm1|psd1|md|toml|json|ya?ml|sh)$/
 const PORT_BY_LABEL = Object.fromEntries(PORT_DEFS.map((port) => [port.name, port.slug]))
 PORT_BY_LABEL['C#'] = 'csharp'
 

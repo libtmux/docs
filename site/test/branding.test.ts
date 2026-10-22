@@ -27,7 +27,7 @@ describe('route branding', () => {
   it('uses project titles independently of package names and shared source repositories', () => {
     const names = {
       py: 'libtmux', ruby: 'libtmux-ruby', lua: 'libtmux-lua', ts: 'libtmux-ts',
-      powershell: 'libtmux-powershell', julia: 'LibTmux.jl',
+      powershell: 'libtmux-powershell', julia: 'LibTmux.jl', elixir: 'libtmux-elixir',
       rs: 'libtmux-rs', go: 'libtmux-go', java: 'libtmux-java', kotlin: 'libtmux-kotlin',
       scala: 'libtmux-scala', csharp: 'libtmux-dotnet', fsharp: 'libtmux-fsharp',
       cxx: 'libtmux-cxx', swift: 'libtmux-swift',

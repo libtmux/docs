@@ -39,6 +39,11 @@ export const DESTINATIONS: Record<string, ExpectedDestinations> = {
   julia: {
     source: github('https://github.com/libtmux/libtmux-julia/tree/master/src', 'libtmux-julia/src'),
   },
+  elixir: {
+    source: github('https://github.com/libtmux/libtmux-elixir/tree/main/lib', 'libtmux-elixir/lib'),
+    registry: { name: 'Hex', url: 'https://hex.pm/packages/libtmux', icon: 'hex', label: 'libtmux on Hex' },
+    api: { name: 'HexDocs', url: 'https://libtmux.hexdocs.pm/', label: 'libtmux API reference on HexDocs' },
+  },
   ts: {
     source: github('https://github.com/libtmux/libtmux-ts', 'libtmux-ts'),
     registry: { name: 'npm', url: 'https://www.npmjs.com/package/libtmux', icon: 'npm', label: 'libtmux on npm' },

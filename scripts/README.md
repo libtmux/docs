@@ -227,6 +227,9 @@ published. A probe that fails for one port keeps that port's baseline entry
 rather than reporting it unpublished, the same way `gen-versions.mjs` falls
 back to its seed.
 
+Hex lists a release and, apart from it, the retirements of the package. A
+retired release is not offered, and its tag is not recorded.
+
 A tag is recorded only once the registry carries its version. A port tags
 first and publishes minutes later, and a tag with no package behind it would
 send an install command to nothing. A baseline tag the repository does not
