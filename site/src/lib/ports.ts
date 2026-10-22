@@ -687,6 +687,7 @@ const CORE_PORTS: readonly Port[] = [
     versionedDocs: true,
     tagGrammar: 'semver',
     renderer: 'astro',
+    publishesOwnTree: true,
     // HexDocs publishes ExDoc output with every Hex release. This site renders
     // the same documentation from the compiled package, and links to it.
     ecosystemHost: {
