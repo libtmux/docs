@@ -261,7 +261,7 @@ describe('Swift names shared by a type and a function', () => {
 describe('the committed models', () => {
   const ports = [
     'py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift',
-    'kotlin', 'scala', 'fsharp', 'powershell', 'julia',
+    'kotlin', 'scala', 'fsharp', 'powershell', 'julia', 'elixir',
   ] as const
   const models = ports.flatMap((port) => {
     const path = join(DATA, `${port}.json`)
