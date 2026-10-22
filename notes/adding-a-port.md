@@ -73,7 +73,17 @@ In the new worktree, on `docs-site`:
   `site/src/lib/api-models.ts`, and the generated model/nav/path sidecars.
   If the port owns guides, stage them from the same checkout with explicit
   routes and source provenance. Ruby's inventory/YARD/RBS adapter and Lua's
-  LuaLS adapter are the current examples.
+  LuaLS adapter are the current examples. Elixir's exporter lives in this
+  repository, as F#'s does: `packages/api-model/scripts/export-elixir.exs` runs in the
+  checkout through its own Mix toolchain, reads the compiled application's
+  documentation chunks and typespecs, and formats each declaration with the
+  language's formatter. Run it, then extract the model:
+
+  ```console
+  $ (cd ~/work/libtmux/libtmux-elixir-docs-site && MIX_ENV=prod mix run --no-start \
+      ~/work/libtmux/docs/packages/api-model/scripts/export-elixir.exs _build/docs/api.json)
+  $ node scripts/gen-api-model.mjs --port elixir
+  ```
 - **`native-skinned` port**: point the language's own generator (DocC,
   rustdoc, Dokka, ...) at our CSS/token output and a header/footer injection
   point, following whichever of those generators is the closest precedent —
