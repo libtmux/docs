@@ -91,6 +91,7 @@ const FENCE_PORT: Record<string, string> = {
   rust: 'rs', rs: 'rs', go: 'go', java: 'java', csharp: 'csharp', cs: 'csharp',
   cpp: 'cxx', 'c++': 'cxx', swift: 'swift',
   powershell: 'powershell', pwsh: 'powershell', ps1: 'powershell', julia: 'julia',
+  elixir: 'elixir', ex: 'elixir', exs: 'elixir',
 }
 
 /** Inline references in prose, including port sections, tables, and existing links. */

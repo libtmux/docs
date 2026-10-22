@@ -162,8 +162,9 @@ d('member order', () => {
     const signals = memberSignals(port)
     const symbols = model(port).symbols
     const parents = symbols.filter((symbol) => memberTier(symbol, signals) === 'parent')
-    // F#/PowerShell use .NET handles; Julia's relationships are free functions.
-    expect(parents.length > 0).toBe(!['fsharp', 'powershell', 'julia'].includes(port))
+    // F#/PowerShell use .NET handles; Julia's and Elixir's relationships are
+    // read from a captured snapshot, not through accessors on an entity.
+    expect(parents.length > 0).toBe(!['fsharp', 'powershell', 'julia', 'elixir'].includes(port))
     for (const parent of parents) {
       const siblings = symbols.filter((symbol) => symbol.parent === parent.parent).toSorted(compareMembers(signals))
       for (const sibling of siblings.filter((symbol) => memberTier(symbol, signals) !== 'parent')) {

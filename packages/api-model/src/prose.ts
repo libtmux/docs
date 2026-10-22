@@ -30,6 +30,7 @@ export const PORT_NAME: Record<string, string> = {
   fsharp: 'F#',
   powershell: 'PowerShell',
   julia: 'Julia',
+  elixir: 'Elixir',
 }
 
 /** Declarations that own a page of members. */

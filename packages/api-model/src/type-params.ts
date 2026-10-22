@@ -160,6 +160,12 @@ const julia: Parser = (text) => {
   return [make({ name: match[1]!, bound: match[3] ? `${match[2] === '>:' ? '>: ' : ''}${match[3]}` : undefined })]
 }
 
+/** `when item: Bound` of a spec, or the bare variable of `t(item)`. */
+const elixir: Parser = (text) => {
+  const match = /^([a-z_]\w*)\s*(?::\s*([\s\S]+))?$/.exec(text.trim())
+  return match ? [make({ name: match[1]!, bound: match[2] })] : []
+}
+
 const ruby: Parser = (text) => {
   const match = /^(?:unchecked\s+)?(?:(in|out)\s+)?([A-Za-z_]\w*)\s*([\s\S]*)$/.exec(text.trim())
   return match ? [make({ name: match[2]!, modifier: match[1], ...boundAndDefault(match[3]!, /^</) })] : []
@@ -176,7 +182,7 @@ const fallback: Parser = (text) => {
 }
 
 const PARSERS: Record<string, Parser> = {
-  ts: typescript, rs: rust, go, java, csharp, kotlin, scala, swift, cxx, julia, ruby, py: python,
+  ts: typescript, rs: rust, go, java, csharp, kotlin, scala, swift, cxx, julia, elixir, ruby, py: python,
 }
 
 /** One declaration entry as the language's grammar reads it; a Go entry can declare several names. */
@@ -225,7 +231,7 @@ export function typeParametersOf(entity: Declares, lang?: string): TypeParameter
 /** `<A, B>` in the brackets the language writes generic lists in. */
 export function typeParameterList(lang: string | undefined, parameters: readonly TypeParameter[]): string {
   if (!parameters.length) return ''
-  const [open, close] = lang === 'go' || lang === 'scala' ? ['[', ']'] : lang === 'julia' ? ['{', '}'] : ['<', '>']
+  const [open, close] = lang === 'go' || lang === 'scala' ? ['[', ']'] : lang === 'julia' ? ['{', '}'] : lang === 'elixir' ? ['(', ')'] : ['<', '>']
   return `${open}${parameters.map((parameter) => parameter.name).join(', ')}${close}`
 }
 

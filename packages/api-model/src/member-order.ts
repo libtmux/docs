@@ -124,11 +124,12 @@ const QUERY = /^(search-|snapshot$)/
 const bareName = (s: ApiSymbol) =>
   s.name
     .replace(/\(.*$/, '')
+    .replace(/\/\d+$/, '')
     .replace(/Async$/, '')
     .toLowerCase()
 
 export function memberTier(s: ApiSymbol, signals: MemberSignals): MemberTier {
-  const name = s.name.replace(/\(.*$/, '')
+  const name = s.name.replace(/\(.*$/, '').replace(/\/\d+$/, '')
   // Demotions first: a private listing helper such as `_list_panes` is still
   // private, and a deprecated `list_sessions` is still deprecated.
   if (/^__\w+__$/.test(name)) return 'special'

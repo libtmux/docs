@@ -74,6 +74,7 @@ export const DEFAULT_PRIMARY_MODULES: Record<string, string> = {
   swift: 'LibTmux',
   powershell: 'LibTmux',
   julia: 'LibTmux',
+  elixir: 'LibTmux',
 }
 
 export const DEFAULT_TEMPLATES: UrlTemplate[] = [
@@ -107,7 +108,7 @@ export function notASymbol(text: string): string | undefined {
   if (/^(?:net|v)?\d+\.\d+(?:\.\d+)?(?:[a-z]|[-+][\w.-]+)?$/.test(text)) return 'a version'
   if (/^\w+(?:\.\w+)+:[\w.-]+(?::[\w.<>{}-]+)?$/.test(text)) return 'a dependency coordinate'
   if (/\.(?:tsv|html)$/.test(text)) return 'a filename'
-  if (/\.(py|ts|go|rs|java|kt|kts|scala|cs|fs|fsi|fsproj|properties|cpp|hpp|c|h|lua|rb|swift|jl|ps1|psm1|psd1|md|json|ya?ml|toml|sh)\b/.test(text)) return 'a filename'
+  if (/\.(py|ts|go|rs|java|kt|kts|scala|cs|fs|fsi|fsproj|properties|cpp|hpp|c|h|lua|rb|swift|jl|exs?|ps1|psm1|psd1|md|json|ya?ml|toml|sh)\b/.test(text)) return 'a filename'
   if (/(^|\s)--?[A-Za-z]/.test(text)) return 'a command-line flag'
   if (/[=<>!]=|\s[=<>]\s/.test(text)) return 'an expression, not a reference'
   if (/^new\s/.test(text)) return 'a constructor call'
@@ -120,6 +121,9 @@ export function notASymbol(text: string): string | undefined {
 export function toPath(text: string): string[] {
   return text
     .replace(/^(await|try|new)\s+/, '')
+    // Elixir spells a type `t:name/0` and a function `name/2`; neither prefix nor arity names a segment.
+    .replace(/^[tc]:(?=[A-Za-z_])/, '')
+    .replace(/(?<=[A-Za-z_!?])\/\d+$/, '')
     .replace(/\(.*$/, '')
     .replace(/`\d+/g, '')
     .replace(/->/g, '.')
@@ -193,7 +197,7 @@ export class Resolver {
         // `unsetEnvironment(_:in:)` — so prose saying `unsetEnvironment`
         // matched nothing at all. Index both forms: the labelled name is what
         // the reference displays, the bare one is what a sentence writes.
-        for (const key of new Set([symbol.name, symbol.name.replace(/\(.*$/, '')])) {
+        for (const key of new Set([symbol.name, symbol.name.replace(/\(.*$/, ''), symbol.name.replace(/\/\d+$/, '')])) {
           if (!key) continue
           const list = this.byMember.get(key) ?? []
           list.push(row)

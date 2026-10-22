@@ -282,6 +282,8 @@ const SYNTAX: Record<string, ReadonlySet<string>> = {
   kotlin: new Set(['kdoc', 'jsdoc']),
   scala: new Set(['scaladoc', 'jsdoc']),
   julia: new Set(['markdown-link', 'documenter']),
+  // ExDoc links a Markdown destination written as code: [the server](`LibTmux.Server`).
+  elixir: new Set(['markdown-link', 'exdoc']),
   powershell: new Set(['markdown-link']),
 }
 
@@ -329,6 +331,11 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
         const label = labelText(node)
         const target = node.url
         let span: DocSpan = { kind: 'text', text: text.slice(start, end) }
+        const exdoc = syntax.has('exdoc') ? /^`([^`]+)`$/.exec(target)?.[1] : undefined
+        if (exdoc) {
+          hits.push({ start, end, span: { kind: 'ref', role: 'any', target: exdoc, label } })
+          return
+        }
         if (syntax.has('documenter') && /^@ref(?:\s|$)/.test(target)) {
           span = { kind: 'ref', role: 'any', target: target.slice(4).trim() || label, label }
         } else if (/^https?:\/\//i.test(target) || !/^(?:[a-z][\w+.-]*:|\/\/)/i.test(target)) {
