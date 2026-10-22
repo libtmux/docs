@@ -135,7 +135,8 @@ socket and leaves that server running:
 [Ruby](/ruby/latest/guides/attaching-to-tmux/) ·
 [Lua](/lua/latest/guides/attaching-to-tmux/) ·
 [PowerShell](/powershell/latest/guides/attaching-to-tmux/) ·
-[Julia](/julia/latest/guides/attaching-to-tmux/)
+[Julia](/julia/latest/guides/attaching-to-tmux/) ·
+[Elixir](/elixir/latest/guides/attaching-to-tmux/)
 
 ## Where to go next
 
