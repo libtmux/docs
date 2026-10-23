@@ -54,7 +54,7 @@ function referenceDeclarations(html: string, document?: Window['document']) {
 }
 const manifest = (): Manifest => JSON.parse(read('versions.json'))
 const urlFor = (path: string) => new URL(`/${SITE_PREFIX}${path}`, 'https://libtmux.org')
-const productUrl = /\/(?:py|ruby|lua|powershell|julia|ts|rs|go|java|csharp|cxx|swift)\/[^/]+\/(?:mcp|workspace)(?:\/|$)/
+const productUrl = /\/(?:py|ruby|lua|powershell|julia|elixir|ts|rs|go|java|csharp|cxx|swift)\/[^/]+\/(?:mcp|workspace)(?:\/|$)/
 const nativeProductDocs = (port: string) => ['powershell', 'julia'].includes(port)
 const mcpClientSetupRoutes: Record<string, string[]> = {
   py: ['mcp/guides'], ruby: ['mcp/guides/connect-client', 'mcp/source-guide'],
@@ -88,7 +88,8 @@ it('advertises local native loaders while retaining their development status', (
 function sectionsFor(port: string, product: ProductPage['product']): string[] {
   if (port === 'powershell' && product === 'mcp') return []
   if (nativeProductDocs(port)) return ['', 'source-guide', 'reference']
-  if (port === 'lua') return ['']
+  // A product with no published implementation has only the overview that says so.
+  if (!productAvailable(PORTS.find((entry) => entry.slug === port)!, product)) return ['']
   if (port === 'ruby') return ['', 'topics', 'guides', 'examples', 'reference']
   // `reference` is a section of the product now, not a page inside Internals:
   // the Workspace Manager and the MCP server are packages with APIs of their
@@ -428,6 +429,23 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     }
   })
 
+  it.each(PORTS.filter((port) => !port.parentLibrary && products.some((product) => !productAvailable(port, product))))
+    ('$name builds, lists and links only the overview of a product it has not published', (port) => {
+    const version = manifest().defaultVersion[port.slug]!
+    const sections = ['topics', 'guides', 'examples', 'reference', 'internals']
+    const docs = JSON.parse(read(`${port.slug}/${version}/docs.json`)) as DocsManifest
+    for (const product of products.filter((entry) => !productAvailable(port, entry))) {
+      for (const section of sections) {
+        const path = `${port.slug}/${version}/${product}/${section}/`
+        expect(existsSync(sitePath(path, 'index.html')), `${path} is not built`).toBe(false)
+        expect(docs.pages.some((entry) => entry.url.endsWith(urlFor(path).pathname)), `${path} is not advertised`).toBe(false)
+      }
+      const advertised = docs.ports.find((entry) => entry.slug === port.slug)!.products.find((entry) => entry.slug === product)!
+      expect(advertised.availability, `${port.slug} ${product}`).toBe('unpublished')
+      expect(advertised.reference, `${port.slug} ${product} reference`).toBeNull()
+    }
+  })
+
   it('opens a product overview with its install picker, then its section cards', async () => {
     let checked = 0
     for (const page of pages().filter((entry) => entry.section === '')) await inspect(page.path, (document) => {
@@ -716,7 +734,8 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     })
   })
 
-  it.each(PORTS.filter((port) => !port.parentLibrary && !['py', 'ruby', 'lua', 'powershell', 'julia'].includes(port.slug)))
+  it.each(PORTS.filter((port) => !port.parentLibrary && productAvailable(port, 'workspace')
+    && !['py', 'ruby', 'powershell', 'julia'].includes(port.slug)))
     ('$name publishes workspace Guides and Examples browse pages', async (port) => {
     for (const page of pages().filter((entry) => entry.product === 'workspace'
       && entry.port === port.slug && ['guides', 'examples'].includes(entry.section))) await inspect(page.path, (document) => {

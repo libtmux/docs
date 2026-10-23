@@ -21,7 +21,7 @@ const current = entries.find((entry) => entry.port === portSlug)
 const name = tmux ? 'tmux CLI' : current?.name ?? PORT_BY_SLUG[portSlug ?? '']?.name ?? 'In other ports'
 const shortName = tmux ? 'tmux' : PORT_BY_SLUG[portSlug ?? '']?.shortName ?? name
 const families = [
-  { label: 'Scripting & web', ports: ['py', 'ruby', 'lua', 'julia', 'ts'] },
+  { label: 'Scripting & web', ports: ['py', 'ruby', 'lua', 'julia', 'elixir', 'ts'] },
   { label: 'Compiled & native', ports: ['rs', 'go', 'cxx', 'swift'] },
   { label: 'JVM', ports: ['java', 'kotlin', 'scala'] },
   { label: '.NET', ports: ['csharp', 'fsharp', 'powershell'] },

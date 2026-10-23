@@ -37,7 +37,7 @@ const { port, language, example } = Astro.props
     <p class="home-example-lifetime">
       <span data-without-cleanup>{example.automaticCleanup ?? 'Cleanup is omitted; the private tmux server may remain running. Select Cleanup to stop it when the program finishes.'}</span>
       <span data-with-cleanup>The program stops its private tmux server when it finishes.</span>
-      {' '}Error handling adds diagnostics; every version checks required results and deadlines.
+      {' '}{example.withoutErrorHandling ?? 'Error handling adds diagnostics; every version checks required results and deadlines.'}
     </p>
     {example.files.filter((file) => file.name !== example.program).map((file) =>
       <details class="home-example-file" data-home-file={file.name}>

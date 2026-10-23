@@ -20,6 +20,7 @@ const rustReference = (page: string) => `https://doc.rust-lang.org/reference/${p
 const rubySyntax = (page: string) => `https://docs.ruby-lang.org/en/3.4/syntax/${page}_rdoc.html`
 const luaManual = (section: string) => `https://www.lua.org/manual/5.4/manual.html#${section}`
 const luaAnnotation = (section: string) => `https://luals.github.io/wiki/annotations/#${section}`
+const elixirDocs = (page: string) => `https://hexdocs.pm/elixir/${page}`
 const swiftBook = (page: string) => `https://docs.swift.org/latest/documentation/the-swift-programming-language/${page}/`
 
 export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> = {
@@ -80,6 +81,22 @@ export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> =
     abstract: term('A Julia abstract type that can have subtypes but no direct instances.', 'Julia abstract types', `${juliaManual('types')}#man-abstract-types`),
     readonly: term('A Julia field whose containing immutable struct prevents field reassignment.', 'Julia immutable composite types', `${juliaManual('types')}#Composite-Types`, 'A referenced vector or other mutable value can still change internally.'),
     package: term('The Julia package supplying the module and its public bindings.', 'Julia code loading', juliaManual('code-loading'), 'Package loading and module namespaces are related but distinct; use the documented project environment.'),
+  },
+  elixir: {
+    module: term('An Elixir module, a named collection of functions, macros and types defined with defmodule.', 'Elixir modules and functions', elixirDocs('modules-and-functions.html'), 'Module names are atoms, and a nested name such as LibTmux.Control.Request is one flat module rather than a child of LibTmux.Control.'),
+    struct: term('An Elixir module that defines a struct: a map with a fixed set of keys and optional defaults.', 'Elixir structs', elixirDocs('structs.html'), 'Fields hold values and are never reassigned. Functions on the module return a new struct rather than changing one.'),
+    exception: term('An Elixir struct declared with defexception, which can be raised and rescued.', 'Elixir exceptions', `${elixirDocs('Kernel.html')}#defexception/1`, 'The struct also carries the fields of the error. A bang function raises it; the plain function returns it in an error tuple.'),
+    interface: term('An Elixir behaviour, a module that declares callbacks other modules implement.', 'Elixir behaviours', `${elixirDocs('typespecs.html')}#behaviours`, 'A module implements a behaviour with the @behaviour attribute and defines each required callback.'),
+    function: term('An Elixir function identified by its module, name and arity.', 'Elixir functions and arity', elixirDocs('modules-and-functions.html'), 'Functions of one name and different arities are different functions. A name ending in ! raises on failure, and a name ending in ? returns a boolean.'),
+    method: term('A callback that a behaviour declares and an implementing module defines.', 'Elixir behaviour callbacks', `${elixirDocs('typespecs.html')}#behaviours`, 'A callback is called through the implementing module, not through the behaviour that declares it.'),
+    property: term('A field of an Elixir struct, read with dot access or pattern matching.', 'Elixir structs', elixirDocs('structs.html'), 'A field has no accessor function; structs are plain maps, so the value is stored as the field holds it.'),
+    typealias: term('An Elixir type declared with @type or @opaque, named and given an arity.', 'Elixir user-defined types', `${elixirDocs('typespecs.html')}#user-defined-types`, 'Types document values for readers and tools. They are not checked when a function runs.'),
+    macro: term('An Elixir macro, defined with defmacro and expanded at compile time.', 'Elixir macros', `${elixirDocs('Kernel.html')}#defmacro/2`, 'A caller must require or import the defining module before using the macro.'),
+    abstract: term('A callback of a behaviour, declared without a body.', 'Elixir behaviour callbacks', `${elixirDocs('typespecs.html')}#behaviours`),
+    opaque: term('An Elixir type declared with @opaque, whose structure callers must not depend on.', 'Elixir user-defined types', `${elixirDocs('typespecs.html')}#user-defined-types`, 'Other modules should build and inspect the value only through the declaring module’s functions.'),
+    deprecated: term('A declaration marked with the @deprecated attribute.', 'Elixir deprecations', elixirDocs('Module.html'), 'The compiler warns at call sites of a deprecated function. The message names the replacement when the author gave one.'),
+    overload: term('A function with several @spec clauses, each describing one accepted combination of argument types.', 'Elixir function specifications', `${elixirDocs('typespecs.html')}#defining-a-specification`, 'The clauses describe one function. Which clause applies depends on the arguments, not on a separate definition.'),
+    package: term('The Hex package supplying this API.', 'Hex packages', 'https://hex.pm/docs/usage', 'A package name and its application name are the same in a Mix dependency, and the module names it defines are independent of both.'),
   },
   py: {
     class: term('A Python type defining attributes and behavior for its instances.', 'Python classes', pythonDocs('tutorial/classes')),

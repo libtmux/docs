@@ -108,6 +108,7 @@ for (const [name, mutate] of mutations) {
     `)
     const gallery = (name) => `https://www.powershellgallery.com/api/v2/FindPackagesById()?id=%27${name}%27`
     const general = 'https://raw.githubusercontent.com/JuliaRegistries/General/master/L/LibTmux/Versions.toml'
+    const hex = 'https://hex.pm/api/packages/libtmux'
     const core = gallery('LibTmux')
     const workspace = gallery('LibTmux.Workspace')
     const next = `${core}&$skip=1`
@@ -125,6 +126,13 @@ for (const [name, mutate] of mutations) {
       [next]: { body: feed(entry('LibTmux', '0.1.0-alpha3') + entry('LibTmux', '1.0.0', '1900-01-01T00:00:00')) },
       [workspace]: { body: feed(entry('LibTmux.Workspace', '0.1.0-alpha4')) },
       [general]: { body: `["0.1.0"]\ngit-tree-sha1 = "${'a'.repeat(40)}"\n\n["0.2.0"]\ngit-tree-sha1 = "${'b'.repeat(40)}"\nyanked = true # unavailable for new installs\n` },
+      'https://api.github.com/repos/libtmux/libtmux-elixir/tags?per_page=100': {
+        body: JSON.stringify(['v0.0.1-alpha.1', 'v0.0.1-alpha.2'].map((name) => ({ name }))),
+      },
+      [hex]: { body: JSON.stringify({
+        releases: [{ version: '0.0.1-alpha.1' }, { version: '0.0.1-alpha.2' }],
+        retirements: { '0.0.1-alpha.2': { reason: 'invalid', message: 'does not compile' } },
+      }) },
     }
     const invoke = (responses, offline = false) => {
       writeFileSync(join(dir, 'responses.json'), JSON.stringify(responses))
@@ -146,6 +154,12 @@ for (const [name, mutate] of mutations) {
       && result.ports.powershell?.packages?.['LibTmux.Workspace']?.version === '0.1.0-alpha4', result.error)
     check('General excludes yanked versions and their tags',
       result.ports.julia?.version === '0.1.0' && result.ports.julia?.tag === 'v0.1.0', result.error)
+    check('Hex excludes retired releases and their tags',
+      result.ports.elixir?.status === 'prerelease' && result.ports.elixir?.version === '0.0.1-alpha.1'
+      && result.ports.elixir?.tag === 'v0.0.1-alpha.1', `${JSON.stringify(result.ports.elixir)} ${result.error}`)
+    const unlisted = invoke({ ...replies, [hex]: { status: 404, body: '{"status":404,"message":"Resource not found"}' } })
+    check('a package Hex does not carry is unpublished',
+      unlisted.ports.elixir?.status === 'unpublished' && unlisted.ports.elixir?.version === null, `${JSON.stringify(unlisted.ports.elixir)} ${unlisted.error}`)
     check('an unavailable existing port retains its newer published entry', same(result.ports.csharp, baseline.ports.csharp), result.error)
 
     // The baseline names a tag the repository never published. Tags the

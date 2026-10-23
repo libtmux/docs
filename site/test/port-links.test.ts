@@ -25,7 +25,7 @@ function cases(): Case[] {
     add(`${port.slug} v1.2.3 @revision`, { port, version: 'v1.2.3', revision: REVISION })
   }
   // Ports with a library directory or tag prefix change their source link with the ref.
-  for (const slug of ['powershell', 'julia', 'kotlin', 'scala', 'rs']) {
+  for (const slug of ['powershell', 'julia', 'elixir', 'kotlin', 'scala', 'rs']) {
     const port = bySlug(slug)
     add(`${slug} v1.2.3`, { port, version: 'v1.2.3' })
     add(`${slug} stable`, { port, version: 'stable' })

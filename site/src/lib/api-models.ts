@@ -9,8 +9,10 @@ import { PORT_BY_SLUG, referenceUrl, type DocProduct } from './ports'
 import { defaultVersionFor } from './versions'
 import powershellNav from '../data/api/powershell.nav.json'
 import juliaNav from '../data/api/julia.nav.json'
+import elixirNav from '../data/api/elixir.nav.json'
 import powershellModel from '../data/api/powershell.json'
 import juliaModel from '../data/api/julia.json'
+import elixirModel from '../data/api/elixir.json'
 import cxxNav from '../data/api/cxx.nav.json'
 import csharpNav from '../data/api/csharp.nav.json'
 import goNav from '../data/api/go.nav.json'
@@ -50,6 +52,7 @@ import fsharpNav from '../data/api/fsharp.nav.json'
 export const API_MODELS: Record<string, ApiModel> = {
   powershell: powershellModel as unknown as ApiModel,
   julia: juliaModel as unknown as ApiModel,
+  elixir: elixirModel as unknown as ApiModel,
   py: pyModel as unknown as ApiModel,
   ruby: rubyModel as unknown as ApiModel,
   lua: luaModel as unknown as ApiModel,
@@ -112,6 +115,7 @@ export interface PortNavData {
 export const API_NAV: Record<string, PortNavData> = {
   powershell: powershellNav as unknown as PortNavData,
   julia: juliaNav as unknown as PortNavData,
+  elixir: elixirNav as unknown as PortNavData,
   py: pyNav as unknown as PortNavData,
   ruby: rubyNav as unknown as PortNavData,
   lua: luaNav as unknown as PortNavData,
@@ -132,6 +136,7 @@ export { isMemberOwner, OWNER_KINDS } from '@libtmux/api-model'
 export const PORT_NAME: Record<string, string> = {
   powershell: 'PowerShell',
   julia: 'Julia',
+  elixir: 'Elixir',
   py: 'Python',
   ruby: 'Ruby',
   lua: 'Lua',

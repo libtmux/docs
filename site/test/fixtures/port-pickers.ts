@@ -5,7 +5,7 @@
  * library first, then the MCP server, then the workspace manager.
  *
  * Julia and C++ publish no package, so they have no package menu. Only Rust,
- * Go, Java, Kotlin, Scala and Swift have an off-site API reference.
+ * Go, Java, Kotlin, Scala, Swift and Elixir have an off-site API reference.
  */
 export type ExpectedRow = readonly ['core' | 'mcp' | 'workspace', label: string, detail: string, url: string]
 
@@ -72,6 +72,14 @@ export const PICKERS: Record<string, ExpectedPickers> = {
       ['mcp', 'LibTmuxMCP', 'libtmux-julia/packages/LibTmuxMCP', dir('libtmux/libtmux-julia', 'packages/LibTmuxMCP')],
       ['workspace', 'LibTmuxWorkspace', 'libtmux-julia/packages/LibTmuxWorkspace', dir('libtmux/libtmux-julia', 'packages/LibTmuxWorkspace')],
     ],
+  },
+  elixir: {
+    github: [
+      ['core', 'libtmux', 'libtmux-elixir/lib', 'https://github.com/libtmux/libtmux-elixir/tree/main/lib'],
+      ['core', 'libtmux-elixir', 'libtmux/libtmux-elixir', repo('libtmux/libtmux-elixir')],
+    ],
+    packages: [['core', 'libtmux', 'Hex', 'https://hex.pm/packages/libtmux']],
+    docs: [['core', 'libtmux', 'HexDocs', 'https://libtmux.hexdocs.pm/']],
   },
   ts: {
     github: [

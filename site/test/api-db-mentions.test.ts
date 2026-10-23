@@ -46,7 +46,7 @@ describe('prose mention index', () => {
     expect(mentionIndex.mentions.some((row) => row.port === 'csharp'
       && row.symbol === 'LibTmux.Workspace.WorkspaceActionKind.CaptureResult'
       && row.page === '/powershell/latest/workspace/source-guide/')).toBe(true)
-    expect(mentionIndex.dangling.filter((row) => ['powershell', 'julia'].includes(row.port))).toEqual([])
+    expect(mentionIndex.dangling.filter((row) => ['powershell', 'julia', 'elixir'].includes(row.port))).toEqual([])
   })
 
   it('does not turn language types into unrelated API backlinks', () => {

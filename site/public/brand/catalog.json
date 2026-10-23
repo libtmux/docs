@@ -94,6 +94,11 @@
       "id": "kotlin",
       "label": "Kotlin",
       "githubColor": "#A97BFF"
+    },
+    {
+      "id": "elixir",
+      "label": "Elixir",
+      "githubColor": "#8847B9"
     }
   ],
   "variants": [
@@ -18596,7 +18601,1240 @@
           "format": "xml"
         }
       ]
+    },
+    {
+      "language": "elixir",
+      "label": "Elixir",
+      "variant": "library",
+      "githubColor": "#8847B9",
+      "alt": "libtmux for Elixir",
+      "files": [
+        {
+          "file": "elixir/library/logo.svg",
+          "bytes": 5885,
+          "sha256": "26558c9536840d516aa6d19d0ec4a22862b80d70cf54a00840af23153c25942a",
+          "format": "svg",
+          "width": 512,
+          "height": 512,
+          "transparent": true
+        },
+        {
+          "file": "elixir/library/logo-16.png",
+          "bytes": 594,
+          "sha256": "668755a7642e8f26aec2e73be92bbe43c24c67817d433853113c7ed07c6cc755",
+          "format": "png",
+          "width": 16,
+          "height": 16,
+          "transparent": true
+        },
+        {
+          "file": "elixir/library/logo-24.png",
+          "bytes": 775,
+          "sha256": "13db7f934237eb053adb1df1694ee5ae51daee48444beebc08249c456cb392da",
+          "format": "png",
+          "width": 24,
+          "height": 24,
+          "transparent": true
+        },
+        {
+          "file": "elixir/library/logo-32.png",
+          "bytes": 1039,
+          "sha256": "afc4da85d5195aca6e174100ce0304916b577ce3633f268b09a27efd9f31e174",
+          "format": "png",
+          "width": 32,
+          "height": 32,
+          "transparent": true
+        },
+        {
+          "file": "elixir/library/logo-48.png",
+          "bytes": 1487,
+          "sha256": "f7c53bcf2b7f276b87a582cef3d10c944fd9e15310da9a0b240b7a0beb0ae7af",
+          "format": "png",
+          "width": 48,
+          "height": 48,
+          "transparent": true
+        },
+        {
+          "file": "elixir/library/logo-64.png",
+          "bytes": 1918,
+          "sha256": "d5eae843b1f7a602f42970f9237d793d9f7915ce6dc9a095a6a22a322917aa9d",
+          "format": "png",
+          "width": 64,
+          "height": 64,
+          "transparent": true
+        },
+        {
+          "file": "elixir/library/logo-96.png",
+          "bytes": 2745,
+          "sha256": "0b26eb5c690de75f0307b738843e92232f440c269247e809888ef950d1189344",
+          "format": "png",
+          "width": 96,
+          "height": 96,
+          "transparent": true
+        },
+        {
+          "file": "elixir/library/logo-128.png",
+          "bytes": 3675,
+          "sha256": "28a926b2b0e92d2bac18c1c895d74116ea7ee8cef2e206540be289d3ada89a5c",
+          "format": "png",
+          "width": 128,
+          "height": 128,
+          "transparent": true
+        },
+        {
+          "file": "elixir/library/logo-144.png",
+          "bytes": 4094,
+          "sha256": "f6c20540138092d417cb36903fadb43e5fc0991890ae60b81b0eafc4022bbdfb",
+          "format": "png",
+          "width": 144,
+          "height": 144,
+          "transparent": true
+        },
+        {
+          "file": "elixir/library/logo-152.png",
+          "bytes": 4265,
+          "sha256": "678a0aa8999519eb0283dae9ef74e8a402ce2478c19ee9f77c772cd8c6b04c26",
+          "format": "png",
+          "width": 152,
+          "height": 152,
+          "transparent": true
+        },
+        {
+          "file": "elixir/library/logo-167.png",
+          "bytes": 4737,
+          "sha256": "489eb80fa79941e5f37049f3fb40e83660c02b6d379972919efbcae113b4eb41",
+          "format": "png",
+          "width": 167,
+          "height": 167,
+          "transparent": true
+        },
+        {
+          "file": "elixir/library/logo-180.png",
+          "bytes": 5227,
+          "sha256": "b591ddac2dd6879191aac92f63c304420c5289e56ddcc927986c5938da9a48e3",
+          "format": "png",
+          "width": 180,
+          "height": 180,
+          "transparent": true
+        },
+        {
+          "file": "elixir/library/logo-192.png",
+          "bytes": 5547,
+          "sha256": "190daea754f7f1cb452ee1011b9bd11ff7b9c8d32369527d3982b5f3a8e30b73",
+          "format": "png",
+          "width": 192,
+          "height": 192,
+          "transparent": true
+        },
+        {
+          "file": "elixir/library/logo-256.png",
+          "bytes": 7466,
+          "sha256": "37459d254c345e3388cde73618d9c176e0ceafc3fb4a31f7bc10bfd1b07b4a28",
+          "format": "png",
+          "width": 256,
+          "height": 256,
+          "transparent": true
+        },
+        {
+          "file": "elixir/library/logo-384.png",
+          "bytes": 11559,
+          "sha256": "880bfb1c10587da1eb28b89147d4f1d897dac12300e4d2b5d34db06d9cb44cc0",
+          "format": "png",
+          "width": 384,
+          "height": 384,
+          "transparent": true
+        },
+        {
+          "file": "elixir/library/logo-512.png",
+          "bytes": 16031,
+          "sha256": "6163616564ac8157296f2f995a341a8832e95475c8fe6cd3fd6f70c48747f368",
+          "format": "png",
+          "width": 512,
+          "height": 512,
+          "transparent": true
+        },
+        {
+          "file": "elixir/library/logo-1024.png",
+          "bytes": 36380,
+          "sha256": "83b40df8f7be54dd1f3a7a63e28ff14b76d33932b179b02d969e651b7d9ba097",
+          "format": "png",
+          "width": 1024,
+          "height": 1024,
+          "transparent": true
+        },
+        {
+          "file": "elixir/library/favicon.ico",
+          "bytes": 22568,
+          "sha256": "2761a5d6c81cbc6bd9200170fa26a0ebc8a6150043744e09347c190a364c9fbc",
+          "format": "ico",
+          "sizes": [
+            16,
+            32,
+            48,
+            256
+          ]
+        },
+        {
+          "file": "elixir/library/safari-pinned-tab.svg",
+          "bytes": 5885,
+          "sha256": "5b24286cbaa29a0c258886d99cfe691afd097b929c0bc751eb190da7d75a8041",
+          "format": "svg",
+          "width": 512,
+          "height": 512,
+          "monochrome": true
+        },
+        {
+          "file": "elixir/library/apple-touch-icon-light.png",
+          "bytes": 3798,
+          "sha256": "d344bf05ce2c750d35c78dc69708aa00cbeb8aa8d048a7184a5f9214cfb64abf",
+          "format": "png",
+          "width": 180,
+          "height": 180,
+          "transparent": false,
+          "purpose": "apple-touch"
+        },
+        {
+          "file": "elixir/library/app-icon-1024-light.png",
+          "bytes": 28057,
+          "sha256": "300416a770d8315b57a9115715c38f94f09ebf8904fe51cb6f820e540807fe5a",
+          "format": "png",
+          "width": 1024,
+          "height": 1024,
+          "transparent": false,
+          "purpose": "app-icon"
+        },
+        {
+          "file": "elixir/library/maskable-192-light.png",
+          "bytes": 3041,
+          "sha256": "179b1778cbd79b27731d40496bee5c654f06b0cbe7a0567ab15bcf51313ecbac",
+          "format": "png",
+          "width": 192,
+          "height": 192,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "elixir/library/maskable-512-light.png",
+          "bytes": 9214,
+          "sha256": "88f541fd9d520585406c26c8b5f7b887dbda2e9594b86627dfc41d9ebaa98e86",
+          "format": "png",
+          "width": 512,
+          "height": 512,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "elixir/library/mstile-150-light.png",
+          "bytes": 2979,
+          "sha256": "493f17036efcb9b7f62a488235bc986fe423b27f5f1edb8e7d815f5b81e1e77e",
+          "format": "png",
+          "width": 150,
+          "height": 150,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "elixir/library/mstile-310-light.png",
+          "bytes": 6424,
+          "sha256": "18cbe24888597d5fba0450afe547a6712bc48a15c8ed521a5ae48858289d1e8c",
+          "format": "png",
+          "width": 310,
+          "height": 310,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "elixir/library/opengraph-light.png",
+          "bytes": 25072,
+          "sha256": "3a1159ca71b7670d261b5fec6a4b06922cf88cbd978181b0f4c25f646bf585f1",
+          "format": "png",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph"
+        },
+        {
+          "file": "elixir/library/opengraph-light.jpg",
+          "bytes": 45037,
+          "sha256": "ebb6c0807167d5e5c49d5f32083a4b73ac8e8506d35f28dfaec3baf59303c38f",
+          "format": "jpeg",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph-fallback"
+        },
+        {
+          "file": "elixir/library/twitter-light.png",
+          "bytes": 24897,
+          "sha256": "173f817529aa194a074d5614b8eb22edf5a370aaa7ac6e5c81d23476c9c2f921",
+          "format": "png",
+          "width": 1200,
+          "height": 600,
+          "transparent": false,
+          "purpose": "twitter"
+        },
+        {
+          "file": "elixir/library/social-square-light.png",
+          "bytes": 29004,
+          "sha256": "7d90545c45c7e45b44dcc980b289164407077d94eb86b303f2b8c01993b19d5a",
+          "format": "png",
+          "width": 1080,
+          "height": 1080,
+          "transparent": false,
+          "purpose": "social-square"
+        },
+        {
+          "file": "elixir/library/site.webmanifest",
+          "bytes": 731,
+          "sha256": "f4560b9d78333227b94035b9a2ef929654bb191548ea27f8f01594c364247b4d",
+          "format": "webmanifest"
+        },
+        {
+          "file": "elixir/library/browserconfig.xml",
+          "bytes": 238,
+          "sha256": "756781058980cd0ff5055500b733217b515aed6098088fe8d2ec7e2306ae4cb1",
+          "format": "xml"
+        },
+        {
+          "file": "elixir/library/apple-touch-icon-dark.png",
+          "bytes": 3827,
+          "sha256": "5fe290d5c6cd4b6641a02fcbe5a82c2705ac5b1b3f4d10166bf04326ddfa761f",
+          "format": "png",
+          "width": 180,
+          "height": 180,
+          "transparent": false,
+          "purpose": "apple-touch"
+        },
+        {
+          "file": "elixir/library/app-icon-1024-dark.png",
+          "bytes": 28349,
+          "sha256": "e9ed6a56c6811154794b88e24107763386f0f76fdeb09f554e663d235da9fd74",
+          "format": "png",
+          "width": 1024,
+          "height": 1024,
+          "transparent": false,
+          "purpose": "app-icon"
+        },
+        {
+          "file": "elixir/library/maskable-192-dark.png",
+          "bytes": 3067,
+          "sha256": "8facded3d013bed23c2925275875f2d4fd8c34bb0ca15d3301ce69439a16ec12",
+          "format": "png",
+          "width": 192,
+          "height": 192,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "elixir/library/maskable-512-dark.png",
+          "bytes": 9297,
+          "sha256": "e5eb658ecc7d1c208f0d0cf204efa9ff71c3079076bd6c14d3c90446f023e35b",
+          "format": "png",
+          "width": 512,
+          "height": 512,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "elixir/library/mstile-150-dark.png",
+          "bytes": 3003,
+          "sha256": "271f275ec0f86d59270340d8c5c5d095409e3d381c26e59813653c1ceee38103",
+          "format": "png",
+          "width": 150,
+          "height": 150,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "elixir/library/mstile-310-dark.png",
+          "bytes": 6480,
+          "sha256": "48c3c3cf97669d32f4134b7f5503ff0d5c1f24e18b3be917b2970f489abc2b1b",
+          "format": "png",
+          "width": 310,
+          "height": 310,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "elixir/library/opengraph-dark.png",
+          "bytes": 25351,
+          "sha256": "b290ef008afea1ff1e92dd858cc24c3f6e44a9a9f0033d946c7acece4437704a",
+          "format": "png",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph"
+        },
+        {
+          "file": "elixir/library/opengraph-dark.jpg",
+          "bytes": 43312,
+          "sha256": "12a5906a0513fc1b00099af2a0d530cf1f4e7d62a01ca1051b67f2a99997703f",
+          "format": "jpeg",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph-fallback"
+        },
+        {
+          "file": "elixir/library/twitter-dark.png",
+          "bytes": 25179,
+          "sha256": "c9e8279f4da5346e7859eb3f086b8c151c17d9f0d25356e48c22e2cfaadbfe16",
+          "format": "png",
+          "width": 1200,
+          "height": 600,
+          "transparent": false,
+          "purpose": "twitter"
+        },
+        {
+          "file": "elixir/library/social-square-dark.png",
+          "bytes": 29253,
+          "sha256": "dadb8a0e50ab27c533c07bd4b6598934d64509df5710855309adb8ce8ed8e284",
+          "format": "png",
+          "width": 1080,
+          "height": 1080,
+          "transparent": false,
+          "purpose": "social-square"
+        },
+        {
+          "file": "elixir/library/site-dark.webmanifest",
+          "bytes": 729,
+          "sha256": "f644d84495d57e251034aef268735380dfbca07d93f47a5c9a3cb83a085efe10",
+          "format": "webmanifest"
+        },
+        {
+          "file": "elixir/library/browserconfig-dark.xml",
+          "bytes": 236,
+          "sha256": "9652b919245ff0901ba08c3bc3f492e727fdbf0d64791c8f4c23637249a57315",
+          "format": "xml"
+        }
+      ]
+    },
+    {
+      "language": "elixir",
+      "label": "Elixir",
+      "variant": "workspace",
+      "githubColor": "#8847B9",
+      "alt": "libtmux for Elixir — workspace CLI",
+      "files": [
+        {
+          "file": "elixir/workspace/logo.svg",
+          "bytes": 2408,
+          "sha256": "312ea770706de6ed235952f00faa06aa0171db41650d377e2de49f80115d0805",
+          "format": "svg",
+          "width": 512,
+          "height": 512,
+          "transparent": true
+        },
+        {
+          "file": "elixir/workspace/logo-16.png",
+          "bytes": 284,
+          "sha256": "52a246d110891796dd516e749e6612dd235090f5fa584f4a07eee7734f7b6f36",
+          "format": "png",
+          "width": 16,
+          "height": 16,
+          "transparent": true
+        },
+        {
+          "file": "elixir/workspace/logo-24.png",
+          "bytes": 326,
+          "sha256": "cd10b67324a99ebdc1b8a319340ecf90334ee63178e1bfd437a5364508ea1883",
+          "format": "png",
+          "width": 24,
+          "height": 24,
+          "transparent": true
+        },
+        {
+          "file": "elixir/workspace/logo-32.png",
+          "bytes": 418,
+          "sha256": "c7c4fcf25daf9e29143aaef6e2c74057d62cfbee3490449a297ca41367231a94",
+          "format": "png",
+          "width": 32,
+          "height": 32,
+          "transparent": true
+        },
+        {
+          "file": "elixir/workspace/logo-48.png",
+          "bytes": 555,
+          "sha256": "0617bd0bbf25c7c10fa4f92259298b672decb8c83bc601baa4c6945f16cb6184",
+          "format": "png",
+          "width": 48,
+          "height": 48,
+          "transparent": true
+        },
+        {
+          "file": "elixir/workspace/logo-64.png",
+          "bytes": 651,
+          "sha256": "6a1f8e1cd1252c0dbc6d567de73bc09f68db1d47bcbdde36bdd3922eaee5063b",
+          "format": "png",
+          "width": 64,
+          "height": 64,
+          "transparent": true
+        },
+        {
+          "file": "elixir/workspace/logo-96.png",
+          "bytes": 871,
+          "sha256": "19999ad64f034a300fa860782a38ea8ad1fee6d7b378ba0adadbb21080ab31c7",
+          "format": "png",
+          "width": 96,
+          "height": 96,
+          "transparent": true
+        },
+        {
+          "file": "elixir/workspace/logo-128.png",
+          "bytes": 1143,
+          "sha256": "678cacc13894b251d3c6391caf81d0ee67e99286bf0d14020e4d01e5a3bf02b9",
+          "format": "png",
+          "width": 128,
+          "height": 128,
+          "transparent": true
+        },
+        {
+          "file": "elixir/workspace/logo-144.png",
+          "bytes": 1294,
+          "sha256": "e8eb69c939de0c69216a2b23c7e3e9de847a493f15e019e1de22cb61010a0b08",
+          "format": "png",
+          "width": 144,
+          "height": 144,
+          "transparent": true
+        },
+        {
+          "file": "elixir/workspace/logo-152.png",
+          "bytes": 1351,
+          "sha256": "dd227adfae5dc9652fca449f7d05c17e4a8bcde0f372a04b5f1f72bede7a5ca6",
+          "format": "png",
+          "width": 152,
+          "height": 152,
+          "transparent": true
+        },
+        {
+          "file": "elixir/workspace/logo-167.png",
+          "bytes": 1519,
+          "sha256": "546a7ea4e3cf684000764afeeb6e2a244f4d17ab86ec14532ca5dbe15438ef7b",
+          "format": "png",
+          "width": 167,
+          "height": 167,
+          "transparent": true
+        },
+        {
+          "file": "elixir/workspace/logo-180.png",
+          "bytes": 1658,
+          "sha256": "1ea3741690e4c09387f3712f6abc877b50d95efd3319e254f41b4cc706cafeca",
+          "format": "png",
+          "width": 180,
+          "height": 180,
+          "transparent": true
+        },
+        {
+          "file": "elixir/workspace/logo-192.png",
+          "bytes": 1746,
+          "sha256": "5b16ebbd830803185a94277781eb65837d9d5e83750b772dea2d73f5dc7540fc",
+          "format": "png",
+          "width": 192,
+          "height": 192,
+          "transparent": true
+        },
+        {
+          "file": "elixir/workspace/logo-256.png",
+          "bytes": 2467,
+          "sha256": "50dd38054996866230e14136c1b1c83ad238d8296a850729de11015ff898670f",
+          "format": "png",
+          "width": 256,
+          "height": 256,
+          "transparent": true
+        },
+        {
+          "file": "elixir/workspace/logo-384.png",
+          "bytes": 3771,
+          "sha256": "88e1ca1c2d6895eb4a1845bd3aceebf32c2905cad37cd4b6292db5f43993c154",
+          "format": "png",
+          "width": 384,
+          "height": 384,
+          "transparent": true
+        },
+        {
+          "file": "elixir/workspace/logo-512.png",
+          "bytes": 5404,
+          "sha256": "2a1fab6ab705db7281480b8c87da31a8aca6bbf7a7c6d33c0348f1022e9e5c9f",
+          "format": "png",
+          "width": 512,
+          "height": 512,
+          "transparent": true
+        },
+        {
+          "file": "elixir/workspace/logo-1024.png",
+          "bytes": 13799,
+          "sha256": "e2ba88ebd0dd2d8e416c112fd3815313c1fbebeb0edf2d04aded7817ee7b1ea2",
+          "format": "png",
+          "width": 1024,
+          "height": 1024,
+          "transparent": true
+        },
+        {
+          "file": "elixir/workspace/favicon.ico",
+          "bytes": 17569,
+          "sha256": "57e292fb4e2da824188dd6fdef3eec525f79bfa63a52cd5977f4192b6125fc20",
+          "format": "ico",
+          "sizes": [
+            16,
+            32,
+            48,
+            256
+          ]
+        },
+        {
+          "file": "elixir/workspace/safari-pinned-tab.svg",
+          "bytes": 2408,
+          "sha256": "f86520f96a3803c89be386b587ec4d1f457a910640de0ee54f194009f258cd94",
+          "format": "svg",
+          "width": 512,
+          "height": 512,
+          "monochrome": true
+        },
+        {
+          "file": "elixir/workspace/apple-touch-icon-light.png",
+          "bytes": 1307,
+          "sha256": "ecb46944bc0d989df17809a7914abfc8926dc065552c6f38670d200f0574c72b",
+          "format": "png",
+          "width": 180,
+          "height": 180,
+          "transparent": false,
+          "purpose": "apple-touch"
+        },
+        {
+          "file": "elixir/workspace/app-icon-1024-light.png",
+          "bytes": 11501,
+          "sha256": "9741408e1c24d76b054ecd1a9f85f916cf6c6d638af947ec65f1210b76fbf1d7",
+          "format": "png",
+          "width": 1024,
+          "height": 1024,
+          "transparent": false,
+          "purpose": "app-icon"
+        },
+        {
+          "file": "elixir/workspace/maskable-192-light.png",
+          "bytes": 1131,
+          "sha256": "c0c307cd22db08aae121eb60f15c5e81f793a3c945e8e557cdb4c36ea0db4526",
+          "format": "png",
+          "width": 192,
+          "height": 192,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "elixir/workspace/maskable-512-light.png",
+          "bytes": 3808,
+          "sha256": "ab76ff6a8041d700f3f9a4fe691cf9497de41c46564be18c293bc4a36774bd6a",
+          "format": "png",
+          "width": 512,
+          "height": 512,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "elixir/workspace/mstile-150-light.png",
+          "bytes": 987,
+          "sha256": "8ea4c4d65e7f81b74fd16f3d8e4ad4f31a9ea6415c82cfd0ccca6dadda9d500e",
+          "format": "png",
+          "width": 150,
+          "height": 150,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "elixir/workspace/mstile-310-light.png",
+          "bytes": 2234,
+          "sha256": "dff5a3052a985977033eb0ed6ce80d57ede1c5b7c7ce6d04f6455e0e7769b8c7",
+          "format": "png",
+          "width": 310,
+          "height": 310,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "elixir/workspace/opengraph-light.png",
+          "bytes": 22534,
+          "sha256": "02f0dfcf8cc16f02ae03faf96ea78400dc1028e3bf4ecf831a9a32cf59a3a773",
+          "format": "png",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph"
+        },
+        {
+          "file": "elixir/workspace/opengraph-light.jpg",
+          "bytes": 43476,
+          "sha256": "48964109d3c9cb9738654a8a0dfc38b2090f73a7e1a40270dc6d4ab9da29a45d",
+          "format": "jpeg",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph-fallback"
+        },
+        {
+          "file": "elixir/workspace/twitter-light.png",
+          "bytes": 22388,
+          "sha256": "ea167065a0fbea933d3a94a006dea36f8c96d9a02dfb73ca7c2a9ca19294071b",
+          "format": "png",
+          "width": 1200,
+          "height": 600,
+          "transparent": false,
+          "purpose": "twitter"
+        },
+        {
+          "file": "elixir/workspace/social-square-light.png",
+          "bytes": 25300,
+          "sha256": "10478a881a606e48e0601443bb8e7533f05ca9d8e04f1a087234f3add7908df3",
+          "format": "png",
+          "width": 1080,
+          "height": 1080,
+          "transparent": false,
+          "purpose": "social-square"
+        },
+        {
+          "file": "elixir/workspace/site.webmanifest",
+          "bytes": 752,
+          "sha256": "baff40d8b95877338fc3ab4df449a9777ded91a69be6582549c07c6ed2ce8f6b",
+          "format": "webmanifest"
+        },
+        {
+          "file": "elixir/workspace/browserconfig.xml",
+          "bytes": 238,
+          "sha256": "756781058980cd0ff5055500b733217b515aed6098088fe8d2ec7e2306ae4cb1",
+          "format": "xml"
+        },
+        {
+          "file": "elixir/workspace/apple-touch-icon-dark.png",
+          "bytes": 1269,
+          "sha256": "7857888c9f5072a4a35daa76429441ad0cfeaaa8a5011272f3bbd05a6399d1d0",
+          "format": "png",
+          "width": 180,
+          "height": 180,
+          "transparent": false,
+          "purpose": "apple-touch"
+        },
+        {
+          "file": "elixir/workspace/app-icon-1024-dark.png",
+          "bytes": 11289,
+          "sha256": "4125b315ecfbdc540ebee433d786f4784e58bf70b5744f0670053d2571694904",
+          "format": "png",
+          "width": 1024,
+          "height": 1024,
+          "transparent": false,
+          "purpose": "app-icon"
+        },
+        {
+          "file": "elixir/workspace/maskable-192-dark.png",
+          "bytes": 1102,
+          "sha256": "92dad523ec1ff928281338ae57d4cf053293d1ea5d49e20effb5033308fbfd68",
+          "format": "png",
+          "width": 192,
+          "height": 192,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "elixir/workspace/maskable-512-dark.png",
+          "bytes": 3764,
+          "sha256": "a2049628fd27a3bbd0b0787cc600271f8c4d358bb14fca4558c1975fc85c601b",
+          "format": "png",
+          "width": 512,
+          "height": 512,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "elixir/workspace/mstile-150-dark.png",
+          "bytes": 962,
+          "sha256": "e2c69650f12284e36cdb0fa672c0bd7c667f63f60803181990cc133492f6582e",
+          "format": "png",
+          "width": 150,
+          "height": 150,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "elixir/workspace/mstile-310-dark.png",
+          "bytes": 2166,
+          "sha256": "e80ac55e0919e7de47f60abef119ed200facf303ed5e166aab439eae6cda1d02",
+          "format": "png",
+          "width": 310,
+          "height": 310,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "elixir/workspace/opengraph-dark.png",
+          "bytes": 22586,
+          "sha256": "4751a6c9f1f69e55349ff5ff0117c95e6686e641f31926e41e788d197e14a2ed",
+          "format": "png",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph"
+        },
+        {
+          "file": "elixir/workspace/opengraph-dark.jpg",
+          "bytes": 40568,
+          "sha256": "322af4afe88e452c009b1315ed8544299ce230491a070a811a313dc1395b5a7f",
+          "format": "jpeg",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph-fallback"
+        },
+        {
+          "file": "elixir/workspace/twitter-dark.png",
+          "bytes": 22439,
+          "sha256": "6b5dd155e1313e3f1eb38c617e3f392d2d7a03e535f113101f0875c5872c10cf",
+          "format": "png",
+          "width": 1200,
+          "height": 600,
+          "transparent": false,
+          "purpose": "twitter"
+        },
+        {
+          "file": "elixir/workspace/social-square-dark.png",
+          "bytes": 25356,
+          "sha256": "85f5c099e385817add4d070c9a7ce5d357395ab83b6641c0d84f806cf510d7f5",
+          "format": "png",
+          "width": 1080,
+          "height": 1080,
+          "transparent": false,
+          "purpose": "social-square"
+        },
+        {
+          "file": "elixir/workspace/site-dark.webmanifest",
+          "bytes": 750,
+          "sha256": "34b2fcf13b2dcc41a39fb01a570a5fdd672421129d40c6e385ccbbfcf3480499",
+          "format": "webmanifest"
+        },
+        {
+          "file": "elixir/workspace/browserconfig-dark.xml",
+          "bytes": 236,
+          "sha256": "9652b919245ff0901ba08c3bc3f492e727fdbf0d64791c8f4c23637249a57315",
+          "format": "xml"
+        }
+      ]
+    },
+    {
+      "language": "elixir",
+      "label": "Elixir",
+      "variant": "mcp",
+      "githubColor": "#8847B9",
+      "alt": "libtmux for Elixir — MCP",
+      "files": [
+        {
+          "file": "elixir/mcp/logo.svg",
+          "bytes": 4056,
+          "sha256": "34b2d3fdcbf0722937339b773464f5eee44b7c40c9b8b057ce723b1fa4899a34",
+          "format": "svg",
+          "width": 512,
+          "height": 512,
+          "transparent": true
+        },
+        {
+          "file": "elixir/mcp/logo-16.png",
+          "bytes": 593,
+          "sha256": "a9cb1fe29b2cfd03135e87689d3da2d7a17acf87c4167a234488bafaec5ab374",
+          "format": "png",
+          "width": 16,
+          "height": 16,
+          "transparent": true
+        },
+        {
+          "file": "elixir/mcp/logo-24.png",
+          "bytes": 889,
+          "sha256": "963267b90db36c1102a85d42615bc37c4d997beffad131116cc8cfb6c84f645a",
+          "format": "png",
+          "width": 24,
+          "height": 24,
+          "transparent": true
+        },
+        {
+          "file": "elixir/mcp/logo-32.png",
+          "bytes": 1192,
+          "sha256": "099e4afc6b7816ba968613cc39ed298481b294e95db1ff8b53af0385b0cad180",
+          "format": "png",
+          "width": 32,
+          "height": 32,
+          "transparent": true
+        },
+        {
+          "file": "elixir/mcp/logo-48.png",
+          "bytes": 1780,
+          "sha256": "9077a3c24e37dc87c8c0bfcbafdd866194fe0a0222170d36f34a87d441b96c98",
+          "format": "png",
+          "width": 48,
+          "height": 48,
+          "transparent": true
+        },
+        {
+          "file": "elixir/mcp/logo-64.png",
+          "bytes": 2217,
+          "sha256": "ac577a922e9089bf7b619a68c6451368dc8bd3bf3d86f6cbfb38bcd29662f851",
+          "format": "png",
+          "width": 64,
+          "height": 64,
+          "transparent": true
+        },
+        {
+          "file": "elixir/mcp/logo-96.png",
+          "bytes": 3203,
+          "sha256": "13d0d358a991ec53fd1d2d84c6526b20120b30243265e2b51f45f83b5d0636bb",
+          "format": "png",
+          "width": 96,
+          "height": 96,
+          "transparent": true
+        },
+        {
+          "file": "elixir/mcp/logo-128.png",
+          "bytes": 4185,
+          "sha256": "40dad8eb626878db1bd5cff5072396158ddf719c0ee98b9c907fffd0d209ee09",
+          "format": "png",
+          "width": 128,
+          "height": 128,
+          "transparent": true
+        },
+        {
+          "file": "elixir/mcp/logo-144.png",
+          "bytes": 4633,
+          "sha256": "32f6e483da7ba57840d68f1346f103ed70ce96a4c6b9056ac1870e4d3fef4b23",
+          "format": "png",
+          "width": 144,
+          "height": 144,
+          "transparent": true
+        },
+        {
+          "file": "elixir/mcp/logo-152.png",
+          "bytes": 4735,
+          "sha256": "95ce05ebce520e93c8c84b3ca7c1a4cf05bd7c2cd9c3c0b2dd2d59a3dab68146",
+          "format": "png",
+          "width": 152,
+          "height": 152,
+          "transparent": true
+        },
+        {
+          "file": "elixir/mcp/logo-167.png",
+          "bytes": 5088,
+          "sha256": "b227baeb805af33be3ba9a15138c74fb7f7642c29e785ac238eb6771275608dc",
+          "format": "png",
+          "width": 167,
+          "height": 167,
+          "transparent": true
+        },
+        {
+          "file": "elixir/mcp/logo-180.png",
+          "bytes": 5604,
+          "sha256": "6af7bf1f9457abafe12074e1cc5b110834853fc0a760284e5c5be9d13e621e88",
+          "format": "png",
+          "width": 180,
+          "height": 180,
+          "transparent": true
+        },
+        {
+          "file": "elixir/mcp/logo-192.png",
+          "bytes": 5940,
+          "sha256": "7a5bc06eca9e582dbeb43ca4076aaa8692fc15f529ef33a817050179f9c48308",
+          "format": "png",
+          "width": 192,
+          "height": 192,
+          "transparent": true
+        },
+        {
+          "file": "elixir/mcp/logo-256.png",
+          "bytes": 8058,
+          "sha256": "cde513598fb8492508722fc821ab4d109f44b0c6acc278c0976316520611bdbc",
+          "format": "png",
+          "width": 256,
+          "height": 256,
+          "transparent": true
+        },
+        {
+          "file": "elixir/mcp/logo-384.png",
+          "bytes": 12296,
+          "sha256": "5c15a135640631690f2502880ee10ebdd6258ee37b114648888d23485ca53cac",
+          "format": "png",
+          "width": 384,
+          "height": 384,
+          "transparent": true
+        },
+        {
+          "file": "elixir/mcp/logo-512.png",
+          "bytes": 16940,
+          "sha256": "677c6c75be0237d0fc2ee91abf6b60426e2077f268b2e65a72daf4f029f6fe22",
+          "format": "png",
+          "width": 512,
+          "height": 512,
+          "transparent": true
+        },
+        {
+          "file": "elixir/mcp/logo-1024.png",
+          "bytes": 37999,
+          "sha256": "eca106ea545084928b06a76795abb0f11f5ff612559aead6e0ac39fb4b5c11e8",
+          "format": "png",
+          "width": 1024,
+          "height": 1024,
+          "transparent": true
+        },
+        {
+          "file": "elixir/mcp/favicon.ico",
+          "bytes": 23160,
+          "sha256": "bf927073136a533f50df02731ffd9d18fdec376d90ebb075d4e1e96e3a570504",
+          "format": "ico",
+          "sizes": [
+            16,
+            32,
+            48,
+            256
+          ]
+        },
+        {
+          "file": "elixir/mcp/safari-pinned-tab.svg",
+          "bytes": 4056,
+          "sha256": "d636e7c135378eeef10aff0125f5e651087648bc09e08ac663ea6853ace409c5",
+          "format": "svg",
+          "width": 512,
+          "height": 512,
+          "monochrome": true
+        },
+        {
+          "file": "elixir/mcp/apple-touch-icon-light.png",
+          "bytes": 4260,
+          "sha256": "68ea303ba8f8e5a7f84fdd7830f15fced4d96cb40fd594ca4f77c3950367892e",
+          "format": "png",
+          "width": 180,
+          "height": 180,
+          "transparent": false,
+          "purpose": "apple-touch"
+        },
+        {
+          "file": "elixir/mcp/app-icon-1024-light.png",
+          "bytes": 28198,
+          "sha256": "c05dcd7b8210f7d964938e031e9197a866541bd6ee5426be11882a76b665ef1d",
+          "format": "png",
+          "width": 1024,
+          "height": 1024,
+          "transparent": false,
+          "purpose": "app-icon"
+        },
+        {
+          "file": "elixir/mcp/maskable-192-light.png",
+          "bytes": 3260,
+          "sha256": "f82920da5936602bac5e0aa752992fb8638c72a6310a94951fa0506899950f8d",
+          "format": "png",
+          "width": 192,
+          "height": 192,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "elixir/mcp/maskable-512-light.png",
+          "bytes": 9634,
+          "sha256": "b1ee2210c63afe0606f28b0c65a06284fd994dcbb0eabcc5f9230cc2efb9741e",
+          "format": "png",
+          "width": 512,
+          "height": 512,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "elixir/mcp/mstile-150-light.png",
+          "bytes": 3303,
+          "sha256": "88d2246b59b01ae46412b8a3de9fd18505b286c05d7b488feeeb8f9f343c47da",
+          "format": "png",
+          "width": 150,
+          "height": 150,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "elixir/mcp/mstile-310-light.png",
+          "bytes": 6779,
+          "sha256": "808ccce3118452a9242ed3b3ef9701a2c9ef80731a3f4d14646468a35340d052",
+          "format": "png",
+          "width": 310,
+          "height": 310,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "elixir/mcp/opengraph-light.png",
+          "bytes": 26052,
+          "sha256": "0e9a778526c5648da4dff5f45117a479609d23a87af2b671091e281676a21c04",
+          "format": "png",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph"
+        },
+        {
+          "file": "elixir/mcp/opengraph-light.jpg",
+          "bytes": 52309,
+          "sha256": "c03f726d8aeefc7a4d661fc2f9aaef938817037ac90763492c280c6fb08dc7cb",
+          "format": "jpeg",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph-fallback"
+        },
+        {
+          "file": "elixir/mcp/twitter-light.png",
+          "bytes": 25876,
+          "sha256": "8f7400a464d5e2449409d5f0cb8533c24c0e07765eb60f3cc9405db6ba889961",
+          "format": "png",
+          "width": 1200,
+          "height": 600,
+          "transparent": false,
+          "purpose": "twitter"
+        },
+        {
+          "file": "elixir/mcp/social-square-light.png",
+          "bytes": 29865,
+          "sha256": "29c108a68b0fff656d8b8b6f06025bcb2f4abfa674cca1743a6b27c49be50e32",
+          "format": "png",
+          "width": 1080,
+          "height": 1080,
+          "transparent": false,
+          "purpose": "social-square"
+        },
+        {
+          "file": "elixir/mcp/site.webmanifest",
+          "bytes": 742,
+          "sha256": "f0a0dd164ec472c46938f1782c8511d324a5ed2cf248ce9bcaf39d214b74be5e",
+          "format": "webmanifest"
+        },
+        {
+          "file": "elixir/mcp/browserconfig.xml",
+          "bytes": 238,
+          "sha256": "756781058980cd0ff5055500b733217b515aed6098088fe8d2ec7e2306ae4cb1",
+          "format": "xml"
+        },
+        {
+          "file": "elixir/mcp/apple-touch-icon-dark.png",
+          "bytes": 4283,
+          "sha256": "95ffb2254eb665afcb0b8785d68f361dc2d0c3ff9764f53c98f02d1bb8dc6c00",
+          "format": "png",
+          "width": 180,
+          "height": 180,
+          "transparent": false,
+          "purpose": "apple-touch"
+        },
+        {
+          "file": "elixir/mcp/app-icon-1024-dark.png",
+          "bytes": 28397,
+          "sha256": "0b7a9d12c177531cdc4d04a02bbbc7b73860e949f0a62123fd5aebb5af598a1e",
+          "format": "png",
+          "width": 1024,
+          "height": 1024,
+          "transparent": false,
+          "purpose": "app-icon"
+        },
+        {
+          "file": "elixir/mcp/maskable-192-dark.png",
+          "bytes": 3305,
+          "sha256": "7a8562a9931b7b9906372c437d1e0f865fe482625db19218abd5aee6d7b76bd8",
+          "format": "png",
+          "width": 192,
+          "height": 192,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "elixir/mcp/maskable-512-dark.png",
+          "bytes": 9687,
+          "sha256": "c535a972e96fdc378f0cb24a698e4490ed9d20217c582973c08048c9ca08792d",
+          "format": "png",
+          "width": 512,
+          "height": 512,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "elixir/mcp/mstile-150-dark.png",
+          "bytes": 3333,
+          "sha256": "fe86562f6732c15dc7cc3f442006be388e8ab2ed27d85aaecf8f2c141c418135",
+          "format": "png",
+          "width": 150,
+          "height": 150,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "elixir/mcp/mstile-310-dark.png",
+          "bytes": 6821,
+          "sha256": "8803f5aeb5641026467507ac23f70359ceb4d9292b9517a91652f2e999e02b0f",
+          "format": "png",
+          "width": 310,
+          "height": 310,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "elixir/mcp/opengraph-dark.png",
+          "bytes": 26225,
+          "sha256": "f4a2130f96cf3c7f4992e3add1571dab9dbe6bdb86c423b48c77222e066f3ca8",
+          "format": "png",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph"
+        },
+        {
+          "file": "elixir/mcp/opengraph-dark.jpg",
+          "bytes": 50404,
+          "sha256": "f87766f30eb70e3f8ad946129f83526b8ea2c5646afecea4780a20cf93170a19",
+          "format": "jpeg",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph-fallback"
+        },
+        {
+          "file": "elixir/mcp/twitter-dark.png",
+          "bytes": 26059,
+          "sha256": "58b39a3c52ec45a860795f964316e84aef6012baa534effa196da7a9712f2f08",
+          "format": "png",
+          "width": 1200,
+          "height": 600,
+          "transparent": false,
+          "purpose": "twitter"
+        },
+        {
+          "file": "elixir/mcp/social-square-dark.png",
+          "bytes": 30110,
+          "sha256": "8250de9f97cb433e035cf6eb53722250ea177db72fad4ef489aa37243944e803",
+          "format": "png",
+          "width": 1080,
+          "height": 1080,
+          "transparent": false,
+          "purpose": "social-square"
+        },
+        {
+          "file": "elixir/mcp/site-dark.webmanifest",
+          "bytes": 740,
+          "sha256": "039ef7ac023cf24ea803fa71e8206121ba2510d87c12394dc431468cd6b82769",
+          "format": "webmanifest"
+        },
+        {
+          "file": "elixir/mcp/browserconfig-dark.xml",
+          "bytes": 236,
+          "sha256": "9652b919245ff0901ba08c3bc3f492e727fdbf0d64791c8f4c23637249a57315",
+          "format": "xml"
+        }
+      ]
     }
   ],
-  "fileCount": 1935
+  "fileCount": 2064
 }

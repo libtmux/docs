@@ -7,12 +7,23 @@ MCP overlay. Light, dark, and system remain reader preferences. A saved
 
 ## Sources and decisions
 
-The static files under `site/public/brand/` come from the libtmux asset kit,
-revision `555f60aff5341d8ba59c7466eb9abb537084c98d`. They cover 15 language
-palettes and three products. The current documentation navigation has ten
-ports; adding artwork does not claim a new port has published documentation.
+The original files under `site/public/brand/` come from the libtmux asset kit,
+revision `555f60aff5341d8ba59c7466eb9abb537084c98d`. Their source includes 15
+language palettes and three products. Adding artwork does not claim a new
+port has published documentation.
 F#, Kotlin, and Scala declarations use their own palettes when the route
 names that package.
+
+Elixir's three product sets use Linguist's `#8847B9` primary and the asset
+kit's supporting shades. Their source revision and original file digests
+are recorded in [`elixir/source.json`](../site/public/brand/elixir/source.json).
+The library uses the cog, workspace uses plain tiles, and MCP uses its
+symbol. The UI palette pairs that purple with darker links and filled
+controls in light mode, lighter links in dark mode, and the shared neutral
+surfaces. Elixir has no entry in `PORTS` until its documentation is integrated;
+the assets and CSS palette are available for that work. Its manifests use
+the shared site root and browser display mode, preserving preview and locale
+prefixes without pointing to an unpublished language route.
 
 - [GitHub Linguist colors](https://github.com/github-linguist/linguist/blob/538da05f034fa5c83bd81df128d144e208898da3/lib/linguist/languages.yml)
 - The original libtmux and tmuxp geometry was supplied by the project owner.

@@ -625,7 +625,7 @@ describe('native signature emission', () => {
     const before = JSON.stringify(models.julia)
     const { entries } = await signatureProbe(models)
     expect([...new Set(entries.map(({ port }) => port))]).toEqual(API_MODEL_PORTS.map(({ slug }) => slug))
-    expect(new Set(entries.map(({ port }) => port)).size).toBe(15)
+    expect(new Set(entries.map(({ port }) => port)).size).toBe(16)
     for (const [port, model] of Object.entries(models)) {
       const callables = model.symbols.filter((symbol) => symbol.signatures.some((signature) => signature.params.length > 0 && signature.returns))
       const selected = callables.find((symbol) => /capture/i.test(symbol.name)) ?? callables[0]

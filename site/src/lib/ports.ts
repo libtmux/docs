@@ -38,7 +38,7 @@ export interface PackageRegistry {
   /** This package's page on that registry. */
   url: string
   /** Which mark `components/icons/RegistryIcon.astro` draws. */
-  icon: 'pypi' | 'npm' | 'crates' | 'go' | 'maven' | 'nuget' | 'swift' | 'rubygems' | 'luarocks' | 'powershell'
+  icon: 'pypi' | 'npm' | 'crates' | 'go' | 'maven' | 'nuget' | 'swift' | 'rubygems' | 'luarocks' | 'powershell' | 'hex'
 }
 
 export type PortPackageId = 'core' | 'async' | DocProduct
@@ -669,6 +669,53 @@ const CORE_PORTS: readonly Port[] = [
       git: { code: 'using Pkg\nPkg.add(PackageSpec(url="https://github.com/libtmux/libtmux-julia.git", rev="master"))', lang: 'julia' },
     },
     installNote: 'Requires Julia 1.13.1 and tmux 3.7c or newer. JSON layouts require tmux 3.8. Companion packages install from the same revision as the core.',
+  },
+  {
+    slug: 'elixir',
+    projectName: 'libtmux-elixir',
+    logoLanguage: 'elixir',
+    shortName: 'Ex',
+    name: 'Elixir',
+    language: 'Elixir',
+    packageName: 'libtmux',
+    productAvailability: { workspace: 'unpublished', mcp: 'unpublished' },
+    repo: 'libtmux/libtmux-elixir',
+    docsDispatch: { workflow: 'docs.yml' },
+    checkout: '~/work/libtmux/libtmux-elixir',
+    worktree: '~/work/libtmux/libtmux-elixir-docs-site',
+    source: { path: 'lib', ref: 'main' },
+    versionedDocs: true,
+    tagGrammar: 'semver',
+    renderer: 'astro',
+    publishesOwnTree: true,
+    // HexDocs publishes ExDoc output with every Hex release. This site renders
+    // the same documentation from the compiled package, and links to it.
+    ecosystemHost: {
+      name: 'HexDocs',
+      url: 'https://libtmux.hexdocs.pm/',
+      rationale: 'ExDoc API reference and guides for published package versions on HexDocs.',
+    },
+    generator: 'Elixir documentation chunks and typespecs',
+    installs: [
+      {
+        label: 'mix.exs',
+        lang: 'elixir',
+        filename: 'mix.exs',
+        code: '{:libtmux, "== {version}"}',
+        additionalBlocks: [{ lang: 'console', code: 'mix deps.get' }],
+        note: 'Add the tuple to the deps list in mix.exs, then fetch it. Needs Elixir 1.20.4 or newer on Erlang/OTP 29, tmux 3.3 or newer (the planned floor), and a C11 compiler on Linux.',
+      },
+    ],
+    registry: { name: 'Hex', url: 'https://hex.pm/packages/libtmux', icon: 'hex' },
+    initProject: { code: 'mix new my_app', lang: 'console' },
+    installForms: {
+      stable: { code: '{:libtmux, "~> {version}"}', lang: 'elixir' },
+      // An exact requirement: the package is an alpha, and its README pins it.
+      prerelease: { code: '{:libtmux, "== {version}"}', lang: 'elixir' },
+      git: { code: '{:libtmux, github: "libtmux/libtmux-elixir", tag: "{tag}"}', lang: 'elixir' },
+    },
+    installNote:
+      'Add the tuple to the deps list in mix.exs and run mix deps.get. Requires Elixir 1.20.4 or newer on Erlang/OTP 29 and tmux 3.3 or newer (the planned floor); Linux builds need a C11 compiler.',
   },
   {
     slug: 'ts',
@@ -1482,6 +1529,13 @@ const REFERENCE_HOSTS: Readonly<Record<string, { name: string; icon: PickerIcon 
   'javadoc.io': { name: 'javadoc.io', icon: 'javadoc' },
   'pkg.go.dev': { name: 'pkg.go.dev', icon: 'go' },
   'swiftpackageindex.com': { name: 'Swift Package Index', icon: 'swift' },
+  'hexdocs.pm': { name: 'HexDocs', icon: 'hex' },
+}
+
+/** A reference host by its registrable domain: HexDocs serves each package from its own subdomain. */
+function referenceHost(reference: string) {
+  const hostname = new URL(reference).hostname
+  return REFERENCE_HOSTS[hostname] ?? REFERENCE_HOSTS[hostname.split('.').slice(-2).join('.')]
 }
 
 /** One source directory, package or API reference that the menus may list. */
@@ -1567,7 +1621,7 @@ function packageDrafts(port: Port, units: readonly PickerUnit[]): PickerDraft[] 
 function referenceDrafts(units: readonly PickerUnit[]): PickerDraft[] {
   return units.flatMap((unit): PickerDraft[] => {
     if (!unit.reference) return []
-    const host = REFERENCE_HOSTS[new URL(unit.reference).hostname]
+    const host = referenceHost(unit.reference)
     if (!host) throw new Error(`portPickers: ${unit.reference} has no registered reference host`)
     return [{
       group: unit.group, label: unit.label, url: unit.reference, icon: host.icon,
@@ -1603,7 +1657,7 @@ export function portPickers(port: Port): PortPicker[] {
   return [
     { kind: 'github', label: 'GitHub', icon: 'github', context: port.repo, rows: github },
     { kind: 'packages', label: 'Packages', icon: port.registry?.icon ?? 'github', context: port.registry?.name ?? '', rows: packages },
-    { kind: 'docs', label: 'Docs', icon: docs[0]?.icon ?? 'github', context: docs[0] ? REFERENCE_HOSTS[new URL(docs[0].url).hostname]!.name : '', rows: docs },
+    { kind: 'docs', label: 'Docs', icon: docs[0]?.icon ?? 'github', context: docs[0] ? referenceHost(docs[0].url)!.name : '', rows: docs },
   ].filter((picker): picker is PortPicker => picker.rows.length > 0)
 }
 

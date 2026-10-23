@@ -9,6 +9,7 @@
     {"slug":"lua","name":"Lua","shortName":"Lua","logoLanguage":"lua","versionedDocs":true,"mcp":false},
     {"slug":"powershell","name":"PowerShell","shortName":"PowerShell","logoLanguage":"powershell","versionedDocs":true,"mcp":false},
     {"slug":"julia","name":"Julia","shortName":"Julia","logoLanguage":"julia","versionedDocs":true,"mcp":true},
+    {"slug":"elixir","name":"Elixir","shortName":"Ex","logoLanguage":"elixir","versionedDocs":true,"mcp":false},
     {"slug":"ts","name":"TypeScript","shortName":"TS","logoLanguage":"typescript","versionedDocs":true,"mcp":true},
     {"slug":"rs","name":"Rust","shortName":"Rs","logoLanguage":"rust","versionedDocs":true,"mcp":true},
     {"slug":"go","name":"Go","shortName":"Go","logoLanguage":"go","versionedDocs":true,"mcp":true},

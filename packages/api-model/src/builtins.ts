@@ -107,7 +107,57 @@ const qualifiedDotnetExceptions = Object.fromEntries([
   'System.Threading.Tasks.TaskCanceledException',
 ].flatMap((name) => [name, name.split('.').at(-1)!].map((alias) => [alias, dotnet(name.toLowerCase())])))
 
+const elixirDocs = (page: string) => `https://hexdocs.pm/elixir/${page}`
+
+/** Modules of the Elixir standard library whose members this reference links to by name. */
+export const ELIXIR_STDLIB_MODULES: ReadonlySet<string> = new Set([
+  'Access', 'Agent', 'Application', 'Atom', 'Base', 'Bitwise', 'Code', 'Collectable', 'Date', 'DateTime', 'DynamicSupervisor',
+  'Enum', 'Exception', 'File', 'Float', 'Function', 'GenServer', 'IO', 'Inspect', 'Integer', 'Kernel', 'Keyword', 'List', 'Macro',
+  'Map', 'MapSet', 'Module', 'NaiveDateTime', 'Node', 'OptionParser', 'Path', 'Port', 'Process', 'Protocol', 'Range', 'Record',
+  'Regex', 'Registry', 'Stream', 'String', 'StringIO', 'Supervisor', 'System', 'Task', 'Time', 'Tuple', 'URI', 'Version',
+])
+
+/** A standard-library page, function or type; `kind` `t` anchors a type as ExDoc does. */
+export function elixirStdlibHref(path: string, name?: string, arity?: number, kind?: 't' | 'c'): string {
+  const anchor = name === undefined ? '' : arity === undefined ? '' : `#${kind ? `${kind}:` : ''}${name}/${arity}`
+  return elixirDocs(`${path}.html${anchor}`)
+}
+
+/**
+ * Standard-library functions that prose names with an arity. A function is
+ * listed once its anchor is on the module's HexDocs page, so a misspelled or
+ * removed name stays unlinked instead of pointing at a page without it.
+ */
+const ELIXIR_STDLIB_FUNCTIONS: readonly (readonly [module: string, name: string, arity: number])[] = [
+  ['Enum', 'member?', 2], ['JSON', 'encode!', 1], ['Supervisor', 'start_child', 2], ['Supervisor', 'restart_child', 2],
+]
+
+/** The typespec grammar names these without a module. */
+const ELIXIR_BASIC_TYPES = [
+  'any', 'none', 'atom', 'map', 'pid', 'port', 'reference', 'struct', 'tuple', 'float', 'integer', 'neg_integer',
+  'non_neg_integer', 'pos_integer', 'list', 'nonempty_list', 'maybe_improper_list', 'nonempty_improper_list',
+  'nonempty_maybe_improper_list',
+]
+const ELIXIR_BUILTIN_TYPES = [
+  'term', 'arity', 'as_boolean', 'binary', 'bitstring', 'boolean', 'byte', 'char', 'charlist', 'nonempty_charlist', 'fun',
+  'function', 'identifier', 'iodata', 'iolist', 'keyword', 'mfa', 'module', 'no_return', 'node', 'number', 'timeout',
+]
+
 export const BUILTINS: Record<string, Record<string, string>> = {
+  elixir: {
+    ...Object.fromEntries(ELIXIR_BASIC_TYPES.map((name) => [name, elixirDocs('typespecs.html#basic-types')])),
+    ...Object.fromEntries(ELIXIR_BUILTIN_TYPES.map((name) => [name, elixirDocs('typespecs.html#built-in-types')])),
+    nil: elixirDocs('typespecs.html#literals'),
+    optional: elixirDocs('typespecs.html#maps'),
+    required: elixirDocs('typespecs.html#maps'),
+    ...Object.fromEntries(['Exception.t', 'Enumerable.t', 'Keyword.t', 'MapSet.t', 'Range.t', 'Regex.t', 'String.t', 'Path.t']
+      .map((name) => [name, elixirStdlibHref(name.split('.')[0]!, 't', 0, 't')])),
+    'Supervisor.child_spec': elixirStdlibHref('Supervisor', 'child_spec', 0, 't'),
+    ...Object.fromEntries(ELIXIR_STDLIB_FUNCTIONS.map(([module, name, arity]) =>
+      [`${module}.${name}/${arity}`, elixirStdlibHref(module, name, arity)])),
+    // A behaviour or protocol named without a function.
+    ...Object.fromEntries([...ELIXIR_STDLIB_MODULES].map((name) => [name, elixirStdlibHref(name)])),
+  },
   julia: {
     // Documenter's inventory exposes String through this constructor entry.
     String: 'https://docs.julialang.org/en/v1/base/strings/#Core.String-Tuple%7BAbstractString%7D',

@@ -1383,6 +1383,65 @@
           "excerptSha256": "376fe3a7bea19970b4eeaa33482edbb71dbb54391371966d7dcf44b7f6bcb776"
         }
       }
+    },
+    {
+      "port": "elixir",
+      "page": "home",
+      "sourceRepository": "libtmux/libtmux-elixir",
+      "sourceRevision": "149565c9f04e043836191c8a7ff32a8ac39572ab",
+      "sourceTree": "91ff76128b52848863e58a4bfa11146800f5e43b",
+      "files": [
+        {
+          "name": "quickstart.exs",
+          "sha256": "0f92d981ae5663a2f494391789a7c63c88a2c2dfe10092998d7ce8434fdfc0b7",
+          "clipboardSha256": "d01da18d1a92abb41e4c447e69bb4f07facb02fa7ecd1ff0c66a698c6591ed92"
+        }
+      ],
+      "shellRecipe": [
+        "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\nelixir quickstart.exs"
+      ],
+      "expectedOutputs": [
+        [
+          "demo: 2 windows, 3 panes"
+        ]
+      ],
+      "excerptSha256": "d01da18d1a92abb41e4c447e69bb4f07facb02fa7ecd1ff0c66a698c6591ed92",
+      "tmuxVersions": [
+        "3.3a",
+        "3.8"
+      ],
+      "variants": {
+        "concise": {
+          "files": [
+            {
+              "name": "quickstart.exs",
+              "sha256": "0b9626d99549877ee6b2cb74262a5771eac451af7c483df27f73ea22082a7fd6",
+              "clipboardSha256": "0c4f4204381d44729ffe6e60eddcc16c819874881374e1ceb3328c0acafc7a5f"
+            }
+          ],
+          "excerptSha256": "0c4f4204381d44729ffe6e60eddcc16c819874881374e1ceb3328c0acafc7a5f"
+        },
+        "errors": {
+          "files": [
+            {
+              "name": "quickstart.exs",
+              "sha256": "0b9626d99549877ee6b2cb74262a5771eac451af7c483df27f73ea22082a7fd6",
+              "clipboardSha256": "0c4f4204381d44729ffe6e60eddcc16c819874881374e1ceb3328c0acafc7a5f"
+            }
+          ],
+          "excerptSha256": "0c4f4204381d44729ffe6e60eddcc16c819874881374e1ceb3328c0acafc7a5f"
+        },
+        "cleanup": {
+          "files": [
+            {
+              "name": "quickstart.exs",
+              "sha256": "0f92d981ae5663a2f494391789a7c63c88a2c2dfe10092998d7ce8434fdfc0b7",
+              "clipboardSha256": "d01da18d1a92abb41e4c447e69bb4f07facb02fa7ecd1ff0c66a698c6591ed92"
+            }
+          ],
+          "excerptSha256": "d01da18d1a92abb41e4c447e69bb4f07facb02fa7ecd1ff0c66a698c6591ed92"
+        }
+      }
     }
   ]
 }

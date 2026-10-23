@@ -1,0 +1,1692 @@
+{
+ "schema": 1,
+ "port": "elixir",
+ "source": {
+  "repository": "libtmux/libtmux-elixir",
+  "revision": "b72452c198917433229bdc266a68c163541b6127",
+  "files": [
+   {
+    "path": "lib/libtmux/entities.ex",
+    "sha256": "b7f564bca6684ddb7169f2c8e4968c86112249dc0e7c69d9773a5361e8421bf4"
+   },
+   {
+    "path": "lib/libtmux/error.ex",
+    "sha256": "f0bed995aaf15970457e29d4fc92d06fd415ead42c498a640ca47e1af7fbd487"
+   },
+   {
+    "path": "lib/libtmux/selection.ex",
+    "sha256": "bcab9130bc60096c5817bd1a54c7de0f6fe588aac5e0c93e6894602f6317e413"
+   },
+   {
+    "path": "lib/libtmux/server.ex",
+    "sha256": "8174ab2224e12a3f36b9f6884d6b92a39f1725b7bc4b4f4b1740a3aed9debf9f"
+   },
+   {
+    "path": "lib/libtmux/snapshot.ex",
+    "sha256": "723f3f297eec0a9ee44ff007b36804e6e60678ae375123e99489882c34e82e4a"
+   },
+   {
+    "path": "mix.exs",
+    "sha256": "c2ee791be07b5d5c04f5e9b4ac73f703fa9441b557d42a5e33af93471ace4ef1"
+   }
+  ]
+ },
+ "exporter": {
+  "name": "Elixir EEP-48 documentation chunks and Code.Typespec",
+  "version": 1,
+  "elixir": "1.20.4",
+  "otp": "29.1.2",
+  "columns": 60
+ },
+ "package": {
+  "name": "libtmux",
+  "app": "libtmux",
+  "version": "0.0.1-alpha.1",
+  "elixir": ">= 1.20.4 and < 2.0.0"
+ },
+ "modules": [
+  {
+   "name": "LibTmux.Error",
+   "kind": "exception",
+   "doc": "An inspectable failure with its phase and certainty about effects.\n\n`retryable` describes a recovery option; it never authorizes replay of a\nmutation. Diagnostic details must stay within the producing operation's\nbyte budget. Bang functions raise this same structure.\n",
+   "since": null,
+   "deprecated": null,
+   "behaviours": [
+    "Exception"
+   ],
+   "source": {
+    "file": "lib/libtmux/error.ex",
+    "line": 1
+   },
+   "fields": [
+    {
+     "name": "kind",
+     "type": "atom()",
+     "required": false,
+     "default": "nil"
+    },
+    {
+     "name": "phase",
+     "type": "atom()",
+     "required": false,
+     "default": ":validation"
+    },
+    {
+     "name": "certainty",
+     "type": "certainty()",
+     "required": false,
+     "default": ":unknown"
+    },
+    {
+     "name": "retryable",
+     "type": "boolean()",
+     "required": false,
+     "default": "false"
+    },
+    {
+     "name": "path",
+     "type": "[path_component()]",
+     "required": false,
+     "default": "[]"
+    },
+    {
+     "name": "details",
+     "type": "map()",
+     "required": false,
+     "default": "%{}"
+    }
+   ],
+   "members": [
+    {
+     "id": "LibTmux.Error.certainty/0",
+     "name": "certainty",
+     "arity": 0,
+     "kind": "type",
+     "line": 19,
+     "doc": "Evidence about effects, independent of whether cleanup or arbitrary program completion is proved.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/error.ex",
+      "line": 19
+     },
+     "opaque": false,
+     "head": "certainty()",
+     "declaration": "@type certainty() ::\n        :no_write | :acknowledged | :observed | :unknown"
+    },
+    {
+     "id": "LibTmux.Error.path_component/0",
+     "name": "path_component",
+     "arity": 0,
+     "kind": "type",
+     "line": 21,
+     "doc": "A field, array index or observed identity locating an error; links retain their contextual tuple ID.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/error.ex",
+      "line": 21
+     },
+     "opaque": false,
+     "head": "path_component()",
+     "declaration": "@type path_component() ::\n        atom() | non_neg_integer() | LibTmux.Ref.id()"
+    },
+    {
+     "id": "LibTmux.Error.t/0",
+     "name": "t",
+     "arity": 0,
+     "kind": "type",
+     "line": 23,
+     "doc": "A structured API failure. Kind and phase are extensible; retryable never permits automatic mutation replay.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/error.ex",
+      "line": 23
+     },
+     "opaque": false,
+     "head": "t()",
+     "declaration": "@type t() :: %LibTmux.Error{\n        __exception__: term(),\n        certainty: certainty(),\n        details: map(),\n        kind: atom(),\n        path: [path_component()],\n        phase: atom(),\n        retryable: boolean()\n      }"
+    }
+   ]
+  },
+  {
+   "name": "LibTmux.Selection",
+   "kind": "struct",
+   "doc": "An ordered, materialized Enumerable over one captured entity type.\n\nEnumeration never refreshes or performs I/O. `where/2` accepts predicate\ndata; `filter/2` accepts unary Elixir functions with Enum truthiness.\nHolding a selection retains its snapshot graph. `Enum.to_list/1` projects\nordinary values when graph context is no longer needed.\n",
+   "since": null,
+   "deprecated": null,
+   "behaviours": [],
+   "source": {
+    "file": "lib/libtmux/selection.ex",
+    "line": 1
+   },
+   "fields": [],
+   "members": [
+    {
+     "id": "LibTmux.Selection.t/1",
+     "name": "t",
+     "arity": 1,
+     "kind": "type",
+     "line": 15,
+     "doc": "An ordered selection retaining items of one observation type and their originating snapshot.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/selection.ex",
+      "line": 15
+     },
+     "opaque": true,
+     "head": "t(item)",
+     "declaration": "@opaque t(item)"
+    },
+    {
+     "id": "LibTmux.Selection.t/0",
+     "name": "t",
+     "arity": 0,
+     "kind": "type",
+     "line": 22,
+     "doc": "A selection without a concrete observation type; use `t:t/1` to preserve item types.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/selection.ex",
+      "line": 22
+     },
+     "opaque": false,
+     "head": "t()",
+     "declaration": "@type t() :: t(LibTmux.Schema.observation())"
+    },
+    {
+     "id": "LibTmux.Selection.new/2",
+     "name": "new",
+     "arity": 2,
+     "kind": "function",
+     "line": 25,
+     "doc": "Materializes the observed items of an entity without I/O.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/selection.ex",
+      "line": 25
+     },
+     "signature": "new(snapshot, entity)",
+     "head": "new(snapshot, entity)",
+     "parameters": [
+      {
+       "name": "snapshot",
+       "default": null
+      },
+      {
+       "name": "entity",
+       "default": null
+      }
+     ],
+     "defaults": 0,
+     "specs": [
+      {
+       "parameters": [
+        "LibTmux.Snapshot.t()",
+        ":session | LibTmux.Session"
+       ],
+       "returns": "t(LibTmux.Session.t())",
+       "constraints": [],
+       "text": "@spec new(\n        LibTmux.Snapshot.t(),\n        :session | LibTmux.Session\n      ) :: t(LibTmux.Session.t())"
+      },
+      {
+       "parameters": [
+        "LibTmux.Snapshot.t()",
+        ":window | LibTmux.Window"
+       ],
+       "returns": "t(LibTmux.Window.t())",
+       "constraints": [],
+       "text": "@spec new(LibTmux.Snapshot.t(), :window | LibTmux.Window) ::\n        t(LibTmux.Window.t())"
+      },
+      {
+       "parameters": [
+        "LibTmux.Snapshot.t()",
+        ":pane | LibTmux.Pane"
+       ],
+       "returns": "t(LibTmux.Pane.t())",
+       "constraints": [],
+       "text": "@spec new(LibTmux.Snapshot.t(), :pane | LibTmux.Pane) ::\n        t(LibTmux.Pane.t())"
+      },
+      {
+       "parameters": [
+        "LibTmux.Snapshot.t()",
+        ":window_link | LibTmux.WindowLink"
+       ],
+       "returns": "t(LibTmux.WindowLink.t())",
+       "constraints": [],
+       "text": "@spec new(\n        LibTmux.Snapshot.t(),\n        :window_link | LibTmux.WindowLink\n      ) :: t(LibTmux.WindowLink.t())"
+      },
+      {
+       "parameters": [
+        "LibTmux.Snapshot.t()",
+        ":client | LibTmux.Client"
+       ],
+       "returns": "t(LibTmux.Client.t())",
+       "constraints": [],
+       "text": "@spec new(LibTmux.Snapshot.t(), :client | LibTmux.Client) ::\n        t(LibTmux.Client.t())"
+      }
+     ],
+     "guard": false,
+     "delegateTo": null,
+     "equiv": null
+    },
+    {
+     "id": "LibTmux.Selection.size/1",
+     "name": "size",
+     "arity": 1,
+     "kind": "function",
+     "line": 43,
+     "doc": "Returns cached materialized size in constant time.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/selection.ex",
+      "line": 43
+     },
+     "signature": "size(selection)",
+     "head": "size(selection)",
+     "parameters": [
+      {
+       "name": "selection",
+       "default": null
+      }
+     ],
+     "defaults": 0,
+     "specs": [
+      {
+       "parameters": [
+        "t()"
+       ],
+       "returns": "non_neg_integer()",
+       "constraints": [],
+       "text": "@spec size(t()) :: non_neg_integer()"
+      }
+     ],
+     "guard": false,
+     "delegateTo": null,
+     "equiv": null
+    },
+    {
+     "id": "LibTmux.Selection.where/2",
+     "name": "where",
+     "arity": 2,
+     "kind": "function",
+     "line": 47,
+     "doc": "Filters validated data while retaining order and captured graph context.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/selection.ex",
+      "line": 47
+     },
+     "signature": "where(selection, criteria)",
+     "head": "where(selection, criteria)",
+     "parameters": [
+      {
+       "name": "selection",
+       "default": null
+      },
+      {
+       "name": "criteria",
+       "default": null
+      }
+     ],
+     "defaults": 0,
+     "specs": [
+      {
+       "parameters": [
+        "t(item)",
+        "LibTmux.Filter.input()"
+       ],
+       "returns": "t(item)",
+       "constraints": [
+        {
+         "name": "item",
+         "type": "LibTmux.Schema.observation()"
+        }
+       ],
+       "text": "@spec where(t(item), LibTmux.Filter.input()) :: t(item)\n      when item: LibTmux.Schema.observation()"
+      }
+     ],
+     "guard": false,
+     "delegateTo": null,
+     "equiv": null
+    },
+    {
+     "id": "LibTmux.Selection.filter/2",
+     "name": "filter",
+     "arity": 2,
+     "kind": "function",
+     "line": 53,
+     "doc": "Filters with a unary local function; normal predicate exceptions propagate.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/selection.ex",
+      "line": 53
+     },
+     "signature": "filter(selection, predicate)",
+     "head": "filter(selection, predicate)",
+     "parameters": [
+      {
+       "name": "selection",
+       "default": null
+      },
+      {
+       "name": "predicate",
+       "default": null
+      }
+     ],
+     "defaults": 0,
+     "specs": [
+      {
+       "parameters": [
+        "t(item)",
+        "(item -> as_boolean(term()))"
+       ],
+       "returns": "t(item)",
+       "constraints": [
+        {
+         "name": "item",
+         "type": "LibTmux.Schema.observation()"
+        }
+       ],
+       "text": "@spec filter(t(item), (item -> as_boolean(term()))) ::\n        t(item)\n      when item: LibTmux.Schema.observation()"
+      }
+     ],
+     "guard": false,
+     "delegateTo": null,
+     "equiv": null
+    },
+    {
+     "id": "LibTmux.Selection.member_id?/2",
+     "name": "member_id?",
+     "arity": 2,
+     "kind": "function",
+     "line": 64,
+     "doc": "Checks native identity separately from Enumerable element membership.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/selection.ex",
+      "line": 64
+     },
+     "signature": "member_id?(selection, id)",
+     "head": "member_id?(selection, id)",
+     "parameters": [
+      {
+       "name": "selection",
+       "default": null
+      },
+      {
+       "name": "id",
+       "default": null
+      }
+     ],
+     "defaults": 0,
+     "specs": [
+      {
+       "parameters": [
+        "t()",
+        "LibTmux.Ref.id()"
+       ],
+       "returns": "boolean()",
+       "constraints": [],
+       "text": "@spec member_id?(t(), LibTmux.Ref.id()) :: boolean()"
+      }
+     ],
+     "guard": false,
+     "delegateTo": null,
+     "equiv": null
+    },
+    {
+     "id": "LibTmux.Selection.one/2",
+     "name": "one",
+     "arity": 2,
+     "kind": "function",
+     "line": 68,
+     "doc": "Returns exactly one match, or a structured cardinality error; stops at the second match.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/selection.ex",
+      "line": 68
+     },
+     "signature": "one(selection, criteria \\\\ [])",
+     "head": "one(selection, criteria \\\\ [])",
+     "parameters": [
+      {
+       "name": "selection",
+       "default": null
+      },
+      {
+       "name": "criteria",
+       "default": "[]"
+      }
+     ],
+     "defaults": 1,
+     "specs": [
+      {
+       "parameters": [
+        "t(item)",
+        "LibTmux.Filter.input()"
+       ],
+       "returns": "{:ok, item} | {:error, LibTmux.Error.t()}",
+       "constraints": [
+        {
+         "name": "item",
+         "type": "LibTmux.Schema.observation()"
+        }
+       ],
+       "text": "@spec one(t(item), LibTmux.Filter.input()) ::\n        {:ok, item} | {:error, LibTmux.Error.t()}\n      when item: LibTmux.Schema.observation()"
+      }
+     ],
+     "guard": false,
+     "delegateTo": null,
+     "equiv": null
+    },
+    {
+     "id": "LibTmux.Selection.one!/2",
+     "name": "one!",
+     "arity": 2,
+     "kind": "function",
+     "line": 73,
+     "doc": "Returns exactly one match or raises its cardinality error.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/selection.ex",
+      "line": 73
+     },
+     "signature": "one!(selection, criteria \\\\ [])",
+     "head": "one!(selection, criteria \\\\ [])",
+     "parameters": [
+      {
+       "name": "selection",
+       "default": null
+      },
+      {
+       "name": "criteria",
+       "default": "[]"
+      }
+     ],
+     "defaults": 1,
+     "specs": [
+      {
+       "parameters": [
+        "t(item)",
+        "LibTmux.Filter.input()"
+       ],
+       "returns": "item",
+       "constraints": [
+        {
+         "name": "item",
+         "type": "LibTmux.Schema.observation()"
+        }
+       ],
+       "text": "@spec one!(t(item), LibTmux.Filter.input()) :: item\n      when item: LibTmux.Schema.observation()"
+      }
+     ],
+     "guard": false,
+     "delegateTo": null,
+     "equiv": null
+    },
+    {
+     "id": "LibTmux.Selection.one_or_nil/2",
+     "name": "one_or_nil",
+     "arity": 2,
+     "kind": "function",
+     "line": 77,
+     "doc": "Returns one match or nil; a second match remains an error.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/selection.ex",
+      "line": 77
+     },
+     "signature": "one_or_nil(selection, criteria \\\\ [])",
+     "head": "one_or_nil(selection, criteria \\\\ [])",
+     "parameters": [
+      {
+       "name": "selection",
+       "default": null
+      },
+      {
+       "name": "criteria",
+       "default": "[]"
+      }
+     ],
+     "defaults": 1,
+     "specs": [
+      {
+       "parameters": [
+        "t(item)",
+        "LibTmux.Filter.input()"
+       ],
+       "returns": "{:ok, item | nil} | {:error, LibTmux.Error.t()}",
+       "constraints": [
+        {
+         "name": "item",
+         "type": "LibTmux.Schema.observation()"
+        }
+       ],
+       "text": "@spec one_or_nil(t(item), LibTmux.Filter.input()) ::\n        {:ok, item | nil} | {:error, LibTmux.Error.t()}\n      when item: LibTmux.Schema.observation()"
+      }
+     ],
+     "guard": false,
+     "delegateTo": null,
+     "equiv": null
+    },
+    {
+     "id": "LibTmux.Selection.one_or_nil!/2",
+     "name": "one_or_nil!",
+     "arity": 2,
+     "kind": "function",
+     "line": 82,
+     "doc": "Returns one match or nil, raising on multiple matches.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/selection.ex",
+      "line": 82
+     },
+     "signature": "one_or_nil!(selection, criteria \\\\ [])",
+     "head": "one_or_nil!(selection, criteria \\\\ [])",
+     "parameters": [
+      {
+       "name": "selection",
+       "default": null
+      },
+      {
+       "name": "criteria",
+       "default": "[]"
+      }
+     ],
+     "defaults": 1,
+     "specs": [
+      {
+       "parameters": [
+        "t(item)",
+        "LibTmux.Filter.input()"
+       ],
+       "returns": "item | nil",
+       "constraints": [
+        {
+         "name": "item",
+         "type": "LibTmux.Schema.observation()"
+        }
+       ],
+       "text": "@spec one_or_nil!(t(item), LibTmux.Filter.input()) ::\n        item | nil\n      when item: LibTmux.Schema.observation()"
+      }
+     ],
+     "guard": false,
+     "delegateTo": null,
+     "equiv": null
+    },
+    {
+     "id": "LibTmux.Selection.exists?/2",
+     "name": "exists?",
+     "arity": 2,
+     "kind": "function",
+     "line": 86,
+     "doc": "Returns true on the first matching observed item.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/selection.ex",
+      "line": 86
+     },
+     "signature": "exists?(selection, criteria \\\\ [])",
+     "head": "exists?(selection, criteria \\\\ [])",
+     "parameters": [
+      {
+       "name": "selection",
+       "default": null
+      },
+      {
+       "name": "criteria",
+       "default": "[]"
+      }
+     ],
+     "defaults": 1,
+     "specs": [
+      {
+       "parameters": [
+        "t()",
+        "LibTmux.Filter.input()"
+       ],
+       "returns": "boolean()",
+       "constraints": [],
+       "text": "@spec exists?(t(), LibTmux.Filter.input()) :: boolean()"
+      }
+     ],
+     "guard": false,
+     "delegateTo": null,
+     "equiv": null
+    },
+    {
+     "id": "LibTmux.Selection.count/2",
+     "name": "count",
+     "arity": 2,
+     "kind": "function",
+     "line": 91,
+     "doc": "Counts observed matching items; use size/1 for cached unfiltered size.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/selection.ex",
+      "line": 91
+     },
+     "signature": "count(selection, criteria \\\\ [])",
+     "head": "count(selection, criteria \\\\ [])",
+     "parameters": [
+      {
+       "name": "selection",
+       "default": null
+      },
+      {
+       "name": "criteria",
+       "default": "[]"
+      }
+     ],
+     "defaults": 1,
+     "specs": [
+      {
+       "parameters": [
+        "t()",
+        "LibTmux.Filter.input()"
+       ],
+       "returns": "non_neg_integer()",
+       "constraints": [],
+       "text": "@spec count(t(), LibTmux.Filter.input()) ::\n        non_neg_integer()"
+      }
+     ],
+     "guard": false,
+     "delegateTo": null,
+     "equiv": null
+    }
+   ]
+  },
+  {
+   "name": "LibTmux.Server",
+   "kind": "struct",
+   "doc": "An explicit local tmux server descriptor.\n\n`new/1` performs no I/O. One-shot commands use an absolute executable and\nsocket with `-N`, so they cannot start a missing server or attach a client.\nConfigured server hooks remain environmental effects. Reads observe an\ninterval; one-shot identity checks leave a check/use race. Persistent\nincarnation-bound mutations require a separately qualified connection.\n",
+   "since": null,
+   "deprecated": null,
+   "behaviours": [],
+   "source": {
+    "file": "lib/libtmux/server.ex",
+    "line": 1
+   },
+   "fields": [
+    {
+     "name": "executable",
+     "type": "String.t()",
+     "required": true,
+     "default": null
+    },
+    {
+     "name": "socket",
+     "type": "String.t()",
+     "required": true,
+     "default": null
+    },
+    {
+     "name": "cwd",
+     "type": "String.t()",
+     "required": true,
+     "default": null
+    },
+    {
+     "name": "env",
+     "type": "%{optional(binary()) => binary()}",
+     "required": true,
+     "default": null
+    }
+   ],
+   "members": [
+    {
+     "id": "LibTmux.Server.t/0",
+     "name": "t",
+     "arity": 0,
+     "kind": "type",
+     "line": 18,
+     "doc": "An explicit local server descriptor; constructing it neither connects nor reserves server identity.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/server.ex",
+      "line": 18
+     },
+     "opaque": false,
+     "head": "t()",
+     "declaration": "@type t() :: %LibTmux.Server{\n        cwd: String.t(),\n        env: %{optional(binary()) => binary()},\n        executable: String.t(),\n        socket: String.t()\n      }"
+    },
+    {
+     "id": "LibTmux.Server.option/0",
+     "name": "option",
+     "arity": 0,
+     "kind": "type",
+     "line": 25,
+     "doc": "Descriptor inputs; executable, socket and cwd are absolute NUL-free paths.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/server.ex",
+      "line": 25
+     },
+     "opaque": false,
+     "head": "option()",
+     "declaration": "@type option() ::\n        {:executable | :socket | :cwd, String.t()}\n        | {:env, %{optional(binary()) => binary()}}"
+    },
+    {
+     "id": "LibTmux.Server.new/1",
+     "name": "new",
+     "arity": 1,
+     "kind": "function",
+     "line": 30,
+     "doc": "Constructs a descriptor for an existing server without connecting or creating it.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/server.ex",
+      "line": 30
+     },
+     "signature": "new(options)",
+     "head": "new(options)",
+     "parameters": [
+      {
+       "name": "options",
+       "default": null
+      }
+     ],
+     "defaults": 0,
+     "specs": [
+      {
+       "parameters": [
+        "[option()]"
+       ],
+       "returns": "t()",
+       "constraints": [],
+       "text": "@spec new([option()]) :: t()"
+      }
+     ],
+     "guard": false,
+     "delegateTo": null,
+     "equiv": null
+    },
+    {
+     "id": "LibTmux.Server.run/3",
+     "name": "run",
+     "arity": 3,
+     "kind": "function",
+     "line": 52,
+     "doc": "Runs one trusted command without attaching; returns bounded output and exit evidence.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/server.ex",
+      "line": 52
+     },
+     "signature": "run(server, command, options \\\\ [])",
+     "head": "run(server, command, options \\\\ [])",
+     "parameters": [
+      {
+       "name": "server",
+       "default": null
+      },
+      {
+       "name": "command",
+       "default": null
+      },
+      {
+       "name": "options",
+       "default": "[]"
+      }
+     ],
+     "defaults": 1,
+     "specs": [
+      {
+       "parameters": [
+        "t()",
+        "LibTmux.Command.t()",
+        "[LibTmux.Transport.OneShot.option()]"
+       ],
+       "returns": "{:ok, LibTmux.Transport.OneShot.result()} | {:error, LibTmux.Error.t()}",
+       "constraints": [],
+       "text": "@spec run(t(), LibTmux.Command.t(), [\n        LibTmux.Transport.OneShot.option()\n      ]) ::\n        {:ok, LibTmux.Transport.OneShot.result()}\n        | {:error, LibTmux.Error.t()}"
+      }
+     ],
+     "guard": false,
+     "delegateTo": null,
+     "equiv": null
+    },
+    {
+     "id": "LibTmux.Server.snapshot/2",
+     "name": "snapshot",
+     "arity": 2,
+     "kind": "function",
+     "line": 76,
+     "doc": "Captures a new graph explicitly, with bounded work and read retries.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/server.ex",
+      "line": 76
+     },
+     "signature": "snapshot(server, options \\\\ [])",
+     "head": "snapshot(server, options \\\\ [])",
+     "parameters": [
+      {
+       "name": "server",
+       "default": null
+      },
+      {
+       "name": "options",
+       "default": "[]"
+      }
+     ],
+     "defaults": 1,
+     "specs": [
+      {
+       "parameters": [
+        "t()",
+        "[LibTmux.Capture.option()]"
+       ],
+       "returns": "{:ok, LibTmux.Snapshot.t()} | {:error, LibTmux.Error.t()}",
+       "constraints": [],
+       "text": "@spec snapshot(t(), [LibTmux.Capture.option()]) ::\n        {:ok, LibTmux.Snapshot.t()}\n        | {:error, LibTmux.Error.t()}"
+      }
+     ],
+     "guard": false,
+     "delegateTo": null,
+     "equiv": null
+    },
+    {
+     "id": "LibTmux.Server.snapshot!/2",
+     "name": "snapshot!",
+     "arity": 2,
+     "kind": "function",
+     "line": 80,
+     "doc": "Captures a graph or raises the same structured capture error.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/server.ex",
+      "line": 80
+     },
+     "signature": "snapshot!(server, options \\\\ [])",
+     "head": "snapshot!(server, options \\\\ [])",
+     "parameters": [
+      {
+       "name": "server",
+       "default": null
+      },
+      {
+       "name": "options",
+       "default": "[]"
+      }
+     ],
+     "defaults": 1,
+     "specs": [
+      {
+       "parameters": [
+        "t()",
+        "[LibTmux.Capture.option()]"
+       ],
+       "returns": "LibTmux.Snapshot.t()",
+       "constraints": [],
+       "text": "@spec snapshot!(t(), [LibTmux.Capture.option()]) ::\n        LibTmux.Snapshot.t()"
+      }
+     ],
+     "guard": false,
+     "delegateTo": null,
+     "equiv": null
+    }
+   ]
+  },
+  {
+   "name": "LibTmux.Session",
+   "kind": "struct",
+   "doc": "An immutable session observation. Attachment retains tmux's client count.",
+   "since": null,
+   "deprecated": null,
+   "behaviours": [],
+   "source": {
+    "file": "lib/libtmux/entities.ex",
+    "line": 1
+   },
+   "fields": [
+    {
+     "name": "id",
+     "type": "String.t()",
+     "required": true,
+     "default": null
+    },
+    {
+     "name": "server_instance",
+     "type": "String.t()",
+     "required": true,
+     "default": null
+    },
+    {
+     "name": "name",
+     "type": "LibTmux.Schema.observed(String.t())",
+     "required": false,
+     "default": ":unloaded"
+    },
+    {
+     "name": "attached_count",
+     "type": "LibTmux.Schema.observed(non_neg_integer())",
+     "required": false,
+     "default": ":unloaded"
+    },
+    {
+     "name": "attached",
+     "type": "LibTmux.Schema.observed(boolean())",
+     "required": false,
+     "default": ":unloaded"
+    }
+   ],
+   "members": [
+    {
+     "id": "LibTmux.Session.t/0",
+     "name": "t",
+     "arity": 0,
+     "kind": "type",
+     "line": 12,
+     "doc": "A session with explicit field coverage and an attachment count separate from its Boolean projection.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/entities.ex",
+      "line": 12
+     },
+     "opaque": false,
+     "head": "t()",
+     "declaration": "@type t() :: %LibTmux.Session{\n        attached: LibTmux.Schema.observed(boolean()),\n        attached_count:\n          LibTmux.Schema.observed(non_neg_integer()),\n        id: String.t(),\n        name: LibTmux.Schema.observed(String.t()),\n        server_instance: String.t()\n      }"
+    }
+   ]
+  },
+  {
+   "name": "LibTmux.Snapshot",
+   "kind": "struct",
+   "doc": "An indexed immutable graph observed over a capture interval.\n\nConstruction and traversal perform no I/O. `fields` declares loaded fields\nover the supplied entity IDs; `complete` declares complete server entity\nsets. Missing declarations remain unloaded, including on empty sets.\nUnavailable capabilities use a separate declaration. Relations require\ncomplete join domains. A snapshot reserves no tmux objects.\n",
+   "since": null,
+   "deprecated": null,
+   "behaviours": [],
+   "source": {
+    "file": "lib/libtmux/snapshot.ex",
+    "line": 1
+   },
+   "fields": [
+    {
+     "name": "id",
+     "type": "pos_integer()",
+     "required": true,
+     "default": null
+    },
+    {
+     "name": "server_instance",
+     "type": "String.t()",
+     "required": true,
+     "default": null
+    },
+    {
+     "name": "captured_from",
+     "type": "integer()",
+     "required": true,
+     "default": null
+    },
+    {
+     "name": "captured_until",
+     "type": "integer()",
+     "required": true,
+     "default": null
+    },
+    {
+     "name": "coverage",
+     "type": "coverage()",
+     "required": true,
+     "default": null
+    },
+    {
+     "name": "schema_version",
+     "type": "1",
+     "required": false,
+     "default": "1"
+    },
+    {
+     "name": "sessions",
+     "type": "%{optional(String.t()) => LibTmux.Session.t()}",
+     "required": false,
+     "default": "%{}"
+    },
+    {
+     "name": "windows",
+     "type": "%{optional(String.t()) => LibTmux.Window.t()}",
+     "required": false,
+     "default": "%{}"
+    },
+    {
+     "name": "window_links",
+     "type": "%{optional(LibTmux.Ref.id()) => LibTmux.WindowLink.t()}",
+     "required": false,
+     "default": "%{}"
+    },
+    {
+     "name": "panes",
+     "type": "%{optional(String.t()) => LibTmux.Pane.t()}",
+     "required": false,
+     "default": "%{}"
+    },
+    {
+     "name": "clients",
+     "type": "%{optional(String.t()) => LibTmux.Client.t()}",
+     "required": false,
+     "default": "%{}"
+    },
+    {
+     "name": "order",
+     "type": "%{required(LibTmux.Schema.entity()) => [LibTmux.Ref.id()]}",
+     "required": false,
+     "default": "%{}"
+    },
+    {
+     "name": "indexes",
+     "type": "indexes()",
+     "required": false,
+     "default": "%{}"
+    }
+   ],
+   "members": [
+    {
+     "id": "LibTmux.Snapshot.entity_coverage/0",
+     "name": "entity_coverage",
+     "arity": 0,
+     "kind": "type",
+     "line": 43,
+     "doc": "Coverage of one captured entity domain; missing field entries are unloaded.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/snapshot.ex",
+      "line": 43
+     },
+     "opaque": false,
+     "head": "entity_coverage()",
+     "declaration": "@type entity_coverage() :: %{\n        ids: MapSet.t(LibTmux.Ref.id()),\n        complete: boolean(),\n        fields: %{\n          optional(atom()) => :loaded | :unavailable\n        }\n      }"
+    },
+    {
+     "id": "LibTmux.Snapshot.coverage/0",
+     "name": "coverage",
+     "arity": 0,
+     "kind": "type",
+     "line": 49,
+     "doc": "Declared entity sets and field availability; completeness is separate from an empty captured set.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/snapshot.ex",
+      "line": 49
+     },
+     "opaque": false,
+     "head": "coverage()",
+     "declaration": "@type coverage() :: %{\n        entities: %{\n          required(LibTmux.Schema.entity()) =>\n            entity_coverage()\n        }\n      }"
+    },
+    {
+     "id": "LibTmux.Snapshot.rows/0",
+     "name": "rows",
+     "arity": 0,
+     "kind": "type",
+     "line": 57,
+     "doc": "Observed rows grouped by canonical entity; construction validates and deduplicates their identities.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/snapshot.ex",
+      "line": 57
+     },
+     "opaque": false,
+     "head": "rows()",
+     "declaration": "@type rows() :: %{\n        optional(LibTmux.Schema.entity()) => [\n          map() | LibTmux.Schema.observation()\n        ]\n      }"
+    },
+    {
+     "id": "LibTmux.Snapshot.option/0",
+     "name": "option",
+     "arity": 0,
+     "kind": "type",
+     "line": 59,
+     "doc": "Construction metadata: one server instance, ordered millisecond timestamps and explicit coverage declarations.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/snapshot.ex",
+      "line": 59
+     },
+     "opaque": false,
+     "head": "option()",
+     "declaration": "@type option() ::\n        {:server_instance, String.t()}\n        | {:captured_from, integer()}\n        | {:captured_until, integer()}\n        | {:fields,\n           %{optional(LibTmux.Schema.entity()) => [atom()]}}\n        | {:complete, [LibTmux.Schema.entity()]}\n        | {:unavailable,\n           %{optional(LibTmux.Schema.entity()) => [atom()]}}"
+    },
+    {
+     "id": "LibTmux.Snapshot.t/0",
+     "name": "t",
+     "arity": 0,
+     "kind": "type",
+     "line": 68,
+     "doc": "An immutable observation interval with indexed entities and explicit coverage.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/snapshot.ex",
+      "line": 68
+     },
+     "opaque": false,
+     "head": "t()",
+     "declaration": "@type t() :: %LibTmux.Snapshot{\n        captured_from: integer(),\n        captured_until: integer(),\n        clients: %{\n          optional(String.t()) => LibTmux.Client.t()\n        },\n        coverage: coverage(),\n        id: pos_integer(),\n        indexes: indexes(),\n        order: %{\n          required(LibTmux.Schema.entity()) => [\n            LibTmux.Ref.id()\n          ]\n        },\n        panes: %{optional(String.t()) => LibTmux.Pane.t()},\n        schema_version: 1,\n        server_instance: String.t(),\n        sessions: %{\n          optional(String.t()) => LibTmux.Session.t()\n        },\n        window_links: %{\n          optional(LibTmux.Ref.id()) =>\n            LibTmux.WindowLink.t()\n        },\n        windows: %{\n          optional(String.t()) => LibTmux.Window.t()\n        }\n      }"
+    },
+    {
+     "id": "LibTmux.Snapshot.new/2",
+     "name": "new",
+     "arity": 2,
+     "kind": "function",
+     "line": 85,
+     "doc": "Validates observed rows, rejecting conflicts, invalid fields and dangling covered references.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/snapshot.ex",
+      "line": 85
+     },
+     "signature": "new(rows, options)",
+     "head": "new(rows, options)",
+     "parameters": [
+      {
+       "name": "rows",
+       "default": null
+      },
+      {
+       "name": "options",
+       "default": null
+      }
+     ],
+     "defaults": 0,
+     "specs": [
+      {
+       "parameters": [
+        "rows()",
+        "[option()]"
+       ],
+       "returns": "{:ok, t()} | {:error, LibTmux.Error.t()}",
+       "constraints": [],
+       "text": "@spec new(rows(), [option()]) ::\n        {:ok, t()} | {:error, LibTmux.Error.t()}"
+      }
+     ],
+     "guard": false,
+     "delegateTo": null,
+     "equiv": null
+    },
+    {
+     "id": "LibTmux.Snapshot.items/2",
+     "name": "items",
+     "arity": 2,
+     "kind": "function",
+     "line": 153,
+     "doc": "Returns plain observed items in stable identity order without loading data.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/snapshot.ex",
+      "line": 153
+     },
+     "signature": "items(snapshot, entity)",
+     "head": "items(snapshot, entity)",
+     "parameters": [
+      {
+       "name": "snapshot",
+       "default": null
+      },
+      {
+       "name": "entity",
+       "default": null
+      }
+     ],
+     "defaults": 0,
+     "specs": [
+      {
+       "parameters": [
+        "t()",
+        "LibTmux.Schema.entity_selector()"
+       ],
+       "returns": "[LibTmux.Schema.observation()]",
+       "constraints": [],
+       "text": "@spec items(t(), LibTmux.Schema.entity_selector()) :: [\n        LibTmux.Schema.observation()\n      ]"
+      }
+     ],
+     "guard": false,
+     "delegateTo": null,
+     "equiv": null
+    },
+    {
+     "id": "LibTmux.Snapshot.sessions/1",
+     "name": "sessions",
+     "arity": 1,
+     "kind": "function",
+     "line": 161,
+     "doc": "Returns a materialized session selection without I/O.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/snapshot.ex",
+      "line": 161
+     },
+     "signature": "sessions(snapshot)",
+     "head": "sessions(snapshot)",
+     "parameters": [
+      {
+       "name": "snapshot",
+       "default": null
+      }
+     ],
+     "defaults": 0,
+     "specs": [
+      {
+       "parameters": [
+        "t()"
+       ],
+       "returns": "LibTmux.Selection.t(LibTmux.Session.t())",
+       "constraints": [],
+       "text": "@spec sessions(t()) ::\n        LibTmux.Selection.t(LibTmux.Session.t())"
+      }
+     ],
+     "guard": false,
+     "delegateTo": null,
+     "equiv": null
+    },
+    {
+     "id": "LibTmux.Snapshot.windows/1",
+     "name": "windows",
+     "arity": 1,
+     "kind": "function",
+     "line": 164,
+     "doc": "Returns a materialized physical window selection without I/O.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/snapshot.ex",
+      "line": 164
+     },
+     "signature": "windows(snapshot)",
+     "head": "windows(snapshot)",
+     "parameters": [
+      {
+       "name": "snapshot",
+       "default": null
+      }
+     ],
+     "defaults": 0,
+     "specs": [
+      {
+       "parameters": [
+        "t()"
+       ],
+       "returns": "LibTmux.Selection.t(LibTmux.Window.t())",
+       "constraints": [],
+       "text": "@spec windows(t()) ::\n        LibTmux.Selection.t(LibTmux.Window.t())"
+      }
+     ],
+     "guard": false,
+     "delegateTo": null,
+     "equiv": null
+    },
+    {
+     "id": "LibTmux.Snapshot.panes/1",
+     "name": "panes",
+     "arity": 1,
+     "kind": "function",
+     "line": 167,
+     "doc": "Returns a materialized physical pane selection without I/O.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/snapshot.ex",
+      "line": 167
+     },
+     "signature": "panes(snapshot)",
+     "head": "panes(snapshot)",
+     "parameters": [
+      {
+       "name": "snapshot",
+       "default": null
+      }
+     ],
+     "defaults": 0,
+     "specs": [
+      {
+       "parameters": [
+        "t()"
+       ],
+       "returns": "LibTmux.Selection.t(LibTmux.Pane.t())",
+       "constraints": [],
+       "text": "@spec panes(t()) :: LibTmux.Selection.t(LibTmux.Pane.t())"
+      }
+     ],
+     "guard": false,
+     "delegateTo": null,
+     "equiv": null
+    },
+    {
+     "id": "LibTmux.Snapshot.window_links/1",
+     "name": "window_links",
+     "arity": 1,
+     "kind": "function",
+     "line": 170,
+     "doc": "Returns a materialized membership selection without I/O.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/snapshot.ex",
+      "line": 170
+     },
+     "signature": "window_links(snapshot)",
+     "head": "window_links(snapshot)",
+     "parameters": [
+      {
+       "name": "snapshot",
+       "default": null
+      }
+     ],
+     "defaults": 0,
+     "specs": [
+      {
+       "parameters": [
+        "t()"
+       ],
+       "returns": "LibTmux.Selection.t(LibTmux.WindowLink.t())",
+       "constraints": [],
+       "text": "@spec window_links(t()) ::\n        LibTmux.Selection.t(LibTmux.WindowLink.t())"
+      }
+     ],
+     "guard": false,
+     "delegateTo": null,
+     "equiv": null
+    },
+    {
+     "id": "LibTmux.Snapshot.clients/1",
+     "name": "clients",
+     "arity": 1,
+     "kind": "function",
+     "line": 173,
+     "doc": "Returns a materialized attached-client selection without I/O.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/snapshot.ex",
+      "line": 173
+     },
+     "signature": "clients(snapshot)",
+     "head": "clients(snapshot)",
+     "parameters": [
+      {
+       "name": "snapshot",
+       "default": null
+      }
+     ],
+     "defaults": 0,
+     "specs": [
+      {
+       "parameters": [
+        "t()"
+       ],
+       "returns": "LibTmux.Selection.t(LibTmux.Client.t())",
+       "constraints": [],
+       "text": "@spec clients(t()) ::\n        LibTmux.Selection.t(LibTmux.Client.t())"
+      }
+     ],
+     "guard": false,
+     "delegateTo": null,
+     "equiv": null
+    },
+    {
+     "id": "LibTmux.Snapshot.fetch/3",
+     "name": "fetch",
+     "arity": 3,
+     "kind": "function",
+     "line": 177,
+     "doc": "Looks up one exact observed ID without I/O.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/snapshot.ex",
+      "line": 177
+     },
+     "signature": "fetch(snapshot, entity, id)",
+     "head": "fetch(snapshot, entity, id)",
+     "parameters": [
+      {
+       "name": "snapshot",
+       "default": null
+      },
+      {
+       "name": "entity",
+       "default": null
+      },
+      {
+       "name": "id",
+       "default": null
+      }
+     ],
+     "defaults": 0,
+     "specs": [
+      {
+       "parameters": [
+        "t()",
+        "LibTmux.Schema.entity_selector()",
+        "LibTmux.Ref.id()"
+       ],
+       "returns": "{:ok, LibTmux.Schema.observation()} | {:error, LibTmux.Error.t()}",
+       "constraints": [],
+       "text": "@spec fetch(\n        t(),\n        LibTmux.Schema.entity_selector(),\n        LibTmux.Ref.id()\n      ) ::\n        {:ok, LibTmux.Schema.observation()}\n        | {:error, LibTmux.Error.t()}"
+      }
+     ],
+     "guard": false,
+     "delegateTo": null,
+     "equiv": null
+    },
+    {
+     "id": "LibTmux.Snapshot.require_complete!/2",
+     "name": "require_complete!",
+     "arity": 2,
+     "kind": "function",
+     "line": 193,
+     "doc": "Requires a declared complete entity set, even when it has no rows.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/snapshot.ex",
+      "line": 193
+     },
+     "signature": "require_complete!(snapshot, entity)",
+     "head": "require_complete!(snapshot, entity)",
+     "parameters": [
+      {
+       "name": "snapshot",
+       "default": null
+      },
+      {
+       "name": "entity",
+       "default": null
+      }
+     ],
+     "defaults": 0,
+     "specs": [
+      {
+       "parameters": [
+        "t()",
+        "LibTmux.Schema.entity_selector()"
+       ],
+       "returns": ":ok",
+       "constraints": [],
+       "text": "@spec require_complete!(\n        t(),\n        LibTmux.Schema.entity_selector()\n      ) :: :ok"
+      }
+     ],
+     "guard": false,
+     "delegateTo": null,
+     "equiv": null
+    },
+    {
+     "id": "LibTmux.Snapshot.require_field!/3",
+     "name": "require_field!",
+     "arity": 3,
+     "kind": "function",
+     "line": 204,
+     "doc": "Requires a loaded field over the captured entity domain before evaluation.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/snapshot.ex",
+      "line": 204
+     },
+     "signature": "require_field!(snapshot, entity, field)",
+     "head": "require_field!(snapshot, entity, field)",
+     "parameters": [
+      {
+       "name": "snapshot",
+       "default": null
+      },
+      {
+       "name": "entity",
+       "default": null
+      },
+      {
+       "name": "field",
+       "default": null
+      }
+     ],
+     "defaults": 0,
+     "specs": [
+      {
+       "parameters": [
+        "t()",
+        "LibTmux.Schema.entity_selector()",
+        "atom()"
+       ],
+       "returns": ":ok",
+       "constraints": [],
+       "text": "@spec require_field!(\n        t(),\n        LibTmux.Schema.entity_selector(),\n        atom()\n      ) :: :ok"
+      }
+     ],
+     "guard": false,
+     "delegateTo": null,
+     "equiv": null
+    },
+    {
+     "id": "LibTmux.Snapshot.require_relation!/4",
+     "name": "require_relation!",
+     "arity": 4,
+     "kind": "function",
+     "line": 217,
+     "doc": "Requires a complete relation domain, including known-empty domains.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/snapshot.ex",
+      "line": 217
+     },
+     "signature": "require_relation!(snapshot, entity, relation, ids \\\\ :all)",
+     "head": "require_relation!(snapshot, entity, relation, ids \\\\ :all)",
+     "parameters": [
+      {
+       "name": "snapshot",
+       "default": null
+      },
+      {
+       "name": "entity",
+       "default": null
+      },
+      {
+       "name": "relation",
+       "default": null
+      },
+      {
+       "name": "ids",
+       "default": ":all"
+      }
+     ],
+     "defaults": 1,
+     "specs": [
+      {
+       "parameters": [
+        "t()",
+        "LibTmux.Schema.entity_selector()",
+        "atom()",
+        ":all | [LibTmux.Ref.id()]"
+       ],
+       "returns": ":ok",
+       "constraints": [],
+       "text": "@spec require_relation!(\n        t(),\n        LibTmux.Schema.entity_selector(),\n        atom(),\n        :all | [LibTmux.Ref.id()]\n      ) :: :ok"
+      }
+     ],
+     "guard": false,
+     "delegateTo": null,
+     "equiv": null
+    },
+    {
+     "id": "LibTmux.Snapshot.related/4",
+     "name": "related",
+     "arity": 4,
+     "kind": "function",
+     "line": 234,
+     "doc": "Resolves a covered relation through captured indexes; never refreshes.",
+     "since": null,
+     "deprecated": null,
+     "source": {
+      "file": "lib/libtmux/snapshot.ex",
+      "line": 234
+     },
+     "signature": "related(snapshot, entity, id, relation)",
+     "head": "related(snapshot, entity, id, relation)",
+     "parameters": [
+      {
+       "name": "snapshot",
+       "default": null
+      },
+      {
+       "name": "entity",
+       "default": null
+      },
+      {
+       "name": "id",
+       "default": null
+      },
+      {
+       "name": "relation",
+       "default": null
+      }
+     ],
+     "defaults": 0,
+     "specs": [
+      {
+       "parameters": [
+        "t()",
+        "LibTmux.Schema.entity_selector()",
+        "LibTmux.Ref.id()",
+        "atom()"
+       ],
+       "returns": "LibTmux.Schema.observation() | nil | [LibTmux.Schema.observation()]",
+       "constraints": [],
+       "text": "@spec related(\n        t(),\n        LibTmux.Schema.entity_selector(),\n        LibTmux.Ref.id(),\n        atom()\n      ) ::\n        LibTmux.Schema.observation()\n        | nil\n        | [LibTmux.Schema.observation()]"
+      }
+     ],
+     "guard": false,
+     "delegateTo": null,
+     "equiv": null
+    }
+   ]
+  }
+ ]
+}

@@ -322,3 +322,20 @@ describe('production shell publication boundaries', { timeout: 30_000 }, () => {
     expect(result.commands).toEqual([])
   })
 })
+
+// A library the shell still publishes shares its `latest` tree with the port
+// publisher, so a new port that omits the flag has two owners for one prefix.
+const unowned = (ports: readonly { slug: string; parentLibrary?: unknown; publishesOwnTree?: boolean }[]) =>
+  ports.filter((port) => !port.parentLibrary && !port.publishesOwnTree).map((port) => port.slug)
+
+describe('port tree ownership', () => {
+  it('has the port publisher own the tree of every library with its own repository', () => {
+    expect(unowned(SUPPORTED_PORTS)).toEqual([])
+  })
+
+  it('notices a library that omits the flag', () => {
+    const elixir = SUPPORTED_PORTS.find((port) => port.slug === 'elixir')!
+    const others = SUPPORTED_PORTS.filter((port) => port !== elixir)
+    expect(unowned([...others, { ...elixir, publishesOwnTree: undefined }])).toEqual(['elixir'])
+  })
+})

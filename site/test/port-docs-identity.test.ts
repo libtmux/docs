@@ -54,7 +54,7 @@ describe('port docs identity', () => {
     expect(result.outputs.source_ref).toBe('abc123')
     expect(versions(result.entries)).toEqual([['pr-37', 'pr', false, '']])
     expect(result.outputs.should_publish).toBe('true')
-    for (const port of ['powershell', 'julia']) {
+    for (const port of ['powershell', 'julia', 'elixir']) {
       const matrix = publicationMatrix({ include: result.entries }, port, `libtmux/libtmux-${port}`)
       expect(matrix.include).toEqual([{ ...result.entries[0], port }])
     }
