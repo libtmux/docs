@@ -35,7 +35,7 @@ const { port, language, example } = Astro.props
     <p>{example.prerequisites}</p>
     <p>Save the program above as <code>{example.program}</code> in a new directory, along with the files below.</p>
     <p class="home-example-lifetime">
-      <span data-without-cleanup>{example.automaticCleanup ?? 'Cleanup is omitted; the private tmux server may remain running. Select Cleanup to stop it when the program finishes.'}</span>
+      <span data-without-cleanup>{example.automaticCleanup ?? 'Cleanup is omitted; the private tmux server and its temporary files may remain. Select Cleanup to remove them when the program finishes.'}</span>
       <span data-with-cleanup>The program stops its private tmux server when it finishes.</span>
       {' '}{example.withoutErrorHandling ?? 'Error handling adds diagnostics; every version checks required results and deadlines.'}
     </p>
