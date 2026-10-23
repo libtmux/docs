@@ -5,6 +5,9 @@ import { ELIXIR_DECLARATION_COLUMNS, extractElixir } from '../src/languages/elix
 import { SymbolIndex } from '../src/link.ts'
 import { tokenizeDoc } from '../src/doc/roles.ts'
 import { builtinHref } from '../src/builtins.ts'
+import type { ApiModel } from '../src/model.ts'
+import { decideMention } from '../src/prose.ts'
+import { Resolver } from '../src/resolver.ts'
 
 const fixture = JSON.parse(readFileSync(new URL('./fixtures/elixir-native.json', import.meta.url), 'utf8'))
 const model = extractElixir(fixture, fixture.source.revision)
@@ -234,6 +237,20 @@ describe('Elixir references', () => {
     expect(index.resolve('t:Enumerable.t/0', 'any', snapshot)).toMatchObject({ external: true, href: 'https://hexdocs.pm/elixir/Enumerable.html#t:t/0' })
     expect(index.resolve('Nonexistent.thing/1', 'any', snapshot)).toBeUndefined()
     expect(index.resolve('missing/9', 'any', snapshot)).toBeUndefined()
+  })
+
+  it.each([
+    ['Enum.member?/2', 'https://hexdocs.pm/elixir/Enum.html#member?/2'],
+    ['JSON.encode!/1', 'https://hexdocs.pm/elixir/JSON.html#encode!/1'],
+    ['Supervisor.start_child/2', 'https://hexdocs.pm/elixir/Supervisor.html#start_child/2'],
+    ['Supervisor.restart_child/2', 'https://hexdocs.pm/elixir/Supervisor.html#restart_child/2'],
+  ])('links the standard-library function %s that a guide names in prose', (mention, href) => {
+    const decide = (text: string, port = 'elixir') =>
+      decideMention(text, { pagePort: port }, new Resolver([model as ApiModel]), { elixir: model as ApiModel })
+    expect(decide(mention)).toMatchObject({ kind: 'link', port: 'elixir', external: true, href })
+    // A name that is not on the module's page, or on another port's page, stays unlinked.
+    expect(decide(mention.replace('/', 'x/'))).toMatchObject({ kind: 'unresolved' })
+    expect(builtinHref('ts', mention)).toBeUndefined()
   })
 
   it('links the types in a declaration and leaves values, keys and attributes plain', () => {

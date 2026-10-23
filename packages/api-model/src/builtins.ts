@@ -123,6 +123,15 @@ export function elixirStdlibHref(path: string, name?: string, arity?: number, ki
   return elixirDocs(`${path}.html${anchor}`)
 }
 
+/**
+ * Standard-library functions that prose names with an arity. A function is
+ * listed once its anchor is on the module's HexDocs page, so a misspelled or
+ * removed name stays unlinked instead of pointing at a page without it.
+ */
+const ELIXIR_STDLIB_FUNCTIONS: readonly (readonly [module: string, name: string, arity: number])[] = [
+  ['Enum', 'member?', 2], ['JSON', 'encode!', 1], ['Supervisor', 'start_child', 2], ['Supervisor', 'restart_child', 2],
+]
+
 /** The typespec grammar names these without a module. */
 const ELIXIR_BASIC_TYPES = [
   'any', 'none', 'atom', 'map', 'pid', 'port', 'reference', 'struct', 'tuple', 'float', 'integer', 'neg_integer',
@@ -144,6 +153,8 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     ...Object.fromEntries(['Exception.t', 'Enumerable.t', 'Keyword.t', 'MapSet.t', 'Range.t', 'Regex.t', 'String.t', 'Path.t']
       .map((name) => [name, elixirStdlibHref(name.split('.')[0]!, 't', 0, 't')])),
     'Supervisor.child_spec': elixirStdlibHref('Supervisor', 'child_spec', 0, 't'),
+    ...Object.fromEntries(ELIXIR_STDLIB_FUNCTIONS.map(([module, name, arity]) =>
+      [`${module}.${name}/${arity}`, elixirStdlibHref(module, name, arity)])),
     // A behaviour or protocol named without a function.
     ...Object.fromEntries([...ELIXIR_STDLIB_MODULES].map((name) => [name, elixirStdlibHref(name)])),
   },

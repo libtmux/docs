@@ -14207,20 +14207,6 @@
  "dangling": [
   {
    "port": "elixir",
-   "text": "Enum.member?/2",
-   "page": "/elixir/latest/guides/filtering/",
-   "line": 26,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "elixir",
-   "text": "JSON.encode!/1",
-   "page": "/elixir/latest/guides/filtering/",
-   "line": 82,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "elixir",
    "text": "1.20.x",
    "page": "/elixir/latest/guides/overview/",
    "line": 31,
@@ -14238,20 +14224,6 @@
    "text": "CC",
    "page": "/elixir/latest/topics/ownership/",
    "line": 81,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "elixir",
-   "text": "Supervisor.start_child/2",
-   "page": "/elixir/latest/topics/ownership/",
-   "line": 301,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "elixir",
-   "text": "Supervisor.restart_child/2",
-   "page": "/elixir/latest/topics/ownership/",
-   "line": 301,
    "why": "not defined in the stated port"
   },
   {
