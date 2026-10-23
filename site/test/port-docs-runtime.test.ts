@@ -9,6 +9,7 @@ import { PORT_BY_SLUG } from '../src/lib/ports'
 const root = new URL('../../', import.meta.url).pathname
 const workflow = readFileSync(join(root, '.github/workflows/port-docs.yml'), 'utf8')
 const doxygenCheck = join(root, 'scripts/check-doxygen.py')
+const toolchainReader = join(root, 'scripts/read-elixir-toolchain.py')
 function script(name: string) {
   const start = workflow.indexOf(`      - name: ${name}\n`)
   expect(start).toBeGreaterThan(-1)
@@ -59,7 +60,7 @@ function elixirToolchain(files: Record<string, string | undefined>) {
     for (const [name, content] of Object.entries(files)) {
       if (content !== undefined) writeFileSync(join(directory, 'port', name), content)
     }
-    const result = spawnSync('bash', ['-e', '-c', script('Read selected Elixir toolchain')], {
+    const result = spawnSync('python3', ['-I', toolchainReader, 'port'], {
       cwd: directory, encoding: 'utf8', timeout: 5000, env: { ...process.env, GITHUB_OUTPUT: output },
     })
     return { ...result, output: readFileSync(output, 'utf8') }
