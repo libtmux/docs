@@ -4,7 +4,7 @@ import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { readInventory } from '../src/inventory.ts'
-import type { ApiModel } from '../src/model.ts'
+import type { ApiModel, ApiSymbol } from '../src/model.ts'
 import { Resolver, notASymbol, toPath } from '../src/resolver.ts'
 import { proseMentions } from '../src/mentions.ts'
 import { portFromSentence } from '../src/prose.ts'
@@ -167,5 +167,30 @@ d('resolver', () => {
     expect(linkable).toBeGreaterThan(200)
     // Floor, not a pin. 87% at the time of writing.
     expect(resolved / linkable).toBeGreaterThan(0.8)
+  })
+})
+
+describe('mention paths by port', () => {
+  const symbol = (id: string, name: string, kind: ApiSymbol['kind'], parent?: string): ApiSymbol => ({
+    id, name, kind, parent, namespace: 'App', modifiers: [], signatures: [], source: { file: 'lib/app', line: 1 },
+  })
+  const resolver = new Resolver([
+    { port: 'elixir', extractor: 'test', symbols: [symbol('App.Server', 'Server', 'struct'), symbol('App.Server.run/2', 'run/2', 'function', 'App.Server')] },
+    { port: 'ts', extractor: 'test', symbols: [symbol('HTTP', 'HTTP', 'class')] },
+  ] as ApiModel[], [], { elixir: 'App' })
+
+  it('drops an Elixir type prefix and arity from a path', () => {
+    expect(toPath('t:Server.t/0', 'elixir')).toEqual(['Server', 't'])
+    expect(toPath('Server.run/2', 'elixir')).toEqual(['Server', 'run'])
+    expect(resolver.resolve('elixir', 'Server.run/2')).toMatchObject({ symbol: { id: 'App.Server.run/2' } })
+    expect(resolver.resolve('elixir', 'run/2')).toMatchObject({ symbol: { id: 'App.Server.run/2' } })
+  })
+
+  it('leaves a `/2` or `t:` in another port\'s mention alone', () => {
+    expect(toPath('HTTP/2', 'ts')).toEqual(['HTTP/2'])
+    expect(toPath('HTTP/2')).toEqual(['HTTP/2'])
+    expect(toPath('t:Server', 'ts')).toEqual(['t', 'Server'])
+    expect(resolver.resolve('ts', 'HTTP')).toMatchObject({ symbol: { id: 'HTTP' } })
+    expect(resolver.resolve('ts', 'HTTP/2')).toEqual({ how: 'no-symbol' })
   })
 })
