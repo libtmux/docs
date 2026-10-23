@@ -52,12 +52,12 @@ the program does not destroy the caller's sessions.
 
 ## Setup and run
 
-Use an empty directory on Linux with Elixir 1.20.4 or newer on Erlang/OTP 29,
-a C11 compiler, tmux 3.3 or newer, a POSIX shell, and access to hex.pm. Save
-the launcher as `run.sh`. It starts an isolated tmux server, runs the program,
-checks that the session still exists, then stops only that server. Cleanup runs
-after failures too. A failed shutdown keeps its socket directory and prints its
-location for inspection.
+Use an empty directory on Linux with Elixir 1.20.4 or newer, Erlang/OTP 29.1.2
+or a newer 29.x release, a C11 compiler, tmux 3.3 or newer, a POSIX shell, and
+access to hex.pm. Save the launcher as `run.sh`. It starts an isolated tmux
+server, runs the program, checks that the session still exists, then stops only
+that server. Cleanup runs after failures too. A failed shutdown keeps its socket
+directory and prints its location for inspection.
 
 ```sh title="run.sh"
 #!/bin/sh
