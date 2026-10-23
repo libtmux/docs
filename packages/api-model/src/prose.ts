@@ -193,6 +193,9 @@ const NOT_API: { why: string; test: RegExp }[] = [
   // Environment variables and tmux option names are SCREAMING_CASE and
   // belong to tmux or the shell, not to a port.
   { why: 'environment variable', test: /^[A-Z][A-Z0-9_]{2,}$/ },
+  // `CC` names the C compiler. Two letters is too short for the pattern above,
+  // which would also take a module such as `IO`, so it is named.
+  { why: 'environment variable', test: /^CC$/ },
   { why: 'single-letter flag or type parameter', test: /^[A-Z]$/ },
   // A tmux release, its candidates and development builds: `3.3a`,
   // `3.8-rc2`, `next-3.9`. A version names tmux, not a port's symbol.

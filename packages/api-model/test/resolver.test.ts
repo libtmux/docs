@@ -40,6 +40,11 @@ d('resolver', () => {
     expect(portFromSentence("Lua's checked wait is `await`")).toBe('lua')
   })
 
+  it('rejects a version line such as a toolchain range, and keeps a member named x', () => {
+    for (const text of ['1.20.x', '29.x', 'v1.x', '3.3.x']) expect(notASymbol(text), text).toBe('a version line')
+    for (const text of ['server.x', 'Version.x', 'x']) expect(notASymbol(text), text).toBeUndefined()
+  })
+
   it('rejects things that are not references', () => {
     expect(notASymbol('sync_snippets.py --check')).toBeTruthy()
     expect(notASymbol('pane.pane_id == other.pane_id')).toBeTruthy()

@@ -97,6 +97,14 @@ describe('spans that are code but not API', () => {
     }
   })
 
+  it('names the C compiler variable, which is too short for the general environment variable rule', () => {
+    expect(isLikelyReference('CC')).toBe(true)
+    expect(notApiReason('CC')).toBe('environment variable')
+    expect(notApiReason('CFLAGS')).toBe('environment variable')
+    // Another two-letter name is a candidate symbol: Elixir's `IO` is a module.
+    for (const text of ['IO', 'CD', 'CCx']) expect(notApiReason(text), text).toBeUndefined()
+  })
+
   it('leaves qualified names and versioned identifiers to the resolver', () => {
     for (const text of ['Server.panes', 'LibTmux.Server', 'v3.3a', '3.3a.Server', 'Version.next', 'TmuxVersion.V3_3a']) {
       expect(notApiReason(text), text).toBeUndefined()

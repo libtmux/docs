@@ -14206,27 +14206,6 @@
  ],
  "dangling": [
   {
-   "port": "elixir",
-   "text": "1.20.x",
-   "page": "/elixir/latest/guides/overview/",
-   "line": 31,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "elixir",
-   "text": "29.x",
-   "page": "/elixir/latest/guides/overview/",
-   "line": 31,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "elixir",
-   "text": "CC",
-   "page": "/elixir/latest/topics/ownership/",
-   "line": 81,
-   "why": "not defined in the stated port"
-  },
-  {
    "port": "fsharp",
    "text": "LibTmux.FSharp",
    "page": "/fsharp/latest/guides/getting-started/",
