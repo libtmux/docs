@@ -94,9 +94,9 @@ defmodule LibTmuxDocsExport do
 
   defp export_module(module, root) do
     with {:docs_v1, anno, :elixir, "text/markdown", moduledoc, metadata, entries} <-
-           Code.fetch_docs(module),
+           fetch_docs!(module),
          false <- moduledoc == :hidden,
-         {:module, ^module} <- Code.ensure_loaded(module) do
+         {:module, ^module} <- ensure_loaded!(module) do
       specs = typespecs(&Code.Typespec.fetch_specs/1, module)
       callbacks = typespecs(&Code.Typespec.fetch_callbacks/1, module)
       types = type_definitions(module)
@@ -126,7 +126,25 @@ defmodule LibTmuxDocsExport do
          ])}
       ]
     else
-      _ -> []
+      true -> []
+    end
+  end
+
+  # ExDoc skips a module whose documentation is hidden, and nothing else. A
+  # module that cannot be read is an error, because skipping it would publish
+  # a reference with a hole in it.
+  defp fetch_docs!(module) do
+    case Code.fetch_docs(module) do
+      {:docs_v1, _, :elixir, "text/markdown", _, _, _} = chunk -> chunk
+      {:error, reason} -> abort("cannot read the documentation of #{inspect(module)}: #{inspect(reason)}")
+      _ -> abort("#{inspect(module)} documents itself in a format other than Elixir Markdown")
+    end
+  end
+
+  defp ensure_loaded!(module) do
+    case Code.ensure_loaded(module) do
+      {:module, ^module} = loaded -> loaded
+      {:error, reason} -> abort("cannot load #{inspect(module)}: #{inspect(reason)}")
     end
   end
 

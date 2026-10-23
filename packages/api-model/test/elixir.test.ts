@@ -146,6 +146,11 @@ describe('Elixir native API adapter', () => {
   it('rejects an artifact exported from another checkout', () => {
     expect(() => extractElixir(fixture, 'f'.repeat(40))).toThrow('differs from the selected checkout')
   })
+
+  it('rejects an artifact that documents no module, because a reference with nothing in it is not a reference', () => {
+    expect(() => extractElixir({ ...fixture, modules: [] }, fixture.source.revision)).toThrow('documents no modules')
+    expect(extractElixir({ ...fixture, modules: fixture.modules.slice(0, 1) }, fixture.source.revision).symbols.length).toBeGreaterThan(0)
+  })
 })
 
 describe('ExDoc Markdown', () => {

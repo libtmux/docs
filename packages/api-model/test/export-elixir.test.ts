@@ -1,5 +1,5 @@
 import { execFileSync, spawnSync } from 'node:child_process'
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -112,6 +112,23 @@ describe.skipIf(needed !== 'run')('Elixir exporter', { timeout: 30_000 }, () => 
       const result = exportFrom(directory)
       expect(result.status).not.toBe(0)
       expect(result.stderr).toContain('uncommitted changes')
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
+  })
+
+  it('refuses a module whose documentation cannot be read instead of leaving it out', () => {
+    const { directory } = checkout()
+    try {
+      expect(exportFrom(directory).status).toBe(0)
+      const mix = readFileSync(join(directory, 'mix.exs'), 'utf8').replace('deps: []', 'elixirc_options: [docs: false],\n      deps: []')
+      writeFileSync(join(directory, 'mix.exs'), mix)
+      execFileSync('git', ['-C', directory, '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qam', 'Compile without documentation'])
+      const out = join(directory, '_build/undocumented.json')
+      const result = exportFrom(directory, out)
+      expect(result.status).not.toBe(0)
+      expect(result.stderr).toContain('cannot read the documentation of Probe')
+      expect(existsSync(out)).toBe(false)
     } finally {
       rmSync(directory, { recursive: true, force: true })
     }
