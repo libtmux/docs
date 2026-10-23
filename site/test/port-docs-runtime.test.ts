@@ -265,6 +265,21 @@ if (process.argv[2] === process.env.FAILING_TASK) process.exit(23)
     expect(existsSync(join(root, 'packages/api-model/scripts/export-elixir.exs'))).toBe(true)
   })
 
+  it('gives the docs test job the same pinned runtimes before its unit tests', () => {
+    const tests = readFileSync(join(root, '.github/workflows/test.yml'), 'utf8')
+    const pin = (text: string) => /uses: (erlef\/setup-beam@[0-9a-f]{40}) # (v\d+\.\d+\.\d+)\n/.exec(text)?.slice(1)
+    expect(pin(tests)).toBeDefined()
+    expect(pin(tests)).toEqual(pin(workflow))
+    expect(workflow).toContain('run: python3 docs/scripts/read-elixir-toolchain.py port')
+    expect(tests).toContain('run: python3 scripts/read-elixir-toolchain.py .port-sources/elixir')
+    expect(tests).toContain('version-type: strict')
+    const read = tests.indexOf('name: Read integrated Elixir toolchain')
+    const setup = tests.indexOf('uses: erlef/setup-beam@')
+    expect(tests.indexOf('path: .port-sources/elixir')).toBeLessThan(read)
+    expect(read).toBeLessThan(setup)
+    expect(setup).toBeLessThan(tests.indexOf('- name: test-all'))
+  })
+
   it('writes the artifact the API model step reads', () => {
     const model = readFileSync(join(root, 'scripts/gen-api-model.mjs'), 'utf8')
     const artifact = /\belixir: \{[^}]*nativeArtifact: '([^']+)'/.exec(model)?.[1]
