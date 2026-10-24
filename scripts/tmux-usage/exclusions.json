@@ -1,0 +1,390 @@
+{
+  "schemaVersion": 1,
+  "exclusions": [
+    {
+      "port": "csharp",
+      "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "owner": "Session",
+      "names": [
+        "CreateWindowAsync"
+      ],
+      "commands": [
+        "display-message"
+      ],
+      "why": "CreateWindowAsync asks display-message to expand a window name only when the request sets SelectExisting. The F# wrapper builds its NewWindowRequest without it, so no F# call sends display-message.",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Session.Lifecycle.cs:279",
+          "has": [
+            "options.SelectExisting"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Session.Lifecycle.cs:284",
+          "has": [
+            "ExpandWindowNameAsync("
+          ]
+        },
+        {
+          "at": "src/LibTmux.FSharp/Hierarchy.fs:100",
+          "has": [
+            "NewWindowRequest("
+          ]
+        },
+        {
+          "at": "src/LibTmux.FSharp/Hierarchy.fs:104",
+          "has": [
+            "Environment = environment window.Environment"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ruby",
+      "owner": "Pane",
+      "names": [
+        "capture"
+      ],
+      "commands": [
+        "list-commands"
+      ],
+      "why": "capture asks list-commands whether tmux knows a flag only when trim_trailing or mode_screen is set; a default capture does not send it.",
+      "evidence": [
+        {
+          "at": "gems/libtmux/lib/libtmux/entity.rb:183",
+          "has": [
+            "next unless enabled"
+          ]
+        },
+        {
+          "at": "gems/libtmux/lib/libtmux/entity.rb:185",
+          "has": [
+            "require_command_flag"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ruby",
+      "owner": "Pane",
+      "names": [
+        "copy_mode"
+      ],
+      "commands": [
+        "list-commands"
+      ],
+      "why": "copy_mode asks list-commands whether tmux knows a flag only when one of those flags is set; a default copy_mode does not send it.",
+      "evidence": [
+        {
+          "at": "gems/libtmux/lib/libtmux/operations.rb:387",
+          "has": [
+            "next unless enabled"
+          ]
+        },
+        {
+          "at": "gems/libtmux/lib/libtmux/operations.rb:389",
+          "has": [
+            "require_command_flag"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "owner": "Plan",
+      "names": [
+        "run_over_control_mode"
+      ],
+      "commands": [
+        "display-message"
+      ],
+      "why": "run_over_control_mode probes the tmux version with display-message only when the plan holds a layout step whose validity differs between releases.",
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/plan/run.rs:785",
+          "has": [
+            "!pending.is_empty()"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/plan/run.rs:786",
+          "has": [
+            "sender.send("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "cxx",
+      "owner": "Window",
+      "names": [
+        "select_layout"
+      ],
+      "commands": [
+        "display-message"
+      ],
+      "why": "select_layout probes the running version with display-message only when the layout string needs it (layout_needs_version); a named layout does not.",
+      "evidence": [
+        {
+          "at": "src/layout.cpp:386",
+          "has": [
+            "if (!sensitive)"
+          ]
+        },
+        {
+          "at": "src/layout.cpp:390",
+          "has": [
+            "\"display-message\""
+          ]
+        },
+        {
+          "at": "src/entities.cpp:696",
+          "has": [
+            "detail::validate_layouts("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "cxx",
+      "owner": "Pane",
+      "names": [
+        "wait_for_text"
+      ],
+      "commands": [
+        "display-message"
+      ],
+      "why": "wait_for_text asks display-message for the session name only when the wait was not given one.",
+      "evidence": [
+        {
+          "at": "src/wait.cpp:460",
+          "has": [
+            "if (!wait.session_known)"
+          ]
+        },
+        {
+          "at": "src/wait.cpp:462",
+          "has": [
+            "\"display-message\""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "owner": "Pane",
+      "names": [
+        "BreakPane"
+      ],
+      "commands": [
+        "rename-window"
+      ],
+      "why": "BreakPane renames the window afterwards only on the tmux release that ignores the name and when the request names one.",
+      "evidence": [
+        {
+          "at": "tmux/pane_relocate.go:179",
+          "has": [
+            "isBroken37 && request.Name != \"\""
+          ]
+        },
+        {
+          "at": "tmux/pane_relocate.go:182",
+          "has": [
+            "\"rename-window\""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "owner": "Server",
+      "names": [
+        "OpenNotifications"
+      ],
+      "commands": [
+        "refresh-client"
+      ],
+      "why": "OpenNotifications arms the pause hold with refresh-client only when PauseAfter is positive.",
+      "evidence": [
+        {
+          "at": "tmux/notification_stream.go:121",
+          "has": [
+            "options.PauseAfter > 0"
+          ]
+        },
+        {
+          "at": "tmux/notification_stream.go:122",
+          "has": [
+            "armPause("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "names": [
+        "open_control"
+      ],
+      "commands": [
+        "wait-for"
+      ],
+      "why": "The connection releases a wait-for signal from its cleanup worker, in the :release phase, and not as part of opening it.",
+      "evidence": [
+        {
+          "at": "src/control.jl:965",
+          "has": [
+            "phase === :release"
+          ]
+        },
+        {
+          "at": "src/control.jl:966",
+          "has": [
+            "\"wait-for\""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "names": [
+        "select_layout"
+      ],
+      "commands": [
+        "display-message"
+      ],
+      "why": "select_layout asks display-message for the version only for a mirrored layout.",
+      "evidence": [
+        {
+          "at": "src/control_topology.jl:131",
+          "has": [
+            "endswith(text, \"-mirrored\")"
+          ]
+        },
+        {
+          "at": "src/control_topology.jl:134",
+          "has": [
+            "\"display-message\""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "owner": "Pane",
+      "names": [
+        "breakOut"
+      ],
+      "commands": [
+        "rename-window"
+      ],
+      "why": "breakOut renames the window afterwards only on the tmux release that ignores the name.",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:839",
+          "has": [
+            "BREAK_PANE_NAMING_BROKEN"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:842",
+          "has": [
+            "\"rename-window\""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "owner": "Pane",
+      "names": [
+        "exitCopyMode"
+      ],
+      "commands": [
+        "copy-mode"
+      ],
+      "why": "exitCopyMode calls setCopyMode with active false, which sends send-keys -X cancel; the copy-mode branch is for entering.",
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/operations/shell.ts:215",
+          "has": [
+            "if (active)"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/shell.ts:216",
+          "has": [
+            "\"copy-mode\""
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/pane.ts:551",
+          "has": [
+            "setCopyMode(runtimeForHandle(this), this.id, false)"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "owner": "Pane",
+      "names": [
+        "enterCopyMode"
+      ],
+      "commands": [
+        "send-keys"
+      ],
+      "why": "enterCopyMode calls setCopyMode with active true, which returns after copy-mode; the send-keys -X cancel branch is for leaving.",
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/operations/shell.ts:216",
+          "has": [
+            "\"copy-mode\""
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/shell.ts:217",
+          "has": [
+            "return;"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/pane.ts:540",
+          "has": [
+            "setCopyMode(runtimeForHandle(this), this.id, true)"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "owner": "Pane",
+      "names": [
+        "breakOut"
+      ],
+      "commands": [
+        "rename-window"
+      ],
+      "why": "breakOut renames the window afterwards only when a name is given and the server is exactly tmux 3.7, the release that ignores the name.",
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/operations/shell.ts:141",
+          "has": [
+            "quirks.breakPane37"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/shell.ts:154",
+          "has": [
+            "if (!renames || windowName === undefined) return;"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/shell.ts:160",
+          "has": [
+            "\"rename-window\""
+          ]
+        }
+      ]
+    }
+  ]
+}

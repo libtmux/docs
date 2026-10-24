@@ -1,0 +1,99 @@
+---
+/**
+ * The library methods that send one tmux command, by scope and language.
+ *
+ * Scopes are columns because tmux scopes one command by flag: `list-panes -a`
+ * lists the server, `-s` a session, and a target the window. Each column
+ * names the C function that lists at that scope, so a reader can go from a
+ * method to the code it ends in and back. A language with no method that
+ * sends the command at a scope leaves the cell empty.
+ */
+import ApiBadge from '../api/ApiBadge.astro'
+import SymbolName from '../api/SymbolName.astro'
+import { PORTS } from '../../lib/ports'
+import type { ResolvedUsage } from '../../lib/tmux-reference'
+
+interface Props {
+  usage: ResolvedUsage
+}
+const { usage } = Astro.props
+const flagOf = (scope: { flag: string; target?: string }) => scope.flag || scope.target ? `-${scope.flag || scope.target}` : ''
+const present = new Set(usage.groups.flatMap((group) => group.ports.map((entry) => entry.port)))
+const rows = PORTS.filter((port) => present.has(port.slug)).map((port) => ({
+  slug: port.slug, name: port.name,
+  cells: usage.groups.map((group) => group.ports.find((entry) => entry.port === port.slug)?.links ?? []),
+}))
+// A page for one scope can leave out languages that send the command at another.
+const single = usage.groups.length === 1 && usage.groups[0].scope !== undefined
+const absent = PORTS.filter((port) => !present.has(port.slug)).map((port) => port.name)
+const headingOf = (group: (typeof usage.groups)[number]) => group.scope ? group.scope.label : 'Methods'
+---
+<div class="tmux-usage" data-tmux-usage={usage.command}>
+  <table>
+    <caption class="sr-only">Library methods that send tmux {usage.command}, by scope</caption>
+    <thead>
+      <tr>
+        <th scope="col">Language</th>
+        {usage.groups.map((group) => <th scope="col">
+          <span class="tmux-usage__scope">{headingOf(group)}{group.scope && flagOf(group.scope) && <>{' '}<code>{flagOf(group.scope)}</code></>}</span>
+          {group.function && <a class="tmux-usage__function" href={group.function.href}><code>{group.function.name}</code></a>}
+        </th>)}
+      </tr>
+    </thead>
+    <tbody>
+      {rows.map((row) => <tr data-port={row.slug}>
+        <th scope="row">{row.name}</th>
+        {row.cells.map((links, index) => <td data-label={usage.groups[index].scope ? `${headingOf(usage.groups[index])}${flagOf(usage.groups[index].scope!) ? ` ${flagOf(usage.groups[index].scope!)}` : ''}` : ''}
+          class:list={[!links.length && 'tmux-usage__empty']}>
+          <span class="tmux-usage__links">{links.map((link) => <span class="tmux-usage__item">
+            <a href={link.href} title={link.via ? `Calls ${link.via.symbol}: ${link.via.evidence[0]}` : `${link.reviewed ? 'Reviewed: ' : ''}${link.evidence[0]}`}>
+              <ApiBadge label={link.kind} variant="kind" value={link.kind} compact preview={false} />
+              <code><SymbolName name={link.label} /></code>
+            </a>
+            {link.when && <span class="tmux-usage__when" data-when={link.when}>{link.when}</span>}
+          </span>)}</span>
+        </td>)}
+      </tr>)}
+    </tbody>
+  </table>
+  {absent.length > 0 && <p class="tmux-usage__absent">No method in {new Intl.ListFormat('en', { type: 'disjunction' }).format(absent)} sends this command{single ? ' at this scope' : ''} itself.</p>}
+</div>
+<style>
+  /* A table wider than its column scrolls inside it; a chip is never cut or wrapped to fit. */
+  .tmux-usage { margin-block: 1rem; font-size: 0.8125rem; max-inline-size: 100%; overflow-x: auto; container: tmux-usage / inline-size; }
+  .tmux-usage table { display: table; width: 100%; border-collapse: collapse; table-layout: auto; font-size: inherit; }
+  .tmux-usage :is(th, td) { padding: 0.45rem 0.9rem 0.45rem 0; vertical-align: top; text-align: left; border-bottom: 1px solid var(--color-edge, var(--color-background-border)); }
+  .tmux-usage thead th { white-space: normal; font-weight: 600; }
+  .tmux-usage tbody th { font-weight: 400; white-space: nowrap; opacity: 0.7; }
+  .tmux-usage tbody tr:last-child :is(th, td) { border-bottom: 0; }
+  .tmux-usage__absent { margin-block: 0.5rem 0; opacity: 0.7; }
+  .tmux-usage__scope { display: block; }
+  .tmux-usage__function { display: block; margin-block-start: 0.15rem; font-weight: 400; }
+  .tmux-usage__function code { background: none; border: 0; padding: 0; font-size: 0.75rem; overflow-wrap: anywhere; }
+  /* Chips stack flush at the start of the cell, one to a line, with an even gap. */
+  .tmux-usage__links { display: flex; flex-direction: column; align-items: flex-start; gap: 0.35rem; }
+  .tmux-usage__links a, .tmux-usage__links code { white-space: nowrap; overflow-wrap: normal; }
+  /*
+   * A send that only some calls make says when, beside the method on its line, quieter than the name. The chip never gives
+   * up width to it: a chip that shrank wrapped its name to make room, so the qualifier goes under the chip when it does not
+   * fit beside it, and wraps in the cell when it is wider than that.
+   */
+  .tmux-usage__item { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 0.1rem 0.5rem; max-inline-size: 100%; }
+  .tmux-usage__item > a { flex: none; }
+  .tmux-usage__when { opacity: 0.65; font-size: 0.75rem; white-space: normal; }
+  /* The scope columns no longer fit beside each other: give each language its own block. */
+  @container tmux-usage (max-width: 50rem) {
+    .tmux-usage thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    /* tr and td take their display from their own rules below: two rules on one element would tie on specificity. */
+    .tmux-usage :is(table, tbody, th) { display: block; }
+    .tmux-usage tr { display: grid; row-gap: 0.3rem; padding-block: 0.5rem; border-bottom: 1px solid var(--color-edge, var(--color-background-border)); }
+    .tmux-usage tbody tr:last-child { border-bottom: 0; }
+    .tmux-usage :is(th, td) { padding: 0.1rem 0; border-bottom: 0; }
+    .tmux-usage td { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: 0.5rem; }
+    .tmux-usage td::before { content: attr(data-label); opacity: 0.6; }
+    /* A command with no scope has one column, so the cell needs no label. */
+    .tmux-usage td[data-label=''] { grid-template-columns: minmax(0, 1fr); }
+    .tmux-usage td[data-label='']::before { content: none; }
+    .tmux-usage td.tmux-usage__empty { display: none; }
+  }
+</style>

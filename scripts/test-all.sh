@@ -151,6 +151,15 @@ fi
 step 'tmux catalog (negative)'
 node scripts/gen-tmux-catalog.negative.mjs
 
+# Which library symbols send which tmux command is read from each port's
+# source at the revision its API model was extracted from. Without the port
+# checkouts this verifies shape and revisions; with them it regenerates too.
+step 'tmux library usage'
+node scripts/gen-tmux-usage.mjs --check --source
+
+step 'tmux library usage (negative)'
+node scripts/gen-tmux-usage.negative.mjs
+
 step 'shell port table'
 node scripts/gen-shell-ports.mjs --check
 

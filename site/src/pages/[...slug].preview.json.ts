@@ -1,8 +1,12 @@
 import type { APIRoute } from 'astro'
+import { getCollection } from 'astro:content'
 import { API_MODELS } from '../lib/api-models'
 import { productApiHref } from '../lib/product-api'
-import { symbolPreview, glossaryPreview, highlightedPreview, tmuxManualPreview, type LinkPreview } from '../lib/link-preview'
-import { PORT_BY_SLUG, referenceUrl } from '../lib/ports'
+import { symbolPreview, glossaryPreview, highlightedPreview, proseReferencePreviews, tmuxManualPreview, type LinkPreview } from '../lib/link-preview'
+import { PORT_BY_SLUG, portPageUrl, referenceUrl } from '../lib/ports'
+import { docsPath } from '../lib/docs-paths'
+import { docsEntriesAvailable } from '../lib/page-port-links'
+import { localeOf } from '../i18n/resolve'
 import { symbolsForProduct } from '@libtmux/api-model'
 import { buildTarget } from '../lib/versions'
 import { buildLocale, DEFAULT_LOCALE } from '../i18n/locales'
@@ -11,7 +15,7 @@ import { mcpObjects } from '../lib/mcp-catalog'
 import { mcpObjectPreview } from '../lib/mcp-preview'
 import { tmuxManualRoutes, tmuxManualUrl } from '../lib/tmux-manual-data'
 
-export function getStaticPaths() {
+export async function getStaticPaths() {
   if (buildLocale() !== DEFAULT_LOCALE) return []
   const buildPort = process.env.LIBTMUX_DOCS_PORT
   const buildBase = process.env.LIBTMUX_DOCS_BASE ?? '/'
@@ -42,6 +46,14 @@ export function getStaticPaths() {
       paths.push(route(preview.href, preview))
     }
   }
+  // Prose pages beside the declarations, such as a workspace's exit codes: the policy marks a link to one for a card too.
+  // A root build writes a product's pages, as it does a product's declarations; a port build writes all of the port's.
+  const entries = docsEntriesAvailable(await getCollection('docs', (entry) => localeOf(entry.id) === DEFAULT_LOCALE), buildPort)
+    .filter((entry) => entry.data.port && PORT_BY_SLUG[entry.data.port] && (buildPort || entry.data.product))
+  for (const { href, preview } of proseReferencePreviews(entries.map((entry) => ({
+    title: entry.data.title, description: entry.data.description,
+    href: portPageUrl(PORT_BY_SLUG[entry.data.port!], buildPort ? buildVersion : defaults[entry.data.port!] ?? 'latest', docsPath(entry)),
+  })))) paths.push(route(href, preview))
   return paths
 }
 export const GET: APIRoute = async ({ props }) => new Response(JSON.stringify(await highlightedPreview(props.preview)), {
