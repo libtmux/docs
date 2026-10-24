@@ -37,9 +37,9 @@ const rows: Row[] = [
   },
 ]
 
-async function render() {
+async function render(shown: Row[] = rows) {
   const container = await experimental_AstroContainer.create()
-  const html = await container.renderToString(await loadMatrix(), { props: { caption: 'test', columns, rows } })
+  const html = await container.renderToString(await loadMatrix(), { props: { caption: 'test', columns, rows: shown } })
   const window = new Window()
   window.document.body.innerHTML = html
   return window.document
@@ -73,5 +73,24 @@ describe('CapabilityMatrix', () => {
     const doc = await render()
     const legend = [...doc.querySelectorAll('[aria-label="Legend"] li')].map((li) => li.textContent?.trim())
     expect(legend).toEqual(['✓Works', '↺Uses another path', '✕Refused with an error'])
+  })
+
+  it('names a repaired cell as repaired and a workaround cell as a workaround', async () => {
+    const only = (state: 'repaired' | 'workaround'): Row[] => [{
+      id: 'x', label: 'X', summary: 'X.', requirement: '3.7', apis: [], commands: [],
+      cells: [{ state }, { state: 'supported' }, { state: 'supported' }, { state: 'supported' }],
+    }]
+    const legend = async (state: 'repaired' | 'workaround') =>
+      [...(await render(only(state))).querySelectorAll('[aria-label="Legend"] li')].map((li) => li.textContent?.trim())
+    expect(await legend('workaround')).toEqual(['✓Works', '◐Works with a workaround'])
+    expect(await legend('repaired')).toEqual(['✓Works', '◑Repaired after the command'])
+    const both = only('repaired')
+    both.push(...only('workaround'))
+    const doc = await render(both)
+    const marks = [...doc.querySelectorAll('[aria-label="Legend"] li')].map((li) => li.textContent?.trim())
+    expect(marks).toEqual(['✓Works', '◐Works with a workaround', '◑Repaired after the command'])
+    // The cell's own words match the legend entry that explains it.
+    const cells = [...doc.querySelectorAll('tbody tr')].map((tr) => tr.querySelector('td .sr-only')?.textContent)
+    expect(cells).toEqual(['Repaired after the command', 'Works with a workaround'])
   })
 })
