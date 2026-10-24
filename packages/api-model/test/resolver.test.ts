@@ -113,12 +113,12 @@ d('resolver', () => {
     if (res.how === 'federated') expect(res.href).toContain('docs.python.org')
   })
 
-  it('uses a URL template where no inventory exists', () => {
-    // javadoc and pkg.go.dev publish no objects.inv; their URLs are derivable.
-    const go = r.resolve('go', 'errors.As')
-    expect(go.how).toBe('federated')
-    const java = r.resolve('java', 'Stream.filter()')
-    expect(java.how).toBe('federated')
+  it('uses a URL template for Go, where no inventory exists', () => {
+    // pkg.go.dev publishes no objects.inv; its URLs are derivable.
+    expect(r.resolve('go', 'errors.As').how).toBe('federated')
+    // javadoc publishes an index, which the JDK inventory is built from. A name it does
+    // not list has no page, and a search address stands in for none.
+    expect(r.resolve('java', 'Stream.filter()').how).not.toBe('federated')
   })
 
   it('refuses rather than guessing when nothing disambiguates', () => {

@@ -59,7 +59,8 @@ function writeSidecar(name, bytes) {
   // something anyone reads.
   writeFileSync(
     join(outDir, `${name}.entries.json`),
-    `${JSON.stringify({ project, version, e: entries.map((x) => [x.name, x.uri]) })}\n`,
+    // A document is a page of the manual, not a symbol a name could mean.
+    `${JSON.stringify({ project, version, e: entries.filter((x) => x.type !== 'std:doc').map((x) => [x.name, x.uri]) })}\n`,
   )
 }
 

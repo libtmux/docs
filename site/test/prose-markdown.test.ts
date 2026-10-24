@@ -354,7 +354,7 @@ describe('prose Markdown links', () => {
     const source = '<!-- port:go -->Use `Session.Panes`.<!-- /port -->\n\n<!-- port:py -->Use `Session.panes` and `list`.<!-- /port -->'
     expect(urls(linkProseMarkdown(source))).toEqual([
       '/go/next/reference/tmux-session-panes/', '/py/stable/reference/libtmux-session-panes/',
-      'https://docs.python.org/3/library/stdtypes.html#list',
+      'https://docs.python.org/3/builtins/stdtypes.html#list',
     ])
     expect(linkProseMarkdown('A `settings.rs` file and `missing-rust-file.rs`.', 'rs')).toBe('A `settings.rs` file and `missing-rust-file.rs`.')
     expect(urls(linkProseMarkdown('Read `src/libtmux/pane.py`.', 'rs'))).toEqual([])

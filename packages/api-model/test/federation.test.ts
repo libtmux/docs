@@ -454,3 +454,37 @@ describe('JDK and DOM federation', () => {
     expect(stray.slice(0, 5).map((e) => e.name)).toEqual([])
   })
 })
+
+describe('a link names a symbol its host documents', () => {
+  const entry = (name: string, uri: string, type = 'std:label') => ({ name, uri, type, priority: 1, dispname: '-' })
+
+  it('does not link a name to a page of the manual', () => {
+    // Julia lists its front page as the document `index`; a variable of that name is not a reference to it.
+    const inventory = [entry('index', '', 'std:doc'), entry('Base.map', 'base/collections/#Base.map', 'jl:function')]
+    const index = new SymbolIndex([], (s) => `#${s.id}`, 'julia')
+    index.addInventory('https://docs.julialang.org/en/v1/', inventory, ['julia'], 'Julia')
+    expect(index.resolve('index')).toBeUndefined()
+    expect(index.resolve('Base.map')?.href).toBe('https://docs.julialang.org/en/v1/base/collections/#Base.map')
+
+    const resolver = new Resolver([{ port: 'julia', symbols: [] } as never])
+    resolver.addInventory('Julia', 'https://docs.julialang.org/en/v1/', inventory, ['julia'])
+    expect(resolver.resolve('julia', 'index')).toMatchObject({ how: 'no-symbol' })
+  })
+
+  it('does not guess a member of a standard-library module', () => {
+    const index = new SymbolIndex([], (s) => `#${s.id}`, 'py')
+    // `re.error` was written as a fragment of the `re` page and answered by no anchor on it.
+    expect(index.resolve('re.error')).toBeUndefined()
+    expect(index.resolve('shutil.which("tmux")')).toBeUndefined()
+    expect(index.resolve('re')?.href).toBe('https://docs.python.org/3/library/re.html')
+  })
+
+  it('does not send an unlisted JDK member to a search page', () => {
+    // The inventory is the JDK's own index. A name it lacks has no page, and a search URL
+    // for it answers 200 from the landing page.
+    const resolver = new Resolver([{ port: 'java', symbols: [] } as never])
+    resolver.addInventory('Java SE', 'https://docs.oracle.com/en/java/javase/21/docs/api/', [entry('Stream.filter', 'java.base/java/util/stream/Stream.html#filter(java.util.function.Predicate)')], ['java'])
+    expect(resolver.resolve('java', 'Stream.filter')).toMatchObject({ how: 'federated', href: expect.stringContaining('java.base/java/util/stream/Stream.html#filter') })
+    expect(resolver.resolve('java', 'Stream.noSuchMember')).toMatchObject({ how: 'no-symbol' })
+  })
+})

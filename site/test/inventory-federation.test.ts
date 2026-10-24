@@ -267,7 +267,9 @@ describe('each sidecar agrees with the .inv beside it', () => {
       readFileSync(join(invDir, `${name}.entries.json`), 'utf8'),
     ) as { project: string; e: [string, string][] }
 
-    expect(sidecar.e.length, `${name}: entry count differs`).toBe(inv.entries.length)
+    // The sidecar leaves out documents: a page of the manual is not a symbol.
+    const symbols = inv.entries.filter((e) => e.type !== 'std:doc')
+    expect(sidecar.e.length, `${name}: entry count differs`).toBe(symbols.length)
     expect(sidecar.project).toBe(inv.project)
 
     // Compared as multisets, not by name: an inventory may carry one name in

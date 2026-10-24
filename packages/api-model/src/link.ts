@@ -41,19 +41,19 @@ const ROLE_KINDS: Record<string, SymbolKind[]> = {
  * mention is, and the rest stays plain rather than wrong.
  */
 const PY_INTERSPHINX: Record<string, string> = {
-  int: 'library/functions.html#int',
-  str: 'library/stdtypes.html#str',
-  bool: 'library/functions.html#bool',
-  float: 'library/functions.html#float',
-  bytes: 'library/stdtypes.html#bytes',
-  list: 'library/stdtypes.html#list',
-  dict: 'library/stdtypes.html#dict',
-  set: 'library/stdtypes.html#set',
-  tuple: 'library/stdtypes.html#tuple',
-  None: 'library/constants.html#None',
-  object: 'library/functions.html#object',
-  Exception: 'library/exceptions.html#Exception',
-  type: 'library/functions.html#type',
+  int: 'builtins/functions.html#int',
+  str: 'builtins/stdtypes.html#str',
+  bool: 'builtins/functions.html#bool',
+  float: 'builtins/functions.html#float',
+  bytes: 'builtins/stdtypes.html#bytes',
+  list: 'builtins/stdtypes.html#list',
+  dict: 'builtins/stdtypes.html#dict',
+  set: 'builtins/stdtypes.html#set',
+  tuple: 'builtins/stdtypes.html#tuple',
+  None: 'builtins/constants.html#None',
+  object: 'builtins/functions.html#object',
+  Exception: 'builtins/exceptions.html#Exception',
+  type: 'builtins/functions.html#type',
   Any: 'library/typing.html#typing.Any',
   Literal: 'library/typing.html#typing.Literal',
   Optional: 'library/typing.html#typing.Optional',
@@ -403,7 +403,9 @@ export class SymbolIndex {
     project?: string,
   ): void {
     const byName = new Map<string, InventoryEntry>()
-    for (const entry of entries) if (!byName.has(entry.name)) byName.set(entry.name, entry)
+    // A document is a page of the manual, not a symbol: Julia's `index` is its
+    // front page, and a variable of that name is not a reference to it.
+    for (const entry of entries) if (entry.type !== 'std:doc' && !byName.has(entry.name)) byName.set(entry.name, entry)
     this.external.push({ baseUrl: baseUrl.replace(/\/*$/, '/'), byName, langs, project })
   }
 
@@ -824,12 +826,12 @@ export class SymbolIndex {
     const std = PY_INTERSPHINX[last]
     if (std) return { href: `${PY_DOCS}${std}`, external: true, project: 'Python' }
     if (PY_EXCEPTIONS.has(last)) {
-      return { href: `${PY_DOCS}library/exceptions.html#${last}`, external: true, project: 'Python' }
+      return { href: `${PY_DOCS}builtins/exceptions.html#${last}`, external: true, project: 'Python' }
     }
+    // A module is a page CPython documents under its own name. A member of one
+    // is only a link when the inventory above lists it: a guessed fragment lands
+    // on the module's page at an anchor that may not exist, as `re.error` did.
     const [head, ...rest] = clean.split('.')
-    if (rest.length && PY_STDLIB_MODULES.has(head)) {
-      return { href: `${PY_DOCS}library/${head}.html#${clean}`, external: true, project: 'Python' }
-    }
     if (!rest.length && PY_STDLIB_MODULES.has(head)) {
       return { href: `${PY_DOCS}library/${head}.html`, external: true, project: 'Python' }
     }
