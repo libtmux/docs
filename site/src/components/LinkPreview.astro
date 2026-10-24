@@ -58,7 +58,7 @@ const { id = 'reference-link-preview', preview, class: className } = Astro.props
   .reference-link-preview__kind .api-badge.api-leg { font-size: 1.05em; }
   .reference-link-preview__name { flex: 1; min-width: 0; font-weight: 700; }
   .reference-link-preview__heading button {
-    flex: none; margin-inline-start: auto; padding: 0 .4rem; border: 0; border-radius: .25rem; background: transparent;
+    flex: none; margin-inline-start: auto; min-inline-size: 1.5rem; min-block-size: 1.5rem; padding: 0 .4rem; border: 0; border-radius: .25rem; background: transparent;
     color: var(--color-foreground-muted); font: 400 1.125rem/1.4 var(--font-sans); cursor: pointer;
   }
   .reference-link-preview__heading button:hover { background: var(--color-api-background-hover); color: inherit; }

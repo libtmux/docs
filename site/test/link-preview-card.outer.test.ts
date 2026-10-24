@@ -150,6 +150,19 @@ describe('the card in a browser', () => {
     } finally { await target.close() }
   })
 
+  it('gives the close control a target of at least 24 px each way, at every width', { timeout: 30_000 }, async () => {
+    const [, preview] = (await cardPayloads())[0]!
+    const target = await browser.newPage()
+    try {
+      for (const width of [280, 390, 768]) {
+        await open(target, preview, 'light', width)
+        const box = (await target.locator('[data-preview-close]').boundingBox())!
+        expect(box.width, `${width}px`).toBeGreaterThanOrEqual(24)
+        expect(box.height, `${width}px`).toBeGreaterThanOrEqual(24)
+      }
+    } finally { await target.close() }
+  })
+
   it('opens from its trigger, reaches the close control, each named type and the way to the page in that order, and closes on Escape', { timeout: 30_000 }, async () => {
     const [, preview] = (await cardPayloads())[0]!
     const target = await browser.newPage()
