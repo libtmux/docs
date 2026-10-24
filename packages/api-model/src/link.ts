@@ -801,9 +801,13 @@ export class SymbolIndex {
     // Intersphinx order: exact name, then the shortest suffix. An inventory
     // is authoritative for its own project, so it is consulted before the
     // built-in table rather than after.
+    // A Python reference may be written as a call or a subscript, as in `shutil.which("tmux")` or
+    // `sys.path[0]`. CPython documents the name before it, so that is what the inventory is asked.
+    const stdlib = this.lang === 'py' && clean.includes('.')
+      ? clean.replace(/\((?:[^()]|\([^()]*\))*\)$/, '').replace(/\[[^\]]*\]$/, '') : clean
     for (const inv of this.external) {
       if (inv.langs && (!this.lang || !inv.langs.includes(this.lang))) continue
-      const hit = inv.byName.get(clean) ?? context?.namespaceImports?.toReversed()
+      const hit = inv.byName.get(stdlib) ?? context?.namespaceImports?.toReversed()
         .map((namespace) => inv.byName.get(`${namespace}.${clean}`)).find(Boolean) ??
         (this.lang === 'julia' && !clean.includes('.')
           ? inv.byName.get(`Core.${clean}`) ?? inv.byName.get(`Base.${clean}`) : undefined)

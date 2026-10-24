@@ -479,6 +479,18 @@ describe('a link names a symbol its host documents', () => {
     expect(index.resolve('re')?.href).toBe('https://docs.python.org/3/library/re.html')
   })
 
+  it('asks CPython for the name before a call or a subscript', () => {
+    const index = new SymbolIndex([], (s) => `#${s.id}`, 'py')
+    index.addInventory('https://docs.python.org/3/', [
+      entry('shutil.which', 'library/shutil.html#shutil.which'), entry('subprocess.Popen', 'library/subprocess.html#subprocess.Popen'), entry('sys.path', 'library/sys.html#sys.path'),
+    ], ['py'], 'Python')
+    expect(index.resolve('shutil.which("tmux")')?.href).toBe('https://docs.python.org/3/library/shutil.html#shutil.which')
+    expect(index.resolve('subprocess.Popen(cwd=)')?.href).toBe('https://docs.python.org/3/library/subprocess.html#subprocess.Popen')
+    expect(index.resolve('sys.path[0]')?.href).toBe('https://docs.python.org/3/library/sys.html#sys.path')
+    // The name must still be one the inventory lists.
+    expect(index.resolve('shutil.nowhere("tmux")')).toBeUndefined()
+  })
+
   it('does not send an unlisted JDK member to a search page', () => {
     // The inventory is the JDK's own index. A name it lacks has no page, and a search URL
     // for it answers 200 from the landing page.
