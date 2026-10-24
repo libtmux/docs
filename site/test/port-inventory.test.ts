@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
-  API_HOSTS, INVENTORY, PACKAGE_HOSTS, entryCandidates, entryDestinations, sourceUrl, type InventoryEntry,
+  API_HOSTS, INVENTORY, PACKAGE_HOSTS, entryCandidates, entryDestinations, servedBy, sourceUrl, type InventoryEntry,
 } from '../src/lib/port-inventory'
 import manifestPackages from '../src/data/manifest-packages.json'
 import { PORTS, PORT_BY_SLUG } from '../src/lib/ports'
@@ -249,8 +249,8 @@ describe('port inventory', () => {
           if (linked.some((destination) => destination.url === url)) {
             expect(parsed.pathname, where).not.toMatch(/^\/(?:pr-\d+\/)?(?:en|ja)\/|\/(?:latest|stable)(?:\/|$)/)
           }
-          if (kind === 'package' && host in PACKAGE_HOSTS) expect(parsed.hostname, where).toBe(PACKAGE_HOSTS[host as keyof typeof PACKAGE_HOSTS].hostname)
-          if (kind === 'api' && host in API_HOSTS) expect(parsed.hostname, where).toBe(API_HOSTS[host as keyof typeof API_HOSTS].hostname)
+          if (kind === 'package' && host in PACKAGE_HOSTS) expect(servedBy(PACKAGE_HOSTS[host as keyof typeof PACKAGE_HOSTS], parsed.hostname), `${where} ${parsed.hostname}`).toBe(true)
+          if (kind === 'api' && host in API_HOSTS) expect(servedBy(API_HOSTS[host as keyof typeof API_HOSTS], parsed.hostname), `${where} ${parsed.hostname}`).toBe(true)
           if (kind === 'source') expect(parsed.hostname, where).toBe('github.com')
         }
       }
@@ -263,9 +263,32 @@ describe('port inventory', () => {
     }
     // Only these ecosystems host an API reference off site.
     expect(PORTS.filter((port) => entries(port.slug).some((entry) => entry.api)).map(({ slug }) => slug).sort())
-      .toEqual(['go', 'java', 'kotlin', 'rs', 'scala', 'swift'])
+      .toEqual(['elixir', 'go', 'java', 'kotlin', 'rs', 'scala', 'swift'])
     // Go’s package page and its API reference are one URL on one host.
     for (const entry of entries('go')) expect(entry.api?.url, entry.id).toBe(entry.package?.url)
+  })
+
+  it('names a host’s own subdomain only for a host that gives each package one', () => {
+    expect(servedBy(API_HOSTS.hexdocs, 'libtmux.hexdocs.pm')).toBe(true)
+    expect(servedBy(API_HOSTS.hexdocs, 'hexdocs.pm')).toBe(true)
+    // Control: a lookalike, a suffix of another domain, and a subdomain of a host that serves none.
+    expect(servedBy(API_HOSTS.hexdocs, 'libtmux.hexdocs.pm.example.com')).toBe(false)
+    expect(servedBy(API_HOSTS.hexdocs, 'nothexdocs.pm')).toBe(false)
+    expect(servedBy(PACKAGE_HOSTS.pypi, 'evil.pypi.org')).toBe(false)
+    expect(servedBy(PACKAGE_HOSTS.pypi, 'pypi.org')).toBe(true)
+  })
+
+  it('lists Elixir’s one Hex package with its HexDocs reference, and no entry for the projects Hex does not carry', () => {
+    expect(entries('elixir').map((entry) => [entry.id, entry.kind, entry.status, entry.path, entry.package?.url, entry.api?.url])).toEqual([
+      ['libtmux', 'library', 'published', 'lib', 'https://hex.pm/packages/libtmux', 'https://libtmux.hexdocs.pm/'],
+      ['repository', 'source', 'published', undefined, undefined, undefined],
+    ])
+    expect(entries('elixir').map((entry) => [entry.repo, entry.ref])).toEqual([['libtmux/libtmux-elixir', 'main'], ['libtmux/libtmux-elixir', 'main']])
+    // The MCP adapter and workspace loader live under packages/ with a -dev version.
+    const named = entries('elixir').flatMap((entry) => [entry.id, entry.label, entry.coordinate, entry.path ?? ''])
+    expect(named.filter((value) => /mcp|workspace/i.test(value))).toEqual([])
+    // Control: the same pattern finds them in a port that does publish them.
+    expect(Object.values(INVENTORY).flat().filter((entry) => /mcp|workspace/i.test(entry.id)).length).toBeGreaterThan(0)
   })
 
   it('links nothing for an entry that is planned or configured but not published', () => {

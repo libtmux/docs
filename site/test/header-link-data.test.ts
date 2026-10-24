@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import evidence from '../src/data/destination-evidence.json'
 import { SECTION_LABEL, headerSections, matchesSearch, portHeaderLinks, type HeaderRow } from '../src/lib/header-links'
-import { API_HOSTS, INVENTORY, PACKAGE_HOSTS, type InventoryEntry } from '../src/lib/port-inventory'
+import { API_HOSTS, INVENTORY, PACKAGE_HOSTS, servedBy, type InventoryEntry } from '../src/lib/port-inventory'
 import { PORTS, PORT_BY_SLUG, portDestinations } from '../src/lib/ports'
 import { LINKS } from './fixtures/header-links'
 
@@ -186,8 +186,9 @@ describe('header links', () => {
     expect(marks('swift')).toEqual(['github', 'swift', 'docc'])
     expect(marks('java')).toEqual(['github', 'maven', 'javadoc'])
     expect(marks('rs')).toEqual(['github', 'crates', 'docsrs'])
+    expect(marks('elixir')).toEqual(['github', 'hex', 'hexdocs'])
     // Control: every reference chip wears a mark of the reference, not of the package host it follows.
-    for (const slug of ['rs', 'java', 'kotlin', 'scala', 'swift']) {
+    for (const slug of ['rs', 'java', 'kotlin', 'scala', 'swift', 'elixir']) {
       const [, pack, api] = links(slug).actions
       expect(api!.icon, slug).not.toBe(pack!.icon)
     }
@@ -207,13 +208,13 @@ describe('header links', () => {
   })
 
   it('links only to https pages on the hosts the inventory names, without version, locale or preview prefix', () => {
-    const hosts = new Set(['github.com', ...Object.values(PACKAGE_HOSTS).map((host) => host.hostname), ...Object.values(API_HOSTS).map((host) => host.hostname)])
+    const hosts = [{ name: 'GitHub', hostname: 'github.com', icon: 'github' as const }, ...Object.values(PACKAGE_HOSTS), ...Object.values(API_HOSTS)]
     for (const port of PORTS) {
       const { actions, rows } = links(port.slug)
       for (const { url } of [...actions, ...rows]) {
         const parsed = new URL(url)
         expect(parsed.protocol, url).toBe('https:')
-        expect(hosts.has(parsed.hostname), url).toBe(true)
+        expect(hosts.some((host) => servedBy(host, parsed.hostname)), url).toBe(true)
         expect(parsed.search + parsed.hash, url).toBe('')
         expect(parsed.pathname, url).not.toMatch(/^\/(?:pr-\d+\/)?(?:en|ja)\/|\/(?:latest|stable)(?:\/|$)/)
       }

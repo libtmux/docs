@@ -5,7 +5,7 @@
  * companion package, a command, an MCP server, a testing product, an importable
  * module, a build target or a source directory. Entries come from the owning
  * manifests (`pyproject.toml`, `Cargo.toml`, `go.mod`, Gradle conventions,
- * `Package.swift`, `*.csproj`, CMake and vcpkg files) and their release
+ * `Package.swift`, `*.csproj`, `mix.exs`, CMake and vcpkg files) and their release
  * configuration, not from the documentation products, which group artifacts by
  * purpose rather than by distribution.
  *
@@ -78,15 +78,22 @@ export type PublicationStatus = 'published' | 'configured-unpublished' | 'planne
 
 export type PackageHostId =
   | 'pypi' | 'rubygems' | 'luarocks' | 'powershell-gallery' | 'npm' | 'crates' | 'pkg-go-dev'
-  | 'maven-central' | 'nuget' | 'swift-package-index'
-export type ApiHostId = 'docs-rs' | 'pkg-go-dev' | 'javadoc-io' | 'swift-package-index'
+  | 'maven-central' | 'nuget' | 'swift-package-index' | 'hex'
+export type ApiHostId = 'docs-rs' | 'pkg-go-dev' | 'javadoc-io' | 'swift-package-index' | 'hexdocs'
 export type HostIcon = 'github' | 'pypi' | 'npm' | 'crates' | 'go' | 'maven' | 'nuget' | 'swift' | 'rubygems' | 'luarocks'
-  | 'powershell' | 'docsrs' | 'javadoc' | 'docc'
+  | 'powershell' | 'docsrs' | 'javadoc' | 'docc' | 'hex' | 'hexdocs'
 
 export interface HostIdentity {
   name: string
   hostname: string
   icon: HostIcon
+  /** The host serves each package from a subdomain of `hostname`, as HexDocs does. */
+  subdomains?: true
+}
+
+/** Whether a URL's hostname is the host's own, or a package's subdomain of it where the host gives each package one. */
+export function servedBy(host: HostIdentity, hostname: string): boolean {
+  return hostname === host.hostname || (host.subdomains === true && hostname.endsWith(`.${host.hostname}`))
 }
 
 export const PACKAGE_HOSTS: Readonly<Record<PackageHostId, HostIdentity>> = {
@@ -100,6 +107,7 @@ export const PACKAGE_HOSTS: Readonly<Record<PackageHostId, HostIdentity>> = {
   'maven-central': { name: 'Maven Central', hostname: 'central.sonatype.com', icon: 'maven' },
   nuget: { name: 'NuGet', hostname: 'www.nuget.org', icon: 'nuget' },
   'swift-package-index': { name: 'Swift Package Index', hostname: 'swiftpackageindex.com', icon: 'swift' },
+  hex: { name: 'Hex', hostname: 'hex.pm', icon: 'hex' },
 }
 
 export const API_HOSTS: Readonly<Record<ApiHostId, HostIdentity>> = {
@@ -108,6 +116,8 @@ export const API_HOSTS: Readonly<Record<ApiHostId, HostIdentity>> = {
   'javadoc-io': { name: 'javadoc.io', hostname: 'javadoc.io', icon: 'javadoc' },
   // The package page wears the Swift mark; its DocC reference wears a document, so the two chips differ at icon size.
   'swift-package-index': { name: 'Swift Package Index', hostname: 'swiftpackageindex.com', icon: 'docc' },
+  // The package page wears the Hex mark; its HexDocs reference wears an open book, so the two chips differ at icon size.
+  hexdocs: { name: 'HexDocs', hostname: 'hexdocs.pm', icon: 'hexdocs', subdomains: true },
 }
 
 export type InventoryProduct = 'core' | DocProduct
@@ -201,6 +211,12 @@ const pkgsite = (path: string): Located & Pick<InventoryEntry, 'api'> => ({
   package: { host: 'pkg-go-dev', url: `https://pkg.go.dev/${path}` },
   api: { host: 'pkg-go-dev', url: `https://pkg.go.dev/${path}` },
 })
+/** A Hex package, and the HexDocs reference that its owner publishes with each release. */
+const hexPackage = (name: string): Located & Pick<InventoryEntry, 'api'> => ({
+  coordinate: name,
+  package: { host: 'hex', url: `https://hex.pm/packages/${name}` },
+  api: { host: 'hexdocs', url: `https://${name}.hexdocs.pm/` },
+})
 const MAVEN_GROUP = 'io.github.libtmux'
 const central = (artifact: string): Located => ({
   coordinate: `${MAVEN_GROUP}:${artifact}`,
@@ -225,6 +241,7 @@ const ruby = family('libtmux/libtmux-ruby')
 const lua = family('libtmux/libtmux-lua')
 const powershell = family('libtmux/libtmux-powershell')
 const julia = family('libtmux/libtmux-julia')
+const elixir = family('libtmux/libtmux-elixir', 'main')
 const ts = family('libtmux/libtmux-ts')
 const rs = family('libtmux/libtmux-rs')
 const go = family('libtmux/libtmux-go')
@@ -328,6 +345,11 @@ export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
       aliases: ['using LibTmuxMCP', 'libtmux-mcp'] }),
     julia({ id: 'LibTmuxWorkspace', kind: 'companion', product: 'workspace', unit: 'package', label: 'LibTmuxWorkspace',
       path: 'packages/LibTmuxWorkspace', aliases: ['using LibTmuxWorkspace', 'libtmux-workspace'] }),
+  ],
+  elixir: [
+    // The MCP adapter and workspace loader under packages/ carry a -dev version and Hex has no package for either, so neither has an entry.
+    elixir({ id: 'libtmux', kind: 'library', product: 'core', label: 'libtmux', ...hexPackage('libtmux'), path: 'lib', aliases: ['LibTmux'] }),
+    elixir({ id: 'repository', kind: 'source', product: 'core', label: 'libtmux-elixir', coordinate: 'libtmux/libtmux-elixir' }),
   ],
   ts: [
     ts({ id: 'libtmux', kind: 'library', product: 'core', label: 'libtmux', ...npm('libtmux'), path: 'packages/libtmux',

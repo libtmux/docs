@@ -11,8 +11,8 @@
  * gains or loses a destination changes a row here.
  *
  * Julia and C++ publish no package, so each has only the repository link.
- * Only Rust, Java, Kotlin, Scala and Swift link an API reference of their
- * own; Go's package page is its reference.
+ * Only Rust, Elixir, Java, Kotlin, Scala and Swift link an API reference of
+ * their own; Go's package page is its reference.
  */
 export type ExpectedAction = readonly [kind: 'source' | 'package' | 'api', label: string, name: string, url: string]
 export type ExpectedRow = readonly [kind: 'source' | 'package' | 'api', label: string, detail: string, url: string, entries: readonly string[]]
@@ -90,6 +90,18 @@ export const LINKS: Record<string, ExpectedLinks> = {
       ['source', 'LibTmuxTablesExt', 'extension · ext/LibTmuxTablesExt.jl', 'https://github.com/libtmux/libtmux-julia/blob/master/ext/LibTmuxTablesExt.jl', ['LibTmuxTablesExt']],
       ['source', 'LibTmuxMCP', 'package · packages/LibTmuxMCP', 'https://github.com/libtmux/libtmux-julia/tree/master/packages/LibTmuxMCP', ['LibTmuxMCP']],
       ['source', 'LibTmuxWorkspace', 'package · packages/LibTmuxWorkspace', 'https://github.com/libtmux/libtmux-julia/tree/master/packages/LibTmuxWorkspace', ['LibTmuxWorkspace']],
+    ],
+  },
+  elixir: {
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-elixir/lib', 'https://github.com/libtmux/libtmux-elixir/tree/main/lib'],
+      ['package', 'Hex', 'Hex: libtmux package', 'https://hex.pm/packages/libtmux'],
+      ['api', 'HexDocs', 'HexDocs: libtmux API reference', 'https://libtmux.hexdocs.pm/']],
+    indexed: true,
+    rows: [
+      ['source', 'libtmux', 'lib', 'https://github.com/libtmux/libtmux-elixir/tree/main/lib', ['libtmux']],
+      ['source', 'libtmux-elixir', 'libtmux/libtmux-elixir', 'https://github.com/libtmux/libtmux-elixir', ['repository']],
+      ['package', 'libtmux', 'Hex', 'https://hex.pm/packages/libtmux', ['libtmux']],
+      ['api', 'libtmux', 'HexDocs', 'https://libtmux.hexdocs.pm/', ['libtmux']],
     ],
   },
   ts: {
