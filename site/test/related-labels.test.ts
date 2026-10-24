@@ -1,4 +1,4 @@
-import { afterEach, beforeAll, describe, expect, it } from 'vitest'
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { experimental_AstroContainer } from 'astro/container'
 import { Window, type Document } from 'happy-dom'
 import { membersOf, memberSignals, moduleOf, qualifiedNameOf, type ApiSymbol } from '@libtmux/api-model'
@@ -8,8 +8,10 @@ import { ownerQualifiedName, relatedLabels, type RelatedLabelInput } from '../sr
 import { relatedApiTypes, relatedTypeLinks, type RelatedTypeLink } from '../src/lib/api-sections'
 import { coreApiSymbols } from '../src/lib/product-api'
 import { wordBreak } from '../src/lib/word-break'
-import { tmuxReferenceIndex, tmuxReferenceUrl, tmuxSourceModel } from '../src/lib/tmux-reference'
+import { tmuxReferenceContext, tmuxReferenceIndex, tmuxReferenceUrl, tmuxSourceModel } from '../src/lib/tmux-reference'
 import { loadAstroTemplate, withoutScope } from './astro-templates'
+
+vi.mock('astro:content', () => ({ getCollection: async () => [] }))
 
 /**
  * A related type is labelled so that a reader can tell which entity it is. A bare name stays when it is unambiguous and the page's
@@ -213,11 +215,11 @@ describe('the rendered related lists', () => {
   const windows: Window[] = []
   afterEach(async () => { for (const win of windows.splice(0)) await win.happyDOM.abort() })
 
-  async function templates() {
-    const cards = await loadAstroTemplate('components/api/ApiRelatedTypes.astro', { real: ['components/api/ApiBadge.astro', 'components/api/SymbolName.astro'] })
-    const rail = await loadAstroTemplate('components/api/ApiPageContents.astro', { real: ['components/api/ApiBadge.astro', 'components/api/SymbolName.astro'] })
-    return { cards, rail }
-  }
+  /**
+   * A page as its own components draw it. Only what a page shows beside the related section is real, as a harness that
+   * renders a reference page lists it: the section is part of `ApiReference`, so no child has to be named for it to appear.
+   */
+  const PAGE_COMPONENTS = ['components/api/ApiPageContents.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro', 'components/api/ApiRelationships.astro']
 
   /** One related list as the reader sees it: the label and title of each link, and the label's markup. */
   function shown(root: Document, selector: string) {
@@ -227,35 +229,102 @@ describe('the rendered related lists', () => {
     })
   }
 
-  it('draws the same unique labels in the Related types cards and the Related APIs chips of every list', async () => {
-    const { cards, rail } = await templates()
+  /** What a chip or card draws for a label: break points where the rule changed it, plain text where it did not. */
+  const markup = (label: string, before: string) => (label !== before ? wordBreak(label).join('<wbr>') : label).replaceAll('&', '&amp;')
+
+  it('draws the Related APIs chips of every list with unique labels, titles, links, marks and break points', async () => {
+    const rail = await loadAstroTemplate('components/api/ApiPageContents.astro', { real: ['components/api/ApiBadge.astro', 'components/api/SymbolName.astro'] })
     const win = new Window({ url: 'https://libtmux.org/' })
     windows.push(win)
     const container = await experimental_AstroContainer.create()
-    const render = async (template: unknown, props: Record<string, unknown>) => withoutScope(await container.renderToString(
-      template as Parameters<typeof container.renderToString>[0], { request: new Request('https://libtmux.org/'), props }))
     let lists = 0
     for (const { port, owner, links, before } of pages().filter((entry) => entry.links.length > 1)) {
       const where = `${port} ${qualifiedNameOf(owner)}`
-      win.document.body.innerHTML = await render(cards, { related: links, index: undefined }) + await render(rail, { sections: [], related: links })
-      const card = shown(win.document, '.api-related-card > a')
-      const chip = shown(win.document, 'nav.api-related a')
-      expect(card.map((item) => item.label), where).toEqual(links.map((link) => link.name))
-      expect(chip.map((item) => item.label), where).toEqual(links.map((link) => link.name))
-      expect(duplicates(card.map((item) => item.label!)), where).toEqual([])
-      expect(duplicates(chip.map((item) => item.label!)), where).toEqual([])
+      win.document.body.innerHTML = withoutScope(await container.renderToString(rail as Parameters<typeof container.renderToString>[0], {
+        request: new Request('https://libtmux.org/'), props: { sections: [], related: links },
+      }))
+      const chips = shown(win.document, 'nav.api-related a')
+      expect(chips.map((item) => item.label), where).toEqual(links.map((link) => link.name))
+      expect(duplicates(chips.map((item) => item.label!)), where).toEqual([])
       for (const [i, link] of links.entries()) {
-        for (const item of [card[i]!, chip[i]!]) {
-          expect(item.title, where).toBe(link.identity)
-          expect(item.href, where).toBe(link.href)
-          expect(item.mark, where).toBeTruthy()
-          // A label the rule changed breaks where a symbol name breaks; one it left alone has no break points.
-          const changed = link.name !== before[i]
-          expect(item.markup, `${where}: ${link.name}`).toBe((changed ? wordBreak(link.name).join('<wbr>') : link.name).replaceAll('&', '&amp;'))
-        }
+        expect(chips[i]!.title, where).toBe(link.identity)
+        expect(chips[i]!.href, where).toBe(link.href)
+        expect(chips[i]!.mark, where).toBeTruthy()
+        expect(chips[i]!.markup, `${where}: ${link.name}`).toBe(markup(link.name, before[i]!))
       }
       lists++
     }
     expect(lists).toBeGreaterThan(1000)
   }, 300_000)
+
+  async function reference(props: Record<string, unknown>, slug: string | undefined, path: string) {
+    const template = await loadAstroTemplate('components/api/ApiReference.astro', { real: PAGE_COMPONENTS })
+    const container = await experimental_AstroContainer.create({ astroConfig: { site: 'https://libtmux.org' } } as never)
+    const win = new Window()
+    windows.push(win)
+    win.document.body.innerHTML = withoutScope(await container.renderToString(template as never, {
+      request: new Request(`https://libtmux.org${path}`), params: slug ? { slug } : undefined, props,
+    }))
+    return win.document
+  }
+
+  it('draws the Related types cards of a page from ApiReference, beside the chips that name the same entries', async () => {
+    const all = pages()
+    // Every page where the rule changed a label, and the first page of each other port with a list to compare.
+    const changed = all.filter((entry) => entry.links.some((link, i) => link.name !== entry.before[i]))
+    const others = Object.keys(API_MODELS).flatMap((port) => changed.some((entry) => entry.port === port) ? [] : all.filter((entry) => entry.port === port && entry.links.length > 1).slice(0, 1))
+    const template = await loadAstroTemplate('components/api/ApiReference.astro', { real: PAGE_COMPONENTS })
+    const container = await experimental_AstroContainer.create({ astroConfig: { site: 'https://libtmux.org' } } as never)
+    const win = new Window()
+    windows.push(win)
+    for (const { port, owner, links, before } of [...changed, ...others]) {
+      const where = `${port} ${qualifiedNameOf(owner)}`
+      win.document.body.innerHTML = withoutScope(await container.renderToString(template as never, {
+        request: new Request(`https://libtmux.org/en/${port}/latest/reference/${owner.slug}/`), params: { slug: owner.slug }, props: { model: API_MODELS[port], owner },
+      }))
+      const ids = [...win.document.querySelectorAll('h2[id^="api-"]')].map((heading) => heading.id)
+      expect(ids, where).toContain('api-related-types')
+      const cards = shown(win.document, '.api-related-card > a')
+      const chips = shown(win.document, 'nav.api-related a')
+      expect(cards.map((item) => item.label), where).toEqual(links.map((link) => link.name))
+      expect(chips.map((item) => item.label), where).toEqual(cards.map((item) => item.label))
+      expect(duplicates(cards.map((item) => item.label!)), where).toEqual([])
+      for (const [i, link] of links.entries()) {
+        expect(cards[i]!.title, where).toBe(link.identity)
+        expect(cards[i]!.href, where).toMatch(new RegExp(`/${link.symbol.slug}/$`))
+        expect(cards[i]!.mark, where).toBeTruthy()
+        expect(cards[i]!.markup, `${where}: ${link.name}`).toBe(markup(link.name, before[i]!))
+      }
+    }
+    expect(changed.length).toBeGreaterThan(0)
+  }, 300_000)
+
+  describe('on the tmux C source reference', () => {
+    // The related types these two pages listed before the owner rule, which no C page takes.
+    const expected = {
+      cmd_list_panes_exec: ['c:enum:cmd_retval', 'c:struct:cmd', 'c:struct:cmdq_item'],
+      cmd_list_panes_window: ['c:struct:cmd', 'c:struct:session', 'c:struct:winlink', 'c:struct:cmdq_item'],
+    }
+
+    it.each(Object.entries(expected))('keeps the related types of %s, as a section of the page and in the chips', async (name, related) => {
+      const model = tmuxSourceModel('latest')
+      const byId = new Map(model.symbols.map((entry) => [entry.id, entry]))
+      const symbol = model.symbols.find((entry) => entry.name === name)!
+      const document = await reference({ source: tmuxReferenceContext('latest', symbol), owner: symbol, searchable: false }, undefined, '/')
+      const ids = [...document.querySelectorAll('h2[id^="api-"]')].map((heading) => heading.id)
+      // The section follows the declarations the function references, and a section a later change appends may follow it.
+      expect(ids).toContain('api-referenced-declarations')
+      expect(ids.indexOf('api-related-types')).toBeGreaterThan(ids.indexOf('api-referenced-declarations'))
+      const labels = related.map((id) => byId.get(id)!.name)
+      const cards = shown(document, '.api-related-card > a')
+      expect(cards.map((item) => item.label)).toEqual(labels)
+      expect(shown(document, 'nav.api-related a').map((item) => item.label)).toEqual(labels)
+      for (const [i, item] of cards.entries()) {
+        expect(item.markup, item.label!).toBe(item.label)
+        expect(item.title, item.label!).toBe(item.label)
+        expect(item.href, item.label!).toBe(tmuxReferenceUrl('latest', byId.get(related[i]!)!))
+        expect(item.mark, item.label!).toBeTruthy()
+      }
+    }, 120_000)
+  })
 })
