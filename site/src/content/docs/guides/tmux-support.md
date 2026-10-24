@@ -16,7 +16,9 @@ refuses an older daemon before the requested operation has any effect.
 
 ## Minimum by port
 
-- Python (`libtmux`), tmuxp and `libtmux-mcp`: tmux 3.2a.
+- Python (`libtmux`) and `libtmux-mcp`: tmux 3.2a.
+- tmuxp: tmux 3.2a, the floor of the `libtmux` release it depends on. Its own
+  README and quickstart say 3.2.
 - Elixir: tmux 3.3.
 - Every other port, with its MCP server and workspace builder: tmux 3.3a.
 

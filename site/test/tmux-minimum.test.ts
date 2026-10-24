@@ -25,7 +25,7 @@ export const PORT_FLOORS = [
   {
     path: 'site/src/content/docs/ports/py/',
     version: '3.2a',
-    why: 'libtmux and libtmux-mcp declare TMUX_MIN_VERSION and a README floor of 3.2a',
+    why: 'libtmux declares TMUX_MIN_VERSION 3.2a and libtmux-mcp documents >= 3.2a; tmuxp depends on libtmux, so its pages state 3.2a too',
   },
   {
     path: 'site/src/content/docs/ports/elixir/',
@@ -43,7 +43,7 @@ export const OTHER_FLOORS = [
   {
     path: 'site/src/content/_workspace-shared/workspace/guides/installation.md',
     version: '3.2a',
-    why: 'the tmuxp paragraph; tmuxp runs on the libtmux floor, 3.2a',
+    why: 'the tmuxp paragraph; tmuxp depends on libtmux~=0.62.0, whose TMUX_MIN_VERSION is 3.2a, although its own README, quickstart and plugin.py say 3.2',
   },
   {
     path: 'site/src/data/home-examples.json',
