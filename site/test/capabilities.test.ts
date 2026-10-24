@@ -17,7 +17,7 @@ function tmuxSource() {
   const git = (...args: string[]) => execFileSync('git', ['-C', dir, '-c', 'user.name=test', '-c', 'user.email=test@example.com', '-c', 'commit.gpgsign=false', ...args], { stdio: 'ignore' })
   git('init', '-q')
   git('commit', '-q', '--allow-empty', '-m', 'release')
-  for (const tag of ['3.2a', '3.3', '3.3a', '3.4']) git('tag', tag)
+  for (const tag of ['3.1', '3.2a', '3.3', '3.3a', '3.4']) git('tag', tag)
   return dir
 }
 
@@ -38,7 +38,7 @@ describe('gen-capabilities', () => {
     const entry = data.ports.py.capabilities[0]
     expect(entry.apis).toEqual(['libtmux.Server.new_session'])
     expect(entry.error).toBe('libtmux.exc.VersionTooLow')
-    expect(data.releases).toEqual(['3.3a', '3.4'])
+    expect(data.releases).toEqual(['3.2a', '3.3', '3.3a', '3.4'])
   })
 
   it('reads a manifest only for the port that owns the checkout', () => {
@@ -149,9 +149,9 @@ describe('gen-capabilities --check', () => {
   })
 
   it('checks committed releases by their form when tmux is absent', () => {
-    const below = check(committed((data) => { data.releases = ['3.2a', '3.3a', '3.4'] }), { tmux: '/nonexistent/tmux' })
+    const below = check(committed((data) => { data.releases = ['3.1', '3.2a', '3.3a', '3.4'] }), { tmux: '/nonexistent/tmux' })
     expect(below.status).toBe(1)
-    expect(below.stderr).toContain('release 3.2a is below the lowest floor 3.3a')
+    expect(below.stderr).toContain('release 3.1 is below the lowest floor 3.2a')
     const unsorted = check(committed((data) => { data.releases = ['3.4', '3.3a'] }), { tmux: '/nonexistent/tmux' })
     expect(unsorted.status).toBe(1)
     expect(unsorted.stderr).toContain('releases are not in ascending order')
