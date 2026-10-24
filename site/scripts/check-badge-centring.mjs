@@ -259,10 +259,13 @@ export function judgeChipGrowth(chips) {
 
 /**
  * The boxes and lines of every chip of one list on the page, judged by `judgeChipGrowth`. The list is the Related APIs
- * rail unless `scope` names another: the `.tmux-usage` table of senders on a tmux command page.
+ * rail unless `scope` names another: the `.tmux-usage` table of senders on a tmux command page. A line is the box of its
+ * text, or with `ink` the box of its letters, from the cap height to the baseline that `text-box` trims the name to: the
+ * usage table sets its names in a semibold face whose text box is taller than the chip's letters and not centred on them,
+ * so the box of the text would put every name a little above its chip.
  */
 export async function chipGrowthProblems(page, scope = { list: 'nav.api-related', where: 'Related APIs column' }) {
-  const chips = await page.evaluate(({ list, where }) => {
+  const chips = await page.evaluate(({ list, where, ink }) => {
     const plain = (r) => ({ top: r.top, bottom: r.bottom, left: r.left, right: r.right })
     return [...document.querySelectorAll(`${list} a:has(> .api-nav__kind)`)].filter((a) => a.offsetParent).map((a) => {
       const name = a.querySelector(':scope > .api-nav__kind + code')
@@ -273,6 +276,13 @@ export async function chipGrowthProblems(page, scope = { list: 'nav.api-related'
       for (const r of [...range.getClientRects()].filter((entry) => entry.width > 0.5 && entry.height > 0.5).sort((x, y) => x.top - y.top)) {
         const last = lines.at(-1)
         if (last && r.top - last.top <= 3) { last.bottom = Math.max(last.bottom, r.bottom); last.right = Math.max(last.right, r.right) } else lines.push({ top: r.top, bottom: r.bottom, right: r.right })
+      }
+      if (ink) {
+        // The trimmed name spans the cap height of its first line to the baseline of its last, so it is one cap height and a line pitch for each line after the first.
+        const trimmed = name.getBoundingClientRect()
+        const pitch = lines.length > 1 ? (lines.at(-1).top - lines[0].top) / (lines.length - 1) : 0
+        const cap = trimmed.height - pitch * (lines.length - 1)
+        lines.forEach((line, index) => { line.top = trimmed.top + index * pitch; line.bottom = line.top + cap })
       }
       const style = getComputedStyle(a)
       const box = a.getBoundingClientRect()
@@ -689,7 +699,7 @@ export async function checkChipGrowth(browser, base) {
   } finally { await context.close() }
 }
 
-const USAGE = { list: '.tmux-usage', where: 'usage table' }
+const USAGE = { list: '.tmux-usage', where: 'usage table', ink: true }
 
 /**
  * The chips of the usage table on the page the maintainer saw them wrap on, `list-panes` at 1134px, and in a container narrow
