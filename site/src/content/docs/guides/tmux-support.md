@@ -9,18 +9,26 @@ sidebar:
 tableOfContents: true
 ---
 
-Every libtmux port, the MCP servers and the workspace builders support tmux
-3.3a and newer. A daemon older than 3.3a is refused before the requested
-operation has any effect.
+No libtmux port requires a tmux newer than 3.3a. The ports, the MCP servers
+and the workspace builders support tmux 3.3a and newer, except Python and
+Elixir, which state an earlier floor. A port that enforces its minimum
+refuses an older daemon before the requested operation has any effect.
+
+## Minimum by port
+
+- Python (`libtmux`), tmuxp and `libtmux-mcp`: tmux 3.2a.
+- Elixir: tmux 3.3.
+- Every other port, with its MCP server and workspace builder: tmux 3.3a.
 
 ## The core minimum
 
 The minimum for ordinary reads, writes, batches, raw commands, workspace
-loading and MCP tools is tmux 3.3a. Releases compare in full, including patch
-letters, so 3.3 is below the minimum and 3.3a is the first supported release.
-A development build such as `next-3.9` ranks below the release it precedes, and
-a release candidate ranks below its release. A version the library cannot
-read is refused, not assumed to be new enough.
+loading and MCP tools is the port's own, tmux 3.3a for most ports. Releases
+compare in full, including patch letters, so 3.3 is below a 3.3a minimum and
+3.3a is the first supported release. A development build such as `next-3.9`
+ranks below the release it precedes, and a release candidate ranks below its
+release. A version the library cannot read is refused, not assumed to be new
+enough.
 
 Libraries judge the daemon that answers on the selected socket, not the `tmux`
 executable that sends the command. The two can differ, for example when a
@@ -37,6 +45,11 @@ newer client binary talks to a server started by an older one. The rules are:
   instead of returning an empty list.
 - The refusal raises the port's version error and happens before the command
   runs, so a refused call leaves no session, window, option or buffer behind.
+
+The Python library does not refuse an older tmux by itself. Its
+`has_minimum_version` helper compares the version that the `tmux` executable
+reports with 3.2a, and no library operation calls it. The Elixir port declares
+its floor and tests it, and has no runtime refusal.
 
 Running `tmux -V` or `tmux -h` on an older executable still works; see the
 [command reference](/tmux/latest/manual/full/#COMMANDS). Their output does not
