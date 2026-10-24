@@ -1016,6 +1016,20 @@ function chipStateProblems(css: string): string[] {
   return problems
 }
 
+describe('a chip with a name that wraps', () => {
+  it('renders the break points of a long name in the chip, and joins the parts back to the name', async () => {
+    const template = await loadAstroTemplate('components/tmux/TmuxUsage.astro', { real: ['components/api/ApiBadge.astro', 'components/api/SymbolName.astro'] })
+    const document = dom(withoutScope(await renderAstroTemplate(template, { props: { usage: tmuxResolvedUsage('latest', 'list-panes') } })))
+    const code = [...document.querySelectorAll('tr[data-port="ruby"] a > .api-nav__kind + code')].find((node) => node.textContent === 'Async::Server#list_panes')!
+    expect(code).toBeDefined()
+    expect(code.innerHTML.replaceAll('<wbr>', '|')).toBe('Async::|Server|#list|_panes')
+    // The control: the same markup for a short Ruby name with fewer break points, and for a name the rule already broke.
+    const short = [...document.querySelectorAll('tr[data-port="ruby"] a > .api-nav__kind + code')].find((node) => node.textContent === 'Session#list_panes')!
+    expect(short.innerHTML.replaceAll('<wbr>', '|')).toBe('Session|#list|_panes')
+    expect(document.querySelector('tr[data-port="py"] a > .api-nav__kind + code')!.innerHTML.replaceAll('<wbr>', '|')).toBe('Server|.panes')
+  })
+})
+
 describe('the hover and focus of a split chip', () => {
   it('acts on the whole chip, leaves the mark as it rests, and focuses with one outline', () => {
     expect(chipStateProblems(MARKS_CSS)).toEqual([])
