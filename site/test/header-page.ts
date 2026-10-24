@@ -25,12 +25,14 @@ export interface HeaderTemplates {
   nativeShell: unknown
 }
 
-export async function loadHeaderTemplates(): Promise<HeaderTemplates> {
+/** `replacements` swaps a helper module the templates import, keyed by its specifier, as a test of what they do with its data. */
+export async function loadHeaderTemplates(replacements: Readonly<Record<string, Record<string, unknown>>> = {}): Promise<HeaderTemplates> {
+  const bound = { ...modules, ...replacements }
   return {
-    baseLayout: await loadAstroTemplate('layouts/BaseLayout.astro', { real, modules }),
+    baseLayout: await loadAstroTemplate('layouts/BaseLayout.astro', { real, modules: bound }),
     nativeShell: await loadAstroTemplate('layouts/NativeShell.astro', {
       real,
-      modules: { ...modules, '../lib/reference-page-links': { referencePageLinks: () => ({ schema: 1, indexes: {}, symbols: {} }) } },
+      modules: { ...bound, '../lib/reference-page-links': { referencePageLinks: () => ({ schema: 1, indexes: {}, symbols: {} }) } },
     }),
   }
 }
