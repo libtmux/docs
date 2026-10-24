@@ -12,7 +12,7 @@ import { apiGlossary, apiGlossaryHeadings, API_GLOSSARY_TITLE, apiGlossaryHref }
 import ApiQualifiedName from '../../components/api/ApiQualifiedName.astro'
 import ApiType from '../../components/api/ApiType.astro'
 import ApiPageContents from '../../components/api/ApiPageContents.astro'
-import { apiEntryFields, apiEntrySections, apiMemberGroups, hasScalarMembers, relatedApiTypes, type ApiSection } from '../../lib/api-sections'
+import { apiEntryFields, apiEntrySections, apiMemberGroups, hasScalarMembers, relatedTypeLinks, type ApiSection } from '../../lib/api-sections'
 import PageToolbar from '../../components/PageToolbar.astro'
 import PagePortSwitcher from '../../components/PagePortSwitcher.astro'
 import DocumentationContext from '../../components/docs/DocumentationContext.astro'
@@ -362,10 +362,7 @@ const paths = (source?.paths ?? []).filter((path) => !owner || path.symbols.some
 if (relationshipSections.some((section) => ['api-calls', 'api-called-by'].includes(section.id))) pageSections.push({ id: 'api-call-network', label: 'Call neighborhood' })
 if (paths.length) pageSections.push({ id: 'api-source-paths', label: 'Paths through the source', count: paths.length })
 pageSections.push(...relationshipSections.map((section) => ({ id: section.id, label: section.label, count: section.items.length })))
-const related = owner ? relatedApiTypes(owner, members, index, declaringType, { includeInternal: Boolean(source) }).map((symbol) => ({
-  name: ownerNames.get(symbol.name)! > 1 ? `${symbol.name} (${moduleOf(symbol)})` : symbol.name,
-  identity: qualifiedNameOf(symbol), kind: symbol.kind, href: hrefFor(symbol), symbol,
-})) : []
+const related = owner && model ? relatedTypeLinks(model, owner, members, index, hrefFor, { language, repeated: ownerNames, includeInternal: Boolean(source) }) : []
 if (related.length) pageSections.push({ id: 'api-related-types', label: 'Related types', count: related.length })
 const title = glossary ? API_GLOSSARY_TITLE : owner
   ? qualifiedNameOf(owner)
@@ -833,7 +830,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                 {related.map((item) => <div class="api-index-card api-related-card">
                   <a class="api-index-card__link" href={item.href} title={item.identity}>
                     <ApiBadge label={item.kind} variant="kind" value={item.kind} compact />
-                    <code>{item.name}</code>
+                    <code>{item.qualified ? <SymbolName name={item.name} /> : item.name}</code>
                   </a>
                   {item.symbol.doc?.summary && <p><ApiDoc text={item.symbol.doc.summary} index={index} context={item.symbol} citations={false} /></p>}
                 </div>)}
