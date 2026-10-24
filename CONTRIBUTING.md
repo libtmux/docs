@@ -226,6 +226,51 @@ API index keep their library symbols.
 The publication audit checks index freshness, rendered links, navigation targets,
 and table layout at desktop, tablet, and phone widths.
 
+### Header destinations
+
+The port header links each repository, package page and API reference that
+[`port-inventory.ts`](site/src/lib/port-inventory.ts) publishes. Two generated
+files hold it to the facts. `site/src/data/manifest-packages.json` lists what
+each port's owning manifests declare at the revision its API model is pinned to,
+and the inventory's tests require the two to agree in both directions. After
+changing an entry, or moving a port's pin, regenerate it from the local
+checkouts:
+
+```console
+$ node scripts/gen-manifest-packages.mjs
+```
+
+A status in the inventory is a claim about a live host, so check it against the
+host after changing an entry or when a package is released:
+
+```console
+$ node scripts/verify-destinations.mjs
+```
+
+The command requests each URL once, read-only. It requires the host's own
+identity for the package, not only a 200; a repository that a registry reports
+must be one of the entry's; and the version the manifest declares must be on
+every host that lists versions, with the record saying so where one cannot. It
+rewrites `site/src/data/destination-evidence.json`, which the unit tests and the
+publication audit compare with the inventory offline. The command exits 1 when
+a published destination fails or an unlinked one starts to answer; commit the
+evidence with the inventory change that follows.
+
+Age is enforced only where a live run is the remedy. Evidence older than
+`EVIDENCE_MAX_AGE_DAYS` in `scripts/lib/destination-verification.mjs` makes the
+offline comparison print a warning with the date of the records (a `::warning::`
+annotation under GitHub Actions), and nothing more, so a change that touches none
+of this does not fail because time passed. A live run ends by requiring every
+record to be within the bound, and a record dated more than a day ahead is
+refused wherever it appears, so evidence cannot be committed back-dated or
+forward-dated. The weekly
+[`verify-destinations.yml`](.github/workflows/verify-destinations.yml) runs the
+live verifier into a temporary file and then
+`node scripts/verify-destinations.mjs --check --fresh` against the committed
+evidence; it fails on a destination that no longer passes or on evidence past
+the bound, and is not a dependency of the test or deploy workflows
+([CI](docs/ci.md#header-destination-check-verify-destinationsyml)).
+
 ## Building and previewing
 
 Build the Astro shell:

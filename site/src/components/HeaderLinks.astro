@@ -1,0 +1,27 @@
+---
+import HeaderPicker from './HeaderPicker.astro'
+import RegistryIcon from './icons/RegistryIcon.astro'
+import type { PortHeaderLinks } from '../lib/header-links'
+import type { Port } from '../lib/ports'
+
+/**
+ * A port's repository, package host and API reference as ordinary links, then
+ * the disclosure that lists everything else. The links stay reachable without
+ * a script and without opening anything; the disclosure is for the packages
+ * and source directories a reader has to search for.
+ *
+ * Below 70rem the bar shows each mark alone, so every link carries an
+ * accessible name that begins with the label CSS hides.
+ */
+interface Props {
+  port: Port
+  links: PortHeaderLinks
+  placement: 'bar' | 'menu'
+}
+const { port, links, placement } = Astro.props
+---
+{links.actions.map((action) => <a class="topnav-chip header-link" href={action.url} rel="noopener" aria-label={action.name} data-header-action={action.kind} data-placement={placement}>
+  <RegistryIcon icon={action.icon} decorative />
+  <span class="header-link__label">{action.label}</span>
+</a>)}
+{links.indexed && <HeaderPicker port={port} rows={links.rows} placement={placement} />}

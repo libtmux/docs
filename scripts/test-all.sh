@@ -184,6 +184,32 @@ node scripts/gen-registry.mjs --check --offline
 step 'package registry state (negative)'
 node scripts/gen-registry.negative.mjs
 
+# The inventory's packages and their versions are read from the pinned
+# manifests. Every port whose checkouts are present is compared and the rest
+# are named as not checked, so a missing checkout narrows the check without
+# silencing it; Python is left out whole if either companion is absent.
+step 'manifest packages'
+node scripts/gen-manifest-packages.mjs --check
+
+step 'manifest packages (negative)'
+node scripts/gen-manifest-packages.negative.mjs
+
+# The header links to these package, API and source pages. The evidence is
+# requested by hand (node scripts/verify-destinations.mjs) and re-verified
+# weekly by .github/workflows/verify-destinations.yml; this compares it
+# with the inventory and the manifests offline, and fails when a port in
+# ports.ts has no inventory entry. The negative case proves the comparison,
+# that rule and the identity rules fail on a wrong package, a 404 and a
+# changed manifest. Old evidence is a printed warning here, not a failure: the
+# live run and the weekly job's --check --fresh are where age is enforced.
+# Neither this step nor the manifest steps above reaches a host: they read
+# local files and, in the negative cases, a loopback server.
+step 'destination evidence'
+node scripts/verify-destinations.mjs --check
+
+step 'destination verification (negative)'
+node scripts/verify-destinations.negative.mjs
+
 step 'source links'
 node scripts/check-source-links.mjs
 

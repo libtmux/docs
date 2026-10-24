@@ -470,6 +470,26 @@ is the backstop for any cleanup run that never fires (a workflow disabled,
 a run that errors before the delete step) — that rule is `infra/`'s
 concern, not this workflow's.
 
+## Header destination check (`verify-destinations.yml`)
+
+Runs weekly and on demand. It asks each host the port header links to whether
+the package, repository or API page still exists and still names what the
+inventory says (`scripts/verify-destinations.mjs`), and holds the evidence
+committed in `site/src/data/destination-evidence.json` to its age bound. It is
+not a dependency of `test.yml` or `deploy-shell.yml`: a registry outage or an
+old record must not block a docs change, and a change that touches none of this
+does not fail because time passed.
+
+The job has `contents: read`, no secrets and no way to push, so the live run
+writes to a temporary file and the workflow uploads it as the
+`destination-evidence` artifact. The second step runs even when the first
+fails, so one run reports both a failing destination and stale evidence. To
+clear either, run `node scripts/verify-destinations.mjs` locally (or download
+the artifact), and commit the file with the inventory change that follows.
+Plain `--check`, which `test.yml` runs through the publication audit, prints
+stale records as `::warning::` annotations under GitHub Actions and still
+passes.
+
 ## Secrets this scheme expects
 
 | Secret | Used by | Scope | Storage level |

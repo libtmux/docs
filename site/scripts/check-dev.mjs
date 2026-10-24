@@ -8,7 +8,7 @@ import { chromium, firefox, webkit } from 'playwright'
 import { API_MODEL_PORTS, PORTS, productAvailable } from '../src/lib/ports.ts'
 import { checkClipboard, checkCompleteApiExamples } from './check-clipboard.mjs'
 import { checkApiAnchorArrival, checkApiExampleOwnership, checkApiNavigation, checkApiStickyHeadings, checkApiStickyHeadingsFail, checkDocumentationNavigation, checkNavigation } from './check-navigation.mjs'
-import { checkReferencePreferences, checkGlobalHeader } from './check-reference-preferences.mjs'
+import { checkReferencePreferences, checkGlobalHeader, checkHeaderLinksFail } from './check-reference-preferences.mjs'
 import { checkHeaderMenuSections, checkHeaderMenuSectionsFail } from './check-header-menu-sections.mjs'
 import { checkStatusBadges, checkStatusBadgesFail } from './check-status-badges.mjs'
 import { checkHomeLauncher } from './check-home-launcher.mjs'
@@ -789,6 +789,7 @@ try {
     await retryReload(() => checkKeywordHelp(browser, base))
   } else if (globalHeaderOnly) {
     await retryReload(() => checkGlobalHeader(browser, base))
+    await checkHeaderLinksFail(browser, base)
   } else if (headerMenuSectionsOnly) {
     await retryReload(() => checkHeaderMenuSections(browser, base))
     await checkHeaderMenuSectionsFail(browser, base)
@@ -859,7 +860,7 @@ try {
       .then(() => retryReload(() => checkKeywordHelp(browser, base)))
     )
     const preferences = schedule(() => checkReferencePreferences(browser, base))
-    const globalHeader = schedule(() => checkGlobalHeader(browser, base))
+    const globalHeader = schedule(() => checkGlobalHeader(browser, base).then(() => checkHeaderLinksFail(browser, base)))
     const headerMenuSections = schedule(() => checkHeaderMenuSections(browser, base)
       .then(() => checkHeaderMenuSectionsFail(browser, base)))
     const statusBadges = schedule(() => checkStatusBadges(browser, base)

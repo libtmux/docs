@@ -8,7 +8,7 @@ import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
  * with their sibling components reduced to slots, and parse the result.
  */
 const real = [
-  'components/SiteHeader.astro', 'components/HeaderPicker.astro', 'components/icons/RegistryIcon.astro',
+  'components/SiteHeader.astro', 'components/HeaderLinks.astro', 'components/HeaderPicker.astro', 'components/icons/RegistryIcon.astro',
 ]
 // `i18n/resolve` reads Astro content collections, which a bare vitest run cannot load.
 const modules = { '../i18n/resolve': { buildLocale } }
@@ -25,12 +25,14 @@ export interface HeaderTemplates {
   nativeShell: unknown
 }
 
-export async function loadHeaderTemplates(): Promise<HeaderTemplates> {
+/** `replacements` swaps a helper module the templates import, keyed by its specifier, as a test of what they do with its data. */
+export async function loadHeaderTemplates(replacements: Readonly<Record<string, Record<string, unknown>>> = {}): Promise<HeaderTemplates> {
+  const bound = { ...modules, ...replacements }
   return {
-    baseLayout: await loadAstroTemplate('layouts/BaseLayout.astro', { real, modules }),
+    baseLayout: await loadAstroTemplate('layouts/BaseLayout.astro', { real, modules: bound }),
     nativeShell: await loadAstroTemplate('layouts/NativeShell.astro', {
       real,
-      modules: { ...modules, '../lib/reference-page-links': { referencePageLinks: () => ({ schema: 1, indexes: {}, symbols: {} }) } },
+      modules: { ...bound, '../lib/reference-page-links': { referencePageLinks: () => ({ schema: 1, indexes: {}, symbols: {} }) } },
     }),
   }
 }

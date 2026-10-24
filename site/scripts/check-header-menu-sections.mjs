@@ -1,15 +1,15 @@
 import assert from 'node:assert/strict'
 
 /**
- * The header's GitHub and Packages menus name each product (Core Library, MCP,
- * Workspace Manager) with a heading over its rows. A heading is a label: it
- * takes no focus, shows no pointer or hover state, names its group for
+ * The header's packages disclosure names each kind of destination (Source,
+ * Packages, API reference) with a heading over its rows. A heading is a label:
+ * it takes no focus, shows no pointer or hover state, names its group for
  * assistive technology, and goes when filtering leaves its group empty.
  */
 const PORTS_WITH_PRODUCTS = ['py', 'java', 'csharp']
-// Kotlin lists one product, so its menus carry no heading at all.
-const PORT_WITH_ONE_PRODUCT = 'kotlin'
-const KINDS = ['github', 'packages']
+// C++ lists source directories only, so its disclosure carries no heading at all.
+const PORT_WITH_ONE_PRODUCT = 'cxx'
+const KINDS = ['destinations']
 const PAINT = ['backgroundColor', 'color', 'cursor', 'textDecorationLine', 'outlineStyle', 'boxShadow', 'opacity', 'transform', 'borderTopColor']
 const INTERACTIVE = 'a, button, input, select, textarea, summary, [tabindex], [role], [contenteditable]'
 
@@ -114,7 +114,7 @@ async function checkStatic(page, picker, where, scheme, expectTitled) {
     assert(block.text.length <= 48, `${where}: a text block in the menu holds ${block.text.length} characters: "${block.text.slice(0, 60)}"`)
   }
   const titled = groups.length > 1
-  assert.equal(titled, expectTitled, `${where}: a menu of ${expectTitled ? 'several products has' : 'one product has no'} headings`)
+  assert.equal(titled, expectTitled, `${where}: a list of ${expectTitled ? 'several kinds has' : 'one kind has no'} headings`)
   if (!titled) {
     assert.equal(groups[0].role, null, `${where}: a single group has no group role to name`)
     assert.equal(groups[0].headingFound, false, `${where}: a single group has no heading`)
@@ -220,7 +220,8 @@ async function checkFilter(page, picker, where, titled) {
       name: heading?.textContent,
     }
   }))
-  const lastRowLabel = await picker.locator('[data-picker-group]').last().locator('.header-picker__name').first().textContent()
+  // The last group's host name is in no row of an earlier group.
+  const lastRowLabel = await picker.locator('[data-picker-group]').last().locator('small').first().textContent()
   await search.fill(lastRowLabel)
   const filtered = await visibility()
   if (titled) {
@@ -243,8 +244,8 @@ async function checkFilter(page, picker, where, titled) {
 }
 
 /**
- * Check the section headings of the GitHub and Packages menus on Python, Java
- * and .NET (several products) and Kotlin (one product).
+ * Check the section headings of the packages disclosure on Python, Java and
+ * .NET (several kinds of destination) and C++ (one kind).
  */
 export async function checkHeaderMenuSections(browser, base, options = {}) {
   const { ports = [...PORTS_WITH_PRODUCTS, PORT_WITH_ONE_PRODUCT], widths = [1440, 390], schemes = ['light', 'dark'],
@@ -299,12 +300,12 @@ export async function checkHeaderMenuSections(browser, base, options = {}) {
       await context.close()
     }
   }
-  console.log(`Header menu sections: ${menus} menus on ${ports.join(', ')} show non-interactive product headings; ${behavior ? 'Tab and arrows skip them, hover and press change nothing, filtering hides empty groups' : 'structure and typography only'}`)
+  console.log(`Header menu sections: ${menus} menus on ${ports.join(', ')} show non-interactive kind headings; ${behavior ? 'Tab and arrows skip them, hover and press change nothing, filtering hides empty groups' : 'structure and typography only'}`)
 }
 
 /** The check must fail on origin/main's menus and on each way a heading could become a row again. */
 export async function checkHeaderMenuSectionsFail(browser, base) {
-  const only = { ports: ['py'], kinds: ['github'], widths: [1440], schemes: ['light'] }
+  const only = { ports: ['py'], kinds: ['destinations'], widths: [1440], schemes: ['light'] }
   const controls = [
     ['origin/main markup and CSS', { script: legacyMarkup, css: LEGACY_CSS }, /group is labelled by its heading/],
     ['a focusable heading', { script: () => document.querySelectorAll('[data-picker-group] > p').forEach((p) => p.setAttribute('tabindex', '0')) }, /heading is not focusable or interactive/],
@@ -312,7 +313,7 @@ export async function checkHeaderMenuSectionsFail(browser, base) {
     ['a heading with a hover state', { css: '.header-picker__heading:hover { background: #f00 !important }' }, /hovering a heading changes nothing/],
     ['item typography on a heading', { css: '.header-picker__heading { font-size: .8125rem !important; text-transform: none !important; color: inherit !important }' }, /heading typography is smaller/],
     ['rows flush with their heading', { css: '.header-picker__group > .header-picker__option { margin-inline-start: 0 !important } .header-picker__heading { margin-inline: 1.2rem !important }' }, /rows are inset under the heading/],
-    ['a paragraph under a product heading', {
+    ['a paragraph under a kind heading', {
       script: () => document.querySelectorAll('[data-picker-group]').forEach((group) => group.querySelector('a').before(Object.assign(document.createElement('p'), { textContent: 'Maintained as a working example of core library usage and deployment. Example APIs, tools and configuration may change without a compatibility or product support commitment.' }))),
     }, /a text block in the menu holds/],
     ['headings that filtering leaves behind', {
