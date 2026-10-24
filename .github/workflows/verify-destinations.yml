@@ -15,7 +15,8 @@ name: verify-destinations
 #
 # The same run holds the standard-library and SDK links the reference pages
 # make to the same standard (scripts/verify-api-destinations.mjs): the page
-# exists, the fragment is an anchor on it, and it documents the symbol the link
+# exists, the fragment is an anchor on it, and what the page declares it
+# documents (kind, package, name, operand count, parameters) is what the link
 # names. Its evidence is site/src/data/api-destination-evidence.json. A host
 # that blocks the request or renders the page in the browser is reported as
 # unresolved, never as passing.

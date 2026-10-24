@@ -2,8 +2,10 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { API_HOSTS, EXTERNAL_INVENTORIES, PAGE_EXCEPTIONS, addressSegments, apiHostOf, arityOf, collectApiDestinations, qualified, terminalSymbol, urlsIn } from '../../scripts/lib/api-destinations.mjs'
 import { addressOf, mismatch } from '../../scripts/lib/api-addresses.mjs'
+import { judge, judgeLabel, pageIdentity, sourceIdentity } from '../../scripts/lib/api-identities.mjs'
+import { linksIn } from '../../scripts/lib/api-destinations.mjs'
 import {
-  INVENTORY_SOURCES, MAX_UNVERIFIABLE_SHARE, checkApiEvidence, expectationsOf, expectedSymbols, mentions, readPage, recordProblems, sameAddress, sectionAt, slugSymbol, unprovenSymbols,
+  INVENTORY_SOURCES, MAX_UNVERIFIABLE_SHARE, UNVERIFIABLE_REASONS, checkApiEvidence, expectationsOf, expectedSymbols, inventoryDigest, mentions, needsCheck, readPage, recordProblems, sameAddress, sectionAt, slugSymbol,
 } from '../../scripts/lib/api-destination-verification.mjs'
 import evidence from '../src/data/api-destination-evidence.json'
 
@@ -21,7 +23,7 @@ describe('API destination evidence', () => {
     for (const record of evidence.destinations as { url: string; ok: boolean; unverifiable?: string; failure?: string; detail?: string }[]) {
       if (record.unverifiable) {
         expect(record.ok, record.url).toBe(false)
-        expect(record.unverifiable.length, record.url).toBeGreaterThan(8)
+        expect(UNVERIFIABLE_REASONS.some((reason) => reason.test(record.unverifiable!)), `${record.url}: ${record.unverifiable}`).toBe(true)
       } else if (!record.ok) {
         expect(record.failure, record.url).toBeTruthy()
         expect(record.detail, record.url).toBeTruthy()
@@ -29,7 +31,7 @@ describe('API destination evidence', () => {
     }
   })
 
-  it('requires a page that answers 200 at its own address, and a symbol for each name', () => {
+  it('requires a page that answers 200 at its own address, and a verdict for each name', () => {
     for (const record of evidence.destinations as { url: string; ok: boolean; status: number; finalUrl?: string; checkedAt: string; terminal?: { symbol: string; at: string }[] }[]) {
       expect(record.url, 'https url').toMatch(/^https:\/\//)
       expect(record.checkedAt, record.url).toMatch(/^\d{4}-\d{2}-\d{2}$/)
@@ -38,16 +40,31 @@ describe('API destination evidence', () => {
       expect(record.finalUrl, `${record.url} is a redirect`).toBeUndefined()
       const destination = destinations.get(record.url)
       if (!destination) continue
-      expect(unprovenSymbols(destination, record), record.url).toEqual([])
+      expect(needsCheck(destination, record), record.url).toBe(false)
     }
   })
 
-  it('names every cached inventory, each checked against its host and still as large as its sidecar', () => {
+  it('names every cached inventory, each checked against its host and still holding the entries it was checked with', () => {
     expect(evidence.inventories.map((record) => record.name).sort()).toEqual(Object.keys(INVENTORY_SOURCES).sort())
-    for (const record of evidence.inventories) {
+    for (const record of evidence.inventories as { name: string; ok: boolean; missing: number; digest: string }[]) {
       expect(record.ok, record.name).toBe(true)
       expect(record.missing, record.name).toBe(0)
+      const entries = JSON.parse(readFileSync(new URL(`../src/data/inventories/${record.name}.entries.json`, import.meta.url), 'utf8')).e as [string, string][]
+      expect(record.digest, record.name).toBe(inventoryDigest(entries))
     }
+  })
+
+  it('keeps a manual\'s own labels out of the inventories, so a name never means one', () => {
+    for (const name of ['python', 'julia']) {
+      const { e } = JSON.parse(readFileSync(new URL(`../src/data/inventories/${name}.entries.json`, import.meta.url), 'utf8')) as { e: [string, string][] }
+      const names = new Set(e.map(([entry]) => entry))
+      for (const label of name === 'python' ? ['search', 'default', 'genindex', 'modindex'] : ['index', 'Level-6']) expect(names.has(label), `${name}: ${label}`).toBe(false)
+    }
+  })
+
+  it('holds one record for each address', () => {
+    const urls = (evidence.destinations as { url: string }[]).map((record) => record.url)
+    expect(new Set(urls).size).toBe(urls.length)
   })
 
   it('lists the same inventories the reference and the prose linker attach', () => {
@@ -68,11 +85,14 @@ describe('what the verifier reads from a page', () => {
   it('matches a symbol as a whole word, never inside another', () => {
     expect(mentions('SetAlgebra Protocol', 'Set')).toBe(false)
     expect(mentions('Set (Java SE 21 & JDK 21)', 'Set')).toBe(true)
-    expect(mentions('the_iterable_protocol', 'iterable')).toBe(true)
+    // An underscore joins words into one name: `map` is not in `unordered_map` or `map_or`.
+    expect(mentions('the_iterable_protocol', 'iterable')).toBe(false)
+    expect(mentions('std::unordered_map', 'map')).toBe(false)
+    expect(mentions('std::map', 'map')).toBe(true)
     expect(mentions('std-fixture-tmp_path', 'tmp_path')).toBe(true)
     expect(mentions('Vector in std::vector - Rust', 'Vec')).toBe(false)
     expect(mentions('Base.sort!', 'sort')).toBe(false)
-    expect(mentions('map_or', 'map')).toBe(true)
+    expect(mentions('map_or', 'map')).toBe(false)
   })
 
   it('opens the text after a heading when the anchor wraps the heading', () => {
@@ -94,6 +114,8 @@ describe('what the verifier reads from a page', () => {
     expect(sameAddress('https://en.cppreference.com/w/cpp/container/vector', 'https://en.cppreference.com/cpp/container/vector')).toBe(false)
     expect(sameAddress('https://hexdocs.pm/elixir/Enum.html', 'https://elixir.hexdocs.pm/Enum.html')).toBe(false)
     expect(sameAddress('https://docs.junit.org/current/api/x.html', 'https://docs.junit.org/6.1.3/api/x.html')).toBe(false)
+    // A path's case is part of its name: MDN answers /map with a redirect to /Map.
+    expect(sameAddress('https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/map', 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map')).toBe(false)
   })
 
   it('reads the symbol a name asks for, and the one an address names', () => {
@@ -161,7 +183,7 @@ describe('what the verifier reads from a page', () => {
   })
 
   it('writes a name as its address would: aliases applied, the root marker and an operand count off', () => {
-    expect(addressSegments('go', 'sdk.Transport')).toEqual(['mcp', 'Transport'])
+    expect(addressSegments('go', 'sdk.Transport')).toEqual(['sdk', 'Transport'])
     expect(addressSegments('scala', 'cats.effect.Async')).toEqual(['cats', 'effect', 'kernel', 'Async'])
     expect(addressSegments('scala', '_root_.cats.effect.IO')).toEqual(['cats', 'effect', 'IO'])
     expect(arityOf('Enum.map/2')).toBe('2')
@@ -187,7 +209,8 @@ describe('what the verifier reads from a page', () => {
     expect(at('https://docs.python.org/3/builtins/functions.html#abs', 'py', 'int')).toBeUndefined()
     // Every exception names an address with a fragment or a page of its own, a reason, and at least one name.
     for (const entry of PAGE_EXCEPTIONS as unknown as { tier: string; url: string; names: string[]; reason: string }[]) {
-      expect(['listed', 'section'], entry.url).toContain(entry.tier)
+      expect(['listed', 'section', 'label'], entry.url).toContain(entry.tier)
+      if (entry.tier === 'label') for (const name of entry.names) expect(name, entry.url).toMatch(/^authored:/)
       expect(entry.reason.length, entry.url).toBeGreaterThan(20)
       expect(entry.names.length, entry.url).toBeGreaterThan(0)
       expect(entry.url, 'an address, not a prefix').not.toMatch(/[#/]$/)
@@ -203,8 +226,13 @@ describe('what the verifier reads from a page', () => {
     expect(recordProblems({ ...passing, host: 'example.org' })[0]).toMatch(/recorded under the host/)
     expect(recordProblems({ ...passing, via: undefined })[0]).toMatch(/without saying how the host was read/)
     expect(recordProblems({ ...passing, terminal: [{ symbol: 'int', at: 'heading' }] })[0]).toMatch(/never reports/)
+    expect(recordProblems({ ...passing, terminal: [{ symbol: 'int', at: 'identity' }] })[0]).toMatch(/found by identity without the identity/)
     expect(recordProblems({ ...passing, ok: false })[0]).toMatch(/neither passes nor says why/)
-    expect(recordProblems({ ...passing, ok: false, unverifiable: 'blocked' })[0]).toMatch(/without a reason/)
+    expect(recordProblems({ ...passing, ok: false, unverifiable: 'blocked' })[0]).toMatch(/no reason the verifier gives/)
+    expect(recordProblems({ ...passing, ok: false, unverifiable: 'n/a' })[0]).toMatch(/no reason the verifier gives/)
+    for (const reason of ['the request failed (EAI_AGAIN)', 'the host rate-limited the request (429)', 'the host blocks the request (403)', 'the page is rendered in the browser and serves no readable content']) {
+      expect(recordProblems({ ...passing, ok: false, unverifiable: reason, status: 0, terminal: undefined })).toEqual([])
+    }
     expect(MAX_UNVERIFIABLE_SHARE).toBeGreaterThan(0)
     expect(MAX_UNVERIFIABLE_SHARE).toBeLessThan(0.5)
   })
@@ -232,5 +260,118 @@ describe('what the verifier reads from a page', () => {
     expect(apiHostOf('https://elixir.hexdocs.pm/Enum.html')).toBe('elixir.hexdocs.pm')
     expect(apiHostOf('https://github.com/libtmux/libtmux')).toBeUndefined()
     expect(API_HOSTS.has('docs.oracle.com')).toBe(true)
+  })
+})
+
+describe('what a name says it is', () => {
+  const identity = (port: string, name: string, extra: object = {}) => sourceIdentity({ port, name, source: 'builtin', ...extra })
+
+  it('keeps the whole path after generics, calls and subscripts', () => {
+    expect(identity('rs', 'Option<T>::map').segments).toEqual(['Option', 'map'])
+    expect(identity('rs', 'Vec<u8>::push').segments).toEqual(['Vec', 'push'])
+    expect(identity('cxx', 'std::vector<int>::push_back').segments).toEqual(['std', 'vector', 'push_back'])
+    expect(identity('java', 'List<String>.add').segments).toEqual(['List', 'add'])
+    expect(identity('rs', 'HashMap<K, V>::get').symbol).toBe('get')
+  })
+
+  it('reads the kind, the operand count and the parameters a name writes', () => {
+    expect(identity('elixir', 't:Supervisor.child_spec/0')).toMatchObject({ kind: 'type', arity: 0, symbol: 'child_spec' })
+    expect(identity('elixir', 'Application.start/2')).toMatchObject({ kind: 'member', arity: 2 })
+    expect(identity('elixir', 'c:Application.start/2')).toMatchObject({ kind: 'callback' })
+    expect(identity('csharp', 'ILogger<TCategoryName>')).toMatchObject({ arity: 1, kind: 'type' })
+    expect(identity('csharp', 'IEnumerable').arity).toBe(1)
+    expect(identity('java', 'Process.waitFor(long, TimeUnit)').params).toEqual(['long', 'TimeUnit'])
+    expect(identity('java', 'System.getenv()').params).toEqual([])
+    expect(identity('java', 'System.getenv').params).toBeUndefined()
+    expect(identity('kotlin', 'Dispatchers').kind).toBe('object')
+    expect(identity('kotlin', 'kotlinx.coroutines.Dispatchers.IO').kind).toBe('member')
+    expect(identity('fsharp', 'Seq').kind).toBe('module')
+    expect(identity('scala', 'Using').kind).toBe('object')
+    expect(identity('ts', 'string')).toMatchObject({ symbol: 'String', aliased: true })
+  })
+
+  it('ties a Go qualifier to the import path it stands for', () => {
+    const mcp = { path: ['github.com/modelcontextprotocol/go-sdk/mcp', 'Transport'], kind: 'type', declared: 'type' }
+    expect(judge(identity('go', 'sdk.Transport'), mcp)).toBeUndefined()
+    expect(judge(identity('go', 'mcp.Transport'), mcp)).toBeUndefined()
+    expect(judge(identity('go', 'errors.Is'), { path: ['errors', 'Is'], kind: 'member', declared: 'function' })).toBeUndefined()
+    expect(judge(identity('go', 'errors.Is'), { path: ['github.com/pkg/errors', 'Is'], kind: 'member', declared: 'function' })).toMatchObject({ failure: 'owner' })
+    expect(judge(identity('go', 'template.New'), { path: ['html/template', 'New'], kind: 'member', declared: 'function' })).toMatchObject({ failure: 'owner' })
+    expect(judge(identity('go', 'template.New'), { path: ['text/template', 'New'], kind: 'member', declared: 'function' })).toBeUndefined()
+  })
+
+  it('refuses a bare name no table gives an owner', () => {
+    expect(judge(identity('java', 'Widget'), { path: ['com', 'example', 'Widget'], kind: 'type', declared: 'class' })).toMatchObject({ failure: 'owner' })
+    expect(judge(identity('java', 'Duration'), { path: ['javax', 'xml', 'datatype', 'Duration'], kind: 'type', declared: 'class' })).toMatchObject({ failure: 'owner' })
+    expect(judge(identity('java', 'Duration'), { path: ['java', 'time', 'Duration'], kind: 'type', declared: 'class' })).toBeUndefined()
+    expect(judge(identity('java', 'IllegalArgumentException'), { path: ['java', 'lang', 'IllegalArgumentException'], kind: 'type', declared: 'class' })).toBeUndefined()
+    expect(judge(identity('py', 'run'), { path: ['subprocess', 'run'], kind: 'member', declared: 'function' })).toMatchObject({ failure: 'owner' })
+    expect(judge(identity('py', 'open'), { path: ['open'], kind: 'member', declared: 'function' })).toBeUndefined()
+  })
+
+  it('accepts a bare member written in the docs of a type that extends its owner, and no other', () => {
+    const close = { path: ['java', 'lang', 'AutoCloseable', 'close'], kind: 'member', declared: 'method' }
+    expect(judge(identity('scala', 'close()'), close)).toMatchObject({ failure: 'owner' })
+    expect(judge(identity('scala', 'close()', { owners: ['AutoCloseable'] }), close)).toBeUndefined()
+    expect(judge(identity('scala', 'close()', { owners: ['Comparable'] }), close)).toMatchObject({ failure: 'owner' })
+  })
+
+  it('tells a kind from a kind, and a page of the manual from a symbol', () => {
+    expect(judge(identity('elixir', 'Application.start/2'), { path: ['Application', 'start'], kind: 'callback', declared: 'callback', arity: 2 })).toMatchObject({ failure: 'kind' })
+    expect(judge(identity('scala', 'IO'), { path: ['cats', 'effect', 'IO'], kind: 'object', declared: 'object' })).toMatchObject({ failure: 'kind' })
+    expect(judge(identity('py', 'default'), { path: ['default'], kind: 'other', declared: 'fragment' })).toMatchObject({ failure: 'kind' })
+    expect(judge(identity('py', 'search'), { path: [], kind: 'other', declared: 'page' })).toMatchObject({ failure: 'kind' })
+    expect(judge(identity('cxx', 'bool'), { path: ['bool'], kind: 'keyword', declared: 'keyword' })).toBeUndefined()
+  })
+
+  it('compares operand counts and parameter lists where the name writes them', () => {
+    expect(judge(identity('csharp', 'ILogger'), { path: ['Microsoft', 'Extensions', 'Logging', 'ILogger'], kind: 'type', declared: 'interface', arity: 1, via: 'learn' })).toMatchObject({ failure: 'arity' })
+    expect(judge(identity('elixir', 'Enum.reduce/2'), { path: ['Enum', 'reduce'], kind: 'member', declared: 'function', arity: 3, via: 'exdoc' })).toMatchObject({ failure: 'arity' })
+    expect(judge(identity('java', 'System.getenv()'), { path: ['java', 'lang', 'System', 'getenv'], kind: 'member', declared: 'method', params: ['String'] })).toMatchObject({ failure: 'params' })
+    expect(judge(identity('java', 'System.getenv'), { path: ['java', 'lang', 'System', 'getenv'], kind: 'member', declared: 'method', params: ['String'] })).toBeUndefined()
+  })
+
+  it('compares words on a link with the symbol the page documents', () => {
+    const strip = { path: ['Base', 'strip'], kind: 'member', declared: 'function' }
+    expect(judgeLabel('strip', strip)).toBeUndefined()
+    expect(judgeLabel('`Base.strip`', strip)).toBeUndefined()
+    expect(judgeLabel('lstrip', strip)).toMatchObject({ failure: 'label' })
+    expect(judgeLabel('`tokio::select!`', { path: ['tokio', 'select'], kind: 'member', declared: 'macro' })).toBeUndefined()
+  })
+
+  it('finds the words of each link a text writes', () => {
+    const links = linksIn('See [`a`](https://x.org/a) and [the b][b] or [c][missing].\n\n[b]: https://x.org/b\n{ title: \'Python classes\', url: \'https://docs.python.org/3/tutorial/classes.html\' }')
+    expect([...links].map(([url, words]) => [url, [...words]])).toEqual([
+      ['https://x.org/a', ['`a`']], ['https://x.org/b', ['the b']], ['https://docs.python.org/3/tutorial/classes.html', ['Python classes']],
+    ])
+  })
+})
+
+describe('what a page says it is', () => {
+  const read = (url: string, html: string) => pageIdentity(url, readPage(`<html><head><title>${/<title>([^<]*)/.exec(html)?.[1] ?? ''}</title></head><body>${html}</body></html>`))
+
+  it('reads rustdoc\'s title and heading', () => {
+    const page = readPage('<html><head><title>Error in std::io - Rust</title></head><body><h1>Struct <span>Error</span></h1><section id="method.kind"></section></body></html>')
+    expect(pageIdentity('https://doc.rust-lang.org/std/io/struct.Error.html', page)).toMatchObject({ kind: 'type', path: ['std', 'io', 'Error'] })
+    expect(pageIdentity('https://doc.rust-lang.org/std/io/struct.Error.html#method.kind', page)).toMatchObject({ kind: 'member', path: ['std', 'io', 'Error', 'kind'] })
+  })
+
+  it('reads javadoc\'s package line and the parameters a member\'s anchor spells', () => {
+    const page = readPage('<html><head><title>Process</title></head><body><div class="sub-title"><span class="package-label-in-type">Package</span>&nbsp;<a href="x">java.lang</a></div><h1>Class Process</h1><section id="method-detail"><section class="detail" id="waitFor(long,java.util.concurrent.TimeUnit)"></section></section></body></html>')
+    const url = 'https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Process.html'
+    expect(pageIdentity(url, page)).toMatchObject({ kind: 'type', path: ['java', 'lang', 'Process'] })
+    expect(pageIdentity(`${url}#waitFor(long,java.util.concurrent.TimeUnit)`, page)).toMatchObject({ kind: 'member', path: ['java', 'lang', 'Process', 'waitFor'], params: ['long', 'TimeUnit'] })
+  })
+
+  it('reads a page of a host it knows, that declares nothing, as no symbol', () => {
+    expect(read('https://docs.python.org/3/search.html', '<h1>Search</h1>')).toMatchObject({ kind: 'other', declared: 'page' })
+    expect(read('https://www.typescriptlang.org/docs/handbook/utility-types.html', '<h1>Utility Types</h1>')).toBeUndefined()
+  })
+
+  it('reads MDN\'s title for a member and for an object', () => {
+    const member = readPage('<html><head><title>AbortSignal: timeout() static method - Web APIs | MDN</title></head><body></body></html>')
+    expect(pageIdentity('https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/timeout_static', member)).toMatchObject({ path: ['AbortSignal', 'timeout'], kind: 'member' })
+    const object = readPage('<html><head><title>Map - JavaScript | MDN</title></head><body></body></html>')
+    expect(pageIdentity('https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map', object)).toMatchObject({ path: ['Map'], kind: 'type' })
   })
 })

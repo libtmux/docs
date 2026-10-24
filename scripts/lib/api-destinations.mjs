@@ -23,6 +23,8 @@ import { BUILTINS } from '../../packages/api-model/src/builtins.ts'
 import { Resolver, SymbolIndex, tokenizeDoc, looksLikeApiMention, notASymbol } from '../../packages/api-model/src/index.ts'
 import { KEYWORD_HELP } from '../../packages/api-model/src/link.ts'
 import { NATIVE_API_GLOSSARIES } from '../../site/src/lib/api-glossary-native.ts'
+export { TYPE_ALIASES, addressSegments, arityOf, nameSegments, terminalSymbol } from './api-sources.mjs'
+import { nameSegments } from './api-sources.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
@@ -60,41 +62,6 @@ export const apiHostOf = (url) => {
   }
 }
 
-/**
- * Names a language spells another way than the page that documents them: a
- * keyword for a library type, or a read-only view of one. The page is right
- * when it documents the target.
- */
-export const TYPE_ALIASES = {
-  csharp: { bool: 'Boolean', string: 'String', char: 'Char', int: 'Int32', long: 'Int64', double: 'Double', void: 'Void', object: 'Object', byte: 'Byte' },
-  fsharp: { string: 'String', bool: 'Boolean', int: 'Int32', int64: 'Int64', seq: 'IEnumerable', None: 'option', Some: 'option' },
-  // MDN has no page for TypeScript's read-only views or for its iterator interface; it documents the runtime
-  // objects they view.
-  // Scala's String is the alias `scala.Predef` declares, and its page is Predef's.
-  scala: { String: 'Predef' },
-  ts: { ReadonlyMap: 'Map', ReadonlySet: 'Set', IterableIterator: 'Iterator' },
-}
-
-/**
- * Names written with a package other than the one whose page documents them.
- * The Go SDK's examples import `mcp` as `sdk`, and cats-effect re-exports the
- * types of its kernel package from `cats.effect`, so both spellings reach the
- * same page. Each rewrites a name to the one the address spells.
- */
-const NAME_ALIASES = {
-  go: { sdk: 'mcp' },
-  scala: Object.fromEntries(['Async', 'Deferred', 'Outcome', 'Resource', 'Fiber', 'Ref'].map((type) => [`cats.effect.${type}`, `cats.effect.kernel.${type}`])),
-}
-
-/** A name's segments as the address spells them: the root marker dropped, a package alias replaced. */
-export function addressSegments(port, name) {
-  const segments = nameSegments(name)
-  const whole = NAME_ALIASES[port]?.[segments.join('.')]
-  if (whole) return whole.split('.')
-  const head = NAME_ALIASES[port]?.[segments[0]]
-  return segments.length > 1 && head && !head.includes('.') ? [head, ...segments.slice(1)] : segments
-}
-
 const CPP = 'https://en.cppreference.com/cpp/'
 const MANUAL = 'https://www.lua.org/manual/5.4/manual.html#2.1'
 const TYPESPECS = 'https://elixir.hexdocs.pm/typespecs.html'
@@ -122,6 +89,9 @@ const UTILITY_ANCHORS = {
  *   or sibling entry) names the symbol. For an anchor that documents several,
  *   or whose spelling is a heading. `words` is what the section says when it
  *   is not the symbol's own spelling (`async iterable` for `AsyncIterable`).
+ * - `label`: a link's own words name the concept, and the page it reaches
+ *   documents the symbol that defines it (`authored:` names, the words as
+ *   written). For a glossary term that links the function declaring it.
  */
 export const PAGE_EXCEPTIONS = [
   ...[
@@ -135,9 +105,22 @@ export const PAGE_EXCEPTIONS = [
     [`${CPP}types/remove_cvref`, ['std::remove_cvref_t'], 'the remove_cvref page lists the _t helper alias'],
     [`${CPP}types/remove_pointer`, ['std::remove_pointer_t'], 'the remove_pointer page lists the _t helper alias'],
     [`${CPP}types/result_of`, ['std::invoke_result_t'], 'the result_of page covers invoke_result and its _t helper alias'],
-    [`${CPP}language/bool_literal`, ['bool'], 'the boolean literals page is where cppreference documents the bool type'],
-    [`${CPP}language/types`, ['int', 'long', 'double', 'char'], 'the fundamental types page documents each in a section of its own'],
   ].map(([url, names, reason]) => ({ tier: 'listed', url, names: names.map((name) => `cxx:${name}`), reason })),
+  ...[
+    ['https://docs.python.org/3/builtins/functions.html#classmethod', 'Python class methods', 'the classmethod builtin is the decorator that makes a class method, and its entry is where Python documents them'],
+    ['https://docs.python.org/3/builtins/functions.html#property', 'Python properties', 'the property builtin is the descriptor class that makes a property, and its entry is where Python documents them'],
+    ['https://docs.python.org/3/library/typing.html#typing.overload', 'Python typing overloads', 'typing.overload is the decorator that declares an overload for a type checker'],
+    ['https://docs.julialang.org/en/v1/base/base/#Base.getproperty', 'Julia fields and properties', 'getproperty is the function that dot access calls, and Base documents field and property access in its entry'],
+    ['https://docs.julialang.org/en/v1/base/base/#Base.getproperty', 'Julia property access', 'getproperty is the function that dot access calls, and Base documents property access in its entry'],
+    ['https://elixir.hexdocs.pm/Kernel.html#defexception/1', 'Elixir exceptions', 'defexception is the macro that declares an exception, and its entry is where Elixir documents them'],
+    ['https://elixir.hexdocs.pm/Kernel.html#defmacro/2', 'Elixir macros', 'defmacro is the macro that defines a macro, and its entry is where Elixir documents them'],
+    ['https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_functions_advanced', 'PowerShell advanced functions', 'the about topic for advanced functions is titled Functions_Advanced'],
+    ['https://elixir.hexdocs.pm/Module.html', 'Elixir deprecations', 'the Module page documents the @deprecated attribute among its module attributes'],
+  ].map(([url, label, reason]) => ({ tier: 'label', url, names: [`authored:${label}`], reason })),
+  ...[['string/basic_string', 'std::string'], ['string/basic_string_view', 'std::string_view']].map(([page, name]) => ({
+    tier: 'listed', url: `${CPP}${page}`, names: [`cxx:${name}`], words: name,
+    reason: `the page lists the ${name} typedef for char beside the template`,
+  })),
   {
     tier: 'listed', url: `${CPP}chrono/time_point/max`, names: ['cxx:std::chrono::steady_clock::time_point::max'], words: 'time_point',
     reason: 'max is documented once for time_point of any clock, and the name picks steady_clock, which the title does not',
@@ -171,29 +154,6 @@ export function exceptionFor(url, key, exceptions = PAGE_EXCEPTIONS) {
   return entry && { tier: entry.tier, reason: entry.reason, ...(entry.words && { words: entry.words }) }
 }
 
-const CALL = /\(.*$/s
-const ARITY = /`\d+/g
-
-/** The segments of a name, outermost first, without generics, arity, call syntax or an Elixir kind prefix. */
-export function nameSegments(name) {
-  let text = name.trim().replace(ARITY, '').replace(/^[tc]:/, '').replace(/\/\d+$/, '')
-  if (!/^[A-Za-z_]+(?:-[A-Za-z]+)+$/.test(text)) text = text.replace(CALL, '').replace(/<.*$/s, '')
-  text = text.replace(/\[.*$/s, '')
-  return text.split(/::|[.#\\]/).filter((segment) => segment && segment !== '_root_')
-}
-
-/** The symbol a name asks for: its last segment, or the word its language spells for it. */
-export function terminalSymbol(port, name) {
-  const aliased = TYPE_ALIASES[port]?.[name]
-  if (aliased) return aliased
-  return nameSegments(name).at(-1) ?? name.trim()
-}
-
-/** The operand count a name writes after a slash, as Elixir does: `Enum.map/2`. */
-export function arityOf(name) {
-  return /\/(\d+)$/.exec(name.trim())?.[1]
-}
-
 function readJson(path) {
   return JSON.parse(readFileSync(path, 'utf8'))
 }
@@ -207,7 +167,11 @@ function note(found, url, use) {
   const host = apiHostOf(url)
   if (!host) return
   const destination = found.get(url) ?? { url, host, uses: new Map() }
-  destination.uses.set(`${use.port}\0${use.name}\0${use.source}`, use)
+  const key = `${use.port}\0${use.name}\0${use.source}\0${use.label ?? ''}`
+  const known = destination.uses.get(key)
+  // The same name written in several places is one use; the types its places extend are all the owners it may mean.
+  const owners = [...new Set([...(known?.owners ?? []), ...(use.owners ?? [])])]
+  destination.uses.set(key, { ...known, ...use, ...(owners.length && { owners }) })
   found.set(url, destination)
 }
 
@@ -244,8 +208,11 @@ export function collectApiDestinations({ root = ROOT } = {}) {
     for (const dependency of dependencies) {
       if (dependency.langs.includes(port)) index.addInventory(dependency.baseUrl, entriesOf(dependency), dependency.langs, dependency.project)
     }
-    const link = (target, text, source, symbol) => {
-      if (target?.external) note(found, target.href, { port, name: qualified(symbol, text), source })
+    const byId = new Map(model.symbols.map((symbol) => [symbol.id, symbol]))
+    // A member written bare in a type's docs may belong to a type it extends, or that its parent extends.
+    const basesOf = (symbol) => [...new Set([symbol, byId.get(symbol.parent)].flatMap((owner) => owner?.extends ?? []).map((base) => nameSegments(base).join('.')).filter(Boolean))]
+    const link = (target, text, source, symbol, role) => {
+      if (target?.external) note(found, target.href, { port, name: qualified(symbol, text), source, ...(role && role !== 'any' && { role }), ...(basesOf(symbol).length && { owners: basesOf(symbol) }) })
     }
     const types = (symbol, signature, text) => {
       if (!text) return
@@ -254,7 +221,7 @@ export function collectApiDestinations({ root = ROOT } = {}) {
     const prose = (symbol, text) => {
       if (!text) return
       for (const span of tokenizeDoc(text, port)) {
-        if (span.kind === 'ref') link(index.resolve(span.target, span.role, symbol), span.target, 'doc', symbol)
+        if (span.kind === 'ref') link(index.resolve(span.target, span.role, symbol), span.target, 'doc', symbol, span.role)
         else if (span.kind === 'code' && looksLikeApiMention(span.text) && !notASymbol(span.text)) link(index.resolve(span.text, 'any', symbol), span.text, 'doc', symbol)
         else if (span.kind === 'link') note(found, span.href, { port, name: span.text, source: 'doc-link' })
       }
@@ -334,11 +301,39 @@ function collectProse(found, { root, models, inventories }) {
   }
 }
 
+/**
+ * The links a text writes with words, as `Map<url, Set<label>>`: inline Markdown
+ * (`[label](url)`), reference style (`[label][ref]` with `[ref]: url`), and the
+ * glossary's `{ title, url }` pairs. A bare URL has no words to compare.
+ */
+export function linksIn(text) {
+  const labels = new Map()
+  const add = (url, label) => {
+    const clean = url.replace(/[.,;:*_]+$/, '')
+    const words = label.replace(/\s+/g, ' ').trim()
+    if (words) labels.set(clean, (labels.get(clean) ?? new Set()).add(words))
+  }
+  for (const match of text.matchAll(/\[((?:[^\]\\]|\\.)+)\]\((https:\/\/[^\s)]+)\)/g)) add(match[2], match[1])
+  const references = new Map([...text.matchAll(/^\[([^\]]+)\]:\s*(https:\/\/\S+)/gm)].map((match) => [match[1].toLowerCase(), match[2]]))
+  for (const match of text.matchAll(/\[((?:[^\]\\]|\\.)+)\]\[([^\]]+)\]/g)) {
+    const url = references.get(match[2].toLowerCase())
+    if (url) add(url, match[1])
+  }
+  for (const match of text.matchAll(/title:\s*'([^']+)',\s*url:\s*'(https:\/\/[^']+)'/g)) add(match[2], match[1])
+  return labels
+}
+
 /** Hand-written references: Markdown links in pages, guide data and the glossary. */
 function collectAuthored(found, { root }) {
   const skip = new Set(JSON.parse(readFileSync(join(root, 'site', 'src', 'data', 'destination-evidence.json'), 'utf8')).destinations.map((record) => record.url))
-  const add = (text, where) => {
-    for (const url of urlsIn(text)) if (!skip.has(url)) note(found, url, { port: '', name: where, source: 'authored' })
+  const add = (text, where, title) => {
+    const labels = linksIn(text)
+    for (const url of urlsIn(text)) {
+      if (skip.has(url)) continue
+      const words = title ? new Set([title]) : labels.get(url)
+      if (words) for (const label of words) note(found, url, { port: '', name: where, source: 'authored', label })
+      else note(found, url, { port: '', name: where, source: 'authored' })
+    }
   }
   const content = join(root, 'site', 'src', 'content', 'docs')
   for (const file of globSync('**/*.{md,mdx}', { cwd: content }).sort()) {
@@ -357,7 +352,7 @@ function collectAuthored(found, { root }) {
   // The native glossary builds its addresses with helpers, so it is read as data.
   for (const [port, terms] of Object.entries(NATIVE_API_GLOSSARIES)) {
     for (const [term, definition] of Object.entries(terms)) {
-      for (const reference of definition.references) add(reference.url, `glossary ${port} ${term}`)
+      for (const reference of definition.references) add(reference.url, `glossary ${port} ${term}`, reference.title)
     }
   }
 }

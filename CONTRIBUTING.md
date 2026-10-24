@@ -282,19 +282,35 @@ on, is held to more than a 200. [`api-destinations.mjs`](scripts/lib/api-destina
 reads every one the site generates: the curated maps in
 [`builtins.ts`](packages/api-model/src/builtins.ts), the cached inventories,
 the references in the extracted doc comments, the links in pages, guide data
-and the glossary. Each is requested once and must land on the page and the
-fragment it names, and the page must document the symbol the link was made
-for. Where the host puts a symbol's package, module, type and member in its
-address (rustdoc, pkg.go.dev, javadoc, Scaladoc, Learn, ExDoc, CPython and
-Documenter fragments), the name written in full must be the end of that path:
-`std::io::Error` is not `std/fmt/struct.Error.html`, `str.join` is not
-`os.path.join`, and `warn` is not `warn_explicit`. Where a fragment is a
-heading's anchor, it must be the symbol's own spelling. Text near an anchor
-does not count, because a CPython entry names the types its neighbours take
-and a javadoc page lists the types it inherits from. A page without a fragment
-must also name the symbol in its title or top heading. A host that moves the
-page elsewhere fails, because a link should be the page's address. Request the missing ones after changing a map, an inventory or
-a pinned model:
+and the glossary. Each is requested once and must land on a page whose own
+declaration is the symbol the link was made for.
+
+A documentation page says what it documents, in the markup its host uses, and
+says it more exactly than its address or a word in its title:
+[`api-identities.mjs`](scripts/lib/api-identities.mjs) reads rustdoc's title and
+heading, javadoc's package line and the parameters a member's anchor spells,
+Dokka's breadcrumbs and declaration, Scaladoc's kind, cppreference's heading
+and declaration, ExDoc's `c:` and `t:` anchors and operand count, fsdocs' Module
+or Type, Learn's namespace and generic arity, CPython's `dl.py` role,
+pkg.go.dev's full import path and kind, Documenter's category, MDN's title and
+DocC's symbol kind. [`api-sources.mjs`](scripts/lib/api-sources.mjs) says the same of the name that led
+there: its kind, the package, module or type written before it, its operand
+count and its parameter list where the name gives them. A link is right when the
+two agree. `Option<T>::map` keeps its `map`, `System.getenv()` is the overload
+that takes nothing, and `std::map` is not `std::unordered_map`, `std::optional`
+not `std::bad_optional_access`, and `Flow` not `flow()`. A name written bare
+needs an owner: `BARE_OWNERS` in `api-sources.mjs` is what each port imports, and
+`DEFAULT_SCOPES` is what its language provides, so `Duration` in Java is
+`java.time.Duration` and a bare `run` in Python is nobody's. A bare name that no
+table covers is refused rather than guessed. A page of a host we read that
+declares no symbol (a search page, a manual section) is no symbol, whatever its
+title says. A link's own words (`[strip](#Base.strip)`) must name the symbol of
+a page that documents one. Only a host that publishes no such declaration (the
+TypeScript handbook, the Lua manual, the JLS) is read by its fragment and its
+title, and a name there passes only by an exception. A host that moves the
+page elsewhere, even by the case of a letter, fails, because a link should be
+the page's address. Request the missing ones after changing a map, an
+inventory or a pinned model:
 
 ```console
 $ node scripts/verify-api-destinations.mjs --missing
@@ -303,36 +319,44 @@ $ node scripts/verify-api-destinations.mjs --missing
 The command is sequential and pauses between requests; it keeps fetched pages
 for twelve hours (`--no-cache` asks again). A host that blocks the request,
 throttles it or renders the page in the browser is recorded as unverifiable
-with the reason and is never counted as passing; the offline check prints those
-as unresolved. The cached inventories (CPython, Julia, the JDK and the web
-platform) are checked whole against the index each host publishes:
+with one of a closed list of reasons and is never counted as passing; the
+offline check prints every one as unresolved. The cached inventories (CPython,
+Julia, the JDK and the web platform) are checked whole against the index each
+host publishes, and bound to the entries they held by a digest:
 
 ```console
 $ node scripts/verify-api-destinations.mjs --inventories
 ```
 
-The evidence is `site/src/data/api-destination-evidence.json`. `--check`, which
-the publication audit runs, requests nothing: it fails on a destination with no
-passing record, a record for a link nothing makes, and a name that was never
-checked against its page, or whose pass rests on an exception that is no longer
-listed. `PAGE_EXCEPTIONS` in `scripts/lib/api-destinations.mjs` carries the
-exceptions, one entry per exact address with the names it covers and its
-reason: `listed` for a name a page documents beside its subject rather than in
-its title (`std::chrono::milliseconds` on the `duration` page, and on no other),
-and `section` for an anchor that documents several symbols or is spelled as a
-heading (the Lua manual's value types, the typespec reference), where the
-section the anchor opens must still name the symbol. Add to it only after
-reading the page. A name that a language spells another way (`int` for
-`Int32`) goes in `TYPE_ALIASES`, and a package that two spellings share in
+The evidence is `site/src/data/api-destination-evidence.json`, and each passing
+record keeps the identity its page declared. `--check` requests nothing, but it
+judges every name the source generates again, now, against that recorded
+identity: a builtin edited over the same address fails. It also fails a
+destination with no passing record, two records for one address, a record for a
+link nothing makes, an identity that disagrees with its own address, and a pass
+that rests on an exception that is no longer listed. `PAGE_EXCEPTIONS` in
+`scripts/lib/api-destinations.mjs` carries the exceptions, one entry per exact
+address with the names it covers and its reason: `listed` for a name a page
+documents beside its subject rather than in its title (`std::chrono::milliseconds`
+on the `duration` page, and on no other), `section` for an anchor that documents
+several symbols or is spelled as a heading (the Lua manual's value types, the
+typespec reference), where the section the anchor opens must still name the
+symbol, and `label` for a link whose words name the concept and whose page
+documents the symbol that defines it. Add to it only after reading the page. A name
+that a language spells another way (`int` for `Int32`, `string` for `String`)
+goes in `TYPE_ALIASES`, and a package that two spellings share in
 `NAME_ALIASES`. `--check` also fails a record that contradicts itself (a pass
-with a 404, a failure field or a redirect) and a run that left more than a few
-destinations unverifiable, because that run checked nothing.
+with a 404, a failure field or a redirect), an unverifiable record that gives a
+reason of its own, and a run that left more than a few destinations
+unverifiable, because that run checked nothing.
 `scripts/verify-api-destinations.negative.mjs` plants a wrong fragment, a wrong
 page, a symbol the page does not document, a word that merely contains the
-symbol, a wrong package or namespace, an exception borrowed by another page and
-a redirect to a landing page on pages shaped like CPython's, rustdoc's,
-Documenter's, javadoc's, cppreference's and ExDoc's, and each fault in the
-evidence, and requires the check to name each. The weekly
+symbol, a wrong package or namespace, a wrong kind, operand count or parameter
+list, a bare name in the wrong scope, words on a link that name another symbol,
+an exception borrowed by another page, a case-only redirect and a redirect to a
+landing page on pages shaped like the real ones, each fault in the evidence, and
+each edit of the source over an unchanged record, and requires the check to name
+each. The weekly
 [`verify-destinations.yml`](.github/workflows/verify-destinations.yml) re-runs
 the live check; pull requests never do.
 

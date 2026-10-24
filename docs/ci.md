@@ -491,7 +491,9 @@ stale records as `::warning::` annotations under GitHub Actions and still
 passes.
 
 The same workflow holds the standard-library and SDK links to the symbols they
-name (`scripts/verify-api-destinations.mjs`). Its second pair of steps does for
+name (`scripts/verify-api-destinations.mjs`): the identity a page declares, its
+kind, package, name, operand count and parameters, must be the one the link was
+made for. Its second pair of steps does for
 `site/src/data/api-destination-evidence.json` what the first does for the
 header evidence: the live run writes to a temporary file that the
 `api-destination-evidence` artifact carries, and `--check --fresh` holds the

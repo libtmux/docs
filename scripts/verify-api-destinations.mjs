@@ -47,7 +47,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { apiHostOf, collectApiDestinations } from './lib/api-destinations.mjs'
-import { INVENTORY_SOURCES, checkApiEvidence, createCachedGet, serializeEvidence, unprovenSymbols, usesOf, verifyApiDestination, verifyInventory } from './lib/api-destination-verification.mjs'
+import { INVENTORY_SOURCES, checkApiEvidence, createCachedGet, needsCheck, serializeEvidence, usesOf, verifyApiDestination, verifyInventory } from './lib/api-destination-verification.mjs'
 import { EVIDENCE_MAX_AGE_DAYS, createGet, dateProblem } from './lib/destination-verification.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -122,11 +122,9 @@ function report(problems) {
   return problems.length > 0
 }
 
-/** The destinations a host left open, a few lines of them and a count: they are a warning, and there can be hundreds. */
-const UNRESOLVED_SHOWN = 20
+/** Every destination a host left open, one line each: an unread page is a fact to see, not a number. */
 function showUnresolved(unresolved) {
-  for (const line of unresolved.slice(0, UNRESOLVED_SHOWN)) console.warn(`unresolved: ${line}`)
-  if (unresolved.length > UNRESOLVED_SHOWN) console.warn(`unresolved: and ${unresolved.length - UNRESOLVED_SHOWN} more`)
+  for (const line of unresolved) console.warn(`unresolved: ${line}`)
 }
 
 if (opts.check) {
@@ -162,8 +160,7 @@ async function live() {
     if (opts.inventories) return false
     if (opts.host && destination.host !== opts.host) return false
     if (opts.missing) {
-      const record = kept.get(destination.url)
-      return !record || !record.ok || unprovenSymbols(destination, record).length > 0
+      return needsCheck(destination, kept.get(destination.url))
     }
     return true
   })
@@ -195,7 +192,7 @@ async function live() {
   // Records for links the source stopped generating go with them, except the crawled ones, which only a crawl can refresh.
   const generated = new Set(destinations.keys())
   const evidence = {
-    schema: 1,
+    schema: 2,
     checkedAt: opts.date,
     inventories: Object.keys(INVENTORY_SOURCES).map((name) => inventoryRecords.get(name)).filter(Boolean),
     destinations: [...records.values()].filter((record) => generated.has(record.url) || record.crawled).sort((a, b) => a.url.localeCompare(b.url)),
