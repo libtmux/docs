@@ -21,6 +21,7 @@ import { checkBadgeCentring, checkChipGrowth, checkMentionDensity } from './chec
 import { checkBlockLinksUndecorated, checkKindBadgeLinks, checkRequiredAppearance, checkWebAnalytics, checkWebAnalyticsTransitions } from './check-page-readiness.mjs'
 import { checkTypeParameters } from './check-type-parameters.mjs'
 import { checkTmuxKeys, TMUX_KEY_PAGES } from './check-tmux-keys.mjs'
+import { checkSidebarDemo } from './check-sidebar-demo.mjs'
 
 const apiNavigationOnly = process.argv.includes('--api-navigation')
 const apiAnchorsOnly = process.argv.includes('--api-anchors')
@@ -1180,6 +1181,7 @@ try {
       clipboard, documentationNavigation, homeLauncher, apiAnchors, apiSticky, typeParameters, kindBadges, badgeCentring, blockLinks,
     ])).filter(Boolean)
     if (failures.length) throw new AggregateError(failures, 'Browser checks failed')
+    await checkSidebarDemo(browser, `${base}/demo/sidebar/`)
   }
 } finally {
   await browser?.close()
