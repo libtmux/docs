@@ -85,28 +85,28 @@
       "name": "guardCommand",
       "purpose": "refuses a command when the tmux daemon is not the one the handle was read from",
       "conditional": true,
-      "when": "the Server carries a daemon identity",
+      "when": "the Server carries a daemon identity or startup version",
       "evidence": [
         {
-          "at": "tmux/identity.go:130",
+          "at": "tmux/identity.go:133",
           "has": [
             "func (s Server) guardCommand("
           ]
         },
         {
-          "at": "tmux/identity.go:134",
+          "at": "tmux/identity.go:137",
           "has": [
-            "s.daemon == nil || s.boundToInstance()"
+            "(s.daemon == nil && s.startupVersion == nil) || s.boundToInstance()"
           ]
         },
         {
-          "at": "tmux/identity.go:151",
+          "at": "tmux/identity.go:161",
           "has": [
-            "\"if-shell\", \"-F\", condition, thenCommand, guard.failure"
+            "\"if-shell\", \"-F\", condition, \"\", guard.failure"
           ]
         },
         {
-          "at": "tmux/control_startup.go:86",
+          "at": "tmux/control_startup.go:102",
           "has": [
             "s.guardCommand(attach, false)"
           ]

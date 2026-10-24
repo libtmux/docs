@@ -2929,25 +2929,25 @@
       "scope": null,
       "evidence": [
         {
-          "at": "tmux/session_lifecycle.go:91",
+          "at": "tmux/session_lifecycle.go:93",
           "has": [
             "\"new-session\""
           ]
         },
         {
-          "at": "tmux/session_lifecycle.go:62",
+          "at": "tmux/session_lifecycle.go:64",
           "has": [
             "renderNewSessionArguments("
           ]
         },
         {
-          "at": "tmux/session_lifecycle.go:230",
+          "at": "tmux/session_lifecycle.go:232",
           "has": [
             "newSessionArguments(request)"
           ]
         },
         {
-          "at": "tmux/session_lifecycle.go:234",
+          "at": "tmux/session_lifecycle.go:236",
           "has": [
             "literalCmd(ctx, arguments...)"
           ],
@@ -2963,25 +2963,25 @@
       "scope": null,
       "evidence": [
         {
-          "at": "tmux/window_lifecycle.go:157",
+          "at": "tmux/window_lifecycle.go:159",
           "has": [
             "\"new-window\""
           ]
         },
         {
-          "at": "tmux/window_lifecycle.go:213",
+          "at": "tmux/window_lifecycle.go:215",
           "has": [
             "newWindowArguments("
           ]
         },
         {
-          "at": "tmux/window_lifecycle.go:224",
+          "at": "tmux/window_lifecycle.go:226",
           "has": [
             "literalCmd(ctx, arguments...)"
           ]
         },
         {
-          "at": "tmux/window_lifecycle.go:88",
+          "at": "tmux/window_lifecycle.go:90",
           "has": [
             "return newWindow("
           ],
@@ -2996,25 +2996,25 @@
       "scope": null,
       "evidence": [
         {
-          "at": "tmux/window_lifecycle.go:157",
+          "at": "tmux/window_lifecycle.go:159",
           "has": [
             "\"new-window\""
           ]
         },
         {
-          "at": "tmux/window_lifecycle.go:213",
+          "at": "tmux/window_lifecycle.go:215",
           "has": [
             "newWindowArguments("
           ]
         },
         {
-          "at": "tmux/window_lifecycle.go:224",
+          "at": "tmux/window_lifecycle.go:226",
           "has": [
             "literalCmd(ctx, arguments...)"
           ]
         },
         {
-          "at": "tmux/window_lifecycle.go:117",
+          "at": "tmux/window_lifecycle.go:119",
           "has": [
             "return newWindow("
           ],
@@ -4502,19 +4502,19 @@
       "scope": null,
       "evidence": [
         {
-          "at": "tmux/lifecycle_kill.go:132",
+          "at": "tmux/lifecycle_kill.go:151",
           "has": [
             "kill-session"
           ]
         },
         {
-          "at": "tmux/lifecycle_kill.go:153",
+          "at": "tmux/lifecycle_kill.go:172",
           "has": [
             "s.literalCmd(ctx, arguments...)"
           ]
         },
         {
-          "at": "tmux/lifecycle_kill.go:95",
+          "at": "tmux/lifecycle_kill.go:114",
           "has": [
             "KillWith("
           ],
@@ -4568,25 +4568,25 @@
       "scope": null,
       "evidence": [
         {
-          "at": "tmux/session_lifecycle.go:91",
+          "at": "tmux/session_lifecycle.go:93",
           "has": [
             "new-session"
           ]
         },
         {
-          "at": "tmux/connection.go:185",
+          "at": "tmux/connection.go:193",
           "has": [
             "effective.guardCommand(arguments"
           ]
         },
         {
-          "at": "tmux/connection.go:299",
+          "at": "tmux/connection.go:307",
           "has": [
             "renderNewSessionArguments("
           ]
         },
         {
-          "at": "tmux/connection.go:169",
+          "at": "tmux/connection.go:177",
           "has": [
             "newSessionConnectionArguments("
           ],
@@ -4601,19 +4601,19 @@
       "scope": null,
       "evidence": [
         {
-          "at": "tmux/pane_create.go:421",
+          "at": "tmux/pane_create.go:425",
           "has": [
             "\"split-window\""
           ]
         },
         {
-          "at": "tmux/pane_create.go:354",
+          "at": "tmux/pane_create.go:358",
           "has": [
             "server.literalCmd(ctx, arguments...)"
           ]
         },
         {
-          "at": "tmux/pane_create.go:327",
+          "at": "tmux/pane_create.go:331",
           "has": [
             "splitPane(ctx, p.server"
           ],
@@ -4628,19 +4628,19 @@
       "scope": null,
       "evidence": [
         {
-          "at": "tmux/pane_create.go:421",
+          "at": "tmux/pane_create.go:425",
           "has": [
             "\"split-window\""
           ]
         },
         {
-          "at": "tmux/pane_create.go:354",
+          "at": "tmux/pane_create.go:358",
           "has": [
             "server.literalCmd(ctx, arguments...)"
           ]
         },
         {
-          "at": "tmux/pane_create.go:308",
+          "at": "tmux/pane_create.go:312",
           "has": [
             "splitPane(ctx, w.server"
           ],
@@ -10183,13 +10183,13 @@
       "scope": null,
       "evidence": [
         {
-          "at": "tmux/snapshot_capture.go:43",
+          "at": "tmux/snapshot_capture.go:39",
           "has": [
             "\"list-sessions\""
           ]
         },
         {
-          "at": "tmux/snapshot_capture.go:49",
+          "at": "tmux/snapshot_capture.go:45",
           "has": [
             "s.snapshotListing("
           ],
@@ -10205,14 +10205,14 @@
       "scope": "server",
       "evidence": [
         {
-          "at": "tmux/snapshot_capture.go:44",
+          "at": "tmux/snapshot_capture.go:40",
           "has": [
             "\"list-windows\"",
             "\"-a\""
           ]
         },
         {
-          "at": "tmux/snapshot_capture.go:49",
+          "at": "tmux/snapshot_capture.go:45",
           "has": [
             "s.snapshotListing("
           ],
@@ -10228,14 +10228,14 @@
       "scope": "server",
       "evidence": [
         {
-          "at": "tmux/snapshot_capture.go:45",
+          "at": "tmux/snapshot_capture.go:41",
           "has": [
             "\"list-panes\"",
             "\"-a\""
           ]
         },
         {
-          "at": "tmux/snapshot_capture.go:49",
+          "at": "tmux/snapshot_capture.go:45",
           "has": [
             "s.snapshotListing("
           ],
@@ -10251,13 +10251,13 @@
       "scope": null,
       "evidence": [
         {
-          "at": "tmux/snapshot_capture.go:46",
+          "at": "tmux/snapshot_capture.go:42",
           "has": [
             "\"list-clients\""
           ]
         },
         {
-          "at": "tmux/snapshot_capture.go:49",
+          "at": "tmux/snapshot_capture.go:45",
           "has": [
             "s.snapshotListing("
           ],
@@ -10313,13 +10313,13 @@
           ]
         },
         {
-          "at": "tmux/tmuxtest/harness.go:546",
+          "at": "tmux/tmuxtest/harness.go:549",
           "has": [
             "runCommand(ctx, server, args...)"
           ]
         },
         {
-          "at": "tmux/tmuxtest/harness.go:536",
+          "at": "tmux/tmuxtest/harness.go:539",
           "has": [
             "server.Cmd(ctx, args...)"
           ]
@@ -10597,14 +10597,14 @@
       "when": "KillExisting is set, session exists",
       "evidence": [
         {
-          "at": "tmux/session_lifecycle.go:223",
+          "at": "tmux/session_lifecycle.go:225",
           "has": [
             "effective.literalCmd(ctx, \"kill-session\""
           ],
           "in": "tmux.Server.NewSession"
         },
         {
-          "at": "tmux/session_lifecycle.go:219",
+          "at": "tmux/session_lifecycle.go:221",
           "has": [
             "!request.KillExisting"
           ]
@@ -10619,14 +10619,14 @@
       "when": "the request sets Pattern",
       "evidence": [
         {
-          "at": "tmux/session_lifecycle.go:141",
+          "at": "tmux/session_lifecycle.go:143",
           "has": [
             "s.literalCmd(ctx, \"has-session\""
           ],
           "in": "tmux.Server.HasSession"
         },
         {
-          "at": "tmux/session_lifecycle.go:137",
+          "at": "tmux/session_lifecycle.go:139",
           "has": [
             "!request.Pattern"
           ]
@@ -10770,13 +10770,13 @@
       "scope": null,
       "evidence": [
         {
-          "at": "tmux/session_lifecycle.go:234",
+          "at": "tmux/session_lifecycle.go:236",
           "has": [
             "effective.literalCmd(ctx, arguments...)"
           ]
         },
         {
-          "at": "tmux/session_lifecycle.go:230",
+          "at": "tmux/session_lifecycle.go:232",
           "has": [
             "newSessionArguments(request)"
           ]
@@ -10797,27 +10797,33 @@
       "scope": null,
       "evidence": [
         {
-          "at": "tmux/control_startup.go:122",
+          "at": "tmux/control_startup.go:155",
           "has": [
             "exec.Command(state.config.executable, arguments...)"
           ]
         },
         {
-          "at": "tmux/control_startup.go:91",
+          "at": "tmux/control_startup.go:107",
           "has": [
-            "s.startControl("
+            "s.startControlWithBacklog("
           ]
         },
         {
-          "at": "tmux/control_startup.go:80",
+          "at": "tmux/control_startup.go:96",
           "has": [
             "\"attach-session\""
           ]
         },
         {
-          "at": "tmux/identity.go:134",
+          "at": "tmux/identity.go:137",
           "has": [
-            "s.daemon == nil || s.boundToInstance()"
+            "s.boundToInstance()"
+          ]
+        },
+        {
+          "at": "tmux/control_startup.go:50",
+          "has": [
+            "s.openControlWithBacklog("
           ]
         },
         {
@@ -10836,33 +10842,33 @@
       "scope": null,
       "evidence": [
         {
-          "at": "tmux/control_startup.go:122",
+          "at": "tmux/control_startup.go:155",
           "has": [
             "exec.Command(state.config.executable, arguments...)"
           ]
         },
         {
-          "at": "tmux/control_startup.go:91",
+          "at": "tmux/control_startup.go:107",
           "has": [
-            "s.startControl("
+            "s.startControlWithBacklog("
           ]
         },
         {
-          "at": "tmux/control_startup.go:80",
+          "at": "tmux/control_startup.go:96",
           "has": [
             "\"attach-session\""
           ]
         },
         {
-          "at": "tmux/identity.go:134",
+          "at": "tmux/identity.go:137",
           "has": [
-            "s.daemon == nil || s.boundToInstance()"
+            "s.boundToInstance()"
           ]
         },
         {
-          "at": "tmux/notification_stream.go:67",
+          "at": "tmux/notification_stream.go:116",
           "has": [
-            "s.openControl("
+            "s.openControlWithBacklog("
           ],
           "in": "tmux.Server.OpenNotifications"
         }
@@ -12401,27 +12407,39 @@
     {
       "port": "go",
       "symbol": "tmux.Server.Session",
-      "command": "display-message",
+      "command": "run-shell",
       "scope": null,
       "when": "the Server has no daemon identity",
       "forwardable": true,
       "evidence": [
         {
-          "at": "tmux/identity.go:210",
+          "at": "tmux/identity.go:226",
           "has": [
-            "s.literalCmdWithRaw("
+            "probe.runCheckedCommand("
           ]
         },
         {
-          "at": "tmux/identity.go:212",
+          "at": "tmux/identity.go:227",
           "has": [
-            "\"display-message\""
+            "identityProbeArguments("
           ]
         },
         {
-          "at": "tmux/identity.go:206",
+          "at": "tmux/identity.go:339",
+          "has": [
+            "\"run-shell\""
+          ]
+        },
+        {
+          "at": "tmux/identity.go:220",
           "has": [
             "if s.daemon != nil {"
+          ]
+        },
+        {
+          "at": "tmux/identity.go:216",
+          "has": [
+            "s.probeServerIdentity("
           ]
         },
         {
@@ -12449,27 +12467,39 @@
     {
       "port": "go",
       "symbol": "tmux.Server.Window",
-      "command": "display-message",
+      "command": "run-shell",
       "scope": null,
       "when": "the Server has no daemon identity",
       "forwardable": true,
       "evidence": [
         {
-          "at": "tmux/identity.go:210",
+          "at": "tmux/identity.go:226",
           "has": [
-            "s.literalCmdWithRaw("
+            "probe.runCheckedCommand("
           ]
         },
         {
-          "at": "tmux/identity.go:212",
+          "at": "tmux/identity.go:227",
           "has": [
-            "\"display-message\""
+            "identityProbeArguments("
           ]
         },
         {
-          "at": "tmux/identity.go:206",
+          "at": "tmux/identity.go:339",
+          "has": [
+            "\"run-shell\""
+          ]
+        },
+        {
+          "at": "tmux/identity.go:220",
           "has": [
             "if s.daemon != nil {"
+          ]
+        },
+        {
+          "at": "tmux/identity.go:216",
+          "has": [
+            "s.probeServerIdentity("
           ]
         },
         {
@@ -12497,27 +12527,39 @@
     {
       "port": "go",
       "symbol": "tmux.Server.Pane",
-      "command": "display-message",
+      "command": "run-shell",
       "scope": null,
       "when": "the Server has no daemon identity",
       "forwardable": true,
       "evidence": [
         {
-          "at": "tmux/identity.go:210",
+          "at": "tmux/identity.go:226",
           "has": [
-            "s.literalCmdWithRaw("
+            "probe.runCheckedCommand("
           ]
         },
         {
-          "at": "tmux/identity.go:212",
+          "at": "tmux/identity.go:227",
           "has": [
-            "\"display-message\""
+            "identityProbeArguments("
           ]
         },
         {
-          "at": "tmux/identity.go:206",
+          "at": "tmux/identity.go:339",
+          "has": [
+            "\"run-shell\""
+          ]
+        },
+        {
+          "at": "tmux/identity.go:220",
           "has": [
             "if s.daemon != nil {"
+          ]
+        },
+        {
+          "at": "tmux/identity.go:216",
+          "has": [
+            "s.probeServerIdentity("
           ]
         },
         {
@@ -12545,27 +12587,39 @@
     {
       "port": "go",
       "symbol": "tmux.Server.Client",
-      "command": "display-message",
+      "command": "run-shell",
       "scope": null,
       "when": "the Server has no daemon identity",
       "forwardable": true,
       "evidence": [
         {
-          "at": "tmux/identity.go:210",
+          "at": "tmux/identity.go:226",
           "has": [
-            "s.literalCmdWithRaw("
+            "probe.runCheckedCommand("
           ]
         },
         {
-          "at": "tmux/identity.go:212",
+          "at": "tmux/identity.go:227",
           "has": [
-            "\"display-message\""
+            "identityProbeArguments("
           ]
         },
         {
-          "at": "tmux/identity.go:206",
+          "at": "tmux/identity.go:339",
+          "has": [
+            "\"run-shell\""
+          ]
+        },
+        {
+          "at": "tmux/identity.go:220",
           "has": [
             "if s.daemon != nil {"
+          ]
+        },
+        {
+          "at": "tmux/identity.go:216",
+          "has": [
+            "s.probeServerIdentity("
           ]
         },
         {
@@ -12598,19 +12652,19 @@
       "when": "a name is given",
       "evidence": [
         {
-          "at": "tmux/session_lifecycle.go:155",
+          "at": "tmux/session_lifecycle.go:157",
           "has": [
             "s.literalCmd(ctx, \"list-sessions\""
           ]
         },
         {
-          "at": "tmux/session_lifecycle.go:208",
+          "at": "tmux/session_lifecycle.go:210",
           "has": [
             "if request.Name != \"\""
           ]
         },
         {
-          "at": "tmux/session_lifecycle.go:215",
+          "at": "tmux/session_lifecycle.go:217",
           "has": [
             "effective.sessionNamed(ctx, request.Name)"
           ],
@@ -12627,19 +12681,19 @@
       "when": "a name is given",
       "evidence": [
         {
-          "at": "tmux/session_lifecycle.go:155",
+          "at": "tmux/session_lifecycle.go:157",
           "has": [
             "s.literalCmd(ctx, \"list-sessions\""
           ]
         },
         {
-          "at": "tmux/connection.go:176",
+          "at": "tmux/connection.go:184",
           "has": [
             "if request.Name != \"\""
           ]
         },
         {
-          "at": "tmux/connection.go:177",
+          "at": "tmux/connection.go:185",
           "has": [
             "effective.sessionNamed(ctx, request.Name)"
           ],
@@ -12988,27 +13042,39 @@
     {
       "port": "go",
       "symbol": "tmux.Server.SearchSessions",
-      "command": "display-message",
+      "command": "run-shell",
       "scope": null,
       "when": "the Server has no daemon identity",
       "forwardable": true,
       "evidence": [
         {
-          "at": "tmux/identity.go:210",
+          "at": "tmux/identity.go:226",
           "has": [
-            "s.literalCmdWithRaw("
+            "probe.runCheckedCommand("
           ]
         },
         {
-          "at": "tmux/identity.go:212",
+          "at": "tmux/identity.go:227",
           "has": [
-            "\"display-message\""
+            "identityProbeArguments("
           ]
         },
         {
-          "at": "tmux/identity.go:206",
+          "at": "tmux/identity.go:339",
+          "has": [
+            "\"run-shell\""
+          ]
+        },
+        {
+          "at": "tmux/identity.go:220",
           "has": [
             "if s.daemon != nil {"
+          ]
+        },
+        {
+          "at": "tmux/identity.go:216",
+          "has": [
+            "s.probeServerIdentity("
           ]
         },
         {
@@ -13036,27 +13102,39 @@
     {
       "port": "go",
       "symbol": "tmux.Server.SearchClients",
-      "command": "display-message",
+      "command": "run-shell",
       "scope": null,
       "when": "the Server has no daemon identity",
       "forwardable": true,
       "evidence": [
         {
-          "at": "tmux/identity.go:210",
+          "at": "tmux/identity.go:226",
           "has": [
-            "s.literalCmdWithRaw("
+            "probe.runCheckedCommand("
           ]
         },
         {
-          "at": "tmux/identity.go:212",
+          "at": "tmux/identity.go:227",
           "has": [
-            "\"display-message\""
+            "identityProbeArguments("
           ]
         },
         {
-          "at": "tmux/identity.go:206",
+          "at": "tmux/identity.go:339",
+          "has": [
+            "\"run-shell\""
+          ]
+        },
+        {
+          "at": "tmux/identity.go:220",
           "has": [
             "if s.daemon != nil {"
+          ]
+        },
+        {
+          "at": "tmux/identity.go:216",
+          "has": [
+            "s.probeServerIdentity("
           ]
         },
         {
@@ -13084,27 +13162,39 @@
     {
       "port": "go",
       "symbol": "tmux.Server.SearchWindows",
-      "command": "display-message",
+      "command": "run-shell",
       "scope": null,
       "when": "the Server has no daemon identity",
       "forwardable": true,
       "evidence": [
         {
-          "at": "tmux/identity.go:210",
+          "at": "tmux/identity.go:226",
           "has": [
-            "s.literalCmdWithRaw("
+            "probe.runCheckedCommand("
           ]
         },
         {
-          "at": "tmux/identity.go:212",
+          "at": "tmux/identity.go:227",
           "has": [
-            "\"display-message\""
+            "identityProbeArguments("
           ]
         },
         {
-          "at": "tmux/identity.go:206",
+          "at": "tmux/identity.go:339",
+          "has": [
+            "\"run-shell\""
+          ]
+        },
+        {
+          "at": "tmux/identity.go:220",
           "has": [
             "if s.daemon != nil {"
+          ]
+        },
+        {
+          "at": "tmux/identity.go:216",
+          "has": [
+            "s.probeServerIdentity("
           ]
         },
         {
@@ -13132,27 +13222,39 @@
     {
       "port": "go",
       "symbol": "tmux.Server.SearchPanes",
-      "command": "display-message",
+      "command": "run-shell",
       "scope": null,
       "when": "the Server has no daemon identity",
       "forwardable": true,
       "evidence": [
         {
-          "at": "tmux/identity.go:210",
+          "at": "tmux/identity.go:226",
           "has": [
-            "s.literalCmdWithRaw("
+            "probe.runCheckedCommand("
           ]
         },
         {
-          "at": "tmux/identity.go:212",
+          "at": "tmux/identity.go:227",
           "has": [
-            "\"display-message\""
+            "identityProbeArguments("
           ]
         },
         {
-          "at": "tmux/identity.go:206",
+          "at": "tmux/identity.go:339",
+          "has": [
+            "\"run-shell\""
+          ]
+        },
+        {
+          "at": "tmux/identity.go:220",
           "has": [
             "if s.daemon != nil {"
+          ]
+        },
+        {
+          "at": "tmux/identity.go:216",
+          "has": [
+            "s.probeServerIdentity("
           ]
         },
         {
@@ -13180,27 +13282,39 @@
     {
       "port": "go",
       "symbol": "tmux.Session.SearchWindows",
-      "command": "display-message",
+      "command": "run-shell",
       "scope": null,
       "when": "the Server has no daemon identity",
       "forwardable": true,
       "evidence": [
         {
-          "at": "tmux/identity.go:210",
+          "at": "tmux/identity.go:226",
           "has": [
-            "s.literalCmdWithRaw("
+            "probe.runCheckedCommand("
           ]
         },
         {
-          "at": "tmux/identity.go:212",
+          "at": "tmux/identity.go:227",
           "has": [
-            "\"display-message\""
+            "identityProbeArguments("
           ]
         },
         {
-          "at": "tmux/identity.go:206",
+          "at": "tmux/identity.go:339",
+          "has": [
+            "\"run-shell\""
+          ]
+        },
+        {
+          "at": "tmux/identity.go:220",
           "has": [
             "if s.daemon != nil {"
+          ]
+        },
+        {
+          "at": "tmux/identity.go:216",
+          "has": [
+            "s.probeServerIdentity("
           ]
         },
         {
@@ -13228,27 +13342,39 @@
     {
       "port": "go",
       "symbol": "tmux.Session.SearchPanes",
-      "command": "display-message",
+      "command": "run-shell",
       "scope": null,
       "when": "the Server has no daemon identity",
       "forwardable": true,
       "evidence": [
         {
-          "at": "tmux/identity.go:210",
+          "at": "tmux/identity.go:226",
           "has": [
-            "s.literalCmdWithRaw("
+            "probe.runCheckedCommand("
           ]
         },
         {
-          "at": "tmux/identity.go:212",
+          "at": "tmux/identity.go:227",
           "has": [
-            "\"display-message\""
+            "identityProbeArguments("
           ]
         },
         {
-          "at": "tmux/identity.go:206",
+          "at": "tmux/identity.go:339",
+          "has": [
+            "\"run-shell\""
+          ]
+        },
+        {
+          "at": "tmux/identity.go:220",
           "has": [
             "if s.daemon != nil {"
+          ]
+        },
+        {
+          "at": "tmux/identity.go:216",
+          "has": [
+            "s.probeServerIdentity("
           ]
         },
         {
@@ -13276,27 +13402,39 @@
     {
       "port": "go",
       "symbol": "tmux.Window.SearchPanes",
-      "command": "display-message",
+      "command": "run-shell",
       "scope": null,
       "when": "the Server has no daemon identity",
       "forwardable": true,
       "evidence": [
         {
-          "at": "tmux/identity.go:210",
+          "at": "tmux/identity.go:226",
           "has": [
-            "s.literalCmdWithRaw("
+            "probe.runCheckedCommand("
           ]
         },
         {
-          "at": "tmux/identity.go:212",
+          "at": "tmux/identity.go:227",
           "has": [
-            "\"display-message\""
+            "identityProbeArguments("
           ]
         },
         {
-          "at": "tmux/identity.go:206",
+          "at": "tmux/identity.go:339",
+          "has": [
+            "\"run-shell\""
+          ]
+        },
+        {
+          "at": "tmux/identity.go:220",
           "has": [
             "if s.daemon != nil {"
+          ]
+        },
+        {
+          "at": "tmux/identity.go:216",
+          "has": [
+            "s.probeServerIdentity("
           ]
         },
         {
@@ -13324,27 +13462,39 @@
     {
       "port": "go",
       "symbol": "tmux.Server.SessionByName",
-      "command": "display-message",
+      "command": "run-shell",
       "scope": null,
       "when": "the Server has no daemon identity",
       "forwardable": true,
       "evidence": [
         {
-          "at": "tmux/identity.go:210",
+          "at": "tmux/identity.go:226",
           "has": [
-            "s.literalCmdWithRaw("
+            "probe.runCheckedCommand("
           ]
         },
         {
-          "at": "tmux/identity.go:212",
+          "at": "tmux/identity.go:227",
           "has": [
-            "\"display-message\""
+            "identityProbeArguments("
           ]
         },
         {
-          "at": "tmux/identity.go:206",
+          "at": "tmux/identity.go:339",
+          "has": [
+            "\"run-shell\""
+          ]
+        },
+        {
+          "at": "tmux/identity.go:220",
           "has": [
             "if s.daemon != nil {"
+          ]
+        },
+        {
+          "at": "tmux/identity.go:216",
+          "has": [
+            "s.probeServerIdentity("
           ]
         },
         {
@@ -13371,13 +13521,61 @@
     },
     {
       "port": "go",
+      "symbol": "tmux.Server.Snapshot",
+      "command": "run-shell",
+      "scope": null,
+      "when": "the Server has no daemon identity",
+      "forwardable": true,
+      "evidence": [
+        {
+          "at": "tmux/identity.go:226",
+          "has": [
+            "probe.runCheckedCommand("
+          ]
+        },
+        {
+          "at": "tmux/identity.go:227",
+          "has": [
+            "identityProbeArguments("
+          ]
+        },
+        {
+          "at": "tmux/identity.go:339",
+          "has": [
+            "\"run-shell\""
+          ]
+        },
+        {
+          "at": "tmux/identity.go:220",
+          "has": [
+            "if s.daemon != nil {"
+          ]
+        },
+        {
+          "at": "tmux/identity.go:216",
+          "has": [
+            "s.probeServerIdentity("
+          ]
+        },
+        {
+          "at": "tmux/snapshot_capture.go:24",
+          "has": [
+            "s.probeSnapshotIdentity(ctx)"
+          ],
+          "in": "tmux.Server.Snapshot"
+        }
+      ],
+      "incidental": true
+    },
+    {
+      "port": "go",
       "symbol": "tmux.Pane.OpenObservation",
       "command": "list-windows",
       "scope": "session",
       "forwardable": true,
       "evidence": [
         {
-          "at": "tmux/control_observation.go:346",
+          "at": "tmux/control_observation.go:350",
           "has": [
             "c.cmd(",
             "\"list-windows\""
@@ -13385,7 +13583,7 @@
           "span": 9
         },
         {
-          "at": "tmux/control_observation.go:301",
+          "at": "tmux/control_observation.go:305",
           "has": [
             "client.observePane(ctx, p)"
           ],

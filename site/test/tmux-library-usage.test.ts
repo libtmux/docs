@@ -331,10 +331,12 @@ describe('a release a library refuses to send on', () => {
     const entries = refused.flatMap(([port, symbol, commands]) => commands.map((command) => ({ label: `${port} ${symbol} ${command}`, entry: use(port, symbol, command) })))
     expect(entries).toHaveLength(11)
     for (const { label, entry } of entries) expect(entry?.when, label).toBe('except before tmux 3.4')
-    // Lua's delete_buffer refuses the same way; go's confirm-before and command-prompt always send -b, which tmux has from 3.3.
+    // Lua's delete_buffer refuses the same way. Go's confirm-before and command-prompt send -b on every release it supports, since its floor is the 3.3a that has it, so they carry no qualifier.
     expect(use('lua', 'libtmux.Server:delete_buffer', 'delete-buffer')?.when).toBe('except before tmux 3.4')
-    expect(use('go', 'tmux.Server.ConfirmBefore', 'confirm-before')?.when).toBe('except before tmux 3.3')
-    expect(use('go', 'tmux.Server.CommandPrompt', 'command-prompt')?.when).toBe('except before tmux 3.3')
+    for (const [symbol, command] of [['tmux.Server.ConfirmBefore', 'confirm-before'], ['tmux.Server.CommandPrompt', 'command-prompt']] as const) {
+      expect(use('go', symbol, command), symbol).toBeDefined()
+      expect(use('go', symbol, command)?.when, symbol).toBeUndefined()
+    }
     // run-shell's output is lost on every release from 3.3 until 3.5, which is a range and not two releases.
     for (const [port, symbol] of [['java', 'io.github.libtmux.Shell.Shell.capturing'], ['kotlin', 'io.github.libtmux.kotlin.Shell.capturing'], ['scala', 'io.github.libtmux.scaladsl.cats.Shell.capturing']] as const) {
       expect(use(port, symbol, 'run-shell')?.when, `${port} ${symbol}`).toBe('except from tmux 3.3 until 3.5')

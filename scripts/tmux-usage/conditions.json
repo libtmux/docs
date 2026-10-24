@@ -468,33 +468,6 @@
       ]
     },
     {
-      "port": "go",
-      "symbol": "tmux.Server.Snapshot",
-      "command": "display-message",
-      "scope": null,
-      "when": "the Server has no daemon identity",
-      "evidence": [
-        {
-          "at": "tmux/identity.go:206",
-          "has": [
-            "if s.daemon != nil {"
-          ]
-        },
-        {
-          "at": "tmux/identity.go:207",
-          "has": [
-            "return *s.daemon, nil"
-          ]
-        },
-        {
-          "at": "tmux/identity.go:212",
-          "has": [
-            "\"display-message\""
-          ]
-        }
-      ]
-    },
-    {
       "port": "java",
       "symbol": "io.github.libtmux.Pane.Pane.paste",
       "command": "load-buffer",
@@ -649,74 +622,6 @@
           "at": "packages/libtmux/src/_internal/operations/session_nav.ts:40",
           "has": [
             "\"select-window\""
-          ]
-        }
-      ]
-    },
-    {
-      "port": "go",
-      "symbol": "tmux.Server.ConfirmBefore",
-      "command": "confirm-before",
-      "scope": null,
-      "when": "except before tmux 3.3",
-      "evidence": [
-        {
-          "at": "tmux/server_interactive.go:9",
-          "has": [
-            "serverInteractiveVersion33",
-            "raw: \"3.3\""
-          ]
-        },
-        {
-          "at": "tmux/server_interactive.go:192",
-          "has": [
-            "current.AtLeast(serverInteractiveVersion33)"
-          ]
-        },
-        {
-          "at": "tmux/server_interactive.go:193",
-          "has": [
-            "&VersionTooLowError{"
-          ]
-        },
-        {
-          "at": "tmux/server_interactive.go:223",
-          "has": [
-            "s.literalCmd(ctx, arguments...)"
-          ]
-        }
-      ]
-    },
-    {
-      "port": "go",
-      "symbol": "tmux.Server.CommandPrompt",
-      "command": "command-prompt",
-      "scope": null,
-      "when": "except before tmux 3.3",
-      "evidence": [
-        {
-          "at": "tmux/server_interactive.go:9",
-          "has": [
-            "serverInteractiveVersion33",
-            "raw: \"3.3\""
-          ]
-        },
-        {
-          "at": "tmux/server_interactive.go:240",
-          "has": [
-            "current.AtLeast(serverInteractiveVersion33)"
-          ]
-        },
-        {
-          "at": "tmux/server_interactive.go:241",
-          "has": [
-            "&VersionTooLowError{"
-          ]
-        },
-        {
-          "at": "tmux/server_interactive.go:301",
-          "has": [
-            "s.literalCmd(ctx, arguments...)"
           ]
         }
       ]

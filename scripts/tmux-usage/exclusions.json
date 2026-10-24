@@ -207,13 +207,13 @@
       "why": "OpenNotifications arms the pause hold with refresh-client only when PauseAfter is positive.",
       "evidence": [
         {
-          "at": "tmux/notification_stream.go:72",
+          "at": "tmux/notification_stream.go:121",
           "has": [
             "options.PauseAfter > 0"
           ]
         },
         {
-          "at": "tmux/notification_stream.go:73",
+          "at": "tmux/notification_stream.go:122",
           "has": [
             "armPause("
           ]

@@ -934,13 +934,13 @@
       "why": "The typed setters of GlobalSessionScope write one option with set-option through setTypedOption and changeOption; they send no command that shares the option's name.",
       "evidence": [
         {
-          "at": "tmux/option_generated.go:5078",
+          "at": "tmux/option_generated.go:5060",
           "has": [
             "func ("
           ]
         },
         {
-          "at": "tmux/option_generated.go:5081",
+          "at": "tmux/option_generated.go:5063",
           "has": [
             "setTypedOption"
           ]
@@ -993,13 +993,13 @@
       "why": "The typed setters of GlobalWindowScope write one option with set-option through setTypedOption and changeOption; they send no command that shares the option's name.",
       "evidence": [
         {
-          "at": "tmux/option_generated.go:4492",
+          "at": "tmux/option_generated.go:4474",
           "has": [
             "func ("
           ]
         },
         {
-          "at": "tmux/option_generated.go:4495",
+          "at": "tmux/option_generated.go:4477",
           "has": [
             "setTypedOption"
           ]
@@ -1051,13 +1051,13 @@
       "why": "Clear types reset into the pane through SendKeys; it sends no clear-history.",
       "evidence": [
         {
-          "at": "tmux/pane_input.go:428",
+          "at": "tmux/pane_input.go:459",
           "has": [
             "command := \"reset\""
           ]
         },
         {
-          "at": "tmux/pane_input.go:429",
+          "at": "tmux/pane_input.go:460",
           "has": [
             "p.SendKeys(ctx, SendKeysRequest{Command: &command})"
           ]
@@ -1077,7 +1077,7 @@
       "why": "ClearHistory sends clear-history; clear-prompt-history is a different command.",
       "evidence": [
         {
-          "at": "tmux/pane_input.go:405",
+          "at": "tmux/pane_input.go:436",
           "has": [
             "clear-history"
           ]
@@ -1124,7 +1124,7 @@
       "why": "These accessors of Pane read a field of the projection the handle holds; they send no command.",
       "evidence": [
         {
-          "at": "tmux/format_generated.go:1228",
+          "at": "tmux/format_generated.go:1232",
           "has": [
             "func ("
           ]
@@ -1152,13 +1152,13 @@
       "why": "The typed setters of Pane write one option with set-option through setTypedOption and changeOption; they send no command that shares the option's name.",
       "evidence": [
         {
-          "at": "tmux/option_generated.go:4896",
+          "at": "tmux/option_generated.go:4878",
           "has": [
             "func ("
           ]
         },
         {
-          "at": "tmux/option_generated.go:4901",
+          "at": "tmux/option_generated.go:4883",
           "has": [
             "setTypedOption"
           ]
@@ -1223,7 +1223,7 @@
           ]
         },
         {
-          "at": "tmux/pane_wait.go:66",
+          "at": "tmux/pane_wait.go:74",
           "has": [
             "o.read(ctx, block)"
           ]
@@ -1243,7 +1243,7 @@
       "why": "ClearPromptHistory sends clear-prompt-history, and not clear-history.",
       "evidence": [
         {
-          "at": "tmux/prompt_history.go:69",
+          "at": "tmux/prompt_history.go:58",
           "has": [
             "clear-prompt-history"
           ]
@@ -1304,13 +1304,13 @@
       "why": "The typed setters of Server write one option with set-option through setTypedOption and changeOption; they send no command that shares the option's name.",
       "evidence": [
         {
-          "at": "tmux/option_generated.go:4718",
+          "at": "tmux/option_generated.go:4700",
           "has": [
             "func ("
           ]
         },
         {
-          "at": "tmux/option_generated.go:4721",
+          "at": "tmux/option_generated.go:4703",
           "has": [
             "setTypedOption"
           ]
@@ -1366,7 +1366,7 @@
       "why": "These accessors of Session read a field of the projection the handle holds; they send no command.",
       "evidence": [
         {
-          "at": "tmux/format_generated.go:906",
+          "at": "tmux/format_generated.go:910",
           "has": [
             "func ("
           ]
@@ -1444,13 +1444,13 @@
       "why": "The typed setters of Session write one option with set-option through setTypedOption and changeOption; they send no command that shares the option's name.",
       "evidence": [
         {
-          "at": "tmux/option_generated.go:5068",
+          "at": "tmux/option_generated.go:5050",
           "has": [
             "func ("
           ]
         },
         {
-          "at": "tmux/option_generated.go:5073",
+          "at": "tmux/option_generated.go:5055",
           "has": [
             "setTypedOption"
           ]
@@ -1476,13 +1476,13 @@
       "why": "A Values type is the struct one show-options or format reply decodes into; its members are fields, not commands.",
       "evidence": [
         {
-          "at": "tmux/option_generated.go:1816",
+          "at": "tmux/option_generated.go:1814",
           "has": [
             "type ServerOptionValues struct"
           ]
         },
         {
-          "at": "tmux/option_generated.go:3203",
+          "at": "tmux/option_generated.go:3201",
           "has": [
             "type ServerHookValues struct"
           ]
@@ -1514,7 +1514,7 @@
       "why": "These accessors of Window read a field of the projection the handle holds; they send no command.",
       "evidence": [
         {
-          "at": "tmux/format_generated.go:973",
+          "at": "tmux/format_generated.go:977",
           "has": [
             "func ("
           ]
@@ -1561,13 +1561,13 @@
       "why": "The typed setters of Window write one option with set-option through setTypedOption and changeOption; they send no command that shares the option's name.",
       "evidence": [
         {
-          "at": "tmux/option_generated.go:4482",
+          "at": "tmux/option_generated.go:4464",
           "has": [
             "func ("
           ]
         },
         {
-          "at": "tmux/option_generated.go:4487",
+          "at": "tmux/option_generated.go:4469",
           "has": [
             "setTypedOption"
           ]
