@@ -361,6 +361,12 @@ describe('a release a library refuses to send on', () => {
     expect(use('elixir', 'LibTmux.Control.submit/3', 'display-message')?.when).toBe('the request reads a field')
     expect(use('elixir', 'LibTmux.Control.submit/3', 'set-option')?.when).toBe('the request sets a user option')
     expect(use('elixir', 'LibTmux.Control.start_link/1', 'attach-session')).toMatchObject({ reviewed: true })
+    // A reconnect attaches again only after a close, through a message to the connection manager, which re-runs the bootstrap it was started with.
+    for (const symbol of ['LibTmux.Control.reconnect/2', 'LibTmux.Control.reconnect!/2']) {
+      for (const command of ['attach-session', 'display-message']) expect(use('elixir', symbol, command), `${symbol} ${command}`).toMatchObject({ reviewed: true, when: 'the connection is closed' })
+    }
+    // The control: starting a connection attaches whenever it is called, so it carries no qualifier.
+    expect(use('elixir', 'LibTmux.Control.start_link/1', 'attach-session')?.when).toBeUndefined()
     // A function of a module that is not a type is still named by its module, and Lua's functions, which no type owns, are not.
     const labels = (port: string, command: string) => tmuxUsage(command)!.groups.flatMap((group) => group.ports).filter((entry) => entry.port === port).flatMap((entry) => entry.links.map((link) => link.label))
     expect(labels('elixir', 'list-panes')).toEqual(expect.arrayContaining(['Capture.fetch/2', 'Server.snapshot/2']))

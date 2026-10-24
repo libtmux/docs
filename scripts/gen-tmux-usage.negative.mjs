@@ -275,6 +275,9 @@ const BAD_RULES = [
   ['an elixir claim whose line does not hold its text', 'elixir', 'claims.json', (document) => {
     document.claims.find((claim) => claim.port === 'elixir' && claim.symbol === 'LibTmux.Capture.fetch/2' && claim.command === 'list-sessions').evidence[0].has = ['list(state, "list-panes"']
   }, /elixir: LibTmux.Capture.fetch\/2 list-sessions null: lib\/libtmux\/capture.ex:158 does not contain "list\(state, \\"list-panes\\""/],
+  ['an elixir claim whose message hop to the connection manager does not hold its text', 'elixir', 'claims.json', (document) => {
+    document.claims.find((claim) => claim.port === 'elixir' && claim.symbol === 'LibTmux.Control.reconnect/2' && claim.command === 'attach-session').evidence.find((item) => item.at.endsWith('manager.ex:573')).has = ['stop(state, ticket)']
+  }, /elixir: LibTmux.Control.reconnect\/2 attach-session null: lib\/libtmux\/control\/manager.ex:573 does not contain "stop\(state, ticket\)"/],
   ['an elixir claim that is not anchored in the symbol it names', 'elixir', 'claims.json', (document) => {
     document.claims.find((claim) => claim.port === 'elixir' && claim.symbol === 'LibTmux.Server.snapshot/2' && claim.command === 'list-clients').evidence.at(-1).at = 'lib/libtmux/server.ex:60'
   }, /elixir: LibTmux.Server.snapshot\/2 list-clients null: lib\/libtmux\/server.ex:60 (?:does not contain|is outside the body of)/],

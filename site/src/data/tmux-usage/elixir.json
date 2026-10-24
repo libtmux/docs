@@ -149,6 +149,76 @@
         "scope": "server"
       }
     ],
+    "LibTmux.Control.reconnect!/2": [
+      {
+        "command": "attach-session",
+        "evidence": [
+          "lib/libtmux/control/bootstrap.ex:17",
+          "lib/libtmux/control/start.ex:62",
+          "lib/libtmux/control/guardian.ex:95",
+          "lib/libtmux/control/manager.ex:244",
+          "lib/libtmux/control/manager.ex:613",
+          "lib/libtmux/control/manager.ex:614",
+          "lib/libtmux/control/manager.ex:573",
+          "lib/libtmux/control.ex:290",
+          "lib/libtmux/control.ex:299"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the connection is closed"
+      },
+      {
+        "command": "display-message",
+        "evidence": [
+          "lib/libtmux/control/bootstrap.ex:24",
+          "lib/libtmux/control/start.ex:62",
+          "lib/libtmux/control/guardian.ex:95",
+          "lib/libtmux/control/manager.ex:244",
+          "lib/libtmux/control/manager.ex:613",
+          "lib/libtmux/control/manager.ex:614",
+          "lib/libtmux/control/manager.ex:573",
+          "lib/libtmux/control.ex:290",
+          "lib/libtmux/control.ex:299"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the connection is closed"
+      }
+    ],
+    "LibTmux.Control.reconnect/2": [
+      {
+        "command": "attach-session",
+        "evidence": [
+          "lib/libtmux/control/bootstrap.ex:17",
+          "lib/libtmux/control/start.ex:62",
+          "lib/libtmux/control/guardian.ex:95",
+          "lib/libtmux/control/manager.ex:244",
+          "lib/libtmux/control/manager.ex:613",
+          "lib/libtmux/control/manager.ex:614",
+          "lib/libtmux/control/manager.ex:573",
+          "lib/libtmux/control.ex:290"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the connection is closed"
+      },
+      {
+        "command": "display-message",
+        "evidence": [
+          "lib/libtmux/control/bootstrap.ex:24",
+          "lib/libtmux/control/start.ex:62",
+          "lib/libtmux/control/guardian.ex:95",
+          "lib/libtmux/control/manager.ex:244",
+          "lib/libtmux/control/manager.ex:613",
+          "lib/libtmux/control/manager.ex:614",
+          "lib/libtmux/control/manager.ex:573",
+          "lib/libtmux/control.ex:290"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the connection is closed"
+      }
+    ],
     "LibTmux.Control.start_link/1": [
       {
         "command": "attach-session",
