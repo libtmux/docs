@@ -6,12 +6,14 @@ import { fileURLToPath } from 'node:url'
 import { afterAll, describe, expect, it } from 'vitest'
 
 /**
- * `just clean` removes ignored output and nothing the build depends on.
+ * `just clean` removes ignored output and nothing the build depends on, and
+ * `just nuke` removes everything it says it removes.
  *
  * The recipes run in a scratch repository that has this repository's own
  * .gitignore plus the .env rules a developer adds. The build cache and the lock
  * file are ignored, so only the recipe's exclusions keep them. Both deleting
  * recipes refuse while an assembly holds .build.lock, as `pnpm run clean` does.
+ * The `just` runs need the binary on PATH and skip without it.
  */
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
 const scratch = mkdtempSync(join(tmpdir(), 'just-clean-'))
@@ -28,6 +30,18 @@ export function recipe(justfile: string, name: string): string[] {
     body.push(line.trim())
   }
   return body
+}
+
+/** The prompt of a recipe's `[confirm("...")]` attribute, if it has one. */
+export function confirmPrompt(justfile: string, name: string): string | undefined {
+  const lines = justfile.split('\n')
+  const start = lines.findIndex((line) => line.startsWith(`${name}:`))
+  if (start === -1) throw new Error(`no recipe named ${name}`)
+  for (let index = start - 1; index >= 0 && lines[index].startsWith('['); index--) {
+    const prompt = lines[index].match(/^\[confirm\("(.*)"\)\]$/)
+    if (prompt) return prompt[1]
+  }
+  return undefined
 }
 
 /** The `git clean` line of a recipe body. */
@@ -94,6 +108,9 @@ async function holdLock(dir: string): Promise<() => Promise<void>> {
     })
 }
 
+/** What `just nuke` leaves: the tracked .gitignore and the .env files, at any depth. */
+const LEFT_BY_NUKE = ['./.env', './.env.local', './.gitignore', './sub/.env']
+
 describe('just clean', () => {
   const justfile = readFileSync(join(ROOT, 'justfile'), 'utf8')
   const exclusions = (command: string) => command.match(/-e '[^']+'/g) ?? []
@@ -137,6 +154,11 @@ describe('just clean', () => {
     expect(recipe('a:\n    one\n    two\n\nb:\n    three\n', 'a')).toEqual(['one', 'two'])
     expect(() => recipe('a:\n    one\n', 'missing')).toThrow('no recipe named missing')
   })
+
+  it('reads a confirm prompt and tells a recipe without one', () => {
+    expect(confirmPrompt('[group: \'x\']\n[confirm("Sure?")]\na:\n    one\n', 'a')).toBe('Sure?')
+    expect(confirmPrompt('a:\n    one\n', 'a')).toBeUndefined()
+  })
 })
 
 describe.each(['clean', 'nuke'])('just %s while an assembly runs', (name) => {
@@ -173,5 +195,56 @@ describe('just clean-dry while an assembly runs', () => {
     } finally {
       await release()
     }
+  })
+})
+
+describe('just nuke', () => {
+  const justfile = readFileSync(join(ROOT, 'justfile'), 'utf8')
+  const hasJust = spawnSync('just', ['--version']).status === 0
+  const withJust = (dir: string, ...args: string[]) =>
+    spawnSync('just', ['--justfile', join(ROOT, 'justfile'), '--working-directory', dir, ...args], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+
+  it('removes untracked files, the build cache and the lock, and keeps the .env files', () => {
+    const dir = fixture()
+    run(dir, recipe(justfile, 'nuke'))
+    expect(files(dir)).toEqual(LEFT_BY_NUKE)
+  })
+
+  it('would delete the .env files without the exclusions', () => {
+    const dir = fixture()
+    run(dir, ['git clean -fdx'])
+    expect(files(dir)).toEqual(['./.gitignore'])
+  })
+
+  it('names in its prompt what it removes and what it keeps', () => {
+    const prompt = confirmPrompt(justfile, 'nuke') ?? ''
+    const kept = (gitClean(recipe(justfile, 'nuke')).match(/-e '([^']+)'/g) ?? []).map((flag) => flag.slice(4, -1))
+    const alsoRemoved = (gitClean(recipe(justfile, 'clean')).match(/-e '!([^']+)'/g) ?? [])
+      .map((flag) => flag.slice(5, -1))
+      .filter((path) => !path.startsWith('.env'))
+    expect(kept).toEqual(['.env', '.env.*'])
+    expect(alsoRemoved).toEqual(['.build-cache/', '.build.lock'])
+    for (const named of [...kept, ...alsoRemoved]) expect(prompt).toContain(named)
+    expect(prompt).not.toMatch(/\ball\b/i)
+  })
+
+  it.skipIf(!hasJust)('runs without a prompt under --yes and leaves the same files', () => {
+    const dir = fixture()
+    const result = withJust(dir, '--yes', 'nuke')
+    expect(result.status).toBe(0)
+    expect(files(dir)).toEqual(LEFT_BY_NUKE)
+  })
+
+  it.skipIf(!hasJust)('exits non-zero without a terminal and --yes, shows the prompt, and deletes nothing', () => {
+    const dir = fixture()
+    const before = files(dir)
+    const result = withJust(dir, 'nuke')
+    expect(result.status).not.toBe(0)
+    expect(result.stderr).toContain(confirmPrompt(justfile, 'nuke'))
+    expect(result.stderr).toContain('was not confirmed')
+    expect(files(dir)).toEqual(before)
   })
 })

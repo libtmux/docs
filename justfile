@@ -24,9 +24,9 @@ clean:
 clean-dry:
     git clean -ndX -e '!.env' -e '!.env.*' -e '!.build-cache/' -e '!.build.lock'
 
-# Remove ignored and untracked files. .env and .env.* stay.
+# Remove untracked and ignored files, even the cache and lock; .env files stay.
 [group: 'clean']
-[confirm("This will delete all untracked and ignored files. Continue?")]
+[confirm("Remove untracked and ignored files, including node_modules/, the .build-cache/ build cache and the .build.lock file. Files named .env and .env.* stay. Continue?")]
 nuke:
     #!/usr/bin/env bash
     # Refuses while an assembly holds .build.lock, as clean does, once the
