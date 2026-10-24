@@ -1,5 +1,6 @@
-import { docSummaryText, qualifiedNameOf, sourceUrl, type ApiModel, type ApiSymbol, type SymbolIndex } from '@libtmux/api-model'
+import { docSummaryText, sourceUrl, type ApiModel, type ApiSymbol, type SymbolIndex } from '@libtmux/api-model'
 import { productApiHref, productApiIndex } from './product-api'
+import { nativeQualifiedName } from './native-name'
 import { PORT_BY_SLUG } from './ports'
 import { apiGlossary } from './api-glossary'
 import { codeLang, highlightTokens, type CodeHighlight } from './highlight'
@@ -84,7 +85,7 @@ export function symbolPreview(model: ApiModel, symbol: ApiSymbol, version: strin
   const description = summary ? docSummaryText(summary, model.port) : ''
   const footer = [symbol.package ?? PORT_BY_SLUG[model.port]?.packageName, ownerOf(model, symbol)?.name].filter((place): place is string => !!place)
   return {
-    schema: 1, title: qualifiedNameOf(symbol), kind: symbol.command?.kind ?? symbol.kind,
+    schema: 1, title: nativeQualifiedName(model, symbol), kind: symbol.command?.kind ?? symbol.kind,
     description,
     descriptionParts: summary ? summaryParts(productApiIndex(model, version), summary, symbol, description) : undefined,
     footer: footer.length ? footer : undefined,
