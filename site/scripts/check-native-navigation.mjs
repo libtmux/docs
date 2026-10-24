@@ -8,20 +8,19 @@ const root = `${base}/py/${version}/api/`
 const browser = await chromium.launch({ channel: process.env.LIBTMUX_DOCS_BROWSER_CHANNEL })
 
 async function openNativeLink(page, suffix) {
-  const opener = page.locator('#mobile-sidebar-toggle')
-  if (await opener.isVisible() && !await page.locator('#__navigation').isChecked()) await opener.click()
-  const links = page.locator('.sidebar-tree a[href]')
+  const opener = page.locator('[data-api-nav-toggle]')
+  if (await opener.isVisible() && await opener.getAttribute('aria-expanded') !== 'true') await opener.click()
+  const links = page.locator('.api-nav__tree a[href]')
   const index = await links.evaluateAll((links, suffix) => links.findIndex((link) => link.pathname.endsWith(suffix)), suffix)
   assert(index >= 0, `No native sidebar destination: ${suffix}`)
   const link = links.nth(index)
   await link.evaluate((link) => {
     for (let item = link.closest('li'); item; item = item.parentElement?.closest('li')) {
-      const toggle = item.querySelector(':scope > input[type=checkbox]')
-      if (toggle) toggle.checked = true
+      if (item.hasAttribute('aria-expanded')) item.setAttribute('aria-expanded', 'true')
     }
   })
   await link.scrollIntoViewIfNeeded()
-  const scroll = await page.locator('.sidebar-scroll').evaluate((element) => element.scrollTop)
+  const scroll = await page.locator('.api-nav__tree').evaluate((element) => element.scrollTop)
   await link.click()
   await page.waitForURL((url) => url.pathname.endsWith(suffix))
   await page.locator('html[data-page-readiness="ready"]').waitFor({ state: 'attached' })
@@ -65,11 +64,11 @@ try {
       assert.equal(await page.evaluate(() => window.nativeNavigationIdentity), undefined, 'Native links create a new document')
       await checkMetadata(page)
       const scroll = await page.evaluate((before) => {
-        const sidebar = document.querySelector('.sidebar-scroll')
+        const sidebar = document.querySelector('.api-nav__tree')
         return { actual: sidebar.scrollTop, expected: Math.min(before, sidebar.scrollHeight - sidebar.clientHeight) }
       }, before)
       assert(Math.abs(scroll.actual - scroll.expected) <= 1, `Sidebar position changed: ${JSON.stringify(scroll)}`)
-      assert.equal(await page.locator('#__navigation').isChecked(), false, 'A page navigation left the drawer open')
+      assert.equal(await page.locator('.api-nav').getAttribute('data-open'), null, 'A page navigation left the drawer open')
       await openNativeLink(page, 'internals/api/libtmux._internal.query_list/')
       await checkMetadata(page)
       await page.locator('dt[id="libtmux._internal.query_list.QueryList"]').hover()
@@ -119,7 +118,7 @@ try {
       await page.goto(`${root}genindex/`)
       assert.equal(await page.locator('#mobile-toc-toggle').count(), 0, 'An empty native index offers Contents')
       assert.equal(await page.locator('#native-toc').isVisible(), false)
-      await page.locator('#__navigation').focus()
+      await page.locator('.api-nav__tree a').first().focus()
       await page.keyboard.press('Tab')
       assert.notEqual(await page.evaluate(() => document.activeElement.id), '__toc', 'Empty Contents remains a keyboard stop')
     } finally { await context.close() }

@@ -5,7 +5,8 @@ import { pathToFileURL } from 'node:url'
 import { experimental_AstroContainer } from 'astro/container'
 import { Window } from 'happy-dom'
 import { API_MODELS, createApiIndex, referenceAlternatives, topLevelTypesOf } from '../src/lib/api-models'
-import { coreApiSymbols, productApiAlternatives, productApiHref, productApiNavigation, productApiRedirects, productApiRoutes } from '../src/lib/product-api'
+import { coreApiSymbols, productApiAlternatives, productApiHref, productApiNavigation, productApiRedirects, productApiRoutes, productReferenceTree } from '../src/lib/product-api'
+import { searchApi, apiTreeHref } from '../src/lib/api-search'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { PORT_BY_SLUG, productAvailable } from '../src/lib/ports'
 import { getResolver } from '../src/lib/prose-resolver'
@@ -55,6 +56,9 @@ describe('product declaration trees', () => {
       const actual = navigationLinks(productApiNavigation(model, product, 'v1.2.3')).sort()
       expect(actual, `${model.port} ${product}`).toEqual(expected)
       expect(new Set(actual).size).toBe(actual.length)
+      const inventory = productReferenceTree(model, product, 'v1.2.3')
+      expect(searchApi(inventory, '').map((record) => apiTreeHref('/reference/', record, inventory.hrefs)).sort(),
+        `${model.port} ${product} selectable sidebar`).toEqual(expected)
     }
   })
 

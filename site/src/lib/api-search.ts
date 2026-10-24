@@ -23,6 +23,9 @@ export interface ApiTreeBucket {
 
 export interface ApiTreeJson {
   port: string
+  /** A reference may browse pages as well as language declarations. */
+  ownerLabel?: string
+  ownerPlural?: string
   buckets: ApiTreeBucket[]
   members: Record<string, [string, string, string?, string?, string?, string?, string?][]>
   /** Canonical destinations for declarations documented in another port. */
@@ -32,7 +35,8 @@ export interface ApiTreeJson {
 
 /** Initial markup, lazy branches and search use the same declaration URL. */
 export function apiTreeHref(base: string, entry: { id?: string; slug: string }, hrefs?: Record<string, string>): string {
-  return (entry.id ? hrefs?.[entry.id] : undefined) ?? `${base}${entry.slug}/`
+  const href = entry.id ? hrefs?.[entry.id] : undefined
+  return href ? /^(?:\/|[a-z]+:)/i.test(href) ? href : `${base}${href}` : `${base}${entry.slug}/`
 }
 
 export interface ApiSearchResult {

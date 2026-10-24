@@ -3,14 +3,15 @@ import TableOfContentsIcon from '../icons/TableOfContentsIcon.astro'
 interface Props { tableOfContents?: boolean; native?: boolean; api?: boolean }
 const { tableOfContents = false, native = false, api = false } = Astro.props
 const Control = native ? 'label' : 'button'
+const SidebarControl = api ? 'button' : Control
 ---
-    <Control
+    <SidebarControl
       id={api ? undefined : 'mobile-sidebar-toggle'}
       data-api-nav-toggle={api || undefined}
-      type={native ? undefined : 'button'}
-      for={native ? '__navigation' : undefined}
-      role={native ? 'button' : undefined}
-      tabindex={native ? 0 : undefined}
+      type={native && !api ? undefined : 'button'}
+      for={native && !api ? '__navigation' : undefined}
+      role={native && !api ? 'button' : undefined}
+      tabindex={native && !api ? 0 : undefined}
       aria-label="Open navigation menu"
       aria-controls={api ? 'api-nav' : native ? 'native-navigation' : 'mobile-sidebar'}
       aria-expanded="false"
@@ -19,7 +20,7 @@ const Control = native ? 'label' : 'button'
       <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
       </svg>
-    </Control>
+    </SidebarControl>
     {
       tableOfContents && (
         <Control

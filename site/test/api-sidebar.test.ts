@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { sidebarCatalog, sidebarNodes } from '../src/lib/api-sidebar'
-import type { ApiTreeJson } from '../src/lib/api-search'
+import { sidebarCatalog, sidebarNodes, quietSidebarKinds } from '../src/lib/api-sidebar'
+import { apiTreeHref, type ApiTreeJson } from '../src/lib/api-search'
 
 const json: ApiTreeJson = {
   port: 'sample',
@@ -84,5 +84,13 @@ describe('API sidebar presentations', () => {
     expect(outline.map((node) => node.label)).toEqual(['Windows and panes'])
     expect(outline[0]?.children?.[0]).toMatchObject({ kind: 'command', current: true, href: '/pr-42/en/tmux/latest/manual/capture-pane/' })
     expect(sidebarCatalog(commands)).toMatchObject({ ownerLabel: 'section', ownerPlural: 'sections' })
+  })
+
+  it('resolves section anchors beneath a preview prefix and keeps homogeneous protocol rows quiet', () => {
+    expect(apiTreeHref('/pr-42/en/rs/latest/mcp/', { id: 'group', slug: '' }, { group: 'tools/#windows' }))
+      .toBe('/pr-42/en/rs/latest/mcp/tools/#windows')
+    const nodes = sidebarNodes(json, '/reference/', 'grouped', 'a-name')
+    quietSidebarKinds(nodes)
+    expect(nodes.find((node) => node.label === 'Methods')?.children?.every((node) => node.quiet)).toBe(true)
   })
 })

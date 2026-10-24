@@ -25,6 +25,14 @@ export interface SidebarNode {
   children?: SidebarNode[]
 }
 
+/** Homogeneous protocol groups already name the kind; retain it for ARIA. */
+export function quietSidebarKinds(nodes: SidebarNode[]) {
+  if (new Set(nodes.map((node) => node.kind).filter(Boolean)).size <= 1) {
+    for (const node of nodes) if (node.kind) node.quiet = true
+  }
+  for (const node of nodes) if (node.children) quietSidebarKinds(node.children)
+}
+
 /** Ownership is explicit: dots in a declaration name do not imply a parent. */
 export function sidebarCatalog(json: ApiTreeJson) {
   const records = searchApi(json, '')
@@ -33,18 +41,18 @@ export function sidebarCatalog(json: ApiTreeJson) {
   for (const [owner, members] of Object.entries(json.members)) {
     for (const [name, , id] of members) parent.set(id ?? `${owner}.${name}`, owner)
   }
-  const owners = records.filter((record) => record.category === 'types')
+  const owners = records.filter((record) => record.category === 'types' || record.category === 'pages')
     .sort((a, b) => a.qualifiedName.localeCompare(b.qualifiedName, 'en'))
   const ownerOf = (id: string): ApiSearchResult | undefined => {
     const record = symbols.get(id)
-    return record?.category === 'types' ? record : symbols.get(parent.get(id) ?? '')
+    return record?.category === 'types' || record?.category === 'pages' ? record : symbols.get(parent.get(id) ?? '')
   }
   const membersOf = (id: string) => (json.members[id] ?? [])
     .map(([name, , memberId]) => symbols.get(memberId ?? `${id}.${name}`))
     .filter((record): record is ApiSearchResult => Boolean(record))
   const sections = owners.length > 0 && owners.every((record) => record.kind === 'section')
   return { records, symbols, parent, owners, ownerOf, membersOf,
-    ownerLabel: sections ? 'section' : 'type', ownerPlural: sections ? 'sections' : 'types' }
+    ownerLabel: json.ownerLabel ?? (sections ? 'section' : 'type'), ownerPlural: json.ownerPlural ?? (sections ? 'sections' : 'types') }
 }
 
 const groupName = (kind: string) => ({ property: 'Properties', method: 'Methods', class: 'Classes', object: 'Objects',
@@ -69,7 +77,7 @@ export function sidebarNodes(json: ApiTreeJson, base: string, mode: SidebarPrese
   if (allTypes || (mode !== 'outline' && !catalog.symbols.has(selected))) return catalog.owners.map((record) => ({ ...symbol({ ...record, name: record.qualifiedName }, 1, false, false), count: catalog.membersOf(record.id).length }))
   if (mode === 'outline') {
     const roots = catalog.records.filter((record) => !catalog.parent.has(record.id))
-    if (catalog.ownerLabel === 'section') return roots.map((record) => symbol(record, 1))
+    if (roots.every((record) => record.kind === 'section')) return roots.map((record) => symbol(record, 1))
     const rootName = (record: ApiSearchResult) => {
       const peers = roots.filter((other) => other.symbolName === record.symbolName)
       if (peers.length < 2) return record.symbolName

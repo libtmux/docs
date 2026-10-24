@@ -88,7 +88,8 @@ const entryCards = (items: ReturnType<typeof tmuxCatalogEntries>) => items.map((
     </button>
   </DocumentationContext>
   <main class:list={['api-reference-layout grid', entry && 'api-reference-layout--symbol']}>
-    <ApiTree referenceBase={base} portName="tmux" tree={navigation.tree} currentRoot={info?.segment}
+    <ApiTree presentation="outline" inventory={navigation.json} selectedSymbol={entry ? `${entry.kind}.${entry.name}` : info ? `section:${info.segment}` : ''}
+      referenceBase={base} portName="tmux" tree={navigation.tree} currentRoot={info?.segment}
       currentBucket={group ? `${info!.segment}-${group.id}` : undefined} currentIndex={kind && !entry ? info!.segment : undefined}
       ownerId={entry ? `${entry.kind}.${entry.name}` : undefined} members={[]} withMembers={new Set()}
       currentPath={Astro.url.pathname} version={navigation.version} indexLabel={CATALOG_TITLE}

@@ -46,6 +46,8 @@
 .api-nav__layouts [aria-checked='true'] .api-nav__choice::before { background: currentColor; box-shadow: inset 0 0 0 2px var(--background-color); }
 .api-nav__destinations { border-top: 1px solid var(--color-edge); padding-top: 0.25rem; margin-top: 0.25rem; }
 .api-nav__actions a { margin: 0; padding: 0.5rem 0.6rem; color: var(--color-link); }
+.api-nav__destinations a { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+.api-nav__destinations a:hover { background: var(--color-surface-hover); }
 @media (pointer: coarse) { .api-nav__picker-row { --api-nav-control-size: 2.75rem; } }
 .api-nav[data-presentation] .api-nav__row { padding-inline-start: 0.5rem; gap: 0.5rem; }
 .api-nav[data-presentation] .api-nav__row > .api-nav__label { padding-inline-start: calc((var(--level, 1) - 1) * var(--api-nav-indent)); }
@@ -54,10 +56,17 @@
 .api-nav__section > :first-child { font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
 .api-nav__section > :last-child { white-space: nowrap; }
 .api-nav[data-presentation='outline'] .api-nav__item > .api-nav__row > .api-nav__label { font-weight: 600; }
+.api-nav[data-presentation] .api-nav__leaf > .api-nav__label { font-weight: 500; }
+.api-nav[data-presentation] .api-nav__leaf[aria-current='page'] > .api-nav__label { font-weight: 600; }
+.api-nav[data-marks='mixed'][data-presentation] .api-nav__row { padding-inline-start: calc(0.5rem + (var(--level, 1) - 1) * var(--api-nav-indent)); gap: 0.25rem; }
+.api-nav[data-marks='mixed'][data-presentation] .api-nav__row > .api-nav__label { padding-inline-start: 0; }
 .api-nav[data-presentation='outline'] :is(.api-nav__item:not([aria-level='1']) > .api-nav__row, .api-nav__leaf:not([aria-level='1'])) > .api-nav__label::before {
   content: ''; position: absolute; top: 0; bottom: 0;
   inset-inline-start: calc(0.5rem + round(1.35em, 2px) + 0.5rem + (var(--level) - 2) * var(--api-nav-indent));
-  border-inline-start: 1px solid var(--color-edge); pointer-events: none;
+  border-inline-start: 1px solid color-mix(in srgb, var(--text-color) 40%, transparent); pointer-events: none;
+}
+.api-nav[data-marks='mixed'][data-presentation='outline'] .api-nav__row > .api-nav__label::before {
+  inset-inline-start: calc(0.5rem + (var(--level) - 2) * var(--api-nav-indent));
 }
 .api-nav[data-presentation] :is(.api-nav__leaf[aria-current='page'], .api-nav__row:has(> [aria-current='page'])) {
   background: color-mix(in srgb, var(--theme-accent) 18%, transparent);

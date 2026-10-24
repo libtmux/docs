@@ -370,6 +370,22 @@ export function referenceTree(port: string): ApiTreeJson {
   return referenceTreeFor(port, navigation.model, navigation.tree, { excludeProducts: true, members: navigation.members, hrefs: navigation.hrefs })
 }
 
+/** Protocol and command catalogs use their published sections as owners. */
+export function referenceSectionTree(json: ApiTreeJson): ApiTreeJson {
+  const hrefs = { ...json.hrefs }
+  const members = { ...json.members }
+  const section = (bucket: ApiTreeBucket, parentPath?: string): ApiTreeBucket['types'][number] => {
+    const id = `section:${bucket.id}`
+    const path = parentPath ?? bucket.slug ?? ''
+    hrefs[id] = parentPath ? `${path}/#${bucket.id}` : `${path}/`
+    const children = [...bucket.types, ...bucket.children.map((child) => section(child, path))]
+    members[id] = children.map((child) => [child.name, child.slug, child.id, child.kind, child.category, child.summary, child.qualifiedName])
+    return { id, name: bucket.label, slug: path, kind: 'section', category: 'types', m: children.length ? 1 : 0 }
+  }
+  const types = json.buckets.map((bucket) => section(bucket))
+  return { ...json, buckets: [{ id: 'sections', label: 'Sections', count: types.length, slug: null, types, children: [] }], members, hrefs }
+}
+
 /** Serialize the same tree consumed by initial HTML, without registry lookups. */
 export function referenceTreeFor(scope: string, model: ApiModelBase, tree: TreeBucket[], options: ReferenceTreeOptions = {}): ApiTreeJson {
   const products = new Set(options.excludeProducts ? productSymbols(model).map((symbol) => symbol.id) : [])

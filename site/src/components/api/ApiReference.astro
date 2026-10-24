@@ -31,7 +31,7 @@ import { buildTarget, defaultVersionFor } from '../../lib/versions'
 import ApiDoc from '../../components/api/ApiDoc.astro'
 import ApiTree from '../../components/api/ApiTree.astro'
 import type { PortNavData } from '../../lib/api-models'
-import { apiTreeVersion, bucketAncestors, bucketForSymbol, navTree, referenceTree, referenceNavigation, referenceIndexSections, referenceIndexSectionsFor, type TreeBucket } from '../../lib/api-tree'
+import { apiTreeVersion, bucketAncestors, bucketForSymbol, navTree, referenceTree, referenceTreeFor, referenceNavigation, referenceIndexSections, referenceIndexSectionsFor, type TreeBucket } from '../../lib/api-tree'
 import type { BreadcrumbItem } from '../../lib/sidebar'
 import SymbolName from '../../components/api/SymbolName.astro'
 import '../../styles/api.css'
@@ -423,8 +423,8 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
   <main class:list={["api-reference-layout grid", owner && 'api-reference-layout--symbol', glossary && 'api-reference-layout--glossary']}>
     {model && (
       <ApiTree
-        presentation={port ? 'outline' : undefined}
-        inventory={port ? referenceTree(port) : undefined}
+        presentation="outline"
+        inventory={port ? referenceTree(port) : referenceTreeFor('tmux', model, tree)}
         selectedSymbol={owner?.publicId ?? owner?.id ?? ''}
         referenceBase={refBase}
         glossaryHref={port ? `${refBase}glossary/` : undefined}

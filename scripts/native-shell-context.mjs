@@ -90,6 +90,7 @@ export async function collectNativeContext(directory, { prefix, sphinxPort, vers
       }
       pages.push({
         file, path, url: `${base}${path}`, sourcePath: `${port.slug}/${version}/api/${path}`,
+        title: window.document.querySelector('article h1')?.textContent?.replace(/¶$/, '').trim() ?? path,
         source, markdownHref, markdownSha256,
         htmlSha256: hashes[file], articleSha256: nativeHash(nativeArticle(html)),
         hasTableOfContents: [...window.document.querySelectorAll('.toc-tree a[href^="#"]')].some((link) => {
@@ -99,6 +100,14 @@ export async function collectNativeContext(directory, { prefix, sphinxPort, vers
           return Boolean(target?.closest('article') && !target.matches('h1') && !target.querySelector(':scope > h1'))
         }),
         signatures: [...window.document.querySelectorAll('dt.sig[id]')].map((element) => element.id),
+        declarations: [...window.document.querySelectorAll('dt.sig[id]')].map((element) => {
+          const owner = element.parentElement
+          const kind = ['class', 'exception', 'method', 'staticmethod', 'classmethod', 'attribute', 'data', 'function', 'module']
+            .find((kind) => owner.classList.contains(kind)) ?? 'section'
+          return { id: element.id, name: element.querySelector('.sig-name')?.textContent?.trim() ?? element.id,
+            kind: kind === 'data' ? 'constant' : ['staticmethod', 'classmethod'].includes(kind) ? 'method' : kind,
+            parent: owner.parentElement?.closest('dl.py')?.querySelector(':scope > dt.sig[id]')?.id }
+        }),
       })
     }
   } finally {

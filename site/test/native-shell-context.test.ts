@@ -4,6 +4,8 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { collectNativeContext, nativeHash } from '../../scripts/native-shell-context.mjs'
+import { nativeReferenceTree, type NativeShellContext } from '../src/lib/native-shell'
+import { searchApi, apiTreeHref } from '../src/lib/api-search'
 
 const directories: string[] = []
 afterEach(() => directories.splice(0).forEach((directory) => rmSync(directory, { recursive: true, force: true })))
@@ -33,6 +35,20 @@ function fixture() {
 }
 
 describe('native shell context', () => {
+  it('keeps repeated native declarations on their own pages with nested ownership', () => {
+    const context = { port: 'py', pages: ['api/server/', 'internals/server/'].map((path) => ({ path, title: 'Server',
+      url: `/pr-42/en/py/stable/api/${path}`, declarations: [
+        { id: 'Server', name: 'Server', kind: 'class' },
+        { id: 'Server.sessions', name: 'sessions', kind: 'property', parent: 'Server' },
+      ] })) } as NativeShellContext
+    const json = nativeReferenceTree(context)
+    const members = searchApi(json, 'sessions')
+    expect(new Set(members.map((member) => member.id)).size).toBe(2)
+    expect(members.map((member) => apiTreeHref('/ignored/', member, json.hrefs))).toEqual([
+      '/pr-42/en/py/stable/api/api/server/#Server.sessions', '/pr-42/en/py/stable/api/internals/server/#Server.sessions',
+    ])
+    expect(json.members['api/server/#Server'][0][2]).toBe('api/server/#Server.sessions')
+  })
   it('binds real source, exact Markdown and native article bytes, without inventing generated-index targets', async () => {
     const { artifact, options, article, source, sourceSha } = fixture()
     const context = await collectNativeContext(artifact, options)

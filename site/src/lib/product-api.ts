@@ -2,6 +2,8 @@ import { symbolsForProduct, type ApiModel, type ApiSymbol, type SymbolIndex } fr
 import { API_MODELS, createApiIndex, referenceAlternatives } from './api-models'
 import { PORT_BY_SLUG, portPageUrl, productApiPath, referenceUrl, type DocProduct } from './ports'
 import type { SidebarItem, SidebarGroupItem } from './sidebar'
+import { referenceTreeFor } from './api-tree'
+import type { ApiTreeJson } from './api-search'
 
 /** Public product declarations have their own routes; internal declarations stay in core. */
 export function coreApiSymbols(model: ApiModel): ApiSymbol[] {
@@ -79,6 +81,27 @@ export function productApiRoots(model: ApiModel, product: DocProduct): ApiSymbol
   const ids = new Set(symbols.map((symbol) => symbol.id))
   return symbols.filter((symbol) => !symbol.parent || !ids.has(symbol.parent))
     .sort((a, b) => a.name.localeCompare(b.name))
+}
+
+const referenceTrees = new WeakMap<ApiModel, Map<string, ApiTreeJson>>()
+
+/** Product pages and their JSON endpoint share the product's exact declarations. */
+export function productReferenceTree(model: ApiModel, product: DocProduct, version: string): ApiTreeJson {
+  let cache = referenceTrees.get(model)
+  if (!cache) { cache = new Map(); referenceTrees.set(model, cache) }
+  const key = `${product}/${version}`
+  const existing = cache.get(key)
+  if (existing) return existing
+  const symbols = symbolsForProduct(model, product)
+  const roots = productApiRoots(model, product)
+  const tree = referenceTreeFor(`${model.port}:${product}`, { ...model, symbols }, [{
+    id: product, label: 'API reference', collapsed: false, children: [],
+    entries: roots.map((symbol) => ({ id: symbol.publicId ?? symbol.id, name: symbol.name, kind: symbol.kind, slug: symbol.slug! })),
+  }], { hrefs: Object.fromEntries(symbols.flatMap((symbol) => [
+    [symbol.id, productApiHref(model, symbol, version)], [symbol.publicId ?? symbol.id, productApiHref(model, symbol, version)],
+  ])) })
+  cache.set(key, tree)
+  return tree
 }
 
 /** Preserve declaration ownership, including nested members, in product sidebars. */

@@ -14,7 +14,7 @@ import { wordBreak } from '../../lib/word-break'
 import { kindMark, markClass } from '../../lib/api-labels'
 import { apiTreeHref, searchApi, type ApiTreeBucket as JsonBucket, type ApiTreeJson as TreeJson } from '../../lib/api-search'
 import { apiTreePath, captureApiTree, initializeApiTree, type ApiTreeSelection, type ApiTreeState } from './api-tree-state'
-import { SIDEBAR_PRESENTATIONS, SIDEBAR_PREFERENCE_KEY, sidebarCatalog, sidebarName, sidebarNodes, type SidebarNode, type SidebarPresentation } from '../../lib/api-sidebar'
+import { SIDEBAR_PRESENTATIONS, SIDEBAR_PREFERENCE_KEY, sidebarCatalog, sidebarName, sidebarNodes, quietSidebarKinds, type SidebarNode, type SidebarPresentation } from '../../lib/api-sidebar'
 import { initApiOwnerPicker } from './api-owner-picker'
 
 const ITEM = '[role="treeitem"]'
@@ -438,8 +438,8 @@ function presentationRows(nodes: SidebarNode[]): HTMLLIElement[] {
       return heading
     }
     const li = node.expanded !== undefined
-      ? branch(node.label, node.href, node.level, node.lazy ?? '', node.count, node.kind, node.shortcut)
-      : leaf(node.label, node.href ?? '', node.level, node.kind, node.shortcut)
+      ? branch(node.label, node.href, node.level, node.lazy ?? '', node.count, node.kind, node.shortcut, node.quiet)
+      : leaf(node.label, node.href ?? '', node.level, node.kind, node.shortcut, node.quiet)
     const row = li.matches(ITEM) ? li : li.querySelector<HTMLElement>(ITEM)!
     row.setAttribute('aria-setsize', String(items.length))
     row.setAttribute('aria-posinset', String(items.indexOf(node) + 1))
@@ -484,7 +484,9 @@ export async function setApiSidebar(nav: HTMLElement, mode: SidebarPresentation,
   else delete nav.dataset.ownerOverview
   nav.dataset.currentHref = record ? apiTreeHref(nav.dataset.base ?? '/', record, json.hrefs) : location.pathname
   delete nav.dataset.apiTreeInteracted
-  tree.replaceChildren(...presentationRows(sidebarNodes(json, nav.dataset.base ?? '/', mode, selected, options.allTypes)))
+  const nodes = sidebarNodes(json, nav.dataset.base ?? '/', mode, selected, options.allTypes)
+  if (nav.dataset.marks === 'mixed') quietSidebarKinds(nodes)
+  tree.replaceChildren(...presentationRows(nodes))
   selectPresentation(nav)
   const tab = tree.querySelector<HTMLElement>('[aria-current="page"]')?.closest<HTMLElement>(ITEM) ?? rows(tree)[0]
   if (tab) tab.tabIndex = 0
@@ -640,7 +642,8 @@ function trackSections(nav: HTMLElement, json: TreeJson, signal: AbortSignal) {
     if (signal.aborted || nav.contains(document.activeElement)) return
     const top = Math.max(0, document.querySelector('.site-header')?.getBoundingClientRect().bottom ?? 0) + 24
     const atBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 1
-    const current = atBottom ? targets.at(-1) : targets.findLast((target) => target.element.getBoundingClientRect().top <= top) ?? targets[0]
+    const visible = targets.filter((target) => target.element.getClientRects().length)
+    const current = atBottom ? visible.at(-1) : visible.findLast((target) => target.element.getBoundingClientRect().top <= top) ?? visible[0]
     if (current && current.id !== nav.dataset.symbol) void setApiSidebar(nav, nav.dataset.presentation as SidebarPresentation, current.id)
   }
   const schedule = () => { window.cancelAnimationFrame(frame); frame = window.requestAnimationFrame(update) }
@@ -859,7 +862,9 @@ function initDrawer(nav: HTMLElement, signal: AbortSignal) {
       first.focus()
     }
   }, { signal })
-  document.addEventListener('keydown', (e) => e.key === 'Escape' && nav.hasAttribute('data-open') && setOpen(false), { signal })
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !event.defaultPrevented && !document.querySelector('dialog[open]') && nav.hasAttribute('data-open')) setOpen(false)
+  }, { signal })
   document.addEventListener('libtmux:drawer-open', (e) => (e as CustomEvent).detail !== 'api-nav' && setOpen(false), { signal })
   phone.addEventListener('change', () => setOpen(false), { signal })
 }

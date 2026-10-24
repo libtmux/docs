@@ -24,9 +24,12 @@ import ProductNotice from '../components/ProductNotice.astro'
 import BaseLayout from './BaseLayout.astro'
 import type { PageSource } from '../lib/markdown-twins'
 import { API_MODELS } from '../lib/api-models'
+import { productReferenceTree } from '../lib/product-api'
+import { referenceTree, apiTreeVersion } from '../lib/api-tree'
+import { searchApi, apiTreeHref } from '../lib/api-search'
 import { branding } from '../lib/branding'
 import { withRoot } from '../lib/site-root'
-import { DOC_PRODUCTS, PORT_BY_SLUG, portPageUrl, productAvailable, type DocProduct } from '../lib/ports'
+import { DOC_PRODUCTS, PORT_BY_SLUG, portPageUrl, referenceUrl, productAvailable, type DocProduct } from '../lib/ports'
 
 /**
  * The documentation reading shell: sidebar | content | table of contents.
@@ -89,7 +92,7 @@ interface Props {
    */
   bare?: boolean
   navigation?: SidebarItem[]
-  apiNavigation?: { inventory: ApiTreeJson; base: string; version: string; selected: string; fullManual: string }
+  apiNavigation?: { inventory: ApiTreeJson; base: string; version: string; selected: string; fullManual?: string }
   breadcrumbs?: BreadcrumbItem[]
   pagePorts?: PagePortLink[]
 }
@@ -119,7 +122,7 @@ const {
   editLabel,
   bare = false,
   navigation,
-  apiNavigation,
+  apiNavigation: requestedApiNavigation,
   breadcrumbs: requestedBreadcrumbs,
   pagePorts: requestedPagePorts,
 } = Astro.props as Props
@@ -147,6 +150,18 @@ const surfaces = port ? await getDocumentationSurfaces(port, version, locale) : 
 const selectedSection = surfaces.length ? currentDocumentation(surfaces, currentPath)?.section : undefined
 // A tmux page's sidebar links tmux releases; the build slug names a docs build.
 const sidebarNavigation = navigation ?? selectedSection?.items ?? await getSidebar(port, contextVersion, locale, product)
+const libraryReference = port && API_MODELS[port] && (selectedSection?.id === 'reference' || /^api(?:\/|$)/.test(pagePath))
+const referenceInventory = libraryReference ? product ? productReferenceTree(API_MODELS[port!], product, version) : referenceTree(port!) : undefined
+const apiNavigation = requestedApiNavigation ?? (referenceInventory ? {
+  inventory: referenceInventory, base: referenceUrl(PORT_BY_SLUG[port!], version, product), version: apiTreeVersion(API_MODELS[port!], []),
+  selected: searchApi(referenceInventory, '').find((entry) => apiTreeHref(referenceUrl(PORT_BY_SLUG[port!], version, product), entry, referenceInventory.hrefs) === currentPath)?.id ?? '',
+} : undefined)
+const referenceLinks = (items: SidebarItem[]): { href: string; label: string }[] => items.flatMap((item) => [
+  ...(item.href ? [{ href: item.href, label: item.label }] : []), ...(item.type === 'group' ? referenceLinks(item.items) : []),
+])
+const declarationLinks = referenceInventory ? new Set(searchApi(referenceInventory, '').map((entry) => apiTreeHref(apiNavigation!.base, entry, referenceInventory.hrefs))) : new Set()
+const referenceDestinations = referenceInventory ? referenceLinks(sidebarNavigation).filter((entry) =>
+  !declarationLinks.has(entry.href) && entry.href !== apiNavigation!.base && entry.href !== `${apiNavigation!.base}glossary/`) : []
 const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && port ? [
   { name: PORT_BY_SLUG[port].name, url: portPageUrl(PORT_BY_SLUG[port], version) },
   { name: DOC_PRODUCTS[product].label, url: portPageUrl(PORT_BY_SLUG[port], version, product) },
@@ -236,11 +251,13 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
   */}
   <div class:list={['mx-auto flex max-w-[100rem] gap-5 px-4 py-6 lg:px-5', apiNavigation && 'docs-reference-navigation']}>
     {apiNavigation ? <ApiTree presentation="outline" inventory={apiNavigation.inventory} selectedSymbol={apiNavigation.selected}
-      referenceBase={apiNavigation.base} portName="tmux CLI" tree={[]} members={[]} withMembers={new Set()}
-      currentPath={currentPath} version={apiNavigation.version} indexLabel="All commands"
-      glossaryHref={apiNavigation.fullManual} glossaryLabel="Full manual" treeLabel="tmux commands"
-      searchLabel="Find a command" searchPlaceholder="Find command"
-      filters={[{ id: 'all', label: 'All' }, { id: 'types', label: 'Sections' }, { id: 'members', label: 'Commands' }]} />
+      referenceBase={apiNavigation.base} portName={port ? PORT_BY_SLUG[port].name : 'tmux CLI'} tree={[]} members={[]} withMembers={new Set()}
+      currentPath={currentPath} version={apiNavigation.version} indexLabel={port ? 'Reference overview' : 'All commands'}
+      destinations={referenceDestinations}
+      glossaryHref={port ? `${apiNavigation.base}glossary/` : apiNavigation.fullManual} glossaryLabel={port ? 'API glossary' : 'Full manual'}
+      treeLabel={port ? `${PORT_BY_SLUG[port].name} API` : 'tmux commands'}
+      searchLabel={port ? 'Find a type or member' : 'Find a command'} searchPlaceholder={port ? 'Find symbol' : 'Find command'}
+      filters={[{ id: 'all', label: 'All' }, { id: 'types', label: port ? 'Types' : 'Sections' }, { id: 'members', label: port ? 'Members' : 'Commands' }]} />
       : <aside class="hidden w-64 shrink-0 lg:block">
       <div data-documentation-scroll="desktop" class="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
         <Sidebar locale={locale} port={port} product={product} version={version} currentPath={currentPath} navigation={sidebarNavigation} />
