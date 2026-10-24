@@ -23,6 +23,12 @@ export const markHeight = (mark: string): 'x' | undefined => /^[acemnorsuvwxz:]$
 export type MarkClass = 'x' | 'col' | 'asc' | 'tee' | 'cap'
 export const markClass = (mark: string): MarkClass => mark === ':' ? 'col' : markHeight(mark) ?? (/^[fhk]$/.test(mark) ? 'asc' : mark === 't' ? 'tee' : 'cap')
 
+/** A member written `Owner#member`, as a doc comment links Ruby and Java members. */
+export const memberReference = /^(?:[\w$]+(?:\.[\w$]+)*)?#[^\s#]+(?:\([^#]*\))?$/
+
+/** `label` with the `#` of a member reference as a part of its own, which the page can mark as the separator. */
+export const labelParts = (label: string, qualified: boolean) => qualified ? label.split(/(#)/) : [label]
+
 const namespaceSegments = new Intl.Segmenter('en', { granularity: 'grapheme' })
 const FULL_NAMESPACE_LENGTH = 48
 
