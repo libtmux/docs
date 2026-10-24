@@ -82,8 +82,8 @@ The compatibility notes list these tmux requirements:
 
 | Feature | Minimum tmux |
 |---------|-------------|
-| All options/hooks features | 3.3a+ |
-| Window/pane hook *scope flags* (`-w`, `-p`) accepted | 3.3a+; see the supported-scope caveat above |
+| All options/hooks features | 3.2+ |
+| Window/pane hook *scope flags* (`-w`, `-p`) accepted | 3.2+; see the supported-scope caveat above |
 | `client-active`, `window-resized` hooks | 3.3+ |
 | `pane-title-changed` hook | 3.2+ |
 

@@ -18,7 +18,7 @@
         "code": "from __future__ import annotations\n\nfrom pathlib import Path\nimport shutil\nimport tempfile\nimport time\n\nimport libtmux\n\ndirectory = Path(tempfile.mkdtemp(prefix=\"libtmux-py-home-\"))\nsocket = directory / \"tmux.sock\"\nserver = libtmux.Server(socket_path=socket, config_file=\"/dev/null\")\n\ntry:\n    session = server.new_session(session_name=\"demo\")\n    window = session.active_window\n    assert window is not None\n    pane = window.split(shell=\"sh\")\n\n    pane.send_keys(\"printf '\\\\nHello world\\\\n'\", enter=True)\n\n    deadline = time.monotonic() + 5\n    while \"Hello world\" not in pane.capture_pane():\n        if time.monotonic() >= deadline:\n            raise TimeoutError(\"The pane did not print Hello world\")\n        time.sleep(0.02)\n\n    print(\"Hello world\")\nexcept Exception as error:\n    raise RuntimeError(\"tmux quickstart failed\") from error\nfinally:\n    if socket.exists():\n        server.kill()\n    shutil.rmtree(directory)\n"
       }
     ],
-    "prerequisites": "POSIX shell, Git, tmux 3.3a or newer, Python 3.14.6 and uv (tested 0.12.0).",
+    "prerequisites": "POSIX shell, Git, tmux 3.2a or newer, Python 3.14.6 and uv (tested 0.12.0).",
     "commands": [
       "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/tmux-python/libtmux.git \\\n  9fdd083a8181a827889337b63cd4e6daea661a8c\ngit -C source checkout -q --detach FETCH_HEAD\nuv venv .venv\nuv pip install --python .venv/bin/python ./source",
       "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\n.venv/bin/python quickstart.py"

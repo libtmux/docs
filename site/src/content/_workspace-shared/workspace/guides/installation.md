@@ -11,7 +11,7 @@ title: Install and load a workspace
 
 <!-- port:py -->
 The runnable terminal loader is the separate Python application tmuxp. Its
-documented prerequisites are Python 3.10 or newer and tmux 3.3a or newer. Install
+documented prerequisites are Python 3.10 or newer and tmux 3.2a or newer. Install
 it in an isolated tool environment with uv:
 ```console
 $ uv tool install tmuxp
