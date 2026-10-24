@@ -18,6 +18,7 @@ import {
 import data from '../data/capabilities.json'
 import { PORT_NAME, referenceHref } from './api-models'
 import { PORTS } from './ports'
+import { requirement, requirementAcross } from './capability-cells'
 import type { ApiLink, Column, Row } from './capability-cells'
 
 export type { ApiLink, Cell, Column, Row } from './capability-cells'
@@ -96,12 +97,6 @@ function link(port: string, publicId: string): ApiLink {
   return { label: publicId, href: referenceHref(port, publicId) }
 }
 
-function requirement(entry: PortEntry): string {
-  if (entry.releases) return `Applies to ${entry.releases.join(', ')}`
-  const except = entry.except?.length ? `, not ${entry.except.join(', ')}` : ''
-  return `${entry.since} and later${except}`
-}
-
 /** One port's capabilities and workarounds against its release columns. */
 export function portRows(port: string): { capabilities: Row[]; workarounds: Row[] } {
   const entry = DATA.ports[port]
@@ -153,7 +148,7 @@ export function mapRows(): Row[] {
     }),
     apis: [],
     commands: entry.commands,
-    requirement: requirement(entry),
+    requirement: requirementAcross([...present], (port) => PORT_NAME[port] ?? port),
   }))
 }
 
@@ -186,6 +181,6 @@ export function commandRows(command: string): Row[] {
     }),
     apis: [],
     commands: entry.commands,
-    requirement: requirement(entry),
+    requirement: requirementAcross([...present], (port) => PORT_NAME[port] ?? port),
   }))
 }
