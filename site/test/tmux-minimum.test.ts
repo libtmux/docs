@@ -37,28 +37,34 @@ export const PORT_FLOORS = [
 
 /**
  * Single statements elsewhere that name another floor on purpose, usually in
- * a file that speaks for several ports. An entry that matches no statement
- * fails, so an exemption cannot outlive the text it covers.
+ * a file that speaks for several ports. `near` selects the statement by its
+ * paragraph (its line, outside Markdown), so a wrong floor elsewhere in the
+ * same file still fails. An entry that matches no statement fails, so an
+ * exemption cannot outlive the text it covers.
  */
 export const OTHER_FLOORS = [
   {
     path: 'site/src/content/_workspace-shared/workspace/guides/installation.md',
     version: '3.2a',
+    near: /tmuxp/,
     why: 'the tmuxp paragraph; tmuxp depends on libtmux~=0.62.0, whose TMUX_MIN_VERSION is 3.2a, although its own README, quickstart and plugin.py say 3.2',
   },
   {
     path: 'site/src/data/home-examples.json',
     version: '3.2a',
+    near: /Python \d/,
     why: 'the Python quickstart prerequisites',
   },
   {
     path: 'site/src/data/home-examples.json',
     version: '3.3',
+    near: /Elixir \d/,
     why: 'the Elixir quickstart prerequisites; priv/tmux/support.json declares tmux_minimum 3.3',
   },
   {
     path: 'site/src/lib/ports.ts',
     version: '3.3',
+    near: /Elixir \d/,
     why: 'the Elixir install notes; priv/tmux/support.json declares tmux_minimum 3.3',
   },
   {
@@ -69,6 +75,7 @@ export const OTHER_FLOORS = [
   {
     path: 'site/src/content/docs/ports/rs/mcp/topics/tool-selection.md',
     version: '3.7',
+    near: /history limit/,
     why: 'a tmux behaviour of the history-limit option from tmux 3.7, not a library minimum',
   },
 ]
@@ -123,17 +130,26 @@ export function minimums(text: string): string[] {
   return scan(text).map((found) => found.version)
 }
 
-interface Floor { path: string, version: string }
-interface Statement { path: string, version: string }
+interface Floor { path: string, version: string, near?: RegExp }
+interface Statement { path: string, version: string, context: string }
+
+/** The paragraph around an index in Markdown, otherwise its line. */
+function around(path: string, text: string, index: number): string {
+  const separator = /\.mdx?$/.test(path) ? '\n\n' : '\n'
+  const before = text.lastIndexOf(separator, index)
+  const after = text.indexOf(separator, index)
+  return text.slice(before < 0 ? 0 : before + separator.length, after < 0 ? text.length : after)
+}
 
 export function statementsIn(path: string, text: string): Statement[] {
-  return scan(text).map(({ version }) => ({ path, version }))
+  return scan(text).map(({ version, index }) => ({ path, version, context: around(path, text, index) }))
 }
 
 /** Statements that disagree with their floor, then entries that excuse or require nothing. */
 export function mismatches(statements: Statement[], ports: Floor[], others: Floor[]): string[] {
   const covers = (entry: Floor, statement: Statement) =>
-    statement.version === entry.version && statement.path.startsWith(entry.path)
+    statement.version === entry.version && statement.path.startsWith(entry.path) &&
+    (entry.near?.test(statement.context) ?? true)
   const expected = (statement: Statement) =>
     ports.find((port) => statement.path.startsWith(port.path))?.version ?? FLOOR
   const wrong = statements
@@ -141,11 +157,11 @@ export function mismatches(statements: Statement[], ports: Floor[], others: Floo
     .map((statement) => `${statement.path}: tmux ${statement.version}, expected ${expected(statement)}`)
   const unused = [...ports, ...others]
     .filter((entry) => !statements.some((statement) => covers(entry, statement)))
-    .map((entry) => `stale entry: ${entry.path} names tmux ${entry.version}, which no statement there states`)
+    .map((entry) => `stale entry: ${entry.path} names tmux ${entry.version}${entry.near ? ` near ${entry.near}` : ''}, which no statement there states`)
   return [...wrong, ...unused]
 }
 
-const statement = (path: string, version: string): Statement => ({ path, version })
+const statement = (path: string, version: string, context = ''): Statement => ({ path, version, context })
 
 describe('tmux minimum statements', () => {
   it('recognizes each phrasing of a minimum', () => {
@@ -245,5 +261,23 @@ describe('tmux minimum statements', () => {
       'Since tmux 3.2a and later, the hook fires.',
     ]
     for (const fact of facts) expect(mismatches(statementsIn('c.md', fact), [], [])).toEqual([])
+  })
+
+  it('limits an exemption to the statement it names', () => {
+    const others = [{ path: 'm.json', version: '3.3', near: /Elixir/ }]
+    const elixir = '{ "elixir": "Elixir 1.20 and tmux 3.3 or newer" }'
+    const go = '{ "go": "Go 1.26 and tmux 3.3 or newer" }'
+    expect(mismatches(statementsIn('m.json', elixir), [], others)).toEqual([])
+    expect(mismatches(statementsIn('m.json', `${elixir}\n${go}`), [], others)).toEqual([
+      'm.json: tmux 3.3, expected 3.3a',
+    ])
+    expect(mismatches(statementsIn('m.json', go), [], others)).toEqual([
+      'm.json: tmux 3.3, expected 3.3a',
+      'stale entry: m.json names tmux 3.3 near /Elixir/, which no statement there states',
+    ])
+    const paragraphs = 'The Elixir port needs tmux 3.3 or newer.\n\nThe Go port needs tmux 3.3 or newer.'
+    expect(mismatches(statementsIn('m.md', paragraphs), [], [{ path: 'm.md', version: '3.3', near: /Elixir/ }])).toEqual([
+      'm.md: tmux 3.3, expected 3.3a',
+    ])
   })
 })
