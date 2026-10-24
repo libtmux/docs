@@ -1,5 +1,5 @@
 import { execFileSync, spawnSync } from 'node:child_process'
-import { mkdtempSync, readFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -55,5 +55,117 @@ describe('gen-capabilities', () => {
     const { run } = generate('py-unresolved.json')
     expect(run.status).toBe(1)
     expect(run.stderr).toContain('"libtmux.Server.no_such_method", which is not in the API model')
+  })
+})
+
+/**
+ * `--check` on a runner that has this repository and nothing else: no port
+ * checkout, and so no manifest to read. Hosted CI is that runner.
+ */
+describe('gen-capabilities --check', () => {
+  const missing = '/nonexistent/capabilities.json'
+  const fixture = join(fixtures, 'py.json')
+
+  /** Write the committed file the way the generator does, from the py fixture. */
+  function committed(edit?: (data: any) => void) {
+    const { run, out } = generate('py.json')
+    expect(run.status, run.stderr).toBe(0)
+    if (edit) {
+      const data = JSON.parse(readFileSync(out, 'utf8'))
+      edit(data)
+      writeFileSync(out, `${JSON.stringify(data, null, 2)}\n`)
+    }
+    return out
+  }
+
+  function check(out: string, { manifest = fixture, tmux = tmuxSource() }: { manifest?: string, tmux?: string } = {}) {
+    return spawnSync('node', ['scripts/gen-capabilities.mjs', '--check', '--port', 'py', '--manifest', `py=${manifest}`, '--tmux', tmux, '--out', out], {
+      cwd: root,
+      encoding: 'utf8',
+    })
+  }
+
+  it('passes a current file when the manifest is readable', () => {
+    const run = check(committed())
+    expect(run.status, run.stderr).toBe(0)
+    expect(run.stdout).toContain('is current for 1 of 1 ports')
+  })
+
+  it('names a port whose manifest it could not read instead of passing silently', () => {
+    const run = check(committed(), { manifest: missing })
+    expect(run.status, run.stderr).toBe(0)
+    expect(run.stdout).toContain('is current for 0 of 1 ports')
+    expect(run.stdout).toContain('manifest not compared: py')
+  })
+
+  it('says so when no port has a manifest anywhere', () => {
+    const empty = join(mkdtempSync(join(tmpdir(), 'capabilities-')), 'capabilities.json')
+    writeFileSync(empty, `${JSON.stringify({ generated: 'scripts/gen-capabilities.mjs', releases: [], ports: {} }, null, 2)}\n`)
+    const run = check(empty, { manifest: missing })
+    expect(run.status, run.stderr).toBe(0)
+    expect(run.stdout).toContain('is current for 0 of 1 ports')
+    expect(run.stdout).toContain('no manifest here and none committed: py')
+  })
+
+  it('fails a committed name the API model lost, with no manifest to compare', () => {
+    const out = committed((data) => { data.ports.py.capabilities[0].apis.push('libtmux.Server.no_such_method') })
+    expect(check(out).status).toBe(1)
+    const run = check(out, { manifest: missing })
+    expect(run.status).toBe(1)
+    expect(run.stderr).toContain('py: committed capability buffer-delete-named names "libtmux.Server.no_such_method", which is not in the API model')
+  })
+
+  it('fails a committed entry that is no longer a valid manifest, with no manifest to compare', () => {
+    const run = check(committed((data) => { data.ports.py.capabilities[0].except = '3.5' }), { manifest: missing })
+    expect(run.status).toBe(1)
+    expect(run.stderr).toContain('py: committed entry: capabilities[0].except: expected an array of releases')
+  })
+
+  it('fails a file that differs from a manifest it can read', () => {
+    const run = check(committed((data) => { data.ports.py.capabilities[0].summary = 'Edited by hand.' }))
+    expect(run.status).toBe(1)
+    expect(run.stderr).toContain('py: differs from its manifest')
+  })
+
+  it('fails a manifest the file does not hold', () => {
+    const run = check(committed((data) => { delete data.ports.py }))
+    expect(run.status).toBe(1)
+    expect(run.stderr).toContain('py: missing from the file')
+  })
+
+  it('fails an entry for a port that is not registered', () => {
+    const run = check(committed((data) => { data.ports.nope = data.ports.py }), { manifest: missing })
+    expect(run.status).toBe(1)
+    expect(run.stderr).toContain('nope: committed, but not a registered port')
+  })
+
+  it('compares releases with tmux when it can, and says when it cannot', () => {
+    const out = committed()
+    const stale = committed((data) => { data.releases = ['3.3a'] })
+    expect(check(stale).stderr).toContain('releases differ from the tmux refs')
+    const run = check(out, { tmux: '/nonexistent/tmux' })
+    expect(run.status, run.stderr).toBe(0)
+    expect(run.stdout).toContain('tmux releases not compared: no tmux checkout at /nonexistent/tmux')
+  })
+
+  it('checks committed releases by their form when tmux is absent', () => {
+    const below = check(committed((data) => { data.releases = ['3.2a', '3.3a', '3.4'] }), { tmux: '/nonexistent/tmux' })
+    expect(below.status).toBe(1)
+    expect(below.stderr).toContain('release 3.2a is below the lowest floor 3.3a')
+    const unsorted = check(committed((data) => { data.releases = ['3.4', '3.3a'] }), { tmux: '/nonexistent/tmux' })
+    expect(unsorted.status).toBe(1)
+    expect(unsorted.stderr).toContain('releases are not in ascending order')
+    const bad = check(committed((data) => { data.releases = ['3.3a', 'master'] }), { tmux: '/nonexistent/tmux' })
+    expect(bad.status).toBe(1)
+    expect(bad.stderr).toContain('not a version tmux prints')
+  })
+
+  it('refuses to write a file that would drop a port it cannot read', () => {
+    const out = committed()
+    const before = readFileSync(out, 'utf8')
+    const run = spawnSync('node', ['scripts/gen-capabilities.mjs', '--manifest', `py=${missing}`, '--tmux', tmuxSource(), '--out', out], { cwd: root, encoding: 'utf8' })
+    expect(run.status).toBe(1)
+    expect(run.stderr).toContain('refusing to write a partial file')
+    expect(readFileSync(out, 'utf8')).toBe(before)
   })
 })

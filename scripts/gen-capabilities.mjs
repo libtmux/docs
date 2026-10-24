@@ -15,6 +15,14 @@
  * tagged), and the `next-X.Y` that master names. Only releases at or above the
  * lowest floor any manifest declares are kept.
  *
+ * `--check` compares the committed file with what the manifests say. Hosted CI
+ * clones this repository alone, so a port whose manifest cannot be read is
+ * named, not skipped in silence: its committed entry is still validated and
+ * every API name in it resolved through the committed API model, so a renamed
+ * method fails there too. Releases are compared with tmux's refs when a clone
+ * is present, and checked by form and order when it is not. Writing refuses
+ * to drop a committed port it cannot read.
+ *
  * Usage: node scripts/gen-capabilities.mjs [--port <slug>] [--manifest <slug>=<path>]
  *        [--tmux <checkout>] [--out <path>] [--check]
  */
@@ -25,7 +33,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PORTS } from '../site/src/lib/ports.ts'
 import { SymbolIndex } from '../packages/api-model/src/link.ts'
-import { compareTmuxVersions, tmuxVersionKey, validateManifest } from '../packages/api-model/src/capabilities.ts'
+import { CAPABILITY_SCHEMA, compareTmuxVersions, tmuxVersionKey, validateManifest } from '../packages/api-model/src/capabilities.ts'
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const args = process.argv.slice(2)
@@ -86,14 +94,46 @@ function resolver(slug) {
   }
 }
 
+/** The names a committed entry holds, as the places they appear. */
+function committedNames(kind, list) {
+  return list.flatMap((e) => [
+    ...e.apis.map((name) => [`${kind} ${e.id}`, name]),
+    ...(e.error ? [[`${kind} ${e.id} error`, e.error]] : []),
+  ])
+}
+
+/**
+ * Check a committed entry without its manifest: it still has to be a valid
+ * manifest, and every name in it still has to resolve in the committed model.
+ */
+function verifyCommitted(slug, entry) {
+  const held = entry && typeof entry === 'object' ? entry : {}
+  const { errors: invalid } = validateManifest({
+    schema: CAPABILITY_SCHEMA, port: slug, floor: held.floor, capabilities: held.capabilities, workarounds: held.workarounds,
+  })
+  if (invalid.length) return invalid.map((e) => `${slug}: committed entry: ${e}`)
+  const resolve = resolver(slug)
+  if (!resolve) return [`${slug}: no API model at ${join(modelDir, `${slug}.json`)}; run gen-api-model first`]
+  return [...committedNames('capability', held.capabilities), ...committedNames('workaround', held.workarounds)]
+    .filter(([, name]) => !resolve(name))
+    .map(([where, name]) => `${slug}: committed ${where} names "${name}", which is not in the API model`)
+}
+
 const errors = []
 const ports = {}
+/** Ports considered, and the ones whose manifest this machine cannot read. */
+const considered = []
+const unread = []
 for (const port of PORTS) {
   if (only && port.slug !== only) continue
   // A wrapper library shares its parent's checkout, where the manifest names the parent.
   if (port.parentLibrary) continue
+  considered.push(port.slug)
   const path = manifestPath(port)
-  if (!existsSync(path)) continue
+  if (!existsSync(path)) {
+    unread.push(port.slug)
+    continue
+  }
   const { manifest, errors: invalid } = validateManifest(JSON.parse(readFileSync(path, 'utf8')))
   if (!manifest) {
     errors.push(...invalid.map((e) => `${port.slug}: ${e}`))
@@ -134,18 +174,77 @@ if (errors.length) {
   process.exit(1)
 }
 
-const floors = Object.values(ports).map((p) => p.floor.minimum)
-const lowest = floors.sort(compareTmuxVersions)[0]
-const releases = lowest ? tmuxReleases().filter((v) => compareTmuxVersions(v, lowest) >= 0) : []
-const data = `${JSON.stringify({ generated: 'scripts/gen-capabilities.mjs', releases, ports }, null, 2)}\n`
+let committed
+if (existsSync(out)) {
+  try {
+    committed = JSON.parse(readFileSync(out, 'utf8'))
+  } catch (error) {
+    if (checking) {
+      console.error(`${out} is not valid JSON: ${error.message}`)
+      process.exit(1)
+    }
+  }
+}
+/** Unread ports the committed file holds an entry for. */
+const kept = unread.filter((slug) => committed?.ports?.[slug])
+const printable = (v) => {
+  try {
+    tmuxVersionKey(v)
+    return true
+  } catch {
+    return false
+  }
+}
+const lowestOf = (floors) => floors.filter(printable).sort(compareTmuxVersions)[0]
+const haveTmux = existsSync(tmuxCheckout)
 
 if (checking) {
-  const current = existsSync(out) ? readFileSync(out, 'utf8') : ''
-  if (current !== data) {
-    console.error(`${out} is stale; run node scripts/gen-capabilities.mjs`)
+  const problems = []
+  if (!committed) problems.push(`${out} does not exist; run node scripts/gen-capabilities.mjs`)
+  else {
+    const registered = new Set(PORTS.map((p) => p.slug))
+    for (const slug of Object.keys(committed.ports ?? {})) if (!registered.has(slug)) problems.push(`${slug}: committed, but not a registered port`)
+    for (const slug of Object.keys(ports)) {
+      if (!committed.ports?.[slug]) problems.push(`${slug}: missing from the file`)
+      else if (JSON.stringify(ports[slug]) !== JSON.stringify(committed.ports[slug])) problems.push(`${slug}: differs from its manifest`)
+    }
+    for (const slug of kept) problems.push(...verifyCommitted(slug, committed.ports[slug]))
+    const lowest = lowestOf([...Object.values(ports).map((p) => p.floor.minimum), ...kept.map((slug) => committed.ports[slug].floor?.minimum)])
+    const held = committed.releases ?? []
+    if (haveTmux) {
+      const expected = lowest ? tmuxReleases().filter((v) => compareTmuxVersions(v, lowest) >= 0) : []
+      if (JSON.stringify(expected) !== JSON.stringify(held)) problems.push(`releases differ from the tmux refs: the file has ${held.join(', ') || 'none'}, the refs give ${expected.join(', ') || 'none'}`)
+    } else if (!Array.isArray(held)) problems.push('releases: expected an array')
+    else {
+      for (const v of held) if (!printable(v)) problems.push(`releases: ${JSON.stringify(v)} is not a version tmux prints`)
+      const valid = held.filter(printable)
+      if (valid.some((v, i) => i > 0 && compareTmuxVersions(valid[i - 1], v) >= 0)) problems.push('releases are not in ascending order')
+      for (const v of valid) if (lowest && compareTmuxVersions(v, lowest) < 0) problems.push(`release ${v} is below the lowest floor ${lowest}`)
+      if (!lowest && held.length) problems.push('releases: the file holds releases but no port with a floor')
+    }
+  }
+  if (problems.length) {
+    console.error(`${out} is out of date or invalid. Fix the entries below, or run node scripts/gen-capabilities.mjs with every checkout present.`)
+    console.error(problems.map((p) => `  ${p}`).join('\n'))
     process.exit(1)
   }
+  const notes = [`gen-capabilities: ${out} is current for ${Object.keys(ports).length} of ${considered.length} ports`]
+  if (kept.length) notes.push(`  committed entry verified against the API model, manifest not compared: ${kept.join(', ')}`)
+  const bare = unread.filter((slug) => !kept.includes(slug))
+  if (bare.length) notes.push(`  no manifest here and none committed: ${bare.join(', ')}`)
+  if (!haveTmux) notes.push(`  tmux releases not compared: no tmux checkout at ${tmuxCheckout}`)
+  console.log(notes.join('\n'))
 } else {
-  writeFileSync(out, data)
+  if (!only && kept.length) {
+    console.error(`gen-capabilities: no manifest for ${kept.join(', ')}; refusing to write a partial file that drops ${kept.length === 1 ? 'its' : 'their'} committed ${kept.length === 1 ? 'entry' : 'entries'}`)
+    process.exit(1)
+  }
+  const lowest = lowestOf(Object.values(ports).map((p) => p.floor.minimum))
+  if (lowest && !haveTmux) {
+    console.error(`gen-capabilities: no tmux checkout at ${tmuxCheckout}; pass --tmux <checkout>`)
+    process.exit(1)
+  }
+  const releases = lowest ? tmuxReleases().filter((v) => compareTmuxVersions(v, lowest) >= 0) : []
+  writeFileSync(out, `${JSON.stringify({ generated: 'scripts/gen-capabilities.mjs', releases, ports }, null, 2)}\n`)
   console.log(`wrote ${out}: ${Object.keys(ports).length} ports, ${releases.length} releases`)
 }
