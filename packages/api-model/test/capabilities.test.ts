@@ -44,7 +44,7 @@ const breakPane: Workaround = {
 const manifest = {
   schema: CAPABILITY_SCHEMA,
   port: 'py',
-  floor: { minimum: '3.3a' },
+  floor: { minimum: '3.2a' },
   capabilities: [control, runShell],
   workarounds: [breakPane],
 }
