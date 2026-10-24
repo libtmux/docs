@@ -69,8 +69,12 @@ export interface CapabilityManifest {
   workarounds: Workaround[]
 }
 
-/** A version tmux has printed: `X.Y`, `X.Ya`, `X.Y-rc`, `X.Y-rcN` or `next-X.Y`. */
-const VERSION = /^(?:next-(0|[1-9]\d*)\.(0|[1-9]\d*)|(0|[1-9]\d*)\.(0|[1-9]\d*)([a-z]?)(?:-rc(\d*))?)$/
+/**
+ * A version tmux has printed: `X.Y`, `X.Ya`, `X.Y-rc`, `X.Y-rcN` or `next-X.Y`.
+ * tmux names its first candidate `X.Y-rc` and the next `X.Y-rc2`, so N starts
+ * at 2 and has no leading zero.
+ */
+const VERSION = /^(?:next-(0|[1-9]\d*)\.(0|[1-9]\d*)|(0|[1-9]\d*)\.(0|[1-9]\d*)([a-z]?)(-rc(?:[2-9]|[1-9]\d+)?)?)$/
 
 /** A sortable key in tmux's own order: next-X.Y < X.Y-rc < X.Y-rcN < X.Y < X.Ya. */
 export function tmuxVersionKey(version: string): number[] {
@@ -80,7 +84,7 @@ export function tmuxVersionKey(version: string): number[] {
   const letter = m[5] ? m[5].charCodeAt(0) - 96 : 0
   if (m[6] !== undefined) {
     if (letter) throw new TypeError(`a candidate carries no patch letter: ${JSON.stringify(version)}`)
-    return [Number(m[3]), Number(m[4]), 1, m[6] === '' ? 0 : Number(m[6]), 0]
+    return [Number(m[3]), Number(m[4]), 1, Number(m[6].slice(3)), 0]
   }
   return [Number(m[3]), Number(m[4]), 2, 0, letter]
 }
