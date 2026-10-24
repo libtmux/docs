@@ -399,12 +399,16 @@ html[data-api-nav] .api-nav__item[aria-expanded='false'] > [role='group']:not([d
     border-inline-end: 1px solid var(--color-edge);
   }
 
+  .api-nav-column:has(.api-nav:not([data-controlled])) {
+    min-height: calc(100dvh - var(--api-nav-top, var(--topnav-height, 3rem)));
+  }
+
   .api-nav {
     position: sticky;
-    top: var(--topnav-height, 3rem);
+    top: var(--api-nav-top, var(--topnav-height, 3rem));
     display: flex;
     flex-direction: column;
-    height: calc(100vh - var(--topnav-height, 3rem));
+    height: var(--api-nav-height, calc(100dvh - var(--api-nav-top, var(--topnav-height, 3rem))));
     padding: 0.75rem 0.5rem 0.75rem 0.75rem;
   }
 

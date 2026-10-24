@@ -619,8 +619,62 @@ function initPresentation(nav: HTMLElement, tree: HTMLElement, signal: AbortSign
       return setApiSidebar(nav, nav.dataset.presentation as SidebarPresentation, record?.id ?? nav.dataset.symbol ?? '')
     }
     window.addEventListener('hashchange', () => present(arrive()), { signal })
-    present(arrive())
+    present(arrive().then(async () => {
+      const json = await load(nav.dataset.src ?? '')
+      if (!signal.aborted) trackSections(nav, json, signal)
+    }))
   }
+}
+
+/** Index pages follow the section being read without changing the URL. */
+function trackSections(nav: HTMLElement, json: TreeJson, signal: AbortSignal) {
+  const targets = sidebarCatalog(json).records.flatMap((record) => {
+    const url = new URL(apiTreeHref(nav.dataset.base ?? '/', record, json.hrefs), location.href)
+    if (url.pathname !== location.pathname || !url.hash) return []
+    const element = document.getElementById(decodeURIComponent(url.hash.slice(1)))
+    return element ? [{ id: record.id, element }] : []
+  }).sort((a, b) => a.element.compareDocumentPosition(b.element) & 4 ? -1 : 1)
+  if (!targets.length) return
+  let frame = 0
+  const update = () => {
+    if (signal.aborted || nav.contains(document.activeElement)) return
+    const top = Math.max(0, document.querySelector('.site-header')?.getBoundingClientRect().bottom ?? 0) + 24
+    const atBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 1
+    const current = atBottom ? targets.at(-1) : targets.findLast((target) => target.element.getBoundingClientRect().top <= top) ?? targets[0]
+    if (current && current.id !== nav.dataset.symbol) void setApiSidebar(nav, nav.dataset.presentation as SidebarPresentation, current.id)
+  }
+  const schedule = () => { window.cancelAnimationFrame(frame); frame = window.requestAnimationFrame(update) }
+  window.addEventListener('scroll', schedule, { passive: true, signal })
+  window.addEventListener('resize', schedule, { signal })
+  nav.addEventListener('focusout', schedule, { signal })
+  signal.addEventListener('abort', () => window.cancelAnimationFrame(frame), { once: true })
+}
+
+/** Keep controls pinned while the tree gives space back to the page footer. */
+function fitSidebar(nav: HTMLElement, signal: AbortSignal) {
+  const column = nav.closest<HTMLElement>('.api-nav-column')
+  if (!column || nav.hasAttribute('data-controlled')) return
+  const desktop = window.matchMedia('(min-width: 56rem)')
+  const header = document.querySelector<HTMLElement>('.site-header')
+  let frame = 0
+  const update = () => {
+    if (signal.aborted || !desktop.matches) return
+    const stickyHeader = header && ['sticky', 'fixed'].includes(getComputedStyle(header).position)
+    const top = stickyHeader ? Math.max(0, header.getBoundingClientRect().bottom) : 0
+    const bounds = column.getBoundingClientRect()
+    const height = Math.max(0, Math.min(window.innerHeight, bounds.bottom) - Math.max(top, bounds.top))
+    column.style.setProperty('--api-nav-top', `${top}px`)
+    nav.style.setProperty('--api-nav-height', `${height}px`)
+  }
+  const schedule = () => { window.cancelAnimationFrame(frame); frame = window.requestAnimationFrame(update) }
+  const observer = new ResizeObserver(schedule)
+  observer.observe(column)
+  if (header) observer.observe(header)
+  window.addEventListener('scroll', schedule, { passive: true, signal })
+  window.addEventListener('resize', schedule, { signal })
+  desktop.addEventListener('change', schedule, { signal })
+  signal.addEventListener('abort', () => { observer.disconnect(); window.cancelAnimationFrame(frame) }, { once: true })
+  layoutBeforeAppearance(update)
 }
 
 /** Fluent's Collapse: max-height and opacity over 200ms, and none for reduced motion. */
@@ -829,5 +883,6 @@ export function initApiTree() {
       else waitForAppearance(restoreTree(nav, tree, signal))
     }
     initDrawer(nav, signal)
+    fitSidebar(nav, signal)
   })
 }

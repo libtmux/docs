@@ -652,6 +652,45 @@ export async function checkApiAnchorArrival(browser, base) {
  * this check drives the production reference page. `only` limits the scenarios
  * and `sabotage` adds a script or style to every page, for the control below.
  */
+export async function checkReferenceSidebarBounds(browser, base) {
+  const page = await browser.newPage({ viewport: { width: 1233, height: 1220 }, reducedMotion: 'reduce', colorScheme: 'dark' })
+  try {
+    await page.goto(`${base}/tmux/latest/manual/#options`)
+    await page.locator('html[data-page-readiness="ready"]').waitFor()
+    await page.locator('.api-nav[data-presentation-ready="true"]').waitFor()
+    for (const mode of ['outline', 'focus', 'grouped']) {
+      await page.locator('[data-api-actions] > summary').click()
+      await page.getByRole('radio', { name: mode, exact: false }).click()
+      await page.evaluate(() => { document.activeElement.blur(); scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }) })
+      await page.waitForFunction(() => {
+        const nav = document.querySelector('.api-nav').getBoundingClientRect()
+        return Math.abs(nav.top - document.querySelector('.site-header').getBoundingClientRect().bottom) < 1
+      }, undefined, { timeout: 1000 })
+      const bounds = await page.evaluate(() => {
+        const rect = selector => document.querySelector(selector).getBoundingClientRect()
+        const search = rect('.api-nav__search'), picker = rect('[data-api-owner]')
+        return { nav: rect('.api-nav').toJSON(), column: rect('.api-nav-column').toJSON(), footer: rect('footer').toJSON(),
+          searchVisible: document.querySelector('.api-nav__search').contains(document.elementFromPoint(search.x + search.width / 2, search.y + search.height / 2)),
+          pickerVisible: document.querySelector('[data-api-owner]').contains(document.elementFromPoint(picker.x + picker.width / 2, picker.y + picker.height / 2)) }
+      })
+      assert(bounds.searchVisible && bounds.pickerVisible, `${mode}: sidebar controls remain reachable at the footer`)
+      assert(Math.abs(bounds.column.bottom - bounds.footer.top) < 1, `${mode}: sidebar column meets the footer: ${JSON.stringify(bounds)}`)
+      assert(bounds.nav.bottom <= bounds.footer.top + 1, `${mode}: navigation does not cover the footer`)
+      await page.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }))
+      await page.waitForFunction(() => document.querySelector('.api-nav').dataset.symbol === 'section:clients-and-sessions', undefined, { timeout: 1000 })
+      await page.evaluate(() => scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }))
+      await page.waitForFunction(() => document.querySelector('.api-nav').dataset.symbol === 'section:options', undefined, { timeout: 1000 })
+    }
+    await page.setViewportSize({ width: 1233, height: 760 })
+    await page.evaluate(() => scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }))
+    await page.waitForFunction(() => {
+      const nav = document.querySelector('.api-nav').getBoundingClientRect()
+      return nav.top >= document.querySelector('.site-header').getBoundingClientRect().bottom - 1 && nav.bottom <= innerHeight
+    }, undefined, { timeout: 1000 })
+    console.log('Reference sidebar: controls stay pinned, tree fits above footer, and sections follow scrolling in all layouts')
+  } finally { await page.close() }
+}
+
 export async function checkApiStickyHeadings(browser, base, { only, sabotage } = {}) {
   const engine = browser.browserType().name()
   const path = `${base}/swift/latest/reference/server/`

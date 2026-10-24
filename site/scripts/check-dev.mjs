@@ -7,7 +7,7 @@ import { dev } from 'astro'
 import { chromium, firefox, webkit } from 'playwright'
 import { API_MODEL_PORTS, PORTS, productAvailable } from '../src/lib/ports.ts'
 import { checkClipboard, checkCompleteApiExamples } from './check-clipboard.mjs'
-import { checkApiAnchorArrival, checkApiExampleOwnership, checkApiNavigation, checkApiStickyHeadings, checkApiStickyHeadingsFail, checkDocumentationNavigation, checkNavigation } from './check-navigation.mjs'
+import { checkApiAnchorArrival, checkApiExampleOwnership, checkApiNavigation, checkApiStickyHeadings, checkApiStickyHeadingsFail, checkReferenceSidebarBounds, checkDocumentationNavigation, checkNavigation } from './check-navigation.mjs'
 import { checkReferencePreferences, checkGlobalHeader, checkHeaderLinksFail } from './check-reference-preferences.mjs'
 import { checkHeaderMenuSections, checkHeaderMenuSectionsFail } from './check-header-menu-sections.mjs'
 import { checkStatusBadges, checkStatusBadgesFail } from './check-status-badges.mjs'
@@ -823,6 +823,7 @@ try {
   } else if (apiAnchorsOnly) {
     await retryReload(() => checkApiAnchorArrival(browser, base))
   } else if (apiStickyOnly) {
+    await checkReferenceSidebarBounds(browser, base)
     // Each engine aligns a sticky heading differently, so this mode runs all three.
     const sticky = (engineBrowser) => retryReload(() => checkApiStickyHeadings(engineBrowser, base))
       .then(() => checkApiStickyHeadingsFail(engineBrowser, base))
@@ -892,6 +893,7 @@ try {
     const apiSticky = schedule(() => retryReload(() => checkApiStickyHeadings(browser, base))
       .then(() => checkApiStickyHeadingsFail(browser, base)))
     await apiSticky
+    await checkReferenceSidebarBounds(browser, base)
     const typeParameters = schedule(() => retryReload(() => checkTypeParameters(browser, base)))
     await typeParameters
     const paths = ['tmux/concepts/server-session-window-pane', 'tmux/examples/attach-and-send-keys', 'mcp/tools', 'ts/latest/workspace/reference/builder-applyworkspace',

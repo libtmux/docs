@@ -174,6 +174,7 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
   pageSource={pageSource}
   markdownIndex={markdownIndex}
   markdown={markdown}
+  flush={Boolean(apiNavigation)}
   repository={product && port ? API_MODELS[port]?.sources?.find((source) => source.product === product)?.repo : undefined}
 >
   {hasContext && <div slot="header-navigation" class="site-header-language">
@@ -429,7 +430,8 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
 </style>
 
 <style>
-  .docs-reference-navigation { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .docs-reference-navigation { display: grid; grid-template-columns: minmax(0, 1fr); padding-block: 0; }
+  .docs-reference-navigation > main { padding-block: 1.5rem; }
   @media (min-width: 56rem) {
     .docs-reference-navigation { grid-template-columns: 16rem minmax(0, 1fr); }
   }
