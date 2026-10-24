@@ -69,9 +69,10 @@ const releaseTitle = (v: string) => (v.startsWith('next-') ? `tmux ${v}, the dev
 /**
  * Release columns with neighbours merged where no cell changes.
  *
- * Fourteen releases do not fit beside a capability name, and most of them
- * behave alike for any one port. A column per run of identical releases
- * ("3.5 – 3.6b") keeps every column the same width and every change visible.
+ * The releases from a port's floor up do not all fit beside a capability
+ * name, and most neighbours behave alike for any one port. A column per run
+ * of identical releases ("3.5 – 3.6b") keeps every column the same width and
+ * every change visible.
  */
 export function releaseGroups(port: string): Column[] {
   const entry = DATA.ports[port]
