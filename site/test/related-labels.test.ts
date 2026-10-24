@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { experimental_AstroContainer } from 'astro/container'
 import { Window, type Document } from 'happy-dom'
 import { membersOf, memberSignals, moduleOf, qualifiedNameOf, type ApiSymbol } from '@libtmux/api-model'
@@ -7,6 +7,7 @@ import { API_MODELS, indexFor, pageSlug, topLevelTypesOf } from '../src/lib/api-
 import { ownerQualifiedName, relatedLabels, type RelatedLabelInput } from '../src/lib/api-labels'
 import { relatedApiTypes, relatedTypeLinks, type RelatedTypeLink } from '../src/lib/api-sections'
 import { coreApiSymbols } from '../src/lib/product-api'
+import { wordBreak } from '../src/lib/word-break'
 import { tmuxReferenceIndex, tmuxReferenceUrl, tmuxSourceModel } from '../src/lib/tmux-reference'
 import { loadAstroTemplate, withoutScope } from './astro-templates'
 
@@ -111,7 +112,8 @@ function pages(): Page[] {
 }
 
 describe('related types on the committed models', () => {
-  const all = pages()
+  let all: Page[] = []
+  beforeAll(() => { all = pages() }, 120_000)
   const page = (port: string, id: string) => {
     const found = all.find((entry) => entry.port === port && (entry.owner.publicId ?? entry.owner.id) === id)
     if (!found) throw new Error(`no ${port} page for ${id}`)
@@ -162,9 +164,15 @@ describe('related types on the committed models', () => {
     expect(renamed).toEqual([])
   }, 120_000)
 
-  it('can fail: without the rule the Elixir and Ruby lists repeat a label', () => {
-    const repeating = all.filter((entry) => duplicates(entry.before).length > 0)
-    expect([...new Set(repeating.map((entry) => entry.port))].sort()).toEqual(['elixir', 'ruby'])
+  it('can fail: without the rule some list repeats a label, and with it none does', () => {
+    expect(all.filter((entry) => duplicates(entry.before).length > 0).length).toBeGreaterThan(0)
+    expect(all.filter((entry) => duplicates(labels(entry)).length > 0)).toEqual([])
+  })
+
+  it('marks as qualified exactly the labels the rule changed', () => {
+    const wrong = all.flatMap(({ port, owner, links, before }) => links.flatMap((link, i) =>
+      link.qualified === (link.name !== before[i]) ? [] : [`${port} ${qualifiedNameOf(owner)}: ${link.identity} reads as ${link.name}, was ${before[i]}, qualified is ${link.qualified}`]))
+    expect(wrong).toEqual([])
   })
 
   it('changes a label outside Elixir only for a name more than one type carries or for entries that would read alike', () => {
@@ -227,7 +235,7 @@ describe('the rendered related lists', () => {
     const render = async (template: unknown, props: Record<string, unknown>) => withoutScope(await container.renderToString(
       template as Parameters<typeof container.renderToString>[0], { request: new Request('https://libtmux.org/'), props }))
     let lists = 0
-    for (const { port, owner, links } of pages().filter((entry) => entry.links.length > 1)) {
+    for (const { port, owner, links, before } of pages().filter((entry) => entry.links.length > 1)) {
       const where = `${port} ${qualifiedNameOf(owner)}`
       win.document.body.innerHTML = await render(cards, { related: links, index: undefined }) + await render(rail, { sections: [], related: links })
       const card = shown(win.document, '.api-related-card > a')
@@ -241,9 +249,9 @@ describe('the rendered related lists', () => {
           expect(item.title, where).toBe(link.identity)
           expect(item.href, where).toBe(link.href)
           expect(item.mark, where).toBeTruthy()
-          // A label with its owner breaks at the owner's separator and reads the same without the break points.
-          expect(item.markup.includes('<wbr>'), `${where}: ${link.name}`).toBe(link.qualified && /[._#]|::/.test(link.name))
-          expect(item.markup.replaceAll('<wbr>', ''), where).toBe(link.name.replaceAll('&', '&amp;'))
+          // A label the rule changed breaks where a symbol name breaks; one it left alone has no break points.
+          const changed = link.name !== before[i]
+          expect(item.markup, `${where}: ${link.name}`).toBe((changed ? wordBreak(link.name).join('<wbr>') : link.name).replaceAll('&', '&amp;'))
         }
       }
       lists++
