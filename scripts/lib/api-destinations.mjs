@@ -106,6 +106,72 @@ export const PAGE_EXCEPTIONS = [
     [`${CPP}types/remove_pointer`, ['std::remove_pointer_t'], 'the remove_pointer page lists the _t helper alias'],
     [`${CPP}types/result_of`, ['std::invoke_result_t'], 'the result_of page covers invoke_result and its _t helper alias'],
   ].map(([url, names, reason]) => ({ tier: 'listed', url, names: names.map((name) => `cxx:${name}`), reason })),
+  // A link whose words go past the heading of the page it reaches, on a host that declares no symbol. The verifier also
+  // requires the page's text to say the words the heading lacks; each row names the heading and what the link adds.
+  ...[
+    ['https://docs.scala-lang.org/tour/basics.html#methods', 'authored:Scala functions and methods', 'Methods', 'functions'],
+    ['https://docs.scala-lang.org/tour/basics.html#methods', 'keyword:Scala method declarations', 'Methods', 'method declarations'],
+    ['https://docs.scala-lang.org/tour/basics.html#methods', 'authored:Scala method declarations', 'Methods', 'method declarations'],
+    ['https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/static', 'authored:C# static members', 'static', 'static members'],
+    ['https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/abstract', 'authored:C# abstract declarations', 'abstract', 'abstract declarations'],
+    ['https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/readonly', 'authored:C# readonly declarations', 'readonly', 'readonly declarations'],
+    ['https://www.typescriptlang.org/docs/handbook/2/classes.html#private', 'authored:TypeScript private members', 'private', 'private members'],
+    ['https://docs.oracle.com/javase/specs/jls/se21/html/jls-9.html#jls-9.6', 'authored:Java annotation interfaces and elements', 'Annotation Interfaces', 'the elements of an annotation interface'],
+    ['https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.1.1.2', 'authored:Java final declarations', 'sealed, non-sealed, and final Classes', 'final declarations'],
+    ['https://kotlinlang.org/docs/functions.html#function-scope', 'authored:Kotlin member functions', 'Function scope', 'member functions'],
+    ['https://eel.is/c++draft/dcl.fct', 'authored:C++ function declarations', 'Functions', 'function declarations'],
+    ['https://doc.rust-lang.org/reference/items/associated-items.html', 'authored:Rust associated declarations', 'Associated items', 'associated declarations'],
+    ['https://docs.swift.org/latest/documentation/the-swift-programming-language/functions/', 'authored:Swift function declarations', 'Functions', 'function declarations'],
+    ['https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/signature-files', 'keyword:F# value signatures', 'Signature files', 'the values a signature declares'],
+    ['https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-tool-install#global-tools', 'authored:`$HOME/.dotnet/tools`', 'Global tools', 'where they are installed, under the home directory'],
+    ['https://doc.rust-lang.org/error_codes/E0117.html', 'authored:orphan rules', 'E0117', 'the orphan rules'],
+    ['https://docs.python.org/3/tutorial/classes.html', 'authored:Python class and instance attributes', '9. Classes', 'class and instance attributes'],
+    ['https://eel.is/c++draft/class.pre', 'authored:C++ class keys', 'Preamble', 'class keys'],
+    ['https://eel.is/c++draft/class.pre', 'authored:C++ classes', 'Preamble', 'classes, which it introduces'],
+    ['https://eel.is/c++draft/class.pre', 'authored:C++ class declarations', 'Preamble', 'class declarations'],
+    ['https://docs.julialang.org/en/v1/manual/types/#Composite-Types', 'authored:Julia immutable composite types', 'Composite Types', 'immutable composite types'],
+    ['https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/discriminated-unions', 'authored:F# union cases', 'Discriminated Unions', 'union cases'],
+    ['https://doc.rust-lang.org/reference/items/enumerations.html', 'authored:Rust enum variants', 'Enumerations', 'enum variants'],
+    ['https://docs.julialang.org/en/v1/manual/methods/', 'authored:Julia method dispatch', 'Methods', 'method dispatch'],
+    ['https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/async', 'authored:C# async methods', 'async', 'async methods'],
+    ['https://kotlinlang.org/docs/coroutines-basics.html', 'authored:Kotlin suspending functions', 'Coroutines basics', 'suspending functions'],
+    ['https://eel.is/c++draft/dcl.type.cv', 'authored:C++ const qualification', 'The cv-qualifiers', 'const qualification'],
+    ['https://eel.is/c++draft/dcl.type.cv', 'authored:C++ cv-qualification', 'The cv-qualifiers', 'cv-qualification'],
+    ['https://docs.scala-lang.org/tour/basics.html#values', 'authored:Scala values and variables', 'Values', 'variables'],
+    ['https://docs.oracle.com/javase/specs/jls/se21/html/jls-4.html#jls-4.12.4', 'authored:Java constant variables', 'final Variables', 'constant variables'],
+    ['https://elixir.hexdocs.pm/typespecs.html#behaviours', 'authored:Elixir behaviour callbacks', 'Behaviours', 'behaviour callbacks'],
+    ['https://elixir.hexdocs.pm/typespecs.html#defining-a-specification', 'authored:Elixir function specifications', 'Defining a specification', 'function specifications'],
+    ['https://www.typescriptlang.org/docs/handbook/2/classes.html#getters--setters', 'authored:TypeScript properties', 'Getters / Setters', 'properties'],
+    ['https://www.typescriptlang.org/docs/handbook/release-notes/typescript-1-7.html#asyncawait-support-in-es6-targets-node-v4', 'authored:TypeScript async functions', 'async / await support', 'async functions'],
+    ['https://www.typescriptlang.org/docs/handbook/2/classes.html#readonly', 'authored:TypeScript readonly fields', 'readonly', 'readonly fields'],
+    ['https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/methods', 'authored:C# method overloading', 'Methods', 'overloading'],
+    ['https://learn.microsoft.com/en-us/nuget/what-is-nuget', 'authored:NuGet packages', 'An introduction to NuGet', 'packages'],
+    ['https://learn.microsoft.com/en-us/powershell/scripting/developer/module/writing-a-windows-powershell-module', 'authored:PowerShell module distribution', 'Writing a Windows PowerShell Module', 'distribution'],
+    ['https://go.dev/doc/modules/layout', 'authored:Go modules and packages', 'Organizing a Go module', 'packages'],
+    ['https://eel.is/c++draft/class.mem', 'authored:C++ data members', 'Class members', 'data members'],
+    ['https://eel.is/c++draft/dcl.typedef', 'authored:C++ type aliases', 'The typedef specifier', 'type aliases'],
+    ['https://doc.rust-lang.org/reference/items/structs.html', 'authored:Rust fields', 'Structs', 'fields'],
+    ['https://doc.rust-lang.org/cargo/reference/cargo-targets.html', 'authored:Cargo packages and targets', 'Cargo Targets', 'packages'],
+    ['https://docs.ruby-lang.org/en/3.4/syntax/methods_rdoc.html', 'authored:Ruby singleton methods', 'methods', 'singleton methods'],
+    ['https://www.lua.org/manual/5.4/manual.html#pdf-require', 'authored:Lua modules', 'require (modname)', 'modules'],
+    ['https://www.lua.org/manual/5.4/manual.html#3.4.10', 'authored:Lua method calls', 'Function Calls', 'method calls'],
+    ['https://www.lua.org/manual/5.4/manual.html#2.4', 'authored:Lua table access', 'Metatables and Metamethods', 'table access'],
+    ['https://luals.github.io/wiki/annotations/#alias', 'authored:Lua type aliases', '@alias', 'type aliases'],
+    ['https://luals.github.io/wiki/annotations/#class', 'authored:Lua class inheritance', '@class', 'inheritance'],
+    ['https://luals.github.io/wiki/annotations/#class', 'authored:Lua class annotations', '@class', 'class annotations'],
+    ['https://luals.github.io/wiki/annotations/#overload', 'authored:Lua overload annotations', '@overload', 'overload annotations'],
+    ['https://docs.swift.org/latest/documentation/the-swift-programming-language/methods/', 'authored:Swift type methods', 'Methods', 'type methods'],
+    ['https://docs.swift.org/latest/documentation/the-swift-programming-language/thebasics/', 'authored:Swift constants', 'The Basics', 'constants'],
+    ['https://www.lua.org/manual/5.4/manual.html#6.3', 'authored:Lua packages and require', 'Modules', 'packages and require'],
+  ].map(([url, key, heading, adds]) => ({ tier: 'label', url, names: [key], reason: `the page, headed "${heading}", also covers ${adds}` })),
+  // The same, where the page documents a symbol and the link's words name a part of it or a way to reach it.
+  ...[
+    ['https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_commonparameters?view=powershell-7.4#-erroraction', 'doc-link:-ErrorAction Continue', '-ErrorAction is one of the common parameters this about topic documents'],
+    ['https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_commonparameters?view=powershell-7.4#-erroraction', 'doc-link:-ErrorAction Stop', '-ErrorAction is one of the common parameters this about topic documents'],
+    ['https://pkg.go.dev/github.com/modelcontextprotocol/go-sdk@v1.6.1/mcp#CallToolResult', 'authored:`CallToolResult.IsError`', 'pkg.go.dev documents a struct\'s fields in the declaration of its type, with no anchor of their own'],
+    ['https://pkg.go.dev/github.com/modelcontextprotocol/go-sdk@v1.6.1/mcp#CallToolResult', 'authored:`CallToolResult.StructuredContent`', 'pkg.go.dev documents a struct\'s fields in the declaration of its type, with no anchor of their own'],
+    ['https://learn.microsoft.com/en-us/dotnet/api/system.management.automation.errorrecord.exception?view=powershellsdk-7.4.0', 'authored:`$_.Exception`', '`$_` is the ErrorRecord of a catch block, and this page documents its Exception property'],
+  ].map(([url, key, reason]) => ({ tier: 'label', url, names: [key], reason })),
   ...[
     ['https://docs.python.org/3/builtins/functions.html#classmethod', 'Python class methods', 'the classmethod builtin is the decorator that makes a class method, and its entry is where Python documents them'],
     ['https://docs.python.org/3/builtins/functions.html#property', 'Python properties', 'the property builtin is the descriptor class that makes a property, and its entry is where Python documents them'],
@@ -169,9 +235,11 @@ function note(found, url, use) {
   const destination = found.get(url) ?? { url, host, uses: new Map() }
   const key = `${use.port}\0${use.name}\0${use.source}\0${use.label ?? ''}`
   const known = destination.uses.get(key)
-  // The same name written in several places is one use; the types its places extend are all the owners it may mean.
+  // The same name written in several places is one use; the types its places extend, and the namespaces their
+  // files open, are all the owners it may mean.
   const owners = [...new Set([...(known?.owners ?? []), ...(use.owners ?? [])])]
-  destination.uses.set(key, { ...known, ...use, ...(owners.length && { owners }) })
+  const opens = [...new Set([...(known?.opens ?? []), ...(use.opens ?? [])])]
+  destination.uses.set(key, { ...known, ...use, ...(owners.length && { owners }), ...(opens.length && { opens }) })
   found.set(url, destination)
 }
 
@@ -187,7 +255,7 @@ export function collectApiDestinations({ root = ROOT } = {}) {
     for (const [name, href] of Object.entries(names)) note(found, href, { port, name, source: 'builtin' })
   }
   for (const [port, words] of Object.entries(KEYWORD_HELP)) {
-    for (const [name, help] of Object.entries(words)) note(found, help.href, { port, name, source: 'keyword' })
+    for (const [name, help] of Object.entries(words)) note(found, help.href, { port, name, source: 'keyword', label: help.title })
   }
 
   const inventories = EXTERNAL_INVENTORIES.map((entry) => ({ ...entry, entries: entriesOf(readJson(join(data, 'inventories', `${entry.file}.entries.json`))) }))
@@ -212,7 +280,7 @@ export function collectApiDestinations({ root = ROOT } = {}) {
     // A member written bare in a type's docs may belong to a type it extends, or that its parent extends.
     const basesOf = (symbol) => [...new Set([symbol, byId.get(symbol.parent)].flatMap((owner) => owner?.extends ?? []).map((base) => nameSegments(base).join('.')).filter(Boolean))]
     const link = (target, text, source, symbol, role) => {
-      if (target?.external) note(found, target.href, { port, name: qualified(symbol, text), source, ...(role && role !== 'any' && { role }), ...(basesOf(symbol).length && { owners: basesOf(symbol) }) })
+      if (target?.external) note(found, target.href, { port, name: qualified(symbol, text), source, ...(role && role !== 'any' && { role }), ...(basesOf(symbol).length && { owners: basesOf(symbol) }), ...(symbol.namespaceImports?.length && { opens: symbol.namespaceImports }) })
     }
     const types = (symbol, signature, text) => {
       if (!text) return
@@ -223,7 +291,7 @@ export function collectApiDestinations({ root = ROOT } = {}) {
       for (const span of tokenizeDoc(text, port)) {
         if (span.kind === 'ref') link(index.resolve(span.target, span.role, symbol), span.target, 'doc', symbol, span.role)
         else if (span.kind === 'code' && looksLikeApiMention(span.text) && !notASymbol(span.text)) link(index.resolve(span.text, 'any', symbol), span.text, 'doc', symbol)
-        else if (span.kind === 'link') note(found, span.href, { port, name: span.text, source: 'doc-link' })
+        else if (span.kind === 'link') note(found, span.href, { port, name: span.text, source: 'doc-link', label: span.text })
       }
     }
     for (const symbol of model.symbols) {
@@ -245,7 +313,7 @@ export function collectApiDestinations({ root = ROOT } = {}) {
       }
       prose(symbol, symbol.doc?.summary)
       prose(symbol, symbol.doc?.body)
-      for (const related of symbol.command?.relatedLinks ?? []) note(found, related.href, { port, name: related.text, source: 'doc-link' })
+      for (const related of symbol.command?.relatedLinks ?? []) note(found, related.href, { port, name: related.text, source: 'doc-link', label: related.text })
     }
   }
 

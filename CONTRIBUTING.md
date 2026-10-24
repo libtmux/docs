@@ -302,12 +302,30 @@ not `std::bad_optional_access`, and `Flow` not `flow()`. A name written bare
 needs an owner: `BARE_OWNERS` in `api-sources.mjs` is what each port imports, and
 `DEFAULT_SCOPES` is what its language provides, so `Duration` in Java is
 `java.time.Duration` and a bare `run` in Python is nobody's. A bare name that no
-table covers is refused rather than guessed. A page of a host we read that
-declares no symbol (a search page, a manual section) is no symbol, whatever its
-title says. A link's own words (`[strip](#Base.strip)`) must name the symbol of
-a page that documents one. Only a host that publishes no such declaration (the
-TypeScript handbook, the Lua manual, the JLS) is read by its fragment and its
-title, and a name there passes only by an exception. A host that moves the
+table covers is refused rather than guessed. The scopes are per name where a language binds
+them so (`DEFAULT_NAMES`: Scala's `Map` and `Set` are `immutable`'s, `Iterator` is
+`scala.collection`'s, as Predef and the package object bind them), a name written bare
+in a file that opens its namespace is read from the port's model (F#'s `open`s), and a
+type a member's docs extend is matched exactly, never by the end of its name. A page
+of a host we read that declares no symbol (a search page, a manual section) is no symbol,
+whatever its title says. A host that publishes no declaration at all (the TypeScript
+handbook, the Lua manual, the JLS) is read by its fragment and its title, and a symbol
+name there passes only by an exception.
+
+Every link's own words are compared with its page, wherever the link comes from: a
+Markdown link in a page, the glossary, a link in a doc comment, and the title a
+keyword's help carries (`label`). On a page that documents a symbol, the words must
+be that symbol: a name written whole (`Option::map`) ends the page's path, owner
+included; a call written out is its callee; and words must say the whole of the
+symbol's name and nothing that is not its own, its owner's or its kind
+(`Where-Object` is not `System.Object`, `Kotlin coroutines` is not `CoroutineScope`).
+On any other page they must be the page's subject, by its title and top heading, the
+heading its fragment opens, a section's label (`[class.mem]`), or the last word of its
+address, ignoring case, plurals and the language's name; a link that names a language
+must be a page of that language. `Kotlin classes` is the page that says "Classes" and
+not the one that says "Functions". Where a link's words legitimately go past the heading
+(`Rust enum variants` at "Enumerations"), a `label` exception names the exact address and
+words, and the verifier requires the page's own text to say what the heading does not. A host that moves the
 page elsewhere, even by the case of a letter, fails, because a link should be
 the page's address. Request the missing ones after changing a map, an
 inventory or a pinned model:
@@ -342,7 +360,7 @@ on the `duration` page, and on no other), `section` for an anchor that documents
 several symbols or is spelled as a heading (the Lua manual's value types, the
 typespec reference), where the section the anchor opens must still name the
 symbol, and `label` for a link whose words name the concept and whose page
-documents the symbol that defines it. Add to it only after reading the page. A name
+documents the symbol that defines it, or go past the heading of a page that declares no symbol. Add to it only after reading the page. A name
 that a language spells another way (`int` for `Int32`, `string` for `String`)
 goes in `TYPE_ALIASES`, and a package that two spellings share in
 `NAME_ALIASES`. `--check` also fails a record that contradicts itself (a pass

@@ -109,6 +109,9 @@ const dokka = (crumbs, keywords, name) => html(`${name} | kotlinx.coroutines –
 const scaladoc = (owner, name, kind) => html(name,
   `<div id="definition"><p id="owner">${owner.split('.').map((part) => `<a href="x.html">${part}</a>`).join(' . ')}</p><h1>${name}<span class="permalink"></span></h1></div><h4 id="signature"><span class="modifier_kind"><span class="kind">${kind}</span></span> <span class="symbol">${name}</span></h4>`)
 
+/** Scaladoc 3: the qualified name and the kind. */
+const scaladoc3 = (qualified, kind) => html(qualified.split('.').at(-1), `<div class="fqname"><span>${qualified}</span></div><span class="kind"><span t="k">${kind}</span></span>`)
+
 /** MDN: the title names the object or the member. */
 const mdn = (title) => html(`${title} | MDN`, `<h1>${title}</h1>`)
 
@@ -163,13 +166,13 @@ const pages = {
     ['method.filter', 'fn <a>filter</a>&lt;P&gt;(self, predicate: P) -&gt; Filter&lt;Self, P&gt;', 'Creates an iterator which uses a closure to decide if an element is yielded. Calls next until a match.'],
     ['method.next_chunk', 'fn <a>next_chunk</a>&lt;const N: usize&gt;(&amp;mut self) -&gt; Result&lt;[Self::Item; N], _&gt;', 'Advances the iterator and returns an array containing the next N values.'],
   ], ['Required Methods', 'Provided Methods']) },
-  '/rust/std/result/enum.Result.html': { body: rustdoc('Result', 'result', 'Enum', [['method.ok', 'pub fn ok(self) -&gt; <a>Option</a>&lt;T&gt;', 'Converts from Result&lt;T, E&gt; to Option&lt;T&gt;.']], ['Implementations']) },
+  '/rust/std/result/enum.Result.html': { body: rustdoc('Result', 'result', 'Enum', [['method.ok', 'pub fn ok(self) -&gt; <a>Option</a>&lt;T&gt;', 'Converts from Result&lt;T, E&gt; to Option&lt;T&gt;.'], ['method.map', 'pub fn map&lt;U, F&gt;(self, op: F) -&gt; Result&lt;U, E&gt;', 'Maps a Result&lt;T, E&gt; to Result&lt;U, E&gt;.']], ['Implementations']) },
   '/rust/std/fmt/type.Result.html': { body: rustdoc('Result', 'fmt', 'Type Alias') },
   '/rust/std/primitive.str.html': { body: html('str - Rust', '<h1>Primitive Type <span>str</span></h1>') },
   '/rust/std/str/index.html': { body: html('std::str - Rust', '<h1>Module <span>str</span></h1>') },
   '/rust/std/option/enum.Option.html': { body: rustdoc('Option', 'option', 'Enum', [['variant.None', 'None', 'No value.'], ['method.map', 'pub fn map&lt;U, F&gt;(self, f: F) -&gt; Option&lt;U&gt;', 'Maps an Option&lt;T&gt; to Option&lt;U&gt;.'], ['method.map_or', 'pub fn map_or&lt;U, F&gt;(self, default: U, f: F) -&gt; U', 'Returns the provided default, or applies a function to the contained value.']]) },
   '/rust/std/vec/struct.Vec.html': { body: rustdoc('Vec', 'vec', 'Struct', [['method.push', 'pub fn push(&amp;mut self, value: T)', 'Appends an element to the back of a collection.']]) },
-  '/rust/std/io/struct.Error.html': { body: rustdoc('Error', 'io', 'Struct', [['method.kind', 'pub fn kind(&amp;self) -&gt; ErrorKind', 'Returns the corresponding ErrorKind for this error.']]) },
+  '/rust/std/io/struct.Error.html': { body: rustdoc('Error', 'io', 'Struct', [['method.kind', 'pub fn kind(&amp;self) -&gt; ErrorKind', 'Returns the corresponding ErrorKind for this error.'], ['method.source', 'fn <a>source</a>(&amp;self) -&gt; Option&lt;&amp;(dyn Error + \'static)&gt;', 'Returns the lower-level source of this error, if any.']]) },
   '/rust/std/fmt/struct.Error.html': { body: rustdoc('Error', 'fmt', 'Struct', [['impl-Display-for-Error', 'impl Display for Error', 'The error type which is returned from formatting a message into a stream.']]) },
   '/rust/std/fs/fn.read_to_string.html': { body: html('read_to_string in std::fs - Rust', '<h1>Function <span>read_to_string</span></h1>') },
   '/rust/std/fs/fn.remove_file.html': { body: html('remove_file in std::fs - Rust', '<h1>Function <span>remove_file</span></h1>') },
@@ -193,6 +196,30 @@ const pages = {
   '/learn/dotnet/api/microsoft.extensions.logging.ilogger-1': { body: learn('ILogger&lt;TCategoryName&gt; Interface', 'Microsoft.Extensions.Logging') },
   '/learn/dotnet/api/system.collections.generic.ienumerable-1': { body: learn('IEnumerable&lt;T&gt; Interface', 'System.Collections.Generic') },
   '/learn/dotnet/api/system.collections.ienumerable': { body: learn('IEnumerable Interface', 'System.Collections') },
+  // Pages of hosts that declare nothing: a manual, a tutorial, a reference. The words on a link must be the page's subject.
+  '/kotlin/docs/classes.html': { body: html('Classes | Kotlin Documentation', '<h1>Classes</h1><p>Classes in Kotlin are declared using the keyword class.</p>') },
+  '/kotlin/docs/functions.html': { body: html('Functions | Kotlin Documentation', '<h1>Functions</h1><p>Kotlin functions are declared using the fun keyword.</p>') },
+  '/rust/reference/items/structs.html': { body: html('Structs - The Rust Reference', '<h1>The Rust Reference</h1><h1>Structs</h1><p>A struct is a nominal struct type defined with the keyword struct.</p>') },
+  '/rust/reference/items/enumerations.html': { body: html('Enumerations - The Rust Reference', '<h1>The Rust Reference</h1><h1>Enumerations</h1><p>An enumeration, also referred to as an enum, is a simultaneous definition of a nominal enumerated type and its variants.</p>') },
+  '/eel/c++draft/dcl.attr.nodiscard': { body: html('[dcl.attr.nodiscard]', '<h1>9 Declarations [dcl]</h1><h2>9.12.9 Nodiscard attribute [dcl.attr.nodiscard]</h2><p>The attribute-token nodiscard may be applied to the declarator-id in a function declaration.</p>') },
+  '/eel/c++draft/dcl.attr.noreturn': { body: html('[dcl.attr.noreturn]', '<h1>9 Declarations [dcl]</h1><h2>9.12.8 Noreturn attribute [dcl.attr.noreturn]</h2><p>The attribute-token noreturn specifies that a function does not return.</p>') },
+  '/eel/c++draft/class.union': { body: html('[class.union]', '<h1>11 Classes [class]</h1><h2>11.5 Unions [class.union]</h2><p>A union is a class defined with the class-key union.</p>') },
+  '/scalatour/tour/basics.html': { body: html('Basics | Tour of Scala | Scala Documentation', `<h1>Basics</h1>${part('values', 'Values', 'You can name the results of expressions with the val keyword.', 3)}${part('methods', 'Methods', 'Method declarations look and behave very similar to functions, and begin with the def keyword.', 3)}`) },
+  '/learn/en-us/dotnet/fsharp/language-reference/signature-files': { body: html('Signature files - F# | Microsoft Learn', '<h1>Signature files</h1><p>A signature file contains information about the public signatures of a set of F# program elements. Each val declares a value.</p>') },
+  '/learn/en-us/dotnet/fsharp/language-reference/records': { body: html('Records - F# | Microsoft Learn', '<h1>Records</h1><p>Records represent simple aggregates of named values.</p>') },
+  '/learn/en-us/dotnet/csharp/programming-guide/classes-and-structs/static-classes-and-static-class-members': { body: html('Static Classes and Static Class Members - C# | Microsoft Learn', '<h1>Static Classes and Static Class Members</h1><p>A static class is basically the same as a non-static class.</p>') },
+  '/learn/en-us/dotnet/fsharp/language-reference/classes': { body: html('Classes - F# | Microsoft Learn', '<h1>Classes</h1><p>Classes are types that represent objects that can have properties, methods, and events.</p>') },
+  '/learn/en-us/powershell/module/microsoft.powershell.core/about/about_functions': { body: html('about_Functions - PowerShell | Microsoft Learn', '<h1>about_Functions</h1><p>Describes how to create and use functions in PowerShell.</p>') },
+  '/rust/std/error/trait.Error.html': { body: rustdoc('Error', 'error', 'Trait', [['method.source', 'fn <a>source</a>(&amp;self) -&gt; Option&lt;&amp;(dyn Error + \'static)&gt;', 'Returns the lower-level source of this error, if any.']]) },
+  '/rust/std/macro.println.html': { body: html('println in std - Rust', '<h1>Macro <span>println</span></h1>') },
+  '/rust/std/macro.print.html': { body: html('print in std - Rust', '<h1>Macro <span>print</span></h1>') },
+  '/scala3/api/3.x/scala/collection/immutable/Map.html': { body: scaladoc3('scala.collection.immutable.Map', 'trait') },
+  '/scala3/api/3.x/scala/collection/Map.html': { body: scaladoc3('scala.collection.Map', 'trait') },
+  '/scala3/api/3.x/scala/collection/Iterator.html': { body: scaladoc3('scala.collection.Iterator', 'trait') },
+  '/kotlin/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow-collector/': { body: dokka(['kotlinx-coroutines-core', 'kotlinx.coroutines.flow'], ['fun', 'interface'], 'FlowCollector') },
+  '/python/3/library/collections.abc.html': { body: cpython('collections.abc', [['collections.abc.Mapping', 'ABC for read-only mapping classes.', 'class']]) },
+  '/python/3/library/typing.html': { body: cpython('typing', [['typing.Mapping', 'Deprecated alias to collections.abc.Mapping.', 'class']]) },
+  '/learn/dotnet/api/system.threading.barrier': { body: learn('Barrier Class', 'System.Threading') },
   '/ts/docs/handbook/utility-types.html': { body: plain('Documentation - Utility Types', 'Utility Types', `${part('omittype-keys', 'Omit&lt;Type, Keys&gt;', 'Constructs a type by picking all properties from Type and then removing Keys.')}${part('omitthisparametertype', 'OmitThisParameter&lt;Type&gt;', 'Removes the this parameter from Type.')}`) },
   // cppreference: a title that names one subject, a declaration that says what it is, and text that names the rest.
   '/cppref/cpp/container/vector': { body: cppref('std::vector', 'template&lt; class T, class Allocator = std::allocator&lt;T&gt; &gt; class vector;', 'std::vector&lt;bool&gt; is a space-efficient specialization. The int and char element types are common.') },
@@ -259,7 +286,7 @@ const rewriteOrigins = {
   'https://elixir.hexdocs.pm': `${origin}/hexdocs`, 'https://pkg.go.dev': `${origin}/go`,
   'https://learn.microsoft.com': `${origin}/learn`, 'https://en.cppreference.com': `${origin}/cppref`,
   'https://www.typescriptlang.org': `${origin}/ts`, 'https://fsharp.github.io': `${origin}/fsharp`,
-  'https://typelevel.org': `${origin}/typelevel`, 'https://developer.mozilla.org': `${origin}/mdn`, 'https://kotlinlang.org': `${origin}/kotlin`,
+  'https://typelevel.org': `${origin}/typelevel`, 'https://developer.mozilla.org': `${origin}/mdn`, 'https://kotlinlang.org': `${origin}/kotlin`, 'https://docs.scala-lang.org': `${origin}/scalatour`, 'https://eel.is': `${origin}/eel`, 'https://www.scala-lang.org': `${origin}/scala3`,
 }
 const get = createGet({ rewriteOrigins, pauseMs: 0, retries: 0 })
 
@@ -419,6 +446,45 @@ const cases = [
   { name: 'authored: [std::fs::read_to_string] swapped to remove_file', destination: authored(`${RUST}/fs/fn.remove_file.html`, '`std::fs::read_to_string`'), failure: 'label' },
   { name: 'authored control: a concept link on a page of the manual says no symbol', destination: authored('https://docs.julialang.org/en/v1/manual/types/#Composite-Types', 'Julia composite types'), ok: true },
 
+  // Class: a scope a language binds per name, a hint that is a whole owner, a declaration that is a modifier before a keyword.
+  { name: 'Scala control: a bare Map is the immutable one, which Predef binds', destination: at('https://www.scala-lang.org/api/3.x/scala/collection/immutable/Map.html', 'scala', 'Map'), ok: true },
+  { name: 'Scala: a bare Map at scala.collection.Map, which Predef does not bind', destination: at('https://www.scala-lang.org/api/3.x/scala/collection/Map.html', 'scala', 'Map'), failure: 'owner' },
+  { name: 'Scala control: a bare Iterator is scala.collection.Iterator', destination: at('https://www.scala-lang.org/api/3.x/scala/collection/Iterator.html', 'scala', 'Iterator'), ok: true },
+  { name: 'hint control: a member written bare in a type that extends Error, at the Error trait', destination: at(`${RUST}/error/trait.Error.html#method.source`, 'rs', 'source', 'doc', { owners: ['Error'] }), ok: true },
+  { name: 'hint: the same member at io::Error, whose name only ends the same', destination: at(`${RUST}/io/struct.Error.html#method.source`, 'rs', 'source', 'doc', { owners: ['Error'] }), failure: 'owner' },
+  { name: 'Dokka control: a fun interface is an interface', destination: at(`${KOTLIN}/kotlinx.coroutines.flow/-flow-collector/`, 'kotlin', 'FlowCollector', 'type'), ok: true },
+  { name: 'opens control: a bare Barrier in a file that opens System.Threading', destination: at(`${LEARN}/system.threading.barrier`, 'fsharp', 'Barrier', 'type', { opens: ['System.Threading'] }), ok: true },
+  { name: 'opens: a bare Barrier in a file that opens nothing of System.Threading', destination: at(`${LEARN}/system.threading.barrier`, 'fsharp', 'Barrier', 'type', { opens: ['System.IO'] }), failure: 'owner' },
+  { name: 'py control: a bare Mapping is collections.abc', destination: at('https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping', 'py', 'Mapping'), ok: true },
+  { name: 'py: a bare Mapping at typing.Mapping, the alias', destination: at(`${PYLIB}/typing.html#typing.Mapping`, 'py', 'Mapping'), failure: 'owner' },
+  { name: 'py control: typing.Mapping written with typing', destination: at(`${PYLIB}/typing.html#typing.Mapping`, 'py', 'typing.Mapping'), ok: true },
+  { name: 'rustdoc control: println is in scope everywhere', destination: at(`${RUST}/macro.println.html`, 'rs', 'println'), ok: true },
+  { name: 'rustdoc: println at print!', destination: at(`${RUST}/macro.print.html`, 'rs', 'println'), failure: 'symbol' },
+
+  // Class: the words on a link, on a host that declares nothing, and on a page that documents no symbol.
+  { name: 'subject control: "Kotlin classes" at the page titled Classes', destination: authored('https://kotlinlang.org/docs/classes.html', 'Kotlin classes'), ok: true },
+  { name: 'subject: "Kotlin classes" at the page titled Functions', destination: authored('https://kotlinlang.org/docs/functions.html', 'Kotlin classes'), failure: 'label' },
+  { name: 'subject control: "Rust structs" at the Structs page of the reference', destination: authored('https://doc.rust-lang.org/reference/items/structs.html', 'Rust structs'), ok: true },
+  { name: 'subject: "Rust structs" at the Enumerations page of the reference', destination: authored('https://doc.rust-lang.org/reference/items/enumerations.html', 'Rust structs'), failure: 'label' },
+  { name: 'subject control: "Rust enum variants" at Enumerations, a reviewed exception whose words the page says', destination: authored('https://doc.rust-lang.org/reference/items/enumerations.html', 'Rust enum variants'), ok: true },
+  { name: 'subject: "Rust enum variants" at Structs, where no exception was reviewed', destination: authored('https://doc.rust-lang.org/reference/items/structs.html', 'Rust enum variants'), failure: 'label' },
+  { name: 'keyword control: C++ nodiscard at its attribute', destination: at('https://eel.is/c++draft/dcl.attr.nodiscard', 'cxx', 'nodiscard', 'keyword'), ok: true },
+  { name: 'keyword: C++ nodiscard at the noreturn attribute', destination: at('https://eel.is/c++draft/dcl.attr.noreturn', 'cxx', 'nodiscard', 'keyword'), failure: 'label' },
+  { name: 'keyword control: Scala def at the Methods section', destination: at('https://docs.scala-lang.org/tour/basics.html#methods', 'scala', 'def', 'keyword'), ok: true },
+  { name: 'keyword: Scala def at the Values section', destination: at('https://docs.scala-lang.org/tour/basics.html#values', 'scala', 'def', 'keyword'), failure: 'label' },
+  { name: 'keyword control: F# val at the signature files page', destination: at('https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/signature-files', 'fsharp', 'val', 'keyword'), ok: true },
+  { name: 'keyword: F# val at the records page', destination: at('https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/records', 'fsharp', 'val', 'keyword'), failure: 'label' },
+  { name: 'language control: "F# classes" at the F# page', destination: authored('https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/classes', 'F# classes'), ok: true },
+  { name: 'language: "F# classes" at the C# page for static classes', destination: authored('https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/static-classes-and-static-class-members', 'F# classes'), failure: 'label' },
+  { name: 'language: "F# functions" at the PowerShell about topic', destination: authored('https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_functions', 'F# functions'), failure: 'label' },
+  { name: 'label control: `Option::map` at Option::map', destination: authored(`${RUST}/option/enum.Option.html#method.map`, '`Option::map`'), ok: true },
+  { name: 'label: `Option::map` at Result::map, the same member of another owner', destination: authored(`${RUST}/result/enum.Result.html#method.map`, '`Option::map`'), failure: 'label' },
+  { name: 'label control: a bare `Result` at the one in std::result, which Rust code imports', destination: authored(`${RUST}/result/enum.Result.html`, '`Result`'), ok: true },
+  { name: 'label: a bare `Result` at the alias in std::fmt', destination: authored(`${RUST}/fmt/type.Result.html`, '`Result`'), failure: 'label' },
+  { name: 'label: a call written out is its callee, so `Base.map!(f)` is not Base.map', destination: authored(`${JULIA}/collections/#Base.map`, '`map!(f)`'), failure: 'label' },
+  { name: 'label control: a call written out is its callee, `map(f)` is Base.map', destination: authored(`${JULIA}/collections/#Base.map`, '`map(f)`'), ok: true },
+  { name: 'label: words that belong to another symbol, "Julia arrays", are not Base.Vector', destination: authored(`${JULIA}/arrays/#Base.Vector`, 'Julia arrays'), failure: 'label' },
+
   // Class: an exception that names a word, not an address. Each is pinned to the one address it was reviewed for.
   { name: 'cppreference control: std::chrono::seconds at the duration page that lists it', destination: at(`${CPPREF}/chrono/duration`, 'cxx', 'std::chrono::seconds'), ok: true },
   { name: 'cppreference control: std::string at the basic_string page that lists the typedef', destination: at(`${CPPREF}/string/basic_string`, 'cxx', 'std::string'), ok: true },
@@ -465,7 +531,7 @@ const check = (mutate) => {
 }
 const firstChecked = evidence.destinations.findIndex((record) => record.ok && record.terminal?.length > 0)
 const firstIdentified = evidence.destinations.findIndex((record) => record.ok && record.identity && record.terminal?.some((entry) => entry.at === 'identity'))
-const firstRead = evidence.destinations.findIndex((record) => record.ok && !record.identity && record.terminal?.length > 0)
+const firstRead = evidence.destinations.findIndex((record) => record.ok && !record.identity && record.terminal?.some((entry) => !entry.key))
 const unverifiable = { ok: false, unverifiable: 'the host blocks the request (403)', status: 403, terminal: undefined, identity: undefined, fragment: undefined }
 
 const drives = [
@@ -490,6 +556,8 @@ const drives = [
   { name: 'every destination unverifiable, so nothing was checked', mutate: (copy) => { for (const record of copy.destinations) Object.assign(record, unverifiable) }, expect: /destinations are unverifiable, more than the \d+ a blocked or throttled host explains/ },
   { name: 'a few destinations unverifiable is unresolved, not a failure', mutate: (copy) => { for (const record of copy.destinations.slice(0, 5)) Object.assign(record, unverifiable) }, status: 0 },
   { name: 'every unverifiable destination is printed, not a count', mutate: (copy) => { for (const record of copy.destinations.slice(0, 30)) Object.assign(record, unverifiable) }, status: 0, printed: { pattern: /unresolved: https:/g, count: 30 } },
+  { name: 'a record that found a link\'s words in a subject it no longer keeps', mutate: (copy) => { delete copy.destinations.find((record) => record.url === 'https://doc.rust-lang.org/reference/items/structs.html').subject }, expect: /as found in the page's subject without the subject it was found in/ },
+  { name: 'a subject recorded as something other than the page\'s words', mutate: (copy) => { copy.destinations.find((record) => record.url === 'https://doc.rust-lang.org/reference/items/structs.html').subject = 'Structs' }, expect: /records a subject that is not a list of the page's words/ },
   { name: 'an inventory without a record', mutate: (copy) => { copy.inventories = copy.inventories.filter((record) => record.name !== 'jdk') }, expect: /the jdk inventory has no record/ },
   { name: 'an inventory that names pages its host lacks', mutate: (copy) => { Object.assign(copy.inventories[0], { ok: false, missing: 3, examples: ['Planted'] }) }, expect: /names 3 pages its host's index lacks/ },
   { name: 'an inventory rebuilt since it was verified', mutate: (copy) => { copy.inventories[0].digest = '0'.repeat(40) }, expect: /entries are not the ones its record was verified with/ },
@@ -529,6 +597,7 @@ const recompute = [
   { name: 'a builtin renamed to a member of the type the address documents', destinations: rename(VEC, 'rs:Vec', 'rs:Vec::push'), expect: /not what rs:Vec::push names \(symbol\)/ },
   { name: 'a builtin renamed into another module', destinations: rename(VEC, 'rs:Vec', 'rs:std::collections::Vec'), expect: /not what rs:std::collections::Vec names \(owner\)/ },
   { name: 'a type written with another operand count over the same address', destinations: rename('https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger', 'csharp:ILogger', 'csharp:ILogger<TCategoryName>'), expect: /not what csharp:ILogger<TCategoryName> names \(arity\)/ },
+  { name: 'a link whose words now name another subject of the same page', destinations: (() => { const map = clone(); map.get('https://doc.rust-lang.org/reference/items/structs.html').uses.set('x', { port: '', name: 'site/src/content/docs/example.md', source: 'authored', label: 'Rust enums' }); return map })(), expect: /not what the link text "Rust enums" names \(label\)/ },
   { name: 'a link whose words now name another symbol', destinations: (() => { const map = clone(); const url = 'https://docs.julialang.org/en/v1/base/strings/#Base.strip'; map.get(url).uses.set('x', { port: '', name: 'site/src/content/docs/example.md', source: 'authored', label: 'lstrip' }); return map })(), expect: /not what the link text "lstrip" names \(label\)/ },
 ]
 for (const drive of recompute) {

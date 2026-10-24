@@ -22,7 +22,8 @@ import { splitTop, stripGroups } from './api-html.mjs'
  */
 export const TYPE_ALIASES = {
   csharp: { bool: 'Boolean', string: 'String', char: 'Char', int: 'Int32', long: 'Int64', double: 'Double', void: 'Void', object: 'Object', byte: 'Byte' },
-  fsharp: { string: 'String', bool: 'Boolean', int: 'Int32', int64: 'Int64', seq: 'IEnumerable', None: 'option', Some: 'option' },
+  // F#'s keyword types abbreviate the BCL's, which are in `System` whatever a file opens.
+  fsharp: { string: 'System.String', bool: 'System.Boolean', int: 'System.Int32', int64: 'System.Int64', seq: 'System.Collections.Generic.IEnumerable', None: 'option', Some: 'option' },
   // Scala's String is the alias `scala.Predef` declares, and its page is Predef's.
   scala: { String: 'Predef' },
   // MDN has no page for TypeScript's read-only views, its iterator interface or its primitive types; it
@@ -87,9 +88,11 @@ export const ARITIES = {
 export const DEFAULT_SCOPES = {
   java: ['java.lang'],
   kotlin: ['kotlin', 'kotlin.collections', 'kotlin.text', 'kotlin.io', 'kotlin.ranges', 'kotlin.sequences', 'kotlin.annotation', 'kotlin.comparisons', 'kotlin.jvm', 'java.lang'],
-  scala: ['scala', 'scala.Predef', 'scala.collection', 'scala.collection.immutable', 'java.lang'],
+  // `scala`, `scala.Predef` and `java.lang` are imported as a whole. What the package object and Predef bind to a collection is per name (`DEFAULT_NAMES`).
+  scala: ['scala', 'scala.Predef', 'java.lang'],
   csharp: ['System', 'System.IO', 'System.Collections.Generic', 'System.Linq', 'System.Net.Http', 'System.Threading', 'System.Threading.Tasks'],
-  fsharp: ['FSharp.Core', 'FSharp.Collections', 'FSharp.Control', 'System', 'System.IO', 'System.Collections.Generic', 'System.Threading', 'System.Threading.Tasks'],
+  // F# opens Microsoft.FSharp.Core, Collections and Control for every file, and nothing from System.
+  fsharp: ['FSharp.Core', 'FSharp.Collections', 'FSharp.Control'],
   rs: [''],
   go: ['builtin'],
   swift: ['Swift'],
@@ -101,6 +104,27 @@ export const DEFAULT_SCOPES = {
   lua: [''],
   powershell: [''],
 }
+
+/**
+ * Names a language binds to one owner without an import, where the owner is not the
+ * package the name is bound in. Scala's `scala` package object and `Predef` alias
+ * `List`, `Seq` and `Vector` to `scala.collection.immutable`, `Iterator`, `Iterable` and
+ * `IterableOnce` to `scala.collection`, and `Map` and `Set` to `immutable` (Scala 3's
+ * `Predef$` and `scala` package pages list each alias and its target). Rust's `std`
+ * macros are in scope everywhere (see `PRELUDE_MACROS`).
+ */
+export const DEFAULT_NAMES = {
+  scala: Object.fromEntries(Object.entries({
+    'scala.collection.immutable': ['Map', 'Set', 'Seq', 'IndexedSeq', 'List', 'Vector', 'LazyList', 'Range'],
+    'scala.collection': ['Iterable', 'IterableOnce', 'Iterator', 'BufferedIterator'],
+    'scala.collection.mutable': ['StringBuilder'],
+    'scala.util': ['Either', 'Left', 'Right'],
+    'scala.math': ['BigInt', 'BigDecimal', 'Ordering', 'Numeric', 'Ordered'],
+  }).flatMap(([owner, names]) => names.map((name) => [name, owner]))),
+}
+
+/** Rust's standard macros are in scope in every file, and rustdoc files them under the crate that defines them. */
+export const PRELUDE_MACROS = new Set(['std', 'core', 'alloc'])
 
 /** What each port means by a bare name it imports, as the owner the name's page is under. */
 export const BARE_OWNERS = Object.fromEntries(Object.entries({
@@ -118,33 +142,66 @@ export const BARE_OWNERS = Object.fromEntries(Object.entries({
   kotlin: {
     'kotlin.time': ['Duration', 'toKotlinDuration', 'toJavaDuration'],
     'kotlinx.coroutines': ['CoroutineScope', 'CoroutineDispatcher', 'Dispatchers', 'NonCancellable', 'launch', 'coroutineScope', 'withContext', 'runInterruptible'],
-    'kotlinx.coroutines.flow': ['Flow', 'StateFlow', 'MutableStateFlow', 'collect'],
+    'kotlinx.coroutines.flow': ['Flow', 'FlowCollector', 'StateFlow', 'MutableStateFlow', 'collect'],
     'java.nio.file': ['Path'],
   },
   scala: {
     'cats.effect.kernel': ['Async', 'Deferred', 'Outcome', 'Resource', 'Fiber', 'Ref'],
-    'fs2.concurrent': ['Signal', 'SignallingRef'], 'scala.concurrent': ['ExecutionContext'], 'scala.util': ['Using', 'Either'], 'cats.effect': ['IO'],
+    'fs2.concurrent': ['Signal', 'SignallingRef'], 'scala.concurrent': ['ExecutionContext'], 'scala.util': ['Using'], 'cats.effect': ['IO'],
+    // The Scala port's prose says SortedSet for the immutable one, as it says Set.
+    'scala.collection.immutable': ['SortedSet'],
   },
   csharp: {
     'System.Text.RegularExpressions': ['RegexMatchTimeoutException'], 'System.Text.Json': ['JsonException'], 'System.Diagnostics': ['ProcessStartInfo'],
     'Microsoft.Extensions.Logging': ['ILogger'], 'Microsoft.Extensions.DependencyInjection': ['IServiceCollection', 'IMcpServerBuilder'], ModelContextProtocol: ['McpException'],
   },
-  fsharp: { 'System.Text.RegularExpressions': ['RegexMatchTimeoutException'], 'System.Text.Json': ['JsonException'] },
+  // The F# port's files open System, System.Collections.Generic, System.Threading and System.Threading.Tasks (the model's
+  // `namespaceImports` lists them, and a test holds this table to it). F# itself opens nothing from System.
+  fsharp: {
+    System: ['Exception', 'ArgumentException', 'ArgumentNullException', 'ArgumentOutOfRangeException', 'InvalidOperationException', 'NotSupportedException', 'ObjectDisposedException', 'TimeoutException', 'FormatException', 'OperationCanceledException'],
+    'System.Threading.Tasks': ['Task', 'TaskCanceledException'], 'System.Threading': ['CancellationToken'],
+    'System.Collections.Generic': ['IReadOnlyList', 'IAsyncEnumerable', 'IEnumerable'],
+  },
   rs: {
     'std.result': ['Result'], 'std.option': ['Option'], 'std.vec': ['Vec'], 'std.string': ['String'], 'std.time': ['Duration', 'Instant'],
     'std.collections': ['HashMap', 'BTreeMap'], 'std.path': ['PathBuf', 'Path'], 'std.sync': ['Arc'], 'std.borrow': ['Cow'],
-    'std.convert': ['Into', 'From', 'AsRef'], 'std.iter': ['Iterator', 'IntoIterator'], 'std.fmt': ['Display'], 'std.ops': ['Drop'], 'std.ffi': ['OsStr', 'OsString'],
+    'std.convert': ['Into', 'From', 'AsRef'], 'std.iter': ['Iterator', 'IntoIterator'], 'std.fmt': ['Display'], 'std.ops': ['Drop'], 'std.ffi': ['OsStr', 'OsString'], 'std.error': ['Error'],
     'rmcp.model': ['ListResourcesResult', 'ListResourceTemplatesResult', 'ReadResourceResult', 'ErrorData'],
     'rmcp.handler.server.wrapper': ['Json', 'Parameters'],
   },
   swift: { Foundation: ['Data'] },
-  py: { typing: ['Unpack', 'TypeGuard', 'TypeAlias', 'Mapping', 'Sequence', 'Callable', 'Iterator'] },
+  // `typing` keeps only what no other module provides; the abstract bases are `collections.abc`'s, and `typing.Mapping` is a name that says so.
+  py: { typing: ['Unpack', 'TypeGuard', 'TypeAlias'], 'collections.abc': ['Mapping', 'Sequence', 'Callable', 'Iterator'] },
   powershell: {
     'System.IO': ['FileInfo'], 'System.Management.Automation': ['ApplicationInfo'],
     'microsoft.powershell.utility': ['Get-Member', 'Invoke-WebRequest'], 'microsoft.powershell.core': ['Where-Object', 'Receive-Job', 'CommonParameters'],
     threadjob: ['Start-ThreadJob'], 'microsoft.powershell.management': ['Set-Content'],
   },
 }).map(([port, owners]) => [port, Object.fromEntries(Object.entries(owners).flatMap(([owner, names]) => names.map((name) => [name, owner])))]))
+
+/**
+ * The owners a bare name may have in a port, as page owners written with dots: the one its
+ * imports give it, else the one its language binds it to, else every scope the language opens
+ * as a whole.
+ */
+export function bareOwners(port, symbol) {
+  const imported = BARE_OWNERS[port]?.[symbol]
+  if (imported !== undefined) return [imported]
+  const bound = DEFAULT_NAMES[port]?.[symbol]
+  return bound === undefined ? DEFAULT_SCOPES[port] ?? [] : [bound]
+}
+
+/**
+ * The page owners a type named in `extends` may be: written whole, it is itself; written bare, it is
+ * in the scope the port gives that name, exactly (`AutoCloseable` is `java.lang.AutoCloseable` for
+ * Scala, and `Error` is `std.error.Error` for Rust). A suffix of someone else's name is not it.
+ */
+export function hintOwners(port, hint) {
+  const segments = parseName(hint).segments
+  if (segments.length === 0) return []
+  if (segments.length > 1) return [segments.join('.')]
+  return bareOwners(port, segments[0]).map((scope) => (scope ? `${scope}.${segments[0]}` : segments[0]))
+}
 
 /** Ports whose names carry a kind a page can contradict: PascalCase types, camelCase members. */
 const PASCAL = new Set(['java', 'kotlin', 'scala', 'csharp', 'fsharp'])
@@ -200,7 +257,7 @@ export const arityOf = (name) => parseName(name).arity
 /** The symbol a name asks for: its last segment, or the word its language spells for it. */
 export function terminalSymbol(port, name) {
   const aliased = TYPE_ALIASES[port]?.[name]
-  if (aliased) return aliased
+  if (aliased) return aliased.split('.').at(-1)
   return parseName(name).segments.at(-1) ?? name.trim()
 }
 
@@ -239,26 +296,31 @@ export function kindOf(port, name, { source, role } = {}) {
   }
   // A lowercase name is a camelCase member in a Pascal language; in Rust and C++ it may be a module, function or primitive, and only a type position settles it.
   if (PASCAL.has(port)) return 'member'
+  // Rust's lowercase types are its primitives; any other lowercase name in a type position is a path to something, not a type.
+  if (port === 'rs') return source === 'type' && segments.length === 1 && RUST_PRIMITIVES.has(last) ? 'type' : undefined
   return source === 'type' ? 'type' : undefined
 }
+
+const RUST_PRIMITIVES = new Set(['bool', 'char', 'str', 'u8', 'u16', 'u32', 'u64', 'u128', 'usize', 'i8', 'i16', 'i32', 'i64', 'i128', 'isize', 'f32', 'f64', 'slice', 'array', 'tuple', 'unit', 'pointer', 'reference', 'fn', 'never'])
 
 /**
  * The identity a use asks of its page.
  *
- * @param {{ port: string, name: string, source?: string, role?: string, owners?: string[] }} use
- * @returns {{ port: string, name: string, segments: string[], symbol: string, kind?: string, owners?: string[], arity?: number, params?: string[], bare: boolean, aliased: boolean }}
+ * @param {{ port: string, name: string, source?: string, role?: string, owners?: string[], opens?: string[] }} use
+ * @returns {{ port: string, name: string, segments: string[], symbol: string, kind?: string, owners?: string[], opens?: string[], arity?: number, params?: string[], bare: boolean, aliased: boolean }}
  */
 export function sourceIdentity(use) {
   const { port, name } = use
   const parsed = parseName(name)
   const aliased = TYPE_ALIASES[port]?.[name]
-  const segments = aliased ? [aliased] : addressSegments(port, name)
+  const segments = aliased ? aliased.split('.') : addressSegments(port, name)
   const key = `${port}:${name}`
   const arity = ARITIES[key] ?? parsed.generics ?? (parsed.arity === undefined ? undefined : Number(parsed.arity))
   return {
     port, name, segments, symbol: segments.at(-1) ?? name.trim(),
     kind: kindOf(port, name, use),
     ...(use.owners?.length && { owners: use.owners }),
+    ...(use.opens?.length && { opens: use.opens }),
     ...(arity !== undefined && { arity }),
     ...(parsed.params && { params: parsed.params }),
     bare: segments.length < 2,

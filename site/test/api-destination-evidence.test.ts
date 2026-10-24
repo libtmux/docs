@@ -2,7 +2,9 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { API_HOSTS, EXTERNAL_INVENTORIES, PAGE_EXCEPTIONS, addressSegments, apiHostOf, arityOf, collectApiDestinations, qualified, terminalSymbol, urlsIn } from '../../scripts/lib/api-destinations.mjs'
 import { addressOf, mismatch } from '../../scripts/lib/api-addresses.mjs'
-import { judge, judgeLabel, pageIdentity, sourceIdentity } from '../../scripts/lib/api-identities.mjs'
+import { judge, judgeLabel, judgeSubject, missingWords, pageIdentity, sourceIdentity } from '../../scripts/lib/api-identities.mjs'
+import { BARE_OWNERS, DEFAULT_NAMES, bareOwners, hintOwners } from '../../scripts/lib/api-sources.mjs'
+import { subjectsOf } from '../../scripts/lib/api-html.mjs'
 import { linksIn } from '../../scripts/lib/api-destinations.mjs'
 import {
   INVENTORY_SOURCES, MAX_UNVERIFIABLE_SHARE, UNVERIFIABLE_REASONS, checkApiEvidence, expectationsOf, expectedSymbols, inventoryDigest, mentions, needsCheck, readPage, recordProblems, sameAddress, sectionAt, slugSymbol,
@@ -210,10 +212,11 @@ describe('what the verifier reads from a page', () => {
     // Every exception names an address with a fragment or a page of its own, a reason, and at least one name.
     for (const entry of PAGE_EXCEPTIONS as unknown as { tier: string; url: string; names: string[]; reason: string }[]) {
       expect(['listed', 'section', 'label'], entry.url).toContain(entry.tier)
-      if (entry.tier === 'label') for (const name of entry.names) expect(name, entry.url).toMatch(/^authored:/)
+      if (entry.tier === 'label') for (const name of entry.names) expect(name, entry.url).toMatch(/^(?:authored|keyword|doc-link):/)
       expect(entry.reason.length, entry.url).toBeGreaterThan(20)
       expect(entry.names.length, entry.url).toBeGreaterThan(0)
-      expect(entry.url, 'an address, not a prefix').not.toMatch(/[#/]$/)
+      expect(entry.url, 'an address, not a prefix').not.toMatch(/#$/)
+      expect(new URL(entry.url).pathname, 'an address, not a host').not.toBe('/')
     }
   })
 
@@ -373,5 +376,120 @@ describe('what a page says it is', () => {
     expect(pageIdentity('https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/timeout_static', member)).toMatchObject({ path: ['AbortSignal', 'timeout'], kind: 'member' })
     const object = readPage('<html><head><title>Map - JavaScript | MDN</title></head><body></body></html>')
     expect(pageIdentity('https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map', object)).toMatchObject({ path: ['Map'], kind: 'type' })
+  })
+})
+
+describe('what a link\'s words say', () => {
+  const symbol = (path: string[], declared = 'function', via = 'documenter', extra: object = {}) => ({ path, kind: 'member', declared, via, ...extra })
+
+  it('holds a name written whole to the owner and the member, and a bare Rust type to the module Rust gives it', () => {
+    const optionMap = symbol(['std', 'option', 'Option', 'map'], 'method', 'rustdoc')
+    const resultMap = symbol(['std', 'result', 'Result', 'map'], 'method', 'rustdoc')
+    expect(judgeLabel('`Option::map`', optionMap)).toBeUndefined()
+    expect(judgeLabel('`Option::map`', resultMap)).toMatchObject({ failure: 'label' })
+    expect(judgeLabel('Option<T>::map', optionMap)).toBeUndefined()
+    expect(judgeLabel('`Result`', { path: ['std', 'result', 'Result'], kind: 'type', declared: 'enum', via: 'rustdoc' })).toBeUndefined()
+    expect(judgeLabel('`Result`', { path: ['std', 'fmt', 'Result'], kind: 'type', declared: 'type alias', via: 'rustdoc' })).toMatchObject({ failure: 'label' })
+  })
+
+  it('reads a call as its callee, and a mark that ends a name as part of it', () => {
+    const map = symbol(['Base', 'map'])
+    expect(judgeLabel('`map(f)`', map)).toBeUndefined()
+    expect(judgeLabel('`map!(f)`', map)).toMatchObject({ failure: 'label' })
+    expect(judgeLabel('`Ok(item)`', symbol(['std', 'result', 'Result', 'Ok'], 'variant', 'rustdoc'))).toBeUndefined()
+    expect(judgeLabel('`Ok(None)`', symbol(['std', 'option', 'Option', 'None'], 'variant', 'rustdoc'))).toMatchObject({ failure: 'label' })
+  })
+
+  it('wants the whole of a symbol\'s name said, and nothing that is not its own, its owner\'s or its kind', () => {
+    const commonParameters = { path: ['microsoft', 'powershell', 'core', 'CommonParameters'], kind: 'keyword', declared: 'about topic', via: 'learn' }
+    expect(judgeLabel('PowerShell common parameters', commonParameters)).toBeUndefined()
+    expect(judgeLabel('PowerShell parameters', commonParameters)).toMatchObject({ failure: 'label' })
+    const scope = { path: ['kotlinx', 'coroutines', 'CoroutineScope'], kind: 'type', declared: 'interface', via: 'dokka' }
+    expect(judgeLabel('Kotlin coroutines', scope)).toMatchObject({ failure: 'label' })
+    expect(judgeLabel('`CoroutineScope`', scope)).toBeUndefined()
+    expect(judgeLabel('`Where-Object`', { path: ['System', 'Object'], kind: 'type', declared: 'class', via: 'learn' })).toMatchObject({ failure: 'label' })
+    expect(judgeLabel('Julia type aliases', { path: ['Core', 'Type'], kind: 'type', declared: 'type', via: 'documenter' })).toMatchObject({ failure: 'label' })
+  })
+
+  it('holds a link that names a language to a page of that language', () => {
+    expect(judgeLabel('F# functions', { path: ['microsoft', 'powershell', 'core', 'Functions'], kind: 'keyword', declared: 'about topic', via: 'learn' })).toMatchObject({ failure: 'label' })
+    expect(judgeLabel('PowerShell functions', { path: ['microsoft', 'powershell', 'core', 'Functions'], kind: 'keyword', declared: 'about topic', via: 'learn' })).toBeUndefined()
+  })
+
+  it('compares a link\'s subject with the page\'s, ignoring case, plurals and the language\'s name', () => {
+    expect(judgeSubject('Kotlin classes', ['Classes | Kotlin Documentation', 'Classes'])).toBeUndefined()
+    expect(judgeSubject('Kotlin classes', ['Functions | Kotlin Documentation', 'Functions'])).toMatchObject({ failure: 'label' })
+    expect(judgeSubject('Rust enums', ['Enumerations - The Rust Reference', 'Enumerations'])).toBeUndefined()
+    expect(judgeSubject('Rust structs', ['Enumerations - The Rust Reference', 'Enumerations'])).toMatchObject({ failure: 'label' })
+    expect(judgeSubject('Python properties', ['Property', 'Python 3.15 documentation'])).toBeUndefined()
+    expect(judgeSubject('Python case', ['Cases'])).toBeUndefined()
+    // A word that only starts another word is another word; a stable section name is not one of the section's words.
+    expect(judgeSubject('Julia composite types', ['CompositeException'])).toMatchObject({ failure: 'label' })
+    expect(judgeSubject('C++ classes', ['11.5 Unions [class.union]'])).toMatchObject({ failure: 'label' })
+    expect(judgeSubject('C++ static members', ['11.4.3 Non-static member functions'])).toMatchObject({ failure: 'label' })
+    expect(judgeSubject('Ruby classes', ['class IO::Buffer - Documentation for Ruby 4.0'])).toMatchObject({ failure: 'label' })
+    // And a link that names one language is not a page of another.
+    expect(judgeSubject('F# classes', ['Static Classes - C# | Microsoft Learn', 'language csharp'])).toMatchObject({ failure: 'label' })
+    expect(missingWords('Rust enum variants', ['Enumerations'])).toEqual(['variants'])
+  })
+
+  it('names a page by the heading its fragment opens, a section label, or its title', () => {
+    const opens = readPage('<html><head><title>Classes - Docs</title></head><body><h1>Classes</h1><h3 id="inheritance">9.5. Inheritance</h3><p>x</p></body></html>')
+    expect(subjectsOf(opens, 'inheritance')).toEqual(['9.5. Inheritance', 'inheritance'])
+    expect(subjectsOf(opens, '')).toEqual(['Classes - Docs', 'Classes'])
+    const section = readPage('<html><head><title>[class.mem]</title></head><body><h1>11 Classes [class]</h1><h2>11.4 Class members [class.mem]</h2></body></html>')
+    expect(subjectsOf(section, '', 'https://eel.is/c++draft/class.mem')).toEqual(['11.4 Class members [class.mem]'])
+    expect(subjectsOf(opens, '', 'https://learn.microsoft.com/en-us/dotnet/csharp/classes')).toContain('language dotnet csharp')
+  })
+
+  it('derives the words of a keyword link from its help title when the use carries none', () => {
+    const keyword = (name: string) => expectationsOf({ url: 'https://eel.is/c++draft/dcl.attr.nodiscard', uses: [{ port: 'cxx', name, source: 'keyword' }] })[0]
+    expect(keyword('nodiscard')).toMatchObject({ label: 'C++ nodiscard attribute', key: 'keyword:C++ nodiscard attribute' })
+  })
+})
+
+describe('what a bare name means', () => {
+  it('binds Scala\'s collections per name, as Predef and the package object do', () => {
+    expect(bareOwners('scala', 'Map')).toEqual(['scala.collection.immutable'])
+    expect(bareOwners('scala', 'Set')).toEqual(['scala.collection.immutable'])
+    expect(bareOwners('scala', 'Seq')).toEqual(['scala.collection.immutable'])
+    expect(bareOwners('scala', 'Iterator')).toEqual(['scala.collection'])
+    expect(bareOwners('scala', 'Iterable')).toEqual(['scala.collection'])
+    expect(bareOwners('scala', 'IterableOnce')).toEqual(['scala.collection'])
+    expect(DEFAULT_NAMES.scala).not.toHaveProperty('Using')
+    expect(bareOwners('scala', 'Using')).toEqual(['scala.util'])
+    expect(bareOwners('scala', 'Widget')).toEqual(['scala', 'scala.Predef', 'java.lang'])
+  })
+
+  it('holds the F# owners to what the F# model\'s files open, and F# itself opens nothing from System', () => {
+    const model = JSON.parse(readFileSync(new URL('../src/data/api/fsharp.json', import.meta.url), 'utf8')) as { symbols: { namespaceImports?: string[] }[] }
+    const opened = new Set(model.symbols.flatMap((symbol) => symbol.namespaceImports ?? []))
+    for (const owner of new Set(Object.values(BARE_OWNERS.fsharp))) expect(opened.has(owner), `the port's files open ${owner}`).toBe(true)
+    expect(bareOwners('fsharp', 'Widget').some((scope: string) => scope.startsWith('System'))).toBe(false)
+  })
+
+  it('resolves a type named in extends exactly, and not by the end of someone else\'s name', () => {
+    expect(hintOwners('rs', 'Error')).toEqual(['std.error.Error'])
+    expect(hintOwners('scala', 'AutoCloseable')).toContain('java.lang.AutoCloseable')
+    expect(hintOwners('scala', 'cats.Show')).toEqual(['cats.Show'])
+    const source = sourceIdentity({ port: 'rs', name: 'source', source: 'doc', owners: ['Error'] })
+    const member = (path: string[]) => ({ path, kind: 'member', declared: 'method', via: 'rustdoc' })
+    expect(judge(source, member(['std', 'error', 'Error', 'source']))).toBeUndefined()
+    expect(judge(source, member(['std', 'io', 'Error', 'source']))).toMatchObject({ failure: 'owner' })
+  })
+
+  it('reads a name as qualified when the port\'s files open the namespace', () => {
+    const barrier = { path: ['System', 'Threading', 'Barrier'], kind: 'type', declared: 'class', via: 'learn', arity: 0 }
+    expect(judge(sourceIdentity({ port: 'fsharp', name: 'Barrier', source: 'type', opens: ['System.Threading'] }), barrier)).toBeUndefined()
+    expect(judge(sourceIdentity({ port: 'fsharp', name: 'Barrier', source: 'type', opens: ['System.IO'] }), barrier)).toMatchObject({ failure: 'owner' })
+    expect(sourceIdentity({ port: 'fsharp', name: 'string' }).segments).toEqual(['System', 'String'])
+  })
+
+  it('reads a Dokka declaration by its leading keywords: a fun interface is an interface', () => {
+    const page = (keywords: string[]) => readPage(`<html><head><title>X</title></head><body><div class="breadcrumbs"><a>core</a><span class="delimiter">/</span><a>kotlinx.coroutines.flow</a><span class="delimiter">/</span><span class="current">FlowCollector</span></div><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span></div></div>${keywords.map((word) => `<span class="token keyword">${word} </span>`).join('')}<a href="x">FlowCollector</a>(<span class="token keyword">in</span> x)</div></body></html>`)
+    const url = 'https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow-collector/'
+    expect(pageIdentity(url, page(['fun', 'interface']))).toMatchObject({ declared: 'interface', kind: 'type' })
+    expect(pageIdentity(url, page(['suspend', 'fun']))).toMatchObject({ declared: 'function', kind: 'member' })
+    expect(pageIdentity(url, page(['value', 'class']))).toMatchObject({ declared: 'class', kind: 'type' })
   })
 })

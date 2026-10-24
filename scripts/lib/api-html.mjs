@@ -30,7 +30,7 @@ export const compact = (text) => text.toLowerCase().replace(/[^a-z0-9!?]/g, '')
  */
 export function readPage(html) {
   const title = decode(/<title[^>]*>([\s\S]*?)<\/title>/i.exec(html)?.[1] ?? '').replace(/\s+/g, ' ').trim()
-  const headings = [...html.matchAll(/<h([1-4])\b[^>]*>([\s\S]*?)<\/h\1>/gi)].map((match) => ({ level: Number(match[1]), text: strip(match[2]) })).filter((heading) => heading.text)
+  const headings = [...html.matchAll(/<h([1-4])\b[^>]*>([\s\S]*?)<\/h\1>/gi)].map((match) => ({ level: Number(match[1]), text: strip(match[2]), at: match.index, end: match.index + match[0].length })).filter((heading) => heading.text)
   const anchors = []
   for (const match of html.matchAll(/<([a-z][a-z0-9-]*)\b[^>]*?\s(?:id|name)\s*=\s*(?:"([^"]*)"|'([^']*)')/gi)) {
     const value = match[2] ?? match[3]
@@ -117,3 +117,53 @@ export function splitTop(text) {
   if (current.trim()) parts.push(current.trim())
   return parts
 }
+
+/**
+ * The heading a fragment opens: the one that holds the anchor, or the first that
+ * follows it with no text between (an anchor on a wrapper, an empty `<a name>`
+ * before the heading). A fragment that sits on an entry has none.
+ */
+export function headingAt(page, fragment) {
+  const decoded = safeDecode(fragment)
+  const anchor = page.anchors.find((candidate) => candidate.id === fragment || candidate.id === decoded)
+  if (!anchor) return undefined
+  const holding = page.headings.find((heading) => heading.at <= anchor.at && anchor.at < heading.end)
+  if (holding) return holding.text
+  const next = page.headings.find((heading) => heading.at >= anchor.at)
+  return next && strip(page.html.slice(anchor.at, next.at)).length <= 12 ? next.text : undefined
+}
+
+/**
+ * What a page says its subject is, from the most specific thing it names. A fragment
+ * that opens a heading names that heading (and its own words), and nothing wider: the
+ * page's title is the whole chapter. A page whose address is a section label (`[class.mem]`)
+ * names the heading that carries it. Otherwise the title and the top heading, when a page
+ * has few of them (a manual with a chapter in every `h1` names none), and the last word of
+ * the address. These are the strings a link's words are compared with when the page
+ * declares no symbol.
+ */
+export function subjectsOf(page, fragment, url) {
+  const slug = url ? decodeURIComponent(new URL(url).pathname.split('/').filter(Boolean).at(-1) ?? '').replace(/\.html?$/i, '') : ''
+  const heading = fragment ? headingAt(page, fragment) : undefined
+  const tops = [...new Set(page.headings.filter((candidate) => candidate.level === 1).map((candidate) => candidate.text))]
+  const labelled = !fragment && slug ? page.headings.find((candidate) => candidate.text.replace(/\s+/g, '').endsWith(`[${slug}]`.replace(/\s+/g, ''))) : undefined
+  const found = heading ? [heading, safeDecode(fragment).replace(/[-_.]+/g, ' ')]
+    : fragment ? [safeDecode(fragment).replace(/[-_.]+/g, ' '), page.title, ...(tops.length <= 3 ? tops : [])]
+      : labelled ? [labelled.text] : [page.title, ...(tops.length <= 3 ? tops : [])]
+  // The address's last word names the page when nothing on the page does.
+  if (!heading && !labelled && slug && index(slug)) found.push(slug.replace(/[-_.]+/g, ' '))
+  // The language an address is about, for pages that do not say it (`/dotnet/csharp/`).
+  const spoken = url ? wordsOf(decodeURIComponent(new URL(url).pathname)).filter((word) => LANGUAGE_WORDS.has(word)) : []
+  if (spoken.length) found.push(`language ${[...new Set(spoken)].join(' ')}`)
+  return [...new Set(found.map((text) => text.replace(/\s+/g, ' ').trim()).filter(Boolean))].slice(0, 8)
+}
+
+/** Whether an address's last word names a page, not the site's front. */
+const index = (slug) => !/^(index|manual|docs?|home)$/i.test(slug)
+
+/** Words that name a language, as titles and addresses spell them. `C++`, `C#` and `F#` are written with a symbol, so they are read as `cpp`, `csharp` and `fsharp`. */
+export const LANGUAGE_WORDS = new Set(['python', 'rust', 'go', 'golang', 'java', 'kotlin', 'scala', 'swift', 'typescript', 'javascript', 'julia', 'lua', 'elixir', 'erlang', 'ruby', 'powershell', 'cmake', 'dotnet', 'net', 'csharp', 'fsharp', 'cpp', 'jvm', 'mcp', 'tmux'])
+
+/** The words of a text, lowercased, with the languages that are written with a symbol spelled as words. */
+export const wordsOf = (text) => text.replace(/c\+\+/gi, 'cpp').replace(/c#/gi, 'csharp').replace(/f#/gi, 'fsharp').replace(/[`*]/g, '')
+  .split(/[^A-Za-z0-9]+/).map((word) => word.toLowerCase()).filter((word) => word && !/^\d+$/.test(word))

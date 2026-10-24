@@ -37,12 +37,13 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { EXTERNAL_INVENTORIES, PAGE_EXCEPTIONS, exceptionFor } from './api-destinations.mjs'
 import { addressOf, mismatch, namespaceMismatch, splitUrl } from './api-addresses.mjs'
-import { doccIdentity, judge, judgeLabel, pageIdentity, sourceIdentity } from './api-identities.mjs'
+import { doccIdentity, judge, judgeLabel, judgeSubject, missingWords, pageIdentity, sourceIdentity } from './api-identities.mjs'
 import { readInventory } from '../../packages/api-model/src/inventory.ts'
+import { KEYWORD_HELP } from '../../packages/api-model/src/link.ts'
 import { USER_AGENT, futureRecords, staleRecords } from './destination-verification.mjs'
 
-export { compact, decode, mentions, readPage, safeDecode, sectionAt, strip } from './api-html.mjs'
-import { compact, mentions, readPage, safeDecode, sectionAt, strip } from './api-html.mjs'
+export { compact, decode, headingAt, mentions, readPage, safeDecode, sectionAt, strip, subjectsOf } from './api-html.mjs'
+import { compact, mentions, readPage, safeDecode, sectionAt, strip, subjectsOf } from './api-html.mjs'
 
 /** The documentation views and locales a host adds to an address without changing the page. */
 export function sameAddress(requested, final) {
@@ -140,15 +141,18 @@ const CONCEPT_SOURCES = new Set(['keyword', 'doc-link', 'authored'])
  * What each name that leads to the destination asks of its page: the identity
  * its source gives it (`sourceIdentity`: kind, owner, name, operand count and
  * parameters), and the exception, if one was reviewed for this name at this
- * exact address. An authored link asks the page for the symbol its text names.
- * A destination reached only by concepts has none.
+ * exact address. A link's own words ask the page for the symbol, or the subject,
+ * they name. A destination reached only by concepts that say nothing has none.
  */
 export function expectationsOf(destination, { exceptions = PAGE_EXCEPTIONS } = {}) {
   const found = new Map()
   for (const use of destination.uses) {
-    if (use.source === 'authored' && use.label !== undefined) {
-      const key = `authored:${use.label}`
-      found.set(key, { key, label: use.label, symbol: use.label, segments: [use.label], where: use.name, ...(exceptionFor(destination.url, key, exceptions) && { exception: exceptionFor(destination.url, key, exceptions) }) })
+    // The words a person wrote on a link, or the title a keyword's help carries: each is held to its page.
+    const label = use.label ?? (use.source === 'keyword' ? KEYWORD_HELP[use.port]?.[use.name]?.title ?? use.name : undefined)
+    if (label !== undefined) {
+      const key = `${use.source}:${label}`
+      const exception = exceptionFor(destination.url, key, exceptions)
+      found.set(key, { key, label, symbol: label, segments: [label], where: use.name, ...(exception && { exception }) })
       continue
     }
     if (CONCEPT_SOURCES.has(use.source) || use.concept) continue
@@ -246,18 +250,42 @@ const identityRecord = (identity) => Object.fromEntries(Object.entries(identity)
  *
  * @returns {{ at: string, reason?: string } | { failure: string, detail: string }}
  */
-export function holdIdentity(expectation, identity, { page, fragment } = {}) {
-  // Words on a link are held to a page that documents a symbol; a page about a topic has no symbol to say.
-  if (expectation.label !== undefined && !SYMBOL_KINDS.has(identity.kind)) return { at: 'identity' }
-  const verdict = expectation.label === undefined ? judge(expectation.source, identity) : judgeLabel(expectation.label, identity)
+export function holdIdentity(expectation, identity, context = {}) {
+  if (expectation.label !== undefined) return holdWords(expectation, identity, context)
+  const { page, fragment } = context
+  const verdict = judge(expectation.source, identity)
   if (!verdict) return { at: 'identity' }
   const { exception, symbol } = expectation
-  if (exception?.tier === 'label' && expectation.label !== undefined) return { at: 'label', reason: exception.reason }
   const words = exception?.words ?? symbol
   if (page && exception?.tier === 'section' && fragment && mentions(sectionAt(page, fragment) ?? '', words)) return { at: 'section', reason: exception.reason }
   if (page && exception?.tier === 'listed' && mentions(strip(page.html), words)) return { at: 'listed', reason: exception.reason }
   return verdict
 }
+
+/**
+ * Whether a link's own words fit its page: the symbol the page documents, where it
+ * documents one, and otherwise its subject (its title, top heading, the heading the
+ * fragment opens). Only a `label` exception reviewed for these words at this exact
+ * address passes a difference.
+ *
+ * @param {any} expectation
+ * @param {any} [identity] What the page declares, if its host declares anything.
+ */
+export function holdWords(expectation, identity, { page, fragment, subjects, url, text } = {}) {
+  const symbolPage = identity !== undefined && SYMBOL_KINDS.has(identity.kind)
+  const wanted = subjects ?? (page ? subjectsOf(page, fragment, url) : [])
+  const verdict = symbolPage ? judgeLabel(expectation.label, identity) : judgeSubject(expectation.label, wanted)
+  if (!verdict) return { at: symbolPage ? 'identity' : 'subject' }
+  if (expectation.exception?.tier !== 'label') return verdict
+  // A link whose words go past its page's heading is right only if the page itself says the rest.
+  const body = text ?? (page ? strip(page.html) : undefined)
+  const unseen = !symbolPage && body !== undefined ? missingWords(expectation.label, [...wanted, body]) : []
+  if (unseen?.length) return { ...verdict, detail: `${verdict.detail}; nor does the rest of the page mention ${unseen.join(', ')}` }
+  return { at: 'label', reason: expectation.exception.reason }
+}
+
+/** Whether words on a link are compared with a subject: the page documents no symbol for them to name. */
+const compareSubject = (expectations, identity) => expectations.some((expectation) => expectation.label !== undefined) && !(identity && SYMBOL_KINDS.has(identity.kind))
 
 /** The expectations held to one identity: what passed, with where, and the first thing that did not. */
 function holdAll(expectations, identity, context) {
@@ -303,8 +331,10 @@ export async function verifyApiDestination(destination, { get, exceptions = PAGE
     if (fragment && !doccAnchors(data).has(safeDecode(fragment))) return { ...found, ok: false, failure: 'fragment', detail: `#${fragment} is not an anchor in the documentation data for ${pageUrl}` }
     const identity = doccIdentity(url, data)
     if (!identity) return { ...found, ok: false, failure: 'generic', detail: 'the documentation data declares no symbol path' }
-    const { terminal, failed } = holdAll(expectations, identity, {})
-    const record = { ...found, identity: identityRecord(identity), ...(fragment && { fragment: 'found' }) }
+    // The page's title, and the anchor a link names: a heading of its own, in DocC.
+    const subjects = fragment ? [safeDecode(fragment).replace(/[-_.]+/g, ' '), title] : [title, identity.path.at(-1)]
+    const { terminal, failed } = holdAll(expectations, identity, { subjects, text: answer.text })
+    const record = { ...found, identity: identityRecord(identity), ...(compareSubject(expectations, identity) && { subject: subjects }), ...(fragment && { fragment: 'found' }) }
     if (failed) return { ...record, ok: false, failure: failed.failure, detail: failed.detail, ...(terminal.length && { terminal }) }
     return { ...record, ok: true, terminal }
   }
@@ -330,8 +360,8 @@ export async function verifyApiDestination(destination, { get, exceptions = PAGE
 
   const identity = pageIdentity(url, page, fragment)
   if (identity) {
-    const { terminal, failed } = holdAll(expectations, identity, { page, fragment })
-    const record = { ...found, identity: identityRecord(identity), ...(fragment && { fragment: 'found' }) }
+    const { terminal, failed } = holdAll(expectations, identity, { page, fragment, url })
+    const record = { ...found, identity: identityRecord(identity), ...(compareSubject(expectations, identity) && { subject: subjectsOf(page, fragment, url) }), ...(fragment && { fragment: 'found' }) }
     if (failed) return { ...record, ok: false, failure: failed.failure, detail: failed.detail, ...(terminal.length && { terminal }) }
     return { ...record, ok: true, terminal }
   }
@@ -347,17 +377,25 @@ export async function verifyApiDestination(destination, { get, exceptions = PAGE
       terminal.push({ symbol: expectation.symbol, ...held })
     }
   }
+  // A host that declares nothing is read by its words: a link's own words must be its page's subject.
+  const subject = compareSubject(expectations, undefined) ? subjectsOf(page, fragment, url) : undefined
+  for (const expectation of expectations.filter((candidate) => candidate.label !== undefined)) {
+    const held = holdWords(expectation, undefined, { subjects: subject, text: strip(page.html) })
+    if (held.failure) failed ??= { ...held, key: expectation.key }
+    else terminal.push({ key: expectation.key, symbol: expectation.symbol, ...held })
+  }
   // The page must be the one its address names, whatever the names say.
   if (slug) {
     const identity = compact(`${page.title} ${page.headings.filter((heading) => heading.level === 1).map((heading) => heading.text).join(' ')}`)
     if (!identity.includes(compact(slug))) failed ??= { failure: 'address', detail: `${pageUrl} names ${slug}, which its title ${JSON.stringify(page.title)} does not` }
     else if (!fragment) terminal.push({ symbol: slug, at: 'address' })
   }
-  if (failed) return { ...found, ok: false, failure: failed.failure, detail: failed.detail, ...(terminal.length && { terminal }) }
+  const kept = { ...(subject && { subject }) }
+  if (failed) return { ...found, ...kept, ok: false, failure: failed.failure, detail: failed.detail, ...(terminal.length && { terminal }) }
   if (terminal.length === 0 && !slug && !fragment) {
     return { ...found, ok: true, terminal: [], note: 'a language reference page; the page exists and is not a redirect' }
   }
-  return { ...found, ok: true, ...(fragment && { fragment: 'found' }), terminal }
+  return { ...found, ...kept, ok: true, ...(fragment && { fragment: 'found' }), terminal }
 }
 
 /**
@@ -368,8 +406,8 @@ export async function verifyApiDestination(destination, { get, exceptions = PAGE
 export function needsCheck(destination, record) {
   if (!record?.ok) return true
   const whole = { ...destination, uses: [...destination.uses.values?.() ?? destination.uses] }
-  if (record.identity) return expectationsOf(whole).some((expectation) => holdRecorded(expectation, record))
-  return unprovenSymbols(whole, record).length > 0
+  if (expectationsOf(whole).some((expectation) => holdRecorded(expectation, record))) return true
+  return record.identity ? false : unprovenSymbols(whole, record).length > 0
 }
 
 /** The symbols the destination's names ask for that its passing record was never checked against. */
@@ -382,7 +420,7 @@ export function unprovenSymbols(destination, record) {
 export const MAX_UNVERIFIABLE_SHARE = 0.05
 
 /** Where the verifier reports finding a symbol. */
-const FOUND_AT = new Set(['identity', 'fragment', 'title', 'address', 'listed', 'section', 'label'])
+const FOUND_AT = new Set(['identity', 'subject', 'fragment', 'title', 'address', 'listed', 'section', 'label'])
 
 /** A passing record carries none of these; a failing one carries a reason, and an unverifiable one only its own. */
 const FAILURE_FIELDS = ['failure', 'detail', 'unverifiable', 'finalUrl']
@@ -414,6 +452,10 @@ export function recordProblems(record) {
     for (const entry of record.terminal ?? []) {
       if (!FOUND_AT.has(entry.at)) problems.push(`${record.url} records ${entry.symbol} as found ${JSON.stringify(entry.at)}, which the verifier never reports`)
       if (entry.at === 'identity' && !record.identity) problems.push(`${record.url} records ${entry.symbol} as found by identity without the identity it was found in`)
+      if (entry.at === 'subject' && !Array.isArray(record.subject)) problems.push(`${record.url} records ${entry.symbol} as found in the page's subject without the subject it was found in`)
+    }
+    if (record.subject !== undefined && (!Array.isArray(record.subject) || record.subject.length === 0 || record.subject.some((text) => typeof text !== 'string'))) {
+      problems.push(`${record.url} records a subject that is not a list of the page's words`)
     }
     if (record.identity !== undefined && (!Array.isArray(record.identity.path) || record.identity.path.some((segment) => typeof segment !== 'string') || typeof record.identity.kind !== 'string')) {
       problems.push(`${record.url} records an identity that is not a path and a kind`)
@@ -430,14 +472,23 @@ export function recordProblems(record) {
 }
 
 /**
- * Whether a name still fits the identity its record saw: the same judgment the
- * live run made, now made again offline, so a name edited over the same
- * address is caught without asking the host. A reviewed exception stands only
- * where the live run recorded passing by it.
+ * Whether a name still fits the identity its record saw, and a link's words the
+ * subject it saw: the same judgment the live run made, now made again offline,
+ * so a name edited over the same address is caught without asking the host. A
+ * reviewed exception stands only where the live run recorded passing by it.
  */
 export function holdRecorded(expectation, record) {
-  if (expectation.label !== undefined && !SYMBOL_KINDS.has(record.identity.kind)) return undefined
-  const verdict = expectation.label === undefined ? judge(expectation.source, record.identity) : judgeLabel(expectation.label, record.identity)
+  if (expectation.label !== undefined) {
+    const symbolPage = record.identity !== undefined && SYMBOL_KINDS.has(record.identity.kind)
+    const verdict = symbolPage ? judgeLabel(expectation.label, record.identity)
+      : Array.isArray(record.subject) ? judgeSubject(expectation.label, record.subject) : { failure: 'label', detail: 'the record keeps no subject to compare the words with' }
+    if (!verdict) return undefined
+    if (expectation.exception?.tier === 'label' && record.terminal?.some((entry) => entry.key === expectation.key && entry.at === 'label')) return undefined
+    return verdict
+  }
+  // A host that declares nothing is read by its words, and its record is held to the symbols it was checked for.
+  if (!record.identity) return undefined
+  const verdict = judge(expectation.source, record.identity)
   if (!verdict) return undefined
   const tier = expectation.exception?.tier
   if (tier && record.terminal?.some((entry) => entry.key === expectation.key && entry.at === tier)) return undefined
@@ -538,18 +589,19 @@ export function checkApiEvidence(destinations, evidence, { today = new Date(), r
       const reviewed = expectations.some((expectation) => (entry.key ? expectation.key === entry.key : expectation.symbol === entry.symbol) && expectation.exception?.tier === entry.at)
       if (!reviewed) problems.push(`${record.url} passes ${entry.symbol} by ${entry.at}, which no reviewed exception in api-destinations.mjs allows at this address (${who})`)
     }
+    // Judge again, now, every name that leads here against what the page was seen to declare, and every link's words against its subject.
     if (record.identity) {
-      // Judge again, now, every name that leads here against the identity the page was seen to declare.
       const stale = identityProblem(record)
       if (stale) problems.push(stale)
-      for (const expectation of expectations) {
-        const verdict = holdRecorded(expectation, record)
-        if (verdict) problems.push(`${record.url} is not what ${expectation.label === undefined ? expectation.key : `the link text ${JSON.stringify(expectation.label)}`} names (${verdict.failure}): ${verdict.detail}`)
-      }
-      continue
     }
-    const unproven = unprovenSymbols(destination, record)
-    if (unproven.length) problems.push(`${destination.url} was never checked for ${unproven.join(', ')} (${who}): run node scripts/verify-api-destinations.mjs --missing`)
+    for (const expectation of expectations) {
+      const verdict = holdRecorded(expectation, record)
+      if (verdict) problems.push(`${record.url} is not what ${expectation.label === undefined ? expectation.key : `the link text ${JSON.stringify(expectation.label)}`} names (${verdict.failure}): ${verdict.detail}`)
+    }
+    if (!record.identity) {
+      const unproven = unprovenSymbols(destination, record)
+      if (unproven.length) problems.push(`${destination.url} was never checked for ${unproven.join(', ')} (${who}): run node scripts/verify-api-destinations.mjs --missing`)
+    }
   }
   // A host or two that blocks a request leaves a few destinations open. Most of them open is a run that
   // asked nothing, and passing it would be passing a check that checked nothing.
