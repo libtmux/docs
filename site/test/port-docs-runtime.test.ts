@@ -9,6 +9,7 @@ import { PORT_BY_SLUG } from '../src/lib/ports'
 const root = new URL('../../', import.meta.url).pathname
 const workflow = readFileSync(join(root, '.github/workflows/port-docs.yml'), 'utf8')
 const doxygenCheck = join(root, 'scripts/check-doxygen.py')
+const toolchainReader = join(root, 'scripts/read-elixir-toolchain.py')
 function script(name: string) {
   const start = workflow.indexOf(`      - name: ${name}\n`)
   expect(start).toBeGreaterThan(-1)
@@ -59,7 +60,7 @@ function elixirToolchain(files: Record<string, string | undefined>) {
     for (const [name, content] of Object.entries(files)) {
       if (content !== undefined) writeFileSync(join(directory, 'port', name), content)
     }
-    const result = spawnSync('bash', ['-e', '-c', script('Read selected Elixir toolchain')], {
+    const result = spawnSync('python3', ['-I', toolchainReader, 'port'], {
       cwd: directory, encoding: 'utf8', timeout: 5000, env: { ...process.env, GITHUB_OUTPUT: output },
     })
     return { ...result, output: readFileSync(output, 'utf8') }
@@ -262,6 +263,58 @@ if (process.argv[2] === process.env.FAILING_TASK) process.exit(23)
     expect(setupStep).toContain('version-type: strict')
     expect(workflow.slice(exportStep, build)).toContain('EXPORTER: ${{ github.workspace }}/docs/packages/api-model/scripts/export-elixir.exs')
     expect(existsSync(join(root, 'packages/api-model/scripts/export-elixir.exs'))).toBe(true)
+  })
+
+  it('gives the docs test job the same pinned runtimes before its unit tests', () => {
+    const tests = readFileSync(join(root, '.github/workflows/test.yml'), 'utf8')
+    const pin = (text: string) => /uses: (erlef\/setup-beam@[0-9a-f]{40}) # (v\d+\.\d+\.\d+)\n/.exec(text)?.slice(1)
+    expect(pin(tests)).toBeDefined()
+    expect(pin(tests)).toEqual(pin(workflow))
+    expect(workflow).toContain('run: python3 docs/scripts/read-elixir-toolchain.py port')
+    expect(tests).toContain('run: python3 scripts/read-elixir-toolchain.py .port-sources/elixir')
+    expect(tests).toContain('version-type: strict')
+    const read = tests.indexOf('name: Read integrated Elixir toolchain')
+    const setup = tests.indexOf('uses: erlef/setup-beam@')
+    expect(tests.indexOf('path: .port-sources/elixir')).toBeLessThan(read)
+    expect(read).toBeLessThan(setup)
+    expect(setup).toBeLessThan(tests.indexOf('- name: test-all'))
+  })
+
+  // setup-beam must receive exactly what the reader printed: a literal version, a decoy step that
+  // mentions the output, or a second setup-beam step would leave the pinned pair unused.
+  const toolchainWiring = (text: string) => {
+    const steps = text.split(/\n(?=      - )/).map((step) => step.replace(/^\n?      - /, '        '))
+    const key = (step: string, name: string) => new RegExp(`^ {8}${name}: (.+)$`, 'm').exec(step)?.[1]
+    const readers = steps.filter((step) => /read-elixir-toolchain\.py/.test(key(step, 'run') ?? ''))
+    const setups = steps.filter((step) => /^erlef\/setup-beam@/.test(key(step, 'uses') ?? ''))
+    const block = setups[0] ? /^ {8}with:\n((?: {10}.*\n?)*)/m.exec(setups[0])?.[1] ?? '' : ''
+    const inputs = Object.fromEntries([...block.matchAll(/^ {10}([\w-]+): (.+)$/gm)].map((match) => [match[1], match[2]]))
+    return { readers: readers.map((step) => key(step, 'id')), setups: setups.length, inputs }
+  }
+
+  it.each(['port-docs.yml', 'test.yml'])('feeds the reader outputs of %s into setup-beam', (name) => {
+    const { readers, setups, inputs } = toolchainWiring(readFileSync(join(root, '.github/workflows', name), 'utf8'))
+    expect(readers, `${name} reader step ids`).toHaveLength(1)
+    expect(readers[0], `${name} reader step has an id`).toMatch(/^[\w-]+$/)
+    expect(setups, `${name} setup-beam steps`).toBe(1)
+    expect(inputs['otp-version'], name).toBe(`\${{ steps.${readers[0]}.outputs.otp-version }}`)
+    expect(inputs['elixir-version'], name).toBe(`\${{ steps.${readers[0]}.outputs.elixir-version }}`)
+  })
+
+  it('notices a literal version, a decoy step and a second setup-beam step', () => {
+    const real = readFileSync(join(root, '.github/workflows/test.yml'), 'utf8')
+    const otp = '          otp-version: ${{ steps.elixir-runtime.outputs.otp-version }}\n'
+    const elixir = '          elixir-version: ${{ steps.elixir-runtime.outputs.elixir-version }}\n'
+    expect(real).toContain(otp)
+    expect(real).toContain(elixir)
+    const wired = toolchainWiring(real).inputs
+    expect(toolchainWiring(real.replace(otp, '          otp-version: "28.0"\n')).inputs['otp-version']).not.toBe(wired['otp-version'])
+    const decoy = '      - name: Decoy\n        run: echo "${{ steps.elixir-runtime.outputs.elixir-version }}"\n'
+    const literal = real.replace(elixir, '          elixir-version: 1.18.0\n').replace('      - name: Stage integrated source guides', `${decoy}      - name: Stage integrated source guides`)
+    expect(literal).toContain('${{ steps.elixir-runtime.outputs.elixir-version }}')
+    expect(toolchainWiring(literal).inputs['elixir-version']).toBe('1.18.0')
+    const doubled = real.replace('      - name: Stage integrated source guides', `      - uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1\n        with:\n${otp}${elixir}\n      - name: Stage integrated source guides`)
+    expect(toolchainWiring(doubled).setups).toBe(2)
   })
 
   it('writes the artifact the API model step reads', () => {

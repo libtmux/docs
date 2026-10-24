@@ -1388,8 +1388,8 @@
       "port": "elixir",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-elixir",
-      "sourceRevision": "149565c9f04e043836191c8a7ff32a8ac39572ab",
-      "sourceTree": "91ff76128b52848863e58a4bfa11146800f5e43b",
+      "sourceRevision": "6e6e88e886bdd9267fcd8be66f561dc5d5462476",
+      "sourceTree": "82a927e2c306379461b7cfba69cf31c9109c01f7",
       "files": [
         {
           "name": "quickstart.exs",

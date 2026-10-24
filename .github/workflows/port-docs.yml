@@ -311,31 +311,10 @@ jobs:
               output.write(f'version={version}\n')
           PY
 
-      # .tool-versions pins release lines, so the exact pair comes from the
-      # selected source's support policy, and .tool-versions must select it.
       - name: Read selected Elixir toolchain
         id: elixir-runtime
         if: matrix.port == 'elixir'
-        run: |
-          python3 - <<'PY'
-          import json, os, pathlib, re
-          source = pathlib.Path('port')
-          reference = json.loads((source / 'priv/tmux/support.json').read_text())['reference']
-          selected = {'erlang': reference.get('otp'), 'elixir': reference.get('elixir')}
-          patterns = {'erlang': r'[0-9]+\.[0-9]+(?:\.[0-9]+){0,2}', 'elixir': r'[0-9]+\.[0-9]+\.[0-9]+'}
-          for tool, version in selected.items():
-              if not isinstance(version, str) or not re.fullmatch(patterns[tool], version):
-                  raise ValueError(f'elixir: selected source must pin an exact {tool} version')
-          lines = [line.split() for line in (source / '.tool-versions').read_text().splitlines()]
-          for tool, version in selected.items():
-              selectors = [line for line in lines if line and line[0] == tool]
-              if len(selectors) != 1 or len(selectors[0]) != 2 or not (
-                  version == selectors[0][1] or version.startswith(selectors[0][1] + '.')):
-                  raise ValueError(f'elixir: .tool-versions must select the pinned {tool} {version}')
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
-              output.write(f"otp-version={selected['erlang']}\n")
-              output.write(f"elixir-version={selected['elixir']}\n")
-          PY
+        run: python3 docs/scripts/read-elixir-toolchain.py port
 
       - name: Install native system dependencies
         if: steps.mcp.outputs.required == 'true' || matrix.port == 'cxx'

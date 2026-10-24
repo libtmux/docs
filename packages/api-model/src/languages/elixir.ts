@@ -58,6 +58,7 @@ function assertArtifact(input: unknown, revision?: string): ElixirArtifact {
     !/^[a-f0-9]{40}$/.test(artifact.source?.revision ?? '')) {
     throw new Error('Elixir documentation artifact has an unsupported schema or source identity')
   }
+  if (!artifact.modules.length) throw new Error('Elixir documentation artifact documents no modules')
   if (revision && artifact.source.revision !== revision) {
     throw new Error(`Elixir artifact source revision differs from the selected checkout: ${artifact.source.revision} is not ${revision}`)
   }

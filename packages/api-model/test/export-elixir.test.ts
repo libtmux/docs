@@ -1,5 +1,5 @@
 import { execFileSync, spawnSync } from 'node:child_process'
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -11,6 +11,23 @@ const env = { ...process.env, MIX_ENV: 'prod', MIX_QUIET: '1' }
 // The exporter runs in the port's own toolchain, so the suite needs Elixir 1.18 or newer (the JSON module) on PATH.
 const version = /Mix (\d+)\.(\d+)/.exec(spawnSync('mix', ['--version'], { encoding: 'utf8', env, cwd: tmpdir() }).stdout ?? '')
 const toolchain = version !== null && (Number(version[1]) > 1 || Number(version[2]) >= 18)
+
+/** CI must have the toolchain, because a skipped suite leaves the exporter untested without a failure. */
+const requirement = (available: boolean, ci: string | undefined): 'run' | 'skip' | 'fail' =>
+  available ? 'run' : ci && ci !== '0' && ci !== 'false' ? 'fail' : 'skip'
+const needed = requirement(toolchain, process.env.CI)
+
+it('fails a missing toolchain on CI and skips it elsewhere', () => {
+  expect(requirement(true, 'true')).toBe('run')
+  expect(requirement(true, undefined)).toBe('run')
+  expect(requirement(false, 'true')).toBe('fail')
+  expect(requirement(false, '1')).toBe('fail')
+  for (const ci of [undefined, '', '0', 'false']) expect(requirement(false, ci)).toBe('skip')
+})
+
+it.runIf(needed === 'fail')('finds Elixir 1.18 or newer and Mix on PATH', () => {
+  throw new Error('CI is set but Mix reports no Elixir 1.18 or newer; install the toolchain before the unit tests')
+})
 
 /** The fixture project, committed in a directory of its own. */
 function checkout() {
@@ -26,7 +43,8 @@ function checkout() {
 const exportFrom = (directory: string, out = join(directory, '_build/api.json')) =>
   spawnSync('mix', ['run', '--no-start', script, out], { cwd: directory, encoding: 'utf8', env })
 
-describe.skipIf(!toolchain)('Elixir exporter', () => {
+// Each case compiles the fixture with Mix, which takes seconds on a loaded or cold runner.
+describe.skipIf(needed !== 'run')('Elixir exporter', { timeout: 30_000 }, () => {
   it('describes a compiled application from its documentation chunks and typespecs', () => {
     const { directory, revision } = checkout()
     try {
@@ -94,6 +112,23 @@ describe.skipIf(!toolchain)('Elixir exporter', () => {
       const result = exportFrom(directory)
       expect(result.status).not.toBe(0)
       expect(result.stderr).toContain('uncommitted changes')
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
+  })
+
+  it('refuses a module whose documentation cannot be read instead of leaving it out', () => {
+    const { directory } = checkout()
+    try {
+      expect(exportFrom(directory).status).toBe(0)
+      const mix = readFileSync(join(directory, 'mix.exs'), 'utf8').replace('deps: []', 'elixirc_options: [docs: false],\n      deps: []')
+      writeFileSync(join(directory, 'mix.exs'), mix)
+      execFileSync('git', ['-C', directory, '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qam', 'Compile without documentation'])
+      const out = join(directory, '_build/undocumented.json')
+      const result = exportFrom(directory, out)
+      expect(result.status).not.toBe(0)
+      expect(result.stderr).toContain('cannot read the documentation of Probe')
+      expect(existsSync(out)).toBe(false)
     } finally {
       rmSync(directory, { recursive: true, force: true })
     }

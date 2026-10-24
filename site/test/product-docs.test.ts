@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { createHash } from 'node:crypto'
 import { Window } from 'happy-dom'
@@ -39,6 +39,8 @@ interface DocsManifest {
 
 const products = ['mcp', 'workspace'] as const
 const primaryPorts = PORTS.filter((port) => !port.parentLibrary)
+/** A regular-expression alternation over the registered ports, so a new port is covered without editing a list. */
+const portSlugs = (ports: readonly Port[] = PORTS) => ports.map((port) => port.slug).join('|')
 const read = (path: string) => readFileSync(sitePath(path), 'utf8')
 // Earlier product checks parse these indexes. Reuse only plain link facts,
 // keyed by the current HTML bytes, rather than keeping their large DOMs alive.
@@ -53,8 +55,18 @@ function referenceDeclarations(html: string, document?: Window['document']) {
   return declarations
 }
 const manifest = (): Manifest => JSON.parse(read('versions.json'))
+/** The pages a manifest lists at or below a product's overview, other than the overview, with or without a trailing slash. */
+const pagesBeyondOverview = (pages: { url: string }[], overview: string) => pages
+  .map((entry) => new URL(entry.url).pathname.replace(/\/*$/, '/'))
+  .filter((path) => path.startsWith(overview) && path !== overview)
 const urlFor = (path: string) => new URL(`/${SITE_PREFIX}${path}`, 'https://libtmux.org')
-const productUrl = /\/(?:py|ruby|lua|powershell|julia|elixir|ts|rs|go|java|csharp|cxx|swift)\/[^/]+\/(?:mcp|workspace)(?:\/|$)/
+const productUrl = new RegExp(`/(?:${portSlugs(primaryPorts)})/[^/]+/(?:mcp|workspace)(?:/|$)`)
+// Python, Ruby, PowerShell and Julia keep real workspace Topics or native replacements; no other port does.
+const legacyWorkspaceTopics = new RegExp(`/(?:${portSlugs(PORTS.filter((port) => !['py', 'ruby', 'powershell', 'julia'].includes(port.slug)))})/[^/]+/workspace/topics/?$`)
+// A page's storage identity under `ports/` must not reach a public link.
+const storageIdentity = new RegExp(`/ports/(?:${portSlugs()})/`)
+// Port documentation is not translated, so no port tree exists under a translated locale.
+const localizedPortTree = new RegExp(`^/ja/(?:${portSlugs()})/`)
 const nativeProductDocs = (port: string) => ['powershell', 'julia'].includes(port)
 const mcpClientSetupRoutes: Record<string, string[]> = {
   py: ['mcp/guides'], ruby: ['mcp/guides/connect-client', 'mcp/source-guide'],
@@ -397,7 +409,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       }
       const hrefs = tags(html, 'a').map((tag) => attribute(tag, 'href')).filter((href): href is string => Boolean(href))
       expect(hrefs.filter((href) => new URL(href, urlFor(page.path)).origin === 'https://libtmux.org'
-        && /\/ports\/(?:py|ruby|lua|ts|rs|go|java|csharp|cxx|swift)\//.test(href)),
+        && storageIdentity.test(href)),
         `${page.path} storage identities in public links`).toEqual([])
       if (!page.section && page.version !== 'latest') {
         const home = pageHtml(`${page.port}/${page.version}/`)
@@ -432,18 +444,38 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
   it.each(PORTS.filter((port) => !port.parentLibrary && products.some((product) => !productAvailable(port, product))))
     ('$name builds, lists and links only the overview of a product it has not published', (port) => {
     const version = manifest().defaultVersion[port.slug]!
-    const sections = ['topics', 'guides', 'examples', 'reference', 'internals']
     const docs = JSON.parse(read(`${port.slug}/${version}/docs.json`)) as DocsManifest
     for (const product of products.filter((entry) => !productAvailable(port, entry))) {
-      for (const section of sections) {
-        const path = `${port.slug}/${version}/${product}/${section}/`
-        expect(existsSync(sitePath(path, 'index.html')), `${path} is not built`).toBe(false)
-        expect(docs.pages.some((entry) => entry.url.endsWith(urlFor(path).pathname)), `${path} is not advertised`).toBe(false)
-      }
+      // Whatever the product's other pages would be called, none is built or listed.
+      const directory = sitePath(`${port.slug}/${version}/${product}`)
+      const built = existsSync(directory) ? readdirSync(directory, { recursive: true }).map(String) : []
+      expect(built.filter((file) => file.endsWith('.html') && file !== 'index.html'), `${port.slug} ${product} pages built beyond the overview`).toEqual([])
+      expect(pagesBeyondOverview(docs.pages, urlFor(`${port.slug}/${version}/${product}/`).pathname),
+        `${port.slug} ${product} pages listed beyond the overview`).toEqual([])
       const advertised = docs.ports.find((entry) => entry.slug === port.slug)!.products.find((entry) => entry.slug === product)!
       expect(advertised.availability, `${port.slug} ${product}`).toBe('unpublished')
       expect(advertised.reference, `${port.slug} ${product} reference`).toBeNull()
     }
+  })
+
+  it('covers every registered port in the patterns that name ports', () => {
+    for (const port of PORTS) {
+      expect(storageIdentity.test(`/en/ports/${port.slug}/guides/`), `${port.slug} storage identity`).toBe(true)
+      expect(localizedPortTree.test(`/ja/${port.slug}/latest/`), `${port.slug} localized tree`).toBe(true)
+      if (!port.parentLibrary) expect(productUrl.test(`/en/${port.slug}/latest/mcp/`), `${port.slug} product URL`).toBe(true)
+      const redirected = !['py', 'ruby', 'powershell', 'julia'].includes(port.slug)
+      expect(legacyWorkspaceTopics.test(`/en/${port.slug}/latest/workspace/topics/`), `${port.slug} legacy Topics`).toBe(redirected)
+    }
+    expect(productUrl.test('/en/elixir/latest/mcp/guides/')).toBe(true)
+    expect(productUrl.test('/en/elixir/latest/guides/overview/')).toBe(false)
+  })
+
+  it('finds a listed page beneath a product overview whatever its name or trailing slash', () => {
+    const overview = '/en/elixir/latest/mcp/'
+    const listed = (...paths: string[]) => pagesBeyondOverview(paths.map((path) => ({ url: `https://libtmux.org${path}` })), overview)
+    expect(listed('/en/elixir/latest/mcp/', '/en/elixir/latest/mcp', '/en/elixir/latest/', '/en/elixir/latest/mcp-notes/')).toEqual([])
+    expect(listed('/en/elixir/latest/mcp/guides')).toEqual(['/en/elixir/latest/mcp/guides/'])
+    expect(listed('/en/elixir/latest/mcp/guides/', '/en/elixir/latest/mcp/cookbook/step')).toEqual(['/en/elixir/latest/mcp/guides/', '/en/elixir/latest/mcp/cookbook/step/'])
   })
 
   it('opens a product overview with its install picker, then its section cards', async () => {
@@ -858,7 +890,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         expect(resolves(entry.url), entry.url).toBe(true)
         expect(resolves(entry.markdownUrl), entry.markdownUrl).toBe(true)
         expect(entry.url, `${root} canonical workspace API exports`).not.toMatch(/\/workspace\/api(?:\/|$)/)
-        expect(entry.url, `${root} legacy workspace Topics redirect excluded`).not.toMatch(/\/(?:lua|ts|rs|go|java|csharp|cxx|swift)\/[^/]+\/workspace\/topics\/?$/)
+        expect(entry.url, `${root} legacy workspace Topics redirect excluded`).not.toMatch(legacyWorkspaceTopics)
         if (root) expect(new URL(entry.url).pathname).toContain(`/${SITE_PREFIX}${root}`)
       }
     }
@@ -866,10 +898,10 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     expect(existsSync(japanese), 'Japanese assembled manifest').toBe(true)
     const translated = JSON.parse(readFileSync(japanese, 'utf8')) as { pages: { url: string }[] }
     expect(translated.pages.map((entry) => new URL(entry.url).pathname)
-      .filter((path) => /^\/ja\/(?:py|ruby|lua|ts|rs|go|java|csharp|cxx|swift)\//.test(path)),
+      .filter((path) => localizedPortTree.test(path)),
     'Japanese manifest does not invent localized port guides').toEqual([])
     for (const entry of translated.pages.filter((entry) => productUrl.test(entry.url))) {
-      expect(new URL(entry.url).pathname, entry.url).not.toMatch(/^\/ja\/(?:py|ruby|lua|ts|rs|go|java|csharp|cxx|swift)\//)
+      expect(new URL(entry.url).pathname, entry.url).not.toMatch(localizedPortTree)
       expect(resolves(entry.url), entry.url).toBe(true)
     }
   })

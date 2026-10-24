@@ -119,12 +119,12 @@ export function notASymbol(text: string): string | undefined {
 }
 
 /** Strip call syntax down to a dotted path. */
-export function toPath(text: string): string[] {
-  return text
-    .replace(/^(await|try|new)\s+/, '')
-    // Elixir spells a type `t:name/0` and a function `name/2`; neither prefix nor arity names a segment.
-    .replace(/^[tc]:(?=[A-Za-z_])/, '')
-    .replace(/(?<=[A-Za-z_!?])\/\d+$/, '')
+export function toPath(text: string, port?: string): string[] {
+  let path = text.replace(/^(await|try|new)\s+/, '')
+  // Elixir spells a type `t:name/0` and a function `name/2`; neither prefix nor
+  // arity names a segment. Elsewhere `/2` belongs to the name, as in `HTTP/2`.
+  if (port === 'elixir') path = path.replace(/^[tc]:(?=[A-Za-z_])/, '').replace(/(?<=[A-Za-z_!?])\/\d+$/, '')
+  return path
     .replace(/\(.*$/, '')
     .replace(/`\d+/g, '')
     .replace(/->/g, '.')
@@ -198,7 +198,10 @@ export class Resolver {
         // `unsetEnvironment(_:in:)` — so prose saying `unsetEnvironment`
         // matched nothing at all. Index both forms: the labelled name is what
         // the reference displays, the bare one is what a sentence writes.
-        for (const key of new Set([symbol.name, symbol.name.replace(/\(.*$/, ''), symbol.name.replace(/\/\d+$/, '')])) {
+        const names = [symbol.name, symbol.name.replace(/\(.*$/, '')]
+        // An Elixir function is `run/2`; prose says `run`.
+        if (model.port === 'elixir') names.push(symbol.name.replace(/\/\d+$/, ''))
+        for (const key of new Set(names)) {
           if (!key) continue
           const list = this.byMember.get(key) ?? []
           list.push(row)
@@ -293,7 +296,7 @@ export class Resolver {
       }
     }
 
-    const parts = toPath(text)
+    const parts = toPath(text, port)
     if (!parts.length) return { how: 'not-a-symbol', why: 'empty after normalisation' }
 
     // A fully qualified name wins outright. `tmux.NewServer` is the module
@@ -318,7 +321,7 @@ export class Resolver {
     const candidates = Resolver.preferTypeOverConstructor(bare.length ? bare : members)
     if (parts.length > 2) {
       const suffix = `.${parts.join('.')}`
-      const qualified = candidates.filter((row) => `.${toPath(row.qualified).join('.')}`.endsWith(suffix))
+      const qualified = candidates.filter((row) => `.${toPath(row.qualified, port).join('.')}`.endsWith(suffix))
       if (qualified.length === 1) return { how: 'scoped', symbol: qualified[0].symbol, port }
     }
     if (parts.length === 1 && candidates.length === 1) return { how: 'unique', symbol: candidates[0].symbol, port }

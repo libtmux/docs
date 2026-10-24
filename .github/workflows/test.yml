@@ -82,6 +82,21 @@ jobs:
           path: .port-sources/elixir
           persist-credentials: false
 
+      # The exporter tests compile a fixture with the package's own toolchain:
+      # the exact pair the integrated Elixir source pins, read as port-docs.yml
+      # reads it.
+      - name: Read integrated Elixir toolchain
+        id: elixir-runtime
+        run: python3 scripts/read-elixir-toolchain.py .port-sources/elixir
+      - uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1
+        with:
+          otp-version: ${{ steps.elixir-runtime.outputs.otp-version }}
+          elixir-version: ${{ steps.elixir-runtime.outputs.elixir-version }}
+          # Exact versions only: a loose match would resolve a moving release.
+          version-type: strict
+          install-hex: true
+          install-rebar: false
+
       - name: Stage integrated source guides
         env:
           LIBTMUX_DOCS_CHECKOUT_RUBY: ${{ github.workspace }}/.port-sources/ruby
@@ -111,7 +126,8 @@ jobs:
           # PowerShell, Julia and Elixir paths stay scoped to guide staging
           # above, which checks the cache used by ordinary builds. Native API
           # and MCP export freshness remain owning-port checks, not claims of
-          # this root audit.
+          # this root audit. Elixir's exporter tests run in the unit step; its
+          # committed model is derived again by port-docs.yml at publication.
           LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS: ruby,lua,powershell,julia,elixir
 
       - name: Upload audited preview

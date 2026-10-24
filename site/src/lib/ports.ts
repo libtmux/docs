@@ -703,7 +703,7 @@ const CORE_PORTS: readonly Port[] = [
         filename: 'mix.exs',
         code: '{:libtmux, "== {version}"}',
         additionalBlocks: [{ lang: 'console', code: 'mix deps.get' }],
-        note: 'Add the tuple to the deps list in mix.exs, then fetch it. Needs Elixir 1.20.4 or newer on Erlang/OTP 29, tmux 3.3 or newer (the planned floor), and a C11 compiler on Linux.',
+        note: 'Add the tuple to the deps list in mix.exs, then fetch it. Needs Elixir 1.20.4 or newer, Erlang/OTP 29.1.2 or a newer 29.x release, tmux 3.3 or newer (the planned floor), and a C11 compiler on Linux.',
       },
     ],
     registry: { name: 'Hex', url: 'https://hex.pm/packages/libtmux', icon: 'hex' },
@@ -715,7 +715,7 @@ const CORE_PORTS: readonly Port[] = [
       git: { code: '{:libtmux, github: "libtmux/libtmux-elixir", tag: "{tag}"}', lang: 'elixir' },
     },
     installNote:
-      'Add the tuple to the deps list in mix.exs and run mix deps.get. Requires Elixir 1.20.4 or newer on Erlang/OTP 29 and tmux 3.3 or newer (the planned floor); Linux builds need a C11 compiler.',
+      'Add the tuple to the deps list in mix.exs and run mix deps.get. Requires Elixir 1.20.4 or newer, Erlang/OTP 29.1.2 or a newer 29.x release, and tmux 3.3 or newer (the planned floor); Linux builds need a C11 compiler.',
   },
   {
     slug: 'ts',
