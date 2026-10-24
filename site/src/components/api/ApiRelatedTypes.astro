@@ -1,0 +1,24 @@
+---
+import type { SymbolIndex } from '@libtmux/api-model'
+import type { RelatedTypeLink } from '../../lib/api-sections'
+import ApiBadge from './ApiBadge.astro'
+import ApiDoc from './ApiDoc.astro'
+
+interface Props {
+  related: RelatedTypeLink[]
+  index: SymbolIndex
+}
+const { related, index } = Astro.props as Props
+---
+{related.length > 0 && <section class="api-related-types" aria-labelledby="api-related-types">
+  <h2 class="api-section-heading text-lg font-semibold" id="api-related-types">Related types<a class="api-heading-link" href="#api-related-types" aria-label="Link to Related types">#</a></h2>
+  <div class="api-related-cards">
+    {related.map((item) => <div class="api-index-card api-related-card">
+      <a class="api-index-card__link" href={item.href} title={item.identity}>
+        <ApiBadge label={item.kind} variant="kind" value={item.kind} compact />
+        <code>{item.name}</code>
+      </a>
+      {item.symbol.doc?.summary && <p><ApiDoc text={item.symbol.doc.summary} index={index} context={item.symbol} citations={false} /></p>}
+    </div>)}
+  </div>
+</section>}

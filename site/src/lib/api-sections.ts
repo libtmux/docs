@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { builtinHref, memberTier, typeParametersOf, type ApiSymbol, type MemberSignals, type Param, type Signature, type SymbolIndex } from '@libtmux/api-model'
+import { builtinHref, memberTier, moduleOf, qualifiedNameOf, typeParametersOf, type ApiModelBase, type ApiSymbol, type MemberSignals, type Param, type Signature, type SymbolIndex } from '@libtmux/api-model'
 import { apiGlossaryHref } from './api-glossary'
 import { csharpParameters, supportsCSharpSignatures, supportsElixirSignatures, supportsGoSignatures, supportsJavaSignatures, supportsLuaSignatures, supportsRubySignatures, supportsRustSignatures, supportsTypeScriptSignatures, swiftBaseName } from './code-layout'
 
@@ -300,12 +300,15 @@ export function apiMemberGroups(members: ApiSymbol[], signals: MemberSignals) {
   return groups.filter((group) => group.members.length > 0)
 }
 
+/** The declarations a related-types list can hold. */
+const RELATED_KINDS: ReadonlySet<string> = new Set(['class', 'struct', 'union', 'interface', 'trait', 'enum', 'typealias'])
+
 /** Related declarations come from ownership, inheritance and return types. */
 export function relatedApiTypes(owner: ApiSymbol, members: ApiSymbol[], index: SymbolIndex, parent?: ApiSymbol, options: { includeInternal?: boolean } = {}) {
   const types = new Map<string, ApiSymbol>()
   const add = (symbol?: ApiSymbol) => {
     if (!symbol || symbol.id === owner.id || (!options.includeInternal && symbol.apiScope === 'internal') ||
-        !['class', 'struct', 'union', 'interface', 'trait', 'enum', 'typealias'].includes(symbol.kind)) return
+        !RELATED_KINDS.has(symbol.kind)) return
     types.set(symbol.publicId ?? symbol.id, symbol)
   }
   add(parent)
@@ -323,6 +326,28 @@ export function relatedApiTypes(owner: ApiSymbol, members: ApiSymbol[], index: S
     }
   }
   return [...types.values()].slice(0, 6)
+}
+
+export interface RelatedTypeLink {
+  /** The label the page shows. */
+  name: string
+  /** The source-qualified name, for the link's title. */
+  identity: string
+  kind: ApiSymbol['kind']
+  href: string
+  symbol: ApiSymbol
+}
+
+/** The related types of a page with the label it shows for each; `repeated` counts the top-level types that share a name. */
+export function relatedTypeLinks(
+  model: ApiModelBase, owner: ApiSymbol, members: ApiSymbol[], index: SymbolIndex, hrefFor: (symbol: ApiSymbol) => string,
+  options: { repeated: ReadonlyMap<string, number>; includeInternal?: boolean },
+): RelatedTypeLink[] {
+  const parent = owner.parent ? model.symbols.find((symbol) => symbol.id === owner.parent) : undefined
+  return relatedApiTypes(owner, members, index, parent, { includeInternal: options.includeInternal }).map((symbol) => ({
+    name: (options.repeated.get(symbol.name) ?? 0) > 1 ? `${symbol.name} (${moduleOf(symbol)})` : symbol.name,
+    identity: qualifiedNameOf(symbol), kind: symbol.kind, href: hrefFor(symbol), symbol,
+  }))
 }
 
 /** Describe unnamed native types without inventing a compilable declaration. */
