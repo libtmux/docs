@@ -13,6 +13,13 @@ name: verify-destinations
 # the repository to the age bound, so it fails once a refresh is due. The fresh
 # file is kept as an artifact: commit it with the inventory change that follows.
 #
+# The same run holds the standard-library and SDK links the reference pages
+# make to the same standard (scripts/verify-api-destinations.mjs): the page
+# exists, the fragment is an anchor on it, and it documents the symbol the link
+# names. Its evidence is site/src/data/api-destination-evidence.json. A host
+# that blocks the request or renders the page in the browser is reported as
+# unresolved, never as passing.
+#
 # Read-only requests to public hosts; no secrets and no write access.
 
 on:
@@ -30,7 +37,7 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7
         with:
@@ -47,11 +54,28 @@ jobs:
         if: ${{ !cancelled() }}
         run: node scripts/verify-destinations.mjs --check --fresh
 
+      - name: Verify every standard-library and SDK link against its host
+        if: ${{ !cancelled() }}
+        run: node scripts/verify-api-destinations.mjs --no-cache --out "$RUNNER_TEMP/api-destination-evidence.json"
+
+      - name: Require the committed API evidence to be fresh
+        if: ${{ !cancelled() }}
+        run: node scripts/verify-api-destinations.mjs --check --fresh
+
       - name: Keep the fresh evidence
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
         with:
           name: destination-evidence
           path: ${{ runner.temp }}/destination-evidence.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Keep the fresh API evidence
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: api-destination-evidence
+          path: ${{ runner.temp }}/api-destination-evidence.json
           if-no-files-found: ignore
           retention-days: 14
