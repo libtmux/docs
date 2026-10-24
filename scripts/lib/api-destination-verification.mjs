@@ -35,7 +35,8 @@ import { createHash } from 'node:crypto'
 import { gunzipSync } from 'node:zlib'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { EXTERNAL_INVENTORIES, LISTED_ON_PAGE, SHARED_SECTIONS, ownerSymbol, terminalSymbol } from './api-destinations.mjs'
+import { EXTERNAL_INVENTORIES, PAGE_EXCEPTIONS, addressSegments, arityOf, exceptionFor, terminalSymbol } from './api-destinations.mjs'
+import { addressOf, mismatch, namespaceMismatch, splitUrl } from './api-addresses.mjs'
 import { readInventory } from '../../packages/api-model/src/inventory.ts'
 import { USER_AGENT, futureRecords, staleRecords } from './destination-verification.mjs'
 
@@ -50,9 +51,15 @@ const decode = (text) => text.replace(/&(#x?[0-9a-f]+|[a-z]+);/gi, (whole, name)
 const strip = (html) => decode(html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, ' ').replace(/<wbr\s*\/?>/gi, '').replace(/<[^>]*>/g, ' ')).replace(/\s+/g, ' ').trim()
 const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
-/** The words of a symbol compare case-insensitively and whole: `Set` is not in `SetAlgebra`. */
-export const mentions = (text, symbol) => new RegExp(`(?<![a-z0-9])${escapeRegExp(symbol.toLowerCase())}(?![a-z0-9])`).test(text.toLowerCase())
-const compact = (text) => text.toLowerCase().replace(/[^a-z0-9]/g, '')
+/**
+ * The words of a heading, title or kebab-case anchor compare case-insensitively
+ * and whole: `Set` is not in `SetAlgebra`, nor `sort` in `sort!`. A host whose
+ * fragments are identifiers is read from its address instead (`addressOf`),
+ * because `_`, `-` and `.` are word breaks here and parts of a name there.
+ */
+export const mentions = (text, symbol) => new RegExp(`(?<![a-z0-9])${escapeRegExp(symbol.toLowerCase())}(?![a-z0-9!?])`).test(text.toLowerCase())
+// `!` and `?` end names (`sort!`, `empty?`), so they are part of what is compared.
+const compact = (text) => text.toLowerCase().replace(/[^a-z0-9!?]/g, '')
 
 /**
  * What a rendered page offers to prove an identity: its title, headings, the
@@ -103,12 +110,6 @@ export function sectionAt(page, fragment) {
 }
 
 const safeDecode = (text) => { try { return decodeURIComponent(text) } catch { return text } }
-
-/** Where a URL asks to land, split into the page and the fragment. */
-export function splitUrl(url) {
-  const hash = url.indexOf('#')
-  return hash < 0 ? { page: url, fragment: '' } : { page: url.slice(0, hash), fragment: url.slice(hash + 1) }
-}
 
 /** The documentation views and locales a host adds to an address without changing the page. */
 export function sameAddress(requested, final) {
@@ -203,23 +204,22 @@ const CONCEPT_SOURCES = new Set(['keyword', 'doc-link', 'authored'])
 
 /**
  * What each name that leads to the destination asks of its page: the symbol,
- * the type that owns it when the name is a member, and the exception, if any,
- * that lets the page document it somewhere other than its title or fragment.
+ * the name written in full (a package, module or type before it is part of
+ * what the address must say), its operand count, and the exception, if one
+ * was reviewed for this name at this exact address.
  * A destination reached only by concepts has none.
  */
-export function expectationsOf(destination, { listed = LISTED_ON_PAGE, shared = SHARED_SECTIONS } = {}) {
+export function expectationsOf(destination, { exceptions = PAGE_EXCEPTIONS } = {}) {
   const found = new Map()
-  // An entry ending in `#` or `/` covers every fragment or page under it; any other names one address.
-  const section = shared.find((entry) => (/[#/]$/.test(entry.page) ? destination.url.startsWith(entry.page) : destination.url === entry.page))
   for (const use of destination.uses) {
     if (CONCEPT_SOURCES.has(use.source) || use.concept) continue
     const symbol = terminalSymbol(use.port, use.name)
     if (!symbol) continue
     const key = `${use.port}:${use.name}`
-    const owner = ownerSymbol(use.port, use.name)
-    const reason = listed.get(key)
-    const exception = reason ? { tier: 'listed', reason } : section && { tier: section.tier, reason: section.reason }
-    found.set(key, { key, symbol, ...(owner && { owner }), ...(exception && { exception }) })
+    const written = addressSegments(use.port, use.name)
+    const segments = symbol === written.at(-1) ? written : [symbol]
+    const exception = exceptionFor(destination.url, key, exceptions)
+    found.set(key, { key, symbol, segments, ...(arityOf(use.name) !== undefined && { arity: arityOf(use.name) }), ...(exception && { exception }) })
   }
   return [...found.values()].sort((a, b) => a.key.localeCompare(b.key))
 }
@@ -230,60 +230,77 @@ export function expectedSymbols(destination, options) {
   return [...symbols.values()].sort()
 }
 
-/** The text of a fragment as the host names the entry: ExDoc spells a type `t:name/0` and a function `name/2`. */
-const entryName = (fragment, host) => (host.endsWith('hexdocs.pm') ? fragment.replace(/^[tc]:/, '').replace(/\/\d+$/, '') : fragment)
-
-/** The last segment of the name a page's address gives its type: `Flow.Subscription` is `Subscription`. */
-const pageType = (slug) => slug.split('.').at(-1)
-
 /** Whether the page's title or a top heading names the symbol. */
 const titledBy = (page, symbol) => [page.title, ...page.headings.filter((heading) => heading.level === 1).map((heading) => heading.text)].some((text) => mentions(text, symbol))
 
 /**
- * Hold one name to the page it leads to. A fragment must spell the symbol: the
- * anchor is the entry the link means, and the text near it is not evidence of
- * which entry that is. A page with no fragment must name the symbol in its
- * title or top heading; its other headings include the members it inherits.
- * An exception widens that for one reason it states, and the evidence says so.
+ * Hold one name to the page it leads to.
+ *
+ * Where the host puts a symbol's package, type and member in its address, the
+ * name written in full must be the end of that path (`addressOf`): the last
+ * segment is the entry, and what precedes it is its package, module or type.
+ * The page's title or top heading must then name the symbol too. Where the
+ * address says nothing, a fragment that is a heading must be the symbol's own
+ * spelling, and a page without a fragment must name it in its title or top
+ * heading. Text near an anchor is never evidence of which entry it is.
+ *
+ * An exception reviewed for this name at this exact address is the only way
+ * past those: its page lists the symbol (`listed`), or the section the anchor
+ * opens does (`section`). The evidence records it with its reason.
  *
  * @returns {{ at: string, reason?: string } | { failure: string, detail: string }}
  */
-function hold(page, { url, fragment, host, slug }, expectation) {
-  const { symbol, owner, exception } = expectation
+function hold(page, { url, fragment }, expectation) {
+  const { symbol, segments, arity, exception } = expectation
+  const address = addressOf(url)
+  const decoded = safeDecode(fragment)
   const where = `${url.split('#')[0]}${fragment ? `#${fragment}` : ''}`
-  if (fragment) {
-    const decoded = safeDecode(fragment)
-    let at
-    if (mentions(entryName(decoded, host), symbol)) at = 'fragment'
-    else if (exception?.tier === 'spelled' && compact(decoded).startsWith(compact(symbol))) at = 'spelled'
-    else if (exception?.tier === 'section' && mentions(sectionAt(page, fragment) ?? '', symbol)) at = 'section'
-    if (!at) return { failure: 'symbol', detail: `${symbol} is not what #${fragment} documents at ${url.split('#')[0]}` }
-    if (owner && slug && compact(pageType(slug)) !== compact(owner)) {
-      return { failure: 'owner', detail: `${symbol} belongs to ${owner}, but ${url.split('#')[0]} documents ${slug}` }
+  let failure
+  if (address && address.fragment !== 'heading') {
+    const differs = mismatch(segments, address)
+    if (differs) {
+      failure = { failure: differs, detail: differs === 'symbol'
+        ? `${segments.join('.')} is not what ${where} documents: its address names ${address.path.at(-1) ?? 'no symbol'}`
+        : `${segments.join('.')} is written with ${segments.slice(0, -1).join('.')}, but ${where} sits under ${address.path.slice(0, -1).join('.')}` }
+    } else if (address.arity !== undefined && arity !== undefined && address.arity !== arity) {
+      failure = { failure: 'symbol', detail: `${segments.join('.')}/${arity} is not what ${where} documents: it takes ${address.arity}` }
+    } else if (!fragment && !titledBy(page, symbol)) {
+      failure = { failure: 'symbol', detail: `${symbol} is not in the title or top heading ${JSON.stringify(page.headings.find((heading) => heading.level === 1)?.text ?? page.title)} of ${where}` }
+    } else {
+      return { at: fragment ? 'fragment' : 'title' }
     }
-    if (owner && !slug && at === 'fragment' && !mentions(decoded, owner) && !titledBy(page, owner)) {
-      return { failure: 'owner', detail: `${symbol} belongs to ${owner}, which neither #${fragment} nor the title of ${url.split('#')[0]} names` }
+  } else if (!address || !address.exact) {
+    // A heading-style fragment, or an address that says nothing: the page's own words.
+    if (fragment) {
+      // A heading's anchor is the heading's words, so only the symbol's own spelling is the symbol's anchor:
+      // `#void` is `void`, and `#the_async_iterator_and_async_iterable_protocols` is not `Iterable`.
+      if (compact(decoded) === compact(symbol)) return { at: 'fragment' }
+      failure = { failure: 'symbol', detail: `${symbol} is not what #${fragment} documents at ${url.split('#')[0]}` }
+    } else if (titledBy(page, symbol)) {
+      const scope = new URL(url).hostname === 'en.cppreference.com' ? namespaceMismatch(url, segments, page.title) : undefined
+      if (!scope) return { at: 'title' }
+      failure = { failure: scope, detail: `${segments.join('::')} is written with namespaces that neither the address nor the title ${JSON.stringify(page.title)} of ${where} names` }
+    } else {
+      failure = { failure: 'symbol', detail: `${symbol} is not in the title or top heading ${JSON.stringify(page.headings.find((heading) => heading.level === 1)?.text ?? page.title)} of ${where}` }
     }
-    return { at, ...(exception && at !== 'fragment' && { reason: exception.reason }) }
+  } else {
+    failure = { failure: 'symbol', detail: `#${fragment} is not an entry name at ${url.split('#')[0]}, so it cannot say it documents ${symbol}` }
   }
-  const titled = titledBy(page, symbol)
-  if (!titled && exception?.tier === 'listed' && mentions(strip(page.html), symbol)) return { at: 'listed', reason: exception.reason }
-  if (!titled) return { failure: 'symbol', detail: `${symbol} is not in the title or top heading ${JSON.stringify(page.headings.find((heading) => heading.level === 1)?.text ?? page.title)} of ${where}` }
-  if (slug && compact(pageType(slug)) !== compact(symbol)) {
-    return { failure: 'address', detail: `${where} documents ${slug}, not ${symbol}` }
-  }
-  return { at: 'title' }
+  const words = exception?.words ?? symbol
+  if (exception?.tier === 'section' && fragment && mentions(sectionAt(page, fragment) ?? '', words)) return { at: 'section', reason: exception.reason }
+  if (exception?.tier === 'listed' && mentions(strip(page.html), words)) return { at: 'listed', reason: exception.reason }
+  return failure
 }
 
 const SHELL = /enable javascript|you need to enable javascript/i
 
 /**
  * Verify one destination. `destination` is `{ url, host, uses: [...] }` where
- * each use is `{ port, name, source, concept? }`. `exceptions` carries the two
- * reviewed lists in `api-destinations.mjs`: the names a page documents beside
- * its subject, and the pages that document several symbols under one anchor.
+ * each use is `{ port, name, source, concept? }`. `exceptions` is the reviewed
+ * list in `api-destinations.mjs`: names a page documents elsewhere than its
+ * title or fragment, each pinned to one address with its reason.
  */
-export async function verifyApiDestination(destination, { get, exceptions = { listed: LISTED_ON_PAGE, shared: SHARED_SECTIONS } }) {
+export async function verifyApiDestination(destination, { get, exceptions = PAGE_EXCEPTIONS }) {
   const { url } = destination
   const { page: pageUrl, fragment } = splitUrl(url)
   const base = { url, host: destination.host }
@@ -304,11 +321,13 @@ export async function verifyApiDestination(destination, { get, exceptions = { li
     if (fragment && !doccAnchors(data).has(safeDecode(fragment))) return { ...found, ok: false, failure: 'fragment', detail: `#${fragment} is not an anchor in the documentation data for ${pageUrl}` }
     const slug = fragment ? undefined : slugSymbol(url)
     const terminal = []
-    for (const { symbol } of expectationsOf(destination, exceptions)) {
-      if (compact(title) !== compact(symbol) && !mentions(title, symbol) && !(fragment && mentions(safeDecode(fragment), symbol))) {
+    const address = addressOf(url)
+    for (const { symbol, segments } of expectationsOf(destination, { exceptions })) {
+      if (compact(title) !== compact(symbol) && !mentions(title, symbol) && !(fragment && compact(safeDecode(fragment)) === compact(symbol))) {
         return { ...found, ok: false, failure: 'symbol', detail: `the page documents ${title}, not ${symbol}` }
       }
-      if (slug && compact(pageType(slug)) !== compact(symbol)) return { ...found, ok: false, failure: 'address', detail: `${pageUrl} documents ${slug}, not ${symbol}` }
+      const differs = address && !fragment ? mismatch(segments, address) : undefined
+      if (differs) return { ...found, ok: false, failure: differs, detail: `${segments.join('.')} is not what ${pageUrl} documents: its address names ${address.path.join('.')}` }
       if (!terminal.some((entry) => entry.symbol === symbol)) terminal.push({ symbol, at: fragment ? 'fragment' : 'title' })
     }
     if (slug && !terminal.length && compact(title) !== compact(slug)) return { ...found, ok: false, failure: 'address', detail: `${pageUrl} names ${slug}, which the page ${JSON.stringify(title)} does not document` }
@@ -336,20 +355,19 @@ export async function verifyApiDestination(destination, { get, exceptions = { li
   const slug = slugSymbol(url)
   const terminal = []
   let failed
-  for (const expectation of expectationsOf(destination, exceptions)) {
-    const held = hold(page, { url, fragment, host: new URL(pageUrl).hostname, slug }, expectation)
+  for (const expectation of expectationsOf(destination, { exceptions })) {
+    const held = hold(page, { url, fragment }, expectation)
     if (held.failure) {
       failed ??= held
     } else if (!terminal.some((entry) => entry.symbol === expectation.symbol)) {
       terminal.push({ symbol: expectation.symbol, ...held })
     }
   }
-  if (!fragment && slug) {
+  // The page must be the one its address names, whatever the names say.
+  if (slug) {
     const identity = compact(`${page.title} ${page.headings.filter((heading) => heading.level === 1).map((heading) => heading.text).join(' ')}`)
-    if (identity.includes(compact(slug))) terminal.push({ symbol: slug, at: 'address' })
-    else {
-      failed ??= { failure: 'address', detail: `${pageUrl} names ${slug}, which its title ${JSON.stringify(page.title)} does not` }
-    }
+    if (!identity.includes(compact(slug))) failed ??= { failure: 'address', detail: `${pageUrl} names ${slug}, which its title ${JSON.stringify(page.title)} does not` }
+    else if (!fragment) terminal.push({ symbol: slug, at: 'address' })
   }
   if (failed) return { ...found, ok: false, failure: failed.failure, detail: failed.detail, ...(terminal.length && { terminal }) }
   if (terminal.length === 0 && !slug && !fragment) {
@@ -362,6 +380,37 @@ export async function verifyApiDestination(destination, { get, exceptions = { li
 export function unprovenSymbols(destination, record) {
   const verified = new Set((record.terminal ?? []).map((entry) => entry.symbol.toLowerCase()))
   return expectedSymbols({ ...destination, uses: [...destination.uses.values()] }).filter((symbol) => !verified.has(symbol.toLowerCase()))
+}
+
+/** The share of destinations a run may leave unverifiable before the evidence stops counting as a check. */
+export const MAX_UNVERIFIABLE_SHARE = 0.05
+
+/** Where the verifier reports finding a symbol. */
+const FOUND_AT = new Set(['fragment', 'title', 'address', 'listed', 'section'])
+
+/** A passing record carries none of these; a failing one carries a reason, and an unverifiable one only its own. */
+const FAILURE_FIELDS = ['failure', 'detail', 'unverifiable', 'finalUrl']
+
+/** Where one record contradicts itself, as sentences. */
+export function recordProblems(record) {
+  const problems = []
+  let host
+  try { host = new URL(record.url).hostname } catch { return [`${record.url} is not an address`] }
+  if (record.host !== host) problems.push(`${record.url} is recorded under the host ${record.host}`)
+  if (record.ok === true) {
+    if (record.status !== 200) problems.push(`${record.url} is recorded as passing with the status ${record.status}`)
+    for (const field of FAILURE_FIELDS) if (record[field] !== undefined) problems.push(`${record.url} is recorded as passing yet carries ${field}: ${JSON.stringify(record[field])}`)
+    if (!['html', 'docc-json'].includes(record.via)) problems.push(`${record.url} is recorded as passing without saying how the host was read`)
+    for (const entry of record.terminal ?? []) {
+      if (!FOUND_AT.has(entry.at)) problems.push(`${record.url} records ${entry.symbol} as found ${JSON.stringify(entry.at)}, which the verifier never reports`)
+    }
+  } else if (record.unverifiable) {
+    if (record.failure !== undefined) problems.push(`${record.url} is recorded as both unverifiable and failing`)
+    if (typeof record.unverifiable !== 'string' || record.unverifiable.length < 9) problems.push(`${record.url} is unverifiable without a reason`)
+  } else if (!record.failure || !record.detail) {
+    problems.push(`${record.url} neither passes nor says why not`)
+  }
+  return problems
 }
 
 const daysAhead = (date, today) => Math.floor((new Date(`${date}T00:00:00Z`).getTime() - today.getTime()) / 86_400_000)
@@ -389,6 +438,7 @@ export function usesOf(destination) {
 export function checkApiEvidence(destinations, evidence, { today = new Date(), root } = {}) {
   const problems = []
   const unresolved = []
+  let unverifiableInventories = 0
   for (const name of Object.keys(INVENTORY_SOURCES)) {
     const record = (evidence.inventories ?? []).find((candidate) => candidate.name === name)
     if (!record) {
@@ -396,6 +446,8 @@ export function checkApiEvidence(destinations, evidence, { today = new Date(), r
       continue
     }
     if (record.unverifiable) {
+      if (record.ok !== false) problems.push(`the ${name} inventory is recorded as passing and unverifiable at once`)
+      unverifiableInventories += 1
       unresolved.push(`the ${name} inventory: ${record.unverifiable}`)
       continue
     }
@@ -412,6 +464,11 @@ export function checkApiEvidence(destinations, evidence, { today = new Date(), r
       problems.push(`${destination.url} has no evidence (${who}): run node scripts/verify-api-destinations.mjs --missing`)
       continue
     }
+    const malformed = recordProblems(record)
+    if (malformed.length) {
+      problems.push(...malformed)
+      continue
+    }
     if (record.unverifiable) {
       unresolved.push(`${destination.url}: ${record.unverifiable}`)
       continue
@@ -422,13 +479,19 @@ export function checkApiEvidence(destinations, evidence, { today = new Date(), r
     }
     // A pass by the page's text, not its title or the fragment's spelling, rests on a reviewed exception.
     for (const entry of record.terminal ?? []) {
-      if (!['section', 'spelled', 'listed'].includes(entry.at)) continue
-      const allowed = expectationsOf({ ...destination, uses: [...destination.uses.values()] }).some((expectation) => expectation.symbol === entry.symbol && expectation.exception?.tier === entry.at)
-      if (!allowed) problems.push(`${record.url} passes ${entry.symbol} by ${entry.at}, which no reviewed exception in api-destinations.mjs allows (${who})`)
+      if (!['section', 'listed'].includes(entry.at)) continue
+      const reviewed = expectationsOf({ ...destination, uses: [...destination.uses.values()] }).some((expectation) => expectation.symbol === entry.symbol && expectation.exception?.tier === entry.at)
+      if (!reviewed) problems.push(`${record.url} passes ${entry.symbol} by ${entry.at}, which no reviewed exception in api-destinations.mjs allows at this address (${who})`)
     }
     const unproven = unprovenSymbols(destination, record)
     if (unproven.length) problems.push(`${destination.url} was never checked for ${unproven.join(', ')} (${who}): run node scripts/verify-api-destinations.mjs --missing`)
   }
+  // A host or two that blocks a request leaves a few destinations open. Most of them open is a run that
+  // asked nothing, and passing it would be passing a check that checked nothing.
+  const open = [...wanted.keys()].filter((url) => records.get(url)?.unverifiable).length
+  const allowed = Math.floor(wanted.size * MAX_UNVERIFIABLE_SHARE)
+  if (open > allowed) problems.push(`${open} of ${wanted.size} destinations are unverifiable, more than the ${allowed} a blocked or throttled host explains: run node scripts/verify-api-destinations.mjs when the hosts answer`)
+  if (unverifiableInventories > 1) problems.push(`${unverifiableInventories} of ${Object.keys(INVENTORY_SOURCES).length} inventories are unverifiable: run node scripts/verify-api-destinations.mjs --inventories when the hosts answer`)
   for (const record of evidence.destinations) {
     if (!wanted.has(record.url) && !record.crawled) problems.push(`${record.url} is in the evidence but no source generates it: run node scripts/verify-api-destinations.mjs`)
   }

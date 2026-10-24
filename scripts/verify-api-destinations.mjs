@@ -112,87 +112,99 @@ function crawl(file) {
   return found
 }
 
+/** Print the problems and mark the run failed. The exit code is set, not forced, so a long report reaches a pipe whole. */
 function report(problems) {
   for (const problem of problems) console.error(`  ${problem}`)
   if (problems.length > 0) {
     console.error(`${problems.length} problem${problems.length === 1 ? '' : 's'} in ${opts.out}`)
-    process.exit(1)
+    process.exitCode = 1
   }
+  return problems.length > 0
+}
+
+/** The destinations a host left open, a few lines of them and a count: they are a warning, and there can be hundreds. */
+const UNRESOLVED_SHOWN = 20
+function showUnresolved(unresolved) {
+  for (const line of unresolved.slice(0, UNRESOLVED_SHOWN)) console.warn(`unresolved: ${line}`)
+  if (unresolved.length > UNRESOLVED_SHOWN) console.warn(`unresolved: and ${unresolved.length - UNRESOLVED_SHOWN} more`)
 }
 
 if (opts.check) {
   if (!existsSync(opts.out)) {
     console.error(`${opts.out} does not exist. Run: node scripts/verify-api-destinations.mjs`)
-    process.exit(1)
+    process.exitCode = 1
+  } else {
+    const evidence = JSON.parse(readFileSync(opts.out, 'utf8'))
+    const { problems, unresolved, stale } = checkApiEvidence(destinations, evidence, { today, root })
+    showUnresolved(unresolved)
+    if (stale.length > 0) {
+      const line = `${stale.length} destination record${stale.length === 1 ? ' was' : 's were'} last checked more than ${EVIDENCE_MAX_AGE_DAYS} days ago (oldest ${stale[0].checkedAt}): run node scripts/verify-api-destinations.mjs`
+      if (opts.fresh) problems.push(line)
+      else if (process.env.GITHUB_ACTIONS === 'true') console.log(`::warning title=Stale API destination evidence::${line}`)
+      else console.warn(`warning: ${line}`)
+    }
+    if (!report(problems)) console.log(`${opts.out} agrees with the ${destinations.size} destinations the source generates${unresolved.length ? ` (${unresolved.length} unresolved)` : ''}`)
   }
-  const evidence = JSON.parse(readFileSync(opts.out, 'utf8'))
-  const { problems, unresolved, stale } = checkApiEvidence(destinations, evidence, { today, root })
-  for (const line of unresolved) console.warn(`unresolved: ${line}`)
-  if (stale.length > 0) {
-    const line = `${stale.length} destination record${stale.length === 1 ? ' was' : 's were'} last checked more than ${EVIDENCE_MAX_AGE_DAYS} days ago (oldest ${stale[0].checkedAt}): run node scripts/verify-api-destinations.mjs`
-    if (opts.fresh) problems.push(line)
-    else if (process.env.GITHUB_ACTIONS === 'true') console.log(`::warning title=Stale API destination evidence::${line}`)
-    else console.warn(`warning: ${line}`)
-  }
-  report(problems)
-  console.log(`${opts.out} agrees with the ${destinations.size} destinations the source generates${unresolved.length ? ` (${unresolved.length} unresolved)` : ''}`)
-  process.exit(0)
+} else {
+  await live()
 }
 
-const rewriteOrigins = JSON.parse(process.env.LIBTMUX_DESTINATION_REWRITE ?? '{}')
-const local = Object.keys(rewriteOrigins).length > 0
-// One request at a time with a pause between, so a live run stays polite; a rewritten origin is a local server.
-const get = createCachedGet(createGet({ rewriteOrigins, timeoutMs: 40_000, pauseMs: local ? 0 : 700 }), { dir: opts.cache })
+async function live() {
+  const rewriteOrigins = JSON.parse(process.env.LIBTMUX_DESTINATION_REWRITE ?? '{}')
+  const local = Object.keys(rewriteOrigins).length > 0
+  // One request at a time with a pause between, so a live run stays polite; a rewritten origin is a local server.
+  const get = createCachedGet(createGet({ rewriteOrigins, timeoutMs: 40_000, pauseMs: local ? 0 : 700 }), { dir: opts.cache })
 
-const previous = existsSync(opts.out) ? JSON.parse(readFileSync(opts.out, 'utf8')) : { destinations: [] }
-const kept = new Map(previous.destinations.map((record) => [record.url, record]))
-const wanted = [...destinations.values(), ...(opts.crawl ? [...crawl(opts.crawl).values()] : [])]
-const queue = wanted.filter((destination) => {
-  if (opts.inventories) return false
-  if (opts.host && destination.host !== opts.host) return false
-  if (opts.missing) {
-    const record = kept.get(destination.url)
-    return !record || !record.ok || unprovenSymbols(destination, record).length > 0
-  }
-  return true
-})
+  const previous = existsSync(opts.out) ? JSON.parse(readFileSync(opts.out, 'utf8')) : { destinations: [] }
+  const kept = new Map(previous.destinations.map((record) => [record.url, record]))
+  const wanted = [...destinations.values(), ...(opts.crawl ? [...crawl(opts.crawl).values()] : [])]
+  const queue = wanted.filter((destination) => {
+    if (opts.inventories) return false
+    if (opts.host && destination.host !== opts.host) return false
+    if (opts.missing) {
+      const record = kept.get(destination.url)
+      return !record || !record.ok || unprovenSymbols(destination, record).length > 0
+    }
+    return true
+  })
 
-const records = new Map(opts.missing || opts.host || opts.inventories ? kept : [])
-let failed = 0
-let unverifiable = 0
-for (const destination of queue) {
-  const result = await verifyApiDestination({ ...destination, uses: [...destination.uses.values()] }, { get })
-  const record = { ...result, checkedAt: opts.date, ...usesOf(destination), ...(destination.crawled && { crawled: true }) }
-  records.set(destination.url, record)
-  if (record.unverifiable) unverifiable += 1
-  else if (!record.ok) failed += 1
-  const mark = record.ok ? 'ok  ' : record.unverifiable ? 'unv ' : 'FAIL'
-  console.log(`${mark} ${String(record.status ?? 0).padEnd(3)} ${destination.url}${record.ok ? '' : `\n       ${record.failure ?? 'unverifiable'}: ${record.detail ?? record.unverifiable}`}`)
-}
-
-const inventoryRecords = new Map((previous.inventories ?? []).map((record) => [record.name, record]))
-if (opts.inventories || !(opts.missing || opts.host)) {
-  for (const name of Object.keys(INVENTORY_SOURCES)) {
-    const record = { ...(await verifyInventory(name, { root, ...(local && { bytes: async (url) => Buffer.from(await (await fetch(url.replace(/^https:\/\/[^/]+/, (origin) => rewriteOrigins[origin] ?? origin))).arrayBuffer()) }) })), checkedAt: opts.date }
-    inventoryRecords.set(name, record)
-    if (!record.ok && !record.unverifiable) failed += 1
+  const records = new Map(opts.missing || opts.host || opts.inventories ? kept : [])
+  let failed = 0
+  let unverifiable = 0
+  for (const destination of queue) {
+    const result = await verifyApiDestination({ ...destination, uses: [...destination.uses.values()] }, { get })
+    const record = { ...result, checkedAt: opts.date, ...usesOf(destination), ...(destination.crawled && { crawled: true }) }
+    records.set(destination.url, record)
     if (record.unverifiable) unverifiable += 1
-    console.log(`${record.ok ? 'ok  ' : record.unverifiable ? 'unv ' : 'FAIL'}     inventory ${name}: ${record.entries} entries${record.ok ? '' : `\n       ${record.unverifiable ?? `${record.missing} not in the host's index, such as ${(record.examples ?? []).slice(0, 3).join('; ')}`}`}`)
+    else if (!record.ok) failed += 1
+    const mark = record.ok ? 'ok  ' : record.unverifiable ? 'unv ' : 'FAIL'
+    console.log(`${mark} ${String(record.status ?? 0).padEnd(3)} ${destination.url}${record.ok ? '' : `\n       ${record.failure ?? 'unverifiable'}: ${record.detail ?? record.unverifiable}`}`)
   }
-}
 
-// Records for links the source stopped generating go with them, except the crawled ones, which only a crawl can refresh.
-const live = new Set(destinations.keys())
-const evidence = {
-  schema: 1,
-  checkedAt: opts.date,
-  inventories: Object.keys(INVENTORY_SOURCES).map((name) => inventoryRecords.get(name)).filter(Boolean),
-  destinations: [...records.values()].filter((record) => live.has(record.url) || record.crawled).sort((a, b) => a.url.localeCompare(b.url)),
-}
-writeFileSync(opts.out, serializeEvidence(evidence))
-console.log(`wrote ${opts.out}: ${queue.length} verified, ${failed} failing, ${unverifiable} unverifiable`)
-const { problems } = checkApiEvidence(destinations, evidence, { today, root })
-if (failed > 0 || problems.length > 0) {
-  report(problems)
-  process.exit(1)
+  const inventoryRecords = new Map((previous.inventories ?? []).map((record) => [record.name, record]))
+  if (opts.inventories || !(opts.missing || opts.host)) {
+    for (const name of Object.keys(INVENTORY_SOURCES)) {
+      const record = { ...(await verifyInventory(name, { root, ...(local && { bytes: async (url) => Buffer.from(await (await fetch(url.replace(/^https:\/\/[^/]+/, (origin) => rewriteOrigins[origin] ?? origin))).arrayBuffer()) }) })), checkedAt: opts.date }
+      inventoryRecords.set(name, record)
+      if (!record.ok && !record.unverifiable) failed += 1
+      if (record.unverifiable) unverifiable += 1
+      console.log(`${record.ok ? 'ok  ' : record.unverifiable ? 'unv ' : 'FAIL'}     inventory ${name}: ${record.entries} entries${record.ok ? '' : `\n       ${record.unverifiable ?? `${record.missing} not in the host's index, such as ${(record.examples ?? []).slice(0, 3).join('; ')}`}`}`)
+    }
+  }
+
+  // Records for links the source stopped generating go with them, except the crawled ones, which only a crawl can refresh.
+  const generated = new Set(destinations.keys())
+  const evidence = {
+    schema: 1,
+    checkedAt: opts.date,
+    inventories: Object.keys(INVENTORY_SOURCES).map((name) => inventoryRecords.get(name)).filter(Boolean),
+    destinations: [...records.values()].filter((record) => generated.has(record.url) || record.crawled).sort((a, b) => a.url.localeCompare(b.url)),
+  }
+  writeFileSync(opts.out, serializeEvidence(evidence))
+  console.log(`wrote ${opts.out}: ${queue.length} verified, ${failed} failing, ${unverifiable} unverifiable`)
+  const { problems } = checkApiEvidence(destinations, evidence, { today, root })
+  if (failed > 0 || problems.length > 0) {
+    report(problems)
+    process.exitCode = 1
+  }
 }

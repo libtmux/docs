@@ -284,13 +284,16 @@ reads every one the site generates: the curated maps in
 the references in the extracted doc comments, the links in pages, guide data
 and the glossary. Each is requested once and must land on the page and the
 fragment it names, and the page must document the symbol the link was made
-for. A fragment must spell that symbol, and a member must sit on the page of
-the type that owns it; text near the anchor does not count, because a CPython
-entry names the types its neighbours take and a javadoc page lists the types it
-inherits from. A page without a fragment must name the symbol in its title or
-top heading, and where its address names a type, it must be that type. A host
-that moves the page elsewhere fails, because a link should be the page's
-address. Request the missing ones after changing a map, an inventory or
+for. Where the host puts a symbol's package, module, type and member in its
+address (rustdoc, pkg.go.dev, javadoc, Scaladoc, Learn, ExDoc, CPython and
+Documenter fragments), the name written in full must be the end of that path:
+`std::io::Error` is not `std/fmt/struct.Error.html`, `str.join` is not
+`os.path.join`, and `warn` is not `warn_explicit`. Where a fragment is a
+heading's anchor, it must be the symbol's own spelling. Text near an anchor
+does not count, because a CPython entry names the types its neighbours take
+and a javadoc page lists the types it inherits from. A page without a fragment
+must also name the symbol in its title or top heading. A host that moves the
+page elsewhere fails, because a link should be the page's address. Request the missing ones after changing a map, an inventory or
 a pinned model:
 
 ```console
@@ -312,18 +315,24 @@ The evidence is `site/src/data/api-destination-evidence.json`. `--check`, which
 the publication audit runs, requests nothing: it fails on a destination with no
 passing record, a record for a link nothing makes, and a name that was never
 checked against its page, or whose pass rests on an exception that is no longer
-listed. Two reviewed lists in `scripts/lib/api-destinations.mjs` carry the
-exceptions, each with its reason: `LISTED_ON_PAGE` for a name a page documents
-beside its subject rather than in its title (`std::chrono::milliseconds` on the
-`duration` page), and `SHARED_SECTIONS` for a page that documents several
-symbols under one anchor (the Lua manual's value types, the typespec
-reference), where the section the anchor opens must still hold the symbol. Add
-to either only after reading the page. A name that a language spells another
-way (`int` for `Int32`) goes in `TYPE_ALIASES`.
+listed. `PAGE_EXCEPTIONS` in `scripts/lib/api-destinations.mjs` carries the
+exceptions, one entry per exact address with the names it covers and its
+reason: `listed` for a name a page documents beside its subject rather than in
+its title (`std::chrono::milliseconds` on the `duration` page, and on no other),
+and `section` for an anchor that documents several symbols or is spelled as a
+heading (the Lua manual's value types, the typespec reference), where the
+section the anchor opens must still name the symbol. Add to it only after
+reading the page. A name that a language spells another way (`int` for
+`Int32`) goes in `TYPE_ALIASES`, and a package that two spellings share in
+`NAME_ALIASES`. `--check` also fails a record that contradicts itself (a pass
+with a 404, a failure field or a redirect) and a run that left more than a few
+destinations unverifiable, because that run checked nothing.
 `scripts/verify-api-destinations.negative.mjs` plants a wrong fragment, a wrong
-page, a symbol the page does not document and a redirect to a landing page on
-pages shaped like CPython's, rustdoc's, Documenter's and javadoc's, and each
-fault in the evidence, and requires the check to name each. The weekly
+page, a symbol the page does not document, a word that merely contains the
+symbol, a wrong package or namespace, an exception borrowed by another page and
+a redirect to a landing page on pages shaped like CPython's, rustdoc's,
+Documenter's, javadoc's, cppreference's and ExDoc's, and each fault in the
+evidence, and requires the check to name each. The weekly
 [`verify-destinations.yml`](.github/workflows/verify-destinations.yml) re-runs
 the live check; pull requests never do.
 
