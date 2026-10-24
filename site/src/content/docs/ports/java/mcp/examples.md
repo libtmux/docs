@@ -19,7 +19,7 @@ For a client configured to launch the server itself, use the
 
 ## Create the project
 
-Use JDK 25, Git, tmux 3.2a or newer, and a Unix host with `env -u`. Create an
+Use JDK 25, Git, tmux 3.3a or newer, and a Unix host with `env -u`. Create an
 empty project and fetch the source revision used by this example:
 
 ```console

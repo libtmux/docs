@@ -15,7 +15,7 @@ same tmux objects that the language libraries control.
 ## Install tmux
 
 Install tmux with your platform's package manager. These examples require tmux
-3.2a or newer and a POSIX shell. Confirm the installed version:
+3.3a or newer and a POSIX shell. Confirm the installed version:
 
 ```console
 $ tmux -V

@@ -17,7 +17,7 @@ separate operations.
 
 This complete script types the word `Enter` into a pane running `cat`, then
 presses the Enter key. Neither command starts an interactive tmux client.
-Save it as `send.sh` and run it in a POSIX shell with tmux 3.2a or newer and
+Save it as `send.sh` and run it in a POSIX shell with tmux 3.3a or newer and
 fractional `sleep` support.
 
 ```sh title="send.sh"

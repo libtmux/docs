@@ -4,6 +4,7 @@ import { nativePackageName, nativeShortName } from './native-name'
 import { PORT_BY_SLUG } from './ports'
 import { apiGlossary } from './api-glossary'
 import { codeLang, highlightTokens, type CodeHighlight } from './highlight'
+import { linkPreviewTarget } from './link-preview-paint'
 import { tmuxEntityHref } from './tmux-links'
 import { tmuxManual, tmuxManualEntities, tmuxManualEntityHref, tmuxManualUrl, type TmuxManualEntity } from './tmux-manual-data'
 
@@ -105,6 +106,24 @@ export function symbolPreview(model: ApiModel, symbol: ApiSymbol, version: strin
 export async function highlightedPreview(preview: LinkPreview): Promise<LinkPreview> {
   if (!preview.signature) return preview
   return { ...preview, signatureHighlight: await highlightTokens(preview.signature, preview.signatureLanguage ?? 'text') }
+}
+
+/**
+ * The card for a prose page that sits where a reference page does, such as a workspace's exit codes: the page's own title
+ * and summary, which is what its front matter already says.
+ */
+export function pagePreview(page: { title: string; description?: string }, href: string): LinkPreview {
+  return { schema: 1, title: page.title, description: page.description ?? '', href, actionLabel: 'Open page' }
+}
+
+/**
+ * The cards of the prose pages a link can open one for. The preview policy marks a link to `/<tree>/reference/<page>/` for a
+ * card whatever the page is, so a prose page in a reference section needs a payload as much as a declaration does. A page
+ * the policy does not mark, such as a guide, is left out: nothing asks for its card.
+ */
+export function proseReferencePreviews(pages: { title: string; description?: string; href: string }[]): { href: string; preview: LinkPreview }[] {
+  return pages.filter((page) => linkPreviewTarget(page.href, 'https://libtmux.org'))
+    .map((page) => ({ href: page.href, preview: pagePreview(page, page.href) }))
 }
 
 export function glossaryPreview(href: string): LinkPreview {

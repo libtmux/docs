@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "forwarders": {
+    "kotlin": {
+      "parent": "java",
+      "generated": {
+        "under": ["libtmux-kotlin/build/generated/"],
+        "kinds": ["READ", "MUTATION"],
+        "evidence": [
+          { "at": "build-logic/codegen/src/main/kotlin/io/github/libtmux/codegen/kotlin/OperationGenerator.kt:183", "has": ["java.${operation.name}("] }
+        ]
+      }
+    },
+    "scala": {
+      "parent": "java",
+      "generated": {
+        "under": ["libtmux-scala/build/generated/", "libtmux-scala-cats/build/generated/"],
+        "kinds": ["CAPTURED", "READ", "MUTATION"],
+        "evidence": [
+          { "at": "build-logic/codegen/src/main/kotlin/io/github/libtmux/codegen/scala/ScalaOperationGenerator.kt:319", "has": ["self.asJava.${op.name}("] },
+          { "at": "build-logic/codegen/src/main/kotlin/io/github/libtmux/codegen/scala/ScalaOperationGenerator.kt:351", "has": ["${op.name}(${sig.javaArgs})"] }
+        ]
+      }
+    },
+    "fsharp": { "parent": "csharp" },
+    "powershell": { "parent": "csharp" }
+  }
+}

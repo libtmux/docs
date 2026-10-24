@@ -36,12 +36,25 @@ async function open(target: Page, preview: LinkPreview, mode: 'light' | 'dark', 
   await target.evaluate(() => (document.getElementById('card') as HTMLElement).showPopover())
 }
 
-/** What spills: the card scrolls sideways, leaves the viewport, or has a piece that sits past its own edge. */
+/**
+ * What spills: the card scrolls sideways, leaves the viewport, or has ink past its own edge. Ink is the text that a
+ * reader sees, measured by the rectangles of its words; the spaces that a wrapped line hangs past its edge draw nothing.
+ */
 const spills = (target: Page) => target.evaluate(() => {
   const card = document.getElementById('card')!
   const box = card.getBoundingClientRect()
-  const stray = [...card.querySelectorAll('*')].filter((node) => !node.closest('[hidden]') && node.getBoundingClientRect().right > box.right + 0.5)
-    .map((node) => `${node.tagName.toLowerCase()}.${node.className}`)
+  const stray: string[] = []
+  const walker = document.createTreeWalker(card, NodeFilter.SHOW_TEXT)
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    if (node.parentElement?.closest('[hidden]')) continue
+    for (const word of (node.textContent ?? '').matchAll(/\S+/g)) {
+      const range = document.createRange()
+      range.setStart(node, word.index)
+      range.setEnd(node, word.index + word[0].length)
+      const right = Math.max(...[...range.getClientRects()].map((rect) => rect.right))
+      if (right > box.right + 0.5) stray.push(`${node.parentElement?.tagName.toLowerCase()} ${JSON.stringify(word[0].slice(0, 30))} ends ${Math.round(right)} of ${Math.round(box.right)}`)
+    }
+  }
   return { scrolls: card.scrollWidth > card.clientWidth, outside: box.left < 0 || box.right > innerWidth, stray }
 })
 

@@ -16,7 +16,7 @@ server. A command client can exit while the server and pane programs continue.
 
 ## Observe the server across client commands
 
-Save this complete script as `architecture.sh`. It requires tmux 3.2a or
+Save this complete script as `architecture.sh`. It requires tmux 3.3a or
 newer and a POSIX shell. It starts a private server, reads it through separate
 clients, and verifies that its session survives with no attached clients.
 

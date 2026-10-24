@@ -39,7 +39,7 @@ When launching the installed `libtmux-mcp` executable directly, pass
 `--enable-tool tmux_capture` or `--enable-tool tmux_wait` as command arguments.
 
 `tmux_wait` can observe screen text or a process exit. Strong process tracking
-requires tmux 3.3 or newer and a supported native identity backend. A refusal
+requires tmux 3.3a or newer and a supported native identity backend. A refusal
 means the required evidence is unavailable; it is not a successful wait.
 See the [tool reference](../tools/) for arguments and results.
 

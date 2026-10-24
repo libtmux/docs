@@ -26,7 +26,7 @@ is a separate Go module that exposes
 tmux through MCP. Its executable is `libtmux-mcp`. Installing the core
 tmux module does not install this server or its protocol dependencies.
 
-The server requires Go 1.26 or newer to build and tmux 3.3a or newer to run.
+The server requires Go 1.26 or newer to build and tmux 3.3a or newer to run. A daemon older than 3.3a is refused before any effect; see [tmux support](../../../tmux/guides/tmux-support/).
 The MCP client launches `libtmux-mcp` and exchanges messages over stdin and
 stdout. The server selects one tmux endpoint and its offered tools at startup.
 Reconnect after changing that configuration.
