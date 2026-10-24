@@ -6,6 +6,7 @@ import { defaultVersionFor } from '../lib/versions'
 import { getResolver } from '../lib/prose-resolver'
 import { API_MODELS } from '../lib/api-models'
 import { withPortRoot } from '../lib/site-root'
+import { labelParts, memberReference } from '../lib/api-labels'
 
 /**
  * A sentence written in an `.astro` template, with its code spans linked.
@@ -62,6 +63,8 @@ const resolved = segments.map((seg) => {
     href: d.external || !d.href.startsWith('/reference/') ? d.href : withPortRoot(d.href),
     title: d.title,
     external: d.external,
+    // As in ApiDoc, only a linked member reference marks its `#`.
+    qualified: memberReference.test(seg.value),
   }
 })
 ---
@@ -77,7 +80,7 @@ const resolved = segments.map((seg) => {
         title={seg.title}
         rel={seg.external ? 'nofollow noopener' : undefined}
       >
-        <code class="api-literal api-literal--link">{seg.value}</code>
+        <code class="api-literal api-literal--link">{labelParts(seg.value, seg.qualified).map((text) => seg.qualified && text === '#' ? <span class="api-reference-separator">{text}</span> : text)}</code>
       </a>
     )
   })

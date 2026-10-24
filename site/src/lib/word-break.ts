@@ -17,14 +17,18 @@
  *   after a colon                              foo:bar   -> foo:|bar
  *   before a dot                               Foo.Bar   -> Foo|.Bar
  *   before an underscore                       foo_bar   -> foo|_bar
+ *   before a hash (a Ruby instance method)     Foo#bar   -> Foo|#bar
  *
  * It is not Swift-specific: `libtmux.Server.new_session` and
  * `TmuxCommandDispatcher` break the same way, and every port has names long
  * enough to need it.
  */
 
-/** Apple's pattern, unchanged: swift-docc-render/src/components/WordBreak.vue */
-const SAFE_BOUNDARY = /([a-z](?=[A-Z])|(:)\w|\w(?=[._]\w))/g
+/**
+ * Apple's pattern, swift-docc-render/src/components/WordBreak.vue, with one more place to break: before the `#` that
+ * Ruby writes between a class and an instance method, `LibTmux::Server#list_panes`.
+ */
+const SAFE_BOUNDARY = /([a-z](?=[A-Z])|(:)\w|\w(?=[._#]\w))/g
 
 /**
  * `name` split at the points a `<wbr>` belongs between.

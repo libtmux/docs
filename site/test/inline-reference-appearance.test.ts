@@ -78,6 +78,42 @@ it('assigns one dotted decoration to each real preview link, including nested an
   expect(win.document.body.textContent).toBe(original)
 })
 
+it('draws one dotted underline in the ink of its text, with one offset and thickness for a name in a code frame', () => {
+  win.document.body.innerHTML = `<p>
+    <a id="chip" class="api-xref" href="../observation-close/"><code class="api-literal api-literal--link">close()</code></a>
+    <code class="api-literal">Observation#<a id="inside" class="api-literal--link" href="../observation-close/">close</a></code>
+    <a id="mixed" href="../server/">See <code class="api-literal api-literal--link">Server</code> now</a>
+    <a id="plain" href="../server/">Server</a>
+    <a id="kind-code" href="../server/">${kindMark('M')}<code>Server</code></a>
+    </p>`
+  markPreviews()
+  const owner = (id: string) => {
+    const link = win.document.getElementById(id)!
+    const [only, ...extra] = [link, ...link.querySelectorAll('*')].filter((node) => win.getComputedStyle(node).textDecorationLine.includes('underline'))
+    expect(extra, `${id}: a second underline`).toEqual([])
+    return win.getComputedStyle(only!)
+  }
+  // The dots sit inside a code frame, clear of its bottom border; a plain name keeps the looser offset and the browser's thickness.
+  for (const id of ['chip', 'inside', 'mixed']) {
+    const style = owner(id)
+    expect([style.textUnderlineOffset, style.textDecorationThickness], id).toEqual(['.08em', '1px'])
+  }
+  for (const id of ['plain', 'kind-code']) {
+    const style = owner(id)
+    expect([style.textUnderlineOffset, style.textDecorationThickness], id).toEqual(['.2em', ''])
+  }
+  // One cue in the ink of the text it runs under: no fixed neutral colour, and the frame's own text carries no decoration of its own.
+  for (const id of ['chip', 'inside', 'mixed', 'plain', 'kind-code']) {
+    const style = owner(id)
+    expect([style.textDecorationStyle, style.textDecorationColor], id).toEqual(['dotted', 'currentColor'])
+  }
+  // The name inside a link states that it has no decoration of its own, so the link's cue is the only one; a code frame around a link has none to state.
+  for (const id of ['chip', 'mixed']) {
+    expect(win.getComputedStyle(win.document.getElementById(id)!.querySelector('code')!).textDecorationLine, id).toBe('none')
+  }
+  expect(win.getComputedStyle(win.document.getElementById('inside')!.closest('code')!).textDecorationLine).not.toContain('underline')
+})
+
 async function docComponent() {
   const { transform } = await import(astroRequire.resolve('@astrojs/compiler-rs'))
   const file = new URL('../src/components/api/ApiDoc.astro', import.meta.url)
