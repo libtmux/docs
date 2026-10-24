@@ -272,9 +272,14 @@ const VERIFIERS = {
     }
     const names = response.text.toLowerCase().includes(`github.com/${owner}/${repo}`.toLowerCase())
     return title.endsWith('Swift Package Index') && names
-      // The index lists the releases it has built, and a SwiftPM release is a Git tag.
+      // The page lists only the newest releases, but the index keeps the documentation of each release it has built,
+      // and a SwiftPM release is a Git tag.
       ? pass({ status: 200, requested: url, identity: `${owner}/${repo}`, repository: [`${owner}/${repo}`.toLowerCase()],
-        exact: async (version) => new RegExp(`(?<![\\w.-])${escapeRegExp(version)}(?![\\w.-])`).test(response.text) })
+        exact: async (version) => {
+          if (new RegExp(`(?<![\\w.-])${escapeRegExp(version)}(?![\\w.-])`).test(response.text)) return true
+          const docs = await get(`${base}/${version}/documentation`)
+          return docs.status === 200 && titleOf(docs.text).endsWith('Documentation – Swift Package Index')
+        } })
       : fail('identity', `title is "${title}" and the page does not name ${owner}/${repo}`, { status: 200, requested: url })
   },
 

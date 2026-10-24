@@ -352,6 +352,18 @@ const bothChecks = JSON.parse(readFileSync(both.out, 'utf8')).destinations.find(
 if (bothChecks.map((item) => `${item.version}:${item.ports}:${item.check}`).join(' ') === '1.0.0:demo:confirmed 2.0.0:other:confirmed') console.log('ok   each port’s release has a check of its own')
 else { console.error(`FAIL each port needs its own check: ${JSON.stringify(bothChecks)}`); failures += 1 }
 
+// The Swift Package Index lists only the newest releases on a package page, and keeps each built release's documentation.
+routes['/swiftpackageindex.com/demo/swiftlate'] = () => [200, 'text/html', html('swiftlate &ndash; Swift Package Index', '<a href="https://github.com/demo/swiftlate">source</a> Version 2.0.0')]
+routes['/swiftpackageindex.com/demo/swiftlate/1.0.0/documentation'] = () => [200, 'text/html', html('lib Documentation &ndash; Swift Package Index')]
+const swiftlate = () => [entry('swiftlate', { repo: 'demo/swiftlate', coordinate: 'swiftlate', package: { host: 'swift-package-index', url: 'https://swiftpackageindex.com/demo/swiftlate' } })]
+const swiftManifest = (version) => ({ ports: { demo: { distributions: [{ name: 'swiftlate', version, repo: 'demo/swiftlate', manifest: 'Package.swift' }] } } })
+await verify('a Swift release the package page no longer lists is confirmed by its documentation', swiftlate(), {
+  manifests: swiftManifest('1.0.0'), expect: { code: 0, matches: [/ok\s+200\s+package\s+https:\/\/swiftpackageindex\.com\/demo\/swiftlate/], excludes: [/does not carry/] },
+})
+await verify('a Swift release that is neither listed nor documented fails', swiftlate(), {
+  manifests: swiftManifest('0.5.0'), expect: { code: 1, matches: [/does not carry 0\.5\.0, the version demo\/swiftlate:Package\.swift declares for demo/] },
+})
+
 // An inventory whose within dangles or loops is refused with its chain, not looped on.
 const loop = (within) => ['a', 'b'].map((id, index) => entry(id, { ...pypi(`demo-${id}`), coordinate: `demo-${id}`, within: within(index) }))
 await verify('a within that leads back to where it began is refused', loop((index) => (index === 0 ? 'b' : 'a')), {
