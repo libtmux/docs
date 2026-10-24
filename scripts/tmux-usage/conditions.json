@@ -625,6 +625,33 @@
           ]
         }
       ]
+    },
+    {
+      "port": "go",
+      "symbol": "tmux.Server.HasSession",
+      "command": "list-sessions",
+      "scope": null,
+      "when": "the request does not set Pattern",
+      "evidence": [
+        {
+          "at": "tmux/session_lifecycle.go:139",
+          "has": [
+            "!request.Pattern"
+          ]
+        },
+        {
+          "at": "tmux/session_lifecycle.go:140",
+          "has": [
+            "s.sessionNamed(ctx, request.Target)"
+          ]
+        },
+        {
+          "at": "tmux/session_lifecycle.go:157",
+          "has": [
+            "\"list-sessions\""
+          ]
+        }
+      ]
     }
   ]
 }

@@ -1300,7 +1300,8 @@
           "tmux/session_lifecycle.go:157",
           "tmux/session_lifecycle.go:140"
         ],
-        "scope": null
+        "scope": null,
+        "when": "the request does not set Pattern"
       }
     ],
     "tmux.Server.IfShell": [

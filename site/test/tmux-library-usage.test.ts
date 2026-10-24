@@ -407,6 +407,14 @@ describe('a release a library refuses to send on', () => {
     expect(use('julia', 'LibTmux.set_hook', 'show-options')).toMatchObject({ incidental: true, when: 'on a Server' })
   })
 
+  it('says which request HasSession sends has-session for and which it lists sessions for, since it does one or the other', () => {
+    // An exact-name check lists sessions and compares names, because tmux's exact-match marker still resolves identifiers; a pattern goes to has-session.
+    expect(use('go', 'tmux.Server.HasSession', 'has-session')).toMatchObject({ when: 'the request sets Pattern', reviewed: true })
+    expect(use('go', 'tmux.Server.HasSession', 'list-sessions')?.when).toBe('the request does not set Pattern')
+    // The control: a method that always lists sessions carries no such qualifier.
+    expect(use('go', 'tmux.Server.CheckAlive', 'list-sessions')?.when).toBeUndefined()
+  })
+
   it('records the command-alias inventory of a guarded Ruby call as list-commands and show-options, on the same symbols', () => {
     const readers = (command: string) => Object.entries(TMUX_USAGE.ruby.symbols).filter(([, entries]) => entries.some((entry) => entry.command === command && entry.incidental)).map(([symbol]) => symbol).sort()
     expect(readers('show-options')).toHaveLength(9)
