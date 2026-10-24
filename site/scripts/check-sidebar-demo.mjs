@@ -20,7 +20,8 @@ export async function checkSidebarDemo(browser, url, options = {}) {
   const select = (name, value) => page.locator(`select[name="${name}"]`).selectOption(value)
   const frame = () => page.frames().find((item) => /\/demo\/sidebar\/preview\//.test(item.url()))
   const ready = async () => {
-    await page.frameLocator('[data-sidebar-frame]').locator('[data-sidebar-preview][data-ready="true"]').waitFor()
+    const language = await page.locator('select[name="language"]').inputValue()
+    await page.frameLocator('[data-sidebar-frame]').locator(`[data-sidebar-preview][data-language="${language}"][data-ready="true"]`).waitFor({ timeout: navigationTimeout })
     return frame()
   }
   const current = (f) => f.locator('.api-nav__tree [aria-current="page"]')
@@ -29,6 +30,8 @@ export async function checkSidebarDemo(browser, url, options = {}) {
     await f.locator(`[data-api-${name}]`).click()
   }
   const open = async (f) => {
+    // The iframe width changes before its media-query listener updates the drawer.
+    await f.waitForFunction(() => (document.querySelector('.api-nav')?.getAttribute('role') === 'dialog') === matchMedia('(width < 56rem)').matches)
     if (await f.locator('.api-nav').evaluate((nav) => nav.inert)) await f.locator('[data-api-nav-toggle]').click()
   }
   const waitSelection = (f, symbol) => f.waitForFunction((id) => document.querySelector('.api-nav')?.dataset.symbol === id && document.querySelector('h1[data-preview-title]')?.textContent === id, symbol)
