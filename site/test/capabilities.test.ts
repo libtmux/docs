@@ -21,9 +21,9 @@ function tmuxSource() {
   return dir
 }
 
-function generate(manifest: string) {
+function generate(manifest: string, port = 'py') {
   const out = join(mkdtempSync(join(tmpdir(), 'capabilities-')), 'capabilities.json')
-  const run = spawnSync('node', ['scripts/gen-capabilities.mjs', '--port', 'py', '--manifest', `py=${join(fixtures, manifest)}`, '--tmux', tmuxSource(), '--out', out], {
+  const run = spawnSync('node', ['scripts/gen-capabilities.mjs', '--port', port, '--manifest', `${port}=${join(fixtures, manifest)}`, '--tmux', tmuxSource(), '--out', out], {
     cwd: root,
     encoding: 'utf8',
   })
@@ -39,6 +39,16 @@ describe('gen-capabilities', () => {
     expect(entry.apis).toEqual(['libtmux.Server.new_session'])
     expect(entry.error).toBe('libtmux.exc.VersionTooLow')
     expect(data.releases).toEqual(['3.3a', '3.4'])
+  })
+
+  it('reads a manifest only for the port that owns the checkout', () => {
+    // Kotlin shares libtmux-java's checkout, so the manifest there names java.
+    const parent = generate('java.json', 'java')
+    expect(parent.run.status, parent.run.stderr).toBe(0)
+    expect(Object.keys(JSON.parse(readFileSync(parent.out, 'utf8')).ports)).toEqual(['java'])
+    const wrapper = generate('java.json', 'kotlin')
+    expect(wrapper.run.status, wrapper.run.stderr).toBe(0)
+    expect(JSON.parse(readFileSync(wrapper.out, 'utf8')).ports).toEqual({})
   })
 
   it('fails on a name the API model does not have', () => {

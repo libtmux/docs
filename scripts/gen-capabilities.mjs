@@ -90,6 +90,8 @@ const errors = []
 const ports = {}
 for (const port of PORTS) {
   if (only && port.slug !== only) continue
+  // A wrapper library shares its parent's checkout, where the manifest names the parent.
+  if (port.parentLibrary) continue
   const path = manifestPath(port)
   if (!existsSync(path)) continue
   const { manifest, errors: invalid } = validateManifest(JSON.parse(readFileSync(path, 'utf8')))
