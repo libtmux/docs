@@ -6,6 +6,7 @@ import { Window } from 'happy-dom'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { visit } from 'unist-util-visit'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+vi.mock('astro:content', () => ({ getCollection: async () => [] }))
 import { kindMark, markClass, markHeight } from '../src/lib/api-labels'
 import { tmuxManualPreview } from '../src/lib/link-preview'
 import { createLinkPreviewPolicy } from '../src/lib/link-preview-paint'
@@ -221,7 +222,7 @@ describe('tmux hover cards', () => {
     expect(payload.signatureHighlight.language).toBe('tmux-usage')
     expect(payload.signatureHighlight.lines.map((line: { content: string }[]) => line.map((token) => token.content).join('')).join('\n'))
       .toBe(preview.signature)
-    const slugs = getStaticPaths().map((path) => path.params.slug)
+    const slugs = (await getStaticPaths()).map((path) => path.params.slug)
     expect(slugs).toEqual(expect.arrayContaining(['tmux/latest/manual/list-clients', 'tmux/latest/manual/full', 'tmux/3.2a/manual/list-clients']))
   })
 

@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+vi.mock('astro:content', () => ({ getCollection: async () => [] }))
 import { readInventory, sourceUrl, writeInventory } from '@libtmux/api-model'
 import { tmuxCommandSources, tmuxReferenceContext, tmuxReferenceIndex, tmuxReferencePaths, tmuxReferencePreview, tmuxReferenceTree, tmuxReferenceUrl, tmuxReferenceVersionUrl, tmuxSourceCommands, tmuxSourceModel } from '../src/lib/tmux-reference'
 import { tmuxManual, tmuxManualUrl } from '../src/lib/tmux-manual-data'
@@ -198,14 +199,14 @@ describe('the card a link to a C declaration opens', () => {
     }
   })
 
-  it('catches a link with no card behind it, and the preview route that the generic one never covered', () => {
+  it('catches a link with no card behind it, and the preview route that the generic one never covered', async () => {
     const real = tmuxReferenceUrl('latest', tmuxSourceModel('latest').symbols.find((entry) => entry.name === 'cmd_list_panes_server')!)
     const invented = '/tmux/latest/reference/c-function-no-such-declaration/'
     // The control: the policy marks the invented address for a card, and nothing answers there.
     expect(linkPreviewTarget(invented, origin)).toBeDefined()
     expect(unanswered([real, invented], answered)).toEqual([invented])
     // Before this route, the generic one was all there was, and it answers at no declaration's address.
-    const generic = new Set(genericPreviewPaths().map((path) => `/${path.params.slug}.preview.json`))
+    const generic = new Set((await genericPreviewPaths()).map((path) => `/${path.params.slug}.preview.json`))
     expect(generic.size).toBeGreaterThan(100)
     expect(unanswered([real], generic)).toEqual([real])
   })

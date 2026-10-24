@@ -9,6 +9,7 @@ import { select } from 'astro-expressive-code/hast'
 import { fromHtml } from 'hast-util-from-html'
 import { visit } from 'unist-util-visit'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+vi.mock('astro:content', () => ({ getCollection: async () => [] }))
 import { symbolPreview, glossaryPreview, tmuxManualPreview } from '../src/lib/link-preview'
 import { API_MODELS } from '../src/lib/api-models'
 import { productApiIndex } from '../src/lib/product-api'
