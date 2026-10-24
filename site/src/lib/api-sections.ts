@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto'
 import { builtinHref, memberTier, moduleOf, qualifiedNameOf, typeParametersOf, type ApiModelBase, type ApiSymbol, type MemberSignals, type Param, type Signature, type SymbolIndex } from '@libtmux/api-model'
 import { apiGlossaryHref } from './api-glossary'
+import { relatedLabels } from './api-labels'
 import { csharpParameters, supportsCSharpSignatures, supportsElixirSignatures, supportsGoSignatures, supportsJavaSignatures, supportsLuaSignatures, supportsRubySignatures, supportsRustSignatures, supportsTypeScriptSignatures, swiftBaseName } from './code-layout'
 
 export interface ApiSection {
@@ -331,6 +332,8 @@ export function relatedApiTypes(owner: ApiSymbol, members: ApiSymbol[], index: S
 export interface RelatedTypeLink {
   /** The label the page shows. */
   name: string
+  /** Whether the label spells out the owner, so it breaks at the owner's separator. */
+  qualified: boolean
   /** The source-qualified name, for the link's title. */
   identity: string
   kind: ApiSymbol['kind']
@@ -338,15 +341,38 @@ export interface RelatedTypeLink {
   symbol: ApiSymbol
 }
 
-/** The related types of a page with the label it shows for each; `repeated` counts the top-level types that share a name. */
+const typeNameCounts = new WeakMap<ApiSymbol[], Map<string, number>>()
+const symbolsById = new WeakMap<ApiSymbol[], Map<string, ApiSymbol>>()
+
+/**
+ * The related types of a page with the label it shows for each; `repeated` counts the top-level types that share a name.
+ * `language` selects the owner-bound spelling of an Elixir type, see `relatedLabels`.
+ */
 export function relatedTypeLinks(
   model: ApiModelBase, owner: ApiSymbol, members: ApiSymbol[], index: SymbolIndex, hrefFor: (symbol: ApiSymbol) => string,
-  options: { repeated: ReadonlyMap<string, number>; includeInternal?: boolean },
+  options: { language?: string; repeated: ReadonlyMap<string, number>; includeInternal?: boolean },
 ): RelatedTypeLink[] {
-  const parent = owner.parent ? model.symbols.find((symbol) => symbol.id === owner.parent) : undefined
-  return relatedApiTypes(owner, members, index, parent, { includeInternal: options.includeInternal }).map((symbol) => ({
-    name: (options.repeated.get(symbol.name) ?? 0) > 1 ? `${symbol.name} (${moduleOf(symbol)})` : symbol.name,
-    identity: qualifiedNameOf(symbol), kind: symbol.kind, href: hrefFor(symbol), symbol,
+  let ids = symbolsById.get(model.symbols)
+  let names = typeNameCounts.get(model.symbols)
+  if (!ids || !names) {
+    ids = new Map(model.symbols.map((symbol) => [symbol.id, symbol]))
+    names = new Map()
+    for (const symbol of model.symbols) if (RELATED_KINDS.has(symbol.kind)) names.set(symbol.name, (names.get(symbol.name) ?? 0) + 1)
+    symbolsById.set(model.symbols, ids)
+    typeNameCounts.set(model.symbols, names)
+  }
+  const symbols = relatedApiTypes(owner, members, index, owner.parent ? ids.get(owner.parent) : undefined, { includeInternal: options.includeInternal })
+  const inputs = symbols.map((symbol) => {
+    const declarer = symbol.parent ? ids.get(symbol.parent) : undefined
+    return {
+      id: symbol.id, name: symbol.name, qualifiedName: qualifiedNameOf(symbol), shared: (names.get(symbol.name) ?? 0) > 1,
+      label: (options.repeated.get(symbol.name) ?? 0) > 1 ? `${symbol.name} (${moduleOf(symbol)})` : symbol.name,
+      owner: declarer && { id: declarer.id, name: declarer.name },
+    }
+  })
+  const labels = relatedLabels(inputs, new Set([owner.id, ...(owner.parent ? [owner.parent] : [])]), options.language)
+  return symbols.map((symbol, i) => ({
+    name: labels[i]!, qualified: labels[i] !== inputs[i]!.label, identity: qualifiedNameOf(symbol), kind: symbol.kind, href: hrefFor(symbol), symbol,
   }))
 }
 

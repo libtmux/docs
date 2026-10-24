@@ -363,7 +363,7 @@ const paths = (source?.paths ?? []).filter((path) => !owner || path.symbols.some
 if (relationshipSections.some((section) => ['api-calls', 'api-called-by'].includes(section.id))) pageSections.push({ id: 'api-call-network', label: 'Call neighborhood' })
 if (paths.length) pageSections.push({ id: 'api-source-paths', label: 'Paths through the source', count: paths.length })
 pageSections.push(...relationshipSections.map((section) => ({ id: section.id, label: section.label, count: section.items.length })))
-const related = owner && model ? relatedTypeLinks(model, owner, members, index, hrefFor, { repeated: ownerNames, includeInternal: Boolean(source) }) : []
+const related = owner && model ? relatedTypeLinks(model, owner, members, index, hrefFor, { language, repeated: ownerNames, includeInternal: Boolean(source) }) : []
 if (related.length) pageSections.push({ id: 'api-related-types', label: 'Related types', count: related.length })
 const title = glossary ? API_GLOSSARY_TITLE : owner
   ? qualifiedNameOf(owner)
