@@ -3,15 +3,24 @@
  *
  * A 200 proves a page exists, and the JDK shows how little that is: the old
  * search-URL template and a module-less path both answered 200 from a generic
- * landing page. So every destination is held to two questions the host's own
- * page can answer:
+ * landing page. Nor is a symbol's name somewhere near the anchor evidence: a
+ * CPython entry names the types its neighbours take, a rustdoc method calls its
+ * siblings, and a javadoc page lists the types it inherits from. So every
+ * destination is held to what the host's own page can answer:
  *
- * - Does the fragment exist on the page the URL names? An `id` or `name`
- *   anchor, read from the HTML the host serves.
- * - Does the page, or the section the fragment opens, document the symbol the
- *   link was made for? The name that leads to the destination must appear as a
- *   whole word in the page's title and headings, in its fragment, or in the
- *   section the fragment opens.
+ * - The fragment is an `id` or `name` anchor on the page the URL names.
+ * - A fragment spells the symbol the link was made for, as a whole word of the
+ *   entry's own name, and a member sits on the page of the type that owns it.
+ * - A page with no fragment names the symbol in its title or top heading, and
+ *   where the address names a type, it is that type: `List` is not
+ *   `ArrayList.html`, which carries a "Methods inherited from interface List"
+ *   heading of its own.
+ *
+ * Two reviewed lists in `api-destinations.mjs` widen that for a stated reason:
+ * the names a page documents beside its subject, and the pages that document
+ * several symbols under one anchor, where the section the anchor opens (up to
+ * the next heading or sibling entry) must still hold the symbol. A record says
+ * when it rests on either.
  *
  * A redirect is an answer too. A host that moves a page elsewhere has said the
  * URL is not the page's address, so anything beyond a locale, a trailing slash
@@ -26,7 +35,7 @@ import { createHash } from 'node:crypto'
 import { gunzipSync } from 'node:zlib'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { EXTERNAL_INVENTORIES, LISTED_ON_PAGE, terminalSymbol } from './api-destinations.mjs'
+import { EXTERNAL_INVENTORIES, LISTED_ON_PAGE, SHARED_SECTIONS, ownerSymbol, terminalSymbol } from './api-destinations.mjs'
 import { readInventory } from '../../packages/api-model/src/inventory.ts'
 import { USER_AGENT, futureRecords, staleRecords } from './destination-verification.mjs'
 
@@ -53,27 +62,44 @@ export function readPage(html) {
   const title = decode(/<title[^>]*>([\s\S]*?)<\/title>/i.exec(html)?.[1] ?? '').replace(/\s+/g, ' ').trim()
   const headings = [...html.matchAll(/<h([1-4])\b[^>]*>([\s\S]*?)<\/h\1>/gi)].map((match) => ({ level: Number(match[1]), text: strip(match[2]) })).filter((heading) => heading.text)
   const anchors = []
-  for (const match of html.matchAll(/<[a-z][a-z0-9-]*\b[^>]*?\s(?:id|name)\s*=\s*(?:"([^"]*)"|'([^']*)')/gi)) {
-    const value = match[1] ?? match[2]
-    if (value) anchors.push({ id: decode(value), at: match.index })
+  for (const match of html.matchAll(/<([a-z][a-z0-9-]*)\b[^>]*?\s(?:id|name)\s*=\s*(?:"([^"]*)"|'([^']*)')/gi)) {
+    const value = match[2] ?? match[3]
+    if (value) anchors.push({ id: decode(value), at: match.index, tag: match[1].toLowerCase() })
   }
   return { title, headings, anchors, html }
 }
 
 /**
- * The text a fragment opens: from its anchor to the next heading, bounded. An
- * anchor on a wrapper around a heading, or on the heading itself, opens the
- * text after that heading, not the heading alone.
+ * The text a fragment opens, bounded by the entry it names. An anchor on a
+ * heading, or on a wrapper just before one, opens the text after that heading
+ * up to the next. An anchor on an entry (a `dt` in CPython's manual, a rustdoc
+ * `section`, a Julia docstring) opens the text up to the next anchor on the
+ * same kind of element, or the next heading, whichever comes first; a page
+ * that lists its entries one after another has no heading between them.
  */
-function sectionAt(page, fragment) {
+export function sectionAt(page, fragment) {
   const decoded = safeDecode(fragment)
-  const anchor = page.anchors.find((candidate) => candidate.id === fragment || candidate.id === decoded)
-  if (!anchor) return undefined
+  const index = page.anchors.findIndex((candidate) => candidate.id === fragment || candidate.id === decoded)
+  if (index < 0) return undefined
+  const anchor = page.anchors[index]
   const rest = page.html.slice(anchor.at)
   const headings = [...rest.matchAll(/<h[1-4]\b/gi)]
-  let end = headings[0]?.index
-  if (end !== undefined && strip(rest.slice(0, end)).length < 40) end = headings[1]?.index
-  return strip(rest.slice(0, Math.min(end ?? 40_000, 40_000)))
+  const opens = headings[0]?.index
+  const closes = rest.search(/<\/h[1-4]>/i)
+  let from = 0
+  let end
+  if (closes >= 0 && (opens === undefined || closes < opens)) {
+    // The anchor sits inside a heading (the JLS writes an empty `<a name>` there): the section follows it.
+    from = closes
+    end = opens
+  } else if (opens !== undefined && strip(rest.slice(0, opens)).length <= 12) {
+    end = headings[1]?.index
+  } else {
+    end = opens
+    const sibling = page.anchors.slice(index + 1).find((candidate) => candidate.tag === anchor.tag && candidate.id !== anchor.id)
+    if (sibling) end = end === undefined ? sibling.at - anchor.at : Math.min(end, sibling.at - anchor.at)
+  }
+  return strip(rest.slice(from, Math.min(end ?? 40_000, from + 40_000)))
 }
 
 const safeDecode = (text) => { try { return decodeURIComponent(text) } catch { return text } }
@@ -114,7 +140,7 @@ export function slugSymbol(url) {
   }
   if (hostname === 'learn.microsoft.com') {
     if (!pathname.toLowerCase().includes('/dotnet/api/') && !pathname.toLowerCase().includes('/powershell/module/')) return undefined
-    return stem.replace(/-\d+$/, '').split('.').at(-1)
+    return stem.replace(/-\d+$/, '').split('.').at(-1).replace(/^about_/, '')
   }
   if (hostname === 'docs.oracle.com' && pathname.includes('/api/')) return stem === 'index' ? undefined : stem.replace(/\$$/, '')
   if (hostname === 'www.scala-lang.org' || hostname === 'typelevel.org' || hostname === 'javadoc.io') return stem === 'index' ? undefined : stem.replace(/\$$/, '')
@@ -176,54 +202,90 @@ export function createCachedGet(get, { dir, maxAgeMs = 12 * 60 * 60 * 1000 } = {
 const CONCEPT_SOURCES = new Set(['keyword', 'doc-link', 'authored'])
 
 /**
- * The names the destination must document, one per distinct symbol that
- * leads to it. A destination reached only by concepts has none.
+ * What each name that leads to the destination asks of its page: the symbol,
+ * the type that owns it when the name is a member, and the exception, if any,
+ * that lets the page document it somewhere other than its title or fragment.
+ * A destination reached only by concepts has none.
  */
-export function expectedSymbols(destination) {
-  const symbols = new Map()
+export function expectationsOf(destination, { listed = LISTED_ON_PAGE, shared = SHARED_SECTIONS } = {}) {
+  const found = new Map()
+  // An entry ending in `#` or `/` covers every fragment or page under it; any other names one address.
+  const section = shared.find((entry) => (/[#/]$/.test(entry.page) ? destination.url.startsWith(entry.page) : destination.url === entry.page))
   for (const use of destination.uses) {
-    if (CONCEPT_SOURCES.has(use.source)) continue
-    if (use.concept) continue
+    if (CONCEPT_SOURCES.has(use.source) || use.concept) continue
     const symbol = terminalSymbol(use.port, use.name)
-    if (!symbol || symbol.length < 1) continue
-    symbols.set(symbol.toLowerCase(), symbol)
+    if (!symbol) continue
+    const key = `${use.port}:${use.name}`
+    const owner = ownerSymbol(use.port, use.name)
+    const reason = listed.get(key)
+    const exception = reason ? { tier: 'listed', reason } : section && { tier: section.tier, reason: section.reason }
+    found.set(key, { key, symbol, ...(owner && { owner }), ...(exception && { exception }) })
   }
+  return [...found.values()].sort((a, b) => a.key.localeCompare(b.key))
+}
+
+/** The distinct symbols the destination's names ask for. */
+export function expectedSymbols(destination, options) {
+  const symbols = new Map(expectationsOf(destination, options).map(({ symbol }) => [symbol.toLowerCase(), symbol]))
   return [...symbols.values()].sort()
 }
 
-/** Where a symbol was found on a page, strongest first. */
-function locate(page, fragment, symbol, extras) {
-  const { title, headings } = page
+/** The text of a fragment as the host names the entry: ExDoc spells a type `t:name/0` and a function `name/2`. */
+const entryName = (fragment, host) => (host.endsWith('hexdocs.pm') ? fragment.replace(/^[tc]:/, '').replace(/\/\d+$/, '') : fragment)
+
+/** The last segment of the name a page's address gives its type: `Flow.Subscription` is `Subscription`. */
+const pageType = (slug) => slug.split('.').at(-1)
+
+/** Whether the page's title or a top heading names the symbol. */
+const titledBy = (page, symbol) => [page.title, ...page.headings.filter((heading) => heading.level === 1).map((heading) => heading.text)].some((text) => mentions(text, symbol))
+
+/**
+ * Hold one name to the page it leads to. A fragment must spell the symbol: the
+ * anchor is the entry the link means, and the text near it is not evidence of
+ * which entry that is. A page with no fragment must name the symbol in its
+ * title or top heading; its other headings include the members it inherits.
+ * An exception widens that for one reason it states, and the evidence says so.
+ *
+ * @returns {{ at: string, reason?: string } | { failure: string, detail: string }}
+ */
+function hold(page, { url, fragment, host, slug }, expectation) {
+  const { symbol, owner, exception } = expectation
+  const where = `${url.split('#')[0]}${fragment ? `#${fragment}` : ''}`
   if (fragment) {
     const decoded = safeDecode(fragment)
-    if (mentions(decoded, symbol) || mentions(fragment, symbol)) return 'fragment'
-    const near = headings.find((heading) => mentions(heading.text, symbol))
-    const section = sectionAt(page, fragment)
-    if (section !== undefined && mentions(section, symbol)) return near ? 'heading' : 'section'
-    return undefined
+    let at
+    if (mentions(entryName(decoded, host), symbol)) at = 'fragment'
+    else if (exception?.tier === 'spelled' && compact(decoded).startsWith(compact(symbol))) at = 'spelled'
+    else if (exception?.tier === 'section' && mentions(sectionAt(page, fragment) ?? '', symbol)) at = 'section'
+    if (!at) return { failure: 'symbol', detail: `${symbol} is not what #${fragment} documents at ${url.split('#')[0]}` }
+    if (owner && slug && compact(pageType(slug)) !== compact(owner)) {
+      return { failure: 'owner', detail: `${symbol} belongs to ${owner}, but ${url.split('#')[0]} documents ${slug}` }
+    }
+    if (owner && !slug && at === 'fragment' && !mentions(decoded, owner) && !titledBy(page, owner)) {
+      return { failure: 'owner', detail: `${symbol} belongs to ${owner}, which neither #${fragment} nor the title of ${url.split('#')[0]} names` }
+    }
+    return { at, ...(exception && at !== 'fragment' && { reason: exception.reason }) }
   }
-  const top = headings.filter((heading) => heading.level === 1).map((heading) => heading.text)
-  if (mentions(title, symbol) || top.some((text) => mentions(text, symbol))) return 'title'
-  if (headings.some((heading) => mentions(heading.text, symbol)) || page.anchors.some((anchor) => mentions(anchor.id, symbol))) return 'heading'
-  if (extras?.listed && extras.listed(symbol)) return 'listed'
-  return undefined
+  const titled = titledBy(page, symbol)
+  if (!titled && exception?.tier === 'listed' && mentions(strip(page.html), symbol)) return { at: 'listed', reason: exception.reason }
+  if (!titled) return { failure: 'symbol', detail: `${symbol} is not in the title or top heading ${JSON.stringify(page.headings.find((heading) => heading.level === 1)?.text ?? page.title)} of ${where}` }
+  if (slug && compact(pageType(slug)) !== compact(symbol)) {
+    return { failure: 'address', detail: `${where} documents ${slug}, not ${symbol}` }
+  }
+  return { at: 'title' }
 }
-
-/** Whether a page's text names the symbol: for a symbol the page lists beside its subject. */
-const listedIn = (html, symbol) => mentions(strip(html), symbol)
 
 const SHELL = /enable javascript|you need to enable javascript/i
 
 /**
  * Verify one destination. `destination` is `{ url, host, uses: [...] }` where
- * each use is `{ port, name, source, concept? }`. `listed` names the
- * `port:name` pairs that a page documents among its siblings rather than under
- * a heading of their own (`std::chrono::milliseconds` on the `duration` page).
+ * each use is `{ port, name, source, concept? }`. `exceptions` carries the two
+ * reviewed lists in `api-destinations.mjs`: the names a page documents beside
+ * its subject, and the pages that document several symbols under one anchor.
  */
-export async function verifyApiDestination(destination, { get, listed = LISTED_ON_PAGE }) {
+export async function verifyApiDestination(destination, { get, exceptions = { listed: LISTED_ON_PAGE, shared: SHARED_SECTIONS } }) {
   const { url } = destination
   const { page: pageUrl, fragment } = splitUrl(url)
-  const symbols = expectedSymbols({ ...destination, uses: [...destination.uses] })
   const base = { url, host: destination.host }
   const source = machineSource(url)
   const answer = await get(source ?? pageUrl)
@@ -240,10 +302,17 @@ export async function verifyApiDestination(destination, { get, listed = LISTED_O
     if (!sameAddress(source, answer.finalUrl ?? source)) return { ...found, ok: false, failure: 'moved', finalUrl: answer.finalUrl, detail: `${pageUrl} is now documented at ${answer.finalUrl}` }
     if (!title) return { ...found, ok: false, failure: 'generic', detail: 'the documentation data names no symbol' }
     if (fragment && !doccAnchors(data).has(safeDecode(fragment))) return { ...found, ok: false, failure: 'fragment', detail: `#${fragment} is not an anchor in the documentation data for ${pageUrl}` }
-    const wanted = [...symbols, ...(fragment || new URL(pageUrl).hostname !== 'developer.apple.com' ? [] : [slugSymbol(url)])].filter(Boolean)
-    const missing = wanted.filter((symbol) => compact(title) !== compact(symbol) && !mentions(title, symbol) && !(fragment && mentions(safeDecode(fragment), symbol)))
-    if (missing.length) return { ...found, ok: false, failure: 'symbol', detail: `the page documents ${title}, not ${missing.join(', ')}` }
-    return { ...found, ok: true, ...(fragment && { fragment: 'found' }), terminal: symbols.map((symbol) => ({ symbol, at: fragment ? 'fragment' : 'title' })) }
+    const slug = fragment ? undefined : slugSymbol(url)
+    const terminal = []
+    for (const { symbol } of expectationsOf(destination, exceptions)) {
+      if (compact(title) !== compact(symbol) && !mentions(title, symbol) && !(fragment && mentions(safeDecode(fragment), symbol))) {
+        return { ...found, ok: false, failure: 'symbol', detail: `the page documents ${title}, not ${symbol}` }
+      }
+      if (slug && compact(pageType(slug)) !== compact(symbol)) return { ...found, ok: false, failure: 'address', detail: `${pageUrl} documents ${slug}, not ${symbol}` }
+      if (!terminal.some((entry) => entry.symbol === symbol)) terminal.push({ symbol, at: fragment ? 'fragment' : 'title' })
+    }
+    if (slug && !terminal.length && compact(title) !== compact(slug)) return { ...found, ok: false, failure: 'address', detail: `${pageUrl} names ${slug}, which the page ${JSON.stringify(title)} does not document` }
+    return { ...found, ok: true, ...(fragment && { fragment: 'found' }), terminal }
   }
 
   const finalUrl = answer.finalUrl ?? pageUrl
@@ -264,31 +333,30 @@ export async function verifyApiDestination(destination, { get, listed = LISTED_O
       return { ...found, ok: false, failure: 'fragment', detail: `#${fragment} is not an anchor on ${pageUrl}` }
     }
   }
-  const extras = { listed: (symbol) => destination.uses.some((use) => listed.has(`${use.port}:${use.name}`)) && listedIn(page.html, symbol) }
-  const wanted = [...symbols]
-  const slug = fragment ? undefined : slugSymbol(url)
+  const slug = slugSymbol(url)
   const terminal = []
-  const missing = []
-  for (const symbol of wanted) {
-    const at = locate(page, fragment, symbol, extras)
-    if (at) terminal.push({ symbol, at })
-    else missing.push(symbol)
+  let failed
+  for (const expectation of expectationsOf(destination, exceptions)) {
+    const held = hold(page, { url, fragment, host: new URL(pageUrl).hostname, slug }, expectation)
+    if (held.failure) {
+      failed ??= held
+    } else if (!terminal.some((entry) => entry.symbol === expectation.symbol)) {
+      terminal.push({ symbol: expectation.symbol, ...held })
+    }
   }
-  if (slug) {
+  if (!fragment && slug) {
     const identity = compact(`${page.title} ${page.headings.filter((heading) => heading.level === 1).map((heading) => heading.text).join(' ')}`)
     if (identity.includes(compact(slug))) terminal.push({ symbol: slug, at: 'address' })
-    else missing.push(slug)
+    else {
+      failed ??= { failure: 'address', detail: `${pageUrl} names ${slug}, which its title ${JSON.stringify(page.title)} does not` }
+    }
   }
-  if (missing.length) {
-    const heading = page.headings.find((candidate) => candidate.level === 1)?.text ?? page.title
-    return { ...found, ok: false, failure: 'symbol', detail: `${missing.join(', ')} not documented by ${JSON.stringify(heading)} at ${pageUrl}${fragment ? `#${fragment}` : ''}`, ...(terminal.length && { terminal }) }
-  }
-  if (wanted.length === 0 && !slug && !fragment) {
+  if (failed) return { ...found, ok: false, failure: failed.failure, detail: failed.detail, ...(terminal.length && { terminal }) }
+  if (terminal.length === 0 && !slug && !fragment) {
     return { ...found, ok: true, terminal: [], note: 'a language reference page; the page exists and is not a redirect' }
   }
   return { ...found, ok: true, ...(fragment && { fragment: 'found' }), terminal }
 }
-
 
 /** The symbols the destination's names ask for that its passing record was never checked against. */
 export function unprovenSymbols(destination, record) {
@@ -351,6 +419,12 @@ export function checkApiEvidence(destinations, evidence, { today = new Date(), r
     if (!record.ok) {
       problems.push(`${destination.url} does not land on its symbol (${record.failure}): ${record.detail}`)
       continue
+    }
+    // A pass by the page's text, not its title or the fragment's spelling, rests on a reviewed exception.
+    for (const entry of record.terminal ?? []) {
+      if (!['section', 'spelled', 'listed'].includes(entry.at)) continue
+      const allowed = expectationsOf({ ...destination, uses: [...destination.uses.values()] }).some((expectation) => expectation.symbol === entry.symbol && expectation.exception?.tier === entry.at)
+      if (!allowed) problems.push(`${record.url} passes ${entry.symbol} by ${entry.at}, which no reviewed exception in api-destinations.mjs allows (${who})`)
     }
     const unproven = unprovenSymbols(destination, record)
     if (unproven.length) problems.push(`${destination.url} was never checked for ${unproven.join(', ')} (${who}): run node scripts/verify-api-destinations.mjs --missing`)

@@ -70,35 +70,76 @@ export const TYPE_ALIASES = {
   fsharp: { string: 'String', bool: 'Boolean', int: 'Int32', int64: 'Int64', seq: 'IEnumerable', None: 'option', Some: 'option' },
   // MDN has no page for TypeScript's read-only views or for its iterable interfaces; it documents the runtime
   // objects and the iteration protocols they implement.
+  // Scala's String is the alias `scala.Predef` declares, and its page is Predef's.
+  scala: { String: 'Predef' },
   ts: { ReadonlyMap: 'Map', ReadonlySet: 'Set', IterableIterator: 'Iterator', AsyncIterable: 'async_iterable' },
 }
 
 /**
- * Names a page documents beside its subject rather than under a heading of
- * their own, so the page's text is where to find them: `milliseconds` is a
- * typedef on the `duration` page, `remove_cv_t` an alias on `remove_cv`'s.
- * Every entry was read on its page; a name not listed here must be in a title,
- * a heading or the fragment it links to.
+ * Names a page documents beside its subject rather than in its title, so the
+ * page's text is where to find them: `milliseconds` is a typedef on the
+ * `duration` page, `remove_cv_t` an alias on `remove_cv`'s. Each entry gives
+ * the reason, was read on its page, and applies to that name alone; any other
+ * page-only link must name its symbol in the page's title or top heading.
  */
-export const LISTED_ON_PAGE = new Set([
-  'std::chrono', 'std::chrono::milliseconds', 'std::chrono::nanoseconds', 'std::chrono::seconds', 'std::chrono::sys_seconds',
-  'std::chrono::steady_clock::time_point', 'std::int64_t', 'std::uint8_t', 'std::uint32_t', 'std::uint64_t', 'std::is_lvalue_reference_v',
-  'std::remove_cv_t', 'std::remove_cvref_t', 'std::remove_pointer_t', 'std::invoke_result_t', 'bool', 'int', 'long', 'double', 'char',
-].map((name) => `cxx:${name}`))
+export const LISTED_ON_PAGE = new Map([
+  ['std::chrono', 'cppreference documents the namespace on the date and time library page, not under its own title'],
+  ...['milliseconds', 'nanoseconds', 'seconds'].map((unit) => [`std::chrono::${unit}`, `the duration page lists ${unit} among its typedefs`]),
+  ['std::chrono::sys_seconds', 'the system_clock page lists sys_seconds among its typedefs'],
+  ['std::chrono::steady_clock::time_point', 'the steady_clock page lists time_point among its member types'],
+  ...['int64_t', 'uint8_t', 'uint32_t', 'uint64_t'].map((type) => [`std::${type}`, 'the fixed width integer types page lists every width in one table']),
+  ['std::is_lvalue_reference_v', 'the is_lvalue_reference page lists the _v helper variable template'],
+  ['std::remove_cv_t', 'the remove_cv page lists the _t helper alias'],
+  ['std::remove_cvref_t', 'the remove_cvref page lists the _t helper alias'],
+  ['std::remove_pointer_t', 'the remove_pointer page lists the _t helper alias'],
+  ['std::invoke_result_t', 'the result_of page covers invoke_result and its _t helper alias'],
+  ...['bool', 'int', 'long', 'double', 'char'].map((type) => [type, `cppreference documents ${type} on a page of related types or literals, not under its own title`]),
+].map(([name, reason]) => [`cxx:${name}`, reason]))
+
+/**
+ * Pages that document several symbols under one anchor. A link into one is
+ * held to the section its fragment opens (the text from the anchor to the next
+ * heading or sibling entry) instead of to the fragment's own spelling, and the
+ * symbol must still be in that section. `spelled` is for fragments that are
+ * the symbol's name run into its signature.
+ */
+export const SHARED_SECTIONS = [
+  { page: 'https://elixir.hexdocs.pm/typespecs.html#', tier: 'section', reason: 'the typespec reference describes the basic and built-in types, literals and maps in one section each' },
+  { page: 'https://www.lua.org/manual/5.4/manual.html#2.1', tier: 'section', reason: 'the manual documents its value types together in section 2.1' },
+  { page: 'https://luals.github.io/wiki/annotations/#documenting-types', tier: 'section', reason: 'the wiki lists the recognized types in one section' },
+  { page: 'https://docs.oracle.com/javase/specs/jls/', tier: 'section', reason: 'a JLS section documents a primitive type and its values under a chapter-numbered anchor' },
+  { page: 'https://kotlinlang.org/docs/coroutines-basics.html#', tier: 'section', reason: 'the keyword is documented in the section its anchor opens, under a gerund heading' },
+  { page: 'https://www.typescriptlang.org/docs/handbook/utility-types.html#', tier: 'spelled', reason: 'the handbook spells a utility type\'s anchor as its name run into its parameters' },
+]
 
 const CALL = /\(.*$/s
 const ARITY = /`\d+/g
 
-/** The symbol a name asks for: its last segment, without generics, arity or call syntax. */
-export function terminalSymbol(port, name) {
-  const keyword = TYPE_ALIASES[port]?.[name]
-  if (keyword) return keyword
+/** The segments of a name, outermost first, without generics, arity, call syntax or an Elixir kind prefix. */
+export function nameSegments(name) {
   let text = name.trim().replace(ARITY, '').replace(/^[tc]:/, '').replace(/\/\d+$/, '')
   if (!/^[A-Za-z_]+(?:-[A-Za-z]+)+$/.test(text)) text = text.replace(CALL, '').replace(/<.*$/s, '')
   text = text.replace(/\[.*$/s, '')
-  const segments = text.split(/::|[.#\\]/).filter(Boolean)
-  const last = segments.at(-1) ?? text
-  return TYPE_ALIASES[port]?.[last] ?? last
+  return text.split(/::|[.#\\]/).filter(Boolean)
+}
+
+/** The symbol a name asks for: its last segment, or the word its language spells for it. */
+export function terminalSymbol(port, name) {
+  const aliased = TYPE_ALIASES[port]?.[name]
+  if (aliased) return aliased
+  return nameSegments(name).at(-1) ?? name.trim()
+}
+
+/**
+ * The type a member belongs to: the segment before the last, when it is written
+ * like a type. A package or namespace (`java.util`, `std::io`) is not an owner,
+ * and a spelled alias has none.
+ */
+export function ownerSymbol(port, name) {
+  if (TYPE_ALIASES[port]?.[name]) return undefined
+  const segments = nameSegments(name)
+  const owner = segments.length > 1 ? segments.at(-2) : undefined
+  return owner && /^[A-Z]/.test(owner) ? owner : undefined
 }
 
 function readJson(path) {

@@ -284,8 +284,13 @@ reads every one the site generates: the curated maps in
 the references in the extracted doc comments, the links in pages, guide data
 and the glossary. Each is requested once and must land on the page and the
 fragment it names, and the page must document the symbol the link was made
-for. A host that moves the page elsewhere fails, because a link should be the
-page's address. Request the missing ones after changing a map, an inventory or
+for. A fragment must spell that symbol, and a member must sit on the page of
+the type that owns it; text near the anchor does not count, because a CPython
+entry names the types its neighbours take and a javadoc page lists the types it
+inherits from. A page without a fragment must name the symbol in its title or
+top heading, and where its address names a type, it must be that type. A host
+that moves the page elsewhere fails, because a link should be the page's
+address. Request the missing ones after changing a map, an inventory or
 a pinned model:
 
 ```console
@@ -306,12 +311,18 @@ $ node scripts/verify-api-destinations.mjs --inventories
 The evidence is `site/src/data/api-destination-evidence.json`. `--check`, which
 the publication audit runs, requests nothing: it fails on a destination with no
 passing record, a record for a link nothing makes, and a name that was never
-checked against its page. A name that a page lists beside its subject rather
-than under a heading (`std::chrono::milliseconds` on the `duration` page) must
-be named in `LISTED_ON_PAGE` after reading that page. A name that a language
-spells another way (`int` for `Int32`) goes in `TYPE_ALIASES`.
+checked against its page, or whose pass rests on an exception that is no longer
+listed. Two reviewed lists in `scripts/lib/api-destinations.mjs` carry the
+exceptions, each with its reason: `LISTED_ON_PAGE` for a name a page documents
+beside its subject rather than in its title (`std::chrono::milliseconds` on the
+`duration` page), and `SHARED_SECTIONS` for a page that documents several
+symbols under one anchor (the Lua manual's value types, the typespec
+reference), where the section the anchor opens must still hold the symbol. Add
+to either only after reading the page. A name that a language spells another
+way (`int` for `Int32`) goes in `TYPE_ALIASES`.
 `scripts/verify-api-destinations.negative.mjs` plants a wrong fragment, a wrong
-page, a symbol the page does not document, a redirect to a landing page and each
+page, a symbol the page does not document and a redirect to a landing page on
+pages shaped like CPython's, rustdoc's, Documenter's and javadoc's, and each
 fault in the evidence, and requires the check to name each. The weekly
 [`verify-destinations.yml`](.github/workflows/verify-destinations.yml) re-runs
 the live check; pull requests never do.

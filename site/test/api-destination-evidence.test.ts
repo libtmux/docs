@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { API_HOSTS, EXTERNAL_INVENTORIES, apiHostOf, collectApiDestinations, terminalSymbol, urlsIn } from '../../scripts/lib/api-destinations.mjs'
+import { API_HOSTS, EXTERNAL_INVENTORIES, apiHostOf, collectApiDestinations, ownerSymbol, terminalSymbol, urlsIn } from '../../scripts/lib/api-destinations.mjs'
 import {
-  INVENTORY_SOURCES, checkApiEvidence, expectedSymbols, mentions, readPage, sameAddress, slugSymbol, unprovenSymbols,
+  INVENTORY_SOURCES, checkApiEvidence, expectationsOf, expectedSymbols, mentions, readPage, sameAddress, sectionAt, slugSymbol, unprovenSymbols,
 } from '../../scripts/lib/api-destination-verification.mjs'
 import evidence from '../src/data/api-destination-evidence.json'
 
@@ -104,6 +104,39 @@ describe('what the verifier reads from a page', () => {
     expect(slugSymbol('https://learn.microsoft.com/dotnet/api/system.threading.tasks.task.whenall')).toBe('whenall')
     expect(slugSymbol('https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html#of(T)')).toBe('Optional')
     expect(slugSymbol('https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/to-kotlin-duration.html')).toBe('to-kotlin-duration')
+    expect(slugSymbol('https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_commonparameters?view=powershell-7.4')).toBe('commonparameters')
+  })
+
+  it('ends a fragment\'s section at the next entry, not at the next heading', () => {
+    const entries = '<h1>Built-in Functions</h1><dl><dt id="abs">abs(x)</dt><dd>Return the absolute value of an int.</dd><dt id="int">int(x)</dt><dd>Return an integer.</dd></dl><h2 id="later">Later</h2>'
+    const page = readPage(`<html><head><title>Built-in Functions</title></head><body>${entries}</body></html>`)
+    expect(sectionAt(page, 'abs')).toContain('absolute value of an int')
+    expect(sectionAt(page, 'abs')).not.toContain('Return an integer')
+    expect(sectionAt(page, 'int')).toBe('int(x) Return an integer.')
+  })
+
+  it('opens the text after a heading when the anchor is inside it, as the JLS writes it', () => {
+    const page = readPage('<html><body><h3 class="title"><a name="jls-4.2.1"></a>4.2.1. Integral Types</h3><p><a name="jls-4.2.1-100"></a>The values of byte, short and int.</p><h3><a name="jls-4.2.2"></a>4.2.2. Operations</h3></body></html>')
+    expect(sectionAt(page, 'jls-4.2.1')).toBe('The values of byte, short and int.')
+  })
+
+  it('reads the owner of a member only when the name writes it like a type', () => {
+    expect(ownerSymbol('java', 'AutoCloseable.close')).toBe('AutoCloseable')
+    expect(ownerSymbol('rs', 'Iterator::next')).toBe('Iterator')
+    expect(ownerSymbol('java', 'java.util.Optional')).toBeUndefined()
+    expect(ownerSymbol('rs', 'std::io::Error')).toBeUndefined()
+    expect(ownerSymbol('ts', 'ReadonlyMap')).toBeUndefined()
+  })
+
+  it('attaches a reviewed exception to the name or the page it was written for, and to no other', () => {
+    const uses = (port: string, name: string) => [{ port, name, source: 'builtin' }]
+    const listed = expectationsOf({ url: 'https://en.cppreference.com/cpp/chrono/duration', uses: uses('cxx', 'std::chrono::milliseconds') })
+    expect(listed[0]?.exception?.tier).toBe('listed')
+    expect(expectationsOf({ url: 'https://en.cppreference.com/cpp/chrono/duration', uses: uses('cxx', 'std::chrono::hours') })[0]?.exception).toBeUndefined()
+    const section = expectationsOf({ url: 'https://www.lua.org/manual/5.4/manual.html#2.1', uses: uses('lua', 'nil') })
+    expect(section[0]?.exception?.tier).toBe('section')
+    expect(expectationsOf({ url: 'https://www.lua.org/manual/5.4/manual.html#2.2', uses: uses('lua', 'nil') })[0]?.exception).toBeUndefined()
+    expect(expectationsOf({ url: 'https://docs.python.org/3/builtins/functions.html#abs', uses: uses('py', 'int') })[0]?.exception).toBeUndefined()
   })
 
   it('asks a name once per symbol and ignores names that stand for a concept', () => {
