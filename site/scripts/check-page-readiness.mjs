@@ -530,3 +530,144 @@ export async function checkBlockLinksUndecorated(browser, base, { sample = false
     await context.close()
   }
 }
+
+/**
+ * The port and version a link's destination is a core reference of, if it is one.
+ *
+ * A port's core reference is a tree of its own, built for one version of the port. `ports`, `segment` (the part of the path
+ * that makes a page a core reference) and `root` are the site's own: `PORTS`, `referenceSegment` and the mount of the build.
+ *
+ * @param {string} pathname the path of the link, root included
+ * @param {{ root: string, ports: readonly { slug: string, versionedDocs: boolean }[], segment: string }} build
+ */
+function coreReference(pathname, { root, ports, segment }) {
+  const rest = pathname.startsWith(`${root}/`) ? pathname.slice(root.length + 1) : pathname.replace(/^\//, '')
+  const parts = rest.split('/')
+  const port = ports.find((entry) => entry.slug === parts[0])
+  if (!port) return undefined
+  const at = port.versionedDocs ? 2 : 1
+  if (parts.slice(at, at + segment.split('/').length).join('/') !== segment) return undefined
+  return { port, version: port.versionedDocs ? parts[1] : undefined }
+}
+
+/**
+ * Whether the build under test contains the destination of a link, as far as a preview payload is concerned.
+ *
+ * The build under test serves one version of each port's core reference: `version`, the one its own target names. A link
+ * to another version of a port's reference leaves for a tree this build does not contain, such as the Python reference that
+ * the other ports' pages link to at its default, `stable`. That tree exists in the assembly, where the port's own shell build
+ * renders it at `/<slug>/<version>/reference/` with its payloads; `reference-previews.test.ts` checks them there.
+ * Everything else is served at whatever version a link names: tmux's pages, a product's pages, the glossary.
+ *
+ * @param {string} pathname the path of the link, root included
+ * @param {{ root: string, ports: readonly { slug: string, versionedDocs: boolean }[], version: string, segment: string }} build
+ */
+export function servedByBuild(pathname, build) {
+  const target = coreReference(pathname, build)
+  return !target || target.version === undefined || target.version === build.version
+}
+
+/**
+ * Whether a destination is a core reference of a port whose publisher owns its version tree (`publishesOwnTree`), at a
+ * version this build does not serve: the one kind of destination the check leaves out, so that what it leaves out is
+ * bounded by what the site says and not by what the check finds convenient.
+ *
+ * @param {string} pathname the path of the link, root included
+ * @param {{ root: string, ports: readonly { slug: string, versionedDocs: boolean, publishesOwnTree?: boolean }[], version: string, segment: string }} build
+ */
+export function ownTreeElsewhere(pathname, build) {
+  const target = coreReference(pathname, build)
+  return Boolean(target?.port.publishesOwnTree) && target?.version !== undefined && target.version !== build.version
+}
+
+/**
+ * The links of `hrefs` that the build serves and that have no payload, and the ones it does not serve, which are not asked.
+ * A payload is at the path of the page with `.preview.json`, as the preview policy computes it.
+ */
+export async function payloadGaps(request, origin, hrefs, served) {
+  const missing = []
+  const skipped = []
+  for (const href of hrefs) {
+    if (served && !served(href)) { skipped.push(href); continue }
+    const response = await request.get(`${origin}${href.slice(0, -1)}.preview.json`)
+    if (!response.ok()) missing.push(`${href} answers ${response.status()}`)
+  }
+  return { missing, skipped }
+}
+
+/**
+ * A link marked for a preview card has a card to show. A C function a method links to carried `data-link-preview` and
+ * opened nothing, because no preview payload was served at its address. Hovering the link is what asks for the card,
+ * so hover it and read the card, then ask the same of every marked link on the pages whose destination the build
+ * serves (`served`, from `servedByBuild`; without it every destination is asked), and of one that has no payload.
+ */
+export async function checkTmuxReferencePreviews(browser, base, { served: build } = {}) {
+  const context = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 1440, height: 1000 } })
+  const page = await context.newPage()
+  page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
+  const opened = () => page.evaluate(() => document.getElementById('reference-link-preview')?.matches(':popover-open') ?? false)
+  const origin = new URL(base).origin
+  const served = build ? (href) => servedByBuild(href, build) : undefined
+  try {
+    await page.goto(`${base}/cxx/latest/reference/libtmux-server-panes/`, { waitUntil: 'load' })
+    await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready')
+    const link = page.locator('p.gp-sphinx-api-mentions .tmux-send a[data-link-preview]').first()
+    assert.equal(await link.count(), 1, 'The method page has no C function link marked for a preview')
+    assert.equal(await link.textContent(), 'cmd_list_panes_server')
+    await link.hover()
+    // The first request for a declaration's card compiles its route in the dev server.
+    await page.waitForFunction(() => document.getElementById('reference-link-preview')?.matches(':popover-open'), null, { timeout: 60000 })
+    assert.equal(await page.locator('#reference-link-preview [data-preview-title]').textContent(), 'cmd_list_panes_server')
+    assert.match(await page.locator('#reference-link-preview [data-preview-signature]').textContent(), /^static void cmd_list_panes_server\(struct cmd \*, struct cmdq_item \*\)$/)
+    assert.match(await page.locator('#reference-link-preview [data-preview-open]').getAttribute('href'), /\/tmux\/latest\/reference\/c-function-cmd-list-panes-c-cmd_list_panes_server\/$/)
+    // Every link a page marks for a card, whose destination the build serves, has a payload at the address the card asks for.
+    const missing = []
+    const skipped = new Set()
+    const questioned = new Set()
+    let asked = 0
+    for (const path of ['/cxx/latest/reference/libtmux-server-panes/', '/tmux/latest/manual/list-panes/', '/tmux/latest/reference/c-function-cmd-list-panes-c-cmd_list_panes_server/', '/tmux/latest/reference/c-struct-window_pane/']) {
+      await page.goto(`${base}${path}`, { waitUntil: 'load' })
+      await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready')
+      const hrefs = await page.evaluate(() => [...new Set([...document.querySelectorAll('a[data-link-preview]')].map((anchor) => new URL(anchor.href).pathname))])
+      const gaps = await payloadGaps(page.request, origin, hrefs, served)
+      asked += hrefs.length - gaps.skipped.length
+      for (const href of gaps.skipped) skipped.add(href)
+      for (const href of hrefs) if (!gaps.skipped.includes(href)) questioned.add(href)
+      missing.push(...gaps.missing.map((gap) => `${path}: ${gap}`))
+    }
+    assert(asked > 3, `Only ${asked} links were asked for a payload, so the pages were not measured`)
+    assert.deepEqual(missing, [], `A link marked for a card that has none:\n${missing.join('\n')}`)
+    // What was left out is bounded by what the site says: only reference trees that a port's publisher owns, at versions this build does not serve.
+    if (build) {
+      assert.deepEqual([...skipped].filter((href) => !ownTreeElsewhere(href, build)), [], 'A destination was left out of the payload check that is not another version of a port tree')
+      assert.deepEqual([...questioned].filter((href) => ownTreeElsewhere(href, build)), [], 'A destination in another version of a port tree was asked for a payload')
+    }
+    // The controls. A payload missing on a destination the build serves is reported, and a destination it does not serve is
+    // left out and not reported, so the sweep cannot go green by skipping what it should have asked.
+    if (served) {
+      const kept = `${build.root}/${build.ports[0].slug}/${build.version}/${build.segment}/no-such-declaration/`
+      const elsewhere = build.version === 'stable' ? 'latest' : 'stable'
+      const away = `${build.root}/${build.ports.find((port) => port.versionedDocs).slug}/${elsewhere}/${build.segment}/no-such-declaration/`
+      const control = await payloadGaps(page.request, origin, [kept, away], served)
+      assert.deepEqual(control.missing, [`${kept} answers 404`], 'A payload missing on a served port was not reported')
+      assert.deepEqual(control.skipped, [away], 'A destination the build does not serve was asked for a payload')
+    }
+    // A link marked for a card whose payload does not exist opens nothing.
+    await page.goto(`${base}/tmux/latest/manual/list-panes/`, { waitUntil: 'load' })
+    await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready')
+    await page.evaluate(() => {
+      const anchor = document.createElement('a')
+      anchor.id = 'no-card'
+      anchor.href = '/en/tmux/latest/reference/c-function-no-such-declaration/'
+      anchor.textContent = 'no_such_declaration'
+      document.querySelector('main').prepend(anchor)
+    })
+    const absent = await page.request.get(`${origin}/en/tmux/latest/reference/c-function-no-such-declaration.preview.json`)
+    assert.equal(absent.status(), 404, 'The control address answered, so the sweep cannot show a missing payload')
+    // The pointer arrives as the browser delivers it, to the link itself, so a sticky header over the top of the page cannot take it.
+    await page.evaluate(() => document.getElementById('no-card').dispatchEvent(new PointerEvent('pointerover', { pointerType: 'mouse', bubbles: true })))
+    await page.waitForTimeout(700)
+    assert.equal(await opened(), false, 'A link with no payload opened a card')
+    console.log(`Tmux reference previews: the C function link of a method page opens its card with its signature; ${asked} marked links on four pages each have a payload (${skipped.size} to trees this build does not serve were not asked); a payload missing on a served port is reported, and a link with none opens nothing PASS`)
+  } finally { await context.close() }
+}

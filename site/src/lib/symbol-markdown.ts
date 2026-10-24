@@ -6,6 +6,7 @@ import mentions from '../data/mentions.json'
 import { PORT_NAME, referenceAlternatives } from './api-models'
 import { apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, hasScalarMembers, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures } from './api-sections'
 import { tmuxCommandsFor, tmuxManualUrl } from './tmux-manual-data'
+import { tmuxCommandItems, tmuxCommandRows, tmuxCommandSeparator, tmuxSymbolSends, type ResolvedUsage } from './tmux-reference'
 import { CATALOG_KINDS, tmuxCatalogKindsForSymbol, tmuxCatalogUrl } from './tmux-catalog'
 import { tmuxCommandMentions, tmuxMentionMarkdown } from './tmux-links'
 import { productApiIndex } from './product-api'
@@ -31,6 +32,8 @@ export interface MarkdownContext {
   index?: SymbolIndex
   hrefFor?: (symbol: ApiSymbol) => string
   manualLinks?: { name: string; href: string }[]
+  /** The library methods that send the command a C declaration implements. */
+  usage?: ResolvedUsage[]
   catalogLinks?: { name: string; href: string }[]
   paths?: ApiRelationshipPath[]
   symbol: ApiSymbol
@@ -134,6 +137,18 @@ export async function symbolMarkdownWithLayout(ctx: MarkdownContext): Promise<st
   return symbolMarkdown({ ...ctx, signatureLayouts: await apiSignatureLayouts(ctx.symbol, language) })
 }
 
+/** The methods that send a command, one line per scope. */
+function usageMarkdown(usage: ResolvedUsage): string[] {
+  const lines = [`These methods send [\`${usage.command}\`](${usage.manualHref}):`, '']
+  for (const group of usage.groups) {
+    const flag = group.scope && (group.scope.flag || group.scope.target) ? ` \`-${group.scope.flag || group.scope.target}\`` : ''
+    const target = group.function ? ` ([\`${group.function.name}\`](${group.function.href}))` : ''
+    const ports = group.ports.map((entry) => `${entry.name}: ${entry.links.map((link) => `[\`${link.label}\`](${link.href})`).join(', ')}`)
+    lines.push(`- ${group.scope?.label ?? 'Any scope'}${flag}${target}: ${ports.join('; ')}`)
+  }
+  return lines
+}
+
 export function symbolMarkdown(ctx: MarkdownContext): string {
   const { model, symbol } = ctx
   const port = 'port' in model ? model.port : undefined
@@ -177,6 +192,13 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   if (facts.length) out.push(...facts, '')
   const commands = ctx.manualLinks ?? (port ? tmuxCommandsFor(port, symbol.publicId ?? symbol.id)
     .map((command) => ({ ...command, href: tmuxManualUrl('latest', command.name) })) : [])
+  for (const send of port && !ctx.manualLinks ? tmuxSymbolSends(port, symbol.publicId ?? symbol.id) : []) {
+    // The same items as the method page: each scope names the command and then its C function, set apart by a comma, and
+    // the scopes by a semicolon. A condition follows the scope it holds for.
+    const items = tmuxCommandItems(tmuxCommandRows([send], []))
+    const written = items.map((item) => `[\`${item.command}\`](${item.href})${item.scope ? ` ${item.scope.label.toLowerCase()} scope${item.function ? `, [\`${item.function.name}\`](${item.function.href})` : ''}` : ''}${item.when ? ` (${item.when})` : ''}`)
+    out.push(`tmux command: ${written.join(tmuxCommandSeparator(items))}`, '')
+  }
   for (const command of commands) out.push(`tmux command: [\`${command.name}\`](${command.href})`, '')
   const catalog = ctx.catalogLinks ?? (port && !ctx.manualLinks ? tmuxCatalogKindsForSymbol(port, symbol)
     .map((kind) => ({ name: CATALOG_KINDS[kind].label, href: tmuxCatalogUrl('latest', kind) })) : [])
@@ -362,6 +384,11 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
       }
       out.push('')
     }
+  }
+
+  if (ctx.usage?.length) {
+    out.push('## In libtmux', '')
+    for (const entry of ctx.usage) out.push(...usageMarkdown(entry), '')
   }
 
   // One trailing newline, so the file ends the way a text file should.

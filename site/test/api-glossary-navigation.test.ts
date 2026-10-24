@@ -19,6 +19,7 @@ import * as apiSidebar from '../src/lib/api-sidebar'
 import * as treeState from '../src/components/api/api-tree-state'
 import * as labels from '../src/lib/api-labels'
 import * as wordBreak from '../src/lib/word-break'
+import * as nativeName from '../src/lib/native-name'
 import * as ports from '../src/lib/ports'
 import * as products from '../src/lib/product-api'
 import * as versions from '../src/lib/versions'
@@ -56,7 +57,7 @@ async function components(stubs: Readonly<Record<string, string>> = {}) {
     ...Object.fromEntries(Object.entries({
       'api-glossary': glossary, 'api-models': models, 'api-sections': sections,
       'api-relationships': relationships, 'api-tree': tree, 'api-search': search, 'api-sidebar': apiSidebar,
-      'api-labels': labels, 'word-break': wordBreak, ports, 'product-api': products,
+      'api-labels': labels, 'word-break': wordBreak, 'native-name': nativeName, ports, 'product-api': products,
       versions, 'site-root': roots, sidebar, 'documentation-navigation': documentation,
       'page-ports-for': pagePorts, 'markdown-twins': markdown, 'tmux-manual-data': manual, 'tmux-reference': reference, 'tmux-catalog': catalog,
       branding,

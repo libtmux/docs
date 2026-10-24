@@ -126,7 +126,7 @@ function placement(source: string): string[] {
   const header = source.slice(source.indexOf('<header'), source.indexOf('</header>'))
   if (/ApiQualifiedName|api-qualified-name/.test(header)) problems.push('the heading still carries the qualified name')
   const panel = source.slice(source.indexOf('<details class="api-source-details"'), source.indexOf('</details>', source.indexOf('<details class="api-source-details"')))
-  if (!/<dt>Qualified name<\/dt>\s*<dd><ApiQualifiedName name=\{qualifiedNameOf\(owner\)\} \/><\/dd>/.test(panel)) problems.push('the disclosure has no qualified name row')
+  if (!/<dt>Qualified name<\/dt>\s*<dd><ApiQualifiedName name=\{nativeQualifiedName\(model, owner\)\} \/><\/dd>/.test(panel)) problems.push('the disclosure has no qualified name row')
   if (!/<dt>\{moduleLabel\}<\/dt>/.test(panel)) problems.push('the disclosure does not label its module row for the port')
   return problems
 }

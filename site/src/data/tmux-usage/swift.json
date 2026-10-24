@@ -1,0 +1,966 @@
+{
+  "commands": [
+    "attach-session",
+    "bind-key",
+    "break-pane",
+    "capture-pane",
+    "choose-buffer",
+    "choose-client",
+    "choose-tree",
+    "clear-history",
+    "clear-prompt-history",
+    "clock-mode",
+    "command-prompt",
+    "confirm-before",
+    "copy-mode",
+    "customize-mode",
+    "delete-buffer",
+    "detach-client",
+    "display-menu",
+    "display-message",
+    "display-panes",
+    "display-popup",
+    "find-window",
+    "has-session",
+    "if-shell",
+    "join-pane",
+    "kill-pane",
+    "kill-server",
+    "kill-session",
+    "kill-window",
+    "last-pane",
+    "last-window",
+    "link-window",
+    "list-buffers",
+    "list-clients",
+    "list-commands",
+    "list-keys",
+    "list-panes",
+    "list-sessions",
+    "list-windows",
+    "load-buffer",
+    "lock-client",
+    "lock-server",
+    "lock-session",
+    "move-pane",
+    "move-window",
+    "new-pane",
+    "new-session",
+    "new-window",
+    "next-layout",
+    "next-window",
+    "paste-buffer",
+    "pipe-pane",
+    "previous-layout",
+    "previous-window",
+    "refresh-client",
+    "rename-session",
+    "rename-window",
+    "resize-pane",
+    "resize-window",
+    "respawn-pane",
+    "respawn-window",
+    "rotate-window",
+    "run-shell",
+    "save-buffer",
+    "select-layout",
+    "select-pane",
+    "select-window",
+    "send-keys",
+    "send-prefix",
+    "server-access",
+    "set-buffer",
+    "set-environment",
+    "set-hook",
+    "set-option",
+    "set-window-option",
+    "show-buffer",
+    "show-environment",
+    "show-hooks",
+    "show-messages",
+    "show-options",
+    "show-prompt-history",
+    "show-window-options",
+    "source-file",
+    "split-window",
+    "start-server",
+    "suspend-client",
+    "swap-pane",
+    "swap-window",
+    "switch-client",
+    "unbind-key",
+    "unlink-window",
+    "wait-for"
+  ],
+  "port": "swift",
+  "repo": "libtmux/libtmux-swift",
+  "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+  "schemaVersion": 1,
+  "symbols": {
+    "ControlSession.stopWatching(_:)": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "Sources/LibTmux/Watch.swift:151"
+        ],
+        "scope": null
+      }
+    ],
+    "ControlSession.watch(_:)": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "Sources/LibTmux/Watch.swift:138"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.breakPane(_:from:named:)": [
+      {
+        "command": "break-pane",
+        "evidence": [
+          "Sources/LibTmux/Navigation.swift:127",
+          "Sources/LibTmux/Navigation.swift:144"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "if-shell",
+        "evidence": [
+          "Sources/LibTmux/Navigation.swift:136",
+          "Sources/LibTmux/Navigation.swift:144"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "no name is given"
+      }
+    ],
+    "Server.buffer(named:)": [
+      {
+        "command": "show-buffer",
+        "evidence": [
+          "Sources/LibTmux/Buffers.swift:51"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.buffers()": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "Sources/LibTmux/Buffers.swift:6"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.cancelModes(in:)": [
+      {
+        "command": "copy-mode",
+        "evidence": [
+          "Sources/LibTmux/Navigation.swift:204"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.capture(_:includingHistory:)": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "Sources/LibTmux/PaneInteraction.swift:363",
+          "Sources/LibTmux/PaneInteraction.swift:94"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.capture(_:includingHistory:maximumLines:)": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "Sources/LibTmux/PaneInteraction.swift:295",
+          "Sources/LibTmux/PaneInteraction.swift:296",
+          "Sources/LibTmux/PaneInteraction.swift:139",
+          "Sources/LibTmux/PaneInteraction.swift:103"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "display-message",
+        "evidence": [
+          "Sources/LibTmux/Formats.swift:364",
+          "Sources/LibTmux/Formats.swift:359",
+          "Sources/LibTmux/Formats.swift:314",
+          "Sources/LibTmux/PaneInteraction.swift:322",
+          "Sources/LibTmux/PaneInteraction.swift:138",
+          "Sources/LibTmux/PaneInteraction.swift:103"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Server.captureRange(_:startingAt:endingAt:joiningWrappedLines:maximumLines:)": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "Sources/LibTmux/PaneInteraction.swift:295",
+          "Sources/LibTmux/PaneInteraction.swift:120"
+        ],
+        "scope": null
+      },
+      {
+        "command": "display-message",
+        "evidence": [
+          "Sources/LibTmux/Formats.swift:364",
+          "Sources/LibTmux/Formats.swift:359",
+          "Sources/LibTmux/Formats.swift:314",
+          "Sources/LibTmux/PaneInteraction.swift:322",
+          "Sources/LibTmux/PaneInteraction.swift:119"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Server.clearHistory(_:)": [
+      {
+        "command": "clear-history",
+        "evidence": [
+          "Sources/LibTmux/Navigation.swift:212"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.clients()": [
+      {
+        "command": "list-clients",
+        "evidence": [
+          "Sources/LibTmux/Server.swift:295"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.clients(where:)": [
+      {
+        "command": "list-clients",
+        "evidence": [
+          "Sources/LibTmux/FilteredListings.swift:100"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.deleteBuffer(named:)": [
+      {
+        "command": "delete-buffer",
+        "evidence": [
+          "Sources/LibTmux/Buffers.swift:61"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.detach(_:)": [
+      {
+        "command": "detach-client",
+        "evidence": [
+          "Sources/LibTmux/Navigation.swift:266"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.detachClients(from:)": [
+      {
+        "command": "detach-client",
+        "evidence": [
+          "Sources/LibTmux/Navigation.swift:278"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.enterCopyMode(_:)": [
+      {
+        "command": "copy-mode",
+        "evidence": [
+          "Sources/LibTmux/Navigation.swift:192"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.environment(_:)": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "Sources/LibTmux/Environment.swift:68"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.environmentValue(_:in:)": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "Sources/LibTmux/Environment.swift:85"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.format(_:)": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "Sources/LibTmux/Formats.swift:396"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.format(_:for:)": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "Sources/LibTmux/Formats.swift:364"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.hooks(_:)": [
+      {
+        "command": "show-hooks",
+        "evidence": [
+          "Sources/LibTmux/Options.swift:224"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.incarnation()": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "Sources/LibTmux/Server.swift:348"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.isRunning()": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "Sources/LibTmux/Server.swift:399"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.join(_:into:direction:size:)": [
+      {
+        "command": "join-pane",
+        "evidence": [
+          "Sources/LibTmux/Navigation.swift:182"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.kill(_:)": [
+      {
+        "command": "kill-pane",
+        "evidence": [
+          "Sources/LibTmux/Mutations.swift:122"
+        ],
+        "scope": null
+      },
+      {
+        "command": "kill-session",
+        "evidence": [
+          "Sources/LibTmux/Mutations.swift:108"
+        ],
+        "scope": null
+      },
+      {
+        "command": "kill-window",
+        "evidence": [
+          "Sources/LibTmux/Mutations.swift:115"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.killServer()": [
+      {
+        "command": "kill-server",
+        "evidence": [
+          "Sources/LibTmux/Navigation.swift:307"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.link(_:into:)": [
+      {
+        "command": "link-window",
+        "evidence": [
+          "Sources/LibTmux/WindowTransfers.swift:75",
+          "Sources/LibTmux/WindowTransfers.swift:91",
+          "Sources/LibTmux/WindowTransfers.swift:20",
+          "Sources/LibTmux/WindowTransfers.swift:27"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "Sources/LibTmux/Server.swift:273",
+          "Sources/LibTmux/Server.swift:274",
+          "Sources/LibTmux/Server.swift:269",
+          "Sources/LibTmux/WindowTransfers.swift:82",
+          "Sources/LibTmux/WindowTransfers.swift:20"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "Server.loadBuffer(from:named:)": [
+      {
+        "command": "load-buffer",
+        "evidence": [
+          "Sources/LibTmux/Buffers.swift:81"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.move(_:to:at:)": [
+      {
+        "command": "list-windows",
+        "evidence": [
+          "Sources/LibTmux/Server.swift:273",
+          "Sources/LibTmux/Server.swift:274",
+          "Sources/LibTmux/Server.swift:269",
+          "Sources/LibTmux/WindowTransfers.swift:82",
+          "Sources/LibTmux/WindowTransfers.swift:79",
+          "Sources/LibTmux/WindowTransfers.swift:46",
+          "Sources/LibTmux/WindowTransfers.swift:10"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": "server",
+        "when": "no index is given"
+      },
+      {
+        "command": "move-window",
+        "evidence": [
+          "Sources/LibTmux/WindowTransfers.swift:75",
+          "Sources/LibTmux/WindowTransfers.swift:91",
+          "Sources/LibTmux/WindowTransfers.swift:46",
+          "Sources/LibTmux/WindowTransfers.swift:10"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Server.newSession(named:startDirectory:windowName:width:height:)": [
+      {
+        "command": "new-session",
+        "evidence": [
+          "Sources/LibTmux/Creation.swift:129"
+        ],
+        "scope": null
+      },
+      {
+        "command": "resize-window",
+        "evidence": [
+          "Sources/LibTmux/Creation.swift:154"
+        ],
+        "scope": null,
+        "when": "the requested size differs from the created size"
+      }
+    ],
+    "Server.newWindow(_:_:named:startDirectory:)": [
+      {
+        "command": "new-window",
+        "evidence": [
+          "Sources/LibTmux/Creation.swift:232",
+          "Sources/LibTmux/Creation.swift:204"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.newWindow(in:named:startDirectory:)": [
+      {
+        "command": "new-window",
+        "evidence": [
+          "Sources/LibTmux/Creation.swift:232",
+          "Sources/LibTmux/Creation.swift:178"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.nextLayout(_:)": [
+      {
+        "command": "next-layout",
+        "evidence": [
+          "Sources/LibTmux/Navigation.swift:101"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.option(_:scope:)": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "Sources/LibTmux/Options.swift:147",
+          "Sources/LibTmux/Options.swift:135"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.options(_:)": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "Sources/LibTmux/Options.swift:110"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.panes()": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "Sources/LibTmux/Server.swift:284"
+        ],
+        "scope": "server"
+      }
+    ],
+    "Server.panes(where:)": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "Sources/LibTmux/FilteredListings.swift:76"
+        ],
+        "scope": "server"
+      }
+    ],
+    "Server.paste(buffer:into:)": [
+      {
+        "command": "paste-buffer",
+        "evidence": [
+          "Sources/LibTmux/Buffers.swift:105"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.pipe(_:to:)": [
+      {
+        "command": "pipe-pane",
+        "evidence": [
+          "Sources/LibTmux/Navigation.swift:393"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.previousLayout(_:)": [
+      {
+        "command": "previous-layout",
+        "evidence": [
+          "Sources/LibTmux/Navigation.swift:108"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.removeEnvironment(_:in:)": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "Sources/LibTmux/Environment.swift:134"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.rename(_:to:)": [
+      {
+        "command": "rename-session",
+        "evidence": [
+          "Sources/LibTmux/Mutations.swift:30"
+        ],
+        "scope": null
+      },
+      {
+        "command": "rename-window",
+        "evidence": [
+          "Sources/LibTmux/Mutations.swift:38"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.resize(_:by:toward:)": [
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "Sources/LibTmux/Mutations.swift:88"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.resize(_:width:height:)": [
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "Sources/LibTmux/Mutations.swift:71"
+        ],
+        "scope": null,
+        "when": "a width or height is given"
+      }
+    ],
+    "Server.resolvedOption(_:scope:)": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "Sources/LibTmux/Options.swift:165"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.respawn(_:running:killingExisting:)": [
+      {
+        "command": "respawn-window",
+        "evidence": [
+          "Sources/LibTmux/Navigation.swift:375"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.respawn(_:running:killingExisting:startDirectory:)": [
+      {
+        "command": "respawn-pane",
+        "evidence": [
+          "Sources/LibTmux/Navigation.swift:362"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.rotate(_:upward:)": [
+      {
+        "command": "rotate-window",
+        "evidence": [
+          "Sources/LibTmux/Navigation.swift:93"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.runHook(_:in:)": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "Sources/LibTmux/Options.swift:286"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.saveBuffer(named:to:)": [
+      {
+        "command": "save-buffer",
+        "evidence": [
+          "Sources/LibTmux/Buffers.swift:95"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.select(_:)": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "Sources/LibTmux/Navigation.swift:19"
+        ],
+        "scope": null
+      },
+      {
+        "command": "select-window",
+        "evidence": [
+          "Sources/LibTmux/Navigation.swift:12"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.selectLastPane(in:)": [
+      {
+        "command": "last-pane",
+        "evidence": [
+          "Sources/LibTmux/Navigation.swift:54"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.selectLastWindow(in:)": [
+      {
+        "command": "last-window",
+        "evidence": [
+          "Sources/LibTmux/Navigation.swift:42"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.selectLayout(_:_:)": [
+      {
+        "command": "select-layout",
+        "evidence": [
+          "Sources/LibTmux/Mutations.swift:52"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.selectNextWindow(in:)": [
+      {
+        "command": "next-window",
+        "evidence": [
+          "Sources/LibTmux/Navigation.swift:27"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.selectPreviousWindow(in:)": [
+      {
+        "command": "previous-window",
+        "evidence": [
+          "Sources/LibTmux/Navigation.swift:34"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.sendKeys(_:to:literally:)": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "Sources/LibTmux/PaneInteraction.swift:43"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.sessions()": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "Sources/LibTmux/Server.swift:249"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.sessions(where:)": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "Sources/LibTmux/FilteredListings.swift:37"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.setBuffer(_:named:)": [
+      {
+        "command": "set-buffer",
+        "evidence": [
+          "Sources/LibTmux/Buffers.swift:35"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.setEnvironment(_:to:in:)": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "Sources/LibTmux/Environment.swift:109",
+          "Sources/LibTmux/Environment.swift:109",
+          "Sources/LibTmux/Environment.swift:51"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.setHook(_:to:at:in:)": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "Sources/LibTmux/Options.swift:259"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.setOption(_:to:scope:)": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "Sources/LibTmux/Options.swift:185"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.setTitle(_:of:)": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "Sources/LibTmux/Navigation.swift:224"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.signal(_:)": [
+      {
+        "command": "wait-for",
+        "evidence": [
+          "Sources/LibTmux/Wait.swift:55"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.snapshot()": [
+      {
+        "command": "list-windows",
+        "evidence": [
+          "Sources/LibTmux/Server.swift:273",
+          "Sources/LibTmux/Server.swift:311"
+        ],
+        "scope": "server"
+      }
+    ],
+    "Server.sourceFile(_:)": [
+      {
+        "command": "source-file",
+        "evidence": [
+          "Sources/LibTmux/Navigation.swift:325"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.split(_:direction:size:startDirectory:)": [
+      {
+        "command": "split-window",
+        "evidence": [
+          "Sources/LibTmux/Creation.swift:313",
+          "Sources/LibTmux/Creation.swift:285"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.splitWindow(_:direction:size:startDirectory:)": [
+      {
+        "command": "split-window",
+        "evidence": [
+          "Sources/LibTmux/Creation.swift:313",
+          "Sources/LibTmux/Creation.swift:258"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.startServer()": [
+      {
+        "command": "start-server",
+        "evidence": [
+          "Sources/LibTmux/Navigation.swift:291"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.swap(_:with:)": [
+      {
+        "command": "swap-pane",
+        "evidence": [
+          "Sources/LibTmux/Navigation.swift:72"
+        ],
+        "scope": null
+      },
+      {
+        "command": "swap-window",
+        "evidence": [
+          "Sources/LibTmux/Navigation.swift:65"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.toggleZoom(_:)": [
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "Sources/LibTmux/Mutations.swift:99"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.unlink(_:)": [
+      {
+        "command": "unlink-window",
+        "evidence": [
+          "Sources/LibTmux/WindowTransfers.swift:34"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.unsetEnvironment(_:in:)": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "Sources/LibTmux/Environment.swift:122"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.unsetHook(_:in:)": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "Sources/LibTmux/Options.swift:275"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.unsetOption(_:scope:)": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "Sources/LibTmux/Options.swift:207"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.wait(for:)": [
+      {
+        "command": "wait-for",
+        "evidence": [
+          "Sources/LibTmux/Wait.swift:35"
+        ],
+        "scope": null
+      }
+    ],
+    "Server.windowLinks()": [
+      {
+        "command": "list-windows",
+        "evidence": [
+          "Sources/LibTmux/Server.swift:273",
+          "Sources/LibTmux/Server.swift:269"
+        ],
+        "scope": "server"
+      }
+    ],
+    "Server.windows()": [
+      {
+        "command": "list-windows",
+        "evidence": [
+          "Sources/LibTmux/Server.swift:273",
+          "Sources/LibTmux/Server.swift:262"
+        ],
+        "scope": "server"
+      }
+    ],
+    "Server.windows(where:)": [
+      {
+        "command": "list-windows",
+        "evidence": [
+          "Sources/LibTmux/FilteredListings.swift:58"
+        ],
+        "scope": "server"
+      }
+    ],
+    "Server.withControlMode(attachingTo:_:)": [
+      {
+        "command": "attach-session",
+        "evidence": [
+          "Sources/LibTmux/ControlMode.swift:179"
+        ],
+        "scope": null
+      }
+    ]
+  }
+}

@@ -5,6 +5,7 @@ import { experimental_AstroContainer } from 'astro/container'
 import { pagePortLinks, type PagePortLink } from '../src/lib/page-port-links'
 import { API_MODELS } from '../src/lib/api-models'
 import { PORTS, productAvailable } from '../src/lib/ports'
+import { PORT_FAMILIES } from '../src/lib/port-families'
 import ts from 'typescript'
 import { Window, type HTMLAnchorElement, type HTMLElement } from 'happy-dom'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
@@ -126,6 +127,7 @@ async function renderPicker(entries: PagePortLink[], portSlug = 'julia') {
     const component = await compile('../src/components/PagePortSwitcher.astro', {
       '../lib/ports': new URL('../src/lib/ports.ts', import.meta.url).href,
       '../lib/branding': new URL('../src/lib/branding.ts', import.meta.url).href,
+      '../lib/port-families': new URL('../src/lib/port-families.ts', import.meta.url).href,
       '../lib/site-root': root, './tmux/Logo.astro': logo,
     })
     return (await import(/* @vite-ignore */ component)).default
@@ -133,6 +135,18 @@ async function renderPicker(entries: PagePortLink[], portSlug = 'julia') {
   const container = await experimental_AstroContainer.create()
   win.document.body.innerHTML = await container.renderToString(await pickerComponent, { props: { entries, portSlug } })
 }
+
+it('draws each port once, under its family, with Elixir under BEAM', async () => {
+  await renderPicker(pagePortLinks({ pagePath: 'reference/glossary', portSlug: 'elixir', version: 'latest', defaults: {}, docs: [] }), 'elixir')
+  const drawn = Array.from(win.document.querySelectorAll('.port-family')).map((section) => ({
+    label: section.querySelector('h3')!.textContent,
+    ports: [...new Set(Array.from(section.querySelectorAll('[data-port]')).map((row) => row.getAttribute('data-port')))],
+  }))
+  expect(drawn.map((family) => family.label)).toEqual(PORT_FAMILIES.map((family) => family.label))
+  expect(drawn.find((family) => family.label === 'BEAM')?.ports).toEqual(['elixir'])
+  expect(drawn.filter((family) => family.ports.includes('elixir'))).toHaveLength(1)
+  expect(drawn.flatMap((family) => family.ports).sort()).toEqual(PORTS.map((port) => port.slug).sort())
+})
 
 it('renders safe native glossary destinations without JavaScript', async () => {
   const entries = pagePortLinks({ pagePath: 'reference/glossary', portSlug: 'scala', version: 'latest', defaults: {}, docs: [] })

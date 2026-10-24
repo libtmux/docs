@@ -1,6 +1,6 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { parseManual } from '../../scripts/gen-tmux-manual.mjs'
-import { buildsTmuxDocumentation, tmuxCommandNotes, tmuxCommandsFor, tmuxGuidesFor, tmuxManualHtml, tmuxManualHeadings, tmuxManual, tmuxManualUrl, tmuxManualVersionUrl } from '../src/lib/tmux-manual-data'
+import { buildsTmuxDocumentation, tmuxApiLinks, tmuxCommandNotes, tmuxCommandsFor, tmuxGuidesFor, tmuxManualHtml, tmuxManualHeadings, tmuxManual, tmuxManualUrl, tmuxManualVersionUrl } from '../src/lib/tmux-manual-data'
 import { highlightTmuxManual, linkTmuxManualEntries, markTmuxManualKeys } from '../src/lib/tmux-manual'
 import { tmuxKeyList } from '../src/lib/tmux-keys'
 import { tmuxManualNavigation } from '../src/lib/tmux-manual-navigation'
@@ -141,12 +141,13 @@ describe('versioned tmux manual', () => {
     expect(referenceUrl('3.2a', 'capture-pane')).toBe('/pr-42/en/tmux/3.2a/manual/capture-pane/')
   })
 
-  it('links verified API concepts without inferring behavior from similar names', () => {
-    expect(tmuxCommandsFor('ts', 'pane.Pane.capture').map((command) => command.name)).toEqual(['capture-pane'])
-    expect(tmuxCommandsFor('ts', 'server.Server.sessions').map((command) => command.name)).toEqual(['list-sessions'])
-    expect(tmuxCommandsFor('ts', 'Unrelated.capture')).toEqual([])
-    expect(tmuxCommandsFor('ts', 'server.Server.windows').map((command) => command.name)).toEqual(['list-windows'])
-    expect(tmuxCommandsFor('ts', 'pane.Pane.split').map((command) => command.name)).toEqual(['split-window'])
+  it('leaves a recorded command to the code that sends it, and keeps the concepts for the language picker', () => {
+    // Every command of the manual has recorded usage, so a concept never names one: what a method sends comes from its source.
+    for (const [port, id] of [['ts', 'pane.Pane.capture'], ['ts', 'server.Server.sessions'], ['ts', 'server.Server.windows'], ['ts', 'pane.Pane.split'], ['ts', 'Unrelated.capture']]) {
+      expect(tmuxCommandsFor(port, id), id).toEqual([])
+    }
+    // The picker still lands TypeScript on the capture, whose send is one helper away.
+    expect(tmuxApiLinks('capture-pane').map((link) => link.name)).toContain('TypeScript')
   })
 
   it('exports the same command sections and related guides as the page', () => {
@@ -155,7 +156,9 @@ describe('versioned tmux manual', () => {
         'capture-pane-options-output-and-line-range', 'capture-pane-options-text-formatting',
         'capture-pane-options-screens-and-pending-output', 'capture-pane-guides', 'capture-pane-use-from-a-library'])
     expect(tmuxManualHeadings('latest', 'server-access').map((heading) => heading.slug))
-      .toEqual(['server-access-syntax', 'server-access-behavior'])
+      .toEqual(['server-access-syntax', 'server-access-behavior', 'server-access-use-from-a-library'])
+    // A command no library sends has no such section.
+    expect(tmuxManualHeadings('latest', 'set-window-option').map((heading) => heading.slug)).not.toContain('set-window-option-use-from-a-library')
     expect(tmuxGuidesFor('capture-pane').map((guide) => guide.href))
       .toEqual([tmuxManualUrl().replace('/tmux/latest/manual/', '/tmux/guides/capturing-output/')])
     expect(tmuxManualHeadings('3.2a', 'full').some((heading) => heading.slug === 'COMMANDS')).toBe(true)

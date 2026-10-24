@@ -1,0 +1,1300 @@
+{
+  "commands": [
+    "attach-session",
+    "bind-key",
+    "break-pane",
+    "capture-pane",
+    "choose-buffer",
+    "choose-client",
+    "choose-tree",
+    "clear-history",
+    "clear-prompt-history",
+    "clock-mode",
+    "command-prompt",
+    "confirm-before",
+    "copy-mode",
+    "customize-mode",
+    "delete-buffer",
+    "detach-client",
+    "display-menu",
+    "display-message",
+    "display-panes",
+    "display-popup",
+    "find-window",
+    "has-session",
+    "if-shell",
+    "join-pane",
+    "kill-pane",
+    "kill-server",
+    "kill-session",
+    "kill-window",
+    "last-pane",
+    "last-window",
+    "link-window",
+    "list-buffers",
+    "list-clients",
+    "list-commands",
+    "list-keys",
+    "list-panes",
+    "list-sessions",
+    "list-windows",
+    "load-buffer",
+    "lock-client",
+    "lock-server",
+    "lock-session",
+    "move-pane",
+    "move-window",
+    "new-pane",
+    "new-session",
+    "new-window",
+    "next-layout",
+    "next-window",
+    "paste-buffer",
+    "pipe-pane",
+    "previous-layout",
+    "previous-window",
+    "refresh-client",
+    "rename-session",
+    "rename-window",
+    "resize-pane",
+    "resize-window",
+    "respawn-pane",
+    "respawn-window",
+    "rotate-window",
+    "run-shell",
+    "save-buffer",
+    "select-layout",
+    "select-pane",
+    "select-window",
+    "send-keys",
+    "send-prefix",
+    "server-access",
+    "set-buffer",
+    "set-environment",
+    "set-hook",
+    "set-option",
+    "set-window-option",
+    "show-buffer",
+    "show-environment",
+    "show-hooks",
+    "show-messages",
+    "show-options",
+    "show-prompt-history",
+    "show-window-options",
+    "source-file",
+    "split-window",
+    "start-server",
+    "suspend-client",
+    "swap-pane",
+    "swap-window",
+    "switch-client",
+    "unbind-key",
+    "unlink-window",
+    "wait-for"
+  ],
+  "port": "ruby",
+  "repo": "libtmux/libtmux-ruby",
+  "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+  "schemaVersion": 1,
+  "symbols": {
+    "LibTmux::Async::ControlConnection#pause_output": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/control.rb:620",
+          "gems/libtmux/lib/libtmux/control.rb:489"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Async::ControlConnection#resume_output": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/control.rb:620",
+          "gems/libtmux/lib/libtmux/control.rb:493"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Async::Server#delete_buffer": [
+      {
+        "command": "delete-buffer",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:63"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Async::Server#display": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:31"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Async::Server#environment": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:228",
+          "gems/libtmux/lib/libtmux/operations.rb:86"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Async::Server#kill": [
+      {
+        "command": "kill-server",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/server.rb:137"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Async::Server#list_buffers": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:67"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Async::Server#list_clients": [
+      {
+        "command": "list-clients",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:95"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Async::Server#list_panes": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/server.rb:470",
+          "gems/libtmux/lib/libtmux/server.rb:163"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "LibTmux::Async::Server#list_sessions": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/server.rb:470",
+          "gems/libtmux/lib/libtmux/server.rb:155"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Async::Server#list_window_links": [
+      {
+        "command": "list-windows",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:207",
+          "gems/libtmux/lib/libtmux/operations.rb:74"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "LibTmux::Async::Server#list_windows": [
+      {
+        "command": "list-windows",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/server.rb:470",
+          "gems/libtmux/lib/libtmux/server.rb:159"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "LibTmux::Async::Server#new_session": [
+      {
+        "command": "new-session",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/server.rb:151"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Async::Server#read_buffer": [
+      {
+        "command": "save-buffer",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:59"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Async::Server#search_panes": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/capture.rb:93",
+          "gems/libtmux/lib/libtmux/server.rb:228",
+          "gems/libtmux/lib/libtmux/source_query.rb:42",
+          "gems/libtmux/lib/libtmux/server.rb:232"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "LibTmux::Async::Server#set_environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:223",
+          "gems/libtmux/lib/libtmux/operations.rb:82"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Async::Server#snapshot": [
+      {
+        "command": "list-clients",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/capture.rb:94",
+          "gems/libtmux/lib/libtmux/server.rb:228"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/capture.rb:93",
+          "gems/libtmux/lib/libtmux/server.rb:228"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/capture.rb:72",
+          "gems/libtmux/lib/libtmux/server.rb:228"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/capture.rb:84",
+          "gems/libtmux/lib/libtmux/server.rb:228"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "LibTmux::Async::Server#source_file": [
+      {
+        "command": "source-file",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:43"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Async::Server#switch_client": [
+      {
+        "command": "list-commands",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:137",
+          "gems/libtmux/lib/libtmux/terminal.rb:41"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "show-options",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/options.rb:65",
+          "gems/libtmux/lib/libtmux/options.rb:61",
+          "gems/libtmux/lib/libtmux/operations.rb:130",
+          "gems/libtmux/lib/libtmux/terminal.rb:41"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "switch-client",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/terminal.rb:41",
+          "gems/libtmux/lib/libtmux/terminal.rb:42"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Async::Server#unset_environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:90"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Async::Server#wait_for": [
+      {
+        "command": "wait-for",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:51"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Async::Server#write_buffer": [
+      {
+        "command": "load-buffer",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:55"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::ControlConnection#pause_output": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/control.rb:620",
+          "gems/libtmux/lib/libtmux/control.rb:489"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::ControlConnection#resume_output": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/control.rb:620",
+          "gems/libtmux/lib/libtmux/control.rb:493"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Hooks#get": [
+      {
+        "command": "show-hooks",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/options.rb:61",
+          "gems/libtmux/lib/libtmux/options.rb:65",
+          "gems/libtmux/lib/libtmux/options.rb:167"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Hooks#list": [
+      {
+        "command": "show-hooks",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/options.rb:61",
+          "gems/libtmux/lib/libtmux/options.rb:65"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Hooks#run": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/options.rb:177"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Hooks#set": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/options.rb:173"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Hooks#unset": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/options.rb:107",
+          "gems/libtmux/lib/libtmux/options.rb:108"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Options#get": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/options.rb:61",
+          "gems/libtmux/lib/libtmux/options.rb:65",
+          "gems/libtmux/lib/libtmux/options.rb:83"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Options#list": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/options.rb:61",
+          "gems/libtmux/lib/libtmux/options.rb:65"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Options#set": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/options.rb:103"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Options#unset": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/options.rb:107",
+          "gems/libtmux/lib/libtmux/options.rb:108"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Pane#break_out": [
+      {
+        "command": "break-pane",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:350"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Pane#capture": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/entity.rb:190"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Pane#copy_command": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:400"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Pane#copy_mode": [
+      {
+        "command": "copy-mode",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:396"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Pane#join": [
+      {
+        "command": "join-pane",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:341"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Pane#kill": [
+      {
+        "command": "kill-pane",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/entity.rb:88",
+          "gems/libtmux/lib/libtmux/server.rb:436",
+          "gems/libtmux/lib/libtmux/entity.rb:87"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Pane#move": [
+      {
+        "command": "move-pane",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:345"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Pane#paste": [
+      {
+        "command": "paste-buffer",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:366"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Pane#pipe": [
+      {
+        "command": "pipe-pane",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:380"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Pane#resize": [
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:333"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Pane#respawn": [
+      {
+        "command": "respawn-pane",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:358"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Pane#select": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:315"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Pane#send_keys": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/entity.rb:202"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Pane#send_text": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/entity.rb:196"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Pane#split": [
+      {
+        "command": "split-window",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/server.rb:528",
+          "gems/libtmux/lib/libtmux/entity.rb:165"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Pane#swap": [
+      {
+        "command": "swap-pane",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:337"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Server#attach": [
+      {
+        "command": "attach-session",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/terminal.rb:60",
+          "gems/libtmux/lib/libtmux/terminal.rb:62",
+          "gems/libtmux/lib/libtmux/terminal.rb:88"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Server#delete_buffer": [
+      {
+        "command": "delete-buffer",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:63"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Server#display": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:31"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Server#environment": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:228",
+          "gems/libtmux/lib/libtmux/operations.rb:86"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Server#kill": [
+      {
+        "command": "kill-server",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/server.rb:137"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Server#list_buffers": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:67"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Server#list_clients": [
+      {
+        "command": "list-clients",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:95"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Server#list_panes": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/server.rb:470",
+          "gems/libtmux/lib/libtmux/server.rb:163"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "LibTmux::Server#list_sessions": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/server.rb:470",
+          "gems/libtmux/lib/libtmux/server.rb:155"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Server#list_window_links": [
+      {
+        "command": "list-windows",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:207",
+          "gems/libtmux/lib/libtmux/operations.rb:74"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "LibTmux::Server#list_windows": [
+      {
+        "command": "list-windows",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/server.rb:470",
+          "gems/libtmux/lib/libtmux/server.rb:159"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "LibTmux::Server#new_session": [
+      {
+        "command": "new-session",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/server.rb:151"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Server#read_buffer": [
+      {
+        "command": "save-buffer",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:59"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Server#search_panes": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/capture.rb:93",
+          "gems/libtmux/lib/libtmux/server.rb:228",
+          "gems/libtmux/lib/libtmux/source_query.rb:42",
+          "gems/libtmux/lib/libtmux/server.rb:232"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "LibTmux::Server#set_environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:223",
+          "gems/libtmux/lib/libtmux/operations.rb:82"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Server#snapshot": [
+      {
+        "command": "list-clients",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/capture.rb:94",
+          "gems/libtmux/lib/libtmux/server.rb:228"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/capture.rb:93",
+          "gems/libtmux/lib/libtmux/server.rb:228"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/capture.rb:72",
+          "gems/libtmux/lib/libtmux/server.rb:228"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/capture.rb:84",
+          "gems/libtmux/lib/libtmux/server.rb:228"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "LibTmux::Server#source_file": [
+      {
+        "command": "source-file",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:43"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Server#switch_client": [
+      {
+        "command": "list-commands",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:137",
+          "gems/libtmux/lib/libtmux/terminal.rb:41"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "show-options",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/options.rb:65",
+          "gems/libtmux/lib/libtmux/options.rb:61",
+          "gems/libtmux/lib/libtmux/operations.rb:130",
+          "gems/libtmux/lib/libtmux/terminal.rb:41"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "switch-client",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/terminal.rb:41",
+          "gems/libtmux/lib/libtmux/terminal.rb:42"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Server#unset_environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:90"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Server#wait_for": [
+      {
+        "command": "wait-for",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:51"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Server#write_buffer": [
+      {
+        "command": "load-buffer",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:55"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Session#environment": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:228",
+          "gems/libtmux/lib/libtmux/operations.rb:280"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Session#kill": [
+      {
+        "command": "if-shell",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:172",
+          "gems/libtmux/lib/libtmux/operations.rb:171",
+          "gems/libtmux/lib/libtmux/operations.rb:257"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "expected windows or panes are given"
+      },
+      {
+        "command": "kill-session",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/entity.rb:88",
+          "gems/libtmux/lib/libtmux/server.rb:436",
+          "gems/libtmux/lib/libtmux/operations.rb:255"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-commands",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:137",
+          "gems/libtmux/lib/libtmux/operations.rb:165",
+          "gems/libtmux/lib/libtmux/operations.rb:257"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null,
+        "when": "expected windows or panes are given"
+      },
+      {
+        "command": "show-options",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/options.rb:65",
+          "gems/libtmux/lib/libtmux/options.rb:61",
+          "gems/libtmux/lib/libtmux/operations.rb:130",
+          "gems/libtmux/lib/libtmux/operations.rb:165",
+          "gems/libtmux/lib/libtmux/operations.rb:257"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null,
+        "when": "expected windows or panes are given"
+      }
+    ],
+    "LibTmux::Session#link_window": [
+      {
+        "command": "link-window",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:272"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Session#list_panes": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/server.rb:470",
+          "gems/libtmux/lib/libtmux/entity.rb:113"
+        ],
+        "reviewed": true,
+        "scope": "session"
+      }
+    ],
+    "LibTmux::Session#list_window_links": [
+      {
+        "command": "list-windows",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:207",
+          "gems/libtmux/lib/libtmux/operations.rb:265"
+        ],
+        "reviewed": true,
+        "scope": "session"
+      }
+    ],
+    "LibTmux::Session#list_windows": [
+      {
+        "command": "list-windows",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/server.rb:470",
+          "gems/libtmux/lib/libtmux/entity.rb:109"
+        ],
+        "reviewed": true,
+        "scope": "session"
+      }
+    ],
+    "LibTmux::Session#new_window": [
+      {
+        "command": "new-window",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/server.rb:509",
+          "gems/libtmux/lib/libtmux/entity.rb:104"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Session#rename": [
+      {
+        "command": "rename-session",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:261"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Session#set_environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:223",
+          "gems/libtmux/lib/libtmux/operations.rb:276"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Session#unset_environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:284"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Window#kill": [
+      {
+        "command": "kill-window",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/entity.rb:88",
+          "gems/libtmux/lib/libtmux/server.rb:436",
+          "gems/libtmux/lib/libtmux/entity.rb:87"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Window#list_panes": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/server.rb:470",
+          "gems/libtmux/lib/libtmux/entity.rb:123"
+        ],
+        "reviewed": true,
+        "scope": "window"
+      }
+    ],
+    "LibTmux::Window#rename": [
+      {
+        "command": "rename-window",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:290"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Window#resize": [
+      {
+        "command": "resize-window",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:309"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Window#respawn": [
+      {
+        "command": "respawn-window",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:297"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Window#select_layout": [
+      {
+        "command": "select-layout",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/entity.rb:159"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::Window#split": [
+      {
+        "command": "split-window",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/server.rb:528",
+          "gems/libtmux/lib/libtmux/entity.rb:127"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::WindowLink#display": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/entity.rb:245"
+        ],
+        "scope": null
+      },
+      {
+        "command": "list-commands",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:137",
+          "gems/libtmux/lib/libtmux/operations.rb:113",
+          "gems/libtmux/lib/libtmux/entity.rb:245"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "show-options",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/options.rb:65",
+          "gems/libtmux/lib/libtmux/options.rb:61",
+          "gems/libtmux/lib/libtmux/operations.rb:130",
+          "gems/libtmux/lib/libtmux/operations.rb:113",
+          "gems/libtmux/lib/libtmux/entity.rb:245"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::WindowLink#kill": [
+      {
+        "command": "kill-window",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/entity.rb:228"
+        ],
+        "scope": null
+      },
+      {
+        "command": "list-commands",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:137",
+          "gems/libtmux/lib/libtmux/operations.rb:113",
+          "gems/libtmux/lib/libtmux/entity.rb:228"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "show-options",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/options.rb:65",
+          "gems/libtmux/lib/libtmux/options.rb:61",
+          "gems/libtmux/lib/libtmux/operations.rb:130",
+          "gems/libtmux/lib/libtmux/operations.rb:113",
+          "gems/libtmux/lib/libtmux/entity.rb:228"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::WindowLink#move": [
+      {
+        "command": "list-commands",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:137",
+          "gems/libtmux/lib/libtmux/operations.rb:113",
+          "gems/libtmux/lib/libtmux/entity.rb:235"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "move-window",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/entity.rb:235"
+        ],
+        "scope": null
+      },
+      {
+        "command": "show-options",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/options.rb:65",
+          "gems/libtmux/lib/libtmux/options.rb:61",
+          "gems/libtmux/lib/libtmux/operations.rb:130",
+          "gems/libtmux/lib/libtmux/operations.rb:113",
+          "gems/libtmux/lib/libtmux/entity.rb:235"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::WindowLink#select": [
+      {
+        "command": "list-commands",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:137",
+          "gems/libtmux/lib/libtmux/operations.rb:113",
+          "gems/libtmux/lib/libtmux/entity.rb:220"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "select-window",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/entity.rb:220"
+        ],
+        "scope": null
+      },
+      {
+        "command": "show-options",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/options.rb:65",
+          "gems/libtmux/lib/libtmux/options.rb:61",
+          "gems/libtmux/lib/libtmux/operations.rb:130",
+          "gems/libtmux/lib/libtmux/operations.rb:113",
+          "gems/libtmux/lib/libtmux/entity.rb:220"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::WindowLink#swap": [
+      {
+        "command": "list-commands",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:137",
+          "gems/libtmux/lib/libtmux/operations.rb:113",
+          "gems/libtmux/lib/libtmux/entity.rb:240"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "show-options",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/options.rb:65",
+          "gems/libtmux/lib/libtmux/options.rb:61",
+          "gems/libtmux/lib/libtmux/operations.rb:130",
+          "gems/libtmux/lib/libtmux/operations.rb:113",
+          "gems/libtmux/lib/libtmux/entity.rb:240"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "swap-window",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/entity.rb:240"
+        ],
+        "scope": null
+      }
+    ],
+    "LibTmux::WindowLink#unlink": [
+      {
+        "command": "list-commands",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:137",
+          "gems/libtmux/lib/libtmux/operations.rb:113",
+          "gems/libtmux/lib/libtmux/entity.rb:224"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "show-options",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/options.rb:65",
+          "gems/libtmux/lib/libtmux/options.rb:61",
+          "gems/libtmux/lib/libtmux/operations.rb:130",
+          "gems/libtmux/lib/libtmux/operations.rb:113",
+          "gems/libtmux/lib/libtmux/entity.rb:224"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "unlink-window",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/entity.rb:224"
+        ],
+        "scope": null
+      }
+    ]
+  }
+}

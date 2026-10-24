@@ -16,7 +16,7 @@ different effects.
 
 ## Set options and observe an event
 
-Save this complete script as `options.sh`. It requires tmux 3.2a or newer and
+Save this complete script as `options.sh`. It requires tmux 3.3a or newer and
 a POSIX shell. It checks a global default and local overrides, then registers
 and removes a session hook on its private server.
 

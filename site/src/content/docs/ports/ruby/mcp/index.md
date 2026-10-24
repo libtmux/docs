@@ -27,6 +27,6 @@ calling an undisclosed name.
 - [Language API](./reference/) documents the Ruby embedding surface.
 
 The server requires Ruby 3.3 or newer. Strong process tracking for waits and
-authored runs requires tmux 3.3 or newer plus native process identity support.
+authored runs requires tmux 3.3a or newer plus native process identity support.
 The [MCP server guide](./source-guide/) is staged from the same revision
 as the generated reference.

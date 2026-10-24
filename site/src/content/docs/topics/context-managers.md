@@ -22,7 +22,7 @@ panes, and every session link to that window.
 [`kill-session`](/tmux/latest/manual/kill-session/) destroys the session and
 its window links. A window linked to another surviving session can remain.
 
-Save this complete script as `cleanup.sh`. It requires tmux 3.2a or newer and
+Save this complete script as `cleanup.sh`. It requires tmux 3.3a or newer and
 a POSIX shell. It removes a temporary pane, window, and session while keeping
 an independent session on the same private server.
 
