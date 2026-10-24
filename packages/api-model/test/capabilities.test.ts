@@ -51,7 +51,7 @@ const manifest = {
 
 describe('tmux version order', () => {
   it('ranks development builds and candidates below the release they name', () => {
-    const ordered = ['next-3.7', '3.7-rc', '3.7-rc3', '3.7', '3.7a', '3.8', 'next-3.9', '3.10']
+    const ordered = ['next-3.7', '3.7-rc', '3.7-rc2', '3.7-rc3', '3.7-rc10', '3.7', '3.7a', '3.8', 'next-3.9', '3.10']
     expect([...ordered].reverse().sort(compareTmuxVersions)).toEqual(ordered)
   })
 
@@ -59,6 +59,15 @@ describe('tmux version order', () => {
     for (const v of ['master', '3.3a-master', 'next-3.3a', '3.3a-rc1', '03.3a', 'openbsd-7.6']) {
       expect(() => compareTmuxVersions(v, '3.3a'), v).toThrow(TypeError)
     }
+  })
+
+  it('refuses candidate numbers tmux has not used', () => {
+    // tmux names its first candidate X.Y-rc and the next X.Y-rc2, so rc0, rc1 and padded numbers are not its.
+    for (const v of ['3.8-rc0', '3.8-rc1', '3.8-rc01', '3.8-rc02', '3.8-rc-2']) {
+      expect(() => compareTmuxVersions(v, '3.8-rc'), v).toThrow(TypeError)
+      expect(validateManifest({ ...manifest, floor: { minimum: v } }).errors.join('\n'), v).toContain('floor.minimum')
+    }
+    expect(compareTmuxVersions('3.8-rc', '3.8-rc2')).toBeLessThan(0)
   })
 })
 
