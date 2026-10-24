@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
-  EVIDENCE_MAX_AGE_DAYS, REPOSITORY_HOSTS, VERSION_SUPPORT, checkEvidence, collectDestinations, dateProblem, futureRecords, repoOf, staleRecords, staleWarnings,
+  EVIDENCE_MAX_AGE_DAYS, REPOSITORY_HOSTS, VERSION_SUPPORT, checkEvidence, collectDestinations, dateProblem, futureRecords, inventoryCoverage, repoOf, staleRecords, staleWarnings,
 } from '../../scripts/lib/destination-verification.mjs'
 import evidence from '../src/data/destination-evidence.json'
 import manifests from '../src/data/manifest-packages.json'
 import { INVENTORY, entryDestinations, type InventoryEntry } from '../src/lib/port-inventory'
+import { PORTS } from '../src/lib/ports'
 
 type Evidence = (typeof evidence.destinations)[number]
 const records = new Map<string, Evidence>(evidence.destinations.map((record) => [record.url, record]))
@@ -30,6 +31,19 @@ describe('destination evidence', () => {
         expect(record?.status, url).toBe(200)
       }
     }
+  })
+
+  it('covers every registered port, and names one the inventory omits or cannot link', () => {
+    const registered = PORTS.map(({ slug }) => slug)
+    // Control: the committed inventory leaves nothing out.
+    expect(inventoryCoverage(INVENTORY, registered)).toEqual([])
+    const { elixir: _omitted, ...without } = INVENTORY
+    expect(inventoryCoverage(without, registered)).toEqual([expect.stringMatching(/^elixir is registered in ports\.ts but has no inventory entry/)])
+    // A library that is not published gives the header nothing to link.
+    const withheld = { ...INVENTORY, elixir: INVENTORY.elixir!.map((entry) => (entry.kind === 'library' ? { ...entry, status: 'planned' as const } : entry)) }
+    expect(inventoryCoverage(withheld, registered)).toEqual([expect.stringMatching(/^elixir has no published library entry/)])
+    expect(inventoryCoverage({ ...INVENTORY, nope: INVENTORY.elixir! }, registered)).toEqual(['nope has inventory entries but is not registered in ports.ts'])
+    expect(inventoryCoverage({ ...INVENTORY, elixir: [] }, registered)).toHaveLength(1)
   })
 
   it('records the url, status, matched identity and date of each request', () => {

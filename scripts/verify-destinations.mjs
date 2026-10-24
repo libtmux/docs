@@ -26,13 +26,19 @@
  * records as warnings with their dates and still exits 0: a change that touches
  * none of this should not fail because time passed, and the remedy is a live run.
  *
+ * Every port in the port table must have an inventory entry with a published
+ * library, in both modes and before any request: the header builds its links
+ * from that entry, so a port without one would offer nothing and no other
+ * check would say so.
+ *
  * Usage:
- *   node scripts/verify-destinations.mjs [--out <path>] [--manifests <path>] [--inventory <path>] [--date <YYYY-MM-DD>]
- *   node scripts/verify-destinations.mjs --check [--fresh] [--out <path>] [--manifests <path>] [--inventory <path>] [--today <YYYY-MM-DD>]
+ *   node scripts/verify-destinations.mjs [--out <path>] [--manifests <path>] [--inventory <path>] [--ports <slugs>] [--date <YYYY-MM-DD>]
+ *   node scripts/verify-destinations.mjs --check [--fresh] [--out <path>] [--manifests <path>] [--inventory <path>] [--ports <slugs>] [--today <YYYY-MM-DD>]
  *
  *   --out <path>         The evidence file (default site/src/data/destination-evidence.json).
  *   --manifests <path>   The manifest packages naming each package's version.
  *   --inventory <path>   A JSON inventory in place of the committed one.
+ *   --ports <slugs>      Comma-separated registered ports the inventory must cover (default: the port table).
  *   --check              Request nothing; compare the evidence file with the inventory.
  *   --fresh              With --check, also fail on evidence older than the bound.
  *   --date <date>        The day to record (default today, UTC). It may not be in the future.
@@ -45,7 +51,8 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { INVENTORY } from '../site/src/lib/port-inventory.ts'
-import { checkEvidence, collectDestinations, createGet, dateProblem, staleRecords, staleWarnings, verifyDestination } from './lib/destination-verification.mjs'
+import { PORTS } from '../site/src/lib/ports.ts'
+import { checkEvidence, collectDestinations, createGet, dateProblem, inventoryCoverage, staleRecords, staleWarnings, verifyDestination } from './lib/destination-verification.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const DEFAULT_OUT = join(root, 'site', 'src', 'data', 'destination-evidence.json')
@@ -53,13 +60,14 @@ const DEFAULT_MANIFESTS = join(root, 'site', 'src', 'data', 'manifest-packages.j
 
 function parseArgs(argv) {
   const today = new Date().toISOString().slice(0, 10)
-  const opts = { out: DEFAULT_OUT, manifests: DEFAULT_MANIFESTS, inventory: null, check: false, fresh: false, date: today, today }
+  const opts = { out: DEFAULT_OUT, manifests: DEFAULT_MANIFESTS, inventory: null, ports: PORTS.map((port) => port.slug), check: false, fresh: false, date: today, today }
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i]
     if (arg === '--out') opts.out = argv[++i]
     else if (arg === '--manifests') opts.manifests = argv[++i]
     else if (arg === '--today') opts.today = argv[++i]
     else if (arg === '--inventory') opts.inventory = argv[++i]
+    else if (arg === '--ports') opts.ports = argv[++i].split(',').filter(Boolean)
     else if (arg === '--date') opts.date = argv[++i]
     else if (arg === '--check') opts.check = true
     else if (arg === '--fresh') opts.fresh = true
@@ -86,6 +94,13 @@ for (const [flag, value] of [['--today', opts.today], ['--date', opts.date]]) {
 }
 
 const inventory = opts.inventory ? JSON.parse(readFileSync(opts.inventory, 'utf8')) : INVENTORY
+
+const uncovered = inventoryCoverage(inventory, opts.ports)
+if (uncovered.length > 0) {
+  for (const problem of uncovered) console.error(`  ${problem}`)
+  console.error(`${uncovered.length} problem${uncovered.length === 1 ? '' : 's'} in the inventory`)
+  process.exit(1)
+}
 
 function report(problems) {
   for (const problem of problems) console.error(`  ${problem}`)

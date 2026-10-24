@@ -41,6 +41,8 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { promisify } from 'node:util'
 import { fileURLToPath } from 'node:url'
+import { INVENTORY } from '../site/src/lib/port-inventory.ts'
+import { PORTS } from '../site/src/lib/ports.ts'
 
 const script = join(dirname(fileURLToPath(import.meta.url)), 'verify-destinations.mjs')
 const run = promisify(execFile)
@@ -262,12 +264,14 @@ async function verify(name, inventory, { args = [], expect: expected, evidence, 
   const inventoryFile = join(dir, `inventory-${cases}.json`)
   const out = join(dir, `evidence-${cases}.json`)
   const manifestFile = join(dir, `manifests-${cases}.json`)
-  writeFileSync(inventoryFile, JSON.stringify(Array.isArray(inventory) ? { demo: inventory } : inventory))
+  const ports = Array.isArray(inventory) ? { demo: inventory } : inventory
+  writeFileSync(inventoryFile, JSON.stringify(ports))
   writeFileSync(manifestFile, JSON.stringify(manifests))
   if (evidence) writeFileSync(out, JSON.stringify(evidence))
   let result
   try {
-    const done = await run('node', [script, '--inventory', inventoryFile, '--out', out, '--date', '2026-01-01', '--today', '2026-01-02', '--manifests', manifestFile, ...args],
+    // The ports the demo inventories register are their own; a case that names `--ports` after this overrides it.
+    const done = await run('node', [script, '--inventory', inventoryFile, '--out', out, '--ports', Object.keys(ports).join(','), '--date', '2026-01-01', '--today', '2026-01-02', '--manifests', manifestFile, ...args],
       { timeout, env: { ...process.env, GITHUB_ACTIONS: '', LIBTMUX_DESTINATION_REWRITE: rewrite, ...env } })
     result = { code: 0, text: `${done.stdout}${done.stderr}` }
   } catch (error) {
@@ -376,17 +380,19 @@ await verify('javadoc.io documentation for the artifact passes', [entry('demo-do
   expect: { code: 0, matches: [/ok\s+200\s+api\s+https:\/\/javadoc\.io\/doc\/demo\.group\/demo-docs/] },
 })
 
-// A destination kept out of the links must keep failing, or the inventory is behind the host.
-await verify('a configured entry whose destination 404s stays unlinked', [entry('demo-gone', { ...gem('demo-gone'), status: 'configured-unpublished', note: 'not uploaded' })], {
+// A destination kept out of the links must keep failing, or the inventory is behind the host. Each inventory also
+// holds a published library, which every port must have; its repository is a page the host serves.
+const home = entry('demo-home', {})
+await verify('a configured entry whose destination 404s stays unlinked', [home, entry('demo-gone', { ...gem('demo-gone'), status: 'configured-unpublished', note: 'not uploaded' })], {
   expect: { code: 0, matches: [/none\s+404\s+package/, /wrote /] },
 })
-await verify('a configured entry whose destination now passes is reported', [entry('demo-back', { ...gem('demo-back'), status: 'configured-unpublished', note: 'not uploaded' })], {
+await verify('a configured entry whose destination now passes is reported', [home, entry('demo-back', { ...gem('demo-back'), status: 'configured-unpublished', note: 'not uploaded' })], {
   expect: { code: 1, matches: [/answers, so demo:demo-back can be published/] },
 })
-await verify('a rejected candidate that now serves the right page is reported', [entry('demo-back', { status: 'planned', note: 'development input', unavailable: [{ kind: 'package', host: 'rubygems', url: 'https://rubygems.org/gems/demo-back', reason: 'not uploaded' }] })], {
+await verify('a rejected candidate that now serves the right page is reported', [home, entry('demo-back', { status: 'planned', note: 'development input', unavailable: [{ kind: 'package', host: 'rubygems', url: 'https://rubygems.org/gems/demo-back', reason: 'not uploaded' }] })], {
   expect: { code: 1, matches: [/answers, so demo:demo-back can be published/] },
 })
-await verify('a rejected candidate that 404s passes', [entry('demo-gone', { status: 'planned', note: 'development input', unavailable: [{ kind: 'package', host: 'rubygems', url: 'https://rubygems.org/gems/demo-gone', reason: 'not uploaded' }] })], {
+await verify('a rejected candidate that 404s passes', [home, entry('demo-gone', { status: 'planned', note: 'development input', unavailable: [{ kind: 'package', host: 'rubygems', url: 'https://rubygems.org/gems/demo-gone', reason: 'not uploaded' }] })], {
   expect: { code: 0, matches: [/none\s+404\s+package/, /wrote /] },
 })
 
@@ -500,6 +506,27 @@ await verify('offline, evidence checked for another version than the manifest de
 await verify('offline, evidence that checked one port’s release but not the other’s fails', twin, {
   args: ['--check'], manifests: pins('1.0.0', '2.0.0'), evidence: { ...good, destinations: [source, { ...recordFor('https://pypi.org/project/demo-good/'), url: 'https://pypi.org/project/demo-twin/', versionChecks: check1('1.0.0', 'confirmed') }] },
   expect: { code: 1, matches: [/was checked for 1\.0\.0 but the manifests now declare 1\.0\.0, 2\.0\.0/] },
+})
+
+// A registered port the inventory omits gets no header links and no verification, and nothing else says so. The
+// control is the committed inventory, evidence and manifests under the same flags; each case then breaks one thing.
+const committed = (name) => JSON.parse(readFileSync(join(dirname(script), '..', 'site', 'src', 'data', name), 'utf8'))
+const registered = PORTS.map((port) => port.slug)
+const atRecord = { args: ['--check', '--ports', registered.join(','), '--today', committed('destination-evidence.json').checkedAt], evidence: committed('destination-evidence.json'), manifests: committed('manifest-packages.json') }
+await verify('offline, the committed inventory covers every registered port', INVENTORY, { ...atRecord, expect: { code: 0, matches: [/agrees with the inventory/] } })
+const { elixir: _omitted, ...withoutElixir } = INVENTORY
+await verify('offline, a registered port with no inventory entry fails', withoutElixir, {
+  ...atRecord, expect: { code: 1, matches: [/elixir is registered in ports\.ts but has no inventory entry/], excludes: [/agrees with the inventory/] },
+})
+const unpublished = { ...INVENTORY, elixir: INVENTORY.elixir.map((item) => (item.kind === 'library' ? { ...item, status: 'planned', note: 'withheld' } : item)) }
+await verify('offline, a registered port whose library is not published fails', unpublished, {
+  ...atRecord, expect: { code: 1, matches: [/elixir has no published library entry/], excludes: [/agrees with the inventory/] },
+})
+await verify('offline, an inventory entry for a port that is not registered fails', { ...INVENTORY, nope: INVENTORY.elixir }, {
+  ...atRecord, expect: { code: 1, matches: [/nope has inventory entries but is not registered in ports\.ts/], excludes: [/agrees with the inventory/] },
+})
+await verify('a live run refuses a registered port with no inventory entry before it requests anything', withoutElixir, {
+  args: ['--ports', registered.join(',')], expect: { code: 1, matches: [/elixir is registered in ports\.ts but has no inventory entry/], excludes: [/wrote /, /\bok\s+200/] },
 })
 
 // Age is a warning wherever a change that touches none of this might run it, and a failure only where a live run is the remedy.

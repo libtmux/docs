@@ -84,6 +84,14 @@ and records what it found:
 $ node scripts/verify-destinations.mjs
 ```
 
+The verifier refuses to run, with or without `--check`, if a port in `ports.ts`
+has no inventory entry with a published library: the header builds its links
+from that entry, so a port without one would offer nothing. A host the
+inventory has not named before needs an identity rule in
+`scripts/lib/destination-verification.mjs` and its cases in
+`scripts/verify-destinations.negative.mjs`; without a rule its destinations are
+recorded as `unverifiable` and fail.
+
 The command exits 1 if a published destination fails or an unlinked one starts
 to answer. Commit the updated `site/src/data/destination-evidence.json`; the
 unit tests and the publication audit hold the inventory to it, and warn
