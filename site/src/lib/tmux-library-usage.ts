@@ -12,6 +12,7 @@ import { PORTS } from './ports'
 import scopeTable from '../data/tmux-usage/scopes.json'
 import csharp from '../data/tmux-usage/csharp.json'
 import cxx from '../data/tmux-usage/cxx.json'
+import elixir from '../data/tmux-usage/elixir.json'
 import fsharp from '../data/tmux-usage/fsharp.json'
 import go from '../data/tmux-usage/go.json'
 import java from '../data/tmux-usage/java.json'
@@ -66,7 +67,7 @@ export interface TmuxScope {
 }
 
 export const TMUX_USAGE: Record<string, UsageDocument> = {
-  csharp, cxx, fsharp, go, java, julia, kotlin, lua, powershell, py, rs, ruby, scala, swift, ts,
+  csharp, cxx, elixir, fsharp, go, java, julia, kotlin, lua, powershell, py, rs, ruby, scala, swift, ts,
 } as unknown as Record<string, UsageDocument>
 
 const SCOPES = scopeTable.commands as Record<string, { scopes: TmuxScope[] }>
@@ -142,10 +143,10 @@ function symbolOf(port: string, publicId: string): ApiSymbol | undefined {
 
 const TYPE_KINDS = new Set(['class', 'interface', 'struct', 'union', 'enum', 'trait', 'exception', 'typealias'])
 
-/** The type that owns a member, when it has one. */
+/** The type that owns a member, when it has one. An Elixir function belongs to its module, which is its only owner. */
 function ownerOf(port: string, symbol: ApiSymbol): ApiSymbol | undefined {
   const parent = symbol.parent ? API_MODELS[port]?.symbols.find((entry) => entry.id === symbol.parent) : undefined
-  return parent && TYPE_KINDS.has(parent.kind) ? parent : undefined
+  return parent && (TYPE_KINDS.has(parent.kind) || (port === 'elixir' && parent.kind === 'module')) ? parent : undefined
 }
 
 /** Where the segment that names the owner starts in a qualified name, whole segments only: `Pane` is not the end of `NewPane`. */

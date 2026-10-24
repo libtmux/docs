@@ -184,7 +184,7 @@ if (existsSync(join(process.env.LIBTMUX_DOCS_CHECKOUT_FSHARP ?? join(homedir(), 
 const CHECKOUTS = {
   py: '~/work/python/libtmux', java: '~/work/libtmux/libtmux-java', ts: '~/work/libtmux/libtmux-ts', swift: '~/work/libtmux/libtmux-swift',
   ruby: '~/work/libtmux/libtmux-ruby', rs: '~/work/libtmux/libtmux-rs', julia: '~/work/libtmux/libtmux-julia', go: '~/work/libtmux/libtmux-go',
-  fsharp: '~/work/libtmux/libtmux-dotnet',
+  fsharp: '~/work/libtmux/libtmux-dotnet', elixir: '~/work/libtmux/libtmux-elixir',
 }
 const checkoutOf = (port) => (process.env[`LIBTMUX_DOCS_CHECKOUT_${port.toUpperCase()}`] ?? CHECKOUTS[port]).replace(/^~/, homedir())
 const SENDS_NOTHING = [
@@ -197,6 +197,7 @@ const SENDS_NOTHING = [
   ['a generic runner that an allowlist admits', 'julia', 'LibTmux.run_command', 'kill-pane', ['src/control_protocol.jl:427', 'src/control.jl:580'], /julia: LibTmux.run_command kill-pane: src\/control_protocol.jl:427 is not a call that sends kill-pane/],
   ['the line that builds the command, where the call that sends is further down', 'rs', 'server.Server.command_prompt', 'command-prompt', ['crates/libtmux/src/server/interactive.rs:105'], /rs: server.Server.command_prompt command-prompt: crates\/libtmux\/src\/server\/interactive.rs:105 is not a call that sends command-prompt/],
   ['the literal of a builder, with the hop to a method of another type that shares its name', 'rs', 'pane.Pane.split', 'capture-pane', ['crates/libtmux/src/pane.rs:1618', 'crates/libtmux/src/pane.rs:515'], /rs: pane.Pane.split capture-pane: crates\/libtmux\/src\/pane.rs:1618 is not a call that sends capture-pane \(it builds a value for the caller\)/],
+  ['a command spelled in a request that is only built, where the call that sends is in the control lane', 'elixir', 'LibTmux.Control.Request.field/2', 'display-message', ['lib/libtmux/control/request.ex:51'], /elixir: LibTmux.Control.Request.field\/2 display-message: lib\/libtmux\/control\/request.ex:51 is not a call that sends display-message \(it reaches no call that sends\)/],
 ]
 const sourced = new Map()
 for (const [name, port, symbol, command, lines, message] of SENDS_NOTHING) {
@@ -267,6 +268,16 @@ const BAD_RULES = [
     document.exclusions.push({ port: 'go', owner: 'Server', names: ['NewSession'], commands: ['list-sessions'], why: 'NewSession lists sessions to look up a name only when the request carries one.',
       evidence: [{ at: 'tmux/session_lifecycle.go:210', has: ['request.Name != ""'] }, { at: 'tmux/session_lifecycle.go:217', has: ['sessionNamed('] }] })
   }, /go: exclusion of Server\.NewSession for list-sessions: removes the reviewed claim of tmux\.Server\.NewSession list-sessions null, which says it sends it/],
+  ['an elixir dispatcher whose chain skips the function between two hops', 'elixir', 'dispatchers.json', (document) => { dispatcher(document, 'elixir', 'read').evidence[0].reaches.splice(3, 1) },
+    /elixir: dispatcher read at lib\/libtmux\/capture.ex:307: hop lib\/libtmux\/transport\/oneshot.ex:86 leads to run_worker, but lib\/libtmux\/transport\/oneshot.ex:172 is not a line of it/],
+  ['an elixir dispatcher whose chain stops before the port is written to', 'elixir', 'dispatchers.json', (document) => { dispatcher(document, 'elixir', 'rows').evidence[0].reaches.pop() },
+    /elixir: dispatcher rows at lib\/libtmux\/capture.ex:193: hop lib\/libtmux\/transport\/oneshot.ex:172 is not a transport/],
+  ['an elixir claim whose line does not hold its text', 'elixir', 'claims.json', (document) => {
+    document.claims.find((claim) => claim.port === 'elixir' && claim.symbol === 'LibTmux.Capture.fetch/2' && claim.command === 'list-sessions').evidence[0].has = ['list(state, "list-panes"']
+  }, /elixir: LibTmux.Capture.fetch\/2 list-sessions null: lib\/libtmux\/capture.ex:158 does not contain "list\(state, \\"list-panes\\""/],
+  ['an elixir claim that is not anchored in the symbol it names', 'elixir', 'claims.json', (document) => {
+    document.claims.find((claim) => claim.port === 'elixir' && claim.symbol === 'LibTmux.Server.snapshot/2' && claim.command === 'list-clients').evidence.at(-1).at = 'lib/libtmux/server.ex:60'
+  }, /elixir: LibTmux.Server.snapshot\/2 list-clients null: lib\/libtmux\/server.ex:60 (?:does not contain|is outside the body of)/],
   ['a conditional guard that does not say when', 'go', 'guards.json', (document) => { delete document.guards.find((guard) => guard.port === 'go' && guard.name === 'guardCommand').when },
     /go: guard guardCommand: is conditional, so it must say when/],
   ['a guard whose function builds no if-shell', 'java', 'guards.json', (document) => {

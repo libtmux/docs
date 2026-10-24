@@ -1384,6 +1384,195 @@
       ]
     },
     {
+      "port": "elixir",
+      "name": "read",
+      "why": "Runs the tmux command it is given through the one-shot transport.",
+      "evidence": [
+        {
+          "at": "lib/libtmux/capture.ex:307",
+          "has": [
+            "defp read("
+          ],
+          "reaches": [
+            {
+              "at": "lib/libtmux/capture.ex:317",
+              "has": [
+                "Server.run("
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "lib/libtmux/server.ex:58",
+              "has": [
+                "OneShot.run("
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "lib/libtmux/transport/oneshot.ex:86",
+              "has": [
+                "run_worker(spec)"
+              ],
+              "calls": "run_worker"
+            },
+            {
+              "at": "lib/libtmux/transport/oneshot.ex:142",
+              "has": [
+                "execute("
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "lib/libtmux/transport/oneshot.ex:172",
+              "has": [
+                "open(spec)"
+              ],
+              "calls": "open"
+            },
+            {
+              "at": "lib/libtmux/transport/oneshot.ex:197",
+              "has": [
+                "send_port("
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "port": "elixir",
+      "name": "rows",
+      "why": "Reads the rows of the command it is given, through read.",
+      "evidence": [
+        {
+          "at": "lib/libtmux/capture.ex:193",
+          "has": [
+            "defp rows("
+          ],
+          "reaches": [
+            {
+              "at": "lib/libtmux/capture.ex:194",
+              "has": [
+                "read("
+              ],
+              "calls": "read"
+            },
+            {
+              "at": "lib/libtmux/capture.ex:317",
+              "has": [
+                "Server.run("
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "lib/libtmux/server.ex:58",
+              "has": [
+                "OneShot.run("
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "lib/libtmux/transport/oneshot.ex:86",
+              "has": [
+                "run_worker(spec)"
+              ],
+              "calls": "run_worker"
+            },
+            {
+              "at": "lib/libtmux/transport/oneshot.ex:142",
+              "has": [
+                "execute("
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "lib/libtmux/transport/oneshot.ex:172",
+              "has": [
+                "open(spec)"
+              ],
+              "calls": "open"
+            },
+            {
+              "at": "lib/libtmux/transport/oneshot.ex:197",
+              "has": [
+                "send_port("
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "port": "elixir",
+      "name": "list",
+      "why": "Reads the rows of the command it is given, through rows.",
+      "evidence": [
+        {
+          "at": "lib/libtmux/capture.ex:185",
+          "has": [
+            "defp list("
+          ],
+          "reaches": [
+            {
+              "at": "lib/libtmux/capture.ex:187",
+              "has": [
+                "rows("
+              ],
+              "calls": "rows"
+            },
+            {
+              "at": "lib/libtmux/capture.ex:194",
+              "has": [
+                "read("
+              ],
+              "calls": "read"
+            },
+            {
+              "at": "lib/libtmux/capture.ex:317",
+              "has": [
+                "Server.run("
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "lib/libtmux/server.ex:58",
+              "has": [
+                "OneShot.run("
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "lib/libtmux/transport/oneshot.ex:86",
+              "has": [
+                "run_worker(spec)"
+              ],
+              "calls": "run_worker"
+            },
+            {
+              "at": "lib/libtmux/transport/oneshot.ex:142",
+              "has": [
+                "execute("
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "lib/libtmux/transport/oneshot.ex:172",
+              "has": [
+                "open(spec)"
+              ],
+              "calls": "open"
+            },
+            {
+              "at": "lib/libtmux/transport/oneshot.ex:197",
+              "has": [
+                "send_port("
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "port": "ts",
       "name": "runCommand",
       "why": "Sends the tmux command in its argument list through the runtime's transport.",

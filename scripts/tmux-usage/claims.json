@@ -14189,6 +14189,691 @@
           "in": "LibTmux::Async::Server#switch_client"
         }
       ]
+    },
+    {
+      "port": "elixir",
+      "symbol": "LibTmux.Capture.fetch/2",
+      "command": "list-sessions",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lib/libtmux/capture.ex:158",
+          "has": [
+            "list(state, \"list-sessions\""
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:96",
+          "has": [
+            "topology(state)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:89",
+          "has": [
+            "attempt(state, 1)"
+          ],
+          "in": "LibTmux.Capture.fetch/2"
+        }
+      ]
+    },
+    {
+      "port": "elixir",
+      "symbol": "LibTmux.Capture.fetch/2",
+      "command": "list-windows",
+      "scope": "server",
+      "evidence": [
+        {
+          "at": "lib/libtmux/capture.ex:164",
+          "has": [
+            "rows(state, \"list-windows\", [\"-a\"]"
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:96",
+          "has": [
+            "topology(state)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:89",
+          "has": [
+            "attempt(state, 1)"
+          ],
+          "in": "LibTmux.Capture.fetch/2"
+        }
+      ]
+    },
+    {
+      "port": "elixir",
+      "symbol": "LibTmux.Capture.fetch/2",
+      "command": "list-panes",
+      "scope": "server",
+      "evidence": [
+        {
+          "at": "lib/libtmux/capture.ex:177",
+          "has": [
+            "list(state, \"list-panes\", [\"-a\"]"
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:96",
+          "has": [
+            "topology(state)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:89",
+          "has": [
+            "attempt(state, 1)"
+          ],
+          "in": "LibTmux.Capture.fetch/2"
+        }
+      ]
+    },
+    {
+      "port": "elixir",
+      "symbol": "LibTmux.Capture.fetch/2",
+      "command": "list-clients",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lib/libtmux/capture.ex:178",
+          "has": [
+            "list(state, \"list-clients\""
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:96",
+          "has": [
+            "topology(state)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:89",
+          "has": [
+            "attempt(state, 1)"
+          ],
+          "in": "LibTmux.Capture.fetch/2"
+        }
+      ]
+    },
+    {
+      "port": "elixir",
+      "symbol": "LibTmux.Capture.fetch/2",
+      "command": "display-message",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lib/libtmux/capture.ex:293",
+          "has": [
+            "read(state, \"display-message\""
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:95",
+          "has": [
+            "identity(state)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:89",
+          "has": [
+            "attempt(state, 1)"
+          ],
+          "in": "LibTmux.Capture.fetch/2"
+        }
+      ]
+    },
+    {
+      "port": "elixir",
+      "symbol": "LibTmux.Server.snapshot/2",
+      "command": "list-sessions",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lib/libtmux/capture.ex:158",
+          "has": [
+            "list(state, \"list-sessions\""
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:96",
+          "has": [
+            "topology(state)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:89",
+          "has": [
+            "attempt(state, 1)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/server.ex:78",
+          "has": [
+            "Capture.fetch("
+          ],
+          "in": "LibTmux.Server.snapshot/2"
+        }
+      ]
+    },
+    {
+      "port": "elixir",
+      "symbol": "LibTmux.Server.snapshot/2",
+      "command": "list-windows",
+      "scope": "server",
+      "evidence": [
+        {
+          "at": "lib/libtmux/capture.ex:164",
+          "has": [
+            "rows(state, \"list-windows\", [\"-a\"]"
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:96",
+          "has": [
+            "topology(state)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:89",
+          "has": [
+            "attempt(state, 1)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/server.ex:78",
+          "has": [
+            "Capture.fetch("
+          ],
+          "in": "LibTmux.Server.snapshot/2"
+        }
+      ]
+    },
+    {
+      "port": "elixir",
+      "symbol": "LibTmux.Server.snapshot/2",
+      "command": "list-panes",
+      "scope": "server",
+      "evidence": [
+        {
+          "at": "lib/libtmux/capture.ex:177",
+          "has": [
+            "list(state, \"list-panes\", [\"-a\"]"
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:96",
+          "has": [
+            "topology(state)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:89",
+          "has": [
+            "attempt(state, 1)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/server.ex:78",
+          "has": [
+            "Capture.fetch("
+          ],
+          "in": "LibTmux.Server.snapshot/2"
+        }
+      ]
+    },
+    {
+      "port": "elixir",
+      "symbol": "LibTmux.Server.snapshot/2",
+      "command": "list-clients",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lib/libtmux/capture.ex:178",
+          "has": [
+            "list(state, \"list-clients\""
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:96",
+          "has": [
+            "topology(state)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:89",
+          "has": [
+            "attempt(state, 1)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/server.ex:78",
+          "has": [
+            "Capture.fetch("
+          ],
+          "in": "LibTmux.Server.snapshot/2"
+        }
+      ]
+    },
+    {
+      "port": "elixir",
+      "symbol": "LibTmux.Server.snapshot/2",
+      "command": "display-message",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lib/libtmux/capture.ex:293",
+          "has": [
+            "read(state, \"display-message\""
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:95",
+          "has": [
+            "identity(state)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:89",
+          "has": [
+            "attempt(state, 1)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/server.ex:78",
+          "has": [
+            "Capture.fetch("
+          ],
+          "in": "LibTmux.Server.snapshot/2"
+        }
+      ]
+    },
+    {
+      "port": "elixir",
+      "symbol": "LibTmux.Server.snapshot!/2",
+      "command": "list-sessions",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lib/libtmux/capture.ex:158",
+          "has": [
+            "list(state, \"list-sessions\""
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:96",
+          "has": [
+            "topology(state)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:89",
+          "has": [
+            "attempt(state, 1)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/server.ex:78",
+          "has": [
+            "Capture.fetch("
+          ]
+        },
+        {
+          "at": "lib/libtmux/server.ex:83",
+          "has": [
+            "snapshot(server, options)"
+          ],
+          "in": "LibTmux.Server.snapshot!/2"
+        }
+      ]
+    },
+    {
+      "port": "elixir",
+      "symbol": "LibTmux.Server.snapshot!/2",
+      "command": "list-windows",
+      "scope": "server",
+      "evidence": [
+        {
+          "at": "lib/libtmux/capture.ex:164",
+          "has": [
+            "rows(state, \"list-windows\", [\"-a\"]"
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:96",
+          "has": [
+            "topology(state)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:89",
+          "has": [
+            "attempt(state, 1)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/server.ex:78",
+          "has": [
+            "Capture.fetch("
+          ]
+        },
+        {
+          "at": "lib/libtmux/server.ex:83",
+          "has": [
+            "snapshot(server, options)"
+          ],
+          "in": "LibTmux.Server.snapshot!/2"
+        }
+      ]
+    },
+    {
+      "port": "elixir",
+      "symbol": "LibTmux.Server.snapshot!/2",
+      "command": "list-panes",
+      "scope": "server",
+      "evidence": [
+        {
+          "at": "lib/libtmux/capture.ex:177",
+          "has": [
+            "list(state, \"list-panes\", [\"-a\"]"
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:96",
+          "has": [
+            "topology(state)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:89",
+          "has": [
+            "attempt(state, 1)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/server.ex:78",
+          "has": [
+            "Capture.fetch("
+          ]
+        },
+        {
+          "at": "lib/libtmux/server.ex:83",
+          "has": [
+            "snapshot(server, options)"
+          ],
+          "in": "LibTmux.Server.snapshot!/2"
+        }
+      ]
+    },
+    {
+      "port": "elixir",
+      "symbol": "LibTmux.Server.snapshot!/2",
+      "command": "list-clients",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lib/libtmux/capture.ex:178",
+          "has": [
+            "list(state, \"list-clients\""
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:96",
+          "has": [
+            "topology(state)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:89",
+          "has": [
+            "attempt(state, 1)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/server.ex:78",
+          "has": [
+            "Capture.fetch("
+          ]
+        },
+        {
+          "at": "lib/libtmux/server.ex:83",
+          "has": [
+            "snapshot(server, options)"
+          ],
+          "in": "LibTmux.Server.snapshot!/2"
+        }
+      ]
+    },
+    {
+      "port": "elixir",
+      "symbol": "LibTmux.Server.snapshot!/2",
+      "command": "display-message",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lib/libtmux/capture.ex:293",
+          "has": [
+            "read(state, \"display-message\""
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:95",
+          "has": [
+            "identity(state)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/capture.ex:89",
+          "has": [
+            "attempt(state, 1)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/server.ex:78",
+          "has": [
+            "Capture.fetch("
+          ]
+        },
+        {
+          "at": "lib/libtmux/server.ex:83",
+          "has": [
+            "snapshot(server, options)"
+          ],
+          "in": "LibTmux.Server.snapshot!/2"
+        }
+      ]
+    },
+    {
+      "port": "elixir",
+      "symbol": "LibTmux.Control.start_link/1",
+      "command": "attach-session",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lib/libtmux/control/bootstrap.ex:17",
+          "has": [
+            "\"attach-session\""
+          ]
+        },
+        {
+          "at": "lib/libtmux/control/start.ex:62",
+          "has": [
+            "Bootstrap.arguments(server, session)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/control/start.ex:23",
+          "has": [
+            "open(prepare(options)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/control.ex:74",
+          "has": [
+            "Start.start("
+          ],
+          "in": "LibTmux.Control.start_link/1"
+        }
+      ]
+    },
+    {
+      "port": "elixir",
+      "symbol": "LibTmux.Control.start_link/1",
+      "command": "display-message",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "lib/libtmux/control/bootstrap.ex:24",
+          "has": [
+            "\"display-message\""
+          ]
+        },
+        {
+          "at": "lib/libtmux/control/start.ex:62",
+          "has": [
+            "Bootstrap.arguments(server, session)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/control/start.ex:23",
+          "has": [
+            "open(prepare(options)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/control.ex:74",
+          "has": [
+            "Start.start("
+          ],
+          "in": "LibTmux.Control.start_link/1"
+        }
+      ]
+    },
+    {
+      "port": "elixir",
+      "symbol": "LibTmux.Control.submit/3",
+      "command": "display-message",
+      "scope": null,
+      "when": "the request reads a field",
+      "evidence": [
+        {
+          "at": "lib/libtmux/control/request.ex:51",
+          "has": [
+            "\"display-message\""
+          ]
+        },
+        {
+          "at": "lib/libtmux/control/request.ex:36",
+          "has": [
+            "encode(request, instance)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/control.ex:152",
+          "has": [
+            "Request.prepare(request, endpoint.instance)"
+          ],
+          "in": "LibTmux.Control.submit/3"
+        }
+      ]
+    },
+    {
+      "port": "elixir",
+      "symbol": "LibTmux.Control.submit!/3",
+      "command": "display-message",
+      "scope": null,
+      "when": "the request reads a field",
+      "evidence": [
+        {
+          "at": "lib/libtmux/control/request.ex:51",
+          "has": [
+            "\"display-message\""
+          ]
+        },
+        {
+          "at": "lib/libtmux/control/request.ex:36",
+          "has": [
+            "encode(request, instance)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/control.ex:152",
+          "has": [
+            "Request.prepare(request, endpoint.instance)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/control.ex:173",
+          "has": [
+            "unwrap(submit("
+          ],
+          "in": "LibTmux.Control.submit!/3"
+        }
+      ]
+    },
+    {
+      "port": "elixir",
+      "symbol": "LibTmux.Control.submit/3",
+      "command": "set-option",
+      "scope": null,
+      "when": "the request sets a user option",
+      "evidence": [
+        {
+          "at": "lib/libtmux/control/request.ex:61",
+          "has": [
+            "\"set-option\""
+          ]
+        },
+        {
+          "at": "lib/libtmux/control/request.ex:36",
+          "has": [
+            "encode(request, instance)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/control.ex:152",
+          "has": [
+            "Request.prepare(request, endpoint.instance)"
+          ],
+          "in": "LibTmux.Control.submit/3"
+        }
+      ]
+    },
+    {
+      "port": "elixir",
+      "symbol": "LibTmux.Control.submit!/3",
+      "command": "set-option",
+      "scope": null,
+      "when": "the request sets a user option",
+      "evidence": [
+        {
+          "at": "lib/libtmux/control/request.ex:61",
+          "has": [
+            "\"set-option\""
+          ]
+        },
+        {
+          "at": "lib/libtmux/control/request.ex:36",
+          "has": [
+            "encode(request, instance)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/control.ex:152",
+          "has": [
+            "Request.prepare(request, endpoint.instance)"
+          ]
+        },
+        {
+          "at": "lib/libtmux/control.ex:173",
+          "has": [
+            "unwrap(submit("
+          ],
+          "in": "LibTmux.Control.submit!/3"
+        }
+      ]
     }
   ]
 }

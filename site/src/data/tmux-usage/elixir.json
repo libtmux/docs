@@ -1,0 +1,346 @@
+{
+  "commands": [
+    "attach-session",
+    "bind-key",
+    "break-pane",
+    "capture-pane",
+    "choose-buffer",
+    "choose-client",
+    "choose-tree",
+    "clear-history",
+    "clear-prompt-history",
+    "clock-mode",
+    "command-prompt",
+    "confirm-before",
+    "copy-mode",
+    "customize-mode",
+    "delete-buffer",
+    "detach-client",
+    "display-menu",
+    "display-message",
+    "display-panes",
+    "display-popup",
+    "find-window",
+    "has-session",
+    "if-shell",
+    "join-pane",
+    "kill-pane",
+    "kill-server",
+    "kill-session",
+    "kill-window",
+    "last-pane",
+    "last-window",
+    "link-window",
+    "list-buffers",
+    "list-clients",
+    "list-commands",
+    "list-keys",
+    "list-panes",
+    "list-sessions",
+    "list-windows",
+    "load-buffer",
+    "lock-client",
+    "lock-server",
+    "lock-session",
+    "move-pane",
+    "move-window",
+    "new-pane",
+    "new-session",
+    "new-window",
+    "next-layout",
+    "next-window",
+    "paste-buffer",
+    "pipe-pane",
+    "previous-layout",
+    "previous-window",
+    "refresh-client",
+    "rename-session",
+    "rename-window",
+    "resize-pane",
+    "resize-window",
+    "respawn-pane",
+    "respawn-window",
+    "rotate-window",
+    "run-shell",
+    "save-buffer",
+    "select-layout",
+    "select-pane",
+    "select-window",
+    "send-keys",
+    "send-prefix",
+    "server-access",
+    "set-buffer",
+    "set-environment",
+    "set-hook",
+    "set-option",
+    "set-window-option",
+    "show-buffer",
+    "show-environment",
+    "show-hooks",
+    "show-messages",
+    "show-options",
+    "show-prompt-history",
+    "show-window-options",
+    "source-file",
+    "split-window",
+    "start-server",
+    "suspend-client",
+    "swap-pane",
+    "swap-window",
+    "switch-client",
+    "unbind-key",
+    "unlink-window",
+    "wait-for"
+  ],
+  "port": "elixir",
+  "repo": "libtmux/libtmux-elixir",
+  "revision": "6e6e88e886bdd9267fcd8be66f561dc5d5462476",
+  "schemaVersion": 1,
+  "symbols": {
+    "LibTmux.Capture.fetch/2": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "lib/libtmux/capture.ex:293",
+          "lib/libtmux/capture.ex:95",
+          "lib/libtmux/capture.ex:89"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-clients",
+        "evidence": [
+          "lib/libtmux/capture.ex:178",
+          "lib/libtmux/capture.ex:96",
+          "lib/libtmux/capture.ex:89"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "lib/libtmux/capture.ex:177",
+          "lib/libtmux/capture.ex:96",
+          "lib/libtmux/capture.ex:89"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "lib/libtmux/capture.ex:158",
+          "lib/libtmux/capture.ex:96",
+          "lib/libtmux/capture.ex:89"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "lib/libtmux/capture.ex:164",
+          "lib/libtmux/capture.ex:96",
+          "lib/libtmux/capture.ex:89"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "LibTmux.Control.start_link/1": [
+      {
+        "command": "attach-session",
+        "evidence": [
+          "lib/libtmux/control/bootstrap.ex:17",
+          "lib/libtmux/control/start.ex:62",
+          "lib/libtmux/control/start.ex:23",
+          "lib/libtmux/control.ex:74"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "display-message",
+        "evidence": [
+          "lib/libtmux/control/bootstrap.ex:24",
+          "lib/libtmux/control/start.ex:62",
+          "lib/libtmux/control/start.ex:23",
+          "lib/libtmux/control.ex:74"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux.Control.submit!/3": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "lib/libtmux/control/request.ex:51",
+          "lib/libtmux/control/request.ex:36",
+          "lib/libtmux/control.ex:152",
+          "lib/libtmux/control.ex:173"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the request reads a field"
+      },
+      {
+        "command": "set-option",
+        "evidence": [
+          "lib/libtmux/control/request.ex:61",
+          "lib/libtmux/control/request.ex:36",
+          "lib/libtmux/control.ex:152",
+          "lib/libtmux/control.ex:173"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the request sets a user option"
+      }
+    ],
+    "LibTmux.Control.submit/3": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "lib/libtmux/control/request.ex:51",
+          "lib/libtmux/control/request.ex:36",
+          "lib/libtmux/control.ex:152"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the request reads a field"
+      },
+      {
+        "command": "set-option",
+        "evidence": [
+          "lib/libtmux/control/request.ex:61",
+          "lib/libtmux/control/request.ex:36",
+          "lib/libtmux/control.ex:152"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the request sets a user option"
+      }
+    ],
+    "LibTmux.Server.snapshot!/2": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "lib/libtmux/capture.ex:293",
+          "lib/libtmux/capture.ex:95",
+          "lib/libtmux/capture.ex:89",
+          "lib/libtmux/server.ex:78",
+          "lib/libtmux/server.ex:83"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-clients",
+        "evidence": [
+          "lib/libtmux/capture.ex:178",
+          "lib/libtmux/capture.ex:96",
+          "lib/libtmux/capture.ex:89",
+          "lib/libtmux/server.ex:78",
+          "lib/libtmux/server.ex:83"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "lib/libtmux/capture.ex:177",
+          "lib/libtmux/capture.ex:96",
+          "lib/libtmux/capture.ex:89",
+          "lib/libtmux/server.ex:78",
+          "lib/libtmux/server.ex:83"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "lib/libtmux/capture.ex:158",
+          "lib/libtmux/capture.ex:96",
+          "lib/libtmux/capture.ex:89",
+          "lib/libtmux/server.ex:78",
+          "lib/libtmux/server.ex:83"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "lib/libtmux/capture.ex:164",
+          "lib/libtmux/capture.ex:96",
+          "lib/libtmux/capture.ex:89",
+          "lib/libtmux/server.ex:78",
+          "lib/libtmux/server.ex:83"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "LibTmux.Server.snapshot/2": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "lib/libtmux/capture.ex:293",
+          "lib/libtmux/capture.ex:95",
+          "lib/libtmux/capture.ex:89",
+          "lib/libtmux/server.ex:78"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-clients",
+        "evidence": [
+          "lib/libtmux/capture.ex:178",
+          "lib/libtmux/capture.ex:96",
+          "lib/libtmux/capture.ex:89",
+          "lib/libtmux/server.ex:78"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "lib/libtmux/capture.ex:177",
+          "lib/libtmux/capture.ex:96",
+          "lib/libtmux/capture.ex:89",
+          "lib/libtmux/server.ex:78"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "lib/libtmux/capture.ex:158",
+          "lib/libtmux/capture.ex:96",
+          "lib/libtmux/capture.ex:89",
+          "lib/libtmux/server.ex:78"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "lib/libtmux/capture.ex:164",
+          "lib/libtmux/capture.ex:96",
+          "lib/libtmux/capture.ex:89",
+          "lib/libtmux/server.ex:78"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ]
+  }
+}

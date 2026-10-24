@@ -350,6 +350,28 @@ describe('a release a library refuses to send on', () => {
     }
   })
 
+  it('records what elixir sends where a call spells it, and nothing for a function that builds or forwards a command', () => {
+    // A capture lists the server's sessions, windows, panes and clients, and reads identity and text fields with display-message.
+    for (const symbol of ['LibTmux.Capture.fetch/2', 'LibTmux.Server.snapshot/2', 'LibTmux.Server.snapshot!/2']) {
+      expect(use('elixir', symbol, 'list-panes'), symbol).toMatchObject({ scope: 'server', reviewed: true })
+      expect(use('elixir', symbol, 'list-windows'), symbol).toMatchObject({ scope: 'server', reviewed: true })
+      expect(use('elixir', symbol, 'list-sessions'), symbol).toMatchObject({ scope: null, reviewed: true })
+    }
+    // A submitted request sends the command it was built as, which the request says.
+    expect(use('elixir', 'LibTmux.Control.submit/3', 'display-message')?.when).toBe('the request reads a field')
+    expect(use('elixir', 'LibTmux.Control.submit/3', 'set-option')?.when).toBe('the request sets a user option')
+    expect(use('elixir', 'LibTmux.Control.start_link/1', 'attach-session')).toMatchObject({ reviewed: true })
+    // A function of a module that is not a type is still named by its module, and Lua's functions, which no type owns, are not.
+    const labels = (port: string, command: string) => tmuxUsage(command)!.groups.flatMap((group) => group.ports).filter((entry) => entry.port === port).flatMap((entry) => entry.links.map((link) => link.label))
+    expect(labels('elixir', 'list-panes')).toEqual(expect.arrayContaining(['Capture.fetch/2', 'Server.snapshot/2']))
+    expect(labels('elixir', 'list-panes')).not.toContain('fetch/2')
+    expect(labels('lua', 'list-panes')).toContain('Server:snapshot')
+    // The controls: a request is data and sends nothing until it is submitted, and a function that runs the command it is handed spells none.
+    for (const symbol of ['LibTmux.Control.Request.set_user_option/2', 'LibTmux.Control.Request.field/2', 'LibTmux.Server.run/3', 'LibTmux.Transport.OneShot.run/3']) {
+      expect(TMUX_USAGE.elixir.symbols[symbol], symbol).toBeUndefined()
+    }
+  })
+
   it('says when a launch sends what it sends, from the line the default launch reaches', () => {
     // ts: only a minimal launch starts the server and reads the owner option; the facts are disclosed whenever the server is there.
     expect(use('ts', 'mcp.server.main', 'start-server')?.when).toBe('a minimal launch, no explicit selection')
@@ -628,7 +650,7 @@ describe('the rendered lists', () => {
     // Every language has one somewhere for list-panes, so the table has no such line.
     expect((await render({ usage: tmuxResolvedUsage('latest', 'list-panes') })).querySelector('.tmux-usage__absent')).toBeNull()
     const windowPage = await render({ usage: tmuxResolvedUsage('latest', 'list-panes', 'window') })
-    expect(windowPage.querySelector('.tmux-usage__absent')!.textContent).toMatch(/^No method in Lua, TypeScript, .*sends this command at this scope itself\.$/)
+    expect(windowPage.querySelector('.tmux-usage__absent')!.textContent).toMatch(/^No method in Lua, Elixir, TypeScript, .*sends this command at this scope itself\.$/)
     // A command a few languages send names the rest, in the order the site lists them.
     const choose = await render({ usage: tmuxResolvedUsage('latest', 'choose-tree') })
     const named = choose.querySelector('.tmux-usage__absent')!.textContent!
