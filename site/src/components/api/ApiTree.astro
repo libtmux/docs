@@ -193,7 +193,6 @@ if (!mark(nodes)) {
       </div>
     </div>
     {presentation && catalog && <div class="api-nav__presentation">
-      <button type="button" class="api-nav__owner-all" data-api-owner-all hidden={presentation === 'outline'}>All {ownerPlural}</button>
       <div class="api-nav__picker-row">
       <div class="api-nav__owner-picker" data-api-owner-picker>
         <button type="button" id="api-owner" class="api-nav__owner-field" data-api-owner data-symbol={selectedOwner?.id}
@@ -219,12 +218,8 @@ if (!mark(nodes)) {
       <details class="api-nav__more" data-api-actions>
       <summary aria-label="Sidebar actions" title="Sidebar actions"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="19" cy="12" r="1.5" /></svg></summary>
       <div class="api-nav__actions">
-        <div class="api-nav__layouts" role="radiogroup" aria-label="Sidebar layout">
-          {SIDEBAR_PRESENTATIONS.map((mode) => <button type="button" role="radio" data-api-presentation={mode}
-            aria-checked={mode === presentation ? 'true' : 'false'} tabindex={mode === presentation ? 0 : -1}>
-            <span class="api-nav__choice" aria-hidden="true" />{mode[0].toUpperCase() + mode.slice(1)}
-          </button>)}
-        </div>
+        <button type="button" data-api-owner-all hidden={presentation === 'outline'}>All {ownerPlural}</button>
+        <a data-api-owner-back hidden></a>
         <button type="button" data-api-reveal aria-label="Reveal current" title="Reveal current">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /><path d="M12 2v4m0 12v4M2 12h4m12 0h4" /></svg>
           <span>Reveal current</span>
@@ -237,10 +232,15 @@ if (!mark(nodes)) {
           {indexLabel && <a href={base} aria-current={indexNode.current ? 'page' : undefined}>{indexLabel}</a>}
           {glossaryHref && <a href={glossaryHref} aria-current={currentPath.replace(/\/?$/, '/') === glossaryHref ? 'page' : undefined}>{glossaryLabel}</a>}
         </div>}
+        <div class="api-nav__layouts" role="radiogroup" aria-label="Sidebar layout">
+          {SIDEBAR_PRESENTATIONS.map((mode) => <button type="button" role="radio" data-api-presentation={mode}
+            aria-checked={mode === presentation ? 'true' : 'false'} tabindex={mode === presentation ? 0 : -1}>
+            <span class="api-nav__choice" aria-hidden="true" />{mode[0].toUpperCase() + mode.slice(1)}
+          </button>)}
+        </div>
       </div>
       </details>
       </div>
-      <a data-api-owner-back hidden></a>
     </div>}
     <nav class="api-nav__nav" aria-label={treeLabel} data-pagefind-ignore="all">
       <p class="api-nav__search-status" role="status" data-api-search-status></p>

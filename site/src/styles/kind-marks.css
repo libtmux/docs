@@ -181,7 +181,7 @@
 .api-nav:not([data-marks='mixed']) .api-nav__row > .api-nav__label {
   padding-inline-start: calc((var(--level, 1) - 1) * var(--api-nav-indent));
 }
-.api-nav:not([data-marks='mixed']) .api-nav__row:not(:has(> .api-nav__kind)) > .api-nav__label {
+.api-nav:not([data-marks='mixed']):not([data-presentation]) .api-nav__row:not(:has(> .api-nav__kind)) > .api-nav__label {
   padding-inline-start: calc(1.35em + .25rem + (var(--level, 1) - 1) * var(--api-nav-indent));
 }
 .api-nav__results strong > .api-kind-word { margin-inline-start: auto; padding-inline-start: .5rem; font-weight: 400; }

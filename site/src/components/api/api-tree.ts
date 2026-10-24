@@ -583,12 +583,15 @@ function initPresentation(nav: HTMLElement, tree: HTMLElement, signal: AbortSign
   nav.querySelector<HTMLButtonElement>('[data-api-owner]')?.addEventListener('change', (event) => present(choose((event.target as HTMLButtonElement).dataset.symbol ?? '')), { signal })
   nav.querySelector('[data-api-owner-all]')?.addEventListener('click', () => {
     present(setApiSidebar(nav, nav.dataset.presentation as SidebarPresentation, nav.dataset.symbol ?? '', { allTypes: !nav.dataset.ownerOverview }))
+    actions?.querySelector('summary')?.focus({ preventScroll: true })
   }, { signal })
   nav.querySelector<HTMLAnchorElement>('[data-api-owner-back]')?.addEventListener('click', (event) => {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
     if (!nav.hasAttribute('data-controlled')) return
     event.preventDefault()
     update((event.currentTarget as HTMLElement).dataset.symbol ?? '')
+    if (actions) actions.open = false
+    actions?.querySelector('summary')?.focus({ preventScroll: true })
   }, { signal })
   nav.querySelector('[data-api-reveal]')?.addEventListener('click', () => {
     nav.dispatchEvent(new CustomEvent('api-sidebar:clear-search'))
