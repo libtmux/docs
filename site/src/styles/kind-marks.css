@@ -57,6 +57,8 @@
 .api-nav__kind:has(> [data-mark='col']) { --mk-gh: calc(.8 * 1ex); }
 .api-nav__kind:has(> [data-mark='asc']) { --mk-gh: calc(.8 * (1cap + .04em)); }
 .api-nav__kind:has(> [data-mark='tee']) { --mk-gh: calc(.8 * (1cap - .035em)); }
+/* The section sign extends below the baseline. */
+.api-nav__kind.api-badge--kind-section { --mk-gh: calc(.8 * (1cap - .2em)); }
 
 /* Without text-box, centre the em box and lift the x-height marks. */
 @supports not (text-box: trim-both cap alphabetic) {
