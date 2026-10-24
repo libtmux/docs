@@ -1,27 +1,22 @@
 ---
 import BaseLayout from '../../../../layouts/BaseLayout.astro'
 import ApiTree from '../../../../components/api/ApiTree.astro'
-import { referenceTree, navTree, apiTreeVersion } from '../../../../lib/api-tree'
-import { API_MODELS } from '../../../../lib/api-models'
-import { PORT_BY_SLUG, referenceUrl } from '../../../../lib/ports'
-import { defaultVersionFor } from '../../../../lib/versions'
+import { DEMO_LANGUAGES, sidebarDemoData } from '../../../../lib/sidebar-demo-data'
 import { withRoot } from '../../../../lib/site-root'
-import { DEMO_LANGUAGES, sidebarExamples } from '../../../../lib/sidebar-demo'
+import { sidebarExamples } from '../../../../lib/sidebar-demo'
 
 export function getStaticPaths() { return DEMO_LANGUAGES.map((port) => ({ params: { port } })) }
 const port = Astro.params.port!
-const inventory = referenceTree(port)
+const { inventory, label, base, version, key } = sidebarDemoData(port)
 const selected = sidebarExamples(inventory)[0]?.id ?? ''
-const version = defaultVersionFor(port)
-const base = referenceUrl(PORT_BY_SLUG[port], version)
 const src = withRoot(`/demo/sidebar/preview/${port}.json`)
 ---
 
-<BaseLayout title={`${PORT_BY_SLUG[port].name} sidebar preview`} portSlug={port} noindex searchable={false} bare>
+<BaseLayout title={`${label} sidebar preview`} portSlug={port === 'tmux' ? undefined : port} noindex searchable={false} bare>
   <div class="sidebar-preview" data-sidebar-preview data-language={port} data-inventory={src}>
     <header class="sidebar-preview__header">
       <a href={withRoot('/demo/sidebar/')} target="_parent">libtmux · sidebar demo</a>
-      <span>{PORT_BY_SLUG[port].name} · {version}</span>
+      <span>{label} · {version}</span>
       <span data-preview-mode>Outline</span>
     </header>
     <div class="sidebar-preview__mobile">
@@ -29,8 +24,10 @@ const src = withRoot(`/demo/sidebar/preview/${port}.json`)
       <span data-preview-selection></span>
     </div>
     <div class="sidebar-preview__layout">
-      <ApiTree referenceBase={base} portName={PORT_BY_SLUG[port].name} tree={[]} members={[]} withMembers={new Set()}
-        currentPath="" version={apiTreeVersion(API_MODELS[port], navTree(port))} presentation="outline" inventory={inventory} inventorySrc={src} selectedSymbol={selected} controlled />
+      <ApiTree referenceBase={base} portName={label} tree={[]} members={[]} withMembers={new Set()}
+        currentPath="" version={key} presentation="outline" inventory={inventory} inventorySrc={src} selectedSymbol={selected} controlled
+        searchLabel={port === 'tmux' ? 'Find a command' : undefined} searchPlaceholder={port === 'tmux' ? 'Find command' : undefined}
+        filters={port === 'tmux' ? [{ id: 'all', label: 'All' }, { id: 'types', label: 'Sections' }, { id: 'members', label: 'Commands' }] : undefined} />
       <main class="sidebar-preview__article" id="preview-article" tabindex="-1">
         <nav aria-label="Declaration ancestry" data-preview-ancestry></nav>
         <p class="sidebar-preview__kind" data-preview-kind></p>

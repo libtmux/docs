@@ -19,12 +19,12 @@ import ApiTreeItems, { type TreeNode } from './ApiTreeItems.astro'
 import ApiBadge from './ApiBadge.astro'
 import { bucketTotal, firstEntry, type TreeBucket } from '../../lib/api-tree'
 import { apiTreeHref, type ApiTreeJson } from '../../lib/api-search'
-import { sidebarCatalog, sidebarNodes, type SidebarPresentation } from '../../lib/api-sidebar'
+import { SIDEBAR_PRESENTATIONS, sidebarCatalog, sidebarNodes, type SidebarPresentation } from '../../lib/api-sidebar'
 import { initializeApiTree } from './api-tree-state'
 import '../../styles/api-tree.css'
 
 interface Props {
-  /** Optional reader presentation; omitted on production reference pages. */
+  /** A shared reference presentation, with the reader's saved choice applied on arrival. */
   presentation?: SidebarPresentation
   inventory?: ApiTreeJson
   inventorySrc?: string
@@ -139,6 +139,8 @@ const glossaryNode: TreeNode[] = glossaryHref ? [{
 }] : []
 const catalog = inventory ? sidebarCatalog(inventory) : undefined
 const selectedOwner = catalog?.ownerOf(selectedSymbol)
+const ownerLabel = catalog?.ownerLabel ?? 'type'
+const ownerPlural = catalog?.ownerPlural ?? 'types'
 const nodes = presentation && inventory ? sidebarNodes(inventory, base, presentation, selectedSymbol)
   : [...(indexLabel ? [indexNode] : []), ...glossaryNode, ...tree.map((b) => bucketNode(b, 1, false))]
 
@@ -152,7 +154,10 @@ if (marks === 'mixed') quieten(nodes)
 /** The one Tab stop: the page's own row, or the first row on a page with none. */
 const mark = (list: TreeNode[]): boolean =>
   list.some((n) => (n.current ? ((n.tab = true), true) : n.children ? mark(n.children) : false))
-if (!mark(nodes) && nodes[0]) nodes[0].tab = true
+if (!mark(nodes)) {
+  const first = nodes.find((node) => !node.section)
+  if (first) first.tab = true
+}
 ---
 
 <!-- One element: the scripts sit inside the column, so the page's grid has the
@@ -167,7 +172,7 @@ if (!mark(nodes) && nodes[0]) nodes[0].tab = true
   <div id="api-nav" class="api-nav" data-src={inventorySrc ?? `${base}tree.json`} data-base={base} data-version={version} data-marks={marks === 'mixed' ? 'mixed' : undefined}
     data-presentation={presentation} data-symbol={presentation ? selectedSymbol : undefined}
     data-controlled={controlled || undefined}
-    data-state-scope={presentation ? `${presentation}:${selectedOwner?.id ?? ''}` : undefined} aria-labelledby="api-nav-title">
+    data-state-scope={presentation === 'outline' ? presentation : presentation ? `${presentation}:${selectedOwner?.id ?? ''}` : undefined} aria-labelledby="api-nav-title">
     <div class="api-nav__head">
       <p class="api-nav__title" id="api-nav-title">{treeLabel}</p>
       <button type="button" class="api-nav__close" data-api-nav-close aria-label={`Close ${treeLabel} contents`}>
@@ -188,19 +193,19 @@ if (!mark(nodes) && nodes[0]) nodes[0].tab = true
       </div>
     </div>
     {presentation && catalog && <div class="api-nav__presentation">
-      <button type="button" class="api-nav__owner-all" data-api-owner-all hidden={presentation === 'outline'}>All types</button>
+      <button type="button" class="api-nav__owner-all" data-api-owner-all hidden={presentation === 'outline'}>All {ownerPlural}</button>
       <div class="api-nav__picker-row">
       <div class="api-nav__owner-picker" data-api-owner-picker>
         <button type="button" id="api-owner" class="api-nav__owner-field" data-api-owner data-symbol={selectedOwner?.id}
-          aria-expanded="false" aria-controls="api-owner-popup" aria-haspopup="listbox" aria-label="Choose type">
+          aria-expanded="false" aria-controls="api-owner-popup" aria-haspopup="listbox" aria-label={`Choose ${ownerLabel}`}>
           <span data-api-owner-mark>{selectedOwner && <ApiBadge label={selectedOwner.kind} variant="kind" value={selectedOwner.kind} compact />}</span>
-          <span data-api-owner-label>{selectedOwner?.symbolName ?? 'Choose type'}</span>
+          <span data-api-owner-label>{selectedOwner?.symbolName ?? `Choose ${ownerLabel}`}</span>
           <span class="api-nav__chevron" aria-hidden="true" />
         </button>
         <div id="api-owner-popup" class="api-nav__owner-popup" data-api-owner-popup hidden>
           <input class="api-nav__owner-search" data-api-owner-search role="combobox" aria-expanded="false" aria-controls="api-owner-options"
-            aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Filter types…" aria-label="Filter types" />
-          <div id="api-owner-options" role="listbox" aria-label="Types" tabindex="-1">
+            aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder={`Filter ${ownerPlural}…`} aria-label={`Filter ${ownerPlural}`} />
+          <div id="api-owner-options" role="listbox" aria-label={ownerPlural} tabindex="-1">
             {catalog.owners.map((owner, index) => <div id={`api-owner-option-${index}`} role="option" aria-selected={owner.id === selectedOwner?.id ? 'true' : 'false'}
               class="api-nav__owner-option" data-owner-id={owner.id} data-qualified-name={owner.qualifiedName}>
               <ApiBadge label={owner.kind} variant="kind" value={owner.kind} compact />
@@ -208,12 +213,18 @@ if (!mark(nodes) && nodes[0]) nodes[0].tab = true
               <ApiBadge label={owner.kind} variant="kind" value={owner.kind} plain />
             </div>)}
           </div>
-          <p data-api-owner-empty role="status" hidden>No types found.</p>
+          <p data-api-owner-empty role="status" hidden>No {ownerPlural} found.</p>
         </div>
       </div>
       <details class="api-nav__more" data-api-actions>
       <summary aria-label="Sidebar actions" title="Sidebar actions"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="19" cy="12" r="1.5" /></svg></summary>
       <div class="api-nav__actions">
+        <div class="api-nav__layouts" role="radiogroup" aria-label="Sidebar layout">
+          {SIDEBAR_PRESENTATIONS.map((mode) => <button type="button" role="radio" data-api-presentation={mode}
+            aria-checked={mode === presentation ? 'true' : 'false'} tabindex={mode === presentation ? 0 : -1}>
+            <span class="api-nav__choice" aria-hidden="true" />{mode[0].toUpperCase() + mode.slice(1)}
+          </button>)}
+        </div>
         <button type="button" data-api-reveal aria-label="Reveal current" title="Reveal current">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /><path d="M12 2v4m0 12v4M2 12h4m12 0h4" /></svg>
           <span>Reveal current</span>
@@ -222,6 +233,10 @@ if (!mark(nodes) && nodes[0]) nodes[0].tab = true
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m8 4 4 4 4-4M8 20l4-4 4 4M5 12h14" /></svg>
           <span>Collapse all</span>
         </button>
+        {!controlled && <div class="api-nav__destinations">
+          {indexLabel && <a href={base} aria-current={indexNode.current ? 'page' : undefined}>{indexLabel}</a>}
+          {glossaryHref && <a href={glossaryHref} aria-current={currentPath.replace(/\/?$/, '/') === glossaryHref ? 'page' : undefined}>{glossaryLabel}</a>}
+        </div>}
       </div>
       </details>
       </div>

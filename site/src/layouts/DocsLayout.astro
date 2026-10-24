@@ -1,6 +1,8 @@
 ---
 import type { MarkdownHeading } from 'astro'
 import Sidebar from '../components/docs/Sidebar.astro'
+import ApiTree from '../components/api/ApiTree.astro'
+import type { ApiTreeJson } from '../lib/api-search'
 import DocumentationNavigationButtons from '../components/docs/DocumentationNavigationButtons.astro'
 import MobileToC from '../components/MobileToC.astro'
 import TableOfContents from '../components/TableOfContents/TableOfContents.astro'
@@ -87,6 +89,7 @@ interface Props {
    */
   bare?: boolean
   navigation?: SidebarItem[]
+  apiNavigation?: { inventory: ApiTreeJson; base: string; version: string; selected: string; fullManual: string }
   breadcrumbs?: BreadcrumbItem[]
   pagePorts?: PagePortLink[]
 }
@@ -116,6 +119,7 @@ const {
   editLabel,
   bare = false,
   navigation,
+  apiNavigation,
   breadcrumbs: requestedBreadcrumbs,
   pagePorts: requestedPagePorts,
 } = Astro.props as Props
@@ -177,20 +181,20 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
   </div>}
   {hasContext && <DocumentationContext slot="context" port={port} version={contextVersion} locale={locale}
     sourcePath={localeSourcePath(Astro.url.pathname, locale)} localeStatuses={localeStatuses} tableOfContents={tocItems.length > 0}>
-    <DocumentationNavigationButtons slot="navigation" tableOfContents={tocItems.length > 0} />
+    <DocumentationNavigationButtons slot="navigation" tableOfContents={tocItems.length > 0} api={Boolean(apiNavigation)} />
   </DocumentationContext>}
   <CodeTabs />
-  {!hasContext && <div class:list={['mobile-toolbar', tocItems.length > 0 && 'mobile-toolbar--contents']}><DocumentationNavigationButtons tableOfContents={tocItems.length > 0} /></div>}
+  {!hasContext && <div class:list={['mobile-toolbar', tocItems.length > 0 && 'mobile-toolbar--contents']}><DocumentationNavigationButtons tableOfContents={tocItems.length > 0} api={Boolean(apiNavigation)} /></div>}
 
   <noscript>
     <style is:inline>
       .mobile-toolbar, .documentation-context-navigation, #mobile-sidebar, #mobile-toc { display: none !important; }
     </style>
     <div class:list={['mobile-fallback', tocItems.length > 0 ? 'xl:hidden' : 'lg:hidden']} data-pagefind-ignore="all">
-      <details class="lg:hidden">
+      {!apiNavigation && <details class="lg:hidden">
         <summary>Browse documentation</summary>
         <Sidebar locale={locale} port={port} product={product} version={version} currentPath={currentPath} navigation={sidebarNavigation} />
-      </details>
+      </details>}
       {tocItems.length > 0 && <details>
         <summary>On this page</summary>
         <nav aria-label="On this page"><ul>
@@ -201,7 +205,7 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
   </noscript>
 
   <!-- Mobile sidebar drawer -->
-  <div id="mobile-sidebar-overlay" class="fixed inset-0 z-40 bg-black/50 opacity-0 invisible lg:hidden"></div>
+  {!apiNavigation && <><div id="mobile-sidebar-overlay" class="fixed inset-0 z-40 bg-black/50 opacity-0 invisible lg:hidden"></div>
   <aside id="mobile-sidebar" data-documentation-scroll="mobile" inert class="drawer-surface fixed left-0 top-0 z-50 h-full w-64 -translate-x-full overflow-y-auto lg:hidden">
     <div class="p-4">
       <div class="mb-6 flex items-center justify-between">
@@ -219,7 +223,7 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
       </div>
       <Sidebar locale={locale} port={port} product={product} version={version} currentPath={currentPath} navigation={sidebarNavigation} />
     </div>
-  </aside>
+  </aside></>}
 
   {tocItems.length > 0 && <MobileToC tocItems={tocItems} />}
 
@@ -229,12 +233,18 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
     contents floating a long way short of the right edge with nothing beside
     it; the sidebars now sit near the edges and the middle grows.
   */}
-  <div class="mx-auto flex max-w-[100rem] gap-5 px-4 py-6 lg:px-5">
-    <aside class="hidden w-64 shrink-0 lg:block">
+  <div class:list={['mx-auto flex max-w-[100rem] gap-5 px-4 py-6 lg:px-5', apiNavigation && 'docs-reference-navigation']}>
+    {apiNavigation ? <ApiTree presentation="outline" inventory={apiNavigation.inventory} selectedSymbol={apiNavigation.selected}
+      referenceBase={apiNavigation.base} portName="tmux CLI" tree={[]} members={[]} withMembers={new Set()}
+      currentPath={currentPath} version={apiNavigation.version} indexLabel="All commands"
+      glossaryHref={apiNavigation.fullManual} glossaryLabel="Full manual" treeLabel="tmux commands"
+      searchLabel="Find a command" searchPlaceholder="Find command"
+      filters={[{ id: 'all', label: 'All' }, { id: 'types', label: 'Sections' }, { id: 'members', label: 'Commands' }]} />
+      : <aside class="hidden w-64 shrink-0 lg:block">
       <div data-documentation-scroll="desktop" class="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
         <Sidebar locale={locale} port={port} product={product} version={version} currentPath={currentPath} navigation={sidebarNavigation} />
       </div>
-    </aside>
+    </aside>}
 
     <main class="min-w-0 flex-1">
       {(!port || pagePath) && !(bare && breadcrumbs.length === 0) && <PageToolbar breadcrumbs={breadcrumbs} pagePorts={hasContext ? [] : pagePorts} port={port} editHref={editHref} editLabel={editLabel} />}
@@ -416,4 +426,14 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
   .mobile-fallback summary { cursor: pointer; padding-block: 0.375rem; }
   .mobile-fallback nav { padding-block: 0.5rem; }
 
+</style>
+
+<style>
+  .docs-reference-navigation { display: grid; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 56rem) {
+    .docs-reference-navigation { grid-template-columns: 16rem minmax(0, 1fr); }
+  }
+  @media (min-width: 80rem) {
+    .docs-reference-navigation:has(> aside) { grid-template-columns: 16rem minmax(0, 1fr) 14rem; }
+  }
 </style>

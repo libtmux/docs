@@ -14,7 +14,7 @@ import { wordBreak } from '../../lib/word-break'
 import { kindMark, markClass } from '../../lib/api-labels'
 import { apiTreeHref, searchApi, type ApiTreeBucket as JsonBucket, type ApiTreeJson as TreeJson } from '../../lib/api-search'
 import { apiTreePath, captureApiTree, initializeApiTree, type ApiTreeSelection, type ApiTreeState } from './api-tree-state'
-import { sidebarCatalog, sidebarName, sidebarNodes, type SidebarNode, type SidebarPresentation } from '../../lib/api-sidebar'
+import { SIDEBAR_PRESENTATIONS, SIDEBAR_PREFERENCE_KEY, sidebarCatalog, sidebarName, sidebarNodes, type SidebarNode, type SidebarPresentation } from '../../lib/api-sidebar'
 import { initApiOwnerPicker } from './api-owner-picker'
 
 const ITEM = '[role="treeitem"]'
@@ -471,19 +471,20 @@ export async function setApiSidebar(nav: HTMLElement, mode: SidebarPresentation,
   const json = await load(nav.dataset.src ?? '')
   if (pending.signal.aborted || !nav.isConnected) return
   const catalog = sidebarCatalog(json)
-  const record = catalog.symbols.get(symbol) ?? catalog.owners[0]
+  const record = catalog.symbols.get(symbol)
   const tree = nav.querySelector<HTMLElement>('[role="tree"]')
-  if (!record || !tree) return
+  if (!tree) return
   if (nav.dataset.presentationReady) saveApiTreeState()
-  const owner = catalog.ownerOf(record.id)
+  const selected = record?.id ?? ''
+  const owner = catalog.ownerOf(selected)
   nav.dataset.presentation = mode
-  nav.dataset.symbol = record.id
-  nav.dataset.stateScope = `${mode}:${options.allTypes ? 'all-types' : owner?.id ?? ''}`
+  nav.dataset.symbol = selected
+  nav.dataset.stateScope = mode === 'outline' ? mode : `${mode}:${options.allTypes ? 'all-types' : owner?.id ?? ''}`
   if (options.allTypes) nav.dataset.ownerOverview = 'true'
   else delete nav.dataset.ownerOverview
-  nav.dataset.currentHref = apiTreeHref(nav.dataset.base ?? '/', record, json.hrefs)
+  nav.dataset.currentHref = record ? apiTreeHref(nav.dataset.base ?? '/', record, json.hrefs) : location.pathname
   delete nav.dataset.apiTreeInteracted
-  tree.replaceChildren(...presentationRows(sidebarNodes(json, nav.dataset.base ?? '/', mode, record.id, options.allTypes)))
+  tree.replaceChildren(...presentationRows(sidebarNodes(json, nav.dataset.base ?? '/', mode, selected, options.allTypes)))
   selectPresentation(nav)
   const tab = tree.querySelector<HTMLElement>('[aria-current="page"]')?.closest<HTMLElement>(ITEM) ?? rows(tree)[0]
   if (tab) tab.tabIndex = 0
@@ -492,7 +493,7 @@ export async function setApiSidebar(nav: HTMLElement, mode: SidebarPresentation,
     picker.dataset.symbol = owner?.id ?? ''
     const ownerLabel = picker.querySelector('[data-api-owner-label]')
     const enclosing = catalog.symbols.get(catalog.parent.get(owner?.id ?? '') ?? '')
-    if (ownerLabel) ownerLabel.textContent = owner ? `${enclosing ? `${enclosing.symbolName}.` : ''}${owner.symbolName}` : 'Choose type'
+    if (ownerLabel) ownerLabel.textContent = owner ? `${enclosing ? `${enclosing.symbolName}.` : ''}${owner.symbolName}` : `Choose ${catalog.ownerLabel}`
     const mark = owner && kindBadge(owner.kind)
     nav.querySelector('[data-api-owner-mark]')?.replaceChildren(...(mark ? [mark] : []))
     for (const option of nav.querySelectorAll<HTMLElement>('[data-owner-id]')) option.setAttribute('aria-selected', String(option.dataset.ownerId === owner?.id))
@@ -501,7 +502,7 @@ export async function setApiSidebar(nav: HTMLElement, mode: SidebarPresentation,
   const all = nav.querySelector<HTMLButtonElement>('[data-api-owner-all]')
   if (all) {
     all.hidden = mode === 'outline'
-    all.textContent = options.allTypes ? `Back to ${owner?.name ?? 'members'}` : 'All types'
+    all.textContent = options.allTypes ? `Back to ${owner?.name ?? 'members'}` : `All ${catalog.ownerPlural}`
   }
   const parent = catalog.symbols.get(catalog.parent.get(owner?.id ?? '') ?? '')
   const back = nav.querySelector<HTMLAnchorElement>('[data-api-owner-back]')
@@ -511,16 +512,25 @@ export async function setApiSidebar(nav: HTMLElement, mode: SidebarPresentation,
     back.dataset.symbol = parent?.id ?? ''
     if (parent) back.href = apiTreeHref(nav.dataset.base ?? '/', parent, json.hrefs)
   }
+  for (const choice of nav.querySelectorAll<HTMLButtonElement>('[data-api-presentation]')) {
+    const checked = choice.dataset.apiPresentation === mode
+    choice.setAttribute('aria-checked', String(checked))
+    choice.tabIndex = checked ? 0 : -1
+  }
   await restoreTree(nav, tree, pending.signal)
   if (pending.signal.aborted) return
   if (hadTreeFocus && !nav.inert) focusRow(tree, tab)
   nav.dataset.presentationReady = 'true'
-  if (options.notify !== false) nav.dispatchEvent(new CustomEvent('api-sidebar:change', { bubbles: true, detail: { symbol: record.id, presentation: mode } }))
+  if (options.notify !== false) nav.dispatchEvent(new CustomEvent('api-sidebar:change', { bubbles: true, detail: { symbol: selected, presentation: mode } }))
   return record
 }
 
 function initPresentation(nav: HTMLElement, tree: HTMLElement, signal: AbortSignal) {
   if (!nav.dataset.presentation) return
+  const present = (work: Promise<unknown>) => waitForAppearance(work.catch(() => {
+    const status = nav.querySelector<HTMLElement>('[data-api-search-status]')
+    if (status) status.textContent = 'Sidebar could not load. Try again from its menu.'
+  }))
   initApiOwnerPicker(nav, signal)
   const actions = nav.querySelector<HTMLDetailsElement>('[data-api-actions]')
   if (actions) {
@@ -541,13 +551,42 @@ function initPresentation(nav: HTMLElement, tree: HTMLElement, signal: AbortSign
       if (!actions.contains(event.target as Node)) actions.open = false
     }, { signal })
   }
-  const update = (symbol: string) => waitForAppearance(setApiSidebar(nav, nav.dataset.presentation as SidebarPresentation, symbol))
-  nav.querySelector<HTMLButtonElement>('[data-api-owner]')?.addEventListener('change', (event) => update((event.target as HTMLButtonElement).dataset.symbol ?? ''), { signal })
+  const update = (symbol: string) => present(setApiSidebar(nav, nav.dataset.presentation as SidebarPresentation, symbol))
+  const choose = async (symbol: string) => {
+    if (nav.hasAttribute('data-controlled')) { update(symbol); return }
+    const json = await load(nav.dataset.src ?? '')
+    const record = sidebarCatalog(json).symbols.get(symbol)
+    if (record) window.location.assign(apiTreeHref(nav.dataset.base ?? '/', record, json.hrefs))
+  }
+  const choices = [...nav.querySelectorAll<HTMLButtonElement>('[data-api-presentation]')]
+  const changeMode = (choice: HTMLButtonElement) => {
+    const mode = choice.dataset.apiPresentation as SidebarPresentation
+    if (!SIDEBAR_PRESENTATIONS.includes(mode)) return
+    try { window.localStorage.setItem(SIDEBAR_PREFERENCE_KEY, mode) } catch { /* Preference storage is optional. */ }
+    present(setApiSidebar(nav, mode, nav.dataset.symbol ?? ''))
+  }
+  for (const choice of choices) {
+    choice.addEventListener('click', () => {
+      changeMode(choice)
+      actions?.querySelector('summary')?.focus({ preventScroll: true })
+    }, { signal })
+    choice.addEventListener('keydown', (event) => {
+      if (!['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
+      event.preventDefault()
+      const index = event.key === 'Home' ? 0 : event.key === 'End' ? choices.length - 1
+        : (choices.indexOf(choice) + (['ArrowDown', 'ArrowRight'].includes(event.key) ? 1 : -1) + choices.length) % choices.length
+      const next = choices[index]!
+      next.focus()
+      changeMode(next)
+    }, { signal })
+  }
+  nav.querySelector<HTMLButtonElement>('[data-api-owner]')?.addEventListener('change', (event) => present(choose((event.target as HTMLButtonElement).dataset.symbol ?? '')), { signal })
   nav.querySelector('[data-api-owner-all]')?.addEventListener('click', () => {
-    waitForAppearance(setApiSidebar(nav, nav.dataset.presentation as SidebarPresentation, nav.dataset.symbol ?? '', { allTypes: !nav.dataset.ownerOverview }))
+    present(setApiSidebar(nav, nav.dataset.presentation as SidebarPresentation, nav.dataset.symbol ?? '', { allTypes: !nav.dataset.ownerOverview }))
   }, { signal })
   nav.querySelector<HTMLAnchorElement>('[data-api-owner-back]')?.addEventListener('click', (event) => {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+    if (!nav.hasAttribute('data-controlled')) return
     event.preventDefault()
     update((event.currentTarget as HTMLElement).dataset.symbol ?? '')
   }, { signal })
@@ -565,7 +604,20 @@ function initPresentation(nav: HTMLElement, tree: HTMLElement, signal: AbortSign
     focusRow(tree, rows(tree)[0])
   }, { signal })
   signal.addEventListener('abort', () => configurations.get(nav)?.abort(), { once: true })
-  if (!nav.hasAttribute('data-controlled')) update(nav.dataset.symbol ?? '')
+  if (!nav.hasAttribute('data-controlled')) {
+    try {
+      const saved = window.localStorage.getItem(SIDEBAR_PREFERENCE_KEY) as SidebarPresentation
+      if (SIDEBAR_PRESENTATIONS.includes(saved)) nav.dataset.presentation = saved
+    } catch { /* Keep the initial layout without storage. */ }
+    const arrive = async () => {
+      const json = await load(nav.dataset.src ?? '')
+      const path = `${location.pathname}${location.hash}`
+      const record = sidebarCatalog(json).records.find((entry) => apiTreeHref(nav.dataset.base ?? '/', entry, json.hrefs) === path)
+      return setApiSidebar(nav, nav.dataset.presentation as SidebarPresentation, record?.id ?? nav.dataset.symbol ?? '')
+    }
+    window.addEventListener('hashchange', () => present(arrive()), { signal })
+    present(arrive())
+  }
 }
 
 /** Fluent's Collapse: max-height and opacity over 200ms, and none for reduced motion. */

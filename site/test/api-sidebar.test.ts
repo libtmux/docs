@@ -75,4 +75,14 @@ describe('API sidebar presentations', () => {
     const owner = sidebarNodes(quoted, '/reference/', 'outline', 'a.`set`').find((node) => node.label === 'Session')
     expect(owner?.children?.find((node) => node.current)).toMatchObject({ label: 'set', href: '/reference/escaped-set/' })
   })
+
+  it('uses manual sections as command owners without presenting them as library types', () => {
+    const commands: ApiTreeJson = { port: 'tmux', buckets: [{ id: 'manual', label: 'Commands', count: 1, slug: null, children: [], types: [
+      { id: 'windows', name: 'Windows and panes', slug: '', kind: 'section', m: 1 },
+    ] }], members: { windows: [['capture-pane', 'capture-pane', 'capture-pane', 'command']] }, hrefs: { windows: '/pr-42/en/tmux/latest/manual/#windows-and-panes' } }
+    const outline = sidebarNodes(commands, '/pr-42/en/tmux/latest/manual/', 'outline', 'capture-pane')
+    expect(outline.map((node) => node.label)).toEqual(['Windows and panes'])
+    expect(outline[0]?.children?.[0]).toMatchObject({ kind: 'command', current: true, href: '/pr-42/en/tmux/latest/manual/capture-pane/' })
+    expect(sidebarCatalog(commands)).toMatchObject({ ownerLabel: 'section', ownerPlural: 'sections' })
+  })
 })

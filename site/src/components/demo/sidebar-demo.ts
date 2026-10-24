@@ -1,4 +1,5 @@
 import { DEMO_VIEWPORTS, demoConfig, demoUrl, type SidebarDemoConfig } from '../../lib/sidebar-demo'
+import { SIDEBAR_PRESENTATIONS } from '../../lib/api-sidebar'
 
 const tradeoffs = {
   outline: 'Outline keeps the type hierarchy visible; expanding a large owner makes a longer list.',
@@ -11,7 +12,8 @@ export function initSidebarDemo() {
   const frame = root?.querySelector<HTMLIFrameElement>('[data-sidebar-frame]')
   const form = root?.querySelector<HTMLFormElement>('form')
   if (!root || !frame || !form) return
-  let config = demoConfig(new URLSearchParams(location.search))
+  const languages = [...(form.elements.namedItem('language') as HTMLSelectElement).options].map((option) => option.value)
+  let config = demoConfig(new URLSearchParams(location.search), languages)
   const selections = new Map<string, string>()
   const examples = new Map<string, { id: string; label: string }[]>()
   let loadedLanguage = ''
@@ -60,12 +62,12 @@ export function initSidebarDemo() {
   form.addEventListener('change', () => {
     const params = new URLSearchParams()
     for (const [key, value] of new FormData(form)) if (typeof value === 'string') params.set(key, value)
-    const next = demoConfig(params)
+    const next = demoConfig(params, languages)
     if (next.language !== config.language) next.symbol = selections.get(next.language) ?? ''
     commit(next)
   })
   window.addEventListener('popstate', () => {
-    config = demoConfig(new URLSearchParams(location.search))
+    config = demoConfig(new URLSearchParams(location.search), languages)
     revision++
     selections.set(config.language, config.symbol)
     reflect()
@@ -81,8 +83,9 @@ export function initSidebarDemo() {
       selections.set(config.language, config.symbol)
       history.replaceState({ ...history.state, sidebarDemo: true }, '', demoUrl(new URL(location.href), config))
       reflect(false)
-    } else if (event.data.type === 'sidebar-demo:selection' && event.data.revision === revision && event.data.variant === config.variant && event.data.symbol !== config.symbol) {
-      commit({ ...config, symbol: event.data.symbol }, !config.symbol)
+    } else if (event.data.type === 'sidebar-demo:selection' && event.data.revision === revision && SIDEBAR_PRESENTATIONS.includes(event.data.variant)
+      && (event.data.symbol !== config.symbol || event.data.variant !== config.variant)) {
+      commit({ ...config, symbol: event.data.symbol, variant: event.data.variant }, !config.symbol)
     }
   })
   commit(config, true)

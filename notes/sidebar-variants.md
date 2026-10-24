@@ -1,7 +1,9 @@
 # API sidebar variants
 
-The `/demo/sidebar/` gallery compares three presentations
-of the shared API sidebar. The normal documentation keeps its current layout.
+The `/demo/sidebar/` gallery compares three presentations of the shared API
+sidebar across all 16 library ports and the tmux CLI. The same layouts are
+available on reference pages through the “…” menu beside the type picker.
+The selected layout persists across reloads and reference pages.
 
 - **Outline** keeps the hierarchy visible, with aligned kind marks and indented
   names. Expanding an owner exposes its members in the model's order.
@@ -11,14 +13,17 @@ of the shared API sidebar. The normal documentation keeps its current layout.
 - **Grouped** separates an owner's members by kind and sorts each group
   alphabetically. Groups can be collapsed independently.
 
-The controls select C# or Kotlin, a desktop/tablet/phone viewport, light or dark
+The controls select a reference, a desktop/tablet/phone viewport, light or dark
 theme, and sidebar width. The URL records the configuration and selected
 declaration. Back, Forward, and reload restore it. The examples include
 `Server.Windows`, `Session.Companion`, repeated names, long names, and a type
 with no members; the current API models supply the inventory and counts.
 
 The type picker opens a searchable list with kind marks and trailing kind
-labels. Reveal current and Collapse all share the adjacent actions menu.
+labels. Outline, Focus, Grouped, Reveal current, and Collapse all share the
+adjacent actions menu. On reference pages it also links to the reference index
+and glossary. The tmux CLI uses manual sections and commands in place of types
+and members, with links to All commands and the full manual.
 Standalone names repeated across receivers include that context, such as
 `OptionalInt.orNull` and `OptionalLong.orNull`. Kotlin identifier escapes stay
 in signatures and identities; navigation labels show the unquoted name.
@@ -26,6 +31,9 @@ in signatures and identities; navigation labels show the unquoted name.
 ![Outline, desktop, dark](sidebar-variants/outline-desktop-dark.png)
 ![Grouped, desktop, light](sidebar-variants/grouped-desktop-light.png)
 ![Focus, Kotlin, phone](sidebar-variants/focus-kotlin-phone.png)
+
+![Sidebar layout menu](sidebar-variants/layout-menu.png)
+![tmux CLI reference menu](sidebar-variants/tmux-menu.png)
 
 ## Local review
 

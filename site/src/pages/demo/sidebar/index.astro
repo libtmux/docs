@@ -1,15 +1,16 @@
 ---
 import DemoLayout from '../../../components/demo/DemoLayout.astro'
 import { withRoot } from '../../../lib/site-root'
+import { API_MODEL_PORTS } from '../../../lib/ports'
 ---
 
-<DemoLayout title="API sidebar variants" description="Compare Outline, Focus, and Grouped with the current C# and Kotlin API models." current="/demo/sidebar/" wide>
+<DemoLayout title="Sidebar layouts" description="Compare Outline, Focus, and Grouped across every library port and the tmux CLI." current="/demo/sidebar/" wide>
   <div class="sidebar-lab" data-sidebar-demo data-preview-base={withRoot('/demo/sidebar/preview/')}>
-    <h1>API sidebar variants</h1>
-    <p>Three ways to browse the same API. Select a symbol, then change modes to compare its context.</p>
+    <h1>Sidebar layouts</h1>
+    <p>Browse a port or the tmux CLI. Use the sidebar’s “…” menu to change its layout.</p>
     <form class="sidebar-lab__controls" aria-label="Sidebar preview settings">
       <label>Variant<select name="variant"><option value="outline">Outline</option><option value="focus">Focus</option><option value="grouped">Grouped</option></select></label>
-      <label>Language<select name="language"><option value="csharp">C#</option><option value="kotlin">Kotlin</option></select></label>
+      <label>Reference<select name="language">{API_MODEL_PORTS.map((port) => <option value={port.slug} selected={port.slug === 'csharp'}>{port.name}</option>)}<option value="tmux">tmux CLI</option></select></label>
       <label>Viewport<select name="viewport"><option value="desktop">Desktop</option><option value="tablet">Tablet · 820px</option><option value="phone">Phone · 390px</option></select></label>
       <label>Theme<select name="theme"><option value="dark">Dark</option><option value="light">Light</option></select></label>
       <label>Sidebar width <output data-width>296px</output><input name="width" type="range" min="248" max="380" value="296" /></label>
@@ -17,7 +18,7 @@ import { withRoot } from '../../../lib/site-root'
     </form>
     <div class="sidebar-lab__caption"><p data-tradeoff>Outline keeps the type hierarchy visible; expanding a large owner makes a longer list.</p><a data-share href={withRoot('/demo/sidebar/')}>Link to this configuration</a></div>
     <div class="sidebar-lab__stage"><iframe title="Interactive API sidebar preview" src={withRoot('/demo/sidebar/preview/csharp/')} data-sidebar-frame></iframe></div>
-    <p class="sidebar-lab__note">The preview shares the documentation sidebar, kind marks, search, keyboard navigation, and mobile drawer. The normal documentation keeps its current layout. Use “Open full documentation” inside the preview to read the selected declaration.</p>
+    <p class="sidebar-lab__note">The preview uses the documentation sidebar, kind marks, search, keyboard navigation, and mobile drawer. Use “Open full documentation” to browse the reference with the same layout menu.</p>
     <noscript>JavaScript is required to change preview settings. The preview still links to the documentation.</noscript>
   </div>
 </DemoLayout>

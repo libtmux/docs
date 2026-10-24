@@ -3,6 +3,7 @@ import { parseManual } from '../../scripts/gen-tmux-manual.mjs'
 import { buildsTmuxDocumentation, tmuxCommandNotes, tmuxCommandsFor, tmuxGuidesFor, tmuxManualHtml, tmuxManualHeadings, tmuxManual, tmuxManualUrl, tmuxManualVersionUrl } from '../src/lib/tmux-manual-data'
 import { highlightTmuxManual, linkTmuxManualEntries, markTmuxManualKeys } from '../src/lib/tmux-manual'
 import { tmuxKeyList } from '../src/lib/tmux-keys'
+import { tmuxManualNavigation } from '../src/lib/tmux-manual-navigation'
 import { fromHtml } from 'hast-util-from-html'
 import { select, selectAll, type Element, type Nodes } from 'astro-expressive-code/hast'
 import { toMdast } from 'hast-util-to-mdast'
@@ -81,6 +82,13 @@ describe('versioned tmux manual', () => {
     expect(current).toBe(tmuxManual('3.7c'))
     expect(old.commands.some((command) => command.name === 'new-pane')).toBe(false)
     expect(current.commands.some((command) => command.name === 'new-pane')).toBe(true)
+    for (const version of ['3.2a', 'latest']) {
+      const navigation = tmuxManualNavigation(version).json
+      expect(Object.values(navigation.members).flat().map((entry) => entry[2]).sort())
+        .toEqual(tmuxManual(version).commands.map((command) => command.name).sort())
+      expect(Object.values(navigation.hrefs!))
+        .toEqual(navigation.buckets[0]!.types.map((section) => `${tmuxManualUrl(version)}#${section.id.slice('section:'.length)}`))
+    }
     const capture = (version: string) => tmuxManual(version).commands.find((command) => command.name === 'capture-pane')!
     expect(capture('3.2a').usage.split(']')[0]).not.toContain('F')
     expect(capture('3.7c').usage.split(']')[0]).toContain('F')

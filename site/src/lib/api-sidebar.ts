@@ -2,6 +2,7 @@ import { apiTreeHref, searchApi, type ApiSearchResult, type ApiTreeJson } from '
 
 export const SIDEBAR_PRESENTATIONS = ['outline', 'focus', 'grouped'] as const
 export type SidebarPresentation = typeof SIDEBAR_PRESENTATIONS[number]
+export const SIDEBAR_PREFERENCE_KEY = 'libtmux:sidebar-presentation'
 
 /** Kotlin quoting belongs in signatures; navigation shows the identifier itself. */
 export const sidebarName = (name: string, port: string) => port === 'kotlin' ? name.replace(/`([^`]+)`/g, '$1') : name
@@ -41,7 +42,9 @@ export function sidebarCatalog(json: ApiTreeJson) {
   const membersOf = (id: string) => (json.members[id] ?? [])
     .map(([name, , memberId]) => symbols.get(memberId ?? `${id}.${name}`))
     .filter((record): record is ApiSearchResult => Boolean(record))
-  return { records, symbols, parent, owners, ownerOf, membersOf }
+  const sections = owners.length > 0 && owners.every((record) => record.kind === 'section')
+  return { records, symbols, parent, owners, ownerOf, membersOf,
+    ownerLabel: sections ? 'section' : 'type', ownerPlural: sections ? 'sections' : 'types' }
 }
 
 const groupName = (kind: string) => ({ property: 'Properties', method: 'Methods', class: 'Classes', object: 'Objects',
@@ -63,9 +66,10 @@ export function sidebarNodes(json: ApiTreeJson, base: string, mode: SidebarPrese
       ...(members.length && expand ? { count: members.length, lazy: `type:${record.id}`, expanded: open,
         ...(open ? { children: members.map((member) => symbol(member, level + 1)) } : {}) } : {}) }
   }
-  if (allTypes) return catalog.owners.map((record) => ({ ...symbol({ ...record, name: record.qualifiedName }, 1, false, false), count: catalog.membersOf(record.id).length }))
+  if (allTypes || (mode !== 'outline' && !catalog.symbols.has(selected))) return catalog.owners.map((record) => ({ ...symbol({ ...record, name: record.qualifiedName }, 1, false, false), count: catalog.membersOf(record.id).length }))
   if (mode === 'outline') {
     const roots = catalog.records.filter((record) => !catalog.parent.has(record.id))
+    if (catalog.ownerLabel === 'section') return roots.map((record) => symbol(record, 1))
     const rootName = (record: ApiSearchResult) => {
       const peers = roots.filter((other) => other.symbolName === record.symbolName)
       if (peers.length < 2) return record.symbolName

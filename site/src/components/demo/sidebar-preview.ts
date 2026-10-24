@@ -14,8 +14,9 @@ export async function initSidebarPreview() {
   const examples = sidebarExamples(json)
   const base = nav.dataset.base ?? '/'
   const href = (id: string) => apiTreeHref(base, catalog.symbols.get(id)!, json.hrefs)
-  const byHref = new Map(catalog.records.map((record) => [new URL(href(record.id), location.href).pathname, record.id]))
-  let config = demoConfig(new URLSearchParams(location.search))
+  const key = (url: URL) => `${url.pathname}${url.hash}`
+  const byHref = new Map(catalog.records.map((record) => [key(new URL(href(record.id), location.href)), record.id]))
+  let config = demoConfig(new URLSearchParams(location.search), [json.port])
   config.language = json.port as SidebarDemoConfig['language']
   if (!catalog.symbols.has(config.symbol)) config.symbol = examples[0]?.id ?? catalog.records[0]!.id
   let revision = 0
@@ -89,7 +90,7 @@ export async function initSidebarPreview() {
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.defaultPrevented) return
     const anchor = (event.target as Element).closest<HTMLAnchorElement>('a')
     if (!anchor || anchor.hasAttribute('data-preview-full') || anchor.hasAttribute('data-api-owner-back')) return
-    const symbol = anchor.origin === location.origin && byHref.get(anchor.pathname)
+    const symbol = anchor.origin === location.origin && byHref.get(key(new URL(anchor.href)))
     if (!symbol) return
     event.preventDefault()
     nav.dispatchEvent(new CustomEvent('api-sidebar:clear-search'))
@@ -102,7 +103,7 @@ export async function initSidebarPreview() {
   window.addEventListener('message', (event) => {
     if (event.origin !== location.origin || event.source !== window.parent || event.data?.type !== 'sidebar-demo:configure') return
     if (!Number.isSafeInteger(event.data.revision) || event.data.revision < revision) return
-    const next = demoConfig(new URLSearchParams(event.data.query))
+    const next = demoConfig(new URLSearchParams(event.data.query), [json.port])
     if (next.language !== json.port) return
     revision = event.data.revision
     void apply(next, revision)
