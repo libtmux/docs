@@ -10,6 +10,7 @@ import { PORT_BY_SLUG } from './ports'
 import { withPortRoot } from './site-root'
 import { rowAnchor } from './row-anchors'
 import { linkTmuxManualTree } from './tmux-manual'
+import { tmuxUsage, tmuxUsageCommands } from './tmux-library-usage'
 
 export type TmuxManual = typeof v37
 export type TmuxCommand = TmuxManual['commands'][number]
@@ -197,16 +198,38 @@ export function tmuxGuidesFor(command: string) {
     .map((guide) => ({ title: guide.title, href: withPortRoot(`/tmux/${guide.path}/`) }))
 }
 
-/** Link only declarations present in the integrated library models. */
+/**
+ * One library page per language for a command, for the language picker.
+ *
+ * A command with recorded usage names the symbol that sends it, at the widest
+ * scope the port has one for. A language without one falls back to the
+ * equivalent API that the concepts name, so the picker still lands somewhere.
+ */
 export function tmuxApiLinks(command: string) {
   const seen = new Set<string>()
-  return commandConcepts(command).flatMap((concept) => Object.entries(concept.symbols).flatMap(([port, id]) => {
+  const sent = tmuxUsage(command)?.groups.flatMap((group) => group.ports).flatMap((entry) => {
+    if (seen.has(entry.port)) return []
+    seen.add(entry.port)
+    return [{ name: PORT_BY_SLUG[entry.port].name, href: entry.links[0].href }]
+  }) ?? []
+  return [...sent, ...commandConcepts(command).flatMap((concept) => Object.entries(concept.symbols).flatMap(([port, id]) => {
     if (seen.has(port) || !API_MODELS[port]?.symbols.some((symbol) => (symbol.publicId ?? symbol.id) === id)) return []
     const href = referenceHref(port, id)
     if (!href) return []
     seen.add(port)
     return [{ name: PORT_BY_SLUG[port].name, href }]
-  }))
+  }))]
+}
+
+/**
+ * What a command's "Use from a library" section lists: the recorded senders, or the equivalents the
+ * concepts name for a command whose usage is not recorded. A recorded command that nothing sends has
+ * no section, because an equivalent that does not send it would be a false link.
+ */
+export function tmuxLibrarySection(command: string): 'usage' | 'equivalents' | undefined {
+  if (tmuxUsage(command)) return 'usage'
+  if (tmuxUsageCommands().includes(command)) return undefined
+  return tmuxApiLinks(command).length ? 'equivalents' : undefined
 }
 
 /** Task-oriented notes complement the pinned manual; the native catalog gates flags. */
@@ -264,15 +287,22 @@ export function tmuxManualHeadings(version: string, slug?: string) {
     { depth: 2, slug: 'behavior', text: notes ? 'Options' : 'Behavior' },
     ...(notes?.groups.map((group) => ({ depth: 3, slug: group.id, text: group.title })) ?? []),
     ...(tmuxGuidesFor(slug).length ? [{ depth: 2, slug: 'guides', text: 'Guides' }] : []),
-    ...(tmuxApiLinks(slug).length ? [{ depth: 2, slug: 'libraries', text: 'Use from a library' }] : []),
+    ...(tmuxLibrarySection(slug) ? [{ depth: 2, slug: 'libraries', text: 'Use from a library' }] : []),
   ].map((heading) => heading.depth === 2 ? { ...heading, slug: rowAnchor(slug, heading.text) } : heading)
   return [...new Set(reference.commands.map((entry) => entry.section))].map((section) => ({
     depth: 2, slug: section.toLowerCase().replaceAll(' ', '-'), text: section[0] + section.slice(1).toLowerCase(),
   }))
 }
 
-/** Match source-verified concepts to commands present in the selected manual. */
+/**
+ * Match source-verified concepts to commands present in the selected manual.
+ *
+ * A command whose usage the data records is left out: a concept names an
+ * equivalent API, and the usage names the symbols that send the command.
+ */
 export function tmuxCommandsFor(port: string, publicId: string): TmuxCommand[] {
   const concepts = conceptsFor(port, publicId)
-  return tmuxManual('latest').commands.filter((command) => commandConcepts(command.name).some((concept) => concepts.includes(concept)))
+  const recorded = tmuxUsageCommands()
+  return tmuxManual('latest').commands.filter((command) => !recorded.includes(command.name)
+    && commandConcepts(command.name).some((concept) => concepts.includes(concept)))
 }

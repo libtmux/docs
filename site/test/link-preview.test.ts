@@ -9,6 +9,7 @@ import { select } from 'astro-expressive-code/hast'
 import { fromHtml } from 'hast-util-from-html'
 import { visit } from 'unist-util-visit'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+vi.mock('astro:content', () => ({ getCollection: async () => [] }))
 import { symbolPreview, glossaryPreview, tmuxManualPreview } from '../src/lib/link-preview'
 import { API_MODELS } from '../src/lib/api-models'
 import { productApiIndex } from '../src/lib/product-api'
@@ -16,6 +17,7 @@ import { apiGlossaryHref } from '../src/lib/api-glossary'
 import { initLinkPreviews, disposeLinkPreviews, linkPreviewTarget, positionLinkPreview } from '../src/lib/link-preview-browser'
 import { GET } from '../src/pages/[...slug].preview.json'
 import { highlightTokens } from '../src/lib/highlight'
+import { PREVIEW_SIGNATURE_CHARS, PREVIEW_SIGNATURE_LINES } from '../src/lib/preview-signature'
 import config from '../ec.config.mjs'
 
 it.each([
@@ -248,6 +250,36 @@ describe('preview lifecycle', () => {
     expect(code.querySelectorAll('*')).toHaveLength(0)
     expect(code.style.getPropertyValue('--shiki-light-bg')).toBe('')
     expect(code.classList.contains('lm-highlighted')).toBe(false)
+  })
+
+  it('shows only the head of a declaration too long for a card, whatever the payload carries', async () => {
+    const token = (content: string) => ({ content, light: { color: '#A626A4', fontStyle: 0 }, dark: { color: '#F97583', fontStyle: 0 } })
+    const lines = Array.from({ length: 40 }, (_, index) => `case_${index}`)
+    const signature = `enum {\n${lines.join('\n')}\n}`
+    const payload = { schema: 1, title: 'enum', description: '', signature, signatureLanguage: 'c', href: `${prefix}-a/`,
+      signatureHighlight: { language: 'c', light: { foreground: '#24292E', background: '#FFFFFF' }, dark: { foreground: '#E1E4E8', background: '#24292E' },
+        lines: signature.split('\n').map((line) => [token(line)]) } }
+    requests.mockResolvedValueOnce(new Response(JSON.stringify(payload)))
+    hover(); await settle()
+    const code = win.document.querySelector<HTMLElement>('[data-preview-signature]')!
+    // The lines it keeps, then a line that says the rest is on the page; the cut highlighting no longer fits, so it is plain text.
+    expect(code.textContent).toBe(`${signature.split('\n').slice(0, PREVIEW_SIGNATURE_LINES).join('\n')}\n…`)
+    expect(code.querySelectorAll('*')).toHaveLength(0)
+    escape()
+    // One line of hundreds of thousands of characters, as the tmux key-code enum is, is cut at the character limit.
+    requests.mockResolvedValueOnce(new Response(JSON.stringify({ ...payload, href: `${prefix}-b/`, signature: `enum { ${'KEYC_X, '.repeat(60_000)}}`, signatureHighlight: undefined })))
+    hover('b'); await settle()
+    expect(code.textContent!.length).toBeLessThanOrEqual(PREVIEW_SIGNATURE_CHARS + 2)
+    expect(code.textContent!.endsWith('\n…')).toBe(true)
+    escape()
+    // The control: a declaration that fits keeps its highlighting and its text, with nothing added.
+    win.document.body.insertAdjacentHTML('afterbegin', `<a id="c" href="${prefix}-c/">c</a>`)
+    const short = 'enum { A, B }'
+    requests.mockResolvedValueOnce(new Response(JSON.stringify({ ...payload, href: `${prefix}-c/`, signature: short,
+      signatureHighlight: { ...payload.signatureHighlight, lines: [[token(short)]] } })))
+    hover('c'); await settle()
+    expect(code.textContent).toBe(short)
+    expect(code.querySelectorAll('span')).toHaveLength(1)
   })
 
   it('keeps the destructor name and native signature intact with meaningful title breaks', async () => {

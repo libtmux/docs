@@ -15,6 +15,7 @@ import ApiType from './ApiType.astro'
 import { asideFor } from '../../lib/aside'
 import { apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMethodDetails, anonymousDeclarationLabel, nativeSignatureText as unformattedNativeSignatureText, parameterBindingText, usesNativeSignatures } from '../../lib/api-sections'
 import { tmuxCommandsFor, tmuxManualUrl } from '../../lib/tmux-manual-data'
+import { tmuxCommandItems, tmuxCommandRows, tmuxCommandSeparator, tmuxSymbolSends } from '../../lib/tmux-reference'
 import { CATALOG_KINDS, tmuxCatalogKindsForSymbol, tmuxCatalogUrl } from '../../lib/tmux-catalog'
 import ApiFieldOverloads from './ApiFieldOverloads.astro'
 import ApiCommandParameters from './ApiCommandParameters.astro'
@@ -180,7 +181,11 @@ const references = symbol.doc?.references ?? []
  * "explained in a concept" and "used in an example" are different offers.
  */
 const mentions = port ? mentionsOf(port, symbol.id) : []
+// A command the symbol sends comes with its scope and C function; one it only has an equivalent for is a plain link.
 const tmuxCommands = manualLinks ?? (port ? tmuxCommandsFor(port, anchor).map((command) => ({ ...command, href: tmuxManualUrl('latest', command.name) })) : [])
+const commandRows = tmuxCommandRows(port && !manualLinks ? tmuxSymbolSends(port, anchor) : [], tmuxCommands)
+const commandItems = tmuxCommandItems(commandRows)
+const commandSeparator = tmuxCommandSeparator(commandItems)
 // Members that wrap options or hooks lead to the catalog of what they take.
 const catalogEntries = catalogLinks ?? (port && !manualLinks ? tmuxCatalogKindsForSymbol(port, symbol).map((kind) => ({ name: CATALOG_KINDS[kind].label, href: tmuxCatalogUrl('latest', kind) })) : [])
 const mentionSections = [...new Set(mentions.map((m) => m.section ?? 'docs'))].sort()
@@ -275,7 +280,7 @@ const hasBody =
   Boolean(symbol.command) ||
   methods.length > 0 ||
   hasFields ||
-  tmuxCommands.length > 0 ||
+  commandRows.length > 0 ||
   catalogEntries.length > 0 ||
   elsewhere.length > 0
 ---
@@ -672,12 +677,12 @@ const hasBody =
       )
     }
 
-    {tmuxCommands.length > 0 && <p class="gp-sphinx-api-mentions">
+    {commandItems.length > 0 && <p class="gp-sphinx-api-mentions">
       <span class="gp-sphinx-api-mentions-label">tmux command</span>
-      {tmuxCommands.map((command, i) => <>
-        {i > 0 && ', '}
-        <a href={command.href}><code>{command.name}</code></a>
-      </>)}
+      {/* No whitespace between an item and the separator that follows it, so a comma or semicolon never trails a space; a condition is in parentheses, as it is in the Markdown. */}
+      {commandItems.map((item, i) => <>{i > 0 ? commandSeparator : ' '}<a href={item.href}><code>{item.command}</code></a>{item.scope
+        ? <span class="tmux-send" title={item.evidence}>{item.scope.flag || item.scope.target ? <>{' '}<code>-{item.scope.flag || item.scope.target}</code></> : null}{item.function ? <>{', '}<a href={item.function.href}><code>{item.function.name}</code></a></> : <>{' '}<span>{item.scope.label}</span></>}{item.when && <>{' ('}<span class="tmux-when" data-when={item.when}>{item.when}</span>{')'}</>}</span>
+        : item.when && <>{' ('}<span class="tmux-when" data-when={item.when}>{item.when}</span>{')'}</>}</>)}
     </p>}
     {catalogEntries.length > 0 && <p class="gp-sphinx-api-mentions">
       <span class="gp-sphinx-api-mentions-label">tmux catalog</span>

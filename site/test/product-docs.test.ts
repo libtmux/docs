@@ -652,6 +652,8 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     }
   })
 
+  // A port reads every page of its MCP reference in one test, so the work grows with the reference and the largest port
+  // leaves little of the default deadline on a slower runner. The deadline is not what the test is about; the assertions are.
   it.each(Object.keys(MCP_REFERENCE))('%s uses the shared reference browser for all advertised protocol objects', async (port) => {
     const version = manifest().defaultVersion[port]
     expect(version, `${port} default version`).toBeDefined()
@@ -679,7 +681,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         expect(JSON.parse(contract.querySelector('code')!.textContent)).toEqual(object.tool?.inputSchema ?? object.item)
       })
     }
-  })
+  }, 30_000)
 
   it.each(primaryPorts.map((port) => port.slug))('switches to equivalent sections and the tmux documentation for %s', async (slug) => {
     const defaults = manifest().defaultVersion

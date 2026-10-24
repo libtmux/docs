@@ -37,6 +37,8 @@ import SymbolName from '../../components/api/SymbolName.astro'
 import '../../styles/api.css'
 import '../../styles/vendor/gp-sphinx-api.css'
 import { tmuxManualUrl } from '../../lib/tmux-manual-data'
+import type { ResolvedUsage } from '../../lib/tmux-reference'
+import TmuxUsage from '../tmux/TmuxUsage.astro'
 
 /** Source projects supply identity and navigation to the same API renderer. */
 export interface SourceReferenceContext {
@@ -53,6 +55,7 @@ export interface SourceReferenceContext {
   index: SymbolIndex
   pagePorts: PagePortLink[]
   manualLinks?: { name: string; href: string }[]
+  usage?: ResolvedUsage[]
   catalogLinks?: { name: string; href: string }[]
   paths?: ApiRelationshipPath[]
 }
@@ -364,6 +367,9 @@ if (paths.length) pageSections.push({ id: 'api-source-paths', label: 'Paths thro
 pageSections.push(...relationshipSections.map((section) => ({ id: section.id, label: section.label, count: section.items.length })))
 const related = owner && model ? relatedTypeLinks(model, owner, members, index, hrefFor, { language, repeated: ownerNames, includeInternal: Boolean(source) }) : []
 if (related.length) pageSections.push({ id: 'api-related-types', label: 'Related types', count: related.length })
+// The methods that send the command are what a reader of the C needs last, after the code around it.
+const usage = source?.usage ?? []
+if (owner && usage.length) pageSections.push({ id: 'api-tmux-usage', label: 'In libtmux' })
 const title = glossary ? API_GLOSSARY_TITLE : owner
   ? qualifiedNameOf(owner)
   : model
@@ -835,6 +841,13 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                   {item.symbol.doc?.summary && <p><ApiDoc text={item.symbol.doc.summary} index={index} context={item.symbol} citations={false} /></p>}
                 </div>)}
               </div>
+            </section>}
+            {usage.length > 0 && <section class="api-tmux-usage" aria-labelledby="api-tmux-usage">
+              <h2 class="api-section-heading text-lg font-semibold" id="api-tmux-usage">In libtmux<a class="api-heading-link" href="#api-tmux-usage" aria-label="Link to In libtmux">#</a></h2>
+              {usage.map((entry) => <>
+                <p>These methods send <a href={entry.manualHref}><code>{entry.command}</code></a>.</p>
+                <TmuxUsage usage={entry} />
+              </>)}
             </section>}
           </>
         )

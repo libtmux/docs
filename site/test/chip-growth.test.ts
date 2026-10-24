@@ -9,7 +9,7 @@ import { judgeChipGrowth, railProblems } from '../scripts/check-badge-centring.m
  */
 const marks = readFileSync(new URL('../src/styles/kind-marks.css', import.meta.url), 'utf8')
 
-const CHIPS = ':is(.api-elsewhere-value, .api-command-related, nav.api-related)'
+const CHIPS = ':is(.api-elsewhere-value, .api-command-related, .tmux-usage, nav.api-related)'
 /** The declarations of the rule whose selector is `selector`, comments removed. */
 function declarations(css: string, selector: string): Record<string, string> | undefined {
   const plain = css.replace(/\/\*[\s\S]*?\*\//g, '')

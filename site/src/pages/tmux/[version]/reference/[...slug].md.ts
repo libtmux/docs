@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro'
 import { sourceUrl } from '@libtmux/api-model'
 import { symbolMarkdownWithLayout } from '../../../../lib/symbol-markdown'
 import { tmuxCatalogLinksForSource } from '../../../../lib/tmux-catalog'
-import { tmuxReferenceIndex, tmuxReferencePaths, tmuxReferenceRoutes, tmuxReferenceUrl, tmuxSourceCommands, tmuxSourceModel } from '../../../../lib/tmux-reference'
+import { tmuxReferenceContext, tmuxReferenceIndex, tmuxReferencePaths, tmuxReferenceRoutes, tmuxReferenceUrl, tmuxSourceCommands, tmuxSourceModel } from '../../../../lib/tmux-reference'
 
 export function getStaticPaths() {
   return tmuxReferenceRoutes().filter(({ symbol }) => symbol).map(({ version, symbol }) => ({
@@ -18,6 +18,7 @@ export const GET: APIRoute = async ({ props, site }) => {
     source: sourceUrl(model, symbol),
     hrefFor: (entry) => tmuxReferenceUrl(version, entry),
     manualLinks: tmuxSourceCommands(version, symbol),
+    usage: tmuxReferenceContext(version, symbol).usage,
     catalogLinks: tmuxCatalogLinksForSource(version, symbol.name),
     paths: tmuxReferencePaths(version),
   }), { headers: { 'Content-Type': 'text/markdown; charset=utf-8' } })

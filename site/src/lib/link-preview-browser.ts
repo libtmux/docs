@@ -3,6 +3,7 @@ import type { CodeHighlight } from './highlight'
 import { linkPreviewTarget, linkPreviewCandidate, linkPreviewBlockLink, markLinkPreview } from './link-preview-paint'
 import { abbreviateNamespace, kindMark, markClass } from './api-labels'
 import { wordBreak } from './word-break'
+import { limitPreviewSignature } from './preview-signature'
 export { linkPreviewTarget } from './link-preview-paint'
 
 const cache = new Map<string, LinkPreview>()
@@ -62,7 +63,8 @@ export function renderPreviewKind(slot: HTMLElement | null, kind?: string) {
 
 /** Optional token metadata can fail independently of the real reference link. */
 export function renderPreviewSignature(element: HTMLElement, preview: LinkPreview) {
-  const signature = preview.signature ?? ''
+  // The head of a declaration: a payload that carries more is cut here, and its highlighting no longer matches, so it is plain text.
+  const signature = limitPreviewSignature(preview.signature ?? '')
   const value = preview.signatureHighlight
   const color = (input: unknown) => typeof input === 'string' && /^#(?:[\da-f]{3,4}|[\da-f]{6}|[\da-f]{8})$/i.test(input)
   const object = (input: unknown): input is Record<string, unknown> => !!input && typeof input === 'object'
