@@ -2215,6 +2215,38 @@
       ]
     },
     {
+      "url": "https://hex.pm/packages/libtmux_mcp",
+      "kinds": [
+        "package"
+      ],
+      "host": "hex",
+      "ok": false,
+      "failure": "status",
+      "detail": "https://hex.pm/packages/libtmux_mcp answered 404",
+      "status": 404,
+      "requested": "https://hex.pm/packages/libtmux_mcp",
+      "checkedAt": "2026-10-24",
+      "entries": [
+        "elixir:libtmux_mcp"
+      ]
+    },
+    {
+      "url": "https://hex.pm/packages/libtmux_workspace",
+      "kinds": [
+        "package"
+      ],
+      "host": "hex",
+      "ok": false,
+      "failure": "status",
+      "detail": "https://hex.pm/packages/libtmux_workspace answered 404",
+      "status": 404,
+      "requested": "https://hex.pm/packages/libtmux_workspace",
+      "checkedAt": "2026-10-24",
+      "entries": [
+        "elixir:libtmux_workspace"
+      ]
+    },
+    {
       "url": "https://javadoc.io/doc/io.github.libtmux/libtmux",
       "kinds": [
         "api"
