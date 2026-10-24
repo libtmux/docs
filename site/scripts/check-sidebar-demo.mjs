@@ -52,6 +52,36 @@ export async function checkSidebarDemo(browser, url, options = {}) {
     await page.goto(values.url, { waitUntil: 'load' })
     let f = await ready()
     const probes = {
+      references: async () => {
+        const ports = await page.locator('select[name="language"] option').evaluateAll((options) => options.map((option) => option.value))
+        assert(ports.includes('tmux') && ports.includes('py') && ports.includes('swift'), 'The gallery includes the full library range and tmux CLI')
+        for (const port of ports) {
+          await select('language', port)
+          f = await ready()
+          const selected = await f.locator('.api-nav').getAttribute('data-symbol')
+          assert(selected, `${port}: a current declaration is selected`)
+          if (values['negative-control'] === 'layout') await f.locator('[data-api-presentation="grouped"]').evaluate((button) => { button.dataset.apiPresentation = 'outline' })
+          for (const mode of ['grouped', 'focus', 'outline']) {
+            await f.locator('[data-api-actions] summary').click()
+            await f.getByRole('radio', { name: mode[0].toUpperCase() + mode.slice(1), exact: true }).click()
+            await f.waitForFunction((mode) => document.querySelector('.api-nav')?.dataset.presentation === mode, mode)
+            await page.waitForFunction((mode) => document.querySelector('select[name="variant"]').value === mode && new URL(location.href).searchParams.get('variant') === mode, mode)
+            assert.equal(await f.locator('.api-nav').getAttribute('data-symbol'), selected, `${port}/${mode}: preserve selection`)
+            assert.equal(await current(f).count(), 1, `${port}/${mode}: one current declaration`)
+            assert.equal(await f.locator('[data-api-actions]').evaluate((menu) => menu.open), false, 'Choosing a layout closes its menu')
+          }
+          assert.equal(await f.locator('.api-nav__tree .api-nav__row').evaluateAll((rows) => rows.every((row) => row.querySelector('.api-nav__kind'))), true, `${port}: Outline marks every item`)
+          const full = await f.locator('[data-preview-full]').getAttribute('href')
+          const destination = await f.evaluate(async (selected) => {
+            const nav = document.querySelector('.api-nav')
+            const inventory = await (await fetch(nav.dataset.src)).json()
+            return { base: nav.dataset.base, override: inventory.hrefs?.[selected] }
+          }, selected)
+          assert(destination.override ? full === destination.override : full.startsWith(destination.base), `${port}: documentation uses its canonical reference`)
+          console.log(`PASS: ${port} menu layouts, selected declaration and destination`)
+        }
+        assert.equal(errors.length, 0, errors.join('\n'))
+      },
       owner: async () => {
         await select('variant', 'focus')
         const picker = f.locator('[data-api-owner]')
@@ -88,17 +118,21 @@ export async function checkSidebarDemo(browser, url, options = {}) {
         await page.waitForFunction(() => document.querySelector('select[name="symbol"]').options.length >= 4)
         const result = await page.evaluate(async () => {
           const select = document.querySelector('select[name="symbol"]')
-          const before = history.length
+          const original = select.value
+          const first = select.options[1].value
           const target = select.options[2].value
           for (const index of [1, 2]) {
             select.selectedIndex = index
             select.dispatchEvent(new Event('change', { bubbles: true }))
           }
           await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
-          return { before, target }
+          return { original, first, target }
         })
         await waitSelection(f, result.target)
-        assert.equal(await page.evaluate(() => history.length), result.before + 2, 'Two inputs create exactly two history entries')
+        await page.goBack()
+        await waitSelection(f, result.first)
+        await page.goBack()
+        await waitSelection(f, result.original)
       },
       appearance: async () => {
         await select('variant', 'outline')
