@@ -116,14 +116,16 @@ export async function checkReferencePreferences(browser, base) {
 }
 
 /**
- * The links each port page shows, in order, and then its disclosure. Rust and
- * Java have a reference host as well, so they show three chips; the others two.
- * Written out rather than read from the page, so a missing chip is a failure.
+ * The links each listed page shows, in order, and then its disclosure. Of the
+ * ports listed, Rust and Elixir have a reference host as well, so they show
+ * three chips; the others two. Written out rather than read from the page, so
+ * a missing chip is a failure.
  */
 const HEADER_PAGES = {
   '/py/latest/': ['source', 'package', 'destinations'],
   '/ts/latest/': ['source', 'package', 'destinations'],
   '/rs/latest/': ['source', 'package', 'api', 'destinations'],
+  '/elixir/latest/': ['source', 'package', 'api', 'destinations'],
   '/api-example-probe/': ['source', 'package', 'destinations'],
 }
 
@@ -255,7 +257,7 @@ export async function checkGlobalHeader(browser, base) {
     const page = await context.newPage()
     const headerFrames = new Map()
     try {
-      for (const path of ['/', '/tmux/latest/manual/capture-pane/', '/py/latest/', '/ts/latest/', '/rs/latest/', '/api-example-probe/']) {
+      for (const path of ['/', '/tmux/latest/manual/capture-pane/', '/py/latest/', '/ts/latest/', '/rs/latest/', '/elixir/latest/', '/api-example-probe/']) {
         await page.goto(`${base}${path}`)
         await page.waitForFunction(() => document.fonts.status === 'loaded')
         for (const width of [280, 304, 320, 360, 390, 560, 561, 640, 767, 768, 784, 1024, 1440, 1600, 1920]) {
