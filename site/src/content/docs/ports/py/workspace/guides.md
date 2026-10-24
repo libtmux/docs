@@ -9,7 +9,7 @@ sidebar:
 tableOfContents: true
 ---
 
-Install tmuxp as a Python tool, with Python 3.10 or newer and tmux 3.2 or newer
+Install tmuxp as a Python tool, with Python 3.10 or newer and tmux 3.2a or newer
 available on the host:
 
 ```console

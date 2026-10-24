@@ -33,6 +33,9 @@ cards:
   - label: Testing
     href: testing-with-libtmux/
     body: Use isolated tmux servers and manage test cleanup.
+  - label: tmux support
+    href: tmux-support/
+    body: Find the tmux release every port requires and how an older daemon is refused.
 ---
 
 Use these guides to run tmux tasks from a terminal or a shell script. Start

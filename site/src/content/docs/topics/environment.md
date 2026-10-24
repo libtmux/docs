@@ -16,7 +16,7 @@ processes. It does not change the environment of processes already running.
 
 ## Set defaults and a one-pane override
 
-Save this complete script as `environment.sh`. It requires tmux 3.2a or newer
+Save this complete script as `environment.sh`. It requires tmux 3.3a or newer
 and a POSIX shell. It inspects global and session values, launches new panes,
 and checks the environment each process receives on a private server.
 

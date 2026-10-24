@@ -18,7 +18,7 @@ rows; an empty listing is a successful command.
 
 ## Match names and choose fields
 
-Save this complete script as `queries.sh`. It requires tmux 3.2a or newer and
+Save this complete script as `queries.sh`. It requires tmux 3.3a or newer and
 a POSIX shell. It creates a private server, runs the queries, and stops that
 server on exit.
 

@@ -52,7 +52,7 @@ object Connect {
 
 ## Setup and run
 
-Use an empty directory on Linux with Git and tmux 3.2a or newer installed.
+Use an empty directory on Linux with Git and tmux 3.3a or newer installed.
 
 This example was checked with JDK 25.0.3, Scala 3.9.0.
 
