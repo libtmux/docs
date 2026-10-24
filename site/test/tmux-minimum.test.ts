@@ -6,13 +6,14 @@ import { describe, expect, it } from 'vitest'
 /**
  * Every statement of a tmux minimum names the floor of the port it is about.
  *
- * A requirement phrased "tmux X or newer", "tmux X+" or "tmux X through Y"
- * is a support promise. These pages, example prerequisites and install notes
- * must agree with the floor in the core tmux support contract, which is 3.3a
- * unless the port declares another. Facts about tmux itself, such as the
- * release that added a format field, use other phrasing, or follow "on", and
- * are not matched. Staged port guides come from pinned port revisions and
- * carry their own floor.
+ * A requirement phrased "tmux X or newer", "tmux X and later", "tmux >= X",
+ * "at least tmux X", "tmux X+" or "tmux X through Y" is a support promise.
+ * These pages, example prerequisites and install notes must agree with the
+ * floor in the core tmux support contract, which is 3.3a unless the port
+ * declares another. Facts about tmux itself, such as the release that added a
+ * format field, are not promises and are not matched when the version follows
+ * a word that dates the fact. Staged port guides come from pinned port
+ * revisions and carry their own floor.
  */
 const FLOOR = '3.3a'
 
@@ -65,6 +66,11 @@ export const OTHER_FLOORS = [
     version: '3.2a',
     why: 'documents a prototype pinned at an older libtmux-rs revision whose own README says 3.2a',
   },
+  {
+    path: 'site/src/content/docs/ports/rs/mcp/topics/tool-selection.md',
+    version: '3.7',
+    why: 'a tmux behaviour of the history-limit option from tmux 3.7, not a library minimum',
+  },
 ]
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
@@ -82,16 +88,47 @@ function files(path: string): string[] {
   return entries.flatMap((entry) => files(join(path, entry.name)))
 }
 
-/** A minimum promise: the version after "tmux" is followed by a floor phrase. */
-export function minimums(text: string): string[] {
-  const found: string[] = []
-  const pattern = /(?<!\bon\s)tmux\s+(\d+\.\d+[a-z]?)(\s+or\s+newer|\+|\s+through\s+\d)/g
-  for (const match of text.matchAll(pattern)) found.push(match[1])
+/**
+ * "tmux" and a version, followed by a floor phrase ("or newer", "and later",
+ * "+", "through Y") or led by one (">=", "at least"). Emphasis marks may sit
+ * between the words.
+ */
+const MINIMUM = new RegExp(
+  String.raw`(?<least>\bat\s+least\s+)?\btmux\s+[*_\x60]*(?:version\s+)?(?<ge>(?:>=|≥)\s*)?` +
+  String.raw`(?<version>\d+\.\d+[a-z]?)[*_\x60]*` +
+  String.raw`(?<tail>\s+(?:or|and)\s+(?:newer|later|higher|greater|above)\b|\+|\s+through\s+\d)?`,
+  'gi',
+)
+
+/**
+ * The words before a version that make it a fact about tmux: what a release
+ * added or dated ("added on", "present in", "since"), or a format field
+ * ("`pane_dead_signal` on"). "runs on" and "works on" are promises.
+ */
+const FACT_LEAD = /(?:\b(?:added|introduced|present|arrived|appears?|appeared|exists?)\s+(?:on|in|with|since)|\bsince|\x60[a-z]+(?:_[a-z]+)+\x60\s+on)\s+$/i
+
+function scan(text: string): { version: string, index: number }[] {
+  const found = []
+  for (const match of text.matchAll(MINIMUM)) {
+    const { least, ge, version, tail } = match.groups!
+    if (!(least || ge || tail)) continue
+    if (FACT_LEAD.test(text.slice(Math.max(0, match.index - 40), match.index))) continue
+    found.push({ version, index: match.index })
+  }
   return found
 }
 
-interface Statement { path: string, version: string }
+/** A minimum promise: the versions that pass the phrasing and fact rules above. */
+export function minimums(text: string): string[] {
+  return scan(text).map((found) => found.version)
+}
+
 interface Floor { path: string, version: string }
+interface Statement { path: string, version: string }
+
+export function statementsIn(path: string, text: string): Statement[] {
+  return scan(text).map(({ version }) => ({ path, version }))
+}
 
 /** Statements that disagree with their floor, then entries that excuse or require nothing. */
 export function mismatches(statements: Statement[], ports: Floor[], others: Floor[]): string[] {
@@ -108,23 +145,47 @@ export function mismatches(statements: Statement[], ports: Floor[], others: Floo
   return [...wrong, ...unused]
 }
 
+const statement = (path: string, version: string): Statement => ({ path, version })
+
 describe('tmux minimum statements', () => {
   it('recognizes each phrasing of a minimum', () => {
     expect(minimums('Use tmux 3.2a or newer.')).toEqual(['3.2a'])
     expect(minimums('Use tmux 3.2\nor newer.')).toEqual(['3.2'])
     expect(minimums('Use tmux 3.2a through 3.7c.')).toEqual(['3.2a'])
     expect(minimums('tmux 3.2a+ is a target')).toEqual(['3.2a'])
-    expect(minimums('A field present on tmux 3.3 or\nnewer is optional.')).toEqual([])
     expect(minimums('The example ran on tmux 3.2a and 3.7c.')).toEqual([])
+    expect(minimums('Use **tmux 3.2a** or later.')).toEqual(['3.2a'])
+    expect(minimums('Needs tmux version 3.2a or newer.')).toEqual(['3.2a'])
+  })
+
+  it('recognizes a minimum that "on" or a comparison would hide', () => {
+    expect(minimums('It runs on tmux 3.2a or newer.')).toEqual(['3.2a'])
+    expect(minimums('It works on tmux 3.2a and later.')).toEqual(['3.2a'])
+    expect(minimums('It supports tmux 3.2a and newer.')).toEqual(['3.2a'])
+    expect(minimums('It supports tmux 3.2a or later.')).toEqual(['3.2a'])
+    expect(minimums('It needs tmux >= 3.2a.')).toEqual(['3.2a'])
+    expect(minimums('Ensure you have tmux **>= 3.2**.')).toEqual(['3.2'])
+    expect(minimums('It needs at least tmux 3.2a.')).toEqual(['3.2a'])
+    expect(minimums('It needs at least tmux 3.2a or newer.')).toEqual(['3.2a'])
+  })
+
+  it('leaves facts about tmux alone', () => {
+    expect(minimums('A field present on tmux 3.3 or\nnewer is optional.')).toEqual([])
+    expect(minimums('Hooks were added on tmux 3.4 or newer.')).toEqual([])
+    expect(minimums('Available since tmux 3.2a and later, the hook fires.')).toEqual([])
+    expect(minimums('Read `pane_dead_signal` on tmux 3.3 or\nnewer.')).toEqual([])
+    expect(minimums('The flag appears in tmux 3.2a and newer.')).toEqual([])
+    expect(minimums('Use tmux 3.2a for the manual.')).toEqual([])
   })
 
   it('names the floor of its port everywhere a minimum is stated', () => {
     const statements: Statement[] = []
     for (const path of RANGES.flatMap(files)) {
       if (!/\.(md|mdx|json|ts)$/.test(path) || path.includes('/_staged/')) continue
-      for (const version of minimums(readFileSync(join(ROOT, path), 'utf8'))) statements.push({ path, version })
+      statements.push(...statementsIn(path, readFileSync(join(ROOT, path), 'utf8')))
     }
     expect(statements.length).toBeGreaterThan(50)
+    expect(statements.some((found) => found.path.endsWith('guides/tmux-support.md'))).toBe(true)
     expect(mismatches(statements, PORT_FLOORS, OTHER_FLOORS)).toEqual([])
   })
 
@@ -141,15 +202,15 @@ describe('tmux minimum statements', () => {
     const ports = [{ path: 'a/', version: '3.2a' }]
     const others = [{ path: 'm.md', version: '3.3' }]
     const clean = [
-      { path: 'a/b.md', version: '3.2a' },
-      { path: 'c.md', version: FLOOR },
-      { path: 'm.md', version: '3.3' },
+      statement('a/b.md', '3.2a'),
+      statement('c.md', FLOOR),
+      statement('m.md', '3.3'),
     ]
     expect(mismatches(clean, ports, others)).toEqual([])
-    expect(mismatches([...clean, { path: 'c.md', version: '3.2a' }], ports, others)).toEqual([
+    expect(mismatches([...clean, statement('c.md', '3.2a')], ports, others)).toEqual([
       'c.md: tmux 3.2a, expected 3.3a',
     ])
-    expect(mismatches([...clean, { path: 'a/d.md', version: FLOOR }], ports, others)).toEqual([
+    expect(mismatches([...clean, statement('a/d.md', FLOOR)], ports, others)).toEqual([
       'a/d.md: tmux 3.3a, expected 3.2a',
     ])
     expect(mismatches(clean.slice(1), ports, others)).toEqual([
@@ -158,5 +219,31 @@ describe('tmux minimum statements', () => {
     expect(mismatches(clean.slice(0, 2), ports, others)).toEqual([
       'stale entry: m.md names tmux 3.3, which no statement there states',
     ])
+  })
+
+  it.each([
+    'tmux {v} or newer',
+    'tmux {v} or later',
+    'tmux {v} and newer',
+    'tmux {v} and later',
+    'tmux {v}+',
+    'tmux {v} through 3.7c',
+    'tmux >= {v}',
+    'at least tmux {v}',
+    'runs on tmux {v} or newer',
+    'works on tmux {v} and later',
+  ])('fails a wrong floor phrased "%s" beside a clean control', (phrase) => {
+    const page = (version: string) => statementsIn('c.md', `Note: ${phrase.replace('{v}', version)}.`)
+    expect(mismatches(page(FLOOR), [], [])).toEqual([])
+    expect(mismatches(page('3.2a'), [], [])).toEqual(['c.md: tmux 3.2a, expected 3.3a'])
+  })
+
+  it('passes a version in a fact about tmux whatever its value', () => {
+    const facts = [
+      'A field present on tmux 3.2a or newer is optional.',
+      'Hooks were added on tmux 3.2a or newer.',
+      'Since tmux 3.2a and later, the hook fires.',
+    ]
+    for (const fact of facts) expect(mismatches(statementsIn('c.md', fact), [], [])).toEqual([])
   })
 })
