@@ -140,6 +140,20 @@
         }
       ]
     },
+    "elixir": {
+      "repo": "libtmux/libtmux-elixir",
+      "revision": "149565c9f04e043836191c8a7ff32a8ac39572ab",
+      "distributions": [
+        {
+          "name": "libtmux",
+          "version": "0.0.1-alpha.1",
+          "manifest": "mix.exs",
+          "repo": "libtmux/libtmux-elixir",
+          "revision": "149565c9f04e043836191c8a7ff32a8ac39572ab"
+        }
+      ],
+      "units": []
+    },
     "ts": {
       "repo": "libtmux/libtmux-ts",
       "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",

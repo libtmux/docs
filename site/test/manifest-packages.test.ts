@@ -110,6 +110,17 @@ describe('manifest packages', () => {
       .toEqual([{ name: 'libtmux', version: '0.1.0-alpha.11', manifest: 'ports/libtmux/vcpkg.json' }])
   })
 
+  it('reads a Mix project as a Hex package named for its app, and leaves out one that still carries a -dev version', () => {
+    const mix = (app: string, version: string) => `defmodule X.MixProject do\n  def project do\n    [\n      app: :${app},\n      version: "${version}",\n      docs: &docs/0\n    ]\n  end\nend\n`
+    const files = (mcp: string) => ({
+      'mix.exs': mix('libtmux', '0.0.1-alpha.1'), 'packages/mcp/mix.exs': mix('libtmux_mcp', mcp), 'packages/workspace/mix.exs': mix('libtmux_workspace', '0.1.0-dev'),
+    })
+    expect(readPort('elixir', repo(files('0.1.0-dev'))).distributions).toEqual([{ name: 'libtmux', version: '0.0.1-alpha.1', manifest: 'mix.exs' }])
+    // Control: the same project with a release version is a distribution too.
+    expect(readPort('elixir', repo(files('0.1.0-alpha.1'))).distributions.map((entry) => [entry.name, entry.version]))
+      .toEqual([['libtmux', '0.0.1-alpha.1'], ['libtmux_mcp', '0.1.0-alpha.1']])
+  })
+
   it('refuses a port it has no reader for', () => {
     expect(() => readPort('nope', repo({}))).toThrow('no manifest reader for nope')
   })

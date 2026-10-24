@@ -52,6 +52,7 @@ const mutations = [
   ['ts', 'a dropped package is caught', (data) => { data.ports.ts.distributions.pop() }],
   ['py', 'an invented package is caught', (data) => { data.ports.py.distributions.push({ name: 'invented', version: '1.0.0', manifest: 'pyproject.toml', repo: 'x/y', revision: 'abc' }) }],
   ['go', 'a dropped unit is caught', (data) => { data.ports.go.units.pop() }],
+  ['elixir', 'a hand-edited Mix version is caught', (data) => { data.ports.elixir.distributions[0].version = '9.9.9' }],
   ['swift', 'a port missing from the file is caught', (data) => { delete data.ports.swift }],
   [undefined, 'a port that is not registered is caught', (data) => { data.ports.nope = data.ports.rs }],
 ]

@@ -8,7 +8,8 @@
  * published by the ecosystem's own switch: a non-private `package.json`, a
  * Cargo package without `publish = false`, a Go module with a release tag
  * series, a Gradle module that applies a publication plugin, a `.csproj` that is
- * packable, a module manifest, a release file.
+ * packable, a module manifest, a release file, a Mix project that carries a
+ * release version.
  *
  * Nothing here runs a build tool. The files are parsed as text.
  */
@@ -204,12 +205,26 @@ const READERS = {
       unit: match[1] === 'executableTarget' ? 'executable target' : 'target', name: match[2] }))
     return { distributions: [{ name: identity, version, manifest: 'Package.swift' }], units: [...products, ...targets] }
   },
+
+  /**
+   * Each `mix.exs` is a Hex package named for its `app`. Mix marks a build that
+   * has no release `-dev`, and the projects under `packages/` carry it until
+   * the release workflow publishes them.
+   */
+  elixir(repo) {
+    const distributions = repo.files().filter((path) => path === 'mix.exs' || /^packages\/[^/]+\/mix\.exs$/.test(path)).flatMap((manifest) => {
+      const text = repo.read(manifest)
+      const version = /^\s*version:\s*"([^"]+)"/m.exec(text)?.[1]
+      return version && !version.endsWith('-dev') ? [{ name: /^\s*app:\s*:(\w+)/m.exec(text)?.[1], version, manifest }] : []
+    })
+    return { distributions, units: [] }
+  },
 }
 
 /** Which reader a port uses: a wrapper port reads its parent's repository. */
 const READER_FOR = {
   py: 'py', ruby: 'ruby', lua: 'lua', powershell: 'powershell', julia: 'julia', ts: 'ts', rs: 'rs', go: 'go',
-  java: 'java', kotlin: 'java', scala: 'java', csharp: 'dotnet', fsharp: 'dotnet', cxx: 'cxx', swift: 'swift',
+  java: 'java', kotlin: 'java', scala: 'java', csharp: 'dotnet', fsharp: 'dotnet', cxx: 'cxx', swift: 'swift', elixir: 'elixir',
 }
 
 /**
