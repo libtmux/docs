@@ -1,5 +1,6 @@
 import { homedir } from 'node:os'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { resolvePortBody, resolvePortContent } from '../lib/workspace-shared-slots.ts'
 import {
   EXCERPT_ATTRIBUTES,
@@ -241,6 +242,16 @@ export function remarkPortCode() {
       // from the code its own repository tests.
       if (meta.file && owner) {
         node.value = readFence(owner, meta, file?.path)
+        // Native example binding checks the exact cached entry used by this import.
+        if (file) {
+          file.data.libtmuxSourceIncludes ??= []
+          const key = `${owner}:${meta.file}`
+          file.data.libtmuxSourceIncludes.push({
+            path: fileURLToPath(new URL('../data/example-sources.json', import.meta.url)),
+            key,
+            entry: CACHE[key],
+          })
+        }
       }
 
     })

@@ -26,6 +26,7 @@ import { MOVED_PAGES, tmuxProsePath, workspaceRedirectPath } from './src/lib/doc
 import { SOURCE_GUIDE_PORTS, sourceGuidesFor, sourceGuideRedirectsFor } from './src/lib/port-documentation.ts'
 import { KNOWN_PORTS } from './src/lib/workspace-shared-slots.ts'
 import { isLegacyTmuxManualPath } from './src/lib/tmux-manual-data.ts'
+import { exampleProgramsFromEnvironment, exampleProgramsIntegration } from './src/lib/example-programs.mjs'
 
 /**
  * Every build targets one version. CI supplies these; a bare `pnpm dev`
@@ -162,6 +163,7 @@ export default defineConfig({
       : []),
     markdownTwins(),
     pagefind(),
+    ...exampleProgramsIntegration(exampleProgramsFromEnvironment()),
   ],
 
   fonts: [
