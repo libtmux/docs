@@ -27,10 +27,10 @@
  * FAMILIES below. Every family gets the right package, a different package
  * under the same URL, and a version the manifest declares that the host lacks.
  * The families whose host reports a repository (PyPI, npm, crates.io,
- * RubyGems, the PowerShell Gallery, NuGet, LuaRocks, Maven Central and
+ * RubyGems, the PowerShell Gallery, NuGet, LuaRocks, Maven Central, Hex and
  * javadoc.io) also get the right package filed under another repository and
  * one whose host reports no repository at all, and npm a directory that
- * differs. pkg.go.dev, docs.rs and the Swift Package Index name their
+ * differs. pkg.go.dev, docs.rs, HexDocs and the Swift Package Index name their
  * repository only in the URL, so they get none of those; pkg.go.dev instead
  * gets three nested-module cases.
  */
@@ -172,6 +172,21 @@ const FAMILIES = [
     },
   },
   {
+    host: 'hex', variants: REPORTS_REPOSITORY, coordinate: (id) => id, destination: (id) => ({ package: { host: 'hex', url: `https://hex.pm/packages/${id}` } }),
+    serve: (id, { shown, repo }) => {
+      routes[`/hex.pm/packages/${id}`] = () => [200, 'text/html', html(`${shown} | Hex`)]
+      routes[`/hex.pm/api/packages/${id}`] = () => text({ name: shown, latest_version: '1.0.0', releases: [{ version: '1.0.0' }], meta: { links: repo ? { GitHub: `https://github.com/${repo}` } : {} } })
+    },
+  },
+  {
+    host: 'hexdocs', variants: NAMED_BY_URL, coordinate: (id) => id, destination: (id) => ({ api: { host: 'hexdocs', url: `https://${id}.hexdocs.pm/` } }),
+    serve: (id, { shown }) => {
+      // The reported name leads the title of the package's root page and of the page for its release.
+      routes[`/${id}.hexdocs.pm/`] = () => [200, 'text/html', html(`${shown} v1.0.0 \u2014 Documentation`)]
+      routes[`/${id}.hexdocs.pm/1.0.0/`] = () => [200, 'text/html', html(`${shown} v1.0.0 \u2014 Documentation`)]
+    },
+  },
+  {
     host: 'pkg-go-dev', variants: NAMED_BY_URL, coordinate: (id) => `example.com/o/lib/${id}`, destination: (id) => ({ package: { host: 'pkg-go-dev', url: `https://pkg.go.dev/example.com/o/lib/${id}` } }),
     serve: (id, { shown }) => {
       routes[`/pkg.go.dev/example.com/o/lib/${id}`] = () => [200, 'text/html', html(`${id} package - example.com/o/lib/${shown} - Go Packages`)]
@@ -226,7 +241,9 @@ const server = createServer((request, response) => {
 await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
 const base = `http://127.0.0.1:${server.address().port}`
 const ORIGINS = ['github.com', 'pypi.org', 'rubygems.org', 'javadoc.io', 'registry.npmjs.org', 'www.npmjs.com', 'crates.io', 'repo1.maven.org', 'central.sonatype.com',
-  'www.nuget.org', 'api.nuget.org', 'www.powershellgallery.com', 'luarocks.org', 'pkg.go.dev', 'proxy.golang.org', 'docs.rs', 'swiftpackageindex.com']
+  'www.nuget.org', 'api.nuget.org', 'www.powershellgallery.com', 'luarocks.org', 'pkg.go.dev', 'proxy.golang.org', 'docs.rs', 'swiftpackageindex.com', 'hex.pm',
+  // HexDocs gives each package a host of its own, so each package a case serves is an origin.
+  ...NAMED_BY_URL.map((variant) => `hexdocs-${variant}.hexdocs.pm`)]
 const rewrite = JSON.stringify(Object.fromEntries(ORIGINS.map((host) => [`https://${host}`, `${base}/${host}`])))
 
 const entry = (id, fields) => ({ id, kind: 'library', product: 'core', label: id, coordinate: id, aliases: [], repo: 'demo/demo', ref: 'master', status: 'published', ...fields })

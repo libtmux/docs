@@ -331,6 +331,41 @@ const VERIFIERS = {
       exact: async (wanted) => { const page = await get(`${url}/${wanted}`); return page.status === 200 && named(wanted).test(titleOf(page.text)) } })
       : fail('identity', `title is "${title}" at ${response.finalUrl}, expected ${artifact} documentation`, { status: 200, requested: url })
   },
+
+  async hex({ url }, { get }) {
+    const name = /^https:\/\/hex\.pm\/packages\/([^/]+)$/.exec(url)?.[1]
+    // The page is rendered on the server and answers 404 for an unknown name, so its title is the identity.
+    const response = await get(url)
+    const missing = answered(response, url)
+    if (missing) return missing
+    const title = titleOf(response.text)
+    if (title !== `${name} | Hex`) return fail('identity', `title is "${title}", expected "${name} | Hex"`, { status: 200, requested: url })
+    // The API lists the releases and the links the package's owner declared.
+    const requested = `https://hex.pm/api/packages/${name}`
+    const listing = await get(requested, { accept: 'application/json' })
+    const refused = answered(listing, requested)
+    if (refused) return refused
+    const body = json(listing.text)
+    return pass({ status: 200, requested: url, identity: name, version: body?.latest_version, versions: (body?.releases ?? []).map((release) => release.version),
+      repository: reposOf(Object.values(body?.meta?.links ?? {})) })
+  },
+
+  async hexdocs({ url }, { get }) {
+    // HexDocs serves each package from its own subdomain: the newest release at the root, each release under its version.
+    const name = /^https:\/\/([^./]+)\.hexdocs\.pm\/?$/.exec(url)?.[1]
+    if (!name) return fail('identity', `${url} is not a package's subdomain of hexdocs.pm`)
+    const response = await get(url)
+    const missing = answered(response, url)
+    if (missing) return missing
+    const title = titleOf(response.text)
+    // ExDoc titles every page "name vVERSION", an em dash (U+2014) and "Documentation".
+    const titled = (version) => `${name} v${version} \u2014 Documentation`
+    const version = new RegExp(`^${escapeRegExp(name)} v(\\S+) \\u2014 Documentation$`).exec(title)?.[1]
+    return version
+      ? pass({ status: 200, requested: url, identity: name, version,
+        exact: async (wanted) => { const page = await get(`https://${name}.hexdocs.pm/${wanted}/`); return page.status === 200 && titleOf(page.text) === titled(wanted) } })
+      : fail('identity', `title is "${title}", expected the documentation of ${name}`, { status: 200, requested: url })
+  },
 }
 
 /**
@@ -347,18 +382,22 @@ const SAMPLES = { 'javadoc-io': 3 }
  */
 export const VERSION_SUPPORT = {
   github: false, pypi: true, npm: true, crates: true, rubygems: true, 'powershell-gallery': true, nuget: true, luarocks: true,
-  'maven-central': true, 'swift-package-index': true, 'pkg-go-dev': true, 'docs-rs': true, 'javadoc-io': true,
+  'maven-central': true, 'swift-package-index': true, 'pkg-go-dev': true, 'docs-rs': true, 'javadoc-io': true, hex: true, hexdocs: true,
 }
 /** Hosts whose records must name the repository the host reports. */
-export const REPOSITORY_HOSTS = new Set(['pypi', 'npm', 'crates', 'rubygems', 'powershell-gallery', 'nuget', 'luarocks', 'maven-central', 'swift-package-index', 'javadoc-io'])
+export const REPOSITORY_HOSTS = new Set(['pypi', 'npm', 'crates', 'rubygems', 'powershell-gallery', 'nuget', 'luarocks', 'maven-central', 'swift-package-index', 'javadoc-io', 'hex'])
 
 const HOSTNAMES = {
   'pypi.org': 'pypi', 'www.npmjs.com': 'npm', 'crates.io': 'crates', 'rubygems.org': 'rubygems',
   'www.powershellgallery.com': 'powershell-gallery', 'www.nuget.org': 'nuget', 'luarocks.org': 'luarocks',
   'central.sonatype.com': 'maven-central', 'swiftpackageindex.com': 'swift-package-index', 'pkg.go.dev': 'pkg-go-dev',
-  'docs.rs': 'docs-rs', 'javadoc.io': 'javadoc-io', 'github.com': 'github',
+  'docs.rs': 'docs-rs', 'javadoc.io': 'javadoc-io', 'github.com': 'github', 'hex.pm': 'hex',
 }
-export const hostOf = (url) => HOSTNAMES[new URL(url).hostname]
+/** The host id of a URL; HexDocs serves each package from a subdomain of `hexdocs.pm`. */
+export const hostOf = (url) => {
+  const { hostname } = new URL(url)
+  return HOSTNAMES[hostname] ?? (hostname.endsWith('.hexdocs.pm') ? 'hexdocs' : undefined)
+}
 
 /**
  * What a host said about each version a manifest declares for the destination.
