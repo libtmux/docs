@@ -489,6 +489,11 @@ describe('a link names a symbol its host documents', () => {
     expect(index.resolve('sys.path[0]')?.href).toBe('https://docs.python.org/3/library/sys.html#sys.path')
     // The name must still be one the inventory lists.
     expect(index.resolve('shutil.nowhere("tmux")')).toBeUndefined()
+    // A bare call is the reader's own function, whatever its argument is called.
+    index.addInventory('https://docs.python.org/3/', [entry('run', 'library/pdb.html#pdbcommand-run', 'std:pdbcommand'), entry('select', 'library/select.html#module-select'), entry('queue', 'library/queue.html#module-queue')], ['py'], 'Python')
+    for (const call of ['run(self.x)', 'select(pane.id)', 'queue(self.q)']) expect(index.resolve(call), call).toBeUndefined()
+    // And a command-line option or a pdb command is no symbol, so a bare word that spells one links to nothing.
+    expect(index.resolve('run')).toBeUndefined()
   })
 
   it('does not send an unlisted JDK member to a search page', () => {

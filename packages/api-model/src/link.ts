@@ -1,5 +1,5 @@
 import { tokenizeDoc, type DocSpan } from './doc/roles.ts'
-import type { InventoryEntry } from './inventory.ts'
+import { isSymbolEntry, type InventoryEntry } from './inventory.ts'
 import type { ApiSymbol, Signature, SymbolKind, TypeParameter } from './model.ts'
 import { builtinHref, ELIXIR_STDLIB_MODULES, elixirStdlibHref } from './builtins.ts'
 import { qualifiedNameOf } from './modules.ts'
@@ -66,6 +66,12 @@ const PY_INTERSPHINX: Record<string, string> = {
 }
 
 const PY_DOCS = 'https://docs.python.org/3/'
+
+/** The dotted name before a trailing call or subscript (`shutil.which` in `shutil.which("tmux")`), else the text as written. */
+function pythonCallee(text: string): string {
+  const stripped = text.replace(/\((?:[^()]|\([^()]*\))*\)$/, '').replace(/\[[^\]]*\]$/, '')
+  return stripped !== text && /^[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)+$/.test(stripped) ? stripped : text
+}
 
 /** Syntax words in the native declarations rendered as complete signatures. */
 const SIGNATURE_KEYWORDS: Record<string, Set<string>> = Object.fromEntries(Object.entries({
@@ -403,9 +409,9 @@ export class SymbolIndex {
     project?: string,
   ): void {
     const byName = new Map<string, InventoryEntry>()
-    // A document is a page of the manual, not a symbol: Julia's `index` is its
-    // front page, and a variable of that name is not a reference to it.
-    for (const entry of entries) if (entry.type !== 'std:doc' && !byName.has(entry.name)) byName.set(entry.name, entry)
+    // A page of the manual or a command-line option is not a symbol: Julia's `index` is its front
+    // page, and a variable of that name is not a reference to it.
+    for (const entry of entries) if (isSymbolEntry(entry) && !byName.has(entry.name)) byName.set(entry.name, entry)
     this.external.push({ baseUrl: baseUrl.replace(/\/*$/, '/'), byName, langs, project })
   }
 
@@ -802,9 +808,10 @@ export class SymbolIndex {
     // is authoritative for its own project, so it is consulted before the
     // built-in table rather than after.
     // A Python reference may be written as a call or a subscript, as in `shutil.which("tmux")` or
-    // `sys.path[0]`. CPython documents the name before it, so that is what the inventory is asked.
-    const stdlib = this.lang === 'py' && clean.includes('.')
-      ? clean.replace(/\((?:[^()]|\([^()]*\))*\)$/, '').replace(/\[[^\]]*\]$/, '') : clean
+    // `sys.path[0]`. CPython documents the name before it, so that is what the inventory is asked,
+    // when that name is itself dotted. A bare call such as `run(self.x)` names a function of the
+    // reader's own, and a dotted argument does not make it CPython's.
+    const stdlib = this.lang === 'py' ? pythonCallee(clean) : clean
     for (const inv of this.external) {
       if (inv.langs && (!this.lang || !inv.langs.includes(this.lang))) continue
       const hit = inv.byName.get(stdlib) ?? context?.namespaceImports?.toReversed()

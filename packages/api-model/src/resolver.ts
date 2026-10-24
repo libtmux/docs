@@ -1,5 +1,5 @@
 import type { ApiModel, ApiProduct, ApiSymbol } from './model.ts'
-import type { InventoryEntry } from './inventory.ts'
+import { isSymbolEntry, type InventoryEntry } from './inventory.ts'
 import { modulesIn, qualifiedNameOf } from './modules.ts'
 
 /**
@@ -230,7 +230,7 @@ export class Resolver {
     langs?: string[],
   ): void {
     const map = new Map<string, InventoryEntry>()
-    for (const e of entries) if (e.type !== 'std:doc' && !map.has(e.name)) map.set(e.name, e)
+    for (const e of entries) if (isSymbolEntry(e) && !map.has(e.name)) map.set(e.name, e)
     this.inventories.push({ project, baseUrl: baseUrl.replace(/\/*$/, '/'), entries: map, langs })
   }
 

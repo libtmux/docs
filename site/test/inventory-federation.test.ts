@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { readInventory } from '@libtmux/api-model'
+import { isSymbolEntry, readInventory } from '@libtmux/api-model'
 import { API_MODELS, createApiIndex, indexFor } from '../src/lib/api-models'
 import { productApiIndex } from '../src/lib/product-api'
 import { createProseLinker } from '../src/lib/prose-resolver'
@@ -268,7 +268,7 @@ describe('each sidecar agrees with the .inv beside it', () => {
     ) as { project: string; e: [string, string][] }
 
     // The sidecar leaves out documents: a page of the manual is not a symbol.
-    const symbols = inv.entries.filter((e) => e.type !== 'std:doc')
+    const symbols = inv.entries.filter(isSymbolEntry)
     expect(sidecar.e.length, `${name}: entry count differs`).toBe(symbols.length)
     expect(sidecar.project).toBe(inv.project)
 

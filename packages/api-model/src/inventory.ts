@@ -24,6 +24,20 @@ import { qualifiedNameOf } from './modules.ts'
  */
 
 /**
+ * Entries of a Sphinx inventory that name something other than an API symbol:
+ * a page of the manual, a command-line option, a pdb command, an environment
+ * variable, a bytecode opcode, a monitoring event or a grammar token. A code
+ * span that happens to spell one (`ps`, `run`, `index`) is not a reference to
+ * it, so a lookup never answers with one.
+ */
+export const NON_SYMBOL_ROLES: ReadonlySet<string> = new Set([
+  'std:doc', 'std:cmdoption', 'std:pdbcommand', 'std:envvar', 'std:opcode', 'std:monitoring-event', 'std:token',
+])
+
+/** Whether an entry can be the destination of a name in code. */
+export const isSymbolEntry = (entry: { type: string }): boolean => !NON_SYMBOL_ROLES.has(entry.type)
+
+/**
  * Model kind to Sphinx domain role.
  *
  * Sphinx has real domains for Python, C++ and JavaScript, and those are used

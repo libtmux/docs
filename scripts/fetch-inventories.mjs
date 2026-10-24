@@ -17,7 +17,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { readInventory } from '../packages/api-model/src/inventory.ts'
+import { isSymbolEntry, readInventory } from '../packages/api-model/src/inventory.ts'
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const outDir = join(repoRoot, 'site/src/data/inventories')
@@ -59,8 +59,8 @@ function writeSidecar(name, bytes) {
   // something anyone reads.
   writeFileSync(
     join(outDir, `${name}.entries.json`),
-    // A document is a page of the manual, not a symbol a name could mean.
-    `${JSON.stringify({ project, version, e: entries.filter((x) => x.type !== 'std:doc').map((x) => [x.name, x.uri]) })}\n`,
+    // A page of the manual or a command-line option is not a symbol a name could mean.
+    `${JSON.stringify({ project, version, e: entries.filter(isSymbolEntry).map((x) => [x.name, x.uri]) })}\n`,
   )
 }
 
