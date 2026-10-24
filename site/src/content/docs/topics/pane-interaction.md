@@ -16,7 +16,7 @@ and observing its result as separate operations.
 
 ## Send a command and capture its result
 
-Save this complete script as `pane-io.sh`. It requires tmux 3.2a or newer and
+Save this complete script as `pane-io.sh`. It requires tmux 3.3a or newer and
 a POSIX shell. It starts a shell with an empty prompt, sends a command, polls
 for both result lines, and cleans up its private server.
 

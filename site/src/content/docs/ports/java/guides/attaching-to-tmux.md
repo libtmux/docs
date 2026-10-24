@@ -56,7 +56,7 @@ public final class Connect {
 
 ## Setup and run
 
-Use an empty directory on Linux with Git and tmux 3.2a or newer installed.
+Use an empty directory on Linux with Git and tmux 3.3a or newer installed.
 
 This example was checked with JDK 25.0.3, library bytecode target Java 21.
 

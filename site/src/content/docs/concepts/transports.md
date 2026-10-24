@@ -22,7 +22,7 @@ reports replies and events on standard output.
 
 ## Group commands and open control mode
 
-Save this complete script as `transports.sh`. It requires tmux 3.2a or newer
+Save this complete script as `transports.sh`. It requires tmux 3.3a or newer
 and a POSIX shell. It creates a private server with a command group, sends
 commands through a control client, and cleans up the server.
 

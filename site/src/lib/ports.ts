@@ -648,7 +648,7 @@ const CORE_PORTS: readonly Port[] = [
       // Unselected source installs follow the default branch.
       git: { code: 'using Pkg\nPkg.add(PackageSpec(url="https://github.com/libtmux/libtmux-julia.git", rev="master"))', lang: 'julia' },
     },
-    installNote: 'Requires Julia 1.13.1 and tmux 3.7c or newer. JSON layouts require tmux 3.8. Companion packages install from the same revision as the core.',
+    installNote: 'Requires Julia 1.13.1 and tmux 3.3a or newer. JSON layouts require tmux 3.8. Companion packages install from the same revision as the core.',
   },
   {
     slug: 'elixir',

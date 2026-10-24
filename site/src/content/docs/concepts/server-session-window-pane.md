@@ -47,7 +47,7 @@ one server lifetime: another server using the same socket path can reuse IDs.
 The [target syntax](/tmux/latest/manual/full/#COMMANDS) describes how commands
 resolve IDs, names, and indexes.
 
-Save this complete script as `hierarchy.sh`. It requires tmux 3.2a or newer
+Save this complete script as `hierarchy.sh`. It requires tmux 3.3a or newer
 and a POSIX shell. It renames a session and a window, checks their IDs, and
 links the window into another session on its private server.
 

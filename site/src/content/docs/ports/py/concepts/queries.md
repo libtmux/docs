@@ -56,8 +56,8 @@ to the server instead, so libtmux builds objects only for the matches:
 >>> server.search_sessions(filter='#{==:#{session_name},alpha-1}')
 ```
 
-Python-side lookups work with the library's supported tmux versions. The tmux
-filter grammar requires tmux 3.2 or newer. An unknown format token expands to an
+Python-side lookups work with the library's supported tmux versions, and the
+tmux filter grammar is available on all of them. An unknown format token expands to an
 empty value, so a malformed filter can look like a valid filter with no matches.
 If `search_*()` unexpectedly returns no results, try `#{m:*,#{session_name}}` to
 check that the session data is available.

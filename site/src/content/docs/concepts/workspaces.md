@@ -19,7 +19,7 @@ programs running.
 
 ## Build a pane layout
 
-Save this complete script as `layout.sh`. It requires tmux 3.2a or newer and
+Save this complete script as `layout.sh`. It requires tmux 3.3a or newer and
 a POSIX shell. It creates a three-pane editor window and a one-pane logs
 window on a private server, then stops that server on exit.
 

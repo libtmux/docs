@@ -21,7 +21,7 @@ Prefix a session target with `=` to require an exact name. `has-session` reports
 whether it exists; it does not return a pane. This script selects panes in
 `work` and rejects both zero matches and multiple matches before using an ID.
 
-Save the complete script as `query.sh`. It requires tmux 3.2a or newer and a
+Save the complete script as `query.sh`. It requires tmux 3.3a or newer and a
 POSIX shell. It creates and cleans up its own server.
 
 ```sh title="query.sh"
