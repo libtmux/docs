@@ -140,7 +140,9 @@ if (opts.check) {
   process.exit(0)
 }
 
-const get = createGet({ rewriteOrigins: JSON.parse(process.env.LIBTMUX_DESTINATION_REWRITE ?? '{}') })
+const rewriteOrigins = JSON.parse(process.env.LIBTMUX_DESTINATION_REWRITE ?? '{}')
+// The pause between requests keeps a live run polite to the hosts; a rewritten origin is a local server.
+const get = createGet({ rewriteOrigins, ...(Object.keys(rewriteOrigins).length > 0 && { pauseMs: 0 }) })
 const wanted = collectDestinations(inventory, manifests)
 
 const records = []
