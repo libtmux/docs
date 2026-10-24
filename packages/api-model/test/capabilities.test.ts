@@ -94,6 +94,10 @@ describe('validateManifest', () => {
     ['bad since', { ...manifest, capabilities: [{ ...control, since: '3.7-dev' }] }, 'since'],
     ['bad flag', { ...manifest, capabilities: [{ ...control, commands: [{ command: 'attach-session', flags: ['C'] }] }] }, 'flags'],
     ['empty workaround', { ...manifest, workarounds: [{ ...breakPane, releases: [] }] }, 'releases'],
+    ['except as a string', { ...manifest, capabilities: [{ ...runShell, except: '3.4' }] }, 'except: expected an array'],
+    ['except as a number', { ...manifest, capabilities: [{ ...runShell, except: 5 }] }, 'except: expected an array'],
+    ['except as an object', { ...manifest, capabilities: [{ ...runShell, except: { 0: '3.4' } }] }, 'except: expected an array'],
+    ['an unprintable except release', { ...manifest, capabilities: [{ ...runShell, except: ['3.4', 'master'] }] }, 'except[1]'],
   ]
   it.each(broken)('rejects a manifest with %s', (_label, value, message) => {
     const { manifest: m, errors } = validateManifest(value)

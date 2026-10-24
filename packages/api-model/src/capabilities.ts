@@ -172,7 +172,10 @@ export function validateManifest(value: unknown): { manifest?: CapabilityManifes
       if (!isString(c?.name)) errors.push(`${at}.name: expected a name`)
       if (!isString(c?.summary)) errors.push(`${at}.summary: expected a sentence`)
       checkVersion(errors, `${at}.since`, c?.since)
-      ;(c?.except ?? []).forEach((r, j) => checkVersion(errors, `${at}.except[${j}]`, r))
+      if (c?.except !== undefined) {
+        if (Array.isArray(c.except)) c.except.forEach((r, j) => checkVersion(errors, `${at}.except[${j}]`, r))
+        else errors.push(`${at}.except: expected an array of releases`)
+      }
       if (!['refuse', 'fallback', 'repair'].includes(c?.handling as string)) errors.push(`${at}.handling: expected refuse, fallback or repair`)
       if (c?.handling === 'refuse' && !isString(c?.error)) errors.push(`${at}.error: a refusal names its error type`)
       checkNames(errors, `${at}.apis`, c?.apis)
