@@ -211,7 +211,7 @@ describe('standard types in product signatures', () => {
     ['csharp', 'ReadOnlyMemory<byte>', 'ReadOnlyMemory', 'https://learn.microsoft.com/dotnet/api/system.readonlymemory-1'],
     ['csharp', 'IEnumerator<T>', 'IEnumerator', 'https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerator-1'],
     ['csharp', 'IReadOnlyCollection<Pane>', 'IReadOnlyCollection', 'https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1'],
-    ['cxx', 'std::function<void(double)>', 'double', 'https://en.cppreference.com/cpp/language/types'],
+    ['cxx', 'std::function<void(double)>', 'double', 'https://en.cppreference.com/cpp/keyword/double'],
     ['swift', 'Data', 'Data', 'https://developer.apple.com/documentation/foundation/data'],
     ['swift', 'AsyncStream<String>', 'AsyncStream', 'https://developer.apple.com/documentation/swift/asyncstream'],
     ['py', 'Unpack[Config]', 'Unpack', 'https://docs.python.org/3/library/typing.html#typing.Unpack'],
