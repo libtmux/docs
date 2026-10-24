@@ -70,14 +70,17 @@ function fixture(): string {
 
 let scripts = 0
 
+/** A recipe that blocks, such as a `flock` that waits, fails the test instead of hanging it. */
+const RECIPE_TIMEOUT_MS = 10_000
+
 /** Runs a recipe body the way `just` does: a shebang body as a script, else one shell line. */
 function attempt(dir: string, body: string[]): SpawnSyncReturns<string> {
   if (body[0]?.startsWith('#!')) {
     const script = join(scratch, `recipe-${scripts++}.sh`)
     writeFileSync(script, `${body.join('\n')}\n`)
-    return spawnSync('bash', [script], { cwd: dir, encoding: 'utf8' })
+    return spawnSync('bash', [script], { cwd: dir, encoding: 'utf8', timeout: RECIPE_TIMEOUT_MS })
   }
-  return spawnSync('sh', ['-c', body.join('\n')], { cwd: dir, encoding: 'utf8' })
+  return spawnSync('sh', ['-c', body.join('\n')], { cwd: dir, encoding: 'utf8', timeout: RECIPE_TIMEOUT_MS })
 }
 
 function run(dir: string, body: string[]): string[] {
@@ -205,6 +208,7 @@ describe('just nuke', () => {
     spawnSync('just', ['--justfile', join(ROOT, 'justfile'), '--working-directory', dir, ...args], {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe'],
+      timeout: RECIPE_TIMEOUT_MS,
     })
 
   it('removes untracked files, the build cache and the lock, and keeps the .env files', () => {
