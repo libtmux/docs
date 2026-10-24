@@ -88,7 +88,7 @@ export interface KeywordHelp {
   href: string
 }
 
-const KEYWORD_HELP: Record<string, Record<string, KeywordHelp>> = {
+export const KEYWORD_HELP: Record<string, Record<string, KeywordHelp>> = {
   cxx: {
     nodiscard: {
       title: 'C++ nodiscard attribute',
