@@ -29,7 +29,7 @@
     "project": "MCP C# SDK",
     "version": "2.2.0",
     "langs": ["csharp"],
-    "baseUrl": "https://csharp.sdk.modelcontextprotocol.io/api/",
+    "baseUrl": "https://csharp.sdk.modelcontextprotocol.io/v2/api/",
     "e": [
       ["McpException", "ModelContextProtocol.McpException.html"],
       ["ProgressNotificationValue", "ModelContextProtocol.ProgressNotificationValue.html"],

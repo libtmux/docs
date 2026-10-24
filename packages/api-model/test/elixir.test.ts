@@ -238,17 +238,17 @@ describe('Elixir references', () => {
   })
 
   it('sends the standard library to its own documentation and invents nothing else', () => {
-    expect(index.resolve('Enum.to_list/1', 'any', snapshot)).toMatchObject({ external: true, href: 'https://hexdocs.pm/elixir/Enum.html#to_list/1' })
-    expect(index.resolve('t:Enumerable.t/0', 'any', snapshot)).toMatchObject({ external: true, href: 'https://hexdocs.pm/elixir/Enumerable.html#t:t/0' })
+    expect(index.resolve('Enum.to_list/1', 'any', snapshot)).toMatchObject({ external: true, href: 'https://elixir.hexdocs.pm/Enum.html#to_list/1' })
+    expect(index.resolve('t:Enumerable.t/0', 'any', snapshot)).toMatchObject({ external: true, href: 'https://elixir.hexdocs.pm/Enumerable.html#t:t/0' })
     expect(index.resolve('Nonexistent.thing/1', 'any', snapshot)).toBeUndefined()
     expect(index.resolve('missing/9', 'any', snapshot)).toBeUndefined()
   })
 
   it.each([
-    ['Enum.member?/2', 'https://hexdocs.pm/elixir/Enum.html#member?/2'],
-    ['JSON.encode!/1', 'https://hexdocs.pm/elixir/JSON.html#encode!/1'],
-    ['Supervisor.start_child/2', 'https://hexdocs.pm/elixir/Supervisor.html#start_child/2'],
-    ['Supervisor.restart_child/2', 'https://hexdocs.pm/elixir/Supervisor.html#restart_child/2'],
+    ['Enum.member?/2', 'https://elixir.hexdocs.pm/Enum.html#member?/2'],
+    ['JSON.encode!/1', 'https://elixir.hexdocs.pm/JSON.html#encode!/1'],
+    ['Supervisor.start_child/2', 'https://elixir.hexdocs.pm/Supervisor.html#start_child/2'],
+    ['Supervisor.restart_child/2', 'https://elixir.hexdocs.pm/Supervisor.html#restart_child/2'],
   ])('links the standard-library function %s that a guide names in prose', (mention, href) => {
     const decide = (text: string, port = 'elixir') =>
       decideMention(text, { pagePort: port }, new Resolver([model as ApiModel]), { elixir: model as ApiModel })

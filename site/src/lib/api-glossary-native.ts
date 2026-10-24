@@ -20,7 +20,7 @@ const rustReference = (page: string) => `https://doc.rust-lang.org/reference/${p
 const rubySyntax = (page: string) => `https://docs.ruby-lang.org/en/3.4/syntax/${page}_rdoc.html`
 const luaManual = (section: string) => `https://www.lua.org/manual/5.4/manual.html#${section}`
 const luaAnnotation = (section: string) => `https://luals.github.io/wiki/annotations/#${section}`
-const elixirDocs = (page: string) => `https://hexdocs.pm/elixir/${page}`
+const elixirDocs = (page: string) => `https://elixir.hexdocs.pm/${page}`
 const swiftBook = (page: string) => `https://docs.swift.org/latest/documentation/the-swift-programming-language/${page}/`
 
 export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> = {
@@ -102,12 +102,12 @@ export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> =
     class: term('A Python type defining attributes and behavior for its instances.', 'Python classes', pythonDocs('tutorial/classes')),
     function: term('A Python callable defined with def or a lambda expression.', 'Python function definitions', `${pythonDocs('reference/compound_stmts')}#function-definitions`),
     method: term('A Python callable obtained through a class or instance. An ordinary bound method supplies its instance as the first argument.', 'Python instance methods', `${pythonDocs('reference/datamodel')}#instance-methods`),
-    property: term('A Python descriptor whose getter, setter or deleter runs during attribute access.', 'Python properties', `${pythonDocs('library/functions')}#property`, 'A property need not correspond to a stored field, and reading it may execute code.'),
+    property: term('A Python descriptor whose getter, setter or deleter runs during attribute access.', 'Python properties', `${pythonDocs('builtins/functions')}#property`, 'A property need not correspond to a stored field, and reading it may execute code.'),
     attribute: term('A named Python value accessed on an object or class, potentially through a descriptor or dynamic lookup.', 'Python attribute access', `${pythonDocs('reference/datamodel')}#customizing-attribute-access`),
     constant: term('A named Python API value conventionally treated as constant. Uppercase naming does not prevent reassignment at runtime.', 'Python constant naming', 'https://peps.python.org/pep-0008/#constants'),
     exception: term('A Python exception class whose instances can be raised and handled with except.', 'Python exceptions', `${pythonDocs('tutorial/errors')}#user-defined-exceptions`),
     async: term('A Python coroutine function declared with async def. Calling it creates a coroutine to await or schedule.', 'Python coroutine functions', `${pythonDocs('reference/compound_stmts')}#coroutine-function-definition`),
-    classmethod: term('A Python method that receives the class as its implicit first argument, including when called through an instance.', 'Python class methods', `${pythonDocs('library/functions')}#classmethod`),
+    classmethod: term('A Python method that receives the class as its implicit first argument, including when called through an instance.', 'Python class methods', `${pythonDocs('builtins/functions')}#classmethod`),
     inherited: term('A Python member resolved from a base class through the method resolution order.', 'Python inheritance', `${pythonDocs('tutorial/classes')}#inheritance`, 'The reference names the declaring class so its original definition remains navigable.'),
     package: term('The Python distribution supplying this API. Its installation name can differ from the package name used in imports.', 'Python distributions and import packages', 'https://packaging.python.org/en/latest/discussions/distribution-package-vs-import-package/'),
   },
