@@ -508,6 +508,17 @@ await verify('offline, evidence that checked one port’s release but not the ot
   expect: { code: 1, matches: [/was checked for 1\.0\.0 but the manifests now declare 1\.0\.0, 2\.0\.0/] },
 })
 
+// A planned Hex package must keep answering 404, so the day its owner publishes it the verifier says the entry can be linked.
+routes['/hex.pm/packages/hex-back'] = () => [200, 'text/html', html('hex-back | Hex')]
+routes['/hex.pm/api/packages/hex-back'] = () => text({ name: 'hex-back', latest_version: '1.0.0', releases: [{ version: '1.0.0' }], meta: { links: { GitHub: 'https://github.com/demo/demo' } } })
+const plannedOnHex = (name) => [home, entry(name, { status: 'planned', note: 'its mix.exs carries a -dev version', unavailable: [{ kind: 'package', host: 'hex', url: `https://hex.pm/packages/${name}`, reason: 'not published' }] })]
+await verify('a planned Hex package that now answers is reported', plannedOnHex('hex-back'), {
+  manifests: manifestFor([['hex-back', '1.0.0']]), expect: { code: 1, matches: [/answers, so demo:hex-back can be published/] },
+})
+await verify('a planned Hex package that answers 404 passes', plannedOnHex('hex-gone'), {
+  expect: { code: 0, matches: [/none\s+404\s+package\s+https:\/\/hex\.pm\/packages\/hex-gone/, /wrote /] },
+})
+
 // A registered port the inventory omits gets no header links and no verification, and nothing else says so. The
 // control is the committed inventory, evidence and manifests under the same flags; each case then breaks one thing.
 const committed = (name) => JSON.parse(readFileSync(join(dirname(script), '..', 'site', 'src', 'data', name), 'utf8'))

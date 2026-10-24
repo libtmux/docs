@@ -278,17 +278,22 @@ describe('port inventory', () => {
     expect(servedBy(PACKAGE_HOSTS.pypi, 'pypi.org')).toBe(true)
   })
 
-  it('lists Elixir’s one Hex package with its HexDocs reference, and no entry for the projects Hex does not carry', () => {
+  it('lists Elixir’s one Hex package with its HexDocs reference, and records the projects Hex does not carry as planned', () => {
     expect(entries('elixir').map((entry) => [entry.id, entry.kind, entry.status, entry.path, entry.package?.url, entry.api?.url])).toEqual([
       ['libtmux', 'library', 'published', 'lib', 'https://hex.pm/packages/libtmux', 'https://libtmux.hexdocs.pm/'],
       ['repository', 'source', 'published', undefined, undefined, undefined],
+      ['libtmux_mcp', 'mcp-server', 'planned', 'packages/mcp', undefined, undefined],
+      ['libtmux_workspace', 'companion', 'planned', 'packages/workspace', undefined, undefined],
     ])
-    expect(entries('elixir').map((entry) => [entry.repo, entry.ref])).toEqual([['libtmux/libtmux-elixir', 'main'], ['libtmux/libtmux-elixir', 'main']])
-    // The MCP adapter and workspace loader live under packages/ with a -dev version.
-    const named = entries('elixir').flatMap((entry) => [entry.id, entry.label, entry.coordinate, entry.path ?? ''])
-    expect(named.filter((value) => /mcp|workspace/i.test(value))).toEqual([])
-    // Control: the same pattern finds them in a port that does publish them.
-    expect(Object.values(INVENTORY).flat().filter((entry) => /mcp|workspace/i.test(entry.id)).length).toBeGreaterThan(0)
+    expect(entries('elixir').every((entry) => entry.repo === 'libtmux/libtmux-elixir' && entry.ref === 'main')).toBe(true)
+    // Hex names a package for its Mix `app`, so these are the pages that would answer once one is published.
+    const planned = entries('elixir').filter((entry) => entry.status === 'planned')
+    for (const entry of planned) {
+      expect(entry.note, entry.id).toMatch(/-dev version/)
+      expect(entryCandidates(entry).map(({ kind, host, url }) => [kind, host, url]), entry.id).toEqual([['package', 'hex', `https://hex.pm/packages/${entry.coordinate}`]])
+    }
+    // They produce no link, so the header offers only the published entries.
+    expect(published('elixir').map((entry) => entry.id)).toEqual(['libtmux', 'repository'])
   })
 
   it('links nothing for an entry that is planned or configured but not published', () => {

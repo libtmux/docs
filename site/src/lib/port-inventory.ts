@@ -347,9 +347,16 @@ export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
       path: 'packages/LibTmuxWorkspace', aliases: ['using LibTmuxWorkspace', 'libtmux-workspace'] }),
   ],
   elixir: [
-    // The MCP adapter and workspace loader under packages/ carry a -dev version and Hex has no package for either, so neither has an entry.
     elixir({ id: 'libtmux', kind: 'library', product: 'core', label: 'libtmux', ...hexPackage('libtmux'), path: 'lib', aliases: ['LibTmux'] }),
     elixir({ id: 'repository', kind: 'source', product: 'core', label: 'libtmux-elixir', coordinate: 'libtmux/libtmux-elixir' }),
+    // The projects under packages/ carry a -dev version, and the release workflow publishes only the root project.
+    // Hex names a package for its `app`, so these are the pages that would answer the day one is published.
+    elixir({ id: 'libtmux_mcp', kind: 'mcp-server', product: 'mcp', label: 'libtmux_mcp', coordinate: 'libtmux_mcp', path: 'packages/mcp',
+      aliases: ['LibTmuxMCP'], status: 'planned', note: 'Its mix.exs carries a -dev version and the release workflow publishes only the root project.',
+      unavailable: [{ kind: 'package', host: 'hex', url: 'https://hex.pm/packages/libtmux_mcp', reason: 'not published' }] }),
+    elixir({ id: 'libtmux_workspace', kind: 'companion', product: 'workspace', label: 'libtmux_workspace', coordinate: 'libtmux_workspace', path: 'packages/workspace',
+      aliases: ['LibTmuxWorkspace'], status: 'planned', note: 'Its mix.exs carries a -dev version and the release workflow publishes only the root project.',
+      unavailable: [{ kind: 'package', host: 'hex', url: 'https://hex.pm/packages/libtmux_workspace', reason: 'not published' }] }),
   ],
   ts: [
     ts({ id: 'libtmux', kind: 'library', product: 'core', label: 'libtmux', ...npm('libtmux'), path: 'packages/libtmux',
