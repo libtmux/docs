@@ -1,5 +1,5 @@
 import type { ApiModel, ApiProduct, ApiSymbol } from './model.ts'
-import type { InventoryEntry } from './inventory.ts'
+import { symbolEntries, type InventoryEntry } from './inventory.ts'
 import { modulesIn, qualifiedNameOf } from './modules.ts'
 
 /**
@@ -86,13 +86,6 @@ export const DEFAULT_TEMPLATES: UrlTemplate[] = [
       const i = q.indexOf('.')
       return 'https://pkg.go.dev/' + q.slice(0, i) + '#' + q.slice(i + 1)
     },
-  },
-  {
-    project: 'Java SE',
-    langs: ['java'],
-    prefixes: ['Stream.', 'Optional.', 'List.', 'Map.', 'Set.', 'CompletableFuture.'],
-    href: (q) =>
-      'https://docs.oracle.com/en/java/javase/21/docs/api/index.html?q=' + encodeURIComponent(q),
   },
 ]
 
@@ -237,7 +230,7 @@ export class Resolver {
     langs?: string[],
   ): void {
     const map = new Map<string, InventoryEntry>()
-    for (const e of entries) if (!map.has(e.name)) map.set(e.name, e)
+    for (const e of symbolEntries(entries)) if (!map.has(e.name)) map.set(e.name, e)
     this.inventories.push({ project, baseUrl: baseUrl.replace(/\/*$/, '/'), entries: map, langs })
   }
 

@@ -30,6 +30,11 @@ function problems(text: string): string[] {
   if (/^\s*run:\s*node scripts\/verify-destinations\.mjs\s*$/m.test(body)) found.push('rewrites the committed evidence')
   const fresh = /if:\s*\$\{\{ !cancelled\(\) \}\}\n\s*run:\s*node scripts\/verify-destinations\.mjs --check --fresh\s*$/m.test(body)
   if (!fresh) found.push('does not hold the committed evidence to the age bound after a failed live run')
+  const liveApi = /node scripts\/verify-api-destinations\.mjs --no-cache --out "\$RUNNER_TEMP\/[\w.-]+"\s*$/m.test(body)
+  if (!liveApi) found.push('does not run the live API verifier into a temporary file')
+  if (/^\s*run:\s*node scripts\/verify-api-destinations\.mjs( --no-cache)?\s*$/m.test(body)) found.push('rewrites the committed API evidence')
+  const freshApi = /if:\s*\$\{\{ !cancelled\(\) \}\}\n\s*run:\s*node scripts\/verify-api-destinations\.mjs --check --fresh\s*$/m.test(body)
+  if (!freshApi) found.push('does not hold the committed API evidence to the age bound after a failed live run')
   for (const action of actionsIn(text)) if (!pinned.has(action)) found.push(`uses ${action}, which no other workflow uses`)
   if (!/actions\/checkout@\S+\n\s+with:\n\s+persist-credentials: false/.test(body)) found.push('keeps credentials after checkout')
   return found
@@ -61,6 +66,8 @@ describe('the destination verification workflow', () => {
     expect(workflow).toContain('node scripts/verify-destinations.mjs --check --fresh')
     expect(workflow).toMatch(/uses: actions\/upload-artifact@v\d+\n\s+with:\n\s+name: destination-evidence/)
     expect(workflow).toContain('if-no-files-found: ignore')
+    expect(workflow).toContain('node scripts/verify-api-destinations.mjs --check --fresh')
+    expect(workflow).toMatch(/uses: actions\/upload-artifact@v\d+\n\s+with:\n\s+name: api-destination-evidence/)
   })
 
   describe('as a check that can fail', () => {
@@ -77,6 +84,10 @@ describe('the destination verification workflow', () => {
       ['no live run', without('run: node scripts/verify-destinations.mjs --out "$RUNNER_TEMP/destination-evidence.json"', 'run: echo skipped'), 'does not run the live verifier into a temporary file'],
       ['an age gate that skips after a failure', without('if: ${{ !cancelled() }}\n        run: node scripts/verify-destinations.mjs --check --fresh', 'run: node scripts/verify-destinations.mjs --check --fresh'), 'does not hold the committed evidence to the age bound after a failed live run'],
       ['an age gate that is only the plain check', without('--check --fresh', '--check'), 'does not hold the committed evidence to the age bound after a failed live run'],
+      ['a live API run over the committed evidence', without('node scripts/verify-api-destinations.mjs --no-cache --out "$RUNNER_TEMP/api-destination-evidence.json"', 'node scripts/verify-api-destinations.mjs'), 'rewrites the committed API evidence'],
+      ['no live API run', without('run: node scripts/verify-api-destinations.mjs --no-cache --out "$RUNNER_TEMP/api-destination-evidence.json"', 'run: echo skipped'), 'does not run the live API verifier into a temporary file'],
+      ['an API age gate that skips after a failure', without('if: ${{ !cancelled() }}\n        run: node scripts/verify-api-destinations.mjs --check --fresh', 'run: node scripts/verify-api-destinations.mjs --check --fresh'), 'does not hold the committed API evidence to the age bound after a failed live run'],
+      ['an API age gate that is only the plain check', without('verify-api-destinations.mjs --check --fresh', 'verify-api-destinations.mjs --check'), 'does not hold the committed API evidence to the age bound after a failed live run'],
       ['an unpinned action', without('actions/setup-node@v7', 'actions/setup-node@v2'), 'uses actions/setup-node@v2, which no other workflow uses'],
       ['kept credentials', without('        with:\n          persist-credentials: false\n'), 'keeps credentials after checkout'],
     ]

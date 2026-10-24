@@ -219,6 +219,19 @@ node scripts/verify-destinations.mjs --check
 step 'destination verification (negative)'
 node scripts/verify-destinations.negative.mjs
 
+# The standard-library and SDK links the reference pages, guides and glossary
+# make. Each lands on the page, fragment and symbol it names, as the host's own
+# page shows (node scripts/verify-api-destinations.mjs, re-run weekly by the
+# same workflow). This reads the destinations from the source and the evidence
+# from the repository and requests nothing: a link with no passing record, a
+# record for a link nothing makes, and a name never checked against its page
+# all fail. A host that could not be read is printed as unresolved.
+step 'api destination evidence'
+node scripts/verify-api-destinations.mjs --check
+
+step 'api destination verification (negative)'
+node scripts/verify-api-destinations.negative.mjs
+
 step 'source links'
 node scripts/check-source-links.mjs
 

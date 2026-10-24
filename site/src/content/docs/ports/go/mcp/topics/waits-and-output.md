@@ -18,7 +18,7 @@ command that deliberately exits with status 7.
 Check each layer before using the result:
 
 1. A client call error means the protocol exchange failed or was cancelled.
-2. A reply with [`IsError`](https://pkg.go.dev/github.com/modelcontextprotocol/go-sdk@v1.6.1/mcp#CallToolResult) set reports a tool failure. Read its text content.
+2. A reply with [`CallToolResult.IsError`](https://pkg.go.dev/github.com/modelcontextprotocol/go-sdk@v1.6.1/mcp#CallToolResult) set reports a tool failure. Read its text content.
 3. In a successful tool reply, `timed_out` and `exit_status` establish whether
    completion was observed. A nonzero exit status is a command result.
 4. `output_unavailable` or `lines_missed` means the returned output is

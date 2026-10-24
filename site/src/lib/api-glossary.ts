@@ -31,7 +31,7 @@ const kinds = {
     detail: 'This category also includes Swift protocols. Conformance rules differ by language: Go interfaces are satisfied implicitly, while other languages can require a declared relationship.',
     references: [
       { title: 'Go interface types', url: 'https://go.dev/ref/spec#Interface_types' },
-      { title: 'Swift protocols', url: 'https://docs.swift.org/swift-book/documentation/the-swift-programming-language/protocols/' },
+      { title: 'Swift protocols', url: 'https://docs.swift.org/latest/documentation/the-swift-programming-language/protocols/' },
     ],
   },
   struct: {
@@ -105,7 +105,7 @@ const kinds = {
   exception: {
     definition: 'A type used to report an error through the language’s exception mechanism.',
     detail: 'The API documentation states when it can be raised or thrown and what a caller can catch. The label does not imply that every failure uses exceptions.',
-    references: [{ title: 'Python exceptions', url: 'https://docs.python.org/3/library/exceptions.html' }],
+    references: [{ title: 'Python exceptions', url: 'https://docs.python.org/3/builtins/exceptions.html' }],
   },
   cmdlet: {
     definition: 'A compiled .NET command invoked through PowerShell’s command and object-pipeline system.',
@@ -129,7 +129,7 @@ const modifiers = {
     detail: 'A Python staticmethod receives neither an implicit instance nor an implicit class argument. A classmethod receives the class. Static does not mean pure, immutable, or safe for concurrent calls.',
     references: [
       { title: 'C# static members', url: 'https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/static' },
-      { title: 'Python staticmethod', url: 'https://docs.python.org/3/library/functions.html#staticmethod' },
+      { title: 'Python staticmethod', url: 'https://docs.python.org/3/builtins/functions.html#staticmethod' },
     ],
   },
   macro: {
@@ -143,14 +143,14 @@ const modifiers = {
   classmethod: {
     definition: 'A Python method that receives the calling class as its implicit first argument.',
     detail: 'It can be called through a class or an instance. A call through a subclass passes that subclass, which is useful for constructors that preserve the requested type.',
-    references: [{ title: 'Python classmethod', url: 'https://docs.python.org/3/library/functions.html#classmethod' }],
+    references: [{ title: 'Python classmethod', url: 'https://docs.python.org/3/builtins/functions.html#classmethod' }],
   },
   abstract: {
     definition: 'A type or member whose complete implementation is supplied by a concrete subtype.',
     detail: 'An abstract type cannot be constructed directly. An abstract member declares required behavior. Julia abstract types define a place in the type hierarchy rather than a concrete data layout.',
     references: [
       { title: 'C# abstract declarations', url: 'https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/abstract' },
-      { title: 'Julia abstract types', url: 'https://docs.julialang.org/en/v1/manual/types/#Abstract-Types' },
+      { title: 'Julia abstract types', url: 'https://docs.julialang.org/en/v1/manual/types/#man-abstract-types' },
     ],
   },
   async: {

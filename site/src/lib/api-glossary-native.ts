@@ -20,7 +20,7 @@ const rustReference = (page: string) => `https://doc.rust-lang.org/reference/${p
 const rubySyntax = (page: string) => `https://docs.ruby-lang.org/en/3.4/syntax/${page}_rdoc.html`
 const luaManual = (section: string) => `https://www.lua.org/manual/5.4/manual.html#${section}`
 const luaAnnotation = (section: string) => `https://luals.github.io/wiki/annotations/#${section}`
-const elixirDocs = (page: string) => `https://hexdocs.pm/elixir/${page}`
+const elixirDocs = (page: string) => `https://elixir.hexdocs.pm/${page}`
 const swiftBook = (page: string) => `https://docs.swift.org/latest/documentation/the-swift-programming-language/${page}/`
 
 export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> = {
@@ -87,7 +87,7 @@ export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> =
     struct: term('An Elixir module that defines a struct: a map with a fixed set of keys and optional defaults.', 'Elixir structs', elixirDocs('structs.html'), 'Fields hold values and are never reassigned. Functions on the module return a new struct rather than changing one.'),
     exception: term('An Elixir struct declared with defexception, which can be raised and rescued.', 'Elixir exceptions', `${elixirDocs('Kernel.html')}#defexception/1`, 'The struct also carries the fields of the error. A bang function raises it; the plain function returns it in an error tuple.'),
     interface: term('An Elixir behaviour, a module that declares callbacks other modules implement.', 'Elixir behaviours', `${elixirDocs('typespecs.html')}#behaviours`, 'A module implements a behaviour with the @behaviour attribute and defines each required callback.'),
-    function: term('An Elixir function identified by its module, name and arity.', 'Elixir functions and arity', elixirDocs('modules-and-functions.html'), 'Functions of one name and different arities are different functions. A name ending in ! raises on failure, and a name ending in ? returns a boolean.'),
+    function: term('An Elixir function identified by its module, name and arity.', 'Elixir functions', elixirDocs('modules-and-functions.html'), 'Functions of one name and different arities are different functions. A name ending in ! raises on failure, and a name ending in ? returns a boolean.'),
     method: term('A callback that a behaviour declares and an implementing module defines.', 'Elixir behaviour callbacks', `${elixirDocs('typespecs.html')}#behaviours`, 'A callback is called through the implementing module, not through the behaviour that declares it.'),
     property: term('A field of an Elixir struct, read with dot access or pattern matching.', 'Elixir structs', elixirDocs('structs.html'), 'A field has no accessor function; structs are plain maps, so the value is stored as the field holds it.'),
     typealias: term('An Elixir type declared with @type or @opaque, named and given an arity.', 'Elixir user-defined types', `${elixirDocs('typespecs.html')}#user-defined-types`, 'Types document values for readers and tools. They are not checked when a function runs.'),
@@ -102,12 +102,12 @@ export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> =
     class: term('A Python type defining attributes and behavior for its instances.', 'Python classes', pythonDocs('tutorial/classes')),
     function: term('A Python callable defined with def or a lambda expression.', 'Python function definitions', `${pythonDocs('reference/compound_stmts')}#function-definitions`),
     method: term('A Python callable obtained through a class or instance. An ordinary bound method supplies its instance as the first argument.', 'Python instance methods', `${pythonDocs('reference/datamodel')}#instance-methods`),
-    property: term('A Python descriptor whose getter, setter or deleter runs during attribute access.', 'Python properties', `${pythonDocs('library/functions')}#property`, 'A property need not correspond to a stored field, and reading it may execute code.'),
+    property: term('A Python descriptor whose getter, setter or deleter runs during attribute access.', 'Python properties', `${pythonDocs('builtins/functions')}#property`, 'A property need not correspond to a stored field, and reading it may execute code.'),
     attribute: term('A named Python value accessed on an object or class, potentially through a descriptor or dynamic lookup.', 'Python attribute access', `${pythonDocs('reference/datamodel')}#customizing-attribute-access`),
     constant: term('A named Python API value conventionally treated as constant. Uppercase naming does not prevent reassignment at runtime.', 'Python constant naming', 'https://peps.python.org/pep-0008/#constants'),
     exception: term('A Python exception class whose instances can be raised and handled with except.', 'Python exceptions', `${pythonDocs('tutorial/errors')}#user-defined-exceptions`),
     async: term('A Python coroutine function declared with async def. Calling it creates a coroutine to await or schedule.', 'Python coroutine functions', `${pythonDocs('reference/compound_stmts')}#coroutine-function-definition`),
-    classmethod: term('A Python method that receives the class as its implicit first argument, including when called through an instance.', 'Python class methods', `${pythonDocs('library/functions')}#classmethod`),
+    classmethod: term('A Python method that receives the class as its implicit first argument, including when called through an instance.', 'Python class methods', `${pythonDocs('builtins/functions')}#classmethod`),
     inherited: term('A Python member resolved from a base class through the method resolution order.', 'Python inheritance', `${pythonDocs('tutorial/classes')}#inheritance`, 'The reference names the declaring class so its original definition remains navigable.'),
     package: term('The Python distribution supplying this API. Its installation name can differ from the package name used in imports.', 'Python distributions and import packages', 'https://packaging.python.org/en/latest/discussions/distribution-package-vs-import-package/'),
   },
@@ -220,7 +220,7 @@ export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> =
     attribute: term('A Lua table field or annotated member. Reading a missing field may invoke a metatable lookup.', 'Lua table access', luaManual('2.4')),
     typealias: term('A Lua tooling alias describing a type expression in comments, without declaring a runtime type.', 'Lua type aliases', luaAnnotation('alias')),
     overload: term('Alternative Lua function signatures supplied by documentation annotations, rather than runtime overload selection.', 'Lua overload annotations', luaAnnotation('overload')),
-    inherited: term('A Lua member documented on an annotated parent type. Follow its declaring type for the original contract.', 'Lua annotated inheritance', luaAnnotation('class')),
+    inherited: term('A Lua member documented on an annotated parent type. Follow its declaring type for the original contract.', 'Lua class inheritance', luaAnnotation('class')),
     package: term('The Lua library distribution supplying these modules. A package name and the string passed to require need not match.', 'Lua packages and require', luaManual('6.3')),
   },
   swift: {
@@ -233,7 +233,7 @@ export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> =
     property: term('A Swift stored or computed member, declared with let or var as applicable.', 'Swift properties', swiftBook('properties'), 'Computed properties use accessors; their value need not be stored.'),
     constant: term('A Swift binding declared with let, or a named enum case in this reference.', 'Swift constants', swiftBook('thebasics'), 'A let binding cannot be reassigned, but a referenced class instance may remain mutable.'),
     typealias: term('A Swift name for an existing type, without defining a new distinct type.', 'Swift type aliases', `${swiftBook('declarations')}#Type-Alias-Declaration`),
-    static: term('A Swift member called or accessed on its type. Class members declared with class can allow subclass overrides.', 'Swift type members', swiftBook('methods')),
+    static: term('A Swift member called or accessed on its type. Class members declared with class can allow subclass overrides.', 'Swift type methods', swiftBook('methods')),
     async: term('A Swift asynchronous function that can suspend at await points, without promising a particular thread.', 'Swift concurrency', swiftBook('concurrency')),
     overload: term('Swift declarations sharing a base name, distinguished by their argument labels, types and applicable context.', 'Swift function declarations', swiftBook('functions')),
     inherited: term('A Swift member supplied by a superclass. The reference identifies its original declaring type.', 'Swift inheritance', swiftBook('inheritance')),
