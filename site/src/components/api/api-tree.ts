@@ -150,7 +150,7 @@ function initSearch(nav: HTMLElement, tree: HTMLElement, signal: AbortSignal) {
         const link = document.createElement('a')
         link.href = apiTreeHref(nav.dataset.base ?? '/', record, json.hrefs)
         const name = document.createElement('strong')
-        name.textContent = record.name
+        name.textContent = nav.dataset.presentation ? sidebarName(record.name, json.port) : record.name
         const mark = quiet ? undefined : kindBadge(record.kind)
         if (mark) name.prepend(mark, ' ')
         // The word trails the name: a result is a menu row, and a menu cannot be hovered for it.
@@ -162,7 +162,7 @@ function initSearch(nav: HTMLElement, tree: HTMLElement, signal: AbortSignal) {
         }
         link.setAttribute('aria-description', record.kind)
         const path = document.createElement('small')
-        path.textContent = record.qualifiedName
+        path.textContent = nav.dataset.presentation ? sidebarName(record.qualifiedName, json.port) : record.qualifiedName
         link.append(name, path)
         li.append(link)
         results.append(li)
@@ -395,7 +395,7 @@ async function build(nav: HTMLElement, item: HTMLElement): Promise<HTMLElement |
       const href = apiTreeHref(base, { id: memberId, slug }, json.hrefs)
       const display = nav.dataset.presentation ? sidebarName(name, json.port) : name
       children.push(memberId && json.members[memberId]?.length
-        ? branch(display, href, level, `type:${memberId}`, undefined, kind, false, quiet)
+        ? branch(display, href, level, `type:${memberId}`, nav.dataset.presentation ? json.members[memberId].length : undefined, kind, false, quiet)
         : leaf(display, href, level, kind, false, quiet))
     }
   }
