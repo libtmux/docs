@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { createHash } from 'node:crypto'
 import { Window } from 'happy-dom'
@@ -53,6 +53,10 @@ function referenceDeclarations(html: string, document?: Window['document']) {
   return declarations
 }
 const manifest = (): Manifest => JSON.parse(read('versions.json'))
+/** The pages a manifest lists at or below a product's overview, other than the overview, with or without a trailing slash. */
+const pagesBeyondOverview = (pages: { url: string }[], overview: string) => pages
+  .map((entry) => new URL(entry.url).pathname.replace(/\/*$/, '/'))
+  .filter((path) => path.startsWith(overview) && path !== overview)
 const urlFor = (path: string) => new URL(`/${SITE_PREFIX}${path}`, 'https://libtmux.org')
 const productUrl = /\/(?:py|ruby|lua|powershell|julia|elixir|ts|rs|go|java|csharp|cxx|swift)\/[^/]+\/(?:mcp|workspace)(?:\/|$)/
 const nativeProductDocs = (port: string) => ['powershell', 'julia'].includes(port)
@@ -432,18 +436,26 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
   it.each(PORTS.filter((port) => !port.parentLibrary && products.some((product) => !productAvailable(port, product))))
     ('$name builds, lists and links only the overview of a product it has not published', (port) => {
     const version = manifest().defaultVersion[port.slug]!
-    const sections = ['topics', 'guides', 'examples', 'reference', 'internals']
     const docs = JSON.parse(read(`${port.slug}/${version}/docs.json`)) as DocsManifest
     for (const product of products.filter((entry) => !productAvailable(port, entry))) {
-      for (const section of sections) {
-        const path = `${port.slug}/${version}/${product}/${section}/`
-        expect(existsSync(sitePath(path, 'index.html')), `${path} is not built`).toBe(false)
-        expect(docs.pages.some((entry) => entry.url.endsWith(urlFor(path).pathname)), `${path} is not advertised`).toBe(false)
-      }
+      // Whatever the product's other pages would be called, none is built or listed.
+      const directory = sitePath(`${port.slug}/${version}/${product}`)
+      const built = existsSync(directory) ? readdirSync(directory, { recursive: true }).map(String) : []
+      expect(built.filter((file) => file.endsWith('.html') && file !== 'index.html'), `${port.slug} ${product} pages built beyond the overview`).toEqual([])
+      expect(pagesBeyondOverview(docs.pages, urlFor(`${port.slug}/${version}/${product}/`).pathname),
+        `${port.slug} ${product} pages listed beyond the overview`).toEqual([])
       const advertised = docs.ports.find((entry) => entry.slug === port.slug)!.products.find((entry) => entry.slug === product)!
       expect(advertised.availability, `${port.slug} ${product}`).toBe('unpublished')
       expect(advertised.reference, `${port.slug} ${product} reference`).toBeNull()
     }
+  })
+
+  it('finds a listed page beneath a product overview whatever its name or trailing slash', () => {
+    const overview = '/en/elixir/latest/mcp/'
+    const listed = (...paths: string[]) => pagesBeyondOverview(paths.map((path) => ({ url: `https://libtmux.org${path}` })), overview)
+    expect(listed('/en/elixir/latest/mcp/', '/en/elixir/latest/mcp', '/en/elixir/latest/', '/en/elixir/latest/mcp-notes/')).toEqual([])
+    expect(listed('/en/elixir/latest/mcp/guides')).toEqual(['/en/elixir/latest/mcp/guides/'])
+    expect(listed('/en/elixir/latest/mcp/guides/', '/en/elixir/latest/mcp/cookbook/step')).toEqual(['/en/elixir/latest/mcp/guides/', '/en/elixir/latest/mcp/cookbook/step/'])
   })
 
   it('opens a product overview with its install picker, then its section cards', async () => {
