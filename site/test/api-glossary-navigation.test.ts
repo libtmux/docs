@@ -15,6 +15,7 @@ import * as sections from '../src/lib/api-sections'
 import * as relationships from '../src/lib/api-relationships'
 import * as tree from '../src/lib/api-tree'
 import * as search from '../src/lib/api-search'
+import * as apiSidebar from '../src/lib/api-sidebar'
 import * as treeState from '../src/components/api/api-tree-state'
 import * as labels from '../src/lib/api-labels'
 import * as wordBreak from '../src/lib/word-break'
@@ -54,7 +55,7 @@ async function components(stubs: Readonly<Record<string, string>> = {}) {
     '@libtmux/api-model': model,
     ...Object.fromEntries(Object.entries({
       'api-glossary': glossary, 'api-models': models, 'api-sections': sections,
-      'api-relationships': relationships, 'api-tree': tree, 'api-search': search,
+      'api-relationships': relationships, 'api-tree': tree, 'api-search': search, 'api-sidebar': apiSidebar,
       'api-labels': labels, 'word-break': wordBreak, ports, 'product-api': products,
       versions, 'site-root': roots, sidebar, 'documentation-navigation': documentation,
       'page-ports-for': pagePorts, 'markdown-twins': markdown, 'tmux-manual-data': manual, 'tmux-reference': reference, 'tmux-catalog': catalog,
