@@ -254,6 +254,16 @@ process.on('SIGINT', terminate)
 const startServer = () => dev({ root, cacheDir: join(mirror, 'cache'),
   devToolbar: { enabled: false },
   vite: { cacheDir: join(mirror, 'vite'),
+    ...(serveOnly ? { plugins: [{ name: 'source-preview-aliases', configureServer(viteServer) {
+      // Run before Astro's base-path guard, including requests for HTML.
+      return () => viteServer.middlewares.stack.unshift({ route: '', handle(request, response, next) {
+        const url = request.url ?? '/'
+        const path = url.split('?')[0]
+        if (path !== '/' && path !== '/demo' && !path.startsWith('/demo/')) return next()
+        response.writeHead(302, { Location: `/en${url}` })
+        response.end()
+      } })
+    } }] } : {}),
     ...(requestedBrowserPort === undefined ? {} : { server: { strictPort: true } }) }, logLevel: 'error',
   server: { host: '127.0.0.1', port: requestedBrowserPort === undefined
     ? (serveOnly ? 53971 : 0) : Number(requestedBrowserPort) } })
