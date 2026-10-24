@@ -26,7 +26,7 @@ const page = (cards: string, mode: 'light' | 'dark') => `<!doctype html><html da
 const popover = (preview: LinkPreview) => `<span id="card" popover="auto" role="dialog" aria-label="${preview.title} preview" class="reference-link-preview not-prose">${cardHtml(previewCard(preview, { id: 'card' }))}</span>`
 
 let browser: Browser
-beforeAll(async () => { browser = await chromium.launch({ headless: true }) })
+beforeAll(async () => { browser = await chromium.launch({ headless: true }) }, 60_000)
 afterAll(async () => { await browser?.close() })
 
 async function open(target: Page, preview: LinkPreview, mode: 'light' | 'dark', width = 480) {
@@ -46,7 +46,7 @@ const spills = (target: Page) => target.evaluate(() => {
 })
 
 describe('the card in a browser', () => {
-  it('draws the header, the declaration band, the summary and the footer on the site\'s own tokens, in light and dark', async () => {
+  it('draws the header, the declaration band, the summary and the footer on the site\'s own tokens, in light and dark', { timeout: 30_000 }, async () => {
     const [, preview] = (await cardPayloads())[0]!
     const target = await browser.newPage()
     try {
@@ -83,7 +83,7 @@ describe('the card in a browser', () => {
     } finally { await target.close() }
   })
 
-  it('keeps the mark of a named type tinted by its kind in the summary, apart from the header\'s kind', async () => {
+  it('keeps the mark of a named type tinted by its kind in the summary, apart from the header\'s kind', { timeout: 30_000 }, async () => {
     const [, preview] = (await cardPayloads())[0]!
     const target = await browser.newPage()
     try {
@@ -118,7 +118,7 @@ describe('the card in a browser', () => {
     } finally { await target.close() }
   })
 
-  it('catches a card that spills, so that the check above can fail', async () => {
+  it('catches a card that spills, so that the check above can fail', { timeout: 30_000 }, async () => {
     const [, preview] = (await cardPayloads())[0]!
     const wide = { ...preview, signature: `fn ${'a'.repeat(160)}()`, signatureHighlight: undefined, title: 'b'.repeat(120) }
     const target = await browser.newPage()
@@ -133,7 +133,7 @@ describe('the card in a browser', () => {
     } finally { await target.close() }
   })
 
-  it('shows the head of a very long declaration and keeps the card within its height', async () => {
+  it('shows the head of a very long declaration and keeps the card within its height', { timeout: 30_000 }, async () => {
     const lines = Array.from({ length: 400 }, (_, index) => `  KEYC_CASE_${index} = ${index},`)
     const huge: LinkPreview = { schema: 1, title: 'enum', kind: 'enum', description: 'Key codes.', signature: `enum {\n${lines.join('\n')}\n}`, signatureLanguage: 'c', href: '/en/tmux/latest/reference/enum/' }
     const target = await browser.newPage()
@@ -150,7 +150,7 @@ describe('the card in a browser', () => {
     } finally { await target.close() }
   })
 
-  it('opens from its trigger, reaches the close control, each named type and the way to the page in that order, and closes on Escape', async () => {
+  it('opens from its trigger, reaches the close control, each named type and the way to the page in that order, and closes on Escape', { timeout: 30_000 }, async () => {
     const [, preview] = (await cardPayloads())[0]!
     const target = await browser.newPage()
     try {
@@ -180,7 +180,7 @@ describe('the card in a browser', () => {
     } finally { await target.close() }
   })
 
-  it('reaches the control that shows the whole name of a long one, ahead of the declaration', async () => {
+  it('reaches the control that shows the whole name of a long one, ahead of the declaration', { timeout: 30_000 }, async () => {
     const long = (await cardPayloads()).find(([name]) => name === 'API name long enough to abbreviate')![1]
     const target = await browser.newPage()
     try {

@@ -137,16 +137,18 @@ let requests: ReturnType<typeof vi.fn>
 let opened: boolean
 let serial = 0
 let prefix: string
-beforeEach(() => {
+let shell = ''
+let cardHtml: Promise<string> | undefined
+beforeEach(async () => {
+  // Rendered before the timers are faked, and once: the card that the layout writes, with every slot the painter fills.
+  shell = await (cardHtml ??= loadAstroTemplate('components/LinkPreview.astro').then((template) => renderAstroTemplate(template, { props: { id: 'reference-link-preview' } })))
   prefix = `/en/ts/latest/reference/preview-test-${++serial}`
   win = new Window({ url: 'https://libtmux.org/en/ts/latest/guides/' })
   for (const [name, value] of Object.entries({ window: win, document: win.document, location: win.location,
     Element: win.Element, Node: win.Node, HTMLElement: win.HTMLElement, innerHeight: 800 })) vi.stubGlobal(name, value)
   vi.useFakeTimers()
   opened = false
-  win.document.body.innerHTML = `<a id="a" href="${prefix}-a/">a</a><a id="b" href="${prefix}-b/">b</a>
-    <span id="reference-link-preview"><code data-preview-title></code><button data-preview-expand hidden aria-expanded="false">Show full name</button><span data-preview-description></span>
-    <span data-preview-detail></span><code data-preview-signature></code><a data-preview-open></a><button data-preview-close>Close</button></span>`
+  win.document.body.innerHTML = `<a id="a" href="${prefix}-a/">a</a><a id="b" href="${prefix}-b/">b</a>${shell}`
   const panel = win.document.getElementById('reference-link-preview')!
   Object.assign(panel, { showPopover: () => { opened = true }, hidePopover: () => { opened = false } })
   const matches = panel.matches.bind(panel)

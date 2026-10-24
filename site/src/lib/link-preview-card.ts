@@ -87,8 +87,16 @@ function legendChip(kind: string | undefined): CardElement | undefined {
 
 /* ------------------------------------------------------------------- the body */
 
-/** A page of this site: a path, never another origin. */
-const sitePath = (href: string) => /^\/(?!\/)/.test(href)
+/**
+ * A page of this site: a path that resolves on the site's own origin. A browser reads `\` as `/` and drops a tab or a
+ * newline inside a URL, so `/\evil.test` and `/<tab>/evil.test` are as far from this site as `//evil.test`. The
+ * address is resolved as the browser would, against an origin of no site, and must stay on that origin.
+ */
+const SITE = 'https://reference.invalid'
+function sitePath(href: string): boolean {
+  if (!href.startsWith('/')) return false
+  try { return new URL(href, SITE).origin === SITE } catch { return false }
+}
 
 /**
  * A name in the summary, as prose writes it: its kind's small mark, then the name as a link. The mark is decoration,

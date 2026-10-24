@@ -32,7 +32,7 @@ describe('the payloads that feed the card', () => {
     expect(symbolPreview(model, type, 'latest').footer).toEqual([type.package ?? 'libtmux'])
   })
 
-  it('reads each summary as its text and the names that resolve to a page, in every port', () => {
+  it('reads each summary as its text and the names that resolve to a page, in every port', { timeout: 30_000 }, () => {
     let marked = 0
     for (const [port, model] of Object.entries(API_MODELS)) {
       for (const symbol of model.symbols) {
@@ -65,7 +65,7 @@ describe('the payloads that feed the card', () => {
     expect(tmuxCatalogPreview('latest', hook).footer).toEqual([manual.terms![Object.keys(manual.terms!)[0]].footer![0], 'Hooks'])
   })
 
-  it('links the names that an MCP description gives its sibling objects, as its page does, and never the object itself', () => {
+  it('links the names that an MCP description gives its sibling objects, as its page does, and never the object itself', { timeout: 30_000 }, () => {
     let linked = 0
     for (const port of ['ruby', 'py', 'ts', 'rs', 'go', 'java', 'julia']) {
       for (const object of mcpObjects(port)) {

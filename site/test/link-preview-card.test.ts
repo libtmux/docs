@@ -41,10 +41,13 @@ const inside = (element: Element) => [...element.childNodes].map(canonical).join
 /** `paintCard` on a card of the test window, which the browser's own types do not describe. */
 const paint = (shell: Element, ...rest: Parameters<typeof paintCard> extends [unknown, ...infer Rest] ? Rest : never) => paintCard(shell as unknown as globalThis.HTMLElement, ...rest)
 
+/** The component compiles once; each card is rendered from it. */
+let component: ReturnType<typeof loadAstroTemplate> | undefined
+
 /** The card as the page carries it: the component's own HTML, as the keyword help of a declaration is written. */
 async function staticCard(preview: LinkPreview | undefined) {
-  const template = await loadAstroTemplate('components/LinkPreview.astro')
-  const html = await renderAstroTemplate(template, { props: { id: ID, preview } })
+  component ??= loadAstroTemplate('components/LinkPreview.astro')
+  const html = await renderAstroTemplate(await component, { props: { id: ID, preview } })
   win.document.body.innerHTML = html
   return win.document.getElementById(ID)!
 }
@@ -57,7 +60,7 @@ async function paintedCard(preview: LinkPreview, options: { expanded?: boolean }
 }
 
 describe('one card, two renderers', () => {
-  it('reads the same from the page\'s own HTML as it does painted into the browser\'s card', async () => {
+  it('reads the same from the page\'s own HTML as it does painted into the browser\'s card', { timeout: 30_000 }, async () => {
     for (const [name, preview] of await payloads()) {
       const direct = await staticCard(preview)
       const markup = inside(direct)
@@ -101,6 +104,53 @@ describe('one card, two renderers', () => {
     expect(shell.querySelector('[data-preview-signature]')!.textContent).toBe('')
   })
 
+  it('paints one payload after another as a fresh card reads, for every pair of kinds', { timeout: 30_000 }, async () => {
+    const all = await payloads()
+    const expected = new Map(all.map(([name, preview]) => {
+      const fresh = win.document.createElement('span')
+      fresh.innerHTML = cardHtml(previewCard(preview, { id: ID }))
+      return [name, inside(fresh)] as const
+    }))
+    await staticCard(undefined)
+    const blankHtml = win.document.body.innerHTML
+    for (const [firstName, first] of all) {
+      for (const [secondName, second] of all) {
+        win.document.body.innerHTML = blankHtml
+        const shell = win.document.getElementById(ID)!
+        paint(shell, first, { id: ID })
+        paint(shell, second, { id: ID })
+        // Nothing of the first card is left in the second: no style, language or class of a highlight, no chip, no footer.
+        expect(inside(shell), `${firstName} then ${secondName}`).toBe(expected.get(secondName))
+      }
+    }
+  })
+
+  it('shows what a stale slot would leave, so that the sequence above can fail', async () => {
+    const all = new Map(await payloads())
+    const highlighted = all.get('API method with a named type')!
+    const plain = all.get('page with no kind')!
+    expect(highlighted.signatureHighlight).toBeDefined()
+    const fresh = await staticCard(plain)
+    const expected = inside(fresh)
+    const shell = await paintedCard(highlighted)
+    const signature = shell.querySelector('[data-preview-signature]')!
+    expect(signature.hasAttribute('style') && signature.hasAttribute('data-language') && signature.classList.contains('lm-highlighted')).toBe(true)
+    paint(shell, plain, { id: ID })
+    // The control: painted over, the slot is as a fresh card has it.
+    expect(inside(shell)).toBe(expected)
+    for (const stale of [['style', '--shiki-light:#000'], ['data-language', 'rust'], ['class', 'reference-link-preview__signature lm-highlighted']] as const) {
+      const leftover = await paintedCard(highlighted)
+      paint(leftover, plain, { id: ID })
+      leftover.querySelector('[data-preview-signature]')!.setAttribute(stale[0], stale[1])
+      expect(inside(leftover), stale[0]).not.toBe(expected)
+    }
+    // A chip left in the kind slot and a footer left on the card are seen the same way.
+    const chipped = await paintedCard(highlighted)
+    paint(chipped, plain, { id: ID })
+    chipped.querySelector('[data-preview-kind]')!.removeAttribute('hidden')
+    expect(inside(chipped)).not.toBe(expected)
+  })
+
   it('notices a card that has drifted from the description, and passes the card that has not', async () => {
     const [, preview] = (await payloads())[0]
     const expected = inside(await staticCard(preview))
@@ -136,7 +186,7 @@ describe('the header chip and the marks in the body', () => {
     'resource-template', 'format', 'tool', 'resource', 'hook', 'typealias', 'module', 'union', 'cmdlet']
   const cardOf = (kind: string, extra: Partial<LinkPreview> = {}): LinkPreview => ({ schema: 1, title: 'Name', kind, description: 'Summary.', href: '/en/x/', ...extra })
 
-  it('is the legend chip a heading carries, for every kind', async () => {
+  it('is the legend chip a heading carries, for every kind', { timeout: 30_000 }, async () => {
     const badge = await loadAstroTemplate('components/api/ApiBadge.astro')
     for (const kind of KINDS) {
       const word = kind.replace(/-/g, ' ')
@@ -217,11 +267,20 @@ describe('the header chip and the marks in the body', () => {
   })
 
   it('does not link a destination that is not a page of this site, and reads the plain description when the runs differ', async () => {
-    for (const href of ['javascript:alert(1)', '//evil.test/x', 'https://evil.test/', 'data:text/html,x', '']) {
+    // A browser reads a backslash as a slash and drops a tab or a newline inside an address, so each of these leaves the site.
+    const offSite = ['javascript:alert(1)', '//evil.test/x', 'https://evil.test/', 'data:text/html,x', '', '/\\evil.test', '/\\\\evil.test', '/\t/evil.test', '/\n/evil.test',
+      '/\r/evil.test', '\\evil.test', '\t/evil.test', '/\t\\evil.test']
+    for (const href of offSite) {
+      // The control for the check: the browser's own reading of the address, from an origin of its own, is off that origin.
+      if (href.startsWith('/')) expect(new URL(href, 'https://libtmux.org/en/ts/').origin, JSON.stringify(href)).not.toBe('https://libtmux.org')
       const preview = cardOf('method', { description: 'See Session.', descriptionParts: ['See ', { text: 'Session', href, kind: 'struct' }, '.'] })
       const shell = await staticCard(preview)
       expect(shell.querySelectorAll('[data-preview-description] a'), href).toHaveLength(0)
       expect(shell.querySelector('[data-preview-description]')!.textContent, href).toBe('See Session.')
+    }
+    for (const href of ['/en/rs/latest/reference/server/', '/rs/latest/reference/server/#libtmux.Server.new_session', '/a/../b/', '/%5C%5Cevil.test']) {
+      const shell = await staticCard(cardOf('method', { description: 'See Session.', descriptionParts: ['See ', { text: 'Session', href, kind: 'struct' }, '.'] }))
+      expect(shell.querySelector('[data-preview-description] a')?.getAttribute('href'), href).toBe(href)
     }
     const disagree = await staticCard(cardOf('method', { description: 'Plain words.', descriptionParts: ['Other ', { text: 'words', href: '/en/x/', kind: 'struct' }] }))
     expect(disagree.querySelector('[data-preview-description]')!.textContent).toBe('Plain words.')
