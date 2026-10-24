@@ -67,16 +67,17 @@ of user-written aliases and shell programs a library only forwards.
 ## Optional features
 
 Some operations depend on behavior that only newer releases have, or that a
-particular release gets wrong. A library decides from the daemon's release
-before it dispatches the operation, then either keeps working through another
-path or refuses with an error that names the requirement. Each optional
+particular release gets wrong. A library that gates one decides from the
+daemon's release before it dispatches the operation, then either keeps working
+through another path or refuses with an error that names the requirement. Each optional
 feature is refused on its own and never raises the minimum for anything else.
 
-Each port records these features in a typed capability registry: the release
-each one needs, what the library does on an earlier release, and the API that
-depends on it. The [capability map](/reference/capabilities/) and each port's
-own capability page are generated from those registries, so they name the
-methods involved and change when the code does.
+A port that publishes a typed capability registry records these features in
+it: the release each one needs, what the library does on an earlier release,
+and the API that depends on it. The [capability map](/reference/capabilities/)
+and that port's own capability page are generated from the registries, so they
+name the methods involved and change when the code does. A port that has
+published none is not on the map and makes no promise about these features.
 
 Two details limit what these gates cover. Control mode also needs a tmux
 client that is compatible with the daemon; a client older than the daemon can
