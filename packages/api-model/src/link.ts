@@ -58,10 +58,12 @@ const PY_INTERSPHINX: Record<string, string> = {
   Literal: 'library/typing.html#typing.Literal',
   Optional: 'library/typing.html#typing.Optional',
   Union: 'library/typing.html#typing.Union',
-  Callable: 'library/typing.html#typing.Callable',
-  Iterator: 'library/typing.html#typing.Iterator',
-  Sequence: 'library/typing.html#typing.Sequence',
-  Mapping: 'library/typing.html#typing.Mapping',
+  // The abstract bases live in `collections.abc`; `typing.Mapping` and the rest are its deprecated aliases,
+  // and a name written with `typing.` still reaches them through the inventory.
+  Callable: 'library/collections.abc.html#collections.abc.Callable',
+  Iterator: 'library/collections.abc.html#collections.abc.Iterator',
+  Sequence: 'library/collections.abc.html#collections.abc.Sequence',
+  Mapping: 'library/collections.abc.html#collections.abc.Mapping',
   Path: 'library/pathlib.html#pathlib.Path',
 }
 

@@ -90,7 +90,7 @@ const qualifiedScala = Object.fromEntries([
     [name, `fs2.concurrent.${name}`].map((alias) => [alias, `https://javadoc.io/static/co.fs2/fs2-core_3/3.13.0/fs2/concurrent/${name}.html`])),
 ])
 
-const qualifiedDotnetExceptions = Object.fromEntries([
+const DOTNET_EXCEPTIONS = [
   'System.Exception',
   'System.ArgumentException',
   'System.ArgumentNullException',
@@ -106,7 +106,15 @@ const qualifiedDotnetExceptions = Object.fromEntries([
   'System.Text.RegularExpressions.RegexMatchTimeoutException',
   'System.Text.Json.JsonException',
   'System.Threading.Tasks.TaskCanceledException',
-].flatMap((name) => [name, name.split('.').at(-1)!].map((alias) => [alias, dotnet(name.toLowerCase())])))
+]
+
+/** Each exception by its full name, and by its bare one where `bare` says the language's files have its namespace in scope. */
+const dotnetExceptions = (bare: (namespace: string) => boolean = () => true) => Object.fromEntries(
+  DOTNET_EXCEPTIONS.flatMap((name) => [name, ...(bare(name.slice(0, name.lastIndexOf('.'))) ? [name.split('.').at(-1)!] : [])].map((alias) => [alias, dotnet(name.toLowerCase())])),
+)
+
+/** What the F# port's files open (the extracted model's `namespaceImports`): F# opens nothing from `System` itself. */
+const FSHARP_OPENED = new Set(['System', 'System.Threading.Tasks'])
 
 const elixirDocs = (page: string) => `https://elixir.hexdocs.pm/${page}`
 
@@ -223,7 +231,7 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     Resource: 'https://typelevel.org/cats-effect/api/3.x/cats/effect/kernel/Resource.html',
   },
   fsharp: {
-    ...qualifiedDotnetExceptions,
+    ...dotnetExceptions((namespace) => FSHARP_OPENED.has(namespace)),
     Result: fsharp('fsharp-core-fsharpresult-2'),
     option: fsharp('fsharp-core-option-1'),
     list: fsharp('fsharp-collections-list-1'),
@@ -244,7 +252,7 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     'Task.WhenAll': dotnet('system.threading.tasks.task.whenall'),
   },
   csharp: {
-    ...qualifiedDotnetExceptions,
+    ...dotnetExceptions(),
     bool: dotnet('system.boolean'),
     Boolean: dotnet('system.boolean'),
     string: dotnet('system.string'),

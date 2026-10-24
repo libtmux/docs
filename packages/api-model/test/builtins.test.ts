@@ -311,14 +311,20 @@ describe('.NET exception references in F# and C#', () => {
     ['System.Threading.Tasks.TaskCanceledException', 'system.threading.tasks.taskcanceledexception'],
   ] as const
 
+  // The F# port's files open System and System.Threading.Tasks (the model's `namespaceImports`), so only those exceptions are
+  // written bare there; an exception of a namespace no file opens is linked by its full name.
+  const fsharpOpened = new Set(['System', 'System.Threading.Tasks'])
+
   it.each(['fsharp', 'csharp'])('links verified qualified and imported exception names in %s', (port) => {
     const index = new SymbolIndex([], () => '#', port)
     for (const [qualified, page] of exceptions) {
-      for (const name of [qualified, qualified.split('.').at(-1)!]) {
+      const bare = port === 'csharp' || fsharpOpened.has(qualified.slice(0, qualified.lastIndexOf('.')))
+      for (const name of bare ? [qualified, qualified.split('.').at(-1)!] : [qualified]) {
         const href = `https://learn.microsoft.com/dotnet/api/${page}`
         expect(builtinHref(port, name), `${port}:${name}`).toBe(href)
         expect(index.linkType(name)).toEqual([{ text: name, link: { href, external: true } }])
       }
+      if (!bare) expect(builtinHref(port, qualified.split('.').at(-1)!), `${port}:${qualified} bare`).toBeUndefined()
     }
   })
 
