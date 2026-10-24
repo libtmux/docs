@@ -15,9 +15,10 @@ import { qualifiedNameOf, type ApiSymbol } from '@libtmux/api-model'
  * - TypeScript names a member by its owner: `Client.session`. The id begins with the file the symbol is written in
  *   (`client`), which a reader never writes; the file is the Module row of the page.
  *
- * `nativeShortName` is the short form the page heading and a hover card use: the owner and the member in the
- * language's separator (`ControlSender::unmute_pane`, `Server#new_session`, `Buffer:reference`, `Capture.fetch/2`), and
- * the bare name for a declaration with no owner. The full name is the page's Qualified name row.
+ * `nativeShortName` is the short form a hover card uses for its header: the owner and the member in the language's
+ * separator (`ControlSender::unmute_pane`, `Server#new_session`, `Buffer:reference`, `Capture.fetch/2`), and the bare name
+ * for a declaration with no owner. The full name is the page's Qualified name row. The page heading still joins the owner
+ * and the member with a dot in every port, so for Rust, C++, Ruby, Lua and PowerShell it differs from the card's header.
  *
  * This is for display. The public id, the anchors and the URLs stay as the model has them.
  */
@@ -50,15 +51,29 @@ function outermost(symbols: readonly ApiSymbol[], symbol: ApiSymbol): ApiSymbol 
   return top
 }
 
+/** The crate a Rust symbol is written in: a package name uses hyphens where the crate that it builds does not. */
+const rustCrate = (symbol: ApiSymbol) => /^crates\/([^/]+)\/src\//.exec(symbol.source?.file ?? '')?.[1]?.replace(/-/g, '_')
+
+/** A tuple field is named by position, which a path cannot hold: rustdoc writes `Window.0`, and so does this. */
+const tupleField = (name: string) => /^\d+$/.test(name)
+
+/**
+ * The package a symbol is declared in, where the model does not say: the crate of a Rust symbol, so that a symbol of
+ * `tmux_mcp` is not credited to `libtmux`. Any other port names the package of a symbol in the symbol itself, or
+ * has one for the whole port.
+ */
+export function nativePackageName(model: { port?: string } | undefined, symbol: ApiSymbol): string | undefined {
+  return symbol.package ?? (model?.port === 'rs' ? rustCrate(symbol) : undefined)
+}
+
 function rustName(model: { symbols: readonly ApiSymbol[] }, symbol: ApiSymbol, id: string): string {
   const file = symbol.source?.file ?? ''
-  // A package name uses hyphens where the crate that it builds does not.
-  const crate = /^crates\/([^/]+)\/src\//.exec(file)?.[1]?.replace(/-/g, '_')
+  const crate = rustCrate(symbol)
   const path = id.split('.')
   if (symbol.product && symbol.product !== 'core' && path[0] === symbol.product) path.shift()
   // A member can be written in another file than its type, so the root is told by the file of the outermost declaration.
   if (path[0] === 'src' && /\/(?:lib|main)\.rs$/.test(outermost(model.symbols, symbol).source?.file ?? file)) path.shift()
-  return [crate, ...path].filter(Boolean).join('::')
+  return [crate, ...path].filter((segment): segment is string => !!segment).reduce((name, segment) => tupleField(segment) ? `${name}.${segment}` : name ? `${name}::${segment}` : segment, '')
 }
 
 function typescriptName(model: { symbols: readonly ApiSymbol[] }, symbol: ApiSymbol, id: string): string {
@@ -70,14 +85,14 @@ function typescriptName(model: { symbols: readonly ApiSymbol[] }, symbol: ApiSym
 }
 
 /**
- * The owner and the member, as the page heading names them, in the separator the language writes between them. The id
+ * The owner and the member, in the separator the language writes between them. The id
  * carries that separator (Ruby `#` for an instance method and `.` for a singleton one, Lua `:`, C++ `::`); Rust's id
  * uses dots where the language writes `::`.
  */
 export function nativeShortName(model: { port?: string; symbols: readonly ApiSymbol[] } | undefined, symbol: ApiSymbol): string {
   const owner = model && symbol.parent ? symbolTable(model.symbols).get(symbol.parent) : undefined
   if (!owner) return symbol.name
-  if (model?.port === 'rs') return `${owner.name}::${symbol.name}`
+  if (model?.port === 'rs') return `${owner.name}${tupleField(symbol.name) ? '.' : '::'}${symbol.name}`
   const id = qualifiedNameOf(symbol), ownerId = qualifiedNameOf(owner)
   // Swift writes a member's labels in its name and fewer of them in its id, so the id is not always the owner and the name.
   const fits = id.startsWith(ownerId) && id.endsWith(symbol.name) && id.length > ownerId.length + symbol.name.length

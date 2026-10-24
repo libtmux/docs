@@ -2,14 +2,14 @@ import { describe, expect, it } from 'vitest'
 import { qualifiedNameOf, type ApiSymbol } from '@libtmux/api-model'
 import { API_MODELS } from '../src/lib/api-models'
 import { symbolPreview } from '../src/lib/link-preview'
-import { nativeQualifiedName, nativeShortName } from '../src/lib/native-name'
+import { nativePackageName, nativeQualifiedName, nativeShortName } from '../src/lib/native-name'
 import { productApiHref } from '../src/lib/product-api'
 
 /**
  * The page's Qualified name row says a declaration the way the language writes it, in full: Rust spells a path with `::`
  * from its crate and TypeScript names a member by its owner, and every other port already keeps its own spelling in the
- * public id, which must stay as it was. A card's header says it in short, as the page heading does: the owner and the
- * member in the language's separator.
+ * public id, which must stay as it was. A card's header says it in short: the owner and the member in the language's
+ * separator. The page heading still joins them with a dot in every port.
  */
 const symbolNamed = (port: string, id: string) => {
   const symbol = API_MODELS[port].symbols.find((entry) => (entry.publicId ?? entry.id) === id)
@@ -21,10 +21,13 @@ const name = (port: string, id: string) => nativeQualifiedName(API_MODELS[port],
 /** What is wrong with a Rust display name, so that a control can show the check is able to fail. */
 function rustProblems(symbol: ApiSymbol, shown: string): string[] {
   const problems: string[] = []
-  if (/\./.test(shown)) problems.push('has a dot where a path has `::`')
+  // A tuple field is named by its position, which a path cannot hold; rustdoc writes it after a dot.
+  const tuple = /^\d+$/.test(symbol.name)
+  if (/\./.test(tuple ? shown.replace(/\.\d+$/, '') : shown)) problems.push('has a dot where a path has `::`')
   if (!/^[a-z][a-z0-9_]*::/.test(shown)) problems.push('does not begin at its crate')
-  if (!shown.endsWith(`::${symbol.name}`)) problems.push('does not end with its own name')
+  if (!shown.endsWith(`${tuple ? '.' : '::'}${symbol.name}`)) problems.push('does not end with its own name')
   if (/^[a-z_]+::(?:src|mcp)(?:::|$)/.test(shown)) problems.push('keeps the extractor\'s marker for the crate root or the product')
+  if (/::\d+$/.test(shown)) problems.push('writes a tuple field as a path')
   return problems
 }
 
@@ -59,6 +62,43 @@ describe('Rust names', () => {
     const symbol = symbolNamed('rs', 'control.ControlSender.unmute_pane')
     expect(rustProblems(symbol, nativeQualifiedName(API_MODELS.rs, symbol))).toEqual([])
     expect(rustProblems(symbol, qualifiedNameOf(symbol))).toEqual(['has a dot where a path has `::`', 'does not begin at its crate', 'does not end with its own name'])
+  })
+})
+
+describe('Rust tuple fields', () => {
+  const tuples = API_MODELS.rs.symbols.filter((symbol) => /^\d+$/.test(symbol.name))
+
+  it('are named as rustdoc names them, after a dot, in the full name and in the short one', () => {
+    expect(tuples.length).toBeGreaterThan(0)
+    const field = symbolNamed('rs', 'error.scoped.ScopeError.Creation.0')
+    expect(nativeQualifiedName(API_MODELS.rs, field)).toBe('libtmux::error::scoped::ScopeError::Creation.0')
+    expect(nativeShortName(API_MODELS.rs, field)).toBe('Creation.0')
+    for (const symbol of tuples) {
+      expect(nativeShortName(API_MODELS.rs, symbol), symbol.id).toMatch(/^\w+\.\d+$/)
+      expect(nativeQualifiedName(API_MODELS.rs, symbol), symbol.id).not.toMatch(/::\d+$/)
+    }
+  })
+
+  it('has a control: written as a path, a tuple field fails the check', () => {
+    const field = symbolNamed('rs', 'error.scoped.ScopeError.Creation.0')
+    expect(rustProblems(field, nativeQualifiedName(API_MODELS.rs, field))).toEqual([])
+    expect(rustProblems(field, 'libtmux::error::scoped::ScopeError::Creation::0')).toEqual(['does not end with its own name', 'writes a tuple field as a path'])
+  })
+})
+
+describe('the package a symbol is declared in', () => {
+  it('is the crate for a Rust symbol, which the Qualified name row names first', () => {
+    expect(nativePackageName(API_MODELS.rs, symbolNamed('rs', 'server.Server.new_session'))).toBe('libtmux')
+    expect(nativePackageName(API_MODELS.rs, symbolNamed('rs', 'config.ConfigError'))).toBe('tmux_workspace')
+    expect(nativePackageName(API_MODELS.rs, symbolNamed('rs', 'mcp.src.TmuxTools.new'))).toBe('tmux_mcp')
+    for (const symbol of API_MODELS.rs.symbols) {
+      expect(nativeQualifiedName(API_MODELS.rs, symbol).startsWith(`${nativePackageName(API_MODELS.rs, symbol)}::`), symbol.id).toBe(true)
+    }
+  })
+
+  it('is what the model says for every other port, and nothing otherwise', () => {
+    expect(nativePackageName(API_MODELS.powershell, symbolNamed('powershell', 'LibTmux\\Connect-TmuxControl'))).toBe('LibTmux')
+    expect(nativePackageName(API_MODELS.py, API_MODELS.py.symbols[0])).toBeUndefined()
   })
 })
 
@@ -151,7 +191,7 @@ describe('short names', () => {
     expect(shortName(port, id)).toBe(expected)
   })
 
-  it('keeps Swift\'s labels, as the page heading does', () => {
+  it('keeps Swift\'s labels, which its name carries', () => {
     const symbol = API_MODELS.swift.symbols.find((entry) => entry.name.startsWith('newSession(named:'))!
     expect(nativeShortName(API_MODELS.swift, symbol)).toBe(`Server.${symbol.name}`)
   })
@@ -166,7 +206,9 @@ describe('short names', () => {
         if (!owner) { expect(shown, `${port} ${symbol.id}`).toBe(symbol.name); continue }
         expect(shown.startsWith(owner.name) && shown.endsWith(symbol.name), `${port} ${symbol.id}`).toBe(true)
         const separator = shown.slice(owner.name.length, shown.length - symbol.name.length)
-        expect(separators[port] ?? ['.'], `${port} ${symbol.id}`).toContain(separator)
+        // A Rust tuple field follows its owner with a dot, as rustdoc writes it; every other Rust member with `::`.
+        const allowed = port === 'rs' && /^\d+$/.test(symbol.name) ? ['.'] : separators[port] ?? ['.']
+        expect(allowed, `${port} ${symbol.id}`).toContain(separator)
       }
     }
   })
