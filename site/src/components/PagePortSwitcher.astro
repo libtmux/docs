@@ -1,6 +1,7 @@
 ---
 import type { PagePortLink } from '../lib/page-port-links'
 import { PORT_BY_SLUG } from '../lib/ports'
+import { portFamilies } from '../lib/port-families'
 import { branding } from '../lib/branding'
 import { withRoot, withPortRoot } from '../lib/site-root'
 import TmuxLogo from './tmux/Logo.astro'
@@ -20,14 +21,7 @@ const { entries, portSlug, label, tmux = false, homeLanguageIcons = false, reser
 const current = entries.find((entry) => entry.port === portSlug)
 const name = tmux ? 'tmux CLI' : current?.name ?? PORT_BY_SLUG[portSlug ?? '']?.name ?? 'In other ports'
 const shortName = tmux ? 'tmux' : PORT_BY_SLUG[portSlug ?? '']?.shortName ?? name
-const families = [
-  { label: 'Scripting & web', ports: ['py', 'ruby', 'lua', 'julia', 'elixir', 'ts'] },
-  { label: 'Compiled & native', ports: ['rs', 'go', 'cxx', 'swift'] },
-  { label: 'JVM', ports: ['java', 'kotlin', 'scala'] },
-  { label: '.NET', ports: ['csharp', 'fsharp', 'powershell'] },
-]
-const known = new Set(families.flatMap((family) => family.ports))
-families.push({ label: 'Other languages', ports: entries.filter((entry) => !known.has(entry.port)).map((entry) => entry.port) })
+const families = portFamilies(entries.map((entry) => entry.port))
 ---
 <details class="doc-picker" data-page-port-switcher data-doc-picker>
   <summary aria-label={label ?? `${name}: choose a language or tmux documentation`} data-reserve-label-width={reserveLabelWidth || undefined}>
