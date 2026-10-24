@@ -2,13 +2,14 @@ import { describe, expect, it } from 'vitest'
 import { qualifiedNameOf, type ApiSymbol } from '@libtmux/api-model'
 import { API_MODELS } from '../src/lib/api-models'
 import { symbolPreview } from '../src/lib/link-preview'
-import { nativeQualifiedName } from '../src/lib/native-name'
+import { nativeQualifiedName, nativeShortName } from '../src/lib/native-name'
 import { productApiHref } from '../src/lib/product-api'
 
 /**
- * A card's header and the page's Qualified name row say a declaration the way the language writes it. Rust spells a path
- * with `::` from its crate and TypeScript names a member by its owner; every other port already keeps its own spelling in
- * the public id, which must stay as it was.
+ * The page's Qualified name row says a declaration the way the language writes it, in full: Rust spells a path with `::`
+ * from its crate and TypeScript names a member by its owner, and every other port already keeps its own spelling in the
+ * public id, which must stay as it was. A card's header says it in short, as the page heading does: the owner and the
+ * member in the language's separator.
  */
 const symbolNamed = (port: string, id: string) => {
   const symbol = API_MODELS[port].symbols.find((entry) => (entry.publicId ?? entry.id) === id)
@@ -110,13 +111,91 @@ describe('the other ports', () => {
   })
 })
 
+const shortName = (port: string, id: string) => nativeShortName(API_MODELS[port], symbolNamed(port, id))
+
+describe('short names', () => {
+  it('name a Rust member by its owner with `::`, and a declaration with no owner by itself', () => {
+    expect(shortName('rs', 'server.Server.new_session')).toBe('Server::new_session')
+    expect(shortName('rs', 'control.ControlSender.unmute_pane')).toBe('ControlSender::unmute_pane')
+    expect(shortName('rs', 'config.ConfigError')).toBe('ConfigError')
+    expect(shortName('rs', 'mcp.src.TmuxTools.new')).toBe('TmuxTools::new')
+    expect(shortName('rs', 'error.scoped.ScopeError.Creation')).toBe('ScopeError::Creation')
+  })
+
+  it('name a TypeScript member by its owner', () => {
+    expect(shortName('ts', 'server.Server.newSession')).toBe('Server.newSession')
+    expect(shortName('ts', 'client.Client.session')).toBe('Client.session')
+    expect(shortName('ts', 'errors.TmuxTransportError.#stderr')).toBe('TmuxTransportError.#stderr')
+    expect(shortName('ts', 'common.isSafeInteger')).toBe('isSafeInteger')
+  })
+
+  it.each([
+    ['cxx', 'libtmux::Server::new_session', 'Server::new_session'],
+    ['cxx', 'libtmux::AttachCommand', 'AttachCommand'],
+    ['ruby', 'LibTmux::Server#new_session', 'Server#new_session'],
+    ['ruby', 'LibTmux::Async.open', 'Async.open'],
+    ['ruby', 'LibTmux::Async::ControlConnection', 'Async::ControlConnection'],
+    ['lua', 'libtmux.Server:new_session', 'Server:new_session'],
+    ['lua', 'libtmux.BreakPaneOptions.name', 'BreakPaneOptions.name'],
+    ['go', 'tmux.Server.NewSession', 'Server.NewSession'],
+    ['elixir', 'LibTmux.Capture.fetch/2', 'Capture.fetch/2'],
+    ['powershell', 'LibTmux\\Connect-TmuxControl', 'LibTmux\\Connect-TmuxControl'],
+    ['py', 'libtmux.Server.new_session', 'Server.new_session'],
+    ['py', 'libtmux._internal.env.resolve_env', 'resolve_env'],
+    ['java', 'io.github.libtmux.Server.Server.newSession', 'Server.newSession'],
+    ['kotlin', 'io.github.libtmux.kotlin.Server.newSession', 'Server.newSession'],
+    ['csharp', 'LibTmux.TmuxBuffers.SetAsync', 'TmuxBuffers.SetAsync'],
+    ['julia', 'LibTmux.BatchResult.operations', 'BatchResult.operations'],
+    ['julia', 'LibTmux.cancel!', 'cancel!'],
+  ] as const)('keeps the separator %s writes: %s -> %s', (port, id, expected) => {
+    expect(shortName(port, id)).toBe(expected)
+  })
+
+  it('keeps Swift\'s labels, as the page heading does', () => {
+    const symbol = API_MODELS.swift.symbols.find((entry) => entry.name.startsWith('newSession(named:'))!
+    expect(nativeShortName(API_MODELS.swift, symbol)).toBe(`Server.${symbol.name}`)
+  })
+
+  it('are the owner, a separator that the language writes, and the member, for every symbol of every port', { timeout: 30_000 }, () => {
+    const separators: Record<string, string[]> = { rs: ['::'], cxx: ['::'], ruby: ['::', '.', '#'], lua: ['.', ':'], powershell: ['\\'] }
+    for (const [port, model] of Object.entries(API_MODELS)) {
+      const owners = new Map(model.symbols.map((symbol) => [symbol.id, symbol]))
+      for (const symbol of model.symbols) {
+        const shown = nativeShortName(model, symbol)
+        const owner = symbol.parent ? owners.get(symbol.parent) : undefined
+        if (!owner) { expect(shown, `${port} ${symbol.id}`).toBe(symbol.name); continue }
+        expect(shown.startsWith(owner.name) && shown.endsWith(symbol.name), `${port} ${symbol.id}`).toBe(true)
+        const separator = shown.slice(owner.name.length, shown.length - symbol.name.length)
+        expect(separators[port] ?? ['.'], `${port} ${symbol.id}`).toContain(separator)
+      }
+    }
+  })
+
+  it('are the end of the full name wherever the id ends with the name, so the card is the page\'s name without its path', { timeout: 30_000 }, () => {
+    for (const [port, model] of Object.entries(API_MODELS)) {
+      for (const symbol of model.symbols) {
+        if (!qualifiedNameOf(symbol).endsWith(symbol.name)) continue
+        expect(nativeQualifiedName(model, symbol).endsWith(nativeShortName(model, symbol)), `${port} ${symbol.id}`).toBe(true)
+      }
+    }
+  })
+
+  it('has a control: a full name is longer than its short form wherever the declaration has a path', () => {
+    const symbol = symbolNamed('rs', 'control.ControlSender.unmute_pane')
+    expect(nativeQualifiedName(API_MODELS.rs, symbol)).toBe('libtmux::control::ControlSender::unmute_pane')
+    expect(nativeShortName(API_MODELS.rs, symbol)).toBe('ControlSender::unmute_pane')
+    expect(nativeShortName(API_MODELS.rs, symbol).length).toBeLessThan(nativeQualifiedName(API_MODELS.rs, symbol).length)
+  })
+})
+
 describe('where the name is used', () => {
-  it('heads the card of a Rust or TypeScript symbol, and every other card as before', () => {
-    expect(symbolPreview(API_MODELS.rs, symbolNamed('rs', 'control.ControlSender.unmute_pane'), 'latest').title).toBe('libtmux::control::ControlSender::unmute_pane')
+  it('heads the card in short and leaves the full name to the page row', () => {
+    expect(symbolPreview(API_MODELS.rs, symbolNamed('rs', 'server.Server.new_session'), 'latest').title).toBe('Server::new_session')
+    expect(symbolPreview(API_MODELS.rs, symbolNamed('rs', 'control.ControlSender.unmute_pane'), 'latest').title).toBe('ControlSender::unmute_pane')
     expect(symbolPreview(API_MODELS.ts, symbolNamed('ts', 'client.Client.session'), 'latest').title).toBe('Client.session')
-    for (const port of ['py', 'go', 'cxx', 'ruby', 'lua']) {
-      const symbol = API_MODELS[port].symbols[0]
-      expect(symbolPreview(API_MODELS[port], symbol, 'latest').title, port).toBe(qualifiedNameOf(symbol))
+    for (const [port, model] of Object.entries(API_MODELS)) {
+      const symbol = model.symbols.find((entry) => entry.parent) ?? model.symbols[0]
+      expect(symbolPreview(model, symbol, 'latest').title, port).toBe(nativeShortName(model, symbol))
     }
   })
 

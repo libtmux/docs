@@ -40,7 +40,7 @@ it('uses authored, native descriptions and signatures without reconstructing lan
   const julia = API_MODELS.julia
   const symbol = julia.symbols.find((entry) => entry.id === 'LibTmux.from_env')!
   const result = symbolPreview(julia, symbol, 'latest')
-  expect(result.title).toBe('LibTmux.from_env')
+  expect(result.title).toBe('from_env')
   expect(result.description).toContain('without contacting tmux')
   expect(result.signature).toBe(symbol.signatures[0].raw)
   expect(result.href).toMatch(/\/julia\/latest\/reference\/libtmux-from_env\/$/)

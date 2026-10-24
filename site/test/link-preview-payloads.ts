@@ -10,7 +10,8 @@ import { tmuxCatalogPreview } from '../src/lib/tmux-catalog-preview'
 export async function cardPayloads(): Promise<[string, LinkPreview][]> {
   const rs = API_MODELS.rs
   const referenced = (model: typeof rs, kind?: string) => model.symbols.find((symbol) => (!kind || symbol.kind === kind) && symbolPreview(model, symbol, 'latest').descriptionParts)!
-  const long = API_MODELS.java.symbols.find((symbol) => symbol.id.length > 70 && symbol.signatures[0]?.raw)!
+  // A header is the owner and the member, so a name is long only where the member carries its labels, as Swift's do.
+  const long = API_MODELS.swift.symbols.find((symbol) => symbol.parent && symbol.name.length > 60)!
   const glossary = glossaryPreview(API_GLOSSARY_PATH)
   const manual = tmuxManualPreview('latest', 'full')
   const object = (kind: string) => {
@@ -24,7 +25,7 @@ export async function cardPayloads(): Promise<[string, LinkPreview][]> {
   return Promise.all(([
     ['API method with a named type', symbolPreview(rs, referenced(rs, 'method'), 'latest')],
     ['API declaration without references', symbolPreview(API_MODELS.cxx, API_MODELS.cxx.symbols.find((symbol) => symbol.kind === 'class')!, 'latest')],
-    ['API name long enough to abbreviate', symbolPreview(API_MODELS.java, long, 'latest')],
+    ['API name long enough to abbreviate', symbolPreview(API_MODELS.swift, long, 'latest')],
     ['glossary page', glossary],
     ['glossary term that is a kind', glossary.terms!.struct],
     ['glossary term that is not a kind', glossary.terms!.inherited],
