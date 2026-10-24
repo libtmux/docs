@@ -1,12 +1,12 @@
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { scanSource } from '../../scripts/lib/tmux-usage-scan.mjs'
+import { GRAMMARS, scanSource } from '../../scripts/lib/tmux-usage-scan.mjs'
 import { MAX_SHARED_BY, applyConditions, applyExclusions, builtSites, callTargets, classify, conditionProblem, definitionsOf, deriveUsage, partialProblems, ruleHolds, verifyClaims } from '../../scripts/lib/tmux-usage-derive.mjs'
 import { auditEvidence } from '../../scripts/lib/tmux-usage-audit.mjs'
 import { chainProblems, dispatcherProblems, guardProblems } from '../../scripts/lib/tmux-usage-dispatch.mjs'
 import { forwardUsage } from '../../scripts/lib/tmux-usage-forward.mjs'
 import { carriesCommand, memberWords, selects, settleCandidates, sweepCandidates } from '../../scripts/lib/tmux-usage-sweep.mjs'
-import { scanFSharp, scanJulia } from '../../scripts/lib/tmux-usage-lexical.mjs'
+import { scanElixir, scanFSharp, scanJulia, tokenizeElixir } from '../../scripts/lib/tmux-usage-lexical.mjs'
 import { guardFlag, libraryScopes, scopeProblems } from '../../scripts/lib/tmux-usage-scopes.mjs'
 
 type Forwarded = { symbol: string; command: string; scope: string | null; evidence: string[]; hops: number; via: { port: string; symbol: string; evidence: string[]; reviewed?: boolean } }
@@ -1686,5 +1686,108 @@ describe('reading back the lines an entry cites', () => {
       expect(run('Core.java:1').filter((problem: string) => /Operation/.test(problem))).toEqual([])
       expect(run('Core.java:2').join('\n')).toMatch(/Core.java:2 is not the @Operation annotation of the core method/)
     })
+  })
+})
+
+describe('reading Elixir by its text', () => {
+  const commands = new Set(['list-panes', 'list-windows'])
+  const elixir = (text: string, dispatch?: string[]) => scanElixir(text, { commands, known: commands, dispatch: dispatch && new Set(dispatch) }) as unknown as {
+    functions: (Scanned & { nameLine: number; callList: { name: string; receiver?: string; line: number }[] })[]
+    types: { name: string; start: number; end: number }[]
+  }
+
+  it('finds a function by its do block or its keyword body, with the module around it and the docs above it', () => {
+    const text = [
+      'defmodule Demo.Capture do',
+      '  @moduledoc false',
+      '',
+      '  @doc """',
+      '  Reads the panes.',
+      '',
+      '  A blank line inside the doc does not end it.',
+      '  """',
+      '  @spec fetch(term()) :: term()',
+      '  def fetch(server) do',
+      '    if server, do: rows(server, "list-panes", ["-a"])',
+      '  end',
+      '',
+      '  defp rows(server, command, arguments),',
+      '    do: read(server, command, arguments)',
+      '',
+      '  defp read(_, _, _), do: :ok',
+      '',
+      '  @doc "Alone."',
+      '',
+      '  def lone(x), do: x',
+      'end',
+      '',
+    ].join('\n')
+    const { functions, types } = elixir(text, ['rows'])
+    const byName = Object.fromEntries(functions.map((fn) => [fn.name, fn]))
+    expect(types).toEqual([{ name: 'Capture', start: 1, end: 22 }])
+    // The API model puts a function at the line of its first doc, so the doc is part of the function.
+    expect([byName.fetch.start, byName.fetch.nameLine, byName.fetch.end, byName.fetch.owner]).toEqual([4, 10, 12, 'Capture'])
+    expect([byName.rows.start, byName.rows.end]).toEqual([14, 15])
+    expect(byName.read).toMatchObject({ start: 17, end: 17 })
+    // A doc with a blank line between it and the function belongs to nothing.
+    expect(byName.lone).toMatchObject({ start: 21, nameLine: 21 })
+    expect(byName.fetch.sites).toEqual([{ command: 'list-panes', line: 11, flags: 'a', dispatch: { line: 11, name: 'rows' } }])
+    expect([...byName.rows.calls.keys()]).toEqual(['read'])
+  })
+
+  it('reads a call by the alias before its dot, and a command no declared call is handed as named and not sent', () => {
+    const text = [
+      'defmodule Demo.Server do',
+      '  def snapshot(server), do: Capture.fetch(server)',
+      '',
+      '  def name(command) do',
+      '    case command do',
+      '      "list-panes" -> :panes',
+      '      _ -> Command.new("list-windows", [])',
+      '    end',
+      '  end',
+      'end',
+      '',
+    ].join('\n')
+    const { functions } = elixir(text, ['run'])
+    const byName = Object.fromEntries(functions.map((fn) => [fn.name, fn]))
+    expect(byName.snapshot.callList).toEqual([{ name: 'fetch', receiver: 'capture', line: 2, calleeLine: 2 }])
+    expect(byName.name.sites.map((site) => [site.command, (site as { dispatch?: unknown }).dispatch])).toEqual([['list-panes', null], ['list-windows', null]])
+    expect((byName.name.sites[0] as { why?: string }).why).toMatch(/case label/)
+  })
+
+  it('steps over strings, interpolation, heredocs, sigils and comments, so a command in none of them is a send', () => {
+    const text = [
+      'defmodule Demo do',
+      '  def one(x) do',
+      '    # list-panes in a comment',
+      '    note = "run list-panes #{inspect("list-windows")} now"',
+      '    pattern = ~r/list-panes/',
+      '    format = ~S"#{pid}"',
+      '    run(x, "list-panes", ["-t", ?"])',
+      '  end',
+      '',
+      '  def ready?(x), do: x',
+      'end',
+      '',
+    ].join('\n')
+    const { functions } = elixir(text, ['run'])
+    const one = functions.find((fn) => fn.name === 'one')!
+    expect(one.sites).toEqual([{ command: 'list-panes', line: 7, flags: 't', dispatch: { line: 7, name: 'run' } }])
+    expect(functions.find((fn) => fn.name === 'ready?')).toMatchObject({ start: 10, end: 10 })
+    expect(tokenizeElixir('~S"#{pid}"').map((token) => [token.t, token.v])).toEqual([['str', '#{pid}']])
+    expect(tokenizeElixir('~r/x/i y').map((token) => token.t)).toEqual(['sigil', 'id'])
+  })
+})
+
+describe('the ports whose source is read', () => {
+  const unread = (slugs: string[], grammars: Record<string, string>) => slugs.filter((slug) => !grammars[slug])
+
+  it('has a grammar for every port with an API model, so one added later is not scanned as empty', () => {
+    const slugs = readdirSync(new URL('../src/data/api', import.meta.url)).filter((name) => /^[a-z]+\.json$/.test(name)).map((name) => name.replace(/\.json$/, ''))
+    expect(slugs).toContain('elixir')
+    expect(unread(slugs, GRAMMARS)).toEqual([])
+    // The control: a port the table lacks is the one named.
+    expect(unread([...slugs, 'newport'], GRAMMARS)).toEqual(['newport'])
   })
 })

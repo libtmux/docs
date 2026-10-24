@@ -31,6 +31,7 @@ export const TRANSPORT = {
   csharp: { pattern: /\bprocess\.Start\(\)|StandardInput\.WriteLineAsync/, files: /(?:TmuxProcessTransport|SystemControlModeProcess)\.cs$/ },
   cxx: { pattern: /::posix_spawnp?\(|::write\(/, files: /(?:posix_child|connection|process)\.cpp$/ },
   swift: { pattern: /Subprocess\.run\(|Glibc\.write\(/, files: /Sources\/LibTmux\/(?:Transport|ControlMode|NonblockingLineWriter)\.swift$/ },
+  elixir: { pattern: /\bsend_port\(/, files: /transport\/oneshot\.ex$/ },
 }
 
 const CONSTRUCTOR = /^(?:__init__|constructor|init|new|initialize)$/

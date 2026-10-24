@@ -1,5 +1,5 @@
 /**
- * Read the source of the two languages that have no tree-sitter grammar here, Julia and F#, by their
+ * Read the source of the three languages that have no tree-sitter grammar here, Julia, F# and Elixir, by their
  * text: comments and strings are stepped over, a function is the lines an offside rule or an `end`
  * gives it, and a call is a name written against its brackets. The result has the shape of a grammar
  * scan, so the same derivation reads it.
@@ -326,6 +326,238 @@ export function scanJulia(text, { commands, known, dispatch }) {
     delete fn.sends
   }
   return { functions, types: [], orphans: [] }
+}
+
+const CLOSING = { '"': '"', "'": "'", '/': '/', '|': '|', '(': ')', '[': ']', '{': '}', '<': '>' }
+
+/**
+ * Words, strings and sigils of Elixir source, with comments dropped. A string keeps its interpolation as text,
+ * a heredoc is marked `doc`, and a sigil other than `~s` or `~S` is a `sigil` and never a string.
+ * @returns {{ t: 'str' | 'chars' | 'sigil' | 'id' | 'num' | 'sym', v: string, line: number, col: number, doc?: boolean }[]}
+ */
+export function tokenizeElixir(text) {
+  const tokens = []
+  let line = 1
+  let col = 0
+  let index = 0
+  const step = (count = 1) => {
+    for (let n = 0; n < count; n++) {
+      if (text[index] === '\n') { line++; col = 0 } else col++
+      index++
+    }
+  }
+  /** Step over `#{ ... }`, whose code may hold strings and braces of its own. */
+  const interpolation = () => {
+    step(2)
+    let depth = 1
+    while (index < text.length && depth) {
+      const here = text[index]
+      if (here === '"') { step(); readQuoted('"', true) }
+      else if (here === '{') { depth++; step() }
+      else if (here === '}') { depth--; step() }
+      else step()
+    }
+  }
+  /** The text after an opening delimiter, up to the closing one; the closer is stepped over. */
+  const readQuoted = (close, interpolate, escapes = true) => {
+    let value = ''
+    while (index < text.length && !text.startsWith(close, index)) {
+      if (escapes && text[index] === '\\') { value += text.slice(index, index + 2); step(2); continue }
+      if (interpolate && text.startsWith('#{', index)) {
+        const from = index
+        interpolation()
+        value += text.slice(from, index)
+        continue
+      }
+      value += text[index]
+      step()
+    }
+    step(close.length)
+    return value
+  }
+  while (index < text.length) {
+    const here = text[index]
+    const start = { line, col }
+    if (here === '#') { while (index < text.length && text[index] !== '\n') step(); continue }
+    if (/\s/.test(here)) { step(); continue }
+    if (text.startsWith('"""', index) || text.startsWith("'''", index)) {
+      const quote = text.slice(index, index + 3)
+      step(3)
+      tokens.push({ t: quote[0] === '"' ? 'str' : 'chars', v: readQuoted(quote, true), ...start, doc: true })
+      continue
+    }
+    if (here === '"') { step(); tokens.push({ t: 'str', v: readQuoted('"', true), ...start }); continue }
+    if (here === "'") { step(); tokens.push({ t: 'chars', v: readQuoted("'", true), ...start }); continue }
+    if (here === '~' && /[A-Za-z]/.test(text[index + 1] ?? '') && CLOSING[text[index + 2]]) {
+      const letter = text[index + 1]
+      const heredoc = text.startsWith('"""', index + 2) || text.startsWith("'''", index + 2)
+      const close = heredoc ? text.slice(index + 2, index + 5) : CLOSING[text[index + 2]]
+      step(heredoc ? 5 : 3)
+      const lower = letter === letter.toLowerCase()
+      const value = readQuoted(close, lower, lower)
+      while (/[a-z]/.test(text[index] ?? '')) step()
+      tokens.push({ t: letter === 's' || letter === 'S' ? 'str' : 'sigil', v: value, ...start, ...(heredoc ? { doc: true } : {}) })
+      continue
+    }
+    // A character literal, `?a` or `?"`, and not the end of a name such as `ready?`.
+    if (here === '?' && !/[\w?!]/.test(text[index - 1] ?? '') && text[index + 1] && !/\s/.test(text[index + 1])) {
+      step(text[index + 1] === '\\' ? 3 : 2)
+      tokens.push({ t: 'num', v: '?', ...start })
+      continue
+    }
+    if (/[A-Za-z_]/.test(here)) {
+      let end = index + 1
+      while (end < text.length && /\w/.test(text[end])) end++
+      if (/[?!]/.test(text[end] ?? '') && text[end + 1] !== '=') end++
+      const word = text.slice(index, end)
+      step(end - index)
+      tokens.push({ t: 'id', v: word, ...start })
+      continue
+    }
+    if (/[0-9]/.test(here)) {
+      let end = index + 1
+      while (end < text.length && (/\w/.test(text[end]) || (text[end] === '.' && /[0-9]/.test(text[end + 1] ?? '')))) end++
+      const word = text.slice(index, end)
+      step(end - index)
+      tokens.push({ t: 'num', v: word, ...start })
+      continue
+    }
+    step()
+    tokens.push({ t: 'sym', v: here, ...start })
+  }
+  return tokens
+}
+
+const ELIXIR_DEFINERS = new Set(['def', 'defp', 'defmacro', 'defmacrop', 'defdelegate', 'defguard', 'defguardp'])
+
+/**
+ * Elixir: a `def` or `defp` clause is a function, the `end` that closes its `do` block or the lines indented under
+ * its `, do:` give it its extent, the `defmodule` around it is its owner, and the attributes above it (`@doc`,
+ * `@spec`) are part of it, which is where the API model puts a function's line. A call is a name against its
+ * parenthesis, made on the alias before its dot. A command in a call to a declared dispatcher is sent; any other
+ * literal is only named, since Elixir hands a command on by variables the scan does not follow.
+ * @param {string} text
+ * @param {{ commands: ReadonlySet<string>, known: ReadonlySet<string>, dispatch?: ReadonlySet<string> }} input
+ */
+export function scanElixir(text, { commands, known, dispatch }) {
+  const lines = text.split('\n')
+  const tokens = tokenizeElixir(text)
+  const groups = bracketGroups(tokens)
+  const adjacent = (index, next) => tokens[next]?.line === tokens[index].line && tokens[next].col === tokens[index].col + tokens[index].v.length
+  const keyword = (index) => tokens[index + 1]?.v === ':' && adjacent(index, index + 1)
+  const atom = (index) => tokens[index - 1]?.v === ':' && adjacent(index - 1, index)
+  const word = (index, value) => tokens[index]?.t === 'id' && tokens[index].v === value && !keyword(index) && !atom(index) && tokens[index - 1]?.v !== '.'
+  const opens = (index) => word(index, 'do') || word(index, 'fn')
+  /** The token index of the `end` that closes the block opened at `index`, or -1. */
+  const closing = (index) => {
+    let depth = 1
+    for (let at = index + 1; at < tokens.length; at++) {
+      if (opens(at)) depth++
+      else if (word(at, 'end') && --depth === 0) return at
+    }
+    return -1
+  }
+  const first = new Map()
+  tokens.forEach((token, index) => { if (!first.has(token.line)) first.set(token.line, index) })
+  /** The last line a token occupies: a string spans the lines of its text, and a heredoc ends on the line of its closing delimiter. */
+  const endLine = (token) => token.line + (token.v.match(/\n/g)?.length ?? 0)
+
+  const modules = []
+  for (const [, index] of first) {
+    if (!word(index, 'defmodule')) continue
+    const path = []
+    let at = index + 1
+    while (tokens[at]?.t === 'id' && !word(at, 'do')) {
+      path.push(tokens[at].v)
+      if (tokens[at + 1]?.v === '.') at += 2
+      else { at++; break }
+    }
+    const open = word(at, 'do') ? at : tokens.findIndex((token, i) => i > at && word(i, 'do'))
+    const close = open < 0 ? -1 : closing(open)
+    if (path.length && close > 0) modules.push({ name: path.at(-1), start: tokens[index].line, end: tokens[close].line })
+  }
+  const moduleAt = (line) => modules.findLast((module) => module.start <= line && line <= module.end)
+
+  const functions = []
+  for (const [line, index] of first) {
+    if (tokens[index].t !== 'id' || !ELIXIR_DEFINERS.has(tokens[index].v) || tokens[index + 1]?.t !== 'id') continue
+    const name = tokens[index + 1].v
+    const after = tokens[index + 2]
+    if (after && !(after.line !== tokens[index].line || ['(', ',', 'do', 'when'].includes(after.v))) continue
+    let headEnd = index + 1
+    if (tokens[index + 2]?.v === '(' && adjacent(index + 1, index + 2)) headEnd = groups.find((group) => group.open === index + 2)?.close ?? headEnd
+    const indent = indentOf(lines, line)
+    let body = -1
+    for (let at = headEnd + 1; at < tokens.length; at++) {
+      if (tokens[at].line > line && indentOf(lines, tokens[at].line) <= indent && first.get(tokens[at].line) === at) break
+      const group = groups.find((candidate) => candidate.open === at)
+      if (group) { at = group.close; continue }
+      if (tokens[at].t === 'id' && tokens[at].v === 'do' && !atom(at)) { body = at; break }
+    }
+    let end = tokens[headEnd].line
+    if (body >= 0 && !keyword(body)) {
+      const close = closing(body)
+      if (close < 0) continue
+      end = tokens[close].line
+    } else if (body >= 0) {
+      end = tokens[body].line
+      for (let next = end + 1; next <= lines.length && lines[next - 1].trim() && indentOf(lines, next) > indent; next++) end = next
+    }
+    // The attributes and docs directly above belong to the function: a heredoc is one token, so a blank line inside a doc does not end them.
+    const lastEnd = functions.at(-1)?.end ?? 0
+    let above = index
+    while (above > 0 && tokens[above].line - endLine(tokens[above - 1]) <= 1 && tokens[above - 1].line > lastEnd && !word(above - 1, 'end')) above--
+    let start = line
+    for (let at = above; at < index; at++) if (tokens[at].v === '@' && first.get(tokens[at].line) === at) { start = tokens[at].line; break }
+    functions.push({ name, owner: moduleAt(line)?.name, start, nameLine: line, end, kind: tokens[index].v, sites: [], calls: new Map(), receivers: new Map(), callList: [] })
+  }
+  const owner = (line) => functions.filter((fn) => fn.nameLine <= line && line <= fn.end).sort((a, b) => b.nameLine - a.nameLine)[0]
+
+  const isCommand = (token) => {
+    if (token.t !== 'str' || token.doc) return undefined
+    const [head, next] = token.v.split(/\s+/)
+    return known.has(head) && (next === undefined || next.startsWith('-')) ? head : undefined
+  }
+  /** The flags written in the widest bracket group around a token that holds no other command. */
+  const flagsAround = (index, command) => {
+    const holds = (group) => tokens.slice(group.open + 1, group.close).some((other) => {
+      const found = isCommand(other)
+      return found && found !== command
+    })
+    const enclosing = groups.filter((group) => group.open < index && index < group.close).sort((a, b) => (a.close - a.open) - (b.close - b.open))
+    let around = [tokens[index]]
+    for (const group of enclosing) {
+      if (holds(group)) break
+      around = tokens.slice(group.open, group.close + 1)
+    }
+    return [...flagLetters(around)].sort().join('')
+  }
+  const callOpen = (index) => tokens[index]?.t === 'id' && tokens[index + 1]?.v === '(' && adjacent(index, index + 1)
+
+  tokens.forEach((token, index) => {
+    const fn = owner(token.line)
+    const command = isCommand(token)
+    if (command && commands.has(command)) {
+      const site = { command, line: token.line, flags: flagsAround(index, command) }
+      if (dispatch) {
+        const label = tokens[index + 1]?.v === '-' && tokens[index + 2]?.v === '>'
+        const enclosing = groups.filter((group) => group.open < index && index < group.close).sort((a, b) => (a.close - a.open) - (b.close - b.open))
+        const call = enclosing.find((group) => callOpen(group.open - 1) && dispatch.has(tokens[group.open - 1].v))
+        if (label) { site.dispatch = null; site.why = 'a case label names it, and sends nothing' }
+        else if (call) site.dispatch = { line: tokens[call.open - 1].line, name: tokens[call.open - 1].v }
+        else { site.dispatch = null; site.why = 'it reaches no call that sends' }
+      }
+      fn?.sites.push(site)
+    }
+    // The name a clause is declared with is not a call of it.
+    if (!callOpen(index) || !fn || ELIXIR_DEFINERS.has(token.v) || ELIXIR_DEFINERS.has(tokens[index - 1]?.v)) return
+    const qualified = tokens[index - 1]?.v === '.' && tokens[index - 2]?.t === 'id'
+    const receiver = qualified ? tokens[index - 2].v.toLowerCase() : undefined
+    if (!fn.calls.has(token.v)) fn.calls.set(token.v, token.line)
+    if (receiver) fn.receivers.set(token.v, new Set([...(fn.receivers.get(token.v) ?? []), receiver]))
+    fn.callList.push({ name: token.v, receiver, line: token.line, calleeLine: token.line })
+  })
+  return { functions, types: modules.map((module) => ({ name: module.name, start: module.start, end: module.end })), orphans: [] }
 }
 
 /**

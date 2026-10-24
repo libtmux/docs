@@ -171,7 +171,11 @@ $ node scripts/gen-tmux-catalog.mjs --check --source ~/study/c/tmux
 each tmux command and at which scope, in `site/src/data/tmux-usage/<port>.json`.
 It reads each port's source at the revision its API model was extracted from,
 through the port checkouts named in `ports.ts` or
-`LIBTMUX_DOCS_CHECKOUT_<PORT>`.
+`LIBTMUX_DOCS_CHECKOUT_<PORT>`. Tree-sitter reads the source of most ports;
+Julia, F# and Elixir have no grammar here, and `lib/tmux-usage-lexical.mjs` reads
+them by their text. `GRAMMARS` in `lib/tmux-usage-scan.mjs` names the reader of
+every port that has an API model, and a test fails for one it lacks, because a
+port with no reader would be generated as sending nothing.
 
 A command is recorded for a symbol only where it is sent. A literal that names
 a command is a send when it is an argument of a call that dispatches, in the
