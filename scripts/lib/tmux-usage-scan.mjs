@@ -603,6 +603,8 @@ export async function scanSource({ grammar, text, commands, known, dispatch, bui
   if (grammar === 'julia') return scanJulia(text, { commands, known, dispatch })
   if (grammar === 'elixir') return scanElixir(text, { commands, known, dispatch })
   if (grammar === 'fsharp') return scanFSharp(text)
+  // A grammar that no reader above or below handles would reach the loader as a file that does not exist.
+  if (!(grammar in FUNCTIONS)) throw new Error(`no reader for the grammar ${JSON.stringify(grammar)}: scanSource reads ${[...Object.keys(FUNCTIONS), 'julia', 'fsharp', 'elixir'].join(', ')}`)
   const parser = await parserFor(grammar)
   // The Swift grammar predates typed throws; blanking the type keeps every line and column.
   const tree = parser.parse(grammar === 'swift' ? withoutNewSwift(text) : grammar === 'csharp' ? withoutPrimaryConstructors(text) : text)

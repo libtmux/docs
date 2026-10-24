@@ -1790,4 +1790,13 @@ describe('the ports whose source is read', () => {
     // The control: a port the table lacks is the one named.
     expect(unread([...slugs, 'newport'], GRAMMARS)).toEqual(['newport'])
   })
+
+  it.each([...new Set(Object.values(GRAMMARS))])('has a reader behind the grammar %s, and not only a name for it', async (grammar) => {
+    // The table names a grammar, and scanSource must dispatch it: a name with no reader failed in the loader, for a file that does not exist.
+    expect(await scanSource({ grammar, text: '', commands: new Set(['list-panes']), known })).toMatchObject({ functions: [] })
+  })
+
+  it('refuses a grammar nothing reads, by name', async () => {
+    await expect(scanSource({ grammar: 'nonesuch', text: '', commands: new Set(['list-panes']), known })).rejects.toThrow(/no reader for the grammar "nonesuch"/)
+  })
 })

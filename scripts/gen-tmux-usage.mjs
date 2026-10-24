@@ -201,10 +201,12 @@ export function portDocument(port, model, found, commands) {
 /** Read a port's source at its pinned revision: every function, and the public symbols that name them. */
 export async function scanPort({ port, model, commands, checkout, known, dispatch, builders, guards, labels, trace }) {
   const grammar = GRAMMARS[port]
+  // A port with no reader would be generated as sending nothing, and pass.
+  if (!grammar) throw new Error(`${port}: no reader for its source; add it to GRAMMARS in scripts/lib/tmux-usage-scan.mjs`)
   const symbols = publicSymbols(model)
   const functions = []
   const types = []
-  const sources = grammar ? librarySources(checkout, model.revision, grammar) : new Map()
+  const sources = librarySources(checkout, model.revision, grammar)
   const wanted = new Set(commands)
   for (const [path, text] of sources) {
     const scanned = await scanSource({ grammar, text, commands: wanted, known, dispatch, builders, guards, labels, trace })

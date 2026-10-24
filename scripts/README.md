@@ -174,8 +174,10 @@ through the port checkouts named in `ports.ts` or
 `LIBTMUX_DOCS_CHECKOUT_<PORT>`. Tree-sitter reads the source of most ports;
 Julia, F# and Elixir have no grammar here, and `lib/tmux-usage-lexical.mjs` reads
 them by their text. `GRAMMARS` in `lib/tmux-usage-scan.mjs` names the reader of
-every port that has an API model, and a test fails for one it lacks, because a
-port with no reader would be generated as sending nothing.
+every port that has an API model. The generator fails by name for a port the
+table lacks, and for a grammar `scanSource` does not read, and a test dispatches
+every grammar of the table, because a port with no reader would be generated as
+sending nothing.
 
 A command is recorded for a symbol only where it is sent. A literal that names
 a command is a send when it is an argument of a call that dispatches, in the
