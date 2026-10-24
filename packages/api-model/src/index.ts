@@ -30,3 +30,17 @@ export { parentInventory } from './parent-inventory.ts'
 
 export { navSidecarFor, type NavConfig } from './nav-sidecar.ts'
 export { parsePythonDoc } from './doc/python.ts'
+export {
+  CAPABILITY_SCHEMA,
+  capabilityState,
+  compareTmuxVersions,
+  tmuxVersionKey,
+  validateManifest,
+  workaroundState,
+  type CapabilityCommand,
+  type CapabilityEntry,
+  type CapabilityManifest,
+  type CellState,
+  type Handling,
+  type Workaround,
+} from './capabilities.ts'

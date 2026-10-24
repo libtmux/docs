@@ -1,0 +1,84 @@
+---
+/**
+ * A map of capabilities against columns (tmux releases, or ports).
+ *
+ * Every column has the same width (`table-layout: fixed`), so the eye reads
+ * down a release and across a capability without text reflowing the grid.
+ * The first column stays put while the releases scroll. A cell carries an
+ * icon and, for screen readers, the same words the legend uses.
+ */
+import { CELL_LABEL, type Column, type Row } from '../../lib/capability-cells'
+
+interface Props {
+  caption: string
+  columns: Column[]
+  rows: Row[]
+  /** Width of each data column. Ports need more room for "3.7+" than releases need. */
+  columnWidth?: 'narrow' | 'wide'
+  /** Heading of the first column. */
+  rowHeader?: string
+}
+
+const { caption, columns, rows, columnWidth = 'narrow', rowHeader = 'Capability' } = Astro.props as Props
+const minimum = columnWidth === 'wide' ? '4.5rem' : '3.5rem'
+
+const ICON: Record<string, string> = {
+  supported: '✓',
+  workaround: '◐',
+  repaired: '◑',
+  fallback: '↺',
+  refused: '✕',
+  absent: '–',
+}
+
+const TONE: Record<string, string> = {
+  supported: 'text-emerald-700 dark:text-emerald-400',
+  workaround: 'text-sky-700 dark:text-sky-400',
+  repaired: 'text-sky-700 dark:text-sky-400',
+  fallback: 'text-amber-700 dark:text-amber-400',
+  refused: 'text-rose-700 dark:text-rose-400',
+  absent: 'text-muted',
+}
+---
+
+<div class="capability-matrix not-prose mt-4 overflow-x-auto rounded border border-edge bg-surface">
+  <table class="table w-full table-fixed border-collapse text-sm" style={`min-width: calc(10rem + ${columns.length} * ${minimum})`}>
+    <caption class="sr-only">{caption}</caption>
+    <colgroup>
+      <col class="w-[10rem] sm:w-[14rem]" />
+      {columns.map(() => <col />)}
+    </colgroup>
+    <thead>
+      <tr class="border-b border-edge">
+        <th scope="col" class="sticky left-0 z-10 bg-surface px-3 py-2 text-left font-semibold">{rowHeader}</th>
+        {columns.map((c) => (
+          <th scope="col" class="px-1 py-2 text-center align-bottom font-mono text-xs font-semibold leading-tight" title={c.title}>{c.label}</th>
+        ))}
+      </tr>
+    </thead>
+    <tbody>
+      {rows.map((row) => (
+        <tr class="border-b border-edge last:border-b-0">
+          <th scope="row" class="sticky left-0 z-10 whitespace-normal bg-surface px-3 py-2 text-left font-medium leading-snug">
+            <a class="hover:underline" href={row.href ?? `#${row.id}`}>{row.label}</a>
+          </th>
+          {row.cells.map((cell, i) => (
+            <td class={`px-1 py-2 text-center ${TONE[cell.state]}`} title={`${row.label}, ${columns[i].title}: ${CELL_LABEL[cell.state]}`}>
+              <span aria-hidden="true" class="text-base leading-none">{ICON[cell.state]}</span>
+              {cell.text && <span aria-hidden="true" class="ml-1 font-mono text-xs">{cell.text}</span>}
+              <span class="sr-only">{CELL_LABEL[cell.state]}{cell.text ? `, ${cell.text}` : ''}</span>
+            </td>
+          ))}
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
+<ul class="not-prose mt-3 flex list-none flex-wrap gap-x-5 gap-y-1 p-0 text-sm" aria-label="Legend">
+  {(['supported', 'workaround', 'repaired', 'fallback', 'refused', 'absent'] as const)
+    .filter((s) => rows.some((r) => r.cells.some((c) => c.state === s)))
+    .map((s) => (
+      <li class={TONE[s]}><span aria-hidden="true" class="mr-1">{ICON[s]}</span><span>{CELL_LABEL[s]}</span></li>
+    ))}
+</ul>
