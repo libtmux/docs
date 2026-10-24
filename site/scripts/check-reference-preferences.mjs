@@ -117,9 +117,9 @@ export async function checkReferencePreferences(browser, base) {
 
 /**
  * The links each listed page shows, in order, and then its disclosure. Of the
- * ports listed, Rust and Elixir have a reference host as well, so they show
- * three chips; the others two. Written out rather than read from the page, so
- * a missing chip is a failure.
+ * ports listed, Rust and Elixir have a reference host as well, so they show a
+ * reference chip after the package chip; the others do not. Written out rather
+ * than read from the page, so a missing chip is a failure.
  */
 const HEADER_PAGES = {
   '/py/latest/': ['source', 'package', 'destinations'],

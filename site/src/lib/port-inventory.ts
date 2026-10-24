@@ -494,7 +494,7 @@ export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
     cxx({ id: 'tmux-workspace', kind: 'cli', product: 'workspace', unit: 'executable', within: 'libtmux', label: 'tmux-workspace',
       path: 'apps/workspace', aliases: ['workspace-cli'] }),
   ],
-  // One package of six targets, exposed as four library products and two executables.
+  // One package whose targets are exposed as library products and executables.
   swift: [
     swift({ id: 'libtmux-swift', kind: 'library', product: 'core', unit: 'package', label: 'libtmux-swift', ...spiPackage,
       reference: 'target:LibTmux', aliases: ['libtmux'] }),

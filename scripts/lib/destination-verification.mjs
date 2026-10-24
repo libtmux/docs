@@ -407,7 +407,7 @@ export const hostOf = (url) => {
 /**
  * What a host said about each version a manifest declares for the destination.
  * Ports that pin different releases of one package (NuGet's LibTmux is
- * alpha.22 for C# and alpha.18 for F#) each get a check of their own.
+ * pinned to different prereleases by C# and F#) each get a check of their own.
  */
 async function versionChecks(result, destination) {
   const expected = destination.expected ?? []

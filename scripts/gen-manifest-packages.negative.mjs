@@ -8,10 +8,11 @@
  * unchecked port has nothing to prove and says so. The control is a copy of
  * the committed file. Each case edits its own copy the way a hand edit would:
  * a version bumped, a package dropped or invented, a unit dropped, a port
- * missing from the file, a port that is not registered. Two more hide a
+ * missing from the file, a port that is not registered. Further cases hide a
  * checkout and require that the rest is still compared and the hidden port named.
- * Python is read from three repositories, so hiding either companion must leave
- * py named and uncompared, not reported as drift from the core alone.
+ * Python is read from the library's repository and from each companion's, so
+ * hiding either companion must leave py named and uncompared, not reported as
+ * drift from the core alone.
  */
 import { copyFileSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
@@ -90,9 +91,9 @@ if (hidden && other) {
   console.log('skip the absent-checkout cases: too few checkouts are present here')
 }
 
-// Python is read from three repositories. With a companion absent the core alone is not the port, so it is
-// named and left unchecked rather than compared and reported as drift; with every source present a change to
-// a companion's package is still caught.
+// Python is read from the library's repository and each companion's. With a companion absent the core
+// alone is not the port, so it is named and left unchecked rather than compared and reported as drift;
+// with every source present a change to a companion's package is still caught.
 if (!notChecked.has('py')) {
   const file = join(dir, 'py.json')
   copyFileSync(real, file)
