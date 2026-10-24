@@ -2,9 +2,10 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { API_HOSTS, EXTERNAL_INVENTORIES, PAGE_EXCEPTIONS, addressSegments, apiHostOf, arityOf, collectApiDestinations, qualified, terminalSymbol, urlsIn } from '../../scripts/lib/api-destinations.mjs'
 import { addressOf, mismatch } from '../../scripts/lib/api-addresses.mjs'
-import { judge, judgeLabel, judgeSubject, missingWords, pageIdentity, sourceIdentity } from '../../scripts/lib/api-identities.mjs'
+import { judge, judgeLabel, pageIdentity, sourceIdentity } from '../../scripts/lib/api-identities.mjs'
+import { PORT_LANGUAGES, languageOfUrl, languageProblem, loadReviewedLinks, doccHeading } from '../../scripts/lib/api-links.mjs'
 import { BARE_OWNERS, DEFAULT_NAMES, bareOwners, hintOwners } from '../../scripts/lib/api-sources.mjs'
-import { subjectsOf } from '../../scripts/lib/api-html.mjs'
+import { pageHeading } from '../../scripts/lib/api-html.mjs'
 import { linksIn } from '../../scripts/lib/api-destinations.mjs'
 import {
   INVENTORY_SOURCES, MAX_UNVERIFIABLE_SHARE, UNVERIFIABLE_REASONS, checkApiEvidence, expectationsOf, expectedSymbols, inventoryDigest, mentions, needsCheck, readPage, recordProblems, sameAddress, sectionAt, slugSymbol,
@@ -211,8 +212,7 @@ describe('what the verifier reads from a page', () => {
     expect(at('https://docs.python.org/3/builtins/functions.html#abs', 'py', 'int')).toBeUndefined()
     // Every exception names an address with a fragment or a page of its own, a reason, and at least one name.
     for (const entry of PAGE_EXCEPTIONS as unknown as { tier: string; url: string; names: string[]; reason: string }[]) {
-      expect(['listed', 'section', 'label'], entry.url).toContain(entry.tier)
-      if (entry.tier === 'label') for (const name of entry.names) expect(name, entry.url).toMatch(/^(?:authored|keyword|doc-link):/)
+      expect(['listed', 'section'], entry.url).toContain(entry.tier)
       expect(entry.reason.length, entry.url).toBeGreaterThan(20)
       expect(entry.names.length, entry.url).toBeGreaterThan(0)
       expect(entry.url, 'an address, not a prefix').not.toMatch(/#$/)
@@ -400,51 +400,88 @@ describe('what a link\'s words say', () => {
     expect(judgeLabel('`Ok(None)`', symbol(['std', 'option', 'Option', 'None'], 'variant', 'rustdoc'))).toMatchObject({ failure: 'label' })
   })
 
-  it('wants the whole of a symbol\'s name said, and nothing that is not its own, its owner\'s or its kind', () => {
+  it('is the name and nothing else: no plural, stem or synonym stands for it', () => {
+    const type = (name: string, ...owner: string[]) => ({ path: [...owner, name], kind: 'type', declared: 'class', via: 'javadoc' })
+    expect(judgeLabel('`Files`', type('Files', 'java', 'nio', 'file'))).toBeUndefined()
+    expect(judgeLabel('`Files`', type('File', 'java', 'io'))).toMatchObject({ failure: 'label' })
+    expect(judgeLabel('`Paths`', type('Path', 'java', 'nio', 'file'))).toMatchObject({ failure: 'label' })
+    expect(judgeLabel('`Objects`', type('Object', 'java', 'lang'))).toMatchObject({ failure: 'label' })
+    expect(judgeLabel('`Collections`', type('Collection', 'java', 'util'))).toMatchObject({ failure: 'label' })
+    expect(judgeLabel('`Collection`', type('Collection', 'java', 'util'))).toBeUndefined()
+    expect(judgeLabel('`Where-Object`', type('Object', 'System'))).toMatchObject({ failure: 'label' })
+  })
+
+  it('does not take words that describe a page for a name: those are rows of the reviewed link table', () => {
     const commonParameters = { path: ['microsoft', 'powershell', 'core', 'CommonParameters'], kind: 'keyword', declared: 'about topic', via: 'learn' }
-    expect(judgeLabel('PowerShell common parameters', commonParameters)).toBeUndefined()
-    expect(judgeLabel('PowerShell parameters', commonParameters)).toMatchObject({ failure: 'label' })
-    const scope = { path: ['kotlinx', 'coroutines', 'CoroutineScope'], kind: 'type', declared: 'interface', via: 'dokka' }
-    expect(judgeLabel('Kotlin coroutines', scope)).toMatchObject({ failure: 'label' })
-    expect(judgeLabel('`CoroutineScope`', scope)).toBeUndefined()
-    expect(judgeLabel('`Where-Object`', { path: ['System', 'Object'], kind: 'type', declared: 'class', via: 'learn' })).toMatchObject({ failure: 'label' })
-    expect(judgeLabel('Julia type aliases', { path: ['Core', 'Type'], kind: 'type', declared: 'type', via: 'documenter' })).toMatchObject({ failure: 'label' })
+    expect(judgeLabel('PowerShell common parameters', commonParameters)).toMatchObject({ failure: 'label', detail: expect.stringContaining('reviewed link table') })
+    expect(judgeLabel('Kotlin coroutines', { path: ['kotlinx', 'coroutines', 'CoroutineScope'], kind: 'type', declared: 'interface', via: 'dokka' })).toMatchObject({ failure: 'label' })
+    expect(judgeLabel('`CommonParameters`', commonParameters)).toBeUndefined()
+  })
+})
+
+describe('the reviewed link table', () => {
+  const { rows, byPair } = loadReviewedLinks(root)
+
+  it('has one row for each text and address, each with a heading, sorted so a review reads as the rows that changed', () => {
+    expect(rows.length).toBeGreaterThan(0)
+    expect(byPair.size).toBe(rows.length)
+    for (const row of rows) {
+      expect(row.label.trim(), row.url).toBe(row.label)
+      expect(row.url, row.label).toMatch(/^https:\/\//)
+      expect(row.heading.length, row.label).toBeGreaterThan(0)
+      expect(row.heading, `${row.label} is a heading, one line`).toBe(row.heading.replace(/\s+/g, ' ').trim())
+    }
+    const keys = rows.map((row) => `${row.url}\u0000${row.label}`)
+    expect(keys).toEqual([...keys].sort((a, b) => a.split('\u0000')[0].localeCompare(b.split('\u0000')[0]) || a.localeCompare(b)))
   })
 
-  it('holds a link that names a language to a page of that language', () => {
-    expect(judgeLabel('F# functions', { path: ['microsoft', 'powershell', 'core', 'Functions'], kind: 'keyword', declared: 'about topic', via: 'learn' })).toMatchObject({ failure: 'label' })
-    expect(judgeLabel('PowerShell functions', { path: ['microsoft', 'powershell', 'core', 'Functions'], kind: 'keyword', declared: 'about topic', via: 'learn' })).toBeUndefined()
-  })
-
-  it('compares a link\'s subject with the page\'s, ignoring case, plurals and the language\'s name', () => {
-    expect(judgeSubject('Kotlin classes', ['Classes | Kotlin Documentation', 'Classes'])).toBeUndefined()
-    expect(judgeSubject('Kotlin classes', ['Functions | Kotlin Documentation', 'Functions'])).toMatchObject({ failure: 'label' })
-    expect(judgeSubject('Rust enums', ['Enumerations - The Rust Reference', 'Enumerations'])).toBeUndefined()
-    expect(judgeSubject('Rust structs', ['Enumerations - The Rust Reference', 'Enumerations'])).toMatchObject({ failure: 'label' })
-    expect(judgeSubject('Python properties', ['Property', 'Python 3.15 documentation'])).toBeUndefined()
-    expect(judgeSubject('Python case', ['Cases'])).toBeUndefined()
-    // A word that only starts another word is another word; a stable section name is not one of the section's words.
-    expect(judgeSubject('Julia composite types', ['CompositeException'])).toMatchObject({ failure: 'label' })
-    expect(judgeSubject('C++ classes', ['11.5 Unions [class.union]'])).toMatchObject({ failure: 'label' })
-    expect(judgeSubject('C++ static members', ['11.4.3 Non-static member functions'])).toMatchObject({ failure: 'label' })
-    expect(judgeSubject('Ruby classes', ['class IO::Buffer - Documentation for Ruby 4.0'])).toMatchObject({ failure: 'label' })
-    // And a link that names one language is not a page of another.
-    expect(judgeSubject('F# classes', ['Static Classes - C# | Microsoft Learn', 'language csharp'])).toMatchObject({ failure: 'label' })
-    expect(missingWords('Rust enum variants', ['Enumerations'])).toEqual(['variants'])
-  })
-
-  it('names a page by the heading its fragment opens, a section label, or its title', () => {
-    const opens = readPage('<html><head><title>Classes - Docs</title></head><body><h1>Classes</h1><h3 id="inheritance">9.5. Inheritance</h3><p>x</p></body></html>')
-    expect(subjectsOf(opens, 'inheritance')).toEqual(['9.5. Inheritance', 'inheritance'])
-    expect(subjectsOf(opens, '')).toEqual(['Classes - Docs', 'Classes'])
+  it('names a page by the heading its fragment opens, a section label, its address, or its title', () => {
+    const opens = readPage('<html><head><title>Classes - Docs</title></head><body><h1>Docs</h1><h1>Classes</h1><h3 id="inheritance">9.5. Inheritance <a>\u00b6</a></h3><p>x</p><dt id="entry">entry</dt></body></html>')
+    expect(pageHeading(opens, 'inheritance')).toBe('9.5. Inheritance')
+    expect(pageHeading(opens, 'entry')).toBe('#entry')
+    expect(pageHeading(opens, '', 'https://example.org/docs/classes.html')).toBe('Classes')
     const section = readPage('<html><head><title>[class.mem]</title></head><body><h1>11 Classes [class]</h1><h2>11.4 Class members [class.mem]</h2></body></html>')
-    expect(subjectsOf(section, '', 'https://eel.is/c++draft/class.mem')).toEqual(['11.4 Class members [class.mem]'])
-    expect(subjectsOf(opens, '', 'https://learn.microsoft.com/en-us/dotnet/csharp/classes')).toContain('language dotnet csharp')
+    expect(pageHeading(section, '', 'https://eel.is/c++draft/class.mem')).toBe('11.4 Class members [class.mem]')
+    // A page that ends in a sidebar heading, and a book whose title heads every page.
+    const book = readPage('<html><head><title>Overload Resolution | Docs</title></head><body><h1>Overload Resolution</h1><h1>Contributors to this page</h1></body></html>')
+    expect(pageHeading(book, '', 'https://example.org/reference/overload-resolution.html')).toBe('Overload Resolution')
+    const rust = readPage('<html><head><title>Structs - The Rust Reference</title></head><body><h1>The Rust Reference</h1><h1>Structs</h1></body></html>')
+    expect(pageHeading(rust, '', 'https://example.org/items/structs.html')).toBe('Structs')
+    // A page whose title and heading differ, under a title bar that is the book's name.
+    const loops = readPage('<html><head><title>Loop expressions - The Rust Reference</title></head><body><h1 class="menu-title">The Rust Reference</h1><h1>Loops and other breakable expressions</h1></body></html>')
+    expect(pageHeading(loops, '', 'https://example.org/expressions/loop-expr.html')).toBe('Loops and other breakable expressions')
+  })
+
+  it('reads a DocC heading by its anchor, and a page by its title', () => {
+    const data = { metadata: { title: 'Declarations' }, primaryContentSections: [{ content: [{ type: 'heading', anchor: 'Type-Alias-Declaration', text: 'Type Alias Declaration' }] }] }
+    expect(doccHeading(data, 'Type-Alias-Declaration')).toBe('Type Alias Declaration')
+    expect(doccHeading(data, '')).toBe('Declarations')
+    expect(doccHeading(data, 'missing')).toBe('#missing')
+  })
+
+  it('reads the language of an address from its host and path, and holds a port to the languages it goes to', () => {
+    expect(languageOfUrl('https://eel.is/c++draft/class.mem')).toBe('cpp')
+    expect(languageOfUrl('https://go.dev/ref/spec#Constants')).toBe('go')
+    expect(languageOfUrl('https://doc.rust-lang.org/reference/items.html')).toBe('rust')
+    expect(languageOfUrl('https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html')).toBe('java')
+    expect(languageOfUrl('https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/static')).toBe('csharp')
+    expect(languageOfUrl('https://learn.microsoft.com/en-us/powershell/module/x/about/about_functions')).toBe('powershell')
+    expect(languageOfUrl('https://learn.microsoft.com/dotnet/api/system.string')).toBe('dotnet')
+    expect(languageProblem('rs', 'https://go.dev/ref/spec#Constants')).toMatchObject({ failure: 'language' })
+    expect(languageProblem('go', 'https://go.dev/ref/spec#Constants')).toBeUndefined()
+    // A JVM port goes to the JLS and the JDK; PowerShell, F# and C# share the .NET API.
+    expect(languageProblem('kotlin', 'https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html')).toBeUndefined()
+    expect(languageProblem('scala', 'https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html')).toBeUndefined()
+    expect(languageProblem('powershell', 'https://learn.microsoft.com/dotnet/api/system.string')).toBeUndefined()
+    expect(languageProblem('fsharp', 'https://learn.microsoft.com/dotnet/api/system.string')).toBeUndefined()
+    expect(languageProblem('py', 'https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html')).toMatchObject({ failure: 'language' })
+    expect(languageProblem('fsharp', 'https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/static')).toMatchObject({ failure: 'language' })
+    expect(Object.keys(PORT_LANGUAGES).length).toBeGreaterThan(10)
   })
 
   it('derives the words of a keyword link from its help title when the use carries none', () => {
     const keyword = (name: string) => expectationsOf({ url: 'https://eel.is/c++draft/dcl.attr.nodiscard', uses: [{ port: 'cxx', name, source: 'keyword' }] })[0]
-    expect(keyword('nodiscard')).toMatchObject({ label: 'C++ nodiscard attribute', key: 'keyword:C++ nodiscard attribute' })
+    expect(keyword('nodiscard')).toMatchObject({ label: 'C++ nodiscard attribute', key: 'keyword:C++ nodiscard attribute', port: 'cxx' })
   })
 })
 

@@ -18,7 +18,7 @@
  */
 
 import { sourceIdentity, bareOwners, hintOwners, parseName, BARE_OWNERS, GO_PACKAGES, PRELUDE_MACROS } from './api-sources.mjs'
-import { LANGUAGE_WORDS, decode, splitTop, stripGroups, strip, safeDecode, wordsOf } from './api-html.mjs'
+import { decode, splitTop, stripGroups, strip, safeDecode } from './api-html.mjs'
 import { splitUrl } from './api-addresses.mjs'
 
 /** The buckets a declared kind falls in; a source and a page agree when theirs do. */
@@ -412,154 +412,39 @@ const PORT_OF = {
   learn: 'csharp', docfx: 'csharp', cpython: 'py', godoc: 'go', documenter: 'julia', mdn: 'ts', docc: 'swift',
 }
 
-/** The words of an identifier: itself in lowercase, and its parts (`CommonParameters`, `read_to_string`, `Where-Object`). */
-const nameParts = (name) => {
-  const parts = name.split(/(?<=[a-z0-9])(?=[A-Z])|[^A-Za-z0-9]+/).filter(Boolean).map((part) => part.toLowerCase())
-  return [...new Set([name.toLowerCase().replace(/[^a-z0-9]/g, ''), ...parts])].filter(Boolean)
-}
-
-/** The languages whose documentation each reader's host holds (Learn serves C#, F# and PowerShell alike). */
-const LANGUAGE_OF = {
-  rustdoc: ['rust'], javadoc: ['java', 'kotlin', 'scala'], dokka: ['kotlin'], scaladoc: ['scala'], cppreference: ['cpp'], exdoc: ['elixir'],
-  fsdocs: ['fsharp'], docfx: ['csharp'], cpython: ['python'], godoc: ['go'], documenter: ['julia'], mdn: ['typescript', 'javascript'], docc: ['swift'],
-}
-
 /** A name written whole inside a link's words: `Option::map`, `AbortSignal.timeout`, `std::fs::read_to_string`. */
-const QUALIFIED = /[A-Za-z_$][\w$]*(?:<[^>\s]*>)?(?:(?:::|\.|#)[A-Za-z_$][\w$!?]*(?:<[^>\s]*>)?)+!?/g
+const NAME_TOKEN = /^[A-Za-z_$@][\w$@-]*(?:<[^>\s]*>)?(?:(?:::|\.|#)[A-Za-z_$@][\w$@-]*(?:<[^>\s]*>)?)*[!?]?$/
 
 /**
- * Whether the words a person wrote on a link name what the page documents.
+ * Whether the words a person wrote on a link are exactly the symbol its page declares.
  *
- * A name written whole (`Option::map`) must end the page's own path, owner and
- * all: `Result::map` is not it. Words without one must say the symbol the page
- * declares, as a whole word of its spelling; and a single bare word that its
- * language gives one owner (`Result` is `std::result`'s) must be the one the
- * page documents. `[strip](#Base.strip)` documents `Base.strip`, and
- * `[strip](#Base.lstrip)` does not.
+ * A name is a name and nothing else: `Files` is `Files`, not `File`, and no plural, stem or
+ * synonym stands for it. A name written whole (`Option::map`) ends the page's path, owner
+ * included, so `Result::map` is another member; a call written out (`Ok(item)`) is its callee; a
+ * mark that ends a name (`map!`) is part of it; and a bare name that a language gives one owner
+ * (`Result` is `std::result`'s) is held to it. Words that describe the page, not name its symbol, are
+ * not a name at all: a link like that is a reviewed row of the link table, where a person has
+ * written down the heading it points at.
  *
  * @returns {{ failure: string, detail: string } | undefined}
  */
 export function judgeLabel(label, identity) {
-  // A call written out (`Ok(item)`, `strip(screen)`) is its callee: the arguments are the reader's own.
   const written = label.replace(/[`*]/g, '').replace(/\(\)/g, '').trim()
   const text = /^([^()\s]+)\(.*\)$/.exec(written)?.[1] ?? written
   const paths = [identity.path, ...(identity.alternatives ?? [])].filter((path) => path?.length)
   const said = (identity.path ?? []).join('.') || JSON.stringify(identity.title)
   const fail = (detail) => ({ failure: 'label', detail: `the link says ${JSON.stringify(label)}, and the page documents ${said} (${identity.declared}): ${detail}` })
-  // A link that names a language is held to a page of that language.
-  const named = new Set(wordsOf(label).filter((word) => LANGUAGES.has(word)))
-  const pageLanguages = LANGUAGE_OF[identity.via] ?? (identity.via === 'learn' && (identity.declared === 'about topic' || identity.declared === 'cmdlet' || /powershell/i.test(identity.path?.[0] ?? '')) ? ['powershell'] : [])
-  if (named.size > 0 && pageLanguages.length > 0 && !pageLanguages.some((language) => named.has(language))) return fail(`the page is ${pageLanguages.join(' or ')}`)
-  const wholes = [...text.matchAll(QUALIFIED)].map((match) => parseName(match[0].replace(/!$/, '')).segments)
-  if (wholes.length > 0) {
-    const ends = (path, segments) => segments.length <= path.length && segments.every((segment, index) => segment === path[path.length - segments.length + index])
-    return wholes.some((segments) => paths.some((path) => ends(path, segments))) ? undefined : fail('it is written under another owner or names another member')
-  }
-  // Words, not a name: each must be one of the symbol's (or its owner's, or its kind's), and one must be the symbol's own.
-  const own = paths.flatMap((path) => nameParts(path.at(-1)))
-  const around = [...own, ...paths.flatMap((path) => nameParts(path.at(-2) ?? '')), ...wordsOf(identity.declared ?? '')]
-  const tokens = text.replace(/c\+\+/gi, 'cpp').replace(/c#/gi, 'csharp').replace(/f#/gi, 'fsharp').split(/[^A-Za-z0-9]+/)
-    .filter((token) => token && !/^\d+$/.test(token) && ![LANGUAGE_WORDS, FILLER_WORDS, SITE_WORDS].some((set) => set.has(token.toLowerCase())))
-  const matches = (token, forms) => {
-    const [whole, ...parts] = nameParts(token)
-    const hit = (word) => forms.some((candidate) => sameWord(word, candidate))
-    return hit(whole) || (parts.length > 1 && parts.every(hit))
-  }
-  const wanted = tokens.length > 0 ? tokens : text.split(/[^A-Za-z0-9]+/).filter(Boolean)
-  const unplaced = wanted.filter((token) => !matches(token, around))
-  // `map!` and `empty?` end in a mark that belongs to the name: `map` is another function.
+  if (!NAME_TOKEN.test(text)) return fail('words that describe a page are not its symbol\'s name; a link like that is a row of the reviewed link table')
   const mark = /[!?]$/.exec(text)?.[0] ?? ''
-  if (!paths.some((path) => (/[!?]$/.exec(path.at(-1))?.[0] ?? '') === mark || (identity.declared === 'macro' && mark === '!'))) return fail(`${text} ends in ${mark || 'no mark'}, and the symbol does not`)
-  // And the label must say the whole of the symbol's own name, not one word of it: `coroutines` is not `CoroutineScope`.
-  const spoken = wanted.flatMap(nameParts)
-  const covered = paths.some((path) => {
-    const [whole, ...parts] = nameParts(path.at(-1))
-    return spoken.some((form) => sameWord(whole, form)) || (parts.length > 1 && parts.every((part) => spoken.some((form) => sameWord(part, form))))
-  })
-  if (unplaced.length > 0 || !covered) return fail(unplaced.length > 0 ? `${unplaced.join(', ')} ${unplaced.length > 1 ? 'are' : 'is'} not the symbol's, its owner's or its kind` : 'it says only part of the symbol\'s name, or none of it')
-  // A single bare word, whose owner the language fixes.
+  const segments = parseName(text.replace(/[!?]$/, '')).segments
+  const ends = (path) => segments.length > 0 && segments.length <= path.length && segments.every((segment, index) => segment === path[path.length - segments.length + index])
+  const named = paths.filter((path) => ends(path) && ((/[!?]$/.exec(path.at(-1))?.[0] ?? '') === mark || (identity.declared === 'macro' && mark === '!')))
+  if (named.length === 0) return fail(segments.length > 1 ? 'it is written under another owner or names another member' : 'it is not that name')
+  // A single bare name, whose owner the language fixes.
   const port = PORT_OF[identity.via]
-  const word = /^[\w$]+!?$/.test(text) ? text.replace(/!$/, '') : undefined
-  const owners = port && word && BARE_OWNERS[port]?.[word] !== undefined ? [BARE_OWNERS[port][word]] : undefined
-  if (owners && !paths.some((path) => path.at(-1) === word && owners.includes(owner(path)))) return fail(`${port} puts ${word} in ${owners[0]}`)
+  const owners = segments.length === 1 && port && BARE_OWNERS[port]?.[segments[0]] !== undefined ? [BARE_OWNERS[port][segments[0]]] : undefined
+  if (owners && !named.some((path) => owners.includes(owner(path)))) return fail(`${port} puts ${segments[0]} in ${owners[0]}`)
   return undefined
-}
-
-const FILLER_WORDS = new Set(['the', 'a', 'an', 'of', 'and', 'or', 'in', 'on', 'to', 'for', 'with', 'is', 'are', 'as', 'by', 'from', 'at', 'it', 's', 'its', 'this', 'that', 'how', 'about'])
-/** The words a title adds to every page of its site. */
-const SITE_WORDS = new Set(['documentation', 'docs', 'handbook', 'tutorial', 'programming', 'language', 'guide', 'tour', 'reference', 'manual', 'specification', 'spec', 'draft', 'standard', 'microsoft', 'learn', 'kotlin', 'oracle', 'cppreference'])
-
-/** The singulars a word may have: `classes` is `class`, `cases` is `case`, `properties` is `property`. */
-const stems = (word) => {
-  const found = new Set([word])
-  if (word.length > 4 && word.endsWith('ies')) found.add(`${word.slice(0, -3)}y`)
-  if (word.length > 3 && word.endsWith('es')) found.add(word.slice(0, -2))
-  if (word.length > 3 && word.endsWith('s') && !word.endsWith('ss')) found.add(word.slice(0, -1))
-  return [...found]
-}
-
-/**
- * The words of a text that carry its subject. `C++`, `C#` and `F#` are languages, written with a
- * symbol. A link's own words also drop what every page of a site says (`documentation`), unless
- * nothing else is left: a text of nothing but languages and filler (`The Rust Reference`) is its
- * own subject.
- */
-function subjectWords(text, { link = false } = {}) {
-  // A section's stable name (`[class.union]`) is a label for it, not a word of what it says.
-  const words = wordsOf(text.replace(/\[[a-z][a-z0-9.\- ]*\]/g, ' ').replace(/\bnon-/gi, 'non'))
-  const kept = words.filter((word) => !LANGUAGE_WORDS.has(word) && !FILLER_WORDS.has(word))
-  const dropped = link ? kept.filter((word) => !SITE_WORDS.has(word)) : kept
-  const subject = link && dropped.length > 0 ? dropped : kept
-  return subject.length > 0 ? subject : words
-}
-
-/** Pairs the languages use for one thing: `enum` is `enumeration`. */
-const SYNONYMS = [['enum', 'enumeration']]
-
-/** Whether two words are one: equal, a plural of the other, or a short form the languages use for it. */
-const sameWord = (a, b) => stems(a).some((left) => stems(b).some((right) => left === right || SYNONYMS.some((pair) => pair.includes(left) && pair.includes(right))))
-
-/**
- * Whether the words on a link name the subject of a page that declares no
- * symbol, by the page's own title, top heading, the heading its fragment
- * opens, and the fragment's words. Every word of the link that carries its
- * subject must be among them, ignoring case, plurals and the language's name:
- * "Kotlin classes" is the page that says "Classes" and not the one that says
- * "Functions".
- *
- * @param {string} label
- * @param {string[]} subjects
- * @returns {{ failure: string, detail: string } | undefined}
- */
-export function judgeSubject(label, subjects) {
-  const missing = missingWords(label, subjects)
-  if (missing === undefined) return { failure: 'label', detail: `the link says ${JSON.stringify(label)}, which names no subject` }
-  const spoken = (texts) => new Set(texts.flatMap(wordsOf).filter((word) => LANGUAGES.has(word)))
-  const said = spoken([label])
-  const about = spoken(subjects)
-  if (said.size > 0 && about.size > 0 && ![...said].some((language) => about.has(language))) {
-    return { failure: 'label', detail: `the link says ${JSON.stringify(label)}, which is ${[...said].join(' and ')}, and the page is ${[...about].join(' and ')}` }
-  }
-  if (missing.length === 0) return undefined
-  return { failure: 'label', detail: `the link says ${JSON.stringify(label)}, and the page is about ${subjects.slice(0, 3).map((text) => JSON.stringify(text)).join(', ') || 'nothing it names'}, which lacks ${missing.join(', ')}` }
-}
-
-/** The languages a link and a page can disagree about. `net` and `.NET` belong to C# and F# alike. */
-const LANGUAGES = new Set([...LANGUAGE_WORDS].filter((word) => !['net', 'dotnet', 'jvm', 'mcp', 'tmux', 'cmake'].includes(word)))
-
-/**
- * The words of a link that its page's subject does not carry, or `undefined` when the link has
- * no words that name a subject.
- *
- * @param {string} label
- * @param {string[]} subjects
- */
-export function missingWords(label, subjects) {
-  const wanted = subjectWords(label, { link: true })
-  if (wanted.length === 0) return undefined
-  // An API page's title leads with its kind (`class IO::Buffer`), which is not what it is about.
-  const present = [...new Set(subjects.flatMap((text) => subjectWords(text.replace(/^(?:class|module|struct|enum|interface|trait|object)\s+(?=[A-Z])/, ''))))]
-  return wanted.filter((word) => !present.some((candidate) => sameWord(word, candidate)))
 }
 
 export { sourceIdentity }

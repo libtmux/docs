@@ -312,20 +312,25 @@ whatever its title says. A host that publishes no declaration at all (the TypeSc
 handbook, the Lua manual, the JLS) is read by its fragment and its title, and a symbol
 name there passes only by an exception.
 
-Every link's own words are compared with its page, wherever the link comes from: a
-Markdown link in a page, the glossary, a link in a doc comment, and the title a
-keyword's help carries (`label`). On a page that documents a symbol, the words must
-be that symbol: a name written whole (`Option::map`) ends the page's path, owner
-included; a call written out is its callee; and words must say the whole of the
-symbol's name and nothing that is not its own, its owner's or its kind
-(`Where-Object` is not `System.Object`, `Kotlin coroutines` is not `CoroutineScope`).
-On any other page they must be the page's subject, by its title and top heading, the
-heading its fragment opens, a section's label (`[class.mem]`), or the last word of its
-address, ignoring case, plurals and the language's name; a link that names a language
-must be a page of that language. `Kotlin classes` is the page that says "Classes" and
-not the one that says "Functions". Where a link's words legitimately go past the heading
-(`Rust enum variants` at "Enumerations"), a `label` exception names the exact address and
-words, and the verifier requires the page's own text to say what the heading does not. A host that moves the
+A link a person wrote is a fact, and it is reviewed as one. Every Markdown link in a page, term in
+the glossary, link in a doc comment and title a keyword's help carries is a pair of its exact text and
+its exact address, and where its page documents no symbol it is a row of
+[`api-link-review.json`](site/src/data/api-link-review.json): the text, the address with its
+fragment, and the heading the page has there (the heading the fragment opens, else the page's own top
+heading). The verifier checks two things and matches nothing by likeness. Every pair the source writes
+is a row and every row is a pair the source writes, so a text planted at another address, a narrower
+page, a page of another language or a heading that shares a word with it fails as unlisted. And the
+page's heading at the address is the row's, so a page rewritten or moved under the link fails as
+drift. Adding a link means adding its row: a failing run prints the heading it found and the row to
+add, and a person reads both. A text that is exactly the name of the symbol its page declares needs no
+row: it is compared with the name, exactly (`Files` is `Files`, never `File`; `Option::map` ends the
+page's path, owner included; a call written out is its callee; `Result` is `std::result`'s), and
+words that describe the page are not a name. A row on a page that declares a symbol (`Python class
+methods` at `classmethod`) is recorded under the symbol's full name. Language is read from the
+address, never from the words: each port goes to its own language's documentation and to what its
+platform shares (a JVM port to the JLS and the JDK, C#, F# and PowerShell to the .NET API), and a link
+a port writes to any other fails (`PORT_LANGUAGES` in
+[`api-links.mjs`](scripts/lib/api-links.mjs)). A host that moves the
 page elsewhere, even by the case of a letter, fails, because a link should be
 the page's address. Request the missing ones after changing a map, an
 inventory or a pinned model:
@@ -351,16 +356,18 @@ record keeps the identity its page declared. `--check` requests nothing, but it
 judges every name the source generates again, now, against that recorded
 identity: a builtin edited over the same address fails. It also fails a
 destination with no passing record, two records for one address, a record for a
-link nothing makes, an identity that disagrees with its own address, and a pass
-that rests on an exception that is no longer listed. `PAGE_EXCEPTIONS` in
+link nothing makes, an identity that disagrees with its own address, a pass
+that rests on an exception that is no longer listed, and any difference between
+the links the source writes and the rows of the link table (a link with no row,
+a row for no link, a row twice, a row for a text that needs none, a record whose
+heading is not its row's). `PAGE_EXCEPTIONS` in
 `scripts/lib/api-destinations.mjs` carries the exceptions, one entry per exact
 address with the names it covers and its reason: `listed` for a name a page
 documents beside its subject rather than in its title (`std::chrono::milliseconds`
 on the `duration` page, and on no other), `section` for an anchor that documents
 several symbols or is spelled as a heading (the Lua manual's value types, the
 typespec reference), where the section the anchor opens must still name the
-symbol, and `label` for a link whose words name the concept and whose page
-documents the symbol that defines it, or go past the heading of a page that declares no symbol. Add to it only after reading the page. A name
+symbol. Add to it only after reading the page. A name
 that a language spells another way (`int` for `Int32`, `string` for `String`)
 goes in `TYPE_ALIASES`, and a package that two spellings share in
 `NAME_ALIASES`. `--check` also fails a record that contradicts itself (a pass
@@ -371,7 +378,8 @@ unverifiable, because that run checked nothing.
 page, a symbol the page does not document, a word that merely contains the
 symbol, a wrong package or namespace, a wrong kind, operand count or parameter
 list, a bare name in the wrong scope, words on a link that name another symbol,
-an exception borrowed by another page, a case-only redirect and a redirect to a
+an exception borrowed by another page, an unlisted link, a drifted heading, a
+link written for the wrong language, a case-only redirect and a redirect to a
 landing page on pages shaped like the real ones, each fault in the evidence, and
 each edit of the source over an unchanged record, and requires the check to name
 each. The weekly

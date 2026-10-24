@@ -38,6 +38,8 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createGet } from './lib/destination-verification.mjs'
 import { collectApiDestinations } from './lib/api-destinations.mjs'
+import { loadReviewedLinks, pairKey } from './lib/api-links.mjs'
+import { judgeLabel } from './lib/api-identities.mjs'
 import { checkApiEvidence, verifyApiDestination } from './lib/api-destination-verification.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -150,6 +152,7 @@ const pages = {
     ['abs', 'Return the absolute value of a number. The argument may be an int, a float or an object implementing __abs__(); an int subclass is accepted.'],
     ['aiter', 'Return an asynchronous iterator for an asynchronous iterable.'],
     ['int', 'Return an integer object constructed from a number or a string.', 'class'],
+    ['classmethod', 'Transform a method into a class method.', 'class'],
     ['open', 'Open file and return a corresponding file object.'],
   ]) },
   '/python/3/library/functions.html': { status: 301, location: '/python/3/builtins/functions.html' },
@@ -220,6 +223,9 @@ const pages = {
   '/python/3/library/collections.abc.html': { body: cpython('collections.abc', [['collections.abc.Mapping', 'ABC for read-only mapping classes.', 'class']]) },
   '/python/3/library/typing.html': { body: cpython('typing', [['typing.Mapping', 'Deprecated alias to collections.abc.Mapping.', 'class']]) },
   '/learn/dotnet/api/system.threading.barrier': { body: learn('Barrier Class', 'System.Threading') },
+  '/kotlin/docs/data-classes.html': { body: html('Data classes | Kotlin Documentation', '<h1>Data classes</h1><p>It is not unusual to create classes whose main purpose is to hold data.</p>') },
+  '/godev/ref/spec': { body: html('The Go Programming Language Specification - The Go Programming Language', `<h1>The Go Programming Language Specification</h1>${part('Constants', 'Constants', 'There are boolean constants, rune constants, integer constants and string constants.', 3)}${part('Variables', 'Variables', 'A variable is a storage location for holding a value.', 3)}`) },
+  [`${JBASE}/io/File.html`]: { body: javadoc('File', 'Class', 'java.io', { members: [['delete()', 'Deletes the file or directory denoted by this abstract pathname.']] }) },
   '/ts/docs/handbook/utility-types.html': { body: plain('Documentation - Utility Types', 'Utility Types', `${part('omittype-keys', 'Omit&lt;Type, Keys&gt;', 'Constructs a type by picking all properties from Type and then removing Keys.')}${part('omitthisparametertype', 'OmitThisParameter&lt;Type&gt;', 'Removes the this parameter from Type.')}`) },
   // cppreference: a title that names one subject, a declaration that says what it is, and text that names the rest.
   '/cppref/cpp/container/vector': { body: cppref('std::vector', 'template&lt; class T, class Allocator = std::allocator&lt;T&gt; &gt; class vector;', 'std::vector&lt;bool&gt; is a space-efficient specialization. The int and char element types are common.') },
@@ -286,7 +292,7 @@ const rewriteOrigins = {
   'https://elixir.hexdocs.pm': `${origin}/hexdocs`, 'https://pkg.go.dev': `${origin}/go`,
   'https://learn.microsoft.com': `${origin}/learn`, 'https://en.cppreference.com': `${origin}/cppref`,
   'https://www.typescriptlang.org': `${origin}/ts`, 'https://fsharp.github.io': `${origin}/fsharp`,
-  'https://typelevel.org': `${origin}/typelevel`, 'https://developer.mozilla.org': `${origin}/mdn`, 'https://kotlinlang.org': `${origin}/kotlin`, 'https://docs.scala-lang.org': `${origin}/scalatour`, 'https://eel.is': `${origin}/eel`, 'https://www.scala-lang.org': `${origin}/scala3`,
+  'https://typelevel.org': `${origin}/typelevel`, 'https://go.dev': `${origin}/godev`, 'https://developer.mozilla.org': `${origin}/mdn`, 'https://kotlinlang.org': `${origin}/kotlin`, 'https://docs.scala-lang.org': `${origin}/scalatour`, 'https://eel.is': `${origin}/eel`, 'https://www.scala-lang.org': `${origin}/scala3`,
 }
 const get = createGet({ rewriteOrigins, pauseMs: 0, retries: 0 })
 
@@ -296,8 +302,24 @@ const fail = (message) => {
   console.error(`FAIL ${message}`)
 }
 
+/** The reviewed link table a case is judged against: the rows its fixtures have headings for. */
+const table = (...rows) => ({ rows: rows.map(([label, url, heading]) => ({ label, url, heading })), byPair: new Map(rows.map(([label, url, heading]) => [pairKey(label, url), { label, url, heading }])) })
+const ROWS = [
+  ['Kotlin classes', 'https://kotlinlang.org/docs/classes.html', 'Classes'],
+  ['Rust structs', 'https://doc.rust-lang.org/reference/items/structs.html', 'Structs'],
+  ['Rust enum variants', 'https://doc.rust-lang.org/reference/items/enumerations.html', 'Enumerations'],
+  ['C++ nodiscard attribute', 'https://eel.is/c++draft/dcl.attr.nodiscard', '9.12.9 Nodiscard attribute [dcl.attr.nodiscard]'],
+  ['Scala method declarations', 'https://docs.scala-lang.org/tour/basics.html#methods', 'Methods'],
+  ['F# value signatures', 'https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/signature-files', 'Signature files'],
+  ['F# classes', 'https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/classes', 'Classes'],
+  ['Python class methods', 'https://docs.python.org/3/builtins/functions.html#classmethod', 'classmethod'],
+  ['Go constants', 'https://go.dev/ref/spec#Constants', 'Constants'],
+  ['Java booleans', 'https://docs.oracle.com/javase/specs/jls/se21/html/jls-4.html#jls-4.2.5', '4.2.5. The boolean Type and boolean Values'],
+  ['Julia composite types', 'https://docs.julialang.org/en/v1/manual/types/#Composite-Types', 'Composite Types'],
+]
+const TABLE = table(...ROWS)
 const at = (url, port, name, source = 'builtin', extra = {}) => ({ url, host: new URL(url).hostname, uses: [{ port, name, source, ...extra }] })
-const authored = (url, label) => ({ url, host: new URL(url).hostname, uses: [{ port: '', name: 'site/src/content/docs/example.md', source: 'authored', label }] })
+const authored = (url, label, from) => ({ url, host: new URL(url).hostname, uses: [{ port: '', name: 'site/src/content/docs/example.md', source: 'authored', label, ...(from && { from }) }] })
 
 const cases = [
   { name: 'control: the page names the symbol', destination: at(`${JDK}/util/Optional.html`, 'java', 'Optional', 'type'), ok: true },
@@ -439,12 +461,26 @@ const cases = [
   { name: 'MDN control: the primitive string, which MDN documents as String', destination: at(`${MDN}/String`, 'ts', 'string'), ok: true },
   { name: 'alias: the primitive string at Number', destination: at(`${MDN}/Number`, 'ts', 'string'), failure: 'symbol' },
 
-  // Class: the words on a link. A symbol page must document the symbol the link says.
+  // Class: the words on a link to a page that documents a symbol are that symbol's name, exactly. No plural, stem or synonym stands for it.
   { name: 'authored control: [strip] at Base.strip', destination: authored(`${JULIA}/strings/#Base.strip`, 'strip'), ok: true },
   { name: 'authored: [strip] swapped to Base.lstrip, a different function', destination: authored(`${JULIA}/strings/#Base.lstrip`, 'strip'), failure: 'label' },
   { name: 'authored control: [std::fs::read_to_string] at read_to_string', destination: authored(`${RUST}/fs/fn.read_to_string.html`, '`std::fs::read_to_string`'), ok: true },
   { name: 'authored: [std::fs::read_to_string] swapped to remove_file', destination: authored(`${RUST}/fs/fn.remove_file.html`, '`std::fs::read_to_string`'), failure: 'label' },
-  { name: 'authored control: a concept link on a page of the manual says no symbol', destination: authored('https://docs.julialang.org/en/v1/manual/types/#Composite-Types', 'Julia composite types'), ok: true },
+  { name: 'exact control: `Files` at the Files class', destination: authored(`${JDK}/nio/file/Files.html`, '`Files`'), ok: true },
+  { name: 'exact: `Files` at File, the singular of it', destination: authored(`${JDK}/io/File.html`, '`Files`'), failure: 'label' },
+  { name: 'exact: `Paths` at Path, the plural of it', destination: authored(`${JDK}/nio/file/Path.html`, '`Paths`'), failure: 'label' },
+  { name: 'exact: `Lists` at List, the plural of it', destination: authored(`${JDK}/util/List.html`, '`Lists`'), failure: 'label' },
+  { name: 'exact control: `List` at List', destination: authored(`${JDK}/util/List.html`, '`List`'), ok: true },
+  { name: 'label control: `Option::map` at Option::map', destination: authored(`${RUST}/option/enum.Option.html#method.map`, '`Option::map`'), ok: true },
+  { name: 'label: `Option::map` at Result::map, the same member of another owner', destination: authored(`${RUST}/result/enum.Result.html#method.map`, '`Option::map`'), failure: 'label' },
+  { name: 'label control: a bare `Result` at the one in std::result, which Rust code imports', destination: authored(`${RUST}/result/enum.Result.html`, '`Result`'), ok: true },
+  { name: 'label: a bare `Result` at the alias in std::fmt', destination: authored(`${RUST}/fmt/type.Result.html`, '`Result`'), failure: 'label' },
+  { name: 'label: a call written out is its callee, so `map!(f)` is not Base.map', destination: authored(`${JULIA}/collections/#Base.map`, '`map!(f)`'), failure: 'label' },
+  { name: 'label control: a call written out is its callee, `map(f)` is Base.map', destination: authored(`${JULIA}/collections/#Base.map`, '`map(f)`'), ok: true },
+  { name: 'words: "Julia arrays" at Base.Vector, which describe a page and name nothing', destination: authored(`${JULIA}/arrays/#Base.Vector`, 'Julia arrays'), failure: 'label' },
+  { name: 'row control: "Python class methods" at classmethod, which a reviewed row says', destination: authored(`${PY}/functions.html#classmethod`, 'Python class methods'), ok: true },
+  { name: 'row: "Python class methods" at int, where no row says it', destination: authored(`${PY}/functions.html#int`, 'Python class methods'), failure: 'label' },
+  { name: 'row: "Python classmethod" at classmethod, words that are not exactly the name and not a row', destination: authored(`${PY}/functions.html#classmethod`, 'Python classmethod'), failure: 'label' },
 
   // Class: a scope a language binds per name, a hint that is a whole owner, a declaration that is a modifier before a keyword.
   { name: 'Scala control: a bare Map is the immutable one, which Predef binds', destination: at('https://www.scala-lang.org/api/3.x/scala/collection/immutable/Map.html', 'scala', 'Map'), ok: true },
@@ -461,29 +497,32 @@ const cases = [
   { name: 'rustdoc control: println is in scope everywhere', destination: at(`${RUST}/macro.println.html`, 'rs', 'println'), ok: true },
   { name: 'rustdoc: println at print!', destination: at(`${RUST}/macro.print.html`, 'rs', 'println'), failure: 'symbol' },
 
-  // Class: the words on a link, on a host that declares nothing, and on a page that documents no symbol.
-  { name: 'subject control: "Kotlin classes" at the page titled Classes', destination: authored('https://kotlinlang.org/docs/classes.html', 'Kotlin classes'), ok: true },
-  { name: 'subject: "Kotlin classes" at the page titled Functions', destination: authored('https://kotlinlang.org/docs/functions.html', 'Kotlin classes'), failure: 'label' },
-  { name: 'subject control: "Rust structs" at the Structs page of the reference', destination: authored('https://doc.rust-lang.org/reference/items/structs.html', 'Rust structs'), ok: true },
-  { name: 'subject: "Rust structs" at the Enumerations page of the reference', destination: authored('https://doc.rust-lang.org/reference/items/enumerations.html', 'Rust structs'), failure: 'label' },
-  { name: 'subject control: "Rust enum variants" at Enumerations, a reviewed exception whose words the page says', destination: authored('https://doc.rust-lang.org/reference/items/enumerations.html', 'Rust enum variants'), ok: true },
-  { name: 'subject: "Rust enum variants" at Structs, where no exception was reviewed', destination: authored('https://doc.rust-lang.org/reference/items/structs.html', 'Rust enum variants'), failure: 'label' },
+  // Class: the words on a link to any other page are a row of the reviewed link table: the exact text, the exact address and the heading the page has there.
+  { name: 'row control: "Kotlin classes" at the page headed Classes', destination: authored('https://kotlinlang.org/docs/classes.html', 'Kotlin classes'), ok: true },
+  { name: 'unlisted: "Kotlin classes" at the page headed Functions', destination: authored('https://kotlinlang.org/docs/functions.html', 'Kotlin classes'), failure: 'unlisted' },
+  { name: 'unlisted: "Kotlin classes" at a narrower page, Data classes', destination: authored('https://kotlinlang.org/docs/data-classes.html', 'Kotlin classes'), failure: 'unlisted' },
+  { name: 'unlisted: "Kotlin class" at the page headed Classes, a text that is not the row\'s', destination: authored('https://kotlinlang.org/docs/classes.html', 'Kotlin class'), failure: 'unlisted' },
+  { name: 'unlisted: "Kotlin documentation" at the page headed Classes, words every page of the site shares', destination: authored('https://kotlinlang.org/docs/classes.html', 'Kotlin documentation'), failure: 'unlisted' },
+  { name: 'unlisted: "The Rust Reference" at the Structs page', destination: authored('https://doc.rust-lang.org/reference/items/structs.html', 'The Rust Reference'), failure: 'unlisted' },
+  { name: 'row control: "Rust structs" at the Structs page of the reference', destination: authored('https://doc.rust-lang.org/reference/items/structs.html', 'Rust structs'), ok: true },
+  { name: 'unlisted: "Rust structs" at the Enumerations page of the reference', destination: authored('https://doc.rust-lang.org/reference/items/enumerations.html', 'Rust structs'), failure: 'unlisted' },
+  { name: 'row control: "Rust enum variants" at Enumerations, which the row says', destination: authored('https://doc.rust-lang.org/reference/items/enumerations.html', 'Rust enum variants'), ok: true },
+  { name: 'unlisted: "Rust enum variants" at Structs, where no row says it', destination: authored('https://doc.rust-lang.org/reference/items/structs.html', 'Rust enum variants'), failure: 'unlisted' },
+  { name: 'drift: "Kotlin classes" whose row records another heading than the page has', destination: authored('https://kotlinlang.org/docs/classes.html', 'Kotlin classes'), links: table(['Kotlin classes', 'https://kotlinlang.org/docs/classes.html', 'Classes and objects']), failure: 'drift' },
+  { name: 'drift: a section whose row records the heading it had before the page was edited', destination: authored('https://docs.scala-lang.org/tour/basics.html#methods', 'Scala method declarations'), links: table(['Scala method declarations', 'https://docs.scala-lang.org/tour/basics.html#methods', 'Defining methods']), failure: 'drift' },
   { name: 'keyword control: C++ nodiscard at its attribute', destination: at('https://eel.is/c++draft/dcl.attr.nodiscard', 'cxx', 'nodiscard', 'keyword'), ok: true },
-  { name: 'keyword: C++ nodiscard at the noreturn attribute', destination: at('https://eel.is/c++draft/dcl.attr.noreturn', 'cxx', 'nodiscard', 'keyword'), failure: 'label' },
+  { name: 'keyword: C++ nodiscard at the noreturn attribute', destination: at('https://eel.is/c++draft/dcl.attr.noreturn', 'cxx', 'nodiscard', 'keyword'), failure: 'unlisted' },
   { name: 'keyword control: Scala def at the Methods section', destination: at('https://docs.scala-lang.org/tour/basics.html#methods', 'scala', 'def', 'keyword'), ok: true },
-  { name: 'keyword: Scala def at the Values section', destination: at('https://docs.scala-lang.org/tour/basics.html#values', 'scala', 'def', 'keyword'), failure: 'label' },
+  { name: 'keyword: Scala def at the Values section', destination: at('https://docs.scala-lang.org/tour/basics.html#values', 'scala', 'def', 'keyword'), failure: 'unlisted' },
   { name: 'keyword control: F# val at the signature files page', destination: at('https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/signature-files', 'fsharp', 'val', 'keyword'), ok: true },
-  { name: 'keyword: F# val at the records page', destination: at('https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/records', 'fsharp', 'val', 'keyword'), failure: 'label' },
-  { name: 'language control: "F# classes" at the F# page', destination: authored('https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/classes', 'F# classes'), ok: true },
-  { name: 'language: "F# classes" at the C# page for static classes', destination: authored('https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/static-classes-and-static-class-members', 'F# classes'), failure: 'label' },
-  { name: 'language: "F# functions" at the PowerShell about topic', destination: authored('https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_functions', 'F# functions'), failure: 'label' },
-  { name: 'label control: `Option::map` at Option::map', destination: authored(`${RUST}/option/enum.Option.html#method.map`, '`Option::map`'), ok: true },
-  { name: 'label: `Option::map` at Result::map, the same member of another owner', destination: authored(`${RUST}/result/enum.Result.html#method.map`, '`Option::map`'), failure: 'label' },
-  { name: 'label control: a bare `Result` at the one in std::result, which Rust code imports', destination: authored(`${RUST}/result/enum.Result.html`, '`Result`'), ok: true },
-  { name: 'label: a bare `Result` at the alias in std::fmt', destination: authored(`${RUST}/fmt/type.Result.html`, '`Result`'), failure: 'label' },
-  { name: 'label: a call written out is its callee, so `Base.map!(f)` is not Base.map', destination: authored(`${JULIA}/collections/#Base.map`, '`map!(f)`'), failure: 'label' },
-  { name: 'label control: a call written out is its callee, `map(f)` is Base.map', destination: authored(`${JULIA}/collections/#Base.map`, '`map(f)`'), ok: true },
-  { name: 'label: words that belong to another symbol, "Julia arrays", are not Base.Vector', destination: authored(`${JULIA}/arrays/#Base.Vector`, 'Julia arrays'), failure: 'label' },
+  { name: 'keyword: F# val at the records page', destination: at('https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/records', 'fsharp', 'val', 'keyword'), failure: 'unlisted' },
+  { name: 'language: "F# classes" at the C# page for static classes, a pair no row lists', destination: authored('https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/static-classes-and-static-class-members', 'F# classes'), failure: 'unlisted' },
+  { name: 'language control: "F# classes" at the F# page', destination: authored('https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/classes', 'F# classes', 'fsharp'), ok: true },
+  { name: 'language: a link the Rust docs write to the Go specification', destination: authored('https://go.dev/ref/spec#Constants', 'Go constants', 'rs'), failure: 'language' },
+  { name: 'language control: the same link written by the Go docs', destination: authored('https://go.dev/ref/spec#Constants', 'Go constants', 'go'), ok: true },
+  { name: 'language: a name the Rust port writes, at the TypeScript handbook', destination: at(`${TS}/utility-types.html#omittype-keys`, 'rs', 'Omit'), failure: 'language' },
+  { name: 'language control: a link the Kotlin docs write to the JLS, a JVM port\'s own platform', destination: authored(`${JLS}/jls-4.html#jls-4.2.5`, 'Java booleans', 'kotlin'), ok: true },
+  { name: 'language: the same link written by the Python docs', destination: authored(`${JLS}/jls-4.html#jls-4.2.5`, 'Java booleans', 'py'), failure: 'language' },
 
   // Class: an exception that names a word, not an address. Each is pinned to the one address it was reviewed for.
   { name: 'cppreference control: std::chrono::seconds at the duration page that lists it', destination: at(`${CPPREF}/chrono/duration`, 'cxx', 'std::chrono::seconds'), ok: true },
@@ -503,7 +542,7 @@ const cases = [
 ]
 
 for (const testCase of cases) {
-  const record = await verifyApiDestination(testCase.destination, { get })
+  const record = await verifyApiDestination(testCase.destination, { get, links: testCase.links ?? TABLE })
   if (testCase.ok) {
     if (!record.ok) fail(`${testCase.name}: expected a pass, got ${record.failure ?? record.unverifiable}: ${record.detail ?? ''}`)
     else console.log(`ok   ${testCase.name}`)
@@ -556,8 +595,9 @@ const drives = [
   { name: 'every destination unverifiable, so nothing was checked', mutate: (copy) => { for (const record of copy.destinations) Object.assign(record, unverifiable) }, expect: /destinations are unverifiable, more than the \d+ a blocked or throttled host explains/ },
   { name: 'a few destinations unverifiable is unresolved, not a failure', mutate: (copy) => { for (const record of copy.destinations.slice(0, 5)) Object.assign(record, unverifiable) }, status: 0 },
   { name: 'every unverifiable destination is printed, not a count', mutate: (copy) => { for (const record of copy.destinations.slice(0, 30)) Object.assign(record, unverifiable) }, status: 0, printed: { pattern: /unresolved: https:/g, count: 30 } },
-  { name: 'a record that found a link\'s words in a subject it no longer keeps', mutate: (copy) => { delete copy.destinations.find((record) => record.url === 'https://doc.rust-lang.org/reference/items/structs.html').subject }, expect: /as found in the page's subject without the subject it was found in/ },
-  { name: 'a subject recorded as something other than the page\'s words', mutate: (copy) => { copy.destinations.find((record) => record.url === 'https://doc.rust-lang.org/reference/items/structs.html').subject = 'Structs' }, expect: /records a subject that is not a list of the page's words/ },
+  { name: 'a reviewed link whose record lost the heading it was compared at', mutate: (copy) => { delete copy.destinations.find((record) => record.url === 'https://doc.rust-lang.org/reference/items/structs.html').heading }, expect: /as a reviewed link without the heading it was compared at/ },
+  { name: 'a heading that is not the words of one', mutate: (copy) => { copy.destinations.find((record) => record.url === 'https://doc.rust-lang.org/reference/items/structs.html').heading = '' }, expect: /records a heading that is not the words of one/ },
+  { name: 'a record that saw another heading than the reviewed row records', mutate: (copy) => { copy.destinations.find((record) => record.url === 'https://doc.rust-lang.org/reference/items/structs.html').heading = 'Enumerations' }, expect: /names \(drift\): the reviewed link records the heading "Structs", and the record saw "Enumerations"/ },
   { name: 'an inventory without a record', mutate: (copy) => { copy.inventories = copy.inventories.filter((record) => record.name !== 'jdk') }, expect: /the jdk inventory has no record/ },
   { name: 'an inventory that names pages its host lacks', mutate: (copy) => { Object.assign(copy.inventories[0], { ok: false, missing: 3, examples: ['Planted'] }) }, expect: /names 3 pages its host's index lacks/ },
   { name: 'an inventory rebuilt since it was verified', mutate: (copy) => { copy.inventories[0].digest = '0'.repeat(40) }, expect: /entries are not the ones its record was verified with/ },
@@ -591,17 +631,40 @@ const rename = (url, from, to, extra = {}) => {
   return map
 }
 const VEC = 'https://doc.rust-lang.org/std/vec/struct.Vec.html'
+const reviewed = loadReviewedLinks(root)
+const asTable = (rows) => ({ rows, byPair: new Map(rows.map((row) => [pairKey(row.label, row.url), row])) })
+const without = (label) => asTable(reviewed.rows.filter((row) => row.label !== label))
+const edited = (label, heading) => asTable(reviewed.rows.map((row) => (row.label === label ? { ...row, heading } : row)))
+const withRow = (row) => asTable([...reviewed.rows, row])
+// A text that is exactly the symbol its page declares, which a row would only repeat.
+const exactRow = (() => {
+  const record = new Map(evidence.destinations.map((candidate) => [candidate.url, candidate]))
+  for (const destination of destinations.values()) {
+    const found = record.get(destination.url)
+    for (const use of destination.uses.values()) {
+      if (use.label !== undefined && found?.identity && ['type', 'object', 'module', 'member', 'callback', 'keyword'].includes(found.identity.kind) && !judgeLabel(use.label, found.identity)) {
+        return { label: use.label, url: destination.url, heading: found.heading ?? found.identity.path.join('.') }
+      }
+    }
+  }
+  return undefined
+})()
 const recompute = [
   { name: 'control: the destinations the source generates', destinations: clone(), expect: undefined },
   { name: 'a builtin renamed to another symbol over the same address', destinations: rename(VEC, 'rs:Vec', 'rs:Option'), expect: /not what rs:Option names \(symbol\)/ },
   { name: 'a builtin renamed to a member of the type the address documents', destinations: rename(VEC, 'rs:Vec', 'rs:Vec::push'), expect: /not what rs:Vec::push names \(symbol\)/ },
   { name: 'a builtin renamed into another module', destinations: rename(VEC, 'rs:Vec', 'rs:std::collections::Vec'), expect: /not what rs:std::collections::Vec names \(owner\)/ },
   { name: 'a type written with another operand count over the same address', destinations: rename('https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger', 'csharp:ILogger', 'csharp:ILogger<TCategoryName>'), expect: /not what csharp:ILogger<TCategoryName> names \(arity\)/ },
-  { name: 'a link whose words now name another subject of the same page', destinations: (() => { const map = clone(); map.get('https://doc.rust-lang.org/reference/items/structs.html').uses.set('x', { port: '', name: 'site/src/content/docs/example.md', source: 'authored', label: 'Rust enums' }); return map })(), expect: /not what the link text "Rust enums" names \(label\)/ },
+  { name: 'a link text edited over the same address: a pair no row lists', destinations: (() => { const map = clone(); map.get('https://doc.rust-lang.org/reference/items/structs.html').uses.set('x', { port: '', name: 'site/src/content/docs/example.md', source: 'authored', label: 'Rust enums' }); return map })(), expect: /not what the link text "Rust enums" names \(unlisted\)/ },
   { name: 'a link whose words now name another symbol', destinations: (() => { const map = clone(); const url = 'https://docs.julialang.org/en/v1/base/strings/#Base.strip'; map.get(url).uses.set('x', { port: '', name: 'site/src/content/docs/example.md', source: 'authored', label: 'lstrip' }); return map })(), expect: /not what the link text "lstrip" names \(label\)/ },
+  { name: 'a row removed from the table', links: without('Rust structs'), expect: /not what the link text "Rust structs" names \(unlisted\)/ },
+  { name: 'a row whose heading was edited', links: edited('Rust structs', 'Enumerations'), expect: /names \(drift\): the reviewed link records the heading "Enumerations", and the record saw "Structs"/ },
+  { name: 'a row for a link nothing generates', links: withRow({ label: 'Rust traits', url: 'https://doc.rust-lang.org/reference/items/unions.html', heading: 'Unions' }), expect: /has a row for "Rust traits" at https:\/\/doc\.rust-lang\.org\/reference\/items\/unions\.html, which nothing the source generates writes/ },
+  { name: 'a row listed twice', links: withRow(reviewed.rows.find((row) => row.label === 'Rust structs')), expect: /has "Rust structs" at https:\/\/doc\.rust-lang\.org\/reference\/items\/structs\.html twice/ },
+  { name: 'a row for a text that is exactly the symbol its page declares', links: withRow(exactRow), expect: /has a reviewed row for .*which is exactly the symbol the page declares: remove the row/ },
 ]
 for (const drive of recompute) {
-  const { problems } = checkApiEvidence(drive.destinations, evidence, { root })
+  const { problems } = checkApiEvidence(drive.destinations ?? destinations, evidence, { root, links: drive.links ?? reviewed })
   const text = problems.join('\n')
   if (drive.expect === undefined) {
     if (problems.length > 0) fail(`${drive.name}: expected no problems, got ${text.slice(0, 600)}`)

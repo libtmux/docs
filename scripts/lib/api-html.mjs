@@ -3,7 +3,7 @@
  * anchors, the text under an anchor, and the small text helpers they share.
  */
 
-const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', ndash: '-', mdash: '-', middot: '.', hellip: '...', rsquo: "'", lsquo: "'", ldquo: '"', rdquo: '"' }
+const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', ndash: '-', mdash: '-', middot: '.', hellip: '...', rsquo: "'", lsquo: "'", ldquo: '"', rdquo: '"', para: '\u00b6', uarr: '\u2191' }
 export const decode = (text) => text.replace(/&(#x?[0-9a-f]+|[a-z]+);/gi, (whole, name) => {
   if (name[0] === '#') {
     try { return String.fromCodePoint(name[1].toLowerCase() === 'x' ? Number.parseInt(name.slice(2), 16) : Number(name.slice(1))) } catch { return whole }
@@ -133,37 +133,29 @@ export function headingAt(page, fragment) {
   return next && strip(page.html.slice(anchor.at, next.at)).length <= 12 ? next.text : undefined
 }
 
+/** A heading as a reader sees it: one line, without the permalink mark a manual hangs on it. */
+export const normalizeHeading = (text) => text.replace(/[\u00b6\u2192\u2191\u200b\ufeff]|\u200c|\u200d/g, ' ').replace(/\s+/g, ' ').trim()
+
 /**
- * What a page says its subject is, from the most specific thing it names. A fragment
- * that opens a heading names that heading (and its own words), and nothing wider: the
- * page's title is the whole chapter. A page whose address is a section label (`[class.mem]`)
- * names the heading that carries it. Otherwise the title and the top heading, when a page
- * has few of them (a manual with a chapter in every `h1` names none), and the last word of
- * the address. These are the strings a link's words are compared with when the page
- * declares no symbol.
+ * The heading a link names, in the words its page gives it: the heading its fragment opens
+ * (`#id` when the anchor sits on an entry that has none), and for a link to the page, the
+ * heading that carries the page's own section label (`[class.mem]`, as the C++ draft writes it),
+ * else the top heading that carries the last word of its address, else the top heading its title
+ * begins with (a book's title heads every page, and a page may end in "Contributors"), else its first
+ * top heading that is not the site's name (a manual's title bar is a heading above the page's own),
+ * else its title.
  */
-export function subjectsOf(page, fragment, url) {
+export function pageHeading(page, fragment, url) {
+  if (fragment) return normalizeHeading(headingAt(page, fragment) ?? `#${safeDecode(fragment)}`)
   const slug = url ? decodeURIComponent(new URL(url).pathname.split('/').filter(Boolean).at(-1) ?? '').replace(/\.html?$/i, '') : ''
-  const heading = fragment ? headingAt(page, fragment) : undefined
-  const tops = [...new Set(page.headings.filter((candidate) => candidate.level === 1).map((candidate) => candidate.text))]
-  const labelled = !fragment && slug ? page.headings.find((candidate) => candidate.text.replace(/\s+/g, '').endsWith(`[${slug}]`.replace(/\s+/g, ''))) : undefined
-  const found = heading ? [heading, safeDecode(fragment).replace(/[-_.]+/g, ' ')]
-    : fragment ? [safeDecode(fragment).replace(/[-_.]+/g, ' '), page.title, ...(tops.length <= 3 ? tops : [])]
-      : labelled ? [labelled.text] : [page.title, ...(tops.length <= 3 ? tops : [])]
-  // The address's last word names the page when nothing on the page does.
-  if (!heading && !labelled && slug && index(slug)) found.push(slug.replace(/[-_.]+/g, ' '))
-  // The language an address is about, for pages that do not say it (`/dotnet/csharp/`).
-  const spoken = url ? wordsOf(decodeURIComponent(new URL(url).pathname)).filter((word) => LANGUAGE_WORDS.has(word)) : []
-  if (spoken.length) found.push(`language ${[...new Set(spoken)].join(' ')}`)
-  return [...new Set(found.map((text) => text.replace(/\s+/g, ' ').trim()).filter(Boolean))].slice(0, 8)
+  const labelled = slug ? page.headings.find((candidate) => candidate.text.replace(/\s+/g, '').endsWith(`[${slug}]`.replace(/\s+/g, ''))) : undefined
+  if (labelled) return normalizeHeading(labelled.text)
+  const squash = (text) => text.toLowerCase().replace(/[^a-z0-9]/g, '')
+  const title = normalizeHeading(page.title).toLowerCase()
+  const tops = page.headings.filter((candidate) => candidate.level === 1).map((candidate) => normalizeHeading(candidate.text)).filter(Boolean)
+  const addressed = slug.length >= 3 ? tops.find((text) => squash(text).includes(squash(slug))) : undefined
+  const named = tops.filter((text) => title.startsWith(text.toLowerCase())).sort((a, b) => b.length - a.length)[0]
+  const site = title.split(/\s+[-|\u2013\u2014]\s+/).slice(1).map((part) => part.trim())
+  const own = tops.filter((text) => !site.includes(text.toLowerCase()))
+  return addressed ?? named ?? own[0] ?? tops[0] ?? normalizeHeading(page.title)
 }
-
-/** Whether an address's last word names a page, not the site's front. */
-const index = (slug) => !/^(index|manual|docs?|home)$/i.test(slug)
-
-/** Words that name a language, as titles and addresses spell them. `C++`, `C#` and `F#` are written with a symbol, so they are read as `cpp`, `csharp` and `fsharp`. */
-export const LANGUAGE_WORDS = new Set(['python', 'rust', 'go', 'golang', 'java', 'kotlin', 'scala', 'swift', 'typescript', 'javascript', 'julia', 'lua', 'elixir', 'erlang', 'ruby', 'powershell', 'cmake', 'dotnet', 'net', 'csharp', 'fsharp', 'cpp', 'jvm', 'mcp', 'tmux'])
-
-/** The words of a text, lowercased, with the languages that are written with a symbol spelled as words. */
-export const wordsOf = (text) => text.replace(/c\+\+/gi, 'cpp').replace(/c#/gi, 'csharp').replace(/f#/gi, 'fsharp').replace(/[`*]/g, '')
-  .split(/[^A-Za-z0-9]+/).map((word) => word.toLowerCase()).filter((word) => word && !/^\d+$/.test(word))

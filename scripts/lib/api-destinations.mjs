@@ -89,9 +89,6 @@ const UTILITY_ANCHORS = {
  *   or sibling entry) names the symbol. For an anchor that documents several,
  *   or whose spelling is a heading. `words` is what the section says when it
  *   is not the symbol's own spelling (`async iterable` for `AsyncIterable`).
- * - `label`: a link's own words name the concept, and the page it reaches
- *   documents the symbol that defines it (`authored:` names, the words as
- *   written). For a glossary term that links the function declaring it.
  */
 export const PAGE_EXCEPTIONS = [
   ...[
@@ -106,83 +103,6 @@ export const PAGE_EXCEPTIONS = [
     [`${CPP}types/remove_pointer`, ['std::remove_pointer_t'], 'the remove_pointer page lists the _t helper alias'],
     [`${CPP}types/result_of`, ['std::invoke_result_t'], 'the result_of page covers invoke_result and its _t helper alias'],
   ].map(([url, names, reason]) => ({ tier: 'listed', url, names: names.map((name) => `cxx:${name}`), reason })),
-  // A link whose words go past the heading of the page it reaches, on a host that declares no symbol. The verifier also
-  // requires the page's text to say the words the heading lacks; each row names the heading and what the link adds.
-  ...[
-    ['https://docs.scala-lang.org/tour/basics.html#methods', 'authored:Scala functions and methods', 'Methods', 'functions'],
-    ['https://docs.scala-lang.org/tour/basics.html#methods', 'keyword:Scala method declarations', 'Methods', 'method declarations'],
-    ['https://docs.scala-lang.org/tour/basics.html#methods', 'authored:Scala method declarations', 'Methods', 'method declarations'],
-    ['https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/static', 'authored:C# static members', 'static', 'static members'],
-    ['https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/abstract', 'authored:C# abstract declarations', 'abstract', 'abstract declarations'],
-    ['https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/readonly', 'authored:C# readonly declarations', 'readonly', 'readonly declarations'],
-    ['https://www.typescriptlang.org/docs/handbook/2/classes.html#private', 'authored:TypeScript private members', 'private', 'private members'],
-    ['https://docs.oracle.com/javase/specs/jls/se21/html/jls-9.html#jls-9.6', 'authored:Java annotation interfaces and elements', 'Annotation Interfaces', 'the elements of an annotation interface'],
-    ['https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.1.1.2', 'authored:Java final declarations', 'sealed, non-sealed, and final Classes', 'final declarations'],
-    ['https://kotlinlang.org/docs/functions.html#function-scope', 'authored:Kotlin member functions', 'Function scope', 'member functions'],
-    ['https://eel.is/c++draft/dcl.fct', 'authored:C++ function declarations', 'Functions', 'function declarations'],
-    ['https://doc.rust-lang.org/reference/items/associated-items.html', 'authored:Rust associated declarations', 'Associated items', 'associated declarations'],
-    ['https://docs.swift.org/latest/documentation/the-swift-programming-language/functions/', 'authored:Swift function declarations', 'Functions', 'function declarations'],
-    ['https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/signature-files', 'keyword:F# value signatures', 'Signature files', 'the values a signature declares'],
-    ['https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-tool-install#global-tools', 'authored:`$HOME/.dotnet/tools`', 'Global tools', 'where they are installed, under the home directory'],
-    ['https://doc.rust-lang.org/error_codes/E0117.html', 'authored:orphan rules', 'E0117', 'the orphan rules'],
-    ['https://docs.python.org/3/tutorial/classes.html', 'authored:Python class and instance attributes', '9. Classes', 'class and instance attributes'],
-    ['https://eel.is/c++draft/class.pre', 'authored:C++ class keys', 'Preamble', 'class keys'],
-    ['https://eel.is/c++draft/class.pre', 'authored:C++ classes', 'Preamble', 'classes, which it introduces'],
-    ['https://eel.is/c++draft/class.pre', 'authored:C++ class declarations', 'Preamble', 'class declarations'],
-    ['https://docs.julialang.org/en/v1/manual/types/#Composite-Types', 'authored:Julia immutable composite types', 'Composite Types', 'immutable composite types'],
-    ['https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/discriminated-unions', 'authored:F# union cases', 'Discriminated Unions', 'union cases'],
-    ['https://doc.rust-lang.org/reference/items/enumerations.html', 'authored:Rust enum variants', 'Enumerations', 'enum variants'],
-    ['https://docs.julialang.org/en/v1/manual/methods/', 'authored:Julia method dispatch', 'Methods', 'method dispatch'],
-    ['https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/async', 'authored:C# async methods', 'async', 'async methods'],
-    ['https://kotlinlang.org/docs/coroutines-basics.html', 'authored:Kotlin suspending functions', 'Coroutines basics', 'suspending functions'],
-    ['https://eel.is/c++draft/dcl.type.cv', 'authored:C++ const qualification', 'The cv-qualifiers', 'const qualification'],
-    ['https://eel.is/c++draft/dcl.type.cv', 'authored:C++ cv-qualification', 'The cv-qualifiers', 'cv-qualification'],
-    ['https://docs.scala-lang.org/tour/basics.html#values', 'authored:Scala values and variables', 'Values', 'variables'],
-    ['https://docs.oracle.com/javase/specs/jls/se21/html/jls-4.html#jls-4.12.4', 'authored:Java constant variables', 'final Variables', 'constant variables'],
-    ['https://elixir.hexdocs.pm/typespecs.html#behaviours', 'authored:Elixir behaviour callbacks', 'Behaviours', 'behaviour callbacks'],
-    ['https://elixir.hexdocs.pm/typespecs.html#defining-a-specification', 'authored:Elixir function specifications', 'Defining a specification', 'function specifications'],
-    ['https://www.typescriptlang.org/docs/handbook/2/classes.html#getters--setters', 'authored:TypeScript properties', 'Getters / Setters', 'properties'],
-    ['https://www.typescriptlang.org/docs/handbook/release-notes/typescript-1-7.html#asyncawait-support-in-es6-targets-node-v4', 'authored:TypeScript async functions', 'async / await support', 'async functions'],
-    ['https://www.typescriptlang.org/docs/handbook/2/classes.html#readonly', 'authored:TypeScript readonly fields', 'readonly', 'readonly fields'],
-    ['https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/methods', 'authored:C# method overloading', 'Methods', 'overloading'],
-    ['https://learn.microsoft.com/en-us/nuget/what-is-nuget', 'authored:NuGet packages', 'An introduction to NuGet', 'packages'],
-    ['https://learn.microsoft.com/en-us/powershell/scripting/developer/module/writing-a-windows-powershell-module', 'authored:PowerShell module distribution', 'Writing a Windows PowerShell Module', 'distribution'],
-    ['https://go.dev/doc/modules/layout', 'authored:Go modules and packages', 'Organizing a Go module', 'packages'],
-    ['https://eel.is/c++draft/class.mem', 'authored:C++ data members', 'Class members', 'data members'],
-    ['https://eel.is/c++draft/dcl.typedef', 'authored:C++ type aliases', 'The typedef specifier', 'type aliases'],
-    ['https://doc.rust-lang.org/reference/items/structs.html', 'authored:Rust fields', 'Structs', 'fields'],
-    ['https://doc.rust-lang.org/cargo/reference/cargo-targets.html', 'authored:Cargo packages and targets', 'Cargo Targets', 'packages'],
-    ['https://docs.ruby-lang.org/en/3.4/syntax/methods_rdoc.html', 'authored:Ruby singleton methods', 'methods', 'singleton methods'],
-    ['https://www.lua.org/manual/5.4/manual.html#pdf-require', 'authored:Lua modules', 'require (modname)', 'modules'],
-    ['https://www.lua.org/manual/5.4/manual.html#3.4.10', 'authored:Lua method calls', 'Function Calls', 'method calls'],
-    ['https://www.lua.org/manual/5.4/manual.html#2.4', 'authored:Lua table access', 'Metatables and Metamethods', 'table access'],
-    ['https://luals.github.io/wiki/annotations/#alias', 'authored:Lua type aliases', '@alias', 'type aliases'],
-    ['https://luals.github.io/wiki/annotations/#class', 'authored:Lua class inheritance', '@class', 'inheritance'],
-    ['https://luals.github.io/wiki/annotations/#class', 'authored:Lua class annotations', '@class', 'class annotations'],
-    ['https://luals.github.io/wiki/annotations/#overload', 'authored:Lua overload annotations', '@overload', 'overload annotations'],
-    ['https://docs.swift.org/latest/documentation/the-swift-programming-language/methods/', 'authored:Swift type methods', 'Methods', 'type methods'],
-    ['https://docs.swift.org/latest/documentation/the-swift-programming-language/thebasics/', 'authored:Swift constants', 'The Basics', 'constants'],
-    ['https://www.lua.org/manual/5.4/manual.html#6.3', 'authored:Lua packages and require', 'Modules', 'packages and require'],
-  ].map(([url, key, heading, adds]) => ({ tier: 'label', url, names: [key], reason: `the page, headed "${heading}", also covers ${adds}` })),
-  // The same, where the page documents a symbol and the link's words name a part of it or a way to reach it.
-  ...[
-    ['https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_commonparameters?view=powershell-7.4#-erroraction', 'doc-link:-ErrorAction Continue', '-ErrorAction is one of the common parameters this about topic documents'],
-    ['https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_commonparameters?view=powershell-7.4#-erroraction', 'doc-link:-ErrorAction Stop', '-ErrorAction is one of the common parameters this about topic documents'],
-    ['https://pkg.go.dev/github.com/modelcontextprotocol/go-sdk@v1.6.1/mcp#CallToolResult', 'authored:`CallToolResult.IsError`', 'pkg.go.dev documents a struct\'s fields in the declaration of its type, with no anchor of their own'],
-    ['https://pkg.go.dev/github.com/modelcontextprotocol/go-sdk@v1.6.1/mcp#CallToolResult', 'authored:`CallToolResult.StructuredContent`', 'pkg.go.dev documents a struct\'s fields in the declaration of its type, with no anchor of their own'],
-    ['https://learn.microsoft.com/en-us/dotnet/api/system.management.automation.errorrecord.exception?view=powershellsdk-7.4.0', 'authored:`$_.Exception`', '`$_` is the ErrorRecord of a catch block, and this page documents its Exception property'],
-  ].map(([url, key, reason]) => ({ tier: 'label', url, names: [key], reason })),
-  ...[
-    ['https://docs.python.org/3/builtins/functions.html#classmethod', 'Python class methods', 'the classmethod builtin is the decorator that makes a class method, and its entry is where Python documents them'],
-    ['https://docs.python.org/3/builtins/functions.html#property', 'Python properties', 'the property builtin is the descriptor class that makes a property, and its entry is where Python documents them'],
-    ['https://docs.python.org/3/library/typing.html#typing.overload', 'Python typing overloads', 'typing.overload is the decorator that declares an overload for a type checker'],
-    ['https://docs.julialang.org/en/v1/base/base/#Base.getproperty', 'Julia fields and properties', 'getproperty is the function that dot access calls, and Base documents field and property access in its entry'],
-    ['https://docs.julialang.org/en/v1/base/base/#Base.getproperty', 'Julia property access', 'getproperty is the function that dot access calls, and Base documents property access in its entry'],
-    ['https://elixir.hexdocs.pm/Kernel.html#defexception/1', 'Elixir exceptions', 'defexception is the macro that declares an exception, and its entry is where Elixir documents them'],
-    ['https://elixir.hexdocs.pm/Kernel.html#defmacro/2', 'Elixir macros', 'defmacro is the macro that defines a macro, and its entry is where Elixir documents them'],
-    ['https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_functions_advanced', 'PowerShell advanced functions', 'the about topic for advanced functions is titled Functions_Advanced'],
-    ['https://elixir.hexdocs.pm/Module.html', 'Elixir deprecations', 'the Module page documents the @deprecated attribute among its module attributes'],
-  ].map(([url, label, reason]) => ({ tier: 'label', url, names: [`authored:${label}`], reason })),
   ...[['string/basic_string', 'std::string'], ['string/basic_string_view', 'std::string_view']].map(([page, name]) => ({
     tier: 'listed', url: `${CPP}${page}`, names: [`cxx:${name}`], words: name,
     reason: `the page lists the ${name} typedef for char beside the template`,
@@ -394,33 +314,36 @@ export function linksIn(text) {
 /** Hand-written references: Markdown links in pages, guide data and the glossary. */
 function collectAuthored(found, { root }) {
   const skip = new Set(JSON.parse(readFileSync(join(root, 'site', 'src', 'data', 'destination-evidence.json'), 'utf8')).destinations.map((record) => record.url))
-  const add = (text, where, title) => {
+  // `from` is the port whose page or data wrote the link, when one did: a link that port writes reaches only its own languages' documentation.
+  const add = (text, where, title, from) => {
     const labels = linksIn(text)
     for (const url of urlsIn(text)) {
       if (skip.has(url)) continue
       const words = title ? new Set([title]) : labels.get(url)
-      if (words) for (const label of words) note(found, url, { port: '', name: where, source: 'authored', label })
-      else note(found, url, { port: '', name: where, source: 'authored' })
+      const origin = from ? { from } : {}
+      if (words) for (const label of words) note(found, url, { port: '', name: where, source: 'authored', label, ...origin })
+      else note(found, url, { port: '', name: where, source: 'authored', ...origin })
     }
   }
   const content = join(root, 'site', 'src', 'content', 'docs')
   for (const file of globSync('**/*.{md,mdx}', { cwd: content }).sort()) {
     if (file.startsWith('meta/') || file.startsWith('_')) continue
-    add(readFileSync(join(content, file), 'utf8'), `site/src/content/docs/${file}`)
+    const text = readFileSync(join(content, file), 'utf8')
+    add(text, `site/src/content/docs/${file}`, undefined, portOf(file, text))
   }
-  const walk = (value, where) => {
-    if (typeof value === 'string') add(value, where)
-    else if (Array.isArray(value)) for (const item of value) walk(item, where)
-    else if (value && typeof value === 'object') for (const item of Object.values(value)) walk(item, where)
+  const walk = (value, where, from) => {
+    if (typeof value === 'string') add(value, where, undefined, from)
+    else if (Array.isArray(value)) for (const item of value) walk(item, where, from)
+    else if (value && typeof value === 'object') for (const item of Object.values(value)) walk(item, where, from)
   }
-  for (const file of globSync('site/src/data/port-guides/*.json', { cwd: root }).sort()) walk(readJson(join(root, file)), file)
+  for (const file of globSync('site/src/data/port-guides/*.json', { cwd: root }).sort()) walk(readJson(join(root, file)), file, /([a-z]+)\.json$/.exec(file)?.[1])
   for (const file of ['site/src/lib/api-glossary.ts', 'site/src/lib/api-sections.ts']) {
     add(readFileSync(join(root, file), 'utf8'), file)
   }
   // The native glossary builds its addresses with helpers, so it is read as data.
   for (const [port, terms] of Object.entries(NATIVE_API_GLOSSARIES)) {
     for (const [term, definition] of Object.entries(terms)) {
-      for (const reference of definition.references) add(reference.url, `glossary ${port} ${term}`, reference.title)
+      for (const reference of definition.references) add(reference.url, `glossary ${port} ${term}`, reference.title, port)
     }
   }
 }
