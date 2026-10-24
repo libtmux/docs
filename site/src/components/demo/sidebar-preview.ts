@@ -1,5 +1,5 @@
 import { apiTreeHref, type ApiTreeJson } from '../../lib/api-search'
-import { sidebarCatalog } from '../../lib/api-sidebar'
+import { sidebarCatalog, sidebarName } from '../../lib/api-sidebar'
 import { demoConfig, demoUrl, sidebarExamples, type SidebarDemoConfig } from '../../lib/sidebar-demo'
 import { setApiSidebar } from '../api/api-tree'
 
@@ -25,7 +25,7 @@ export async function initSidebarPreview() {
   const link = (id: string) => {
     const element = document.createElement('a')
     element.href = href(id)
-    element.textContent = catalog.symbols.get(id)!.name
+    element.textContent = sidebarName(catalog.symbols.get(id)!.name, json.port)
     return element
   }
   const article = (symbol: string) => {
