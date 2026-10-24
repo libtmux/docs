@@ -1,24 +1,17 @@
 ---
+import type { LinkPreview as Preview } from '../lib/link-preview'
+import { cardHtml, previewCard, previewLabel } from '../lib/link-preview-card'
+
 interface Props {
   id?: string
-  title?: string
-  description?: string
-  href?: string
-  actionLabel?: string
+  /** The card to carry in the page's own HTML; without one, the card the browser fills for each reference link. */
+  preview?: Preview
   class?: string
 }
-const { id = 'reference-link-preview', title = 'Reference preview', description = '', href,
-  actionLabel = 'Open reference', class: className } = Astro.props
+const { id = 'reference-link-preview', preview, class: className } = Astro.props
 ---
-<span id={id} popover="auto" role="dialog" aria-label={title}
-  class:list={['reference-link-preview not-prose', className]} data-pagefind-ignore="all">
-  <span class="reference-link-preview__heading"><span data-preview-kind hidden></span><code id={`${id}-title`} data-preview-title>{title}</code><button type="button" data-preview-close popovertarget={id} popovertargetaction="hide" aria-label="Close preview">×</button></span>
-  <button type="button" data-preview-expand hidden aria-expanded="false" aria-controls={`${id}-title`}>Show full name</button>
-  <span data-preview-description>{description}</span>
-  <span data-preview-detail hidden></span>
-  <code data-preview-signature hidden></code>
-  <a href={href} data-preview-open data-preview-skip>{actionLabel}</a>
-</span>
+<span id={id} popover="auto" role="dialog" aria-label={previewLabel(preview)}
+  class:list={['reference-link-preview not-prose', className]} data-pagefind-ignore="all"><Fragment set:html={cardHtml(previewCard(preview, { id }))} /></span>
 <style is:global>
   /* A line on the link would run through its kind badge, since an ancestor's
      decoration reaches every in-flow descendant. The name carries it instead. */
@@ -37,30 +30,85 @@ const { id = 'reference-link-preview', title = 'Reference preview', description 
     text-underline-offset: .08em;
     text-decoration-thickness: 1px;
   }
+  /*
+   * The hover card: a header that names the entry, the declaration on its own band, the summary, and a footer that says
+   * where the entry lives. Every surface and ink is a gp-sphinx token, so light and dark follow the page. A page that
+   * defines no `--color-*-primary` pair falls back to the page's own background and text.
+   */
   .reference-link-preview {
-    position: fixed; inset: 0; margin: auto; padding: 1rem;
-    box-sizing: border-box; width: min(40rem, calc(100vw - 2rem)); max-height: min(28rem, calc(100dvh - 2rem));
+    position: fixed; inset: 0; margin: auto; padding: 0;
+    box-sizing: border-box; width: min(28rem, calc(100vw - 2rem)); max-height: min(28rem, calc(100dvh - 2rem));
     overflow: auto; border: 1px solid var(--color-background-border); border-radius: .5rem;
-    background: var(--color-background-secondary); color: var(--color-foreground-primary);
-    box-shadow: 0 6px 24px rgb(0 0 0 / 22%);
+    background: var(--color-background-primary, var(--background-color, Canvas));
+    color: var(--color-foreground-primary, var(--text-color, CanvasText));
+    box-shadow: 0 8px 24px rgb(0 0 0 / .12);
     font: 400 .875rem/1.5 var(--font-sans); white-space: normal; overflow-wrap: anywhere;
   }
   .reference-link-preview [hidden] { display: none; }
-  .reference-link-preview__heading { display: flex; align-items: baseline; gap: .75rem; margin-bottom: .65rem; }
-  .reference-link-preview__heading code { flex: 1; min-width: 0; }
-  .reference-link-preview__heading [data-preview-kind]:not([hidden]) { display: inline-flex; align-self: center; flex: none; font-size: 1rem; }
   .reference-link-preview code { font-family: var(--font-mono, ui-monospace, monospace); }
-  .reference-link-preview__heading button { flex: none; margin-left: auto; padding: .1rem .4rem; cursor: pointer; }
-  .reference-link-preview [data-preview-expand] { margin-bottom: .65rem; color: var(--color-link); text-decoration: underline; cursor: pointer; }
-  .reference-link-preview [data-preview-description], .reference-link-preview [data-preview-detail] { display: block; margin-bottom: .65rem; }
-  .reference-link-preview [data-preview-detail][hidden] { display: none; }
-  .reference-link-preview [data-preview-signature] { font: .8125rem/1.5 var(--font-mono, ui-monospace, monospace); white-space: pre-wrap; padding: .5rem; margin-block: .75rem; background: var(--shiki-light-bg, var(--color-background-primary)); color: var(--shiki-light, inherit); border: 1px solid var(--color-background-border); border-radius: .25rem; }
-  .reference-link-preview [data-preview-signature] span { font-style: var(--shiki-light-font-style); font-weight: var(--shiki-light-font-weight); text-decoration: var(--shiki-light-text-decoration); }
-  html[data-theme-mode="dark"] .reference-link-preview [data-preview-signature] { background: var(--shiki-dark-bg, var(--color-background-primary)); color: var(--shiki-dark, inherit); }
-  html[data-theme-mode="dark"] .reference-link-preview [data-preview-signature] span { font-style: var(--shiki-dark-font-style); font-weight: var(--shiki-dark-font-weight); text-decoration: var(--shiki-dark-text-decoration); }
-  .reference-link-preview [data-preview-signature]:not([hidden]) { display: block; }
-  .reference-link-preview [data-preview-open] { color: var(--color-link); text-decoration: underline; }
   .reference-link-preview :focus-visible { outline: 2px solid var(--color-link); outline-offset: 3px; }
+
+  /* Header: the legend chip, then the qualified name. */
+  .reference-link-preview__heading {
+    display: flex; align-items: center; gap: .5rem; padding: .55rem .8rem;
+    border-bottom: 1px solid var(--color-background-border); background: var(--color-background-secondary);
+    font-family: var(--font-mono, ui-monospace, monospace);
+  }
+  .reference-link-preview__kind:not([hidden]) { display: inline-flex; flex: none; }
+  .reference-link-preview__kind .api-badge.api-leg { font-size: 1.05em; }
+  .reference-link-preview__name { flex: 1; min-width: 0; font-weight: 700; }
+  .reference-link-preview__heading button {
+    flex: none; margin-inline-start: auto; min-inline-size: 1.5rem; min-block-size: 1.5rem; padding: 0 .4rem; border: 0; border-radius: .25rem; background: transparent;
+    color: var(--color-foreground-muted); font: 400 1.125rem/1.4 var(--font-sans); cursor: pointer;
+  }
+  .reference-link-preview__heading button:hover { background: var(--color-api-background-hover); color: inherit; }
+  .reference-link-preview__expand {
+    display: block; width: 100%; padding: .2rem .8rem; border: 0; border-bottom: 1px solid var(--color-background-border);
+    background: var(--color-background-secondary); color: var(--color-link); font: .75rem/1.5 var(--font-sans);
+    text-align: start; text-decoration: underline; cursor: pointer;
+  }
+  /* The strip runs to the card's edge, which clips an outline drawn outside it. */
+  .reference-link-preview__expand:focus-visible { outline-offset: -2px; }
+
+  /* The declaration, on a band of its own. The tokens colour the text; the band is the card's surface. */
+  .reference-link-preview__signature {
+    display: block; margin: 0; padding: .5rem .8rem; background: var(--color-background-secondary);
+    color: var(--shiki-light, inherit); font: 400 .8125rem/1.6 var(--font-mono, ui-monospace, monospace); white-space: pre-wrap;
+  }
+  .reference-link-preview__signature[hidden] { display: none; }
+  .reference-link-preview__signature span { font-style: var(--shiki-light-font-style); font-weight: var(--shiki-light-font-weight); text-decoration: var(--shiki-light-text-decoration); }
+  html[data-theme-mode="dark"] .reference-link-preview__signature { color: var(--shiki-dark, inherit); }
+  html[data-theme-mode="dark"] .reference-link-preview__signature span { font-style: var(--shiki-dark-font-style); font-weight: var(--shiki-dark-font-weight); text-decoration: var(--shiki-dark-text-decoration); }
+
+  /* Summary: tall lines leave room for the small kind marks of the names in it. */
+  .reference-link-preview__prose { display: block; padding: .55rem .8rem .7rem; font: 400 .8125rem/1.8 var(--font-sans); }
+  .reference-link-preview__signature:not([hidden]) + .reference-link-preview__prose { padding-top: .1rem; }
+  .reference-link-preview__summary { display: block; }
+  .reference-link-preview__detail { display: block; margin-top: .25rem; color: var(--color-foreground-muted); font-size: .75rem; line-height: 1.5; }
+
+  /*
+   * A name in the summary reads as it does in prose: the kind's mark, then the name as a link. These rules are the
+   * card's own, so that a page that does not load the reference styles draws the same mention.
+   */
+  .reference-link-preview .api-xref { color: var(--color-link); text-decoration: none; }
+  .reference-link-preview a:has(> .api-link-kind) { display: inline-flex; align-items: baseline; gap: .25em; max-inline-size: 100%; vertical-align: baseline; }
+  .reference-link-preview .api-link-kind { flex-shrink: 0; user-select: none; text-decoration: none; }
+  .reference-link-preview .api-symbol-link__name { min-inline-size: 0; overflow-wrap: anywhere; }
+  .reference-link-preview .api-link-kind ~ .api-symbol-link__name,
+  .reference-link-preview a:not(:has(> .api-link-kind)) .api-literal { text-decoration: underline; text-underline-offset: .2em; }
+  .reference-link-preview .api-literal {
+    padding: .075em .2em; border: 1px solid var(--color-background-border); border-radius: .2em;
+    background: var(--color-inline-code-background); font-size: .85em; overflow-wrap: anywhere; box-decoration-break: clone;
+  }
+
+  /* Footer: where the entry lives, and the way to its page. */
+  .reference-link-preview__footer {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: .15rem .75rem; padding: .4rem .8rem;
+    border-top: 1px solid var(--color-background-border); color: var(--color-foreground-muted);
+    font: .6875rem/1.4 var(--font-mono, ui-monospace, monospace);
+  }
+  .reference-link-preview__where { min-width: 0; }
+  .reference-link-preview [data-preview-open] { margin-inline-start: auto; color: var(--color-link); font: .75rem/1.4 var(--font-sans); text-decoration: underline; }
 </style>
 <script>
   import { initLinkPreviews, disposeLinkPreviews } from '../lib/link-preview-browser'

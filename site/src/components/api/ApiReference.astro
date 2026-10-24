@@ -24,6 +24,7 @@ import { withRoot } from '../../lib/site-root'
 import { API_MODELS, API_NAV, PORT_NAME, indexFor, isMemberOwner, ownersOf, pageSlug, referenceAlternatives, topLevelTypesOf } from '../../lib/api-models'
 import { PORT_BY_SLUG, referenceUrl } from '../../lib/ports'
 import { productApiHref } from '../../lib/product-api'
+import { nativeQualifiedName } from '../../lib/native-name'
 import { symbolSource } from '../../lib/markdown-twins'
 import { localeSourcePath } from '../../i18n/locales'
 import { buildLocale } from '../../i18n/resolve'
@@ -690,7 +691,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
               <dl class="api-definition">
               {/* The module, namespace or package this symbol is in, and its full name with a button to copy it; the page heading above carries neither. */}
               <dt>Qualified name</dt>
-              <dd><ApiQualifiedName name={qualifiedNameOf(owner)} /></dd>
+              <dd><ApiQualifiedName name={nativeQualifiedName(model, owner)} /></dd>
               {ownerModule && (
                 <>
                   <dt>{moduleLabel}</dt>

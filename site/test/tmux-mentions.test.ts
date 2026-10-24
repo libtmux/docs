@@ -191,7 +191,7 @@ describe('tmux hover cards', () => {
     expect(tmuxManualPreview('latest', 'list-clients')).toEqual({
       schema: 1, title: 'list-clients', kind: 'command', description: command.summary,
       signature: `tmux list-clients ${command.usage}`, signatureLanguage: 'tmux-usage', detail: 'Alias: lsc.',
-      href: '/tmux/latest/manual/list-clients/', actionLabel: 'Open manual',
+      href: '/tmux/latest/manual/list-clients/', actionLabel: 'Open manual', footer: [`tmux ${tmuxManual('latest').version}`, 'Manual'],
     })
   })
 
@@ -201,12 +201,14 @@ describe('tmux hover cards', () => {
     expect(terms!.session_attached).toEqual({
       schema: 1, title: 'session_attached', kind: 'format', description: 'Number of clients session is attached to',
       detail: 'Format variable', href: '/tmux/latest/manual/full/#session_attached', actionLabel: 'Open manual',
+      footer: [`tmux ${tmuxManual('latest').version}`, 'Manual'],
     })
     expect(terms!['options-destroy-unattached']).toEqual({
       schema: 1, title: 'destroy-unattached', kind: 'option', detail: 'Session option',
       description: 'If on, destroy the session after the last client has detached.',
       signature: 'destroy-unattached [off | on | keep-last | keep-group]', signatureLanguage: 'tmux-usage',
       href: '/tmux/latest/manual/full/#options-destroy-unattached', actionLabel: 'Open manual',
+      footer: [`tmux ${tmuxManual('latest').version}`, 'Manual'],
     })
     expect(terms!['hooks-session-created']).toMatchObject({ kind: 'hook', detail: 'Hook', description: 'Run when a new session created.' })
     for (const [anchor, term] of Object.entries(terms!)) {

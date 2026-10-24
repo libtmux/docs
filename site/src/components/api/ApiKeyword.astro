@@ -13,8 +13,8 @@ const id = `api-keyword-help-${locals.apiKeywordSequence = (locals.apiKeywordSeq
 ---
 <button type="button" class="api-type-label api-keyword api-keyword-trigger"
   popovertarget={id} popovertargetaction="show" aria-label={`About ${text}: ${help.title}`}
->{text}</button><LinkPreview id={id} title={help.title} description={help.description}
-  href={help.href} actionLabel="Language documentation" class="api-keyword-help" />
+>{text}</button><LinkPreview id={id} class="api-keyword-help"
+  preview={{ schema: 1, title: help.title, description: help.description, href: help.href, actionLabel: 'Language documentation' }} />
 
 <style>
   .api-keyword-trigger {
