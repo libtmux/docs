@@ -39,6 +39,14 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Install Python tooling
+        run: uv sync --locked
+
       - name: Install browser for the rendering audit
         run: pnpm --filter @libtmux/site exec playwright install --with-deps chromium
 

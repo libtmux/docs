@@ -9439,6 +9439,13 @@
   {
    "port": "py",
    "symbol": "libtmux.pane.Pane",
+   "page": "/meta/intersphinx/",
+   "title": "Link to libtmux from Sphinx",
+   "section": "meta"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.pane.Pane",
    "page": "/py/latest/concepts/server-session-window-pane/",
    "title": "Server, session, window, pane",
    "section": "concepts"
@@ -14497,6 +14504,20 @@
    "text": "libtmux.filter/1",
    "page": "/scala/latest/guides/query/",
    "line": 119,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "py",
+   "text": "objects.inv",
+   "page": "/meta/intersphinx/",
+   "line": 37,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "py",
+   "text": "objects.inv",
+   "page": "/meta/intersphinx/examples/",
+   "line": 35,
    "why": "not defined in the stated port"
   },
   {

@@ -10,6 +10,9 @@ import { markdownPath } from '../src/lib/markdown-twins'
 import { pageBrand, PORT_BY_SLUG, PORTS, portSourceUrl } from '../src/lib/ports'
 import { withPortRoot, withRoot } from '../src/lib/site-root'
 import { buildTarget } from '../src/lib/versions'
+import { renderedTargets } from '../src/lib/inventory-targets'
+import { tmuxInventoryVersion } from '../src/lib/inventory-links'
+import { targetKey } from '@libtmux/api-model'
 
 const astroRequire = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
 const noticeSource = readFileSync(new URL('../src/components/PrereleaseNotice.astro', import.meta.url), 'utf8')
@@ -32,7 +35,7 @@ beforeAll(async () => {
   vi.stubGlobal('__prereleaseChild', (await import(/* @vite-ignore */ stub)).default)
   const helpers = {
     buildLocale, localeSourcePath, CONTRIBUTE_BRANCH, CONTRIBUTE_REPO, repoPath,
-    markdownPath, pageBrand, PORT_BY_SLUG, portSourceUrl, withPortRoot, withRoot, buildTarget,
+    markdownPath, pageBrand, PORT_BY_SLUG, portSourceUrl, withPortRoot, withRoot, buildTarget, tmuxInventoryVersion,
   }
   vi.stubGlobal('__prereleaseHelpers', helpers)
   const helperModule = `data:text/javascript,export const {${Object.keys(helpers).join(',')}}=globalThis.__prereleaseHelpers`
@@ -52,11 +55,11 @@ afterEach(async () => {
 })
 afterAll(() => vi.unstubAllGlobals())
 
-async function render(path: string, pagePath?: string, portSlug?: string, bare = false) {
+async function render(path: string, pagePath?: string, portSlug?: string, bare = false, buildPort = '') {
   const url = new URL(path, 'https://libtmux.org')
   const prefix = /^(\/pr-\d+)?\/(en|ja)\//.exec(url.pathname)
   vi.stubEnv('LIBTMUX_DOCS_BASE', prefix?.[0] ?? '/')
-  vi.stubEnv('LIBTMUX_DOCS_PORT', '')
+  vi.stubEnv('LIBTMUX_DOCS_PORT', buildPort)
   vi.stubEnv('LIBTMUX_DOCS_LOCALE', prefix?.[2] ?? 'en')
   const container = await experimental_AstroContainer.create()
   return container.renderToString(layout, {
@@ -67,6 +70,31 @@ async function render(path: string, pagePath?: string, portSlug?: string, bare =
 }
 
 describe('prerelease notice ownership', () => {
+  it('assigns versioned tmux manuals, catalogs and C pages to their release inventory', async () => {
+    for (const version of ['latest', '3.7c', '3.2a']) for (const section of ['manual', 'catalog', 'reference']) {
+      const page = `tmux/${version}/${section}/entry`
+      for (const pagePath of [page, undefined]) {
+        const href = `/pr-42/en/${page}/`
+        const targets = renderedTargets(await render(href, pagePath), href)
+        expect(targets).toMatchObject([{ scope: `tmux@${version}`, version, category: 'doc', identity: page }])
+        if (section === 'catalog') expect(targets[0].aliases).toContain(targetKey({ scope: 'site', product: 'core', category: 'doc', identity: page }))
+      }
+    }
+  })
+  it('exports the selected port only inside its version mount', async () => {
+    for (const path of ['/en/', '/pr-42/en/', '/py/', '/py/latestish/']) {
+      const shared = await render(path, '', 'py', false, 'py')
+      expect(renderedTargets(shared, path), path).toEqual([])
+    }
+    const port = await render('/py/latest/', '', 'py', false, 'py')
+    expect(renderedTargets(port, '/py/latest/')).toMatchObject([
+      { scope: 'py', version: 'latest', category: 'doc', identity: 'index', href: '/py/latest/' },
+    ])
+    const root = await render('/en/', '')
+    expect(renderedTargets(root, '/en/')).toMatchObject([
+      { scope: 'site', category: 'doc', identity: 'index', href: '/en/' },
+    ])
+  })
   it('omits the library notice from every tmux area before JavaScript runs', async () => {
     for (const prefix of ['/en/', '/ja/', '/pr-42/en/', '/pr-42/ja/']) {
       for (const page of ['tmux', 'tmux/', 'tmux/guides', 'tmux/topics/environment',

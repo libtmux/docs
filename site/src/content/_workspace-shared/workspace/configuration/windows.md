@@ -1,4 +1,9 @@
 ---
+inventoryTables:
+  window-keys:
+    type: std:confval
+    identity: schema/windows/items
+    prefix: "window."
 description: Set window names, indexes, layouts, options and focus.
 product: workspace
 sidebar:

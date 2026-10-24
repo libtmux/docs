@@ -1,5 +1,6 @@
 ---
-import { boundLabel, parameterId, qualifiedNameOf, typeParameterId, typeParameterList, type ApiSymbol, type SymbolIndex } from '@libtmux/api-model'
+import { boundLabel, parameterId, qualifiedNameOf, typeParameterId, typeParameterList, type ApiSymbol, type SymbolIndex, type SymbolKind } from '@libtmux/api-model'
+import { apiInventoryAttributes } from '../../lib/inventory-targets'
 import { API_MODELS, mentionsOf, referenceAlternatives } from '../../lib/api-models'
 import { productApiIndex } from '../../lib/product-api'
 import { defaultVersionFor } from '../../lib/versions'
@@ -13,7 +14,7 @@ import ApiDoc from './ApiDoc.astro'
 import ApiProse from './ApiProse.astro'
 import ApiType from './ApiType.astro'
 import { asideFor } from '../../lib/aside'
-import { apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMethodDetails, anonymousDeclarationLabel, nativeSignatureText as unformattedNativeSignatureText, parameterBindingText, usesNativeSignatures } from '../../lib/api-sections'
+import { apiCommandFacts, apiCommandRelatedLinks, apiOverloadId, apiOverloadIdentity, apiEntryFields, apiMethodDetails, anonymousDeclarationLabel, nativeSignatureText as unformattedNativeSignatureText, parameterBindingText, usesNativeSignatures } from '../../lib/api-sections'
 import { tmuxCommandsFor, tmuxManualUrl } from '../../lib/tmux-manual-data'
 import { CATALOG_KINDS, tmuxCatalogKindsForSymbol, tmuxCatalogUrl } from '../../lib/tmux-catalog'
 import ApiFieldOverloads from './ApiFieldOverloads.astro'
@@ -36,6 +37,7 @@ import { pythonSignatureLayout } from '../../lib/python-code-layout'
  */
 interface Props {
   symbol: ApiSymbol
+  parentKind?: SymbolKind
   index: SymbolIndex
   /** Repository blob URL builder, for the source link. */
   sourceUrl?: (symbol: ApiSymbol) => string | undefined
@@ -76,9 +78,10 @@ interface Props {
   /** Previous fragment for the same declaration. */
   legacyId?: string
 }
-const { symbol, index, sourceUrl, port, language = port, manualLinks, catalogLinks, alternativesFor, heading = false, member = false,
+const { symbol, parentKind, index, sourceUrl, port, language = port, manualLinks, catalogLinks, alternativesFor, heading = false, member = false,
   showSummary = true, showBases = true, legacyId, nameHref } = Astro.props as Props
 const anchor = symbol.publicId ?? symbol.id
+const inventory = apiInventoryAttributes(symbol, language ?? '', parentKind ?? (symbol.parent ? API_MODELS[port ?? '']?.symbols.find((parent) => parent.id === symbol.parent)?.kind : undefined))
 const kind = symbol.kind
 const nativeEntries = language === 'c' ? symbol.signatures.filter((signature) => signature.raw) : symbol.signatures
 const signatureLayouts = await apiSignatureLayouts(symbol, language)
@@ -88,6 +91,15 @@ const nativeSignatureText: typeof unformattedNativeSignatureText = (entry, signa
 // A Swift layout is the declaration, even where the port documents few parameters.
 // A Python layout only spaces the parameter list, which keeps its own markup.
 const nativeSignatures = usesNativeSignatures(symbol, language) || (language === 'swift' && signatureLayouts.size > 0)
+const signatureIdentities = new Set<string>()
+const signatureTargets = (nativeSignatures ? nativeEntries : symbol.signatures).map((signature) => {
+  const identity = apiOverloadIdentity(signature)
+  if (signatureIdentities.has(identity)) return {}
+  signatureIdentities.add(identity)
+  return { id: apiOverloadId(symbol, signature), 'data-inventory-category': 'signature',
+    'data-inventory-id': `${anchor}.signature:${identity}`,
+    'data-inventory-display': signature.label || signature.raw || `${anchor} signature` }
+})
 
 /**
  * The Sphinx domain this port's symbols belong to.
@@ -281,6 +293,9 @@ const hasBody =
 ---
 
 <dl
+  data-inventory-ignore={nameHref ? true : undefined}
+  data-inventory-owner={inventory['data-inventory-id']}
+  data-inventory-anchor={anchor}
   class:list={[
     'py',
     kind,
@@ -292,6 +307,7 @@ const hasBody =
   <dt
     class:list={['sig sig-object py gp-sphinx-api-header', nativeSignatures && 'api-native-header']}
     id={anchor}
+    {...inventory}
     data-symbol-id={symbol.id}
     data-domain={domain}
     data-objtype={kind}
@@ -308,8 +324,9 @@ const hasBody =
           {language === 'julia' && kind === 'typealias' && symbol.type && (
             <span class="api-native-signature"><span class="api-declaration-name">{symbol.name}</span> = <ApiType type={symbol.type} index={index} context={symbol} /></span>
           )}
-          {nativeSignatures ? (nativeEntries.length ? nativeEntries.map((sig) => (
+          {nativeSignatures ? (nativeEntries.length ? nativeEntries.map((sig, i) => (
             <span class:list={['api-native-signature', port === 'fsharp' && 'api-native-signature--fsharp', signatureLayouts.has(sig) && 'api-native-signature--formatted']}
+              {...signatureTargets[i]}
               tabindex={signatureLayouts.has(sig) ? '0' : undefined}
               role={signatureLayouts.has(sig) ? 'region' : undefined}
               aria-label={signatureLayouts.has(sig) ? `Signature for ${symbol.name}${symbol.signatures.length > 1 ? `, overload ${symbol.signatures.indexOf(sig) + 1} of ${symbol.signatures.length}` : ''}` : undefined}
@@ -334,8 +351,9 @@ const hasBody =
             )
           }
           {
-            symbol.signatures.map((sig) => (
+            symbol.signatures.map((sig, i) => (
               <>
+                <span {...signatureTargets[i]} class="section-anchor-alias" />
                 {folds(sig) ? (
                   <details class="gp-sphinx-api-fold">
                     <summary class="gp-sphinx-api-signature-toggle">
@@ -474,7 +492,7 @@ const hasBody =
         {methods.map(({ id, label, signature }) => {
           const methodSource = signature.source && sourceUrl?.({ ...symbol, source: signature.source })
           return (
-          <section id={id} class="api-method">
+          <section id={id} data-inventory-category="dispatch" data-inventory-id={`${anchor}.method:${signature.identity}`} data-inventory-display={label} class="api-method">
             {symbol.signatures.length > 1 ? <h3 class="api-native-signature"><ApiType type={nativeSignatureText(symbol, signature, language)} index={index} context={symbol} signature={signature} layout={signatureLayouts.get(signature)} />{methodSource && <span class="api-method-source">[<a href={methodSource} aria-label={`Source for ${label}`}>source</a>]</span>}<a class="api-heading-link" href={`#${id}`} aria-label="Link to method">#</a></h3>
               : methodSource && methodSource !== source && <p><span class="api-method-source">[<a href={methodSource} aria-label={`Source for ${label}`}>source</a>]</span></p>}
             {signature.extension && <p>Available when <code>{signature.extension}</code> is loaded.</p>}
@@ -607,7 +625,7 @@ const hasBody =
                 <dd class="field-odd">
                   {symbol.command ? <ApiCommandParameters params={params} symbol={symbol} index={index} /> : <ul class="simple api-parameters">
                     {params.map((p, i) => (
-                      <li id={params.findIndex((entry) => entry.name === p.name) === i ? parameterId(symbol, p.name) : undefined}>
+                      <li id={params.findIndex((entry) => entry.name === p.name) === i ? parameterId(symbol, p.name) : undefined} data-inventory-category="parameter" data-inventory-id={parameterId(symbol, p.name)} data-inventory-display={`${anchor} (${p.name})`}>
                         <p class:list={[(language === 'julia' || language === 'ts') && 'api-parameter-heading']}>
                           <span class="api-parameter-signature">
                             {/* One line: Astro turns a line break between these parts into a space. */}

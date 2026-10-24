@@ -191,6 +191,25 @@ export function apiEntrySections(symbol: ApiSymbol, port?: string, index?: Symbo
   return sections
 }
 
+/** Signature identities survive display formatting and overload reordering. */
+export function apiOverloadIdentity(signature: Signature): string {
+  if (signature.identity) return signature.identity
+  // Keep word boundaries and quoted values while discarding layout whitespace.
+  const tokens = (text?: string) => text?.match(/"""[\s\S]*?"""|'''[\s\S]*?'''|"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'(?![\p{L}\p{N}_$])|`(?:\\[\s\S]|[^`\\])*`|[\p{L}\p{N}_$]+|[^\s]/gu)
+  const shape = signature.raw ? { raw: tokens(signature.raw), label: signature.label, methodKind: signature.methodKind } : {
+    label: signature.label, methodKind: signature.methodKind,
+    params: signature.params.map((param) => ({ name: tokens(param.name), type: tokens(param.type),
+      variadic: param.variadic, optional: Boolean(param.optional), keywordOnly: Boolean(param.keywordOnly) })),
+    returns: tokens(signature.returns), typeParams: signature.typeParams?.map(tokens),
+    receiver: signature.receiver && { name: tokens(signature.receiver.name), type: tokens(signature.receiver.type) },
+  }
+  return createHash('sha256').update(JSON.stringify(shape)).digest('hex')
+}
+
+export function apiOverloadId(symbol: ApiSymbol, signature: Signature): string {
+  return `${symbol.publicId ?? symbol.id}.overload-${createHash('sha256').update(apiOverloadIdentity(signature)).digest('hex').slice(0, 16)}`
+}
+
 /** Dispatch methods retain their own documentation and stable fragment identities. */
 export function apiMethodDetails(symbol: ApiSymbol) {
   const labels = signatureLabels(symbol)

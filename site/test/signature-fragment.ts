@@ -37,7 +37,7 @@ async function compileFragment() {
   const end = source.indexOf('\n          ))', start)
   expect(start).toBeGreaterThan(0)
   expect(end).toBeGreaterThan(start)
-  const wrapper = `---\nimport ApiType from './ApiType.astro'\nconst { symbol, sig, port, language, index, nameHref, nativeSignatureText, signatureLayouts = new Map() } = Astro.props\n---\n${source.slice(start, end)}`
+  const wrapper = `---\nimport ApiType from './ApiType.astro'\nconst { symbol, sig, port, language, index, nameHref, nativeSignatureText, signatureLayouts = new Map(), signatureTargets = [{}], i = 0 } = Astro.props\n---\n${source.slice(start, end)}`
   return (await import(/* @vite-ignore */ await compile('../src/components/api/ApiEntry.astro', { './ApiType.astro': type }, wrapper))).default
 }
 

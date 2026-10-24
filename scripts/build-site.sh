@@ -846,10 +846,10 @@ build_reference() {
         [ -n "$cxx_conf_backup" ] && [ -f "$cxx_conf_backup" ] &&
           cp "$cxx_conf_backup" "$checkout_expanded/docs/conf.py"
       }
-      # The C++ docs tree is not a Python project, so uv has no lockfile to
-      # resolve from: name the doc dependencies explicitly.
+      # Resolve the C++ renderer from this repository's locked docs group;
+      # the port's docs directory has no Python project of its own.
       if (cd "$checkout_expanded/docs" && uv run \
-        --with sphinx --with breathe --with furo \
+        --project "$script_dir/.." --locked --group docs \
         sphinx-build -q -b dirhtml \
         -D "breathe_projects.$slug=$doxygen_xml/xml" \
         -d "$scratch/doctrees-$slug-$version" . "$outdir") >>"$log_file" 2>&1; then
@@ -1206,6 +1206,9 @@ if [ "$had_failure" -eq 1 ]; then
   warn "one or more reference generators failed (toolchain present, build broke) — see per-port .log files above"
   exit 1
 fi
+
+log "publishing inventories from assembled pages"
+node "$script_dir/publish-inventories.mjs" "$site_out" "$LIBTMUX_DOCS_PORT_ROOT/"
 
 # Only here is a whole-site link check meaningful. Every `/py/stable/` path is
 # written by a different `astro build`, so any single build reports thousands

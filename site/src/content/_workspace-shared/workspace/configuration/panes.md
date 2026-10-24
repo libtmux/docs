@@ -1,4 +1,9 @@
 ---
+inventoryTables:
+  pane-keys:
+    type: std:confval
+    identity: schema/windows/items/panes/items
+    prefix: "pane."
 description: Choose pane commands, launch settings and focus.
 product: workspace
 sidebar:

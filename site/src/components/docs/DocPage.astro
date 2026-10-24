@@ -120,6 +120,9 @@ const isWorkspaceOverview = entry.data.product === 'workspace'
 
 <DocsLayout
   title={entry.data.title}
+  inventoryId={entry.data.inventoryId ?? sourceId}
+  inventoryAliases={entry.data.inventoryAliases}
+  inventoryExclude={Boolean(placeholderLocale)}
   description={entry.data.description}
   port={port}
   product={entry.data.product}
