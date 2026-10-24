@@ -28,7 +28,8 @@
  * a label that names a parameter nothing takes, or is dropped, so that a literal the call
  * only reports a failure under is read as the command; a guard that builds no if-shell, a
  * conditional guard or claim that does not say when, a condition that qualifies no entry, and a
- * guard dropped, so that the if-shell it wrapped is recorded in place of the command; and for a
+ * guard dropped, so that the if-shell it wrapped is recorded in place of the command; a preflight whose line does
+ * not hold its text or that gives no reason; and for a
  * generic function, a send some methods make with no condition that says so, a receiver
  * condition that cites a signature in place of the bodies, and one on a send every method makes.
  * Each is refused, and the committed rules beside them are accepted.
@@ -281,6 +282,10 @@ const BAD_RULES = [
   ['an elixir claim that is not anchored in the symbol it names', 'elixir', 'claims.json', (document) => {
     document.claims.find((claim) => claim.port === 'elixir' && claim.symbol === 'LibTmux.Server.snapshot/2' && claim.command === 'list-clients').evidence.at(-1).at = 'lib/libtmux/server.ex:60'
   }, /elixir: LibTmux.Server.snapshot\/2 list-clients null: lib\/libtmux\/server.ex:60 (?:does not contain|is outside the body of)/],
+  ['a preflight whose line does not hold its text', 'go', 'preflights.json', (document) => { document.preflights[0].evidence[1].has = ['s.checkNothing('] },
+    /go: preflight run-shell: tmux\/transport.go:106 does not contain "s.checkNothing\("/],
+  ['a preflight that gives no reason', 'go', 'preflights.json', (document) => { delete document.preflights[0].why },
+    /go: preflight run-shell: names no command or gives no reason/],
   ['a conditional guard that does not say when', 'go', 'guards.json', (document) => { delete document.guards.find((guard) => guard.port === 'go' && guard.name === 'guardCommand').when },
     /go: guard guardCommand: is conditional, so it must say when/],
   ['a guard whose function builds no if-shell', 'java', 'guards.json', (document) => {

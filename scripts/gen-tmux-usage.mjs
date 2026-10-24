@@ -34,7 +34,7 @@ import { extractProject } from '../packages/api-model/src/project.ts'
 import { GRAMMARS, isLibrarySource, scanSource } from './lib/tmux-usage-scan.mjs'
 import { applyConditions, applyExclusions, conditionProblem, deriveUsage, partialProblems, ruleHolds, verifyClaims } from './lib/tmux-usage-derive.mjs'
 import { auditEvidence } from './lib/tmux-usage-audit.mjs'
-import { dispatcherProblems, guardProblems } from './lib/tmux-usage-dispatch.mjs'
+import { dispatcherProblems, guardProblems, preflightProblems } from './lib/tmux-usage-dispatch.mjs'
 import { forwardUsage } from './lib/tmux-usage-forward.mjs'
 import { settleCandidates, sweepCandidates } from './lib/tmux-usage-sweep.mjs'
 import { libraryScopes, scopeProblems } from './lib/tmux-usage-scopes.mjs'
@@ -57,6 +57,7 @@ const reviewsPath = join(rulesDir, 'not-senders.json')
 const dispatchersPath = join(rulesDir, 'dispatchers.json')
 const guardsPath = join(rulesDir, 'guards.json')
 const conditionsPath = join(rulesDir, 'conditions.json')
+const preflightsPath = join(rulesDir, 'preflights.json')
 const check = args.includes('--check')
 const regenerate = !check || args.includes('--source')
 const usageDir = args.includes('--data') ? resolve(option('--data')) : defaultUsageDir
@@ -374,7 +375,7 @@ function sweepProblems({ port, model, document, reviews, exclusions, report, rea
   return problems
 }
 
-export { dispatcherProblems, guardProblems }
+export { dispatcherProblems, guardProblems, preflightProblems }
 
 export async function main() {
   const scopes = readJson(join(usageDir, 'scopes.json'))
@@ -384,6 +385,7 @@ export async function main() {
   const dispatchers = existsSync(dispatchersPath) ? readJson(dispatchersPath).dispatchers : []
   const guards = existsSync(guardsPath) ? readJson(guardsPath).guards : []
   const conditions = existsSync(conditionsPath) ? readJson(conditionsPath).conditions : []
+  const preflights = existsSync(preflightsPath) ? readJson(preflightsPath).preflights : []
   const ports = await portsWithModels()
   const report = []
   const failures = []
@@ -486,6 +488,7 @@ export async function main() {
     const pass = await derivePass({ port, model, core })
     const { found, scanned } = pass
     failures.push(...pass.problems)
+    failures.push(...preflightProblems({ port: port.slug, preflights: preflights.filter((rule) => rule.port === port.slug), readSource: scanned.readSource }))
     if (config && core) {
       const forwarded = forwardPort({
         port: port.slug, config, scanned, coreScan: core.scanned, readEvidence: scanned.readSource,

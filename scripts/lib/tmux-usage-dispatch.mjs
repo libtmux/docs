@@ -212,3 +212,31 @@ export function guardProblems({ port, guards, readSource, functions }) {
   }
   return problems
 }
+
+/**
+ * The checks a library makes before every command it sends, which are the library's own and not a send of the method that
+ * triggers them: Go probes the daemon with `run-shell -C` before each ordinary command. Crediting each method with one would
+ * list every method that sends under that command, and crediting only some would tell a reader the others never probe, so
+ * none is credited for the check itself. A method that probes as a step of its own carries a claim that says when. Each rule
+ * names the command and why, and cites the lines from the call that makes the check to the line that spells the command; the
+ * lines are read back against the pinned source.
+ *
+ * @param {{ port: string, preflights: { command: string, why?: string, evidence?: { at: string, has?: string[] }[] }[], readSource: (path: string) => string | undefined }} input
+ * @returns {string[]}
+ */
+export function preflightProblems({ port, preflights, readSource }) {
+  const problems = []
+  for (const rule of preflights) {
+    const label = `${port}: preflight ${rule.command}`
+    if (!rule.command || !rule.why?.trim()) { problems.push(`${label}: names no command or gives no reason`); continue }
+    if (!rule.evidence?.length) { problems.push(`${label}: cites no lines`); continue }
+    for (const item of rule.evidence) {
+      const { file, line } = split(item.at)
+      const text = readSource(file)?.split('\n')[line - 1]
+      if (text === undefined) { problems.push(`${label}: ${item.at} is not a line of the pinned source`); continue }
+      for (const needle of item.has ?? []) if (!text.includes(needle)) problems.push(`${label}: ${item.at} does not contain ${JSON.stringify(needle)}`)
+    }
+    if (!rule.evidence.some((item) => (item.has ?? []).some((needle) => needle.includes(`"${rule.command}"`)))) problems.push(`${label}: no cited line spells the command`)
+  }
+  return problems
+}

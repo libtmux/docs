@@ -337,6 +337,16 @@ negative script seeds a rule that is wrong:
   (`through`: the line the method ends on), because a signature line names a type
   and shows neither. A method that may reach it only through a call the scan does
   not resolve leaves the question open, and fails until it is settled by a claim.
+- `preflights.json`: a check a library makes before every command it sends, which
+  is the library's own and not a send of the method that triggers it. Go probes the
+  daemon with `run-shell -C` before each ordinary command, so crediting every
+  method would list each one that sends under `run-shell`, and crediting some
+  would tell a reader the others never probe. No method is credited for the check
+  itself, and one that probes as a step of its own (a lookup, a snapshot) has an
+  incidental claim that says when. The rule cites the lines from the call that
+  makes the check to the line that spells the command, read back against the
+  pinned source; a test pins which methods carry the claim. The usage table has
+  no place for a note about one language, so the rule is the record.
 - `not-senders.json`: why a public method whose own name carries a command has
   no entry for it, one of `builds` (it builds a command for a caller, or only
   holds one), `other-command` (it sends a different command, or runs it only

@@ -3,7 +3,7 @@ import { beforeAll, describe, expect, it } from 'vitest'
 import { GRAMMARS, scanSource } from '../../scripts/lib/tmux-usage-scan.mjs'
 import { MAX_SHARED_BY, applyConditions, applyExclusions, builtSites, callTargets, classify, conditionProblem, definitionsOf, deriveUsage, partialProblems, ruleHolds, verifyClaims } from '../../scripts/lib/tmux-usage-derive.mjs'
 import { auditEvidence } from '../../scripts/lib/tmux-usage-audit.mjs'
-import { chainProblems, dispatcherProblems, guardProblems } from '../../scripts/lib/tmux-usage-dispatch.mjs'
+import { chainProblems, dispatcherProblems, guardProblems, preflightProblems } from '../../scripts/lib/tmux-usage-dispatch.mjs'
 import { forwardUsage } from '../../scripts/lib/tmux-usage-forward.mjs'
 import { carriesCommand, memberWords, selects, settleCandidates, sweepCandidates } from '../../scripts/lib/tmux-usage-sweep.mjs'
 import { scanElixir, scanFSharp, scanJulia, tokenizeElixir } from '../../scripts/lib/tmux-usage-lexical.mjs'
@@ -1798,5 +1798,20 @@ describe('the ports whose source is read', () => {
 
   it('refuses a grammar nothing reads, by name', async () => {
     await expect(scanSource({ grammar: 'nonesuch', text: '', commands: new Set(['list-panes']), known })).rejects.toThrow(/no reader for the grammar "nonesuch"/)
+  })
+})
+
+describe('a check a library makes before every command', () => {
+  const source = ['func run() {', '\tcheck(ctx)', '\tsend("run-shell")', '}'].join('\n')
+  const readSource = (path: string) => (path === 'run.go' ? source : undefined)
+  const rule = { command: 'run-shell', why: 'It probes before every command.', evidence: [{ at: 'run.go:2', has: ['check('] }, { at: 'run.go:3', has: ['"run-shell"'] }] }
+
+  it('is held to the lines it cites, and to a reason', () => {
+    expect(preflightProblems({ port: 'go', preflights: [rule], readSource })).toEqual([])
+    expect(preflightProblems({ port: 'go', preflights: [{ ...rule, evidence: [{ at: 'run.go:2', has: ['verify('] }, rule.evidence[1]] }], readSource })).toEqual(['go: preflight run-shell: run.go:2 does not contain "verify("'])
+    expect(preflightProblems({ port: 'go', preflights: [{ ...rule, why: ' ' }], readSource })).toEqual(['go: preflight run-shell: names no command or gives no reason'])
+    expect(preflightProblems({ port: 'go', preflights: [{ ...rule, evidence: [{ at: 'run.go:9', has: ['check('] }, rule.evidence[1]] }], readSource })).toEqual(['go: preflight run-shell: run.go:9 is not a line of the pinned source'])
+    // A rule that cites no line that spells the command is about something else.
+    expect(preflightProblems({ port: 'go', preflights: [{ ...rule, evidence: [rule.evidence[0]] }], readSource })).toEqual(['go: preflight run-shell: no cited line spells the command'])
   })
 })

@@ -413,6 +413,25 @@ describe('a release a library refuses to send on', () => {
     expect(use('julia', 'LibTmux.set_hook', 'show-options')).toMatchObject({ incidental: true, when: 'on a Server' })
   })
 
+  it('credits go\'s probe before every command to no method for the check itself, and only to the methods that probe as a step of their own', () => {
+    // The probe is the library's own preflight, recorded as a rule, so a method that merely sends a command is not credited with the run-shell that precedes it.
+    const rules = JSON.parse(readFileSync(new URL('../../scripts/tmux-usage/preflights.json', import.meta.url), 'utf8')).preflights as { port: string; command: string; why: string }[]
+    expect(rules.find((rule) => rule.port === 'go' && rule.command === 'run-shell')?.why).toMatch(/before every ordinary command/)
+    for (const symbol of ['tmux.Server.NewSession', 'tmux.Session.Kill', 'tmux.Pane.SendKeys', 'tmux.Server.ListSessions']) {
+      expect(use('go', symbol, 'run-shell'), symbol).toBeUndefined()
+    }
+    // What carries run-shell besides the method that is run-shell is a lookup or a snapshot, whose own step is the probe, said so and not listed on the command's page.
+    const probers = Object.entries(TMUX_USAGE.go.symbols).filter(([symbol, entries]) => !/Server\.RunShell$|Running\.Kill$/.test(symbol) && entries.some((entry) => entry.command === 'run-shell'))
+    expect(probers.length).toBeGreaterThan(10)
+    for (const [symbol, entries] of probers) {
+      const entry = entries.find((candidate) => candidate.command === 'run-shell')!
+      expect(entry.when, symbol).toBe('the Server has no daemon identity')
+      expect(entry.reviewed || entry.via, symbol).toBeTruthy()
+    }
+    expect(tmuxUsage('run-shell')!.groups.flatMap((group) => group.ports).filter((entry) => entry.port === 'go').flatMap((entry) => entry.links.map((link) => link.label))).toEqual(expect.arrayContaining(['Server.RunShell']))
+    expect(tmuxUsage('run-shell')!.groups.flatMap((group) => group.ports).filter((entry) => entry.port === 'go').flatMap((entry) => entry.links.map((link) => link.label))).not.toContain('Server.Session')
+  })
+
   it('says which request HasSession sends has-session for and which it lists sessions for, since it does one or the other', () => {
     // An exact-name check lists sessions and compares names, because tmux's exact-match marker still resolves identifiers; a pattern goes to has-session.
     expect(use('go', 'tmux.Server.HasSession', 'has-session')).toMatchObject({ when: 'the request sets Pattern', reviewed: true })
