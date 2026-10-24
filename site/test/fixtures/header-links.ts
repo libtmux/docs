@@ -143,7 +143,7 @@ export const LINKS: Record<string, ExpectedLinks> = {
   },
   go: {
     actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-go', 'https://github.com/libtmux/libtmux-go'],
-      ['package', 'pkg.go.dev', 'pkg.go.dev: libtmux/libtmux-go/tmux package', 'https://pkg.go.dev/github.com/libtmux/libtmux-go/tmux']],
+      ['package', 'pkg.go.dev', 'pkg.go.dev: libtmux/libtmux-go/tmux package and API reference', 'https://pkg.go.dev/github.com/libtmux/libtmux-go/tmux']],
     indexed: true,
     rows: [
       ['source', 'tmux', 'package · tmux', 'https://github.com/libtmux/libtmux-go/tree/master/tmux', ['tmux']],

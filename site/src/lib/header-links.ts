@@ -135,12 +135,13 @@ export function portHeaderLinks(port: Port, inventory: Readonly<Record<string, r
     kind: 'source', label: 'GitHub', icon: 'github', url: source.url,
     name: `GitHub: ${source.repo}${source.path ? `/${source.path}` : ''}`,
   }]
+  const documented = library.api ? library : entries.find((entry) => entry.id === library.reference)
   if (library.package) {
     const host = PACKAGE_HOSTS[library.package.host]
-    actions.push({ kind: 'package', label: host.name, icon: host.icon, url: library.package.url, name: `${host.name}: ${named(library.coordinate)} package` })
+    // A host that serves the package page as its reference is one destination, not two, so its one link says it is both.
+    const also = documented?.api?.url === library.package.url ? ' and API reference' : ''
+    actions.push({ kind: 'package', label: host.name, icon: host.icon, url: library.package.url, name: `${host.name}: ${named(library.coordinate)} package${also}` })
   }
-  // A host that serves the package page as its reference is one destination, not two.
-  const documented = library.api ? library : entries.find((entry) => entry.id === library.reference)
   if (documented?.api && documented.api.url !== library.package?.url) {
     const host = API_HOSTS[documented.api.host]
     const label = documented.api.tool ?? host.name

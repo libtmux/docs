@@ -51,6 +51,15 @@ describe('header links', () => {
     expect(tmux.kind).toBe('package')
     // The merged row still answers a search for the reference.
     expect(matchesSearch(tmux, 'api reference')).toBe(true)
+    // With no chip of its own for the reference, the one link says it opens both; its visible label is unchanged.
+    expect(go.actions[1]!.label).toBe('pkg.go.dev')
+    expect(go.actions[1]!.name).toBe('pkg.go.dev: libtmux/libtmux-go/tmux package and API reference')
+    // Control: a port whose reference is another page names only its package, and has the reference chip as well.
+    for (const slug of ['rs', 'java', 'swift', 'elixir']) {
+      const [, pack, api] = links(slug).actions
+      expect(pack!.name, slug).toMatch(/ package$/)
+      expect(api?.kind, slug).toBe('api')
+    }
   })
 
   it('names one row for each URL and keeps every entry’s identity in its search text', () => {
