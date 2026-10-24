@@ -278,7 +278,9 @@ const VERIFIERS = {
         exact: async (version) => {
           if (new RegExp(`(?<![\\w.-])${escapeRegExp(version)}(?![\\w.-])`).test(response.text)) return true
           const docs = await get(`${base}/${version}/documentation`)
-          return docs.status === 200 && titleOf(docs.text).endsWith('Documentation – Swift Package Index')
+          // The index redirects to the release's default module; a redirect that leaves this repository or release is not its documentation.
+          const stays = new RegExp(`^${escapeRegExp(base)}/${escapeRegExp(version)}/documentation(?:/|$)`, 'i').test(docs.finalUrl)
+          return docs.status === 200 && stays && titleOf(docs.text).endsWith('Documentation – Swift Package Index')
         } })
       : fail('identity', `title is "${title}" and the page does not name ${owner}/${repo}`, { status: 200, requested: url })
   },

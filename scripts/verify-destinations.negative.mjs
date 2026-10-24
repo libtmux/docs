@@ -358,12 +358,23 @@ else { console.error(`FAIL each port needs its own check: ${JSON.stringify(bothC
 
 // The Swift Package Index lists only the newest releases on a package page, and keeps each built release's documentation.
 routes['/swiftpackageindex.com/demo/swiftlate'] = () => [200, 'text/html', html('swiftlate &ndash; Swift Package Index', '<a href="https://github.com/demo/swiftlate">source</a> Version 2.0.0')]
-routes['/swiftpackageindex.com/demo/swiftlate/1.0.0/documentation'] = () => [200, 'text/html', html('lib Documentation &ndash; Swift Package Index')]
+// The index sends a release's documentation root to its default module, as it does for the real package.
+routes['/swiftpackageindex.com/demo/swiftlate/1.0.0/documentation'] = (_, origin) => [302, '', '', { location: `${origin}/swiftpackageindex.com/demo/swiftlate/1.0.0/documentation/lib` }]
+routes['/swiftpackageindex.com/demo/swiftlate/1.0.0/documentation/lib'] = () => [200, 'text/html', html('lib Documentation &ndash; Swift Package Index')]
+// A documentation page that answers, but only after a redirect off the repository or onto another release.
+routes['/swiftpackageindex.com/demo/swiftlate/0.9.0/documentation'] = (_, origin) => [302, '', '', { location: `${origin}/swiftpackageindex.com/demo/elsewhere/0.9.0/documentation/lib` }]
+routes['/swiftpackageindex.com/demo/swiftlate/0.8.0/documentation'] = (_, origin) => [302, '', '', { location: `${origin}/swiftpackageindex.com/demo/swiftlate/1.0.0/documentation/lib` }]
+routes['/swiftpackageindex.com/demo/elsewhere/0.9.0/documentation/lib'] = () => [200, 'text/html', html('lib Documentation &ndash; Swift Package Index')]
 const swiftlate = () => [entry('swiftlate', { repo: 'demo/swiftlate', coordinate: 'swiftlate', package: { host: 'swift-package-index', url: 'https://swiftpackageindex.com/demo/swiftlate' } })]
 const swiftManifest = (version) => ({ ports: { demo: { distributions: [{ name: 'swiftlate', version, repo: 'demo/swiftlate', manifest: 'Package.swift' }] } } })
 await verify('a Swift release the package page no longer lists is confirmed by its documentation', swiftlate(), {
   manifests: swiftManifest('1.0.0'), expect: { code: 0, matches: [/ok\s+200\s+package\s+https:\/\/swiftpackageindex\.com\/demo\/swiftlate/], excludes: [/does not carry/] },
 })
+for (const [version, where] of [['0.9.0', 'another repository'], ['0.8.0', 'another release']]) {
+  await verify(`a Swift release whose documentation redirects to ${where} fails`, swiftlate(), {
+    manifests: swiftManifest(version), expect: { code: 1, matches: [new RegExp(`does not carry ${version.replaceAll('.', '\\.')}, the version demo/swiftlate:Package\\.swift declares for demo`)] },
+  })
+}
 await verify('a Swift release that is neither listed nor documented fails', swiftlate(), {
   manifests: swiftManifest('0.5.0'), expect: { code: 1, matches: [/does not carry 0\.5\.0, the version demo\/swiftlate:Package\.swift declares for demo/] },
 })
