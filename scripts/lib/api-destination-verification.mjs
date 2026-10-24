@@ -44,7 +44,7 @@ import { KEYWORD_HELP } from '../../packages/api-model/src/link.ts'
 import { USER_AGENT, futureRecords, staleRecords } from './destination-verification.mjs'
 
 export { compact, decode, headingAt, mentions, pageHeading, readPage, safeDecode, sectionAt, strip } from './api-html.mjs'
-import { compact, mentions, pageHeading, readPage, safeDecode, sectionAt, strip } from './api-html.mjs'
+import { compact, headingAt, mentions, normalizeHeading, pageHeading, readPage, safeDecode, sectionAt, strip } from './api-html.mjs'
 
 /** The documentation views and locales a host adds to an address without changing the page. */
 export function sameAddress(requested, final) {
@@ -146,20 +146,29 @@ const REVIEWED = loadReviewedLinks()
  * its source gives it (`sourceIdentity`: kind, owner, name, operand count and
  * parameters), and the exception, if one was reviewed for this name at this
  * exact address. A link's own words ask for their row in the reviewed link table,
- * keyed by the exact text and the exact address, and carry the port that wrote the
- * link so its language can be held to the address's. A destination reached only by
- * concepts that say nothing has none.
+ * keyed by the exact text and the exact address, and carry every port that wrote the
+ * link so each one's language can be held to the address's. An address written outside
+ * a link asks for a link. A destination reached only by concepts that say nothing has none.
  */
 export function expectationsOf(destination, { exceptions = PAGE_EXCEPTIONS, links = REVIEWED } = {}) {
   const found = new Map()
   for (const use of destination.uses) {
     // The words a person wrote on a link, or the title a keyword's help carries: each is a reviewed pair of text and address.
+    // An address written outside any link has no words to review, so it has nothing to be held to and does not pass.
+    if (use.unmatched) {
+      const key = `${use.source}:(no link) ${use.name}`
+      found.set(key, { key, symbol: key, segments: [key], where: use.name, unmatched: true })
+      continue
+    }
     const label = use.label ?? (use.source === 'keyword' ? KEYWORD_HELP[use.port]?.[use.name]?.title ?? use.name : undefined)
     if (label !== undefined) {
+      // The same words at the same address written for several ports are one pair, and each port's language is held to the address.
       const key = `${use.source}:${label}`
+      const earlier = found.get(key)
       const row = links.byPair.get(pairKey(label, destination.url))
       const port = use.from ?? (use.port || undefined)
-      found.set(key, { key, label, symbol: label, segments: [label], where: use.name, ...(port && { port }), ...(row && { row }) })
+      const ports = [...new Set([...(earlier?.ports ?? []), ...(port ? [port] : [])])].sort()
+      found.set(key, { key, label, symbol: label, segments: [label], where: earlier?.where ?? use.name, ...(ports.length && { ports }), ...(row && { row }) })
       continue
     }
     if (CONCEPT_SOURCES.has(use.source) || use.concept) continue
@@ -174,7 +183,7 @@ export function expectationsOf(destination, { exceptions = PAGE_EXCEPTIONS, link
 
 /** The distinct symbols the destination's names ask for. The words on a link are held to a page's declared identity, not to a symbol list. */
 export function expectedSymbols(destination, options) {
-  const symbols = new Map(expectationsOf(destination, options).filter((expectation) => expectation.label === undefined).map(({ symbol }) => [symbol.toLowerCase(), symbol]))
+  const symbols = new Map(expectationsOf(destination, options).filter((expectation) => expectation.label === undefined && !expectation.unmatched).map(({ symbol }) => [symbol.toLowerCase(), symbol]))
   return [...symbols.values()].sort()
 }
 
@@ -258,6 +267,7 @@ const identityRecord = (identity) => Object.fromEntries(Object.entries(identity)
  * @returns {{ at: string, reason?: string } | { failure: string, detail: string }}
  */
 export function holdIdentity(expectation, identity, context = {}) {
+  if (expectation.unmatched) return unlinked(expectation, context.url)
   if (expectation.label !== undefined) return holdLink(expectation, { ...context, identity })
   const { page, fragment, url } = context
   const wrong = expectation.port && url ? languageProblem(expectation.port, url) : undefined
@@ -271,6 +281,12 @@ export function holdIdentity(expectation, identity, context = {}) {
   return verdict
 }
 
+/** An address written outside a link: nothing says what the words are for, so a person has nothing to review. */
+const unlinked = (expectation, url) => ({
+  failure: 'unlisted',
+  detail: `${expectation.where} writes ${url} outside a Markdown link (in a code span, a fence, front matter, a definition nothing uses, or a bare address), so no words say what it is for: write it as a link and review the pair in ${REVIEW_FILE}`,
+})
+
 /**
  * Hold the words on a link to the page, with no judgment of how alike they are. A link of the
  * reviewed table is right when the page's heading at its address is the row's; a link that is
@@ -283,7 +299,7 @@ export function holdIdentity(expectation, identity, context = {}) {
  * @returns {{ at: string } | { failure: string, detail: string }}
  */
 export function holdLink(expectation, { identity, heading, url }) {
-  const wrong = expectation.port ? languageProblem(expectation.port, url) : undefined
+  const wrong = languageProblem(expectation.ports ?? expectation.port, url)
   if (wrong) return wrong
   const quoted = JSON.stringify(expectation.label)
   if (expectation.row) {
@@ -301,6 +317,17 @@ export function holdLink(expectation, { identity, heading, url }) {
 
 /** The heading a symbol page is recorded under: the full name it declares. */
 const symbolHeading = (identity) => identity.path.join('.')
+
+/**
+ * The heading a link's words are compared at: the heading the address's fragment opens, whatever
+ * the page declares, else the name a symbol page declares, else the page's own heading. A fragment
+ * that moves to another section moves the heading with it.
+ */
+function linkHeading(page, fragment, url, identity) {
+  const opened = fragment ? headingAt(page, fragment) : undefined
+  if (opened) return normalizeHeading(opened)
+  return identity && SYMBOL_KINDS.has(identity.kind) ? symbolHeading(identity) : pageHeading(page, fragment, url)
+}
 
 /** Whether any of the expectations is a link's own words, which are recorded with the heading they were compared at. */
 const hasLinks = (expectations) => expectations.some((expectation) => expectation.label !== undefined)
@@ -377,7 +404,7 @@ export async function verifyApiDestination(destination, { get, exceptions = PAGE
 
   const identity = pageIdentity(url, page, fragment)
   if (identity) {
-    const heading = SYMBOL_KINDS.has(identity.kind) ? symbolHeading(identity) : pageHeading(page, fragment, url)
+    const heading = linkHeading(page, fragment, url, identity)
     const { terminal, failed } = holdAll(expectations, identity, { page, fragment, url, heading })
     const record = { ...found, identity: identityRecord(identity), ...(hasLinks(expectations) && { heading }), ...(fragment && { fragment: 'found' }) }
     if (failed) return { ...record, ok: false, failure: failed.failure, detail: failed.detail, ...(terminal.length && { terminal }) }
@@ -387,7 +414,7 @@ export async function verifyApiDestination(destination, { get, exceptions = PAGE
   const slug = slugSymbol(url)
   const terminal = []
   let failed
-  for (const expectation of expectations.filter((candidate) => candidate.label === undefined)) {
+  for (const expectation of expectations.filter((candidate) => candidate.label === undefined && !candidate.unmatched)) {
     const held = (expectation.port ? languageProblem(expectation.port, url) : undefined) ?? hold(page, { url, fragment }, expectation)
     if (held.failure) {
       failed ??= held
@@ -397,8 +424,8 @@ export async function verifyApiDestination(destination, { get, exceptions = PAGE
   }
   // A host that declares nothing: a link's own words are a row of the reviewed link table, at the heading the page has.
   const heading = hasLinks(expectations) ? pageHeading(page, fragment, url) : undefined
-  for (const expectation of expectations.filter((candidate) => candidate.label !== undefined)) {
-    const held = holdLink(expectation, { identity: undefined, heading, url })
+  for (const expectation of expectations.filter((candidate) => candidate.label !== undefined || candidate.unmatched)) {
+    const held = expectation.unmatched ? unlinked(expectation, url) : holdLink(expectation, { identity: undefined, heading, url })
     if (held.failure) failed ??= { ...held, key: expectation.key }
     else terminal.push({ key: expectation.key, symbol: expectation.symbol, ...held })
   }
@@ -495,8 +522,9 @@ export function recordProblems(record) {
  * or a link edited over the same address is caught without asking the host.
  */
 export function holdRecorded(expectation, record) {
+  if (expectation.unmatched) return unlinked(expectation, record.url)
   if (expectation.label !== undefined) {
-    const wrong = expectation.port ? languageProblem(expectation.port, record.url) : undefined
+    const wrong = languageProblem(expectation.ports ?? expectation.port, record.url)
     if (wrong) return wrong
     if (expectation.row) {
       if (typeof record.heading !== 'string') return { failure: 'drift', detail: 'the record keeps no heading to compare the reviewed link with' }
@@ -629,7 +657,7 @@ export function checkApiEvidence(destinations, evidence, { today = new Date(), r
     if (record.identity) {
       const stale = identityProblem(record)
       if (stale) problems.push(stale)
-      if (SYMBOL_KINDS.has(record.identity.kind) && typeof record.heading === 'string' && record.heading !== symbolHeading(record.identity)) {
+      if (SYMBOL_KINDS.has(record.identity.kind) && !record.url.includes('#') && typeof record.heading === 'string' && record.heading !== symbolHeading(record.identity)) {
         problems.push(`${record.url} records the heading ${JSON.stringify(record.heading)}, but the page declares ${symbolHeading(record.identity)}`)
       }
     }

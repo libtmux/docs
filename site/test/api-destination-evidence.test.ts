@@ -1,12 +1,12 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { API_HOSTS, EXTERNAL_INVENTORIES, PAGE_EXCEPTIONS, addressSegments, apiHostOf, arityOf, collectApiDestinations, qualified, terminalSymbol, urlsIn } from '../../scripts/lib/api-destinations.mjs'
+import { API_HOSTS, EXTERNAL_INVENTORIES, PAGE_EXCEPTIONS, addressSegments, apiHostOf, arityOf, collectApiDestinations, linksIn, qualified, terminalSymbol, urlsIn } from '../../scripts/lib/api-destinations.mjs'
 import { addressOf, mismatch } from '../../scripts/lib/api-addresses.mjs'
 import { judge, judgeLabel, pageIdentity, sourceIdentity } from '../../scripts/lib/api-identities.mjs'
 import { PORT_LANGUAGES, languageOfUrl, languageProblem, loadReviewedLinks, doccHeading } from '../../scripts/lib/api-links.mjs'
 import { BARE_OWNERS, DEFAULT_NAMES, bareOwners, hintOwners } from '../../scripts/lib/api-sources.mjs'
 import { pageHeading } from '../../scripts/lib/api-html.mjs'
-import { linksIn } from '../../scripts/lib/api-destinations.mjs'
+import { dataLinks, markdownLinks } from '../../scripts/lib/api-markdown-links.mjs'
 import {
   INVENTORY_SOURCES, MAX_UNVERIFIABLE_SHARE, UNVERIFIABLE_REASONS, checkApiEvidence, expectationsOf, expectedSymbols, inventoryDigest, mentions, needsCheck, readPage, recordProblems, sameAddress, sectionAt, slugSymbol,
 } from '../../scripts/lib/api-destination-verification.mjs'
@@ -342,10 +342,46 @@ describe('what a name says it is', () => {
     expect(judgeLabel('`tokio::select!`', { path: ['tokio', 'select'], kind: 'member', declared: 'macro' })).toBeUndefined()
   })
 
-  it('finds the words of each link a text writes', () => {
-    const links = linksIn('See [`a`](https://x.org/a) and [the b][b] or [c][missing].\n\n[b]: https://x.org/b\n{ title: \'Python classes\', url: \'https://docs.python.org/3/tutorial/classes.html\' }')
-    expect([...links].map(([url, words]) => [url, [...words]])).toEqual([
-      ['https://x.org/a', ['`a`']], ['https://x.org/b', ['the b']], ['https://docs.python.org/3/tutorial/classes.html', ['Python classes']],
+  it('finds the words of each link a text writes, in every form a Markdown link takes', () => {
+    const url = 'https://x.org/a'
+    const pair = (text: string) => markdownLinks(text).pairs
+    expect(pair(`See [\`a\`](${url}) and [the b][b] or [c][missing].\n\n[b]: https://x.org/b`)).toEqual([{ label: '`a`', url }, { label: 'the b', url: 'https://x.org/b' }])
+    expect(pair(`[a](${url} "title")`)).toEqual([{ label: 'a', url }])
+    expect(pair(`[a](<${url}>)`)).toEqual([{ label: 'a', url }])
+    expect(pair(`<${url}>`)).toEqual([{ label: url, url }])
+    expect(pair(`[a][]\n\n[a]: ${url}`)).toEqual([{ label: 'a', url }])
+    expect(pair(`[a]\n\n[a]: ${url} 'title'`)).toEqual([{ label: 'a', url }])
+    expect(pair(`[a][o]\n\n[o]: <${url}>`)).toEqual([{ label: 'a', url }])
+    expect(pair(`<a href="${url}">a</a>`)).toEqual([{ label: 'a', url }])
+    expect(pair(`See <a class="x" href='${url}'>a <b>b</b></a> here`)).toEqual([{ label: 'a b', url }])
+    expect(pair(`[\`a[0]\`](${url})`)).toEqual([{ label: '`a[0]`', url }])
+    expect(pair('[a](https://x.org/f_(b))')).toEqual([{ label: 'a', url: 'https://x.org/f_(b)' }])
+    expect(markdownLinks(`[a](${url}) and <${url}> and [b](https://x.org/b "t")`).loose).toEqual([])
+  })
+
+  it('reports an address written outside a link as loose, so that a form the parser does not know cannot pass by being missed', () => {
+    const url = 'https://x.org/a'
+    expect(markdownLinks(`See ${url} here.`).loose).toEqual([url])
+    expect(markdownLinks(`Run \`curl ${url}\` here.`).loose).toEqual([url])
+    expect(markdownLinks(`\`\`\`sh\ncurl ${url}\n\`\`\``).loose).toEqual([url])
+    expect(markdownLinks(`![diagram](${url})`).loose).toEqual([url])
+    expect(markdownLinks(`See nothing.\n\n[o]: ${url}`).loose).toEqual([url])
+    expect(markdownLinks(`[a](${url}) and again ${url}`).loose).toEqual([url])
+    expect(markdownLinks(`[](${url})`).loose).toEqual([url])
+    const front = `---\nsource: ${url}\n---\n`
+    expect(markdownLinks(`${front}See [a](https://x.org/b).`, { front: front.length })).toEqual({ pairs: [{ label: 'a', url: 'https://x.org/b' }], loose: [url] })
+    // The address in front matter is loose even when the body links to the same page: front matter is not prose.
+    expect(markdownLinks(`${front}[a](${url})`, { front: front.length }).loose).toEqual([url])
+  })
+
+  it('reads the pairs a data file writes, and the addresses it writes any other way', () => {
+    const text = `{ title: 'Python classes', url: 'https://docs.python.org/3/tutorial/classes.html' }, { title: "Go types", url: "https://go.dev/ref/spec#Types" }\nconst HELP = 'https://x.org/help'`
+    expect(dataLinks(text)).toEqual({
+      pairs: [{ label: 'Python classes', url: 'https://docs.python.org/3/tutorial/classes.html' }, { label: 'Go types', url: 'https://go.dev/ref/spec#Types' }],
+      loose: ['https://x.org/help'],
+    })
+    expect([...linksIn(`See [a](https://x.org/a) and ${text}`)].map(([url, words]) => [url, [...words]])).toEqual([
+      ['https://x.org/a', ['a']], ['https://docs.python.org/3/tutorial/classes.html', ['Python classes']], ['https://go.dev/ref/spec#Types', ['Go types']],
     ])
   })
 })
@@ -479,9 +515,55 @@ describe('the reviewed link table', () => {
     expect(Object.keys(PORT_LANGUAGES).length).toBeGreaterThan(10)
   })
 
+  it('gives each Microsoft Learn product its own language, and the platform only its API, runtime, standard library and NuGet pages', () => {
+    const learn = (path: string) => languageOfUrl(`https://learn.microsoft.com/en-us/${path}`)
+    expect(learn('dotnet/api/system.string')).toBe('dotnet')
+    expect(learn('dotnet/core/tools/dotnet-tool-install')).toBe('dotnet')
+    expect(learn('dotnet/standard/design-guidelines/member-overloading')).toBe('dotnet')
+    expect(learn('nuget/what-is-nuget')).toBe('dotnet')
+    expect(learn('dotnet/csharp/fundamentals/types/classes')).toBe('csharp')
+    expect(learn('dotnet/fsharp/language-reference/classes')).toBe('fsharp')
+    expect(learn('dotnet/visual-basic/programming-guide/language-features/objects-and-classes/')).toBe('visual-basic')
+    expect(learn('cpp/cpp/classes-and-structs-cpp')).toBe('cpp')
+    expect(learn('azure/storage/blobs/storage-blobs-introduction')).not.toBe('dotnet')
+    expect(learn('dotnet/maui/what-is-maui')).not.toBe('dotnet')
+    expect(languageOfUrl('https://learn.microsoft.com/powershell/module/x/about/about_functions')).toBe('powershell')
+    expect(languageProblem('csharp', 'https://learn.microsoft.com/en-us/cpp/cpp/classes-and-structs-cpp')).toMatchObject({ failure: 'language' })
+    expect(languageProblem('csharp', 'https://learn.microsoft.com/en-us/dotnet/visual-basic/programming-guide/language-features/objects-and-classes/')).toMatchObject({ failure: 'language' })
+    expect(languageProblem('fsharp', 'https://learn.microsoft.com/en-us/azure/storage/blobs/storage-blobs-introduction')).toMatchObject({ failure: 'language' })
+    expect(languageProblem('csharp', 'https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-tool-install')).toBeUndefined()
+    expect(languageProblem('cxx', 'https://learn.microsoft.com/en-us/cpp/cpp/classes-and-structs-cpp')).toBeUndefined()
+  })
+
+  it('holds every port a pair was written for, and refuses a port or an address it cannot place', () => {
+    const rust = 'https://doc.rust-lang.org/reference/items/structs.html'
+    expect(languageProblem(['rs', 'py'], rust)).toMatchObject({ failure: 'language' })
+    expect(languageProblem(['py', 'rs'], rust)).toMatchObject({ failure: 'language' })
+    expect(languageProblem(['rs', 'rs'], rust)).toBeUndefined()
+    expect(languageProblem(undefined, rust)).toBeUndefined()
+    expect(languageProblem('zig', rust)).toMatchObject({ failure: 'language', detail: expect.stringContaining('zig is not a port') })
+    expect(languageProblem('rs', 'https://example.org/page')).toMatchObject({ failure: 'language', detail: expect.stringContaining('no language is known') })
+    // Every host the verifier reads has a language, so no API address escapes the check by being unplaced.
+    for (const host of API_HOSTS) expect(languageOfUrl(`https://${host}/`), host).toBeDefined()
+  })
+
   it('derives the words of a keyword link from its help title when the use carries none', () => {
     const keyword = (name: string) => expectationsOf({ url: 'https://eel.is/c++draft/dcl.attr.nodiscard', uses: [{ port: 'cxx', name, source: 'keyword' }] })[0]
-    expect(keyword('nodiscard')).toMatchObject({ label: 'C++ nodiscard attribute', key: 'keyword:C++ nodiscard attribute', port: 'cxx' })
+    expect(keyword('nodiscard')).toMatchObject({ label: 'C++ nodiscard attribute', key: 'keyword:C++ nodiscard attribute', ports: ['cxx'] })
+  })
+
+  it('keeps every port that wrote the same words at the same address, so the last one cannot hide the others', () => {
+    const use = (from: string, name: string) => ({ port: '', name, source: 'authored', label: 'Rust structs', from })
+    const [expectation] = expectationsOf({ url: 'https://doc.rust-lang.org/reference/items/structs.html', uses: [use('rs', 'a.md'), use('py', 'b.md'), use('rs', 'c.md')] })
+    expect(expectation).toMatchObject({ label: 'Rust structs', ports: ['py', 'rs'] })
+    const [other] = expectationsOf({ url: 'https://doc.rust-lang.org/reference/items/structs.html', uses: [use('py', 'b.md'), use('rs', 'a.md')] })
+    expect(other.ports).toEqual(['py', 'rs'])
+  })
+
+  it('holds an address written outside a link as a use that has no words to review', () => {
+    const [expectation] = expectationsOf({ url: 'https://x.org/a', uses: [{ port: '', name: 'site/src/content/docs/a.md', source: 'authored', unmatched: true }] })
+    expect(expectation).toMatchObject({ unmatched: true })
+    expect(expectedSymbols({ url: 'https://x.org/a', uses: [{ port: '', name: 'site/src/content/docs/a.md', source: 'authored', unmatched: true }] })).toEqual([])
   })
 })
 

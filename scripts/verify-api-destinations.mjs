@@ -13,7 +13,9 @@
  * `site/src/data/api-link-review.json` with the heading its page has there,
  * unless its text is exactly the name of the symbol its page declares
  * (`scripts/lib/api-links.mjs`). A run that finds a link with no row prints
- * the heading it found and the row to add; a person reads both.
+ * the heading it found and the row to add; a person reads both. The links of
+ * a page are read by a Markdown parser, and an API address written outside a
+ * link fails: it has no words to review.
  *
  * A destination the host cannot answer for (it blocks the request, throttles
  * it, or renders the page in the browser) is recorded as unverifiable with the

@@ -1,6 +1,6 @@
 ---
 import { parameterId, type ApiSymbol, type Param, type SymbolIndex } from '@libtmux/api-model'
-import { parameterBindingFacts, POWER_SHELL_COMMON_HELP } from '../../lib/api-sections'
+import { parameterBindingFacts, POWER_SHELL_COMMON_HELP, POWER_SHELL_COMMON_HELP_TITLE } from '../../lib/api-sections'
 import ApiDoc from './ApiDoc.astro'
 import ApiType from './ApiType.astro'
 import ApiFieldOverloads from './ApiFieldOverloads.astro'
@@ -30,7 +30,7 @@ const anchor = (param: Param) => params.find((p) => p.name === param.name) === p
 </ul>
 {common.length > 0 && <details class="api-common-parameters" id={`${symbol.publicId ?? symbol.id}.common-parameters`}>
   <summary>Common parameters <span class="api-count">{new Set(common.map((p) => p.name)).size}</span></summary>
-  <p>PowerShell supplies these parameters. See <a href={POWER_SHELL_COMMON_HELP}>common parameter behavior</a> for their effects.</p>
+  <p>PowerShell supplies these parameters. See <a href={POWER_SHELL_COMMON_HELP}>{POWER_SHELL_COMMON_HELP_TITLE}</a> for their effects.</p>
   <ul class="simple api-command-parameters">
     {common.map((p) => <li id={anchor(p)}>
       <p class="api-parameter-heading">

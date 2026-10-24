@@ -31,7 +31,7 @@
  * Usage: node scripts/verify-api-destinations.negative.mjs
  */
 import { spawnSync } from 'node:child_process'
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
@@ -212,6 +212,11 @@ const pages = {
   '/learn/en-us/dotnet/fsharp/language-reference/records': { body: html('Records - F# | Microsoft Learn', '<h1>Records</h1><p>Records represent simple aggregates of named values.</p>') },
   '/learn/en-us/dotnet/csharp/programming-guide/classes-and-structs/static-classes-and-static-class-members': { body: html('Static Classes and Static Class Members - C# | Microsoft Learn', '<h1>Static Classes and Static Class Members</h1><p>A static class is basically the same as a non-static class.</p>') },
   '/learn/en-us/dotnet/fsharp/language-reference/classes': { body: html('Classes - F# | Microsoft Learn', '<h1>Classes</h1><p>Classes are types that represent objects that can have properties, methods, and events.</p>') },
+  '/learn/en-us/powershell/module/microsoft.powershell.core/about/about_commonparameters': { body: html('about_CommonParameters - PowerShell | Microsoft Learn', `<h1 id="about_commonparameters">about_CommonParameters</h1>${part('-erroraction', '-ErrorAction', 'Determines how the cmdlet responds to a non-terminating error.')}${part('-verbose', '-Verbose', 'Displays detailed information about the operation.')}`) },
+  '/learn/en-us/dotnet/csharp/language-reference/language-specification/basic-concepts': { body: html('Basic concepts - C# language specification | Microsoft Learn', `<h1>7 Basic concepts</h1>${part('75-signatures-and-overloading', '7.5 Signatures and overloading', 'Methods, instance constructors, indexers, and operators are characterized by their signatures.', 2)}`) },
+  '/learn/en-us/dotnet/core/tools/dotnet-tool-install': { body: html('dotnet tool install command - .NET CLI | Microsoft Learn', '<h1>dotnet tool install</h1><p>Installs the specified .NET tool on your machine.</p>') },
+  '/learn/en-us/cpp/cpp/classes-and-structs-cpp': { body: html('Classes and structs (C++) | Microsoft Learn', '<h1>Classes and structs (C++)</h1><p>This article introduces classes and structs in C++.</p>') },
+  '/learn/en-us/dotnet/visual-basic/programming-guide/language-features/objects-and-classes/': { body: html('Objects and classes - Visual Basic | Microsoft Learn', '<h1>Objects and classes</h1><p>Visual Basic classes.</p>') },
   '/learn/en-us/powershell/module/microsoft.powershell.core/about/about_functions': { body: html('about_Functions - PowerShell | Microsoft Learn', '<h1>about_Functions</h1><p>Describes how to create and use functions in PowerShell.</p>') },
   '/rust/std/error/trait.Error.html': { body: rustdoc('Error', 'error', 'Trait', [['method.source', 'fn <a>source</a>(&amp;self) -&gt; Option&lt;&amp;(dyn Error + \'static)&gt;', 'Returns the lower-level source of this error, if any.']]) },
   '/rust/std/macro.println.html': { body: html('println in std - Rust', '<h1>Macro <span>println</span></h1>') },
@@ -316,10 +321,17 @@ const ROWS = [
   ['Go constants', 'https://go.dev/ref/spec#Constants', 'Constants'],
   ['Java booleans', 'https://docs.oracle.com/javase/specs/jls/se21/html/jls-4.html#jls-4.2.5', '4.2.5. The boolean Type and boolean Values'],
   ['Julia composite types', 'https://docs.julialang.org/en/v1/manual/types/#Composite-Types', 'Composite Types'],
+  ['PowerShell error action', 'https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_commonparameters#-erroraction', '-ErrorAction'],
+  ['C# signatures and overloading', 'https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/basic-concepts#75-signatures-and-overloading', '7.5 Signatures and overloading'],
+  ['.NET tool install', 'https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-tool-install', 'dotnet tool install'],
 ]
 const TABLE = table(...ROWS)
 const at = (url, port, name, source = 'builtin', extra = {}) => ({ url, host: new URL(url).hostname, uses: [{ port, name, source, ...extra }] })
 const authored = (url, label, from) => ({ url, host: new URL(url).hostname, uses: [{ port: '', name: 'site/src/content/docs/example.md', source: 'authored', label, ...(from && { from }) }] })
+/** One pair written by the pages of several ports: the uses merge into one expectation, and each port's language is held to the address. */
+const written = (url, label, ...froms) => ({ url, host: new URL(url).hostname, uses: froms.map((from, index) => ({ port: '', name: `site/src/content/docs/ports/${from}/page-${index}.md`, source: 'authored', label, from })) })
+const STRUCTS = 'https://doc.rust-lang.org/reference/items/structs.html'
+const COMMON = 'https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_commonparameters'
 
 const cases = [
   { name: 'control: the page names the symbol', destination: at(`${JDK}/util/Optional.html`, 'java', 'Optional', 'type'), ok: true },
@@ -523,6 +535,20 @@ const cases = [
   { name: 'language: a name the Rust port writes, at the TypeScript handbook', destination: at(`${TS}/utility-types.html#omittype-keys`, 'rs', 'Omit'), failure: 'language' },
   { name: 'language control: a link the Kotlin docs write to the JLS, a JVM port\'s own platform', destination: authored(`${JLS}/jls-4.html#jls-4.2.5`, 'Java booleans', 'kotlin'), ok: true },
   { name: 'language: the same link written by the Python docs', destination: authored(`${JLS}/jls-4.html#jls-4.2.5`, 'Java booleans', 'py'), failure: 'language' },
+  { name: 'language: one pair written by a Rust page and then a Python page is held for the Python page too', destination: written(STRUCTS, 'Rust structs', 'rs', 'py'), failure: 'language' },
+  { name: 'language: the same pair written by a Python page and then a Rust page', destination: written(STRUCTS, 'Rust structs', 'py', 'rs'), failure: 'language' },
+  { name: 'language control: the pair written by two Rust pages', destination: written(STRUCTS, 'Rust structs', 'rs', 'rs'), ok: true },
+  { name: 'language: a link written for a port the language table does not know', destination: authored(STRUCTS, 'Rust structs', 'zig'), failure: 'language' },
+  { name: 'language: a C# link to the C++ documentation on Learn', destination: authored('https://learn.microsoft.com/en-us/cpp/cpp/classes-and-structs-cpp', 'C# classes', 'csharp'), failure: 'language' },
+  { name: 'language: a C# link to the Visual Basic documentation on Learn', destination: authored('https://learn.microsoft.com/en-us/dotnet/visual-basic/programming-guide/language-features/objects-and-classes/', 'C# classes', 'csharp'), failure: 'language' },
+  { name: 'language: a PowerShell link to the C# language specification', destination: authored('https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/basic-concepts#75-signatures-and-overloading', 'C# signatures and overloading', 'powershell'), failure: 'language' },
+  { name: 'language control: a C# link to the C# language specification', destination: authored('https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/basic-concepts#75-signatures-and-overloading', 'C# signatures and overloading', 'csharp'), ok: true },
+  { name: 'language control: a C# link to the platform both C# and F# share', destination: authored('https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-tool-install', '.NET tool install', 'csharp'), ok: true },
+  // Class: the heading a fragment opens, on a page that declares a symbol.
+  { name: 'fragment control: PowerShell error action at the section its fragment opens', destination: authored(`${COMMON}#-erroraction`, 'PowerShell error action', 'powershell'), ok: true },
+  { name: 'fragment: a row that records the page-level name, not the heading the fragment opens', destination: authored(`${COMMON}#-erroraction`, 'PowerShell error action', 'powershell'), links: table(['PowerShell error action', `${COMMON}#-erroraction`, 'microsoft.powershell.core.CommonParameters']), failure: 'drift' },
+  { name: 'fragment: a row that records the section the fragment opened before it moved', destination: authored(`${COMMON}#-erroraction`, 'PowerShell error action', 'powershell'), links: table(['PowerShell error action', `${COMMON}#-erroraction`, '-Verbose']), failure: 'drift' },
+  { name: 'fragment: the same words at another section of the page, which no row lists', destination: authored(`${COMMON}#-verbose`, 'PowerShell error action', 'powershell'), failure: 'label' },
 
   // Class: an exception that names a word, not an address. Each is pinned to the one address it was reviewed for.
   { name: 'cppreference control: std::chrono::seconds at the duration page that lists it', destination: at(`${CPPREF}/chrono/duration`, 'cxx', 'std::chrono::seconds'), ok: true },
@@ -555,6 +581,72 @@ for (const testCase of cases) {
     console.log(`ok   ${testCase.name}: ${record.failure}`)
   }
 }
+
+// Class: every form a Markdown link takes yields its pair, and an address written outside a link is held as one with no words.
+// Each page is planted in a root of its own whose data and libraries are this checkout's, so the collector reads it as it reads the site.
+const planted = mkdtempSync(join(tmpdir(), 'api-destination-forms-'))
+const plantedDocs = join(planted, 'site', 'src', 'content', 'docs', 'ports', 'rs', 'concepts')
+mkdirSync(plantedDocs, { recursive: true })
+symlinkSync(join(root, 'site', 'src', 'data'), join(planted, 'site', 'src', 'data'))
+symlinkSync(join(root, 'site', 'src', 'lib'), join(planted, 'site', 'src', 'lib'))
+const LISTED = 'Rust structs'
+const UNLISTED = 'Rust enums'
+const CODED = '`Rust structs[0]`'
+const formsOf = [
+  ['an inline link', (label) => `See [${label}](${STRUCTS}) here.`],
+  ['an inline link with a title', (label) => `See [${label}](${STRUCTS} "A title") here.`],
+  ['an inline link with a title in single quotes', (label) => `See [${label}](${STRUCTS} 'A title') here.`],
+  ['an inline link with the address in angle brackets', (label) => `See [${label}](<${STRUCTS}>) here.`],
+  ['a reference link with a titled definition', (label) => `See [${label}][o] here.\n\n[o]: ${STRUCTS} "A title"`],
+  ['a collapsed reference link', (label) => `See [${label}][] here.\n\n[${label}]: ${STRUCTS}`],
+  ['a shortcut reference link', (label) => `See [${label}] here.\n\n[${label}]: ${STRUCTS}`],
+  ['a definition with the address in angle brackets', (label) => `See [${label}][o] here.\n\n[o]: <${STRUCTS}>`],
+  ['a raw anchor', (label) => `See <a href="${STRUCTS}">${label}</a> here.`],
+  ['a raw anchor with single quotes and attributes', (label) => `<p><a class="x" href='${STRUCTS}' target="_blank">${label}</a></p>`],
+  ['a link inside emphasis', (label) => `See *[${label}](${STRUCTS})* here.`],
+  ['a link in a list item', (label) => `- [${label}](${STRUCTS})`],
+  ['a link in a table cell', (label) => `| a | b |\n| - | - |\n| [${label}](${STRUCTS}) | x |`],
+]
+const looseForms = [
+  ['an address in a sentence', `See ${STRUCTS} here.`],
+  ['an address in a code span', `Run \`curl ${STRUCTS}\` here.`],
+  ['an address in a fence', `\`\`\`sh\ncurl ${STRUCTS}\n\`\`\``],
+  ['an address in an image', `![diagram](${STRUCTS})`],
+  ['a definition nothing uses', `See nothing here.\n\n[o]: ${STRUCTS}`],
+  ['an address written as a link and again in a sentence', `See [${LISTED}](${STRUCTS}) and also ${STRUCTS} for more.`],
+  ['an address in front matter', `FRONT:source: ${STRUCTS}\nSee nothing here.`],
+]
+const plants = []
+const plant = (name, body, expectation) => {
+  const file = `form-${plants.length}.md`
+  const front = body.startsWith('FRONT:') ? `${body.slice(6).split('\n')[0]}\n` : ''
+  const text = body.startsWith('FRONT:') ? body.slice(6).split('\n').slice(1).join('\n') : body
+  writeFileSync(join(plantedDocs, file), `---\nport: rs\ntitle: planted\n${front}---\n${text}\n`)
+  plants.push({ name, where: `site/src/content/docs/ports/rs/concepts/${file}`, ...expectation })
+}
+for (const [name, write] of formsOf) {
+  plant(`${name}, its words listed`, write(LISTED), { ok: true })
+  plant(`${name}, its words not listed`, write(UNLISTED), { failure: 'unlisted', mentions: JSON.stringify(UNLISTED) })
+}
+plant('an inline link whose words are code with brackets in it', `See [${CODED}](${STRUCTS}) here.`, { failure: 'unlisted', mentions: JSON.stringify(CODED) })
+plant('an autolink', `See <${STRUCTS}> here.`, { failure: 'unlisted', mentions: JSON.stringify(STRUCTS) })
+for (const [name, body] of looseForms) plant(name, body, { failure: 'unlisted', mentions: 'outside a Markdown link' })
+const found = collectApiDestinations({ root: planted })
+for (const planting of plants) {
+  const uses = [...found.values()].flatMap((destination) => [...destination.uses.values()].filter((use) => use.name === planting.where).map((use) => ({ destination, use })))
+  const destination = uses[0]?.destination
+  if (!destination) { fail(`markdown: ${planting.name}: the collector found no address in the page`); continue }
+  const record = await verifyApiDestination({ url: destination.url, host: destination.host, uses: uses.map(({ use }) => use) }, { get, links: TABLE })
+  if (planting.ok) {
+    if (!record.ok) fail(`markdown: ${planting.name}: expected a pass, got ${record.failure ?? record.unverifiable}: ${record.detail ?? ''}`)
+    else console.log(`ok   markdown: ${planting.name}`)
+  } else if (record.ok || record.failure !== planting.failure || !String(record.detail).includes(planting.mentions)) {
+    fail(`markdown: ${planting.name}: expected ${planting.failure} naming ${planting.mentions}, got ${record.ok ? 'a pass' : `${record.failure}: ${record.detail}`}`)
+  } else {
+    console.log(`ok   markdown: ${planting.name}: ${record.failure}`)
+  }
+}
+rmSync(planted, { recursive: true, force: true })
 server.close()
 
 // The second half drives the real command over a copy of the committed evidence.

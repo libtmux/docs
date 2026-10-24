@@ -282,7 +282,10 @@ export function parameterBindingFacts(param: Param): { label: string; value: str
   return facts
 }
 
-export const POWER_SHELL_COMMON_HELP = 'https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_commonparameters?view=powershell-7.4'
+/** The page that documents PowerShell's common parameters, with the words that link to it; the link verifier reads the pair from here. */
+const COMMON_PARAMETERS = { title: 'common parameter behavior', url: 'https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_commonparameters?view=powershell-7.4' }
+export const POWER_SHELL_COMMON_HELP = COMMON_PARAMETERS.url
+export const POWER_SHELL_COMMON_HELP_TITLE = COMMON_PARAMETERS.title
 
 /** Group the existing semantic order without sorting or omitting members. */
 export function apiMemberGroups(members: ApiSymbol[], signals: MemberSignals) {

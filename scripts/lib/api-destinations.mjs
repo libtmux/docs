@@ -25,6 +25,7 @@ import { KEYWORD_HELP } from '../../packages/api-model/src/link.ts'
 import { NATIVE_API_GLOSSARIES } from '../../site/src/lib/api-glossary-native.ts'
 export { TYPE_ALIASES, addressSegments, arityOf, nameSegments, terminalSymbol } from './api-sources.mjs'
 import { nameSegments } from './api-sources.mjs'
+import { dataLinks, markdownLinks, occurrencesIn } from './api-markdown-links.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
@@ -254,10 +255,15 @@ export function qualified(symbol, text) {
 }
 
 /** The URLs a text names, without the punctuation of the sentence or markup around them. */
-export function urlsIn(text) {
-  return [...text.matchAll(/https:\/\/[^\s'"`)<>\]\\|]+/g)]
-    .map((match) => match[0].replace(/[.,;:*_]+$/, ''))
-    .filter((url) => !url.includes('${'))
+export const urlsIn = (text) => occurrencesIn(text).map((occurrence) => occurrence.url)
+
+/** The words each address is linked with in a text, as `Map<url, Set<label>>`: Markdown links, and `{ title, url }` pairs. */
+export function linksIn(text) {
+  const labels = new Map()
+  for (const { pairs } of [markdownLinks(text), dataLinks(text)]) {
+    for (const { label, url } of pairs) labels.set(url, (labels.get(url) ?? new Set()).add(label))
+  }
+  return labels
 }
 
 const portOf = (file, source) => /^port:\s*['"]?([a-z]+)['"]?\s*$/m.exec(/^---\r?\n([\s\S]*?)\r?\n---/.exec(source)?.[1] ?? '')?.[1]
@@ -289,61 +295,42 @@ function collectProse(found, { root, models, inventories }) {
   }
 }
 
-/**
- * The links a text writes with words, as `Map<url, Set<label>>`: inline Markdown
- * (`[label](url)`), reference style (`[label][ref]` with `[ref]: url`), and the
- * glossary's `{ title, url }` pairs. A bare URL has no words to compare.
- */
-export function linksIn(text) {
-  const labels = new Map()
-  const add = (url, label) => {
-    const clean = url.replace(/[.,;:*_]+$/, '')
-    const words = label.replace(/\s+/g, ' ').trim()
-    if (words) labels.set(clean, (labels.get(clean) ?? new Set()).add(words))
-  }
-  for (const match of text.matchAll(/\[((?:[^\]\\]|\\.)+)\]\((https:\/\/[^\s)]+)\)/g)) add(match[2], match[1])
-  const references = new Map([...text.matchAll(/^\[([^\]]+)\]:\s*(https:\/\/\S+)/gm)].map((match) => [match[1].toLowerCase(), match[2]]))
-  for (const match of text.matchAll(/\[((?:[^\]\\]|\\.)+)\]\[([^\]]+)\]/g)) {
-    const url = references.get(match[2].toLowerCase())
-    if (url) add(url, match[1])
-  }
-  for (const match of text.matchAll(/title:\s*'([^']+)',\s*url:\s*'(https:\/\/[^']+)'/g)) add(match[2], match[1])
-  return labels
-}
-
 /** Hand-written references: Markdown links in pages, guide data and the glossary. */
 function collectAuthored(found, { root }) {
   const skip = new Set(JSON.parse(readFileSync(join(root, 'site', 'src', 'data', 'destination-evidence.json'), 'utf8')).destinations.map((record) => record.url))
   // `from` is the port whose page or data wrote the link, when one did: a link that port writes reaches only its own languages' documentation.
-  const add = (text, where, title, from) => {
-    const labels = linksIn(text)
-    for (const url of urlsIn(text)) {
-      if (skip.has(url)) continue
-      const words = title ? new Set([title]) : labels.get(url)
-      const origin = from ? { from } : {}
-      if (words) for (const label of words) note(found, url, { port: '', name: where, source: 'authored', label, ...origin })
-      else note(found, url, { port: '', name: where, source: 'authored', ...origin })
-    }
+  const origin = (from) => (from ? { from } : {})
+  const pair = (url, label, where, from) => {
+    if (!skip.has(url)) note(found, url, { port: '', name: where, source: 'authored', label, ...origin(from) })
+  }
+  // An address written outside any link has no words to review: it is held as a use that fails until it is written as a link.
+  const loose = (url, where, from) => {
+    if (!skip.has(url)) note(found, url, { port: '', name: where, source: 'authored', unmatched: true, ...origin(from) })
+  }
+  const read = ({ pairs, loose: stray }, where, from) => {
+    for (const { label, url } of pairs) pair(url, label, where, from)
+    for (const url of stray) loose(url, where, from)
   }
   const content = join(root, 'site', 'src', 'content', 'docs')
   for (const file of globSync('**/*.{md,mdx}', { cwd: content }).sort()) {
     if (file.startsWith('meta/') || file.startsWith('_')) continue
     const text = readFileSync(join(content, file), 'utf8')
-    add(text, `site/src/content/docs/${file}`, undefined, portOf(file, text))
+    const front = /^---\r?\n[\s\S]*?\r?\n---\r?\n/.exec(text)?.[0] ?? ''
+    read(markdownLinks(text, { front: front.length }), `site/src/content/docs/${file}`, portOf(file, text))
   }
   const walk = (value, where, from) => {
-    if (typeof value === 'string') add(value, where, undefined, from)
+    if (typeof value === 'string') read(markdownLinks(value), where, from)
     else if (Array.isArray(value)) for (const item of value) walk(item, where, from)
     else if (value && typeof value === 'object') for (const item of Object.values(value)) walk(item, where, from)
   }
   for (const file of globSync('site/src/data/port-guides/*.json', { cwd: root }).sort()) walk(readJson(join(root, file)), file, /([a-z]+)\.json$/.exec(file)?.[1])
   for (const file of ['site/src/lib/api-glossary.ts', 'site/src/lib/api-sections.ts']) {
-    add(readFileSync(join(root, file), 'utf8'), file)
+    read(dataLinks(readFileSync(join(root, file), 'utf8')), file)
   }
   // The native glossary builds its addresses with helpers, so it is read as data.
   for (const [port, terms] of Object.entries(NATIVE_API_GLOSSARIES)) {
     for (const [term, definition] of Object.entries(terms)) {
-      for (const reference of definition.references) add(reference.url, `glossary ${port} ${term}`, reference.title, port)
+      for (const reference of definition.references) pair(reference.url, reference.title, `glossary ${port} ${term}`, port)
     }
   }
 }

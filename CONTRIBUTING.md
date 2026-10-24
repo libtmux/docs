@@ -328,9 +328,17 @@ page's path, owner included; a call written out is its callee; `Result` is `std:
 words that describe the page are not a name. A row on a page that declares a symbol (`Python class
 methods` at `classmethod`) is recorded under the symbol's full name. Language is read from the
 address, never from the words: each port goes to its own language's documentation and to what its
-platform shares (a JVM port to the JLS and the JDK, C#, F# and PowerShell to the .NET API), and a link
-a port writes to any other fails (`PORT_LANGUAGES` in
-[`api-links.mjs`](scripts/lib/api-links.mjs)). A host that moves the
+platform shares (Kotlin and Scala to the Java hosts, C#, F# and PowerShell to the .NET API, runtime,
+standard library and NuGet pages of Microsoft Learn, and no port to another product's pages there),
+and a link a port writes to any other fails (`PORT_LANGUAGES` in
+[`api-links.mjs`](scripts/lib/api-links.mjs)). The same words at the same address written for several
+ports are held for each of them, and a port the table does not know, or an address whose language it
+cannot read, fails rather than passes unchecked. The links in a page are read by a Markdown parser
+([`api-markdown-links.mjs`](scripts/lib/api-markdown-links.mjs)), so a link with a title, an autolink,
+a reference link, a `<url>` definition, a raw `<a>` or code with brackets in its words is a pair like
+any other, and an address on an API host that no link accounts for (in a code span, a fence, front
+matter, an image, a definition nothing uses, or a sentence) fails as a link with no words to review.
+A host that moves the
 page elsewhere, even by the case of a letter, fails, because a link should be
 the page's address. Request the missing ones after changing a map, an
 inventory or a pinned model:
@@ -379,7 +387,8 @@ page, a symbol the page does not document, a word that merely contains the
 symbol, a wrong package or namespace, a wrong kind, operand count or parameter
 list, a bare name in the wrong scope, words on a link that name another symbol,
 an exception borrowed by another page, an unlisted link, a drifted heading, a
-link written for the wrong language, a case-only redirect and a redirect to a
+link written for the wrong language or several ports, each form a Markdown link
+takes, an address outside any link, a case-only redirect and a redirect to a
 landing page on pages shaped like the real ones, each fault in the evidence, and
 each edit of the source over an unchanged record, and requires the check to name
 each. The weekly

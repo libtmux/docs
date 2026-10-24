@@ -56,6 +56,22 @@ export function serializeReviewedLinks(rows) {
 }
 
 /**
+ * The language a Microsoft Learn path documents. `dotnet` is the platform C#, F# and PowerShell share:
+ * only its API reference, runtime, standard library and NuGet pages. Every other product has its
+ * own language, so a C# link to the C++ or Visual Basic documentation is a link to another language.
+ */
+function learnLanguage(path) {
+  const rest = path.replace(/^\/[a-z]{2}-[a-z]{2}(?=\/)/, '')
+  if (/^\/powershell(?:\/|$)/.test(rest)) return 'powershell'
+  if (/^\/dotnet\/csharp(?:\/|$)/.test(rest)) return 'csharp'
+  if (/^\/dotnet\/fsharp(?:\/|$)/.test(rest)) return 'fsharp'
+  if (/^\/dotnet\/visual-basic(?:\/|$)/.test(rest)) return 'visual-basic'
+  if (/^\/(?:dotnet\/(?:api|core|standard)|nuget)(?:\/|$)/.test(rest)) return 'dotnet'
+  if (/^\/cpp(?:\/|$)/.test(rest)) return 'cpp'
+  return `microsoft-learn${rest.split('/').slice(0, 3).join('/')}`
+}
+
+/**
  * The language an address documents, from its host and path. `dotnet` is the platform C#, F# and
  * PowerShell share; `any` is a page that is for every port.
  */
@@ -84,12 +100,7 @@ export function languageOfUrl(url) {
   if (byHost[hostname]) return byHost[hostname]
   if (hostname === 'hexdocs.pm' || hostname.endsWith('.hexdocs.pm')) return 'elixir'
   if (hostname === 'docs.oracle.com') return 'java'
-  if (hostname === 'learn.microsoft.com') {
-    if (/\/powershell\//.test(path)) return 'powershell'
-    if (/\/dotnet\/csharp\//.test(path)) return 'csharp'
-    if (/\/dotnet\/fsharp\//.test(path)) return 'fsharp'
-    return 'dotnet'
-  }
+  if (hostname === 'learn.microsoft.com') return learnLanguage(path)
   return undefined
 }
 
@@ -101,12 +112,23 @@ export const PORT_LANGUAGES = {
   cxx: ['cpp'], swift: ['swift'], julia: ['julia'], lua: ['lua'], elixir: ['elixir', 'erlang'], ruby: ['ruby'],
 }
 
-/** Whether a link written for a port reaches the documentation of a language it has no business in. */
-export function languageProblem(port, url) {
-  const allowed = PORT_LANGUAGES[port]
+/**
+ * Whether a link written for one port, or for several, reaches documentation of a language the port
+ * has no business in. A port this table does not know, or an address whose language it cannot read,
+ * is a problem too: a check that skips what it does not know passes whatever it was not told about.
+ *
+ * @param {string | string[] | undefined} ports
+ */
+export function languageProblem(ports, url) {
   const language = languageOfUrl(url)
-  if (!allowed || !language || language === 'any' || allowed.includes(language)) return undefined
-  return { failure: 'language', detail: `a ${port} link reaches ${language} documentation at ${url.split('#')[0]}` }
+  for (const port of [ports].flat()) {
+    if (!port) continue
+    const allowed = PORT_LANGUAGES[port]
+    if (!allowed) return { failure: 'language', detail: `${port} is not a port whose documentation is known (PORT_LANGUAGES in api-links.mjs), so a link it writes to ${url.split('#')[0]} cannot be held to a language` }
+    if (language === undefined) return { failure: 'language', detail: `no language is known for ${url.split('#')[0]}, so a ${port} link to it cannot be held to one (languageOfUrl in api-links.mjs)` }
+    if (language !== 'any' && !allowed.includes(language)) return { failure: 'language', detail: `a ${port} link reaches ${language} documentation at ${url.split('#')[0]}` }
+  }
+  return undefined
 }
 
 /** The heading a DocC document gives an anchor, or the document's title for the page itself. */
