@@ -15,9 +15,10 @@ interface Props {
   description: string
   /** The demo's path as `lib/demos.ts` writes it, such as `/demo/ux/aside/`. */
   current: string
+  wide?: boolean
 }
 
-const { title, description, current } = Astro.props as Props
+const { title, description, current, wide = false } = Astro.props as Props
 
 const topLink = (active: boolean) =>
   `block rounded-md px-3 py-2 text-sm no-underline transition ${
@@ -34,7 +35,7 @@ const subLink = (active: boolean) =>
 ---
 
 <BaseLayout title={title} description={description} noindex searchable={false} localeStatuses={ALL_TRANSLATED}>
-  <div class="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 md:flex-row md:gap-10">
+  <div class:list={['mx-auto flex flex-col gap-6 px-4 py-8 md:flex-row md:gap-10', !wide && 'max-w-7xl']}>
     <nav aria-label="Demos" class="shrink-0 md:w-56">
       <a
         href={withRoot(DEMO_OVERVIEW)}
