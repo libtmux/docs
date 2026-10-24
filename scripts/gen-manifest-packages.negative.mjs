@@ -33,7 +33,9 @@ function run(file, env = {}) {
 
 const dir = mkdtempSync(join(tmpdir(), 'gen-manifest-packages-'))
 const control = run(real)
-const notChecked = new Set((/not checked: (.*)$/m.exec(control.out)?.[1] ?? '').split(', ').filter(Boolean))
+/** The ports a run named as not checked: the line lists every one, so a lone name is not what to look for. */
+const namedUnchecked = (out) => new Set((/not checked: (.*)$/m.exec(out)?.[1] ?? '').split(', ').filter(Boolean))
+const notChecked = namedUnchecked(control.out)
 
 let failures = 0
 const check = (name, ok, detail) => {
@@ -102,9 +104,9 @@ if (!notChecked.has('py')) {
   for (const variable of ['LIBTMUX_DOCS_WORKSPACE_PY', 'LIBTMUX_DOCS_MCP_PY']) {
     const env = { [variable]: '/nonexistent' }
     const untouched = run(real, env)
-    check(`with ${variable} absent, py is named and the committed file passes`, untouched.code === 0 && /not checked: py$/m.test(untouched.out) && !/differs/.test(untouched.out), `exit ${untouched.code}: ${untouched.out.trim()}`)
+    check(`with ${variable} absent, py is named and the committed file passes`, untouched.code === 0 && namedUnchecked(untouched.out).has('py') && !/differs/.test(untouched.out), `exit ${untouched.code}: ${untouched.out.trim()}`)
     const partial = run(file, env)
-    check(`with ${variable} absent, py is not compared from the core alone`, partial.code === 0 && /not checked: py$/m.test(partial.out), `exit ${partial.code}: ${partial.out.trim()}`)
+    check(`with ${variable} absent, py is not compared from the core alone`, partial.code === 0 && namedUnchecked(partial.out).has('py'), `exit ${partial.code}: ${partial.out.trim()}`)
   }
   const other = ['rs', 'ts', 'go', 'swift'].find((slug) => !notChecked.has(slug))
   if (other) {
