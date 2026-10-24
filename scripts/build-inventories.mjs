@@ -19,7 +19,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { isSymbolEntry, readInventory, writeInventory } from '../packages/api-model/src/inventory.ts'
+import { readInventory, symbolEntries, writeInventory } from '../packages/api-model/src/inventory.ts'
 import { TYPESCRIPT_UTILITY_TYPES } from '../packages/api-model/src/builtins.ts'
 import { javadocSymbols } from '../packages/api-model/src/javadoc.ts'
 
@@ -157,7 +157,7 @@ function writeSidecar(name, bytes) {
   // something anyone reads.
   writeFileSync(
     join(outDir, `${name}.entries.json`),
-    `${JSON.stringify({ project, version, e: entries.filter(isSymbolEntry).map((x) => [x.name, x.uri]) })}\n`,
+    `${JSON.stringify({ project, version, e: symbolEntries(entries).map((x) => [x.name, x.uri]) })}\n`,
   )
 }
 

@@ -1,5 +1,5 @@
 import { tokenizeDoc, type DocSpan } from './doc/roles.ts'
-import { isSymbolEntry, type InventoryEntry } from './inventory.ts'
+import { symbolEntries, type InventoryEntry } from './inventory.ts'
 import type { ApiSymbol, Signature, SymbolKind, TypeParameter } from './model.ts'
 import { builtinHref, ELIXIR_STDLIB_MODULES, elixirStdlibHref } from './builtins.ts'
 import { qualifiedNameOf } from './modules.ts'
@@ -410,8 +410,8 @@ export class SymbolIndex {
   ): void {
     const byName = new Map<string, InventoryEntry>()
     // A page of the manual or a command-line option is not a symbol: Julia's `index` is its front
-    // page, and a variable of that name is not a reference to it.
-    for (const entry of entries) if (isSymbolEntry(entry) && !byName.has(entry.name)) byName.set(entry.name, entry)
+    // page, and CPython's `search` is its search page, not a function of that name.
+    for (const entry of symbolEntries(entries)) if (!byName.has(entry.name)) byName.set(entry.name, entry)
     this.external.push({ baseUrl: baseUrl.replace(/\/*$/, '/'), byName, langs, project })
   }
 
@@ -639,6 +639,8 @@ export class SymbolIndex {
       if (elixir) return elixir
     }
     let clean = target.replace(/^[~.]/, '')
+    // `System.getenv()` is the overload that takes nothing, and an inventory that lists overloads says which.
+    const nullary = this.lang !== 'swift' && this.lang !== 'py' && clean.endsWith('()')
     // Swift ids keep their argument labels, so `isRunning()` names `Server.isRunning()`.
     if (this.lang !== 'swift') clean = clean.replace(/\(\)$/, '')
     // Elixir names a type `t:name/0` and a function `name/2`; the prefix and arity select, they do not spell.
@@ -814,10 +816,18 @@ export class SymbolIndex {
     const stdlib = this.lang === 'py' ? pythonCallee(clean) : clean
     for (const inv of this.external) {
       if (inv.langs && (!this.lang || !inv.langs.includes(this.lang))) continue
-      const hit = inv.byName.get(stdlib) ?? context?.namespaceImports?.toReversed()
-        .map((namespace) => inv.byName.get(`${namespace}.${clean}`)).find(Boolean) ??
+      // A call with no arguments is not an overload that takes some: it has the entry written with its
+      // parentheses, or the plain name when that entry's anchor lists no parameters.
+      const entry = (name: string) => {
+        const exact = nullary ? inv.byName.get(`${name}()`) : undefined
+        if (exact) return exact
+        const plain = inv.byName.get(name)
+        return plain && !(nullary && /\([^)]/.test(plain.uri.split('#')[1] ?? '')) ? plain : undefined
+      }
+      const hit = entry(stdlib) ?? context?.namespaceImports?.toReversed()
+        .map((namespace) => entry(`${namespace}.${clean}`)).find(Boolean) ??
         (this.lang === 'julia' && !clean.includes('.')
-          ? inv.byName.get(`Core.${clean}`) ?? inv.byName.get(`Base.${clean}`) : undefined)
+          ? entry(`Core.${clean}`) ?? entry(`Base.${clean}`) : undefined)
       if (hit) return {
         href: inv.baseUrl === '/' && hit.uri.startsWith('/') ? hit.uri : inv.baseUrl + hit.uri,
         external: true,

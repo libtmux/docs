@@ -21,6 +21,8 @@ describe('Javadoc search-index URLs', () => {
       { p: 'java.util', c: 'Map.Entry', l: 'getKey()' },
       { p: 'java.util', c: 'ArrayList', l: 'ArrayList(int)', u: '%3Cinit%3E(int)' },
       { p: 'java.util.logging', c: 'Logger', l: 'log(Level, String)', u: 'log(java.util.logging.Level,java.lang.String)' },
+      { p: 'java.lang', c: 'System', l: 'getenv()' },
+      { p: 'java.lang', c: 'System', l: 'getenv(String)', u: 'getenv(java.lang.String)' },
     ])
     const uri = (name: string) => symbols.find((symbol) => symbol.id === name)?.uri
     expect(uri('AutoCloseable')).toBe('java.base/java/lang/AutoCloseable.html')
@@ -32,6 +34,20 @@ describe('Javadoc search-index URLs', () => {
     expect(uri('Map.Entry.getKey')).toBe('java.base/java/util/Map.Entry.html#getKey()')
     expect(uri('ArrayList.ArrayList')).toBe('java.base/java/util/ArrayList.html#%3Cinit%3E(int)')
     expect(uri('Logger.log')).toBe('java.logging/java/util/logging/Logger.html#log(java.util.logging.Level,java.lang.String)')
+  })
+
+  it('gives each name one entry and the nullary overload its own', () => {
+    const symbols = javadocSymbols([{ l: 'java.lang', m: 'java.base' }], [], [
+      { p: 'java.lang', c: 'System', l: 'getenv()' },
+      { p: 'java.lang', c: 'System', l: 'getenv(String)', u: 'getenv(java.lang.String)' },
+    ])
+    const ids = symbols.map((symbol) => symbol.id)
+    expect(new Set(ids).size, 'a name is listed once').toBe(ids.length)
+    const uri = (name: string) => symbols.find((symbol) => symbol.id === name)?.uri
+    expect(uri('System.getenv()')).toBe('java.base/java/lang/System.html#getenv()')
+    expect(uri('java.lang.System.getenv()')).toBe('java.base/java/lang/System.html#getenv()')
+    expect(uri('System.getenv')).toBe('java.base/java/lang/System.html#getenv(java.lang.String)')
+    expect(uri('System.getenv(String)')).toBeUndefined()
   })
 
   it('requires unambiguous authoritative package ownership', () => {

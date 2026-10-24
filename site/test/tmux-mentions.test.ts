@@ -348,9 +348,17 @@ describe('workspace and MCP mentions render like tmux mentions', () => {
     ])('lets the library win on %s, where freeze is the function', async (_name, route, group) => {
       const found = hrefs(await workspace(SOURCE, 'py', route, group ? { sidebar: { group } } : {}))
       expect(found[0]).toMatch(/\/py\/latest\/workspace\/reference\/tmuxp-workspace-freezer-freeze\/$/)
-      expect(found[1]).toMatch(/^https:\/\/docs\.python\.org\//)
+      // `search` is CPython's search page, a label of its manual and no function, so it links to nothing here
+      // and the format falls through to tmux.
+      expect(found).toHaveLength(2)
+      expect(found[1]).toBe('/tmux/latest/catalog/formats/session_name/')
       expect(found.some((href) => href.includes('/workspace/cli/') || href.includes('/workspace/configuration/'))).toBe(false)
       expect(exported(SOURCE, 'py', 'workspace', `ports/py/${route}`, group)).toEqual(found.map((href) => href))
+    })
+
+    it('links a standard-library function, and no label of the manual that happens to spell a command', async () => {
+      const found = hrefs(await workspace('Use `sorted` or `search`.', 'py', 'workspace/reference'))
+      expect(found).toEqual(['https://docs.python.org/3/builtins/functions.html#sorted'])
     })
 
     it('keeps tmux and the library on pages that are not workspace pages', async () => {

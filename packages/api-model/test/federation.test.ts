@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { SymbolIndex } from '../src/link.ts'
 import { Resolver } from '../src/resolver.ts'
-import { readInventory } from '../src/inventory.ts'
+import { readInventory, symbolEntries } from '../src/inventory.ts'
 import { moduleOf, modulesIn } from '../src/modules.ts'
 
 /**
@@ -469,6 +469,40 @@ describe('a link names a symbol its host documents', () => {
     const resolver = new Resolver([{ port: 'julia', symbols: [] } as never])
     resolver.addInventory('Julia', 'https://docs.julialang.org/en/v1/', inventory, ['julia'])
     expect(resolver.resolve('julia', 'index')).toMatchObject({ how: 'no-symbol' })
+  })
+
+  it('does not link a name to a label of the manual, in an inventory that keeps its symbols in a domain of its own', () => {
+    // CPython lists the search page as the label `search` and argparse's section as `default`; neither is a function.
+    const inventory = [
+      entry('search', 'search.html'), entry('default', 'library/argparse.html#default'), entry('open', 'builtins/functions.html#open', 'py:function'),
+      entry('glossary', 'glossary.html', 'std:doc'), entry('os.open', 'library/os.html#os.open', 'py:function'),
+    ]
+    expect(symbolEntries(inventory).map((candidate) => candidate.name)).toEqual(['open', 'os.open'])
+    const index = new SymbolIndex([], (s) => `#${s.id}`, 'py')
+    index.addInventory('https://docs.python.org/3/', inventory, ['py'], 'Python')
+    expect(index.resolve('search')).toBeUndefined()
+    expect(index.resolve('default')).toBeUndefined()
+    expect(index.resolve('open')?.href).toBe('https://docs.python.org/3/builtins/functions.html#open')
+    const resolver = new Resolver([{ port: 'py', symbols: [] } as never])
+    resolver.addInventory('Python', 'https://docs.python.org/3/', inventory, ['py'])
+    expect(resolver.resolve('py', 'search')).toMatchObject({ how: 'no-symbol' })
+    // An inventory with no domain of its own, as the JDK's, writes its symbols as labels.
+    expect(symbolEntries([entry('List', 'java.base/java/util/List.html')]).length).toBe(1)
+  })
+
+  it('links a call with no arguments to the overload that takes none', () => {
+    const jdk = [
+      entry('System.getenv', 'java.base/java/lang/System.html#getenv(java.lang.String)'), entry('System.getenv()', 'java.base/java/lang/System.html#getenv()'),
+      entry('System.getProperty', 'java.base/java/lang/System.html#getProperty(java.lang.String)'), entry('Process.pid', 'java.base/java/lang/Process.html#pid()'),
+    ]
+    const index = new SymbolIndex([], (s) => `#${s.id}`, 'java')
+    index.addInventory('https://docs.oracle.com/en/java/javase/21/docs/api/', jdk, ['java'], 'Java SE')
+    const href = (name: string) => index.resolve(name)?.href?.replace('https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/', '')
+    expect(href('System.getenv()')).toBe('System.html#getenv()')
+    expect(href('System.getenv')).toBe('System.html#getenv(java.lang.String)')
+    // The only overload takes an argument, so a call with none links to nothing; one whose anchor lists none is the call.
+    expect(href('System.getProperty()')).toBeUndefined()
+    expect(href('Process.pid()')).toBe('Process.html#pid()')
   })
 
   it('does not guess a member of a standard-library module', () => {

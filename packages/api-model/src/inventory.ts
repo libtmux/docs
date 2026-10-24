@@ -38,6 +38,20 @@ export const NON_SYMBOL_ROLES: ReadonlySet<string> = new Set([
 export const isSymbolEntry = (entry: { type: string }): boolean => !NON_SYMBOL_ROLES.has(entry.type)
 
 /**
+ * The entries of one inventory that can be the destination of a name in code.
+ *
+ * An inventory that documents a language in a domain of its own (CPython's
+ * `py:`, Julia's `jl:`) keeps its symbols there, and its `std:` entries are
+ * the manual: headings, glossary terms, pages. `search` and `default` are
+ * labels of CPython's manual, not functions. An inventory with no such domain,
+ * as our own JDK one, writes its symbols as `std:label`, so those stay.
+ */
+export function symbolEntries<T extends { type: string }>(entries: T[]): T[] {
+  const language = entries.some((entry) => !entry.type.startsWith('std:'))
+  return entries.filter((entry) => isSymbolEntry(entry) && !(language && entry.type.startsWith('std:')))
+}
+
+/**
  * Model kind to Sphinx domain role.
  *
  * Sphinx has real domains for Python, C++ and JavaScript, and those are used
