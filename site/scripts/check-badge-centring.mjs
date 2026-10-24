@@ -182,14 +182,25 @@ const GROUPS = [
 
 /**
  * The related-APIs chips in the contents column: each is one outlined box that
- * contains its mark and its name, no box overlaps the next, and the rows are
- * evenly spaced. Measured from the laid-out boxes, since the failure it guards
- * is a box that does not hold its content.
+ * contains its mark and its name, with the mark as its cap (flush with the top-left
+ * corner inside the border, as tall as the first line of the name), no box overlaps
+ * the next, and the rows are evenly spaced. Measured from the laid-out boxes, since the
+ * failure it guards is a box that does not hold its content.
+ *
+ * A chip grows with a name that wraps, so padding does not overflow it: it insets the
+ * mark from the corner instead, and that is what the flush rule sees.
  */
 export async function railProblems(page) {
   const rows = await page.evaluate(() => [...document.querySelectorAll('nav.api-related a:has(> .api-nav__kind)')].filter((a) => a.offsetParent).map((a) => {
     const box = (node) => { const r = node.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, left: r.left, right: r.right } }
-    return { chip: box(a), mark: box(a.querySelector(':scope > .api-nav__kind')), name: box(a.querySelector(':scope > code')), text: a.textContent.trim(), clipped: a.scrollHeight > a.clientHeight + 1 || a.scrollWidth > a.clientWidth + 1 }
+    const style = getComputedStyle(a)
+    return {
+      chip: box(a), mark: box(a.querySelector(':scope > .api-nav__kind')), name: box(a.querySelector(':scope > code')), text: a.textContent.trim(),
+      // `min-height` is the height of a chip with a one-line name, which the mark spans however many lines the name takes.
+      line: parseFloat(style.minHeight) || a.getBoundingClientRect().height,
+      border: { top: parseFloat(style.borderTopWidth) || 0, left: parseFloat(style.borderLeftWidth) || 0 },
+      clipped: a.scrollHeight > a.clientHeight + 1 || a.scrollWidth > a.clientWidth + 1,
+    }
   }))
   const problems = []
   const slack = 0.51
@@ -198,14 +209,78 @@ export async function railProblems(page) {
       const inside = row[part].top >= row.chip.top - slack && row[part].bottom <= row.chip.bottom + slack && row[part].left >= row.chip.left - slack && row[part].right <= row.chip.right + slack
       if (!inside) problems.push(`${row.text}: the chip's box does not contain its ${part}`)
     }
-    // The mark is the chip's cap: it spans the chip's full height, and nothing is clipped by the chip's edge.
-    if (row.mark.bottom - row.mark.top < row.chip.bottom - row.chip.top - 2 - slack) problems.push(`${row.text}: the mark does not fill the chip's height`)
+    // The mark is the chip's cap: flush with its top-left corner inside the border, and as tall as the first line, which is the whole chip when the name is one line.
+    if (Math.abs(row.mark.top - (row.chip.top + row.border.top)) > 1) problems.push(`${row.text}: the mark is not flush with the chip's top edge`)
+    if (Math.abs(row.mark.left - (row.chip.left + row.border.left)) > 1) problems.push(`${row.text}: the mark is not flush with the chip's left edge`)
+    if (row.mark.bottom - row.mark.top < Math.min(row.chip.bottom - row.chip.top, row.line) - 2 - slack) problems.push(`${row.text}: the mark does not fill the chip's height`)
+    // Nothing is clipped by the chip's edge.
     if (row.clipped) problems.push(`${row.text}: the chip clips its content`)
   }
   const gaps = rows.slice(1).map((row, index) => row.chip.top - rows[index].chip.bottom)
   gaps.forEach((gap, index) => { if (gap < 0) problems.push(`${rows[index + 1].text}: overlaps the row above by ${(-gap).toFixed(1)}px`) })
   if (gaps.length && Math.max(...gaps) - Math.min(...gaps) > 1) problems.push(`rows are unevenly spaced: gaps run ${Math.min(...gaps).toFixed(1)} to ${Math.max(...gaps).toFixed(1)}px`)
   return { rows: rows.length, problems }
+}
+
+/**
+ * What is wrong with a Related APIs chip, from its measured boxes. A chip grows with a name that wraps, so the lines of the
+ * name stay inside it, the mark stays one line tall in its corner and level with the first line, and no chip runs onto the next
+ * or out of the column. Kept apart from the measuring so it can be exercised without a browser.
+ */
+export function judgeChipGrowth(chips) {
+  const slack = 0.51
+  const problems = []
+  for (const chip of chips) {
+    const { text, box, mark, lines, border, line, rail } = chip
+    if (!lines.length) { problems.push(`${text}: the name has no line to measure`); continue }
+    const top = box.top + border
+    const bottom = box.bottom - border
+    if (lines[0].top < top - slack) problems.push(`${text}: the name starts ${(top - lines[0].top).toFixed(1)}px above the chip's top edge`)
+    if (lines.at(-1).bottom > bottom + slack) problems.push(`${text}: the name runs ${(lines.at(-1).bottom - bottom).toFixed(1)}px past the chip's bottom edge`)
+    if (Math.max(...lines.map((entry) => entry.right)) > box.right - border + slack) problems.push(`${text}: the name runs past the chip's right edge`)
+    if (chip.clipped) problems.push(`${text}: the chip clips its name`)
+    if (lines.length > 1 && box.bottom - box.top <= line + slack) problems.push(`${text}: the chip is still one line tall, ${(box.bottom - box.top).toFixed(1)}px, for a name of ${lines.length} lines`)
+    const markHeight = mark.bottom - mark.top
+    if (Math.abs(markHeight - (line - 2 * border)) > 1) problems.push(`${text}: the mark is ${markHeight.toFixed(1)}px tall, not the ${(line - 2 * border).toFixed(1)}px of one line`)
+    if (Math.abs(mark.top - top) > slack) problems.push(`${text}: the mark left the top of the chip`)
+    const offset = (lines[0].top + lines[0].bottom) / 2 - (mark.top + mark.bottom) / 2
+    if (Math.abs(offset) > 1) problems.push(`${text}: the first line of the name is ${Math.abs(offset).toFixed(1)}px ${offset < 0 ? 'above' : 'below'} the centre of the mark`)
+    if (box.left < rail.left - slack || box.right > rail.right + slack) problems.push(`${text}: the chip runs out of the Related APIs column`)
+  }
+  for (let i = 0; i < chips.length; i++) for (let j = i + 1; j < chips.length; j++) {
+    const a = chips[i].box
+    const b = chips[j].box
+    const across = Math.min(a.right, b.right) - Math.max(a.left, b.left)
+    const down = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top)
+    if (across > slack && down > slack) problems.push(`${chips[j].text}: overlaps ${chips[i].text} by ${down.toFixed(1)}px`)
+  }
+  return problems
+}
+
+/** The boxes and lines of every Related APIs chip on the page, judged by `judgeChipGrowth`. */
+export async function chipGrowthProblems(page) {
+  const chips = await page.evaluate(() => {
+    const plain = (r) => ({ top: r.top, bottom: r.bottom, left: r.left, right: r.right })
+    return [...document.querySelectorAll('nav.api-related a:has(> .api-nav__kind)')].filter((a) => a.offsetParent).map((a) => {
+      const name = a.querySelector(':scope > .api-nav__kind + code')
+      const range = document.createRange()
+      range.selectNodeContents(name)
+      // A line is every fragment of the name whose top is within a few pixels of the one before it.
+      const lines = []
+      for (const r of [...range.getClientRects()].filter((entry) => entry.width > 0.5 && entry.height > 0.5).sort((x, y) => x.top - y.top)) {
+        const last = lines.at(-1)
+        if (last && r.top - last.top <= 3) { last.bottom = Math.max(last.bottom, r.bottom); last.right = Math.max(last.right, r.right) } else lines.push({ top: r.top, bottom: r.bottom, right: r.right })
+      }
+      const style = getComputedStyle(a)
+      const box = a.getBoundingClientRect()
+      return {
+        text: name.textContent.trim(), box: plain(box), mark: plain(a.querySelector(':scope > .api-nav__kind').getBoundingClientRect()), lines,
+        border: parseFloat(style.borderTopWidth) || 0, line: parseFloat(style.minHeight) || box.height, rail: plain(a.closest('nav.api-related').getBoundingClientRect()),
+        clipped: a.scrollHeight > a.clientHeight + 1 || a.scrollWidth > a.clientWidth + 1,
+      }
+    })
+  })
+  return { chips: chips.length, wrapped: chips.filter((chip) => chip.lines.length > 1).length, problems: judgeChipGrowth(chips) }
 }
 
 /**
@@ -357,14 +432,25 @@ async function negativeControl(page, base, results) {
   results.controlTested = tested
   assert(noticed > 0, 'The centring gate noticed no mark shifted by 2px: it cannot fail')
 
-  // A chip that inherits the contents column's link padding no longer holds its content.
+  // Each way a related chip can stop being one box with its mark as its cap, and the problem the check must name for it.
   await page.goto(`${base}${PAGES[6].path}`, { waitUntil: 'load' })
   await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
   const clean = await railProblems(page)
   assert(clean.rows > 1 && clean.problems.length === 0, `The related chips are not clean before the control: ${clean.problems.join('; ')}`)
-  const padded = await page.addStyleTag({ content: 'nav.api-related a:has(> .api-nav__kind) { padding: .4rem .35rem !important; }' })
-  results.railControl = (await railProblems(page)).problems.length
-  await padded.evaluate((node) => node.remove())
+  const CHIP = 'nav.api-related a:has(> .api-nav__kind)'
+  const broken = async (css, expected, why) => {
+    const style = await page.addStyleTag({ content: css })
+    const { problems } = await railProblems(page)
+    await style.evaluate((node) => node.remove())
+    assert(problems.some((problem) => expected.test(problem)), `The rail check did not notice ${why}; it said: ${problems.join('; ') || 'nothing'}`)
+    return problems.length
+  }
+  // A chip that inherits the contents column's link padding: the chip grows around it, and the mark sits inside the padding and not in the corner.
+  results.railControl = await broken(`${CHIP} { padding: .4rem .35rem !important; }`, /the mark is not flush with the chip's top edge/, 'a chip that inherits the contents column\'s link padding')
+  // A chip too narrow for its name, which is held on one line: the name runs out of the chip.
+  results.railControl += await broken(`${CHIP} { inline-size: 3rem !important; } ${CHIP} > code { white-space: nowrap !important; overflow-wrap: normal !important; }`, /the chip's box does not contain its name/, 'a name running out of its chip')
+  // A mark shorter than the first line of the name.
+  results.railControl += await broken(`${CHIP} > .api-nav__kind { height: 6px !important; }`, /the mark does not fill the chip's height/, 'a mark shorter than a line')
   assert(results.railControl > 0, 'The rail check did not notice a chip that does not contain its content')
 
   // A modifier word shifted two pixels inside its chip.
@@ -514,11 +600,59 @@ export async function checkMentionDensity(browser, base) {
   } finally { await context.close() }
 }
 
+const CHIP_PAGES = ['server', 'session', 'window', 'pane', 'client'].map((name) => `/scala/latest/reference/io-github-libtmux-scaladsl-${name}/`)
+
+/**
+ * The Related APIs chips of the Scala Server, Session, Window, Pane and Client pages, where the name `Session (io.github.libtmux.scaladsl)` wraps onto
+ * three lines in the contents column: each chip grows to fit its name, its mark stays one line tall beside the first line, and nothing runs out
+ * of a chip or onto the next. The controls put back the fixed height the chip once had, stretch the mark down the chip, take the name's first-line
+ * offset away and lay one chip over another, and the check must name each.
+ */
+export async function checkChipGrowth(browser, base) {
+  // The contents column, and the Related APIs in it, show from 85rem.
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' })
+  const page = await context.newPage()
+  page.setDefaultNavigationTimeout(60000)
+  const open = async (path) => {
+    await page.goto(`${base}${path}`, { waitUntil: 'load' })
+    await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
+  }
+  try {
+    let chips = 0
+    let wrapped = 0
+    for (const path of CHIP_PAGES) {
+      await open(path)
+      const found = await chipGrowthProblems(page)
+      assert(found.wrapped > 0, `No Related APIs chip wrapped its name at 1440px on ${path}, so growth was not measured there`)
+      assert.deepEqual(found.problems, [], `A Related APIs chip on ${path}:\n${found.problems.join('\n')}`)
+      chips += found.chips
+      wrapped += found.wrapped
+    }
+    // The Session page mixes one-line chips with wrapped ones, so a name that loses its first-line offset differs from its neighbours.
+    await open(CHIP_PAGES[1])
+    const CHIP = 'nav.api-related a:has(> .api-nav__kind)'
+    const caught = {}
+    const broken = async (label, css, expected) => {
+      const style = await page.addStyleTag({ content: css })
+      const { problems } = await chipGrowthProblems(page)
+      await style.evaluate((node) => node.remove())
+      for (const pattern of expected) assert(problems.some((problem) => pattern.test(problem)), `The chip check did not notice ${label} (${pattern}); it said: ${problems.join('; ') || 'nothing'}`)
+      caught[label] = problems.length
+    }
+    await broken('the fixed height', `${CHIP} { height: var(--sp-h) !important; min-height: 0 !important; }`, [/the name starts .* above the chip's top edge/, /the chip is still one line tall/])
+    await broken('a mark stretched down the chip', `${CHIP} > .api-nav__kind { align-self: stretch !important; height: auto !important; }`, [/the mark is .* tall, not the/])
+    await broken('a first line that lost its offset', `${CHIP} > .api-nav__kind + code { margin-top: 0 !important; }`, [/the first line of the name is .* the centre of the mark/])
+    await broken('one chip over another', 'nav.api-related li:nth-child(2) a { translate: 0 -14px !important; }', [/overlaps/])
+    console.log(`Chip growth: ${chips} Related APIs chips (${wrapped} wrapped) on the Scala Server, Session, Window, Pane and Client pages each hold their name, keep the mark one line tall beside the first line and clear the next chip; controls caught ${Object.entries(caught).map(([label, count]) => `${label} (${count} problems)`).join(', ')} PASS`)
+  } finally { await context.close() }
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   const url = process.argv.find((arg) => arg.startsWith('--url='))?.slice(6) ?? 'http://localhost:47392/en'
   const browser = await chromium.launch()
   try {
     await checkBadgeCentring(browser, url, { sample: process.argv.includes('--sample') })
     await checkMentionDensity(browser, url)
+    await checkChipGrowth(browser, url)
   } finally { await browser.close() }
 }

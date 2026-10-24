@@ -17,7 +17,7 @@ import { checkColorScheme } from './check-color-scheme.mjs'
 import { checkHomeExampleOptions } from './check-home-example-options.mjs'
 import { checkDevSample, checkRowPermalinks } from './check-dev-sample.mjs'
 import { checkDeclarationControlAlignment, checkDeclarationControlsLevel, checkMemberBodyInsets, checkNativeSignatureGeometry, checkNativeSignatureLinks } from './check-native-layout.mjs'
-import { checkBadgeCentring, checkMentionDensity } from './check-badge-centring.mjs'
+import { checkBadgeCentring, checkChipGrowth, checkMentionDensity } from './check-badge-centring.mjs'
 import { checkBlockLinksUndecorated, checkKindBadgeLinks, checkRequiredAppearance, checkWebAnalytics, checkWebAnalyticsTransitions } from './check-page-readiness.mjs'
 import { checkTypeParameters } from './check-type-parameters.mjs'
 import { checkTmuxKeys, TMUX_KEY_PAGES } from './check-tmux-keys.mjs'
@@ -799,6 +799,7 @@ try {
   } else if (badgeCentringOnly) {
     await retryReload(() => checkBadgeCentring(browser, base))
     await checkMentionDensity(browser, base)
+    await checkChipGrowth(browser, base)
   } else if (referencePreferencesOnly) {
     await retryReload(() => checkReferencePreferences(browser, base))
     await retryReload(() => checkGlobalHeader(browser, base))
@@ -873,7 +874,8 @@ try {
     const apiAnchors = schedule(() => retryReload(() => checkApiAnchorArrival(browser, base)))
     const kindBadges = schedule(() => retryReload(() => checkKindBadgeLinks(browser, base)))
     const badgeCentring = schedule(() => retryReload(() => checkBadgeCentring(browser, base, { sample: sampleOnly }))
-      .then(() => checkMentionDensity(browser, base)))
+      .then(() => checkMentionDensity(browser, base))
+      .then(() => checkChipGrowth(browser, base)))
     const blockLinks = schedule(() => retryReload(() => checkBlockLinksUndecorated(browser, base)))
     await apiAnchors
     const apiSticky = schedule(() => retryReload(() => checkApiStickyHeadings(browser, base))

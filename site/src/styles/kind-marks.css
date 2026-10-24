@@ -226,7 +226,8 @@
   align-items: stretch;
   gap: 0;
   box-sizing: border-box;
-  height: var(--sp-h);
+  /* One line keeps the snapped height; a name that wraps at its <wbr> points grows the chip instead of spilling out of it. */
+  min-height: var(--sp-h);
   max-inline-size: 100%;
   /* The contents column pads and flags its links; a chip's box is its own. */
   padding: 0;
@@ -240,8 +241,9 @@
 :is(.api-elsewhere-value, .api-command-related, nav.api-related) a > .api-nav__kind {
   --mk-w: 1.6em; --mk-bwv: 0px;
   --mk-fill: color-mix(in srgb, var(--mk-hue, currentColor) 18%, var(--background-color, transparent));
-  align-self: stretch;
-  height: auto;
+  /* The mark is one line tall and stays on the first line, however many lines the name takes. */
+  align-self: flex-start;
+  height: calc(var(--sp-h) - 2px);
   min-width: 1.6em;
   padding-bottom: var(--sp-pb);
   border-width: 0;
@@ -249,15 +251,24 @@
   border-radius: 0;
 }
 :is(.api-elsewhere-value, .api-command-related, nav.api-related) a > .api-nav__kind + code {
+  /*
+   * The last line's baseline keeps its gap from the bottom edge. The top margin reserves exactly the space the first
+   * line has in a one-line chip (a hair less, so a single line never grows it), so the first line sits level with
+   * the mark, and each line after it adds one line of height to the chip.
+   */
   align-self: flex-end;
-  margin: 0 0 var(--sp-pb);
+  margin: calc(var(--sp-h) - 2px - var(--sp-pb) - 1cap - .1px) 0 var(--sp-pb);
   padding: 0 .45em;
   border: 0;
   background: none;
   font-size: .875em;
-  line-height: 1;
+  /* The text is trimmed to its cap and baseline, so this spaces the lines of a wrapped name and does not move one line. */
+  line-height: 1.3;
   text-box: trim-both cap alphabetic;
   text-decoration: none;
+}
+@supports not (text-box: trim-both cap alphabetic) {
+  :is(.api-elsewhere-value, .api-command-related, nav.api-related) a > .api-nav__kind + code { margin: 0 0 var(--sp-pb); line-height: 1; }
 }
 :is(.api-elsewhere-value, .api-command-related, nav.api-related) a:has(> .api-nav__kind):is(:hover, :focus-visible) {
   background: color-mix(in srgb, var(--color-foreground-primary, currentColor) 9%, transparent);
