@@ -275,6 +275,47 @@ evidence; it fails on a destination that no longer passes or on evidence past
 the bound, and is not a dependency of the test or deploy workflows
 ([CI](docs/ci.md#header-destination-check-verify-destinationsyml)).
 
+### Standard-library and SDK destinations
+
+A link into a language's own documentation, or into an SDK this estate builds
+on, is held to more than a 200. [`api-destinations.mjs`](scripts/lib/api-destinations.mjs)
+reads every one the site generates: the curated maps in
+[`builtins.ts`](packages/api-model/src/builtins.ts), the cached inventories,
+the references in the extracted doc comments, the links in pages, guide data
+and the glossary. Each is requested once and must land on the page and the
+fragment it names, and the page must document the symbol the link was made
+for. A host that moves the page elsewhere fails, because a link should be the
+page's address. Request the missing ones after changing a map, an inventory or
+a pinned model:
+
+```console
+$ node scripts/verify-api-destinations.mjs --missing
+```
+
+The command is sequential and pauses between requests; it keeps fetched pages
+for twelve hours (`--no-cache` asks again). A host that blocks the request,
+throttles it or renders the page in the browser is recorded as unverifiable
+with the reason and is never counted as passing; the offline check prints those
+as unresolved. The cached inventories (CPython, Julia, the JDK and the web
+platform) are checked whole against the index each host publishes:
+
+```console
+$ node scripts/verify-api-destinations.mjs --inventories
+```
+
+The evidence is `site/src/data/api-destination-evidence.json`. `--check`, which
+the publication audit runs, requests nothing: it fails on a destination with no
+passing record, a record for a link nothing makes, and a name that was never
+checked against its page. A name that a page lists beside its subject rather
+than under a heading (`std::chrono::milliseconds` on the `duration` page) must
+be named in `LISTED_ON_PAGE` after reading that page. A name that a language
+spells another way (`int` for `Int32`) goes in `TYPE_ALIASES`.
+`scripts/verify-api-destinations.negative.mjs` plants a wrong fragment, a wrong
+page, a symbol the page does not document, a redirect to a landing page and each
+fault in the evidence, and requires the check to name each. The weekly
+[`verify-destinations.yml`](.github/workflows/verify-destinations.yml) re-runs
+the live check; pull requests never do.
+
 ## Building and previewing
 
 Build the Astro shell:
