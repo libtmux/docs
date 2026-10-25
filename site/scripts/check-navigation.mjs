@@ -413,7 +413,8 @@ async function observeInitialPageLoad(page) {
 }
 
 /** Keep API controls and history usable across document navigation. */
-export async function checkApiNavigation(page, base) {
+export async function checkApiNavigation(page, base, { sabotage } = {}) {
+  if (sabotage) await page.addInitScript(sabotage)
   await observeInitialPageLoad(page)
   const server = `${base}/lua/latest/reference/libtmux-server/`
   const snapshot = `${base}/lua/latest/reference/libtmux-server-snapshot/`
@@ -449,8 +450,8 @@ export async function checkApiNavigation(page, base) {
         assert(bounds, 'The open drawer exposes its dismissal overlay')
         await overlay.click({ position: { x: bounds.width - 2, y: 400 } })
       }
+      assert.equal(await toggle.getAttribute('aria-expanded'), 'false', `${close}: API drawer closes`)
       await nav.waitFor({ state: 'hidden' })
-      assert.equal(await toggle.getAttribute('aria-expanded'), 'false')
       assert.equal(await page.evaluate(() => document.body.style.overflow), '')
     }
     await page.goBack({ waitUntil: 'commit' })
@@ -529,6 +530,66 @@ export async function checkApiNavigation(page, base) {
   await page.getByRole('button', { name: 'Retry search' }).click()
   await results.locator('a[href$="libtmux-server-snapshot/"]').waitFor()
   console.log('API search: full member names, category filters, keyboard focus, phone layout and visible retryable failures pass')
+
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.keyboard.press('Escape')
+  await page.keyboard.press('Escape')
+  await search.fill('')
+  await page.locator('[data-lazy="bucket:pane"]').focus()
+  await page.keyboard.press('ArrowRight')
+  await page.locator('[data-lazy="type:libtmux.Pane"]').focus()
+  await page.keyboard.press('ArrowRight')
+  await page.waitForFunction(() => document.querySelector('[data-lazy="type:libtmux.Pane"]')?.getAttribute('aria-expanded') === 'true')
+  await page.locator('.api-nav__tree a[href$="/reference/libtmux-session/"]').click()
+  await page.waitForURL(`${base}/lua/latest/reference/libtmux-session/`, { waitUntil: 'commit' })
+  await page.waitForFunction(() => window.__docsPageLoaded)
+  assert.equal(await page.locator('[data-lazy="type:libtmux.Pane"]').getAttribute('aria-expanded'), 'true', 'Outline keeps other owners expanded across document navigation')
+  const layout = async (mode) => {
+    await page.locator('[data-api-actions] summary').click()
+    await page.getByRole('radio', { name: mode, exact: true }).click()
+    await page.waitForFunction((mode) => document.querySelector('.api-nav')?.dataset.presentation === mode, mode.toLowerCase())
+  }
+  await layout('Grouped')
+  await page.reload({ waitUntil: 'commit' })
+  await page.waitForFunction(() => window.__docsPageLoaded)
+  assert.equal(await page.locator('.api-nav').getAttribute('data-presentation'), 'grouped', 'A chosen layout survives reload')
+  await page.locator('[data-api-owner]').click()
+  await page.getByRole('combobox', { name: 'Filter types' }).fill('Window')
+  await page.locator('[data-owner-id="libtmux.Window"]').click()
+  await page.waitForURL(`${base}/lua/latest/reference/libtmux-window/`, { waitUntil: 'commit' })
+  await page.waitForFunction(() => window.__docsPageLoaded)
+  assert.equal(await page.locator('.api-nav').getAttribute('data-symbol'), 'libtmux.Window', 'The picker navigates to the selected type')
+  assert.equal(await page.locator('.api-nav').getAttribute('data-presentation'), 'grouped')
+
+  await page.goto(`${base}/tmux/latest/manual/capture-pane/`, { waitUntil: 'commit' })
+  await page.waitForFunction(() => window.__docsPageLoaded)
+  assert.equal(await page.locator('.api-nav').getAttribute('data-presentation'), 'grouped', 'The layout persists between a port and tmux CLI')
+  await page.locator('[data-api-actions] summary').click()
+  await page.getByRole('radio', { name: 'Grouped', exact: true }).focus()
+  await page.keyboard.press('ArrowUp')
+  await page.waitForFunction(() => document.querySelector('.api-nav').dataset.presentation === 'focus')
+  assert.equal(await page.getByRole('radio', { name: 'Focus', exact: true }).evaluate((button) => button === document.activeElement), true, 'Arrow keys select and focus a layout')
+  await page.keyboard.press('Escape')
+  assert.equal(await page.locator('[data-api-actions] summary').evaluate((button) => button === document.activeElement), true)
+  await page.locator('[data-api-owner]').click()
+  await page.getByRole('combobox', { name: 'Filter sections' }).fill('Key bindings')
+  await page.locator('[data-owner-id="section:key-bindings"]').click()
+  await page.waitForURL(`${base}/tmux/latest/manual/#key-bindings`, { waitUntil: 'commit' })
+  await page.waitForFunction(() => window.__docsPageLoaded && document.querySelector('.api-nav')?.dataset.symbol === 'section:key-bindings')
+  assert.equal(await page.locator('.api-nav__tree [aria-current="page"]').count(), 1, 'A manual section has one selected row')
+  await page.setViewportSize({ width: 390, height: 759 })
+  await page.locator('[data-api-nav-toggle]').click()
+  await layout('Outline')
+  assert.equal(await page.locator('.api-nav').getAttribute('role'), 'dialog')
+  await page.keyboard.press('Escape')
+  assert.equal(await page.locator('.api-nav').evaluate((nav) => nav.inert), true, 'The CLI drawer dismisses with Escape')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.route('**/tree.json', (route) => route.fulfill({ status: 503, body: 'Unavailable' }))
+  await page.goto(`${base}/lua/latest/reference/`, { waitUntil: 'commit' })
+  await page.waitForFunction(() => window.__docsPageLoaded)
+  assert.equal(await page.locator('.api-nav__tree [role="treeitem"][tabindex="0"]').count(), 1, 'The server-rendered index remains keyboard reachable when its inventory cannot load')
+  await page.unroute('**/tree.json')
+  console.log('Sidebar layouts: persisted choice, native type navigation, radio keyboard controls and tmux section/mobile navigation pass')
 }
 
 /** Public symbol fragments and earlier declaration links reach the same bar. */
@@ -587,6 +648,73 @@ export async function checkApiAnchorArrival(browser, base) {
     }
   }
   console.log(`API anchors: ${paths.size} declarations across ${PORTS.length} ports, primary and retained fragments, phone/desktop, both themes and no-JavaScript navigation pass`)
+}
+
+/** The control for `checkApiNavigation`: a drawer whose close button does nothing must fail it. */
+export async function checkApiNavigationFail(browser, base) {
+  const page = await browser.newPage({ reducedMotion: 'reduce' })
+  try {
+    await assert.rejects(() => checkApiNavigation(page, base, { sabotage: () => {
+      document.addEventListener('click', (event) => {
+        if (event.target.closest('[data-api-nav-close]')) event.stopImmediatePropagation()
+      }, true)
+    } }), /button: API drawer closes/, 'The navigation check detects a broken close button')
+  } finally { await page.close() }
+}
+
+/**
+ * The tmux manual's sidebar in each layout: controls stay reachable and the column ends at the footer
+ * while the page scrolls, and the highlighted section follows the one being read. `sabotage` adds a
+ * style to the page, for the control below.
+ */
+export async function checkReferenceSidebarBounds(browser, base, { sabotage } = {}) {
+  const page = await browser.newPage({ viewport: { width: 1233, height: 1220 }, reducedMotion: 'reduce', colorScheme: 'dark' })
+  try {
+    await page.goto(`${base}/tmux/latest/manual/#options`)
+    await page.locator('html[data-page-readiness="ready"]').waitFor()
+    await page.locator('.api-nav[data-presentation-ready="true"]').waitFor()
+    if (sabotage) await page.addStyleTag({ content: sabotage })
+    for (const mode of ['outline', 'focus', 'grouped']) {
+      await page.locator('[data-api-actions] > summary').click()
+      await page.getByRole('radio', { name: mode, exact: false }).click()
+      await page.evaluate(() => { document.activeElement.blur(); scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }) })
+      await page.waitForFunction(() => {
+        const nav = document.querySelector('.api-nav').getBoundingClientRect()
+        return Math.abs(nav.top - document.querySelector('.site-header').getBoundingClientRect().bottom) < 1
+      }, undefined, { timeout: 1000 })
+      const bounds = await page.evaluate(() => {
+        const rect = selector => document.querySelector(selector).getBoundingClientRect()
+        const search = rect('.api-nav__search'), picker = rect('[data-api-owner]')
+        return { nav: rect('.api-nav').toJSON(), column: rect('.api-nav-column').toJSON(), footer: rect('footer').toJSON(),
+          searchVisible: document.querySelector('.api-nav__search').contains(document.elementFromPoint(search.x + search.width / 2, search.y + search.height / 2)),
+          pickerVisible: document.querySelector('[data-api-owner]').contains(document.elementFromPoint(picker.x + picker.width / 2, picker.y + picker.height / 2)) }
+      })
+      assert(bounds.searchVisible && bounds.pickerVisible, `${mode}: sidebar controls remain reachable at the footer`)
+      assert(Math.abs(bounds.column.bottom - bounds.footer.top) < 1, `${mode}: sidebar column meets the footer: ${JSON.stringify(bounds)}`)
+      assert(bounds.nav.bottom <= bounds.footer.top + 1, `${mode}: navigation does not cover the footer`)
+      await page.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }))
+      await page.waitForFunction(() => document.querySelector('.api-nav').dataset.symbol === 'section:clients-and-sessions', undefined, { timeout: 1000 })
+      await page.evaluate(() => scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }))
+      await page.waitForFunction(() => document.querySelector('.api-nav').dataset.symbol === 'section:options', undefined, { timeout: 1000 }).catch(() => {})
+      assert.equal(await page.locator('.api-nav').getAttribute('data-symbol'), 'section:options', `${mode}: sidebar follows the last visible section`)
+    }
+    await page.setViewportSize({ width: 1233, height: 760 })
+    await page.evaluate(() => scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }))
+    await page.waitForFunction(() => {
+      const nav = document.querySelector('.api-nav').getBoundingClientRect()
+      return nav.top >= document.querySelector('.site-header').getBoundingClientRect().bottom - 1 && nav.bottom <= innerHeight
+    }, undefined, { timeout: 1000 })
+    console.log('Reference sidebar: controls stay pinned, tree fits above footer, and sections follow scrolling in all layouts')
+  } finally { await page.close() }
+}
+
+/** The controls for `checkReferenceSidebarBounds`: a column pushed off the footer and a hidden last section must each fail it. */
+export async function checkReferenceSidebarBoundsFail(browser, base) {
+  for (const [sabotage, failure] of [
+    ['.api-nav-column { margin-bottom: 40px !important; }', /sidebar column meets the footer/],
+    ['h2#options { display: none !important; }', /sidebar follows the last visible section/],
+  ]) await assert.rejects(() => checkReferenceSidebarBounds(browser, base, { sabotage }), failure,
+    'The sidebar check detects broken footer alignment and section tracking')
 }
 
 /**

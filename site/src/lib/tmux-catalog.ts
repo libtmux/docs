@@ -6,6 +6,7 @@ import pins from '../data/tmux/versions.json'
 import v32 from '../data/tmux/catalog/3.2a.json'
 import v37 from '../data/tmux/catalog/3.7c.json'
 import type { ApiTreeJson } from './api-search'
+import { referenceSectionTree } from './api-tree'
 import type { TreeBucket } from './api-tree'
 import { withPortRoot } from './site-root'
 import { TMUX_REPOSITORY, buildsTmuxDocumentation, tmuxManualUrl, TMUX_VERSIONS } from './tmux-manual-data'
@@ -264,7 +265,7 @@ export function tmuxCatalogNavigation(version: string) {
     }),
     children: entry.children.map(bucket),
   })
-  const json: ApiTreeJson = { port: `tmux-catalog-${version}`, buckets: tree.map(bucket), members: {} }
+  const json = referenceSectionTree({ port: `tmux-catalog-${version}`, buckets: tree.map(bucket), members: {} })
   const hash = createHash('sha256').update(JSON.stringify([model.sourceCommit, json])).digest('hex').slice(0, 20)
   const value = { tree, json, version: `catalog-1:${hash}` }
   navigations.set(version, value)

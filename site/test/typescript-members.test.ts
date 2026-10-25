@@ -61,8 +61,9 @@ describe('TypeScript named values', () => {
       const nav = navSidecarFor('ts', model, { buckets: [{ id: 'constants', label: 'Constants', match: { kind: 'id', is: owner.id } }] })
       const tree = referenceTreeFor('ts', model, navTreeFor(model, nav))
       expect(tree.buckets[0].types[0]).toMatchObject({ id: owner.id, kind: 'constant', m: 1, category: 'members' })
+      // The id keeps the file the constant is written in; the names a reader sees are TypeScript's own spelling.
       expect(tree.members[owner.id]).toEqual([
-        ['Up', 'constants-direction-up', 'constants.Direction.Up', 'property', 'members', '', 'constants.Direction.Up'],
+        ['Up', 'constants-direction-up', 'constants.Direction.Up', 'property', 'members', '', 'Direction.Up', 'Direction.Up'],
       ])
     } finally { rmSync(directory, { recursive: true, force: true }) }
   })

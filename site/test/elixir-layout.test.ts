@@ -62,7 +62,7 @@ describe('Elixir declarations', () => {
     expect(spans.filter((span) => span.text === ':ok' || span.text === ':error').every((span) => !span.link)).toBe(true)
     const server = symbol('LibTmux.Server.t/0')
     const field = index.linkType(server.signatures[0]!.raw!, server, server.signatures[0])
-    expect(field.find((span) => span.text === 'String.t')?.link).toMatchObject({ external: true, href: 'https://hexdocs.pm/elixir/String.html#t:t/0' })
+    expect(field.find((span) => span.text === 'String.t')?.link).toMatchObject({ external: true, href: 'https://elixir.hexdocs.pm/String.html#t:t/0' })
   })
 
   it('render as one preformatted declaration with working links and no nested anchors', async () => {

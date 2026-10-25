@@ -1,0 +1,46 @@
+---
+import DemoLayout from '../../../components/demo/DemoLayout.astro'
+import { withRoot } from '../../../lib/site-root'
+import { API_MODEL_PORTS } from '../../../lib/ports'
+---
+
+<DemoLayout title="Sidebar layouts" description="Compare Outline, Focus, and Grouped across every library port and the tmux CLI." current="/demo/sidebar/" wide>
+  <div class="sidebar-lab" data-sidebar-demo data-preview-base={withRoot('/demo/sidebar/preview/')}>
+    <h1>Sidebar layouts</h1>
+    <p>Browse a port or the tmux CLI. Use the sidebar’s “…” menu to change its layout.</p>
+    <form class="sidebar-lab__controls" aria-label="Sidebar preview settings">
+      <label>Variant<select name="variant"><option value="outline">Outline</option><option value="focus">Focus</option><option value="grouped">Grouped</option></select></label>
+      <label>Reference<select name="language">{API_MODEL_PORTS.map((port) => <option value={port.slug} selected={port.slug === 'csharp'}>{port.name}</option>)}<option value="tmux">tmux CLI</option></select></label>
+      <label>Viewport<select name="viewport"><option value="desktop">Desktop</option><option value="tablet">Tablet · 820px</option><option value="phone">Phone · 390px</option></select></label>
+      <label>Theme<select name="theme"><option value="dark">Dark</option><option value="light">Light</option></select></label>
+      <label>Sidebar width <output data-width>296px</output><input name="width" type="range" min="248" max="380" value="296" /></label>
+      <label class="sidebar-lab__examples">Example<select name="symbol" aria-label="Example declaration"><option value="">Loading current API examples…</option></select></label>
+    </form>
+    <div class="sidebar-lab__caption"><p data-tradeoff>Outline keeps the type hierarchy visible; expanding a large owner makes a longer list.</p><a data-share href={withRoot('/demo/sidebar/')}>Link to this configuration</a></div>
+    <div class="sidebar-lab__stage"><iframe title="Interactive API sidebar preview" src={withRoot('/demo/sidebar/preview/csharp/')} data-sidebar-frame></iframe></div>
+    <p class="sidebar-lab__note">The preview uses the documentation sidebar, kind marks, search, keyboard navigation, and mobile drawer. Use “Open full documentation” to browse the reference with the same layout menu.</p>
+    <noscript>JavaScript is required to change preview settings. The preview still links to the documentation.</noscript>
+  </div>
+</DemoLayout>
+
+<script>
+  import { initSidebarDemo } from '../../../components/demo/sidebar-demo'
+  initSidebarDemo()
+</script>
+
+<style>
+  .sidebar-lab h1 { font-size: 1.75rem; margin-bottom: 0.5rem; }
+  .sidebar-lab > p { color: var(--color-muted); font-size: 0.875rem; }
+  .sidebar-lab__controls { display: flex; flex-wrap: wrap; align-items: end; gap: 1rem; margin: 1.5rem 0 1rem; }
+  .sidebar-lab__controls label { display: grid; gap: 0.3rem; font-size: 0.75rem; min-width: 8rem; }
+  .sidebar-lab__controls select { padding: 0.5rem; min-height: 2.5rem; color: inherit; background: var(--background-color); border: 1px solid var(--color-edge); border-radius: 0.3rem; max-width: 100%; }
+  .sidebar-lab__controls input { min-height: 2rem; }
+  .sidebar-lab__controls output { display: inline; color: var(--color-muted); }
+  .sidebar-lab__examples { flex: 1 1 20rem; min-width: 0 !important; }
+  .sidebar-lab__caption { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; align-items: center; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.75rem; }
+  .sidebar-lab__caption a { color: var(--color-link); }
+  .sidebar-lab__stage { overflow: hidden; border: 1px solid var(--color-edge); border-radius: 0.5rem; background: var(--color-surface); padding: 0.5rem; }
+  .sidebar-lab__stage iframe { display: block; box-sizing: content-box; width: 1180px; max-width: calc(100% - 2px); height: 740px; border: 1px solid var(--color-edge); margin: 0 auto; background: var(--background-color); }
+  .sidebar-lab__note { margin-top: 1rem; max-width: 85ch; line-height: 1.6; }
+  .sidebar-lab :is(select, input, a):focus-visible { outline: 2px solid var(--color-link); outline-offset: 3px; }
+</style>

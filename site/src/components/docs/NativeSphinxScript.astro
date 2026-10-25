@@ -1,20 +1,6 @@
 <script>
   import { layoutBeforeAppearance } from '../../lib/page-readiness'
   let controller: AbortController | undefined
-  const sidebarKey = `libtmux:native-sidebar:${document.documentElement.dataset.shellBase}`
-  const saveSidebar = () => {
-    const sidebar = document.querySelector('.sidebar-scroll')
-    if (!sidebar) return
-    try { sessionStorage.setItem(sidebarKey, String(sidebar.scrollTop)) } catch { /* Storage is optional. */ }
-  }
-  layoutBeforeAppearance(() => {
-    const sidebar = document.querySelector('.sidebar-scroll')
-    try {
-      const saved = sessionStorage.getItem(sidebarKey)
-      if (sidebar && saved !== null && Number.isFinite(Number(saved))) sidebar.scrollTop = Number(saved)
-    } catch { /* Direct arrivals remain usable without storage. */ }
-  })
-  window.addEventListener('pagehide', saveSidebar)
   const syncTheme = () => {
     document.documentElement.classList.remove('no-js')
     document.body.dataset.theme = document.documentElement.dataset.themeMode || 'auto'
@@ -114,7 +100,6 @@
       }, { signal })
 
       for (const [inputId, buttonId, drawerId] of [
-        ['__navigation', 'mobile-sidebar-toggle', 'native-navigation'],
         ['__toc', 'mobile-toc-toggle', 'native-toc'],
       ]) {
         const input = document.getElementById(inputId) as HTMLInputElement | null

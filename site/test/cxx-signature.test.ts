@@ -87,7 +87,7 @@ describe('C++ native signature emission', () => {
           expect(signature.getAttribute('data-code-width-status')).toBe('fits')
           expect(signature.querySelector('button.api-keyword-trigger')?.textContent).toBe('nodiscard')
           expect(signature.querySelector('[popover] a[href="https://eel.is/c++draft/dcl.attr.nodiscard"]')).not.toBeNull()
-          expect(signature.querySelector('a[href="https://en.cppreference.com/w/cpp/container/vector"]')?.textContent).toBe('std::vector')
+          expect(signature.querySelector('a[href="https://en.cppreference.com/cpp/container/vector"]')?.textContent).toBe('std::vector')
           expect(signature.querySelector('.api-signature-name-link')?.textContent).toBe(member ? name : undefined)
         }
       }

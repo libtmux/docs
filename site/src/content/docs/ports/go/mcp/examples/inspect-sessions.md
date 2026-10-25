@@ -220,8 +220,8 @@ starts the daemon with an empty tmux configuration. The MCP child connects to
 that exact socket using the same tmux executable.
 
 The SDK's [`CallTool`](https://pkg.go.dev/github.com/modelcontextprotocol/go-sdk@v1.6.1/mcp#ClientSession.CallTool) can return a protocol error before there is a tool result.
-A returned reply can also set [`IsError`](https://pkg.go.dev/github.com/modelcontextprotocol/go-sdk@v1.6.1/mcp#CallToolResult); the program checks both before reading
-[`StructuredContent`](https://pkg.go.dev/github.com/modelcontextprotocol/go-sdk@v1.6.1/mcp#CallToolResult). For this tool, structured content contains a `sessions`
+A returned reply can also set [`CallToolResult.IsError`](https://pkg.go.dev/github.com/modelcontextprotocol/go-sdk@v1.6.1/mcp#CallToolResult); the program checks both before reading
+[`CallToolResult.StructuredContent`](https://pkg.go.dev/github.com/modelcontextprotocol/go-sdk@v1.6.1/mcp#CallToolResult). For this tool, structured content contains a `sessions`
 array with `id`, `name`, `windows`, and `attached` fields.
 
 The example decodes only the fields it needs and verifies that exactly one

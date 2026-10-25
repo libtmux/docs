@@ -263,7 +263,7 @@ Choose the result contract before sending input or deleting an object. Taking
 | <a id="handle-zero-one-and-several-results-several"></a>Several | `Err(ExactlyOneError::MultipleItems)` | [`Err(MultipleItemsError)`](../../reference/query-multipleitemserror/) |
 
 Both helpers preserve the iterator's item type and pull at most two items.
-With a [slice iterator](https://doc.rust-lang.org/std/primitive.slice.html#method.iter),
+With the iterator from [`slice::iter`](https://doc.rust-lang.org/std/primitive.slice.html#method.iter),
 a successful lookup returns a borrowed object. Neither helper issues tmux
 commands or refreshes a stale snapshot.
 

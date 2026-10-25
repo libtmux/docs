@@ -212,6 +212,8 @@ export function rehypeApiLinks() {
   return (tree: unknown, file?: { path?: string; data?: { astro?: { frontmatter?: { port?: string; product?: ApiProduct; route?: string; symbols?: boolean; sidebar?: { group?: string } } } } }) => {
     const frontmatter = file?.data?.astro?.frontmatter
     const buildPort = frontmatter?.port ?? (process.env.LIBTMUX_DOCS_PORT || undefined)
+    // A page shared by every port is rendered once for each: the port of the build is where it is read, not what it is about.
+    const ownPort = frontmatter?.port ?? file?.path?.replaceAll('\\', '/').match(/\/content\/docs\/(?:ja\/)?ports\/([^/]+)\//)?.[1]
     const source = file?.path?.replaceAll('\\', '/').match(/\/content\/(docs|_workspace-shared)\/(.+)\.mdx?$/)
     const id = source ? `${source[1] === '_workspace-shared' ? `ports/${buildPort}/` : ''}${source[2]}`.replace(/(?:^|\/)index$/, '') : undefined
     const route = frontmatter?.route ?? (id !== undefined ? docsPath({ id, data: { ...frontmatter, port: buildPort } }) : undefined)
@@ -306,6 +308,9 @@ export function rehypeApiLinks() {
           const explicitPort = child.properties?.dataDocPort
           const pagePort = (typeof explicitPort === 'string' ? explicitPort : undefined)
             ?? buildPort ?? rowPort ?? fence.lang ?? sections.at(-1)?.port
+          // The page says its language when it, a fence, a row or a section names the port the span is read in; the build alone does not.
+          const said = typeof explicitPort === 'string' ? explicitPort : ownPort ?? rowPort ?? fence.lang ?? sections.at(-1)?.port
+          const languageSaid = said !== undefined && said === pagePort
           // The page's own product and port name things the language API and tmux also name.
           const names = pagePort
             ? workspaceNames(text, { port: pagePort, route, bare: bareWorkspaceNames, definition: definitions > 0 })
@@ -334,7 +339,7 @@ export function rehypeApiLinks() {
             linkMentions()
             continue
           }
-          const decision = link(text, { pagePort, before: scope.text })
+          const decision = link(text, { pagePort, before: scope.text, languageSaid })
           if (decision.kind === 'link') {
             kids[i] = {
               type: 'element', tagName: 'a', children: [child],

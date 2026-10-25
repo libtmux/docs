@@ -10,8 +10,82 @@
 
 .api-nav {
   --api-nav-indent: 0.75rem;
+  --api-nav-row-gap: 2px;
+  --api-nav-guide: color-mix(in srgb, var(--text-color) 28%, var(--background-color));
   font-size: 0.875rem;
 }
+
+html[data-theme-mode='dark'] .api-nav { --api-nav-guide: color-mix(in srgb, var(--text-color) 45%, var(--background-color)); }
+
+.api-nav__presentation { padding: 0 0.5rem 0.75rem; border-bottom: 1px solid var(--color-edge); }
+.api-nav__reference-link { display: block; padding: 0.5rem; color: var(--color-muted); font-size: 0.75rem; }
+.api-nav__reference-link:hover { color: var(--text-color); background: var(--color-surface-hover); }
+.api-nav__reference-link[aria-current='page'] { color: var(--color-link); font-weight: 600; }
+.api-nav__picker-row { --api-nav-control-size: 2.25rem; display: flex; position: relative; align-items: center; gap: 0.35rem; }
+.api-nav__owner-picker { flex: 1; min-width: 0; }
+.api-nav__owner-field { display: flex; align-items: center; gap: 0.5rem; width: 100%; height: var(--api-nav-control-size); padding: 0.4rem; border: 1px solid var(--color-edge); border-radius: 0.3rem; background: var(--background-color); color: inherit; cursor: pointer; text-align: start; }
+.api-nav__owner-field > [data-api-owner-mark] { display: flex; }
+.api-nav__owner-field > [data-api-owner-label] { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.api-nav__owner-popup { position: absolute; z-index: 10; inset: calc(100% + 0.25rem) 0 auto; border: 1px solid var(--color-edge); border-radius: 0.3rem; background: var(--background-color); box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.25); padding: 0.25rem; }
+.api-nav__owner-search { width: 100%; min-width: 0; padding: 0.55rem; margin-bottom: 0.25rem; border: 1px solid var(--color-edge); border-radius: 0.2rem; background: var(--color-surface); color: inherit; }
+.api-nav__owner-popup > [role='listbox'] { max-height: min(19rem, 40dvh); overflow-y: auto; overscroll-behavior: contain; }
+.api-nav__owner-popup[hidden], .api-nav__owner-option[hidden] { display: none; }
+.api-nav__owner-option { display: flex; align-items: center; gap: 0.5rem; padding: 0.45rem; border-radius: 0.2rem; cursor: pointer; }
+.api-nav__owner-option:is(:hover, .is-active) { background: var(--color-surface-hover); }
+.api-nav__owner-name { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.api-nav__owner-name small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-muted); font-size: 0.65rem; }
+.api-nav__owner-option > .api-kind-word { flex: none; font-size: 0.6875rem; color: var(--color-muted); }
+.api-nav__presentation a { display: block; margin-top: 0.5rem; font-size: 0.75rem; }
+.api-nav__presentation a[hidden] { display: none; }
+.api-nav__more { position: relative; flex: none; }
+.api-nav__more > summary { display: grid; place-items: center; width: var(--api-nav-control-size); height: var(--api-nav-control-size); border: 1px solid var(--color-edge); border-radius: 0.25rem; list-style: none; color: var(--color-muted); cursor: pointer; }
+.api-nav__more > summary::-webkit-details-marker { display: none; }
+.api-nav__more svg { width: 1.1rem; height: 1.1rem; }
+.api-nav__actions { position: absolute; z-index: 11; inset: calc(100% + 0.25rem) 0 auto auto; width: max-content; max-height: min(24rem, calc(100dvh - 12rem)); overflow-y: auto; padding: 0.25rem; border: 1px solid var(--color-edge); border-radius: 0.25rem; background: var(--background-color); box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.25); }
+.api-nav__actions button { display: flex; align-items: center; gap: 0.5rem; width: 100%; min-height: var(--api-nav-control-size); padding: 0.4rem 0.6rem; border-radius: 0.2rem; color: var(--color-muted); cursor: pointer; text-align: start; }
+.api-nav__actions button[hidden] { display: none; }
+.api-nav__actions button:hover { color: var(--text-color); background: var(--color-surface-hover); }
+.api-nav__actions svg { width: 1.1rem; height: 1.1rem; }
+.api-nav__layouts { border-top: 1px solid var(--color-edge); margin-top: 0.25rem; padding-top: 0.25rem; }
+.api-nav__choice { display: grid; place-items: center; width: 1.1rem; height: 1.1rem; }
+.api-nav__choice::before { content: ''; width: 0.65rem; height: 0.65rem; border: 1px solid currentColor; border-radius: 50%; }
+.api-nav__layouts [aria-checked='true'] { color: var(--color-link); }
+.api-nav__layouts [aria-checked='true'] .api-nav__choice::before { background: currentColor; box-shadow: inset 0 0 0 2px var(--background-color); }
+.api-nav__destinations { border-top: 1px solid var(--color-edge); padding-top: 0.25rem; margin-top: 0.25rem; }
+.api-nav__actions a { margin: 0; padding: 0.5rem 0.6rem; color: var(--color-link); }
+.api-nav__destinations a { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+.api-nav__destinations a:hover { background: var(--color-surface-hover); }
+@media (pointer: coarse) { .api-nav__picker-row { --api-nav-control-size: 2.75rem; } }
+.api-nav[data-presentation] .api-nav__row { padding-inline-start: 0.5rem; gap: 0.5rem; }
+.api-nav[data-presentation] .api-nav__row > .api-nav__label,
+.api-nav[data-presentation] .api-nav__row > noscript > .api-nav__label { padding-inline-start: calc((var(--level, 1) - 1) * var(--api-nav-indent)); }
+.api-nav[data-presentation] :is(button, input, select, summary, a):focus-visible { outline: 2px solid var(--color-link); outline-offset: 2px; }
+.api-nav__section { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; padding: 0.75rem 0.5rem 0.35rem; color: var(--color-muted); font-size: 0.6875rem; }
+.api-nav__section > :first-child { font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+.api-nav__section > :last-child { white-space: nowrap; }
+.api-nav[data-presentation='outline'] .api-nav__item > .api-nav__row > .api-nav__label { font-weight: 600; }
+.api-nav[data-presentation] .api-nav__leaf > .api-nav__label { font-weight: 500; }
+/* A folded run has no kind mark, so it keeps the mark's gutter and its label lines up with the rows it stands for. */
+.api-nav[data-presentation] .api-nav__item[data-lazy^='more:'] > .api-nav__row > .api-nav__label,
+.api-nav[data-presentation] .api-nav__item[data-lazy^='more:'] > .api-nav__row > noscript > .api-nav__label { margin-inline-start: calc(round(1.35em, 2px) + 0.5rem); font-weight: 400; color: var(--color-muted); }
+.api-nav[data-marks='mixed'][data-presentation] .api-nav__item[data-lazy^='more:'] > .api-nav__row > .api-nav__label,
+.api-nav[data-marks='mixed'][data-presentation] .api-nav__item[data-lazy^='more:'] > .api-nav__row > noscript > .api-nav__label { margin-inline-start: 0; }
+.api-nav[data-presentation] .api-nav__leaf[aria-current='page'] > .api-nav__label { font-weight: 600; }
+.api-nav[data-marks='mixed'][data-presentation] .api-nav__row { padding-inline-start: calc(0.5rem + (var(--level, 1) - 1) * var(--api-nav-indent)); gap: 0.25rem; }
+.api-nav[data-marks='mixed'][data-presentation] .api-nav__row > .api-nav__label { padding-inline-start: 0; }
+.api-nav[data-presentation='outline'] :is(.api-nav__item[aria-description]:not([aria-level='1']) > .api-nav__row, .api-nav__item[data-lazy^='more:'] > .api-nav__row, .api-nav__leaf[aria-description]:not([aria-level='1'])) > .api-nav__label::before,
+.api-nav[data-presentation='outline'] .api-nav__item[data-lazy^='more:'] > .api-nav__row > noscript > .api-nav__label::before {
+  content: ''; position: absolute; top: calc(-1 * var(--api-nav-row-gap)); bottom: 0;
+  inset-inline-start: calc(0.5rem + round(1.35em, 2px) + 0.5rem + (var(--level) - 2) * var(--api-nav-indent));
+  border-inline-start: 1px solid var(--api-nav-guide); pointer-events: none;
+}
+.api-nav[data-marks='mixed'][data-presentation='outline'] .api-nav__row > .api-nav__label::before {
+  inset-inline-start: calc(0.5rem + (var(--level) - 2) * var(--api-nav-indent));
+}
+.api-nav[data-presentation] :is(.api-nav__leaf[aria-current='page'], .api-nav__row:has(> [aria-current='page'])) {
+  background: color-mix(in srgb, var(--theme-accent) 18%, transparent);
+}
+.api-nav[data-presentation] .api-nav__tree > .api-nav__item[aria-expanded='false']:has([aria-current='page']) > .api-nav__row::before { display: none; }
 
 .api-nav .api-nav__tree[hidden], .api-nav .api-nav__results[hidden] { display: none; }
 .api-nav__search { padding: 0.75rem 0.5rem; }
@@ -174,14 +248,14 @@
 .api-nav__group {
   display: flex;
   flex-direction: column;
-  row-gap: 2px;
+  row-gap: var(--api-nav-row-gap);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .api-nav__group {
-  padding-top: 2px;
+  padding-top: var(--api-nav-row-gap);
 }
 
 /* Positioned, so a row's offsetTop is measured from the tree it scrolls in. */
@@ -348,12 +422,16 @@ html[data-api-nav] .api-nav__item[aria-expanded='false'] > [role='group']:not([d
     border-inline-end: 1px solid var(--color-edge);
   }
 
+  .api-nav-column:has(.api-nav:not([data-controlled])) {
+    min-height: calc(100dvh - var(--api-nav-top, var(--topnav-height, 3rem)));
+  }
+
   .api-nav {
     position: sticky;
-    top: var(--topnav-height, 3rem);
+    top: var(--api-nav-top, var(--topnav-height, 3rem));
     display: flex;
     flex-direction: column;
-    height: calc(100vh - var(--topnav-height, 3rem));
+    height: var(--api-nav-height, calc(100dvh - var(--api-nav-top, var(--topnav-height, 3rem))));
     padding: 0.75rem 0.5rem 0.75rem 0.75rem;
   }
 

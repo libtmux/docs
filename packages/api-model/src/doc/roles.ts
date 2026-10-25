@@ -303,7 +303,37 @@ export function docSummaryText(text: string, lang?: string): string {
     .join('')
 }
 
+/**
+ * Tokenize doc text into spans. Fenced code is literal: it is cut out first and kept as text, so
+ * the backticks of a fence, and the code between two fences, pair with nothing around them.
+ */
 export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
+  const fence = /^ {0,3}(`{3,}|~{3,})[^`~]*$/
+  const lines = text.split('\n')
+  if (!lines.some((line) => fence.test(line))) return tokenizeRun(text, lang)
+  const spans: DocSpan[] = []
+  let prose: string[] = []
+  for (let i = 0; i < lines.length; i++) {
+    const open = fence.exec(lines[i])
+    if (!open) {
+      prose.push(lines[i])
+      continue
+    }
+    if (prose.length) spans.push(...tokenizeRun(`${prose.join('\n')}\n`, lang))
+    prose = []
+    const close = new RegExp(`^ {0,3}${open[1][0]}{${open[1].length},}\\s*$`)
+    const code = [lines[i]]
+    while (++i < lines.length) {
+      code.push(lines[i])
+      if (close.test(lines[i])) break
+    }
+    spans.push({ kind: 'text', text: code.join('\n') + (i < lines.length - 1 ? '\n' : '') })
+  }
+  if (prose.length) spans.push(...tokenizeRun(prose.join('\n'), lang))
+  return spans
+}
+
+function tokenizeRun(text: string, lang?: string): DocSpan[] {
   const spans: DocSpan[] = []
   let index = 0
   const syntax = lang ? (SYNTAX[lang] ?? new Set<string>()) : SYNTAX.py

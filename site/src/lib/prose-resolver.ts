@@ -50,7 +50,7 @@ export function createProseLinker(product?: ApiProduct) {
   const resolver = getResolver()
   const versionOf = (port: string) => linkedVersionFor(port)
 
-  return (text: string, context: Pick<MentionContext, 'pagePort' | 'before'>): ProseDecision => {
+  return (text: string, context: Pick<MentionContext, 'pagePort' | 'before' | 'languageSaid'>): ProseDecision => {
     let protocol = decideMcpMention(text, { ...context, product })
     // Markdown encodes URI-template braces; literal registrations still win.
     if (protocol?.kind === 'unresolved' && text.startsWith('mcp:')) {

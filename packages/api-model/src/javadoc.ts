@@ -33,20 +33,29 @@ export function javadocSymbols(
     if (!entry.m && modules?.size === 1) return [...modules][0]
     throw new Error(`Javadoc package ${entry.p}: ${entry.m ? `unknown module ${entry.m}` : 'missing or ambiguous module'}`)
   }
-  const symbols: { id: string; name: string; kind: 'class' | 'method'; uri: string }[] = []
+  // An inventory names one URI for a name, so a name has one entry here. A bare `Owner.name` is every
+  // overload at once and lands on the last the index lists. The nullary overload also has the name it is
+  // written with, `Owner.name()`, so a call with no arguments reaches that overload and not another.
+  const symbols = new Map<string, { id: string; name: string; kind: 'class' | 'method'; uri: string }>()
+  const put = (id: string, name: string, kind: 'class' | 'method', uri: string) => symbols.set(id, { id, name, kind, uri })
   for (const type of types) {
     if (!type.p || !type.l) continue
     const path = `${moduleOf(type)}/${type.p.replace(/\./g, '/')}/${type.u ?? `${type.l}.html`}`
-    symbols.push({ id: `${type.p}.${type.l}`, name: type.l, kind: 'class', uri: path })
-    symbols.push({ id: type.l, name: type.l, kind: 'class', uri: path })
+    put(`${type.p}.${type.l}`, type.l, 'class', path)
+    put(type.l, type.l, 'class', path)
   }
+  const nullary = new Map<string, string>()
   for (const member of members) {
     if (!member.p || !member.c || !member.l) continue
     const bare = member.l.replace(/\(.*$/, '')
     if (!bare || /[^A-Za-z0-9_$]/.test(bare)) continue
     const path = `${moduleOf(member)}/${member.p.replace(/\./g, '/')}/${member.c}.html#${member.u ?? member.l}`
-    symbols.push({ id: `${member.c}.${bare}`, name: bare, kind: 'method', uri: path })
-    symbols.push({ id: `${member.p}.${member.c}.${bare}`, name: bare, kind: 'method', uri: path })
+    for (const id of [`${member.c}.${bare}`, `${member.p}.${member.c}.${bare}`]) {
+      put(id, bare, 'method', path)
+      if (member.l === `${bare}()`) nullary.set(id, path)
+    }
   }
-  return symbols
+  // Only a name whose plain entry is another overload needs its own.
+  for (const [id, path] of nullary) if (symbols.get(id)?.uri !== path) put(`${id}()`, symbols.get(id)!.name, 'method', path)
+  return [...symbols.values()]
 }

@@ -26,6 +26,11 @@ export const DEMO_SECTIONS: DemoSection[] = [
     description: 'Components that pages and widgets are built from.',
     demos: [
       {
+        href: '/demo/sidebar/',
+        title: 'API sidebar variants',
+        description: 'Outline, Focus, and Grouped with every language port and tmux CLI.',
+      },
+      {
         href: '/demo/ux/button/',
         title: 'Button',
         description: 'The reroll button in eight sizes, with and without a label.',

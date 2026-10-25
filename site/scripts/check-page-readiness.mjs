@@ -286,6 +286,19 @@ const BADGE_GAP = { min: .21, max: .29 }
  */
 
 /**
+ * A reference page's sidebar is the shared API tree, open on the current
+ * member: a member row is a link holding its mark, and a type row holds the
+ * mark beside the name's own link. The tree keeps its marks in a fixed gutter
+ * and centres one on the whole row when a long name wraps, so only the
+ * decorations are measured here; the badge-centring check owns the geometry.
+ */
+const SIDEBAR_PAGE = '/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/'
+const SIDEBAR_BADGE_LINKS = [
+  { label: 'sidebar member link', path: SIDEBAR_PAGE, badges: 'a.api-nav__leaf > .api-nav__kind', gap: false, centre: false },
+  { label: 'sidebar type row', path: SIDEBAR_PAGE, badges: 'div.api-nav__row > .api-nav__kind', gap: false, centre: false },
+]
+
+/**
  * Every link that leads with a kind badge, by the badge's selector. `line`
  * marks single-line prose links, which must not grow their line; `sample`
  * keeps an entry in the bounded sample.
@@ -297,8 +310,7 @@ const BADGE_LINKS = [
   { label: 'MCP index card', path: '/py/stable/mcp/tools/', badges: '.api-index-card a > .api-nav__kind', gap: false, centre: false, sample: true },
   { label: 'MCP catalog heading', path: '/py/stable/mcp/tools/', badges: 'h2 a > .api-nav__kind', gap: false, centre: false },
   { label: 'API equivalent', path: '/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/', badges: '.api-elsewhere-value a > .api-nav__kind', gap: false, sample: true },
-  { label: 'sidebar link', path: '/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/', badges: 'a.sidebar-link > .api-nav__kind' },
-  { label: 'sidebar section', path: '/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/', badges: 'summary a > .api-nav__kind' },
+  ...SIDEBAR_BADGE_LINKS,
   // The MCP tree draws no marks under a group of one kind, so its leaf marks are measured on an API tree.
   { label: 'navigation tree link', path: '/java/latest/reference/io-github-libtmux-server-server/', badges: 'a.api-nav__leaf > .api-nav__kind', gap: false },
   { label: 'navigation tree row', path: '/java/latest/reference/io-github-libtmux-server-server/', badges: 'div.api-nav__row > .api-nav__kind', gap: false },
@@ -411,18 +423,18 @@ async function addBadgeLinkFixtures(page) {
  * A kind badge inside a link carries no dotted line, sits centred on the
  * name's text, and leads it by about a quarter em.
  */
-export async function checkKindBadgeLinks(browser, base, { sample = false } = {}) {
+export async function checkKindBadgeLinks(browser, base, { sample = false, entries = BADGE_LINKS } = {}) {
   const context = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 1600, height: 1000 } })
   const page = await context.newPage()
   page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
   const failures = []
   try {
-    for (const path of new Set(BADGE_LINKS.filter((entry) => !sample || entry.sample).map((entry) => entry.path))) {
+    for (const path of new Set(entries.filter((entry) => !sample || entry.sample).map((entry) => entry.path))) {
       await page.goto(`${base}${path}`, { waitUntil: 'load' })
       await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready')
       // A hover preview opens over the page and would differ between the two paints.
       await page.addStyleTag({ content: '.reference-link-preview { display: none !important; }' })
-      for (const entry of BADGE_LINKS.filter((candidate) => candidate.path === path && (!sample || candidate.sample))) {
+      for (const entry of entries.filter((candidate) => candidate.path === path && (!sample || candidate.sample))) {
         await entry.prepare?.(page)
         const variants = [{ label: entry.label, badges: entry.badges, line: entry.line, gap: entry.gap, centre: entry.centre }]
         if (entry.fixtures) {
@@ -467,6 +479,19 @@ export async function checkKindBadgeLinks(browser, base, { sample = false } = {}
   } finally {
     await context.close()
   }
+}
+
+/**
+ * A sidebar with no badged row has nothing to measure and must fail, not pass
+ * empty. A guide's sidebar is plain links, so each sidebar selector is asked
+ * of it alone and has to report the missing badge by its own name.
+ */
+export async function checkKindBadgeLinksFail(browser, base) {
+  for (const entry of SIDEBAR_BADGE_LINKS) {
+    await assert.rejects(checkKindBadgeLinks(browser, base, { entries: [{ ...entry, path: '/py/stable/workspace/guides/' }] }),
+      new RegExp(`no ${entry.label} badge to measure`))
+  }
+  console.log(`Kind badges: a sidebar without badged rows fails each of its ${SIDEBAR_BADGE_LINKS.length} selectors PASS`)
 }
 
 /** Overview pages with cards, then a prose page whose inline preview links must keep their line. */

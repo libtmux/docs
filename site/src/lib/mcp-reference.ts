@@ -7,6 +7,7 @@ import { rehypeApiLinks } from '../plugins/rehype-api-links'
 import { createHash } from 'node:crypto'
 import type { TreeBucket } from './api-tree'
 import type { ApiTreeJson } from './api-search'
+import { referenceSectionTree } from './api-tree'
 import { kindMark, markClass } from './api-labels'
 
 export * from './mcp-catalog'
@@ -56,7 +57,7 @@ export function mcpNavigation(port: string): { tree: TreeBucket[]; json: ApiTree
       return { ...row, m: 0, category: object.section, summary: plainSummary(object.description, port) }
     }), children: entry.children.map(bucket),
   })
-  const json = { port, buckets: tree.map(bucket), members: {} }
+  const json = referenceSectionTree({ port, buckets: tree.map(bucket), members: {} })
   const version = `mcp-1:${createHash('sha256').update(JSON.stringify([MCP_REFERENCE[port], json])).digest('hex').slice(0, 20)}`
   return { tree, json, version }
 }
