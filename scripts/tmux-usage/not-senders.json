@@ -3721,7 +3721,7 @@
       "why": "clearHistory sends clear-history; clear-prompt-history is a different command.",
       "evidence": [
         {
-          "at": "Sources/LibTmux/Navigation.swift:213",
+          "at": "Sources/LibTmux/Navigation.swift:226",
           "has": [
             "\"clear-history\""
           ]
@@ -3887,7 +3887,7 @@
       "why": "windowLinks lists the windows with list-windows -a and reads their links; it does not send link-window.",
       "evidence": [
         {
-          "at": "Sources/LibTmux/Server.swift:274",
+          "at": "Sources/LibTmux/Server.swift:451",
           "has": [
             "\"list-windows\""
           ]

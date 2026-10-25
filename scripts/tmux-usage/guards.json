@@ -277,19 +277,19 @@
       "purpose": "runs the command together with a marker that shows it ran, inside the guards that refuse a stale target",
       "evidence": [
         {
-          "at": "Sources/LibTmux/GuardedRequest.swift:174",
+          "at": "Sources/LibTmux/GuardedRequest.swift:177",
           "has": [
             "private static func guardedAction("
           ]
         },
         {
-          "at": "Sources/LibTmux/GuardedRequest.swift:179",
+          "at": "Sources/LibTmux/GuardedRequest.swift:182",
           "has": [
             "\"if-shell\""
           ]
         },
         {
-          "at": "Sources/LibTmux/GuardedRequest.swift:25",
+          "at": "Sources/LibTmux/GuardedRequest.swift:28",
           "has": [
             "GuardedRequest("
           ]
@@ -302,19 +302,19 @@
       "purpose": "refuses the command when the server restarted or the target no longer matches what the value was read from",
       "evidence": [
         {
-          "at": "Sources/LibTmux/GuardedRequest.swift:187",
+          "at": "Sources/LibTmux/GuardedRequest.swift:190",
           "has": [
             "private static func commandGuard("
           ]
         },
         {
-          "at": "Sources/LibTmux/GuardedRequest.swift:200",
+          "at": "Sources/LibTmux/GuardedRequest.swift:203",
           "has": [
             "TmuxCommand(\"if-shell\", arguments)"
           ]
         },
         {
-          "at": "Sources/LibTmux/Server.swift:214",
+          "at": "Sources/LibTmux/Server.swift:391",
           "has": [
             "GuardedRequest("
           ]

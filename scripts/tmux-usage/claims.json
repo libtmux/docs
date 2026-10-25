@@ -10021,7 +10021,7 @@
           ]
         },
         {
-          "at": "Sources/LibTmux/Navigation.swift:144",
+          "at": "Sources/LibTmux/Navigation.swift:146",
           "has": [
             "windowAppearance("
           ],
@@ -10037,13 +10037,13 @@
       "when": "no name is given",
       "evidence": [
         {
-          "at": "Sources/LibTmux/Navigation.swift:136",
+          "at": "Sources/LibTmux/Navigation.swift:138",
           "has": [
             "\"if-shell\""
           ]
         },
         {
-          "at": "Sources/LibTmux/Navigation.swift:144",
+          "at": "Sources/LibTmux/Navigation.swift:146",
           "has": [
             "windowAppearance("
           ],
@@ -12709,13 +12709,13 @@
       "scope": null,
       "evidence": [
         {
-          "at": "Sources/LibTmux/PaneInteraction.swift:295",
+          "at": "Sources/LibTmux/PaneInteraction.swift:332",
           "has": [
             "runIsolated("
           ]
         },
         {
-          "at": "Sources/LibTmux/PaneInteraction.swift:296",
+          "at": "Sources/LibTmux/PaneInteraction.swift:333",
           "has": [
             "\"capture-pane\""
           ]
@@ -12760,7 +12760,7 @@
           ]
         },
         {
-          "at": "Sources/LibTmux/PaneInteraction.swift:322",
+          "at": "Sources/LibTmux/PaneInteraction.swift:359",
           "has": [
             "formatGlobal("
           ]
@@ -12806,7 +12806,7 @@
           ]
         },
         {
-          "at": "Sources/LibTmux/PaneInteraction.swift:322",
+          "at": "Sources/LibTmux/PaneInteraction.swift:359",
           "has": [
             "formatGlobal("
           ]
@@ -12828,19 +12828,19 @@
       "scope": "server",
       "evidence": [
         {
-          "at": "Sources/LibTmux/Server.swift:273",
+          "at": "Sources/LibTmux/Server.swift:450",
           "has": [
             "list("
           ]
         },
         {
-          "at": "Sources/LibTmux/Server.swift:274",
+          "at": "Sources/LibTmux/Server.swift:451",
           "has": [
             "\"list-windows\", [\"-a\""
           ]
         },
         {
-          "at": "Sources/LibTmux/Server.swift:269",
+          "at": "Sources/LibTmux/Server.swift:446",
           "has": [
             "windowListingRows()"
           ]
@@ -12869,19 +12869,19 @@
       "when": "no index is given",
       "evidence": [
         {
-          "at": "Sources/LibTmux/Server.swift:273",
+          "at": "Sources/LibTmux/Server.swift:450",
           "has": [
             "list("
           ]
         },
         {
-          "at": "Sources/LibTmux/Server.swift:274",
+          "at": "Sources/LibTmux/Server.swift:451",
           "has": [
             "\"list-windows\", [\"-a\""
           ]
         },
         {
-          "at": "Sources/LibTmux/Server.swift:269",
+          "at": "Sources/LibTmux/Server.swift:446",
           "has": [
             "windowListingRows()"
           ]
