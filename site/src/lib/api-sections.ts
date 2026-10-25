@@ -21,10 +21,19 @@ export function hasScalarMembers(owner: ApiSymbol, members: ApiSymbol[]): boolea
 /** Ports whose extracted fields carry a name, a type and a summary for every struct and payload variant. */
 const FIELD_TABLE_PORTS: ReadonlySet<string> = new Set(['rs'])
 
-/** Fields of a record-like type use a Name/Type/Description table; a type that also has methods keeps the member list. */
+/** The typed fields of a Rust struct or payload variant, apart from every other member, in member order. */
+export function splitFieldMembers(owner: ApiSymbol, members: ApiSymbol[], port?: string): { fields: ApiSymbol[]; rest: ApiSymbol[] } {
+  if (!FIELD_TABLE_PORTS.has(port ?? '') || !(owner.kind === 'struct' || owner.variant === 'struct' || owner.variant === 'tuple')) {
+    return { fields: [], rest: members }
+  }
+  const isField = (member: ApiSymbol) => member.kind === 'attribute' && member.type !== undefined
+  return { fields: members.filter(isField), rest: members.filter((member) => !isField(member)) }
+}
+
+/** A record-like type whose members are all typed fields uses one Name/Type/Description table. */
 export function hasFieldMembers(owner: ApiSymbol, members: ApiSymbol[], port?: string): boolean {
-  return FIELD_TABLE_PORTS.has(port ?? '') && (owner.kind === 'struct' || owner.variant === 'struct' || owner.variant === 'tuple') &&
-    members.length > 0 && members.every((member) => member.kind === 'attribute' && member.type !== undefined)
+  const { fields, rest } = splitFieldMembers(owner, members, port)
+  return fields.length > 0 && rest.length === 0
 }
 
 /** The table a type page lists its members in, or none for the grouped list. */

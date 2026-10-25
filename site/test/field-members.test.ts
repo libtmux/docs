@@ -4,7 +4,7 @@ import { afterAll, describe, expect, it, vi } from 'vitest'
 import { experimental_AstroContainer } from 'astro/container'
 import { membersOf, SymbolIndex, type ApiSymbol } from '@libtmux/api-model'
 import { API_MODELS } from '../src/lib/api-models'
-import { hasFieldMembers, memberTableColumns } from '../src/lib/api-sections'
+import { hasFieldMembers, memberTableColumns, splitFieldMembers } from '../src/lib/api-sections'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { apiComponents } from './api-components'
 
@@ -89,7 +89,7 @@ describe('Rust field tables', () => {
   })
 
   it('shows no table for a type without fields (clean control)', () => {
-    for (const id of ['blocking.Runtime', 'config.Workspace']) {
+    for (const id of ['blocking.Runtime']) {
       const owner = symbol(id)
       expect(hasFieldMembers(owner, fieldsOf(owner), 'rs'), id).toBe(false)
       expect(symbolMarkdown({ model, symbol: owner, index, hrefFor })).not.toContain('| Name | Type | Description |')
@@ -97,6 +97,49 @@ describe('Rust field tables', () => {
     const empty = { ...symbol('pane.CapturedLine') }
     expect(hasFieldMembers(empty, [], 'rs')).toBe(false)
     expect(hasFieldMembers(symbol('pane.CapturedLine'), fieldsOf(symbol('pane.CapturedLine')), 'go')).toBe(false)
+  })
+
+  describe.each(['config.Workspace', 'config.ShellCommand', 'mcp.cli.Options'])('mixed type %s', (id) => {
+    const owner = symbol(id)
+    const children = () => raw.symbols.filter((entry) => entry.parent === id)
+    const hrefs = (symbols: ApiSymbol[]) => symbols.map((entry) => hrefFor(model.symbols.find((m) => m.id === entry.id)!))
+    const linkedIn = (lines: string[]) => lines.map((line) => /\]\(([^)]*)\)/.exec(line)![1])
+    const split = (symbols = model.symbols) => {
+      const lines = symbolMarkdown({ model: { ...model, symbols }, symbol: owner, index, hrefFor }).split('\n')
+      const fieldsAt = lines.indexOf('## Fields')
+      const membersAt = lines.indexOf('## Members')
+      return {
+        fieldsAt, membersAt,
+        table: linkedIn(lines.slice(fieldsAt).filter((line) => line.startsWith('| [`'))),
+        list: linkedIn(lines.slice(membersAt).filter((line) => line.startsWith('- ['))),
+      }
+    }
+
+    it('splits the raw children into a Fields table and the remaining list, with none lost or repeated', () => {
+      const fields = children().filter((entry) => entry.kind === 'attribute')
+      const others = children().filter((entry) => entry.kind !== 'attribute')
+      expect(fields.length).toBeGreaterThan(0)
+      expect(others.length).toBeGreaterThan(0)
+      const parts = splitFieldMembers(owner, fieldsOf(owner), 'rs')
+      expect(parts.fields.map((entry) => entry.id).toSorted()).toEqual(fields.map((entry) => entry.id).toSorted())
+      expect(parts.rest.map((entry) => entry.id).toSorted()).toEqual(others.map((entry) => entry.id).toSorted())
+      expect(hasFieldMembers(owner, fieldsOf(owner), 'rs')).toBe(false)
+      expect(memberTableColumns(owner, fieldsOf(owner), 'rs')).toBeUndefined()
+      const out = split()
+      expect(out.fieldsAt).toBeGreaterThan(-1)
+      expect(out.membersAt).toBeGreaterThan(out.fieldsAt)
+      expect(out.table.toSorted()).toEqual(hrefs(fields).toSorted())
+      expect(out.list.toSorted()).toEqual(hrefs(others).toSorted())
+      const all = [...out.table, ...out.list]
+      expect(new Set(all).size).toBe(all.length)
+      expect(all.toSorted()).toEqual(hrefs(children()).toSorted())
+    })
+
+    it('fails the split when a field is dropped from a copy of the data', () => {
+      const victim = children().find((entry) => entry.kind === 'attribute')!.id
+      const out = split(model.symbols.filter((entry) => entry.id !== victim))
+      expect(out.table).toHaveLength(children().filter((entry) => entry.kind === 'attribute').length - 1)
+    })
   })
 
   it('fails when a field is dropped from the model', () => {
