@@ -3,7 +3,7 @@
 This guide governs documentation, user-facing text, content frontmatter,
 source comments, review descriptions, changelogs, release notes, and commit
 messages. For setup, checks, and pull request workflow, see
-[CONTRIBUTING.md](CONTRIBUTING.md).
+[CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
 ## Voice
 

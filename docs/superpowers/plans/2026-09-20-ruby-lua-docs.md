@@ -33,7 +33,7 @@ three proposed PRs are not implemented by this planning change.
   maintainer. This plan does not push branches or open PRs.
 - Run examples against owned tmux sockets and preserve existing user state.
 - Scope upload and cleanup to one job's exact port/version prefix.
-- Apply [CONTRIBUTING.md](../../../CONTRIBUTING.md) and
+- Apply [CONTRIBUTING.md](../../../.github/CONTRIBUTING.md) and
   [WRITING.md](../../../WRITING.md), including whole-command test budgets:
   inner under 2 seconds, medium under 10 seconds, outer under 60 seconds.
   The separate publication audit includes full assembly and browser coverage.

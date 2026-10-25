@@ -3,8 +3,8 @@
 Contributions should fix a concrete documentation, rendering, or tooling
 problem. Keep each change focused and describe its effect on readers.
 
-Read [AGENTS.md](AGENTS.md) for repository boundaries and
-[WRITING.md](WRITING.md) for prose, comments, and commit conventions.
+Read [AGENTS.md](../AGENTS.md) for repository boundaries and
+[WRITING.md](../WRITING.md) for prose, comments, and commit conventions.
 
 ## Setup
 
@@ -28,7 +28,7 @@ $ pnpm dev
 `@astrojs/check` accepts TypeScript 5 or 6 as a peer dependency. The site's
 `astro check` and Astro language tooling depend on the compiler's language
 service API; a compiler upgrade must preserve that integration. Follow the
-TypeScript 6 constraint in [AGENTS.md](AGENTS.md#change-discipline).
+TypeScript 6 constraint in [AGENTS.md](../AGENTS.md#change-discipline).
 
 The plain TypeScript packages extend the root `tsconfig.json`. The site
 extends Astro's strict configuration instead. Keep both paths working when
@@ -221,7 +221,7 @@ must remain visible in snapshots.
 
 ### Links between ports and guides
 
-[`concepts.ts`](packages/api-model/src/concepts.ts) maps equivalent APIs by
+[`concepts.ts`](../packages/api-model/src/concepts.ts) maps equivalent APIs by
 their public symbol IDs. Check behavior and scope in each port's source
 before adding a mapping. Record an absence when a port has no equivalent;
 similar names alone do not establish one. An overloaded page can belong to
@@ -269,7 +269,7 @@ and table layout at desktop, tablet, and phone widths.
 ### Header destinations
 
 The port header links each repository, package page and API reference that
-[`port-inventory.ts`](site/src/lib/port-inventory.ts) publishes. Two generated
+[`port-inventory.ts`](../site/src/lib/port-inventory.ts) publishes. Two generated
 files hold it to the facts. `site/src/data/manifest-packages.json` lists what
 each port's owning manifests declare at the revision its API model is pinned to,
 and the inventory's tests require the two to agree in both directions. After
@@ -304,19 +304,19 @@ of this does not fail because time passed. A live run ends by requiring every
 record to be within the bound, and a record dated more than a day ahead is
 refused wherever it appears, so evidence cannot be committed back-dated or
 forward-dated. The weekly
-[`verify-destinations.yml`](.github/workflows/verify-destinations.yml) runs the
+[`verify-destinations.yml`](workflows/verify-destinations.yml) runs the
 live verifier into a temporary file and then
 `node scripts/verify-destinations.mjs --check --fresh` against the committed
 evidence; it fails on a destination that no longer passes or on evidence past
 the bound, and is not a dependency of the test or deploy workflows
-([CI](docs/ci.md#header-destination-check-verify-destinationsyml)).
+([CI](../docs/ci.md#header-destination-check-verify-destinationsyml)).
 
 ### Standard-library and SDK destinations
 
 A link into a language's own documentation, or into an SDK this estate builds
-on, is held to more than a 200. [`api-destinations.mjs`](scripts/lib/api-destinations.mjs)
+on, is held to more than a 200. [`api-destinations.mjs`](../scripts/lib/api-destinations.mjs)
 reads every one the site generates: the curated maps in
-[`builtins.ts`](packages/api-model/src/builtins.ts), the cached inventories,
+[`builtins.ts`](../packages/api-model/src/builtins.ts), the cached inventories,
 the references in the extracted doc comments, the links in pages (the content tree, the guides staged
 from each port's artifact, and the workspace pages written once for every port), guide data, the glossary,
 and the heading each of PowerShell's common parameters has on its Microsoft Learn page. Each is requested once and must land on a page whose own
@@ -324,13 +324,13 @@ declaration is the symbol the link was made for.
 
 A documentation page says what it documents, in the markup its host uses, and
 says it more exactly than its address or a word in its title:
-[`api-identities.mjs`](scripts/lib/api-identities.mjs) reads rustdoc's title and
+[`api-identities.mjs`](../scripts/lib/api-identities.mjs) reads rustdoc's title and
 heading, javadoc's package line and the parameters a member's anchor spells,
 Dokka's breadcrumbs and declaration, Scaladoc's kind, cppreference's heading
 and declaration, ExDoc's `c:` and `t:` anchors and operand count, fsdocs' Module
 or Type, Learn's namespace and generic arity, CPython's `dl.py` role,
 pkg.go.dev's full import path and kind, Documenter's category, MDN's title and
-DocC's symbol kind. [`api-sources.mjs`](scripts/lib/api-sources.mjs) says the same of the name that led
+DocC's symbol kind. [`api-sources.mjs`](../scripts/lib/api-sources.mjs) says the same of the name that led
 there: its kind, the package, module or type written before it, its operand
 count and its parameter list where the name gives them. A link is right when the
 two agree. `Option<T>::map` keeps its `map`, `System.getenv()` is the overload
@@ -352,7 +352,7 @@ name there passes only by an exception.
 A link a person wrote is a fact, and it is reviewed as one. Every Markdown link in a page, term in
 the glossary, link in a doc comment and title a keyword's help carries is a pair of its exact text and
 its exact address, and where its page documents no symbol it is a row of
-[`api-link-review.json`](site/src/data/api-link-review.json): the text, the address with its
+[`api-link-review.json`](../site/src/data/api-link-review.json): the text, the address with its
 fragment, and the heading the page has there (the heading the fragment opens, else the page's own top
 heading). The verifier checks two things and matches nothing by likeness. Every pair the source writes
 is a row and every row is a pair the source writes, so a text planted at another address, a narrower
@@ -368,10 +368,10 @@ address, never from the words: each port goes to its own language's documentatio
 platform shares (Kotlin and Scala to the Java hosts, C#, F# and PowerShell to the .NET API, runtime,
 standard library and NuGet pages of Microsoft Learn, and no port to another product's pages there),
 and a link a port writes to any other fails (`PORT_LANGUAGES` in
-[`api-links.mjs`](scripts/lib/api-links.mjs)). The same words at the same address written for several
+[`api-links.mjs`](../scripts/lib/api-links.mjs)). The same words at the same address written for several
 ports are held for each of them, and a port the table does not know, or an address whose language it
 cannot read, fails rather than passes unchecked. The links in a page are read by a Markdown parser
-([`api-markdown-links.mjs`](scripts/lib/api-markdown-links.mjs)), so a link with a title, an autolink,
+([`api-markdown-links.mjs`](../scripts/lib/api-markdown-links.mjs)), so a link with a title, an autolink,
 a reference link, a `<url>` definition, a raw `<a>` or code with brackets in its words is a pair like
 any other. An address is read the way a browser reads it (`HTTPS://` and `http://` in any case, a
 protocol-relative `//host`, a host with a dot after it, a bare `www.` host), and an address on an API
@@ -385,7 +385,7 @@ are logo and licence terms, not API documentation, so only their links to those 
 and not a language or an SDK, so it is not one of the hosts read (`API_HOSTS`).
 
 Prose is read the way the page renders it. A symbol's documentation (`PROSE_FIELDS` in
-[`prose-fields.ts`](packages/api-model/src/prose-fields.ts)) is linked by `SymbolIndex.docSpans`, the
+[`prose-fields.ts`](../packages/api-model/src/prose-fields.ts)) is linked by `SymbolIndex.docSpans`, the
 function `ApiDoc` renders with, over the text `ApiDoc` receives: the field itself, or the paragraphs and
 list items `ApiProse` splits it into, with fenced code left alone. A link the site writes from the model
 (a command's facts, a parameter's binding) is the builtin it names. Every other string a symbol holds
@@ -472,7 +472,7 @@ takes, an address outside any link, a case-only redirect and a redirect to a
 landing page on pages shaped like the real ones, each fault in the evidence, and
 each edit of the source over an unchanged record, and requires the check to name
 each. The weekly
-[`verify-destinations.yml`](.github/workflows/verify-destinations.yml) re-runs
+[`verify-destinations.yml`](workflows/verify-destinations.yml) re-runs
 the live check; pull requests never do.
 
 ## Building and previewing
@@ -490,7 +490,7 @@ $ pnpm build:site
 ```
 
 Port inputs use the checkout and worktree locations in
-`site/src/lib/ports.ts`. See [Adding a port](notes/adding-a-port.md) for
+`site/src/lib/ports.ts`. See [Adding a port](../notes/adding-a-port.md) for
 preparing docs-tooling worktrees and generator inputs.
 
 Serve the assembled output with Python 3:
@@ -520,5 +520,5 @@ Keep commits focused on one topic. Explain the problem, resulting behavior,
 and verification, including failures or skipped checks. Keep unrelated
 cleanup in separate work.
 
-Follow [WRITING.md](WRITING.md#commits) for commit messages and
-[AGENTS.md](AGENTS.md#repository-boundaries) for push and deployment limits.
+Follow [WRITING.md](../WRITING.md#commits) for commit messages and
+[AGENTS.md](../AGENTS.md#repository-boundaries) for push and deployment limits.
