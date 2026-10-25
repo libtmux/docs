@@ -141,3 +141,5 @@ the contribution, including material adapted with AI assistance, and provide
 its source and license. Keep required notices, and raise unclear permissions
 before including the material. These source and licensing requirements apply
 to maintainers too.
+
+<p class="site-credit">Acknowledgments: Informed by <a href="https://palletsprojects.com/contributing/llm-ai">Pallets’ LLM and AI Policy</a>, <a href="https://github.com/tmux/tmux/wiki/Contributing#use-of-ai">tmux’s AI contribution guidelines</a>, and <a href="https://openjdk.org/legal/ai">OpenJDK’s Interim Policy on Generative AI</a>. Licensing references: the GNU GPL FAQ on <a href="https://www.gnu.org/licenses/gpl-faq.en.html#TranslateCode">translating code</a> and <a href="https://www.gnu.org/licenses/gpl-faq.en.html#WhatDoesCompatMean">license compatibility</a>. All sources consulted <time datetime="2026-10">October 2026</time>.</p>
