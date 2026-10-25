@@ -107,6 +107,18 @@ describe('prerelease notice ownership', () => {
     expect(await render('/en/ts/latest/reference/server/', 'reference/server', 'ts', true)).not.toContain('data-prerelease-notice')
   })
 
+  it('says the libraries are released and no longer calls the site an alpha', async () => {
+    const html = await render('/en/ts/latest/reference/server/', 'reference/server', 'ts')
+    expect(html).toContain('libtmux is released, and its APIs may still change between releases.')
+    expect(html).toContain('structure and URLs may change too')
+    expect(html).not.toMatch(/alpha/i)
+  })
+
+  it('stores dismissal under a key the alpha notice never wrote', () => {
+    expect(noticeSource).not.toContain("'libtmux-docs.prerelease-notice'")
+    expect(readFileSync(new URL('../src/components/ThemeScript.astro', import.meta.url), 'utf8')).toContain("'libtmux-docs.release-notice-0.1'")
+  })
+
   it('binds dismissal after swaps through a tmux page and remembers the dismissal', async () => {
     const [{ Window }, { default: ts }] = await Promise.all([import('happy-dom'), import('typescript')])
     const win = new Window()
@@ -118,7 +130,7 @@ describe('prerelease notice ownership', () => {
     if (!script) throw new Error('Prerelease dismissal script is missing')
     win.eval(ts.transpileModule(script, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText)
     const first = win.document.querySelector<HTMLButtonElement>('[data-prerelease-dismiss]')!
-    expect(first.getAttribute('aria-label')).toBe('Dismiss the prerelease notice')
+    expect(first.getAttribute('aria-label')).toBe('Dismiss the release notice')
     expect(first.dataset.bound).toBe('yes')
     win.document.body.innerHTML = tmux
     win.document.dispatchEvent(new win.Event('astro:after-swap'))
@@ -129,6 +141,6 @@ describe('prerelease notice ownership', () => {
     expect(next.dataset.bound).toBe('yes')
     next.click()
     expect(win.document.documentElement.getAttribute('data-prerelease')).toBe('dismissed')
-    expect(win.localStorage.getItem('libtmux-docs.prerelease-notice')).toBe('dismissed')
+    expect(win.localStorage.getItem('libtmux-docs.release-notice-0.1')).toBe('dismissed')
   })
 })

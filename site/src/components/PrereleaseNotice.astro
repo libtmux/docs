@@ -1,10 +1,13 @@
 ---
 /**
- * The bar that says this site describes an alpha.
+ * The bar that says the libraries are released but still change between releases.
  *
  * Sits directly under the header and scrolls away with the page rather than
  * pinning: the header is `sticky top-0`, and a second sticky strip would take
  * a permanent bite out of every viewport for a sentence a reader needs once.
+ *
+ * The storage key names the release line. A reader who dismissed the alpha
+ * notice under the old key sees this one, because it says something else.
  *
  * Dismissal is remembered, and the remembering has to survive first paint.
  * `ThemeScript` reads the key in <head> and sets `data-prerelease` on the
@@ -28,17 +31,17 @@ const { centered = false } = Astro.props
 <div class:list={['prerelease-notice', { 'prerelease-notice--centered': centered }]} data-prerelease-notice>
   <div class="prerelease-notice__inner">
     <p class="prerelease-notice__text">
-      <strong class="prerelease-notice__badge">Prerelease</strong>
+      <strong class="prerelease-notice__badge">Early release</strong>
       <span>
-        This site documents an <strong>alpha</strong> of libtmux. Its structure,
-        URLs and APIs are subject to change.
+        libtmux is released, and its APIs may still change between releases.
+        This site's structure and URLs may change too.
       </span>
     </p>
     <button
       class="prerelease-notice__dismiss"
       type="button"
       data-prerelease-dismiss
-      aria-label="Dismiss the prerelease notice"
+      aria-label="Dismiss the release notice"
     >
       <span class="prerelease-notice__dismiss-label">Dismiss</span>
       <svg class="prerelease-notice__dismiss-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 4 8 8M4 12l8-8" /></svg>
@@ -47,7 +50,7 @@ const { centered = false } = Astro.props
 </div>
 
 <script>
-  const STORAGE_KEY = 'libtmux-docs.prerelease-notice'
+  const STORAGE_KEY = 'libtmux-docs.release-notice-0.1'
 
   /**
    * Hide the bar for good, and do it through the same attribute <head> reads.
