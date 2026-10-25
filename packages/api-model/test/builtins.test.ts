@@ -146,6 +146,16 @@ describe('standard types in product signatures', () => {
     expect(builtinHref('powershell', 'ApplicationInfo')).toBe('https://learn.microsoft.com/dotnet/api/system.management.automation.applicationinfo?view=powershellsdk-7.4.0')
   })
 
+  it('links PSResourceGet and the argument exception that PowerShell guides name', () => {
+    expect(builtinHref('powershell', 'Install-PSResource'))
+      .toBe('https://learn.microsoft.com/powershell/module/microsoft.powershell.psresourceget/install-psresource?view=powershellget-3.x')
+    expect(builtinHref('powershell', 'System.ArgumentException')).toBe('https://learn.microsoft.com/dotnet/api/system.argumentexception')
+    for (const name of ['ArgumentException', 'System.InvalidOperationException', 'Install-Module']) {
+      expect(builtinHref('powershell', name), name).toBeUndefined()
+    }
+    expect(builtinHref('csharp', 'Install-PSResource')).toBeUndefined()
+  })
+
   it('resolves compiler utility types without claiming local declarations', () => {
     const utilities = new SymbolIndex([], () => '#', 'ts')
     for (const [name, target] of Object.entries(TYPESCRIPT_UTILITY_TYPES)) {

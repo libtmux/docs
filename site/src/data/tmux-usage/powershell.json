@@ -94,23 +94,23 @@
   ],
   "port": "powershell",
   "repo": "libtmux/libtmux-powershell",
-  "revision": "48d770503a01e36426839b94951109dea6ce4562",
+  "revision": "5ebb019afa5520b07e27439d676e125a1db18fb0",
   "schemaVersion": 1,
   "symbols": {
     "LibTmux\\Connect-TmuxControl": [
       {
         "command": "refresh-client",
         "evidence": [
-          "src/LibTmux.PowerShell/ConnectTmuxControlCommand.cs:33"
+          "src/LibTmux.PowerShell/ConnectTmuxControlCommand.cs:34"
         ],
         "scope": null,
         "via": {
           "evidence": [
-            "src/LibTmux/Server.ControlMode.cs:84",
-            "src/LibTmux/Server.ControlMode.cs:32"
+            "src/LibTmux/Server.ControlMode.cs:105",
+            "src/LibTmux/Server.ControlMode.cs:36"
           ],
           "port": "csharp",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.Server.EnterControlModeAsync"
         }
       }
@@ -129,7 +129,7 @@
             "src/LibTmux/Session.Lifecycle.cs:424"
           ],
           "port": "csharp",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.Session.AttachAsync"
         }
       }
@@ -147,7 +147,7 @@
             "src/LibTmux/Server.Clients.cs:27"
           ],
           "port": "csharp",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.Server.GetClientsAsync"
         }
       }
@@ -168,7 +168,7 @@
           ],
           "port": "csharp",
           "reviewed": true,
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.Client.ResolveAttachmentAsync"
         }
       }
@@ -186,7 +186,7 @@
             "src/LibTmux/Environment/TmuxEnvironmentOperations.cs:67"
           ],
           "port": "csharp",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.TmuxEnvironment.GetAllAsync"
         }
       }
@@ -205,7 +205,7 @@
             "src/LibTmux/Hooks/TmuxHooks.cs:118"
           ],
           "port": "csharp",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.TmuxHooks.GetAllAsync"
         }
       }
@@ -225,7 +225,7 @@
             "src/LibTmux/Options/TmuxOptions.cs:94"
           ],
           "port": "csharp",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.TmuxOptions.GetAllAsync"
         }
       }
@@ -248,7 +248,7 @@
           ],
           "port": "csharp",
           "reviewed": true,
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.Server.CaptureSnapshotAsync"
         }
       },
@@ -263,7 +263,7 @@
             "src/LibTmux/Session.Relations.cs:167"
           ],
           "port": "csharp",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.Session.GetPanesAsync"
         }
       },
@@ -278,7 +278,7 @@
             "src/LibTmux/Window.Relations.cs:121"
           ],
           "port": "csharp",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.Window.GetPanesAsync"
         }
       }
@@ -297,7 +297,7 @@
             "src/LibTmux/Pane.Capture.cs:144"
           ],
           "port": "csharp",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.Pane.CaptureAsync"
         }
       }
@@ -314,7 +314,7 @@
             "src/LibTmux/Server.Identity.cs:121"
           ],
           "port": "csharp",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.Server.InspectAsync"
         }
       }
@@ -337,7 +337,7 @@
           ],
           "port": "csharp",
           "reviewed": true,
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.Server.CaptureSnapshotAsync"
         }
       }
@@ -354,7 +354,7 @@
             "src/LibTmux/Session.Relations.cs:153"
           ],
           "port": "csharp",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.Session.GetWindowsAsync"
         }
       }
@@ -372,7 +372,7 @@
             "src/LibTmux/Window.Move.cs:53"
           ],
           "port": "csharp",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.Window.MoveAsync"
         }
       },
@@ -388,7 +388,7 @@
             "src/LibTmux/Window.Move.cs:31"
           ],
           "port": "csharp",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.Window.MoveAsync"
         }
       },
@@ -405,7 +405,7 @@
             "src/LibTmux/Window.Links.cs:122"
           ],
           "port": "csharp",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.Window.MoveAsync"
         }
       }
@@ -414,7 +414,7 @@
       {
         "command": "new-session",
         "evidence": [
-          "src/LibTmux.PowerShell/NewTmuxSessionCommand.cs:84"
+          "src/LibTmux.PowerShell/NewTmuxSessionCommand.cs:87"
         ],
         "scope": null,
         "via": {
@@ -425,7 +425,7 @@
           ],
           "port": "csharp",
           "reviewed": true,
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.Server.CreateSessionAsync"
         }
       }
@@ -434,7 +434,7 @@
       {
         "command": "new-window",
         "evidence": [
-          "src/LibTmux.PowerShell/NewTmuxWindowCommand.cs:77"
+          "src/LibTmux.PowerShell/NewTmuxWindowCommand.cs:80"
         ],
         "scope": null,
         "via": {
@@ -446,7 +446,7 @@
           ],
           "port": "csharp",
           "reviewed": true,
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.Session.CreateWindowAsync"
         }
       }
@@ -465,7 +465,7 @@
             "src/LibTmux/Window.Links.cs:17"
           ],
           "port": "csharp",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.Window.LinkAsync"
         }
       }
@@ -479,10 +479,10 @@
         "scope": null,
         "via": {
           "evidence": [
-            "src/LibTmux/Pane.Topology.cs:300"
+            "src/LibTmux/Pane.Topology.cs:312"
           ],
           "port": "csharp",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.Pane.KillAsync"
         }
       }
@@ -499,7 +499,7 @@
             "src/LibTmux/Session.Lifecycle.cs:119"
           ],
           "port": "csharp",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.Session.KillAsync"
         }
       }
@@ -516,7 +516,7 @@
             "src/LibTmux/Window.Lifecycle.cs:64"
           ],
           "port": "csharp",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.Window.KillAsync"
         }
       }
@@ -535,7 +535,7 @@
             "src/LibTmux/Window.Links.cs:187"
           ],
           "port": "csharp",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.Window.UnlinkAsync"
         }
       }
@@ -569,7 +569,7 @@
           ],
           "port": "csharp",
           "reviewed": true,
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.Pane.SendKeysAsync"
         }
       }
@@ -588,7 +588,7 @@
             "src/LibTmux/Environment/TmuxEnvironmentOperations.cs:143"
           ],
           "port": "csharp",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.TmuxEnvironment.SetAsync"
         }
       }
@@ -610,7 +610,7 @@
           ],
           "port": "csharp",
           "reviewed": true,
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.TmuxHooks.SetAsync"
         }
       }
@@ -629,7 +629,7 @@
             "src/LibTmux/Window.Layout.cs:60"
           ],
           "port": "csharp",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.Window.SelectLayoutAsync"
         }
       }
@@ -650,7 +650,7 @@
             "src/LibTmux/Options/TmuxOptions.cs:170"
           ],
           "port": "csharp",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.TmuxOptions.SetAsync"
         }
       }
@@ -664,12 +664,12 @@
         "scope": null,
         "via": {
           "evidence": [
-            "src/LibTmux/Pane.Topology.cs:337",
-            "src/LibTmux/Pane.Topology.cs:334",
-            "src/LibTmux/Pane.Topology.cs:426"
+            "src/LibTmux/Pane.Topology.cs:349",
+            "src/LibTmux/Pane.Topology.cs:346",
+            "src/LibTmux/Pane.Topology.cs:438"
           ],
           "port": "csharp",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.Pane.ResizeAsync"
         }
       }
@@ -688,7 +688,7 @@
             "src/LibTmux/Window.Layout.cs:34"
           ],
           "port": "csharp",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.Window.ResizeAsync"
         }
       }
@@ -702,13 +702,13 @@
         "scope": null,
         "via": {
           "evidence": [
-            "src/LibTmux/Pane.Topology.cs:576",
+            "src/LibTmux/Pane.Topology.cs:588",
             "src/LibTmux/Pane.Topology.cs:105",
-            "src/LibTmux/Pane.Topology.cs:232"
+            "src/LibTmux/Pane.Topology.cs:244"
           ],
           "port": "csharp",
           "reviewed": true,
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.Pane.SplitAsync"
         }
       }
@@ -717,16 +717,16 @@
       {
         "command": "refresh-client",
         "evidence": [
-          "src/LibTmux.PowerShell/WatchTmuxEventCommand.cs:60"
+          "src/LibTmux.PowerShell/WatchTmuxEventCommand.cs:65"
         ],
         "scope": null,
         "via": {
           "evidence": [
-            "src/LibTmux/Server.ControlMode.cs:84",
-            "src/LibTmux/Server.ControlMode.cs:32"
+            "src/LibTmux/Server.ControlMode.cs:105",
+            "src/LibTmux/Server.ControlMode.cs:36"
           ],
           "port": "csharp",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
           "symbol": "LibTmux.Server.EnterControlModeAsync"
         }
       }

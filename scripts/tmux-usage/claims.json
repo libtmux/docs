@@ -5231,13 +5231,13 @@
           ]
         },
         {
-          "at": "src/LibTmux/Pane.Waiting.cs:169",
+          "at": "src/LibTmux/Pane.Waiting.cs:179",
           "has": [
             "SendKeysAsync(keys, token)"
           ]
         },
         {
-          "at": "src/LibTmux/Pane.Waiting.cs:103",
+          "at": "src/LibTmux/Pane.Waiting.cs:113",
           "has": [
             "SendKeysAndWaitAsync("
           ],
@@ -5277,7 +5277,7 @@
           ]
         },
         {
-          "at": "src/LibTmux/Pane.Waiting.cs:169",
+          "at": "src/LibTmux/Pane.Waiting.cs:179",
           "has": [
             "SendKeysAsync(keys, token)"
           ],
@@ -11144,7 +11144,7 @@
       "forwardable": true,
       "evidence": [
         {
-          "at": "src/LibTmux/Pane.Topology.cs:576",
+          "at": "src/LibTmux/Pane.Topology.cs:588",
           "has": [
             "_commandDispatcher.ExecuteAsync(arguments"
           ]
@@ -11156,7 +11156,7 @@
           ]
         },
         {
-          "at": "src/LibTmux/Pane.Topology.cs:232",
+          "at": "src/LibTmux/Pane.Topology.cs:244",
           "has": [
             "CreatePaneFromAsync(arguments, \"split-window\""
           ],
