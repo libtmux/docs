@@ -35,7 +35,7 @@ describe('verified complete F# API programs', () => {
     expect(symbol.source.revision).toBe(example.sourceRevision)
     expect(example.page).toBe(`ports/fsharp/reference/${symbol.slug}`)
     expect(example.sourceCompilerId.slice(2).replace(/\(.*$/, '').replace(/`{1,2}\d+$/, '')).toBe(symbol.id)
-    expect(example.files).toHaveLength(4)
+    expect(example.files).toHaveLength(2)
     for (const file of example.files) {
       const label = `${example.symbol}/${file.name}`
       if (!('clipboardSha256' in file) || !('sourceFile' in file) || !('path' in file)) {
@@ -54,13 +54,16 @@ describe('verified complete F# API programs', () => {
     }
     expect(example.consoleBlocks.map((index) => blocks[index].code.replace(/^\$ /gm, '').trim()))
       .toEqual(example.shellRecipe)
-    const output = blocks[example.consoleBlocks[1] + 1].code.trimEnd().split('\n')
-    expect(example.expectedOutputs[1]).toEqual([...output, ...output])
+    expect(example.shellRecipe).toEqual([
+      'dotnet build Example.fsproj --configuration Release && \\\n' +
+      '  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll'])
+    const output = blocks[example.consoleBlocks.at(-1)! + 1].code.trimEnd().split('\n')
+    expect(example.expectedOutputs.at(-1)).toEqual([...output, ...output])
     for (const index of example.consoleBlocks) {
       expect(blocks[index].lang).toBe('console')
       expect(exported.some((entry) => entry.value + '\n' === blocks[index].code)).toBe(true)
     }
-    const program = blocks[example.files[3].block]
+    const program = blocks[example.files[1].block]
     expect(program.lang).toBe('fsharp')
     expect(program.code).toContain('Server.CreateOwnedAsync')
     expect(program.code).toContain('use!')

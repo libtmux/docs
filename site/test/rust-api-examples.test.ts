@@ -40,7 +40,7 @@ describe('complete Rust API examples', () => {
     const blocks = symbol.doc?.examples ?? []
     const markdown = symbolMarkdown({ model, symbol })
     const exported = fromMarkdown(markdown).children.filter((node) => node.type === 'code')
-    expect(example.files).toHaveLength(3)
+    expect(example.files).toHaveLength(1)
     for (const file of example.files) {
       const label = `${example.symbol}/${file.name}`
       if (!('sourceFile' in file) || typeof file.sourceFile !== 'string' ||
@@ -61,10 +61,10 @@ describe('complete Rust API examples', () => {
     for (const command of example.shellRecipe) {
       expect(exported.some((entry) => entry.value.replace(/^\$ /gm, '').trim() === command)).toBe(true)
     }
-    expect(example.shellRecipe[1]).toContain('mkdir -p src &&\n')
-    expect(example.shellRecipe[1]).toContain('cargo run --quiet')
+    expect(example.shellRecipe[0]).toMatch(/^cargo init --name libtmux-api-example &&\n  cargo add libtmux@\d\S* /)
+    expect(example.shellRecipe[1]).toBe('cargo run --quiet')
     expect(blocks.at(-1)?.code).toBe(`${example.expectedOutputs[1].join('\n')}\n`)
-    const program = blocks[example.files[2].block]
+    const program = blocks[example.files[0].block]
     expect(program.code).toContain('async fn main()')
     expect(program.code).toContain('#[tokio::main')
     expect(program.code).toContain('server.kill().await')
