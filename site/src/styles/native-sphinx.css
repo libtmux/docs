@@ -31,6 +31,28 @@ html[data-native-shell] body {
 html[data-native-shell] dl.gp-sphinx-api-container:not(.fixture) > dt.gp-sphinx-api-header:not(:target) {
   background: color-mix(in srgb, var(--background-color), var(--text-color) 6%);
 }
+/*
+ * Declaration controls share the vertical centre of the signature's first
+ * line, as on the shared reference pages. Native rows centre every child on
+ * the whole block, so the permalink, source link and badges drop to the middle
+ * of a signature that wraps over several lines.
+ */
+html[data-native-shell] dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--desktop {
+  align-items: flex-start;
+}
+html[data-native-shell] dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--desktop > .gp-sphinx-api-layout-left {
+  align-items: flex-start;
+}
+html[data-native-shell] dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--desktop > .gp-sphinx-api-layout-right {
+  align-items: baseline;
+}
+html[data-native-shell] dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--desktop > .gp-sphinx-api-layout-right > :is(.gp-sphinx-api-badge-container, .gp-sphinx-api-slot) {
+  align-self: center;
+}
+html[data-native-shell] dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--desktop > .gp-sphinx-api-layout-right .gp-sphinx-api-badge-container {
+  display: flex;
+  align-items: center;
+}
 html[data-native-shell] .sidebar-sticky,
 html[data-native-shell] .toc-sticky {
   top: var(--native-header-height);
