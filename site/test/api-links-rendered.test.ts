@@ -8,7 +8,7 @@ import { normalizeAddress } from '../../scripts/lib/api-markdown-links.mjs'
 import { API_MODELS } from '../src/lib/api-models'
 import { linkProseMarkdown } from '../src/lib/prose-markdown'
 import { createProseLinker } from '../src/lib/prose-resolver'
-import { DOC_PRODUCTS, PORTS, productConceptNotice, productDescription, workspaceOverviewNotice } from '../src/lib/ports'
+import { DOC_PRODUCTS, PORTS as SITE_PORTS, productConceptNotice, productDescription, workspaceOverviewNotice } from '../src/lib/ports'
 import { productApiHref } from '../src/lib/product-api'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { defaultVersionFor } from '../src/lib/versions'
@@ -117,7 +117,9 @@ describe('the pages, rendered for each port', () => {
       }
     }
     expect([...missing].map(([href, where]) => `${href} (${where})`)).toEqual([])
-    expect(renders).toBeGreaterThan(pages.length)
+    // Every page once, and a shared page again in the build of each port: the builds are the ports' slugs, not objects.
+    expect(PORTS.every((port) => /^[a-z]+$/.test(port)) && PORTS.length).toBeGreaterThan(10)
+    expect(renders).toBe(pages.length + pages.filter((page) => page.shared).length * PORTS.length)
     expect(linked).toBeGreaterThan(0)
   }, 900_000)
 
@@ -162,7 +164,7 @@ describe('the notices a template writes', () => {
     const link = createProseLinker()
     const missing: string[] = []
     let spans = 0
-    for (const port of PORTS) {
+    for (const port of SITE_PORTS) {
       for (const product of Object.keys(DOC_PRODUCTS) as (keyof typeof DOC_PRODUCTS)[]) {
         const texts = [productConceptNotice(port, product)?.body, workspaceOverviewNotice(port)?.body, (() => { try { return productDescription(port, product) } catch { return undefined } })()]
         for (const text of texts) {

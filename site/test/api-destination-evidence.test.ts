@@ -623,6 +623,11 @@ describe('the reviewed link table', () => {
 })
 
 describe('what a bare name means', () => {
+  it('scopes a PowerShell command to the module its page is documented under', () => {
+    expect(bareOwners('powershell', 'Install-PSResource')).toEqual(['microsoft.powershell.psresourceget'])
+    expect(bareOwners('powershell', 'Where-Object')).toEqual(['microsoft.powershell.core'])
+  })
+
   it('puts Julia\'s keywords at the top level, where the manual lists them, and no function there', () => {
     expect(bareOwners('julia', 'import')).toEqual([''])
     expect(bareOwners('julia', 'for')).toEqual([''])

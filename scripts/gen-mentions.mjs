@@ -3,7 +3,7 @@
 import { existsSync, globSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { Resolver, parentInventory, decideMention, isLikelyReference, notASymbol, notApiReason, proseMentions, pageSlug } from '../packages/api-model/src/index.ts'
+import { Resolver, parentInventory, pageMentions, pageSlug } from '../packages/api-model/src/index.ts'
 import { isLocale } from '../site/src/i18n/locales.ts'
 import { isTmuxProse } from '../site/src/lib/docs-paths.ts'
 
@@ -183,26 +183,12 @@ for (const { file, source } of [...realEntries, ...sharedWorkspaceEntries(realFi
   const product = frontmatterValue(source, 'product') ?? /^ports\/[^/]+\/(workspace|mcp)\//.exec(file)?.[1]
 
   const selected = resolvePortContent(source, authoredPort)
-  for (const { port: contextPort, text, line, before, linked, href } of proseMentions(selected.body, PORT_BY_LABEL, selected.portAt)) {
-    const pagePort = authoredPort ?? contextPort
-    if (!linked && nativeTmux) continue
-    if (notASymbol(text)) continue
-    let target
-    if (linked) {
-      target = authoredTarget(href, page)
-    } else {
-      const decision = decideMention(text, { pagePort, product, before }, resolver, models)
-      if (decision.kind !== 'link') {
-        if (decision.kind === 'unresolved' && pagePort && isLikelyReference(text) && !notApiReason(text)) {
-          dangling.push({ port: pagePort, text, page, line, why: decision.why })
-        }
-        continue
-      }
-      const res = resolver.resolve(decision.port, text, product)
-      if ('symbol' in res) target = { port: decision.port, symbol: res.symbol.id }
-    }
-    if (!target) continue
-    const { port, symbol } = target
+  const found = pageMentions({
+    body: selected.body, portAt: selected.portAt, portByLabel: PORT_BY_LABEL, page, authoredPort, nativeTmux, product,
+    resolver, models, authoredTarget: (href) => authoredTarget(href, page),
+  })
+  dangling.push(...found.dangling)
+  for (const { port, symbol } of found.targets) {
     // `(port, symbol, page)` is the key: a symbol named three times on one
     // page is one backlink, not three.
     const key = `${port} ${symbol} ${page}`

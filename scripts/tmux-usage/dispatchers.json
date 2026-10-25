@@ -6551,35 +6551,35 @@
               "on": "ControlModeSession"
             },
             {
-              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:294",
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:307",
               "has": [
                 "SendCoreAsync"
               ],
               "calls": "SendCoreAsync"
             },
             {
-              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:410",
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:423",
               "has": [
                 "SendAdmittedAsync"
               ],
               "calls": "SendAdmittedAsync"
             },
             {
-              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:455",
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:468",
               "has": [
                 "DispatchAndWaitAsync"
               ],
               "calls": "DispatchAndWaitAsync"
             },
             {
-              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:509",
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:522",
               "has": [
                 "WriteRequestAsync"
               ],
               "calls": "WriteRequestAsync"
             },
             {
-              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:557",
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:570",
               "has": [
                 "WriteLineAsync"
               ],
@@ -6915,41 +6915,41 @@
       "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
       "evidence": [
         {
-          "at": "src/LibTmux/ControlMode/ControlModeSession.cs:281",
+          "at": "src/LibTmux/ControlMode/ControlModeSession.cs:289",
           "has": [
             "SendAsync"
           ],
           "reaches": [
             {
-              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:294",
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:307",
               "has": [
                 "SendCoreAsync"
               ],
               "calls": "SendCoreAsync"
             },
             {
-              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:410",
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:423",
               "has": [
                 "SendAdmittedAsync"
               ],
               "calls": "SendAdmittedAsync"
             },
             {
-              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:455",
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:468",
               "has": [
                 "DispatchAndWaitAsync"
               ],
               "calls": "DispatchAndWaitAsync"
             },
             {
-              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:509",
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:522",
               "has": [
                 "WriteRequestAsync"
               ],
               "calls": "WriteRequestAsync"
             },
             {
-              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:557",
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:570",
               "has": [
                 "WriteLineAsync"
               ],
@@ -6972,34 +6972,34 @@
       "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
       "evidence": [
         {
-          "at": "src/LibTmux/ControlMode/ControlModeSession.cs:306",
+          "at": "src/LibTmux/ControlMode/ControlModeSession.cs:319",
           "has": [
             "SendRawAsync"
           ],
           "reaches": [
             {
-              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:327",
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:340",
               "has": [
                 "SendAdmittedAsync"
               ],
               "calls": "SendAdmittedAsync"
             },
             {
-              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:455",
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:468",
               "has": [
                 "DispatchAndWaitAsync"
               ],
               "calls": "DispatchAndWaitAsync"
             },
             {
-              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:509",
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:522",
               "has": [
                 "WriteRequestAsync"
               ],
               "calls": "WriteRequestAsync"
             },
             {
-              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:557",
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:570",
               "has": [
                 "WriteLineAsync"
               ],
@@ -7081,20 +7081,20 @@
       "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
       "evidence": [
         {
-          "at": "src/LibTmux/Server.Clients.cs:194",
+          "at": "src/LibTmux/Server.Clients.cs:196",
           "has": [
             "RunClientAsync"
           ],
           "reaches": [
             {
-              "at": "src/LibTmux/Server.Clients.cs:201",
+              "at": "src/LibTmux/Server.Clients.cs:203",
               "has": [
                 "RunAsync(arguments, cancellationToken)"
               ],
               "calls": "RunAsync"
             },
             {
-              "at": "src/LibTmux/Server.Clients.cs:209",
+              "at": "src/LibTmux/Server.Clients.cs:211",
               "has": [
                 ".ExecuteAsync(arguments, cancellationToken)"
               ],
@@ -7147,13 +7147,13 @@
       "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
       "evidence": [
         {
-          "at": "src/LibTmux/Streaming/PaneReader.cs:438",
+          "at": "src/LibTmux/Streaming/PaneReader.cs:696",
           "has": [
             "TryThroughControlAsync"
           ],
           "reaches": [
             {
-              "at": "src/LibTmux/Streaming/PaneReader.cs:455",
+              "at": "src/LibTmux/Streaming/PaneReader.cs:713",
               "has": [
                 "SendAsync"
               ],
@@ -7161,35 +7161,35 @@
               "on": "ControlModeSession"
             },
             {
-              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:294",
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:307",
               "has": [
                 "SendCoreAsync"
               ],
               "calls": "SendCoreAsync"
             },
             {
-              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:410",
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:423",
               "has": [
                 "SendAdmittedAsync"
               ],
               "calls": "SendAdmittedAsync"
             },
             {
-              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:455",
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:468",
               "has": [
                 "DispatchAndWaitAsync"
               ],
               "calls": "DispatchAndWaitAsync"
             },
             {
-              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:509",
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:522",
               "has": [
                 "WriteRequestAsync"
               ],
               "calls": "WriteRequestAsync"
             },
             {
-              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:557",
+              "at": "src/LibTmux/ControlMode/ControlModeSession.cs:570",
               "has": [
                 "WriteLineAsync"
               ],
@@ -8039,13 +8039,13 @@
       "why": "Sends the tmux arguments it is given, or the list command it is named for, to the server.",
       "evidence": [
         {
-          "at": "src/LibTmux/Pane.Topology.cs:567",
+          "at": "src/LibTmux/Pane.Topology.cs:579",
           "has": [
             "CreatePaneFromAsync"
           ],
           "reaches": [
             {
-              "at": "src/LibTmux/Pane.Topology.cs:576",
+              "at": "src/LibTmux/Pane.Topology.cs:588",
               "has": [
                 "_commandDispatcher.ExecuteAsync(arguments, cancellationToken)"
               ],
@@ -8157,7 +8157,7 @@
       "why": "Builds the argument list of a command from the command it is given.",
       "evidence": [
         {
-          "at": "src/LibTmux/Pane.Topology.cs:533",
+          "at": "src/LibTmux/Pane.Topology.cs:545",
           "has": [
             "BuildRehomeArguments"
           ]

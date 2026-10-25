@@ -177,6 +177,8 @@ export const BARE_OWNERS = Object.fromEntries(Object.entries({
   powershell: {
     'System.IO': ['FileInfo'], 'System.Management.Automation': ['ApplicationInfo'],
     'microsoft.powershell.utility': ['Get-Member', 'Invoke-WebRequest'], 'microsoft.powershell.core': ['Where-Object', 'Receive-Job', 'CommonParameters'],
+    // PSResourceGet ships with PowerShell 7.4 and is documented under its own module.
+    'microsoft.powershell.psresourceget': ['Install-PSResource'],
     threadjob: ['Start-ThreadJob'], 'microsoft.powershell.management': ['Set-Content'],
   },
 }).map(([port, owners]) => [port, Object.fromEntries(Object.entries(owners).flatMap(([owner, names]) => names.map((name) => [name, owner])))]))

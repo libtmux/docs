@@ -8557,6 +8557,13 @@
   {
    "port": "powershell",
    "symbol": "LibTmux\\Connect-TmuxControl",
+   "page": "/powershell/latest/guides/commands/",
+   "title": "Commands and control clients",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Connect-TmuxControl",
    "page": "/powershell/latest/guides/compatibility/",
    "title": "Compatibility",
    "section": "guides"
@@ -8795,6 +8802,13 @@
   {
    "port": "powershell",
    "symbol": "LibTmux\\Invoke-TmuxChain",
+   "page": "/powershell/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Invoke-TmuxChain",
    "page": "/powershell/latest/guides/getting-started/",
    "title": "Getting started",
    "section": "guides"
@@ -8811,6 +8825,20 @@
    "symbol": "LibTmux\\Invoke-TmuxCommand",
    "page": "/powershell/latest/guides/capture/",
    "title": "Capture, refresh and raw commands",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Invoke-TmuxCommand",
+   "page": "/powershell/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Invoke-TmuxCommand",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -8847,6 +8875,13 @@
    "page": "/powershell/latest/examples/command-completion/",
    "title": "Check command completion",
    "section": "examples"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Invoke-TmuxPaneCommand",
+   "page": "/powershell/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
   },
   {
    "port": "powershell",
@@ -9109,6 +9144,13 @@
   },
   {
    "port": "powershell",
+   "symbol": "LibTmux\\Set-TmuxLayout",
+   "page": "/powershell/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
    "symbol": "LibTmux\\Split-TmuxPane",
    "page": "/powershell/latest/examples/create-layout/",
    "title": "Create windows and panes",
@@ -9162,6 +9204,13 @@
    "page": "/powershell/latest/examples/wait-for-service/",
    "title": "Wait for a service",
    "section": "examples"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Wait-TmuxPaneText",
+   "page": "/powershell/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
   },
   {
    "port": "powershell",

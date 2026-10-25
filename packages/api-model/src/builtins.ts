@@ -190,8 +190,10 @@ export const BUILTINS: Record<string, Record<string, string>> = {
       'ValidateNotNullOrEmpty', 'ValidatePattern', 'ValidateRange', 'ValidateSet',
     ].map((name) => [`System.Management.Automation.${name}Attribute`,
       `${dotnet(`system.management.automation.${name.toLowerCase()}attribute`)}?view=powershellsdk-7.4.0`])),
-    ...Object.fromEntries(['String', 'Int32', 'Int64', 'Double', 'Boolean', 'Object', 'IO.FileInfo', 'Collections.IDictionary']
-      .map((name) => [`System.${name}`, dotnet(`system.${name.toLowerCase()}`)])),
+    ...Object.fromEntries(['String', 'Int32', 'Int64', 'Double', 'Boolean', 'Object', 'IO.FileInfo', 'Collections.IDictionary',
+      'ArgumentException'].map((name) => [`System.${name}`, dotnet(`system.${name.toLowerCase()}`)])),
+    // PSResourceGet ships with PowerShell 7.4 but is documented under its own view.
+    'Install-PSResource': 'https://learn.microsoft.com/powershell/module/microsoft.powershell.psresourceget/install-psresource?view=powershellget-3.x',
     'System.Nullable': dotnet('system.nullable-1'),
     'System.Management.Automation.SwitchParameter': `${dotnet('system.management.automation.switchparameter')}?view=powershellsdk-7.4.0`,
     'System.Management.Automation.ActionPreference': `${dotnet('system.management.automation.actionpreference')}?view=powershellsdk-7.4.0`,

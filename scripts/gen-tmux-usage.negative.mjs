@@ -148,13 +148,14 @@ edit(privateHelper, 'py', (document) => { document.symbols['libtmux.Server._show
 const privateRun = run(privateHelper)
 check('a private helper recorded as API fails', privateRun.code !== 0 && /py: libtmux.Server._show_option: is private or package-private, and only public API is recorded/.test(privateRun.out), privateRun.out)
 
+const modelRevision = (port) => JSON.parse(readFileSync(join(committed, '..', 'api', `${port}.json`), 'utf8')).revision
 const viaMoved = fixture()
 edit(viaMoved, 'fsharp', (document) => {
   const via = Object.values(document.symbols).flat().find((use) => use.via).via
-  via.revision = JSON.parse(readFileSync(join(committed, '..', 'api', 'csharp.json'), 'utf8')).revision
+  via.revision = modelRevision('csharp')
 })
 const viaMovedRun = run(viaMoved)
-check('core lines cited at the core model\'s revision instead of the wrapper\'s fail', viaMovedRun.code !== 0 && /fsharp: .* cites csharp lines at 5b486ea9\w+, which must be 4f1b997b2\w+/.test(viaMovedRun.out), viaMovedRun.out)
+check('core lines cited at the core model\'s revision instead of the wrapper\'s fail', viaMovedRun.code !== 0 && new RegExp(`fsharp: .* cites csharp lines at ${modelRevision('csharp')}, which must be ${modelRevision('fsharp')}`).test(viaMovedRun.out), viaMovedRun.out)
 
 const viaUnnamed = fixture()
 edit(viaUnnamed, 'powershell', (document) => { delete Object.values(document.symbols).flat().find((use) => use.via).via.revision })

@@ -94,7 +94,7 @@
   ],
   "port": "csharp",
   "repo": "libtmux/libtmux-dotnet",
-  "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+  "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
   "schemaVersion": 1,
   "symbols": {
     "LibTmux.Client.GetAsync": [
@@ -209,9 +209,17 @@
         "scope": null
       },
       {
+        "command": "display-message",
+        "evidence": [
+          "src/LibTmux/Pane.Topology.cs:195"
+        ],
+        "scope": null,
+        "when": "break-pane prints no window ID"
+      },
+      {
         "command": "rename-window",
         "evidence": [
-          "src/LibTmux/Pane.Topology.cs:203"
+          "src/LibTmux/Pane.Topology.cs:215"
         ],
         "scope": null
       }
@@ -280,8 +288,8 @@
       {
         "command": "new-pane",
         "evidence": [
-          "src/LibTmux/Pane.Topology.cs:251",
-          "src/LibTmux/Pane.Topology.cs:249",
+          "src/LibTmux/Pane.Topology.cs:263",
+          "src/LibTmux/Pane.Topology.cs:261",
           "src/LibTmux/Pane.Topology.cs:48"
         ],
         "scope": null
@@ -369,7 +377,7 @@
       {
         "command": "join-pane",
         "evidence": [
-          "src/LibTmux/Pane.Topology.cs:262"
+          "src/LibTmux/Pane.Topology.cs:274"
         ],
         "scope": null
       }
@@ -378,7 +386,7 @@
       {
         "command": "kill-pane",
         "evidence": [
-          "src/LibTmux/Pane.Topology.cs:300"
+          "src/LibTmux/Pane.Topology.cs:312"
         ],
         "scope": null
       }
@@ -387,7 +395,7 @@
       {
         "command": "move-pane",
         "evidence": [
-          "src/LibTmux/Pane.Topology.cs:271"
+          "src/LibTmux/Pane.Topology.cs:283"
         ],
         "scope": null
       }
@@ -434,9 +442,9 @@
       {
         "command": "resize-pane",
         "evidence": [
-          "src/LibTmux/Pane.Topology.cs:337",
-          "src/LibTmux/Pane.Topology.cs:334",
-          "src/LibTmux/Pane.Topology.cs:426"
+          "src/LibTmux/Pane.Topology.cs:349",
+          "src/LibTmux/Pane.Topology.cs:346",
+          "src/LibTmux/Pane.Topology.cs:438"
         ],
         "scope": null
       }
@@ -445,8 +453,8 @@
       {
         "command": "respawn-pane",
         "evidence": [
-          "src/LibTmux/Pane.Topology.cs:317",
-          "src/LibTmux/Pane.Topology.cs:316",
+          "src/LibTmux/Pane.Topology.cs:329",
+          "src/LibTmux/Pane.Topology.cs:328",
           "src/LibTmux/Pane.Topology.cs:11"
         ],
         "scope": null
@@ -456,9 +464,9 @@
       {
         "command": "select-pane",
         "evidence": [
-          "src/LibTmux/Pane.Topology.cs:395",
-          "src/LibTmux/Pane.Topology.cs:392",
-          "src/LibTmux/Pane.Topology.cs:461"
+          "src/LibTmux/Pane.Topology.cs:407",
+          "src/LibTmux/Pane.Topology.cs:404",
+          "src/LibTmux/Pane.Topology.cs:473"
         ],
         "scope": null
       }
@@ -471,7 +479,7 @@
           "src/LibTmux/Pane.Input.cs:71",
           "src/LibTmux/Pane.Input.cs:94",
           "src/LibTmux/Pane.Input.cs:100",
-          "src/LibTmux/Pane.Waiting.cs:169"
+          "src/LibTmux/Pane.Waiting.cs:179"
         ],
         "forwardable": true,
         "reviewed": true,
@@ -509,8 +517,8 @@
           "src/LibTmux/Pane.Input.cs:71",
           "src/LibTmux/Pane.Input.cs:94",
           "src/LibTmux/Pane.Input.cs:100",
-          "src/LibTmux/Pane.Waiting.cs:169",
-          "src/LibTmux/Pane.Waiting.cs:103"
+          "src/LibTmux/Pane.Waiting.cs:179",
+          "src/LibTmux/Pane.Waiting.cs:113"
         ],
         "forwardable": true,
         "reviewed": true,
@@ -536,7 +544,7 @@
       {
         "command": "select-pane",
         "evidence": [
-          "src/LibTmux/Pane.Topology.cs:377"
+          "src/LibTmux/Pane.Topology.cs:389"
         ],
         "scope": null
       }
@@ -545,9 +553,9 @@
       {
         "command": "split-window",
         "evidence": [
-          "src/LibTmux/Pane.Topology.cs:576",
+          "src/LibTmux/Pane.Topology.cs:588",
           "src/LibTmux/Pane.Topology.cs:105",
-          "src/LibTmux/Pane.Topology.cs:232"
+          "src/LibTmux/Pane.Topology.cs:244"
         ],
         "forwardable": true,
         "reviewed": true,
@@ -558,9 +566,9 @@
       {
         "command": "swap-pane",
         "evidence": [
-          "src/LibTmux/Pane.Topology.cs:283",
-          "src/LibTmux/Pane.Topology.cs:282",
-          "src/LibTmux/Pane.Topology.cs:403"
+          "src/LibTmux/Pane.Topology.cs:295",
+          "src/LibTmux/Pane.Topology.cs:294",
+          "src/LibTmux/Pane.Topology.cs:415"
         ],
         "scope": null
       }
@@ -700,7 +708,7 @@
       {
         "command": "detach-client",
         "evidence": [
-          "src/LibTmux/Server.Clients.cs:190",
+          "src/LibTmux/Server.Clients.cs:192",
           "src/LibTmux/Server.Clients.cs:73"
         ],
         "scope": null
@@ -710,7 +718,7 @@
       {
         "command": "detach-client",
         "evidence": [
-          "src/LibTmux/Server.Clients.cs:190",
+          "src/LibTmux/Server.Clients.cs:192",
           "src/LibTmux/Server.Clients.cs:55"
         ],
         "scope": null
@@ -731,8 +739,8 @@
       {
         "command": "refresh-client",
         "evidence": [
-          "src/LibTmux/Server.ControlMode.cs:84",
-          "src/LibTmux/Server.ControlMode.cs:32"
+          "src/LibTmux/Server.ControlMode.cs:105",
+          "src/LibTmux/Server.ControlMode.cs:36"
         ],
         "scope": null
       }
@@ -904,9 +912,9 @@
       {
         "command": "if-shell",
         "evidence": [
-          "src/LibTmux/Server.Execution.cs:99",
-          "src/LibTmux/Server.Execution.cs:99",
-          "src/LibTmux/Server.Execution.cs:104"
+          "src/LibTmux/Server.Execution.cs:119",
+          "src/LibTmux/Server.Execution.cs:119",
+          "src/LibTmux/Server.Execution.cs:124"
         ],
         "scope": null
       }
@@ -969,7 +977,7 @@
       {
         "command": "refresh-client",
         "evidence": [
-          "src/LibTmux/Server.Clients.cs:114"
+          "src/LibTmux/Server.Clients.cs:116"
         ],
         "scope": null
       }
@@ -978,8 +986,8 @@
       {
         "command": "run-shell",
         "evidence": [
+          "src/LibTmux/Server.Execution.cs:103",
           "src/LibTmux/Server.Execution.cs:83",
-          "src/LibTmux/Server.Execution.cs:80",
           "src/LibTmux/Server.Execution.cs:17"
         ],
         "scope": null
@@ -1078,7 +1086,7 @@
       {
         "command": "switch-client",
         "evidence": [
-          "src/LibTmux/Server.Clients.cs:126"
+          "src/LibTmux/Server.Clients.cs:128"
         ],
         "scope": null
       }
@@ -1096,9 +1104,9 @@
       {
         "command": "wait-for",
         "evidence": [
-          "src/LibTmux/Server.Execution.cs:147",
-          "src/LibTmux/Server.Execution.cs:147",
-          "src/LibTmux/Server.Execution.cs:233"
+          "src/LibTmux/Server.Execution.cs:167",
+          "src/LibTmux/Server.Execution.cs:167",
+          "src/LibTmux/Server.Execution.cs:253"
         ],
         "scope": null
       }
