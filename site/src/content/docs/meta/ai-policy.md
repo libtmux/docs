@@ -13,9 +13,10 @@ Use these packages with AI tools as you like. When contributing, check what
 you submit and wait for a maintainer's invitation before preparing a pull
 request.
 
-This policy covers the libraries, ports, and documentation in the libtmux and
-tmux-python organizations, including their issues, comments, discussions,
-reviews, and pull requests.
+This policy covers the libraries, ports, and documentation in the
+[libtmux](https://github.com/libtmux) and
+[tmux-python](https://github.com/tmux-python) organizations, including their
+issues, comments, discussions, reviews, and pull requests.
 
 ## 1. For users: About these packages
 
@@ -45,9 +46,9 @@ and maintain.
 
 ### Stability
 
-Packages in the libtmux organization are experimental unless their README says
-otherwise. Names and APIs may change between releases. Pin an exact version and
-review changes before upgrading.
+Packages in the [libtmux organization](https://github.com/libtmux) are
+experimental unless their README says otherwise. Names and APIs may change
+between releases. Pin an exact version and review changes before upgrading.
 
 ## 2. For contributors: How to report issues, ideas, suggestions, and security issues
 
