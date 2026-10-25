@@ -27,6 +27,7 @@ import { readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { normalizeHeading } from './api-html.mjs'
+import { normalizeAddress } from './api-markdown-links.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
@@ -77,8 +78,8 @@ function learnLanguage(path) {
  */
 export function languageOfUrl(url) {
   let parsed
-  try { parsed = new URL(url) } catch { return undefined }
-  const { hostname } = parsed
+  try { parsed = new URL(normalizeAddress(url)) } catch { return undefined }
+  const hostname = parsed.hostname.replace(/\.$/, '')
   const path = parsed.pathname.toLowerCase()
   const byHost = {
     'docs.python.org': 'python', 'gofastmcp.com': 'python',
@@ -88,7 +89,7 @@ export function languageOfUrl(url) {
     'docs.junit.org': 'java', 'javadoc.io': 'java',
     'kotlinlang.org': 'kotlin',
     'www.scala-lang.org': 'scala', 'docs.scala-lang.org': 'scala', 'typelevel.org': 'scala',
-    'fsharp.github.io': 'fsharp', 'csharp.sdk.modelcontextprotocol.io': 'csharp',
+    'fsharp.github.io': 'fsharp', 'csharp.sdk.modelcontextprotocol.io': 'csharp', 'ts.sdk.modelcontextprotocol.io': 'typescript',
     'en.cppreference.com': 'cpp', 'eel.is': 'cpp', 'cmake.org': 'cpp',
     'developer.apple.com': 'swift', 'docs.swift.org': 'swift',
     'docs.ruby-lang.org': 'ruby', 'ruby-doc.org': 'ruby',

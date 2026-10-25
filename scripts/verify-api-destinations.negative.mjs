@@ -272,6 +272,7 @@ const pages = {
     ['Core.Array', 'Array{T,N} &lt;: AbstractArray{T,N}. N-dimensional dense array with elements of type T.', 'Type'],
     ['Base.Vector', 'Vector{T} is an alias for Array{T,1}: a one-dimensional dense Array.', 'Type'],
   ]) },
+  '/julia/en/v1/base/base/': { body: documenter('Essentials', [['import', 'import Foo makes the module available, and its names reachable by qualified name.', 'Keyword'], ['for', 'for loops repeat a block of statements.', 'Keyword'], ['Base.in', 'in(item, collection) determines whether an item is in a collection.']]) },
   '/julia/en/v1/base/strings/': { body: documenter('Strings', [['Base.strip', 'Remove leading and trailing whitespace.'], ['Base.lstrip', 'Remove leading whitespace. Compare strip.']]) },
   '/julia/en/v1/base/collections/': { body: documenter('Collections', [['Base.map', 'Transform collection by applying f to each element.'], ['Base.map!', 'Like map, but stores the result in the destination.']]) },
   '/julia/en/v1/manual/types/': { body: plain('Types · The Julia Language', 'Types', part('Composite-Types', 'Composite Types', 'Composite types are called records, structs, or objects in various languages.')) },
@@ -324,6 +325,7 @@ const ROWS = [
   ['PowerShell error action', 'https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_commonparameters#-erroraction', '-ErrorAction'],
   ['C# signatures and overloading', 'https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/basic-concepts#75-signatures-and-overloading', '7.5 Signatures and overloading'],
   ['.NET tool install', 'https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-tool-install', 'dotnet tool install'],
+  ['crate API', 'https://docs.rs/tmux-mcp', 'tmux-mcp'],
 ]
 const TABLE = table(...ROWS)
 const at = (url, port, name, source = 'builtin', extra = {}) => ({ url, host: new URL(url).hostname, uses: [{ port, name, source, ...extra }] })
@@ -331,6 +333,8 @@ const authored = (url, label, from) => ({ url, host: new URL(url).hostname, uses
 /** One pair written by the pages of several ports: the uses merge into one expectation, and each port's language is held to the address. */
 const written = (url, label, ...froms) => ({ url, host: new URL(url).hostname, uses: froms.map((from, index) => ({ port: '', name: `site/src/content/docs/ports/${from}/page-${index}.md`, source: 'authored', label, from })) })
 const STRUCTS = 'https://doc.rust-lang.org/reference/items/structs.html'
+/** A pair at a libtmux package page, which the header verifier owns: the verifier holds the port that writes it and the package it names. */
+const packaged = (url, label, from, identity, ports) => ({ url, host: new URL(url).hostname, uses: [{ port: '', name: 'site/src/content/docs/ports/x/page.md', source: 'authored', label, from, package: { identity, ports } }] })
 const COMMON = 'https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_commonparameters'
 
 const cases = [
@@ -374,6 +378,9 @@ const cases = [
   // Documenter-shaped: a docstring per binding, and a docstring that names the type it aliases.
   { name: 'Documenter control: Array at #Core.Array', destination: at(`${JULIA}/arrays/#Core.Array`, 'julia', 'Array'), ok: true },
   { name: 'Documenter: Array at the docstring for Vector, which names Array', destination: at(`${JULIA}/arrays/#Base.Vector`, 'julia', 'Array'), failure: 'symbol' },
+  { name: 'Documenter keyword control: import at the keyword the manual lists with the language', destination: at(`${JULIA}/base/#import`, 'julia', 'import', 'doc'), ok: true },
+  { name: 'Documenter keyword: import at the keyword for', destination: at(`${JULIA}/base/#for`, 'julia', 'import', 'doc'), failure: 'symbol' },
+  { name: 'Documenter keyword: a name that is no keyword, written bare, at the keyword page', destination: at(`${JULIA}/base/#for`, 'julia', 'forall', 'doc'), failure: 'symbol' },
   { name: 'Documenter control: map at Base.map', destination: at(`${JULIA}/collections/#Base.map`, 'julia', 'map'), ok: true },
   { name: 'Documenter: map at Base.map!, a different function', destination: at(`${JULIA}/collections/#Base.map%21`, 'julia', 'map'), failure: 'symbol' },
 
@@ -549,6 +556,13 @@ const cases = [
   { name: 'fragment: a row that records the page-level name, not the heading the fragment opens', destination: authored(`${COMMON}#-erroraction`, 'PowerShell error action', 'powershell'), links: table(['PowerShell error action', `${COMMON}#-erroraction`, 'microsoft.powershell.core.CommonParameters']), failure: 'drift' },
   { name: 'fragment: a row that records the section the fragment opened before it moved', destination: authored(`${COMMON}#-erroraction`, 'PowerShell error action', 'powershell'), links: table(['PowerShell error action', `${COMMON}#-erroraction`, '-Verbose']), failure: 'drift' },
   { name: 'fragment: the same words at another section of the page, which no row lists', destination: authored(`${COMMON}#-verbose`, 'PowerShell error action', 'powershell'), failure: 'label' },
+  // Class: a link to the page of a libtmux package is held to the port that publishes it and the package it names.
+  { name: 'package control: the Rust page links the crate it publishes, with the reviewed words', destination: packaged('https://docs.rs/tmux-mcp', 'crate API', 'rs', 'tmux-mcp', ['rs']), ok: true },
+  { name: 'package: a Go page links the Rust crate', destination: packaged('https://docs.rs/tmux-mcp', 'crate API', 'go', 'tmux-mcp', ['rs']), failure: 'language' },
+  { name: 'package: the same pair written by a Rust page and a Go page', destination: { ...packaged('https://docs.rs/tmux-mcp', 'crate API', 'rs', 'tmux-mcp', ['rs']), uses: [packaged('https://docs.rs/tmux-mcp', 'crate API', 'rs', 'tmux-mcp', ['rs']).uses[0], { ...packaged('https://docs.rs/tmux-mcp', 'crate API', 'go', 'tmux-mcp', ['rs']).uses[0], name: 'site/src/content/docs/ports/go/page.md' }] }, failure: 'language' },
+  { name: 'package: words no row lists, on a link to the crate', destination: packaged('https://docs.rs/tmux-mcp', 'the workspace crate', 'rs', 'tmux-mcp', ['rs']), failure: 'unlisted' },
+  { name: 'package: a reviewed row for another package than the page is', destination: packaged('https://docs.rs/tmux-mcp', 'crate API', 'rs', 'libtmux', ['rs']), failure: 'drift' },
+  { name: 'package: the address written outside a link', destination: { url: 'https://docs.rs/tmux-mcp', host: 'docs.rs', uses: [{ port: '', name: 'site/src/content/docs/ports/rs/page.md', source: 'authored', unmatched: true, from: 'rs', package: { identity: 'tmux-mcp', ports: ['rs'] } }] }, failure: 'unlisted' },
 
   // Class: an exception that names a word, not an address. Each is pinned to the one address it was reviewed for.
   { name: 'cppreference control: std::chrono::seconds at the duration page that lists it', destination: at(`${CPPREF}/chrono/duration`, 'cxx', 'std::chrono::seconds'), ok: true },
@@ -607,6 +621,12 @@ const formsOf = [
   ['a link in a list item', (label) => `- [${label}](${STRUCTS})`],
   ['a link in a table cell', (label) => `| a | b |\n| - | - |\n| [${label}](${STRUCTS}) | x |`],
 ]
+const spellings = [
+  ['a protocol-relative address', (label) => `See [${label}](//doc.rust-lang.org/reference/items/structs.html) here.`],
+  ['an address in capitals', (label) => `See [${label}](HTTPS://DOC.RUST-LANG.ORG/reference/items/structs.html) here.`],
+  ['a host with a dot after it', (label) => `See [${label}](https://doc.rust-lang.org./reference/items/structs.html) here.`],
+  ['a raw anchor to a protocol-relative address', (label) => `See <a href="//doc.rust-lang.org/reference/items/structs.html">${label}</a> here.`],
+]
 const looseForms = [
   ['an address in a sentence', `See ${STRUCTS} here.`],
   ['an address in a code span', `Run \`curl ${STRUCTS}\` here.`],
@@ -615,6 +635,17 @@ const looseForms = [
   ['a definition nothing uses', `See nothing here.\n\n[o]: ${STRUCTS}`],
   ['an address written as a link and again in a sentence', `See [${LISTED}](${STRUCTS}) and also ${STRUCTS} for more.`],
   ['an address in front matter', `FRONT:source: ${STRUCTS}\nSee nothing here.`],
+  ['a raw anchor with an unquoted address, which a Markdown parser reads as text', `See <a href=https://doc.rust-lang.org/reference/items/structs.html>${LISTED}</a> here.`],
+  ['a protocol-relative address in a sentence', 'See //doc.rust-lang.org/reference/items/structs.html here.'],
+  ['an address in capitals in a sentence', 'See HTTPS://DOC.RUST-LANG.ORG/reference/items/structs.html here.'],
+  ['a host with a dot after it in a sentence', 'See https://doc.rust-lang.org./reference/items/structs.html here.'],
+]
+// Addresses the check cannot fetch from the stand-in server are held at the collector: they are found, and found loose.
+const looseCollected = [
+  ['an http address in a sentence', 'See http://doc.rust-lang.org/reference/items/structs.html here.', 'http://doc.rust-lang.org/reference/items/structs.html'],
+  ['a bare www address in a sentence', 'See www.lua.org/manual/5.4/manual.html here.', 'http://www.lua.org/manual/5.4/manual.html'],
+  ['an http address as a link destination', `See [${LISTED}](http://doc.rust-lang.org/reference/items/structs.html) here.`, 'http://doc.rust-lang.org/reference/items/structs.html'],
+  ['an http address in a raw anchor with an unquoted address', `See <a href=http://doc.rust-lang.org/reference/items/structs.html>${LISTED}</a> here.`, 'http://doc.rust-lang.org/reference/items/structs.html'],
 ]
 const plants = []
 const plant = (name, body, expectation) => {
@@ -628,14 +659,26 @@ for (const [name, write] of formsOf) {
   plant(`${name}, its words listed`, write(LISTED), { ok: true })
   plant(`${name}, its words not listed`, write(UNLISTED), { failure: 'unlisted', mentions: JSON.stringify(UNLISTED) })
 }
+for (const [name, write] of spellings) {
+  plant(`${name}, its words listed`, write(LISTED), { ok: true })
+  plant(`${name}, its words not listed`, write(UNLISTED), { failure: 'unlisted', mentions: JSON.stringify(UNLISTED) })
+}
 plant('an inline link whose words are code with brackets in it', `See [${CODED}](${STRUCTS}) here.`, { failure: 'unlisted', mentions: JSON.stringify(CODED) })
 plant('an autolink', `See <${STRUCTS}> here.`, { failure: 'unlisted', mentions: JSON.stringify(STRUCTS) })
 for (const [name, body] of looseForms) plant(name, body, { failure: 'unlisted', mentions: 'outside a Markdown link' })
+for (const [name, body] of looseCollected) plant(name, body, { collected: true })
 const found = collectApiDestinations({ root: planted })
 for (const planting of plants) {
   const uses = [...found.values()].flatMap((destination) => [...destination.uses.values()].filter((use) => use.name === planting.where).map((use) => ({ destination, use })))
   const destination = uses[0]?.destination
   if (!destination) { fail(`markdown: ${planting.name}: the collector found no address in the page`); continue }
+  if (planting.collected) {
+    // Held at the collector: an http address is a destination of its own, and it is written outside a link or reaches the page by a redirect.
+    const url = looseCollected.find(([title]) => planting.name === title)[2]
+    if (destination.url === url && uses.some(({ use }) => use.unmatched || use.label)) console.log(`ok   markdown: ${planting.name}: found at ${url}`)
+    else fail(`markdown: ${planting.name}: expected the collector to find ${url}, found ${destination.url}`)
+    continue
+  }
   const record = await verifyApiDestination({ url: destination.url, host: destination.host, uses: uses.map(({ use }) => use) }, { get, links: TABLE })
   if (planting.ok) {
     if (!record.ok) fail(`markdown: ${planting.name}: expected a pass, got ${record.failure ?? record.unverifiable}: ${record.detail ?? ''}`)
@@ -646,7 +689,6 @@ for (const planting of plants) {
     console.log(`ok   markdown: ${planting.name}: ${record.failure}`)
   }
 }
-rmSync(planted, { recursive: true, force: true })
 server.close()
 
 // The second half drives the real command over a copy of the committed evidence.
@@ -767,6 +809,16 @@ for (const drive of recompute) {
     console.log(`ok   ${drive.name}`)
   }
 }
+
+// The pages planted above, read as the committed `--check` reads them: an address the committed evidence has no record of, or one written
+// outside a link, is a problem, so a form that cannot be fetched from the stand-in server still cannot pass.
+const plantedProblems = checkApiEvidence(found, evidence, { root: planted }).problems.join('\n')
+for (const planting of plants.filter((candidate) => candidate.collected)) {
+  const url = looseCollected.find(([title]) => planting.name === title)[2]
+  if (plantedProblems.includes(url)) console.log(`ok   --check: ${planting.name}`)
+  else fail(`--check: ${planting.name}: expected a problem naming ${url}, got ${plantedProblems.slice(0, 400) || 'none'}`)
+}
+rmSync(planted, { recursive: true, force: true })
 
 // An inventory whose entries were swapped keeps its count and loses its digest.
 const swapped = mkdtempSync(join(tmpdir(), 'api-destination-inventories-'))

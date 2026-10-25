@@ -20,12 +20,13 @@ import { globSync, readdirSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { BUILTINS } from '../../packages/api-model/src/builtins.ts'
-import { Resolver, SymbolIndex, tokenizeDoc, looksLikeApiMention, notASymbol } from '../../packages/api-model/src/index.ts'
+import { Resolver, SymbolIndex, conceptNotes, proseTexts, tokenizeDoc, looksLikeApiMention, notASymbol } from '../../packages/api-model/src/index.ts'
+import { parseApiProse } from '../../site/src/lib/api-prose.ts'
 import { KEYWORD_HELP } from '../../packages/api-model/src/link.ts'
 import { NATIVE_API_GLOSSARIES } from '../../site/src/lib/api-glossary-native.ts'
 export { TYPE_ALIASES, addressSegments, arityOf, nameSegments, terminalSymbol } from './api-sources.mjs'
 import { nameSegments } from './api-sources.mjs'
-import { dataLinks, markdownLinks, occurrencesIn } from './api-markdown-links.mjs'
+import { dataLinks, markdownLinks, normalizeAddress, occurrencesIn } from './api-markdown-links.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
@@ -51,12 +52,12 @@ export const API_HOSTS = new Set([
   'docs.oracle.com', 'docs.junit.org', 'kotlinlang.org', 'www.scala-lang.org', 'docs.scala-lang.org', 'typelevel.org', 'javadoc.io',
   'learn.microsoft.com', 'fsharp.github.io', 'en.cppreference.com', 'eel.is', 'developer.apple.com', 'docs.swift.org',
   'docs.ruby-lang.org', 'ruby-doc.org', 'www.lua.org', 'luals.github.io', 'docs.julialang.org', 'hexdocs.pm', 'www.erlang.org',
-  'gofastmcp.com', 'csharp.sdk.modelcontextprotocol.io', 'modelcontextprotocol.io', 'cmake.org',
+  'gofastmcp.com', 'csharp.sdk.modelcontextprotocol.io', 'ts.sdk.modelcontextprotocol.io', 'modelcontextprotocol.io', 'cmake.org',
 ])
 
 export const apiHostOf = (url) => {
   try {
-    const { hostname } = new URL(url)
+    const { hostname } = new URL(normalizeAddress(url))
     return API_HOSTS.has(hostname) ? hostname : hostname.endsWith('.hexdocs.pm') && API_HOSTS.has('hexdocs.pm') ? hostname : undefined
   } catch {
     return undefined
@@ -150,7 +151,8 @@ function entriesOf(inventory) {
 }
 
 /** A fragment the host did not mint is the verifier's to check; the URL is kept exactly as the site links it. */
-function note(found, url, use) {
+function note(found, written, use) {
+  const url = normalizeAddress(written)
   const host = apiHostOf(url)
   if (!host) return
   const destination = found.get(url) ?? { url, host, uses: new Map() }
@@ -165,20 +167,21 @@ function note(found, url, use) {
 }
 
 /**
- * The destinations, as `Map<url, { url, host, uses: Map }>`, where each use is
- * `{ port, name, source }` and `source` says which part of the site makes it.
+ * The runs of text `ApiDoc` receives for a prose field: the text itself, or the paragraphs and list items
+ * `ApiProse` splits it into, which leave fenced code alone.
  */
-export function collectApiDestinations({ root = ROOT } = {}) {
-  const found = new Map()
+function runsOf(text, form) {
+  const items = (list) => list.flatMap((item) => [item.text, ...items(item.children)])
+  const blocks = () => parseApiProse(text).flatMap((block) => (block.kind === 'p' ? [block.text] : block.kind === 'ul' || block.kind === 'ol' ? items(block.items) : []))
+  return form === 'inline' ? [text] : form === 'blocks' ? blocks() : [text, ...blocks()]
+}
+
+/**
+ * The extracted API models of a checkout and, for each port, the index the site links its prose with:
+ * the port's own symbols and the inventories it resolves against.
+ */
+export function apiIndexes({ root = ROOT } = {}) {
   const data = join(root, 'site', 'src', 'data')
-
-  for (const [port, names] of Object.entries(BUILTINS)) {
-    for (const [name, href] of Object.entries(names)) note(found, href, { port, name, source: 'builtin' })
-  }
-  for (const [port, words] of Object.entries(KEYWORD_HELP)) {
-    for (const [name, help] of Object.entries(words)) note(found, help.href, { port, name, source: 'keyword', label: help.title })
-  }
-
   const inventories = EXTERNAL_INVENTORIES.map((entry) => ({ ...entry, entries: entriesOf(readJson(join(data, 'inventories', `${entry.file}.entries.json`))) }))
   const dependencies = readJson(join(data, 'inventories', 'dependencies.entries.json'))
 
@@ -189,6 +192,7 @@ export function collectApiDestinations({ root = ROOT } = {}) {
     if (Array.isArray(model.symbols)) models[file.replace(/\.json$/, '')] = model
   }
 
+  const indexes = {}
   for (const [port, model] of Object.entries(models)) {
     const index = new SymbolIndex(model.symbols, (symbol) => `/${symbol.slug ?? symbol.id}/`, port)
     for (const inventory of inventories) {
@@ -197,22 +201,63 @@ export function collectApiDestinations({ root = ROOT } = {}) {
     for (const dependency of dependencies) {
       if (dependency.langs.includes(port)) index.addInventory(dependency.baseUrl, entriesOf(dependency), dependency.langs, dependency.project)
     }
+    indexes[port] = index
+  }
+  return { models, inventories, indexes }
+}
+
+/**
+ * The destinations, as `Map<url, { url, host, uses: Map }>`, where each use is
+ * `{ port, name, source }` and `source` says which part of the site makes it.
+ */
+export function collectApiDestinations({ root = ROOT } = {}) {
+  const found = new Map()
+
+  for (const [port, names] of Object.entries(BUILTINS)) {
+    for (const [name, href] of Object.entries(names)) note(found, href, { port, name, source: 'builtin' })
+  }
+  for (const [port, words] of Object.entries(KEYWORD_HELP)) {
+    for (const [name, help] of Object.entries(words)) note(found, help.href, { port, name, source: 'keyword', label: help.title })
+  }
+
+  const { models, inventories, indexes } = apiIndexes({ root })
+
+  for (const [port, model] of Object.entries(models)) {
+    const index = indexes[port]
     const byId = new Map(model.symbols.map((symbol) => [symbol.id, symbol]))
     // A member written bare in a type's docs may belong to a type it extends, or that its parent extends.
     const basesOf = (symbol) => [...new Set([symbol, byId.get(symbol.parent)].flatMap((owner) => owner?.extends ?? []).map((base) => nameSegments(base).join('.')).filter(Boolean))]
     const link = (target, text, source, symbol, role) => {
-      if (target?.external) note(found, target.href, { port, name: qualified(symbol, text), source, ...(role && role !== 'any' && { role }), ...(basesOf(symbol).length && { owners: basesOf(symbol) }), ...(symbol.namespaceImports?.length && { opens: symbol.namespaceImports }) })
+      if (target?.external) note(found, target.href, { port, name: symbol ? qualified(symbol, text) : text, source, ...(role && role !== 'any' && { role }), ...(symbol && basesOf(symbol).length && { owners: basesOf(symbol) }), ...(symbol?.namespaceImports?.length && { opens: symbol.namespaceImports }) })
     }
     const types = (symbol, signature, text) => {
       if (!text) return
       for (const span of index.linkType(text, symbol, signature)) link(span.link, span.text, 'type', symbol)
     }
-    const prose = (symbol, text) => {
-      if (!text) return
+    // What the Markdown export links: a name in a code span, a reference, a written link.
+    const exported = (symbol, text) => {
       for (const span of tokenizeDoc(text, port)) {
         if (span.kind === 'ref') link(index.resolve(span.target, span.role, symbol), span.target, 'doc', symbol, span.role)
         else if (span.kind === 'code' && looksLikeApiMention(span.text) && !notASymbol(span.text)) link(index.resolve(span.text, 'any', symbol), span.text, 'doc', symbol)
         else if (span.kind === 'link') note(found, span.href, { port, name: span.text, source: 'doc-link', label: span.text })
+      }
+    }
+    // What `ApiDoc` renders: the spans `docSpans` gives, and the linked parts of the literal of a reference that resolves nowhere.
+    // A fact the site writes from the model links the builtin it names, which is already a destination of its own; only an author's link is a pair to review.
+    const builtinHrefs = new Set(Object.values(BUILTINS[port] ?? {}))
+    const rendered = (symbol, text, derived = false) => {
+      for (const span of index.docSpans(text, symbol)) {
+        if (span.kind === 'link') {
+          if (!(derived && builtinHrefs.has(span.href))) note(found, span.href, { port, name: span.text, source: 'doc-link', label: span.text })
+        }
+        else if (span.kind === 'ref' && span.link) link(span.link, span.target, 'doc', symbol, span.role)
+        else if (span.kind === 'ref') for (const part of span.parts ?? []) link(part.link, part.text, 'doc', symbol)
+      }
+    }
+    const prose = (symbol, text, form = 'inline', derived = false) => {
+      for (const run of runsOf(text, form)) {
+        if (!derived) exported(symbol, run)
+        rendered(symbol, run, derived)
       }
     }
     for (const symbol of model.symbols) {
@@ -228,14 +273,13 @@ export function collectApiDestinations({ root = ROOT } = {}) {
           types(symbol, signature, parameter.bound)
           types(symbol, signature, parameter.default)
         }
-        for (const param of signature.params ?? []) prose(symbol, param.doc)
-        prose(symbol, signature.returnsDoc)
-        for (const raised of signature.raises ?? []) prose(symbol, raised.doc)
       }
-      prose(symbol, symbol.doc?.summary)
-      prose(symbol, symbol.doc?.body)
+      // Every string the site renders as documentation, read as the site reads it.
+      for (const { text, form, derived } of proseTexts(symbol)) prose(symbol, text, form, derived)
       for (const related of symbol.command?.relatedLinks ?? []) note(found, related.href, { port, name: related.text, source: 'doc-link', label: related.text })
     }
+    // A note on an alternative in this port is shown on the pages of the others, read in this port's index.
+    for (const { port: notePort, text } of conceptNotes()) if (notePort === port) rendered(undefined, text)
   }
 
   collectProse(found, { root, models, inventories })
@@ -297,15 +341,19 @@ function collectProse(found, { root, models, inventories }) {
 
 /** Hand-written references: Markdown links in pages, guide data and the glossary. */
 function collectAuthored(found, { root }) {
-  const skip = new Set(JSON.parse(readFileSync(join(root, 'site', 'src', 'data', 'destination-evidence.json'), 'utf8')).destinations.map((record) => record.url))
+  // The pages of the libtmux packages themselves are read by the header verifier, which records the package each is and the
+  // ports that publish it. A link to one is held here to that: the port that writes it, and the package it names.
+  const owned = new Map(JSON.parse(readFileSync(join(root, 'site', 'src', 'data', 'destination-evidence.json'), 'utf8')).destinations
+    .map((record) => [record.url, { identity: record.identity, ports: [...new Set((record.entries ?? []).map((entry) => entry.split(':')[0]))] }]))
   // `from` is the port whose page or data wrote the link, when one did: a link that port writes reaches only its own languages' documentation.
   const origin = (from) => (from ? { from } : {})
   const pair = (url, label, where, from) => {
-    if (!skip.has(url)) note(found, url, { port: '', name: where, source: 'authored', label, ...origin(from) })
+    const package_ = owned.get(normalizeAddress(url))
+    note(found, url, { port: '', name: where, source: 'authored', label, ...origin(from), ...(package_ && { package: package_ }) })
   }
   // An address written outside any link has no words to review: it is held as a use that fails until it is written as a link.
   const loose = (url, where, from) => {
-    if (!skip.has(url)) note(found, url, { port: '', name: where, source: 'authored', unmatched: true, ...origin(from) })
+    note(found, url, { port: '', name: where, source: 'authored', unmatched: true, ...origin(from) })
   }
   const read = ({ pairs, loose: stray }, where, from) => {
     for (const { label, url } of pairs) pair(url, label, where, from)
@@ -313,6 +361,8 @@ function collectAuthored(found, { root }) {
   }
   const content = join(root, 'site', 'src', 'content', 'docs')
   for (const file of globSync('**/*.{md,mdx}', { cwd: content }).sort()) {
+    // Astro does not build a file that starts with `_`. `meta/` is the site's own credits and licences: its links to a language's
+    // website are logo, trademark and licence terms (and a zip of a logo), which are not API documentation and have no symbol to name.
     if (file.startsWith('meta/') || file.startsWith('_')) continue
     const text = readFileSync(join(content, file), 'utf8')
     const front = /^---\r?\n[\s\S]*?\r?\n---\r?\n/.exec(text)?.[0] ?? ''

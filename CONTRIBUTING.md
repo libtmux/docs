@@ -336,8 +336,26 @@ ports are held for each of them, and a port the table does not know, or an addre
 cannot read, fails rather than passes unchecked. The links in a page are read by a Markdown parser
 ([`api-markdown-links.mjs`](scripts/lib/api-markdown-links.mjs)), so a link with a title, an autolink,
 a reference link, a `<url>` definition, a raw `<a>` or code with brackets in its words is a pair like
-any other, and an address on an API host that no link accounts for (in a code span, a fence, front
-matter, an image, a definition nothing uses, or a sentence) fails as a link with no words to review.
+any other. An address is read the way a browser reads it (`HTTPS://` and `http://` in any case, a
+protocol-relative `//host`, a host with a dot after it, a bare `www.` host), and an address on an API
+host that no link accounts for (in a code span, a fence, front matter, an image, a definition nothing
+uses, or a sentence) fails as a link with no words to review. The pages of the libtmux packages
+themselves belong to the header verifier, which records the package each is and the ports that publish it;
+a link to one is a pair like any other, held to the port that writes it and, by its row, to the package
+it names. `meta/` pages are the site's own credits and licences: their links to a language's website
+are logo and licence terms, not API documentation, and they are not read.
+
+Prose is read the way the page renders it. A symbol's documentation (`PROSE_FIELDS` in
+[`prose-fields.ts`](packages/api-model/src/prose-fields.ts)) is linked by `SymbolIndex.docSpans`, the
+function `ApiDoc` renders with, over the text `ApiDoc` receives: the field itself, or the paragraphs and
+list items `ApiProse` splits it into, with fenced code left alone. A link the site writes from the model
+(a command's facts, a parameter's binding) is the builtin it names. Every other string a symbol holds
+is in `STRUCTURAL_FIELDS`, and a test fails on a string in neither, and on an expression a component
+passes to `ApiDoc` or `ApiProse` that `RENDERED_TEXTS` does not list, so a field the extractor adds, or
+a field a component starts to render, is decided before it ships. A variable is the reader's own and
+links nowhere, a printed `[object Object]` is text, and a language's keywords (`for`, `import`) are
+documented at the top level (`BARE_OWNERS` in `api-sources.mjs`).
+
 A host that moves the
 page elsewhere, even by the case of a letter, fails, because a link should be
 the page's address. Request the missing ones after changing a map, an

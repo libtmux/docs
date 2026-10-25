@@ -13,10 +13,26 @@
 
 import { fromMarkdown } from 'mdast-util-from-markdown'
 
-/** The addresses a text writes, with where each starts and ends, without the punctuation of the sentence around them. */
+/**
+ * An address as the browser reads it, so that the same page is one destination however it was written: the
+ * scheme and host in lower case, a protocol-relative `//host` on https, a bare `www.` host on http, and no
+ * dot after the host. The path and fragment are kept as written.
+ */
+export function normalizeAddress(url) {
+  const bare = /^www\./i.test(url) ? `http://${url}` : url
+  const parts = /^(?:([a-z][a-z0-9+.-]*):)?\/\/([^/?#]*)(.*)$/is.exec(bare)
+  if (!parts) return url
+  return `${(parts[1] ?? 'https').toLowerCase()}://${parts[2].replace(/\.+(?=:\d+$|$)/, '').toLowerCase()}${parts[3]}`
+}
+
+/**
+ * The addresses a text writes, with where each starts and ends, without the punctuation of the sentence
+ * around them. An address is written the ways a Markdown renderer links it: `https://` or `http://` in
+ * any case, a protocol-relative `//host`, and a bare `www.` host, which GFM turns into a link.
+ */
 export function occurrencesIn(text) {
   const found = []
-  for (const match of text.matchAll(/https:\/\/[^\s'"`)<>\]\\|]+/g)) {
+  for (const match of text.matchAll(/(?:https?:\/\/|(?<![\w:/.-])\/\/(?=[a-z0-9])|(?<![\w./-])www\.(?=[a-z0-9]))[^\s'"`)<>\]\\|]+/gi)) {
     const url = match[0].replace(/[.,;:*_]+$/, '')
     if (url.includes('${')) continue
     found.push({ url, start: match.index, end: match.index + url.length })
@@ -25,6 +41,8 @@ export function occurrencesIn(text) {
 }
 
 const plain = (html) => html.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim()
+// A Markdown parser reads an anchor with a quoted address as HTML. One with an unquoted address (`<a href=https://x.org>`) it reads as text,
+// and the address in it is found loose.
 const WHOLE_ANCHOR = /<a\b[^>]*?\bhref\s*=\s*(?:"([^"]*)"|'([^']*)')[^>]*>([\s\S]*?)<\/a\s*>/gi
 const OPEN_ANCHOR = /^\s*<a\b[^>]*?\bhref\s*=\s*(?:"([^"]*)"|'([^']*)')[^>]*>\s*$/i
 const CLOSE_ANCHOR = /^\s*<\/a\s*>\s*$/i
@@ -117,7 +135,7 @@ export function markdownLinks(text, { front = 0 } = {}) {
 export function dataLinks(text) {
   const pairs = []
   const covered = []
-  for (const match of text.matchAll(/title:\s*(['"])([^'"\n]+)\1\s*,\s*url:\s*(['"])(https:\/\/[^'"\n]+)\3/g)) {
+  for (const match of text.matchAll(/title:\s*(['"])([^'"\n]+)\1\s*,\s*url:\s*(['"])((?:https?:)?\/\/[^'"\n]+)\3/gi)) {
     pairs.push({ label: match[2], url: match[4] })
     covered.push([match.index, match.index + match[0].length])
   }

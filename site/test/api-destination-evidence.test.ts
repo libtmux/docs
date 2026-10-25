@@ -6,7 +6,7 @@ import { judge, judgeLabel, pageIdentity, sourceIdentity } from '../../scripts/l
 import { PORT_LANGUAGES, languageOfUrl, languageProblem, loadReviewedLinks, doccHeading } from '../../scripts/lib/api-links.mjs'
 import { BARE_OWNERS, DEFAULT_NAMES, bareOwners, hintOwners } from '../../scripts/lib/api-sources.mjs'
 import { pageHeading } from '../../scripts/lib/api-html.mjs'
-import { dataLinks, markdownLinks } from '../../scripts/lib/api-markdown-links.mjs'
+import { dataLinks, markdownLinks, normalizeAddress, occurrencesIn } from '../../scripts/lib/api-markdown-links.mjs'
 import {
   INVENTORY_SOURCES, MAX_UNVERIFIABLE_SHARE, UNVERIFIABLE_REASONS, checkApiEvidence, expectationsOf, expectedSymbols, inventoryDigest, mentions, needsCheck, readPage, recordProblems, sameAddress, sectionAt, slugSymbol,
 } from '../../scripts/lib/api-destination-verification.mjs'
@@ -17,6 +17,21 @@ const destinations = collectApiDestinations({ root })
 const today = new Date(`${evidence.checkedAt}T12:00:00Z`)
 
 describe('API destination evidence', () => {
+  it('records the heading a link was read at, never the name of the book or site the page belongs to', () => {
+    // "Associated items - The Rust Reference" is headed "Associated items": a record that kept "The Rust Reference" could not see a page move.
+    // A name that ends the titles of three pages of one host is the host's book, not any page's.
+    const records = evidence.destinations as { url: string; host: string; title?: string; heading?: string }[]
+    const parts = (record: { title?: string }) => (record.title ?? '').split(/\s+[-|\u2013\u2014]\s+/).map((part) => part.trim().toLowerCase()).filter(Boolean)
+    const seen = new Map<string, Set<string>>()
+    for (const record of records) for (const part of new Set(parts(record))) seen.set(`${record.host}\0${part}`, new Set([...(seen.get(`${record.host}\0${part}`) ?? []), record.url.split('#')[0]]))
+    const books = new Set([...seen].filter(([, pages]) => pages.size >= 3).map(([key]) => key))
+    for (const record of records) {
+      if (record.heading === undefined) continue
+      expect(books.has(`${record.host}\0${record.heading.toLowerCase()}`), `${record.url} records ${JSON.stringify(record.heading)}`).toBe(false)
+    }
+    expect([...books].some((key) => key.endsWith('\0the rust reference'))).toBe(true)
+  })
+
   it('holds a passing record for every destination the site generates, and none for a link nothing makes', () => {
     const { problems } = checkApiEvidence(destinations, evidence, { today, root })
     expect(problems).toEqual([])
@@ -374,6 +389,26 @@ describe('what a name says it is', () => {
     expect(markdownLinks(`${front}[a](${url})`, { front: front.length }).loose).toEqual([url])
   })
 
+  it('reads an address the way a browser does, however it is written', () => {
+    expect(normalizeAddress('HTTPS://Docs.Python.org/3/library/os.html#X')).toBe('https://docs.python.org/3/library/os.html#X')
+    expect(normalizeAddress('//docs.python.org/3/library/sys.html')).toBe('https://docs.python.org/3/library/sys.html')
+    expect(normalizeAddress('https://docs.python.org./3/library/os.html')).toBe('https://docs.python.org/3/library/os.html')
+    expect(normalizeAddress('www.lua.org/manual/5.4/')).toBe('http://www.lua.org/manual/5.4/')
+    expect(normalizeAddress('http://docs.python.org/3/')).toBe('http://docs.python.org/3/')
+    expect(normalizeAddress('/en/python/latest/')).toBe('/en/python/latest/')
+    for (const written of ['HTTPS://DOCS.PYTHON.ORG/3/', '//docs.python.org/3/', 'https://docs.python.org./3/', 'http://docs.python.org/3/', 'www.lua.org/manual/']) {
+      expect(apiHostOf(written), written).toBeDefined()
+    }
+    expect(apiHostOf('//example.org/a')).toBeUndefined()
+  })
+
+  it('finds an address in every form a renderer links, and not a comment', () => {
+    const text = 'a HTTPS://X.org/a b http://y.org/b c //docs.python.org/3/sys.html d www.lua.org/manual e // a comment f https://z.org/q. g ftp://x.org/a h wwwx.org'
+    expect(occurrencesIn(text).map((found) => found.url)).toEqual(['HTTPS://X.org/a', 'http://y.org/b', '//docs.python.org/3/sys.html', 'www.lua.org/manual', 'https://z.org/q'])
+    expect(markdownLinks('See //docs.python.org/3/sys.html and www.lua.org/manual/ and HTTPS://X.org/a.').loose).toEqual(['//docs.python.org/3/sys.html', 'www.lua.org/manual/', 'HTTPS://X.org/a'])
+    expect(markdownLinks('[os.environ](//docs.python.org/3/library/sys.html)')).toEqual({ pairs: [{ label: 'os.environ', url: '//docs.python.org/3/library/sys.html' }], loose: [] })
+  })
+
   it('reads the pairs a data file writes, and the addresses it writes any other way', () => {
     const text = `{ title: 'Python classes', url: 'https://docs.python.org/3/tutorial/classes.html' }, { title: "Go types", url: "https://go.dev/ref/spec#Types" }\nconst HELP = 'https://x.org/help'`
     expect(dataLinks(text)).toEqual({
@@ -552,6 +587,13 @@ describe('the reviewed link table', () => {
     expect(keyword('nodiscard')).toMatchObject({ label: 'C++ nodiscard attribute', key: 'keyword:C++ nodiscard attribute', ports: ['cxx'] })
   })
 
+  it('keeps the package a link reaches, so the port and the words are held to it', () => {
+    const use = { port: '', name: 'a.md', source: 'authored', label: 'crate API', from: 'go', package: { identity: 'tmux-mcp', ports: ['rs'] } }
+    const [expectation] = expectationsOf({ url: 'https://docs.rs/tmux-mcp', uses: [use] })
+    expect(expectation).toMatchObject({ label: 'crate API', ports: ['go'], package: { identity: 'tmux-mcp', ports: ['rs'] } })
+    expect(Object.keys(destinations.get('https://docs.rs/tmux-mcp')?.uses.values().next().value.package ?? {})).toEqual(['identity', 'ports'])
+  })
+
   it('keeps every port that wrote the same words at the same address, so the last one cannot hide the others', () => {
     const use = (from: string, name: string) => ({ port: '', name, source: 'authored', label: 'Rust structs', from })
     const [expectation] = expectationsOf({ url: 'https://doc.rust-lang.org/reference/items/structs.html', uses: [use('rs', 'a.md'), use('py', 'b.md'), use('rs', 'c.md')] })
@@ -568,6 +610,12 @@ describe('the reviewed link table', () => {
 })
 
 describe('what a bare name means', () => {
+  it('puts Julia\'s keywords at the top level, where the manual lists them, and no function there', () => {
+    expect(bareOwners('julia', 'import')).toEqual([''])
+    expect(bareOwners('julia', 'for')).toEqual([''])
+    expect(bareOwners('julia', 'map')).toEqual(['Base', 'Core'])
+  })
+
   it('binds Scala\'s collections per name, as Predef and the package object do', () => {
     expect(bareOwners('scala', 'Map')).toEqual(['scala.collection.immutable'])
     expect(bareOwners('scala', 'Set')).toEqual(['scala.collection.immutable'])

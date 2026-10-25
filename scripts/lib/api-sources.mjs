@@ -170,6 +170,8 @@ export const BARE_OWNERS = Object.fromEntries(Object.entries({
     'rmcp.handler.server.wrapper': ['Json', 'Parameters'],
   },
   swift: { Foundation: ['Data'] },
+  // Julia's keywords are documented with the language and under no module: the manual's keyword section lists them at the top level.
+  julia: { '': ['as', 'baremodule', 'begin', 'break', 'catch', 'const', 'continue', 'do', 'else', 'elseif', 'end', 'export', 'finally', 'for', 'function', 'global', 'if', 'import', 'let', 'local', 'macro', 'module', 'quote', 'return', 'struct', 'try', 'using', 'where', 'while'] },
   // `typing` keeps only what no other module provides; the abstract bases are `collections.abc`'s, and `typing.Mapping` is a name that says so.
   py: { typing: ['Unpack', 'TypeGuard', 'TypeAlias'], 'collections.abc': ['Mapping', 'Sequence', 'Callable', 'Iterator'] },
   powershell: {

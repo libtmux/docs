@@ -168,7 +168,7 @@ export function expectationsOf(destination, { exceptions = PAGE_EXCEPTIONS, link
       const row = links.byPair.get(pairKey(label, destination.url))
       const port = use.from ?? (use.port || undefined)
       const ports = [...new Set([...(earlier?.ports ?? []), ...(port ? [port] : [])])].sort()
-      found.set(key, { key, label, symbol: label, segments: [label], where: earlier?.where ?? use.name, ...(ports.length && { ports }), ...(row && { row }) })
+      found.set(key, { key, label, symbol: label, segments: [label], where: earlier?.where ?? use.name, ...(ports.length && { ports }), ...(row && { row }), ...(use.package && { package: use.package }) })
       continue
     }
     if (CONCEPT_SOURCES.has(use.source) || use.concept) continue
@@ -281,6 +281,18 @@ export function holdIdentity(expectation, identity, context = {}) {
   return verdict
 }
 
+/**
+ * A link to the page of a libtmux package is held to the ports that publish the package: a page of another
+ * port linking it is a link to a package it does not use.
+ */
+function packageProblem(expectation, url) {
+  const owners = expectation.package?.ports ?? []
+  const stray = (expectation.ports ?? []).find((port) => !owners.includes(port))
+  return expectation.package && stray
+    ? { failure: 'language', detail: `a ${stray} link reaches the ${owners.join(' and ')} package ${expectation.package.identity} at ${url.split('#')[0]}` }
+    : undefined
+}
+
 /** An address written outside a link: nothing says what the words are for, so a person has nothing to review. */
 const unlinked = (expectation, url) => ({
   failure: 'unlisted',
@@ -299,7 +311,7 @@ const unlinked = (expectation, url) => ({
  * @returns {{ at: string } | { failure: string, detail: string }}
  */
 export function holdLink(expectation, { identity, heading, url }) {
-  const wrong = languageProblem(expectation.ports ?? expectation.port, url)
+  const wrong = languageProblem(expectation.ports ?? expectation.port, url) ?? packageProblem(expectation, url)
   if (wrong) return wrong
   const quoted = JSON.stringify(expectation.label)
   if (expectation.row) {
@@ -358,6 +370,19 @@ export async function verifyApiDestination(destination, { get, exceptions = PAGE
   const { url } = destination
   const { page: pageUrl, fragment } = splitUrl(url)
   const base = { url, host: destination.host }
+  // A page the header verifier owns is read there. What is held here is how it is linked: by which port, with which words.
+  if (destination.uses.length > 0 && destination.uses.every((use) => use.package)) {
+    const identity = destination.uses[0].package.identity
+    const terminal = []
+    let failed
+    for (const expectation of expectationsOf(destination, { exceptions, links })) {
+      const held = expectation.unmatched ? unlinked(expectation, url) : holdLink(expectation, { identity: undefined, heading: identity, url })
+      if (held.failure) failed ??= { ...held, key: expectation.key }
+      else terminal.push({ key: expectation.key, symbol: expectation.symbol, ...held })
+    }
+    const record = { ...base, status: 200, via: 'package', title: identity, heading: identity }
+    return failed ? { ...record, ok: false, failure: failed.failure, detail: failed.detail, ...(terminal.length && { terminal }) } : { ...record, ok: true, terminal }
+  }
   const source = machineSource(url)
   const answer = await get(source ?? pageUrl)
   if (answer.status === 0) return { ...base, ok: false, unverifiable: `the request failed (${answer.error ?? 'no answer'})`, status: 0 }
@@ -493,7 +518,7 @@ export function recordProblems(record) {
   if (record.ok === true) {
     if (record.status !== 200) problems.push(`${record.url} is recorded as passing with the status ${record.status}`)
     for (const field of FAILURE_FIELDS) if (record[field] !== undefined) problems.push(`${record.url} is recorded as passing yet carries ${field}: ${JSON.stringify(record[field])}`)
-    if (!['html', 'docc-json'].includes(record.via)) problems.push(`${record.url} is recorded as passing without saying how the host was read`)
+    if (!['html', 'docc-json', 'package'].includes(record.via)) problems.push(`${record.url} is recorded as passing without saying how the host was read`)
     for (const entry of record.terminal ?? []) {
       if (!FOUND_AT.has(entry.at)) problems.push(`${record.url} records ${entry.symbol} as found ${JSON.stringify(entry.at)}, which the verifier never reports`)
       if (entry.at === 'identity' && !record.identity) problems.push(`${record.url} records ${entry.symbol} as found by identity without the identity it was found in`)
@@ -524,7 +549,7 @@ export function recordProblems(record) {
 export function holdRecorded(expectation, record) {
   if (expectation.unmatched) return unlinked(expectation, record.url)
   if (expectation.label !== undefined) {
-    const wrong = languageProblem(expectation.ports ?? expectation.port, record.url)
+    const wrong = languageProblem(expectation.ports ?? expectation.port, record.url) ?? packageProblem(expectation, record.url)
     if (wrong) return wrong
     if (expectation.row) {
       if (typeof record.heading !== 'string') return { failure: 'drift', detail: 'the record keeps no heading to compare the reviewed link with' }
