@@ -18,6 +18,15 @@ export function hasScalarMembers(owner: ApiSymbol, members: ApiSymbol[]): boolea
       member.modifiers.includes('readonly') && member.value !== undefined)
 }
 
+/** Ports whose extracted fields carry a name, a type and a summary for every struct and payload variant. */
+const FIELD_TABLE_PORTS: ReadonlySet<string> = new Set(['rs'])
+
+/** Fields of a record-like type use a Name/Type/Description table; a type that also has methods keeps the member list. */
+export function hasFieldMembers(owner: ApiSymbol, members: ApiSymbol[], port?: string): boolean {
+  return FIELD_TABLE_PORTS.has(port ?? '') && (owner.kind === 'struct' || owner.variant === 'struct' || owner.variant === 'tuple') &&
+    members.length > 0 && members.every((member) => member.kind === 'attribute' && member.type !== undefined)
+}
+
 /** Match the rendered declaration in HTML and Markdown, including long lists. */
 export function signatureParameterText(param: Param, port?: string): string {
   const variadic = param.variadic === 'keyword' ? '**' : param.variadic ? (port === 'ts' ? '...' : '*') : ''

@@ -4,7 +4,7 @@ import { toMarkdown } from 'mdast-util-to-markdown'
 import { boundLabel, membersOf, memberSignals, memberTier, moduleOf, qualifiedNameOf, typeParameterList, type TypeParameter } from '@libtmux/api-model'
 import mentions from '../data/mentions.json'
 import { PORT_NAME, referenceAlternatives } from './api-models'
-import { apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, hasScalarMembers, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures } from './api-sections'
+import { apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, hasFieldMembers, hasScalarMembers, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures } from './api-sections'
 import { tmuxCommandsFor, tmuxManualUrl } from './tmux-manual-data'
 import { tmuxCommandItems, tmuxCommandRows, tmuxCommandSeparator, tmuxSymbolSends, type ResolvedUsage } from './tmux-reference'
 import { CATALOG_KINDS, tmuxCatalogKindsForSymbol, tmuxCatalogUrl } from './tmux-catalog'
@@ -336,13 +336,17 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     out.push('')
   }
   if (declared.length) {
-    out.push(symbol.variant ? '## Fields' : '## Members', '')
-    if (hasScalarMembers(symbol, declared)) {
-      out.push('| Name | Value | Description |', '| --- | --- | --- |')
+    const fieldTable = hasFieldMembers(symbol, declared, port)
+    out.push(symbol.variant || fieldTable ? '## Fields' : '## Members', '')
+    if (fieldTable || hasScalarMembers(symbol, declared)) {
+      out.push(`| Name | ${fieldTable ? 'Type' : 'Value'} | Description |`, '| --- | --- | --- |')
       const cell = (text: string) => text.replaceAll('|', '\\|').replaceAll('\n', ' ')
       for (const member of declared) {
         const name = ctx.hrefFor ? `[${inlineCode(member.name)}](${ctx.hrefFor(member)})` : inlineCode(member.name)
-        out.push(`| ${cell(name)} | ${cell(inlineCode(member.value!))} | ${cell(member.doc?.summary ?? '')} |`)
+        const value = fieldTable
+          ? (referenceMarkdown({ label: member.type!, parts: index?.linkType(member.type!, member) }) ?? inlineCode(member.type!))
+          : inlineCode(member.value!)
+        out.push(`| ${cell(name)} | ${cell(value)} | ${cell(member.doc?.summary ?? '')} |`)
       }
       out.push('')
     } else for (const group of apiMemberGroups(declared, signals)) {
