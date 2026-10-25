@@ -1,8 +1,10 @@
-import { expect, it } from 'vitest'
+import { afterEach, expect, it, vi } from 'vitest'
 import { Window } from 'happy-dom'
 import { demoConfig, demoUrl } from '../src/lib/sidebar-demo'
 import { API_MODEL_PORTS } from '../src/lib/ports'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
+
+afterEach(() => vi.unstubAllEnvs())
 
 const languages = [...API_MODEL_PORTS.map((port) => port.slug), 'tmux']
 
@@ -25,6 +27,16 @@ it('defaults invalid controls and bounds the requested sidebar width', () => {
   expect(demoConfig(new URLSearchParams('variant=unknown&language=bad&viewport=bad&theme=bad&width=9999'), languages))
     .toMatchObject({ variant: 'outline', language: 'csharp', viewport: 'desktop', theme: 'dark', width: 380 })
   expect(demoConfig(new URLSearchParams('width=nan'), languages).width).toBe(296)
+})
+
+it('emits a preview for every language at the site root and none in a port build', async () => {
+  const paths = async (port: string) => {
+    vi.stubEnv('LIBTMUX_DOCS_PORT', port)
+    vi.resetModules()
+    return (await import('../src/lib/sidebar-demo-data')).sidebarPreviewPaths().map((entry) => entry.params.port)
+  }
+  expect(await paths('')).toEqual(languages)
+  expect(await paths('py')).toEqual([])
 })
 
 async function footer(props: Record<string, unknown>) {

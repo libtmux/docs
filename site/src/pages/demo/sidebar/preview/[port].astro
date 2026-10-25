@@ -1,12 +1,12 @@
 ---
 import BaseLayout from '../../../../layouts/BaseLayout.astro'
 import ApiTree from '../../../../components/api/ApiTree.astro'
-import { DEMO_LANGUAGES, sidebarDemoData } from '../../../../lib/sidebar-demo-data'
+import { sidebarDemoData, sidebarPreviewPaths } from '../../../../lib/sidebar-demo-data'
 import { withRoot } from '../../../../lib/site-root'
 import { sidebarExamples } from '../../../../lib/sidebar-demo'
 import { CONTRIBUTE_REPO } from '../../../../i18n/contribute'
 
-export function getStaticPaths() { return DEMO_LANGUAGES.map((port) => ({ params: { port } })) }
+export function getStaticPaths() { return sidebarPreviewPaths() }
 const port = Astro.params.port!
 const { inventory, label, base, version, key } = sidebarDemoData(port)
 const selected = sidebarExamples(inventory)[0]?.id ?? ''
