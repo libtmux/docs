@@ -322,7 +322,7 @@ describe('native Sphinx declarations', () => {
   const furoTarget = readFileSync(new URL('./fixtures/native-furo-target.css', import.meta.url), 'utf8')
   const published = `${unlayer(sheet)}\n${furoTarget}\nbody { --color-highlight-on-target: ${highlight}; }`
   const shellCss = (source = readFileSync(new URL('../src/styles/native-sphinx.css', import.meta.url), 'utf8')) => source
-  const dt = (type: string, id: string, extra = '') => `<dt class="sig gp-sphinx-api-header" id="${id}"><div class="gp-sphinx-api-layout gp-sphinx-api-layout--desktop"><div class="gp-sphinx-api-layout-left"><div class="gp-sphinx-api-signature">f(\n  a,\n  b)</div><a class="headerlink gp-sphinx-api-link">&para;</a></div><div class="gp-sphinx-api-layout-right"><span class="gp-sphinx-api-badge-container"><span class="gp-sphinx-badge">${type}</span></span><span class="gp-sphinx-api-source-link"><a>[source]</a></span></div></div></dt>`
+  const dt = (type: string, id: string) => `<dt class="sig gp-sphinx-api-header" id="${id}"><div class="gp-sphinx-api-layout gp-sphinx-api-layout--desktop"><div class="gp-sphinx-api-layout-left"><div class="gp-sphinx-api-signature">f(\n  a,\n  b)</div><a class="headerlink gp-sphinx-api-link">&para;</a></div><div class="gp-sphinx-api-layout-right"><span class="gp-sphinx-api-badge-container"><span class="gp-sphinx-badge">${type}</span></span><span class="gp-sphinx-api-source-link"><a>[source]</a></span></div></div></dt>`
   const dl = (type: string, id: string, body = '') => `<dl class="py ${type} gp-sphinx-api-container">${dt(type, id)}<dd>${body}</dd></dl>`
   const page = dl('class', 'Outer', dl('method', 'Outer.run') + dl('class', 'Outer.Inner', dl('method', 'Outer.Inner.go'))) + dl('function', 'helper')
   const open = (shell: boolean, css = shellCss(), width = 1024, hash = '', marker = true) => {
@@ -354,7 +354,7 @@ describe('native Sphinx declarations', () => {
   const computed = (id: string, hash = '', css?: string, rowHeight?: string, marker = true) => {
     const { win, style } = open(true, css, 1024, hash, marker)
     try {
-      if (rowHeight) win.document.getElementById('Outer')!.closest('dl')!.style.setProperty('--native-class-row-height', rowHeight)
+      if (rowHeight) (win.document.getElementById('Outer')!.closest('dl') as unknown as HTMLElement).style.setProperty('--native-class-row-height', rowHeight)
       const { backgroundColor, zIndex, scrollMarginTop } = style(id); return { backgroundColor, zIndex, scrollMarginTop } } finally { void win.happyDOM.abort() }
   }
 
@@ -482,7 +482,7 @@ describe('native Sphinx declarations', () => {
       }
       win.document.body.innerHTML = `<article><section>${options.html ?? page}</section></article>`
       win.eval(ts.transpileModule(source.replace(/^  import .*$/gm, ''), { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText)
-      return { win, observed, height: (id: string) => win.document.getElementById(id)!.closest('dl')!.style.getPropertyValue('--native-class-row-height') }
+      return { win, observed, height: (id: string) => (win.document.getElementById(id)!.closest('dl') as unknown as HTMLElement).style.getPropertyValue('--native-class-row-height') }
     }
     const body = script.match(/<script>([\s\S]*?)<\/script>/)![1]
 
