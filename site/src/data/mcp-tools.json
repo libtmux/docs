@@ -63264,8 +63264,8 @@
           "wireName": "call_read_tools_batch",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 3
           },
@@ -64600,8 +64600,8 @@
           "wireName": "capture_pane",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 4
           },
@@ -64763,8 +64763,8 @@
           "wireName": "capture_since",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 5
           },
@@ -64948,8 +64948,8 @@
           "wireName": "clear_pane_scrollback",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 47
           },
@@ -65052,8 +65052,8 @@
           "wireName": "create_session",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 37
           },
@@ -65229,8 +65229,8 @@
           "wireName": "create_window",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 38
           },
@@ -65425,8 +65425,8 @@
           "wireName": "find_pane_by_position",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 6
           },
@@ -65681,8 +65681,8 @@
           "wireName": "get_pane_info",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 7
           },
@@ -65915,8 +65915,8 @@
           "wireName": "get_server_info",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 8
           },
@@ -66009,8 +66009,8 @@
           "wireName": "get_session_info",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 9
           },
@@ -66163,8 +66163,8 @@
           "wireName": "get_tmux_variables",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 10
           },
@@ -66292,8 +66292,8 @@
           "wireName": "get_window_info",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 11
           },
@@ -66518,8 +66518,8 @@
           "wireName": "kill_pane",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 48
           },
@@ -66631,8 +66631,8 @@
           "wireName": "kill_session",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 49
           },
@@ -66744,8 +66744,8 @@
           "wireName": "kill_window",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 50
           },
@@ -66857,8 +66857,8 @@
           "wireName": "list_panes",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 12
           },
@@ -67101,8 +67101,8 @@
           "wireName": "list_sessions",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 13
           },
@@ -67247,8 +67247,8 @@
           "wireName": "list_windows",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 14
           },
@@ -67443,8 +67443,8 @@
           "wireName": "move_window",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 22
           },
@@ -67584,8 +67584,8 @@
           "wireName": "paste_text",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 39
           },
@@ -67723,8 +67723,8 @@
           "wireName": "rename_session",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 23
           },
@@ -67840,8 +67840,8 @@
           "wireName": "rename_window",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 24
           },
@@ -67957,8 +67957,8 @@
           "wireName": "resize_pane",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 25
           },
@@ -68112,8 +68112,8 @@
           "wireName": "resize_window",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 26
           },
@@ -68229,8 +68229,8 @@
           "wireName": "respawn_pane",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 40
           },
@@ -68361,8 +68361,8 @@
           "wireName": "run_shell_command",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 41
           },
@@ -68577,8 +68577,8 @@
           "wireName": "search_panes",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 15
           },
@@ -68802,8 +68802,8 @@
           "wireName": "select_layout",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 27
           },
@@ -68917,8 +68917,8 @@
           "wireName": "select_pane",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 28
           },
@@ -69014,8 +69014,8 @@
           "wireName": "select_window",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 29
           },
@@ -69137,8 +69137,8 @@
           "wireName": "send_keys",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 42
           },
@@ -69310,8 +69310,8 @@
           "wireName": "send_keys_batch",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 43
           },
@@ -69567,8 +69567,8 @@
           "wireName": "set_history_limit",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 30
           },
@@ -69667,8 +69667,8 @@
           "wireName": "set_mouse_enabled",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 31
           },
@@ -69763,8 +69763,8 @@
           "wireName": "set_pane_title",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 32
           },
@@ -69880,8 +69880,8 @@
           "wireName": "set_synchronize_panes",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 44
           },
@@ -69994,8 +69994,8 @@
           "wireName": "show_environment",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 16
           },
@@ -70098,8 +70098,8 @@
           "wireName": "show_hooks",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 17
           },
@@ -70230,8 +70230,8 @@
           "wireName": "show_option",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 18
           },
@@ -70391,8 +70391,8 @@
           "wireName": "signal_channel",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 33
           },
@@ -70495,8 +70495,8 @@
           "wireName": "snapshot_pane",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 19
           },
@@ -70790,8 +70790,8 @@
           "wireName": "split_window",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 45
           },
@@ -71037,8 +71037,8 @@
           "wireName": "swap_pane",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 34
           },
@@ -71152,8 +71152,8 @@
           "wireName": "wait_for_channel",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 35
           },
@@ -71286,8 +71286,8 @@
           "wireName": "wait_for_text",
           "source": {
             "repo": "libtmux/libtmux-swift",
-            "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+            "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 20
           },
@@ -71559,8 +71559,8 @@
       "selectable": true,
       "source": "Sources/LibTmuxMCP",
       "repo": "libtmux/libtmux-swift",
-      "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-      "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
+      "extractedRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
       "selection": {
         "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
       },
@@ -71589,7 +71589,7 @@
         "serverInfo": {
           "name": "libtmux",
           "title": "tmux",
-          "version": "0.1.0-alpha.6"
+          "version": "0.1.0-alpha.8"
         }
       }
     }
