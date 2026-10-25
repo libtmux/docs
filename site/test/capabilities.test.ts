@@ -1,5 +1,5 @@
 import { execFileSync, spawnSync } from 'node:child_process'
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { copyFileSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -113,10 +113,11 @@ describe('gen-capabilities --check', () => {
     return out
   }
 
-  function check(out: string, { manifest = fixture, tmux = tmuxSource(), port = 'py' }: { manifest?: string, tmux?: string, port?: string } = {}) {
+  function check(out: string, { manifest = fixture, tmux = tmuxSource(), port = 'py', env = {} }: { manifest?: string, tmux?: string, port?: string, env?: Record<string, string> } = {}) {
     return spawnSync('node', ['scripts/gen-capabilities.mjs', '--check', '--port', port, '--manifest', `${port}=${manifest}`, '--tmux', tmux, '--out', out], {
       cwd: root,
       encoding: 'utf8',
+      env: { ...process.env, ...env },
     })
   }
 
@@ -203,6 +204,30 @@ describe('gen-capabilities --check', () => {
     const run = check(out, options)
     expect(run.status).toBe(1)
     expect(run.stderr).toContain('powershell: committed capability control-mode error names "LibTmux.NoSuchException", which is not in the API model')
+  })
+
+  it('reads a port\'s manifest from LIBTMUX_DOCS_CHECKOUT_<PORT>', () => {
+    const checkout = mkdtempSync(join(tmpdir(), 'port-checkout-'))
+    copyFileSync(fixture, join(checkout, 'capabilities.json'))
+    const out = join(mkdtempSync(join(tmpdir(), 'capabilities-')), 'capabilities.json')
+    // No --manifest: the override alone says where the manifest is.
+    const run = (flags: string[], checkoutEnv: string) => spawnSync('node', ['scripts/gen-capabilities.mjs', '--port', 'py', '--tmux', tmuxSource(), '--out', out, ...flags], {
+      cwd: root, encoding: 'utf8', env: { ...process.env, LIBTMUX_DOCS_CHECKOUT_PY: checkoutEnv },
+    })
+    const written = run([], checkout)
+    expect(written.status, written.stderr).toBe(0)
+    expect(JSON.parse(readFileSync(out, 'utf8')).ports.py.capabilities[0].id).toBe('buffer-delete-named')
+    const read = run(['--check'], checkout)
+    expect(read.status, read.stderr).toBe(0)
+    expect(read.stdout).toContain('is current for 1 of 1 ports')
+    // An override with no manifest is named, not replaced by the default checkout.
+    const absent = run(['--check'], join(checkout, 'nowhere'))
+    expect(absent.status, absent.stderr).toBe(0)
+    expect(absent.stdout).toContain('manifest not compared: py')
+    // --manifest still wins over the environment.
+    const named = check(committed(), { env: { LIBTMUX_DOCS_CHECKOUT_PY: join(checkout, 'nowhere') } })
+    expect(named.status, named.stderr).toBe(0)
+    expect(named.stdout).toContain('is current for 1 of 1 ports')
   })
 
   it('refuses to write a file that would drop a port it cannot read', () => {

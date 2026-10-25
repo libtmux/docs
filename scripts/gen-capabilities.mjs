@@ -27,6 +27,10 @@
  * is present, and checked by form and order when it is not. Writing refuses
  * to drop a committed port it cannot read.
  *
+ * A port's manifest is read from `capabilities.json` at the root of its
+ * checkout. `LIBTMUX_DOCS_CHECKOUT_<PORT>` selects another checkout, and
+ * `--manifest <slug>=<path>` selects the file itself.
+ *
  * Usage: node scripts/gen-capabilities.mjs [--port <slug>] [--manifest <slug>=<path>]
  *        [--tmux <checkout>] [--out <path>] [--check]
  */
@@ -56,7 +60,8 @@ const overrides = Object.fromEntries(values('--manifest').map((pair) => pair.spl
 
 /** The manifest sits at the root of the port's checkout, emitted and drift-checked there. */
 function manifestPath(port) {
-  return overrides[port.slug] ?? join(expand(port.checkout), 'capabilities.json')
+  const checkout = process.env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`] || port.checkout
+  return overrides[port.slug] ?? join(expand(checkout), 'capabilities.json')
 }
 
 function git(...a) {
