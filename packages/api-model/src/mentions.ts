@@ -1,5 +1,7 @@
 import { fromMarkdown } from 'mdast-util-from-markdown'
-import { looksLikeApiMention } from './prose.ts'
+import type { ApiModel, ApiProduct } from './model.ts'
+import { decideMention, isLikelyReference, looksLikeApiMention, notApiReason } from './prose.ts'
+import { notASymbol, type Resolver } from './resolver.ts'
 export { looksLikeApiMention } from './prose.ts'
 
 /** One code span found in a port-labelled table row. */
@@ -129,6 +131,75 @@ export class LinkedOwners {
     const owners = this.owners.get(LinkedOwners.key(port, text))
     return owners?.size === 1 ? [...owners.values()][0] : undefined
   }
+}
+
+/** A code span that looks like API and names nothing the page's port defines. */
+export interface DanglingMention {
+  port: string
+  text: string
+  page: string
+  line: number
+  why: string
+}
+
+export interface PageMentionsInput {
+  /** The page's Markdown after its port regions are selected. */
+  body: string
+  portAt?: (offset: number) => string | undefined
+  portByLabel: Record<string, string>
+  /** The page's route, carried into each unresolved row. */
+  page: string
+  /** The port a page under `ports/<slug>/` belongs to; a shared page has none. */
+  authoredPort?: string
+  /** Prose about tmux itself, where only an authored link is a mention. */
+  nativeTmux: boolean
+  product?: ApiProduct
+  resolver: Resolver
+  models: Record<string, ApiModel>
+  /** The symbol an authored destination names, if it names one. */
+  authoredTarget: (href: string | undefined) => LinkedOwner | undefined
+}
+
+/**
+ * The symbols one page mentions, and the spans in it that look like API but resolve to nothing.
+ *
+ * A link names its own symbol. A bare span is resolved by `decideMention`, and when that leaves it
+ * unresolved it takes the owner an earlier link in the same port section of the page gave the same
+ * text. `targets` repeats a symbol once for each mention; counting a symbol once per page is the
+ * caller's.
+ */
+export function pageMentions(input: PageMentionsInput): { targets: LinkedOwner[]; dangling: DanglingMention[] } {
+  const { page, authoredPort, nativeTmux, product, resolver, models } = input
+  const targets: LinkedOwner[] = []
+  const dangling: DanglingMention[] = []
+  const linkedHere = new LinkedOwners()
+  for (const { port: contextPort, text, line, before, linked, href } of proseMentions(input.body, input.portByLabel, input.portAt)) {
+    const pagePort = authoredPort ?? contextPort
+    if (!linked && nativeTmux) continue
+    if (notASymbol(text)) continue
+    let target: LinkedOwner | undefined
+    if (linked) {
+      target = input.authoredTarget(href)
+      if (target) linkedHere.link(contextPort, text, target)
+    } else {
+      const decision = decideMention(text, { pagePort, product, before }, resolver, models)
+      if (decision.kind !== 'link') {
+        const authored = decision.kind === 'unresolved' ? linkedHere.recur(contextPort, text) : undefined
+        if (!authored) {
+          if (decision.kind === 'unresolved' && pagePort && isLikelyReference(text) && !notApiReason(text)) {
+            dangling.push({ port: pagePort, text, page, line, why: decision.why })
+          }
+          continue
+        }
+        target = authored
+      } else {
+        const res = resolver.resolve(decision.port, text, product)
+        if ('symbol' in res) target = { port: decision.port, symbol: res.symbol.id }
+      }
+    }
+    if (target) targets.push(target)
+  }
+  return { targets, dangling }
 }
 
 /** Inline references in prose, including port sections, tables, and existing links. */
