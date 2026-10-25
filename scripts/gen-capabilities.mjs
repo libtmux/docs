@@ -209,6 +209,7 @@ if (existsSync(out)) {
 }
 /** Ports that read a manifest of their own; a wrapper library takes its parent's. */
 const owners = PORTS.filter((p) => !p.parentLibrary).map((p) => p.slug)
+const parentOf = new Map(PORTS.filter((p) => p.parentLibrary).map((p) => [p.slug, p.parentLibrary.slug]))
 /** Unread ports the committed file holds an entry for. */
 const kept = unread.filter((slug) => committed?.ports?.[slug])
 /** What the file holds for a port once this run is done: what the run read, else the entry it already has. */
@@ -229,7 +230,10 @@ if (checking) {
   if (!committed) problems.push(`${out} does not exist; run node scripts/gen-capabilities.mjs`)
   else {
     const registered = new Set(PORTS.map((p) => p.slug))
-    for (const slug of Object.keys(committed.ports ?? {})) if (!registered.has(slug)) problems.push(`${slug}: committed, but not a registered port`)
+    for (const slug of Object.keys(committed.ports ?? {})) {
+      if (!registered.has(slug)) problems.push(`${slug}: committed, but not a registered port`)
+      else if (parentOf.has(slug)) problems.push(`${slug}: committed, but ${slug} is a wrapper library; its capabilities come from ${parentOf.get(slug)}'s manifest`)
+    }
     for (const slug of Object.keys(ports)) {
       if (!committed.ports?.[slug]) problems.push(`${slug}: missing from the file`)
       else if (JSON.stringify(ports[slug]) !== JSON.stringify(committed.ports[slug])) problems.push(`${slug}: differs from its manifest`)

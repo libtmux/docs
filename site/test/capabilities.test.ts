@@ -206,6 +206,18 @@ describe('gen-capabilities --check', () => {
     expect(run.stderr).toContain('powershell: committed capability control-mode error names "LibTmux.NoSuchException", which is not in the API model')
   })
 
+  // Kotlin, Scala and F# take their parent library's manifest, so the file has
+  // no entry of their own for the site to show a column from.
+  it('rejects a committed entry for a wrapper library', () => {
+    const control = check(committed(), { manifest: missing })
+    expect(control.status, control.stderr).toBe(0)
+    for (const [wrapper, parent] of [['kotlin', 'java'], ['scala', 'java'], ['fsharp', 'csharp']]) {
+      const run = check(committed((data) => { data.ports[wrapper] = data.ports.py }), { manifest: missing })
+      expect(run.status, wrapper).toBe(1)
+      expect(run.stderr).toContain(`${wrapper}: committed, but ${wrapper} is a wrapper library; its capabilities come from ${parent}'s manifest`)
+    }
+  })
+
   it('reads a port\'s manifest from LIBTMUX_DOCS_CHECKOUT_<PORT>', () => {
     const checkout = mkdtempSync(join(tmpdir(), 'port-checkout-'))
     copyFileSync(fixture, join(checkout, 'capabilities.json'))
