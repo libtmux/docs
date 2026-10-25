@@ -94,7 +94,7 @@
   ],
   "port": "swift",
   "repo": "libtmux/libtmux-swift",
-  "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+  "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
   "schemaVersion": 1,
   "symbols": {
     "ControlSession.stopWatching(_:)": [
@@ -120,7 +120,7 @@
         "command": "break-pane",
         "evidence": [
           "Sources/LibTmux/Navigation.swift:127",
-          "Sources/LibTmux/Navigation.swift:144"
+          "Sources/LibTmux/Navigation.swift:146"
         ],
         "reviewed": true,
         "scope": null
@@ -128,12 +128,20 @@
       {
         "command": "if-shell",
         "evidence": [
-          "Sources/LibTmux/Navigation.swift:136",
-          "Sources/LibTmux/Navigation.swift:144"
+          "Sources/LibTmux/Navigation.swift:138",
+          "Sources/LibTmux/Navigation.swift:146"
         ],
         "reviewed": true,
         "scope": null,
         "when": "no name is given"
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "Sources/LibTmux/Server.swift:450",
+          "Sources/LibTmux/Navigation.swift:152"
+        ],
+        "scope": "server"
       }
     ],
     "Server.buffer(named:)": [
@@ -158,7 +166,7 @@
       {
         "command": "copy-mode",
         "evidence": [
-          "Sources/LibTmux/Navigation.swift:204"
+          "Sources/LibTmux/Navigation.swift:217"
         ],
         "scope": null
       }
@@ -167,7 +175,7 @@
       {
         "command": "capture-pane",
         "evidence": [
-          "Sources/LibTmux/PaneInteraction.swift:363",
+          "Sources/LibTmux/PaneInteraction.swift:400",
           "Sources/LibTmux/PaneInteraction.swift:94"
         ],
         "scope": null
@@ -177,8 +185,8 @@
       {
         "command": "capture-pane",
         "evidence": [
-          "Sources/LibTmux/PaneInteraction.swift:295",
-          "Sources/LibTmux/PaneInteraction.swift:296",
+          "Sources/LibTmux/PaneInteraction.swift:332",
+          "Sources/LibTmux/PaneInteraction.swift:333",
           "Sources/LibTmux/PaneInteraction.swift:139",
           "Sources/LibTmux/PaneInteraction.swift:103"
         ],
@@ -191,7 +199,7 @@
           "Sources/LibTmux/Formats.swift:364",
           "Sources/LibTmux/Formats.swift:359",
           "Sources/LibTmux/Formats.swift:314",
-          "Sources/LibTmux/PaneInteraction.swift:322",
+          "Sources/LibTmux/PaneInteraction.swift:359",
           "Sources/LibTmux/PaneInteraction.swift:138",
           "Sources/LibTmux/PaneInteraction.swift:103"
         ],
@@ -204,7 +212,7 @@
       {
         "command": "capture-pane",
         "evidence": [
-          "Sources/LibTmux/PaneInteraction.swift:295",
+          "Sources/LibTmux/PaneInteraction.swift:332",
           "Sources/LibTmux/PaneInteraction.swift:120"
         ],
         "scope": null
@@ -215,7 +223,7 @@
           "Sources/LibTmux/Formats.swift:364",
           "Sources/LibTmux/Formats.swift:359",
           "Sources/LibTmux/Formats.swift:314",
-          "Sources/LibTmux/PaneInteraction.swift:322",
+          "Sources/LibTmux/PaneInteraction.swift:359",
           "Sources/LibTmux/PaneInteraction.swift:119"
         ],
         "incidental": true,
@@ -227,7 +235,7 @@
       {
         "command": "clear-history",
         "evidence": [
-          "Sources/LibTmux/Navigation.swift:212"
+          "Sources/LibTmux/Navigation.swift:225"
         ],
         "scope": null
       }
@@ -236,7 +244,7 @@
       {
         "command": "list-clients",
         "evidence": [
-          "Sources/LibTmux/Server.swift:295"
+          "Sources/LibTmux/Server.swift:472"
         ],
         "scope": null
       }
@@ -263,7 +271,7 @@
       {
         "command": "detach-client",
         "evidence": [
-          "Sources/LibTmux/Navigation.swift:266"
+          "Sources/LibTmux/Navigation.swift:279"
         ],
         "scope": null
       }
@@ -272,7 +280,7 @@
       {
         "command": "detach-client",
         "evidence": [
-          "Sources/LibTmux/Navigation.swift:278"
+          "Sources/LibTmux/Navigation.swift:291"
         ],
         "scope": null
       }
@@ -281,7 +289,7 @@
       {
         "command": "copy-mode",
         "evidence": [
-          "Sources/LibTmux/Navigation.swift:192"
+          "Sources/LibTmux/Navigation.swift:205"
         ],
         "scope": null
       }
@@ -333,9 +341,9 @@
     ],
     "Server.incarnation()": [
       {
-        "command": "display-message",
+        "command": "run-shell",
         "evidence": [
-          "Sources/LibTmux/Server.swift:348"
+          "Sources/LibTmux/Server.swift:534"
         ],
         "scope": null
       }
@@ -344,7 +352,7 @@
       {
         "command": "list-sessions",
         "evidence": [
-          "Sources/LibTmux/Server.swift:399"
+          "Sources/LibTmux/Server.swift:589"
         ],
         "scope": null
       }
@@ -353,7 +361,7 @@
       {
         "command": "join-pane",
         "evidence": [
-          "Sources/LibTmux/Navigation.swift:182"
+          "Sources/LibTmux/Navigation.swift:195"
         ],
         "scope": null
       }
@@ -385,7 +393,7 @@
       {
         "command": "kill-server",
         "evidence": [
-          "Sources/LibTmux/Navigation.swift:307"
+          "Sources/LibTmux/Navigation.swift:320"
         ],
         "scope": null
       }
@@ -405,9 +413,9 @@
       {
         "command": "list-windows",
         "evidence": [
-          "Sources/LibTmux/Server.swift:273",
-          "Sources/LibTmux/Server.swift:274",
-          "Sources/LibTmux/Server.swift:269",
+          "Sources/LibTmux/Server.swift:450",
+          "Sources/LibTmux/Server.swift:451",
+          "Sources/LibTmux/Server.swift:446",
           "Sources/LibTmux/WindowTransfers.swift:82",
           "Sources/LibTmux/WindowTransfers.swift:20"
         ],
@@ -429,9 +437,9 @@
       {
         "command": "list-windows",
         "evidence": [
-          "Sources/LibTmux/Server.swift:273",
-          "Sources/LibTmux/Server.swift:274",
-          "Sources/LibTmux/Server.swift:269",
+          "Sources/LibTmux/Server.swift:450",
+          "Sources/LibTmux/Server.swift:451",
+          "Sources/LibTmux/Server.swift:446",
           "Sources/LibTmux/WindowTransfers.swift:82",
           "Sources/LibTmux/WindowTransfers.swift:79",
           "Sources/LibTmux/WindowTransfers.swift:46",
@@ -523,7 +531,7 @@
       {
         "command": "list-panes",
         "evidence": [
-          "Sources/LibTmux/Server.swift:284"
+          "Sources/LibTmux/Server.swift:461"
         ],
         "scope": "server"
       }
@@ -550,7 +558,7 @@
       {
         "command": "pipe-pane",
         "evidence": [
-          "Sources/LibTmux/Navigation.swift:393"
+          "Sources/LibTmux/Navigation.swift:406"
         ],
         "scope": null
       }
@@ -621,7 +629,7 @@
       {
         "command": "respawn-window",
         "evidence": [
-          "Sources/LibTmux/Navigation.swift:375"
+          "Sources/LibTmux/Navigation.swift:388"
         ],
         "scope": null
       }
@@ -630,7 +638,7 @@
       {
         "command": "respawn-pane",
         "evidence": [
-          "Sources/LibTmux/Navigation.swift:362"
+          "Sources/LibTmux/Navigation.swift:375"
         ],
         "scope": null
       }
@@ -736,7 +744,7 @@
       {
         "command": "list-sessions",
         "evidence": [
-          "Sources/LibTmux/Server.swift:249"
+          "Sources/LibTmux/Server.swift:426"
         ],
         "scope": null
       }
@@ -792,7 +800,7 @@
       {
         "command": "select-pane",
         "evidence": [
-          "Sources/LibTmux/Navigation.swift:224"
+          "Sources/LibTmux/Navigation.swift:237"
         ],
         "scope": null
       }
@@ -810,8 +818,8 @@
       {
         "command": "list-windows",
         "evidence": [
-          "Sources/LibTmux/Server.swift:273",
-          "Sources/LibTmux/Server.swift:311"
+          "Sources/LibTmux/Server.swift:450",
+          "Sources/LibTmux/Server.swift:488"
         ],
         "scope": "server"
       }
@@ -820,7 +828,7 @@
       {
         "command": "source-file",
         "evidence": [
-          "Sources/LibTmux/Navigation.swift:325"
+          "Sources/LibTmux/Navigation.swift:338"
         ],
         "scope": null
       }
@@ -849,7 +857,7 @@
       {
         "command": "start-server",
         "evidence": [
-          "Sources/LibTmux/Navigation.swift:291"
+          "Sources/LibTmux/Navigation.swift:304"
         ],
         "scope": null
       }
@@ -928,8 +936,8 @@
       {
         "command": "list-windows",
         "evidence": [
-          "Sources/LibTmux/Server.swift:273",
-          "Sources/LibTmux/Server.swift:269"
+          "Sources/LibTmux/Server.swift:450",
+          "Sources/LibTmux/Server.swift:446"
         ],
         "scope": "server"
       }
@@ -938,8 +946,8 @@
       {
         "command": "list-windows",
         "evidence": [
-          "Sources/LibTmux/Server.swift:273",
-          "Sources/LibTmux/Server.swift:262"
+          "Sources/LibTmux/Server.swift:450",
+          "Sources/LibTmux/Server.swift:439"
         ],
         "scope": "server"
       }
@@ -957,7 +965,7 @@
       {
         "command": "attach-session",
         "evidence": [
-          "Sources/LibTmux/ControlMode.swift:179"
+          "Sources/LibTmux/ControlMode.swift:186"
         ],
         "scope": null
       }

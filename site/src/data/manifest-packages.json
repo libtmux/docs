@@ -675,14 +675,14 @@
     },
     "swift": {
       "repo": "libtmux/libtmux-swift",
-      "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
       "distributions": [
         {
           "name": "libtmux-swift",
-          "version": "0.1.0-alpha.6",
+          "version": "0.1.0-alpha.8",
           "manifest": "Package.swift",
           "repo": "libtmux/libtmux-swift",
-          "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898"
+          "revision": "b58e7e1414bbd3996f4f6837f863132efb2d7361"
         }
       ],
       "units": [

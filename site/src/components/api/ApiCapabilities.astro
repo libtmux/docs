@@ -1,0 +1,136 @@
+---
+/**
+ * tmux capabilities, generated from each port's own registry.
+ *
+ * In a port build: that port's capabilities against every tmux release from
+ * its floor, with the API each one gates. In the root build: one map of every
+ * capability against every port that publishes a manifest. No row or cell is
+ * written here; see site/src/lib/capabilities.ts.
+ */
+import CapabilityMatrix from '../capabilities/CapabilityMatrix.astro'
+import DocsLayout from '../../layouts/DocsLayout.astro'
+import { DEFAULT_LOCALE, localeRoot } from '../../i18n/locales'
+import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO } from '../../i18n/contribute'
+import { PORT_BY_SLUG, portPageUrl, referenceUrl } from '../../lib/ports'
+import { buildTarget } from '../../lib/versions'
+import { tmuxCommandSources } from '../../lib/tmux-reference'
+import {
+  capabilityFloor,
+  capabilityPorts,
+  capabilityRevision,
+  mapRows,
+  portColumns,
+  portRows,
+  releaseGroups,
+  type Row,
+} from '../../lib/capabilities'
+
+interface Props { port?: string; version?: string }
+const { port, version = buildTarget(process.env).version } = Astro.props as Props
+const name = port ? PORT_BY_SLUG[port].name : 'libtmux'
+const library = port ? PORT_BY_SLUG[port].projectName : 'libtmux'
+const referenceBase = port ? referenceUrl(PORT_BY_SLUG[port], version, 'core') : `${localeRoot(DEFAULT_LOCALE)}reference/`
+const pagePath = 'reference/capabilities'
+const pageUrl = `${referenceBase}capabilities/`
+const title = port ? `${library} tmux capabilities` : 'tmux capabilities'
+const description = port
+  ? `What ${library} can do on each tmux release, generated from its capability registry.`
+  : 'What each libtmux port can do on each tmux release, generated from each port\'s capability registry.'
+
+const floor = port ? capabilityFloor(port) : undefined
+const revision = port ? capabilityRevision(port) : undefined
+const { capabilities, workarounds } = port ? portRows(port) : { capabilities: mapRows(), workarounds: [] as Row[] }
+const published = capabilityPorts()
+const commandHref = (command: string) => tmuxCommandSources('latest', command)[0]?.href
+
+const sections = [...capabilities, ...workarounds]
+const headings = [
+  ...(capabilities.length ? [{ depth: 2, slug: 'capabilities', text: 'Capabilities' }] : []),
+  ...(workarounds.length ? [{ depth: 2, slug: 'workarounds', text: 'Release workarounds' }] : []),
+  ...sections.map((r) => ({ depth: 3, slug: r.id, text: r.label })),
+]
+---
+
+<DocsLayout
+  title={title}
+  description={description}
+  port={port}
+  version={version}
+  pagePath={pagePath}
+  sourcePath={pagePath}
+  locale={DEFAULT_LOCALE}
+  locales={[DEFAULT_LOCALE]}
+  searchable
+  headings={headings}
+  pageSource={{ repo: CONTRIBUTE_REPO, ref: CONTRIBUTE_BRANCH, path: 'scripts/gen-capabilities.mjs' }}
+  breadcrumbs={[
+    { name, url: port ? portPageUrl(PORT_BY_SLUG[port], version) : localeRoot(DEFAULT_LOCALE) },
+    { name: 'API reference', url: referenceBase },
+    { name: 'Capabilities', url: pageUrl },
+  ]}
+>
+  {port && floor ? (
+    <p>
+      {library} (libtmux for {name}) requires tmux {floor} or newer. Each capability below needs a newer
+      tmux release, or avoids one release. Before it sends a command, {library} checks the version of
+      the running tmux server. The tables and every link on this page are generated from the library's
+      capability registry{revision && <> at <code>{revision.slice(0, 12)}</code></>}.
+    </p>
+  ) : !port && published.length > 0 ? (
+    <p>
+      Every libtmux port supports tmux from its floor up. Each capability below needs a newer release on
+      some ports; a cell gives the release a port needs. Rows and cells are generated from each port's
+      capability registry, so a port appears here once it publishes one.
+    </p>
+  ) : null}
+
+  {published.length === 0 ? (
+    <p>No port publishes a capability registry on this build yet.</p>
+  ) : port && !floor ? (
+    <p>{library} does not publish a capability registry on this build yet.</p>
+  ) : (
+    <>
+      <h2 id="capabilities">Capabilities</h2>
+      <CapabilityMatrix
+        caption={port ? `${library} capabilities by tmux release` : 'Capabilities by port'}
+        columns={port ? releaseGroups(port) : portColumns()}
+        columnWidth="wide"
+        rows={capabilities}
+      />
+      {workarounds.length > 0 && (
+        <>
+          <h2 id="workarounds">Release workarounds</h2>
+          <p>A tmux release that gets one command wrong. {library} repairs the result, or refuses the call, on that release only.</p>
+          <CapabilityMatrix caption={`${library} workarounds by tmux release`} columns={releaseGroups(port!)} columnWidth="wide" rowHeader="Workaround" rows={workarounds} />
+        </>
+      )}
+      {sections.map((row) => (
+        <section>
+          <h3 id={row.id}>{row.label}</h3>
+          <p>{row.summary}</p>
+          <dl class="not-prose grid grid-cols-[7rem_1fr] gap-x-4 gap-y-2 text-sm">
+            <dt class="font-medium text-muted">tmux</dt>
+            <dd>{row.requirement}</dd>
+            {row.error && (<><dt class="font-medium text-muted">Refusal</dt><dd>{row.error.href ? <a class="hover:underline" href={row.error.href}><code>{row.error.label}</code></a> : <code>{row.error.label}</code>}</dd></>)}
+            {row.apis.length > 0 && (
+              <>
+                <dt class="font-medium text-muted">API</dt>
+                <dd class="flex flex-wrap gap-x-3 gap-y-1">{row.apis.map((api) => api.href ? <a class="hover:underline" href={api.href}><code>{api.label}</code></a> : <code>{api.label}</code>)}</dd>
+              </>
+            )}
+            {row.commands.length > 0 && (
+              <>
+                <dt class="font-medium text-muted">Commands</dt>
+                <dd class="flex flex-wrap gap-x-3 gap-y-1">{row.commands.map((c) => {
+                  const href = commandHref(c.command)
+                  const text = [c.command, ...(c.flags ?? [])].join(' ')
+                  return href ? <a class="hover:underline" href={href}><code>{text}</code></a> : <code>{text}</code>
+                })}</dd>
+              </>
+            )}
+          </dl>
+        </section>
+      ))}
+    </>
+  )}
+</DocsLayout>

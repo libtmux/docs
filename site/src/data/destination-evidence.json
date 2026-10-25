@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "checkedAt": "2026-10-24",
+  "checkedAt": "2026-10-25",
   "destinations": [
     {
       "url": "https://central.sonatype.com/artifact/io.github.libtmux/libtmux",
@@ -12,7 +12,7 @@
       "status": 200,
       "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux/maven-metadata.xml",
       "identity": "io.github.libtmux:libtmux",
-      "version": "0.0.1-alpha.18",
+      "version": "0.0.1-alpha.19",
       "repository": "libtmux/libtmux-java",
       "pageStatus": 200,
       "versionChecks": [
@@ -27,7 +27,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux",
         "kotlin:libtmux",
@@ -44,7 +44,7 @@
       "status": 200,
       "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-bom/maven-metadata.xml",
       "identity": "io.github.libtmux:libtmux-bom",
-      "version": "0.0.1-alpha.18",
+      "version": "0.0.1-alpha.19",
       "repository": "libtmux/libtmux-java",
       "pageStatus": 200,
       "versionChecks": [
@@ -57,7 +57,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-bom"
       ]
@@ -72,7 +72,7 @@
       "status": 200,
       "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-jackson/maven-metadata.xml",
       "identity": "io.github.libtmux:libtmux-jackson",
-      "version": "0.0.1-alpha.18",
+      "version": "0.0.1-alpha.19",
       "repository": "libtmux/libtmux-java",
       "pageStatus": 200,
       "versionChecks": [
@@ -85,7 +85,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-jackson"
       ]
@@ -100,7 +100,7 @@
       "status": 200,
       "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-junit5/maven-metadata.xml",
       "identity": "io.github.libtmux:libtmux-junit5",
-      "version": "0.0.1-alpha.18",
+      "version": "0.0.1-alpha.19",
       "repository": "libtmux/libtmux-java",
       "pageStatus": 200,
       "versionChecks": [
@@ -113,7 +113,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-junit5"
       ]
@@ -128,7 +128,7 @@
       "status": 200,
       "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-kotlin/maven-metadata.xml",
       "identity": "io.github.libtmux:libtmux-kotlin",
-      "version": "0.0.1-alpha.18",
+      "version": "0.0.1-alpha.19",
       "repository": "libtmux/libtmux-java",
       "pageStatus": 200,
       "versionChecks": [
@@ -142,7 +142,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-kotlin",
         "kotlin:libtmux-kotlin"
@@ -158,7 +158,7 @@
       "status": 200,
       "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-mcp/maven-metadata.xml",
       "identity": "io.github.libtmux:libtmux-mcp",
-      "version": "0.0.1-alpha.18",
+      "version": "0.0.1-alpha.19",
       "repository": "libtmux/libtmux-java",
       "pageStatus": 200,
       "versionChecks": [
@@ -171,7 +171,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-mcp"
       ]
@@ -186,7 +186,7 @@
       "status": 200,
       "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-scala_3/maven-metadata.xml",
       "identity": "io.github.libtmux:libtmux-scala_3",
-      "version": "0.0.1-alpha.18",
+      "version": "0.0.1-alpha.19",
       "repository": "libtmux/libtmux-java",
       "pageStatus": 200,
       "versionChecks": [
@@ -200,7 +200,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-scala",
         "scala:libtmux-scala"
@@ -216,7 +216,7 @@
       "status": 200,
       "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-scala-cats_3/maven-metadata.xml",
       "identity": "io.github.libtmux:libtmux-scala-cats_3",
-      "version": "0.0.1-alpha.18",
+      "version": "0.0.1-alpha.19",
       "repository": "libtmux/libtmux-java",
       "pageStatus": 200,
       "versionChecks": [
@@ -230,7 +230,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-scala-cats",
         "scala:libtmux-scala-cats"
@@ -246,7 +246,7 @@
       "status": 200,
       "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-scala-ox_3/maven-metadata.xml",
       "identity": "io.github.libtmux:libtmux-scala-ox_3",
-      "version": "0.0.1-alpha.18",
+      "version": "0.0.1-alpha.19",
       "repository": "libtmux/libtmux-java",
       "pageStatus": 200,
       "versionChecks": [
@@ -260,7 +260,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-scala-ox",
         "scala:libtmux-scala-ox"
@@ -276,7 +276,7 @@
       "status": 200,
       "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-workspace/maven-metadata.xml",
       "identity": "io.github.libtmux:libtmux-workspace",
-      "version": "0.0.1-alpha.18",
+      "version": "0.0.1-alpha.19",
       "repository": "libtmux/libtmux-java",
       "pageStatus": 200,
       "versionChecks": [
@@ -289,7 +289,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-workspace"
       ]
@@ -304,7 +304,7 @@
       "status": 200,
       "requested": "https://repo1.maven.org/maven2/io/github/libtmux/libtmux-workspace-cli/maven-metadata.xml",
       "identity": "io.github.libtmux:libtmux-workspace-cli",
-      "version": "0.0.1-alpha.18",
+      "version": "0.0.1-alpha.19",
       "repository": "libtmux/libtmux-java",
       "pageStatus": 200,
       "versionChecks": [
@@ -317,7 +317,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-workspace-cli"
       ]
@@ -333,7 +333,7 @@
       "detail": "https://conan.io/center/recipes/libtmux answered 404",
       "status": 404,
       "requested": "https://conan.io/center/recipes/libtmux",
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "cxx:libtmux"
       ]
@@ -348,7 +348,7 @@
       "status": 200,
       "requested": "https://crates.io/api/v1/crates/libtmux",
       "identity": "libtmux",
-      "version": "0.1.0-alpha.16",
+      "version": "0.1.0-alpha.17",
       "repository": "libtmux/libtmux-rs",
       "pageStatus": 200,
       "versionChecks": [
@@ -361,7 +361,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "rs:libtmux"
       ]
@@ -376,7 +376,7 @@
       "status": 200,
       "requested": "https://crates.io/api/v1/crates/libtmux-macros",
       "identity": "libtmux-macros",
-      "version": "0.1.0-alpha.16",
+      "version": "0.1.0-alpha.17",
       "repository": "libtmux/libtmux-rs",
       "pageStatus": 200,
       "versionChecks": [
@@ -389,7 +389,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "rs:libtmux-macros"
       ]
@@ -404,7 +404,7 @@
       "status": 200,
       "requested": "https://crates.io/api/v1/crates/tmux-mcp",
       "identity": "tmux-mcp",
-      "version": "0.1.0-alpha.17",
+      "version": "0.1.0-alpha.18",
       "repository": "libtmux/libtmux-rs",
       "pageStatus": 200,
       "versionChecks": [
@@ -417,7 +417,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "rs:tmux-mcp"
       ]
@@ -432,7 +432,7 @@
       "status": 200,
       "requested": "https://crates.io/api/v1/crates/tmux-workspace",
       "identity": "tmux-workspace",
-      "version": "0.1.0-alpha.16",
+      "version": "0.1.0-alpha.17",
       "repository": "libtmux/libtmux-rs",
       "pageStatus": 200,
       "versionChecks": [
@@ -445,7 +445,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "rs:tmux-workspace"
       ]
@@ -470,7 +470,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "rs:libtmux"
       ]
@@ -495,7 +495,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "rs:libtmux-macros"
       ]
@@ -520,7 +520,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "rs:tmux-mcp"
       ]
@@ -545,7 +545,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "rs:tmux-workspace"
       ]
@@ -566,7 +566,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "cxx:libtmux",
         "cxx:repository"
@@ -588,7 +588,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "cxx:libtmux-mcp-server"
       ]
@@ -609,7 +609,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "cxx:tmux-workspace"
       ]
@@ -630,7 +630,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "cxx:vcpkg-registry"
       ]
@@ -651,7 +651,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "cxx:libtmux-target"
       ]
@@ -672,7 +672,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "cxx:libtmux-testing"
       ]
@@ -693,7 +693,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "csharp:repository",
         "fsharp:repository"
@@ -715,7 +715,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "csharp:LibTmux",
         "fsharp:LibTmux"
@@ -737,7 +737,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "csharp:LibTmux.Extensions.DependencyInjection"
       ]
@@ -758,7 +758,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "csharp:LibTmux.FSharp",
         "fsharp:LibTmux.FSharp"
@@ -780,7 +780,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "csharp:LibTmux.Mcp"
       ]
@@ -801,7 +801,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "csharp:LibTmux.Query.Json"
       ]
@@ -822,7 +822,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "csharp:LibTmux.Testing"
       ]
@@ -843,7 +843,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "csharp:LibTmux.Workspace"
       ]
@@ -864,7 +864,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "csharp:LibTmux.Workspace.Cli"
       ]
@@ -885,7 +885,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "elixir:repository"
       ]
@@ -906,7 +906,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "elixir:libtmux"
       ]
@@ -927,7 +927,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "go:repository",
         "go:module"
@@ -949,7 +949,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "go:mcp"
       ]
@@ -970,7 +970,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "go:libtmux-mcp"
       ]
@@ -991,7 +991,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "go:tmux"
       ]
@@ -1012,7 +1012,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "go:tmuxtest"
       ]
@@ -1033,7 +1033,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "go:tmuxq"
       ]
@@ -1054,7 +1054,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "go:workspace"
       ]
@@ -1075,7 +1075,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "go:tmux-workspace"
       ]
@@ -1096,7 +1096,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:repository",
         "kotlin:repository",
@@ -1119,7 +1119,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux",
         "kotlin:libtmux",
@@ -1142,7 +1142,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-bom"
       ]
@@ -1163,7 +1163,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-jackson"
       ]
@@ -1184,7 +1184,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-junit5"
       ]
@@ -1205,7 +1205,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-kotlin",
         "kotlin:libtmux-kotlin"
@@ -1227,7 +1227,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-mcp"
       ]
@@ -1248,7 +1248,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-scala",
         "scala:libtmux-scala"
@@ -1270,7 +1270,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-scala-cats",
         "scala:libtmux-scala-cats"
@@ -1292,7 +1292,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-scala-ox",
         "scala:libtmux-scala-ox"
@@ -1314,7 +1314,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-workspace"
       ]
@@ -1335,7 +1335,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-workspace-cli"
       ]
@@ -1356,7 +1356,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "julia:repository"
       ]
@@ -1377,7 +1377,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "julia:LibTmuxJSONExt"
       ]
@@ -1398,7 +1398,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "julia:LibTmuxTablesExt"
       ]
@@ -1419,7 +1419,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "julia:LibTmux.Filters"
       ]
@@ -1440,7 +1440,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "julia:LibTmuxMCP"
       ]
@@ -1461,7 +1461,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "julia:LibTmuxWorkspace"
       ]
@@ -1482,7 +1482,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "julia:LibTmux"
       ]
@@ -1503,7 +1503,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "lua:libtmux"
       ]
@@ -1524,7 +1524,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "powershell:repository"
       ]
@@ -1545,7 +1545,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "powershell:LibTmux"
       ]
@@ -1566,7 +1566,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "powershell:LibTmux.Workspace"
       ]
@@ -1587,7 +1587,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "rs:repository"
       ]
@@ -1608,7 +1608,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "rs:libtmux"
       ]
@@ -1629,7 +1629,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "rs:libtmux-macros"
       ]
@@ -1650,7 +1650,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "rs:tmux-mcp"
       ]
@@ -1671,7 +1671,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "rs:tmux-workspace"
       ]
@@ -1692,7 +1692,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "ruby:repository"
       ]
@@ -1713,7 +1713,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "ruby:libtmux"
       ]
@@ -1734,7 +1734,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "ruby:libtmux-async"
       ]
@@ -1755,7 +1755,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "ruby:libtmux-mcp"
       ]
@@ -1776,7 +1776,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "ruby:libtmux-workspace"
       ]
@@ -1797,7 +1797,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "swift:libtmux-swift"
       ]
@@ -1818,7 +1818,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "swift:target:LibTmux",
         "swift:product:LibTmux"
@@ -1840,7 +1840,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "swift:target:libtmux-mcp",
         "swift:product:libtmux-mcp"
@@ -1862,7 +1862,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "swift:target:LibTmuxMCP",
         "swift:product:LibTmuxMCP"
@@ -1884,7 +1884,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "swift:target:TmuxWorkspace",
         "swift:product:TmuxWorkspace"
@@ -1906,7 +1906,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "swift:target:TmuxWorkspaceCLI",
         "swift:product:tmux-workspace"
@@ -1928,7 +1928,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "swift:target:TmuxFixture",
         "swift:product:TmuxFixture"
@@ -1950,7 +1950,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "ts:repository"
       ]
@@ -1971,7 +1971,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "ts:libtmux",
         "ts:libtmux-testing"
@@ -1993,7 +1993,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "ts:mcp"
       ]
@@ -2014,7 +2014,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "ts:workspace"
       ]
@@ -2035,7 +2035,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "ts:workspace-cli"
       ]
@@ -2056,7 +2056,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "py:libtmux"
       ]
@@ -2077,7 +2077,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "py:libtmux-mcp-repository"
       ]
@@ -2098,7 +2098,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "py:libtmux-mcp"
       ]
@@ -2119,7 +2119,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "py:pytest-plugin"
       ]
@@ -2140,7 +2140,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "py:test-module"
       ]
@@ -2161,7 +2161,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "py:tmuxp-repository"
       ]
@@ -2182,7 +2182,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "py:tmuxp"
       ]
@@ -2197,7 +2197,7 @@
       "status": 200,
       "requested": "https://hex.pm/packages/libtmux",
       "identity": "libtmux",
-      "version": "0.0.1-alpha.1",
+      "version": "0.0.1-alpha.3",
       "repository": "libtmux/libtmux-elixir",
       "versionChecks": [
         {
@@ -2209,7 +2209,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "elixir:libtmux"
       ]
@@ -2225,7 +2225,7 @@
       "detail": "https://hex.pm/packages/libtmux_mcp answered 404",
       "status": 404,
       "requested": "https://hex.pm/packages/libtmux_mcp",
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "elixir:libtmux_mcp"
       ]
@@ -2241,7 +2241,7 @@
       "detail": "https://hex.pm/packages/libtmux_workspace answered 404",
       "status": 404,
       "requested": "https://hex.pm/packages/libtmux_workspace",
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "elixir:libtmux_workspace"
       ]
@@ -2271,7 +2271,7 @@
         }
       ],
       "samples": 3,
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux",
         "kotlin:libtmux",
@@ -2290,7 +2290,7 @@
       "status": 200,
       "requested": "https://javadoc.io/doc/io.github.libtmux/libtmux-bom",
       "samples": 3,
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-bom"
       ]
@@ -2318,7 +2318,7 @@
         }
       ],
       "samples": 3,
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-jackson"
       ]
@@ -2346,7 +2346,7 @@
         }
       ],
       "samples": 3,
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-junit5"
       ]
@@ -2375,7 +2375,7 @@
         }
       ],
       "samples": 3,
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-kotlin",
         "kotlin:libtmux-kotlin"
@@ -2404,7 +2404,7 @@
         }
       ],
       "samples": 3,
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-mcp"
       ]
@@ -2433,7 +2433,7 @@
         }
       ],
       "samples": 3,
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-scala",
         "scala:libtmux-scala"
@@ -2463,7 +2463,7 @@
         }
       ],
       "samples": 3,
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-scala-cats",
         "scala:libtmux-scala-cats"
@@ -2493,7 +2493,7 @@
         }
       ],
       "samples": 3,
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-scala-ox",
         "scala:libtmux-scala-ox"
@@ -2522,7 +2522,7 @@
         }
       ],
       "samples": 3,
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-workspace"
       ]
@@ -2539,7 +2539,7 @@
       "status": 200,
       "requested": "https://javadoc.io/doc/io.github.libtmux/libtmux-workspace-cli",
       "samples": 3,
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "java:libtmux-workspace-cli"
       ]
@@ -2554,7 +2554,7 @@
       "status": 200,
       "requested": "https://libtmux.hexdocs.pm/",
       "identity": "libtmux",
-      "version": "0.0.1-alpha.1",
+      "version": "0.0.1-alpha.3",
       "versionChecks": [
         {
           "version": "0.0.1-alpha.1",
@@ -2565,7 +2565,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "elixir:libtmux"
       ]
@@ -2580,7 +2580,7 @@
       "status": 200,
       "requested": "https://luarocks.org/modules/tony/libtmux",
       "identity": "tony/libtmux",
-      "version": "0.1.0alpha2-1",
+      "version": "0.1.0alpha3-1",
       "repository": "libtmux/libtmux-lua",
       "versionChecks": [
         {
@@ -2592,7 +2592,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "lua:libtmux"
       ]
@@ -2608,7 +2608,7 @@
       "detail": "https://luarocks.org/modules/tony/libtmux-mcp answered 404",
       "status": 404,
       "requested": "https://luarocks.org/modules/tony/libtmux-mcp",
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "lua:libtmux-mcp"
       ]
@@ -2624,7 +2624,7 @@
       "detail": "https://luarocks.org/modules/tony/libtmux-workspace answered 404",
       "status": 404,
       "requested": "https://luarocks.org/modules/tony/libtmux-workspace",
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "lua:libtmux-workspace"
       ]
@@ -2650,7 +2650,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "go:module"
       ]
@@ -2676,7 +2676,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "go:mcp"
       ]
@@ -2702,7 +2702,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "go:libtmux-mcp"
       ]
@@ -2728,7 +2728,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "go:tmux"
       ]
@@ -2754,7 +2754,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "go:tmuxtest"
       ]
@@ -2780,7 +2780,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "go:tmuxq"
       ]
@@ -2806,7 +2806,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "go:workspace"
       ]
@@ -2832,7 +2832,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "go:tmux-workspace"
       ]
@@ -2860,7 +2860,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "py:libtmux-mcp"
       ]
@@ -2888,7 +2888,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "py:libtmux",
         "py:pytest-plugin",
@@ -2905,7 +2905,7 @@
       "status": 200,
       "requested": "https://pypi.org/pypi/tmuxp/json",
       "identity": "tmuxp",
-      "version": "1.74.0",
+      "version": "1.76.0",
       "repository": "tmux-python/tmuxp",
       "pageStatus": 200,
       "versionChecks": [
@@ -2918,7 +2918,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "py:tmuxp"
       ]
@@ -2933,7 +2933,7 @@
       "status": 200,
       "requested": "https://rubygems.org/api/v1/gems/libtmux.json",
       "identity": "libtmux",
-      "version": "0.1.0.alpha.2",
+      "version": "0.1.0.alpha.3",
       "repository": "libtmux/libtmux-ruby",
       "versionChecks": [
         {
@@ -2945,7 +2945,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "ruby:libtmux"
       ]
@@ -2960,7 +2960,7 @@
       "status": 200,
       "requested": "https://rubygems.org/api/v1/gems/libtmux-async.json",
       "identity": "libtmux-async",
-      "version": "0.1.0.alpha.2",
+      "version": "0.1.0.alpha.3",
       "repository": "libtmux/libtmux-ruby",
       "versionChecks": [
         {
@@ -2972,7 +2972,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "ruby:libtmux-async"
       ]
@@ -2987,7 +2987,7 @@
       "status": 200,
       "requested": "https://rubygems.org/api/v1/gems/libtmux-mcp.json",
       "identity": "libtmux-mcp",
-      "version": "0.1.0.alpha.2",
+      "version": "0.1.0.alpha.3",
       "repository": "libtmux/libtmux-ruby",
       "versionChecks": [
         {
@@ -2999,7 +2999,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "ruby:libtmux-mcp"
       ]
@@ -3014,7 +3014,7 @@
       "status": 200,
       "requested": "https://rubygems.org/api/v1/gems/libtmux-workspace.json",
       "identity": "libtmux-workspace",
-      "version": "0.1.0.alpha.2",
+      "version": "0.1.0.alpha.3",
       "repository": "libtmux/libtmux-ruby",
       "versionChecks": [
         {
@@ -3026,7 +3026,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "ruby:libtmux-workspace"
       ]
@@ -3044,7 +3044,7 @@
       "repository": "libtmux/libtmux-swift",
       "versionChecks": [
         {
-          "version": "0.1.0-alpha.6",
+          "version": "0.1.0-alpha.8",
           "source": "libtmux/libtmux-swift:Package.swift",
           "ports": [
             "swift"
@@ -3052,7 +3052,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "swift:libtmux-swift",
         "swift:product:LibTmux",
@@ -3077,15 +3077,15 @@
       "repository": "libtmux/libtmux-swift",
       "versionChecks": [
         {
-          "version": "0.1.0-alpha.6",
+          "version": "0.1.0-alpha.8",
           "source": "libtmux/libtmux-swift:Package.swift",
           "ports": [
             "swift"
           ],
-          "check": "confirmed"
+          "check": "absent"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "swift:target:LibTmux"
       ]
@@ -3104,15 +3104,15 @@
       "repository": "libtmux/libtmux-swift",
       "versionChecks": [
         {
-          "version": "0.1.0-alpha.6",
+          "version": "0.1.0-alpha.8",
           "source": "libtmux/libtmux-swift:Package.swift",
           "ports": [
             "swift"
           ],
-          "check": "confirmed"
+          "check": "absent"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "swift:target:LibTmuxMCP"
       ]
@@ -3131,15 +3131,15 @@
       "repository": "libtmux/libtmux-swift",
       "versionChecks": [
         {
-          "version": "0.1.0-alpha.6",
+          "version": "0.1.0-alpha.8",
           "source": "libtmux/libtmux-swift:Package.swift",
           "ports": [
             "swift"
           ],
-          "check": "confirmed"
+          "check": "absent"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "swift:target:TmuxWorkspace"
       ]
@@ -3155,7 +3155,7 @@
       "detail": "https://vcpkg.io/en/package/libtmux answered 404",
       "status": 404,
       "requested": "https://vcpkg.io/en/package/libtmux",
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "cxx:libtmux"
       ]
@@ -3170,7 +3170,7 @@
       "status": 200,
       "requested": "https://registry.npmjs.org/@libtmux%2fmcp",
       "identity": "@libtmux/mcp",
-      "version": "0.1.0-alpha.14",
+      "version": "0.1.0-alpha.15",
       "repository": "libtmux/libtmux-ts",
       "directory": "packages/mcp",
       "pageStatus": 403,
@@ -3184,7 +3184,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "ts:mcp"
       ]
@@ -3199,7 +3199,7 @@
       "status": 200,
       "requested": "https://registry.npmjs.org/@libtmux%2fworkspace",
       "identity": "@libtmux/workspace",
-      "version": "0.1.0-alpha.14",
+      "version": "0.1.0-alpha.15",
       "repository": "libtmux/libtmux-ts",
       "directory": "packages/workspace",
       "pageStatus": 403,
@@ -3213,7 +3213,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "ts:workspace"
       ]
@@ -3228,7 +3228,7 @@
       "status": 200,
       "requested": "https://registry.npmjs.org/@libtmux%2fworkspace-cli",
       "identity": "@libtmux/workspace-cli",
-      "version": "0.1.0-alpha.14",
+      "version": "0.1.0-alpha.15",
       "repository": "libtmux/libtmux-ts",
       "directory": "packages/workspace-cli",
       "pageStatus": 403,
@@ -3242,7 +3242,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "ts:workspace-cli"
       ]
@@ -3257,7 +3257,7 @@
       "status": 200,
       "requested": "https://registry.npmjs.org/libtmux",
       "identity": "libtmux",
-      "version": "0.1.0-alpha.14",
+      "version": "0.1.0-alpha.15",
       "repository": "libtmux/libtmux-ts",
       "directory": "packages/libtmux",
       "pageStatus": 403,
@@ -3271,7 +3271,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "ts:libtmux",
         "ts:libtmux-testing"
@@ -3307,7 +3307,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "csharp:LibTmux",
         "fsharp:LibTmux"
@@ -3335,7 +3335,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "csharp:LibTmux.Extensions.DependencyInjection"
       ]
@@ -3370,7 +3370,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "csharp:LibTmux.FSharp",
         "fsharp:LibTmux.FSharp"
@@ -3398,7 +3398,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "csharp:LibTmux.Mcp"
       ]
@@ -3425,7 +3425,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "csharp:LibTmux.Query.Json"
       ]
@@ -3452,7 +3452,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "csharp:LibTmux.Testing"
       ]
@@ -3479,7 +3479,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "csharp:LibTmux.Workspace"
       ]
@@ -3506,7 +3506,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "csharp:LibTmux.Workspace.Cli"
       ]
@@ -3533,7 +3533,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "powershell:LibTmux"
       ]
@@ -3560,7 +3560,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-10-24",
+      "checkedAt": "2026-10-25",
       "entries": [
         "powershell:LibTmux.Workspace"
       ]

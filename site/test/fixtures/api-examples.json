@@ -5778,7 +5778,7 @@
       "port": "swift",
       "page": "ports/swift/reference/server",
       "symbol": "Server",
-      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "sourceRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
       "files": [
         {
           "name": "Package.swift",
@@ -5796,7 +5796,7 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout b58e7e1414bbd3996f4f6837f863132efb2d7361",
         "swift run --jobs 5 ApiExample"
       ],
       "expectedOutputs": [
@@ -5805,12 +5805,12 @@
           "Sessions: bootstrap"
         ]
       ],
-      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "runtime": "Swift 6.2.4 on Linux",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, and no example server was left running.",
       "sourceFile": "Examples/Sources/ApiServer/ApiServer.swift",
       "publicId": "Server",
       "sourceRepository": "libtmux/libtmux-swift",
@@ -5823,7 +5823,7 @@
       "port": "swift",
       "page": "ports/swift/reference/server-init(socketpath-tmuxexecutable-configurationfile-)",
       "symbol": "Server.init(socketPath:tmuxExecutable:configurationFile:)",
-      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "sourceRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
       "files": [
         {
           "name": "Package.swift",
@@ -5841,7 +5841,7 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout b58e7e1414bbd3996f4f6837f863132efb2d7361",
         "swift run --jobs 5 ApiExample"
       ],
       "expectedOutputs": [
@@ -5850,12 +5850,12 @@
           "Sessions: bootstrap"
         ]
       ],
-      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "runtime": "Swift 6.2.4 on Linux",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, and no example server was left running.",
       "sourceFile": "Examples/Sources/ApiServer/ApiServer.swift",
       "publicId": "Server.init(socketPath:tmuxExecutable:configurationFile:)",
       "sourceRepository": "libtmux/libtmux-swift",
@@ -5868,7 +5868,7 @@
       "port": "swift",
       "page": "ports/swift/reference/server-sessions()",
       "symbol": "Server.sessions()",
-      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "sourceRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
       "files": [
         {
           "name": "Package.swift",
@@ -5886,7 +5886,7 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout b58e7e1414bbd3996f4f6837f863132efb2d7361",
         "swift run --jobs 5 ApiExample"
       ],
       "expectedOutputs": [
@@ -5897,12 +5897,12 @@
           "work: 1 window"
         ]
       ],
-      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "runtime": "Swift 6.2.4 on Linux",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, and no example server was left running.",
       "sourceFile": "Examples/Sources/ApiSessions/ApiSessions.swift",
       "publicId": "Server.sessions()",
       "sourceRepository": "libtmux/libtmux-swift",
@@ -5915,7 +5915,7 @@
       "port": "swift",
       "page": "ports/swift/reference/server-windows()",
       "symbol": "Server.windows()",
-      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "sourceRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
       "files": [
         {
           "name": "Package.swift",
@@ -5933,7 +5933,7 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout b58e7e1414bbd3996f4f6837f863132efb2d7361",
         "swift run --jobs 5 ApiExample"
       ],
       "expectedOutputs": [
@@ -5943,12 +5943,12 @@
           "logs: 1 pane"
         ]
       ],
-      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "runtime": "Swift 6.2.4 on Linux",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, and no example server was left running.",
       "sourceFile": "Examples/Sources/ApiWindows/ApiWindows.swift",
       "publicId": "Server.windows()",
       "sourceRepository": "libtmux/libtmux-swift",
@@ -5961,7 +5961,7 @@
       "port": "swift",
       "page": "ports/swift/reference/window",
       "symbol": "Window",
-      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "sourceRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
       "files": [
         {
           "name": "Package.swift",
@@ -5979,7 +5979,7 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout b58e7e1414bbd3996f4f6837f863132efb2d7361",
         "swift run --jobs 5 ApiExample"
       ],
       "expectedOutputs": [
@@ -5989,12 +5989,12 @@
           "logs: 1 pane"
         ]
       ],
-      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "runtime": "Swift 6.2.4 on Linux",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, and no example server was left running.",
       "sourceFile": "Examples/Sources/ApiWindows/ApiWindows.swift",
       "publicId": "Window",
       "sourceRepository": "libtmux/libtmux-swift",
@@ -6007,7 +6007,7 @@
       "port": "swift",
       "page": "ports/swift/reference/server-panes()",
       "symbol": "Server.panes()",
-      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "sourceRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
       "files": [
         {
           "name": "Package.swift",
@@ -6025,7 +6025,7 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout b58e7e1414bbd3996f4f6837f863132efb2d7361",
         "swift run --jobs 5 ApiExample"
       ],
       "expectedOutputs": [
@@ -6035,12 +6035,12 @@
           "Active: true"
         ]
       ],
-      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "runtime": "Swift 6.2.4 on Linux",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, and no example server was left running.",
       "sourceFile": "Examples/Sources/ApiPanes/ApiPanes.swift",
       "publicId": "Server.panes()",
       "sourceRepository": "libtmux/libtmux-swift",
@@ -6053,7 +6053,7 @@
       "port": "swift",
       "page": "ports/swift/reference/pane",
       "symbol": "Pane",
-      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "sourceRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
       "files": [
         {
           "name": "Package.swift",
@@ -6071,7 +6071,7 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout b58e7e1414bbd3996f4f6837f863132efb2d7361",
         "swift run --jobs 5 ApiExample"
       ],
       "expectedOutputs": [
@@ -6081,12 +6081,12 @@
           "Active: true"
         ]
       ],
-      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "runtime": "Swift 6.2.4 on Linux",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, and no example server was left running.",
       "sourceFile": "Examples/Sources/ApiPanes/ApiPanes.swift",
       "publicId": "Pane",
       "sourceRepository": "libtmux/libtmux-swift",
@@ -6099,7 +6099,7 @@
       "port": "swift",
       "page": "ports/swift/reference/server-newsession(named-startdirectory-windowname-width-height-)",
       "symbol": "Server.newSession(named:startDirectory:windowName:width:height:environment:shell:)",
-      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "sourceRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
       "files": [
         {
           "name": "Package.swift",
@@ -6117,7 +6117,7 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout b58e7e1414bbd3996f4f6837f863132efb2d7361",
         "swift run --jobs 5 ApiExample"
       ],
       "expectedOutputs": [
@@ -6128,12 +6128,12 @@
           "Current windows: 2"
         ]
       ],
-      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "runtime": "Swift 6.2.4 on Linux",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, and no example server was left running.",
       "sourceFile": "Examples/Sources/ApiNewSession/ApiNewSession.swift",
       "publicId": "Server.newSession(named:startDirectory:windowName:width:height:)",
       "sourceRepository": "libtmux/libtmux-swift",
@@ -6146,7 +6146,7 @@
       "port": "swift",
       "page": "ports/swift/reference/session",
       "symbol": "Session",
-      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "sourceRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
       "files": [
         {
           "name": "Package.swift",
@@ -6164,7 +6164,7 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout b58e7e1414bbd3996f4f6837f863132efb2d7361",
         "swift run --jobs 5 ApiExample"
       ],
       "expectedOutputs": [
@@ -6175,12 +6175,12 @@
           "Current windows: 2"
         ]
       ],
-      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "runtime": "Swift 6.2.4 on Linux",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, and no example server was left running.",
       "sourceFile": "Examples/Sources/ApiNewSession/ApiNewSession.swift",
       "publicId": "Session",
       "sourceRepository": "libtmux/libtmux-swift",
@@ -6193,7 +6193,7 @@
       "port": "swift",
       "page": "ports/swift/reference/server-session(_-)",
       "symbol": "Server.session(_:)",
-      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "sourceRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
       "files": [
         {
           "name": "Package.swift",
@@ -6211,7 +6211,7 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout b58e7e1414bbd3996f4f6837f863132efb2d7361",
         "swift run --jobs 5 ApiExample"
       ],
       "expectedOutputs": [
@@ -6222,12 +6222,12 @@
           "Current windows: 2"
         ]
       ],
-      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "runtime": "Swift 6.2.4 on Linux",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, and no example server was left running.",
       "sourceFile": "Examples/Sources/ApiNewSession/ApiNewSession.swift",
       "publicId": "Server.session(_:)",
       "sourceRepository": "libtmux/libtmux-swift",
@@ -6240,7 +6240,7 @@
       "port": "swift",
       "page": "ports/swift/reference/server-newwindow(in-named-startdirectory-)",
       "symbol": "Server.newWindow(in:named:startDirectory:at:environment:shell:)",
-      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "sourceRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
       "files": [
         {
           "name": "Package.swift",
@@ -6258,7 +6258,7 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout b58e7e1414bbd3996f4f6837f863132efb2d7361",
         "swift run --jobs 5 ApiExample"
       ],
       "expectedOutputs": [
@@ -6269,12 +6269,12 @@
           "Same session: true"
         ]
       ],
-      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "runtime": "Swift 6.2.4 on Linux",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, and no example server was left running.",
       "sourceFile": "Examples/Sources/ApiNewWindow/ApiNewWindow.swift",
       "publicId": "Server.newWindow(in:named:startDirectory:)",
       "sourceRepository": "libtmux/libtmux-swift",
@@ -6287,7 +6287,7 @@
       "port": "swift",
       "page": "ports/swift/reference/windowappearance",
       "symbol": "WindowAppearance",
-      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "sourceRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
       "files": [
         {
           "name": "Package.swift",
@@ -6305,7 +6305,7 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout b58e7e1414bbd3996f4f6837f863132efb2d7361",
         "swift run --jobs 5 ApiExample"
       ],
       "expectedOutputs": [
@@ -6316,12 +6316,12 @@
           "Same session: true"
         ]
       ],
-      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "runtime": "Swift 6.2.4 on Linux",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, and no example server was left running.",
       "sourceFile": "Examples/Sources/ApiNewWindow/ApiNewWindow.swift",
       "publicId": "WindowAppearance",
       "sourceRepository": "libtmux/libtmux-swift",
@@ -6334,7 +6334,7 @@
       "port": "swift",
       "page": "ports/swift/reference/windowlink",
       "symbol": "WindowLink",
-      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "sourceRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
       "files": [
         {
           "name": "Package.swift",
@@ -6352,7 +6352,7 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout b58e7e1414bbd3996f4f6837f863132efb2d7361",
         "swift run --jobs 5 ApiExample"
       ],
       "expectedOutputs": [
@@ -6363,12 +6363,12 @@
           "Same session: true"
         ]
       ],
-      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "runtime": "Swift 6.2.4 on Linux",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, and no example server was left running.",
       "sourceFile": "Examples/Sources/ApiNewWindow/ApiNewWindow.swift",
       "publicId": "WindowLink",
       "sourceRepository": "libtmux/libtmux-swift",
@@ -6381,7 +6381,7 @@
       "port": "swift",
       "page": "ports/swift/reference/server-split(_-direction-size-startdirectory-)",
       "symbol": "Server.split(_:direction:size:startDirectory:environment:shell:)",
-      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "sourceRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
       "files": [
         {
           "name": "Package.swift",
@@ -6399,7 +6399,7 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout b58e7e1414bbd3996f4f6837f863132efb2d7361",
         "swift run --jobs 5 ApiExample"
       ],
       "expectedOutputs": [
@@ -6409,12 +6409,12 @@
           "Same window: true"
         ]
       ],
-      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "runtime": "Swift 6.2.4 on Linux",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, and no example server was left running.",
       "sourceFile": "Examples/Sources/ApiSplitPane/ApiSplitPane.swift",
       "publicId": "Server.split(_:direction:size:startDirectory:)",
       "sourceRepository": "libtmux/libtmux-swift",
@@ -6427,7 +6427,7 @@
       "port": "swift",
       "page": "ports/swift/reference/panedirection",
       "symbol": "PaneDirection",
-      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "sourceRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
       "files": [
         {
           "name": "Package.swift",
@@ -6445,7 +6445,7 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout b58e7e1414bbd3996f4f6837f863132efb2d7361",
         "swift run --jobs 5 ApiExample"
       ],
       "expectedOutputs": [
@@ -6455,12 +6455,12 @@
           "Same window: true"
         ]
       ],
-      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "runtime": "Swift 6.2.4 on Linux",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, and no example server was left running.",
       "sourceFile": "Examples/Sources/ApiSplitPane/ApiSplitPane.swift",
       "publicId": "PaneDirection",
       "sourceRepository": "libtmux/libtmux-swift",
@@ -6473,7 +6473,7 @@
       "port": "swift",
       "page": "ports/swift/reference/panesize",
       "symbol": "PaneSize",
-      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "sourceRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
       "files": [
         {
           "name": "Package.swift",
@@ -6491,7 +6491,7 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout b58e7e1414bbd3996f4f6837f863132efb2d7361",
         "swift run --jobs 5 ApiExample"
       ],
       "expectedOutputs": [
@@ -6501,12 +6501,12 @@
           "Same window: true"
         ]
       ],
-      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "runtime": "Swift 6.2.4 on Linux",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, and no example server was left running.",
       "sourceFile": "Examples/Sources/ApiSplitPane/ApiSplitPane.swift",
       "publicId": "PaneSize",
       "sourceRepository": "libtmux/libtmux-swift",
@@ -6519,7 +6519,7 @@
       "port": "swift",
       "page": "ports/swift/reference/server-panes(where-)",
       "symbol": "Server.panes(where:)",
-      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "sourceRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
       "files": [
         {
           "name": "Package.swift",
@@ -6537,7 +6537,7 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout b58e7e1414bbd3996f4f6837f863132efb2d7361",
         "swift run --jobs 5 ApiExample"
       ],
       "expectedOutputs": [
@@ -6547,12 +6547,12 @@
           "Original stays active: true"
         ]
       ],
-      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "runtime": "Swift 6.2.4 on Linux",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, and no example server was left running.",
       "sourceFile": "Examples/Sources/ApiQueryPanes/ApiQueryPanes.swift",
       "publicId": "Server.panes(where:)",
       "sourceRepository": "libtmux/libtmux-swift",
@@ -6565,7 +6565,7 @@
       "port": "swift",
       "page": "ports/swift/reference/filterexpr",
       "symbol": "FilterExpr",
-      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "sourceRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
       "files": [
         {
           "name": "Package.swift",
@@ -6583,7 +6583,7 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout b58e7e1414bbd3996f4f6837f863132efb2d7361",
         "swift run --jobs 5 ApiExample"
       ],
       "expectedOutputs": [
@@ -6593,12 +6593,12 @@
           "Original stays active: true"
         ]
       ],
-      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "runtime": "Swift 6.2.4 on Linux",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, and no example server was left running.",
       "sourceFile": "Examples/Sources/ApiQueryPanes/ApiQueryPanes.swift",
       "publicId": "FilterExpr",
       "sourceRepository": "libtmux/libtmux-swift",
@@ -6611,7 +6611,7 @@
       "port": "swift",
       "page": "ports/swift/reference/filterexpr-where(_-_-)",
       "symbol": "FilterExpr.where(_:_:)",
-      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "sourceRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
       "files": [
         {
           "name": "Package.swift",
@@ -6629,7 +6629,7 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout b58e7e1414bbd3996f4f6837f863132efb2d7361",
         "swift run --jobs 5 ApiExample"
       ],
       "expectedOutputs": [
@@ -6639,12 +6639,12 @@
           "Original stays active: true"
         ]
       ],
-      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "runtime": "Swift 6.2.4 on Linux",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, and no example server was left running.",
       "sourceFile": "Examples/Sources/ApiQueryPanes/ApiQueryPanes.swift",
       "publicId": "FilterExpr.where(_:_:)",
       "sourceRepository": "libtmux/libtmux-swift",
@@ -6657,7 +6657,7 @@
       "port": "swift",
       "page": "ports/swift/reference/server-sendkeys(_-to-literally-)",
       "symbol": "Server.sendKeys(_:to:literally:)",
-      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "sourceRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
       "files": [
         {
           "name": "Package.swift",
@@ -6675,7 +6675,7 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout b58e7e1414bbd3996f4f6837f863132efb2d7361",
         "swift run --jobs 5 ApiExample"
       ],
       "expectedOutputs": [
@@ -6684,12 +6684,12 @@
           "libtmux-swift-api"
         ]
       ],
-      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "runtime": "Swift 6.2.4 on Linux",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, and no example server was left running.",
       "sourceFile": "Examples/Sources/ApiCapture/ApiCapture.swift",
       "publicId": "Server.sendKeys(_:to:literally:)",
       "sourceRepository": "libtmux/libtmux-swift",
@@ -6702,7 +6702,7 @@
       "port": "swift",
       "page": "ports/swift/reference/server-capture(_-includinghistory-)",
       "symbol": "Server.capture(_:includingHistory:)",
-      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "sourceRevision": "b58e7e1414bbd3996f4f6837f863132efb2d7361",
       "files": [
         {
           "name": "Package.swift",
@@ -6720,7 +6720,7 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout b58e7e1414bbd3996f4f6837f863132efb2d7361",
         "swift run --jobs 5 ApiExample"
       ],
       "expectedOutputs": [
@@ -6729,12 +6729,12 @@
           "libtmux-swift-api"
         ]
       ],
-      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "runtime": "Swift 6.2.4 on Linux",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, and no example server was left running.",
       "sourceFile": "Examples/Sources/ApiCapture/ApiCapture.swift",
       "publicId": "Server.capture(_:includingHistory:)",
       "sourceRepository": "libtmux/libtmux-swift",

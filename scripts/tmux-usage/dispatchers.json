@@ -8637,14 +8637,14 @@
               "calls": "run"
             },
             {
-              "at": "Sources/LibTmux/Server.swift:132",
+              "at": "Sources/LibTmux/Server.swift:284",
               "has": [
                 "run(rawArguments: command.argumentVector)"
               ],
               "calls": "run"
             },
             {
-              "at": "Sources/LibTmux/Server.swift:137",
+              "at": "Sources/LibTmux/Server.swift:289",
               "has": [
                 "runtime.run(rawArguments: rawArguments)"
               ],
@@ -8652,7 +8652,14 @@
               "on": "ServerRuntime"
             },
             {
-              "at": "Sources/LibTmux/Server.swift:462",
+              "at": "Sources/LibTmux/Server.swift:692",
+              "has": [
+                "send("
+              ],
+              "calls": "send"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:839",
               "has": [
                 "transport.run("
               ],
@@ -8681,14 +8688,14 @@
               "calls": "runGuarded"
             },
             {
-              "at": "Sources/LibTmux/GuardedRequest.swift:34",
+              "at": "Sources/LibTmux/GuardedRequest.swift:37",
               "has": [
                 "run(rawArguments: request.commands.argumentVector)"
               ],
               "calls": "run"
             },
             {
-              "at": "Sources/LibTmux/Server.swift:137",
+              "at": "Sources/LibTmux/Server.swift:289",
               "has": [
                 "runtime.run(rawArguments: rawArguments)"
               ],
@@ -8696,7 +8703,14 @@
               "on": "ServerRuntime"
             },
             {
-              "at": "Sources/LibTmux/Server.swift:462",
+              "at": "Sources/LibTmux/Server.swift:692",
+              "has": [
+                "send("
+              ],
+              "calls": "send"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:839",
               "has": [
                 "transport.run("
               ],
@@ -8732,7 +8746,7 @@
               "calls": "run"
             },
             {
-              "at": "Sources/LibTmux/Server.swift:137",
+              "at": "Sources/LibTmux/Server.swift:289",
               "has": [
                 "runtime.run(rawArguments: rawArguments)"
               ],
@@ -8740,7 +8754,14 @@
               "on": "ServerRuntime"
             },
             {
-              "at": "Sources/LibTmux/Server.swift:462",
+              "at": "Sources/LibTmux/Server.swift:692",
+              "has": [
+                "send("
+              ],
+              "calls": "send"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:839",
               "has": [
                 "transport.run("
               ],
@@ -8756,20 +8777,20 @@
           ]
         },
         {
-          "at": "Sources/LibTmux/Server.swift:131",
+          "at": "Sources/LibTmux/Server.swift:283",
           "has": [
             "run"
           ],
           "reaches": [
             {
-              "at": "Sources/LibTmux/Server.swift:132",
+              "at": "Sources/LibTmux/Server.swift:284",
               "has": [
                 "run(rawArguments: command.argumentVector)"
               ],
               "calls": "run"
             },
             {
-              "at": "Sources/LibTmux/Server.swift:137",
+              "at": "Sources/LibTmux/Server.swift:289",
               "has": [
                 "runtime.run(rawArguments: rawArguments)"
               ],
@@ -8777,7 +8798,14 @@
               "on": "ServerRuntime"
             },
             {
-              "at": "Sources/LibTmux/Server.swift:462",
+              "at": "Sources/LibTmux/Server.swift:692",
+              "has": [
+                "send("
+              ],
+              "calls": "send"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:839",
               "has": [
                 "transport.run("
               ],
@@ -8793,13 +8821,13 @@
           ]
         },
         {
-          "at": "Sources/LibTmux/Server.swift:135",
+          "at": "Sources/LibTmux/Server.swift:287",
           "has": [
             "run"
           ],
           "reaches": [
             {
-              "at": "Sources/LibTmux/Server.swift:137",
+              "at": "Sources/LibTmux/Server.swift:289",
               "has": [
                 "runtime.run(rawArguments: rawArguments)"
               ],
@@ -8807,7 +8835,14 @@
               "on": "ServerRuntime"
             },
             {
-              "at": "Sources/LibTmux/Server.swift:462",
+              "at": "Sources/LibTmux/Server.swift:692",
+              "has": [
+                "send("
+              ],
+              "calls": "send"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:839",
               "has": [
                 "transport.run("
               ],
@@ -8843,14 +8878,14 @@
               "calls": "run"
             },
             {
-              "at": "Sources/LibTmux/Server.swift:132",
+              "at": "Sources/LibTmux/Server.swift:284",
               "has": [
                 "run(rawArguments: command.argumentVector)"
               ],
               "calls": "run"
             },
             {
-              "at": "Sources/LibTmux/Server.swift:137",
+              "at": "Sources/LibTmux/Server.swift:289",
               "has": [
                 "runtime.run(rawArguments: rawArguments)"
               ],
@@ -8858,7 +8893,14 @@
               "on": "ServerRuntime"
             },
             {
-              "at": "Sources/LibTmux/Server.swift:462",
+              "at": "Sources/LibTmux/Server.swift:692",
+              "has": [
+                "send("
+              ],
+              "calls": "send"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:839",
               "has": [
                 "transport.run("
               ],
@@ -8881,20 +8923,20 @@
       "why": "Sends the TmuxCommand it is given to the server.",
       "evidence": [
         {
-          "at": "Sources/LibTmux/Server.swift:367",
+          "at": "Sources/LibTmux/Server.swift:557",
           "has": [
             "list"
           ],
           "reaches": [
             {
-              "at": "Sources/LibTmux/Server.swift:372",
+              "at": "Sources/LibTmux/Server.swift:562",
               "has": [
                 "run(rawArguments: command.argumentVector)"
               ],
               "calls": "run"
             },
             {
-              "at": "Sources/LibTmux/Server.swift:137",
+              "at": "Sources/LibTmux/Server.swift:289",
               "has": [
                 "runtime.run(rawArguments: rawArguments)"
               ],
@@ -8902,7 +8944,14 @@
               "on": "ServerRuntime"
             },
             {
-              "at": "Sources/LibTmux/Server.swift:462",
+              "at": "Sources/LibTmux/Server.swift:692",
+              "has": [
+                "send("
+              ],
+              "calls": "send"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:839",
               "has": [
                 "transport.run("
               ],
@@ -8925,13 +8974,13 @@
       "why": "Sends the TmuxCommand it is given to the server.",
       "evidence": [
         {
-          "at": "Sources/LibTmux/Server.swift:167",
+          "at": "Sources/LibTmux/Server.swift:344",
           "has": [
             "runInOwnProcess"
           ],
           "reaches": [
             {
-              "at": "Sources/LibTmux/Server.swift:168",
+              "at": "Sources/LibTmux/Server.swift:345",
               "has": [
                 "runtime.run(rawArguments: rawArguments)"
               ],
@@ -8939,7 +8988,14 @@
               "on": "ServerRuntime"
             },
             {
-              "at": "Sources/LibTmux/Server.swift:462",
+              "at": "Sources/LibTmux/Server.swift:692",
+              "has": [
+                "send("
+              ],
+              "calls": "send"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:839",
               "has": [
                 "transport.run("
               ],
@@ -8968,14 +9024,14 @@
           ],
           "reaches": [
             {
-              "at": "Sources/LibTmux/GuardedRequest.swift:34",
+              "at": "Sources/LibTmux/GuardedRequest.swift:37",
               "has": [
                 "run(rawArguments: request.commands.argumentVector)"
               ],
               "calls": "run"
             },
             {
-              "at": "Sources/LibTmux/Server.swift:137",
+              "at": "Sources/LibTmux/Server.swift:289",
               "has": [
                 "runtime.run(rawArguments: rawArguments)"
               ],
@@ -8983,7 +9039,14 @@
               "on": "ServerRuntime"
             },
             {
-              "at": "Sources/LibTmux/Server.swift:462",
+              "at": "Sources/LibTmux/Server.swift:692",
+              "has": [
+                "send("
+              ],
+              "calls": "send"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:839",
               "has": [
                 "transport.run("
               ],
@@ -9006,27 +9069,27 @@
       "why": "Sends the TmuxCommand it is given to the server.",
       "evidence": [
         {
-          "at": "Sources/LibTmux/ControlSession.swift:168",
+          "at": "Sources/LibTmux/ControlSession.swift:181",
           "has": [
             "send"
           ],
           "reaches": [
             {
-              "at": "Sources/LibTmux/ControlSession.swift:170",
+              "at": "Sources/LibTmux/ControlSession.swift:186",
               "has": [
                 "send("
               ],
               "calls": "send"
             },
             {
-              "at": "Sources/LibTmux/ControlSession.swift:181",
+              "at": "Sources/LibTmux/ControlSession.swift:197",
               "has": [
                 "enqueue("
               ],
               "calls": "enqueue"
             },
             {
-              "at": "Sources/LibTmux/ControlSession.swift:234",
+              "at": "Sources/LibTmux/ControlSession.swift:250",
               "has": [
                 "write("
               ],
@@ -9056,13 +9119,13 @@
       "why": "Sends the TmuxCommand it is given to the server.",
       "evidence": [
         {
-          "at": "Sources/LibTmux/Server.swift:226",
+          "at": "Sources/LibTmux/Server.swift:403",
           "has": [
             "runTerminatingIsolated"
           ],
           "reaches": [
             {
-              "at": "Sources/LibTmux/Server.swift:237",
+              "at": "Sources/LibTmux/Server.swift:414",
               "has": [
                 "runtime.run("
               ],
@@ -9070,7 +9133,14 @@
               "on": "ServerRuntime"
             },
             {
-              "at": "Sources/LibTmux/Server.swift:462",
+              "at": "Sources/LibTmux/Server.swift:692",
+              "has": [
+                "send("
+              ],
+              "calls": "send"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:839",
               "has": [
                 "transport.run("
               ],
@@ -9093,13 +9163,13 @@
       "why": "Sends the TmuxCommand it is given to the server.",
       "evidence": [
         {
-          "at": "Sources/LibTmux/Server.swift:171",
+          "at": "Sources/LibTmux/Server.swift:348",
           "has": [
             "runIsolated"
           ],
           "reaches": [
             {
-              "at": "Sources/LibTmux/Server.swift:175",
+              "at": "Sources/LibTmux/Server.swift:352",
               "has": [
                 "runtime.run("
               ],
@@ -9107,7 +9177,14 @@
               "on": "ServerRuntime"
             },
             {
-              "at": "Sources/LibTmux/Server.swift:462",
+              "at": "Sources/LibTmux/Server.swift:692",
+              "has": [
+                "send("
+              ],
+              "calls": "send"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:839",
               "has": [
                 "transport.run("
               ],
@@ -9136,21 +9213,21 @@
           ],
           "reaches": [
             {
-              "at": "Sources/LibTmux/Creation.swift:346",
+              "at": "Sources/LibTmux/Creation.swift:347",
               "has": [
                 "runGuarded("
               ],
               "calls": "runGuarded"
             },
             {
-              "at": "Sources/LibTmux/GuardedRequest.swift:34",
+              "at": "Sources/LibTmux/GuardedRequest.swift:37",
               "has": [
                 "run(rawArguments: request.commands.argumentVector)"
               ],
               "calls": "run"
             },
             {
-              "at": "Sources/LibTmux/Server.swift:137",
+              "at": "Sources/LibTmux/Server.swift:289",
               "has": [
                 "runtime.run(rawArguments: rawArguments)"
               ],
@@ -9158,7 +9235,14 @@
               "on": "ServerRuntime"
             },
             {
-              "at": "Sources/LibTmux/Server.swift:462",
+              "at": "Sources/LibTmux/Server.swift:692",
+              "has": [
+                "send("
+              ],
+              "calls": "send"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:839",
               "has": [
                 "transport.run("
               ],
@@ -9194,14 +9278,14 @@
               "calls": "run"
             },
             {
-              "at": "Sources/LibTmux/Server.swift:132",
+              "at": "Sources/LibTmux/Server.swift:284",
               "has": [
                 "run(rawArguments: command.argumentVector)"
               ],
               "calls": "run"
             },
             {
-              "at": "Sources/LibTmux/Server.swift:137",
+              "at": "Sources/LibTmux/Server.swift:289",
               "has": [
                 "runtime.run(rawArguments: rawArguments)"
               ],
@@ -9209,7 +9293,14 @@
               "on": "ServerRuntime"
             },
             {
-              "at": "Sources/LibTmux/Server.swift:462",
+              "at": "Sources/LibTmux/Server.swift:692",
+              "has": [
+                "send("
+              ],
+              "calls": "send"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:839",
               "has": [
                 "transport.run("
               ],
@@ -9245,14 +9336,14 @@
               "calls": "run"
             },
             {
-              "at": "Sources/LibTmux/Server.swift:132",
+              "at": "Sources/LibTmux/Server.swift:284",
               "has": [
                 "run(rawArguments: command.argumentVector)"
               ],
               "calls": "run"
             },
             {
-              "at": "Sources/LibTmux/Server.swift:137",
+              "at": "Sources/LibTmux/Server.swift:289",
               "has": [
                 "runtime.run(rawArguments: rawArguments)"
               ],
@@ -9260,7 +9351,14 @@
               "on": "ServerRuntime"
             },
             {
-              "at": "Sources/LibTmux/Server.swift:462",
+              "at": "Sources/LibTmux/Server.swift:692",
+              "has": [
+                "send("
+              ],
+              "calls": "send"
+            },
+            {
+              "at": "Sources/LibTmux/Server.swift:839",
               "has": [
                 "transport.run("
               ],

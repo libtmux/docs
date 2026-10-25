@@ -1,7 +1,7 @@
 {
  "formatter": "swift-format 6.2.4 (swift-6.2.4-RELEASE)",
  "config": {
-  "source": "libtmux/libtmux-swift .swift-format at 7993e7044347629b08020e9b02ae8bcffa0e5898, the revision swift.json is extracted from",
+  "source": "libtmux/libtmux-swift .swift-format at b58e7e1414bbd3996f4f6837f863132efb2d7361, the revision swift.json is extracted from",
   "options": {
    "indentation": {
     "spaces": 4
