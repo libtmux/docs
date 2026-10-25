@@ -40,6 +40,9 @@ describe('complete C++ API examples', () => {
     expect(blocks[4].sourceUrl).toBe(
       `https://github.com/${source.repo}/blob/${source.revision}/examples/api/server.cpp`)
     expect(blocks[1].code).toContain(`git -C libtmux-source checkout ${source.revision}`)
+    expect(blocks[1].intro).toContain('not published to a package registry yet')
+    expect(blocks[1].intro).toContain('Clang 18 or newer')
+    expect(blocks[4].intro).toContain('`main.cpp`')
     expect(blocks[2].code).toContain('-DLIBTMUX_BUILD_TESTING_LIBRARY=ON')
     expect(blocks[5].code).toContain('-DCMAKE_PREFIX_PATH="$PWD/libtmux-prefix"')
     expect(blocks[6].code).toBe('api\n')
