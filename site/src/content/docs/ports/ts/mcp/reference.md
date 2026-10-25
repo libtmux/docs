@@ -17,7 +17,7 @@ communicating through an MCP client.
 ## Embedding API
 
 `createTmuxMcpServer(tmux, options)` accepts a libtmux `Server` and
-returns the SDK's [`McpServer`](https://ts.sdk.modelcontextprotocol.io/server).
+returns the SDK's [`McpServer`](https://ts.sdk.modelcontextprotocol.io/server#server-overview).
 Options can supply the caller environment,
 tool-selection environment, resolved policy, and startup provenance.
 Without supplied provenance, the factory treats the server as unprobed

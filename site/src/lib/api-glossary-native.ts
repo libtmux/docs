@@ -28,7 +28,7 @@ export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> =
     module: term('A singleton object that groups Scala declarations.', 'Scala singleton objects', scalaTour('singleton-objects'), 'The module badge represents object declarations here. Its members belong to that object; the label does not identify a separately installed artifact.'),
     class: term('A Scala class that defines instances, constructors and members.', 'Scala classes', scalaTour('classes'), 'Traits and case classes have their own declaration syntax; read the displayed signature for those distinctions.'),
     enum: term('A Scala enum whose cases describe the alternatives of a type.', 'Scala enums', scalaReference('enums/enums'), 'Cases can be singleton values or carry constructor parameters.'),
-    function: term('A callable Scala declaration shown at package or object scope.', 'Scala functions and methods', `${scalaTour('basics')}#methods`, 'A def declaration is a method; a function value is a value that can be applied. The signature distinguishes them.'),
+    function: term('A callable Scala declaration shown at package or object scope.', 'Scala methods', `${scalaTour('basics')}#methods`, 'A def declaration is a method; a function value is a value that can be applied. The signature distinguishes them.'),
     method: {
       definition: 'A Scala method declared with def, with parameter lists and a result type.',
       detail: 'An extension method adds callable syntax to a receiver without changing its type. The extension declaration identifies that receiver and any contextual requirements.',
@@ -112,7 +112,7 @@ export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> =
     property: term('A Python descriptor whose getter, setter or deleter runs during attribute access.', 'Python properties', `${pythonDocs('builtins/functions')}#property`, 'A property need not correspond to a stored field, and reading it may execute code.'),
     attribute: term('A named Python value accessed on an object or class, potentially through a descriptor or dynamic lookup.', 'Python attribute access', `${pythonDocs('reference/datamodel')}#customizing-attribute-access`),
     constant: term('A named Python API value conventionally treated as constant. Uppercase naming does not prevent reassignment at runtime.', 'Python constant naming', 'https://peps.python.org/pep-0008/#constants'),
-    exception: term('A Python exception class whose instances can be raised and handled with except.', 'Python exceptions', `${pythonDocs('tutorial/errors')}#user-defined-exceptions`),
+    exception: term('A Python exception class whose instances can be raised and handled with except.', 'Python errors and exceptions', pythonDocs('tutorial/errors')),
     async: term('A Python coroutine function declared with async def. Calling it creates a coroutine to await or schedule.', 'Python coroutine functions', `${pythonDocs('reference/compound_stmts')}#coroutine-function-definition`),
     classmethod: term('A Python method that receives the class as its implicit first argument, including when called through an instance.', 'Python class methods', `${pythonDocs('builtins/functions')}#classmethod`),
     inherited: term('A Python member resolved from a base class through the method resolution order.', 'Python inheritance', `${pythonDocs('tutorial/classes')}#inheritance`, 'The reference names the declaring class so its original definition remains navigable.'),
