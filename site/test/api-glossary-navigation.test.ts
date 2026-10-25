@@ -663,3 +663,28 @@ it('points the tmux sidebar at tmux releases, not at the docs build slug', async
   expect(hrefs).toContain(reference.tmuxReferenceUrl())
   expect(hrefs.filter((href) => href?.includes('pr-157'))).toEqual([])
 })
+
+// A product's reference is the API of that product, not of its core library, so its navigation carries the
+// product's name, and the declaration being read is already current when the page arrives.
+const productReferences = ports.PORTS.filter((port) => !port.parentLibrary && models.API_MODELS[port.slug]).flatMap((port) =>
+  (['mcp', 'workspace'] as const).filter((product) => ports.productAvailable(port, product)).map((product) => ({ port: port.slug, product })))
+
+it('names each product reference navigation by its product and marks the declaration current', async () => {
+  const templates = await components()
+  const label = { mcp: 'MCP', workspace: 'Workspace Manager' }
+  expect(productReferences.length).toBeGreaterThan(0)
+  for (const { port, product } of productReferences) {
+    const model = models.API_MODELS[port]!
+    const symbol = products.productApiRoots(model, product)[0]!
+    const href = products.productApiHref(model, symbol, 'latest')
+    const container = await experimental_AstroContainer.create()
+    const win = new Window({ url: `https://libtmux.org${href}` })
+    windows.push(win)
+    win.document.body.innerHTML = await container.renderToString(await templates('ProductApiPage'), {
+      props: { model, symbol, version: 'latest' }, request: new Request(`https://libtmux.org${href}`),
+    })
+    const navigation = [...win.document.querySelectorAll('.api-nav nav')]
+    expect(navigation.map((nav) => nav.getAttribute('aria-label')), `${port} ${product}`).toEqual([`${label[product]}: API Reference`])
+    expect(navigation[0]!.querySelector('[aria-current="page"]')?.getAttribute('href'), `${port} ${product} current declaration`).toBe(href)
+  }
+}, 120_000)

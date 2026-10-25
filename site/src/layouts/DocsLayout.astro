@@ -147,7 +147,8 @@ const productBrand = port && product && pagePath === product && productAvailable
   ? branding(port, pagePath) : undefined
 const workspaceInternals = product === 'workspace' && pagePath.startsWith('workspace/internals/')
 const surfaces = port ? await getDocumentationSurfaces(port, version, locale) : []
-const selectedSection = surfaces.length ? currentDocumentation(surfaces, currentPath)?.section : undefined
+const selectedDocumentation = surfaces.length ? currentDocumentation(surfaces, currentPath) : undefined
+const selectedSection = selectedDocumentation?.section
 // A tmux page's sidebar links tmux releases; the build slug names a docs build.
 const sidebarNavigation = navigation ?? selectedSection?.items ?? await getSidebar(port, contextVersion, locale, product)
 const libraryReference = port && API_MODELS[port] && (selectedSection?.id === 'reference' || /^api(?:\/|$)/.test(pagePath))
@@ -248,7 +249,7 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
       referenceBase={apiNavigation.base} portName={port ? PORT_BY_SLUG[port].name : 'tmux CLI'} tree={[]} members={[]} withMembers={new Set()}
       currentPath={currentPath} version={apiNavigation.version} indexLabel={port ? 'Reference overview' : 'All commands'}
       glossaryHref={port ? `${apiNavigation.base}glossary/` : apiNavigation.fullManual} glossaryLabel={port ? 'API glossary' : 'Full manual'}
-      treeLabel={port ? `${PORT_BY_SLUG[port].name} API` : 'tmux commands'}
+      treeLabel={product && selectedDocumentation ? `${selectedDocumentation.surface.label}: ${selectedDocumentation.section.label}` : port ? `${PORT_BY_SLUG[port].name} API` : 'tmux commands'}
       searchLabel={port ? 'Find a type or member' : 'Find a command'} searchPlaceholder={port ? 'Find symbol' : 'Find command'}
       filters={[{ id: 'all', label: 'All' }, { id: 'types', label: port ? 'Types' : 'Sections' }, { id: 'members', label: port ? 'Members' : 'Commands' }]} />
       : <aside class="hidden w-64 shrink-0 lg:block">
