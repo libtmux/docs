@@ -5,13 +5,14 @@
  * Buckets and their contents are decided once per port in
  * `scripts/gen-api-model.mjs`; this only shapes them for a tree.
  */
-import { membersOf, memberSignals, qualifiedNameOf, symbolsForProduct, type ApiModel, type ApiModelBase, type ApiSymbol } from '@libtmux/api-model'
+import { membersOf, memberSignals, symbolsForProduct, type ApiModel, type ApiModelBase, type ApiSymbol } from '@libtmux/api-model'
 import mentions from '../data/mentions.json'
 import { API_MODELS, API_NAV, OWNER_KINDS, isMemberOwner, pageSlug, referenceHref, topLevelTypesOf, type NavEntry, type PortNavData, type NavBucket } from './api-models'
 import type { ApiTreeBucket, ApiTreeJson } from './api-search'
 import { createHash } from 'node:crypto'
 import { PORT_BY_SLUG, type ApiDependencyNavigation } from './ports'
 import type { BreadcrumbItem } from './sidebar'
+import { nativeQualifiedName, nativeShortName } from './native-name'
 
 export interface TreeBucket {
   id: string
@@ -370,8 +371,25 @@ export function referenceTree(port: string): ApiTreeJson {
   return referenceTreeFor(port, navigation.model, navigation.tree, { excludeProducts: true, members: navigation.members, hrefs: navigation.hrefs })
 }
 
+/** Protocol and command catalogs use their published sections as owners. */
+export function referenceSectionTree(json: ApiTreeJson): ApiTreeJson {
+  const hrefs = { ...json.hrefs }
+  const members = { ...json.members }
+  const section = (bucket: ApiTreeBucket, parentPath?: string): ApiTreeBucket['types'][number] => {
+    const id = `section:${bucket.id}`
+    const path = parentPath ?? bucket.slug ?? ''
+    hrefs[id] = parentPath ? `${path}/#${bucket.id}` : `${path}/`
+    const children = [...bucket.types, ...bucket.children.map((child) => section(child, path))]
+    members[id] = children.map((child) => [child.name, child.slug, child.id, child.kind, child.category, child.summary, child.qualifiedName, child.shortName])
+    return { id, name: bucket.label, slug: path, kind: 'section', category: 'types', m: children.length ? 1 : 0 }
+  }
+  const types = json.buckets.map((bucket) => section(bucket))
+  return { ...json, buckets: [{ id: 'sections', label: 'Sections', count: types.length, slug: null, types, children: [] }], members, hrefs }
+}
+
 /** Serialize the same tree consumed by initial HTML, without registry lookups. */
 export function referenceTreeFor(scope: string, model: ApiModelBase, tree: TreeBucket[], options: ReferenceTreeOptions = {}): ApiTreeJson {
+  const naming = { port: scope.split(':')[0], symbols: model.symbols }
   const products = new Set(options.excludeProducts ? productSymbols(model).map((symbol) => symbol.id) : [])
   const symbols = new Map(model.symbols.filter((symbol) => !products.has(symbol.id)).flatMap((symbol) =>
     [[symbol.id, symbol], [symbol.publicId ?? symbol.id, symbol]] as const))
@@ -388,7 +406,8 @@ export function referenceTreeFor(scope: string, model: ApiModelBase, tree: TreeB
     count: bucketTotal(b),
     slug: firstEntry(b)?.slug ?? null,
     types: b.entries.map((t) => ({ id: t.id, name: t.name, symbolName: symbols.get(t.id)?.name ?? t.name,
-      qualifiedName: symbols.get(t.id) ? qualifiedNameOf(symbols.get(t.id)!) : t.id,
+      qualifiedName: symbols.get(t.id) ? nativeQualifiedName(naming, symbols.get(t.id)!) : t.id,
+      shortName: symbols.get(t.id) ? nativeShortName(naming, symbols.get(t.id)!) : t.name,
       slug: t.slug, m: members.has(t.id) ? 1 : 0,
       ...(t.shortcut ? { shortcut: true } : {}),
       kind: t.kind, category: category(t.kind), summary: symbols.get(t.id)?.doc?.summary ?? '' })),
@@ -406,7 +425,8 @@ export function referenceTreeFor(scope: string, model: ApiModelBase, tree: TreeB
     members: Object.fromEntries([...members].map(([id, list]) => [id, list.map((m) => {
       const symbol = symbols.get(m.id)
       const kind = symbol?.kind ?? 'member'
-      return [m.name, m.slug, m.id, kind, category(kind), symbol?.doc?.summary ?? '', symbol ? qualifiedNameOf(symbol) : m.id]
+      return [m.name, m.slug, m.id, kind, category(kind), symbol?.doc?.summary ?? '',
+        symbol ? nativeQualifiedName(naming, symbol) : m.id, symbol ? nativeShortName(naming, symbol) : m.name]
     })])),
   }
 }

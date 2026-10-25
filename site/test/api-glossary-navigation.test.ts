@@ -1,6 +1,7 @@
 import { afterEach, expect, it, vi } from 'vitest'
 vi.mock('astro:content', () => ({ getCollection: vi.fn(async () => []) }))
 import { readFileSync, realpathSync } from 'node:fs'
+import { gzipSync } from 'node:zlib'
 import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
 import { experimental_AstroContainer } from 'astro/container'
@@ -15,6 +16,7 @@ import * as sections from '../src/lib/api-sections'
 import * as relationships from '../src/lib/api-relationships'
 import * as tree from '../src/lib/api-tree'
 import * as search from '../src/lib/api-search'
+import * as apiSidebar from '../src/lib/api-sidebar'
 import * as treeState from '../src/components/api/api-tree-state'
 import * as labels from '../src/lib/api-labels'
 import * as wordBreak from '../src/lib/word-break'
@@ -55,7 +57,7 @@ async function components(stubs: Readonly<Record<string, string>> = {}) {
     '@libtmux/api-model': model,
     ...Object.fromEntries(Object.entries({
       'api-glossary': glossary, 'api-models': models, 'api-sections': sections,
-      'api-relationships': relationships, 'api-tree': tree, 'api-search': search,
+      'api-relationships': relationships, 'api-tree': tree, 'api-search': search, 'api-sidebar': apiSidebar,
       'api-labels': labels, 'word-break': wordBreak, 'native-name': nativeName, ports, 'product-api': products,
       versions, 'site-root': roots, sidebar, 'documentation-navigation': documentation,
       'page-ports-for': pagePorts, 'markdown-twins': markdown, 'tmux-manual-data': manual, 'tmux-reference': reference, 'tmux-catalog': catalog,
@@ -181,13 +183,234 @@ it.each([{ port: 'go', term: 'struct' }, { port: 'ts', term: 'class' }])('render
     request: new Request(`https://libtmux.org${path}`),
   })
   expect(win.document.querySelector('.api-nav-column [role="tree"]')).not.toBeNull()
-  expect(win.document.querySelector(`.api-nav a[href="${path}"]`)?.getAttribute('aria-current')).toBe('page')
+  expect(win.document.querySelector('.api-nav a[aria-current="page"]')?.textContent?.trim()).toBe('API glossary')
+  expect(win.document.querySelector('.api-nav [data-api-root]')?.getAttribute('href')).toBe(ports.referenceUrl(ports.PORT_BY_SLUG[port], 'v9-proof'))
   checkContents(win.document, path)
   expect([...win.document.querySelectorAll('details')].some((details) =>
     details.querySelector('summary')?.textContent === 'On this page' && details.querySelector(`a[href="#${term}"]`))).toBe(true)
   checkHeadings(win.document, path)
   expect(win.document.querySelector('a[href$=".json"]')?.getAttribute('href')).toBe(`${path.slice(0, -1)}.json`)
 })
+
+// A page selects its declaration by the model's own identifier, which for Python's members and
+// a few of Swift's is not the id the sidebar inventory keys them by.
+it.each([
+  { port: 'py', id: 'libtmux.pane.Pane.split', publicId: 'libtmux.Pane.split' },
+  { port: 'py', id: 'libtmux.pane.Pane', publicId: 'libtmux.Pane' },
+  { port: 'swift', id: 'Server.newSession(named:startDirectory:windowName:width:height:environment:shell:)', publicId: 'Server.newSession(named:startDirectory:windowName:width:height:)' },
+  { port: 'go', id: 'tmux.Pane.Kill', publicId: 'tmux.Pane.Kill' },
+])('opens the ancestry and marks the page in the server-rendered $port sidebar of $id', async ({ port, id, publicId }) => {
+  const model = models.API_MODELS[port]!
+  const owner = model.symbols.find((symbol) => symbol.id === id)
+  expect(owner, `${port}: ${id}`).toBeDefined()
+  expect(owner!.publicId).toBe(publicId)
+  const component = await (await components())('ApiReference')
+  const container = await experimental_AstroContainer.create()
+  const win = new Window()
+  windows.push(win)
+  const slug = owner!.slug ?? models.pageSlug(owner!.publicId ?? owner!.id)
+  win.document.body.innerHTML = await container.renderToString(component, {
+    props: { model, owner }, params: { slug },
+    request: new Request(`https://libtmux.org/en/${port}/latest/reference/${slug}/`),
+  })
+  const current = [...win.document.querySelectorAll('.api-nav__tree [aria-current="page"]')]
+  expect(current.map((link) => link.getAttribute('href'))).toEqual([`${ports.referenceUrl(ports.PORT_BY_SLUG[port], 'latest')}${slug}/`])
+  expect(win.document.querySelector('.api-nav__tree [aria-expanded="true"]'), 'the page\'s own branch opens').not.toBeNull()
+}, 60_000)
+
+it.each(['outline', 'focus', 'grouped'] as const)('keeps Full manual visible and current in the %s sidebar', async (presentation) => {
+  const component = await (await components())('ApiTree')
+  const container = await experimental_AstroContainer.create()
+  const win = new Window()
+  windows.push(win)
+  win.document.body.innerHTML = await container.renderToString(component, { props: {
+    presentation, inventory: { port: 'tmux', buckets: [], members: {} },
+    referenceBase: '/en/tmux/3.7c/manual/', portName: 'tmux', tree: [], members: [], withMembers: new Set(),
+    currentPath: '/en/tmux/3.7c/manual/full/', version: '3.7c',
+    glossaryHref: '/en/tmux/3.7c/manual/full/', glossaryLabel: 'Full manual',
+  } })
+  const link = win.document.querySelector('.api-nav a[aria-current="page"]')
+  expect(link?.textContent?.trim()).toBe('Full manual')
+  expect(link?.getAttribute('href')).toBe('/en/tmux/3.7c/manual/full/')
+  expect(link?.closest('details')).toBeNull()
+})
+
+it('renders Up to the immediate parent before the sidebar script loads', async () => {
+  const component = await (await components())('ApiTree')
+  const container = await experimental_AstroContainer.create()
+  const win = new Window()
+  windows.push(win)
+  win.document.body.innerHTML = await container.renderToString(component, { props: {
+    presentation: 'outline', selectedSymbol: 'create', inventory: { port: 'kotlin',
+      buckets: [{ id: 'objects', label: 'Objects', count: 1, slug: 'session', children: [], types: [
+        { id: 'session', name: 'Session', slug: 'session', kind: 'class', m: 1 },
+      ] }], members: { session: [['Companion', 'companion', 'companion', 'module', 'types']], companion: [['create', 'create', 'create', 'method']] },
+    }, referenceBase: '/pr-42/en/kotlin/latest/reference/', portName: 'Kotlin', tree: [], members: [], withMembers: new Set(),
+    currentPath: '/pr-42/en/kotlin/latest/reference/create/', version: 'test',
+  } })
+  const up = win.document.querySelector('[data-api-owner-back]')!
+  expect(up.getAttribute('href')).toBe('/pr-42/en/kotlin/latest/reference/companion/')
+  expect(up.getAttribute('aria-label')).toBe('Up to Companion')
+  // The client moves Up in place from this identity, so the markup must carry it.
+  expect(up.getAttribute('data-symbol')).toBe('companion')
+  expect(up.hasAttribute('hidden')).toBe(false)
+})
+
+it.each([
+  { page: 'a top-level declaration', selectedSymbol: 'session', path: 'session/', hidden: false },
+  { page: 'the reference root', selectedSymbol: '', path: '', hidden: true },
+])('sends Up from $page to the reference root and hides it only at the root', async ({ selectedSymbol, path, hidden }) => {
+  const component = await (await components())('ApiTree')
+  const container = await experimental_AstroContainer.create()
+  const win = new Window()
+  windows.push(win)
+  const referenceBase = '/pr-42/en/kotlin/latest/reference/'
+  win.document.body.innerHTML = await container.renderToString(component, { props: {
+    presentation: 'outline', selectedSymbol, inventory: { port: 'kotlin',
+      buckets: [{ id: 'objects', label: 'Objects', count: 1, slug: 'session', children: [], types: [
+        { id: 'session', name: 'Session', slug: 'session', kind: 'class', m: 0 },
+      ] }], members: {},
+    }, referenceBase, portName: 'Kotlin', tree: [], members: [], withMembers: new Set(),
+    currentPath: `${referenceBase}${path}`, version: 'test',
+  } })
+  const up = win.document.querySelector('[data-api-owner-back]')!
+  expect(up.getAttribute('href')).toBe(referenceBase)
+  expect(up.getAttribute('aria-label')).toBe('Up to reference root')
+  expect(up.hasAttribute('hidden')).toBe(hidden)
+  expect(up.getAttribute('data-symbol') ?? '').toBe('')
+})
+
+it('labels the owner picker before the sidebar script loads with the owner in its own spelling', async () => {
+  const component = await (await components())('ApiTree')
+  const container = await experimental_AstroContainer.create()
+  const win = new Window()
+  windows.push(win)
+  const inventory = (spelling?: string) => ({ port: 'cxx',
+    buckets: [{ id: 'objects', label: 'Objects', count: 1, slug: 'session', children: [], types: [
+      { id: 'session', name: 'Session', slug: 'session', kind: 'class', m: 1 },
+    ] }], members: { session: [['Node', 'node', 'node', 'class', 'types', '', 'libtmux::Session::Node', spelling] as never], node: [['leaf', 'leaf', 'leaf', 'method']] } })
+  const label = async (spelling?: string) => {
+    win.document.body.innerHTML = await container.renderToString(component, { props: {
+      presentation: 'outline', selectedSymbol: 'leaf', inventory: inventory(spelling), referenceBase: '/en/cxx/latest/reference/', portName: 'C++',
+      tree: [], members: [], withMembers: new Set(), currentPath: '/en/cxx/latest/reference/leaf/', version: 'test',
+    } })
+    return win.document.querySelector('[data-api-owner-label]')?.textContent
+  }
+  expect(await label('Session::Node')).toBe('Session::Node')
+  expect(await label()).toBe('Node')
+})
+
+const PORT_SLUGS = ports.API_MODEL_PORTS.map((port) => port.slug)
+/** What one rendered sidebar may add to a page, before and after compression. */
+const SIDEBAR_RAW_BUDGET = 96 * 1024
+const SIDEBAR_GZIP_BUDGET = 12 * 1024
+
+async function sidebarMarkup(component: unknown, port: string, inventory: search.ApiTreeJson, selected: { id: string; slug: string }, presentation = 'outline',
+  base = `/en/${port}/latest/reference/`) {
+  const container = await experimental_AstroContainer.create()
+  return container.renderToString(component as never, { props: {
+    presentation, inventory, selectedSymbol: selected.id,
+    referenceBase: base, portName: port, tree: [], members: [], withMembers: new Set(),
+    currentPath: search.apiTreeHref(base, selected, inventory.hrefs), version: 'test',
+  } })
+}
+
+it.each(PORT_SLUGS)('bounds the initial %s sidebar to its current path and deferred picker', async (port) => {
+  const inventory = tree.referenceTree(port)
+  const selected = inventory.buckets[0]!.types.find((entry) => !entry.shortcut)!
+  const component = await (await components())('ApiTree')
+  const html = await sidebarMarkup(component, port, inventory, selected)
+  expect(Buffer.byteLength(html), `${port} sidebar bytes`).toBeLessThan(SIDEBAR_RAW_BUDGET)
+  expect(gzipSync(html).byteLength, `${port} sidebar gzip bytes`).toBeLessThan(SIDEBAR_GZIP_BUDGET)
+  const win = new Window()
+  windows.push(win)
+  win.document.body.innerHTML = html
+  expect(win.document.querySelectorAll('[data-owner-id]')).toHaveLength(0)
+  const top = win.document.querySelectorAll('.api-nav__tree > [data-lazy^="bucket:"]')
+  expect(top.length).toBe(inventory.buckets.length)
+  expect([...top].filter((row) => row.getAttribute('aria-expanded') === 'true')).toHaveLength(1)
+  expect(win.document.querySelector('.api-nav__tree [aria-current="page"]')?.getAttribute('href'))
+    .toBe(search.apiTreeHref(`/en/${port}/latest/reference/`, selected, inventory.hrefs))
+}, 30_000)
+
+// Every reference whose pages carry this sidebar: the sixteen libraries, and the tmux C reference in its oldest and newest versions.
+const BUDGETED = [
+  ...PORT_SLUGS.map((port) => ({ name: port, port, base: `/en/${port}/latest/reference/`, inventory: () => tree.referenceTree(port) })),
+  ...['3.7c', '3.2a'].map((version) => ({ name: `tmux ${version}`, port: 'tmux', base: reference.tmuxReferenceUrl(version), inventory: () => reference.tmuxReferenceTree(version) })),
+]
+/** Pages rendered per reference, from the top of the ranking. */
+const HEAVIEST_RENDERED = 100
+
+// The heaviest sidebar belongs to whichever declaration opens the most rows, not to a
+// type or a first entry. Ranking every declaration's rows finds it without rendering
+// them all. The ranking tracks rendered bytes closely but not exactly, so enough of its
+// top is rendered to cover the drift, and each page must fit.
+it.each(BUDGETED)('keeps the heaviest $name sidebar inside the page-weight budget', async ({ name, port, base, inventory: load }) => {
+  const inventory = load()
+  const heaviest = apiSidebar.sidebarCatalog(inventory).records
+    .map((record) => ({ record, rows: JSON.stringify(apiSidebar.sidebarNodes(inventory, base, 'outline', record.id)).length }))
+    .sort((a, z) => z.rows - a.rows).slice(0, HEAVIEST_RENDERED)
+  const component = await (await components())('ApiTree')
+  const sizes: number[] = []
+  for (const { record } of heaviest) {
+    const html = await sidebarMarkup(component, port, inventory, record, 'outline', base)
+    sizes.push(Buffer.byteLength(html))
+    expect(sizes.at(-1), `${name} ${record.id} sidebar bytes`).toBeLessThan(SIDEBAR_RAW_BUDGET)
+    expect(gzipSync(html).byteLength, `${name} ${record.id} sidebar gzip bytes`).toBeLessThan(SIDEBAR_GZIP_BUDGET)
+  }
+  // The ranking must lead to heavy pages: any page picked without it, such as a category's first, weighs no more.
+  const first = inventory.buckets[0]!.types.find((entry) => !entry.shortcut)!
+  expect(Math.max(...sizes), `${name} ranking finds the heaviest sidebar`)
+    .toBeGreaterThanOrEqual(Buffer.byteLength(await sidebarMarkup(component, port, inventory, first, 'outline', base)))
+}, 120_000)
+
+it('names each folded row by what it holds, and links it to the first page it holds only without a script', async () => {
+  const members = Array.from({ length: 300 }, (_, i): [string, string, string, string] => [`member_${i}`, `big-member-${i}`, `big.member_${i}`, 'method'])
+  const inventory: search.ApiTreeJson = { port: 'sample', members: { big: members }, buckets: [{ id: 'objects', label: 'Objects', count: 1, slug: 'big', children: [], types: [
+    { id: 'big', name: 'Big', slug: 'big', m: 1, kind: 'class', category: 'types' }] }] }
+  const templates = await components()
+  const html = await sidebarMarkup(await templates('ApiTree'), 'sample', inventory, { id: 'big.member_150', slug: 'big-member-150' })
+  for (const javascript of [true, false]) {
+    const win = new Window()
+    windows.push(win)
+    // Select the real noscript payload for the DOM fixture, as the contents tests do.
+    win.document.body.innerHTML = html.replace(/<noscript\b[^>]*>([\s\S]*?)<\/noscript>/g, javascript ? '' : '$1')
+    await paint(win, [...templates.styles, readFileSync(new URL('../src/styles/api-tree.css', import.meta.url), 'utf8')])
+    const folded = [...win.document.querySelectorAll('[data-lazy^="more:"]')]
+    expect(folded, `folded rows (JavaScript ${javascript})`).toHaveLength(2)
+    for (const row of folded) {
+      const label = row.querySelector(':scope > .api-nav__row > span.api-nav__label')!
+      const link = row.querySelector(':scope > .api-nav__row a')
+      const first = Number(row.getAttribute('data-lazy')!.split(':').at(-1)!.split('-')[0])
+      expect(label.textContent!.trim(), 'the name says what the row holds').toMatch(/^\d+ more members$/)
+      expect(win.document.getElementById(row.getAttribute('aria-labelledby')!)).toBe(label)
+      expect(row.getAttribute('aria-expanded')).toBe('false')
+      if (javascript) expect(link, 'a script opens the row, so it is not a link').toBeNull()
+      else {
+        expect(link?.getAttribute('href')).toBe(`/en/sample/latest/reference/big-member-${first}/`)
+        expect(link?.textContent?.trim()).toBe(label.textContent!.trim())
+        expect(displayed(win, link), 'the link is shown').toBe(true)
+        expect(displayed(win, label), 'and the text it stands in for is not').toBe(false)
+      }
+    }
+  }
+}, 60_000)
+
+it('measures a sidebar that lists every member as over budget, and the same owner in Outline as within it', async () => {
+  const members = Array.from({ length: 3000 }, (_, i): [string, string, string, string] => [`member_${i}`, `huge-member-${i}`, `huge.member_${i}`, 'method'])
+  const inventory: search.ApiTreeJson = { port: 'sample', members: { huge: members }, buckets: [{ id: 'objects', label: 'Objects', count: 1, slug: 'huge', children: [], types: [
+    { id: 'huge', name: 'Huge', slug: 'huge', m: 1, kind: 'class', category: 'types' }] }] }
+  const component = await (await components())('ApiTree')
+  const selected = { id: 'huge.member_1500', slug: 'huge-member-1500' }
+  // Focus exists to list the owner's members, so it is the clean control for the measurement.
+  const everyMember = await sidebarMarkup(component, 'sample', inventory, selected, 'focus')
+  expect(Buffer.byteLength(everyMember)).toBeGreaterThan(SIDEBAR_RAW_BUDGET)
+  expect(gzipSync(everyMember).byteLength).toBeGreaterThan(SIDEBAR_GZIP_BUDGET)
+  const outline = await sidebarMarkup(component, 'sample', inventory, selected)
+  expect(Buffer.byteLength(outline)).toBeLessThan(SIDEBAR_RAW_BUDGET)
+  expect(gzipSync(outline).byteLength).toBeLessThan(SIDEBAR_GZIP_BUDGET)
+  expect(outline).toContain('huge-member-1500')
+}, 60_000)
 
 it.each([undefined, 'mcp', 'workspace'] as const)('preserves real DocsLayout contents and adds %s glossary permalinks', async (product) => {
   const path = product ? `${ports.referenceUrl(ports.PORT_BY_SLUG.go, 'v9-proof', product)}glossary/` : glossary.API_GLOSSARY_PATH
@@ -440,3 +663,28 @@ it('points the tmux sidebar at tmux releases, not at the docs build slug', async
   expect(hrefs).toContain(reference.tmuxReferenceUrl())
   expect(hrefs.filter((href) => href?.includes('pr-157'))).toEqual([])
 })
+
+// A product's reference is the API of that product, not of its core library, so its navigation carries the
+// product's name, and the declaration being read is already current when the page arrives.
+const productReferences = ports.PORTS.filter((port) => !port.parentLibrary && models.API_MODELS[port.slug]).flatMap((port) =>
+  (['mcp', 'workspace'] as const).filter((product) => ports.productAvailable(port, product)).map((product) => ({ port: port.slug, product })))
+
+it('names each product reference navigation by its product and marks the declaration current', async () => {
+  const templates = await components()
+  const label = { mcp: 'MCP', workspace: 'Workspace Manager' }
+  expect(productReferences.length).toBeGreaterThan(0)
+  for (const { port, product } of productReferences) {
+    const model = models.API_MODELS[port]!
+    const symbol = products.productApiRoots(model, product)[0]!
+    const href = products.productApiHref(model, symbol, 'latest')
+    const container = await experimental_AstroContainer.create()
+    const win = new Window({ url: `https://libtmux.org${href}` })
+    windows.push(win)
+    win.document.body.innerHTML = await container.renderToString(await templates('ProductApiPage'), {
+      props: { model, symbol, version: 'latest' }, request: new Request(`https://libtmux.org${href}`),
+    })
+    const navigation = [...win.document.querySelectorAll('.api-nav nav')]
+    expect(navigation.map((nav) => nav.getAttribute('aria-label')), `${port} ${product}`).toEqual([`${label[product]}: API Reference`])
+    expect(navigation[0]!.querySelector('[aria-current="page"]')?.getAttribute('href'), `${port} ${product} current declaration`).toBe(href)
+  }
+}, 120_000)

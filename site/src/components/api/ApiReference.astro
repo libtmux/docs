@@ -32,7 +32,8 @@ import { buildTarget, defaultVersionFor } from '../../lib/versions'
 import ApiDoc from '../../components/api/ApiDoc.astro'
 import ApiTree from '../../components/api/ApiTree.astro'
 import type { PortNavData } from '../../lib/api-models'
-import { apiTreeVersion, bucketAncestors, bucketForSymbol, navTree, referenceNavigation, referenceIndexSections, referenceIndexSectionsFor, type TreeBucket } from '../../lib/api-tree'
+import { apiTreeVersion, bucketAncestors, bucketForSymbol, navTree, referenceTree, referenceTreeFor, referenceNavigation, referenceIndexSections, referenceIndexSectionsFor, type TreeBucket } from '../../lib/api-tree'
+import { sidebarSelection } from '../../lib/api-sidebar'
 import type { BreadcrumbItem } from '../../lib/sidebar'
 import SymbolName from '../../components/api/SymbolName.astro'
 import '../../styles/api.css'
@@ -136,6 +137,9 @@ const index = source?.index ?? indexFor(portModel ?? { port: 'py', extractor: ''
 const nav = source?.nav ?? (port ? API_NAV[port] : undefined)
 const dependencyNavigation = port && PORT_BY_SLUG[port]?.apiDependencyNavigation?.length ? referenceNavigation(port) : undefined
 const tree = source?.tree ?? dependencyNavigation?.tree ?? (port ? navTree(port) : [])
+
+/** What the sidebar navigates: this port's inventory, or the source project's. */
+const sidebarInventory = model ? (port ? referenceTree(port) : referenceTreeFor('tmux', model, tree)) : undefined
 
 /** Nav ids of the types that own members, which open into them in the tree. */
 const withMembers = new Set([...pageOwners.map((s) => s.publicId ?? s.id), ...(dependencyNavigation?.members.keys() ?? [])])
@@ -425,8 +429,11 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
   <!-- Flush: the tree's column runs from the header to the footer against the
        viewport's edge, as Learn's does, and only the text column is padded. -->
   <main class:list={["api-reference-layout grid", owner && 'api-reference-layout--symbol', glossary && 'api-reference-layout--glossary']}>
-    {model && (
+    {model && sidebarInventory && (
       <ApiTree
+        presentation="outline"
+        inventory={sidebarInventory}
+        selectedSymbol={sidebarSelection(sidebarInventory, owner)}
         referenceBase={refBase}
         glossaryHref={port ? `${refBase}glossary/` : undefined}
         portName={label}

@@ -754,8 +754,8 @@ html:has(:is(.api-reference-layout--symbol, .api-reference-layout--glossary)):no
 @media (min-width: 56rem) {
   .api-reference-layout:has(> .api-nav-column) { grid-template-columns: 16rem minmax(0, 1fr); }
   :is(.api-reference-layout--symbol, .api-reference-layout--glossary) .api-nav {
-    top: var(--api-header-height);
-    height: calc(100dvh - var(--api-header-height));
+    top: var(--api-nav-top, var(--api-header-height));
+    height: var(--api-nav-height, calc(100dvh - var(--api-header-height)));
   }
 }
 .api-page-contents { display: none; }

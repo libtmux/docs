@@ -87,7 +87,9 @@ $ pnpm test
 ```
 
 The outer loop includes the `*.outer.test.ts` integration suites, which seed
-the full API catalog or exercise subprocess shutdown. It also adds type
+the full API catalog, run native compiler comparisons, or exercise subprocess
+shutdown. Elixir exporter fixtures and live clang-format comparisons run here;
+the medium loop keeps the pinned formatter fixtures. It also adds type
 checks and starts its own Astro development server
 from current source. Browser checks cover prose, an MCP table, row permalinks,
 API equivalents, and phone dropdown placement at 1440, 768, and 390 pixels. The

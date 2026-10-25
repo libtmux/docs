@@ -85,7 +85,7 @@ function compiledChrome(file) {
   if (!/<html\b[^>]*data-native-shell-export/.test(html)) throw new Error(`Not a native shell export: ${file}`)
   const heads = [...html.matchAll(/<head\b[^>]*data-native-shell-assets[^>]*>([\s\S]*?)<\/head>/g)]
   if (heads.length !== 1) throw new Error(`Native export must contain one asset head: ${file}`)
-  return { head: heads[0][1], header: exportRegion(html, 'header'), footer: exportRegion(html, 'footer') }
+  return { head: heads[0][1], header: exportRegion(html, 'header'), sidebar: exportRegion(html, 'sidebar'), footer: exportRegion(html, 'footer') }
 }
 
 function stripNativeTheme(html, file) {
@@ -160,12 +160,14 @@ function adaptNativePage(html, page, context, chrome, file, assetDigests) {
       return `${open}${charset}<!-- libtmux-native-head -->${chrome.head}<!-- /libtmux-native-head -->${content.replace(charset, '')}${close}`
     })
     .replace(/<body\b([^>]*)>\s*/i, (_tag, attributes) => `<body${attributes.replace(/\sdata-documentation-layout=["'][^"']*["']/gi, '')} data-documentation-layout="reference">\n<!-- libtmux-native-header -->${chrome.header}<!-- /libtmux-native-header -->\n`)
-    .replace(/<aside class="sidebar-drawer"(?: id="native-navigation")?>/, '<aside class="sidebar-drawer" id="native-navigation">')
+    .replace(/(?:<aside class="sidebar-drawer"(?: id="native-navigation")?>[\s\S]*?<\/aside>|<!-- libtmux-native-sidebar -->[\s\S]*?<!-- \/libtmux-native-sidebar -->)/,
+      () => `<!-- libtmux-native-sidebar -->${chrome.sidebar}<!-- /libtmux-native-sidebar -->`)
   after = after
     .replace(/<aside class="toc-drawer"(?: id="native-toc")?>/, '<aside class="toc-drawer" id="native-toc">')
-    .replace(/\s*<\/body>/i, `\n<!-- libtmux-native-footer -->${chrome.footer}<!-- /libtmux-native-footer -->\n</body>`)
+    .replace(/\s*<\/body>/i, () => `\n<!-- libtmux-native-footer -->${chrome.footer}<!-- /libtmux-native-footer -->\n</body>`)
   const attributes = opening[0].replace(/\sdata-pagefind-(?:body|filter)(?:=["'][^"']*["'])?/gi, '').replace(/>$/, ` data-pagefind-body data-pagefind-filter="port:${PORT_BY_SLUG[context.port].name}">`)
   const result = before + attributes + article + after
+  if (result.split('<!-- libtmux-native-sidebar -->').length !== 2) throw new Error(`Native page must contain one shared sidebar: ${page.file}`)
   if (nativeArticle(result) !== article) throw new Error(`Native article was modified: ${page.file}`)
   return result
 }
@@ -188,6 +190,11 @@ export async function normalizeNativeShell(directory, prefix, { sphinxPort, vers
   const seen = new Set()
   const normalize = (content) => content.replace(/(['"(])(?:https?:\/\/libtmux\.org)?\/_shell\//g, `$1${root}/_shell/`)
   let changed = context ? adaptHighlight(directory) : 0
+  if (context && shellDirectory) {
+    const tree = readFileSync(join(shellDirectory, 'api/tree.json'))
+    const target = join(directory, 'tree.json')
+    if (!existsSync(target) || !tree.equals(readFileSync(target))) { writeFileSync(target, tree); changed++ }
+  }
   const widgets = context ? adaptWidgets(directory) : { changed: 0, digests: {} }
   changed += widgets.changed
   const highlightFile = join(directory, '_static/sphinx_highlight.js')

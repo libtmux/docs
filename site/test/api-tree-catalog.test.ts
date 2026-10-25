@@ -31,6 +31,28 @@ const nav: PortNavData = {
 }
 
 describe('source catalog reference navigation', () => {
+  it.each([
+    ['rs', 'blocking.Runtime', 'Runtime', 'blocking.Runtime.spawn', 'spawn', 'libtmux::blocking::Runtime', 'Runtime::spawn'],
+    ['ts', 'client.Client', 'Client', 'client.Client.session', 'session', 'Client', 'Client.session'],
+    ['ruby', 'LibTmux::Async', 'Async', 'LibTmux::Async::ControlConnection', 'ControlConnection', 'LibTmux::Async', 'Async::ControlConnection'],
+    ['cxx', 'libtmux::FilterExpr', 'FilterExpr', 'libtmux::FilterExpr::Node', 'Node', 'libtmux::FilterExpr', 'FilterExpr::Node'],
+  ])('serializes native %s picker names while retaining identities and links', (port, ownerId, ownerName, childId, childName, qualified, short) => {
+    const owner = { ...symbol(ownerId, 'class'), name: ownerName, source: { file: 'crates/libtmux/src/lib.rs' } }
+    const child = { ...symbol(childId, 'class', ownerId), name: childName, source: owner.source }
+    const catalog = { extractor: 'fixture', symbols: [owner, child] }
+    const json = referenceTreeFor(port, catalog, [{ id: 'objects', label: 'Objects', collapsed: false, children: [],
+      entries: [{ id: ownerId, name: ownerName, kind: owner.kind, slug: owner.slug! }] }])
+    const records = searchApi(json, '')
+    expect(records.find((record) => record.id === ownerId)?.qualifiedName).toBe(qualified)
+    expect(records.find((record) => record.id === childId)?.shortName).toBe(short)
+    expect(records.map((record) => [record.id, record.slug])).toEqual([[ownerId, owner.slug], [childId, child.slug]])
+    // A nested type that is itself a category entry carries the same spelling on that entry.
+    const nested = referenceTreeFor(port, catalog, [{ id: 'objects', label: 'Objects', collapsed: false, children: [],
+      entries: [owner, child].map((item) => ({ id: item.id, name: item.name, kind: item.kind, slug: item.slug! })) }])
+    expect(nested.buckets[0]!.types.map((entry) => [entry.id, entry.shortName])).toEqual([[ownerId, ownerName], [childId, short]])
+    expect(searchApi(nested, '').find((record) => record.id === childId)?.shortName).toBe(short)
+  })
+
   it('shares ordered sections, counts, search and nested union members without a library port', () => {
     const tree = navTreeFor(model, nav)
     expect(tree[0].entries.map((item) => item.name)).toEqual(['read', 'one:callback', 'two:callback'])

@@ -8,6 +8,8 @@ import { REGISTRY } from '../src/lib/registry'
 import { LANG_TO_PORT } from '../src/plugins/remark-port-code.mjs'
 import { SITE_BUILT, SITE_PREFIX, PREVIEW_PREFIX, productionPath, publishedPath, sitePath } from './site-root'
 import { MCP_REFERENCE, MCP_SECTIONS, mcpObjects } from '../src/lib/mcp-catalog'
+import type { ApiTreeJson } from '../src/lib/api-search'
+import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
 interface Manifest {
   ports: Record<string, { slug: string; supported: boolean }[]>
@@ -188,44 +190,91 @@ function graph(document: Window['document']): StructuredEntry[] {
     })
 }
 
-/** Read the rendered sidebar ancestry independently of the breadcrumb builder. */
+/**
+ * Read the rendered sidebar ancestry independently of the breadcrumb builder.
+ *
+ * The API reference is one tree whose only top-level row is the reference itself. The rows from there to the
+ * page's declaration are returned, without the badge each row draws beside its name. The page's own link must
+ * already be marked current in the served HTML, since nothing here runs a script.
+ */
 function referenceTrail(document: Window['document'], href: string) {
-  const navigation = document.querySelector('[data-section-navigation] nav')!
+  const navigation = document.querySelector('.api-nav nav')!
   const current = [...navigation.querySelectorAll('a[aria-current="page"]')]
     .find((link) => link.getAttribute('href') === href)
   expect(current, `${href} active sidebar declaration`).toBeDefined()
-  const trail: { name: string; url: string | null }[] = [{ name: current!.getAttribute('data-sidebar-label')!, url: href }]
-  for (let group = current!.closest('details.sidebar-section'); group; group = group.parentElement?.closest('details.sidebar-section') ?? null) {
-    const label = group.querySelector(':scope > summary > .api-nav__label')!
-    if (label === current) continue
+  const trail: { name: string; url: string | null }[] = []
+  for (let row = current!.closest('[role="treeitem"]'); row; row = row.parentElement?.closest('[role="treeitem"]') ?? null) {
+    // A leaf is its own link; a branch keeps its label, linked or not, in the row above its group.
+    const leaf = row.tagName === 'A'
+    const label = row.querySelector(leaf ? ':scope > .api-nav__label' : ':scope > .api-nav__row > .api-nav__label')!
     const copy = label.cloneNode(true)
     for (const decoration of copy.querySelectorAll('[aria-hidden="true"]')) decoration.remove()
-    trail.unshift({ name: copy.textContent.trim(), url: label.getAttribute('href') })
+    trail.unshift({ name: copy.textContent.trim(), url: (leaf ? row : label).getAttribute('href') })
   }
-  return trail
+  const [reference, ...declarations] = trail
+  expect(reference?.name, `${href} the tree's top row is the reference`).toBe('API reference')
+  return declarations
+}
+
+/** The first paint of the real reference sidebar, so the reader below follows the component's markup. */
+async function referenceSidebar(inventory: ApiTreeJson, selectedSymbol: string) {
+  const template = await loadAstroTemplate('components/api/ApiTree.astro', {
+    real: ['components/api/ApiTreeItems.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro'],
+  })
+  const window = new Window()
+  window.document.body.innerHTML = await renderAstroTemplate(template, { props: {
+    presentation: 'outline', inventory, selectedSymbol, referenceBase: '/reference/', portName: 'Sample', tree: [], members: [],
+    withMembers: new Set(), currentPath: '/reference/', version: 'test', treeLabel: 'Sample: API Reference',
+  } })
+  return window
+}
+
+const sidebarInventory: ApiTreeJson = {
+  port: 'sample',
+  buckets: [{ id: 'sample', label: 'API reference', count: 2, slug: 'application', types: [], children: [
+    { id: 'base', label: 'Base', count: 2, slug: null, types: [
+      { id: 'Application', name: 'Application', slug: 'application', m: 1, kind: 'struct', category: 'types' },
+      { id: 'Other', name: 'Other', slug: 'other', m: 0, kind: 'struct', category: 'types' },
+    ], children: [] },
+  ] }],
+  members: { Application: [['close', 'application-close', 'Application.close', 'method']] },
 }
 
 it.each([
-  { href: '/reference/application-close/', label: 'close', expected: [
-    { name: 'Application', url: '/reference/application/' }, { name: 'close', url: '/reference/application-close/' },
+  { symbol: 'Application.close', href: '/reference/application-close/', expected: [
+    { name: 'Base', url: null }, { name: 'Application', url: '/reference/application/' }, { name: 'close', url: '/reference/application-close/' },
   ] },
-  { href: '/reference/application/', label: 'Application', expected: [
-    { name: 'Application', url: '/reference/application/' },
+  { symbol: 'Application', href: '/reference/application/', expected: [
+    { name: 'Base', url: null }, { name: 'Application', url: '/reference/application/' },
   ] },
-])('reads reference ancestors of $label without badges or a repeated current owner', async ({ href, label, expected }) => {
-  const window = new Window()
+])('reads reference ancestors of $symbol without badges or a repeated current owner', async ({ symbol, href, expected }) => {
+  const window = await referenceSidebar(sidebarInventory, symbol)
   try {
-    window.document.body.innerHTML = `<div data-section-navigation><nav>
-      <details class="sidebar-section"><summary><a class="api-nav__label" href="/reference/">Language API</a></summary>
-      <details class="sidebar-section"><summary><span class="api-nav__label"><span aria-hidden="true">M</span>Base</span></summary>
-      <details class="sidebar-section"><summary><a class="api-nav__label" data-sidebar-label="Application" href="/reference/application/"><span aria-hidden="true">S</span>Application</a></summary>
-      <a data-sidebar-label="close" href="/reference/application-close/">close</a>
-      </details></details></details></nav></div>`
-    window.document.querySelector(`a[data-sidebar-label="${label}"]`)!.setAttribute('aria-current', 'page')
-    expect(referenceTrail(window.document, href)).toEqual([
-      { name: 'Language API', url: '/reference/' }, { name: 'Base', url: null },
-      ...expected,
-    ])
+    expect(referenceTrail(window.document, href)).toEqual(expected)
+  } finally {
+    await window.happyDOM.close()
+  }
+})
+
+it('names a row by its label alone when a mark is drawn inside it', async () => {
+  const window = await referenceSidebar(sidebarInventory, 'Application.close')
+  try {
+    const owner = window.document.querySelector('.api-nav [role="treeitem"][aria-description="struct"]')!
+    const label = owner.querySelector(':scope > .api-nav__row > .api-nav__label')!
+    label.prepend(owner.querySelector(':scope > .api-nav__row > .api-nav__kind')!)
+    expect(label.textContent).toMatch(/^\s*\S+\s+Application/)
+    expect(referenceTrail(window.document, '/reference/application-close/').map((item) => item.name)).toEqual(['Base', 'Application', 'close'])
+  } finally {
+    await window.happyDOM.close()
+  }
+})
+
+it('finds no ancestry in a sidebar that does not mark the page, or that marks another', async () => {
+  const window = await referenceSidebar(sidebarInventory, 'Other')
+  try {
+    expect(() => referenceTrail(window.document, '/reference/application-close/')).toThrow(/active sidebar declaration/)
+    window.document.querySelector('.api-nav nav a[aria-current="page"]')!.removeAttribute('aria-current')
+    expect(() => referenceTrail(window.document, '/reference/other/')).toThrow(/active sidebar declaration/)
   } finally {
     await window.happyDOM.close()
   }
@@ -524,8 +573,10 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       const sectionPath = `${page.port}/${page.version}/${page.product}/${page.section === 'source-guide' ? 'source-guide/' : section === 'home' ? '' : `${section}/`}`
       expect(current![0].getAttribute('href'), `${page.path} current destination`).toBe(urlFor(sectionPath).pathname)
       expect(resolves(current![0].getAttribute('href')!), `${page.path} current destination exists`).toBe(true)
-      const navigation = document.querySelectorAll('[data-section-navigation] nav')
+      // The API reference is the reference sidebar, one navigation for every viewport; the other sections share the section sidebar.
+      const navigation = document.querySelectorAll(section === 'reference' ? '.api-nav nav' : '[data-section-navigation] nav')
       expect(navigation.length, `${page.path} documentation navigation`).toBeGreaterThan(0)
+      if (section === 'reference') expect(navigation, `${page.path} one reference navigation`).toHaveLength(1)
       for (const nav of navigation) {
         expect(nav.getAttribute('aria-label'), page.path).toBe(`${surface}: ${sectionLabel}`)
         const links = [...nav.querySelectorAll('a[href]')]
@@ -603,14 +654,14 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       await inspect(samplePath, (document) => {
         expect(document.querySelector('article h1')?.textContent).toBe(sample.title)
         expect(graph(document).some((entry) => entry['@type'] === 'APIReference')).toBe(true)
+        const trail = referenceTrail(document, new URL(sample.href, urlFor(page.path)).pathname)
         if (page.product === 'workspace') {
           const reference = urlFor(page.path).pathname
           const expected = [
             { name: page.name, url: urlFor(`${page.port}/${page.version}/`).pathname },
             { name: 'Workspace Manager', url: urlFor(`${page.port}/${page.version}/workspace/`).pathname },
             { name: 'API reference', url: reference },
-            ...referenceTrail(document, new URL(sample.href, urlFor(page.path)).pathname)
-              .filter((item) => item.url !== reference),
+            ...trail,
           ]
           const crumbs = [...document.querySelectorAll('nav[aria-label="Breadcrumb"] [data-breadcrumb-item]')]
           expect(crumbs.map((item) => item.textContent.trim()), `${samplePath} sidebar ancestry`)
