@@ -21,8 +21,8 @@ function tmuxSource() {
   return dir
 }
 
-function generate(manifest: string, port = 'py') {
-  const out = join(mkdtempSync(join(tmpdir(), 'capabilities-')), 'capabilities.json')
+function generate(manifest: string, port = 'py', into?: string) {
+  const out = into ?? join(mkdtempSync(join(tmpdir(), 'capabilities-')), 'capabilities.json')
   const run = spawnSync('node', ['scripts/gen-capabilities.mjs', '--port', port, '--manifest', `${port}=${resolve(fixtures, manifest)}`, '--tmux', tmuxSource(), '--out', out], {
     cwd: root,
     encoding: 'utf8',
@@ -239,4 +239,25 @@ describe('gen-capabilities --check', () => {
     expect(readFileSync(out, 'utf8')).toBe(before)
   })
 
+  it('refuses the same when --port selects the port it cannot read', () => {
+    const out = committed()
+    const before = readFileSync(out, 'utf8')
+    const run = spawnSync('node', ['scripts/gen-capabilities.mjs', '--port', 'py', '--manifest', `py=${missing}`, '--tmux', tmuxSource(), '--out', out], { cwd: root, encoding: 'utf8' })
+    expect(run.status).toBe(1)
+    expect(run.stderr).toContain('refusing to write a partial file')
+    expect(readFileSync(out, 'utf8')).toBe(before)
+  })
+
+  it('keeps the other committed ports when --port rewrites one', () => {
+    const out = committed()
+    const run = generate('java.json', 'java', out).run
+    expect(run.status, run.stderr).toBe(0)
+    const data = JSON.parse(readFileSync(out, 'utf8'))
+    expect(Object.keys(data.ports).sort()).toEqual(['java', 'py'])
+    expect(data.ports.py.capabilities[0].error).toBe('libtmux.exc.VersionTooLow')
+    // The py floor is the lowest, so its releases stay although only java was read.
+    expect(data.releases).toEqual(['3.2a', '3.3', '3.3a', '3.4'])
+    const current = check(out, { manifest: fixture })
+    expect(current.status, current.stderr).toBe(0)
+  })
 })

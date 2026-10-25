@@ -25,7 +25,8 @@
  * every API name in it resolved through the committed API model, so a renamed
  * method fails there too. Releases are compared with tmux's refs when a clone
  * is present, and checked by form and order when it is not. Writing refuses
- * to drop a committed port it cannot read.
+ * to drop a committed port it cannot read. `--port` rewrites that port's entry
+ * and keeps the others as committed.
  *
  * A port's manifest is read from `capabilities.json` at the root of its
  * checkout. `LIBTMUX_DOCS_CHECKOUT_<PORT>` selects another checkout, and
@@ -206,8 +207,12 @@ if (existsSync(out)) {
     }
   }
 }
+/** Ports that read a manifest of their own; a wrapper library takes its parent's. */
+const owners = PORTS.filter((p) => !p.parentLibrary).map((p) => p.slug)
 /** Unread ports the committed file holds an entry for. */
 const kept = unread.filter((slug) => committed?.ports?.[slug])
+/** What the file holds for a port once this run is done: what the run read, else the entry it already has. */
+const entryOf = (slug) => ports[slug] ?? committed?.ports?.[slug]
 const printable = (v) => {
   try {
     tmuxVersionKey(v)
@@ -230,7 +235,7 @@ if (checking) {
       else if (JSON.stringify(ports[slug]) !== JSON.stringify(committed.ports[slug])) problems.push(`${slug}: differs from its manifest`)
     }
     for (const slug of kept) problems.push(...verifyCommitted(slug, committed.ports[slug]))
-    const lowest = lowestOf([...Object.values(ports).map((p) => p.floor.minimum), ...kept.map((slug) => committed.ports[slug].floor?.minimum)])
+    const lowest = lowestOf(owners.map((slug) => entryOf(slug)?.floor?.minimum))
     const held = committed.releases ?? []
     if (haveTmux) {
       const expected = lowest ? tmuxReleases().filter((v) => compareTmuxVersions(v, lowest) >= 0) : []
@@ -256,16 +261,19 @@ if (checking) {
   if (!haveTmux) notes.push(`  tmux releases not compared: no tmux checkout at ${tmuxCheckout}`)
   console.log(notes.join('\n'))
 } else {
-  if (!only && kept.length) {
+  if (kept.length) {
     console.error(`gen-capabilities: no manifest for ${kept.join(', ')}; refusing to write a partial file that drops ${kept.length === 1 ? 'its' : 'their'} committed ${kept.length === 1 ? 'entry' : 'entries'}`)
     process.exit(1)
   }
-  const lowest = lowestOf(Object.values(ports).map((p) => p.floor.minimum))
+  // A run that selects one port rewrites its entry and leaves the others as committed.
+  const written = Object.fromEntries(owners.filter(entryOf).map((slug) => [slug, entryOf(slug)]))
+  const lowest = lowestOf(Object.values(written).map((p) => p.floor?.minimum))
   if (lowest && !haveTmux) {
     console.error(`gen-capabilities: no tmux checkout at ${tmuxCheckout}; pass --tmux <checkout>`)
     process.exit(1)
   }
   const releases = lowest ? tmuxReleases().filter((v) => compareTmuxVersions(v, lowest) >= 0) : []
-  writeFileSync(out, `${JSON.stringify({ generated: 'scripts/gen-capabilities.mjs', releases, ports }, null, 2)}\n`)
-  console.log(`wrote ${out}: ${Object.keys(ports).length} ports, ${releases.length} releases`)
+  writeFileSync(out, `${JSON.stringify({ generated: 'scripts/gen-capabilities.mjs', releases, ports: written }, null, 2)}\n`)
+  const dropped = Object.keys(committed?.ports ?? {}).filter((slug) => !(slug in written))
+  console.log(`wrote ${out}: ${Object.keys(written).length} ports, ${releases.length} releases${dropped.length ? `; dropped entries no port publishes: ${dropped.join(', ')}` : ''}`)
 }
