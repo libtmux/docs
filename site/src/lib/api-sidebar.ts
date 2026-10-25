@@ -117,6 +117,18 @@ function createCatalog(json: ApiTreeJson) {
     ownerLabel: json.ownerLabel ?? (sections ? 'section' : 'type'), ownerPlural: json.ownerPlural ?? (sections ? 'sections' : 'types') }
 }
 
+/**
+ * Outline's first paint shows about this many rows of one sibling list, around
+ * the selected row, or from the top when the owner or category itself is
+ * selected. The rest wait behind "N more" rows that open like any lazy branch,
+ * so a page carries the rows a reader needs rather than every member of its
+ * owner or every entry of its category.
+ */
+export const SIDEBAR_WINDOW = 40
+
+/** A hidden run shorter than this is shown instead: a row to open it would save nothing. */
+const SIDEBAR_MIN_GAP = 8
+
 const groupName = (kind: string) => ({ property: 'Properties', method: 'Methods', class: 'Classes', object: 'Objects',
   constructor: 'Constructors', field: 'Fields', event: 'Events', function: 'Functions', interface: 'Interfaces',
   enum: 'Enums', 'enum-member': 'Enum members', typealias: 'Type aliases' }[kind] ?? `${kind[0]?.toUpperCase()}${kind.slice(1)}s`)
@@ -142,6 +154,20 @@ export function sidebarNodes(source: ApiTreeJson, base: string, mode: SidebarPre
   const currentBuckets = new Set([...ancestry].map((id) => placements.get(id)).find(Boolean) ?? [])
   let seq = 0
   const nextId = () => `api-presentation-${++seq}`
+  // Only Outline's first paint is bounded. A branch the reader opens, a run
+  // that was left out, and the other layouts list everything they are asked for.
+  const bounded = mode === 'outline' && !branch
+  const windowed = (parent: string, level: number, list: SidebarNode[]): SidebarNode[] => {
+    if (!bounded || list.length <= SIDEBAR_WINDOW + SIDEBAR_MIN_GAP) return list
+    const pivot = Math.max(0, list.findIndex((node) => node.current || (node.expanded && node.children)))
+    let start = Math.min(Math.max(0, pivot - (SIDEBAR_WINDOW >> 1)), list.length - SIDEBAR_WINDOW)
+    let end = start + SIDEBAR_WINDOW
+    if (start < SIDEBAR_MIN_GAP) start = 0
+    if (list.length - end < SIDEBAR_MIN_GAP) end = list.length
+    const rest = (from: number, to: number): SidebarNode[] => from === to ? []
+      : [{ id: nextId(), label: `${to - from} more`, level, expanded: false, lazy: `more:${parent}:${from}-${to}` }]
+    return [...rest(0, start), ...list.slice(start, end), ...rest(end, list.length)]
+  }
   const symbol = (record: ApiSearchResult, level: number, shortcut = false, expand = true): SidebarNode => {
     const members = catalog.membersOf(record.id)
     const open = expand && !shortcut && ancestry.has(record.id)
@@ -152,7 +178,7 @@ export function sidebarNodes(source: ApiTreeJson, base: string, mode: SidebarPre
   }
   const memberNodes = (owner: string, level: number): SidebarNode[] => {
     const members = catalog.membersOf(owner)
-    if (mode !== 'grouped') return members.map((member) => symbol(member, level))
+    if (mode !== 'grouped') return windowed(`type:${owner}`, level, members.map((member) => symbol(member, level)))
     const groups = new Map<string, ApiSearchResult[]>()
     for (const member of members) {
       const group = groups.get(member.kind) ?? []
@@ -180,8 +206,8 @@ export function sidebarNodes(source: ApiTreeJson, base: string, mode: SidebarPre
       const record = catalog.symbols.get(entry.id)
       return record ? [{ ...record, name: entry.name, shortcut: entry.shortcut }] : []
     })
-    return [...entries.map((entry) => symbol({ ...entry, name: rootName(entry, entries) }, level, entry.shortcut)),
-      ...bucket.children.map((child) => bucketNode(child, level))]
+    return windowed(`bucket:${bucket.id}`, level, [...entries.map((entry) => symbol({ ...entry, name: rootName(entry, entries) }, level, entry.shortcut)),
+      ...bucket.children.map((child) => bucketNode(child, level))])
   }
   const bucketNode = (bucket: ApiTreeBucket, level: number): SidebarNode => ({
     id: nextId(), label: bucket.label, level, count: bucket.count, lazy: `bucket:${bucket.id}`,
@@ -190,6 +216,13 @@ export function sidebarNodes(source: ApiTreeJson, base: string, mode: SidebarPre
     ...(currentBuckets.has(bucket.id) ? { children: bucketNodes(bucket, level + 1) } : {}),
   })
   if (branch) {
+    // A run a window left out, by position in the list it was cut from.
+    const folded = /^more:(bucket|type):(.+):(\d+)-(\d+)$/.exec(branch.lazy)
+    if (folded) {
+      const [kind, id, from, to] = folded.slice(1) as [string, string, string, string]
+      const bucket = buckets.get(id)
+      return (kind === 'bucket' ? bucket ? bucketNodes(bucket, branch.level) : [] : memberNodes(id, branch.level)).slice(Number(from), Number(to))
+    }
     if (branch.lazy.startsWith('bucket:')) {
       const bucket = buckets.get(branch.lazy.slice(7))
       return bucket ? bucketNodes(bucket, branch.level) : []

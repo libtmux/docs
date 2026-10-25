@@ -7,7 +7,8 @@
  * types with members closed over nothing: their children arrive from
  * `tree.json` the first time a reader opens one. So the markup a page carries
  * stays its own branch rather than twelve thousand symbols, and every bucket
- * still opens in place.
+ * still opens in place. A list longer than a window keeps the rows around the
+ * page and folds the rest into "N more" rows, which open like any other branch.
  *
  * Desktop: a sticky column whose tree scrolls on its own, opened at the page
  * being read before first paint. Phone: the same markup as a drawer docked on

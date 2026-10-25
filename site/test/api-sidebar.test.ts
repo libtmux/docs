@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { sidebarCatalog, sidebarInventory, sidebarNodes, quietSidebarKinds, SIDEBAR_PRESENTATIONS, type SidebarNode } from '../src/lib/api-sidebar'
+import { sidebarCatalog, sidebarInventory, sidebarNodes, quietSidebarKinds, SIDEBAR_PRESENTATIONS, SIDEBAR_WINDOW, type SidebarNode } from '../src/lib/api-sidebar'
 import { apiTreeHref, searchApi, type ApiSearchResult, type ApiTreeJson } from '../src/lib/api-search'
+import { API_MODEL_PORTS } from '../src/lib/ports'
+import { referenceTree } from '../src/lib/api-tree'
 import { tmuxReferenceTree, tmuxReferenceUrl, tmuxSourceModel } from '../src/lib/tmux-reference'
 
 const json: ApiTreeJson = {
@@ -122,6 +124,126 @@ describe('API sidebar presentations', () => {
 })
 
 const rowsOf = (nodes: SidebarNode[]): SidebarNode[] => nodes.flatMap((node) => [node, ...rowsOf(node.children ?? [])])
+
+describe('long lists in Outline', () => {
+  const COUNT = SIDEBAR_WINDOW * 5
+  const base = '/reference/'
+  /** One owner whose members are far more than a window. */
+  const longOwner = (count = COUNT, owner = 'big'): ApiTreeJson => ({
+    port: 'sample',
+    buckets: [{ id: 'objects', label: 'Objects', count: 1, slug: 'big', children: [], types: [
+      { id: owner, name: 'Big', slug: 'big', m: 1, kind: 'class', category: 'types' },
+    ] }],
+    members: { [owner]: Array.from({ length: count }, (_, i) => [`m${i}`, `big-m${i}`, `${owner}.m${i}`, 'method']) },
+  })
+  const membersOfBig = (nodes: SidebarNode[]) => nodes[0]!.children![0]!.children!
+  const isMore = (node: SidebarNode) => Boolean(node.lazy?.startsWith('more:'))
+  const index = (node: SidebarNode) => Number(node.label.slice(1))
+
+  it('keeps a window of members around the selected member and folds the rest behind lazy rows', () => {
+    const json = longOwner()
+    const children = membersOfBig(sidebarNodes(json, base, 'outline', 'big.m100'))
+    const shown = children.filter((node) => !isMore(node))
+    const [before, after] = children.filter(isMore)
+    expect(shown.length).toBeLessThanOrEqual(SIDEBAR_WINDOW + 16)
+    expect(shown.find((node) => node.current)?.label).toBe('m100')
+    expect(shown.map(index)).toEqual(Array.from({ length: shown.length }, (_, i) => index(shown[0]!) + i))
+    expect(index(shown[0]!)).toBeGreaterThan(0)
+    expect(index(shown.at(-1)!)).toBeLessThan(COUNT - 1)
+    expect(children[0]).toBe(before)
+    expect(children.at(-1)).toBe(after)
+    expect(before).toMatchObject({ label: `${index(shown[0]!)} more`, expanded: false, level: shown[0]!.level, lazy: `more:type:big:0-${index(shown[0]!)}` })
+    expect(before!.href).toBeUndefined()
+    expect(after).toMatchObject({ label: `${COUNT - 1 - index(shown.at(-1)!)} more`, lazy: `more:type:big:${index(shown.at(-1)!) + 1}-${COUNT}` })
+  })
+
+  it('opens a long owner at its first members when the owner itself is selected', () => {
+    const children = membersOfBig(sidebarNodes(longOwner(), base, 'outline', 'big'))
+    expect(children[0]).toMatchObject({ label: 'm0', kind: 'method' })
+    expect(children.filter(isMore)).toHaveLength(1)
+    expect(children.at(-1)!.lazy).toBe(`more:type:big:${children.length - 1}-${COUNT}`)
+  })
+
+  it.each([SIDEBAR_WINDOW, SIDEBAR_WINDOW + 2])('lists %i members whole, as a run that short is not worth a row', (count) => {
+    const children = membersOfBig(sidebarNodes(longOwner(count), base, 'outline', `big.m${count - 1}`))
+    expect(children.map((node) => node.label)).toEqual(Array.from({ length: count }, (_, i) => `m${i}`))
+  })
+
+  it('returns exactly the omitted members, one level in, when a folded row opens', () => {
+    const json = longOwner()
+    const children = membersOfBig(sidebarNodes(json, base, 'outline', 'big.m100'))
+    const opened: { node: SidebarNode; folded?: number }[] = children.flatMap((node) => isMore(node)
+      ? sidebarNodes(json, base, 'outline', 'big.m100', false, { lazy: node.lazy!, level: node.level + 1 }).map((child) => ({ node: child, folded: node.level + 1 }))
+      : [{ node }])
+    expect(opened.map(({ node }) => node.href)).toEqual(Array.from({ length: COUNT }, (_, i) => `${base}big-m${i}/`))
+    expect(opened.filter(({ folded }) => folded !== undefined).every(({ node, folded }) => node.level === folded)).toBe(true)
+    expect(opened.every(({ node }) => node.kind === 'method')).toBe(true)
+  })
+
+  it('reads a folded run of an owner whose id holds colons and ranges', () => {
+    const id = 'libtmux.Buffer:reference-1:2-3'
+    const json = longOwner(COUNT, id)
+    const children = membersOfBig(sidebarNodes(json, base, 'outline', `${id}.m100`))
+    const [before] = children.filter(isMore)
+    expect(before!.lazy).toMatch(/^more:type:libtmux\.Buffer:reference-1:2-3:0-\d+$/)
+    const hidden = sidebarNodes(json, base, 'outline', `${id}.m100`, false, { lazy: before!.lazy!, level: before!.level + 1 })
+    expect(hidden.map(index)).toEqual(Array.from({ length: index(children[1]!) }, (_, i) => i))
+  })
+
+  it('lists every member when the reader opens the owner, or chooses another layout', () => {
+    const json = longOwner()
+    expect(sidebarNodes(json, base, 'outline', 'big.m100', false, { lazy: 'type:big', level: 3 })).toHaveLength(COUNT)
+    expect(sidebarNodes(json, base, 'focus', 'big.m100')).toHaveLength(COUNT + 1)
+    const grouped = sidebarNodes(json, base, 'grouped', 'big.m100')[0]!.children![0]!.children!
+    expect(grouped).toHaveLength(1)
+    expect(grouped[0]!.children).toHaveLength(COUNT)
+  })
+
+  it('windows a long category the same way and returns its omitted entries', () => {
+    const json: ApiTreeJson = { port: 'sample', members: {}, buckets: [{ id: 'objects', label: 'Objects', count: COUNT, slug: 'f0', children: [], types:
+      Array.from({ length: COUNT }, (_, i) => ({ id: `f${i}`, name: `f${i}`, slug: `f${i}`, m: 0 as const, kind: 'function', category: 'members' })) }] }
+    const children = sidebarNodes(json, base, 'outline', 'f100')[0]!.children!
+    const [before, after] = children.filter(isMore)
+    expect(children.find((node) => node.current)?.label).toBe('f100')
+    expect(before!.lazy).toMatch(/^more:bucket:objects:0-\d+$/)
+    expect(after!.lazy).toMatch(new RegExp(`^more:bucket:objects:\\d+-${COUNT}$`))
+    const opened = children.flatMap((node) => isMore(node)
+      ? sidebarNodes(json, base, 'outline', 'f100', false, { lazy: node.lazy!, level: node.level + 1 }) : [node])
+    expect(opened.map((node) => node.label)).toEqual(Array.from({ length: COUNT }, (_, i) => `f${i}`))
+  })
+
+  it('lists a whole long category in Grouped, which has no first paint to bound', () => {
+    const json: ApiTreeJson = { port: 'sample', members: {}, buckets: [{ id: 'objects', label: 'Objects', count: COUNT, slug: 'f0', children: [], types:
+      Array.from({ length: COUNT }, (_, i) => ({ id: `f${i}`, name: `f${i}`, slug: `f${i}`, m: 0 as const, kind: 'function', category: 'members' })) }] }
+    expect(sidebarNodes(json, base, 'grouped', 'f100')[0]!.children!.filter(isMore)).toEqual([])
+    expect(sidebarNodes(json, base, 'grouped', 'f100')[0]!.children).toHaveLength(COUNT)
+  })
+
+  it.each(API_MODEL_PORTS.map((port) => port.slug))('reaches every %s declaration by opening rows from Outline', (slug) => {
+    const json = referenceTree(slug)
+    const catalog = sidebarCatalog(json)
+    const prefix = `/en/${slug}/latest/reference/`
+    const widest = catalog.owners.reduce((best, owner) => catalog.membersOf(owner.id).length > catalog.membersOf(best.id).length ? owner : best)
+    const middle = catalog.membersOf(widest.id)[catalog.membersOf(widest.id).length >> 1]
+    const reached = (selected: string) => {
+      const hrefs = new Set<string>()
+      const walk = (nodes: SidebarNode[], depth: number) => {
+        for (const node of nodes) {
+          if (node.kind && node.href && !node.shortcut) hrefs.add(node.href)
+          walk(node.children ?? (node.lazy && depth < 40
+            ? sidebarNodes(json, prefix, 'outline', selected, false, { lazy: node.lazy, level: node.level + 1 }) : []), depth + 1)
+        }
+      }
+      walk(sidebarNodes(json, prefix, 'outline', selected), 0)
+      return hrefs
+    }
+    const expected = new Set(catalog.records.map((record) => apiTreeHref(prefix, record, json.hrefs)))
+    for (const selected of [widest.id, middle?.id ?? widest.id, '']) {
+      const hrefs = reached(selected)
+      expect([...expected].filter((href) => !hrefs.has(href)).slice(0, 5), `${slug} from ${selected || 'the root'}`).toEqual([])
+    }
+  }, 60_000)
+})
 const ANONYMOUS = /^anonymous (?:enum|struct|union)$/
 
 describe('anonymous declarations in the sidebar', () => {

@@ -213,3 +213,24 @@ it('marks only the declaration as the current page, never the category that link
   expect(inner.hasAttribute('aria-current')).toBe(false)
   expect([...plain.nav.querySelectorAll('[aria-current="page"]')].map((link) => link.matches('.api-nav__leaf'))).toEqual([true])
 })
+
+it('opens the members a window folded away in place, one level in', async () => {
+  const members = Array.from({ length: 200 }, (_, i): [string, string, string, string] => [`m${i}`, `big-m${i}`, `big.m${i}`, 'method'])
+  const big: ApiTreeJson = { port: 'sample', buckets: [{ id: 'objects', label: 'Objects', count: 1, slug: 'big', children: [], types: [
+    { id: 'big', name: 'Big', slug: 'big', m: 1, kind: 'class', category: 'types' }] }], members: { big: members } }
+  const { nav, setApiSidebar } = await mount(big, 'https://libtmux.org/en/sample/latest/reference/big-m100/', 'big.m100')
+  await setApiSidebar(nav, 'outline', 'big.m100')
+  const folded = [...nav.querySelectorAll<HTMLElement>('[data-lazy^="more:"]')]
+  expect(folded).toHaveLength(2)
+  expect(folded.every((row) => row.getAttribute('aria-expanded') === 'false' && row.getAttribute('aria-level') === '3')).toBe(true)
+  const before = nav.querySelectorAll('.api-nav__tree a[href*="big-m"]').length
+  expect(before).toBeLessThan(200)
+  const last = folded.at(-1)!
+  ;(last.querySelector('.api-nav__row') as HTMLElement).click()
+  await vi.waitFor(() => expect(last.getAttribute('aria-expanded')).toBe('true'))
+  const revealed = [...last.querySelectorAll<HTMLElement>(':scope > [role="group"] a[href]')]
+  expect(revealed.map((row) => row.getAttribute('aria-level'))).toEqual(revealed.map(() => '4'))
+  expect(revealed.at(-1)?.getAttribute('href')).toBe('/en/sample/latest/reference/big-m199/')
+  expect(nav.querySelectorAll('.api-nav__tree a[href*="big-m"]').length).toBe(before + revealed.length)
+  expect(nav.querySelectorAll('[aria-current="page"]')).toHaveLength(1)
+})

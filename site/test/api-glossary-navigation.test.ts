@@ -274,18 +274,27 @@ it('labels the owner picker before the sidebar script loads with the owner in it
   expect(await label()).toBe('Node')
 })
 
-it.each(['go', 'rs', 'cxx', 'ts'])('bounds the initial %s sidebar to its current path and deferred picker', async (port) => {
-  const inventory = tree.referenceTree(port)
-  const selected = inventory.buckets[0]!.types.find((entry) => !entry.shortcut)!
-  const component = await (await components())('ApiTree')
+const PORT_SLUGS = ports.API_MODEL_PORTS.map((port) => port.slug)
+/** What one rendered sidebar may add to a page, before and after compression. */
+const SIDEBAR_RAW_BUDGET = 96 * 1024
+const SIDEBAR_GZIP_BUDGET = 12 * 1024
+
+async function sidebarMarkup(component: unknown, port: string, inventory: search.ApiTreeJson, selected: { id: string; slug: string }, presentation = 'outline') {
   const container = await experimental_AstroContainer.create()
-  const html = await container.renderToString(component, { props: {
-    presentation: 'outline', inventory, selectedSymbol: selected.id,
+  return container.renderToString(component as never, { props: {
+    presentation, inventory, selectedSymbol: selected.id,
     referenceBase: `/en/${port}/latest/reference/`, portName: port, tree: [], members: [], withMembers: new Set(),
     currentPath: `/en/${port}/latest/reference/${selected.slug}/`, version: 'test',
   } })
-  expect(Buffer.byteLength(html), `${port} sidebar bytes`).toBeLessThan(96 * 1024)
-  expect(gzipSync(html).byteLength, `${port} sidebar gzip bytes`).toBeLessThan(12 * 1024)
+}
+
+it.each(PORT_SLUGS)('bounds the initial %s sidebar to its current path and deferred picker', async (port) => {
+  const inventory = tree.referenceTree(port)
+  const selected = inventory.buckets[0]!.types.find((entry) => !entry.shortcut)!
+  const component = await (await components())('ApiTree')
+  const html = await sidebarMarkup(component, port, inventory, selected)
+  expect(Buffer.byteLength(html), `${port} sidebar bytes`).toBeLessThan(SIDEBAR_RAW_BUDGET)
+  expect(gzipSync(html).byteLength, `${port} sidebar gzip bytes`).toBeLessThan(SIDEBAR_GZIP_BUDGET)
   const win = new Window()
   windows.push(win)
   win.document.body.innerHTML = html
@@ -293,8 +302,48 @@ it.each(['go', 'rs', 'cxx', 'ts'])('bounds the initial %s sidebar to its current
   const top = win.document.querySelectorAll('.api-nav__tree > [data-lazy^="bucket:"]')
   expect(top.length).toBe(inventory.buckets.length)
   expect([...top].filter((row) => row.getAttribute('aria-expanded') === 'true')).toHaveLength(1)
-  expect(win.document.querySelector('.api-nav__tree [aria-current="page"]')?.getAttribute('href')).toBe(`/en/${port}/latest/reference/${selected.slug}/`)
-})
+  expect(win.document.querySelector('.api-nav__tree [aria-current="page"]')?.getAttribute('href'))
+    .toBe(search.apiTreeHref(`/en/${port}/latest/reference/`, selected, inventory.hrefs))
+}, 30_000)
+
+// The heaviest sidebar belongs to whichever declaration opens the most rows, not to a
+// type or a first entry. Ranking every declaration's rows finds it without rendering
+// them all; the heaviest few are rendered and each must fit.
+it.each(PORT_SLUGS)('keeps the heaviest %s sidebar inside the page-weight budget', async (port) => {
+  const inventory = tree.referenceTree(port)
+  const base = `/en/${port}/latest/reference/`
+  const heaviest = apiSidebar.sidebarCatalog(inventory).records
+    .map((record) => ({ record, rows: JSON.stringify(apiSidebar.sidebarNodes(inventory, base, 'outline', record.id)).length }))
+    .sort((a, z) => z.rows - a.rows).slice(0, 5)
+  const component = await (await components())('ApiTree')
+  const sizes: number[] = []
+  for (const { record } of heaviest) {
+    const html = await sidebarMarkup(component, port, inventory, record)
+    sizes.push(Buffer.byteLength(html))
+    expect(sizes.at(-1), `${port} ${record.id} sidebar bytes`).toBeLessThan(SIDEBAR_RAW_BUDGET)
+    expect(gzipSync(html).byteLength, `${port} ${record.id} sidebar gzip bytes`).toBeLessThan(SIDEBAR_GZIP_BUDGET)
+  }
+  // The ranking must lead to heavy pages: any page picked without it, such as a category's first, weighs no more.
+  const first = inventory.buckets[0]!.types.find((entry) => !entry.shortcut)!
+  expect(Math.max(...sizes), `${port} ranking finds the heaviest sidebar`)
+    .toBeGreaterThanOrEqual(Buffer.byteLength(await sidebarMarkup(component, port, inventory, first)))
+}, 60_000)
+
+it('measures a sidebar that lists every member as over budget, and the same owner in Outline as within it', async () => {
+  const members = Array.from({ length: 3000 }, (_, i): [string, string, string, string] => [`member_${i}`, `huge-member-${i}`, `huge.member_${i}`, 'method'])
+  const inventory: search.ApiTreeJson = { port: 'sample', members: { huge: members }, buckets: [{ id: 'objects', label: 'Objects', count: 1, slug: 'huge', children: [], types: [
+    { id: 'huge', name: 'Huge', slug: 'huge', m: 1, kind: 'class', category: 'types' }] }] }
+  const component = await (await components())('ApiTree')
+  const selected = { id: 'huge.member_1500', slug: 'huge-member-1500' }
+  // Focus exists to list the owner's members, so it is the clean control for the measurement.
+  const everyMember = await sidebarMarkup(component, 'sample', inventory, selected, 'focus')
+  expect(Buffer.byteLength(everyMember)).toBeGreaterThan(SIDEBAR_RAW_BUDGET)
+  expect(gzipSync(everyMember).byteLength).toBeGreaterThan(SIDEBAR_GZIP_BUDGET)
+  const outline = await sidebarMarkup(component, 'sample', inventory, selected)
+  expect(Buffer.byteLength(outline)).toBeLessThan(SIDEBAR_RAW_BUDGET)
+  expect(gzipSync(outline).byteLength).toBeLessThan(SIDEBAR_GZIP_BUDGET)
+  expect(outline).toContain('huge-member-1500')
+}, 60_000)
 
 it.each([undefined, 'mcp', 'workspace'] as const)('preserves real DocsLayout contents and adds %s glossary permalinks', async (product) => {
   const path = product ? `${ports.referenceUrl(ports.PORT_BY_SLUG.go, 'v9-proof', product)}glossary/` : glossary.API_GLOSSARY_PATH
