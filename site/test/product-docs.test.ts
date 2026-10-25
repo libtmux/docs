@@ -93,7 +93,7 @@ it('advertises local native loaders while retaining their development status', (
     }
     if (native(port)) expect(workspaceOverviewNotice(port)?.body).toContain(`\`${port.workspaceCli!.split(/\s+/)[0]}\``)
     if (port.workspaceCliAvailability === 'published') {
-      expect(productDescription(port, 'workspace')).toContain('prerelease')
+      expect(productDescription(port, 'workspace')).toContain('published')
       expect(workspaceOverviewNotice(port)?.body).not.toMatch(/unreleased|local/)
     }
   }
