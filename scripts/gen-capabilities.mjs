@@ -241,11 +241,11 @@ if (checking) {
     for (const slug of kept) problems.push(...verifyCommitted(slug, committed.ports[slug]))
     const lowest = lowestOf(owners.map((slug) => entryOf(slug)?.floor?.minimum))
     const held = committed.releases ?? []
-    if (haveTmux) {
+    if (!Array.isArray(held)) problems.push('releases: expected an array')
+    else if (haveTmux) {
       const expected = lowest ? tmuxReleases().filter((v) => compareTmuxVersions(v, lowest) >= 0) : []
       if (JSON.stringify(expected) !== JSON.stringify(held)) problems.push(`releases differ from the tmux refs: the file has ${held.join(', ') || 'none'}, the refs give ${expected.join(', ') || 'none'}`)
-    } else if (!Array.isArray(held)) problems.push('releases: expected an array')
-    else {
+    } else {
       for (const v of held) if (!printable(v)) problems.push(`releases: ${JSON.stringify(v)} is not a version tmux prints`)
       const valid = held.filter(printable)
       if (valid.some((v, i) => i > 0 && compareTmuxVersions(valid[i - 1], v) >= 0)) problems.push('releases are not in ascending order')

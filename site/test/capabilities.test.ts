@@ -242,6 +242,15 @@ describe('gen-capabilities --check', () => {
     expect(named.stdout).toContain('is current for 1 of 1 ports')
   })
 
+  it('reports releases that are not a list instead of crashing', () => {
+    for (const tmux of [tmuxSource(), '/nonexistent/tmux']) {
+      const run = check(committed((data) => { data.releases = '3.3a' }), { tmux })
+      expect(run.status).toBe(1)
+      expect(run.stderr).toContain('releases: expected an array')
+      expect(run.stderr).not.toContain('TypeError')
+    }
+  })
+
   it('refuses to write a file that would drop a port it cannot read', () => {
     const out = committed()
     const before = readFileSync(out, 'utf8')
