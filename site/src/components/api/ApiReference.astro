@@ -12,7 +12,7 @@ import { apiGlossary, apiGlossaryHeadings, API_GLOSSARY_TITLE, apiGlossaryHref }
 import ApiQualifiedName from '../../components/api/ApiQualifiedName.astro'
 import ApiType from '../../components/api/ApiType.astro'
 import ApiPageContents from '../../components/api/ApiPageContents.astro'
-import { apiEntryFields, apiEntrySections, apiMemberGroups, hasFieldMembers, hasScalarMembers, relatedTypeLinks, type ApiSection } from '../../lib/api-sections'
+import { apiEntryFields, apiEntrySections, apiMemberGroups, memberTableColumns, relatedTypeLinks, type ApiSection } from '../../lib/api-sections'
 import PageToolbar from '../../components/PageToolbar.astro'
 import PagePortSwitcher from '../../components/PagePortSwitcher.astro'
 import DocumentationContext from '../../components/docs/DocumentationContext.astro'
@@ -352,10 +352,9 @@ const inherited = members.filter((m) => m.inheritedFrom)
 const listed = members.filter((m) => !m.inheritedFrom || memberTier(m, signals) === 'parent')
 const otherInherited = inherited.filter((m) => memberTier(m, signals) !== 'parent')
 const memberGroups = apiMemberGroups(listed, signals)
-const scalarMembers = Boolean(owner && hasScalarMembers(owner, listed))
-const fieldMembers = Boolean(owner && hasFieldMembers(owner, listed, port))
-const showMemberGroups = !scalarMembers && !fieldMembers && memberGroups.length > 1
-const membersLabel = owner?.variant || fieldMembers || (language === 'julia' && owner?.kind === 'struct' && listed.every((member) => member.kind === 'property')) ? 'Fields' : 'Members'
+const tableColumns = owner ? memberTableColumns(owner, listed, port) : undefined
+const showMemberGroups = !tableColumns && memberGroups.length > 1
+const membersLabel = owner?.variant || tableColumns === 'fields' || (language === 'julia' && owner?.kind === 'struct' && listed.every((member) => member.kind === 'property')) ? 'Fields' : 'Members'
 const glossaryContext = apiGlossary(`${refBase}glossary/`)
 const pageSections: ApiSection[] = glossary ? apiGlossaryHeadings(glossaryContext.path).map((heading) => ({
   id: heading.slug, label: heading.text, nested: heading.depth === 3,
@@ -792,7 +791,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
             {listed.length > 0 && (
               <div class="api-members mt-8">
                 <h2 class="api-section-heading text-lg font-semibold" id="api-members">{membersLabel}<span class="api-section-count">{listed.length}</span><a class="api-heading-link" href="#api-members" aria-label={`Link to ${membersLabel}`}>#</a></h2>
-                {scalarMembers || fieldMembers ? <ApiScalarMembers owner={owner} members={listed} index={index} hrefFor={hrefFor} columns={fieldMembers ? 'fields' : 'value'} /> : memberGroups.map((group) => <section id={showMemberGroups ? undefined : group.id} class:list={['api-member-group', !showMemberGroups && 'api-member-group--single']} aria-labelledby={showMemberGroups ? group.id : 'api-members'}>
+                {tableColumns ? <ApiScalarMembers owner={owner} members={listed} index={index} hrefFor={hrefFor} columns={tableColumns} /> : memberGroups.map((group) => <section id={showMemberGroups ? undefined : group.id} class:list={['api-member-group', !showMemberGroups && 'api-member-group--single']} aria-labelledby={showMemberGroups ? group.id : 'api-members'}>
                 {showMemberGroups && <h3 id={group.id}>{group.label}<span class="api-section-count">{group.members.length}</span><a class="api-heading-link" href={`#${group.id}`} aria-label={`Link to ${group.label}`}>#</a></h3>}
                 <ul class="api-member-list mt-3">
                   {group.members.map((m) => (

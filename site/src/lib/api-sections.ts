@@ -27,6 +27,11 @@ export function hasFieldMembers(owner: ApiSymbol, members: ApiSymbol[], port?: s
     members.length > 0 && members.every((member) => member.kind === 'attribute' && member.type !== undefined)
 }
 
+/** The table a type page lists its members in, or none for the grouped list. */
+export function memberTableColumns(owner: ApiSymbol, members: ApiSymbol[], port?: string): 'fields' | 'value' | undefined {
+  return hasFieldMembers(owner, members, port) ? 'fields' : hasScalarMembers(owner, members) ? 'value' : undefined
+}
+
 /** Match the rendered declaration in HTML and Markdown, including long lists. */
 export function signatureParameterText(param: Param, port?: string): string {
   const variadic = param.variadic === 'keyword' ? '**' : param.variadic ? (port === 'ts' ? '...' : '*') : ''

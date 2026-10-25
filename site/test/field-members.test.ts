@@ -1,9 +1,10 @@
+import { readFileSync } from 'node:fs'
 import { Window } from 'happy-dom'
 import { afterAll, describe, expect, it, vi } from 'vitest'
 import { experimental_AstroContainer } from 'astro/container'
 import { membersOf, SymbolIndex, type ApiSymbol } from '@libtmux/api-model'
 import { API_MODELS } from '../src/lib/api-models'
-import { hasFieldMembers } from '../src/lib/api-sections'
+import { hasFieldMembers, memberTableColumns } from '../src/lib/api-sections'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { apiComponents } from './api-components'
 
@@ -16,6 +17,9 @@ const symbol = (id: string) => model.symbols.find((entry) => entry.id === id)!
 const fieldsOf = (owner: ApiSymbol) => membersOf(model, owner).filter((member) => !member.inheritedFrom)
 const markdownRows = (owner: ApiSymbol) => symbolMarkdown({ model, symbol: owner, index, hrefFor })
   .split('\n').filter((line) => line.startsWith('| ') && !line.startsWith('| Name') && !line.startsWith('| ---'))
+
+/** The Type cell with link syntax, code spans and pipe escapes removed. */
+const typeText = (row: string) => row.split(' | ')[1].replace(/\[`([^`]*)`\]\([^)]*\)/g, '$1').replaceAll('`', '').replaceAll('\\|', '|')
 
 // A struct, a named-field variant, a tuple variant, and a variant whose field type resolves to a page of its own.
 const owners = ['pane.CapturedLine', 'control.Event.Output', 'control.Subscription.Window']
@@ -30,7 +34,7 @@ describe('Rust field tables', () => {
     expect(rows).toHaveLength(fields.length)
     fields.forEach((field, i) => {
       expect(rows[i]).toContain(`[\`${field.name}\`](${hrefFor(field)})`)
-      expect(rows[i]).toContain(field.type!.split(/\W+/).filter(Boolean)[0])
+      expect(typeText(rows[i])).toBe(field.type!.replaceAll('\n', ' '))
       if (field.doc?.summary) expect(rows[i]).toContain(field.doc.summary.replaceAll('\n', ' '))
     })
     expect(symbolMarkdown({ model, symbol: owner, index, hrefFor })).toContain('| Name | Type | Description |')
@@ -53,10 +57,35 @@ describe('Rust field tables', () => {
     } finally { await window.happyDOM.abort() }
   })
 
-  it('renders the fields of every eligible type, one row per modelled field', () => {
-    const eligible = model.symbols.filter((owner) => hasFieldMembers(owner, fieldsOf(owner), 'rs'))
-    expect(eligible.length).toBeGreaterThan(0)
-    for (const owner of eligible) expect(markdownRows(owner), owner.id).toHaveLength(fieldsOf(owner).length)
+  // The oracle reads the committed file, not the member list the predicate and renderer consume.
+  const raw: { symbols: ApiSymbol[] } = JSON.parse(readFileSync(new URL('../src/data/api/rs.json', import.meta.url), 'utf8'))
+  const rawFieldCount = (symbols: ApiSymbol[], owner: ApiSymbol) =>
+    symbols.filter((entry) => entry.parent === owner.id && entry.kind === 'attribute').length
+  const sweep = (symbols: ApiSymbol[]) => {
+    const copy = { ...model, symbols }
+    return model.symbols.filter((owner) => hasFieldMembers(owner, fieldsOf(owner), 'rs')).map((owner) => ({
+      id: owner.id, rows: symbolMarkdown({ model: copy, symbol: owner, index, hrefFor }).split('\n').filter((line) => line.startsWith('| [`')).length,
+      expected: rawFieldCount(raw.symbols, owner),
+    }))
+  }
+
+  it('renders one row per raw field for every eligible type', () => {
+    const results = sweep(model.symbols)
+    expect(results.length).toBeGreaterThan(50)
+    expect(results.filter((entry) => entry.rows !== entry.expected)).toEqual([])
+  })
+
+  it('the sweep fails when one field is removed from a copy of the data', () => {
+    const victim = fieldsOf(symbol('pane.CapturedLine'))[0].id
+    const results = sweep(model.symbols.filter((entry) => entry.id !== victim))
+    expect(results.filter((entry) => entry.rows !== entry.expected).map((entry) => entry.id)).toEqual(['pane.CapturedLine'])
+  })
+
+  it('chooses the fields columns for every Rust field owner, never the value columns', () => {
+    for (const owner of model.symbols.filter((entry) => hasFieldMembers(entry, fieldsOf(entry), 'rs'))) {
+      expect(memberTableColumns(owner, fieldsOf(owner), 'rs'), owner.id).toBe('fields')
+    }
+    expect(memberTableColumns(symbol('blocking.Runtime'), fieldsOf(symbol('blocking.Runtime')), 'rs')).toBeUndefined()
   })
 
   it('shows no table for a type without fields (clean control)', () => {
