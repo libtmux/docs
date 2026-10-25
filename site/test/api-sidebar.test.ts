@@ -219,6 +219,26 @@ describe('long lists in Outline', () => {
     expect(sidebarNodes(json, base, 'grouped', 'f100')[0]!.children).toHaveLength(COUNT)
   })
 
+  // A window that misses the page's own row would leave the first paint showing nothing the reader is on.
+  it.each(API_MODEL_PORTS.map((port) => port.slug))('shows exactly one current row in the first paint of every %s declaration', (slug) => {
+    const json = referenceTree(slug)
+    const prefix = `/en/${slug}/latest/reference/`
+    const wrong = sidebarCatalog(json).records.filter((record) =>
+      rowsOf(sidebarNodes(json, prefix, 'outline', record.id)).filter((node) => node.current).length !== 1)
+    expect(wrong.map((record) => record.id).slice(0, 5), `${slug}: declarations whose page row is missing or repeated`).toEqual([])
+  }, 60_000)
+
+  it.each(['3.7c', '3.2a'])('shows exactly one current row in the first paint of tmux %s reference pages', (version) => {
+    const json = tmuxReferenceTree(version)
+    const prefix = tmuxReferenceUrl(version)
+    const records = sidebarCatalog(json).records
+    // A spread of every declaration, since each tmux page costs far more than a library's.
+    const sample = records.filter((_, index) => index % 12 === 0)
+    const wrong = sample.filter((record) => rowsOf(sidebarNodes(json, prefix, 'outline', record.id)).filter((node) => node.current).length !== 1)
+    expect(wrong.map((record) => record.id).slice(0, 5)).toEqual([])
+    expect(sample.length).toBeGreaterThan(0)
+  }, 60_000)
+
   it.each(API_MODEL_PORTS.map((port) => port.slug))('reaches every %s declaration by opening rows from Outline', (slug) => {
     const json = referenceTree(slug)
     const catalog = sidebarCatalog(json)
