@@ -19,7 +19,7 @@ const fixture = () => {
   const files = new Map([
     ['global.json', '{"sdk":{"version":"10.0.302"}}\n'],
     ['examples/api/NuGet.config', '<?xml version="1.0"?>\n<configuration />\n'],
-    ['examples/api/fsharp/Example.fsproj', '<Project Sdk="Microsoft.NET.Sdk" />\n'],
+    ['examples/api/fsharp/Example.fsproj', '<Project Sdk="Microsoft.NET.Sdk">\n  <ItemGroup>\n    <PackageReference Include="LibTmux.FSharp" Version="[0.0.0-alpha.24]" />\n  </ItemGroup>\n</Project>\n'],
     [program.sourceFile, '\n// Complete source file, including every blank line.\nopen LibTmux.FSharp\n\n'],
   ])
   const symbols: ApiSymbol[] = [
@@ -45,20 +45,19 @@ describe('complete F# API programs', () => {
       const all = symbol.doc!.examples!
       expect(all.slice(0, original.length)).toEqual(original)
       const blocks = all.slice(original.length)
-      expect(blocks).toHaveLength(7)
-      expect(blocks[0].code).toContain(`checkout --detach ${source.revision}`)
-      expect(blocks[0].intro).toContain('.NET SDK 10.0.302')
-      for (const [i, path] of ['global.json', 'examples/api/NuGet.config',
-        'examples/api/fsharp/Example.fsproj', manifest.examples[0].sourceFile].entries()) {
-        expect(blocks[i + 1].code).toBe(files.get(path))
-        expect(blocks[i + 1].sourceUrl).toBe(`https://github.com/${source.repo}/blob/${source.revision}/${path}`)
+      expect(blocks).toHaveLength(4)
+      for (const [i, path] of ['examples/api/fsharp/Example.fsproj', manifest.examples[0].sourceFile].entries()) {
+        expect(blocks[i].code).toBe(files.get(path))
+        expect(blocks[i].sourceUrl).toBe(`https://github.com/${source.repo}/blob/${source.revision}/${path}`)
       }
-      expect(blocks[4].lang).toBe('fsharp')
-      expect(blocks[4].intro).toContain('Program.fs')
-      expect(blocks[5].code).toContain('dotnet restore Example.fsproj --configfile NuGet.config')
-      expect(blocks[5].code).toContain('dotnet bin/Release/net8.0/Example.dll && \\\n')
-      expect(blocks[5].code).toContain('dotnet bin/Release/net10.0/Example.dll\n')
-      expect(blocks[6].code).toBe(manifest.examples[0].output)
+      expect(blocks[0].intro).toContain('the .NET 10 SDK or newer')
+      expect(blocks[0].intro).toContain('0.0.0-alpha.24 release of `LibTmux.FSharp` on NuGet')
+      expect(blocks.some((block) => /git clone|libtmux-source|NuGet\.config|global\.json/.test(block.code))).toBe(false)
+      expect(blocks[1].lang).toBe('fsharp')
+      expect(blocks[1].intro).toContain('`Program.fs`')
+      expect(blocks[2].code).toBe('$ dotnet build Example.fsproj --configuration Release && \\\n' +
+        '  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll\n')
+      expect(blocks[3].code).toBe(manifest.examples[0].output)
     }
   })
 
@@ -71,11 +70,11 @@ describe('complete F# API programs', () => {
     manifest.examples.push(second)
     attachCompleteFSharpExamples(symbols, read, source)
     const blocks = symbols[0].doc!.examples!
-    expect(blocks).toHaveLength(15)
-    expect(blocks[5].code).toBe(files.get(first.sourceFile))
-    expect(blocks[12].code).toBe(files.get(second.sourceFile))
-    expect(blocks[14].code).toBe('failure kept\n')
-    expect(symbols[1].doc!.examples).toHaveLength(7)
+    expect(blocks).toHaveLength(9)
+    expect(blocks[2].code).toBe(files.get(first.sourceFile))
+    expect(blocks[6].code).toBe(files.get(second.sourceFile))
+    expect(blocks[8].code).toBe('failure kept\n')
+    expect(symbols[1].doc!.examples).toHaveLength(4)
   })
 
   it('leaves historical source without an opt-in manifest unchanged', () => {
@@ -124,5 +123,14 @@ describe('complete F# API programs', () => {
     const sdk = fixture()
     sdk.files.set('global.json', '{"sdk":{"version":"latest"}}\n')
     expect(() => attachCompleteFSharpExamples(sdk.symbols, sdk.read, source)).toThrow('pinned SDK')
+  })
+
+  it('refuses a consumer project that does not reference one exact release', () => {
+    for (const project of ['<Project Sdk="Microsoft.NET.Sdk" />\n',
+      '<Project><ItemGroup><PackageReference Include="LibTmux.Other" Version="[0.0.0-alpha.24]" /></ItemGroup></Project>\n']) {
+      const { files, symbols, read } = fixture()
+      files.set('examples/api/fsharp/Example.fsproj', project)
+      expect(() => attachCompleteFSharpExamples(symbols, read, source)).toThrow('must reference one exact')
+    }
   })
 })

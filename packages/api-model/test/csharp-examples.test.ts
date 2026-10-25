@@ -20,7 +20,7 @@ const fixture = () => {
   const files = new Map([
     ['global.json', '{"sdk":{"version":"10.0.302"}}\n'],
     ['examples/api/NuGet.config', '<?xml version="1.0"?>\n<configuration />\n'],
-    ['examples/api/csharp/Example.csproj', '<Project Sdk="Microsoft.NET.Sdk" />\n'],
+    ['examples/api/csharp/Example.csproj', '<Project Sdk="Microsoft.NET.Sdk">\n  <ItemGroup>\n    <PackageReference Include="LibTmux" Version="[0.0.0-alpha.24]" />\n  </ItemGroup>\n</Project>\n'],
     [program.sourceFile, '\n// Complete file, including every blank line.\nusing System;\nConsole.WriteLine("connected");\n\n'],
   ])
   const symbols: ApiSymbol[] = [
@@ -48,23 +48,19 @@ describe('complete C# API programs', () => {
       const all = symbol.doc!.examples!
       expect(all.slice(0, original.length)).toEqual(original)
       const blocks = all.slice(original.length)
-      expect(blocks).toHaveLength(7)
-      expect(blocks[0].code).toContain(`checkout --detach ${source.revision}`)
-      expect(blocks[0].intro).toContain('.NET SDK 10.0.302')
-      for (const [i, path] of ['global.json', 'examples/api/NuGet.config',
-        'examples/api/csharp/Example.csproj', manifest.examples[0].sourceFile].entries()) {
-        expect(blocks[i + 1].code).toBe(files.get(path))
-        expect(blocks[i + 1].sourceUrl).toBe(`https://github.com/${source.repo}/blob/${source.revision}/${path}`)
+      expect(blocks).toHaveLength(4)
+      for (const [i, path] of ['examples/api/csharp/Example.csproj', manifest.examples[0].sourceFile].entries()) {
+        expect(blocks[i].code).toBe(files.get(path))
+        expect(blocks[i].sourceUrl).toBe(`https://github.com/${source.repo}/blob/${source.revision}/${path}`)
       }
-      expect(blocks[4].lang).toBe('csharp')
-      expect(blocks[4].intro).toContain('Program.cs')
-      expect(blocks[5].code.match(/dotnet pack /g)).toHaveLength(1)
-      expect(blocks[5].code).toContain('dotnet restore Example.csproj --configfile NuGet.config')
-      expect(blocks[5].code).toContain('-p:ContinuousIntegrationBuild=true')
-      expect(blocks[5].code).toContain('dotnet bin/Release/net8.0/Example.dll && \\\n')
-      expect(blocks[5].code).toContain('dotnet bin/Release/net10.0/Example.dll\n')
-      expect(blocks[5].code).not.toContain('FSharp')
-      expect(blocks[6].code).toBe(manifest.examples[0].output)
+      expect(blocks[0].intro).toContain('the .NET 10 SDK or newer')
+      expect(blocks[0].intro).toContain('0.0.0-alpha.24 release of `LibTmux` on NuGet')
+      expect(blocks.some((block) => /git clone|libtmux-source|NuGet\.config|global\.json/.test(block.code))).toBe(false)
+      expect(blocks[1].lang).toBe('csharp')
+      expect(blocks[1].intro).toContain('`Program.cs`')
+      expect(blocks[2].code).toBe('$ dotnet build Example.csproj --configuration Release && \\\n' +
+        '  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll\n')
+      expect(blocks[3].code).toBe(manifest.examples[0].output)
     }
   })
 
@@ -77,11 +73,11 @@ describe('complete C# API programs', () => {
     manifest.examples.push(second)
     attachCompleteCSharpExamples(symbols, read, source)
     const blocks = symbols[0].doc!.examples!
-    expect(blocks).toHaveLength(15)
-    expect(blocks[5].code).toBe(files.get(first.sourceFile))
-    expect(blocks[12].code).toBe(files.get(second.sourceFile))
-    expect(blocks[14].code).toBe('second\n')
-    expect(symbols[1].doc!.examples).toHaveLength(7)
+    expect(blocks).toHaveLength(9)
+    expect(blocks[2].code).toBe(files.get(first.sourceFile))
+    expect(blocks[6].code).toBe(files.get(second.sourceFile))
+    expect(blocks[8].code).toBe('second\n')
+    expect(symbols[1].doc!.examples).toHaveLength(4)
   })
 
   it('maps generic owner and method arities while retaining native property and method kinds', () => {
@@ -93,7 +89,7 @@ describe('complete C# API programs', () => {
     symbols[1].id = 'LibTmux.Query.QueryExtensions.Matching'
     symbols[1].kind = 'method'
     attachCompleteCSharpExamples(symbols, read, source)
-    expect(symbols.map((symbol) => symbol.doc!.examples!.length)).toEqual([8, 7])
+    expect(symbols.map((symbol) => symbol.doc!.examples!.length)).toEqual([5, 4])
   })
 
   it('leaves historical source and an F#-only manifest unchanged', () => {
@@ -148,5 +144,14 @@ describe('complete C# API programs', () => {
     const packageProfile = fixture()
     packageProfile.manifest.profiles.csharp.package = 'LibTmux.FSharp'
     expect(() => attachCompleteCSharpExamples(packageProfile.symbols, packageProfile.read, source)).toThrow('Invalid C# example profile')
+  })
+
+  it('refuses a consumer project that does not reference one exact release', () => {
+    for (const project of ['<Project Sdk="Microsoft.NET.Sdk" />\n',
+      '<Project><ItemGroup><PackageReference Include="LibTmux.Other" Version="[0.0.0-alpha.24]" /></ItemGroup></Project>\n']) {
+      const { files, symbols, read } = fixture()
+      files.set('examples/api/csharp/Example.csproj', project)
+      expect(() => attachCompleteCSharpExamples(symbols, read, source)).toThrow('must reference one exact')
+    }
   })
 })

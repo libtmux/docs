@@ -16,7 +16,13 @@ interface Manifest {
   examples: Program[]
 }
 
-/** Attach source-verified compiler targets without changing the site's C# source identities. */
+/**
+ * Attach source-verified compiler targets without changing the site's C# source identities.
+ *
+ * The consumer project references the NuGet release its repository revision
+ * declares, so readers restore it from nuget.org; the port's local package
+ * feed and pinned SDK serve only its own source-built verification.
+ */
 export function attachCompleteCSharpExamples(
   symbols: ApiSymbol[],
   read: (path: string) => string | undefined,
@@ -49,13 +55,12 @@ export function attachCompleteCSharpExamples(
     return code
   }
   const urlFor = (path: string) => `https://github.com/${source.repo}/blob/${source.revision}/${path}`
-  const setup = [
-    { sourceFile: 'global.json', path: 'global.json', lang: 'json' },
-    { sourceFile: 'examples/api/NuGet.config', path: 'NuGet.config', lang: 'xml' },
-    { sourceFile: profile.projectFile, path: 'Example.csproj', lang: 'xml' },
-  ]
   const sdk = JSON.parse(codeFor('global.json')).sdk?.version
   if (!/^\d+\.\d+\.\d+$/.test(sdk ?? '')) throw new Error('C# examples require a pinned SDK')
+  const project = codeFor(profile.projectFile)
+  const release = new RegExp(`<PackageReference Include="${profile.package.replaceAll('.', '\\.')}" Version="\\[([^\\]]+)\\]" />`)
+    .exec(project)?.[1]
+  if (!release) throw new Error(`C# example project must reference one exact ${profile.package} release`)
   const ids = new Set<string>()
   for (const program of programs) {
     if (!/^csharp-[A-Za-z0-9]+$/.test(program.id) || ids.has(program.id) ||
@@ -69,32 +74,18 @@ export function attachCompleteCSharpExamples(
     }
     ids.add(program.id)
     const blocks: NonNullable<DocBlock['examples']> = [{
-      lang: 'console',
-      intro: `${program.description.replace(/\n/g, ' ')} Use Linux or macOS with Git, tmux 3.3a or newer, .NET SDK ${sdk}, and the .NET 8 and 10 runtimes. In an empty directory, fetch the documented library revision:`,
-      code: `$ git clone https://github.com/${source.repo}.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ${source.revision}\n`,
+      lang: 'xml',
+      intro: `${program.description.replace(/\n/g, ' ')} Use Linux or macOS with tmux 3.3a or newer, the .NET ${sdk.split('.')[0]} SDK or newer, and the .NET 8 and 10 runtimes. In an empty directory, save this project as \`Example.csproj\`. It references the ${release} release of \`${profile.package}\` on NuGet:`,
+      sourceUrl: urlFor(profile.projectFile), code: project,
     }]
-    for (const file of setup) blocks.push({
-      lang: file.lang, intro: `Save this complete consumer setup as ${file.path}:`,
-      sourceUrl: urlFor(file.sourceFile), code: codeFor(file.sourceFile),
-    })
     blocks.push({
       lang: 'csharp',
-      intro: 'Save this complete program as Program.cs. It creates a private server; await using disposes its owned scopes after success, cancellation or failure. The complete file contains explicit imports, a top-level async entry point and a cancellation deadline.',
+      intro: 'Save this complete program as `Program.cs`. It creates a private server; `await using` disposes its owned scopes after success, cancellation or failure. The complete file contains explicit imports, a top-level async entry point and a cancellation deadline.',
       sourceUrl: urlFor(program.sourceFile), code: codeFor(program.sourceFile),
     }, {
       lang: 'console',
-      intro: 'Build the exact source package and the saved consumer, then run both supported frameworks. The local package feed prevents an unrelated published package from satisfying the restore. Each program checks its result and exits unsuccessfully after an unhandled error:',
-      code: '$ export NUGET_PACKAGES="$PWD/packages" && \\\n' +
-        '  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n' +
-        '  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n' +
-        '    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n' +
-        '    --output "$PWD/libtmux-source/artifacts/api-example-packages" && \\\n' +
-        '  dotnet restore Example.csproj --configfile NuGet.config && \\\n' +
-        '  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n' +
-        '  export LIBTMUX_TMUX="$(command -v tmux)" && \\\n' +
-        '  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n' +
-        '  mkdir -p "$TMUX_TMPDIR" && \\\n' +
-        '  unset TMUX TMUX_PANE && \\\n' +
+      intro: 'Build the project and run both supported frameworks. Each program checks its result and exits unsuccessfully after an unhandled error:',
+      code: '$ dotnet build Example.csproj --configuration Release && \\\n' +
         '  dotnet bin/Release/net8.0/Example.dll && \\\n' +
         '  dotnet bin/Release/net10.0/Example.dll\n',
     }, { lang: 'text', intro: 'Expected program output from each framework:', code: program.output })
