@@ -158,6 +158,19 @@
     signal.addEventListener('abort', () => cancelAnimationFrame(frame), { once: true })
     update()
     layoutBeforeAppearance(update)
+    // A pinned class row varies in height, so anchored members measure it for their scroll margin.
+    const classRows = [...document.querySelectorAll<HTMLElement>('section > dl.py.class.gp-sphinx-api-container')]
+      .flatMap((owner) => { const row = owner.querySelector<HTMLElement>(':scope > dt'); return row ? [{ owner, row }] : [] })
+    const measureClassRows = () => {
+      for (const { owner, row } of classRows) owner.style.setProperty('--native-class-row-height', `${row.getBoundingClientRect().height}px`)
+    }
+    measureClassRows()
+    layoutBeforeAppearance(measureClassRows)
+    if (typeof ResizeObserver === 'function' && classRows.length) {
+      const rowObserver = new ResizeObserver(measureClassRows)
+      for (const { row } of classRows) rowObserver.observe(row)
+      signal.addEventListener('abort', () => rowObserver.disconnect(), { once: true })
+    }
     document.addEventListener('gp-sphinx:navigated', () => {
       queueMicrotask(() => layoutBeforeAppearance(update))
     }, { signal })
