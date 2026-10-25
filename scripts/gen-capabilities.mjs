@@ -10,6 +10,10 @@
  * matrix columns come from. A name that does not resolve fails the run, so a
  * renamed method cannot leave a capability pointing at nothing.
  *
+ * A port that raises another port's types, as PowerShell raises .NET's
+ * exceptions, resolves those names through the models in its
+ * `apiDependencies`, by the inventory reference navigation links them with.
+ *
  * Releases come from tmux's own refs: final tags, the version a release
  * branch names in `configure.ac` (3.7d shipped from a branch before it was
  * tagged), and the `next-X.Y` that master names. Only releases at or above the
@@ -31,8 +35,9 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { PORTS } from '../site/src/lib/ports.ts'
+import { PORTS, PORT_BY_SLUG } from '../site/src/lib/ports.ts'
 import { SymbolIndex } from '../packages/api-model/src/link.ts'
+import { parentInventory } from '../packages/api-model/src/parent-inventory.ts'
 import { CAPABILITY_SCHEMA, compareTmuxVersions, tmuxVersionKey, validateManifest } from '../packages/api-model/src/capabilities.ts'
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -82,16 +87,27 @@ function tmuxReleases() {
   return [...versions].sort(compareTmuxVersions)
 }
 
-/** Resolve a manifest's API name to the public id the reference pages use. */
+const modelFile = (slug) => join(modelDir, `${slug}.json`)
+const readModel = (slug) => JSON.parse(readFileSync(modelFile(slug), 'utf8'))
+
+/**
+ * Resolve a manifest's API name to the public id the reference pages use.
+ * `missing` names an API model the port needs and this checkout lacks.
+ */
 function resolver(slug) {
-  const file = join(modelDir, `${slug}.json`)
-  if (!existsSync(file)) return undefined
-  const model = JSON.parse(readFileSync(file, 'utf8'))
-  const index = new SymbolIndex(model.symbols, () => '', slug)
-  return (name) => {
+  const dependencies = PORT_BY_SLUG[slug]?.apiDependencies ?? []
+  const missing = [slug, ...dependencies].map(modelFile).find((file) => !existsSync(file))
+  if (missing) return { missing }
+  const index = new SymbolIndex(readModel(slug).symbols, () => '', slug)
+  const inherited = dependencies.map((dependency) =>
+    new Map(parentInventory(readModel(dependency), (symbol) => symbol.publicId ?? symbol.id).map((entry) => [entry.name, entry.uri])))
+  const resolve = (name) => {
     const target = index.resolve(name)
-    return target?.symbol ? (target.symbol.publicId ?? target.symbol.id) : undefined
+    if (target?.symbol) return target.symbol.publicId ?? target.symbol.id
+    return inherited.map((names) => names.get(name)).find(Boolean)
   }
+  const scope = dependencies.length ? `the API model or the model of ${dependencies.join(', ')}` : 'the API model'
+  return { resolve, scope }
 }
 
 /** The names a committed entry holds, as the places they appear. */
@@ -112,11 +128,11 @@ function verifyCommitted(slug, entry) {
     schema: CAPABILITY_SCHEMA, port: slug, floor: held.floor, capabilities: held.capabilities, workarounds: held.workarounds,
   })
   if (invalid.length) return invalid.map((e) => `${slug}: committed entry: ${e}`)
-  const resolve = resolver(slug)
-  if (!resolve) return [`${slug}: no API model at ${join(modelDir, `${slug}.json`)}; run gen-api-model first`]
+  const { resolve, scope, missing } = resolver(slug)
+  if (missing) return [`${slug}: no API model at ${missing}; run gen-api-model first`]
   return [...committedNames('capability', held.capabilities), ...committedNames('workaround', held.workarounds)]
     .filter(([, name]) => !resolve(name))
-    .map(([where, name]) => `${slug}: committed ${where} names "${name}", which is not in the API model`)
+    .map(([where, name]) => `${slug}: committed ${where} names "${name}", which is not in ${scope}`)
 }
 
 const errors = []
@@ -140,14 +156,14 @@ for (const port of PORTS) {
     continue
   }
   if (manifest.port !== port.slug) errors.push(`${port.slug}: manifest names port "${manifest.port}"`)
-  const resolve = resolver(port.slug)
-  if (!resolve) {
-    errors.push(`${port.slug}: no API model at ${join(modelDir, `${port.slug}.json`)}; run gen-api-model first`)
+  const { resolve, scope, missing } = resolver(port.slug)
+  if (missing) {
+    errors.push(`${port.slug}: no API model at ${missing}; run gen-api-model first`)
     continue
   }
   const link = (where, name) => {
     const id = resolve(name)
-    if (!id) errors.push(`${port.slug}: ${where} names "${name}", which is not in the API model`)
+    if (!id) errors.push(`${port.slug}: ${where} names "${name}", which is not in ${scope}`)
     return id ?? name
   }
   const entries = (list, kind) => list.map((e) => ({

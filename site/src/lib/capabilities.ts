@@ -17,7 +17,7 @@ import {
 } from '@libtmux/api-model'
 import data from '../data/capabilities.json'
 import { PORT_NAME, referenceHref } from './api-models'
-import { PORTS } from './ports'
+import { PORTS, PORT_BY_SLUG } from './ports'
 import { requirement, requirementAcross } from './capability-cells'
 import type { ApiLink, Column, Row } from './capability-cells'
 
@@ -94,8 +94,13 @@ export function releaseGroups(port: string): Column[] {
   }))
 }
 
+/**
+ * A name's reference page: the port's own, else its API dependency's, in the
+ * order the generator resolved it. PowerShell's exceptions are .NET types.
+ */
 function link(port: string, publicId: string): ApiLink {
-  return { label: publicId, href: referenceHref(port, publicId) }
+  const owners = [port, ...(PORT_BY_SLUG[port]?.apiDependencies ?? [])]
+  return { label: publicId, href: owners.map((owner) => referenceHref(owner, publicId)).find(Boolean) }
 }
 
 /** One port's capabilities and workarounds against its release columns. */

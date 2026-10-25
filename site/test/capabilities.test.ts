@@ -23,11 +23,20 @@ function tmuxSource() {
 
 function generate(manifest: string, port = 'py') {
   const out = join(mkdtempSync(join(tmpdir(), 'capabilities-')), 'capabilities.json')
-  const run = spawnSync('node', ['scripts/gen-capabilities.mjs', '--port', port, '--manifest', `${port}=${join(fixtures, manifest)}`, '--tmux', tmuxSource(), '--out', out], {
+  const run = spawnSync('node', ['scripts/gen-capabilities.mjs', '--port', port, '--manifest', `${port}=${resolve(fixtures, manifest)}`, '--tmux', tmuxSource(), '--out', out], {
     cwd: root,
     encoding: 'utf8',
   })
   return { run, out }
+}
+
+/** A fixture manifest with one edit applied, so a test names the single difference. */
+function edited(fixture: string, edit: (manifest: any) => void) {
+  const manifest = JSON.parse(readFileSync(join(fixtures, fixture), 'utf8'))
+  edit(manifest)
+  const path = join(mkdtempSync(join(tmpdir(), 'capabilities-manifest-')), 'capabilities.json')
+  writeFileSync(path, JSON.stringify(manifest))
+  return path
 }
 
 describe('gen-capabilities', () => {
@@ -56,6 +65,32 @@ describe('gen-capabilities', () => {
     expect(run.status).toBe(1)
     expect(run.stderr).toContain('"libtmux.Server.no_such_method", which is not in the API model')
   })
+
+  // PowerShell raises the C# library's exceptions, so its manifest names types
+  // that only the .NET model holds. Reference navigation links those through
+  // `apiDependencies`; the generator resolves them the same way.
+  it('resolves a name through the model of an API dependency', () => {
+    const { run, out } = generate('powershell.json', 'powershell')
+    expect(run.status, run.stderr).toBe(0)
+    const [control, layout] = JSON.parse(readFileSync(out, 'utf8')).ports.powershell.capabilities
+    expect(control.apis).toEqual(['LibTmux\\Connect-TmuxControl'])
+    expect(control.error).toBe('LibTmux.TmuxVersionTooLowException')
+    expect(layout.error).toBe('LibTmux.TmuxWindowException')
+  })
+
+  it('leaves a dependency name unresolved for a port that does not depend on it', () => {
+    const goOnly = edited('powershell.json', (m) => { m.port = 'go' })
+    const { run } = generate(goOnly, 'go')
+    expect(run.status).toBe(1)
+    expect(run.stderr).toContain('go: capability control-mode error names "LibTmux.TmuxVersionTooLowException", which is not in the API model')
+  })
+
+  it('fails on a dependency name that neither model has', () => {
+    const lost = edited('powershell.json', (m) => { m.capabilities[0].error = 'LibTmux.NoSuchException' })
+    const { run } = generate(lost, 'powershell')
+    expect(run.status).toBe(1)
+    expect(run.stderr).toContain('powershell: capability control-mode error names "LibTmux.NoSuchException", which is not in the API model')
+  })
 })
 
 /**
@@ -66,9 +101,9 @@ describe('gen-capabilities --check', () => {
   const missing = '/nonexistent/capabilities.json'
   const fixture = join(fixtures, 'py.json')
 
-  /** Write the committed file the way the generator does, from the py fixture. */
-  function committed(edit?: (data: any) => void) {
-    const { run, out } = generate('py.json')
+  /** Write the committed file the way the generator does, from a fixture (the py one by default). */
+  function committed(edit?: (data: any) => void, { manifest = 'py.json', port = 'py' } = {}) {
+    const { run, out } = generate(manifest, port)
     expect(run.status, run.stderr).toBe(0)
     if (edit) {
       const data = JSON.parse(readFileSync(out, 'utf8'))
@@ -78,8 +113,8 @@ describe('gen-capabilities --check', () => {
     return out
   }
 
-  function check(out: string, { manifest = fixture, tmux = tmuxSource() }: { manifest?: string, tmux?: string } = {}) {
-    return spawnSync('node', ['scripts/gen-capabilities.mjs', '--check', '--port', 'py', '--manifest', `py=${manifest}`, '--tmux', tmux, '--out', out], {
+  function check(out: string, { manifest = fixture, tmux = tmuxSource(), port = 'py' }: { manifest?: string, tmux?: string, port?: string } = {}) {
+    return spawnSync('node', ['scripts/gen-capabilities.mjs', '--check', '--port', port, '--manifest', `${port}=${manifest}`, '--tmux', tmux, '--out', out], {
       cwd: root,
       encoding: 'utf8',
     })
@@ -160,6 +195,16 @@ describe('gen-capabilities --check', () => {
     expect(bad.stderr).toContain('not a version tmux prints')
   })
 
+  it('verifies a committed dependency name against the dependency model, with no manifest to compare', () => {
+    const options = { manifest: missing, port: 'powershell' }
+    const clean = check(committed(undefined, { manifest: 'powershell.json', port: 'powershell' }), options)
+    expect(clean.status, clean.stderr).toBe(0)
+    const out = committed((data) => { data.ports.powershell.capabilities[0].error = 'LibTmux.NoSuchException' }, { manifest: 'powershell.json', port: 'powershell' })
+    const run = check(out, options)
+    expect(run.status).toBe(1)
+    expect(run.stderr).toContain('powershell: committed capability control-mode error names "LibTmux.NoSuchException", which is not in the API model')
+  })
+
   it('refuses to write a file that would drop a port it cannot read', () => {
     const out = committed()
     const before = readFileSync(out, 'utf8')
@@ -168,4 +213,5 @@ describe('gen-capabilities --check', () => {
     expect(run.stderr).toContain('refusing to write a partial file')
     expect(readFileSync(out, 'utf8')).toBe(before)
   })
+
 })
