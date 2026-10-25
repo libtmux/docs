@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { attachCompleteJvmExamples } from '../src/languages/jvm-examples.ts'
 import type { ApiSymbol } from '../src/model.ts'
 
-const source = { repo: 'libtmux/libtmux-java', revision: 'a'.repeat(40) }
+const source = { repo: 'libtmux/libtmux-java', revision: 'a'.repeat(40), releaseTag: 'v0.0.1-alpha.18' }
 const variants = ['java', 'kotlin', 'scala-direct', 'scala-cats'] as const
 const fixture = () => {
   const files = new Map<string, string>()
@@ -21,7 +21,11 @@ const fixture = () => {
     variants: Object.fromEntries(variants.map((variant) => [variant, { files:
       ['settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'run.sh'].map((path) => {
         const sourceFile = `examples/api/${variant}/${path}`
-        files.set(sourceFile, `${variant} ${path}\n`)
+        files.set(sourceFile, path === 'settings.gradle.kts'
+          ? 'rootProject.name = "api-example"\n\nincludeBuild("libtmux-source")\n'
+          : path === 'build.gradle.kts'
+            ? `plugins { application }\ndependencies {\n    implementation("io.github.libtmux:${variant}:0.0.1-alpha.19-SNAPSHOT")\n}\n`
+            : `${variant} ${path}\n`)
         return { path, sourceFile }
       }),
     }])),
@@ -33,6 +37,7 @@ const fixture = () => {
     signatures: [], slug: `${program.variant}-server`, source: { file: 'Server' },
     doc: { summary: 'Existing native documentation.' },
   }))
+  files.set('gradle.properties', 'libtmuxVersion=0.0.1-alpha.19-SNAPSHOT\nlibtmuxApiBaseline=0.0.1-alpha.17\n')
   const read = (path: string) => path === 'examples/api/manifest.json' ? JSON.stringify(manifest) : files.get(path)
   return { files, manifest, symbols, read }
 }
@@ -47,17 +52,25 @@ describe('complete JVM API programs', () => {
       const blocks = symbols[i].doc?.examples
       if (program.language !== port) { expect(blocks).toBeUndefined(); continue }
       expect(symbols[i].doc?.summary).toBe('Existing native documentation.')
-      expect(blocks).toHaveLength(8)
-      const displayed = [...manifest.variants[program.variant].files, program]
-      displayed.forEach((file, index) => {
-        expect(blocks![index + 1].code).toBe(files.get(file.sourceFile))
-        expect(blocks![index + 1].sourceUrl).toBe(`https://github.com/${source.repo}/blob/${source.revision}/${file.sourceFile}`)
-        expect(blocks![index + 1].intro).toContain(file.path)
-      })
-      expect(blocks![5].lang).toBe(port)
-      expect(blocks![0].code).toContain(`git -C libtmux-source checkout ${source.revision}`)
-      expect(blocks![6].code).toBe(`$ ./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=${program.mainClass} && \\\n  sh run.sh build/install/api-example/bin/api-example\n`)
-      expect(blocks![7]).toEqual({ lang: 'text', intro: 'Expected output:', code: program.expectedOutput })
+      expect(blocks).toHaveLength(7)
+      const [settings, build, properties, launcher] = manifest.variants[program.variant].files
+      expect(blocks![0].code).toBe('rootProject.name = "api-example"\n')
+      expect(blocks![0].sourceUrl).toBeUndefined()
+      expect(blocks![0].intro).toContain('Gradle 9 or newer, and tmux 3.3a or newer')
+      expect(blocks![0].intro).toContain('`/bin/cat`')
+      expect(blocks![1].code).toBe(files.get(build.sourceFile)!.replace('0.0.1-alpha.19-SNAPSHOT', '0.0.1-alpha.18'))
+      expect(blocks![1].sourceUrl).toBeUndefined()
+      expect(blocks![1].intro).toContain('0.0.1-alpha.18 release from Maven Central')
+      for (const [index, file] of [[2, properties], [3, launcher], [4, program]] as const) {
+        expect(blocks![index].code).toBe(files.get(file.sourceFile))
+        expect(blocks![index].sourceUrl).toBe(`https://github.com/${source.repo}/blob/${source.revision}/${file.sourceFile}`)
+        expect(blocks![index].intro).toContain(`\`${file.path}\``)
+      }
+      expect(blocks![0].intro).toContain(`\`${settings.path}\``)
+      expect(blocks![4].lang).toBe(port)
+      expect(blocks!.some((block) => /git clone|libtmux-source/.test(block.code))).toBe(false)
+      expect(blocks![5].code).toBe(`$ gradle --console=plain --quiet installDist -PexampleMain=${program.mainClass} && \\\n  sh run.sh build/install/api-example/bin/api-example\n`)
+      expect(blocks![6]).toEqual({ lang: 'text', intro: 'Expected output:', code: program.expectedOutput })
     }
   })
 
@@ -78,11 +91,11 @@ describe('complete JVM API programs', () => {
     manifest.examples.push(second)
     attachCompleteJvmExamples(symbols, 'java', read, source)
     const blocks = symbols[0].doc!.examples!
-    expect(blocks).toHaveLength(16)
+    expect(blocks).toHaveLength(14)
     for (const [index, program] of [first, second].entries()) {
-      expect(blocks[index * 8 + 5].code).toBe(files.get(program.sourceFile))
-      expect(blocks[index * 8 + 6].code).toContain(`-PexampleMain=${program.mainClass}`)
-      expect(blocks[index * 8 + 7].code).toBe(program.expectedOutput)
+      expect(blocks[index * 7 + 4].code).toBe(files.get(program.sourceFile))
+      expect(blocks[index * 7 + 5].code).toContain(`-PexampleMain=${program.mainClass}`)
+      expect(blocks[index * 7 + 6].code).toBe(program.expectedOutput)
     }
   })
 
@@ -117,6 +130,21 @@ describe('complete JVM API programs', () => {
     const command = fixture()
     command.manifest.examples[0].mainClass += '; echo injected'
     expect(() => attachCompleteJvmExamples(command.symbols, 'java', command.read, source)).toThrow('Invalid JVM example metadata')
+  })
+
+  it('refuses a release it cannot name or a setup that does not build from source', () => {
+    const untagged = fixture()
+    expect(() => attachCompleteJvmExamples(untagged.symbols, 'java', untagged.read, { ...source, releaseTag: undefined })).toThrow('release tag')
+    expect(() => attachCompleteJvmExamples(untagged.symbols, 'java', untagged.read, { ...source, releaseTag: 'docs-site-backup' })).toThrow('release tag')
+    const undeveloped = fixture()
+    undeveloped.files.set('gradle.properties', 'libtmuxApiBaseline=0.0.1-alpha.17\n')
+    expect(() => attachCompleteJvmExamples(undeveloped.symbols, 'java', undeveloped.read, source)).toThrow('development version')
+    const drifted = fixture()
+    drifted.files.set('examples/api/java/build.gradle.kts', 'dependencies {\n    implementation("io.github.libtmux:java:0.0.1-alpha.18-SNAPSHOT")\n}\n')
+    expect(() => attachCompleteJvmExamples(drifted.symbols, 'java', drifted.read, source)).toThrow('source build version')
+    const unincluded = fixture()
+    unincluded.files.set('examples/api/java/settings.gradle.kts', 'rootProject.name = "api-example"\n')
+    expect(() => attachCompleteJvmExamples(unincluded.symbols, 'java', unincluded.read, source)).toThrow('include the source build')
   })
 
   it('requires public source provenance for every displayed file', () => {
