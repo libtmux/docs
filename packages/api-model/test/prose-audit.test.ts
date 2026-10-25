@@ -7,6 +7,8 @@ import { describe, expect, it } from 'vitest'
 import type { ApiModel, ApiSymbol } from '../src/model.ts'
 import { Resolver, notASymbol } from '../src/resolver.ts'
 import { decideFilePath, decideMention, portFromSentence } from '../src/prose.ts'
+import { pageMentions } from '../src/mentions.ts'
+import { parentInventory } from '../src/parent-inventory.ts'
 import { builtinHref } from '../src/builtins.ts'
 import { extractWithSpec } from '../src/languages/spec.ts'
 import { GO } from '../src/languages/specs.ts'
@@ -215,6 +217,55 @@ describe('product context in prose', () => {
     expect(decideFilePath('src/libtmux/pane.py', { pagePort: 'rs', before: 'Python uses ' }, trees))
       .toMatchObject({ kind: 'link', port: 'py' })
     expect(decideFilePath('src/libtmux/pane.py', {}, trees)).toMatchObject({ kind: 'link', port: 'py' })
+  })
+})
+
+describe('a Java-only libtmux symbol on a Kotlin or Scala page', () => {
+  const symbol = (id: string, name: string) => ({ id, name, kind: 'class', signatures: [], source: { file: `${name}.java` } })
+  const kotlin = { port: 'kotlin', version: '0', symbols: [symbol('io.example.Snapshot', 'Snapshot')] } as unknown as ApiModel
+  const scala = { port: 'scala', version: '0', symbols: [symbol('io.example.Snapshot', 'Snapshot')] } as unknown as ApiModel
+  const java = {
+    port: 'java', version: '0',
+    symbols: [symbol('io.example.PaneState', 'PaneState'), symbol('io.example.Snapshot', 'Snapshot')],
+  } as unknown as ApiModel
+  const models = { kotlin, scala, java }
+  const jdk = ['Phaser', 'Flow', 'Vector'].map((name) => ({ name, uri: `java.base/java/util/concurrent/${name}.html`, type: 'std:label', priority: 1, dispname: '-' }))
+
+  /** The inventories a Kotlin or Scala build holds: the parent library the port wraps, and the JDK's. The site and the generators name the first differently. */
+  const resolverNamed = (parent: string) => {
+    const resolver = new Resolver([kotlin, scala, java])
+    resolver.addInventory(parent, '', parentInventory(java, (entry) => `/reference/java/${entry.name}/`), ['kotlin', 'scala'])
+    resolver.addInventory('Java SE', 'https://docs.oracle.com/en/java/javase/21/docs/api/', jdk, ['java', 'kotlin', 'scala'])
+    return resolver
+  }
+  const builds = ['Library API', 'libtmux Java']
+
+  describe.each(builds)('where the parent library\'s inventory is named %s', (parent) => {
+    const resolver = resolverNamed(parent)
+
+    it.each(['kotlin', 'scala'])('credits the symbol to Java when the %s sentence says Java: the page\'s port holds only an inventory entry for it', (pagePort) => {
+      for (const before of ['returning the real Java ', 'Wraps Java\'s ']) {
+        expect(decideMention('PaneState', { pagePort, before }, resolver, models), before)
+          .toMatchObject({ kind: 'link', port: 'java', external: false })
+      }
+    })
+
+    it.each(['kotlin', 'scala'])('records the Java symbol as the %s page\'s backlink, and records nothing for a name Java lacks', (authoredPort) => {
+      const mentioned = (body: string) => pageMentions({
+        body, portByLabel: {}, page: `/${authoredPort}/latest/guides/state/`, authoredPort, nativeTmux: false, resolver, models, authoredTarget: () => undefined,
+      }).targets
+      expect(mentioned('Each call returns the real Java `PaneState` for the pane.\n')).toEqual([{ port: 'java', symbol: 'io.example.PaneState' }])
+      expect(mentioned('Each call returns the real Java `Missing` for the pane.\n')).toEqual([])
+    })
+
+    it.each(['kotlin', 'scala'])('leaves the %s page its own symbols and curated names, and sends the JDK\'s names to Java', (pagePort) => {
+      const said = { pagePort, before: 'the real Java ' }
+      expect(decideMention('Snapshot', said, resolver, models)).toMatchObject({ kind: 'link', port: pagePort })
+      expect(decideMention('Phaser', said, resolver, models)).toMatchObject({ kind: 'link', port: 'java' })
+      // A curated name written as a call is still the port's, where the JDK's inventory holds the same word.
+      const curated = pagePort === 'kotlin' ? 'Flow' : 'Vector'
+      expect(decideMention(`${curated}()`, said, resolver, models)).toMatchObject({ kind: 'link', port: pagePort, href: builtinHref(pagePort, curated) })
+    })
   })
 })
 

@@ -329,7 +329,10 @@ export function decideMention(
     const res = resolver.resolve(port, text, ctx.product)
     ambiguous ||= res.how === 'ambiguous'
     tried.push(`${port}:${res.how}`)
-    if (reached && port === ctx.pagePort && res.how === 'federated' && res.project === 'Java SE' && !builtinHref(port, text)) continue
+    // The page port answers with a symbol or a curated name, which the resolver files under the port's own name. A hit in any other
+    // inventory, the JDK's or the parent library's (each build names that one differently), is the language's: the sentence says
+    // which, and the language answers next.
+    if (reached && port === ctx.pagePort && res.how === 'federated' && res.project !== PORT_NAME[port]) continue
     const hit = link(port, res)
     if (hit) {
       if (hit.kind === 'link' && /^https?:\/\//i.test(hit.href) && unsaid) return { kind: 'skip', why: 'a bare word on a page that does not say its language' }

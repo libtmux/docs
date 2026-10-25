@@ -396,9 +396,9 @@ the top level (`BARE_OWNERS` in `api-sources.mjs`).
 
 A name in prose is linked by one function, `decideMention`, and a port's own curated names come before the
 inventory of the platform it runs on, in a page and in a symbol's documentation alike (`CURATED_BEFORE_INVENTORY`):
-Scala's `Vector` and Kotlin's `Flow` are not `java.util`'s, and a name only the JDK has is Java's where the
-sentence says Java (`PLATFORM_REACH`). The language a sentence names is read by whole words, and a path, a URL
-or a dotted name names none: `JavaScript` is not `Java`, and `options-table.c#L359` is not C#.
+Scala's `Vector` and Kotlin's `Flow` are not `java.util`'s, and a name only the JDK or the Java library has is
+Java's where the sentence says Java (`PLATFORM_REACH`). The language a sentence names is read by whole words, and a
+path, a URL or a dotted name names none: `JavaScript` is not `Java`, and `options-table.c#L359` is not C#.
 
 The same prose reaches a reader by more than one route, and the tests render each one and hold the
 verifier to it: every page the site builds, staged guides and shared workspace pages included
