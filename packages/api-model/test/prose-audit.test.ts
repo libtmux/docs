@@ -95,6 +95,27 @@ describe('product context in prose', () => {
       .toMatchObject({ kind: 'link', port: 'rs', href: 'https://doc.rust-lang.org/std/collections/struct.BTreeMap.html', external: true })
   })
 
+  it('links a standard-library name for the port of a build only where the page says its language', () => {
+    const rust = { port: 'rs', version: '0', symbols: [] } as unknown as ApiModel
+    const ask = (context: Parameters<typeof decideMention>[1]) => decideMention('BTreeMap', context, new Resolver([rust]), { rs: rust })
+    expect(ask({ pagePort: 'rs' })).toMatchObject({ kind: 'link', external: true })
+    expect(ask({ pagePort: 'rs', languageSaid: true })).toMatchObject({ kind: 'link', external: true })
+    // A page shared by every port is rendered for Rust too, and says nothing of Rust.
+    expect(ask({ pagePort: 'rs', languageSaid: false })).toMatchObject({ kind: 'skip' })
+    // The sentence that names the port says it, whatever the page does.
+    expect(ask({ pagePort: 'rs', languageSaid: false, before: 'In Rust, ' })).toMatchObject({ kind: 'link', external: true })
+    // The library's own symbols are the page's to link in every build.
+    const own = { port: 'rs', version: '0', symbols: [{ id: 'Session', name: 'Session', kind: 'struct', signatures: [], source: { file: 'a.rs' } }] } as unknown as ApiModel
+    expect(decideMention('Session', { pagePort: 'rs', languageSaid: false }, new Resolver([own]), { rs: own })).toMatchObject({ kind: 'link', external: false })
+  })
+
+  it('links a variable or a printed object nowhere', () => {
+    const rust = { port: 'rs', version: '0', symbols: [] } as unknown as ApiModel
+    for (const text of ['$SocketPath', '$control.Windows[0]', '[object Object]', '[object Array]']) {
+      expect(decideMention(text, { pagePort: 'rs' }, new Resolver([rust]), { rs: rust }), text).toMatchObject({ kind: 'skip' })
+    }
+  })
+
   it('uses the enclosing type to distinguish nested builders', () => {
     const java = { port: 'java', version: '0', symbols: ['SessionSpec', 'WindowSpec'].map((name) => ({
       id: `io.example.${name}.${name}.Builder.environment`, name: 'environment', kind: 'method', signatures: [],

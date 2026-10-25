@@ -1,6 +1,7 @@
 import type { ApiModel, ApiProduct, ApiSymbol } from './model.ts'
 import type { Resolver } from './resolver.ts'
 import { builtinHref } from './builtins.ts'
+import { neverLinks } from './never-links.ts'
 
 /**
  * Whether a code span in prose is a reference to the API, and to what.
@@ -232,6 +233,13 @@ export type MentionDecision =
 
 export interface MentionContext {
   pagePort?: string
+  /**
+   * Whether the page itself says `pagePort` is its language: its own port, a fence's language, a port-labelled row or section.
+   * A page that is shared by every port is rendered once for each, so the port it is rendered for says where it is read, not
+   * what it is about. A standard-library or builtin name is then not linked by that port: `exit` in a sentence about a shell
+   * is not Python's, and `timeout` in one about coreutils is not Elixir's type. Left unset, the page is taken to say so.
+   */
+  languageSaid?: boolean
   product?: ApiProduct
   before?: string
   /**
@@ -260,6 +268,8 @@ export function decideMention(
   models: Record<string, ApiModel>,
 ): MentionDecision {
   if (!looksLikeApiMention(text)) return { kind: 'skip', why: 'not a mention' }
+  const never = neverLinks(text)
+  if (never) return { kind: 'skip', why: never }
 
   const link = (port: string, res: ReturnType<Resolver['resolve']>): MentionDecision | undefined => {
     if (res.how === 'federated') {
@@ -291,13 +301,21 @@ export function decideMention(
   let ambiguous = false
   for (const port of [named, ctx.pagePort]) {
     if (!port || !models[port]) continue
+    // The language of a build that the page does not name is where the page is read: it owns the library's symbols, not the language's.
+    const unsaid = port === ctx.pagePort && port !== named && ctx.languageSaid === false
     const res = resolver.resolve(port, text, ctx.product)
     ambiguous ||= res.how === 'ambiguous'
     tried.push(`${port}:${res.how}`)
     const hit = link(port, res)
-    if (hit) return hit
+    if (hit) {
+      if (hit.kind === 'link' && /^https?:\/\//i.test(hit.href) && unsaid) return { kind: 'skip', why: 'a standard-library name on a page that does not say its language' }
+      return hit
+    }
     const builtin = builtinHref(port, text)
-    if (builtin) return { kind: 'link', port, href: builtin, title: `${text}: ${PORT_NAME[port]}`, external: true }
+    if (builtin) {
+      if (unsaid) return { kind: 'skip', why: 'a builtin name on a page that does not say its language' }
+      return { kind: 'link', port, href: builtin, title: `${text}: ${PORT_NAME[port]}`, external: true }
+    }
   }
   // A known language must never resolve a similarly named API in another port.
   if (tried.length) return ambiguous

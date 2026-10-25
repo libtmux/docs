@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { tokenizeDoc } from '../src/doc/roles.ts'
 import { SymbolIndex } from '../src/link.ts'
+import { neverLinks } from '../src/never-links.ts'
 import type { ApiSymbol } from '../src/model.ts'
 
 const symbol = (id: string): ApiSymbol => ({
@@ -36,6 +37,22 @@ describe('doc spans', () => {
     expect(span).toMatchObject({ kind: 'ref', label: 'Pane | Map<string, Pane>' })
     expect('link' in span && span.link).toBeFalsy()
     expect('parts' in span && span.parts?.some((part) => part.link)).toBe(true)
+  })
+
+  it('never links a variable or the text a program prints, in the tokenizer every path calls', () => {
+    expect(neverLinks('$SocketPath')).toBe('a variable')
+    expect(neverLinks(' $control ')).toBe('a variable')
+    expect(neverLinks('[object Object]')).toBe('text a program prints')
+    expect(neverLinks('Pane')).toBeUndefined()
+    expect(neverLinks('$')).toBeUndefined()
+    expect(neverLinks('[object Object] and more')).toBeUndefined()
+    const powershell = new SymbolIndex([symbol('LibTmux.Server')], (item) => `/${item.id}/`, 'powershell')
+    for (const text of ['$Server', '[object Object]', '[object Array]']) {
+      expect(index.linkType(text), text).toEqual([{ text }])
+      expect(powershell.linkType(text), text).toEqual([{ text }])
+      expect(powershell.linkLiteral(text), text).toEqual([{ text }])
+    }
+    expect(powershell.resolve('[object Object]')).toBeUndefined()
   })
 
   it('leaves the text a program prints as plain code: [object Object] names no type', () => {

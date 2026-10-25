@@ -2,6 +2,7 @@ import { tokenizeDoc, type DocSpan } from './doc/roles.ts'
 import { symbolEntries, type InventoryEntry } from './inventory.ts'
 import type { ApiSymbol, Signature, SymbolKind, TypeParameter } from './model.ts'
 import { builtinHref, ELIXIR_STDLIB_MODULES, elixirStdlibHref } from './builtins.ts'
+import { neverLinks } from './never-links.ts'
 import { qualifiedNameOf } from './modules.ts'
 import { findTopLevel, splitTopLevel, typeParametersOf } from './type-params.ts'
 
@@ -134,9 +135,6 @@ export const KEYWORD_HELP: Record<string, Record<string, KeywordHelp>> = {
 
 /** A keyword argument (`cancel:`, `clients: true`) names a parameter, not a member. */
 export const keywordArgument = /^[A-Za-z_]\w*[?!]?:(?:\s|$)/
-
-/** What JavaScript prints for an object with no description: a string a reader sees, not a type. */
-const stringifiedObject = /^\[object [A-Za-z]+\]$/
 
 interface TypeSpan {
   text: string
@@ -669,6 +667,9 @@ export class SymbolIndex {
         if (documented && help) return { href: `${help}#notes`, external: true, project: 'PowerShell command help' }
       }
     }
+    // A variable names no page and a printed string names no symbol, whatever else resolves under that spelling. A command's own
+    // parameter, which a `$name` may stand for, is answered above.
+    if (neverLinks(target)) return undefined
     if (this.lang === 'scala') clean = clean.replace(/^_root_\./, '').replace(/#/g, '.')
     if (this.lang === 'fsharp' || this.lang === 'csharp') clean = clean.replace(/`\d+/g, '')
     const [importHead, ...tail] = clean.split('.')
@@ -1008,11 +1009,11 @@ export class SymbolIndex {
    *
    * A keyword argument such as `cancel:` or `clients: true` names a parameter
    * of the call being described, not the member elsewhere that shares its
-   * name, so it stays plain code. So does `[object Object]`, which is text
-   * a program prints and not a type that mentions `Object`.
+   * name, so it stays plain code. A variable and the text a program prints
+   * stay plain too (`neverLinks`), in `linkType`, which every path calls.
    */
   linkLiteral(text: string, context?: ApiSymbol): TypeSpan[] {
-    return keywordArgument.test(text) || stringifiedObject.test(text) ? [{ text }] : this.linkType(text, context)
+    return keywordArgument.test(text) ? [{ text }] : this.linkType(text, context)
   }
 
   /**
@@ -1071,6 +1072,7 @@ export class SymbolIndex {
    * makes those all work without a grammar for type syntax.
    */
   linkType(annotation: string, context?: ApiSymbol, signature?: Signature): TypeSpan[] {
+    if (neverLinks(annotation)) return [{ text: annotation }]
     const out: TypeSpan[] = []
     const rustPayload = this.lang === 'rs' && (context?.variant || (context?.parent && this.byDeclared.get(context.parent)?.variant))
     const variantDelimiters: string[] = []
