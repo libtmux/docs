@@ -53,6 +53,25 @@ html[data-native-shell] dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .
   display: flex;
   align-items: center;
 }
+/*
+ * A top-level class declaration stays pinned under the site header while the
+ * reader scrolls through its members, and releases when the class ends
+ * because the row can only stick inside its own dl. Nested classes, methods
+ * and functions stay in flow so bars never stack. Narrow layouts keep the row
+ * in flow: its stacked controls would take too much of a small screen.
+ */
+@media screen and (min-width: 35.01rem) {
+  html[data-native-shell] section > dl.py.class.gp-sphinx-api-container > dt.gp-sphinx-api-header {
+    position: sticky;
+    top: var(--native-header-height);
+    z-index: 5;
+    background-color: color-mix(in srgb, var(--background-color), var(--text-color) 6%);
+  }
+  /* An anchored member lands below the pinned row instead of under it. */
+  html[data-native-shell] section > dl.py.class.gp-sphinx-api-container > dd [id] {
+    scroll-margin-top: 1.5rem;
+  }
+}
 html[data-native-shell] .sidebar-sticky,
 html[data-native-shell] .toc-sticky {
   top: var(--native-header-height);

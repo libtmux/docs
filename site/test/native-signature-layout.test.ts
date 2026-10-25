@@ -301,34 +301,82 @@ describe('formatter-owned painted rows', () => {
     const record = { text: 'Missing', rows: [{ line: 1, text: 'Missing', glyphs: 0, topSpread: 0 }] }
     await expect(nativeLayoutChecks.checkNativeSignatureLines({ evaluate: async () => [record] })).rejects.toThrow(/painted text/)
   })
-  describe('native Sphinx declaration controls', () => {
-    const declaration = '<dl class="py method gp-sphinx-api-container"><dt class="sig gp-sphinx-api-header"><div class="gp-sphinx-api-layout gp-sphinx-api-layout--desktop"><div class="gp-sphinx-api-layout-left"><div class="gp-sphinx-api-signature">f(\n  a,\n  b)</div><a class="headerlink gp-sphinx-api-link">&para;</a></div><div class="gp-sphinx-api-layout-right"><span class="gp-sphinx-api-badge-container"><span class="gp-sphinx-badge">method</span></span><span class="gp-sphinx-api-source-link"><a>[source]</a></span></div></div></dt><dd>Body</dd></dl>'
-    const styles = ['vendor/gp-sphinx-api.css', 'native-sphinx.css']
-      .map((name) => readFileSync(new URL(`../src/styles/${name}`, import.meta.url), 'utf8')).join('\n')
-    const alignments = (shell: boolean) => {
-      const win = new Window()
-      try {
-        win.document.documentElement.toggleAttribute('data-native-shell', shell)
-        win.document.head.innerHTML = `<style>${styles}</style>`
-        win.document.body.innerHTML = declaration
-        const read = (selector: string) => win.getComputedStyle(win.document.querySelector(selector)!)
-        return {
-          row: read('.gp-sphinx-api-layout--desktop').alignItems,
-          code: read('.gp-sphinx-api-layout-left').alignItems,
-          controls: read('.gp-sphinx-api-layout-right').alignItems,
-          badge: read('.gp-sphinx-api-badge-container').alignSelf,
-        }
-      } finally { void win.happyDOM.abort() }
+})
+
+/** The stylesheets a native Sphinx Python page receives: the published gp-sphinx layout sheet, then the shell's. */
+describe('native Sphinx declarations', () => {
+  const sheet = readFileSync(new URL('./fixtures/native-gp-sphinx-layout.css', import.meta.url), 'utf8')
+  // happy-dom ignores rules inside @layer. Unwrapping each layer lets its rules compete by specificity, which is
+  // stricter than a browser, where every unlayered shell rule beats every layered one.
+  const unlayer = (css: string): string => {
+    const start = css.indexOf('@layer gp-sphinx {')
+    if (start < 0) return css
+    const inner = start + '@layer gp-sphinx {'.length
+    let depth = 1, end = inner
+    for (; depth > 0 && end < css.length; end++) depth += css[end] === '{' ? 1 : css[end] === '}' ? -1 : 0
+    return unlayer(css.slice(0, start) + css.slice(inner, end - 1) + css.slice(end))
+  }
+  const published = unlayer(sheet)
+  const shellCss = (source = readFileSync(new URL('../src/styles/native-sphinx.css', import.meta.url), 'utf8')) => source
+  const dt = (type: string, id: string, extra = '') => `<dt class="sig gp-sphinx-api-header" id="${id}"><div class="gp-sphinx-api-layout gp-sphinx-api-layout--desktop"><div class="gp-sphinx-api-layout-left"><div class="gp-sphinx-api-signature">f(\n  a,\n  b)</div><a class="headerlink gp-sphinx-api-link">&para;</a></div><div class="gp-sphinx-api-layout-right"><span class="gp-sphinx-api-badge-container"><span class="gp-sphinx-badge">${type}</span></span><span class="gp-sphinx-api-source-link"><a>[source]</a></span></div></div></dt>`
+  const dl = (type: string, id: string, body = '') => `<dl class="py ${type} gp-sphinx-api-container">${dt(type, id)}<dd>${body}</dd></dl>`
+  const page = dl('class', 'Outer', dl('method', 'Outer.run') + dl('class', 'Outer.Inner', dl('method', 'Outer.Inner.go'))) + dl('function', 'helper')
+  const open = (shell: boolean, css = shellCss(), width = 1024) => {
+    const win = new Window({ width })
+    win.document.documentElement.toggleAttribute('data-native-shell', shell)
+    win.document.head.innerHTML = `<style>${published}\n${css}</style>`
+    win.document.body.innerHTML = `<article><section id="m">${page}</section></article>`
+    const style = (id: string, selector?: string) => {
+      const row = win.document.getElementById(id)!
+      return win.getComputedStyle(selector ? row.querySelector(selector)! : row)
     }
+    return { win, style }
+  }
+  const controls = (shell: boolean, css?: string) => {
+    const { win, style } = open(shell, css)
+    try {
+      const read = (selector: string) => style('Outer.run', selector)
+      return {
+        row: read('.gp-sphinx-api-layout--desktop').alignItems, code: read('.gp-sphinx-api-layout-left').alignItems,
+        controls: read('.gp-sphinx-api-layout-right').alignItems, badge: read('.gp-sphinx-api-badge-container').alignSelf,
+      }
+    } finally { void win.happyDOM.abort() }
+  }
+  const sticky = (id: string, shell = true, css?: string, width?: number) => {
+    const { win, style } = open(shell, css, width)
+    try { const { position, top } = style(id); return { position, top } } finally { void win.happyDOM.abort() }
+  }
 
-    it('starts the permalink, source link and badges on the first signature line', () => {
-      expect(alignments(true)).toEqual({ row: 'flex-start', code: 'flex-start', controls: 'baseline', badge: 'center' })
-    })
+  it('starts the permalink, source link and badges on the first signature line', () => {
+    expect(controls(true)).toEqual({ row: 'flex-start', code: 'flex-start', controls: 'baseline', badge: 'center' })
+  })
 
-    it('leaves the vendored block-centred rows alone outside the native shell', () => {
-      const outside = alignments(false)
-      expect(outside).toMatchObject({ code: 'center', controls: 'baseline' })
-      expect(outside.row).not.toBe('flex-start')
-    })
+  it('keeps the published block-centred rows outside the native shell', () => {
+    expect(controls(false)).toEqual({ row: 'center', code: 'center', controls: 'center', badge: '' })
+  })
+
+  it('fails when the shell no longer overrides the published row', () => {
+    const without = shellCss().replace(/(--desktop \{\s*)align-items: flex-start;/, '$1')
+    expect(without).not.toBe(shellCss())
+    expect(controls(true, without).row).toBe('center')
+  })
+
+  it('pins a top-level class declaration under the site header', () => {
+    expect(sticky('Outer')).toEqual({ position: 'sticky', top: 'calc(52px + 1px)' })
+  })
+
+  it.each(['Outer.run', 'Outer.Inner', 'Outer.Inner.go', 'helper'])('keeps the %s row in flow', (id) => {
+    expect(sticky(id).position).not.toBe('sticky')
+  })
+
+  it('keeps the class row in flow outside the shell and on narrow screens', () => {
+    expect(sticky('Outer', false).position).not.toBe('sticky')
+    expect(sticky('Outer', true, undefined, 400).position).not.toBe('sticky')
+  })
+
+  it('fails when the class row rule is removed', () => {
+    const without = shellCss().replace(/position: sticky;/, '')
+    expect(without).not.toBe(shellCss())
+    expect(sticky('Outer', true, without).position).not.toBe('sticky')
   })
 })
