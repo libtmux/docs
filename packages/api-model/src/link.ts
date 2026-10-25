@@ -135,6 +135,9 @@ export const KEYWORD_HELP: Record<string, Record<string, KeywordHelp>> = {
 /** A keyword argument (`cancel:`, `clients: true`) names a parameter, not a member. */
 export const keywordArgument = /^[A-Za-z_]\w*[?!]?:(?:\s|$)/
 
+/** What JavaScript prints for an object with no description: a string a reader sees, not a type. */
+const stringifiedObject = /^\[object [A-Za-z]+\]$/
+
 interface TypeSpan {
   text: string
   link?: LinkTarget
@@ -666,10 +669,6 @@ export class SymbolIndex {
         if (documented && help) return { href: `${help}#notes`, external: true, project: 'PowerShell command help' }
       }
     }
-    if (this.lang === 'powershell' && role === 'variable') return {
-      href: 'https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_variables?view=powershell-7.4',
-      external: true, project: 'PowerShell variables',
-    }
     if (this.lang === 'scala') clean = clean.replace(/^_root_\./, '').replace(/#/g, '.')
     if (this.lang === 'fsharp' || this.lang === 'csharp') clean = clean.replace(/`\d+/g, '')
     const [importHead, ...tail] = clean.split('.')
@@ -1009,10 +1008,20 @@ export class SymbolIndex {
    *
    * A keyword argument such as `cancel:` or `clients: true` names a parameter
    * of the call being described, not the member elsewhere that shares its
-   * name, so it stays plain code.
+   * name, so it stays plain code. So does `[object Object]`, which is text
+   * a program prints and not a type that mentions `Object`.
    */
   linkLiteral(text: string, context?: ApiSymbol): TypeSpan[] {
-    return keywordArgument.test(text) ? [{ text }] : this.linkType(text, context)
+    return keywordArgument.test(text) || stringifiedObject.test(text) ? [{ text }] : this.linkType(text, context)
+  }
+
+  /**
+   * One run of doc prose as the page renders it: the spans `linkText` finds, and for a reference that
+   * resolves nowhere, the linked parts of its literal. `ApiDoc` renders these spans and the link verifier
+   * reads its destinations from them, so both see the same links.
+   */
+  docSpans(text: string, context?: ApiSymbol): (DocSpan & { link?: LinkTarget; parts?: TypeSpan[] })[] {
+    return this.linkText(text, context).map((span) => (span.kind === 'ref' && !span.link ? { ...span, parts: this.linkLiteral(span.label, context) } : span))
   }
 
   /**

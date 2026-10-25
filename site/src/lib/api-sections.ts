@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { builtinHref, memberTier, typeParametersOf, type ApiSymbol, type MemberSignals, type Param, type Signature, type SymbolIndex } from '@libtmux/api-model'
+import { commandFacts, memberTier, parameterBindingFacts, parameterBindingText, typeParametersOf, type ApiSymbol, type MemberSignals, type Param, type Signature, type SymbolIndex } from '@libtmux/api-model'
 import { apiGlossaryHref } from './api-glossary'
 import { csharpParameters, supportsCSharpSignatures, supportsElixirSignatures, supportsGoSignatures, supportsJavaSignatures, supportsLuaSignatures, supportsRubySignatures, supportsRustSignatures, supportsTypeScriptSignatures, swiftBaseName } from './code-layout'
 
@@ -205,18 +205,7 @@ export function apiMethodDetails(symbol: ApiSymbol) {
 /** The same native command facts appear in HTML and copied Markdown. */
 export function apiCommandFacts(symbol: ApiSymbol, contextPath?: string): { label: string; value: string }[] {
   const command = symbol.command
-  if (!command) return []
-  const kindHelp = apiGlossaryHref(command.kind, contextPath)
-  const facts: { label: string; value: string }[] = [{ label: 'Command type', value: kindHelp ? `[\`${command.kind}\`](${kindHelp})` : `\`${command.kind}\`` }]
-  if (command.defaultParameterSet && command.defaultParameterSet !== '__AllParameterSets') facts.push({ label: 'Default parameter set', value: command.defaultParameterSet })
-  if (command.aliases.length) facts.push({ label: 'Aliases', value: command.aliases.map((alias) => `\`${alias}\``).join(', ') })
-  if (command.supportsShouldProcess) facts.push({ label: 'Confirmation', value: `Supports \`-WhatIf\` and \`-Confirm\`; confirm impact: ${command.confirmImpact}.` })
-  if (command.supportsPaging) facts.push({ label: 'Paging', value: 'Supports paging parameters.' })
-  if (command.supportsTransactions) facts.push({ label: 'Transactions', value: 'Supports transactions.' })
-  facts.push({ label: 'Positional binding', value: command.positionalBinding ? 'Enabled.' : 'Disabled; use named parameters unless a position is declared.' })
-  if (command.inputTypes.length) facts.push({ label: 'Pipeline inputs', value: command.inputTypes.map((entry) => `\`${entry.type}\`${entry.description ? `: ${entry.description}` : ''}`).join('; ') })
-  if (command.outputTypes.length) facts.push({ label: 'Outputs', value: command.outputTypes.map((type) => `\`${type}\``).join(', ') })
-  return facts
+  return command ? commandFacts(command, apiGlossaryHref(command.kind, contextPath)) : []
 }
 
 /** Native help links prefer the same generated declaration in this reference. */
@@ -232,55 +221,7 @@ export function apiCommandRelatedLinks(symbol: ApiSymbol, index?: SymbolIndex) {
   return links.filter((link, i) => links.findIndex((entry) => entry.href === link.href) === i)
 }
 
-/** Preserve the reflected attribute type even when its display name is short. */
-function parameterAttributeText(attribute: NonNullable<Param['binding']>['attributes'][number]): string {
-  const name = attribute.type.split('.').at(-1)!.replace(/Attribute$/, '')
-  const call = `${name}(${attribute.arguments.map((value) => JSON.stringify(value)).join(', ')})`
-  const fence = '`'.repeat(Math.max(1, ...[...call.matchAll(/`+/g)].map((match) => match[0].length + 1)))
-  const label = `${fence}${call}${fence}`
-  const href = builtinHref('powershell', attribute.type)
-  return href ? `[${label}](${href})` : label
-}
-
-export function parameterBindingText(param: Param): string | undefined {
-  const binding = param.binding
-  if (!binding) return undefined
-  const facts = [binding.mandatory ? 'Required.' : 'Optional.', binding.position === undefined ? 'Named parameter.' : `Position ${binding.position}.`]
-  if (binding.switch) facts.push('Switch parameter.')
-  if (binding.common) facts.push('Common parameter.')
-  if (binding.dynamic) facts.push('Dynamic parameter.')
-  const pipeline = [binding.pipeline.byValue && 'by value', binding.pipeline.byPropertyName && 'by property name'].filter(Boolean)
-  facts.push(pipeline.length ? `Accepts pipeline input ${pipeline.join(' and ')}.` : 'Does not accept pipeline input.')
-  if (binding.pipeline.remainingArguments) facts.push('Accepts remaining arguments.')
-  if (binding.aliases.length) facts.push(`Aliases: ${binding.aliases.map((alias) => `\`${alias}\``).join(', ')}.`)
-  if (binding.documentedDefault) facts.push(`Documented default: \`${binding.documentedDefault}\`.`)
-  for (const attribute of binding.attributes.filter((entry) => /\.(Validate\w+|ArgumentCompleter)Attribute$/.test(entry.type))) {
-    facts.push(`${parameterAttributeText(attribute)}.`)
-  }
-  return facts.join(' ')
-}
-
-/** Native properties are easier to compare as labelled facts than sentences. */
-export function parameterBindingFacts(param: Param): { label: string; value: string }[] {
-  const b = param.binding
-  if (!b) return []
-  const pipeline = [b.pipeline.byValue && 'By value', b.pipeline.byPropertyName && 'By property name'].filter(Boolean)
-  const facts = [
-    { label: 'Required', value: b.mandatory ? 'Yes' : 'No' },
-    { label: 'Position', value: b.position === undefined ? 'Named' : String(b.position) },
-    { label: 'Pipeline input', value: pipeline.join('; ') || 'No' },
-  ]
-  if (b.switch) facts.push({ label: 'Switch', value: 'Yes' })
-  if (b.dynamic) facts.push({ label: 'Dynamic', value: 'Yes' })
-  if (b.pipeline.remainingArguments) facts.push({ label: 'Remaining arguments', value: 'Yes' })
-  if (b.aliases.length) facts.push({ label: 'Aliases', value: b.aliases.map((alias) => `\`${alias}\``).join(', ') })
-  if (b.documentedDefault) facts.push({ label: 'Default', value: `\`${b.documentedDefault}\`` })
-  for (const attribute of b.attributes.filter((entry) => /\.(Validate\w+|ArgumentCompleter)Attribute$/.test(entry.type))) {
-    const name = attribute.type.split('.').at(-1)!.replace(/Attribute$/, '')
-    facts.push({ label: name === 'ArgumentCompleter' ? 'Completion' : 'Validation', value: parameterAttributeText(attribute) })
-  }
-  return facts
-}
+export { parameterBindingFacts, parameterBindingText }
 
 /** The page that documents PowerShell's common parameters, with the words that link to it; the link verifier reads the pair from here. */
 const COMMON_PARAMETERS = { title: 'common parameter behavior', url: 'https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_commonparameters?view=powershell-7.4' }
