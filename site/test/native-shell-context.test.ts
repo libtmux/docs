@@ -35,6 +35,15 @@ function fixture() {
 }
 
 describe('native shell context', () => {
+  it('recognizes Sphinx properties inside their class', async () => {
+    const { artifact, options, html } = fixture()
+    const declarations = '<dl class="py class"><dt class="sig" id="libtmux.Server"><span class="sig-name">Server</span></dt><dd><dl class="py property"><dt class="sig" id="libtmux.Server.sessions"><span class="sig-name">sessions</span></dt></dl></dd></dl>'
+    writeFileSync(join(artifact, 'api/libtmux.server/index.html'), html.replace(/<dt class="sig".*?<\/dt>/, declarations))
+    const context = await collectNativeContext(artifact, options)
+    expect(context.pages.find((page) => page.file === 'api/libtmux.server/index.html')?.declarations).toContainEqual({
+      id: 'libtmux.Server.sessions', name: 'sessions', kind: 'property', parent: 'libtmux.Server',
+    })
+  })
   it('keeps repeated native declarations on their own pages with nested ownership', () => {
     const context = { port: 'py', pages: ['api/server/', 'internals/server/'].map((path) => ({ path, title: 'Server',
       url: `/pr-42/en/py/stable/api/${path}`, declarations: [

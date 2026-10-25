@@ -102,7 +102,7 @@ export async function collectNativeContext(directory, { prefix, sphinxPort, vers
         signatures: [...window.document.querySelectorAll('dt.sig[id]')].map((element) => element.id),
         declarations: [...window.document.querySelectorAll('dt.sig[id]')].map((element) => {
           const owner = element.parentElement
-          const kind = ['class', 'exception', 'method', 'staticmethod', 'classmethod', 'attribute', 'data', 'function', 'module']
+          const kind = ['class', 'exception', 'method', 'staticmethod', 'classmethod', 'property', 'attribute', 'data', 'function', 'module']
             .find((kind) => owner.classList.contains(kind)) ?? 'section'
           return { id: element.id, name: element.querySelector('.sig-name')?.textContent?.trim() ?? element.id,
             kind: kind === 'data' ? 'constant' : ['staticmethod', 'classmethod'].includes(kind) ? 'method' : kind,
