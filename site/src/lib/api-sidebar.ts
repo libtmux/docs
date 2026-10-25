@@ -14,6 +14,8 @@ export interface SidebarNode {
   section?: string
   quiet?: boolean
   href?: string
+  /** Where a row that only opens in a script leads without one. */
+  fallbackHref?: string
   count?: number
   level: number
   current?: boolean
@@ -48,35 +50,72 @@ export function sidebarInventory(json: ApiTreeJson): ApiTreeJson {
   const known = inventories.get(json)
   if (known) return known
   const hidden = new Set<string>()
-  const hide = (id: string) => {
+  const hiddenSlugs = new Set<string>()
+  const hide = (id: string, slug: string) => {
+    hiddenSlugs.add(slug)
     if (hidden.has(id)) return
     hidden.add(id)
-    for (const [name, , memberId] of json.members[id] ?? []) hide(memberId ?? `${id}.${name}`)
+    for (const [name, slug, memberId] of json.members[id] ?? []) hide(memberId ?? `${id}.${name}`, slug)
   }
   const anonymous = (name: string, qualifiedName = '') => ANONYMOUS_DECLARATION.test(name) || ANONYMOUS_DECLARATION.test(qualifiedName)
   const find = (buckets: ApiTreeBucket[]) => {
     for (const bucket of buckets) {
-      for (const entry of bucket.types) if (anonymous(entry.name, entry.qualifiedName)) hide(entry.id)
+      for (const entry of bucket.types) if (anonymous(entry.name, entry.qualifiedName)) hide(entry.id, entry.slug)
       find(bucket.children)
     }
   }
   find(json.buckets)
   for (const [owner, members] of Object.entries(json.members)) {
-    for (const [name, , id, , , , qualifiedName] of members) if (anonymous(name, qualifiedName)) hide(id ?? `${owner}.${name}`)
+    for (const [name, slug, id, , , , qualifiedName] of members) if (anonymous(name, qualifiedName)) hide(id ?? `${owner}.${name}`, slug)
   }
-  const strip = (buckets: ApiTreeBucket[]): ApiTreeBucket[] => buckets.map((bucket) => ({
-    ...bucket, types: bucket.types.filter((entry) => !hidden.has(entry.id)), children: strip(bucket.children),
-  }))
+  const strip = (buckets: ApiTreeBucket[]): ApiTreeBucket[] => buckets.map((bucket) => {
+    const types = bucket.types.filter((entry) => !hidden.has(entry.id))
+    const children = strip(bucket.children)
+    return { ...bucket, types, children, count: types.length + children.reduce((sum, child) => sum + child.count, 0),
+      slug: bucket.slug && hiddenSlugs.has(bucket.slug) ? types[0]?.slug ?? children.find((child) => child.slug)?.slug ?? null : bucket.slug }
+  }).filter((bucket) => bucket.count > 0)
   const view: ApiTreeJson = hidden.size === 0 ? json : { ...json, buckets: strip(json.buckets), members: Object.fromEntries(
     Object.entries(json.members).filter(([owner]) => !hidden.has(owner))
       .map(([owner, members]) => [owner, members.filter(([name, , id]) => !hidden.has(id ?? `${owner}.${name}`))])) }
   inventories.set(json, view)
+  inventories.set(view, view)
   return view
 }
 
-/** Ownership is explicit: dots in a declaration name do not imply a parent. */
+const catalogs = new WeakMap<ApiTreeJson, ReturnType<typeof createCatalog>>()
+
+/**
+ * The id the sidebar inventory knows a page's declaration by.
+ *
+ * A page names its declaration by public id, but the inventory keys a type by
+ * the id its category entry carries and a member by the id the model gives it,
+ * and for Python and a few Swift members the two differ. Selecting by the
+ * public id alone finds no row there, so the first paint opens nothing and
+ * marks nothing until the client takes over. The public id wins where the
+ * inventory holds it, since that is how types are keyed. A declaration the
+ * inventory does not hold, such as an anonymous one, keeps its public id.
+ */
+export function sidebarSelection(source: ApiTreeJson, symbol: { id: string; publicId?: string } | undefined): string {
+  if (!symbol) return ''
+  const { symbols } = sidebarCatalog(source)
+  return [symbol.publicId, symbol.id].find((id): id is string => id !== undefined && symbols.has(id)) ?? symbol.publicId ?? symbol.id
+}
+
+/**
+ * Ownership is explicit: dots in a declaration name do not imply a parent.
+ * Every page and every lazy branch asks for the same inventory's catalog, so
+ * it is built once per inventory, as its filtered view is.
+ */
 export function sidebarCatalog(source: ApiTreeJson) {
   const json = sidebarInventory(source)
+  const known = catalogs.get(json)
+  if (known) return known
+  const catalog = createCatalog(json)
+  catalogs.set(json, catalog)
+  return catalog
+}
+
+function createCatalog(json: ApiTreeJson) {
   const records = searchApi(json, '')
   const symbols = new Map(records.map((record) => [record.id, record]))
   const parent = new Map<string, string>()
@@ -97,68 +136,136 @@ export function sidebarCatalog(source: ApiTreeJson) {
     ownerLabel: json.ownerLabel ?? (sections ? 'section' : 'type'), ownerPlural: json.ownerPlural ?? (sections ? 'sections' : 'types') }
 }
 
+/**
+ * Outline's first paint shows about this many rows of one sibling list, around
+ * the selected row, or from the top when the owner or category itself is
+ * selected. The rest wait behind "N more" rows that open like any lazy branch,
+ * so a page carries the rows a reader needs rather than every member of its
+ * owner or every entry of its category.
+ */
+export const SIDEBAR_WINDOW = 40
+
+/** A hidden run shorter than this is shown instead: a row to open it would save nothing. */
+export const SIDEBAR_MIN_GAP = 8
+
 const groupName = (kind: string) => ({ property: 'Properties', method: 'Methods', class: 'Classes', object: 'Objects',
   constructor: 'Constructors', field: 'Fields', event: 'Events', function: 'Functions', interface: 'Interfaces',
   enum: 'Enums', 'enum-member': 'Enum members', typealias: 'Type aliases' }[kind] ?? `${kind[0]?.toUpperCase()}${kind.slice(1)}s`)
 
-/** A projection of the same inventory used by ordinary reference navigation. */
-export function sidebarNodes(json: ApiTreeJson, base: string, mode: SidebarPresentation, selected: string, allTypes = false): SidebarNode[] {
+/** Curated buckets and declaration ownership share one projection for initial and lazy rows. */
+export function sidebarNodes(source: ApiTreeJson, base: string, mode: SidebarPresentation, selected: string, allTypes = false,
+  branch?: { lazy: string; level: number }): SidebarNode[] {
+  const json = sidebarInventory(source)
   const catalog = sidebarCatalog(json)
   const ancestry = new Set<string>()
   for (let id: string | undefined = selected; id && !ancestry.has(id); id = catalog.parent.get(id)) ancestry.add(id)
+  const buckets = new Map<string, ApiTreeBucket>()
+  const placements = new Map<string, string[]>()
+  const index = (list: ApiTreeBucket[], path: string[] = []) => {
+    for (const bucket of list) {
+      buckets.set(bucket.id, bucket)
+      const here = [...path, bucket.id]
+      for (const entry of bucket.types) if (!entry.shortcut) placements.set(entry.id, here)
+      index(bucket.children, here)
+    }
+  }
+  index(json.buckets)
+  const currentBuckets = new Set([...ancestry].map((id) => placements.get(id)).find(Boolean) ?? [])
   let seq = 0
   const nextId = () => `api-presentation-${++seq}`
+  // Only Outline's first paint is bounded. A branch the reader opens, a run
+  // that was left out, and the other layouts list everything they are asked for.
+  const bounded = mode === 'outline' && !branch
+  const windowed = (parent: string, level: number, list: SidebarNode[]): SidebarNode[] => {
+    if (!bounded || list.length <= SIDEBAR_WINDOW + SIDEBAR_MIN_GAP) return list
+    const pivot = Math.max(0, list.findIndex((node) => node.current || (node.expanded && node.children)))
+    let start = Math.min(Math.max(0, pivot - (SIDEBAR_WINDOW >> 1)), list.length - SIDEBAR_WINDOW)
+    let end = start + SIDEBAR_WINDOW
+    if (start < SIDEBAR_MIN_GAP) start = 0
+    if (list.length - end < SIDEBAR_MIN_GAP) end = list.length
+    // Without a script the run cannot open, so its row leads to the first page it holds, whose own window shows what follows.
+    const rest = (from: number, to: number): SidebarNode[] => {
+      if (from === to) return []
+      const fallbackHref = list.slice(from, to).find((node) => node.href)?.href
+      return [{ id: nextId(), label: `${to - from} more ${parent.startsWith('type:') ? 'members' : 'entries'}`, level, expanded: false,
+        lazy: `more:${parent}:${from}-${to}`, ...(fallbackHref ? { fallbackHref } : {}) }]
+    }
+    return [...rest(0, start), ...list.slice(start, end), ...rest(end, list.length)]
+  }
   const symbol = (record: ApiSearchResult, level: number, shortcut = false, expand = true): SidebarNode => {
     const members = catalog.membersOf(record.id)
-    const open = expand && ancestry.has(record.id)
+    const open = expand && !shortcut && ancestry.has(record.id)
     return { id: nextId(), label: sidebarName(record.name, json.port), kind: record.kind, href: apiTreeHref(base, record, json.hrefs),
       level, current: !shortcut && record.id === selected, shortcut,
       ...(members.length && expand ? { count: members.length, lazy: `type:${record.id}`, expanded: open,
-        ...(open ? { children: members.map((member) => symbol(member, level + 1)) } : {}) } : {}) }
+        ...(open ? { children: memberNodes(record.id, level + 1) } : {}) } : {}) }
   }
-  if (allTypes || (mode !== 'outline' && !catalog.symbols.has(selected))) return catalog.owners.map((record) => ({ ...symbol({ ...record, name: record.qualifiedName }, 1, false, false), count: catalog.membersOf(record.id).length }))
-  if (mode === 'outline') {
-    const roots = catalog.records.filter((record) => !catalog.parent.has(record.id))
-    if (roots.every((record) => record.kind === 'section')) return roots.map((record) => symbol(record, 1))
-    const rootName = (record: ApiSearchResult) => {
-      const peers = roots.filter((other) => other.symbolName === record.symbolName)
-      if (peers.length < 2) return record.symbolName
-      const parts = record.qualifiedName.split('.')
-      for (let length = 2; length <= parts.length; length++) {
-        const name = parts.slice(-length).join('.')
-        if (peers.every((other) => other.id === record.id || other.qualifiedName.split('.').slice(-length).join('.') !== name)) return name
-      }
-      // An id is no label: peers the name cannot separate keep it, and their kind mark and link do.
-      return record.symbolName
+  const memberNodes = (owner: string, level: number): SidebarNode[] => {
+    const members = catalog.membersOf(owner)
+    if (mode !== 'grouped') return windowed(`type:${owner}`, level, members.map((member) => symbol(member, level)))
+    const groups = new Map<string, ApiSearchResult[]>()
+    for (const member of members) {
+      const group = groups.get(member.kind) ?? []
+      group.push(member)
+      groups.set(member.kind, group)
     }
-    const core = ['Server', 'Session', 'Window', 'Pane', 'Client']
-      .flatMap((name) => roots.filter((record) => record.symbolName === name))
-    const support = roots.filter((record) => !core.includes(record) && record.category === 'types')
-    const other = roots.filter((record) => !core.includes(record) && record.category !== 'types')
-    const section = (label: string, records: ApiSearchResult[], unit = 'types'): SidebarNode[] => records.length ? [
-      { id: nextId(), label, section: unit, count: records.length, level: 1 },
-      ...records.map((record) => symbol({ ...record, name: rootName(record) }, 1)),
-    ] : []
-    return [...section('Core objects', core), ...section('Supporting types', support),
-      ...section(other.every((record) => record.kind === 'function') ? 'Functions' : 'Other declarations', other, 'declarations')]
+    return [...groups].sort(([a], [b]) => groupName(a).localeCompare(groupName(b), 'en')).map(([kind, records]) => ({
+      id: nextId(), label: groupName(kind), count: records.length, level, expanded: true, lazy: `group:${owner}:${kind}`,
+      children: records.toSorted((a, b) => a.name.localeCompare(b.name, 'en') || a.id.localeCompare(b.id, 'en'))
+        .map((member) => symbol(member, level + 1)),
+    }))
   }
-  const owner = catalog.ownerOf(selected)
-  if (!owner) {
-    const record = catalog.symbols.get(selected)
-    return record ? [symbol(record, 1)] : []
+  const rootName = (record: ApiSearchResult, peers: ApiSearchResult[], names: Map<string, number>) => {
+    if (record.name !== record.symbolName || (names.get(record.name) ?? 0) < 2) return record.name
+    const separator = record.qualifiedName.includes('::') ? '::' : '.'
+    const parts = record.qualifiedName.split(separator)
+    for (let length = 2; length <= parts.length; length++) {
+      const name = parts.slice(-length).join(separator)
+      if (peers.every((other) => other.id === record.id || other.qualifiedName.split(separator).slice(-length).join(separator) !== name)) return name
+    }
+    return record.symbolName
   }
-  const members = catalog.membersOf(owner.id)
-  const head = symbol(owner, 1, false, false)
-  head.count = members.length
-  if (mode === 'focus') return [head, ...members.map((member) => symbol(member, 1))]
-  const groups = new Map<string, ApiSearchResult[]>()
-  for (const member of members) {
-    const group = groups.get(member.kind) ?? []
-    group.push(member)
-    groups.set(member.kind, group)
+  const bucketNodes = (bucket: ApiTreeBucket, level: number): SidebarNode[] => {
+    const entries = bucket.types.flatMap((entry) => {
+      const record = catalog.symbols.get(entry.id)
+      return record ? [{ ...record, name: entry.name, shortcut: entry.shortcut }] : []
+    })
+    const names = new Map<string, number>()
+    for (const entry of entries) names.set(entry.name, (names.get(entry.name) ?? 0) + 1)
+    return windowed(`bucket:${bucket.id}`, level, [...entries.map((entry) => symbol({ ...entry, name: rootName(entry, entries, names) }, level, entry.shortcut)),
+      ...bucket.children.map((child) => bucketNode(child, level))])
   }
-  return [head, ...[...groups].sort(([a], [b]) => groupName(a).localeCompare(groupName(b), 'en')).map(([kind, records]) => ({
-    id: nextId(), label: groupName(kind), count: records.length, level: 1, expanded: true, lazy: `group:${owner.id}:${kind}`,
-    children: records.sort((a, b) => a.name.localeCompare(b.name, 'en') || a.id.localeCompare(b.id, 'en')).map((member) => symbol(member, 2)),
-  }))]
+  const bucketNode = (bucket: ApiTreeBucket, level: number): SidebarNode => ({
+    id: nextId(), label: bucket.label, level, count: bucket.count, lazy: `bucket:${bucket.id}`,
+    ...(bucket.slug ? { href: `${base}${bucket.slug}/` } : {}),
+    expanded: currentBuckets.has(bucket.id),
+    ...(currentBuckets.has(bucket.id) ? { children: bucketNodes(bucket, level + 1) } : {}),
+  })
+  if (branch) {
+    // A run a window left out, by position in the list it was cut from.
+    const folded = /^more:(bucket|type):(.+):(\d+)-(\d+)$/.exec(branch.lazy)
+    if (folded) {
+      const [kind, id, from, to] = folded.slice(1) as [string, string, string, string]
+      const bucket = buckets.get(id)
+      return (kind === 'bucket' ? bucket ? bucketNodes(bucket, branch.level) : [] : memberNodes(id, branch.level)).slice(Number(from), Number(to))
+    }
+    if (branch.lazy.startsWith('bucket:')) {
+      const bucket = buckets.get(branch.lazy.slice(7))
+      return bucket ? bucketNodes(bucket, branch.level) : []
+    }
+    if (branch.lazy.startsWith('type:')) return memberNodes(branch.lazy.slice(5), branch.level)
+    return []
+  }
+  if (allTypes) return catalog.owners.map((record) => ({ ...symbol({ ...record, name: record.qualifiedName }, 1, false, false), count: catalog.membersOf(record.id).length }))
+  if (mode === 'focus' && catalog.symbols.has(selected)) {
+    const owner = catalog.ownerOf(selected)
+    if (!owner) return [symbol(catalog.symbols.get(selected)!, 1)]
+    const members = catalog.membersOf(owner.id)
+    return [{ ...symbol(owner, 1, false, false), count: members.length }, ...members.map((member) => symbol(member, 1))]
+  }
+  // Manuals and protocol catalogs already have section owners; avoid wrapping them in a second section row.
+  if (json.buckets.length === 1 && !json.buckets[0]!.children.length && json.buckets[0]!.types.every((entry) => entry.kind === 'section')) {
+    return bucketNodes(json.buckets[0]!, 1)
+  }
+  return json.buckets.map((bucket) => bucketNode(bucket, 1))
 }

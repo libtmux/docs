@@ -413,7 +413,8 @@ async function observeInitialPageLoad(page) {
 }
 
 /** Keep API controls and history usable across document navigation. */
-export async function checkApiNavigation(page, base) {
+export async function checkApiNavigation(page, base, { sabotage } = {}) {
+  if (sabotage) await page.addInitScript(sabotage)
   await observeInitialPageLoad(page)
   const server = `${base}/lua/latest/reference/libtmux-server/`
   const snapshot = `${base}/lua/latest/reference/libtmux-server-snapshot/`
@@ -449,8 +450,8 @@ export async function checkApiNavigation(page, base) {
         assert(bounds, 'The open drawer exposes its dismissal overlay')
         await overlay.click({ position: { x: bounds.width - 2, y: 400 } })
       }
+      assert.equal(await toggle.getAttribute('aria-expanded'), 'false', `${close}: API drawer closes`)
       await nav.waitFor({ state: 'hidden' })
-      assert.equal(await toggle.getAttribute('aria-expanded'), 'false')
       assert.equal(await page.evaluate(() => document.body.style.overflow), '')
     }
     await page.goBack({ waitUntil: 'commit' })
@@ -534,7 +535,10 @@ export async function checkApiNavigation(page, base) {
   await page.keyboard.press('Escape')
   await page.keyboard.press('Escape')
   await search.fill('')
-  await page.locator('[data-lazy="type:libtmux.Pane"] > .api-nav__row').click()
+  await page.locator('[data-lazy="bucket:pane"]').focus()
+  await page.keyboard.press('ArrowRight')
+  await page.locator('[data-lazy="type:libtmux.Pane"]').focus()
+  await page.keyboard.press('ArrowRight')
   await page.waitForFunction(() => document.querySelector('[data-lazy="type:libtmux.Pane"]')?.getAttribute('aria-expanded') === 'true')
   await page.locator('.api-nav__tree a[href$="/reference/libtmux-session/"]').click()
   await page.waitForURL(`${base}/lua/latest/reference/libtmux-session/`, { waitUntil: 'commit' })
@@ -646,18 +650,30 @@ export async function checkApiAnchorArrival(browser, base) {
   console.log(`API anchors: ${paths.size} declarations across ${PORTS.length} ports, primary and retained fragments, phone/desktop, both themes and no-JavaScript navigation pass`)
 }
 
+/** The control for `checkApiNavigation`: a drawer whose close button does nothing must fail it. */
+export async function checkApiNavigationFail(browser, base) {
+  const page = await browser.newPage({ reducedMotion: 'reduce' })
+  try {
+    await assert.rejects(() => checkApiNavigation(page, base, { sabotage: () => {
+      document.addEventListener('click', (event) => {
+        if (event.target.closest('[data-api-nav-close]')) event.stopImmediatePropagation()
+      }, true)
+    } }), /button: API drawer closes/, 'The navigation check detects a broken close button')
+  } finally { await page.close() }
+}
+
 /**
- * Sticky Members and group bars in a real engine. Mocked geometry cannot show
- * where a browser aligns a sticky heading or whether the bars cover focus, so
- * this check drives the production reference page. `only` limits the scenarios
- * and `sabotage` adds a script or style to every page, for the control below.
+ * The tmux manual's sidebar in each layout: controls stay reachable and the column ends at the footer
+ * while the page scrolls, and the highlighted section follows the one being read. `sabotage` adds a
+ * style to the page, for the control below.
  */
-export async function checkReferenceSidebarBounds(browser, base) {
+export async function checkReferenceSidebarBounds(browser, base, { sabotage } = {}) {
   const page = await browser.newPage({ viewport: { width: 1233, height: 1220 }, reducedMotion: 'reduce', colorScheme: 'dark' })
   try {
     await page.goto(`${base}/tmux/latest/manual/#options`)
     await page.locator('html[data-page-readiness="ready"]').waitFor()
     await page.locator('.api-nav[data-presentation-ready="true"]').waitFor()
+    if (sabotage) await page.addStyleTag({ content: sabotage })
     for (const mode of ['outline', 'focus', 'grouped']) {
       await page.locator('[data-api-actions] > summary').click()
       await page.getByRole('radio', { name: mode, exact: false }).click()
@@ -679,7 +695,8 @@ export async function checkReferenceSidebarBounds(browser, base) {
       await page.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }))
       await page.waitForFunction(() => document.querySelector('.api-nav').dataset.symbol === 'section:clients-and-sessions', undefined, { timeout: 1000 })
       await page.evaluate(() => scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }))
-      await page.waitForFunction(() => document.querySelector('.api-nav').dataset.symbol === 'section:options', undefined, { timeout: 1000 })
+      await page.waitForFunction(() => document.querySelector('.api-nav').dataset.symbol === 'section:options', undefined, { timeout: 1000 }).catch(() => {})
+      assert.equal(await page.locator('.api-nav').getAttribute('data-symbol'), 'section:options', `${mode}: sidebar follows the last visible section`)
     }
     await page.setViewportSize({ width: 1233, height: 760 })
     await page.evaluate(() => scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }))
@@ -691,6 +708,21 @@ export async function checkReferenceSidebarBounds(browser, base) {
   } finally { await page.close() }
 }
 
+/** The controls for `checkReferenceSidebarBounds`: a column pushed off the footer and a hidden last section must each fail it. */
+export async function checkReferenceSidebarBoundsFail(browser, base) {
+  for (const [sabotage, failure] of [
+    ['.api-nav-column { margin-bottom: 40px !important; }', /sidebar column meets the footer/],
+    ['h2#options { display: none !important; }', /sidebar follows the last visible section/],
+  ]) await assert.rejects(() => checkReferenceSidebarBounds(browser, base, { sabotage }), failure,
+    'The sidebar check detects broken footer alignment and section tracking')
+}
+
+/**
+ * Sticky Members and group bars in a real engine. Mocked geometry cannot show
+ * where a browser aligns a sticky heading or whether the bars cover focus, so
+ * this check drives the production reference page. `only` limits the scenarios
+ * and `sabotage` adds a script or style to every page, for the control below.
+ */
 export async function checkApiStickyHeadings(browser, base, { only, sabotage } = {}) {
   const engine = browser.browserType().name()
   const path = `${base}/swift/latest/reference/server/`

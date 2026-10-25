@@ -7,13 +7,15 @@
  * types with members closed over nothing: their children arrive from
  * `tree.json` the first time a reader opens one. So the markup a page carries
  * stays its own branch rather than twelve thousand symbols, and every bucket
- * still opens in place.
+ * still opens in place. A list longer than a window keeps the rows around the
+ * page and folds the rest into "N more" rows, which open like any other branch.
  *
  * Desktop: a sticky column whose tree scrolls on its own, opened at the page
  * being read before first paint. Phone: the same markup as a drawer docked on
  * the left, as Microsoft Learn's table of contents is, rather than two screens
  * of links above the title. Without JavaScript it stays an inline column, and
- * every closed row is still a link.
+ * every closed row is still a link; a folded "N more" row leads to the first
+ * page it holds.
  */
 import ApiTreeItems, { type TreeNode } from './ApiTreeItems.astro'
 import ApiBadge from './ApiBadge.astro'
@@ -165,7 +167,7 @@ if (!mark(nodes)) {
     document.documentElement.setAttribute('data-api-nav', '')
   </script>
   <div class="api-nav-overlay" data-api-nav-overlay></div>
-  <div id="api-nav" class="api-nav" data-src={inventorySrc ?? `${base}tree.json`} data-base={base} data-version={version} data-marks={marks === 'mixed' ? 'mixed' : undefined}
+  <div id="api-nav" class="api-nav" data-src={inventorySrc ?? `${base}tree.json`} data-base={base} data-version={presentation ? `3:${version}` : version} data-marks={marks === 'mixed' ? 'mixed' : undefined}
     data-presentation={presentation} data-symbol={presentation ? selectedSymbol : undefined}
     data-controlled={controlled || undefined}
     data-state-scope={presentation === 'outline' ? presentation : presentation ? `${presentation}:${selectedOwner?.id ?? ''}` : undefined} aria-labelledby="api-nav-title">
@@ -191,22 +193,17 @@ if (!mark(nodes)) {
     {presentation && catalog && <div class="api-nav__presentation">
       <div class="api-nav__picker-row">
       <div class="api-nav__owner-picker" data-api-owner-picker>
-        <button type="button" id="api-owner" class="api-nav__owner-field" data-api-owner data-symbol={selectedOwner?.id}
+        <button type="button" id="api-owner" class="api-nav__owner-field" disabled data-api-owner data-symbol={selectedOwner?.id}
           aria-expanded="false" aria-controls="api-owner-popup" aria-haspopup="listbox" aria-label={`Choose ${ownerLabel}`}>
           <span data-api-owner-mark>{selectedOwner && <ApiBadge label={selectedOwner.kind} variant="kind" value={selectedOwner.kind} compact />}</span>
-          <span data-api-owner-label>{selectedOwner?.symbolName ?? `Choose ${ownerLabel}`}</span>
+          <span data-api-owner-label>{selectedOwner?.shortName ?? selectedOwner?.symbolName ?? `Choose ${ownerLabel}`}</span>
           <span class="api-nav__chevron" aria-hidden="true" />
         </button>
         <div id="api-owner-popup" class="api-nav__owner-popup" data-api-owner-popup hidden>
           <input class="api-nav__owner-search" data-api-owner-search role="combobox" aria-expanded="false" aria-controls="api-owner-options"
             aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder={`Filter ${ownerPlural}…`} aria-label={`Filter ${ownerPlural}`} />
           <div id="api-owner-options" role="listbox" aria-label={ownerPlural} tabindex="-1">
-            {catalog.owners.map((owner, index) => <div id={`api-owner-option-${index}`} role="option" aria-selected={owner.id === selectedOwner?.id ? 'true' : 'false'}
-              class="api-nav__owner-option" data-owner-id={owner.id} data-qualified-name={owner.qualifiedName}>
-              <ApiBadge label={owner.kind} variant="kind" value={owner.kind} compact />
-              <span class="api-nav__owner-name">{owner.symbolName}<small>{owner.qualifiedName !== owner.symbolName ? owner.qualifiedName : ''}</small></span>
-              <ApiBadge label={owner.kind} variant="kind" value={owner.kind} plain />
-            </div>)}
+
           </div>
           <p data-api-owner-empty role="status" hidden>No {ownerPlural} found.</p>
         </div>
@@ -244,6 +241,9 @@ if (!mark(nodes)) {
       </details>
       </div>
     </div>}
+    {presentation && glossaryHref && <a class="api-nav__reference-link" href={glossaryHref}
+      aria-current={currentPath.replace(/\/?$/, '/') === glossaryHref ? 'page' : undefined}
+      target={controlled ? '_top' : undefined}>{glossaryLabel}</a>}
     <nav class="api-nav__nav" aria-label={treeLabel} data-pagefind-ignore="all">
       <p class="api-nav__search-status" role="status" data-api-search-status></p>
       <button type="button" class="api-nav__retry" data-api-search-retry hidden>Retry search</button>
@@ -253,7 +253,7 @@ if (!mark(nodes)) {
       </ul>
     </nav>
   </div>
-  <noscript><style>.api-nav__search { display: none; }</style></noscript>
+  <noscript><style>.api-nav__search, .api-nav__item[data-lazy^='more:'] > .api-nav__row > span.api-nav__label { display: none; }</style></noscript>
   <script is:inline data-astro-rerun set:html={`((nav) => (${initializeApiTree.toString()})(nav, !nav.dataset.apiTreeInitialized))(document.currentScript.closest('.api-nav-column').querySelector('.api-nav'));`} />
   <script>
     import { initApiTree, saveApiTreeState } from './api-tree'

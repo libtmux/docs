@@ -55,9 +55,12 @@ const items = nodes.filter((node) => !node.section)
               <SymbolName name={node.label} />
             </a>
           ) : (
-            <span class="api-nav__label" id={node.id}>
-              <SymbolName name={node.label} />
-            </span>
+            <>
+              <span class="api-nav__label" id={node.id}>
+                <SymbolName name={node.label} />
+              </span>
+              {node.fallbackHref && <noscript><a class="api-nav__label" href={node.fallbackHref}><SymbolName name={node.label} /></a></noscript>}
+            </>
           )}
           {node.count !== undefined && (
             <span class="api-nav__count" id={`${node.id}-count`}>

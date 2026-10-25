@@ -161,10 +161,10 @@ function adaptNativePage(html, page, context, chrome, file, assetDigests) {
     })
     .replace(/<body\b([^>]*)>\s*/i, (_tag, attributes) => `<body${attributes.replace(/\sdata-documentation-layout=["'][^"']*["']/gi, '')} data-documentation-layout="reference">\n<!-- libtmux-native-header -->${chrome.header}<!-- /libtmux-native-header -->\n`)
     .replace(/(?:<aside class="sidebar-drawer"(?: id="native-navigation")?>[\s\S]*?<\/aside>|<!-- libtmux-native-sidebar -->[\s\S]*?<!-- \/libtmux-native-sidebar -->)/,
-      `<!-- libtmux-native-sidebar -->${chrome.sidebar}<!-- /libtmux-native-sidebar -->`)
+      () => `<!-- libtmux-native-sidebar -->${chrome.sidebar}<!-- /libtmux-native-sidebar -->`)
   after = after
     .replace(/<aside class="toc-drawer"(?: id="native-toc")?>/, '<aside class="toc-drawer" id="native-toc">')
-    .replace(/\s*<\/body>/i, `\n<!-- libtmux-native-footer -->${chrome.footer}<!-- /libtmux-native-footer -->\n</body>`)
+    .replace(/\s*<\/body>/i, () => `\n<!-- libtmux-native-footer -->${chrome.footer}<!-- /libtmux-native-footer -->\n</body>`)
   const attributes = opening[0].replace(/\sdata-pagefind-(?:body|filter)(?:=["'][^"']*["'])?/gi, '').replace(/>$/, ` data-pagefind-body data-pagefind-filter="port:${PORT_BY_SLUG[context.port].name}">`)
   const result = before + attributes + article + after
   if (result.split('<!-- libtmux-native-sidebar -->').length !== 2) throw new Error(`Native page must contain one shared sidebar: ${page.file}`)

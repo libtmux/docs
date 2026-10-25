@@ -28,7 +28,7 @@ export const DEMO_SECTIONS: DemoSection[] = [
       {
         href: '/demo/sidebar/',
         title: 'API sidebar variants',
-        description: 'Outline, Focus, and Grouped with the current C# and Kotlin APIs.',
+        description: 'Outline, Focus, and Grouped with every language port and tmux CLI.',
       },
       {
         href: '/demo/ux/button/',
