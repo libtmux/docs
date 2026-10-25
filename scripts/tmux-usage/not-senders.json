@@ -109,13 +109,13 @@
       "why": "WaitForTextAsync waits on pane activity through PaneTextWaiter; it does not send tmux's wait-for.",
       "evidence": [
         {
-          "at": "src/LibTmux/Pane.Waiting.cs:66",
+          "at": "src/LibTmux/Pane.Waiting.cs:76",
           "has": [
             "PaneTextWaiter.WaitAsync("
           ]
         },
         {
-          "at": "src/LibTmux/Pane.Waiting.cs:67",
+          "at": "src/LibTmux/Pane.Waiting.cs:77",
           "has": [
             "PaneActivityHub.Shared"
           ]

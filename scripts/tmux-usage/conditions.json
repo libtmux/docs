@@ -652,6 +652,27 @@
           ]
         }
       ]
+    },
+    {
+      "port": "csharp",
+      "symbol": "LibTmux.Pane.BreakAsync",
+      "command": "display-message",
+      "scope": null,
+      "when": "break-pane prints no window ID",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Pane.Topology.cs:192",
+          "has": [
+            "result.StandardOutputLines.Count == 0"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Pane.Topology.cs:196",
+          "has": [
+            "\"display-message\", \"-p\", \"-t\", Target"
+          ]
+        }
+      ]
     }
   ]
 }

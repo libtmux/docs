@@ -80,21 +80,21 @@
     },
     "powershell": {
       "repo": "libtmux/libtmux-powershell",
-      "revision": "48d770503a01e36426839b94951109dea6ce4562",
+      "revision": "5ebb019afa5520b07e27439d676e125a1db18fb0",
       "distributions": [
         {
           "name": "LibTmux",
-          "version": "0.1.0-alpha2",
+          "version": "0.1.0-alpha3",
           "manifest": "module/LibTmux/LibTmux.psd1",
           "repo": "libtmux/libtmux-powershell",
-          "revision": "48d770503a01e36426839b94951109dea6ce4562"
+          "revision": "5ebb019afa5520b07e27439d676e125a1db18fb0"
         },
         {
           "name": "LibTmux.Workspace",
-          "version": "0.1.0-alpha2",
+          "version": "0.1.0-alpha3",
           "manifest": "module/LibTmux.Workspace/LibTmux.Workspace.psd1",
           "repo": "libtmux/libtmux-powershell",
-          "revision": "48d770503a01e36426839b94951109dea6ce4562"
+          "revision": "5ebb019afa5520b07e27439d676e125a1db18fb0"
         }
       ],
       "units": []
@@ -534,63 +534,63 @@
     },
     "csharp": {
       "repo": "libtmux/libtmux-dotnet",
-      "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f",
+      "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f",
       "distributions": [
         {
           "name": "LibTmux",
-          "version": "0.0.0-alpha.22",
+          "version": "0.0.0-alpha.23",
           "manifest": "src/LibTmux/LibTmux.csproj",
           "repo": "libtmux/libtmux-dotnet",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f"
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f"
         },
         {
           "name": "LibTmux.Extensions.DependencyInjection",
-          "version": "0.0.0-alpha.22",
+          "version": "0.0.0-alpha.23",
           "manifest": "src/LibTmux.Extensions.DependencyInjection/LibTmux.Extensions.DependencyInjection.csproj",
           "repo": "libtmux/libtmux-dotnet",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f"
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f"
         },
         {
           "name": "LibTmux.FSharp",
-          "version": "0.0.0-alpha.22",
+          "version": "0.0.0-alpha.23",
           "manifest": "src/LibTmux.FSharp/LibTmux.FSharp.fsproj",
           "repo": "libtmux/libtmux-dotnet",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f"
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f"
         },
         {
           "name": "LibTmux.Mcp",
-          "version": "0.0.0-alpha.22",
+          "version": "0.0.0-alpha.23",
           "manifest": "src/LibTmux.Mcp/LibTmux.Mcp.csproj",
           "repo": "libtmux/libtmux-dotnet",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f"
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f"
         },
         {
           "name": "LibTmux.Query.Json",
-          "version": "0.0.0-alpha.22",
+          "version": "0.0.0-alpha.23",
           "manifest": "src/LibTmux.Query.Json/LibTmux.Query.Json.csproj",
           "repo": "libtmux/libtmux-dotnet",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f"
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f"
         },
         {
           "name": "LibTmux.Testing",
-          "version": "0.0.0-alpha.22",
+          "version": "0.0.0-alpha.23",
           "manifest": "src/LibTmux.Testing/LibTmux.Testing.csproj",
           "repo": "libtmux/libtmux-dotnet",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f"
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f"
         },
         {
           "name": "LibTmux.Workspace",
-          "version": "0.0.0-alpha.22",
+          "version": "0.0.0-alpha.23",
           "manifest": "src/LibTmux.Workspace/LibTmux.Workspace.csproj",
           "repo": "libtmux/libtmux-dotnet",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f"
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f"
         },
         {
           "name": "LibTmux.Workspace.Cli",
-          "version": "0.0.0-alpha.22",
+          "version": "0.0.0-alpha.23",
           "manifest": "src/LibTmux.Workspace.Cli/LibTmux.Workspace.Cli.csproj",
           "repo": "libtmux/libtmux-dotnet",
-          "revision": "5b486ea9f3df6a882f3fedb36b9373a8161f4d0f"
+          "revision": "0e25b51502c3a3879325aa0dbc1868f5940b233f"
         }
       ],
       "units": []
