@@ -7,6 +7,8 @@ import { apiHostOf, collectApiDestinations } from '../../scripts/lib/api-destina
 import { normalizeAddress } from '../../scripts/lib/api-markdown-links.mjs'
 import { API_MODELS } from '../src/lib/api-models'
 import { linkProseMarkdown } from '../src/lib/prose-markdown'
+import { createProseLinker } from '../src/lib/prose-resolver'
+import { DOC_PRODUCTS, PORTS, productConceptNotice, productDescription, workspaceOverviewNotice } from '../src/lib/ports'
 import { productApiHref } from '../src/lib/product-api'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { defaultVersionFor } from '../src/lib/versions'
@@ -153,4 +155,26 @@ describe('the pages, rendered for each port', () => {
     expect([...missing].map(([href, where]) => `${href} (${where})`)).toEqual([])
     expect(linked).toBeGreaterThan(0)
   }, 900_000)
+})
+
+describe('the notices a template writes', () => {
+  it('link no address the collector does not read: the prose a product notice carries is linked as the page linker links it', () => {
+    const link = createProseLinker()
+    const missing: string[] = []
+    let spans = 0
+    for (const port of PORTS) {
+      for (const product of Object.keys(DOC_PRODUCTS) as (keyof typeof DOC_PRODUCTS)[]) {
+        const texts = [productConceptNotice(port, product)?.body, workspaceOverviewNotice(port)?.body, (() => { try { return productDescription(port, product) } catch { return undefined } })()]
+        for (const text of texts) {
+          for (const code of (text ?? '').matchAll(/`([^`]+)`/g)) {
+            spans += 1
+            const decision = link(code[1], { pagePort: port.slug })
+            if (decision.kind === 'link' && apiHostOf(decision.href) && !collected(decision.href)) missing.push(`${decision.href} (${port.slug} ${product})`)
+          }
+        }
+      }
+    }
+    expect(missing).toEqual([])
+    expect(spans).toBeGreaterThan(0)
+  })
 })

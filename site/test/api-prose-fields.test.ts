@@ -84,7 +84,7 @@ describe('the code that links prose', () => {
   const WHERE = /^(?:src(?!\/(?:data|content)\/)|scripts)\//
   const READ: Record<string, string> = {
     'scripts/check-dev.mjs': 'asks an index which page a name has; links nothing',
-    'src/components/ProseText.astro': 'template prose, with the port it names: decideMention; the notices it carries are read below',
+    'src/components/ProseText.astro': 'template prose, with the port it names: decideMention; the notices it carries are read in api-links-rendered.test.ts',
     'src/components/api/ApiCommandParameters.astro': 'passes the index to ApiDoc',
     'src/components/api/ApiDoc.astro': 'the renderer: docSpans, which the collector calls too',
     'src/components/api/ApiEntry.astro': 'passes the index to ApiDoc; resolves the type an entry inherits from, to a page of this site',
